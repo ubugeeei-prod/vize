@@ -1,0 +1,27 @@
+<script setup lang="ts">
+import { computed, ref } from "vue";
+import type { Component } from "vue";
+
+const usedInTemplate = 1;
+const unused = 2;
+const _ignored = 3;
+const source = { first: 1, second: 2 };
+const { first, second } = source;
+let counter = 0;
+let neverReassigned = 4;
+const total = ref(first);
+function keepFirst(a: number, b: number): number {
+  return a;
+}
+function nested(): number {
+  const inner = 5;
+  return 6;
+}
+function handler(_event: Event, value: number): number {
+  return value + total.value + keepFirst(1, 2) + nested();
+}
+</script>
+
+<template>
+  <button type="button" @click="counter++">{{ usedInTemplate }} {{ neverReassigned }} {{ handler }}</button>
+</template>

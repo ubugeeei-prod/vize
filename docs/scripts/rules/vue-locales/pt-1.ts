@@ -100,6 +100,11 @@ export const portugueseVue1: Record<string, readonly [purpose: string, bad: stri
       "O template declara o nome de ref unused sem uma variável de referência correspondente no script.",
       "A ref de template inputEl tem uma variável ref de mesmo nome em script setup.",
     ],
+    "vue/no-unused-script-vars": [
+      "Proibir variáveis, importações e parâmetros de script não usados",
+      "O script setup declara unused, e nem o script nem o template o leem.",
+      "A interpolação do template lê unused, então a variável declarada é usada.",
+    ],
     "vue/no-unused-setup-bindings": [
       "Proibir variáveis de script setup que nunca são lidas",
       "A variável message de script setup nunca é lida pelo template.",
@@ -159,6 +164,11 @@ export const portugueseVue1: Record<string, readonly [purpose: string, bad: stri
       "Aplicar as regras do modelo de conteúdo HTML",
       "Os exemplos colocam conteúdo em bloco dentro de p, omitem o corpo da tabela, aninham controles interativos ou colocam uma div diretamente dentro de ul.",
       "Os exemplos usam conteúdo inline no parágrafo, um tbody explícito e filhos li. O componente personalizado MyItem não é tratado como um filho nativo conhecido de ul.",
+    ],
+    "vue/prefer-const": [
+      "Exigir const para vínculos que o script e o template nunca reatribuem",
+      "O template lê label, e nem o script nem o template o reatribui, então let não é necessário.",
+      "const corresponde a um vínculo que o script e o template apenas leem.",
     ],
     "vue/prefer-props-shorthand": [
       "Recomendar sintaxe abreviada para props (Vue 3.4+)",

@@ -259,6 +259,7 @@ export const purposeJa: Readonly<Record<string, string>> = {
   "vue/no-unused-components": "登録しているのにテンプレートで使わないコンポーネントを検出します。",
   "vue/no-unused-properties": "defineProps に宣言しているのに使わない prop を検出します。",
   "vue/no-unused-refs": "テンプレートに宣言しているのに参照しない ref を検出します。",
+  "vue/no-unused-script-vars": "スクリプトで宣言しているのに使わない変数、インポート、引数を検出します。",
   "vue/no-unused-setup-bindings": "script setup に宣言しているのに読み取らない変数を検出します。",
   "vue/no-unused-vars": "v-for / v-slot に宣言しているのに使わない変数を検出します。",
   "vue/no-use-v-else-with-v-for": "同じ要素での v-else / v-else-if と v-for の併用を検出します。",
@@ -272,6 +273,7 @@ export const purposeJa: Readonly<Record<string, string>> = {
   "vue/no-v-text": "v-text の代わりに mustache を使う方針を適用します。",
   "vue/no-v-text-v-html-on-component": "コンポーネントでの v-text / v-html を検出します。",
   "vue/permitted-contents": "HTML の要素ごとのコンテンツモデルを検査します。",
+  "vue/prefer-const": "スクリプトとテンプレートが再代入しないバインディングを const にします。",
   "vue/prefer-props-shorthand": "Vue 3.4 の同名 prop バインディングの省略形を使います。",
   "vue/prefer-true-attribute-shorthand":
     "true を指定するバインディングを真偽属性の省略形にします。",

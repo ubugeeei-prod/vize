@@ -11,8 +11,10 @@ const LATER_DEFAULT_RULES: &[&str] = &[
     "script/define-props-destructuring",
     "vue/html-self-closing",
     "vue/no-undefined-refs",
+    "vue/no-unused-script-vars",
     "vue/no-unused-setup-bindings",
     "vue/no-this-in-before-route-enter",
+    "vue/prefer-const",
 ];
 
 fn corpus_linter(preset: LintPreset, additionally_disabled: Option<&str>) -> Linter {

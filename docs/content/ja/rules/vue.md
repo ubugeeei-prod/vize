@@ -103,7 +103,7 @@ SFC のテンプレート・ディレクティブ・コンポーネント・各�
 | <span id="vue-v-on-style"></span>[`vue/v-on-style`](./reference/vue-v-on-style.md) | v-on の表記形式を揃えます。 | ✓ |
 | <span id="vue-v-slot-style"></span>[`vue/v-slot-style`](./reference/vue-v-slot-style.md) | v-slot の表記形式を揃えます。 | ✓ |
 
-## より厳しいプリセット (27)
+## より厳しいプリセット (29)
 
 `opinionated`・`nuxt`・`ecosystem` のいずれかにだけ含まれます。どれに含まれるかはプリセット列を参照してください。
 
@@ -124,9 +124,11 @@ SFC のテンプレート・ディレクティブ・コンポーネント・各�
 | <span id="vue-no-src-attribute"></span>[`vue/no-src-attribute`](./reference/vue-no-src-attribute.md) | SFC ブロックの外部 src 指定を検出します。 | `nuxt`, `opinionated` |  |
 | <span id="vue-no-template-lang"></span>[`vue/no-template-lang`](./reference/vue-no-template-lang.md) | template の lang 指定を避ける方針を示します。 | `nuxt`, `opinionated` |  |
 | <span id="vue-no-unused-refs"></span>[`vue/no-unused-refs`](./reference/vue-no-unused-refs.md) | テンプレートに宣言しているのに参照しない ref を検出します。 | `nuxt`, `opinionated` |  |
+| <span id="vue-no-unused-script-vars"></span>[`vue/no-unused-script-vars`](./reference/vue-no-unused-script-vars.md) | スクリプトで宣言しているのに使わない変数、インポート、引数を検出します。 | `nuxt`, `opinionated` |  |
 | <span id="vue-no-useless-mustaches"></span>[`vue/no-useless-mustaches`](./reference/vue-no-useless-mustaches.md) | 文字列リテラルだけの不要な mustache を検出します。 | `nuxt`, `opinionated` |  |
 | <span id="vue-no-useless-v-bind"></span>[`vue/no-useless-v-bind`](./reference/vue-no-useless-v-bind.md) | 文字列リテラルだけの不要な v-bind を検出します。 | `nuxt`, `opinionated` |  |
 | <span id="vue-no-v-text"></span>[`vue/no-v-text`](./reference/vue-no-v-text.md) | v-text の代わりに mustache を使う方針を適用します。 | `nuxt`, `opinionated` |  |
+| <span id="vue-prefer-const"></span>[`vue/prefer-const`](./reference/vue-prefer-const.md) | スクリプトとテンプレートが再代入しないバインディングを const にします。 | `nuxt`, `opinionated` |  |
 | <span id="vue-prefer-props-shorthand"></span>[`vue/prefer-props-shorthand`](./reference/vue-prefer-props-shorthand.md) | Vue 3.4 の同名 prop バインディングの省略形を使います。 | `nuxt`, `opinionated` | ✓ |
 | <span id="vue-prefer-true-attribute-shorthand"></span>[`vue/prefer-true-attribute-shorthand`](./reference/vue-prefer-true-attribute-shorthand.md) | true を指定するバインディングを真偽属性の省略形にします。 | `nuxt`, `opinionated` |  |
 | <span id="vue-require-component-registration"></span>[`vue/require-component-registration`](./reference/vue-require-component-registration.md) | 使用するコンポーネントを import または登録します。 | `opinionated` |  |

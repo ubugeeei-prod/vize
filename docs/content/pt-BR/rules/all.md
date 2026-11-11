@@ -9,7 +9,7 @@ Todas as regras do linter do Vize, agrupadas por categoria. Abra uma regra para 
 
 A coluna Predefinição indica a menor predefinição que ativa a regra; a página de cada regra lista todas. Veja em [predefinições](../rules/index.md#predefinições) o que cada uma contém.
 
-## Regras Vue (166)
+## Regras Vue (168)
 
 | Regra | O que verifica | Predefinição | Correção automática |
 | --- | --- | --- | --- |
@@ -113,6 +113,7 @@ A coluna Predefinição indica a menor predefinição que ativa a regra; a pági
 | <span id="vue-no-unused-components"></span>[`vue/no-unused-components`](./reference/vue-no-unused-components.md) | Proibir o registro de componentes não usados nos templates. | `essential` |  |
 | <span id="vue-no-unused-properties"></span>[`vue/no-unused-properties`](./reference/vue-no-unused-properties.md) | Proibir propriedades não usadas definidas em defineProps. | `happy-path` |  |
 | <span id="vue-no-unused-refs"></span>[`vue/no-unused-refs`](./reference/vue-no-unused-refs.md) | Reportar refs de template (ref="x") nunca referenciadas em &lt;script&gt;. | `nuxt`, `opinionated` |  |
+| <span id="vue-no-unused-script-vars"></span>[`vue/no-unused-script-vars`](./reference/vue-no-unused-script-vars.md) | Proibir variáveis, importações e parâmetros de script não usados. | `nuxt`, `opinionated` |  |
 | <span id="vue-no-unused-setup-bindings"></span>[`vue/no-unused-setup-bindings`](./reference/vue-no-unused-setup-bindings.md) | Proibir variáveis de script setup que nunca são lidas. | `happy-path` |  |
 | <span id="vue-no-unused-vars"></span>[`vue/no-unused-vars`](./reference/vue-no-unused-vars.md) | Proibir definições de variáveis não usadas nas diretivas v-for e v-slot. | `essential` |  |
 | <span id="vue-no-use-v-else-with-v-for"></span>[`vue/no-use-v-else-with-v-for`](./reference/vue-no-use-v-else-with-v-for.md) | Proibir `v-else-if` ou `v-else` no mesmo elemento que `v-for`. | `happy-path` |  |
@@ -128,6 +129,7 @@ A coluna Predefinição indica a menor predefinição que ativa a regra; a pági
 | <span id="vue-no-v-text-v-html-on-component"></span>[`vue/no-v-text-v-html-on-component`](./reference/vue-no-v-text-v-html-on-component.md) | Proibir v-text / v-html em elementos de componente. | `essential` |  |
 | <span id="vue-object-shorthand"></span>[`vue/object-shorthand`](./reference/vue-object-shorthand.md) | Exige propriedades abreviadas nos objetos do template. | — |  |
 | <span id="vue-permitted-contents"></span>[`vue/permitted-contents`](./reference/vue-permitted-contents.md) | Aplicar as regras do modelo de conteúdo HTML. | `happy-path` |  |
+| <span id="vue-prefer-const"></span>[`vue/prefer-const`](./reference/vue-prefer-const.md) | Exigir const para vínculos que o script e o template nunca reatribuem. | `nuxt`, `opinionated` |  |
 | <span id="vue-prefer-prop-type-boolean-first"></span>[`vue/prefer-prop-type-boolean-first`](./reference/vue-prefer-prop-type-boolean-first.md) | Exige `Boolean` na primeira posição da lista de construtores de tipo das props. | — |  |
 | <span id="vue-prefer-props-shorthand"></span>[`vue/prefer-props-shorthand`](./reference/vue-prefer-props-shorthand.md) | Recomendar sintaxe abreviada para props (Vue 3.4+). | `nuxt`, `opinionated` | ✓ |
 | <span id="vue-prefer-template"></span>[`vue/prefer-template`](./reference/vue-prefer-template.md) | Prefere template literals à concatenação de strings. | — |  |

@@ -9,7 +9,7 @@ Vize linter 提供的全部规则，按类别分组。打开规则页面即可�
 
 “预设”列给出启用该规则的最小预设，规则页面列出全部预设。各预设包含的内容见[预设](../rules/index.md#预设)。
 
-## Vue 规则 (166)
+## Vue 规则 (168)
 
 | 规则 | 检查内容 | 预设 | 自动修复 |
 | --- | --- | --- | --- |
@@ -113,6 +113,7 @@ Vize linter 提供的全部规则，按类别分组。打开规则页面即可�
 | <span id="vue-no-unused-components"></span>[`vue/no-unused-components`](./reference/vue-no-unused-components.md) | 禁止注册未在模板中使用的组件。 | `essential` |  |
 | <span id="vue-no-unused-properties"></span>[`vue/no-unused-properties`](./reference/vue-no-unused-properties.md) | 禁止 defineProps 中定义的未使用属性。 | `happy-path` |  |
 | <span id="vue-no-unused-refs"></span>[`vue/no-unused-refs`](./reference/vue-no-unused-refs.md) | 报告从未在 &lt;script&gt; 中引用的模板 ref（ref="x"）。 | `nuxt`, `opinionated` |  |
+| <span id="vue-no-unused-script-vars"></span>[`vue/no-unused-script-vars`](./reference/vue-no-unused-script-vars.md) | 禁止未使用的脚本变量、导入和参数。 | `nuxt`, `opinionated` |  |
 | <span id="vue-no-unused-setup-bindings"></span>[`vue/no-unused-setup-bindings`](./reference/vue-no-unused-setup-bindings.md) | 禁止从未读取的 script setup 绑定。 | `happy-path` |  |
 | <span id="vue-no-unused-vars"></span>[`vue/no-unused-vars`](./reference/vue-no-unused-vars.md) | 禁止 v-for 和 v-slot 指令中未使用的变量定义。 | `essential` |  |
 | <span id="vue-no-use-v-else-with-v-for"></span>[`vue/no-use-v-else-with-v-for`](./reference/vue-no-use-v-else-with-v-for.md) | 禁止在同一元素上使用 `v-else-if` 或 `v-else` 与 `v-for`。 | `happy-path` |  |
@@ -128,6 +129,7 @@ Vize linter 提供的全部规则，按类别分组。打开规则页面即可�
 | <span id="vue-no-v-text-v-html-on-component"></span>[`vue/no-v-text-v-html-on-component`](./reference/vue-no-v-text-v-html-on-component.md) | 禁止在组件元素上使用 v-text / v-html。 | `essential` |  |
 | <span id="vue-object-shorthand"></span>[`vue/object-shorthand`](./reference/vue-object-shorthand.md) | 要求模板对象使用属性简写。 | — |  |
 | <span id="vue-permitted-contents"></span>[`vue/permitted-contents`](./reference/vue-permitted-contents.md) | 要求符合 HTML 内容模型规则。 | `happy-path` |  |
+| <span id="vue-prefer-const"></span>[`vue/prefer-const`](./reference/vue-prefer-const.md) | 要求脚本和模板都不会重新赋值的绑定使用 const。 | `nuxt`, `opinionated` |  |
 | <span id="vue-prefer-prop-type-boolean-first"></span>[`vue/prefer-prop-type-boolean-first`](./reference/vue-prefer-prop-type-boolean-first.md) | 要求在组件 prop 的类型构造函数数组中将 `Boolean` 放在首位。 | — |  |
 | <span id="vue-prefer-props-shorthand"></span>[`vue/prefer-props-shorthand`](./reference/vue-prefer-props-shorthand.md) | 建议使用 props 简写语法（Vue 3.4+）。 | `nuxt`, `opinionated` | ✓ |
 | <span id="vue-prefer-template"></span>[`vue/prefer-template`](./reference/vue-prefer-template.md) | 优先使用模板字符串而非字符串拼接。 | — |  |

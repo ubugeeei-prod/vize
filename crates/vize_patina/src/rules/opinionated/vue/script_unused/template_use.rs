@@ -1,0 +1,207 @@
+//! Template names that read or reassign a script binding.
+//!
+//! Only free names count. A `v-for` or slot alias shadows a script binding of
+//! the same name. `counter++` is a read and a write. `counter.foo = 1` reads
+//! `counter` and does not reassign it.
+
+use oxc_allocator::Allocator;
+use oxc_parser::Parser;
+use oxc_semantic::SemanticBuilder;
+use oxc_span::SourceType;
+use vize_croquis::drawer::{extract_slot_props, parse_v_for_scope_expression};
+use vize_l0::{CompactString, FxHashSet};
+use vize_relief::{ElementNode, ExpressionNode, PropNode, RootNode, TemplateChildNode};
+
+pub(super) struct TemplateUse {
+    pub(super) reads: FxHashSet<CompactString>,
+    pub(super) writes: FxHashSet<CompactString>,
+}
+
+impl TemplateUse {
+    pub(super) fn empty() -> Self {
+        Self {
+            reads: FxHashSet::default(),
+            writes: FxHashSet::default(),
+        }
+    }
+}
+
+pub(super) fn template_use(root: &RootNode<'_>) -> TemplateUse {
+    let mut uses = TemplateUse::empty();
+    let mut shadow = Vec::new();
+    walk_children(&root.children, root.source, &mut shadow, &mut uses);
+    uses
+}
+
+fn walk_children(
+    children: &[TemplateChildNode<'_>],
+    source: &str,
+    shadow: &mut Vec<CompactString>,
+    uses: &mut TemplateUse,
+) {
+    for child in children {
+        match child {
+            TemplateChildNode::Element(element) => walk_element(element, source, shadow, uses),
+            TemplateChildNode::Interpolation(interpolation) => {
+                note_expression(
+                    expression_source(&interpolation.content, source),
+                    shadow,
+                    uses,
+                );
+            }
+            TemplateChildNode::If(if_node) => {
+                for branch in if_node.branches.iter() {
+                    if let Some(condition) = branch.condition.as_ref() {
+                        note_expression(expression_source(condition, source), shadow, uses);
+                    }
+                    walk_children(&branch.children, source, shadow, uses);
+                }
+            }
+            TemplateChildNode::For(for_node) => {
+                let mark = shadow.len();
+                note_expression(expression_source(&for_node.source, source), shadow, uses);
+                for alias in [
+                    for_node.value_alias.as_ref(),
+                    for_node.key_alias.as_ref(),
+                    for_node.object_index_alias.as_ref(),
+                ]
+                .into_iter()
+                .flatten()
+                {
+                    push_alias(expression_source(alias, source), shadow);
+                }
+                walk_children(&for_node.children, source, shadow, uses);
+                shadow.truncate(mark);
+            }
+            _ => {}
+        }
+    }
+}
+
+fn walk_element(
+    element: &ElementNode<'_>,
+    source: &str,
+    shadow: &mut Vec<CompactString>,
+    uses: &mut TemplateUse,
+) {
+    if has_v_pre(element) {
+        return;
+    }
+    let mark = shadow.len();
+    for prop in element.props.iter() {
+        let PropNode::Directive(directive) = prop else {
+            continue;
+        };
+        let Some(exp) = directive.exp.as_ref() else {
+            continue;
+        };
+        let content = expression_source(exp, source);
+        if directive.name == "for" {
+            if let Some(parsed) = parse_v_for_scope_expression(content) {
+                note_expression(parsed.source.as_str(), shadow, uses);
+                for alias in parsed.value_bindings {
+                    shadow.push(alias);
+                }
+                if let Some(alias) = parsed.key_alias {
+                    shadow.push(alias);
+                }
+                if let Some(alias) = parsed.index_alias {
+                    shadow.push(alias);
+                }
+            } else {
+                note_expression(content, shadow, uses);
+            }
+        } else if directive.name == "slot" {
+            for alias in extract_slot_props(content) {
+                shadow.push(alias);
+            }
+        }
+    }
+    for prop in element.props.iter() {
+        let PropNode::Directive(directive) = prop else {
+            continue;
+        };
+        if let Some(argument) = directive.arg.as_ref()
+            && !is_static(argument)
+        {
+            note_expression(expression_source(argument, source), shadow, uses);
+        }
+        if matches!(directive.name, "for" | "slot") {
+            continue;
+        }
+        if let Some(exp) = directive.exp.as_ref() {
+            note_expression(expression_source(exp, source), shadow, uses);
+        }
+    }
+    walk_children(&element.children, source, shadow, uses);
+    shadow.truncate(mark);
+}
+
+fn has_v_pre(element: &ElementNode<'_>) -> bool {
+    element.props.iter().any(|prop| match prop {
+        PropNode::Attribute(attribute) => attribute.name == "v-pre",
+        PropNode::Directive(directive) => directive.name == "pre",
+    })
+}
+
+fn is_static(exp: &ExpressionNode<'_>) -> bool {
+    matches!(exp, ExpressionNode::Simple(simple) if simple.is_static)
+}
+
+fn expression_source<'a>(exp: &'a ExpressionNode<'a>, source: &'a str) -> &'a str {
+    match exp {
+        ExpressionNode::Simple(simple) => simple.content,
+        ExpressionNode::Compound(compound) => compound.loc.span.slice(source),
+    }
+}
+
+fn push_alias(source: &str, shadow: &mut Vec<CompactString>) {
+    let name = source.trim();
+    if !name.is_empty() {
+        shadow.push(CompactString::new(name));
+    }
+}
+
+fn note_expression(source: &str, shadow: &[CompactString], uses: &mut TemplateUse) {
+    let source = source.trim();
+    if source.is_empty() {
+        return;
+    }
+    let allocator = Allocator::default();
+    let wrapped = format!("({source})");
+    let wrapped_parse = Parser::new(&allocator, &wrapped, SourceType::tsx()).parse();
+    let wrapped_ok = !wrapped_parse.panicked && wrapped_parse.diagnostics.is_empty();
+    let parsed = if wrapped_ok {
+        wrapped_parse
+    } else {
+        Parser::new(&allocator, source, SourceType::tsx()).parse()
+    };
+    if parsed.panicked || !parsed.diagnostics.is_empty() {
+        return;
+    }
+    let built = SemanticBuilder::new()
+        .with_check_syntax_error(true)
+        .with_build_nodes(true)
+        .build(&parsed.program);
+    if !built.diagnostics.is_empty() {
+        return;
+    }
+    let semantic = &built.semantic;
+    let scoping = semantic.scoping();
+    for ids in scoping.root_unresolved_references_ids() {
+        for id in ids {
+            let reference = scoping.get_reference(id);
+            let name = semantic.reference_name(reference);
+            if shadow.iter().any(|alias| alias.as_str() == name) {
+                continue;
+            }
+            let flags = reference.flags();
+            if flags.is_write() {
+                uses.writes.insert(CompactString::new(name));
+            }
+            if flags.is_read() || flags.is_type() || flags.is_value_as_type() {
+                uses.reads.insert(CompactString::new(name));
+            }
+        }
+    }
+}

@@ -38,6 +38,9 @@ const EMITS_RETURN: Domain = Domain::new(
 );
 const SCRIPT: Domain =
     Domain::new("the syntax of <script> and <script setup> programs, without type information");
+const SCRIPT_TEMPLATE: Domain = Domain::new(
+    "script bindings and the template expressions that read or reassign them; unresolved syntax is outside",
+);
 const STYLE: Domain = Domain::new(
     "the authored text of SFC templates and declarations: casing, quoting, spacing, order and shorthand",
 );
@@ -324,6 +327,7 @@ pub static RULE_CONTRACTS: &[RuleEntry] = &[
     row!("vue/no-unused-components", Complete, BINDINGS, Warning),
     row!("vue/no-unused-properties", Complete, BINDINGS, Warning),
     row!("vue/no-unused-refs", Complete, BINDINGS, Warning),
+    row!("vue/no-unused-script-vars", Exact, SCRIPT_TEMPLATE, Warning),
     row!("vue/no-unused-setup-bindings", Sound, UNUSED_SETUP, Warning),
     row!("vue/no-unused-vars", Exact, DIRECTIVES, Warning),
     row!("vue/no-use-v-else-with-v-for", Exact, DIRECTIVES, Warning),
@@ -339,6 +343,7 @@ pub static RULE_CONTRACTS: &[RuleEntry] = &[
     row!("vue/no-v-text-v-html-on-component", Exact, DIRECTIVES, Error),
     row!("vue/object-shorthand", Complete, TEMPLATE_EXPRESSION_SYNTAX, Warning),
     row!("vue/permitted-contents", Exact, HTML, Error),
+    row!("vue/prefer-const", Exact, SCRIPT_TEMPLATE, Warning),
     row!("vue/prefer-prop-type-boolean-first", Exact, OPTIONS, Warning),
     row!("vue/prefer-props-shorthand", Exact, STYLE, Warning),
     row!("vue/prefer-template", Complete, TEMPLATE_EXPRESSION_SYNTAX, Warning),

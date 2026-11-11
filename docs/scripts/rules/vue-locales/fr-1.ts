@@ -99,6 +99,11 @@ export const frenchVue1 = {
     "Le template déclare le nom de ref unused sans liaison de référence correspondante dans le script.",
     "La ref de template inputEl possède une liaison ref du même nom dans script setup.",
   ],
+  "vue/no-unused-script-vars": [
+    "Interdire les variables, importations et paramètres de script inutilisés",
+    "script setup déclare unused, et ni le script ni le template ne le lit.",
+    "L’interpolation du template lit unused, donc la liaison déclarée est utilisée.",
+  ],
   "vue/no-unused-setup-bindings": [
     "Interdire les liaisons script setup qui ne sont jamais lues",
     "La liaison message de script setup n’est jamais lue par le template.",
@@ -158,6 +163,11 @@ export const frenchVue1 = {
     "Faire respecter les règles du modèle de contenu HTML",
     "Les exemples placent du contenu de bloc dans p, omettent le corps du tableau, imbriquent des contrôles interactifs ou placent un div directement dans ul.",
     "Les exemples utilisent du contenu en ligne dans le paragraphe, un tbody explicite et des enfants li. Le composant personnalisé MyItem n’est pas considéré comme un enfant natif connu de ul.",
+  ],
+  "vue/prefer-const": [
+    "Exiger const pour les liaisons que le script et le template ne réassignent jamais",
+    "Le template lit label, et ni le script ni le template ne le réassigne, donc let est inutile.",
+    "const correspond à une liaison que le script et le template ne font que lire.",
   ],
   "vue/prefer-props-shorthand": [
     "Recommander la syntaxe abrégée des props (Vue 3.4+)",

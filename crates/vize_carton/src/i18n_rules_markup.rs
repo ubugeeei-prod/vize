@@ -338,10 +338,22 @@ static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "报告从未在 <script> 中引用的模板引用（ref=\"x\"）",
     ),
     (
+        "vue/no-unused-script-vars.description",
+        "Disallow unused script variables, imports, and parameters",
+        "未使用のスクリプト変数、インポート、引数を禁止する",
+        "禁止未使用的脚本变量、导入和参数",
+    ),
+    (
         "vue/no-unused-setup-bindings.description",
         "Disallow unread script setup bindings",
         "読み取られない script setup のバインディングを禁止する",
         "禁止未被读取的 script setup 绑定",
+    ),
+    (
+        "vue/prefer-const.description",
+        "Require const for bindings the script and template never reassign",
+        "スクリプトとテンプレートが再代入しないバインディングに const を必須にする",
+        "要求脚本和模板都不会重新赋值的绑定使用 const",
     ),
     (
         "vue/require-component-registration.description",

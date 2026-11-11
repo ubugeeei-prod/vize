@@ -5524,6 +5524,16 @@ vue/no-unused-refs · lint ルール
   import { ref } from 'vue'
   const inputEl = ref(null)
   </script>
+=== vue/no-unused-script-vars
+vue/no-unused-script-vars · lint ルール
+未使用のスクリプト変数、インポート、引数を禁止する
+
+精度: exact
+対象: script bindings and the template expressions that read or reassign them; unresolved syntax is outside
+重大度: 警告
+カテゴリー: recommended
+自動修正: なし
+ドキュメント: docs/content/rules/reference/vue-no-unused-script-vars.md
 === vue/no-unused-setup-bindings
 vue/no-unused-setup-bindings · lint ルール
 読み取られない script setup のバインディングを禁止する
@@ -5836,6 +5846,16 @@ HTMLコンテンツモデルルールを強制
   - <a>と<button>は互いにネスト不可
   - <ul>/<ol>の直接の子は<li>のみ
   - <table>の直接の子は<thead>、<tbody>、<tfoot>、<tr>、<caption>のみ
+=== vue/prefer-const
+vue/prefer-const · lint ルール
+スクリプトとテンプレートが再代入しないバインディングに const を必須にする
+
+精度: exact
+対象: script bindings and the template expressions that read or reassign them; unresolved syntax is outside
+重大度: 警告
+カテゴリー: recommended
+自動修正: なし
+ドキュメント: docs/content/rules/reference/vue-prefer-const.md
 === vue/prefer-prop-type-boolean-first
 vue/prefer-prop-type-boolean-first · lint ルール
 コンポーネントの props の型で `Boolean` を先頭に置くことを必須にする

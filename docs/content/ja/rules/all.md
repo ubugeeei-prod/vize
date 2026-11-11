@@ -9,7 +9,7 @@ Vize のリンターに含まれるすべてのルールを、カテゴリごと
 
 プリセット列は、そのルールを有効にする最小のプリセットです。すべてのプリセットは各ルールのページに載っています。各プリセットの内容は[プリセット](../rules/index.md#プリセット)を参照してください。
 
-## Vue ルール (166)
+## Vue ルール (168)
 
 | ルール | 検出する内容 | プリセット | 自動修正 |
 | --- | --- | --- | --- |
@@ -113,6 +113,7 @@ Vize のリンターに含まれるすべてのルールを、カテゴリごと
 | <span id="vue-no-unused-components"></span>[`vue/no-unused-components`](./reference/vue-no-unused-components.md) | 登録しているのにテンプレートで使わないコンポーネントを検出します。 | `essential` |  |
 | <span id="vue-no-unused-properties"></span>[`vue/no-unused-properties`](./reference/vue-no-unused-properties.md) | defineProps に宣言しているのに使わない prop を検出します。 | `happy-path` |  |
 | <span id="vue-no-unused-refs"></span>[`vue/no-unused-refs`](./reference/vue-no-unused-refs.md) | テンプレートに宣言しているのに参照しない ref を検出します。 | `nuxt`, `opinionated` |  |
+| <span id="vue-no-unused-script-vars"></span>[`vue/no-unused-script-vars`](./reference/vue-no-unused-script-vars.md) | スクリプトで宣言しているのに使わない変数、インポート、引数を検出します。 | `nuxt`, `opinionated` |  |
 | <span id="vue-no-unused-setup-bindings"></span>[`vue/no-unused-setup-bindings`](./reference/vue-no-unused-setup-bindings.md) | script setup に宣言しているのに読み取らない変数を検出します。 | `happy-path` |  |
 | <span id="vue-no-unused-vars"></span>[`vue/no-unused-vars`](./reference/vue-no-unused-vars.md) | v-for / v-slot に宣言しているのに使わない変数を検出します。 | `essential` |  |
 | <span id="vue-no-use-v-else-with-v-for"></span>[`vue/no-use-v-else-with-v-for`](./reference/vue-no-use-v-else-with-v-for.md) | 同じ要素での v-else / v-else-if と v-for の併用を検出します。 | `happy-path` |  |
@@ -128,6 +129,7 @@ Vize のリンターに含まれるすべてのルールを、カテゴリごと
 | <span id="vue-no-v-text-v-html-on-component"></span>[`vue/no-v-text-v-html-on-component`](./reference/vue-no-v-text-v-html-on-component.md) | コンポーネントでの v-text / v-html を検出します。 | `essential` |  |
 | <span id="vue-object-shorthand"></span>[`vue/object-shorthand`](./reference/vue-object-shorthand.md) | テンプレート式のオブジェクトに短縮プロパティ記法を使います。 | — |  |
 | <span id="vue-permitted-contents"></span>[`vue/permitted-contents`](./reference/vue-permitted-contents.md) | HTML の要素ごとのコンテンツモデルを検査します。 | `happy-path` |  |
+| <span id="vue-prefer-const"></span>[`vue/prefer-const`](./reference/vue-prefer-const.md) | スクリプトとテンプレートが再代入しないバインディングを const にします。 | `nuxt`, `opinionated` |  |
 | <span id="vue-prefer-prop-type-boolean-first"></span>[`vue/prefer-prop-type-boolean-first`](./reference/vue-prefer-prop-type-boolean-first.md) | prop の型コンストラクター配列で Boolean を先頭に置きます。 | — |  |
 | <span id="vue-prefer-props-shorthand"></span>[`vue/prefer-props-shorthand`](./reference/vue-prefer-props-shorthand.md) | Vue 3.4 の同名 prop バインディングの省略形を使います。 | `nuxt`, `opinionated` | ✓ |
 | <span id="vue-prefer-template"></span>[`vue/prefer-template`](./reference/vue-prefer-template.md) | 文字列連結の代わりにテンプレートリテラルを使います。 | — |  |
