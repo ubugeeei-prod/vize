@@ -1,18 +1,17 @@
 //! Import-name extraction and `/// <reference types>` directives.
 
-use oxc_allocator::Allocator;
 use oxc_ast::ast::{
     IdentifierReference, ImportDeclarationSpecifier, ImportOrExportKind, Program, Statement,
     TSEnumDeclaration, TSTypeName, TSTypeQueryExprName, TSTypeReference,
 };
 use oxc_ast_visit::{Visit, walk};
-use oxc_parser::Parser;
 use oxc_span::SourceType;
 use oxc_syntax::identifier::is_identifier_name;
 use vize_carton::append;
 use vize_carton::cstr;
 use vize_carton::{CompactString, FxHashSet, String};
 use vize_croquis::Croquis;
+use vize_croquis::script_parser::with_shared_parse;
 
 use super::super::types::VirtualTsOptions;
 
@@ -338,47 +337,47 @@ fn extract_import_names_with_types<'a>(
 ) -> Vec<&'a str> {
     #[cfg(test)]
     import_parse_count(true);
-    let allocator = Allocator::default();
-    let parsed = Parser::new(&allocator, import_text, SourceType::ts()).parse();
-    let Some(Statement::ImportDeclaration(declaration)) = parsed.program.body.first() else {
-        return Vec::new();
-    };
-    let whole_type = declaration.import_kind == ImportOrExportKind::Type;
-    if whole_type && type_only.is_none() {
-        return Vec::new();
-    }
-    let mut values = Vec::new();
-    for specifier in declaration.specifiers.iter().flatten() {
-        let (span, is_type) = match specifier {
-            ImportDeclarationSpecifier::ImportSpecifier(specifier)
-                if whole_type || specifier.import_kind == ImportOrExportKind::Type =>
-            {
-                (specifier.local.span, true)
-            }
-            ImportDeclarationSpecifier::ImportSpecifier(specifier)
-                if specifier.import_kind == ImportOrExportKind::Value =>
-            {
-                (specifier.local.span, false)
-            }
-            ImportDeclarationSpecifier::ImportDefaultSpecifier(specifier) => {
-                (specifier.local.span, whole_type)
-            }
-            ImportDeclarationSpecifier::ImportNamespaceSpecifier(specifier) => {
-                (specifier.local.span, whole_type)
-            }
-            ImportDeclarationSpecifier::ImportSpecifier(_) => continue,
+    with_shared_parse(import_text, SourceType::ts(), |parsed| {
+        let Some(Statement::ImportDeclaration(declaration)) = parsed.program.body.first() else {
+            return Vec::new();
         };
-        if let Some(name) = import_text.get(span.start as usize..span.end as usize) {
-            if is_type {
-                if let Some(names) = type_only.as_mut() {
-                    names.insert(CompactString::new(name));
+        let whole_type = declaration.import_kind == ImportOrExportKind::Type;
+        if whole_type && type_only.is_none() {
+            return Vec::new();
+        }
+        let mut values = Vec::new();
+        for specifier in declaration.specifiers.iter().flatten() {
+            let (span, is_type) = match specifier {
+                ImportDeclarationSpecifier::ImportSpecifier(specifier)
+                    if whole_type || specifier.import_kind == ImportOrExportKind::Type =>
+                {
+                    (specifier.local.span, true)
                 }
-            } else {
-                values.push(name);
+                ImportDeclarationSpecifier::ImportSpecifier(specifier)
+                    if specifier.import_kind == ImportOrExportKind::Value =>
+                {
+                    (specifier.local.span, false)
+                }
+                ImportDeclarationSpecifier::ImportDefaultSpecifier(specifier) => {
+                    (specifier.local.span, whole_type)
+                }
+                ImportDeclarationSpecifier::ImportNamespaceSpecifier(specifier) => {
+                    (specifier.local.span, whole_type)
+                }
+                ImportDeclarationSpecifier::ImportSpecifier(_) => continue,
+            };
+            if let Some(name) = import_text.get(span.start as usize..span.end as usize) {
+                if is_type {
+                    if let Some(names) = type_only.as_mut() {
+                        names.insert(CompactString::new(name));
+                    }
+                } else {
+                    values.push(name);
+                }
             }
         }
-    }
-    values
+        values
+    })
 }
 
 #[cfg(test)]

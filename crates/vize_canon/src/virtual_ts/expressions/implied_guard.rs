@@ -7,11 +7,10 @@
 //! member and every `R` value they remove, so TypeScript narrows `R` and its
 //! object to the same types without them.
 
-use oxc_allocator::Allocator;
 use oxc_ast::ast::{BinaryExpression, BinaryOperator, Expression, UnaryOperator};
-use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
 use vize_carton::String;
+use vize_croquis::script_parser::with_shared_expression;
 
 /// A literal compared by value: `'a'` and `"a"` are the same literal.
 #[derive(PartialEq)]
@@ -29,17 +28,19 @@ struct Discriminant<'s, 'a> {
 
 /// The guard without its implied exclusions, or `None` when none apply.
 pub(crate) fn drop_implied_exclusions(guard: &str) -> Option<String> {
-    let allocator = Allocator::default();
-    let expression = Parser::new(&allocator, guard, SourceType::ts())
-        .parse_expression()
-        .ok()?;
+    with_shared_expression(guard, SourceType::ts(), |expression| {
+        drop_implied_exclusions_in(expression?, guard)
+    })
+}
+
+fn drop_implied_exclusions_in(expression: &Expression<'_>, guard: &str) -> Option<String> {
     // The parser may accept a valid prefix; never rewrite around trailing text.
     let span = expression.span();
     if guard.get(span.start as usize..span.end as usize) != Some(guard.trim()) {
         return None;
     }
     let mut terms = Vec::new();
-    collect_terms(&expression, &mut terms);
+    collect_terms(expression, &mut terms);
     let tests: Vec<_> = terms.iter().map(|term| discriminant(term, guard)).collect();
     let mut kept = vec![true; terms.len()];
     for (index, test) in tests.iter().enumerate() {

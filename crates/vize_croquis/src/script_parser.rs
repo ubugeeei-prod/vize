@@ -71,7 +71,7 @@ pub use recovery::{
 };
 pub(crate) use result::{ReactiveGetterContext, ReactiveValueOrigin, RuntimeObjectLiteral};
 pub use result::{ScriptParseResult, ScriptParserOptions};
-pub use shared::{SharedParseScope, with_shared_parse};
+pub use shared::{SharedParseScope, with_shared_expression, with_shared_parse};
 pub(crate) use typeof_refs::{
     annotation_has_value_reads, arguments_have_value_reads, has_value_type_reads,
     parameters_have_value_reads,

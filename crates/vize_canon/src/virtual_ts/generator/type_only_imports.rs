@@ -1,11 +1,10 @@
 //! Syntactic `import type` binding extraction for component-value shadowing.
 
-use oxc_allocator::Allocator;
 use oxc_ast::ast::{ImportDeclarationSpecifier, ImportOrExportKind, Statement};
-use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_carton::{CompactString, FxHashSet};
 use vize_croquis::Croquis;
+use vize_croquis::script_parser::with_shared_parse;
 
 use super::global_components::GlobalComponentPlan;
 use super::imports::TypeOnlyImportPlan;
@@ -72,39 +71,39 @@ fn collect_syntactic_type_only_imported_names(
 fn extract_syntactic_type_only_import_names(import_text: &str) -> Vec<&str> {
     #[cfg(test)]
     super::imports::import_parse_count(true);
-    let allocator = Allocator::default();
-    let parsed = Parser::new(&allocator, import_text, SourceType::ts()).parse();
-    let Some(Statement::ImportDeclaration(declaration)) = parsed.program.body.first() else {
-        return Vec::new();
-    };
+    with_shared_parse(import_text, SourceType::ts(), |parsed| {
+        let Some(Statement::ImportDeclaration(declaration)) = parsed.program.body.first() else {
+            return Vec::new();
+        };
 
-    declaration
-        .specifiers
-        .iter()
-        .flatten()
-        .filter_map(|specifier| {
-            let span = match specifier {
-                ImportDeclarationSpecifier::ImportSpecifier(specifier)
-                    if declaration.import_kind == ImportOrExportKind::Type
-                        || specifier.import_kind == ImportOrExportKind::Type =>
-                {
-                    specifier.local.span
-                }
-                ImportDeclarationSpecifier::ImportDefaultSpecifier(specifier)
-                    if declaration.import_kind == ImportOrExportKind::Type =>
-                {
-                    specifier.local.span
-                }
-                ImportDeclarationSpecifier::ImportNamespaceSpecifier(specifier)
-                    if declaration.import_kind == ImportOrExportKind::Type =>
-                {
-                    specifier.local.span
-                }
-                _ => return None,
-            };
-            import_text.get(span.start as usize..span.end as usize)
-        })
-        .collect()
+        declaration
+            .specifiers
+            .iter()
+            .flatten()
+            .filter_map(|specifier| {
+                let span = match specifier {
+                    ImportDeclarationSpecifier::ImportSpecifier(specifier)
+                        if declaration.import_kind == ImportOrExportKind::Type
+                            || specifier.import_kind == ImportOrExportKind::Type =>
+                    {
+                        specifier.local.span
+                    }
+                    ImportDeclarationSpecifier::ImportDefaultSpecifier(specifier)
+                        if declaration.import_kind == ImportOrExportKind::Type =>
+                    {
+                        specifier.local.span
+                    }
+                    ImportDeclarationSpecifier::ImportNamespaceSpecifier(specifier)
+                        if declaration.import_kind == ImportOrExportKind::Type =>
+                    {
+                        specifier.local.span
+                    }
+                    _ => return None,
+                };
+                import_text.get(span.start as usize..span.end as usize)
+            })
+            .collect()
+    })
 }
 
 #[cfg(test)]

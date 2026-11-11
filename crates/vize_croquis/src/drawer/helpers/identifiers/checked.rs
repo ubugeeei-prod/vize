@@ -1,8 +1,8 @@
 //! Conservative, demand-only free reads for expressions without a retained AST.
 
 use super::IdentifierRef;
-use oxc_allocator::Allocator;
-use oxc_parser::Parser;
+use crate::script_parser::with_shared_parse;
+use oxc_parser::ParserReturn;
 use oxc_semantic::SemanticBuilder;
 use oxc_span::SourceType;
 use vize_carton::{CompactString, cstr};
@@ -43,16 +43,24 @@ fn witnessed(references: Vec<IdentifierRef>, source: &str) -> Option<(Vec<Identi
 }
 
 fn checked_semantic_references(source: &str, writes: bool) -> Option<Vec<IdentifierRef>> {
-    let allocator = Allocator::default();
     let wrapped = cstr!("({source})");
-    let expression = Parser::new(&allocator, &wrapped, SourceType::tsx()).parse();
-    let wrapped_view = !expression.panicked && expression.diagnostics.is_empty();
-    let parsed = if !wrapped_view {
-        // Inline event handlers may be statement bodies.
-        Parser::new(&allocator, source, SourceType::tsx()).parse()
-    } else {
-        expression
-    };
+    with_shared_parse(&wrapped, SourceType::tsx(), |expression| {
+        if !expression.panicked && expression.diagnostics.is_empty() {
+            semantic_references(expression, true, writes)
+        } else {
+            // Inline event handlers may be statement bodies.
+            with_shared_parse(source, SourceType::tsx(), |parsed| {
+                semantic_references(parsed, false, writes)
+            })
+        }
+    })
+}
+
+fn semantic_references(
+    parsed: &ParserReturn<'_>,
+    wrapped_view: bool,
+    writes: bool,
+) -> Option<Vec<IdentifierRef>> {
     if parsed.panicked || !parsed.diagnostics.is_empty() {
         return None;
     }
