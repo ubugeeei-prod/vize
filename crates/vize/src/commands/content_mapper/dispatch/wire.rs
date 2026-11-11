@@ -64,7 +64,7 @@ pub(super) fn encode_transform(
     frame.extend_from_slice(br#","jsonrpc":"2.0","result":{"#);
     if let Some(directives) = diagnostic_directives {
         frame.extend_from_slice(br#""diagnosticDirectives":"#);
-        push_directives(&mut frame, directives)?;
+        push_directives(&mut frame, directives, text)?;
         frame.push(b',');
     }
     frame.extend_from_slice(br#""diagnostics":"#);
@@ -164,20 +164,27 @@ fn push_spans(out: &mut Vec<u8>, spans: &[ContentMapperSpan]) {
 }
 
 /// Directive table with sorted keys. An ignore tuple drops its unused-expect
-/// index, which the host never reads for that policy.
+/// index, which the host never reads for that policy, and an ignore that
+/// [`suppresses_nothing`] is not sent.
 fn push_directives(
     out: &mut Vec<u8>,
     directives: &ContentMapperDiagnosticDirectives,
+    text: &str,
 ) -> io::Result<()> {
     let ContentMapperDiagnosticDirectives {
         unused_expect_directive_diagnostics,
         directives,
     } = directives;
     out.extend_from_slice(br#"{"directives":["#);
-    for (row, ContentMapperDiagnosticDirective(tuple)) in directives.iter().enumerate() {
-        if row > 0 {
+    let mut first = true;
+    for ContentMapperDiagnosticDirective(tuple) in directives {
+        if tuple[4] == DIRECTIVE_POLICY_IGNORE && suppresses_nothing(text, tuple[2], tuple[3]) {
+            continue;
+        }
+        if !first {
             out.push(b',');
         }
+        first = false;
         let width = if tuple[4] == DIRECTIVE_POLICY_IGNORE {
             5
         } else {
@@ -190,6 +197,24 @@ fn push_directives(
         .map_err(io::Error::other)?;
     out.push(b'}');
     Ok(())
+}
+
+/// An ignore over spaces, tabs and line breaks only. TypeScript 7 hosts
+/// (tsgo's `applyContentMapperDiagnosticDirectives`, and tsrs on the same
+/// probes) apply a directive to a bind or check diagnostic whose start lies
+/// in its virtual range, never to a syntax error, and such a diagnostic starts
+/// at its node's first token, after trivia (`GetErrorRangeForNode`). Only a
+/// missing node, JSX text, or a grammar error at a raw position starts on
+/// trivia, and those need a projection with a syntax error or JSX text, which
+/// unmapped scaffolding never is. These were 41% of the gap ignores, and the
+/// host decodes each tuple with several JSON calls. The table itself is
+/// unchanged: the editor projection also suppresses syntax errors with it.
+fn suppresses_nothing(text: &str, start: usize, end: usize) -> bool {
+    text.as_bytes().get(start..end).is_some_and(|range| {
+        range
+            .iter()
+            .all(|byte| matches!(byte, b' ' | b'\t' | b'\n' | b'\r'))
+    })
 }
 
 fn push_row(out: &mut Vec<u8>, row: &[usize]) {
@@ -327,169 +352,20 @@ pub(in crate::commands::content_mapper) fn wire_value(transform: &ContentMapperT
         4,
         DIRECTIVE_POLICY_IGNORE,
     );
+    if let Some(rows) = value
+        .get_mut("diagnosticDirectives")
+        .and_then(|table| table.get_mut("directives"))
+        .and_then(Value::as_array_mut)
+    {
+        rows.retain(|row| {
+            let column =
+                |index: usize| row.get(index).and_then(Value::as_u64).unwrap_or(0) as usize;
+            !(column(4) == DIRECTIVE_POLICY_IGNORE
+                && suppresses_nothing(transform.text.as_str(), column(2), column(3)))
+        });
+    }
     value
 }
 
 #[cfg(test)]
-mod tests {
-    use serde_json::json;
-    use vize_canon::{
-        ContentMapperDiagnostic, ContentMapperDiagnosticDirective,
-        ContentMapperDiagnosticDirectives, ContentMapperSemanticLink, ContentMapperSpan,
-        ContentMapperTransform, ContentMapperUnusedExpectDiagnostic,
-    };
-
-    use super::{encode_error, encode_result, encode_transform};
-
-    fn transform(full: bool) -> ContentMapperTransform {
-        ContentMapperTransform {
-            text: "const a = \"雪\\n\";\u{2028}🌸\t\r\u{1}\u{8}\u{c}\u{1f}\u{7f}\n".into(),
-            extension: ".tsx",
-            mappings: vec![
-                ContentMapperSpan([0, 5, 10, 5, 0, 7]),
-                ContentMapperSpan([5, 1, 15, 1, 1, super::SPAN_FEATURES_ALL]),
-                ContentMapperSpan([6, 2, 16, 2, 0, 0]),
-            ],
-            semantic_links: if full {
-                vec![ContentMapperSemanticLink {
-                    source_start: 1,
-                    source_length: 2,
-                    target_start: 3,
-                    target_length: 4,
-                    kind: "vueSetupTemplateRefUnwrap",
-                }]
-            } else {
-                Vec::new()
-            },
-            diagnostic_directives: full.then(|| ContentMapperDiagnosticDirectives {
-                unused_expect_directive_diagnostics: vec![ContentMapperUnusedExpectDiagnostic {
-                    code: 2578,
-                    message_text: "Unused '@ts-expect-error' directive.".into(),
-                }],
-                directives: vec![
-                    ContentMapperDiagnosticDirective([0, 0, 0, 1, 0, 0]),
-                    ContentMapperDiagnosticDirective([1, 2, 3, 4, 1, 0]),
-                ],
-            }),
-            diagnostics: vec![ContentMapperDiagnostic {
-                message_text: "bad \"value\"".into(),
-                start: 9,
-                length: 2,
-                code: 100_002,
-            }],
-        }
-    }
-
-    #[test]
-    fn transform_frames_match_the_sorted_value_envelope() {
-        for full in [true, false] {
-            for id in [json!(7), json!("req-1"), json!(null)] {
-                assert_eq!(
-                    encode_transform(&id, &transform(full)).unwrap(),
-                    encode_result(&id, super::wire_value(&transform(full))).unwrap(),
-                );
-            }
-        }
-    }
-
-    #[test]
-    fn every_feature_spans_and_ignore_directives_drop_their_sixth_element() {
-        let frame = encode_transform(&json!(1), &transform(true)).unwrap();
-        let text = std::str::from_utf8(&frame).unwrap();
-        let (_, body) = text.split_once("\r\n\r\n").unwrap();
-        let value: serde_json::Value = serde_json::from_str(body).unwrap();
-        assert_eq!(
-            value["result"]["mappings"],
-            json!([[0, 5, 10, 5, 0, 7], [5, 1, 15, 1, 1], [6, 2, 16, 2, 0, 0]])
-        );
-        assert_eq!(
-            value["result"]["diagnosticDirectives"]["directives"],
-            json!([[0, 0, 0, 1, 0], [1, 2, 3, 4, 1, 0]])
-        );
-    }
-
-    #[test]
-    fn semantic_links_stay_off_the_wire() {
-        let frame = encode_transform(&json!(1), &transform(true)).unwrap();
-        let text = std::str::from_utf8(&frame).unwrap();
-        let (_, body) = text.split_once("\r\n\r\n").unwrap();
-        let value: serde_json::Value = serde_json::from_str(body).unwrap();
-        assert_eq!(
-            value["result"]
-                .as_object()
-                .unwrap()
-                .keys()
-                .collect::<Vec<_>>(),
-            [
-                "diagnosticDirectives",
-                "diagnostics",
-                "extension",
-                "mappings",
-                "text"
-            ]
-        );
-    }
-
-    #[test]
-    fn json_strings_match_serde_json() {
-        let alphabet: Vec<char> = (0u8..0x20)
-            .map(char::from)
-            .chain([
-                '"', '\\', '/', '\u{7f}', 'a', ' ', 'é', '雪', '🌸', '\u{2028}',
-            ])
-            .collect();
-        let mut state = 0x9e37_79b9_7f4a_7c15_u64;
-        for length in 0..48 {
-            for _ in 0..64 {
-                let text: vize_l0::String = (0..length)
-                    .map(|_| {
-                        state ^= state << 13;
-                        state ^= state >> 7;
-                        state ^= state << 17;
-                        let plain = !state.is_multiple_of(4);
-                        if plain {
-                            'x'
-                        } else {
-                            alphabet[(state >> 8) as usize % alphabet.len()]
-                        }
-                    })
-                    .collect();
-                let mut out = Vec::new();
-                super::push_json_str(&mut out, &text);
-                assert_eq!(
-                    std::str::from_utf8(&out).unwrap(),
-                    serde_json::to_string(&text).unwrap()
-                );
-            }
-        }
-    }
-
-    #[test]
-    fn spans_match_serde_json() {
-        let spans = vec![
-            ContentMapperSpan([0, 9, 10, 99, 100, usize::MAX]),
-            ContentMapperSpan([1, 12_345, 7, 0, 65_536, 4_294_967_296]),
-        ];
-        let mut out = Vec::new();
-        super::push_spans(&mut out, &spans);
-        assert_eq!(
-            std::str::from_utf8(&out).unwrap(),
-            serde_json::to_string(&spans).unwrap()
-        );
-        let mut empty = Vec::new();
-        super::push_spans(&mut empty, &[]);
-        assert_eq!(empty, b"[]");
-    }
-
-    #[test]
-    fn frames_carry_the_exact_body_length() {
-        let frame = encode_error(&json!(1), -32603, "雪").unwrap();
-        let text = std::str::from_utf8(&frame).unwrap();
-        let (header, body) = text.split_once("\r\n\r\n").unwrap();
-        assert_eq!(header, vize_l0::cstr!("Content-Length: {}", body.len()));
-        assert_eq!(
-            body,
-            r#"{"error":{"code":-32603,"message":"雪"},"id":1,"jsonrpc":"2.0"}"#
-        );
-    }
-}
+mod tests;
