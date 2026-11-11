@@ -56,6 +56,7 @@ const pageText: Record<
     complexity: string;
     currentSupport: string;
     badDiagnostic: string;
+    eslintDifference: string;
   }
 > = {
   en: {
@@ -85,6 +86,7 @@ const pageText: Record<
       "See [complexity scoring and component boundaries](../../guide/cross-file-complexity.md) for how the example's two scores are computed.",
     currentSupport: "Current support",
     badDiagnostic: "Bad diagnostic",
+    eslintDifference: "Differences from eslint-plugin-vue",
   },
   ja: {
     severity: "既定の重大度",
@@ -113,6 +115,7 @@ const pageText: Record<
       "例の二つの値の計算内訳は[複雑度の計算とコンポーネントの境界](../../guide/cross-file-complexity.md)を参照してください。",
     currentSupport: "現在の対応",
     badDiagnostic: "悪い例での診断",
+    eslintDifference: "eslint-plugin-vue との差異",
   },
   "zh-CN": {
     severity: "默认严重程度",
@@ -141,6 +144,7 @@ const pageText: Record<
       "示例中两个分数的计算方式见[复杂度计分与组件边界](../../guide/cross-file-complexity.md)。",
     currentSupport: "当前支持情况",
     badDiagnostic: "错误示例的诊断",
+    eslintDifference: "与 eslint-plugin-vue 的差异",
   },
   "pt-BR": {
     severity: "Severidade padrão",
@@ -169,6 +173,7 @@ const pageText: Record<
       "Veja [pontuação de complexidade e limites de componentes](../../guide/cross-file-complexity.md) para entender como as duas pontuações do exemplo são calculadas.",
     currentSupport: "Suporte atual",
     badDiagnostic: "Diagnóstico do exemplo incorreto",
+    eslintDifference: "Diferenças em relação ao eslint-plugin-vue",
   },
   fr: {
     severity: "Gravité par défaut",
@@ -197,6 +202,7 @@ const pageText: Record<
       "Consultez [le calcul de la complexité et les limites des composants](../../guide/cross-file-complexity.md) pour savoir comment les deux scores de l’exemple sont calculés.",
     currentSupport: "Prise en charge actuelle",
     badDiagnostic: "Diagnostic du mauvais exemple",
+    eslintDifference: "Différences avec eslint-plugin-vue",
   },
 };
 
@@ -387,6 +393,10 @@ export function renderRulePage(rule: RuleMetadata, example: RuleExample, locale:
     "",
     text.run,
     "",
+  );
+  const eslintDifference = example.eslintDifference?.[locale];
+  if (eslintDifference) lines.push(`## ${text.eslintDifference}`, "", eslintDifference, "");
+  lines.push(
     `## ${text.related}`,
     "",
     `- [${categoryTitle(group, locale)}](../${group}.md)`,
