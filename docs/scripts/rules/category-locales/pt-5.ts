@@ -1,4 +1,9 @@
 export const portugueseRules5: Record<string, readonly [string, string, string]> = {
+  "max-lines": [
+    "Limita o número de linhas de um arquivo.",
+    "O arquivo tem mais linhas do que o máximo configurado.",
+    "O arquivo permanece dentro do máximo configurado.",
+  ],
   "vize:croquis/cf/non-unique-id": [
     "Um id de elemento dentro de um laço não é único por item.",
     "Cada iteração de `v-for` renderiza o mesmo ID literal `result-title`; a chave do laço não torna os IDs do DOM únicos.",

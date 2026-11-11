@@ -188,4 +188,16 @@ pub(crate) static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "宣言された各 prop に JSDoc コメントを必須にする",
         "要求每个声明的 prop 都有 JSDoc 注释",
     ),
+    (
+        "max-lines.description",
+        "Enforce a maximum number of lines in a file",
+        "ファイルの最大行数を適用する",
+        "限制文件的最大行数",
+    ),
+    (
+        "vue/max-lines-per-block.description",
+        "Enforce a maximum number of lines in each Vue SFC block",
+        "Vue SFC の各ブロックの最大行数を適用する",
+        "限制每个 Vue SFC 块的最大行数",
+    ),
 ];

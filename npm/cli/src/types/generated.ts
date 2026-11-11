@@ -329,6 +329,19 @@ export interface LintRuleOptions {
       required?: boolean;
     };
   };
+  "max-lines"?:
+    | number
+    | {
+        max?: number;
+        skipComments?: boolean;
+        skipBlankLines?: boolean;
+      };
+  "vue/max-lines-per-block"?: {
+    style?: number;
+    template?: number;
+    script?: number;
+    skipBlankLines?: boolean;
+  };
   "vue/enforce-style-attribute"?: {
     allow?: ("plain" | "scoped" | "module")[];
   };

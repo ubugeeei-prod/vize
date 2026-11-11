@@ -4,7 +4,7 @@ title: ESLint ルール移行対応表
 
 # ESLint ルール移行対応表
 
-コミットされた対応記録は 256 件で、対応付け 184 件、意図的な差異 3 件、未実装 69 件です。「対応」はルール名の対応を示し、オプション・検出・修正・適用範囲の完全な一致を保証しません。
+コミットされた対応記録は 256 件で、対応付け 185 件、意図的な差異 3 件、未実装 68 件です。「対応」はルール名の対応を示し、オプション・検出・修正・適用範囲の完全な一致を保証しません。
 
 ESLint を実行基盤として残す場合は、[`eslint.config.mjs` の flat config 連携](../guide/tool-integrations.md#eslint-の-flat-config)を優先してください。以下の Vite+ 設定は、ネイティブタスクを使う場合の代替です。
 
@@ -77,7 +77,7 @@ Vite+ の設定では Vize のルールを `withVue` の `linter.rules` に指�
 | `vue/match-component-import-name` | — | 未実装 |
 | `vue/max-attributes-per-line` | — | 未実装 |
 | `vue/max-len` | — | 未実装 |
-| `vue/max-lines-per-block` | — | 未実装 |
+| `vue/max-lines-per-block` | [`vue/max-lines-per-block`](./reference/vue-max-lines-per-block.md) | 対応付け |
 | `vue/max-props` | — | 未実装 |
 | `vue/max-template-depth` | — | 未実装 |
 | `vue/multi-word-component-names` | [`vue/multi-word-component-names`](./reference/vue-multi-word-component-names.md) | 対応付け |

@@ -106,7 +106,10 @@ mod permitted_contents;
 
 // Style rules
 mod block_lang;
+mod line_count;
 mod match_component_file_name;
+mod max_lines;
+mod max_lines_per_block;
 mod require_default_export;
 mod require_prop_comment;
 mod single_style_block;
@@ -192,6 +195,8 @@ pub use compatibility_template::{
 pub use component_definition_name_casing::ComponentDefinitionNameCasing;
 pub use html_end_tags::HtmlEndTags;
 pub use html_quotes::{HtmlQuotes, HtmlQuotesOption};
+pub use max_lines::MaxLines;
+pub use max_lines_per_block::MaxLinesPerBlock;
 pub use mustache_interpolation_spacing::{
     MustacheInterpolationSpacing, SpacingStyle as MustacheInterpolationSpacingStyle,
 };
@@ -395,4 +400,6 @@ pub(crate) fn register_opt_in(registry: &mut crate::rule::RuleRegistry) {
     register_if_missing(registry, Box::new(BlockLang::default()));
     register_if_missing(registry, Box::new(RequireDefaultExport));
     register_if_missing(registry, Box::new(RequirePropComment));
+    register_if_missing(registry, Box::new(MaxLines::default()));
+    register_if_missing(registry, Box::new(MaxLinesPerBlock::default()));
 }

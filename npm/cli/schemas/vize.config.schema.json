@@ -769,6 +769,51 @@
           },
           "additionalProperties": false
         },
+        "max-lines": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "object",
+              "properties": {
+                "max": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "skipComments": {
+                  "type": "boolean"
+                },
+                "skipBlankLines": {
+                  "type": "boolean"
+                }
+              },
+              "additionalProperties": false
+            }
+          ]
+        },
+        "vue/max-lines-per-block": {
+          "type": "object",
+          "properties": {
+            "style": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "template": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "script": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "skipBlankLines": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
         "vue/enforce-style-attribute": {
           "type": "object",
           "properties": {

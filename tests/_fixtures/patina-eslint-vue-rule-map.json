@@ -303,8 +303,10 @@
       "status": "unimplemented"
     },
     "vue/max-lines-per-block": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [],
+      "patinaRule": "vue/max-lines-per-block",
+      "patinaSeverity": "warning",
+      "status": "mapped"
     },
     "vue/max-props": {
       "issue": 3223,
@@ -2120,8 +2122,8 @@
   "schemaVersion": 1,
   "summary": {
     "intentionalDivergence": 3,
-    "mapped": 184,
-    "unimplemented": 69
+    "mapped": 185,
+    "unimplemented": 68
   },
   "upstream": {
     "package": "eslint-plugin-vue",

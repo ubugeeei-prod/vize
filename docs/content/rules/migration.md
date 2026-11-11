@@ -4,7 +4,7 @@ title: ESLint rule migration map
 
 # ESLint rule migration map
 
-The committed ESLint mapping records 256 rule IDs: 184 mapped, 3 intentional divergences, and 69 unimplemented. A mapped ID identifies a Vize rule; it does not guarantee identical options, findings, fixes, or coverage.
+The committed ESLint mapping records 256 rule IDs: 185 mapped, 3 intentional divergences, and 68 unimplemented. A mapped ID identifies a Vize rule; it does not guarantee identical options, findings, fixes, or coverage.
 
 When ESLint remains the host, prefer the [`eslint.config.mjs` flat-config integration](../guide/tool-integrations.md#eslint-flat-config). The Vite+ configuration below is the native-task alternative.
 
@@ -77,7 +77,7 @@ For option conversion, see [Rule Options](./options.md) and [props destructuring
 | `vue/match-component-import-name` | — | unimplemented |
 | `vue/max-attributes-per-line` | — | unimplemented |
 | `vue/max-len` | — | unimplemented |
-| `vue/max-lines-per-block` | — | unimplemented |
+| `vue/max-lines-per-block` | [`vue/max-lines-per-block`](./reference/vue-max-lines-per-block.md) | mapped |
 | `vue/max-props` | — | unimplemented |
 | `vue/max-template-depth` | — | unimplemented |
 | `vue/multi-word-component-names` | [`vue/multi-word-component-names`](./reference/vue-multi-word-component-names.md) | mapped |

@@ -1628,6 +1628,16 @@ html/require-datetime · lint ルール
 
 ヒント:
   機械可読な日時値を持つdatetime属性を追加してください。例: <time datetime="2024-12-25">クリスマス</time>
+=== max-lines
+max-lines · lint ルール
+ファイルの最大行数を適用する
+
+精度: exact
+対象: the authored text of one linted file, including every SFC block
+重大度: 警告
+カテゴリー: recommended
+自動修正: なし
+ドキュメント: docs/content/rules/reference/max-lines.md
 === musea/no-empty-variant
 musea/no-empty-variant · lint ルール
 空の <variant> ブロックを禁止する
@@ -4168,6 +4178,16 @@ vue/match-component-file-name · lint ルール
 カテゴリー: recommended
 自動修正: なし
 ドキュメント: docs/content/rules/reference/vue-match-component-file-name.md
+=== vue/max-lines-per-block
+vue/max-lines-per-block · lint ルール
+Vue SFC の各ブロックの最大行数を適用する
+
+精度: exact
+対象: the SFC's top-level blocks, their order and their attributes
+重大度: 警告
+カテゴリー: recommended
+自動修正: なし
+ドキュメント: docs/content/rules/reference/vue-max-lines-per-block.md
 === vue/max-template-complexity
 vue/max-template-complexity · lint ルール
 コンポーネント自身のテンプレート複雑度（循環的複雑度と認知的複雑度）に上限を設ける

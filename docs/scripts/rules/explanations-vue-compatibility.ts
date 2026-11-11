@@ -218,4 +218,18 @@ export const vueCompatibilityExplanations: readonly ExplanationRecord[] = [
     "size プロパティに JSDoc コメントがありません。",
     "size プロパティに JSDoc コメントを付けます。",
   ],
+  [
+    "max-lines",
+    "The file has more lines than the configured maximum.",
+    "The file stays within the configured maximum.",
+    "ファイルの行数が設定した上限を超えています。",
+    "ファイルの行数は設定した上限以内です。",
+  ],
+  [
+    "vue/max-lines-per-block",
+    "The template block has more lines than the configured maximum.",
+    "The template block stays within the configured maximum.",
+    "template ブロックの行数が設定した上限を超えています。",
+    "template ブロックの行数は設定した上限以内です。",
+  ],
 ];

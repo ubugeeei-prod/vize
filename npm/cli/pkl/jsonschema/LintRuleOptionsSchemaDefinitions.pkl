@@ -51,6 +51,34 @@ blockLangBlockDef: JsonSchema = new JsonSchema {
   additionalProperties = false
 }
 
+maxLinesObjectDef: JsonSchema = new JsonSchema {
+  type = "object"
+  properties {
+    ["max"] = new JsonSchema { type = "integer"; minimum = 0 }
+    ["skipComments"] = new JsonSchema { type = "boolean" }
+    ["skipBlankLines"] = new JsonSchema { type = "boolean" }
+  }
+  additionalProperties = false
+}
+
+maxLinesDef: JsonSchema = new JsonSchema {
+  oneOf = new Listing {
+    new JsonSchema { type = "integer"; minimum = 0 }
+    maxLinesObjectDef
+  }
+}
+
+maxLinesPerBlockDef: JsonSchema = new JsonSchema {
+  type = "object"
+  properties {
+    ["style"] = new JsonSchema { type = "integer"; minimum = 1 }
+    ["template"] = new JsonSchema { type = "integer"; minimum = 1 }
+    ["script"] = new JsonSchema { type = "integer"; minimum = 1 }
+    ["skipBlankLines"] = new JsonSchema { type = "boolean" }
+  }
+  additionalProperties = false
+}
+
 lintRuleOptionsDef: JsonSchema = new JsonSchema {
   type = "object"
   properties {
@@ -152,6 +180,8 @@ lintRuleOptionsDef: JsonSchema = new JsonSchema {
       }
       additionalProperties = false
     }
+    ["max-lines"] = maxLinesDef
+    ["vue/max-lines-per-block"] = maxLinesPerBlockDef
     ["vue/enforce-style-attribute"] = new JsonSchema {
       type = "object"
       properties {

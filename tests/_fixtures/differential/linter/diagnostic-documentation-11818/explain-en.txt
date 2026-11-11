@@ -1677,6 +1677,16 @@ valid:
 
 help:
   Add a datetime attribute with a machine-readable date/time value, e.g. <time datetime="2024-12-25">Christmas</time>
+=== max-lines
+max-lines · lint rule
+Enforce a maximum number of lines in a file
+
+tier: exact
+domain: the authored text of one linted file, including every SFC block
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/reference/max-lines.md
 === musea/no-empty-variant
 musea/no-empty-variant · lint rule
 Disallow empty <variant> blocks
@@ -4217,6 +4227,16 @@ severity: warning
 category: recommended
 autofix: no
 docs: docs/content/rules/reference/vue-match-component-file-name.md
+=== vue/max-lines-per-block
+vue/max-lines-per-block · lint rule
+Enforce a maximum number of lines in each Vue SFC block
+
+tier: exact
+domain: the SFC's top-level blocks, their order and their attributes
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/reference/vue-max-lines-per-block.md
 === vue/max-template-complexity
 vue/max-template-complexity · lint rule
 Limit a component's own template complexity (cyclomatic and cognitive)
