@@ -21,11 +21,11 @@
     ]
   },
   "summary": {
-    "mapped": 70,
-    "unimplemented": 39,
+    "mapped": 73,
+    "unimplemented": 36,
     "intentionalDivergence": 3,
-    "mappedWithTypedOptions": 25,
-    "mappedWithoutTypedOptions": 45
+    "mappedWithTypedOptions": 26,
+    "mappedWithoutTypedOptions": 47
   },
   "mappedWithTypedOptions": [
     ["vue/attribute-hyphenation", "vue/attribute-hyphenation"],
@@ -38,6 +38,7 @@
     ["vue/html-button-has-type", "vue/html-button-has-type"],
     ["vue/html-self-closing", "vue/html-self-closing"],
     ["vue/html-quotes", "vue/html-quotes"],
+    ["vue/max-lines-per-block", "vue/max-lines-per-block"],
     ["vue/multi-word-component-names", "vue/multi-word-component-names"],
     ["vue/mustache-interpolation-spacing", "vue/mustache-interpolation-spacing"],
     ["vue/no-bare-strings-in-template", "vue/no-bare-strings-in-template"],

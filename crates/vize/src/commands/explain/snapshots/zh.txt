@@ -1708,6 +1708,16 @@ html/require-datetime · lint 规则
 
 帮助:
   添加包含机器可读日期/时间值的datetime属性，例如：<time datetime="2024-12-25">圣诞节</time>
+=== max-lines
+max-lines · lint 规则
+限制文件的最大行数
+
+精度层级: exact
+适用范围: the authored text of one linted file, including every SFC block
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/reference/max-lines.md
 === musea/no-empty-variant
 musea/no-empty-variant · lint 规则
 禁止空的 <variant> 块
@@ -4346,6 +4356,16 @@ vue/match-component-file-name · lint 规则
 类别: recommended
 自动修复: 不支持
 文档: docs/content/rules/reference/vue-match-component-file-name.md
+=== vue/max-lines-per-block
+vue/max-lines-per-block · lint 规则
+限制每个 Vue SFC 块的最大行数
+
+精度层级: exact
+适用范围: the SFC's top-level blocks, their order and their attributes
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/reference/vue-max-lines-per-block.md
 === vue/max-template-complexity
 vue/max-template-complexity · lint 规则
 限制组件自身模板的复杂度（圈复杂度与认知复杂度）

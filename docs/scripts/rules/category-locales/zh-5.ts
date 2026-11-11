@@ -1,4 +1,9 @@
 export const chineseRules5: Record<string, readonly [string, string, string]> = {
+  "max-lines": [
+    "限制文件的行数。",
+    "文件的行数超过配置的上限。",
+    "文件的行数保持在配置的上限以内。",
+  ],
   "vize:croquis/cf/non-unique-id": [
     "循环内的元素 id 对每个列表项并不唯一。",
     "每次 `v-for` 迭代都渲染相同的 `result-title` 字面量 ID；循环的 key 不会让 DOM ID 唯一。",

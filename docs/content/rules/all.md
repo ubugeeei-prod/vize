@@ -9,10 +9,11 @@ Every rule Vize's linter ships, grouped by category. Open a rule to see what it 
 
 The Preset column names the smallest preset that turns a rule on. Rule pages list every preset. See [presets](../rules/index.md#presets) for what each one contains.
 
-## Vue rules (151)
+## Vue rules (153)
 
 | Rule | What it checks | Preset | Auto-fix |
 | --- | --- | --- | --- |
+| <span id="max-lines"></span>[`max-lines`](./reference/max-lines.md) | Enforce a maximum number of lines in a file. | — |  |
 | <span id="vue-a11y-img-alt"></span>[`vue/a11y-img-alt`](./reference/vue-a11y-img-alt.md) | Require alt attribute on images for accessibility. | — |  |
 | <span id="vue-attribute-hyphenation"></span>[`vue/attribute-hyphenation`](./reference/vue-attribute-hyphenation.md) | Enforce attribute naming style on custom components. | `happy-path` | ✓ |
 | <span id="vue-attribute-order"></span>[`vue/attribute-order`](./reference/vue-attribute-order.md) | Enforce a consistent order of attributes. | `happy-path` |  |
@@ -30,6 +31,7 @@ The Preset column names the smallest preset that turns a rule on. Rule pages lis
 | <span id="vue-html-self-closing"></span>[`vue/html-self-closing`](./reference/vue-html-self-closing.md) | Enforce self-closing style. | `nuxt`, `opinionated` | ✓ |
 | <span id="vue-jsx-uses-vars"></span>[`vue/jsx-uses-vars`](./reference/vue-jsx-uses-vars.md) | Treat variables used in JSX element names as used. | `essential` |  |
 | <span id="vue-match-component-file-name"></span>[`vue/match-component-file-name`](./reference/vue-match-component-file-name.md) | Require a component name to match its file name. | — |  |
+| <span id="vue-max-lines-per-block"></span>[`vue/max-lines-per-block`](./reference/vue-max-lines-per-block.md) | Enforce a maximum number of lines in each Vue SFC block. | — |  |
 | <span id="vue-max-template-complexity"></span>[`vue/max-template-complexity`](./reference/vue-max-template-complexity.md) | Limit a component's own template complexity (cyclomatic and cognitive). | — |  |
 | <span id="vue-multi-word-component-names"></span>[`vue/multi-word-component-names`](./reference/vue-multi-word-component-names.md) | Require component names to be multi-word. | `essential` |  |
 | <span id="vue-mustache-interpolation-spacing"></span>[`vue/mustache-interpolation-spacing`](./reference/vue-mustache-interpolation-spacing.md) | Enforce consistent spacing inside mustache interpolations. | `happy-path` | ✓ |

@@ -9,10 +9,11 @@ Toutes les règles du linter de Vize, regroupées par catégorie. Ouvrez une rè
 
 La colonne Préréglage indique le plus petit préréglage qui active la règle ; la page de chaque règle les liste tous. Voir [préréglages](../rules/index.md#préréglages) pour le contenu de chacun.
 
-## Règles Vue (151)
+## Règles Vue (153)
 
 | Règle | Ce qu’elle vérifie | Préréglage | Correction automatique |
 | --- | --- | --- | --- |
+| <span id="max-lines"></span>[`max-lines`](./reference/max-lines.md) | Limite le nombre de lignes d'un fichier. | — |  |
 | <span id="vue-a11y-img-alt"></span>[`vue/a11y-img-alt`](./reference/vue-a11y-img-alt.md) | Exiger un attribut alt sur les images pour les rendre accessibles. | — |  |
 | <span id="vue-attribute-hyphenation"></span>[`vue/attribute-hyphenation`](./reference/vue-attribute-hyphenation.md) | Imposer un style de nommage des attributs sur les composants personnalisés. | `happy-path` | ✓ |
 | <span id="vue-attribute-order"></span>[`vue/attribute-order`](./reference/vue-attribute-order.md) | Imposer un ordre cohérent des attributs. | `happy-path` |  |
@@ -30,6 +31,7 @@ La colonne Préréglage indique le plus petit préréglage qui active la règle 
 | <span id="vue-html-self-closing"></span>[`vue/html-self-closing`](./reference/vue-html-self-closing.md) | Imposer un style de fermeture automatique des balises. | `nuxt`, `opinionated` | ✓ |
 | <span id="vue-jsx-uses-vars"></span>[`vue/jsx-uses-vars`](./reference/vue-jsx-uses-vars.md) | Considère comme utilisées les variables référencées dans les noms d'éléments JSX. | `essential` |  |
 | <span id="vue-match-component-file-name"></span>[`vue/match-component-file-name`](./reference/vue-match-component-file-name.md) | Exige que le nom déclaré du composant corresponde au nom du fichier. | — |  |
+| <span id="vue-max-lines-per-block"></span>[`vue/max-lines-per-block`](./reference/vue-max-lines-per-block.md) | Limite le nombre de lignes de chaque bloc SFC. | — |  |
 | <span id="vue-max-template-complexity"></span>[`vue/max-template-complexity`](./reference/vue-max-template-complexity.md) | Limiter la complexité propre du template d’un composant, cyclomatique et cognitive. | — |  |
 | <span id="vue-multi-word-component-names"></span>[`vue/multi-word-component-names`](./reference/vue-multi-word-component-names.md) | Exiger des noms de composants composés de plusieurs mots. | `essential` |  |
 | <span id="vue-mustache-interpolation-spacing"></span>[`vue/mustache-interpolation-spacing`](./reference/vue-mustache-interpolation-spacing.md) | Imposer un espacement cohérent dans les interpolations à doubles accolades. | `happy-path` | ✓ |

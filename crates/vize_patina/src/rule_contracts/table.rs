@@ -14,6 +14,8 @@ const UNUSED_SETUP: Domain = Domain::new(
     "valid inline script-setup declarations with no resolved script, template or style v-bind read; external blocks, eval and unsupported syntax are outside",
 );
 const BLOCKS: Domain = Domain::new("the SFC's top-level blocks, their order and their attributes");
+const FILE_TEXT: Domain =
+    Domain::new("the authored text of one linted file, including every SFC block");
 const CSS_TEXT: Domain =
     Domain::new("declarations and selectors of <style> blocks as parsed by lightningcss");
 const DIRECTIVES: Domain = Domain::new(
@@ -118,6 +120,7 @@ pub static RULE_CONTRACTS: &[RuleEntry] = &[
     row!("html/no-duplicate-dt", Exact, HTML, Warning),
     row!("html/no-empty-palpable-content", Exact, HTML, Warning),
     row!("html/require-datetime", Exact, HTML, Warning),
+    row!("max-lines", Exact, FILE_TEXT, Warning),
     row!("musea/no-empty-variant", Exact, MUSEA, Warning),
     row!("musea/prefer-design-tokens", Heuristic, MUSEA, Warning),
     row!("musea/require-component", Exact, MUSEA, Warning),
@@ -238,6 +241,7 @@ pub static RULE_CONTRACTS: &[RuleEntry] = &[
     row!("vue/html-self-closing", Exact, STYLE, Warning),
     row!("vue/jsx-uses-vars", Complete, SCRIPT, Error),
     row!("vue/match-component-file-name", Exact, SCRIPT, Warning),
+    row!("vue/max-lines-per-block", Exact, BLOCKS, Warning),
     row!("vue/max-template-complexity", Exact, TEMPLATE_FLOW, Warning),
     row!("vue/multi-word-component-names", Exact, STYLE, Error),
     row!("vue/mustache-interpolation-spacing", Exact, STYLE, Warning),

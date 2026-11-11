@@ -137,12 +137,13 @@ SFC のテンプレート・ディレクティブ・コンポーネント・各�
 | <span id="vue-warn-custom-block"></span>[`vue/warn-custom-block`](./reference/vue-warn-custom-block.md) | SFC のカスタムブロックを検出します。 | `nuxt`, `opinionated` |  |
 | <span id="vue-warn-custom-directive"></span>[`vue/warn-custom-directive`](./reference/vue-warn-custom-directive.md) | 登録が必要なカスタムディレクティブを検出します。 | `nuxt`, `opinionated` |  |
 
-## 個別に有効化 (44)
+## 個別に有効化 (46)
 
 どのプリセットにも含まれません。`withVue` に渡す `linter.rules` でルール名を指定して有効にします。
 
 | ルール | 検出する内容 | 自動修正 |
 | --- | --- | --- |
+| <span id="max-lines"></span>[`max-lines`](./reference/max-lines.md) | ファイルの行数が上限を超えた箇所を検出します。 |  |
 | <span id="vue-a11y-img-alt"></span>[`vue/a11y-img-alt`](./reference/vue-a11y-img-alt.md) | 画像に代替テキストの alt 属性を指定します。 |  |
 | <span id="vue-block-lang"></span>[`vue/block-lang`](./reference/vue-block-lang.md) | SFC ブロックの lang を設定した言語に揃えます。 |  |
 | <span id="vue-camelcase"></span>[`vue/camelcase`](./reference/vue-camelcase.md) | テンプレート式の識別子を camelCase に揃えます。 |  |
@@ -150,6 +151,7 @@ SFC のテンプレート・ディレクティブ・コンポーネント・各�
 | <span id="vue-enforce-style-attribute"></span>[`vue/enforce-style-attribute`](./reference/vue-enforce-style-attribute.md) | style ブロックを許可した属性モードに揃えます。 |  |
 | <span id="vue-eqeqeq"></span>[`vue/eqeqeq`](./reference/vue-eqeqeq.md) | テンプレート式で厳密等価演算子を使います。 |  |
 | <span id="vue-match-component-file-name"></span>[`vue/match-component-file-name`](./reference/vue-match-component-file-name.md) | 宣言したコンポーネント名をファイル名と一致させます。 |  |
+| <span id="vue-max-lines-per-block"></span>[`vue/max-lines-per-block`](./reference/vue-max-lines-per-block.md) | SFC ブロックの行数が上限を超えた箇所を検出します。 |  |
 | <span id="vue-max-template-complexity"></span>[`vue/max-template-complexity`](./reference/vue-max-template-complexity.md) | コンポーネント自身のテンプレートの複雑度を制限します。 |  |
 | <span id="vue-next-tick-style"></span>[`vue/next-tick-style`](./reference/vue-next-tick-style.md) | nextTick を Promise 形式で使います。 |  |
 | <span id="vue-no-bare-strings-in-template"></span>[`vue/no-bare-strings-in-template`](./reference/vue-no-bare-strings-in-template.md) | テンプレートに直接書かれた、国際化の対象となるテキストを検出します。 |  |

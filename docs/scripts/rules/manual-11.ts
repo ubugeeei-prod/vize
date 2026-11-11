@@ -131,6 +131,38 @@ export const manual11: Record<string, RuleExample> = {
     '<script lang="ts">\nconst label = "a";\n</script>\n<template>\n  <p>label</p>\n</template>',
     '<script lang="ts">\nconst label = "a";\nexport default { name: "Label" };\n</script>\n<template>\n  <p>label</p>\n</template>',
   ),
+  "max-lines": {
+    bad: {
+      language: "vue",
+      source:
+        '<script setup lang="ts">\nconst label = "a";\n</script>\n\n<template>\n  <ul>\n    <li>{{ label }}</li>\n    <li>{{ label }}</li>\n    <li>{{ label }}</li>\n    <li>{{ label }}</li>\n    <li>{{ label }}</li>\n    <li>{{ label }}</li>\n    <li>{{ label }}</li>\n    <li>{{ label }}</li>\n    <li>{{ label }}</li>\n    <li>{{ label }}</li>\n  </ul>\n</template>\n',
+    },
+    good: {
+      language: "vue",
+      source:
+        '<script setup lang="ts">\nconst label = "a";\n</script>\n<template>\n  <p>{{ label }}</p>\n</template>\n',
+    },
+    evidence: "crates/vize_patina/src/rules/vue/max_lines.rs",
+    ruleOptions: { max: 10 },
+    eslintDifferenceHeading: { en: "Differences from ESLint" },
+    eslintDifference: {
+      en: "The count covers the whole file Vize lints, including `<template>` and `<style>`, so an SFC can be capped in one place. A trailing newline does not add a line. `skipComments` skips a line whose remaining text is only a `//` comment, a `/* */` comment, or an HTML comment, and it does not treat text inside a string as a comment. A comment that shares a line with code stays counted. ESLint takes those comment lines from the parser's comment list.",
+    },
+  },
+  "vue/max-lines-per-block": {
+    bad: {
+      language: "vue",
+      source:
+        '<script setup lang="ts">\nconst label = "a";\n</script>\n\n<template>\n  <ul>\n    <li>{{ label }}</li>\n    <li>{{ label }}</li>\n    <li>{{ label }}</li>\n    <li>{{ label }}</li>\n    <li>{{ label }}</li>\n    <li>{{ label }}</li>\n    <li>{{ label }}</li>\n    <li>{{ label }}</li>\n    <li>{{ label }}</li>\n    <li>{{ label }}</li>\n  </ul>\n</template>\n',
+    },
+    good: {
+      language: "vue",
+      source:
+        '<script setup lang="ts">\nconst label = "a";\n</script>\n<template>\n  <p>{{ label }}</p>\n</template>\n',
+    },
+    evidence: "crates/vize_patina/src/rules/vue/max_lines_per_block.rs",
+    ruleOptions: { template: 10 },
+  },
   "vue/require-prop-comment": sfc(
     '<script setup lang="ts">\nconst { size } = defineProps<{ size: string }>();\n</script>\n<template>\n  <p>{{ size }}</p>\n</template>',
     '<script setup lang="ts">\nconst { size } = defineProps<{\n  /** The rendered size. */\n  size: string;\n}>();\n</script>\n<template>\n  <p>{{ size }}</p>\n</template>',

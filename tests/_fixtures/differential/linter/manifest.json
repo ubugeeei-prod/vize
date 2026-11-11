@@ -2996,17 +2996,17 @@
           {
             "path": "explain-en.txt",
             "role": "whole-current-explain-oracle",
-            "sha256": "3b42baf0f8371d37ab7ea46e60417e950e11d50cd534adb765959ffee3326729"
+            "sha256": "d95b97d1738e2e74ae920c2d19c2640a053564386a630fc1279af9c3928a8805"
           },
           {
             "path": "explain-ja.txt",
             "role": "whole-current-explain-oracle",
-            "sha256": "52ef70382719c9672d50becbe47c436ea347f6c0260d526419f0a52781a9af9b"
+            "sha256": "c34def650e76578031f21112f4beac3fd7e63df7a36f0a49867255ed91821ebe"
           },
           {
             "path": "explain-zh.txt",
             "role": "whole-current-explain-oracle",
-            "sha256": "7308ce1ce68c19f304de258cf2aae3099cb321b3fda46c373c3d1890a710bb4e"
+            "sha256": "d2b00794e0521c1b7a1bf29d0b4a8f97a71c77d2fb864bdd35f077488061888f"
           }
         ]
       },
@@ -4682,6 +4682,38 @@
             "dialects": [
               "vue3-sfc",
               "html-template"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/patina/compat-max-lines-12864",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "patina-compat-max-lines-12864",
+        "files": [
+          {
+            "path": "Long.vue.txt",
+            "role": "third-party-max-lines-reproduction",
+            "sha256": "365575b17f8d16fce2f6dd6fe303b70f757da168c67cd0b3da8a5d1f2bdf910c"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
             ],
             "selector": "linter manifest pinned authored sources"
           }

@@ -1,4 +1,9 @@
 export const frenchRules5 = {
+  "max-lines": [
+    "Limite le nombre de lignes d'un fichier.",
+    "Le fichier dépasse le maximum configuré.",
+    "Le fichier reste dans le maximum configuré.",
+  ],
   "vize:croquis/cf/missing-suspense": [
     "Une dépendance asynchrone est utilisée en dehors d’une frontière Suspense.",
     "`AsyncCard` contient un await au niveau supérieur, ce qui rend son setup asynchrone, mais App le rend sans frontière Suspense pour coordonner cette dépendance.",
