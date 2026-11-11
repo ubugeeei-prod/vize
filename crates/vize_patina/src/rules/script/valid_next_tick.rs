@@ -206,15 +206,26 @@ fn check_use(
     reports: &mut Vec<(Span, &'static str)>,
 ) {
     let callee = nodes.kind(node).span();
+    // The operand its parent sees: the reference, or the conditional around it.
+    let mut operand = callee;
+    let mut tested = false;
     let mut parent_id = parent(nodes, node);
-    if matches!(nodes.kind(parent_id), AstKind::ConditionalExpression(_)) {
+    if let AstKind::ConditionalExpression(conditional) = nodes.kind(parent_id) {
+        tested = conditional.test.without_parentheses().span() == callee;
+        operand = conditional.span;
         parent_id = parent(nodes, parent_id);
     }
     let call = match nodes.kind(parent_id) {
         AstKind::CallExpression(call) if call.callee.without_parentheses().span() == callee => call,
+        // A property value forwards the function, as an argument does; a
+        // computed key or a conditional test only reads it.
+        AstKind::ObjectProperty(property)
+            if !tested && property.value.without_parentheses().span() == operand =>
+        {
+            return;
+        }
         AstKind::CallExpression(_)
         | AstKind::VariableDeclarator(_)
-        | AstKind::ObjectProperty(_)
         | AstKind::AssignmentExpression(_) => return,
         _ => {
             reports.push((span, NOT_CALLED));
@@ -448,6 +459,20 @@ mod tests {
     fn test_promise_consumers_and_value_passing_are_valid() {
         let source = "import { nextTick } from \"vue\";\nasync function f(done) {\n  const p = nextTick();\n  done(nextTick);\n  done({ nextTick });\n  await Promise.all([nextTick(), p]);\n  nextTick().then(done).catch(done);\n  const pick = done ? nextTick : done;\n  return [p, pick];\n}";
         assert!(messages(source).is_empty(), "{:?}", messages(source));
+    }
+
+    #[test]
+    fn test_property_keys_and_conditional_tests_are_not_forwarded() {
+        let source = "import { nextTick } from \"vue\";\nfunction f(done) {\n  done({ nextTick, tick: (nextTick), pick: done ? nextTick : done });\n  done({ [nextTick]: done });\n  done({ ready: nextTick ? done : done });\n}";
+        let key = source.find("[nextTick]").map(|index| index as u32 + 1);
+        let test = source.find("nextTick ? done").map(|index| index as u32);
+        let expected: Vec<_> = [key, test]
+            .into_iter()
+            .flatten()
+            .map(|start| (start, std::string::String::from(super::NOT_CALLED)))
+            .collect();
+        assert_eq!(expected.len(), 2);
+        assert_eq!(messages(source), expected);
     }
 
     #[test]
