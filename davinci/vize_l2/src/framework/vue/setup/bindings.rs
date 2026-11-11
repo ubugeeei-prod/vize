@@ -4,14 +4,16 @@
 //! the ref/reactive call families authoritative, mutable declarations stay
 //! mutable, and literal constants depend on script-setup static hoisting.
 
+mod classify;
 mod pattern;
 
+use self::classify::{by_initializer, call, is_static_node};
 use super::super::{MacroKind, lookup};
 use super::props::{self, PropsDestructure};
 use alloc::vec::Vec;
 use oxc_ast::ast::{
-    BindingPattern, CallExpression, Expression, ImportDeclaration, ImportDeclarationSpecifier,
-    Statement, VariableDeclarationKind, VariableDeclarator,
+    BindingPattern, CallExpression, Declaration, Expression, ImportDeclaration,
+    ImportDeclarationSpecifier, Statement, VariableDeclarationKind, VariableDeclarator,
 };
 use vize_l0::Span;
 
@@ -120,8 +122,8 @@ fn vue_setup_call(name: &str) -> Option<&'static (&'static str, SetupBindingKind
 
 /// Binding rows plus the local names that alias a Vue reactivity API.
 #[derive(Debug)]
-pub(super) struct Bindings<'a> {
-    pub(super) rows: Vec<SetupBinding>,
+pub(in crate::framework::vue) struct Bindings<'a> {
+    pub(in crate::framework::vue) rows: Vec<SetupBinding>,
     pub(super) props: Option<PropsDestructure>,
     /// `defineProps` destructures the facts do not cover.
     pub(super) unclassified: Vec<Span>,
@@ -129,7 +131,8 @@ pub(super) struct Bindings<'a> {
     pub(super) defaults: Vec<(&'a str, Span)>,
     aliases: Vec<(&'a str, &'static str)>,
     hoist_static: bool,
-    pub(super) overflow: bool,
+    script_setup: bool,
+    pub(in crate::framework::vue) overflow: bool,
 }
 
 impl Default for Bindings<'_> {
@@ -141,12 +144,20 @@ impl Default for Bindings<'_> {
             defaults: Vec::new(),
             aliases: Vec::new(),
             hoist_static: true,
+            script_setup: true,
             overflow: false,
         }
     }
 }
 
 impl<'a> Bindings<'a> {
+    pub(in crate::framework::vue) fn ordinary() -> Self {
+        Self {
+            script_setup: false,
+            ..Self::default()
+        }
+    }
+
     pub(super) fn set_hoist_static(&mut self, enabled: bool) {
         self.hoist_static = enabled;
     }
@@ -176,7 +187,7 @@ impl<'a> Bindings<'a> {
         self.rows.push(SetupBinding { name, kind, source });
     }
 
-    pub(super) fn statement(&mut self, base: u32, statement: &Statement<'a>) {
+    pub(in crate::framework::vue) fn statement(&mut self, base: u32, statement: &Statement<'a>) {
         match statement {
             Statement::ImportDeclaration(import) if !import.import_kind.is_type() => {
                 self.import(base, import);
@@ -197,6 +208,45 @@ impl<'a> Bindings<'a> {
                 }
             }
             Statement::TSEnumDeclaration(enumeration) if !enumeration.declare => {
+                let kind = if enumeration
+                    .body
+                    .members
+                    .iter()
+                    .all(|member| member.initializer.as_ref().is_none_or(is_static_node))
+                {
+                    SetupBindingKind::LiteralConst
+                } else {
+                    SetupBindingKind::SetupConst
+                };
+                self.push(base, enumeration.id.span, kind);
+            }
+            Statement::ExportNamedDeclaration(export) if !self.script_setup => {
+                if let Some(declaration) = &export.declaration {
+                    self.declaration(base, declaration);
+                }
+            }
+            _ => {}
+        }
+    }
+
+    fn declaration(&mut self, base: u32, declaration: &Declaration<'a>) {
+        match declaration {
+            Declaration::VariableDeclaration(declaration) if !declaration.declare => {
+                for declarator in &declaration.declarations {
+                    self.declarator(base, declaration.kind, declarator);
+                }
+            }
+            Declaration::FunctionDeclaration(function) if !function.declare => {
+                if let Some(id) = &function.id {
+                    self.push(base, id.span, SetupBindingKind::SetupConst);
+                }
+            }
+            Declaration::ClassDeclaration(class) if !class.declare => {
+                if let Some(id) = &class.id {
+                    self.push(base, id.span, SetupBindingKind::SetupConst);
+                }
+            }
+            Declaration::TSEnumDeclaration(enumeration) if !enumeration.declare => {
                 let kind = if enumeration
                     .body
                     .members
@@ -310,7 +360,9 @@ impl<'a> Bindings<'a> {
         };
         let callee = callee.name.as_str();
         let is_const = kind == VariableDeclarationKind::Const;
-        if let Some(row) = lookup(callee).filter(|row| row.builtin) {
+        if self.script_setup
+            && let Some(row) = lookup(callee).filter(|row| row.builtin)
+        {
             return match (is_const, row.kind) {
                 (true, MacroKind::DefineProps) => (
                     SetupBindingKind::SetupReactiveConst,
@@ -343,124 +395,5 @@ impl<'a> Bindings<'a> {
             return (SetupBindingKind::SetupLet, None);
         }
         (*class, Some(*source))
-    }
-}
-
-fn is_callee(call: &CallExpression<'_>, name: &str) -> bool {
-    matches!(&call.callee, Expression::Identifier(id) if id.name == name)
-}
-
-pub(super) fn is_const_macro_call(call: &CallExpression<'_>) -> bool {
-    matches!(&call.callee, Expression::Identifier(id) if matches!(
-        lookup(id.name.as_str()).map(|row| row.kind),
-        Some(
-            MacroKind::DefineProps
-                | MacroKind::DefineEmits
-                | MacroKind::WithDefaults
-                | MacroKind::DefineSlots
-        )
-    ))
-}
-
-/// `defineProps()` or `withDefaults(defineProps(), ...)`, through TS wrappers.
-pub(super) fn destructures_props(init: &Expression<'_>) -> bool {
-    let Expression::CallExpression(call) = transparent(init) else {
-        return false;
-    };
-    is_callee(call, super::super::DEFINE_PROPS)
-        || (is_callee(call, super::super::WITH_DEFAULTS)
-            && matches!(
-                call.arguments.first(),
-                Some(oxc_ast::ast::Argument::CallExpression(inner))
-                    if is_callee(inner, super::super::DEFINE_PROPS)
-            ))
-}
-
-/// The call an initializer evaluates to, through TS wrappers and parentheses.
-pub(super) fn call<'e, 'a>(expression: &'e Expression<'a>) -> Option<&'e CallExpression<'a>> {
-    match transparent(expression) {
-        Expression::CallExpression(call) => Some(call),
-        _ => None,
-    }
-}
-
-fn transparent<'e, 'a>(expression: &'e Expression<'a>) -> &'e Expression<'a> {
-    match expression {
-        Expression::ParenthesizedExpression(inner) => transparent(&inner.expression),
-        Expression::TSAsExpression(inner) => transparent(&inner.expression),
-        Expression::TSSatisfiesExpression(inner) => transparent(&inner.expression),
-        Expression::TSTypeAssertion(inner) => transparent(&inner.expression),
-        Expression::TSNonNullExpression(inner) => transparent(&inner.expression),
-        Expression::TSInstantiationExpression(inner) => transparent(&inner.expression),
-        other => other,
-    }
-}
-
-/// A declaration's kind by Vue's static and never-ref tests.
-fn by_initializer(
-    kind: VariableDeclarationKind,
-    init: &Expression<'_>,
-    hoist_static: bool,
-) -> SetupBindingKind {
-    if kind != VariableDeclarationKind::Const {
-        return SetupBindingKind::SetupLet;
-    }
-    if hoist_static && is_static_node(init) {
-        return SetupBindingKind::LiteralConst;
-    }
-    if can_never_be_ref(init) {
-        SetupBindingKind::SetupConst
-    } else {
-        SetupBindingKind::SetupMaybeRef
-    }
-}
-
-fn can_never_be_ref(init: &Expression<'_>) -> bool {
-    match transparent(init) {
-        Expression::StringLiteral(_)
-        | Expression::NumericLiteral(_)
-        | Expression::BooleanLiteral(_)
-        | Expression::NullLiteral(_)
-        | Expression::BigIntLiteral(_)
-        | Expression::RegExpLiteral(_)
-        | Expression::TemplateLiteral(_)
-        | Expression::UnaryExpression(_)
-        | Expression::BinaryExpression(_)
-        | Expression::UpdateExpression(_)
-        | Expression::FunctionExpression(_)
-        | Expression::ArrowFunctionExpression(_)
-        | Expression::ClassExpression(_)
-        | Expression::TaggedTemplateExpression(_)
-        | Expression::ObjectExpression(_)
-        | Expression::ArrayExpression(_) => true,
-        Expression::SequenceExpression(sequence) => {
-            sequence.expressions.last().is_some_and(can_never_be_ref)
-        }
-        _ => false,
-    }
-}
-
-fn is_static_node(init: &Expression<'_>) -> bool {
-    match transparent(init) {
-        Expression::StringLiteral(_)
-        | Expression::NumericLiteral(_)
-        | Expression::BooleanLiteral(_)
-        | Expression::NullLiteral(_)
-        | Expression::BigIntLiteral(_) => true,
-        Expression::UnaryExpression(unary) => is_static_node(&unary.argument),
-        Expression::LogicalExpression(logical) => {
-            is_static_node(&logical.left) && is_static_node(&logical.right)
-        }
-        Expression::BinaryExpression(binary) => {
-            is_static_node(&binary.left) && is_static_node(&binary.right)
-        }
-        Expression::ConditionalExpression(conditional) => {
-            is_static_node(&conditional.test)
-                && is_static_node(&conditional.consequent)
-                && is_static_node(&conditional.alternate)
-        }
-        Expression::SequenceExpression(sequence) => sequence.expressions.iter().all(is_static_node),
-        Expression::TemplateLiteral(template) => template.expressions.iter().all(is_static_node),
-        _ => false,
     }
 }

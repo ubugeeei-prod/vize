@@ -1,6 +1,7 @@
 //! Vue's const, macro, nested, and rest rules for binding patterns.
 
-use super::{Bindings, SetupBindingKind, call, destructures_props, is_const_macro_call};
+use super::classify::{call, destructures_props, is_const_macro_call};
+use super::{Bindings, SetupBindingKind};
 use oxc_ast::ast::{BindingPattern, VariableDeclarationKind, VariableDeclarator};
 
 impl<'a> Bindings<'a> {
@@ -13,9 +14,12 @@ impl<'a> Bindings<'a> {
     ) {
         let init = declarator.init.as_ref();
         let is_const = kind == VariableDeclarationKind::Const;
-        let is_const_macro = is_const && init.and_then(call).is_some_and(is_const_macro_call);
+        let is_const_macro =
+            self.script_setup && is_const && init.and_then(call).is_some_and(is_const_macro_call);
         match &declarator.id {
-            BindingPattern::ObjectPattern(pattern) if init.is_some_and(destructures_props) => {
+            BindingPattern::ObjectPattern(pattern)
+                if self.script_setup && init.is_some_and(destructures_props) =>
+            {
                 self.props_destructure(base, pattern);
             }
             BindingPattern::ObjectPattern(pattern) => {

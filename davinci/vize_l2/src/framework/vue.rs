@@ -177,6 +177,11 @@ pub use contract::{
     Prop, PropsContract, SlotsContract,
 };
 
+mod ordinary;
+pub use ordinary::{
+    OrdinaryBinding, OrdinaryCheckpoint, OrdinaryFacts, OrdinaryFactsIncomplete, OrdinaryObserver,
+};
+
 mod setup;
 pub use setup::{
     MacroCall, PropsDestructure, PropsField, ReactiveSource, SetupBinding, SetupBindingKind,
