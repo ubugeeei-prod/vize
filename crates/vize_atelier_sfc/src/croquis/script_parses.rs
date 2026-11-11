@@ -6,12 +6,13 @@ use oxc_allocator::Allocator;
 use oxc_parser::ParserReturn;
 use oxc_span::SourceType;
 use vize_carton::profile;
-use vize_croquis::script_parser::parse_original_for_analysis;
+use vize_croquis::script_parser::{SharedProgram, parse_original_for_analysis, shared_program};
 
 use crate::{SfcDescriptor, SfcScriptBlock};
 
 /// A descriptor's script blocks, each parsed at most once, on first read, in
-/// the language its consumer reads it as.
+/// the language its consumer reads it as. Inside a `SharedParseScope` the
+/// block reads the projection's shared parse of its text.
 pub struct SfcScriptParses<'a> {
     descriptor: &'a SfcDescriptor<'a>,
     allocator: &'a Allocator,
@@ -22,7 +23,23 @@ pub struct SfcScriptParses<'a> {
 struct Block<'a> {
     source: &'a str,
     source_type: SourceType,
-    parsed: OnceCell<ParserReturn<'a>>,
+    parsed: OnceCell<BlockParse<'a>>,
+}
+
+/// A block's parse: the projection's shared parse inside a
+/// `SharedParseScope`, otherwise one in this value's arena.
+enum BlockParse<'a> {
+    Shared(SharedProgram),
+    Own(Box<ParserReturn<'a>>),
+}
+
+impl BlockParse<'_> {
+    fn get(&self) -> &ParserReturn<'_> {
+        match self {
+            Self::Shared(parse) => parse.get(),
+            Self::Own(parse) => parse,
+        }
+    }
 }
 
 impl<'a> SfcScriptParses<'a> {
@@ -62,21 +79,33 @@ impl<'a> SfcScriptParses<'a> {
     }
 
     /// The `<script>` block's authored parse.
-    pub fn script(&self) -> Option<&ParserReturn<'a>> {
+    pub fn script(&self) -> Option<&ParserReturn<'_>> {
         self.script.as_ref().map(|block| self.parse(block))
     }
 
     /// The `<script setup>` block's authored parse.
-    pub fn script_setup(&self) -> Option<&ParserReturn<'a>> {
+    pub fn script_setup(&self) -> Option<&ParserReturn<'_>> {
         self.script_setup.as_ref().map(|block| self.parse(block))
     }
 
-    fn parse<'s>(&'s self, block: &'s Block<'a>) -> &'s ParserReturn<'a> {
-        block.parsed.get_or_init(|| {
-            profile!(
-                "atelier.sfc.script_parse",
-                parse_original_for_analysis(self.allocator, block.source, block.source_type)
-            )
-        })
+    fn parse<'s>(&'s self, block: &'s Block<'a>) -> &'s ParserReturn<'s> {
+        block
+            .parsed
+            .get_or_init(|| {
+                profile!(
+                    "atelier.sfc.script_parse",
+                    shared_program(block.source, block.source_type).map_or_else(
+                        || {
+                            BlockParse::Own(Box::new(parse_original_for_analysis(
+                                self.allocator,
+                                block.source,
+                                block.source_type,
+                            )))
+                        },
+                        BlockParse::Shared,
+                    )
+                )
+            })
+            .get()
     }
 }
