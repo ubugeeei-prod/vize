@@ -33,8 +33,8 @@ fn restore(current: String, file: &Value) -> String {
 
 /// The exact pre-#12461 bytes of a recorded producer. Older images pass through.
 pub(super) fn source_before(path: &str, current: String) -> String {
-    let current = super::component_export_memmem::source_before(path, current);
     let current = super::shared_usage_gates::source_before(path, current);
+    let current = super::component_export_memmem::source_before(path, current);
     let current = super::check_mode_generator::source_before(path, current);
     let record = record();
     match record["files"]
@@ -67,9 +67,9 @@ mod tests {
         let record = record();
         for file in record["files"].as_array().unwrap() {
             let path = file["path"].as_str().unwrap();
-            let current = super::super::shared_usage_gates::source_before(
+            let current = super::super::component_export_memmem::source_before(
                 path,
-                super::super::component_export_memmem::source_before(
+                super::super::shared_usage_gates::source_before(
                     path,
                     fs::read_to_string(support::repository().join(path)).unwrap(),
                 ),

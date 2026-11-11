@@ -30,12 +30,12 @@
     {
       "path": "crates/vize_canon/src/virtual_ts/generator/component_export.rs",
       "before": {
-        "bytes": 16399,
-        "sha256": "2e70012b05192f7a4661afc223fa7bc2d1e91e3d7dd6ffef663aa8e26c4e0813"
+        "bytes": 16723,
+        "sha256": "85e4d61720c39671fde71629c504dbe2277d11b23eb7c263d6a358c0de3c7e2b"
       },
       "after": {
-      "bytes": 16922,
-      "sha256": "b79c3dbe4b9c61b0bb9c47dbc39599ee7237fe4467ddb771568dce66c3034ca0"
+      "bytes": 17246,
+      "sha256": "816f52f22d490d3828ce2a9d50db0cee843c19d76f67ac087d8345dff409d2c3"
       },
       "hunks": [
       {
