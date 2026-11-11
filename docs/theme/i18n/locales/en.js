@@ -73,6 +73,7 @@
       "/rules/options-events": "Events",
       "/rules/options-attributes": "Attributes",
       "/rules/options-props": "Props",
+      "/rules/reference/max-lines": "max-lines",
       "/rules/options-script": "Script",
       "/rules/options-type": "Type",
       "/rules/options-musea": "Musea",

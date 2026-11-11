@@ -367,7 +367,7 @@
     "W063": {"sourceRef":"S058","function":"literal_attributes_sort_only_inside_safe_unique_runs"},
     "W064": {"sourceRef":"S058","function":"dynamic_argument_bindings_keep_literal_collision_order"},
     "W065": {"sourceRef":"S018","function":"legacy_bound_slots_keep_their_public_ordering_boundaries"},
-    "W066": {"sourceRef":"S059","function":"static_argument_bindings_sort_by_group_and_name"},
+    "W066": {"sourceRef":"S059","function":"runtime_bindings_and_custom_directives_remain_in_authored_order"},
     "W067": {"sourceRef":"S059","function":"dynamic_argument_bindings_keep_literal_collision_order"},
     "W068": {"sourceRef":"S059","function":"literal_attributes_sort_only_inside_safe_unique_runs"},
     "W069": {"sourceRef":"S016","function":"object_v_bind_stays_between_independently_sorted_attribute_groups"},

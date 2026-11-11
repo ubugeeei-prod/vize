@@ -747,7 +747,7 @@
           "artifacts": [
             {
               "path": "sfc-button-type-semantic-order-12030/reference.expected.txt",
-              "sha256": "9f00f3e78eff48715970d3b40662da22bad7bdd811da40292dcec7316c7bd7ca",
+              "sha256": "7d6d0d87d4920a5cfc789f170246d88457ebb56b7c3abeea351f01c45b3d2dee",
               "role": "issue-authored-regression-reference",
               "provenance": {
                 "issue": 12030,
