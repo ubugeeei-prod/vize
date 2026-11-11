@@ -8,8 +8,9 @@ immutable source outside the generated Vue event-handler inventory.
 
 `original-before.json` retains the complete public CLI 0.600.0 process output.
 The opinionated route reports exactly one listbox warning, at the authored
-opening tag. The expected result removes only that whole warning and decreases
-its packet's warning count; no source file or other diagnostic field changes.
+opening tag. Its pinned argv passes `--quiet`, which now reports errors only
+(#12824), so the expected packet keeps every other field and has no messages
+and no warnings; no source file changes.
 
 The W3C APG describes two different focus strategies:
 

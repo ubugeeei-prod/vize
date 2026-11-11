@@ -66,11 +66,11 @@ void test("changed original assets, current law bytes and outside symlinks canno
     fs.writeFileSync(file, original);
   }
   const file = path.join(directory, owner);
-  fs.writeFileSync(
-    file,
-    fs.readFileSync(file, "utf8").replace("owns_value_lines: false", "owns_value_lines: true"),
-  );
-  assert.throws(() => validateExpressionWidthWitness(directory, entry, names[0]));
+  const live = fs.readFileSync(file, "utf8");
+  for (const field of ["owns_value_lines", "order_sensitive"]) {
+    fs.writeFileSync(file, live.replace(`${field}: false`, `${field}: true`));
+    assert.throws(() => validateExpressionWidthWitness(directory, entry, names[0]));
+  }
 });
 
 void test("expression extraction retains all ten complete original script witnesses", () => {
