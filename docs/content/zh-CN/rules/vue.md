@@ -103,7 +103,7 @@ description: "针对 SFC 模板、指令、组件和代码块的正确性、写�
 | <span id="vue-v-on-style"></span>[`vue/v-on-style`](./reference/vue-v-on-style.md) | 规范 `v-on` 指令风格。 | ✓ |
 | <span id="vue-v-slot-style"></span>[`vue/v-slot-style`](./reference/vue-v-slot-style.md) | 规范 `v-slot` 指令风格。 | ✓ |
 
-## 更严格的预设 (27)
+## 更严格的预设 (29)
 
 只在 `opinionated`、`nuxt` 或 `ecosystem` 中。具体是哪些见“预设”列。
 
@@ -124,9 +124,11 @@ description: "针对 SFC 模板、指令、组件和代码块的正确性、写�
 | <span id="vue-no-src-attribute"></span>[`vue/no-src-attribute`](./reference/vue-no-src-attribute.md) | 不建议在 SFC 块上使用 src 属性。 | `nuxt`, `opinionated` |  |
 | <span id="vue-no-template-lang"></span>[`vue/no-template-lang`](./reference/vue-no-template-lang.md) | 不建议在 template 块上使用 lang 属性。 | `nuxt`, `opinionated` |  |
 | <span id="vue-no-unused-refs"></span>[`vue/no-unused-refs`](./reference/vue-no-unused-refs.md) | 报告从未在 &lt;script&gt; 中引用的模板 ref（ref="x"）。 | `nuxt`, `opinionated` |  |
+| <span id="vue-no-unused-script-vars"></span>[`vue/no-unused-script-vars`](./reference/vue-no-unused-script-vars.md) | 禁止未使用的脚本变量、导入和参数。 | `nuxt`, `opinionated` |  |
 | <span id="vue-no-useless-mustaches"></span>[`vue/no-useless-mustaches`](./reference/vue-no-useless-mustaches.md) | 禁止表达式为常量字符串字面量的双花括号插值。 | `nuxt`, `opinionated` |  |
 | <span id="vue-no-useless-v-bind"></span>[`vue/no-useless-v-bind`](./reference/vue-no-useless-v-bind.md) | 禁止值为普通字符串字面量的 v-bind。 | `nuxt`, `opinionated` |  |
 | <span id="vue-no-v-text"></span>[`vue/no-v-text`](./reference/vue-no-v-text.md) | 禁止 v-text 指令，优先使用双花括号插值。 | `nuxt`, `opinionated` |  |
+| <span id="vue-prefer-const"></span>[`vue/prefer-const`](./reference/vue-prefer-const.md) | 要求脚本和模板都不会重新赋值的绑定使用 const。 | `nuxt`, `opinionated` |  |
 | <span id="vue-prefer-props-shorthand"></span>[`vue/prefer-props-shorthand`](./reference/vue-prefer-props-shorthand.md) | 建议使用 props 简写语法（Vue 3.4+）。 | `nuxt`, `opinionated` | ✓ |
 | <span id="vue-prefer-true-attribute-shorthand"></span>[`vue/prefer-true-attribute-shorthand`](./reference/vue-prefer-true-attribute-shorthand.md) | 优先使用绑定到 `true` 的布尔属性简写。 | `nuxt`, `opinionated` |  |
 | <span id="vue-require-component-registration"></span>[`vue/require-component-registration`](./reference/vue-require-component-registration.md) | 要求显式导入或注册组件。 | `opinionated` |  |

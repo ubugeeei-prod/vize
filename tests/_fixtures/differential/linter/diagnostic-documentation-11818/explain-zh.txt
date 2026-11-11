@@ -5758,6 +5758,16 @@ vue/no-unused-refs · lint 规则
   import { ref } from 'vue'
   const inputEl = ref(null)
   </script>
+=== vue/no-unused-script-vars
+vue/no-unused-script-vars · lint 规则
+禁止未使用的脚本变量、导入和参数
+
+精度层级: exact
+适用范围: script bindings and the template expressions that read or reassign them; unresolved syntax is outside
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/reference/vue-no-unused-script-vars.md
 === vue/no-unused-setup-bindings
 vue/no-unused-setup-bindings · lint 规则
 禁止未被读取的 script setup 绑定
@@ -6102,6 +6112,16 @@ vue/permitted-contents · lint 规则
   - <a>和<button>不能相互嵌套
   - <ul>/<ol>的直接子元素只能是<li>
   - <table>的直接子元素只能是<thead>、<tbody>、<tfoot>、<tr>或<caption>
+=== vue/prefer-const
+vue/prefer-const · lint 规则
+要求脚本和模板都不会重新赋值的绑定使用 const
+
+精度层级: exact
+适用范围: script bindings and the template expressions that read or reassign them; unresolved syntax is outside
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/reference/vue-prefer-const.md
 === vue/prefer-prop-type-boolean-first
 vue/prefer-prop-type-boolean-first · lint 规则
 要求组件 prop 类型中的 `Boolean` 排在首位

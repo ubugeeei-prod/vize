@@ -99,6 +99,11 @@ export const chineseVue1: Record<string, readonly [purpose: string, bad: string,
     "模板声明了名为 unused 的 ref，但脚本中没有对应的引用绑定。",
     "模板 ref inputEl 在 script setup 中具有同名的 ref 绑定。",
   ],
+  "vue/no-unused-script-vars": [
+    "禁止未使用的脚本变量、导入和参数",
+    "script setup 声明了 unused，脚本和模板都没有读取它。",
+    "模板插值读取 unused，因此声明的绑定被使用了。",
+  ],
   "vue/no-unused-setup-bindings": [
     "禁止从未读取的 script setup 绑定",
     "script setup 中的 message 绑定从未被模板读取。",
@@ -158,6 +163,11 @@ export const chineseVue1: Record<string, readonly [purpose: string, bad: string,
     "要求符合 HTML 内容模型规则",
     "示例在 p 中放置块级内容、省略表格主体、嵌套交互控件，或将 div 直接放在 ul 内。",
     "示例使用段落内的行内内容、显式 tbody 和 li 子节点。自定义 MyItem 不被视为已知的原生 ul 子节点。",
+  ],
+  "vue/prefer-const": [
+    "要求脚本和模板都不会重新赋值的绑定使用 const",
+    "模板只读取 label，脚本和模板都没有重新赋值，因此不需要 let。",
+    "脚本和模板只读取的绑定使用 const。",
   ],
   "vue/prefer-props-shorthand": [
     "建议使用 props 简写语法（Vue 3.4+）",

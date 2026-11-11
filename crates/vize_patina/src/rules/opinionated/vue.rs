@@ -25,6 +25,7 @@ mod prefer_props_shorthand;
 mod prefer_true_attribute_shorthand;
 mod require_component_registration;
 mod scoped_event_names;
+mod script_unused;
 mod slot_name_casing;
 mod this_in_template;
 mod use_unique_element_ids;
@@ -132,4 +133,6 @@ fn register_shared(registry: &mut RuleRegistry, flavor: PresetFlavor) {
     registry.register(Box::new(NoUnusedRefs));
     registry.register(Box::new(PreferTrueAttributeShorthand));
     registry.register(Box::new(NoArrayIndexKey));
+    registry.register(Box::new(script_unused::NoUnusedScriptVars::default()));
+    registry.register(Box::new(script_unused::PreferConst::default()));
 }

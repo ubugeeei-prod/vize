@@ -172,12 +172,28 @@ export const overrides: Record<string, RuleExample> = {
     script('export default { props: { title: { type: String, default: "Untitled" } } };', false),
     "crates/vize_patina/src/rules/script/props_emits/no_required_prop_with_default.rs",
   ),
+  "vue/no-unused-script-vars": pair(
+    vue('<script setup>\nconst unused = 1;\n</script>\n<template><p>Welcome</p></template>'),
+    vue(
+      '<script setup>\nconst unused = 1;\n</script>\n<template><p>{{ unused }}</p></template>',
+    ),
+    "crates/vize_patina/src/rules/opinionated/vue/script_unused/no_unused_script_vars.rs",
+  ),
   "vue/no-unused-setup-bindings": pair(
     vue('<script setup>const message = "Hello";</script>\n<template><p>Welcome</p></template>'),
     vue(
       '<script setup>const message = "Hello";</script>\n<template><p>{{ message }}</p></template>',
     ),
     "crates/vize_patina/src/rules/facts/unused_setup_bindings.rs",
+  ),
+  "vue/prefer-const": pair(
+    vue(
+      '<script setup>\nlet label = "Hello";\n</script>\n<template><p>{{ label }}</p></template>',
+    ),
+    vue(
+      '<script setup>\nconst label = "Hello";\n</script>\n<template><p>{{ label }}</p></template>',
+    ),
+    "crates/vize_patina/src/rules/opinionated/vue/script_unused/prefer_const.rs",
   ),
   ...runtimeOverrides,
 };

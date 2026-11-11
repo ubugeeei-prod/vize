@@ -142,6 +142,13 @@ export const vue1Explanations: readonly ExplanationRecord[] = [
     "inputEl のテンプレート ref に、script setup の同じ名前の ref を対応させます。",
   ],
   [
+    "vue/no-unused-script-vars",
+    "The script setup declares unused, and neither the script nor the template reads it.",
+    "The template interpolates unused, so the declared binding is read.",
+    "script setup の unused を、スクリプトでもテンプレートでも読んでいません。",
+    "テンプレートの補間が unused を読むので、宣言したバインディングは使われています。",
+  ],
+  [
     "vue/no-unused-setup-bindings",
     "The script setup message binding is never read by the template.",
     "The paragraph interpolates message, using the declared binding.",
@@ -224,6 +231,13 @@ export const vue1Explanations: readonly ExplanationRecord[] = [
     "The examples use inline paragraph content, an explicit tbody, and li children. The custom MyItem is not treated as a known native ul child.",
     "p にブロック要素を入れたり、tbody を省略したりしています。操作要素の入れ子や、ul の直下に div を置く例もあります。",
     "p はインラインの内容、table は tbody、ul は li を使います。独自コンポーネントの MyItem は、ul の子となる既知の HTML 要素としては検査されません。",
+  ],
+  [
+    "vue/prefer-const",
+    "The template reads label, and neither the script nor the template reassigns it, so let is wider than the binding needs.",
+    "const matches a binding that the script and the template only read.",
+    "テンプレートは label を読むだけで、スクリプトもテンプレートも再代入していません。let である必要はありません。",
+    "スクリプトとテンプレートが読むだけのバインディングは const にします。",
   ],
   [
     "vue/prefer-props-shorthand",

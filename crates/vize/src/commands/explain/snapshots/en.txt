@@ -5579,6 +5579,16 @@ valid:
   import { ref } from 'vue'
   const inputEl = ref(null)
   </script>
+=== vue/no-unused-script-vars
+vue/no-unused-script-vars · lint rule
+Disallow unused script variables, imports, and parameters
+
+tier: exact
+domain: script bindings and the template expressions that read or reassign them; unresolved syntax is outside
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/reference/vue-no-unused-script-vars.md
 === vue/no-unused-setup-bindings
 vue/no-unused-setup-bindings · lint rule
 Disallow unread script setup bindings
@@ -5930,6 +5940,16 @@ help:
   - <a> and <button> cannot be nested inside each other
   - <ul>/<ol> direct children must be <li>
   - <table> direct children must be <thead>, <tbody>, <tfoot>, <tr>, or <caption>
+=== vue/prefer-const
+vue/prefer-const · lint rule
+Require const for bindings the script and template never reassign
+
+tier: exact
+domain: script bindings and the template expressions that read or reassign them; unresolved syntax is outside
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/reference/vue-prefer-const.md
 === vue/prefer-prop-type-boolean-first
 vue/prefer-prop-type-boolean-first · lint rule
 Enforce `Boolean` comes first in component prop types
