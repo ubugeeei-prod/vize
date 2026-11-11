@@ -64,7 +64,7 @@ pub(super) fn encode_transform(
     frame.extend_from_slice(br#","jsonrpc":"2.0","result":{"#);
     if let Some(directives) = diagnostic_directives {
         frame.extend_from_slice(br#""diagnosticDirectives":"#);
-        push_directives(&mut frame, directives)?;
+        push_directives(&mut frame, directives, text)?;
         frame.push(b',');
     }
     frame.extend_from_slice(br#""diagnostics":"#);
@@ -164,20 +164,27 @@ fn push_spans(out: &mut Vec<u8>, spans: &[ContentMapperSpan]) {
 }
 
 /// Directive table with sorted keys. An ignore tuple drops its unused-expect
-/// index, which the host never reads for that policy.
+/// index, which the host never reads for that policy, and an ignore that
+/// [`suppresses_nothing`] is not sent.
 fn push_directives(
     out: &mut Vec<u8>,
     directives: &ContentMapperDiagnosticDirectives,
+    text: &str,
 ) -> io::Result<()> {
     let ContentMapperDiagnosticDirectives {
         unused_expect_directive_diagnostics,
         directives,
     } = directives;
     out.extend_from_slice(br#"{"directives":["#);
-    for (row, ContentMapperDiagnosticDirective(tuple)) in directives.iter().enumerate() {
-        if row > 0 {
+    let mut first = true;
+    for ContentMapperDiagnosticDirective(tuple) in directives {
+        if tuple[4] == DIRECTIVE_POLICY_IGNORE && suppresses_nothing(text, tuple[2], tuple[3]) {
+            continue;
+        }
+        if !first {
             out.push(b',');
         }
+        first = false;
         let width = if tuple[4] == DIRECTIVE_POLICY_IGNORE {
             5
         } else {
@@ -190,6 +197,24 @@ fn push_directives(
         .map_err(io::Error::other)?;
     out.push(b'}');
     Ok(())
+}
+
+/// An ignore over spaces, tabs and line breaks only. TypeScript 7 hosts
+/// (tsgo's `applyContentMapperDiagnosticDirectives`, and tsrs on the same
+/// probes) apply a directive to a bind or check diagnostic whose start lies
+/// in its virtual range, never to a syntax error, and such a diagnostic starts
+/// at its node's first token, after trivia (`GetErrorRangeForNode`). Only a
+/// missing node, JSX text, or a grammar error at a raw position starts on
+/// trivia, and those need a projection with a syntax error or JSX text, which
+/// unmapped scaffolding never is. These were 41% of the gap ignores, and the
+/// host decodes each tuple with several JSON calls. The table itself is
+/// unchanged: the editor projection also suppresses syntax errors with it.
+fn suppresses_nothing(text: &str, start: usize, end: usize) -> bool {
+    text.as_bytes().get(start..end).is_some_and(|range| {
+        range
+            .iter()
+            .all(|byte| matches!(byte, b' ' | b'\t' | b'\n' | b'\r'))
+    })
 }
 
 fn push_row(out: &mut Vec<u8>, row: &[usize]) {
@@ -327,6 +352,18 @@ pub(in crate::commands::content_mapper) fn wire_value(transform: &ContentMapperT
         4,
         DIRECTIVE_POLICY_IGNORE,
     );
+    if let Some(rows) = value
+        .get_mut("diagnosticDirectives")
+        .and_then(|table| table.get_mut("directives"))
+        .and_then(Value::as_array_mut)
+    {
+        rows.retain(|row| {
+            let column =
+                |index: usize| row.get(index).and_then(Value::as_u64).unwrap_or(0) as usize;
+            !(column(4) == DIRECTIVE_POLICY_IGNORE
+                && suppresses_nothing(transform.text.as_str(), column(2), column(3)))
+        });
+    }
     value
 }
 
@@ -405,6 +442,40 @@ mod tests {
         assert_eq!(
             value["result"]["diagnosticDirectives"]["directives"],
             json!([[0, 0, 0, 1, 0], [1, 2, 3, 4, 1, 0]])
+        );
+    }
+
+    #[test]
+    fn ignores_over_whitespace_only_stay_off_the_wire() {
+        let mut transform = transform(true);
+        transform.text = "a  \n\t b;\r\n c".into();
+        transform.diagnostic_directives = Some(ContentMapperDiagnosticDirectives {
+            unused_expect_directive_diagnostics: vec![ContentMapperUnusedExpectDiagnostic {
+                code: 2578,
+                message_text: "Unused".into(),
+            }],
+            directives: vec![
+                // `  \n\t `: nothing can start there.
+                ContentMapperDiagnosticDirective([0, 0, 1, 6, 0, 0]),
+                // ` b`: a diagnostic can start at `b`.
+                ContentMapperDiagnosticDirective([0, 0, 5, 7, 0, 0]),
+                // An expect still reports when unused.
+                ContentMapperDiagnosticDirective([1, 2, 8, 11, 1, 0]),
+                // Empty.
+                ContentMapperDiagnosticDirective([0, 0, 12, 12, 0, 0]),
+            ],
+        });
+        let frame = encode_transform(&json!(1), &transform).unwrap();
+        let text = std::str::from_utf8(&frame).unwrap();
+        let (_, body) = text.split_once("\r\n\r\n").unwrap();
+        let value: serde_json::Value = serde_json::from_str(body).unwrap();
+        assert_eq!(
+            value["result"]["diagnosticDirectives"]["directives"],
+            json!([[0, 0, 5, 7, 0], [1, 2, 8, 11, 1, 0]])
+        );
+        assert_eq!(
+            frame,
+            encode_result(&json!(1), super::wire_value(&transform)).unwrap()
         );
     }
 
