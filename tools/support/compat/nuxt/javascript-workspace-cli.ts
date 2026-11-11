@@ -13,7 +13,11 @@ import { lexical, save, sha } from "./javascript-workspace-project.ts";
 import type { WorkspaceContext } from "./javascript-workspace-project.ts";
 import { expectedCheckMembership, projectEvidence } from "./javascript-workspace-config.ts";
 import { packageDeclarations } from "./javascript-workspace-declarations.ts";
-import { currentNoDupeKeysPacket } from "./javascript-workspace-lint.ts";
+import {
+  currentNoDupeKeysPacket,
+  outputLabelLintMessage,
+  outputTag,
+} from "./javascript-workspace-lint.ts";
 import {
   configuredHiddenMembership,
   probeHiddenMembership,
@@ -106,9 +110,14 @@ export async function cliProducts(root: string, context: WorkspaceContext, provi
     "lint-clean",
   );
   assert.equal(lint.status, 0);
+  const outputLabel = outputLabelLintMessage(position(fs.readFileSync(main, "utf8"), outputTag));
   assert.deepEqual(
     parseJson(lint.stdout),
-    ownFiles.map((file) => ({ file, messages: [], errorCount: 0, warningCount: 0 })),
+    ownFiles.map((file) =>
+      file === main
+        ? { file, messages: [outputLabel], errorCount: 0, warningCount: 1 }
+        : { file, messages: [], errorCount: 0, warningCount: 0 },
+    ),
   );
   const lintFile = path.join(context.project, "lint-options.js");
   const lintSource = fs.readFileSync(

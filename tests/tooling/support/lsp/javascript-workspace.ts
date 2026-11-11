@@ -11,6 +11,10 @@ import {
   missingMessage,
   position,
 } from "../../../../tools/support/compat/nuxt/javascript-workspace-cli.ts";
+import {
+  outputLabelDiagnostic,
+  outputTag,
+} from "../../../../tools/support/compat/nuxt/javascript-workspace-lint.ts";
 import { save, sha } from "../../../../tools/support/compat/nuxt/javascript-workspace-project.ts";
 
 type Context = { project: string; artifacts: string; cohort: { nuxt?: string } };
@@ -124,14 +128,15 @@ export async function editorProducts(root: string, context: Context, binary: str
                 };
               })()
             : undefined;
+        const outputLabel = outputLabelDiagnostic(position(testCase.source, outputTag));
         const expected = {
           uri,
           version,
           diagnostics: native
             ? [...(diagnostic ? [diagnostic] : []), ...nativeSuggestions(context, testCase.source)]
             : index === 1
-              ? [lintDiagnostic]
-              : [],
+              ? [outputLabel, lintDiagnostic]
+              : [outputLabel],
         };
         const started = performance.now();
         if (index === 0)
