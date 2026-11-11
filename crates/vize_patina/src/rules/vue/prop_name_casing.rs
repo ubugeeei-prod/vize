@@ -16,7 +16,9 @@
 //!
 //! Props declared through `defineProps` — runtime array, runtime object and
 //! type-literal spellings alike — and Options API object/array declarations
-//! are checked at their complete written declaration ranges.
+//! are checked at their complete written declaration ranges. A template
+//! literal with no expressions is a static name. An imported props type is
+//! resolved from the SFC path when the file has no `<template>`.
 //!
 //! ## Examples
 //!
