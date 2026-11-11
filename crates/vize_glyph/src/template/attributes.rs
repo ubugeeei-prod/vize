@@ -144,7 +144,20 @@ pub(crate) fn is_order_sensitive_attribute(
         _ => false,
     };
     // The value is scanned only when the directive itself does not decide.
-    bounds_by_directive || value.is_some_and(|value| value.contains("{{"))
+    bounds_by_directive || value.is_some_and(opens_mustache)
+}
+
+/// Whether the value contains `{{`. Most values hold no brace at all, so one
+/// `memchr` for `{` replaces a general substring search per attribute.
+fn opens_mustache(value: &str) -> bool {
+    let mut rest = value.as_bytes();
+    while let Some(at) = memchr::memchr(b'{', rest) {
+        if rest.get(at + 1) == Some(&b'{') {
+            return true;
+        }
+        rest = rest.get(at + 1..).unwrap_or_default();
+    }
+    false
 }
 
 fn has_duplicate_static_names(attrs: &[ParsedAttribute]) -> bool {

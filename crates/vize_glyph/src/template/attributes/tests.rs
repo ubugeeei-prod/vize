@@ -78,3 +78,25 @@ fn write_rendered_attribute_leaves_template_literal_lines_verbatim() {
         ":class='[`\n  w-full\n  `,\n      x]'"
     );
 }
+
+#[test]
+fn opens_mustache_matches_the_substring_search() {
+    for value in [
+        "",
+        "{",
+        "{{",
+        "a{b{c",
+        "a{{b",
+        "{a{{",
+        "}}{",
+        "{ a: { b: 1 } }",
+        "x{",
+        "日本{{語",
+    ] {
+        assert_eq!(
+            super::opens_mustache(value),
+            value.contains("{{"),
+            "{value}"
+        );
+    }
+}
