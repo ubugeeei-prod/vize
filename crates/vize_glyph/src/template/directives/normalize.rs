@@ -1,6 +1,6 @@
 //! Directive shorthand and sort-priority normalization.
 
-use super::super::attributes::attribute_priority_with_head;
+use super::super::attributes::{attribute_priority_with_head, is_order_sensitive_attribute};
 use super::{
     custom_attribute_priority, directive_head, format_directive_value,
     should_format_expression_with_head,
@@ -16,7 +16,7 @@ pub(crate) fn normalize_attribute_with_vue_version(
     options: &FormatOptions,
     vue_version: crate::VueVersion,
     attribute_depth: usize,
-) -> (String, Option<String>, usize, bool, bool) {
+) -> (String, Option<String>, usize, bool, bool, bool) {
     // Normalize directive shorthands (only if enabled)
     let head = directive_head(name);
     let normalized_shorthand: Option<String> = head
@@ -66,11 +66,18 @@ pub(crate) fn normalize_attribute_with_vue_version(
         ))
     };
 
+    let order_sensitive = is_order_sensitive_attribute(
+        &normalized_name,
+        normalized_head.as_ref(),
+        formatted_value.as_deref(),
+    );
+
     (
         normalized_name,
         formatted_value,
         priority,
         indent_multiline_value,
         owns_value_lines,
+        order_sensitive,
     )
 }
