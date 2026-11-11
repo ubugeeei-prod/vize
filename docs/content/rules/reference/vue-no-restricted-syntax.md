@@ -1,11 +1,11 @@
 ---
 title: "vue/no-restricted-syntax"
-description: "Disallow configured syntax in template expressions."
+description: "Disallow configured syntax in the template."
 ---
 
 # `vue/no-restricted-syntax`
 
-Disallow configured syntax in template expressions.
+Disallow configured syntax in the template.
 
 | Default severity | Presets | Automatic fix | Options |
 | --- | --- | --- | --- |
@@ -57,9 +57,13 @@ export default defineConfig({}).withVue({
 
 Then run `vp run lint`.
 
+## Differences from eslint-plugin-vue
+
+The option value may be the ESLint array of selector strings and `{ selector, message }` objects, or `{ selectors: [...] }`. Selectors are a subset of esquery, listed under [rule options](../options.md#vue-no-restricted-syntax-selectors). A selector outside that subset fails configuration. `:nth-child(an+b)` formulas, relative `:has(> …)` selectors, `[attr=type(...)]`, and the `:exit` suffix are outside the subset.
+
 ## Related
 
 - [Vue rules](../vue.md)
 - [Rule options](../options.md)
 - [All rules](../all.md)
-- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/compatibility_template/restricted.rs#L16)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/compatibility_template/restricted.rs#L20)

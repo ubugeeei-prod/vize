@@ -204,13 +204,14 @@ function ruleOptionsSchema(ruleName: string): unknown[] | Record<string, unknown
       return {
         type: "array",
         items: {
-          enum: [
-            "ArrayExpression",
-            "BinaryExpression",
-            "CallExpression",
-            "ConditionalExpression",
-            "ObjectExpression",
-            "UnaryExpression",
+          oneOf: [
+            { type: "string" },
+            {
+              type: "object",
+              properties: { selector: { type: "string" }, message: { type: "string" } },
+              required: ["selector"],
+              additionalProperties: false,
+            },
           ],
         },
         uniqueItems: true,

@@ -687,26 +687,66 @@
           "additionalProperties": false
         },
         "vue/no-restricted-syntax": {
-          "type": "object",
-          "properties": {
-            "selectors": {
+          "oneOf": [
+            {
               "default": [],
               "type": "array",
               "items": {
-                "type": "string",
-                "enum": [
-                  "ArrayExpression",
-                  "BinaryExpression",
-                  "CallExpression",
-                  "ConditionalExpression",
-                  "ObjectExpression",
-                  "UnaryExpression"
+                "oneOf": [
+                  {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "selector": {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      "message": {
+                        "type": "string"
+                      }
+                    },
+                    "additionalProperties": false,
+                    "required": ["selector"]
+                  }
                 ]
+              }
+            },
+            {
+              "type": "object",
+              "properties": {
+                "selectors": {
+                  "default": [],
+                  "type": "array",
+                  "items": {
+                    "oneOf": [
+                      {
+                        "type": "string",
+                        "minLength": 1
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "selector": {
+                            "type": "string",
+                            "minLength": 1
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": false,
+                        "required": ["selector"]
+                      }
+                    ]
+                  }
+                }
               },
-              "uniqueItems": true
+              "additionalProperties": false
             }
-          },
-          "additionalProperties": false
+          ]
         },
         "vue/quote-props": {
           "type": "string",

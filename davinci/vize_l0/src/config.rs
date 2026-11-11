@@ -24,11 +24,12 @@ pub use model::{
     NoRestrictedMembersOptions, NoRestrictedSyntaxOptions, NoUseVIfWithVForOptions,
     ParseVueVersionError, PropNameCasingOptions, PropNameCasingStyle, PropsDestructureMode,
     QuoteProps, QuotePropsStyle, ResolvedLinterConfig, ResolvedLinterConfigWithConfigRuleOptions,
-    RestrictedGlobal, RestrictedMember, SfcElementOrderGroup, SfcElementOrderOptions,
-    SlotNameCasingStyle, SortImportsConfig, SortImportsSetting, SortKeysOptions, SortKeysOrder,
-    StrictBooleanExpressionsOptions, StyleAttributeMode, TemplateComponentNameCasing,
-    TrailingComma, TypeCheckerConfig, VBindStyle, VOnEventHyphenationConfig,
-    VOnEventHyphenationOptions, VOnStyle, VSlotNamedStyle, VSlotStyle, VSlotStyleOptions,
-    VSlotStyleValue, VSlotUniformStyle, VizeConfig, VueVersion, WarnCustomDirectiveOptions,
+    RestrictedGlobal, RestrictedMember, RestrictedSyntaxSelector, SfcElementOrderGroup,
+    SfcElementOrderOptions, SlotNameCasingStyle, SortImportsConfig, SortImportsSetting,
+    SortKeysOptions, SortKeysOrder, StrictBooleanExpressionsOptions, StyleAttributeMode,
+    TemplateComponentNameCasing, TrailingComma, TypeCheckerConfig, VBindStyle,
+    VOnEventHyphenationConfig, VOnEventHyphenationOptions, VOnStyle, VSlotNamedStyle, VSlotStyle,
+    VSlotStyleOptions, VSlotStyleValue, VSlotUniformStyle, VizeConfig, VueVersion,
+    WarnCustomDirectiveOptions, esquery,
 };
 pub use normalize::normalize_public_config_value;

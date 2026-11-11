@@ -57,11 +57,11 @@ pub use linter_rule_options::{
     NoBareStringsInTemplateOptions, NoMutatingPropsOptions, NoRestrictedGlobalsOptions,
     NoRestrictedMembersOptions, NoRestrictedSyntaxOptions, NoUseVIfWithVForOptions,
     PropNameCasingOptions, PropNameCasingStyle, PropsDestructureMode, QuotePropsStyle,
-    RestrictedGlobal, RestrictedMember, SfcElementOrderGroup, SfcElementOrderOptions,
-    SlotNameCasingStyle, SortKeysOptions, SortKeysOrder, StrictBooleanExpressionsOptions,
-    StyleAttributeMode, TemplateComponentNameCasing, VBindStyle, VOnEventHyphenationConfig,
-    VOnEventHyphenationOptions, VOnStyle, VSlotNamedStyle, VSlotStyle, VSlotStyleOptions,
-    VSlotStyleValue, VSlotUniformStyle, WarnCustomDirectiveOptions,
+    RestrictedGlobal, RestrictedMember, RestrictedSyntaxSelector, SfcElementOrderGroup,
+    SfcElementOrderOptions, SlotNameCasingStyle, SortKeysOptions, SortKeysOrder,
+    StrictBooleanExpressionsOptions, StyleAttributeMode, TemplateComponentNameCasing, VBindStyle,
+    VOnEventHyphenationConfig, VOnEventHyphenationOptions, VOnStyle, VSlotNamedStyle, VSlotStyle,
+    VSlotStyleOptions, VSlotStyleValue, VSlotUniformStyle, WarnCustomDirectiveOptions, esquery,
 };
 pub use type_checker::TypeCheckerConfig;
 pub use vue::{ParseVueVersionError, VueVersion};

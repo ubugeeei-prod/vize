@@ -1,0 +1,14 @@
+<script setup lang="ts">
+defineProps<{ value: unknown; label?: string }>();
+
+const ts: Readonly<Record<"save", string>> = { save: "Save" };
+</script>
+
+<template>
+  <p>{{ (value as string).length }}</p>
+  <p>{{ label!.length }}</p>
+  <p>{{ ts.save ?? "Save" }}</p>
+  <p>{{ ts?.save || "Save" }}</p>
+  <slot name="title">Untitled</slot>
+  <slot><span>{{ label }}</span></slot>
+</template>
