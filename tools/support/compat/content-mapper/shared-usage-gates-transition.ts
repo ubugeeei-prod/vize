@@ -78,3 +78,43 @@ export function beforeSharedUsageGatesIn(current: string): string {
   }
   return previous;
 }
+
+/**
+ * Certify the generated component-contract field introduced by the raw
+ * fallthrough-source gate. Every prior marker gains exactly one bounded field;
+ * packets that already contain the field, or do not use the marker, are inert.
+ */
+export function certifyFallthroughSourceFields(
+  before: Buffer,
+  after: Buffer,
+): Array<{ start: number; end: number; replacement: Buffer; at: number; label: string }> {
+  const marker = " readonly __vizeHasFallthroughProps: true;";
+  const field =
+    / readonly __vizeFallthroughSource\?: [^;\r\n]+;(?= readonly __vizeHasFallthroughProps: true;)/gu;
+  const beforeText = before.toString();
+  const afterText = after.toString();
+  const beforeFields = [...beforeText.matchAll(field)];
+  const afterFields = [...afterText.matchAll(field)];
+  if (beforeFields.length === afterFields.length) return [];
+  assert.equal(beforeFields.length, 0, "fallthrough-source predecessor fields");
+  const markerOffsets = [...beforeText.matchAll(new RegExp(marker, "gu"))].map((match) =>
+    Buffer.byteLength(beforeText.slice(0, match.index)),
+  );
+  assert.equal(
+    afterFields.length,
+    markerOffsets.length,
+    "each fallthrough marker must gain one raw source field",
+  );
+  return afterFields.map((match, index) => {
+    assert.ok(match.index != null && match[0].length > 0, "bounded fallthrough-source field");
+    const replacement = Buffer.from(match[0]);
+    const start = markerOffsets[index];
+    return {
+      start,
+      end: start,
+      replacement,
+      at: Buffer.byteLength(afterText.slice(0, match.index)),
+      label: "raw fallthrough source field",
+    };
+  });
+}

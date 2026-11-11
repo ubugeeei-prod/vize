@@ -24,6 +24,7 @@ import {
   type Assets,
   type Row,
 } from "../../tools/support/compat/content-mapper/constructor-projection-parity.ts";
+import { certifyFallthroughSourceFields } from "../../tools/support/compat/content-mapper/shared-usage-gates-transition.ts";
 
 const root = fileURLToPath(new URL("../..", import.meta.url));
 const assets = readAssets(root, root);
@@ -206,6 +207,26 @@ test("certified helper and self-described coordinates preserve complete packets"
   assert.equal(proof.edits.length, 2);
   assert.equal(proof.edits[0].start, base.text.indexOf(assets.embedded.toString()));
   assert.equal(proof.edits[1].replacementBytes < proof.edits[1].end - proof.edits[1].start, true);
+});
+
+test("raw fallthrough source fields cover every prior component marker", () => {
+  const marker = " readonly __vizeHasFallthroughProps: true;";
+  const before = Buffer.from(`type A = {${marker} }; type B = {${marker} };`);
+  const after = Buffer.from(
+    `type A = { readonly __vizeFallthroughSource?: AProps;${marker} }; ` +
+      `type B = { readonly __vizeFallthroughSource?: BProps;${marker} };`,
+  );
+  const edits = certifyFallthroughSourceFields(before, after);
+  assert.equal(edits.length, 2);
+  assert.deepEqual(
+    edits.map((edit) => edit.replacement.toString()),
+    [" readonly __vizeFallthroughSource?: AProps;", " readonly __vizeFallthroughSource?: BProps;"],
+  );
+  assert.deepEqual(certifyFallthroughSourceFields(after, after), []);
+  assert.throws(
+    () => certifyFallthroughSourceFields(before, Buffer.from(after.toString().replace(marker, ""))),
+    /each fallthrough marker/,
+  );
 });
 
 test("certified packets join only safe verbatim lines", () => {

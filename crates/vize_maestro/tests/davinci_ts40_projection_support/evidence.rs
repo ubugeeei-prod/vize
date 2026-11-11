@@ -1,6 +1,7 @@
 //! Authenticate the complete packets behind the reviewed #10933 transition.
 mod constructor_noinfer_return;
 mod receipt;
+mod shared_listener_args;
 mod unowned_owned_keys;
 mod verbatim_runs;
 
@@ -494,7 +495,7 @@ fn public_instance_mixed_vue2_packets_remain_authenticated() {
         );
         assert_eq!(
             capture_fixture(fixture).render().as_str(),
-            verbatim_runs::mixed_vue2(unowned_successor)
+            shared_listener_args::mixed_vue2(unowned_successor)
         );
     }
 }

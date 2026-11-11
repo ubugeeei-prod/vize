@@ -52,6 +52,7 @@ import {
 import { certifyComponentExportTransition } from "./component-export-transition.ts";
 import { dedentEdits } from "./setup-dedent.ts";
 import { writeConstructorProjectionReceipt } from "./constructor-projection-receipt.ts";
+import { certifyFallthroughSourceFields } from "./shared-usage-gates-transition.ts";
 const digest = (bytes: Uint8Array) => createHash("sha256").update(bytes).digest("hex");
 type Link = {
   sourceStart: number;
@@ -192,6 +193,7 @@ function relocationEdits(
     if (transition) certifiedEdits.push(transition);
   const emitTransition = certifyEmitOverloadInventory(before, after, assets.emitOverloads);
   if (emitTransition) certifiedEdits.push(emitTransition);
+  certifiedEdits.push(...certifyFallthroughSourceFields(before, after));
   const componentConstructorTransition = certifyComponentConstructorTransition(before, after);
   if (componentConstructorTransition) certifiedEdits.push(componentConstructorTransition);
   const genericComponentContextTransition = certifyGenericComponentContextTransition(before, after);
