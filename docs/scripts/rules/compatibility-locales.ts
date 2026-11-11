@@ -143,6 +143,21 @@ export const compatibilityPackets: Record<Locale, Record<string, Packet>> = {
       "嵌套的方法键未按升序排列。",
       "嵌套的方法键遵循配置顺序。",
     ],
+    "vue/block-lang": [
+      "将 SFC 块的 lang 限制为配置的语言。",
+      "script 块缺少配置的 lang 属性。",
+      "script 块把 lang 设为配置的语言。",
+    ],
+    "vue/require-default-export": [
+      "要求组件的 script 作为默认导出。",
+      "组件 script 没有默认导出。",
+      "组件是 script 的默认导出。",
+    ],
+    "vue/require-prop-comment": [
+      "要求每个声明的 prop 都有 JSDoc 注释。",
+      "size 属性没有 JSDoc 注释。",
+      "size 属性带有说明其含义的 JSDoc 注释。",
+    ],
   },
   "pt-BR": {
     "vue/camelcase": [
@@ -285,6 +300,21 @@ export const compatibilityPackets: Record<Locale, Record<string, Packet>> = {
       "As chaves de métodos aninhadas não estão em ordem crescente.",
       "As chaves aninhadas seguem a ordem configurada.",
     ],
+    "vue/block-lang": [
+      "Restringe o lang do bloco SFC ao idioma configurado.",
+      "O bloco script omite o atributo lang configurado.",
+      "O bloco script define lang como o idioma configurado.",
+    ],
+    "vue/require-default-export": [
+      "Exige que o script do componente seja o export padrão.",
+      "O script do componente não tem export padrão.",
+      "O componente é o export padrão do script.",
+    ],
+    "vue/require-prop-comment": [
+      "Exige um comentário JSDoc em cada prop declarada.",
+      "A prop size não tem comentário JSDoc.",
+      "A prop size documenta seu significado com um comentário JSDoc.",
+    ],
   },
   fr: {
     "vue/camelcase": [
@@ -426,6 +456,21 @@ export const compatibilityPackets: Record<Locale, Record<string, Packet>> = {
       "Trie les clés des options du composant selon la configuration.",
       "Les clés des méthodes imbriquées ne sont pas en ordre croissant.",
       "Les clés imbriquées suivent l'ordre configuré.",
+    ],
+    "vue/block-lang": [
+      "Limite le lang d'un bloc SFC à la langue configurée.",
+      "Le bloc script omet l'attribut lang configuré.",
+      "Le bloc script définit lang sur la langue configurée.",
+    ],
+    "vue/require-default-export": [
+      "Exige que le script du composant soit l'export par défaut.",
+      "Le script du composant n'a pas d'export par défaut.",
+      "Le composant est l'export par défaut du script.",
+    ],
+    "vue/require-prop-comment": [
+      "Exige un commentaire JSDoc sur chaque prop déclarée.",
+      "La prop size n'a pas de commentaire JSDoc.",
+      "La prop size documente son sens avec un commentaire JSDoc.",
     ],
   },
 };

@@ -35,6 +35,9 @@ const portedEslintVueRules = [
   "vue/require-macro-variable-name",
   "vue/sort-keys",
   "vue/v-if-else-key",
+  "vue/block-lang",
+  "vue/require-default-export",
+  "vue/require-prop-comment",
 ] as const;
 
 const newlyTrackedEslintVueRules = [
@@ -70,6 +73,9 @@ const optInEslintVueRules = [
   "vue/no-restricted-v-bind",
   "vue/prefer-v-model",
   "vue/v-if-else-key",
+  "vue/block-lang",
+  "vue/require-default-export",
+  "vue/require-prop-comment",
 ] as const;
 
 // Remove only the exact eslint-plugin-vue compatibility port before the
@@ -78,8 +84,8 @@ const optInEslintVueRules = [
 export function inverseEslintVueRulePort(name: string, body: Buffer): Buffer {
   if (name === eslintVueRuleMapPath) {
     identity(body, {
-      bytes: 53889,
-      sha256: "114c035933eada1df79e10d5694c21ec881e9b386c038d40e37c47444e3ea554",
+      bytes: 54125,
+      sha256: "e468375d0bf07d9f465c0ef439d16dea64ec228206e36110558af4679e07adc8",
     });
     const value = canonical(body);
     assert.deepEqual(value.upstream, {
@@ -89,8 +95,8 @@ export function inverseEslintVueRulePort(name: string, body: Buffer): Buffer {
     });
     assert.deepEqual(value.summary, {
       intentionalDivergence: 3,
-      mapped: 181,
-      unimplemented: 72,
+      mapped: 184,
+      unimplemented: 69,
     });
     for (const rule of [...portedEslintVueRules, ...newlyTrackedEslintVueRules]) {
       assert.equal(value.entries[rule].status, "mapped", rule);
@@ -120,8 +126,8 @@ export function inverseEslintVueRulePort(name: string, body: Buffer): Buffer {
   }
   if (name === eslintVueMembershipPath) {
     identity(body, {
-      bytes: 36221,
-      sha256: "24982170b23834b4fb93ef32d0751145915d9a4749a8fcc7a4d46b81cc4725e8",
+      bytes: 36309,
+      sha256: "abe7325c43538cc239a226a539dcf2a1c8619ba79758799de2c97f92e96bfe03",
     });
     const text = body.toString();
     const at = text.indexOf("{");

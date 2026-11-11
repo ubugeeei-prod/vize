@@ -170,4 +170,22 @@ pub(crate) static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "コンポーネントオプションオブジェクトのキーを並べ替える",
         "要求组件选项对象中的键保持排序",
     ),
+    (
+        "vue/block-lang.description",
+        "Disallow languages other than the configured lang on an SFC block",
+        "SFC ブロックで設定された lang 以外の言語を禁止する",
+        "禁止在 SFC 块上使用配置的 lang 以外的语言",
+    ),
+    (
+        "vue/require-default-export.description",
+        "Require a component's script to be the default export",
+        "コンポーネントの script をデフォルトエクスポートにすることを必須にする",
+        "要求组件的 script 作为默认导出",
+    ),
+    (
+        "vue/require-prop-comment.description",
+        "Require a JSDoc comment on each declared prop",
+        "宣言された各 prop に JSDoc コメントを必須にする",
+        "要求每个声明的 prop 都有 JSDoc 注释",
+    ),
 ];

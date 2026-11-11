@@ -4009,6 +4009,16 @@ valid:
 
 help:
   Reorder attributes to follow the recommended order
+=== vue/block-lang
+vue/block-lang · lint rule
+Disallow languages other than the configured lang on an SFC block
+
+tier: exact
+domain: the SFC's top-level blocks, their order and their attributes
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/reference/vue-block-lang.md
 === vue/camelcase
 vue/camelcase · lint rule
 Require camelCase identifiers in template expressions
@@ -5933,6 +5943,16 @@ severity: warning
 category: recommended
 autofix: no
 docs: docs/content/rules/reference/vue-require-component-registration.md
+=== vue/require-default-export
+vue/require-default-export · lint rule
+Require a component's script to be the default export
+
+tier: exact
+domain: the syntax of <script> and <script setup> programs, without type information
+severity: error
+category: essential
+autofix: no
+docs: docs/content/rules/reference/vue-require-default-export.md
 === vue/require-expose
 vue/require-expose · lint rule
 Require declare public properties using `expose`
@@ -5953,6 +5973,16 @@ severity: warning
 category: recommended
 autofix: no
 docs: docs/content/rules/reference/vue-require-macro-variable-name.md
+=== vue/require-prop-comment
+vue/require-prop-comment · lint rule
+Require a JSDoc comment on each declared prop
+
+tier: complete
+domain: inline SFC scripts and descriptors with lexically unshadowed Vue macros and APIs and structurally recognizable component option objects; external blocks and unresolved aliases are outside
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/reference/vue-require-prop-comment.md
 === vue/require-scoped-style
 vue/require-scoped-style · lint rule
 Require scoped attribute on style tags

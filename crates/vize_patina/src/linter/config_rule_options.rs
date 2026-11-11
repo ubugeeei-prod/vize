@@ -108,6 +108,9 @@ impl Linter {
         if let Some(value) = options.label_has_for() {
             self = self.with_label_control_components(value.control_components.clone());
         }
+        if let Some(value) = options.block_lang() {
+            self = block_lang::apply(self, value);
+        }
         if let Some(value) = options.enforce_style_attribute() {
             use crate::rules::vue::StyleAttribute;
             use vize_l0::config::StyleAttributeMode;
@@ -277,7 +280,7 @@ fn self_closing_style(value: ConfigSelfClosingStyle) -> HtmlSelfClosingStyle {
         ConfigSelfClosingStyle::Any => HtmlSelfClosingStyle::Any,
     }
 }
-
+mod block_lang;
 #[cfg(test)]
 mod macro_order;
 
