@@ -162,6 +162,7 @@ Principais opções:
 | `--fix`               | Aplique correções automáticas seguras de regras que forneçam edições de texto, depois reporte os diagnósticos restantes |
 | `-f, --format`        | Formato de saída: `text`, `ansi`, `plain`, `json`, `stylish`, `markdown`, `html`ou `agent`                              |
 | `--max-warnings`      | Falha quando os avisos excedem o limite                                                                                 |
+| `--no-warn-ignored`   | Não avisar sobre arquivos nomeados que `ignores` exclui, como `--no-warn-ignored` do ESLint                             |
 | `-q, --quiet`         | Resumo do programa apenas                                                                                               |
 | `--help-level`        | `full`, `short`ou `none`                                                                                                |
 | `--preset`            | `happy-path`, `opinionated`, `essential`, `incremental`ou `nuxt`                                                        |

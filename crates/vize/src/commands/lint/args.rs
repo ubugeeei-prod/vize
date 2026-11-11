@@ -69,6 +69,10 @@ pub struct LintArgs {
     #[arg(long)]
     pub max_warnings: Option<usize>,
 
+    /// Do not warn about explicitly named files that the config's ignores exclude
+    #[arg(long)]
+    pub no_warn_ignored: bool,
+
     /// Report `eslint-disable` template comments that suppressed nothing
     #[arg(long)]
     pub report_unused_disable_directives: bool,

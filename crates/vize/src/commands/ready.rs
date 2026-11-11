@@ -122,6 +122,7 @@ pub fn run(args: ReadyArgs) {
             format: "text".into(),
             locale: "en".into(),
             max_warnings: None,
+            no_warn_ignored: false,
             report_unused_disable_directives: false,
             quiet: false,
             help_level: "full".into(),

@@ -180,6 +180,7 @@ vize lint --help-level short src
 | `--fix`                              | テキスト編集を提供するルールの安全な自動修正を適用し、残った診断を報告する                                                          |
 | `-f, --format`                       | 出力形式: `text`、`rich`（`--locale ja` または `zh` で言語を指定）、`ansi`、`plain`、`json`、`stylish`、`markdown`、`html`、`agent` |
 | `--max-warnings`                     | 警告数が指定した上限を超えると失敗する                                                                                              |
+| `--no-warn-ignored`                  | `ignores` が除外する明示指定のファイルを警告しない（ESLint の `--no-warn-ignored` と同じ）                                          |
 | `--report-unused-disable-directives` | 何も抑制していないテンプレートの `eslint-disable` コメントを `vue/comment-directive` のエラーとして報告する                         |
 | `-q, --quiet`                        | 概要だけを表示する                                                                                                                  |
 | `--help-level`                       | `full`、`short`、`none`                                                                                                             |

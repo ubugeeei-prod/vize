@@ -23,7 +23,8 @@ pub use args::LintArgs;
 use crate::profile_support;
 use aggregate::{LintRunAccumulator, should_retain_file_results};
 use collect::{
-    LintIgnoreSet, collect_default_lint_files, collect_lint_inputs, resolve_lint_config_path,
+    LintIgnoreSet, LintInputs, collect_default_lint_files, collect_lint_inputs,
+    resolve_lint_config_path,
 };
 use entry_rules::{LintProjectContext, LinterRuleResolver};
 use fix::lint_source_with_optional_fix;
@@ -88,18 +89,29 @@ pub fn run(mut args: LintArgs) {
         LintIgnoreSet::new(&linter_plan.plan.global_ignores, config_dir)
     };
     let collect_start = Instant::now();
-    let (files, input_warnings) = if args.patterns.is_empty() {
-        (
-            collect_default_lint_files(
+    let LintInputs {
+        files,
+        warnings: input_warnings,
+        ignored_only,
+    } = if args.patterns.is_empty() {
+        LintInputs {
+            files: collect_default_lint_files(
                 project_root.as_deref().unwrap_or_else(|| Path::new(".")),
                 ignore_set.as_ref(),
             ),
-            0,
-        )
+            warnings: 0,
+            ignored_only: false,
+        }
     } else {
-        collect_lint_inputs(&args.patterns, ignore_set.as_ref())
+        collect_lint_inputs(&args.patterns, ignore_set.as_ref(), !args.no_warn_ignored)
     };
     let collect_time = collect_start.elapsed();
+    if ignored_only {
+        patterns::write_ignored_only(format);
+        let _ = std::io::stdout().flush();
+        warnings::exit_if_over_max(input_warnings, args.max_warnings);
+        return;
+    }
     if files.is_empty() {
         patterns::write_no_files(format, &args.patterns);
         let _ = std::io::stdout().flush();

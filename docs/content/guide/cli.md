@@ -183,6 +183,7 @@ Key options:
 | `--fix`                              | Apply safe autofixes from rules that provide text edits, then report remaining diagnostics                                              |
 | `-f, --format`                       | Output format: `text`, `rich` (localize with `--locale ja` or `zh`), `ansi`, `plain`, `json`, `stylish`, `markdown`, `html`, or `agent` |
 | `--max-warnings`                     | Fail when warnings exceed the limit                                                                                                     |
+| `--no-warn-ignored`                  | Do not warn about explicitly named files that `ignores` excludes, like ESLint's `--no-warn-ignored`                                     |
 | `--report-unused-disable-directives` | Report `eslint-disable` template comments that suppressed nothing, as `vue/comment-directive` errors                                    |
 | `-q, --quiet`                        | Show summary only                                                                                                                       |
 | `--help-level`                       | `full`, `short`, or `none`                                                                                                              |

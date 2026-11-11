@@ -164,6 +164,7 @@ vize lint --help-level short src
 | `--fix`               | 从允许文本编辑的规则中应用安全的自动修复，然后报告剩余的诊断                                                                     |
 | `-f, --format`        | 输出格式：`text`、`rich`（可用 `--locale ja` 或 `zh` 切换语言）、`ansi`、`plain`、`json`、`stylish`、`markdown`、`html`或`agent` |
 | `--max-warnings`      | 警告超过限制时失败                                                                                                               |
+| `--no-warn-ignored`   | 不对 `ignores` 排除的显式文件发出警告，同 ESLint 的 `--no-warn-ignored`                                                          |
 | `-q, --quiet`         | 仅节目摘要                                                                                                                       |
 | `--help-level`        | `full`、`short`或`none`                                                                                                          |
 | `--preset`            | `happy-path`、`opinionated`、`essential`、`incremental`或`nuxt`                                                                  |

@@ -75,3 +75,87 @@ fn lint_json_emits_an_empty_array_when_patterns_match_no_files() {
 
     let _ = fs::remove_dir_all(project_root);
 }
+
+fn ignored_file_project(test_name: &str) -> PathBuf {
+    let project_root = temp_project_dir(test_name);
+    for (path, content) in [
+        (
+            "vite.config.mjs",
+            crate::support::vite_config::source(
+                r#"{ "ignores": ["tests/**"], "linter": { "preset": "incremental" } }"#,
+            ),
+        ),
+        (
+            "src/App.vue",
+            "<template>\n  <div>ok</div>\n</template>\n".into(),
+        ),
+        (
+            "tests/Ignored.vue",
+            "<template>\n  <div>ok</div>\n</template>\n".into(),
+        ),
+    ] {
+        let file = project_root.join(path);
+        fs::create_dir_all(file.parent().unwrap()).unwrap();
+        fs::write(file, content).unwrap();
+    }
+    project_root
+}
+
+fn lint_in(project_root: &PathBuf, args: &[&str]) -> Output {
+    Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(project_root)
+        .args(["lint", "-c", "vite.config.mjs"])
+        .args(args)
+        .output()
+        .unwrap()
+}
+
+#[test]
+fn lint_treats_explicitly_named_ignored_files_as_ignored() {
+    let project_root = ignored_file_project("explicit-ignored-file");
+
+    let output = lint_in(&project_root, &["--", "tests/Ignored.vue"]);
+    assert_eq!(output.status.code(), Some(0), "{}", output_details(&output));
+    assert!(
+        String::from_utf8_lossy(&output.stderr).contains("--no-warn-ignored"),
+        "{}",
+        output_details(&output)
+    );
+
+    let output = lint_in(
+        &project_root,
+        &[
+            "--max-warnings",
+            "0",
+            "--",
+            "src/App.vue",
+            "tests/Ignored.vue",
+        ],
+    );
+    assert_eq!(output.status.code(), Some(1), "{}", output_details(&output));
+
+    let output = lint_in(
+        &project_root,
+        &[
+            "--max-warnings",
+            "0",
+            "--no-warn-ignored",
+            "--",
+            "src/App.vue",
+            "tests/Ignored.vue",
+        ],
+    );
+    assert_eq!(output.status.code(), Some(0), "{}", output_details(&output));
+    assert!(
+        !String::from_utf8_lossy(&output.stderr).contains("ignored"),
+        "{}",
+        output_details(&output)
+    );
+
+    for missing in ["src/Missing.vue", "tests/**/*.vue"] {
+        let output = lint_in(&project_root, &["--", missing]);
+        assert_eq!(output.status.code(), Some(2), "{}", output_details(&output));
+    }
+
+    let _ = fs::remove_dir_all(project_root);
+}

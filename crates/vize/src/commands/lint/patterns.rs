@@ -36,8 +36,27 @@ pub(super) fn write_no_files(format: vize_patina::OutputFormat, patterns: &[vize
     }
 }
 
+/// Output for a run whose inputs were all ignored files: nothing to lint, and
+/// an empty JSON result so consumers still parse stdout.
+pub(super) fn write_ignored_only(format: vize_patina::OutputFormat) {
+    if format == vize_patina::OutputFormat::Json {
+        super::stdout::write(vize_patina::format_results(&[], &[], format).as_bytes());
+    }
+}
+
 pub(super) fn write_unmatched_patterns(patterns: &[vize_l0::String]) {
     eprintln!("{}", unmatched_lint_patterns_message(patterns));
+}
+
+/// One warning per explicit file the config's `ignores` excludes, as ESLint
+/// reports them; `--no-warn-ignored` silences it.
+pub(super) fn write_ignored_files(files: &[vize_l0::String]) -> usize {
+    if !files.is_empty() {
+        eprintln!(
+            "Warning: files ignored because of a matching ignore pattern: {files:?}. Use --no-warn-ignored to suppress this warning."
+        );
+    }
+    files.len()
 }
 
 pub(super) fn write_unmatched_explicit_patterns(
