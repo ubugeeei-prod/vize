@@ -28,6 +28,7 @@ pub mod type_projects;
 
 mod commands;
 mod config;
+mod process_allocator;
 mod profile_support;
 
 /// Ordered lint-plan resolution and provenance for inspector consumers.

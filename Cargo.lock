@@ -5251,6 +5251,7 @@ dependencies = [
  "ignore",
  "insta",
  "js-sys",
+ "mimalloc",
  "napi",
  "napi-build",
  "napi-derive",

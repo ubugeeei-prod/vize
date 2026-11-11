@@ -22,6 +22,7 @@ legacy = ["vize/legacy", "vize_canon/legacy"]
 napi = [
   "dep:napi",
   "dep:napi-derive",
+  "dep:mimalloc",
   "dep:vize",
   "dep:glob",
   "dep:rayon",
@@ -97,6 +98,18 @@ web-sys = { workspace = true, optional = true }
 # For WASM compatibility with getrandom
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 getrandom = { workspace = true }
+
+# The Node addon's allocator, as the CLI binary's (see `allocator` in lib.rs).
+# A dlopen'd library needs mimalloc's thread locals in the local-dynamic TLS
+# model: musl refuses initial-exec TLS in a dynamically loaded object, and
+# glibc only has a small static TLS surplus for it. macOS is left out: the
+# bundled mimalloc 3.3 keeps its thread heap in fixed TLS slots 108/109, which
+# another addon's statically linked mimalloc in the same process also uses.
+[target.'cfg(target_os = "linux")'.dependencies]
+mimalloc = { workspace = true, optional = true, features = ["local_dynamic_tls"] }
+
+[target.'cfg(windows)'.dependencies]
+mimalloc = { workspace = true, optional = true }
 
 [target.'cfg(not(target_arch = "wasm32"))'.build-dependencies]
 napi-build.workspace = true
