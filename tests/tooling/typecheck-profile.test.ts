@@ -107,9 +107,11 @@ const SCRIPT = [
   "\t    7f00000ff000 start_thread (/usr/lib/x86_64-linux-gnu/libc.so.6)",
   "",
   "tsrs 200/200 PERF_RECORD_COMM exec: tsrs:200/200",
-  `tsrs 200/200 PERF_RECORD_MMAP2 200/200: [0x555555600000(0x100000) @ 0x200000 08:01 13 0]: r-xp ${TSRS}`,
+  // The loader's whole-image reservation comes first; the code segment is mapped over it.
+  `tsrs 200/200 PERF_RECORD_MMAP2 200/200: [0x555555400000(0x2800000) @ 0 08:01 13 0]: r--p ${TSRS}`,
+  `tsrs 200/200 PERF_RECORD_MMAP2 200/200: [0x555557a00000(0x100000) @ 0x200000 08:01 13 0]: r-xp ${TSRS}`,
   "tsrs 200/200     1000000 cpu-clock:u: ",
-  `\t    555555604010 [unknown] (${TSRS})`,
+  `\t    555557a04010 [unknown] (${TSRS})`,
   "",
 ];
 
@@ -180,7 +182,8 @@ void test("the folder splits a lane tree by process, DSO, cost kind, phase and f
     fn("vize::commands::content_mapper::dispatch::wire::encode_transform")?.total,
     3_000_000,
   );
-  // PIE: 0x555555604010 - 0x555555600000 + 0x200000 = file 0x204010 -> vaddr 0x2604010.
+  // PIE: 0x555557a04010 - 0x555557a00000 + 0x200000 = file 0x204010 -> vaddr 0x2604010;
+  // the r--p whole-image reservation would have read it as file 0x2604010.
   assert.equal(fn("fn@2604000")?.self, 1_000_000);
   // The futex sample's user chain stops in runtime.futex, not at an entry frame.
   assert.equal(profile.quality.tsgo?.complete, 2_000_000);

@@ -197,7 +197,9 @@ export class ProfileFolder {
       return;
     }
     const mmap = MMAP.exec(text);
-    if (mmap) {
+    // Only code mappings: the ELF loader's first whole-image reservation is
+    // not one, and it would place every later segment at offset 0.
+    if (mmap && mmap[6]!.includes("x")) {
       const pid = Number(mmap[1]);
       const start = Number.parseInt(mmap[3]!, 16);
       const mapping = {
@@ -237,7 +239,8 @@ export class ProfileFolder {
     if (!table || table.kind === "symtab" || table.kind === "none") return frame.sym;
     const inFile = (map: Mapping) =>
       map.path === frame.dso && frame.ip >= map.start && frame.ip < map.end;
-    const mapping = this.maps.get(pid)?.find(inFile);
+    // The latest mapping wins, as a MAP_FIXED remap replaces what it covers.
+    const mapping = this.maps.get(pid)?.findLast(inFile);
     let vaddr: number | null = null;
     let how = "mapping";
     if (mapping) vaddr = vaddrOf(table, frame.ip - mapping.start + mapping.pgoff);
