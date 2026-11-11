@@ -1023,7 +1023,7 @@ a11y/no-redundant-roles · lint ルール
 ドキュメント: docs/content/rules/reference/a11y-no-redundant-roles.md
 
 不正な例:
-  <nav role="navigation">...</nav>
+  <nav aria-label="Primary" role="navigation">...</nav>
   <button role="button">...</button>
 
 正しい例:

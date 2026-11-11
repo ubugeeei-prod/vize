@@ -1,6 +1,10 @@
 export default {
   lint: {
     rules: {
+      // Existing app examples use <output> as a live status value without a
+      // separately named form control. Keep that repository migration local
+      // while the product preset requires labels for output, meter and progress.
+      "vize/a11y/form-control-has-label": "off",
       // The repository's existing public APIs use camelCase events. Keep that
       // compatibility explicit while the product default remains lowercase.
       "vize/script/custom-event-name-casing": ["error", { casing: "camelCase" }],

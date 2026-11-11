@@ -54,7 +54,9 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         // Script setup macro validity adds three literal fixtures.
         + 3
         // Default-prop and ARIA role compatibility add nine literal fixtures.
-        + 9,
+        + 9
+        // Accessibility and explicit-slot parity add one literal fixture.
+        + 1,
     // Original 1057/87 census plus non-literal calls in valid_v_slot (3 + 1),
     // require_toggle_inside_transition (3), the v-else-if/v-is/v-pre rules (38
     // templates over 42 calls, one `v-pre` helper, #8856) and v_bind_style (one
@@ -231,7 +233,9 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         // Missing end-tag parser custody adds one helper-driven call.
         + 1
         // Label association parity adds one helper-driven call.
-        + 1,
+        + 1
+        // Accessibility and explicit-slot parity add three fixture calls.
+        + 3,
     rule_fixture_skipped: 87
         + 4
         + 3
@@ -283,7 +287,9 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         // The missing end-tag parser observation remains an explicit skip.
         + 1
         // The label association observation remains an explicit skip.
-        + 1,
+        + 1
+        // Two new parity observations remain helper-driven scanner skips.
+        + 2,
     matrix: 90,
     template_lines: 6316 + 233 + 5 + 10 + 25 + 7 - 49
         + 31
@@ -336,7 +342,9 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         // Script setup macro validity retains forty-nine complete trace lines.
         + 49
         // Default-prop and ARIA role compatibility retain eighty-eight trace lines.
-        + 88,
+        + 88
+        // Accessibility and explicit-slot parity retain six trace lines.
+        + 6,
     restructured: 0,
     jsx: JsxComparison {
         roots: 14,

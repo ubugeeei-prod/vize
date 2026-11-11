@@ -1076,7 +1076,7 @@ a11y/no-redundant-roles · lint 规则
 文档: docs/content/rules/reference/a11y-no-redundant-roles.md
 
 错误示例:
-  <nav role="navigation">...</nav>
+  <nav aria-label="Primary" role="navigation">...</nav>
   <button role="button">...</button>
 
 正确示例:

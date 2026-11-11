@@ -1072,7 +1072,7 @@ autofix: yes
 docs: docs/content/rules/reference/a11y-no-redundant-roles.md
 
 invalid:
-  <nav role="navigation">...</nav>
+  <nav aria-label="Primary" role="navigation">...</nav>
   <button role="button">...</button>
 
 valid:

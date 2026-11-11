@@ -64,4 +64,4 @@ export default defineConfig({}).withVue({
 - [无障碍规则](../accessibility.md)
 - [规则选项](/rules/options.md)
 - [全部规则](../all.md)
-- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/anchor_has_content.rs#L24)
+- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/anchor_has_content.rs#L31)
