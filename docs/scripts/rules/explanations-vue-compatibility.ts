@@ -197,4 +197,25 @@ export const vueCompatibilityExplanations: readonly ExplanationRecord[] = [
     "ネストしたメソッドのキーが昇順ではありません。",
     "ネストしたメソッドのキーを設定した順序に並べます。",
   ],
+  [
+    "vue/block-lang",
+    "The script block omits the configured lang attribute.",
+    "The script block sets lang to the configured language.",
+    "script ブロックに設定した lang 属性がありません。",
+    "script ブロックの lang を設定した言語にします。",
+  ],
+  [
+    "vue/require-default-export",
+    "The component script has no default export.",
+    "The component is the default export of the script.",
+    "コンポーネントの script にデフォルトエクスポートがありません。",
+    "コンポーネントを script のデフォルトエクスポートにします。",
+  ],
+  [
+    "vue/require-prop-comment",
+    "The size prop has no JSDoc comment.",
+    "The size prop documents its meaning with a JSDoc comment.",
+    "size プロパティに JSDoc コメントがありません。",
+    "size プロパティに JSDoc コメントを付けます。",
+  ],
 ];

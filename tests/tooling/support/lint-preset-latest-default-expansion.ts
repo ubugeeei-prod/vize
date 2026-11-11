@@ -153,8 +153,8 @@ function inverseFormatterCompatibility(name: string, body: Buffer): Buffer {
     "crates/vize_patina/src/preset/snapshots/vize_patina__preset__tests__lint_preset_rule_membership.snap"
   ) {
     identity(body, {
-      bytes: 36173,
-      sha256: "596bea3d1adfe3248dd6ab6ec33bd1666d3f9c1f0f9ce8f8b4b706e1e6b7e370",
+      bytes: 36261,
+      sha256: "9773bc43b3e97947fd26fe872b30a561880bdd2528093171e3f21a821f9b664d",
     });
     const text = body.toString();
     const marker = `    "script/custom-event-name-casing",\n`;
@@ -165,8 +165,8 @@ function inverseFormatterCompatibility(name: string, body: Buffer): Buffer {
       `${text.slice(0, opinionated)}    "script/consistent-props-emits-key-quotes",\n${text.slice(opinionated)}`,
     );
     identity(predecessor, {
-      bytes: 36221,
-      sha256: "24982170b23834b4fb93ef32d0751145915d9a4749a8fcc7a4d46b81cc4725e8",
+      bytes: 36309,
+      sha256: "abe7325c43538cc239a226a539dcf2a1c8619ba79758799de2c97f92e96bfe03",
     });
     return predecessor;
   }

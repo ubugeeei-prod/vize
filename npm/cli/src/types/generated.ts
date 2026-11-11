@@ -312,6 +312,23 @@ export interface LintRuleOptions {
   "a11y/label-has-for"?: {
     controlComponents?: string[];
   };
+  "vue/block-lang"?: {
+    script?: {
+      lang?: string | string[];
+      allowNoLang?: boolean;
+      required?: boolean;
+    };
+    template?: {
+      lang?: string | string[];
+      allowNoLang?: boolean;
+      required?: boolean;
+    };
+    style?: {
+      lang?: string | string[];
+      allowNoLang?: boolean;
+      required?: boolean;
+    };
+  };
   "vue/enforce-style-attribute"?: {
     allow?: ("plain" | "scoped" | "module")[];
   };
