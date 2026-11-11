@@ -14,6 +14,7 @@ use oxc_ast::ast::{
 };
 use oxc_ast_visit::{Visit, walk};
 use oxc_span::{GetSpan, Span};
+use vize_l0::{String, cstr};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/require-prop-comment",
@@ -76,7 +77,7 @@ fn collect_block(program: &Program<'_>, source: &str, offset: u32) -> Vec<(Strin
         .filter(|prop| !has_jsdoc(source, &program.comments, prop.anchor))
         .map(|prop| {
             (
-                format!(
+                cstr!(
                     "The \"{}\" property should have a JSDoc comment.",
                     prop.name
                 ),
@@ -279,7 +280,7 @@ impl<'a> PropVisitor<'a> {
             return;
         }
         self.props.push(Prop {
-            name: name.to_owned(),
+            name: String::from(name),
             span,
             anchor,
         });
@@ -294,7 +295,7 @@ fn named(key: &PropertyKey<'_>, anchor: u32) -> Option<Prop> {
     };
     let span = key.span();
     Some(Prop {
-        name: name.to_owned(),
+        name: String::from(name),
         span,
         anchor: anchor.min(span.start),
     })
