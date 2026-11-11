@@ -26,12 +26,12 @@
     {
       "path": "npm/cli/virtual-ts.d.ts",
       "before": {
-        "bytes": 17836,
-        "sha256": "f2d7c9c5befc6f27f8d2c28e5eb2dd38c6d4fb052d4ba4f112c2d3de3df2aac5"
+        "bytes": 17860,
+        "sha256": "63b5f81f2e720a0960b4240b40f37cef05b4077855bb69086a8e90610e2345a6"
       },
       "after": {
-        "bytes": 18007,
-        "sha256": "84cd8a33540d8c54ea79148089767b0579885fca319a04dca59ff28fbf618573"
+        "bytes": 18031,
+        "sha256": "cc4a986fd39fcaa231495e885fd5ebda53575b22ae961023d4e59332dafce19b"
       },
       "hunks": [
         {
@@ -49,14 +49,31 @@
       ]
     },
     {
-      "path": "npm/cli/virtual-ts.d.mts",
+      "path": "crates/vize_canon/src/virtual_ts/helpers/shared_types.rs",
       "before": {
-        "bytes": 17836,
-        "sha256": "f2d7c9c5befc6f27f8d2c28e5eb2dd38c6d4fb052d4ba4f112c2d3de3df2aac5"
+        "bytes": 4665,
+        "sha256": "460798f74160021f6397b4cdb196a2b3cd1839c0dc5baab648ee60f3c7b3d4f7"
       },
       "after": {
-        "bytes": 18007,
-        "sha256": "84cd8a33540d8c54ea79148089767b0579885fca319a04dca59ff28fbf618573"
+        "bytes": 4953,
+        "sha256": "d29c24aeb9fca4b3e2c129c7c0c80bf4d04c2ee388a1d1a86f9ef7b49b485529"
+      },
+      "hunks": [
+        {
+          "before": "",
+          "after": "    DOM_ELEMENT => (\"$DomElement\", \"$DomElement\"),\n    TEMPLATE_COMPONENT_REF => (\"$TemplateComponentRef\", \"$TemplateComponentRef\"),\n    REF_INSTANCE_FACTORY => (\"$RefInstanceFactory\", \"$RefInstanceFactory\"),\n    TEMPLATE_REF_INSTANCE => (\"$TemplateRefInstance\", \"$TemplateRefInstance\"),\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/virtual-ts.d.mts",
+      "before": {
+        "bytes": 17860,
+        "sha256": "63b5f81f2e720a0960b4240b40f37cef05b4077855bb69086a8e90610e2345a6"
+      },
+      "after": {
+        "bytes": 18031,
+        "sha256": "cc4a986fd39fcaa231495e885fd5ebda53575b22ae961023d4e59332dafce19b"
       },
       "hunks": [
         {
@@ -76,12 +93,12 @@
     {
       "path": "npm/cli/virtual-ts.d.cts",
       "before": {
-        "bytes": 17836,
-        "sha256": "f2d7c9c5befc6f27f8d2c28e5eb2dd38c6d4fb052d4ba4f112c2d3de3df2aac5"
+        "bytes": 17860,
+        "sha256": "63b5f81f2e720a0960b4240b40f37cef05b4077855bb69086a8e90610e2345a6"
       },
       "after": {
-        "bytes": 18007,
-        "sha256": "84cd8a33540d8c54ea79148089767b0579885fca319a04dca59ff28fbf618573"
+        "bytes": 18031,
+        "sha256": "cc4a986fd39fcaa231495e885fd5ebda53575b22ae961023d4e59332dafce19b"
       },
       "hunks": [
         {
@@ -101,12 +118,12 @@
     {
       "path": "crates/vize_canon/src/virtual_ts/generator.rs",
       "before": {
-        "bytes": 37699,
-        "sha256": "31ffef289d05da9ba517f41367ff6d21e46ef76e40b09a26a4389ceb7bdd6655"
+        "bytes": 37789,
+        "sha256": "3eb5b8a7c0e30e866a9cafe482955945f50bc35b9ac33396f52d3b97ce33acdf"
       },
       "after": {
-        "bytes": 37848,
-        "sha256": "448235b80787c3d624b7d6fedcf9e2ba34d22f1a0e428cd9261767d9560df4bd"
+        "bytes": 37938,
+        "sha256": "72c4bf98066da0acc68fe73d6e9aba486f8628cb0447a1c5f875931d8ed43cd0"
       },
       "hunks": [
         {
@@ -139,12 +156,12 @@
   ],
   "compiledPreamble": {
     "before": {
-      "bytes": 54688,
-      "sha256": "449fcfdae8ddbe751f101952201ed8cfad3a8dc3b4e90f899aa70eaf53040257"
+      "bytes": 56572,
+      "sha256": "101ae06644c80ffb5f55ad87a1a41870a5cddd82d82739be84f3a139d2d67772"
     },
     "after": {
-      "bytes": 56279,
-      "sha256": "6371f778bc70866f142a9261c6302ffa609025b49a00d538d021b0bc58f13964"
+      "bytes": 58163,
+      "sha256": "cf659c06c0ac9228aea29c0720b33cd6d854d15a9f5ec9977bc609c9fa472405"
     },
     "hunks": [
       {
@@ -155,12 +172,12 @@
   },
   "compiledStrictPreamble": {
     "before": {
-      "bytes": 54479,
-      "sha256": "0258cc1331d3957d875125117f3e279f97f10e9704e1e27f2c9d194bd8680214"
+      "bytes": 56363,
+      "sha256": "6719f76be603588930cc76c10421a1a64eddcfd0bde6e487619de65c0e9894d9"
     },
     "after": {
-      "bytes": 56070,
-      "sha256": "51766128dc823968b07bc78c38812d741d4623712729c4d61948246b8e56602f"
+      "bytes": 57954,
+      "sha256": "3748c9b6116a91de1494edf8fc4a7e91520ffb9effa16c5ab8b1dc5d7d03e499"
     },
     "hunks": [
       {
