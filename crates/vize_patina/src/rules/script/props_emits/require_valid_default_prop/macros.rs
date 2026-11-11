@@ -6,12 +6,13 @@
 
 use oxc_ast::ast::{
     Argument, BindingPattern, CallExpression, Expression, ObjectExpression, ObjectPropertyKind,
-    Program,
+    Program, TSType,
 };
 use oxc_ast_visit::{
     Visit,
     walk::{walk_call_expression, walk_variable_declarator},
 };
+use oxc_span::GetSpan;
 use vize_l0::CompactString;
 
 use super::{
@@ -23,12 +24,16 @@ mod infer;
 
 pub(super) fn check_setup_defaults(
     program: &Program<'_>,
+    source: &str,
     offset: usize,
+    world: Option<&vize_croquis::types::ResolvedTypeWorld>,
     result: &mut ScriptLintResult,
 ) {
     let mut visitor = SetupDefaults {
         program,
+        source,
         offset,
+        world,
         result,
         props_shadowed: super::super::compiler_macro_is_shadowed(program, "defineProps"),
         model_shadowed: super::super::compiler_macro_is_shadowed(program, "defineModel"),
@@ -37,23 +42,32 @@ pub(super) fn check_setup_defaults(
     visitor.visit_program(program);
 }
 
-struct SetupDefaults<'a, 'out> {
+struct SetupDefaults<'a, 'w, 'out> {
     program: &'a Program<'a>,
+    source: &'a str,
     offset: usize,
+    world: Option<&'w vize_croquis::types::ResolvedTypeWorld>,
     result: &'out mut ScriptLintResult,
     props_shadowed: bool,
     model_shadowed: bool,
     defaults_shadowed: bool,
 }
 
-impl<'a> Visit<'a> for SetupDefaults<'a, '_> {
+impl<'a> Visit<'a> for SetupDefaults<'a, '_, '_> {
     fn visit_call_expression(&mut self, call: &CallExpression<'a>) {
         match callee_name(call) {
             Some("defineModel") if !self.model_shadowed => {
                 check_define_model(self.program, call, self.offset, self.result);
             }
             Some("withDefaults") if !self.defaults_shadowed && !self.props_shadowed => {
-                check_with_defaults(self.program, call, self.offset, self.result);
+                check_with_defaults(
+                    self.program,
+                    self.source,
+                    call,
+                    self.offset,
+                    self.world,
+                    self.result,
+                );
             }
             _ => {}
         }
@@ -66,7 +80,7 @@ impl<'a> Visit<'a> for SetupDefaults<'a, '_> {
             && let Some(init) = declarator.init.as_ref()
             && let Some(call) = define_props_call(init)
         {
-            let props = prop_types(self.program, call);
+            let props = prop_types(self.program, self.source, call, self.world);
             for property in &pattern.properties {
                 if property.computed {
                     continue;
@@ -142,8 +156,10 @@ fn check_define_model(
 
 fn check_with_defaults(
     program: &Program<'_>,
+    source: &str,
     call: &CallExpression<'_>,
     offset: usize,
+    world: Option<&vize_croquis::types::ResolvedTypeWorld>,
     result: &mut ScriptLintResult,
 ) {
     let Some(props_call) = call
@@ -162,7 +178,7 @@ fn check_with_defaults(
     else {
         return;
     };
-    let props = prop_types(program, props_call);
+    let props = prop_types(program, source, props_call, world);
     for property in &defaults.properties {
         let ObjectPropertyKind::ObjectProperty(property) = property else {
             continue;
@@ -189,14 +205,22 @@ fn check_with_defaults(
 
 fn prop_types(
     program: &Program<'_>,
+    source: &str,
     call: &CallExpression<'_>,
+    world: Option<&vize_croquis::types::ResolvedTypeWorld>,
 ) -> Vec<(CompactString, Vec<&'static str>)> {
     if let Some(ty) = call
         .type_arguments
         .as_ref()
         .and_then(|arguments| arguments.params.first())
     {
-        return infer::collect_type_props(program, ty);
+        let local = infer::collect_type_props(program, ty);
+        // An inline literal or a same-file interface already names every prop.
+        // Querying the world as well would report the same default twice.
+        if !local.is_empty() {
+            return local;
+        }
+        return imported_prop_types(source, ty, world);
     }
     call.arguments
         .first()
@@ -204,6 +228,70 @@ fn prop_types(
         .and_then(object_expr)
         .map(runtime_prop_types)
         .unwrap_or_default()
+}
+
+/// Props of an imported `defineProps<CardProps>()` argument.
+///
+/// A same-file walk cannot see the module. An unresolved or partial type is
+/// skipped: treating it as "no props" would hide a default that should be
+/// checked once the import can be read.
+fn imported_prop_types(
+    source: &str,
+    ty: &TSType<'_>,
+    world: Option<&vize_croquis::types::ResolvedTypeWorld>,
+) -> Vec<(CompactString, Vec<&'static str>)> {
+    let Some(world) = world else {
+        return Vec::new();
+    };
+    let span = ty.span();
+    let Some(type_source) = source.get(span.start as usize..span.end as usize) else {
+        return Vec::new();
+    };
+    let resolved = world.resolve_properties(type_source);
+    if !resolved.complete {
+        return Vec::new();
+    }
+    resolved
+        .properties
+        .into_iter()
+        .filter_map(|property| {
+            let types = native_types_from_annotation(property.prop_type.as_deref()?);
+            if types.is_empty() {
+                None
+            } else {
+                Some((property.name, types))
+            }
+        })
+        .collect()
+}
+
+fn native_types_from_annotation(annotation: &str) -> Vec<&'static str> {
+    let mut types = Vec::new();
+    for part in annotation.split('|') {
+        let Some(name) = native_type_from_annotation(part) else {
+            continue;
+        };
+        if !types.contains(&name) {
+            types.push(name);
+        }
+    }
+    types
+}
+
+fn native_type_from_annotation(part: &str) -> Option<&'static str> {
+    let mut text = part.trim();
+    while text.len() >= 2 && text.starts_with('(') && text.ends_with(')') {
+        text = text[1..text.len() - 1].trim();
+    }
+    match text {
+        "string" | "String" => Some("String"),
+        "number" | "Number" => Some("Number"),
+        "boolean" | "Boolean" => Some("Boolean"),
+        "bigint" | "BigInt" => Some("BigInt"),
+        "symbol" | "Symbol" => Some("Symbol"),
+        "object" | "Object" => Some("Object"),
+        _ => None,
+    }
 }
 
 fn runtime_prop_types(object: &ObjectExpression<'_>) -> Vec<(CompactString, Vec<&'static str>)> {
