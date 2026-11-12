@@ -195,19 +195,42 @@ async fn node_types(
     let Some(encoded) = encoded else {
         return Ok(None);
     };
-    let locations = match checker_node_locations(encoded.as_bytes(), source, ranges) {
-        Ok(locations) => locations,
-        Err(_) => return Ok(None),
+    // Only an unreadable tree falls back to caret types. A range with no node
+    // stays untyped on its own: a caret type describes the token at the start
+    // (`isListening` for `isListening.value`), so falling back for the whole
+    // batch would mistype every other expression in the script.
+    let Ok(each) = checker_node_locations(encoded.as_bytes(), source, ranges) else {
+        return Ok(None);
     };
-    session
-        .client()
-        .get_type_at_locations(
-            session.snapshot().handle.clone(),
-            session.project_handle(),
-            locations,
-        )
-        .await
-        .map(Some)
+    let mut slots = Vec::with_capacity(each.len());
+    let mut locations = Vec::new();
+    for location in each {
+        match location {
+            Ok(location) => {
+                slots.push(Some(locations.len()));
+                locations.push(location);
+            }
+            Err(_) => slots.push(None),
+        }
+    }
+    let mut types = if locations.is_empty() {
+        Vec::new()
+    } else {
+        session
+            .client()
+            .get_type_at_locations(
+                session.snapshot().handle.clone(),
+                session.project_handle(),
+                locations,
+            )
+            .await?
+    };
+    Ok(Some(
+        slots
+            .into_iter()
+            .map(|slot| slot.and_then(|index| types.get_mut(index).and_then(Option::take)))
+            .collect(),
+    ))
 }
 
 async fn property_names(

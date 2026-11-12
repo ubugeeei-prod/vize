@@ -5224,6 +5224,43 @@
       }
     },
     {
+      "id": "linter/patina/compat-type-aware-macro-positions-12880",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "patina-compat-type-aware-macro-positions-12880",
+        "files": [
+          {
+            "path": "ModelOnly.vue.txt",
+            "role": "third-party-type-aware-reproduction",
+            "sha256": "135e3470e127fc4834387ed63239026b62ad907b41d2da2e083ac4598f913c42"
+          },
+          {
+            "path": "NoMacros.vue.txt",
+            "role": "third-party-type-aware-reproduction",
+            "sha256": "25b0000e32e6b80bef6789d5a67995eeaed49c39454c86f05ac6f762d6421ebb"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/patina/compat-type-aware-ts-eslint-12875",
       "state": "active",
       "targets": [
