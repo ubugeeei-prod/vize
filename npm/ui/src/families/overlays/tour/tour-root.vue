@@ -586,7 +586,6 @@ type TourRootSetupExpose = Omit<
   readonly target: Readonly<ShallowRef<Element | null>>;
   readonly targetState: ComputedRef<TourTargetState>;
   readonly total: ComputedRef<number>;
-  // eslint-disable-next-line type/no-redundant-type-constituents -- vize types the generic `TStep["value"]` alias as `any` here; typescript-eslint does not report it
   readonly value: ComputedRef<StepValue | null>;
 };
 
