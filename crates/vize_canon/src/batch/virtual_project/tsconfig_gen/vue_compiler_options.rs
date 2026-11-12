@@ -46,6 +46,31 @@ pub fn snapshot_tsconfig_vue_compiler_options(
     snapshot_vue_compiler_options(tsconfig_path).map(|(options, _)| options)
 }
 
+/// Whether an unimported `useTemplateRef(...)` call is Vue's composable.
+#[derive(Clone, Copy, Debug, Default)]
+pub(in crate::batch::virtual_project) struct GlobalTemplateRef {
+    /// `vueCompilerOptions.composables.useTemplateRef`, when the project sets it.
+    pub(in crate::batch::virtual_project) explicit: Option<bool>,
+    /// The program declares the global as Vue's own export (Nuxt's auto-imports).
+    pub(in crate::batch::virtual_project) ambient: bool,
+}
+
+impl GlobalTemplateRef {
+    /// An explicit option decides; otherwise only Vue's own export counts.
+    pub(in crate::batch::virtual_project) fn enabled(self) -> bool {
+        self.explicit.unwrap_or(self.ambient)
+    }
+}
+
+impl super::super::VirtualProject {
+    /// The program declares the global `useTemplateRef` as Vue's own export
+    /// (Nuxt's auto-import declarations do). Absent an explicit
+    /// `composables.useTemplateRef`, the call then reads the template's refs.
+    pub(crate) fn set_ambient_vue_template_ref(&mut self, declared: bool) {
+        self.global_template_ref.ambient = declared;
+    }
+}
+
 /// What `vueCompilerOptions.composables.useTemplateRef` says about an
 /// unimported `useTemplateRef(...)` call: `Some(true)` when the list names it,
 /// `Some(false)` when the project lists other names (or none), and `None` when
@@ -215,11 +240,8 @@ impl VirtualProject {
             || load_vue_compiler_options(path.as_deref()).ok(),
             |snapshot| Some(snapshot.vue_options.clone()),
         );
-        self.explicit_global_template_ref =
+        self.global_template_ref.explicit =
             options.as_ref().and_then(configured_global_template_ref);
-        self.configured_global_template_ref = self
-            .explicit_global_template_ref
-            .unwrap_or(self.ambient_vue_template_ref);
         super::super::typed_router::refresh(self, options.as_ref(), path.as_deref());
         super::super::vue_check_options::resolve(
             &mut self.virtual_ts_check_options,

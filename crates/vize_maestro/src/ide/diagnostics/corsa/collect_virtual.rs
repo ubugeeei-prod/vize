@@ -16,7 +16,7 @@ use vize_canon::virtual_ts::{ProjectionFeatures, ProjectionMapping, ProjectionMe
 use vize_l0::line_index::LineBreaks;
 
 use super::super::{NativeDiagnostic, VirtualTsResult, sources};
-use super::message::strip_corsa_overlay_paths;
+use super::message::present_corsa_message;
 
 /// One virtual document synced to Corsa, ready for assembly.
 pub(super) struct CorsaDocument {
@@ -249,9 +249,7 @@ fn assemble_corsa_diagnostics_for_source(
                     }),
                     code,
                     source: Some(sources::TYPE_CHECKER.to_string()),
-                    message: strip_corsa_overlay_paths(
-                        &vize_canon::batch::present_internal_type_names(&assembled.message),
-                    ),
+                    message: present_corsa_message(&assembled.message),
                     ..Default::default()
                 },
                 phase,
