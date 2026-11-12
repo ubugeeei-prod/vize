@@ -9,7 +9,6 @@ use super::{
     RULE_REQUIRE_TYPED_EMITS, RULE_REQUIRE_TYPED_PROPS, lint_sfc_with_corsa,
 };
 use crate::{LintPreset, Linter};
-
 use assertion::{
     assert_absent, assert_absent_note, assert_absent_rules, assert_reports, assert_reports_message,
     assert_reports_note, failure_context,

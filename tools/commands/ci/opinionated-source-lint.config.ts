@@ -25,8 +25,7 @@ export default {
       "vize/vue/no-negated-v-if-condition": "off",
       "vize/vue/no-root-v-if": "off",
       // #12878 added this rule to the opinionated preset. It does not yet see
-      // components used inside Musea <art> blocks, custom directives such as
-      // v-musea-globals, or ref="..." template refs, and the remaining reports
+      // components used inside Musea <art> blocks, and the remaining reports
       // (unused type imports and locals) are an app migration. Keep the
       // repository exception local until both are done.
       "vize/vue/no-unused-script-vars": "off",
