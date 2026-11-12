@@ -20,6 +20,8 @@ mod tests;
 #[cfg(test)]
 mod tests_art;
 #[cfg(test)]
+mod tests_cross;
+#[cfg(test)]
 mod tests_issue;
 #[cfg(test)]
 mod tests_tse;
