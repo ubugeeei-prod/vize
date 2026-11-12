@@ -3,6 +3,10 @@
 //! Report `let` and `var` bindings that neither the script nor the template
 //! reassigns. A template update such as `counter++` is a write, so the
 //! binding stays `let`. Parameters and `const` stay quiet.
+//!
+//! As in ESLint `prefer-const`, a binding without an initializer counts when
+//! one plain `=` statement in its own block writes it (`let late; late = 5;`),
+//! and a binding that is never written does not.
 
 use vize_relief::RootNode;
 
@@ -25,6 +29,15 @@ static META: RuleMeta = RuleMeta {
 #[derive(Default)]
 pub struct PreferConst {
     options: PreferConstOptions,
+}
+
+impl PreferConst {
+    /// Rule with `linter.ruleOptions["vue/prefer-const"]` applied.
+    pub fn from_options(options: &vize_l0::config::PreferConstOptions) -> Self {
+        Self {
+            options: PreferConstOptions::from_config(options),
+        }
+    }
 }
 
 impl Rule for PreferConst {

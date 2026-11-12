@@ -376,6 +376,22 @@ export interface LintRuleOptions {
     version?: string;
     ignores?: string[];
   };
+  "vue/no-unused-script-vars"?: {
+    vars?: "all" | "local";
+    varsIgnorePattern?: string;
+    args?: "all" | "after-used" | "none";
+    argsIgnorePattern?: string;
+    caughtErrors?: "all" | "none";
+    caughtErrorsIgnorePattern?: string;
+    destructuredArrayIgnorePattern?: string;
+    ignoreRestSiblings?: boolean;
+    ignoreClassWithStaticInitBlock?: boolean;
+    reportUsedIgnorePattern?: boolean;
+  };
+  "vue/prefer-const"?: {
+    destructuring?: "any" | "all";
+    ignoreReadBeforeAssign?: boolean;
+  };
   "vue/enforce-style-attribute"?: {
     allow?: ("plain" | "scoped" | "module")[];
   };

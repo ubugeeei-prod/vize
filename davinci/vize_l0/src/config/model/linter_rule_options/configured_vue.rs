@@ -5,6 +5,7 @@
 
 use serde::{Deserialize, Serialize};
 
+use super::script_unused::{NoUnusedScriptVarsOptions, PreferConstOptions};
 use crate::String;
 
 /// `vue/max-props`. Absent or zero means unlimited.
@@ -183,6 +184,15 @@ pub struct ConfiguredVueRuleOptions {
         skip_serializing_if = "Option::is_none"
     )]
     pub no_unsupported_features: Option<UnsupportedFeaturesOptions>,
+    /// `vue/no-unused-script-vars`.
+    #[serde(
+        rename = "vue/no-unused-script-vars",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub no_unused_script_vars: Option<NoUnusedScriptVarsOptions>,
+    /// `vue/prefer-const`.
+    #[serde(rename = "vue/prefer-const", skip_serializing_if = "Option::is_none")]
+    pub prefer_const: Option<PreferConstOptions>,
 }
 
 impl ConfiguredVueRuleOptions {
@@ -201,6 +211,8 @@ impl ConfiguredVueRuleOptions {
             && self.no_restricted_static_attribute.is_none()
             && self.no_restricted_v_on.is_none()
             && self.no_unsupported_features.is_none()
+            && self.no_unused_script_vars.is_none()
+            && self.prefer_const.is_none()
     }
 
     /// Apply a later config layer.
@@ -243,6 +255,12 @@ impl ConfiguredVueRuleOptions {
         }
         if overlay.no_unsupported_features.is_some() {
             self.no_unsupported_features = overlay.no_unsupported_features.clone();
+        }
+        if overlay.no_unused_script_vars.is_some() {
+            self.no_unused_script_vars = overlay.no_unused_script_vars.clone();
+        }
+        if overlay.prefer_const.is_some() {
+            self.prefer_const = overlay.prefer_const.clone();
         }
     }
 }

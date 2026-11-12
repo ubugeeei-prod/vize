@@ -196,6 +196,8 @@ lintRuleOptionsDef: JsonSchema = new JsonSchema {
     ["vue/no-restricted-static-attribute"] = ConfiguredVueRuleOptions.restrictedNamesDef
     ["vue/no-restricted-v-on"] = ConfiguredVueRuleOptions.restrictedNamesDef
     ["vue/no-unsupported-features"] = ConfiguredVueRuleOptions.unsupportedFeaturesDef
+    ["vue/no-unused-script-vars"] = ConfiguredVueRuleOptions.noUnusedScriptVarsDef
+    ["vue/prefer-const"] = ConfiguredVueRuleOptions.preferConstDef
     ["vue/enforce-style-attribute"] = new JsonSchema {
       type = "object"
       properties {

@@ -45,6 +45,12 @@ export default defineConfig({}).withVue({
     "preset": "incremental",
     "rules": {
       "vue/no-unused-script-vars": "warn"
+    },
+    "ruleOptions": {
+      "vue/no-unused-script-vars": {
+        "varsIgnorePattern": "^_",
+        "argsIgnorePattern": "^_"
+      }
     }
   },
 });
@@ -56,4 +62,4 @@ Lancez ensuite `vp run lint`.
 
 - [Règles Vue](../vue.md)
 - [Toutes les règles](../all.md)
-- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/script_unused/no_unused_script_vars.rs#L16)
+- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/script_unused/no_unused_script_vars.rs#L23)

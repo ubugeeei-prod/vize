@@ -178,6 +178,7 @@ export const overrides: Record<string, RuleExample> = {
       '<script setup>\nconst unused = 1;\n</script>\n<template><p>{{ unused }}</p></template>',
     ),
     "crates/vize_patina/src/rules/opinionated/vue/script_unused/no_unused_script_vars.rs",
+    { ruleOptions: { varsIgnorePattern: "^_", argsIgnorePattern: "^_" } },
   ),
   "vue/no-unused-setup-bindings": pair(
     vue('<script setup>const message = "Hello";</script>\n<template><p>Welcome</p></template>'),
