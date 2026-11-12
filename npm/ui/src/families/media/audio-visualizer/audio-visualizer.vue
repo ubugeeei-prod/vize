@@ -136,6 +136,7 @@ const levelStyle = computed(() => ({
 
 function bands(count: number, options?: AudioBarsOptions): readonly number[] {
   // Read the frame ref so render effects re-run on every analysed frame.
+  // eslint-disable-next-line type/no-meaningless-void-operator -- the read itself is the point: it subscribes the caller's render effect
   void analyser.frequency.value;
   return analyser.bands(count, options);
 }

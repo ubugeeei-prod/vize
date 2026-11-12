@@ -167,7 +167,7 @@ notificationCenterContext.provide({
 function itemSegment(value: string): string {
   return /^[A-Za-z0-9][A-Za-z0-9_-]*$/.test(value)
     ? value
-    : `x${[...value].map((char) => char.charCodeAt(0).toString(36)).join("")}`;
+    : `x${Array.from(value).map((char) => char.charCodeAt(0).toString(36)).join("")}`;
 }
 
 type NotificationCenterRootSetupExpose = Omit<
