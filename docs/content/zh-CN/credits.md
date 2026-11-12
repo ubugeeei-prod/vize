@@ -25,6 +25,7 @@ Vize是基于实际应用者的实际反馈而形成的
 - [Q16solver](https://github.com/Q16solver) 将一个 Nuxt monorepo 的 Vue 工具链迁移到 Vize（使用 tsrs 和 content mapper 进行类型检查、库构建以及 Nuxt 应用构建），并把每一处与 `vue-tsc` 的差异整理成精确且附带最小复现的报告，涵盖泛型组件、动态组件、内联回调 props、事件映射和声明输出。
 - [naitokosuke](https://github.com/naitokosuke) 报告了几乎覆盖整个工具链的问题——编译器的 SSR 与 Vapor 输出、linter 规则、Nuxt 的 SSR 与生产构建、语言服务器、VS Code 扩展、content mapper 和 Musea——并为 VS Code 扩展、安装指南和开发环境提交了修复。
 - [FLPPPPPP](https://github.com/FLPPPPPP) 精确报告了 Windows 上的 `oxlint-vize` 与带类型的 `vize lint`、导入的 `defineProps` / `defineEmits` 类型，以及 Vize 规则与 eslint-plugin-vue 的差异——无障碍角色、插槽名、自定义指令、裸字符串 allowlist，以及没有文件匹配时的 lint 退出码。
+- [warflash](https://github.com/warflash) 精确报告了 `defineProps<Props>()` 解析到导入模块里的 `interface Props`，而不是本地的 `type Props`。
 
 也感谢所有在社区中提及、分享、测试或推广Vize的人，以及
 对所有与这项工作相关的人。这些信号让我们更容易看到工具链的位置

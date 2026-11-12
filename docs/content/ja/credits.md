@@ -27,6 +27,7 @@ Vize の改善は、実際のアプリケーションや関連ツールで使い
 - [Q16solver](https://github.com/Q16solver): Nuxt モノレポの Vue ツールチェーン（tsrs と content mapper による型チェック、ライブラリのビルド、Nuxt アプリのビルド）の Vize への移行と、`vue-tsc` との差分の精密な報告。ジェネリックコンポーネントや動的コンポーネント、インラインのコールバック props、イベントの型、宣言ファイルの出力まで、どの報告も最小限の再現付きで届けてくださっています。
 - [naitokosuke](https://github.com/naitokosuke): コンパイラの SSR・Vapor 出力、リンタールール、Nuxt の SSR と本番ビルド、言語サーバー、VS Code 拡張、content mapper、Musea と、ツールチェーンのほぼ全域にわたる不具合報告。VS Code 拡張、インストールガイド、開発環境の修正も送ってくださいました。
 - [FLPPPPPP](https://github.com/FLPPPPPP): Windows 上の `oxlint-vize` と型情報付き `vize lint`、インポートした `defineProps` / `defineEmits` 型、eslint-plugin-vue との差分（アクセシビリティ、スロット名、カスタムディレクティブ、bare string の allowlist、対象ファイルがないときの終了コード）まで、再現付きの不具合報告。
+- [warflash](https://github.com/warflash): `defineProps<Props>()` がローカルの `type Props` ではなく、インポート先モジュールの `interface Props` を実行時 props にしてしまう不具合の再現付き報告。
 
 Vize を紹介し、情報を共有し、試してくださった皆様と、その活動に関わった方々にも感謝します。
 こうした声が、ツールチェーンの役立つ場面や問題点を知り、次に改善する機能を考える助けになっています。

@@ -26,6 +26,7 @@ In particular, thank you to:
 - [Q16solver](https://github.com/Q16solver) for moving a Nuxt monorepo's Vue tooling onto Vize — type checking with tsrs and the content mapper, library builds, and the Nuxt app build — and turning every gap against `vue-tsc` into a precise, minimal report covering generic and dynamic components, inline callback props, event maps, and declaration emit.
 - [naitokosuke](https://github.com/naitokosuke) for reports spanning nearly the whole toolchain — compiler SSR and Vapor output, linter rules, Nuxt SSR and production builds, the language server, the VS Code extension, the content mapper, and Musea — and for fixes to the VS Code extension, the install guide, and the development shell.
 - [FLPPPPPP](https://github.com/FLPPPPPP) for precise reports on Windows `oxlint-vize` and type-aware `vize lint`, imported `defineProps` / `defineEmits` types, and gaps between Vize rules and eslint-plugin-vue — accessibility roles, slot names, custom directives, bare-string allowlists, and a lint run that matched no files.
+- [warflash](https://github.com/warflash) for a precise report where `defineProps<Props>()` resolved an imported `interface Props` instead of the local `type Props`.
 
 Thanks also to everyone who has mentioned, shared, tested, or amplified Vize in the community, and
 to everyone connected to that work. Those signals make it easier to see where the toolchain is

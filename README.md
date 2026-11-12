@@ -268,6 +268,8 @@ Special thanks to:
   guide, and the development shell.
 - [FLPPPPPP](https://github.com/FLPPPPPP) for Windows `oxlint-vize` and type-aware `vize lint`
   reports, and for precise gaps between Vize rules and eslint-plugin-vue.
+- [warflash](https://github.com/warflash) for a precise report where `defineProps<Props>()`
+  resolved an imported `interface Props` instead of the local `type Props`.
 - Everyone who has mentioned, shared, tested, or amplified Vize across the community.
 
 Vize is a personal project by ubugeeei, licensed under the MIT License and maintained as a
