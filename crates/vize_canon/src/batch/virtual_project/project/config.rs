@@ -52,6 +52,16 @@ impl VirtualProject {
         self.resolved_tsconfig_path()
     }
 
+    /// One walk's imported-type snapshot, bound to the program's tsconfig so
+    /// imported prop types resolve `paths` aliases the way the checker does.
+    pub(in crate::batch::virtual_project) fn runtime_prop_resolve_cache(
+        &self,
+    ) -> super::super::setup_props::RuntimePropResolveCache {
+        super::super::setup_props::RuntimePropResolveCache::for_tsconfig(
+            self.resolved_tsconfig_path().as_deref(),
+        )
+    }
+
     /// Set the tsconfig path to extend.
     pub fn set_tsconfig_path(&mut self, tsconfig_path: Option<PathBuf>) {
         self.tsconfig_path = tsconfig_path.map(vize_carton::path::normalize_windows_verbatim_path);

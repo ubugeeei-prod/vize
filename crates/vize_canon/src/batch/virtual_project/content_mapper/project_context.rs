@@ -30,6 +30,22 @@ impl Default for ContentMapperTypeSources {
     }
 }
 
+impl ContentMapperTypeSources {
+    /// A request's snapshot bound to the project the host opened. Imported
+    /// prop types behind a `paths` alias resolve through that project, as the
+    /// host's checker does, instead of the nearest `tsconfig.json` of each
+    /// importer (a solution-style config there declares no `paths`).
+    pub fn for_tsconfig(config: &Path) -> Self {
+        match vize_atelier_sfc::script::SfcTypeProject::from_tsconfig(config) {
+            Ok(project) => Self(Arc::new(TypeSourceSnapshot::with_project(
+                std::iter::empty(),
+                project,
+            ))),
+            Err(_) => Self::default(),
+        }
+    }
+}
+
 /// Equal values read through one snapshot.
 impl PartialEq for ContentMapperTypeSources {
     fn eq(&self, other: &Self) -> bool {

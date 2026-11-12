@@ -1,0 +1,1 @@
+export { type AsTag, type PrimitiveProps } from './Primitive'

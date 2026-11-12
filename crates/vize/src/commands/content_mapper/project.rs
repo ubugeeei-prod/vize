@@ -32,6 +32,8 @@ const OPTION_CODE_INVALID_TYPE: i32 = 3;
 pub(super) struct ProjectSettings {
     pub transform_options: ContentMapperTransformOptions,
     pub project_context: ContentMapperProjectContext,
+    /// The tsconfig the host opened; imported prop types resolve through it.
+    pub type_config: Option<std::path::PathBuf>,
 }
 
 /// Open mapper projects, keyed by the host-assigned opaque handle.
@@ -185,6 +187,8 @@ pub(super) fn resolve_open_project(
     );
     Ok((
         ProjectSettings {
+            type_config: (!params.config_file_name.is_empty())
+                .then(|| std::path::PathBuf::from(params.config_file_name.as_str())),
             project_context: configuration.project_context,
             transform_options: configuration
                 .transform_options
