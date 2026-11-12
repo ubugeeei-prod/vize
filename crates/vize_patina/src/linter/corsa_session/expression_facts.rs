@@ -22,15 +22,15 @@ pub(in crate::linter) struct ExpressionQuery {
 #[derive(Clone)]
 pub(in crate::linter) struct ExpressionFact {
     /// Rendered type texts. Empty when the checker has no type.
-    pub type_texts: Vec<String>,
+    pub type_texts: Vec<CompactString>,
     /// Property names visible on the type.
-    pub property_names: Vec<String>,
+    pub property_names: Vec<CompactString>,
     /// Parameter type texts of the first call signature.
-    pub parameter_type_texts: Vec<Vec<String>>,
+    pub parameter_type_texts: Vec<Vec<CompactString>>,
     /// The symbol at this position carries `@deprecated`.
     pub deprecated: bool,
     /// Text of that `@deprecated` tag.
-    pub deprecation_reason: String,
+    pub deprecation_reason: CompactString,
 }
 
 impl Default for ExpressionFact {
@@ -46,7 +46,7 @@ impl ExpressionFact {
             property_names: Vec::new(),
             parameter_type_texts: Vec::new(),
             deprecated: false,
-            deprecation_reason: String::new(),
+            deprecation_reason: CompactString::default(),
         }
     }
 }
@@ -119,8 +119,8 @@ async fn load(
             "Incomplete expression type batch".into(),
         ));
     }
-    let mut properties: FxHashMap<TypeHandle, Vec<String>> = FxHashMap::default();
-    let mut signatures: FxHashMap<TypeHandle, Vec<Vec<String>>> = FxHashMap::default();
+    let mut properties: FxHashMap<TypeHandle, Vec<CompactString>> = FxHashMap::default();
+    let mut signatures: FxHashMap<TypeHandle, Vec<Vec<CompactString>>> = FxHashMap::default();
     let mut facts = Vec::with_capacity(responses.len());
     for (response, query) in responses.into_iter().zip(queries) {
         let Some(response) = response else {
@@ -130,10 +130,7 @@ async fn load(
         let type_texts = session
             .render_type_texts(&response)
             .await
-            .unwrap_or_default()
-            .into_iter()
-            .map(|text| text.to_string())
-            .collect::<Vec<_>>();
+            .unwrap_or_default();
         let property_names = property_names(session, &response, &mut properties).await?;
         let parameter_type_texts = if query.signatures {
             parameter_types(session, &response, &mut signatures).await?
@@ -145,7 +142,7 @@ async fn load(
             property_names,
             parameter_type_texts,
             deprecated: false,
-            deprecation_reason: String::new(),
+            deprecation_reason: CompactString::default(),
         });
     }
     if queries.iter().any(|query| query.symbols) {
@@ -161,10 +158,8 @@ async fn type_responses(
     ranges: &[(u32, u32)],
 ) -> corsa::Result<Vec<Option<TypeResponse>>> {
     let usable = ranges.iter().all(|&(start, end)| start < end);
-    if usable {
-        if let Some(responses) = node_types(session, file, source, ranges).await? {
-            return Ok(responses);
-        }
+    if usable && let Some(responses) = node_types(session, file, source, ranges).await? {
+        return Ok(responses);
     }
     let positions = ranges.iter().map(|&(start, _)| start).collect();
     session
@@ -195,26 +190,49 @@ async fn node_types(
     let Some(encoded) = encoded else {
         return Ok(None);
     };
-    let locations = match checker_node_locations(encoded.as_bytes(), source, ranges) {
-        Ok(locations) => locations,
-        Err(_) => return Ok(None),
+    // Only an unreadable tree falls back to caret types. A range with no node
+    // stays untyped on its own: a caret type describes the token at the start
+    // (`isListening` for `isListening.value`), so falling back for the whole
+    // batch would mistype every other expression in the script.
+    let Ok(each) = checker_node_locations(encoded.as_bytes(), source, ranges) else {
+        return Ok(None);
     };
-    session
-        .client()
-        .get_type_at_locations(
-            session.snapshot().handle.clone(),
-            session.project_handle(),
-            locations,
-        )
-        .await
-        .map(Some)
+    let mut slots = Vec::with_capacity(each.len());
+    let mut locations = Vec::new();
+    for location in each {
+        match location {
+            Ok(location) => {
+                slots.push(Some(locations.len()));
+                locations.push(location);
+            }
+            Err(_) => slots.push(None),
+        }
+    }
+    let mut types = if locations.is_empty() {
+        Vec::new()
+    } else {
+        session
+            .client()
+            .get_type_at_locations(
+                session.snapshot().handle.clone(),
+                session.project_handle(),
+                locations,
+            )
+            .await?
+    };
+    Ok(Some(
+        slots
+            .into_iter()
+            .map(|slot| slot.and_then(|index| types.get_mut(index).and_then(Option::take)))
+            .collect(),
+    ))
 }
 
 async fn property_names(
     session: &ProjectSession,
     response: &TypeResponse,
-    cache: &mut FxHashMap<TypeHandle, Vec<String>>,
-) -> corsa::Result<Vec<String>> {
+    cache: &mut FxHashMap<TypeHandle, Vec<CompactString>>,
+) -> corsa::Result<Vec<CompactString>> {
     if let Some(names) = cache.get(&response.id) {
         return Ok(names.clone());
     }
@@ -223,7 +241,7 @@ async fn property_names(
         .await
         .unwrap_or_default()
         .into_iter()
-        .map(|property| property.name)
+        .map(|property| CompactString::from(property.name))
         .collect::<Vec<_>>();
     cache.insert(response.id.clone(), names.clone());
     Ok(names)
@@ -232,8 +250,8 @@ async fn property_names(
 async fn parameter_types(
     session: &ProjectSession,
     response: &TypeResponse,
-    cache: &mut FxHashMap<TypeHandle, Vec<Vec<String>>>,
-) -> corsa::Result<Vec<Vec<String>>> {
+    cache: &mut FxHashMap<TypeHandle, Vec<Vec<CompactString>>>,
+) -> corsa::Result<Vec<Vec<CompactString>>> {
     if let Some(texts) = cache.get(&response.id) {
         return Ok(texts.clone());
     }
@@ -241,10 +259,16 @@ async fn parameter_types(
         .get_signatures_of_type(response.id.clone(), 0)
         .await
         .unwrap_or_default();
-    let texts = signatures
+    let texts: Vec<Vec<CompactString>> = signatures
         .into_iter()
         .next()
-        .map(|signature| signature.parameter_type_texts)
+        .map(|signature| {
+            signature
+                .parameter_type_texts
+                .into_iter()
+                .map(|texts| texts.into_iter().map(CompactString::from).collect())
+                .collect()
+        })
         .unwrap_or_default();
     cache.insert(response.id.clone(), texts.clone());
     Ok(texts)
@@ -289,7 +313,7 @@ async fn apply_deprecated(
         };
         if let Some(fact) = facts.get_mut(index) {
             fact.deprecated = true;
-            fact.deprecation_reason = tag.text;
+            fact.deprecation_reason = CompactString::from(tag.text);
         }
     }
     Ok(())

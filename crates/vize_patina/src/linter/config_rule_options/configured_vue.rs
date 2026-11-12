@@ -1,6 +1,7 @@
 //! Apply the configurable Vue rule options by replacing the registered rules.
 
 use super::super::config::Linter;
+use crate::rules::opinionated::vue::{NoUnusedScriptVars, PreferConst};
 use crate::rules::vue::configured::{
     MaxProps, MaxTemplateDepth, NoRestrictedBlock, NoRestrictedCallAfterAwait, NoRestrictedClass,
     NoRestrictedComponentNames, NoRestrictedComponentOptions, NoRestrictedCustomEvent,
@@ -74,6 +75,16 @@ pub(super) fn apply(mut linter: Linter, options: &ConfiguredVueRuleOptions) -> L
         linter
             .registry
             .replace(Box::new(NoUnsupportedFeatures::from_options(value)));
+    }
+    if let Some(value) = &options.no_unused_script_vars {
+        linter
+            .registry
+            .replace(Box::new(NoUnusedScriptVars::from_options(value)));
+    }
+    if let Some(value) = &options.prefer_const {
+        linter
+            .registry
+            .replace(Box::new(PreferConst::from_options(value)));
     }
     linter
 }

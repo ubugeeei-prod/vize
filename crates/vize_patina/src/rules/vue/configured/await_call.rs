@@ -103,13 +103,16 @@ fn imports(program: &Program<'_>) -> Vec<(String, Vec<Binding>)> {
         let module = String::from(import.source.value.as_str());
         let slot = grouped
             .iter_mut()
-            .find(|(name, _)| name == &module)
+            .find(|(name, _)| name == module)
             .map(|(_, bindings)| bindings);
         let bindings = if let Some(slot) = slot {
             slot
         } else {
             grouped.push((module, Vec::new()));
-            &mut grouped.last_mut().unwrap().1
+            let Some((_, bindings)) = grouped.last_mut() else {
+                continue;
+            };
+            bindings
         };
         for specifier in import.specifiers.iter().flatten() {
             if let Some(binding) = binding(specifier) {
@@ -243,7 +246,7 @@ impl Scan<'_> {
             let Some(bindings) = self
                 .bindings
                 .iter()
-                .find(|(module, _)| module == &restriction.module)
+                .find(|(module, _)| module == restriction.module)
                 .map(|(_, bindings)| bindings)
             else {
                 continue;
@@ -252,21 +255,17 @@ impl Scan<'_> {
             if !path_matches(bindings, root, &members, &segments) {
                 continue;
             }
-            let message = restriction
-                .message
-                .clone()
-                .map(CompactString::from)
-                .unwrap_or_else(|| {
-                    let path = segments
-                        .iter()
-                        .map(String::as_str)
-                        .collect::<Vec<_>>()
-                        .join(".");
-                    cstr!(
-                        "`import(\"{}\").{path}` is forbidden after an `await` expression.",
-                        restriction.module
-                    )
-                });
+            let message = restriction.message.clone().unwrap_or_else(|| {
+                let path = segments
+                    .iter()
+                    .map(String::as_str)
+                    .collect::<Vec<_>>()
+                    .join(".");
+                cstr!(
+                    "`import(\"{}\").{path}` is forbidden after an `await` expression.",
+                    restriction.module
+                )
+            });
             self.findings.push((call.span, message));
             return;
         }
@@ -277,7 +276,9 @@ fn path_matches(bindings: &[Binding], root: &str, members: &[&str], segments: &[
     for binding in bindings {
         let matched = match binding {
             Binding::Named { local, imported } if local == root && !segments.is_empty() => {
-                imported.as_str() == segments[0]
+                segments
+                    .first()
+                    .is_some_and(|first| imported.as_str() == first.as_str())
                     && members
                         .iter()
                         .copied()

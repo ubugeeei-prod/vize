@@ -181,6 +181,7 @@ vize lint --help-level short src
 | `-f, --format`                       | 出力形式: `text`、`rich`（`--locale ja` または `zh` で言語を指定）、`ansi`、`plain`、`json`、`stylish`、`markdown`、`html`、`agent` |
 | `--max-warnings`                     | 警告数が指定した上限を超えると失敗する                                                                                              |
 | `--no-warn-ignored`                  | `ignores` が除外する明示指定のファイルを警告しない（ESLint の `--no-warn-ignored` と同じ）                                          |
+| `--no-inline-config`                 | ソース内の `eslint-disable` コメントを無視する（ESLint の `--no-inline-config` と同じ）                                             |
 | `--report-unused-disable-directives` | 何も抑制していないテンプレートの `eslint-disable` コメントを `vue/comment-directive` のエラーとして報告する                         |
 | `-q, --quiet`                        | 概要だけを表示する                                                                                                                  |
 | `--help-level`                       | `full`、`short`、`none`                                                                                                             |

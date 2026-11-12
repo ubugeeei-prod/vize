@@ -292,6 +292,8 @@ class LintRuleOptions {
   `vue/no-restricted-static-attribute`: LintRuleOptionTypes.RestrictedNames? = null
   `vue/no-restricted-v-on`: LintRuleOptionTypes.RestrictedNames? = null
   `vue/no-unsupported-features`: LintRuleOptionTypes.UnsupportedFeaturesOptions? = null
+  `vue/no-unused-script-vars`: LintRuleOptionTypes.NoUnusedScriptVarsOptions? = null
+  `vue/prefer-const`: LintRuleOptionTypes.PreferConstOptions? = null
   `vue/enforce-style-attribute`: EnforceStyleAttributeOptions? = null
   `vue/no-restricted-syntax`: (Listing<RestrictedSyntaxEntry> | NoRestrictedSyntaxOptions)? = null
   `vue/quote-props`: "as-needed"? = null

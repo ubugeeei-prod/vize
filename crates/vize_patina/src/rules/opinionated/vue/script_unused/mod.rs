@@ -7,10 +7,16 @@ mod no_unused_script_vars;
 mod options;
 mod prefer_const;
 mod run;
+mod sfc_use;
 mod template_use;
+mod usage;
 
-pub(super) use no_unused_script_vars::NoUnusedScriptVars;
-pub(super) use prefer_const::PreferConst;
+pub(crate) use no_unused_script_vars::NoUnusedScriptVars;
+pub(crate) use prefer_const::PreferConst;
 
 #[cfg(test)]
 mod tests;
+#[cfg(test)]
+mod tests_issue;
+#[cfg(test)]
+mod tests_tse;

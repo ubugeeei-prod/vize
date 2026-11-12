@@ -2,7 +2,7 @@
 
 use oxc_ast::ast::{
     BindingIdentifier, BindingPattern, Declaration, ExportDefaultDeclarationKind, Statement,
-    VariableDeclaration,
+    TSModuleDeclaration, TSModuleDeclarationBody, TSModuleDeclarationName, VariableDeclaration,
 };
 use oxc_syntax::symbol::SymbolId;
 use vize_l0::FxHashMap;
@@ -13,7 +13,11 @@ pub(super) fn mark_exports(
     program: &oxc_ast::ast::Program<'_>,
     infos: &mut FxHashMap<SymbolId, BindingInfo>,
 ) {
-    for statement in &program.body {
+    mark_statements(&program.body, infos);
+}
+
+fn mark_statements(statements: &[Statement<'_>], infos: &mut FxHashMap<SymbolId, BindingInfo>) {
+    for statement in statements {
         match statement {
             Statement::ExportNamedDeclaration(export) => {
                 if let Some(declaration) = &export.declaration {
@@ -23,8 +27,18 @@ pub(super) fn mark_exports(
             Statement::ExportDefaultDeclaration(export) => {
                 mark_default(&export.declaration, infos);
             }
+            // `namespace Foo { export const bar = 1; }` exports `bar` from `Foo`.
+            Statement::TSModuleDeclaration(module) => mark_module(module, infos),
             _ => {}
         }
+    }
+}
+
+fn mark_module(module: &TSModuleDeclaration<'_>, infos: &mut FxHashMap<SymbolId, BindingInfo>) {
+    match &module.body {
+        Some(TSModuleDeclarationBody::TSModuleBlock(block)) => mark_statements(&block.body, infos),
+        Some(TSModuleDeclarationBody::TSModuleDeclaration(inner)) => mark_module(inner, infos),
+        None => {}
     }
 }
 
@@ -39,7 +53,13 @@ fn mark_declaration(declaration: &Declaration<'_>, infos: &mut FxHashMap<SymbolI
         Declaration::TSImportEqualsDeclaration(declaration) => {
             mark_id(Some(&declaration.id), infos)
         }
-        Declaration::TSModuleDeclaration(_) | Declaration::TSGlobalDeclaration(_) => {}
+        Declaration::TSModuleDeclaration(module) => {
+            if let TSModuleDeclarationName::Identifier(id) = &module.id {
+                mark_id(Some(id), infos);
+            }
+            mark_module(module, infos);
+        }
+        Declaration::TSGlobalDeclaration(_) => {}
     }
 }
 

@@ -36,10 +36,10 @@ mod script_options;
 mod slot_binding_tests;
 mod source_path;
 mod strict_boolean;
-mod typescript_eslint;
 #[cfg(test)]
 mod template_component_tests;
 mod template_queries;
+mod typescript_eslint;
 #[cfg(test)]
 mod unsafe_template_tests;
 

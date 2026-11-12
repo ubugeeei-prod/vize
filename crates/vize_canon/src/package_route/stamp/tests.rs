@@ -69,6 +69,59 @@ fn same_size_and_mtime_edits_still_change_full_content_stamps() {
     assert!(InputStamp::capture_source(&path, &content).is_current());
 }
 
+/// A generator that rewrites a config with the same bytes (Nitro rewrites
+/// `tsconfig.server.json` on every build, #12871) changes only its mtime.
+/// Hashed stamps stay current; a directory, which has no digest, does not.
+#[test]
+fn content_identical_rewrites_with_a_new_mtime_keep_hashed_stamps_current() {
+    let root = tempfile::tempdir().unwrap();
+    let directory = root.path().join("generated");
+    std::fs::create_dir_all(&directory).unwrap();
+    let path = directory.join("tsconfig.server.json");
+    let content = br#"{"compilerOptions":{"strict":true}}"#;
+    std::fs::write(&path, content).unwrap();
+    let physical = InputStamp::capture(&path);
+    let source = InputStamp::capture_source(&path, content);
+    let folder = InputStamp::capture(&directory);
+    #[cfg(feature = "native")]
+    let observed = crate::ConfigurationObservations::capture(std::slice::from_ref(&path));
+
+    let original = std::fs::metadata(&path).unwrap().modified().unwrap();
+    let later = original + std::time::Duration::from_secs(5);
+    std::fs::write(&path, content).unwrap();
+    std::fs::File::options()
+        .write(true)
+        .open(&path)
+        .unwrap()
+        .set_times(std::fs::FileTimes::new().set_modified(later))
+        .unwrap();
+    assert_eq!(std::fs::metadata(&path).unwrap().modified().unwrap(), later);
+    assert!(physical.is_current());
+    assert!(source.is_current());
+    #[cfg(feature = "native")]
+    assert!(observed.changed_paths().is_empty());
+    // Opening a directory to set its times is Unix-only.
+    #[cfg(unix)]
+    {
+        std::fs::File::open(&directory)
+            .unwrap()
+            .set_times(std::fs::FileTimes::new().set_modified(later))
+            .unwrap();
+        assert!(
+            !folder.is_current(),
+            "a directory has no digest; mtime still decides"
+        );
+    }
+    #[cfg(not(unix))]
+    let _ = folder;
+
+    std::fs::write(&path, br#"{"compilerOptions":{"strict":false}}"#).unwrap();
+    assert!(!physical.is_current());
+    assert!(!source.is_current());
+    #[cfg(feature = "native")]
+    assert_eq!(observed.changed_paths(), vec![path]);
+}
+
 #[cfg(unix)]
 #[test]
 fn source_stamps_track_symlink_content_and_target_without_becoming_always_dirty() {

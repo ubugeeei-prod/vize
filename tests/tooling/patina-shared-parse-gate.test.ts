@@ -20,12 +20,19 @@ const LEDGER: Readonly<Record<string, number>> = {
   "linter/native_type_aware/strict_boolean.rs": 1,
   "linter/native_type_aware/strict_boolean/template.rs": 1,
   "linter/native_type_aware/template_queries/calls.rs": 2,
+  // #12879: typescript-eslint listeners walk an ESTree serialization of each
+  // type-aware script plan entry, built from its own arena parse.
+  "linter/native_type_aware/typescript_eslint/tree.rs": 1,
   "linter/script_rules.rs": 1,
   "rules/musea.rs": 1,
   "rules/musea/require_component.rs": 1,
   "rules/musea/require_title.rs": 1,
   "rules/opinionated/vue/no_multiple_objects_in_class.rs": 1,
   "rules/opinionated/vue/require_component_registration.rs": 1,
+  // #12878: template expressions are re-parsed with a parenthesized retry.
+  // #12927: a `generic="..."` attribute is parsed as a type parameter list.
+  "rules/opinionated/vue/script_unused/sfc_use.rs": 1,
+  "rules/opinionated/vue/script_unused/template_use.rs": 2,
   "rules/opinionated/vue/require_component_registration/async_setup.rs": 1,
   "rules/opinionated/vue/this_in_template/expressions.rs": 3,
   "rules/opinionated/vue/warn_custom_directive.rs": 1,

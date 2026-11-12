@@ -1,0 +1,19 @@
+<script setup lang="ts">
+import { computed, ref, useId, useSlots } from "vue";
+
+const title = "";
+const slots = useSlots();
+const isListening = ref(false);
+
+const drawerId = `drawer-${useId()}`;
+const hasTitle = computed(() => Boolean(title) || Boolean(slots.header));
+const fieldClass = computed(() => isListening.value && "ring");
+
+function toggle(): void {
+  isListening.value = !isListening.value;
+}
+</script>
+
+<template>
+  <p :id="drawerId" :class="fieldClass" @click="toggle">{{ hasTitle }}</p>
+</template>

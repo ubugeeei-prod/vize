@@ -1,0 +1,24 @@
+<script setup lang="ts" generic="Row extends RowBase">
+import { ref } from "vue";
+
+import { vFocus } from "./focus";
+import type { RowBase } from "./rows";
+import Swatch from "./Swatch.vue";
+
+defineProps<{ rows: Row[] }>();
+
+const tint = ref("red");
+const panel = ref<HTMLElement | null>(null);
+</script>
+
+<template>
+  <div ref="panel" v-focus>
+    <svg viewBox="0 0 4 4"><Swatch /></svg>
+  </div>
+</template>
+
+<style scoped>
+div {
+  color: v-bind(tint);
+}
+</style>

@@ -155,8 +155,8 @@ export function inverseEslintVueRulePort(name: string, body: Buffer): Buffer {
   }
   if (name === eslintVueMembershipPath) {
     identity(body, {
-      bytes: 36793,
-      sha256: "8ef85bb196ae091afca89dd548ac9fa8e04e7233ff5f41c2e411cb36adebe711",
+      bytes: 36811,
+      sha256: "986a6f02bffa28ac63651363be7c85e5f4d61bbea0b161b0b323b4a659799ec0",
     });
     const text = body.toString();
     const at = text.indexOf("{");

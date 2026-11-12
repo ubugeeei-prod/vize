@@ -15227,6 +15227,35 @@
       }
     },
     {
+      "id": "typechecker/regression/nuxt-generated-config-rewrite-12871",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "nuxt-generated-config-rewrite-12871/case.json",
+          "sha256": "1a5696a23c83333994d44c78861ed8194d49bd4263c52e12cab9a7d78f641c2e",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "type_projects::tests::pinned_nuxt_config_rewrites_retire_a_revision_only_when_bytes_change; physically consumes the #12871 Nuxt reference graph through Canon ownership snapshot and SFC compile. A content-identical rewrite with a new mtime keeps the captured revision and its watch admission; the nuxt dev exclude edit retires it and recompiles msg:String/required:true. Input-only registration; no native SDK, diagnostic pack or Nuxt dev-server qualification."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/package-import-redirects-11317",
       "state": "active",
       "targets": [

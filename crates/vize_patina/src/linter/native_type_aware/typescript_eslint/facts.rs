@@ -7,7 +7,7 @@ mod shape;
 use crate::linter::corsa_session::{ExpressionFact, ExpressionQuery};
 use corsa::lint::LintNode;
 use serde_json::{Value, json};
-use std::collections::{HashMap, HashSet};
+use vize_l0::{FxHashMap, FxHashSet, String};
 
 pub(super) fn prepare(source: &str, collected: &mut Collected) {
     let deprecated = scan::deprecated_names(source);
@@ -32,7 +32,7 @@ pub(super) fn enrich(source: &str, nodes: &mut [LintNode], program: &Value) {
 }
 
 pub(super) fn apply(nodes: &mut [LintNode], facts: &[ExpressionFact], queries: &[ExpressionQuery]) {
-    let mut by_range = HashMap::<(u32, u32), &ExpressionFact>::new();
+    let mut by_range = FxHashMap::<(u32, u32), &ExpressionFact>::default();
     for (fact, query) in facts.iter().zip(queries) {
         by_range.insert((query.start, query.end), fact);
     }
@@ -43,10 +43,10 @@ pub(super) fn apply(nodes: &mut [LintNode], facts: &[ExpressionFact], queries: &
 
 fn stamp(
     node: &mut LintNode,
-    deprecated: &HashSet<String>,
-    functions: &HashMap<String, scan::LocalFn>,
-    methods: &HashMap<String, HashSet<String>>,
-    instances: &HashMap<String, String>,
+    deprecated: &FxHashSet<String>,
+    functions: &FxHashMap<String, scan::LocalFn>,
+    methods: &FxHashMap<String, FxHashSet<String>>,
+    instances: &FxHashMap<String, String>,
 ) {
     if node.kind == "Identifier"
         && node.field_bool("__declarationName") != Some(true)
@@ -75,7 +75,7 @@ fn stamp(
     }
 }
 
-fn stamp_call(node: &mut LintNode, functions: &HashMap<String, scan::LocalFn>) {
+fn stamp_call(node: &mut LintNode, functions: &FxHashMap<String, scan::LocalFn>) {
     let property = node
         .child("callee")
         .and_then(|callee| callee.child("property"))
@@ -89,7 +89,7 @@ fn stamp_call(node: &mut LintNode, functions: &HashMap<String, scan::LocalFn>) {
     let Some(name) = node
         .child("callee")
         .and_then(|callee| callee.field_str("name"))
-        .map(str::to_owned)
+        .map(String::from)
     else {
         return;
     };
@@ -107,7 +107,7 @@ fn stamp_call(node: &mut LintNode, functions: &HashMap<String, scan::LocalFn>) {
         .collect::<Vec<_>>();
     let argument_text = arguments
         .get(last)
-        .and_then(|argument| argument.text.clone());
+        .and_then(|argument| argument.text.as_deref().map(String::from));
     let range_values = ranges
         .iter()
         .map(|(start, end)| json!({ "start": start, "end": end }))
@@ -139,8 +139,8 @@ fn type_argument_nodes(node: &LintNode) -> &[LintNode] {
 
 fn stamp_member(
     node: &mut LintNode,
-    methods: &HashMap<String, HashSet<String>>,
-    instances: &HashMap<String, String>,
+    methods: &FxHashMap<String, FxHashSet<String>>,
+    instances: &FxHashMap<String, String>,
 ) {
     if node.field_str("__parentKind") == Some("CallExpression") {
         node.fields.insert("__safeUse".into(), json!(true));
@@ -179,15 +179,15 @@ fn collect_queries(node: &LintNode, queries: &mut Vec<ExpressionQuery>) {
         symbols: node.kind == "Identifier",
         signatures: false,
     });
-    if node.kind == "CallExpression" {
-        if let Some(callee) = node.child("callee") {
-            queries.push(ExpressionQuery {
-                start: callee.range.start,
-                end: callee.range.end,
-                symbols: false,
-                signatures: true,
-            });
-        }
+    if node.kind == "CallExpression"
+        && let Some(callee) = node.child("callee")
+    {
+        queries.push(ExpressionQuery {
+            start: callee.range.start,
+            end: callee.range.end,
+            symbols: false,
+            signatures: true,
+        });
     }
     for child in node.children.values() {
         collect_queries(child, queries);
@@ -199,10 +199,18 @@ fn collect_queries(node: &LintNode, queries: &mut Vec<ExpressionQuery>) {
     }
 }
 
-fn apply_node(node: &mut LintNode, facts: &HashMap<(u32, u32), &ExpressionFact>) {
+fn apply_node(node: &mut LintNode, facts: &FxHashMap<(u32, u32), &ExpressionFact>) {
     if let Some(fact) = facts.get(&(node.range.start, node.range.end)) {
-        node.type_texts.clone_from(&fact.type_texts);
-        node.property_names.clone_from(&fact.property_names);
+        node.type_texts = fact
+            .type_texts
+            .iter()
+            .map(|text| text.as_str().into())
+            .collect();
+        node.property_names = fact
+            .property_names
+            .iter()
+            .map(|name| name.as_str().into())
+            .collect();
         if fact.deprecated && node.field_bool("__declarationName") != Some(true) {
             node.fields.insert(
                 "__symbolFacts".into(),
@@ -213,17 +221,15 @@ fn apply_node(node: &mut LintNode, facts: &HashMap<(u32, u32), &ExpressionFact>)
             );
         }
     }
-    if node.kind == "CallExpression" {
-        if let Some(callee) = node.child("callee") {
-            if let Some(fact) = facts.get(&(callee.range.start, callee.range.end)) {
-                if !fact.parameter_type_texts.is_empty() {
-                    node.fields.insert(
-                        "__expectedArgumentTypeTexts".into(),
-                        json!(fact.parameter_type_texts),
-                    );
-                }
-            }
-        }
+    if node.kind == "CallExpression"
+        && let Some(callee) = node.child("callee")
+        && let Some(fact) = facts.get(&(callee.range.start, callee.range.end))
+        && !fact.parameter_type_texts.is_empty()
+    {
+        node.fields.insert(
+            "__expectedArgumentTypeTexts".into(),
+            json!(fact.parameter_type_texts),
+        );
     }
     let keys = node.children.keys().cloned().collect::<Vec<_>>();
     for key in keys {

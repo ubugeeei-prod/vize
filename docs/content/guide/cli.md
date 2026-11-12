@@ -184,6 +184,7 @@ Key options:
 | `-f, --format`                       | Output format: `text`, `rich` (localize with `--locale ja` or `zh`), `ansi`, `plain`, `json`, `stylish`, `markdown`, `html`, or `agent` |
 | `--max-warnings`                     | Fail when warnings exceed the limit                                                                                                     |
 | `--no-warn-ignored`                  | Do not warn about explicitly named files that `ignores` excludes, like ESLint's `--no-warn-ignored`                                     |
+| `--no-inline-config`                 | Ignore `eslint-disable` comments in source files, like ESLint's `--no-inline-config`                                                    |
 | `--report-unused-disable-directives` | Report `eslint-disable` template comments that suppressed nothing, as `vue/comment-directive` errors                                    |
 | `-q, --quiet`                        | Show summary only                                                                                                                       |
 | `--help-level`                       | `full`, `short`, or `none`                                                                                                              |

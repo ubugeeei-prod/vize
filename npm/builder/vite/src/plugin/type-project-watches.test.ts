@@ -73,9 +73,9 @@ void test("a known cached revision is still rejected after its authority changes
   const context = { root: "/work/tsconfig.json", revision: "1" };
   watchTypeProject(cache, context, () => {}, api);
   current = "2";
-  assert.throws(
-    () => watchTypeProject(cache, context, () => {}, api),
-    /TypeScript project changed/,
+  assert.equal(
+    watchTypeProject(cache, context, () => {}, api),
+    false,
   );
 });
 
@@ -91,15 +91,14 @@ void test("runtime-only modules make no project query and stale revisions fail c
   };
   watchTypeProject(cache, undefined, () => assert.fail("no project inputs"), api);
   assert.deepEqual(typeProjectDependencyRoots(cache, "/work/Ordinary.vue", api), []);
-  assert.throws(
-    () =>
-      watchTypeProject(
-        cache,
-        { root: "/work/tsconfig.json", revision: "old" },
-        () => assert.fail("stale input"),
-        api,
-      ),
-    /TypeScript project changed while compiling/,
+  assert.equal(
+    watchTypeProject(
+      cache,
+      { root: "/work/tsconfig.json", revision: "old" },
+      () => assert.fail("stale input"),
+      api,
+    ),
+    false,
   );
   assert.deepEqual(typeProjectDependencyRoots(cache, "/work/Ordinary.vue", api), []);
 });

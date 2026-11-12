@@ -6,6 +6,7 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 use serde_json::{Map, Value, json};
 use std::collections::BTreeMap;
+use vize_l0::String;
 
 const DEPTH: u32 = 24;
 
@@ -80,14 +81,14 @@ fn walk(
     let Some(kind) = value.get("type").and_then(Value::as_str) else {
         return;
     };
-    if listeners.contains(&kind) {
-        if let Some(mut node) = convert(value, source, DEPTH, parent_kind, key) {
-            node.fields
-                .insert("__ancestorFacts".into(), Value::Array(ancestors.clone()));
-            node.fields
-                .insert("__ancestorChain".into(), ancestor_chain(ancestors, key));
-            out.push(node);
-        }
+    if listeners.contains(&kind)
+        && let Some(mut node) = convert(value, source, DEPTH, parent_kind, key)
+    {
+        node.fields
+            .insert("__ancestorFacts".into(), Value::Array(ancestors.clone()));
+        node.fields
+            .insert("__ancestorChain".into(), ancestor_chain(ancestors, key));
+        out.push(node);
     }
     ancestors.push(ancestor_fact(value, kind, key));
     for (child_key, child) in object_entries(value) {
@@ -231,25 +232,29 @@ fn ancestor_fact(value: &Value, kind: &str, key_in_parent: Option<&str>) -> Valu
     if let Some(key) = key_in_parent {
         fact.insert("keyInParent".into(), json!(key));
     }
-    if matches!(kind, "ClassDeclaration" | "ClassExpression") {
-        if let Some(name) = value
+    if matches!(kind, "ClassDeclaration" | "ClassExpression")
+        && let Some(name) = value
             .get("id")
             .and_then(|id| id.get("name"))
             .and_then(Value::as_str)
-        {
-            fact.insert("className".into(), json!(name));
-        }
+    {
+        fact.insert("className".into(), json!(name));
     }
     if kind.contains("Function") || kind == "CatchClause" {
         let names = parameter_names(value);
-        if kind == "CatchClause" {
-            if let Some(name) = names.first() {
-                fact.insert("catchParamName".into(), json!(name));
-            }
+        if kind == "CatchClause"
+            && let Some(name) = names.first()
+        {
+            fact.insert("catchParamName".into(), json!(name.as_str()));
         }
         fact.insert(
             "paramNames".into(),
-            Value::Array(names.into_iter().map(Value::String).collect()),
+            Value::Array(
+                names
+                    .into_iter()
+                    .map(|name| Value::String(name.into()))
+                    .collect(),
+            ),
         );
     }
     Value::Object(fact)
@@ -260,17 +265,17 @@ fn parameter_names(value: &Value) -> Vec<String> {
     if let Some(params) = value.get("params").and_then(Value::as_array) {
         names.extend(params.iter().filter_map(binding_name));
     }
-    if let Some(param) = value.get("param") {
-        if let Some(name) = binding_name(param) {
-            names.push(name);
-        }
+    if let Some(param) = value.get("param")
+        && let Some(name) = binding_name(param)
+    {
+        names.push(name);
     }
     names
 }
 
 fn binding_name(value: &Value) -> Option<String> {
     match value.get("type").and_then(Value::as_str)? {
-        "Identifier" => value.get("name").and_then(Value::as_str).map(str::to_owned),
+        "Identifier" => value.get("name").and_then(Value::as_str).map(String::from),
         "AssignmentPattern" => value.get("left").and_then(binding_name),
         "RestElement" | "TSParameterProperty" => value
             .get("argument")
@@ -298,15 +303,14 @@ fn normalize(value: &mut Value) {
     while let Some(inner) = parenthesized(value) {
         *value = inner;
     }
-    if let Some(kind) = value.get("type").and_then(Value::as_str) {
-        if matches!(
+    if let Some(kind) = value.get("type").and_then(Value::as_str)
+        && matches!(
             kind,
             "NumericLiteral" | "StringLiteral" | "BooleanLiteral" | "NullLiteral" | "BigIntLiteral"
-        ) {
-            if let Some(object) = value.as_object_mut() {
-                object.insert("type".into(), json!("Literal"));
-            }
-        }
+        )
+        && let Some(object) = value.as_object_mut()
+    {
+        object.insert("type".into(), json!("Literal"));
     }
     match value {
         Value::Object(map) => {

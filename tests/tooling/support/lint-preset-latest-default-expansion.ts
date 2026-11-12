@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { canonical, identity, jsonBytes, sha } from "./lint-preset-source-successors.ts";
 import { inverseEslintVueRulePort } from "./lint-preset-eslint-vue-port.ts";
+import { inverseScriptUnusedAndTypeAwarePresets } from "./lint-preset-script-unused-type-aware.ts";
 
 const publicApiDocSuccessors = [
   {
@@ -123,7 +124,10 @@ export function inversePatinaCurrentSource(name: string, body: Buffer): Buffer {
       name,
       inverseFormatterCompatibility(
         name,
-        inversePatinaPublicApiDocs(name, inverseMappedRuleSource(name, body)),
+        inversePatinaPublicApiDocs(
+          name,
+          inverseMappedRuleSource(name, inverseScriptUnusedAndTypeAwarePresets(name, body)),
+        ),
       ),
     ),
   );
@@ -153,8 +157,8 @@ function inverseFormatterCompatibility(name: string, body: Buffer): Buffer {
     "crates/vize_patina/src/preset/snapshots/vize_patina__preset__tests__lint_preset_rule_membership.snap"
   ) {
     identity(body, {
-      bytes: 36309,
-      sha256: "7315b3d4ac8326e8efb6077a1503a2b3f819089cc2d4e89b8ae65b7d48df65b2",
+      bytes: 36763,
+      sha256: "b6323fe83900c7dfe8bd59556af7792b67ccd9c98b74c18a928f63731a56fb47",
     });
     const text = body.toString();
     const marker = `    "script/custom-event-name-casing",\n`;
@@ -165,8 +169,8 @@ function inverseFormatterCompatibility(name: string, body: Buffer): Buffer {
       `${text.slice(0, opinionated)}    "script/consistent-props-emits-key-quotes",\n${text.slice(opinionated)}`,
     );
     identity(predecessor, {
-      bytes: 36793,
-      sha256: "8ef85bb196ae091afca89dd548ac9fa8e04e7233ff5f41c2e411cb36adebe711",
+      bytes: 36811,
+      sha256: "986a6f02bffa28ac63651363be7c85e5f4d61bbea0b161b0b323b4a659799ec0",
     });
     return predecessor;
   }

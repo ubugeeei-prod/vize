@@ -261,12 +261,21 @@ export async function compileAll(
         continue;
       }
 
+      if (!watchTypeProject(targetCache, fileResult.typeProject, addWatchFile)) {
+        // The TypeScript project changed while the batch compiled, as Nuxt's
+        // `.nuxt` tsconfigs do while the dev server starts (#12871). Keep no
+        // result: the module compiles on request against the current project.
+        targetCache.delete(fileResult.path);
+        targetMetadata.delete(fileResult.path);
+        state.collectedCss.delete(fileResult.path);
+        cache.delete(fileResult.path);
+        continue;
+      }
       if (metadata) {
         targetMetadata.set(fileResult.path, metadata);
       }
 
       const compiled = targetCache.get(fileResult.path);
-      watchTypeProject(targetCache, fileResult.typeProject, addWatchFile);
       const sourceHash = sourceHashes.get(fileResult.path);
       if (fileResult.warnings.length > 0) {
         // The disk entry does not carry diagnostics. Recompile warned sources

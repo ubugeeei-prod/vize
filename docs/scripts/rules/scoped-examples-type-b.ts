@@ -1,8 +1,7 @@
 import type { RuleExample } from "./types.ts";
 
 const vue = (source: string) => ({ language: "vue" as const, source });
-const script = (source: string) =>
-  vue(`<script setup lang="ts">\n${source}\n</script>`);
+const script = (source: string) => vue(`<script setup lang="ts">\n${source}\n</script>`);
 const pair = (bad: string, good: string, file: string): RuleExample => ({
   bad: script(bad),
   good: script(good),
@@ -47,18 +46,18 @@ export const typescriptEslintExamplesB: Record<string, RuleExample> = {
     "no_unsafe_return.rs",
   ),
   "type/no-unsafe-unary-minus": pair(
-    "const label = \"a\";\nconst negated = -label;",
+    'const label = "a";\nconst negated = -label;',
     "const count = 1;\nconst negated = -count;",
     "no_unsafe_unary_minus.rs",
   ),
   "type/only-throw-error": pair(
-    "function fail(): never {\n  throw \"failure\";\n}",
-    "function fail(): never {\n  throw new Error(\"failure\");\n}",
+    'function fail(): never {\n  throw "failure";\n}',
+    'function fail(): never {\n  throw new Error("failure");\n}',
     "only_throw_error.rs",
   ),
   "type/prefer-promise-reject-errors": pair(
-    "const rejected = Promise.reject(\"failure\");",
-    "const rejected = Promise.reject(new Error(\"failure\"));",
+    'const rejected = Promise.reject("failure");',
+    'const rejected = Promise.reject(new Error("failure"));',
     "prefer_promise_reject_errors.rs",
   ),
   "type/prefer-reduce-type-parameter": pair(
@@ -82,13 +81,13 @@ export const typescriptEslintExamplesB: Record<string, RuleExample> = {
     "require_await.rs",
   ),
   "type/restrict-plus-operands": pair(
-    "const label = \"a\";\nconst numbers = [1, 2, 3];\nconst mixedSum = label + numbers;",
-    "const label = \"a\";\nconst extra = \"b\";\nconst mixedSum = label + extra;",
+    'const label = "a";\nconst numbers = [1, 2, 3];\nconst mixedSum = label + numbers;',
+    'const label = "a";\nconst extra = "b";\nconst mixedSum = label + extra;',
     "restrict_plus_operands.rs",
   ),
   "type/restrict-template-expressions": pair(
     "const numbers = [1, 2, 3];\nconst listText = `${numbers}`;",
-    "const label = \"a\";\nconst listText = `${label}`;",
+    'const label = "a";\nconst listText = `${label}`;',
     "restrict_template_expressions.rs",
   ),
   "type/return-await": pair(

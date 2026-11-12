@@ -187,7 +187,7 @@ import Unused from "./unused.vue";
     );
 }
 
-fn line_col(source: &str, offset: u32) -> (usize, usize) {
+pub(super) fn line_col(source: &str, offset: u32) -> (usize, usize) {
     let mut line = 1usize;
     let mut column = 1usize;
     for (index, byte) in source.bytes().enumerate() {
