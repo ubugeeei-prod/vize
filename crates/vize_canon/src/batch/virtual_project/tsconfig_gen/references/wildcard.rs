@@ -124,6 +124,19 @@ impl TsconfigWildcard {
         &self.base
     }
 
+    /// The directory `tsc` walks for this spec, or `None` when it walks only
+    /// the project. A rooted spec whose first segment is a wildcard
+    /// (`"/**/*.vue"`, as reka-ui's docs tsconfig spells it) has no literal
+    /// directory: `getIncludeBasePath` returns `""`, so `tsc` walks the
+    /// current directory, never the filesystem root. The spec still selects
+    /// the files of the walked directories by its rooted pattern.
+    pub fn walk_base(&self) -> Option<&Path> {
+        let unanchored = self.literal_directories.as_os_str().is_empty()
+            && self.base.has_root()
+            && self.base.parent().is_none();
+        (!unanchored).then_some(self.base.as_path())
+    }
+
     /// The literal directories the spec itself names below its config
     /// directory, e.g. `.vitepress/theme` for `.vitepress/theme/**/*`.
     pub fn literal_directories(&self) -> &Path {
