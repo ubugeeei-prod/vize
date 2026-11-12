@@ -15178,6 +15178,70 @@
       }
     },
     {
+      "id": "typechecker/regression/nested-consumer-rooted-stub",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "nested-consumer-rooted-stub/Chip.vue.txt",
+          "sha256": "1faf09034f4a40575382167f8a96d80171797cd8a8fd83419bdce63242630975",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "nested-consumer-rooted-stub/Use.vue.txt",
+          "sha256": "4fd9496e137c763b8e2c3f8a2298875efe88874590b9972b7579c8ec3199f259",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "nested-consumer-rooted-stub/docs-package.json.txt",
+          "sha256": "3953c6bda0242b69fc3392c2cbdfe894cc2fe47840441076f9537a34bbc804f9",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "nested-consumer-rooted-stub/docs-tsconfig.json.txt",
+          "sha256": "b53b916f3f6e045fb59286230d468b0a428421fcefc23229ebdaf574a83c1fbb",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "nested-consumer-rooted-stub/module.d.mts.txt",
+          "sha256": "9046e9bafcdb3b737c1853ddd2195946d9f97eed730e3587619908e3c11987bd",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "nested-consumer-rooted-stub/module.ts.txt",
+          "sha256": "9608b5a2bbdd38cbb7408efb07f688049442e398eb5d382fde6c6c586081c69c",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "nested-consumer-rooted-stub/package.json.txt",
+          "sha256": "92ef61b1e5e47707ee17c001efcca0c85ef91b886ab5794feed9d05578d6e886",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "nested-consumer-rooted-stub/types-index.ts.txt",
+          "sha256": "0a363346d789c152aabcb82aedacd778cf9328134d931ac696b2dc937cb9d936",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "check_canon_recent_issues_cli::check_nested_consumer_reaches_library_vue_types_through_a_rooted_stub; nuxt/ui's docs app sits below the library root with its own package.json, and the stub build's dist/module.d.mts re-exports the source by a rooted path, so a type exported from a library .vue (ChipProps) must reach the docs app through node_modules and the mirrored source; expected rows are vue-tsc 3.3.14's single TS2322."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/nested-dynamic-vfor-11728",
       "state": "active",
       "targets": [

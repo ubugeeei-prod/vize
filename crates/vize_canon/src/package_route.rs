@@ -15,6 +15,7 @@ mod cache;
 mod candidates;
 mod graph_inputs;
 mod model;
+mod scope;
 mod search;
 mod shadow_mapping;
 mod source;
@@ -31,6 +32,7 @@ use search::{
 use source::{resolve_sources, resolve_workspace_source_fallbacks};
 
 pub use cache::{PackageRouteLookup, PackageRouteResolver, PackageRouteValidationScope};
+pub use scope::{is_package_member, is_package_self_reference_scope};
 #[cfg(feature = "native")]
 pub(crate) use model::PackageRouteKey;
 pub use model::{

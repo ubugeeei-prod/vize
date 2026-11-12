@@ -48,10 +48,11 @@ impl VirtualProject {
             // its editor project does not retain the dependency's typed
             // surface through a re-export barrel. The authored bytes are also
             // the only sound authority for import/export mode and diagnostics.
-            return Ok(self
+            // Only a rooted specifier, which would leave the mirror, is rebased.
+            let authored = self
                 .original_content_for_virtual(canonical_path)
-                .map(vize_carton::String::from)
-                .unwrap_or_else(|| file.content.clone()));
+                .unwrap_or(file.content.as_str());
+            return Ok(self.rebase_rooted_shadow_specifiers(authored, &file.original_path));
         }
         if shadow_path
             .file_name()

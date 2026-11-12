@@ -1,0 +1,5 @@
+export type * from './runtime/types'
+
+export default function defineUiModule(): string {
+  return 'ui'
+}

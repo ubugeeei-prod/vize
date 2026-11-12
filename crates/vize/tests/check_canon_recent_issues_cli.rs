@@ -455,3 +455,62 @@ fn check_union_host_slot_payload_is_the_union_of_member_payloads() {
 
     let _ = std::fs::remove_dir_all(&project_root);
 }
+
+const NESTED_CONSUMER_FIXTURE: &str = concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/typechecker/nested-consumer-rooted-stub/"
+);
+
+/// nuxt/ui keeps its `docs/` app below the library root, with its own
+/// `package.json`, and the stub build's `dist/module.d.mts` re-exports the
+/// source by a rooted path. A type exported from a library `.vue` must reach
+/// the docs app: the docs import is not a self-reference, and the rooted
+/// re-export must land on the mirrored source, not the unreadable original.
+#[test]
+fn check_nested_consumer_reaches_library_vue_types_through_a_rooted_stub() {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
+        return;
+    };
+    let library = unique_case_dir("nested-consumer-rooted-stub");
+    let _ = std::fs::remove_dir_all(&library);
+    for dir in [
+        "dist",
+        "src/runtime/types",
+        "src/runtime/components",
+        "docs/src",
+    ] {
+        std::fs::create_dir_all(library.join(dir)).unwrap();
+    }
+    link_workspace_vue(&library).unwrap();
+    std::fs::create_dir_all(library.join("docs/node_modules/@x")).unwrap();
+    symlink_path(&library, &library.join("docs/node_modules/@x/ui")).unwrap();
+    let canonical_library = std::fs::canonicalize(&library).unwrap();
+    for (input, target) in [
+        ("package.json.txt", "package.json"),
+        ("module.d.mts.txt", "dist/module.d.mts"),
+        ("module.ts.txt", "src/module.ts"),
+        ("types-index.ts.txt", "src/runtime/types/index.ts"),
+        ("Chip.vue.txt", "src/runtime/components/Chip.vue"),
+        ("docs-package.json.txt", "docs/package.json"),
+        ("docs-tsconfig.json.txt", "docs/tsconfig.json"),
+        ("Use.vue.txt", "docs/src/Use.vue"),
+    ] {
+        let source = std::fs::read_to_string(Path::new(NESTED_CONSUMER_FIXTURE).join(input))
+            .unwrap()
+            .replace(
+                "__PACKAGE_ROOT__",
+                canonical_library.to_str().expect("utf-8 test path"),
+            );
+        std::fs::write(library.join(target), source).unwrap();
+    }
+
+    let (rows, stdout) = check_diagnostic_rows(&library.join("docs"), &corsa_path);
+    // vue-tsc 3.3.14 reports exactly this one row for the same project.
+    assert_eq!(
+        rows,
+        vec!["error:4:45 [TS2322] Type 'string' is not assignable to type 'boolean | undefined'."],
+        "{stdout}"
+    );
+
+    let _ = std::fs::remove_dir_all(&library);
+}

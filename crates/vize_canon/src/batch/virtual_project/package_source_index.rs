@@ -119,9 +119,13 @@ impl VirtualProject {
 
     /// `source` must already be canonicalized.
     pub(super) fn index_canonical_package_source(&mut self, source: PathBuf, virtual_path: &Path) {
+        // A source of a package nested below a route root (a library's own
+        // `docs/` app) is not a member of that library: shadowing it would put
+        // a second copy of the consumer in the program.
         let roots = source
             .ancestors()
             .filter(|ancestor| self.package_route_roots.contains_key(*ancestor))
+            .filter(|ancestor| crate::package_route::is_package_member(&source, ancestor))
             .map(Path::to_path_buf)
             .collect::<Vec<_>>();
         for root in roots {
