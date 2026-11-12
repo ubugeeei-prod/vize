@@ -5,6 +5,12 @@
 //! project can carry its typescript-eslint configuration over unchanged.
 //! Omitted keys take typescript-eslint's default.
 
+mod misused_promises;
+
+pub use misused_promises::{
+    ChecksConditionalsOptions, ChecksVoidReturnOptions, NoMeaninglessVoidOperatorOptions,
+    NoMisusedPromisesOptions, PromiseUnionFlag, Switch,
+};
 use serde::{Deserialize, Serialize};
 
 use crate::String;
@@ -299,98 +305,6 @@ impl Default for NoFloatingPromisesOptions {
     }
 }
 
-/// `type/no-meaningless-void-operator`.
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(default, deny_unknown_fields, rename_all = "camelCase")]
-pub struct NoMeaninglessVoidOperatorOptions {
-    /// Also report `void` on `never`-typed expressions.
-    pub check_never: bool,
-}
-
-/// Which union types `checksConditionals` reports.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "kebab-case")]
-pub enum PromiseUnionFlag {
-    /// Report any union with a promise constituent.
-    All,
-    /// Report only unions whose constituents are all promises.
-    Strict,
-    /// Never report unions.
-    None,
-}
-
-/// Object form of `checksConditionals`.
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(default, deny_unknown_fields, rename_all = "camelCase")]
-pub struct ChecksConditionalsOptions {
-    /// Which unions to report.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub flag_unions: Option<PromiseUnionFlag>,
-}
-
-/// Object form of `checksVoidReturn`.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(default, deny_unknown_fields, rename_all = "camelCase")]
-pub struct ChecksVoidReturnOptions {
-    /// Promise-returning functions passed as `void`-returning arguments.
-    pub arguments: bool,
-    /// Promise-returning functions passed as `void`-returning JSX attributes.
-    pub attributes: bool,
-    /// Promise-returning methods overriding `void`-returning ones.
-    pub inherited_methods: bool,
-    /// Promise-returning functions assigned to `void`-returning properties.
-    pub properties: bool,
-    /// Promise-returning functions returned where `void` is expected.
-    pub returns: bool,
-    /// Promise-returning functions assigned to `void`-returning variables.
-    pub variables: bool,
-}
-
-impl Default for ChecksVoidReturnOptions {
-    fn default() -> Self {
-        Self {
-            arguments: true,
-            attributes: true,
-            inherited_methods: true,
-            properties: true,
-            returns: true,
-            variables: true,
-        }
-    }
-}
-
-/// A boolean switch, or an object with finer settings.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(untagged)]
-pub enum Switch<T> {
-    /// On or off.
-    Flag(bool),
-    /// On, with settings.
-    Settings(T),
-}
-
-/// `type/no-misused-promises`.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(default, deny_unknown_fields, rename_all = "camelCase")]
-pub struct NoMisusedPromisesOptions {
-    /// Check promises used as conditions.
-    pub checks_conditionals: Switch<ChecksConditionalsOptions>,
-    /// Check spreading promises into objects.
-    pub checks_spreads: bool,
-    /// Check promise-returning functions where `void` is expected.
-    pub checks_void_return: Switch<ChecksVoidReturnOptions>,
-}
-
-impl Default for NoMisusedPromisesOptions {
-    fn default() -> Self {
-        Self {
-            checks_conditionals: Switch::Flag(true),
-            checks_spreads: true,
-            checks_void_return: Switch::Flag(true),
-        }
-    }
-}
-
 /// `type/no-unnecessary-boolean-literal-compare`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default, deny_unknown_fields, rename_all = "camelCase")]
@@ -555,116 +469,4 @@ impl super::ConfigLintRuleOptions {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::{
-        ConstantLoopConditionMode, RestrictPlusOperandsOptions, ReturnAwaitOption,
-        TypeAwareRuleOptions,
-    };
-    use crate::config::ConfigLintRuleOptions;
-
-    #[test]
-    fn reads_typescript_eslint_strict_type_checked_overrides() {
-        let options: ConfigLintRuleOptions = serde_json::from_value(serde_json::json!({
-            "type/no-confusing-void-expression": { "ignoreArrowShorthand": true },
-            "type/no-unnecessary-condition": {
-                "allowConstantLoopConditions": "only-allowed-literals"
-            },
-            "type/restrict-plus-operands": {
-                "allowAny": false,
-                "allowBoolean": false,
-                "allowNullish": false,
-                "allowNumberAndString": true,
-                "allowRegExp": false
-            },
-            "type/restrict-template-expressions": {
-                "allowBoolean": true,
-                "allowNullish": false,
-                "allowNumber": true
-            },
-            "type/return-await": "error-handling-correctness-only"
-        }))
-        .expect("typescript-eslint option shapes parse");
-        let typed = options.type_aware();
-        assert_eq!(
-            typed
-                .no_confusing_void_expression
-                .map(|value| value.ignore_arrow_shorthand),
-            Some(true)
-        );
-        assert_eq!(
-            typed
-                .no_unnecessary_condition
-                .map(|value| value.constant_loop_mode()),
-            Some(ConstantLoopConditionMode::OnlyAllowedLiterals)
-        );
-        assert_eq!(
-            typed.restrict_plus_operands,
-            Some(RestrictPlusOperandsOptions {
-                allow_any: false,
-                allow_boolean: false,
-                allow_nullish: false,
-                allow_number_and_string: true,
-                allow_regexp: false,
-                skip_compound_assignments: false,
-            })
-        );
-        let template = typed
-            .restrict_template_expressions
-            .clone()
-            .expect("template options");
-        assert!(!template.allow_nullish);
-        assert!(
-            template.allow_any,
-            "omitted keys keep typescript-eslint defaults"
-        );
-        assert_eq!(template.allow.len(), 1, "default allow list is kept");
-        assert_eq!(
-            typed.return_await,
-            Some(ReturnAwaitOption::ErrorHandlingCorrectnessOnly)
-        );
-        assert!(!options.is_empty());
-    }
-
-    #[test]
-    fn boolean_loop_conditions_resolve_to_modes() {
-        let typed: TypeAwareRuleOptions = serde_json::from_value(serde_json::json!({
-            "type/no-unnecessary-condition": { "allowConstantLoopConditions": true }
-        }))
-        .expect("boolean form parses");
-        assert_eq!(
-            typed
-                .no_unnecessary_condition
-                .map(|value| value.constant_loop_mode()),
-            Some(ConstantLoopConditionMode::Always)
-        );
-    }
-
-    #[test]
-    fn rejects_unknown_keys_and_modes() {
-        for invalid in [
-            serde_json::json!({ "type/restrict-plus-operands": { "allowStrings": true } }),
-            serde_json::json!({ "type/return-await": "sometimes" }),
-            serde_json::json!({
-                "type/no-unnecessary-condition": { "allowConstantLoopConditions": "maybe" }
-            }),
-        ] {
-            assert!(serde_json::from_value::<TypeAwareRuleOptions>(invalid).is_err());
-        }
-    }
-
-    #[test]
-    fn merges_later_layers_per_rule() {
-        let mut base: TypeAwareRuleOptions = serde_json::from_value(serde_json::json!({
-            "type/return-await": "always",
-            "type/no-confusing-void-expression": { "ignoreVoidOperator": true }
-        }))
-        .expect("base");
-        let overlay: TypeAwareRuleOptions = serde_json::from_value(serde_json::json!({
-            "type/return-await": "never"
-        }))
-        .expect("overlay");
-        base.merge_from(&overlay);
-        assert_eq!(base.return_await, Some(ReturnAwaitOption::Never));
-        assert!(base.no_confusing_void_expression.is_some());
-    }
-}
+mod tests;

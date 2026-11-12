@@ -5,6 +5,8 @@ import "@json_schema/JsonSchema.pkl"
 import "ConfigArtifactDefinitions.pkl"
 import "ConfiguredVueRuleOptions.pkl"
 import "TypeAwareRuleOptions.pkl"
+import "TypeAwareRuleOptionsMToO.pkl"
+import "TypeAwareRuleOptionsPToU.pkl"
 
 definePropsDestructuringOptionsDef: JsonSchema = new JsonSchema {
   type = "object"
@@ -203,19 +205,19 @@ lintRuleOptionsDef: JsonSchema = new JsonSchema {
     ["type/no-deprecated"] = TypeAwareRuleOptions.noDeprecatedDef
     ["type/no-duplicate-type-constituents"] = TypeAwareRuleOptions.noDuplicateTypeConstituentsDef
     ["type/no-floating-promises"] = TypeAwareRuleOptions.noFloatingPromisesDef
-    ["type/no-meaningless-void-operator"] = TypeAwareRuleOptions.noMeaninglessVoidOperatorDef
-    ["type/no-misused-promises"] = TypeAwareRuleOptions.noMisusedPromisesDef
-    ["type/no-misused-spread"] = TypeAwareRuleOptions.noMisusedSpreadDef
-    ["type/no-unnecessary-boolean-literal-compare"] = TypeAwareRuleOptions.noUnnecessaryBooleanLiteralCompareDef
-    ["type/no-unnecessary-condition"] = TypeAwareRuleOptions.noUnnecessaryConditionDef
-    ["type/no-unnecessary-type-assertion"] = TypeAwareRuleOptions.noUnnecessaryTypeAssertionDef
-    ["type/no-unsafe-member-access"] = TypeAwareRuleOptions.noUnsafeMemberAccessDef
-    ["type/only-throw-error"] = TypeAwareRuleOptions.onlyThrowErrorDef
-    ["type/prefer-promise-reject-errors"] = TypeAwareRuleOptions.preferPromiseRejectErrorsDef
-    ["type/restrict-plus-operands"] = TypeAwareRuleOptions.restrictPlusOperandsDef
-    ["type/restrict-template-expressions"] = TypeAwareRuleOptions.restrictTemplateExpressionsDef
-    ["type/return-await"] = TypeAwareRuleOptions.returnAwaitDef
-    ["type/unbound-method"] = TypeAwareRuleOptions.unboundMethodDef
+    ["type/no-meaningless-void-operator"] = TypeAwareRuleOptionsMToO.noMeaninglessVoidOperatorDef
+    ["type/no-misused-promises"] = TypeAwareRuleOptionsMToO.noMisusedPromisesDef
+    ["type/no-misused-spread"] = TypeAwareRuleOptionsMToO.noMisusedSpreadDef
+    ["type/no-unnecessary-boolean-literal-compare"] = TypeAwareRuleOptionsMToO.noUnnecessaryBooleanLiteralCompareDef
+    ["type/no-unnecessary-condition"] = TypeAwareRuleOptionsMToO.noUnnecessaryConditionDef
+    ["type/no-unnecessary-type-assertion"] = TypeAwareRuleOptionsMToO.noUnnecessaryTypeAssertionDef
+    ["type/no-unsafe-member-access"] = TypeAwareRuleOptionsMToO.noUnsafeMemberAccessDef
+    ["type/only-throw-error"] = TypeAwareRuleOptionsMToO.onlyThrowErrorDef
+    ["type/prefer-promise-reject-errors"] = TypeAwareRuleOptionsPToU.preferPromiseRejectErrorsDef
+    ["type/restrict-plus-operands"] = TypeAwareRuleOptionsPToU.restrictPlusOperandsDef
+    ["type/restrict-template-expressions"] = TypeAwareRuleOptionsPToU.restrictTemplateExpressionsDef
+    ["type/return-await"] = TypeAwareRuleOptionsPToU.returnAwaitDef
+    ["type/unbound-method"] = TypeAwareRuleOptionsPToU.unboundMethodDef
     ["vue/no-unused-script-vars"] = ConfiguredVueRuleOptions.noUnusedScriptVarsDef
     ["vue/prefer-const"] = ConfiguredVueRuleOptions.preferConstDef
     ["vue/enforce-style-attribute"] = new JsonSchema {

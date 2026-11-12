@@ -38,7 +38,7 @@ mod sfc_element_order;
 mod slot_name_casing;
 mod stable;
 mod strict_boolean;
-mod type_aware;
+pub(super) mod type_aware;
 mod v_bind_style;
 mod v_on_event_hyphenation;
 mod v_on_style;
@@ -89,17 +89,6 @@ pub use script_unused::{
 pub use sfc_element_order::{SfcElementOrderGroup, SfcElementOrderOptions};
 pub use slot_name_casing::SlotNameCasingStyle;
 pub use strict_boolean::StrictBooleanExpressionsOptions;
-pub use type_aware::{
-    AllowListOptions, AwaitThenableOptions, ChecksConditionalsOptions, ChecksVoidReturnOptions,
-    ConstantLoopConditionMode, ConstantLoopConditions, NoBaseToStringOptions,
-    NoConfusingVoidExpressionOptions, NoDuplicateTypeConstituentsOptions,
-    NoFloatingPromisesOptions, NoMeaninglessVoidOperatorOptions, NoMisusedPromisesOptions,
-    NoUnnecessaryBooleanLiteralCompareOptions, NoUnnecessaryConditionOptions,
-    NoUnnecessaryTypeAssertionOptions, NoUnsafeMemberAccessOptions, OnlyThrowErrorOptions,
-    PreferPromiseRejectErrorsOptions, PromiseUnionFlag, RestrictPlusOperandsOptions,
-    RestrictTemplateExpressionsOptions, ReturnAwaitOption, Switch, TypeAwareRuleOptions,
-    TypeSpecifier, TypeSpecifierNames, TypeSpecifierSource, TypeSpecifiers, UnboundMethodOptions,
-};
 pub use v_bind_style::VBindStyle;
 pub use v_on_event_hyphenation::{VOnEventHyphenationConfig, VOnEventHyphenationOptions};
 pub use v_on_style::VOnStyle;
