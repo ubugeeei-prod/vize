@@ -127,7 +127,10 @@ pub(crate) fn native_session(project: &Path, capture: &Path) -> Value {
     serde_json::from_slice(&fs::read(session.join("tsconfig.json")).unwrap()).unwrap()
 }
 
-pub(crate) fn expected_session(flag: &Value) -> Value {
+/// The session tsconfig vize writes for `authored`: its fixed options plus the
+/// project's own `lib` and `noUncheckedIndexedAccess`, read from the nearest
+/// tsconfig and its `extends` chain.
+pub(crate) fn expected_session(flag: &Value, project: &Path, authored: &Path) -> Value {
     let mut value = json!({
         "compilerOptions": {
             "target":"ES2022", "module":"ESNext", "moduleResolution":"bundler",
@@ -137,8 +140,37 @@ pub(crate) fn expected_session(flag: &Value) -> Value {
         },
         "include":["**/*.patina.ts"]
     });
+    if let Some(lib) = project_lib(project, authored) {
+        value["compilerOptions"]["lib"] = lib;
+    }
     if !flag.is_null() {
         value["compilerOptions"]["noUncheckedIndexedAccess"] = flag.clone();
     }
     value
+}
+
+/// `compilerOptions.lib` of the tsconfig nearest to `authored` inside
+/// `project`, following `extends`.
+fn project_lib(project: &Path, authored: &Path) -> Option<Value> {
+    let mut directory = authored.parent()?;
+    let mut config = loop {
+        let candidate = directory.join("tsconfig.json");
+        if candidate.is_file() {
+            break candidate;
+        }
+        if directory == project {
+            return None;
+        }
+        directory = directory.parent()?;
+    };
+    for _ in 0..8 {
+        let text = fs::read_to_string(&config).ok()?;
+        let parsed: Value = serde_json::from_str(&text).ok()?;
+        if let Some(lib) = parsed["compilerOptions"].get("lib") {
+            return Some(lib.clone());
+        }
+        let extends = parsed.get("extends")?.as_str()?;
+        config = config.parent()?.join(extends);
+    }
+    None
 }
