@@ -1,5 +1,48 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
+
+type Identity = { bytes: number; sha256: string };
+type Hunk = { before: string; after: string };
+type FileTransition = { path: string; before: Identity; after: Identity; hunks: Hunk[] };
+type UnionHostRecord = {
+  schema: string;
+  credit: { compiled: boolean; native: boolean; performance: boolean };
+  files: FileTransition[];
+};
+
+/** Inverse of the union-host slot payload; mirrors payload_update/union_host_slot_payload.rs. */
+const recordBytes = readFileSync(
+  new URL("../../../../tests/_fixtures/tooling/union-host-slot-payload.json", import.meta.url),
+);
+assert.equal(
+  createHash("sha256").update(recordBytes).digest("hex"),
+  "b5fc83b7d0cdfbf82f45dac0bf04674c88becb6050e16107dc26adc9eefed085",
+);
+const record = JSON.parse(recordBytes.toString("utf8")) as UnionHostRecord;
+assert.equal(record.schema, "vize.unionHostSlotPayloadSource.v1");
+assert.deepEqual(record.credit, { compiled: false, native: false, performance: false });
+
+const identity = (text: string): Identity => ({
+  bytes: Buffer.byteLength(text),
+  sha256: createHash("sha256").update(text).digest("hex"),
+});
+
+/** The intersecting-payload bytes of a recorded helper asset; other images pass through. */
+export function beforeUnionHostSlotPayloadSource(file: string, current: string): string {
+  const transition = record.files.find((candidate) => candidate.path === file);
+  if (!transition) return current;
+  const now = identity(current);
+  if (now.bytes !== transition.after.bytes || now.sha256 !== transition.after.sha256)
+    return current;
+  let previous = current;
+  for (const hunk of transition.hunks) {
+    assert.equal(previous.split(hunk.after).length - 1, 1);
+    previous = previous.replace(hunk.after, () => hunk.before);
+  }
+  assert.deepEqual(identity(previous), transition.before);
+  return previous;
+}
 
 /**
  * The slot payload before it distributed over a union host: one parameter was
