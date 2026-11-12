@@ -94,7 +94,7 @@ const root = useTemplateRef<HTMLDivElement>("root");
 const selection = useRangeCalendarSelection({
   value: () => props.modelValue,
   defaultValue: () => props.defaultValue,
-  allowNonContiguousRanges: () => props.allowNonContiguousRanges === true,
+  allowNonContiguousRanges: () => props.allowNonContiguousRanges,
   isDateUnavailable: () => props.isDateUnavailable,
   onUpdate: (value) => emit("update:modelValue", value),
   onChange: (value, previous, event) => emit("change", value, previous, event),

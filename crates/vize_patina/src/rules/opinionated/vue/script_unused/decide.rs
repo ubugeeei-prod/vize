@@ -61,7 +61,12 @@ pub(super) fn analyze(
             let name = scoping.symbol_name(*id);
             let seen = Seen {
                 facts: usage.facts(*id, info, &classified.for_return_targets),
-                template_read: top && template.reads.contains(name),
+                // A template cannot reassign a `const`. Vue compiles
+                // `hovered = $event` on one to a write through the ref's
+                // `.value`, which reads the binding.
+                template_read: top
+                    && (template.reads.contains(name)
+                        || (info.kind == Kind::Const && template.writes.contains(name))),
                 template_write: top && template.writes.contains(name),
             };
             (*id, seen)

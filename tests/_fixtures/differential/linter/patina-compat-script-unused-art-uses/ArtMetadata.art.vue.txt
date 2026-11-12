@@ -1,0 +1,12 @@
+<script setup lang="ts">
+import Button from "./Button.vue";
+const title = "Button";
+</script>
+
+<art title="title" component="./Button.vue">
+  <variant name="Button" args='{"title": 1}'>plain text</variant>
+</art>
+
+<docs>
+  <Button :title="title" />
+</docs>

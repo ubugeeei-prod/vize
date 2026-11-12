@@ -6,11 +6,7 @@ import type {
   StatusLightElement,
   StatusLightExpose,
   StatusLightProps,
-  StatusLightRole,
-  StatusLightSize,
   StatusLightSlotState,
-  StatusLightState,
-  StatusLightTone,
 } from "./status-light-types.ts";
 
 const {

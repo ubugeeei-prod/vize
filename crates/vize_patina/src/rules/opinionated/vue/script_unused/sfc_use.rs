@@ -1,5 +1,5 @@
-//! Script binding reads outside the template: `<style>` `v-bind()` and the
-//! `<script setup generic="...">` attribute.
+//! Script binding reads outside the template: `<style>` `v-bind()`, the
+//! `<script setup generic="...">` attribute, and Musea `<art>` variants.
 
 use oxc_allocator::Allocator;
 use oxc_parser::Parser;
@@ -8,6 +8,7 @@ use oxc_span::SourceType;
 use vize_atelier_sfc::SfcDescriptor;
 use vize_l0::{CompactString, cstr};
 
+use super::art_use::{is_art_block, note_art_uses};
 use super::template_use::{TemplateUse, note_expression};
 
 pub(super) fn note_sfc_uses(descriptor: &SfcDescriptor<'_>, uses: &mut TemplateUse) {
@@ -21,6 +22,11 @@ pub(super) fn note_sfc_uses(descriptor: &SfcDescriptor<'_>, uses: &mut TemplateU
         .and_then(|block| block.attrs.get("generic"))
     {
         note_generic(generic, uses);
+    }
+    for block in &descriptor.custom_blocks {
+        if is_art_block(&block.block_type) {
+            note_art_uses(&block.content, uses);
+        }
     }
 }
 

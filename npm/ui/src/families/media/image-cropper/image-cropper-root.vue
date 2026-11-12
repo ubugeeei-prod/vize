@@ -423,7 +423,7 @@ async function toBlob(options: Omit<CropImageOptions, "rotation"> = {}): Promise
   if (image === null || crop.value === null) {
     throw new ImageCropperError("VIZE_UI_IMAGE_CROPPER_IMAGE_LOAD", "no loaded image to crop");
   }
-  return await cropImage(image, crop.value, { ...options, rotation: rotationValue.value });
+  return cropImage(image, crop.value, { ...options, rotation: rotationValue.value });
 }
 
 async function toDataUrl(options: Omit<CropImageOptions, "rotation"> = {}): Promise<string> {
@@ -431,7 +431,7 @@ async function toDataUrl(options: Omit<CropImageOptions, "rotation"> = {}): Prom
   if (image === null || crop.value === null) {
     throw new ImageCropperError("VIZE_UI_IMAGE_CROPPER_IMAGE_LOAD", "no loaded image to crop");
   }
-  return await cropImage(image, crop.value, {
+  return cropImage(image, crop.value, {
     ...options,
     output: "data-url",
     rotation: rotationValue.value,

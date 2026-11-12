@@ -309,3 +309,25 @@ fn an_empty_pattern_turns_the_default_off() {
         ]
     );
 }
+
+#[test]
+fn a_template_write_to_a_const_ref_reads_it() {
+    let source = r#"<script setup lang="ts">
+import { ref } from "vue";
+const hovered = ref<number | null>(null);
+let draft = "";
+</script>
+
+<template>
+  <input @focus="hovered = 1" @input="draft = 'x'" />
+</template>
+"#;
+    assert_eq!(
+        reports(source, None),
+        vec![unused(
+            4,
+            5,
+            "'draft' is assigned a value but never used. Allowed unused vars must match /^_/u"
+        )]
+    );
+}

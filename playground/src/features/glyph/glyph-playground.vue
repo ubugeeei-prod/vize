@@ -62,7 +62,6 @@ const diffLines = computed(() => {
   }> = [];
 
   // Simple diff - just show removed and added lines
-  const maxLen = Math.max(original.length, formatted.length);
   let origIdx = 0;
   let fmtIdx = 0;
 

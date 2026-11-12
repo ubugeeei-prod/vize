@@ -3,8 +3,9 @@
 //! Report unused script variables, imports, type imports, and parameters.
 //! A template read counts, including a name nested code cannot see: a
 //! component tag, a custom directive (`v-focus` reads `vFocus`), and
-//! `ref="panel"`. A `<style>` `v-bind()` and the `<script setup generic>`
-//! attribute count too. Nested locals stay local.
+//! `ref="panel"`. A `<style>` `v-bind()`, the `<script setup generic>`
+//! attribute, and a Musea `<art>` `<variant>` body count too. Nested locals
+//! stay local.
 //!
 //! Reads follow typescript-eslint `no-unused-vars`: `a += 1`, `x = f(x)`, and
 //! a read inside the binding's own declaration are not uses. Options take
