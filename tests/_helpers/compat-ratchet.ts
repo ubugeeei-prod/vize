@@ -127,8 +127,13 @@ export const compatProbes: CompatProbe[] = [
   },
   {
     fixtureId: "nuxt-ui",
-    includePaths: ["docs/app/components/content/examples/tabs"],
-    include: ["docs/app/components/content/examples/tabs"],
+    includePaths: [
+      "docs/app/components/content/examples/accordion",
+      "docs/app/components/content/examples/breadcrumb",
+      "docs/app/components/content/examples/navigation-menu",
+      "docs/app/components/content/examples/tabs",
+    ],
+    include: ["docs/app/components/content/examples"],
   },
   {
     // reka-ui's own `tsconfig.json` is solution-style; `paths` live in the

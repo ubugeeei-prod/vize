@@ -312,6 +312,23 @@
       "baseline": null,
       "issue": 3984,
       "reason": "Spreading this reactive() object (v-bind=\"props\") exceeds TypeScript instantiation depth; the same spread in a plain .ts file reports TS2589 under both TypeScript 6 and 7. vue-tsc emits the props call too, but the checker anchors the error on the unmapped call start, so vue-tsc drops it. Vize reports it on the component tag the props literal maps to, because dropping a give-up hides why the props and listeners of this usage are degraded."
+    },
+    {
+      "project": "nuxt-ui",
+      "file": "docs/app/components/content/examples/navigation-menu/NavigationMenuModelValueExample.vue",
+      "severity": "error",
+      "line": 97,
+      "column": 1,
+      "vize": {
+        "code": 2552,
+        "message": "Cannot find name 'defineShortcuts'. Did you mean 'defineSlots'?"
+      },
+      "baseline": {
+        "code": 2304,
+        "message": "Cannot find name 'defineShortcuts'."
+      },
+      "issue": 3358,
+      "reason": "Same suggestion cap as the TabsRouteQueryExample row: TypeScript stops offering spelling suggestions once a program has produced maximumSuggestionCount = 10 unresolved-name errors, counting names its generated virtual code never surfaces. vue-tsc reaches that cap early in this probe (every example uses Nuxt auto-imports the isolated workspace does not declare), so it drops the hint; Corsa has no such cap and vize keeps it. The symbol tables agree."
     }
   ]
 }
