@@ -16,6 +16,7 @@ const modules = [
   "i18n_rules_markup_compatibility",
   "i18n_rules_script",
   "i18n_rules_script_more",
+  "i18n_rules_type_aware",
   "i18n_supplemental",
   "i18n_supplemental_extra",
   "i18n_supplemental_extra2",
