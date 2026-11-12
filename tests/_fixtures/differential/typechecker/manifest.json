@@ -15285,6 +15285,39 @@
       }
     },
     {
+      "id": "typechecker/regression/plain-script-ambient-capture",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "plain-script-ambient-capture/Namespaces.vue.txt",
+          "sha256": "a1a2f57ab7e472d1124e759701b70a62cb7577d951243e36b1305896767d0cd1",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "plain-script-ambient-capture/tsconfig.json.txt",
+          "sha256": "30ef07e9afd6dde40d32db4493dfc52039b1dd03a535c72b6848a80990761eae",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "ts"
+            ],
+            "selector": "plain_script_namespace_hoisting::an_ambient_binding_read_by_a_hoisted_body_is_not_redeclared and namespace_hoist::tests::a_capture_already_at_module_scope_gets_no_alias; a plain-script `declare const` read by a hoisted body is relocated to module scope once and gets no setup-return alias, so it is not redeclared (TS2451) and its reads keep their declared type. Input-only batch registration for the shared Canon source change; no native parity claim."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/prepared-type-only-import-facts",
       "state": "active",
       "targets": [

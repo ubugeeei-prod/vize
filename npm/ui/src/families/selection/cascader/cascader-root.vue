@@ -441,7 +441,8 @@ function typeahead(key: string): boolean {
   const level = position?.level ?? 0;
   const list = optionsAt(level);
   if (list.length === 0) return false;
-  const repeated = typeaheadBuffer.length > 0 && Array.from(typeaheadBuffer).every((char) => char === key);
+  const repeated =
+    typeaheadBuffer.length > 0 && Array.from(typeaheadBuffer).every((char) => char === key);
   typeaheadBuffer = repeated ? key : `${typeaheadBuffer}${key}`;
   if (typeaheadTimer !== null) clearTimeout(typeaheadTimer);
   typeaheadTimer = setTimeout(() => {
