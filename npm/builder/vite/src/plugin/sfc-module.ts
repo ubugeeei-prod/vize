@@ -34,7 +34,7 @@ import {
 import { transformVizeVirtualModule } from "./vite-transform.ts";
 import { isPluginVueCustomElement } from "./plugin-vue-options.ts";
 import { loadedSfcModule } from "./tree-shaking.ts";
-import { watchTypeProject } from "./type-project-watches.ts";
+import { TYPE_PROJECT_CHANGED_MESSAGE, watchTypeProject } from "./type-project-watches.ts";
 import { evictCompiledModule } from "./compiled-module-cache.ts";
 
 const SERVER_PLACEHOLDER_CODE = `import { createElementBlock, defineComponent } from "vue";
@@ -156,23 +156,32 @@ export async function transformSfcModule(
   const cache = getEnvironmentCache(state, isSsr);
   const customElement = isPluginVueCustomElement(state.mergedOptions, realPath);
   const extractCss = shouldExtractCssForRequest(state, isSsr) && !customElement;
-  let compiled = cache.get(realPath);
-  if (compiled?.source !== code) {
+  const compile = async () => {
     state.logger.log(`transform: compiling ${realPath}`);
     if (options.resolve) await prepareSfcSrcRequests(state, options.resolve, realPath, code);
-    compiled = compileFile(realPath, cache, compileOptions(state, isSsr, realPath), code, {
+    return compileFile(realPath, cache, compileOptions(state, isSsr, realPath), code, {
       logWarnings: shouldLogSfcWarnings(state, realPath),
     });
+  };
+  const watchDependency = createDependencyWatch(state.server, options.addWatchFile);
+  const cached = cache.get(realPath);
+  const reused = cached?.source === code ? cached : undefined;
+  let compiled = reused ?? (await compile());
+  let typeProjectCurrent = watchTypeProject(state.cache, compiled.typeProject, watchDependency);
+  // A cached compile (the `buildStart` pre-compile, or an earlier request)
+  // can predate a rewrite of its TypeScript project that no hot update
+  // reported: Nuxt rewrites `.nuxt/tsconfig.*.json` while the dev server
+  // starts, and its watcher ignores the build directory (#12871). Compile the
+  // unchanged source again against the current project instead of failing.
+  if (!typeProjectCurrent && reused) {
+    compiled = await compile();
+    typeProjectCurrent = watchTypeProject(state.cache, compiled.typeProject, watchDependency);
+  }
+  if (!typeProjectCurrent) {
+    evictCompiledModule(cache, realPath);
+    throw new Error(TYPE_PROJECT_CHANGED_MESSAGE);
   }
   syncCollectedCssForFile({ ...state, extractCss }, realPath, compiled);
-
-  const watchDependency = createDependencyWatch(state.server, options.addWatchFile);
-  try {
-    watchTypeProject(state.cache, compiled.typeProject, watchDependency);
-  } catch (error) {
-    evictCompiledModule(cache, realPath);
-    throw error;
-  }
   // The real SFC is executable; compiler inputs only need filesystem watches.
   if (sfc.nullPrefixed) options.addWatchFile?.(realPath);
   const dependencies = compiled.dependencies ?? [];
