@@ -1,12 +1,17 @@
 //! Turn script bindings plus template reads and writes into the two reports.
 
 use oxc_semantic::{Scoping, SemanticBuilder};
-use oxc_syntax::symbol::SymbolFlags;
-use vize_l0::{FxHashSet, String, cstr};
+use oxc_span::Span;
+use oxc_syntax::symbol::SymbolId;
+use vize_l0::{FxHashMap, FxHashSet, String, cstr};
 
-use super::classify::{BindingInfo, Kind, classify};
-use super::options::{Caught, Destructuring, UnusedOptions, Vars, allowance};
+use super::classify::{BindingInfo, Classified, Kind, ParamSlot, classify};
+use super::options::{
+    Args, Caught, Destructuring, Pattern, PreferConstOptions, UnusedOptions, Vars, allowance,
+    used_allowance,
+};
 use super::template_use::TemplateUse;
+use super::usage::{Facts, Usage};
 
 pub(super) enum Which {
     Unused,
@@ -19,233 +24,247 @@ pub(super) struct Finding {
     pub(super) message: String,
 }
 
+/// What the script and the template do with one binding.
+struct Seen {
+    facts: Facts,
+    template_read: bool,
+    template_write: bool,
+}
+
+impl Seen {
+    fn used(&self) -> bool {
+        self.facts.used || self.template_read
+    }
+}
+
 pub(super) fn analyze(
     program: &oxc_ast::ast::Program<'_>,
     offset: u32,
     template: &TemplateUse,
     apply_template: bool,
     unused: &UnusedOptions,
-    prefer: &super::options::PreferConstOptions,
+    prefer: &PreferConstOptions,
     which: Which,
 ) -> Vec<Finding> {
-    let semantic = SemanticBuilder::new().build(program).semantic;
+    let semantic = SemanticBuilder::new()
+        .with_build_nodes(true)
+        .build(program)
+        .semantic;
     let scoping = semantic.scoping();
+    let usage = Usage::new(scoping, semantic.nodes());
     let classified = classify(program);
+    let seen: FxHashMap<SymbolId, Seen> = classified
+        .infos
+        .iter()
+        .map(|(id, info)| {
+            let top = apply_template && scoping.symbol_scope_id(*id) == scoping.root_scope_id();
+            let name = scoping.symbol_name(*id);
+            let seen = Seen {
+                facts: usage.facts(*id, info, &classified.for_return_targets),
+                template_read: top && template.reads.contains(name),
+                template_write: top && template.writes.contains(name),
+            };
+            (*id, seen)
+        })
+        .collect();
+    let mut findings = Vec::new();
+    match which {
+        Which::Unused => unused_findings(&classified, &seen, scoping, unused, &mut findings),
+        Which::PreferConst => {
+            prefer_findings(&classified, &seen, scoping, &usage, prefer, &mut findings);
+        }
+    }
+    let mut findings: Vec<Finding> = findings
+        .into_iter()
+        .filter_map(|(span, message)| {
+            let start = offset.saturating_add(span.start);
+            let end = offset.saturating_add(span.end);
+            (end > start).then_some(Finding {
+                start,
+                end,
+                message,
+            })
+        })
+        .collect();
+    findings.sort_by_key(|finding| (finding.start, finding.end));
+    findings
+}
+
+fn unused_findings(
+    classified: &Classified,
+    seen: &FxHashMap<SymbolId, Seen>,
+    scoping: &Scoping,
+    options: &UnusedOptions,
+    findings: &mut Vec<(Span, String)>,
+) {
     let mut ignored = FxHashSet::default();
-    if unused.ignore_rest_siblings {
+    if options.ignore_rest_siblings {
         for group in &classified.rests {
             let rest_used = group.rest.iter().any(|id| {
                 classified.infos.get(id).is_some_and(|info| info.exported)
-                    || symbol_used(scoping, *id, template, apply_template)
+                    || seen.get(id).is_some_and(Seen::used)
             });
             if rest_used {
                 ignored.extend(group.siblings.iter().copied());
             }
         }
     }
-    let params = param_reports(
-        &classified.functions,
-        scoping,
-        template,
-        apply_template,
-        unused,
-    );
-    let suppressed =
-        suppressed_groups(&classified.infos, scoping, template, apply_template, prefer);
-    let mut findings = Vec::new();
+    let params = param_reports(&classified.functions, seen, options.args);
     for (id, info) in &classified.infos {
-        if info.exported || scoping.symbol_flags(*id).contains(SymbolFlags::Ambient) {
+        let Some(seen) = seen.get(id) else {
+            continue;
+        };
+        if info.exported {
             continue;
         }
         let name = scoping.symbol_name(*id);
-        let used = symbol_used(scoping, *id, template, apply_template);
-        let mutated = symbol_mutated(scoping, *id, template, apply_template);
-        let span = scoping.symbol_span(*id);
-        let start = offset.saturating_add(span.start);
-        let end = offset.saturating_add(span.end);
-        if end <= start {
+        let (pattern, kind) = ignore_pattern(info, options);
+        let array_pattern = options.array_ignore.as_ref().filter(|_| info.array_element);
+        let by_kind = pattern.filter(|pattern| pattern.matches(name));
+        let by_array = array_pattern.filter(|pattern| pattern.matches(name));
+        if seen.used() {
+            if options.report_used_ignore_pattern {
+                let matched = by_array
+                    .map(|pattern| (pattern, ARRAY_ELEMENTS))
+                    .or(by_kind.map(|pattern| (pattern, kind)));
+                if let Some((pattern, kind)) = matched {
+                    let suffix = used_allowance(kind, pattern);
+                    let message = cstr!("'{name}' is marked as ignored but is used.{suffix}");
+                    findings.push((scoping.symbol_span(*id), message));
+                }
+            }
             continue;
         }
-        let message = match which {
-            Which::Unused => {
-                unused_message(name, info, used, &params, &ignored, unused, scoping, *id)
-            }
-            Which::PreferConst => prefer_message(name, info, used, mutated, &suppressed, prefer),
+        let skipped = by_kind.is_some()
+            || by_array.is_some()
+            || ignored.contains(id)
+            || match info.kind {
+                Kind::Param => !params.contains(id),
+                Kind::Catch => matches!(options.caught, Caught::None),
+                Kind::Class => info.static_block && options.ignore_static_block_classes,
+                _ => {
+                    matches!(options.vars, Vars::Local)
+                        && scoping.symbol_scope_id(*id) == scoping.root_scope_id()
+                }
+            };
+        if skipped {
+            continue;
+        }
+        let assigned = info.has_init || seen.facts.any_write || seen.template_write;
+        let verb = if assigned {
+            "is assigned a value but never used."
+        } else {
+            "is defined but never used."
         };
-        if let Some(message) = message {
-            findings.push(Finding {
-                start,
-                end,
-                message,
-            });
-        }
+        let suffix = match array_pattern {
+            Some(array) if assigned && !matches!(info.kind, Kind::Param | Kind::Catch) => {
+                allowance(ARRAY_ELEMENTS, Some(array))
+            }
+            _ => allowance(kind, pattern),
+        };
+        let span = match (info.init_span, seen.facts.last_local_write) {
+            (Some(init), Some(write)) if init.start > write.start => init,
+            (_, Some(write)) => write,
+            (Some(init), None) => init,
+            (None, None) => scoping.symbol_span(*id),
+        };
+        findings.push((span, cstr!("'{name}' {verb}{suffix}")));
     }
-    findings.sort_by_key(|finding| (finding.start, finding.end));
-    findings
 }
 
-#[expect(clippy::too_many_arguments, reason = "explicit per-binding state")]
-fn unused_message(
-    name: &str,
+const ARRAY_ELEMENTS: &str = "elements of array destructuring";
+
+/// The pattern for the binding's kind, and its wording in messages.
+fn ignore_pattern<'o>(
     info: &BindingInfo,
-    used: bool,
-    params: &FxHashSet<oxc_syntax::symbol::SymbolId>,
-    ignored: &FxHashSet<oxc_syntax::symbol::SymbolId>,
-    options: &UnusedOptions,
+    options: &'o UnusedOptions,
+) -> (Option<&'o Pattern>, &'static str) {
+    match info.kind {
+        Kind::Param => (options.args_ignore.as_ref(), "args"),
+        Kind::Catch => (options.caught_ignore.as_ref(), "caught errors"),
+        _ => (options.vars_ignore.as_ref(), "vars"),
+    }
+}
+
+fn prefer_findings(
+    classified: &Classified,
+    seen: &FxHashMap<SymbolId, Seen>,
     scoping: &Scoping,
-    id: oxc_syntax::symbol::SymbolId,
-) -> Option<String> {
-    if used {
-        return None;
-    }
-    let (allowance, report) = match info.kind {
-        Kind::Param => (
-            allowance("args", options.args_ignore.as_ref()),
-            params.contains(&id) && !matches_pattern(options.args_ignore.as_ref(), name),
-        ),
-        Kind::Catch => (
-            allowance("caught errors", options.caught_ignore.as_ref()),
-            matches!(options.caught, Caught::All)
-                && !matches_pattern(options.caught_ignore.as_ref(), name),
-        ),
-        _ => {
-            let local_only = matches!(options.vars, Vars::Local)
-                && scoping.symbol_scope_id(id) == scoping.root_scope_id();
-            let skipped = local_only
-                || ignored.contains(&id)
-                || matches_pattern(options.vars_ignore.as_ref(), name)
-                || (info.array_element && matches_pattern(options.array_ignore.as_ref(), name));
-            (allowance("vars", options.vars_ignore.as_ref()), !skipped)
+    usage: &Usage<'_, '_>,
+    options: &PreferConstOptions,
+    findings: &mut Vec<(Span, String)>,
+) {
+    let mut targets = FxHashMap::default();
+    let mut blocked_groups = FxHashSet::default();
+    for (id, info) in &classified.infos {
+        if !matches!(info.kind, Kind::Let | Kind::Var) || info.exported {
+            continue;
         }
-    };
-    if !report {
-        return None;
+        let template_write = seen.get(id).is_some_and(|seen| seen.template_write);
+        let target = if template_write {
+            None
+        } else {
+            usage.const_target(*id, info, options.ignore_read_before_assign)
+        };
+        match target {
+            Some(span) => {
+                targets.insert(*id, span);
+            }
+            None if info.group != 0 => {
+                blocked_groups.insert(info.group);
+            }
+            None => {}
+        }
     }
-    let assigned = info.has_init && matches!(info.kind, Kind::Let | Kind::Const | Kind::Var);
-    let verb = if assigned {
-        "is assigned a value but never used."
-    } else {
-        "is defined but never used."
-    };
-    Some(cstr!("'{name}' {verb}{allowance}"))
+    for (id, span) in targets {
+        let Some(info) = classified.infos.get(&id) else {
+            continue;
+        };
+        if matches!(options.destructuring, Destructuring::All)
+            && blocked_groups.contains(&info.group)
+        {
+            continue;
+        }
+        let name = scoping.symbol_name(id);
+        findings.push((
+            span,
+            cstr!("'{name}' is never reassigned. Use 'const' instead"),
+        ));
+    }
 }
 
-fn prefer_message(
-    name: &str,
-    info: &BindingInfo,
-    used: bool,
-    mutated: bool,
-    suppressed: &FxHashSet<u32>,
-    options: &super::options::PreferConstOptions,
-) -> Option<String> {
-    if mutated || !matches!(info.kind, Kind::Let | Kind::Var) {
-        return None;
-    }
-    if options.ignore_read_before_assign && !info.has_init && used {
-        return None;
-    }
-    if matches!(options.destructuring, Destructuring::All)
-        && info.group != 0
-        && suppressed.contains(&info.group)
-    {
-        return None;
-    }
-    Some(cstr!("'{name}' is never reassigned. Use 'const' instead"))
-}
-
+/// Parameters the `args` setting checks. ESLint `after-used` skips a plain
+/// parameter only when a later parameter is referenced; destructured,
+/// defaulted, and rest parameters are always checked.
 fn param_reports(
-    functions: &[Vec<Vec<oxc_syntax::symbol::SymbolId>>],
-    scoping: &Scoping,
-    template: &TemplateUse,
-    apply_template: bool,
-    options: &UnusedOptions,
-) -> FxHashSet<oxc_syntax::symbol::SymbolId> {
+    functions: &[Vec<ParamSlot>],
+    seen: &FxHashMap<SymbolId, Seen>,
+    args: Args,
+) -> FxHashSet<SymbolId> {
     let mut reports = FxHashSet::default();
-    if matches!(options.args, super::options::Args::None) {
+    if matches!(args, Args::None) {
         return reports;
     }
+    let referenced = |id: &SymbolId| {
+        seen.get(id)
+            .is_some_and(|seen| seen.facts.any_reference || seen.template_read)
+    };
     for slots in functions {
-        let mut last_used = None;
         for (index, slot) in slots.iter().enumerate() {
-            if slot
-                .iter()
-                .any(|id| symbol_used(scoping, *id, template, apply_template))
-            {
-                last_used = Some(index);
-            }
-        }
-        for (index, slot) in slots.iter().enumerate() {
-            let include = match options.args {
-                super::options::Args::All => true,
-                super::options::Args::None => false,
-                super::options::Args::AfterUsed => {
-                    last_used.map(|last| index > last).unwrap_or(true)
+            let include = match args {
+                Args::All | Args::None => true,
+                Args::AfterUsed => {
+                    !slot.plain
+                        || !slots
+                            .iter()
+                            .skip(index + 1)
+                            .any(|later| later.ids.iter().any(referenced))
                 }
             };
             if include {
-                reports.extend(slot.iter().copied());
+                reports.extend(slot.ids.iter().copied());
             }
         }
     }
     reports
-}
-
-fn suppressed_groups(
-    infos: &vize_l0::FxHashMap<oxc_syntax::symbol::SymbolId, BindingInfo>,
-    scoping: &Scoping,
-    template: &TemplateUse,
-    apply_template: bool,
-    options: &super::options::PreferConstOptions,
-) -> FxHashSet<u32> {
-    let mut groups = FxHashSet::default();
-    if !matches!(options.destructuring, Destructuring::All) {
-        return groups;
-    }
-    for (id, info) in infos {
-        if info.group != 0
-            && matches!(info.kind, Kind::Let | Kind::Var)
-            && symbol_mutated(scoping, *id, template, apply_template)
-        {
-            groups.insert(info.group);
-        }
-    }
-    groups
-}
-
-fn symbol_used(
-    scoping: &Scoping,
-    id: oxc_syntax::symbol::SymbolId,
-    template: &TemplateUse,
-    apply: bool,
-) -> bool {
-    let script = scoping.get_resolved_references(id).any(|reference| {
-        let flags = reference.flags();
-        flags.is_read() || flags.is_type() || flags.is_value_as_type()
-    });
-    script
-        || (apply
-            && scoping.symbol_scope_id(id) == scoping.root_scope_id()
-            && template.reads.contains(scoping.symbol_name(id)))
-}
-
-fn symbol_mutated(
-    scoping: &Scoping,
-    id: oxc_syntax::symbol::SymbolId,
-    template: &TemplateUse,
-    apply: bool,
-) -> bool {
-    if scoping
-        .symbol_flags(id)
-        .contains(SymbolFlags::ConstVariable)
-    {
-        return false;
-    }
-    scoping.symbol_is_mutated(id)
-        || (apply
-            && scoping.symbol_scope_id(id) == scoping.root_scope_id()
-            && template.writes.contains(scoping.symbol_name(id)))
-}
-
-fn matches_pattern(pattern: Option<&super::options::Pattern>, name: &str) -> bool {
-    pattern.is_some_and(|pattern| pattern.matches(name))
 }

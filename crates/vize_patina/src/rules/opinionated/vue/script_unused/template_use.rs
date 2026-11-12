@@ -90,11 +90,29 @@ fn walk_element(
         return;
     }
     // A script-setup component is used when the template names it as a tag.
-    // `<router-view>` resolves the same binding as `<RouterView>`.
-    if element.tag_type == ElementType::Component {
+    // `<router-view>` resolves the same binding as `<RouterView>`. Inside
+    // `<svg>` a non-native tag such as `<Swatch>` still resolves a component.
+    if element.tag_type == ElementType::Component
+        || (element.tag_type == ElementType::Element && !vize_l0::is_native_tag(element.tag))
+    {
         note_component_tag(element.tag, uses);
     }
     let mark = shadow.len();
+    for prop in element.props.iter() {
+        match prop {
+            // `ref="panel"` fills the script binding `panel`.
+            PropNode::Attribute(attribute) if attribute.name == "ref" => {
+                if let Some(value) = attribute.value.as_ref() {
+                    note_ref_name(value.content, uses);
+                }
+            }
+            // `v-focus` resolves the script binding `vFocus`.
+            PropNode::Directive(directive) if !is_builtin_directive(directive.name) => {
+                note_directive(directive.name, uses);
+            }
+            _ => {}
+        }
+    }
     for prop in element.props.iter() {
         let PropNode::Directive(directive) = prop else {
             continue;
@@ -177,8 +195,62 @@ fn note_component_tag(tag: &str, uses: &mut TemplateUse) {
             names.push(pascal);
         }
     }
-    for name in names {
-        uses.reads.insert(name);
+    uses.reads.extend(names);
+}
+
+fn is_builtin_directive(name: &str) -> bool {
+    matches!(
+        name,
+        "bind"
+            | "on"
+            | "if"
+            | "else"
+            | "else-if"
+            | "for"
+            | "show"
+            | "model"
+            | "slot"
+            | "text"
+            | "html"
+            | "cloak"
+            | "once"
+            | "pre"
+            | "memo"
+            | "is"
+    )
+}
+
+/// `v-focus` and `v-my-dir` resolve `vFocus` and `vMyDir`.
+fn note_directive(name: &str, uses: &mut TemplateUse) {
+    if name.is_empty() {
+        return;
+    }
+    let mut binding = CompactString::new("v");
+    let mut upper = true;
+    for ch in name.chars() {
+        if ch == '-' {
+            upper = true;
+            continue;
+        }
+        if upper {
+            binding.extend(ch.to_uppercase());
+            upper = false;
+        } else {
+            binding.push(ch);
+        }
+    }
+    uses.reads.insert(binding);
+}
+
+fn note_ref_name(value: &str, uses: &mut TemplateUse) {
+    let value = value.trim();
+    let mut chars = value.chars();
+    let valid = chars
+        .next()
+        .is_some_and(|first| first.is_alphabetic() || first == '_' || first == '$')
+        && chars.all(|ch| ch.is_alphanumeric() || ch == '_' || ch == '$');
+    if valid {
+        uses.reads.insert(CompactString::new(value));
     }
 }
 
@@ -207,7 +279,7 @@ fn push_alias(source: &str, shadow: &mut Vec<CompactString>) {
     }
 }
 
-fn note_expression(source: &str, shadow: &[CompactString], uses: &mut TemplateUse) {
+pub(super) fn note_expression(source: &str, shadow: &[CompactString], uses: &mut TemplateUse) {
     let source = source.trim();
     if source.is_empty() {
         return;

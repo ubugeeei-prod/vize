@@ -68,3 +68,21 @@ class UnsupportedFeaturesOptions {
   version: String? = null
   ignores: Listing<String>? = null
 }
+
+class NoUnusedScriptVarsOptions {
+  vars: ("all" | "local")? = null
+  varsIgnorePattern: String? = null
+  args: ("all" | "after-used" | "none")? = null
+  argsIgnorePattern: String? = null
+  caughtErrors: ("all" | "none")? = null
+  caughtErrorsIgnorePattern: String? = null
+  destructuredArrayIgnorePattern: String? = null
+  ignoreRestSiblings: Boolean? = null
+  ignoreClassWithStaticInitBlock: Boolean? = null
+  reportUsedIgnorePattern: Boolean? = null
+}
+
+class PreferConstOptions {
+  destructuring: ("any" | "all")? = null
+  ignoreReadBeforeAssign: Boolean? = null
+}

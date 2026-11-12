@@ -5129,6 +5129,43 @@
       }
     },
     {
+      "id": "linter/patina/compat-script-unused-reads-12883",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "patina-compat-script-unused-reads-12883",
+        "files": [
+          {
+            "path": "ScriptShapes.vue.txt",
+            "role": "third-party-script-unused-reads-reproduction",
+            "sha256": "119ef7dd30e82cc2b9c35c4c0f70cb5918e40b2af4867e4ffa98aae77d81f0e7"
+          },
+          {
+            "path": "TemplateUses.vue.txt",
+            "role": "third-party-script-unused-reads-reproduction",
+            "sha256": "361171929162e8e3a74620eb014e281c2b4d2a2cbfdf6196e70afb827160d423"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/patina/compat-semantics-12775",
       "state": "active",
       "targets": [
