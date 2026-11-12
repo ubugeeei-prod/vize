@@ -113,7 +113,10 @@ pub(super) fn collect_supported_files_for_include_roots(
     seen_roots.insert(normalized_project_root.clone());
 
     for include in includes {
-        let root = normalize_input_path(include.base_dir());
+        let Some(walk_base) = include.walk_base() else {
+            continue;
+        };
+        let root = normalize_input_path(walk_base);
         if root.is_dir()
             && !root.starts_with(&normalized_project_root)
             && seen_roots.insert(root.clone())

@@ -1,0 +1,28 @@
+<script setup lang="ts">
+import { ref } from "vue";
+import Button from "./Button.vue";
+import IconStar from "./IconStar.vue";
+import { vTooltip } from "./tooltip";
+import { tones } from "./tones";
+import Unused from "./Unused.vue";
+
+let clicks = 0;
+const anchor = ref<HTMLElement | null>(null);
+const label = "Save";
+const hidden = "never shown";
+</script>
+
+<art title="Button" component="./Button.vue">
+  <variant name="Default" default>
+    <Button :label="label" @click="clicks++">
+      <icon-star />
+    </Button>
+  </variant>
+  <section>
+    <variant name="Tones">
+      <div ref="anchor" v-tooltip>
+        <Button v-for="tone in tones" :key="tone" :tone="tone" />
+      </div>
+    </variant>
+  </section>
+</art>

@@ -5,7 +5,6 @@ import type { ComputedRef } from "vue";
 import { useControllableState } from "../../foundations/controllable-state/controllable-state.ts";
 import { useDeterministicId } from "../../foundations/id/deterministic-id.ts";
 import type {
-  NativeSelectAriaInvalid,
   NativeSelectDirection,
   NativeSelectEmits,
   NativeSelectExpose,

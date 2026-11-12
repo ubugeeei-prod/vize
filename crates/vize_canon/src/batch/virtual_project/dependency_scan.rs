@@ -33,7 +33,6 @@ use crate::batch::error::CorsaResult;
 use crate::batch::import_rewriter::ModuleSpecifierFactsCache;
 
 use super::VirtualProject;
-use super::setup_props::RuntimePropResolveCache;
 
 mod declaration_sources;
 use declaration_sources::source_backed;
@@ -72,7 +71,7 @@ impl VirtualProject {
         // imported props; rebuilding that snapshot per file repeats the entire
         // imported-type graph. Derived runtime facts remain root-local, and a
         // later walk always starts fresh.
-        let runtime_prop_resolve_cache = RuntimePropResolveCache::default();
+        let runtime_prop_resolve_cache = self.runtime_prop_resolve_cache();
         let aliases = self.dependency_alias_map();
         let mut source_cache = FxHashMap::default();
         let alias_prefixes: Vec<CompactString> = aliases

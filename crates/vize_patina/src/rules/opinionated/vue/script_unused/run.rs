@@ -3,6 +3,7 @@
 use oxc_ast::ast::Program;
 use vize_relief::RootNode;
 
+use super::art_use::is_art_variant_source;
 use super::decide::{Which, analyze};
 use super::options::{PreferConstOptions, UnusedOptions};
 use super::sfc_use::note_sfc_uses;
@@ -19,6 +20,13 @@ pub(super) fn report(
     rule: &'static str,
 ) {
     if !ctx.is_rule_enabled(rule) {
+        return;
+    }
+    if root.is_some()
+        && ctx
+            .sfc_descriptor()
+            .is_some_and(|descriptor| is_art_variant_source(descriptor, ctx.source))
+    {
         return;
     }
     let mut template = root.map(template_use).unwrap_or_else(TemplateUse::empty);

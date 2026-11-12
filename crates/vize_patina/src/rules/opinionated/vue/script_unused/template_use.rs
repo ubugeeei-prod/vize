@@ -35,7 +35,7 @@ pub(super) fn template_use(root: &RootNode<'_>) -> TemplateUse {
     uses
 }
 
-fn walk_children(
+pub(super) fn walk_children(
     children: &[TemplateChildNode<'_>],
     source: &str,
     shadow: &mut Vec<CompactString>,

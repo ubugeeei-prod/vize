@@ -112,20 +112,50 @@ impl<'a> Tree<'a> {
     }
 }
 
+/// Text of an encoded source file and the UTF-16 `[pos, end)` of node `index`
+/// in it. `pos` includes the node's leading trivia, where JSDoc lives.
+pub(in crate::linter) fn node_text(data: &[u8], index: usize) -> corsa::Result<(&str, u32, u32)> {
+    let tree = Tree::read(data)?;
+    let root_data = tree.field(1, 20)?;
+    if root_data & 0xc000_0000 != 0x8000_0000 {
+        return Err(invalid("missing source-file metadata"));
+    }
+    let root = tree
+        .extended
+        .checked_add((root_data & 0x3fff_ffff) as usize)
+        .ok_or_else(|| invalid("metadata overflow"))?;
+    if root.checked_add(12).is_none_or(|end| end > tree.structured) {
+        return Err(invalid("truncated source-file metadata"));
+    }
+    let text = std::str::from_utf8(tree.string(word(data, root)?)?)
+        .map_err(|_| invalid("invalid source text"))?;
+    let count = (tree.node_end - tree.nodes) / NODE;
+    if index == 0 || index >= count {
+        return Err(invalid("missing declaration node"));
+    }
+    Ok((text, tree.field(index, 4)?, tree.field(index, 8)?))
+}
+
 pub(in crate::linter) fn locations(
     data: &[u8],
     source: &str,
     ranges: &[(u32, u32)],
 ) -> corsa::Result<Vec<NodeHandle>> {
-    locations_each(data, source, ranges)?.into_iter().collect()
+    locations_each(data, source, ranges, &[])?
+        .into_iter()
+        .collect()
 }
 
 /// One node per range. The outer error rejects the encoded tree; an inner
 /// error rejects only its own range, so one bad range leaves the rest usable.
+/// A range whose `widen` entry is set resolves to the outermost node spanning
+/// exactly the same text: a type reference `A` and its name share one span,
+/// and the checker types only the reference.
 pub(in crate::linter) fn locations_each(
     data: &[u8],
     source: &str,
     ranges: &[(u32, u32)],
+    widen: &[bool],
 ) -> corsa::Result<Vec<corsa::Result<NodeHandle>>> {
     let tree = Tree::read(data)?;
     let root_data = tree.field(1, 20)?;
@@ -165,7 +195,8 @@ pub(in crate::linter) fn locations_each(
     ordered.sort_unstable();
     Ok(ranges
         .iter()
-        .map(|&(start, end)| {
+        .enumerate()
+        .map(|(position, &(start, end))| {
             if start >= end || end > length {
                 return Err(invalid("invalid expression range"));
             }
@@ -181,6 +212,10 @@ pub(in crate::linter) fn locations_each(
                     && tree.field(index, 4)? <= start
                     && tree.field(index, 8)? >= end
                 {
+                    if widen.get(position).copied().unwrap_or(false) {
+                        index = outermost_same_span(&tree, index, count)?;
+                    }
+                    let kind = tree.field(index, 0)?;
                     return Ok(NodeHandle::from(cstr!("{index}.{kind}.{path}").as_str()));
                 }
                 index = tree.field(index, 16)? as usize;
@@ -191,6 +226,23 @@ pub(in crate::linter) fn locations_each(
             Err(invalid("cyclic syntax parents"))
         })
         .collect())
+}
+
+/// Climb from `index` while the parent spans the same text.
+fn outermost_same_span(tree: &Tree<'_>, mut index: usize, count: usize) -> corsa::Result<usize> {
+    let span = (tree.field(index, 4)?, tree.field(index, 8)?);
+    for _ in 0..count {
+        let parent = tree.field(index, 16)? as usize;
+        if parent <= 1
+            || parent >= count
+            || tree.field(parent, 0)? == u32::MAX
+            || (tree.field(parent, 4)?, tree.field(parent, 8)?) != span
+        {
+            return Ok(index);
+        }
+        index = parent;
+    }
+    Err(invalid("cyclic syntax parents"))
 }
 
 #[cfg(test)]

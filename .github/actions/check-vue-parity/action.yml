@@ -85,6 +85,7 @@ runs:
           tests/_fixtures/_git/mobile-web-best-practice \
           tests/_fixtures/_git/nuxt-ui \
           tests/_fixtures/_git/pinia \
+          tests/_fixtures/_git/reka-ui \
           tests/_fixtures/_git/vue-router \
           tests/_fixtures/_git/vue-element-admin \
           tests/_fixtures/_git/vue2-elm \

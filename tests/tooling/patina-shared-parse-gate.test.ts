@@ -30,6 +30,8 @@ const LEDGER: Readonly<Record<string, number>> = {
   "rules/opinionated/vue/no_multiple_objects_in_class.rs": 1,
   "rules/opinionated/vue/require_component_registration.rs": 1,
   // #12878: template expressions are re-parsed with a parenthesized retry.
+  // #12927: a `generic="..."` attribute is parsed as a type parameter list.
+  "rules/opinionated/vue/script_unused/sfc_use.rs": 1,
   "rules/opinionated/vue/script_unused/template_use.rs": 2,
   "rules/opinionated/vue/require_component_registration/async_setup.rs": 1,
   "rules/opinionated/vue/this_in_template/expressions.rs": 3,

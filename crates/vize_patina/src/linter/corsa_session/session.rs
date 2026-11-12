@@ -52,6 +52,8 @@ impl CorsaTypeAwareSession {
         let tsconfig_contents = session_tsconfig_contents(&project_root, tsconfig_path.as_deref());
         let vue_path_aliases =
             super::vue_dependencies::PathAliases::from_tsconfig(&tsconfig_contents, &project_root);
+        let no_unchecked_indexed_access =
+            compiler_option_enabled(&tsconfig_contents, "noUncheckedIndexedAccess");
         profile!(
             "patina.corsa_session.write_tsconfig",
             std::fs::write(&config_path, tsconfig_contents.as_str(),)
@@ -130,7 +132,13 @@ impl CorsaTypeAwareSession {
             #[cfg(test)]
             last_refresh: super::virtual_documents::RefreshCounts::default(),
             closed: false,
+            no_unchecked_indexed_access,
         })
+    }
+
+    /// Whether the session tsconfig sets `noUncheckedIndexedAccess`.
+    pub(in crate::linter) fn no_unchecked_indexed_access(&self) -> bool {
+        self.no_unchecked_indexed_access
     }
 
     pub(in crate::linter) fn matches_source_file(
@@ -280,3 +288,16 @@ fn api_mode_for_executable(path: &std::path::Path) -> ApiMode {
 
 #[cfg(test)]
 pub(super) mod tests;
+
+/// Reads a boolean `compilerOptions` entry from rendered tsconfig JSON.
+fn compiler_option_enabled(tsconfig: &str, option: &str) -> bool {
+    serde_json::from_str::<serde_json::Value>(tsconfig)
+        .ok()
+        .and_then(|value| {
+            value
+                .get("compilerOptions")
+                .and_then(|options| options.get(option))
+                .and_then(serde_json::Value::as_bool)
+        })
+        .unwrap_or(false)
+}

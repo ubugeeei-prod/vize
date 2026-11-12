@@ -169,7 +169,7 @@ impl VirtualProject {
         &mut self,
         sources: impl IntoIterator<Item = (&'a Path, &'a str)>,
     ) -> CorsaResult<()> {
-        let runtime_prop_resolve_cache = RuntimePropResolveCache::default();
+        let runtime_prop_resolve_cache = self.runtime_prop_resolve_cache();
         for (path, content) in sources {
             self.register_content_with_prop_cache(
                 path,
@@ -211,7 +211,7 @@ impl VirtualProject {
         // The batch shares one immutable dependency snapshot so an imported type
         // module is resolved once per batch, while each root keeps its own
         // runtime-prop maps: their cycle cuts depend on that root.
-        let shared_type_sources = RuntimePropResolveCache::default();
+        let shared_type_sources = self.runtime_prop_resolve_cache();
         let root_caches: Vec<RuntimePropResolveCache> = paths
             .iter()
             .map(|_| shared_type_sources.with_shared_type_sources())
@@ -343,7 +343,7 @@ impl VirtualProject {
         }
 
         let preserve_unused_diagnostics = self.tsconfig_preserves_unused_diagnostics();
-        let runtime_prop_resolve_cache = RuntimePropResolveCache::default();
+        let runtime_prop_resolve_cache = self.runtime_prop_resolve_cache();
         let mut mirrorable_project_files: FxHashSet<PathBuf> =
             canonical_paths.iter().cloned().collect();
         mirrorable_project_files.extend(self.original_index.keys().cloned());

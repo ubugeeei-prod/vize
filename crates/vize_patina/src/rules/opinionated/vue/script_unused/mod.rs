@@ -1,5 +1,6 @@
 //! Template-aware script unused-vars and prefer-const.
 
+mod art_use;
 mod classify;
 mod decide;
 mod exports;
@@ -16,6 +17,8 @@ pub(crate) use prefer_const::PreferConst;
 
 #[cfg(test)]
 mod tests;
+#[cfg(test)]
+mod tests_art;
 #[cfg(test)]
 mod tests_issue;
 #[cfg(test)]

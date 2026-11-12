@@ -208,7 +208,7 @@ function toSvg(options: Partial<SignatureSvgOptions> = {}): string {
 }
 
 async function toDataUrl(options: Partial<SignatureDataUrlOptions> = {}): Promise<string> {
-  return await signatureToDataUrl(value.value, exportOptions(options));
+  return signatureToDataUrl(value.value, exportOptions(options));
 }
 
 function currentValue(): SignatureValue {

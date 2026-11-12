@@ -52,10 +52,14 @@ export function runVizeCheck(
   return { ...result, report: JSON.parse(result.stdout) as CheckReport };
 }
 
-export function runVueTsc(workspaceDir: string, vueTscPath: string): CommandResult {
+export function runVueTsc(
+  workspaceDir: string,
+  vueTscPath: string,
+  tsconfigPath = "tsconfig.json",
+): CommandResult {
   return runCommand(
     vueTscPath,
-    ["--noEmit", "--pretty", "false", "-p", "tsconfig.json"],
+    ["--noEmit", "--pretty", "false", "-p", tsconfigPath],
     workspaceDir,
   );
 }

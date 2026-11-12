@@ -3,13 +3,16 @@ mod macro_positions;
 mod opt_in;
 mod options_api;
 mod severity;
+mod typescript_constituents;
+mod typescript_parity;
+mod typescript_promises;
 mod typescript_shapes;
+mod typescript_type_shapes;
 use super::{
     RULE_NO_FLOATING_PROMISES, RULE_NO_REACTIVITY_LOSS, RULE_NO_UNSAFE_TEMPLATE_BINDING,
     RULE_REQUIRE_TYPED_EMITS, RULE_REQUIRE_TYPED_PROPS, lint_sfc_with_corsa,
 };
 use crate::{LintPreset, Linter};
-
 use assertion::{
     assert_absent, assert_absent_note, assert_absent_rules, assert_reports, assert_reports_message,
     assert_reports_note, failure_context,

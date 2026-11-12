@@ -74,21 +74,23 @@ impl PreparedSfc {
             &mut self.should_warn_for_props,
             &mut self.should_warn_for_emits,
         )?;
-        if let Some(boolean) = &plan.boolean {
-            strict_boolean::evaluate(
-                session,
-                &plan.content,
-                boolean,
-                linter.strict_boolean_options,
-                &mut self.result,
-            )?;
-        }
+        // Script-statement findings (no-floating-promises among them) keep
+        // their place ahead of strict-boolean-expressions.
         if let Some(typescript) = &plan.typescript {
             typescript_eslint::evaluate(
                 session,
                 typescript,
                 &plan.content,
                 linter,
+                &mut self.result,
+            )?;
+        }
+        if let Some(boolean) = &plan.boolean {
+            strict_boolean::evaluate(
+                session,
+                &plan.content,
+                boolean,
+                linter.strict_boolean_options,
                 &mut self.result,
             )?;
         }
