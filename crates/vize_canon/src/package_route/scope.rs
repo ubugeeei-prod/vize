@@ -35,6 +35,15 @@ pub fn is_package_member(source: &Path, package_root: &Path) -> bool {
             .all(|dir| !is_named_package_root(dir))
 }
 
+/// The root of the named package `source` belongs to: its nearest ancestor
+/// whose `package.json` has a `name`.
+pub fn named_package_root(source: &Path) -> Option<&Path> {
+    source
+        .ancestors()
+        .skip(1)
+        .find(|dir| is_named_package_root(dir))
+}
+
 fn is_named_package_root(dir: &Path) -> bool {
     let manifest = dir.join("package.json");
     if !manifest.is_file() {

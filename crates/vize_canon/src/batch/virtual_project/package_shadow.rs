@@ -16,12 +16,20 @@ use super::VirtualProject;
 use super::build::mirrored_virtual_path;
 use super::canonical_paths::{CanonicalPathGuard, canonical_path};
 
+/// Directory of the shadows that give a package's private `#` imports their
+/// scope manifest.
+pub(super) const PRIVATE_PACKAGE_SCOPES_DIR: &str = "__vize_package_scopes__";
+
 #[derive(Clone, Default)]
 pub(super) struct PackageShadowTopology {
     pub(super) files: FxHashMap<PathBuf, PathBuf>,
     pub(super) manifests: FxHashMap<PathBuf, PathBuf>,
     pub(super) aliases: FxHashMap<PathBuf, PathBuf>,
     pub(super) install_roots: FxHashMap<PathBuf, PathBuf>,
+    /// The route's own package when its importer lives inside it (a nested
+    /// consumer such as a library's `docs/` app, or a self-reference): its
+    /// members are that importer's own sources on disk and are not copied.
+    pub(super) local_package_root: Option<PathBuf>,
     #[cfg(test)]
     pub(super) route_visits: usize,
     #[cfg(test)]
@@ -108,6 +116,13 @@ impl VirtualProject {
             return Ok(());
         };
         let mut topology = PackageShadowTopology::default();
+        // A private `#` scope still needs its package's members beside it.
+        if !binding.specifier.starts_with('#') {
+            let package_root = canonical_path(&route.package_root);
+            if canonical_path(&binding.importer_path).starts_with(&package_root) {
+                topology.local_package_root = Some(package_root);
+            }
+        }
 
         if let Some(scope_manifest) = binding.context.scope_manifest_path.as_ref()
             && scope_manifest.is_file()
@@ -352,6 +367,13 @@ impl VirtualProject {
         topology: &mut PackageShadowTopology,
     ) {
         let normalized_root = canonical_path(source_root);
+        // An importer inside the package reaches its members as its own
+        // sources, and the package's entry modules forward to their one
+        // mirror copy. Copying every member into each importer scope only
+        // multiplies the shadow (nuxt/ui's docs app: 683 files per scope).
+        if topology.local_package_root.as_deref() == Some(normalized_root.as_path()) {
+            return;
+        }
         let mut source_files = self
             .package_source_index
             .get(&normalized_root)
@@ -419,6 +441,6 @@ fn private_package_shadow_root(virtual_root: &Path, manifest_path: &Path) -> Pat
         }
     }
     virtual_root
-        .join("__vize_package_scopes__")
+        .join(PRIVATE_PACKAGE_SCOPES_DIR)
         .join(key.as_str())
 }

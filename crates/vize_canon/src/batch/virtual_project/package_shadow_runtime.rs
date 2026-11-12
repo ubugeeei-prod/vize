@@ -39,6 +39,15 @@ impl VirtualProject {
             {
                 return Ok(forwarder);
             }
+            // See `enclosing_library_forwarder`: a source module of a library
+            // that contains the project forwards to its one mirror copy, whose
+            // own relative imports then resolve beside it.
+            if !is_declaration_file(&file.original_path)
+                && self.shadows_an_enclosing_library(shadow_path, &file.original_path)
+                && let Some(forwarder) = enclosing_library_forwarder(file)
+            {
+                return Ok(forwarder);
+            }
             // Package TS/declaration modules keep their authored spelling in
             // the importer-local mirror. Native TypeScript can then apply
             // `allowArbitraryExtensions` to `./Widget.vue` and select the
@@ -98,6 +107,18 @@ impl VirtualProject {
                 "export {{ default }} from \"./{source_name}.tsx\";\nexport * from \"./{source_name}.tsx\";\n"
             ));
         }
+        // A library that contains the checked project (nuxt/ui's `docs/` app)
+        // shares its sources with it: the project's own config usually
+        // includes them, and from the consumer they resolve to the same files
+        // on disk. A copy here would check every component once more per
+        // importer scope, so the companion forwards to the one generated
+        // module, the identity the checker also reaches through a rooted
+        // re-export.
+        if self.shadows_an_enclosing_library(shadow_path, &file.original_path)
+            && let Some(forwarder) = enclosing_library_forwarder(file)
+        {
+            return Ok(forwarder);
+        }
         // Corsa is explicitly activated on the Canon mirror tsconfig before
         // these files are opened, so the shared-helper ambient belongs to the
         // same native project. Keep ordinary Vue companions byte-identical to
@@ -105,6 +126,18 @@ impl VirtualProject {
         // authored TS/declaration shadows deliberately fail closed for
         // canonical coordinates when their bytes differ.
         Ok(file.content.clone())
+    }
+
+    /// Whether `original` belongs to a library that contains the program
+    /// root, so its mirror copy is a first-party module of this program. A
+    /// private `#` scope keeps its authored copies: those imports resolve
+    /// against the scope manifest beside them.
+    fn shadows_an_enclosing_library(&self, shadow_path: &Path, original: &Path) -> bool {
+        !shadow_path.starts_with(
+            self.virtual_root
+                .join(super::package_shadow::PRIVATE_PACKAGE_SCOPES_DIR),
+        ) && crate::package_route::named_package_root(original)
+            .is_some_and(|root| self.project_root.starts_with(root))
     }
 
     pub(super) fn package_shadow_dependency_links(
@@ -215,6 +248,29 @@ impl<'a> DependencyLinkScan<'a> {
         self.links.dedup();
         self.links
     }
+}
+
+/// A shadow module that re-exports the one mirror copy of a source of a
+/// library enclosing the project. The library's sources are the project's own
+/// on disk (its config often includes them), so the checker must reach them
+/// once, as it does the authored files, not once more per importer scope.
+fn enclosing_library_forwarder(file: &super::VirtualFile) -> Option<CompactString> {
+    let target = file.virtual_path.to_str()?;
+    let vue = file
+        .original_path
+        .extension()
+        .is_some_and(|extension| extension == "vue");
+    let mut forwarder = cstr!("export * from \"{target}\";\n");
+    if vue || has_default_export(&file.content) {
+        forwarder.push_str(&cstr!("export {{ default }} from \"{target}\";\n"));
+    }
+    Some(forwarder)
+}
+
+/// Whether a TypeScript module declares a default export. A forwarder may
+/// only name `default` when the target has one.
+fn has_default_export(content: &str) -> bool {
+    content.contains("export default") || content.contains(" as default")
 }
 
 fn declaration_shadow_forwarder(shadow_path: &Path) -> Option<CompactString> {
