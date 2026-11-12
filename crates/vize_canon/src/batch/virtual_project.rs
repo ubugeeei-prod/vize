@@ -115,6 +115,7 @@ pub use package_route_reachability::{
 };
 mod package_shadow;
 mod package_shadow_owners;
+mod package_shadow_rooted;
 mod package_shadow_runtime;
 mod package_shadow_scope;
 mod package_source_index;
@@ -249,7 +250,7 @@ pub struct VirtualProject {
 
     /// The effective Vue config explicitly owns the ambient `useTemplateRef`.
     /// Imported bindings are authenticated from their source syntax instead.
-    configured_global_template_ref: bool,
+    global_template_ref: tsconfig_gen::vue_compiler_options::GlobalTemplateRef,
 
     /// Effective TypeScript source membership and JavaScript diagnostic policy.
     source_policy: SourceFilePolicy,

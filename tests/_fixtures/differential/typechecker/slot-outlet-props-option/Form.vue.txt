@@ -1,0 +1,11 @@
+<script setup lang="ts">
+// A value that may be missing, like a prop read through a composable.
+const loading = undefined as boolean | undefined
+defineSlots<{ submit(props: { loading: boolean }): any }>()
+</script>
+
+<template>
+  <form>
+    <slot name="submit" :loading="loading" />
+  </form>
+</template>

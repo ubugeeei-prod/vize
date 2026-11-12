@@ -1,0 +1,10 @@
+<script setup lang="ts" generic="T extends string | number = string">
+import { ref } from 'vue'
+defineProps<{ placeholder?: string, modelValue?: T }>()
+const inputRef = ref<HTMLInputElement | null>(null)
+defineExpose({ inputRef })
+</script>
+
+<template>
+  <input ref="inputRef" />
+</template>

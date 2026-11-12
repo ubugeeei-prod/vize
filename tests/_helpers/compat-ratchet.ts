@@ -132,8 +132,14 @@ export const compatProbes: CompatProbe[] = [
       "docs/app/components/content/examples/breadcrumb",
       "docs/app/components/content/examples/navigation-menu",
       "docs/app/components/content/examples/tabs",
+      // Auto-imported `useTemplateRef` on a registered component.
+      "docs/app/components/content/examples/input",
+      // A slot scope on `computed(() => range ? DateRangeField : DateField)`.
+      "src/runtime/components/InputDate.vue",
+      "src/runtime/components/InputTime.vue",
     ],
-    include: ["docs/app/components/content/examples"],
+    include: ["docs/app/components/content/examples", "src/runtime/components"],
+    packages: ["reka-ui"],
   },
   {
     // reka-ui's own `tsconfig.json` is solution-style; `paths` live in the

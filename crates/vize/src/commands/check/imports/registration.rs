@@ -127,7 +127,9 @@ struct RegistrationFrontier {
 }
 
 /// A file inside a package that imports that package's own name pulls the
-/// package entry, not an internal alias such as `#/composables/file`.
+/// package entry, not an internal alias such as `#/composables/file`. Only the
+/// package's own scope self-references: a nested consumer (nuxt/ui's `docs/`,
+/// with its own `package.json`) reaches the library through `node_modules`.
 pub(super) fn importer_is_inside_own_package_entry(
     importer: &Path,
     route: &vize_canon::PackageRoute,
@@ -140,7 +142,7 @@ pub(super) fn importer_is_inside_own_package_entry(
         || specifier
             .strip_prefix(name)
             .is_some_and(|rest| rest.starts_with('/'));
-    own_entry && importer.starts_with(&route.package_root)
+    own_entry && vize_canon::is_package_self_reference_scope(importer, &route.package_root)
 }
 
 pub(super) fn non_relative_import_needs_virtual_registration(

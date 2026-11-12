@@ -46,6 +46,7 @@ mod static_emit_gate;
 mod strict_extra_keys;
 mod template_ref_targets;
 mod template_ref_unwrap;
+mod union_host_slot_payload;
 mod unowned_owned_keys;
 mod usage_helpers;
 

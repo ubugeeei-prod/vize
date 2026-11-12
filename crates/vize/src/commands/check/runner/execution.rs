@@ -215,6 +215,7 @@ pub(super) fn prepare_program(
     checker.set_package_route_resolver(input.package_route_resolver);
     checker.set_package_routes(input.package_routes);
     checker.set_foreign_declarations(input.foreign_declarations);
+    checker.set_ambient_vue_template_ref(declares_vue_template_ref_global(input.files));
     checker
         .scan_paths(input.files)
         .map_err(|error| cstr!("{}", error))?;
@@ -387,4 +388,61 @@ mod vue_target_tests {
             VueVersion::V3
         );
     }
+}
+
+/// Whether one of the program's ambient declarations makes the global
+/// `useTemplateRef` Vue's own export, as Nuxt's auto-imports do. Nuxt reaches
+/// them through `/// <reference path>` from `.nuxt/nuxt.d.ts`, so those edges
+/// are followed too.
+fn declares_vue_template_ref_global(files: &[PathBuf]) -> bool {
+    let mut queue: Vec<PathBuf> = files
+        .iter()
+        .filter(|path| is_declaration_path(path))
+        .cloned()
+        .collect();
+    let mut visited = FxHashSet::default();
+    while let Some(path) = queue.pop() {
+        if !visited.insert(path.clone()) {
+            continue;
+        }
+        let Ok(content) = std::fs::read_to_string(&path) else {
+            continue;
+        };
+        if vize_canon::batch::declares_vue_template_ref_global(&content) {
+            return true;
+        }
+        let Some(dir) = path.parent() else {
+            continue;
+        };
+        queue.extend(
+            reference_paths(&content)
+                .map(|reference| dir.join(reference))
+                .filter(|reference| is_declaration_path(reference)),
+        );
+    }
+    false
+}
+
+fn is_declaration_path(path: &std::path::Path) -> bool {
+    path.file_name()
+        .and_then(|name| name.to_str())
+        .is_some_and(|name| name.ends_with(".d.ts"))
+}
+
+/// The `path` of every leading `/// <reference path="..." />` directive.
+fn reference_paths(content: &str) -> impl Iterator<Item = &str> {
+    content
+        .lines()
+        .map(str::trim_start)
+        .take_while(|line| line.is_empty() || line.starts_with("//") || line.starts_with("/*"))
+        .filter_map(|line| line.strip_prefix("///"))
+        .filter_map(|line| line.trim_start().strip_prefix("<reference"))
+        .filter_map(|line| line.split_once("path=").map(|(_, rest)| rest))
+        .filter_map(|rest| {
+            let quote = rest
+                .chars()
+                .next()
+                .filter(|quote| matches!(quote, '"' | '\''))?;
+            rest.get(1..)?.split_once(quote).map(|(path, _)| path)
+        })
 }

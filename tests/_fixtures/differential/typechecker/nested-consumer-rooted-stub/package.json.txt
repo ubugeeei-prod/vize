@@ -1,0 +1,10 @@
+{
+  "name": "@x/ui",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/module.d.mts",
+      "import": "./dist/module.mjs"
+    }
+  }
+}

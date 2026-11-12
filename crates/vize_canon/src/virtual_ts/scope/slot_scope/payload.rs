@@ -23,6 +23,13 @@ const SLOT_RESOLVER_HELPERS: &str =
 /// type witnesses still report errors. A compiler error-any provider retains
 /// its own intrinsic identity instead of receiving a fabricated replacement.
 /// Missing registry providers keep their framework-compatible silent fallback.
+///
+/// The payload distributes over a union host (`<component :is="flag ? A : B">`
+/// or a computed that picks one of two components): the scope receives the
+/// props of whichever component renders, `PA | PB`. Inferring one parameter
+/// from the union of both slot functions would intersect them instead, and a
+/// `v-if` on the shape of one member would narrow the other branch to `never`.
+/// A member without the slot contributes nothing, because it never calls it.
 const SLOT_PAYLOAD_HELPER: &str = include_str!("../../helpers/declarations/slot-payload.d.ts.txt");
 
 /// Emit helpers only when a component owns an authored slot scope. Keeping

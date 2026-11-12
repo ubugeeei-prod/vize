@@ -32,6 +32,7 @@ mod check_canon_generic_inference_cli;
 mod check_canon_generic_props_cli;
 mod check_canon_generic_sfc_mount_cli;
 mod check_canon_graphql_cli;
+mod check_canon_nuxt_parity_cli;
 mod check_canon_path_alias_json_cli;
 mod check_canon_recent_issues_cli;
 mod check_canon_recent_type_regressions_cli;

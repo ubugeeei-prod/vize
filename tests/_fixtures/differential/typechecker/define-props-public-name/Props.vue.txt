@@ -1,0 +1,14 @@
+<script setup lang="ts">
+interface Props {
+  label: string
+  disabled?: boolean
+}
+const props = defineProps<Props>()
+// The message names the macro's result type the way Vue declares it.
+const count: number = props
+void count
+</script>
+
+<template>
+  <span>{{ props.label }}</span>
+</template>
