@@ -8,6 +8,7 @@ use crate::linter::corsa_session::{ExpressionFact, ExpressionQuery};
 use corsa::lint::LintNode;
 use serde_json::{Value, json};
 use std::collections::{HashMap, HashSet};
+use vize_l0::FxHashSet;
 
 pub(super) fn prepare(source: &str, collected: &mut Collected) {
     let deprecated = scan::deprecated_names(source);
@@ -19,12 +20,63 @@ pub(super) fn prepare(source: &str, collected: &mut Collected) {
     }
 }
 
-pub(super) fn queries(nodes: &[LintNode]) -> Vec<ExpressionQuery> {
+/// Which checker facts about type nodes the enabled rules read.
+#[derive(Clone, Copy)]
+pub(super) struct TypeNodeWants {
+    /// Union constituents of every union/intersection member.
+    parts: bool,
+    /// The empty-object probe on intersections and generic references.
+    empty_object: bool,
+}
+
+impl TypeNodeWants {
+    /// What the enabled `type/` rules need.
+    pub(super) fn for_rules(rules: &[&str]) -> Self {
+        Self {
+            parts: rules.iter().any(|rule| {
+                matches!(
+                    *rule,
+                    "type/no-redundant-type-constituents" | "type/no-duplicate-type-constituents"
+                )
+            }),
+            empty_object: rules.contains(&"type/no-generated-empty-object-type"),
+        }
+    }
+
+    pub(super) fn empty_object(self) -> bool {
+        self.empty_object
+    }
+}
+
+pub(super) fn queries(nodes: &[LintNode], wants: TypeNodeWants) -> Vec<ExpressionQuery> {
+    let mut members = FxHashSet::default();
+    if wants.parts {
+        for node in nodes {
+            type_members(node, &mut members);
+        }
+    }
     let mut queries = Vec::new();
     for node in nodes {
-        collect_queries(node, &mut queries);
+        collect_queries(node, wants, &members, &mut queries);
     }
     queries
+}
+
+/// Ranges of every union/intersection member under `node`.
+fn type_members(node: &LintNode, members: &mut FxHashSet<(u32, u32)>) {
+    if matches!(node.kind.as_str(), "TSUnionType" | "TSIntersectionType") {
+        for member in node.child_list("types").unwrap_or(&[]) {
+            members.insert((member.range.start, member.range.end));
+        }
+    }
+    for child in node.children.values() {
+        type_members(child, members);
+    }
+    for children in node.child_lists.values() {
+        for child in children {
+            type_members(child, members);
+        }
+    }
 }
 
 pub(super) fn enrich(source: &str, nodes: &mut [LintNode], program: &Value) {
@@ -34,7 +86,12 @@ pub(super) fn enrich(source: &str, nodes: &mut [LintNode], program: &Value) {
 pub(super) fn apply(nodes: &mut [LintNode], facts: &[ExpressionFact], queries: &[ExpressionQuery]) {
     let mut by_range = HashMap::<(u32, u32), &ExpressionFact>::new();
     for (fact, query) in facts.iter().zip(queries) {
-        by_range.insert((query.start, query.end), fact);
+        // Callee queries share a range with the callee's own query; keep the
+        // richer type-node facts when two queries land on one range.
+        let slot = by_range.entry((query.start, query.end)).or_insert(fact);
+        if slot.type_parts.is_empty() && slot.empty_object.is_none() {
+            *slot = fact;
+        }
     }
     for node in nodes {
         apply_node(node, &by_range);
@@ -172,37 +229,52 @@ fn stamp_member(
     }
 }
 
-fn collect_queries(node: &LintNode, queries: &mut Vec<ExpressionQuery>) {
+fn collect_queries(
+    node: &LintNode,
+    wants: TypeNodeWants,
+    members: &FxHashSet<(u32, u32)>,
+    queries: &mut Vec<ExpressionQuery>,
+) {
     queries.push(ExpressionQuery {
         start: node.range.start,
         end: node.range.end,
         symbols: node.kind == "Identifier",
-        signatures: false,
+        parts: members.contains(&(node.range.start, node.range.end)),
+        empty_object: wants.empty_object && may_generate_empty_object(node),
+        ..ExpressionQuery::default()
     });
     if node.kind == "CallExpression" {
         if let Some(callee) = node.child("callee") {
             queries.push(ExpressionQuery {
                 start: callee.range.start,
                 end: callee.range.end,
-                symbols: false,
                 signatures: true,
+                ..ExpressionQuery::default()
             });
         }
     }
     for child in node.children.values() {
-        collect_queries(child, queries);
+        collect_queries(child, wants, members, queries);
     }
     for children in node.child_lists.values() {
         for child in children {
-            collect_queries(child, queries);
+            collect_queries(child, wants, members, queries);
         }
     }
+}
+
+/// The nodes `no-generated-empty-object-type` inspects: intersections and
+/// type references with type arguments.
+fn may_generate_empty_object(node: &LintNode) -> bool {
+    node.kind == "TSIntersectionType"
+        || (node.kind == "TSTypeReference" && node.child("typeArguments").is_some())
 }
 
 fn apply_node(node: &mut LintNode, facts: &HashMap<(u32, u32), &ExpressionFact>) {
     if let Some(fact) = facts.get(&(node.range.start, node.range.end)) {
         node.type_texts.clone_from(&fact.type_texts);
         node.property_names.clone_from(&fact.property_names);
+        type_node_fields(node, fact);
         if fact.deprecated && node.field_bool("__declarationName") != Some(true) {
             node.fields.insert(
                 "__symbolFacts".into(),
@@ -238,5 +310,60 @@ fn apply_node(node: &mut LintNode, facts: &HashMap<(u32, u32), &ExpressionFact>)
                 apply_node(child, facts);
             }
         }
+    }
+}
+
+// TypeScript 7 TypeFlags, from microsoft/typescript-go internal/checker/types.go.
+const TYPE_FLAG_UNDEFINED: u32 = 1 << 2;
+const TYPE_PART_LABELS: &[(u32, &str)] = &[
+    (1, "any"),
+    (1 << 1, "unknown"),
+    (1 << 18, "never"),
+    (1 << 5, "string"),
+    (1 << 6, "number"),
+    (1 << 7, "bigint"),
+    (1 << 8, "boolean"),
+    (1 << 10, "stringLiteral"),
+    (1 << 11, "numberLiteral"),
+    (1 << 12, "bigintLiteral"),
+    (1 << 13, "booleanLiteral"),
+    (1 << 22, "templateLiteral"),
+];
+
+/// Checker facts the union/intersection rules read off one member node.
+fn type_node_fields(node: &mut LintNode, fact: &ExpressionFact) {
+    if let Some(empty) = fact.empty_object {
+        node.fields.insert("__emptyObjectType".into(), json!(empty));
+    }
+    if fact.error_type {
+        // An unresolved name: duplicate detection skips it. It gets no part
+        // flags, because the virtual SFC module can leave names unresolved
+        // that the user's TypeScript resolves (hoisted declarations, lib
+        // types), and reporting those as `error` types would be wrong.
+        node.fields.insert("__isErrorType".into(), json!(true));
+        return;
+    }
+    if fact.type_parts.is_empty() {
+        return;
+    }
+    let parts = fact
+        .type_parts
+        .iter()
+        .map(|part| {
+            let label = TYPE_PART_LABELS
+                .iter()
+                .find(|(mask, _)| part.flags & mask != 0)
+                .map_or("other", |(_, label)| label);
+            json!({ "flag": label, "flags": part.flags, "text": part.text.as_str() })
+        })
+        .collect::<Vec<_>>();
+    node.fields
+        .insert("__typePartFlags".into(), Value::Array(parts));
+    if let Some(id) = &fact.type_id {
+        node.fields
+            .insert("__resolvedTypeId".into(), json!(id.as_str()));
+    }
+    if fact.type_flags & TYPE_FLAG_UNDEFINED != 0 {
+        node.fields.insert("__isUndefinedType".into(), json!(true));
     }
 }

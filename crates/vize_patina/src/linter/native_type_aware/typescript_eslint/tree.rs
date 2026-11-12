@@ -231,6 +231,9 @@ fn ancestor_fact(value: &Value, kind: &str, key_in_parent: Option<&str>) -> Valu
     if let Some(key) = key_in_parent {
         fact.insert("keyInParent".into(), json!(key));
     }
+    if value.get("optional").and_then(Value::as_bool) == Some(true) {
+        fact.insert("optional".into(), json!(true));
+    }
     if matches!(kind, "ClassDeclaration" | "ClassExpression") {
         if let Some(name) = value
             .get("id")
@@ -323,10 +326,11 @@ fn normalize(value: &mut Value) {
     }
 }
 
+/// TS-ESTree has no parenthesized expression or type nodes.
 fn parenthesized(value: &Value) -> Option<Value> {
-    if value.get("type").and_then(Value::as_str) == Some("ParenthesizedExpression") {
-        value.get("expression").cloned()
-    } else {
-        None
+    match value.get("type").and_then(Value::as_str) {
+        Some("ParenthesizedExpression") => value.get("expression").cloned(),
+        Some("TSParenthesizedType") => value.get("typeAnnotation").cloned(),
+        _ => None,
     }
 }

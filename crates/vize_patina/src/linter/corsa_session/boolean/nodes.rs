@@ -117,6 +117,18 @@ pub(in crate::linter) fn locations(
     source: &str,
     ranges: &[(u32, u32)],
 ) -> corsa::Result<Vec<NodeHandle>> {
+    locations_widened(data, source, ranges, &[])
+}
+
+/// Like [`locations`], but a range whose `widen` entry is set resolves to the
+/// outermost node spanning exactly the same text. A type reference `A` and
+/// its name share one span; the checker types only the reference.
+pub(in crate::linter) fn locations_widened(
+    data: &[u8],
+    source: &str,
+    ranges: &[(u32, u32)],
+    widen: &[bool],
+) -> corsa::Result<Vec<NodeHandle>> {
     let tree = Tree::read(data)?;
     let root_data = tree.field(1, 20)?;
     if root_data & 0xc000_0000 != 0x8000_0000 {
@@ -155,7 +167,8 @@ pub(in crate::linter) fn locations(
     ordered.sort_unstable();
     ranges
         .iter()
-        .map(|&(start, end)| {
+        .enumerate()
+        .map(|(position, &(start, end))| {
             if start >= end || end > length {
                 return Err(invalid("invalid expression range"));
             }
@@ -171,6 +184,10 @@ pub(in crate::linter) fn locations(
                     && tree.field(index, 4)? <= start
                     && tree.field(index, 8)? >= end
                 {
+                    if widen.get(position).copied().unwrap_or(false) {
+                        index = outermost_same_span(&tree, index, count)?;
+                    }
+                    let kind = tree.field(index, 0)?;
                     return Ok(NodeHandle::from(cstr!("{index}.{kind}.{path}").as_str()));
                 }
                 index = tree.field(index, 16)? as usize;
@@ -181,6 +198,23 @@ pub(in crate::linter) fn locations(
             Err(invalid("cyclic syntax parents"))
         })
         .collect()
+}
+
+/// Climb from `index` while the parent spans the same text.
+fn outermost_same_span(tree: &Tree<'_>, mut index: usize, count: usize) -> corsa::Result<usize> {
+    let span = (tree.field(index, 4)?, tree.field(index, 8)?);
+    for _ in 0..count {
+        let parent = tree.field(index, 16)? as usize;
+        if parent <= 1
+            || parent >= count
+            || tree.field(parent, 0)? == u32::MAX
+            || (tree.field(parent, 4)?, tree.field(parent, 8)?) != span
+        {
+            return Ok(index);
+        }
+        index = parent;
+    }
+    Err(invalid("cyclic syntax parents"))
 }
 
 #[cfg(test)]

@@ -79,6 +79,7 @@ pub(super) fn evaluate(
         .copied()
         .filter_map(corsa_name)
         .collect::<Vec<_>>();
+    let wants = facts::TypeNodeWants::for_rules(&enabled);
     let metas = default_type_aware_registry().metas();
     let mut listeners = corsa_rules
         .iter()
@@ -92,13 +93,15 @@ pub(super) fn evaluate(
         })
         .flatten()
         .collect::<HashSet<_>>();
-    listeners.insert("TSTypeAliasDeclaration");
     listeners.insert("VariableDeclarator");
+    if wants.empty_object() {
+        listeners.extend(gaps::EMPTY_OBJECT_LISTENERS);
+    }
     let listener_list = listeners.iter().copied().collect::<Vec<_>>();
     for script in &plan.scripts {
         let mut collected = tree::collect(&script.content, script.tsx, &listener_list);
         facts::prepare(&script.content, &mut collected);
-        let script_queries = queries(&collected.nodes);
+        let script_queries = queries(&collected.nodes, wants);
         let mut generated = Vec::new();
         let mut used = Vec::new();
         for (index, query) in script_queries.iter().enumerate() {
@@ -110,8 +113,7 @@ pub(super) fn evaluate(
             generated.push(ExpressionQuery {
                 start,
                 end,
-                symbols: query.symbols,
-                signatures: query.signatures,
+                ..*query
             });
             used.push(index);
         }
