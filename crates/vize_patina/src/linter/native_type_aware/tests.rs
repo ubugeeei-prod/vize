@@ -5,6 +5,7 @@ mod options_api;
 mod severity;
 mod template_event_handlers;
 mod typescript_constituents;
+mod typescript_jsdoc_callee;
 mod typescript_parity;
 mod typescript_promises;
 mod typescript_shapes;

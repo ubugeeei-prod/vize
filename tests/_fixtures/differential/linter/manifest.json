@@ -3394,6 +3394,37 @@
       }
     },
     {
+      "id": "linter/jsdoc-callee-type-facts",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "jsdoc-callee-type-facts",
+        "files": [
+          {
+            "path": "JsDocCall.vue.txt",
+            "role": "jsdoc-callee-reproduction",
+            "sha256": "237cffab14ca1c3d0dd8adf42fff5e77c7fa70759100a0b5bafcc3b2228c5b35"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/jsx-child-expression-control-6890",
       "state": "active",
       "targets": [

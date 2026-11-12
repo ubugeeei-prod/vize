@@ -200,11 +200,21 @@ pub(in crate::linter) fn locations_each(
             if start >= end || end > length {
                 return Err(invalid("invalid expression range"));
             }
+            // `pos` includes leading trivia, so a JSDoc comment's nodes start
+            // inside the trivia of the node that follows them, and sort after
+            // it. Climbing from one would reach the commented statement, never
+            // the expression. Start from the last node that reaches into the
+            // range instead: one that ends before it is not on the range's
+            // ancestor chain, and skipping it never skips that chain.
             let before = ordered.partition_point(|&(position, _)| position <= start);
-            let mut index = ordered
-                .get(before.wrapping_sub(1))
-                .ok_or_else(|| invalid("missing expression node"))?
-                .1;
+            let mut index = None;
+            for &(_, candidate) in ordered.get(..before).into_iter().flatten().rev() {
+                if tree.field(candidate, 8)? > start {
+                    index = Some(candidate);
+                    break;
+                }
+            }
+            let mut index = index.ok_or_else(|| invalid("missing expression node"))?;
             for _ in 0..count {
                 let kind = tree.field(index, 0)?;
                 if index > 1
