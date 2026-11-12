@@ -559,3 +559,62 @@ fn check_auto_imported_use_template_ref_reads_the_template_registry() {
 
     let _ = std::fs::remove_dir_all(&project_root);
 }
+
+/// A one-file project from a pinned fixture, with `vue_compiler_options`
+/// merged into the shared test tsconfig.
+fn create_fixture_case(
+    name: &str,
+    fixture: &str,
+    file: &str,
+    vue_compiler_options: Option<serde_json::Value>,
+) -> PathBuf {
+    let project_root = unique_case_dir(name);
+    let _ = std::fs::remove_dir_all(&project_root);
+    std::fs::create_dir_all(project_root.join("src")).unwrap();
+    link_workspace_vue(&project_root).unwrap();
+    write_tsconfig(&project_root);
+    if let Some(options) = vue_compiler_options {
+        let path = project_root.join("tsconfig.json");
+        let mut config: serde_json::Value =
+            serde_json::from_str(&std::fs::read_to_string(&path).unwrap()).unwrap();
+        config["vueCompilerOptions"] = options;
+        std::fs::write(&path, serde_json::to_vec_pretty(&config).unwrap()).unwrap();
+    }
+    let input = cstr!("{file}.txt");
+    let source = std::fs::read(
+        workspace_root()
+            .join("tests/_fixtures/differential/typechecker")
+            .join(fixture)
+            .join(input.as_str()),
+    )
+    .unwrap();
+    std::fs::write(project_root.join("src").join(file), source).unwrap();
+    project_root
+}
+
+/// The checker names Vize's private copy of Vue's `defineProps` result type;
+/// the message must name it the way Vue declares it, as `vue-tsc` does.
+#[test]
+fn check_define_props_messages_use_vue_public_type_names() {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
+        return;
+    };
+    let project_root = create_fixture_case(
+        "define-props-public-name",
+        "define-props-public-name",
+        "Props.vue",
+        None,
+    );
+
+    let (rows, stdout) = check_diagnostic_rows(&project_root, &corsa_path);
+    // vue-tsc 3.3.14 reports exactly this one row for the same project.
+    assert_eq!(
+        rows,
+        vec![
+            "error:8:7 [TS2322] Type 'DefineProps<LooseRequired<Props>, \"disabled\">' is not assignable to type 'number'."
+        ],
+        "{stdout}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}

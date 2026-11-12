@@ -1,12 +1,14 @@
 //! Restore authored paths in Corsa/TypeScript diagnostic messages.
 
-use vize_canon::batch::restore_virtual_vue_specifiers;
+use vize_canon::batch::{present_internal_type_names, restore_virtual_vue_specifiers};
 
-/// Preserve checker wording while hiding private virtual-document paths.
+/// Preserve checker wording while hiding private virtual-document paths and
+/// Vize's private Vue helper aliases.
 /// Diagnostic text alone cannot prove Vue Ref identity, template unwrapping,
 /// or whether inserting `.value` would fix an error.
 pub(in crate::ide) fn rewrite_corsa_message(message: &str, authored_source: &str) -> String {
-    strip_corsa_overlay_paths(&restore_virtual_vue_specifiers(message, authored_source))
+    let restored = restore_virtual_vue_specifiers(message, authored_source);
+    strip_corsa_overlay_paths(&present_internal_type_names(&restored))
 }
 
 pub(super) fn strip_corsa_overlay_paths(message: &str) -> String {
