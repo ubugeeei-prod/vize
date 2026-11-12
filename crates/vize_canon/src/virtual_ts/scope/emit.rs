@@ -120,15 +120,23 @@ pub(super) fn append_v_for_comment(
     alias: &str,
     source: &str,
 ) {
-    append!(*ts, "\n{indent}// {label}: {alias} in ");
-    for c in source.chars() {
+    // The comment is one line. A line break in the alias or the source would
+    // otherwise become code and stop the semantic pass (#12932).
+    append!(*ts, "\n{indent}// {label}: ");
+    push_comment_text(ts, alias);
+    append!(*ts, " in ");
+    push_comment_text(ts, source);
+    ts.push('\n');
+}
+
+fn push_comment_text(ts: &mut crate::virtual_ts::TextBuf, text: &str) {
+    for c in text.chars() {
         if c == '\n' || c == '\r' {
             ts.push(' ');
         } else {
             ts.push(c);
         }
     }
-    ts.push('\n');
 }
 
 /// Emit the opening of a v-for scope as
@@ -389,6 +397,21 @@ mod tests {
         assert_eq!(
             super::pattern_identifier_offset("[first, ...it]", "it"),
             Some(11)
+        );
+    }
+
+    #[test]
+    fn multi_line_v_for_alias_stays_inside_the_scope_comment() {
+        let alias = "{\n      bar,\n      baz,\n    }";
+        let source = "items\r\n";
+        let mut ts = crate::virtual_ts::TextBuf::default();
+        super::append_v_for_comment(&mut ts, "  ", "v-for scope", alias, source);
+        let flat = |text: &str| text.replace(['\n', '\r'], " ");
+        let expected = format!("\n  // v-for scope: {} in {}\n", flat(alias), flat(source));
+        assert_eq!(ts.as_str(), expected);
+        assert_eq!(
+            ts.as_str().lines().filter(|line| !line.is_empty()).count(),
+            1
         );
     }
 }
