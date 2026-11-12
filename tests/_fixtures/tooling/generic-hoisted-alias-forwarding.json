@@ -1,0 +1,27 @@
+{
+  "schema": "vize.genericHoistedAliasSource.v1",
+  "credit": {
+    "compiled": false,
+    "native": false,
+    "performance": false
+  },
+  "files": [
+    {
+      "path": "crates/vize_canon/src/virtual_ts/generator.rs",
+      "before": {
+        "bytes": 37936,
+        "sha256": "96863ed850e4905ad266c48594969e8752297048a073fa9feeba62e29a5074f1"
+      },
+      "after": {
+        "bytes": 37959,
+        "sha256": "8d6315d1c1a16ea0a63caf479728491e3b07cfd3b59cd18f5d984e26693c92e1"
+      },
+      "hunks": [
+        {
+          "before": "                    hoisted_type_spans.get(&span).copied(),\n",
+          "after": "                    module_statements::hoisted(&hoisted_type_spans, script, span),\n"
+        }
+      ]
+    }
+  ]
+}

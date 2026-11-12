@@ -4,6 +4,7 @@ mod declaration_emit;
 mod emit_only;
 mod explicit_generic_events;
 mod generated_name_shadowing;
+mod hoisted_alias_forwarding;
 mod inherited_boolean;
 mod inline_callback_context_props;
 mod inline_callback_guarded_props;

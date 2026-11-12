@@ -308,3 +308,42 @@ fn generic_event_alias_keeps_indirect_callable_and_model_contracts() {
         assert!(virtual_ts.contains("__EmitProps<Emits<T>>"), "{virtual_ts}");
     }
 }
+
+#[test]
+fn hoisted_generic_declarations_forward_the_parameters_to_each_other() {
+    // Setup reads `Expose` as `$HoistedGeneric1<TStep>`, which is the module
+    // declaration. A bare `StepValue` there would be `StepValue<any>`.
+    let script = r#"type StepValue = TStep["value"]
+type Expose = { step: TStep | null; value: StepValue | null; children: Expose[] }
+defineExpose({} as Expose)
+"#;
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup_with_generic(script, Some("TStep extends { value: string }"));
+    let summary = analyzer.finish();
+    let output =
+        generate_virtual_ts_with_offsets(&summary, Some(script), None, 0, 0, &Default::default());
+    let (module_scope, _) = output
+        .code
+        .split_once("// ========== Setup Scope ==========")
+        .expect("setup scope marker present");
+    let declarations: Vec<_> = module_scope
+        .lines()
+        .filter(|line| line.starts_with("type StepValue") || line.starts_with("type Expose"))
+        .collect();
+    assert_eq!(
+        declarations,
+        [
+            r#"type StepValue<TStep extends { value: string } = any> = TStep["value"]"#,
+            "type Expose<TStep extends { value: string } = any> = { step: TStep | null; value: StepValue<TStep> | null; children: Expose<TStep>[] }",
+        ]
+    );
+    // The authored reference keeps its span; the arguments map to nothing.
+    let value = script.find("value: StepValue").unwrap() + "value: ".len();
+    let generated = output.mapping.to_generated(value).unwrap();
+    assert_eq!(
+        output
+            .code
+            .get(generated..generated + "StepValue<TStep>".len()),
+        Some("StepValue<TStep>")
+    );
+}
