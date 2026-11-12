@@ -222,3 +222,28 @@ fn bases_stop_at_the_first_wildcard() {
     .unwrap();
     assert_eq!(hidden.literal_directories(), Path::new(".vitepress/theme"));
 }
+
+/// `tsc` 6.0.3 `getIncludeBasePath("/**/*.vue")` is `""`: a rooted spec with
+/// no literal directory walks the current directory, never the filesystem
+/// root. reka-ui's docs tsconfig includes `"/**/*.vue"` and `"/**/*.ts"`.
+#[test]
+fn rooted_wildcard_specs_never_walk_the_filesystem_root() {
+    let walk_base = |spec: &str| {
+        TsconfigWildcard::new(Path::new(ROOT), spec, TsconfigWildcardUsage::Include)
+            .and_then(|spec| spec.walk_base().map(Path::to_path_buf))
+    };
+    assert_eq!(walk_base("/**/*.vue"), None);
+    assert_eq!(walk_base("/*.ts"), None);
+    assert_eq!(
+        walk_base("/vize-wildcard-fixture/**/*.ts"),
+        Some(PathBuf::from("/vize-wildcard-fixture"))
+    );
+    assert_eq!(
+        walk_base("src/**/*.vue"),
+        Some(PathBuf::from(ROOT).join("src"))
+    );
+    let rooted =
+        TsconfigWildcard::new(Path::new(ROOT), "/**/*.vue", TsconfigWildcardUsage::Include)
+            .unwrap();
+    assert!(rooted.matches(&PathBuf::from(ROOT).join("src/i.vue"), true));
+}

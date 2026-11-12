@@ -1,0 +1,6 @@
+export type AsTag = 'a' | 'button' | 'div' | ({} & string)
+
+export interface PrimitiveProps {
+  asChild?: boolean
+  as?: AsTag
+}

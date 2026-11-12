@@ -134,6 +134,13 @@ impl GlobSpec {
         self.0.base()
     }
 
+    /// The directory `tsc` walks for this entry, or `None` when the entry is
+    /// rooted at the filesystem root with no literal directory (`"/**/*.vue"`):
+    /// `tsc` then walks only the project. See [`TsconfigWildcard::walk_base`].
+    pub(super) fn walk_base(&self) -> Option<&Path> {
+        self.0.walk_base()
+    }
+
     /// The literal directories the entry spells out below its config.
     pub(super) fn literal_directories(&self) -> &Path {
         self.0.literal_directories()

@@ -35,6 +35,12 @@ export type CompatProbe = {
   packages?: string[];
   /** Extra compilerOptions merged over the canonical probe tsconfig. */
   compilerOptions?: Record<string, unknown>;
+  /**
+   * Drive both tools through this config instead of `tsconfig.json`, which is
+   * then written as a solution-style shell (`files: []` plus `references`),
+   * the layout reka-ui ships: the nearest `tsconfig.json` declares no `paths`.
+   */
+  tsconfigName?: string;
 };
 
 export type CompatSummary = {
@@ -121,8 +127,31 @@ export const compatProbes: CompatProbe[] = [
   },
   {
     fixtureId: "nuxt-ui",
-    includePaths: ["docs/app/components/content/examples/tabs"],
-    include: ["docs/app/components/content/examples/tabs"],
+    includePaths: [
+      "docs/app/components/content/examples/accordion",
+      "docs/app/components/content/examples/breadcrumb",
+      "docs/app/components/content/examples/navigation-menu",
+      "docs/app/components/content/examples/tabs",
+    ],
+    include: ["docs/app/components/content/examples"],
+  },
+  {
+    // reka-ui's own `tsconfig.json` is solution-style; `paths` live in the
+    // referenced app config. These directories carry the primitives whose
+    // templates read props inherited from `PrimitiveProps` through `@/`.
+    fixtureId: "reka-ui",
+    includePaths: [
+      "packages/core/src/Collection",
+      "packages/core/src/Pagination",
+      "packages/core/src/Primitive",
+      "packages/core/src/RovingFocus",
+      "packages/core/src/Toolbar",
+      "packages/core/src/shared",
+    ],
+    include: ["packages/core/src"],
+    packages: ["@vueuse/core"],
+    compilerOptions: { paths: { "@/*": ["./packages/core/src/*"] } },
+    tsconfigName: "tsconfig.app.json",
   },
   {
     fixtureId: "pinia",
@@ -202,12 +231,17 @@ export async function runCompatProbe(probe: CompatProbe): Promise<CompatProbeRes
       for (const name of probe.packages ?? []) {
         symlinkWorkspacePackage(fixture.workspaceDir, name);
       }
-      fixture.write("tsconfig.json", `${JSON.stringify(probeTsconfig(probe), null, 2)}\n`);
+      const tsconfigName = probe.tsconfigName ?? "tsconfig.json";
+      fixture.write(tsconfigName, `${JSON.stringify(probeTsconfig(probe), null, 2)}\n`);
+      if (tsconfigName !== "tsconfig.json") {
+        const shell = { files: [], references: [{ path: `./${tsconfigName}` }] };
+        fixture.write("tsconfig.json", `${JSON.stringify(shell, null, 2)}\n`);
+      }
 
       const vizeStartedAt = Date.now();
       let vize: ReturnType<typeof runVizeCheck>;
       try {
-        vize = runVizeCheck(fixture.workspaceDir, corsaPath, []);
+        vize = runVizeCheck(fixture.workspaceDir, corsaPath, [], tsconfigName);
       } catch (error) {
         throw new Error(
           `vize check did not produce a JSON report for ${probe.fixtureId}; ` +
@@ -222,7 +256,7 @@ export async function runCompatProbe(probe: CompatProbe): Promise<CompatProbeRes
       );
 
       const vueTscStartedAt = Date.now();
-      const vueTsc = runVueTsc(fixture.workspaceDir, vueTscPath);
+      const vueTsc = runVueTsc(fixture.workspaceDir, vueTscPath, tsconfigName);
       const vueTscDurationMs = Date.now() - vueTscStartedAt;
       console.log(
         "vize-compat-probe-observation " +

@@ -3,9 +3,10 @@
     reason = "walk-owned immutable source snapshots share parsed imports across roots"
 )]
 
+use std::path::Path;
 use std::sync::{Arc, Mutex};
 
-use vize_atelier_sfc::script::TypeSourceSnapshot;
+use vize_atelier_sfc::script::{SfcTypeProject, TypeSourceSnapshot};
 use vize_carton::{CompactString, FxHashMap, FxHashSet};
 use vize_croquis::macros::PropDefinition;
 
@@ -24,6 +25,25 @@ pub(crate) struct RuntimePropResolveCache {
 }
 
 impl RuntimePropResolveCache {
+    /// A fresh walk-owned snapshot that resolves bare specifiers (`paths`,
+    /// `baseUrl`, package conditions) through the program's own tsconfig.
+    ///
+    /// Without a bound project the snapshot discovers the nearest
+    /// `tsconfig.json` per importer. A solution-style config (`files: []`
+    /// plus `references`, as reka-ui ships) declares no `paths`, so imported
+    /// prop types behind an alias such as `@/Primitive` resolved to nothing
+    /// while TypeScript, driven by the selected tsconfig, resolved them.
+    pub(in crate::batch::virtual_project) fn for_tsconfig(tsconfig: Option<&Path>) -> Self {
+        let Some(project) = tsconfig.and_then(|path| SfcTypeProject::from_tsconfig(path).ok())
+        else {
+            return Self::default();
+        };
+        Self::with_type_sources(Arc::new(TypeSourceSnapshot::with_project(
+            std::iter::empty(),
+            project,
+        )))
+    }
+
     /// A per-root cache over a dependency snapshot owned elsewhere.
     pub(in crate::batch::virtual_project) fn with_type_sources(
         type_sources: Arc<TypeSourceSnapshot>,

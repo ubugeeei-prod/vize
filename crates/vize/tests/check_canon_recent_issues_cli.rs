@@ -298,6 +298,69 @@ forwardProps(props)
     let _ = std::fs::remove_dir_all(&project_root);
 }
 
+const SOLUTION_FIXTURE: &str = concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/typechecker/solution-tsconfig-imported-props/"
+);
+
+/// reka-ui's `packages/core/tsconfig.json` is solution-style (`files: []`
+/// plus `references`); its `paths` live in the referenced app config. Imported
+/// prop types behind `@/` must resolve through the selected `--tsconfig`, not
+/// the nearest `tsconfig.json`, or `as` (bound as `_as` in the template scope)
+/// is reported as a missing instance property.
+#[test]
+fn check_imported_props_resolve_through_the_selected_tsconfig_paths() {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
+        return;
+    };
+    let project_root = unique_case_dir("solution-tsconfig-imported-props");
+    let _ = std::fs::remove_dir_all(&project_root);
+    std::fs::create_dir_all(project_root.join("src/Primitive")).unwrap();
+    link_workspace_vue(&project_root).unwrap();
+    for (input, target) in [
+        ("tsconfig.json.txt", "tsconfig.json"),
+        ("tsconfig.app.json.txt", "tsconfig.app.json"),
+        ("Primitive.ts.txt", "src/Primitive/Primitive.ts"),
+        ("index.ts.txt", "src/Primitive/index.ts"),
+        ("Trigger.vue.txt", "src/Trigger.vue"),
+    ] {
+        let source = std::fs::read(Path::new(SOLUTION_FIXTURE).join(input)).unwrap();
+        std::fs::write(project_root.join(target), source).unwrap();
+    }
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .env("CORSA_PATH", &corsa_path)
+        .args([
+            "check",
+            "--tsconfig",
+            "tsconfig.app.json",
+            "--format",
+            "json",
+        ])
+        .output()
+        .unwrap();
+    let stdout = std::str::from_utf8(&output.stdout).unwrap();
+    let json: serde_json::Value = serde_json::from_str(stdout).unwrap();
+    let diagnostics: Vec<&str> = json["files"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .flat_map(|file| file["diagnostics"].as_array().unwrap().iter())
+        .filter_map(serde_json::Value::as_str)
+        .collect();
+    // vue-tsc 3.3.14 reports exactly this one row for the same project.
+    assert_eq!(
+        diagnostics,
+        vec![
+            "error:20:43 [TS2339] Property 'toFixed' does not exist on type 'boolean'. (source: <span>{{ as.toUpperCase() }} {{ asChild.toFixed() }}</span>)"
+        ],
+        "{stdout}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
+
 #[test]
 fn check_extended_interface_props_are_available_in_template_scope() {
     let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {

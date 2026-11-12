@@ -79,12 +79,13 @@ export function runCompatNonVacuityProbe({
 
     try {
       fixture.write(file, mutation.brokenSource);
-      const vize = runVizeCheck(fixture.workspaceDir, corsaPath, []);
+      const tsconfigName = probe.tsconfigName ?? "tsconfig.json";
+      const vize = runVizeCheck(fixture.workspaceDir, corsaPath, [], tsconfigName);
       assert.ok(
         vize.status === 0 || vize.status === 1,
         `${probe.fixtureId}: Vize non-vacuity probe must complete: exit ${vize.status}\n${vize.stderr}`,
       );
-      const vueTsc = runVueTsc(fixture.workspaceDir, vueTscPath);
+      const vueTsc = runVueTsc(fixture.workspaceDir, vueTscPath, tsconfigName);
       assert.ok(
         vueTsc.status === 0 || vueTsc.status === 1 || vueTsc.status === 2,
         `${probe.fixtureId}: vue-tsc non-vacuity probe must complete: exit ${vueTsc.status}\n${vueTsc.stderr}`,

@@ -3,7 +3,7 @@
 
 use std::io::{self, BufRead, Write};
 use std::panic::{AssertUnwindSafe, catch_unwind};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::sync::mpsc::{self, Receiver, Sender};
 use std::sync::{Mutex, PoisonError};
 use std::thread;
@@ -51,20 +51,35 @@ struct SharedTypeSources {
 #[derive(Default)]
 struct TypeSourceGeneration {
     active: usize,
-    current: Option<(ContentMapperTypeSources, Instant)>,
+    /// One snapshot per opened tsconfig: a snapshot binds its project's
+    /// `paths`, so projects with different configs never share one.
+    current: Vec<(Option<PathBuf>, ContentMapperTypeSources, Instant)>,
 }
 
 impl SharedTypeSources {
-    fn acquire(&self) -> ContentMapperTypeSources {
+    fn acquire(&self, config: Option<&Path>) -> ContentMapperTypeSources {
         let mut state = self.state.lock().unwrap_or_else(PoisonError::into_inner);
         state.active += 1;
-        if let Some((sources, created)) = &state.current
+        if let Some((_, sources, created)) = state
+            .current
+            .iter()
+            .find(|(owner, _, _)| owner.as_deref() == config)
             && created.elapsed() < TYPE_SOURCE_MAX_AGE
         {
             return sources.clone();
         }
-        let sources = ContentMapperTypeSources::default();
-        state.current = Some((sources.clone(), Instant::now()));
+        let sources = config.map_or_else(
+            ContentMapperTypeSources::default,
+            ContentMapperTypeSources::for_tsconfig,
+        );
+        state
+            .current
+            .retain(|(owner, _, _)| owner.as_deref() != config);
+        state.current.push((
+            config.map(Path::to_path_buf),
+            sources.clone(),
+            Instant::now(),
+        ));
         sources
     }
 
@@ -72,7 +87,7 @@ impl SharedTypeSources {
         let mut state = self.state.lock().unwrap_or_else(PoisonError::into_inner);
         state.active = state.active.saturating_sub(1);
         if state.active == 0 {
-            state.current = None;
+            state.current.clear();
         }
     }
 }
@@ -231,7 +246,7 @@ fn worker(
         };
         let Ok(job) = job else { break };
         let seq = job.seq;
-        let sources = type_sources.acquire();
+        let sources = type_sources.acquire(job.settings.type_config.as_deref());
         let bytes = match catch_unwind(AssertUnwindSafe(|| transform_frame(&job, &sources))) {
             Ok(Ok(bytes)) => bytes,
             Ok(Err(error)) => encode_error(&job.id, -32603, &cstr!("{error}")).unwrap_or_default(),
@@ -422,16 +437,33 @@ mod type_source_tests {
     #[test]
     fn overlapping_transforms_share_type_sources_until_idle() {
         let shared = SharedTypeSources::default();
-        let first = shared.acquire();
-        let overlapping = shared.acquire();
+        let first = shared.acquire(None);
+        let overlapping = shared.acquire(None);
         assert_eq!(first, overlapping);
         shared.release();
-        let joined = shared.acquire();
+        let joined = shared.acquire(None);
         assert_eq!(first, joined);
         shared.release();
         shared.release();
-        let after_idle = shared.acquire();
+        let after_idle = shared.acquire(None);
         assert_ne!(first, after_idle);
         shared.release();
+    }
+
+    #[test]
+    fn projects_with_different_tsconfigs_never_share_type_sources() {
+        use std::path::Path;
+
+        let shared = SharedTypeSources::default();
+        let app = shared.acquire(Some(Path::new("/project/tsconfig.app.json")));
+        let node = shared.acquire(Some(Path::new("/project/tsconfig.node.json")));
+        assert_ne!(app, node);
+        let joined = shared.acquire(Some(Path::new("/project/tsconfig.app.json")));
+        assert_eq!(app, joined);
+        let unbound = shared.acquire(None);
+        assert_ne!(app, unbound);
+        for _ in 0..4 {
+            shared.release();
+        }
     }
 }

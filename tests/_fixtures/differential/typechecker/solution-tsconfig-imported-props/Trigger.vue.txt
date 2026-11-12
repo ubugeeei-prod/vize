@@ -1,0 +1,21 @@
+<script lang="ts">
+import type { PrimitiveProps } from '@/Primitive'
+
+export interface TriggerProps extends PrimitiveProps {
+  disabled?: boolean
+}
+</script>
+
+<script setup lang="ts">
+const props = withDefaults(defineProps<TriggerProps>(), { as: 'button' })
+</script>
+
+<template>
+  <div
+    :data-type="as === 'button' ? 'button' : undefined"
+    :data-child="asChild ? 'yes' : 'no'"
+    :aria-disabled="disabled"
+    v-bind="props"
+  />
+  <span>{{ as.toUpperCase() }} {{ asChild.toFixed() }}</span>
+</template>
