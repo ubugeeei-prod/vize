@@ -63,16 +63,22 @@ pub(super) fn collect(source: &str, tsx: bool, listeners: &[&str]) -> Collected 
         &mut Vec::new(),
         None,
         None,
+        None,
         &mut nodes,
     );
     Collected { program, nodes }
 }
 
+#[expect(
+    clippy::too_many_arguments,
+    reason = "the walk threads the parent context alongside the ancestor stack"
+)]
 fn walk(
     value: &Value,
     source: &str,
     listeners: &[&str],
     ancestors: &mut Vec<Value>,
+    parent: Option<&Value>,
     parent_kind: Option<&str>,
     key: Option<&str>,
     out: &mut Vec<LintNode>,
@@ -82,6 +88,9 @@ fn walk(
     };
     if listeners.contains(&kind) {
         if let Some(mut node) = convert(value, source, DEPTH, parent_kind, key) {
+            if let Some(parent) = parent {
+                function_naming(&mut node, parent);
+            }
             node.fields
                 .insert("__ancestorFacts".into(), Value::Array(ancestors.clone()));
             node.fields
@@ -89,7 +98,7 @@ fn walk(
             out.push(node);
         }
     }
-    ancestors.push(ancestor_fact(value, kind, key));
+    ancestors.push(ancestor_fact(value, kind, key, parent));
     for (child_key, child) in object_entries(value) {
         match child {
             Value::Object(_) => walk(
@@ -97,6 +106,7 @@ fn walk(
                 source,
                 listeners,
                 ancestors,
+                Some(value),
                 Some(kind),
                 Some(child_key),
                 out,
@@ -108,6 +118,7 @@ fn walk(
                         source,
                         listeners,
                         ancestors,
+                        Some(value),
                         Some(kind),
                         Some(child_key),
                         out,
@@ -186,6 +197,76 @@ fn convert(
     Some(node)
 }
 
+/// How typescript-eslint names a function (`getFunctionNameWithKind`) and
+/// where its head starts (`getFunctionHeadLoc`), from its parent.
+fn function_naming(node: &mut LintNode, parent: &Value) {
+    if !matches!(
+        node.kind.as_str(),
+        "FunctionDeclaration" | "FunctionExpression" | "ArrowFunctionExpression"
+    ) {
+        return;
+    }
+    let parent_kind = parent
+        .get("type")
+        .and_then(Value::as_str)
+        .unwrap_or_default();
+    let member = matches!(
+        parent_kind,
+        "Property" | "MethodDefinition" | "PropertyDefinition"
+    ) && parent.get("value").and_then(|value| value.get("start"))
+        == Some(&json!(node.range.start));
+    if member {
+        let kind = match parent.get("kind").and_then(Value::as_str) {
+            Some("constructor") => "constructor",
+            Some("get") => "getter",
+            Some("set") => "setter",
+            _ => "method",
+        };
+        node.fields.insert("__functionKind".into(), json!(kind));
+        if parent.get("static").and_then(Value::as_bool) == Some(true) {
+            node.fields.insert("__functionStatic".into(), json!(true));
+        }
+        if let Some(start) = parent.get("start") {
+            node.fields
+                .insert("__functionHeadStart".into(), start.clone());
+        }
+        let computed = parent.get("computed").and_then(Value::as_bool) == Some(true);
+        let key = parent.get("key");
+        let name = match key.and_then(|key| key.get("type")).and_then(Value::as_str) {
+            Some("Identifier") if !computed => key.and_then(|key| key.get("name")),
+            Some("PrivateIdentifier") => key.and_then(|key| key.get("name")),
+            Some("Literal") => key.and_then(|key| key.get("value")),
+            _ => None,
+        };
+        let private = key.and_then(|key| key.get("type")).and_then(Value::as_str)
+            == Some("PrivateIdentifier");
+        if let Some(name) = name.and_then(Value::as_str) {
+            let mut text = vize_l0::String::from(if private { "#" } else { "" });
+            text.push_str(name);
+            node.fields
+                .insert("__functionName".into(), json!(text.as_str()));
+        }
+        return;
+    }
+    if node.field_str("__functionName").is_some() {
+        return;
+    }
+    let own = node
+        .child("id")
+        .and_then(|id| id.field_str("name"))
+        .map(str::to_owned);
+    let inferred = (parent_kind == "VariableDeclarator")
+        .then(|| parent.get("id"))
+        .flatten()
+        .filter(|id| id.get("type").and_then(Value::as_str) == Some("Identifier"))
+        .and_then(|id| id.get("name"))
+        .and_then(Value::as_str)
+        .map(str::to_owned);
+    if let Some(name) = own.or(inferred) {
+        node.fields.insert("__functionName".into(), json!(name));
+    }
+}
+
 fn ancestor_chain(ancestors: &[Value], key: Option<&str>) -> Value {
     let mut chain = Vec::new();
     let mut child_key = key.map(str::to_owned);
@@ -198,6 +279,9 @@ fn ancestor_chain(ancestors: &[Value], key: Option<&str>) -> Value {
             entry.insert("operator".into(), operator.clone());
         }
         let position = child_key.as_deref();
+        if let Some(position) = position {
+            entry.insert("childKey".into(), json!(position));
+        }
         entry.insert("childIsLeft".into(), json!(position == Some("left")));
         entry.insert("childIsRight".into(), json!(position == Some("right")));
         entry.insert(
@@ -213,7 +297,12 @@ fn ancestor_chain(ancestors: &[Value], key: Option<&str>) -> Value {
     Value::Array(chain)
 }
 
-fn ancestor_fact(value: &Value, kind: &str, key_in_parent: Option<&str>) -> Value {
+fn ancestor_fact(
+    value: &Value,
+    kind: &str,
+    key_in_parent: Option<&str>,
+    parent: Option<&Value>,
+) -> Value {
     let mut fact = Map::new();
     fact.insert("kind".into(), json!(kind));
     fact.insert(
@@ -251,8 +340,102 @@ fn ancestor_fact(value: &Value, kind: &str, key_in_parent: Option<&str>) -> Valu
             "paramNames".into(),
             Value::Array(names.into_iter().map(Value::String).collect()),
         );
+        let first_param_kind = value
+            .get("params")
+            .and_then(Value::as_array)
+            .and_then(|params| params.first())
+            .and_then(|param| param.get("type"))
+            .and_then(Value::as_str);
+        if let Some(first_param_kind) = first_param_kind {
+            fact.insert(
+                "firstParamIsIdentifier".into(),
+                json!(first_param_kind == "Identifier"),
+            );
+        }
+        if let Some(parent) = parent
+            && let Value::Object(extra) = call_parent_facts(value, parent)
+        {
+            fact.extend(extra);
+        }
+    }
+    if kind == "TryStatement" {
+        fact.insert(
+            "hasFinalizer".into(),
+            json!(
+                value
+                    .get("finalizer")
+                    .is_some_and(|finalizer| !finalizer.is_null())
+            ),
+        );
     }
     Value::Object(fact)
+}
+
+/// Where a function sits when it is a call argument: the callee's static
+/// member name, the argument index and whether a spread precedes it.
+fn call_parent_facts(function: &Value, parent: &Value) -> Value {
+    let mut fact = json!({});
+    fill_call_parent(&mut fact, function, parent);
+    fact
+}
+
+fn fill_call_parent(fact: &mut Value, function: &Value, parent: &Value) {
+    let Some(fact) = fact.as_object_mut() else {
+        return;
+    };
+    let Some(parent_kind) = parent.get("type").and_then(Value::as_str) else {
+        return;
+    };
+    fact.insert("parentKind".into(), json!(parent_kind));
+    if parent_kind != "CallExpression" {
+        return;
+    }
+    let Some(arguments) = parent.get("arguments").and_then(Value::as_array) else {
+        return;
+    };
+    let Some(index) = arguments.iter().position(|argument| {
+        argument.get("start") == function.get("start") && argument.get("end") == function.get("end")
+    }) else {
+        return;
+    };
+    fact.insert("parentArgumentIndex".into(), json!(index));
+    let spread = arguments
+        .iter()
+        .take(index)
+        .any(|argument| argument.get("type").and_then(Value::as_str) == Some("SpreadElement"));
+    fact.insert("parentLeadingSpreadArgument".into(), json!(spread));
+    let callee = parent.get("callee");
+    let callee = match callee
+        .and_then(|callee| callee.get("type"))
+        .and_then(Value::as_str)
+    {
+        Some("ChainExpression") => callee.and_then(|callee| callee.get("expression")),
+        _ => callee,
+    };
+    let Some(callee) = callee else {
+        return;
+    };
+    if callee.get("type").and_then(Value::as_str) != Some("MemberExpression") {
+        return;
+    }
+    let computed = callee
+        .get("computed")
+        .and_then(Value::as_bool)
+        .unwrap_or(false);
+    let property = callee.get("property");
+    let name = if computed {
+        property
+            .filter(|property| property.get("type").and_then(Value::as_str) == Some("Literal"))
+            .and_then(|property| property.get("value"))
+            .and_then(Value::as_str)
+    } else {
+        property
+            .and_then(|property| property.get("name"))
+            .and_then(Value::as_str)
+    };
+    if let Some(name) = name {
+        fact.insert("parentCalleePropertyName".into(), json!(name));
+    }
 }
 
 fn parameter_names(value: &Value) -> Vec<String> {

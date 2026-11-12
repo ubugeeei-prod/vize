@@ -254,7 +254,9 @@ pub(in crate::linter) fn prepare_with_descriptor<'a>(
         );
     }
 
-    if include_template_promise_queries {
+    // Script statements go through the typescript-eslint pass, which reads
+    // checker facts at the real nodes; only the template uses markers.
+    if include_template_promise_queries && !typescript_eslint::floating_active(linter) {
         for candidate in profile!(
             "patina.type_aware.collect_floating_candidates",
             collect_floating_candidates(script_content)
@@ -318,9 +320,8 @@ pub(in crate::linter) fn prepare_with_descriptor<'a>(
         )
     });
 
-    let typescript_plan = include_typescript.then(|| {
-        typescript_eslint::Plan::from_descriptor(descriptor, virtual_ts.mapping.clone())
-    });
+    let typescript_plan = include_typescript
+        .then(|| typescript_eslint::Plan::from_descriptor(descriptor, virtual_ts.mapping.clone()));
     if macro_queries.is_empty()
         && template_queries.is_empty()
         && template_promise_queries.is_empty()
@@ -328,7 +329,9 @@ pub(in crate::linter) fn prepare_with_descriptor<'a>(
         && boolean_plan
             .as_ref()
             .is_none_or(strict_boolean::Plan::is_empty)
-        && typescript_plan.as_ref().is_none_or(typescript_eslint::Plan::is_empty)
+        && typescript_plan
+            .as_ref()
+            .is_none_or(typescript_eslint::Plan::is_empty)
     {
         return finish(result, None);
     }

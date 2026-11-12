@@ -1,7 +1,9 @@
 //! Expression types from checker syntax nodes.
 //! Symbol types at a caret describe the callee, not the expression.
+pub(in crate::linter) use super::promise_facts::Facets;
+use super::promise_facts::{PromiseChecker, PromiseFacts};
 use super::{CorsaTypeAwareSession, boolean::checker_node_locations};
-use corsa::api::{ProjectSession, TypeHandle, TypeResponse};
+use corsa::api::{NodeHandle, ProjectSession, TypeHandle, TypeResponse};
 use corsa::fast::ToCompactString as _;
 use corsa::runtime::block_on;
 use vize_l0::{FxHashMap, String as CompactString};
@@ -16,6 +18,29 @@ pub(in crate::linter) struct ExpressionQuery {
     pub symbols: bool,
     /// Load the first call signature's parameter type texts.
     pub signatures: bool,
+    /// Promise and thenable facts to load for the expression type.
+    pub promise: Facets,
+    /// Load whether the contextual type is a void-returning function.
+    pub contextual: bool,
+    /// For a callee: `(is_new, argument_count)` to resolve the argument
+    /// positions that expect a void-returning function.
+    pub void_arguments: Option<(bool, usize)>,
+    /// For an object literal: method names to resolve against its
+    /// contextual type.
+    pub members: Vec<CompactString>,
+    /// For a class, an interface or an `implements` clause: member names to
+    /// look up on the heritage types.
+    pub heritage: Option<HeritageQuery>,
+}
+
+/// Heritage lookups for no-misused-promises' `checksVoidReturn.inheritedMethods`.
+#[derive(Clone, Debug)]
+pub(in crate::linter) struct HeritageQuery {
+    /// Read the heritage types as the base types of the declared type
+    /// (`extends`); otherwise the expression type is the heritage type.
+    pub base_types: bool,
+    /// Non-static member names of the class or interface.
+    pub members: Vec<CompactString>,
 }
 
 /// Facts a typescript-eslint rule reads off one expression.
@@ -31,6 +56,19 @@ pub(in crate::linter) struct ExpressionFact {
     pub deprecated: bool,
     /// Text of that `@deprecated` tag.
     pub deprecation_reason: String,
+    /// Promise and thenable facts of the expression type.
+    pub promise: Option<PromiseFacts>,
+    /// The contextual type is a void-returning function.
+    pub contextual_void: Option<bool>,
+    /// The contextual type is a thenable-returning function.
+    pub contextual_thenable: Option<bool>,
+    /// Argument positions that expect a void-returning function, and those
+    /// that accept a thenable-returning one.
+    pub void_arguments: Option<(Vec<usize>, Vec<usize>)>,
+    /// Method name to "the contextual property is a void-returning function".
+    pub contextual_members: Vec<(CompactString, bool)>,
+    /// `(member, heritage type text)` for heritage members that return void.
+    pub heritage_voids: Vec<(CompactString, CompactString)>,
 }
 
 impl Default for ExpressionFact {
@@ -47,6 +85,12 @@ impl ExpressionFact {
             parameter_type_texts: Vec::new(),
             deprecated: false,
             deprecation_reason: String::new(),
+            promise: None,
+            contextual_void: None,
+            contextual_thenable: None,
+            void_arguments: None,
+            contextual_members: Vec::new(),
+            heritage_voids: Vec::new(),
         }
     }
 }
@@ -113,7 +157,7 @@ async fn load(
             )
         })
         .collect::<Vec<_>>();
-    let responses = type_responses(session, file, source, &utf16).await?;
+    let (locations, responses) = type_responses(session, file, source, &utf16).await?;
     if responses.len() != queries.len() {
         return Err(corsa::CorsaError::Protocol(
             "Incomplete expression type batch".into(),
@@ -122,21 +166,21 @@ async fn load(
     let mut properties: FxHashMap<TypeHandle, Vec<String>> = FxHashMap::default();
     let mut signatures: FxHashMap<TypeHandle, Vec<Vec<String>>> = FxHashMap::default();
     let mut facts = Vec::with_capacity(responses.len());
-    for (response, query) in responses.into_iter().zip(queries) {
+    for (response, query) in responses.iter().zip(queries) {
         let Some(response) = response else {
             facts.push(ExpressionFact::empty());
             continue;
         };
         let type_texts = session
-            .render_type_texts(&response)
+            .render_type_texts(response)
             .await
             .unwrap_or_default()
             .into_iter()
             .map(|text| text.to_string())
             .collect::<Vec<_>>();
-        let property_names = property_names(session, &response, &mut properties).await?;
+        let property_names = property_names(session, response, &mut properties).await?;
         let parameter_type_texts = if query.signatures {
-            parameter_types(session, &response, &mut signatures).await?
+            parameter_types(session, response, &mut signatures).await?
         } else {
             Vec::new()
         };
@@ -146,7 +190,31 @@ async fn load(
             parameter_type_texts,
             deprecated: false,
             deprecation_reason: String::new(),
+            promise: None,
+            contextual_void: None,
+            contextual_thenable: None,
+            void_arguments: None,
+            contextual_members: Vec::new(),
+            heritage_voids: Vec::new(),
         });
+    }
+    if queries.iter().any(|query| {
+        !query.promise.is_empty()
+            || query.contextual
+            || query.void_arguments.is_some()
+            || !query.members.is_empty()
+            || query.heritage.is_some()
+    }) {
+        // Promise facts refine the rules; a failed walk leaves them unset
+        // rather than failing the whole lint.
+        let _ = apply_promise_facts(
+            session,
+            &responses,
+            locations.as_deref(),
+            queries,
+            &mut facts,
+        )
+        .await;
     }
     if queries.iter().any(|query| query.symbols) {
         apply_deprecated(session, file, &utf16, queries, &mut facts).await?;
@@ -154,20 +222,22 @@ async fn load(
     Ok(facts)
 }
 
+type Located = (Option<Vec<NodeHandle>>, Vec<Option<TypeResponse>>);
+
 async fn type_responses(
     session: &ProjectSession,
     file: &str,
     source: &str,
     ranges: &[(u32, u32)],
-) -> corsa::Result<Vec<Option<TypeResponse>>> {
+) -> corsa::Result<Located> {
     let usable = ranges.iter().all(|&(start, end)| start < end);
     if usable {
-        if let Some(responses) = node_types(session, file, source, ranges).await? {
-            return Ok(responses);
+        if let Some((locations, responses)) = node_types(session, file, source, ranges).await? {
+            return Ok((Some(locations), responses));
         }
     }
     let positions = ranges.iter().map(|&(start, _)| start).collect();
-    session
+    let responses = session
         .client()
         .get_types_at_positions(
             session.snapshot().handle.clone(),
@@ -175,7 +245,85 @@ async fn type_responses(
             file,
             positions,
         )
+        .await?;
+    Ok((None, responses))
+}
+
+async fn apply_promise_facts(
+    session: &ProjectSession,
+    responses: &[Option<TypeResponse>],
+    locations: Option<&[NodeHandle]>,
+    queries: &[ExpressionQuery],
+    facts: &mut [ExpressionFact],
+) -> corsa::Result<()> {
+    let mut checker = PromiseChecker::new(session);
+    for (index, query) in queries.iter().enumerate() {
+        // One failed checker walk leaves only this expression without facts.
+        let _ = promise_fact(
+            session,
+            &mut checker,
+            responses.get(index).and_then(Option::as_ref),
+            locations.and_then(|locations| locations.get(index)),
+            query,
+            facts.get_mut(index),
+        )
+        .await;
+    }
+    Ok(())
+}
+
+async fn promise_fact(
+    session: &ProjectSession,
+    checker: &mut PromiseChecker<'_>,
+    response: Option<&TypeResponse>,
+    location: Option<&NodeHandle>,
+    query: &ExpressionQuery,
+    fact: Option<&mut ExpressionFact>,
+) -> corsa::Result<()> {
+    let Some(fact) = fact else {
+        return Ok(());
+    };
+    if let Some(response) = response {
+        if !query.promise.is_empty() {
+            fact.promise = Some(checker.facts(response, query.promise).await?);
+        }
+        if let Some((construct, count)) = query.void_arguments {
+            fact.void_arguments = Some(checker.void_arguments(response, construct, count).await?);
+        }
+        if let Some(heritage) = &query.heritage {
+            fact.heritage_voids = checker
+                .heritage_voids(response, heritage.base_types, &heritage.members)
+                .await?;
+        }
+    }
+    if !query.contextual && query.members.is_empty() {
+        return Ok(());
+    }
+    let Some(location) = location else {
+        return Ok(());
+    };
+    let contextual = session
+        .client()
+        .get_contextual_type(
+            session.snapshot().handle.clone(),
+            session.project_handle(),
+            location.clone(),
+        )
         .await
+        .unwrap_or_default();
+    let Some(contextual) = contextual else {
+        return Ok(());
+    };
+    if query.contextual {
+        fact.contextual_void = Some(checker.void_function(&contextual).await?);
+        fact.contextual_thenable = Some(checker.thenable_function(&contextual).await?);
+    }
+    if !query.members.is_empty() {
+        fact.contextual_members = checker
+            .member_void_functions(&contextual, &query.members)
+            .await?;
+    }
+    Ok(())
 }
 
 async fn node_types(
@@ -183,7 +331,7 @@ async fn node_types(
     file: &str,
     source: &str,
     ranges: &[(u32, u32)],
-) -> corsa::Result<Option<Vec<Option<TypeResponse>>>> {
+) -> corsa::Result<Option<(Vec<NodeHandle>, Vec<Option<TypeResponse>>)>> {
     let encoded = session
         .client()
         .get_source_file(
@@ -199,15 +347,15 @@ async fn node_types(
         Ok(locations) => locations,
         Err(_) => return Ok(None),
     };
-    session
+    let responses = session
         .client()
         .get_type_at_locations(
             session.snapshot().handle.clone(),
             session.project_handle(),
-            locations,
+            locations.clone(),
         )
-        .await
-        .map(Some)
+        .await?;
+    Ok(Some((locations, responses)))
 }
 
 async fn property_names(

@@ -12,10 +12,11 @@ use vize_atelier_sfc::SfcDescriptor;
 use vize_canon::virtual_ts::ProjectionMapping;
 use vize_l0::String as CompactString;
 
-use super::{CorsaTypeAwareSession, LintResult, Linter, push_warning};
+use super::{CorsaTypeAwareSession, LintResult, Linter, RULE_NO_FLOATING_PROMISES, push_warning};
 use crate::diagnostic::LintDiagnostic;
 use crate::linter::corsa_session::{ExpressionFact, ExpressionQuery};
-use facts::queries;
+use corsa::lint::LintNode;
+use facts::{PromiseRules, queries};
 use names::{RULES, corsa_name, static_rule};
 
 pub(super) struct Script {
@@ -57,6 +58,14 @@ pub(super) fn is_active(linter: &Linter) -> bool {
     RULES
         .iter()
         .any(|(name, _)| linter.registry.has_rule(name) && linter.is_rule_enabled(name))
+        || floating_active(linter)
+}
+
+/// `type/no-floating-promises` is a native vize rule; on SFC scripts it runs
+/// typescript-eslint's decision flow over checker facts here.
+pub(super) fn floating_active(linter: &Linter) -> bool {
+    linter.registry.has_rule(RULE_NO_FLOATING_PROMISES)
+        && linter.is_rule_enabled(RULE_NO_FLOATING_PROMISES)
 }
 
 pub(super) fn evaluate(
@@ -94,11 +103,22 @@ pub(super) fn evaluate(
         .collect::<HashSet<_>>();
     listeners.insert("TSTypeAliasDeclaration");
     listeners.insert("VariableDeclarator");
+    let floating = floating_active(linter);
+    if floating {
+        listeners.insert("ExpressionStatement");
+    }
+    let promise_rules = PromiseRules::from_rules(&corsa_rules, floating);
+    if promise_rules.any() {
+        // Promise executors are found from their `new` expression, and object
+        // literal methods from their object's contextual type.
+        listeners.insert("NewExpression");
+        listeners.insert("ObjectExpression");
+    }
     let listener_list = listeners.iter().copied().collect::<Vec<_>>();
     for script in &plan.scripts {
         let mut collected = tree::collect(&script.content, script.tsx, &listener_list);
         facts::prepare(&script.content, &mut collected);
-        let script_queries = queries(&collected.nodes);
+        let script_queries = queries(&collected.nodes, promise_rules);
         let mut generated = Vec::new();
         let mut used = Vec::new();
         for (index, query) in script_queries.iter().enumerate() {
@@ -112,6 +132,11 @@ pub(super) fn evaluate(
                 end,
                 symbols: query.symbols,
                 signatures: query.signatures,
+                promise: query.promise,
+                contextual: query.contextual,
+                void_arguments: query.void_arguments,
+                members: query.members.clone(),
+                heritage: query.heritage.clone(),
             });
             used.push(index);
         }
@@ -125,6 +150,37 @@ pub(super) fn evaluate(
         facts::apply(&mut collected.nodes, &aligned, &script_queries);
         facts::enrich(&script.content, &mut collected.nodes, &collected.program);
         let mut seen = HashSet::new();
+        if floating {
+            for node in collected
+                .nodes
+                .iter()
+                .filter(|node| node.kind == "ExpressionStatement")
+            {
+                for diagnostic in floating_reports(node) {
+                    let start = script.offset.saturating_add(diagnostic.range.start);
+                    let end = script.offset.saturating_add(diagnostic.range.end);
+                    if seen.insert((
+                        RULE_NO_FLOATING_PROMISES,
+                        start,
+                        end,
+                        diagnostic.message.clone(),
+                    )) {
+                        push_warning(
+                            result,
+                            LintDiagnostic::warn(
+                                RULE_NO_FLOATING_PROMISES,
+                                diagnostic.message,
+                                start,
+                                end,
+                            )
+                            .with_help(
+                                "Add `await`, return the Promise, or prefix it with `void` when the fire-and-forget behavior is intentional.",
+                            ),
+                        );
+                    }
+                }
+            }
+        }
         for node in &collected.nodes {
             for rule in &corsa_rules {
                 let listens = metas.iter().any(|meta| {
@@ -165,6 +221,20 @@ pub(super) fn evaluate(
         }
     }
     Ok(())
+}
+
+/// typescript-eslint's no-floating-promises on one statement. Upstream
+/// reports the statement; vize marks its expression.
+fn floating_reports(node: &LintNode) -> Vec<corsa::lint::LintDiagnostic> {
+    let Some(expression) = node.child("expression") else {
+        return Vec::new();
+    };
+    let mut diagnostics =
+        run_default_type_aware_rule_owned("no-floating-promises", node.clone()).unwrap_or_default();
+    for diagnostic in &mut diagnostics {
+        diagnostic.range = expression.range;
+    }
+    diagnostics
 }
 
 fn generated_range(
