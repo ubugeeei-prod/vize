@@ -26,6 +26,10 @@ pub(super) fn absolutize_relative_imports(document: &mut TypeAwareDocument, file
             .canonicalize()
             .map(|path| display_path(&path))
             .unwrap_or_else(|_| display_path(&normalize_path(&resolved)));
+        // `allowImportingTsExtensions` covers relative specifiers only. An
+        // absolute `api.ts` is an error module (`any`); the extensionless
+        // path still resolves under `moduleResolution: bundler` (#12948).
+        let absolute = strip_implementation_extension(absolute);
         let quote = text.as_bytes().get(start - 1).copied().unwrap_or(b'\'');
         edits.push((start, end, escape_specifier(&absolute, quote)));
         from = end;
@@ -110,6 +114,21 @@ fn display_path(path: &Path) -> VizeString {
     VizeString::from(path.to_string_lossy().replace('\\', "/"))
 }
 
+/// Drop `.ts` / `.tsx` / `.mts` / `.cts` from a checker path. `.d.ts` stays,
+/// and `.js` stays so TypeScript can map it back onto the implementation.
+fn strip_implementation_extension(path: VizeString) -> VizeString {
+    let text = path.as_str();
+    if text.ends_with(".d.ts") || text.ends_with(".d.mts") || text.ends_with(".d.cts") {
+        return path;
+    }
+    for suffix in [".mts", ".cts", ".tsx", ".ts"] {
+        if let Some(stripped) = text.strip_suffix(suffix) {
+            return VizeString::from(stripped);
+        }
+    }
+    path
+}
+
 #[cfg(test)]
 #[expect(clippy::string_slice, reason = "tests assert by panicking")]
 mod tests {
@@ -134,12 +153,26 @@ mod tests {
         absolutize_relative_imports(&mut document, "/pkg/src/Widget.vue");
         assert_eq!(
             document.content.as_str(),
-            "import { useAnnouncer } from \"/pkg/src/announcer-runtime.ts\";\nconst y = 1;\n"
+            "import { useAnnouncer } from \"/pkg/src/announcer-runtime\";\nconst y = 1;\n"
         );
         let generated = document.mapping.to_generated(4).expect("moved row");
         assert_eq!(
             &document.content[generated..generated + "const y".len()],
             "const y"
+        );
+    }
+
+    #[test]
+    fn declaration_and_javascript_specifiers_keep_their_extensions() {
+        let source = "import type { Props } from \"./props.d.ts\";\nexport { api } from './api.js';\n";
+        let mut document = TypeAwareDocument {
+            content: VizeString::from(source),
+            mapping: ProjectionMapping::from_spans(vec![]),
+        };
+        absolutize_relative_imports(&mut document, "/pkg/src/Widget.vue");
+        assert_eq!(
+            document.content.as_str(),
+            "import type { Props } from \"/pkg/src/props.d.ts\";\nexport { api } from '/pkg/src/api.js';\n"
         );
     }
 }
