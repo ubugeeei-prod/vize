@@ -3,7 +3,7 @@
 use oxc_semantic::{Scoping, SemanticBuilder};
 use oxc_span::Span;
 use oxc_syntax::symbol::SymbolId;
-use vize_l0::{FxHashMap, FxHashSet, String, cstr};
+use vize_l0::{CompactString, FxHashMap, FxHashSet, String, cstr};
 
 use super::classify::{BindingInfo, Classified, Kind, ParamSlot, classify};
 use super::options::{
@@ -42,6 +42,7 @@ pub(super) fn analyze(
     offset: u32,
     template: &TemplateUse,
     apply_template: bool,
+    sibling_reads: &FxHashSet<CompactString>,
     unused: &UnusedOptions,
     prefer: &PreferConstOptions,
     which: Which,
@@ -57,16 +58,20 @@ pub(super) fn analyze(
         .infos
         .iter()
         .map(|(id, info)| {
-            let top = apply_template && scoping.symbol_scope_id(*id) == scoping.root_scope_id();
+            let module_binding = scoping.symbol_scope_id(*id) == scoping.root_scope_id();
+            let top = apply_template && module_binding;
             let name = scoping.symbol_name(*id);
             let seen = Seen {
                 facts: usage.facts(*id, info, &classified.for_return_targets),
                 // A template cannot reassign a `const`. Vue compiles
                 // `hovered = $event` on one to a write through the ref's
-                // `.value`, which reads the binding.
-                template_read: top
+                // `.value`, which reads the binding. A `let` write stays an
+                // assignment. A root binding of either script block is also
+                // read when the other block names it: both blocks are one module.
+                template_read: (top
                     && (template.reads.contains(name)
-                        || (info.kind == Kind::Const && template.writes.contains(name))),
+                        || (info.kind == Kind::Const && template.writes.contains(name))))
+                    || (module_binding && sibling_reads.contains(name)),
                 template_write: top && template.writes.contains(name),
             };
             (*id, seen)
