@@ -9,7 +9,7 @@ Interdire une référence à une méthode sans son receveur (`this`).
 
 | Gravité par défaut | Préréglages | Correction automatique | Options |
 | --- | --- | --- | --- |
-| `warning` | `nuxt`, `opinionated` | Non | Aucune |
+| `warning` | `nuxt`, `opinionated` | Non | [Options des règles](/rules/options.md) |
 
 Champ d’application : Informations de type dans les scripts et templates des SFC Vue, pour les constructions présentées ci-dessous.
 
@@ -70,5 +70,6 @@ Lancez ensuite `vp run lint`.
 ## Voir aussi
 
 - [Règles de type et de script](../type-and-script.md)
+- [Options des règles](/rules/options.md)
 - [Toutes les règles](../all.md)
 - [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/type_aware/unbound_method.rs#L5)

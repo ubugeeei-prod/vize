@@ -94,7 +94,7 @@ function openEditModal(path: string, token: DesignToken) {
   showFormModal.value = true;
 }
 
-function openDeleteConfirm(path: string, token: DesignToken) {
+function openDeleteConfirm(path: string, _token: DesignToken) {
   deletePath.value = path;
   // Find dependents from tokenMap
   const deps: string[] = [];

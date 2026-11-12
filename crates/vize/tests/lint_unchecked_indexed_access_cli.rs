@@ -152,7 +152,7 @@ fn authored_index_access_options_reach_native_boolean_types_and_complete_cli_rep
         assert_eq!(actual, expected, "{name} complete native API result");
         assert_eq!(
             generated,
-            support::expected_session(&case["expectedFlag"]),
+            support::expected_session(&case["expectedFlag"], &project, &authored),
             "{name} whole session config"
         );
         Linter::finish_type_aware_lint(

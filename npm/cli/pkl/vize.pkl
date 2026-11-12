@@ -17,21 +17,9 @@ typealias JsxCompat = "native" | "babel"
 typealias ScriptExt = "ts" | "js"
 typealias RuleSeverity = "off" | "warn" | "error"
 typealias LintPreset =
-  "general-recommended"
-    | "general_recommended"
-    | "generalRecommended"
-    | "happy-path"
-    | "happy_path"
-    | "happy"
-    | "default"
-    | "recommended"
-    | "opinionated"
-    | "strict"
-    | "all"
-    | "essential"
-    | "incremental"
-    | "ecosystem"
-    | "nuxt"
+  "general-recommended" | "general_recommended" | "generalRecommended"
+    | "happy-path" | "happy_path" | "happy" | "default" | "recommended" | "opinionated"
+    | "strict" | "all" | "essential" | "incremental" | "ecosystem" | "nuxt"
 typealias TemplateComponentNameCasing = "PascalCase" | "kebab-case"
 typealias CustomEventNameCasing = "lowercase" | "camelCase" | "kebab-case"
 typealias PropNameCasingStyle = "camelCase" | "snake_case"
@@ -276,6 +264,25 @@ class LintRuleOptions {
   `vue/no-restricted-static-attribute`: LintRuleOptionTypes.RestrictedNames? = null
   `vue/no-restricted-v-on`: LintRuleOptionTypes.RestrictedNames? = null
   `vue/no-unsupported-features`: LintRuleOptionTypes.UnsupportedFeaturesOptions? = null
+  `type/await-thenable`: LintRuleOptionTypes.AwaitThenableOptions? = null
+  `type/no-base-to-string`: LintRuleOptionTypes.NoBaseToStringOptions? = null
+  `type/no-confusing-void-expression`: LintRuleOptionTypes.NoConfusingVoidExpressionOptions? = null
+  `type/no-deprecated`: LintRuleOptionTypes.AllowListOptions? = null
+  `type/no-duplicate-type-constituents`: LintRuleOptionTypes.NoDuplicateTypeConstituentsOptions? = null
+  `type/no-floating-promises`: LintRuleOptionTypes.NoFloatingPromisesOptions? = null
+  `type/no-meaningless-void-operator`: LintRuleOptionTypes.NoMeaninglessVoidOperatorOptions? = null
+  `type/no-misused-promises`: LintRuleOptionTypes.NoMisusedPromisesOptions? = null
+  `type/no-misused-spread`: LintRuleOptionTypes.AllowListOptions? = null
+  `type/no-unnecessary-boolean-literal-compare`: LintRuleOptionTypes.NoUnnecessaryBooleanLiteralCompareOptions? = null
+  `type/no-unnecessary-condition`: LintRuleOptionTypes.NoUnnecessaryConditionOptions? = null
+  `type/no-unnecessary-type-assertion`: LintRuleOptionTypes.NoUnnecessaryTypeAssertionOptions? = null
+  `type/no-unsafe-member-access`: LintRuleOptionTypes.NoUnsafeMemberAccessOptions? = null
+  `type/only-throw-error`: LintRuleOptionTypes.OnlyThrowErrorOptions? = null
+  `type/prefer-promise-reject-errors`: LintRuleOptionTypes.PreferPromiseRejectErrorsOptions? = null
+  `type/restrict-plus-operands`: LintRuleOptionTypes.RestrictPlusOperandsOptions? = null
+  `type/restrict-template-expressions`: LintRuleOptionTypes.RestrictTemplateExpressionsOptions? = null
+  `type/return-await`: LintRuleOptionTypes.ReturnAwaitOption? = null
+  `type/unbound-method`: LintRuleOptionTypes.UnboundMethodOptions? = null
   `vue/no-unused-script-vars`: LintRuleOptionTypes.NoUnusedScriptVarsOptions? = null
   `vue/prefer-const`: LintRuleOptionTypes.PreferConstOptions? = null
   `vue/enforce-style-attribute`: EnforceStyleAttributeOptions? = null

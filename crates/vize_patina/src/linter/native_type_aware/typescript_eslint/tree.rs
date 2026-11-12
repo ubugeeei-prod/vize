@@ -1,12 +1,14 @@
 //! TS-ESTree nodes for the corsa typescript-eslint rules.
+mod ancestors;
+use ancestors::{ancestor_chain, ancestor_fact};
 use corsa::lint::{LintNode, TextRange};
 use oxc_allocator::Allocator;
+use oxc_ast::ast::Program;
 use oxc_estree::{CompactSerializer, ESTree};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
-use serde_json::{Map, Value, json};
+use serde_json::{Value, json};
 use std::collections::BTreeMap;
-use vize_l0::String;
 
 const DEPTH: u32 = 24;
 
@@ -38,7 +40,20 @@ pub(super) struct Collected {
     pub nodes: Vec<LintNode>,
 }
 
+#[cfg(test)]
 pub(super) fn collect(source: &str, tsx: bool, listeners: &[&str]) -> Collected {
+    collect_with(source, tsx, listeners, |_, _| ()).0
+}
+
+/// Parse `source` once, serialize the listener trees, and hand the same
+/// parse to `then` (scope analysis the ESTree JSON cannot answer). `then`
+/// does not run when the parse fails.
+pub(super) fn collect_with<R: Default>(
+    source: &str,
+    tsx: bool,
+    listeners: &[&str],
+    then: impl FnOnce(&Collected, &Program<'_>) -> R,
+) -> (Collected, R) {
     let allocator = Allocator::default();
     let source_type = if tsx {
         SourceType::tsx()
@@ -47,10 +62,11 @@ pub(super) fn collect(source: &str, tsx: bool, listeners: &[&str]) -> Collected 
     };
     let parsed = Parser::new(&allocator, source, source_type).parse();
     if parsed.panicked {
-        return Collected {
+        let empty = Collected {
             program: Value::Null,
             nodes: Vec::new(),
         };
+        return (empty, R::default());
     }
     let mut serializer = CompactSerializer::new(true, false);
     parsed.program.serialize(&mut serializer);
@@ -64,53 +80,99 @@ pub(super) fn collect(source: &str, tsx: bool, listeners: &[&str]) -> Collected 
         &mut Vec::new(),
         None,
         None,
+        Slot::default(),
         &mut nodes,
     );
-    Collected { program, nodes }
+    let collected = Collected { program, nodes };
+    let extra = then(&collected, &parsed.program);
+    (collected, extra)
 }
 
+/// Where a node sits in its parent: the field name and, for list fields,
+/// whether it is the last item.
+#[derive(Clone, Copy, Default)]
+struct Slot<'a> {
+    key: Option<&'a str>,
+    last: Option<bool>,
+    /// For a destructuring pattern: the value it destructures (`init` of a
+    /// declarator, `right` of an assignment or default).
+    init: Option<&'a Value>,
+}
+
+#[expect(
+    clippy::too_many_arguments,
+    reason = "the walk threads the parent context alongside the ancestor stack"
+)]
 fn walk(
     value: &Value,
     source: &str,
     listeners: &[&str],
     ancestors: &mut Vec<Value>,
+    parent: Option<&Value>,
     parent_kind: Option<&str>,
-    key: Option<&str>,
+    slot: Slot<'_>,
     out: &mut Vec<LintNode>,
 ) {
     let Some(kind) = value.get("type").and_then(Value::as_str) else {
         return;
     };
+    let key = slot.key;
     if listeners.contains(&kind)
         && let Some(mut node) = convert(value, source, DEPTH, parent_kind, key)
     {
+        if let Some(parent) = parent {
+            function_naming(&mut node, parent);
+        }
+        if kind == "ObjectPattern" {
+            stamp_pattern_init(&mut node, slot.init);
+        }
         node.fields
             .insert("__ancestorFacts".into(), Value::Array(ancestors.clone()));
         node.fields
-            .insert("__ancestorChain".into(), ancestor_chain(ancestors, key));
+            .insert("__ancestorChain".into(), ancestor_chain(ancestors, slot));
+        if let Some(key) = key {
+            node.fields.insert("__keyInParent".into(), json!(key));
+        }
         out.push(node);
     }
-    ancestors.push(ancestor_fact(value, kind, key));
+    ancestors.push(ancestor_fact(value, kind, slot, parent));
+    let init = match kind {
+        "VariableDeclarator" => value.get("init"),
+        "AssignmentPattern" | "AssignmentExpression" => value.get("right"),
+        _ => None,
+    };
     for (child_key, child) in object_entries(value) {
+        let child_init = matches!(child_key, "id" | "left").then_some(init).flatten();
         match child {
             Value::Object(_) => walk(
                 child,
                 source,
                 listeners,
                 ancestors,
+                Some(value),
                 Some(kind),
-                Some(child_key),
+                Slot {
+                    key: Some(child_key),
+                    last: None,
+                    init: child_init,
+                },
                 out,
             ),
             Value::Array(items) => {
-                for item in items {
+                let count = items.len();
+                for (index, item) in items.iter().enumerate() {
                     walk(
                         item,
                         source,
                         listeners,
                         ancestors,
+                        Some(value),
                         Some(kind),
-                        Some(child_key),
+                        Slot {
+                            key: Some(child_key),
+                            last: Some(index + 1 == count),
+                            init: None,
+                        },
                         out,
                     );
                 }
@@ -119,6 +181,11 @@ fn walk(
         }
     }
     ancestors.pop();
+}
+
+/// Converts one ESTree value (and its subtree) into a [`LintNode`].
+pub(super) fn node_of(value: &Value, source: &str, parent_kind: &str) -> Option<LintNode> {
+    convert(value, source, DEPTH, Some(parent_kind), None)
 }
 
 fn convert(
@@ -187,101 +254,92 @@ fn convert(
     Some(node)
 }
 
-fn ancestor_chain(ancestors: &[Value], key: Option<&str>) -> Value {
-    let mut chain = Vec::new();
-    let mut child_key = key.map(str::to_owned);
-    for ancestor in ancestors.iter().rev() {
-        let mut entry = Map::new();
-        if let Some(kind) = ancestor.get("kind") {
-            entry.insert("kind".into(), kind.clone());
-        }
-        if let Some(operator) = ancestor.get("operator") {
-            entry.insert("operator".into(), operator.clone());
-        }
-        let position = child_key.as_deref();
-        entry.insert("childIsLeft".into(), json!(position == Some("left")));
-        entry.insert("childIsRight".into(), json!(position == Some("right")));
-        entry.insert(
-            "childIsBranch".into(),
-            json!(matches!(position, Some("consequent" | "alternate"))),
-        );
-        chain.push(Value::Object(entry));
-        child_key = ancestor
-            .get("keyInParent")
-            .and_then(Value::as_str)
-            .map(str::to_owned);
+/// How typescript-eslint names a function (`getFunctionNameWithKind`) and
+/// where its head starts (`getFunctionHeadLoc`), from its parent.
+fn function_naming(node: &mut LintNode, parent: &Value) {
+    if !matches!(
+        node.kind.as_str(),
+        "FunctionDeclaration" | "FunctionExpression" | "ArrowFunctionExpression"
+    ) {
+        return;
     }
-    Value::Array(chain)
+    let parent_kind = parent
+        .get("type")
+        .and_then(Value::as_str)
+        .unwrap_or_default();
+    let member = matches!(
+        parent_kind,
+        "Property" | "MethodDefinition" | "PropertyDefinition"
+    ) && parent.get("value").and_then(|value| value.get("start"))
+        == Some(&json!(node.range.start));
+    if member {
+        let kind = match parent.get("kind").and_then(Value::as_str) {
+            Some("constructor") => "constructor",
+            Some("get") => "getter",
+            Some("set") => "setter",
+            _ => "method",
+        };
+        node.fields.insert("__functionKind".into(), json!(kind));
+        if parent.get("static").and_then(Value::as_bool) == Some(true) {
+            node.fields.insert("__functionStatic".into(), json!(true));
+        }
+        if let Some(start) = parent.get("start") {
+            node.fields
+                .insert("__functionHeadStart".into(), start.clone());
+        }
+        let computed = parent.get("computed").and_then(Value::as_bool) == Some(true);
+        let key = parent.get("key");
+        let name = match key.and_then(|key| key.get("type")).and_then(Value::as_str) {
+            Some("Identifier") if !computed => key.and_then(|key| key.get("name")),
+            Some("PrivateIdentifier") => key.and_then(|key| key.get("name")),
+            Some("Literal") => key.and_then(|key| key.get("value")),
+            _ => None,
+        };
+        let private = key.and_then(|key| key.get("type")).and_then(Value::as_str)
+            == Some("PrivateIdentifier");
+        if let Some(name) = name.and_then(Value::as_str) {
+            let mut text = vize_l0::String::from(if private { "#" } else { "" });
+            text.push_str(name);
+            node.fields
+                .insert("__functionName".into(), json!(text.as_str()));
+        }
+        return;
+    }
+    if node.field_str("__functionName").is_some() {
+        return;
+    }
+    let own = node
+        .child("id")
+        .and_then(|id| id.field_str("name"))
+        .map(str::to_owned);
+    let inferred = (parent_kind == "VariableDeclarator")
+        .then(|| parent.get("id"))
+        .flatten()
+        .filter(|id| id.get("type").and_then(Value::as_str) == Some("Identifier"))
+        .and_then(|id| id.get("name"))
+        .and_then(Value::as_str)
+        .map(str::to_owned);
+    if let Some(name) = own.or(inferred) {
+        node.fields.insert("__functionName".into(), json!(name));
+    }
 }
 
-fn ancestor_fact(value: &Value, kind: &str, key_in_parent: Option<&str>) -> Value {
-    let mut fact = Map::new();
-    fact.insert("kind".into(), json!(kind));
-    fact.insert(
-        "async".into(),
-        json!(value.get("async").and_then(Value::as_bool).unwrap_or(false)),
-    );
-    fact.insert(
-        "start".into(),
-        value.get("start").cloned().unwrap_or(json!(0)),
-    );
-    fact.insert("end".into(), value.get("end").cloned().unwrap_or(json!(0)));
-    if let Some(operator) = value.get("operator").and_then(Value::as_str) {
-        fact.insert("operator".into(), json!(operator));
-    }
-    if let Some(key) = key_in_parent {
-        fact.insert("keyInParent".into(), json!(key));
-    }
-    if matches!(kind, "ClassDeclaration" | "ClassExpression")
-        && let Some(name) = value
-            .get("id")
-            .and_then(|id| id.get("name"))
-            .and_then(Value::as_str)
+/// unbound-method checks destructured members against the initializer type.
+fn stamp_pattern_init(node: &mut LintNode, init: Option<&Value>) {
+    let Some(init) = init.filter(|init| init.get("type").is_some()) else {
+        return;
+    };
+    let start = init.get("start").and_then(Value::as_u64);
+    let end = init.get("end").and_then(Value::as_u64);
+    let (Some(start), Some(end)) = (start, end) else {
+        return;
+    };
+    node.fields
+        .insert("__initRange".into(), json!({ "start": start, "end": end }));
+    if init.get("type").and_then(Value::as_str) == Some("Identifier")
+        && let Some(name) = init.get("name").and_then(Value::as_str)
     {
-        fact.insert("className".into(), json!(name));
-    }
-    if kind.contains("Function") || kind == "CatchClause" {
-        let names = parameter_names(value);
-        if kind == "CatchClause"
-            && let Some(name) = names.first()
-        {
-            fact.insert("catchParamName".into(), json!(name.as_str()));
-        }
-        fact.insert(
-            "paramNames".into(),
-            Value::Array(
-                names
-                    .into_iter()
-                    .map(|name| Value::String(name.into()))
-                    .collect(),
-            ),
-        );
-    }
-    Value::Object(fact)
-}
-
-fn parameter_names(value: &Value) -> Vec<String> {
-    let mut names = Vec::new();
-    if let Some(params) = value.get("params").and_then(Value::as_array) {
-        names.extend(params.iter().filter_map(binding_name));
-    }
-    if let Some(param) = value.get("param")
-        && let Some(name) = binding_name(param)
-    {
-        names.push(name);
-    }
-    names
-}
-
-fn binding_name(value: &Value) -> Option<String> {
-    match value.get("type").and_then(Value::as_str)? {
-        "Identifier" => value.get("name").and_then(Value::as_str).map(String::from),
-        "AssignmentPattern" => value.get("left").and_then(binding_name),
-        "RestElement" | "TSParameterProperty" => value
-            .get("argument")
-            .or_else(|| value.get("parameter"))
-            .and_then(binding_name),
-        _ => None,
+        node.fields.insert("__initName".into(), json!(name));
     }
 }
 
@@ -327,10 +385,11 @@ fn normalize(value: &mut Value) {
     }
 }
 
+/// TS-ESTree has no parenthesized expression or type nodes.
 fn parenthesized(value: &Value) -> Option<Value> {
-    if value.get("type").and_then(Value::as_str) == Some("ParenthesizedExpression") {
-        value.get("expression").cloned()
-    } else {
-        None
+    match value.get("type").and_then(Value::as_str) {
+        Some("ParenthesizedExpression") => value.get("expression").cloned(),
+        Some("TSParenthesizedType") => value.get("typeAnnotation").cloned(),
+        _ => None,
     }
 }

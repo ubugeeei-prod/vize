@@ -1,0 +1,10 @@
+<script lang="ts">
+declare const hello: 'hello';
+function greet() {
+  return hello;
+}
+class Greeter {
+  greeting = hello;
+}
+export default { name: "Namespaces", greet, Greeter };
+</script>

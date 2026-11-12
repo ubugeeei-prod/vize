@@ -306,6 +306,7 @@ fn overlay_user_compiler_options(value: &mut Value, project_root: &Path, tsconfi
         "types",
         "typeRoots",
         "noUncheckedIndexedAccess",
+        "lib",
     ] {
         if let Some(option) = snapshot.get(key) {
             options.insert(json_string(key), option.clone());

@@ -30,6 +30,9 @@ impl Linter {
         if let Some(names) = options.palpable_content_directives() {
             self = self.with_palpable_content_directives(names.to_vec());
         }
+        if !options.type_aware().is_empty() {
+            self = self.with_type_aware_rule_options(options.type_aware().clone());
+        }
         if let Some(value) = options.strict_boolean_expressions() {
             self = self.with_strict_boolean_expressions_options(value);
         }

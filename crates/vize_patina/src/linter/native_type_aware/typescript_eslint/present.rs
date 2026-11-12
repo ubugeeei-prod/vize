@@ -45,31 +45,9 @@ fn supply_tostring_argument(node: &mut LintNode) {
 
 pub(super) fn range(rule: &str, node: &LintNode, start: u32, end: u32) -> (u32, u32) {
     match rule {
-        "no-implied-eval" => implied_eval(node).unwrap_or((start, end)),
-        "restrict-plus-operands" => plus_operand(node).unwrap_or((start, end)),
         "no-unsafe-return" => unsafe_return(node, start, end),
         _ => (start, end),
     }
-}
-
-fn implied_eval(node: &LintNode) -> Option<(u32, u32)> {
-    let argument = node.child_list("arguments")?.first()?;
-    Some((argument.range.start, argument.range.end))
-}
-
-fn plus_operand(node: &LintNode) -> Option<(u32, u32)> {
-    if node.kind != "BinaryExpression" {
-        return None;
-    }
-    let left = node.child("left")?;
-    let right = node.child("right")?;
-    if is_primitive(&left.type_texts) && !is_primitive(&right.type_texts) {
-        return Some((right.range.start, right.range.end));
-    }
-    if is_primitive(&right.type_texts) && !is_primitive(&left.type_texts) {
-        return Some((left.range.start, left.range.end));
-    }
-    None
 }
 
 fn unsafe_return(node: &LintNode, start: u32, end: u32) -> (u32, u32) {
@@ -78,24 +56,4 @@ fn unsafe_return(node: &LintNode, start: u32, end: u32) -> (u32, u32) {
     } else {
         (start, end)
     }
-}
-
-fn is_primitive(texts: &[impl AsRef<str>]) -> bool {
-    texts.iter().any(|text| {
-        let text = text.as_ref().trim();
-        matches!(
-            text,
-            "string"
-                | "number"
-                | "bigint"
-                | "boolean"
-                | "any"
-                | "never"
-                | "unknown"
-                | "null"
-                | "undefined"
-                | "void"
-        ) || text.starts_with('"')
-            || text.starts_with('\'')
-    })
 }

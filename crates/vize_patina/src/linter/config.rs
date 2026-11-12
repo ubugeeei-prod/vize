@@ -99,6 +99,8 @@ pub struct Linter {
     /// Whether native type-aware lint rules may run.
     pub(crate) type_aware_enabled: bool,
     pub(crate) strict_boolean_options: vize_l0::config::StrictBooleanExpressionsOptions,
+    /// `linter.ruleOptions` for the typescript-eslint type-aware rules.
+    pub(crate) type_aware_options: vize_l0::config::TypeAwareRuleOptions,
     /// Live native Corsa sessions, one per project root and tsconfig.
     #[cfg(not(target_arch = "wasm32"))]
     pub(crate) native_corsa: CorsaSessionPool,

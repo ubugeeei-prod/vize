@@ -40,6 +40,7 @@ impl Linter {
             script_rule_overrides: FxHashMap::default(),
             type_aware_enabled: false,
             strict_boolean_options: vize_l0::config::StrictBooleanExpressionsOptions::default(),
+            type_aware_options: vize_l0::config::TypeAwareRuleOptions::default(),
             #[cfg(not(target_arch = "wasm32"))]
             native_corsa: CorsaSessionPool::default(),
             #[cfg(not(target_arch = "wasm32"))]
@@ -81,6 +82,7 @@ impl Linter {
             script_rule_overrides: FxHashMap::default(),
             type_aware_enabled: false,
             strict_boolean_options: vize_l0::config::StrictBooleanExpressionsOptions::default(),
+            type_aware_options: vize_l0::config::TypeAwareRuleOptions::default(),
             #[cfg(not(target_arch = "wasm32"))]
             native_corsa: CorsaSessionPool::default(),
             #[cfg(not(target_arch = "wasm32"))]
@@ -129,6 +131,7 @@ impl Linter {
             script_rule_overrides: FxHashMap::default(),
             type_aware_enabled: false,
             strict_boolean_options: vize_l0::config::StrictBooleanExpressionsOptions::default(),
+            type_aware_options: vize_l0::config::TypeAwareRuleOptions::default(),
             #[cfg(not(target_arch = "wasm32"))]
             native_corsa: CorsaSessionPool::default(),
             #[cfg(not(target_arch = "wasm32"))]
@@ -186,6 +189,7 @@ impl Linter {
             script_rule_overrides: FxHashMap::default(),
             type_aware_enabled: false,
             strict_boolean_options: vize_l0::config::StrictBooleanExpressionsOptions::default(),
+            type_aware_options: vize_l0::config::TypeAwareRuleOptions::default(),
             #[cfg(not(target_arch = "wasm32"))]
             native_corsa: CorsaSessionPool::default(),
             #[cfg(not(target_arch = "wasm32"))]

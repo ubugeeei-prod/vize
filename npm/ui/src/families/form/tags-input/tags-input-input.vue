@@ -32,6 +32,7 @@ function caretAtStart(input: HTMLInputElement): boolean {
 
 function onKeydown(event: KeyboardEvent): void {
   // IME composition owns Enter and delimiters until the candidate is committed.
+  // eslint-disable-next-line type/no-deprecated -- Safari reports the keydown that commits an IME candidate only through keyCode 229
   if (event.isComposing || event.keyCode === 229 || event.defaultPrevented) return;
   const input = event.currentTarget as HTMLInputElement;
   const count = context.tags.value.length;

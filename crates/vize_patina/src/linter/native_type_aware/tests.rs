@@ -3,7 +3,13 @@ mod macro_positions;
 mod opt_in;
 mod options_api;
 mod severity;
+mod template_event_handlers;
+mod typescript_constituents;
+mod typescript_jsdoc_callee;
+mod typescript_parity;
+mod typescript_promises;
 mod typescript_shapes;
+mod typescript_type_shapes;
 use super::{
     RULE_NO_FLOATING_PROMISES, RULE_NO_REACTIVITY_LOSS, RULE_NO_UNSAFE_TEMPLATE_BINDING,
     RULE_REQUIRE_TYPED_EMITS, RULE_REQUIRE_TYPED_PROPS, lint_sfc_with_corsa,
@@ -277,153 +283,6 @@ async function save(): Promise<void> {}
         RULE_NO_FLOATING_PROMISES,
         "malformed template event should not emit floating-promise noise",
     );
-}
-
-#[test]
-fn no_floating_promises_ignores_bare_template_event_handlers() {
-    if !corsa_available() {
-        return;
-    }
-
-    let linter = Linter::with_preset(LintPreset::Opinionated);
-    let source = r#"<script setup lang="ts">
-async function save(): Promise<void> {}
-</script>
-
-<template>
-  <button @click="save">Save</button>
-</template>"#;
-    let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
-    assert_absent(&result, RULE_NO_FLOATING_PROMISES);
-}
-
-#[test]
-fn no_floating_promises_ignores_member_template_event_handlers() {
-    if !corsa_available() {
-        return;
-    }
-
-    let linter = Linter::with_preset(LintPreset::Opinionated);
-    let source = r#"<script setup lang="ts">
-const actions = {
-  async save(): Promise<void> {}
-}
-</script>
-
-<template>
-  <button @click="actions.save">Save</button>
-</template>"#;
-    let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
-    assert_absent(&result, RULE_NO_FLOATING_PROMISES);
-}
-
-#[test]
-fn no_floating_promises_ignores_sync_member_template_event_handlers() {
-    if !corsa_available() {
-        return;
-    }
-
-    let linter = Linter::with_preset(LintPreset::Opinionated);
-    let source = r#"<script setup lang="ts">
-const actions = {
-  save(): void {}
-}
-</script>
-
-<template>
-  <button @click="actions.save">Save</button>
-</template>"#;
-    let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
-    assert_absent(&result, RULE_NO_FLOATING_PROMISES);
-}
-
-#[test]
-fn no_floating_promises_ignores_optional_member_template_event_handlers() {
-    if !corsa_available() {
-        return;
-    }
-
-    let linter = Linter::with_preset(LintPreset::Opinionated);
-    let source = r#"<script setup lang="ts">
-type Actions = {
-  save(): Promise<void>
-}
-const actions: Actions | undefined = {
-  async save(): Promise<void> {}
-}
-</script>
-
-<template>
-  <button @click="actions?.save">Save</button>
-</template>"#;
-    let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
-    assert_absent(&result, RULE_NO_FLOATING_PROMISES);
-}
-
-#[test]
-fn no_floating_promises_ignores_computed_member_template_event_handlers() {
-    if !corsa_available() {
-        return;
-    }
-
-    let linter = Linter::with_preset(LintPreset::Opinionated);
-    let source = r#"<script setup lang="ts">
-const method = 'save' as const
-const actions = {
-  async save(): Promise<void> {}
-}
-</script>
-
-<template>
-  <button @click="actions[method]">Save</button>
-</template>"#;
-    let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
-    assert_absent(&result, RULE_NO_FLOATING_PROMISES);
-}
-
-#[test]
-fn no_floating_promises_ignores_sync_computed_member_template_event_handlers() {
-    if !corsa_available() {
-        return;
-    }
-
-    let linter = Linter::with_preset(LintPreset::Opinionated);
-    let source = r#"<script setup lang="ts">
-const method = 'save' as const
-const actions = {
-  save(): void {}
-}
-</script>
-
-<template>
-  <button @click="actions[method]">Save</button>
-</template>"#;
-    let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
-    assert_absent(&result, RULE_NO_FLOATING_PROMISES);
-}
-
-#[test]
-fn no_floating_promises_ignores_optional_computed_member_template_event_handlers() {
-    if !corsa_available() {
-        return;
-    }
-
-    let linter = Linter::with_preset(LintPreset::Opinionated);
-    let source = r#"<script setup lang="ts">
-type Actions = {
-  save(): Promise<void>
-}
-const method = 'save' as const
-const actions: Actions | undefined = {
-  async save(): Promise<void> {}
-}
-</script>
-
-<template>
-  <button @click="actions?.[method]">Save</button>
-</template>"#;
-    let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
-    assert_absent(&result, RULE_NO_FLOATING_PROMISES);
 }
 
 #[test]

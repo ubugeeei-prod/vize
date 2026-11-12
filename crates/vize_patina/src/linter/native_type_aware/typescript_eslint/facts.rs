@@ -1,81 +1,65 @@
 //! Host facts the corsa rules do not infer from type text alone.
 use super::tree::Collected;
 
+mod builtins;
+mod checker;
+mod destructuring;
 mod enrich;
+mod enums;
+mod module_this;
+mod promise;
+mod queries;
 mod scan;
 mod shape;
+mod type_shape;
 use crate::linter::corsa_session::{ExpressionFact, ExpressionQuery};
 use corsa::lint::LintNode;
+pub(super) use queries::{Wants, queries};
 use serde_json::{Value, json};
-use vize_l0::{FxHashMap, FxHashSet, String};
+use vize_l0::FxHashMap;
 
 pub(super) fn prepare(source: &str, collected: &mut Collected) {
-    let deprecated = scan::deprecated_names(source);
-    let functions = scan::local_functions(&collected.program, source);
-    let methods = scan::class_methods(&collected.program);
-    let instances = scan::class_instances(&collected.program);
     for node in &mut collected.nodes {
-        stamp(node, &deprecated, &functions, &methods, &instances);
+        stamp(node);
     }
-}
-
-pub(super) fn queries(nodes: &[LintNode]) -> Vec<ExpressionQuery> {
-    let mut queries = Vec::new();
-    for node in nodes {
-        collect_queries(node, &mut queries);
-    }
-    queries
+    enums::stamp_merged_enums(&collected.program, source, &mut collected.nodes);
 }
 
 pub(super) fn enrich(source: &str, nodes: &mut [LintNode], program: &Value) {
     enrich::apply(source, nodes, program);
+    promise::enrich(nodes, program);
+    builtins::stamp(nodes, program);
 }
 
+/// Stamps each answered query's facts onto the nodes at its range.
 pub(super) fn apply(nodes: &mut [LintNode], facts: &[ExpressionFact], queries: &[ExpressionQuery]) {
-    let mut by_range = FxHashMap::<(u32, u32), &ExpressionFact>::default();
-    for (fact, query) in facts.iter().zip(queries) {
-        by_range.insert((query.start, query.end), fact);
-    }
+    let by_range = facts
+        .iter()
+        .zip(queries)
+        .map(|(fact, query)| ((query.start, query.end), fact))
+        .collect::<FxHashMap<_, _>>();
     for node in nodes {
         apply_node(node, &by_range);
+        checker::stamp_listener(node, &by_range);
+        module_this::stamp_module_this(node);
     }
 }
 
-fn stamp(
-    node: &mut LintNode,
-    deprecated: &FxHashSet<String>,
-    functions: &FxHashMap<String, scan::LocalFn>,
-    methods: &FxHashMap<String, FxHashSet<String>>,
-    instances: &FxHashMap<String, String>,
-) {
-    if node.kind == "Identifier"
-        && node.field_bool("__declarationName") != Some(true)
-        && node
-            .field_str("name")
-            .is_some_and(|name| deprecated.contains(name))
-    {
-        node.fields.insert(
-            "__symbolFacts".into(),
-            json!({ "deprecated": true, "deprecationReason": "" }),
-        );
-    }
+fn stamp(node: &mut LintNode) {
     if node.kind == "CallExpression" {
-        stamp_call(node, functions);
-    }
-    if node.kind == "MemberExpression" {
-        stamp_member(node, methods, instances);
+        stamp_call(node);
     }
     for child in node.children.values_mut() {
-        stamp(child, deprecated, functions, methods, instances);
+        stamp(child);
     }
     for children in node.child_lists.values_mut() {
         for child in children {
-            stamp(child, deprecated, functions, methods, instances);
+            stamp(child);
         }
     }
 }
 
-fn stamp_call(node: &mut LintNode, functions: &FxHashMap<String, scan::LocalFn>) {
+fn stamp_call(node: &mut LintNode) {
     let property = node
         .child("callee")
         .and_then(|callee| callee.child("property"))
@@ -86,116 +70,27 @@ fn stamp_call(node: &mut LintNode, functions: &FxHashMap<String, scan::LocalFn>)
             json!([["void"]]),
         );
     }
-    let Some(name) = node
-        .child("callee")
-        .and_then(|callee| callee.field_str("name"))
-        .map(String::from)
-    else {
-        return;
-    };
-    let Some(function) = functions.get(&name) else {
-        return;
-    };
-    let arguments = type_argument_nodes(node);
-    if arguments.is_empty() || function.params.is_empty() {
-        return;
-    }
-    let last = arguments.len() - 1;
-    let ranges = arguments
-        .iter()
-        .map(|argument| (argument.range.start, argument.range.end))
-        .collect::<Vec<_>>();
-    let argument_text = arguments
-        .get(last)
-        .and_then(|argument| argument.text.as_deref().map(String::from));
-    let range_values = ranges
-        .iter()
-        .map(|(start, end)| json!({ "start": start, "end": end }))
-        .collect::<Vec<_>>();
-    node.fields
-        .insert("__typeArgumentRanges".into(), Value::Array(range_values));
-    node.fields
-        .insert("__typeParameterCount".into(), json!(function.params.len()));
-    let default_text = function
-        .params
-        .get(last)
-        .and_then(|(_, default)| default.clone());
-    node.fields.insert(
-        "__lastTypeParameterHasDefault".into(),
-        json!(default_text.is_some()),
-    );
-    node.fields.insert(
-        "__lastTypeArgumentEqualsDefault".into(),
-        json!(default_text.is_some() && default_text == argument_text),
-    );
 }
 
-fn type_argument_nodes(node: &LintNode) -> &[LintNode] {
-    node.child("typeArguments")
-        .or_else(|| node.child("typeParameters"))
-        .and_then(|list| list.child_list("params"))
-        .unwrap_or(&[])
-}
-
-fn stamp_member(
-    node: &mut LintNode,
-    methods: &FxHashMap<String, FxHashSet<String>>,
-    instances: &FxHashMap<String, String>,
-) {
-    if node.field_str("__parentKind") == Some("CallExpression") {
-        node.fields.insert("__safeUse".into(), json!(true));
-        return;
-    }
-    let Some(object) = node
-        .child("object")
-        .and_then(|object| object.field_str("name"))
-    else {
+/// Copies the destructured initializer's member facts onto the pattern.
+fn apply_pattern_init(node: &mut LintNode, facts: &FxHashMap<(u32, u32), &ExpressionFact>) {
+    let Some(range) = node.fields.get("__initRange") else {
         return;
     };
-    let Some(class_name) = instances.get(object) else {
+    let field = |key: &str| u32::try_from(range.get(key)?.as_u64()?).ok();
+    let (Some(start), Some(end)) = (field("start"), field("end")) else {
         return;
     };
-    let Some(property) = node
-        .child("property")
-        .and_then(|property| property.field_str("name"))
-    else {
+    let Some(fact) = facts.get(&(start, end)) else {
         return;
     };
-    if methods
-        .get(class_name)
-        .is_some_and(|names| names.contains(property))
-    {
-        node.fields.insert(
-            "__unboundMethodInfo".into(),
-            json!({ "isMethod": true, "firstParamIsThis": false, "thisArgIsVoid": false, "isStatic": false }),
-        );
+    if let Some(members) = &fact.member_methods {
+        node.fields
+            .insert("__initMemberMethods".into(), members.clone());
     }
-}
-
-fn collect_queries(node: &LintNode, queries: &mut Vec<ExpressionQuery>) {
-    queries.push(ExpressionQuery {
-        start: node.range.start,
-        end: node.range.end,
-        symbols: node.kind == "Identifier",
-        signatures: false,
-    });
-    if node.kind == "CallExpression"
-        && let Some(callee) = node.child("callee")
-    {
-        queries.push(ExpressionQuery {
-            start: callee.range.start,
-            end: callee.range.end,
-            symbols: false,
-            signatures: true,
-        });
-    }
-    for child in node.children.values() {
-        collect_queries(child, queries);
-    }
-    for children in node.child_lists.values() {
-        for child in children {
-            collect_queries(child, queries);
-        }
+    if let Some(declared) = fact.declared_in_file {
+        node.fields
+            .insert("__initDeclaredInFile".into(), json!(declared));
     }
 }
 
@@ -211,38 +106,116 @@ fn apply_node(node: &mut LintNode, facts: &FxHashMap<(u32, u32), &ExpressionFact
             .iter()
             .map(|name| name.as_str().into())
             .collect();
-        if fact.deprecated && node.field_bool("__declarationName") != Some(true) {
+        if let Some(flags) = fact.type_flags {
+            node.fields.insert("__typeFlags".into(), json!(flags));
+        }
+        if let Some(declared) = fact.declared_in_file {
+            node.fields
+                .insert("__declaredInFile".into(), json!(declared));
+        }
+        if let Some(detail) = &fact.detail {
+            node.fields.insert("__typeDetail".into(), detail.clone());
+        }
+        if let Some((call, construct)) = fact.function_signatures {
+            node.fields
+                .insert("__callSignatureCount".into(), json!(call));
+            node.fields
+                .insert("__constructSignatureCount".into(), json!(construct));
+        }
+        if let Some(shape) = &fact.shape {
+            node.fields.insert("__typeShape".into(), shape.clone());
+        }
+        if let Some(tree) = &fact.tree {
+            node.fields.insert("__typeTree".into(), tree.clone());
+        }
+        if let Some(members) = &fact.member_methods {
+            node.fields
+                .insert("__memberMethods".into(), members.clone());
+        }
+        promise::apply(node, fact);
+        type_node_fields(node, fact);
+    }
+    if node.kind == "ObjectPattern" {
+        apply_pattern_init(node, facts);
+    }
+    let callee = match node.kind.as_str() {
+        "CallExpression" | "NewExpression" => node.child("callee"),
+        _ => None,
+    };
+    if let Some(fact) = callee.and_then(|callee| facts.get(&(callee.range.start, callee.range.end)))
+    {
+        promise::apply_call(node, fact);
+        if node.kind == "CallExpression" && !fact.parameter_type_texts.is_empty() {
             node.fields.insert(
-                "__symbolFacts".into(),
-                json!({
-                    "deprecated": true,
-                    "deprecationReason": fact.deprecation_reason,
-                }),
+                "__expectedArgumentTypeTexts".into(),
+                json!(fact.parameter_type_texts),
             );
         }
     }
-    if node.kind == "CallExpression"
-        && let Some(callee) = node.child("callee")
-        && let Some(fact) = facts.get(&(callee.range.start, callee.range.end))
-        && !fact.parameter_type_texts.is_empty()
-    {
-        node.fields.insert(
-            "__expectedArgumentTypeTexts".into(),
-            json!(fact.parameter_type_texts),
-        );
+    for child in node.children.values_mut() {
+        apply_node(child, facts);
     }
-    let keys = node.children.keys().cloned().collect::<Vec<_>>();
-    for key in keys {
-        if let Some(child) = node.children.get_mut(&key) {
+    for children in node.child_lists.values_mut() {
+        for child in children {
             apply_node(child, facts);
         }
     }
-    let lists = node.child_lists.keys().cloned().collect::<Vec<_>>();
-    for key in lists {
-        if let Some(children) = node.child_lists.get_mut(&key) {
-            for child in children {
-                apply_node(child, facts);
-            }
-        }
+}
+
+// TypeScript 7 TypeFlags, from microsoft/typescript-go internal/checker/types.go.
+const TYPE_FLAG_UNDEFINED: u32 = 1 << 2;
+const TYPE_PART_LABELS: &[(u32, &str)] = &[
+    (1, "any"),
+    (1 << 1, "unknown"),
+    (1 << 18, "never"),
+    (1 << 5, "string"),
+    (1 << 6, "number"),
+    (1 << 7, "bigint"),
+    (1 << 8, "boolean"),
+    (1 << 10, "stringLiteral"),
+    (1 << 11, "numberLiteral"),
+    (1 << 12, "bigintLiteral"),
+    (1 << 13, "booleanLiteral"),
+    (1 << 22, "templateLiteral"),
+];
+
+/// Checker facts the union/intersection rules read off one member node.
+fn type_node_fields(node: &mut LintNode, fact: &ExpressionFact) {
+    if let Some(empty) = fact.empty_object {
+        node.fields.insert("__emptyObjectType".into(), json!(empty));
+    }
+    if fact.error_type {
+        // An unresolved name: duplicate detection skips it. It gets no part
+        // flags, because the virtual SFC module can leave names unresolved
+        // that the user's TypeScript resolves (hoisted declarations, lib
+        // types), and reporting those as `error` types would be wrong.
+        node.fields.insert("__isErrorType".into(), json!(true));
+        return;
+    }
+    if fact.type_parts.is_empty() {
+        return;
+    }
+    let parts = fact
+        .type_parts
+        .iter()
+        .map(|part| {
+            let label = TYPE_PART_LABELS
+                .iter()
+                .find(|(mask, _)| part.flags & mask != 0)
+                .map_or("other", |(_, label)| label);
+            json!({ "flag": label, "flags": part.flags, "text": part.text.as_str() })
+        })
+        .collect::<Vec<_>>();
+    node.fields
+        .insert("__typePartFlags".into(), Value::Array(parts));
+    if let Some(id) = &fact.type_id {
+        node.fields
+            .insert("__resolvedTypeId".into(), json!(id.as_str()));
+    }
+    if fact
+        .type_flags
+        .is_some_and(|flags| flags & TYPE_FLAG_UNDEFINED != 0)
+    {
+        node.fields.insert("__isUndefinedType".into(), json!(true));
     }
 }

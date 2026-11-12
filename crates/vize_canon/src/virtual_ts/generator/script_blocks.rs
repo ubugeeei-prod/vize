@@ -13,6 +13,7 @@
 
 mod ambient;
 pub(super) use ambient::AmbientProjection;
+pub(super) use ambient::relocatable_line as relocatable_ambient_line;
 
 use vize_carton::{CompactString, FxHashMap, FxHashSet};
 use vize_croquis::{Croquis, ScopeKind, TypeExport};

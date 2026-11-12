@@ -46,6 +46,17 @@ pub(crate) use linter::RawLinterConfig;
 pub use linter::{LintRuleSeverity, LinterConfig};
 pub use linter_execution::LinterExecutionOptions;
 pub use linter_feature_flags::LinterFeatureFlags;
+pub use linter_rule_options::type_aware::{
+    AllowListOptions, AwaitThenableOptions, ChecksConditionalsOptions, ChecksVoidReturnOptions,
+    ConstantLoopConditionMode, ConstantLoopConditions, NoBaseToStringOptions,
+    NoConfusingVoidExpressionOptions, NoDuplicateTypeConstituentsOptions,
+    NoFloatingPromisesOptions, NoMeaninglessVoidOperatorOptions, NoMisusedPromisesOptions,
+    NoUnnecessaryBooleanLiteralCompareOptions, NoUnnecessaryConditionOptions,
+    NoUnnecessaryTypeAssertionOptions, NoUnsafeMemberAccessOptions, OnlyThrowErrorOptions,
+    PreferPromiseRejectErrorsOptions, PromiseUnionFlag, RestrictPlusOperandsOptions,
+    RestrictTemplateExpressionsOptions, ReturnAwaitOption, Switch, TypeAwareRuleOptions,
+    TypeSpecifier, TypeSpecifierNames, TypeSpecifierSource, TypeSpecifiers, UnboundMethodOptions,
+};
 pub use linter_rule_options::{
     AnchorHasContentOptions, AttributeHyphenationConfig, AttributeHyphenationOptions,
     BlockLangBlock, BlockLangNames, BlockLangOptions, CallAfterAwaitOptions, CallAfterAwaitSpec,

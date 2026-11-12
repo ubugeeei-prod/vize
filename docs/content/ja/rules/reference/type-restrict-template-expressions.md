@@ -9,7 +9,7 @@ description: "テンプレートリテラルの式を文字列と互換にする
 
 | 既定の重大度 | プリセット | 自動修正 | オプション |
 | --- | --- | --- | --- |
-| `warning` | `nuxt`, `opinionated` | なし | なし |
+| `warning` | `nuxt`, `opinionated` | なし | [ルールのオプション](../options.md) |
 
 適用範囲：Vue SFC の script とテンプレートの型情報。例に示した構文が対象です。
 
@@ -58,5 +58,6 @@ export default defineConfig({}).withVue({
 ## 関連ページ
 
 - [型と script のルール](../type-and-script.md)
+- [ルールのオプション](../options.md)
 - [全ルール](../all.md)
 - [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/type_aware/restrict_template_expressions.rs#L5)

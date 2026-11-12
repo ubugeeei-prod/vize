@@ -89,7 +89,7 @@ const MACROS: &[(&str, &str)] = &[
     ),
     (
         "defineSlots",
-        "const slots = defineSlots<{ default(props: { item: string }): unknown }>();\nconst hasDefault = Boolean(slots.default);",
+        "const slots = defineSlots<{ default(props: { item: string }): unknown }>();\nconst hasDefault = typeof slots.default === \"function\";",
     ),
     (
         "defineExpose",

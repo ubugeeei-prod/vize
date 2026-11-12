@@ -167,10 +167,7 @@ pub(super) fn static_rule(corsa_name: &str) -> Option<&'static str> {
 
 pub(super) fn corsa_name(vize_name: &'static str) -> Option<&'static str> {
     let bare = vize_name.strip_prefix("type/")?;
-    if matches!(
-        bare,
-        "no-generated-empty-object-type" | "no-unsafe-enum-assignment"
-    ) {
+    if bare == "no-generated-empty-object-type" {
         return None;
     }
     Some(bare)

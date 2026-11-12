@@ -101,6 +101,25 @@ export default defineConfig({}).withVue({
 | `vue/valid-v-slot` | `{ allowModifiers?: boolean }` | 既定は `false`。`true` では、名前付きスロットの修飾子を許可します。引数なしの修飾子や、そのスロット自身のプロパティに依存する動的な名前は報告します。 |
 | `musea/prefer-design-tokens` | `{ tokens?: Array<{ path: string; value: string; tier?: string }> }` | トークンのデータを指定し、ルールを有効にするか、空でないトークンのリストで暗黙に選択した場合だけ報告します。`tier` の既定は `primitive` です。 |
 | `type/strict-boolean-expressions` | `{ allowString?: boolean; allowNumber?: boolean; allowNullableObject?: boolean; allowNullableBoolean?: boolean; allowNullableString?: boolean; allowNullableNumber?: boolean; allowNullableEnum?: boolean; allowAny?: boolean }` | `allowString`、`allowNumber`、`allowNullableObject` の既定は `true`、その他は `false` です。ルールを明示的に有効にする必要があります。 |
+| `type/no-confusing-void-expression` | `{ ignoreArrowShorthand?: boolean; ignoreVoidOperator?: boolean; ignoreVoidReturningFunctions?: boolean }` | typescript-eslint と同じく、3 つとも既定は `false` です。`ignoreArrowShorthand` で `() => voidCall()` を許可します。 |
+| `type/no-unnecessary-condition` | `{ allowConstantLoopConditions?: boolean \| "always" \| "never" \| "only-allowed-literals"; checkTypePredicates?: boolean; allowRuleToRunWithoutStrictNullChecksIKnowWhatIAmDoing?: boolean }` | typescript-eslint と同じく、既定は `"never"` と `false` です。`"only-allowed-literals"` はループ条件の `true`、`false`、`1`、`0` を許可します。`true` は `"always"` と同じです。 |
+| `type/restrict-plus-operands` | `{ allowAny?: boolean; allowBoolean?: boolean; allowNullish?: boolean; allowNumberAndString?: boolean; allowRegExp?: boolean; skipCompoundAssignments?: boolean }` | typescript-eslint と同じく、`allow*` の既定は `true`、`skipCompoundAssignments` は `false` です。typescript-eslint の `strict-type-checked` は `allow*` をすべて `false` にします。 |
+| `type/restrict-template-expressions` | `{ allowAny?: boolean; allowArray?: boolean; allowBoolean?: boolean; allowNullish?: boolean; allowNumber?: boolean; allowRegExp?: boolean; allowNever?: boolean; allow?: Array<string \| { from: "file" \| "lib" \| "package"; name: string \| string[]; path?: string; package?: string }> }` | typescript-eslint と同じく、`allowAny`、`allowBoolean`、`allowNullish`、`allowNumber`、`allowRegExp` の既定は `true`、`allowArray` と `allowNever` は `false`、`allow` は標準ライブラリの `Error`、`URL`、`URLSearchParams` です。 |
+| `type/return-await` | `"in-try-catch" \| "always" \| "error-handling-correctness-only" \| "never"` | typescript-eslint と同じく、既定は `"in-try-catch"` です。`strict-type-checked` が使う `"error-handling-correctness-only"` は、エラー処理の文脈だけを検査します。 |
+| `type/await-thenable` | `{ allowMixedPromiseArrays?: boolean }` | typescript-eslint と同じく、既定は `false` です。 |
+| `type/no-base-to-string` | `{ checkUnknown?: boolean; ignoredTypeNames?: string[] }` | typescript-eslint と同じく、既定は `false` と `["Error", "RegExp", "URL", "URLSearchParams"]` です。 |
+| `type/no-deprecated` | `{ allow?: TypeSpecifier[] }` | typescript-eslint と同じく、既定は `[]` です。各要素は型または値の指定子（`string \| { from: "file" \| "lib" \| "package"; name: string \| string[]; path?: string; package?: string }`）です。 |
+| `type/no-duplicate-type-constituents` | `{ ignoreIntersections?: boolean; ignoreUnions?: boolean }` | typescript-eslint と同じく、どちらも既定は `false` です。 |
+| `type/no-floating-promises` | `{ allowForKnownSafeCalls?: TypeSpecifier[]; allowForKnownSafePromises?: TypeSpecifier[]; checkThenables?: boolean; ignoreIIFE?: boolean; ignoreVoid?: boolean }` | typescript-eslint と同じく、既定は `[]`、`[]`、`false`、`false`、`true` です。 |
+| `type/no-meaningless-void-operator` | `{ checkNever?: boolean }` | typescript-eslint と同じく、既定は `false` です。 |
+| `type/no-misused-promises` | `{ checksConditionals?: boolean \| { flagUnions?: "all" \| "strict" \| "none" }; checksSpreads?: boolean; checksVoidReturn?: boolean \| { arguments?, attributes?, inheritedMethods?, properties?, returns?, variables?: boolean } }` | typescript-eslint と同じく、すべての検査の既定は `true` です。`checksVoidReturn` のオブジェクト形式で個別の位置を無効にできます。 |
+| `type/no-misused-spread` | `{ allow?: TypeSpecifier[] }` | typescript-eslint と同じく、既定は `[]` です。 |
+| `type/no-unnecessary-boolean-literal-compare` | `{ allowComparingNullableBooleansToFalse?: boolean; allowComparingNullableBooleansToTrue?: boolean }` | typescript-eslint と同じく、どちらも既定は `true` です。 |
+| `type/no-unnecessary-type-assertion` | `{ checkLiteralConstAssertions?: boolean; typesToIgnore?: string[] }` | typescript-eslint と同じく、既定は `false` と `[]` です。 |
+| `type/no-unsafe-member-access` | `{ allowOptionalChaining?: boolean }` | typescript-eslint と同じく、既定は `false` です。 |
+| `type/only-throw-error` | `{ allow?: TypeSpecifier[]; allowRethrowing?: boolean; allowThrowingAny?: boolean; allowThrowingUnknown?: boolean }` | typescript-eslint と同じく、既定は `[]`、3 つのスイッチは `true` です。 |
+| `type/prefer-promise-reject-errors` | `{ allow?: TypeSpecifier[]; allowEmptyReject?: boolean; allowThrowingAny?: boolean; allowThrowingUnknown?: boolean }` | typescript-eslint と同じく、既定は `[]`、3 つのスイッチは `false` です。 |
+| `type/unbound-method` | `{ ignoreStatic?: boolean }` | typescript-eslint と同じく、既定は `false` です。 |
 
 ## 詳しい例
 

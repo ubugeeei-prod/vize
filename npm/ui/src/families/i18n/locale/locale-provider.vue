@@ -79,13 +79,20 @@ defineSlots<{
   }): unknown;
 }>();
 
-const value = reactive({
+const value = reactive<{
+  locale: string;
+  direction: TextDirection;
+  numberingSystem: string | undefined;
+  calendar: string | undefined;
+  timeZone: string;
+  timeZoneDisambiguation: LocaleTimeZoneDisambiguation;
+}>({
   locale: "en-US",
-  direction: "ltr" as TextDirection,
-  numberingSystem: undefined as string | undefined,
-  calendar: undefined as string | undefined,
+  direction: "ltr",
+  numberingSystem: undefined,
+  calendar: undefined,
   timeZone: "UTC",
-  timeZoneDisambiguation: "compatible" as LocaleTimeZoneDisambiguation,
+  timeZoneDisambiguation: "compatible",
 });
 
 watchEffect(() => {

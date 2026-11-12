@@ -69,6 +69,153 @@ class UnsupportedFeaturesOptions {
   ignores: Listing<String>? = null
 }
 
+/// `type/no-confusing-void-expression`, as in typescript-eslint.
+class NoConfusingVoidExpressionOptions {
+  ignoreArrowShorthand: Boolean = false
+  ignoreVoidOperator: Boolean = false
+  ignoreVoidReturningFunctions: Boolean = false
+}
+
+/// `type/no-unnecessary-condition`, as in typescript-eslint.
+class NoUnnecessaryConditionOptions {
+  allowConstantLoopConditions: (Boolean | "always" | "never" | "only-allowed-literals")? = null
+  checkTypePredicates: Boolean = false
+  allowRuleToRunWithoutStrictNullChecksIKnowWhatIAmDoing: Boolean = false
+}
+
+/// `type/restrict-plus-operands`, as in typescript-eslint.
+class RestrictPlusOperandsOptions {
+  allowAny: Boolean = true
+  allowBoolean: Boolean = true
+  allowNullish: Boolean = true
+  allowNumberAndString: Boolean = true
+  allowRegExp: Boolean = true
+  skipCompoundAssignments: Boolean = false
+}
+
+/// A typescript-eslint `TypeOrValueSpecifier` with its declaration source.
+class TypeSpecifier {
+  from: "file" | "lib" | "package"
+  name: String | Listing<String>
+  path: String? = null
+  package: String? = null
+}
+
+/// `type/restrict-template-expressions`, as in typescript-eslint.
+class RestrictTemplateExpressionsOptions {
+  allowAny: Boolean = true
+  allowArray: Boolean = false
+  allowBoolean: Boolean = true
+  allowNullish: Boolean = true
+  allowNumber: Boolean = true
+  allowRegExp: Boolean = true
+  allowNever: Boolean = false
+  allow: Listing<String | TypeSpecifier>? = null
+}
+
+/// `type/return-await`, as in typescript-eslint.
+typealias ReturnAwaitOption = "in-try-catch" | "always" | "error-handling-correctness-only" | "never"
+
+/// A list of typescript-eslint `TypeOrValueSpecifier`s.
+typealias TypeSpecifiers = Listing<String | TypeSpecifier>
+
+/// `type/await-thenable`, as in typescript-eslint.
+class AwaitThenableOptions {
+  allowMixedPromiseArrays: Boolean = false
+}
+
+/// `type/no-base-to-string`, as in typescript-eslint.
+class NoBaseToStringOptions {
+  checkUnknown: Boolean = false
+  ignoredTypeNames: Listing<String>? = null
+}
+
+/// A typescript-eslint rule whose only option is an `allow` list.
+class AllowListOptions {
+  allow: TypeSpecifiers? = null
+}
+
+/// `type/no-duplicate-type-constituents`, as in typescript-eslint.
+class NoDuplicateTypeConstituentsOptions {
+  ignoreIntersections: Boolean = false
+  ignoreUnions: Boolean = false
+}
+
+/// `type/no-floating-promises`, as in typescript-eslint.
+class NoFloatingPromisesOptions {
+  allowForKnownSafeCalls: TypeSpecifiers? = null
+  allowForKnownSafePromises: TypeSpecifiers? = null
+  checkThenables: Boolean = false
+  ignoreIIFE: Boolean = false
+  ignoreVoid: Boolean = true
+}
+
+/// `type/no-meaningless-void-operator`, as in typescript-eslint.
+class NoMeaninglessVoidOperatorOptions {
+  checkNever: Boolean = false
+}
+
+/// Object form of `checksConditionals`.
+class ChecksConditionalsOptions {
+  flagUnions: ("all" | "strict" | "none")? = null
+}
+
+/// Object form of `checksVoidReturn`.
+class ChecksVoidReturnOptions {
+  arguments: Boolean = true
+  attributes: Boolean = true
+  inheritedMethods: Boolean = true
+  properties: Boolean = true
+  returns: Boolean = true
+  variables: Boolean = true
+}
+
+/// `type/no-misused-promises`, as in typescript-eslint.
+class NoMisusedPromisesOptions {
+  checksConditionals: (Boolean | ChecksConditionalsOptions)? = null
+  checksSpreads: Boolean = true
+  checksVoidReturn: (Boolean | ChecksVoidReturnOptions)? = null
+}
+
+/// `type/no-unnecessary-boolean-literal-compare`, as in typescript-eslint.
+class NoUnnecessaryBooleanLiteralCompareOptions {
+  allowComparingNullableBooleansToFalse: Boolean = true
+  allowComparingNullableBooleansToTrue: Boolean = true
+  allowRuleToRunWithoutStrictNullChecksIKnowWhatIAmDoing: Boolean = false
+}
+
+/// `type/no-unnecessary-type-assertion`, as in typescript-eslint.
+class NoUnnecessaryTypeAssertionOptions {
+  checkLiteralConstAssertions: Boolean = false
+  typesToIgnore: Listing<String>? = null
+}
+
+/// `type/no-unsafe-member-access`, as in typescript-eslint.
+class NoUnsafeMemberAccessOptions {
+  allowOptionalChaining: Boolean = false
+}
+
+/// `type/only-throw-error`, as in typescript-eslint.
+class OnlyThrowErrorOptions {
+  allow: TypeSpecifiers? = null
+  allowRethrowing: Boolean = true
+  allowThrowingAny: Boolean = true
+  allowThrowingUnknown: Boolean = true
+}
+
+/// `type/prefer-promise-reject-errors`, as in typescript-eslint.
+class PreferPromiseRejectErrorsOptions {
+  allow: TypeSpecifiers? = null
+  allowEmptyReject: Boolean = false
+  allowThrowingAny: Boolean = false
+  allowThrowingUnknown: Boolean = false
+}
+
+/// `type/unbound-method`, as in typescript-eslint.
+class UnboundMethodOptions {
+  ignoreStatic: Boolean = false
+}
+
 class NoUnusedScriptVarsOptions {
   vars: ("all" | "local")? = null
   varsIgnorePattern: String? = null

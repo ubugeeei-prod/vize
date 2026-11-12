@@ -1,0 +1,338 @@
+/// JSON Schema for the typescript-eslint type-aware rule options (prefer-promise-reject-errors through unbound-method).
+///
+/// Generated from the rule schemas and defaults of @typescript-eslint/eslint-plugin
+/// 8.72.1; keep it in step with
+/// davinci/vize_l0/src/config/model/linter_rule_options/type_aware.rs.
+module vize.jsonschema.TypeAwareRuleOptionsPToU
+
+import "@json_schema/JsonSchema.pkl"
+
+preferPromiseRejectErrorsDef: JsonSchema = new JsonSchema {
+  type = "object"
+  properties {
+    ["allow"] = new JsonSchema {
+      description = "Type specifiers that can be used as Promise rejection reasons."
+      type = "array"
+      items = new JsonSchema {
+        oneOf = new Listing {
+          new JsonSchema {
+            type = "string"
+          }
+          new JsonSchema {
+            type = "object"
+            properties {
+              ["from"] = new JsonSchema {
+                type = "string"
+                enum = new Listing { "file" }
+              }
+              ["name"] = new JsonSchema {
+                oneOf = new Listing {
+                  new JsonSchema {
+                    type = "string"
+                  }
+                  new JsonSchema {
+                    type = "array"
+                    items = new JsonSchema {
+                      type = "string"
+                    }
+                    minItems = 1
+                    uniqueItems = true
+                  }
+                }
+              }
+              ["path"] = new JsonSchema {
+                type = "string"
+              }
+            }
+            required = new Listing { "from"; "name" }
+            additionalProperties = false
+          }
+          new JsonSchema {
+            type = "object"
+            properties {
+              ["from"] = new JsonSchema {
+                type = "string"
+                enum = new Listing { "lib" }
+              }
+              ["name"] = new JsonSchema {
+                oneOf = new Listing {
+                  new JsonSchema {
+                    type = "string"
+                  }
+                  new JsonSchema {
+                    type = "array"
+                    items = new JsonSchema {
+                      type = "string"
+                    }
+                    minItems = 1
+                    uniqueItems = true
+                  }
+                }
+              }
+            }
+            required = new Listing { "from"; "name" }
+            additionalProperties = false
+          }
+          new JsonSchema {
+            type = "object"
+            properties {
+              ["from"] = new JsonSchema {
+                type = "string"
+                enum = new Listing { "package" }
+              }
+              ["name"] = new JsonSchema {
+                oneOf = new Listing {
+                  new JsonSchema {
+                    type = "string"
+                  }
+                  new JsonSchema {
+                    type = "array"
+                    items = new JsonSchema {
+                      type = "string"
+                    }
+                    minItems = 1
+                    uniqueItems = true
+                  }
+                }
+              }
+              ["package"] = new JsonSchema {
+                type = "string"
+              }
+            }
+            required = new Listing { "from"; "name"; "package" }
+            additionalProperties = false
+          }
+        }
+      }
+      default = new Listing {  }
+    }
+    ["allowEmptyReject"] = new JsonSchema {
+      description = "Whether to allow calls to `Promise.reject()` with no arguments."
+      type = "boolean"
+      default = false
+    }
+    ["allowThrowingAny"] = new JsonSchema {
+      description = "Whether to always allow throwing values typed as `any`."
+      type = "boolean"
+      default = false
+    }
+    ["allowThrowingUnknown"] = new JsonSchema {
+      description = "Whether to always allow throwing values typed as `unknown`."
+      type = "boolean"
+      default = false
+    }
+  }
+  additionalProperties = false
+}
+
+restrictPlusOperandsDef: JsonSchema = new JsonSchema {
+  type = "object"
+  properties {
+    ["allowAny"] = new JsonSchema {
+      description = "Whether to allow `any` typed values."
+      type = "boolean"
+      default = true
+    }
+    ["allowBoolean"] = new JsonSchema {
+      description = "Whether to allow `boolean` typed values."
+      type = "boolean"
+      default = true
+    }
+    ["allowNullish"] = new JsonSchema {
+      description = "Whether to allow potentially `null` or `undefined` typed values."
+      type = "boolean"
+      default = true
+    }
+    ["allowNumberAndString"] = new JsonSchema {
+      description = "Whether to allow `bigint`/`number` typed values and `string` typed values to be added together."
+      type = "boolean"
+      default = true
+    }
+    ["allowRegExp"] = new JsonSchema {
+      description = "Whether to allow `regexp` typed values."
+      type = "boolean"
+      default = true
+    }
+    ["skipCompoundAssignments"] = new JsonSchema {
+      description = "Whether to skip compound assignments such as `+=`."
+      type = "boolean"
+      default = false
+    }
+  }
+  additionalProperties = false
+}
+
+restrictTemplateExpressionsDef: JsonSchema = new JsonSchema {
+  type = "object"
+  properties {
+    ["allowAny"] = new JsonSchema {
+      description = "Whether to allow `any` typed values in template expressions."
+      type = "boolean"
+      default = true
+    }
+    ["allowArray"] = new JsonSchema {
+      description = "Whether to allow `array` typed values in template expressions."
+      type = "boolean"
+    }
+    ["allowBoolean"] = new JsonSchema {
+      description = "Whether to allow `boolean` typed values in template expressions."
+      type = "boolean"
+      default = true
+    }
+    ["allowNullish"] = new JsonSchema {
+      description = "Whether to allow `nullish` typed values in template expressions."
+      type = "boolean"
+      default = true
+    }
+    ["allowNumber"] = new JsonSchema {
+      description = "Whether to allow `number` typed values in template expressions."
+      type = "boolean"
+      default = true
+    }
+    ["allowRegExp"] = new JsonSchema {
+      description = "Whether to allow `regexp` typed values in template expressions."
+      type = "boolean"
+      default = true
+    }
+    ["allowNever"] = new JsonSchema {
+      description = "Whether to allow `never` typed values in template expressions."
+      type = "boolean"
+    }
+    ["allow"] = new JsonSchema {
+      description = "Types to allow in template expressions."
+      type = "array"
+      items = new JsonSchema {
+        oneOf = new Listing {
+          new JsonSchema {
+            type = "string"
+          }
+          new JsonSchema {
+            type = "object"
+            properties {
+              ["from"] = new JsonSchema {
+                type = "string"
+                enum = new Listing { "file" }
+              }
+              ["name"] = new JsonSchema {
+                oneOf = new Listing {
+                  new JsonSchema {
+                    type = "string"
+                  }
+                  new JsonSchema {
+                    type = "array"
+                    items = new JsonSchema {
+                      type = "string"
+                    }
+                    minItems = 1
+                    uniqueItems = true
+                  }
+                }
+              }
+              ["path"] = new JsonSchema {
+                type = "string"
+              }
+            }
+            required = new Listing { "from"; "name" }
+            additionalProperties = false
+          }
+          new JsonSchema {
+            type = "object"
+            properties {
+              ["from"] = new JsonSchema {
+                type = "string"
+                enum = new Listing { "lib" }
+              }
+              ["name"] = new JsonSchema {
+                oneOf = new Listing {
+                  new JsonSchema {
+                    type = "string"
+                  }
+                  new JsonSchema {
+                    type = "array"
+                    items = new JsonSchema {
+                      type = "string"
+                    }
+                    minItems = 1
+                    uniqueItems = true
+                  }
+                }
+              }
+            }
+            required = new Listing { "from"; "name" }
+            additionalProperties = false
+          }
+          new JsonSchema {
+            type = "object"
+            properties {
+              ["from"] = new JsonSchema {
+                type = "string"
+                enum = new Listing { "package" }
+              }
+              ["name"] = new JsonSchema {
+                oneOf = new Listing {
+                  new JsonSchema {
+                    type = "string"
+                  }
+                  new JsonSchema {
+                    type = "array"
+                    items = new JsonSchema {
+                      type = "string"
+                    }
+                    minItems = 1
+                    uniqueItems = true
+                  }
+                }
+              }
+              ["package"] = new JsonSchema {
+                type = "string"
+              }
+            }
+            required = new Listing { "from"; "name"; "package" }
+            additionalProperties = false
+          }
+        }
+      }
+      default = new Listing { new Dynamic { name = new Listing { "Error"; "URL"; "URLSearchParams" }; from = "lib" } }
+    }
+  }
+  additionalProperties = false
+}
+
+returnAwaitDef: JsonSchema = new JsonSchema {
+  type = "string"
+  oneOf = new Listing {
+    new JsonSchema {
+      description = "Requires that all returned promises be awaited."
+      type = "string"
+      enum = new Listing { "always" }
+    }
+    new JsonSchema {
+      description = "In error-handling contexts, the rule enforces that returned promises must be awaited. In ordinary contexts, the rule does not enforce any particular behavior around whether returned promises are awaited."
+      type = "string"
+      enum = new Listing { "error-handling-correctness-only" }
+    }
+    new JsonSchema {
+      description = "In error-handling contexts, the rule enforces that returned promises must be awaited. In ordinary contexts, the rule enforces that returned promises _must not_ be awaited."
+      type = "string"
+      enum = new Listing { "in-try-catch" }
+    }
+    new JsonSchema {
+      description = "Disallows awaiting any returned promises."
+      type = "string"
+      enum = new Listing { "never" }
+    }
+  }
+  default = "in-try-catch"
+}
+
+unboundMethodDef: JsonSchema = new JsonSchema {
+  type = "object"
+  properties {
+    ["ignoreStatic"] = new JsonSchema {
+      description = "Whether to skip checking whether `static` methods are correctly bound."
+      type = "boolean"
+      default = false
+    }
+  }
+  additionalProperties = false
+}

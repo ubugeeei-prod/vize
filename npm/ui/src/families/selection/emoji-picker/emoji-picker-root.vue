@@ -132,8 +132,7 @@ function move(direction: Parameters<typeof moveInGrid>[0]): boolean {
   return true;
 }
 
-function select(item: T, event: Event | null): void {
-  void event;
+function select(item: T, _event: Event | null): void {
   emit("select", item, glyphOf(item));
 }
 

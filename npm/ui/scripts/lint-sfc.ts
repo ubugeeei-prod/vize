@@ -46,21 +46,13 @@ const packageCompatibilityRules = new Set([
   // Static native-element `is` attributes are retained for current package
   // compatibility; the upstream rule requires a bound component selector.
   "vue/require-component-is",
-  // #12878 reports components used only inside Musea <art> blocks as unused;
-  // the remaining reports are unused imports and locals to migrate separately.
-  "vue/no-unused-script-vars",
-  // #12879 runs these typescript-eslint checks on SFC scripts. Existing
-  // components predate them; adopting each one is a package source migration.
-  "type/await-thenable",
+  // These typescript-eslint checks agree with typescript-eslint on the package
+  // sources, but the existing components predate them: arrow-shorthand void
+  // returns, defensive optional chains on DOM APIs, and calls through an
+  // `any`-typed focus helper. Adopting each one is a package source migration.
   "type/no-confusing-void-expression",
-  "type/no-deprecated",
-  "type/no-misused-spread",
-  "type/no-unnecessary-boolean-literal-compare",
   "type/no-unnecessary-condition",
   "type/no-unsafe-call",
-  "type/restrict-plus-operands",
-  "type/restrict-template-expressions",
-  "type/return-await",
 ]);
 
 const lintCoreSfc: SfcLintFunction = (source, options) => {

@@ -1027,6 +1027,1102 @@
           },
           "additionalProperties": false
         },
+        "type/await-thenable": {
+          "type": "object",
+          "properties": {
+            "allowMixedPromiseArrays": {
+              "description": "Whether to allow promise aggregators to receive iterables mixing Promise and non-Promise values, as long as at least one value may be a Promise.",
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        "type/no-base-to-string": {
+          "type": "object",
+          "properties": {
+            "checkUnknown": {
+              "description": "Whether to also check values of type `unknown`",
+              "default": false,
+              "type": "boolean"
+            },
+            "ignoredTypeNames": {
+              "description": "Stringified type names to ignore.",
+              "default": ["Error", "RegExp", "URL", "URLSearchParams"],
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "type/no-confusing-void-expression": {
+          "type": "object",
+          "properties": {
+            "ignoreArrowShorthand": {
+              "description": "Whether to ignore \"shorthand\" `() =>` arrow functions: those without `{ ... }` braces.",
+              "default": false,
+              "type": "boolean"
+            },
+            "ignoreVoidOperator": {
+              "description": "Whether to ignore returns that start with the `void` operator.",
+              "default": false,
+              "type": "boolean"
+            },
+            "ignoreVoidReturningFunctions": {
+              "description": "Whether to ignore returns from functions with explicit `void` return types and functions with contextual `void` return types.",
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        "type/no-deprecated": {
+          "type": "object",
+          "properties": {
+            "allow": {
+              "description": "Type specifiers that can be allowed.",
+              "default": [],
+              "type": "array",
+              "items": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "from": {
+                        "type": "string",
+                        "enum": ["file"]
+                      },
+                      "name": {
+                        "oneOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "minItems": 1,
+                            "uniqueItems": true
+                          }
+                        ]
+                      },
+                      "path": {
+                        "type": "string"
+                      }
+                    },
+                    "additionalProperties": false,
+                    "required": ["from", "name"]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "from": {
+                        "type": "string",
+                        "enum": ["lib"]
+                      },
+                      "name": {
+                        "oneOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "minItems": 1,
+                            "uniqueItems": true
+                          }
+                        ]
+                      }
+                    },
+                    "additionalProperties": false,
+                    "required": ["from", "name"]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "from": {
+                        "type": "string",
+                        "enum": ["package"]
+                      },
+                      "name": {
+                        "oneOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "minItems": 1,
+                            "uniqueItems": true
+                          }
+                        ]
+                      },
+                      "package": {
+                        "type": "string"
+                      }
+                    },
+                    "additionalProperties": false,
+                    "required": ["from", "name", "package"]
+                  }
+                ]
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "type/no-duplicate-type-constituents": {
+          "type": "object",
+          "properties": {
+            "ignoreIntersections": {
+              "description": "Whether to ignore `&` intersections.",
+              "default": false,
+              "type": "boolean"
+            },
+            "ignoreUnions": {
+              "description": "Whether to ignore `|` unions.",
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        "type/no-floating-promises": {
+          "type": "object",
+          "properties": {
+            "allowForKnownSafeCalls": {
+              "description": "Type specifiers of functions whose calls are safe to float.",
+              "default": [],
+              "type": "array",
+              "items": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "from": {
+                        "type": "string",
+                        "enum": ["file"]
+                      },
+                      "name": {
+                        "oneOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "minItems": 1,
+                            "uniqueItems": true
+                          }
+                        ]
+                      },
+                      "path": {
+                        "type": "string"
+                      }
+                    },
+                    "additionalProperties": false,
+                    "required": ["from", "name"]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "from": {
+                        "type": "string",
+                        "enum": ["lib"]
+                      },
+                      "name": {
+                        "oneOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "minItems": 1,
+                            "uniqueItems": true
+                          }
+                        ]
+                      }
+                    },
+                    "additionalProperties": false,
+                    "required": ["from", "name"]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "from": {
+                        "type": "string",
+                        "enum": ["package"]
+                      },
+                      "name": {
+                        "oneOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "minItems": 1,
+                            "uniqueItems": true
+                          }
+                        ]
+                      },
+                      "package": {
+                        "type": "string"
+                      }
+                    },
+                    "additionalProperties": false,
+                    "required": ["from", "name", "package"]
+                  }
+                ]
+              }
+            },
+            "allowForKnownSafePromises": {
+              "description": "Type specifiers that are known to be safe to float.",
+              "default": [],
+              "type": "array",
+              "items": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "from": {
+                        "type": "string",
+                        "enum": ["file"]
+                      },
+                      "name": {
+                        "oneOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "minItems": 1,
+                            "uniqueItems": true
+                          }
+                        ]
+                      },
+                      "path": {
+                        "type": "string"
+                      }
+                    },
+                    "additionalProperties": false,
+                    "required": ["from", "name"]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "from": {
+                        "type": "string",
+                        "enum": ["lib"]
+                      },
+                      "name": {
+                        "oneOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "minItems": 1,
+                            "uniqueItems": true
+                          }
+                        ]
+                      }
+                    },
+                    "additionalProperties": false,
+                    "required": ["from", "name"]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "from": {
+                        "type": "string",
+                        "enum": ["package"]
+                      },
+                      "name": {
+                        "oneOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "minItems": 1,
+                            "uniqueItems": true
+                          }
+                        ]
+                      },
+                      "package": {
+                        "type": "string"
+                      }
+                    },
+                    "additionalProperties": false,
+                    "required": ["from", "name", "package"]
+                  }
+                ]
+              }
+            },
+            "checkThenables": {
+              "description": "Whether to check all \"Thenable\"s, not just the built-in Promise type.",
+              "default": false,
+              "type": "boolean"
+            },
+            "ignoreIIFE": {
+              "description": "Whether to ignore async IIFEs (Immediately Invoked Function Expressions).",
+              "default": false,
+              "type": "boolean"
+            },
+            "ignoreVoid": {
+              "description": "Whether to ignore `void` expressions.",
+              "default": true,
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        "type/no-meaningless-void-operator": {
+          "type": "object",
+          "properties": {
+            "checkNever": {
+              "description": "Whether to suggest removing `void` when a call's return type is `never`.",
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        "type/no-misused-promises": {
+          "type": "object",
+          "properties": {
+            "checksConditionals": {
+              "description": "Whether to warn when a Promise is provided to conditional statements.",
+              "default": true,
+              "oneOf": [
+                {
+                  "description": "Whether to check conditionals.",
+                  "type": "boolean"
+                },
+                {
+                  "description": "Detailed settings for conditional inspection.",
+                  "type": "object",
+                  "properties": {
+                    "flagUnions": {
+                      "description": "Configures how union types containing Promise-like types are checked.",
+                      "type": "string",
+                      "enum": ["all", "strict", "none"]
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              ]
+            },
+            "checksSpreads": {
+              "description": "Whether to warn when `...` spreading a `Promise`.",
+              "default": true,
+              "type": "boolean"
+            },
+            "checksVoidReturn": {
+              "description": "Whether to warn when a Promise is returned from a function typed as returning `void`.",
+              "default": true,
+              "oneOf": [
+                {
+                  "description": "Whether to disable checking all asynchronous functions.",
+                  "type": "boolean"
+                },
+                {
+                  "description": "Which forms of functions may have checking disabled.",
+                  "type": "object",
+                  "properties": {
+                    "arguments": {
+                      "description": "Disables checking an asynchronous function passed as argument where the parameter type expects a function that returns `void`.",
+                      "type": "boolean"
+                    },
+                    "attributes": {
+                      "description": "Disables checking an asynchronous function passed as a JSX attribute expected to be a function that returns `void`.",
+                      "type": "boolean"
+                    },
+                    "inheritedMethods": {
+                      "description": "Disables checking an asynchronous method in a type that extends or implements another type expecting that method to return `void`.",
+                      "type": "boolean"
+                    },
+                    "properties": {
+                      "description": "Disables checking an asynchronous function passed as an object property expected to be a function that returns `void`.",
+                      "type": "boolean"
+                    },
+                    "returns": {
+                      "description": "Disables checking an asynchronous function returned in a function whose return type is a function that returns `void`.",
+                      "type": "boolean"
+                    },
+                    "variables": {
+                      "description": "Disables checking an asynchronous function used as a variable whose return type is a function that returns `void`.",
+                      "type": "boolean"
+                    }
+                  },
+                  "additionalProperties": false
+                }
+              ]
+            }
+          },
+          "additionalProperties": false
+        },
+        "type/no-misused-spread": {
+          "type": "object",
+          "properties": {
+            "allow": {
+              "description": "An array of type specifiers that are known to be safe to spread.",
+              "default": [],
+              "type": "array",
+              "items": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "from": {
+                        "type": "string",
+                        "enum": ["file"]
+                      },
+                      "name": {
+                        "oneOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "minItems": 1,
+                            "uniqueItems": true
+                          }
+                        ]
+                      },
+                      "path": {
+                        "type": "string"
+                      }
+                    },
+                    "additionalProperties": false,
+                    "required": ["from", "name"]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "from": {
+                        "type": "string",
+                        "enum": ["lib"]
+                      },
+                      "name": {
+                        "oneOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "minItems": 1,
+                            "uniqueItems": true
+                          }
+                        ]
+                      }
+                    },
+                    "additionalProperties": false,
+                    "required": ["from", "name"]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "from": {
+                        "type": "string",
+                        "enum": ["package"]
+                      },
+                      "name": {
+                        "oneOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "minItems": 1,
+                            "uniqueItems": true
+                          }
+                        ]
+                      },
+                      "package": {
+                        "type": "string"
+                      }
+                    },
+                    "additionalProperties": false,
+                    "required": ["from", "name", "package"]
+                  }
+                ]
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "type/no-unnecessary-boolean-literal-compare": {
+          "type": "object",
+          "properties": {
+            "allowComparingNullableBooleansToFalse": {
+              "description": "Whether to allow comparisons between nullable boolean variables and `false`.",
+              "default": true,
+              "type": "boolean"
+            },
+            "allowComparingNullableBooleansToTrue": {
+              "description": "Whether to allow comparisons between nullable boolean variables and `true`.",
+              "default": true,
+              "type": "boolean"
+            },
+            "allowRuleToRunWithoutStrictNullChecksIKnowWhatIAmDoing": {
+              "description": "Unless this is set to `true`, the rule will error on every file whose `tsconfig.json` does _not_ have the `strictNullChecks` compiler option (or `strict`) set to `true`.",
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        "type/no-unnecessary-condition": {
+          "type": "object",
+          "properties": {
+            "allowConstantLoopConditions": {
+              "description": "Whether to ignore constant loop conditions, such as `while (true)`.",
+              "default": "never",
+              "oneOf": [
+                {
+                  "description": "Always ignore or not ignore the loop conditions",
+                  "type": "boolean"
+                },
+                {
+                  "description": "Which situations to ignore constant conditions in.",
+                  "type": "string",
+                  "enum": ["always", "never", "only-allowed-literals"]
+                }
+              ]
+            },
+            "allowRuleToRunWithoutStrictNullChecksIKnowWhatIAmDoing": {
+              "description": "Whether to not error when running with a tsconfig that has strictNullChecks turned.",
+              "default": false,
+              "type": "boolean"
+            },
+            "checkTypePredicates": {
+              "description": "Whether to check the asserted argument of a type predicate function for unnecessary conditions",
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        "type/no-unnecessary-type-assertion": {
+          "type": "object",
+          "properties": {
+            "checkLiteralConstAssertions": {
+              "description": "Whether to check literal const assertions.",
+              "type": "boolean"
+            },
+            "typesToIgnore": {
+              "description": "A list of type names to ignore.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "type/no-unsafe-member-access": {
+          "type": "object",
+          "properties": {
+            "allowOptionalChaining": {
+              "description": "Whether to allow `?.` optional chains on `any` values.",
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        "type/only-throw-error": {
+          "type": "object",
+          "properties": {
+            "allow": {
+              "description": "Type specifiers that can be thrown.",
+              "default": [],
+              "type": "array",
+              "items": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "from": {
+                        "type": "string",
+                        "enum": ["file"]
+                      },
+                      "name": {
+                        "oneOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "minItems": 1,
+                            "uniqueItems": true
+                          }
+                        ]
+                      },
+                      "path": {
+                        "type": "string"
+                      }
+                    },
+                    "additionalProperties": false,
+                    "required": ["from", "name"]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "from": {
+                        "type": "string",
+                        "enum": ["lib"]
+                      },
+                      "name": {
+                        "oneOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "minItems": 1,
+                            "uniqueItems": true
+                          }
+                        ]
+                      }
+                    },
+                    "additionalProperties": false,
+                    "required": ["from", "name"]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "from": {
+                        "type": "string",
+                        "enum": ["package"]
+                      },
+                      "name": {
+                        "oneOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "minItems": 1,
+                            "uniqueItems": true
+                          }
+                        ]
+                      },
+                      "package": {
+                        "type": "string"
+                      }
+                    },
+                    "additionalProperties": false,
+                    "required": ["from", "name", "package"]
+                  }
+                ]
+              }
+            },
+            "allowRethrowing": {
+              "description": "Whether to allow rethrowing caught values that are not `Error` objects.",
+              "default": true,
+              "type": "boolean"
+            },
+            "allowThrowingAny": {
+              "description": "Whether to always allow throwing values typed as `any`.",
+              "default": true,
+              "type": "boolean"
+            },
+            "allowThrowingUnknown": {
+              "description": "Whether to always allow throwing values typed as `unknown`.",
+              "default": true,
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        "type/prefer-promise-reject-errors": {
+          "type": "object",
+          "properties": {
+            "allow": {
+              "description": "Type specifiers that can be used as Promise rejection reasons.",
+              "default": [],
+              "type": "array",
+              "items": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "from": {
+                        "type": "string",
+                        "enum": ["file"]
+                      },
+                      "name": {
+                        "oneOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "minItems": 1,
+                            "uniqueItems": true
+                          }
+                        ]
+                      },
+                      "path": {
+                        "type": "string"
+                      }
+                    },
+                    "additionalProperties": false,
+                    "required": ["from", "name"]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "from": {
+                        "type": "string",
+                        "enum": ["lib"]
+                      },
+                      "name": {
+                        "oneOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "minItems": 1,
+                            "uniqueItems": true
+                          }
+                        ]
+                      }
+                    },
+                    "additionalProperties": false,
+                    "required": ["from", "name"]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "from": {
+                        "type": "string",
+                        "enum": ["package"]
+                      },
+                      "name": {
+                        "oneOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "minItems": 1,
+                            "uniqueItems": true
+                          }
+                        ]
+                      },
+                      "package": {
+                        "type": "string"
+                      }
+                    },
+                    "additionalProperties": false,
+                    "required": ["from", "name", "package"]
+                  }
+                ]
+              }
+            },
+            "allowEmptyReject": {
+              "description": "Whether to allow calls to `Promise.reject()` with no arguments.",
+              "default": false,
+              "type": "boolean"
+            },
+            "allowThrowingAny": {
+              "description": "Whether to always allow throwing values typed as `any`.",
+              "default": false,
+              "type": "boolean"
+            },
+            "allowThrowingUnknown": {
+              "description": "Whether to always allow throwing values typed as `unknown`.",
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        "type/restrict-plus-operands": {
+          "type": "object",
+          "properties": {
+            "allowAny": {
+              "description": "Whether to allow `any` typed values.",
+              "default": true,
+              "type": "boolean"
+            },
+            "allowBoolean": {
+              "description": "Whether to allow `boolean` typed values.",
+              "default": true,
+              "type": "boolean"
+            },
+            "allowNullish": {
+              "description": "Whether to allow potentially `null` or `undefined` typed values.",
+              "default": true,
+              "type": "boolean"
+            },
+            "allowNumberAndString": {
+              "description": "Whether to allow `bigint`/`number` typed values and `string` typed values to be added together.",
+              "default": true,
+              "type": "boolean"
+            },
+            "allowRegExp": {
+              "description": "Whether to allow `regexp` typed values.",
+              "default": true,
+              "type": "boolean"
+            },
+            "skipCompoundAssignments": {
+              "description": "Whether to skip compound assignments such as `+=`.",
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        "type/restrict-template-expressions": {
+          "type": "object",
+          "properties": {
+            "allowAny": {
+              "description": "Whether to allow `any` typed values in template expressions.",
+              "default": true,
+              "type": "boolean"
+            },
+            "allowArray": {
+              "description": "Whether to allow `array` typed values in template expressions.",
+              "type": "boolean"
+            },
+            "allowBoolean": {
+              "description": "Whether to allow `boolean` typed values in template expressions.",
+              "default": true,
+              "type": "boolean"
+            },
+            "allowNullish": {
+              "description": "Whether to allow `nullish` typed values in template expressions.",
+              "default": true,
+              "type": "boolean"
+            },
+            "allowNumber": {
+              "description": "Whether to allow `number` typed values in template expressions.",
+              "default": true,
+              "type": "boolean"
+            },
+            "allowRegExp": {
+              "description": "Whether to allow `regexp` typed values in template expressions.",
+              "default": true,
+              "type": "boolean"
+            },
+            "allowNever": {
+              "description": "Whether to allow `never` typed values in template expressions.",
+              "type": "boolean"
+            },
+            "allow": {
+              "description": "Types to allow in template expressions.",
+              "default": [
+                {
+                  "name": ["Error", "URL", "URLSearchParams"],
+                  "from": "lib"
+                }
+              ],
+              "type": "array",
+              "items": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "from": {
+                        "type": "string",
+                        "enum": ["file"]
+                      },
+                      "name": {
+                        "oneOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "minItems": 1,
+                            "uniqueItems": true
+                          }
+                        ]
+                      },
+                      "path": {
+                        "type": "string"
+                      }
+                    },
+                    "additionalProperties": false,
+                    "required": ["from", "name"]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "from": {
+                        "type": "string",
+                        "enum": ["lib"]
+                      },
+                      "name": {
+                        "oneOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "minItems": 1,
+                            "uniqueItems": true
+                          }
+                        ]
+                      }
+                    },
+                    "additionalProperties": false,
+                    "required": ["from", "name"]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "from": {
+                        "type": "string",
+                        "enum": ["package"]
+                      },
+                      "name": {
+                        "oneOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "minItems": 1,
+                            "uniqueItems": true
+                          }
+                        ]
+                      },
+                      "package": {
+                        "type": "string"
+                      }
+                    },
+                    "additionalProperties": false,
+                    "required": ["from", "name", "package"]
+                  }
+                ]
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "type/return-await": {
+          "default": "in-try-catch",
+          "type": "string",
+          "oneOf": [
+            {
+              "description": "Requires that all returned promises be awaited.",
+              "type": "string",
+              "enum": ["always"]
+            },
+            {
+              "description": "In error-handling contexts, the rule enforces that returned promises must be awaited. In ordinary contexts, the rule does not enforce any particular behavior around whether returned promises are awaited.",
+              "type": "string",
+              "enum": ["error-handling-correctness-only"]
+            },
+            {
+              "description": "In error-handling contexts, the rule enforces that returned promises must be awaited. In ordinary contexts, the rule enforces that returned promises _must not_ be awaited.",
+              "type": "string",
+              "enum": ["in-try-catch"]
+            },
+            {
+              "description": "Disallows awaiting any returned promises.",
+              "type": "string",
+              "enum": ["never"]
+            }
+          ]
+        },
+        "type/unbound-method": {
+          "type": "object",
+          "properties": {
+            "ignoreStatic": {
+              "description": "Whether to skip checking whether `static` methods are correctly bound.",
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
         "vue/no-unused-script-vars": {
           "type": "object",
           "properties": {

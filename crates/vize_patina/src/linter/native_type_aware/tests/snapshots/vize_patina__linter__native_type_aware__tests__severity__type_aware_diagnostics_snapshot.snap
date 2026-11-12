@@ -77,14 +77,14 @@ expression: diagnostics
     ),
     (
         "type/no-unsafe-assignment",
-        "Unsafe assignment of an any-typed value.",
+        "Unsafe assignment of an `any` value.",
         174,
         191,
         None,
     ),
     (
         "type/no-unsafe-assignment",
-        "Unsafe assignment of an any-typed value.",
+        "Unsafe assignment of an `any` value.",
         198,
         220,
         None,
@@ -105,7 +105,7 @@ expression: diagnostics
     ),
     (
         "type/no-unsafe-member-access",
-        "Unsafe member access on an `any` value.",
+        "Unsafe member access .value on an `any` value.",
         215,
         220,
         None,
@@ -130,7 +130,7 @@ expression: diagnostics
     ),
     (
         "type/require-await",
-        "Function has no 'await' expression.",
+        "Async function 'loadData' has no 'await' expression.",
         222,
         279,
         None,

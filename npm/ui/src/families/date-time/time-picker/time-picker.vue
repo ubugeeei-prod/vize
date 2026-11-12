@@ -73,15 +73,15 @@ const picker = useTimePicker({
   hourCycle: () => props.hourCycle,
   locale: () => locale.value,
   isTimeUnavailable: () => props.isTimeUnavailable,
-  readOnly: () => props.readOnly === true,
+  readOnly: () => props.readOnly,
   onUpdate: (value) => emit("update:modelValue", value),
   onChange: (value, previous, event) => emit("change", value, previous, event),
 });
 const listboxProps = computed<ListboxProps>(() => ({
   modelValue: picker.listboxValue.value,
   selectionMode: "single",
-  disabled: props.disabled === true,
-  required: props.required === true,
+  disabled: props.disabled,
+  required: props.required,
   id: deriveDeterministicId(baseId.value, "listbox"),
   ...(props.ariaLabel === undefined ? {} : { ariaLabel: props.ariaLabel }),
   ...(props.ariaLabelledby === undefined ? {} : { ariaLabelledby: props.ariaLabelledby }),
@@ -91,8 +91,8 @@ const slotState = computed<TimePickerSlotState>(() => ({
   value: picker.value.value,
   slots: picker.slots.value,
   hourCycle: picker.hourCycle.value,
-  disabled: props.disabled === true,
-  readOnly: props.readOnly === true,
+  disabled: props.disabled,
+  readOnly: props.readOnly,
 }));
 
 function onChange(
@@ -107,8 +107,8 @@ defineExpose({
   value: picker.value,
   slots: picker.slots,
   hourCycle: picker.hourCycle,
-  disabled: computed(() => props.disabled === true),
-  readOnly: computed(() => props.readOnly === true),
+  disabled: computed(() => props.disabled),
+  readOnly: computed(() => props.readOnly),
   focus: (options?: FocusOptions) => listbox.value?.focus(options),
   setValue: (value: PlainTime | null) => picker.setValue(value),
 } satisfies { readonly [Key in keyof TimePickerExpose]: unknown });

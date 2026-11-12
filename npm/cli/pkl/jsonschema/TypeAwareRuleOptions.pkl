@@ -1,0 +1,396 @@
+/// JSON Schema for the typescript-eslint type-aware rule options.
+///
+/// Generated from the rule schemas and defaults of @typescript-eslint/eslint-plugin
+/// 8.72.1; keep it in step with
+/// davinci/vize_l0/src/config/model/linter_rule_options/type_aware.rs.
+module vize.jsonschema.TypeAwareRuleOptions
+
+import "@json_schema/JsonSchema.pkl"
+
+awaitThenableDef: JsonSchema = new JsonSchema {
+  type = "object"
+  properties {
+    ["allowMixedPromiseArrays"] = new JsonSchema {
+      description = "Whether to allow promise aggregators to receive iterables mixing Promise and non-Promise values, as long as at least one value may be a Promise."
+      type = "boolean"
+      default = false
+    }
+  }
+  additionalProperties = false
+}
+
+noBaseToStringDef: JsonSchema = new JsonSchema {
+  type = "object"
+  properties {
+    ["checkUnknown"] = new JsonSchema {
+      description = "Whether to also check values of type `unknown`"
+      type = "boolean"
+      default = false
+    }
+    ["ignoredTypeNames"] = new JsonSchema {
+      description = "Stringified type names to ignore."
+      type = "array"
+      items = new JsonSchema {
+        type = "string"
+      }
+      default = new Listing { "Error"; "RegExp"; "URL"; "URLSearchParams" }
+    }
+  }
+  additionalProperties = false
+}
+
+noConfusingVoidExpressionDef: JsonSchema = new JsonSchema {
+  type = "object"
+  properties {
+    ["ignoreArrowShorthand"] = new JsonSchema {
+      description = "Whether to ignore \"shorthand\" `() =>` arrow functions: those without `{ ... }` braces."
+      type = "boolean"
+      default = false
+    }
+    ["ignoreVoidOperator"] = new JsonSchema {
+      description = "Whether to ignore returns that start with the `void` operator."
+      type = "boolean"
+      default = false
+    }
+    ["ignoreVoidReturningFunctions"] = new JsonSchema {
+      description = "Whether to ignore returns from functions with explicit `void` return types and functions with contextual `void` return types."
+      type = "boolean"
+      default = false
+    }
+  }
+  additionalProperties = false
+}
+
+noDeprecatedDef: JsonSchema = new JsonSchema {
+  type = "object"
+  properties {
+    ["allow"] = new JsonSchema {
+      description = "Type specifiers that can be allowed."
+      type = "array"
+      items = new JsonSchema {
+        oneOf = new Listing {
+          new JsonSchema {
+            type = "string"
+          }
+          new JsonSchema {
+            type = "object"
+            properties {
+              ["from"] = new JsonSchema {
+                type = "string"
+                enum = new Listing { "file" }
+              }
+              ["name"] = new JsonSchema {
+                oneOf = new Listing {
+                  new JsonSchema {
+                    type = "string"
+                  }
+                  new JsonSchema {
+                    type = "array"
+                    items = new JsonSchema {
+                      type = "string"
+                    }
+                    minItems = 1
+                    uniqueItems = true
+                  }
+                }
+              }
+              ["path"] = new JsonSchema {
+                type = "string"
+              }
+            }
+            required = new Listing { "from"; "name" }
+            additionalProperties = false
+          }
+          new JsonSchema {
+            type = "object"
+            properties {
+              ["from"] = new JsonSchema {
+                type = "string"
+                enum = new Listing { "lib" }
+              }
+              ["name"] = new JsonSchema {
+                oneOf = new Listing {
+                  new JsonSchema {
+                    type = "string"
+                  }
+                  new JsonSchema {
+                    type = "array"
+                    items = new JsonSchema {
+                      type = "string"
+                    }
+                    minItems = 1
+                    uniqueItems = true
+                  }
+                }
+              }
+            }
+            required = new Listing { "from"; "name" }
+            additionalProperties = false
+          }
+          new JsonSchema {
+            type = "object"
+            properties {
+              ["from"] = new JsonSchema {
+                type = "string"
+                enum = new Listing { "package" }
+              }
+              ["name"] = new JsonSchema {
+                oneOf = new Listing {
+                  new JsonSchema {
+                    type = "string"
+                  }
+                  new JsonSchema {
+                    type = "array"
+                    items = new JsonSchema {
+                      type = "string"
+                    }
+                    minItems = 1
+                    uniqueItems = true
+                  }
+                }
+              }
+              ["package"] = new JsonSchema {
+                type = "string"
+              }
+            }
+            required = new Listing { "from"; "name"; "package" }
+            additionalProperties = false
+          }
+        }
+      }
+      default = new Listing {  }
+    }
+  }
+  additionalProperties = false
+}
+
+noDuplicateTypeConstituentsDef: JsonSchema = new JsonSchema {
+  type = "object"
+  properties {
+    ["ignoreIntersections"] = new JsonSchema {
+      description = "Whether to ignore `&` intersections."
+      type = "boolean"
+      default = false
+    }
+    ["ignoreUnions"] = new JsonSchema {
+      description = "Whether to ignore `|` unions."
+      type = "boolean"
+      default = false
+    }
+  }
+  additionalProperties = false
+}
+
+noFloatingPromisesDef: JsonSchema = new JsonSchema {
+  type = "object"
+  properties {
+    ["allowForKnownSafeCalls"] = new JsonSchema {
+      description = "Type specifiers of functions whose calls are safe to float."
+      type = "array"
+      items = new JsonSchema {
+        oneOf = new Listing {
+          new JsonSchema {
+            type = "string"
+          }
+          new JsonSchema {
+            type = "object"
+            properties {
+              ["from"] = new JsonSchema {
+                type = "string"
+                enum = new Listing { "file" }
+              }
+              ["name"] = new JsonSchema {
+                oneOf = new Listing {
+                  new JsonSchema {
+                    type = "string"
+                  }
+                  new JsonSchema {
+                    type = "array"
+                    items = new JsonSchema {
+                      type = "string"
+                    }
+                    minItems = 1
+                    uniqueItems = true
+                  }
+                }
+              }
+              ["path"] = new JsonSchema {
+                type = "string"
+              }
+            }
+            required = new Listing { "from"; "name" }
+            additionalProperties = false
+          }
+          new JsonSchema {
+            type = "object"
+            properties {
+              ["from"] = new JsonSchema {
+                type = "string"
+                enum = new Listing { "lib" }
+              }
+              ["name"] = new JsonSchema {
+                oneOf = new Listing {
+                  new JsonSchema {
+                    type = "string"
+                  }
+                  new JsonSchema {
+                    type = "array"
+                    items = new JsonSchema {
+                      type = "string"
+                    }
+                    minItems = 1
+                    uniqueItems = true
+                  }
+                }
+              }
+            }
+            required = new Listing { "from"; "name" }
+            additionalProperties = false
+          }
+          new JsonSchema {
+            type = "object"
+            properties {
+              ["from"] = new JsonSchema {
+                type = "string"
+                enum = new Listing { "package" }
+              }
+              ["name"] = new JsonSchema {
+                oneOf = new Listing {
+                  new JsonSchema {
+                    type = "string"
+                  }
+                  new JsonSchema {
+                    type = "array"
+                    items = new JsonSchema {
+                      type = "string"
+                    }
+                    minItems = 1
+                    uniqueItems = true
+                  }
+                }
+              }
+              ["package"] = new JsonSchema {
+                type = "string"
+              }
+            }
+            required = new Listing { "from"; "name"; "package" }
+            additionalProperties = false
+          }
+        }
+      }
+      default = new Listing {  }
+    }
+    ["allowForKnownSafePromises"] = new JsonSchema {
+      description = "Type specifiers that are known to be safe to float."
+      type = "array"
+      items = new JsonSchema {
+        oneOf = new Listing {
+          new JsonSchema {
+            type = "string"
+          }
+          new JsonSchema {
+            type = "object"
+            properties {
+              ["from"] = new JsonSchema {
+                type = "string"
+                enum = new Listing { "file" }
+              }
+              ["name"] = new JsonSchema {
+                oneOf = new Listing {
+                  new JsonSchema {
+                    type = "string"
+                  }
+                  new JsonSchema {
+                    type = "array"
+                    items = new JsonSchema {
+                      type = "string"
+                    }
+                    minItems = 1
+                    uniqueItems = true
+                  }
+                }
+              }
+              ["path"] = new JsonSchema {
+                type = "string"
+              }
+            }
+            required = new Listing { "from"; "name" }
+            additionalProperties = false
+          }
+          new JsonSchema {
+            type = "object"
+            properties {
+              ["from"] = new JsonSchema {
+                type = "string"
+                enum = new Listing { "lib" }
+              }
+              ["name"] = new JsonSchema {
+                oneOf = new Listing {
+                  new JsonSchema {
+                    type = "string"
+                  }
+                  new JsonSchema {
+                    type = "array"
+                    items = new JsonSchema {
+                      type = "string"
+                    }
+                    minItems = 1
+                    uniqueItems = true
+                  }
+                }
+              }
+            }
+            required = new Listing { "from"; "name" }
+            additionalProperties = false
+          }
+          new JsonSchema {
+            type = "object"
+            properties {
+              ["from"] = new JsonSchema {
+                type = "string"
+                enum = new Listing { "package" }
+              }
+              ["name"] = new JsonSchema {
+                oneOf = new Listing {
+                  new JsonSchema {
+                    type = "string"
+                  }
+                  new JsonSchema {
+                    type = "array"
+                    items = new JsonSchema {
+                      type = "string"
+                    }
+                    minItems = 1
+                    uniqueItems = true
+                  }
+                }
+              }
+              ["package"] = new JsonSchema {
+                type = "string"
+              }
+            }
+            required = new Listing { "from"; "name"; "package" }
+            additionalProperties = false
+          }
+        }
+      }
+      default = new Listing {  }
+    }
+    ["checkThenables"] = new JsonSchema {
+      description = "Whether to check all \"Thenable\"s, not just the built-in Promise type."
+      type = "boolean"
+      default = false
+    }
+    ["ignoreIIFE"] = new JsonSchema {
+      description = "Whether to ignore async IIFEs (Immediately Invoked Function Expressions)."
+      type = "boolean"
+      default = false
+    }
+    ["ignoreVoid"] = new JsonSchema {
+      description = "Whether to ignore `void` expressions."
+      type = "boolean"
+      default = true
+    }
+  }
+  additionalProperties = false
+}

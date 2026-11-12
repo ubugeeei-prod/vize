@@ -4,9 +4,22 @@ use vize_l0::String;
 
 mod batch;
 mod boolean;
+mod checker_memo;
 mod expression_facts;
+mod promise_facts;
+mod relations;
+mod type_node_facts;
+mod type_shape;
 
-pub(in crate::linter) use expression_facts::{ExpressionFact, ExpressionQuery};
+pub(in crate::linter) use expression_facts::{
+    ExpressionFact, ExpressionQuery, Facets, HeritageQuery, PathStep, detail,
+};
+pub(in crate::linter) use relations::{
+    AssertionAsk, AssertionContext, ContextSource, DeprecationAsk, DeprecationKind, Literal,
+    NonNullAsk, PropertyContext, RelationReply, RelationRequest, ReturnAsk, Shape, Span,
+    flags as type_flags,
+};
+pub(in crate::linter) use type_shape::{PredicateRequest, ShapeRequest};
 mod errors;
 mod paths;
 mod probe;
@@ -66,6 +79,8 @@ pub(crate) struct CorsaTypeAwareSession {
     #[cfg(test)]
     last_refresh: virtual_documents::RefreshCounts,
     closed: bool,
+    /// `compilerOptions.noUncheckedIndexedAccess` of the session tsconfig.
+    no_unchecked_indexed_access: bool,
 }
 
 impl CorsaTypeAwareSession {
