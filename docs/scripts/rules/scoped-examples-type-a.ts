@@ -1,8 +1,7 @@
 import type { RuleExample } from "./types.ts";
 
 const vue = (source: string) => ({ language: "vue" as const, source });
-const script = (source: string) =>
-  vue(`<script setup lang="ts">\n${source}\n</script>`);
+const script = (source: string) => vue(`<script setup lang="ts">\n${source}\n</script>`);
 const pair = (bad: string, good: string, file: string): RuleExample => ({
   bad: script(bad),
   good: script(good),
@@ -23,7 +22,7 @@ export const typescriptEslintExamplesA: Record<string, RuleExample> = {
   ),
   "type/no-base-to-string": pair(
     "const plain = { a: 1 };\nplain.toString();",
-    "const label = \"a\";\nlabel.toString();",
+    'const label = "a";\nlabel.toString();',
     "no_base_to_string.rs",
   ),
   "type/no-confusing-void-expression": pair(
@@ -47,12 +46,12 @@ export const typescriptEslintExamplesA: Record<string, RuleExample> = {
     "no_for_in_array.rs",
   ),
   "type/no-generated-empty-object-type": pair(
-    "type Emptied = Omit<{ a: number }, \"a\">;",
-    "type Kept = Omit<{ a: number; b: string }, \"a\">;",
+    'type Emptied = Omit<{ a: number }, "a">;',
+    'type Kept = Omit<{ a: number; b: string }, "a">;',
     "no_generated_empty_object_type.rs",
   ),
   "type/no-implied-eval": pair(
-    "function logVoid(): void {}\nsetTimeout(\"logVoid()\", 10);",
+    'function logVoid(): void {}\nsetTimeout("logVoid()", 10);',
     "setTimeout(() => {}, 10);",
     "no_implied_eval.rs",
   ),
@@ -67,12 +66,12 @@ export const typescriptEslintExamplesA: Record<string, RuleExample> = {
     "no_misused_promises.rs",
   ),
   "type/no-misused-spread": pair(
-    "const label = \"a\";\nconst chars = [...label];",
+    'const label = "a";\nconst chars = [...label];',
     "const numbers = [1, 2, 3];\nconst chars = [...numbers];",
     "no_misused_spread.rs",
   ),
   "type/no-mixed-enums": pair(
-    "enum Mixed {\n  A = 0,\n  B = \"b\",\n}",
+    'enum Mixed {\n  A = 0,\n  B = "b",\n}',
     "enum Mixed {\n  A = 0,\n  B = 1,\n}",
     "no_mixed_enums.rs",
   ),
@@ -87,13 +86,13 @@ export const typescriptEslintExamplesA: Record<string, RuleExample> = {
     "no_unnecessary_boolean_literal_compare.rs",
   ),
   "type/no-unnecessary-condition": pair(
-    "function orDefault(value: string): string {\n  return value ?? \"x\";\n}",
-    "function orDefault(value: string | undefined): string {\n  return value ?? \"x\";\n}",
+    'function orDefault(value: string): string {\n  return value ?? "x";\n}',
+    'function orDefault(value: string | undefined): string {\n  return value ?? "x";\n}',
     "no_unnecessary_condition.rs",
   ),
   "type/no-unnecessary-template-expression": pair(
-    "const label = \"a\";\nconst wrapped = `${label}`;",
-    "const label = \"a\";\nconst wrapped = label;",
+    'const label = "a";\nconst wrapped = `${label}`;',
+    'const label = "a";\nconst wrapped = label;',
     "no_unnecessary_template_expression.rs",
   ),
   "type/no-unnecessary-type-arguments": pair(
@@ -107,7 +106,7 @@ export const typescriptEslintExamplesA: Record<string, RuleExample> = {
     "no_unnecessary_type_assertion.rs",
   ),
   "type/no-unnecessary-type-conversion": pair(
-    "const label = \"a\";\nconst same = String(label);",
+    'const label = "a";\nconst same = String(label);',
     "const count = 1;\nconst same = String(count);",
     "no_unnecessary_type_conversion.rs",
   ),

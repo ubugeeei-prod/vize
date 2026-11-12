@@ -128,10 +128,8 @@ impl Classifier {
             }
             BindingPattern::ArrayPattern(array) => {
                 let mut siblings = Vec::new();
-                for element in &array.elements {
-                    if let Some(element) = element {
-                        siblings.extend(self.record_pattern(element, kind, has_init, true, group));
-                    }
+                for element in array.elements.iter().flatten() {
+                    siblings.extend(self.record_pattern(element, kind, has_init, true, group));
                 }
                 let rest = array
                     .rest

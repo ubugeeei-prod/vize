@@ -80,9 +80,9 @@ fn unsafe_return(node: &LintNode, start: u32, end: u32) -> (u32, u32) {
     }
 }
 
-fn is_primitive(texts: &[String]) -> bool {
+fn is_primitive(texts: &[impl AsRef<str>]) -> bool {
     texts.iter().any(|text| {
-        let text = text.trim();
+        let text = text.as_ref().trim();
         matches!(
             text,
             "string"

@@ -2996,17 +2996,17 @@
           {
             "path": "explain-en.txt",
             "role": "whole-current-explain-oracle",
-            "sha256": "cb3cd0e1426fe6b72469f93d2291e8ef3330f94473cf1c7f707c315099537ad9"
+            "sha256": "029d1aa5b27ed6c31f92f39855e6845ca89e9e23fc881dabe76d6e4af6c8db20"
           },
           {
             "path": "explain-ja.txt",
             "role": "whole-current-explain-oracle",
-            "sha256": "0ea134ac2a36395213864bab9eb0bd0aca8df9896751f16bf75ef89b450b345b"
+            "sha256": "6968d1bd7f67ebceef6f4aae86c06976f36d47d100950516f6ac464030297e67"
           },
           {
             "path": "explain-zh.txt",
             "role": "whole-current-explain-oracle",
-            "sha256": "8afe0a601be68782caa856cd362217dafcfc6c3da5a042f3246fe263588a8646"
+            "sha256": "fa5c587c2d3098ba7d3e4903c05b22bd9f476c9873aa0a8ea06c4c9a6faabc1a"
           }
         ]
       },
@@ -5236,6 +5236,38 @@
             "path": "TypedShapes.vue.txt",
             "role": "third-party-type-aware-reproduction",
             "sha256": "55974dd54e1563dabaf02fdfbfadb3bd48a5f0971ee5732b09a7b15b039d6f60"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/patina/restore-main-mechanical-12879",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "patina-restore-main-mechanical-12879",
+        "files": [
+          {
+            "path": "MechanicalShapes.vue.txt",
+            "role": "regression-reproduction",
+            "sha256": "3b44b635d796cf4b298a2f94320f5aa70a04b556de596aee3873e81f9695d880"
           }
         ]
       },

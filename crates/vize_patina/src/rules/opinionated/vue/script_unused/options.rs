@@ -1,9 +1,13 @@
 //! Defaults match typescript-eslint `no-unused-vars` and ESLint `prefer-const`.
 
 use regex::Regex;
+use vize_l0::{String, cstr};
 
 #[derive(Clone, Copy, PartialEq, Eq)]
-#[allow(dead_code)]
+#[expect(
+    dead_code,
+    reason = "upstream option values that no config path selects yet"
+)]
 pub(super) enum Args {
     All,
     AfterUsed,
@@ -11,21 +15,30 @@ pub(super) enum Args {
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
-#[allow(dead_code)]
+#[expect(
+    dead_code,
+    reason = "upstream option values that no config path selects yet"
+)]
 pub(super) enum Vars {
     All,
     Local,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
-#[allow(dead_code)]
+#[expect(
+    dead_code,
+    reason = "upstream option values that no config path selects yet"
+)]
 pub(super) enum Caught {
     All,
     None,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
-#[allow(dead_code)]
+#[expect(
+    dead_code,
+    reason = "upstream option values that no config path selects yet"
+)]
 pub(super) enum Destructuring {
     Any,
     All,
@@ -43,7 +56,7 @@ impl Pattern {
             return None;
         }
         Regex::new(source).ok().map(|regex| Self {
-            source: source.to_string(),
+            source: String::from(source),
             regex,
         })
     }
@@ -100,7 +113,7 @@ impl Default for PreferConstOptions {
 
 pub(super) fn allowance(kind: &str, pattern: Option<&Pattern>) -> String {
     let Some(pattern) = pattern else {
-        return String::new();
+        return String::default();
     };
-    format!(" Allowed unused {kind} must match /{}/u", pattern.source())
+    cstr!(" Allowed unused {kind} must match /{}/u", pattern.source())
 }

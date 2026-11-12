@@ -1,6 +1,6 @@
 //! Same-file names the host can resolve without the checker.
 use serde_json::Value;
-use std::collections::{HashMap, HashSet};
+use vize_l0::{FxHashMap, FxHashSet, String};
 
 pub(super) struct LocalFn {
     pub(super) params: Vec<(String, Option<String>)>,
@@ -8,46 +8,44 @@ pub(super) struct LocalFn {
     pub(super) returns: Option<String>,
 }
 
-pub(super) fn deprecated_names(source: &str) -> HashSet<String> {
-    let mut names = HashSet::new();
+pub(super) fn deprecated_names(source: &str) -> FxHashSet<String> {
+    let mut names = FxHashSet::default();
     let mut rest = source;
     while let Some(at) = rest.find("@deprecated") {
-        rest = &rest[at + "@deprecated".len()..];
+        rest = rest.get(at + "@deprecated".len()..).unwrap_or_default();
         if let Some(name) = rest.split("function").nth(1).and_then(|tail| {
             tail.trim_start()
                 .split(|ch: char| !ch.is_ascii_alphanumeric() && ch != '_' && ch != '$')
                 .next()
-        }) {
-            if !name.is_empty() {
-                names.insert(name.to_owned());
-            }
+        }) && !name.is_empty()
+        {
+            names.insert(String::from(name));
         }
     }
     names
 }
 
-pub(super) fn local_functions(program: &Value, source: &str) -> HashMap<String, LocalFn> {
-    let mut functions = HashMap::new();
+pub(super) fn local_functions(program: &Value, source: &str) -> FxHashMap<String, LocalFn> {
+    let mut functions = FxHashMap::default();
     walk_functions(program, source, &mut functions);
     functions
 }
 
-fn walk_functions(value: &Value, source: &str, functions: &mut HashMap<String, LocalFn>) {
-    if value.get("type").and_then(Value::as_str) == Some("FunctionDeclaration") {
-        if let Some(name) = value
+fn walk_functions(value: &Value, source: &str, functions: &mut FxHashMap<String, LocalFn>) {
+    if value.get("type").and_then(Value::as_str) == Some("FunctionDeclaration")
+        && let Some(name) = value
             .get("id")
             .and_then(|id| id.get("name"))
             .and_then(Value::as_str)
-        {
-            functions.insert(
-                name.to_owned(),
-                LocalFn {
-                    params: type_params(value, source),
-                    value_params: value_param_texts(value, source),
-                    returns: return_annotation(value, source),
-                },
-            );
-        }
+    {
+        functions.insert(
+            String::from(name),
+            LocalFn {
+                params: type_params(value, source),
+                value_params: value_param_texts(value, source),
+                returns: return_annotation(value, source),
+            },
+        );
     }
     match value {
         Value::Object(map) => {
@@ -84,7 +82,7 @@ fn type_params(value: &Value, source: &str) -> Vec<(String, Option<String>)> {
             let default = param
                 .get("default")
                 .and_then(|default| slice_node(source, default));
-            Some((name.to_owned(), default))
+            Some((String::from(name), default))
         })
         .collect()
 }
@@ -92,7 +90,7 @@ fn type_params(value: &Value, source: &str) -> Vec<(String, Option<String>)> {
 fn slice_node(source: &str, value: &Value) -> Option<String> {
     let start = value.get("start").and_then(Value::as_u64)? as usize;
     let end = value.get("end").and_then(Value::as_u64)? as usize;
-    source.get(start..end).map(str::to_owned)
+    source.get(start..end).map(String::from)
 }
 
 fn value_param_texts(value: &Value, source: &str) -> Vec<Option<String>> {
@@ -130,39 +128,37 @@ pub(super) fn annotation_text(value: &Value, source: &str) -> Option<String> {
     }
 }
 
-pub(super) fn class_methods(program: &Value) -> HashMap<String, HashSet<String>> {
-    let mut methods = HashMap::new();
+pub(super) fn class_methods(program: &Value) -> FxHashMap<String, FxHashSet<String>> {
+    let mut methods = FxHashMap::default();
     walk_classes(program, &mut methods);
     methods
 }
 
-fn walk_classes(value: &Value, methods: &mut HashMap<String, HashSet<String>>) {
-    if value.get("type").and_then(Value::as_str) == Some("ClassDeclaration") {
-        if let Some(name) = value
+fn walk_classes(value: &Value, methods: &mut FxHashMap<String, FxHashSet<String>>) {
+    if value.get("type").and_then(Value::as_str) == Some("ClassDeclaration")
+        && let Some(name) = value
             .get("id")
             .and_then(|id| id.get("name"))
             .and_then(Value::as_str)
+    {
+        let mut names = FxHashSet::default();
+        if let Some(body) = value
+            .get("body")
+            .and_then(|body| body.get("body"))
+            .and_then(Value::as_array)
         {
-            let mut names = HashSet::new();
-            if let Some(body) = value
-                .get("body")
-                .and_then(|body| body.get("body"))
-                .and_then(Value::as_array)
-            {
-                for member in body {
-                    if member.get("type").and_then(Value::as_str) == Some("MethodDefinition") {
-                        if let Some(method) = member
-                            .get("key")
-                            .and_then(|key| key.get("name"))
-                            .and_then(Value::as_str)
-                        {
-                            names.insert(method.to_owned());
-                        }
-                    }
+            for member in body {
+                if member.get("type").and_then(Value::as_str) == Some("MethodDefinition")
+                    && let Some(method) = member
+                        .get("key")
+                        .and_then(|key| key.get("name"))
+                        .and_then(Value::as_str)
+                {
+                    names.insert(String::from(method));
                 }
             }
-            methods.insert(name.to_owned(), names);
         }
+        methods.insert(String::from(name), names);
     }
     match value {
         Value::Object(map) => {
@@ -179,13 +175,13 @@ fn walk_classes(value: &Value, methods: &mut HashMap<String, HashSet<String>>) {
     }
 }
 
-pub(super) fn class_instances(program: &Value) -> HashMap<String, String> {
-    let mut instances = HashMap::new();
+pub(super) fn class_instances(program: &Value) -> FxHashMap<String, String> {
+    let mut instances = FxHashMap::default();
     walk_instances(program, &mut instances);
     instances
 }
 
-fn walk_instances(value: &Value, instances: &mut HashMap<String, String>) {
+fn walk_instances(value: &Value, instances: &mut FxHashMap<String, String>) {
     if value.get("type").and_then(Value::as_str) == Some("VariableDeclarator") {
         let name = value
             .get("id")
@@ -198,7 +194,7 @@ fn walk_instances(value: &Value, instances: &mut HashMap<String, String>) {
             .and_then(|callee| callee.get("name"))
             .and_then(Value::as_str);
         if let (Some(name), Some(class_name)) = (name, class_name) {
-            instances.insert(name.to_owned(), class_name.to_owned());
+            instances.insert(String::from(name), String::from(class_name));
         }
     }
     match value {

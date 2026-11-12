@@ -5,12 +5,10 @@ mod names;
 mod present;
 mod tree;
 
-use std::collections::HashSet;
-
 use corsa::lint::{default_type_aware_registry, run_default_type_aware_rule_owned};
 use vize_atelier_sfc::SfcDescriptor;
 use vize_canon::virtual_ts::ProjectionMapping;
-use vize_l0::String as CompactString;
+use vize_l0::{FxHashSet, String as CompactString};
 
 use super::{CorsaTypeAwareSession, LintResult, Linter, push_warning};
 use crate::diagnostic::LintDiagnostic;
@@ -19,7 +17,7 @@ use facts::queries;
 use names::{RULES, corsa_name, static_rule};
 
 pub(super) struct Script {
-    content: String,
+    content: CompactString,
     offset: u32,
     tsx: bool,
 }
@@ -40,7 +38,7 @@ impl Plan {
             .chain(descriptor.script_setup.iter())
             .filter(|block| !block.content.is_empty())
             .map(|block| Script {
-                content: block.content.to_string(),
+                content: CompactString::new(&block.content),
                 offset: block.loc.start as u32,
                 tsx: matches!(block.lang.as_deref().map(str::trim), Some("tsx" | "jsx")),
             })
@@ -86,12 +84,12 @@ pub(super) fn evaluate(
             metas.iter().find(|meta| meta.name == *name).map(|meta| {
                 meta.listeners
                     .iter()
-                    .map(String::as_str)
+                    .map(|listener| listener.as_str())
                     .collect::<Vec<_>>()
             })
         })
         .flatten()
-        .collect::<HashSet<_>>();
+        .collect::<FxHashSet<_>>();
     listeners.insert("TSTypeAliasDeclaration");
     listeners.insert("VariableDeclarator");
     let listener_list = listeners.iter().copied().collect::<Vec<_>>();
@@ -124,7 +122,7 @@ pub(super) fn evaluate(
         }
         facts::apply(&mut collected.nodes, &aligned, &script_queries);
         facts::enrich(&script.content, &mut collected.nodes, &collected.program);
-        let mut seen = HashSet::new();
+        let mut seen = FxHashSet::default();
         for node in &collected.nodes {
             for rule in &corsa_rules {
                 let listens = metas.iter().any(|meta| {

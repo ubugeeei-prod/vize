@@ -1,0 +1,21 @@
+<script setup lang="ts">
+import { onMounted } from "vue";
+
+type Props = { label: string; hidden: boolean };
+type Visible = Omit<Props, "hidden">;
+
+/** @deprecated use `label` instead */
+const legacyLabel = "legacy";
+
+const [first, , third] = [1, 2, 3];
+const visible: Visible = { label: legacyLabel };
+
+await Promise.resolve();
+onMounted(() => {
+  console.log(first, third, visible.label);
+});
+</script>
+
+<template>
+  <p>{{ visible.label }}</p>
+</template>

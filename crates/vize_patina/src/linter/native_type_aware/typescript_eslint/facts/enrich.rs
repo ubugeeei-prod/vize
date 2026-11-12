@@ -2,7 +2,7 @@
 use super::scan::{self, LocalFn};
 use corsa::lint::LintNode;
 use serde_json::{Value, json};
-use std::collections::{HashMap, HashSet};
+use vize_l0::{FxHashMap, FxHashSet, String};
 
 pub(super) fn apply(source: &str, nodes: &mut [LintNode], program: &Value) {
     let functions = scan::local_functions(program, source);
@@ -16,10 +16,10 @@ pub(super) fn apply(source: &str, nodes: &mut [LintNode], program: &Value) {
 
 fn walk(
     node: &mut LintNode,
-    functions: &HashMap<String, LocalFn>,
-    enums: &HashMap<String, HashMap<String, String>>,
-    objects: &HashSet<String>,
-    bindings: &HashMap<String, String>,
+    functions: &FxHashMap<String, LocalFn>,
+    enums: &FxHashMap<String, FxHashMap<String, String>>,
+    objects: &FxHashSet<String>,
+    bindings: &FxHashMap<String, String>,
 ) {
     if node.kind == "CallExpression" {
         fill_call(node, functions, objects);
@@ -43,7 +43,11 @@ fn walk(
     }
 }
 
-fn fill_call(node: &mut LintNode, functions: &HashMap<String, LocalFn>, objects: &HashSet<String>) {
+fn fill_call(
+    node: &mut LintNode,
+    functions: &FxHashMap<String, LocalFn>,
+    objects: &FxHashSet<String>,
+) {
     let Some(name) = callee_name(node) else {
         ensure_tostring_object(node, objects);
         return;
@@ -51,33 +55,31 @@ fn fill_call(node: &mut LintNode, functions: &HashMap<String, LocalFn>, objects:
     if let Some(returns) = functions
         .get(&name)
         .and_then(|function| function.returns.clone())
+        && (returns == "void" || returns == "undefined")
+        && !node.type_texts.iter().any(|text| {
+            let text = text.trim();
+            text == "void" || text == "undefined"
+        })
     {
-        if (returns == "void" || returns == "undefined")
-            && !node.type_texts.iter().any(|text| {
-                let text = text.trim();
-                text == "void" || text == "undefined"
-            })
-        {
-            node.type_texts = vec![returns];
-        }
+        node.type_texts = vec![returns.into()];
     }
-    if !node.fields.contains_key("__expectedArgumentTypeTexts") {
-        if let Some(function) = functions.get(&name) {
-            let texts = function
-                .value_params
-                .iter()
-                .map(|param| param.clone().into_iter().collect::<Vec<_>>())
-                .collect::<Vec<_>>();
-            if texts.iter().any(|texts| !texts.is_empty()) {
-                node.fields
-                    .insert("__expectedArgumentTypeTexts".into(), json!(texts));
-            }
+    if !node.fields.contains_key("__expectedArgumentTypeTexts")
+        && let Some(function) = functions.get(&name)
+    {
+        let texts = function
+            .value_params
+            .iter()
+            .map(|param| param.clone().into_iter().collect::<Vec<_>>())
+            .collect::<Vec<_>>();
+        if texts.iter().any(|texts| !texts.is_empty()) {
+            node.fields
+                .insert("__expectedArgumentTypeTexts".into(), json!(texts));
         }
     }
     ensure_tostring_object(node, objects);
 }
 
-fn ensure_tostring_object(node: &mut LintNode, objects: &HashSet<String>) {
+fn ensure_tostring_object(node: &mut LintNode, objects: &FxHashSet<String>) {
     let Some(callee) = node.children.get("callee") else {
         return;
     };
@@ -87,11 +89,11 @@ fn ensure_tostring_object(node: &mut LintNode, objects: &HashSet<String>) {
     let property = callee
         .child("property")
         .and_then(|property| property.field_str("name"))
-        .map(str::to_owned);
+        .map(String::from);
     let name = callee
         .child("object")
         .and_then(|object| object.field_str("name"))
-        .map(str::to_owned);
+        .map(String::from);
     if !matches!(property.as_deref(), Some("toString" | "toLocaleString")) {
         return;
     }
@@ -114,15 +116,15 @@ fn ensure_tostring_object(node: &mut LintNode, objects: &HashSet<String>) {
     }
 }
 
-fn needs_object_fact(texts: &[String]) -> bool {
+fn needs_object_fact(texts: &[impl AsRef<str>]) -> bool {
     texts.is_empty()
         || texts.iter().all(|text| {
-            let trimmed = text.trim();
+            let trimmed = text.as_ref().trim();
             !trimmed.starts_with('{') && trimmed != "object" && trimmed != "Object"
         })
 }
 
-fn fill_assertion(node: &mut LintNode, bindings: &HashMap<String, String>) {
+fn fill_assertion(node: &mut LintNode, bindings: &FxHashMap<String, String>) {
     let Some(annotation) = node.field_str("__typeAnnotationText").map(str::trim) else {
         return;
     };
@@ -143,14 +145,14 @@ fn fill_assertion(node: &mut LintNode, bindings: &HashMap<String, String>) {
     }
 }
 
-fn fill_enum_member(node: &mut LintNode, enums: &HashMap<String, HashMap<String, String>>) {
+fn fill_enum_member(node: &mut LintNode, enums: &FxHashMap<String, FxHashMap<String, String>>) {
     if node.field_bool("computed").unwrap_or(false) {
         return;
     }
     let Some(enum_name) = node
         .child("object")
         .and_then(|object| object.field_str("name"))
-        .map(str::to_owned)
+        .map(String::from)
     else {
         return;
     };
@@ -160,7 +162,7 @@ fn fill_enum_member(node: &mut LintNode, enums: &HashMap<String, HashMap<String,
     let Some(member) = node
         .child("property")
         .and_then(|property| property.field_str("name"))
-        .map(str::to_owned)
+        .map(String::from)
     else {
         return;
     };
@@ -185,29 +187,29 @@ fn fill_primitive_side(node: &mut LintNode) {
 fn callee_name(node: &LintNode) -> Option<String> {
     node.child("callee")
         .and_then(|callee| callee.field_str("name"))
-        .map(str::to_owned)
+        .map(String::from)
 }
 
 fn same_type(text: &str, annotation: &str) -> bool {
     let text = text.trim();
     let annotation = annotation.trim();
     text == annotation
-        || (annotation == "number" && number_like(&[text.to_owned()]))
-        || (annotation == "string" && string_like(&[text.to_owned()]))
+        || (annotation == "number" && number_like(&[text]))
+        || (annotation == "string" && string_like(&[text]))
 }
 
-fn number_like(texts: &[String]) -> bool {
+fn number_like(texts: &[impl AsRef<str>]) -> bool {
     texts.iter().any(|text| {
-        text.split('|').any(|part| {
+        text.as_ref().split('|').any(|part| {
             let part = part.trim();
             part == "number" || part.parse::<f64>().is_ok()
         })
     })
 }
 
-fn string_like(texts: &[String]) -> bool {
+fn string_like(texts: &[impl AsRef<str>]) -> bool {
     texts.iter().any(|text| {
-        text.split('|').any(|part| {
+        text.as_ref().split('|').any(|part| {
             let part = part.trim();
             part == "string" || part.starts_with('"') || part.starts_with('\'')
         })

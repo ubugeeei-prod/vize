@@ -230,12 +230,13 @@ fn empty_options_and_a_bare_string_stay_within_the_configured_shape() {
             RULES.iter().copied().map(vize_l0::String::from).collect(),
         ))
         .lint_sfc(SHOWCASE, "Fixture.vue");
-    assert!(
-        enabled
-            .diagnostics
-            .iter()
-            .all(|diagnostic| !RULES.contains(&diagnostic.rule_name))
-    );
+    let configured = enabled
+        .diagnostics
+        .iter()
+        .map(|diagnostic| diagnostic.rule_name)
+        .filter(|rule_name| RULES.contains(rule_name))
+        .collect::<Vec<_>>();
+    assert_eq!(configured, Vec::<&str>::new());
     let empty: ConfigLintRuleOptions = serde_json::from_value(serde_json::json!({
         "vue/max-props": {},
         "vue/max-template-depth": {},

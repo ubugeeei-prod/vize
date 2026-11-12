@@ -9,7 +9,7 @@ use oxc_parser::Parser;
 use oxc_semantic::SemanticBuilder;
 use oxc_span::SourceType;
 use vize_croquis::drawer::{extract_slot_props, parse_v_for_scope_expression};
-use vize_l0::{CompactString, FxHashSet};
+use vize_l0::{CompactString, FxHashSet, cstr};
 use vize_relief::{
     ElementNode, ElementType, ExpressionNode, PropNode, RootNode, TemplateChildNode,
 };
@@ -150,8 +150,8 @@ fn note_component_tag(tag: &str, uses: &mut TemplateUse) {
     }
     // Vue resolves a tag through the raw name, its camelCase form, and the
     // capitalized form. `<kebab>` and `<router-view>` both use `Kebab` / `RouterView`.
-    let mut names = vec![tag.to_string()];
-    let mut camel = std::string::String::new();
+    let mut names = vec![CompactString::new(tag)];
+    let mut camel = CompactString::default();
     let mut upper = false;
     for ch in tag.chars() {
         if ch == '-' {
@@ -170,7 +170,7 @@ fn note_component_tag(tag: &str, uses: &mut TemplateUse) {
     }
     let mut chars = camel.chars();
     if let Some(first) = chars.next() {
-        let mut pascal = String::new();
+        let mut pascal = CompactString::default();
         pascal.extend(first.to_uppercase());
         pascal.push_str(chars.as_str());
         if pascal != tag && pascal != camel {
@@ -178,7 +178,7 @@ fn note_component_tag(tag: &str, uses: &mut TemplateUse) {
         }
     }
     for name in names {
-        uses.reads.insert(CompactString::new(&name));
+        uses.reads.insert(name);
     }
 }
 
@@ -213,7 +213,7 @@ fn note_expression(source: &str, shadow: &[CompactString], uses: &mut TemplateUs
         return;
     }
     let allocator = Allocator::default();
-    let wrapped = format!("({source})");
+    let wrapped = cstr!("({source})");
     let wrapped_parse = Parser::new(&allocator, &wrapped, SourceType::tsx()).parse();
     let wrapped_ok = !wrapped_parse.panicked && wrapped_parse.diagnostics.is_empty();
     let parsed = if wrapped_ok {

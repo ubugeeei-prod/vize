@@ -2,7 +2,7 @@
 
 use oxc_semantic::{Scoping, SemanticBuilder};
 use oxc_syntax::symbol::SymbolFlags;
-use vize_l0::FxHashSet;
+use vize_l0::{FxHashSet, String, cstr};
 
 use super::classify::{BindingInfo, Kind, classify};
 use super::options::{Caught, Destructuring, UnusedOptions, Vars, allowance};
@@ -84,6 +84,7 @@ pub(super) fn analyze(
     findings
 }
 
+#[expect(clippy::too_many_arguments, reason = "explicit per-binding state")]
 fn unused_message(
     name: &str,
     info: &BindingInfo,
@@ -126,7 +127,7 @@ fn unused_message(
     } else {
         "is defined but never used."
     };
-    Some(format!("'{name}' {verb}{allowance}"))
+    Some(cstr!("'{name}' {verb}{allowance}"))
 }
 
 fn prefer_message(
@@ -149,7 +150,7 @@ fn prefer_message(
     {
         return None;
     }
-    Some(format!("'{name}' is never reassigned. Use 'const' instead"))
+    Some(cstr!("'{name}' is never reassigned. Use 'const' instead"))
 }
 
 fn param_reports(

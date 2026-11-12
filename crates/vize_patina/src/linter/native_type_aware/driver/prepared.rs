@@ -6,8 +6,9 @@ use super::super::{
     markers::{MacroQuery, QueryKind},
     reactivity_loss::ReactivityLossQuery,
     rule_queries::{MacroWarning, push_macro_warning},
-    strict_boolean, typescript_eslint,
+    strict_boolean,
     template_queries::{TemplatePromiseQuery, TemplateQuery},
+    typescript_eslint,
 };
 use super::probes::{self, ProbeBatch};
 use vize_l0::String;

@@ -57,7 +57,7 @@ class MaxTemplateDepthOptions {
 typealias RestrictedNames = String | Listing<String>
 
 class CallAfterAwaitSpec {
-  module: String
+  `module`: String
   path: (String | Listing<String>)? = null
   message: String? = null
 }

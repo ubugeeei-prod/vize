@@ -61,7 +61,7 @@ export const manual12: Record<string, RuleExample> = {
     ["RestrictedShowcase"],
   ),
   "vue/no-restricted-component-options": example(
-    "<script setup lang=\"ts\">\ndefineOptions({ inheritAttrs: false });\n</script>\n<template>\n  <p>ok</p>\n</template>",
+    '<script setup lang="ts">\ndefineOptions({ inheritAttrs: false });\n</script>\n<template>\n  <p>ok</p>\n</template>',
     '<script setup lang="ts">\ndefineOptions({ name: "Widget" });\n</script>\n<template>\n  <p>ok</p>\n</template>',
     names,
     ["inheritAttrs"],
@@ -80,8 +80,8 @@ export const manual12: Record<string, RuleExample> = {
     ["marquee"],
   ),
   "vue/no-restricted-props": example(
-    "<script setup lang=\"ts\">\ndefineProps<{ third?: number }>();\n</script>\n<template>\n  <p>ok</p>\n</template>",
-    "<script setup lang=\"ts\">\ndefineProps<{ first?: number }>();\n</script>\n<template>\n  <p>ok</p>\n</template>",
+    '<script setup lang="ts">\ndefineProps<{ third?: number }>();\n</script>\n<template>\n  <p>ok</p>\n</template>',
+    '<script setup lang="ts">\ndefineProps<{ first?: number }>();\n</script>\n<template>\n  <p>ok</p>\n</template>',
     props,
     ["third"],
   ),

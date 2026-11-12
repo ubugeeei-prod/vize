@@ -38,6 +38,9 @@ Options:
       --no-warn-ignored
           Do not warn about explicitly named files that the config's ignores exclude
 
+      --no-inline-config
+          Ignore `eslint-disable` comments in source files
+
       --report-unused-disable-directives
           Report `eslint-disable` template comments that suppressed nothing
 
