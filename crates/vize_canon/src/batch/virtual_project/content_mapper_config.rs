@@ -144,7 +144,8 @@ impl ContentMapperTransformOptions {
     ) -> CorsaResult<(Self, Option<std::path::PathBuf>)> {
         super::vue_check_options::resolve(&mut self.checks, Some(options));
         self.configured_global_template_ref =
-            super::tsconfig_gen::vue_compiler_options::configures_global_template_ref(options);
+            super::tsconfig_gen::vue_compiler_options::configured_global_template_ref(options)
+                .unwrap_or(false);
         let (target, manifest) =
             super::tsconfig_gen::vue_compiler_options::vue_target_from_options_with_dependencies(
                 config_file_name.parent().unwrap_or(Path::new(".")),

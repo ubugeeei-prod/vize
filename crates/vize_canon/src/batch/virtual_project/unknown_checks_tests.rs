@@ -72,12 +72,17 @@ fn assert_unknown_checks(content: &str, enabled: bool) {
 }
 
 /// `composables` is the authored `vueCompilerOptions.composables.useTemplateRef`
-/// list, or `None` for a project that leaves Vue's defaults in place.
-fn configured_global_template_ref_source(composables: Option<&str>) -> vize_carton::String {
-    let root = case_dir(match composables {
-        Some("[]") => "custom-global-template-ref",
-        Some(_) => "configured-global-template-ref",
-        None => "default-global-template-ref",
+/// list, or `None` for a project that leaves it out; `ambient` says the program
+/// declares the global as Vue's own export (Nuxt's auto-imports).
+fn configured_global_template_ref_source(
+    composables: Option<&str>,
+    ambient: bool,
+) -> vize_carton::String {
+    let root = case_dir(match (composables, ambient) {
+        (Some("[]"), _) => "custom-global-template-ref",
+        (Some(_), _) => "configured-global-template-ref",
+        (None, true) => "ambient-global-template-ref",
+        (None, false) => "default-global-template-ref",
     });
     let _ = fs::remove_dir_all(&root);
     fs::create_dir_all(root.join("src")).unwrap();
@@ -105,6 +110,7 @@ fn configured_global_template_ref_source(composables: Option<&str>) -> vize_cart
     .unwrap();
     let mut project = VirtualProject::new(&root).unwrap();
     project.set_tsconfig_path(Some(root.join("tsconfig.json")));
+    project.set_ambient_vue_template_ref(ambient);
     project.register_path(&app).unwrap();
     let content = project.find_by_original(&app).unwrap().content.clone();
     let _ = fs::remove_dir_all(&root);
@@ -151,17 +157,18 @@ fn unknown_checks_follow_vue_compiler_options() {
     );
 }
 
-/// Vue's language tools recognize `useTemplateRef` by name unless the project
-/// narrows `composables.useTemplateRef`; Nuxt's auto-imported global relies on
-/// that default.
+/// An explicit `composables.useTemplateRef` decides; without one, the global
+/// is Vue's composable only when the program declares it as Vue's own export
+/// (Nuxt's auto-imports), so a separately authored ambient keeps its contract.
 #[test]
 fn ambient_template_ref_ownership_follows_the_effective_composables_list() {
-    for (composables, enabled) in [
-        (Some(r#"["useTemplateRef"]"#), true),
-        (None, true),
-        (Some("[]"), false),
+    for (composables, ambient, enabled) in [
+        (Some(r#"["useTemplateRef"]"#), false, true),
+        (None, false, false),
+        (None, true, true),
+        (Some("[]"), true, false),
     ] {
-        let content = configured_global_template_ref_source(composables);
+        let content = configured_global_template_ref_source(composables, ambient);
         let expected: &[&str] = if enabled {
             &[
                 "  type __vizeInferRefIsVue = true;",

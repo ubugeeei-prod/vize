@@ -32,13 +32,13 @@ use search::{
 use source::{resolve_sources, resolve_workspace_source_fallbacks};
 
 pub use cache::{PackageRouteLookup, PackageRouteResolver, PackageRouteValidationScope};
-pub use scope::{is_package_member, is_package_self_reference_scope, named_package_root};
 #[cfg(feature = "native")]
 pub(crate) use model::PackageRouteKey;
 pub use model::{
     PackageResolutionContext, PackageResolutionMode, PackageRoute, PackageRouteBinding,
     PackageRouteMetrics, PackageRouteSource,
 };
+pub use scope::{is_package_member, is_package_self_reference_scope, named_package_root};
 
 /// Read an installed package's manifest using the same importer-scoped lookup
 /// as package routes, including workspace self references and pnpm links.

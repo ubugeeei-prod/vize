@@ -46,8 +46,9 @@ impl VirtualProject {
             tsconfig_path: None,
             compiler_configuration: None,
             preserve_unused_diagnostics: false,
-            // Vue's language tools recognize `useTemplateRef` by default.
-            configured_global_template_ref: true,
+            configured_global_template_ref: false,
+            explicit_global_template_ref: None,
+            ambient_vue_template_ref: false,
             source_policy: Default::default(),
             alias_rewrite_policy: Default::default(),
             virtual_ts_options: VirtualTsOptions::default(),
@@ -135,6 +136,14 @@ impl VirtualProject {
 
     pub(crate) fn configured_global_template_ref(&self) -> bool {
         self.configured_global_template_ref
+    }
+
+    /// The program declares the global `useTemplateRef` as Vue's own export
+    /// (Nuxt's auto-import declarations do). Absent an explicit
+    /// `composables.useTemplateRef`, the call then reads the template's refs.
+    pub(crate) fn set_ambient_vue_template_ref(&mut self, declared: bool) {
+        self.ambient_vue_template_ref = declared;
+        self.configured_global_template_ref = self.explicit_global_template_ref.unwrap_or(declared);
     }
 
     /// Register a supported file path.

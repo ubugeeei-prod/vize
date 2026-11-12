@@ -161,6 +161,13 @@ impl BatchTypeChecker {
             });
     }
 
+    /// The program declares the global `useTemplateRef` as Vue's own export,
+    /// so an unimported call is Vue's composable unless the project's
+    /// `composables.useTemplateRef` says otherwise.
+    pub fn set_ambient_vue_template_ref(&mut self, declared: bool) {
+        self.project.set_ambient_vue_template_ref(declared);
+    }
+
     /// Preserve importer-scoped package identities in the virtual project.
     pub fn set_package_routes(
         &mut self,

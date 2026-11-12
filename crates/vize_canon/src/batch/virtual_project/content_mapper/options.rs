@@ -30,8 +30,7 @@ impl Default for ContentMapperTransformOptions {
             external_component_type_helpers: false,
             shared_virtual_module: false,
             diagnostics_only: false,
-            // Vue's language tools recognize `useTemplateRef` by default.
-            configured_global_template_ref: true,
+            configured_global_template_ref: false,
             checks: VirtualTsCheckOptions::default(),
         }
     }

@@ -12,6 +12,7 @@ mod error;
 mod executor;
 mod import_rewriter;
 mod internal_type_names;
+mod vue_template_ref_global;
 pub(crate) use import_rewriter::{ModuleSpecifierFactsCache, declaration_module_path};
 pub(crate) mod import_rewriter_alias;
 #[cfg(test)]
@@ -39,6 +40,7 @@ pub(crate) mod virtual_specifier_message;
 pub use error::{CorsaError, CorsaNotFoundError, CorsaResult, PackageManager};
 pub use executor::CorsaExecutor;
 pub use import_rewriter::{ImportRewriter, ImportSourceMap, OffsetAdjustment, RewriteResult};
+pub use internal_type_names::present_internal_type_names;
 pub use source_map::{CompositeSourceMap, SfcBlockRange, SfcSourceMap};
 pub use type_checker::{
     BatchTypeChecker, BatchTypeCheckerOptions, DeclarationEmitOptions, DeclarationEmitResult,
@@ -68,8 +70,8 @@ pub use virtual_project::{
     scan_package_route_reachability, snapshot_tsconfig_compiler_options,
     snapshot_tsconfig_vue_compiler_options, snapshot_tsconfig_vue_target,
 };
-pub use internal_type_names::present_internal_type_names;
 pub use virtual_specifier_message::{AUTHORED_VUE_TS_SENTINEL, restore_virtual_vue_specifiers};
+pub use vue_template_ref_global::declares_vue_template_ref_global;
 
 pub(crate) use virtual_specifier_message::AUTHORED_VUE_TS_ALIAS_SENTINEL;
 

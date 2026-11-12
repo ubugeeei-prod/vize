@@ -251,6 +251,10 @@ pub struct VirtualProject {
     /// The effective Vue config explicitly owns the ambient `useTemplateRef`.
     /// Imported bindings are authenticated from their source syntax instead.
     configured_global_template_ref: bool,
+    /// `vueCompilerOptions.composables.useTemplateRef`, when the project sets it.
+    explicit_global_template_ref: Option<bool>,
+    /// The program declares the global `useTemplateRef` as Vue's own export.
+    ambient_vue_template_ref: bool,
 
     /// Effective TypeScript source membership and JavaScript diagnostic policy.
     source_policy: SourceFilePolicy,
