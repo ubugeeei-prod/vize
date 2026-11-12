@@ -71,25 +71,27 @@ fn assert_unknown_checks(content: &str, enabled: bool) {
     assert_eq!(open_tail, !enabled, "{content}");
 }
 
-fn configured_global_template_ref_source(enabled: bool) -> vize_carton::String {
-    let root = case_dir(if enabled {
-        "configured-global-template-ref"
-    } else {
-        "custom-global-template-ref"
+/// `composables` is the authored `vueCompilerOptions.composables.useTemplateRef`
+/// list, or `None` for a project that leaves Vue's defaults in place.
+fn configured_global_template_ref_source(composables: Option<&str>) -> vize_carton::String {
+    let root = case_dir(match composables {
+        Some("[]") => "custom-global-template-ref",
+        Some(_) => "configured-global-template-ref",
+        None => "default-global-template-ref",
     });
     let _ = fs::remove_dir_all(&root);
     fs::create_dir_all(root.join("src")).unwrap();
-    let composables = if enabled {
-        r#"["useTemplateRef"]"#
-    } else {
-        "[]"
-    };
+    let vue_options = composables.map_or_else(String::new, |composables| {
+        format!(
+            r#""vueCompilerOptions": {{ "composables": {{ "useTemplateRef": {composables} }} }},"#
+        )
+    });
     fs::write(
         root.join("tsconfig.json"),
         format!(
             r#"{{
   "compilerOptions": {{ "strict": true }},
-  "vueCompilerOptions": {{ "composables": {{ "useTemplateRef": {composables} }} }},
+  {vue_options}
   "include": ["src/**/*"]
 }}"#,
         ),
@@ -149,10 +151,17 @@ fn unknown_checks_follow_vue_compiler_options() {
     );
 }
 
+/// Vue's language tools recognize `useTemplateRef` by name unless the project
+/// narrows `composables.useTemplateRef`; Nuxt's auto-imported global relies on
+/// that default.
 #[test]
-fn ambient_template_ref_ownership_requires_explicit_vue_configuration() {
-    for enabled in [true, false] {
-        let content = configured_global_template_ref_source(enabled);
+fn ambient_template_ref_ownership_follows_the_effective_composables_list() {
+    for (composables, enabled) in [
+        (Some(r#"["useTemplateRef"]"#), true),
+        (None, true),
+        (Some("[]"), false),
+    ] {
+        let content = configured_global_template_ref_source(composables);
         let expected: &[&str] = if enabled {
             &[
                 "  type __vizeInferRefIsVue = true;",

@@ -46,7 +46,8 @@ impl VirtualProject {
             tsconfig_path: None,
             compiler_configuration: None,
             preserve_unused_diagnostics: false,
-            configured_global_template_ref: false,
+            // Vue's language tools recognize `useTemplateRef` by default.
+            configured_global_template_ref: true,
             source_policy: Default::default(),
             alias_rewrite_policy: Default::default(),
             virtual_ts_options: VirtualTsOptions::default(),

@@ -46,20 +46,29 @@ pub fn snapshot_tsconfig_vue_compiler_options(
     snapshot_vue_compiler_options(tsconfig_path).map(|(options, _)| options)
 }
 
+/// Whether an unimported `useTemplateRef(...)` call is Vue's composable.
+///
+/// This is `vueCompilerOptions.composables.useTemplateRef`, whose default in
+/// Vue's language tools is `["useTemplateRef", "templateRef"]`: a call is
+/// recognized by name, which is how Nuxt's auto-imported global reaches every
+/// component. A project with an unrelated global of that name opts out with
+/// `"composables": { "useTemplateRef": [] }`.
 #[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
 pub(in crate::batch::virtual_project) fn configures_global_template_ref(
     options: &Map<std::string::String, Value>,
 ) -> bool {
-    options
+    let Some(names) = options
         .get("composables")
         .and_then(Value::as_object)
         .and_then(|composables| composables.get("useTemplateRef"))
-        .and_then(Value::as_array)
-        .is_some_and(|names| {
-            names
-                .iter()
-                .any(|name| name.as_str() == Some("useTemplateRef"))
-        })
+    else {
+        return true;
+    };
+    names.as_array().is_some_and(|names| {
+        names
+            .iter()
+            .any(|name| name.as_str() == Some("useTemplateRef"))
+    })
 }
 
 #[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
@@ -209,8 +218,9 @@ impl VirtualProject {
             || load_vue_compiler_options(path.as_deref()).ok(),
             |snapshot| Some(snapshot.vue_options.clone()),
         );
+        // Without Vue options the language tools' defaults apply.
         self.configured_global_template_ref =
-            options.as_ref().is_some_and(configures_global_template_ref);
+            options.as_ref().is_none_or(configures_global_template_ref);
         super::super::typed_router::refresh(self, options.as_ref(), path.as_deref());
         super::super::vue_check_options::resolve(
             &mut self.virtual_ts_check_options,

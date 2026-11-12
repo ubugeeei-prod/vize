@@ -514,3 +514,48 @@ fn check_nested_consumer_reaches_library_vue_types_through_a_rooted_stub() {
 
     let _ = std::fs::remove_dir_all(&library);
 }
+
+const AUTO_IMPORTED_TEMPLATE_REF_FIXTURE: &str = concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/typechecker/auto-imported-template-ref/"
+);
+
+/// Nuxt auto-imports `useTemplateRef` as a global. Vue's language tools
+/// recognize the composable by name (`composables.useTemplateRef` defaults to
+/// `["useTemplateRef", "templateRef"]`), so the ref is the exposed instance of
+/// the component that registers it, not `unknown`.
+#[test]
+fn check_auto_imported_use_template_ref_reads_the_template_registry() {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
+        return;
+    };
+    let project_root = unique_case_dir("auto-imported-template-ref");
+    let _ = std::fs::remove_dir_all(&project_root);
+    std::fs::create_dir_all(project_root.join("src")).unwrap();
+    link_workspace_vue(&project_root).unwrap();
+    write_tsconfig(&project_root);
+    for name in [
+        "Input.vue",
+        "Use.vue",
+        "auto-imports.d.ts",
+        "components.d.ts",
+    ] {
+        let input = cstr!("{name}.txt");
+        let source =
+            std::fs::read(Path::new(AUTO_IMPORTED_TEMPLATE_REF_FIXTURE).join(input.as_str()))
+                .unwrap();
+        std::fs::write(project_root.join("src").join(name), source).unwrap();
+    }
+
+    let (rows, stdout) = check_diagnostic_rows(&project_root, &corsa_path);
+    // vue-tsc 3.3.14 reports exactly this one row for the same project.
+    assert_eq!(
+        rows,
+        vec![
+            "error:5:16 [TS2339] Property 'missing' does not exist on type '{ inputRef: HTMLInputElement | null; }'."
+        ],
+        "{stdout}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}

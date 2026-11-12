@@ -1,0 +1,4 @@
+export {}
+declare global {
+  const useTemplateRef: typeof import('vue')['useTemplateRef']
+}
