@@ -4,6 +4,7 @@ module vize.jsonschema.LintRuleOptionsSchemaDefinitions
 import "@json_schema/JsonSchema.pkl"
 import "ConfigArtifactDefinitions.pkl"
 import "ConfiguredVueRuleOptions.pkl"
+import "TypeAwareRuleOptions.pkl"
 
 definePropsDestructuringOptionsDef: JsonSchema = new JsonSchema {
   type = "object"
@@ -196,6 +197,11 @@ lintRuleOptionsDef: JsonSchema = new JsonSchema {
     ["vue/no-restricted-static-attribute"] = ConfiguredVueRuleOptions.restrictedNamesDef
     ["vue/no-restricted-v-on"] = ConfiguredVueRuleOptions.restrictedNamesDef
     ["vue/no-unsupported-features"] = ConfiguredVueRuleOptions.unsupportedFeaturesDef
+    ["type/no-confusing-void-expression"] = TypeAwareRuleOptions.noConfusingVoidExpressionDef
+    ["type/no-unnecessary-condition"] = TypeAwareRuleOptions.noUnnecessaryConditionDef
+    ["type/restrict-plus-operands"] = TypeAwareRuleOptions.restrictPlusOperandsDef
+    ["type/restrict-template-expressions"] = TypeAwareRuleOptions.restrictTemplateExpressionsDef
+    ["type/return-await"] = TypeAwareRuleOptions.returnAwaitDef
     ["vue/enforce-style-attribute"] = new JsonSchema {
       type = "object"
       properties {

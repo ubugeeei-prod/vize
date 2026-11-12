@@ -292,6 +292,11 @@ class LintRuleOptions {
   `vue/no-restricted-static-attribute`: LintRuleOptionTypes.RestrictedNames? = null
   `vue/no-restricted-v-on`: LintRuleOptionTypes.RestrictedNames? = null
   `vue/no-unsupported-features`: LintRuleOptionTypes.UnsupportedFeaturesOptions? = null
+  `type/no-confusing-void-expression`: LintRuleOptionTypes.NoConfusingVoidExpressionOptions? = null
+  `type/no-unnecessary-condition`: LintRuleOptionTypes.NoUnnecessaryConditionOptions? = null
+  `type/restrict-plus-operands`: LintRuleOptionTypes.RestrictPlusOperandsOptions? = null
+  `type/restrict-template-expressions`: LintRuleOptionTypes.RestrictTemplateExpressionsOptions? = null
+  `type/return-await`: LintRuleOptionTypes.ReturnAwaitOption? = null
   `vue/enforce-style-attribute`: EnforceStyleAttributeOptions? = null
   `vue/no-restricted-syntax`: (Listing<RestrictedSyntaxEntry> | NoRestrictedSyntaxOptions)? = null
   `vue/quote-props`: "as-needed"? = null

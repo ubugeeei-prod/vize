@@ -376,6 +376,43 @@ export interface LintRuleOptions {
     version?: string;
     ignores?: string[];
   };
+  "type/no-confusing-void-expression"?: {
+    ignoreArrowShorthand?: boolean;
+    ignoreVoidOperator?: boolean;
+    ignoreVoidReturningFunctions?: boolean;
+  };
+  "type/no-unnecessary-condition"?: {
+    allowConstantLoopConditions?: boolean | ("always" | "never" | "only-allowed-literals");
+    checkTypePredicates?: boolean;
+    allowRuleToRunWithoutStrictNullChecksIKnowWhatIAmDoing?: boolean;
+  };
+  "type/restrict-plus-operands"?: {
+    allowAny?: boolean;
+    allowBoolean?: boolean;
+    allowNullish?: boolean;
+    allowNumberAndString?: boolean;
+    allowRegExp?: boolean;
+    skipCompoundAssignments?: boolean;
+  };
+  "type/restrict-template-expressions"?: {
+    allowAny?: boolean;
+    allowArray?: boolean;
+    allowBoolean?: boolean;
+    allowNullish?: boolean;
+    allowNumber?: boolean;
+    allowRegExp?: boolean;
+    allowNever?: boolean;
+    allow?: (
+      | string
+      | {
+          from: "file" | "lib" | "package";
+          name: string | [string, ...string[]];
+          path?: string;
+          package?: string;
+        }
+    )[];
+  };
+  "type/return-await"?: "in-try-catch" | "always" | "error-handling-correctness-only" | "never";
   "vue/enforce-style-attribute"?: {
     allow?: ("plain" | "scoped" | "module")[];
   };

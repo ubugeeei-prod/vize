@@ -37,6 +37,7 @@ mod sfc_element_order;
 mod slot_name_casing;
 mod stable;
 mod strict_boolean;
+mod type_aware;
 mod v_bind_style;
 mod v_on_event_hyphenation;
 mod v_on_style;
@@ -83,6 +84,12 @@ pub use restrictions::{
 pub use sfc_element_order::{SfcElementOrderGroup, SfcElementOrderOptions};
 pub use slot_name_casing::SlotNameCasingStyle;
 pub use strict_boolean::StrictBooleanExpressionsOptions;
+pub use type_aware::{
+    ConstantLoopConditionMode, ConstantLoopConditions, NoConfusingVoidExpressionOptions,
+    NoUnnecessaryConditionOptions, RestrictPlusOperandsOptions, RestrictTemplateExpressionsOptions,
+    ReturnAwaitOption, TypeAwareRuleOptions, TypeSpecifier, TypeSpecifierNames,
+    TypeSpecifierSource,
+};
 pub use v_bind_style::VBindStyle;
 pub use v_on_event_hyphenation::{VOnEventHyphenationConfig, VOnEventHyphenationOptions};
 pub use v_on_style::VOnStyle;
@@ -235,6 +242,9 @@ pub struct ConfigLintRuleOptions {
     /// Configurable Vue rules that check nothing until a project names a limit.
     #[serde(flatten)]
     configured: configured_vue::ConfiguredVueRuleOptions,
+    /// Options for the typescript-eslint type-aware rules.
+    #[serde(flatten)]
+    type_aware: type_aware::TypeAwareRuleOptions,
 }
 impl ConfigLintRuleOptions {
     /// Build full config options from the stable public subset.
@@ -298,6 +308,7 @@ impl ConfigLintRuleOptions {
             && self.max_lines.is_none()
             && self.max_lines_per_block.is_none()
             && self.configured.is_empty()
+            && self.type_aware.is_empty()
     }
 
     /// Globally registered components permitted by the registration rule.

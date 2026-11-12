@@ -1,0 +1,104 @@
+/// JSON Schema for the typescript-eslint type-aware rule options.
+module vize.jsonschema.TypeAwareRuleOptions
+
+import "@json_schema/JsonSchema.pkl"
+
+noConfusingVoidExpressionDef: JsonSchema = new JsonSchema {
+  type = "object"
+  properties {
+    ["ignoreArrowShorthand"] = new JsonSchema { type = "boolean"; default = false }
+    ["ignoreVoidOperator"] = new JsonSchema { type = "boolean"; default = false }
+    ["ignoreVoidReturningFunctions"] = new JsonSchema { type = "boolean"; default = false }
+  }
+  additionalProperties = false
+}
+
+noUnnecessaryConditionDef: JsonSchema = new JsonSchema {
+  type = "object"
+  properties {
+    ["allowConstantLoopConditions"] = new JsonSchema {
+      oneOf = new Listing {
+        new JsonSchema { type = "boolean" }
+        new JsonSchema {
+          type = "string"
+          enum = new Listing { "always"; "never"; "only-allowed-literals" }
+        }
+      }
+    }
+    ["checkTypePredicates"] = new JsonSchema { type = "boolean"; default = false }
+    ["allowRuleToRunWithoutStrictNullChecksIKnowWhatIAmDoing"] = new JsonSchema {
+      type = "boolean"
+      default = false
+    }
+  }
+  additionalProperties = false
+}
+
+restrictPlusOperandsDef: JsonSchema = new JsonSchema {
+  type = "object"
+  properties {
+    ["allowAny"] = new JsonSchema { type = "boolean"; default = true }
+    ["allowBoolean"] = new JsonSchema { type = "boolean"; default = true }
+    ["allowNullish"] = new JsonSchema { type = "boolean"; default = true }
+    ["allowNumberAndString"] = new JsonSchema { type = "boolean"; default = true }
+    ["allowRegExp"] = new JsonSchema { type = "boolean"; default = true }
+    ["skipCompoundAssignments"] = new JsonSchema { type = "boolean"; default = false }
+  }
+  additionalProperties = false
+}
+
+typeSpecifierNameDef: JsonSchema = new JsonSchema {
+  oneOf = new Listing {
+    new JsonSchema { type = "string" }
+    new JsonSchema {
+      type = "array"
+      items = new JsonSchema { type = "string" }
+      minItems = 1
+      uniqueItems = true
+    }
+  }
+}
+
+typeSpecifierDef: JsonSchema = new JsonSchema {
+  oneOf = new Listing {
+    new JsonSchema { type = "string" }
+    new JsonSchema {
+      type = "object"
+      properties {
+        ["from"] = new JsonSchema {
+          type = "string"
+          enum = new Listing { "file"; "lib"; "package" }
+        }
+        ["name"] = typeSpecifierNameDef
+        ["path"] = new JsonSchema { type = "string" }
+        ["package"] = new JsonSchema { type = "string" }
+      }
+      required = new Listing { "from"; "name" }
+      additionalProperties = false
+    }
+  }
+}
+
+restrictTemplateExpressionsDef: JsonSchema = new JsonSchema {
+  type = "object"
+  properties {
+    ["allowAny"] = new JsonSchema { type = "boolean"; default = true }
+    ["allowArray"] = new JsonSchema { type = "boolean"; default = false }
+    ["allowBoolean"] = new JsonSchema { type = "boolean"; default = true }
+    ["allowNullish"] = new JsonSchema { type = "boolean"; default = true }
+    ["allowNumber"] = new JsonSchema { type = "boolean"; default = true }
+    ["allowRegExp"] = new JsonSchema { type = "boolean"; default = true }
+    ["allowNever"] = new JsonSchema { type = "boolean"; default = false }
+    ["allow"] = new JsonSchema {
+      type = "array"
+      items = typeSpecifierDef
+    }
+  }
+  additionalProperties = false
+}
+
+returnAwaitDef: JsonSchema = new JsonSchema {
+  type = "string"
+  enum = new Listing { "in-try-catch"; "always"; "error-handling-correctness-only"; "never" }
+  default = "in-try-catch"
+}

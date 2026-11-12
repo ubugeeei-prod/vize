@@ -1,8 +1,8 @@
 pub(in crate::linter::native_type_aware) mod assertion;
-mod severity;
-mod typescript_shapes;
 mod opt_in;
 mod options_api;
+mod severity;
+mod typescript_shapes;
 use super::{
     RULE_NO_FLOATING_PROMISES, RULE_NO_REACTIVITY_LOSS, RULE_NO_UNSAFE_TEMPLATE_BINDING,
     RULE_REQUIRE_TYPED_EMITS, RULE_REQUIRE_TYPED_PROPS, lint_sfc_with_corsa,

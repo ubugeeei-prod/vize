@@ -68,3 +68,50 @@ class UnsupportedFeaturesOptions {
   version: String? = null
   ignores: Listing<String>? = null
 }
+
+/// `type/no-confusing-void-expression`, as in typescript-eslint.
+class NoConfusingVoidExpressionOptions {
+  ignoreArrowShorthand: Boolean = false
+  ignoreVoidOperator: Boolean = false
+  ignoreVoidReturningFunctions: Boolean = false
+}
+
+/// `type/no-unnecessary-condition`, as in typescript-eslint.
+class NoUnnecessaryConditionOptions {
+  allowConstantLoopConditions: (Boolean | "always" | "never" | "only-allowed-literals")? = null
+  checkTypePredicates: Boolean = false
+  allowRuleToRunWithoutStrictNullChecksIKnowWhatIAmDoing: Boolean = false
+}
+
+/// `type/restrict-plus-operands`, as in typescript-eslint.
+class RestrictPlusOperandsOptions {
+  allowAny: Boolean = true
+  allowBoolean: Boolean = true
+  allowNullish: Boolean = true
+  allowNumberAndString: Boolean = true
+  allowRegExp: Boolean = true
+  skipCompoundAssignments: Boolean = false
+}
+
+/// A typescript-eslint `TypeOrValueSpecifier` with its declaration source.
+class TypeSpecifier {
+  from: "file" | "lib" | "package"
+  name: String | Listing<String>
+  path: String? = null
+  package: String? = null
+}
+
+/// `type/restrict-template-expressions`, as in typescript-eslint.
+class RestrictTemplateExpressionsOptions {
+  allowAny: Boolean = true
+  allowArray: Boolean = false
+  allowBoolean: Boolean = true
+  allowNullish: Boolean = true
+  allowNumber: Boolean = true
+  allowRegExp: Boolean = true
+  allowNever: Boolean = false
+  allow: Listing<String | TypeSpecifier>? = null
+}
+
+/// `type/return-await`, as in typescript-eslint.
+typealias ReturnAwaitOption = "in-try-catch" | "always" | "error-handling-correctness-only" | "never"

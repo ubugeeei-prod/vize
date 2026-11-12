@@ -151,6 +151,16 @@ impl Linter {
         self
     }
 
+    /// Options for the typescript-eslint type-aware rules, keyed as in
+    /// `linter.ruleOptions`.
+    pub fn with_type_aware_rule_options(
+        mut self,
+        options: vize_l0::config::TypeAwareRuleOptions,
+    ) -> Self {
+        self.type_aware_options = options;
+        self
+    }
+
     /// Configure the deny list for `script/no-restricted-globals`.
     ///
     /// Each entry is `(name, optional message)`. A non-empty list **replaces**

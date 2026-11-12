@@ -1027,6 +1027,160 @@
           },
           "additionalProperties": false
         },
+        "type/no-confusing-void-expression": {
+          "type": "object",
+          "properties": {
+            "ignoreArrowShorthand": {
+              "default": false,
+              "type": "boolean"
+            },
+            "ignoreVoidOperator": {
+              "default": false,
+              "type": "boolean"
+            },
+            "ignoreVoidReturningFunctions": {
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        "type/no-unnecessary-condition": {
+          "type": "object",
+          "properties": {
+            "allowConstantLoopConditions": {
+              "oneOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "string",
+                  "enum": ["always", "never", "only-allowed-literals"]
+                }
+              ]
+            },
+            "checkTypePredicates": {
+              "default": false,
+              "type": "boolean"
+            },
+            "allowRuleToRunWithoutStrictNullChecksIKnowWhatIAmDoing": {
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        "type/restrict-plus-operands": {
+          "type": "object",
+          "properties": {
+            "allowAny": {
+              "default": true,
+              "type": "boolean"
+            },
+            "allowBoolean": {
+              "default": true,
+              "type": "boolean"
+            },
+            "allowNullish": {
+              "default": true,
+              "type": "boolean"
+            },
+            "allowNumberAndString": {
+              "default": true,
+              "type": "boolean"
+            },
+            "allowRegExp": {
+              "default": true,
+              "type": "boolean"
+            },
+            "skipCompoundAssignments": {
+              "default": false,
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        "type/restrict-template-expressions": {
+          "type": "object",
+          "properties": {
+            "allowAny": {
+              "default": true,
+              "type": "boolean"
+            },
+            "allowArray": {
+              "default": false,
+              "type": "boolean"
+            },
+            "allowBoolean": {
+              "default": true,
+              "type": "boolean"
+            },
+            "allowNullish": {
+              "default": true,
+              "type": "boolean"
+            },
+            "allowNumber": {
+              "default": true,
+              "type": "boolean"
+            },
+            "allowRegExp": {
+              "default": true,
+              "type": "boolean"
+            },
+            "allowNever": {
+              "default": false,
+              "type": "boolean"
+            },
+            "allow": {
+              "type": "array",
+              "items": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "from": {
+                        "type": "string",
+                        "enum": ["file", "lib", "package"]
+                      },
+                      "name": {
+                        "oneOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            },
+                            "minItems": 1,
+                            "uniqueItems": true
+                          }
+                        ]
+                      },
+                      "path": {
+                        "type": "string"
+                      },
+                      "package": {
+                        "type": "string"
+                      }
+                    },
+                    "additionalProperties": false,
+                    "required": ["from", "name"]
+                  }
+                ]
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "type/return-await": {
+          "default": "in-try-catch",
+          "type": "string",
+          "enum": ["in-try-catch", "always", "error-handling-correctness-only", "never"]
+        },
         "vue/enforce-style-attribute": {
           "type": "object",
           "properties": {

@@ -9,7 +9,7 @@ Exigir o uso consistente de `return await` conforme o contexto e a configuraçã
 
 | Severidade padrão | Predefinições | Correção automática | Opções |
 | --- | --- | --- | --- |
-| `warning` | `nuxt`, `opinionated` | Não | Nenhuma |
+| `warning` | `nuxt`, `opinionated` | Não | [Opções das regras](/rules/options.md) |
 
 Aplicável a: Informações de tipos em scripts e templates de SFCs Vue, para as construções mostradas abaixo.
 
@@ -74,5 +74,6 @@ Depois, execute `vp run lint`.
 ## Páginas relacionadas
 
 - [Regras de tipo e script](../type-and-script.md)
+- [Opções das regras](/rules/options.md)
 - [Todas as regras](../all.md)
 - [Código-fonte](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/type_aware/return_await.rs#L5)

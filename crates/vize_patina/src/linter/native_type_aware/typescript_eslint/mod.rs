@@ -2,6 +2,7 @@
 mod facts;
 mod gaps;
 mod names;
+mod options;
 mod present;
 mod tree;
 
@@ -136,9 +137,12 @@ pub(super) fn evaluate(
                 let Some(vize_name) = static_rule(rule) else {
                     continue;
                 };
+                let mut prepared = present::prepare(rule, node);
+                if let Some(configured) = options::for_rule(&linter.type_aware_options, rule) {
+                    prepared.fields.insert("__ruleOptions".into(), configured);
+                }
                 for diagnostic in
-                    run_default_type_aware_rule_owned(rule, present::prepare(rule, node))
-                        .unwrap_or_default()
+                    run_default_type_aware_rule_owned(rule, prepared).unwrap_or_default()
                 {
                     let (raw_start, raw_end) =
                         present::range(rule, node, diagnostic.range.start, diagnostic.range.end);
