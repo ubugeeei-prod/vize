@@ -27,6 +27,49 @@ pub(super) fn local_type_declaration(source: &str) -> Option<(&str, FxHashSet<Co
     Some((source.get(range?)?, names))
 }
 
+/// Byte offsets, in ascending order, just past each bare type reference in a
+/// declaration that names one of `names` at module scope: a free reference,
+/// or the declaration's own name. A reference bound by a nested type
+/// parameter, a `typeof` value query, a qualified name and a reference that
+/// already passes type arguments are left alone.
+pub(super) fn module_type_reference_ends(source: &str, names: &[&str]) -> Option<Vec<usize>> {
+    let allocator = Allocator::default();
+    let parsed = Parser::new(&allocator, source, SourceType::ts()).parse();
+    if parsed.panicked || !parsed.diagnostics.is_empty() {
+        return None;
+    }
+    let semantic = SemanticBuilder::new()
+        .with_build_nodes(true)
+        .build(&parsed.program)
+        .semantic;
+    let scoping = semantic.scoping();
+    let root = scoping.root_scope_id();
+    let declared = scoping
+        .symbol_ids()
+        .filter(|&symbol| scoping.symbol_scope_id(symbol) == root)
+        .flat_map(|symbol| scoping.get_resolved_reference_ids(symbol).iter().copied());
+    let bytes = source.as_bytes();
+    let mut ends: Vec<usize> = scoping
+        .root_unresolved_references_ids()
+        .flatten()
+        .chain(declared)
+        .map(|id| scoping.get_reference(id))
+        .filter(|reference| {
+            reference.is_type() && names.contains(&semantic.reference_name(reference))
+        })
+        .map(|reference| semantic.nodes().get_node(reference.node_id()).span().end as usize)
+        .filter(|&end| {
+            let next = bytes
+                .get(end..)
+                .and_then(|rest| rest.iter().find(|byte| !byte.is_ascii_whitespace()));
+            !matches!(next, Some(b'<' | b'.'))
+        })
+        .collect();
+    ends.sort_unstable();
+    ends.dedup();
+    Some(ends)
+}
+
 fn analyze_declaration(
     source: &str,
 ) -> Option<(FxHashSet<CompactString>, Option<std::ops::Range<usize>>)> {
@@ -74,7 +117,28 @@ fn analyze_declaration(
 
 #[cfg(test)]
 mod tests {
-    use super::{declaration_free_names, free_names, local_type_declaration};
+    use super::{
+        declaration_free_names, free_names, local_type_declaration, module_type_reference_ends,
+    };
+
+    #[test]
+    fn module_references_are_bare_free_or_self_type_references() {
+        let source = concat!(
+            "export type Expose = { value: StepValue | null; list: Expose[]; ",
+            "own: <StepValue>(value: StepValue) => StepValue; given: StepValue<T>; ",
+            "query: typeof StepValue; spaced: StepValue ; };",
+        );
+        let ends = module_type_reference_ends(source, &["StepValue", "Expose"]).unwrap();
+        let expected: Vec<usize> = ["value: StepValue", "list: Expose", "spaced: StepValue"]
+            .iter()
+            .map(|prefix| source.find(prefix).unwrap() + prefix.len())
+            .collect();
+        assert_eq!(ends, expected);
+        assert_eq!(
+            module_type_reference_ends("type Broken = {", &["Broken"]),
+            None
+        );
+    }
 
     #[test]
     fn setup_copy_uses_the_ast_declaration_inside_an_export_wrapper() {

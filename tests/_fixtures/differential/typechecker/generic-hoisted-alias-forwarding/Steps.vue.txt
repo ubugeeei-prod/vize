@@ -1,0 +1,14 @@
+<script setup lang="ts" generic="TStep extends { value: string }">
+type StepValue = TStep["value"];
+type Expose = {
+  readonly step: TStep | null;
+  readonly value: StepValue | null;
+};
+
+const { steps } = defineProps<{ steps: readonly TStep[] }>();
+const exposed = {
+  step: steps[0] ?? null,
+  value: steps.length,
+} satisfies Expose;
+defineExpose(exposed);
+</script>

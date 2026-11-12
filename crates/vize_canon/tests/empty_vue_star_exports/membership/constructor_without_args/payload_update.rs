@@ -21,6 +21,7 @@ mod emit_props_block_scope;
 mod emit_props_twins;
 mod extra_keys_policy;
 mod generic_event_specialization;
+mod generic_hoisted_alias;
 mod guarded_inference_arrow;
 mod input_channels;
 mod instance_input_keys;

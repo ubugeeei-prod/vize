@@ -267,7 +267,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                     text,
                     script_source_offset(start as usize),
                     generic_injection.as_ref(),
-                    hoisted_type_spans.get(&span).copied(),
+                    module_statements::hoisted(&hoisted_type_spans, script, span),
                 ) {
                     continue;
                 }
