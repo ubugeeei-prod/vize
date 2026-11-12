@@ -68,6 +68,19 @@
       "falsePositiveRatio": 0,
       "falseNegativeRatio": 0
     },
+    "reka-ui": {
+      "revision": "c23e0ed8a38c66cd4f9350e7a46c6b502a8491c2",
+      "accepted": true,
+      "vizeDiagnosticCount": 7,
+      "baselineDiagnosticCount": 7,
+      "sharedCount": 6,
+      "messageMismatchCount": 1,
+      "documentedDifferenceCount": 0,
+      "falsePositiveCount": 0,
+      "falseNegativeCount": 0,
+      "falsePositiveRatio": 0,
+      "falseNegativeRatio": 0
+    },
     "vitepress": {
       "revision": "9ee401d7adefc39fd960990cc032be5464e4eb27",
       "accepted": true,
