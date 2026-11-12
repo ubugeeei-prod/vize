@@ -14,9 +14,19 @@ use vize_l0::String as CompactString;
 
 use super::{CorsaTypeAwareSession, LintResult, Linter, push_warning};
 use crate::diagnostic::LintDiagnostic;
-use crate::linter::corsa_session::{ExpressionFact, ExpressionQuery};
+use crate::linter::corsa_session::{
+    ExpressionFact, ExpressionQuery, PredicateRequest as ShapeCall,
+};
 use facts::queries;
 use names::{RULES, corsa_name, static_rule};
+
+/// Rules that read the `__typeShape` (constrained type flags) fact.
+const SHAPE_RULES: &[&str] = &[
+    "no-unnecessary-condition",
+    "no-unnecessary-template-expression",
+    "no-unnecessary-type-conversion",
+    "no-unnecessary-boolean-literal-compare",
+];
 
 pub(super) struct Script {
     content: String,
@@ -95,10 +105,11 @@ pub(super) fn evaluate(
     listeners.insert("TSTypeAliasDeclaration");
     listeners.insert("VariableDeclarator");
     let listener_list = listeners.iter().copied().collect::<Vec<_>>();
+    let shapes = corsa_rules.iter().any(|rule| SHAPE_RULES.contains(rule));
     for script in &plan.scripts {
         let mut collected = tree::collect(&script.content, script.tsx, &listener_list);
         facts::prepare(&script.content, &mut collected);
-        let script_queries = queries(&collected.nodes);
+        let script_queries = queries(&collected.nodes, shapes);
         let mut generated = Vec::new();
         let mut used = Vec::new();
         for (index, query) in script_queries.iter().enumerate() {
@@ -112,6 +123,25 @@ pub(super) fn evaluate(
                 end,
                 symbols: query.symbols,
                 signatures: query.signatures,
+                shape: query.shape.clone().map(|mut request| {
+                    request.keys_from = request.keys_from.and_then(|(start, end)| {
+                        generated_range(&plan.mapping, script.offset, start, end)
+                    });
+                    let map = |(start, end): (u32, u32)| {
+                        generated_range(&plan.mapping, script.offset, start, end)
+                    };
+                    request.predicate = request.predicate.and_then(|call| {
+                        Some(ShapeCall {
+                            callee: map(call.callee)?,
+                            arguments: call
+                                .arguments
+                                .into_iter()
+                                .map(map)
+                                .collect::<Option<Vec<_>>>()?,
+                        })
+                    });
+                    request
+                }),
             });
             used.push(index);
         }
@@ -124,6 +154,12 @@ pub(super) fn evaluate(
         }
         facts::apply(&mut collected.nodes, &aligned, &script_queries);
         facts::enrich(&script.content, &mut collected.nodes, &collected.program);
+        if session.no_unchecked_indexed_access() {
+            for node in &mut collected.nodes {
+                node.fields
+                    .insert("__noUncheckedIndexedAccess".into(), serde_json::json!(true));
+            }
+        }
         let mut seen = HashSet::new();
         for node in &collected.nodes {
             for rule in &corsa_rules {

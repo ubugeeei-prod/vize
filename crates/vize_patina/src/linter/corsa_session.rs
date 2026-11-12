@@ -5,8 +5,10 @@ use vize_l0::String;
 mod batch;
 mod boolean;
 mod expression_facts;
+mod type_shape;
 
 pub(in crate::linter) use expression_facts::{ExpressionFact, ExpressionQuery};
+pub(in crate::linter) use type_shape::{PredicateRequest, ShapeRequest};
 mod errors;
 mod paths;
 mod probe;
@@ -66,6 +68,8 @@ pub(crate) struct CorsaTypeAwareSession {
     #[cfg(test)]
     last_refresh: virtual_documents::RefreshCounts,
     closed: bool,
+    /// `compilerOptions.noUncheckedIndexedAccess` of the session tsconfig.
+    no_unchecked_indexed_access: bool,
 }
 
 impl CorsaTypeAwareSession {

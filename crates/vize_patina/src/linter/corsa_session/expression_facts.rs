@@ -1,6 +1,12 @@
 //! Expression types from checker syntax nodes.
 //! Symbol types at a caret describe the callee, not the expression.
-use super::{CorsaTypeAwareSession, boolean::checker_node_locations};
+use super::{
+    CorsaTypeAwareSession,
+    boolean::checker_node_locations,
+    type_shape::{
+        ShapeCache, ShapeRequest, describe as describe_shape, predicate as predicate_fact,
+    },
+};
 use corsa::api::{ProjectSession, TypeHandle, TypeResponse};
 use corsa::fast::ToCompactString as _;
 use corsa::runtime::block_on;
@@ -16,6 +22,8 @@ pub(in crate::linter) struct ExpressionQuery {
     pub symbols: bool,
     /// Load the first call signature's parameter type texts.
     pub signatures: bool,
+    /// Describe the constrained type as a `__typeShape` fact.
+    pub shape: Option<ShapeRequest>,
 }
 
 /// Facts a typescript-eslint rule reads off one expression.
@@ -31,6 +39,8 @@ pub(in crate::linter) struct ExpressionFact {
     pub deprecated: bool,
     /// Text of that `@deprecated` tag.
     pub deprecation_reason: String,
+    /// Constrained type flags, literal values and union parts.
+    pub shape: Option<serde_json::Value>,
 }
 
 impl Default for ExpressionFact {
@@ -47,6 +57,7 @@ impl ExpressionFact {
             parameter_type_texts: Vec::new(),
             deprecated: false,
             deprecation_reason: String::new(),
+            shape: None,
         }
     }
 }
@@ -121,8 +132,16 @@ async fn load(
     }
     let mut properties: FxHashMap<TypeHandle, Vec<String>> = FxHashMap::default();
     let mut signatures: FxHashMap<TypeHandle, Vec<Vec<String>>> = FxHashMap::default();
+    let mut shapes = ShapeCache::default();
     let mut facts = Vec::with_capacity(responses.len());
-    for (response, query) in responses.into_iter().zip(queries) {
+    let by_range = queries
+        .iter()
+        .enumerate()
+        .map(|(index, query)| ((query.start, query.end), index))
+        .collect::<FxHashMap<_, _>>();
+    let all = responses;
+    for (index, query) in queries.iter().enumerate() {
+        let response = all.get(index).cloned().flatten();
         let Some(response) = response else {
             facts.push(ExpressionFact::empty());
             continue;
@@ -140,12 +159,43 @@ async fn load(
         } else {
             Vec::new()
         };
+        let shape = match &query.shape {
+            Some(request) => {
+                let key = request
+                    .keys_from
+                    .and_then(|range| by_range.get(&range))
+                    .and_then(|&index| all.get(index))
+                    .and_then(Option::as_ref);
+                let mut shape =
+                    describe_shape(session, &response, request, key, &mut shapes).await?;
+                if let Some(call) = &request.predicate {
+                    let response_at = |range: &(u32, u32)| {
+                        by_range
+                            .get(range)
+                            .and_then(|&index| all.get(index))
+                            .and_then(Option::as_ref)
+                    };
+                    if let Some(callee) = response_at(&call.callee) {
+                        let arguments = call.arguments.iter().map(response_at).collect::<Vec<_>>();
+                        if let (Some(fact), Some(map)) = (
+                            predicate_fact(session, callee, &arguments, &mut shapes).await?,
+                            shape.as_object_mut(),
+                        ) {
+                            map.insert("predicate".into(), fact);
+                        }
+                    }
+                }
+                Some(shape)
+            }
+            None => None,
+        };
         facts.push(ExpressionFact {
             type_texts,
             property_names,
             parameter_type_texts,
             deprecated: false,
             deprecation_reason: String::new(),
+            shape,
         });
     }
     if queries.iter().any(|query| query.symbols) {

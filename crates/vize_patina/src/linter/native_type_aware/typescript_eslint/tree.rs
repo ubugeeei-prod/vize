@@ -204,6 +204,7 @@ fn ancestor_chain(ancestors: &[Value], key: Option<&str>) -> Value {
             "childIsBranch".into(),
             json!(matches!(position, Some("consequent" | "alternate"))),
         );
+        entry.insert("childIsTest".into(), json!(position == Some("test")));
         chain.push(Value::Object(entry));
         child_key = ancestor
             .get("keyInParent")

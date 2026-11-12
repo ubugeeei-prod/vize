@@ -1,9 +1,11 @@
 //! Host facts the corsa rules do not infer from type text alone.
 use super::tree::Collected;
 
+mod builtins;
 mod enrich;
 mod scan;
 mod shape;
+mod type_shape;
 use crate::linter::corsa_session::{ExpressionFact, ExpressionQuery};
 use corsa::lint::LintNode;
 use serde_json::{Value, json};
@@ -19,16 +21,20 @@ pub(super) fn prepare(source: &str, collected: &mut Collected) {
     }
 }
 
-pub(super) fn queries(nodes: &[LintNode]) -> Vec<ExpressionQuery> {
+pub(super) fn queries(nodes: &[LintNode], shapes: bool) -> Vec<ExpressionQuery> {
     let mut queries = Vec::new();
     for node in nodes {
         collect_queries(node, &mut queries);
+    }
+    if shapes {
+        type_shape::request(nodes, &mut queries);
     }
     queries
 }
 
 pub(super) fn enrich(source: &str, nodes: &mut [LintNode], program: &Value) {
     enrich::apply(source, nodes, program);
+    builtins::stamp(nodes, program);
 }
 
 pub(super) fn apply(nodes: &mut [LintNode], facts: &[ExpressionFact], queries: &[ExpressionQuery]) {
@@ -178,6 +184,7 @@ fn collect_queries(node: &LintNode, queries: &mut Vec<ExpressionQuery>) {
         end: node.range.end,
         symbols: node.kind == "Identifier",
         signatures: false,
+        shape: None,
     });
     if node.kind == "CallExpression" {
         if let Some(callee) = node.child("callee") {
@@ -186,6 +193,7 @@ fn collect_queries(node: &LintNode, queries: &mut Vec<ExpressionQuery>) {
                 end: callee.range.end,
                 symbols: false,
                 signatures: true,
+                shape: None,
             });
         }
     }
@@ -203,6 +211,9 @@ fn apply_node(node: &mut LintNode, facts: &HashMap<(u32, u32), &ExpressionFact>)
     if let Some(fact) = facts.get(&(node.range.start, node.range.end)) {
         node.type_texts.clone_from(&fact.type_texts);
         node.property_names.clone_from(&fact.property_names);
+        if let Some(shape) = &fact.shape {
+            node.fields.insert("__typeShape".into(), shape.clone());
+        }
         if fact.deprecated && node.field_bool("__declarationName") != Some(true) {
             node.fields.insert(
                 "__symbolFacts".into(),
