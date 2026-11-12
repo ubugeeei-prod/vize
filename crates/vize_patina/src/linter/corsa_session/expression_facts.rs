@@ -1,7 +1,8 @@
 //! Expression types from checker syntax nodes.
 //! Symbol types at a caret describe the callee, not the expression.
+use super::relations::{self, RelationReply, RelationRequest};
 use super::{CorsaTypeAwareSession, boolean::checker_node_locations};
-use corsa::api::{ProjectSession, TypeHandle, TypeResponse};
+use corsa::api::{NodeHandle, ProjectSession, TypeHandle, TypeResponse};
 use corsa::fast::ToCompactString as _;
 use corsa::runtime::block_on;
 use vize_l0::{FxHashMap, String as CompactString};
@@ -87,7 +88,68 @@ impl CorsaTypeAwareSession {
             source,
             &ranges,
             queries,
+            &[],
         ))
+        .map(|(facts, _)| facts)
+        .map_err(|error| {
+            vize_l0::cstr!(
+                "Failed to query expression types: {}",
+                error.to_compact_string()
+            )
+        })
+    }
+
+    /// [`Self::expression_facts`] plus the checker relations of `request`,
+    /// resolved in the same node-location and type batch.
+    pub(in crate::linter) fn expression_and_relation_facts(
+        &self,
+        generated_source: &str,
+        queries: &[ExpressionQuery],
+        request: &RelationRequest,
+    ) -> Result<(Vec<ExpressionFact>, RelationReply), CompactString> {
+        let rewritten = self.active_document().and_then(|document| {
+            document
+                .rewritten_source
+                .as_deref()
+                .map(|source| (source, &document.import_source_map))
+        });
+        let source = rewritten.map_or(generated_source, |(source, _)| source);
+        let to_virtual = |(start, end): (u32, u32)| match rewritten {
+            Some((_, map)) => (
+                map.get_virtual_offset(start),
+                map.get_virtual_offset(end.saturating_sub(1))
+                    .saturating_add(1),
+            ),
+            None => (start, end),
+        };
+        let ranges = queries
+            .iter()
+            .map(|query| to_virtual((query.start, query.end)))
+            .collect::<Vec<_>>();
+        let translate = |span: (u32, u32)| {
+            let (start, end) = to_virtual(span);
+            (
+                byte_offset_to_utf16_offset(source, start),
+                byte_offset_to_utf16_offset(source, end),
+            )
+        };
+        let extra = relations::spans(request, &translate);
+        if queries.is_empty() && extra.is_empty() {
+            return Ok((Vec::new(), RelationReply::empty(request)));
+        }
+        let file = self.virtual_file_wire.as_str();
+        block_on(async {
+            let (facts, located) =
+                load(&self.session, file, source, &ranges, queries, &extra).await?;
+            let reply = match located {
+                Some((spans, handles, types)) => {
+                    relations::answer(&self.session, request, &translate, spans, handles, types)
+                        .await
+                }
+                None => RelationReply::empty(request),
+            };
+            Ok::<_, corsa::CorsaError>((facts, reply))
+        })
         .map_err(|error| {
             vize_l0::cstr!(
                 "Failed to query expression types: {}",
@@ -97,14 +159,18 @@ impl CorsaTypeAwareSession {
     }
 }
 
+/// Node-located spans with their handles and types, in batch order.
+type Located = (Vec<(u32, u32)>, Vec<NodeHandle>, Vec<Option<TypeResponse>>);
+
 async fn load(
     session: &ProjectSession,
     file: &str,
     source: &str,
     ranges: &[(u32, u32)],
     queries: &[ExpressionQuery],
-) -> corsa::Result<Vec<ExpressionFact>> {
-    let utf16 = ranges
+    extra: &[(u32, u32)],
+) -> corsa::Result<(Vec<ExpressionFact>, Option<Located>)> {
+    let mut utf16 = ranges
         .iter()
         .map(|&(start, end)| {
             (
@@ -113,12 +179,16 @@ async fn load(
             )
         })
         .collect::<Vec<_>>();
-    let responses = type_responses(session, file, source, &utf16).await?;
-    if responses.len() != queries.len() {
+    utf16.extend_from_slice(extra);
+    let (mut responses, handles) = type_responses(session, file, source, &utf16).await?;
+    if responses.len() != utf16.len() {
         return Err(corsa::CorsaError::Protocol(
             "Incomplete expression type batch".into(),
         ));
     }
+    let located = handles.map(|handles| (utf16.clone(), handles, responses.clone()));
+    responses.truncate(queries.len());
+    utf16.truncate(queries.len());
     let mut properties: FxHashMap<TypeHandle, Vec<String>> = FxHashMap::default();
     let mut signatures: FxHashMap<TypeHandle, Vec<Vec<String>>> = FxHashMap::default();
     let mut facts = Vec::with_capacity(responses.len());
@@ -151,19 +221,21 @@ async fn load(
     if queries.iter().any(|query| query.symbols) {
         apply_deprecated(session, file, &utf16, queries, &mut facts).await?;
     }
-    Ok(facts)
+    Ok((facts, located))
 }
 
+/// Types for `ranges`, with the checker node handles when the ranges could be
+/// resolved to syntax nodes.
 async fn type_responses(
     session: &ProjectSession,
     file: &str,
     source: &str,
     ranges: &[(u32, u32)],
-) -> corsa::Result<Vec<Option<TypeResponse>>> {
+) -> corsa::Result<(Vec<Option<TypeResponse>>, Option<Vec<NodeHandle>>)> {
     let usable = ranges.iter().all(|&(start, end)| start < end);
     if usable {
-        if let Some(responses) = node_types(session, file, source, ranges).await? {
-            return Ok(responses);
+        if let Some((handles, responses)) = node_types(session, file, source, ranges).await? {
+            return Ok((responses, Some(handles)));
         }
     }
     let positions = ranges.iter().map(|&(start, _)| start).collect();
@@ -176,6 +248,7 @@ async fn type_responses(
             positions,
         )
         .await
+        .map(|responses| (responses, None))
 }
 
 async fn node_types(
@@ -183,7 +256,7 @@ async fn node_types(
     file: &str,
     source: &str,
     ranges: &[(u32, u32)],
-) -> corsa::Result<Option<Vec<Option<TypeResponse>>>> {
+) -> corsa::Result<Option<(Vec<NodeHandle>, Vec<Option<TypeResponse>>)>> {
     let encoded = session
         .client()
         .get_source_file(
@@ -204,10 +277,10 @@ async fn node_types(
         .get_type_at_locations(
             session.snapshot().handle.clone(),
             session.project_handle(),
-            locations,
+            locations.clone(),
         )
         .await
-        .map(Some)
+        .map(|types| Some((locations, types)))
 }
 
 async fn property_names(

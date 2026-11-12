@@ -3,6 +3,7 @@ mod facts;
 mod gaps;
 mod names;
 mod present;
+mod relate;
 mod tree;
 
 use std::collections::HashSet;
@@ -97,7 +98,7 @@ pub(super) fn evaluate(
     let listener_list = listeners.iter().copied().collect::<Vec<_>>();
     for script in &plan.scripts {
         let mut collected = tree::collect(&script.content, script.tsx, &listener_list);
-        facts::prepare(&script.content, &mut collected);
+        facts::prepare(&mut collected);
         let script_queries = queries(&collected.nodes);
         let mut generated = Vec::new();
         let mut used = Vec::new();
@@ -115,7 +116,23 @@ pub(super) fn evaluate(
             });
             used.push(index);
         }
-        let probed = session.expression_facts(virtual_content, &generated)?;
+        let pending = relate::plan(
+            &script.content,
+            script.tsx,
+            &collected.program,
+            &corsa_rules,
+            &|(start, end)| generated_range(&plan.mapping, script.offset, start, end),
+        );
+        let (probed, relations) = if pending.is_empty() {
+            (session.expression_facts(virtual_content, &generated)?, None)
+        } else {
+            let (probed, reply) = session.expression_and_relation_facts(
+                virtual_content,
+                &generated,
+                pending.request(),
+            )?;
+            (probed, Some(reply))
+        };
         let mut aligned = vec![ExpressionFact::default(); script_queries.len()];
         for (index, fact) in used.into_iter().zip(probed) {
             if let Some(slot) = aligned.get_mut(index) {
@@ -124,6 +141,9 @@ pub(super) fn evaluate(
         }
         facts::apply(&mut collected.nodes, &aligned, &script_queries);
         facts::enrich(&script.content, &mut collected.nodes, &collected.program);
+        if !pending.is_empty() {
+            relate::apply(&mut collected.nodes, &pending, relations.as_ref());
+        }
         let mut seen = HashSet::new();
         for node in &collected.nodes {
             for rule in &corsa_rules {

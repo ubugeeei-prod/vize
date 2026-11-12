@@ -3,27 +3,8 @@ use serde_json::Value;
 use std::collections::{HashMap, HashSet};
 
 pub(super) struct LocalFn {
-    pub(super) params: Vec<(String, Option<String>)>,
     pub(super) value_params: Vec<Option<String>>,
     pub(super) returns: Option<String>,
-}
-
-pub(super) fn deprecated_names(source: &str) -> HashSet<String> {
-    let mut names = HashSet::new();
-    let mut rest = source;
-    while let Some(at) = rest.find("@deprecated") {
-        rest = &rest[at + "@deprecated".len()..];
-        if let Some(name) = rest.split("function").nth(1).and_then(|tail| {
-            tail.trim_start()
-                .split(|ch: char| !ch.is_ascii_alphanumeric() && ch != '_' && ch != '$')
-                .next()
-        }) {
-            if !name.is_empty() {
-                names.insert(name.to_owned());
-            }
-        }
-    }
-    names
 }
 
 pub(super) fn local_functions(program: &Value, source: &str) -> HashMap<String, LocalFn> {
@@ -42,7 +23,6 @@ fn walk_functions(value: &Value, source: &str, functions: &mut HashMap<String, L
             functions.insert(
                 name.to_owned(),
                 LocalFn {
-                    params: type_params(value, source),
                     value_params: value_param_texts(value, source),
                     returns: return_annotation(value, source),
                 },
@@ -62,31 +42,6 @@ fn walk_functions(value: &Value, source: &str, functions: &mut HashMap<String, L
         }
         _ => {}
     }
-}
-
-fn type_params(value: &Value, source: &str) -> Vec<(String, Option<String>)> {
-    let list = value
-        .get("typeParameters")
-        .or_else(|| value.get("typeArguments"));
-    let Some(params) = list
-        .and_then(|list| list.get("params"))
-        .and_then(Value::as_array)
-    else {
-        return Vec::new();
-    };
-    params
-        .iter()
-        .filter_map(|param| {
-            let name = param.get("name").and_then(|name| {
-                name.as_str()
-                    .or_else(|| name.get("name").and_then(Value::as_str))
-            })?;
-            let default = param
-                .get("default")
-                .and_then(|default| slice_node(source, default));
-            Some((name.to_owned(), default))
-        })
-        .collect()
 }
 
 fn slice_node(source: &str, value: &Value) -> Option<String> {

@@ -112,6 +112,30 @@ impl<'a> Tree<'a> {
     }
 }
 
+/// Text of an encoded source file and the UTF-16 `[pos, end)` of node `index`
+/// in it. `pos` includes the node's leading trivia, where JSDoc lives.
+pub(in crate::linter) fn node_text(data: &[u8], index: usize) -> corsa::Result<(&str, u32, u32)> {
+    let tree = Tree::read(data)?;
+    let root_data = tree.field(1, 20)?;
+    if root_data & 0xc000_0000 != 0x8000_0000 {
+        return Err(invalid("missing source-file metadata"));
+    }
+    let root = tree
+        .extended
+        .checked_add((root_data & 0x3fff_ffff) as usize)
+        .ok_or_else(|| invalid("metadata overflow"))?;
+    if root.checked_add(12).is_none_or(|end| end > tree.structured) {
+        return Err(invalid("truncated source-file metadata"));
+    }
+    let text = std::str::from_utf8(tree.string(word(data, root)?)?)
+        .map_err(|_| invalid("invalid source text"))?;
+    let count = (tree.node_end - tree.nodes) / NODE;
+    if index == 0 || index >= count {
+        return Err(invalid("missing declaration node"));
+    }
+    Ok((text, tree.field(index, 4)?, tree.field(index, 8)?))
+}
+
 pub(in crate::linter) fn locations(
     data: &[u8],
     source: &str,

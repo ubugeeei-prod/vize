@@ -7,6 +7,12 @@ mod boolean;
 mod expression_facts;
 
 pub(in crate::linter) use expression_facts::{ExpressionFact, ExpressionQuery};
+mod relations;
+pub(in crate::linter) use relations::{
+    AssertionAsk, AssertionContext, ContextSource, DeprecationAsk, DeprecationKind, Literal,
+    NonNullAsk, PropertyContext, RelationReply, RelationRequest, ReturnAsk, Shape, Span,
+    flags as type_flags,
+};
 mod errors;
 mod paths;
 mod probe;

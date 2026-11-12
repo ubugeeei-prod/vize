@@ -9,13 +9,11 @@ use corsa::lint::LintNode;
 use serde_json::{Value, json};
 use std::collections::{HashMap, HashSet};
 
-pub(super) fn prepare(source: &str, collected: &mut Collected) {
-    let deprecated = scan::deprecated_names(source);
-    let functions = scan::local_functions(&collected.program, source);
+pub(super) fn prepare(collected: &mut Collected) {
     let methods = scan::class_methods(&collected.program);
     let instances = scan::class_instances(&collected.program);
     for node in &mut collected.nodes {
-        stamp(node, &deprecated, &functions, &methods, &instances);
+        stamp(node, &methods, &instances);
     }
 }
 
@@ -43,39 +41,26 @@ pub(super) fn apply(nodes: &mut [LintNode], facts: &[ExpressionFact], queries: &
 
 fn stamp(
     node: &mut LintNode,
-    deprecated: &HashSet<String>,
-    functions: &HashMap<String, scan::LocalFn>,
     methods: &HashMap<String, HashSet<String>>,
     instances: &HashMap<String, String>,
 ) {
-    if node.kind == "Identifier"
-        && node.field_bool("__declarationName") != Some(true)
-        && node
-            .field_str("name")
-            .is_some_and(|name| deprecated.contains(name))
-    {
-        node.fields.insert(
-            "__symbolFacts".into(),
-            json!({ "deprecated": true, "deprecationReason": "" }),
-        );
-    }
     if node.kind == "CallExpression" {
-        stamp_call(node, functions);
+        stamp_call(node);
     }
     if node.kind == "MemberExpression" {
         stamp_member(node, methods, instances);
     }
     for child in node.children.values_mut() {
-        stamp(child, deprecated, functions, methods, instances);
+        stamp(child, methods, instances);
     }
     for children in node.child_lists.values_mut() {
         for child in children {
-            stamp(child, deprecated, functions, methods, instances);
+            stamp(child, methods, instances);
         }
     }
 }
 
-fn stamp_call(node: &mut LintNode, functions: &HashMap<String, scan::LocalFn>) {
+fn stamp_call(node: &mut LintNode) {
     let property = node
         .child("callee")
         .and_then(|callee| callee.child("property"))
@@ -86,55 +71,6 @@ fn stamp_call(node: &mut LintNode, functions: &HashMap<String, scan::LocalFn>) {
             json!([["void"]]),
         );
     }
-    let Some(name) = node
-        .child("callee")
-        .and_then(|callee| callee.field_str("name"))
-        .map(str::to_owned)
-    else {
-        return;
-    };
-    let Some(function) = functions.get(&name) else {
-        return;
-    };
-    let arguments = type_argument_nodes(node);
-    if arguments.is_empty() || function.params.is_empty() {
-        return;
-    }
-    let last = arguments.len() - 1;
-    let ranges = arguments
-        .iter()
-        .map(|argument| (argument.range.start, argument.range.end))
-        .collect::<Vec<_>>();
-    let argument_text = arguments
-        .get(last)
-        .and_then(|argument| argument.text.clone());
-    let range_values = ranges
-        .iter()
-        .map(|(start, end)| json!({ "start": start, "end": end }))
-        .collect::<Vec<_>>();
-    node.fields
-        .insert("__typeArgumentRanges".into(), Value::Array(range_values));
-    node.fields
-        .insert("__typeParameterCount".into(), json!(function.params.len()));
-    let default_text = function
-        .params
-        .get(last)
-        .and_then(|(_, default)| default.clone());
-    node.fields.insert(
-        "__lastTypeParameterHasDefault".into(),
-        json!(default_text.is_some()),
-    );
-    node.fields.insert(
-        "__lastTypeArgumentEqualsDefault".into(),
-        json!(default_text.is_some() && default_text == argument_text),
-    );
-}
-
-fn type_argument_nodes(node: &LintNode) -> &[LintNode] {
-    node.child("typeArguments")
-        .or_else(|| node.child("typeParameters"))
-        .and_then(|list| list.child_list("params"))
-        .unwrap_or(&[])
 }
 
 fn stamp_member(
@@ -176,7 +112,8 @@ fn collect_queries(node: &LintNode, queries: &mut Vec<ExpressionQuery>) {
     queries.push(ExpressionQuery {
         start: node.range.start,
         end: node.range.end,
-        symbols: node.kind == "Identifier",
+        // `no-deprecated` resolves symbols through the relation pass.
+        symbols: false,
         signatures: false,
     });
     if node.kind == "CallExpression" {
