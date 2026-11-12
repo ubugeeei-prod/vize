@@ -75,6 +75,10 @@ import {
   applySharedTemplateRefTargetsIn,
   beforeSharedTemplateRefTargetsIn,
 } from "../../tools/support/compat/content-mapper/shared-template-ref-targets-transition.ts";
+import {
+  applyUnionHostSlotPayloadIn,
+  beforeUnionHostSlotPayloadIn,
+} from "../../tools/support/compat/content-mapper/union-host-slot-payload-transition.ts";
 
 test("quiet CLI debug output retains exact helper/file bytes and refuses unrelated stderr", () => {
   const record = JSON.parse(
@@ -212,8 +216,11 @@ test("quiet CLI debug output retains exact helper/file bytes and refuses unrelat
   assert.equal(beforeSharedUsageGatesIn(usageGatesSourcePreamble), closedSourcePreamble);
   const kebabSourcePreamble = applySharedKebabCaseIn(usageGatesSourcePreamble);
   assert.equal(beforeSharedKebabCaseIn(kebabSourcePreamble), usageGatesSourcePreamble);
-  const currentSourcePreamble = applySharedTemplateRefTargetsIn(kebabSourcePreamble);
-  assert.equal(beforeSharedTemplateRefTargetsIn(currentSourcePreamble), kebabSourcePreamble);
+  const targetsSourcePreamble = applySharedTemplateRefTargetsIn(kebabSourcePreamble);
+  assert.equal(beforeSharedTemplateRefTargetsIn(targetsSourcePreamble), kebabSourcePreamble);
+  const currentSourcePreamble = applyUnionHostSlotPayloadIn(targetsSourcePreamble);
+  assert.equal(beforeUnionHostSlotPayloadIn(currentSourcePreamble), targetsSourcePreamble);
+  assert.throws(() => applyUnionHostSlotPayloadIn(currentSourcePreamble), /predecessor/u);
   const canonPredecessor = [...canonLeftoverPreamblePaths]
     .reverse()
     .reduce((current, file) => beforeCanonLeftoversIn(file, current), canonSourcePreamble);

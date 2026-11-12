@@ -195,7 +195,7 @@ fn type_only_props_and_defaults_reach_template_dollar_props() {
         return;
     };
 
-    let props_type = r#"Readonly<__DefineProps<Props, "isActive">>"#;
+    let props_type = r#"Readonly<DefineProps<Props, "isActive">>"#;
     assert_eq!(
         snapshot,
         vec![

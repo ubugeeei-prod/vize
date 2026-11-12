@@ -15,6 +15,7 @@ mod cache;
 mod candidates;
 mod graph_inputs;
 mod model;
+mod scope;
 mod search;
 mod shadow_mapping;
 mod source;
@@ -37,6 +38,7 @@ pub use model::{
     PackageResolutionContext, PackageResolutionMode, PackageRoute, PackageRouteBinding,
     PackageRouteMetrics, PackageRouteSource,
 };
+pub use scope::{is_package_member, is_package_self_reference_scope, named_package_root};
 
 /// Read an installed package's manifest using the same importer-scoped lookup
 /// as package routes, including workspace self references and pnpm links.

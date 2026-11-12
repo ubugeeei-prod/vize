@@ -36,9 +36,17 @@ const STYLE_IMPORT: &str = include_str!(concat!(
     "/../../tests/_fixtures/differential/typechecker/vue-compiler-options-mapper-11688/StyleImport.vue.txt"
 ));
 
+/// A component whose `<slot>` outlet passes a value its declared slot rejects.
+const SLOT_OUTLET: &str = "<script setup lang=\"ts\">\ndefineSlots<{ default(props: { count: number }): any }>()\n</script>\n<template><slot :count=\"'one'\" /></template>\n";
+
+/// Options that are on unless a project turns them off; their rows toggle
+/// `false` instead of `true`.
+const DEFAULT_ON: &[&str] = &["checkSlotOutletProps"];
+
 /// (option, options both projections share, probe).
 const ROWS: &[(&str, &str, &str)] = &[
     ("strictTemplates", "", TEMPLATE_GLOBALS),
+    ("checkSlotOutletProps", "", SLOT_OUTLET),
     ("checkUnknownProps", "", TEMPLATE_GLOBALS),
     ("checkUnknownComponents", "", TEMPLATE_GLOBALS),
     ("checkUnknownEvents", "", TEMPLATE_GLOBALS),
@@ -91,7 +99,8 @@ fn every_check_option_changes_the_mapper_projection() {
     let mut ignored = Vec::new();
     for &(key, shared, probe) in ROWS {
         let separator = if shared.is_empty() { "" } else { ", " };
-        let with = vize_l0::cstr!(r#"{shared}{separator}"{key}": true"#);
+        let toggled = !DEFAULT_ON.contains(&key);
+        let with = vize_l0::cstr!(r#"{shared}{separator}"{key}": {toggled}"#);
         if projection(&with, probe) == projection(shared, probe) {
             ignored.push(key);
         }

@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "id": "lsp/regression/define-props-public-name",
+  "provenance": {
+    "fixCommit": "7ce03814c9128431239a57a4bda485bed77664f1",
+    "witnessPath": "tests/tooling/lsp-define-props-public-name.test.ts",
+    "inputOrigin": "nuxt/ui and reka-ui diagnostics on a defineProps<T>() result named Vize's private __DefineProps<__LooseRequired<T>, K> copy",
+    "contractOrigin": "The exact typecheck-only initial diagnostic packet names Vue's DefineProps<LooseRequired<Props>, \"disabled\">, as vue-tsc 3.3.14 does; the CSS color request is an independent completion barrier."
+  },
+  "files": [
+    {
+      "source": "Props.vue.txt",
+      "runtimePath": "Props.vue",
+      "sha256": "87daed93a314e20fbac328827b13807972318751b060cc0ec6eace211f8aa996"
+    },
+    {
+      "source": "tsconfig.json.txt",
+      "runtimePath": "tsconfig.json",
+      "sha256": "bc8a3b395534eaaf1f7e36d242a0274b432003aa1b3dd4f06bf77107b8d8b179"
+    }
+  ],
+  "entry": "Props.vue",
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": true
+  },
+  "initialDiagnostics": [
+    {
+      "code": 2322,
+      "message": "Type 'DefineProps<LooseRequired<Props>, \"disabled\">' is not assignable to type 'number'.",
+      "range": {
+        "end": {
+          "character": 11,
+          "line": 7
+        },
+        "start": {
+          "character": 6,
+          "line": 7
+        }
+      },
+      "severity": 1,
+      "source": "vize/types"
+    }
+  ],
+  "method": "textDocument/documentColor",
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "5713705d01ad19fd0fe485055fceeb515dbb59a4908542a53fcf3f0d0c1bc650"
+  },
+  "scope": "The exact typecheck-only initial packet is the regression contract for editor diagnostic message presentation. The documentColor result only proves that the same native stdio session completed a request after readiness."
+}

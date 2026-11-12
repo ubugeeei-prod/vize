@@ -1,0 +1,127 @@
+{
+  "schema": "vize.unionHostSlotPayloadSource.v1",
+  "credit": {
+    "compiled": false,
+    "native": false,
+    "performance": false
+  },
+  "files": [
+    {
+      "path": "crates/vize_canon/src/virtual_ts/helpers/declarations/shared-slot-payload.d.ts.txt",
+      "before": {
+        "bytes": 889,
+        "sha256": "ed9982d8213e47bdcc902eb09ef5177f7988edce7084f896b219a98e2a3b72ab"
+      },
+      "after": {
+        "bytes": 919,
+        "sha256": "c803a5161de53b16e48506347c6afe47210f6906e54a0f5aaff8059b98f09afc"
+      },
+      "hunks": [
+        {
+          "before": "  type $NamedSlotPayload<S, N> = { [K in keyof S & N]-?: NonNullable<S[K]> extends (props: infer P, ...args: any[]) => any ? P : never }[keyof S & N] extends infer P ? ([P] extends [never] ? any : P) : any;\n",
+          "after": "  type $NamedSlotPayload<S, N> = (S extends unknown ? { [K in keyof S & N]-?: NonNullable<S[K]> extends (props: infer P, ...args: any[]) => any ? P : never }[keyof S & N] : never) extends infer P ? ([P] extends [never] ? any : P) : any;\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/helpers/declarations/slot-payload.d.ts.txt",
+      "before": {
+        "bytes": 918,
+        "sha256": "8d757ac70691c62411b593d49bf38f9e49dd89c309ba0b51a3e22ae77d6a1fa9"
+      },
+      "after": {
+        "bytes": 950,
+        "sha256": "898c1bef7beabb09ac2abbd70cb2e50adbacfd7b098f1acdee6cc14691b9954d"
+      },
+      "hunks": [
+        {
+          "before": "type $NamedSlotPayload<__S, __N> = { [__K in keyof __S & __N]-?: NonNullable<__S[__K]> extends (props: infer __P, ...args: any[]) => any ? __P : never }[keyof __S & __N] extends infer __P ? ([__P] extends [never] ? any : __P) : any;\n",
+          "after": "type $NamedSlotPayload<__S, __N> = (__S extends unknown ? { [__K in keyof __S & __N]-?: NonNullable<__S[__K]> extends (props: infer __P, ...args: any[]) => any ? __P : never }[keyof __S & __N] : never) extends infer __P ? ([__P] extends [never] ? any : __P) : any;\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/virtual-ts.d.ts",
+      "before": {
+        "bytes": 18031,
+        "sha256": "cc4a986fd39fcaa231495e885fd5ebda53575b22ae961023d4e59332dafce19b"
+      },
+      "after": {
+        "bytes": 18097,
+        "sha256": "fc5d0e8c02ed7827130baeebdbdda4c15d2abe45d1ea123be2e461af7014c45f"
+      },
+      "hunks": [
+        {
+          "before": "type $NamedSlotPayload<S, N> = {\n  [K in keyof S & N]-?: NonNullable<S[K]> extends (props: infer P, ...args: any[]) => any\n    ? P\n    : never;\n}[keyof S & N] extends infer P\n",
+          "after": "type $NamedSlotPayload<S, N> = (\n  S extends unknown\n    ? {\n        [K in keyof S & N]-?: NonNullable<S[K]> extends (props: infer P, ...args: any[]) => any\n          ? P\n          : never;\n      }[keyof S & N]\n    : never\n) extends infer P\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/virtual-ts.d.mts",
+      "before": {
+        "bytes": 18031,
+        "sha256": "cc4a986fd39fcaa231495e885fd5ebda53575b22ae961023d4e59332dafce19b"
+      },
+      "after": {
+        "bytes": 18097,
+        "sha256": "fc5d0e8c02ed7827130baeebdbdda4c15d2abe45d1ea123be2e461af7014c45f"
+      },
+      "hunks": [
+        {
+          "before": "type $NamedSlotPayload<S, N> = {\n  [K in keyof S & N]-?: NonNullable<S[K]> extends (props: infer P, ...args: any[]) => any\n    ? P\n    : never;\n}[keyof S & N] extends infer P\n",
+          "after": "type $NamedSlotPayload<S, N> = (\n  S extends unknown\n    ? {\n        [K in keyof S & N]-?: NonNullable<S[K]> extends (props: infer P, ...args: any[]) => any\n          ? P\n          : never;\n      }[keyof S & N]\n    : never\n) extends infer P\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/virtual-ts.d.cts",
+      "before": {
+        "bytes": 18031,
+        "sha256": "cc4a986fd39fcaa231495e885fd5ebda53575b22ae961023d4e59332dafce19b"
+      },
+      "after": {
+        "bytes": 18097,
+        "sha256": "fc5d0e8c02ed7827130baeebdbdda4c15d2abe45d1ea123be2e461af7014c45f"
+      },
+      "hunks": [
+        {
+          "before": "type $NamedSlotPayload<S, N> = {\n  [K in keyof S & N]-?: NonNullable<S[K]> extends (props: infer P, ...args: any[]) => any\n    ? P\n    : never;\n}[keyof S & N] extends infer P\n",
+          "after": "type $NamedSlotPayload<S, N> = (\n  S extends unknown\n    ? {\n        [K in keyof S & N]-?: NonNullable<S[K]> extends (props: infer P, ...args: any[]) => any\n          ? P\n          : never;\n      }[keyof S & N]\n    : never\n) extends infer P\n"
+        }
+      ]
+    }
+  ],
+  "compiledPreamble": {
+    "before": {
+      "bytes": 58163,
+      "sha256": "cf659c06c0ac9228aea29c0720b33cd6d854d15a9f5ec9977bc609c9fa472405"
+    },
+    "after": {
+      "bytes": 58193,
+      "sha256": "e9e4d173622a004b7578fdf871e1ebddd61cf0a5c51ed51dca13a0fd2c956936"
+    },
+    "hunks": [
+      {
+        "before": "  type $NamedSlotPayload<S, N> = { [K in keyof S & N]-?: NonNullable<S[K]> extends (props: infer P, ...args: any[]) => any ? P : never }[keyof S & N] extends infer P ? ([P] extends [never] ? any : P) : any;\n",
+        "after": "  type $NamedSlotPayload<S, N> = (S extends unknown ? { [K in keyof S & N]-?: NonNullable<S[K]> extends (props: infer P, ...args: any[]) => any ? P : never }[keyof S & N] : never) extends infer P ? ([P] extends [never] ? any : P) : any;\n"
+      }
+    ]
+  },
+  "compiledStrictPreamble": {
+    "before": {
+      "bytes": 57954,
+      "sha256": "3748c9b6116a91de1494edf8fc4a7e91520ffb9effa16c5ab8b1dc5d7d03e499"
+    },
+    "after": {
+      "bytes": 57984,
+      "sha256": "34977be86bcc81f2f7fe1c75c3511c4799e7c582b7a5ea0ebabaf7316f5d8526"
+    },
+    "hunks": [
+      {
+        "before": "  type $NamedSlotPayload<S, N> = { [K in keyof S & N]-?: NonNullable<S[K]> extends (props: infer P, ...args: any[]) => any ? P : never }[keyof S & N] extends infer P ? ([P] extends [never] ? any : P) : any;\n",
+        "after": "  type $NamedSlotPayload<S, N> = (S extends unknown ? { [K in keyof S & N]-?: NonNullable<S[K]> extends (props: infer P, ...args: any[]) => any ? P : never }[keyof S & N] : never) extends infer P ? ([P] extends [never] ? any : P) : any;\n"
+      }
+    ]
+  }
+}

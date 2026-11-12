@@ -10,7 +10,7 @@ use std::{
 
 use vize_l0::cstr;
 
-fn workspace_root() -> PathBuf {
+pub(crate) fn workspace_root() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent()
         .and_then(Path::parent)
@@ -18,7 +18,7 @@ fn workspace_root() -> PathBuf {
         .to_path_buf()
 }
 
-fn unique_case_dir(name: &str) -> PathBuf {
+pub(crate) fn unique_case_dir(name: &str) -> PathBuf {
     workspace_root()
         .join("target")
         .join("vize-tests")
@@ -26,7 +26,7 @@ fn unique_case_dir(name: &str) -> PathBuf {
         .join(cstr!("check-canon-recent-{name}-{}", std::process::id()).as_str())
 }
 
-fn resolve_test_corsa_path() -> Option<PathBuf> {
+pub(crate) fn resolve_test_corsa_path() -> Option<PathBuf> {
     let root = workspace_root();
     [
         root.parent()?.join("corsa-bind/.cache/tsgo"),
@@ -37,7 +37,7 @@ fn resolve_test_corsa_path() -> Option<PathBuf> {
     .find(|candidate| candidate.exists())
 }
 
-fn link_workspace_vue(project_root: &Path) -> std::io::Result<()> {
+pub(crate) fn link_workspace_vue(project_root: &Path) -> std::io::Result<()> {
     let Some(vue_package) = workspace_vue_package() else {
         return Err(std::io::Error::new(
             std::io::ErrorKind::NotFound,
@@ -74,7 +74,7 @@ fn workspace_vue_package() -> Option<PathBuf> {
     .find(|candidate| candidate.exists())
 }
 
-fn symlink_path(source: &Path, target: &Path) -> std::io::Result<()> {
+pub(crate) fn symlink_path(source: &Path, target: &Path) -> std::io::Result<()> {
     if target.is_symlink() || target.is_file() {
         std::fs::remove_file(target)?;
     } else if target.exists() {
@@ -90,7 +90,7 @@ fn symlink_path(source: &Path, target: &Path) -> std::io::Result<()> {
     }
 }
 
-fn write_tsconfig(project_root: &Path) {
+pub(crate) fn write_tsconfig(project_root: &Path) {
     std::fs::write(
         project_root.join("tsconfig.json"),
         r#"{

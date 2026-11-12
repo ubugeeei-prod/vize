@@ -1,0 +1,2 @@
+export * from "__PACKAGE_ROOT__/src/module.js";
+export { default } from "__PACKAGE_ROOT__/src/module.js";

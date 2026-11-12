@@ -1935,6 +1935,51 @@
       }
     },
     {
+      "id": "lsp/regression/define-props-public-name",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "define-props-public-name",
+        "files": [
+          {
+            "path": "Props.vue.txt",
+            "sha256": "87daed93a314e20fbac328827b13807972318751b060cc0ec6eace211f8aa996"
+          },
+          {
+            "path": "tsconfig.json.txt",
+            "sha256": "bc8a3b395534eaaf1f7e36d242a0274b432003aa1b3dd4f06bf77107b8d8b179"
+          }
+        ]
+      },
+      "case": {
+        "path": "define-props-public-name/case.json",
+        "sha256": "8a7fbeee6cdedf7a87ba664c1caed7989b128b50eecf6e2b75a958348acc63ec"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": true
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "lsp/regression/document-symbol-outline-myswitch",
       "state": "active",
       "targets": [

@@ -1,0 +1,11 @@
+<script setup lang="ts">
+const input = useTemplateRef('input')
+function focus() {
+  input.value?.inputRef?.focus()
+  input.value?.missing
+}
+</script>
+
+<template>
+  <UInput ref="input" placeholder="Search..." @click="focus" />
+</template>

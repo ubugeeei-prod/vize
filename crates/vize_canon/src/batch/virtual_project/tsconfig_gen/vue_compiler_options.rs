@@ -46,20 +46,51 @@ pub fn snapshot_tsconfig_vue_compiler_options(
     snapshot_vue_compiler_options(tsconfig_path).map(|(options, _)| options)
 }
 
+/// Whether an unimported `useTemplateRef(...)` call is Vue's composable.
+#[derive(Clone, Copy, Debug, Default)]
+pub(in crate::batch::virtual_project) struct GlobalTemplateRef {
+    /// `vueCompilerOptions.composables.useTemplateRef`, when the project sets it.
+    pub(in crate::batch::virtual_project) explicit: Option<bool>,
+    /// The program declares the global as Vue's own export (Nuxt's auto-imports).
+    pub(in crate::batch::virtual_project) ambient: bool,
+}
+
+impl GlobalTemplateRef {
+    /// An explicit option decides; otherwise only Vue's own export counts.
+    pub(in crate::batch::virtual_project) fn enabled(self) -> bool {
+        self.explicit.unwrap_or(self.ambient)
+    }
+}
+
+impl super::super::VirtualProject {
+    /// The program declares the global `useTemplateRef` as Vue's own export
+    /// (Nuxt's auto-import declarations do). Absent an explicit
+    /// `composables.useTemplateRef`, the call then reads the template's refs.
+    pub(crate) fn set_ambient_vue_template_ref(&mut self, declared: bool) {
+        self.global_template_ref.ambient = declared;
+    }
+}
+
+/// What `vueCompilerOptions.composables.useTemplateRef` says about an
+/// unimported `useTemplateRef(...)` call: `Some(true)` when the list names it,
+/// `Some(false)` when the project lists other names (or none), and `None` when
+/// the option is absent. Vue's language tools then recognize the call by name;
+/// Vize does so only when the global is declared as Vue's own export (see
+/// [`crate::batch::declares_vue_template_ref_global`]), so a separately
+/// authored ambient composable keeps its contract (#10980).
 #[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
-pub(in crate::batch::virtual_project) fn configures_global_template_ref(
+pub(in crate::batch::virtual_project) fn configured_global_template_ref(
     options: &Map<std::string::String, Value>,
-) -> bool {
-    options
+) -> Option<bool> {
+    let names = options
         .get("composables")
         .and_then(Value::as_object)
-        .and_then(|composables| composables.get("useTemplateRef"))
-        .and_then(Value::as_array)
-        .is_some_and(|names| {
-            names
-                .iter()
-                .any(|name| name.as_str() == Some("useTemplateRef"))
-        })
+        .and_then(|composables| composables.get("useTemplateRef"))?;
+    Some(names.as_array().is_some_and(|names| {
+        names
+            .iter()
+            .any(|name| name.as_str() == Some("useTemplateRef"))
+    }))
 }
 
 #[expect(clippy::disallowed_types, reason = "serde_json keys are std String")]
@@ -209,8 +240,8 @@ impl VirtualProject {
             || load_vue_compiler_options(path.as_deref()).ok(),
             |snapshot| Some(snapshot.vue_options.clone()),
         );
-        self.configured_global_template_ref =
-            options.as_ref().is_some_and(configures_global_template_ref);
+        self.global_template_ref.explicit =
+            options.as_ref().and_then(configured_global_template_ref);
         super::super::typed_router::refresh(self, options.as_ref(), path.as_deref());
         super::super::vue_check_options::resolve(
             &mut self.virtual_ts_check_options,

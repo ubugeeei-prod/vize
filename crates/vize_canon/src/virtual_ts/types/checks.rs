@@ -16,6 +16,12 @@ pub(crate) enum ResolveStyleClassNames {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) struct VirtualTsCheckOptions {
     pub(crate) check_props: bool,
+    /// `checkSlotOutletProps`: a `<slot>` outlet's bound props are checked
+    /// against the slot the component declares (`defineSlots`, `slots`). On by
+    /// default; `false` keeps only the outlet inference an undeclared slot
+    /// needs, for a project that matches `vue-tsc`, which misses the check in
+    /// some generic components.
+    pub(crate) check_slot_outlet_props: bool,
     pub(crate) check_template_bindings: bool,
     pub(crate) check_emits: bool,
     pub(crate) check_unknown_props: bool,
@@ -100,6 +106,7 @@ impl Default for VirtualTsCheckOptions {
     fn default() -> Self {
         Self {
             check_props: true,
+            check_slot_outlet_props: true,
             check_template_bindings: true,
             check_emits: true,
             check_unknown_props: true,

@@ -42,11 +42,13 @@ pub(in crate::batch::executor) fn restore_authored_paths_in_messages(
     project: &VirtualProject,
 ) -> Vec<Diagnostic> {
     for diagnostic in &mut diagnostics {
-        diagnostic.message = restore_authored_paths(
+        let restored = restore_authored_paths(
             &diagnostic.message,
             project.virtual_root(),
             project.project_root(),
         );
+        // The same total pass also rewords Vize's private Vue helper aliases.
+        diagnostic.message = crate::batch::present_internal_type_names(&restored);
     }
     diagnostics
 }

@@ -1,0 +1,14 @@
+<script lang="ts">
+export interface ChipProps {
+  color?: 'primary' | 'neutral'
+  inset?: boolean
+}
+</script>
+
+<script setup lang="ts">
+defineProps<ChipProps>()
+</script>
+
+<template>
+  <span><slot /></span>
+</template>

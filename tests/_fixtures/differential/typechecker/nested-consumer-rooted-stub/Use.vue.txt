@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import type { ChipProps } from '@x/ui'
+
+const chip: ChipProps = { color: 'primary', inset: 'yes' }
+</script>
+
+<template>
+  <span>{{ chip.color }}</span>
+</template>

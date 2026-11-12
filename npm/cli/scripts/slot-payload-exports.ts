@@ -86,6 +86,28 @@ export async function slotPayloadExports(root: string): Promise<Map<string, stri
   `,
     "previous public payload",
   );
+  // The registered-provider payload before it distributed over a union host: it
+  // inferred one parameter from the union of the members' slot functions, which
+  // intersects their payloads.
+  const intersecting = aliases(
+    `
+    type $SilentAny = {}["__vizeSilentAny"];
+    export type $RegisteredSlotProvider<G, K extends string | number | symbol, F extends string | number | symbol = K, L extends string | number | symbol = F> = $IsAny<G> extends true ? $SilentAny : K extends keyof G ? G[K] : F extends keyof G ? G[F] : L extends keyof G ? G[L] : $SilentAny;
+    type $NamedSlotPayload<S, N> = { [K in keyof S & N]-?: NonNullable<S[K]> extends (props: infer P, ...args: any[]) => any ? P : never }[keyof S & N] extends infer P ? ([P] extends [never] ? any : P) : any;
+    export type $SlotPayload<S, N, C = $RegisteredSlotProvider<any, never>> = $IsAny<S> extends true ? $IsAny<C> extends true ? C : any : string extends N ? string extends keyof S ? $NamedSlotPayload<S, N> : any : $NamedSlotPayload<S, N>;
+  `,
+    "intersecting public payload",
+  );
+  const sameFamily = (
+    current: ReturnType<typeof aliases>,
+    family: ReturnType<typeof aliases>,
+  ): boolean =>
+    current.found.length === family.found.length &&
+    current.found.every(
+      (node, index) =>
+        node.name.text === family.found[index]!.name.text &&
+        identity(node, current.source) === identity(family.found[index]!, family.source),
+    );
   const body = sharedText.slice(sharedText.indexOf("{") + 1, sharedText.lastIndexOf("}"));
   const formatted = await format("virtual-ts.d.ts", body, { printWidth: 100 });
   assert.deepEqual(formatted.errors, [], "source-owned payload exports must parse");
@@ -94,8 +116,10 @@ export async function slotPayloadExports(root: string): Promise<Map<string, stri
     const relative = `npm/cli/virtual-ts.d.${extension}`;
     const text = readFileSync(path.join(root, relative), "utf8");
     const current = aliases(text, relative);
-    const previous = current.found.length === legacy.found.length;
-    const expected = previous ? legacy : shared;
+    // A known earlier policy is rewritten to the source's; anything else is refused.
+    const expected =
+      [legacy, intersecting, shared].find((family) => sameFamily(current, family)) ??
+      (current.found.length === legacy.found.length ? legacy : shared);
     assert.deepEqual(
       current.found.map((node) => node.name.text),
       expected.found.map((node) => node.name.text),
@@ -103,6 +127,14 @@ export async function slotPayloadExports(root: string): Promise<Map<string, stri
     );
     for (let index = 0; index < current.found.length; index++) {
       const node = current.found[index]!;
+      // Layout first: a foreign alias inside the family is refused as such, not
+      // as whichever policy it happens to break.
+      if (index > 0)
+        assert.equal(
+          current.source.statements.indexOf(node),
+          current.source.statements.indexOf(current.found[index - 1]!) + 1,
+          `${relative}: payload aliases must remain adjacent`,
+        );
       assert.equal(
         identity(node, current.source),
         identity(expected.found[index]!, expected.source),
@@ -113,12 +145,6 @@ export async function slotPayloadExports(root: string): Promise<Map<string, stri
         node.name.text === "$RegisteredSlotProvider" || node.name.text === "$SlotPayload",
         `${relative}: payload visibility`,
       );
-      if (index > 0)
-        assert.equal(
-          current.source.statements.indexOf(node),
-          current.source.statements.indexOf(current.found[index - 1]!) + 1,
-          `${relative}: payload aliases must remain adjacent`,
-        );
     }
     const first = current.found[0]!,
       last = current.found.at(-1)!;

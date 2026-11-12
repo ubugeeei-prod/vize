@@ -42,7 +42,7 @@ fn restore(current: &str, transition: &Value) -> String {
 /// The pre-target bytes of a recorded asset's current image. Older images
 /// pass through; the layers below authenticate them.
 pub(super) fn source_before(path: &str, current: String) -> String {
-    let current = super::generic_hoisted_alias::source_before(path, current);
+    let current = super::union_host_slot_payload::source_before(path, current);
     let record = record();
     match record["files"]
         .as_array()
@@ -57,6 +57,7 @@ pub(super) fn source_before(path: &str, current: String) -> String {
 
 /// A compiled preamble without the shared template-ref registry targets.
 pub(super) fn preamble_before(current: &str) -> String {
+    let current = &super::union_host_slot_payload::preamble_before(current);
     let record = record();
     match ["compiledPreamble", "compiledStrictPreamble"]
         .into_iter()
@@ -77,7 +78,10 @@ mod tests {
         let record = record();
         for file in record["files"].as_array().unwrap() {
             let path = file["path"].as_str().unwrap();
-            let current = super::super::generic_hoisted_alias::read_current(path);
+            let current = super::super::union_host_slot_payload::source_before(
+                path,
+                fs::read_to_string(support::repository().join(path)).unwrap(),
+            );
             assert!(is_after(&current, file), "{path}");
             let previous = source_before(path, current.clone());
             assert_eq!(support::hash(previous.as_bytes()), file["before"]["sha256"]);
@@ -101,6 +105,7 @@ mod tests {
                 "compiledStrictPreamble",
             ),
         ] {
+            let physical = &super::super::union_host_slot_payload::preamble_before(physical);
             let preamble = &record[key];
             assert!(is_after(physical, preamble));
             let previous = preamble_before(physical);

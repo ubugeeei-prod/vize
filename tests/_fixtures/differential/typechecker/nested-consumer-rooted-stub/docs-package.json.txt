@@ -1,0 +1,7 @@
+{
+  "name": "docs",
+  "private": true,
+  "dependencies": {
+    "@x/ui": "workspace:*"
+  }
+}
