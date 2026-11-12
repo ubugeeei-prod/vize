@@ -9,6 +9,11 @@ import { getVOnEventHyphenationOptions } from "./v-on-event-options.js";
 import { getAttributeHyphenationOptions } from "./attribute-options.js";
 import { getPropNameCasingOptions } from "./prop-name-options.js";
 import { getComponentNameCasingOptions } from "./component-name-options.js";
+import {
+  getBlockLangOptions,
+  getMaxLinesOptions,
+  getMaxLinesPerBlockOptions,
+} from "./block-limit-options.js";
 import type {
   CustomEventNameCasingOption,
   DefineMacrosOrderOption,
@@ -105,6 +110,12 @@ export function getRuleOptions(
       break;
     case "vue/attribute-hyphenation":
       return getAttributeHyphenationOptions(options);
+    case "vue/block-lang":
+      return getBlockLangOptions(options);
+    case "max-lines":
+      return getMaxLinesOptions(options);
+    case "vue/max-lines-per-block":
+      return getMaxLinesPerBlockOptions(options);
     case "vue/no-restricted-syntax":
       if (options.every(isSupportedRestrictedSyntaxEntry)) {
         return {

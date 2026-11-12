@@ -4,6 +4,7 @@ import { vOnEventHyphenationRuleSchema } from "./v-on-event-options.js";
 import { attributeHyphenationSchema } from "./attribute-options.js";
 import { propNameCasingSchema } from "./prop-name-options.js";
 import { componentNameCasingSchema } from "./component-name-options.js";
+import { blockLangSchema, maxLinesPerBlockSchema, maxLinesSchema } from "./block-limit-options.js";
 import { collectActiveRule, getActiveRuleDiagnostics } from "./active-rule-collection.js";
 
 import { getPatinaRules } from "./binding.js";
@@ -265,6 +266,12 @@ function ruleOptionsSchema(ruleName: string): unknown[] | Record<string, unknown
       return [objectSchema({ allowModifiers: { type: "boolean" } })];
     case "musea/prefer-design-tokens":
       return [designTokensSchema()];
+    case "vue/block-lang":
+      return [blockLangSchema()];
+    case "max-lines":
+      return [maxLinesSchema()];
+    case "vue/max-lines-per-block":
+      return [maxLinesPerBlockSchema()];
     default:
       return [];
   }

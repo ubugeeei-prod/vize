@@ -194,6 +194,9 @@ export interface VizeRuleOptions {
   "musea/prefer-design-tokens"?: {
     tokens?: Array<{ path: string; value: string; tier?: string }>;
   };
+  "vue/block-lang"?: import("./block-limit-options.js").BlockLangRuleOptions;
+  "max-lines"?: import("./block-limit-options.js").MaxLinesRuleOptions;
+  "vue/max-lines-per-block"?: import("./block-limit-options.js").MaxLinesPerBlockRuleOptions;
 }
 
 export interface LineColumn {
