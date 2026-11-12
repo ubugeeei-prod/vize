@@ -117,6 +117,16 @@ pub(in crate::linter) fn locations(
     source: &str,
     ranges: &[(u32, u32)],
 ) -> corsa::Result<Vec<NodeHandle>> {
+    locations_each(data, source, ranges)?.into_iter().collect()
+}
+
+/// One node per range. The outer error rejects the encoded tree; an inner
+/// error rejects only its own range, so one bad range leaves the rest usable.
+pub(in crate::linter) fn locations_each(
+    data: &[u8],
+    source: &str,
+    ranges: &[(u32, u32)],
+) -> corsa::Result<Vec<corsa::Result<NodeHandle>>> {
     let tree = Tree::read(data)?;
     let root_data = tree.field(1, 20)?;
     if root_data & 0xc000_0000 != 0x8000_0000 {
@@ -153,7 +163,7 @@ pub(in crate::linter) fn locations(
         }
     }
     ordered.sort_unstable();
-    ranges
+    Ok(ranges
         .iter()
         .map(|&(start, end)| {
             if start >= end || end > length {
@@ -180,7 +190,7 @@ pub(in crate::linter) fn locations(
             }
             Err(invalid("cyclic syntax parents"))
         })
-        .collect()
+        .collect())
 }
 
 #[cfg(test)]
