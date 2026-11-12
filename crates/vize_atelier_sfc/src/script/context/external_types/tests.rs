@@ -226,3 +226,44 @@ fn resolves_javascript_specifiers_to_declaration_sources() {
 
     let _ = std::fs::remove_dir_all(project);
 }
+
+#[test]
+fn local_props_alias_wins_over_an_imported_interface_of_the_same_name() {
+    let project = temp_project_dir("local-props-shadow");
+    std::fs::create_dir_all(&project).unwrap();
+    std::fs::write(
+        project.join("features.ts"),
+        "interface Props { label: string }\nexport type Features = { bold?: boolean; props?: Props }\n",
+    )
+    .unwrap();
+    let filename = project.join("App.vue");
+    let script = "import type { Features } from './features';\ntype Props = { msg?: string; features?: Features }\nwithDefaults(defineProps<Props>(), { msg: 'hello' })\n";
+    let mut ctx = crate::script::ScriptCompileContext::new(script);
+    ctx.collect_imported_types_from_path(script, filename.to_str().unwrap(), true);
+    ctx.analyze();
+    let resolved = ctx.resolve_type_props("Props");
+    let names: Vec<_> = resolved.iter().map(|prop| prop.name.as_str()).collect();
+    assert_eq!(names, vec!["msg", "features"]);
+    let _ = std::fs::remove_dir_all(project);
+}
+
+#[test]
+fn normal_script_props_alias_wins_over_a_later_imported_interface() {
+    let project = temp_project_dir("normal-props-shadow");
+    std::fs::create_dir_all(&project).unwrap();
+    std::fs::write(
+        project.join("features.ts"),
+        "interface Props { label: string }\nexport type Features = { bold?: boolean }\n",
+    )
+    .unwrap();
+    let filename = project.join("App.vue");
+    let setup = "import type { Features } from './features';\ndefineProps<Props>()\n";
+    let mut ctx = crate::script::ScriptCompileContext::new(setup);
+    ctx.collect_types_from("type Props = { msg?: string; features?: Features }\n");
+    ctx.collect_imported_types_from_path(setup, filename.to_str().unwrap(), true);
+    ctx.analyze();
+    let resolved = ctx.resolve_type_props("Props");
+    let names: Vec<_> = resolved.iter().map(|prop| prop.name.as_str()).collect();
+    assert_eq!(names, vec!["msg", "features"]);
+    let _ = std::fs::remove_dir_all(project);
+}

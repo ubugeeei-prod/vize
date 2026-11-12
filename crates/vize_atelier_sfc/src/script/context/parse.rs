@@ -58,13 +58,13 @@ impl ScriptCompileContext {
                         iface.body.span.start as usize,
                         iface.body.span.end as usize,
                     );
-                    self.interfaces.insert(name, body);
+                    self.bind_local_interface(name, body);
                 }
                 Statement::TSTypeAliasDeclaration(type_alias) => {
                     let name = type_alias.id.name.to_compact_string();
                     let type_body =
                         String::from(span_text(source, type_alias.type_annotation.span()));
-                    self.type_aliases.insert(name, type_body);
+                    self.bind_local_type_alias(name, type_body);
                 }
                 // Handle exported types: `export type X = ...` and `export interface X { ... }`
                 Statement::ExportNamedDeclaration(export_decl) => {
@@ -78,7 +78,7 @@ impl ScriptCompileContext {
                                     iface.body.span.start as usize,
                                     iface.body.span.end as usize,
                                 );
-                                self.interfaces.insert(name, body);
+                                self.bind_local_interface(name, body);
                             }
                             oxc_ast::ast::Declaration::TSTypeAliasDeclaration(type_alias) => {
                                 let name = type_alias.id.name.to_compact_string();
@@ -86,7 +86,7 @@ impl ScriptCompileContext {
                                     source,
                                     type_alias.type_annotation.span(),
                                 ));
-                                self.type_aliases.insert(name, type_body);
+                                self.bind_local_type_alias(name, type_body);
                             }
                             _ => {}
                         }

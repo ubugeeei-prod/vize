@@ -434,12 +434,21 @@ impl ScriptCompileContext {
     }
 
     fn merge_file_summary(&mut self, summary: &FileTypeSummary) {
+        // A name already declared in this SFC, in either map, is that
+        // binding. An imported `interface Props` must not shadow a local
+        // `type Props` (#12942).
         for (name, body) in &summary.interfaces {
+            if self.type_aliases.contains_key(name) {
+                continue;
+            }
             self.interfaces
                 .entry(name.clone())
                 .or_insert_with(|| body.clone());
         }
         for (name, body) in &summary.type_aliases {
+            if self.interfaces.contains_key(name) {
+                continue;
+            }
             self.type_aliases
                 .entry(name.clone())
                 .or_insert_with(|| body.clone());

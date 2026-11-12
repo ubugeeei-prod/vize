@@ -88,6 +88,19 @@ impl ScriptCompileContext {
         }
     }
 
+    /// A declaration in this SFC owns `name`. An imported declaration of the
+    /// same name lives in the other map and must not keep shadowing it (#12942).
+    pub(super) fn bind_local_interface(&mut self, name: String, body: String) {
+        self.type_aliases.remove(&name);
+        self.interfaces.insert(name, body);
+    }
+
+    /// See [`Self::bind_local_interface`].
+    pub(super) fn bind_local_type_alias(&mut self, name: String, body: String) {
+        self.interfaces.remove(&name);
+        self.type_aliases.insert(name, body);
+    }
+
     /// Analyze script setup and extract bindings
     pub fn analyze(&mut self) {
         // Temporarily take ownership of source to avoid borrow conflicts
