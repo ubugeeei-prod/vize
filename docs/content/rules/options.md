@@ -103,6 +103,20 @@ export default defineConfig({}).withVue({
 | `type/restrict-plus-operands` | `{ allowAny?: boolean; allowBoolean?: boolean; allowNullish?: boolean; allowNumberAndString?: boolean; allowRegExp?: boolean; skipCompoundAssignments?: boolean }` | The `allow*` options default to `true` and `skipCompoundAssignments` to `false`, as in typescript-eslint. typescript-eslint's `strict-type-checked` sets every `allow*` option to `false`. |
 | `type/restrict-template-expressions` | `{ allowAny?: boolean; allowArray?: boolean; allowBoolean?: boolean; allowNullish?: boolean; allowNumber?: boolean; allowRegExp?: boolean; allowNever?: boolean; allow?: Array<string \| { from: "file" \| "lib" \| "package"; name: string \| string[]; path?: string; package?: string }> }` | `allowAny`, `allowBoolean`, `allowNullish`, `allowNumber` and `allowRegExp` default to `true`; `allowArray` and `allowNever` to `false`; `allow` to `Error`, `URL` and `URLSearchParams` from the default library, as in typescript-eslint. |
 | `type/return-await` | `"in-try-catch" \| "always" \| "error-handling-correctness-only" \| "never"` | Defaults to `"in-try-catch"`, as in typescript-eslint. `"error-handling-correctness-only"`, which `strict-type-checked` uses, checks only error-handling contexts. |
+| `type/await-thenable` | `{ allowMixedPromiseArrays?: boolean }` | Defaults to `false`, as in typescript-eslint. |
+| `type/no-base-to-string` | `{ checkUnknown?: boolean; ignoredTypeNames?: string[] }` | Defaults to `false` and `["Error", "RegExp", "URL", "URLSearchParams"]`, as in typescript-eslint. |
+| `type/no-deprecated` | `{ allow?: TypeSpecifier[] }` | Defaults to `[]`. Each entry is a type or value specifier (`string \| { from: "file" \| "lib" \| "package"; name: string \| string[]; path?: string; package?: string }`), as in typescript-eslint. |
+| `type/no-duplicate-type-constituents` | `{ ignoreIntersections?: boolean; ignoreUnions?: boolean }` | Both default to `false`, as in typescript-eslint. |
+| `type/no-floating-promises` | `{ allowForKnownSafeCalls?: TypeSpecifier[]; allowForKnownSafePromises?: TypeSpecifier[]; checkThenables?: boolean; ignoreIIFE?: boolean; ignoreVoid?: boolean }` | Defaults to `[]`, `[]`, `false`, `false` and `true`, as in typescript-eslint. |
+| `type/no-meaningless-void-operator` | `{ checkNever?: boolean }` | Defaults to `false`, as in typescript-eslint. |
+| `type/no-misused-promises` | `{ checksConditionals?: boolean \| { flagUnions?: "all" \| "strict" \| "none" }; checksSpreads?: boolean; checksVoidReturn?: boolean \| { arguments?, attributes?, inheritedMethods?, properties?, returns?, variables?: boolean } }` | Every check defaults to `true`, as in typescript-eslint. The object form of `checksVoidReturn` turns single positions off. |
+| `type/no-misused-spread` | `{ allow?: TypeSpecifier[] }` | Defaults to `[]`, as in typescript-eslint. |
+| `type/no-unnecessary-boolean-literal-compare` | `{ allowComparingNullableBooleansToFalse?: boolean; allowComparingNullableBooleansToTrue?: boolean }` | Both default to `true`, as in typescript-eslint. |
+| `type/no-unnecessary-type-assertion` | `{ checkLiteralConstAssertions?: boolean; typesToIgnore?: string[] }` | Defaults to `false` and `[]`, as in typescript-eslint. |
+| `type/no-unsafe-member-access` | `{ allowOptionalChaining?: boolean }` | Defaults to `false`, as in typescript-eslint. |
+| `type/only-throw-error` | `{ allow?: TypeSpecifier[]; allowRethrowing?: boolean; allowThrowingAny?: boolean; allowThrowingUnknown?: boolean }` | Defaults to `[]` and `true` for the three switches, as in typescript-eslint. |
+| `type/prefer-promise-reject-errors` | `{ allow?: TypeSpecifier[]; allowEmptyReject?: boolean; allowThrowingAny?: boolean; allowThrowingUnknown?: boolean }` | Defaults to `[]` and `false` for the three switches, as in typescript-eslint. |
+| `type/unbound-method` | `{ ignoreStatic?: boolean }` | Defaults to `false`, as in typescript-eslint. |
 
 ## Detailed Examples
 

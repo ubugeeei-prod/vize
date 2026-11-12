@@ -9,7 +9,7 @@ Disallow unnecessary comparisons against boolean literals.
 
 | Default severity | Presets | Automatic fix | Options |
 | --- | --- | --- | --- |
-| `warning` | `nuxt`, `opinionated` | No | None |
+| `warning` | `nuxt`, `opinionated` | No | [Rule options](../options.md) |
 
 Applies to: Type information in Vue SFC scripts and templates, for the constructs shown below.
 
@@ -60,5 +60,6 @@ Then run `vp run lint`.
 ## Related
 
 - [Type and script rules](../type-and-script.md)
+- [Rule options](../options.md)
 - [All rules](../all.md)
 - [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/type_aware/no_unnecessary_boolean_literal_compare.rs#L5)

@@ -1,33 +1,14 @@
 //! `linter.ruleOptions` for the typescript-eslint checks, in the shape the
-//! corsa rules read from `__ruleOptions`.
+//! corsa rules read from `__ruleOptions` (ESLint's option list).
 use serde_json::{Value, json};
 use vize_l0::config::TypeAwareRuleOptions;
 
 /// The configured option list for one corsa rule, if any.
 pub(super) fn for_rule(options: &TypeAwareRuleOptions, corsa_rule: &str) -> Option<Value> {
-    let value = match corsa_rule {
-        "no-confusing-void-expression" => {
-            serde_json::to_value(options.no_confusing_void_expression?).ok()?
-        }
-        "no-unnecessary-condition" => {
-            let configured = options.no_unnecessary_condition?;
-            let mut value = serde_json::to_value(configured).ok()?;
-            if let Some(object) = value.as_object_mut() {
-                object.insert(
-                    "allowConstantLoopConditions".into(),
-                    serde_json::to_value(configured.constant_loop_mode()).ok()?,
-                );
-            }
-            value
-        }
-        "restrict-plus-operands" => serde_json::to_value(options.restrict_plus_operands?).ok()?,
-        "restrict-template-expressions" => {
-            serde_json::to_value(options.restrict_template_expressions.as_ref()?).ok()?
-        }
-        "return-await" => serde_json::to_value(options.return_await?).ok()?,
-        _ => return None,
-    };
-    Some(json!([value]))
+    let rule = TypeAwareRuleOptions::RULES
+        .iter()
+        .find(|name| name.strip_prefix("type/") == Some(corsa_rule))?;
+    Some(json!([options.rule_value(rule)?]))
 }
 
 #[cfg(test)]
@@ -39,10 +20,14 @@ mod tests {
     fn configured() -> TypeAwareRuleOptions {
         serde_json::from_value(json!({
             "type/no-confusing-void-expression": { "ignoreArrowShorthand": true },
-            "type/no-unnecessary-condition": { "allowConstantLoopConditions": true },
+            "type/no-unnecessary-condition": {
+                "allowConstantLoopConditions": "only-allowed-literals"
+            },
             "type/restrict-plus-operands": { "allowAny": false },
             "type/restrict-template-expressions": { "allowNullish": false },
-            "type/return-await": "error-handling-correctness-only"
+            "type/return-await": "error-handling-correctness-only",
+            "type/no-misused-promises": { "checksVoidReturn": { "arguments": false } },
+            "type/only-throw-error": { "allow": [{ "from": "lib", "name": "DOMException" }] }
         }))
         .expect("options")
     }
@@ -57,7 +42,7 @@ mod tests {
         assert_eq!(
             for_rule(&options, "no-unnecessary-condition"),
             Some(json!([{
-                "allowConstantLoopConditions": "always",
+                "allowConstantLoopConditions": "only-allowed-literals",
                 "checkTypePredicates": false,
                 "allowRuleToRunWithoutStrictNullChecksIKnowWhatIAmDoing": false
             }]))
@@ -80,20 +65,39 @@ mod tests {
                 "ignoreVoidReturningFunctions": false
             }]))
         );
+        assert_eq!(
+            for_rule(&options, "no-misused-promises"),
+            Some(json!([{
+                "checksConditionals": true,
+                "checksSpreads": true,
+                "checksVoidReturn": {
+                    "arguments": false,
+                    "attributes": true,
+                    "inheritedMethods": true,
+                    "properties": true,
+                    "returns": true,
+                    "variables": true
+                }
+            }]))
+        );
+        assert_eq!(
+            for_rule(&options, "only-throw-error"),
+            Some(json!([{
+                "allow": [{ "from": "lib", "name": "DOMException" }],
+                "allowRethrowing": true,
+                "allowThrowingAny": true,
+                "allowThrowingUnknown": true
+            }]))
+        );
     }
 
     #[test]
     fn leaves_unconfigured_rules_on_their_defaults() {
         let options = TypeAwareRuleOptions::default();
-        for rule in [
-            "no-confusing-void-expression",
-            "no-unnecessary-condition",
-            "restrict-plus-operands",
-            "restrict-template-expressions",
-            "return-await",
-            "no-deprecated",
-        ] {
-            assert_eq!(for_rule(&options, rule), None, "{rule}");
+        for rule in TypeAwareRuleOptions::RULES {
+            let bare = rule.strip_prefix("type/").expect("type/ prefix");
+            assert_eq!(for_rule(&options, bare), None);
         }
+        assert_eq!(for_rule(&configured(), "no-array-delete"), None);
     }
 }

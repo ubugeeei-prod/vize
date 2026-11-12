@@ -376,43 +376,394 @@ export interface LintRuleOptions {
     version?: string;
     ignores?: string[];
   };
+  "type/await-thenable"?: {
+    /**
+     * Whether to allow promise aggregators to receive iterables mixing Promise and non-Promise values, as long as at least one value may be a Promise.
+     */
+    allowMixedPromiseArrays?: boolean;
+  };
+  "type/no-base-to-string"?: {
+    /**
+     * Whether to also check values of type `unknown`
+     */
+    checkUnknown?: boolean;
+    /**
+     * Stringified type names to ignore.
+     */
+    ignoredTypeNames?: string[];
+  };
   "type/no-confusing-void-expression"?: {
+    /**
+     * Whether to ignore "shorthand" `() =>` arrow functions: those without `{ ... }` braces.
+     */
     ignoreArrowShorthand?: boolean;
+    /**
+     * Whether to ignore returns that start with the `void` operator.
+     */
     ignoreVoidOperator?: boolean;
+    /**
+     * Whether to ignore returns from functions with explicit `void` return types and functions with contextual `void` return types.
+     */
     ignoreVoidReturningFunctions?: boolean;
   };
-  "type/no-unnecessary-condition"?: {
-    allowConstantLoopConditions?: boolean | ("always" | "never" | "only-allowed-literals");
-    checkTypePredicates?: boolean;
-    allowRuleToRunWithoutStrictNullChecksIKnowWhatIAmDoing?: boolean;
-  };
-  "type/restrict-plus-operands"?: {
-    allowAny?: boolean;
-    allowBoolean?: boolean;
-    allowNullish?: boolean;
-    allowNumberAndString?: boolean;
-    allowRegExp?: boolean;
-    skipCompoundAssignments?: boolean;
-  };
-  "type/restrict-template-expressions"?: {
-    allowAny?: boolean;
-    allowArray?: boolean;
-    allowBoolean?: boolean;
-    allowNullish?: boolean;
-    allowNumber?: boolean;
-    allowRegExp?: boolean;
-    allowNever?: boolean;
+  "type/no-deprecated"?: {
+    /**
+     * Type specifiers that can be allowed.
+     */
     allow?: (
       | string
       | {
-          from: "file" | "lib" | "package";
+          from: "file";
           name: string | [string, ...string[]];
           path?: string;
-          package?: string;
+        }
+      | {
+          from: "lib";
+          name: string | [string, ...string[]];
+        }
+      | {
+          from: "package";
+          name: string | [string, ...string[]];
+          package: string;
         }
     )[];
   };
-  "type/return-await"?: "in-try-catch" | "always" | "error-handling-correctness-only" | "never";
+  "type/no-duplicate-type-constituents"?: {
+    /**
+     * Whether to ignore `&` intersections.
+     */
+    ignoreIntersections?: boolean;
+    /**
+     * Whether to ignore `|` unions.
+     */
+    ignoreUnions?: boolean;
+  };
+  "type/no-floating-promises"?: {
+    /**
+     * Type specifiers of functions whose calls are safe to float.
+     */
+    allowForKnownSafeCalls?: (
+      | string
+      | {
+          from: "file";
+          name: string | [string, ...string[]];
+          path?: string;
+        }
+      | {
+          from: "lib";
+          name: string | [string, ...string[]];
+        }
+      | {
+          from: "package";
+          name: string | [string, ...string[]];
+          package: string;
+        }
+    )[];
+    /**
+     * Type specifiers that are known to be safe to float.
+     */
+    allowForKnownSafePromises?: (
+      | string
+      | {
+          from: "file";
+          name: string | [string, ...string[]];
+          path?: string;
+        }
+      | {
+          from: "lib";
+          name: string | [string, ...string[]];
+        }
+      | {
+          from: "package";
+          name: string | [string, ...string[]];
+          package: string;
+        }
+    )[];
+    /**
+     * Whether to check all "Thenable"s, not just the built-in Promise type.
+     */
+    checkThenables?: boolean;
+    /**
+     * Whether to ignore async IIFEs (Immediately Invoked Function Expressions).
+     */
+    ignoreIIFE?: boolean;
+    /**
+     * Whether to ignore `void` expressions.
+     */
+    ignoreVoid?: boolean;
+  };
+  "type/no-meaningless-void-operator"?: {
+    /**
+     * Whether to suggest removing `void` when a call's return type is `never`.
+     */
+    checkNever?: boolean;
+  };
+  "type/no-misused-promises"?: {
+    /**
+     * Whether to warn when a Promise is provided to conditional statements.
+     */
+    checksConditionals?:
+      | boolean
+      | {
+          /**
+           * Configures how union types containing Promise-like types are checked.
+           */
+          flagUnions?: "all" | "strict" | "none";
+        };
+    /**
+     * Whether to warn when `...` spreading a `Promise`.
+     */
+    checksSpreads?: boolean;
+    /**
+     * Whether to warn when a Promise is returned from a function typed as returning `void`.
+     */
+    checksVoidReturn?:
+      | boolean
+      | {
+          /**
+           * Disables checking an asynchronous function passed as argument where the parameter type expects a function that returns `void`.
+           */
+          arguments?: boolean;
+          /**
+           * Disables checking an asynchronous function passed as a JSX attribute expected to be a function that returns `void`.
+           */
+          attributes?: boolean;
+          /**
+           * Disables checking an asynchronous method in a type that extends or implements another type expecting that method to return `void`.
+           */
+          inheritedMethods?: boolean;
+          /**
+           * Disables checking an asynchronous function passed as an object property expected to be a function that returns `void`.
+           */
+          properties?: boolean;
+          /**
+           * Disables checking an asynchronous function returned in a function whose return type is a function that returns `void`.
+           */
+          returns?: boolean;
+          /**
+           * Disables checking an asynchronous function used as a variable whose return type is a function that returns `void`.
+           */
+          variables?: boolean;
+        };
+  };
+  "type/no-misused-spread"?: {
+    /**
+     * An array of type specifiers that are known to be safe to spread.
+     */
+    allow?: (
+      | string
+      | {
+          from: "file";
+          name: string | [string, ...string[]];
+          path?: string;
+        }
+      | {
+          from: "lib";
+          name: string | [string, ...string[]];
+        }
+      | {
+          from: "package";
+          name: string | [string, ...string[]];
+          package: string;
+        }
+    )[];
+  };
+  "type/no-unnecessary-boolean-literal-compare"?: {
+    /**
+     * Whether to allow comparisons between nullable boolean variables and `false`.
+     */
+    allowComparingNullableBooleansToFalse?: boolean;
+    /**
+     * Whether to allow comparisons between nullable boolean variables and `true`.
+     */
+    allowComparingNullableBooleansToTrue?: boolean;
+    /**
+     * Unless this is set to `true`, the rule will error on every file whose `tsconfig.json` does _not_ have the `strictNullChecks` compiler option (or `strict`) set to `true`.
+     */
+    allowRuleToRunWithoutStrictNullChecksIKnowWhatIAmDoing?: boolean;
+  };
+  "type/no-unnecessary-condition"?: {
+    /**
+     * Whether to ignore constant loop conditions, such as `while (true)`.
+     */
+    allowConstantLoopConditions?: boolean | ("always" | "never" | "only-allowed-literals");
+    /**
+     * Whether to not error when running with a tsconfig that has strictNullChecks turned.
+     */
+    allowRuleToRunWithoutStrictNullChecksIKnowWhatIAmDoing?: boolean;
+    /**
+     * Whether to check the asserted argument of a type predicate function for unnecessary conditions
+     */
+    checkTypePredicates?: boolean;
+  };
+  "type/no-unnecessary-type-assertion"?: {
+    /**
+     * Whether to check literal const assertions.
+     */
+    checkLiteralConstAssertions?: boolean;
+    /**
+     * A list of type names to ignore.
+     */
+    typesToIgnore?: string[];
+  };
+  "type/no-unsafe-member-access"?: {
+    /**
+     * Whether to allow `?.` optional chains on `any` values.
+     */
+    allowOptionalChaining?: boolean;
+  };
+  "type/only-throw-error"?: {
+    /**
+     * Type specifiers that can be thrown.
+     */
+    allow?: (
+      | string
+      | {
+          from: "file";
+          name: string | [string, ...string[]];
+          path?: string;
+        }
+      | {
+          from: "lib";
+          name: string | [string, ...string[]];
+        }
+      | {
+          from: "package";
+          name: string | [string, ...string[]];
+          package: string;
+        }
+    )[];
+    /**
+     * Whether to allow rethrowing caught values that are not `Error` objects.
+     */
+    allowRethrowing?: boolean;
+    /**
+     * Whether to always allow throwing values typed as `any`.
+     */
+    allowThrowingAny?: boolean;
+    /**
+     * Whether to always allow throwing values typed as `unknown`.
+     */
+    allowThrowingUnknown?: boolean;
+  };
+  "type/prefer-promise-reject-errors"?: {
+    /**
+     * Type specifiers that can be used as Promise rejection reasons.
+     */
+    allow?: (
+      | string
+      | {
+          from: "file";
+          name: string | [string, ...string[]];
+          path?: string;
+        }
+      | {
+          from: "lib";
+          name: string | [string, ...string[]];
+        }
+      | {
+          from: "package";
+          name: string | [string, ...string[]];
+          package: string;
+        }
+    )[];
+    /**
+     * Whether to allow calls to `Promise.reject()` with no arguments.
+     */
+    allowEmptyReject?: boolean;
+    /**
+     * Whether to always allow throwing values typed as `any`.
+     */
+    allowThrowingAny?: boolean;
+    /**
+     * Whether to always allow throwing values typed as `unknown`.
+     */
+    allowThrowingUnknown?: boolean;
+  };
+  "type/restrict-plus-operands"?: {
+    /**
+     * Whether to allow `any` typed values.
+     */
+    allowAny?: boolean;
+    /**
+     * Whether to allow `boolean` typed values.
+     */
+    allowBoolean?: boolean;
+    /**
+     * Whether to allow potentially `null` or `undefined` typed values.
+     */
+    allowNullish?: boolean;
+    /**
+     * Whether to allow `bigint`/`number` typed values and `string` typed values to be added together.
+     */
+    allowNumberAndString?: boolean;
+    /**
+     * Whether to allow `regexp` typed values.
+     */
+    allowRegExp?: boolean;
+    /**
+     * Whether to skip compound assignments such as `+=`.
+     */
+    skipCompoundAssignments?: boolean;
+  };
+  "type/restrict-template-expressions"?: {
+    /**
+     * Whether to allow `any` typed values in template expressions.
+     */
+    allowAny?: boolean;
+    /**
+     * Whether to allow `array` typed values in template expressions.
+     */
+    allowArray?: boolean;
+    /**
+     * Whether to allow `boolean` typed values in template expressions.
+     */
+    allowBoolean?: boolean;
+    /**
+     * Whether to allow `nullish` typed values in template expressions.
+     */
+    allowNullish?: boolean;
+    /**
+     * Whether to allow `number` typed values in template expressions.
+     */
+    allowNumber?: boolean;
+    /**
+     * Whether to allow `regexp` typed values in template expressions.
+     */
+    allowRegExp?: boolean;
+    /**
+     * Whether to allow `never` typed values in template expressions.
+     */
+    allowNever?: boolean;
+    /**
+     * Types to allow in template expressions.
+     */
+    allow?: (
+      | string
+      | {
+          from: "file";
+          name: string | [string, ...string[]];
+          path?: string;
+        }
+      | {
+          from: "lib";
+          name: string | [string, ...string[]];
+        }
+      | {
+          from: "package";
+          name: string | [string, ...string[]];
+          package: string;
+        }
+    )[];
+  };
+  "type/return-await"?: ("always" | "error-handling-correctness-only" | "in-try-catch" | "never") &
+    string;
+  "type/unbound-method"?: {
+    /**
+     * Whether to skip checking whether `static` methods are correctly bound.
+     */
+    ignoreStatic?: boolean;
+  };
   "vue/enforce-style-attribute"?: {
     allow?: ("plain" | "scoped" | "module")[];
   };
