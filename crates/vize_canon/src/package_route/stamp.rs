@@ -301,9 +301,17 @@ impl PartialEq for InputStamp {
             (None, None) => true,
             _ => self.installed_identity.is_some() && other.installed_identity.is_some(),
         };
+        // Both sides hashed the same bytes: a rewrite that keeps them is no
+        // change, whatever its mtime. Generators rewrite identical configs on
+        // every build (Nitro's `tsconfig.server.json`, #12871). Installed
+        // identities still compare below.
+        let same_bytes = matches!(
+            (&self.content_digest, &other.content_digest),
+            (Some(left), Some(right)) if left == right
+        );
         digests_agree
             && self.path == other.path
-            && self.modified == other.modified
+            && (same_bytes || self.modified == other.modified)
             && self.len == other.len
             && self.kind == other.kind
             && self.installed_identity == other.installed_identity

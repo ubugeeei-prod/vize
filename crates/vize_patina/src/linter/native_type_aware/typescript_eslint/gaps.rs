@@ -2,7 +2,7 @@
 use super::tree::Collected;
 use corsa::lint::LintNode;
 use serde_json::Value;
-use std::collections::HashSet;
+use vize_l0::{FxHashSet, String};
 
 pub(super) struct Gap {
     pub rule: &'static str,
@@ -15,21 +15,21 @@ pub(super) fn reports(collected: &Collected) -> Vec<Gap> {
     let enums = enum_names(&collected.program);
     let mut gaps = Vec::new();
     for node in &collected.nodes {
-        if node.kind == "VariableDeclarator" {
-            if let Some(gap) = unsafe_enum(node, &enums) {
-                gaps.push(gap);
-            }
+        if node.kind == "VariableDeclarator"
+            && let Some(gap) = unsafe_enum(node, &enums)
+        {
+            gaps.push(gap);
         }
-        if node.kind == "TSTypeAliasDeclaration" {
-            if let Some(gap) = generated_empty(node) {
-                gaps.push(gap);
-            }
+        if node.kind == "TSTypeAliasDeclaration"
+            && let Some(gap) = generated_empty(node)
+        {
+            gaps.push(gap);
         }
     }
     gaps
 }
 
-fn unsafe_enum(node: &LintNode, enums: &HashSet<String>) -> Option<Gap> {
+fn unsafe_enum(node: &LintNode, enums: &FxHashSet<String>) -> Option<Gap> {
     let id = node.child("id")?;
     let name = referenced_name(id.child("typeAnnotation")?)?;
     if !enums.contains(&name) {
@@ -101,14 +101,14 @@ fn omit_drops_every_key(node: &LintNode) -> bool {
     else {
         return false;
     };
-    if params.len() < 2 {
+    let [first, second, ..] = params else {
         return false;
-    }
-    let keys = object_keys(&params[0]);
+    };
+    let keys = object_keys(first);
     if keys.is_empty() {
         return false;
     }
-    let dropped = literal_keys(&params[1]);
+    let dropped = literal_keys(second);
     keys.iter()
         .all(|key| dropped.iter().any(|item| item == key))
 }
@@ -124,7 +124,7 @@ fn object_keys(node: &LintNode) -> Vec<String> {
             member
                 .child("key")
                 .and_then(|key| key.field_str("name"))
-                .map(str::to_owned)
+                .map(String::from)
         })
         .collect()
 }
@@ -140,11 +140,11 @@ fn literal_keys(node: &LintNode) -> Vec<String> {
         "TSLiteralType" => node
             .child("literal")
             .and_then(|literal| literal.field_str("value"))
-            .map(|value| vec![value.to_owned()])
+            .map(|value| vec![String::from(value)])
             .unwrap_or_default(),
         "Literal" => node
             .field_str("value")
-            .map(|value| vec![value.to_owned()])
+            .map(|value| vec![String::from(value)])
             .unwrap_or_default(),
         _ => Vec::new(),
     }
@@ -158,24 +158,23 @@ fn referenced_name(annotation: &LintNode) -> Option<String> {
     let name = inner.child("typeName").unwrap_or(inner);
     name.field_str("name")
         .filter(|name| !name.is_empty())
-        .map(str::to_owned)
+        .map(String::from)
 }
 
-fn enum_names(value: &Value) -> HashSet<String> {
-    let mut names = HashSet::new();
+fn enum_names(value: &Value) -> FxHashSet<String> {
+    let mut names = FxHashSet::default();
     walk_enums(value, &mut names);
     names
 }
 
-fn walk_enums(value: &Value, names: &mut HashSet<String>) {
-    if value.get("type").and_then(Value::as_str) == Some("TSEnumDeclaration") {
-        if let Some(name) = value
+fn walk_enums(value: &Value, names: &mut FxHashSet<String>) {
+    if value.get("type").and_then(Value::as_str) == Some("TSEnumDeclaration")
+        && let Some(name) = value
             .get("id")
             .and_then(|id| id.get("name"))
             .and_then(Value::as_str)
-        {
-            names.insert(name.to_owned());
-        }
+    {
+        names.insert(String::from(name));
     }
     match value {
         Value::Object(map) => {

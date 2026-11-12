@@ -2123,6 +2123,58 @@
           },
           "additionalProperties": false
         },
+        "vue/no-unused-script-vars": {
+          "type": "object",
+          "properties": {
+            "vars": {
+              "type": "string",
+              "enum": ["all", "local"]
+            },
+            "varsIgnorePattern": {
+              "type": "string"
+            },
+            "args": {
+              "type": "string",
+              "enum": ["all", "after-used", "none"]
+            },
+            "argsIgnorePattern": {
+              "type": "string"
+            },
+            "caughtErrors": {
+              "type": "string",
+              "enum": ["all", "none"]
+            },
+            "caughtErrorsIgnorePattern": {
+              "type": "string"
+            },
+            "destructuredArrayIgnorePattern": {
+              "type": "string"
+            },
+            "ignoreRestSiblings": {
+              "type": "boolean"
+            },
+            "ignoreClassWithStaticInitBlock": {
+              "type": "boolean"
+            },
+            "reportUsedIgnorePattern": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        "vue/prefer-const": {
+          "type": "object",
+          "properties": {
+            "destructuring": {
+              "type": "string",
+              "enum": ["any", "all"]
+            },
+            "ignoreReadBeforeAssign": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
         "vue/enforce-style-attribute": {
           "type": "object",
           "properties": {

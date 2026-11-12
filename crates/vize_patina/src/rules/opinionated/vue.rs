@@ -68,6 +68,7 @@ pub use require_component_registration::{
     NUXT_BUILTIN_COMPONENTS, RequireComponentRegistration, VUE_ROUTER_COMPONENTS,
 };
 pub use scoped_event_names::ScopedEventNames;
+pub(crate) use script_unused::{NoUnusedScriptVars, PreferConst};
 pub use slot_name_casing::SlotNameCasing;
 pub use this_in_template::ThisInTemplate;
 pub use use_unique_element_ids::UseUniqueElementIds;

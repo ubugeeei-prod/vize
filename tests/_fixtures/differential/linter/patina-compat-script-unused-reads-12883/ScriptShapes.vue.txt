@@ -1,0 +1,30 @@
+<script setup lang="ts">
+const { first, ...others } = { first: 1, second: 2 };
+type LocalAlias = string;
+interface LocalShape {
+  size: number;
+}
+try {
+  JSON.parse("{}");
+} catch (error) {
+  console.log("bad json");
+}
+try {
+  JSON.parse("[]");
+} catch (_ignored) {
+  console.log("bad list");
+}
+let late: number;
+late = 5;
+for (let item of [1, 2]) {
+  console.log(item, others, late);
+}
+let counter = 0;
+let { left, right } = { left: 1, right: 2 };
+right = 3;
+console.log(left, right);
+</script>
+
+<template>
+  <button type="button" @click="counter++">{{ counter }}</button>
+</template>

@@ -1,0 +1,15 @@
+<script setup lang="ts">
+import { ref } from "vue";
+
+const model = defineModel<boolean>({ default: false });
+const isListening = ref(false);
+const label = `open: ${isListening.value}`;
+
+function toggle(): void {
+  model.value = !model.value;
+}
+</script>
+
+<template>
+  <p @click="toggle">{{ label }}</p>
+</template>

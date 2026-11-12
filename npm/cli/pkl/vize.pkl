@@ -295,6 +295,8 @@ class LintRuleOptions {
   `type/restrict-template-expressions`: LintRuleOptionTypes.RestrictTemplateExpressionsOptions? = null
   `type/return-await`: LintRuleOptionTypes.ReturnAwaitOption? = null
   `type/unbound-method`: LintRuleOptionTypes.UnboundMethodOptions? = null
+  `vue/no-unused-script-vars`: LintRuleOptionTypes.NoUnusedScriptVarsOptions? = null
+  `vue/prefer-const`: LintRuleOptionTypes.PreferConstOptions? = null
   `vue/enforce-style-attribute`: EnforceStyleAttributeOptions? = null
   `vue/no-restricted-syntax`: (Listing<RestrictedSyntaxEntry> | NoRestrictedSyntaxOptions)? = null
   `vue/quote-props`: "as-needed"? = null

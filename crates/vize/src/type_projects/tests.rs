@@ -16,6 +16,9 @@ use super::*;
 const FIXTURE: &str = include_str!(
     "../../../../tests/_fixtures/differential/typechecker/imported-project-ownership-11794/case.json"
 );
+const NUXT_REWRITE_FIXTURE: &str = include_str!(
+    "../../../../tests/_fixtures/differential/typechecker/nuxt-generated-config-rewrite-12871/case.json"
+);
 
 #[derive(Default)]
 struct Props(Vec<Value>);
@@ -296,6 +299,75 @@ fn watch_admission_observes_absent_parent_creation_and_config_deletion() {
     let third = third_session.snapshot(&config).expect("capture deletion");
     assert_ne!(second.revision, third.revision);
     assert_eq!(type_project_owners(&parent), vec![config]);
+}
+
+/// Nuxt and Nitro rewrite their generated tsconfigs while `nuxt dev` starts,
+/// often with the same bytes (#12871). Such a rewrite keeps the captured
+/// revision a compile used current; a changed config still retires it.
+#[test]
+fn pinned_nuxt_config_rewrites_retire_a_revision_only_when_bytes_change() {
+    let project = tempfile::tempdir().expect("finite project");
+    let root = project.path().canonicalize().expect("physical root");
+    let fixture: Value = serde_json::from_str(NUXT_REWRITE_FIXTURE).expect("pinned JSON");
+    assert_eq!(fixture["version"], 1);
+    assert_eq!(fixture["issue"], 12871);
+    write_files(&root, &fixture["files"]);
+    let config = root.join("tsconfig.json");
+    let session = ImportedTypeProjects::default();
+    let prepared = session.snapshot(&config).expect("capture prepared configs");
+    assert_eq!(
+        prepared.select(
+            &root.join(fixture["source"].as_str().unwrap()),
+            TsconfigSourceKind::Typed
+        ),
+        root.join(fixture["selectedConfig"].as_str().unwrap())
+    );
+    let first = compile(&root, &fixture, &session).expect("compile prepared project");
+    assert_eq!(props(&first.code), fixture["expectedProps"]);
+    assert!(type_project_inputs(&prepared.root, prepared.revision, None).is_some());
+
+    for file in fixture["identicalRewrite"]
+        .as_array()
+        .expect("rewritten configs")
+    {
+        let path = root.join(file.as_str().expect("config path"));
+        let bytes = std::fs::read(&path).expect("generated config");
+        let modified = std::fs::metadata(&path)
+            .and_then(|metadata| metadata.modified())
+            .expect("config mtime");
+        std::fs::write(&path, &bytes).expect("rewrite identical bytes");
+        std::fs::File::options()
+            .write(true)
+            .open(&path)
+            .and_then(|config| {
+                config.set_times(
+                    std::fs::FileTimes::new()
+                        .set_modified(modified + std::time::Duration::from_secs(5)),
+                )
+            })
+            .expect("move config mtime");
+    }
+    assert!(
+        type_project_inputs(&prepared.root, prepared.revision, None).is_some(),
+        "an identical rewrite must not retire the revision a compile used"
+    );
+    let rebuilt = ImportedTypeProjects::default();
+    assert!(Arc::ptr_eq(
+        &prepared,
+        &rebuilt.snapshot(&config).expect("reuse capture")
+    ));
+
+    write_files(&root, &fixture["devRewrite"]["files"]);
+    assert_eq!(
+        type_project_inputs(&prepared.root, prepared.revision, None),
+        None
+    );
+    let dev = ImportedTypeProjects::default();
+    let current = dev.snapshot(&config).expect("recapture dev configs");
+    assert_ne!(prepared.revision, current.revision);
+    let second = compile(&root, &fixture, &dev).expect("compile dev project");
+    assert_eq!(props(&second.code), fixture["expectedProps"]);
+    assert!(type_project_inputs(&current.root, current.revision, None).is_some());
 }
 
 #[test]

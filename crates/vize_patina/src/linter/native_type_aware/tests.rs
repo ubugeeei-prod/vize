@@ -1,4 +1,5 @@
 pub(in crate::linter::native_type_aware) mod assertion;
+mod macro_positions;
 mod opt_in;
 mod options_api;
 mod severity;

@@ -33,6 +33,7 @@ mod prop_name_casing;
 mod props_destructuring;
 mod real_project_allowances;
 mod restrictions;
+mod script_unused;
 mod sfc_element_order;
 mod slot_name_casing;
 mod stable;
@@ -80,6 +81,10 @@ pub use real_project_allowances::{
 pub use restrictions::{
     MuseaDesignToken, MuseaPreferDesignTokensOptions, NoRestrictedGlobalsOptions,
     NoRestrictedMembersOptions, RestrictedGlobal, RestrictedMember,
+};
+pub use script_unused::{
+    NoUnusedScriptVarsOptions, PreferConstDestructuring, PreferConstOptions, UnusedArgs,
+    UnusedCaughtErrors, UnusedVarsScope,
 };
 pub use sfc_element_order::{SfcElementOrderGroup, SfcElementOrderOptions};
 pub use slot_name_casing::SlotNameCasingStyle;

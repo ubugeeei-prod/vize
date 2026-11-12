@@ -18,25 +18,33 @@ export function resetTypeProjectWatches(cache: object): void {
   watched.delete(cache);
 }
 
+export const TYPE_PROJECT_CHANGED_MESSAGE =
+  "[vize] TypeScript project changed while compiling; reload the component.";
+
+/**
+ * Register the watches for the type project a compile used. Returns `false`
+ * without registering anything when that project revision is no longer
+ * current, so the compile must not be served.
+ */
 export function watchTypeProject(
   cache: object,
   context: TypeProjectContext | undefined,
   addWatchFile: ((path: string) => void) | undefined,
   api: ProjectWatchApi = native,
-): void {
-  if (!context || !addWatchFile) return;
+): boolean {
+  if (!context || !addWatchFile) return true;
   let projects = watched.get(cache);
   const knownRevision = projects?.get(context.root);
   const inputs = api.typeProjectInputs(context.root, context.revision, knownRevision);
-  if (!inputs)
-    throw new Error("[vize] TypeScript project changed while compiling; reload the component.");
-  if (knownRevision === context.revision) return;
+  if (!inputs) return false;
+  if (knownRevision === context.revision) return true;
   for (const input of new Set(inputs.map(withoutVerbatimPrefix))) addWatchFile(input);
   if (!projects) {
     projects = new Map();
     watched.set(cache, projects);
   }
   projects.set(context.root, context.revision);
+  return true;
 }
 
 export function typeProjectDependencyRoots(

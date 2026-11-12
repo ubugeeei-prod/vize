@@ -57,7 +57,7 @@ class MaxTemplateDepthOptions {
 typealias RestrictedNames = String | Listing<String>
 
 class CallAfterAwaitSpec {
-  module: String
+  `module`: String
   path: (String | Listing<String>)? = null
   message: String? = null
 }
@@ -214,4 +214,22 @@ class PreferPromiseRejectErrorsOptions {
 /// `type/unbound-method`, as in typescript-eslint.
 class UnboundMethodOptions {
   ignoreStatic: Boolean = false
+}
+
+class NoUnusedScriptVarsOptions {
+  vars: ("all" | "local")? = null
+  varsIgnorePattern: String? = null
+  args: ("all" | "after-used" | "none")? = null
+  argsIgnorePattern: String? = null
+  caughtErrors: ("all" | "none")? = null
+  caughtErrorsIgnorePattern: String? = null
+  destructuredArrayIgnorePattern: String? = null
+  ignoreRestSiblings: Boolean? = null
+  ignoreClassWithStaticInitBlock: Boolean? = null
+  reportUsedIgnorePattern: Boolean? = null
+}
+
+class PreferConstOptions {
+  destructuring: ("any" | "all")? = null
+  ignoreReadBeforeAssign: Boolean? = null
 }

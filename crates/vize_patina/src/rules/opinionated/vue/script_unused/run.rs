@@ -5,6 +5,7 @@ use vize_relief::RootNode;
 
 use super::decide::{Which, analyze};
 use super::options::{PreferConstOptions, UnusedOptions};
+use super::sfc_use::note_sfc_uses;
 use super::template_use::{TemplateUse, template_use};
 use crate::context::LintContext;
 use crate::diagnostic::LintDiagnostic;
@@ -20,7 +21,10 @@ pub(super) fn report(
     if !ctx.is_rule_enabled(rule) {
         return;
     }
-    let template = root.map(template_use).unwrap_or_else(TemplateUse::empty);
+    let mut template = root.map(template_use).unwrap_or_else(TemplateUse::empty);
+    if let Some(descriptor) = ctx.sfc_descriptor() {
+        note_sfc_uses(descriptor, &mut template);
+    }
     let has_setup = ctx
         .sfc_descriptor()
         .is_some_and(|descriptor| descriptor.script_setup.is_some());

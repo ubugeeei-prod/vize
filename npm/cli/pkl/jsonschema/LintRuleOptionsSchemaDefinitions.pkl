@@ -216,6 +216,8 @@ lintRuleOptionsDef: JsonSchema = new JsonSchema {
     ["type/restrict-template-expressions"] = TypeAwareRuleOptions.restrictTemplateExpressionsDef
     ["type/return-await"] = TypeAwareRuleOptions.returnAwaitDef
     ["type/unbound-method"] = TypeAwareRuleOptions.unboundMethodDef
+    ["vue/no-unused-script-vars"] = ConfiguredVueRuleOptions.noUnusedScriptVarsDef
+    ["vue/prefer-const"] = ConfiguredVueRuleOptions.preferConstDef
     ["vue/enforce-style-attribute"] = new JsonSchema {
       type = "object"
       properties {

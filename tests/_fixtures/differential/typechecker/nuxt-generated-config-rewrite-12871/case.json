@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "issue": 12871,
+  "source": "app/components/Greeting.vue",
+  "selectedConfig": ".nuxt/tsconfig.app.json",
+  "files": {
+    "tsconfig.json": {
+      "files": [],
+      "references": [
+        {
+          "path": "./.nuxt/tsconfig.app.json"
+        },
+        {
+          "path": "./.nuxt/tsconfig.server.json"
+        }
+      ]
+    },
+    ".nuxt/tsconfig.app.json": {
+      "compilerOptions": {
+        "strict": true,
+        "paths": {
+          "~/*": ["../app/*"]
+        }
+      },
+      "include": ["../app/**/*"],
+      "exclude": ["../.output"]
+    },
+    ".nuxt/tsconfig.server.json": {
+      "compilerOptions": {
+        "strict": true
+      },
+      "include": ["../server/**/*"]
+    },
+    "app/types/greeting.ts": "export interface GreetingProps { msg: string }\n",
+    "app/components/Greeting.vue": "<script setup lang=\"ts\">\nimport type { GreetingProps } from \"~/types/greeting\";\n\ndefineProps<GreetingProps>();\n</script>\n\n<template>\n  <p>{{ msg }}</p>\n</template>\n"
+  },
+  "expectedProps": {
+    "msg": {
+      "type": "String",
+      "required": true
+    }
+  },
+  "identicalRewrite": [".nuxt/tsconfig.app.json", ".nuxt/tsconfig.server.json"],
+  "devRewrite": {
+    "files": {
+      ".nuxt/tsconfig.app.json": {
+        "compilerOptions": {
+          "strict": true,
+          "paths": {
+            "~/*": ["../app/*"]
+          }
+        },
+        "include": ["../app/**/*"],
+        "exclude": ["dev"]
+      }
+    }
+  }
+}

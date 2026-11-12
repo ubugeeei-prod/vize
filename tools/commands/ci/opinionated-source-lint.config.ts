@@ -24,6 +24,12 @@ export default {
       "vize/vue/multi-word-component-names": "off",
       "vize/vue/no-negated-v-if-condition": "off",
       "vize/vue/no-root-v-if": "off",
+      // #12878 added this rule to the opinionated preset. It does not yet see
+      // components used inside Musea <art> blocks, custom directives such as
+      // v-musea-globals, or ref="..." template refs, and the remaining reports
+      // (unused type imports and locals) are an app migration. Keep the
+      // repository exception local until both are done.
+      "vize/vue/no-unused-script-vars": "off",
       "vize/vue/prefer-true-attribute-shorthand": "off",
       "vize/vue/require-component-is": "off",
       "vize/vue/v-on-handler-style": "off",

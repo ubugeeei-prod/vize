@@ -76,6 +76,41 @@ expression: diagnostics
         ),
     ),
     (
+        "type/no-unsafe-assignment",
+        "Unsafe assignment of an any-typed value.",
+        174,
+        191,
+        None,
+    ),
+    (
+        "type/no-unsafe-assignment",
+        "Unsafe assignment of an any-typed value.",
+        198,
+        220,
+        None,
+    ),
+    (
+        "type/no-unsafe-call",
+        "Unsafe call of a(n) `any` typed value.",
+        185,
+        188,
+        None,
+    ),
+    (
+        "type/no-unsafe-call",
+        "Unsafe call of a(n) `any` typed value.",
+        292,
+        307,
+        None,
+    ),
+    (
+        "type/no-unsafe-member-access",
+        "Unsafe member access on an `any` value.",
+        215,
+        220,
+        None,
+    ),
+    (
         "type/no-unsafe-template-binding",
         "Template event handler calls a value with an unsafe `any` or `unknown` type",
         388,
@@ -92,6 +127,13 @@ expression: diagnostics
         Some(
             "Give the value a concrete type in `<script setup>` or narrow it before using it in the template.",
         ),
+    ),
+    (
+        "type/require-await",
+        "Function has no 'await' expression.",
+        222,
+        279,
+        None,
     ),
     (
         "type/require-typed-emits",

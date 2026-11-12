@@ -199,11 +199,13 @@ export const purposeJa: Readonly<Record<string, string>> = {
   "type/no-misused-promises": "Promise を扱わない場所に Promise を渡している箇所を検出します。",
   "type/no-misused-spread": "互換性のない位置へのスプレッドを検出します。",
   "type/no-mixed-enums": "文字列と数値の列挙メンバーが混在する箇所を検出します。",
-  "type/no-reactivity-loss": "リアクティブな値を代入や呼び出しで取り出し、元の更新に追従しないスナップショットになる箇所を検出します。",
+  "type/no-reactivity-loss":
+    "リアクティブな値を代入や呼び出しで取り出し、元の更新に追従しないスナップショットになる箇所を検出します。",
   "type/no-redundant-type-constituents": "効果がない共用体や交差型のメンバーを検出します。",
   "type/no-unnecessary-boolean-literal-compare": "真偽値リテラルとの不要な比較を検出します。",
   "type/no-unnecessary-condition": "常に真、常に偽、または常に nullish な条件を検出します。",
-  "type/no-unnecessary-template-expression": "単一の式を不要に包むテンプレートリテラルを検出します。",
+  "type/no-unnecessary-template-expression":
+    "単一の式を不要に包むテンプレートリテラルを検出します。",
   "type/no-unnecessary-type-arguments": "既定値と同じ型引数を検出します。",
   "type/no-unnecessary-type-assertion": "式の型を変えない型アサーションを検出します。",
   "type/no-unnecessary-type-conversion": "型も値も変えない変換を検出します。",
@@ -217,19 +219,24 @@ export const purposeJa: Readonly<Record<string, string>> = {
   "type/no-unsafe-template-binding": "テンプレートで安全でない型の値を使用する箇所を検出します。",
   "type/no-unsafe-unary-minus": "number でも bigint でもない値の単項マイナスを検出します。",
   "type/only-throw-error": "throw する値が Error 相当であることを必須にします。",
-  "type/prefer-promise-reject-errors": "Promise の拒否理由を Error 相当の値にすることを必須にします。",
+  "type/prefer-promise-reject-errors":
+    "Promise の拒否理由を Error 相当の値にすることを必須にします。",
   "type/prefer-reduce-type-parameter": "Array#reduce の初期値アサーションより型引数を推奨します。",
-  "type/prefer-return-this-type": "返す値が `this` だけのメソッドでは戻り値の型に `this` を使います。",
-  "type/related-getter-setter-pairs": "対になる getter と setter の型が互換であることを必須にします。",
+  "type/prefer-return-this-type":
+    "返す値が `this` だけのメソッドでは戻り値の型に `this` を使います。",
+  "type/related-getter-setter-pairs":
+    "対になる getter と setter の型が互換であることを必須にします。",
   "type/require-await": "await を含まない async 関数を検出します。",
   "type/require-typed-emits": "defineEmits に型定義を指定します。",
   "type/require-typed-props": "defineProps に型定義を指定します。",
   "type/restrict-plus-operands": "加算の両辺が明示的に互換であることを必須にします。",
-  "type/restrict-template-expressions": "テンプレートリテラルの式を文字列と互換にすることを必須にします。",
+  "type/restrict-template-expressions":
+    "テンプレートリテラルの式を文字列と互換にすることを必須にします。",
   "type/return-await": "try の中で Promise を返すときは `return await` を使います。",
   "type/strict-boolean-expressions": "script とテンプレートの条件式で安全な真偽判定を使います。",
   "type/unbound-method": "レシーバーから切り離したメソッド参照を検出します。",
-  "type/use-unknown-in-catch-callback-variable": "Promise の catch コールバック引数に unknown 注釈を必須にします。",
+  "type/use-unknown-in-catch-callback-variable":
+    "Promise の catch コールバック引数に unknown 注釈を必須にします。",
   "vapor/no-inline-template": "Vapor で削除済みの inline-template 属性を検出します。",
   "vapor/no-vue-lifecycle-events":
     "Vapor では未対応の、要素ごとに指定する @vue:* ライフサイクルイベントを検出します。",
@@ -297,7 +304,8 @@ export const purposeJa: Readonly<Record<string, string>> = {
   "vue/no-unused-components": "登録しているのにテンプレートで使わないコンポーネントを検出します。",
   "vue/no-unused-properties": "defineProps に宣言しているのに使わない prop を検出します。",
   "vue/no-unused-refs": "テンプレートに宣言しているのに参照しない ref を検出します。",
-  "vue/no-unused-script-vars": "スクリプトで宣言しているのに使わない変数、インポート、引数を検出します。",
+  "vue/no-unused-script-vars":
+    "スクリプトで宣言しているのに使わない変数、インポート、引数を検出します。",
   "vue/no-unused-setup-bindings": "script setup に宣言しているのに読み取らない変数を検出します。",
   "vue/no-unused-vars": "v-for / v-slot に宣言しているのに使わない変数を検出します。",
   "vue/no-use-v-else-with-v-for": "同じ要素での v-else / v-else-if と v-for の併用を検出します。",

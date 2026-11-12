@@ -10,7 +10,7 @@ use vize_l0::{FxHashMap, String};
 
 mod nodes;
 
-pub(in crate::linter) use nodes::locations as checker_node_locations;
+pub(in crate::linter) use nodes::locations_each as checker_node_locations;
 
 // TypeScript 7 TypeFlags, from microsoft/typescript-go internal/checker/types.go.
 // Aliases/unions are classified by assignability, not by their rendered names.

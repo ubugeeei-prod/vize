@@ -61,3 +61,29 @@ unsupportedFeaturesDef: JsonSchema = new JsonSchema {
   }
   additionalProperties = false
 }
+
+noUnusedScriptVarsDef: JsonSchema = new JsonSchema {
+  type = "object"
+  properties {
+    ["vars"] = new JsonSchema { type = "string"; enum = new Listing { "all"; "local" } }
+    ["varsIgnorePattern"] = new JsonSchema { type = "string" }
+    ["args"] = new JsonSchema { type = "string"; enum = new Listing { "all"; "after-used"; "none" } }
+    ["argsIgnorePattern"] = new JsonSchema { type = "string" }
+    ["caughtErrors"] = new JsonSchema { type = "string"; enum = new Listing { "all"; "none" } }
+    ["caughtErrorsIgnorePattern"] = new JsonSchema { type = "string" }
+    ["destructuredArrayIgnorePattern"] = new JsonSchema { type = "string" }
+    ["ignoreRestSiblings"] = new JsonSchema { type = "boolean" }
+    ["ignoreClassWithStaticInitBlock"] = new JsonSchema { type = "boolean" }
+    ["reportUsedIgnorePattern"] = new JsonSchema { type = "boolean" }
+  }
+  additionalProperties = false
+}
+
+preferConstDef: JsonSchema = new JsonSchema {
+  type = "object"
+  properties {
+    ["destructuring"] = new JsonSchema { type = "string"; enum = new Listing { "any"; "all" } }
+    ["ignoreReadBeforeAssign"] = new JsonSchema { type = "boolean" }
+  }
+  additionalProperties = false
+}
