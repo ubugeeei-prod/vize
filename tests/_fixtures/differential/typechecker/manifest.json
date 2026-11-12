@@ -11950,6 +11950,34 @@
       }
     },
     {
+      "id": "typechecker/generic-hoisted-alias-forwarding",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "generic-hoisted-alias-forwarding/Steps.vue.txt",
+          "sha256": "b5df7510d74817763bb9b9deecb8c06fea6c4b34e8a7e9bfe25cb0962e8f041e",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/generic-local-indexing-11589",
       "state": "active",
       "targets": [

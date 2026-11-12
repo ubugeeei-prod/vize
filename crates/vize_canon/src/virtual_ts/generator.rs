@@ -221,6 +221,19 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     } else {
         FxHashMap::default()
     };
+    let generic_injected: Vec<&str> = script_content
+        .map(|script| {
+            module_spans
+                .iter()
+                .filter_map(|&(start, end)| {
+                    let name = *hoisted_type_spans.get(&(start, end))?;
+                    let text = script.get(start as usize..end as usize)?;
+                    module_statements::is_generic_injected(text, generic_injection.as_ref(), name)
+                        .then_some(name)
+                })
+                .collect()
+        })
+        .unwrap_or_default();
 
     namespace_hoist.emit_ambient_captures(&mut ts, &named_value_exports);
     // Track whether a default-export rewrite declared `__default__`; generated helpers and user
@@ -268,6 +281,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
                     script_source_offset(start as usize),
                     generic_injection.as_ref(),
                     hoisted_type_spans.get(&span).copied(),
+                    &generic_injected,
                 ) {
                     continue;
                 }

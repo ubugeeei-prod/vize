@@ -23,8 +23,25 @@ fn push_mapped(
     });
 }
 
+/// Whether a hoisted declaration receives the SFC generic parameters at module
+/// scope: it names one of them and declares no parameter list of its own.
+pub(super) fn is_generic_injected(
+    text: &str,
+    injection: Option<&(String, Vec<String>)>,
+    type_name: &str,
+) -> bool {
+    injection.is_some_and(|(_, names)| {
+        references_any_identifier(text, names) && generic_injection_point(text, type_name).is_some()
+    })
+}
+
 /// Splice the SFC generic parameters into a hoisted type/interface declaration
 /// that references them, so the reference resolves at module scope.
+///
+/// `injected` names every module declaration that receives them. A bare
+/// reference to one of those inside this declaration forwards the parameters:
+/// `type A<T = any> = { b: B }` would otherwise read `B<any>`, so setup's
+/// `A<T>` would lose `T` behind the fallback default.
 pub(super) fn emit_generic_injected(
     ts: &mut crate::virtual_ts::TextBuf,
     mappings: &mut Vec<VizeMapping>,
@@ -32,6 +49,7 @@ pub(super) fn emit_generic_injected(
     source: usize,
     injection: Option<&(String, Vec<String>)>,
     type_name: Option<&str>,
+    injected: &[&str],
 ) -> bool {
     let Some((defaults, names)) = injection else {
         return false;
@@ -50,7 +68,35 @@ pub(super) fn emit_generic_injected(
     if suffix.starts_with('=') {
         ts.push(' ');
     }
-    push_mapped(ts, mappings, suffix, source + prefix.len());
+    // Parse only a body that spells an injected name at all.
+    let spelled: Vec<String> = injected.iter().copied().map(String::from).collect();
+    let forwarded = references_any_identifier(suffix, &spelled)
+        .then(|| crate::virtual_ts::type_dependencies::module_type_reference_ends(text, injected))
+        .flatten()
+        .unwrap_or_default();
+    let mut arguments = String::default();
+    for (index, name) in names.iter().enumerate() {
+        if index > 0 {
+            arguments.push_str(", ");
+        }
+        arguments.push_str(name);
+    }
+    let mut from = inject_at;
+    for end in forwarded.into_iter().filter(|&end| end > inject_at) {
+        let Some(segment) = text.get(from..end) else {
+            continue;
+        };
+        push_mapped(ts, mappings, segment, source + from);
+        // Synthetic arguments; the authored reference keeps its own span.
+        append!(*ts, "<{arguments}>");
+        from = end;
+    }
+    push_mapped(
+        ts,
+        mappings,
+        text.get(from..).unwrap_or_default(),
+        source + from,
+    );
     ts.push('\n');
     true
 }
