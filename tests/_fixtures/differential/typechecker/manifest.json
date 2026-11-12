@@ -12983,7 +12983,7 @@
               "html-template",
               "ts"
             ],
-            "selector": "check_canon_recent_issues_cli::check_auto_imported_use_template_ref_reads_the_template_registry and unknown_checks_tests::ambient_template_ref_ownership_follows_the_effective_composables_list; Nuxt's auto-imported global useTemplateRef is Vue's composable by name under the default vueCompilerOptions.composables.useTemplateRef, so the ref is the registered component's exposed instance; expected rows are vue-tsc 3.3.14's single TS2339."
+            "selector": "check_canon_nuxt_parity_cli::check_auto_imported_use_template_ref_reads_the_template_registry and unknown_checks_tests::ambient_template_ref_ownership_follows_the_effective_composables_list; Nuxt's auto-imported global useTemplateRef is Vue's composable by name under the default vueCompilerOptions.composables.useTemplateRef, so the ref is the registered component's exposed instance; expected rows are vue-tsc 3.3.14's single TS2339."
           }
         ]
       }
@@ -13666,7 +13666,7 @@
               "html-template",
               "ts"
             ],
-            "selector": "check_canon_recent_issues_cli::check_define_props_messages_use_vue_public_type_names and internal_type_names::tests; a diagnostic about a defineProps<T>() result names Vize's private __DefineProps<__LooseRequired<T>, K> copy, which users cannot import; the message names Vue's DefineProps<LooseRequired<T>, K>; expected rows are vue-tsc 3.3.14's single TS2322."
+            "selector": "check_canon_nuxt_parity_cli::check_define_props_messages_use_vue_public_type_names and internal_type_names::tests; a diagnostic about a defineProps<T>() result names Vize's private __DefineProps<__LooseRequired<T>, K> copy, which users cannot import; the message names Vue's DefineProps<LooseRequired<T>, K>; expected rows are vue-tsc 3.3.14's single TS2322."
           }
         ]
       }
@@ -15309,7 +15309,7 @@
               "html-template",
               "ts"
             ],
-            "selector": "check_canon_recent_issues_cli::check_nested_consumer_reaches_library_vue_types_through_a_rooted_stub; nuxt/ui's docs app sits below the library root with its own package.json, and the stub build's dist/module.d.mts re-exports the source by a rooted path, so a type exported from a library .vue (ChipProps) must reach the docs app through node_modules and the mirrored source; expected rows are vue-tsc 3.3.14's single TS2322."
+            "selector": "check_canon_nuxt_parity_cli::check_nested_consumer_reaches_library_vue_types_through_a_rooted_stub; nuxt/ui's docs app sits below the library root with its own package.json, and the stub build's dist/module.d.mts re-exports the source by a rooted path, so a type exported from a library .vue (ChipProps) must reach the docs app through node_modules and the mirrored source; expected rows are vue-tsc 3.3.14's single TS2322."
           }
         ]
       }
@@ -16651,7 +16651,7 @@
               "html-template",
               "ts"
             ],
-            "selector": "check_canon_recent_issues_cli::check_slot_outlet_props_follow_the_vue_compiler_option and vue_options_projection_tests; a slot outlet passing boolean | undefined to a declared boolean slot prop is TS2322 by default, as vue-tsc 3.3.14 reports, and vueCompilerOptions.checkSlotOutletProps: false turns the check off in vize check and the content mapper."
+            "selector": "check_canon_nuxt_parity_cli::check_slot_outlet_props_follow_the_vue_compiler_option and vue_options_projection_tests; a slot outlet passing boolean | undefined to a declared boolean slot prop is TS2322 by default, as vue-tsc 3.3.14 reports, and vueCompilerOptions.checkSlotOutletProps: false turns the check off in vize check and the content mapper."
           }
         ]
       }
@@ -17087,7 +17087,7 @@
               "html-template",
               "ts"
             ],
-            "selector": "check_canon_recent_issues_cli::check_union_host_slot_payload_is_the_union_of_member_payloads; a v-slot scope on a component picked from a union (nuxt/ui InputDate, InputTime) receives the union of the member payloads, so a v-else branch on the shape of one member keeps the other member's type instead of never; expected rows are vue-tsc 3.3.14's single TS2339."
+            "selector": "check_canon_nuxt_parity_cli::check_union_host_slot_payload_is_the_union_of_member_payloads; a v-slot scope on a component picked from a union (nuxt/ui InputDate, InputTime) receives the union of the member payloads, so a v-else branch on the shape of one member keeps the other member's type instead of never; expected rows are vue-tsc 3.3.14's single TS2339."
           }
         ]
       }
