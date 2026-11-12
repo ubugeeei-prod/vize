@@ -129,12 +129,17 @@ pub(super) fn evaluate(
     }
     let listener_list = listeners.iter().copied().collect::<Vec<_>>();
     for script in &plan.scripts {
-        let mut collected = tree::collect(&script.content, script.tsx, &listener_list);
-        facts::prepare(&script.content, &mut collected);
-        let script_queries = queries(&collected.nodes, wants);
         let map = |(start, end): (u32, u32)| {
             generated_range(&plan.mapping, virtual_content, script, start, end)
         };
+        let (mut collected, pending) = tree::collect_with(
+            &script.content,
+            script.tsx,
+            &listener_list,
+            |collected, ast| relate::plan(ast, &collected.program, &corsa_rules, &map),
+        );
+        facts::prepare(&script.content, &mut collected);
+        let script_queries = queries(&collected.nodes, wants);
         let mut generated = Vec::new();
         let mut used = Vec::new();
         for (index, query) in script_queries.iter().enumerate() {
@@ -163,13 +168,6 @@ pub(super) fn evaluate(
             });
             used.push(index);
         }
-        let pending = relate::plan(
-            &script.content,
-            script.tsx,
-            &collected.program,
-            &corsa_rules,
-            &map,
-        );
         let request = (!pending.is_empty()).then(|| pending.request());
         let (probed, relations) = session.expression_facts(virtual_content, &generated, request)?;
         let mut aligned = vec![ExpressionFact::default(); script_queries.len()];

@@ -6,6 +6,7 @@ mod binding;
 
 use crate::linter::corsa_session::{RelationReply, RelationRequest, Shape, Span, type_flags};
 use corsa::lint::LintNode;
+use oxc_ast::ast::Program;
 use serde_json::{Value, json};
 use vize_l0::FxHashMap;
 
@@ -57,15 +58,16 @@ impl Pending {
 }
 
 /// Build the checker asks for the rules in `rules`.
+/// `ast` is the script's own parse (the one the listener tree serializes),
+/// for the scope questions the ESTree JSON cannot answer.
 pub(super) fn plan(
-    source: &str,
-    tsx: bool,
+    ast: &Program<'_>,
     program: &Value,
     rules: &[&str],
     map: &dyn Fn(Span) -> Option<Span>,
 ) -> Pending {
     let mut pending = Pending::default();
-    asks::collect(source, tsx, program, rules, map, &mut pending);
+    asks::collect(ast, program, rules, map, &mut pending);
     pending
 }
 

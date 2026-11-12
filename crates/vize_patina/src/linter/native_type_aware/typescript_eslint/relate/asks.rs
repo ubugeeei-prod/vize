@@ -6,6 +6,7 @@ use crate::linter::corsa_session::{
     AssertionAsk, AssertionContext, ContextSource, DeprecationAsk, DeprecationKind, Literal,
     NonNullAsk, PropertyContext, ReturnAsk, Span,
 };
+use oxc_ast::ast::Program;
 use serde_json::{Value, json};
 use vize_l0::String as CompactString;
 
@@ -33,8 +34,7 @@ struct Walk<'a, 'm, 'v> {
 }
 
 pub(super) fn collect(
-    source: &str,
-    tsx: bool,
+    ast: &Program<'_>,
     program: &Value,
     rules: &[&str],
     map: &dyn Fn(Span) -> Option<Span>,
@@ -54,7 +54,7 @@ pub(super) fn collect(
         .iter()
         .map(|(_, name, constructed)| (*name, *constructed))
         .collect::<Vec<_>>();
-    let defaults = binding::type_parameter_defaults(source, tsx, &names);
+    let defaults = binding::type_parameter_defaults(ast, &names);
     for ((list, _, _), defaults) in instantiations.into_iter().zip(defaults) {
         if let Some(defaults) = defaults {
             walk.type_arguments(list, &defaults);
@@ -65,7 +65,7 @@ pub(super) fn collect(
         .iter()
         .map(|(_, span)| *span)
         .collect::<Vec<_>>();
-    let bindings = binding::resolve(source, tsx, &spans);
+    let bindings = binding::resolve(ast, &spans);
     for ((index, _), binding) in identifiers.into_iter().zip(bindings) {
         match binding {
             Binding::Assigned => {}

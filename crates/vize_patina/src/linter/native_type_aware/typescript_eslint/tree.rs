@@ -1,6 +1,7 @@
 //! TS-ESTree nodes for the corsa typescript-eslint rules.
 use corsa::lint::{LintNode, TextRange};
 use oxc_allocator::Allocator;
+use oxc_ast::ast::Program;
 use oxc_estree::{CompactSerializer, ESTree};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
@@ -38,7 +39,20 @@ pub(super) struct Collected {
     pub nodes: Vec<LintNode>,
 }
 
+#[cfg(test)]
 pub(super) fn collect(source: &str, tsx: bool, listeners: &[&str]) -> Collected {
+    collect_with(source, tsx, listeners, |_, _| ()).0
+}
+
+/// Parse `source` once, serialize the listener trees, and hand the same
+/// parse to `then` (scope analysis the ESTree JSON cannot answer). `then`
+/// does not run when the parse fails.
+pub(super) fn collect_with<R: Default>(
+    source: &str,
+    tsx: bool,
+    listeners: &[&str],
+    then: impl FnOnce(&Collected, &Program<'_>) -> R,
+) -> (Collected, R) {
     let allocator = Allocator::default();
     let source_type = if tsx {
         SourceType::tsx()
@@ -47,10 +61,11 @@ pub(super) fn collect(source: &str, tsx: bool, listeners: &[&str]) -> Collected 
     };
     let parsed = Parser::new(&allocator, source, source_type).parse();
     if parsed.panicked {
-        return Collected {
+        let empty = Collected {
             program: Value::Null,
             nodes: Vec::new(),
         };
+        return (empty, R::default());
     }
     let mut serializer = CompactSerializer::new(true, false);
     parsed.program.serialize(&mut serializer);
@@ -67,7 +82,9 @@ pub(super) fn collect(source: &str, tsx: bool, listeners: &[&str]) -> Collected 
         Slot::default(),
         &mut nodes,
     );
-    Collected { program, nodes }
+    let collected = Collected { program, nodes };
+    let extra = then(&collected, &parsed.program);
+    (collected, extra)
 }
 
 /// Where a node sits in its parent: the field name and, for list fields,

@@ -1,13 +1,11 @@
 //! `isPossiblyUsedBeforeAssigned` from typescript-eslint's
 //! `no-unnecessary-type-assertion`, resolved with oxc's scope analysis.
-use oxc_allocator::Allocator;
 use oxc_ast::{
     AstKind,
-    ast::{BindingPattern, ClassElement, MethodDefinitionKind, VariableDeclarationKind},
+    ast::{BindingPattern, ClassElement, MethodDefinitionKind, Program, VariableDeclarationKind},
 };
-use oxc_parser::Parser;
 use oxc_semantic::SemanticBuilder;
-use oxc_span::{GetSpan, SourceType};
+use oxc_span::GetSpan;
 
 /// Default spans of a declaration's type parameters, `None` without a default.
 pub(super) type Defaults = Vec<Option<(u32, u32)>>;
@@ -25,24 +23,15 @@ pub(super) enum Binding {
     Annotated { name: (u32, u32) },
 }
 
-/// Resolve each identifier reference span in `source`.
-pub(super) fn resolve(source: &str, tsx: bool, references: &[(u32, u32)]) -> Vec<Binding> {
+/// Resolve each identifier reference span in the script `program` (the
+/// listener tree's own parse).
+pub(super) fn resolve(program: &Program<'_>, references: &[(u32, u32)]) -> Vec<Binding> {
     if references.is_empty() {
         return Vec::new();
     }
-    let allocator = Allocator::default();
-    let source_type = if tsx {
-        SourceType::tsx()
-    } else {
-        SourceType::ts()
-    };
-    let parsed = Parser::new(&allocator, source, source_type).parse();
-    if parsed.panicked {
-        return vec![Binding::Assigned; references.len()];
-    }
     let semantic = SemanticBuilder::new()
         .with_build_nodes(true)
-        .build(&parsed.program)
+        .build(program)
         .semantic;
     let nodes = semantic.nodes();
     let scoping = semantic.scoping();
@@ -106,26 +95,15 @@ pub(super) fn resolve(source: &str, tsx: bool, references: &[(u32, u32)]) -> Vec
 /// explicit constructor called through `new` (whose resolved signature owns no
 /// type parameters), resolve to `None`.
 pub(super) fn type_parameter_defaults(
-    source: &str,
-    tsx: bool,
+    program: &Program<'_>,
     names: &[((u32, u32), bool)],
 ) -> Vec<Option<Defaults>> {
     if names.is_empty() {
         return Vec::new();
     }
-    let allocator = Allocator::default();
-    let source_type = if tsx {
-        SourceType::tsx()
-    } else {
-        SourceType::ts()
-    };
-    let parsed = Parser::new(&allocator, source, source_type).parse();
-    if parsed.panicked {
-        return vec![None; names.len()];
-    }
     let semantic = SemanticBuilder::new()
         .with_build_nodes(true)
-        .build(&parsed.program)
+        .build(program)
         .semantic;
     let nodes = semantic.nodes();
     let scoping = semantic.scoping();
@@ -180,7 +158,23 @@ pub(super) fn type_parameter_defaults(
 
 #[cfg(test)]
 mod tests {
-    use super::{Binding, resolve};
+    use super::super::super::tree;
+    use super::{Binding, Defaults};
+
+    fn resolve(source: &str, tsx: bool, references: &[(u32, u32)]) -> Vec<Binding> {
+        tree::collect_with(source, tsx, &[], |_, ast| super::resolve(ast, references)).1
+    }
+
+    fn type_parameter_defaults(
+        source: &str,
+        tsx: bool,
+        names: &[((u32, u32), bool)],
+    ) -> Vec<Option<Defaults>> {
+        tree::collect_with(source, tsx, &[], |_, ast| {
+            super::type_parameter_defaults(ast, names)
+        })
+        .1
+    }
 
     fn at(source: &str, needle: &str) -> (u32, u32) {
         let start = source.rfind(needle).unwrap() as u32;
@@ -221,7 +215,7 @@ mod tests {
     fn defaults_come_from_the_single_local_declaration() {
         let source =
             "class C<T = number> {}\nfunction h(c: C<number>) {}\ntype B = Map<string, string>;";
-        let found = super::type_parameter_defaults(
+        let found = type_parameter_defaults(
             source,
             false,
             &[
