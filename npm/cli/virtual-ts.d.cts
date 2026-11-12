@@ -81,11 +81,15 @@ export type $RegisteredSlotProvider<
         : L extends keyof G
           ? G[L]
           : $SilentAny;
-type $NamedSlotPayload<S, N> = {
-  [K in keyof S & N]-?: NonNullable<S[K]> extends (props: infer P, ...args: any[]) => any
-    ? P
-    : never;
-}[keyof S & N] extends infer P
+type $NamedSlotPayload<S, N> = (
+  S extends unknown
+    ? {
+        [K in keyof S & N]-?: NonNullable<S[K]> extends (props: infer P, ...args: any[]) => any
+          ? P
+          : never;
+      }[keyof S & N]
+    : never
+) extends infer P
   ? [P] extends [never]
     ? any
     : P

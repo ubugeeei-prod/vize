@@ -425,6 +425,32 @@ export type $SlotPayload<S, N> = $IsAny<S> extends true ? $SilentAny : string ex
       );
   }
 });
+test("the intersecting payload family regenerates to the union-host payload", (t) => {
+  const fixture = generatorFixture();
+  t.after(fixture.cleanup);
+  const intersecting = `// @ts-ignore A missing provider keeps its framework error-any fallback.
+type $SilentAny = {}["__vizeSilentAny"];
+export type $RegisteredSlotProvider<G, K extends string | number | symbol, F extends string | number | symbol = K, L extends string | number | symbol = F> = $IsAny<G> extends true ? $SilentAny : K extends keyof G ? G[K] : F extends keyof G ? G[F] : L extends keyof G ? G[L] : $SilentAny;
+type $NamedSlotPayload<S, N> = { [K in keyof S & N]-?: NonNullable<S[K]> extends (props: infer P, ...args: any[]) => any ? P : never }[keyof S & N] extends infer P ? ([P] extends [never] ? any : P) : any;
+export type $SlotPayload<S, N, C = $RegisteredSlotProvider<any, never>> = $IsAny<S> extends true ? $IsAny<C> extends true ? C : any : string extends N ? string extends keyof S ? $NamedSlotPayload<S, N> : any : $NamedSlotPayload<S, N>;`;
+  for (const file of publicFiles) {
+    const target = path.join(fixture.cwd, file);
+    const current = readFileSync(target, "utf8");
+    const start = current.indexOf("// @ts-ignore A missing provider keeps");
+    const end = current.indexOf("\n\nexport type __EmitProps", start);
+    assert.ok(start >= 0 && end > start);
+    writeFileSync(target, current.slice(0, start) + intersecting + current.slice(end));
+  }
+  for (const check of [false, true]) {
+    const result = fixture.run(check);
+    assert.equal(result.status, 0, `${result.stdout}${result.stderr}`);
+    for (const file of publicFiles)
+      assert.equal(
+        readFileSync(path.join(fixture.cwd, file), "utf8"),
+        readFileSync(path.join(root, file), "utf8"),
+      );
+  }
+});
 for (const [name, file, mutate, reason] of [
   [
     "missing canonical provider",

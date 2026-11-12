@@ -1,0 +1,16 @@
+<script setup lang="ts">
+import { computed } from 'vue'
+import Single from './Single.vue'
+import Range from './Range.vue'
+
+const props = defineProps<{ range?: boolean }>()
+// One of two components whose default slots pass differently shaped props.
+const Field = computed(() => props.range ? Range : Single)
+</script>
+
+<template>
+  <Field v-slot="{ segments }">
+    <template v-if="Array.isArray(segments)">{{ segments.length }}</template>
+    <template v-else>{{ segments.start.length }} {{ segments.end.toFixed() }}</template>
+  </Field>
+</template>

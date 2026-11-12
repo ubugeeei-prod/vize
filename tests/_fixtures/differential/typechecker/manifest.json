@@ -16888,6 +16888,45 @@
       }
     },
     {
+      "id": "typechecker/regression/union-host-slot-payload",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "union-host-slot-payload/Host.vue.txt",
+          "sha256": "6ef472064900f2b7fdea56d1d76206b4aa6ed26d991518303a3131988209ab2d",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "union-host-slot-payload/Range.vue.txt",
+          "sha256": "be96c5ef2b2eeaca99a88bfe1e75b68415296cbb0a03a6245dd69cc5cd1be51c",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "union-host-slot-payload/Single.vue.txt",
+          "sha256": "b912e2a9365351cb2f154324731a71e3ee1b671cee124d2ec4d90b702fbe748d",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "check_canon_recent_issues_cli::check_union_host_slot_payload_is_the_union_of_member_payloads; a v-slot scope on a component picked from a union (nuxt/ui InputDate, InputTime) receives the union of the member payloads, so a v-else branch on the shape of one member keeps the other member's type instead of never; expected rows are vue-tsc 3.3.14's single TS2339."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/unmapped-ignores-entry-points-11472",
       "state": "active",
       "targets": [

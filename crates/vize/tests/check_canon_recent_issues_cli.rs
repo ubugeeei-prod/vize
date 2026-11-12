@@ -394,3 +394,64 @@ defineProps<FooProps>()
 
     let _ = std::fs::remove_dir_all(&project_root);
 }
+
+const UNION_HOST_FIXTURE: &str = concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/typechecker/union-host-slot-payload/"
+);
+
+/// Every diagnostic row of a `vize check --format json` run, in report order,
+/// with the raw report for assertion messages.
+fn check_diagnostic_rows(project_root: &Path, corsa_path: &Path) -> (Vec<String>, String) {
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(project_root)
+        .env("CORSA_PATH", corsa_path)
+        .args(["check", "--tsconfig", "tsconfig.json", "--format", "json"])
+        .output()
+        .unwrap();
+    let stdout = std::str::from_utf8(&output.stdout).unwrap().to_string();
+    let json: serde_json::Value = serde_json::from_str(&stdout).unwrap();
+    let rows = json["files"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .flat_map(|file| file["diagnostics"].as_array().unwrap().iter())
+        .filter_map(serde_json::Value::as_str)
+        .map(str::to_string)
+        .collect();
+    (rows, stdout)
+}
+
+/// A slot scope on a component picked from a union (nuxt/ui's `InputDate`
+/// mounts `computed(() => range ? DateRangeField : DateField)`) receives the
+/// props of whichever member renders. Inferring one parameter from the union of
+/// both slot functions intersected the payloads, so the `v-else` branch of an
+/// `Array.isArray` check narrowed to `never`.
+#[test]
+fn check_union_host_slot_payload_is_the_union_of_member_payloads() {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
+        return;
+    };
+    let project_root = unique_case_dir("union-host-slot-payload");
+    let _ = std::fs::remove_dir_all(&project_root);
+    std::fs::create_dir_all(project_root.join("src")).unwrap();
+    link_workspace_vue(&project_root).unwrap();
+    write_tsconfig(&project_root);
+    for name in ["Host.vue", "Single.vue", "Range.vue"] {
+        let input = cstr!("{name}.txt");
+        let source = std::fs::read(Path::new(UNION_HOST_FIXTURE).join(input.as_str())).unwrap();
+        std::fs::write(project_root.join("src").join(name), source).unwrap();
+    }
+
+    let (rows, stdout) = check_diagnostic_rows(&project_root, &corsa_path);
+    // vue-tsc 3.3.14 reports exactly this one row for the same project.
+    assert_eq!(
+        rows,
+        vec![
+            "error:14:66 [TS2339] Property 'toFixed' does not exist on type '{ part: string; }[]'. (source: <template v-else>{{ segments.start.length }} {{ segments.end.toFixed() }}</template>)"
+        ],
+        "{stdout}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}

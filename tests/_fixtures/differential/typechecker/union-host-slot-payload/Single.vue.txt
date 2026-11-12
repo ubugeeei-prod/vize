@@ -1,0 +1,4 @@
+<script setup lang="ts">
+defineSlots<{ default(props: { segments: { part: string }[], type?: 'start' | 'end' }): any }>()
+</script>
+<template><div><slot :segments="[]" /></div></template>
