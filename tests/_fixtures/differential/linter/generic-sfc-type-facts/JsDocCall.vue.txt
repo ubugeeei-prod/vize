@@ -1,0 +1,10 @@
+<script setup lang="ts">
+declare function settle(callback: () => void): void;
+declare const loose: any;
+
+/** Settle once mounted. */
+settle(() => {});
+
+/** An untyped call stays unsafe. */
+loose();
+</script>

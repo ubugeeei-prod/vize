@@ -4,6 +4,7 @@ mod opt_in;
 mod options_api;
 mod severity;
 mod typescript_constituents;
+mod typescript_generic_sfc;
 mod typescript_parity;
 mod typescript_promises;
 mod typescript_shapes;

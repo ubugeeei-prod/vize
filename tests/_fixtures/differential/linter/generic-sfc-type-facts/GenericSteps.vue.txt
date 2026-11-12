@@ -1,0 +1,21 @@
+<script setup lang="ts" generic="TStep extends { value: string }">
+interface Box<T> {
+  readonly current: T;
+}
+type StepValue = TStep["value"];
+type Exposed = {
+  readonly step: TStep | null;
+  readonly value: Box<StepValue | null>;
+  readonly children: readonly Exposed[];
+};
+type Loose = any | null;
+
+const { steps } = defineProps<{ steps: readonly TStep[] }>();
+const exposed = {
+  step: steps[0] ?? null,
+  value: { current: steps[0]?.value ?? null },
+  children: [],
+} satisfies Exposed;
+const loose: Loose = null;
+defineExpose({ exposed, loose });
+</script>
