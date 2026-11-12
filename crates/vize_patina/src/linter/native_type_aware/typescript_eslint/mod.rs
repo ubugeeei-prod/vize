@@ -98,7 +98,7 @@ pub(super) fn evaluate(
     for script in &plan.scripts {
         let mut collected = tree::collect(&script.content, script.tsx, &listener_list);
         facts::prepare(&script.content, &mut collected);
-        let script_queries = queries(&collected.nodes);
+        let script_queries = queries(&collected.nodes, &corsa_rules);
         let mut generated = Vec::new();
         let mut used = Vec::new();
         for (index, query) in script_queries.iter().enumerate() {
@@ -112,6 +112,8 @@ pub(super) fn evaluate(
                 end,
                 symbols: query.symbols,
                 signatures: query.signatures,
+                shape: query.shape,
+                members: query.members.clone(),
             });
             used.push(index);
         }

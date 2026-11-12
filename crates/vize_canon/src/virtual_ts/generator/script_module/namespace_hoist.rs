@@ -167,6 +167,18 @@ impl NamespaceHoistPlan {
         }
     }
 
+    /// Forgets captures whose declaration already sits at module scope, such as
+    /// a relocated `declare const`. Aliasing those would declare the name twice
+    /// (TS2451) and turn every read into an error type.
+    pub(crate) fn drop_module_scope_captures(&mut self, module_spans: &[(u32, u32)]) {
+        self.captured.retain(|capture| {
+            !module_spans.iter().any(|&(start, end)| {
+                capture.source_range.start >= start as usize
+                    && capture.source_range.end <= end as usize
+            })
+        });
+    }
+
     /// Ambient module-scope aliases for the captured setup bindings. Emitted
     /// before the hoisted declarations so the namespace bodies can read them.
     pub(crate) fn emit_ambient_captures(

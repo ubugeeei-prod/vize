@@ -2,29 +2,21 @@
 use super::tree::Collected;
 
 mod enrich;
+mod queries;
 mod scan;
 mod shape;
 use crate::linter::corsa_session::{ExpressionFact, ExpressionQuery};
 use corsa::lint::LintNode;
+pub(super) use queries::queries;
 use serde_json::{Value, json};
 use std::collections::{HashMap, HashSet};
 
 pub(super) fn prepare(source: &str, collected: &mut Collected) {
     let deprecated = scan::deprecated_names(source);
     let functions = scan::local_functions(&collected.program, source);
-    let methods = scan::class_methods(&collected.program);
-    let instances = scan::class_instances(&collected.program);
     for node in &mut collected.nodes {
-        stamp(node, &deprecated, &functions, &methods, &instances);
+        stamp(node, &deprecated, &functions);
     }
-}
-
-pub(super) fn queries(nodes: &[LintNode]) -> Vec<ExpressionQuery> {
-    let mut queries = Vec::new();
-    for node in nodes {
-        collect_queries(node, &mut queries);
-    }
-    queries
 }
 
 pub(super) fn enrich(source: &str, nodes: &mut [LintNode], program: &Value) {
@@ -45,8 +37,6 @@ fn stamp(
     node: &mut LintNode,
     deprecated: &HashSet<String>,
     functions: &HashMap<String, scan::LocalFn>,
-    methods: &HashMap<String, HashSet<String>>,
-    instances: &HashMap<String, String>,
 ) {
     if node.kind == "Identifier"
         && node.field_bool("__declarationName") != Some(true)
@@ -62,15 +52,12 @@ fn stamp(
     if node.kind == "CallExpression" {
         stamp_call(node, functions);
     }
-    if node.kind == "MemberExpression" {
-        stamp_member(node, methods, instances);
-    }
     for child in node.children.values_mut() {
-        stamp(child, deprecated, functions, methods, instances);
+        stamp(child, deprecated, functions);
     }
     for children in node.child_lists.values_mut() {
         for child in children {
-            stamp(child, deprecated, functions, methods, instances);
+            stamp(child, deprecated, functions);
         }
     }
 }
@@ -137,65 +124,26 @@ fn type_argument_nodes(node: &LintNode) -> &[LintNode] {
         .unwrap_or(&[])
 }
 
-fn stamp_member(
-    node: &mut LintNode,
-    methods: &HashMap<String, HashSet<String>>,
-    instances: &HashMap<String, String>,
-) {
-    if node.field_str("__parentKind") == Some("CallExpression") {
-        node.fields.insert("__safeUse".into(), json!(true));
-        return;
-    }
-    let Some(object) = node
-        .child("object")
-        .and_then(|object| object.field_str("name"))
-    else {
+/// Copies the destructured initializer's member facts onto the pattern.
+fn apply_pattern_init(node: &mut LintNode, facts: &HashMap<(u32, u32), &ExpressionFact>) {
+    let Some(range) = node.fields.get("__initRange") else {
         return;
     };
-    let Some(class_name) = instances.get(object) else {
+    let start = range.get("start").and_then(Value::as_u64);
+    let end = range.get("end").and_then(Value::as_u64);
+    let (Some(start), Some(end)) = (start, end) else {
         return;
     };
-    let Some(property) = node
-        .child("property")
-        .and_then(|property| property.field_str("name"))
-    else {
+    let Some(fact) = facts.get(&(start as u32, end as u32)) else {
         return;
     };
-    if methods
-        .get(class_name)
-        .is_some_and(|names| names.contains(property))
-    {
-        node.fields.insert(
-            "__unboundMethodInfo".into(),
-            json!({ "isMethod": true, "firstParamIsThis": false, "thisArgIsVoid": false, "isStatic": false }),
-        );
+    if let Some(members) = &fact.members {
+        node.fields
+            .insert("__initMemberMethods".into(), members.clone());
     }
-}
-
-fn collect_queries(node: &LintNode, queries: &mut Vec<ExpressionQuery>) {
-    queries.push(ExpressionQuery {
-        start: node.range.start,
-        end: node.range.end,
-        symbols: node.kind == "Identifier",
-        signatures: false,
-    });
-    if node.kind == "CallExpression" {
-        if let Some(callee) = node.child("callee") {
-            queries.push(ExpressionQuery {
-                start: callee.range.start,
-                end: callee.range.end,
-                symbols: false,
-                signatures: true,
-            });
-        }
-    }
-    for child in node.children.values() {
-        collect_queries(child, queries);
-    }
-    for children in node.child_lists.values() {
-        for child in children {
-            collect_queries(child, queries);
-        }
+    if let Some(declared) = fact.declared_in_file {
+        node.fields
+            .insert("__initDeclaredInFile".into(), json!(declared));
     }
 }
 
@@ -203,6 +151,20 @@ fn apply_node(node: &mut LintNode, facts: &HashMap<(u32, u32), &ExpressionFact>)
     if let Some(fact) = facts.get(&(node.range.start, node.range.end)) {
         node.type_texts.clone_from(&fact.type_texts);
         node.property_names.clone_from(&fact.property_names);
+        if let Some(declared) = fact.declared_in_file {
+            node.fields
+                .insert("__declaredInFile".into(), json!(declared));
+        }
+        if let Some(flags) = fact.type_flags {
+            node.fields.insert("__typeFlags".into(), json!(flags));
+        }
+        if let Some(shape) = &fact.shape {
+            node.fields.insert("__typeShape".into(), shape.clone());
+        }
+        if let Some(members) = &fact.members {
+            node.fields
+                .insert("__memberMethods".into(), members.clone());
+        }
         if fact.deprecated && node.field_bool("__declarationName") != Some(true) {
             node.fields.insert(
                 "__symbolFacts".into(),
@@ -212,6 +174,9 @@ fn apply_node(node: &mut LintNode, facts: &HashMap<(u32, u32), &ExpressionFact>)
                 }),
             );
         }
+    }
+    if node.kind == "ObjectPattern" {
+        apply_pattern_init(node, facts);
     }
     if node.kind == "CallExpression" {
         if let Some(callee) = node.child("callee") {

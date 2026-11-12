@@ -6,7 +6,7 @@ mod batch;
 mod boolean;
 mod expression_facts;
 
-pub(in crate::linter) use expression_facts::{ExpressionFact, ExpressionQuery};
+pub(in crate::linter) use expression_facts::{ExpressionFact, ExpressionQuery, detail};
 mod errors;
 mod paths;
 mod probe;
