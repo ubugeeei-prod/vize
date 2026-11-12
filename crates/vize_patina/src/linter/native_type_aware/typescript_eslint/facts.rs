@@ -1,7 +1,11 @@
 //! Host facts the corsa rules do not infer from type text alone.
 use super::tree::Collected;
 
+mod checker;
+mod destructuring;
 mod enrich;
+mod enums;
+mod module_this;
 mod scan;
 mod shape;
 use crate::linter::corsa_session::{ExpressionFact, ExpressionQuery};
@@ -17,12 +21,16 @@ pub(super) fn prepare(source: &str, collected: &mut Collected) {
     for node in &mut collected.nodes {
         stamp(node, &deprecated, &functions, &methods, &instances);
     }
+    enums::stamp_merged_enums(&collected.program, source, &mut collected.nodes);
 }
 
-pub(super) fn queries(nodes: &[LintNode]) -> Vec<ExpressionQuery> {
+pub(super) use checker::Needs;
+
+pub(super) fn queries(nodes: &[LintNode], needs: Needs) -> Vec<ExpressionQuery> {
     let mut queries = Vec::new();
     for node in nodes {
-        collect_queries(node, &mut queries);
+        collect_queries(node, &mut queries, needs);
+        checker::listener_queries(node, &mut queries, needs);
     }
     queries
 }
@@ -33,11 +41,22 @@ pub(super) fn enrich(source: &str, nodes: &mut [LintNode], program: &Value) {
 
 pub(super) fn apply(nodes: &mut [LintNode], facts: &[ExpressionFact], queries: &[ExpressionQuery]) {
     let mut by_range = HashMap::<(u32, u32), &ExpressionFact>::new();
+    // A callee is queried twice: once for its signature, once as a plain node.
+    // Keep the signature answer apart so the plain one cannot erase it.
+    let mut signatures = HashMap::<(u32, u32), &ExpressionFact>::new();
+    let mut listener = checker::ListenerFacts::default();
     for (fact, query) in facts.iter().zip(queries) {
-        by_range.insert((query.start, query.end), fact);
+        let key = (query.start, query.end);
+        if query.signatures {
+            signatures.insert(key, fact);
+        }
+        listener.record(query, fact);
+        by_range.entry(key).or_insert(fact);
     }
     for node in nodes {
-        apply_node(node, &by_range);
+        apply_node(node, &by_range, &signatures);
+        checker::stamp_listener(node, &listener);
+        module_this::stamp_module_this(node);
     }
 }
 
@@ -172,37 +191,61 @@ fn stamp_member(
     }
 }
 
-fn collect_queries(node: &LintNode, queries: &mut Vec<ExpressionQuery>) {
+fn collect_queries(node: &LintNode, queries: &mut Vec<ExpressionQuery>, needs: Needs) {
     queries.push(ExpressionQuery {
         start: node.range.start,
         end: node.range.end,
         symbols: node.kind == "Identifier",
         signatures: false,
+        call_positions: 0,
+        function_returns: None,
+        contextual: false,
+        detail: needs.details,
+        paths: Vec::new(),
     });
-    if node.kind == "CallExpression" {
-        if let Some(callee) = node.child("callee") {
-            queries.push(ExpressionQuery {
-                start: callee.range.start,
-                end: callee.range.end,
-                symbols: false,
-                signatures: true,
-            });
-        }
+    let callee = match node.kind.as_str() {
+        "CallExpression" | "NewExpression" => node.child("callee"),
+        "TaggedTemplateExpression" => node.child("tag"),
+        _ => None,
+    };
+    if let Some(callee) = callee {
+        queries.push(ExpressionQuery {
+            start: callee.range.start,
+            end: callee.range.end,
+            symbols: false,
+            signatures: true,
+            call_positions: 0,
+            function_returns: None,
+            contextual: false,
+            detail: needs.details,
+            paths: Vec::new(),
+        });
     }
     for child in node.children.values() {
-        collect_queries(child, queries);
+        collect_queries(child, queries, needs);
     }
     for children in node.child_lists.values() {
         for child in children {
-            collect_queries(child, queries);
+            collect_queries(child, queries, needs);
         }
     }
 }
 
-fn apply_node(node: &mut LintNode, facts: &HashMap<(u32, u32), &ExpressionFact>) {
+fn apply_node(
+    node: &mut LintNode,
+    facts: &HashMap<(u32, u32), &ExpressionFact>,
+    signatures: &HashMap<(u32, u32), &ExpressionFact>,
+) {
     if let Some(fact) = facts.get(&(node.range.start, node.range.end)) {
         node.type_texts.clone_from(&fact.type_texts);
         node.property_names.clone_from(&fact.property_names);
+        checker::stamp_detail(node, fact);
+        if let Some((call, construct)) = fact.function_signatures {
+            node.fields
+                .insert("__callSignatureCount".into(), json!(call));
+            node.fields
+                .insert("__constructSignatureCount".into(), json!(construct));
+        }
         if fact.deprecated && node.field_bool("__declarationName") != Some(true) {
             node.fields.insert(
                 "__symbolFacts".into(),
@@ -215,7 +258,7 @@ fn apply_node(node: &mut LintNode, facts: &HashMap<(u32, u32), &ExpressionFact>)
     }
     if node.kind == "CallExpression" {
         if let Some(callee) = node.child("callee") {
-            if let Some(fact) = facts.get(&(callee.range.start, callee.range.end)) {
+            if let Some(fact) = signatures.get(&(callee.range.start, callee.range.end)) {
                 if !fact.parameter_type_texts.is_empty() {
                     node.fields.insert(
                         "__expectedArgumentTypeTexts".into(),
@@ -228,14 +271,14 @@ fn apply_node(node: &mut LintNode, facts: &HashMap<(u32, u32), &ExpressionFact>)
     let keys = node.children.keys().cloned().collect::<Vec<_>>();
     for key in keys {
         if let Some(child) = node.children.get_mut(&key) {
-            apply_node(child, facts);
+            apply_node(child, facts, signatures);
         }
     }
     let lists = node.child_lists.keys().cloned().collect::<Vec<_>>();
     for key in lists {
         if let Some(children) = node.child_lists.get_mut(&key) {
             for child in children {
-                apply_node(child, facts);
+                apply_node(child, facts, signatures);
             }
         }
     }

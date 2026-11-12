@@ -167,6 +167,28 @@ impl NamespaceHoistPlan {
         }
     }
 
+    /// Drops captures whose declaration already sits at module scope. An
+    /// ambient `declare const x` is relocated there by the ambient projection,
+    /// so an alias of the setup return would redeclare `x` (TS2451) and turn
+    /// every read of it into `any`.
+    /// Exported captures keep their alias: the bridge no longer declares them.
+    pub(crate) fn release_module_scope_captures(
+        &mut self,
+        module_spans: &[(u32, u32)],
+        exports: &[PlainScriptExport],
+    ) {
+        self.captured.retain(|capture| {
+            if exports.iter().any(|export| export.name == capture.name) {
+                return true;
+            }
+            let start = capture.source_range.start;
+            let end = capture.source_range.end;
+            !module_spans.iter().any(|&(span_start, span_end)| {
+                span_start as usize <= start && end <= span_end as usize
+            })
+        });
+    }
+
     /// Ambient module-scope aliases for the captured setup bindings. Emitted
     /// before the hoisted declarations so the namespace bodies can read them.
     pub(crate) fn emit_ambient_captures(

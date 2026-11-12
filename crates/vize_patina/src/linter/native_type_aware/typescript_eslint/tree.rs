@@ -86,6 +86,9 @@ fn walk(
                 .insert("__ancestorFacts".into(), Value::Array(ancestors.clone()));
             node.fields
                 .insert("__ancestorChain".into(), ancestor_chain(ancestors, key));
+            if let Some(key) = key {
+                node.fields.insert("__keyInParent".into(), json!(key));
+            }
             out.push(node);
         }
     }
@@ -118,6 +121,11 @@ fn walk(
         }
     }
     ancestors.pop();
+}
+
+/// Converts one ESTree value (and its subtree) into a [`LintNode`].
+pub(super) fn node_of(value: &Value, source: &str, parent_kind: &str) -> Option<LintNode> {
+    convert(value, source, DEPTH, Some(parent_kind), None)
 }
 
 fn convert(
@@ -231,6 +239,14 @@ fn ancestor_fact(value: &Value, kind: &str, key_in_parent: Option<&str>) -> Valu
     if let Some(key) = key_in_parent {
         fact.insert("keyInParent".into(), json!(key));
     }
+    if kind == "SwitchStatement" {
+        if let Some(discriminant) = value.get("discriminant") {
+            fact.insert(
+                "discriminant".into(),
+                json!({ "start": discriminant.get("start"), "end": discriminant.get("end") }),
+            );
+        }
+    }
     if matches!(kind, "ClassDeclaration" | "ClassExpression") {
         if let Some(name) = value
             .get("id")
@@ -239,6 +255,22 @@ fn ancestor_fact(value: &Value, kind: &str, key_in_parent: Option<&str>) -> Valu
         {
             fact.insert("className".into(), json!(name));
         }
+        if let Some(super_class) = value.get("superClass").filter(|value| !value.is_null()) {
+            fact.insert(
+                "superClass".into(),
+                json!({ "start": super_class.get("start"), "end": super_class.get("end") }),
+            );
+        }
+    }
+    if kind.contains("Function") {
+        fact.insert(
+            "hasReturnType".into(),
+            json!(
+                value
+                    .get("returnType")
+                    .is_some_and(|annotation| !annotation.is_null())
+            ),
+        );
     }
     if kind.contains("Function") || kind == "CatchClause" {
         let names = parameter_names(value);

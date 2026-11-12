@@ -79,6 +79,7 @@ pub(super) fn evaluate(
         .copied()
         .filter_map(corsa_name)
         .collect::<Vec<_>>();
+    let needs = facts::Needs::for_rules(&corsa_rules);
     let metas = default_type_aware_registry().metas();
     let mut listeners = corsa_rules
         .iter()
@@ -98,7 +99,7 @@ pub(super) fn evaluate(
     for script in &plan.scripts {
         let mut collected = tree::collect(&script.content, script.tsx, &listener_list);
         facts::prepare(&script.content, &mut collected);
-        let script_queries = queries(&collected.nodes);
+        let script_queries = queries(&collected.nodes, needs);
         let mut generated = Vec::new();
         let mut used = Vec::new();
         for (index, query) in script_queries.iter().enumerate() {
@@ -112,6 +113,11 @@ pub(super) fn evaluate(
                 end,
                 symbols: query.symbols,
                 signatures: query.signatures,
+                call_positions: query.call_positions,
+                function_returns: query.function_returns,
+                contextual: query.contextual,
+                detail: query.detail,
+                paths: query.paths.clone(),
             });
             used.push(index);
         }

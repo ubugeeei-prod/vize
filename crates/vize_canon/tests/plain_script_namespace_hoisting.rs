@@ -260,3 +260,30 @@ export default { name: "Namespaces" };
         format!("__setup();\n\n{AUTHORED_COMPONENT_ALIASES}")
     );
 }
+
+#[test]
+fn an_ambient_binding_read_by_a_hoisted_body_is_not_redeclared() {
+    let (module, _bridge) = generated_sections(
+        "plain-script-namespace-ambient-capture",
+        r#"<script lang="ts">
+declare const hello: 'hello';
+function greet() {
+  return hello;
+}
+class Greeter {
+  greeting = hello;
+}
+export default { name: "Namespaces" };
+</script>
+"#,
+    );
+
+    // `declare const hello` is itself relocated to module scope by the ambient
+    // projection. An alias of the setup return would redeclare it (TS2451) and
+    // type every read of `hello` as `any`.
+    assert!(
+        !module.contains("Setup-scope bindings a hoisted namespace body reads"),
+        "{module}"
+    );
+    assert_eq!(module.matches("declare const hello").count(), 1, "{module}");
+}

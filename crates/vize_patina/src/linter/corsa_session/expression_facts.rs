@@ -1,9 +1,17 @@
 //! Expression types from checker syntax nodes.
 //! Symbol types at a caret describe the callee, not the expression.
+mod details;
+mod paths;
+mod signatures;
+
+pub(in crate::linter) use paths::PathStep;
+
 use super::{CorsaTypeAwareSession, boolean::checker_node_locations};
-use corsa::api::{ProjectSession, TypeHandle, TypeResponse};
+use corsa::api::{NodeHandle, ProjectSession, TypeHandle, TypeResponse};
 use corsa::fast::ToCompactString as _;
 use corsa::runtime::block_on;
+use details::{DetailCache, type_detail};
+use serde_json::Value;
 use vize_l0::{FxHashMap, String as CompactString};
 
 /// One half-open generated range whose expression type the host needs.
@@ -16,6 +24,18 @@ pub(in crate::linter) struct ExpressionQuery {
     pub symbols: bool,
     /// Load the first call signature's parameter type texts.
     pub signatures: bool,
+    /// For a call-like node: argument positions whose resolved parameter types
+    /// to load (0 loads none).
+    pub call_positions: u32,
+    /// For a function-like node: load its call signatures' return types.
+    /// `Some(true)` reads them off the contextual type when there is one.
+    pub function_returns: Option<bool>,
+    /// Load the checker's contextual type at this node.
+    pub contextual: bool,
+    /// Load checker details (flags, constituents, constraint, references).
+    pub detail: bool,
+    /// Member paths into the type (destructuring patterns) whose types to load.
+    pub paths: Vec<Vec<PathStep>>,
 }
 
 /// Facts a typescript-eslint rule reads off one expression.
@@ -31,6 +51,19 @@ pub(in crate::linter) struct ExpressionFact {
     pub deprecated: bool,
     /// Text of that `@deprecated` tag.
     pub deprecation_reason: String,
+    /// Checker details of the type (flags, union parts, enum identity, constraint).
+    pub detail: Option<Value>,
+    /// Resolved-signature parameter types, for `ExpressionQuery::call_positions`.
+    pub call: Option<Value>,
+    /// Signature return types, for `ExpressionQuery::function_returns`.
+    pub returns: Option<Value>,
+    /// `(call, construct)` signature counts of a callee typed as `Function`.
+    pub function_signatures: Option<(usize, usize)>,
+    /// Contextual type for `ExpressionQuery::contextual`: `Some(Value::Null)`
+    /// when the checker has none.
+    pub contextual: Option<Value>,
+    /// Details at `ExpressionQuery::paths`, aligned; `None` where a step fails.
+    pub paths: Vec<Option<Value>>,
 }
 
 impl Default for ExpressionFact {
@@ -47,6 +80,12 @@ impl ExpressionFact {
             parameter_type_texts: Vec::new(),
             deprecated: false,
             deprecation_reason: String::new(),
+            detail: None,
+            call: None,
+            returns: None,
+            function_signatures: None,
+            contextual: None,
+            paths: Vec::new(),
         }
     }
 }
@@ -113,7 +152,7 @@ async fn load(
             )
         })
         .collect::<Vec<_>>();
-    let responses = type_responses(session, file, source, &utf16).await?;
+    let (responses, locations) = type_responses(session, file, source, &utf16).await?;
     if responses.len() != queries.len() {
         return Err(corsa::CorsaError::Protocol(
             "Incomplete expression type batch".into(),
@@ -121,8 +160,13 @@ async fn load(
     }
     let mut properties: FxHashMap<TypeHandle, Vec<String>> = FxHashMap::default();
     let mut signatures: FxHashMap<TypeHandle, Vec<Vec<String>>> = FxHashMap::default();
+    let mut details = DetailCache::default();
     let mut facts = Vec::with_capacity(responses.len());
-    for (response, query) in responses.into_iter().zip(queries) {
+    for (index, (response, query)) in responses.into_iter().zip(queries).enumerate() {
+        let location = locations
+            .as_ref()
+            .and_then(|locations| locations.get(index))
+            .cloned();
         let Some(response) = response else {
             facts.push(ExpressionFact::empty());
             continue;
@@ -135,17 +179,66 @@ async fn load(
             .map(|text| text.to_string())
             .collect::<Vec<_>>();
         let property_names = property_names(session, &response, &mut properties).await?;
-        let parameter_type_texts = if query.signatures {
-            parameter_types(session, &response, &mut signatures).await?
+        let (parameter_type_texts, function_signatures) = if query.signatures {
+            (
+                parameter_types(session, &response, &mut signatures).await?,
+                signatures::function_signature_counts(
+                    session,
+                    &response,
+                    &type_texts,
+                    &property_names,
+                )
+                .await,
+            )
         } else {
-            Vec::new()
+            (Vec::new(), None)
         };
+        let detail = if query.detail {
+            Some(type_detail(session, &response, &mut details).await?)
+        } else {
+            None
+        };
+        let call = match (&location, query.call_positions) {
+            (Some(location), positions) if positions > 0 => {
+                signatures::resolved_parameters(session, location.clone(), positions, &mut details)
+                    .await?
+            }
+            _ => None,
+        };
+        let returns = match query.function_returns {
+            Some(contextual) => Some(
+                signatures::function_returns(
+                    session,
+                    &response,
+                    location.clone().filter(|_| contextual),
+                    &mut details,
+                )
+                .await?,
+            ),
+            None => None,
+        };
+        let contextual = match (&location, query.contextual) {
+            (Some(location), true) => {
+                Some(signatures::contextual_type(session, location.clone(), &mut details).await?)
+            }
+            _ => None,
+        };
+        let mut path_details = Vec::with_capacity(query.paths.len());
+        for path in &query.paths {
+            path_details.push(paths::detail_at(session, &response, path, &mut details).await?);
+        }
         facts.push(ExpressionFact {
             type_texts,
             property_names,
             parameter_type_texts,
             deprecated: false,
             deprecation_reason: String::new(),
+            detail,
+            call,
+            returns,
+            function_signatures,
+            contextual,
+            paths: path_details,
         });
     }
     if queries.iter().any(|query| query.symbols) {
@@ -154,20 +247,22 @@ async fn load(
     Ok(facts)
 }
 
+type Responses = (Vec<Option<TypeResponse>>, Option<Vec<NodeHandle>>);
+
 async fn type_responses(
     session: &ProjectSession,
     file: &str,
     source: &str,
     ranges: &[(u32, u32)],
-) -> corsa::Result<Vec<Option<TypeResponse>>> {
+) -> corsa::Result<Responses> {
     let usable = ranges.iter().all(|&(start, end)| start < end);
     if usable {
-        if let Some(responses) = node_types(session, file, source, ranges).await? {
-            return Ok(responses);
+        if let Some((responses, locations)) = node_types(session, file, source, ranges).await? {
+            return Ok((responses, Some(locations)));
         }
     }
     let positions = ranges.iter().map(|&(start, _)| start).collect();
-    session
+    let responses = session
         .client()
         .get_types_at_positions(
             session.snapshot().handle.clone(),
@@ -175,7 +270,8 @@ async fn type_responses(
             file,
             positions,
         )
-        .await
+        .await?;
+    Ok((responses, None))
 }
 
 async fn node_types(
@@ -183,7 +279,7 @@ async fn node_types(
     file: &str,
     source: &str,
     ranges: &[(u32, u32)],
-) -> corsa::Result<Option<Vec<Option<TypeResponse>>>> {
+) -> corsa::Result<Option<(Vec<Option<TypeResponse>>, Vec<NodeHandle>)>> {
     let encoded = session
         .client()
         .get_source_file(
@@ -199,15 +295,15 @@ async fn node_types(
         Ok(locations) => locations,
         Err(_) => return Ok(None),
     };
-    session
+    let responses = session
         .client()
         .get_type_at_locations(
             session.snapshot().handle.clone(),
             session.project_handle(),
-            locations,
+            locations.clone(),
         )
-        .await
-        .map(Some)
+        .await?;
+    Ok(Some((responses, locations)))
 }
 
 async fn property_names(
