@@ -249,7 +249,9 @@ fn assemble_corsa_diagnostics_for_source(
                     }),
                     code,
                     source: Some(sources::TYPE_CHECKER.to_string()),
-                    message: strip_corsa_overlay_paths(&assembled.message),
+                    message: strip_corsa_overlay_paths(
+                        &vize_canon::batch::present_internal_type_names(&assembled.message),
+                    ),
                     ..Default::default()
                 },
                 phase,
