@@ -281,7 +281,13 @@ fn containing(candidates: &[Span], span: Span) -> Option<usize> {
     (span.end <= candidates.get(index)?.end).then_some(index)
 }
 
-fn relocatable_line(script: &str, span: Span, comments: &[Span]) -> bool {
+/// Whether the ambient projection can move the statement at `span` to module
+/// scope on its own: nothing else shares its lines.
+pub(in crate::virtual_ts::generator) fn relocatable_line(
+    script: &str,
+    span: Span,
+    comments: &[Span],
+) -> bool {
     let start = span.start as usize;
     let end = span.end as usize;
     let (Some(before), Some(after)) = (script.get(..start), script.get(end..)) else {

@@ -163,7 +163,7 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
     );
     // A `namespace` cannot stay in `__setup()` (TS1235), so it and merged declarations move to
     // module scope instead of through the export bridge.
-    let mut namespace_hoist = self::script_module::NamespaceHoistPlan::collect(
+    let namespace_hoist = self::script_module::NamespaceHoistPlan::collect(
         script_content,
         has_script_setup,
         has_plain_script_scope,
@@ -222,7 +222,6 @@ pub(crate) fn generate_virtual_ts_with_offsets_and_checks(
         FxHashMap::default()
     };
 
-    namespace_hoist.release_module_scope_captures(&module_spans, &named_value_exports);
     namespace_hoist.emit_ambient_captures(&mut ts, &named_value_exports);
     // Track whether a default-export rewrite declared `__default__`; generated helpers and user
     // code can also mention the name (#3888), so grepping the output is not authoritative.

@@ -226,9 +226,7 @@ fn a_script_setup_block_keeps_the_plan_empty() {
 fn a_capture_already_at_module_scope_gets_no_alias() {
     let script = "declare const seed: number;\nfunction read() {\n  return seed;\n}\n";
 
-    let mut plan = plan(script);
-    let declare_end = script.find(";\n").map_or(0, |end| end + 1) as u32;
-    plan.release_module_scope_captures(&[(0, declare_end)], &[]);
+    let plan = plan(script);
     let mut ts = crate::virtual_ts::TextBuf::default();
     plan.emit_ambient_captures(&mut ts, &[]);
     assert_eq!(ts.as_str(), "");

@@ -123,7 +123,32 @@ impl NamespaceHoistPlan {
             }
         }
 
-        let captured = collect_captures(&parsed.program.body, &spans, &hoisted);
+        let mut captured = collect_captures(&parsed.program.body, &spans, &hoisted);
+        // An ambient `declare` statement is relocated to module scope by the
+        // ambient projection, so an alias of the setup return would redeclare
+        // it (TS2451) and turn every read of it into `any`.
+        let comments = parsed
+            .program
+            .comments
+            .iter()
+            .map(|comment| comment.span)
+            .collect::<Vec<_>>();
+        let ambient = parsed
+            .program
+            .body
+            .iter()
+            .filter(|statement| is_ambient_declaration(statement))
+            .map(GetSpan::span)
+            .filter(|span| {
+                super::super::script_blocks::relocatable_ambient_line(script, *span, &comments)
+            })
+            .collect::<Vec<_>>();
+        captured.retain(|capture| {
+            !ambient.iter().any(|span| {
+                span.start as usize <= capture.source_range.start
+                    && capture.source_range.end <= span.end as usize
+            })
+        });
         // Preserve JSDoc used by hover/completion/declaration emit. TypeScript
         // treats a same-line comment after a statement as trailing trivia even
         // when Oxc attaches it to the next token: do not promote it to JSDoc.
@@ -165,28 +190,6 @@ impl NamespaceHoistPlan {
                 export.bridged_value = false;
             }
         }
-    }
-
-    /// Drops captures whose declaration already sits at module scope. An
-    /// ambient `declare const x` is relocated there by the ambient projection,
-    /// so an alias of the setup return would redeclare `x` (TS2451) and turn
-    /// every read of it into `any`.
-    /// Exported captures keep their alias: the bridge no longer declares them.
-    pub(crate) fn release_module_scope_captures(
-        &mut self,
-        module_spans: &[(u32, u32)],
-        exports: &[PlainScriptExport],
-    ) {
-        self.captured.retain(|capture| {
-            if exports.iter().any(|export| export.name == capture.name) {
-                return true;
-            }
-            let start = capture.source_range.start;
-            let end = capture.source_range.end;
-            !module_spans.iter().any(|&(span_start, span_end)| {
-                span_start as usize <= start && end <= span_end as usize
-            })
-        });
     }
 
     /// Ambient module-scope aliases for the captured setup bindings. Emitted
@@ -271,6 +274,17 @@ fn merge_partner_name(declaration: &Declaration<'_>) -> Option<CompactString> {
 ///
 /// Type aliases and interfaces are excluded because the generator already emits
 /// those at module scope, so a hoisted body resolves them without help.
+/// A top-level `declare` variable, function or class: the ambient projection
+/// moves it to module scope.
+fn is_ambient_declaration(statement: &Statement<'_>) -> bool {
+    match statement {
+        Statement::VariableDeclaration(declaration) => declaration.declare,
+        Statement::FunctionDeclaration(declaration) => declaration.declare,
+        Statement::ClassDeclaration(declaration) => declaration.declare,
+        _ => false,
+    }
+}
+
 fn collect_captures(
     body: &[Statement<'_>],
     spans: &[(u32, u32)],
