@@ -129,6 +129,11 @@ pub(in crate::virtual_ts::scope) fn generate_scope_slot_outlet_checks(
     if !ctx.check_options.check_props {
         return;
     }
+    // A declared slot only checks the outlet; an undeclared one still infers
+    // its payload from it.
+    if !ctx.check_options.check_slot_outlet_props && !ctx.slot_outlets.infer {
+        return;
+    }
     generate_slot_outlet_checks(
         ts,
         mappings,

@@ -80,7 +80,7 @@ Supported Vue options include `target`, `strictTemplates`, `checkUnknownProps`,
 `inferComponentDollarRefs`, `inferTemplateDollarEl`, `inferTemplateDollarRefs`,
 `inferTemplateDollarSlots`, `inferTemplateDollarAttrs`, `fallthroughAttributes`,
 `checkRequiredFallthroughAttributes`, `resolveStyleImports`, `resolveStyleClassNames`
-and `vapor`. This does not imply support for every `vue-tsc` option.
+and `vapor`, plus the Vize option `checkSlotOutletProps`. This does not imply support for every `vue-tsc` option.
 
 `target` accepts Vue 2.x through 2.7, Vue 3.x, `99` and `"auto"`. Automatic target
 selection follows the installed project Vue package; explicit `vue.version` in
@@ -97,6 +97,7 @@ These options come from the TypeScript project that owns the source file, includ
 | `target`                                                                                                                                                         | Select the project's Vue target as described above.                                                                         |
 | `strictTemplates`                                                                                                                                                | Supply defaults for the supported strict template checks; explicit options remain authoritative.                            |
 | `checkUnknownProps`, `checkUnknownComponents`, `checkUnknownEvents`, `checkUnknownDirectives`                                                                    | Configure the corresponding unknown template member checks.                                                                 |
+| `checkSlotOutletProps` | Vize option, on by default: check the props a `<slot>` outlet passes against the slot the component declares. `false` keeps only the inference an undeclared slot needs, matching `vue-tsc` where it misses this check inside some generic components. |
 | `strictVModel`, `strictCssModules`, `strictComponentAttrs`                                                                                                       | Configure the corresponding checks. `strictComponentAttrs` is explicit; `strictTemplates` does not enable it automatically. |
 | `jsxSlots`                                                                                                                                                       | Configure JSX slot checking.                                                                                                |
 | `inferComponentDollarEl`, `inferComponentDollarRefs`, `inferTemplateDollarEl`, `inferTemplateDollarRefs`, `inferTemplateDollarSlots`, `inferTemplateDollarAttrs` | Configure the corresponding component/template inference.                                                                   |

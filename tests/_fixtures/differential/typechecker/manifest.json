@@ -16628,6 +16628,35 @@
       }
     },
     {
+      "id": "typechecker/regression/slot-outlet-props-option",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "slot-outlet-props-option/Form.vue.txt",
+          "sha256": "351202ea81ae92ea4a2887e26e9ffc6879648c73f617d49bf233841fc240f2be",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "check_canon_recent_issues_cli::check_slot_outlet_props_follow_the_vue_compiler_option and vue_options_projection_tests; a slot outlet passing boolean | undefined to a declared boolean slot prop is TS2322 by default, as vue-tsc 3.3.14 reports, and vueCompilerOptions.checkSlotOutletProps: false turns the check off in vize check and the content mapper."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/slot-pattern-once-12479",
       "state": "active",
       "targets": [

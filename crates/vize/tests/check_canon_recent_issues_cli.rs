@@ -618,3 +618,38 @@ fn check_define_props_messages_use_vue_public_type_names() {
 
     let _ = std::fs::remove_dir_all(&project_root);
 }
+
+/// A `<slot>` outlet's props are checked against the declared slot by
+/// default, as `vue-tsc` does here; `checkSlotOutletProps: false` turns the
+/// check off for projects that match `vue-tsc` where it misses it.
+#[test]
+fn check_slot_outlet_props_follow_the_vue_compiler_option() {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
+        return;
+    };
+    for (option, expected) in [
+        (None, 1),
+        (Some(serde_json::json!({ "checkSlotOutletProps": true })), 1),
+        (
+            Some(serde_json::json!({ "checkSlotOutletProps": false })),
+            0,
+        ),
+    ] {
+        let project_root = create_fixture_case(
+            "slot-outlet-props-option",
+            "slot-outlet-props-option",
+            "Form.vue",
+            option,
+        );
+        let (rows, stdout) = check_diagnostic_rows(&project_root, &corsa_path);
+        let expected_rows: Vec<String> = [
+            "error:9:26 [TS2322] Type 'boolean | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'. (source: <slot name=\"submit\" :loading=\"loading\" />; binding: 'loading')",
+        ]
+        .into_iter()
+        .take(expected)
+        .map(str::to_string)
+        .collect();
+        assert_eq!(rows, expected_rows, "{stdout}");
+        let _ = std::fs::remove_dir_all(&project_root);
+    }
+}

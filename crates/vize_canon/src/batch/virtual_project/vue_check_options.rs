@@ -14,8 +14,9 @@ use crate::virtual_ts::{ResolveStyleClassNames, VirtualTsCheckOptions};
 /// Every key [`resolve`] reads. `vue_check_options_tests` fails when a key is
 /// read here without being listed, or read by one host outside [`resolve`].
 #[cfg(test)]
-pub(super) const CHECK_OPTION_KEYS: [&str; 20] = [
+pub(super) const CHECK_OPTION_KEYS: [&str; 21] = [
     "strictTemplates",
+    "checkSlotOutletProps",
     "checkUnknownProps",
     "checkUnknownComponents",
     "checkUnknownEvents",
@@ -55,6 +56,8 @@ pub(super) fn resolve(
     };
 
     checks.check_unknown_props = options.is_none() || strict("checkUnknownProps");
+    // A Vize option, strict by default: the outlet really passes those values.
+    checks.check_slot_outlet_props = flag("checkSlotOutletProps").unwrap_or(true);
     checks.check_unknown_fallthrough_props = flag("checkUnknownProps") == Some(true);
     checks.check_unknown_components = strict("checkUnknownComponents");
     checks.check_unknown_events = strict("checkUnknownEvents");
