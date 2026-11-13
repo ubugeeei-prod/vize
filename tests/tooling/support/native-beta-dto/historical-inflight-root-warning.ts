@@ -7,6 +7,7 @@ import {
 } from "./historical-root-watch-warning.ts";
 import { historicalWarningTranscript } from "./historical-inflight-transcript.ts";
 import { micros, timedPackets } from "./stable-watcher-timing.ts";
+import { requireExitTeardownUnfinished } from "./exit-teardown.ts";
 import { requireCompletedBefore, type NativeTimedObservation } from "./native-io.ts";
 export { historicalRootWarning } from "./historical-root-watch-warning.ts";
 
@@ -93,7 +94,7 @@ export function historicalInflightLifecycle(
     assert.ok(micros(row.at) < micros(exits.get(row.tid)!.at));
   }
   assert.equal(owner.failedWrites.length, 0);
-  assert.equal(owner.unfinishedOperations.length, 0);
+  requireExitTeardownUnfinished(owner);
   const eof = one(eofReads);
   assert.equal(eof.fd, 0);
   assert.ok(members.has(eof.tid));
