@@ -36,7 +36,7 @@ jobs:
         run: node tools/benchmarks/scripts/recovery_cost_contract.ts
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with: { node-version: "26.6.0" }
-      - run: rustup toolchain install 1.99.1 --profile minimal
+      - run: rustup toolchain install 1.100.0 --profile minimal
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
         with: { wild-version: "0.9.0" }
       - uses: ./.github/actions/setup-rust-sticky-cache
@@ -64,20 +64,20 @@ jobs:
           cp davinci/vize_l0/examples/source_recovery_benchmark.rs "$RUNNER_TEMP/recovery-base/davinci/vize_l0/examples/"
           sha256sum davinci/vize_l0/examples/source_recovery_benchmark.rs "$RUNNER_TEMP/recovery-base/davinci/vize_l0/examples/source_recovery_benchmark.rs" > evidence/carriers.sha256
           test "$(cut -d' ' -f1 evidence/carriers.sha256 | sort -u | wc -l)" -eq 1
-          rustc +1.99.1 -vV > evidence/rustc.txt
+          rustc +1.100.0 -vV > evidence/rustc.txt
           lscpu > evidence/cpu.txt
       - name: Compare complete parser packets and exact source counter controls
         run: |
           set -euo pipefail
-          cargo +1.99.1 test --locked --profile ci -p vize_croquis script_parser::recovery 2>&1 | tee evidence/recovery-packets.log
-          cargo +1.99.1 test --locked --profile ci -p vize_l0 --test source_operations_profile --features micro-profiling 2>&1 | tee evidence/callsite-controls.log
+          cargo +1.100.0 test --locked --profile ci -p vize_croquis script_parser::recovery 2>&1 | tee evidence/recovery-packets.log
+          cargo +1.100.0 test --locked --profile ci -p vize_l0 --test source_operations_profile --features micro-profiling 2>&1 | tee evidence/callsite-controls.log
       - name: Build independent baseline and candidate targets with equal flags
         run: |
           set -euo pipefail
           for role in base head; do
             source="$GITHUB_WORKSPACE"
             if [[ "$role" == base ]]; then source="$RUNNER_TEMP/recovery-base"; fi
-            cargo +1.99.1 build --locked --profile ci-opt --manifest-path "$source/Cargo.toml" --target-dir "$GITHUB_WORKSPACE/target/recovery-$role" -p vize_l0 --example source_recovery_benchmark --message-format json > "evidence/build-$role.jsonl"
+            cargo +1.100.0 build --locked --profile ci-opt --manifest-path "$source/Cargo.toml" --target-dir "$GITHUB_WORKSPACE/target/recovery-$role" -p vize_l0 --example source_recovery_benchmark --message-format json > "evidence/build-$role.jsonl"
             cp "target/recovery-$role/ci-opt/examples/source_recovery_benchmark" "evidence/normal-$role"
             sha256sum "$source/Cargo.lock" "$source/crates/vize_croquis/src/script_parser/recovery.rs" > "evidence/inputs-$role.sha256"
           done
@@ -124,7 +124,7 @@ jobs:
           for role in base head; do
             source="$GITHUB_WORKSPACE"
             if [[ "$role" == base ]]; then source="$RUNNER_TEMP/recovery-base"; fi
-            cargo +1.99.1 build --locked --profile ci-opt --manifest-path "$source/Cargo.toml" --target-dir "$GITHUB_WORKSPACE/target/recovery-$role" -p vize_l0 --example source_recovery_benchmark --features micro-profiling
+            cargo +1.100.0 build --locked --profile ci-opt --manifest-path "$source/Cargo.toml" --target-dir "$GITHUB_WORKSPACE/target/recovery-$role" -p vize_l0 --example source_recovery_benchmark --features micro-profiling
             taskset -c "$cpus" "target/recovery-$role/ci-opt/examples/source_recovery_benchmark" 100 256 profile > "evidence/profile-$role.json"
           done
           node tools/benchmarks/scripts/compare_recovery_cost.ts evidence

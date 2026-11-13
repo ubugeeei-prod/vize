@@ -29,7 +29,7 @@ jobs:
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: source/package.json, cache: true, run-install: false }
       - uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f # master
-        with: { toolchain: "1.99.1" }
+        with: { toolchain: "1.100.0" }
       - uses: ./.github/actions/setup-rust-script
       - uses: ./.github/actions/setup-ubuntu-archive
       - name: Install the pinned Linux heap observer

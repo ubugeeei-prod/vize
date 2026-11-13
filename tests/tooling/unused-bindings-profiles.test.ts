@@ -230,6 +230,56 @@ await test("unit evidence retains actual artifact identity and only emitted fing
   }
 });
 
+await test("Cargo 1.100 unit directories retain their own fingerprint evidence", () => {
+  const root = mkdtempSync(join(tmpdir(), "vize-unit-evidence-layout-"));
+  try {
+    const target = join(root, "target"),
+      output = join(target, "unused-bindings-units");
+    mkdirSync(output, { recursive: true });
+    const hash = "5555555555555555";
+    const unit = join(target, "ci/build/package_name", hash);
+    const filename = join(unit, "out", `libsame_name-${hash}.rlib`);
+    mkdirSync(dirname(filename), { recursive: true });
+    writeFileSync(filename, "compiled output must not be copied");
+    mkdirSync(join(unit, "fingerprint"));
+    writeFileSync(join(unit, "fingerprint/lib-same_name.json"), '{"rustflags":["--cfg","unit"]}');
+    const missing = join(target, "ci/build/package_name/6666666666666666/out/libmissing.rlib");
+    mkdirSync(dirname(missing), { recursive: true });
+    writeFileSync(missing, "");
+    writeFileSync(
+      join(output, "ci-unit-layout.jsonl"),
+      [filename, missing]
+        .map((name) => JSON.stringify({ reason: "compiler-artifact", filenames: [name] }))
+        .join("\n"),
+    );
+    const result = collectUnitEvidence(output, target);
+    assert.deepEqual(result.units[0].gaps, []);
+    assert.deepEqual(
+      result.units[0].fingerprints.map(({ hash, source, path }) => ({ hash, source, path })),
+      [
+        {
+          hash,
+          source: join("ci/build/package_name", hash, "fingerprint/lib-same_name.json"),
+          path: join("fingerprints/ci/package_name", hash, "lib-same_name.json"),
+        },
+      ],
+    );
+    assert.deepEqual(
+      JSON.parse(readFileSync(join(output, result.units[0].fingerprints[0].path), "utf8")),
+      { rustflags: ["--cfg", "unit"] },
+    );
+    assert.deepEqual(result.units[1].gaps, [
+      {
+        filename: missing,
+        hash: "6666666666666666",
+        reason: "missing or ambiguous fingerprint directory",
+      },
+    ]);
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 await test("unhashed, missing and escaped unit evidence stays explicitly unavailable", () => {
   const root = mkdtempSync(join(tmpdir(), "vize-unit-evidence-gaps-"));
   try {

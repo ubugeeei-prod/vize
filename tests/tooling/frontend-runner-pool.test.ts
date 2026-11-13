@@ -15,7 +15,7 @@ import {
 } from "./support/frontend-case-reporting.ts";
 import { restorePlaygroundCaseReporting } from "./support/frontend-playground-reporting.ts";
 import { helperAbiStep, restoreContentMapperHelperAbi } from "./support/frontend-helper-abi.ts";
-import { restorePinnedWildAction } from "./support/github-workflows.ts";
+import { restorePinnedWildAction, restoreRustToolchainPin } from "./support/github-workflows.ts";
 
 type Step = { name?: string; uses?: string; if?: string; with?: Record<string, unknown> } & Record<
   string,
@@ -180,6 +180,9 @@ test("maximum non-release runners preserve every original job contract", () => {
         before.jobs["node-engine-compat"],
       );
       restoreContentMapperHelperAbi(restored.jobs["node-engine-compat"]);
+      // The MSRV SemVer lane follows the Rust 1.100.0 bump; the job is otherwise unchanged.
+      const semver = restored.jobs["semver-checks"].steps ?? [];
+      assert.equal(restoreRustToolchainPin(semver, "1.99.0"), 2);
     }
     if (specification.name === "pr-source-checks") {
       restoreReviewedCheckout(
@@ -193,6 +196,10 @@ test("maximum non-release runners preserve every original job contract", () => {
       );
       restoreToolingCasePacketJob(restored, before);
       restorePlaygroundCaseReporting(restored, before);
+      // The native lane follows the checked-in Rust 1.100.0 channel.
+      const nativeEnv = restored.jobs["pr-native-runtime"].env as Record<string, string>;
+      assert.equal(nativeEnv.VIZE_NATIVE_RUST_TOOLCHAIN, "1.100.0");
+      nativeEnv.VIZE_NATIVE_RUST_TOOLCHAIN = "1.99.1";
       restoredWildSteps += restorePinnedWildAction(restored.jobs["pr-native-runtime"].steps ?? []);
       restoreNativeRuntimeCasePacket(
         restored.jobs["pr-native-runtime"],

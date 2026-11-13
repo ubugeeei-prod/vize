@@ -46,7 +46,7 @@ jobs:
           cache: true
           run-install: false
       - uses: dtolnay/rust-toolchain@e2a55d2ffb04f378e9626c28d38b36d230d1e12f # master
-        with: { toolchain: "1.99.1" }
+        with: { toolchain: "1.100.0" }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with: { wild-version: "0.9.0" }
       # Both builds share downloaded Cargo registry/git sources in CARGO_HOME,

@@ -18,14 +18,11 @@ pub(super) fn has_unresolved_props(analysis: &Croquis) -> bool {
         .strip_prefix('<')
         .and_then(|inner| inner.strip_suffix('>'))
         .unwrap_or(type_args);
-    if imported_shape(
+    imported_shape(
         analysis.types.definitions(),
         type_args,
         &mut FxHashSet::default(),
-    ) {
-        return true;
-    }
-    false
+    )
 }
 
 fn imported_shape(

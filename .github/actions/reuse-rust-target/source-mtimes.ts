@@ -26,8 +26,29 @@ const schema = "vize.rust-source-mtimes";
 const version = 1;
 const blob = /^[0-9a-f]{40}(?:[0-9a-f]{24})?$/;
 // Cargo leaves these large directories under each profile; freshness evidence
-// lives only in `.fingerprint`.
+// lives only in `.fingerprint` (Cargo 1.99) or in each unit's
+// `build/<package>/<hash>/fingerprint` (Cargo 1.100).
 const skippedTargetDirectories = new Set(["build", "deps", "examples", "incremental", "doc"]);
+
+/** Cargo 1.100 unit fingerprint directories: `<profile>/build/<package>/<hash>/fingerprint`. */
+export function unitFingerprintDirectories(profile: string): string[] {
+  const build = join(profile, "build");
+  const directories: string[] = [];
+  let packages: Dirent[];
+  try {
+    packages = readdirSync(build, { withFileTypes: true });
+  } catch {
+    return directories;
+  }
+  for (const pkg of packages) {
+    if (!pkg.isDirectory()) continue;
+    for (const unit of readdirSync(join(build, pkg.name), { withFileTypes: true })) {
+      const fingerprint = join(build, pkg.name, unit.name, "fingerprint");
+      if (unit.isDirectory() && existsSync(fingerprint)) directories.push(fingerprint);
+    }
+  }
+  return directories;
+}
 
 /** A tracked file's content (Git blob ID) and the whole-second mtime it was given. */
 type FileRecord = [blob: string, mtime: number];
@@ -92,11 +113,22 @@ export function newestFingerprint(target: string): number {
     for (const entry of entries) {
       if (!entry.isDirectory()) continue;
       const path = join(directory, entry.name);
-      if (entry.name === ".fingerprint") {
-        for (const unit of readdirSync(path)) {
-          newest = Math.max(newest, ceilSeconds(lstatSync(join(path, unit), { bigint: true })));
+      const fingerprints =
+        entry.name === ".fingerprint"
+          ? [path]
+          : entry.name === "build"
+            ? unitFingerprintDirectories(directory)
+            : [];
+      for (const fingerprint of fingerprints) {
+        for (const unit of readdirSync(fingerprint)) {
+          newest = Math.max(
+            newest,
+            ceilSeconds(lstatSync(join(fingerprint, unit), { bigint: true })),
+          );
         }
-      } else if (depth < 4 && !skippedTargetDirectories.has(entry.name)) {
+      }
+      if (fingerprints.length > 0) continue;
+      if (depth < 4 && !skippedTargetDirectories.has(entry.name)) {
         visit(path, depth + 1);
       }
     }

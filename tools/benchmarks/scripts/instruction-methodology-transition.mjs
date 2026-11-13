@@ -6,12 +6,46 @@ import { isDeepStrictEqual } from "node:util";
 
 const FROM = "rustc 1.98.0 (88d9e12ae 2026-08-18)";
 const TO = "rustc 1.99.0 (b940084d7 2026-09-28)";
-const CURRENT = "rustc 1.99.1 (58cf8f9c3 2026-10-13)";
-// Single-toolchain re-baseline evidence: the same rows and inputs measured on 1.99.1.
-const REBASE_SOURCE = "e40813b3306bf85e5f61d96b19ebd432cae10334";
-const REBASE_RUN = "https://github.com/ubugeeei-prod/vize/actions/runs/39370420052";
+const RUST1991 = "rustc 1.99.1 (58cf8f9c3 2026-10-13)";
+const CURRENT = "rustc 1.100.0 (0ef1bc386 2026-11-09)";
 const SOURCE = "1a3996963af208c13cd732420bdee586df88bf7a";
+// Same-source control db73bca412 (run 43352512122) holds these rows under their
+// caps on 1.99.1; the 1.100.0 measurement alone crosses them.
+const RAISES_1100 = Object.freeze({
+  armature_parse_medium: 244853,
+  croquis_analyze_full_large: 2789255,
+  "harness-selfcheck": 15481,
+});
 const RUN = "https://github.com/ubugeeei-prod/vize/actions/runs/37653130635";
+// Single-toolchain re-baselines, keyed by the base compiler: the same rows and
+// inputs measured on the next pinned compiler, citing that measurement.
+const REBASES = new Map([
+  [
+    TO,
+    {
+      version: "1.99.0",
+      source: SOURCE,
+      run: RUN,
+      rustc: RUST1991,
+      rebaseSource: "e40813b3306bf85e5f61d96b19ebd432cae10334",
+      rebaseRun: "https://github.com/ubugeeei-prod/vize/actions/runs/39370420052",
+    },
+  ],
+  [
+    RUST1991,
+    {
+      version: "1.99.1",
+      source: "e40813b3306bf85e5f61d96b19ebd432cae10334",
+      run: "https://github.com/ubugeeei-prod/vize/actions/runs/39370420052",
+      rustc: CURRENT,
+      rebaseSource: "aa9ab054fd272578f142dfd2c789d0e1869c7b86",
+      rebaseRun: "https://github.com/ubugeeei-prod/vize/actions/runs/43351845175",
+      // Rows whose same-source count crosses its cap only under the new
+      // compiler. Each may rise to exactly its reviewed 1.100.0 count.
+      raises: RAISES_1100,
+    },
+  ],
+]);
 const ORIGINALS = [
   {
     source: "b79010ff63b21612ab1dcc927a221f4000a65fe5",
@@ -43,30 +77,35 @@ function identities(budgets) {
   );
 }
 
-// 1.99.0 to 1.99.1 keeps every row, input and non-rustc method field; caps
-// still pass the caller's downward ratchet against the 1.99.0 registry.
-function rebaselineInstructionToolchain(current, base) {
-  assert.equal(base.source_commit, SOURCE, "unauthenticated 1.99.0 instruction provenance");
-  assert.equal(base.recorded_run, RUN, "unauthenticated 1.99.0 instruction provenance");
-  assert.equal(current.methodology.rustc, CURRENT, "unauthorized forward instruction compiler");
+// A re-baseline keeps every row, input and non-rustc method field; caps still
+// pass the caller's downward ratchet against the authenticated base registry,
+// except the reviewed compiler-explained raises it returns.
+function rebaselineInstructionToolchain(current, base, step) {
+  const provenance = `unauthenticated ${step.version} instruction provenance`;
+  assert.equal(base.source_commit, step.source, provenance);
+  assert.equal(base.recorded_run, step.run, provenance);
+  assert.equal(current.methodology.rustc, step.rustc, "unauthorized forward instruction compiler");
   assert.deepEqual(
     { ...current, instruction: identities(current) },
     {
       ...base,
-      source_commit: REBASE_SOURCE,
-      recorded_run: REBASE_RUN,
-      methodology: { ...base.methodology, rustc: CURRENT },
+      source_commit: step.rebaseSource,
+      recorded_run: step.rebaseRun,
+      methodology: { ...base.methodology, rustc: step.rustc },
       instruction: identities(base),
     },
     "toolchain re-baseline must preserve every row, input identity and method field",
   );
+  return step.raises ?? {};
 }
 
 // Reviewed toolchain transitions. The complete 1.98 contract includes every
 // row, cap, input path/digest/window, provenance and non-rustc method field.
+// Returns the caps a reviewed re-baseline may raise, keyed by row.
 export function ratchetInstructionMethodology(current, base) {
-  if (isDeepStrictEqual(current.methodology, base.methodology)) return;
-  if (base.methodology.rustc === TO) return rebaselineInstructionToolchain(current, base);
+  if (isDeepStrictEqual(current.methodology, base.methodology)) return {};
+  const rebase = REBASES.get(base.methodology.rustc);
+  if (rebase) return rebaselineInstructionToolchain(current, base, rebase);
   assert.equal(base.methodology.rustc, FROM, "unauthorized original instruction compiler");
   assert.equal(current.methodology.rustc, TO, "unauthorized forward instruction compiler");
   const original = ORIGINALS.find(
@@ -91,6 +130,7 @@ export function ratchetInstructionMethodology(current, base) {
     },
     "forward instruction transition must preserve every original cap and identity",
   );
+  return {};
 }
 
 export function authenticateInstructionMeasurementSource(report, context) {

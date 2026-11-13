@@ -34,7 +34,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           persist-credentials: false
-      - run: rustup toolchain install 1.99.1 --profile minimal
+      - run: rustup toolchain install 1.100.0 --profile minimal
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with:
           wild-version: "0.9.0"
@@ -47,20 +47,20 @@ jobs:
           set -euo pipefail
           mkdir -p evidence
           git rev-parse HEAD > evidence/source.sha
-          rustc +1.99.1 -vV > evidence/rustc.txt
-          cargo +1.99.1 test --locked --profile ci -p vize_l0 --test source_operations_profile 2>&1 | tee evidence/disabled-tests.log
-          cargo +1.99.1 test --locked --profile ci -p vize_l0 --test source_operations_profile --features micro-profiling 2>&1 | tee evidence/instrumented-tests.log
-          cargo +1.99.1 test --locked --profile ci -p vize_carton --features micro-profiling profile_export 2>&1 | tee evidence/export-tests.log
-          cargo +1.99.1 test --locked --profile ci -p vize_l0 --lib profiler::micro_hash --features micro-profiling 2>&1 | tee evidence/hash-digest-parity.log
-          cargo +1.99.1 test --locked --profile ci -p vize_carton --features micro-profiling --test davinci_profile_export 2>&1 | tee evidence/export-schema-tests.log
-          test "$(cargo +1.99.1 test --locked --profile ci -p vize_l0 --test source_operations_profile --features micro-profiling -- --list --format terse)" = 'source_operations_profile: test'
-          test -z "$(cargo +1.99.1 test --locked --profile ci -p vize_l0 --test source_operations_profile --features micro-profiling -- --list --ignored --format terse)"
+          rustc +1.100.0 -vV > evidence/rustc.txt
+          cargo +1.100.0 test --locked --profile ci -p vize_l0 --test source_operations_profile 2>&1 | tee evidence/disabled-tests.log
+          cargo +1.100.0 test --locked --profile ci -p vize_l0 --test source_operations_profile --features micro-profiling 2>&1 | tee evidence/instrumented-tests.log
+          cargo +1.100.0 test --locked --profile ci -p vize_carton --features micro-profiling profile_export 2>&1 | tee evidence/export-tests.log
+          cargo +1.100.0 test --locked --profile ci -p vize_l0 --lib profiler::micro_hash --features micro-profiling 2>&1 | tee evidence/hash-digest-parity.log
+          cargo +1.100.0 test --locked --profile ci -p vize_carton --features micro-profiling --test davinci_profile_export 2>&1 | tee evidence/export-schema-tests.log
+          test "$(cargo +1.100.0 test --locked --profile ci -p vize_l0 --test source_operations_profile --features micro-profiling -- --list --format terse)" = 'source_operations_profile: test'
+          test -z "$(cargo +1.100.0 test --locked --profile ci -p vize_l0 --test source_operations_profile --features micro-profiling -- --list --ignored --format terse)"
       - name: Measure instrumentation overhead separately from product speed
         run: |
           set -euo pipefail
-          cargo +1.99.1 build --locked --profile ci-opt -p vize_l0 --example source_operation_overhead
+          cargo +1.100.0 build --locked --profile ci-opt -p vize_l0 --example source_operation_overhead
           cp target/ci-opt/examples/source_operation_overhead evidence/normal
-          cargo +1.99.1 build --locked --profile ci-opt -p vize_l0 --example source_operation_overhead --features micro-profiling
+          cargo +1.100.0 build --locked --profile ci-opt -p vize_l0 --example source_operation_overhead --features micro-profiling
           cp target/ci-opt/examples/source_operation_overhead evidence/instrumented
           sha256sum evidence/normal evidence/instrumented > evidence/binaries.sha256
           wc -c evidence/normal evidence/instrumented > evidence/binary-bytes.txt

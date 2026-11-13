@@ -33,7 +33,8 @@ const artifacts = build
   );
 assert.equal(artifacts.length, 1);
 const executable = fs.realpathSync(artifacts[0].executable);
-assert(executable.startsWith(path.join(root, "target/ci/deps/")));
+// Cargo 1.99 places it under target/ci/deps; Cargo 1.100 under target/ci/build.
+assert(executable.startsWith(path.join(root, "target/ci/")));
 const source = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim();
 assert.equal(source, process.env.GITHUB_SHA, "original producer and executing source actor agree");
 const strace = fs.realpathSync(execFileSync("which", ["strace"], { encoding: "utf8" }).trim());
