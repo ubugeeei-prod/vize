@@ -1,6 +1,7 @@
 //! #12943: unbound-method distinguishes lexical arrows from function expressions.
 use super::{corsa_available, lint_sfc_with_corsa};
 use crate::{LintPreset, Linter};
+use std::path::Path;
 
 const COMPOSABLES: &str = r#"export function useArrow() {
   const copy = (): void => {};
@@ -66,7 +67,12 @@ fn composable_arrows_are_safe_but_function_expression_and_method_are_not() {
     if !corsa_available() {
         return;
     }
-    let project = tempfile::tempdir().expect("project");
+    let workspace = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../target/vize-tests");
+    std::fs::create_dir_all(&workspace).expect("test workspace");
+    let project = tempfile::Builder::new()
+        .prefix("unbound-method-composable-12943-")
+        .tempdir_in(workspace)
+        .expect("project");
     let source_dir = project.path().join("src");
     std::fs::create_dir_all(&source_dir).expect("src");
     std::fs::write(

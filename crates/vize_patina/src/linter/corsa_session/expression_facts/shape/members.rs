@@ -1,7 +1,8 @@
 //! unbound-method member facts: the receiver's symbol and how each property is declared (`checkIfMethod`).
 use super::{
     FUNCTION_EXPRESSION, INTERSECTION, JsonMap, METHOD_DECLARATION, METHOD_SIGNATURE, OBJECT,
-    PROPERTY_ASSIGNMENT, PROPERTY_DECLARATION, SYMBOL_CLASS, Shapes, UNION, VOID,
+    PROPERTY_ASSIGNMENT, PROPERTY_DECLARATION, SHORTHAND_PROPERTY_ASSIGNMENT, SYMBOL_CLASS, Shapes,
+    UNION, VOID,
 };
 use corsa::api::{NodeHandle, TypeResponse};
 use serde_json::{Map, Value, json};
@@ -153,7 +154,15 @@ impl Shapes<'_> {
             .as_ref()
             .and_then(declaration_kind);
         let method_like = matches!(kind, Some(METHOD_SIGNATURE | METHOD_DECLARATION));
-        let property_like = matches!(kind, Some(PROPERTY_DECLARATION | PROPERTY_ASSIGNMENT));
+        let property_like = matches!(
+            kind,
+            Some(
+                PROPERTY_DECLARATION
+                    | PROPERTY_ASSIGNMENT
+                    | SHORTHAND_PROPERTY_ASSIGNMENT
+                    | FUNCTION_EXPRESSION
+            )
+        );
         if !method_like && !property_like {
             return json!({ "isMethod": false });
         }
@@ -240,13 +249,22 @@ pub(super) fn is_default_library(handle: &NodeHandle) -> bool {
 mod tests {
     use corsa::api::NodeHandle;
 
-    use super::{FUNCTION_EXPRESSION, declaration_kind};
+    use super::{
+        FUNCTION_EXPRESSION, PROPERTY_ASSIGNMENT, SHORTHAND_PROPERTY_ASSIGNMENT, declaration_kind,
+    };
 
     #[test]
     fn typescript_seven_distinguishes_function_expressions_from_arrows() {
         let function = NodeHandle::from("42.219./workspace/composables.ts");
         let arrow = NodeHandle::from("43.220./workspace/composables.ts");
+        let property = NodeHandle::from("44.303./workspace/composables.ts");
+        let shorthand = NodeHandle::from("45.304./workspace/composables.ts");
         assert_eq!(declaration_kind(&function), Some(FUNCTION_EXPRESSION));
         assert_ne!(declaration_kind(&arrow), Some(FUNCTION_EXPRESSION));
+        assert_eq!(declaration_kind(&property), Some(PROPERTY_ASSIGNMENT));
+        assert_eq!(
+            declaration_kind(&shorthand),
+            Some(SHORTHAND_PROPERTY_ASSIGNMENT)
+        );
     }
 }
