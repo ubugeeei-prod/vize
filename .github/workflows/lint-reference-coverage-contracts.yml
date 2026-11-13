@@ -58,14 +58,14 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           persist-credentials: false
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # master
-        with: { toolchain: "1.99.1" }
+        with: { toolchain: "1.100.0" }
       - uses: ./.github/actions/setup-rust-script
       - uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5
         with:
           path: |
             ~/.cache/rust-script
             ~/.cargo/registry
-          key: lint-report-reference-${{ runner.os }}-${{ runner.arch }}-1.99.1-49545646-7421901d
+          key: lint-report-reference-${{ runner.os }}-${{ runner.arch }}-1.100.0-49545646-7421901d
       - uses: ./.github/actions/cache-vp-bootstrap
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with: { node-version-file: package.json, cache: true, run-install: false }

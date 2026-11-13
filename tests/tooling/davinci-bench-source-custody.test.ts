@@ -319,7 +319,7 @@ await test("paired memory builds select the single contributor toolchain pin", (
   const retired = sourceCompare(f);
   assert.equal(retired.status, 0, retired.stderr);
   const head = path.join(f.arms.head.root, "rust-toolchain.toml");
-  fs.writeFileSync(head, fs.readFileSync(head, "utf8").replace("1.99.1", "1.99.0"));
+  fs.writeFileSync(head, fs.readFileSync(head, "utf8").replace("1.100.0", "1.99.1"));
   f.refresh("head");
   f.save();
   const changed = sourceCompare(f);

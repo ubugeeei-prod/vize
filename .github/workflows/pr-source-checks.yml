@@ -223,7 +223,7 @@ jobs:
     timeout-minutes: 15
     env:
       CARGO_BUILD_JOBS: "12"
-      VIZE_NATIVE_RUST_TOOLCHAIN: "1.99.1"
+      VIZE_NATIVE_RUST_TOOLCHAIN: "1.100.0"
       VIZE_NATIVE_RUST_COMPONENTS: clippy,rust-src,rustfmt
       VIZE_NATIVE_RUST_TARGETS: wasm32-unknown-unknown,wasm32-wasip2
       NODE_OPTIONS: "--disable-warning=DEP0040 --disable-warning=DEP0169"

@@ -88,7 +88,7 @@ jobs:
         run: vp install --frozen-lockfile --prefer-offline
       - uses: dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067 # master
         with:
-          toolchain: "1.99.1"
+          toolchain: "1.100.0"
       - uses: ./.github/actions/setup-wild-http-recovery
         with:
           wild-version: "0.9.0"

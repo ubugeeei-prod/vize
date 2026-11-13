@@ -56,7 +56,6 @@ pub(super) fn report(
                 program,
                 *offset,
                 &template,
-                true,
                 &sibling_reads,
                 unused,
                 prefer,

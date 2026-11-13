@@ -52,11 +52,11 @@ jobs:
         if: matrix.role == 'before'
         run: cp qualification/crates/vize_atelier_sfc/tests/template_global_policy.rs crates/vize_atelier_sfc/tests/template_global_policy.rs
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
-        with: { toolchain: "1.99.1" }
+        with: { toolchain: "1.100.0" }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with: { wild-version: "0.9.0" }
       - uses: ./.github/actions/setup-rust-sticky-cache
-        with: { key: nextest-ci, cache-key-suffix: Linux-X64-1.99.1 }
+        with: { key: nextest-ci, cache-key-suffix: Linux-X64-1.100.0 }
       - name: Require the whole-module policy and preserve actual execution
         shell: bash
         run: |
@@ -128,11 +128,11 @@ jobs:
           cache-save: false
           run-install: false
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
-        with: { toolchain: "1.99.1" }
+        with: { toolchain: "1.100.0" }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with: { wild-version: "0.9.0" }
       - uses: ./.github/actions/setup-rust-sticky-cache
-        with: { key: test-js-packages, cache-key-suffix: Linux-X64-1.99.1 }
+        with: { key: test-js-packages, cache-key-suffix: Linux-X64-1.100.0 }
       - name: Install the pinned workspace runtime providers
         run: vp install --frozen-lockfile --prefer-offline
       - name: Install the independent public Vue and Vize baseline

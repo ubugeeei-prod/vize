@@ -4,7 +4,7 @@ Thanks for helping make Vize sharper. This project is still moving toward v1 alp
 
 ## Setup
 
-Use the Node.js development runtime from `package.json#devEngines.runtime` and the Rust version from `rust-toolchain.toml`. The workspace declares a minimum supported Rust version (MSRV) of `1.99.0` in `Cargo.toml` (`[workspace.package].rust-version`); contributions must compile under that version.
+Use the Node.js development runtime from `package.json#devEngines.runtime` and the Rust version from `rust-toolchain.toml`. The workspace declares a minimum supported Rust version (MSRV) of `1.100.0` in `Cargo.toml` (`[workspace.package].rust-version`); contributions must compile under that version.
 
 Instruction-count and paired-memory measurements use the same `rust-toolchain.toml` compiler. A toolchain bump re-baselines their recorded compiler identity in the same PR, without loosening ceilings the compiler change does not explain (see [one Rust toolchain](../docs/davinci/decisions/2026-10-20-single-rust-toolchain.md)).
 

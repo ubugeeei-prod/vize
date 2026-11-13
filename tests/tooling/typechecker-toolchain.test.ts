@@ -25,12 +25,12 @@ function source(t: TestContext, channel?: string) {
 }
 
 test("reviewed source pins resolve their committed compiler identity", (t) => {
-  for (const channel of ["1.98.0", "1.99.0", "1.99.1"])
+  for (const channel of ["1.98.0", "1.99.0", "1.99.1", "1.100.0"])
     assert.equal(typecheckerSourceIdentity(source(t, channel)).toolchain, channel);
 });
 
 test("unsupported or absent committed source stamps cannot qualify observations", (t) => {
-  for (const channel of [undefined, "1.100.0", "stable", "1.99.0-nightly"])
+  for (const channel of [undefined, "1.101.0", "stable", "1.100.0-nightly"])
     assert.throws(() => typecheckerSourceIdentity(source(t, channel)));
 });
 

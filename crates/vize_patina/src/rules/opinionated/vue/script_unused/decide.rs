@@ -41,7 +41,6 @@ pub(super) fn analyze(
     program: &oxc_ast::ast::Program<'_>,
     offset: u32,
     template: &TemplateUse,
-    apply_template: bool,
     sibling_reads: &FxHashSet<CompactString>,
     unused: &UnusedOptions,
     prefer: &PreferConstOptions,
@@ -59,7 +58,6 @@ pub(super) fn analyze(
         .iter()
         .map(|(id, info)| {
             let module_binding = scoping.symbol_scope_id(*id) == scoping.root_scope_id();
-            let top = apply_template && module_binding;
             let name = scoping.symbol_name(*id);
             let seen = Seen {
                 facts: usage.facts(*id, info, &classified.for_return_targets),
@@ -68,11 +66,11 @@ pub(super) fn analyze(
                 // `.value`, which reads the binding. A `let` write stays an
                 // assignment. A root binding of either script block is also
                 // read when the other block names it: both blocks are one module.
-                template_read: (top
+                template_read: module_binding
                     && (template.reads.contains(name)
-                        || (info.kind == Kind::Const && template.writes.contains(name))))
-                    || (module_binding && sibling_reads.contains(name)),
-                template_write: top && template.writes.contains(name),
+                        || (info.kind == Kind::Const && template.writes.contains(name))
+                        || sibling_reads.contains(name)),
+                template_write: module_binding && template.writes.contains(name),
             };
             (*id, seen)
         })

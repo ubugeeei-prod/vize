@@ -88,7 +88,10 @@ mod allocation_report {
             "reallocNewBytes": snapshot.realloc_new_bytes,
             "deallocCalls": snapshot.dealloc_calls,
         });
-        if let Err(error) = std::fs::write(&path, report.to_string()) {
+        let written = serde_json::to_vec(&report)
+            .map_err(std::io::Error::from)
+            .and_then(|bytes| std::fs::write(&path, bytes));
+        if let Err(error) = written {
             eprintln!("vize content-mapper: allocation report: {error}");
         }
     }

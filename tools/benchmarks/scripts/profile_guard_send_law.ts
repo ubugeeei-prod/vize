@@ -82,7 +82,7 @@ function compileProbe(
   const code = invoke(
     [
       "rustc",
-      "+1.99.1",
+      "+1.100.0",
       "--edition=2024",
       "--crate-name",
       "guard_send_probe",
@@ -164,7 +164,7 @@ export function main(): void {
   const oldCode = invoke(
     [
       "cargo",
-      "+1.99.1",
+      "+1.100.0",
       "build",
       "--locked",
       "--profile",
