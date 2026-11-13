@@ -68,8 +68,8 @@ const opinionatedVueAdditions = [
 export function inverseScriptUnusedAndTypeAwarePresets(name: string, body: Buffer): Buffer {
   if (name === membershipPath) {
     identity(body, {
-      bytes: 39808,
-      sha256: "abee0c1b443a26a723be362e702d086cff8fac9fab46ee48247573a7cee3e948",
+      bytes: 39769,
+      sha256: "d093ed93fcd632850cf06003918a7d67ab073ea582bfe6f8cbd0ccb562152df4",
     });
     const text = body.toString();
     const at = text.indexOf("{");
