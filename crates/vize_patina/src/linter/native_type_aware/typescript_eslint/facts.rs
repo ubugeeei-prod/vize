@@ -11,6 +11,7 @@ mod promise;
 mod queries;
 mod scan;
 mod shape;
+mod type_parameters;
 mod type_shape;
 use crate::linter::corsa_session::{ExpressionFact, ExpressionQuery};
 use corsa::lint::LintNode;
@@ -41,6 +42,7 @@ pub(super) fn apply(nodes: &mut [LintNode], facts: &[ExpressionFact], queries: &
     for node in nodes {
         apply_node(node, &by_range);
         checker::stamp_listener(node, &by_range);
+        type_parameters::apply(node, &by_range);
         module_this::stamp_module_this(node);
     }
 }

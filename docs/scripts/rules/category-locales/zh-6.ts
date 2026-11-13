@@ -99,6 +99,11 @@ export const chineseRules6: Record<string, readonly [string, string, string]> = 
     "label 已经是字符串，因此 String(label) 不会改变它的类型或值。",
     "count 是数字，因此 String(count) 会把它转换成字符串。",
   ],
+  "type/no-unnecessary-type-parameters": [
+    "禁止在签名中只使用一次的类型参数。",
+    "T 在 logValue 的签名中只出现一次，因此没有关联任何类型。",
+    "把 value 声明为 unknown，无需类型参数即可接受相同的参数。",
+  ],
   "type/no-unsafe-argument": [
     "禁止用 `any` 类型的值调用函数。",
     "anyValue 的类型是 any，它被传给了期望 number 的参数。",

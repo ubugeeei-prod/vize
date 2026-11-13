@@ -17,7 +17,7 @@ use vize_l0::{FxHashSet, String as CompactString};
 use super::{CorsaTypeAwareSession, LintResult, Linter, RULE_NO_FLOATING_PROMISES, push_warning};
 use crate::diagnostic::LintDiagnostic;
 use crate::linter::corsa_session::{
-    ExpressionFact, ExpressionQuery, PredicateRequest as ShapeCall,
+    ExpressionFact, ExpressionQuery, PredicateRequest as ShapeCall, TypeParameterUsage,
 };
 use corsa::lint::LintNode;
 use facts::{Wants, queries};
@@ -185,10 +185,15 @@ pub(super) fn evaluate(
                 });
                 request
             });
+            let type_parameter_usage = query
+                .type_parameter_usage
+                .clone()
+                .and_then(|usage| map_usage(usage, &map));
             generated.push(ExpressionQuery {
                 start,
                 end,
                 shape,
+                type_parameter_usage,
                 ..query.clone()
             });
             used.push(index);
@@ -299,6 +304,35 @@ pub(super) fn evaluate(
         }
     }
     failure.map_or(Ok(()), Err)
+}
+
+/// `usage` in generated ranges. A parameter or member the projection does
+/// not copy verbatim would hide uses, so the whole count is dropped.
+fn map_usage(
+    usage: TypeParameterUsage,
+    map: &impl Fn((u32, u32)) -> Option<(u32, u32)>,
+) -> Option<TypeParameterUsage> {
+    Some(TypeParameterUsage {
+        parameters: usage
+            .parameters
+            .into_iter()
+            .map(map)
+            .collect::<Option<Vec<_>>>()?,
+        defaults: usage
+            .defaults
+            .into_iter()
+            .map(|range| range.and_then(map))
+            .collect(),
+        members: usage
+            .members
+            .into_iter()
+            .map(|(start, end, constructor)| {
+                let (start, end) = map((start, end))?;
+                Some((start, end, constructor))
+            })
+            .collect::<Option<Vec<_>>>()?,
+        ..usage
+    })
 }
 
 /// vize's `type/no-floating-promises` message.

@@ -9,10 +9,12 @@ mod details;
 mod paths;
 mod shape;
 mod signatures;
+mod type_parameters;
 
 pub(in crate::linter) use super::promise_facts::Facets;
 pub(in crate::linter) use paths::PathStep;
 pub(in crate::linter) use shape::detail;
+pub(in crate::linter) use type_parameters::TypeParameterUsage;
 
 mod batch;
 use super::CorsaTypeAwareSession;
@@ -83,6 +85,8 @@ pub(in crate::linter) struct ExpressionQuery {
     pub parts: bool,
     /// Probe whether a type node's type is (or holds) the empty object type.
     pub empty_object: bool,
+    /// For a generic declaration: count its type parameters' uses.
+    pub type_parameter_usage: Option<TypeParameterUsage>,
 }
 
 impl ExpressionQuery {
@@ -137,6 +141,9 @@ impl ExpressionQuery {
         }
         self.parts |= other.parts;
         self.empty_object |= other.empty_object;
+        if self.type_parameter_usage.is_none() {
+            self.type_parameter_usage = other.type_parameter_usage;
+        }
     }
 
     /// Resolve this range to the outermost node with the same span: a type
@@ -210,6 +217,8 @@ pub(in crate::linter) struct ExpressionFact {
     pub type_parts: Vec<TypePartFact>,
     /// The type is, or holds, the empty object type. Set for `empty_object`.
     pub empty_object: Option<bool>,
+    /// Uses per own type parameter, for `type_parameter_usage`.
+    pub type_parameter_usage: Option<Vec<u32>>,
 }
 
 impl CorsaTypeAwareSession {
@@ -337,8 +346,25 @@ async fn load(
         let location = handles
             .and_then(|handles| handles.get(index))
             .and_then(Option::as_ref);
-        let Some(response) = responses.get(index).and_then(Option::as_ref) else {
-            facts.push(ExpressionFact::default());
+        let response = responses.get(index).and_then(Option::as_ref);
+        let usage = match &query.type_parameter_usage {
+            Some(request) => {
+                let location_at = |range: &(u32, u32)| {
+                    by_range
+                        .get(range)
+                        .and_then(|&at| handles.and_then(|handles| handles.get(at)))
+                        .and_then(Option::as_ref)
+                };
+                type_parameters::count(memo, request, response, location, &response_at, location_at)
+                    .await
+            }
+            None => None,
+        };
+        let Some(response) = response else {
+            facts.push(ExpressionFact {
+                type_parameter_usage: usage,
+                ..ExpressionFact::default()
+            });
             continue;
         };
         let mut fact = ExpressionFact {
@@ -346,6 +372,7 @@ async fn load(
             property_names: memo.property_names(response).await,
             type_id: Some(CompactString::from(response.id.as_str())),
             type_flags: Some(response.flags),
+            type_parameter_usage: usage,
             ..ExpressionFact::default()
         };
         if query.signatures {

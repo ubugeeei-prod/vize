@@ -4073,6 +4073,16 @@ type/no-unnecessary-type-conversion · lint 规则
 类别: type-aware
 自动修复: 不支持
 文档: docs/content/rules/reference/type-no-unnecessary-type-conversion.md
+=== type/no-unnecessary-type-parameters
+type/no-unnecessary-type-parameters · lint 规则
+禁止在签名中只使用一次的类型参数
+
+精度层级: complete
+适用范围: types the Corsa session resolves for the component; unresolved types are outside
+严重级别: 警告
+类别: type-aware
+自动修复: 不支持
+文档: docs/content/rules/reference/type-no-unnecessary-type-parameters.md
 === type/no-unsafe-argument
 type/no-unsafe-argument · lint 规则
 禁止用 `any` 类型的值调用函数

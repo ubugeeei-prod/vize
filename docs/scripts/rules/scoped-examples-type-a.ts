@@ -110,4 +110,9 @@ export const typescriptEslintExamplesA: Record<string, RuleExample> = {
     "const count = 1;\nconst same = String(count);",
     "no_unnecessary_type_conversion.rs",
   ),
+  "type/no-unnecessary-type-parameters": pair(
+    "function logValue<T>(value: T): void {\n  console.info(value);\n}\nlogValue(1);",
+    "function logValue(value: unknown): void {\n  console.info(value);\n}\nlogValue(1);",
+    "no_unnecessary_type_parameters.rs",
+  ),
 };

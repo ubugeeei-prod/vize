@@ -209,6 +209,7 @@ export const purposeJa: Readonly<Record<string, string>> = {
   "type/no-unnecessary-type-arguments": "既定値と同じ型引数を検出します。",
   "type/no-unnecessary-type-assertion": "式の型を変えない型アサーションを検出します。",
   "type/no-unnecessary-type-conversion": "型も値も変えない変換を検出します。",
+  "type/no-unnecessary-type-parameters": "シグネチャで一度しか使われない型パラメーターを検出します。",
   "type/no-unsafe-argument": "`any` 型の値を関数引数に渡している箇所を検出します。",
   "type/no-unsafe-assignment": "any 型の値をより具体的な型へ代入している箇所を検出します。",
   "type/no-unsafe-call": "any 型の値を呼び出している箇所を検出します。",

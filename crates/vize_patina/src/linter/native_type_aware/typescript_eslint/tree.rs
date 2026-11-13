@@ -1,5 +1,6 @@
 //! TS-ESTree nodes for the corsa typescript-eslint rules.
 mod ancestors;
+mod type_parameters;
 use ancestors::{ancestor_chain, ancestor_fact};
 use corsa::lint::{LintNode, TextRange};
 use oxc_allocator::Allocator;
@@ -125,6 +126,12 @@ fn walk(
         }
         if kind == "ObjectPattern" {
             stamp_pattern_init(&mut node, slot.init);
+        }
+        if kind == "TSTypeParameterDeclaration"
+            && key == Some("typeParameters")
+            && let (Some(owner), Some(owner_kind)) = (parent, parent_kind)
+        {
+            type_parameters::stamp(&mut node, owner, owner_kind, source);
         }
         node.fields
             .insert("__ancestorFacts".into(), Value::Array(ancestors.clone()));
