@@ -5,9 +5,9 @@
 //! where `toString` comes from. Rendered type text cannot answer those
 //! questions, so the host sends them as a small JSON tree (`__typeShape`).
 mod members;
-use super::super::checker_memo::CheckerMemo;
+use super::super::checker_memo::{CheckerMemo, syntax_kind};
 use corsa::api::{DocumentIdentifier, NodeHandle, TypeHandle, TypeResponse};
-use members::{declaration_kind, is_default_library};
+use members::is_default_library;
 use serde_json::{Map, Value, json};
 use std::{future::Future, pin::Pin};
 use vize_l0::FxHashMap;
@@ -33,12 +33,6 @@ const REFERENCE: u32 = 1 << 2;
 // SymbolFlags.Class and SymbolFlags.Interface.
 const SYMBOL_CLASS: u32 = 1 << 5;
 const SYMBOL_INTERFACE: u32 = 1 << 6;
-// TypeScript 7 SyntaxKind values.
-const PROPERTY_DECLARATION: u16 = 174;
-const METHOD_SIGNATURE: u16 = 175;
-const METHOD_DECLARATION: u16 = 176;
-const FUNCTION_EXPRESSION: u16 = 220;
-const PROPERTY_ASSIGNMENT: u16 = 304;
 
 /// Nesting depth of the shape tree. Deep enough for `T[]` inside a union
 /// inside a constraint.
@@ -183,9 +177,6 @@ impl<'a> Shapes<'a> {
         {
             out.insert("symbol".into(), json!(symbol.name));
             out.insert("symbolFlags".into(), json!(symbol.flags));
-            if let Some(kind) = symbol.value_declaration.as_ref().and_then(declaration_kind) {
-                out.insert("valueDeclarationKind".into(), json!(kind));
-            }
             let symbol_type = if details & detail::OBJECT_KIND != 0 {
                 client
                     .get_type_of_symbol(snapshot.clone(), project.clone(), symbol.id.clone())
@@ -344,8 +335,8 @@ impl<'a> Shapes<'a> {
                 && property
                     .value_declaration
                     .as_ref()
-                    .and_then(declaration_kind)
-                    .is_some_and(|kind| kind == METHOD_SIGNATURE)
+                    .and_then(|handle| self.session.syntax_kind(handle))
+                    .is_some_and(|kind| kind == syntax_kind::METHOD_SIGNATURE)
         });
         if declares_to_primitive {
             return json!(false);

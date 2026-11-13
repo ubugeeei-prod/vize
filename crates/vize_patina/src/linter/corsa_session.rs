@@ -8,6 +8,7 @@ mod checker_memo;
 mod expression_facts;
 mod promise_facts;
 mod relations;
+mod resilient;
 mod type_node_facts;
 mod type_shape;
 

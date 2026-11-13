@@ -33,6 +33,8 @@ pub(super) struct Script {
 pub(super) struct Plan {
     pub scripts: Vec<Script>,
     pub mapping: ProjectionMapping,
+    /// Run only `type/no-floating-promises` (a plain TypeScript module).
+    pub floating_only: bool,
 }
 
 impl Plan {
@@ -51,7 +53,27 @@ impl Plan {
                 tsx: matches!(block.lang.as_deref().map(str::trim), Some("tsx" | "jsx")),
             })
             .collect();
-        Self { scripts, mapping }
+        Self {
+            scripts,
+            mapping,
+            floating_only: false,
+        }
+    }
+
+    /// A plain TypeScript module as one script at offset 0. `mapping` links
+    /// its bytes to the checker document. Only `type/no-floating-promises`
+    /// runs, with the same typescript-eslint decision flow and
+    /// `linter.ruleOptions` as on SFC scripts.
+    pub(super) fn for_module(source: &str, tsx: bool, mapping: ProjectionMapping) -> Self {
+        Self {
+            scripts: vec![Script {
+                content: CompactString::new(source),
+                offset: 0,
+                tsx,
+            }],
+            mapping,
+            floating_only: true,
+        }
     }
 
     pub(super) fn is_empty(&self) -> bool {
@@ -86,7 +108,9 @@ pub(super) fn evaluate(
     let enabled = RULES
         .iter()
         .map(|(name, _)| *name)
-        .filter(|name| linter.registry.has_rule(name) && linter.is_rule_enabled(name))
+        .filter(|name| {
+            !plan.floating_only && linter.registry.has_rule(name) && linter.is_rule_enabled(name)
+        })
         .collect::<Vec<_>>();
     let corsa_rules = enabled
         .iter()
@@ -128,6 +152,7 @@ pub(super) fn evaluate(
         listeners.insert("ObjectExpression");
     }
     let listener_list = listeners.iter().copied().collect::<Vec<_>>();
+    let mut failure = None;
     for script in &plan.scripts {
         let map = |(start, end): (u32, u32)| {
             generated_range(&plan.mapping, virtual_content, script, start, end)
@@ -169,7 +194,16 @@ pub(super) fn evaluate(
             used.push(index);
         }
         let request = (!pending.is_empty()).then(|| pending.request());
-        let (probed, relations) = session.expression_facts(virtual_content, &generated, request)?;
+        // A script whose checker batch fails is skipped; the other script
+        // block still runs, and the first failure is reported.
+        let (probed, relations) =
+            match session.expression_facts(virtual_content, &generated, request) {
+                Ok(answered) => answered,
+                Err(error) => {
+                    failure.get_or_insert(error);
+                    continue;
+                }
+            };
         let mut aligned = vec![ExpressionFact::default(); script_queries.len()];
         for (index, fact) in used.into_iter().zip(probed) {
             if let Some(slot) = aligned.get_mut(index) {
@@ -264,7 +298,7 @@ pub(super) fn evaluate(
             }
         }
     }
-    Ok(())
+    failure.map_or(Ok(()), Err)
 }
 
 /// vize's `type/no-floating-promises` message.

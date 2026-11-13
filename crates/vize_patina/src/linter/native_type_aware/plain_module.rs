@@ -3,18 +3,17 @@
 //! SFC-only rules stay on the descriptor path. `type/no-floating-promises` and
 //! `type/no-reactivity-loss` also run here, because composables live in `.ts`.
 
-use vize_canon::virtual_ts::ProjectionMapping;
+use vize_canon::virtual_ts::{ProjectionMapping, VizeMapping};
 use vize_croquis::script_parser::{self, ScriptParseResult, ScriptParserOptions};
 use vize_l0::{FxHashSet, String, ToCompactString, profile};
 
 use super::document::TypeAwareDocument;
-use super::parsing::collect_floating_candidates_from;
+use super::parsing::may_float;
 use super::reactivity_loss::{ReactivityLossQuery, collect_reactivity_loss_queries};
 use super::{
     LintResult, Linter, RULE_NO_FLOATING_PROMISES, RULE_NO_REACTIVITY_LOSS, TypeProbe,
-    has_promise_like_return, push_warning, should_warn_for_reactivity_loss, with_corsa_session,
+    push_warning, should_warn_for_reactivity_loss, typescript_eslint, with_corsa_session,
 };
-use crate::diagnostic::LintDiagnostic;
 
 mod prepared;
 mod syntax;
@@ -69,32 +68,49 @@ pub(in crate::linter) fn prepare_plain_module(
     if !linter.type_aware_enabled || !is_plain_type_script(filename) {
         return PreparedPlainModule::new(result, None, false);
     }
-    let promises = rule_active(linter, RULE_NO_FLOATING_PROMISES);
+    let promises_active = rule_active(linter, RULE_NO_FLOATING_PROMISES);
     let reactivity = rule_active(linter, RULE_NO_REACTIVITY_LOSS);
-    if !promises && !reactivity {
+    if !promises_active && !reactivity {
         return PreparedPlainModule::new(result, None, false);
     }
+    // A module without a statement that could float needs no checker.
+    let promises = promises_active && may_float(source, filename, !ignores_void(linter));
 
     let mut slots = Vec::new();
-    if promises {
-        push_promise_slots(source, filename, &mut slots);
-    }
     if reactivity {
         push_reactivity_slots(linter, source, filename, &mut result, &mut slots);
     }
     place_slots_after_statements(source, filename, &mut slots);
-    if slots.is_empty() {
+    if slots.is_empty() && !promises {
         return PreparedPlainModule::new(result, None, true);
     }
 
-    let (content, probes) = augment_source(source, &slots);
-    let mut seen_promises = FxHashSet::default();
-    let mut seen_reactivity = FxHashSet::default();
+    let (content, probes, rows) = augment_source(source, &slots);
+    // `type/no-floating-promises` runs typescript-eslint's decision flow over
+    // the module's own bytes, with its `linter.ruleOptions`, as on SFC
+    // scripts. A statement that holds a reactivity probe crosses rows and
+    // stays unchecked rather than mistyped.
+    let typescript = promises.then(|| {
+        Box::new(typescript_eslint::Plan::for_module(
+            source,
+            is_tsx(filename),
+            ProjectionMapping::from_spans(rows),
+        ))
+    });
+    let mut seen = FxHashSet::default();
     let probes = probes
         .into_iter()
-        .filter(|(_, kind)| remember_probe(kind, &mut seen_promises, &mut seen_reactivity))
+        .filter(|(_, query)| remember_probe(query, &mut seen))
         .collect();
-    PreparedPlainModule::new(result, Some(PlainQueryPlan { content, probes }), true)
+    PreparedPlainModule::new(
+        result,
+        Some(PlainQueryPlan {
+            content,
+            probes,
+            typescript,
+        }),
+        true,
+    )
 }
 
 fn empty_result(filename: &str) -> LintResult {
@@ -103,28 +119,6 @@ fn empty_result(filename: &str) -> LintResult {
         diagnostics: Vec::new(),
         error_count: 0,
         warning_count: 0,
-    }
-}
-
-fn push_promise_slots(source: &str, filename: &str, slots: &mut Vec<Slot>) {
-    for (index, candidate) in collect_floating_candidates_from(source, filename)
-        .into_iter()
-        .enumerate()
-    {
-        let Some(expression) = source_slice(source, candidate.start, candidate.end) else {
-            continue;
-        };
-        let (text, name_rel) = promise_marker(index, expression);
-        slots.push(Slot {
-            at: candidate.end,
-            range_start: candidate.start,
-            text,
-            name_rel,
-            kind: Probe::Promise {
-                start: candidate.start,
-                end: candidate.end,
-            },
-        });
     }
 }
 
@@ -154,7 +148,7 @@ fn push_reactivity_slots(
             range_start: query.source_start,
             text,
             name_rel,
-            kind: Probe::Reactivity(query),
+            query,
         });
     }
 }
@@ -172,49 +166,14 @@ fn place_slots_after_statements(source: &str, filename: &str, slots: &mut Vec<Sl
     *slots = placed;
 }
 
-fn report_probe(result: &mut LintResult, kind: &Probe, probe: Option<&TypeProbe>) {
-    match kind {
-        Probe::Promise { start, end } => {
-            let Some(probe) = probe else {
-                return;
-            };
-            if has_promise_like_return(probe)
-                || corsa::utils::is_promise_like_type_texts(
-                    &probe.type_texts,
-                    &probe.property_names,
-                )
-            {
-                push_warning(
-                    result,
-                    LintDiagnostic::warn(
-                        RULE_NO_FLOATING_PROMISES,
-                        "Floating Promise must be awaited, returned, or explicitly ignored with `void`",
-                        *start,
-                        *end,
-                    )
-                    .with_help(
-                        "Add `await`, return the Promise, or prefix it with `void` when the fire-and-forget behavior is intentional.",
-                    ),
-                );
-            }
-        }
-        Probe::Reactivity(query) => {
-            if should_warn_for_reactivity_loss(probe) {
-                push_warning(result, query.diagnostic(0));
-            }
-        }
+fn report_probe(result: &mut LintResult, query: &ReactivityLossQuery, probe: Option<&TypeProbe>) {
+    if should_warn_for_reactivity_loss(probe) {
+        push_warning(result, query.diagnostic(0));
     }
 }
 
-fn remember_probe(
-    kind: &Probe,
-    promises: &mut FxHashSet<(u32, u32)>,
-    reactivity: &mut FxHashSet<u64>,
-) -> bool {
-    match kind {
-        Probe::Promise { start, end } => promises.insert((*start, *end)),
-        Probe::Reactivity(query) => reactivity.insert(query.owner_key()),
-    }
+fn remember_probe(query: &ReactivityLossQuery, reactivity: &mut FxHashSet<u64>) -> bool {
+    reactivity.insert(query.owner_key())
 }
 
 struct Slot {
@@ -222,22 +181,15 @@ struct Slot {
     range_start: u32,
     text: String,
     name_rel: u32,
-    kind: Probe,
+    query: ReactivityLossQuery,
 }
 
-#[derive(Clone)]
-enum Probe {
-    Promise { start: u32, end: u32 },
-    Reactivity(ReactivityLossQuery),
-}
-
-impl Probe {
-    fn loads_signatures(&self) -> bool {
-        matches!(self, Self::Promise { .. })
-    }
-}
-
-fn augment_source(source: &str, slots: &[Slot]) -> (String, Vec<(u32, Probe)>) {
+/// The checker document: `source` with each slot's text inserted, the probe
+/// offsets, and the rows linking each verbatim run of `source` to it.
+fn augment_source(
+    source: &str,
+    slots: &[Slot],
+) -> (String, Vec<(u32, ReactivityLossQuery)>, Vec<VizeMapping>) {
     let mut order: Vec<(u32, usize)> = slots
         .iter()
         .enumerate()
@@ -247,6 +199,7 @@ fn augment_source(source: &str, slots: &[Slot]) -> (String, Vec<(u32, Probe)>) {
     let extra: usize = slots.iter().map(|slot| slot.text.len()).sum();
     let mut out = String::with_capacity(source.len() + extra);
     let mut probes = Vec::with_capacity(slots.len());
+    let mut rows = Vec::with_capacity(slots.len() + 1);
     let mut cursor = 0usize;
     for (_, index) in order {
         let Some(slot) = slots.get(index) else {
@@ -259,25 +212,26 @@ fn augment_source(source: &str, slots: &[Slot]) -> (String, Vec<(u32, Probe)>) {
         let Some(chunk) = source.get(cursor..at) else {
             continue;
         };
+        rows.push(VizeMapping::new(
+            out.len()..out.len() + chunk.len(),
+            cursor..at,
+        ));
         out.push_str(chunk);
         cursor = at;
         let Some(offset) = u32::try_from(out.len() + slot.name_rel as usize).ok() else {
             continue;
         };
-        probes.push((offset, slot.kind.clone()));
+        probes.push((offset, slot.query.clone()));
         out.push_str(slot.text.as_str());
     }
     if let Some(rest) = source.get(cursor..) {
+        rows.push(VizeMapping::new(
+            out.len()..out.len() + rest.len(),
+            cursor..source.len(),
+        ));
         out.push_str(rest);
     }
-    (out, probes)
-}
-
-fn promise_marker(index: usize, expression: &str) -> (String, u32) {
-    let mut name = String::with_capacity(32);
-    name.push_str("__vize_patina_promise_");
-    name.push_str(index.to_compact_string().as_str());
-    marker_text(&name, expression, "function ", "() { return (", "); }\n")
+    (out, probes, rows)
 }
 
 fn reactivity_marker(index: usize, query: &ReactivityLossQuery, expression: &str) -> (String, u32) {
@@ -328,6 +282,15 @@ fn source_slice(source: &str, start: u32, end: u32) -> Option<&str> {
         .get(start as usize..end as usize)
         .map(str::trim)
         .filter(|expression| !expression.is_empty())
+}
+
+/// The configured `ignoreVoid` of `type/no-floating-promises` (default true).
+fn ignores_void(linter: &Linter) -> bool {
+    linter
+        .type_aware_options
+        .rule_value("type/no-floating-promises")
+        .and_then(|options| options.get("ignoreVoid")?.as_bool())
+        .unwrap_or(true)
 }
 
 fn rule_active(linter: &Linter, rule_name: &str) -> bool {

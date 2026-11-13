@@ -90,6 +90,16 @@ pub(super) fn collect_floating_candidates_from(
     source: &str,
     filename: &str,
 ) -> Vec<FloatingCandidate> {
+    collect_candidates(source, filename, false)
+}
+
+/// Whether a statement of the module could float. `void`-ed statements count
+/// when the configuration reports them (`ignoreVoid: false`).
+pub(super) fn may_float(source: &str, filename: &str, voided: bool) -> bool {
+    !collect_candidates(source, filename, voided).is_empty()
+}
+
+fn collect_candidates(source: &str, filename: &str, voided: bool) -> Vec<FloatingCandidate> {
     let allocator = OxcAllocator::default();
     let source_type = SourceType::from_path(filename).unwrap_or_default();
     let parsed = profile!(
@@ -100,7 +110,10 @@ pub(super) fn collect_floating_candidates_from(
         return Vec::new();
     }
 
-    let mut collector = FloatingCandidateCollector::default();
+    let mut collector = FloatingCandidateCollector {
+        voided,
+        ..FloatingCandidateCollector::default()
+    };
     collector.visit_program(&parsed.program);
     collector.candidates
 }
@@ -108,11 +121,15 @@ pub(super) fn collect_floating_candidates_from(
 #[derive(Default)]
 struct FloatingCandidateCollector {
     candidates: Vec<FloatingCandidate>,
+    /// Keep `void` statements as candidates.
+    voided: bool,
 }
 
 impl<'a> Visit<'a> for FloatingCandidateCollector {
     fn visit_expression_statement(&mut self, statement: &ExpressionStatement<'a>) {
-        if !is_explicitly_handled(&statement.expression) {
+        let voided = self.voided
+            && matches!(&statement.expression, Expression::UnaryExpression(unary) if unary.operator == UnaryOperator::Void);
+        if voided || !is_explicitly_handled(&statement.expression) {
             let span = statement.expression.span();
             if span.end > span.start {
                 self.candidates.push(FloatingCandidate {

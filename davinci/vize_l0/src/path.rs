@@ -62,6 +62,21 @@ pub fn normalize_windows_verbatim_path(path: PathBuf) -> PathBuf {
     normalize_windows_verbatim_path_impl(path)
 }
 
+/// `path` without a Windows verbatim prefix, on every platform: `\\?\C:\a`
+/// becomes `C:\a`, `\\?\UNC\server\share` becomes `\\server\share`, and the
+/// `//?/C:/a` spelling Node and TypeScript print becomes `C:/a`.
+///
+/// Use it where a path is handed to TypeScript. No Unix path starts with
+/// either prefix in practice, so the platform split of
+/// [`normalize_windows_verbatim_path`] is not needed, and the spelling a
+/// Windows run produces can be tested on any host.
+pub fn strip_verbatim_prefix(path: PathBuf) -> PathBuf {
+    match path.to_str().and_then(strip_windows_verbatim_prefix) {
+        Some(plain) => PathBuf::from(plain),
+        None => path,
+    }
+}
+
 #[cfg(windows)]
 fn normalize_windows_verbatim_path_impl(path: PathBuf) -> PathBuf {
     let Some(path_str) = path.to_str() else {
@@ -77,7 +92,6 @@ fn normalize_windows_verbatim_path_impl(path: PathBuf) -> PathBuf {
     path
 }
 
-#[cfg(any(windows, test))]
 #[expect(
     clippy::disallowed_types,
     reason = "Preserve Windows path prefix normalization and its existing owned string"
@@ -147,6 +161,27 @@ mod tests {
             strip_windows_verbatim_prefix("//?/D:/repo/node_modules/.vize/canon/tsconfig.json")
                 .as_deref(),
             Some("D:/repo/node_modules/.vize/canon/tsconfig.json")
+        );
+    }
+
+    #[test]
+    fn strip_verbatim_prefix_keeps_the_plain_spelling_on_every_host() {
+        use super::strip_verbatim_prefix;
+        assert_eq!(
+            strip_verbatim_prefix(PathBuf::from("\\\\?\\D:\\app\\src\\api.ts")),
+            PathBuf::from("D:\\app\\src\\api.ts")
+        );
+        assert_eq!(
+            strip_verbatim_prefix(PathBuf::from("\\\\?\\UNC\\server\\share\\src")),
+            PathBuf::from("\\\\server\\share\\src")
+        );
+        assert_eq!(
+            strip_verbatim_prefix(PathBuf::from("//?/D:/app/src/lib")),
+            PathBuf::from("D:/app/src/lib")
+        );
+        assert_eq!(
+            strip_verbatim_prefix(PathBuf::from("/app/src/lib")),
+            PathBuf::from("/app/src/lib")
         );
     }
 

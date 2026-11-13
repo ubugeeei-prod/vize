@@ -1,7 +1,8 @@
 //! The type batch behind the fact pass, and the per-query lookups (signatures, promise facts, symbols) answered off it.
-use super::super::boolean::checker_node_locations;
+use super::super::boolean::{checker_node_locations, checker_source_file_kind};
 use super::super::checker_memo::CheckerMemo;
 use super::super::promise_facts::PromiseChecker;
+use super::super::resilient::answer_each;
 use super::{ExpressionFact, ExpressionQuery};
 use corsa::api::{NodeHandle, ProjectSession, TypeResponse};
 use vize_l0::String as CompactString;
@@ -11,38 +12,40 @@ type Responses = (Vec<Option<TypeResponse>>, Option<Vec<Option<NodeHandle>>>);
 /// Types for `ranges`, with the checker node handles when the source file's
 /// syntax tree could be read.
 pub(super) async fn type_responses(
-    session: &ProjectSession,
+    memo: &CheckerMemo<'_>,
     file: &str,
     source: &str,
     ranges: &[(u32, u32)],
     widen: &[bool],
 ) -> corsa::Result<Responses> {
+    let session = memo.session();
     let usable = ranges.iter().all(|&(start, end)| start < end);
     if usable
-        && let Some((responses, handles)) = node_types(session, file, source, ranges, widen).await?
+        && let Some((responses, handles)) = node_types(memo, file, source, ranges, widen).await?
     {
         return Ok((responses, Some(handles)));
     }
     let positions = ranges.iter().map(|&(start, _)| start).collect();
-    let responses = session
-        .client()
-        .get_types_at_positions(
+    let responses = answer_each(positions, |positions| {
+        session.client().get_types_at_positions(
             session.snapshot().handle.clone(),
             session.project_handle(),
             file,
             positions,
         )
-        .await?;
+    })
+    .await?;
     Ok((responses, None))
 }
 
 pub(super) async fn node_types(
-    session: &ProjectSession,
+    memo: &CheckerMemo<'_>,
     file: &str,
     source: &str,
     ranges: &[(u32, u32)],
     widen: &[bool],
 ) -> corsa::Result<Option<(Vec<Option<TypeResponse>>, Vec<Option<NodeHandle>>)>> {
+    let session = memo.session();
     let encoded = session
         .client()
         .get_source_file(
@@ -54,6 +57,9 @@ pub(super) async fn node_types(
     let Some(encoded) = encoded else {
         return Ok(None);
     };
+    if let Ok(kind) = checker_source_file_kind(encoded.as_bytes()) {
+        memo.calibrate_kinds(kind);
+    }
     // Only an unreadable tree falls back to caret types. A range with no node
     // stays untyped on its own: a caret type describes the token at the start
     // (`isListening` for `isListening.value`), so falling back for the whole
@@ -66,14 +72,14 @@ pub(super) async fn node_types(
     let mut types = if located.is_empty() {
         Vec::new()
     } else {
-        session
-            .client()
-            .get_type_at_locations(
+        answer_each(located, |located| {
+            session.client().get_type_at_locations(
                 session.snapshot().handle.clone(),
                 session.project_handle(),
                 located,
             )
-            .await?
+        })
+        .await?
     }
     .into_iter();
     let responses = handles

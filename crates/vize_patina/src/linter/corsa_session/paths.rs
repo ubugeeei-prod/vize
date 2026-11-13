@@ -36,7 +36,11 @@ pub(super) const TSCONFIG_CONTENTS: &str = r#"{
 }
 "#;
 
+/// The spelling of `path` TypeScript reads: no Windows verbatim prefix
+/// (`\\?\C:\` from `canonicalize`, which TypeScript sees as `//?/C:/` and
+/// cannot resolve, #12952) and, on Windows, a lowercase drive letter.
 pub(super) fn path_to_wire(path: &Path) -> String {
+    let path = vize_l0::path::strip_verbatim_prefix(path.to_path_buf());
     let path = path.to_string_lossy();
     #[cfg(windows)]
     return normalize_windows_drive_letter(path.as_ref());
@@ -64,11 +68,11 @@ pub(super) fn virtual_file_path(
     project_root: &Path,
     filename: &str,
 ) -> PathBuf {
-    let authored = Path::new(filename);
+    let authored = vize_l0::path::strip_verbatim_prefix(PathBuf::from(filename));
     let authored = if authored.is_absolute() {
-        authored.to_path_buf()
+        authored
     } else {
-        std::env::current_dir().map_or_else(|_| authored.to_path_buf(), |cwd| cwd.join(authored))
+        std::env::current_dir().map_or_else(|_| authored.clone(), |cwd| cwd.join(&authored))
     };
     let relative = authored
         .strip_prefix(project_root)
@@ -119,8 +123,8 @@ mod tests {
     use super::store::is_stale_session_directory;
     use super::{
         cleanup_stale_session_roots, effective_tsconfig_for_source, normalize_windows_drive_letter,
-        remove_finished_process_sessions, resolve_corsa_executable, session_store_root,
-        session_tsconfig_contents, virtual_file_path,
+        path_to_wire, remove_finished_process_sessions, resolve_corsa_executable,
+        session_store_root, session_tsconfig_contents, virtual_file_path,
     };
     use std::{
         path::{Path, PathBuf},
@@ -144,6 +148,33 @@ mod tests {
         assert_eq!(
             normalize_windows_drive_letter(r"\\server\share\src\a.ts"),
             r"\\server\share\src\a.ts"
+        );
+    }
+
+    /// A verbatim path (`canonicalize` on Windows) reaches TypeScript in its
+    /// plain spelling (#12952). This host keeps the drive letter's case.
+    #[test]
+    fn wire_paths_drop_windows_verbatim_prefixes() {
+        for (verbatim, plain) in [
+            (r"\\?\C:\repo\src\a.ts", r"C:\repo\src\a.ts"),
+            (r"\\?\UNC\server\share\src\a.ts", r"\\server\share\src\a.ts"),
+            ("//?/C:/repo/src/a.ts", "C:/repo/src/a.ts"),
+        ] {
+            assert_eq!(
+                path_to_wire(Path::new(verbatim)),
+                path_to_wire(Path::new(plain)),
+                "{verbatim}"
+            );
+        }
+    }
+
+    #[test]
+    fn a_verbatim_authored_path_mirrors_like_the_plain_one() {
+        let package = Path::new("//server/share/ui");
+        let session = package.join(".vize/patina/session-1-0");
+        assert_eq!(
+            virtual_file_path(&session, package, "//?/UNC/server/share/ui/src/Button.vue"),
+            session.join("src/Button.vue.patina.ts")
         );
     }
 

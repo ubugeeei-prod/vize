@@ -173,6 +173,73 @@ fn plain_typescript_reports_reactivity_loss() {
     );
 }
 
+/// `linter.ruleOptions` reach `type/no-floating-promises` on plain modules
+/// as on SFC scripts: typescript-eslint's `ignoreVoid: false` reports a
+/// `void`-ed Promise, and an `async` IIFE floats unless `ignoreIIFE` is set.
+#[test]
+fn plain_typescript_floating_promises_follow_rule_options() {
+    if !corsa_available() {
+        return;
+    }
+    const IIFE: &str = "(async () => {})();\n";
+    let configured = |options: serde_json::Value| {
+        let options = serde_json::from_value::<vize_l0::config::TypeAwareRuleOptions>(
+            serde_json::json!({ "type/no-floating-promises": options }),
+        )
+        .expect("valid no-floating-promises options");
+        type_aware().with_type_aware_rule_options(options)
+    };
+    let strict = configured(serde_json::json!({ "ignoreVoid": false }));
+    let Some(voided) = IGNORED.find("void save();") else {
+        panic!("void save(); is in the fixture");
+    };
+    assert_eq!(
+        starts(
+            &strict.lint_script(IGNORED, "src/save.ts"),
+            RULE_NO_FLOATING_PROMISES
+        ),
+        vec![voided as u32]
+    );
+    assert_eq!(
+        count(
+            &type_aware().lint_script(IIFE, "src/iife.ts"),
+            RULE_NO_FLOATING_PROMISES
+        ),
+        1
+    );
+    let iife = configured(serde_json::json!({ "ignoreIIFE": true }));
+    assert_eq!(
+        count(
+            &iife.lint_script(IIFE, "src/iife.ts"),
+            RULE_NO_FLOATING_PROMISES
+        ),
+        0
+    );
+}
+
+/// A module with both checks: the reactivity probes go into the checker
+/// document and the floating-promise check still reads the authored bytes.
+#[test]
+fn plain_typescript_runs_both_checks_in_one_document() {
+    if !corsa_available() {
+        return;
+    }
+    let source = [REACTIVITY, FLOATING].concat();
+    let result = type_aware().lint_script(&source, "src/both.ts");
+    let (Some(extract), Some(call)) = (source.find("state.count"), source.find("save();")) else {
+        panic!("both findings are in the fixture");
+    };
+    assert_eq!(
+        starts(&result, RULE_NO_REACTIVITY_LOSS),
+        vec![extract as u32]
+    );
+    assert_eq!(
+        starts(&result, RULE_NO_FLOATING_PROMISES),
+        vec![call as u32],
+        "{result:#?}"
+    );
+}
+
 fn messages<'a>(result: &'a LintResult, rule: &str) -> Vec<&'a str> {
     result
         .diagnostics

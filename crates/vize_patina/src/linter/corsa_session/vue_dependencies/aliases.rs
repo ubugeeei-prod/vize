@@ -103,7 +103,12 @@ impl PathAliases {
                 self.project_root.join(path)
             };
             if candidate.is_file() {
-                return Some(candidate.canonicalize().unwrap_or(candidate));
+                return Some(
+                    candidate
+                        .canonicalize()
+                        .map(vize_l0::path::strip_verbatim_prefix)
+                        .unwrap_or(candidate),
+                );
             }
         }
         None

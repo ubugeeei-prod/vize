@@ -138,7 +138,8 @@ pub(in super::super) fn resolve_corsa_executable(
 }
 
 fn source_directory(filename: &str) -> PathBuf {
-    let path = Path::new(filename);
+    let path = vize_l0::path::strip_verbatim_prefix(PathBuf::from(filename));
+    let path = path.as_path();
     if path.is_absolute() {
         return path
             .parent()
@@ -218,10 +219,11 @@ pub(in crate::linter) fn effective_tsconfig_for_source(
 }
 
 fn absolute_path(path: &Path) -> PathBuf {
+    let path = vize_l0::path::strip_verbatim_prefix(path.to_path_buf());
     if path.is_absolute() {
-        path.to_path_buf()
+        path
     } else {
-        std::env::current_dir().map_or_else(|_| path.to_path_buf(), |cwd| cwd.join(path))
+        std::env::current_dir().map_or_else(|_| path.clone(), |cwd| cwd.join(&path))
     }
 }
 

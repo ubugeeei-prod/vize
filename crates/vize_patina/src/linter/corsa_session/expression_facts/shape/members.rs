@@ -1,8 +1,9 @@
 //! unbound-method member facts: the receiver's symbol and how each property is declared (`checkIfMethod`).
-use super::{
-    FUNCTION_EXPRESSION, INTERSECTION, JsonMap, METHOD_DECLARATION, METHOD_SIGNATURE, OBJECT,
-    PROPERTY_ASSIGNMENT, PROPERTY_DECLARATION, SYMBOL_CLASS, Shapes, UNION, VOID,
+use super::super::super::checker_memo::syntax_kind::{
+    FUNCTION_EXPRESSION, METHOD_DECLARATION, METHOD_SIGNATURE, PROPERTY_ASSIGNMENT,
+    PROPERTY_DECLARATION,
 };
+use super::{INTERSECTION, JsonMap, OBJECT, SYMBOL_CLASS, Shapes, UNION, VOID};
 use corsa::api::{NodeHandle, TypeResponse};
 use serde_json::{Map, Value, json};
 
@@ -151,7 +152,7 @@ impl Shapes<'_> {
         let kind = property
             .value_declaration
             .as_ref()
-            .and_then(declaration_kind);
+            .and_then(|handle| self.session.syntax_kind(handle));
         let method_like = matches!(kind, Some(METHOD_SIGNATURE | METHOD_DECLARATION));
         let property_like = matches!(kind, Some(PROPERTY_DECLARATION | PROPERTY_ASSIGNMENT));
         if !method_like && !property_like {
@@ -186,7 +187,10 @@ impl Shapes<'_> {
         // A property is a method only when initialized with a `function`
         // expression; arrow functions keep their lexical `this`.
         let is_method = method_like
-            || signature.declaration.as_ref().and_then(declaration_kind)
+            || signature
+                .declaration
+                .as_ref()
+                .and_then(|handle| self.session.syntax_kind(handle))
                 == Some(FUNCTION_EXPRESSION);
         let first_param_is_this =
             signature.this_parameter.is_some() || signature.this_parameter_symbol.is_some();
@@ -197,16 +201,32 @@ impl Shapes<'_> {
         {
             true
         } else if let Some(this_parameter) = signature.this_parameter.clone() {
-            client
-                .get_type_of_symbol(
-                    self.session.snapshot().handle.clone(),
-                    self.session.project_handle(),
-                    this_parameter,
-                )
+            let snapshot = self.session.snapshot().handle.clone();
+            let project = self.session.project_handle();
+            // TypeScript 7.0 does not register a signature's `this` symbol,
+            // so its handle fails; ask the signature for it instead.
+            let this_type = match client
+                .get_type_of_symbol(snapshot.clone(), project.clone(), this_parameter)
                 .await
-                .ok()
-                .flatten()
-                .is_some_and(|this_type| this_type.flags == VOID)
+            {
+                Ok(this_type) => this_type,
+                Err(_) => match client
+                    .get_this_parameter_of_signature(
+                        snapshot.clone(),
+                        project.clone(),
+                        signature.id.clone(),
+                    )
+                    .await
+                {
+                    Ok(Some(symbol)) => client
+                        .get_type_of_symbol(snapshot, project, symbol.id)
+                        .await
+                        .ok()
+                        .flatten(),
+                    _ => None,
+                },
+            };
+            this_type.is_some_and(|this_type| this_type.flags == VOID)
         } else {
             false
         };
@@ -217,14 +237,6 @@ impl Shapes<'_> {
             "isStatic": false,
         })
     }
-}
-
-pub(super) fn declaration_kind(handle: &NodeHandle) -> Option<u16> {
-    if let Ok(parsed) = handle.parse() {
-        return Some(parsed.kind);
-    }
-    // Compact stable-runtime handles: `<node id>.<kind>.<path>`.
-    handle.as_str().split('.').nth(1)?.parse().ok()
 }
 
 /// Whether a declaration lives in one of TypeScript's bundled `lib.*.d.ts`

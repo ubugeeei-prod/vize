@@ -1,5 +1,10 @@
 //! Snapshot-local, flow-sensitive boolean facts from the actual checker.
-use super::{CorsaTypeAwareSession, errors::compact_error, probe::byte_offset_to_utf16_offset};
+use super::{
+    CorsaTypeAwareSession,
+    errors::compact_error,
+    probe::byte_offset_to_utf16_offset,
+    resilient::{answer_each, is_query_local},
+};
 use corsa::fast::ToCompactString as _;
 use corsa::{
     api::{ProjectSession, TypeHandle, TypeResponse},
@@ -12,6 +17,7 @@ mod nodes;
 
 pub(in crate::linter) use nodes::locations_each as checker_node_locations;
 pub(in crate::linter) use nodes::node_text as checker_node_text;
+pub(in crate::linter) use nodes::source_file_kind as checker_source_file_kind;
 
 // TypeScript 7 TypeFlags, from microsoft/typescript-go internal/checker/types.go.
 // Aliases/unions are classified by assignability, not by their rendered names.
@@ -114,14 +120,14 @@ async fn classify_batch(
         })
         .collect();
     let locations = nodes::locations(encoded.as_bytes(), source, &ranges)?;
-    let responses = session
-        .client()
-        .get_type_at_locations(
+    let responses = answer_each(locations, |locations| {
+        session.client().get_type_at_locations(
             session.snapshot().handle.clone(),
             session.project_handle(),
             locations,
         )
-        .await?;
+    })
+    .await?;
     if responses.len() != ranges.len() {
         return Err(corsa::CorsaError::Protocol(
             "Incomplete boolean expression type batch".into(),
@@ -129,19 +135,25 @@ async fn classify_batch(
     }
     let mut cache = FxHashMap::<TypeHandle, Vec<Value>>::default();
     let mut result = Vec::with_capacity(ranges.len());
+    // A condition the checker cannot type, or whose classification fails on
+    // its own, stays unclassified; the other conditions still are.
     for response in responses {
-        let response = response.ok_or_else(|| {
-            corsa::CorsaError::Protocol("Missing boolean expression node type".into())
-        })?;
-        let parts = match cache.get(&response.id) {
-            Some(parts) => parts.clone(),
-            None => {
-                let parts = classify(session, &response, &handles).await?;
-                cache.insert(response.id, parts.clone());
-                parts
-            }
+        let Some(response) = response else {
+            result.push(None);
+            continue;
         };
-        result.push(Some(parts));
+        let parts = match cache.get(&response.id) {
+            Some(parts) => Some(parts.clone()),
+            None => match classify(session, &response, &handles).await {
+                Ok(parts) => {
+                    cache.insert(response.id, parts.clone());
+                    Some(parts)
+                }
+                Err(error) if is_query_local(&error) => None,
+                Err(error) => return Err(error),
+            },
+        };
+        result.push(parts);
     }
     Ok(result)
 }

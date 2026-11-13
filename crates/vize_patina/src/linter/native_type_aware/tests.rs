@@ -8,6 +8,7 @@ mod typescript_constituents;
 mod typescript_jsdoc_callee;
 mod typescript_parity;
 mod typescript_promises;
+mod typescript_regressions;
 mod typescript_shapes;
 mod typescript_type_shapes;
 use super::{

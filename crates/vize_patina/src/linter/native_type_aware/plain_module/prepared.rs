@@ -1,12 +1,18 @@
 //! Owned plain-module checker work and its static findings.
 
-use super::super::{CorsaTypeAwareSession, LintResult, Linter, TypeAwareFailure};
-use super::{Probe, report_probe};
+use super::super::reactivity_loss::ReactivityLossQuery;
+use super::super::{
+    CorsaTypeAwareSession, LintResult, Linter, TypeAwareFailure, typescript_eslint,
+};
+use super::report_probe;
 use vize_l0::String;
 
 pub(super) struct PlainQueryPlan {
     pub content: String,
-    pub probes: Vec<(u32, Probe)>,
+    /// Reactivity-loss probes: offsets of the probe names in `content`.
+    pub probes: Vec<(u32, ReactivityLossQuery)>,
+    /// `type/no-floating-promises` over the module's own bytes.
+    pub typescript: Option<Box<typescript_eslint::Plan>>,
 }
 
 pub(in crate::linter) struct PreparedPlainModule {
@@ -33,24 +39,41 @@ impl PreparedPlainModule {
     }
 
     /// Query the document the caller selected in the published project snapshot.
+    /// The two checks fail independently; the first failure is reported.
     pub(in crate::linter) fn evaluate(
         &mut self,
-        _linter: &Linter,
+        linter: &Linter,
         session: &mut CorsaTypeAwareSession,
     ) -> Result<(), String> {
         let Some(plan) = &self.plan else {
             return Ok(());
         };
-        let requests = plan
-            .probes
-            .iter()
-            .map(|(offset, kind)| (*offset, false, kind.loads_signatures()))
-            .collect::<Vec<_>>();
-        let probes = session.probe_types_at_offsets(&plan.content, &requests)?;
-        for ((_, kind), probe) in plan.probes.iter().zip(probes) {
-            report_probe(&mut self.result, kind, probe.as_ref());
-        }
-        Ok(())
+        let typed = plan.typescript.as_ref().map_or(Ok(()), |typescript| {
+            typescript_eslint::evaluate(
+                session,
+                typescript,
+                &plan.content,
+                linter,
+                &mut self.result,
+            )
+        });
+        let probed = if plan.probes.is_empty() {
+            Ok(())
+        } else {
+            let requests = plan
+                .probes
+                .iter()
+                .map(|(offset, _)| (*offset, false, false))
+                .collect::<Vec<_>>();
+            session
+                .probe_types_at_offsets(&plan.content, &requests)
+                .map(|probes| {
+                    for ((_, query), probe) in plan.probes.iter().zip(probes) {
+                        report_probe(&mut self.result, query, probe.as_ref());
+                    }
+                })
+        };
+        typed.and(probed)
     }
 
     pub(in crate::linter) fn finish(

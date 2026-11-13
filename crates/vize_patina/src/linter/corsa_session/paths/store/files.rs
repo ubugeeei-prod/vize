@@ -40,7 +40,9 @@ pub(super) fn ambient_declaration_files(tsconfig: &Path) -> Vec<String> {
         if is_excluded(relative.as_str(), &excludes) {
             continue;
         }
-        let absolute = std::fs::canonicalize(&path).unwrap_or(path);
+        let absolute = std::fs::canonicalize(&path)
+            .map(vize_l0::path::strip_verbatim_prefix)
+            .unwrap_or(path);
         declarations.push(slash_path(&absolute));
     }
     declarations.sort();

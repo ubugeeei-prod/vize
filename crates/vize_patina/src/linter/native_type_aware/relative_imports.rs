@@ -22,14 +22,7 @@ pub(super) fn absolutize_relative_imports(document: &mut TypeAwareDocument, file
     while let Some((start, end)) = next_relative_specifier(&text, from) {
         let relative = text.get(start..end).unwrap_or_default();
         let resolved = parent.join(relative);
-        let absolute = resolved
-            .canonicalize()
-            .map(|path| display_path(&path))
-            .unwrap_or_else(|_| display_path(&normalize_path(&resolved)));
-        // `allowImportingTsExtensions` covers relative specifiers only. An
-        // absolute `api.ts` is an error module (`any`); the extensionless
-        // path still resolves under `moduleResolution: bundler` (#12948).
-        let absolute = strip_implementation_extension(absolute);
+        let absolute = checker_specifier(&resolved, resolved.canonicalize().ok());
         let quote = text.as_bytes().get(start - 1).copied().unwrap_or(b'\'');
         edits.push((start, end, escape_specifier(&absolute, quote)));
         from = end;
@@ -43,10 +36,26 @@ pub(super) fn absolutize_relative_imports(document: &mut TypeAwareDocument, file
     document.content = text;
 }
 
+/// The absolute specifier the checker resolves for `resolved`, given its
+/// canonical path when it exists on disk.
+///
+/// Windows `canonicalize` returns a verbatim path (`\\?\D:\app\src\api.ts`),
+/// which TypeScript reads as `//?/D:/app/src/api.ts` and cannot resolve, so
+/// every import of an existing file or directory was `any` there (#12952).
+/// The prefix is dropped wherever the path came from.
+fn checker_specifier(resolved: &Path, canonical: Option<std::path::PathBuf>) -> VizeString {
+    let path = canonical.unwrap_or_else(|| normalize_path(resolved));
+    let absolute = display_path(&vize_l0::path::strip_verbatim_prefix(path));
+    // `allowImportingTsExtensions` covers relative specifiers only. An
+    // absolute `api.ts` is an error module (`any`); the extensionless
+    // path still resolves under `moduleResolution: bundler` (#12948).
+    strip_implementation_extension(absolute)
+}
+
 fn source_directory(filename: &str) -> Option<std::path::PathBuf> {
-    let path = Path::new(filename);
+    let path = vize_l0::path::strip_verbatim_prefix(std::path::PathBuf::from(filename));
     let path = if path.is_absolute() {
-        path.to_path_buf()
+        path
     } else {
         std::env::current_dir().ok()?.join(path)
     };
@@ -136,8 +145,9 @@ mod tests {
     use vize_canon::virtual_ts::VizeMapping;
     use vize_l0::String as VizeString;
 
-    use super::absolutize_relative_imports;
+    use super::{absolutize_relative_imports, checker_specifier};
     use crate::linter::native_type_aware::document::TypeAwareDocument;
+    use std::path::{Path, PathBuf};
 
     #[test]
     fn a_relative_import_becomes_absolute_and_later_rows_move() {
@@ -164,7 +174,8 @@ mod tests {
 
     #[test]
     fn declaration_and_javascript_specifiers_keep_their_extensions() {
-        let source = "import type { Props } from \"./props.d.ts\";\nexport { api } from './api.js';\n";
+        let source =
+            "import type { Props } from \"./props.d.ts\";\nexport { api } from './api.js';\n";
         let mut document = TypeAwareDocument {
             content: VizeString::from(source),
             mapping: ProjectionMapping::from_spans(vec![]),
@@ -174,5 +185,30 @@ mod tests {
             document.content.as_str(),
             "import type { Props } from \"/pkg/src/props.d.ts\";\nexport { api } from '/pkg/src/api.js';\n"
         );
+    }
+
+    /// Windows `canonicalize` spellings of an existing file and directory
+    /// (#12952), which this host cannot produce itself.
+    #[test]
+    fn a_verbatim_canonical_path_resolves_like_the_plain_one() {
+        let resolved = Path::new("D:/app/src/./api.ts");
+        let cases = [
+            (r"\\?\D:\app\src\api.ts", "D:/app/src/api"),
+            (r"\\?\D:\app\src\lib", "D:/app/src/lib"),
+            (
+                r"\\?\UNC\server\share\app\src\api.ts",
+                "//server/share/app/src/api",
+            ),
+            ("//?/D:/app/src/props.d.ts", "D:/app/src/props.d.ts"),
+        ];
+        for (canonical, expected) in cases {
+            assert_eq!(
+                checker_specifier(resolved, Some(PathBuf::from(canonical))).as_str(),
+                expected,
+                "{canonical}"
+            );
+        }
+        // A path that does not exist keeps the lexical spelling.
+        assert_eq!(checker_specifier(resolved, None).as_str(), "D:/app/src/api");
     }
 }

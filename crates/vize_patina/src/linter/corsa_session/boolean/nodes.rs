@@ -136,6 +136,12 @@ pub(in crate::linter) fn node_text(data: &[u8], index: usize) -> corsa::Result<(
     Ok((text, tree.field(index, 4)?, tree.field(index, 8)?))
 }
 
+/// The syntax kind of the encoded tree's root, which is always the
+/// `SourceFile`. Node handles carry kinds in the same numbering.
+pub(in crate::linter) fn source_file_kind(data: &[u8]) -> corsa::Result<u32> {
+    Tree::read(data)?.field(1, 0)
+}
+
 pub(in crate::linter) fn locations(
     data: &[u8],
     source: &str,

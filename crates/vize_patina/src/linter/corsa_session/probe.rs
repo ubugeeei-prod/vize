@@ -1,4 +1,8 @@
-use super::{CorsaTypeAwareSession, TypeProbe, errors::compact_error};
+use super::{
+    CorsaTypeAwareSession, TypeProbe,
+    errors::compact_error,
+    resilient::{answer_each, is_query_local},
+};
 use corsa::{
     CorsaError,
     api::{DocumentIdentifier, ProjectSession, TypeProbeOptions, TypeResponse},
@@ -105,14 +109,14 @@ async fn probe_types_at_positions(
     } else {
         match profile!(
             "patina.corsa_session.types_of_symbols",
-            session
-                .get_types_of_symbols(
-                    symbol_slots
-                        .iter()
-                        .map(|(_, symbol)| symbol.clone())
-                        .collect(),
-                )
-                .await
+            answer_each(
+                symbol_slots
+                    .iter()
+                    .map(|(_, symbol)| symbol.clone())
+                    .collect(),
+                |symbols| session.get_types_of_symbols(symbols),
+            )
+            .await
         ) {
             Ok(types) => types,
             Err(error) if is_snapshot_registry_handle_error(&error) => {
@@ -151,15 +155,15 @@ async fn probe_types_at_positions(
             };
             missing_positions.push(position);
         }
-        let positional = session
-            .client()
-            .get_types_at_positions(
+        let positional = answer_each(missing_positions, |positions| {
+            session.client().get_types_at_positions(
                 session.snapshot().handle.clone(),
                 session.project_handle(),
-                file,
-                missing_positions,
+                file.clone(),
+                positions,
             )
-            .await?;
+        })
+        .await?;
         if positional.len() != missing.len() {
             return Err(CorsaError::Protocol(
                 "Incomplete type probe position batch".into(),
@@ -190,7 +194,12 @@ async fn probe_types_at_positions(
         let probe = match cache.get(&key) {
             Some(probe) => probe.clone(),
             None => {
-                let probe = probe_type_response(session, response, options).await?;
+                // One type whose probe fails stays unprobed; the rest are not.
+                let probe = match probe_type_response(session, response, options).await {
+                    Ok(probe) => probe,
+                    Err(error) if is_query_local(&error) => None,
+                    Err(error) => return Err(error),
+                };
                 cache.insert(key, probe.clone());
                 probe
             }

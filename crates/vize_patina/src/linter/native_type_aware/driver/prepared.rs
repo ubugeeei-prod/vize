@@ -59,7 +59,10 @@ impl PreparedSfc {
         let Some(plan) = self.plan.as_ref() else {
             return Ok(());
         };
-        probes::evaluate(
+        // The stages fail independently: a stage the checker cannot finish
+        // keeps the findings it made, the later stages still run, and the
+        // first failure is reported once for the file.
+        let probed = probes::evaluate(
             session,
             ProbeBatch {
                 content: &plan.content,
@@ -73,28 +76,28 @@ impl PreparedSfc {
             &mut self.result,
             &mut self.should_warn_for_props,
             &mut self.should_warn_for_emits,
-        )?;
+        );
         // Script-statement findings (no-floating-promises among them) keep
         // their place ahead of strict-boolean-expressions.
-        if let Some(typescript) = &plan.typescript {
+        let typed = plan.typescript.as_ref().map_or(Ok(()), |typescript| {
             typescript_eslint::evaluate(
                 session,
                 typescript,
                 &plan.content,
                 linter,
                 &mut self.result,
-            )?;
-        }
-        if let Some(boolean) = &plan.boolean {
+            )
+        });
+        let boolean = plan.boolean.as_ref().map_or(Ok(()), |boolean| {
             strict_boolean::evaluate(
                 session,
                 &plan.content,
                 boolean,
                 linter.strict_boolean_options,
                 &mut self.result,
-            )?;
-        }
-        Ok(())
+            )
+        });
+        probed.and(typed).and(boolean)
     }
 
     /// Retain partial probe findings on failure, followed by macro and CSS findings.

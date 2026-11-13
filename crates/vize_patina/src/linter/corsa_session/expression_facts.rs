@@ -19,6 +19,7 @@ use super::CorsaTypeAwareSession;
 use super::checker_memo::CheckerMemo;
 use super::promise_facts::{PromiseChecker, PromiseFacts};
 use super::relations::{self, RelationReply, RelationRequest};
+use super::resilient::local;
 use super::type_node_facts::{TypeNodeProbe, TypePartFact};
 use super::type_shape::{
     ShapeCache, ShapeRequest, describe as describe_shape, predicate as predicate_fact,
@@ -298,7 +299,7 @@ async fn load(
         .map(ExpressionQuery::widens)
         .collect::<Vec<_>>();
     widen.resize(spans.len(), false);
-    let (responses, handles) = type_responses(session, file, source, &spans, &widen).await?;
+    let (responses, handles) = type_responses(memo, file, source, &spans, &widen).await?;
     if responses.len() != spans.len() {
         return Err(corsa::CorsaError::Protocol(
             "Incomplete expression type batch".into(),
@@ -357,54 +358,60 @@ async fn load(
             )
             .await;
         }
+        // Each fact family below fails on its own: a query the checker
+        // cannot answer leaves that family unset for this expression only.
         if query.detail {
-            fact.detail = Some(type_detail(memo, response, &mut details).await?);
+            fact.detail = local(type_detail(memo, response, &mut details).await)?;
         }
         if let Some(location) = location {
             if query.call_positions > 0 {
-                fact.call = signatures::resolved_parameters(
-                    memo,
-                    location.clone(),
-                    query.call_positions,
-                    &mut details,
-                )
-                .await?;
+                fact.call = local(
+                    signatures::resolved_parameters(
+                        memo,
+                        location.clone(),
+                        query.call_positions,
+                        &mut details,
+                    )
+                    .await,
+                )?
+                .flatten();
             }
             if query.contextual {
                 fact.contextual =
-                    Some(signatures::contextual_type(memo, location.clone(), &mut details).await?);
+                    local(signatures::contextual_type(memo, location.clone(), &mut details).await)?;
             }
         }
         if let Some(contextual) = query.function_returns {
-            fact.returns = Some(
+            fact.returns = local(
                 signatures::function_returns(
                     memo,
                     response,
                     location.filter(|_| contextual).cloned(),
                     &mut details,
                 )
-                .await?,
-            );
+                .await,
+            )?;
         }
         for path in &query.paths {
-            let detail = paths::detail_at(memo, response, path, &mut details).await?;
-            fact.paths.push(detail);
+            let detail = local(paths::detail_at(memo, response, path, &mut details).await)?;
+            fact.paths.push(detail.flatten());
         }
         if let Some(request) = &query.shape {
             let key = request.keys_from.as_ref().and_then(response_at);
-            let mut described = describe_shape(memo, response, request, key, &mut shapes).await?;
-            if let Some(call) = &request.predicate
+            let mut described =
+                local(describe_shape(memo, response, request, key, &mut shapes).await)?;
+            if let Some(map) = described.as_mut().and_then(Value::as_object_mut)
+                && let Some(call) = &request.predicate
                 && let Some(callee) = response_at(&call.callee)
             {
                 let arguments = call.arguments.iter().map(response_at).collect::<Vec<_>>();
-                if let (Some(predicate), Some(map)) = (
-                    predicate_fact(memo, callee, &arguments, &mut shapes).await?,
-                    described.as_object_mut(),
-                ) {
+                if let Some(predicate) =
+                    local(predicate_fact(memo, callee, &arguments, &mut shapes).await)?.flatten()
+                {
                     map.insert("predicate".into(), predicate);
                 }
             }
-            fact.shape = Some(described);
+            fact.shape = described;
         }
         if query.tree != 0 {
             fact.tree = Some(trees.shape(response, query.tree).await);
@@ -413,11 +420,11 @@ async fn load(
             fact.member_methods = Some(trees.member_methods(response, &query.member_methods).await);
         }
         if query.parts {
-            fact.type_parts = probe.parts(memo, response).await?;
+            fact.type_parts = local(probe.parts(memo, response).await)?.unwrap_or_default();
             fact.error_type = probe.is_error(response);
         }
         if query.empty_object {
-            fact.empty_object = Some(probe.contains_empty_object(memo, response).await?);
+            fact.empty_object = local(probe.contains_empty_object(memo, response).await)?;
         }
         // Promise facts refine the rules; a failed walk leaves them unset
         // rather than failing the whole lint.

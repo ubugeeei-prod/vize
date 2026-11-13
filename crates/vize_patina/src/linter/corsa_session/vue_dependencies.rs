@@ -200,13 +200,15 @@ pub(super) fn materialize(
 }
 
 fn absolute_path(path: &Path) -> PathBuf {
-    path.canonicalize().unwrap_or_else(|_| {
-        if path.is_absolute() {
-            path.to_path_buf()
-        } else {
-            std::env::current_dir().unwrap_or_default().join(path)
-        }
-    })
+    path.canonicalize()
+        .map(vize_l0::path::strip_verbatim_prefix)
+        .unwrap_or_else(|_| {
+            if path.is_absolute() {
+                path.to_path_buf()
+            } else {
+                std::env::current_dir().unwrap_or_default().join(path)
+            }
+        })
 }
 
 fn dependency_target(session_root: &Path, project_root: &Path, source: &Path) -> PathBuf {

@@ -5,7 +5,7 @@
 //! contextual types). One memo per batch answers each question once per type
 //! or node, whichever family asks first.
 use corsa::api::{NodeHandle, ProjectSession, TypeHandle, TypeResponse};
-use std::cell::RefCell;
+use std::cell::{Cell, RefCell};
 use std::ops::Deref;
 use vize_l0::FxHashMap;
 
@@ -19,6 +19,23 @@ pub(in crate::linter) struct CheckerMemo<'a> {
     contextual: RefCell<FxHashMap<NodeHandle, Option<TypeResponse>>>,
     texts: RefCell<FxHashMap<TypeHandle, Vec<vize_l0::String>>>,
     property_names: RefCell<FxHashMap<TypeHandle, Vec<vize_l0::String>>>,
+    /// How far this runtime's syntax kinds sit from [`syntax_kind`]'s.
+    kind_offset: Cell<Option<i64>>,
+}
+
+/// TypeScript 7.0 `ast.Kind` values (typescript-go
+/// internal/ast/kind_generated.go). Runtimes number kinds differently: 7.1
+/// beta inserts one ahead of the declarations, so every value below is one
+/// higher there. A node handle's kind is read through
+/// [`CheckerMemo::syntax_kind`], which removes that offset (#12943).
+pub(in crate::linter) mod syntax_kind {
+    pub(in crate::linter) const PROPERTY_DECLARATION: u16 = 173;
+    pub(in crate::linter) const METHOD_SIGNATURE: u16 = 174;
+    pub(in crate::linter) const METHOD_DECLARATION: u16 = 175;
+    pub(in crate::linter) const FUNCTION_EXPRESSION: u16 = 219;
+    pub(in crate::linter) const PROPERTY_ASSIGNMENT: u16 = 303;
+    /// The root of every encoded tree, which calibrates the offset.
+    pub(in crate::linter) const SOURCE_FILE: u16 = 307;
 }
 
 impl Deref for CheckerMemo<'_> {
@@ -38,7 +55,28 @@ impl<'a> CheckerMemo<'a> {
             contextual: RefCell::default(),
             texts: RefCell::default(),
             property_names: RefCell::default(),
+            kind_offset: Cell::new(None),
         }
+    }
+
+    /// Learn this runtime's kind numbering from the kind its encoded trees
+    /// give the `SourceFile` root.
+    pub(in crate::linter) fn calibrate_kinds(&self, source_file_kind: u32) {
+        self.kind_offset.set(Some(
+            i64::from(source_file_kind) - i64::from(syntax_kind::SOURCE_FILE),
+        ));
+    }
+
+    /// The kind of the node `handle` names, in [`syntax_kind`] numbering.
+    /// `None` when the handle carries no kind or the numbering is unknown.
+    pub(in crate::linter) fn syntax_kind(&self, handle: &NodeHandle) -> Option<u16> {
+        let raw = match handle.parse() {
+            Ok(parsed) => parsed.kind,
+            // Compact stable-runtime handles: `<node index>.<kind>.<path>`.
+            Err(_) => handle.as_str().split('.').nth(1)?.parse().ok()?,
+        };
+        let offset = self.kind_offset.get()?;
+        u16::try_from(i64::from(raw) - offset).ok()
     }
 
     /// The session itself, for helpers that take `&ProjectSession`.
