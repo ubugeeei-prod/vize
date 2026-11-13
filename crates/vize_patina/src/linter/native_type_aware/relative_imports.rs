@@ -22,10 +22,9 @@ pub(super) fn absolutize_relative_imports(document: &mut TypeAwareDocument, file
     while let Some((start, end)) = next_relative_specifier(&text, from) {
         let relative = text.get(start..end).unwrap_or_default();
         let resolved = parent.join(relative);
-        let absolute = resolved
-            .canonicalize()
-            .map(|path| display_path(&path))
-            .unwrap_or_else(|_| display_path(&normalize_path(&resolved)));
+        let absolute = display_path(&vize_carton::path::canonicalize_non_verbatim(
+            &normalize_path(&resolved),
+        ));
         // `allowImportingTsExtensions` covers relative specifiers only. An
         // absolute `api.ts` is an error module (`any`); the extensionless
         // path still resolves under `moduleResolution: bundler` (#12948).
@@ -132,6 +131,9 @@ fn strip_implementation_extension(path: VizeString) -> VizeString {
 #[cfg(test)]
 #[expect(clippy::string_slice, reason = "tests assert by panicking")]
 mod tests {
+    use std::fs;
+
+    use tempfile::tempdir;
     use vize_canon::virtual_ts::ProjectionMapping;
     use vize_canon::virtual_ts::VizeMapping;
     use vize_l0::String as VizeString;
@@ -175,5 +177,34 @@ mod tests {
             document.content.as_str(),
             "import type { Props } from \"/pkg/src/props.d.ts\";\nexport { api } from '/pkg/src/api.js';\n"
         );
+    }
+
+    #[test]
+    fn existing_files_and_directories_use_checker_compatible_absolute_paths() {
+        let package = tempdir().expect("temporary package");
+        let source_dir = package.path().join("src");
+        fs::create_dir_all(source_dir.join("lib")).expect("library directory");
+        fs::write(source_dir.join("api.ts"), "export const value = 1;\n")
+            .expect("TypeScript module");
+        fs::write(
+            source_dir.join("lib/index.ts"),
+            "export const nested = 2;\n",
+        )
+        .expect("directory module");
+
+        let source = "import { value } from './api.ts';\nimport { nested } from './lib';\n";
+        let mut document = TypeAwareDocument {
+            content: VizeString::from(source),
+            mapping: ProjectionMapping::from_spans(vec![]),
+        };
+        absolutize_relative_imports(
+            &mut document,
+            source_dir.join("Panel.vue").to_str().expect("UTF-8 path"),
+        );
+
+        let normalized = document.content.replace('\\', "/");
+        assert!(!normalized.contains("//?/"), "{normalized}");
+        assert!(normalized.contains("/src/api'"), "{normalized}");
+        assert!(normalized.contains("/src/lib'"), "{normalized}");
     }
 }
