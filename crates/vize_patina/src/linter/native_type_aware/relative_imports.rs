@@ -164,7 +164,8 @@ mod tests {
 
     #[test]
     fn declaration_and_javascript_specifiers_keep_their_extensions() {
-        let source = "import type { Props } from \"./props.d.ts\";\nexport { api } from './api.js';\n";
+        let source =
+            "import type { Props } from \"./props.d.ts\";\nexport { api } from './api.js';\n";
         let mut document = TypeAwareDocument {
             content: VizeString::from(source),
             mapping: ProjectionMapping::from_spans(vec![]),
