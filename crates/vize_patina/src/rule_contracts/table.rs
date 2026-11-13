@@ -240,6 +240,7 @@ pub static RULE_CONTRACTS: &[RuleEntry] = &[
     row!("type/no-unnecessary-type-arguments", Complete, TYPES, Warning),
     row!("type/no-unnecessary-type-assertion", Complete, TYPES, Warning),
     row!("type/no-unnecessary-type-conversion", Complete, TYPES, Warning),
+    row!("type/no-unnecessary-type-parameters", Complete, TYPES, Warning),
     row!("type/no-unsafe-argument", Complete, TYPES, Warning),
     row!("type/no-unsafe-assignment", Complete, TYPES, Warning),
     row!("type/no-unsafe-call", Complete, TYPES, Warning),

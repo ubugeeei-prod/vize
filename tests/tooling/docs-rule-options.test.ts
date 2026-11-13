@@ -295,6 +295,7 @@ test("strict boolean rows render within the complete option and type-aware table
       "type/no-unnecessary-type-arguments",
       "type/no-unnecessary-type-assertion",
       "type/no-unnecessary-type-conversion",
+      "type/no-unnecessary-type-parameters",
       "type/no-unsafe-argument",
       "type/no-unsafe-assignment",
       "type/no-unsafe-call",
