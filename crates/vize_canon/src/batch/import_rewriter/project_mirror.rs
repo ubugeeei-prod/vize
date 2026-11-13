@@ -7,6 +7,7 @@ use vize_carton::{FxHashSet, String, cstr};
 
 use super::dts_rewrite::rewrite_relative_dts_specifier;
 use super::policy::rewrite_vue_mirror_specifier;
+use super::reference_directives::escaping_reference_occurrences;
 use super::virtual_rewrite::{
     absolute_import_needs_virtual_rewrite, is_rewritable_project_specifier,
     is_rewritable_vue_specifier, resolve_source_path,
@@ -95,11 +96,22 @@ impl ImportRewriter {
                     )
                 })
         };
+        let directives = escaping_reference_occurrences(source, source_dir, roots.0);
         match capture {
-            Some(mode) => self.rewrite_with_syntax(source, source_type, rewrite_specifier, mode),
+            Some(mode) => self.rewrite_with_syntax_and_directives(
+                source,
+                source_type,
+                rewrite_specifier,
+                mode,
+                &directives,
+            ),
             None => {
-                let (result, stars, _) =
-                    self.rewrite_with_star_capture(source, source_type, rewrite_specifier, false);
+                let (result, stars) = self.rewrite_with_reference_directives(
+                    source,
+                    source_type,
+                    rewrite_specifier,
+                    &directives,
+                );
                 SyntaxRewrite::without_syntax(result, stars)
             }
         }
@@ -214,11 +226,22 @@ impl ImportRewriter {
                 options.alias_rewrite_policy,
             )
         };
+        let directives = escaping_reference_occurrences(source, source_dir, roots.0);
         match capture {
-            Some(mode) => self.rewrite_with_syntax(source, source_type, rewrite_specifier, mode),
+            Some(mode) => self.rewrite_with_syntax_and_directives(
+                source,
+                source_type,
+                rewrite_specifier,
+                mode,
+                &directives,
+            ),
             None => {
-                let (result, stars, _) =
-                    self.rewrite_with_star_capture(source, source_type, rewrite_specifier, false);
+                let (result, stars) = self.rewrite_with_reference_directives(
+                    source,
+                    source_type,
+                    rewrite_specifier,
+                    &directives,
+                );
                 SyntaxRewrite::without_syntax(result, stars)
             }
         }

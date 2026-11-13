@@ -93,13 +93,29 @@ impl ImportRewriter {
     where
         F: Fn(&str, crate::PackageResolutionMode) -> Option<String>,
     {
+        self.rewrite_with_syntax_and_directives(source, source_type, rewrite_specifier, mode, &[])
+    }
+
+    /// [`Self::rewrite_with_syntax`], also offering each of `directives` (the
+    /// reference-directive values outside every literal) to the same policy.
+    pub(super) fn rewrite_with_syntax_and_directives<F>(
+        &self,
+        source: &str,
+        source_type: SourceType,
+        rewrite_specifier: F,
+        mode: RewriteSyntaxMode<'_>,
+        directives: &[SpanOccurrence],
+    ) -> SyntaxRewrite
+    where
+        F: Fn(&str, crate::PackageResolutionMode) -> Option<String>,
+    {
         if let RewriteSyntaxMode::Reuse(Some(syntax)) = mode
             && syntax.reusable_for(source, source_type)
         {
             vize_carton::micro_count!("canon.import_rewriter.rewrite_parse.reused.calls", 1);
             let result = self.rewrite_literals(
                 source,
-                syntax.occurrences(source),
+                syntax.occurrences(source).chain(literal_views(directives)),
                 |_, _, path, mode| rewrite_specifier(path, mode),
                 None,
             );
@@ -111,10 +127,7 @@ impl ImportRewriter {
         let mut replaced = ReplacedLiterals::default();
         let result = self.rewrite_literals(
             source,
-            parsed
-                .occurrences
-                .iter()
-                .map(|(start, end, path, mode)| (*start, *end, path.as_str(), *mode)),
+            literal_views(&parsed.occurrences).chain(literal_views(directives)),
             |_, _, path, mode| rewrite_specifier(path, mode),
             retain.then_some(&mut replaced),
         );
@@ -133,6 +146,14 @@ impl ImportRewriter {
             replaced,
         }
     }
+}
+
+pub(super) fn literal_views(
+    occurrences: &[SpanOccurrence],
+) -> impl Iterator<Item = (u32, u32, &str, crate::PackageResolutionMode)> {
+    occurrences
+        .iter()
+        .map(|(start, end, path, mode)| (*start, *end, path.as_str(), *mode))
 }
 
 /// Literals and stars of one rewrite parse, offsets into the parsed source.

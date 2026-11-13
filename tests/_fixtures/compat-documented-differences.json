@@ -21,20 +21,6 @@
     },
     {
       "project": "reka-ui",
-      "file": "packages/core/src/Calendar/story/CalendarMultiple.story.vue",
-      "severity": "error",
-      "line": 11,
-      "column": 45,
-      "vize": null,
-      "baseline": {
-        "code": 2353,
-        "message": "Object literal may only specify known properties, and 'iframe' does not exist in type '{ type: \"grid\"; width?: string | number | undefined; }'."
-      },
-      "issue": 5722,
-      "reason": "vue-tsc applies the Histoire Story layout prop surface differently for this story file; the exact baseline-only row is tracked for follow-up under issue 5722."
-    },
-    {
-      "project": "reka-ui",
       "file": "packages/core/src/DismissableLayer/story/_DismissableBox.vue",
       "severity": "error",
       "line": 28,
@@ -49,62 +35,6 @@
     },
     {
       "project": "reka-ui",
-      "file": "packages/core/src/Editable/story/EditableChromatic.story.vue",
-      "severity": "error",
-      "line": 12,
-      "column": 44,
-      "vize": null,
-      "baseline": {
-        "code": 2353,
-        "message": "Object literal may only specify known properties, and 'iframe' does not exist in type '{ type: \"grid\"; width?: string | number | undefined; }'."
-      },
-      "issue": 5722,
-      "reason": "vue-tsc applies the Histoire Story layout prop surface differently for this story file; the exact baseline-only row is tracked for follow-up under issue 5722."
-    },
-    {
-      "project": "reka-ui",
-      "file": "packages/core/src/Listbox/story/ListboxChromatic.story.vue",
-      "severity": "error",
-      "line": 17,
-      "column": 30,
-      "vize": null,
-      "baseline": {
-        "code": 2353,
-        "message": "Object literal may only specify known properties, and 'iframe' does not exist in type '{ type: \"grid\"; width?: string | number | undefined; }'."
-      },
-      "issue": 5722,
-      "reason": "vue-tsc applies the Histoire Story layout prop surface differently for this story file; the exact baseline-only row is tracked for follow-up under issue 5722."
-    },
-    {
-      "project": "reka-ui",
-      "file": "packages/core/src/Listbox/story/ListboxFilter.story.vue",
-      "severity": "error",
-      "line": 13,
-      "column": 30,
-      "vize": null,
-      "baseline": {
-        "code": 2353,
-        "message": "Object literal may only specify known properties, and 'iframe' does not exist in type '{ type: \"grid\"; width?: string | number | undefined; }'."
-      },
-      "issue": 5722,
-      "reason": "vue-tsc applies the Histoire Story layout prop surface differently for this story file; the exact baseline-only row is tracked for follow-up under issue 5722."
-    },
-    {
-      "project": "reka-ui",
-      "file": "packages/core/src/Listbox/story/ListboxVirtual.story.vue",
-      "severity": "error",
-      "line": 16,
-      "column": 30,
-      "vize": null,
-      "baseline": {
-        "code": 2353,
-        "message": "Object literal may only specify known properties, and 'iframe' does not exist in type '{ type: \"grid\"; width?: string | number | undefined; }'."
-      },
-      "issue": 5722,
-      "reason": "vue-tsc applies the Histoire Story layout prop surface differently for this story file; the exact baseline-only row is tracked for follow-up under issue 5722."
-    },
-    {
-      "project": "reka-ui",
       "file": "packages/core/src/PinInput/story/PinInput.story.vue",
       "severity": "error",
       "line": 20,
@@ -116,118 +46,6 @@
       "baseline": null,
       "issue": 5722,
       "reason": "Vize preserves this stricter real-project diagnostic while vue-tsc accepts the same source; the exact row is tracked for follow-up under issue 5722."
-    },
-    {
-      "project": "reka-ui",
-      "file": "packages/core/src/RangeCalendar/story/RangeCalendarMultiple.story.vue",
-      "severity": "error",
-      "line": 11,
-      "column": 45,
-      "vize": null,
-      "baseline": {
-        "code": 2353,
-        "message": "Object literal may only specify known properties, and 'iframe' does not exist in type '{ type: \"grid\"; width?: string | number | undefined; }'."
-      },
-      "issue": 5722,
-      "reason": "vue-tsc applies the Histoire Story layout prop surface differently for this story file; the exact baseline-only row is tracked for follow-up under issue 5722."
-    },
-    {
-      "project": "reka-ui",
-      "file": "packages/core/src/Splitter/story/SplitterAction.story.vue",
-      "severity": "error",
-      "line": 18,
-      "column": 32,
-      "vize": null,
-      "baseline": {
-        "code": 2353,
-        "message": "Object literal may only specify known properties, and 'width' does not exist in type '{ type: \"single\"; iframe?: boolean | undefined; }'."
-      },
-      "issue": 5722,
-      "reason": "vue-tsc applies the Histoire Story layout prop surface differently for this story file; the exact baseline-only row is tracked for follow-up under issue 5722."
-    },
-    {
-      "project": "reka-ui",
-      "file": "packages/core/src/Splitter/story/SplitterChromatic.story.vue",
-      "severity": "error",
-      "line": 8,
-      "column": 45,
-      "vize": null,
-      "baseline": {
-        "code": 2353,
-        "message": "Object literal may only specify known properties, and 'iframe' does not exist in type '{ type: \"grid\"; width?: string | number | undefined; }'."
-      },
-      "issue": 5722,
-      "reason": "vue-tsc applies the Histoire Story layout prop surface differently for this story file; the exact baseline-only row is tracked for follow-up under issue 5722."
-    },
-    {
-      "project": "reka-ui",
-      "file": "packages/core/src/Splitter/story/SplitterCollapsible.story.vue",
-      "severity": "error",
-      "line": 8,
-      "column": 32,
-      "vize": null,
-      "baseline": {
-        "code": 2353,
-        "message": "Object literal may only specify known properties, and 'width' does not exist in type '{ type: \"single\"; iframe?: boolean | undefined; }'."
-      },
-      "issue": 5722,
-      "reason": "vue-tsc applies the Histoire Story layout prop surface differently for this story file; the exact baseline-only row is tracked for follow-up under issue 5722."
-    },
-    {
-      "project": "reka-ui",
-      "file": "packages/core/src/Splitter/story/SplitterConditional.story.vue",
-      "severity": "error",
-      "line": 12,
-      "column": 32,
-      "vize": null,
-      "baseline": {
-        "code": 2353,
-        "message": "Object literal may only specify known properties, and 'width' does not exist in type '{ type: \"single\"; iframe?: boolean | undefined; }'."
-      },
-      "issue": 5722,
-      "reason": "vue-tsc applies the Histoire Story layout prop surface differently for this story file; the exact baseline-only row is tracked for follow-up under issue 5722."
-    },
-    {
-      "project": "reka-ui",
-      "file": "packages/core/src/Splitter/story/SplitterDirection.story.vue",
-      "severity": "error",
-      "line": 12,
-      "column": 32,
-      "vize": null,
-      "baseline": {
-        "code": 2353,
-        "message": "Object literal may only specify known properties, and 'width' does not exist in type '{ type: \"single\"; iframe?: boolean | undefined; }'."
-      },
-      "issue": 5722,
-      "reason": "vue-tsc applies the Histoire Story layout prop surface differently for this story file; the exact baseline-only row is tracked for follow-up under issue 5722."
-    },
-    {
-      "project": "reka-ui",
-      "file": "packages/core/src/Splitter/story/SplitterOverflow.story.vue",
-      "severity": "error",
-      "line": 8,
-      "column": 32,
-      "vize": null,
-      "baseline": {
-        "code": 2353,
-        "message": "Object literal may only specify known properties, and 'width' does not exist in type '{ type: \"single\"; iframe?: boolean | undefined; }'."
-      },
-      "issue": 5722,
-      "reason": "vue-tsc applies the Histoire Story layout prop surface differently for this story file; the exact baseline-only row is tracked for follow-up under issue 5722."
-    },
-    {
-      "project": "reka-ui",
-      "file": "packages/core/src/Splitter/story/SplitterPersistence.story.vue",
-      "severity": "error",
-      "line": 8,
-      "column": 32,
-      "vize": null,
-      "baseline": {
-        "code": 2353,
-        "message": "Object literal may only specify known properties, and 'width' does not exist in type '{ type: \"single\"; iframe?: boolean | undefined; }'."
-      },
-      "issue": 5722,
-      "reason": "vue-tsc applies the Histoire Story layout prop surface differently for this story file; the exact baseline-only row is tracked for follow-up under issue 5722."
     },
     {
       "project": "reka-ui",

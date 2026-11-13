@@ -306,13 +306,6 @@ fn reopening_tracks_provider_bytes_reexports_removal_and_configuration_changes()
 #[test]
 fn resolver_redirections_never_publish_a_route_props_capability() {
     let (_guard, root) = project("preview");
-    let legacy = generate_vue_content_mapper_transform_with_project_options(
-        &root.join("src/pages/[id].vue"),
-        PAGE,
-        Default::default(),
-        Some(&root),
-    )
-    .unwrap();
     for extension in [
         json!({"baseUrl":"."}),
         json!({"baseUrl":""}),
@@ -337,6 +330,14 @@ fn resolver_redirections_never_publish_a_route_props_capability() {
             config.watched_files,
             vec![root.join("tsconfig.json").to_string_lossy().into_owned()]
         );
+        // The project's resolved checks, without any route-props capability.
+        let legacy = generate_vue_content_mapper_transform_with_project_options(
+            &root.join("src/pages/[id].vue"),
+            PAGE,
+            config.transform_options,
+            Some(&root),
+        )
+        .unwrap();
         assert_eq!(
             serde_json::to_value(transform(&root, &config)).unwrap(),
             serde_json::to_value(&legacy).unwrap()

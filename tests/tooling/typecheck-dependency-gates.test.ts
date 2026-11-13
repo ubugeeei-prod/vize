@@ -103,7 +103,7 @@ test("Canon Rust CLI gates use the fail-closed Corsa helper", () => {
     ["check_canon_generic_props_cli.rs", 1, []],
     ["check_canon_generic_sfc_mount_cli.rs", 1, []],
     ["check_canon_graphql_cli.rs", 2, []],
-    ["check_canon_nuxt_parity_cli.rs", 5, []],
+    ["check_canon_nuxt_parity_cli.rs", 6, []],
     ["check_canon_recent_issues_cli.rs", 6, []],
     ["check_canon_recent_type_regressions_cli.rs", 6, []],
     ["check_canon_remapped_key_cli.rs", 1, []],

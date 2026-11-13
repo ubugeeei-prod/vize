@@ -1,0 +1,4 @@
+<template>
+  <Story title="Splitter" :layout="{ type: 'single', width: '100%' }" />
+  <Story :title="1" />
+</template>

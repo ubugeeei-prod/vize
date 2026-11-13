@@ -15599,6 +15599,45 @@
       }
     },
     {
+      "id": "typechecker/regression/relative-reference-global-components",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "relative-reference-global-components/Layout.story.vue.txt",
+          "sha256": "b46c5dda29088bdbe82285c7c4f24919b692ae38609a9044a5403e7cadae59cb",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "relative-reference-global-components/components.d.ts.txt",
+          "sha256": "b6622ab8fb4fc98773fcf94927eafbba51c35e4d44bb359cfb957d23269c4696",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "relative-reference-global-components/env.d.ts.txt",
+          "sha256": "19b2189a018f3f063f7dc1a22f7805d690b181e7967132303e382f0918e6e6ae",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "check_canon_nuxt_parity_cli::check_relative_reference_directives_keep_global_components_typed; reka-ui's env.d.ts reaches Histoire's GlobalComponents augmentation through a relative /// <reference types> that leaves the project root, so the copy in the virtual project must still name that file or every <Story> prop goes unchecked; expected rows are vue-tsc 3.3.14's TS2353 and TS2322."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/relaxed-fallthrough-undefined-12491",
       "state": "active",
       "targets": [

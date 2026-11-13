@@ -1,6 +1,7 @@
 //! nuxt/ui and reka-ui parity regressions: union-host slot payloads, a
 //! library consumed from a nested app, auto-imported template refs, public
-//! `defineProps` type names and the slot-outlet option.
+//! `defineProps` type names, the slot-outlet option and global components
+//! registered through a relative reference directive.
 #![cfg(test)]
 #![expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
@@ -274,4 +275,54 @@ fn check_slot_outlet_props_follow_the_vue_compiler_option() {
         assert_eq!(rows, expected_rows, "{stdout}");
         let _ = std::fs::remove_dir_all(&project_root);
     }
+}
+
+const RELATIVE_REFERENCE_FIXTURE: &str = concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/typechecker/relative-reference-global-components/"
+);
+
+/// reka-ui's `env.d.ts` reaches Histoire's `GlobalComponents` through a
+/// relative `/// <reference types>` that leaves the project root. The copy in
+/// the virtual project must still name that file, or `<Story>` is `any` and
+/// its props go unchecked.
+#[test]
+fn check_relative_reference_directives_keep_global_components_typed() {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
+        return;
+    };
+    let case_root = unique_case_dir("relative-reference-global-components");
+    let _ = std::fs::remove_dir_all(&case_root);
+    let project_root = case_root.join("app");
+    std::fs::create_dir_all(project_root.join("src")).unwrap();
+    std::fs::create_dir_all(case_root.join("types")).unwrap();
+    link_workspace_vue(&case_root).unwrap();
+    write_tsconfig(&project_root);
+    for (input, target) in [
+        (
+            "components.d.ts.txt",
+            case_root.join("types/components.d.ts"),
+        ),
+        ("env.d.ts.txt", project_root.join("src/env.d.ts")),
+        (
+            "Layout.story.vue.txt",
+            project_root.join("src/Layout.story.vue"),
+        ),
+    ] {
+        let source = std::fs::read(Path::new(RELATIVE_REFERENCE_FIXTURE).join(input)).unwrap();
+        std::fs::write(target, source).unwrap();
+    }
+
+    let (rows, stdout) = check_diagnostic_rows(&project_root, &corsa_path);
+    // vue-tsc 3.3.14 reports exactly these rows for the same project.
+    assert_eq!(
+        rows,
+        vec![
+            "error:2:54 [TS2353] Object literal may only specify known properties, and 'width' does not exist in type '{ type: \"single\"; iframe?: boolean | undefined; }'. (source: <Story title=\"Splitter\" :layout=\"{ type: 'single', width: '100%' }\" />; binding: 'layout')",
+            "error:3:11 [TS2322] Type 'number' is not assignable to type 'string'. (source: <Story :title=\"1\" />; binding: 'title')",
+        ],
+        "{stdout}"
+    );
+
+    let _ = std::fs::remove_dir_all(&case_root);
 }

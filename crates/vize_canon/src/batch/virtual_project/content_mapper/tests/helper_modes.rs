@@ -43,3 +43,31 @@ fn type_sharing_alone_does_not_change_self_contained_packets() {
         packet(standalone.with_external_component_type_helpers(true))
     );
 }
+
+/// A module that embeds its helpers has no `vize/virtual-ts-checker` import,
+/// so it declares vue-tsc's props fallback itself. Without it, an attribute a
+/// generic library component does not declare (`data-slot`) is an excess
+/// property in the mapper lanes but not in `vize check`.
+#[test]
+fn embedded_modules_declare_the_props_fallback_unless_unknown_props_are_checked() {
+    for (check_unknown_props, attrs_module, shared_virtual_module, expected) in [
+        (false, false, false, 1),
+        (false, true, false, 1),
+        (true, false, false, 0),
+        (false, true, true, 0),
+    ] {
+        let mut options = ContentMapperTransformOptions::default()
+            .with_external_component_attrs_module(attrs_module)
+            .with_external_component_type_helpers(attrs_module)
+            .with_shared_virtual_module(shared_virtual_module);
+        options.checks.check_unknown_props = check_unknown_props;
+        let packet = packet(options);
+        let text = packet["text"].as_str().unwrap_or_default();
+        assert_eq!(
+            text.matches("var __VLS_PROPS_FALLBACK: Record<string, unknown>;")
+                .count(),
+            expected,
+            "{text}"
+        );
+    }
+}

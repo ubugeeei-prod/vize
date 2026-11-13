@@ -20,6 +20,10 @@ const OWNER_SENSITIVE_COMPONENT_INSTANCE_HELPER_EXPORTS: &str = concat!(
     "$RelaxedDynamicUnionExtra };\n"
 );
 
+/// `props-fallback.d.ts.txt` as a module's global augmentation.
+const PROPS_FALLBACK_GLOBAL: &str =
+    "declare global {\n  var __VLS_PROPS_FALLBACK: Record<string, unknown>;\n}\n";
+
 /// Keep helpers outside setup so public component aliases can refer to them.
 pub(super) fn emit_module_preamble(
     ts: &mut crate::virtual_ts::TextBuf,
@@ -66,6 +70,14 @@ pub(super) fn emit_module_preamble(
         }
     } else {
         emit_import_meta_augmentation(ts, !options.omit_vite_client_reference);
+        if !options.check_options.check_unknown_props {
+            // A self-contained module has neither the program-wide preamble
+            // nor `vize/virtual-ts-checker`, the two places that declare
+            // vue-tsc's props fallback. Without it a generic library
+            // component's props are closed, and an attribute it does not
+            // declare (`data-slot`) becomes an excess property.
+            ts.push_str(PROPS_FALLBACK_GLOBAL);
+        }
         ts.push('\n');
     }
     ts.push_str("// ========== Module Scope (imports) ==========\n");

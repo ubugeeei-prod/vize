@@ -1,0 +1,20 @@
+// A Histoire-style registry: the component types are local to this module,
+// and only the `GlobalComponents` augmentation names them.
+type StoryLayout = { type: 'single', iframe?: boolean } | { type: 'grid', width?: number | string }
+
+interface StoryProps {
+  title?: string
+  layout?: StoryLayout
+}
+
+type StoryComponent = import('vue').DefineComponent<StoryProps>
+
+declare const Story: StoryComponent
+
+declare module 'vue' {
+  export interface GlobalComponents {
+    Story: typeof Story
+  }
+}
+
+export {}
