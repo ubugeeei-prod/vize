@@ -63,7 +63,7 @@ test("10617 current packets add only the independently observed 11675 diagnostic
     "8d388c0430adc0200efd324478c2f59e701a857e381b35988502249f746d4a08",
   );
   const current = JSON.parse(parenthesisRaw);
-  assert.equal(authority.currentSourcePackets, "source-packets-current-a0fe19e9a57e.json");
+  assert.equal(authority.currentSourcePackets, "source-packets-current-b04abc20ad7e.json");
   const proofRaw = readFileSync(
     new URL(
       "../fixtures/typechecker/undeclared-instance-globals-10617/source-packets-current-beca9eaf0681-provenance.json",

@@ -1,0 +1,156 @@
+{
+  "schema": "vize.instance-global-current-provenance",
+  "version": 1,
+  "issue": 10617,
+  "pullRequest": 12951,
+  "sourceChanges": [
+    {
+      "pullRequest": 12848,
+      "commit": "da8fa24faf2ca6bfdbc7157a339df8b1e33a383e"
+    },
+    {
+      "pullRequest": 12863,
+      "commit": "99bf1bc7a48092f42844c7cac3b6540bfa16d494"
+    }
+  ],
+  "producer": {
+    "sourceRevision": "b04abc20ad7e6944e9951417d492f786b7782ebd",
+    "sourceTree": "820816a945ff11eddebedd32db63f737b508c43c",
+    "pullRequestHead": "558eaa1dcc10886035238dba76ee13f9d677ff78",
+    "binarySha256": "8830fc2eea9ad6e67f1c6b0338d931c271726a6d00bec6de1f53140b15620071",
+    "recipe": "cargo build --profile ci -p vize",
+    "captureRun": 43251466440,
+    "artifactId": 13959294344,
+    "runAttempt": 1,
+    "platform": "linux",
+    "arch": "x64"
+  },
+  "artifact": {
+    "repository": "ubugeeei-prod/vize",
+    "run": 43251466440,
+    "job": 131299205802,
+    "id": 13959294344,
+    "name": "instance-globals-10617-558eaa1dcc10886035238dba76ee13f9d677ff78-1",
+    "digest": "sha256:a456d056a496d04877221faea72084ad817add6e3a28554f683e41194957a46b",
+    "bytes": 18699200
+  },
+  "previousPopulation": {
+    "path": "source-packets-current-a0fe19e9a57e.json",
+    "bytes": 416722,
+    "sha256": "bb469a9d4d5aac4ea578445080b0d9a371e17bad338dc4a637cfb00d32840802"
+  },
+  "successorPopulation": {
+    "path": "source-packets-current-b04abc20ad7e.json",
+    "bytes": 421129,
+    "sha256": "50857a5c71a6c9828a8eeb3f555551092646da180dbc6bbc9d0b482973a0825d"
+  },
+  "evidence": {
+    "source-build.json": {
+      "bytes": 326,
+      "sha256": "85302ef0d79e8b2556212de46b35716ffb079f2d4104d0bbdeca4bfcc071b141"
+    },
+    "source-launch.json": {
+      "bytes": 882,
+      "sha256": "faaf5d4506a88fb2fb3c5313daa1763ca69053ae9d7e4c329e8bf052f955294a"
+    },
+    "source-protocol.json": {
+      "bytes": 482439,
+      "sha256": "9e4cd1060a81ac49ee8666a54d871982d44f1e3142806989867b1e455c4c86a1"
+    },
+    "outcomes.json": {
+      "bytes": 687537,
+      "sha256": "ddcfa07ed67553c8acb8982ef2ff3983ca6163eec0a6226cb1e5f22cfec6a504"
+    },
+    "qualification.json": {
+      "bytes": 691806,
+      "sha256": "b1a5929f0ff9ee1dd18f801580d25a247bfacf49056fdac6280b8d53b27e422b"
+    },
+    "host-matrix.json": {
+      "bytes": 4328,
+      "sha256": "2602fef6ab60b41fab9477f3b9b1ac02a04e0a5408a1618c8c9b49361f2a3cfd"
+    }
+  },
+  "capturedQualification": {
+    "status": "unqualified",
+    "fullPacketQualification": false,
+    "hostMatrixQualification": false,
+    "totalOutcomes": 499,
+    "passedOutcomes": 435,
+    "gapCount": 64,
+    "gapIds": [
+      "whole-packet/lf/original",
+      "whole-packet/lf/valid",
+      "whole-packet/lf/undeclared-only",
+      "whole-packet/lf/repaired",
+      "whole-packet/lf/repeated",
+      "whole-packet/lf/optional",
+      "whole-packet/lf/call",
+      "whole-packet/lf/intentional-any",
+      "whole-packet/lf/declared-unknown",
+      "whole-packet/lf/plugin-valid",
+      "whole-packet/lf/plugin-invalid",
+      "whole-packet/lf/setup-shadow",
+      "whole-packet/lf/slot-shadow",
+      "whole-packet/lf/css-module",
+      "whole-packet/lf/own-props",
+      "whole-packet/lf/options-own-method",
+      "whole-packet/lf/expect-error-opening-child",
+      "whole-packet/lf/ignore-opening-child",
+      "whole-packet/lf/expect-owned-attribute",
+      "whole-packet/lf/ignore-owned-attribute",
+      "whole-packet/lf/shorthand-free",
+      "whole-packet/lf/typeof-value-free",
+      "whole-packet/lf/object-key",
+      "whole-packet/lf/member-key",
+      "whole-packet/lf/string-comment-role",
+      "whole-packet/lf/template-literal-raw",
+      "whole-packet/lf/template-literal-value",
+      "whole-packet/lf/callback-shadow",
+      "whole-packet/lf/callback-mixed",
+      "whole-packet/lf/callback-free",
+      "whole-packet/lf/computed-key-free",
+      "whole-packet/lf/destructured-callback-shadow",
+      "whole-packet/crlf-unicode/original",
+      "whole-packet/crlf-unicode/valid",
+      "whole-packet/crlf-unicode/undeclared-only",
+      "whole-packet/crlf-unicode/repaired",
+      "whole-packet/crlf-unicode/repeated",
+      "whole-packet/crlf-unicode/optional",
+      "whole-packet/crlf-unicode/call",
+      "whole-packet/crlf-unicode/intentional-any",
+      "whole-packet/crlf-unicode/declared-unknown",
+      "whole-packet/crlf-unicode/plugin-valid",
+      "whole-packet/crlf-unicode/plugin-invalid",
+      "whole-packet/crlf-unicode/setup-shadow",
+      "whole-packet/crlf-unicode/slot-shadow",
+      "whole-packet/crlf-unicode/css-module",
+      "whole-packet/crlf-unicode/own-props",
+      "whole-packet/crlf-unicode/options-own-method",
+      "whole-packet/crlf-unicode/expect-error-opening-child",
+      "whole-packet/crlf-unicode/ignore-opening-child",
+      "whole-packet/crlf-unicode/expect-owned-attribute",
+      "whole-packet/crlf-unicode/ignore-owned-attribute",
+      "whole-packet/crlf-unicode/shorthand-free",
+      "whole-packet/crlf-unicode/typeof-value-free",
+      "whole-packet/crlf-unicode/object-key",
+      "whole-packet/crlf-unicode/member-key",
+      "whole-packet/crlf-unicode/string-comment-role",
+      "whole-packet/crlf-unicode/template-literal-raw",
+      "whole-packet/crlf-unicode/template-literal-value",
+      "whole-packet/crlf-unicode/callback-shadow",
+      "whole-packet/crlf-unicode/callback-mixed",
+      "whole-packet/crlf-unicode/callback-free",
+      "whole-packet/crlf-unicode/computed-key-free",
+      "whole-packet/crlf-unicode/destructured-callback-shadow"
+    ]
+  },
+  "review": {
+    "completePackets": 80,
+    "allNonWholePacketOutcomesPassed": true,
+    "qualificationCredit": false,
+    "nativeAcceptanceCredit": false,
+    "publicPackageAcceptanceCredit": false,
+    "performanceCredit": false,
+    "reason": "64 LF and CRLF/Unicode whole packets gained exactly one raw `readonly __vizeFallthroughSource?: <fallthrough source>;` member ahead of __vizeHasFallthroughProps in their component type (#12863), with every later generated coordinate moved by that member's bytes; the two string-comment-role packets also dropped their one ignore directive over a single space (#12848). The other 16 complete results were byte-identical and all 435 semantic, protocol, mapping-geometry, and real-host controls passed; this record retains the observed postimages without assigning acceptance credit to the stale-golden run."
+  }
+}

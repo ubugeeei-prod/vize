@@ -30,30 +30,42 @@ type CurrentPacketProvenance = {
   };
 };
 
+/** Packets whose component type has no fallthrough surface stay byte-identical. */
+const unchangedCases = [
+  "v-for-source",
+  "loop-shadow",
+  "expect-owned-interpolation",
+  "ignore-owned-interpolation",
+  "expect-owned-foreign-sibling",
+  "ignore-owned-foreign-sibling",
+  "mixed-loop-scope",
+  "mixed-slot-scope",
+];
+
+export function currentPacketChanges(labels: readonly string[]): string[] {
+  return labels.filter((label) => !unchangedCases.includes(label.slice(label.indexOf("/") + 1)));
+}
+
 export function assertCurrentPacketProvenance(
   provenance: CurrentPacketProvenance,
   labels: readonly string[],
 ): void {
   assert.deepEqual(provenance.artifact, {
     repository: "ubugeeei-prod/vize",
-    run: 42811997092,
-    job: 129816418407,
-    id: 13762672879,
-    name: "instance-globals-10617-393142e7e6e77c9dde476131485011bfef8dfe59-1",
-    digest: "sha256:7f5c7f7be65b5e1447a99bb70d8006713b927a80bdcd1a708c33328f90f1e57c",
-    bytes: 18675558,
+    run: 43251466440,
+    job: 131299205802,
+    id: 13959294344,
+    name: "instance-globals-10617-558eaa1dcc10886035238dba76ee13f9d677ff78-1",
+    digest: "sha256:a456d056a496d04877221faea72084ad817add6e3a28554f683e41194957a46b",
+    bytes: 18699200,
   });
-  const changed = [
-    "lf/slot-shadow",
-    "lf/mixed-slot-scope",
-    "crlf-unicode/slot-shadow",
-    "crlf-unicode/mixed-slot-scope",
-  ];
-  assert.ok(changed.every((label) => labels.includes(label)));
+  const changed = currentPacketChanges(labels);
+  assert.equal(labels.length, 80);
+  assert.equal(changed.length, 64);
   assert.deepEqual(provenance.capturedQualification, {
     totalOutcomes: 499,
-    passedOutcomes: 495,
-    gapCount: 4,
+    passedOutcomes: 435,
+    gapCount: 64,
     status: "unqualified",
     fullPacketQualification: false,
     hostMatrixQualification: false,
@@ -67,6 +79,6 @@ export function assertCurrentPacketProvenance(
     publicPackageAcceptanceCredit: false,
     performanceCredit: false,
     reason:
-      "Only the LF and CRLF/Unicode slot-shadow and mixed-slot-scope whole packets dropped their wire-only vueSetupTemplateRefUnwrap semanticLinks, which the content-mapper protocol does not carry (#12604); their generated text, mappings, diagnostic directives, diagnostics, and all other fields stayed exact, the other 76 complete results were byte-identical, and all 495 semantic, protocol, mapping-geometry, and real-host controls passed; this record retains the observed postimages without assigning acceptance credit to the stale-golden run.",
+      "64 LF and CRLF/Unicode whole packets gained exactly one raw `readonly __vizeFallthroughSource?: <fallthrough source>;` member ahead of __vizeHasFallthroughProps in their component type (#12863), with every later generated coordinate moved by that member's bytes; the two string-comment-role packets also dropped their one ignore directive over a single space (#12848). The other 16 complete results were byte-identical and all 435 semantic, protocol, mapping-geometry, and real-host controls passed; this record retains the observed postimages without assigning acceptance credit to the stale-golden run.",
   });
 }
