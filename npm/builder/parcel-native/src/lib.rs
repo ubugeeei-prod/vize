@@ -46,13 +46,8 @@ struct VizeTransformer {
 
 impl Plugin for VizeTransformer {
     fn new(config: &[u8]) -> Result<Self, Diagnostic> {
-        let config = if config.is_empty() {
-            TransformerConfig::default()
-        } else {
-            serde_json::from_slice(config).map_err(|error| {
-                Diagnostic::new(cstr!("Invalid Vize transformer config: {error}").into_string())
-            })?
-        };
+        let config = parse_transformer_config(config)
+            .map_err(|message| Diagnostic::new(message.into_string()))?;
         Ok(Self { config })
     }
 
@@ -87,6 +82,20 @@ impl Plugin for VizeTransformer {
         asset.set_type("js");
         Ok(())
     }
+}
+
+fn parse_transformer_config(config: &[u8]) -> Result<TransformerConfig, String> {
+    if config.is_empty() {
+        return Ok(TransformerConfig::default());
+    }
+    let value = serde_json::from_slice::<serde_json::Value>(config)
+        .map_err(|error| cstr!("Invalid Vize transformer config: {error}"))?;
+    if !value.is_object() {
+        return Err(cstr!(
+            "Invalid Vize transformer config: expected a JSON object"
+        ));
+    }
+    serde_json::from_value(value).map_err(|error| cstr!("Invalid Vize transformer config: {error}"))
 }
 
 register_plugin!(VizeTransformer);
@@ -351,73 +360,4 @@ fn shift_map(mut map: serde_json::Value, lines: usize) -> serde_json::Value {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-
-    fn config() -> TransformerConfig {
-        TransformerConfig {
-            transform_asset_urls: true,
-            ..Default::default()
-        }
-    }
-
-    #[test]
-    fn compiles_scoped_typescript_sfc_with_map_and_style_runtime() {
-        let output = compile_source(
-            "<script setup lang=\"ts\">const message: string = 'hello'</script>\n<template><p class=\"message\">{{ message }}</p></template>\n<style scoped>.message { color: red }</style>",
-            "/project/src/Card.vue",
-            "/project",
-            false,
-            &config(),
-        )
-        .expect("compile SFC");
-        assert!(output.code.contains("const message = \"hello\""));
-        assert!(output.code.contains("__vize_css__"));
-        assert!(output.code.contains("__scopeId"));
-        assert!(output.code.contains(".message[data-v-"));
-        let map = output.map.expect("source map");
-        assert!(map.contains("/project/src/Card.vue"));
-    }
-
-    #[test]
-    fn rewrites_template_assets_to_parcel_url_imports() {
-        let output = compile_source(
-            "<template><img src=\"./logo.svg\"></template>",
-            "/project/src/Card.vue",
-            "/project",
-            false,
-            &config(),
-        )
-        .expect("compile asset URL");
-        assert!(output.code.contains("from \"url:./logo.svg\""));
-        assert!(output.code.contains("_imports_0"));
-    }
-
-    #[test]
-    fn rejects_styles_when_configured() {
-        let mut options = config();
-        options.styles = StyleMode::Error;
-        let error = compile_source(
-            "<template><p /></template><style>p { color: red }</style>",
-            "/project/src/Card.vue",
-            "/project",
-            false,
-            &options,
-        )
-        .expect_err("styles must fail");
-        assert!(error.contains("styles are disabled"));
-    }
-
-    #[test]
-    fn parses_config_and_rejects_unknown_keys() {
-        let parsed: TransformerConfig =
-            serde_json::from_slice(br#"{"ssr":true,"styles":"ignore"}"#).expect("config");
-        assert!(parsed.ssr);
-        assert_eq!(parsed.styles, StyleMode::Ignore);
-        assert!(parsed.transform_asset_urls);
-        let parsed: TransformerConfig =
-            serde_json::from_slice(br#"{"transformAssetUrls":false}"#).expect("config");
-        assert!(!parsed.transform_asset_urls);
-        assert!(serde_json::from_slice::<TransformerConfig>(br#"{"unknown":true}"#).is_err());
-    }
-}
+mod tests;
