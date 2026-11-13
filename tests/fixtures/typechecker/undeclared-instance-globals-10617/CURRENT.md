@@ -1,5 +1,15 @@
 # Current instance-global packet authority
 
+The active expected population is `source-packets-current-b04abc20ad7e.json`: all 80 whole transform results from [source Actions 43251466440](https://github.com/ubugeeei-prod/vize/actions/runs/43251466440/job/131299205802), synthetic merge producer `b04abc20ad7e6944e9951417d492f786b7782ebd` for PR head `558eaa1dcc10886035238dba76ee13f9d677ff78` (#12951). Its tree `820816a945ff11eddebedd32db63f737b508c43c` is the tree of main `db73bca412`. The launch receipt binds the exact source CLI, and the artifact admits the reported beta, official nightly, and pinned source-built TypeScript host.
+
+The strict comparison remains **unqualified**: 435 of 499 semantic, protocol, geometry, and whole-packet outcomes passed. The 64 gaps are whole packets only, from two product changes that merged while this check was not required. #12863 declares the raw fallthrough surface on each component type that has one: 64 LF and CRLF/Unicode packets gain exactly one `readonly __vizeFallthroughSource?: Partial<$NativeElement<"div">>;` (or `Record<string, unknown>;`) member ahead of `__vizeHasFallthroughProps`, and every later generated coordinate moves by that member's bytes. #12848 stops sending an ignore directive over whitespace only, so both `string-comment-role` packets also drop their one directive over a single space. Diagnostics, mapping spans and every other field stayed exact, the other 16 complete results remain byte-identical, and every non-whole-packet outcome and all three real-host controls passed.
+
+`complete: true` records the complete observed successor population. It grants no public-package or performance acceptance and does not retroactively qualify the capture. `source-packets-current-b04abc20ad7e-provenance.json` binds the producer, artifact digest, exact evidence members, previous population, failed qualification vector, and explicit credit limits.
+
+## Previous authority (historical)
+
+# Current instance-global packet authority
+
 The active expected population is `source-packets-current-a0fe19e9a57e.json`: all 80 whole transform results from [source Actions 42811997092](https://github.com/ubugeeei-prod/vize/actions/runs/42811997092/job/129816418407), synthetic merge producer `a0fe19e9a57e31b1a2f785273477ea10c5d2c3ae` for PR head `393142e7e6e77c9dde476131485011bfef8dfe59`. The launch receipt binds the exact source CLI, and the artifact admits the reported beta, official nightly, and pinned source-built TypeScript host.
 
 The strict comparison remains **unqualified**: 495 of 499 semantic, protocol, geometry, and whole-packet outcomes passed. Only the LF and CRLF/Unicode `slot-shadow` and `mixed-slot-scope` whole packets changed: the content-mapper wire no longer carries their wire-only `vueSetupTemplateRefUnwrap` semantic links, which the protocol has no field for (#12604). Generated text, mappings, diagnostic directives, diagnostics, and every other field stayed exact, and the other 76 complete results remain byte-identical. Every non-whole-packet outcome and all three real-host controls passed.

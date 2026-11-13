@@ -85,6 +85,17 @@ test("fully acknowledged root header+warning retains exact EOF proof without can
     assert.equal(disposition[key], false);
 });
 
+test("an undecoded syscall entry that exit_group interrupts is teardown, not unfinished I/O", () => {
+  const args = acknowledgedArgs();
+  // Run 43204068107: the owner's main thread entered `???(` 77us after a
+  // sibling's exit_group and exited 2ms later; strace never decoded it.
+  args[5].unfinishedOperations = fixture("B").owner.unfinishedOperations;
+  assert.equal(args[5].unfinishedOperations[0]!.raw, `${at(20)} ???( `);
+  const result = observeAcknowledgedRootWarning(...args);
+  assert.equal(result.kind, "acknowledged-root-header-warning");
+  assert.equal(result.nativeQualification, false);
+});
+
 test("acknowledged header+warning rejects source, complete owner, paired channel and temporal mutants", () => {
   const mutations: Array<[string, (args: AcknowledgedArgs) => void]> = [
     [
@@ -188,9 +199,27 @@ test("acknowledged header+warning rejects source, complete owner, paired channel
       },
     ],
     [
-      "unfinished",
+      "decoded unfinished syscall",
       (a) => {
-        a[5].unfinishedOperations = fixture("B").owner.unfinishedOperations;
+        a[5].unfinishedOperations = [
+          { tid: 41, file: "syscalls.41", line: 400, at: at(20), raw: `${at(20)} read(0, ` },
+        ];
+      },
+    ],
+    [
+      "unfinished before exit_group",
+      (a) => {
+        a[5].unfinishedOperations = [
+          { tid: 41, file: "syscalls.41", line: 400, at: at(17), raw: `${at(17)} ???( ` },
+        ];
+      },
+    ],
+    [
+      "unfinished after its thread exit",
+      (a) => {
+        a[5].unfinishedOperations = [
+          { tid: 41, file: "syscalls.41", line: 400, at: at(27), raw: `${at(27)} ???( ` },
+        ];
       },
     ],
     [

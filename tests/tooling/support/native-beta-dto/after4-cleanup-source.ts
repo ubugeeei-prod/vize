@@ -19,10 +19,9 @@ const text = (value: unknown): string => {
   return value as string;
 };
 const hash = (bytes: Uint8Array | string) => createHash("sha256").update(bytes).digest("hex");
-const version = "2.0.0-beta.4",
-  registry = "registry+https://github.com/rust-lang/crates.io-index";
+const registry = "registry+https://github.com/rust-lang/crates.io-index";
 // Exact seven public SDK4 checksums/runtime lock vectors authenticated by TP's
-// 446a1cf8… Rust publication handoff. Other SDK generations never acquire this authority.
+// 446a1cf8… Rust publication handoff. Unregistered SDK generations never acquire this authority.
 export const sdk4CleanupPackages = [
   [
     "corsa",
@@ -99,6 +98,29 @@ export const sdk4CleanupPackages = [
     ["smallvec"],
   ],
 ] as const;
+// #12934 moved the pins to 2.0.0-beta.5. The dependency vectors are unchanged;
+// each checksum equals the crates.io index `cksum` for that exact version.
+const sdk5Checksums: Readonly<Record<string, string>> = {
+  corsa: "2423289c1b3234486f63f98940e6ebc52844eb17a65de347120c05edb4f08b15",
+  corsa_client: "762f29521c89cc16bca7b00864c7ca4c52bcf024f9b9f3581ff31f69dc01eec7",
+  corsa_core: "47f70f4d9cff68ca173fe4fae206e9c01c378dda59ed9eef1321bf11d236c807",
+  corsa_jsonrpc: "e1a595cdbda26eedd79f89c957dab1d5425b3ea4e7f3950d95e6071e7fc03eaf",
+  corsa_lsp: "ee8da211e9bb610c8a0bf5f32eabf0beefc0b62044ab39c10a32ab99f811cb30",
+  corsa_orchestrator: "8de4a68aa41bfa0acf1e13e2945072aacf982d7e67e7420b260ab9079f97e6b0",
+  corsa_runtime: "be088c5e72ac415932623f06f9bff3084b2324d49eb4b10ee410aad29b7e7842",
+};
+type CleanupPackage = readonly [string, string, readonly string[]];
+export const sdk5CleanupPackages: readonly CleanupPackage[] = sdk4CleanupPackages.map(
+  ([name, , dependencies]) => [name, sdk5Checksums[name]!, dependencies] as const,
+);
+/** Each registered SDK generation keeps the same source-authored two-close cleanup. */
+export const cleanupGenerations: ReadonlyMap<string, readonly CleanupPackage[]> = new Map<
+  string,
+  readonly CleanupPackage[]
+>([
+  ["2.0.0-beta.4", sdk4CleanupPackages],
+  ["2.0.0-beta.5", sdk5CleanupPackages],
+]);
 const names: readonly string[] = sdk4CleanupPackages.map((row) => row[0]);
 const observer = "crates/vize_canon/src/lsp_client/editor_lsp/snapshot_source/tests/native_beta.rs";
 const helper = observer.replace(/\.rs$/u, "/storage_authority.rs");
@@ -145,7 +167,11 @@ export function verifyAfter4CleanupSource(
     object(parseTomlLite("[workspace.dependencies]\n" + assignments.join("\n")).workspace)
       .dependencies,
   );
-  if (!Object.values(pins).some((value) => object(value).version === "=" + version)) return null;
+  const version = [...cleanupGenerations.keys()].find((candidate) =>
+    Object.values(pins).some((value) => object(value).version === "=" + candidate),
+  );
+  if (version === undefined) return null;
+  const generation = cleanupGenerations.get(version)!;
   assert.deepEqual(Object.keys(pins).sort(), ["corsa", "corsa_lsp", "corsa_runtime"]);
   for (const name of Object.keys(pins))
     assert.deepEqual(pins[name], { package: name, version: "=" + version });
@@ -156,7 +182,7 @@ export function verifyAfter4CleanupSource(
     .map(object)
     .filter((row) => names.includes(text(row.name)));
   assert.deepEqual(packages.map((row) => text(row.name)).sort(), [...names].sort());
-  for (const [name, checksum, dependencies] of sdk4CleanupPackages) {
+  for (const [name, checksum, dependencies] of generation) {
     const row = packages.find((value) => value.name === name)!;
     assert.deepEqual(row, {
       name,

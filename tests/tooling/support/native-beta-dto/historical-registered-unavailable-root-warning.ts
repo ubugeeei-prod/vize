@@ -8,6 +8,7 @@ import {
 import { historicalRootWarning } from "./historical-inflight-root-warning.ts";
 import { requireCompletedBefore, requireObservedEntryBefore } from "./native-io.ts";
 import { micros, timedPackets } from "./stable-watcher-timing.ts";
+import { requireExitTeardownUnfinished } from "./exit-teardown.ts";
 
 const one = <T>(rows: readonly T[]): T => {
   assert.equal(rows.length, 1);
@@ -80,7 +81,7 @@ export function observeRegisteredUnavailableRootWarning(...args: Args) {
     assert.ok(micros(row.at) < micros(exits.get(row.tid)!.at));
   }
   assert.equal(owner.failedWrites.length, 0);
-  assert.equal(owner.unfinishedOperations.length, 0);
+  requireExitTeardownUnfinished(owner);
   assert.equal(owner.zeroCapacityReads.length, 0);
 
   const eof = one(eofReads);
