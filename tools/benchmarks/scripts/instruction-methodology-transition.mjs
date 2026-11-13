@@ -9,6 +9,13 @@ const TO = "rustc 1.99.0 (b940084d7 2026-09-28)";
 const RUST1991 = "rustc 1.99.1 (58cf8f9c3 2026-10-13)";
 const CURRENT = "rustc 1.100.0 (0ef1bc386 2026-11-09)";
 const SOURCE = "1a3996963af208c13cd732420bdee586df88bf7a";
+// Same-source control db73bca412 (run 43352512122) holds these rows under their
+// caps on 1.99.1; the 1.100.0 measurement alone crosses them.
+const RAISES_1100 = Object.freeze({
+  armature_parse_medium: 244853,
+  croquis_analyze_full_large: 2789255,
+  "harness-selfcheck": 15481,
+});
 const RUN = "https://github.com/ubugeeei-prod/vize/actions/runs/37653130635";
 // Single-toolchain re-baselines, keyed by the base compiler: the same rows and
 // inputs measured on the next pinned compiler, citing that measurement.
@@ -31,8 +38,11 @@ const REBASES = new Map([
       source: "e40813b3306bf85e5f61d96b19ebd432cae10334",
       run: "https://github.com/ubugeeei-prod/vize/actions/runs/39370420052",
       rustc: CURRENT,
-      rebaseSource: "REBASE_SOURCE_1100",
-      rebaseRun: "REBASE_RUN_1100",
+      rebaseSource: "aa9ab054fd272578f142dfd2c789d0e1869c7b86",
+      rebaseRun: "https://github.com/ubugeeei-prod/vize/actions/runs/43351845175",
+      // Rows whose same-source count crosses its cap only under the new
+      // compiler. Each may rise to exactly its reviewed 1.100.0 count.
+      raises: RAISES_1100,
     },
   ],
 ]);
@@ -68,7 +78,8 @@ function identities(budgets) {
 }
 
 // A re-baseline keeps every row, input and non-rustc method field; caps still
-// pass the caller's downward ratchet against the authenticated base registry.
+// pass the caller's downward ratchet against the authenticated base registry,
+// except the reviewed compiler-explained raises it returns.
 function rebaselineInstructionToolchain(current, base, step) {
   const provenance = `unauthenticated ${step.version} instruction provenance`;
   assert.equal(base.source_commit, step.source, provenance);
@@ -85,12 +96,14 @@ function rebaselineInstructionToolchain(current, base, step) {
     },
     "toolchain re-baseline must preserve every row, input identity and method field",
   );
+  return step.raises ?? {};
 }
 
 // Reviewed toolchain transitions. The complete 1.98 contract includes every
 // row, cap, input path/digest/window, provenance and non-rustc method field.
+// Returns the caps a reviewed re-baseline may raise, keyed by row.
 export function ratchetInstructionMethodology(current, base) {
-  if (isDeepStrictEqual(current.methodology, base.methodology)) return;
+  if (isDeepStrictEqual(current.methodology, base.methodology)) return {};
   const rebase = REBASES.get(base.methodology.rustc);
   if (rebase) return rebaselineInstructionToolchain(current, base, rebase);
   assert.equal(base.methodology.rustc, FROM, "unauthorized original instruction compiler");
@@ -117,6 +130,7 @@ export function ratchetInstructionMethodology(current, base) {
     },
     "forward instruction transition must preserve every original cap and identity",
   );
+  return {};
 }
 
 export function authenticateInstructionMeasurementSource(report, context) {
