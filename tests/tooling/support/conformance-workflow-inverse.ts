@@ -28,8 +28,14 @@ function restoreFallthroughValueSuite(workflow: string): string {
 }
 
 /** Restores content-mapper-conformance.yml before its sealed command-local edits. */
+// Reverse only the reviewed Rust 1.100.0 pin edit (#12954) on its two installers.
+function restoreRustToolchainPin(workflow: string): string {
+  assert.equal(workflow.split('toolchain: "1.100.0"').length, 3);
+  return workflow.replaceAll('toolchain: "1.100.0"', 'toolchain: "1.99.1"');
+}
+
 export function restoreConformanceWorkflow(workflow: string): string {
   return restoreConformanceNativeStaging(
-    restoreFallthroughValueSuite(restoreExactTsgoTimeout(workflow)),
+    restoreFallthroughValueSuite(restoreExactTsgoTimeout(restoreRustToolchainPin(workflow))),
   );
 }
