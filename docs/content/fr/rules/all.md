@@ -5,7 +5,7 @@ description: "Toutes les règles du linter de Vize, regroupées par catégorie. 
 
 # Toutes les règles de lint
 
-## Règles Vue (168)
+## Règles Vue (169)
 
 | Règle | Ce qu’elle vérifie | Préréglage | Correction automatique |
 | --- | --- | --- | --- |
@@ -128,6 +128,7 @@ description: "Toutes les règles du linter de Vize, regroupées par catégorie. 
 | <span id="vue-prefer-const"></span>[`vue/prefer-const`](./reference/vue-prefer-const.md) | Exiger const pour les liaisons que le script et le template ne réassignent jamais. | `nuxt`, `opinionated` |  |
 | <span id="vue-prefer-prop-type-boolean-first"></span>[`vue/prefer-prop-type-boolean-first`](./reference/vue-prefer-prop-type-boolean-first.md) | Exige que `Boolean` soit le premier constructeur dans la liste des types d'une prop. | — |  |
 | <span id="vue-prefer-props-shorthand"></span>[`vue/prefer-props-shorthand`](./reference/vue-prefer-props-shorthand.md) | Recommander la syntaxe abrégée des props (Vue 3.4+). | `nuxt`, `opinionated` | ✓ |
+| <span id="vue-prefer-single-event-payload"></span>[`vue/prefer-single-event-payload`](./reference/vue-prefer-single-event-payload.md) | Impose un seul argument de charge utile pour les événements personnalisés. | — |  |
 | <span id="vue-prefer-template"></span>[`vue/prefer-template`](./reference/vue-prefer-template.md) | Préfère les littéraux de gabarit à la concaténation. | — |  |
 | <span id="vue-prefer-true-attribute-shorthand"></span>[`vue/prefer-true-attribute-shorthand`](./reference/vue-prefer-true-attribute-shorthand.md) | Préférer la syntaxe abrégée pour un attribut booléen lié à `true`. | `nuxt`, `opinionated` |  |
 | <span id="vue-prefer-v-model"></span>[`vue/prefer-v-model`](./reference/vue-prefer-v-model.md) | Préfère v-model à une paire bind et update équivalente. | — |  |
@@ -425,8 +426,6 @@ description: "Toutes les règles du linter de Vize, regroupées par catégorie. 
 | <span id="petite-vue-valid-v-scope"></span>[`petite-vue/valid-v-scope`](./reference/petite-vue-valid-v-scope.md) | Exiger que v-scope reçoive un objet littéral. | — |  |
 
 ## Règles inter-fichiers (66)
-
-Activez ces vérifications avec `crossFile: true` dans `linter`, passé à `withVue`, ou lancez `vize lint --cross-file`. Les diagnostics s’affichent sous la forme `vize:croquis/cf/<name>` ; configurez-les dans `linter.rules` sous la forme `croquis/cf/<name>`, sans `vize:`.
 
 | Règle | Ce qu’elle vérifie | État |
 | --- | --- | --- |

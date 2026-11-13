@@ -185,7 +185,8 @@ pub use block_lang::BlockLang;
 pub use comment_directive::CommentDirective;
 pub use compatibility_sfc::{
     EnforceStyleAttribute, NextTickStyle, NoContentOutsideBlock, NoDefineModelDefault,
-    NoPropsShadow, NoShadowNativeEvents, RequireMacroVariableName, SortKeys, StyleAttribute,
+    NoPropsShadow, NoShadowNativeEvents, PreferSingleEventPayload, RequireMacroVariableName,
+    SortKeys, StyleAttribute,
 };
 pub use compatibility_template::{
     Camelcase, DotNotation, Eqeqeq, NoConsole, NoConstantCondition, NoEmptyPattern,
@@ -315,6 +316,7 @@ pub(crate) fn register_opt_in(registry: &mut crate::rule::RuleRegistry) {
     register_if_missing(registry, Box::new(NoDefineModelDefault));
     register_if_missing(registry, Box::new(NoPropsShadow));
     register_if_missing(registry, Box::new(NoShadowNativeEvents));
+    register_if_missing(registry, Box::new(PreferSingleEventPayload));
     register_if_missing(registry, Box::new(RequireMacroVariableName));
     register_if_missing(registry, Box::new(SortKeys::default()));
     register_if_missing(registry, Box::new(Camelcase));

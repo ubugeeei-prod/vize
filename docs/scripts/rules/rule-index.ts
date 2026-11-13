@@ -332,10 +332,10 @@ function allRulesPage(rules: readonly IndexedRule[], locale: RuleLocale) {
     );
   }
   const project = rules.filter((rule) => rule.project).sort(byId);
+  // How to run cross-file rules is on their own page; repeating it here pushes
+  // the English index over the 500-line source limit.
   lines.push(
     `## ${categoryTitle("cross-file", locale)} (${project.length})`,
-    "",
-    t.crossFileUse,
     "",
     `| ${t.rule} | ${t.checks} | ${t.status} |`,
     "| --- | --- | --- |",

@@ -113,6 +113,10 @@ export const manual11: Record<string, RuleExample> = {
     "<script setup>\nconst emit = defineEmits(['click'])\n</script>\n<template />",
     "<script setup>\nconst emit = defineEmits(['activate'])\n</script>\n<template />",
   ),
+  "vue/prefer-single-event-payload": sfc(
+    '<script setup lang="ts">\nconst emit = defineEmits<{ move: [x: number, y: number] }>()\nemit("move", 1, 2)\n</script>\n<template />',
+    '<script setup lang="ts">\nconst emit = defineEmits<{ move: [point: { x: number; y: number }] }>()\nemit("move", { x: 1, y: 2 })\n</script>\n<template />',
+  ),
   "vue/require-macro-variable-name": sfc(
     "<script setup>\nconst p = defineProps({ value: String })\n</script>\n<template />",
     "<script setup>\nconst props = defineProps({ value: String })\n</script>\n<template />",

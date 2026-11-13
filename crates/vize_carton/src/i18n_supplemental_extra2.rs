@@ -95,6 +95,73 @@ static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "この要素で許可されている標準の`rel`トークンだけを使ってください。例: リンクの`noopener noreferrer`、link要素の`stylesheet`。",
         "请只使用此元素允许的标准`rel`标记，例如链接上的`noopener noreferrer`或link元素上的`stylesheet`。",
     ),
+    // vue/v-on-handler-style with eslint-plugin-vue's styles
+    (
+        "vue/v-on-handler-style.prefer_method_over_inline",
+        "Prefer method handler over inline handler in v-on.",
+        "v-on ではインラインハンドラではなくメソッドハンドラを使用してください。",
+        "v-on 中应优先使用方法处理函数，而非内联处理函数。",
+    ),
+    (
+        "vue/v-on-handler-style.prefer_method_over_inline_without_id_call",
+        "Prefer method handler over inline handler in v-on. Note that you may need to create a new method.",
+        "v-on ではインラインハンドラではなくメソッドハンドラを使用してください。新しいメソッドの作成が必要な場合があります。",
+        "v-on 中应优先使用方法处理函数，而非内联处理函数。注意可能需要新建一个方法。",
+    ),
+    (
+        "vue/v-on-handler-style.prefer_method_over_inline_function",
+        "Prefer method handler over inline function in v-on.",
+        "v-on ではインライン関数ではなくメソッドハンドラを使用してください。",
+        "v-on 中应优先使用方法处理函数，而非内联函数。",
+    ),
+    (
+        "vue/v-on-handler-style.prefer_method_over_inline_function_without_id_call",
+        "Prefer method handler over inline function in v-on. Note that you may need to create a new method.",
+        "v-on ではインライン関数ではなくメソッドハンドラを使用してください。新しいメソッドの作成が必要な場合があります。",
+        "v-on 中应优先使用方法处理函数，而非内联函数。注意可能需要新建一个方法。",
+    ),
+    (
+        "vue/v-on-handler-style.prefer_inline_over_method",
+        "Prefer inline handler over method handler in v-on.",
+        "v-on ではメソッドハンドラではなくインラインハンドラを使用してください。",
+        "v-on 中应优先使用内联处理函数，而非方法处理函数。",
+    ),
+    (
+        "vue/v-on-handler-style.prefer_inline_over_inline_function",
+        "Prefer inline handler over inline function in v-on.",
+        "v-on ではインライン関数ではなくインラインハンドラを使用してください。",
+        "v-on 中应优先使用内联处理函数，而非内联函数。",
+    ),
+    (
+        "vue/v-on-handler-style.prefer_inline_over_inline_function_with_multiple_params",
+        "Prefer inline handler over inline function in v-on. Note that the custom event must be changed to a single payload.",
+        "v-on ではインライン関数ではなくインラインハンドラを使用してください。カスタムイベントのペイロードを1つにまとめる必要があります。",
+        "v-on 中应优先使用内联处理函数，而非内联函数。注意需要将自定义事件改为单个负载。",
+    ),
+    (
+        "vue/v-on-handler-style.prefer_inline_function_over_method",
+        "Prefer inline function over method handler in v-on.",
+        "v-on ではメソッドハンドラではなくインライン関数を使用してください。",
+        "v-on 中应优先使用内联函数，而非方法处理函数。",
+    ),
+    (
+        "vue/v-on-handler-style.prefer_inline_function_over_inline",
+        "Prefer inline function over inline handler in v-on.",
+        "v-on ではインラインハンドラではなくインライン関数を使用してください。",
+        "v-on 中应优先使用内联函数，而非内联处理函数。",
+    ),
+    (
+        "vue/v-on-handler-style.help_inline",
+        "Write the handler as an inline handler (e.g. @click=\"handler()\").",
+        "ハンドラをインラインハンドラ（例: @click=\"handler()\"）として記述してください。",
+        "请将处理函数写成内联处理函数（例如 @click=\"handler()\"）。",
+    ),
+    (
+        "vue/v-on-handler-style.help_inline_function",
+        "Write the handler as an inline function (e.g. @click=\"() => handler()\").",
+        "ハンドラをインライン関数（例: @click=\"() => handler()\"）として記述してください。",
+        "请将处理函数写成内联函数（例如 @click=\"() => handler()\"）。",
+    ),
     // vue/v-on-event-hyphenation
     (
         "vue/v-on-event-hyphenation.message_never",

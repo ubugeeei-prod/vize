@@ -9,7 +9,7 @@ Exigir manipuladores de v-on escritos como referência a método.
 
 | Severidade padrão | Predefinições | Correção automática | Opções |
 | --- | --- | --- | --- |
-| `warning` | `nuxt`, `opinionated` | Não | Nenhuma |
+| `warning` | `nuxt`, `opinionated` | Não | [Opções das regras](/rules/options.md) |
 
 Aplicável a: Templates e blocos de SFC Vue, com o contexto do script quando exigido pela regra.
 
@@ -56,5 +56,6 @@ Depois, execute `vp run lint`.
 ## Páginas relacionadas
 
 - [Regras Vue](../vue.md)
+- [Opções das regras](/rules/options.md)
 - [Todas as regras](../all.md)
-- [Código-fonte](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_on_handler_style.rs#L31)
+- [Código-fonte](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_on_handler_style.rs#L38)

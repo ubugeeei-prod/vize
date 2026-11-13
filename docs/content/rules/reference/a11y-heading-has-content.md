@@ -9,7 +9,7 @@ Require heading elements to have accessible content.
 
 | Default severity | Presets | Automatic fix | Options |
 | --- | --- | --- | --- |
-| `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | None |
+| `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | No | [Rule options](../options.md) |
 
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
 
@@ -53,5 +53,6 @@ Then run `vp run lint`.
 ## Related
 
 - [Accessibility rules](../accessibility.md)
+- [Rule options](../options.md)
 - [All rules](../all.md)
-- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/heading_has_content.rs#L20)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/heading_has_content.rs#L21)

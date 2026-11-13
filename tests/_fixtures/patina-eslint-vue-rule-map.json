@@ -1496,8 +1496,10 @@
       "status": "mapped"
     },
     "vue/prefer-single-event-payload": {
-      "issue": 3223,
-      "status": "unimplemented"
+      "patinaPresets": [],
+      "patinaRule": "vue/prefer-single-event-payload",
+      "patinaSeverity": "warning",
+      "status": "mapped"
     },
     "vue/prefer-template": {
       "patinaPresets": [],
@@ -1845,8 +1847,13 @@
       "status": "mapped"
     },
     "vue/v-on-handler-style": {
-      "reason": "Patina's opinionated policy permits only method references, while eslint-plugin-vue always permits two of method, inline, and inline-function handlers; no upstream option has the same acceptance surface.",
-      "status": "intentional-divergence"
+      "patinaPresets": [
+        "nuxt",
+        "opinionated"
+      ],
+      "patinaRule": "vue/v-on-handler-style",
+      "patinaSeverity": "warning",
+      "status": "mapped"
     },
     "vue/v-on-style": {
       "patinaPresets": [
@@ -2147,9 +2154,9 @@
   },
   "schemaVersion": 1,
   "summary": {
-    "intentionalDivergence": 3,
-    "mapped": 198,
-    "unimplemented": 55
+    "intentionalDivergence": 2,
+    "mapped": 200,
+    "unimplemented": 54
   },
   "upstream": {
     "package": "eslint-plugin-vue",

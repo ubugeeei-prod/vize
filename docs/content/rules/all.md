@@ -5,7 +5,7 @@ description: "Every rule Vize's linter ships, grouped by category. Open a rule t
 
 # All lint rules
 
-## Vue rules (168)
+## Vue rules (169)
 
 | Rule | What it checks | Preset | Auto-fix |
 | --- | --- | --- | --- |
@@ -128,6 +128,7 @@ description: "Every rule Vize's linter ships, grouped by category. Open a rule t
 | <span id="vue-prefer-const"></span>[`vue/prefer-const`](./reference/vue-prefer-const.md) | Require const for bindings the script and template never reassign. | `nuxt`, `opinionated` |  |
 | <span id="vue-prefer-prop-type-boolean-first"></span>[`vue/prefer-prop-type-boolean-first`](./reference/vue-prefer-prop-type-boolean-first.md) | Enforce `Boolean` comes first in component prop types. | — |  |
 | <span id="vue-prefer-props-shorthand"></span>[`vue/prefer-props-shorthand`](./reference/vue-prefer-props-shorthand.md) | Recommend shorthand syntax for props (Vue 3.4+). | `nuxt`, `opinionated` | ✓ |
+| <span id="vue-prefer-single-event-payload"></span>[`vue/prefer-single-event-payload`](./reference/vue-prefer-single-event-payload.md) | Enforce passing a single argument to custom event emissions. | — |  |
 | <span id="vue-prefer-template"></span>[`vue/prefer-template`](./reference/vue-prefer-template.md) | Prefer template literals in template expressions. | — |  |
 | <span id="vue-prefer-true-attribute-shorthand"></span>[`vue/prefer-true-attribute-shorthand`](./reference/vue-prefer-true-attribute-shorthand.md) | Prefer the shorthand for a boolean attribute bound to `true`. | `nuxt`, `opinionated` |  |
 | <span id="vue-prefer-v-model"></span>[`vue/prefer-v-model`](./reference/vue-prefer-v-model.md) | Prefer v-model over matching bind and update listeners. | — |  |
@@ -425,8 +426,6 @@ description: "Every rule Vize's linter ships, grouped by category. Open a rule t
 | <span id="petite-vue-valid-v-scope"></span>[`petite-vue/valid-v-scope`](./reference/petite-vue-valid-v-scope.md) | Require v-scope to bind an object literal. | — |  |
 
 ## Cross-file rules (66)
-
-Turn these checks on with `crossFile: true` in the `linter` passed to `withVue`, or run `vize lint --cross-file`. Diagnostics are shown as `vize:croquis/cf/<name>`; configure them in `linter.rules` as `croquis/cf/<name>`, without `vize:`.
 
 | Rule | What it checks | Status |
 | --- | --- | --- |

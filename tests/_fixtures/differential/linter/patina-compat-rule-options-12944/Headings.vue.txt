@@ -1,0 +1,13 @@
+<script setup lang="ts">
+const { text } = defineProps<{ text: string }>();
+</script>
+
+<template>
+  <section>
+    <h2 v-markup-inline="text" />
+    <h3 v-text="text" />
+    <h4 />
+    <a href="/docs" v-markup-inline="text" />
+    <a href="/faq" />
+  </section>
+</template>

@@ -6288,6 +6288,16 @@ vue/prefer-props-shorthand · lint ルール
 
 ヒント:
   propsの省略構文を使用してください
+=== vue/prefer-single-event-payload
+vue/prefer-single-event-payload · lint ルール
+カスタムイベントの発行で渡すペイロードを1つにすることを強制する
+
+精度: complete
+対象: inline SFC scripts and descriptors with lexically unshadowed Vue macros and APIs and structurally recognizable component option objects; external blocks and unresolved aliases are outside
+重大度: 警告
+カテゴリー: recommended
+自動修正: なし
+ドキュメント: docs/content/rules/reference/vue-prefer-single-event-payload.md
 === vue/prefer-template
 vue/prefer-template · lint ルール
 テンプレート式でテンプレートリテラルを推奨する

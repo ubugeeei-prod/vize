@@ -21,10 +21,10 @@
     ]
   },
   "summary": {
-    "mapped": 86,
+    "mapped": 87,
     "unimplemented": 23,
-    "intentionalDivergence": 3,
-    "mappedWithTypedOptions": 39,
+    "intentionalDivergence": 2,
+    "mappedWithTypedOptions": 40,
     "mappedWithoutTypedOptions": 47
   },
   "mappedWithTypedOptions": [
@@ -63,6 +63,7 @@
     ["vue/sort-keys", "vue/sort-keys"],
     ["vue/v-bind-style", "vue/v-bind-style"],
     ["vue/v-on-event-hyphenation", "vue/v-on-event-hyphenation"],
+    ["vue/v-on-handler-style", "vue/v-on-handler-style"],
     ["vue/v-on-style", "vue/v-on-style"],
     ["vue/v-slot-style", "vue/v-slot-style"],
     ["vue/valid-v-on", "vue/valid-v-on"],

@@ -6554,6 +6554,16 @@ vue/prefer-props-shorthand · lint 规则
 
 帮助:
   使用prop简写语法
+=== vue/prefer-single-event-payload
+vue/prefer-single-event-payload · lint 规则
+强制自定义事件只传递单个负载参数
+
+精度层级: complete
+适用范围: inline SFC scripts and descriptors with lexically unshadowed Vue macros and APIs and structurally recognizable component option objects; external blocks and unresolved aliases are outside
+严重级别: 警告
+类别: recommended
+自动修复: 不支持
+文档: docs/content/rules/reference/vue-prefer-single-event-payload.md
 === vue/prefer-template
 vue/prefer-template · lint 规则
 推荐模板表达式使用模板字符串

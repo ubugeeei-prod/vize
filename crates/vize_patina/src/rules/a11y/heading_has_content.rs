@@ -12,6 +12,7 @@ use crate::markup::{MarkupBindingKind, MarkupContext, MarkupElement, MarkupNode,
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::ElementNode;
 
+use super::content_options::ContentOptions;
 use super::markup_helpers::get_static_or_bound_literal_markup_value;
 use super::reference_values::{
     has_attribute_text, interpolation_has_value, is_hidden_from_screen_reader, is_slot_outlet,
@@ -26,11 +27,35 @@ static META: RuleMeta = RuleMeta {
 };
 
 /// Require heading elements to have accessible content
-#[derive(Default)]
-pub struct HeadingHasContent;
+pub struct HeadingHasContent {
+    options: ContentOptions,
+}
+
+#[expect(
+    non_upper_case_globals,
+    reason = "the unit-like rule value intentionally shares the rule type name"
+)]
+/// Default `a11y/heading-has-content` rule with no project-local names.
+pub const HeadingHasContent: HeadingHasContent = HeadingHasContent {
+    options: ContentOptions::EMPTY,
+};
+
+impl Default for HeadingHasContent {
+    fn default() -> Self {
+        HeadingHasContent
+    }
+}
 
 impl HeadingHasContent {
-    fn heading_tag<'a>(element: &MarkupElement<'a>) -> Option<&'a str> {
+    /// Build the rule from `linter.ruleOptions["a11y/heading-has-content"]`.
+    pub(crate) fn from_options(options: &vize_l0::config::HeadingHasContentOptions) -> Self {
+        Self {
+            options: ContentOptions::from_config(options),
+        }
+    }
+
+    /// The heading's tag for the message, or `None` when it is not checked.
+    fn heading_tag<'e>(&self, element: &'e MarkupElement<'_>) -> Option<&'e str> {
         const HEADINGS: [&str; 6] = ["h1", "h2", "h3", "h4", "h5", "h6"];
         if let Some(tag) = HEADINGS
             .iter()
@@ -39,14 +64,16 @@ impl HeadingHasContent {
         {
             return Some(tag);
         }
-        if !element.is_unqualified_tag_exact("component") {
-            return None;
+        if element.is_unqualified_tag_exact("component") {
+            return get_static_or_bound_literal_markup_value(element, "is")
+                .filter(|tag| HEADINGS.contains(tag));
         }
-        get_static_or_bound_literal_markup_value(element, "is").filter(|tag| HEADINGS.contains(tag))
+        let tag = element.tag();
+        self.options.is_checked_component(tag).then_some(tag)
     }
 
-    fn has_rendered_text_directive(element: &MarkupElement<'_>) -> bool {
-        let mut found = false;
+    fn has_rendered_text_directive(&self, element: &MarkupElement<'_>) -> bool {
+        let mut found = self.options.has_markup_directive(element);
         element.walk_bindings(&mut |binding| {
             found |= binding.kind() == MarkupBindingKind::Custom
                 && (binding.is_static_unqualified_arg_exact("text")
@@ -55,14 +82,14 @@ impl HeadingHasContent {
         });
         element.walk_children(&mut |child| {
             if !found && let MarkupNode::Element(child) = child {
-                found = Self::has_rendered_text_directive(&child);
+                found = self.has_rendered_text_directive(&child);
             }
         });
         found
     }
 
-    fn has_accessible_content(source: &str, element: &MarkupElement<'_>) -> bool {
-        if Self::has_rendered_text_directive(element) {
+    fn has_accessible_content(&self, source: &str, element: &MarkupElement<'_>) -> bool {
+        if self.has_rendered_text_directive(element) {
             return true;
         }
 
@@ -83,7 +110,8 @@ impl HeadingHasContent {
             }
             MarkupNode::Element(child_element)
                 if !is_hidden_from_screen_reader(&child_element)
-                    && Self::has_accessible_content(source, &child_element) =>
+                    && (self.options.is_accessible_child(child_element.tag())
+                        || self.has_accessible_content(source, &child_element)) =>
             {
                 has_content = true;
             }
@@ -98,12 +126,12 @@ impl HeadingHasContent {
         has_content
     }
 
-    fn check_element(ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
-        let Some(tag) = Self::heading_tag(element) else {
+    fn check_element(&self, ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
+        let Some(tag) = self.heading_tag(element) else {
             return;
         };
 
-        if !Self::has_accessible_content(ctx.source, element) {
+        if !self.has_accessible_content(ctx.source, element) {
             ctx.warn_at_with_help(
                 ctx.t_fmt("a11y/heading-has-content.message", &[("tag", tag)]),
                 element.range(),
@@ -127,7 +155,7 @@ impl MarkupRule for HeadingHasContent {
             return;
         }
 
-        Self::check_element(ctx.lint(), element);
+        self.check_element(ctx.lint(), element);
     }
 }
 
@@ -141,7 +169,7 @@ impl Rule for HeadingHasContent {
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        Self::check_element(ctx, &MarkupElement::new(element));
+        self.check_element(ctx, &MarkupElement::new(element));
     }
 }
 

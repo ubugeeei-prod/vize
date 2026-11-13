@@ -5,7 +5,7 @@ description: "Vize linter 提供的全部规则，按类别分组。打开规则
 
 # 全部 lint 规则
 
-## Vue 规则 (168)
+## Vue 规则 (169)
 
 | 规则 | 检查内容 | 预设 | 自动修复 |
 | --- | --- | --- | --- |
@@ -128,6 +128,7 @@ description: "Vize linter 提供的全部规则，按类别分组。打开规则
 | <span id="vue-prefer-const"></span>[`vue/prefer-const`](./reference/vue-prefer-const.md) | 要求脚本和模板都不会重新赋值的绑定使用 const。 | `nuxt`, `opinionated` |  |
 | <span id="vue-prefer-prop-type-boolean-first"></span>[`vue/prefer-prop-type-boolean-first`](./reference/vue-prefer-prop-type-boolean-first.md) | 要求在组件 prop 的类型构造函数数组中将 `Boolean` 放在首位。 | — |  |
 | <span id="vue-prefer-props-shorthand"></span>[`vue/prefer-props-shorthand`](./reference/vue-prefer-props-shorthand.md) | 建议使用 props 简写语法（Vue 3.4+）。 | `nuxt`, `opinionated` | ✓ |
+| <span id="vue-prefer-single-event-payload"></span>[`vue/prefer-single-event-payload`](./reference/vue-prefer-single-event-payload.md) | 强制自定义事件只传递单个负载参数。 | — |  |
 | <span id="vue-prefer-template"></span>[`vue/prefer-template`](./reference/vue-prefer-template.md) | 优先使用模板字符串而非字符串拼接。 | — |  |
 | <span id="vue-prefer-true-attribute-shorthand"></span>[`vue/prefer-true-attribute-shorthand`](./reference/vue-prefer-true-attribute-shorthand.md) | 优先使用绑定到 `true` 的布尔属性简写。 | `nuxt`, `opinionated` |  |
 | <span id="vue-prefer-v-model"></span>[`vue/prefer-v-model`](./reference/vue-prefer-v-model.md) | 用 v-model 代替匹配的 bind 与 update 监听器。 | — |  |
@@ -425,8 +426,6 @@ description: "Vize linter 提供的全部规则，按类别分组。打开规则
 | <span id="petite-vue-valid-v-scope"></span>[`petite-vue/valid-v-scope`](./reference/petite-vue-valid-v-scope.md) | 要求 v-scope 绑定对象字面量。 | — |  |
 
 ## 跨文件规则 (66)
-
-在传给 `withVue` 的 `linter` 中设置 `crossFile: true`，或运行 `vize lint --cross-file` 来启用这些检查。诊断显示为 `vize:croquis/cf/<name>`；在 `linter.rules` 中去掉 `vize:`，写作 `croquis/cf/<name>`。
 
 | 规则 | 检查内容 | 状态 |
 | --- | --- | --- |

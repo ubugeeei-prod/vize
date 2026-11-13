@@ -14,9 +14,9 @@ use crate::markup::{
     MarkupTraversal,
 };
 use crate::rule::{Rule, RuleCategory, RuleMeta};
+use crate::rules::a11y::content_options::ContentOptions;
 use crate::rules::a11y::helpers::{
-    canonical_component_name, get_static_or_bound_literal_attribute_value, is_slot_element,
-    matches_configured_component, string_literal_value,
+    get_static_or_bound_literal_attribute_value, is_slot_element, string_literal_value,
 };
 use crate::rules::a11y::markup_helpers;
 use vize_relief::{ElementNode, ExpressionNode, PropNode, TemplateChildNode};
@@ -38,7 +38,7 @@ static META: RuleMeta = RuleMeta {
 
 /// Require anchor elements to have accessible content
 pub struct AnchorHasContent {
-    accessible_children: Vec<vize_l0::String>,
+    options: ContentOptions,
 }
 
 #[expect(
@@ -47,7 +47,7 @@ pub struct AnchorHasContent {
 )]
 /// Default `a11y/anchor-has-content` rule with no project-local components.
 pub const AnchorHasContent: AnchorHasContent = AnchorHasContent {
-    accessible_children: Vec::new(),
+    options: ContentOptions::EMPTY,
 };
 
 impl Default for AnchorHasContent {
@@ -59,11 +59,22 @@ impl Default for AnchorHasContent {
 impl AnchorHasContent {
     pub(crate) fn with_accessible_children(children: Vec<vize_l0::String>) -> Self {
         Self {
-            accessible_children: children
-                .into_iter()
-                .map(|name| canonical_component_name(&name))
-                .collect(),
+            options: ContentOptions::with_accessible_children(&children),
         }
+    }
+
+    pub(crate) fn from_options(options: &vize_l0::config::AnchorHasContentOptions) -> Self {
+        Self {
+            options: ContentOptions::from_config(options),
+        }
+    }
+
+    fn is_anchor(&self, element: &ElementNode<'_>) -> bool {
+        is_anchor_element(element) || self.options.is_checked_component(element.tag)
+    }
+
+    fn has_directive_content(&self, element: &ElementNode<'_>) -> bool {
+        has_content_directive(element) || self.options.has_directive(element)
     }
 
     fn has_accessible_content(&self, element: &ElementNode) -> bool {
@@ -91,7 +102,7 @@ impl AnchorHasContent {
             }
         }
 
-        if has_content_directive(element) {
+        if self.has_directive_content(element) {
             return true;
         }
 
@@ -119,10 +130,7 @@ impl AnchorHasContent {
                     if relief_hides_content(el) {
                         continue;
                     }
-                    if has_content_directive(el) {
-                        return true;
-                    }
-                    if matches_configured_component(el.tag, &self.accessible_children) {
+                    if self.has_directive_content(el) || self.options.is_accessible_child(el.tag) {
                         return true;
                     }
                     // Check for img with alt
@@ -186,7 +194,7 @@ impl AnchorHasContent {
                 _ => false,
             };
         });
-        if labelled || has_markup_content_directive(element) {
+        if labelled || self.has_markup_directive_content(element) {
             return true;
         }
         let mut found = false;
@@ -203,11 +211,8 @@ impl AnchorHasContent {
                     child.kind() == MarkupElementKind::Slot
                         || child.is_unqualified_tag_exact("slot")
                         || (!markup_hides_content(&child)
-                            && (has_markup_content_directive(&child)
-                                || matches_configured_component(
-                                    child.tag(),
-                                    &self.accessible_children,
-                                )
+                            && (self.has_markup_directive_content(&child)
+                                || self.options.is_accessible_child(child.tag())
                                 || (child.is_unqualified_tag_exact("img")
                                     && Self::has_markup_alt(&child))
                                 || self.has_markup_content(&child, source)))
@@ -239,6 +244,14 @@ impl AnchorHasContent {
             };
         });
         found
+    }
+
+    fn has_markup_directive_content(&self, element: &MarkupElement<'_>) -> bool {
+        has_markup_content_directive(element) || self.options.has_markup_directive(element)
+    }
+
+    fn is_markup_anchor(&self, element: &MarkupElement<'_>) -> bool {
+        is_markup_anchor(element) || self.options.is_checked_component(element.tag())
     }
 }
 
@@ -285,7 +298,7 @@ impl MarkupRule for AnchorHasContent {
     }
 
     fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
-        if !is_markup_anchor(element)
+        if !self.is_markup_anchor(element)
             || markup_hides_content(element)
             || self.has_markup_content(element, ctx.lint().source)
         {
@@ -307,7 +320,7 @@ impl Rule for AnchorHasContent {
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        if !is_anchor_element(element) || relief_hides_content(element) {
+        if !self.is_anchor(element) || relief_hides_content(element) {
             return;
         }
 

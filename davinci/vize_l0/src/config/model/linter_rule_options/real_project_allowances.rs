@@ -22,13 +22,23 @@ pub struct NoBareStringsInTemplateOptions {
     pub allowlist: Option<Vec<String>>,
 }
 
-/// Options for `a11y/anchor-has-content`.
+/// Options for `a11y/anchor-has-content` and `a11y/heading-has-content`, in
+/// eslint-plugin-vuejs-accessibility's shape.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default, deny_unknown_fields, rename_all = "camelCase")]
 pub struct AnchorHasContentOptions {
+    /// Component names checked as if they were the native element.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub components: Vec<String>,
     /// Component names whose rendered subtree always provides an accessible name.
     pub accessible_children: Vec<String>,
+    /// Directive names, without `v-`, that fill the element they sit on.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub accessible_directives: Vec<String>,
 }
+
+/// Options for `a11y/heading-has-content`, in the same shape.
+pub type HeadingHasContentOptions = AnchorHasContentOptions;
 
 /// Options for `a11y/label-has-for`.
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]

@@ -6382,6 +6382,16 @@ valid:
 
 help:
   Use shorthand prop syntax
+=== vue/prefer-single-event-payload
+vue/prefer-single-event-payload · lint rule
+Enforce passing a single argument to custom event emissions
+
+tier: complete
+domain: inline SFC scripts and descriptors with lexically unshadowed Vue macros and APIs and structurally recognizable component option objects; external blocks and unresolved aliases are outside
+severity: warning
+category: recommended
+autofix: no
+docs: docs/content/rules/reference/vue-prefer-single-event-payload.md
 === vue/prefer-template
 vue/prefer-template · lint rule
 Prefer template literals in template expressions

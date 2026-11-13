@@ -385,6 +385,7 @@ pub static RULE_CONTRACTS: &[RuleEntry] = &[
     row!("vue/prefer-const", Exact, SCRIPT_TEMPLATE, Warning),
     row!("vue/prefer-prop-type-boolean-first", Exact, OPTIONS, Warning),
     row!("vue/prefer-props-shorthand", Exact, STYLE, Warning),
+    row!("vue/prefer-single-event-payload", Complete, VUE_COMPAT_SCRIPT, Warning),
     row!("vue/prefer-template", Complete, TEMPLATE_EXPRESSION_SYNTAX, Warning),
     row!("vue/prefer-true-attribute-shorthand", Exact, STYLE, Warning),
     row!("vue/prefer-v-model", Complete, DIRECTIVES, Warning),
