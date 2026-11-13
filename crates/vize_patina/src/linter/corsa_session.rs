@@ -12,7 +12,7 @@ mod type_node_facts;
 mod type_shape;
 
 pub(in crate::linter) use expression_facts::{
-    ExpressionFact, ExpressionQuery, Facets, HeritageQuery, PathStep, detail,
+    ExpressionFact, ExpressionQuery, Facets, HeritageQuery, PathStep, TypeParameterUsage, detail,
 };
 pub(in crate::linter) use relations::{
     AssertionAsk, AssertionContext, ContextSource, DeprecationAsk, DeprecationKind, Literal,

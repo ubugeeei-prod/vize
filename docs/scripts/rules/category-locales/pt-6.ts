@@ -99,6 +99,11 @@ export const portugueseRules6: Record<string, readonly [string, string, string]>
     "label já é string, então String(label) não muda o seu tipo nem o seu valor.",
     "count é um número, então String(count) converte-o numa string.",
   ],
+  "type/no-unnecessary-type-parameters": [
+    "Proibir parâmetros de tipo usados uma única vez na assinatura.",
+    "T aparece uma única vez na assinatura de logValue, então não relaciona nada.",
+    "Tipar value como unknown aceita os mesmos argumentos sem parâmetro de tipo.",
+  ],
   "type/no-unsafe-argument": [
     "Proibir chamar uma função com um valor do tipo `any`.",
     "anyValue é any e é passado a um parâmetro que espera number.",

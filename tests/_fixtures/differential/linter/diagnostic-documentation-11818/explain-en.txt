@@ -3990,6 +3990,16 @@ severity: warning
 category: type-aware
 autofix: no
 docs: docs/content/rules/reference/type-no-unnecessary-type-conversion.md
+=== type/no-unnecessary-type-parameters
+type/no-unnecessary-type-parameters · lint rule
+Disallow type parameters that are used only once in their signature.
+
+tier: complete
+domain: types the Corsa session resolves for the component; unresolved types are outside
+severity: warning
+category: type-aware
+autofix: no
+docs: docs/content/rules/reference/type-no-unnecessary-type-parameters.md
 === type/no-unsafe-argument
 type/no-unsafe-argument · lint rule
 Disallow calling a function with a value of type `any`.

@@ -178,7 +178,7 @@ description: "Vize linter 提供的全部规则，按类别分组。打开规则
 | <span id="vue-warn-custom-block"></span>[`vue/warn-custom-block`](./reference/vue-warn-custom-block.md) | 警告 SFC 文件中的自定义块。 | `nuxt`, `opinionated` |  |
 | <span id="vue-warn-custom-directive"></span>[`vue/warn-custom-directive`](./reference/vue-warn-custom-directive.md) | 警告需要注册的自定义指令。 | `nuxt`, `opinionated` |  |
 
-## 类型与脚本规则 (123)
+## 类型与脚本规则 (124)
 
 | 规则 | 检查内容 | 预设 | 自动修复 |
 | --- | --- | --- | --- |
@@ -282,6 +282,7 @@ description: "Vize linter 提供的全部规则，按类别分组。打开规则
 | <span id="type-no-unnecessary-type-arguments"></span>[`type/no-unnecessary-type-arguments`](./reference/type-no-unnecessary-type-arguments.md) | 禁止与默认值相同的类型参数。 | `nuxt`, `opinionated` |  |
 | <span id="type-no-unnecessary-type-assertion"></span>[`type/no-unnecessary-type-assertion`](./reference/type-no-unnecessary-type-assertion.md) | 禁止不改变表达式类型的类型断言。 | `nuxt`, `opinionated` |  |
 | <span id="type-no-unnecessary-type-conversion"></span>[`type/no-unnecessary-type-conversion`](./reference/type-no-unnecessary-type-conversion.md) | 禁止不改变表达式类型或值的转换。 | `nuxt`, `opinionated` |  |
+| <span id="type-no-unnecessary-type-parameters"></span>[`type/no-unnecessary-type-parameters`](./reference/type-no-unnecessary-type-parameters.md) | 禁止在签名中只使用一次的类型参数。 | `nuxt`, `opinionated` |  |
 | <span id="type-no-unsafe-argument"></span>[`type/no-unsafe-argument`](./reference/type-no-unsafe-argument.md) | 禁止用 `any` 类型的值调用函数。 | `nuxt`, `opinionated` |  |
 | <span id="type-no-unsafe-assignment"></span>[`type/no-unsafe-assignment`](./reference/type-no-unsafe-assignment.md) | 禁止把 any 类型的值赋给更具体的目标。 | `nuxt`, `opinionated` |  |
 | <span id="type-no-unsafe-call"></span>[`type/no-unsafe-call`](./reference/type-no-unsafe-call.md) | 禁止调用类型为 any 的值。 | `nuxt`, `opinionated` |  |

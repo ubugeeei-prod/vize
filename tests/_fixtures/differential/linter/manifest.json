@@ -2996,17 +2996,17 @@
           {
             "path": "explain-en.txt",
             "role": "whole-current-explain-oracle",
-            "sha256": "029d1aa5b27ed6c31f92f39855e6845ca89e9e23fc881dabe76d6e4af6c8db20"
+            "sha256": "caaea29c06d1445ed8811040cc6170dbbba32ab0707527a499bc52f436ad0ba5"
           },
           {
             "path": "explain-ja.txt",
             "role": "whole-current-explain-oracle",
-            "sha256": "6968d1bd7f67ebceef6f4aae86c06976f36d47d100950516f6ac464030297e67"
+            "sha256": "ba095e1c4f483c26fb9260e74ab17890d2abcfc917dbbb4b57e73a40170dcf0c"
           },
           {
             "path": "explain-zh.txt",
             "role": "whole-current-explain-oracle",
-            "sha256": "fa5c587c2d3098ba7d3e4903c05b22bd9f476c9873aa0a8ea06c4c9a6faabc1a"
+            "sha256": "a2efda34e1246da3b747cdbf9e8bcefa9fd8a78b94ab70964cde0ce68cac29e4"
           }
         ]
       },
@@ -4177,6 +4177,37 @@
               "ts"
             ],
             "selector": "next-tick pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/no-unnecessary-type-parameters-12947",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "no-unnecessary-type-parameters-12947",
+        "files": [
+          {
+            "path": "Generics.vue.txt",
+            "role": "type-parameter-usage-reproduction",
+            "sha256": "546acd8278742d75ab98ea0bf88966dd256fd3b8fd48816ae5fe56e99c74de4c"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
           }
         ]
       }

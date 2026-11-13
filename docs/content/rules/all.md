@@ -178,7 +178,7 @@ description: "Every rule Vize's linter ships, grouped by category. Open a rule t
 | <span id="vue-warn-custom-block"></span>[`vue/warn-custom-block`](./reference/vue-warn-custom-block.md) | Warn about custom blocks in SFC files. | `nuxt`, `opinionated` |  |
 | <span id="vue-warn-custom-directive"></span>[`vue/warn-custom-directive`](./reference/vue-warn-custom-directive.md) | Warn about custom directives that need registration. | `nuxt`, `opinionated` |  |
 
-## Type and script rules (123)
+## Type and script rules (124)
 
 | Rule | What it checks | Preset | Auto-fix |
 | --- | --- | --- | --- |
@@ -282,6 +282,7 @@ description: "Every rule Vize's linter ships, grouped by category. Open a rule t
 | <span id="type-no-unnecessary-type-arguments"></span>[`type/no-unnecessary-type-arguments`](./reference/type-no-unnecessary-type-arguments.md) | Disallow type arguments that are equal to the default. | `nuxt`, `opinionated` |  |
 | <span id="type-no-unnecessary-type-assertion"></span>[`type/no-unnecessary-type-assertion`](./reference/type-no-unnecessary-type-assertion.md) | Disallow type assertions that do not change the expression type. | `nuxt`, `opinionated` |  |
 | <span id="type-no-unnecessary-type-conversion"></span>[`type/no-unnecessary-type-conversion`](./reference/type-no-unnecessary-type-conversion.md) | Disallow conversions that do not change the type or value of the expression. | `nuxt`, `opinionated` |  |
+| <span id="type-no-unnecessary-type-parameters"></span>[`type/no-unnecessary-type-parameters`](./reference/type-no-unnecessary-type-parameters.md) | Disallow type parameters that are used only once in their signature. | `nuxt`, `opinionated` |  |
 | <span id="type-no-unsafe-argument"></span>[`type/no-unsafe-argument`](./reference/type-no-unsafe-argument.md) | Disallow calling a function with a value of type `any`. | `nuxt`, `opinionated` |  |
 | <span id="type-no-unsafe-assignment"></span>[`type/no-unsafe-assignment`](./reference/type-no-unsafe-assignment.md) | Disallow assigning any-typed values to more specific targets. | `nuxt`, `opinionated` |  |
 | <span id="type-no-unsafe-call"></span>[`type/no-unsafe-call`](./reference/type-no-unsafe-call.md) | Disallow calling values typed as any. | `nuxt`, `opinionated` |  |

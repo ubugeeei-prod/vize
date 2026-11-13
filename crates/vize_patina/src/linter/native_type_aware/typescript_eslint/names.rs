@@ -81,6 +81,10 @@ pub(super) const RULES: &[(&str, &str)] = &[
         "Disallow conversions that do not change the type or value of the expression.",
     ),
     (
+        "type/no-unnecessary-type-parameters",
+        "Disallow type parameters that are used only once in their signature.",
+    ),
+    (
         "type/no-unsafe-argument",
         "Disallow calling a function with a value of type `any`.",
     ),

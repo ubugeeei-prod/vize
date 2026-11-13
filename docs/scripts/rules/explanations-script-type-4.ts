@@ -142,6 +142,13 @@ export const scriptType4Explanations: readonly ExplanationRecord[] = [
     "count は数値なので、String(count) はそれを文字列へ変換します。",
   ],
   [
+    "type/no-unnecessary-type-parameters",
+    "T appears only once in the signature of logValue, so it relates nothing to anything.",
+    "Typing value as unknown accepts the same arguments without a type parameter.",
+    "T は logValue のシグネチャに一度しか現れないため、何も関連付けていません。",
+    "value を unknown にすると、型パラメーターなしで同じ引数を受け取れます。",
+  ],
+  [
     "type/no-unsafe-argument",
     "anyValue is any, and it is passed to a parameter that expects number.",
     "The call passes the number 1 to the number parameter.",

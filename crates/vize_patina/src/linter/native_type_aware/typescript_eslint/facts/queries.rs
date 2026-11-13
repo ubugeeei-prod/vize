@@ -8,7 +8,7 @@
 mod members;
 use super::checker::{self, Needs as CheckerNeeds};
 use super::promise::{self, PromiseRules};
-use super::type_shape;
+use super::{type_parameters, type_shape};
 use crate::linter::corsa_session::{ExpressionQuery, Facets, HeritageQuery, detail};
 use corsa::lint::LintNode;
 use members::{accessed_name, is_receiver_position, pattern_keys};
@@ -29,6 +29,8 @@ pub(in super::super) struct Wants {
     type_parts: bool,
     /// The empty-object probe on intersections and generic references.
     empty_object: bool,
+    /// Type parameter use counts for no-unnecessary-type-parameters.
+    type_parameters: bool,
 }
 
 impl Wants {
@@ -60,6 +62,7 @@ impl Wants {
             type_parts: has("no-redundant-type-constituents")
                 || has("no-duplicate-type-constituents"),
             empty_object,
+            type_parameters: has("no-unnecessary-type-parameters"),
         }
     }
 
@@ -114,6 +117,9 @@ pub(in super::super) fn queries(nodes: &[LintNode], wants: Wants) -> Vec<Express
     }
     if wants.shapes {
         type_shape::request(nodes, wants.predicates, &mut plan);
+    }
+    if wants.type_parameters {
+        type_parameters::request(nodes, &mut plan);
     }
     plan.queries
 }

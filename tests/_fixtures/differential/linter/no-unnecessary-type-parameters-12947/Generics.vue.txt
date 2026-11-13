@@ -1,0 +1,15 @@
+<script setup lang="ts">
+function logValue<T>(value: T): void {
+  console.info(value);
+}
+function identity<T>(value: T): T {
+  return value;
+}
+
+logValue(1);
+const kept = identity("a");
+</script>
+
+<template>
+  <p>{{ kept }}</p>
+</template>

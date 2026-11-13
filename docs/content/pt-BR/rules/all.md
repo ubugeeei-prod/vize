@@ -178,7 +178,7 @@ description: "Todas as regras do linter do Vize, agrupadas por categoria. Abra u
 | <span id="vue-warn-custom-block"></span>[`vue/warn-custom-block`](./reference/vue-warn-custom-block.md) | Alertar sobre blocos personalizados em arquivos SFC. | `nuxt`, `opinionated` |  |
 | <span id="vue-warn-custom-directive"></span>[`vue/warn-custom-directive`](./reference/vue-warn-custom-directive.md) | Alertar sobre diretivas personalizadas que precisam de registro. | `nuxt`, `opinionated` |  |
 
-## Regras de tipo e script (123)
+## Regras de tipo e script (124)
 
 | Regra | O que verifica | Predefinição | Correção automática |
 | --- | --- | --- | --- |
@@ -282,6 +282,7 @@ description: "Todas as regras do linter do Vize, agrupadas por categoria. Abra u
 | <span id="type-no-unnecessary-type-arguments"></span>[`type/no-unnecessary-type-arguments`](./reference/type-no-unnecessary-type-arguments.md) | Proibir argumentos de tipo iguais ao valor padrão. | `nuxt`, `opinionated` |  |
 | <span id="type-no-unnecessary-type-assertion"></span>[`type/no-unnecessary-type-assertion`](./reference/type-no-unnecessary-type-assertion.md) | Proibir asserções de tipo que não mudam o tipo da expressão. | `nuxt`, `opinionated` |  |
 | <span id="type-no-unnecessary-type-conversion"></span>[`type/no-unnecessary-type-conversion`](./reference/type-no-unnecessary-type-conversion.md) | Proibir conversões que não mudam o tipo nem o valor da expressão. | `nuxt`, `opinionated` |  |
+| <span id="type-no-unnecessary-type-parameters"></span>[`type/no-unnecessary-type-parameters`](./reference/type-no-unnecessary-type-parameters.md) | Proibir parâmetros de tipo usados uma única vez na assinatura. | `nuxt`, `opinionated` |  |
 | <span id="type-no-unsafe-argument"></span>[`type/no-unsafe-argument`](./reference/type-no-unsafe-argument.md) | Proibir chamar uma função com um valor do tipo `any`. | `nuxt`, `opinionated` |  |
 | <span id="type-no-unsafe-assignment"></span>[`type/no-unsafe-assignment`](./reference/type-no-unsafe-assignment.md) | Proibir atribuir valores any a alvos mais específicos. | `nuxt`, `opinionated` |  |
 | <span id="type-no-unsafe-call"></span>[`type/no-unsafe-call`](./reference/type-no-unsafe-call.md) | Proibir chamar valores tipados como any. | `nuxt`, `opinionated` |  |
