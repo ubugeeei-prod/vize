@@ -60,6 +60,7 @@ export async function verifySolePagesWriter(
   floorJobId: number | null = null,
   repositoryId: number | null = null,
   guardedWorkflowHash: string | null = null,
+  cancelledJobIds: ReadonlySet<number> = new Set(),
 ) {
   const pending = new Set<number>();
   for (const record of await recentEnvironments(api, since, retainedIds)) {
@@ -110,6 +111,8 @@ export async function verifySolePagesWriter(
         "An uncertain actual Pages effect refuses publication even without a configured site",
       );
       if (trusted && floorJobId === job.id && page?.conclusion === "success") continue;
+      // History proved this known publisher's failed step cancelled its deployment.
+      if (knownRuns.has(job.run_id) && cancelledJobIds.has(job.id)) continue;
       if (floorCompletedAt !== null)
         assert(
           page?.completed_at &&
