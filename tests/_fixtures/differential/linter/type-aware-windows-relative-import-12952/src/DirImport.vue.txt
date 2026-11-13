@@ -1,0 +1,10 @@
+<script setup lang="ts">
+import { LIB_X, libSave } from "./lib";
+
+const left = `${LIB_X + 1}px`;
+libSave();
+</script>
+
+<template>
+  <p :style="{ left }">x</p>
+</template>
