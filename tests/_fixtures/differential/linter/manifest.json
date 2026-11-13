@@ -7230,7 +7230,7 @@
               "js",
               "ts"
             ],
-            "selector": "linter manifest pinned issue-authored Windows sources"
+          "selector": "linter manifest pinned authored sources"
           }
         ]
       }
