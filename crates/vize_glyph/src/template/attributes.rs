@@ -131,12 +131,13 @@ pub(crate) fn is_order_sensitive_attribute(
     value: Option<&str>,
 ) -> bool {
     let bounds_by_directive = match (head, kind) {
+        // Listener registration order is observable when handlers share an
+        // event, and moving an event across another runtime attribute can
+        // change setup order. Keep every `v-on` form at its authored slot.
+        (Some(_), Some(DirectiveKind::On)) => true,
         (Some(head), Some(kind)) => match head.arg {
             Some(ArgSyntax::Dynamic(_)) => true,
-            None => matches!(
-                kind,
-                DirectiveKind::Bind | DirectiveKind::On | DirectiveKind::Custom
-            ),
+            None => matches!(kind, DirectiveKind::Bind | DirectiveKind::Custom),
             Some(ArgSyntax::Static(_)) => {
                 matches!(kind, DirectiveKind::Bind | DirectiveKind::Custom)
             }
