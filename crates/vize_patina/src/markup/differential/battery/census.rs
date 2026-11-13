@@ -239,7 +239,9 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         // Whole-template esquery matching adds one helper-driven fixture call.
         + 1
         // Configurable component-name exemptions add four exact-name calls.
-        + 4,
+        + 4
+        // The v-on-handler-style option tests add one helper-driven call.
+        + 1,
     rule_fixture_skipped: 87
         + 4
         + 3
@@ -295,7 +297,9 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         // The whole-template esquery observation remains a scanner skip.
         + 1
         // Two new parity observations remain helper-driven scanner skips.
-        + 2,
+        + 2
+        // The v-on-handler-style option observation is a helper-driven skip.
+        + 1,
     matrix: 90,
     template_lines: 6316 + 233 + 5 + 10 + 25 + 7 - 49
         + 31

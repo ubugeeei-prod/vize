@@ -139,7 +139,7 @@ description: "针对 SFC 模板、指令、组件和代码块的正确性、写�
 | <span id="vue-warn-custom-block"></span>[`vue/warn-custom-block`](./reference/vue-warn-custom-block.md) | 警告 SFC 文件中的自定义块。 | `nuxt`, `opinionated` |  |
 | <span id="vue-warn-custom-directive"></span>[`vue/warn-custom-directive`](./reference/vue-warn-custom-directive.md) | 警告需要注册的自定义指令。 | `nuxt`, `opinionated` |  |
 
-## 按需启用 (59)
+## 按需启用 (60)
 
 不属于任何预设。在传给 `withVue` 的 `linter.rules` 中按名称启用。
 
@@ -194,6 +194,7 @@ description: "针对 SFC 模板、指令、组件和代码块的正确性、写�
 | <span id="vue-no-v-for-template-key"></span>[`vue/no-v-for-template-key`](./reference/vue-no-v-for-template-key.md) | 为兼容 Vue 2，要求将 `template v-for` 的 key 放在实际子元素上。 |  |
 | <span id="vue-object-shorthand"></span>[`vue/object-shorthand`](./reference/vue-object-shorthand.md) | 要求模板对象使用属性简写。 |  |
 | <span id="vue-prefer-prop-type-boolean-first"></span>[`vue/prefer-prop-type-boolean-first`](./reference/vue-prefer-prop-type-boolean-first.md) | 要求在组件 prop 的类型构造函数数组中将 `Boolean` 放在首位。 |  |
+| <span id="vue-prefer-single-event-payload"></span>[`vue/prefer-single-event-payload`](./reference/vue-prefer-single-event-payload.md) | 强制自定义事件只传递单个负载参数。 |  |
 | <span id="vue-prefer-template"></span>[`vue/prefer-template`](./reference/vue-prefer-template.md) | 优先使用模板字符串而非字符串拼接。 |  |
 | <span id="vue-prefer-v-model"></span>[`vue/prefer-v-model`](./reference/vue-prefer-v-model.md) | 用 v-model 代替匹配的 bind 与 update 监听器。 |  |
 | <span id="vue-quote-props"></span>[`vue/quote-props`](./reference/vue-quote-props.md) | 禁止不必要的带引号对象属性。 |  |

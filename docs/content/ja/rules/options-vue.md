@@ -523,16 +523,8 @@ const ruleOptions = { "vue/no-bare-strings-in-template": { allowlist: ["Cancel",
 
 <span id="a11y-anchor-has-content"></span>
 
-## `a11y/anchor-has-content`：アクセシブルな子コンポーネント
-
-常にアクセシブルな内容を描画するコンポーネントを `accessibleChildren` に指定します。PascalCase と kebab-case は同じ名前です。
-
-```ts
-const ruleOptions = { "a11y/anchor-has-content": { accessibleChildren: ["RetryImage"] } };
-```
-
-報告される：`<a href="/retry"><UnknownImage /></a>`
-許可される：`<a href="/retry"><RetryImage /></a>`
+`a11y/anchor-has-content` と `a11y/heading-has-content` の内容のオプションは
+[内容のオプション](./options.md#a11y-content-options)を参照してください。
 
 <span id="a11y-label-has-for"></span>
 

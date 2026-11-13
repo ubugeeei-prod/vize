@@ -13,6 +13,7 @@ mod aria_query;
 mod aria_role;
 mod aria_unsupported_elements;
 mod click_events_have_key_events;
+mod content_options;
 mod form_control_has_label;
 mod handler_source;
 mod heading_has_content;

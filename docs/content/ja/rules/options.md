@@ -85,7 +85,8 @@ export default defineConfig({}).withVue({
 | `vue/sort-keys` | `{ order?: "asc" \| "desc"; caseSensitive?: boolean; natural?: boolean }` | 既定は昇順・大文字小文字を区別する辞書順です。対応するコンポーネントオプション内のオブジェクトキーを検査します。 |
 | `vue/warn-custom-directive` | `{ ignore?: string[] }` | 既定は空のリストです。`ignore` の正確なディレクティブ名を登録済みとして扱います。 |
 | `vue/no-bare-strings-in-template` | `{ allowlist?: string[] }` | 省略時は上流の既定 allowlist を使い、明示したリストはそれを置き換えます。リテラルまたは Rust の正規表現構文を使う `/pattern/flags` を指定でき、無効なパターンはリテラルのまま扱います。 |
-| `a11y/anchor-has-content` | `{ accessibleChildren?: string[] }` | 既定は空のリストです。指定したコンポーネントをアクセシブルなリンク内容として扱います。 |
+| `a11y/anchor-has-content` | `{ components?: string[]; accessibleChildren?: string[]; accessibleDirectives?: string[] }` | どのリストも既定は空です。`components` はリンクとして検査し、`accessibleChildren` は内容として扱います。`accessibleDirectives`（`v-` を除いた名前）のディレクティブが付いた要素は内容を持つとみなします。[内容のオプション](#a11y-content-options)を参照してください。 |
+| `a11y/heading-has-content` | `{ components?: string[]; accessibleChildren?: string[]; accessibleDirectives?: string[] }` | `a11y/anchor-has-content` と同じオプションを `<h1>` から `<h6>` に適用します。 |
 | `a11y/label-has-for` | `{ controlComponents?: string[] }` | 既定は空のリストです。指定したコンポーネントをラベルのコントロールとして扱います。 |
 | `vue/require-component-registration` | `{ globals?: string[]; ignorePatterns?: string[] }` | アプリケーションのプラグインやプレビューのセットアップで登録するコンポーネント名を指定します。PascalCase と kebab-case の表記を許可します。`ignorePatterns` には eslint-plugin-vue の `vue/no-undef-components` と同じく正規表現を指定します。ルールは別に有効にしてください。 |
 | `vue/sfc-element-order` | `{ order?: Array<string \| string[]> }` | 既定は `[["script", "template"], "style"]` です。入れ子の配列は、その位置に配列内のどのブロックが現れてもよいことを表します。 |
@@ -94,6 +95,7 @@ export default defineConfig({}).withVue({
 | `vue/html-quotes` | `"double" \| "single"` または `{ style?: "double" \| "single"; avoidEscape?: boolean }` | 既定はダブルクォート、`avoidEscape: false` です。`true` では、指定した引用符を内部に含むクォート済みの値を変更しません。 |
 | `vue/mustache-interpolation-spacing` | `"always" \| "never"` | 既定は `"always"` です。`{{` と `}}` の直内側の空白を必須または禁止し、左右を個別に安全修正します。 |
 | `vue/v-on-event-hyphenation` | `"always" \| "never" \| { style?: "always" \| "never"; ignore?: string[] }` | 既定は `always` と空の除外リストです。大文字・小文字を区別する部分文字列を含むイベント名を除外します。 |
+| `vue/v-on-handler-style` | `Style \| { style?: Style; ignoreIncludesComment?: boolean }`（`Style` は `"method"`、`"inline"`、`"inline-function"`、`["method", "inline"]`、`["method", "inline-function"]`） | 既定は `"method"` で、メソッド参照だけを許可します。ほかの値は eslint-plugin-vue のもので、その既定は `["method", "inline-function"]` です。[ハンドラの書き方](./options-events.md#vue-v-on-handler-style)を参照してください。 |
 | `vue/v-bind-style` | `"shorthand" \| "longform"` | 既定は `"shorthand"` です。バインディングディレクティブを `:class` と `v-bind:class` のどちらで書くかを指定します。longform は `.title` を `v-bind:title.prop` に修正し、明示的な修飾子を保持します。`v-bind="attrs"` のようなオブジェクト形式は変更しません。 |
 | `vue/v-on-style` | `"shorthand" \| "longform"` | 既定は `"shorthand"` です。イベントディレクティブを `@click` と `v-on:click` のどちらで書くかを指定します。`v-on="listeners"` のようなオブジェクト形式は変更しません。 |
 | `vue/v-slot-style` | `"shorthand" \| "longform"` または `{ atComponent?: SlotStyle; default?: SlotStyle; named?: "shorthand" \| "longform" }`（`SlotStyle` は `"v-slot"` も可） | 既定は `atComponent: "v-slot"`、`default: "shorthand"`、`named: "shorthand"` です。名前を消してしまうため、`named` では裸の `v-slot` を受け付けません。 |
@@ -164,6 +166,48 @@ export default defineConfig({}).withVue({
 ```vue
 <p v-safe-html="message" />
 ```
+
+<span id="a11y-content-options"></span>
+
+## `a11y/anchor-has-content`
+
+オプションは eslint-plugin-vuejs-accessibility と同じです。`components` にはルーターのリンクなど、
+リンクとして検査するコンポーネントを指定します。`accessibleChildren` には常にアクセシブルな内容を
+描画するコンポーネントを指定します。`accessibleDirectives` には、付いた要素に内容を挿入する
+カスタムディレクティブを `v-` を除いた名前で指定します。要素自身か子孫に付いていれば、値の有無を
+問わず内容があるとみなします。値のある `v-text` と `v-html` は常に内容です。PascalCase、camelCase、
+kebab-case の表記は同じ名前です。`aria-hidden="true"` で隠した子は、指定していても内容になりません。
+
+```ts
+const ruleOptions = {
+  "a11y/anchor-has-content": {
+    components: ["NuxtLink"],
+    accessibleChildren: ["RetryImage"],
+    accessibleDirectives: ["markup-inline"],
+  },
+};
+```
+
+報告される：`<NuxtLink to="/docs" />` と `<a href="/retry"><UnknownImage /></a>`
+許可される：`<a href="/docs" v-markup-inline="label" />` と `<a href="/retry"><RetryImage /></a>`
+
+## `a11y/heading-has-content`
+
+同じ3つのオプションを `<h1>` から `<h6>` と `<component is="h2">` に適用します。カスタム
+ディレクティブで内容を挿入する見出しは空ではありませんが、`accessibleDirectives` がなければ
+ルールはそれを判断できません。
+
+```ts
+const ruleOptions = {
+  "a11y/heading-has-content": {
+    components: ["SectionTitle"],
+    accessibleDirectives: ["markup-inline"],
+  },
+};
+```
+
+報告される：`<h4 />` と `<SectionTitle />`
+許可される：`<h2 v-markup-inline="text" />` と `<h3 v-text="text" />`
 
 <span id="scoped-entries"></span>
 

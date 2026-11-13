@@ -35,6 +35,9 @@ const LEDGER: Readonly<Record<string, number>> = {
   "rules/opinionated/vue/script_unused/template_use.rs": 2,
   "rules/opinionated/vue/require_component_registration/async_setup.rs": 1,
   "rules/opinionated/vue/this_in_template/expressions.rs": 3,
+  // #12944: an opted-in eslint-plugin-vue handler style reads a handler's
+  // scopes and comments, which the retained js_ast does not carry.
+  "rules/opinionated/vue/v_on_handler_style/upstream.rs": 1,
   "rules/opinionated/vue/warn_custom_directive.rs": 1,
   "rules/petite_vue/valid_v_scope.rs": 1,
   "rules/script.rs": 1,

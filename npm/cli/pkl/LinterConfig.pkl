@@ -105,10 +105,8 @@ class NoBareStringsInTemplateOptions {
   allowlist: Listing<String>? = null
 }
 
-/// Components that always provide an accessible name to their parent anchor.
-class AnchorHasContentOptions {
-  accessibleChildren: Listing<String> = new Listing {}
-}
+/// Components and directives that provide an anchor's accessible content.
+class AnchorHasContentOptions extends LintRuleOptionTypes.HasContentOptions {}
 
 /// Components that render a native form control inside a label.
 class LabelHasForOptions {
@@ -275,6 +273,7 @@ class LintRuleOptions {
   `vue/warn-custom-directive`: WarnCustomDirectiveOptions? = null
   `vue/no-bare-strings-in-template`: NoBareStringsInTemplateOptions? = null
   `a11y/anchor-has-content`: AnchorHasContentOptions? = null
+  `a11y/heading-has-content`: LintRuleOptionTypes.HasContentOptions? = null
   `a11y/label-has-for`: LabelHasForOptions? = null
   `vue/block-lang`: BlockLangOptions? = null
   `max-lines`: MaxLinesOptions? = null
@@ -313,6 +312,7 @@ class LintRuleOptions {
   `type/unbound-method`: LintRuleOptionTypes.UnboundMethodOptions? = null
   `vue/no-unused-script-vars`: LintRuleOptionTypes.NoUnusedScriptVarsOptions? = null
   `vue/prefer-const`: LintRuleOptionTypes.PreferConstOptions? = null
+  `vue/v-on-handler-style`: (LintRuleOptionTypes.VOnHandlerStyle | LintRuleOptionTypes.VOnHandlerStyleOptions)? = null
   `vue/enforce-style-attribute`: EnforceStyleAttributeOptions? = null
   `vue/no-restricted-syntax`: (Listing<RestrictedSyntaxEntry> | NoRestrictedSyntaxOptions)? = null
   `vue/quote-props`: "as-needed"? = null

@@ -9,7 +9,7 @@ description: "見出しに支援技術で読める内容を用意します。"
 
 | 既定の重大度 | プリセット | 自動修正 | オプション |
 | --- | --- | --- | --- |
-| `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | なし |
+| `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | なし | [ルールのオプション](../options.md) |
 
 適用範囲：Vue SFC のテンプレートと各ブロック。ルールに必要な script の文脈も例に含めています。
 
@@ -53,5 +53,6 @@ export default defineConfig({}).withVue({
 ## 関連ページ
 
 - [アクセシビリティのルール](../accessibility.md)
+- [ルールのオプション](../options.md)
 - [全ルール](../all.md)
-- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/heading_has_content.rs#L20)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/heading_has_content.rs#L21)

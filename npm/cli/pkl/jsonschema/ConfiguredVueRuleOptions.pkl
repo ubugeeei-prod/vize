@@ -87,3 +87,49 @@ preferConstDef: JsonSchema = new JsonSchema {
   }
   additionalProperties = false
 }
+
+local namesDef: JsonSchema = new JsonSchema {
+  type = "array"
+  items = new JsonSchema { type = "string" }
+  default = new Listing {}
+}
+
+/// `a11y/anchor-has-content` and `a11y/heading-has-content`.
+hasContentDef: JsonSchema = new JsonSchema {
+  type = "object"
+  properties {
+    ["components"] = namesDef
+    ["accessibleChildren"] = namesDef
+    ["accessibleDirectives"] = namesDef
+  }
+  additionalProperties = false
+}
+
+local vOnHandlerKindDef: JsonSchema = new JsonSchema {
+  type = "string"
+  enum = new Listing { "method"; "inline"; "inline-function" }
+}
+
+/// `"method"`, `"inline"`, `"inline-function"`, or `["method", "inline" | "inline-function"]`.
+local vOnHandlerAllowedDefs: Listing<JsonSchema> = new Listing {
+  vOnHandlerKindDef
+  new JsonSchema {
+    type = "array"
+    items = vOnHandlerKindDef
+    uniqueItems = true
+  }
+}
+
+vOnHandlerStyleDef: JsonSchema = new JsonSchema {
+  oneOf = new Listing {
+    ...vOnHandlerAllowedDefs
+    new JsonSchema {
+      type = "object"
+      properties {
+        ["style"] = new JsonSchema { oneOf = vOnHandlerAllowedDefs }
+        ["ignoreIncludesComment"] = new JsonSchema { type = "boolean"; default = false }
+      }
+      additionalProperties = false
+    }
+  }
+}

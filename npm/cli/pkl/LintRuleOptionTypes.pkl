@@ -233,3 +233,25 @@ class PreferConstOptions {
   destructuring: ("any" | "all")? = null
   ignoreReadBeforeAssign: Boolean? = null
 }
+
+/// `a11y/anchor-has-content` and `a11y/heading-has-content`, as
+/// eslint-plugin-vuejs-accessibility reads them.
+open class HasContentOptions {
+  /// Components checked as if they were the native element.
+  components: Listing<String> = new Listing {}
+  /// Components whose rendered subtree is accessible content.
+  accessibleChildren: Listing<String> = new Listing {}
+  /// Directive names, without `v-`, that fill the element they sit on.
+  accessibleDirectives: Listing<String> = new Listing {}
+}
+
+typealias VOnHandlerKind = "method" | "inline" | "inline-function"
+
+/// `"method"` (the default), `"inline"`, `"inline-function"`, or
+/// `["method", "inline"]` / `["method", "inline-function"]`.
+typealias VOnHandlerStyle = VOnHandlerKind | Listing<VOnHandlerKind>
+
+class VOnHandlerStyleOptions {
+  style: VOnHandlerStyle? = null
+  ignoreIncludesComment: Boolean = false
+}

@@ -41,6 +41,7 @@ mod strict_boolean;
 pub(super) mod type_aware;
 mod v_bind_style;
 mod v_on_event_hyphenation;
+mod v_on_handler_style;
 mod v_on_style;
 mod v_slot_style;
 mod valid_v_on;
@@ -75,8 +76,8 @@ pub use no_use_v_if_with_v_for::NoUseVIfWithVForOptions;
 pub use prop_name_casing::{PropNameCasingOptions, PropNameCasingStyle};
 pub use props_destructuring::{DefinePropsDestructuringOptions, PropsDestructureMode};
 pub use real_project_allowances::{
-    AnchorHasContentOptions, LabelHasForOptions, NoBareStringsInTemplateOptions,
-    WarnCustomDirectiveOptions,
+    AnchorHasContentOptions, HeadingHasContentOptions, LabelHasForOptions,
+    NoBareStringsInTemplateOptions, WarnCustomDirectiveOptions,
 };
 pub use restrictions::{
     MuseaDesignToken, MuseaPreferDesignTokensOptions, NoRestrictedGlobalsOptions,
@@ -91,6 +92,9 @@ pub use slot_name_casing::SlotNameCasingStyle;
 pub use strict_boolean::StrictBooleanExpressionsOptions;
 pub use v_bind_style::VBindStyle;
 pub use v_on_event_hyphenation::{VOnEventHyphenationConfig, VOnEventHyphenationOptions};
+pub use v_on_handler_style::{
+    VOnHandlerAllowed, VOnHandlerKind, VOnHandlerStyleConfig, VOnHandlerStyleOptions,
+};
 pub use v_on_style::VOnStyle;
 pub use v_slot_style::{
     VSlotNamedStyle, VSlotStyle, VSlotStyleOptions, VSlotStyleValue, VSlotUniformStyle,

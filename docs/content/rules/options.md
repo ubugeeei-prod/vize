@@ -82,7 +82,8 @@ export default defineConfig({}).withVue({
 | `vue/sort-keys` | `{ order?: "asc" \| "desc"; caseSensitive?: boolean; natural?: boolean }` | Defaults to ascending, case-sensitive lexical order. Checks every object literal of the script blocks except a component options object itself, the children of `model` and the grandchildren of `computed`, `directives`, `inject`, `props` and `watch`, as eslint-plugin-vue does by default; `natural` uses its natural-compare order. |
 | `vue/warn-custom-directive` | `{ ignore?: string[] }` | Defaults to an empty list. Exact directive names in `ignore` are treated as registered. |
 | `vue/no-bare-strings-in-template` | `{ allowlist?: string[] }` | Omitted uses the upstream default allowlist; an explicit list replaces it. Entries are literals or `/pattern/flags` values using Rust regex syntax; invalid patterns remain literals. |
-| `a11y/anchor-has-content` | `{ accessibleChildren?: string[] }` | Defaults to an empty list. Named components count as accessible anchor content. |
+| `a11y/anchor-has-content` | `{ components?: string[]; accessibleChildren?: string[]; accessibleDirectives?: string[] }` | Each list defaults to empty. `components` are checked as anchors, `accessibleChildren` count as content, and an element carrying one of `accessibleDirectives` (named without `v-`) has content. See [content options](#a11y-content-options). |
+| `a11y/heading-has-content` | `{ components?: string[]; accessibleChildren?: string[]; accessibleDirectives?: string[] }` | The same options as `a11y/anchor-has-content`, for `<h1>` to `<h6>`. |
 | `a11y/label-has-for` | `{ controlComponents?: string[] }` | Defaults to an empty list. Named components count as label controls. |
 | `vue/require-component-registration` | `{ globals?: string[]; ignorePatterns?: string[] }` | Explicit application/preview component names; accepts PascalCase and kebab-case spellings. `ignorePatterns` takes regular expressions, as in eslint-plugin-vue `vue/no-undef-components`. Options do not enable the rule. |
 | `vue/sfc-element-order` | `{ order?: Array<string \| string[]> }` | Defaults to `[["script", "template"], "style"]`. A nested array means any of those block selectors may appear at that rank. |
@@ -91,6 +92,7 @@ export default defineConfig({}).withVue({
 | `vue/html-quotes` | `"double" \| "single"` or `{ style?: "double" \| "single"; avoidEscape?: boolean }` | Defaults to double quotes and `avoidEscape: false`. With `avoidEscape: true`, a quoted value containing the requested delimiter is left unchanged. |
 | `vue/mustache-interpolation-spacing` | `"always" \| "never"` | Defaults to `"always"`. Requires or forbids whitespace immediately inside `{{` and `}}`; both sides are fixed independently. |
 | `vue/v-on-event-hyphenation` | `"always" \| "never" \| { style?: "always" \| "never"; ignore?: string[] }` | Defaults to `always` and an empty ignore list. Exempts event names containing a configured case-sensitive substring. |
+| `vue/v-on-handler-style` | `Style \| { style?: Style; ignoreIncludesComment?: boolean }`, where `Style` is `"method"`, `"inline"`, `"inline-function"`, `["method", "inline"]` or `["method", "inline-function"]` | Defaults to `"method"`: only a method reference. The other values are eslint-plugin-vue's; its default is `["method", "inline-function"]`. See [handler styles](./options-events.md#vue-v-on-handler-style). |
 | `vue/v-bind-style` | `"shorthand" \| "longform"` | Defaults to `"shorthand"`. Configures whether binding directives use `:class` or `v-bind:class`; longform rewrites `.title` to `v-bind:title.prop`, preserving explicit modifiers. Object syntax such as `v-bind="attrs"` is unchanged. |
 | `vue/v-on-style` | `"shorthand" \| "longform"` | Defaults to `"shorthand"`. Configures whether event directives use `@click` or `v-on:click`; object syntax such as `v-on="listeners"` is unchanged. |
 | `vue/v-slot-style` | `"shorthand" \| "longform"` or `{ atComponent?: SlotStyle; default?: SlotStyle; named?: "shorthand" \| "longform" }`, where `SlotStyle` also accepts `"v-slot"` | Defaults to `atComponent: "v-slot"`, `default: "shorthand"`, and `named: "shorthand"`. Bare `v-slot` is rejected for `named` because it would erase the slot name. |
@@ -163,6 +165,47 @@ Good (configured provider):
 ```vue
 <p v-safe-html="message" />
 ```
+
+<span id="a11y-content-options"></span>
+
+## `a11y/anchor-has-content`
+
+The options follow eslint-plugin-vuejs-accessibility. `components` lists components checked as
+anchors, such as a router link. `accessibleChildren` lists components that always render
+accessible content. `accessibleDirectives` lists custom directives, named without `v-`, that fill
+the element they sit on; the element itself or a descendant may carry one, with or without a value.
+`v-text` and `v-html` with a value always count. PascalCase, camelCase and kebab-case spellings
+are equivalent. A child hidden with `aria-hidden="true"` does not count, even when listed.
+
+```ts
+const ruleOptions = {
+  "a11y/anchor-has-content": {
+    components: ["NuxtLink"],
+    accessibleChildren: ["RetryImage"],
+    accessibleDirectives: ["markup-inline"],
+  },
+};
+```
+
+Bad: `<NuxtLink to="/docs" />` and `<a href="/retry"><UnknownImage /></a>`
+Good: `<a href="/docs" v-markup-inline="label" />` and `<a href="/retry"><RetryImage /></a>`
+
+## `a11y/heading-has-content`
+
+The same three options apply to `<h1>` to `<h6>` and `<component is="h2">`. A heading filled by a
+custom directive is not empty, and the rule cannot tell that without `accessibleDirectives`.
+
+```ts
+const ruleOptions = {
+  "a11y/heading-has-content": {
+    components: ["SectionTitle"],
+    accessibleDirectives: ["markup-inline"],
+  },
+};
+```
+
+Bad: `<h4 />` and `<SectionTitle />`
+Good: `<h2 v-markup-inline="text" />` and `<h3 v-text="text" />`
 
 ## Scoped Entries
 

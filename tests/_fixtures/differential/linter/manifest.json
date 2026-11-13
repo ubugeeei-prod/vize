@@ -2996,17 +2996,17 @@
           {
             "path": "explain-en.txt",
             "role": "whole-current-explain-oracle",
-            "sha256": "029d1aa5b27ed6c31f92f39855e6845ca89e9e23fc881dabe76d6e4af6c8db20"
+            "sha256": "f0db0832abef6dcc89ca714242c285bb59bc60598f4444108a007d2e3ba6daeb"
           },
           {
             "path": "explain-ja.txt",
             "role": "whole-current-explain-oracle",
-            "sha256": "6968d1bd7f67ebceef6f4aae86c06976f36d47d100950516f6ac464030297e67"
+            "sha256": "221951fc422d2b279431f6b4391fb7fc4ca25175c1629a9016aad2229b000265"
           },
           {
             "path": "explain-zh.txt",
             "role": "whole-current-explain-oracle",
-            "sha256": "fa5c587c2d3098ba7d3e4903c05b22bd9f476c9873aa0a8ea06c4c9a6faabc1a"
+            "sha256": "19f2dfa383d164a11022bee94d07b45c7dd4edc1836f97f2661abd573f13c032"
           }
         ]
       },
@@ -5140,6 +5140,48 @@
             "path": "RoleImage.vue.txt",
             "role": "third-party-role-img-name-reproduction",
             "sha256": "a63f15d0093ce950b1f5797643f39fb4c272af7508aed63aaac9246ead29a16b"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/patina/compat-rule-options-12944",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "patina-compat-rule-options-12944",
+        "files": [
+          {
+            "path": "Emits.vue.txt",
+            "role": "third-party-rule-options-reproduction",
+            "sha256": "8c9650754eff7203ffb9ae453c891662675c288779064b989d4000476bb894c7"
+          },
+          {
+            "path": "Handlers.vue.txt",
+            "role": "third-party-rule-options-reproduction",
+            "sha256": "24fa55a8ada2a17d33c29fe7927bdfae63ae2b8efd500a9dfde1156601c11ad8"
+          },
+          {
+            "path": "Headings.vue.txt",
+            "role": "third-party-rule-options-reproduction",
+            "sha256": "5244bc2d953479b2e191f3414d756b3b542bdf0ef7b1b8082877315c78ed432a"
           }
         ]
       },

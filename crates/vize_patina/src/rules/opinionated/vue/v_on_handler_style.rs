@@ -4,6 +4,8 @@
 //!
 //! A handler such as `@click="handler"` is directly reusable. Inline functions
 //! and inline statements are reported by the default method-handler policy.
+//! `linter.ruleOptions` selects eslint-plugin-vue's styles instead, such as
+//! `["method", "inline-function"]`, and `ignoreIncludesComment`.
 //!
 //! ## Examples
 //!
@@ -24,9 +26,14 @@ use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use oxc_ast::ast::Expression as JsExpression;
+use vize_l0::config::{VOnHandlerAllowed, VOnHandlerStyleConfig};
 use vize_relief::{
     DirectiveNode, ElementNode, ExpressionNode, SimpleExpressionNode, SourceLocation,
 };
+
+#[cfg(test)]
+mod options_tests;
+mod upstream;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/v-on-handler-style",
@@ -36,8 +43,51 @@ static META: RuleMeta = RuleMeta {
     default_severity: Severity::Warning,
 };
 
-/// Enforce v-on handler style (method reference).
-pub struct VOnHandlerStyle;
+/// Enforce v-on handler style (method reference by default).
+pub struct VOnHandlerStyle {
+    allowed: VOnHandlerAllowed,
+    ignore_includes_comment: bool,
+}
+
+#[expect(
+    non_upper_case_globals,
+    reason = "the unit-like rule value intentionally shares the rule type name"
+)]
+/// Default `vue/v-on-handler-style` rule: only method references.
+pub const VOnHandlerStyle: VOnHandlerStyle = VOnHandlerStyle {
+    allowed: VOnHandlerAllowed::METHOD,
+    ignore_includes_comment: false,
+};
+
+impl VOnHandlerStyle {
+    /// Build the rule from `linter.ruleOptions["vue/v-on-handler-style"]`.
+    pub(crate) fn from_options(config: VOnHandlerStyleConfig) -> Self {
+        Self {
+            allowed: config.allowed(),
+            ignore_includes_comment: config.ignore_includes_comment(),
+        }
+    }
+
+    /// eslint-plugin-vue's styles: a member reference is never reported.
+    fn upstream_report(
+        &self,
+        ctx: &LintContext<'_>,
+        expr: &str,
+        simple: Option<&SimpleExpressionNode<'_>>,
+    ) -> Option<upstream::Report> {
+        if is_identifier(expr) {
+            return upstream::method_reference(self.allowed);
+        }
+        if simple.is_some_and(retained_method_reference)
+            || is_method_reference(expr)
+            || is_typescript_asserted_method_reference(expr)
+        {
+            return None;
+        }
+        let handler = upstream::analyze(expr)?;
+        upstream::handler(ctx, self.allowed, self.ignore_includes_comment, &handler)
+    }
+}
 
 impl Rule for VOnHandlerStyle {
     fn meta(&self) -> &'static RuleMeta {
@@ -82,23 +132,39 @@ impl Rule for VOnHandlerStyle {
             return;
         }
 
-        if simple.is_some_and(retained_method_reference)
-            || is_method_reference(expr)
-            || is_typescript_asserted_method_reference(expr)
-        {
-            return;
-        }
+        let (message, help) = if self.allowed == VOnHandlerAllowed::METHOD {
+            if simple.is_some_and(retained_method_reference)
+                || is_method_reference(expr)
+                || is_typescript_asserted_method_reference(expr)
+                || (self.ignore_includes_comment
+                    && (expr.contains("//") || expr.contains("/*"))
+                    && upstream::analyze(expr).is_some_and(|handler| handler.has_comment))
+            {
+                return;
+            }
+            (
+                "vue/v-on-handler-style.message",
+                "vue/v-on-handler-style.help",
+            )
+        } else {
+            match self.upstream_report(ctx, expr, simple) {
+                Some(report) => report,
+                None => return,
+            }
+        };
 
         // The parser location includes whitespace inside the quotes, while
         // eslint-plugin-vue reports the JavaScript node itself.
         let loc = trimmed_expression_location(ctx.source, loc);
 
-        ctx.warn_with_help(
-            ctx.t("vue/v-on-handler-style.message"),
-            &loc,
-            ctx.t("vue/v-on-handler-style.help"),
-        );
+        ctx.warn_with_help(ctx.t(message), &loc, ctx.t(help));
     }
+}
+
+/// A single identifier, which upstream treats as a method handler.
+fn is_identifier(expr: &str) -> bool {
+    let mut chars = expr.chars();
+    chars.next().is_some_and(is_ident_start) && chars.all(is_ident_continue)
 }
 
 fn retained_method_reference(expression: &SimpleExpressionNode<'_>) -> bool {

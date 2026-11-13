@@ -996,6 +996,7 @@ expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
     "vue/no-define-model-default",
     "vue/no-props-shadow",
     "vue/no-shadow-native-events",
+    "vue/prefer-single-event-payload",
     "vue/require-macro-variable-name",
     "vue/sort-keys",
     "vue/camelcase",

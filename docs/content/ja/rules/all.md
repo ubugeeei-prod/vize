@@ -5,7 +5,7 @@ description: "Vize のリンターに含まれるすべてのルールを、カ�
 
 # 全 lint ルール
 
-## Vue ルール (168)
+## Vue ルール (169)
 
 | ルール | 検出する内容 | プリセット | 自動修正 |
 | --- | --- | --- | --- |
@@ -128,6 +128,7 @@ description: "Vize のリンターに含まれるすべてのルールを、カ�
 | <span id="vue-prefer-const"></span>[`vue/prefer-const`](./reference/vue-prefer-const.md) | スクリプトとテンプレートが再代入しないバインディングを const にします。 | `nuxt`, `opinionated` |  |
 | <span id="vue-prefer-prop-type-boolean-first"></span>[`vue/prefer-prop-type-boolean-first`](./reference/vue-prefer-prop-type-boolean-first.md) | prop の型コンストラクター配列で Boolean を先頭に置きます。 | — |  |
 | <span id="vue-prefer-props-shorthand"></span>[`vue/prefer-props-shorthand`](./reference/vue-prefer-props-shorthand.md) | Vue 3.4 の同名 prop バインディングの省略形を使います。 | `nuxt`, `opinionated` | ✓ |
+| <span id="vue-prefer-single-event-payload"></span>[`vue/prefer-single-event-payload`](./reference/vue-prefer-single-event-payload.md) | カスタムイベントのペイロードを1つにまとめます。 | — |  |
 | <span id="vue-prefer-template"></span>[`vue/prefer-template`](./reference/vue-prefer-template.md) | 文字列連結の代わりにテンプレートリテラルを使います。 | — |  |
 | <span id="vue-prefer-true-attribute-shorthand"></span>[`vue/prefer-true-attribute-shorthand`](./reference/vue-prefer-true-attribute-shorthand.md) | true を指定するバインディングを真偽属性の省略形にします。 | `nuxt`, `opinionated` |  |
 | <span id="vue-prefer-v-model"></span>[`vue/prefer-v-model`](./reference/vue-prefer-v-model.md) | 対応する bind と update リスナーを v-model にまとめます。 | — |  |
@@ -425,8 +426,6 @@ description: "Vize のリンターに含まれるすべてのルールを、カ�
 | <span id="petite-vue-valid-v-scope"></span>[`petite-vue/valid-v-scope`](./reference/petite-vue-valid-v-scope.md) | v-scope に値を指定する場合は、オブジェクトリテラルにします。 | — |  |
 
 ## ファイル間ルール (66)
-
-`withVue` に渡す `linter` に `crossFile: true` を指定するか、`vize lint --cross-file` を実行すると有効になります。診断は `vize:croquis/cf/<name>` と表示されます。`linter.rules` では `vize:` を除いた `croquis/cf/<name>` で設定します。
 
 | ルール | 検出する内容 | 対応状況 |
 | --- | --- | --- |

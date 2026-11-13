@@ -311,7 +311,14 @@ export interface LintRuleOptions {
     allowlist?: string[];
   };
   "a11y/anchor-has-content"?: {
+    components?: string[];
     accessibleChildren?: string[];
+    accessibleDirectives?: string[];
+  };
+  "a11y/heading-has-content"?: {
+    components?: string[];
+    accessibleChildren?: string[];
+    accessibleDirectives?: string[];
   };
   "a11y/label-has-for"?: {
     controlComponents?: string[];
@@ -780,6 +787,15 @@ export interface LintRuleOptions {
     destructuring?: "any" | "all";
     ignoreReadBeforeAssign?: boolean;
   };
+  "vue/v-on-handler-style"?:
+    | ("method" | "inline" | "inline-function")
+    | ("method" | "inline" | "inline-function")[]
+    | {
+        style?:
+          | ("method" | "inline" | "inline-function")
+          | ("method" | "inline" | "inline-function")[];
+        ignoreIncludesComment?: boolean;
+      };
   "vue/enforce-style-attribute"?: {
     allow?: ("plain" | "scoped" | "module")[];
   };

@@ -419,6 +419,7 @@ export const purposeJa: Readonly<Record<string, string>> = {
   "vue/no-sparse-arrays": "テンプレート式の疎な配列を検出します。",
   "vue/no-useless-concat": "文字列リテラル同士の不要な連結を検出します。",
   "vue/object-shorthand": "テンプレート式のオブジェクトに短縮プロパティ記法を使います。",
+  "vue/prefer-single-event-payload": "カスタムイベントのペイロードを1つにまとめます。",
   "vue/prefer-template": "文字列連結の代わりにテンプレートリテラルを使います。",
   "vue/prefer-v-model": "対応する bind と update リスナーを v-model にまとめます。",
   "vue/quote-props": "不要な引用符付きオブジェクトプロパティを検出します。",
