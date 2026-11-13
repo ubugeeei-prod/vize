@@ -2,7 +2,10 @@
 //! #12894, #12896, #12918, #12919, #12921): type flags, structural shapes,
 //! member-method facts and file-local declarations. Also the reported
 //! regressions: empty tuples that panic the native runtime (#12949) and
-//! unbound-method on destructured composable members (#12943).
+//! unbound-method on destructured composable members (#12943), and
+//! `type/no-unnecessary-type-parameters` (#12947): written uses decide most
+//! parameters, the checker counts the uses an inferred type or a class
+//! member adds.
 use super::{corsa_available, lint_sfc_with_corsa};
 use crate::{LintPreset, LintResult, Linter};
 
@@ -247,4 +250,66 @@ fn unbound_method_reports_methods_and_function_expressions_only() {
         "{:#?}",
         result.diagnostics
     );
+}
+
+const TYPE_PARAMETERS: &str = r#"<script setup lang="ts">
+function logValue<T>(value: T): void {
+  console.info(value);
+}
+function identity<T>(value: T): T {
+  return value;
+}
+function wrap<T>(value: T) {
+  return [value];
+}
+function first<K, V>(map: Map<K, V>): K | undefined {
+  return map.keys().next().value;
+}
+class Box<T> {
+  value?: T;
+}
+class Pair<T> {
+  constructor(readonly left: T, readonly right: T) {}
+}
+logValue(1);
+const kept = identity("a");
+export { kept, wrap, first, Box, Pair };
+</script>"#;
+
+/// `(line, column, message)`, with the `<script>` tag on line 1.
+const TYPE_PARAMETER_FINDINGS: &[(u32, u32, &str)] = &[
+    (
+        2,
+        19,
+        "Type parameter T is used only once in the function signature.",
+    ),
+    (
+        14,
+        11,
+        "Type parameter T is used only once in the class signature.",
+    ),
+];
+
+#[test]
+fn reports_type_parameters_used_once() {
+    if !corsa_available() {
+        return;
+    }
+    let linter = Linter::with_preset(LintPreset::Opinionated);
+    let result = lint_sfc_with_corsa(&linter, TYPE_PARAMETERS, "TypeParameters.vue");
+    let mut actual = result
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.rule_name == "type/no-unnecessary-type-parameters")
+        .map(|diagnostic| {
+            let (line, column) = line_column(TYPE_PARAMETERS, diagnostic.start);
+            (line, column, diagnostic.message.to_string())
+        })
+        .collect::<Vec<_>>();
+    actual.sort();
+    let expected = TYPE_PARAMETER_FINDINGS
+        .iter()
+        .map(|(line, column, message)| (*line, *column, (*message).to_owned()))
+        .collect::<Vec<_>>();
+    assert_eq!(actual, expected, "{:#?}", result.diagnostics);
 }
