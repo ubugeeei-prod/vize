@@ -59,6 +59,40 @@ function libraryArtifact(log: string): { artifact: Artifact; library: string } {
   assert(fs.statSync(libraries[0]!).isFile());
   return { artifact, library: libraries[0]! };
 }
+// Cargo 1.99 keeps every library of a profile in <profile>/deps. Cargo 1.100
+// keeps each unit in <profile>/build/<package>/<hash>/out, so the probe
+// searches every unit output directory of the library's profile.
+function dependencyDirectories(filenames: string[]): string[] {
+  const deps = new Set(
+    filenames.map(path.dirname).filter((name) => path.basename(name) === "deps"),
+  );
+  const units = new Set(
+    filenames
+      .map(path.dirname)
+      .filter(
+        (name) =>
+          path.basename(name) === "out" &&
+          path.basename(path.dirname(path.dirname(path.dirname(name)))) === "build",
+      )
+      .map((name) => path.dirname(path.dirname(path.dirname(name)))),
+  );
+  assert.equal(deps.size + units.size, 1);
+  if (deps.size === 1) {
+    const directory = [...deps][0]!;
+    assert(fs.statSync(directory).isDirectory());
+    return [directory];
+  }
+  const build = [...units][0]!;
+  const directories = fs
+    .readdirSync(build)
+    .flatMap((pkg) =>
+      fs.readdirSync(path.join(build, pkg)).map((hash) => path.join(build, pkg, hash, "out")),
+    )
+    .filter((directory) => fs.existsSync(directory))
+    .sort();
+  assert(directories.length > 0);
+  return directories;
+}
 function compileProbe(
   role: string,
   artifact: Artifact,
@@ -66,15 +100,7 @@ function compileProbe(
   snippet: string,
   evidence: string,
 ) {
-  const directories = new Set(
-    list(artifact.filenames)
-      .map(string)
-      .map(path.dirname)
-      .filter((name) => path.basename(name) === "deps"),
-  );
-  assert.equal(directories.size, 1);
-  const dependencies = [...directories][0]!;
-  assert(fs.statSync(dependencies).isDirectory());
+  const dependencies = dependencyDirectories(list(artifact.filenames).map(string));
   const destination = path.join(evidence, "send-" + role);
   fs.mkdirSync(destination);
   const stdout = path.join(evidence, "send-" + role + ".stdout");
@@ -92,8 +118,7 @@ function compileProbe(
       destination,
       "--extern",
       "vize_l0=" + library,
-      "-L",
-      "dependency=" + dependencies,
+      ...dependencies.flatMap((directory) => ["-L", "dependency=" + directory]),
       snippet,
     ],
     stdout,
@@ -115,7 +140,7 @@ function compileProbe(
     diagnostics,
     rlib: library,
     rlibSha256: digest(library),
-    dependencyDirectory: dependencies,
+    dependencyDirectories: dependencies,
     artifact,
   };
 }

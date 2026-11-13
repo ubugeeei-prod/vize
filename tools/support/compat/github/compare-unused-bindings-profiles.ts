@@ -90,25 +90,35 @@ export function collectUnitEvidence(output: string, target: string, context: obj
           continue;
         }
         const parent = dirname(filename);
-        const buildScript = basename(dirname(parent)) === "build";
-        const hash = /-([a-f0-9]{16})(?:\.[^.]+)?$/.exec(
-          buildScript ? basename(parent) : basename(filename),
-        )?.[1];
+        // Cargo 1.100 keeps each unit in <profile>/build/<package>/<hash>/{out,fingerprint}.
+        const unitRoot = dirname(parent);
+        const unitLayout =
+          basename(parent) === "out" &&
+          basename(dirname(dirname(unitRoot))) === "build" &&
+          /^[a-f0-9]{16}$/.test(basename(unitRoot));
+        const buildScript = !unitLayout && basename(dirname(parent)) === "build";
+        const hash = unitLayout
+          ? basename(unitRoot)
+          : /-([a-f0-9]{16})(?:\.[^.]+)?$/.exec(
+              buildScript ? basename(parent) : basename(filename),
+            )?.[1];
         const profileRoot = buildScript ? dirname(dirname(parent)) : dirname(parent);
-        if (!hash || (!buildScript && basename(parent) !== "deps")) {
+        if (!hash || (!unitLayout && !buildScript && basename(parent) !== "deps")) {
           unit.gaps.push({ filename, reason: "no emitted unit hash; name matching refused" });
           continue;
         }
-        const fingerprintRoot = join(profileRoot, ".fingerprint");
+        const fingerprintRoot = unitLayout ? unitRoot : join(profileRoot, ".fingerprint");
         if (seen.has(`${fingerprintRoot}/${hash}`)) continue;
         seen.add(`${fingerprintRoot}/${hash}`);
         if (!existsSync(fingerprintRoot) || !inside(fingerprintRoot)) {
           unit.gaps.push({ filename, hash, reason: "fingerprint root unavailable" });
           continue;
         }
-        const matches = readdirSync(fingerprintRoot, { withFileTypes: true }).filter(
-          (entry) => entry.isDirectory() && entry.name.endsWith(`-${hash}`),
-        );
+        const matches = unitLayout
+          ? [{ name: "fingerprint" }].filter(({ name }) => existsSync(join(unitRoot, name)))
+          : readdirSync(fingerprintRoot, { withFileTypes: true }).filter(
+              (entry) => entry.isDirectory() && entry.name.endsWith(`-${hash}`),
+            );
         if (matches.length !== 1) {
           unit.gaps.push({ filename, hash, reason: "missing or ambiguous fingerprint directory" });
           continue;
@@ -128,7 +138,7 @@ export function collectUnitEvidence(output: string, target: string, context: obj
           const sourcePath = relative(canonicalTarget, realpathSync(source));
           const name = sourcePath
             .split(sep)
-            .filter((part) => part !== ".fingerprint")
+            .filter((part) => part !== ".fingerprint" && part !== "build" && part !== "fingerprint")
             .join(sep);
           const destination = join(output, "fingerprints", name);
           mkdirSync(dirname(destination), { recursive: true });
