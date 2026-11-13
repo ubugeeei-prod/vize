@@ -21,7 +21,8 @@ pub(in super::super) struct Wants {
     promise: PromiseRules,
     checker: CheckerNeeds,
     tree: TreeNeeds,
-    /// `__typeShape` for the no-unnecessary-* rules.
+    /// The constrained `__type` and its `__typeContext` for the
+    /// no-unnecessary-* rules.
     shapes: bool,
     /// Type predicates for no-unnecessary-condition's `checkTypePredicates`.
     predicates: bool,
@@ -124,8 +125,8 @@ struct Role<'a> {
     /// `(parent kind, key)` as the promise rules name positions.
     promise: Option<(&'a str, &'a str)>,
     /// Type tree details (`detail::*`).
-    tree: u8,
-    /// `__typeDetail`.
+    tree: u16,
+    /// The `no-unsafe-*` details of `__type`.
     detail: bool,
 }
 
@@ -354,22 +355,22 @@ fn may_generate_empty_object(node: &LintNode) -> bool {
 #[derive(Clone, Copy, Default)]
 struct TreeNeeds {
     /// `+` / `+=` operands (restrict-plus-operands, no-base-to-string).
-    plus_operands: u8,
+    plus_operands: u16,
     /// Template literal expressions (restrict-template-expressions,
     /// no-base-to-string).
-    template_expressions: u8,
+    template_expressions: u16,
     /// First call/`new` arguments: the `String()` argument (no-base-to-string)
     /// and eval-like handlers (no-implied-eval).
-    first_argument: u8,
+    first_argument: u16,
     /// Receivers of `toString`, `toLocaleString` and `join`
     /// (no-base-to-string).
-    stringified_receiver: u8,
+    stringified_receiver: u16,
     /// The `Function` callee (no-implied-eval).
-    function_callee: u8,
+    function_callee: u16,
     /// `void` arguments (no-meaningless-void-operator).
-    void_argument: u8,
+    void_argument: u16,
     /// Spread arguments (no-misused-spread).
-    spread_argument: u8,
+    spread_argument: u16,
     /// Accessed and destructured members (unbound-method).
     members: bool,
 }
@@ -377,12 +378,8 @@ struct TreeNeeds {
 impl TreeNeeds {
     fn from_rules(rules: &[&str]) -> Self {
         let has = |name: &str| rules.contains(&name);
-        let when = |enabled: bool, details: u8| {
-            if enabled {
-                detail::STRUCTURE | details
-            } else {
-                0
-            }
+        let when = |enabled: bool, details: u16| {
+            if enabled { detail::TREE | details } else { 0 }
         };
         let to_string = when(
             has("no-base-to-string"),
@@ -414,7 +411,7 @@ impl TreeNeeds {
 }
 
 /// Type tree details an enabled rule needs for a child position.
-fn wants_tree(needs: TreeNeeds, parent: &LintNode, key: &str, index: usize) -> u8 {
+fn wants_tree(needs: TreeNeeds, parent: &LintNode, key: &str, index: usize) -> u16 {
     match parent.kind.as_str() {
         "BinaryExpression"
             if parent.field_str("operator") == Some("+") && matches!(key, "left" | "right") =>

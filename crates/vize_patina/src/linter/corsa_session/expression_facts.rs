@@ -28,7 +28,6 @@ use batch::{apply_symbols, parameter_types, promise_fact, type_responses};
 use corsa::api::{NodeHandle, TypeResponse};
 use corsa::fast::ToCompactString as _;
 use corsa::runtime::block_on;
-use details::{DetailCache, type_detail};
 use serde_json::Value;
 use vize_l0::{FxHashMap, String as CompactString};
 
@@ -69,14 +68,16 @@ pub(in crate::linter) struct ExpressionQuery {
     pub function_returns: Option<bool>,
     /// Load the checker's contextual type at this node, with its detail.
     pub contextual: bool,
-    /// Load checker details (flags, constituents, constraint, references).
+    /// Load the `__type` details the `no-unsafe-*` and enum rules read
+    /// (references, array/tuple, enum identity).
     pub detail: bool,
     /// Member paths into the type (destructuring patterns) whose types to load.
     pub paths: Vec<Vec<PathStep>>,
-    /// Describe the constrained type as a `__typeShape` fact.
+    /// Position facts of the constrained type (`__typeContext`); the type
+    /// itself goes into the tree.
     pub shape: Option<ShapeRequest>,
-    /// Type tree details to load (`detail::*`); `0` for none.
-    pub tree: u8,
+    /// `__type` details to load (`detail::*`); `0` for none.
+    pub tree: u16,
     /// Property names whose method declarations to describe on this type.
     pub member_methods: Vec<CompactString>,
     /// Load the union constituents of a type node's type.
@@ -187,8 +188,8 @@ pub(in crate::linter) struct ExpressionFact {
     pub contextual_members: Vec<(CompactString, bool)>,
     /// `(member, heritage type text)` for heritage members that return void.
     pub heritage_voids: Vec<(CompactString, CompactString)>,
-    /// Checker details of the type (flags, union parts, enum identity, constraint).
-    pub detail: Option<Value>,
+    /// The `__type` tree, with every detail the query asked for.
+    pub ty: Option<Value>,
     /// Resolved-signature parameter types, for `ExpressionQuery::call_positions`.
     pub call: Option<Value>,
     /// Signature return types, for `ExpressionQuery::function_returns`.
@@ -198,10 +199,8 @@ pub(in crate::linter) struct ExpressionFact {
     pub contextual: Option<Value>,
     /// Details at `ExpressionQuery::paths`, aligned; `None` where a step fails.
     pub paths: Vec<Option<Value>>,
-    /// Constrained type flags, literal values and union parts (`__typeShape`).
-    pub shape: Option<Value>,
-    /// Recursive type tree (`__typeTree`), when the query asked for one.
-    pub tree: Option<Value>,
+    /// Position facts beside the tree (`__typeContext`).
+    pub context: Option<Value>,
     /// Method facts per requested member name, when the query asked for any.
     pub member_methods: Option<Value>,
     /// The type is the checker's `error` type. Set for `parts` queries.
@@ -322,8 +321,8 @@ async fn load(
             .and_then(|&index| responses.get(index))
             .and_then(Option::as_ref)
     };
-    let mut details = DetailCache::default();
     let mut shapes = ShapeCache::default();
+    // One tree builder for every family: a type is described once per batch.
     let mut trees = shape::Shapes::new(memo, file);
     let mut promises = PromiseChecker::new(memo);
     let mut probe = TypeNodeProbe::new(
@@ -360,8 +359,18 @@ async fn load(
         }
         // Each fact family below fails on its own: a query the checker
         // cannot answer leaves that family unset for this expression only.
+        let mut demand = query.tree;
         if query.detail {
-            fact.detail = local(type_detail(memo, response, &mut details).await)?;
+            demand |= detail::CHECKER;
+        }
+        if let Some(request) = &query.shape {
+            demand |= detail::CONSTRAINED;
+            if request.array {
+                demand |= detail::ARRAY;
+            }
+        }
+        if demand != 0 {
+            fact.ty = Some(trees.shape(response, demand).await);
         }
         if let Some(location) = location {
             if query.call_positions > 0 {
@@ -370,7 +379,7 @@ async fn load(
                         memo,
                         location.clone(),
                         query.call_positions,
-                        &mut details,
+                        &mut trees,
                     )
                     .await,
                 )?
@@ -378,7 +387,7 @@ async fn load(
             }
             if query.contextual {
                 fact.contextual =
-                    local(signatures::contextual_type(memo, location.clone(), &mut details).await)?;
+                    local(signatures::contextual_type(memo, location.clone(), &mut trees).await)?;
             }
         }
         if let Some(contextual) = query.function_returns {
@@ -387,34 +396,49 @@ async fn load(
                     memo,
                     response,
                     location.filter(|_| contextual).cloned(),
-                    &mut details,
+                    &mut trees,
                 )
                 .await,
             )?;
         }
         for path in &query.paths {
-            let detail = local(paths::detail_at(memo, response, path, &mut details).await)?;
+            let detail = local(paths::detail_at(memo, response, path, &mut trees).await)?;
             fact.paths.push(detail.flatten());
         }
         if let Some(request) = &query.shape {
             let key = request.keys_from.as_ref().and_then(response_at);
-            let mut described =
-                local(describe_shape(memo, response, request, key, &mut shapes).await)?;
-            if let Some(map) = described.as_mut().and_then(Value::as_object_mut)
-                && let Some(call) = &request.predicate
-                && let Some(callee) = response_at(&call.callee)
-            {
-                let arguments = call.arguments.iter().map(response_at).collect::<Vec<_>>();
-                if let Some(predicate) =
-                    local(predicate_fact(memo, callee, &arguments, &mut shapes).await)?.flatten()
-                {
-                    map.insert("predicate".into(), predicate);
+            let described = local(describe_shape(memo, response, request, key, &mut shapes).await)?;
+            if let Some((mut context, returns)) = described {
+                if let Some(map) = context.as_object_mut() {
+                    if request.returns {
+                        let mut trees_of_returns = Vec::with_capacity(returns.len());
+                        for returned in &returns {
+                            trees_of_returns.push(trees.shape(returned, detail::CONSTRAINED).await);
+                        }
+                        map.insert("returns".into(), Value::Array(trees_of_returns));
+                    }
+                    if let Some(call) = &request.predicate
+                        && let Some(callee) = response_at(&call.callee)
+                    {
+                        let arguments = call.arguments.iter().map(response_at).collect::<Vec<_>>();
+                        if let Some((mut predicate, asserted)) =
+                            local(predicate_fact(memo, callee, &arguments, &mut shapes).await)?
+                                .flatten()
+                        {
+                            if let (Some(asserted), Some(fields)) =
+                                (asserted, predicate.as_object_mut())
+                            {
+                                fields.insert(
+                                    "shape".into(),
+                                    trees.shape(&asserted, detail::CONSTRAINED).await,
+                                );
+                            }
+                            map.insert("predicate".into(), predicate);
+                        }
+                    }
                 }
+                fact.context = Some(context);
             }
-            fact.shape = described;
-        }
-        if query.tree != 0 {
-            fact.tree = Some(trees.shape(response, query.tree).await);
         }
         if !query.member_methods.is_empty() {
             fact.member_methods = Some(trees.member_methods(response, &query.member_methods).await);

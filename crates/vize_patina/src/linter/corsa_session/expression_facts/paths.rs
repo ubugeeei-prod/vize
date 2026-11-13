@@ -21,7 +21,7 @@ pub(super) async fn detail_at(
     session: &CheckerMemo<'_>,
     ty: &TypeResponse,
     path: &[PathStep],
-    cache: &mut DetailCache,
+    cache: &mut DetailCache<'_>,
 ) -> corsa::Result<Option<Value>> {
     let mut current = ty.clone();
     for step in path {
@@ -34,7 +34,7 @@ pub(super) async fn detail_at(
         };
         current = next;
     }
-    Ok(Some(type_detail(session, &current, cache).await?))
+    Ok(Some(type_detail(cache, &current).await?))
 }
 
 async fn property_type(

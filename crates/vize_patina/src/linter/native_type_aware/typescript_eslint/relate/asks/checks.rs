@@ -10,13 +10,12 @@ use crate::linter::corsa_session::{
 use serde_json::{Value, json};
 
 impl<'v> Walk<'_, '_, 'v> {
+    /// A node whose constrained array-likeness a rule reads: the fact pass
+    /// describes it with `detail::ARRAY_LIKE`.
     pub(super) fn shape(&mut self, value: &Value) {
-        let (Some(key), Some(range)) = (key(value), span(value).and_then(|span| (self.map)(span)))
-        else {
-            return;
-        };
-        self.pending.shapes.push(key);
-        self.pending.request.shapes.push(range);
+        if let Some(key) = key(value) {
+            self.pending.array_like.push(key);
+        }
     }
 
     pub(super) fn assertion(&mut self, value: &Value, ancestors: &[Ancestor<'_>]) {

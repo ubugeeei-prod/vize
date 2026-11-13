@@ -1,9 +1,6 @@
 //! Type predicates of a call, for no-unnecessary-condition's `checkTypePredicates`.
 use super::super::checker_memo::CheckerMemo;
-use super::{
-    CALL_SIGNATURE, CONSTRAINABLE, INTERSECTION, ShapeCache, ShapeRequest, UNION, constraint,
-    describe,
-};
+use super::{CALL_SIGNATURE, CONSTRAINABLE, INTERSECTION, ShapeCache, UNION, constraint};
 use corsa::api::{TypePredicateResponse, TypeResponse};
 use serde_json::{Map, Value, json};
 
@@ -17,16 +14,17 @@ const PREDICATE_ASSERTS_IDENTIFIER: i32 = 3;
 /// share one predicate, and never for a generic predicate type (whose
 /// instantiation would need the resolved signature).
 ///
-/// `{ "argument": index, "asserts": bool }` plus either `"shape"` (the
-/// asserted argument's shape, for `asserts x`) or `"argumentFlags"`,
-/// `"assignable"` (argument to predicate type), `"reverseAssignable"` and
-/// `"predicateIsUnion"` (for `x is T` / `asserts x is T`).
+/// `{ "argument": index, "asserts": bool }` plus either the asserted
+/// argument's type (for `asserts x`; the caller adds its tree as `"shape"`) or
+/// `"argumentFlags"`, `"assignable"` (argument to predicate type),
+/// `"reverseAssignable"` and `"predicateIsUnion"` (for `x is T` /
+/// `asserts x is T`).
 pub(in super::super) async fn predicate(
     session: &CheckerMemo<'_>,
     callee: &TypeResponse,
     arguments: &[Option<&TypeResponse>],
     cache: &mut ShapeCache,
-) -> corsa::Result<Option<Value>> {
+) -> corsa::Result<Option<(Value, Option<TypeResponse>)>> {
     if arguments.is_empty() {
         return Ok(None);
     }
@@ -43,12 +41,9 @@ pub(in super::super) async fn predicate(
     let mut fact = Map::new();
     fact.insert("argument".into(), json!(index));
     fact.insert("asserts".into(), json!(asserts));
+    let mut asserted = None;
     match &found.r#type {
-        None if asserts => {
-            let request = ShapeRequest::default();
-            let shape = Box::pin(describe(session, argument, &request, None, cache)).await?;
-            fact.insert("shape".into(), shape);
-        }
+        None if asserts => asserted = Some((*argument).clone()),
         Some(target) if found.kind == PREDICATE_IDENTIFIER || asserts => {
             if target.flags & CONSTRAINABLE & !(UNION | INTERSECTION) != 0 {
                 return Ok(None);
@@ -70,7 +65,7 @@ pub(in super::super) async fn predicate(
         }
         _ => return Ok(None),
     }
-    Ok(Some(Value::Object(fact)))
+    Ok(Some((Value::Object(fact), asserted)))
 }
 
 pub(super) async fn assignable(

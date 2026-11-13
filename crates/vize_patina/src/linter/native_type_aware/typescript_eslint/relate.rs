@@ -4,7 +4,7 @@
 mod asks;
 mod binding;
 
-use crate::linter::corsa_session::{RelationReply, RelationRequest, Shape, Span, type_flags};
+use crate::linter::corsa_session::{RelationReply, RelationRequest, Span, type_flags};
 use corsa::lint::LintNode;
 use oxc_ast::ast::Program;
 use serde_json::{Value, json};
@@ -20,7 +20,8 @@ pub(super) struct Pending {
     request: RelationRequest,
     assertions: Vec<AssertionTarget>,
     non_null: Vec<NonNullTarget>,
-    shapes: Vec<Key>,
+    /// Nodes whose constrained array-likeness a rule reads off `__type`.
+    array_like: Vec<Key>,
     deprecations: Vec<Key>,
     defaults: Vec<Key>,
     returns: Vec<Key>,
@@ -45,11 +46,16 @@ impl Pending {
         &self.request
     }
 
+    /// Script ranges whose `__type` needs `detail::ARRAY_LIKE`.
+    pub(super) fn array_like_ranges(&self) -> impl Iterator<Item = (u32, u32)> + '_ {
+        self.array_like.iter().map(|&(_, start, end)| (start, end))
+    }
+
     pub(super) fn is_empty(&self) -> bool {
         self.fixed.is_empty()
             && self.request.assertions.is_empty()
             && self.request.non_null.is_empty()
-            && self.request.shapes.is_empty()
+            && self.array_like.is_empty()
             && self.request.deprecations.is_empty()
             && self.request.defaults.is_empty()
             && self.request.returns.is_empty()
@@ -148,15 +154,6 @@ pub(super) fn apply(nodes: &mut [LintNode], pending: &Pending, reply: Option<&Re
             json!(target.used_before_assigned || answer.declared_matches),
         );
     }
-    for (index, key) in pending.shapes.iter().enumerate() {
-        match reply
-            .and_then(|reply| reply.shapes.get(index))
-            .and_then(Option::as_ref)
-        {
-            Some(shape) => push(*key, "__constrainedTypeShape", shape_value(shape)),
-            None => push(*key, "__typeFactsMissing", json!(true)),
-        }
-    }
     for (index, key) in pending.defaults.iter().enumerate() {
         let same = reply
             .and_then(|reply| reply.defaults.get(index))
@@ -204,6 +201,27 @@ pub(super) fn apply(nodes: &mut [LintNode], pending: &Pending, reply: Option<&Re
     }
     for node in nodes {
         stamp(node, &facts);
+        // An array-likeness question the checker did not answer keeps the
+        // rule silent.
+        mark_untyped(node, &pending.array_like);
+    }
+}
+
+fn mark_untyped(node: &mut LintNode, keys: &[Key]) {
+    if !node.fields.contains_key("__type")
+        && keys.iter().any(|&(kind, start, end)| {
+            kind == node.kind && start == node.range.start && end == node.range.end
+        })
+    {
+        node.fields.insert("__typeFactsMissing".into(), json!(true));
+    }
+    for child in node.children.values_mut() {
+        mark_untyped(child, keys);
+    }
+    for children in node.child_lists.values_mut() {
+        for child in children {
+            mark_untyped(child, keys);
+        }
     }
 }
 
@@ -242,18 +260,4 @@ fn flag_names(bits: u32) -> Value {
             .map(|(_, name)| json!(name))
             .collect(),
     )
-}
-
-fn shape_value(shape: &Shape) -> Value {
-    json!({
-        "flags": shape.flags,
-        "union": shape.union,
-        "intersection": shape.intersection,
-        "array": shape.array,
-        "tuple": shape.tuple,
-        "numberIndex": shape.number_index,
-        "numberLength": shape.number_length,
-        "stringLike": shape.flags & (type_flags::STRING | type_flags::STRING_LITERAL) != 0,
-        "parts": shape.parts.iter().map(shape_value).collect::<Vec<_>>(),
-    })
 }

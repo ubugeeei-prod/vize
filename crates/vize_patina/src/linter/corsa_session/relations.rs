@@ -24,7 +24,6 @@ pub(in crate::linter) type Span = (u32, u32);
 pub(in crate::linter) struct RelationRequest {
     pub assertions: Vec<AssertionAsk>,
     pub non_null: Vec<NonNullAsk>,
-    pub shapes: Vec<Span>,
     pub returns: Vec<ReturnAsk>,
     /// `isTypeAssignableTo(typeAt(source), typeAt(target))`.
     pub assignable: Vec<(Span, Span)>,
@@ -39,7 +38,6 @@ pub(in crate::linter) struct RelationRequest {
 pub(in crate::linter) struct RelationReply {
     pub assertions: Vec<AssertionReply>,
     pub non_null: Vec<NonNullReply>,
-    pub shapes: Vec<Option<Shape>>,
     pub returns: Vec<ReturnReply>,
     pub assignable: Vec<Option<bool>>,
     pub deprecations: Vec<Option<Deprecation>>,
@@ -154,21 +152,6 @@ pub(in crate::linter) struct NonNullReply {
     pub declared_matches: bool,
 }
 
-/// Union/intersection structure of a base-constrained type.
-#[derive(Clone, Debug, Default, PartialEq, Eq)]
-pub(in crate::linter) struct Shape {
-    pub flags: u32,
-    pub union: bool,
-    pub intersection: bool,
-    pub array: bool,
-    pub tuple: bool,
-    /// The type has a `number` index signature.
-    pub number_index: bool,
-    /// The type has a `length` property of a number-like type.
-    pub number_length: bool,
-    pub parts: Vec<Shape>,
-}
-
 /// A deprecated use.
 #[derive(Clone)]
 pub(in crate::linter) struct Deprecation {
@@ -226,7 +209,6 @@ impl RelationReply {
         Self {
             assertions: vec![AssertionReply::default(); request.assertions.len()],
             non_null: vec![NonNullReply::default(); request.non_null.len()],
-            shapes: vec![None; request.shapes.len()],
             returns: vec![ReturnReply::default(); request.returns.len()],
             assignable: vec![None; request.assignable.len()],
             deprecations: vec![None; request.deprecations.len()],
@@ -273,9 +255,6 @@ pub(super) fn spans(request: &RelationRequest, translate: &dyn Fn(Span) -> Span)
         if let Some(declared) = ask.declared {
             add(declared);
         }
-    }
-    for span in &request.shapes {
-        add(*span);
     }
     for ask in &request.returns {
         add(ask.class);
@@ -359,13 +338,6 @@ pub(super) async fn answer(
         reply
             .non_null
             .push(non_null(&mut checker, &located, ask, translate).await);
-    }
-    for span in &request.shapes {
-        let shape = match located.ty(translate(*span)) {
-            Some(ty) => checker.shape(ty).await,
-            None => None,
-        };
-        reply.shapes.push(shape);
     }
     for ask in &request.returns {
         reply

@@ -17,7 +17,7 @@ pub(in crate::linter) use expression_facts::{
 };
 pub(in crate::linter) use relations::{
     AssertionAsk, AssertionContext, ContextSource, DeprecationAsk, DeprecationKind, Literal,
-    NonNullAsk, PropertyContext, RelationReply, RelationRequest, ReturnAsk, Shape, Span,
+    NonNullAsk, PropertyContext, RelationReply, RelationRequest, ReturnAsk, Span,
     flags as type_flags,
 };
 pub(in crate::linter) use type_shape::{PredicateRequest, ShapeRequest};

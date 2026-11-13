@@ -18,7 +18,7 @@ const SPREAD_SLACK: u32 = 8;
 /// Which checker facts the enabled rules read, so nothing else is asked for.
 #[derive(Clone, Copy, Debug, Default)]
 pub(in super::super) struct Needs {
-    /// `__typeDetail`, per rule that reads it.
+    /// the `no-unsafe-*` details of `__type`, per rule that reads it.
     pub detail: DetailRules,
     /// Resolved parameter types at calls.
     pub calls: bool,
@@ -36,7 +36,7 @@ pub(in super::super) struct Needs {
     pub super_calls: bool,
 }
 
-/// The enabled rules that read `__typeDetail`.
+/// The enabled rules that read the `no-unsafe-*` details of `__type`.
 #[derive(Clone, Copy, Debug, Default)]
 #[expect(
     clippy::struct_excessive_bools,
@@ -96,7 +96,7 @@ impl Needs {
     }
 }
 
-/// Whether an enabled rule reads `__typeDetail` off the `key` child of
+/// Whether an enabled rule reads the `no-unsafe-*` details of `__type` off the `key` child of
 /// `parent`. Each rule reads its listener's direct operands (see the rules'
 /// `TypeDetail::of` calls); nothing deeper is read except through these
 /// same positions on nested listeners.
@@ -256,7 +256,7 @@ pub(super) fn stamp_listener(node: &mut LintNode, facts: &ListenerFacts<'_>) {
         "SwitchCase" => {
             let detail = switch_discriminant(node)
                 .and_then(|range| facts.get(&range))
-                .and_then(|fact| fact.detail.clone());
+                .and_then(|fact| fact.ty.clone());
             if let Some(detail) = detail {
                 node.fields
                     .insert("__switchDiscriminantDetail".into(), detail);

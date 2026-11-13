@@ -42,10 +42,8 @@ fn mark_module_this(node: &mut LintNode) {
     if node.kind == "ThisExpression" {
         node.type_texts = vec!["undefined".into()];
         node.property_names.clear();
-        node.fields.insert(
-            "__typeDetail".into(),
-            json!({ "id": "", "flags": UNDEFINED, "parts": [{ "id": "", "flags": UNDEFINED }] }),
-        );
+        node.fields
+            .insert("__type".into(), json!({ "id": "", "flags": UNDEFINED }));
         return;
     }
     for child in node.children.values_mut() {

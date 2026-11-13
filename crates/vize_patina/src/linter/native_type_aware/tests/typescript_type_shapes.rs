@@ -1,4 +1,4 @@
-//! Checker-flag facts (`__typeShape`) behind the no-unnecessary-* type rules.
+//! Constrained `__type` facts behind the no-unnecessary-* type rules.
 use super::{corsa_available, lint_sfc_with_corsa};
 use crate::{LintPreset, Linter};
 

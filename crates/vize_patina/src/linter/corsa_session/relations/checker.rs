@@ -14,13 +14,10 @@ pub(in crate::linter) mod flags {
     pub const UNDEFINED: u32 = 1 << 2;
     pub const NULL: u32 = 1 << 3;
     pub const VOID: u32 = 1 << 4;
-    pub const STRING: u32 = 1 << 5;
-    pub const NUMBER: u32 = 1 << 6;
     pub const STRING_LITERAL: u32 = 1 << 10;
     pub const NUMBER_LITERAL: u32 = 1 << 11;
     pub const BIGINT_LITERAL: u32 = 1 << 12;
     pub const BOOLEAN_LITERAL: u32 = 1 << 13;
-    pub const ENUM: u32 = 1 << 16;
     pub const NON_PRIMITIVE: u32 = 1 << 17;
     pub const TYPE_PARAMETER: u32 = 1 << 19;
     pub const OBJECT: u32 = 1 << 20;
@@ -30,8 +27,6 @@ pub(in crate::linter) mod flags {
     pub const INTERSECTION: u32 = 1 << 28;
     /// `isTypeLiteralType(t) || isBooleanLiteralType(t)`.
     pub const LITERAL: u32 = STRING_LITERAL | NUMBER_LITERAL | BIGINT_LITERAL | BOOLEAN_LITERAL;
-    /// `TypeFlags.NumberLike`.
-    pub const NUMBER_LIKE: u32 = NUMBER | NUMBER_LITERAL | ENUM;
     /// `TypeFlags.TypeVariable | TypeFlags.Index`.
     pub const TYPE_VARIABLE: u32 = TYPE_PARAMETER | INDEXED_ACCESS | INDEX;
     /// Types `getBaseConstraintOfType` can resolve to something other than

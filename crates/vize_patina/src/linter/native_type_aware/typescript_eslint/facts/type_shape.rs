@@ -1,4 +1,4 @@
-//! Which expressions get a `__typeShape` (constrained type flags) fact.
+//! Which expressions get the constrained `__type` and `__typeContext` facts.
 use super::queries::Planner;
 use crate::linter::corsa_session::{ExpressionQuery, PredicateRequest, ShapeRequest};
 use corsa::lint::LintNode;
