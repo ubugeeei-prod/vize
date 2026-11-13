@@ -206,6 +206,10 @@ libc = "=0.2.190"
 # runs low, so template nesting depth costs heap instead of stack. See
 # `vize_carton::recursion` for why the compiler needs it.
 stacker = "=0.1.25"
+# Production-grade Python grammar for the Davinci language-axis example. The
+# example owns the deliberately small Python-to-JavaScript lowering surface;
+# syntax recognition and source ranges come from RustPython.
+rustpython-parser = { version = "=0.4.0", default-features = false, features = ["location", "num-bigint"] }
 
 # Reads WIT sources for contract-surface classification (P6-8), behind
 # `vize_marquette`'s `wit` feature.

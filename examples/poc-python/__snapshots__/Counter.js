@@ -20,6 +20,8 @@ export default {
       count.value > 3 && !done.value ? _h("p", null, "Hot!") : _h("p", null, "Keep clicking"),
       _withDirectives(_h("input", { "onUpdate:modelValue": ($event) => (name.value = $event) }), [[_vModelText, name.value]]),
       _h("p", null, _toDisplayString(`Hello, ${name.value}! ${items.value.length} steps.`)),
+      _h("p", { class: "forecast" }, "Next doubled: " + _toDisplayString((count.value + 1) * 2)),
+      _h("p", { class: "first" }, "First: " + _toDisplayString(items.value[0].toUpperCase())),
       _h("ul", null, [_h(_Fragment, null, _renderList(items.value, (item) => _h("li", null, _toDisplayString(item.toUpperCase()))))]),
     ]);
   },
