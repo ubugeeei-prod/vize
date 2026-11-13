@@ -21,7 +21,7 @@ pub(super) async fn resolved_parameters(
     session: &CheckerMemo<'_>,
     location: NodeHandle,
     positions: u32,
-    cache: &mut DetailCache,
+    cache: &mut DetailCache<'_>,
 ) -> corsa::Result<Option<Value>> {
     let signature = session
         .client()
@@ -74,7 +74,7 @@ pub(super) async fn function_returns(
     session: &CheckerMemo<'_>,
     own: &TypeResponse,
     location: Option<NodeHandle>,
-    cache: &mut DetailCache,
+    cache: &mut DetailCache<'_>,
 ) -> corsa::Result<Value> {
     let contextual = match location {
         Some(location) => session.contextual_type(&location).await,
@@ -94,7 +94,7 @@ pub(super) async fn function_returns(
 async fn signature_returns(
     session: &CheckerMemo<'_>,
     function_type: &TypeResponse,
-    cache: &mut DetailCache,
+    cache: &mut DetailCache<'_>,
 ) -> corsa::Result<Vec<Value>> {
     // tsutils `getCallSignaturesOfType`: a union contributes the signatures of
     // each constituent (`(() => any) | null`).
@@ -134,11 +134,11 @@ async fn signature_returns(
 async fn described(
     session: &CheckerMemo<'_>,
     ty: &TypeResponse,
-    cache: &mut DetailCache,
+    cache: &mut DetailCache<'_>,
 ) -> corsa::Result<Value> {
     let texts = session.render_type_texts(ty).await.unwrap_or_default();
     let texts = texts.iter().map(|text| text.as_str()).collect::<Vec<_>>();
-    Ok(json!({ "texts": texts, "detail": type_detail(session, ty, cache).await? }))
+    Ok(json!({ "texts": texts, "detail": type_detail(cache, ty).await? }))
 }
 
 /// `(call, construct)` signature counts of a callee typed as (a subtype of) the
@@ -172,7 +172,7 @@ pub(super) async fn function_signature_counts<T: AsRef<str>>(
 pub(super) async fn contextual_type(
     session: &CheckerMemo<'_>,
     location: NodeHandle,
-    cache: &mut DetailCache,
+    cache: &mut DetailCache<'_>,
 ) -> corsa::Result<Value> {
     let contextual = session.contextual_type(&location).await;
     match contextual {

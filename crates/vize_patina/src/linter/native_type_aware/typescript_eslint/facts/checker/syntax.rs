@@ -43,12 +43,12 @@ pub(super) fn type_super_callee(node: &mut LintNode, base: &ExpressionFact) {
         .iter()
         .map(|name| name.as_str().into())
         .collect();
-    match &base.detail {
-        Some(detail) => {
-            callee.fields.insert("__typeDetail".into(), detail.clone());
+    match &base.ty {
+        Some(ty) => {
+            callee.fields.insert("__type".into(), ty.clone());
         }
         None => {
-            callee.fields.remove("__typeDetail");
+            callee.fields.remove("__type");
         }
     }
 }

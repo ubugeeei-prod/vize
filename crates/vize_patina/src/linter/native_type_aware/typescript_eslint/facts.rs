@@ -115,8 +115,8 @@ fn apply_node(node: &mut LintNode, facts: &FxHashMap<(u32, u32), &ExpressionFact
             node.fields
                 .insert("__declaredInFile".into(), json!(declared));
         }
-        if let Some(detail) = &fact.detail {
-            node.fields.insert("__typeDetail".into(), detail.clone());
+        if let Some(ty) = &fact.ty {
+            node.fields.insert("__type".into(), ty.clone());
         }
         if let Some((call, construct)) = fact.function_signatures {
             node.fields
@@ -124,11 +124,8 @@ fn apply_node(node: &mut LintNode, facts: &FxHashMap<(u32, u32), &ExpressionFact
             node.fields
                 .insert("__constructSignatureCount".into(), json!(construct));
         }
-        if let Some(shape) = &fact.shape {
-            node.fields.insert("__typeShape".into(), shape.clone());
-        }
-        if let Some(tree) = &fact.tree {
-            node.fields.insert("__typeTree".into(), tree.clone());
+        if let Some(context) = &fact.context {
+            node.fields.insert("__typeContext".into(), context.clone());
         }
         if let Some(members) = &fact.member_methods {
             node.fields

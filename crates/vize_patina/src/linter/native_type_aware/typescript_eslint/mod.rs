@@ -164,7 +164,20 @@ pub(super) fn evaluate(
             |collected, ast| relate::plan(ast, &collected.program, &corsa_rules, &map),
         );
         facts::prepare(&script.content, &mut collected);
-        let script_queries = queries(&collected.nodes, wants);
+        let mut script_queries = queries(&collected.nodes, wants);
+        // no-for-in-array, no-array-delete and prefer-reduce-type-parameter
+        // read the array-likeness of a constrained type.
+        for (start, end) in pending.array_like_ranges() {
+            let mut query = ExpressionQuery::at(start, end);
+            query.tree = crate::linter::corsa_session::detail::ARRAY_LIKE;
+            match script_queries
+                .iter_mut()
+                .find(|existing| existing.start == start && existing.end == end)
+            {
+                Some(existing) => existing.merge(query),
+                None => script_queries.push(query),
+            }
+        }
         let mut generated = Vec::new();
         let mut used = Vec::new();
         for (index, query) in script_queries.iter().enumerate() {

@@ -4,12 +4,10 @@
 //! `getConstrainedTypeAtLocation` plus `TypeFlags`, not on rendered type text.
 //! A shape carries those facts so the corsa rules can apply the same tests.
 mod keys;
-mod literal;
 mod predicate;
 use super::checker_memo::CheckerMemo;
 use corsa::api::{IndexInfo, SymbolResponse, TypeHandle, TypePredicateResponse, TypeResponse};
 use keys::{keyed_facts, keys};
-use literal::literal_value;
 pub(super) use predicate::predicate;
 use serde_json::{Map, Value, json};
 
@@ -28,7 +26,6 @@ const NULL: u32 = 1 << 3;
 const VOID: u32 = 1 << 4;
 const STRING: u32 = 1 << 5;
 const STRING_LIKE: u32 = STRING | STRING_LITERAL | TEMPLATE_LITERAL | STRING_MAPPING;
-const BOOLEAN_LITERAL: u32 = 1 << 13;
 const INDEX: u32 = 1 << 21;
 const TYPE_PARAMETER: u32 = 1 << 19;
 const TEMPLATE_LITERAL: u32 = 1 << 22;
@@ -40,7 +37,6 @@ const UNION: u32 = 1 << 27;
 const INTERSECTION: u32 = 1 << 28;
 const STRING_LITERAL: u32 = 1 << 10;
 const NUMBER_LITERAL: u32 = 1 << 11;
-const BIGINT_LITERAL: u32 = 1 << 12;
 const NULLABLE: u32 = ANY | UNKNOWN | UNDEFINED | NULL | VOID;
 const CONSTRAINABLE: u32 = TYPE_PARAMETER
     | INDEXED_ACCESS
@@ -51,9 +47,6 @@ const CONSTRAINABLE: u32 = TYPE_PARAMETER
     | TEMPLATE_LITERAL
     | STRING_MAPPING
     | INDEX;
-// ObjectFlags.Reference and ObjectFlags.Tuple.
-const OBJECT_REFERENCE: u32 = 1 << 2;
-const OBJECT_TUPLE: u32 = 1 << 3;
 // SymbolFlags.Optional.
 const OPTIONAL: u32 = 1 << 24;
 // SignatureKind.Call.
@@ -110,191 +103,91 @@ pub(in crate::linter) struct PredicateRequest {
 pub(super) struct ShapeCache {
     constraints: FxHashMap<TypeHandle, Option<TypeResponse>>,
     constituents: FxHashMap<TypeHandle, Vec<TypeResponse>>,
-    booleans: FxHashMap<TypeHandle, bool>,
     predicates: FxHashMap<TypeHandle, Option<TypePredicateResponse>>,
 }
 
-/// Describe the constrained type of `ty` as JSON for the `__typeShape` fact.
+/// The position facts of `ty` for the `__typeContext` fact: property facts
+/// of the constrained type (and of each union constituent) for `request`,
+/// computed keys, and the call-signature return types to describe as trees.
+/// The type itself goes into the node's `__type` tree.
 pub(super) async fn describe(
     session: &CheckerMemo<'_>,
     ty: &TypeResponse,
     request: &ShapeRequest,
     key: Option<&TypeResponse>,
     cache: &mut ShapeCache,
-) -> corsa::Result<Value> {
+) -> corsa::Result<(Value, Vec<TypeResponse>)> {
     let constrained = match constraint(session, ty, cache).await? {
         Some(constrained) => constrained,
         None => ty.clone(),
     };
-    let mut shape = Map::new();
-    shape.insert("flags".into(), json!(constrained.flags));
-    shape.insert("rawFlags".into(), json!(ty.flags));
-    if constrained.id != ty.id {
-        shape.insert("constrained".into(), json!(true));
-        // The unconstrained type's own parts, for checks that read
-        // `getTypeAtLocation` rather than the constrained type.
-        let raw_parts = if ty.flags & UNION != 0 {
-            constituents(session, ty, cache).await?
-        } else {
-            vec![ty.clone()]
-        };
-        let mut raw_union = Vec::with_capacity(raw_parts.len());
-        for part in &raw_parts {
-            let request = ShapeRequest::default();
-            raw_union.push(describe_part(session, part, &request, false, cache).await?);
-        }
-        shape.insert(
-            "raw".into(),
-            json!({ "flags": ty.flags, "union": raw_union }),
-        );
-    }
-    if let Some(value) = literal_value(session, &constrained, cache).await? {
-        shape.insert("value".into(), value);
-    }
-    let parts = if constrained.flags & UNION != 0 {
-        constituents(session, &constrained, cache).await?
-    } else {
-        vec![constrained.clone()]
-    };
+    let mut context = Map::new();
     let is_union = constrained.flags & UNION != 0;
     let keys = match key {
         Some(key) => Some(keys(session, key, cache).await?),
         None => None,
     };
-    let mut union = Vec::with_capacity(parts.len());
-    for part in &parts {
-        let mut entry = describe_part(session, part, request, is_union, cache).await?;
-        if let (Some(keys), true, Some(map)) = (&keys, is_union, entry.as_object_mut()) {
-            keyed_facts(session, part, keys, map, cache).await?;
+    // Per-part facts only matter for unions: they tell an optional chain
+    // whether the nullability comes from the object itself.
+    let part_facts = is_union && (request.member.is_some() || request.call || keys.is_some());
+    if part_facts {
+        let parts = constituents(session, &constrained, cache).await?;
+        let mut entries = Vec::with_capacity(parts.len());
+        for part in &parts {
+            let mut entry = Map::new();
+            if let Some(name) = request.member.as_deref() {
+                entry.insert("member".into(), property(session, part, name, cache).await?);
+            }
+            if request.call {
+                entry.insert(
+                    "callReturnsNullable".into(),
+                    json!(call_returns_nullable(session, part, cache).await?),
+                );
+            }
+            if let Some(keys) = &keys {
+                keyed_facts(session, part, keys, &mut entry, cache).await?;
+            }
+            entries.push(Value::Object(entry));
         }
-        union.push(entry);
+        context.insert("parts".into(), Value::Array(entries));
     }
-    shape.insert("union".into(), Value::Array(union));
     if let Some(keys) = keys {
-        keyed_facts(session, &constrained, &keys, &mut shape, cache).await?;
-        shape.insert(
+        keyed_facts(session, &constrained, &keys, &mut context, cache).await?;
+        context.insert(
             "keys".into(),
             Value::Array(keys.into_iter().map(|key| key.json).collect()),
         );
     }
     if let Some(name) = request.member.as_deref() {
         let member = property(session, &constrained, name, cache).await?;
-        shape.insert("member".into(), member);
+        context.insert("member".into(), member);
     }
-    if request.returns {
-        shape.insert(
-            "returns".into(),
-            Value::Array(return_shapes(session, &constrained, cache).await?),
-        );
-    }
-    Ok(Value::Object(shape))
+    let returns = if request.returns {
+        return_types(session, &constrained).await
+    } else {
+        Vec::new()
+    };
+    Ok((Value::Object(context), returns))
 }
 
-/// Shapes of the call-signature return types, each constrained the way
-/// typescript-eslint's `getConstraintInfo` does (type parameters only).
-async fn return_shapes(
-    session: &CheckerMemo<'_>,
-    ty: &TypeResponse,
-    cache: &mut ShapeCache,
-) -> corsa::Result<Vec<Value>> {
+/// The call-signature return types, which typescript-eslint's
+/// `getConstraintInfo` reads through their constraints.
+async fn return_types(session: &CheckerMemo<'_>, ty: &TypeResponse) -> Vec<TypeResponse> {
     let signatures = session
         .get_signatures_of_type(ty.id.clone(), CALL_SIGNATURE)
         .await
         .unwrap_or_default();
-    let mut shapes = Vec::with_capacity(signatures.len());
+    let mut types = Vec::with_capacity(signatures.len());
     for signature in signatures {
-        let Some(returns) = session
+        if let Some(returns) = session
             .get_return_type_of_signature(signature.id.clone())
             .await
             .unwrap_or(None)
-        else {
-            continue;
-        };
-        let request = ShapeRequest::default();
-        shapes.push(Box::pin(describe(session, &returns, &request, None, cache)).await?);
-    }
-    Ok(shapes)
-}
-
-async fn describe_part(
-    session: &CheckerMemo<'_>,
-    part: &TypeResponse,
-    request: &ShapeRequest,
-    is_union: bool,
-    cache: &mut ShapeCache,
-) -> corsa::Result<Value> {
-    let mut entry = Map::new();
-    entry.insert("flags".into(), json!(part.flags));
-    if let Some(value) = literal_value(session, part, cache).await? {
-        entry.insert("value".into(), value);
-    }
-    if part.flags & INTERSECTION != 0 {
-        let mut members = Vec::new();
-        for member in constituents(session, part, cache).await? {
-            let mut item = Map::new();
-            item.insert("flags".into(), json!(member.flags));
-            if let Some(value) = literal_value(session, &member, cache).await? {
-                item.insert("value".into(), value);
-            }
-            if request.array {
-                array_facts(session, &member, &mut item).await;
-            }
-            members.push(Value::Object(item));
-        }
-        entry.insert("intersection".into(), Value::Array(members));
-    }
-    if request.array {
-        array_facts(session, part, &mut entry).await;
-    }
-    // Per-part property and call facts only matter for unions: they tell an
-    // optional chain whether the nullability comes from the object itself.
-    if is_union {
-        if let Some(name) = request.member.as_deref() {
-            entry.insert("member".into(), property(session, part, name, cache).await?);
-        }
-        if request.call {
-            entry.insert(
-                "callReturnsNullable".into(),
-                json!(call_returns_nullable(session, part, cache).await?),
-            );
+        {
+            types.push(returns);
         }
     }
-    Ok(Value::Object(entry))
-}
-
-/// `array` / `tuple`: `checker.isArrayType` and `checker.isTupleType`.
-async fn array_facts(session: &CheckerMemo<'_>, ty: &TypeResponse, entry: &mut JsonMap) {
-    let array = session
-        .client()
-        .is_array_type(
-            session.snapshot().handle.clone(),
-            session.project_handle(),
-            ty.id.clone(),
-        )
-        .await
-        .unwrap_or(false);
-    let tuple = !array && is_tuple(session, ty).await;
-    entry.insert("array".into(), json!(array));
-    entry.insert("tuple".into(), json!(tuple));
-}
-
-/// `checker.isTupleType`: a reference whose target is a tuple type. The API's
-/// own predicate answers false for tuple references, so read the target.
-async fn is_tuple(session: &CheckerMemo<'_>, ty: &TypeResponse) -> bool {
-    if ty.object_flags.unwrap_or(0) & OBJECT_REFERENCE == 0 {
-        return false;
-    }
-    session
-        .client()
-        .get_target_of_type_in_project(
-            session.snapshot().handle.clone(),
-            session.project_handle(),
-            ty.id.clone(),
-        )
-        .await
-        .ok()
-        .flatten()
-        .is_some_and(|target| target.object_flags.unwrap_or(0) & OBJECT_TUPLE != 0)
+    types
 }
 
 async fn constraint(
