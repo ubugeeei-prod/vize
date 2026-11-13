@@ -11,6 +11,7 @@ import {
 } from "./historical-post-ack-root-warning.ts";
 import { requireCompletedBefore, type NativeTimedObservation } from "./native-io.ts";
 import { micros, timedPackets } from "./stable-watcher-timing.ts";
+import { requireExitTeardownUnfinished } from "./exit-teardown.ts";
 import { observeRegisteredUnavailableRootWarning } from "./historical-registered-unavailable-root-warning.ts";
 export { historicalRootWarning } from "./historical-post-ack-root-warning.ts";
 
@@ -92,7 +93,7 @@ export function observeAcknowledgedRootWarning(...args: Args) {
   }
   assert.equal(owner.unknownWrites.length, 0);
   assert.equal(owner.failedWrites.length, 0);
-  assert.equal(owner.unfinishedOperations.length, 0);
+  requireExitTeardownUnfinished(owner);
   assert.equal(owner.zeroCapacityReads.length, 0);
   const eof = one(eofReads);
   assert.equal(eof.fd, 0);

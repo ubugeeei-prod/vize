@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import { logicalFixture } from "./native-beta-logical-fixture.ts";
-import { sdk4CleanupPackages } from "./native-beta-dto/after4-cleanup-source.ts";
+import { cleanupGenerations } from "./native-beta-dto/after4-cleanup-source.ts";
 type Row = Record<string, unknown>;
 const object = (value: unknown): Row => {
   assert.ok(value && typeof value === "object" && !Array.isArray(value));
@@ -12,10 +12,11 @@ export const observer =
 export const helper = observer.replace(/\.rs$/u, "/storage_authority.rs");
 export const input =
   "tests/_fixtures/differential/typechecker/logical-workspace-overlay-revision-11145/input.json";
-const version = "2.0.0-beta.4";
+
 export const registry = "registry+https://github.com/rust-lang/crates.io-index";
 // Constructed boundaries only, never a native capture or qualification witness.
-export function sdk4CleanupFixture() {
+export function sdk4CleanupFixture(version = "2.0.0-beta.4") {
+  const packages = cleanupGenerations.get(version)!;
   const f = logicalFixture(),
     owners = f.owners.map((owner) => ({
       ...owner,
@@ -161,7 +162,7 @@ export function sdk4CleanupFixture() {
       "Cargo.lock",
       Buffer.from(
         "version = 4\n" +
-          sdk4CleanupPackages
+          packages
             .map(
               ([name, checksum, dependencies]) =>
                 `\n[[package]]\nname = "${name}"\nversion = "${version}"\nsource = "${registry}"\nchecksum = "${checksum}"\ndependencies = ${JSON.stringify(dependencies)}\n`,
@@ -170,7 +171,7 @@ export function sdk4CleanupFixture() {
       ),
     ],
   ]);
-  const artifacts: Row[] = sdk4CleanupPackages.map(([name]) => ({
+  const artifacts: Row[] = packages.map(([name]) => ({
     reason: "compiler-artifact",
     package_id: registry + "#" + name + "@" + version,
     manifest_path:

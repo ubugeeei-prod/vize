@@ -52,6 +52,28 @@ test("AFTER4 source/compiler/full55/API26 precede exact source cleanup; default 
   assert.equal(row.apiServer, f.owners[0]!.apiServer);
   assert.equal(object(row.sourceCompilerAuthority).nativeQualification, false);
 });
+test("the registered beta.5 generation keeps the same cleanup; unregistered or mixed pins do not", () => {
+  const five = fixture("2.0.0-beta.5"),
+    proof = verify(five),
+    row = object(object(proof.owners[0]!.sourceSupplement).sourceCleanup);
+  assert.equal(object(row.sourceCompilerAuthority).version, "2.0.0-beta.5");
+  assert.equal((row.packets as unknown[]).length, 5);
+  assert.throws(() => verify(five, null), "beta.5 without cleanup authority stays strict");
+  const mixed = fixture("2.0.0-beta.5");
+  mixed.files.set("Cargo.lock", fixture().files.get("Cargo.lock")!);
+  assert.throws(() => authority(mixed), "beta.5 pins cannot borrow beta.4 checksums");
+  const unregistered = fixture("2.0.0-beta.5");
+  for (const name of ["Cargo.toml", "Cargo.lock"])
+    unregistered.files.set(
+      name,
+      Buffer.from(
+        Buffer.from(unregistered.files.get(name)!)
+          .toString()
+          .replaceAll("2.0.0-beta.5", "2.0.0-beta.6"),
+      ),
+    );
+  assert.equal(authority(unregistered), null);
+});
 test("the actual asynchronous capability error/release order remains whole and unnormalized", () => {
   const f = fixture(),
     rows = f.owners[0]!.apiServer;

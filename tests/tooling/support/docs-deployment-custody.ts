@@ -51,14 +51,18 @@ export function custodyFixture(publisherId = 38013719817) {
     return values.get(path) as T;
   };
   api.response = async (path: string) => {
-    assert.match(path, /^\/actions\/artifacts\/\d+$/);
+    assert.match(path, /^\/(?:actions\/artifacts\/\d+|pages\/deployments\/[0-9a-f]{40})$/);
     return values.has(path)
       ? Response.json(await api.json(path))
       : new Response(null, { status: 404 });
   };
+  // Other publisher jobs' logs; the receipt marker follows later receipt edits.
+  const logs = new Map<number, string>();
   api.jobLog = async (id: number) => {
-    assert.equal(id, job.id);
-    return "vize-docs-receipt:" + deployment.id + ":" + sha256(stableJson(receipt));
+    if (id === job.id)
+      return "vize-docs-receipt:" + deployment.id + ":" + sha256(stableJson(receipt));
+    assert(logs.has(id), "Only exact publisher job logs: " + id);
+    return logs.get(id)!;
   };
-  return { api, publisher, job, deployment, receipt, values, pages };
+  return { api, publisher, job, deployment, receipt, values, pages, logs };
 }

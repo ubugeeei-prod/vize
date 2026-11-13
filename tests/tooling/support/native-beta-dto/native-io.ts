@@ -414,6 +414,8 @@ export async function readNativeTrace(
         });
     }
     lastLines.set(tid, lineNumber);
+    if (pending && handoffs.adoptUnfinished(tid, file, pending.line, pending.text))
+      pending = undefined;
     if (pending) {
       const normalized = pending.text.trimEnd().replace(/\)?$/u, ") = ?");
       const write = /^([0-9]+\.[0-9]+) writev?\(/u.test(pending.text)
@@ -435,6 +437,8 @@ export async function readNativeTrace(
   for (const tid of threads.keys())
     assert.ok(files.includes(`syscalls.${tid}`), "whole cloned thread trace required");
   const execveHandoffs = handoffs.resolve(threads, lastLines);
+  for (const { tid, file, line, at, raw } of handoffs.unclaimed())
+    unfinishedOperations.push({ tid, file, line, at, raw });
   for (const handoff of execveHandoffs)
     assert.notEqual(
       handoff.executable,

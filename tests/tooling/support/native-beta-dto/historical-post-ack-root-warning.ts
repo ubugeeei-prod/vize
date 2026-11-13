@@ -9,6 +9,7 @@ import {
   observeRootWatchWarning as observeStrictRootWatchWarning,
 } from "./historical-inflight-root-warning.ts";
 import { micros, timedPackets } from "./stable-watcher-timing.ts";
+import { requireExitTeardownUnfinished } from "./exit-teardown.ts";
 export { historicalRootWarning } from "./historical-inflight-root-warning.ts";
 
 const one = <T>(rows: readonly T[]) => {
@@ -59,7 +60,7 @@ export function observeHistoricalPostAckRootWarning(...args: Args) {
     }
   }
   assert.equal(owner.failedWrites.length, 0);
-  assert.equal(owner.unfinishedOperations.length, 0);
+  requireExitTeardownUnfinished(owner);
   const attempt = one(owner.unknownWrites);
   assert.ok(members.has(attempt.tid));
   assert.equal(attempt.file, `syscalls.${attempt.tid}`);

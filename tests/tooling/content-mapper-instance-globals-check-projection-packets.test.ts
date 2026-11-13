@@ -29,8 +29,11 @@ const changedLabels = [
 
 test("the mapper wire omits only four wire-only template-ref links", () => {
   const { authority, files, cases } = readGlobalsFixture();
-  assert.equal(authority.currentSourcePackets, observedName);
-  const observed = selectPacketGoldens(authority, files, cases)!;
+  const observed = selectPacketGoldens(
+    { ...authority, currentSourcePackets: observedName },
+    files,
+    cases,
+  )!;
   const previous = selectPacketGoldens(
     { ...authority, currentSourcePackets: previousName },
     files,

@@ -27,7 +27,7 @@ test("new authenticated actual custody supersedes missing legacy metadata and un
 });
 
 test("a publisher queued before the anchor remains checked until its real terminal Pages effect", async () => {
-  const { api, receipt, values, lists } = history();
+  const { api, receipt, values, lists, logs } = history();
   const older = run({
     id: 88001,
     path: ".github/workflows/deploy-docs.yml",
@@ -66,6 +66,7 @@ test("a publisher queued before the anchor remains checked until its real termin
     /later Pages effect lacks authenticated/,
   );
   job.steps[0].conclusion = "failure";
+  logs.set(job.id, "2026-10-10T01:40:05.0000000Z Deployment failed, try again later.\n");
   await assert.rejects(
     () => publicationState(api, repositoryId, 0),
     /later Pages effect lacks authenticated/,
