@@ -7690,6 +7690,73 @@
           }
         ]
       }
+    },
+    {
+      "id": "linter/patina/type-aware-followups-12949",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "patina-type-aware-followups-12949",
+        "files": [
+          {
+            "path": "Destructure.vue.txt",
+            "role": "third-party-type-aware-reproduction",
+            "sha256": "0f68c0fb118327db77ec76a92d6cd1b74534f820374aac9c4df1af936f687ff1"
+          },
+          {
+            "path": "EmptyAsConst.vue.txt",
+            "role": "third-party-type-aware-reproduction",
+            "sha256": "edad5f36aeb78e4e16b13dc23999795469096c6e8ec8824c118d1a198975eb75"
+          },
+          {
+            "path": "EmptyPromiseAll.vue.txt",
+            "role": "third-party-type-aware-reproduction",
+            "sha256": "d2beec7aa8fa3dc62c70029c550129506341bacb79b1223e4459c54cec3d5075"
+          },
+          {
+            "path": "EmptySpread.vue.txt",
+            "role": "third-party-type-aware-reproduction",
+            "sha256": "76b6ea7bfb5cfb14b3ada002529ae1a8212134588c83330a7a149bdfa4b85dd3"
+          },
+          {
+            "path": "WithExtension.vue.txt",
+            "role": "third-party-type-aware-reproduction",
+            "sha256": "1045cb305ae686eaa0dcf1a6ba01a07d3749b2b50aa13ca035cfc98cb99ef30c"
+          },
+          {
+            "path": "api.ts.txt",
+            "role": "third-party-type-aware-reproduction",
+            "sha256": "50a5285c3ae71d8d284a286a5da143bc0cde83337568076a81e292bec27ebe8d"
+          },
+          {
+            "path": "composables.ts.txt",
+            "role": "third-party-type-aware-reproduction",
+            "sha256": "e2f787abce7d6a527bf4818fdd0e01eed4197d3c35fa3410f771f3a931b21daf"
+          },
+          {
+            "path": "floating.ts.txt",
+            "role": "eslint-compatibility-control",
+            "sha256": "6a79074b68c5762fdbb23c1d4d6c534daaeb67f5ed22f93a04dc823d661e1e30"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
     }
   ]
 }

@@ -110,7 +110,7 @@ export default defineConfig({}).withVue({
 | `type/no-base-to-string` | `{ checkUnknown?: boolean; ignoredTypeNames?: string[] }` | typescript-eslint と同じく、既定は `false` と `["Error", "RegExp", "URL", "URLSearchParams"]` です。 |
 | `type/no-deprecated` | `{ allow?: TypeSpecifier[] }` | typescript-eslint と同じく、既定は `[]` です。各要素は型または値の指定子（`string \| { from: "file" \| "lib" \| "package"; name: string \| string[]; path?: string; package?: string }`）です。 |
 | `type/no-duplicate-type-constituents` | `{ ignoreIntersections?: boolean; ignoreUnions?: boolean }` | typescript-eslint と同じく、どちらも既定は `false` です。 |
-| `type/no-floating-promises` | `{ allowForKnownSafeCalls?: TypeSpecifier[]; allowForKnownSafePromises?: TypeSpecifier[]; checkThenables?: boolean; ignoreIIFE?: boolean; ignoreVoid?: boolean }` | typescript-eslint と同じく、既定は `[]`、`[]`、`false`、`false`、`true` です。 |
+| `type/no-floating-promises` | `{ allowForKnownSafeCalls?: TypeSpecifier[]; allowForKnownSafePromises?: TypeSpecifier[]; checkThenables?: boolean; ignoreIIFE?: boolean; ignoreVoid?: boolean }` | typescript-eslint と同じく、既定は `[]`、`[]`、`false`、`false`、`true` です。SFC の script にも、TypeScript モジュール（`.ts`、`.mts`、`.cts`、`.tsx`）にも同じく効きます。 |
 | `type/no-meaningless-void-operator` | `{ checkNever?: boolean }` | typescript-eslint と同じく、既定は `false` です。 |
 | `type/no-misused-promises` | `{ checksConditionals?: boolean \| { flagUnions?: "all" \| "strict" \| "none" }; checksSpreads?: boolean; checksVoidReturn?: boolean \| { arguments?, attributes?, inheritedMethods?, properties?, returns?, variables?: boolean } }` | typescript-eslint と同じく、すべての検査の既定は `true` です。`checksVoidReturn` のオブジェクト形式で個別の位置を無効にできます。 |
 | `type/no-misused-spread` | `{ allow?: TypeSpecifier[] }` | typescript-eslint と同じく、既定は `[]` です。 |

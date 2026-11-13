@@ -1,0 +1,7 @@
+<script setup lang="ts">
+const top = Math.max(...[]);
+</script>
+
+<template>
+  <p>{{ top }}</p>
+</template>
