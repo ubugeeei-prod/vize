@@ -37,10 +37,6 @@ impl Seen {
     }
 }
 
-#[expect(
-    clippy::too_many_arguments,
-    reason = "one script block with its template, sibling-read and rule options"
-)]
 pub(super) fn analyze(
     program: &oxc_ast::ast::Program<'_>,
     offset: u32,
