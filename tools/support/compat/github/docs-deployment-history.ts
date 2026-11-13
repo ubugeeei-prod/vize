@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { GitHub, type Deployment } from "./docs-deployment-api.ts";
+import { cancelledPagesEffect } from "./docs-deployment-cancellation.ts";
 import {
   custodyEnvironment,
   custodyTask,
@@ -213,14 +214,22 @@ export async function publicationState(
   );
   if (!floor && successes.length)
     floor = await qualifyLegacy(api, repositoryId, successes[0].publisher, successes[0].job);
+  const cancelled = new Set<number>();
   for (const effect of effects) {
     const step = pagesStep(effect.job)!;
     if (floor && effect.job.id === floor.receipt.publisher.jobId) continue;
-    assert(
+    const earlier =
       step.completed_at &&
-        Number.isFinite(Date.parse(step.completed_at)) &&
-        floor &&
-        Date.parse(step.completed_at) < Date.parse(floor.completedAt),
+      Number.isFinite(Date.parse(step.completed_at)) &&
+      floor &&
+      Date.parse(step.completed_at) < Date.parse(floor.completedAt);
+    // A later failed step whose own log proves a cancelled deployment published nothing.
+    if (!earlier && floor && (await cancelledPagesEffect(api, effect.publisher, effect.job))) {
+      cancelled.add(effect.job.id);
+      continue;
+    }
+    assert(
+      earlier,
       "A current or uncertain later Pages effect lacks authenticated publication custody",
     );
   }
@@ -235,6 +244,7 @@ export async function publicationState(
     floor?.receipt.publisher.jobId ?? null,
     repositoryId,
     guardedWorkflowHash,
+    cancelled,
   );
   return {
     floor,

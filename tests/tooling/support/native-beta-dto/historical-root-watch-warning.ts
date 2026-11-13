@@ -8,6 +8,7 @@ import {
   verifyNativeRelations,
 } from "./stable-watcher-boundary.ts";
 import { micros, timedPackets } from "./stable-watcher-timing.ts";
+import { requireExitTeardownUnfinished } from "./exit-teardown.ts";
 import { requireCompletedBefore, type NativeTimedObservation } from "./native-io.ts";
 import type { observeTerminalStableStderr } from "./terminal-stderr.ts";
 
@@ -218,7 +219,7 @@ export function observeHistoricalRootWatchWarning(...args: [...Args, HistoricalP
   let stdoutWatchLog: typeof output = [];
   if (unknown.length === 0) {
     assert.deepEqual(completed, historicalRootWarning);
-    assert.equal(owner.unfinishedOperations.length, 0);
+    requireExitTeardownUnfinished(owner);
     const headerIndex = output.findIndex(
       (row) =>
         row.packet.method === "window/logMessage" &&
