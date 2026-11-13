@@ -174,14 +174,34 @@ fn emit_constant(value: &ast::Constant, out: &mut dyn Write) -> Result<(), ()> {
     match value {
         ast::Constant::None => out.write_str("null").map_err(|_| ()),
         ast::Constant::Bool(value) => write!(out, "{value}").map_err(|_| ()),
-        ast::Constant::Str(value) => {
-            let quoted = serde_json::to_string(value).map_err(|_| ())?;
-            out.write_str(&quoted).map_err(|_| ())
-        }
+        ast::Constant::Str(value) => emit_string(value, out),
         ast::Constant::Int(value) => write!(out, "{value}").map_err(|_| ()),
         ast::Constant::Float(value) => write!(out, "{value}").map_err(|_| ()),
         _ => Err(()),
     }
+}
+
+fn emit_string(value: &str, out: &mut dyn Write) -> Result<(), ()> {
+    out.write_char('"').map_err(|_| ())?;
+    for character in value.chars() {
+        match character {
+            '"' => out.write_str("\\\"").map_err(|_| ())?,
+            '\\' => out.write_str("\\\\").map_err(|_| ())?,
+            '\u{08}' => out.write_str("\\b").map_err(|_| ())?,
+            '\u{0c}' => out.write_str("\\f").map_err(|_| ())?,
+            '\n' => out.write_str("\\n").map_err(|_| ())?,
+            '\r' => out.write_str("\\r").map_err(|_| ())?,
+            '\t' => out.write_str("\\t").map_err(|_| ())?,
+            '\u{2028}' | '\u{2029}' => {
+                write!(out, "\\u{:04x}", character as u32).map_err(|_| ())?;
+            }
+            control if control < '\u{20}' => {
+                write!(out, "\\u{:04x}", control as u32).map_err(|_| ())?;
+            }
+            character => out.write_char(character).map_err(|_| ())?,
+        }
+    }
+    out.write_char('"').map_err(|_| ())
 }
 
 fn precedence(expr: &ast::Expr) -> Result<u8, ()> {

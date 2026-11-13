@@ -11,6 +11,7 @@ fn rustpython_ast_expressions_lower_to_javascript() {
         ("ref(False)", "ref(false)"),
         ("items[0]", "items[0]"),
         ("(left + right) * scale", "(left + right) * scale"),
+        (r#""line\n\"quoted\"\\tail""#, r#""line\n\"quoted\"\\tail""#),
     ];
     for (python, javascript) in cases {
         assert_eq!(expression(python).as_deref(), Ok(javascript), "{python}");

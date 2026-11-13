@@ -205,7 +205,7 @@ export function preflight(read: Reader, exists: Exists): string {
   let lock = read("Cargo.lock");
   for (const dependency of ["once_cell", "rustc-hash"])
     requireState(
-      lockPackage(lock, "vize_l0").includes(` "${dependency}",\n`),
+      new RegExp(`^ "${dependency}(?: [^"]+)?",$`, "mu").test(lockPackage(lock, "vize_l0")),
       "retained core dependency: " + dependency,
     );
   for (const [name, additions] of edges) {
