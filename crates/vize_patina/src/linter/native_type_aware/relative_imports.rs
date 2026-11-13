@@ -203,8 +203,13 @@ mod tests {
         );
 
         let normalized = document.content.replace('\\', "/");
-        assert!(!normalized.contains("//?/"), "{normalized}");
-        assert!(normalized.contains("/src/api'"), "{normalized}");
-        assert!(normalized.contains("/src/lib'"), "{normalized}");
+        let normalized_source_dir = source_dir.to_string_lossy().replace('\\', "/");
+        assert_eq!(
+            normalized,
+            format!(
+                "import {{ value }} from '{normalized_source_dir}/api';\n\
+                 import {{ nested }} from '{normalized_source_dir}/lib';\n"
+            )
+        );
     }
 }
