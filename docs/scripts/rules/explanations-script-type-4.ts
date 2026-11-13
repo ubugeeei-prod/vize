@@ -142,6 +142,13 @@ export const scriptType4Explanations: readonly ExplanationRecord[] = [
     "count は数値なので、String(count) はそれを文字列へ変換します。",
   ],
   [
+    "type/no-unnecessary-type-parameters",
+    "T appears only once in the signature, so it does not express a relationship between types.",
+    "T relates the parameter type to the return type.",
+    "T はシグネチャ内に一度しか現れず、型同士の関係を表していません。",
+    "T は引数の型と戻り値の型を結び付けています。",
+  ],
+  [
     "type/no-unsafe-argument",
     "anyValue is any, and it is passed to a parameter that expects number.",
     "The call passes the number 1 to the number parameter.",

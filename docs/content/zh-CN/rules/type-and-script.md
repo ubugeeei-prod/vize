@@ -69,7 +69,7 @@ description: "检查 `<script>` 与 `<script setup>`：编译器宏、响应式�
 | <span id="type-require-typed-emits"></span>[`type/require-typed-emits`](./reference/type-require-typed-emits.md) | 要求 defineEmits 具有类型定义。 |  |
 | <span id="type-require-typed-props"></span>[`type/require-typed-props`](./reference/type-require-typed-props.md) | 要求 defineProps 具有类型定义。 |  |
 
-## 更严格的预设 (61)
+## 更严格的预设 (62)
 
 只在 `opinionated`、`nuxt` 或 `ecosystem` 中。具体是哪些见“预设”列。
 
@@ -116,6 +116,7 @@ description: "检查 `<script>` 与 `<script setup>`：编译器宏、响应式�
 | <span id="type-no-unnecessary-type-arguments"></span>[`type/no-unnecessary-type-arguments`](./reference/type-no-unnecessary-type-arguments.md) | 禁止与默认值相同的类型参数。 | `nuxt`, `opinionated` |  |
 | <span id="type-no-unnecessary-type-assertion"></span>[`type/no-unnecessary-type-assertion`](./reference/type-no-unnecessary-type-assertion.md) | 禁止不改变表达式类型的类型断言。 | `nuxt`, `opinionated` |  |
 | <span id="type-no-unnecessary-type-conversion"></span>[`type/no-unnecessary-type-conversion`](./reference/type-no-unnecessary-type-conversion.md) | 禁止不改变表达式类型或值的转换。 | `nuxt`, `opinionated` |  |
+| <span id="type-no-unnecessary-type-parameters"></span>[`type/no-unnecessary-type-parameters`](./reference/type-no-unnecessary-type-parameters.md) | 禁止只使用一次、无法表达类型关系的类型参数。 | `nuxt`, `opinionated` |  |
 | <span id="type-no-unsafe-argument"></span>[`type/no-unsafe-argument`](./reference/type-no-unsafe-argument.md) | 禁止用 `any` 类型的值调用函数。 | `nuxt`, `opinionated` |  |
 | <span id="type-no-unsafe-assignment"></span>[`type/no-unsafe-assignment`](./reference/type-no-unsafe-assignment.md) | 禁止把 any 类型的值赋给更具体的目标。 | `nuxt`, `opinionated` |  |
 | <span id="type-no-unsafe-call"></span>[`type/no-unsafe-call`](./reference/type-no-unsafe-call.md) | 禁止调用类型为 any 的值。 | `nuxt`, `opinionated` |  |
