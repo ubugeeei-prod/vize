@@ -109,11 +109,15 @@ const sdk5Checksums: Readonly<Record<string, string>> = {
   corsa_orchestrator: "8de4a68aa41bfa0acf1e13e2945072aacf982d7e67e7420b260ab9079f97e6b0",
   corsa_runtime: "be088c5e72ac415932623f06f9bff3084b2324d49eb4b10ee410aad29b7e7842",
 };
-export const sdk5CleanupPackages = sdk4CleanupPackages.map(
+type CleanupPackage = readonly [string, string, readonly string[]];
+export const sdk5CleanupPackages: readonly CleanupPackage[] = sdk4CleanupPackages.map(
   ([name, , dependencies]) => [name, sdk5Checksums[name]!, dependencies] as const,
 );
 /** Each registered SDK generation keeps the same source-authored two-close cleanup. */
-export const cleanupGenerations: ReadonlyMap<string, typeof sdk5CleanupPackages> = new Map([
+export const cleanupGenerations: ReadonlyMap<string, readonly CleanupPackage[]> = new Map<
+  string,
+  readonly CleanupPackage[]
+>([
   ["2.0.0-beta.4", sdk4CleanupPackages],
   ["2.0.0-beta.5", sdk5CleanupPackages],
 ]);
