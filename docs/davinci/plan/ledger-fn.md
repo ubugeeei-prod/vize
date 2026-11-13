@@ -145,6 +145,7 @@ This is triage of a class-registration gap, not a zero-FN claim.
 - `a11y/no-static-element-interactions`
 - `a11y/placeholder-label-option`
 - `a11y/role-has-required-aria-props`
+- `a11y/role-img-has-name`
 - `a11y/tabindex-no-positive`
 - `css/no-id-selectors`
 - `css/no-important`
@@ -163,6 +164,7 @@ This is triage of a class-registration gap, not a zero-FN claim.
 - `html/no-duplicate-class`
 - `html/no-duplicate-dt`
 - `html/no-empty-palpable-content`
+- `max-lines`
 - `musea/no-empty-variant`
 - `musea/require-component`
 - `musea/require-title`
@@ -239,6 +241,7 @@ This is triage of a class-registration gap, not a zero-FN claim.
 - `vue/a11y-img-alt`
 - `vue/attribute-hyphenation`
 - `vue/attribute-order`
+- `vue/block-lang`
 - `vue/comment-directive`
 - `vue/component-definition-name-casing`
 - `vue/component-name-in-template-casing`
@@ -246,6 +249,10 @@ This is triage of a class-registration gap, not a zero-FN claim.
 - `vue/html-button-has-type`
 - `vue/html-self-closing`
 - `vue/match-component-file-name`
+- `vue/max-lines-per-block`
+- `vue/max-props`
+- `vue/max-template-complexity`
+- `vue/max-template-depth`
 - `vue/multi-word-component-names`
 - `vue/mustache-interpolation-spacing`
 - `vue/no-array-index-key`
@@ -274,6 +281,16 @@ This is triage of a class-registration gap, not a zero-FN claim.
 - `vue/no-preprocessor-lang`
 - `vue/no-ref-object-reactivity-loss`
 - `vue/no-reserved-component-names`
+- `vue/no-restricted-block`
+- `vue/no-restricted-call-after-await`
+- `vue/no-restricted-class`
+- `vue/no-restricted-component-names`
+- `vue/no-restricted-component-options`
+- `vue/no-restricted-custom-event`
+- `vue/no-restricted-html-elements`
+- `vue/no-restricted-props`
+- `vue/no-restricted-static-attribute`
+- `vue/no-restricted-v-on`
 - `vue/no-root-v-if`
 - `vue/no-script-non-standard-lang`
 - `vue/no-src-attribute`
@@ -283,6 +300,8 @@ This is triage of a class-registration gap, not a zero-FN claim.
 - `vue/no-template-target-blank`
 - `vue/no-this-in-before-route-enter`
 - `vue/no-unsandboxed-iframe`
+- `vue/no-unsupported-features`
+- `vue/no-unused-script-vars`
 - `vue/no-unused-vars`
 - `vue/no-use-v-else-with-v-for`
 - `vue/no-use-v-if-with-v-for`
@@ -293,10 +312,12 @@ This is triage of a class-registration gap, not a zero-FN claim.
 - `vue/no-v-for-template-key-on-child`
 - `vue/no-v-text`
 - `vue/no-v-text-v-html-on-component`
+- `vue/prefer-const`
 - `vue/prefer-prop-type-boolean-first`
 - `vue/prefer-props-shorthand`
 - `vue/prefer-true-attribute-shorthand`
 - `vue/prop-name-casing`
+- `vue/require-default-export`
 - `vue/require-expose`
 - `vue/require-scoped-style`
 - `vue/require-toggle-inside-transition`
@@ -332,6 +353,5 @@ This is triage of a class-registration gap, not a zero-FN claim.
 - `vue/valid-v-text`
 - `vue/warn-custom-block`
 - `vue/warn-custom-directive`
-- `vue/max-template-complexity`
 
 <!-- /p4-15a-unclassed -->
