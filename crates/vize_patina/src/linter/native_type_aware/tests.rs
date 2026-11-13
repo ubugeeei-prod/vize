@@ -10,6 +10,7 @@ mod typescript_parity;
 mod typescript_promises;
 mod typescript_shapes;
 mod typescript_type_shapes;
+mod unbound_method_composable;
 use super::{
     RULE_NO_FLOATING_PROMISES, RULE_NO_REACTIVITY_LOSS, RULE_NO_UNSAFE_TEMPLATE_BINDING,
     RULE_REQUIRE_TYPED_EMITS, RULE_REQUIRE_TYPED_PROPS, lint_sfc_with_corsa,

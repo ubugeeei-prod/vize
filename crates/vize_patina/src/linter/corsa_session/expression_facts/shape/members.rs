@@ -235,3 +235,18 @@ pub(super) fn is_default_library(handle: &NodeHandle) -> bool {
         name.starts_with("lib.") && name.ends_with(".d.ts")
     })
 }
+
+#[cfg(test)]
+mod tests {
+    use corsa::api::NodeHandle;
+
+    use super::{FUNCTION_EXPRESSION, declaration_kind};
+
+    #[test]
+    fn typescript_seven_distinguishes_function_expressions_from_arrows() {
+        let function = NodeHandle::from("42.219./workspace/composables.ts");
+        let arrow = NodeHandle::from("43.220./workspace/composables.ts");
+        assert_eq!(declaration_kind(&function), Some(FUNCTION_EXPRESSION));
+        assert_ne!(declaration_kind(&arrow), Some(FUNCTION_EXPRESSION));
+    }
+}
