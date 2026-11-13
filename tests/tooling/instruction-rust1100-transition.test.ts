@@ -130,7 +130,7 @@ for (const family of families) {
     );
     const { old, current, report, registry } = rebase1100(family);
     assert.equal(old.source_commit, rebaseSource);
-    for (const [id, row] of Object.entries(old.instruction)) {
+    for (const [id, row] of Object.entries<{ instructions: number }>(old.instruction)) {
       const raised = raises1100[id];
       assert.equal(current.instruction[id].instructions, raised ?? row.instructions, id);
       if (raised) assert.ok(raised > row.instructions, `${id}: reviewed raise`);
@@ -146,6 +146,7 @@ for (const family of families) {
     checkMeasurement(report, current);
     for (const run of report.runs) assert.equal(Object.keys(run).length, registry.size);
     const id = Object.keys(old.instruction).find((item) => !(item in raises1100));
+    assert.ok(id);
     const lowered = structuredClone(current);
     lowered.instruction[id].instructions -= 1;
     ratchetBudgets(lowered, old);

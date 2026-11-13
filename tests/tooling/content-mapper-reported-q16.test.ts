@@ -20,10 +20,13 @@ import {
 } from "../../tools/support/compat/content-mapper/reported-q16.ts";
 import { restoreConformanceWorkflow } from "./support/conformance-workflow-inverse.ts";
 
-const actualWorkflow = fs.readFileSync(
+const pinnedWorkflow = fs.readFileSync(
   new URL("../../.github/workflows/content-mapper-conformance.yml", import.meta.url),
   "utf8",
 );
+// Reverse only the reviewed Rust 1.100.0 pin edit (#12954) on its two installers.
+assert.equal(pinnedWorkflow.split('toolchain: "1.100.0"').length, 3);
+const actualWorkflow = pinnedWorkflow.replaceAll('toolchain: "1.100.0"', 'toolchain: "1.99.1"');
 function stripProviderClosure(value: string): string {
   const invocation = "      - uses: ./.github/actions/qualify-content-mapper-provider-closure\n";
   assert.equal(value.split(invocation).length, 2);
