@@ -56,21 +56,21 @@ where
                 finish(&mut results, index, handle);
             }
             while running.len() >= program_concurrency {
-                let completed_index = loop {
-                    let completed_index = completion_receiver
-                        .recv()
-                        .expect("running check must report completion");
-                    if running
+                let finished = loop {
+                    let completed_index = match completion_receiver.recv() {
+                        Ok(completed_index) => completed_index,
+                        // Every running handle owns a sender. Disconnection is
+                        // only possible after they are all gone, so this is a
+                        // defensive shutdown fallback rather than admission.
+                        Err(_) => break 0,
+                    };
+                    if let Some(position) = running
                         .iter()
-                        .any(|(index, _, _)| *index == completed_index)
+                        .position(|(index, _, _)| *index == completed_index)
                     {
-                        break completed_index;
+                        break position;
                     }
                 };
-                let finished = running
-                    .iter()
-                    .position(|(index, _, _)| *index == completed_index)
-                    .expect("completed check must still be running");
                 let (index, _, handle) = running.remove(finished);
                 finish(&mut results, index, handle);
             }
