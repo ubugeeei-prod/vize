@@ -23,6 +23,23 @@ const PRESET_ALIASES = new Map<string, PatinaPreset>([
   ["nuxt", "nuxt"],
 ]);
 
+interface SettingsCacheEntry {
+  readonly locale: unknown;
+  readonly helpLevel: unknown;
+  readonly preset: unknown;
+  readonly showHelp: unknown;
+  readonly typeAware: unknown;
+  readonly corsaPath: unknown;
+  readonly rules: unknown;
+  readonly resolved: PatinaSettings;
+}
+
+// Every active Oxlint rule receives a context, but the settings object is
+// shared for the file. Cache its shallow projection; nested rule mutations are
+// still observed because the resolved value retains the same rules object and
+// rule-selection owns its byte revision.
+const settingsCache = new WeakMap<object, SettingsCacheEntry>();
+
 export function getVizeSettings(context: Context): PatinaSettings {
   const settings = context.settings as Record<string, unknown>;
   return parseVizeSettings(settings.vize ?? settings.patina);
@@ -40,13 +57,24 @@ export function parseVizeSettings(vize: unknown): PatinaSettings {
   const showHelp = vizeRecord.showHelp;
   const typeAware = vizeRecord.typeAware;
   const corsaPath = vizeRecord.corsaPath;
+  const rules = vizeRecord.rules;
+  const cached = settingsCache.get(vize);
+  if (
+    cached !== undefined &&
+    cached.locale === locale &&
+    cached.helpLevel === helpLevel &&
+    cached.preset === preset &&
+    cached.showHelp === showHelp &&
+    cached.typeAware === typeAware &&
+    cached.corsaPath === corsaPath &&
+    cached.rules === rules
+  ) {
+    return cached.resolved;
+  }
   const resolved: PatinaSettings = {};
 
-  if (
-    Array.isArray(vizeRecord.rules) ||
-    (typeof vizeRecord.rules === "object" && vizeRecord.rules !== null)
-  ) {
-    resolved.rules = vizeRecord.rules as NonNullable<PatinaSettings["rules"]>;
+  if (Array.isArray(rules) || (typeof rules === "object" && rules !== null)) {
+    resolved.rules = rules as NonNullable<PatinaSettings["rules"]>;
   }
 
   if (typeof locale === "string") {
@@ -70,13 +98,20 @@ export function parseVizeSettings(vize: unknown): PatinaSettings {
 
   if (typeof helpLevel === "string" && HELP_LEVELS.has(helpLevel as HelpLevel)) {
     resolved.helpLevel = helpLevel as HelpLevel;
-    return resolved;
-  }
-
-  if (typeof showHelp === "boolean") {
+  } else if (typeof showHelp === "boolean") {
     resolved.helpLevel = showHelp ? "full" : "none";
   }
 
+  settingsCache.set(vize, {
+    locale,
+    helpLevel,
+    preset,
+    showHelp,
+    typeAware,
+    corsaPath,
+    rules,
+    resolved,
+  });
   return resolved;
 }
 
@@ -181,6 +216,25 @@ if (import.meta.vitest) {
     it("ignores non-object vize settings", () => {
       expect(parseVizeSettings(null)).toEqual({});
       expect(parseVizeSettings("ja")).toEqual({});
+    });
+
+    it("reuses one shallow projection across active rule contexts", () => {
+      const rules = { "vize/vue/no-v-html": "error" };
+      const authored = { helpLevel: "none", preset: "incremental", rules };
+      const first = parseVizeSettings(authored);
+      expect(parseVizeSettings(authored)).toBe(first);
+
+      rules["vize/vue/no-v-html"] = "warn";
+      expect(parseVizeSettings(authored)).toBe(first);
+      expect(first.rules).toBe(rules);
+
+      authored.helpLevel = "short";
+      expect(parseVizeSettings(authored)).not.toBe(first);
+      expect(parseVizeSettings(authored)).toEqual({
+        helpLevel: "short",
+        preset: "incremental",
+        rules,
+      });
     });
   });
 }

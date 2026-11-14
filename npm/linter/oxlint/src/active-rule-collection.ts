@@ -68,9 +68,14 @@ export function getActiveRuleDiagnostics(
 ): { state: FileState; diagnostics: readonly PatinaDiagnostic[] } | undefined {
   const collection = programs.get(program);
   if (!collection?.optionsByRule.has(ruleName)) return undefined;
-  // Other plugins can change a physical file/settings between exit callbacks.
-  // Preserve source authority through every report, including a cached pass.
-  if (!hasCurrentProgramInputs(context, collection)) {
+  const firstExit = collection.selection === undefined;
+  const finalExit = collection.remaining?.size === 1;
+  // Source and settings are cheap in-memory checks on every callback. The
+  // physical-file syscall guards the two ownership boundaries: before native
+  // execution and before the completed packet is accepted. A synchronous
+  // mid-pass mutation therefore still fails closed without issuing one stat
+  // for every active rule.
+  if (!hasCurrentProgramInputs(context, collection, firstExit || finalExit)) {
     programs.delete(program);
     throw new Error("Vize source or configuration changed before rule execution");
   }
@@ -118,18 +123,27 @@ function physicalIdentity(filename: string): PhysicalIdentity {
   };
 }
 
-function hasCurrentProgramInputs(context: Context, collection: ProgramCollection): boolean {
-  const currentIdentity = physicalIdentity(context.physicalFilename);
-  const expectedIdentity = collection.physicalIdentity;
-  if (
-    currentIdentity.dev !== expectedIdentity.dev ||
-    currentIdentity.ino !== expectedIdentity.ino ||
-    currentIdentity.size !== expectedIdentity.size ||
-    currentIdentity.mtimeNs !== expectedIdentity.mtimeNs ||
-    currentIdentity.ctimeNs !== expectedIdentity.ctimeNs ||
-    context.sourceCode.text !== collection.state.extractedScript
-  ) {
+function hasCurrentProgramInputs(
+  context: Context,
+  collection: ProgramCollection,
+  checkPhysicalFile: boolean,
+): boolean {
+  if (context.sourceCode.text !== collection.state.extractedScript) {
     return false;
+  }
+
+  if (checkPhysicalFile) {
+    const currentIdentity = physicalIdentity(context.physicalFilename);
+    const expectedIdentity = collection.physicalIdentity;
+    if (
+      currentIdentity.dev !== expectedIdentity.dev ||
+      currentIdentity.ino !== expectedIdentity.ino ||
+      currentIdentity.size !== expectedIdentity.size ||
+      currentIdentity.mtimeNs !== expectedIdentity.mtimeNs ||
+      currentIdentity.ctimeNs !== expectedIdentity.ctimeNs
+    ) {
+      return false;
+    }
   }
 
   const current = getVizeSettings(context);
