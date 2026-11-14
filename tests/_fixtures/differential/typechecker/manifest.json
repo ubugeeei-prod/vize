@@ -13632,6 +13632,60 @@
       }
     },
     {
+      "id": "typechecker/regression/content-mapper-shipped-declaration-12968",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "content-mapper-shipped-declaration-12968/App.vue.txt",
+          "sha256": "61617869a883536ca57c29575ec34a219035e5317b9efca8c782feaf0dfded72",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "content-mapper-shipped-declaration-12968/Badge.d.vue.ts.txt",
+          "sha256": "13a8c15eaf5fff54db0d77c97409f33f017375ea11d9d3d9526683ddd30a9a70",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "content-mapper-shipped-declaration-12968/Badge.vue.txt",
+          "sha256": "1d7214504962c27a1ae5ebb852101dd6a75b36a9b078e1be37de54e0cdf15f33",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "content-mapper-shipped-declaration-12968/index.d.ts.txt",
+          "sha256": "e96cd706e93a83fc88d2799ff741bcbb1b1f3fbbf5b4ce88caa672071f3cc8c9",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "content-mapper-shipped-declaration-12968/package.json.txt",
+          "sha256": "933074f9cd74a0d53ffbd1a83f2bd56eec5a247256b60cd3e64c60e676505387",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "content-mapper-shipped-declaration-12968/tsconfig.json.txt",
+          "sha256": "0100b10f4f610b701968917e818a949569fa4d728fe531cd462a40e71a56b3e9",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::shipped_declarations_12968::packaged_sfc_uses_its_declaration_without_hiding_consumer_errors; reported #12968 package whose compiled Badge.vue shadows its adjacent .d.vue.ts unless the mapper projects the shipped declaration. The exact TypeScript host checks named types, bare values, props and slots with skipLibCheck both enabled and disabled. Input-only registration; no native parity claim."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/declaration-fallthrough-attrs-11454",
       "state": "active",
       "targets": [
