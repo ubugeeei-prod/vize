@@ -9,6 +9,8 @@ use super::{
     workspace_root,
 };
 
+const GENERIC_LIBRARY_FIXTURE: &str = "global-generic-library-slots-12971";
+
 const CASES: &str = include_str!(concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/../../tests/_fixtures/differential/typechecker/content-mapper-global-component-10185/cases.json"
@@ -87,4 +89,43 @@ fn standard_tsgo_accepts_unimported_framework_global_components() {
         assert_eq!(output.stdout, b"", "{}: {}", case.id, output_text(&output));
         assert_eq!(output.stderr, b"", "{}: {}", case.id, output_text(&output));
     }
+}
+
+#[test]
+fn globally_registered_generic_library_component_preserves_slot_inference() {
+    let Some(tsgo) = std::env::var_os(TSGO_ENV).map(PathBuf::from) else {
+        eprintln!("skipping generic global component conformance: {TSGO_ENV} is not set");
+        return;
+    };
+    assert!(tsgo.is_file(), "{TSGO_ENV} is not a file");
+
+    let fixture = workspace_root()
+        .join("tests/_fixtures/differential/typechecker")
+        .join(GENERIC_LIBRARY_FIXTURE);
+    let cases_root = workspace_root().join("target/vize-tests/tests");
+    std::fs::create_dir_all(&cases_root).unwrap();
+    let project = tempfile::Builder::new()
+        .prefix("content-mapper-global-generic-library-")
+        .tempdir_in(cases_root)
+        .unwrap();
+    install_mapper_manifest(project.path());
+    install_vue_package(project.path());
+    for name in [
+        "tsconfig.json",
+        "src/components.d.ts",
+        "src/global.vue",
+        "src/imported.vue",
+        "src/lib/data-list.js",
+        "src/lib/data-list.d.ts",
+    ] {
+        let source = fixture.join(format!("{name}.txt"));
+        let target = project.path().join(name);
+        std::fs::create_dir_all(target.parent().unwrap()).unwrap();
+        std::fs::copy(source, target).unwrap();
+    }
+
+    let output = check_project(&tsgo, project.path(), "tsconfig.json");
+    assert!(output.status.success(), "{}", output_text(&output));
+    assert_eq!(output.stdout, b"", "{}", output_text(&output));
+    assert_eq!(output.stderr, b"", "{}", output_text(&output));
 }

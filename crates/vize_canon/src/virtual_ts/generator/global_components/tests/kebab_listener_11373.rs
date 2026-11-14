@@ -64,11 +64,7 @@ fn original_mapper_outputs_keep_typed_global_declarations_before_values() {
         } else {
             "$GlobalComponent<\"GlobalLink\", \"globalLink\", \"global-link\">"
         };
-        assert_eq!(
-            line,
-            format!("{declaration} $GlobalComponentFallback & {expected};"),
-            "{id}"
-        );
+        assert_eq!(line, format!("{declaration} {expected};"), "{id}");
         let late = format!("const {reference}:");
         let late_bindings = transform
             .text

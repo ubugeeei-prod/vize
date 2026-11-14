@@ -138,13 +138,16 @@ it("reads and keys one physical revision once while all active rules share a Pro
     rules,
   });
   const readFileSync = vi.spyOn(fs, "readFileSync");
+  const statSync = vi.spyOn(fs, "statSync");
   const stringify = vi.spyOn(JSON, "stringify");
 
   run(context, rules);
 
   assert.equal(readFileSync.mock.calls.filter(([candidate]) => candidate === filename).length, 1);
+  assert.equal(statSync.mock.calls.filter(([candidate]) => candidate === filename).length, 3);
   assert.equal(stringify.mock.calls.filter(([candidate]) => candidate === rules).length, 1);
   readFileSync.mockRestore();
+  statSync.mockRestore();
   stringify.mockRestore();
 });
 

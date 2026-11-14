@@ -19,6 +19,9 @@ use vize_canon::{
 use vize_l0::{FxHashMap, String as CompactString, cstr};
 
 use super::mode::ProjectionMode;
+use crate::commands::check::tsconfig_inputs::{
+    TsconfigInputCache, collect_ambient_declaration_files, declares_vue_template_ref_global,
+};
 
 /// Mapper diagnostic code for an options value that is not an object.
 const OPTION_CODE_NOT_AN_OBJECT: i32 = 1;
@@ -124,13 +127,29 @@ pub(super) fn resolve_open_project(
     explicit_mode: Option<ProjectionMode>,
 ) -> Result<(ProjectSettings, OpenProjectResult), CorsaError> {
     let empty_compiler_options = serde_json::Map::new();
-    let (configuration, _) = ContentMapperProjectConfiguration::load_with_compiler_options(
+    let (mut configuration, _) = ContentMapperProjectConfiguration::load_with_compiler_options(
         Path::new(params.config_file_name.as_str()),
         params
             .compiler_options
             .as_object()
             .unwrap_or(&empty_compiler_options),
     )?;
+    let mut ambient_declarations = Vec::new();
+    let ambient_template_ref = if params.config_file_name.is_empty() {
+        false
+    } else {
+        let config = Path::new(params.config_file_name.as_str());
+        let project_root = config.parent().unwrap_or(Path::new("."));
+        ambient_declarations = collect_ambient_declaration_files(
+            project_root,
+            Some(config),
+            &mut TsconfigInputCache::default(),
+        );
+        declares_vue_template_ref_global(&ambient_declarations)
+    };
+    configuration.transform_options = configuration
+        .transform_options
+        .with_ambient_global_template_ref(ambient_template_ref);
     let mut options_api = true;
     let mut no_unused_locals = false;
     let mut check_javascript = false;
@@ -171,6 +190,11 @@ pub(super) fn resolve_open_project(
         &params.compiler_options,
     );
     let mut watched_files = configuration.watched_files;
+    watched_files.extend(
+        ambient_declarations
+            .iter()
+            .map(|path| CompactString::from(path.to_string_lossy().as_ref())),
+    );
     watched_files.extend(shared_helpers.watched_files);
     watched_files.sort();
     watched_files.dedup();
@@ -183,6 +207,10 @@ pub(super) fn resolve_open_project(
             shared_helpers.fingerprint
         )
     };
+    let config_identity = cstr!(
+        "{config_identity}:ambient-vue-template-ref:{}",
+        u8::from(ambient_template_ref)
+    );
     let mode = ProjectionMode::resolve(
         explicit_mode,
         params.config_file_name.as_str(),

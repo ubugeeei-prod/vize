@@ -132,6 +132,24 @@ fn configured_template_ref_composable_reaches_the_mapper_projection() {
 }
 
 #[test]
+fn explicit_template_ref_configuration_overrides_ambient_authority() {
+    let directory = tempfile::tempdir().unwrap();
+    let path = directory.path().join("tsconfig.json");
+    std::fs::write(
+        &path,
+        r#"{"vueCompilerOptions":{"composables":{"useTemplateRef":[]}}}"#,
+    )
+    .unwrap();
+    let configuration = load(&path);
+    assert!(
+        !configuration
+            .transform_options
+            .with_ambient_global_template_ref(true)
+            .configured_global_template_ref
+    );
+}
+
+#[test]
 fn shared_chain_obeys_jsonc_array_precedence_and_explicit_false() {
     let directory = tempfile::tempdir().unwrap();
     let root = directory.path();
