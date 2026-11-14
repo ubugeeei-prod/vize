@@ -4,6 +4,7 @@
 //! symbol observations that its Rust rule consumes.
 use corsa::lint::LintNode;
 use serde_json::{Value, json};
+use vize_carton::String;
 
 pub(super) fn enrich(source: &str, nodes: &mut [LintNode], program: &Value) {
     for node in nodes {
@@ -304,7 +305,7 @@ fn collect_binding_names(value: &Value, out: &mut Vec<String>) {
     match value.get("type").and_then(Value::as_str) {
         Some("Identifier") => {
             if let Some(name) = value.get("name").and_then(Value::as_str) {
-                out.push(name.to_owned());
+                out.push(name.into());
             }
         }
         Some("AssignmentPattern") => {
