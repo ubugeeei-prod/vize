@@ -126,7 +126,7 @@ fn verify_examples(type_aware: bool) {
             }
         }
     }
-    assert_eq!(checked, if type_aware { 45 } else { 325 });
+    assert_eq!(checked, if type_aware { 46 } else { 325 });
     assert_eq!(unavailable, if type_aware { 0 } else { 2 });
     assert_eq!(parser_owned, if type_aware { 0 } else { 1 });
     eprintln!(
