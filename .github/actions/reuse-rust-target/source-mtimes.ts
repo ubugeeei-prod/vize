@@ -50,6 +50,8 @@ export type RestoreResult =
       floor: number;
       restored: number;
       changed: number;
+      invalidated: number;
+      invalidation: string;
       manifest: string;
     };
 
@@ -124,8 +126,11 @@ export function newestFingerprint(target: string): number {
 }
 
 /** Keep dependency artifacts, but never trust workspace outputs without custody. */
-function invalidateUnownedWorkspaceArtifacts(root: string, target: string): void {
-  if (newestFingerprint(target) === 0) return;
+function invalidateUnownedWorkspaceArtifacts(
+  root: string,
+  target: string,
+): { removed: number; reason: string } {
+  if (newestFingerprint(target) === 0) return { removed: 0, reason: "no fingerprints" };
   let owners: Set<string>;
   try {
     const metadata = JSON.parse(
@@ -143,16 +148,28 @@ function invalidateUnownedWorkspaceArtifacts(root: string, target: string): void
       .filter(({ id }) => members.has(id))
       .flatMap(({ name, targets }) => [name, ...targets.map((target) => target.name)]);
     owners = new Set(names.flatMap((name) => [name, name.replaceAll("-", "_")]));
-  } catch {
+  } catch (error) {
     // Source mtimes remain the conservative fallback outside a Cargo workspace.
-    return;
+    const detail = error instanceof Error ? error.message.split("\n", 1)[0] : String(error);
+    return { removed: 0, reason: `metadata unavailable: ${detail}` };
   }
+  let removed = 0;
+  const seen: string[] = [];
   visitFingerprintDirectories(target, (path) => {
     for (const unit of readdirSync(path)) {
+      if (seen.length < 5) seen.push(unit);
       const match = /^(.*)-[0-9a-f]{16}$/u.exec(unit);
-      if (match?.[1] && owners.has(match[1])) rmSync(join(path, unit), { recursive: true });
+      if (match?.[1] && owners.has(match[1])) {
+        rmSync(join(path, unit), { recursive: true });
+        removed++;
+      }
     }
   });
+  const reason =
+    removed > 0
+      ? `removed ${removed} workspace fingerprint(s)`
+      : `no owner match; owners=${[...owners].slice(0, 5).join(",")}; units=${seen.join(",")}`;
+  return { removed, reason };
 }
 
 function isObject(value: unknown): value is Record<string, unknown> {
@@ -244,9 +261,13 @@ export function restoreSourceMtimes({
   const { manifest, reason } = sharedSecondary
     ? { manifest: null, reason: "another target directory shares this work tree" }
     : readManifest(file, root);
+  let invalidated = 0;
+  let invalidation = "authorized manifest";
   if (!manifest) {
-    invalidateUnownedWorkspaceArtifacts(root, targetPath);
-    if (sharedSecondary) invalidateUnownedWorkspaceArtifacts(root, secondaryPath);
+    const outcomes = [invalidateUnownedWorkspaceArtifacts(root, targetPath)];
+    if (sharedSecondary) outcomes.push(invalidateUnownedWorkspaceArtifacts(root, secondaryPath));
+    invalidated = outcomes.reduce((total, outcome) => total + outcome.removed, 0);
+    invalidation = outcomes.map((outcome) => outcome.reason).join("; ");
   }
   const recorded = manifest?.files ?? {};
   // Whole seconds keep restored values exact; the fingerprint and manifest
@@ -297,7 +318,17 @@ export function restoreSourceMtimes({
   }
   if (record)
     writeManifest(file, { schema, version, root, state: "pending", updatedAt: floor, files: next });
-  return { applied: true, reason, root, floor, restored, changed, manifest: file };
+  return {
+    applied: true,
+    reason,
+    root,
+    floor,
+    restored,
+    changed,
+    invalidated,
+    invalidation,
+    manifest: file,
+  };
 }
 
 /**

@@ -358,6 +358,7 @@ await test(
       const restored = applied(restoreSourceMtimes({ target, record: false }));
       assert.equal(restored.reason, "no manifest");
       assert.equal(restored.changed, 2);
+      assert.ok(restored.invalidated > 0, restored.invalidation);
       assert.equal(run(second), "second");
     } finally {
       rmSync(root, { recursive: true, force: true });
