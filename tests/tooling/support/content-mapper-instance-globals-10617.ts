@@ -424,7 +424,7 @@ export function assertProtocolAdmission(responses: Response[], configFile: strin
     id: 2,
     jsonrpc: "2.0",
     result: {
-      configIdentity: `vize-content-mapper-v1:${sha(JSON.stringify([{}, watchedFiles]))}`,
+      configIdentity: `vize-content-mapper-v1:${sha(JSON.stringify([{}, watchedFiles]))}:ambient-vue-template-ref:0`,
       watchedFiles,
     },
   });

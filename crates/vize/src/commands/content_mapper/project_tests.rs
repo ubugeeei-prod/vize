@@ -26,6 +26,43 @@ fn inferred_project_returns_dynamic_config_identity_without_file_discovery() {
 }
 
 #[test]
+fn directly_selected_nuxt_import_manifest_can_own_vue_template_ref() {
+    let directory = tempfile::tempdir().unwrap();
+    let generated = directory.path().join(".nuxt/imports.d.ts");
+    std::fs::create_dir_all(generated.parent().unwrap()).unwrap();
+    std::fs::write(
+        &generated,
+        r#"export {};
+declare global {
+  const useTemplateRef: typeof import("vue").useTemplateRef;
+}
+"#,
+    )
+    .unwrap();
+    let config = directory.path().join("tsconfig.json");
+    std::fs::write(&config, r#"{"files":[".nuxt/imports.d.ts"]}"#).unwrap();
+
+    let responses = exchange(&frames(&[
+        initialize_request(),
+        configured_open(2, "nuxt", &config),
+    ]));
+    let result = &responses[1]["result"];
+    assert!(
+        result["configIdentity"]
+            .as_str()
+            .unwrap()
+            .ends_with(":ambient-vue-template-ref:1")
+    );
+    let watched = result["watchedFiles"].as_array().unwrap();
+    let generated = std::fs::canonicalize(generated).unwrap();
+    assert!(
+        watched
+            .iter()
+            .any(|path| path.as_str() == generated.to_str())
+    );
+}
+
+#[test]
 fn rejects_open_project_before_initialize() {
     let input = frames(&[open_project_request(1, Value::Null, json!({}))]);
     let responses = exchange(&input);
