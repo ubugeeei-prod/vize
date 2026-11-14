@@ -48,7 +48,10 @@ fn linter() -> Linter {
 }
 
 fn compare_template(source: &str) {
-    let prefix = "<script setup>const note = '日本語😀'</script>\r\n<template>";
+    // Keep the authored fixture from being the only SFC root. RouterLink-like
+    // components may inherit a navigation target only in that SFC-specific
+    // position, while the raw-template baseline has no descriptor to model it.
+    let prefix = "<script setup>const note = '日本語😀'</script>\r\n<template><div/>";
     let sfc = format!("{prefix}{source}</template>");
     let linter = linter();
     let mut expected = linter.lint_template_relief(source, "test.vue");
