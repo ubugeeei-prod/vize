@@ -412,6 +412,18 @@ fn dispatch_transform(
 }
 
 fn transform_frame(job: &TransformJob, sources: &ContentMapperTypeSources) -> io::Result<Vec<u8>> {
+    match super::shipped_declaration::read_shipped_declaration(
+        Path::new(job.file_name.as_str()),
+        job.settings.skip_lib_check,
+    ) {
+        Ok(Some(result)) => return encode_transform(&job.id, &result),
+        Ok(None) => {}
+        Err(error) => {
+            let message = cstr!("Cannot read shipped declaration: {error}");
+            return encode_error(&job.id, -32603, &message);
+        }
+    }
+
     match generate_vue_content_mapper_transform_with_type_sources(
         Path::new(job.file_name.as_str()),
         job.content.as_str(),

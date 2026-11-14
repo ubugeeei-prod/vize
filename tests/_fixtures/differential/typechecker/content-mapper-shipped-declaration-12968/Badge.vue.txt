@@ -1,0 +1,2 @@
+<script>export default { props: { label: String } }</script>
+<template><div /></template>

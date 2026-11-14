@@ -168,8 +168,9 @@ pub use batch::{
     generate_vue_content_mapper_transform_with_project_context,
     generate_vue_content_mapper_transform_with_project_options,
     generate_vue_content_mapper_transform_with_type_sources, legacy_project_virtual_roots,
-    persistent_batch_storage_root, persistent_batch_virtual_root, project_virtual_access_path,
-    project_virtual_lock_paths, project_virtual_root, snapshot_tsconfig_compiler_options,
+    persistent_batch_storage_root, persistent_batch_virtual_root,
+    project_declaration_as_typescript, project_virtual_access_path, project_virtual_lock_paths,
+    project_virtual_root, snapshot_tsconfig_compiler_options,
     snapshot_tsconfig_vue_compiler_options, snapshot_tsconfig_vue_target,
 };
 

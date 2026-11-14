@@ -14,6 +14,18 @@ const identity = (text: string): Identity => ({
   sha256: hash(text),
 });
 
+const shippedDeclarationSkipLibCheckTransition: Transition = {
+  before: {
+    bytes: 4_522,
+    sha256: "54f3c69dcae1a2a2263bd599fa3057ddf2eea6adab125c66ecbb59476130e87b",
+  },
+  after: {
+    bytes: 4_546,
+    sha256: "88cdce7d633b102c440c8fe4aa723e8fddbd42260357dc741070ef9301fb59df",
+  },
+  edits: [{ before: "", after: '        "skipLibCheck",\n' }],
+};
+
 const publicExport = `
 import type * as __vizeListenerTypes from "./virtual-ts-listeners.js" with {
   "resolution-mode": "import",
@@ -357,6 +369,16 @@ function inverse(current: string, transition: Transition, context: string): stri
 
 /** Restore only the authenticated pre-listener-relation source image. */
 export function beforeSharedListenerRelationSource(path: string, current: string): string {
+  if (
+    path === "npm/cli/package.json" &&
+    identity(current).sha256 === shippedDeclarationSkipLibCheckTransition.after.sha256
+  ) {
+    current = inverse(
+      current,
+      shippedDeclarationSkipLibCheckTransition,
+      "selected emit gate producer: shipped declaration compiler option",
+    );
+  }
   current = beforeSharedTemplateRefTargetsSource(path, current);
   current = beforeSharedKebabCaseSource(path, current);
   current = emitMemberInferEditsBefore(readRepository, path, current);

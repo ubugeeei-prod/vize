@@ -1,0 +1,10 @@
+<script setup lang="ts">
+import { Badge, format, palette, type BadgeProps } from "fake-ui";
+const props: BadgeProps = { label: format(palette[0] ?? "ok") };
+</script>
+
+<template>
+  <Badge :label="props.label">
+    <template #header="{ label }">{{ label.toUpperCase() }}</template>
+  </Badge>
+</template>

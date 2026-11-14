@@ -37,6 +37,7 @@ mod type_checker;
 pub(crate) mod virtual_project;
 pub(crate) mod virtual_specifier_message;
 
+pub use declaration_path::project_declaration_as_typescript;
 pub use error::{CorsaError, CorsaNotFoundError, CorsaResult, PackageManager};
 pub use executor::CorsaExecutor;
 pub use import_rewriter::{ImportRewriter, ImportSourceMap, OffsetAdjustment, RewriteResult};
