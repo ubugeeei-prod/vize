@@ -11,6 +11,8 @@ use super::{
 };
 
 const DECLARATION: &str = r#"export interface BadgeProps { label: string }
+export function format(value: string): string;
+export const palette: readonly string[];
 declare const Badge: new () => {
   $props: BadgeProps;
   $slots: { header(props: { label: string }): unknown };
@@ -83,7 +85,7 @@ fn prepare_project() -> tempfile::TempDir {
     write(
         project.path(),
         "src/main.ts",
-        "import type { BadgeProps } from 'fake-ui';\nexport const props: BadgeProps = { label: 'ok' };\n",
+        "import { format, palette, type BadgeProps } from 'fake-ui';\nexport const props: BadgeProps = { label: format(palette[0] ?? 'ok') };\n",
     );
     write(
         project.path(),
@@ -101,11 +103,7 @@ import { Badge } from 'fake-ui'
         "src/Local.vue",
         r#"<script setup lang="ts">defineProps<{ label: string }>()</script><template>{{ label }}</template>"#,
     );
-    write(
-        project.path(),
-        "src/Local.d.vue.ts",
-        LOCAL_DECLARATION,
-    );
+    write(project.path(), "src/Local.d.vue.ts", LOCAL_DECLARATION);
     write(
         project.path(),
         "src/LocalConsumer.vue",
@@ -158,7 +156,7 @@ fn packaged_sfc_uses_its_declaration_without_hiding_consumer_errors() {
     write(
         project.path(),
         "src/main.ts",
-        "import type { BadgeProps } from 'fake-ui';\nexport const props: BadgeProps = { label: 123 };\n",
+        "import { format, palette, type BadgeProps } from 'fake-ui';\nexport const props: BadgeProps = { label: format(palette[0] ?? 'ok') };\nprops.label = 123;\n",
     );
     let consumer_error = check_project(&tsgo, project.path(), "tsconfig.json");
     let consumer_text = output_text(&consumer_error);
@@ -172,7 +170,7 @@ fn packaged_sfc_uses_its_declaration_without_hiding_consumer_errors() {
     write(
         project.path(),
         "src/main.ts",
-        "import type { BadgeProps } from 'fake-ui';\nexport const props: BadgeProps = { label: 'ok' };\n",
+        "import { format, palette, type BadgeProps } from 'fake-ui';\nexport const props: BadgeProps = { label: format(palette[0] ?? 'ok') };\n",
     );
     std::fs::remove_file(project.path().join("node_modules/fake-ui/Badge.d.vue.ts")).unwrap();
     write(
