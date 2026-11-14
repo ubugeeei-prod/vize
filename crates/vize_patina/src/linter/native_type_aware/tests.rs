@@ -1,7 +1,9 @@
 pub(in crate::linter::native_type_aware) mod assertion;
+mod empty_tuple_runtime;
 mod macro_positions;
 mod opt_in;
 mod options_api;
+mod runtime;
 mod severity;
 mod template_event_handlers;
 mod typescript_constituents;
@@ -20,22 +22,7 @@ use assertion::{
     assert_absent, assert_absent_note, assert_absent_rules, assert_reports, assert_reports_message,
     assert_reports_note, failure_context,
 };
-pub(super) fn corsa_available() -> bool {
-    let mut session =
-        match super::CorsaTypeAwareSession::new_with_corsa_path("Component.vue", None, None) {
-            Ok(session) => session,
-            Err(_) => return false,
-        };
-    if session
-        .open_virtual_project("const value = 1;\n", "Component.vue")
-        .is_err()
-    {
-        session.close();
-        return false;
-    }
-    session.close();
-    true
-}
+pub(super) use runtime::corsa_available;
 
 #[test]
 fn require_typed_props_uses_corsa() {

@@ -4,6 +4,7 @@ use super::super::checker_memo::CheckerMemo;
 use super::super::promise_facts::PromiseChecker;
 use super::{ExpressionFact, ExpressionQuery};
 use corsa::api::{NodeHandle, ProjectSession, TypeResponse};
+use corsa::fast::ToCompactString as _;
 use vize_l0::String as CompactString;
 
 type Responses = (Vec<Option<TypeResponse>>, Option<Vec<Option<NodeHandle>>>);
@@ -63,24 +64,58 @@ pub(super) async fn node_types(
     };
     let handles = each.into_iter().map(Result::ok).collect::<Vec<_>>();
     let located = handles.iter().flatten().cloned().collect::<Vec<_>>();
-    let mut types = if located.is_empty() {
-        Vec::new()
-    } else {
-        session
-            .client()
-            .get_type_at_locations(
-                session.snapshot().handle.clone(),
-                session.project_handle(),
-                located,
-            )
-            .await?
-    }
-    .into_iter();
+    let mut types = resilient_node_types(session, located).await?.into_iter();
     let responses = handles
         .iter()
         .map(|handle| handle.as_ref().and_then(|_| types.next().flatten()))
         .collect();
     Ok(Some((responses, handles)))
+}
+
+/// TypeScript 7.0.2 can panic while serializing an empty tuple returned by
+/// `getTypeAtLocations`. The RPC server recovers, but one bad node rejects the
+/// entire batch. Retry that one known failure node-by-node so the empty tuple
+/// alone stays untyped and every independent expression keeps its facts.
+async fn resilient_node_types(
+    session: &ProjectSession,
+    locations: Vec<NodeHandle>,
+) -> corsa::Result<Vec<Option<TypeResponse>>> {
+    if locations.is_empty() {
+        return Ok(Vec::new());
+    }
+    let snapshot = session.snapshot().handle.clone();
+    let project = session.project_handle();
+    match session
+        .client()
+        .get_type_at_locations(snapshot.clone(), project.clone(), locations.clone())
+        .await
+    {
+        Ok(responses) => Ok(responses),
+        Err(error) if is_empty_tuple_runtime_panic(&error.to_compact_string()) => {
+            let mut responses = Vec::with_capacity(locations.len());
+            for location in locations {
+                let response = session
+                    .client()
+                    .get_type_at_locations(snapshot.clone(), project.clone(), vec![location])
+                    .await;
+                match response {
+                    Ok(each) => responses.push(each.into_iter().next().flatten()),
+                    Err(error) if is_empty_tuple_runtime_panic(&error.to_compact_string()) => {
+                        responses.push(None);
+                    }
+                    Err(error) => return Err(error),
+                }
+            }
+            Ok(responses)
+        }
+        Err(error) => Err(error),
+    }
+}
+
+fn is_empty_tuple_runtime_panic(message: &str) -> bool {
+    message.contains("AsTupleType")
+        && message.contains("checker.TypeReference")
+        && message.contains("checker.TupleType")
 }
 
 /// Parameter type texts of the first call signature, once per type.
@@ -190,4 +225,24 @@ pub(super) async fn apply_symbols(
 pub(super) fn same_file(path: &str, file: &str) -> bool {
     let file = file.strip_prefix("file://").unwrap_or(file);
     path.eq_ignore_ascii_case(file)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::is_empty_tuple_runtime_panic;
+
+    const EMPTY_TUPLE_PANIC: &str = "rpc error -32603: panic: interface conversion: \
+        checker.TypeData is *checker.TypeReference, not *checker.TupleType; \
+        github.com/microsoft/typescript-go/internal/checker.(*Type).AsTupleType";
+
+    #[test]
+    fn recognizes_only_the_upstream_empty_tuple_panic() {
+        assert!(is_empty_tuple_runtime_panic(EMPTY_TUPLE_PANIC));
+        assert!(!is_empty_tuple_runtime_panic(
+            "rpc error -32603: panic: unrelated runtime failure"
+        ));
+        assert!(!is_empty_tuple_runtime_panic(
+            "interface conversion: checker.TypeData is *checker.TypeReference"
+        ));
+    }
 }

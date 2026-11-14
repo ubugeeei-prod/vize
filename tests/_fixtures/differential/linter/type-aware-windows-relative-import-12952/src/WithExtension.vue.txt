@@ -1,0 +1,10 @@
+<script setup lang="ts">
+import { OUT_DX, save, START_X } from "./api.ts";
+
+const left = `${START_X + OUT_DX}px`;
+save();
+</script>
+
+<template>
+  <p :style="{ left }">x</p>
+</template>

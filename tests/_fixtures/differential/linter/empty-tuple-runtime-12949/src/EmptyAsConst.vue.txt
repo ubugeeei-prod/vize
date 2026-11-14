@@ -1,0 +1,7 @@
+<script setup lang="ts">
+const results = [] as const;
+</script>
+
+<template>
+  <p>{{ results.length }}</p>
+</template>
