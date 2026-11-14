@@ -358,6 +358,11 @@ await test(
       const restored = applied(restoreSourceMtimes({ target, record: false }));
       assert.equal(restored.reason, "no manifest");
       assert.equal(restored.changed, 2);
+      const binary = join(
+        target,
+        `debug/cargo_source_custody_probe${process.platform === "win32" ? ".exe" : ""}`,
+      );
+      assert.ok(!existsSync(binary), "unowned workspace artifacts are invalidated");
       assert.equal(run(second), "second");
     } finally {
       rmSync(root, { recursive: true, force: true });

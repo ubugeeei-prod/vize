@@ -117,6 +117,20 @@ export function newestFingerprint(target: string): number {
   return newest;
 }
 
+/** Keep dependency artifacts, but never trust workspace outputs without custody. */
+function invalidateUnownedWorkspaceArtifacts(root: string, target: string): void {
+  if (newestFingerprint(target) === 0) return;
+  try {
+    execFileSync(
+      "cargo",
+      ["clean", "--quiet", "--workspace", "--target-dir", target],
+      { cwd: root, stdio: "ignore" },
+    );
+  } catch {
+    // Source mtimes remain the conservative fallback outside a Cargo workspace.
+  }
+}
+
 function isObject(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 }
@@ -206,6 +220,10 @@ export function restoreSourceMtimes({
   const { manifest, reason } = sharedSecondary
     ? { manifest: null, reason: "another target directory shares this work tree" }
     : readManifest(file, root);
+  if (!manifest) {
+    invalidateUnownedWorkspaceArtifacts(root, targetPath);
+    if (sharedSecondary) invalidateUnownedWorkspaceArtifacts(root, secondaryPath);
+  }
   const recorded = manifest?.files ?? {};
   // Whole seconds keep restored values exact; the fingerprint and manifest
   // bounds, not the clock, keep a changed file newer than every artifact.
