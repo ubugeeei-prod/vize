@@ -46,7 +46,7 @@ fn default_order_matches_patina_vue_attribute_order_groups() {
 }
 
 #[test]
-fn object_v_on_stays_between_independently_sorted_event_groups() {
+fn object_and_static_v_on_bindings_keep_authored_event_order() {
     let source = r#"<button @keyup="up" @click="click" v-on="listeners" @mouseup="up" @mousedown="down"></button>"#;
     let options = FormatOptions {
         print_width: 200,
@@ -58,7 +58,7 @@ fn object_v_on_stays_between_independently_sorted_event_groups() {
 
     assert_eq!(
         first.as_str(),
-        r#"<button @click="click" @keyup="up" v-on="listeners" @mousedown="down" @mouseup="up"></button>"#
+        r#"<button @keyup="up" @click="click" v-on="listeners" @mouseup="up" @mousedown="down"></button>"#
     );
     assert_eq!(first, second);
 }
