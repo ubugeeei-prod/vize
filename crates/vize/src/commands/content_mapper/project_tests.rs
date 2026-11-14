@@ -1,5 +1,5 @@
 use serde_json::{Value, json};
-use vize_l0::cstr;
+use vize_l0::{cstr, path::canonicalize_non_verbatim};
 
 use super::mode::ProjectionMode;
 use super::test_support::{
@@ -55,7 +55,7 @@ declare global {
         "ambient-vue-template-ref"
     );
     let watched = result["watchedFiles"].as_array().unwrap();
-    let generated = vize_carton::path::canonicalize_non_verbatim(&generated);
+    let generated = canonicalize_non_verbatim(&generated);
     assert!(
         watched
             .iter()
