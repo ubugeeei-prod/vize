@@ -10,6 +10,7 @@ use oxc_span::SourceType;
 use vize_canon::{
     ContentMapperDiagnosticDirective, ContentMapperDiagnosticDirectives, ContentMapperTransform,
 };
+use vize_l0::{String, ToCompactString, cstr};
 
 #[derive(Debug)]
 struct TextEdit {
@@ -51,9 +52,9 @@ fn ambient_insertion(declaration: &Declaration<'_>) -> Option<u32> {
 
 fn default_export_name(text: &str, sequence: &mut usize) -> String {
     loop {
-        let name = format!("__vize_shipped_default_{}", *sequence);
+        let name = cstr!("__vize_shipped_default_{}", *sequence);
         *sequence += 1;
-        if !text.contains(&name) {
+        if !text.contains(name.as_str()) {
             return name;
         }
     }
@@ -66,24 +67,33 @@ fn keyword_end(text: &str, span_start: u32, span_end: u32, keyword: &str) -> Opt
     Some(start + relative + keyword.len())
 }
 
-fn ambient_default_export(
-    text: &str,
+struct DefaultExport<'a> {
     export_start: u32,
     declaration_start: u32,
     declaration_end: u32,
-    declared_name: Option<&str>,
+    declared_name: Option<&'a str>,
     anonymous_name_offset: Option<u32>,
+}
+
+fn ambient_default_export(
+    text: &str,
+    declaration: DefaultExport<'_>,
     sequence: &mut usize,
     edits: &mut Vec<TextEdit>,
 ) {
-    let export_start = export_start as usize;
-    let declaration_start = declaration_start as usize;
-    let prefix = &text[export_start..declaration_start];
+    let export_start = declaration.export_start as usize;
+    let declaration_start = declaration.declaration_start as usize;
+    let Some(prefix) = text.get(export_start..declaration_start) else {
+        return;
+    };
     let Some(default_start) = prefix.find("default") else {
         return;
     };
     let after_default = default_start + "default".len();
-    let delete_end = if prefix[after_default..].trim().is_empty() {
+    let Some(trailing_prefix) = prefix.get(after_default..) else {
+        return;
+    };
+    let delete_end = if trailing_prefix.trim().is_empty() {
         declaration_start
     } else {
         export_start + after_default
@@ -91,19 +101,22 @@ fn ambient_default_export(
     edits.push(TextEdit {
         start: export_start,
         end: delete_end,
-        replacement: String::new(),
+        replacement: String::default(),
     });
     edits.push(TextEdit::insertion(declaration_start as u32, "declare "));
 
-    let name = declared_name.map_or_else(|| default_export_name(text, sequence), str::to_owned);
-    if declared_name.is_none()
-        && let Some(offset) = anonymous_name_offset
+    let name = declaration.declared_name.map_or_else(
+        || default_export_name(text, sequence),
+        ToCompactString::to_compact_string,
+    );
+    if declaration.declared_name.is_none()
+        && let Some(offset) = declaration.anonymous_name_offset
     {
-        edits.push(TextEdit::insertion(offset, &format!(" {name}")));
+        edits.push(TextEdit::insertion(offset, cstr!(" {name}").as_str()));
     }
     edits.push(TextEdit::insertion(
-        declaration_end,
-        &format!("\nexport default {name};"),
+        declaration.declaration_end,
+        cstr!("\nexport default {name};").as_str(),
     ));
 }
 
@@ -114,7 +127,7 @@ fn project_declaration_as_typescript(text: &str) -> String {
     let allocator = Allocator::default();
     let parsed = Parser::new(&allocator, text, SourceType::d_ts()).parse();
     if parsed.panicked || !parsed.diagnostics.is_empty() {
-        return text.into();
+        return text.to_compact_string();
     }
 
     let mut edits = Vec::new();
@@ -151,11 +164,13 @@ fn project_declaration_as_typescript(text: &str) -> String {
                         });
                     ambient_default_export(
                         text,
-                        export.span.start,
-                        declaration.span.start,
-                        declaration.span.end,
-                        declaration.id.as_ref().map(|id| id.name.as_str()),
-                        Some(anonymous_name_offset),
+                        DefaultExport {
+                            export_start: export.span.start,
+                            declaration_start: declaration.span.start,
+                            declaration_end: declaration.span.end,
+                            declared_name: declaration.id.as_ref().map(|id| id.name.as_str()),
+                            anonymous_name_offset: Some(anonymous_name_offset),
+                        },
                         &mut default_sequence,
                         &mut edits,
                     );
@@ -171,11 +186,13 @@ fn project_declaration_as_typescript(text: &str) -> String {
                         });
                     ambient_default_export(
                         text,
-                        export.span.start,
-                        declaration.span.start,
-                        declaration.span.end,
-                        declaration.id.as_ref().map(|id| id.name.as_str()),
-                        anonymous_name_offset,
+                        DefaultExport {
+                            export_start: export.span.start,
+                            declaration_start: declaration.span.start,
+                            declaration_end: declaration.span.end,
+                            declared_name: declaration.id.as_ref().map(|id| id.name.as_str()),
+                            anonymous_name_offset,
+                        },
                         &mut default_sequence,
                         &mut edits,
                     );
@@ -192,7 +209,7 @@ fn project_declaration_as_typescript(text: &str) -> String {
             .cmp(&left.start)
             .then_with(|| right.end.cmp(&left.end))
     });
-    let mut projected = text.to_owned();
+    let mut projected = text.to_compact_string();
     for edit in edits {
         projected.replace_range(edit.start..edit.end, &edit.replacement);
     }
@@ -241,7 +258,7 @@ pub(super) fn read_shipped_declaration(
             ])],
         });
         return Ok(Some(ContentMapperTransform {
-            text: text.into(),
+            text,
             extension: ".ts",
             mappings: Vec::new(),
             semantic_links: Vec::new(),
