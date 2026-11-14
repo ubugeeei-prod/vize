@@ -241,7 +241,7 @@ fn validate_documentation_successor(before: &str, current: &str, locale: Locale)
             assert_eq!(old, new, "unchanged page body for {rule}");
         }
     }
-    assert_eq!((urls, transitioned_urls), (370, 0));
+    assert_eq!((urls, transitioned_urls), (371, 0));
 }
 
 #[test]
