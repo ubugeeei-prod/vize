@@ -4,7 +4,7 @@
 //! symbol observations that its Rust rule consumes.
 use corsa::lint::LintNode;
 use serde_json::{Value, json};
-use vize_carton::String;
+use vize_l0::String;
 
 pub(super) fn enrich(source: &str, nodes: &mut [LintNode], program: &Value) {
     for node in nodes {
