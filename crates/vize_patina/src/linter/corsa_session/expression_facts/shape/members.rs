@@ -197,15 +197,30 @@ impl Shapes<'_> {
         let is_method = method_like
             || signature.declaration.as_ref().and_then(declaration_kind)
                 == Some(FUNCTION_EXPRESSION);
-        let first_param_is_this =
-            signature.this_parameter.is_some() || signature.this_parameter_symbol.is_some();
+        let this_parameter = if let Some(parameter) = signature.this_parameter.clone() {
+            Some(parameter)
+        } else if let Some(parameter) = &signature.this_parameter_symbol {
+            Some(parameter.id.clone())
+        } else {
+            client
+                .get_this_parameter_of_signature(
+                    snapshot.clone(),
+                    project.clone(),
+                    signature.id.clone(),
+                )
+                .await
+                .ok()
+                .flatten()
+                .map(|parameter| parameter.id)
+        };
+        let first_param_is_this = this_parameter.is_some();
         let this_arg_is_void = if signature
             .this_parameter_type_texts
             .iter()
             .any(|text| text.trim() == "void")
         {
             true
-        } else if let Some(this_parameter) = signature.this_parameter.clone() {
+        } else if let Some(this_parameter) = this_parameter {
             client
                 .get_type_of_symbol(
                     self.session.snapshot().handle.clone(),
