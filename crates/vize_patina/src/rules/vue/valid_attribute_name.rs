@@ -23,7 +23,6 @@ use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::markup::{MarkupContext, MarkupDirective, MarkupElement, MarkupRule, MarkupTraversal};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use crate::rules::vue::require_v_for_key::markup_element_is_custom_component;
 use vize_relief::ElementNode;
 
 static META: RuleMeta = RuleMeta {
@@ -47,10 +46,7 @@ impl ValidAttributeName {
     }
 
     fn check(ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
-        if !element.is_tag("slot")
-            && !element.is_tag("template")
-            && markup_element_is_custom_component(element)
-        {
+        if element.is_component() {
             return;
         }
         element.walk_attributes(&mut |attribute| {
@@ -192,5 +188,16 @@ mod tests {
     fn test_invalid_name_is_ignored_on_component() {
         let result = create_linter().lint_template(r#"<MyComponent :el$="el$" />"#, "test.vue");
         assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
+    fn test_invalid_name_on_native_element_with_is_attribute() {
+        let result =
+            create_linter().lint_template(r#"<button is="x-button" bad$="value" />"#, "test.vue");
+        assert_eq!(result.error_count, 1);
+        assert_eq!(
+            result.diagnostics[0].message,
+            "Attribute name 'bad$' is invalid"
+        );
     }
 }
