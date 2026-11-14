@@ -22,9 +22,9 @@ pub(super) fn absolutize_relative_imports(document: &mut TypeAwareDocument, file
     while let Some((start, end)) = next_relative_specifier(&text, from) {
         let relative = text.get(start..end).unwrap_or_default();
         let resolved = parent.join(relative);
-        let absolute = display_path(&vize_carton::path::canonicalize_non_verbatim(
-            &normalize_path(&resolved),
-        ));
+        let absolute = display_path(&vize_l0::path::canonicalize_non_verbatim(&normalize_path(
+            &resolved,
+        )));
         // `allowImportingTsExtensions` covers relative specifiers only. An
         // absolute `api.ts` is an error module (`any`); the extensionless
         // path still resolves under `moduleResolution: bundler` (#12948).
@@ -203,7 +203,9 @@ mod tests {
         );
 
         let normalized = document.content.replace('\\', "/");
-        let normalized_source_dir = source_dir.to_string_lossy().replace('\\', "/");
+        let normalized_source_dir = vize_l0::path::canonicalize_non_verbatim(&source_dir)
+            .to_string_lossy()
+            .replace('\\', "/");
         assert_eq!(
             normalized,
             format!(
