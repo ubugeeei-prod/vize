@@ -47,11 +47,12 @@ declare global {
         configured_open(2, "nuxt", &config),
     ]));
     let result = &responses[1]["result"];
-    assert!(
-        result["configIdentity"]
-            .as_str()
-            .unwrap()
-            .ends_with(":ambient-vue-template-ref:1")
+    let config_identity = result["configIdentity"].as_str().unwrap();
+    let (identity_prefix, ambient_template_ref) = config_identity.rsplit_once(':').unwrap();
+    assert_eq!(ambient_template_ref, "1");
+    assert_eq!(
+        identity_prefix.rsplit_once(':').unwrap().1,
+        "ambient-vue-template-ref"
     );
     let watched = result["watchedFiles"].as_array().unwrap();
     let generated = std::fs::canonicalize(generated).unwrap();
