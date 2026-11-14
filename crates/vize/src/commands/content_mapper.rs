@@ -19,6 +19,7 @@ mod dispatch;
 mod helper_abi;
 mod mode;
 mod project;
+mod shipped_declaration;
 
 const MAX_MESSAGE_BYTES: usize = 64 * 1024 * 1024;
 const MAX_HEADER_BYTES: usize = 8 * 1024;

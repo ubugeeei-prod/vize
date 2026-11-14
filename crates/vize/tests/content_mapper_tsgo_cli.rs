@@ -52,6 +52,7 @@ mod runtime_null_prop;
 mod semantic_compile_errors_12522;
 mod setup_local_public_types;
 mod setup_verbatim_lines_12481;
+mod shipped_declarations_12968;
 mod solution_tsconfig_imported_props;
 mod support;
 mod surplus_defaults;
