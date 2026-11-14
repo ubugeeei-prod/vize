@@ -37,7 +37,6 @@ defineProps(['msg', 'count'])
     let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
     assert_reports(&result, RULE_REQUIRE_TYPED_PROPS);
 }
-
 #[test]
 fn require_typed_emits_uses_corsa() {
     if !corsa_available() {
