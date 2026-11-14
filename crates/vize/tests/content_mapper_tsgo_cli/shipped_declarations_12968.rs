@@ -19,6 +19,14 @@ export default Badge;
 export type Optional = import("missing-optional-integration").Options;
 "#;
 
+const LOCAL_DECLARATION: &str = r#"export interface BadgeProps { label: number }
+declare const Badge: new () => {
+  $props: BadgeProps;
+  $slots: { header(props: { label: number }): unknown };
+};
+export default Badge;
+"#;
+
 fn write(root: &Path, relative: &str, content: &str) {
     let path = root.join(relative);
     std::fs::create_dir_all(path.parent().unwrap()).unwrap();
@@ -96,7 +104,7 @@ import { Badge } from 'fake-ui'
     write(
         project.path(),
         "src/Local.d.vue.ts",
-        &DECLARATION.replace("label: string", "label: number"),
+        LOCAL_DECLARATION,
     );
     write(
         project.path(),
