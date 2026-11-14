@@ -184,6 +184,11 @@ fn packaged_sfc_uses_its_declaration_without_hiding_consumer_errors() {
     std::fs::remove_file(project.path().join("node_modules/fake-ui/Badge.vue.d.ts")).unwrap();
     write(
         project.path(),
+        "src/main.ts",
+        "import type { BadgeProps } from 'fake-ui';\nexport const props: BadgeProps = { label: 'ok' };\n",
+    );
+    write(
+        project.path(),
         "node_modules/fake-ui/Badge.vue",
         r#"<script lang="ts">export interface BadgeProps { label: string }</script>
 <script setup lang="ts">defineProps<BadgeProps>()</script>
