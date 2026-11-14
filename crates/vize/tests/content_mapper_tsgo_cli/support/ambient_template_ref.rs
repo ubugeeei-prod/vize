@@ -296,4 +296,23 @@ fn reported_auto_imported_dom_and_component_refs_match_explicit_imports() {
     assert!(output.status.success(), "{}", output_text(&output));
     assert_eq!(output.stdout, b"", "{}", output_text(&output));
     assert_eq!(output.stderr, b"", "{}", output_text(&output));
+
+    for name in ["src/auto-imported.vue", "src/imported.vue"] {
+        let path = project.path().join(name);
+        let source = std::fs::read_to_string(&path).unwrap();
+        let probe = source.replace(
+            "child.value?.focus()",
+            "element.value?.__vizeMissingElement\nchild.value?.__vizeMissingComponent",
+        );
+        assert_ne!(probe, source);
+        std::fs::write(path, probe).unwrap();
+    }
+    let output = check_project(&native, project.path(), "tsconfig.json");
+    assert_eq!(output.status.code(), Some(2), "{}", output_text(&output));
+    assert_eq!(output.stderr, b"", "{}", output_text(&output));
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert_eq!(stdout.matches("error TS2339").count(), 4, "{stdout}");
+    for property in ["__vizeMissingElement", "__vizeMissingComponent"] {
+        assert_eq!(stdout.matches(property).count(), 2, "{stdout}");
+    }
 }

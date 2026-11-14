@@ -15,7 +15,7 @@ pub(crate) struct ContentOptions {
     components: Vec<String>,
     /// Components whose rendered subtree is accessible content.
     accessible_children: Vec<String>,
-    /// Directives, kebab-case and without `v-`, that fill their element.
+    /// Directives, without `v-`, that fill their element.
     accessible_directives: Vec<String>,
 }
 
@@ -34,7 +34,7 @@ impl ContentOptions {
             accessible_directives: options
                 .accessible_directives
                 .iter()
-                .map(|name| directive_name(name))
+                .flat_map(|name| directive_names(name))
                 .filter(|name| !name.is_empty())
                 .collect(),
         }
@@ -95,17 +95,24 @@ fn components(names: &[String]) -> Vec<String> {
         .collect()
 }
 
-/// `markupInline`, `markup-inline` and `v-markup-inline` all name the
-/// directive written `v-markup-inline`.
-fn directive_name(name: &str) -> String {
+/// Preserve the lowercased authored spelling used by
+/// eslint-plugin-vuejs-accessibility, and also accept Vue's equivalent
+/// kebab-case spelling.
+fn directive_names(name: &str) -> Vec<String> {
     let name = name.trim();
     let name = name.strip_prefix("v-").unwrap_or(name);
-    canonical_component_name(name)
+    let authored = String::from(name.to_ascii_lowercase());
+    let canonical = canonical_component_name(name);
+    if authored == canonical {
+        vec![authored]
+    } else {
+        vec![authored, canonical]
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::directive_name;
+    use super::directive_names;
     use crate::LintPreset;
     use crate::linter::Linter;
     use vize_l0::config::ConfigLintRuleOptions;
@@ -219,14 +226,36 @@ mod tests {
 
     #[test]
     fn directive_names_normalize_to_the_template_spelling() {
-        for name in [
-            "markupInline",
-            "markup-inline",
-            "v-markup-inline",
-            " markup-inline ",
-        ] {
-            assert_eq!(directive_name(name), "markup-inline");
+        assert_eq!(
+            directive_names("markupInline"),
+            ["markupinline", "markup-inline"]
+        );
+        for name in ["markup-inline", "v-markup-inline", " markup-inline "] {
+            assert_eq!(directive_names(name), ["markup-inline"]);
         }
-        assert_eq!(directive_name("v-"), "");
+        assert_eq!(directive_names("v-"), [""]);
+    }
+
+    #[test]
+    fn camel_case_plugin_spelling_and_vue_kebab_alias_are_accessible() {
+        let options = serde_json::json!({
+            "a11y/heading-has-content": {
+                "accessibleDirectives": ["accessibleDirective", "MARKUP-INLINE"]
+            },
+            "a11y/anchor-has-content": {
+                "accessibleDirectives": ["accessibleDirective", "MARKUP-INLINE"]
+            },
+        });
+        let template = r#"<section>
+  <h2 v-accessibleDirective="text" />
+  <h3 v-markup-inline="text" />
+  <h4 v-accessible-directive="text" />
+  <h5 />
+  <a href="/docs" v-accessibleDirective="text" />
+</section>"#;
+        assert_eq!(
+            report_lines(options, template),
+            [("a11y/heading-has-content", 6)]
+        );
     }
 }

@@ -58,6 +58,42 @@
   },
   "cases": [
     {
+      "id": "linter/a11y-accessible-directive-case-12974",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "a11y-accessible-directive-case-12974",
+        "files": [
+          {
+            "path": "Case.vue.txt",
+            "role": "issue-authored-reproduction",
+            "sha256": "a7aba24e0075b02a08214e422f7221685be6d60483b554180c2ae66fba1f9b4c"
+          },
+          {
+            "path": "options.json",
+            "role": "rule-options",
+            "sha256": "8158fe0e469aa1d3d9b0c84f2119417e19c77fe36de148b8399f833b8689606e"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/a11y-dynamic-role-10926",
       "state": "active",
       "targets": [
