@@ -6,7 +6,8 @@
     "**/*.cts",
     "../vite.config.ts",
     "../examples/oxlint-vize/check-configs.ts",
-    "../npm/compose/core/scripts/check-size.ts"
+    "../npm/compose/core/scripts/check-size.ts",
+    "../crates/vize_atelier_jsx/tests/babel_compat/oracle.ts"
   ],
   "exclude": ["**/node_modules/**", "support/compat/*/fixtures/**"]
 }

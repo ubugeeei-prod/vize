@@ -23,7 +23,7 @@ import { classifyDialectCoverage, normalizeDialectCoverage } from "../differenti
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const compatDir = join(repoRoot, "crates", "vize_atelier_jsx", "tests", "babel_compat");
-const oracle = await import(join(compatDir, "oracle.mjs"));
+const oracle = await import(join(compatDir, "oracle.ts"));
 
 test("recorded babel output matches the installed @vue/babel-plugin-jsx", async () => {
   const recomputed = await oracle.runOracle();
