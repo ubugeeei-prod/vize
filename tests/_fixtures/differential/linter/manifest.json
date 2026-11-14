@@ -3116,6 +3116,64 @@
       }
     },
     {
+      "id": "linter/empty-tuple-runtime-12949",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "empty-tuple-runtime-12949",
+        "files": [
+          {
+            "path": "src/EmptyAsConst.vue.txt",
+            "role": "issue-authored-empty-const-tuple-reproduction",
+            "sha256": "edad5f36aeb78e4e16b13dc23999795469096c6e8ec8824c118d1a198975eb75"
+          },
+          {
+            "path": "src/EmptyPromiseAll.vue.txt",
+            "role": "issue-authored-empty-promise-tuple-reproduction",
+            "sha256": "d2beec7aa8fa3dc62c70029c550129506341bacb79b1223e4459c54cec3d5075"
+          },
+          {
+            "path": "src/EmptySpread.vue.txt",
+            "role": "issue-authored-empty-spread-tuple-reproduction",
+            "sha256": "76b6ea7bfb5cfb14b3ada002529ae1a8212134588c83330a7a149bdfa4b85dd3"
+          },
+          {
+            "path": "src/FilledAsConst.vue.txt",
+            "role": "issue-authored-nonempty-tuple-control",
+            "sha256": "975545868f28b3266e8e3bc53092a2baa98bbe7c9c6540e37af262c7906adae4"
+          },
+          {
+            "path": "tsconfig.json",
+            "role": "issue-authored-typescript-project-config",
+            "sha256": "7107bd42896210fb3b9ee123220485252b4bd41d52a10ee6942e53e56ee1ef01"
+          },
+          {
+            "path": "vize-lint.config.mjs.txt",
+            "role": "issue-authored-type-aware-lint-config",
+            "sha256": "3f03963fbd1c9cc7a8d209f967f8f09f5860625eb91fb31e698f6db298f2097f"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/explicit-slots-imported-intersection-12599",
       "state": "active",
       "targets": [
