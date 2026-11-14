@@ -32,6 +32,9 @@ const OPTION_CODE_INVALID_TYPE: i32 = 3;
 pub(super) struct ProjectSettings {
     pub transform_options: ContentMapperTransformOptions,
     pub project_context: ContentMapperProjectContext,
+    /// Match TypeScript's declaration-file diagnostic policy when a packaged
+    /// SFC is represented by its adjacent declaration.
+    pub skip_lib_check: bool,
     /// The tsconfig the host opened; imported prop types resolve through it.
     pub type_config: Option<std::path::PathBuf>,
 }
@@ -187,6 +190,7 @@ pub(super) fn resolve_open_project(
     );
     Ok((
         ProjectSettings {
+            skip_lib_check: params.compiler_options.get("skipLibCheck") == Some(&Value::Bool(true)),
             type_config: (!params.config_file_name.is_empty())
                 .then(|| std::path::PathBuf::from(params.config_file_name.as_str())),
             project_context: configuration.project_context,
