@@ -133,6 +133,13 @@ impl Rule for ValidAttributeName {
         Some(self)
     }
 
+    // Invalid JSX attribute syntax exists only through parser recovery. Keep
+    // that recovery-owned shape in the lowered lane instead of charging the
+    // direct projection for a check it cannot authoritatively decide.
+    fn jsx_needs_lowering(&self) -> bool {
+        true
+    }
+
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
         Self::check(ctx, &MarkupElement::new(element));
     }

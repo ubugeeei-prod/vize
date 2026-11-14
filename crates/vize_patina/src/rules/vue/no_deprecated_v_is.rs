@@ -21,9 +21,7 @@
 use crate::context::LintContext;
 use crate::diagnostic::{LintDiagnostic, Severity};
 use crate::ir::ByteRange;
-use crate::markup::{
-    MarkupContext, MarkupDirective, MarkupElement, MarkupRule, MarkupTraversal,
-};
+use crate::markup::{MarkupContext, MarkupDirective, MarkupElement, MarkupRule, MarkupTraversal};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_l0::dialect::VueDialect;
 use vize_relief::{DirectiveNode, ElementNode};
