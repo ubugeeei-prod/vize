@@ -2996,17 +2996,17 @@
           {
             "path": "explain-en.txt",
             "role": "whole-current-explain-oracle",
-            "sha256": "f0db0832abef6dcc89ca714242c285bb59bc60598f4444108a007d2e3ba6daeb"
+            "sha256": "ad8c441cabeab98bc603fd4b09d478b4ab1bb187eae30c13d69ce4dd08304242"
           },
           {
             "path": "explain-ja.txt",
             "role": "whole-current-explain-oracle",
-            "sha256": "221951fc422d2b279431f6b4391fb7fc4ca25175c1629a9016aad2229b000265"
+            "sha256": "4101687276d545099329f9a9ab0928c1ca6d67ef6a23ccf7fdf03ad1521e7530"
           },
           {
             "path": "explain-zh.txt",
             "role": "whole-current-explain-oracle",
-            "sha256": "19f2dfa383d164a11022bee94d07b45c7dd4edc1836f97f2661abd573f13c032"
+            "sha256": "deaba360db675c4a3819a1c66fd6926dfdd14a65c6fa32cdef56af1d5292c85d"
           }
         ]
       },

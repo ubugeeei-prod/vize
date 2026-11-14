@@ -2,6 +2,7 @@
 use std::collections::BTreeMap;
 
 use corsa::lint::{LintNode, TextRange};
+use vize_l0::{String, cstr};
 
 pub(super) fn prepare(rule: &str, node: &LintNode) -> LintNode {
     let mut owned = node.clone();
@@ -48,6 +49,30 @@ pub(super) fn range(rule: &str, node: &LintNode, start: u32, end: u32) -> (u32, 
         "no-unsafe-return" => unsafe_return(node, start, end),
         _ => (start, end),
     }
+}
+
+pub(super) fn message(rule: &str, node: &LintNode, start: u32, fallback: String) -> String {
+    if rule != "no-unnecessary-type-parameters" {
+        return fallback;
+    }
+    let Some(param) = node.child_list("params").and_then(|params| {
+        params
+            .iter()
+            .find(|param| param.range.start <= start && start < param.range.end)
+    }) else {
+        return fallback;
+    };
+    let name = param.field_str("__typeParameterName").unwrap_or("T");
+    let uses = match param.field_f64("__typeParameterUsageCount") {
+        Some(1.0) => "never used",
+        Some(2.0) => "used only once",
+        _ => return fallback,
+    };
+    let descriptor = match node.field_str("__ownerKind") {
+        Some("ClassDeclaration" | "ClassExpression") => "class",
+        _ => "function",
+    };
+    cstr!("Type parameter {name} is {uses} in the {descriptor} signature.")
 }
 
 fn unsafe_return(node: &LintNode, start: u32, end: u32) -> (u32, u32) {

@@ -3941,6 +3941,16 @@ type/no-unnecessary-type-conversion · lint ルール
 カテゴリー: type-aware
 自動修正: なし
 ドキュメント: docs/content/rules/reference/type-no-unnecessary-type-conversion.md
+=== type/no-unnecessary-type-parameters
+type/no-unnecessary-type-parameters · lint ルール
+型同士の関係を表さず、一度しか使われない型パラメータを禁止する。
+
+精度: complete
+対象: types the Corsa session resolves for the component; unresolved types are outside
+重大度: 警告
+カテゴリー: type-aware
+自動修正: なし
+ドキュメント: docs/content/rules/reference/type-no-unnecessary-type-parameters.md
 === type/no-unsafe-argument
 type/no-unsafe-argument · lint ルール
 `any` 型の値を関数に渡すことを禁止する

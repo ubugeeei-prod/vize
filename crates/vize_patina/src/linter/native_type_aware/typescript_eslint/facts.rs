@@ -11,6 +11,7 @@ mod promise;
 mod queries;
 mod scan;
 mod shape;
+mod type_parameters;
 mod type_shape;
 use crate::linter::corsa_session::{ExpressionFact, ExpressionQuery};
 use corsa::lint::LintNode;
@@ -27,6 +28,7 @@ pub(super) fn prepare(source: &str, collected: &mut Collected) {
 
 pub(super) fn enrich(source: &str, nodes: &mut [LintNode], program: &Value) {
     enrich::apply(source, nodes, program);
+    type_parameters::enrich(source, nodes, program);
     promise::enrich(nodes, program);
     builtins::stamp(nodes, program);
 }

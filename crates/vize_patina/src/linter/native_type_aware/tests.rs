@@ -11,6 +11,7 @@ mod typescript_jsdoc_callee;
 mod typescript_parity;
 mod typescript_promises;
 mod typescript_shapes;
+mod typescript_type_parameters;
 mod typescript_type_shapes;
 mod unbound_method_composable;
 use super::{
@@ -36,7 +37,6 @@ defineProps(['msg', 'count'])
     let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
     assert_reports(&result, RULE_REQUIRE_TYPED_PROPS);
 }
-
 #[test]
 fn require_typed_emits_uses_corsa() {
     if !corsa_available() {
