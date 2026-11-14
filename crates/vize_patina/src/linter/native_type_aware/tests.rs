@@ -23,7 +23,6 @@ use assertion::{
     assert_reports_note, failure_context,
 };
 pub(super) use runtime::corsa_available;
-
 #[test]
 fn require_typed_props_uses_corsa() {
     if !corsa_available() {

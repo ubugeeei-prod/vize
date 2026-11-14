@@ -230,7 +230,7 @@ impl Shapes<'_> {
                 .await
                 .ok()
                 .flatten()
-                .is_some_and(|this_type| this_type.flags == VOID)
+                .is_some_and(|this_type| this_type.flags & VOID != 0)
         } else {
             false
         };
