@@ -21,7 +21,7 @@ opt-in compat mode (#3391) is expected to change.
 | Artifact                                  | Role                                                                                                       |
 | ----------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
 | `babel_compat/fixtures/corpus.json`       | the 100 inputs + the babel plugin options each is compiled with                                            |
-| `babel_compat/oracle.mjs`                 | runs the corpus through the real plugin; `--write` records, `--check` verifies                             |
+| `babel_compat/oracle.ts`                  | runs the corpus through the real plugin; `--write` records, `--check` verifies                             |
 | `babel_compat/fixtures/babel-output.json` | committed ground truth (generated — do not hand-edit)                                                      |
 | `../babel_compat_oracle.rs`               | snapshots babel's output beside Vize's, per category, with a verdict per row                               |
 | `babel_compat/verdicts.rs`                | the executable form of this file's verdict column                                                          |
@@ -56,7 +56,7 @@ update. Tracked on #3391; deliberately not claimed here.
 Regenerate / verify:
 
 ```text
-node crates/vize_atelier_jsx/tests/babel_compat/oracle.mjs --check
+node crates/vize_atelier_jsx/tests/babel_compat/oracle.ts --check
 cargo test -p vize_atelier_jsx --test babel_compat_oracle
 node --test tests/tooling/babel-jsx-oracle.test.ts
 ```
