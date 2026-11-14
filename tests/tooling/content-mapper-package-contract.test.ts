@@ -28,7 +28,6 @@ function withInstalledMapper(run: (installDir: string, packageRoot: string) => v
             exec: ["node", "./bin/vize", "content-mapper"],
             compilerOptions: [
               "checkJs",
-              "skipLibCheck",
               "noUnusedLocals",
               "rootDir",
               "module",

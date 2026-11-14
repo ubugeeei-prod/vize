@@ -17,7 +17,6 @@ const contract = {
   exec: ["node", "./bin/vize", "content-mapper"],
   compilerOptions: [
     "checkJs",
-    "skipLibCheck",
     "noUnusedLocals",
     "rootDir",
     "module",

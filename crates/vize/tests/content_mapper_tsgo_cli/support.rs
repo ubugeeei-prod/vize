@@ -37,7 +37,7 @@ pub(super) fn install_mapper_manifest(project_root: &Path) {
         "typescript": {
             "contentMapper": {
                 "exec": [env!("CARGO_BIN_EXE_vize"), "content-mapper"],
-                "compilerOptions": ["checkJs", "skipLibCheck", "noUnusedLocals", "rootDir"],
+                "compilerOptions": ["checkJs", "noUnusedLocals", "rootDir"],
                 "dynamicConfig": true,
             },
         },

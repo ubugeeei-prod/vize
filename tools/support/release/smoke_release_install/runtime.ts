@@ -207,7 +207,6 @@ export function assertInstalledMapperContract(installDir: string): void {
       exec: ["node", "./bin/vize", "content-mapper"],
       compilerOptions: [
         "checkJs",
-        "skipLibCheck",
         "noUnusedLocals",
         "rootDir",
         "module",

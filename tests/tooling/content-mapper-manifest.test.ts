@@ -44,7 +44,6 @@ test("vize package exposes an executable TypeScript content mapper", () => {
     exec: ["node", "./bin/vize", "content-mapper"],
     compilerOptions: [
       "checkJs",
-      "skipLibCheck",
       "noUnusedLocals",
       "rootDir",
       "module",

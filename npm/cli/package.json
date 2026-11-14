@@ -132,7 +132,6 @@
     "contentMapper": {
       "compilerOptions": [
         "checkJs",
-        "skipLibCheck",
         "noUnusedLocals",
         "rootDir",
         "module",
