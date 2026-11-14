@@ -1,7 +1,8 @@
 //! unbound-method member facts: the receiver's symbol and how each property is declared (`checkIfMethod`).
 use super::{
     FUNCTION_EXPRESSION, INTERSECTION, JsonMap, METHOD_DECLARATION, METHOD_SIGNATURE, OBJECT,
-    PROPERTY_ASSIGNMENT, PROPERTY_DECLARATION, SYMBOL_CLASS, Shapes, UNION, VOID,
+    PROPERTY_ASSIGNMENT, PROPERTY_DECLARATION, SHORTHAND_PROPERTY_ASSIGNMENT, SYMBOL_CLASS, Shapes,
+    UNION, VOID,
 };
 use corsa::api::{NodeHandle, TypeResponse};
 use serde_json::{Map, Value, json};
@@ -153,7 +154,15 @@ impl Shapes<'_> {
             .as_ref()
             .and_then(declaration_kind);
         let method_like = matches!(kind, Some(METHOD_SIGNATURE | METHOD_DECLARATION));
-        let property_like = matches!(kind, Some(PROPERTY_DECLARATION | PROPERTY_ASSIGNMENT));
+        let property_like = matches!(
+            kind,
+            Some(
+                PROPERTY_DECLARATION
+                    | PROPERTY_ASSIGNMENT
+                    | SHORTHAND_PROPERTY_ASSIGNMENT
+                    | FUNCTION_EXPRESSION
+            )
+        );
         if !method_like && !property_like {
             return json!({ "isMethod": false });
         }
@@ -188,25 +197,88 @@ impl Shapes<'_> {
         let is_method = method_like
             || signature.declaration.as_ref().and_then(declaration_kind)
                 == Some(FUNCTION_EXPRESSION);
-        let first_param_is_this =
-            signature.this_parameter.is_some() || signature.this_parameter_symbol.is_some();
+        let queried_this_parameter = client
+            .get_this_parameter_of_signature(
+                snapshot.clone(),
+                project.clone(),
+                signature.id.clone(),
+            )
+            .await
+            .ok()
+            .flatten();
+        let ordinary_this_parameter = if signature.this_parameter.is_none()
+            && signature.this_parameter_symbol.is_none()
+            && queried_this_parameter.is_none()
+        {
+            let parameters = if signature.parameter_symbols.is_empty() {
+                client
+                    .get_parameters_of_signature(
+                        snapshot.clone(),
+                        project.clone(),
+                        signature.id.clone(),
+                    )
+                    .await
+                    .unwrap_or_default()
+            } else {
+                signature.parameter_symbols.clone()
+            };
+            parameters
+                .into_iter()
+                .find(|parameter| parameter.name == "this")
+        } else {
+            None
+        };
+        let this_parameter_symbol = signature
+            .this_parameter_symbol
+            .as_ref()
+            .or(queried_this_parameter.as_ref())
+            .or(ordinary_this_parameter.as_ref());
+        let this_parameter = signature
+            .this_parameter
+            .clone()
+            .or_else(|| this_parameter_symbol.map(|parameter| parameter.id.clone()));
+        let first_param_is_this = this_parameter.is_some();
         let this_arg_is_void = if signature
             .this_parameter_type_texts
             .iter()
             .any(|text| text.trim() == "void")
         {
             true
-        } else if let Some(this_parameter) = signature.this_parameter.clone() {
-            client
-                .get_type_of_symbol(
-                    self.session.snapshot().handle.clone(),
-                    self.session.project_handle(),
-                    this_parameter,
-                )
+        } else if let Some(this_parameter) = this_parameter {
+            let mut this_type = client
+                .get_type_of_symbol(snapshot.clone(), project.clone(), this_parameter.clone())
                 .await
                 .ok()
-                .flatten()
-                .is_some_and(|this_type| this_type.flags == VOID)
+                .flatten();
+            if let Some(location) =
+                this_parameter_symbol.and_then(|parameter| parameter.declarations.first())
+                && !this_type.as_ref().is_some_and(|ty| ty.flags & VOID != 0)
+            {
+                this_type = client
+                    .get_type_of_symbol_at_location(
+                        snapshot,
+                        project,
+                        this_parameter,
+                        location.clone(),
+                    )
+                    .await
+                    .ok()
+                    .flatten()
+                    .or(this_type);
+            }
+            if let Some(this_type) = this_type {
+                this_type.flags & VOID != 0
+                    || this_type.texts.iter().any(|text| text.trim() == "void")
+                    || self
+                        .session
+                        .render_type_texts(&this_type)
+                        .await
+                        .unwrap_or_default()
+                        .iter()
+                        .any(|text| text.trim() == "void")
+            } else {
+                false
+            }
         } else {
             false
         };
@@ -234,4 +306,28 @@ pub(super) fn is_default_library(handle: &NodeHandle) -> bool {
         let name = path.rsplit('/').next().unwrap_or_default();
         name.starts_with("lib.") && name.ends_with(".d.ts")
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use corsa::api::NodeHandle;
+
+    use super::{
+        FUNCTION_EXPRESSION, PROPERTY_ASSIGNMENT, SHORTHAND_PROPERTY_ASSIGNMENT, declaration_kind,
+    };
+
+    #[test]
+    fn typescript_seven_distinguishes_function_expressions_from_arrows() {
+        let function = NodeHandle::from("42.219./workspace/composables.ts");
+        let arrow = NodeHandle::from("43.220./workspace/composables.ts");
+        let property = NodeHandle::from("44.303./workspace/composables.ts");
+        let shorthand = NodeHandle::from("45.304./workspace/composables.ts");
+        assert_eq!(declaration_kind(&function), Some(FUNCTION_EXPRESSION));
+        assert_ne!(declaration_kind(&arrow), Some(FUNCTION_EXPRESSION));
+        assert_eq!(declaration_kind(&property), Some(PROPERTY_ASSIGNMENT));
+        assert_eq!(
+            declaration_kind(&shorthand),
+            Some(SHORTHAND_PROPERTY_ASSIGNMENT)
+        );
+    }
 }

@@ -1,0 +1,26 @@
+<script setup lang="ts">
+import {
+  useArrow,
+  useArrowProperty,
+  useAsyncArrow,
+  useFunctionDeclaration,
+  useFunctionExpression,
+  useMethodShorthand,
+} from "./composables";
+
+const { copy } = useArrow();
+const { save } = useAsyncArrow();
+const { open } = useArrowProperty();
+const { load } = useFunctionDeclaration();
+const { close } = useFunctionExpression();
+const { reset } = useMethodShorthand();
+</script>
+
+<template>
+  <button type="button" @click="copy">copy</button>
+  <button type="button" @click="save">save</button>
+  <button type="button" @click="open">open</button>
+  <button type="button" @click="load">load</button>
+  <button type="button" @click="close">close</button>
+  <button type="button" @click="reset">reset</button>
+</template>
