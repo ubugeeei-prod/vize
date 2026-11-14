@@ -4075,7 +4075,7 @@ type/no-unnecessary-type-conversion · lint 规则
 文档: docs/content/rules/reference/type-no-unnecessary-type-conversion.md
 === type/no-unnecessary-type-parameters
 type/no-unnecessary-type-parameters · lint 规则
-Disallow type parameters that are not used more than once.
+禁止未使用超过一次、不能表达类型关系的类型参数。
 
 精度层级: complete
 适用范围: types the Corsa session resolves for the component; unresolved types are outside

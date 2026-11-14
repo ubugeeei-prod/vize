@@ -3001,12 +3001,12 @@
           {
             "path": "explain-ja.txt",
             "role": "whole-current-explain-oracle",
-            "sha256": "b2b8921ad9c22c6a8381ff91516e2487e9df1b3c97566ee6f5acc3e16f8f1350"
+            "sha256": "4101687276d545099329f9a9ab0928c1ca6d67ef6a23ccf7fdf03ad1521e7530"
           },
           {
             "path": "explain-zh.txt",
             "role": "whole-current-explain-oracle",
-            "sha256": "acc1876311b476456fb8e95b319b0ee0a8108a62e9dec1384f89a183ee8d30b9"
+            "sha256": "deaba360db675c4a3819a1c66fd6926dfdd14a65c6fa32cdef56af1d5292c85d"
           }
         ]
       },
