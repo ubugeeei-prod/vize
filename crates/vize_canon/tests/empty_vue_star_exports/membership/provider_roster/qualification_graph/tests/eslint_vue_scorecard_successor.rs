@@ -21,10 +21,15 @@ fn inputs() -> Inputs {
         predecessor: js_tooling_refresh::update(),
         predecessor_bytes: fs::read(support::corpus().join(js_tooling_refresh::UPDATE)).unwrap(),
         update: eslint_vue_scorecard_update(),
-        lock: node_forge_security::reconstruct_lock_predecessor(&current_lock).unwrap(),
+        lock: node_forge_security::reconstruct_lock_predecessor(
+            &runtime_security::reconstruct_lock_predecessor(&current_lock).unwrap(),
+        )
+        .unwrap(),
         package: fs::read(support::repository().join("package.json")).unwrap(),
-        workspace: node_forge_security::reconstruct_workspace_predecessor(&current_workspace)
-            .unwrap(),
+        workspace: node_forge_security::reconstruct_workspace_predecessor(
+            &runtime_security::reconstruct_workspace_predecessor(&current_workspace).unwrap(),
+        )
+        .unwrap(),
         manifest: fs::read(support::repository().join(eslint_vue_scorecard::MANIFEST)).unwrap(),
     }
 }
