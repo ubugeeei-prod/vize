@@ -7,6 +7,7 @@ const CASES: [(&str, &str); 4] = [
         "EmptyAsConst.vue",
         r#"<script setup lang="ts">
 const results = [] as const;
+Promise.resolve("type-aware control");
 </script>
 
 <template><p>{{ results.length }}</p></template>"#,
@@ -15,6 +16,7 @@ const results = [] as const;
         "EmptyPromiseAll.vue",
         r#"<script setup lang="ts">
 const all = Promise.all([]);
+Promise.resolve("type-aware control");
 </script>
 
 <template><p>{{ all }}</p></template>"#,
@@ -23,6 +25,7 @@ const all = Promise.all([]);
         "EmptySpread.vue",
         r#"<script setup lang="ts">
 const top = Math.max(...[]);
+Promise.resolve("type-aware control");
 </script>
 
 <template><p>{{ top }}</p></template>"#,
@@ -31,6 +34,7 @@ const top = Math.max(...[]);
         "FilledAsConst.vue",
         r#"<script setup lang="ts">
 const results = ["a"] as const;
+Promise.resolve("type-aware control");
 </script>
 
 <template><p>{{ results.length }}</p></template>"#,
@@ -52,6 +56,14 @@ fn empty_tuple_queries_do_not_discard_the_files_type_rules() {
                 .diagnostics
                 .iter()
                 .all(|diagnostic| diagnostic.rule_name != "type/corsa-runtime"),
+            "{}",
+            failure_context(&result)
+        );
+        assert!(
+            result
+                .diagnostics
+                .iter()
+                .any(|diagnostic| diagnostic.rule_name == RULE_NO_FLOATING_PROMISES),
             "{}",
             failure_context(&result)
         );
