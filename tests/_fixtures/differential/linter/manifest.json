@@ -88,7 +88,7 @@
               "vue3-sfc",
               "html-template"
             ],
-            "selector": "rules::a11y::content_options::tests::camel_case_plugin_spelling_and_vue_kebab_alias_are_accessible physically consumes the exact options and source spellings. Input-only registration; no adapter or native parity credit."
+            "selector": "linter manifest pinned authored sources"
           }
         ]
       }
