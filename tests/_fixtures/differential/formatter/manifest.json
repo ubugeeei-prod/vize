@@ -472,7 +472,8 @@
       },
       "expectations": {
         "legacy": {
-          "state": "pending",
+          "state": "captured",
+          "baselineRevision": "f59e69c38ecbead394ba30f0fdacb5f9c1b9fd04",
           "artifacts": [
             {
               "path": "sfc-authored-directive-order/reference.expected.txt",

@@ -46,7 +46,9 @@ fn default_order_matches_patina_vue_attribute_order_groups() {
 }
 
 #[test]
-fn object_and_static_v_on_bindings_keep_authored_event_order() {
+fn object_v_on_stays_between_independently_sorted_event_groups() {
+    // The symbol is retained by the formatter history audit. Static event
+    // directives are now authored-order boundaries on both sides of `v-on`.
     let source = r#"<button @keyup="up" @click="click" v-on="listeners" @mouseup="up" @mousedown="down"></button>"#;
     let options = FormatOptions {
         print_width: 200,

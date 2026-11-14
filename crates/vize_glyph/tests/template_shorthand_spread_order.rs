@@ -24,7 +24,9 @@ fn shorthand_object_bind_is_an_attribute_sorting_barrier() {
 }
 
 #[test]
-fn shorthand_and_static_event_bindings_preserve_authored_order() {
+fn shorthand_object_on_is_an_event_sorting_barrier() {
+    // Static event directives are authored-order boundaries too; the retained
+    // history symbol still covers the shorthand object-event boundary.
     let options = FormatOptions {
         print_width: 240,
         ..FormatOptions::default()
