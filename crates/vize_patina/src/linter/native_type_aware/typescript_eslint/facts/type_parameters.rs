@@ -145,11 +145,7 @@ fn collect_references(
     out: &mut Vec<(u32, u32)>,
 ) {
     let kind = value.get("type").and_then(Value::as_str);
-    if !root
-        && kind.is_some_and(|kind| {
-            kind.contains("Function") || matches!(kind, "ClassDeclaration" | "ClassExpression")
-        })
-    {
+    if !root && declares_type_parameter(value, name) {
         return;
     }
     if kind == Some("Identifier")
@@ -167,9 +163,7 @@ fn collect_references(
     match value {
         Value::Object(fields) => {
             for (key, child) in fields {
-                if key == "body"
-                    && child.get("type").and_then(Value::as_str) == Some("BlockStatement")
-                {
+                if should_skip_child(kind, fields, key) {
                     continue;
                 }
                 let child_type_context = next_type_context
@@ -194,6 +188,54 @@ fn collect_references(
     }
 }
 
+fn declares_type_parameter(value: &Value, name: &str) -> bool {
+    value
+        .get("typeParameters")
+        .and_then(|parameters| parameters.get("params"))
+        .and_then(Value::as_array)
+        .is_some_and(|parameters| {
+            parameters
+                .iter()
+                .any(|parameter| type_parameter_name(parameter) == Some(name))
+        })
+        || (value.get("type").and_then(Value::as_str) == Some("TSMappedType")
+            && value
+                .get("key")
+                .is_some_and(|parameter| type_parameter_name(parameter) == Some(name)))
+}
+
+fn type_parameter_name(parameter: &Value) -> Option<&str> {
+    parameter
+        .get("name")
+        .and_then(|name| name.as_str().or_else(|| name.get("name")?.as_str()))
+}
+
+fn should_skip_child(
+    owner_kind: Option<&str>,
+    fields: &serde_json::Map<String, Value>,
+    key: &str,
+) -> bool {
+    if key == "body" && owner_kind.is_some_and(|kind| kind.contains("Function")) {
+        return true;
+    }
+    key == "key"
+        && !fields
+            .get("computed")
+            .and_then(Value::as_bool)
+            .unwrap_or(false)
+        && owner_kind.is_some_and(|kind| {
+            matches!(
+                kind,
+                "AccessorProperty"
+                    | "MethodDefinition"
+                    | "Property"
+                    | "PropertyDefinition"
+                    | "TSMethodSignature"
+                    | "TSPropertySignature"
+            )
+        })
+}
+
 #[cfg(test)]
 mod tests {
     use corsa::lint::run_default_type_aware_rule_owned;
@@ -216,8 +258,58 @@ mod tests {
             .collect::<Vec<_>>();
         assert_eq!(reports.len(), 1, "{reports:#?}");
         assert_eq!(
+            reports[0].range.start as usize,
+            source.find("logValue<T>").unwrap() + "logValue<".len()
+        );
+        assert_eq!(
             source.get(reports[0].range.start as usize..reports[0].range.end as usize),
             Some("T")
         );
+    }
+
+    #[test]
+    fn collects_nested_signatures_but_not_shadowed_type_parameters() {
+        let source = concat!(
+            "function wrap<T>(value: T): () => T { return () => value; }\n",
+            "class Box<T> { get(value: T): T { return value; } }\n",
+            "function outer<T>(value: T): <T>(inner: T) => T { return inner => inner; }\n",
+        );
+        let reports = report_ranges(source);
+        assert_eq!(reports.len(), 1, "{reports:#?}");
+        assert_eq!(
+            reports[0].0,
+            source.find("outer<T>").unwrap() + "outer<".len()
+        );
+    }
+
+    #[test]
+    fn excludes_property_keys_and_mapped_type_binders() {
+        let source = concat!(
+            "function property<T>(value: { T: T }): void {}\n",
+            "function mapped<T>(value: { [T in 'x']: T }): void {}\n",
+        );
+        let reports = report_ranges(source);
+        assert_eq!(reports.len(), 2, "{reports:#?}");
+    }
+
+    #[test]
+    fn excludes_concise_arrow_function_bodies() {
+        let source = "const log = <T>(value: T): void => void (value as T);\n";
+        let reports = report_ranges(source);
+        assert_eq!(reports.len(), 1, "{reports:#?}");
+    }
+
+    fn report_ranges(source: &str) -> Vec<(usize, usize)> {
+        let mut collected = tree::collect(source, false, &["TSTypeParameterDeclaration"]);
+        enrich(source, &mut collected.nodes, &collected.program);
+        collected
+            .nodes
+            .into_iter()
+            .flat_map(|node| {
+                run_default_type_aware_rule_owned("no-unnecessary-type-parameters", node)
+                    .unwrap_or_default()
+            })
+            .map(|report| (report.range.start as usize, report.range.end as usize))
+            .collect()
     }
 }

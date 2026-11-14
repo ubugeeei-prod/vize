@@ -37,6 +37,10 @@ const kept = identity("a");
         "Type parameter T is used only once in the function signature."
     );
     assert_eq!(
+        diagnostics[0].start as usize,
+        source.find("logValue<T>").unwrap() + "logValue<".len()
+    );
+    assert_eq!(
         source.get(diagnostics[0].start as usize..diagnostics[0].end as usize),
         Some("T")
     );
