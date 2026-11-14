@@ -121,11 +121,10 @@ export function newestFingerprint(target: string): number {
 function invalidateUnownedWorkspaceArtifacts(root: string, target: string): void {
   if (newestFingerprint(target) === 0) return;
   try {
-    execFileSync(
-      "cargo",
-      ["clean", "--quiet", "--workspace", "--target-dir", target],
-      { cwd: root, stdio: "ignore" },
-    );
+    execFileSync("cargo", ["clean", "--quiet", "--workspace", "--target-dir", target], {
+      cwd: root,
+      stdio: "ignore",
+    });
   } catch {
     // Source mtimes remain the conservative fallback outside a Cargo workspace.
   }
