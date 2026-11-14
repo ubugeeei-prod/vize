@@ -18,7 +18,7 @@ const forgeIntegrity =
 const listhenIntegrity =
   "sha512-6nt/86SkqUQSLW1ofz8MxC6RhRMqOl3ONISe6qqvJ3xj09aJWQx6DhgSZpugs3PX4PXdOas/WD6A9jx6J2N19A==";
 const forgeRef = "1.4.3";
-const listhenRef = "1.10.1(srvx@0.11.15)";
+const listhenRef = "1.10.1(@parcel/watcher@2.6.0)(srvx@0.11.15)";
 
 function record(value: unknown): Record<string, unknown> {
   assert.ok(value && typeof value === "object" && !Array.isArray(value), "expected record");
