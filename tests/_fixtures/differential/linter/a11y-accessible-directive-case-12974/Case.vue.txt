@@ -1,0 +1,8 @@
+<template>
+  <section>
+    <h2 v-accessibleDirective="heading" />
+    <h3 v-accessible-directive="heading" />
+    <h4 />
+    <a href="/docs" v-accessibleDirective="link" />
+  </section>
+</template>
