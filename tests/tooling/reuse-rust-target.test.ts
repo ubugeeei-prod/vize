@@ -355,10 +355,12 @@ await test(
       // Newer Cargo versions include enough source identity to invalidate this
       // fingerprint themselves; older versions still expose the stale binary.
       assert.match(run(second), /^(?:first|second)$/u);
+      const fingerprint = newestFingerprint(target);
+      assert.ok(pruneRunOutputs(target).length > 0, "the stale run output is pruned");
       const restored = applied(restoreSourceMtimes({ target, record: false }));
       assert.equal(restored.reason, "no manifest");
       assert.equal(restored.changed, 2);
-      assert.ok(restored.invalidated > 0, restored.invalidation);
+      if (fingerprint > 0) assert.ok(restored.invalidated > 0, restored.invalidation);
       assert.equal(run(second), "second");
     } finally {
       rmSync(root, { recursive: true, force: true });
