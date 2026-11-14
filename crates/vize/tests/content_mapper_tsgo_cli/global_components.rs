@@ -128,4 +128,22 @@ fn globally_registered_generic_library_component_preserves_slot_inference() {
     assert!(output.status.success(), "{}", output_text(&output));
     assert_eq!(output.stdout, b"", "{}", output_text(&output));
     assert_eq!(output.stderr, b"", "{}", output_text(&output));
+
+    for name in ["src/global.vue", "src/imported.vue"] {
+        let path = project.path().join(name);
+        let source = std::fs::read_to_string(&path).unwrap();
+        let probe = source.replace("item.name", "item.__vizeMissingSlotProperty");
+        assert_ne!(probe, source);
+        std::fs::write(path, probe).unwrap();
+    }
+    let output = check_project(&tsgo, project.path(), "tsconfig.json");
+    assert_eq!(output.status.code(), Some(2), "{}", output_text(&output));
+    assert_eq!(output.stderr, b"", "{}", output_text(&output));
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert_eq!(stdout.matches("error TS2339").count(), 2, "{stdout}");
+    assert_eq!(
+        stdout.matches("__vizeMissingSlotProperty").count(),
+        2,
+        "{stdout}"
+    );
 }
