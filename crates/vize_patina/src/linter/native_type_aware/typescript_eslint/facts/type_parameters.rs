@@ -39,6 +39,9 @@ fn enrich_declaration(source: &str, declaration: &mut LintNode, program: &Value)
         let mut references = Vec::new();
         collect_references(owner, &name, false, true, &mut references);
         references.retain(|(start, end)| *start < param.range.start || *end > param.range.end);
+        if let Some(reference) = inferred_return_reference(owner, &name) {
+            references.push(reference);
+        }
         param
             .fields
             .insert("__typeParameterName".into(), json!(name));
@@ -111,6 +114,7 @@ fn is_signature_owner(kind: &str) -> bool {
                 | "MethodDefinition"
                 | "TSCallSignatureDeclaration"
                 | "TSConstructSignatureDeclaration"
+                | "TSConstructorType"
                 | "TSDeclareFunction"
                 | "TSFunctionType"
                 | "TSInterfaceDeclaration"
@@ -173,6 +177,14 @@ fn collect_references(
                 ) {
                     continue;
                 }
+                if kind == Some("TSConditionalType")
+                    && key == "trueType"
+                    && fields
+                        .get("extendsType")
+                        .is_some_and(|extends| contains_infer_binder(extends, name))
+                {
+                    continue;
+                }
                 let child_type_context = next_type_context
                     || matches!(
                         key.as_str(),
@@ -209,6 +221,27 @@ fn declares_type_parameter(value: &Value, name: &str) -> bool {
             && value
                 .get("key")
                 .is_some_and(|parameter| type_parameter_name(parameter) == Some(name)))
+        || (value.get("type").and_then(Value::as_str) == Some("TSInferType")
+            && value
+                .get("typeParameter")
+                .is_some_and(|parameter| type_parameter_name(parameter) == Some(name)))
+}
+
+fn contains_infer_binder(value: &Value, name: &str) -> bool {
+    if value.get("type").and_then(Value::as_str) == Some("TSInferType")
+        && value
+            .get("typeParameter")
+            .is_some_and(|parameter| type_parameter_name(parameter) == Some(name))
+    {
+        return true;
+    }
+    match value {
+        Value::Object(fields) => fields
+            .values()
+            .any(|child| contains_infer_binder(child, name)),
+        Value::Array(items) => items.iter().any(|child| contains_infer_binder(child, name)),
+        _ => false,
+    }
 }
 
 fn type_parameter_name(parameter: &Value) -> Option<&str> {
@@ -236,80 +269,124 @@ fn should_skip_child(owner_kind: Option<&str>, computed: bool, key: &str) -> boo
         })
 }
 
-#[cfg(test)]
-mod tests {
-    use corsa::lint::run_default_type_aware_rule_owned;
-
-    use super::enrich;
-    use crate::linter::native_type_aware::typescript_eslint::tree;
-
-    #[test]
-    fn reports_a_single_use_and_keeps_a_relational_parameter() {
-        let source = "function logValue<T>(value: T): void {}\nfunction identity<T>(value: T): T { return value; }\n";
-        let mut collected = tree::collect(source, false, &["TSTypeParameterDeclaration"]);
-        enrich(source, &mut collected.nodes, &collected.program);
-        let reports = collected
-            .nodes
-            .into_iter()
-            .flat_map(|node| {
-                run_default_type_aware_rule_owned("no-unnecessary-type-parameters", node)
-                    .unwrap_or_default()
-            })
-            .collect::<Vec<_>>();
-        assert_eq!(reports.len(), 1, "{reports:#?}");
-        assert_eq!(
-            reports[0].range.start as usize,
-            source.find("logValue<T>").unwrap() + "logValue<".len()
-        );
-        assert_eq!(
-            source.get(reports[0].range.start as usize..reports[0].range.end as usize),
-            Some("T")
-        );
+fn inferred_return_reference(owner: &Value, type_parameter: &str) -> Option<(u32, u32)> {
+    let kind = owner.get("type").and_then(Value::as_str)?;
+    if !matches!(
+        kind,
+        "ArrowFunctionExpression" | "FunctionDeclaration" | "FunctionExpression"
+    ) || owner
+        .get("returnType")
+        .is_some_and(|return_type| !return_type.is_null())
+    {
+        return None;
     }
-
-    #[test]
-    fn collects_nested_signatures_but_not_shadowed_type_parameters() {
-        let source = concat!(
-            "function wrap<T>(value: T): () => T { return () => value; }\n",
-            "class Box<T> { get(value: T): T { return value; } }\n",
-            "function outer<T>(value: T): <T>(inner: T) => T { return inner => inner; }\n",
-        );
-        let reports = report_ranges(source);
-        assert_eq!(reports.len(), 1, "{reports:#?}");
-        assert_eq!(
-            reports[0].0,
-            source.find("outer<T>").unwrap() + "outer<".len()
-        );
+    let mut bindings = Vec::new();
+    for parameter in owner.get("params")?.as_array()? {
+        let mut references = Vec::new();
+        collect_references(parameter, type_parameter, false, true, &mut references);
+        if !references.is_empty() {
+            collect_binding_names(parameter, &mut bindings);
+        }
     }
-
-    #[test]
-    fn excludes_property_keys_and_mapped_type_binders() {
-        let source = concat!(
-            "function property<T>(value: { T: T }): void {}\n",
-            "function mapped<T>(value: { [T in 'x']: T }): void {}\n",
-        );
-        let reports = report_ranges(source);
-        assert_eq!(reports.len(), 2, "{reports:#?}");
+    if bindings.is_empty() {
+        return None;
     }
-
-    #[test]
-    fn excludes_concise_arrow_function_bodies() {
-        let source = "const log = <T>(value: T): void => void (value as T);\n";
-        let reports = report_ranges(source);
-        assert_eq!(reports.len(), 1, "{reports:#?}");
+    let body = owner.get("body")?;
+    if kind == "ArrowFunctionExpression"
+        && body.get("type").and_then(Value::as_str) != Some("BlockStatement")
+    {
+        return expression_binding_reference(body, &bindings);
     }
+    return_binding_reference(body, &bindings, true)
+}
 
-    fn report_ranges(source: &str) -> Vec<(usize, usize)> {
-        let mut collected = tree::collect(source, false, &["TSTypeParameterDeclaration"]);
-        enrich(source, &mut collected.nodes, &collected.program);
-        collected
-            .nodes
-            .into_iter()
-            .flat_map(|node| {
-                run_default_type_aware_rule_owned("no-unnecessary-type-parameters", node)
-                    .unwrap_or_default()
-            })
-            .map(|report| (report.range.start as usize, report.range.end as usize))
-            .collect()
+fn collect_binding_names(value: &Value, out: &mut Vec<String>) {
+    match value.get("type").and_then(Value::as_str) {
+        Some("Identifier") => {
+            if let Some(name) = value.get("name").and_then(Value::as_str) {
+                out.push(name.to_owned());
+            }
+        }
+        Some("AssignmentPattern") => {
+            if let Some(left) = value.get("left") {
+                collect_binding_names(left, out);
+            }
+        }
+        Some("RestElement") => {
+            if let Some(argument) = value.get("argument") {
+                collect_binding_names(argument, out);
+            }
+        }
+        Some("ObjectPattern") => {
+            if let Some(properties) = value.get("properties").and_then(Value::as_array) {
+                for property in properties {
+                    let binding = property.get("value").unwrap_or(property);
+                    collect_binding_names(binding, out);
+                }
+            }
+        }
+        Some("ArrayPattern") => {
+            if let Some(elements) = value.get("elements").and_then(Value::as_array) {
+                for element in elements {
+                    collect_binding_names(element, out);
+                }
+            }
+        }
+        Some("TSParameterProperty") => {
+            if let Some(parameter) = value.get("parameter") {
+                collect_binding_names(parameter, out);
+            }
+        }
+        _ => {}
     }
 }
+
+fn return_binding_reference(value: &Value, bindings: &[String], root: bool) -> Option<(u32, u32)> {
+    let kind = value.get("type").and_then(Value::as_str);
+    if !root
+        && kind.is_some_and(|kind| {
+            kind.contains("Function") || matches!(kind, "ClassDeclaration" | "ClassExpression")
+        })
+    {
+        return None;
+    }
+    if kind == Some("ReturnStatement") {
+        return value
+            .get("argument")
+            .and_then(|argument| expression_binding_reference(argument, bindings));
+    }
+    match value {
+        Value::Object(fields) => fields
+            .values()
+            .find_map(|child| return_binding_reference(child, bindings, false)),
+        Value::Array(items) => items
+            .iter()
+            .find_map(|child| return_binding_reference(child, bindings, false)),
+        _ => None,
+    }
+}
+
+fn expression_binding_reference(value: &Value, bindings: &[String]) -> Option<(u32, u32)> {
+    if value.get("type").and_then(Value::as_str) == Some("Identifier")
+        && value
+            .get("name")
+            .and_then(Value::as_str)
+            .is_some_and(|name| bindings.iter().any(|binding| binding == name))
+    {
+        let start = u32::try_from(value.get("start")?.as_u64()?).ok()?;
+        let end = u32::try_from(value.get("end")?.as_u64()?).ok()?;
+        return Some((start, end));
+    }
+    match value {
+        Value::Object(fields) => fields
+            .values()
+            .find_map(|child| expression_binding_reference(child, bindings)),
+        Value::Array(items) => items
+            .iter()
+            .find_map(|child| expression_binding_reference(child, bindings)),
+        _ => None,
+    }
+}
+
+#[cfg(test)]
+mod tests;

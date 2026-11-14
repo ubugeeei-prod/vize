@@ -13,7 +13,7 @@ fn single_use_type_parameters_report_without_flagging_relational_generics() {
 function logValue<T>(value: T): void {
   console.info(value);
 }
-function identity<T>(value: T): T {
+function identity<T>(value: T) {
   return value;
 }
 
