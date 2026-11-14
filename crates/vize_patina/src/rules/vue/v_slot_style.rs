@@ -30,7 +30,9 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::{LintDiagnostic, Severity};
-use crate::markup::{MarkupContext, MarkupDirective, MarkupElement, MarkupRule};
+use crate::markup::{
+    MarkupContext, MarkupDirective, MarkupElement, MarkupRule, MarkupTraversal,
+};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::{DirectiveNode, ElementNode};
 
@@ -146,6 +148,10 @@ impl VSlotStyle {
 impl MarkupRule for VSlotStyle {
     fn name(&self) -> &'static str {
         META.name
+    }
+
+    fn traversal(&self) -> MarkupTraversal {
+        MarkupTraversal::Directives
     }
 
     fn enter_directive<'a>(

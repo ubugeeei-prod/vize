@@ -21,7 +21,9 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::{Fix, LintDiagnostic, Severity, TextEdit};
-use crate::markup::{MarkupContext, MarkupDirective, MarkupElement, MarkupRule};
+use crate::markup::{
+    MarkupContext, MarkupDirective, MarkupElement, MarkupRule, MarkupTraversal,
+};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_l0::String;
 use vize_relief::{DirectiveNode, ElementNode};
@@ -97,6 +99,10 @@ impl VOnStyle {
 impl MarkupRule for VOnStyle {
     fn name(&self) -> &'static str {
         META.name
+    }
+
+    fn traversal(&self) -> MarkupTraversal {
+        MarkupTraversal::Directives
     }
 
     fn enter_directive<'a>(

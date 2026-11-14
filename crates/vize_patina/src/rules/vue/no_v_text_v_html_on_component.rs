@@ -25,7 +25,9 @@ mod dynamic_component;
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
-use crate::markup::{MarkupContext, MarkupDirective, MarkupElement, MarkupRule};
+use crate::markup::{
+    MarkupContext, MarkupDirective, MarkupElement, MarkupRule, MarkupTraversal,
+};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use dynamic_component::{dynamic_component_may_render_component, is_dynamic_component};
 use vize_l0::is_native_tag;
@@ -67,6 +69,10 @@ impl NoVTextVHtmlOnComponent {
 impl MarkupRule for NoVTextVHtmlOnComponent {
     fn name(&self) -> &'static str {
         META.name
+    }
+
+    fn traversal(&self) -> MarkupTraversal {
+        MarkupTraversal::Directives
     }
 
     fn enter_directive<'a>(

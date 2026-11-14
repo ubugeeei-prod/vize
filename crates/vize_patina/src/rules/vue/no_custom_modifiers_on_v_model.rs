@@ -8,7 +8,9 @@
 use super::require_v_for_key::markup_element_is_custom_component;
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
-use crate::markup::{MarkupContext, MarkupDirective, MarkupElement, MarkupRule};
+use crate::markup::{
+    MarkupContext, MarkupDirective, MarkupElement, MarkupRule, MarkupTraversal,
+};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::{DirectiveNode, ElementNode};
 
@@ -55,6 +57,10 @@ impl NoCustomModifiersOnVModel {
 impl MarkupRule for NoCustomModifiersOnVModel {
     fn name(&self) -> &'static str {
         META.name
+    }
+
+    fn traversal(&self) -> MarkupTraversal {
+        MarkupTraversal::Directives
     }
 
     fn enter_directive<'a>(

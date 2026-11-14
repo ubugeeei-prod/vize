@@ -155,7 +155,7 @@ impl MarkupRule for MarkupRules<'_> {
             element.range().start,
             directive.range().start,
         ));
-        self.each(ctx, MarkupTraversal::is_full, |entry, ctx| {
+        self.each(ctx, MarkupTraversal::enters_directives, |entry, ctx| {
             entry.rule.enter_directive(ctx, element, directive);
         });
     }
@@ -167,7 +167,7 @@ impl MarkupRule for MarkupRules<'_> {
     ) {
         ctx.lint()
             .replay_callback_site(CallbackSite::Conditional(conditional.range().start));
-        self.each(ctx, MarkupTraversal::is_full, |entry, ctx| {
+        self.each(ctx, MarkupTraversal::enters_conditionals, |entry, ctx| {
             entry.rule.enter_conditional(ctx, conditional);
         });
     }
