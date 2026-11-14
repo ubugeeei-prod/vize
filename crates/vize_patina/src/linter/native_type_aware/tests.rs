@@ -20,7 +20,6 @@ use assertion::{
     assert_absent, assert_absent_note, assert_absent_rules, assert_reports, assert_reports_message,
     assert_reports_note, failure_context,
 };
-
 pub(super) fn corsa_available() -> bool {
     let mut session =
         match super::CorsaTypeAwareSession::new_with_corsa_path("Component.vue", None, None) {
