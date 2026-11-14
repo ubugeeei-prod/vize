@@ -148,6 +148,12 @@ export declare namespace colors { const current: string; }
             "declare class __vize_shipped_default_0 { value: string; }\nexport default __vize_shipped_default_0;\n"
         );
         assert_eq!(
+            project_declaration_as_typescript(
+                "export default abstract /* class in a comment */ class {}\n"
+            ),
+            "declare abstract /* class in a comment */ class __vize_shipped_default_0 {}\nexport default __vize_shipped_default_0;\n"
+        );
+        assert_eq!(
             project_declaration_as_typescript("export default function<T>(): T;\n"),
             "declare function __vize_shipped_default_0<T>(): T;\nexport default __vize_shipped_default_0;\n"
         );

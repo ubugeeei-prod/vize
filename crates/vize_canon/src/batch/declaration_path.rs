@@ -67,8 +67,42 @@ fn default_export_name(text: &str, sequence: &mut usize) -> String {
 fn keyword_end(text: &str, span_start: u32, span_end: u32, keyword: &str) -> Option<usize> {
     let start = span_start as usize;
     let end = span_end as usize;
-    let relative = text.get(start..end)?.find(keyword)?;
-    Some(start + relative + keyword.len())
+    let source = text.get(start..end)?;
+    let bytes = source.as_bytes();
+    let keyword = keyword.as_bytes();
+    let mut offset = 0;
+    while offset < bytes.len() {
+        if bytes[offset..].starts_with(b"//") {
+            offset += 2;
+            while offset < bytes.len() && !matches!(bytes[offset], b'\n' | b'\r') {
+                offset += 1;
+            }
+            continue;
+        }
+        if bytes[offset..].starts_with(b"/*") {
+            let close = bytes[offset + 2..]
+                .windows(2)
+                .position(|window| window == b"*/")?;
+            offset += close + 4;
+            continue;
+        }
+        if bytes[offset..].starts_with(keyword)
+            && offset
+                .checked_sub(1)
+                .is_none_or(|previous| !is_identifier_byte(bytes[previous]))
+            && bytes
+                .get(offset + keyword.len())
+                .is_none_or(|next| !is_identifier_byte(*next))
+        {
+            return Some(start + offset + keyword.len());
+        }
+        offset += source[offset..].chars().next()?.len_utf8();
+    }
+    None
+}
+
+const fn is_identifier_byte(byte: u8) -> bool {
+    byte.is_ascii_alphanumeric() || matches!(byte, b'_' | b'$') || !byte.is_ascii()
 }
 
 struct DefaultExport<'a> {
