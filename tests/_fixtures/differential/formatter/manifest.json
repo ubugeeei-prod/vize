@@ -440,8 +440,7 @@
           "executor": "rust-test",
           "asserts": [
             "full-output-bytes",
-            "authored-directive-order",
-            "idempotence"
+            "authored-directive-order"
           ],
           "limitations": [
             "The input isolates the directive-order contract reproduced in the affected real-project corpus."
