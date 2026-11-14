@@ -1,6 +1,7 @@
 //! Regression coverage for packaged Vue declarations shadowed by compiled SFCs (#12968).
 
 use std::path::{Path, PathBuf};
+use std::process::Output;
 
 use serde_json::json;
 
@@ -22,6 +23,18 @@ fn write(root: &Path, relative: &str, content: &str) {
     let path = root.join(relative);
     std::fs::create_dir_all(path.parent().unwrap()).unwrap();
     std::fs::write(path, content).unwrap();
+}
+
+fn diagnostic_keys(output: &Output) -> Vec<(&str, u32)> {
+    let text = std::str::from_utf8(&output.stdout).unwrap();
+    text.lines()
+        .filter_map(|line| {
+            let (location, message) = line.split_once(": error TS")?;
+            let path = location.rsplit_once('(')?.0;
+            let code = message.split_once(':')?.0.parse().ok()?;
+            Some((path, code))
+        })
+        .collect()
 }
 
 fn prepare_project() -> tempfile::TempDir {
@@ -128,9 +141,9 @@ fn packaged_sfc_uses_its_declaration_without_hiding_consumer_errors() {
     let checked = check_project(&tsgo, project.path(), "tsconfig.checked.json");
     let checked_text = output_text(&checked);
     assert!(!checked.status.success(), "{checked_text}");
-    assert!(checked_text.contains("TS2307"), "{checked_text}");
-    assert!(
-        checked_text.contains("missing-optional-integration"),
+    assert_eq!(
+        diagnostic_keys(&checked),
+        [("node_modules/fake-ui/Badge.vue", 2307)],
         "{checked_text}"
     );
 
@@ -142,8 +155,11 @@ fn packaged_sfc_uses_its_declaration_without_hiding_consumer_errors() {
     let consumer_error = check_project(&tsgo, project.path(), "tsconfig.json");
     let consumer_text = output_text(&consumer_error);
     assert!(!consumer_error.status.success(), "{consumer_text}");
-    assert!(consumer_text.contains("src/main.ts") && consumer_text.contains("TS2322"));
-    assert!(!consumer_text.contains("missing-optional-integration"));
+    assert_eq!(
+        diagnostic_keys(&consumer_error),
+        [("src/main.ts", 2322)],
+        "{consumer_text}"
+    );
 
     write(
         project.path(),
