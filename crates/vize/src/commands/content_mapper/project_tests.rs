@@ -55,7 +55,7 @@ declare global {
         "ambient-vue-template-ref"
     );
     let watched = result["watchedFiles"].as_array().unwrap();
-    let generated = std::fs::canonicalize(generated).unwrap();
+    let generated = vize_carton::path::canonicalize_non_verbatim(&generated);
     assert!(
         watched
             .iter()
