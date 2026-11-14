@@ -333,8 +333,7 @@ fn named_member_exclusion_removes_only_the_exact_registry_check_and_mapping() {
         "void __vize_global_component_0;\n",
         "\n// Global component stubs (vue module augmentations)\n",
         "type $GlobalComponent<__K extends string | number | symbol, __F extends string | number | symbol = __K, __L extends string | number | symbol = __F, __G = import(\"vue\").GlobalComponents, __C = __K extends keyof __G ? __G[__K] : __F extends keyof __G ? __G[__F] : __L extends keyof __G ? __G[__L] : any> = unknown extends __C ? any : __C;\n",
-        "type $GlobalComponentFallback = (props: Record<string, unknown>, ...args: any[]) => any;\n",
-        "declare const __vize_dynamic_is_0: $GlobalComponentFallback & $GlobalComponent<\"__vize_dynamic_is_0\">;\n",
+        "declare const __vize_dynamic_is_0: $GlobalComponent<\"__vize_dynamic_is_0\">;\n",
     );
     assert_eq!(owned, "");
     assert_eq!(unowned, UNOWNED);

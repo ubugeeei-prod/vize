@@ -102,6 +102,15 @@ pub(crate) fn tsconfig_project_graph_allows_js(
         .any(|project| tsconfig_allows_js(project, cache))
 }
 
+/// Whether the selected program declares the global `useTemplateRef` as
+/// Vue's own export. Declaration reference edges are part of the program too.
+pub(crate) fn declares_vue_template_ref_global(files: &[PathBuf]) -> bool {
+    collect_declaration_reference_graph(files)
+        .iter()
+        .filter_map(|path| std::fs::read_to_string(path).ok())
+        .any(|source| vize_canon::batch::declares_vue_template_ref_global(&source))
+}
+
 fn collect_default_check_files_inner(
     project_root: &Path,
     tsconfig_path: Option<&Path>,

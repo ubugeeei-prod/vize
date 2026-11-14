@@ -107,8 +107,7 @@ declare function __vizeDirectiveTail<F extends (...args: any[]) => any>(hook: F)
 
 // Global component stubs (vue module augmentations)
 type $GlobalComponent<__K extends string | number | symbol, __F extends string | number | symbol = __K, __L extends string | number | symbol = __F, __G = import("vue").GlobalComponents, __C = __K extends keyof __G ? __G[__K] : __F extends keyof __G ? __G[__F] : __L extends keyof __G ? __G[__L] : any> = unknown extends __C ? any : __C;
-type $GlobalComponentFallback = (props: Record<string, unknown>, ...args: any[]) => any;
-declare const my_widget: $GlobalComponentFallback & $GlobalComponent<"MyWidget", "myWidget", "my-widget">;
+declare const my_widget: $GlobalComponent<"MyWidget", "myWidget", "my-widget">;
 
 // ========== Exported Types ==========
 export type Props = {};
@@ -138,7 +137,7 @@ function handleUpdate(value: string) {
   void value
 }
 
-  // @vize-map: 16578:16655 -> 0:76
+  // @vize-map: 16462:16539 -> 0:76
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
