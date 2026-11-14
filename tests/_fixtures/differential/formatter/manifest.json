@@ -396,6 +396,127 @@
       ]
     },
     {
+      "id": "formatter/sfc/authored-directive-order",
+      "state": "active",
+      "targets": [
+        "fmt"
+      ],
+      "inputs": {
+        "root": "sfc-authored-directive-order",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "bcd864528638b62f31b43a7e9a590cb4f0676e57344c7184bde1efe7abcfc928",
+            "role": "entry",
+            "kind": "vue",
+            "runtimeFileName": "App.vue"
+          }
+        ],
+        "config": []
+      },
+      "provenance": {
+        "issues": [],
+        "commits": [
+          {
+            "sha": "9fde78771d23c5322bd76541c48e87fd07386536",
+            "role": "pre-fix-base",
+            "paths": [
+              "crates/vize_glyph/src/template/attributes.rs"
+            ]
+          }
+        ],
+        "sources": [
+          {
+            "kind": "actions-corpus-regression",
+            "path": "crates/vize_glyph/src/template/attribute_segment_tests.rs",
+            "symbol": "static_event_directives_preserve_authored_order"
+          }
+        ]
+      },
+      "witnesses": [
+        {
+          "path": "crates/vize_glyph/src/template/attribute_segment_tests.rs",
+          "symbol": "static_event_directives_preserve_authored_order",
+          "executor": "rust-test",
+          "asserts": [
+            "full-output-bytes",
+            "authored-directive-order"
+          ],
+          "limitations": [
+            "The input isolates the directive-order contract reproduced in the affected real-project corpus."
+          ]
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "static-event-directives",
+              "literal-html-attributes"
+            ],
+            "selector": "template attributes around static event directives"
+          }
+        ]
+      },
+      "adapters": {
+        "legacy": "formatter-cli-v1",
+        "native": null,
+        "reasons": {
+          "legacy": "Source-built formatter CLI compares complete output and a three-pass fixed point.",
+          "native": "No verified native formatter adapter; unsupported is nonpass."
+        }
+      },
+      "expectations": {
+        "legacy": {
+          "state": "captured",
+          "baselineRevision": "f59e69c38ecbead394ba30f0fdacb5f9c1b9fd04",
+          "artifacts": [
+            {
+              "path": "sfc-authored-directive-order/reference.expected.txt",
+              "sha256": "bcd864528638b62f31b43a7e9a590cb4f0676e57344c7184bde1efe7abcfc928",
+              "role": "source-authored-complete-output",
+              "provenance": {
+                "path": "crates/vize_glyph/src/template/attribute_segment_tests.rs",
+                "symbol": "static_event_directives_preserve_authored_order",
+                "assertion": "Event directives remain in authored order while neighboring literal attributes retain their positions."
+              },
+              "mediaType": "text/x-vue",
+              "runtimeFileName": "App.vue"
+            }
+          ],
+          "contract": "formatter-byte-output-v1",
+          "fields": [
+            "reference-full-output-bytes",
+            "candidate-cli-output-bytes",
+            "3-pass-idempotence"
+          ],
+          "missingFields": [
+            "structured FormatResult.changed is covered by the Rust convergence witness"
+          ],
+          "referenceState": "source-authored corpus repair; exact-source Actions required"
+        }
+      },
+      "comparison": {
+        "contract": "formatter-byte-output-v1",
+        "requiredFacets": [
+          "full-output-bytes",
+          "idempotence"
+        ],
+        "transportMappings": []
+      },
+      "scenarios": [
+        {
+          "id": "initial",
+          "inputRef": "App.vue",
+          "operations": []
+        }
+      ]
+    },
+    {
       "id": "formatter/sfc/auto-cr",
       "state": "active",
       "targets": [

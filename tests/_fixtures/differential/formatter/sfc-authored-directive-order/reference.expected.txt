@@ -1,0 +1,3 @@
+<template>
+  <button @show="show" tabindex="0" @hide="hide" class="control">open</button>
+</template>

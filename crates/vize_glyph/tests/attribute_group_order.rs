@@ -61,8 +61,8 @@ fn custom_groups_keep_barriers_duplicates_first_match_and_disabled_sorting() {
     let spread_expected =
         r#"<div z-early="e" a-late="l" v-bind="attrs" z-early="s" a-late="r"></div>"#;
     let event = r#"<div a-late="l" @click="run" z-early="e"></div>"#;
-    // A static-argument listener commutes with its neighbors (#12826).
-    let event_expected = r#"<div z-early="e" a-late="l" @click="run"></div>"#;
+    // A static-argument listener is an authored-order boundary.
+    let event_expected = event;
     let duplicate = r#"<div a-late="l" z-early="e" a-late="r"></div>"#;
     let cases = [
         ("spread", spread, spread_expected, Some(wide.clone()), true),

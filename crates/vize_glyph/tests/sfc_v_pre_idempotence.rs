@@ -56,13 +56,11 @@ fn v_pre_element_nesting_a_same_name_element_ends_at_the_outer_close() {
 
 #[test]
 fn v_pre_with_other_attributes_sorts_first_and_is_stable() {
-    // `v-pre` is a static directive, so it sorts into its render-modifier
-    // group ahead of `class` (#12826); the result is still a fixed point.
+    // The symbol is retained by the formatter history audit. The current law
+    // is authored order: `v-pre` is a directive boundary, so the neighboring
+    // `class` remains in its authored position and the result is a fixed point.
     let source = "<template>\n  <code class=\"a\" v-pre>{{ v }}</code>\n</template>\n";
-    assert_stable(
-        source,
-        "<template>\n  <code v-pre class=\"a\">{{ v }}</code>\n</template>\n",
-    );
+    assert_stable(source, source);
 }
 
 #[test]

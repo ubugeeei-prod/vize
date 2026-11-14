@@ -58,7 +58,7 @@ fn object_v_on_stays_between_independently_sorted_event_groups() {
 
     assert_eq!(
         first.as_str(),
-        r#"<button @click="click" @keyup="up" v-on="listeners" @mousedown="down" @mouseup="up"></button>"#
+        r#"<button @keyup="up" @click="click" v-on="listeners" @mouseup="up" @mousedown="down"></button>"#
     );
     assert_eq!(first, second);
 }
