@@ -18,6 +18,7 @@ import { test } from "node:test";
 import { parse } from "yaml";
 import {
   manifestName,
+  newestFingerprint,
   recordSourceMtimes,
   restoreSourceMtimes,
 } from "../../.github/actions/reuse-rust-target/source-mtimes.ts";
@@ -289,6 +290,24 @@ await test("the action refuses a reused target without worktree custody", () => 
 
 // Probe outside this checkout so its pinned toolchain file does not apply.
 const cargo = spawnSync("cargo", ["--version"], { cwd: tmpdir(), encoding: "utf8" });
+
+await test("Cargo fingerprint leaves define the source mtime floor", () => {
+  const target = mkdtempSync(join(tmpdir(), "vize-cargo-fingerprint-floor-"));
+  try {
+    const unit = join(target, "debug/.fingerprint/unit");
+    const evidence = join(unit, "invoked.timestamp");
+    mkdirSync(unit, { recursive: true });
+    writeFileSync(evidence, "");
+    const old = new Date("2020-01-01T00:00:00Z");
+    const leaf = new Date("2020-01-01T00:00:03.125Z");
+    utimesSync(unit, old, old);
+    utimesSync(evidence, leaf, leaf);
+
+    assert.equal(newestFingerprint(target), 1_577_836_804);
+  } finally {
+    rmSync(target, { recursive: true, force: true });
+  }
+});
 
 await test(
   "foreign worktree sources remain correct across a shared Cargo fingerprint",

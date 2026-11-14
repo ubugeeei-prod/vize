@@ -94,7 +94,19 @@ export function newestFingerprint(target: string): number {
       const path = join(directory, entry.name);
       if (entry.name === ".fingerprint") {
         for (const unit of readdirSync(path)) {
-          newest = Math.max(newest, ceilSeconds(lstatSync(join(path, unit), { bigint: true })));
+          const unitPath = join(path, unit);
+          const unitStat = lstatSync(unitPath, { bigint: true });
+          newest = Math.max(newest, ceilSeconds(unitStat));
+          // Cargo writes freshness evidence after creating the unit directory.
+          // The directory mtime therefore does not bound the mtimes of its
+          // files, especially when a build crosses a whole-second boundary.
+          if (!unitStat.isDirectory()) continue;
+          for (const evidence of readdirSync(unitPath)) {
+            newest = Math.max(
+              newest,
+              ceilSeconds(lstatSync(join(unitPath, evidence), { bigint: true })),
+            );
+          }
         }
       } else if (depth < 4 && !skippedTargetDirectories.has(entry.name)) {
         visit(path, depth + 1);
