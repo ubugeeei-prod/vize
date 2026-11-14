@@ -163,7 +163,14 @@ fn collect_references(
     match value {
         Value::Object(fields) => {
             for (key, child) in fields {
-                if should_skip_child(kind, fields, key) {
+                if should_skip_child(
+                    kind,
+                    fields
+                        .get("computed")
+                        .and_then(Value::as_bool)
+                        .unwrap_or(false),
+                    key,
+                ) {
                     continue;
                 }
                 let child_type_context = next_type_context
@@ -210,19 +217,12 @@ fn type_parameter_name(parameter: &Value) -> Option<&str> {
         .and_then(|name| name.as_str().or_else(|| name.get("name")?.as_str()))
 }
 
-fn should_skip_child(
-    owner_kind: Option<&str>,
-    fields: &serde_json::Map<String, Value>,
-    key: &str,
-) -> bool {
+fn should_skip_child(owner_kind: Option<&str>, computed: bool, key: &str) -> bool {
     if key == "body" && owner_kind.is_some_and(|kind| kind.contains("Function")) {
         return true;
     }
     key == "key"
-        && !fields
-            .get("computed")
-            .and_then(Value::as_bool)
-            .unwrap_or(false)
+        && !computed
         && owner_kind.is_some_and(|kind| {
             matches!(
                 kind,
