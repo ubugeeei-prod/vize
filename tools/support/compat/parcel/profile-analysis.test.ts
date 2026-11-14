@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { analyseProfile } from "./profile-analysis.mjs";
+import { analyseProfile } from "./profile-analysis.ts";
 
 function fixture(timeDeltas: (number | null)[]) {
   return {

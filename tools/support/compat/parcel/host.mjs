@@ -6,7 +6,7 @@ import http from "node:http";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { summarizeNativeEvents } from "./native-analysis.mjs";
+import { summarizeNativeEvents } from "./native-analysis.ts";
 import { validateNativeTargetCustody } from "./native-target.mjs";
 import {
   devCacheReporterFilename,

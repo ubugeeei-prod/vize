@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { summarizeNativeEvents } from "./native-analysis.mjs";
+import { summarizeNativeEvents } from "./native-analysis.ts";
 
 const event = (callId: string, duration = 1, tid = 1) => ({
   type: "trace",
