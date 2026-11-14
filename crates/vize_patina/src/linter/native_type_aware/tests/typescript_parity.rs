@@ -65,6 +65,7 @@ const EXPECTED: &[(u32, u32, &str)] = &[
     (26, 1, "type/no-meaningless-void-operator"),
     (27, 12, "type/no-implied-eval"),
     (33, 17, "type/unbound-method"),
+    (34, 9, "type/unbound-method"),
     (34, 12, "type/unbound-method"),
 ];
 

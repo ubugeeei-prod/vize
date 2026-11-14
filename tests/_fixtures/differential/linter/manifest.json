@@ -7220,7 +7220,7 @@
               "js",
               "ts"
             ],
-            "selector": "linter manifest pinned issue-authored composable sources"
+            "selector": "linter manifest pinned authored sources"
           }
         ]
       }
