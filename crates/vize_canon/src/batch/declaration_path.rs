@@ -69,34 +69,30 @@ fn keyword_end(text: &str, span_start: u32, span_end: u32, keyword: &str) -> Opt
     let end = span_end as usize;
     let source = text.get(start..end)?;
     let bytes = source.as_bytes();
-    let keyword = keyword.as_bytes();
     let mut offset = 0;
     while offset < bytes.len() {
-        if bytes[offset..].starts_with(b"//") {
-            offset += 2;
-            while offset < bytes.len() && !matches!(bytes[offset], b'\n' | b'\r') {
-                offset += 1;
-            }
+        let remaining = source.get(offset..)?;
+        if remaining.starts_with("//") {
+            offset += remaining.find(['\n', '\r']).unwrap_or(remaining.len());
             continue;
         }
-        if bytes[offset..].starts_with(b"/*") {
-            let close = bytes[offset + 2..]
-                .windows(2)
-                .position(|window| window == b"*/")?;
+        if remaining.starts_with("/*") {
+            let close = remaining.get(2..)?.find("*/")?;
             offset += close + 4;
             continue;
         }
-        if bytes[offset..].starts_with(keyword)
+        if remaining.starts_with(keyword)
             && offset
                 .checked_sub(1)
-                .is_none_or(|previous| !is_identifier_byte(bytes[previous]))
+                .and_then(|previous| bytes.get(previous))
+                .is_none_or(|previous| !is_identifier_byte(*previous))
             && bytes
                 .get(offset + keyword.len())
                 .is_none_or(|next| !is_identifier_byte(*next))
         {
             return Some(start + offset + keyword.len());
         }
-        offset += source[offset..].chars().next()?.len_utf8();
+        offset += remaining.chars().next()?.len_utf8();
     }
     None
 }
