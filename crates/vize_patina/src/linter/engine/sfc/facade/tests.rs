@@ -25,6 +25,24 @@ fn linter() -> Linter {
     linter
         .registry
         .register(Box::new(crate::rules::vue::NoBareStringsInTemplate));
+    linter
+        .registry
+        .register(Box::new(crate::rules::vue::NoCustomModifiersOnVModel));
+    linter
+        .registry
+        .register(Box::new(crate::rules::ecosystem::NuxtPreferNuxtLink));
+    linter
+        .registry
+        .register(Box::new(crate::rules::ecosystem::RouterLinkRequireTo));
+    linter
+        .registry
+        .register(Box::new(crate::rules::ecosystem::VoidLinkRequireHref));
+    linter
+        .registry
+        .register(Box::new(crate::rules::ecosystem::VoidLinkValidMethod));
+    linter
+        .registry
+        .register(Box::new(crate::rules::ecosystem::VueRouterPreferNamedLink));
     linter.registry.mark_has_exit_element_rules();
     linter
 }
@@ -56,6 +74,43 @@ fn compare_template(source: &str) {
 
 #[test]
 fn migrated_sfc_rules_preserve_diagnostics_and_fixes() {
+    for (sfc, expected_rule) in [
+        (
+            r#"<template><MyComponent v-model.custom="value"/></template>"#,
+            "vue/no-custom-modifiers-on-v-model",
+        ),
+        (
+            r#"<template><div/><RouterLink/></template>"#,
+            "ecosystem/router-link-require-to",
+        ),
+        (
+            r#"<template><RouterLink to="/users"/></template>"#,
+            "ecosystem/vue-router-prefer-named-link",
+        ),
+        (
+            r#"<template><a href="/settings">Settings</a></template>"#,
+            "ecosystem/nuxt-prefer-nuxt-link",
+        ),
+        (
+            r#"<script setup>import { Link } from "@void/vue";</script><template><Link/></template>"#,
+            "ecosystem/void-link-require-href",
+        ),
+        (
+            r#"<script setup>import { Link } from "@void/vue";</script><template><Link href="/posts" method="CREATE"/></template>"#,
+            "ecosystem/void-link-valid-method",
+        ),
+    ] {
+        let result = linter().lint_sfc(sfc, "test.vue");
+        assert!(
+            result
+                .diagnostics
+                .iter()
+                .any(|diagnostic| diagnostic.rule_name == expected_rule),
+            "{expected_rule}: {:?}",
+            result.diagnostics
+        );
+    }
+
     for source in [
         r#"<div  style="color:red"><textarea>{{ message }}</textarea><button>go</button></div>"#,
         r#"<a href="https://example.com" target="_blank">go</a><iframe src="/frame"/><input disabled="true"/><div contenteditable="invalid"/>"#,
@@ -91,7 +146,7 @@ fn migrated_sfc_rules_preserve_diagnostics_and_fixes() {
         "<!-- eslint-disable-next-line vue/no-deprecated-slot-scope-attribute -->\n<template slot-scope=\"props\"/>",
         "<!-- eslint-disable-next-line vue/no-deprecated-scope-attribute -->\n<template scope=\"props\"/>",
         "<!-- eslint-disable-next-line vue/no-deprecated-inline-template -->\n<MyComponent inline-template/>",
-        "<!-- eslint-disable-next-line vue/no-deprecated-router-link-tag-prop -->\n<router-link tag=\"button\"/>",
+        "<!-- eslint-disable-next-line vue/no-deprecated-router-link-tag-prop -->\n<router-link tag=\"button\" to=\"/legacy\"/>",
         "<!-- eslint-disable-next-line vue/no-deprecated-html-element-is -->\n<div is=\"MyComponent\"/>",
         "<!-- eslint-disable-next-line vue/require-component-is -->\n<component/>",
         "<!-- eslint-disable-next-line vue/no-deprecated-v-is -->\n<div v-is=\"'MyComponent'\"/>",
