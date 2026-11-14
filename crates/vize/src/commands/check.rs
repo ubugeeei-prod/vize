@@ -17,7 +17,7 @@ mod path_cache;
 mod patterns;
 mod reporting;
 pub(crate) mod runner;
-mod tsconfig_inputs;
+pub(in crate::commands) mod tsconfig_inputs;
 
 use clap::Args;
 use std::path::PathBuf;

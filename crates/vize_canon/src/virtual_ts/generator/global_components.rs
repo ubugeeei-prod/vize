@@ -246,10 +246,6 @@ impl<'a> GlobalComponentPlan<'a> {
                         )
                     },
                 );
-                crate::virtual_ts::generated_names::push_lib_text(
-                    ts,
-                    "type $GlobalComponentFallback = (props: Record<string, unknown>, ...args: any[]) => any;\n",
-                );
                 has_header = true;
             }
 
@@ -295,12 +291,10 @@ fn append_global_component_stub(
     component_ref: &str,
     keys: [&str; 3],
 ) {
-    // Keep the real callable signature last: template-ref inference reads its
-    // exposed members instead of the open fallback's unconstrained argument.
-    append!(
-        *ts,
-        "declare const {component_ref}: $GlobalComponentFallback & $GlobalComponent<"
-    );
+    // Keep the registry's callable signature intact. Intersecting a generic
+    // functional component with an open fallback makes TypeScript select the
+    // fallback during props/slot inference and erases its type parameter.
+    append!(*ts, "declare const {component_ref}: $GlobalComponent<");
     let mut previous = None;
     for key in keys {
         if previous == Some(key) {
