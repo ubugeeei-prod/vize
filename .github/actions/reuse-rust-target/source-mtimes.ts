@@ -120,14 +120,32 @@ export function newestFingerprint(target: string): number {
 /** Keep dependency artifacts, but never trust workspace outputs without custody. */
 function invalidateUnownedWorkspaceArtifacts(root: string, target: string): void {
   if (newestFingerprint(target) === 0) return;
+  let packages: string[];
   try {
-    execFileSync("cargo", ["clean", "--quiet", "--workspace", "--target-dir", target], {
-      cwd: root,
-      stdio: "ignore",
-    });
+    const metadata = JSON.parse(
+      execFileSync("cargo", ["metadata", "--no-deps", "--format-version", "1"], {
+        cwd: root,
+        encoding: "utf8",
+        stdio: ["ignore", "pipe", "pipe"],
+      }),
+    ) as {
+      packages: Array<{ id: string; name: string; version: string }>;
+      workspace_members: string[];
+    };
+    const members = new Set(metadata.workspace_members);
+    packages = metadata.packages
+      .filter(({ id }) => members.has(id))
+      .map(({ name, version }) => `${name}@${version}`);
   } catch {
     // Source mtimes remain the conservative fallback outside a Cargo workspace.
+    return;
   }
+  if (packages.length === 0) return;
+  const selected = packages.flatMap((spec) => ["--package", spec]);
+  execFileSync("cargo", ["clean", "--quiet", "--target-dir", target, ...selected], {
+    cwd: root,
+    stdio: ["ignore", "pipe", "pipe"],
+  });
 }
 
 function isObject(value: unknown): value is Record<string, unknown> {
