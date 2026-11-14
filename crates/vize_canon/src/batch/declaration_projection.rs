@@ -73,28 +73,20 @@ fn ambient_default_export(
     text: &str,
     declaration: DefaultExport<'_>,
     sequence: &mut usize,
+    exported_names: &mut Vec<String>,
     edits: &mut Vec<TextEdit>,
 ) {
     let export_start = declaration.export_start as usize;
     let declaration_start = declaration.declaration_start as usize;
-    let Some(prefix) = text.get(export_start..declaration_start) else {
+    if text.get(export_start..declaration_start).is_none() {
         return;
-    };
-    let Some(default_start) = prefix.find("default") else {
-        return;
-    };
-    let after_default = default_start + "default".len();
-    let Some(trailing_prefix) = prefix.get(after_default..) else {
-        return;
-    };
-    let delete_end = if trailing_prefix.trim().is_empty() {
-        declaration_start
-    } else {
-        export_start + after_default
-    };
+    }
+    // OXC already identified this as an export-default declaration. Remove the
+    // complete token prefix instead of searching its source spelling: comments
+    // between `export`, `default`, and the declaration may contain either word.
     edits.push(TextEdit {
         start: export_start,
-        end: delete_end,
+        end: declaration_start,
         replacement: String::default(),
     });
     edits.push(TextEdit::insertion(declaration_start as u32, "declare "));
@@ -108,10 +100,13 @@ fn ambient_default_export(
     {
         edits.push(TextEdit::insertion(offset, cstr!(" {name}").as_str()));
     }
-    edits.push(TextEdit::insertion(
-        declaration.declaration_end,
-        cstr!("\nexport default {name};").as_str(),
-    ));
+    if !exported_names.contains(&name) {
+        exported_names.push(name.clone());
+        edits.push(TextEdit::insertion(
+            declaration.declaration_end,
+            cstr!("\nexport default {name};").as_str(),
+        ));
+    }
 }
 
 /// Make the value declarations that are implicitly ambient in a `.d.ts`
@@ -125,6 +120,7 @@ pub fn project_declaration_as_typescript(text: &str) -> String {
 
     let mut edits = Vec::new();
     let mut default_sequence = 0;
+    let mut exported_default_names = Vec::new();
     for statement in &parsed.program.body {
         match statement {
             Statement::VariableDeclaration(declaration) if !declaration.declare => {
@@ -165,6 +161,7 @@ pub fn project_declaration_as_typescript(text: &str) -> String {
                             anonymous_name_offset: Some(anonymous_name_offset),
                         },
                         &mut default_sequence,
+                        &mut exported_default_names,
                         &mut edits,
                     );
                 }
@@ -187,6 +184,7 @@ pub fn project_declaration_as_typescript(text: &str) -> String {
                             anonymous_name_offset,
                         },
                         &mut default_sequence,
+                        &mut exported_default_names,
                         &mut edits,
                     );
                 }

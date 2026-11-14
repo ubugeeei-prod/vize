@@ -151,6 +151,18 @@ export declare namespace colors { const current: string; }
             project_declaration_as_typescript("export default function<T>(): T;\n"),
             "declare function __vize_shipped_default_0<T>(): T;\nexport default __vize_shipped_default_0;\n"
         );
+        assert_eq!(
+            project_declaration_as_typescript(
+                "export /* default in a comment */ default class Badge {}\n"
+            ),
+            "declare class Badge {}\nexport default Badge;\n"
+        );
+        assert_eq!(
+            project_declaration_as_typescript(
+                "export default function format(value: string): string;\nexport default function format(value: number): number;\n"
+            ),
+            "declare function format(value: string): string;\nexport default format;\ndeclare function format(value: number): number;\n"
+        );
     }
 
     #[test]
