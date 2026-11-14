@@ -79,9 +79,7 @@ const exactSeconds = (stat: BigIntStats, value: number) =>
   stat.mtimeNs === BigInt(value) * 1_000_000_000n;
 const ceilSeconds = (stat: BigIntStats) => Number((stat.mtimeNs + 999_999_999n) / 1_000_000_000n);
 
-/** The newest fingerprint written into a target directory, in whole seconds. */
-export function newestFingerprint(target: string): number {
-  let newest = 0;
+function visitFingerprintDirectories(target: string, visitor: (path: string) => void): void {
   const visit = (directory: string, depth: number) => {
     let entries: Dirent[];
     try {
@@ -93,34 +91,42 @@ export function newestFingerprint(target: string): number {
       if (!entry.isDirectory()) continue;
       const path = join(directory, entry.name);
       if (entry.name === ".fingerprint") {
-        for (const unit of readdirSync(path)) {
-          const unitPath = join(path, unit);
-          const unitStat = lstatSync(unitPath, { bigint: true });
-          newest = Math.max(newest, ceilSeconds(unitStat));
-          // Cargo writes freshness evidence after creating the unit directory.
-          // The directory mtime therefore does not bound the mtimes of its
-          // files, especially when a build crosses a whole-second boundary.
-          if (!unitStat.isDirectory()) continue;
-          for (const evidence of readdirSync(unitPath)) {
-            newest = Math.max(
-              newest,
-              ceilSeconds(lstatSync(join(unitPath, evidence), { bigint: true })),
-            );
-          }
-        }
+        visitor(path);
       } else if (depth < 4 && !skippedTargetDirectories.has(entry.name)) {
         visit(path, depth + 1);
       }
     }
   };
   visit(target, 0);
+}
+
+/** The newest fingerprint written into a target directory, in whole seconds. */
+export function newestFingerprint(target: string): number {
+  let newest = 0;
+  visitFingerprintDirectories(target, (path) => {
+    for (const unit of readdirSync(path)) {
+      const unitPath = join(path, unit);
+      const unitStat = lstatSync(unitPath, { bigint: true });
+      newest = Math.max(newest, ceilSeconds(unitStat));
+      // Cargo writes freshness evidence after creating the unit directory.
+      // The directory mtime therefore does not bound the mtimes of its
+      // files, especially when a build crosses a whole-second boundary.
+      if (!unitStat.isDirectory()) continue;
+      for (const evidence of readdirSync(unitPath)) {
+        newest = Math.max(
+          newest,
+          ceilSeconds(lstatSync(join(unitPath, evidence), { bigint: true })),
+        );
+      }
+    }
+  });
   return newest;
 }
 
 /** Keep dependency artifacts, but never trust workspace outputs without custody. */
 function invalidateUnownedWorkspaceArtifacts(root: string, target: string): void {
   if (newestFingerprint(target) === 0) return;
-  let packages: string[];
+  let owners: Set<string>;
   try {
     const metadata = JSON.parse(
       execFileSync("cargo", ["metadata", "--no-deps", "--format-version", "1"], {
@@ -129,22 +135,23 @@ function invalidateUnownedWorkspaceArtifacts(root: string, target: string): void
         stdio: ["ignore", "pipe", "pipe"],
       }),
     ) as {
-      packages: Array<{ id: string; name: string; version: string }>;
+      packages: Array<{ id: string; name: string; targets: Array<{ name: string }> }>;
       workspace_members: string[];
     };
     const members = new Set(metadata.workspace_members);
-    packages = metadata.packages
+    const names = metadata.packages
       .filter(({ id }) => members.has(id))
-      .map(({ name, version }) => `${name}@${version}`);
+      .flatMap(({ name, targets }) => [name, ...targets.map((target) => target.name)]);
+    owners = new Set(names.flatMap((name) => [name, name.replaceAll("-", "_")]));
   } catch {
     // Source mtimes remain the conservative fallback outside a Cargo workspace.
     return;
   }
-  if (packages.length === 0) return;
-  const selected = packages.flatMap((spec) => ["--package", spec]);
-  execFileSync("cargo", ["clean", "--quiet", "--target-dir", target, ...selected], {
-    cwd: root,
-    stdio: ["ignore", "pipe", "pipe"],
+  visitFingerprintDirectories(target, (path) => {
+    for (const unit of readdirSync(path)) {
+      const match = /^(.*)-[0-9a-f]{16}$/u.exec(unit);
+      if (match?.[1] && owners.has(match[1])) rmSync(join(path, unit), { recursive: true });
+    }
   });
 }
 
