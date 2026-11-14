@@ -8,6 +8,30 @@ pub(super) struct AuthoredAttribute<'a> {
     pub(super) value: Option<(usize, usize)>,
 }
 
+/// Parse one complete authored attribute range.
+pub(super) fn authored_attribute(source: &str) -> Option<AuthoredAttribute<'_>> {
+    let bytes = source.as_bytes();
+    let name_end = skip_while(bytes, 0, |byte| {
+        !byte.is_ascii_whitespace() && !matches!(byte, b'=' | b'>' | b'/')
+    });
+    let name = source.get(..name_end)?;
+    if name.is_empty() {
+        return None;
+    }
+    let after_name = skip_while(bytes, name_end, |byte| byte.is_ascii_whitespace());
+    let value = if bytes.get(after_name) == Some(&b'=') {
+        let start = skip_while(bytes, after_name + 1, |byte| byte.is_ascii_whitespace());
+        Some((start, bytes.len()))
+    } else {
+        None
+    };
+    Some(AuthoredAttribute {
+        name,
+        name_start: 0,
+        value,
+    })
+}
+
 /// Iterate the attributes of the opening tag that starts `element_source`.
 ///
 /// `element_source` begins at `<`; scanning stops at the `>` that closes the

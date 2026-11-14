@@ -2,48 +2,49 @@
 
 use super::VSlotStyleOption;
 use crate::diagnostic::{Fix, TextEdit};
-use vize_relief::{DirectiveNode, ExpressionNode};
+use crate::markup::MarkupDirective;
 
 pub(super) fn slot_fix(
     source: &str,
-    directive: &DirectiveNode<'_>,
+    directive: &MarkupDirective<'_>,
     actual: VSlotStyleOption,
     expected: VSlotStyleOption,
     help: &str,
 ) -> Option<Fix> {
-    if directive.name != "slot" || !directive.modifiers.is_empty() || actual == expected {
+    let mut has_modifiers = false;
+    directive.walk_modifier_ranges(&mut |_, _| has_modifiers = true);
+    if !directive.name_eq("slot") || has_modifiers || actual == expected {
         return None;
     }
-    let start = directive.loc.span.start;
-    let end = directive.loc.span.end;
+    let range = directive.range();
+    let start = range.start;
+    let end = range.end;
     let attribute = source.get(start as usize..end as usize)?;
-    // Relief retains the directive prefix, not the full authored argument.
     let (prefix, prefix_text) = match actual {
-        VSlotStyleOption::Shorthand if directive.raw_name == Some("#") => (1, "#"),
-        VSlotStyleOption::Longform if directive.raw_name == Some("v-slot") => (7, "v-slot:"),
-        VSlotStyleOption::VSlot if directive.raw_name == Some("v-slot") => (6, "v-slot"),
+        VSlotStyleOption::Shorthand if directive.has_authored_prefix("#") => (1, "#"),
+        VSlotStyleOption::Longform if directive.has_authored_prefix("v-slot") => (7, "v-slot:"),
+        VSlotStyleOption::VSlot if directive.has_authored_prefix("v-slot") => (6, "v-slot"),
         _ => return None,
     };
     if !attribute.starts_with(prefix_text) {
         return None;
     }
-    let (name_end, is_default) = match (&directive.arg, actual) {
+    let argument = directive.argument_range();
+    let (name_end, is_default) = match (argument, actual) {
         (None, VSlotStyleOption::VSlot) => (start.checked_add(prefix)?, true),
-        (
-            Some(ExpressionNode::Simple(simple)),
-            VSlotStyleOption::Shorthand | VSlotStyleOption::Longform,
-        ) => {
-            if simple.content.is_empty() {
+        (Some(argument), VSlotStyleOption::Shorthand | VSlotStyleOption::Longform) => {
+            let content = directive.arg_name()?;
+            if content.is_empty() {
                 return None;
             }
-            let bracket = u32::from(!simple.is_static);
-            let argument = simple.loc.span;
+            let prefix_end = start.checked_add(prefix)?;
+            let bracket = u32::from(source.as_bytes().get(prefix_end as usize) == Some(&b'['));
             if argument.start != start.checked_add(prefix)?.checked_add(bracket)?
-                || source.get(argument.start as usize..argument.end as usize)? != simple.content
+                || source.get(argument.start as usize..argument.end as usize)? != content
             {
                 return None;
             }
-            if !simple.is_static
+            if bracket == 1
                 && (source.as_bytes().get((argument.start - 1) as usize) != Some(&b'[')
                     || source.as_bytes().get(argument.end as usize) != Some(&b']'))
             {
@@ -51,7 +52,7 @@ pub(super) fn slot_fix(
             }
             (
                 argument.end.checked_add(bracket)?,
-                simple.is_static && simple.content == "default",
+                bracket == 0 && directive.is_static_arg_exact("default"),
             )
         }
         _ => return None,
@@ -73,9 +74,9 @@ pub(super) fn slot_fix(
         return None;
     }
     let (width, replacement) = match expected {
-        VSlotStyleOption::Shorthand if directive.arg.is_some() => (prefix, "#"),
+        VSlotStyleOption::Shorthand if argument.is_some() => (prefix, "#"),
         VSlotStyleOption::Shorthand => (prefix, "#default"),
-        VSlotStyleOption::Longform if directive.arg.is_some() => (prefix, "v-slot:"),
+        VSlotStyleOption::Longform if argument.is_some() => (prefix, "v-slot:"),
         VSlotStyleOption::Longform => (prefix, "v-slot:default"),
         // Dropping a named or dynamic argument would select a different slot.
         VSlotStyleOption::VSlot if is_default => (name_end - start, "v-slot"),
@@ -97,6 +98,7 @@ mod tests {
 
     use super::super::{VSlotStyle, VSlotStyleOption};
     use super::slot_fix;
+    use crate::markup::MarkupDirective;
     use crate::{Fix, HelpLevel, LintDiagnostic, Linter, TextEdit, rule::RuleRegistry};
     use vize_l0::{Allocator, Box as ArenaBox, cstr};
     use vize_relief::{DirectiveNode, ExpressionNode, SimpleExpressionNode, SourceLocation};
@@ -221,7 +223,14 @@ mod tests {
             SimpleExpressionNode::new("header", true, SourceLocation::new(8, 14)),
             &&allocator,
         )));
-        let fix = slot_fix(source, &directive, Longform, Shorthand, HELP).unwrap();
+        let fix = slot_fix(
+            source,
+            &MarkupDirective::from_relief(&directive),
+            Longform,
+            Shorthand,
+            HELP,
+        )
+        .unwrap();
         assert_eq!(
             cstr!("{fix:?}"),
             cstr!("{:?}", Fix::new(HELP, TextEdit::replace(1, 8, "#")))
@@ -236,14 +245,23 @@ mod tests {
         ] {
             directive.raw_name = raw;
             directive.loc = SourceLocation::new(start, end);
-            assert!(slot_fix(source, &directive, Longform, Shorthand, HELP).is_none());
+            assert!(
+                slot_fix(
+                    source,
+                    &MarkupDirective::from_relief(&directive),
+                    Longform,
+                    Shorthand,
+                    HELP,
+                )
+                .is_none()
+            );
         }
         directive.raw_name = Some("v-slot");
         directive.loc = SourceLocation::new(1, 22);
         assert!(
             slot_fix(
                 "xv-slot:header=\"props\" ",
-                &directive,
+                &MarkupDirective::from_relief(&directive),
                 Longform,
                 Shorthand,
                 HELP
@@ -253,7 +271,7 @@ mod tests {
         assert!(
             slot_fix(
                 " v-slot:header=\"props\"x",
-                &directive,
+                &MarkupDirective::from_relief(&directive),
                 Longform,
                 Shorthand,
                 HELP
@@ -266,13 +284,22 @@ mod tests {
         )));
         let malformed = " v-slot:[name=\"props\" ";
         directive.loc = SourceLocation::new(1, malformed.len() as u32 - 1);
-        assert!(slot_fix(malformed, &directive, Longform, Shorthand, HELP).is_none());
+        assert!(
+            slot_fix(
+                malformed,
+                &MarkupDirective::from_relief(&directive),
+                Longform,
+                Shorthand,
+                HELP,
+            )
+            .is_none()
+        );
         directive.loc = SourceLocation::new(0, 6);
         directive.arg = None;
         assert_eq!(
             slot_fix(
                 "v-slot",
-                &directive,
+                &MarkupDirective::from_relief(&directive),
                 VSlotStyleOption::VSlot,
                 Shorthand,
                 HELP

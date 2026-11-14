@@ -30,8 +30,9 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::{LintDiagnostic, Severity};
+use crate::markup::{MarkupContext, MarkupDirective, MarkupElement, MarkupRule, MarkupTraversal};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::{DirectiveNode, ElementNode, ExpressionNode};
+use vize_relief::{DirectiveNode, ElementNode};
 
 mod fix;
 mod position;
@@ -95,27 +96,17 @@ impl VSlotStyle {
             SlotPosition::Named => self.named,
         }
     }
-}
 
-impl Rule for VSlotStyle {
-    fn meta(&self) -> &'static RuleMeta {
-        &META
-    }
-
-    fn check_directive<'a>(
+    fn check(
         &self,
-        ctx: &mut LintContext<'a>,
-        element: &ElementNode<'a>,
-        directive: &DirectiveNode<'a>,
+        ctx: &mut LintContext<'_>,
+        element: &MarkupElement<'_>,
+        directive: &MarkupDirective<'_>,
     ) {
-        if directive.name != "slot" {
+        if !directive.name_eq("slot") {
             return;
         }
-        let argument = directive.arg.as_ref().and_then(|arg| match arg {
-            ExpressionNode::Simple(simple) if simple.is_static => Some(simple.content),
-            _ => None,
-        });
-        let expected = self.expected(slot_position(element, &directive.arg, argument));
+        let expected = self.expected(slot_position(element, directive));
         let actual = actual_style(ctx.source, directive);
         if actual == expected {
             return;
@@ -137,12 +128,9 @@ impl Rule for VSlotStyle {
             }
         };
         let help = ctx.t("vue/v-slot-style.help");
-        let mut diagnostic = LintDiagnostic::warn(
-            ctx.current_rule,
-            message,
-            directive.loc.span.start,
-            directive.loc.span.end,
-        );
+        let range = directive.range();
+        let mut diagnostic =
+            LintDiagnostic::warn(ctx.current_rule, message, range.start, range.end);
         if let Some(processed) = ctx.help_level().process(help.as_ref()) {
             diagnostic = diagnostic.with_help(processed);
         }
@@ -152,6 +140,48 @@ impl Rule for VSlotStyle {
             diagnostic = diagnostic.with_fix(fix);
         }
         ctx.report(diagnostic);
+    }
+}
+
+impl MarkupRule for VSlotStyle {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn traversal(&self) -> MarkupTraversal {
+        MarkupTraversal::Directives
+    }
+
+    fn enter_directive<'a>(
+        &self,
+        ctx: &mut MarkupContext<'_, 'a>,
+        element: &MarkupElement<'a>,
+        directive: &MarkupDirective<'a>,
+    ) {
+        self.check(ctx.lint(), element, directive);
+    }
+}
+
+impl Rule for VSlotStyle {
+    fn meta(&self) -> &'static RuleMeta {
+        &META
+    }
+
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
+    }
+
+    fn check_directive<'a>(
+        &self,
+        ctx: &mut LintContext<'a>,
+        element: &ElementNode<'a>,
+        directive: &DirectiveNode<'a>,
+    ) {
+        self.check(
+            ctx,
+            &MarkupElement::new(element),
+            &MarkupDirective::from_relief(directive),
+        );
     }
 }
 

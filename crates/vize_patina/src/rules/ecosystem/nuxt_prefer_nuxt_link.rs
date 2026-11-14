@@ -8,6 +8,7 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::{MarkupContext, MarkupElement, MarkupRule, MarkupTraversal};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::{ElementNode, PropNode};
 
@@ -22,9 +23,41 @@ static META: RuleMeta = RuleMeta {
 /// Implements the `ecosystem/nuxt-prefer-nuxt-link` lint rule.
 pub struct NuxtPreferNuxtLink;
 
+impl MarkupRule for NuxtPreferNuxtLink {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn traversal(&self) -> MarkupTraversal {
+        MarkupTraversal::Elements
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        if element.tag() != "a" || has_markup_anchor_escape_hatch(element) {
+            return;
+        }
+
+        element.walk_attributes(&mut |attribute| {
+            if attribute.name_eq("href")
+                && attribute.value().is_some_and(is_internal_href)
+            {
+                ctx.lint().warn_at_with_help(
+                    "Use NuxtLink for internal links",
+                    attribute.range(),
+                    "Replace the anchor with `<NuxtLink to=\"...\">` so Nuxt can prefetch, route, and type-check the navigation target.",
+                );
+            }
+        });
+    }
+}
+
 impl Rule for NuxtPreferNuxtLink {
     fn meta(&self) -> &'static RuleMeta {
         &META
+    }
+
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
@@ -53,6 +86,15 @@ impl Rule for NuxtPreferNuxtLink {
             );
         }
     }
+}
+
+fn has_markup_anchor_escape_hatch(element: &MarkupElement<'_>) -> bool {
+    let mut found = false;
+    element.walk_attributes(&mut |attribute| {
+        found |= attribute.name_eq("download")
+            || (attribute.name_eq("target") && attribute.value() == Some("_blank"));
+    });
+    found
 }
 
 fn has_anchor_escape_hatch(element: &ElementNode<'_>) -> bool {

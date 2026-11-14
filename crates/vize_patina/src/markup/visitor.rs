@@ -79,7 +79,7 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
     }
 
     fn conditional(&mut self, conditional: MarkupConditional<'a>) {
-        if self.traversal.is_full() {
+        if self.traversal.enters_conditionals() {
             self.set_rule();
             self.rule.enter_conditional(self.ctx, &conditional);
         }
@@ -216,7 +216,7 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
                 self.rule.enter_binding(self.ctx, &element, &binding);
             });
         }
-        if self.traversal.is_full() {
+        if self.traversal.enters_directives() {
             element.walk_directives(&mut |directive| {
                 self.ctx.lint.current_rule = self.name;
                 self.rule.enter_directive(self.ctx, &element, &directive);

@@ -9,6 +9,9 @@
 use super::router_link_require_to::is_router_link_tag;
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::{
+    MarkupBinding, MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule, MarkupTraversal,
+};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, PropNode};
 
@@ -23,9 +26,41 @@ static META: RuleMeta = RuleMeta {
 /// Implements the `ecosystem/vue-router-prefer-named-link` lint rule.
 pub struct VueRouterPreferNamedLink;
 
+impl MarkupRule for VueRouterPreferNamedLink {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn traversal(&self) -> MarkupTraversal {
+        MarkupTraversal::Elements
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        if !is_router_link_tag(element.tag()) {
+            return;
+        }
+
+        element.walk_bindings(&mut |binding| {
+            if is_markup_static_path_to_binding(&binding) {
+                report_markup_static_path(ctx, binding.range());
+            }
+        });
+    }
+}
+
 impl Rule for VueRouterPreferNamedLink {
     fn meta(&self) -> &'static RuleMeta {
         &META
+    }
+
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
+    }
+
+    // Bound string and object literals need their authored expression text;
+    // the direct OXC attribute projection intentionally does not retain it.
+    fn jsx_needs_lowering(&self) -> bool {
+        true
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
@@ -45,6 +80,31 @@ impl Rule for VueRouterPreferNamedLink {
             );
         }
     }
+}
+
+fn is_markup_static_path_to_binding(binding: &MarkupBinding<'_>) -> bool {
+    match binding.kind() {
+        MarkupBindingKind::Attribute => {
+            binding.arg_name() == Some("to") && binding.static_value().is_some_and(is_internal_path)
+        }
+        MarkupBindingKind::Bind if binding.arg_name() == Some("to") => {
+            let Some(expression) = binding.expression() else {
+                return false;
+            };
+            let expression = expression.trim();
+            static_string_literal_value(expression).is_some_and(is_internal_path)
+                || object_path_literal_value(expression).is_some_and(is_internal_path)
+        }
+        _ => false,
+    }
+}
+
+fn report_markup_static_path(ctx: &mut MarkupContext<'_, '_>, range: crate::ir::ByteRange) {
+    ctx.lint().warn_at_with_help(
+        "Prefer a named route object for RouterLink targets",
+        range,
+        "Use `:to=\"{ name: 'route-name' }\"` so route params and Vue Router 5 typed routes stay visible to the editor.",
+    );
 }
 
 fn is_static_path_to_prop(prop: &PropNode<'_>) -> bool {

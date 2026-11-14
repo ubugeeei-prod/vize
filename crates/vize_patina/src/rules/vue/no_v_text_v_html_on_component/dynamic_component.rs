@@ -1,15 +1,16 @@
 use crate::context::LintContext;
+use crate::markup::{MarkupBinding, MarkupBindingKind, MarkupElement};
 use vize_l0::is_native_tag;
-use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, PropNode};
 
 /// Whether the element compiles through `resolveDynamicComponent`.
 ///
 /// Mirrors the compiler's `is_dynamic_component` helper in `vize_atelier_core`:
 /// lowercase `<component>` is always Vue's reserved dynamic-component element,
 /// while `<Component>` is only dynamic when it actually carries an `is` prop.
-pub(super) fn is_dynamic_component(element: &ElementNode<'_>) -> bool {
-    element.tag == "component"
-        || (element.tag == "Component" && element.props.iter().any(is_is_prop))
+pub(super) fn is_dynamic_component(element: &MarkupElement<'_>) -> bool {
+    element.tag() == "component"
+        || (element.tag() == "Component"
+            && (element.has_static_attribute("is") || element.has_bound_attribute("is")))
 }
 
 /// Whether a dynamic component statically resolves to a native element.
@@ -19,41 +20,35 @@ pub(super) fn is_dynamic_component(element: &ElementNode<'_>) -> bool {
 /// are accepted. A dynamic `:is` binding wins over a static `is` attribute.
 pub(super) fn dynamic_component_may_render_component(
     ctx: &LintContext<'_>,
-    element: &ElementNode<'_>,
+    element: &MarkupElement<'_>,
 ) -> bool {
     let mut static_is: Option<&str> = None;
-    for prop in element.props.iter() {
-        match prop {
-            PropNode::Directive(dir) if is_bind_is(dir) => {
-                return bind_is_may_render_component(ctx, dir);
-            }
+    let mut dynamic_is = None;
+    element.walk_bindings(&mut |binding| {
+        if dynamic_is.is_none()
+            && binding.kind() == MarkupBindingKind::Bind
+            && binding.arg_name_eq("is")
+        {
+            dynamic_is = Some(binding);
+        } else if static_is.is_none()
+            && binding.kind() == MarkupBindingKind::Attribute
+            && binding.arg_name_eq("is")
+        {
             // Duplicate `is` attributes: codegen keeps the first.
-            PropNode::Attribute(attr) if attr.name == "is" && static_is.is_none() => {
-                static_is = attr.value.as_ref().map(|v| v.content);
-            }
-            _ => {}
+            static_is = binding.static_value();
         }
+    });
+    if let Some(binding) = dynamic_is {
+        return bind_is_may_render_component(ctx, &binding);
     }
     !static_is.is_some_and(is_native_tag)
 }
 
-fn is_is_prop(prop: &PropNode<'_>) -> bool {
-    match prop {
-        PropNode::Attribute(attr) => attr.name == "is",
-        PropNode::Directive(dir) => is_bind_is(dir),
-    }
-}
-
-fn is_bind_is(dir: &DirectiveNode<'_>) -> bool {
-    dir.name == "bind"
-        && matches!(&dir.arg, Some(ExpressionNode::Simple(arg)) if arg.content == "is")
-}
-
-fn bind_is_may_render_component(ctx: &LintContext<'_>, dir: &DirectiveNode<'_>) -> bool {
-    let Some(exp) = &dir.exp else {
+fn bind_is_may_render_component(ctx: &LintContext<'_>, binding: &MarkupBinding<'_>) -> bool {
+    let Some(content) = binding.expression() else {
         return true;
     };
-    let content = expression_content(ctx.source, exp).trim();
+    let content = content.trim();
     if content.is_empty() {
         return true;
     }
@@ -70,17 +65,6 @@ fn bind_is_may_render_component(ctx: &LintContext<'_>, dir: &DirectiveNode<'_>) 
     }
 
     expression_has_component_reference(content)
-}
-
-fn expression_content<'a>(source: &'a str, expression: &'a ExpressionNode<'a>) -> &'a str {
-    match expression {
-        ExpressionNode::Simple(simple) => simple.content,
-        ExpressionNode::Compound(compound) => {
-            let start = compound.loc.span.start as usize;
-            let end = compound.loc.span.end as usize;
-            source.get(start..end).unwrap_or_default()
-        }
-    }
 }
 
 fn string_literal_value(expression: &str) -> Option<&str> {
