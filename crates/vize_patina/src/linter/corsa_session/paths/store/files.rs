@@ -7,19 +7,27 @@ use oxc_span::SourceType;
 use rayon::prelude::*;
 
 pub(super) fn ambient_program_files(project_root: &Path, tsconfig: &Path) -> Vec<String> {
-    let mut files = ambient_declaration_files(tsconfig);
-    files.extend(
-        vize_canon::batch::tsconfig_included_source_files(tsconfig, project_root)
-            .into_par_iter()
-            .filter(|path| is_typescript_source(path))
-            .filter_map(|path| {
-                let content = std::fs::read_to_string(&path).ok()?;
-                is_module_augmentation(&path, &content).then(|| {
-                    let canonical = std::fs::canonicalize(&path).unwrap_or(path);
-                    slash_path(&canonical)
-                })
-            }),
-    );
+    let selection = configured_program_files(tsconfig);
+    let mut files = selection.declarations;
+    let mut sources = selection.source_candidates;
+    if selection.needs_authoritative_source_scan {
+        sources.extend(vize_canon::batch::tsconfig_included_source_files(
+            tsconfig,
+            project_root,
+        ));
+    }
+    sources.sort();
+    sources.dedup();
+    files.extend(sources.into_par_iter().filter_map(|path| {
+        if !is_typescript_source(&path) {
+            return None;
+        }
+        let content = std::fs::read_to_string(&path).ok()?;
+        is_module_augmentation(&path, &content).then(|| {
+            let canonical = std::fs::canonicalize(&path).unwrap_or(path);
+            slash_path(&canonical)
+        })
+    }));
     files.sort();
     files.dedup();
     files
@@ -68,15 +76,26 @@ fn declaration_is_augmentation(declaration: &Declaration<'_>) -> bool {
     }
 }
 
-fn ambient_declaration_files(tsconfig: &Path) -> Vec<String> {
+struct ProgramFileSelection {
+    declarations: Vec<String>,
+    source_candidates: Vec<PathBuf>,
+    needs_authoritative_source_scan: bool,
+}
+
+fn configured_program_files(tsconfig: &Path) -> ProgramFileSelection {
+    let empty = || ProgramFileSelection {
+        declarations: Vec::new(),
+        source_candidates: Vec::new(),
+        needs_authoritative_source_scan: false,
+    };
     let Some(base) = tsconfig.parent() else {
-        return Vec::new();
+        return empty();
     };
     let Ok(content) = std::fs::read_to_string(tsconfig) else {
-        return Vec::new();
+        return empty();
     };
     let Some(value) = parse_jsonc(&content) else {
-        return Vec::new();
+        return empty();
     };
     let excludes = exclude_patterns(&value);
     let mut matched = Vec::new();
@@ -88,8 +107,12 @@ fn ambient_declaration_files(tsconfig: &Path) -> Vec<String> {
             }
         }
     }
+    let mut include_needs_scan = false;
     if let Some(include) = value.get("include").and_then(Value::as_array) {
         for entry in include.iter().filter_map(Value::as_str) {
+            include_needs_scan |= !entry.contains('*')
+                && !entry.contains('?')
+                && resolve_config_path(base, entry).is_dir();
             collect_include_entry(base, entry, &mut matched);
         }
     }
@@ -98,21 +121,31 @@ fn ambient_declaration_files(tsconfig: &Path) -> Vec<String> {
     }
 
     let mut declarations = Vec::new();
+    let mut source_candidates = Vec::new();
     for path in matched {
-        if !is_declaration_file(&path) {
-            continue;
-        }
         let relative = path.strip_prefix(base).unwrap_or(path.as_path());
         let relative = slash_path(relative);
         if is_excluded(relative.as_str(), &excludes) {
             continue;
         }
-        let absolute = std::fs::canonicalize(&path).unwrap_or(path);
-        declarations.push(slash_path(&absolute));
+        if is_declaration_file(&path) {
+            let absolute = std::fs::canonicalize(&path).unwrap_or(path);
+            declarations.push(slash_path(&absolute));
+        } else if is_typescript_source(&path) {
+            source_candidates.push(path);
+        }
     }
     declarations.sort();
     declarations.dedup();
-    declarations
+    source_candidates.sort();
+    source_candidates.dedup();
+    ProgramFileSelection {
+        declarations,
+        source_candidates,
+        needs_authoritative_source_scan: value.get("extends").is_some()
+            || (value.get("files").is_none() && value.get("include").is_none())
+            || include_needs_scan,
+    }
 }
 
 #[cfg(test)]
@@ -176,6 +209,40 @@ mod tests {
             relative,
             vec!["src/augment.ts", "src/env.d.ts", "src/global.ts"]
         );
+    }
+
+    #[test]
+    fn inherited_program_membership_uses_the_shared_tsconfig_authority() {
+        let root = tempfile::tempdir().unwrap();
+        write(
+            root.path(),
+            "base.json",
+            r#"{"include":["src/**/*.ts"],"exclude":["src/excluded.ts"]}"#,
+        );
+        write(root.path(), "tsconfig.json", r#"{"extends":"./base.json"}"#);
+        write(
+            root.path(),
+            "src/augment.ts",
+            "export {}; declare global { interface Window { inherited: true } }\n",
+        );
+        write(
+            root.path(),
+            "src/excluded.ts",
+            "export {}; declare global { interface Window { excluded: true } }\n",
+        );
+
+        let files = ambient_program_files(root.path(), &root.path().join("tsconfig.json"));
+        let relative: Vec<_> = files
+            .iter()
+            .map(|path| {
+                Path::new(path)
+                    .strip_prefix(root.path())
+                    .unwrap()
+                    .to_string_lossy()
+                    .replace('\\', "/")
+            })
+            .collect();
+        assert_eq!(relative, vec!["src/augment.ts"]);
     }
 }
 
