@@ -81,6 +81,41 @@ test("the flat GitHub workflow directory has a generated navigation catalog", ()
   }
 });
 
+test("public unused script vars authenticates one release and runs the exact package under Bun", () => {
+  const workflow = parse(readRepoFile(".github/workflows/no-unused-script-vars-public.yml"));
+  assert.deepEqual(Object.keys(workflow.on.workflow_dispatch.inputs), [
+    "version",
+    "candidate",
+    "source",
+    "producer_run",
+  ]);
+  const published = workflow.jobs.published;
+  assert.equal(
+    published.if,
+    "github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'",
+  );
+  const setup = published.steps.find((step: { uses?: string }) =>
+    step.uses?.startsWith("oven-sh/setup-bun@"),
+  );
+  assert.ok(setup);
+  assert.match(setup.uses, /^oven-sh\/setup-bun@[0-9a-f]{40}$/u);
+  assert.equal(setup.with["bun-version"], "1.3.14");
+  const runner = published.steps.find((step: { name?: string }) =>
+    step.name?.includes("reported packet"),
+  );
+  assert.ok(runner);
+  assert.match(runner.run, /bun tools\/support\/release\/no_unused_script_vars_public\/run\.ts/u);
+
+  const authenticateStep = published.steps.find((step: { name?: string }) =>
+    step.name?.startsWith("Authenticate"),
+  );
+  assert.ok(authenticateStep);
+  assert.match(
+    authenticateStep.run,
+    /tools\/support\/release\/no_unused_script_vars_public\/authority\.ts/u,
+  );
+});
+
 test("non-release workflows use maximum Blacksmith runner classes", () => {
   const workflows = path.join(root, ".github/workflows");
   const violations = fs
