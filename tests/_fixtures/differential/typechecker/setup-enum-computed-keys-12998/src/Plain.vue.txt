@@ -1,0 +1,12 @@
+<script lang="ts">
+enum Keys {
+  A = "A",
+  B = "B",
+}
+type Foo = {
+  [Keys.A]: number | null;
+  [Keys.B]: number;
+};
+declare const foo: Foo;
+export const value = foo[Keys.A] ?? 0;
+</script>
