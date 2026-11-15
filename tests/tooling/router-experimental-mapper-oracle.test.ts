@@ -143,14 +143,12 @@ function assertRouteMappings(source: string, result: Transform) {
       authored.subarray(originalStart, originalStart + length),
     );
   }
-  const expected = [
-    ...templateAccesses.flatMap(({ length, originalStart: at, generatedStart }) => [
-      span(projection(at, templateUseFeatures), at, binding, templateUseFeatures),
-      span(projection(at, templateHoverFeatures), at, binding, templateHoverFeatures),
-      span(generatedStart, at, binding, allFeatures & ~templateHoverFeatures),
-      span(generatedStart + binding, at + binding, length - binding, allFeatures),
-    ]),
-  ];
+  const expected = templateAccesses.flatMap(({ length, originalStart: at, generatedStart }) => [
+    span(projection(at, templateUseFeatures), at, binding, templateUseFeatures),
+    span(projection(at, templateHoverFeatures), at, binding, templateHoverFeatures),
+    span(generatedStart, at, binding, allFeatures & ~templateHoverFeatures),
+    span(generatedStart + binding, at + binding, length - binding, allFeatures),
+  ]);
   const byGenerated = (left: Span, right: Span) => left[0] - right[0];
   assert.deepEqual(
     result.mappings
