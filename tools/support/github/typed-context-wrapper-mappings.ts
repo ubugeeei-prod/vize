@@ -24,8 +24,98 @@ export function assertTypedContextWrapperMappings(
   ];
   assert.equal(
     digest(producer),
-    "4faaf62203dc7d08d7b7e32c1495cdb3c1a6058b1b0cca0a9e0bbc6975f53a9c",
+    "e05df54b6db5727e5eb15d52d57b2b799a7852ef8e22e1ff4dc9f87f1a1a44d5",
     "unqualified content-mapper producer",
+  );
+  const qualificationRefactorSuccessors = [
+    [
+      `mod directive_table;
+mod directives;
+mod unmapped_ignores;
+use directive_table::content_mapper_diagnostic_directives;
+use directives::with_owned_input_echoes;
+`,
+      `mod directives;
+mod unmapped_ignores;
+use directives::{
+    sfc_diagnostic_directives, with_component_prop_echoes, with_generic_echoes,
+    with_loose_library_prop_fallthrough, with_owned_input_echoes,
+};
+`,
+    ],
+    [
+      `                    content_mapper_diagnostic_directives(
+                        content,
+                        &code,
+                        &descriptor,
+                        &spans,
+                        &diagnostic_echoes,
+                        &diagnostic_primaries,
+                        generic_copies.as_ref(),
+                        &mappings,
+                        &mapping_meta,
+                        &callback_primaries,
+                        loose_unknown_props,
+                    )
+`,
+      `                    let directives = with_generic_echoes(
+                        sfc_diagnostic_directives(
+                            content,
+                            &code,
+                            &descriptor,
+                            &spans,
+                            &diagnostic_echoes,
+                            &diagnostic_primaries,
+                        ),
+                        generic_copies.as_ref(),
+                    );
+                    let directives = with_component_prop_echoes(
+                        directives,
+                        &code,
+                        &mappings,
+                        &callback_primaries,
+                    );
+                    with_loose_library_prop_fallthrough(
+                        directives,
+                        content,
+                        &code,
+                        &mappings,
+                        &mapping_meta,
+                        loose_unknown_props,
+                    )
+`,
+    ],
+    [
+      `    })
+}
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
+`,
+      `    })
+}
+fn ranges_overlap(left: &Range<usize>, right: &Range<usize>) -> bool {
+    left.start < right.end && right.start < left.end
+}
+
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
+`,
+    ],
+  ] as const;
+  let qualificationRefactorPredecessor = currentProducer;
+  for (const [successor, predecessor] of qualificationRefactorSuccessors) {
+    assert.equal(
+      qualificationRefactorPredecessor.split(successor).length,
+      2,
+      "finite qualification-refactor producer successor",
+    );
+    qualificationRefactorPredecessor = qualificationRefactorPredecessor.replace(
+      successor,
+      predecessor,
+    );
+  }
+  assert.equal(
+    digest(qualificationRefactorPredecessor),
+    "4faaf62203dc7d08d7b7e32c1495cdb3c1a6058b1b0cca0a9e0bbc6975f53a9c",
+    "finite qualification-refactor producer successor",
   );
   const looseFallthroughSuccessors = [
     [
@@ -71,7 +161,7 @@ export function assertTypedContextWrapperMappings(
 `,
     ],
   ] as const;
-  let looseFallthroughPredecessor = currentProducer;
+  let looseFallthroughPredecessor = qualificationRefactorPredecessor;
   for (const [successor, predecessor] of looseFallthroughSuccessors) {
     assert.equal(
       looseFallthroughPredecessor.split(successor).length,
