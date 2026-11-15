@@ -42,7 +42,7 @@ export function source(code: string): string {
 export function authoredPosition(text: string, offset: number): Position {
   const prefix = text.slice(0, offset);
   const lines = prefix.split("\n");
-  return { line: lines.length, column: Array.from(lines.at(-1)!).length + 1 };
+  return { line: lines.length, column: lines.at(-1)!.length + 1 };
 }
 
 function message(text: string, name: string, marker: string, body: string): Message {
