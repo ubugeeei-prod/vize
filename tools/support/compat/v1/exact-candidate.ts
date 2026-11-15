@@ -88,7 +88,7 @@ export interface V1ExactCandidateHostAdmission {
   rows: AdmittedRow[];
 }
 
-function hostId(row: RequiredRow): string {
+function hostId(row: Pick<RequiredRow, "runtime" | "runtimeVersion" | "host">): string {
   return `${row.runtime}-${row.runtimeVersion}-${row.host}`;
 }
 

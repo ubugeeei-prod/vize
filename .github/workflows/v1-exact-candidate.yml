@@ -51,7 +51,7 @@ concurrency:
 jobs:
   plan:
     name: Generate exact host plan
-    runs-on: blacksmith-8vcpu-ubuntu-2404
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 5
     outputs:
       hosts: ${{ steps.plan.outputs.hosts }}
@@ -97,7 +97,7 @@ jobs:
   validate-host:
     name: Admit ${{ matrix.id }}
     needs: plan
-    runs-on: blacksmith-8vcpu-ubuntu-2404
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 5
     strategy:
       fail-fast: false
@@ -136,7 +136,7 @@ jobs:
   admit:
     name: Enforce one exact candidate
     needs: [plan, validate-host]
-    runs-on: blacksmith-8vcpu-ubuntu-2404
+    runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
