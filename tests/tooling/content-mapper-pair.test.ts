@@ -82,10 +82,7 @@ test("reference-enabled replicates balance every position and relative order", (
     const orders = balancedOrders(builds, replicate);
     assert.equal(orders.length, 6);
     for (const build of builds) {
-      assert.deepEqual(
-        orders.map((order) => order.indexOf(build)).sort(),
-        [0, 0, 1, 1, 2, 2],
-      );
+      assert.deepEqual(orders.map((order) => order.indexOf(build)).sort(), [0, 0, 1, 1, 2, 2]);
     }
     for (const left of builds) {
       for (const right of builds.filter((build) => build !== left)) {

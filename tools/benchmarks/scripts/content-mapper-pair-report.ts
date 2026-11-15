@@ -157,8 +157,7 @@ export function summarizeCell(input: {
     serialFiles: input.serialFiles,
     replicates: input.replicates,
     orderSeed: input.orderSeed ?? PAIR_ORDER_SEED,
-    ordersPerReplicate:
-      (input.bursts.get(input.builds[0] ?? "")?.length ?? 0) / input.replicates,
+    ordersPerReplicate: (input.bursts.get(input.builds[0] ?? "")?.length ?? 0) / input.replicates,
     burstSamplesPerBuild: input.bursts.get(input.builds[0] ?? "")?.length ?? 0,
     builds,
     outputsIdentical,
