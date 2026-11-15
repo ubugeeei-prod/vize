@@ -16,7 +16,7 @@ export function workspaceRootFiles(
     private: true,
     ...(managerId === "bun" ? { workspaces: ["packages/*"] } : {}),
   };
-  const redirected = { ...(manager.redirect(manifest, redirects) ?? {}) };
+  const redirected = { ...manager.redirect(manifest, redirects) };
   if (managerId === "pnpm") {
     const overrides = redirected["pnpm-workspace.yaml"];
     assert.equal(typeof overrides, "string", "pnpm workspace overrides are missing");
