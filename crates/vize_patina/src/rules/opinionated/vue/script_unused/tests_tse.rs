@@ -81,7 +81,7 @@ fn reports(source: &str, options: Option<&ConfigLintRuleOptions>) -> Vec<String>
 fn all_114_cases_are_present() {
     let cases = cases();
     assert_eq!(cases.len(), 114);
-    assert_eq!(cases.iter().filter(|case| case.kept.is_some()).count(), 3);
+    assert_eq!(cases.iter().filter(|case| case.kept.is_some()).count(), 1);
 }
 
 #[test]

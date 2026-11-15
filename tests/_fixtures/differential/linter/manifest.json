@@ -4534,6 +4534,43 @@
       }
     },
     {
+      "id": "linter/no-unused-script-vars-12999",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "no-unused-script-vars-12999",
+        "files": [
+          {
+            "path": "Reported.vue.txt",
+            "role": "reporter-exhaustive-reproduction-and-negative-controls",
+            "sha256": "12f4775ca88379cdf02030cdff031e8f6d16649221e0f50d0d138c9522dad323"
+          },
+          {
+            "path": "corpus.json",
+            "role": "reporter-exhaustive-typescript-eslint-corpus-and-packet-oracle",
+            "sha256": "ac210b57f805903823a0c8140e6417a2278cf4512376f98d6e0e66c30f4cf714"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/operational-documentation-11863",
       "state": "active",
       "targets": [
