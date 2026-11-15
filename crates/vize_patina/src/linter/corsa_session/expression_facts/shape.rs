@@ -34,12 +34,11 @@ const REFERENCE: u32 = 1 << 2;
 const SYMBOL_CLASS: u32 = 1 << 5;
 const SYMBOL_INTERFACE: u32 = 1 << 6;
 // TypeScript 7 SyntaxKind values.
-const PROPERTY_DECLARATION: u16 = 174;
-const METHOD_SIGNATURE: u16 = 175;
-const METHOD_DECLARATION: u16 = 176;
+const PROPERTY_DECLARATION: u16 = 173;
+const METHOD_SIGNATURE: u16 = 174;
+const METHOD_DECLARATION: u16 = 175;
 const FUNCTION_EXPRESSION: u16 = 219;
 const PROPERTY_ASSIGNMENT: u16 = 303;
-const SHORTHAND_PROPERTY_ASSIGNMENT: u16 = 304;
 
 /// Nesting depth of the shape tree. Deep enough for `T[]` inside a union
 /// inside a constraint.

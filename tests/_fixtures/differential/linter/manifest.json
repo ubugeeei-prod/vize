@@ -7409,6 +7409,59 @@
       }
     },
     {
+      "id": "linter/unbound-method-declarations-12975",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "unbound-method-declarations-12975",
+        "files": [
+          {
+            "path": "src/composables.ts.txt",
+            "role": "issue-authored-property-declaration-shapes",
+            "sha256": "3708b02467061e5b3d584ca71d4956f6a8a91b7398174ff9607bfcc672792a68"
+          },
+          {
+            "path": "src/Destructure.vue.txt",
+            "role": "issue-authored-shorthand-and-class-member-reproduction",
+            "sha256": "a8f7f9c44304d2c249223f4b71e56c1912a61d4d2438281169c5bffe0bb4495b"
+          },
+          {
+            "path": "src/Unbound.vue.txt",
+            "role": "issue-authored-interface-and-library-member-reproduction",
+            "sha256": "3b33f724b29f6b09977663248248b8b173e1df9a81985f1aab0cf6fc4ad134ef"
+          },
+          {
+            "path": "tsconfig.json",
+            "role": "issue-authored-bundler-resolution-config",
+            "sha256": "240d4a075d2223ef2135e651e760cb688878de493339595e67fd9cad12596044"
+          },
+          {
+            "path": "vize-lint.config.mjs.txt",
+            "role": "issue-authored-type-aware-lint-config",
+            "sha256": "83f81c9dfc7601d0ae6b754e063f31c77a77c5496a8057e1a04f9505c4a13f2c"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/unsafe-template-binding-unicode-comment-10898",
       "state": "active",
       "targets": [
