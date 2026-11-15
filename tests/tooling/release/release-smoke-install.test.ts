@@ -331,6 +331,12 @@ module.exports.compileSfc = () => ({
     const environment = {
       BUN_BIN: bunStub,
       NPM_BIN: npmStub,
+      NODE_OPTIONS:
+        process.platform === "win32"
+          ? [process.env.NODE_OPTIONS, `--require=${path.join(tempDir, "bun-runtime-hook.cjs")}`]
+              .filter(Boolean)
+              .join(" ")
+          : process.env.NODE_OPTIONS,
       VIZE_RUNTIME_STUB_LOG: log,
       VIZE_RUNTIME_STUB_NPM: realNpm,
     };
@@ -497,6 +503,7 @@ function resolvePathCommand(name: string): string {
 }
 
 function writeRuntimeStub(tempDir: string, kind: "bun" | "npm"): string {
+  if (process.platform === "win32" && kind === "bun") return writeWindowsBunRuntimeStub(tempDir);
   const script = path.join(tempDir, `${kind}-runtime-stub.cjs`);
   fs.writeFileSync(
     script,
@@ -538,4 +545,40 @@ process.exit(child.status ?? 1);
   const wrapper = path.join(tempDir, `${kind}-runtime-stub.cmd`);
   fs.writeFileSync(wrapper, `@echo off\r\n"${process.execPath}" "${script}" %*\r\n`);
   return wrapper;
+}
+
+function writeWindowsBunRuntimeStub(tempDir: string): string {
+  const executable = path.join(tempDir, "bun-runtime-stub.exe");
+  const hook = path.join(tempDir, "bun-runtime-hook.cjs");
+  fs.copyFileSync(process.execPath, executable);
+  fs.writeFileSync(
+    hook,
+    `const { spawnSync } = require("node:child_process");
+const fs = require("node:fs");
+const path = require("node:path");
+const stub = ${JSON.stringify(executable)}.toLowerCase();
+if (process.execPath.toLowerCase() === stub) {
+  const installing = process.argv[1] === "install";
+  const args = installing ? process.argv.slice(1) : process.execArgv;
+  fs.appendFileSync(process.env.VIZE_RUNTIME_STUB_LOG, JSON.stringify({ kind: "bun", args }) + "\\n");
+  if (installing) {
+    const manifestPath = path.join(process.cwd(), "package.json");
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+    manifest.dependencies = Object.fromEntries(
+      Object.entries(manifest.dependencies || {}).filter(([, value]) => String(value).startsWith("file:")),
+    );
+    fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + "\\n");
+    const child = spawnSync(
+      process.env.VIZE_RUNTIME_STUB_NPM,
+      ["install", "--ignore-scripts", "--package-lock=false", "--no-audit", "--fund=false", "--legacy-peer-deps", "--include=optional"],
+      { cwd: process.cwd(), env: process.env, shell: true, stdio: "inherit" },
+    );
+    if (child.error) throw child.error;
+    process.exit(child.status ?? 1);
+  }
+  process.env.VIZE_BUN_STUB_RUNTIME = "1";
+}
+`,
+  );
+  return executable;
 }
