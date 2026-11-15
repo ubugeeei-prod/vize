@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { appendFileSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
@@ -26,10 +27,26 @@ function option(args: readonly string[], name: string): string {
   return value;
 }
 
+function optionalOption(args: readonly string[], name: string): string | undefined {
+  const index = args.indexOf(name);
+  if (index < 0) return undefined;
+  const value = args[index + 1];
+  if (!value || value.startsWith("--")) throw new Error(`${name} requires a value`);
+  return value;
+}
+
 function plan(args: readonly string[]): void {
   const candidate = option(args, "--candidate");
   assert.match(candidate, /^[0-9a-f]{40}$/u, "candidate must be one exact 40-character SHA");
   const hosts = buildV1ExactCandidateHostPlan(buildV1SupportMatrix());
+  const rowIds = hosts.flatMap(({ rowIds: ids }) => ids).toSorted();
+  const receipt = {
+    schema: "vize.v1-exact-candidate-plan.v1",
+    candidateSource: candidate,
+    counts: { hostPlans: hosts.length, requiredRows: rowIds.length },
+    rowInventorySha256: createHash("sha256").update(JSON.stringify(rowIds)).digest("hex"),
+    hosts,
+  };
   const githubOutput = args.includes("--github-output") ? process.env.GITHUB_OUTPUT : undefined;
   if (githubOutput) {
     appendFileSync(githubOutput, `hosts=${JSON.stringify({ include: hosts })}\n`);
@@ -38,7 +55,10 @@ function plan(args: readonly string[]): void {
       githubOutput,
       `row_count=${hosts.reduce((count, host) => count + host.rowIds.length, 0)}\n`,
     );
-  } else console.log(JSON.stringify({ candidate, hosts }, null, 2));
+  }
+  const output = optionalOption(args, "--output");
+  if (output) writeJson(output, receipt);
+  if (!githubOutput && !output) console.log(JSON.stringify(receipt, null, 2));
 }
 
 function validateHost(args: readonly string[]): void {
