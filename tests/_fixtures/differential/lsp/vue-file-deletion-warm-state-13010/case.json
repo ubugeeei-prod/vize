@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "id": "lsp/fix-history/vue-file-deletion-warm-state-13010",
+  "provenance": {
+    "fixCommit": "7da024714335c6832a7f0cdb2c4e9dfc873cbc5f",
+    "witnessPath": "tests/tooling/real-project-lsp-file-lifecycle.test.ts",
+    "witnessTest": "authored file lifecycle creates, renames, deletes, and repairs a dependency",
+    "inputOrigin": "Exact synthetic importer and dependency used by the authored lifecycle regression",
+    "contractOrigin": "The exact-source Pinia lifecycle action owns delete, repair, warm-backend, and diagnostic acceptance; this differential row pins the authored graph input"
+  },
+  "files": [
+    {
+      "source": "Entry.vue.txt",
+      "runtimePath": "Entry.vue",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "Importer.vue.txt",
+      "runtimePath": "Importer.vue",
+      "sha256": "9171dacd07766ca3265823e45fd2dcc182b37a6db7ed6e47aff827c5507b2688"
+    },
+    {
+      "source": "Child.vue.txt",
+      "runtimePath": "Child.vue",
+      "sha256": "e2dfe48de81be5cbea5b7e9deb0ef763a68d1dd67b7f36c5ccc17b6e6bf3b4a2"
+    }
+  ],
+  "entry": "Entry.vue",
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "38e0b9de817f645c4bec37c0d4a3e58baecccb040f5718dc069a72c7385a0bed"
+  },
+  "method": "textDocument/foldingRange",
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "scope": "Pins the importer and dependency graph whose copied child is renamed, deleted, and repaired while the warm Corsa owner and open importer overlay remain live"
+}
