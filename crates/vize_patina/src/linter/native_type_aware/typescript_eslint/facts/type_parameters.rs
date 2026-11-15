@@ -5,17 +5,23 @@
 use crate::linter::corsa_session::ExpressionFact;
 use corsa::lint::LintNode;
 use serde_json::{Value, json};
-use vize_l0::{FxHashMap, String};
+use vize_l0::{FxHashMap, FxHashSet, String};
 
 pub(super) fn prepare(source: &str, nodes: &mut [LintNode], program: &Value) {
+    let merged = merged_owners(program);
     for node in nodes {
         if node.kind == "TSTypeParameterDeclaration" {
-            enrich_declaration(source, node, program);
+            enrich_declaration(source, node, program, &merged);
         }
     }
 }
 
-fn enrich_declaration(source: &str, declaration: &mut LintNode, program: &Value) {
+fn enrich_declaration(
+    source: &str,
+    declaration: &mut LintNode,
+    program: &Value,
+    merged: &MergedOwners,
+) {
     let Some((owner_kind, owner_start, owner_end)) =
         owner(declaration).map(|(kind, start, end)| (kind.to_owned(), start, end))
     else {
@@ -32,6 +38,7 @@ fn enrich_declaration(source: &str, declaration: &mut LintNode, program: &Value)
         json!({ "start": owner_start, "end": owner_end }),
     );
     let usage_queries = usage_queries(owner, owner_kind.as_str());
+    let merged_owner = merged.contains(&(owner_start, owner_end));
 
     let Some(params) = declaration.child_lists.get_mut("params") else {
         return;
@@ -50,7 +57,8 @@ fn enrich_declaration(source: &str, declaration: &mut LintNode, program: &Value)
         collect_references(owner, &name, false, true, &mut references);
         references.retain(|(start, end)| *start < param.range.start || *end > param.range.end);
         let base_usage_count = references.len() + 1;
-        let repeated = references.len() >= 2
+        let repeated = merged_owner
+            || references.len() >= 2
             || reference_implies_multiple(owner, &name, owner_kind.as_str(), false, false, true);
         needs_checker |= !repeated && !usage_queries.is_empty();
         if let Some(reference) = inferred_return_reference(owner, &name) {
@@ -107,6 +115,72 @@ fn enrich_declaration(source: &str, declaration: &mut LintNode, program: &Value)
             "__typeParameterUsageQueries".into(),
             Value::Array(usage_queries),
         );
+    }
+}
+
+type MergedOwners = FxHashSet<(u32, u32)>;
+
+fn merged_owners(program: &Value) -> MergedOwners {
+    let mut interfaces = FxHashSet::default();
+    let mut candidates = Vec::new();
+    collect_merged_owner_candidates(program, None, &mut interfaces, &mut candidates);
+    candidates
+        .into_iter()
+        .filter_map(|(range, name)| interfaces.contains(&name).then_some(range))
+        .collect()
+}
+
+fn collect_merged_owner_candidates(
+    value: &Value,
+    enclosing_variable: Option<&str>,
+    interfaces: &mut FxHashSet<String>,
+    candidates: &mut Vec<((u32, u32), String)>,
+) {
+    let kind = value.get("type").and_then(Value::as_str);
+    if kind == Some("TSInterfaceDeclaration")
+        && let Some(name) = value
+            .get("id")
+            .and_then(|id| id.get("name"))
+            .and_then(Value::as_str)
+    {
+        interfaces.insert(name.into());
+    }
+
+    let enclosing_variable = if kind == Some("VariableDeclarator") {
+        value
+            .get("id")
+            .and_then(|id| id.get("name"))
+            .and_then(Value::as_str)
+            .or(enclosing_variable)
+    } else {
+        enclosing_variable
+    };
+    let candidate_name = if matches!(kind, Some("ClassDeclaration" | "ClassExpression")) {
+        value
+            .get("id")
+            .and_then(|id| id.get("name"))
+            .and_then(Value::as_str)
+    } else if kind == Some("TSConstructorType") {
+        enclosing_variable
+    } else {
+        None
+    };
+    if let Some((range, name)) = node_range(value).zip(candidate_name) {
+        candidates.push((range, name.into()));
+    }
+
+    match value {
+        Value::Object(fields) => {
+            for child in fields.values() {
+                collect_merged_owner_candidates(child, enclosing_variable, interfaces, candidates);
+            }
+        }
+        Value::Array(items) => {
+            for child in items {
+                collect_merged_owner_candidates(child, enclosing_variable, interfaces, candidates);
+            }
+        }
+        _ => {}
     }
 }
 
@@ -185,7 +259,7 @@ fn collect_references(
     {
         out.push((start, end));
     }
-    let next_type_context = type_context || kind.is_some_and(|kind| kind.starts_with("TS"));
+    let next_type_context = type_context || kind.is_some_and(is_type_only_kind);
     match value {
         Value::Object(fields) => {
             for (key, child) in fields {
@@ -207,16 +281,24 @@ fn collect_references(
                 {
                     continue;
                 }
-                let child_type_context = next_type_context
-                    || matches!(
-                        key.as_str(),
-                        "typeAnnotation"
-                            | "returnType"
-                            | "typeArguments"
-                            | "typeParameters"
-                            | "superTypeArguments"
-                            | "implements"
-                    );
+                let child_type_context = if (kind == Some("TSParameterProperty")
+                    && key == "parameter")
+                    || (kind.is_some_and(is_signature_owner) && key == "params")
+                    || key == "key"
+                {
+                    false
+                } else {
+                    next_type_context
+                        || matches!(
+                            key.as_str(),
+                            "typeAnnotation"
+                                | "returnType"
+                                | "typeArguments"
+                                | "typeParameters"
+                                | "superTypeArguments"
+                                | "implements"
+                        )
+                };
                 collect_references(child, name, child_type_context, false, out);
             }
         }
@@ -227,6 +309,10 @@ fn collect_references(
         }
         _ => {}
     }
+}
+
+fn is_type_only_kind(kind: &str) -> bool {
+    kind.starts_with("TS") && !is_signature_owner(kind) && kind != "TSParameterProperty"
 }
 
 fn declares_type_parameter(value: &Value, name: &str) -> bool {
@@ -637,6 +723,12 @@ fn reference_implies_multiple(
         collect_references(child, name, false, true, &mut references);
         !references.is_empty()
     };
+    if from_class
+        && root
+        && (contains(value.get("superTypeArguments")) || contains(value.get("implements")))
+    {
+        return true;
+    }
     match kind {
         Some("TSTypeReference") => {
             let arguments = value
@@ -658,6 +750,7 @@ fn reference_implies_multiple(
             }
         }
         Some("TSParameterProperty") if contains(Some(value)) => return true,
+        Some("TSInstantiationExpression") if contains(value.get("typeArguments")) => return true,
         _ => {}
     }
     let next_readonly = readonly

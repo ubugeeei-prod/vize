@@ -131,12 +131,17 @@ fn class_arrays_and_parameter_properties_are_relational() {
         "class Values<T> { values: T[] = []; }\n",
         "class Box<T> { constructor(public value: T) {} }\n",
         "class Single<T> { value!: T; }\n",
+        "class Named<T> { constructor(public T: string) {} }\n",
     );
     let reports = report_ranges(source);
-    assert_eq!(reports.len(), 1, "{reports:#?}");
+    assert_eq!(reports.len(), 2, "{reports:#?}");
     assert_eq!(
         reports[0].0,
         source.find("Single<T>").unwrap() + "Single<".len()
+    );
+    assert_eq!(
+        reports[1].0,
+        source.find("Named<T>").unwrap() + "Named<".len()
     );
 }
 
@@ -145,6 +150,26 @@ fn rendered_generic_returns_do_not_capture_outer_names() {
     assert!(locally_binds("<T>(value: T) => T", "T"));
     assert_eq!(text_usage("<T>(value: T) => T", "T", false, true), 0);
     assert_eq!(text_usage("Map<K, V>", "K", false, true), 2);
+}
+
+#[test]
+fn merged_and_heritage_generics_match_checker_identity() {
+    let source = concat!(
+        "interface Merged<T> {}\n",
+        "class Merged<T> {}\n",
+        "interface Parent<T> {}\n",
+        "class Child<T> implements Parent<T> {}\n",
+        "interface Factory<T> {}\n",
+        "declare var Factory: { new <T>(value: T): any };\n",
+        "declare function setItem<T>(T): T;\n",
+        "function instance<T>(value: typeof Merged<T>): void {}\n",
+    );
+    let reports = report_ranges(source);
+    assert_eq!(reports.len(), 1, "{reports:#?}");
+    assert_eq!(
+        reports[0].0,
+        source.find("setItem<T>").unwrap() + "setItem<".len()
+    );
 }
 
 fn report_ranges(source: &str) -> Vec<(usize, usize)> {
