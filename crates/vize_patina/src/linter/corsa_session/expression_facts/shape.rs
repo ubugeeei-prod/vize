@@ -74,6 +74,9 @@ pub(in crate::linter) mod detail {
     pub(in crate::linter) const OBJECT_KIND: u8 = 1 << 4;
     /// Where `toString`, `toLocaleString` and `valueOf` come from.
     pub(in crate::linter) const TO_STRING: u8 = 1 << 5;
+    /// Whether exactly the root type has call signatures. Unlike `CALLABLE`,
+    /// this is not inherited by union parts or generic constraints.
+    pub(in crate::linter) const ROOT_CALLABLE: u8 = 1 << 6;
 }
 
 /// Builds and caches shape trees for one snapshot.
@@ -153,10 +156,11 @@ impl<'a> Shapes<'a> {
                 out.insert("constraint".into(), shape);
             }
         }
-        // typescript-eslint asks for call signatures on the whole handler
-        // type. Union, intersection and constrained type-parameter roots are
-        // callable without carrying TypeFlags.Object.
-        if details & detail::CALLABLE != 0 {
+        // no-implied-eval asks for call signatures on the whole handler type.
+        // Union, intersection and constrained type-parameter roots can be
+        // callable without carrying TypeFlags.Object. Other rules retain the
+        // object-only query below, including on nested parts and constraints.
+        if depth == 0 && details & detail::ROOT_CALLABLE != 0 {
             let signatures = self
                 .session
                 .client()
@@ -228,6 +232,13 @@ impl<'a> Shapes<'a> {
                         && symbol.declarations.iter().all(is_default_library)
                 ),
             );
+        }
+        if details & detail::CALLABLE != 0 && (depth != 0 || details & detail::ROOT_CALLABLE == 0) {
+            let signatures = client
+                .get_signatures_of_type(snapshot.clone(), project.clone(), ty.id.clone(), 0)
+                .await
+                .unwrap_or_default();
+            out.insert("callable".into(), json!(!signatures.is_empty()));
         }
         if details & detail::OBJECT_KIND != 0 {
             self.object_kind(ty, out).await;

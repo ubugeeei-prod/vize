@@ -379,6 +379,8 @@ struct TreeNeeds {
     /// First call/`new` arguments: the `String()` argument (no-base-to-string)
     /// and eval-like handlers (no-implied-eval).
     first_argument: u8,
+    /// The whole type of an eval-like handler (no-implied-eval).
+    implied_eval_handler: bool,
     /// Receivers of `toString`, `toLocaleString` and `join`
     /// (no-base-to-string).
     stringified_receiver: u8,
@@ -415,6 +417,7 @@ impl TreeNeeds {
                     detail::SYMBOL | detail::ELEMENTS | detail::BASES,
                 ),
             first_argument: to_string | when(implied_eval, detail::SYMBOL | detail::CALLABLE),
+            implied_eval_handler: implied_eval,
             stringified_receiver: to_string,
             function_callee: when(implied_eval, detail::SYMBOL),
             void_argument: when(has("no-meaningless-void-operator"), 0),
@@ -447,6 +450,13 @@ fn wants_tree(needs: TreeNeeds, parent: &LintNode, key: &str, index: usize) -> u
         "TemplateLiteral" if key == "expressions" => needs.template_expressions,
         "CallExpression" | "NewExpression" if key == "arguments" && index == 0 => {
             needs.first_argument
+                | if needs.implied_eval_handler
+                    && parent.child("callee").is_some_and(names_eval_like)
+                {
+                    detail::ROOT_CALLABLE
+                } else {
+                    0
+                }
         }
         "CallExpression" | "NewExpression"
             if key == "callee" && parent.child("callee").is_some_and(names_function) =>
@@ -477,5 +487,94 @@ fn names_function(callee: &LintNode) -> bool {
                 || property.field_str("value") == Some("Function")
         }),
         _ => false,
+    }
+}
+
+/// An eval-like global name recognized by no-implied-eval.
+fn names_eval_like(callee: &LintNode) -> bool {
+    let name = match callee.kind.as_str() {
+        "Identifier" => callee.field_str("name"),
+        "MemberExpression"
+            if callee.child("object").is_some_and(|object| {
+                object.kind == "Identifier"
+                    && object
+                        .field_str("name")
+                        .is_some_and(|name| matches!(name, "global" | "globalThis" | "window"))
+            }) =>
+        {
+            let property = callee.child("property");
+            match property.map(|property| property.kind.as_str()) {
+                Some("Identifier") if callee.field_bool("computed") != Some(true) => {
+                    property.and_then(|property| property.field_str("name"))
+                }
+                Some("Literal") => property.and_then(|property| property.field_str("value")),
+                _ => None,
+            }
+        }
+        _ => None,
+    };
+    name.is_some_and(|name| {
+        matches!(
+            name,
+            "setImmediate" | "setInterval" | "setTimeout" | "execScript"
+        )
+    })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{TreeNeeds, wants_tree};
+    use crate::linter::corsa_session::detail;
+    use corsa::lint::LintNode;
+    use serde_json::{Value, json};
+
+    fn identifier(name: &str) -> Value {
+        json!({
+            "kind": "Identifier",
+            "range": { "start": 0, "end": 10 },
+            "fields": { "name": name }
+        })
+    }
+
+    fn call(callee: Value) -> LintNode {
+        serde_json::from_value(json!({
+            "kind": "CallExpression",
+            "range": { "start": 0, "end": 20 },
+            "children": { "callee": callee }
+        }))
+        .expect("call expression")
+    }
+
+    #[test]
+    fn scopes_root_callable_to_eval_like_handlers() {
+        let needs = TreeNeeds::from_rules(&["no-implied-eval"]);
+        let inherited = detail::STRUCTURE | detail::SYMBOL | detail::CALLABLE;
+
+        assert_eq!(
+            wants_tree(needs, &call(identifier("run")), "arguments", 0),
+            inherited
+        );
+        assert_eq!(
+            wants_tree(needs, &call(identifier("setTimeout")), "arguments", 0),
+            inherited | detail::ROOT_CALLABLE
+        );
+
+        let global_timer = json!({
+            "kind": "MemberExpression",
+            "range": { "start": 0, "end": 20 },
+            "fields": { "computed": true },
+            "children": {
+                "object": identifier("globalThis"),
+                "property": {
+                    "kind": "Literal",
+                    "range": { "start": 11, "end": 19 },
+                    "fields": { "value": "setInterval" }
+                }
+            }
+        });
+        assert_eq!(
+            wants_tree(needs, &call(global_timer), "arguments", 0),
+            inherited | detail::ROOT_CALLABLE
+        );
     }
 }
