@@ -171,6 +171,9 @@ fn project<'a>(
 /// at the capture site: the original declaration is a const, and the capture
 /// alias is its exact authored type.
 fn shadow_captured_ambient_consts(document: &mut TypeAwareDocument) {
+    if !document.content.contains("[\"__vize_ambient_") {
+        return;
+    }
     let setup = document
         .content
         .find("// ========== Setup Scope ==========")
