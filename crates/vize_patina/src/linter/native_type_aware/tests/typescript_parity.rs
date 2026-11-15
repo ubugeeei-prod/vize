@@ -6,6 +6,7 @@ use crate::{LintDiagnostic, LintPreset, Linter, Severity};
 
 mod no_implied_eval_callable;
 mod upstream_872_cases;
+mod upstream_872_no_unsafe_return_12996;
 
 const SOURCE: &str = r#"<script lang="ts">
 declare const maybe: (() => void) | undefined;

@@ -1,0 +1,33 @@
+async function unsafeUnion() {
+  return {} as Promise<any> | Promise<object>;
+}
+
+async function unsafeIntersection() {
+  return {} as Promise<any> & { __brand: "any" };
+}
+
+interface UnsafeAlias<T> extends Promise<any> {
+  foo: "bar";
+}
+
+declare const unsafeAlias: UnsafeAlias<number>;
+async function unsafeInheritedAlias() {
+  return unsafeAlias;
+}
+
+function synchronousPromiseAny() {
+  return {} as Promise<any>;
+}
+
+async function safeUnion() {
+  return {} as Promise<string> | Promise<object>;
+}
+
+interface SafeAlias<T> extends Promise<T> {
+  foo: "bar";
+}
+
+declare const safeAlias: SafeAlias<number>;
+async function safeInheritedAlias() {
+  return safeAlias;
+}

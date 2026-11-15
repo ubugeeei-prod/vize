@@ -132,6 +132,8 @@ struct Role<'a> {
     tree: u8,
     /// `__typeDetail`.
     detail: bool,
+    /// Awaited-`any` discrimination for `no-unsafe-return`.
+    promise_any: bool,
 }
 
 fn collect(
@@ -153,6 +155,7 @@ fn collect(
         own.heritage = promise::heritage_query(node);
     }
     own.detail = role.detail || checker::detail_on_self(node, wants.checker);
+    own.promise_any = role.promise_any;
     own.tree = role.tree;
     if wants.tree.members && node.kind == "ObjectPattern" {
         own.member_methods = pattern_keys(node);
@@ -196,6 +199,7 @@ fn collect(
         promise: None,
         tree: wants_tree(wants.tree, node, key, index),
         detail: checker::detail_at(wants.checker, node, key),
+        promise_any: checker::promise_any_at(wants.checker, node, key),
     };
     for (key, child) in &node.children {
         let role = Role {

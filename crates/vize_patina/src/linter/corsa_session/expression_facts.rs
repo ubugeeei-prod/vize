@@ -70,6 +70,8 @@ pub(in crate::linter) struct ExpressionQuery {
     pub contextual: bool,
     /// Load checker details (flags, constituents, constraint, references).
     pub detail: bool,
+    /// Resolve the awaited `any` behind a thenable return expression.
+    pub promise_any: bool,
     /// Member paths into the type (destructuring patterns) whose types to load.
     pub paths: Vec<Vec<PathStep>>,
     /// Describe the constrained type as a `__typeShape` fact.
@@ -121,6 +123,7 @@ impl ExpressionQuery {
         };
         self.contextual |= other.contextual;
         self.detail |= other.detail;
+        self.promise_any |= other.promise_any;
         if self.paths.is_empty() {
             self.paths = other.paths;
         }
@@ -201,6 +204,8 @@ pub(in crate::linter) struct ExpressionFact {
     pub heritage_voids: Vec<(CompactString, CompactString)>,
     /// Checker details of the type (flags, union parts, enum identity, constraint).
     pub detail: Option<Value>,
+    /// Checker detail of the `any` awaited from a thenable return expression.
+    pub promise_any: Option<Value>,
     /// Resolved-signature parameter types, for `ExpressionQuery::call_positions`.
     pub call: Option<Value>,
     /// Signature return types, for `ExpressionQuery::function_returns`.
@@ -375,6 +380,16 @@ async fn load(
         if query.detail {
             fact.detail = Some(type_detail(memo, response, &mut details).await?);
         }
+        if query.promise_any
+            && !detail_exposes_promise(fact.detail.as_ref())
+            && fact
+                .property_names
+                .iter()
+                .any(|property| property == "then")
+            && let Some(awaited) = promises.promise_any_awaited(response).await?
+        {
+            fact.promise_any = Some(type_detail(memo, &awaited, &mut details).await?);
+        }
         if let Some(location) = location {
             if query.call_positions > 0 {
                 fact.call = signatures::resolved_parameters(
@@ -451,6 +466,25 @@ async fn load(
         apply_symbols(session, file, ranges, queries, &mut facts).await;
     }
     Ok((facts, located))
+}
+
+/// The current rule reader already unwraps ordinary `Promise<T>` and
+/// `PromiseLike<T>` references. Avoid a structural checker walk unless the
+/// thenable is hidden behind a composite or a differently named alias.
+fn detail_exposes_promise(detail: Option<&Value>) -> bool {
+    const REFERENCE: u64 = 1 << 2;
+    detail.is_some_and(|detail| {
+        detail
+            .get("objectFlags")
+            .and_then(Value::as_u64)
+            .is_some_and(|flags| flags & REFERENCE != 0)
+            && detail
+                .get("text")
+                .and_then(Value::as_str)
+                .is_some_and(|text| {
+                    text.starts_with("Promise<") || text.starts_with("PromiseLike<")
+                })
+    })
 }
 
 fn byte_offset_to_utf16_offset(source: &str, byte_offset: u32) -> u32 {

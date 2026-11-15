@@ -4544,6 +4544,41 @@
       }
     },
     {
+      "id": "linter/no-unsafe-return-composite-12996",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "no-unsafe-return-composite-12996",
+        "files": [
+          {
+            "path": "Reported.ts.txt",
+            "role": "issue-reported-reproductions-and-negative-controls",
+            "sha256": "139bdd3786c1d88b66b0d47ceb0a3e992112dcd2ecbeac716ab8dfed935b3d49"
+          },
+          {
+            "path": "cases.json",
+            "role": "upstream-immutable-oracle",
+            "sha256": "ea6b933dd64e414939ec41c27f94f98227adbe58a4f1b5188b5b54870588759e"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/no-unused-emit-wrappers-12597",
       "state": "active",
       "targets": [
