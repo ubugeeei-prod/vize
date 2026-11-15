@@ -201,10 +201,12 @@ const check = {
 
 Vite+ automatically tracks source files, configuration imports, dependencies, and
 directory entries. Generated tasks exclude every workspace's `node_modules` tree
-and count the active package manager's lockfile instead. The `packageManager`
-field selects `bun.lock` / `bun.lockb`, `npm-shrinkwrap.json` /
-`package-lock.json`, `pnpm-lock.yaml`, or `yarn.lock`; without that field, present
-lockfiles are selected. Generated `**/.vize/**` files are also excluded, and
+and count the active package manager's lockfile instead. In a workspace package,
+the workspace-root lockfile is resolved from the workspace root; a package-local
+lockfile remains relative to that package. The `packageManager` field selects
+`bun.lock` / `bun.lockb`, `npm-shrinkwrap.json` / `package-lock.json`,
+`pnpm-lock.yaml`, or `yarn.lock`; without that field, present lockfiles are
+selected. Generated `**/.vize/**` files are also excluded, and
 checks never restore output files. Source-writing tasks such as `fmt` and
 `lint:fix` remain uncached. Passing `--fix` to a cached check still runs on
 changed inputs, including reintroducing the same unformatted source after a

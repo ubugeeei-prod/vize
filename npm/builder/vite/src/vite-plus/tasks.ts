@@ -20,6 +20,12 @@ const tasks: VizeTask[] = [
   "test",
 ];
 type Tasks = NonNullable<NonNullable<UserConfig["run"]>["tasks"]>;
+type LockfileInput = string | { pattern: string; base: "workspace" };
+type PackageManifest = {
+  packageManager?: string;
+  scripts?: Record<string, string>;
+  workspaces?: unknown;
+};
 const readOnlyTasks = new Set<VizeTask>(["lint", "fmt:check", "check", "typecheck"]);
 const lockfilesByPackageManager = {
   bun: ["bun.lock", "bun.lockb"],
@@ -40,13 +46,14 @@ export function createTasks(
   let scripts: Record<string, string> = {};
   let packageManager: string | undefined;
   try {
-    const manifest = JSON.parse(readFileSync(path.resolve("package.json"), "utf8"));
+    const manifest = readManifest(process.cwd());
     scripts = manifest.scripts ?? {};
     packageManager = manifest.packageManager;
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
   }
   const result: Tasks = {};
+  let lockfiles: LockfileInput[] | undefined;
   for (const task of tasks) {
     if (names[task] === false) continue;
     const name = names[task] ?? (task in scripts ? `vize:${task}` : task);
@@ -60,24 +67,61 @@ export function createTasks(
     const command = `node ${quote(runner)} ${task}`;
     result[name] =
       taskCache && readOnlyTasks.has(task)
-        ? cachedTask(command, lockfileInputs(packageManager))
+        ? cachedTask(command, (lockfiles ??= lockfileInputs(packageManager)))
         : { command, cache: false };
   }
   return result;
 }
 
-function lockfileInputs(packageManager?: string): string[] {
-  const declared = packageManager?.split("@", 1)[0];
-  if (declared && declared in lockfilesByPackageManager) {
-    return [...lockfilesByPackageManager[declared as keyof typeof lockfilesByPackageManager]];
+function lockfileInputs(packageManager?: string): LockfileInput[] {
+  const packageDirectory = process.cwd();
+  const local = allLockfiles.filter((file) => existsSync(path.join(packageDirectory, file)));
+  const workspaceDirectory = findWorkspaceDirectory(packageDirectory);
+  const workspace = workspaceDirectory === packageDirectory ? local : [];
+  const useWorkspace = workspaceDirectory !== packageDirectory && !local.length;
+  if (useWorkspace) {
+    workspace.push(
+      ...allLockfiles.filter((file) => existsSync(path.join(workspaceDirectory, file))),
+    );
   }
-  const present = allLockfiles.filter((file) => existsSync(path.resolve(file)));
-  // If installation has not created a lockfile yet, retain every supported name
-  // so the first one becomes an input without requiring a config change.
-  return present.length > 0 ? present : [...allLockfiles];
+  const selectedPackageManager = useWorkspace
+    ? (readManifest(workspaceDirectory).packageManager ?? packageManager)
+    : packageManager;
+  const declared = selectedPackageManager?.split("@", 1)[0];
+  let selected: string[];
+  if (declared && declared in lockfilesByPackageManager) {
+    selected = [...lockfilesByPackageManager[declared as keyof typeof lockfilesByPackageManager]];
+  } else {
+    const present = useWorkspace ? workspace : local;
+    // If installation has not created a lockfile yet, retain every supported
+    // name so the first one becomes an input without a config change.
+    selected = present.length > 0 ? present : [...allLockfiles];
+  }
+  return useWorkspace ? selected.map((pattern) => ({ pattern, base: "workspace" })) : selected;
 }
 
-function cachedTask(command: string, lockfiles: string[]): Tasks[string] {
+function findWorkspaceDirectory(packageDirectory: string): string {
+  let directory = packageDirectory;
+  for (;;) {
+    if (existsSync(path.join(directory, "pnpm-workspace.yaml"))) return directory;
+    if (existsSync(path.join(directory, "package.json"))) {
+      try {
+        if (readManifest(directory).workspaces != null) return directory;
+      } catch (error) {
+        if (directory === packageDirectory) throw error;
+      }
+    }
+    const parent = path.dirname(directory);
+    if (parent === directory) return packageDirectory;
+    directory = parent;
+  }
+}
+
+function readManifest(directory: string): PackageManifest {
+  return JSON.parse(readFileSync(path.join(directory, "package.json"), "utf8"));
+}
+
+function cachedTask(command: string, lockfiles: LockfileInput[]): Tasks[string] {
   const require = createRequire(path.resolve("package.json"));
   const { version } = JSON.parse(readFileSync(require.resolve("vite-plus/package.json"), "utf8"));
   const cache = {

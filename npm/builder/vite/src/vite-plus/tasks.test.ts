@@ -115,6 +115,28 @@ void test("task cache is opt-in and only checks cache without restoring outputs"
       "pnpm-lock.yaml",
       "yarn.lock",
     ]);
+    const packageDirectory = path.join(directory, "packages/app");
+    mkdirSync(packageDirectory, { recursive: true });
+    writeFileSync(
+      "package.json",
+      JSON.stringify({
+        packageManager: "pnpm@12.1.0",
+        workspaces: ["packages/*"],
+      }),
+    );
+    writeFileSync("pnpm-workspace.yaml", 'packages:\n  - "packages/*"\n');
+    writeFileSync("pnpm-lock.yaml", "lockfileVersion: '9.0'\n");
+    process.chdir(packageDirectory);
+    assert.deepEqual(lockfileInputs("npm@11.11.0"), [
+      ...common,
+      { pattern: "pnpm-lock.yaml", base: "workspace" },
+    ]);
+    assert.deepEqual(lockfileInputs("npm@11.11.0", ["package-lock.json"]), [
+      ...common,
+      "npm-shrinkwrap.json",
+      "package-lock.json",
+    ]);
+    process.chdir(directory);
     assert.deepEqual(createTasks({}, false, true), {});
   } finally {
     process.chdir(previous);

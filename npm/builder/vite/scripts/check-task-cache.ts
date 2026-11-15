@@ -10,7 +10,9 @@ import {
   installFixture,
   installSourceCliLauncher,
   installSourceArchive as installSourcePackage,
+  restoreSourceCliLauncher,
   runNodeModulesCacheProbes,
+  snapshotFiles,
   type FixtureInstaller,
   type TaskRunOptions,
   type TaskRunReceipt,
@@ -57,16 +59,8 @@ const write = (file: string, contents: string): void => {
   fs.mkdirSync(path.dirname(path.join(directory, file)), { recursive: true });
   fs.writeFileSync(path.join(directory, file), contents);
 };
-function snapshot(): Record<string, string> {
-  return Object.fromEntries(
-    ["src/App.vue", "src/value.ts", "lint-policy.ts", "vite.config.ts"].map((file) => [
-      file,
-      createHash("sha256")
-        .update(fs.readFileSync(path.join(directory, file)))
-        .digest("hex"),
-    ]),
-  );
-}
+const snapshot = (): Record<string, string> =>
+  snapshotFiles(directory, ["src/App.vue", "src/value.ts", "lint-policy.ts", "vite.config.ts"]);
 try {
   write(
     "package.json",
@@ -361,11 +355,15 @@ try {
       run,
       install,
       installSourceArchive,
+      restoreSourceCliLauncher: sourceCli
+        ? () => void restoreSourceCliLauncher(sourceCli, require)
+        : undefined,
       sourceArchivePath,
     });
 
     fs.appendFileSync(path.join(directory, lockfile), "\n");
-    run("lockfile-change", "verify:lint", { hit: false });
+    const lockfileOutput = run("lockfile-change", "verify:lint", { hit: false });
+    if (sourceCli) assert.match(lockfileOutput, /^VIZE_TASK_CACHE_SOURCE_ENV /mu);
     run("lockfile-change-hit", "verify:lint", { hit: true });
 
     write("src/value.ts", 'export const value: string = "hello";\ndebugger;\n');

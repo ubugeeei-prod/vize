@@ -46,6 +46,7 @@ interface CacheProbeOptions {
   run: RunTask;
   install: (fresh?: boolean) => void;
   installSourceArchive: (archive: string) => void;
+  restoreSourceCliLauncher?: () => void;
   sourceArchivePath?: string;
 }
 
@@ -123,6 +124,16 @@ export async function installSourceCliLauncher(
   for await (const chunk of fs.createReadStream(sourceCli)) hash.update(chunk);
   assert.equal(hash.digest("hex"), expected, "the exact verified source CLI executes");
   assert.ok(receipt);
+  return {
+    verified: JSON.parse(fs.readFileSync(receipt, "utf8")) as unknown,
+    launcher: restoreSourceCliLauncher(sourceCli, require),
+  };
+}
+
+export function restoreSourceCliLauncher(
+  sourceCli: string,
+  require: NodeRequire,
+): Record<string, string> {
   const launcher = path.resolve(path.dirname(require.resolve("vize")), "../bin/vize");
   const originalLauncher = fs.readFileSync(launcher, "utf8");
   // Only this disposable install's launcher delegates to the real, verified
@@ -132,14 +143,22 @@ export async function installSourceCliLauncher(
     `#!/usr/bin/env node\nimport { spawn } from "node:child_process";\nconsole.error("VIZE_TASK_CACHE_SOURCE_ENV " + JSON.stringify({ cwd: process.cwd(), xdgCacheHome: process.env.XDG_CACHE_HOME, tmpdir: process.env.TMPDIR, argv: process.argv.slice(2) }));\nconst child = spawn(${JSON.stringify(sourceCli)}, process.argv.slice(2), { stdio: "inherit" });\nconst stop = (signal) => { if (!child.killed) child.kill(signal); };\nprocess.on("SIGTERM", () => stop("SIGTERM"));\nprocess.on("SIGINT", () => stop("SIGINT"));\nchild.on("error", (error) => { throw error; });\nchild.on("exit", (code, signal) => {\n  if (signal) process.kill(process.pid, signal);\n  else process.exitCode = code ?? 1;\n});\n`,
   );
   return {
-    verified: JSON.parse(fs.readFileSync(receipt, "utf8")) as unknown,
-    launcher: {
-      path: launcher,
-      original: originalLauncher,
-      originalSha256: createHash("sha256").update(originalLauncher).digest("hex"),
-      delegatedSha256: createHash("sha256").update(fs.readFileSync(launcher)).digest("hex"),
-    },
+    path: launcher,
+    original: originalLauncher,
+    originalSha256: createHash("sha256").update(originalLauncher).digest("hex"),
+    delegatedSha256: createHash("sha256").update(fs.readFileSync(launcher)).digest("hex"),
   };
+}
+
+export function snapshotFiles(directory: string, files: string[]): Record<string, string> {
+  return Object.fromEntries(
+    files.map((file) => [
+      file,
+      createHash("sha256")
+        .update(fs.readFileSync(path.join(directory, file)))
+        .digest("hex"),
+    ]),
+  );
 }
 
 export function runNodeModulesCacheProbes(options: CacheProbeOptions): void {
@@ -180,6 +199,7 @@ export function runNodeModulesCacheProbes(options: CacheProbeOptions): void {
   fs.rmSync(options.nodeModules, { recursive: true });
   options.install(true);
   if (options.sourceArchivePath) options.installSourceArchive(options.sourceArchivePath);
+  options.restoreSourceCliLauncher?.();
   fs.mkdirSync(path.dirname(taskCache), { recursive: true });
   fs.cpSync(preservedTaskCache, taskCache, { recursive: true });
   probe("fresh-install-with-restored-task-cache", () => {});
