@@ -472,24 +472,20 @@ void test("the reusable Action publishes the same plan or admission artifact", (
       const result = runDriver(driver.run!, operation);
       assert.equal(result.status, 0, `${operation}: ${result.stderr}`);
       const arguments_ = readFileSync(argumentsLog, "utf8").split("\n");
+      const valueAfter = (name: string) => arguments_[arguments_.indexOf(name) + 1];
       assert.equal(arguments_[0], "tools/commands/release/v1-five-case-receipts.ts");
       assert.equal(arguments_[1], command);
-      assert.ok(arguments_.includes("--source"), operation);
-      assert.ok(arguments_.includes(sourceSha), operation);
-      assert.ok(arguments_.includes("--candidate"), operation);
-      assert.ok(arguments_.includes(candidateSha), operation);
-      assert.ok(arguments_.includes("--mode"), operation);
-      assert.ok(arguments_.includes("pr"), operation);
+      assert.equal(valueAfter("--source"), sourceSha, operation);
+      assert.equal(valueAfter("--candidate"), candidateSha, operation);
+      assert.equal(valueAfter("--mode"), "pr", operation);
       if (operation === "plan") {
-        assert.ok(arguments_.includes("--run"), operation);
-        assert.ok(arguments_.includes("44000000000"), operation);
-        assert.ok(arguments_.includes("--attempt"), operation);
-        assert.ok(arguments_.includes("1"), operation);
-        assert.ok(arguments_.includes("--shards"), operation);
-        assert.ok(arguments_.includes("8"), operation);
+        assert.equal(valueAfter("--run"), "44000000000", operation);
+        assert.equal(valueAfter("--attempt"), "1", operation);
+        assert.equal(valueAfter("--shards"), "8", operation);
+        assert.equal(valueAfter("--output"), outputPath, operation);
       } else {
-        assert.ok(arguments_.includes("--bundles"), operation);
-        assert.ok(arguments_.includes(bundlesDirectory), operation);
+        assert.equal(valueAfter("--bundles"), bundlesDirectory, operation);
+        if (operation === "admit") assert.equal(valueAfter("--output"), outputPath, operation);
       }
       assert.equal(readFileSync(output, "utf8").trim(), `output_path=${outputPath}`);
     }
