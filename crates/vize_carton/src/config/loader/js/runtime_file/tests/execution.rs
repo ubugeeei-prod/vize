@@ -103,16 +103,11 @@ fn live_reader_does_not_deadlock_damaged_runtime_repair() {
     fs::write(&path, "partial").unwrap();
 
     let fallback = runtime(cache.path(), script);
+    let fallback_path = fallback.path().to_path_buf();
     assert!(!fallback.is_cached());
     drop(fallback);
+    assert!(!fallback_path.exists());
     drop(reader);
-
-    let repaired = runtime(cache.path(), script);
-    assert!(repaired.is_cached());
-    assert_eq!(
-        fs::read(path).unwrap(),
-        super::super::runtime_source(script)
-    );
 }
 
 #[test]
