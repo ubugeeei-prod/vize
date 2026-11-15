@@ -91,12 +91,7 @@ void test("task cache is opt-in and only checks cache without restoring outputs"
       const cache = (typeof task.cache === "object" ? task.cache : task) as { input: unknown };
       return cache.input;
     };
-    const common = [
-      { auto: true },
-      "!**/node_modules",
-      "!**/node_modules/**",
-      "!**/.vize/**",
-    ];
+    const common = [{ auto: true }, "!**/node_modules", "!**/node_modules/**", "!**/.vize/**"];
     assert.deepEqual(lockfileInputs("bun@1.3.14"), [...common, "bun.lock", "bun.lockb"]);
     assert.deepEqual(lockfileInputs("npm@11.11.0"), [
       ...common,
