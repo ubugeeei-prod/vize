@@ -220,6 +220,13 @@ fn cached_runtime(home: &Path, source: &[u8]) -> io::Result<NodeRuntimeFile> {
     }
     lease.unlock()?;
 
+    // Make room before publishing while no runtime lease is held. The
+    // operation stays non-blocking: another constructor may own the catalog,
+    // in which case the ordinary post-publish maintenance remains the bounded
+    // follow-up. Reserving on a quiet miss prevents the try-only maintenance
+    // policy from retaining one avoidable overflow after this constructor.
+    reserve_cache_capacity(&root, &path, &catalog);
+
     lock_exclusive_lease(&catalog, &lease)?;
     if !runtime_matches(&path, source) {
         remove_invalid_runtime(&path)?;
@@ -436,7 +443,16 @@ fn maintain_cache(root: &Path, current: &Path, catalog: &File) {
         return;
     }
     recover_interrupted_writes_locked(root);
-    prune_cache_locked(root, current);
+    prune_cache_locked(root, current, CACHE_LIMIT);
+    let _ = catalog.unlock();
+}
+
+fn reserve_cache_capacity(root: &Path, current: &Path, catalog: &File) {
+    if catalog.try_lock().is_err() {
+        return;
+    }
+    recover_interrupted_writes_locked(root);
+    prune_cache_locked(root, current, CACHE_LIMIT.saturating_sub(1));
     let _ = catalog.unlock();
 }
 
@@ -496,7 +512,7 @@ fn recover_interrupted_writes_locked(root: &Path) {
     }
 }
 
-fn prune_cache_locked(root: &Path, current: &Path) {
+fn prune_cache_locked(root: &Path, current: &Path, limit: usize) {
     let Ok(entries) = fs::read_dir(root) else {
         return;
     };
@@ -516,7 +532,7 @@ fn prune_cache_locked(root: &Path, current: &Path) {
     runtimes.sort_by_key(|(_, modified)| std::cmp::Reverse(*modified));
     let mut retained = runtimes.len();
     for (path, _) in runtimes.into_iter().rev() {
-        if retained <= CACHE_LIMIT {
+        if retained <= limit {
             break;
         }
         if path == current || !remove_inactive_runtime(&path) {
