@@ -109,6 +109,21 @@ fn cached_runtime(home: &Path, source: &[u8]) -> io::Result<NodeRuntimeFile> {
     let path = root.join(crate::cstr!("{hash}.mjs").as_str());
     let lease_path = root.join(crate::cstr!("{hash}.lease").as_str());
     let lease = open_lease(&lease_path)?;
+
+    // Cache hits are readers. Keeping their lease shared lets the same
+    // evaluator be reused by nested loads and other processes without an
+    // exclusive-lock cycle. Only a missing or damaged entry needs repair.
+    lease.lock_shared()?;
+    if runtime_matches(&path, source) {
+        prune_cache(&root, &path);
+        return Ok(NodeRuntimeFile {
+            path,
+            _lease: Some(lease),
+            _temporary: None,
+        });
+    }
+    lease.unlock()?;
+
     lease.lock()?;
     if !runtime_matches(&path, source) {
         remove_invalid_runtime(&path)?;
@@ -262,6 +277,9 @@ fn recover_interrupted_writes(root: &Path) {
         if file.try_lock().is_err() {
             continue;
         }
+        if file.unlock().is_err() {
+            continue;
+        }
         drop(file);
         let _ = fs::remove_file(path);
     }
@@ -283,6 +301,9 @@ fn recover_interrupted_writes(root: &Path) {
             continue;
         };
         if file.try_lock().is_err() {
+            continue;
+        }
+        if file.unlock().is_err() {
             continue;
         }
         drop(file);

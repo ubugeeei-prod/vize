@@ -1,9 +1,15 @@
 use super::NodeRuntimeFile;
 use std::{
+    env,
     fs::{self, OpenOptions},
     io::Write,
-    path::Path,
+    path::{Path, PathBuf},
+    process::Command,
+    thread,
+    time::{Duration, Instant},
 };
+
+const SHARED_PROCESS_SCRIPT: &str = "process.stdout.write('shared process');";
 
 fn runtime(cache_home: &Path, script: &str) -> NodeRuntimeFile {
     NodeRuntimeFile::new_with_cache_home(script, cache_home).unwrap()
@@ -165,11 +171,10 @@ fn unavailable_cache_uses_a_scoped_fallback_on_success_or_child_failure() {
 }
 
 #[test]
-fn identical_runtime_is_reused_and_old_identities_are_bounded() {
+fn live_runtime_is_reused_and_stale_identities_are_bounded() {
     let cache = tempfile::tempdir().unwrap();
     let first = runtime(cache.path(), "process.stdout.write('same');");
     let first_path = first.path().to_path_buf();
-    drop(first);
     let repeated = runtime(cache.path(), "process.stdout.write('same');");
     assert_eq!(repeated.path(), first_path);
     drop(repeated);
@@ -207,6 +212,68 @@ fn identical_runtime_is_reused_and_old_identities_are_bounded() {
             .count(),
         0
     );
+    assert!(first_path.exists(), "an active runtime must not be pruned");
+    drop(first);
+}
+
+#[test]
+fn another_process_can_reuse_a_live_runtime() {
+    let cache = tempfile::tempdir().unwrap();
+    let result = cache.path().join("child-runtime-path");
+    let held = runtime(cache.path(), SHARED_PROCESS_SCRIPT);
+    let mut child = Command::new(env::current_exe().unwrap())
+        .arg("runtime_cache_process_fixture")
+        .arg("--ignored")
+        .arg("--nocapture")
+        .env("VIZE_RUNTIME_FIXTURE_CACHE", cache.path())
+        .env("VIZE_RUNTIME_FIXTURE_RESULT", &result)
+        .spawn()
+        .unwrap();
+    let deadline = Instant::now() + Duration::from_secs(10);
+    let status = loop {
+        if let Some(status) = child.try_wait().unwrap() {
+            break status;
+        }
+        if Instant::now() >= deadline {
+            child.kill().unwrap();
+            child.wait().unwrap();
+            panic!("another process blocked while reusing a live runtime");
+        }
+        thread::sleep(Duration::from_millis(10));
+    };
+    assert!(status.success());
+    assert_eq!(
+        fs::read_to_string(result).unwrap(),
+        held.path().file_name().unwrap().to_str().unwrap()
+    );
+}
+
+#[test]
+#[ignore = "helper process for another_process_can_reuse_a_live_runtime"]
+fn runtime_cache_process_fixture() {
+    let cache = PathBuf::from(env::var_os("VIZE_RUNTIME_FIXTURE_CACHE").unwrap());
+    let result = PathBuf::from(env::var_os("VIZE_RUNTIME_FIXTURE_RESULT").unwrap());
+    let runtime = runtime(&cache, SHARED_PROCESS_SCRIPT);
+    fs::write(
+        result,
+        runtime.path().file_name().unwrap().to_str().unwrap(),
+    )
+    .unwrap();
+}
+
+#[test]
+fn damaged_owned_runtime_is_repaired_in_place() {
+    let cache = tempfile::tempdir().unwrap();
+    let script = "process.stdout.write('repair');";
+    let cached = runtime(cache.path(), script);
+    let path = cached.path().to_path_buf();
+    drop(cached);
+    fs::write(&path, "partial").unwrap();
+
+    let repaired = runtime(cache.path(), script);
+    assert!(repaired.is_cached());
+    assert_eq!(repaired.path(), path);
+    assert_eq!(fs::read(path).unwrap(), super::runtime_source(script));
 }
 
 #[test]
@@ -229,6 +296,7 @@ fn startup_recovers_only_unlocked_partial_writes() {
     drop(runtime(cache.path(), "process.stdout.write('recover');"));
     assert!(!abandoned.exists());
     assert!(active.exists());
+    active_file.unlock().unwrap();
     drop(active_file);
     drop(runtime(
         cache.path(),
