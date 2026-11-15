@@ -17775,6 +17775,45 @@
       }
     },
     {
+      "id": "typechecker/setup-enum-computed-keys-12998/reported-project",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "setup-enum-computed-keys-12998/src/Keyed.vue.txt",
+          "role": "issue-authored-setup-regression",
+          "sha256": "6a24604c7a04e29111252ae82e4714dcc76355590e8ff2fb20fad66e1d68a5d8"
+        },
+        {
+          "path": "setup-enum-computed-keys-12998/src/Plain.vue.txt",
+          "role": "issue-authored-plain-script-control",
+          "sha256": "580ba52fd6690ecc76982abebe71b674a962153a2dcfb2448172e4bb6465f7d6"
+        },
+        {
+          "path": "setup-enum-computed-keys-12998/tsconfig.json.txt",
+          "role": "issue-authored-project-config",
+          "sha256": "58a7b95ded5405fa3e811fa60c74459a8ac19b08153682a3a2212ec946671451"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "sfc_typecheck::tests::setup_enum_computed_keys::computed_keys_stay_with_setup_enum; exact #12998 setup regression and plain-script control. Input-only registration; no native parity claim."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/shorthand-double-diagnostic-10920",
       "state": "active",
       "targets": [

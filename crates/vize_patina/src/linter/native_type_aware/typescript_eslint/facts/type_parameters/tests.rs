@@ -1,7 +1,7 @@
 use corsa::lint::run_default_type_aware_rule_owned;
 use serde_json::Value;
 
-use super::enrich;
+use super::{enrich, locally_binds, text_usage};
 use crate::linter::native_type_aware::typescript_eslint::tree;
 
 #[test]
@@ -98,6 +98,87 @@ fn excludes_concise_arrow_function_bodies() {
     let source = "const log = <T>(value: T): void => void (value as T);\n";
     let reports = report_ranges(source);
     assert_eq!(reports.len(), 1, "{reports:#?}");
+}
+
+#[test]
+fn generic_wrappers_establish_multiple_type_uses() {
+    let source = concat!(
+        "declare function fetchJson<T>(): Promise<T>;\n",
+        "declare function select<T>(props: ItemProps<T>): void;\n",
+        "declare function takeArray<T>(items: T[]): void;\n",
+        "declare function returnArray<T>(): T[];\n",
+    );
+    let reports = report_ranges(source);
+    assert_eq!(reports.len(), 1, "{reports:#?}");
+    assert_eq!(
+        reports[0].0,
+        source.find("takeArray<T>").unwrap() + "takeArray<".len()
+    );
+}
+
+#[test]
+fn ignores_generic_interfaces_and_aliases() {
+    let source = concat!(
+        "interface Marker<T> { name: string }\n",
+        "type Wrapped<T> = { value: T };\n",
+    );
+    assert!(report_ranges(source).is_empty());
+}
+
+#[test]
+fn class_arrays_and_parameter_properties_are_relational() {
+    let source = concat!(
+        "class Values<T> { values: T[] = []; }\n",
+        "class Box<T> { constructor(public value: T) {} }\n",
+        "class Single<T> { value!: T; }\n",
+        "class Named<T> { constructor(public T: string) {} }\n",
+    );
+    let reports = report_ranges(source);
+    assert_eq!(reports.len(), 2, "{reports:#?}");
+    assert_eq!(
+        reports[0].0,
+        source.find("Single<T>").unwrap() + "Single<".len()
+    );
+    assert_eq!(
+        reports[1].0,
+        source.find("Named<T>").unwrap() + "Named<".len()
+    );
+}
+
+#[test]
+fn rendered_generic_returns_do_not_capture_outer_names() {
+    assert!(locally_binds("<T>(value: T) => T", "T"));
+    assert_eq!(text_usage("<T>(value: T) => T", "T", false, true), 0);
+    assert_eq!(text_usage("Map<K, V>", "K", false, true), 2);
+}
+
+#[test]
+fn merged_and_heritage_generics_match_checker_identity() {
+    let source = concat!(
+        "interface Merged<T> {}\n",
+        "class Merged<T> {}\n",
+        "class MergedChild extends Merged<string> {}\n",
+        "interface Parent<T> {}\n",
+        "class Child<T> implements Parent<T> {}\n",
+        "interface Factory<T> {}\n",
+        "declare var Factory: { new <T>(value: T): any };\n",
+        "class Product extends Factory<string> {}\n",
+        "class UnusedMerged<T> {}\n",
+        "interface UnusedMerged<T> {}\n",
+        "class Consumer implements UnusedMerged<string> {}\n",
+        "declare function setItem<T>(T): T;\n",
+        "function instance<T>(value: typeof Merged<T>): void {}\n",
+    );
+    let reports = report_ranges(source);
+    assert_eq!(reports.len(), 2, "{reports:#?}");
+    assert_eq!(
+        reports[0].0,
+        source.find("UnusedMerged<T>").unwrap() + "UnusedMerged<".len()
+    );
+    assert_eq!(
+        reports[1].0,
+        source.find("setItem<T>").unwrap() + "setItem<".len()
+    );
 }
 
 fn report_ranges(source: &str) -> Vec<(usize, usize)> {

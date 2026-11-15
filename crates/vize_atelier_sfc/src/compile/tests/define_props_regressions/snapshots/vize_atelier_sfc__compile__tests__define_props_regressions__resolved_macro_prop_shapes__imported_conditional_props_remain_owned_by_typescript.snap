@@ -20,9 +20,7 @@ const props = __props
 
 return (_ctx: any,_cache: any) => {
   return (_openBlock(), _createElementBlock(_Fragment, null, [
-    _toDisplayString(props.title),
-    _createTextVNode(),
-    _toDisplayString(props.count)
+    _createTextVNode(_toDisplayString(props.title) + " " + _toDisplayString(props.count), 1 /* TEXT */)
   ], 64 /* STABLE_FRAGMENT */))
 }
 }

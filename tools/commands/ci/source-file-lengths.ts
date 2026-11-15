@@ -60,6 +60,7 @@ function isExcluded(file: string): boolean {
     file.startsWith("upstream/forks/") ||
     file === "npm/cli/schemas/vize.config.schema.json" ||
     file === "npm/cli/src/types/generated.ts" ||
+    file === "docs/release/v1-supported-matrix.json" ||
     file === "docs/davinci/plan/croquis-consumption.md" ||
     file === "docs/davinci/plan/corpus-coverage.md" ||
     file === "package.json" ||

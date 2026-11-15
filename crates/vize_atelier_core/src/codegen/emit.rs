@@ -9,11 +9,10 @@ use crate::{
 };
 use vize_l0::profile;
 
-use super::children::is_directive_comment;
+use super::children::{generate_child_refs_force_array, is_directive_comment};
 use super::context::{CodegenContext, CodegenResult, CodegenResultWithSections, CodegenSections};
 use super::element::generate_root_node;
 use super::generate::{collect_hoist_helpers, generate_hoists};
-use super::node::generate_node;
 use super::root::{
     generate_assets, generate_function_signature, generate_preamble_from_helpers,
     is_ignorable_root_text,
@@ -115,20 +114,11 @@ pub(super) fn generate_with_sections_and_options(
         ctx.push_vnode_helper(RuntimeHelper::CreateElementBlock);
         ctx.push("(");
         ctx.push(ctx.helper(RuntimeHelper::Fragment));
-        ctx.push(", null, [");
-        ctx.indent();
-        for (i, child) in root_children.iter().enumerate() {
-            if i > 0 {
-                ctx.push(",");
-            }
-            ctx.newline();
-            profile!(
-                "atelier.codegen.fragment_child",
-                generate_node(&mut ctx, child)
-            );
-        }
-        ctx.deindent();
-        ctx.newline();
+        ctx.push(", null, ");
+        profile!(
+            "atelier.codegen.fragment_children",
+            generate_child_refs_force_array(&mut ctx, &root_children)
+        );
         // Vue tags a root fragment as DEV_ROOT_FRAGMENT when it wraps a single
         // real node plus comment siblings, so dev tooling treats it as a root.
         let non_comment_children = root_children
@@ -136,9 +126,9 @@ pub(super) fn generate_with_sections_and_options(
             .filter(|child| !matches!(child, TemplateChildNode::Comment(_)))
             .count();
         if non_comment_children == 1 {
-            ctx.push("], 2112 /* STABLE_FRAGMENT, DEV_ROOT_FRAGMENT */))");
+            ctx.push(", 2112 /* STABLE_FRAGMENT, DEV_ROOT_FRAGMENT */))");
         } else {
-            ctx.push("], 64 /* STABLE_FRAGMENT */))");
+            ctx.push(", 64 /* STABLE_FRAGMENT */))");
         }
     }
     let return_expr_end = ctx.code_len();

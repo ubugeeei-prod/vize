@@ -28,7 +28,7 @@ surfaces and are not routine CI-refactor targets.
 
 | Group | Area                                                                                   | Workflows |
 | ----- | -------------------------------------------------------------------------------------- | --------- |
-| 01    | [Pull request orchestration](#01-pull-request-orchestration)                           | 20        |
+| 01    | [Pull request orchestration](#01-pull-request-orchestration)                           | 21        |
 | 02    | [Release and public acceptance](#02-release-and-public-acceptance)                     | 35        |
 | 03    | [Benchmarks and profiling](#03-benchmarks-and-profiling)                               | 39        |
 | 04    | [Type checking and content mapping](#04-type-checking-and-content-mapping)             | 16        |
@@ -66,6 +66,7 @@ Start here for required checks, change planning, merge queues, and full qualific
 | 01.18 | Real Project Matrix                | [`real-project-matrix.yml`](./real-project-matrix.yml)                           |
 | 01.19 | Seed PR Rust target                | [`rust-pr-target-seed.yml`](./rust-pr-target-seed.yml)                           |
 | 01.20 | Title Policy                       | [`title-policy.yml`](./title-policy.yml)                                         |
+| 01.21 | V1 qualification manifest          | [`v1-supported-matrix.yml`](./v1-supported-matrix.yml)                           |
 
 ## 02 Release and public acceptance
 

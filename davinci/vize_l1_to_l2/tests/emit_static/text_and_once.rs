@@ -81,10 +81,7 @@ const { toDisplayString: _toDisplayString, openBlock: _openBlock, createElementB
 
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   return (_openBlock(), _createElementBlock(_Fragment, null, [
-    _createTextVNode(\"x \"),
-    _toDisplayString(a),
-    _createTextVNode(),
-    _toDisplayString(b)
+    _createTextVNode(\"x \" + _toDisplayString(a) + \" \" + _toDisplayString(b), 1 /* TEXT */)
   ], 64 /* STABLE_FRAGMENT */))
 }"
     );
@@ -95,9 +92,7 @@ const { toDisplayString: _toDisplayString, openBlock: _openBlock, createElementB
 
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   return (_openBlock(), _createElementBlock(_Fragment, null, [
-    _toDisplayString(a),
-    _createTextVNode(),
-    _toDisplayString(b)
+    _createTextVNode(_toDisplayString(a) + \" \" + _toDisplayString(b), 1 /* TEXT */)
   ], 64 /* STABLE_FRAGMENT */))
 }"
     );

@@ -1,0 +1,19 @@
+<script setup lang="ts">
+declare const emit: ((event: "close") => void) & ((event: "tick", count: number) => void);
+declare const either: (() => Promise<void>) | (() => void);
+declare const plain: () => void;
+
+function later<T extends () => void>(task: T): void {
+  setTimeout(task, 10);
+}
+
+setTimeout(emit, 300, "close");
+setTimeout(either, 300);
+setTimeout(Object.assign(plain, { tag: "x" }), 300);
+setTimeout(plain, 300);
+setTimeout("plain()", 300);
+</script>
+
+<template>
+  <p>{{ later }}</p>
+</template>

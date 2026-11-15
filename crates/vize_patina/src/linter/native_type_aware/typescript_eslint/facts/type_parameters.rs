@@ -2,32 +2,48 @@
 //!
 //! Corsa owns the rule verdict. This module supplies the signature-local
 //! symbol observations that its Rust rule consumes.
+use crate::linter::corsa_session::ExpressionFact;
 use corsa::lint::LintNode;
 use serde_json::{Value, json};
-use vize_l0::String;
+use vize_l0::{FxHashMap, FxHashSet, String};
 
-pub(super) fn enrich(source: &str, nodes: &mut [LintNode], program: &Value) {
+pub(super) fn prepare(source: &str, nodes: &mut [LintNode], program: &Value) {
+    let merged = merged_owners(program);
     for node in nodes {
         if node.kind == "TSTypeParameterDeclaration" {
-            enrich_declaration(source, node, program);
+            enrich_declaration(source, node, program, &merged);
         }
     }
 }
 
-fn enrich_declaration(source: &str, declaration: &mut LintNode, program: &Value) {
-    let Some((owner_kind, owner_start, owner_end)) = owner(declaration) else {
+fn enrich_declaration(
+    source: &str,
+    declaration: &mut LintNode,
+    program: &Value,
+    merged: &MergedOwners,
+) {
+    let Some((owner_kind, owner_start, owner_end)) =
+        owner(declaration).map(|(kind, start, end)| (kind.to_owned(), start, end))
+    else {
         return;
     };
-    let Some(owner) = find_node(program, owner_kind, owner_start, owner_end) else {
+    let Some(owner) = find_node(program, owner_kind.as_str(), owner_start, owner_end) else {
         return;
     };
     declaration
         .fields
-        .insert("__ownerKind".into(), json!(owner_kind));
+        .insert("__ownerKind".into(), json!(owner_kind.as_str()));
+    declaration.fields.insert(
+        "__typeParameterOwnerRange".into(),
+        json!({ "start": owner_start, "end": owner_end }),
+    );
+    let usage_queries = usage_queries(owner, owner_kind.as_str());
+    let merged_owner = merged.contains(&(owner_start, owner_end));
 
     let Some(params) = declaration.child_lists.get_mut("params") else {
         return;
     };
+    let mut needs_checker = false;
     for param in params {
         let Some(name) = param
             .child("name")
@@ -40,6 +56,11 @@ fn enrich_declaration(source: &str, declaration: &mut LintNode, program: &Value)
         let mut references = Vec::new();
         collect_references(owner, &name, false, true, &mut references);
         references.retain(|(start, end)| *start < param.range.start || *end > param.range.end);
+        let base_usage_count = references.len() + 1;
+        let repeated = merged_owner
+            || references.len() >= 2
+            || reference_implies_multiple(owner, &name, owner_kind.as_str(), false, false, true);
+        needs_checker |= !repeated && !usage_queries.is_empty();
         if let Some(reference) = inferred_return_reference(owner, &name) {
             references.push(reference);
         }
@@ -50,9 +71,13 @@ fn enrich_declaration(source: &str, declaration: &mut LintNode, program: &Value)
             "__typeParameterUsageCount".into(),
             json!(references.len() + 1),
         );
+        param.fields.insert(
+            "__typeParameterBaseUsageCount".into(),
+            json!(base_usage_count),
+        );
         param
             .fields
-            .insert("__repeatedInAst".into(), json!(references.len() >= 2));
+            .insert("__repeatedInAst".into(), json!(repeated));
         param.fields.insert(
             "__references".into(),
             Value::Array(
@@ -84,6 +109,111 @@ fn enrich_declaration(source: &str, declaration: &mut LintNode, program: &Value)
                 .fields
                 .insert("__constraintIsComplex".into(), json!(complex));
         }
+    }
+    if needs_checker {
+        declaration.fields.insert(
+            "__typeParameterUsageQueries".into(),
+            Value::Array(usage_queries),
+        );
+    }
+}
+
+type MergedOwners = FxHashSet<(u32, u32)>;
+
+fn merged_owners(program: &Value) -> MergedOwners {
+    let mut interfaces = FxHashSet::default();
+    let mut value_references = FxHashSet::default();
+    let mut candidates = Vec::new();
+    collect_merged_owner_candidates(
+        program,
+        None,
+        &mut interfaces,
+        &mut value_references,
+        &mut candidates,
+    );
+    candidates
+        .into_iter()
+        .filter_map(|(range, name)| {
+            (interfaces.contains(&name) && value_references.contains(&name)).then_some(range)
+        })
+        .collect()
+}
+
+fn collect_merged_owner_candidates(
+    value: &Value,
+    enclosing_variable: Option<&str>,
+    interfaces: &mut FxHashSet<String>,
+    value_references: &mut FxHashSet<String>,
+    candidates: &mut Vec<((u32, u32), String)>,
+) {
+    let kind = value.get("type").and_then(Value::as_str);
+    if kind == Some("TSInterfaceDeclaration")
+        && let Some(name) = value
+            .get("id")
+            .and_then(|id| id.get("name"))
+            .and_then(Value::as_str)
+    {
+        interfaces.insert(name.into());
+    }
+    if matches!(kind, Some("ClassDeclaration" | "ClassExpression"))
+        && let Some(name) = value
+            .get("superClass")
+            .and_then(|super_class| super_class.get("name"))
+            .and_then(Value::as_str)
+    {
+        value_references.insert(name.into());
+    }
+
+    let enclosing_variable = if kind == Some("VariableDeclarator") {
+        value
+            .get("id")
+            .and_then(|id| id.get("name"))
+            .and_then(Value::as_str)
+            .or(enclosing_variable)
+    } else {
+        enclosing_variable
+    };
+    let candidate_name = if matches!(kind, Some("ClassDeclaration" | "ClassExpression")) {
+        value
+            .get("id")
+            .and_then(|id| id.get("name"))
+            .and_then(Value::as_str)
+    } else if matches!(
+        kind,
+        Some("TSConstructorType" | "TSConstructSignatureDeclaration")
+    ) {
+        enclosing_variable
+    } else {
+        None
+    };
+    if let Some((range, name)) = node_range(value).zip(candidate_name) {
+        candidates.push((range, name.into()));
+    }
+
+    match value {
+        Value::Object(fields) => {
+            for child in fields.values() {
+                collect_merged_owner_candidates(
+                    child,
+                    enclosing_variable,
+                    interfaces,
+                    value_references,
+                    candidates,
+                );
+            }
+        }
+        Value::Array(items) => {
+            for child in items {
+                collect_merged_owner_candidates(
+                    child,
+                    enclosing_variable,
+                    interfaces,
+                    value_references,
+                    candidates,
+                );
+            }
+        }
+        _ => {}
     }
 }
 
@@ -118,9 +248,7 @@ fn is_signature_owner(kind: &str) -> bool {
                 | "TSConstructorType"
                 | "TSDeclareFunction"
                 | "TSFunctionType"
-                | "TSInterfaceDeclaration"
                 | "TSMethodSignature"
-                | "TSTypeAliasDeclaration"
         )
 }
 
@@ -164,7 +292,7 @@ fn collect_references(
     {
         out.push((start, end));
     }
-    let next_type_context = type_context || kind.is_some_and(|kind| kind.starts_with("TS"));
+    let next_type_context = type_context || kind.is_some_and(is_type_only_kind);
     match value {
         Value::Object(fields) => {
             for (key, child) in fields {
@@ -186,16 +314,24 @@ fn collect_references(
                 {
                     continue;
                 }
-                let child_type_context = next_type_context
-                    || matches!(
-                        key.as_str(),
-                        "typeAnnotation"
-                            | "returnType"
-                            | "typeArguments"
-                            | "typeParameters"
-                            | "superTypeArguments"
-                            | "implements"
-                    );
+                let child_type_context = if (kind == Some("TSParameterProperty")
+                    && key == "parameter")
+                    || (kind.is_some_and(is_signature_owner) && key == "params")
+                    || key == "key"
+                {
+                    false
+                } else {
+                    next_type_context
+                        || matches!(
+                            key.as_str(),
+                            "typeAnnotation"
+                                | "returnType"
+                                | "typeArguments"
+                                | "typeParameters"
+                                | "superTypeArguments"
+                                | "implements"
+                        )
+                };
                 collect_references(child, name, child_type_context, false, out);
             }
         }
@@ -206,6 +342,10 @@ fn collect_references(
         }
         _ => {}
     }
+}
+
+fn is_type_only_kind(kind: &str) -> bool {
+    kind.starts_with("TS") && !is_signature_owner(kind) && kind != "TSParameterProperty"
 }
 
 fn declares_type_parameter(value: &Value, name: &str) -> bool {
@@ -342,52 +482,4 @@ fn collect_binding_names(value: &Value, out: &mut Vec<String>) {
     }
 }
 
-fn return_binding_reference(value: &Value, bindings: &[String], root: bool) -> Option<(u32, u32)> {
-    let kind = value.get("type").and_then(Value::as_str);
-    if !root
-        && kind.is_some_and(|kind| {
-            kind.contains("Function") || matches!(kind, "ClassDeclaration" | "ClassExpression")
-        })
-    {
-        return None;
-    }
-    if kind == Some("ReturnStatement") {
-        return value
-            .get("argument")
-            .and_then(|argument| expression_binding_reference(argument, bindings));
-    }
-    match value {
-        Value::Object(fields) => fields
-            .values()
-            .find_map(|child| return_binding_reference(child, bindings, false)),
-        Value::Array(items) => items
-            .iter()
-            .find_map(|child| return_binding_reference(child, bindings, false)),
-        _ => None,
-    }
-}
-
-fn expression_binding_reference(value: &Value, bindings: &[String]) -> Option<(u32, u32)> {
-    if value.get("type").and_then(Value::as_str) == Some("Identifier")
-        && value
-            .get("name")
-            .and_then(Value::as_str)
-            .is_some_and(|name| bindings.iter().any(|binding| binding == name))
-    {
-        let start = u32::try_from(value.get("start")?.as_u64()?).ok()?;
-        let end = u32::try_from(value.get("end")?.as_u64()?).ok()?;
-        return Some((start, end));
-    }
-    match value {
-        Value::Object(fields) => fields
-            .values()
-            .find_map(|child| expression_binding_reference(child, bindings)),
-        Value::Array(items) => items
-            .iter()
-            .find_map(|child| expression_binding_reference(child, bindings)),
-        _ => None,
-    }
-}
-
-#[cfg(test)]
-mod tests;
+include!("type_parameters/semantic.rs");

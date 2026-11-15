@@ -2,7 +2,7 @@
 source: crates/vize_atelier_sfc/tests/setup_binding_kinds.rs
 expression: result.code.as_str()
 ---
-const { toDisplayString: _toDisplayString, openBlock: _openBlock, createElementBlock: _createElementBlock, Fragment: _Fragment } = Vue
+const { toDisplayString: _toDisplayString, openBlock: _openBlock, createElementBlock: _createElementBlock, Fragment: _Fragment, createTextVNode: _createTextVNode } = Vue
 
 
 return {
@@ -14,8 +14,7 @@ const text = `plain`
 
 return (_ctx, _cache) => {
   return (_openBlock(), _createElementBlock(_Fragment, null, [
-    _toDisplayString(n),
-    _toDisplayString(text)
+    _createTextVNode(_toDisplayString(n) + _toDisplayString(text), 1 /* TEXT */)
   ], 64 /* STABLE_FRAGMENT */))
 }
 }

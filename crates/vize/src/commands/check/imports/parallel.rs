@@ -15,10 +15,7 @@ use super::session::{AliasScope, LocalImportSession};
 use super::specifiers::{
     ModuleSpecifierOccurrence, extract_module_specifier_occurrences, is_relative_specifier,
 };
-use super::{
-    ImportFileOptions, is_declaration_file, is_node_modules_path, resolve_import_base,
-    resolve_relative_import,
-};
+use super::{ImportFileOptions, is_declaration_file, is_node_modules_path, resolve_import_base};
 
 struct BareImport {
     file: PathBuf,
@@ -108,7 +105,7 @@ pub(super) fn prepare_pending(
 /// itself: relative and alias imports, and the sources of workspace routes.
 fn next_wave(
     wave: &[PathBuf],
-    session: &LocalImportSession,
+    session: &mut LocalImportSession,
     scope: AliasScope,
     options: ImportFileOptions,
     canonical_paths: &mut CanonicalPathCache,
@@ -132,9 +129,11 @@ fn next_wave(
         for occurrence in occurrences {
             let specifier = occurrence.specifier.as_str();
             if is_relative_specifier(specifier) {
-                if let Some(target) =
-                    resolve_relative_import(dir, specifier, canonical_paths, options)
-                {
+                if let Some(target) = session.local_resolutions.resolve(
+                    &dir.join(specifier),
+                    canonical_paths,
+                    options,
+                ) {
                     consider(target, session, seen, &mut next);
                 }
                 continue;

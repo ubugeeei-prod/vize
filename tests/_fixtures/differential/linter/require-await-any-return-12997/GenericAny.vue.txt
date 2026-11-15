@@ -1,0 +1,6 @@
+<script lang="ts">
+async function fn<T extends any>(x: T): Promise<unknown> {
+  return x as any;
+}
+export {};
+</script>

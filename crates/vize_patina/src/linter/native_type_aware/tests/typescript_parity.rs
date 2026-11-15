@@ -4,6 +4,7 @@
 use super::{corsa_available, lint_sfc_with_corsa};
 use crate::{LintPreset, Linter};
 
+mod no_implied_eval_callable;
 mod upstream_872_cases;
 
 const SOURCE: &str = r#"<script lang="ts">
@@ -105,6 +106,41 @@ fn checker_facts_match_typescript_eslint() {
             .map(|(line, column, rule, message)| format!("{line}:{column} {rule} {message}"))
             .collect::<Vec<_>>()
             .join("\n")
+    );
+}
+
+#[test]
+fn setup_enum_computed_keys_do_not_become_unsafe_members() {
+    if !corsa_available() {
+        return;
+    }
+    let source = r#"<script setup lang="ts">
+enum Keys {
+  A = "A",
+  B = "B",
+}
+type Foo = {
+  [Keys.A]: number | null;
+  [Keys.B]: number;
+};
+declare const foo: Foo;
+const value = foo[Keys.A] ?? 0;
+</script>
+
+<template>
+  <p>{{ value }}</p>
+</template>"#;
+    let linter = Linter::with_preset(LintPreset::Opinionated);
+    let result = lint_sfc_with_corsa(&linter, source, "Keyed.vue");
+    let unsafe_members = result
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.rule_name == "type/no-unsafe-member-access")
+        .collect::<Vec<_>>();
+
+    assert!(
+        unsafe_members.is_empty(),
+        "setup enum members must retain their authored type: {unsafe_members:#?}"
     );
 }
 

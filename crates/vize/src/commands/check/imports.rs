@@ -24,7 +24,7 @@ mod deferred;
 mod registration;
 use registration::non_relative_import_needs_virtual_registration;
 mod resolution;
-use resolution::{absolutize, is_declaration_file, is_node_modules_path, resolve_relative_import};
+use resolution::{absolutize, is_declaration_file, is_node_modules_path};
 pub(super) use resolution::{resolve_import_base, resolve_import_base_with_inputs};
 mod parallel;
 mod reachability;
@@ -150,9 +150,17 @@ pub(super) fn collect_transitive_local_imports_with_session(
             let absolute_specifier = Path::new(specifier.as_str()).is_absolute();
             let mut package_lookup = None;
             let resolved = if relative_specifier {
-                resolve_relative_import(dir, &specifier, canonical_paths, options)
+                session.local_resolutions.resolve(
+                    &dir.join(specifier.as_str()),
+                    canonical_paths,
+                    options,
+                )
             } else if absolute_specifier {
-                resolve_import_base(Path::new(specifier.as_str()), canonical_paths, options)
+                session.local_resolutions.resolve(
+                    Path::new(specifier.as_str()),
+                    canonical_paths,
+                    options,
+                )
             } else {
                 let aliased = aliases.and_then(|aliases| {
                     session

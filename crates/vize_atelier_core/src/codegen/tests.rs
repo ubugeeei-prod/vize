@@ -1,5 +1,6 @@
 //! Snapshot and assertion tests for codegen.
 
+mod root_fragment;
 mod source_map_identity;
 
 use crate::compile;
@@ -27,7 +28,6 @@ fn test_codegen_simple_element() {
 
 #[test]
 fn test_codegen_interpolation() {
-    // When prefix_identifiers is false (default), expressions are not prefixed with _ctx.
     let result = compile!("<div>{{ msg }}</div>");
     assert_codegen_snapshot!(result);
 }
