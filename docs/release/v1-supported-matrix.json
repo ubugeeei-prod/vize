@@ -26904,107 +26904,170 @@
       {
         "runtime": "node",
         "version": "22",
-        "target": "aarch64-apple-darwin"
+        "target": "aarch64-apple-darwin",
+        "os": "darwin",
+        "architecture": "arm64",
+        "libc": "none"
       },
       {
         "runtime": "node",
         "version": "24",
-        "target": "aarch64-apple-darwin"
+        "target": "aarch64-apple-darwin",
+        "os": "darwin",
+        "architecture": "arm64",
+        "libc": "none"
       },
       {
         "runtime": "node",
         "version": "22",
-        "target": "aarch64-pc-windows-msvc"
+        "target": "aarch64-pc-windows-msvc",
+        "os": "win32",
+        "architecture": "arm64",
+        "libc": "msvc"
       },
       {
         "runtime": "node",
         "version": "24",
-        "target": "aarch64-pc-windows-msvc"
+        "target": "aarch64-pc-windows-msvc",
+        "os": "win32",
+        "architecture": "arm64",
+        "libc": "msvc"
       },
       {
         "runtime": "node",
         "version": "22",
-        "target": "aarch64-unknown-linux-gnu"
+        "target": "aarch64-unknown-linux-gnu",
+        "os": "linux",
+        "architecture": "arm64",
+        "libc": "glibc"
       },
       {
         "runtime": "node",
         "version": "24",
-        "target": "aarch64-unknown-linux-gnu"
+        "target": "aarch64-unknown-linux-gnu",
+        "os": "linux",
+        "architecture": "arm64",
+        "libc": "glibc"
       },
       {
         "runtime": "node",
         "version": "24",
-        "target": "aarch64-unknown-linux-musl"
+        "target": "aarch64-unknown-linux-musl",
+        "os": "linux",
+        "architecture": "arm64",
+        "libc": "musl"
       },
       {
         "runtime": "node",
         "version": "22",
-        "target": "x86_64-apple-darwin"
+        "target": "x86_64-apple-darwin",
+        "os": "darwin",
+        "architecture": "x64",
+        "libc": "none"
       },
       {
         "runtime": "node",
         "version": "24",
-        "target": "x86_64-apple-darwin"
+        "target": "x86_64-apple-darwin",
+        "os": "darwin",
+        "architecture": "x64",
+        "libc": "none"
       },
       {
         "runtime": "node",
         "version": "22",
-        "target": "x86_64-pc-windows-msvc"
+        "target": "x86_64-pc-windows-msvc",
+        "os": "win32",
+        "architecture": "x64",
+        "libc": "msvc"
       },
       {
         "runtime": "node",
         "version": "24",
-        "target": "x86_64-pc-windows-msvc"
+        "target": "x86_64-pc-windows-msvc",
+        "os": "win32",
+        "architecture": "x64",
+        "libc": "msvc"
       },
       {
         "runtime": "node",
         "version": "22",
-        "target": "x86_64-unknown-linux-gnu"
+        "target": "x86_64-unknown-linux-gnu",
+        "os": "linux",
+        "architecture": "x64",
+        "libc": "glibc"
       },
       {
         "runtime": "node",
         "version": "24",
-        "target": "x86_64-unknown-linux-gnu"
+        "target": "x86_64-unknown-linux-gnu",
+        "os": "linux",
+        "architecture": "x64",
+        "libc": "glibc"
       },
       {
         "runtime": "node",
         "version": "24",
-        "target": "x86_64-unknown-linux-musl"
+        "target": "x86_64-unknown-linux-musl",
+        "os": "linux",
+        "architecture": "x64",
+        "libc": "musl"
       },
       {
         "runtime": "bun",
         "version": "1.3.14",
-        "target": "aarch64-apple-darwin"
+        "target": "aarch64-apple-darwin",
+        "os": "darwin",
+        "architecture": "arm64",
+        "libc": "none"
       },
       {
         "runtime": "bun",
         "version": "1.3.14",
-        "target": "aarch64-pc-windows-msvc"
+        "target": "aarch64-pc-windows-msvc",
+        "os": "win32",
+        "architecture": "arm64",
+        "libc": "msvc"
       },
       {
         "runtime": "bun",
         "version": "1.3.14",
-        "target": "aarch64-unknown-linux-gnu"
+        "target": "aarch64-unknown-linux-gnu",
+        "os": "linux",
+        "architecture": "arm64",
+        "libc": "glibc"
       },
       {
         "runtime": "bun",
         "version": "1.3.14",
-        "target": "x86_64-apple-darwin"
+        "target": "x86_64-apple-darwin",
+        "os": "darwin",
+        "architecture": "x64",
+        "libc": "none"
       },
       {
         "runtime": "bun",
         "version": "1.3.14",
-        "target": "x86_64-pc-windows-msvc"
+        "target": "x86_64-pc-windows-msvc",
+        "os": "win32",
+        "architecture": "x64",
+        "libc": "msvc"
       },
       {
         "runtime": "bun",
         "version": "1.3.14",
-        "target": "x86_64-unknown-linux-gnu"
+        "target": "x86_64-unknown-linux-gnu",
+        "os": "linux",
+        "architecture": "x64",
+        "libc": "glibc"
       },
       {
         "runtime": "node",
         "version": "24.14.0",
         "target": "wsl2-ubuntu-24.04-x64",
+        "os": "linux",
+        "architecture": "x64",
+        "libc": "glibc",
         "filesystems": [
           "ext4",
           "windows-mount"

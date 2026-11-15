@@ -225,7 +225,10 @@ function assertRuntime(matrix: SupportMatrix, receipt: V1FiveCaseReceipt): void 
       (host) =>
         host.runtime === runtime.name &&
         host.version === runtime.version &&
-        host.target === runtime.target,
+        host.target === runtime.target &&
+        host.os === runtime.os &&
+        host.architecture === runtime.architecture &&
+        host.libc === runtime.libc,
     ),
     `${receipt.id}: unknown host/runtime identity`,
   );

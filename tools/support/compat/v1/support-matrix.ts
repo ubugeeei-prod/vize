@@ -426,6 +426,19 @@ function qualifiedBaseline(profile: Profile): string {
   return "shipping-vue@3.5.42-differential-vue@3.5.35";
 }
 
+function nativeHostPlatform(target: string): {
+  os: "darwin" | "linux" | "win32";
+  architecture: "arm64" | "x64";
+  libc: "glibc" | "msvc" | "musl" | "none";
+} {
+  const architecture = target.startsWith("aarch64-") ? "arm64" : "x64";
+  if (target.endsWith("-apple-darwin")) return { os: "darwin", architecture, libc: "none" };
+  if (target.endsWith("-windows-msvc")) return { os: "win32", architecture, libc: "msvc" };
+  if (target.endsWith("-linux-gnu")) return { os: "linux", architecture, libc: "glibc" };
+  if (target.endsWith("-linux-musl")) return { os: "linux", architecture, libc: "musl" };
+  throw new Error(`Unsupported native target identity: ${target}`);
+}
+
 export function buildV1SupportMatrix(root = process.cwd()) {
   const nativeManifest = manifest(path.join(root, "npm/native/package.json"));
   const cliManifest = manifest(path.join(root, "npm/cli/package.json"));
@@ -492,11 +505,12 @@ export function buildV1SupportMatrix(root = process.cwd()) {
       runtime: "node",
       version,
       target,
+      ...nativeHostPlatform(target),
     })),
   );
   const bunHosts = nativeTargets
     .filter((target) => !target.endsWith("-musl"))
-    .map((target) => ({ runtime: "bun", version: bun, target }));
+    .map((target) => ({ runtime: "bun", version: bun, target, ...nativeHostPlatform(target) }));
   const packageManagers = Object.values(PACKAGE_MANAGERS)
     .map(({ id, binary, corepackSpec, lockfile }) => ({
       id,
@@ -565,6 +579,9 @@ export function buildV1SupportMatrix(root = process.cwd()) {
       runtime: "node",
       version: "24.14.0",
       target: "wsl2-ubuntu-24.04-x64",
+      os: "linux",
+      architecture: "x64",
+      libc: "glibc",
       filesystems: ["ext4", "windows-mount"],
       observedSurfaces: ["content-mapper", "lsp-server"],
     },

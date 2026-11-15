@@ -53,9 +53,9 @@ function receipt(
     name: host.runtime,
     version: host.version,
     target: host.target,
-    os: "linux",
-    architecture: "x64",
-    libc: "glibc",
+    os: host.os,
+    architecture: host.architecture,
+    libc: host.libc,
     vue: selector.vue,
   };
   const id = overrides.id ?? `receipt:${selector.id}`;
@@ -264,14 +264,33 @@ void test("receipt, runtime and bundle identities reject partial or duplicate ev
       name: host.runtime,
       version: host.version,
       target: host.target,
-      architecture: "x64",
-      libc: "glibc",
+      architecture: host.architecture,
+      libc: host.libc,
       vue: selected.vue,
     } as V1FiveCaseReceiptBody["runtime"],
   });
   assert.throws(
     () => validateV1FiveCaseReceiptBundles(matrix, [bundle("bundle:missing-os", [missingOs])]),
     /runtime os/u,
+  );
+
+  const conflictingPlatform = receipt(selected, {
+    runtime: {
+      name: host.runtime,
+      version: host.version,
+      target: host.target,
+      os: host.os === "linux" ? "darwin" : "linux",
+      architecture: host.architecture,
+      libc: host.libc,
+      vue: selected.vue,
+    },
+  });
+  assert.throws(
+    () =>
+      validateV1FiveCaseReceiptBundles(matrix, [
+        bundle("bundle:conflicting-platform", [conflictingPlatform]),
+      ]),
+    /unknown host\/runtime identity/u,
   );
 
   const shared = receipt(selected);
@@ -358,9 +377,9 @@ void test("selector, candidate and Vue identity changes cannot receive current c
       name: wsl.runtime,
       version: wsl.version,
       target: wsl.target,
-      os: "linux",
-      architecture: "x64",
-      libc: "glibc",
+      os: wsl.os,
+      architecture: wsl.architecture,
+      libc: wsl.libc,
       vue: editorSelector.vue,
     },
   });
