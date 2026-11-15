@@ -1,8 +1,8 @@
 //! Checker facts behind typescript-eslint parity (#12886, #12887, #12893,
-//! #12894, #12896, #12918, #12919, #12921): type flags, structural shapes,
+//! #12894, #12896, #12918, #12919, #12921, #12995): type flags, structural shapes,
 //! member-method facts and file-local declarations.
 use super::{corsa_available, lint_sfc_with_corsa};
-use crate::{LintPreset, Linter};
+use crate::{LintDiagnostic, LintPreset, Linter, Severity};
 
 mod no_implied_eval_callable;
 mod upstream_872_cases;
@@ -70,6 +70,84 @@ const EXPECTED: &[(u32, u32, &str)] = &[
     (33, 17, "type/unbound-method"),
     (34, 12, "type/unbound-method"),
 ];
+
+const ENUM_COMPARISON_RULE: &str = "type/no-unsafe-enum-comparison";
+const BRANDED_ENUM_CASE: &str = r#"enum Fruit {
+  Apple = 'apple',
+}
+type __String =
+  | (string & { __escapedIdentifier: void })
+  | (void & { __escapedIdentifier: void })
+  | Fruit;
+declare const weirdString: __String;
+weirdString === 'someArbitraryValue';"#;
+const ENUM_COMPARISON_MESSAGE: &str =
+    "The two values in this comparison do not have a shared enum type.";
+
+fn enum_comparison_diagnostics(source: &str, filename: &str) -> Vec<LintDiagnostic> {
+    let linter = Linter::with_preset(LintPreset::Opinionated)
+        .with_enabled_rules(Some(vec![ENUM_COMPARISON_RULE.into()]));
+    lint_sfc_with_corsa(&linter, source, filename)
+        .diagnostics
+        .into_iter()
+        .filter(|diagnostic| diagnostic.rule_name == ENUM_COMPARISON_RULE)
+        .collect()
+}
+
+fn assert_enum_comparison_packet(source: &str, diagnostic: &LintDiagnostic) {
+    let start = u32::try_from(source.find("weirdString ===").expect("comparison"))
+        .expect("comparison offset");
+    let end = start + u32::try_from("weirdString === 'someArbitraryValue'".len()).unwrap();
+    assert_eq!(diagnostic.rule_name, ENUM_COMPARISON_RULE);
+    assert_eq!(diagnostic.severity, Severity::Warning);
+    assert_eq!(diagnostic.message, ENUM_COMPARISON_MESSAGE);
+    assert_eq!((diagnostic.start, diagnostic.end), (start, end));
+    assert_eq!(diagnostic.help, None);
+    assert!(diagnostic.labels.is_empty());
+    assert!(diagnostic.fix.is_none());
+}
+
+#[test]
+fn branded_string_enum_comparison_has_the_same_packet_in_both_script_modes() {
+    if !corsa_available() {
+        return;
+    }
+    for (filename, source) in [
+        (
+            "Classic.vue",
+            format!("<script lang=\"ts\">\n{BRANDED_ENUM_CASE}\nexport {{}};\n</script>"),
+        ),
+        (
+            "Setup.vue",
+            format!("<script setup lang=\"ts\">\n{BRANDED_ENUM_CASE}\n</script>"),
+        ),
+    ] {
+        let actual = enum_comparison_diagnostics(&source, filename);
+        assert_eq!(actual.len(), 1, "{filename}: {actual:#?}");
+        assert_enum_comparison_packet(&source, &actual[0]);
+    }
+}
+
+#[test]
+fn branded_string_controls_do_not_invent_enum_mismatches() {
+    if !corsa_available() {
+        return;
+    }
+    let source = r#"<script setup lang="ts">
+enum Fruit {
+  Apple = 'apple',
+}
+type BrandedString = string & { __escapedIdentifier: void };
+declare const branded: BrandedString;
+declare const fruitOrBrand: Fruit | BrandedString;
+branded === 'someArbitraryValue';
+fruitOrBrand === Fruit.Apple;
+</script>"#;
+    assert!(
+        enum_comparison_diagnostics(source, "Controls.vue").is_empty(),
+        "negative controls must remain silent"
+    );
+}
 
 #[test]
 fn checker_facts_match_typescript_eslint() {
