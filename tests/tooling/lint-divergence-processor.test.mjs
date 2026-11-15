@@ -9,18 +9,20 @@ import { test } from "node:test";
 import {
   baselineConfig,
   retainEnabledFindings,
-  runBaseline,
   selectComparableRules,
 } from "../../tools/support/compat/fixtures/lint-divergence-baseline.mjs";
 import {
   baselineProviderPackage,
+  configureScorecardRules,
   resolveScorecardRuntime,
+  runScorecardBaseline,
 } from "../../tools/support/compat/fixtures/lint-divergence-scorecard.ts";
 import { collectBaselineFindings } from "../../tools/support/compat/fixtures/lint-divergence-records.ts";
 import {
   assertBudgetsPassed,
   evaluateBudget,
 } from "../../tools/support/compat/fixtures/lint-divergence-budget.ts";
+import { selectComparableRules as selectCurrentComparableRules } from "../../tools/support/fixtures/lint_divergence/compare.ts";
 import { baselineScript as embedded } from "../../tools/support/fixtures/lint_divergence/runtime.ts";
 
 const root = path.resolve(import.meta.dirname, "../..");
@@ -51,10 +53,16 @@ const providers = Object.fromEntries(
 const ruleMap = JSON.parse(
   fs.readFileSync(path.join(root, "tests/_fixtures/patina-eslint-vue-rule-map.json"), "utf8"),
 );
-const rules = selectComparableRules(ruleMap, "ecosystem", { includeUnimplemented: true }).rules;
-const defaults = selectComparableRules(ruleMap, "ecosystem").rules;
-const allMapped = selectComparableRules(ruleMap, null).rules;
+const rules = configureScorecardRules(
+  selectComparableRules(ruleMap, "ecosystem", { includeUnimplemented: true }).rules,
+);
+const defaults = configureScorecardRules(selectComparableRules(ruleMap, "ecosystem").rules);
+const allMapped = configureScorecardRules(selectComparableRules(ruleMap, null).rules);
 assert.deepEqual(allMapped["vue/quote-props"], ["warn", "as-needed"]);
+assert.deepEqual(selectCurrentComparableRules(ruleMap, null, false).rules["vue/quote-props"], [
+  "warn",
+  "as-needed",
+]);
 const base = runtime.plugin.configs["flat/base"].find(
   (config) => config.name === "vue/base/setup-for-vue",
 );
@@ -159,15 +167,17 @@ async function reference(input, selected) {
   return retainEnabledFindings(await eslint.lintFiles([input.filename]), selected);
 }
 
+async function scorecard(input, selected, files = [input.filename]) {
+  const packet = await runScorecardBaseline(runtime, baselineConfig, input.cwd, files, selected);
+  return { results: packet.results, droppedConfigMessageCount: packet.droppedConfigMessageCount };
+}
+
 async function paired(input, selected = rules) {
   // Match the producer's actual JSON transport, including the public getter
   // values; JSON cannot carry an undefined deprecated-rule metadata field.
   const transported = (packet) => JSON.parse(JSON.stringify(packet));
   const expected = transported(await reference(input, selected));
-  const measured = [
-    actual(input, selected),
-    transported(await runBaseline(runtime, input.cwd, [input.filename], selected)),
-  ];
+  const measured = [actual(input, selected), transported(await scorecard(input, selected))];
   record(input, "whole-results-before-collection", {
     selected,
     publicProcessor: expected,
@@ -253,11 +263,19 @@ await test("the scorecard mirrors resolved vue-router global components", async 
   fs.mkdirSync(router, { recursive: true });
   fs.writeFileSync(path.join(router, "package.json"), '{"name":"vue-router","version":"0.0.0"}\n');
   try {
+    const expected = JSON.parse(
+      JSON.stringify(
+        await reference(input, {
+          "vue/no-undef-components": ["warn", { ignorePatterns: ["^(?:RouterLink|RouterView)$"] }],
+        }),
+      ),
+    );
     const measured = [
       actual(input, selected),
-      JSON.parse(JSON.stringify(await runBaseline(runtime, input.cwd, [input.filename], selected))),
+      JSON.parse(JSON.stringify(await scorecard(input, selected))),
     ];
     for (const packet of measured) {
+      assert.deepEqual(packet, expected, "whole contextual public-provider packet");
       assert.deepEqual(
         packet.results[0].messages.map((message) => [message.ruleId, message.message]),
         [
@@ -270,7 +288,7 @@ await test("the scorecard mirrors resolved vue-router global components", async 
     }
 
     fs.rmSync(path.join(input.cwd, "node_modules"), { recursive: true, force: true });
-    const control = await runBaseline(runtime, input.cwd, [input.filename], selected);
+    const control = await scorecard(input, selected);
     assert.deepEqual(
       control.results[0].messages.map((message) => message.message),
       [
@@ -296,9 +314,10 @@ await test("vue-router qualification follows each linted file's resolution bound
   fs.mkdirSync(router, { recursive: true });
   fs.writeFileSync(path.join(router, "package.json"), '{"name":"vue-router","version":"0.0.0"}\n');
   try {
-    const run = await runBaseline(runtime, input.cwd, [withRouter, withoutRouter], {
-      "vue/no-undef-components": "warn",
-    });
+    const run = await scorecard(input, { "vue/no-undef-components": "warn" }, [
+      withRouter,
+      withoutRouter,
+    ]);
     assert.deepEqual(
       run.results.map((result) => ({
         file: path.relative(input.cwd, result.filePath),

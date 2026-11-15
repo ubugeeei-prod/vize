@@ -1,4 +1,5 @@
 import path from "node:path";
+import { realProjectLocationDivergence } from "./real_project_locations.ts";
 import {
   byteOrder,
   get,
@@ -1202,13 +1203,9 @@ export function pairRuleLocationDivergences(
         };
         break;
       }
-      if (positive.ruleId === "vue/require-component-is") {
-        match = {
-          index,
-          subject: "component-without-is",
-          reason:
-            "both tools report the same dynamic component without is; Patina reports the element while eslint-plugin-vue extends the range through recovered following content.",
-        };
+      const realProjectLocation = realProjectLocationDivergence(positive, negative);
+      if (realProjectLocation !== null) {
+        match = { index, ...realProjectLocation };
         break;
       }
       if (

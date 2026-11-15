@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { isAbsolute, join } from "node:path";
+import { realProjectLocationRules } from "../../fixtures/lint_divergence/real_project_locations.ts";
 
 import {
   byteOrder,
@@ -1252,43 +1253,7 @@ const ruleLocationDivergenceRules: Readonly<Record<string, RuleLocationRule>> = 
       return `define-props:${positive.line}:${negative.line}`;
     },
   },
-  "vue/require-component-is": {
-    reason:
-      "both tools report the same dynamic component without is; Patina reports the element while eslint-plugin-vue extends the range through recovered following content.",
-    subject() {
-      return "component-without-is";
-    },
-  },
-  "vue/require-component-registration": {
-    reason:
-      "Patina preserves the authored component tag-name anchor while eslint-plugin-vue reports the complete owning start tag.",
-    subject(positive, negative) {
-      return containsSpan(negative, positive)
-        ? `component-tag:${positive.line}:${positive.column}`
-        : null;
-    },
-  },
-  "vue/require-prop-comment": {
-    reason:
-      "Patina reports the authored prop name while eslint-plugin-vue reports the complete prop declaration.",
-    subject(positive, negative) {
-      const prop = propCommentName(positive.message);
-      return prop !== null &&
-        prop === propCommentName(negative.message) &&
-        containsSpan(negative, positive)
-        ? `prop:${prop}`
-        : null;
-    },
-  },
-  "vue/quote-props": {
-    reason:
-      "Patina reports the quoted property key while eslint-plugin-vue reports the complete owning property.",
-    subject(positive, negative) {
-      return containsSpan(negative, positive)
-        ? `property:${positive.line}:${positive.column}`
-        : null;
-    },
-  },
+  ...realProjectLocationRules,
   "script/require-valid-default-prop": {
     reason:
       "both tools reject the same prop default; Patina reports the complete default expression while eslint-plugin-vue reports the returned value.",
@@ -1488,10 +1453,6 @@ function unusedComponentName(message: string): string | null {
     message.match(/The "([^"]+)" component has been registered but not used\./u)?.[1] ??
     null
   );
-}
-
-function propCommentName(message: string): string | null {
-  return /The "([^"]+)" property should have a JSDoc comment\./u.exec(message)?.[1] ?? null;
 }
 
 function sameSpan(left: LintRange, right: LintRange): boolean {

@@ -30,7 +30,7 @@ import {
   JsonFloat,
 } from "./value.ts";
 
-export type BaselineRuleSetting = string | [string, JsonObject];
+export type BaselineRuleSetting = string | [string, Json];
 
 function baselineRuleSetting(upstream: string, severity: string): BaselineRuleSetting {
   // Patina deliberately makes the Vue 3.5 destructuring preference stronger
@@ -42,6 +42,7 @@ function baselineRuleSetting(upstream: string, severity: string): BaselineRuleSe
   if (upstream === "vue/match-component-file-name") {
     return [severity, { extensions: ["jsx", "vue"] }];
   }
+  if (upstream === "vue/quote-props") return [severity, "as-needed"];
   return severity;
 }
 
