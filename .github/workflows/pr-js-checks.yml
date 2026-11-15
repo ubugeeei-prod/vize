@@ -81,6 +81,9 @@ jobs:
       - name: Test Vite+ rule catalog custody on Bun
         if: ${{ inputs.run-js && matrix.group == 'builders' }}
         run: bun test npm/builder/vite/src/vite-plus/runtime.test.ts
+      - name: Test content mapper capability launch on Bun
+        if: ${{ inputs.run-js && matrix.group == 'builders' }}
+        run: bun test npm/cli/tests/content-mapper-bun.test.ts
       - name: Preserve complete Rspack JSX producer and bundle
         if: ${{ !cancelled() && inputs.run-js && matrix.group == 'builders' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

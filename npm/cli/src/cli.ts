@@ -53,9 +53,10 @@ try {
   } else if (args[0] === "content-mapper") {
     assertMatchingNativeVersion();
     // Reply before the addon loads; the host's `initialize` wait is fixed (#12530).
-    if (answerContentMapperInitialize()) {
+    const capabilityArgs = answerContentMapperInitialize();
+    if (capabilityArgs !== null) {
       const native = require("@vizejs/native") as typeof import("@vizejs/native");
-      native.runCli([...args, "--initialized", "--reply-when-ready"]);
+      native.runCli([...args, "--initialized", "--reply-when-ready", ...capabilityArgs]);
     }
   } else {
     assertMatchingNativeVersion();
