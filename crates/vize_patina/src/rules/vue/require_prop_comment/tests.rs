@@ -75,8 +75,8 @@ defineProps<Props>();
             .map(|(_, message)| message)
             .collect::<Vec<_>>(),
         vec![
-            "The \"own\" property should have a JSDoc comment.",
             "The \"inherited\" property should have a JSDoc comment.",
+            "The \"own\" property should have a JSDoc comment.",
         ]
     );
 }

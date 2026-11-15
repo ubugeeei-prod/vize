@@ -155,10 +155,10 @@ impl RequireComponentRegistration {
     /// components that needs no import (importing yourself is not possible
     /// without an alias).
     fn is_self_reference(&self, ctx: &LintContext<'_>, tag: &str) -> bool {
-        let script_setup = ctx
-            .sfc_descriptor()
-            .is_some_and(|descriptor| descriptor.script_setup.is_some());
-        if script_setup {
+        let descriptor = ctx.sfc_descriptor();
+        let has_script_setup = descriptor.is_some_and(|sfc| sfc.script_setup.is_some());
+        let has_plain_script = descriptor.is_some_and(|sfc| sfc.script.is_some());
+        if has_script_setup || !has_plain_script {
             let stem = file_stem(ctx.filename);
             if !stem.is_empty()
                 && setup_name_matches(tag, capitalize(camelize(stem).as_str()).as_str())
@@ -225,25 +225,6 @@ impl RequireComponentRegistration {
             .iter()
             .any(|registration| component_name_matches(tag, registration.name.as_str()))
     }
-
-    fn is_script_setup_binding(&self, ctx: &LintContext<'_>, tag: &str) -> bool {
-        let Some(analysis) = art::analysis(ctx) else {
-            return false;
-        };
-        analysis.bindings.is_script_setup
-            && analysis.bindings.iter().any(|(name, binding_type)| {
-                matches!(
-                    binding_type,
-                    BindingType::SetupLet
-                        | BindingType::SetupMaybeRef
-                        | BindingType::SetupRef
-                        | BindingType::SetupReactiveConst
-                        | BindingType::SetupConst
-                        | BindingType::LiteralConst
-                        | BindingType::ExternalModule
-                ) && template_binding_matches(tag, name)
-            })
-    }
 }
 
 impl Rule for RequireComponentRegistration {
@@ -256,7 +237,8 @@ impl Rule for RequireComponentRegistration {
         let mut used_components: Vec<(String, u32, u32)> = Vec::new();
         collect_components(root, &mut used_components);
         let art_bindings = art::setup_bindings(ctx);
-        let async_components = if art_bindings.is_some() {
+        let uses_art_bindings = art_bindings.is_some();
+        let async_components = if uses_art_bindings {
             Vec::new()
         } else {
             ctx.sfc_descriptor()
@@ -264,7 +246,7 @@ impl Rule for RequireComponentRegistration {
                 .map(async_component_names)
                 .unwrap_or_default()
         };
-        let setup_bindings: Vec<String> = art_bindings.unwrap_or_else(|| {
+        let mut setup_bindings: Vec<String> = art_bindings.unwrap_or_else(|| {
             ctx.sfc_descriptor()
                 .and_then(|descriptor| descriptor.script_setup.as_ref())
                 .map(|script| {
@@ -276,6 +258,9 @@ impl Rule for RequireComponentRegistration {
                 })
                 .unwrap_or_default()
         });
+        if !uses_art_bindings {
+            setup_bindings.extend(croquis_script_setup_bindings(ctx));
+        }
 
         // Registration is project context, never a guess based on a tag prefix.
         for (tag, start, end) in used_components {
@@ -294,8 +279,7 @@ impl Rule for RequireComponentRegistration {
                 if art::analysis(ctx).is_some_and(|analysis| {
                     self.is_template_visible_imported_component(ctx, analysis, &tag)
                         || self.is_options_api_registered_component(analysis, &tag)
-                }) || self.is_script_setup_binding(ctx, &tag)
-                    || options_api_registers(ctx, &tag)
+                }) || options_api_registers(ctx, &tag)
                     || async_components
                         .iter()
                         .any(|name| setup_name_matches(&tag, name))
@@ -323,6 +307,39 @@ impl Rule for RequireComponentRegistration {
             }
         }
     }
+}
+
+fn croquis_script_setup_bindings(ctx: &LintContext<'_>) -> Vec<String> {
+    let Some(analysis) = art::analysis(ctx) else {
+        return Vec::new();
+    };
+    analysis
+        .scopes
+        .iter()
+        .filter(|scope| scope.kind == ScopeKind::ScriptSetup)
+        .flat_map(|scope| {
+            analysis.bindings.iter().filter_map(|(name, binding_type)| {
+                let runtime_value = matches!(
+                    binding_type,
+                    BindingType::SetupLet
+                        | BindingType::SetupMaybeRef
+                        | BindingType::SetupRef
+                        | BindingType::SetupReactiveConst
+                        | BindingType::SetupConst
+                        | BindingType::LiteralConst
+                        | BindingType::ExternalModule
+                );
+                (runtime_value
+                    && analysis
+                        .binding_spans
+                        .get(*name)
+                        .is_some_and(|&(start, end)| {
+                            scope.span.start <= start && end <= scope.span.end
+                        }))
+                .then(|| name.to_compact_string())
+            })
+        })
+        .collect()
 }
 
 /// Collect all element tags from the template
