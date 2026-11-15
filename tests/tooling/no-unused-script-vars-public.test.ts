@@ -195,7 +195,7 @@ await test("producer authority binds the exact run, candidate, source, version a
   const run = {
     id: 43_747_366_056,
     run_attempt: 1,
-    name: "Release",
+    name: "Release 0.760.0 @ " + releaseSource,
     path: ".github/workflows/release.yml",
     event: "workflow_dispatch",
     status: "completed",
