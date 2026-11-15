@@ -6632,9 +6632,10 @@
             "dialects": [
               "vue3-sfc",
               "html-template",
+              "js",
               "ts"
             ],
-            "selector": "typescript_parity::setup_enum_computed_keys_do_not_become_unsafe_members; exact #12998 setup regression and plain-script control"
+            "selector": "linter manifest pinned authored sources"
           }
         ]
       }
