@@ -11,6 +11,27 @@ import { normalizeOxlintObservation } from "../../../tools/support/release/smoke
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 const smokeCommand = path.join(root, "tools/commands/release/npm/smoke-release-install.ts");
 
+test("the Bun lane executes the shared source planner when its graph changes", () => {
+  const workflow = fs.readFileSync(
+    path.join(root, ".github/workflows/release-smoke-contracts.yml"),
+    "utf8",
+  );
+  for (const source of [
+    "tools/support/compat/github/legacy-fix-fixture-report.ts",
+    "tools/support/compat/github/native-beta-dto-fixtures.ts",
+    "tools/support/compat/github/report-legacy-fix-fixtures.ts",
+    "tests/tooling/legacy-fix-fixture-report.test.ts",
+  ]) {
+    assert.ok(workflow.includes(`- "${source}"`), `${source} must select the Bun lane`);
+  }
+  assert.match(workflow, /name: Shared source planner on Bun 1\.3\.14/);
+  assert.match(workflow, /bun test tests\/tooling\/legacy-fix-fixture-report\.test\.ts/);
+  assert.match(workflow, /name: Shared source planner on Node 24\.14\.0/);
+  assert.match(workflow, /node --test tests\/tooling\/legacy-fix-fixture-report\.test\.ts/);
+  assert.match(workflow, /bun-planner-\$phase\.txt/);
+  assert.match(workflow, /node-planner-\$phase\.txt/);
+});
+
 test("Bun install and Node/Bun parity execute through the configured runtime", () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize bun runtime smoke test-"));
   try {

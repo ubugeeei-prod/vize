@@ -9,11 +9,15 @@ on:
       - "tools/commands/release/npm/smoke-release-install.ts"
       - "tools/support/release/smoke_release_install/**"
       - "tools/support/compat/npm/smoke-*"
+      - "tools/support/compat/github/legacy-fix-fixture-report.ts"
+      - "tools/support/compat/github/native-beta-dto-fixtures.ts"
+      - "tools/support/compat/github/report-legacy-fix-fixtures.ts"
       - "npm/cli/**"
       - "npm/native/**"
       - "npm/builder/vite/**"
       - "npm/linter/oxlint/**"
       - "tests/tooling/release/release-smoke-*"
+      - "tests/tooling/legacy-fix-fixture-report.test.ts"
       - "tests/tooling/support/release-smoke-*"
       - "tests/tooling/github-workflows-release-build.test.ts"
       - "tests/tooling/release/release-workflow.test.ts"
@@ -27,6 +31,56 @@ concurrency:
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 jobs:
+  bun-planner:
+    name: Shared source planner on Bun 1.3.14
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - uses: ./.github/actions/setup-runtime-package-managers
+      - name: Execute the shared planner contract through Bun
+        shell: bash
+        run: |
+          for phase in cold warm; do
+            /usr/bin/time --verbose --output="$RUNNER_TEMP/bun-planner-$phase.txt" \
+              bun test tests/tooling/legacy-fix-fixture-report.test.ts
+          done
+          cat "$RUNNER_TEMP"/bun-planner-*.txt
+      - name: Retain Bun planner timing and RSS
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: bun-planner-performance
+          path: ${{ runner.temp }}/bun-planner-*.txt
+          if-no-files-found: error
+          retention-days: 14
+
+  node-planner-baseline:
+    name: Shared source planner on Node 24.14.0
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - uses: ./.github/actions/setup-runtime-package-managers
+      - name: Execute the shared planner baseline through Node
+        shell: bash
+        run: |
+          for phase in cold warm; do
+            /usr/bin/time --verbose --output="$RUNNER_TEMP/node-planner-$phase.txt" \
+              node --test tests/tooling/legacy-fix-fixture-report.test.ts
+          done
+          cat "$RUNNER_TEMP"/node-planner-*.txt
+      - name: Retain Node planner timing and RSS
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: node-planner-performance
+          path: ${{ runner.temp }}/node-planner-*.txt
+          if-no-files-found: error
+          retention-days: 14
+
   bun-products:
     name: Packed products on Bun 1.3.14
     runs-on: blacksmith-32vcpu-ubuntu-2404
@@ -98,4 +152,4 @@ jobs:
         run: node --test tests/tooling/release/release-smoke-public-native.test.ts tests/tooling/native-build-token.test.ts tests/tooling/native-binding-identity.test.ts
       - name: Require release caller and fresh-project workflow wiring
         shell: bash
-        run: node --test tests/tooling/github-workflows-release-build.test.ts tests/tooling/release/release-workflow.test.ts tests/tooling/release/release-smoke-init-fresh.test.ts tests/tooling/release/release-smoke-init-toolchain.test.ts tests/tooling/release/release-smoke-musl.test.ts
+        run: node --test tests/tooling/github-workflows-release-build.test.ts tests/tooling/release/release-workflow.test.ts tests/tooling/release/release-smoke-init-fresh.test.ts tests/tooling/release/release-smoke-init-toolchain.test.ts tests/tooling/release/release-smoke-init-workspace.test.ts tests/tooling/release/release-smoke-musl.test.ts
