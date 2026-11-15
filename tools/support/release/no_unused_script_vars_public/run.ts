@@ -7,7 +7,7 @@ import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
 const rule = "vue/no-unused-script-vars";
-const docs = "docs/content/rules/vue.md";
+const docs = "docs/content/rules/reference/vue-no-unused-script-vars.md";
 
 type DiagnosticSpec = { name: string; marker: string; line: number };
 type GlobalCase = { id: string; code: string; diagnostics: DiagnosticSpec[] };

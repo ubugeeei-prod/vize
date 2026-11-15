@@ -75,6 +75,12 @@ await test("all eleven directive packets keep exact authored character coordinat
     assert.equal(report[0]!.errorCount, 0);
     assert.equal(report[0]!.warningCount, row.diagnostics.length);
     assert.ok(report[0]!.messages.every((message) => message.severity === 1));
+    assert.ok(
+      report[0]!.messages.every(
+        (message) =>
+          message.ruleDocsPath === "docs/content/rules/reference/vue-no-unused-script-vars.md",
+      ),
+    );
   }
 });
 
