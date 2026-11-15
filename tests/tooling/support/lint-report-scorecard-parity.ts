@@ -129,6 +129,18 @@ export function registerScorecardParityTests({
         indexFile(result).totals.falsePositiveCount++;
       });
       rejects((result) => {
+        reportFile(
+          result,
+          `${entry.project}-lint-divergence.json`,
+        ).divergence.summary.falsePositiveRatio = 0;
+      });
+      rejects((result) => {
+        const name = `${entry.project}-lint-divergence.md`,
+          markdown = result.files[name];
+        if (typeof markdown !== "string") assert.fail(`${name}: expected Markdown`);
+        result.files[name] = markdown.replace("Budget passed: false", "Budget passed: true");
+      });
+      rejects((result) => {
         result.status = 0;
         result.stderr = "";
       });

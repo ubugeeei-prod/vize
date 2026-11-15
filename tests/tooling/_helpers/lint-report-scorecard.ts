@@ -39,6 +39,92 @@ function without(fields: Fields, keys: readonly string[]): Fields {
   return Object.fromEntries(Object.entries(fields).filter(([key]) => !keys.includes(key)));
 }
 
+function json(value: unknown): string {
+  const rendered = JSON.stringify(value);
+  assert.notEqual(rendered, undefined);
+  return rendered as string;
+}
+
+function markdownRuleTable(title: string, findings: Fields[]): string {
+  if (findings.length === 0) return `### ${title}: none\n\n`;
+  const counts = new Map<string, number>();
+  for (const finding of findings) {
+    const key = String(finding.upstreamRuleId ?? finding.ruleId);
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
+  const rows = [...counts].sort(
+    (left, right) => right[1] - left[1] || left[0].localeCompare(right[0]),
+  );
+  return `${[
+    `### ${title}: ${findings.length}`,
+    "",
+    "| Rule | Findings |",
+    "| --- | ---: |",
+    ...rows.map(([rule, count]) => `| \`${rule}\` | ${count} |`),
+    "",
+  ].join("\n")}\n`;
+}
+
+function normalizeReviewedMarkdown(
+  markdown: string,
+  actual: ProjectReport,
+  expected: ProjectReport,
+): string {
+  const actualSummary = actual.divergence.summary,
+    expectedSummary = expected.divergence.summary,
+    actualBudget = actual.budget,
+    expectedBudget = expected.budget;
+  const replacements: Array<[string, string, string]> = [
+    [
+      `False positives: ${json(actualSummary.falsePositiveCount)} (${json(actualSummary.falsePositiveRatio)})`,
+      `False positives: ${json(expectedSummary.falsePositiveCount)} (${json(expectedSummary.falsePositiveRatio)})`,
+      "false-positive summary",
+    ],
+    [
+      `Patina findings outside reference coverage: ${json(actualSummary.patinaOutsideBaselineSurfaceCount)}`,
+      `Patina findings outside reference coverage: ${json(expectedSummary.patinaOutsideBaselineSurfaceCount)}`,
+      "outside-surface summary",
+    ],
+    [
+      `Reference coverage integrity errors: ${json(actualSummary.referenceCoverageIntegrityErrorCount)}`,
+      `Reference coverage integrity errors: ${json(expectedSummary.referenceCoverageIntegrityErrorCount)}`,
+      "reference-coverage summary",
+    ],
+    [
+      `Budget verdict: ${String(actualBudget.verdict)}`,
+      `Budget verdict: ${String(expectedBudget.verdict)}`,
+      "budget verdict",
+    ],
+    [
+      `Budget passed: ${actualBudget.passed === true}`,
+      `Budget passed: ${expectedBudget.passed === true}`,
+      "budget pass",
+    ],
+    [
+      markdownRuleTable("False positives", actual.divergence.falsePositives),
+      markdownRuleTable("False positives", expected.divergence.falsePositives),
+      "false-positive table",
+    ],
+    [
+      markdownRuleTable(
+        "Patina findings outside reference coverage",
+        actual.divergence.patinaOutsideBaselineSurface,
+      ),
+      markdownRuleTable(
+        "Patina findings outside reference coverage",
+        expected.divergence.patinaOutsideBaselineSurface,
+      ),
+      "outside-surface table",
+    ],
+  ];
+  for (const [actualFragment, expectedFragment, label] of replacements) {
+    if (actualFragment === expectedFragment) continue;
+    assert.equal(markdown.split(actualFragment).length, 2, `exact reviewed Markdown ${label}`);
+    markdown = markdown.replace(actualFragment, expectedFragment);
+  }
+  return markdown;
+}
+
 function expectedIndexBudget(projects: Array<{ project: string; budget: Fields }>): Fields {
   const failed = projects.filter(({ budget }) => budget.passed !== true);
   return {
@@ -143,6 +229,16 @@ function normalizeReviewedCoverageIdentity(
     actual.divergence.summary.falsePositiveCount,
     actual.divergence.falsePositives.length,
   );
+  const falsePositiveDenominator =
+    actual.divergence.summary.sharedCount +
+    actual.divergence.summary.falsePositiveCount +
+    actual.divergence.summary.ruleLocationDivergenceCount;
+  assert.equal(
+    actual.divergence.summary.falsePositiveRatio,
+    falsePositiveDenominator === 0
+      ? 0
+      : actual.divergence.summary.falsePositiveCount / falsePositiveDenominator,
+  );
   assert.equal(actual.divergence.summary.patinaOutsideBaselineSurfaceCount, 0);
   assert.equal(actual.divergence.summary.referenceCoverageIntegrityErrorCount, 0);
   assert.deepEqual(
@@ -200,6 +296,7 @@ export function assertScorecardIdentityTransition(
       expectedSummary: Fields;
       file: string;
       markdownName: string;
+      normalizedActualMarkdown: string;
     }
   >();
   for (const [file, actualArtifact] of Object.entries(actual.files)) {
@@ -238,7 +335,8 @@ export function assertScorecardIdentityTransition(
     const actualMarkdown = helpers.markdown(actual, markdownName);
     assert.equal(expectedMarkdown.split(expectedLine).length, 2);
     assert.equal(actualMarkdown.split(actualLine).length, 2);
-    actual.files[markdownName] = actualMarkdown.replace(actualLine, expectedLine);
+    const normalizedActualMarkdown = actualMarkdown.replace(actualLine, expectedLine);
+    actual.files[markdownName] = normalizedActualMarkdown;
     if (changed) {
       const project = file.replace(/-lint-divergence\.json$/u, "");
       assert.equal(reviewedTransitions.has(project), false);
@@ -250,6 +348,7 @@ export function assertScorecardIdentityTransition(
         expectedSummary: structuredClone(helpers.object(expectedArtifact.divergence.summary)),
         file,
         markdownName,
+        normalizedActualMarkdown,
       });
     }
   }
@@ -353,8 +452,18 @@ export function assertScorecardIdentityTransition(
       assert.ok(
         typeof actualArtifact === "object" &&
           actualArtifact.schema === "vize.fixtureLintDivergenceRun" &&
+          "raw" in actualArtifact &&
           typeof expectedArtifact === "object" &&
-          expectedArtifact.schema === "vize.fixtureLintDivergenceRun",
+          expectedArtifact.schema === "vize.fixtureLintDivergenceRun" &&
+          "raw" in expectedArtifact,
+      );
+      assert.equal(
+        normalizeReviewedMarkdown(
+          transition.normalizedActualMarkdown,
+          actualArtifact,
+          expectedArtifact,
+        ),
+        transition.expectedMarkdown,
       );
       actualArtifact.divergence = structuredClone(expectedArtifact.divergence);
       actualArtifact.budget = structuredClone(expectedArtifact.budget);
