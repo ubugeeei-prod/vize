@@ -7,6 +7,7 @@
 //! Corsa's LSP instead of parsing CLI text output.
 
 mod cache_lock;
+mod component_literal_key;
 mod declaration_path;
 mod error;
 mod executor;

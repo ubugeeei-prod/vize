@@ -225,6 +225,9 @@ mod test_support;
 mod tests;
 
 #[cfg(test)]
+mod diagnostic_selector_tests;
+
+#[cfg(test)]
 mod project_tests;
 
 #[cfg(test)]
