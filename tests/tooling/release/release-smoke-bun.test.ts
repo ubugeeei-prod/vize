@@ -51,6 +51,7 @@ test("Bun install and Node/Bun parity execute through the configured runtime", (
         (line) =>
           JSON.parse(line) as {
             args: string[];
+            cwd: string;
             kind: string;
             overrides?: Record<string, string>;
           },
@@ -69,9 +70,11 @@ test("Bun install and Node/Bun parity execute through the configured runtime", (
       "@vizejs/native",
       "@vizejs/native-pack-only",
     ]);
-    assert.match(
-      bunInstall!.overrides!["@vizejs/native"],
-      /^file:\.\.\/packs\/vizejs-native-1\.0\.0\.tgz$/,
+    const nativeOverride = bunInstall!.overrides!["@vizejs/native"];
+    assert.ok(nativeOverride.startsWith("file:"));
+    assert.equal(
+      path.resolve(bunInstall!.cwd, nativeOverride.slice("file:".length)),
+      path.resolve(bunInstall!.cwd, "../packs/vizejs-native-1.0.0.tgz"),
     );
     assert.ok(
       invocations.some(({ args, kind }) => kind === "bun" && args[0] === "-e"),
@@ -215,6 +218,7 @@ const fs = require("node:fs");
 const path = require("node:path");
 const kind = ${JSON.stringify(kind)};
 const args = process.argv.slice(2);
+const originalArgs = [...args];
 const installing = args[0] === "install";
 let overrides;
 if (installing) {
@@ -227,7 +231,7 @@ if (installing) {
   fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + "\\n");
   args.splice(0, args.length, "install", "--ignore-scripts", "--package-lock=false", "--no-audit", "--fund=false", "--legacy-peer-deps", "--include=optional");
 }
-fs.appendFileSync(process.env.VIZE_RUNTIME_STUB_LOG, JSON.stringify({ kind, args, overrides }) + "\\n");
+fs.appendFileSync(process.env.VIZE_RUNTIME_STUB_LOG, JSON.stringify({ kind, args: originalArgs, cwd: process.cwd(), overrides }) + "\\n");
 const command = kind === "npm" || installing ? process.env.VIZE_RUNTIME_STUB_NPM : process.execPath;
 const env = kind === "bun" && !installing
   ? { ...process.env, VIZE_BUN_STUB_RUNTIME: "1" }
@@ -274,7 +278,7 @@ if (process.execPath.toLowerCase() === stub) {
       Object.entries(manifest.dependencies || {}).filter(([, value]) => String(value).startsWith("file:")),
     );
     fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + "\\n");
-    fs.appendFileSync(process.env.VIZE_RUNTIME_STUB_LOG, JSON.stringify({ kind: "bun", args, overrides }) + "\\n");
+    fs.appendFileSync(process.env.VIZE_RUNTIME_STUB_LOG, JSON.stringify({ kind: "bun", args, cwd: process.cwd(), overrides }) + "\\n");
     const child = spawnSync(
       '"' + process.env.VIZE_RUNTIME_STUB_NPM + '"',
       ["install", "--ignore-scripts", "--package-lock=false", "--no-audit", "--fund=false", "--legacy-peer-deps", "--include=optional"],
@@ -283,7 +287,7 @@ if (process.execPath.toLowerCase() === stub) {
     if (child.error) throw child.error;
     process.exit(child.status ?? 1);
   }
-  fs.appendFileSync(process.env.VIZE_RUNTIME_STUB_LOG, JSON.stringify({ kind: "bun", args, overrides }) + "\\n");
+  fs.appendFileSync(process.env.VIZE_RUNTIME_STUB_LOG, JSON.stringify({ kind: "bun", args, cwd: process.cwd(), overrides }) + "\\n");
   process.env.VIZE_BUN_STUB_RUNTIME = "1";
 }
 `,
