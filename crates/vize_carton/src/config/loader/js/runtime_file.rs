@@ -106,8 +106,8 @@ fn cached_runtime(home: &Path, source: &[u8]) -> io::Result<NodeRuntimeFile> {
     recover_interrupted_writes(&root);
 
     let hash = sha256_hex(source);
-    let path = root.join(format!("{hash}.mjs"));
-    let lease_path = root.join(format!("{hash}.lease"));
+    let path = root.join(crate::cstr!("{hash}.mjs").as_str());
+    let lease_path = root.join(crate::cstr!("{hash}.lease").as_str());
     let lease = open_lease(&lease_path)?;
     lease.lock()?;
     if !runtime_matches(&path, source) {
@@ -223,8 +223,9 @@ fn remove_invalid_runtime(path: &Path) -> io::Result<()> {
 }
 
 fn publish_runtime(root: &Path, path: &Path, hash: &str, source: &[u8]) -> io::Result<()> {
+    let prefix = crate::cstr!("{hash}.{}.", std::process::id());
     let mut temporary = tempfile::Builder::new()
-        .prefix(&format!("{hash}.{}.", std::process::id()))
+        .prefix(prefix.as_str())
         .suffix(".tmp")
         .tempfile_in(root)?;
     temporary.as_file().lock()?;
@@ -333,7 +334,7 @@ fn remove_inactive_runtime(path: &Path) -> bool {
     let Some(stem) = path.file_stem().and_then(|stem| stem.to_str()) else {
         return false;
     };
-    let lease_path = path.with_file_name(format!("{stem}.lease"));
+    let lease_path = path.with_file_name(crate::cstr!("{stem}.lease").as_str());
     let Ok(metadata) = fs::symlink_metadata(&lease_path) else {
         return false;
     };

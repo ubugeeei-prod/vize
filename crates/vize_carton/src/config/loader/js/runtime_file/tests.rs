@@ -177,7 +177,7 @@ fn identical_runtime_is_reused_and_old_identities_are_bounded() {
     for identity in 0..8 {
         drop(runtime(
             cache.path(),
-            &format!("process.stdout.write('{identity}');"),
+            crate::cstr!("process.stdout.write('{identity}');").as_str(),
         ));
     }
     let entries: Vec<_> = fs::read_dir(super::cache_root(cache.path()))
@@ -200,10 +200,12 @@ fn identical_runtime_is_reused_and_old_identities_are_bounded() {
             .count(),
         super::CACHE_LIMIT
     );
-    assert!(
+    assert_eq!(
         entries
             .iter()
-            .all(|path| !path.to_string_lossy().ends_with(".tmp"))
+            .filter(|path| path.extension().is_some_and(|extension| extension == "tmp"))
+            .count(),
+        0
     );
 }
 
