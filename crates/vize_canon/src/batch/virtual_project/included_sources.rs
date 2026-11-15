@@ -14,8 +14,10 @@ impl VirtualProject {
         let Some(tsconfig) = self.resolved_tsconfig_path() else {
             return Ok(());
         };
-        let included =
-            super::tsconfig_gen::references::included_sources(&tsconfig, &self.project_root);
+        let included = super::tsconfig_gen::references::tsconfig_included_source_files(
+            &tsconfig,
+            &self.project_root,
+        );
         self.register_unregistered_sources(included)
     }
 

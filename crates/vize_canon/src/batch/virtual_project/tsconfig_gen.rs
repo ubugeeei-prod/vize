@@ -16,7 +16,7 @@ mod path_rebase;
 pub(super) mod references;
 pub use references::{
     TsconfigOwnershipCache, TsconfigOwnershipOptions, TsconfigOwnershipSnapshot,
-    TsconfigSourceKind, TsconfigWildcard, TsconfigWildcardUsage,
+    TsconfigSourceKind, TsconfigWildcard, TsconfigWildcardUsage, tsconfig_included_source_files,
 };
 mod jsx_files;
 mod literal_roots;

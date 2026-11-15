@@ -70,6 +70,7 @@ pub use virtual_project::{
     project_virtual_access_path, project_virtual_lock_paths, project_virtual_root,
     scan_package_route_reachability, snapshot_tsconfig_compiler_options,
     snapshot_tsconfig_vue_compiler_options, snapshot_tsconfig_vue_target,
+    tsconfig_included_source_files,
 };
 pub use virtual_specifier_message::{AUTHORED_VUE_TS_SENTINEL, restore_virtual_vue_specifiers};
 pub use vue_template_ref_global::declares_vue_template_ref_global;

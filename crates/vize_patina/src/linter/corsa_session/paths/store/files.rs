@@ -1,7 +1,74 @@
 use super::walk::{glob_match, is_declaration_file, parse_jsonc, slash_path, walk_glob};
 use super::{Path, PathBuf, String, ToCompactString, Value};
+use oxc_allocator::Allocator;
+use oxc_ast::ast::{Declaration, Statement, TSModuleDeclarationName};
+use oxc_parser::Parser;
+use oxc_span::SourceType;
+use rayon::prelude::*;
 
-pub(super) fn ambient_declaration_files(tsconfig: &Path) -> Vec<String> {
+pub(super) fn ambient_program_files(project_root: &Path, tsconfig: &Path) -> Vec<String> {
+    let mut files = ambient_declaration_files(tsconfig);
+    files.extend(
+        vize_canon::batch::tsconfig_included_source_files(tsconfig, project_root)
+            .into_par_iter()
+            .filter(|path| is_typescript_source(path))
+            .filter_map(|path| {
+                let content = std::fs::read_to_string(&path).ok()?;
+                is_module_augmentation(&path, &content).then(|| {
+                    let canonical = std::fs::canonicalize(&path).unwrap_or(path);
+                    slash_path(&canonical)
+                })
+            }),
+    );
+    files.sort();
+    files.dedup();
+    files
+}
+
+fn is_typescript_source(path: &Path) -> bool {
+    path.extension()
+        .and_then(|extension| extension.to_str())
+        .is_some_and(|extension| matches!(extension, "ts" | "tsx" | "mts" | "cts"))
+}
+
+fn is_module_augmentation(path: &Path, content: &str) -> bool {
+    if !content.contains("declare module") && !content.contains("declare global") {
+        return false;
+    }
+    let Ok(source_type) = SourceType::from_path(path) else {
+        return false;
+    };
+    let allocator = Allocator::default();
+    let parsed = Parser::new(&allocator, content, source_type.with_unambiguous(true)).parse();
+    if parsed.panicked || !parsed.program.source_type.is_module() {
+        return false;
+    }
+    parsed.program.body.iter().any(|statement| match statement {
+        Statement::TSModuleDeclaration(declaration) => {
+            declaration.declare
+                && matches!(&declaration.id, TSModuleDeclarationName::StringLiteral(_))
+        }
+        Statement::TSGlobalDeclaration(_) => true,
+        Statement::ExportNamedDeclaration(export) => export
+            .declaration
+            .as_ref()
+            .is_some_and(declaration_is_augmentation),
+        _ => false,
+    })
+}
+
+fn declaration_is_augmentation(declaration: &Declaration<'_>) -> bool {
+    match declaration {
+        Declaration::TSModuleDeclaration(declaration) => {
+            declaration.declare
+                && matches!(&declaration.id, TSModuleDeclarationName::StringLiteral(_))
+        }
+        Declaration::TSGlobalDeclaration(_) => true,
+        _ => false,
+    }
+}
+
+fn ambient_declaration_files(tsconfig: &Path) -> Vec<String> {
     let Some(base) = tsconfig.parent() else {
         return Vec::new();
     };
@@ -46,6 +113,70 @@ pub(super) fn ambient_declaration_files(tsconfig: &Path) -> Vec<String> {
     declarations.sort();
     declarations.dedup();
     declarations
+}
+
+#[cfg(test)]
+mod tests {
+    use super::ambient_program_files;
+    use std::{fs, path::Path};
+
+    fn write(root: &Path, path: &str, content: &str) {
+        let path = root.join(path);
+        fs::create_dir_all(path.parent().unwrap()).unwrap();
+        fs::write(path, content).unwrap();
+    }
+
+    #[test]
+    fn project_program_adds_only_selected_external_module_augmentations() {
+        let root = tempfile::tempdir().unwrap();
+        write(
+            root.path(),
+            "tsconfig.json",
+            r#"{"include":["src/**/*.ts"],"exclude":["src/excluded.ts"]}"#,
+        );
+        write(root.path(), "src/env.d.ts", "declare const build: string;\n");
+        write(
+            root.path(),
+            "src/augment.ts",
+            "import './registry';\ndeclare module './registry' { interface Registry { extra: true } }\n",
+        );
+        write(
+            root.path(),
+            "src/global.ts",
+            "export {};\ndeclare global { interface Window { widget: true } }\n",
+        );
+        write(
+            root.path(),
+            "src/comment.ts",
+            "export const text = 'declare module not-a-declaration';\n",
+        );
+        write(
+            root.path(),
+            "src/script.ts",
+            "declare module 'ambient-but-not-an-augmentation' {}\n",
+        );
+        write(
+            root.path(),
+            "src/excluded.ts",
+            "export {}; declare global { interface Window { excluded: true } }\n",
+        );
+
+        let files = ambient_program_files(root.path(), &root.path().join("tsconfig.json"));
+        let relative: Vec<_> = files
+            .iter()
+            .map(|path| {
+                Path::new(path)
+                    .strip_prefix(root.path())
+                    .unwrap()
+                    .to_string_lossy()
+                    .replace('\\', "/")
+            })
+            .collect();
+        assert_eq!(
+            relative,
+            vec!["src/augment.ts", "src/env.d.ts", "src/global.ts"]
+        );
+    }
 }
 
 fn exclude_patterns(value: &Value) -> Vec<String> {

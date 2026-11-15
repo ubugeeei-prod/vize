@@ -49,7 +49,7 @@ pub(in super::super) fn referenced_project_configs_with_inputs(
 /// dot directories. TypeScript's `**` does not descend into hidden
 /// directories, and a gitignore-aware walk would drop included sources the
 /// diagnostic pass still has to see.
-pub(in super::super) fn included_sources(
+pub fn tsconfig_included_source_files(
     tsconfig_path: &Path,
     project_root: &Path,
 ) -> Vec<PathBuf> {
