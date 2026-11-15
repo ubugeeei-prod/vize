@@ -114,7 +114,7 @@
   "interface model": {
     "contents": {
       "kind": "markdown",
-      "value": "```typescript\n(property) name?: string | undefined\n```\nThe edited name."
+      "value": "```typescript\n(property) \"name\"?: string | undefined\n```\nThe edited name."
     },
     "range": {
       "end": {
@@ -210,7 +210,7 @@
   "options event": {
     "contents": {
       "kind": "markdown",
-      "value": "```typescript\n(property) change: (value: string) => any\n```\n"
+      "value": "```typescript\n(property) \"change\": (value: string) => any\n```\n"
     },
     "range": {
       "end": {
