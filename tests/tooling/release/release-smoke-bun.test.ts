@@ -15,7 +15,11 @@ test("Bun install and Node/Bun parity execute through the configured runtime", (
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize bun runtime smoke test-"));
   try {
     const log = path.join(tempDir, "runtime.jsonl");
-    const realNpm = resolvePathCommand("npm");
+    const resolvedNpm = resolvePathCommand("npm");
+    const realNpm =
+      process.platform === "win32"
+        ? writeWindowsCommandProxy(tempDir, "real npm.cmd", resolvedNpm)
+        : resolvedNpm;
     const npmStub = writeRuntimeStub(tempDir, "npm");
     const bunStub = writeRuntimeStub(tempDir, "bun");
     const nativeDir = writeNativePackage(tempDir);
@@ -183,10 +187,12 @@ const command = kind === "npm" || installing ? process.env.VIZE_RUNTIME_STUB_NPM
 const env = kind === "bun" && !installing
   ? { ...process.env, VIZE_BUN_STUB_RUNTIME: "1" }
   : process.env;
-const child = spawnSync(command, args, {
+const shell = process.platform === "win32" && /\\.(cmd|bat)$/i.test(command);
+const executable = shell ? '"' + command + '"' : command;
+const child = spawnSync(executable, args, {
   cwd: process.cwd(),
   env,
-  shell: process.platform === "win32" && /\\.(cmd|bat)$/i.test(command),
+  shell,
   stdio: "inherit",
 });
 if (child.error) throw child.error;
@@ -223,7 +229,7 @@ if (process.execPath.toLowerCase() === stub) {
     );
     fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + "\\n");
     const child = spawnSync(
-      process.env.VIZE_RUNTIME_STUB_NPM,
+      '"' + process.env.VIZE_RUNTIME_STUB_NPM + '"',
       ["install", "--ignore-scripts", "--package-lock=false", "--no-audit", "--fund=false", "--legacy-peer-deps", "--include=optional"],
       { cwd: process.cwd(), env: process.env, shell: true, stdio: "inherit" },
     );
@@ -235,4 +241,10 @@ if (process.execPath.toLowerCase() === stub) {
 `,
   );
   return executable;
+}
+
+function writeWindowsCommandProxy(tempDir: string, name: string, command: string): string {
+  const proxy = path.join(tempDir, name);
+  fs.writeFileSync(proxy, `@call "${command}" %*\r\n`);
+  return proxy;
 }
