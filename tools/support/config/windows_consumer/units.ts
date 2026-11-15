@@ -22,6 +22,7 @@ export function runLoaderUnits(source: string, evidence: string): void {
       "config::loader::",
       "--",
       "--nocapture",
+      "--test-threads=1",
     ],
     source,
     undefined,
