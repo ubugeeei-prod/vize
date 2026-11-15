@@ -1,7 +1,9 @@
 name: Inspect sharded type-aware evidence
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - bench/no-implied-eval-sharded-13000
 
 permissions:
   actions: read
@@ -16,7 +18,7 @@ jobs:
           name: patina-project-batch
           path: evidence
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          run-id: "43727628529"
+          run-id: "43728888443"
       - name: Publish retained boundary
         run: |
           escape() {
@@ -32,7 +34,16 @@ jobs:
             echo "::notice title=progress tail::$(escape "$(tail -n 30 evidence/progress.jsonl)")"
           fi
           if [[ -f evidence/samples.jsonl ]]; then
-            echo "::notice title=completed samples::$(escape "$(cat evidence/samples.jsonl)")"
+            detail="$(jq -s 'map({side,label,elapsedMs,diagnostics,aggregateCpuSeconds,maximumShardRssKiB,requestCount:(.requestPhaseCounts // [] | map(.count) | add),signatureRequests:(.requestPhaseCounts // [] | map(select(.attribution.pass=="getSignaturesOfType")|.count) | add)})' evidence/samples.jsonl)"
+            echo "::notice title=completed sample summary::$(escape "$detail")"
+            base_vector="$(jq -c 'select(.label=="base-profile-0")|.requestPhaseCounts' evidence/samples.jsonl)"
+            head_vector="$(jq -c 'select(.label=="head-profile-0")|.requestPhaseCounts' evidence/samples.jsonl)"
+            if [[ -n "$base_vector" && -n "$head_vector" && "$base_vector" != "$head_vector" ]]; then
+              printf '%s\n' "$base_vector" | jq . > /tmp/base-vector.json
+              printf '%s\n' "$head_vector" | jq . > /tmp/head-vector.json
+              detail="$(diff -u /tmp/base-vector.json /tmp/head-vector.json | head -n 120 || true)"
+              echo "::notice title=base head request delta::$(escape "$detail")"
+            fi
           fi
           for file in evidence/*.unexpected.stdout; do
             [[ -f "$file" ]] || continue
