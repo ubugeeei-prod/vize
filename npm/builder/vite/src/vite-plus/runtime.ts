@@ -209,7 +209,7 @@ export function availableVueRules(): Set<string> {
   } catch {
     const temporary = temporaryCatalogWorkspace();
     directory = temporary.directory;
-    cleanup = temporary.cleanup;
+    cleanup = () => temporary.cleanup();
   }
   try {
     // A standalone project prevents recursive loading of defineConfig while
