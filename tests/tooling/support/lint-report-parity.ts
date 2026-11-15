@@ -436,7 +436,11 @@ for (const entry of reviewed) {
           results: [{ file, messages: Array.from({ length: count }, () => message) }],
         });
         const result = compare(input, input.args, ["updated"]);
-        assert.equal(result.status, count === 0 && falseNegatives.length === 0 ? 0 : 1, result.stderr);
+        assert.equal(
+          result.status,
+          count === 0 && falseNegatives.length === 0 ? 0 : 1,
+          result.stderr,
+        );
         const report = reportFile(result, `${entry.project}-lint-divergence.json`);
         assert.deepEqual(report.divergence.falseNegatives, falseNegatives);
         assert.equal(report.divergence.summary.falseNegativeCount, falseNegatives.length);
