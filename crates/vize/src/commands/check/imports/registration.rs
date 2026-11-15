@@ -8,7 +8,6 @@ use super::session::{EdgeScope, LocalImportSession};
 use super::{
     ImportFileOptions, extract_module_specifier_occurrences, is_declaration_file,
     is_relative_specifier, resolve_import_base, resolve_import_base_with_inputs,
-    resolve_relative_import,
 };
 
 mod reachability;
