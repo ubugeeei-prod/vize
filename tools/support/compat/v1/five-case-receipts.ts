@@ -213,8 +213,13 @@ export function validateV1FiveCaseSelectorRegistry(matrix: SupportMatrix): void 
 
 function assertRuntime(matrix: SupportMatrix, receipt: V1FiveCaseReceipt): void {
   const runtime = receipt.runtime;
-  for (const [name, value] of Object.entries(runtime))
-    assert.ok(value.trim().length > 0, `${receipt.id}: runtime ${name}`);
+  for (const name of ["name", "version", "target", "os", "architecture", "libc", "vue"] as const) {
+    const value: unknown = runtime[name];
+    assert.ok(
+      typeof value === "string" && value.trim().length > 0,
+      `${receipt.id}: runtime ${name}`,
+    );
+  }
   assert.ok(
     matrix.environments.hostRuntimeCombinations.some(
       (host) =>
@@ -228,6 +233,20 @@ function assertRuntime(matrix: SupportMatrix, receipt: V1FiveCaseReceipt): void 
     receipt.runtimeSha256,
     digestV1FiveCaseValue(runtime),
     `${receipt.id}: runtime digest`,
+  );
+}
+
+function selectorShardIndex(selector: CaseSelector, shardTotal: number): number {
+  return Number.parseInt(selector.selectorSha256.slice(0, 12), 16) % shardTotal;
+}
+
+function runtimeSupportsSelector(
+  selector: CaseSelector,
+  runtime: V1FiveCaseRuntimeIdentity,
+): boolean {
+  return !(
+    runtime.target.startsWith("wsl2-") &&
+    selector.requiredQualificationSets.includes("shipped-editors")
   );
 }
 
@@ -270,6 +289,11 @@ function assertReceipt(matrix: SupportMatrix, receipt: V1FiveCaseReceipt): void 
       receipt.shardIndex >= 0 &&
       receipt.shardIndex < receipt.shardTotal,
     `${receipt.id}: shardIndex`,
+  );
+  assert.equal(
+    selectorShardIndex(selector, receipt.shardTotal),
+    receipt.shardIndex,
+    `${receipt.id}: selector shard ownership`,
   );
   assert.ok(
     receipt.outcome === "passed" ||
@@ -371,7 +395,7 @@ export function buildV1FiveCaseShardPlan(
     selectorInventorySha256: "",
   }));
   for (const selector of matrix.caseSelectors) {
-    const index = Number.parseInt(selector.selectorSha256.slice(0, 12), 16) % shardTotal;
+    const index = selectorShardIndex(selector, shardTotal);
     shards[index]!.selectorIds.push(selector.id);
   }
   for (const shard of shards) {
@@ -390,6 +414,7 @@ export function buildV1FiveCaseShardPlan(
 }
 
 function admitSelector(
+  matrix: SupportMatrix,
   selector: CaseSelector,
   identity: { sourceSha: string; candidateSha: string; mode: V1FiveCaseMode },
   receipts: readonly V1FiveCaseReceipt[],
@@ -401,7 +426,8 @@ function admitSelector(
       receipt.candidateSha === identity.candidateSha &&
       receipt.mode === identity.mode &&
       receipt.selectorSha256 === selector.selectorSha256 &&
-      receipt.runtime.vue === selector.vue,
+      receipt.runtime.vue === selector.vue &&
+      runtimeSupportsSelector(selector, receipt.runtime),
   );
   const passed = exact.filter(({ outcome }) => outcome === "passed");
   const skipped = exact.some(({ outcome }) => outcome === "skipped");
@@ -424,7 +450,7 @@ function admitSelector(
         : state === "skipped"
           ? "The exact selector was skipped."
           : state === "stale"
-            ? "Only stale source, candidate, selector, mode or Vue identities exist."
+            ? "Only stale source, candidate, selector, mode, Vue or host/product identities exist."
             : "No receipt owns this selector.";
   return {
     ...selector,
@@ -446,7 +472,7 @@ export function admitV1FiveCaseReceipts(
   validateV1FiveCaseReceiptBundles(matrix, bundles);
   const receipts = bundles.flatMap(({ receipts: entries }) => entries);
   const caseSelectors = matrix.caseSelectors.map((selector) =>
-    admitSelector(selector, identity, receipts),
+    admitSelector(matrix, selector, identity, receipts),
   );
   const caseComplete = caseSelectors.every(({ qualification }) => qualification === "complete");
   const knownGaps = matrix.knownGaps.map((gap) =>

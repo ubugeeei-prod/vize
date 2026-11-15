@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
+import { parse } from "yaml";
 
 import {
   admitV1FiveCaseReceipts,
@@ -260,6 +262,21 @@ void test("receipt, runtime and bundle identities reject partial or duplicate ev
     /runtime digest/u,
   );
 
+  const missingOs = receipt(selected, {
+    runtime: {
+      name: host.runtime,
+      version: host.version,
+      target: host.target,
+      architecture: "x64",
+      libc: "glibc",
+      vue: selected.vue,
+    } as V1FiveCaseReceiptBody["runtime"],
+  });
+  assert.throws(
+    () => validateV1FiveCaseReceiptBundles(matrix, [bundle("bundle:missing-os", [missingOs])]),
+    /runtime os/u,
+  );
+
   const shared = receipt(selected);
   assert.throws(
     () =>
@@ -284,6 +301,25 @@ void test("receipt, runtime and bundle identities reject partial or duplicate ev
     () =>
       validateV1FiveCaseReceiptBundles(matrix, [bundle("bundle:changed-packet", [changedPacket])]),
     /passed receipt changes behavior/u,
+  );
+
+  const shardPlan = buildV1FiveCaseShardPlan(matrix, "release", 8);
+  const expectedShard = shardPlan.shards.find(({ selectorIds }) =>
+    selectorIds.includes(selected.id),
+  )!.index;
+  const wrongShard = receipt(selected, {
+    shardIndex: (expectedShard + 1) % 8,
+    shardTotal: 8,
+  });
+  assert.throws(
+    () =>
+      validateV1FiveCaseReceiptBundles(matrix, [
+        bundle("bundle:wrong-shard", [wrongShard], {
+          shardIndex: wrongShard.shardIndex,
+          shardTotal: wrongShard.shardTotal,
+        }),
+      ]),
+    /selector shard ownership/u,
   );
 });
 
@@ -315,18 +351,106 @@ void test("selector, candidate and Vue identity changes cannot receive current c
       validateV1FiveCaseReceiptBundles(matrix, [bundle("bundle:wrong-runtime", [wrongRuntime])]),
     /unknown host\/runtime identity/u,
   );
+
+  const editorSelector = matrix.caseSelectors.find(({ product }) => product === "shipped-editors")!;
+  const wsl = matrix.environments.hostRuntimeCombinations.find(({ target }) =>
+    target.startsWith("wsl2-"),
+  )!;
+  const wslEditor = receipt(editorSelector, {
+    runtime: {
+      name: wsl.runtime,
+      version: wsl.version,
+      target: wsl.target,
+      os: "linux",
+      architecture: "x64",
+      libc: "glibc",
+      vue: editorSelector.vue,
+    },
+  });
+  const unsupportedHost = admitV1FiveCaseReceipts(
+    matrix,
+    { sourceSha, candidateSha, mode: "release" },
+    [bundle("bundle:wsl-editor", [wslEditor])],
+  );
+  assert.equal(
+    unsupportedHost.caseSelectors.find(({ id }) => id === editorSelector.id)?.receiptState,
+    "stale",
+  );
 });
 
 void test("the reusable Action publishes the same plan or admission artifact", () => {
-  const action = readFileSync(
+  const actionSource = readFileSync(
     path.join(root, ".github/actions/v1-five-case-receipts/action.yml"),
     "utf8",
   );
-  assert.match(action, /operation must be plan, validate, or admit/u);
-  assert.match(action, /git rev-parse HEAD/u);
-  assert.match(action, /v1-five-case-receipts\.ts plan/u);
-  assert.match(action, /v1-five-case-receipts\.ts validate-bundles/u);
-  assert.match(action, /v1-five-case-receipts\.ts "\$\{args\[@\]\}"/u);
-  assert.match(action, /actions\/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a/u);
-  assert.match(action, /if-no-files-found: error/u);
+  const action = parse(actionSource) as {
+    inputs: Record<string, { required?: boolean }>;
+    outputs: Record<string, { value: string }>;
+    runs: {
+      steps: Array<{
+        id?: string;
+        env?: Record<string, string>;
+        run?: string;
+        uses?: string;
+        with?: Record<string, string>;
+      }>;
+    };
+  };
+  for (const input of [
+    "operation",
+    "source-sha",
+    "candidate-sha",
+    "mode",
+    "run-id",
+    "run-attempt",
+    "artifact-name",
+  ])
+    assert.equal(action.inputs[input]?.required, true, input);
+  assert.equal(action.outputs["output-path"]?.value, "${{ steps.driver.outputs.output_path }}");
+
+  const driver = action.runs.steps.find(({ id }) => id === "driver")!;
+  assert.equal(driver.env?.SOURCE_SHA, "${{ inputs.source-sha }}");
+  assert.equal(driver.env?.CANDIDATE_SHA, "${{ inputs.candidate-sha }}");
+  assert.equal(driver.env?.RUN_IDENTITY, "${{ inputs.run-id }}");
+  assert.equal(driver.env?.RUN_ATTEMPT, "${{ inputs.run-attempt }}");
+  assert.match(driver.run!, /v1-five-case-receipts\.ts plan/u);
+  assert.match(driver.run!, /v1-five-case-receipts\.ts validate-bundles/u);
+  assert.match(driver.run!, /v1-five-case-receipts\.ts "\$\{args\[@\]\}"/u);
+  assert.match(driver.run!, /operation must be plan, validate, or admit/u);
+
+  const upload = action.runs.steps.find(({ uses }) =>
+    uses?.startsWith("actions/upload-artifact@"),
+  )!;
+  assert.equal(upload.uses, "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a");
+  assert.equal(upload.with?.path, "${{ steps.driver.outputs.output_path }}");
+  assert.equal(upload.with?.["if-no-files-found"], "error");
+
+  const command = path.join(root, "tools/commands/release/v1-five-case-receipts.ts");
+  const missingCandidate = spawnSync(
+    process.execPath,
+    [
+      command,
+      "plan",
+      "--source",
+      sourceSha,
+      "--mode",
+      "pr",
+      "--run",
+      "1",
+      "--attempt",
+      "1",
+      "--shards",
+      "1",
+    ],
+    { cwd: root, encoding: "utf8" },
+  );
+  assert.notEqual(missingCandidate.status, 0);
+  assert.match(missingCandidate.stderr, /--candidate is required/u);
+
+  const invalidOperation = spawnSync(process.execPath, [command, "not-an-operation"], {
+    cwd: root,
+    encoding: "utf8",
+  });
+  assert.notEqual(invalidOperation.status, 0);
+  assert.match(invalidOperation.stderr, /plan\|validate-bundles\|admit/u);
 });

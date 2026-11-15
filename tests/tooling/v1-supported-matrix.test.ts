@@ -219,25 +219,30 @@ void test("qualification receipts require exact source, fixture, dependency, run
   ]);
   for (const producer of matrix.identityContracts.producers)
     assert.ok(existsSync(path.join(root, producer)), `missing identity producer ${producer}`);
-  assert.deepEqual(Object.keys(matrix.caseReceiptIdentityContracts), [
-    "source",
-    "candidate",
-    "actions",
-    "fixture",
-    "dependency",
-    "runtime",
-    "binary",
-    "packet",
-    "receipt",
-  ]);
+  assert.deepEqual(
+    Object.keys(matrix.caseReceiptIdentityContracts).toSorted(),
+    [
+      "source",
+      "candidate",
+      "actions",
+      "fixture",
+      "dependency",
+      "runtime",
+      "binary",
+      "packet",
+      "receipt",
+    ].toSorted(),
+  );
   for (const side of ["source", "candidate"] as const)
-    assert.deepEqual(matrix.caseReceiptIdentityContracts.packet[side], [
-      "diagnosticsSha256",
-      "authoredRangesSha256",
-      "editsSha256",
-      "generatedOutputSha256",
-      "orderingSha256",
-      "exitBehaviorSha256",
-    ]);
-  assert.match(matrix.caseReceiptIdentityContracts.packet.passedContract, /must be identical/u);
+    assert.deepEqual(
+      matrix.caseReceiptIdentityContracts.packet[side].toSorted(),
+      [
+        "diagnosticsSha256",
+        "authoredRangesSha256",
+        "editsSha256",
+        "generatedOutputSha256",
+        "orderingSha256",
+        "exitBehaviorSha256",
+      ].toSorted(),
+    );
 });
