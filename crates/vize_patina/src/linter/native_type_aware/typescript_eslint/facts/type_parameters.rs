@@ -122,11 +122,20 @@ type MergedOwners = FxHashSet<(u32, u32)>;
 
 fn merged_owners(program: &Value) -> MergedOwners {
     let mut interfaces = FxHashSet::default();
+    let mut value_references = FxHashSet::default();
     let mut candidates = Vec::new();
-    collect_merged_owner_candidates(program, None, &mut interfaces, &mut candidates);
+    collect_merged_owner_candidates(
+        program,
+        None,
+        &mut interfaces,
+        &mut value_references,
+        &mut candidates,
+    );
     candidates
         .into_iter()
-        .filter_map(|(range, name)| interfaces.contains(&name).then_some(range))
+        .filter_map(|(range, name)| {
+            (interfaces.contains(&name) && value_references.contains(&name)).then_some(range)
+        })
         .collect()
 }
 
@@ -134,6 +143,7 @@ fn collect_merged_owner_candidates(
     value: &Value,
     enclosing_variable: Option<&str>,
     interfaces: &mut FxHashSet<String>,
+    value_references: &mut FxHashSet<String>,
     candidates: &mut Vec<((u32, u32), String)>,
 ) {
     let kind = value.get("type").and_then(Value::as_str);
@@ -144,6 +154,14 @@ fn collect_merged_owner_candidates(
             .and_then(Value::as_str)
     {
         interfaces.insert(name.into());
+    }
+    if matches!(kind, Some("ClassDeclaration" | "ClassExpression"))
+        && let Some(name) = value
+            .get("superClass")
+            .and_then(|super_class| super_class.get("name"))
+            .and_then(Value::as_str)
+    {
+        value_references.insert(name.into());
     }
 
     let enclosing_variable = if kind == Some("VariableDeclarator") {
@@ -160,7 +178,10 @@ fn collect_merged_owner_candidates(
             .get("id")
             .and_then(|id| id.get("name"))
             .and_then(Value::as_str)
-    } else if kind == Some("TSConstructorType") {
+    } else if matches!(
+        kind,
+        Some("TSConstructorType" | "TSConstructSignatureDeclaration")
+    ) {
         enclosing_variable
     } else {
         None
@@ -172,12 +193,24 @@ fn collect_merged_owner_candidates(
     match value {
         Value::Object(fields) => {
             for child in fields.values() {
-                collect_merged_owner_candidates(child, enclosing_variable, interfaces, candidates);
+                collect_merged_owner_candidates(
+                    child,
+                    enclosing_variable,
+                    interfaces,
+                    value_references,
+                    candidates,
+                );
             }
         }
         Value::Array(items) => {
             for child in items {
-                collect_merged_owner_candidates(child, enclosing_variable, interfaces, candidates);
+                collect_merged_owner_candidates(
+                    child,
+                    enclosing_variable,
+                    interfaces,
+                    value_references,
+                    candidates,
+                );
             }
         }
         _ => {}
@@ -751,6 +784,7 @@ fn reference_implies_multiple(
         }
         Some("TSParameterProperty") if contains(Some(value)) => return true,
         Some("TSInstantiationExpression") if contains(value.get("typeArguments")) => return true,
+        Some("TSTypeQuery") if contains(value.get("typeArguments")) => return true,
         _ => {}
     }
     let next_readonly = readonly

@@ -157,17 +157,26 @@ fn merged_and_heritage_generics_match_checker_identity() {
     let source = concat!(
         "interface Merged<T> {}\n",
         "class Merged<T> {}\n",
+        "class MergedChild extends Merged<string> {}\n",
         "interface Parent<T> {}\n",
         "class Child<T> implements Parent<T> {}\n",
         "interface Factory<T> {}\n",
         "declare var Factory: { new <T>(value: T): any };\n",
+        "class Product extends Factory<string> {}\n",
+        "class UnusedMerged<T> {}\n",
+        "interface UnusedMerged<T> {}\n",
+        "class Consumer implements UnusedMerged<string> {}\n",
         "declare function setItem<T>(T): T;\n",
         "function instance<T>(value: typeof Merged<T>): void {}\n",
     );
     let reports = report_ranges(source);
-    assert_eq!(reports.len(), 1, "{reports:#?}");
+    assert_eq!(reports.len(), 2, "{reports:#?}");
     assert_eq!(
         reports[0].0,
+        source.find("UnusedMerged<T>").unwrap() + "UnusedMerged<".len()
+    );
+    assert_eq!(
+        reports[1].0,
         source.find("setItem<T>").unwrap() + "setItem<".len()
     );
 }
