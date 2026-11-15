@@ -67,7 +67,7 @@ await test("all eleven directive packets keep exact authored character coordinat
     { id: "eslint-invalid-64", positions: [[2, 11, 2, 17]] },
     { id: "eslint-invalid-65", positions: [[2, 10, 2, 13]] },
     { id: "eslint-invalid-66", positions: [[2, 14, 2, 15]] },
-    { id: "eslint-invalid-67", positions: [[2, 14, 2, 15]] },
+    { id: "eslint-invalid-67", positions: [[2, 16, 2, 18]] },
     { id: "eslint-invalid-101", positions: [[3, 1, 3, 4]] },
   ]);
   for (const row of corpus.globalCases) {
