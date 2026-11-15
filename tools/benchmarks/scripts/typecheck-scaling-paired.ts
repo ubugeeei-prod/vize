@@ -12,6 +12,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { availableParallelism, totalmem } from "node:os";
+import { createRequire } from "node:module";
 import { basename, dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
@@ -130,6 +131,15 @@ type Options = {
   runner: string;
   runUrl: string | null;
 };
+
+export function resolvePairedProviders(providerRoot: string) {
+  const root = resolve(providerRoot);
+  const require = createRequire(join(root, "tests/package.json"));
+  return {
+    backend: realpathSync(join(root, "node_modules/@typescript/typescript-linux-x64/lib/tsc")),
+    vueDir: dirname(realpathSync(require.resolve("vue/package.json"))),
+  };
+}
 
 type SummaryReport = {
   sources: { base: string; head: string };
@@ -354,8 +364,7 @@ function main() {
         "head-bin",
         "base-source",
         "head-source",
-        "corsa-path",
-        "vue-dir",
+        "provider-root",
         "build-receipts",
         "sizes",
         "runs",
@@ -374,13 +383,14 @@ function main() {
   };
   const sources = [required("base-source"), required("head-source")];
   sources.forEach((source) => assert.match(source, /^[0-9a-f]{40}$/u));
+  const providers = resolvePairedProviders(required("provider-root"));
   const report = collectPairedScaling({
     baseBin: resolve(required("base-bin")),
     headBin: resolve(required("head-bin")),
     baseSource: sources[0]!,
     headSource: sources[1]!,
-    backend: realpathSync(required("corsa-path")),
-    vueDir: realpathSync(required("vue-dir")),
+    backend: providers.backend,
+    vueDir: providers.vueDir,
     buildReceipts: resolve(required("build-receipts")),
     sizes: required("sizes").split(",").map(Number),
     runs: Number(required("runs")),

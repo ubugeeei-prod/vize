@@ -44,5 +44,6 @@ void test("the scaling workflow supports isolated single and same-runner paired 
   assert.match(pairedScript, /typecheck-scaling-paired\.ts/u);
   assert.match(pairedScript, /--runs 5/u);
   assert.match(pairedScript, /--sizes "\$SIZES"/u);
+  assert.match(pairedScript, /--provider-root "\$GITHUB_WORKSPACE\/driver"/u);
   assert.ok(pairedSteps.some((step) => step.uses?.startsWith("actions/upload-artifact@")));
 });
