@@ -202,15 +202,25 @@ fn strict_mode_retains_the_complete_excess_property_packet() {
             (
                 "src/App.vue".into(),
                 Some(2353),
+                r#"10:32:error Object literal may only specify known properties, and '"dataIndex"' does not exist in type 'Props<number>'."#.into(),
+            ),
+            (
+                "src/App.vue".into(),
+                Some(2353),
+                r#"11:34:error Object literal may only specify known properties, and '"dataIndex"' does not exist in type '{ items: number[]; itemSize?: ItemSizeValue<number> | undefined; } & VNodeProps & AllowedComponentProps & ComponentCustomProps'."#.into(),
+            ),
+            (
+                "src/App.vue".into(),
+                Some(2353),
                 r#"6:32:error Object literal may only specify known properties, and '"buffer"' does not exist in type 'Props<number>'."#.into(),
             ),
             (
                 "src/App.vue".into(),
                 Some(2353),
-                r#"10:32:error Object literal may only specify known properties, and '"dataIndex"' does not exist in type 'Props<number>'."#.into(),
+                r#"7:34:error Object literal may only specify known properties, and '"buffer"' does not exist in type '{ items: number[]; itemSize?: ItemSizeValue<number> | undefined; } & VNodeProps & AllowedComponentProps & ComponentCustomProps'."#.into(),
             ),
         ],
-        "strict mode must retain both authored TS2353 rows and exact spans",
+        "strict mode must retain the complete authored TS2353 packet and exact spans",
     );
 }
 
