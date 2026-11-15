@@ -11,9 +11,7 @@ import {
   baselineConfig,
   resolveBaselineRuntime,
 } from "../../tools/support/compat/fixtures/lint-divergence-baseline.mjs";
-import {
-  resolveScorecardRuntime,
-} from "../../tools/support/compat/fixtures/lint-divergence-scorecard.ts";
+import { resolveScorecardRuntime } from "../../tools/support/compat/fixtures/lint-divergence-scorecard.ts";
 import { eligibleReferenceCoverage } from "../../tools/support/fixtures/lint_reference_coverage.ts";
 
 const root = path.resolve(import.meta.dirname, "../..");
