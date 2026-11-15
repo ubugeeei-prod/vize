@@ -73,15 +73,15 @@ struct ScriptBlock<'a> {
 
 fn collect_blocks(blocks: &[ScriptBlock<'_>]) -> Vec<(String, u32, u32)> {
     let mut findings = Vec::new();
-    for current in 0..blocks.len() {
+    for (current, current_block) in blocks.iter().enumerate() {
         let mut visitor = PropVisitor {
             blocks,
             current,
             props: Vec::new(),
         };
-        visitor.visit_program(blocks[current].program);
+        visitor.visit_program(current_block.program);
         findings.extend(visitor.props.into_iter().filter_map(|prop| {
-            let block = &blocks[prop.block];
+            let block = blocks.get(prop.block)?;
             if has_jsdoc(block.source, &block.program.comments, prop.anchor) {
                 return None;
             }
@@ -262,7 +262,10 @@ impl<'ctx, 'ast> PropVisitor<'ctx, 'ast> {
 
     fn lookup(&self, name: &str, depth: u8, origin: usize) -> Option<Vec<Prop>> {
         for block in (0..self.blocks.len()).map(|index| (origin + index) % self.blocks.len()) {
-            for statement in &self.blocks[block].program.body {
+            let Some(script_block) = self.blocks.get(block) else {
+                continue;
+            };
+            for statement in &script_block.program.body {
                 if let Some(props) = self.declaration_props(statement, name, depth, block) {
                     return Some(props);
                 }
