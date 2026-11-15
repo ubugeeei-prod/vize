@@ -252,6 +252,9 @@ test("release install smoke can run runtime checks for Vize packages", () => {
   );
   assert.match(script, /packageManager === "bun" \? bunRuntimePeerDependencies\(\)/);
   assert.match(runtimeScript, /delete peers\["typescript-native"\]/);
+  assert.match(script, /const parityNodeObservations = runRuntimeChecks\(/);
+  assert.match(script, /isDeepStrictEqual\(bunObservations, parityNodeObservations\)/);
+  assert.match(runtimeScript, /delete observation\.start_time/);
   assert.match(script, /Bun runtime behavior differs from Node/);
   assert.match(script, /Bun and Node diagnostics\/generated output are identical/);
   // vize declares its Corsa runtime itself, so the fresh-install smoke must not

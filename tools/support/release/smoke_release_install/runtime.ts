@@ -211,6 +211,15 @@ function normalizeRuntimeText(text: string, installDir: string): string {
     .replaceAll(installDir.replaceAll("\\", "/"), "/VIZE_PROJECT");
 }
 
+function normalizeOxlintObservation(text: string, installDir: string): string {
+  const observation = JSON.parse(normalizeRuntimeText(text, installDir)) as Record<string, unknown>;
+  // Wall-clock telemetry is not product behavior.  Keep diagnostics, spans,
+  // rule/file counts and thread selection exact while excluding only the
+  // per-invocation timer from the Node/Bun parity packet.
+  delete observation.start_time;
+  return JSON.stringify(sortedJson(observation));
+}
+
 function treeObservation(directory: string, installDir: string): Record<string, string> {
   const result: Record<string, string> = {};
   const visit = (current: string) => {
@@ -245,6 +254,7 @@ export function runRuntimeChecks(
   tempDir: string,
   kind: RuntimeKind = "node",
   fullProducts = false,
+  parityPass = false,
 ): RuntimeObservations {
   writeRuntimeSmokeProject(installDir);
   const runtime =
@@ -303,7 +313,8 @@ export function runRuntimeChecks(
       runLspRuntimeCheck(runtime, vizeBin, installDir);
       console.log(`${runtimePrefix}: vize lsp`);
     }
-    if (kind === "node") runInitChecks(installDir, vizeBin, packages, allPackages, tempDir);
+    if (kind === "node" && !parityPass)
+      runInitChecks(installDir, vizeBin, packages, allPackages, tempDir);
     else {
       runCommand(
         runtime,
@@ -322,7 +333,7 @@ export function runRuntimeChecks(
         ],
         installDir,
       );
-      console.log("runtime (Bun): vize init --package-manager bun");
+      console.log(`${runtimePrefix}: vize init --package-manager bun`);
     }
   }
   if (packages.some((entry) => entry.name === "@vizejs/vite-plugin")) {
@@ -334,7 +345,7 @@ export function runRuntimeChecks(
   }
   if (fullProducts && packages.some((entry) => entry.name === "oxlint-plugin-vize")) {
     const oxlintVize = resolveInstalledBin(installDir, "oxlint-plugin-vize", "oxlint-vize");
-    observations.oxlint = normalizeRuntimeText(
+    observations.oxlint = normalizeOxlintObservation(
       runCommand(
         runtime,
         [oxlintVize, "-c", ".oxlintrc.json", "-f", "json", "src/Oxlint.vue"],

@@ -155,18 +155,25 @@ export function smokeReleaseInstall(argv: readonly string[]): number {
       installable,
       options.runtimeChecks || options.contentMapperChecks,
     );
-    const nodeObservations = options.runtimeChecks
-      ? runRuntimeChecks(
-          install,
-          installable,
-          packages,
-          temporary,
-          "node",
-          options.bunRuntimeChecks,
-        )
-      : undefined;
+    if (options.runtimeChecks)
+      runRuntimeChecks(install, installable, packages, temporary, "node", options.bunRuntimeChecks);
     if (options.bunRuntimeChecks) {
       const bunInstall = installPackedPackages(temporary, installable, true, "bun");
+      // Compare the runtimes against one immutable dependency graph.  The
+      // historical Node smoke intentionally installs the mapper-host beta,
+      // while the product LSP owns its stable bundled provider.  Reusing the
+      // Bun-created graph here keeps that independent coverage and prevents a
+      // dependency-version difference from being misreported as a runtime
+      // difference.
+      const parityNodeObservations = runRuntimeChecks(
+        bunInstall,
+        installable,
+        packages,
+        temporary,
+        "node",
+        true,
+        true,
+      );
       const bunObservations = runRuntimeChecks(
         bunInstall,
         installable,
@@ -174,10 +181,11 @@ export function smokeReleaseInstall(argv: readonly string[]): number {
         temporary,
         "bun",
         true,
+        true,
       );
-      if (!isDeepStrictEqual(bunObservations, nodeObservations))
+      if (!isDeepStrictEqual(bunObservations, parityNodeObservations))
         throw new Error(
-          `Bun runtime behavior differs from Node\nNode: ${JSON.stringify(nodeObservations, null, 2)}\nBun: ${JSON.stringify(bunObservations, null, 2)}`,
+          `Bun runtime behavior differs from Node\nNode: ${JSON.stringify(parityNodeObservations, null, 2)}\nBun: ${JSON.stringify(bunObservations, null, 2)}`,
         );
       console.log("runtime: Bun and Node diagnostics/generated output are identical");
     }
