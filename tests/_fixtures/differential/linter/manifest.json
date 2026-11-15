@@ -4307,6 +4307,42 @@
       }
     },
     {
+      "id": "linter/no-unnecessary-type-parameters-12972",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "no-unnecessary-type-parameters-12972",
+        "files": [
+          {
+            "path": "Reported.vue.txt",
+            "role": "issue-reported-reproduction-and-controls",
+            "sha256": "fc013968e981366f25a35d475780177669eb97729ea4275c0a2507837c25013a"
+          },
+          {
+            "path": "cases.json",
+            "role": "upstream-oracle-residual-corpus",
+            "sha256": "33cdd3cdb8fc4a1c04fde55c4d7f6f87e5b61281ec6955c5f0c837bd0631aea0"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/no-unused-emit-wrappers-12597",
       "state": "active",
       "targets": [

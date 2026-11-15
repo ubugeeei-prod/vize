@@ -31,6 +31,8 @@ pub(in super::super) struct Wants {
     type_parts: bool,
     /// The empty-object probe on intersections and generic references.
     empty_object: bool,
+    /// Inferred signature/member types for no-unnecessary-type-parameters.
+    type_parameters: bool,
 }
 
 impl Wants {
@@ -62,6 +64,7 @@ impl Wants {
             type_parts: has("no-redundant-type-constituents")
                 || has("no-duplicate-type-constituents"),
             empty_object,
+            type_parameters: has("no-unnecessary-type-parameters"),
         }
     }
 
@@ -138,6 +141,9 @@ fn collect(
     members: &FxHashSet<(u32, u32)>,
     plan: &mut Planner,
 ) {
+    if wants.type_parameters && node.kind == "TSTypeParameterDeclaration" {
+        type_parameter_queries(node, plan);
+    }
     let rules = wants.promise;
     let mut own = ExpressionQuery::at(node.range.start, node.range.end);
     own.promise = promise_facets(node, role.promise, rules);
@@ -208,6 +214,8 @@ fn collect(
         }
     }
 }
+
+include!("queries/type_parameters.rs");
 
 /// The callee (or tag) of a call: its signatures, `Function` signature
 /// counts and void-expecting argument positions.
