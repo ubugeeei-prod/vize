@@ -70,9 +70,6 @@ jobs:
           TEST_CASES_JOB: "PR JS package tests (${{ matrix.group }})"
           VIZE_TEST_CASES: ${{ runner.temp }}/test-cases-js-${{ matrix.group }}.json
         run: node .github/actions/test-js-packages-with-history/native-fault-evidence.ts -- vp run --workspace-root "test:js:$VIZE_JS_PACKAGE_GROUP"
-      - name: Test Vite+ rule catalog custody on Bun
-        if: ${{ inputs.run-js && matrix.group == 'builders' }}
-        run: bun test npm/builder/vite/src/vite-plus/runtime.test.ts
       - name: Upload JS package test cases
         if: ${{ !cancelled() && steps.tests.outcome != 'skipped' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -81,6 +78,9 @@ jobs:
           path: ${{ runner.temp }}/test-cases-js-${{ matrix.group }}.json
           if-no-files-found: error
           retention-days: 7
+      - name: Test Vite+ rule catalog custody on Bun
+        if: ${{ inputs.run-js && matrix.group == 'builders' }}
+        run: bun test npm/builder/vite/src/vite-plus/runtime.test.ts
       - name: Preserve complete Rspack JSX producer and bundle
         if: ${{ !cancelled() && inputs.run-js && matrix.group == 'builders' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
