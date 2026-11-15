@@ -99,7 +99,7 @@ export function validateProducerIdentity(
 
   const run = object(runValue);
   assert.equal(String(integer(run.id)), request.run);
-  assert.equal(run.name, "Release");
+  assert.equal(run.name, `Release ${request.version} @ ${source}`);
   assert.equal(run.path, ".github/workflows/release.yml");
   assert.equal(run.event, "workflow_dispatch");
   assert.equal(run.status, "completed");
