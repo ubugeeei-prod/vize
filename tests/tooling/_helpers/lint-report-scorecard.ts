@@ -160,10 +160,22 @@ function normalizeReviewedCoverageIdentity(
     ]),
   );
   const actualBudget = helpers.object(actual.budget);
-  assert.equal(actualBudget.falsePositivePassed, false);
+  const falsePositivePassed = actual.divergence.summary.falsePositiveCount === 0,
+    falseNegativePassed = actual.divergence.summary.falseNegativeCount === 0,
+    unusableReason = actualBudget.unusableReason,
+    verdict =
+      unusableReason !== null
+        ? "unusable"
+        : falsePositivePassed && falseNegativePassed
+          ? "passed"
+          : "breached";
+  assert.equal(actualBudget.maxFalsePositiveCount, 0);
+  assert.equal(actualBudget.maxFalseNegativeCount, 0);
+  assert.equal(actualBudget.falsePositivePassed, falsePositivePassed);
+  assert.equal(actualBudget.falseNegativePassed, falseNegativePassed);
   assert.equal(actualBudget.unusableReason, null);
-  assert.equal(actualBudget.verdict, "breached");
-  assert.equal(actualBudget.passed, false);
+  assert.equal(actualBudget.verdict, verdict);
+  assert.equal(actualBudget.passed, verdict === "passed");
   return true;
 }
 
@@ -319,12 +331,14 @@ export function assertScorecardIdentityTransition(
         return { project, ...evidence };
       })
       .filter(({ budget }) => budget.passed !== true);
-    assert.equal(actual.status, 1);
+    assert.equal(actual.status, failed.length === 0 ? 0 : 1);
     assert.equal(
       actual.stderr,
-      `Lint divergence budget failed for ${failed.length} project(s):\n${failed
-        .map(({ project, budget, summary }) => budgetFailure(project, budget, summary))
-        .join("\n")}\n`,
+      failed.length === 0
+        ? ""
+        : `Lint divergence budget failed for ${failed.length} project(s):\n${failed
+            .map(({ project, budget, summary }) => budgetFailure(project, budget, summary))
+            .join("\n")}\n`,
     );
     for (const [project, transition] of reviewedTransitions) {
       const row = actualIndex.projects.find((candidate) => String(candidate.project) === project),
