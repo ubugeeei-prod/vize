@@ -45,6 +45,13 @@ function json(value: unknown): string {
   return rendered as string;
 }
 
+function markdownRatio(value: number): string {
+  if (Object.is(value, -0)) return "-0.0";
+  const magnitude = Math.abs(value);
+  if (magnitude !== 0 && (magnitude < 0.00001 || magnitude >= 1e16)) return value.toExponential();
+  return Number.isInteger(value) ? `${value}.0` : String(value);
+}
+
 function markdownRuleTable(title: string, findings: Fields[]): string {
   if (findings.length === 0) return `### ${title}: none\n\n`;
   const counts = new Map<string, number>();
@@ -76,8 +83,8 @@ function normalizeReviewedMarkdown(
     expectedBudget = expected.budget;
   const replacements: Array<[string, string, string]> = [
     [
-      `False positives: ${json(actualSummary.falsePositiveCount)} (${json(actualSummary.falsePositiveRatio)})`,
-      `False positives: ${json(expectedSummary.falsePositiveCount)} (${json(expectedSummary.falsePositiveRatio)})`,
+      `False positives: ${json(actualSummary.falsePositiveCount)} (${markdownRatio(actualSummary.falsePositiveRatio)})`,
+      `False positives: ${json(expectedSummary.falsePositiveCount)} (${markdownRatio(expectedSummary.falsePositiveRatio)})`,
       "false-positive summary",
     ],
     [
