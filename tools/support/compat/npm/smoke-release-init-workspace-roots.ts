@@ -20,9 +20,7 @@ export function workspaceRootFiles(
   if (managerId === "pnpm") {
     const overrides = redirected["pnpm-workspace.yaml"];
     assert.equal(typeof overrides, "string", "pnpm workspace overrides are missing");
-    redirected["pnpm-workspace.yaml"] = ['packages:', '  - "packages/*"', overrides].join(
-      "\n",
-    );
+    redirected["pnpm-workspace.yaml"] = ["packages:", '  - "packages/*"', overrides].join("\n");
   }
   return {
     "package.json": `${JSON.stringify(manifest, null, 2)}\n`,

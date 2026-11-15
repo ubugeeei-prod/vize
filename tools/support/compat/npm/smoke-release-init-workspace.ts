@@ -104,16 +104,14 @@ export function runWorkspacePackageCheck(
   assert.ok(!fs.existsSync(path.join(project, manager.lockfile)), "the package has a lockfile");
 
   const init = (flags: readonly string[]): string =>
-    run(managerId === "bun" ? managerBinary(manager) : process.execPath, [
-      context.vizeBin,
-      "init",
-      project,
-      ...shape.initFlags,
-      ...flags,
-    ], {
-      cwd: context.tempDir,
-      env: projectEnv(),
-    });
+    run(
+      managerId === "bun" ? managerBinary(manager) : process.execPath,
+      [context.vizeBin, "init", project, ...shape.initFlags, ...flags],
+      {
+        cwd: context.tempDir,
+        env: projectEnv(),
+      },
+    );
   assert.equal(init(["--dry-run"]), expectedInitOutput(shape, project, manager, "dry"));
   assert.equal(init(["--no-install"]), expectedInitOutput(shape, project, manager, "apply"));
 
@@ -163,7 +161,5 @@ export function runWorkspacePackageCheck(
     lspDiagnosticsSettleMs: lsp.settleMs,
     diagnosticQuietMs: lsp.diagnosticQuietMs,
   });
-  console.log(
-    `runtime: fresh ${manager.id} workspace package (init, install, check triple, LSP)`,
-  );
+  console.log(`runtime: fresh ${manager.id} workspace package (init, install, check triple, LSP)`);
 }

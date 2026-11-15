@@ -23,10 +23,7 @@ import { renderOutput, run } from "./smoke-process.ts";
 import { runInitFailureChecks } from "./smoke-release-init-failures.ts";
 import { PACKAGE_MANAGERS } from "./smoke-release-init-managers.ts";
 import { withPoisonedVizePath } from "./smoke-release-path-poison.ts";
-import {
-  runProjectLspSession,
-  runWorkspacePackageCheck,
-} from "./smoke-release-init-workspace.ts";
+import { runProjectLspSession, runWorkspacePackageCheck } from "./smoke-release-init-workspace.ts";
 import { WORKSPACE_PACKAGE_MANAGERS } from "./smoke-release-init-workspace-roots.ts";
 import { recordPackedInstallReceipt } from "./smoke-release-init-receipt.ts";
 import {
