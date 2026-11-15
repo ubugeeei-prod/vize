@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
@@ -413,10 +414,6 @@ void test("the reusable Action publishes the same plan or admission artifact", (
   assert.equal(driver.env?.CANDIDATE_SHA, "${{ inputs.candidate-sha }}");
   assert.equal(driver.env?.RUN_IDENTITY, "${{ inputs.run-id }}");
   assert.equal(driver.env?.RUN_ATTEMPT, "${{ inputs.run-attempt }}");
-  assert.match(driver.run!, /v1-five-case-receipts\.ts plan/u);
-  assert.match(driver.run!, /v1-five-case-receipts\.ts validate-bundles/u);
-  assert.match(driver.run!, /v1-five-case-receipts\.ts "\$\{args\[@\]\}"/u);
-  assert.match(driver.run!, /operation must be plan, validate, or admit/u);
 
   const upload = action.runs.steps.find(({ uses }) =>
     uses?.startsWith("actions/upload-artifact@"),
@@ -425,32 +422,76 @@ void test("the reusable Action publishes the same plan or admission artifact", (
   assert.equal(upload.with?.path, "${{ steps.driver.outputs.output_path }}");
   assert.equal(upload.with?.["if-no-files-found"], "error");
 
-  const command = path.join(root, "tools/commands/release/v1-five-case-receipts.ts");
-  const missingCandidate = spawnSync(
-    process.execPath,
-    [
-      command,
-      "plan",
-      "--source",
-      sourceSha,
-      "--mode",
-      "pr",
-      "--run",
-      "1",
-      "--attempt",
-      "1",
-      "--shards",
-      "1",
-    ],
-    { cwd: root, encoding: "utf8" },
-  );
-  assert.notEqual(missingCandidate.status, 0);
-  assert.match(missingCandidate.stderr, /--candidate is required/u);
+  const temporary = mkdtempSync(path.join(os.tmpdir(), "vize-five-case-action-"));
+  try {
+    const binaryDirectory = path.join(temporary, "bin");
+    const bundlesDirectory = path.join(temporary, "bundles");
+    const argumentsLog = path.join(temporary, "node-arguments.txt");
+    const output = path.join(temporary, "github-output.txt");
+    mkdirSync(binaryDirectory);
+    mkdirSync(bundlesDirectory);
+    writeFileSync(
+      path.join(binaryDirectory, "git"),
+      '#!/usr/bin/env bash\nset -euo pipefail\ntest "$1" = rev-parse\ntest "$2" = HEAD\nprintf "%s\\n" "$SOURCE_SHA"\n',
+    );
+    writeFileSync(
+      path.join(binaryDirectory, "node"),
+      '#!/usr/bin/env bash\nset -euo pipefail\nprintf "%s\\n" "$@" > "$NODE_ARGUMENTS_LOG"\nfound=false\nfor argument in "$@"; do\n  if [ "$argument" = --candidate ]; then found=true; fi\ndone\n$found\n',
+    );
+    chmodSync(path.join(binaryDirectory, "git"), 0o755);
+    chmodSync(path.join(binaryDirectory, "node"), 0o755);
 
-  const invalidOperation = spawnSync(process.execPath, [command, "not-an-operation"], {
-    cwd: root,
-    encoding: "utf8",
-  });
-  assert.notEqual(invalidOperation.status, 0);
-  assert.match(invalidOperation.stderr, /plan\|validate-bundles\|admit/u);
+    const runDriver = (script: string, operation: string) =>
+      spawnSync("bash", ["-euo", "pipefail", "-c", script], {
+        cwd: temporary,
+        encoding: "utf8",
+        env: {
+          ...process.env,
+          PATH: `${binaryDirectory}:${process.env.PATH ?? ""}`,
+          OPERATION: operation,
+          SOURCE_SHA: sourceSha,
+          CANDIDATE_SHA: candidateSha,
+          MODE: "pr",
+          RUN_IDENTITY: "44000000000",
+          RUN_ATTEMPT: "1",
+          SHARD_COUNT: "8",
+          BUNDLES_DIRECTORY: bundlesDirectory,
+          ENFORCE_COMPLETE: "false",
+          GITHUB_OUTPUT: output,
+          NODE_ARGUMENTS_LOG: argumentsLog,
+        },
+      });
+
+    for (const [operation, command] of [
+      ["plan", "plan"],
+      ["validate", "validate-bundles"],
+      ["admit", "admit"],
+    ] as const) {
+      const result = runDriver(driver.run!, operation);
+      assert.equal(result.status, 0, `${operation}: ${result.stderr}`);
+      const arguments_ = readFileSync(argumentsLog, "utf8").split("\n");
+      assert.equal(arguments_[0], "tools/commands/release/v1-five-case-receipts.ts");
+      assert.equal(arguments_[1], command);
+      assert.ok(arguments_.includes("--source"), operation);
+      assert.ok(arguments_.includes(sourceSha), operation);
+      assert.ok(arguments_.includes("--candidate"), operation);
+      assert.ok(arguments_.includes(candidateSha), operation);
+      assert.ok(arguments_.includes("--mode"), operation);
+      assert.ok(arguments_.includes("pr"), operation);
+    }
+
+    const invalidOperation = runDriver(driver.run!, "not-an-operation");
+    assert.notEqual(invalidOperation.status, 0);
+    assert.match(invalidOperation.stderr, /operation must be plan, validate, or admit/u);
+
+    const missingCandidateScript = driver.run!.replace(
+      /\s+--candidate "\$CANDIDATE_SHA" \\\n/u,
+      "\n",
+    );
+    assert.notEqual(missingCandidateScript, driver.run);
+    const missingCandidate = runDriver(missingCandidateScript, "plan");
+    assert.notEqual(missingCandidate.status, 0);
+  } finally {
+    rmSync(temporary, { recursive: true, force: true });
+  }
 });
