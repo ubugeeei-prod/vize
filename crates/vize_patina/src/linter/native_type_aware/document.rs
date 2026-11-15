@@ -197,11 +197,15 @@ fn shadow_captured_ambient_consts(document: &mut TypeAwareDocument) {
         let Some(capture_start) = ty.find("[\"") else {
             continue;
         };
-        let capture = &ty[capture_start + 2..];
+        let Some(capture) = ty.get(capture_start + 2..) else {
+            continue;
+        };
         let Some(capture_end) = capture.find("\"]") else {
             continue;
         };
-        let capture = &capture[..capture_end];
+        let Some(capture) = capture.get(..capture_end) else {
+            continue;
+        };
         let Some((prefix, index)) = capture.rsplit_once("capture_") else {
             continue;
         };
