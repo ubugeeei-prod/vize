@@ -1,11 +1,21 @@
 use super::NodeRuntimeFile;
-use std::fs;
+use std::{
+    fs::{self, OpenOptions},
+    io::Write,
+    path::Path,
+};
+
+fn runtime(cache_home: &Path, script: &str) -> NodeRuntimeFile {
+    NodeRuntimeFile::new_with_cache_home(script, cache_home).unwrap()
+}
 
 #[test]
 fn large_evaluator_is_a_private_file_instead_of_a_command_argument() {
+    let cache = tempfile::tempdir().unwrap();
     let script = " ".repeat(70_000);
     assert!(script.encode_utf16().count() > 32_767);
-    let runtime = NodeRuntimeFile::new(&script).unwrap();
+    let runtime = runtime(cache.path(), &script);
+    assert!(runtime.is_cached());
     let config = std::path::Path::new("vite.config.ts");
     let command = runtime.command(config);
     let args: Vec<_> = command.get_args().collect();
@@ -38,12 +48,21 @@ fn large_evaluator_is_a_private_file_instead_of_a_command_argument() {
             fs::metadata(runtime.path()).unwrap().permissions().mode() & 0o077,
             0
         );
+        assert_eq!(
+            fs::metadata(super::cache_root(cache.path()))
+                .unwrap()
+                .permissions()
+                .mode()
+                & 0o077,
+            0
+        );
     }
 }
 
 #[test]
 fn file_execution_preserves_unicode_paths_cache_marker_and_cwd() {
     let root = tempfile::tempdir().unwrap();
+    let runtime_cache = root.path().join("cache space 日本語");
     let project = root.path().join("space 日本語 🐱");
     fs::create_dir(&project).unwrap();
     let config = project.join("vite.config.ts");
@@ -56,7 +75,7 @@ process.stdout.write(JSON.stringify({ argv: process.argv.slice(1), cwd: process.
 "#,
     );
     for cached in [false, true] {
-        let runtime = NodeRuntimeFile::new(&script).unwrap();
+        let runtime = runtime(&runtime_cache, &script);
         let mut command = runtime.command(&config);
         if cached {
             command.arg(&cache);
@@ -85,6 +104,7 @@ process.stdout.write(JSON.stringify({ argv: process.argv.slice(1), cwd: process.
 #[test]
 fn file_runtime_keeps_stdin_available_for_the_real_observation_handshake() {
     let project = tempfile::tempdir().unwrap();
+    let cache = tempfile::tempdir().unwrap();
     let config = project.path().join("vite.config.ts");
     let mut script = " ".repeat(70_000);
     script.push_str(
@@ -96,7 +116,7 @@ process.stdout.write("R\n" + JSON.stringify(process.argv.slice(1)));
 process.stdin.destroy();
 "#,
     );
-    let runtime = NodeRuntimeFile::new(&script).unwrap();
+    let runtime = runtime(cache.path(), &script);
     let mut command = runtime.command(&config);
     let mut phases = 0;
     let output =
@@ -119,16 +139,19 @@ process.stdin.destroy();
 }
 
 #[test]
-fn temporary_module_is_removed_after_success_or_child_failure() {
+fn unavailable_cache_uses_a_scoped_fallback_on_success_or_child_failure() {
     let project = tempfile::tempdir().unwrap();
     let config = project.path().join("vite.config.ts");
     for (script, expected_exit) in [
         ("process.stdout.write('ok');", 0),
         ("throw new Error('expected runtime failure');", 1),
     ] {
+        let cache = tempfile::tempdir().unwrap();
+        fs::write(cache.path().join("vize"), "not a directory").unwrap();
         let path;
         {
-            let runtime = NodeRuntimeFile::new(script).unwrap();
+            let runtime = runtime(cache.path(), script);
+            assert!(!runtime.is_cached());
             path = runtime.path().to_path_buf();
             assert!(path.exists());
             let output = runtime
@@ -142,15 +165,112 @@ fn temporary_module_is_removed_after_success_or_child_failure() {
 }
 
 #[test]
+fn identical_runtime_is_reused_and_old_identities_are_bounded() {
+    let cache = tempfile::tempdir().unwrap();
+    let first = runtime(cache.path(), "process.stdout.write('same');");
+    let first_path = first.path().to_path_buf();
+    drop(first);
+    let repeated = runtime(cache.path(), "process.stdout.write('same');");
+    assert_eq!(repeated.path(), first_path);
+    drop(repeated);
+
+    for identity in 0..8 {
+        drop(runtime(
+            cache.path(),
+            &format!("process.stdout.write('{identity}');"),
+        ));
+    }
+    let entries: Vec<_> = fs::read_dir(super::cache_root(cache.path()))
+        .unwrap()
+        .map(|entry| entry.unwrap().path())
+        .collect();
+    assert_eq!(
+        entries
+            .iter()
+            .filter(|path| path.extension().is_some_and(|extension| extension == "mjs"))
+            .count(),
+        super::CACHE_LIMIT
+    );
+    assert_eq!(
+        entries
+            .iter()
+            .filter(|path| path
+                .extension()
+                .is_some_and(|extension| extension == "lease"))
+            .count(),
+        super::CACHE_LIMIT
+    );
+    assert!(
+        entries
+            .iter()
+            .all(|path| !path.to_string_lossy().ends_with(".tmp"))
+    );
+}
+
+#[test]
+fn startup_recovers_only_unlocked_partial_writes() {
+    let cache = tempfile::tempdir().unwrap();
+    drop(runtime(cache.path(), "process.stdout.write('prepare');"));
+    let root = super::cache_root(cache.path());
+    let abandoned = root.join("abandoned.tmp");
+    fs::write(&abandoned, "partial").unwrap();
+    let active = root.join("active.tmp");
+    let mut active_file = OpenOptions::new()
+        .read(true)
+        .write(true)
+        .create_new(true)
+        .open(&active)
+        .unwrap();
+    active_file.write_all(b"partial").unwrap();
+    active_file.lock().unwrap();
+
+    drop(runtime(cache.path(), "process.stdout.write('recover');"));
+    assert!(!abandoned.exists());
+    assert!(active.exists());
+    drop(active_file);
+    drop(runtime(
+        cache.path(),
+        "process.stdout.write('recover again');",
+    ));
+    assert!(!active.exists());
+}
+
+#[cfg(unix)]
+#[test]
+fn symlink_runtime_leaf_is_rejected_without_mutating_its_target() {
+    use std::os::unix::fs::symlink;
+
+    let cache = tempfile::tempdir().unwrap();
+    let cached = runtime(cache.path(), "process.stdout.write('owned');");
+    let path = cached.path().to_path_buf();
+    drop(cached);
+    fs::remove_file(&path).unwrap();
+    let foreign = cache.path().join("foreign.mjs");
+    fs::write(&foreign, "foreign").unwrap();
+    symlink(&foreign, &path).unwrap();
+
+    let fallback = runtime(cache.path(), "process.stdout.write('owned');");
+    assert!(!fallback.is_cached());
+    assert_eq!(fs::read_to_string(&foreign).unwrap(), "foreign");
+    assert!(
+        fs::symlink_metadata(&path)
+            .unwrap()
+            .file_type()
+            .is_symlink()
+    );
+}
+
+#[test]
 fn runtime_source_identity_preserves_authored_errors_across_retries() {
     let project = tempfile::tempdir().unwrap();
+    let cache = tempfile::tempdir().unwrap();
     let config = project.path().join("vite.config.mjs");
     let authored_source = "throw new Error('authored-specificreason 日本語');\n";
     fs::write(&config, authored_source).unwrap();
     let script = "const { pathToFileURL } = await import('node:url');\nawait import(pathToFileURL(process.argv[1]).href);\n";
-    let first = NodeRuntimeFile::new(script).unwrap();
-    let second = NodeRuntimeFile::new(script).unwrap();
-    assert_ne!(first.path(), second.path());
+    let first = runtime(cache.path(), script);
+    let second = runtime(cache.path(), script);
+    assert_eq!(first.path(), second.path());
     let output = first.command(&config).output().unwrap();
     let repeated = second.command(&config).output().unwrap();
     assert_eq!(output.status.code(), Some(1));

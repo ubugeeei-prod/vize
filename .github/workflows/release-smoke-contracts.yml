@@ -16,6 +16,9 @@ on:
       - "npm/native/**"
       - "npm/builder/vite/**"
       - "npm/linter/oxlint/**"
+      - "crates/vize_carton/src/config/loader/js/runtime_file.rs"
+      - "crates/vize_carton/src/config/loader/js/runtime_file/tests.rs"
+      - "tools/benchmarks/scripts/config-runtime-storage.ts"
       - "tests/tooling/release/release-smoke-*"
       - "tests/tooling/legacy-fix-fixture-report.test.ts"
       - "tests/tooling/support/release-smoke-*"
@@ -139,6 +142,36 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { persist-credentials: false }
       - uses: ./.github/actions/setup-runtime-package-managers
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable }
+      - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+        with:
+          shared-key: config-runtime-storage-${{ runner.os }}-${{ runner.arch }}
+          cache-workspace-crates: "true"
+      - name: Verify owned config runtime storage and locking
+        shell: bash
+        run: cargo test --locked -p vize_carton --lib runtime_file::tests -- --nocapture
+      - name: Measure config runtime storage lifecycle
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          for lane in base head; do
+            /usr/bin/time --verbose --output="$RUNNER_TEMP/config-runtime-$lane.time.txt" \
+              node tools/benchmarks/scripts/config-runtime-storage.ts \
+                --lane="$lane" --samples=21 --iterations=64 \
+                > "$RUNNER_TEMP/config-runtime-$lane.json"
+          done
+          cat "$RUNNER_TEMP"/config-runtime-*.json "$RUNNER_TEMP"/config-runtime-*.time.txt
+      - name: Retain config runtime storage counts and timings
+        if: ${{ !cancelled() && runner.os == 'Linux' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: config-runtime-storage-${{ github.sha }}-${{ github.run_attempt }}-${{ runner.os }}
+          path: |
+            ${{ runner.temp }}/config-runtime-*.json
+            ${{ runner.temp }}/config-runtime-*.time.txt
+          if-no-files-found: error
+          retention-days: 14
       - name: Install source contract dependencies
         shell: bash
         run: >-
