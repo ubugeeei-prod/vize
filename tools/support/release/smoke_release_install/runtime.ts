@@ -211,7 +211,7 @@ function normalizeRuntimeText(text: string, installDir: string): string {
     .replaceAll(installDir.replaceAll("\\", "/"), "/VIZE_PROJECT");
 }
 
-function normalizeOxlintObservation(text: string, installDir: string): string {
+export function normalizeOxlintObservation(text: string, installDir: string): string {
   const observation = JSON.parse(normalizeRuntimeText(text, installDir)) as Record<string, unknown>;
   // Wall-clock telemetry is not product behavior.  Keep diagnostics, spans,
   // rule/file counts and thread selection exact while excluding only the

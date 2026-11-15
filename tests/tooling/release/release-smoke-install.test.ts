@@ -7,6 +7,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 
 import { preparePublishManifest } from "../../../tools/support/compat/npm/prepare-publish-manifest.ts";
+import { normalizeOxlintObservation } from "../../../tools/support/release/smoke_release_install/runtime.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 const smokeCommand = path.join(root, "tools/commands/release/npm/smoke-release-install.ts");
@@ -246,15 +247,7 @@ test("release install smoke can run runtime checks for Vize packages", () => {
   assert.match(script, /--bun-runtime-checks/);
   assert.match(script, /--content-mapper-checks/);
   assert.match(script, /--bun-runtime-checks requires --runtime-checks/);
-  assert.match(
-    script,
-    /runCommand\(process\.env\.BUN_BIN \?\? "bun", \["install", "--ignore-scripts"\]/,
-  );
-  assert.match(script, /packageManager === "bun" \? bunRuntimePeerDependencies\(\)/);
   assert.match(runtimeScript, /delete peers\["typescript-native"\]/);
-  assert.match(script, /const parityNodeObservations = runRuntimeChecks\(/);
-  assert.match(script, /isDeepStrictEqual\(bunObservations, parityNodeObservations\)/);
-  assert.match(runtimeScript, /delete observation\.start_time/);
   assert.match(script, /Bun runtime behavior differs from Node/);
   assert.match(script, /Bun and Node diagnostics\/generated output are identical/);
   // vize declares its Corsa runtime itself, so the fresh-install smoke must not
@@ -301,20 +294,119 @@ test("release install smoke can run runtime checks for Vize packages", () => {
   assert.match(smokeSources, /viteBin, "build"/);
   assert.match(smokeSources, /vite:\s*"\^8\.0\.0"/);
   assert.match(smokeSources, /runtime: @vizejs\/vite-plugin vite build/);
-  assert.match(runtimeScript, /"fmt", "src\/Format\.vue", "--write", "--no-config"/);
-  assert.match(runtimeScript, /"build", "src\/App\.vue", "--output", "vize-build"/);
-  assert.match(runtimeScript, /runLspRuntimeCheck\(runtime, vizeBin, installDir\)/);
-  assert.match(runtimeScript, /diagnostics = message\.params\.diagnostics \?\? \[\]/);
-  assert.match(runtimeScript, /diagnostics\.length === 0[\s\S]*setTimeout[\s\S]*500/);
-  assert.match(runtimeScript, /LSP smoke timed out with diagnostics/);
-  assert.match(
-    runtimeScript,
-    /resolveInstalledBin\(installDir, "oxlint-plugin-vize", "oxlint-vize"\)/,
-  );
   // The combined install must request optional deps explicitly so that an
   // inherited `omit=optional` config does not silently drop platform-specific
   // native bindings (e.g. rolldown).
   assert.match(script, /"--include=optional"/);
+});
+
+test("Bun install and Node/Bun parity execute through the configured runtime", () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-bun-runtime-smoke-test-"));
+  try {
+    const log = path.join(tempDir, "runtime.jsonl");
+    const realNpm = resolvePathCommand("npm");
+    const npmStub = writeRuntimeStub(tempDir, "npm");
+    const bunStub = writeRuntimeStub(tempDir, "bun");
+    const nativeDir = writePackage(tempDir, "native", {
+      name: "@vizejs/native",
+      version: "1.0.0",
+      exports: {
+        ".": {
+          import: "./index.js",
+          require: "./index.js",
+          types: "./index.d.ts",
+        },
+      },
+    });
+    fs.writeFileSync(
+      path.join(nativeDir, "index.js"),
+      `const runtime = process.env.VIZE_BUN_STUB_RUNTIME === "1" ? "bun" : "node";
+module.exports.compileSfc = () => ({
+  code: process.env.VIZE_BUN_STUB_DIFFER === "1" ? runtime : "identical",
+  errors: [],
+  warnings: [],
+});
+`,
+    );
+    const environment = {
+      BUN_BIN: bunStub,
+      NPM_BIN: npmStub,
+      VIZE_RUNTIME_STUB_LOG: log,
+      VIZE_RUNTIME_STUB_NPM: realNpm,
+    };
+
+    const matching = runSmokeArgs(["--runtime-checks", "--bun-runtime-checks", nativeDir], {
+      env: environment,
+    });
+    assert.equal(matching.status, 0, `${matching.stderr}\n${matching.stdout}`.trim());
+    assert.match(matching.stdout, /Bun and Node diagnostics\/generated output are identical/);
+    const invocations = fs
+      .readFileSync(log, "utf8")
+      .trim()
+      .split("\n")
+      .map((line) => JSON.parse(line) as { args: string[]; kind: string });
+    assert.ok(
+      invocations.some(
+        ({ args, kind }) =>
+          kind === "bun" && args[0] === "install" && args[1] === "--ignore-scripts",
+      ),
+      "Bun must install the packed graph without lifecycle scripts",
+    );
+    assert.ok(
+      invocations.some(({ args, kind }) => kind === "bun" && args[0] === "-e"),
+      "the packed native product must execute through the configured Bun runtime",
+    );
+
+    fs.writeFileSync(log, "");
+    const differing = runSmokeArgs(["--runtime-checks", "--bun-runtime-checks", nativeDir], {
+      env: { ...environment, VIZE_BUN_STUB_DIFFER: "1" },
+    });
+    assert.equal(differing.status, 1);
+    assert.match(differing.stderr, /Bun runtime behavior differs from Node/);
+    assert.match(differing.stderr, /\\"code\\":\\"node\\"/);
+    assert.match(differing.stderr, /\\"code\\":\\"bun\\"/);
+  } finally {
+    fs.rmSync(tempDir, { force: true, recursive: true });
+  }
+});
+
+test("Oxlint parity excludes only per-invocation timing", () => {
+  const report = {
+    diagnostics: [
+      {
+        code: "vize(vue/no-v-html)",
+        filename: "/packed/src/App.vue",
+        labels: [{ span: { column: 1, length: 6, line: 1, offset: 0 } }],
+        message: "unsafe html",
+        severity: "warning",
+      },
+    ],
+    number_of_files: 2,
+    number_of_rules: 89,
+    start_time: 12.5,
+    threads_count: 4,
+  };
+  const first = normalizeOxlintObservation(JSON.stringify(report), "/packed");
+  const second = normalizeOxlintObservation(
+    JSON.stringify({ ...report, start_time: 0.000_001 }),
+    "/packed",
+  );
+
+  assert.equal(first, second);
+  assert.deepEqual(JSON.parse(first), {
+    diagnostics: [
+      {
+        code: "vize(vue/no-v-html)",
+        filename: "/VIZE_PROJECT/src/App.vue",
+        labels: [{ span: { column: 1, length: 6, line: 1, offset: 0 } }],
+        message: "unsafe html",
+        severity: "warning",
+      },
+    ],
+    number_of_files: 2,
+    number_of_rules: 89,
+    threads_count: 4,
+  });
 });
 
 function writePackage(tempDir: string, dirName: string, manifest: Record<string, unknown>): string {
@@ -387,4 +479,63 @@ function runSmokeArgs(args: string[], options: SmokeOptions = {}): SmokeResult {
     stderr: result.stderr,
     stdout: result.stdout,
   };
+}
+
+function resolvePathCommand(name: string): string {
+  const extensions =
+    process.platform === "win32" ? (process.env.PATHEXT ?? ".CMD;.EXE").split(";") : [""];
+  for (const directory of (process.env.PATH ?? "").split(path.delimiter))
+    for (const extension of extensions) {
+      const candidate = path.join(directory, `${name}${extension.toLowerCase()}`);
+      try {
+        if (fs.statSync(candidate).isFile()) return fs.realpathSync.native(candidate);
+      } catch {
+        // Try the next PATH entry.
+      }
+    }
+  throw new Error(`${name} is not available on PATH`);
+}
+
+function writeRuntimeStub(tempDir: string, kind: "bun" | "npm"): string {
+  const script = path.join(tempDir, `${kind}-runtime-stub.cjs`);
+  fs.writeFileSync(
+    script,
+    `#!${process.execPath}
+const { spawnSync } = require("node:child_process");
+const fs = require("node:fs");
+const path = require("node:path");
+const kind = ${JSON.stringify(kind)};
+const args = process.argv.slice(2);
+fs.appendFileSync(process.env.VIZE_RUNTIME_STUB_LOG, JSON.stringify({ kind, args }) + "\\n");
+const installing = args[0] === "install";
+if (installing) {
+  const manifestPath = path.join(process.cwd(), "package.json");
+  const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+  manifest.dependencies = Object.fromEntries(
+    Object.entries(manifest.dependencies || {}).filter(([, value]) => String(value).startsWith("file:")),
+  );
+  fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2) + "\\n");
+  args.splice(0, args.length, "install", "--ignore-scripts", "--package-lock=false", "--no-audit", "--fund=false", "--legacy-peer-deps", "--include=optional");
+}
+const command = kind === "npm" || installing ? process.env.VIZE_RUNTIME_STUB_NPM : process.execPath;
+const env = kind === "bun" && !installing
+  ? { ...process.env, VIZE_BUN_STUB_RUNTIME: "1" }
+  : process.env;
+const child = spawnSync(command, args, {
+  cwd: process.cwd(),
+  env,
+  shell: process.platform === "win32" && /\\.(cmd|bat)$/i.test(command),
+  stdio: "inherit",
+});
+if (child.error) throw child.error;
+process.exit(child.status ?? 1);
+`,
+  );
+  if (process.platform !== "win32") {
+    fs.chmodSync(script, 0o755);
+    return script;
+  }
+  const wrapper = path.join(tempDir, `${kind}-runtime-stub.cmd`);
+  fs.writeFileSync(wrapper, `@echo off\r\n"${process.execPath}" "${script}" %*\r\n`);
+  return wrapper;
 }
