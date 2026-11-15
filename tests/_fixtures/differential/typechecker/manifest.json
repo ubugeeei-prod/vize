@@ -10392,7 +10392,7 @@
               "html-template",
               "ts"
             ],
-            "selector": "sfc_typecheck::tests::test_type_check_computed_keys_stay_with_setup_enum; exact #12998 setup regression and plain-script control. Input-only registration; no native parity claim."
+            "selector": "sfc_typecheck::tests::setup_enum_computed_keys::computed_keys_stay_with_setup_enum; exact #12998 setup regression and plain-script control. Input-only registration; no native parity claim."
           }
         ]
       }
