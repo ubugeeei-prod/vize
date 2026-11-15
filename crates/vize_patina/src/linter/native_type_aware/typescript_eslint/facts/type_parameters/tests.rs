@@ -1,7 +1,7 @@
 use corsa::lint::run_default_type_aware_rule_owned;
 use serde_json::Value;
 
-use super::enrich;
+use super::{enrich, locally_binds, text_usage};
 use crate::linter::native_type_aware::typescript_eslint::tree;
 
 #[test]
@@ -98,6 +98,53 @@ fn excludes_concise_arrow_function_bodies() {
     let source = "const log = <T>(value: T): void => void (value as T);\n";
     let reports = report_ranges(source);
     assert_eq!(reports.len(), 1, "{reports:#?}");
+}
+
+#[test]
+fn generic_wrappers_establish_multiple_type_uses() {
+    let source = concat!(
+        "declare function fetchJson<T>(): Promise<T>;\n",
+        "declare function select<T>(props: ItemProps<T>): void;\n",
+        "declare function takeArray<T>(items: T[]): void;\n",
+        "declare function returnArray<T>(): T[];\n",
+    );
+    let reports = report_ranges(source);
+    assert_eq!(reports.len(), 1, "{reports:#?}");
+    assert_eq!(
+        reports[0].0,
+        source.find("takeArray<T>").unwrap() + "takeArray<".len()
+    );
+}
+
+#[test]
+fn ignores_generic_interfaces_and_aliases() {
+    let source = concat!(
+        "interface Marker<T> { name: string }\n",
+        "type Wrapped<T> = { value: T };\n",
+    );
+    assert!(report_ranges(source).is_empty());
+}
+
+#[test]
+fn class_arrays_and_parameter_properties_are_relational() {
+    let source = concat!(
+        "class Values<T> { values: T[] = []; }\n",
+        "class Box<T> { constructor(public value: T) {} }\n",
+        "class Single<T> { value!: T; }\n",
+    );
+    let reports = report_ranges(source);
+    assert_eq!(reports.len(), 1, "{reports:#?}");
+    assert_eq!(
+        reports[0].0,
+        source.find("Single<T>").unwrap() + "Single<".len()
+    );
+}
+
+#[test]
+fn rendered_generic_returns_do_not_capture_outer_names() {
+    assert!(locally_binds("<T>(value: T) => T", "T"));
+    assert_eq!(text_usage("<T>(value: T) => T", "T", false, true), 0);
+    assert_eq!(text_usage("Map<K, V>", "K", false, true), 2);
 }
 
 fn report_ranges(source: &str) -> Vec<(usize, usize)> {

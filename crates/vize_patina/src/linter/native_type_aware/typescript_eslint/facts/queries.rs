@@ -31,6 +31,8 @@ pub(in super::super) struct Wants {
     type_parts: bool,
     /// The empty-object probe on intersections and generic references.
     empty_object: bool,
+    /// Inferred signature/member types for no-unnecessary-type-parameters.
+    type_parameters: bool,
 }
 
 impl Wants {
@@ -62,6 +64,7 @@ impl Wants {
             type_parts: has("no-redundant-type-constituents")
                 || has("no-duplicate-type-constituents"),
             empty_object,
+            type_parameters: has("no-unnecessary-type-parameters"),
         }
     }
 
@@ -138,6 +141,9 @@ fn collect(
     members: &FxHashSet<(u32, u32)>,
     plan: &mut Planner,
 ) {
+    if wants.type_parameters && node.kind == "TSTypeParameterDeclaration" {
+        type_parameter_queries(node, plan);
+    }
     let rules = wants.promise;
     let mut own = ExpressionQuery::at(node.range.start, node.range.end);
     own.promise = promise_facets(node, role.promise, rules);
@@ -206,6 +212,33 @@ fn collect(
             };
             collect(child, role, wants, members, plan);
         }
+    }
+}
+
+/// Only syntax shapes whose type-parameter usage cannot be decided from the
+/// authored signature reach the checker: inferred returns, `typeof` returns,
+/// and inferred class-member types.
+fn type_parameter_queries(node: &LintNode, plan: &mut Planner) {
+    let Some(items) = node
+        .fields
+        .get("__typeParameterUsageQueries")
+        .and_then(Value::as_array)
+    else {
+        return;
+    };
+    for item in items {
+        let (Some(start), Some(end), Some(kind)) = (
+            field_u32(item, "start"),
+            field_u32(item, "end"),
+            item.get("kind").and_then(Value::as_str),
+        ) else {
+            continue;
+        };
+        let mut query = ExpressionQuery::at(start, end);
+        if kind == "return" {
+            query.function_returns = Some(false);
+        }
+        plan.push(query);
     }
 }
 
