@@ -1,6 +1,9 @@
 name: Benchmark
 
 on:
+  push:
+    branches:
+      - bench/no-implied-eval-sharded-13000
   schedule:
     - cron: "29 5 * * 2"
   # Dispatch records its head SHA from --ref, so validation rejects mismatches.

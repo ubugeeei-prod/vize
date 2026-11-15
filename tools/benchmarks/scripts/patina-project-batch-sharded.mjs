@@ -182,15 +182,31 @@ function run(side, label, { profile = false, record = true } = {}) {
   const profiles = [];
   for (const { cohort, name, directory } of shardDirectories) {
     const shardLabel = `${label}-${name}`;
+    fs.appendFileSync(
+      path.join(output, "progress.jsonl"),
+      `${JSON.stringify({ side, label, shard: name, phase: "start" })}\n`,
+    );
     const args = [...CLI_ARGS];
     if (profile)
       args.push("--profile-json", path.join(output, `${shardLabel}.profile.json`));
     const rssFile = path.join(output, `${shardLabel}.rss.txt`);
-    const result = spawnSync(
-      "/usr/bin/time",
-      ["-v", "-o", rssFile, "--", binaries[side], ...args],
-      { cwd: directory, env, timeout: 180_000, maxBuffer: 16 * 1024 * 1024 },
+    const temp = fs.mkdtempSync(
+      path.join(process.env.RUNNER_TEMP ?? output, `patina-${shardLabel}-`),
     );
+    const shardEnv = {
+      ...env,
+      TMPDIR: temp,
+      TMP: temp,
+      TEMP: temp,
+      XDG_CACHE_HOME: path.join(temp, "xdg-cache"),
+    };
+    const result = spawnSync("/usr/bin/time", ["-v", "-o", rssFile, "--", binaries[side], ...args], {
+      cwd: directory,
+      env: shardEnv,
+      timeout: 180_000,
+      maxBuffer: 16 * 1024 * 1024,
+    });
+    fs.rmSync(temp, { recursive: true, force: true });
     fs.writeFileSync(path.join(output, `${shardLabel}.stderr`), result.stderr ?? "");
     try {
       assertProcess(result, cohortStdout);
@@ -211,6 +227,10 @@ function run(side, label, { profile = false, record = true } = {}) {
       profiles.push(
         JSON.parse(fs.readFileSync(path.join(output, `${shardLabel}.profile.json`), "utf8")),
       );
+    fs.appendFileSync(
+      path.join(output, "progress.jsonl"),
+      `${JSON.stringify({ side, label, shard: name, phase: "complete" })}\n`,
+    );
   }
   const stdout = Buffer.from(JSON.stringify(rows, null, 2));
   assert.deepEqual(
