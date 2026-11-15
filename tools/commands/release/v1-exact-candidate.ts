@@ -35,6 +35,14 @@ function optionalOption(args: readonly string[], name: string): string | undefin
   return value;
 }
 
+function positiveIntegerOption(args: readonly string[], name: string): number {
+  const value = option(args, name);
+  if (!/^[1-9][0-9]*$/u.test(value)) throw new Error(`${name} must be a positive integer`);
+  const parsed = Number(value);
+  if (!Number.isSafeInteger(parsed)) throw new Error(`${name} must be a safe integer`);
+  return parsed;
+}
+
 function plan(args: readonly string[]): void {
   const candidate = option(args, "--candidate");
   assert.match(candidate, /^[0-9a-f]{40}$/u, "candidate must be one exact 40-character SHA");
@@ -64,11 +72,16 @@ function plan(args: readonly string[]): void {
 function validateHost(args: readonly string[]): void {
   const candidate = option(args, "--candidate");
   const host = option(args, "--host");
+  const run = positiveIntegerOption(args, "--run");
+  const runAttempt = positiveIntegerOption(args, "--run-attempt");
   const receipts = option(args, "--receipts");
   const output = option(args, "--output");
   const matrix = buildV1SupportMatrix();
   const bundle = readJson<V1ExactCandidateReceiptBundle>(receipts);
-  writeJson(output, admitV1ExactCandidateHost(matrix, bundle, candidate, host));
+  writeJson(
+    output,
+    admitV1ExactCandidateHost(matrix, bundle, candidate, host, { run, runAttempt }),
+  );
 }
 
 function admissionFiles(directory: string): string[] {
@@ -82,10 +95,15 @@ function admit(args: readonly string[]): void {
   const candidate = option(args, "--candidate");
   const admissionsDirectory = option(args, "--admissions");
   const output = option(args, "--output");
+  const run = positiveIntegerOption(args, "--run");
+  const runAttempt = positiveIntegerOption(args, "--run-attempt");
   const admissions = admissionFiles(admissionsDirectory).map((filename) =>
     readJson<V1ExactCandidateHostAdmission>(filename),
   );
-  const admitted = admitV1ExactCandidate(buildV1SupportMatrix(), candidate, admissions);
+  const admitted = admitV1ExactCandidate(buildV1SupportMatrix(), candidate, admissions, {
+    run,
+    runAttempt,
+  });
   if (args.includes("--enforce-complete"))
     assert.equal(
       admitted.counts.completeRequiredRows,

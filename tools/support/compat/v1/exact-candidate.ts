@@ -65,6 +65,7 @@ type AdmittedRow = Omit<
   candidateRun: number | null;
   candidateRuns: number[];
   evidence: string[];
+  receiptDigests: string[];
   positive: string[];
   negative: string[];
   manual: string[];
@@ -84,8 +85,15 @@ export interface V1ExactCandidateHostPlan {
 export interface V1ExactCandidateHostAdmission {
   schema: typeof V1_EXACT_CANDIDATE_HOST_ADMISSION_SCHEMA;
   candidateSource: string;
+  candidateRun: number;
+  candidateRunAttempt: number;
   host: V1ExactCandidateHostPlan;
   rows: AdmittedRow[];
+}
+
+export interface V1ExactCandidateRunIdentity {
+  run: number;
+  runAttempt: number;
 }
 
 function hostId(row: Pick<RequiredRow, "runtime" | "runtimeVersion" | "host">): string {
@@ -139,12 +147,24 @@ function assertReceipt(receipt: V1ExactCandidateReceipt): void {
 export function validateV1ExactCandidateReceiptBundle(
   matrix: SupportMatrix,
   bundle: V1ExactCandidateReceiptBundle,
+  runIdentity: V1ExactCandidateRunIdentity,
 ): void {
   assert.equal(bundle.schema, V1_EXACT_CANDIDATE_BUNDLE_SCHEMA);
+  assert.ok(Number.isSafeInteger(runIdentity.run) && runIdentity.run > 0, "candidate run");
+  assert.ok(
+    Number.isSafeInteger(runIdentity.runAttempt) && runIdentity.runAttempt > 0,
+    "candidate run attempt",
+  );
   const rowIds = new Set(matrix.requiredRows.map(({ id }) => id));
   const receiptIds = new Set<string>();
   for (const receipt of bundle.receipts) {
     assertReceipt(receipt);
+    assert.equal(receipt.run, runIdentity.run, `${receipt.id}: candidate run`);
+    assert.equal(
+      receipt.runAttempt,
+      runIdentity.runAttempt,
+      `${receipt.id}: candidate run attempt`,
+    );
     assert.ok(!receiptIds.has(receipt.id), `duplicate receipt ID: ${receipt.id}`);
     receiptIds.add(receipt.id);
     if (receipt.row)
@@ -212,6 +232,50 @@ function receiptIdentityMatchesRow(receipt: V1ExactCandidateReceipt, row: Requir
   );
 }
 
+function qualificationRuntimeMatches(
+  matrix: SupportMatrix,
+  set: string,
+  environment: string,
+  receipt: V1ExactCandidateReceipt,
+): boolean {
+  if (set !== "wsl2-node") return true;
+  const host = matrix.environments.hostRuntimeCombinations.find(
+    ({ target }) => target === environment,
+  );
+  return (
+    host !== undefined &&
+    receipt.runtime.name === host.runtime &&
+    receipt.runtime.version === host.version &&
+    receipt.runtime.target === host.target
+  );
+}
+
+function receiptDigest(receipt: V1ExactCandidateReceipt): string {
+  const payload = {
+    schema: receipt.schema,
+    id: receipt.id,
+    classification: receipt.classification,
+    outcome: receipt.outcome,
+    row: receipt.row,
+    qualificationSet: receipt.qualificationSet,
+    environment: receipt.environment,
+    source: receipt.source,
+    run: receipt.run,
+    runAttempt: receipt.runAttempt,
+    job: receipt.job,
+    fixtureSha256: receipt.fixtureSha256,
+    dependencySha256: receipt.dependencySha256,
+    binarySha256: receipt.binarySha256,
+    runtime: {
+      name: receipt.runtime.name,
+      version: receipt.runtime.version,
+      target: receipt.runtime.target,
+    },
+    manualReason: receipt.manualReason,
+  };
+  return createHash("sha256").update(JSON.stringify(payload)).digest("hex");
+}
+
 function uniqueSorted(values: readonly string[]): string[] {
   return [...new Set(values)].toSorted(compareText);
 }
@@ -253,7 +317,8 @@ function admitRow(
             (receipt) =>
               receipt.qualificationSet === set &&
               receipt.environment === environment &&
-              receipt.outcome === "passed",
+              receipt.outcome === "passed" &&
+              qualificationRuntimeMatches(matrix, set, environment, receipt),
           ),
       )
       .map((environment) => `${set}/${environment}`),
@@ -262,7 +327,8 @@ function admitRow(
     requiredQualificationSets(matrix, row).some(
       (set) =>
         receipt.qualificationSet === set &&
-        expectedQualificationEnvironments(matrix, set).includes(receipt.environment ?? ""),
+        expectedQualificationEnvironments(matrix, set).includes(receipt.environment ?? "") &&
+        qualificationRuntimeMatches(matrix, set, receipt.environment ?? "", receipt),
     ),
   );
   const skipped = exact.some(({ outcome }) => outcome === "skipped");
@@ -297,6 +363,7 @@ function admitRow(
     candidateRun: admitted.length === 1 ? admitted[0].run : null,
     candidateRuns: uniqueSortedNumbers(admitted.map(({ run }) => run)),
     evidence: uniqueSorted(admitted.map(({ id }) => id)),
+    receiptDigests: uniqueSorted(admitted.map(receiptDigest)),
     positive: uniqueSorted(positive.map(({ id }) => id)),
     negative: uniqueSorted(negative.map(({ id }) => id)),
     manual: uniqueSorted(manual.map(({ id }) => id)),
@@ -311,15 +378,18 @@ export function admitV1ExactCandidateHost(
   bundle: V1ExactCandidateReceiptBundle,
   candidateSource: string,
   selectedHostId: string,
+  runIdentity: V1ExactCandidateRunIdentity,
 ): V1ExactCandidateHostAdmission {
   assertExactSource(candidateSource);
-  validateV1ExactCandidateReceiptBundle(matrix, bundle);
+  validateV1ExactCandidateReceiptBundle(matrix, bundle, runIdentity);
   const host = buildV1ExactCandidateHostPlan(matrix).find(({ id }) => id === selectedHostId);
   assert.ok(host, `unknown host plan: ${selectedHostId}`);
   const byId = new Map(matrix.requiredRows.map((row) => [row.id, row]));
   return {
     schema: V1_EXACT_CANDIDATE_HOST_ADMISSION_SCHEMA,
     candidateSource,
+    candidateRun: runIdentity.run,
+    candidateRunAttempt: runIdentity.runAttempt,
     host,
     rows: host.rowIds.map((id) =>
       admitRow(matrix, byId.get(id)!, candidateSource, bundle.receipts),
@@ -330,12 +400,19 @@ export function admitV1ExactCandidateHost(
 function assertHostAdmission(
   admission: V1ExactCandidateHostAdmission,
   candidateSource: string,
+  runIdentity: V1ExactCandidateRunIdentity,
 ): void {
   assert.equal(admission.schema, V1_EXACT_CANDIDATE_HOST_ADMISSION_SCHEMA);
   assert.equal(
     admission.candidateSource,
     candidateSource,
     `${admission.host.id}: candidate source`,
+  );
+  assert.equal(admission.candidateRun, runIdentity.run, `${admission.host.id}: candidate run`);
+  assert.equal(
+    admission.candidateRunAttempt,
+    runIdentity.runAttempt,
+    `${admission.host.id}: candidate run attempt`,
   );
   assert.deepEqual(
     admission.rows.map(({ id }) => id).toSorted(compareText),
@@ -346,19 +423,24 @@ function assertHostAdmission(
     admission.rows.every((row) => hostId(row) === admission.host.id),
     `${admission.host.id}: foreign row`,
   );
+  assert.ok(
+    admission.rows.every((row) => row.candidateSource === candidateSource),
+    `${admission.host.id}: foreign candidate source`,
+  );
 }
 
 export function admitV1ExactCandidate(
   matrix: SupportMatrix,
   candidateSource: string,
   admissions: readonly V1ExactCandidateHostAdmission[],
+  runIdentity: V1ExactCandidateRunIdentity,
 ) {
   assertExactSource(candidateSource);
   const expectedHosts = buildV1ExactCandidateHostPlan(matrix);
   const hostIds = new Set<string>();
   const rows = new Map<string, AdmittedRow>();
   for (const admission of admissions) {
-    assertHostAdmission(admission, candidateSource);
+    assertHostAdmission(admission, candidateSource, runIdentity);
     assert.ok(!hostIds.has(admission.host.id), `duplicate host admission: ${admission.host.id}`);
     hostIds.add(admission.host.id);
     for (const row of admission.rows) {
@@ -393,9 +475,11 @@ export function admitV1ExactCandidate(
     ...matrix,
     admission: {
       candidateSource,
+      candidateRun: runIdentity.run,
+      candidateRunAttempt: runIdentity.runAttempt,
       hostPlans: expectedHosts.length,
       receiptDigest: createHash("sha256")
-        .update(JSON.stringify(requiredRows.map(({ id, evidence }) => [id, evidence])))
+        .update(JSON.stringify(requiredRows.map(({ id, receiptDigests }) => [id, receiptDigests])))
         .digest("hex"),
     },
     requiredRows,

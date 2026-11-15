@@ -57,6 +57,8 @@ jobs:
       hosts: ${{ steps.plan.outputs.hosts }}
       host_count: ${{ steps.plan.outputs.host_count }}
       row_count: ${{ steps.plan.outputs.row_count }}
+      receipt_run: ${{ steps.receipt-run.outputs.run }}
+      receipt_run_attempt: ${{ steps.receipt-run.outputs.attempt }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
@@ -69,6 +71,24 @@ jobs:
         run: test "$(git rev-parse HEAD)" = "$CANDIDATE_SHA"
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with: { node-version: "24", package-manager-cache: false }
+      - name: Bind the receipt run to the exact candidate
+        id: receipt-run
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CANDIDATE_SHA: ${{ inputs.candidate_sha }}
+          RECEIPT_RUN_ID: ${{ inputs.receipt_run_id }}
+        run: |
+          [[ "$CANDIDATE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$RECEIPT_RUN_ID" =~ ^[1-9][0-9]*$ ]]
+          IFS=$'\t' read -r run source attempt < <(
+            gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RECEIPT_RUN_ID" \
+              --jq '[.id, .head_sha, .run_attempt] | @tsv'
+          )
+          test "$run" = "$RECEIPT_RUN_ID"
+          test "$source" = "$CANDIDATE_SHA"
+          [[ "$attempt" =~ ^[1-9][0-9]*$ ]]
+          printf 'run=%s\nattempt=%s\n' "$run" "$attempt" >> "$GITHUB_OUTPUT"
       - name: Download the immutable receipt bundle
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
@@ -123,13 +143,15 @@ jobs:
           node tools/commands/release/v1-exact-candidate.ts validate-host \
             --candidate "$CANDIDATE_SHA" \
             --host "$HOST_ID" \
+            --run "${{ needs.plan.outputs.receipt_run }}" \
+            --run-attempt "${{ needs.plan.outputs.receipt_run_attempt }}" \
             --receipts .qualification/receipts/v1-exact-candidate-receipts.json \
-            --output ".qualification/admission/$HOST_ID.json"
+            --output ".qualification/admission/$CANDIDATE_SHA-$HOST_ID.json"
       - name: Preserve immutable host admission
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: v1-host-admission-${{ matrix.id }}
-          path: .qualification/admission/${{ matrix.id }}.json
+          name: v1-host-admission-${{ inputs.candidate_sha }}-${{ matrix.id }}
+          path: .qualification/admission/${{ inputs.candidate_sha }}-${{ matrix.id }}.json
           if-no-files-found: error
           retention-days: 30
 
@@ -148,7 +170,7 @@ jobs:
       - name: Download every host admission from this run
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          pattern: v1-host-admission-*
+          pattern: v1-host-admission-${{ inputs.candidate_sha }}-*
           path: .qualification/admissions
           merge-multiple: true
       - name: Assemble the exact-candidate manifest
@@ -158,6 +180,8 @@ jobs:
         run: |
           node tools/commands/release/v1-exact-candidate.ts admit \
             --candidate "$CANDIDATE_SHA" \
+            --run "${{ needs.plan.outputs.receipt_run }}" \
+            --run-attempt "${{ needs.plan.outputs.receipt_run_attempt }}" \
             --admissions .qualification/admissions \
             --output .qualification/v1-exact-candidate-manifest.json
       - name: Enforce complete exact-candidate host qualification
@@ -168,10 +192,13 @@ jobs:
         run: |
           node tools/commands/release/v1-exact-candidate.ts admit \
             --candidate "$CANDIDATE_SHA" \
+            --run "${{ needs.plan.outputs.receipt_run }}" \
+            --run-attempt "${{ needs.plan.outputs.receipt_run_attempt }}" \
             --admissions .qualification/admissions \
             --output .qualification/v1-exact-candidate-manifest.json \
             --enforce-complete
       - name: Preserve the admitted manifest
+        if: ${{ always() && hashFiles('.qualification/v1-exact-candidate-manifest.json') != '' }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: v1-exact-candidate-manifest-${{ inputs.candidate_sha }}
