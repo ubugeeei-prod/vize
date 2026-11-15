@@ -829,24 +829,31 @@ function typedDefaultComesFromComposedContract(finding: LintRecord, source: stri
 }
 
 function localTypeDependsOn(source: string, root: string, target: string): boolean {
+  const maximumVisitedTypes = 32;
   const pending = [root];
   const seen = new Set<string>();
-  while (pending.length > 0 && seen.size < 32) {
+  while (pending.length > 0 && seen.size < maximumVisitedTypes) {
     const name = pending.pop();
-    if (name === undefined || !seen.add(name)) continue;
+    if (name === undefined || seen.has(name)) continue;
+    seen.add(name);
     if (name === target) return true;
     const escaped = name.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
     const interfaceMatch = new RegExp(
-      `\\binterface\\s+${escaped}(?:\\s*<[^>{}]*>)?\\s*([^{}]*)\\{`,
+      `\\binterface\\s+${escaped}\\b(?:\\s*<[^>{}]*>)?\\s*([^{}]*)\\{`,
       "u",
     ).exec(source);
     const aliasMatch = new RegExp(
-      `\\btype\\s+${escaped}(?:\\s*<[^;={}]*>)?\\s*=\\s*([^;]+)`,
+      `\\btype\\s+${escaped}\\b(?:\\s*<[^;={}]*>)?\\s*=\\s*([^;]+)`,
       "u",
     ).exec(source);
     const dependencyText = interfaceMatch?.[1] ?? aliasMatch?.[1] ?? "";
     for (const match of dependencyText.matchAll(/\b[A-Za-z_$][\w$]*\b/gu)) {
-      pending.push(match[0]);
+      const dependency = match[0];
+      if (seen.has(dependency)) continue;
+      const queued = pending.lastIndexOf(dependency);
+      if (queued >= 0) pending.splice(queued, 1);
+      pending.push(dependency);
+      if (pending.length > maximumVisitedTypes - seen.size) pending.shift();
     }
   }
   return false;

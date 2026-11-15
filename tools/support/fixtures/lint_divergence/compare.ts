@@ -253,14 +253,8 @@ export function compareLintFindings(
     console.log(
       `Lint comparison classifying ${falsePositives.length} false positives and ${falseNegatives.length} false negatives`,
     );
-  let generalVisited = 0;
   for (let index = falsePositives.length - 1; index >= 0; index--) {
     const finding = falsePositives[index];
-    if (process.env.VIZE_LINT_BASELINE_PROGRESS === "1")
-      console.log(
-        `Lint comparison general intentional classifier ${generalVisited} at ${index}: ${finding.file} ${finding.ruleId}`,
-      );
-    generalVisited++;
     // A reporter finding outside the reconciled corpus is always an
     // over-report. Source-based semantic classifiers have no authority over a
     // file the two providers were not asked to compare.
