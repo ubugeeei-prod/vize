@@ -177,7 +177,7 @@ fn emit_fragment(cx: &mut EmitCx<'_>, root: &Region<'_>) -> Result<(), EmitError
             }) {
                 index += 1;
             }
-            let run = &ops[start..index];
+            let run = ops.get(start..index).unwrap_or_default();
             non_comment_children += run.len();
             // Keep the established DEV_ROOT_FRAGMENT classification even
             // though compound text is now emitted as one patchable vnode.
