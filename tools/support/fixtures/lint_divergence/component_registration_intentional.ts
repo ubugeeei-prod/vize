@@ -163,6 +163,39 @@ function decoratorRegisters(source: string, tag: string): boolean {
   return false;
 }
 
+function optionsApiRegistersNumericKebab(source: string, tag: string): boolean {
+  if (!/-\d/u.test(tag)) return false;
+  for (const match of source.matchAll(/\bexport\s+default\b/gu)) {
+    const open = skipTrivia(source, (match.index ?? 0) + match[0].length);
+    if (source[open] !== "{") continue;
+    const close = matchingBrace(source, open);
+    if (close === null) continue;
+    const components = propertyValue(source, open, close, "components");
+    if (components === null || source[components] !== "{") continue;
+    const componentsClose = matchingBrace(source, components, close);
+    if (componentsClose === null) continue;
+    for (let cursor = components + 1; cursor < componentsClose;) {
+      cursor = skipTrivia(source, cursor, componentsClose);
+      if (source[cursor] === ",") {
+        cursor += 1;
+        continue;
+      }
+      const literal = quoted(source, cursor, componentsClose);
+      let key: string;
+      if (literal !== null) [key, cursor] = literal;
+      else {
+        const identifier = /^[A-Za-z_$][\w$]*/u.exec(source.slice(cursor, componentsClose));
+        if (identifier === null) break;
+        key = identifier[0];
+        cursor += key.length;
+      }
+      if (comparableName(key) === comparableName(tag)) return true;
+      while (cursor < componentsClose && source[cursor] !== ",") cursor += 1;
+    }
+  }
+  return false;
+}
+
 export function componentRegistrationBaselineIntentionalReason(
   finding: BaselineComponentFinding,
   source: string,
@@ -174,5 +207,7 @@ export function componentRegistrationBaselineIntentionalReason(
     return "The component renders itself recursively by its defineOptions name, which Vue resolves; eslint-plugin-vue does not read that name.";
   if (decoratorRegisters(source, tag))
     return "The vue-property-decorator components map registers this class component; eslint-plugin-vue does not associate that decorator registration with the template.";
+  if (optionsApiRegistersNumericKebab(source, tag))
+    return "Vue resolves this numeric kebab tag to its Options API registration key; eslint-plugin-vue does not associate that spelling with the registered component.";
   return null;
 }

@@ -45,11 +45,31 @@ defineOptions({ inheritAttrs: false, name: "RouteTreeBranch" });
   );
 });
 
+test("numeric kebab tags retain their Options API runtime registration", () => {
+  const source = `<script>
+import { Edit1Icon } from "tdesign-icons-vue";
+export default {
+  components: { Edit1Icon },
+};
+</script>`;
+
+  assert.match(
+    componentRegistrationBaselineIntentionalReason(finding("edit-1-icon"), source) ?? "",
+    /numeric kebab/u,
+  );
+  assert.equal(
+    componentRegistrationBaselineIntentionalReason(finding("edit-2-icon"), source),
+    null,
+  );
+  assert.equal(componentRegistrationBaselineIntentionalReason(finding("edit-icon"), source), null);
+});
+
 test("unrelated source shapes stay in the scored baseline", () => {
   const controls: Array<[ReturnType<typeof finding>, string]> = [
     [finding("missing"), "@Component({ components: { present } })"],
     [finding("timer"), "const options = { components: { timer } }; @Component({}) class Home {}"],
     [finding("TreeItem"), 'defineOptions({ name: dynamicName }); const name = "TreeItem";'],
+    [finding("edit-1-icon"), "const options = { components: { Edit1Icon } }; export default {};"],
     [
       { ruleId: "vue/no-unused-components", message: finding("timer").message },
       "@Component({ components: { timer } })",
@@ -64,7 +84,7 @@ test("unrelated source shapes stay in the scored baseline", () => {
 });
 
 test("reviewed registrations retain their complete baseline packet in both comparators", () => {
-  const file = "src/Recursive.vue",
+  const file = "src/Icon.vue",
     filename = path.join(cwd, file),
     map = {
       upstream: { package: "eslint-plugin-vue", version: "10.9.2" },
@@ -78,14 +98,17 @@ test("reviewed registrations retain their complete baseline packet in both compa
     packet = {
       ruleId: "vue/no-undef-components",
       severity: 1,
-      ...span(4, 3, 4, 20),
-      message: "The '<RouteTreeBranch>' component has been used, but not defined.",
+      ...span(6, 3, 6, 18),
+      message: "The '<edit-1-icon>' component has been used, but not defined.",
     },
     baseline = [eslintResult(file, [packet])],
-    source = `<script setup lang="ts">
-defineOptions({ name: "RouteTreeBranch" });
+    source = `<script>
+import { Edit1Icon } from "tdesign-icons-vue";
+export default { components: { Edit1Icon } };
 </script>
-<template><RouteTreeBranch /></template>`;
+<template>
+  <edit-1-icon />
+</template>`;
   fs.mkdirSync(path.dirname(filename), { recursive: true });
   fs.writeFileSync(filename, source);
   try {
@@ -132,7 +155,7 @@ defineOptions({ name: "RouteTreeBranch" });
       );
       const reason = get(reviewed as Json, "reason");
       if (typeof reason !== "string") throw new TypeError("divergence reason must be a string");
-      assert.match(reason, /recursively/u);
+      assert.match(reason, /numeric kebab/u);
     }
   } finally {
     fs.rmSync(filename, { force: true });
