@@ -125,7 +125,7 @@ fn generate_effective_children_inner(
             .iter()
             .all(|child| is_static_cacheable_element(child))
     {
-        generate_cached_static_children_array(ctx, &effective);
+        generate_cached_static_children_array(ctx, effective);
         return;
     }
 
