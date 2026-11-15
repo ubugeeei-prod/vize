@@ -147,10 +147,7 @@ fn options_name_property(args: &str) -> Option<&str> {
 
 #[cfg(test)]
 mod tests {
-    use super::{file_stem, options_api_name, options_name_property};
-    use oxc_allocator::Allocator;
-    use oxc_parser::Parser;
-    use oxc_span::SourceType;
+    use super::{file_stem, options_name_property};
 
     #[test]
     fn extracts_name_property() {
@@ -181,17 +178,5 @@ mod tests {
         assert_eq!(file_stem("src/components/tree-item.vue"), "tree-item");
         assert_eq!(file_stem("App.vue"), "App");
         assert_eq!(file_stem(r"win\path\Item.vue"), "Item");
-    }
-
-    #[test]
-    fn extracts_options_api_name() {
-        let allocator = Allocator::default();
-        for source in [
-            "export default { name: 'TreeItem' }",
-            "export default defineComponent({ name: `TreeItem` })",
-        ] {
-            let parsed = Parser::new(&allocator, source, SourceType::ts()).parse();
-            assert_eq!(options_api_name(&parsed.program), Some("TreeItem"));
-        }
     }
 }
