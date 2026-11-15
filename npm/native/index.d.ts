@@ -1342,6 +1342,8 @@ export declare function rewriteViteStaticAssetUrls(
 
 export declare function runCli(args: Array<string>): void;
 
+export declare function supportsCliConfigStdin(): boolean;
+
 /** One `templateScopes` entry on the proxy arm. */
 export interface ScopeEntryNapi {
   name: string;

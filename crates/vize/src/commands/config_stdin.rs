@@ -5,7 +5,7 @@
 )]
 
 use std::{io::Read, path::PathBuf};
-use vize_carton::cstr;
+use vize_l0::cstr;
 
 fn read() -> Result<Vec<u8>, std::string::String> {
     let mut payload = Vec::new();

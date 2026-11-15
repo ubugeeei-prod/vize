@@ -1,4 +1,8 @@
 import { createRequire } from "node:module";
+import { randomUUID } from "node:crypto";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 
 import {
   answerContentMapperInitialize,
@@ -9,6 +13,28 @@ import { assertMatchingNativeVersion } from "./native-version-guard.js";
 import { runSetupCli } from "./setup.js";
 
 const require = createRequire(import.meta.url);
+
+function runNativeCli(native: typeof import("@vizejs/native"), args: string[]): void {
+  const configStdin = args.indexOf("--config-stdin");
+  if (configStdin === -1 || native.supportsCliConfigStdin?.() === true) {
+    native.runCli(args);
+    return;
+  }
+
+  const payload = fs.readFileSync(0);
+  const file = path.join(os.tmpdir(), `.vize-vp-${randomUUID()}.json`);
+  try {
+    fs.writeFileSync(file, payload, { flag: "wx", mode: 0o600 });
+    native.runCli([
+      ...args.slice(0, configStdin),
+      "--config",
+      file,
+      ...args.slice(configStdin + 1),
+    ]);
+  } finally {
+    fs.rmSync(file, { force: true });
+  }
+}
 
 function fail(error: unknown): void {
   const message = error instanceof Error ? error.message : String(error);
@@ -34,7 +60,7 @@ try {
   } else {
     assertMatchingNativeVersion();
     const native = require("@vizejs/native") as typeof import("@vizejs/native");
-    native.runCli(args);
+    runNativeCli(native, args);
   }
 } catch (error) {
   if (error instanceof ContentMapperFramingError) {
