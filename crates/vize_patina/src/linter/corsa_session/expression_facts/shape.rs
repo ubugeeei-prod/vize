@@ -153,6 +153,23 @@ impl<'a> Shapes<'a> {
                 out.insert("constraint".into(), shape);
             }
         }
+        // typescript-eslint asks for call signatures on the whole handler
+        // type. Union, intersection and constrained type-parameter roots are
+        // callable without carrying TypeFlags.Object.
+        if details & detail::CALLABLE != 0 {
+            let signatures = self
+                .session
+                .client()
+                .get_signatures_of_type(
+                    self.session.snapshot().handle.clone(),
+                    self.session.project_handle(),
+                    ty.id.clone(),
+                    0,
+                )
+                .await
+                .unwrap_or_default();
+            out.insert("callable".into(), json!(!signatures.is_empty()));
+        }
         if flags & OBJECT != 0 {
             self.object_facts(ty, depth, details, &mut out).await;
         }
@@ -211,13 +228,6 @@ impl<'a> Shapes<'a> {
                         && symbol.declarations.iter().all(is_default_library)
                 ),
             );
-        }
-        if details & detail::CALLABLE != 0 {
-            let signatures = client
-                .get_signatures_of_type(snapshot.clone(), project.clone(), ty.id.clone(), 0)
-                .await
-                .unwrap_or_default();
-            out.insert("callable".into(), json!(!signatures.is_empty()));
         }
         if details & detail::OBJECT_KIND != 0 {
             self.object_kind(ty, out).await;
