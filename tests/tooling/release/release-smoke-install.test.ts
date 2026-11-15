@@ -558,8 +558,8 @@ const fs = require("node:fs");
 const path = require("node:path");
 const stub = ${JSON.stringify(executable)}.toLowerCase();
 if (process.execPath.toLowerCase() === stub) {
-  const installing = process.argv[1] === "install";
-  const args = installing ? process.argv.slice(1) : process.execArgv;
+  const installing = path.basename(process.argv[1] || "").toLowerCase() === "install";
+  const args = installing ? ["install", ...process.argv.slice(2)] : process.execArgv;
   fs.appendFileSync(process.env.VIZE_RUNTIME_STUB_LOG, JSON.stringify({ kind: "bun", args }) + "\\n");
   if (installing) {
     const manifestPath = path.join(process.cwd(), "package.json");
