@@ -299,6 +299,9 @@ test("release install smoke can run runtime checks for Vize packages", () => {
   assert.match(runtimeScript, /"fmt", "src\/Format\.vue", "--write", "--no-config"/);
   assert.match(runtimeScript, /"build", "src\/App\.vue", "--output", "vize-build"/);
   assert.match(runtimeScript, /runLspRuntimeCheck\(runtime, vizeBin, installDir\)/);
+  assert.match(runtimeScript, /diagnostics = message\.params\.diagnostics \?\? \[\]/);
+  assert.match(runtimeScript, /diagnostics\.length === 0[\s\S]*setTimeout[\s\S]*500/);
+  assert.match(runtimeScript, /LSP smoke timed out with diagnostics/);
   assert.match(
     runtimeScript,
     /resolveInstalledBin\(installDir, "oxlint-plugin-vize", "oxlint-vize"\)/,
