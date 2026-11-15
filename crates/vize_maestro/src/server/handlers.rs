@@ -136,7 +136,13 @@ impl LanguageServer for MaestroServer {
 
     async fn did_save(&self, params: DidSaveTextDocumentParams) {
         #[cfg(feature = "native")]
-        self.state.observe_configuration_retry_trigger();
+        {
+            self.state.observe_configuration_retry_trigger();
+            // A save can be followed by close before the editor's watched-file
+            // notification is delivered. Retire the closed-source snapshot at
+            // the protocol boundary so that ordering cannot expose old disk text.
+            self.state.invalidate_workspace_project_source_contents();
+        }
         let server = self.for_document(&params.text_document.uri).await;
         #[cfg(feature = "native")]
         server.state.note_corsa_document_boundary();

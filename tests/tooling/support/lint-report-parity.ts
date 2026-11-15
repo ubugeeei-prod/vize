@@ -283,12 +283,19 @@ test("u64 diagnostic ranges and arbitrary raw i64/u64 keys retain every source d
     input.clean();
   }
 });
-test("zero input requires an explicit integer zero and preserves all refusal side effects", () => {
+test("zero input bypasses Patina while retaining exact reports and refusal side effects", () => {
   const input = fixture();
   try {
     fs.rmSync(path.join(input.directory, "App.vue"));
     input.configure([input.project("parity", { expectedVueFileCount: 0 })], { results: [] });
-    const result = compare(input);
+    const result = runReporter(input, nodeCommand);
+    assert.deepEqual(result.processes, []);
+    for (const oracle of ["original", "updated"] as const) {
+      const measured = runReporter(input, frozen.paths[oracle], input.args, oracle);
+      assert.equal(measured.processes.length, 1);
+      measured.processes = [];
+      assertParity(measured, result, oracle);
+    }
     assert.equal(result.status, 0, result.stderr);
     assert.deepEqual(reportFile(result, "parity-lint-divergence.json").files, {
       comparedCount: 0,

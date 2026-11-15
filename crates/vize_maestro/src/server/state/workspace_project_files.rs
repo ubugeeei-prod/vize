@@ -1,6 +1,7 @@
-//! Demand-loaded source paths for project-wide navigation. Content is never cached.
+//! Demand-loaded source snapshots for project-wide navigation.
 
 use std::path::{Path, PathBuf};
+use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, Ordering};
 
 use futures::{channel::oneshot, lock::Mutex};
@@ -18,7 +19,9 @@ mod worker;
 #[derive(Default)]
 pub(super) struct Inventory {
     generation: AtomicU64,
+    content_generation: AtomicU64,
     paths: RwLock<Option<CachedPaths>>,
+    sources: RwLock<Option<CachedSources>>,
     retired: RwLock<Vec<PathBuf>>,
     scan: Mutex<()>,
     worker: worker::Worker,
@@ -34,6 +37,13 @@ struct CachedPaths {
     uris: Vec<Url>,
 }
 
+struct CachedSources {
+    generation: u64,
+    content_generation: u64,
+    roots: Vec<PathBuf>,
+    sources: Arc<[(Url, Arc<str>)]>,
+}
+
 impl Inventory {
     fn cached_paths(&self, roots: &[PathBuf], generation: u64) -> Option<Vec<Url>> {
         self.paths
@@ -42,27 +52,52 @@ impl Inventory {
             .filter(|cached| cached.generation == generation && cached.roots == roots)
             .map(|cached| cached.uris.clone())
     }
+
+    fn cached_sources(
+        &self,
+        roots: &[PathBuf],
+        generation: u64,
+        content_generation: u64,
+    ) -> Option<Vec<(Url, Arc<str>)>> {
+        self.sources
+            .read()
+            .as_ref()
+            .filter(|cached| {
+                cached.generation == generation
+                    && cached.content_generation == content_generation
+                    && cached.roots == roots
+            })
+            .map(|cached| cached.sources.iter().cloned().collect())
+    }
 }
 
-fn read_sources(uris: &[Url], retired: &[PathBuf]) -> Vec<(Url, std::string::String)> {
-    uris.iter()
+fn read_sources(uris: &[Url], retired: &[PathBuf]) -> (Vec<(Url, Arc<str>)>, bool) {
+    let mut complete = true;
+    let sources = uris
+        .iter()
         .filter_map(|uri| {
             let path = uri.to_file_path().ok()?;
             if retired.iter().any(|prefix| path.starts_with(prefix)) {
                 return None;
             }
-            let source = std::fs::read_to_string(path).ok()?;
-            Some((uri.clone(), source))
+            match std::fs::read_to_string(path) {
+                Ok(source) => Some((uri.clone(), Arc::from(source))),
+                Err(_) => {
+                    complete = false;
+                    None
+                }
+            }
         })
-        .collect()
+        .collect();
+    (sources, complete)
 }
 
 impl ServerState {
     pub(crate) fn observe_workspace_project_file_events(&self, events: &[FileEvent]) {
         for event in events {
-            if event.typ != FileChangeType::CHANGED
-                && let Ok(path) = event.uri.to_file_path()
-            {
+            if event.typ == FileChangeType::CHANGED {
+                self.invalidate_workspace_project_source_contents();
+            } else if let Ok(path) = event.uri.to_file_path() {
                 self.observe_workspace_project_membership(
                     &path,
                     event.typ == FileChangeType::CREATED,
@@ -88,23 +123,56 @@ impl ServerState {
         self.workspace_project_files
             .generation
             .fetch_add(1, Ordering::AcqRel);
+        self.invalidate_workspace_project_source_contents();
+    }
+
+    pub(crate) fn invalidate_workspace_project_source_contents(&self) {
+        self.workspace_project_files
+            .content_generation
+            .fetch_add(1, Ordering::AcqRel);
     }
 
     /// Only references and symbol requests pay for this inventory. A snapshot
-    /// contains paths, not text; closed-file edits are read afresh and unsaved
-    /// buffers always win. Roots and file events retire the path snapshot.
+    /// shares immutable closed-file text only after the client has confirmed
+    /// the workspace watcher registration. Unsaved buffers always win. Clients
+    /// without watcher support retain the fresh-read behavior.
+    #[cfg(test)]
     pub(crate) async fn discover_workspace_project_sources(
         &self,
     ) -> Vec<(Url, std::string::String)> {
+        self.discover_workspace_project_source_snapshots()
+            .await
+            .into_iter()
+            .map(|(uri, source)| (uri, source.as_ref().to_owned()))
+            .collect()
+    }
+
+    pub(crate) async fn discover_workspace_project_source_snapshots(&self) -> Vec<(Url, Arc<str>)> {
         let inventory = &self.workspace_project_files;
         let sources = loop {
             let roots = self.project_source_roots();
             let generation = inventory.generation.load(Ordering::Acquire);
+            let content_generation = inventory.content_generation.load(Ordering::Acquire);
+            let reuse_sources = self.corsa_disk_watcher_registered.load(Ordering::Acquire);
+            if reuse_sources
+                && let Some(sources) =
+                    inventory.cached_sources(&roots, generation, content_generation)
+            {
+                break sources;
+            }
             if let Some(uris) = inventory.cached_paths(&roots, generation) {
-                if let Some(sources) = self
-                    .read_current_project_sources(uris, &roots, generation)
+                if let Some((sources, complete)) = self
+                    .read_current_project_sources(uris, &roots, generation, content_generation)
                     .await
                 {
+                    if reuse_sources && complete {
+                        self.cache_workspace_project_sources(
+                            &roots,
+                            generation,
+                            content_generation,
+                            &sources,
+                        );
+                    }
                     break sources;
                 }
                 continue;
@@ -114,34 +182,51 @@ impl ServerState {
                 continue;
             }
             if let Some(uris) = inventory.cached_paths(&roots, generation) {
-                if let Some(sources) = self
-                    .read_current_project_sources(uris, &roots, generation)
+                if let Some((sources, complete)) = self
+                    .read_current_project_sources(uris, &roots, generation, content_generation)
                     .await
                 {
+                    if reuse_sources && complete {
+                        self.cache_workspace_project_sources(
+                            &roots,
+                            generation,
+                            content_generation,
+                            &sources,
+                        );
+                    }
                     break sources;
                 }
                 continue;
             }
             let scan_roots = roots.clone();
             let retired = inventory.retired.read().clone();
-            let Some((uris, sources, complete)) = background(move || {
-                let (uris, complete) = discover_paths(&scan_roots);
-                let sources = read_sources(&uris, &retired);
-                (uris, sources, complete)
+            let Some((uris, sources, walk_complete, reads_complete)) = background(move || {
+                let (uris, walk_complete) = discover_paths(&scan_roots);
+                let (sources, reads_complete) = read_sources(&uris, &retired);
+                (uris, sources, walk_complete, reads_complete)
             })
             .await
             else {
                 break Vec::new();
             };
-            if !self.project_source_snapshot_current(&roots, generation) {
+            if !self.project_source_content_snapshot_current(&roots, generation, content_generation)
+            {
                 continue;
             }
-            if complete {
+            if walk_complete {
                 *inventory.paths.write() = Some(CachedPaths {
                     generation,
-                    roots,
+                    roots: roots.clone(),
                     uris,
                 });
+            }
+            if reuse_sources && walk_complete && reads_complete {
+                self.cache_workspace_project_sources(
+                    &roots,
+                    generation,
+                    content_generation,
+                    &sources,
+                );
             }
             break sources;
         };
@@ -150,9 +235,9 @@ impl ServerState {
             if uri
                 .to_file_path()
                 .is_ok_and(|path| is_project_source(&path))
-                && let Some(source) = self.documents.text(uri)
+                && let Some(source) = self.documents.text_snapshot(uri)
             {
-                sources.insert(uri.clone(), source);
+                sources.insert(uri.clone(), Arc::from(source.as_str()));
             }
         }
         let mut sources = sources.into_iter().collect::<Vec<_>>();
@@ -175,12 +260,45 @@ impl ServerState {
             && self.project_source_roots() == roots
     }
 
+    fn project_source_content_snapshot_current(
+        &self,
+        roots: &[PathBuf],
+        generation: u64,
+        content_generation: u64,
+    ) -> bool {
+        self.project_source_snapshot_current(roots, generation)
+            && self
+                .workspace_project_files
+                .content_generation
+                .load(Ordering::Acquire)
+                == content_generation
+    }
+
+    fn cache_workspace_project_sources(
+        &self,
+        roots: &[PathBuf],
+        generation: u64,
+        content_generation: u64,
+        sources: &[(Url, Arc<str>)],
+    ) {
+        if !self.project_source_content_snapshot_current(roots, generation, content_generation) {
+            return;
+        }
+        *self.workspace_project_files.sources.write() = Some(CachedSources {
+            generation,
+            content_generation,
+            roots: roots.to_vec(),
+            sources: Arc::from(sources),
+        });
+    }
+
     async fn read_current_project_sources(
         &self,
         uris: Vec<Url>,
         roots: &[PathBuf],
         generation: u64,
-    ) -> Option<Vec<(Url, std::string::String)>> {
+        content_generation: u64,
+    ) -> Option<(Vec<(Url, Arc<str>)>, bool)> {
         let retired = self.workspace_project_files.retired.read().clone();
         let sources = background(move || read_sources(&uris, &retired))
             .await
@@ -193,7 +311,7 @@ impl ServerState {
                 let _ = resume.await;
             }
         }
-        self.project_source_snapshot_current(roots, generation)
+        self.project_source_content_snapshot_current(roots, generation, content_generation)
             .then_some(sources)
     }
 }
