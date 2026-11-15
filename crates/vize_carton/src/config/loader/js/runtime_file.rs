@@ -7,7 +7,8 @@ use std::{
     io::{self, ErrorKind, Write},
     path::{Path, PathBuf},
     process::Command,
-    time::UNIX_EPOCH,
+    sync::{Mutex, OnceLock},
+    time::{SystemTime, UNIX_EPOCH},
 };
 
 /// Preserve the logical argv contract previously supplied by Node eval mode.
@@ -20,10 +21,35 @@ const SOURCE_IDENTITY: &[u8] = b"\n//# sourceURL=vize:config-runtime\n";
 const CACHE_DIRECTORY: &str = "config-runtime-v1";
 const CATALOG_LEASE: &str = "catalog.lock";
 const CACHE_LIMIT: usize = 4;
+const PROCESS_CACHE_LIMIT: usize = 32;
+
+#[expect(
+    clippy::disallowed_types,
+    reason = "the process cache shares one validated lease without reopening it"
+)]
+type SharedRuntime = std::sync::Arc<CachedRuntime>;
+
+struct CachedRuntime {
+    path: PathBuf,
+    _lease: File,
+    metadata: RuntimeMetadata,
+}
+
+#[derive(Clone, Copy, Eq, PartialEq)]
+struct RuntimeMetadata {
+    len: u64,
+    modified: Option<SystemTime>,
+}
+
+struct ProcessRuntime {
+    home: PathBuf,
+    source: Vec<u8>,
+    runtime: SharedRuntime,
+}
 
 pub(super) struct NodeRuntimeFile {
     path: PathBuf,
-    _lease: Option<File>,
+    _lease: Option<SharedRuntime>,
     _temporary: Option<tempfile::TempPath>,
 }
 
@@ -31,7 +57,7 @@ impl NodeRuntimeFile {
     pub(super) fn new(script: &str) -> io::Result<Self> {
         let source = runtime_source(script);
         if let Ok(home) = cache_home()
-            && let Ok(cached) = cached_runtime(&home, &source)
+            && let Ok(cached) = process_runtime(&home, &source)
         {
             return Ok(cached);
         }
@@ -72,6 +98,80 @@ fn runtime_source(script: &str) -> Vec<u8> {
     source
 }
 
+fn process_cache() -> &'static Mutex<Vec<ProcessRuntime>> {
+    static CACHE: OnceLock<Mutex<Vec<ProcessRuntime>>> = OnceLock::new();
+    CACHE.get_or_init(|| Mutex::new(Vec::new()))
+}
+
+fn process_runtime(home: &Path, source: &[u8]) -> io::Result<NodeRuntimeFile> {
+    if let Some(cached) = process_cache_hit(home, source) {
+        return Ok(cached);
+    }
+    reserve_process_runtime(home);
+    let cached = cached_runtime(home, source)?;
+    remember_process_runtime(home, source, &cached);
+    Ok(cached)
+}
+
+fn reserve_process_runtime(home: &Path) {
+    let Ok(mut entries) = process_cache().lock() else {
+        return;
+    };
+    if entries.iter().filter(|entry| entry.home == home).count() >= CACHE_LIMIT
+        && let Some(position) = entries.iter().position(|entry| entry.home == home)
+    {
+        entries.remove(position);
+    }
+}
+
+fn process_cache_hit(home: &Path, source: &[u8]) -> Option<NodeRuntimeFile> {
+    let runtime = {
+        let mut entries = process_cache().lock().ok()?;
+        let position = entries
+            .iter()
+            .position(|entry| entry.home == home && entry.source == source)?;
+        let entry = entries.remove(position);
+        let runtime = entry.runtime.clone();
+        entries.push(entry);
+        runtime
+    };
+    if runtime_metadata(&runtime.path).as_ref() == Some(&runtime.metadata) {
+        return Some(NodeRuntimeFile {
+            path: runtime.path.clone(),
+            _lease: Some(runtime),
+            _temporary: None,
+        });
+    }
+    if let Ok(mut entries) = process_cache().lock() {
+        entries.retain(|entry| !SharedRuntime::ptr_eq(&entry.runtime, &runtime));
+    }
+    None
+}
+
+fn remember_process_runtime(home: &Path, source: &[u8], runtime: &NodeRuntimeFile) {
+    let Some(shared) = runtime._lease.as_ref() else {
+        return;
+    };
+    let Ok(mut entries) = process_cache().lock() else {
+        return;
+    };
+    entries.retain(|entry| !(entry.home == home && entry.source == source));
+    while entries.iter().filter(|entry| entry.home == home).count() >= CACHE_LIMIT {
+        let Some(position) = entries.iter().position(|entry| entry.home == home) else {
+            break;
+        };
+        entries.remove(position);
+    }
+    if entries.len() >= PROCESS_CACHE_LIMIT {
+        entries.remove(0);
+    }
+    entries.push(ProcessRuntime {
+        home: home.to_path_buf(),
+        source: source.to_vec(),
+        runtime: shared.clone(),
+    });
+}
+
 fn cache_home() -> io::Result<PathBuf> {
     let home = |name| {
         env::var_os(name)
@@ -105,7 +205,6 @@ fn cached_runtime(home: &Path, source: &[u8]) -> io::Result<NodeRuntimeFile> {
     ensure_private_directory(&vize)?;
     ensure_private_directory(&root)?;
     let catalog = open_lease(&root.join(CATALOG_LEASE))?;
-    recover_interrupted_writes(&root, &catalog);
 
     let hash = sha256_hex(source);
     let path = root.join(crate::cstr!("{hash}.mjs").as_str());
@@ -116,12 +215,8 @@ fn cached_runtime(home: &Path, source: &[u8]) -> io::Result<NodeRuntimeFile> {
     // evaluator be reused by nested loads and other processes without an
     // exclusive-lock cycle. Only a missing or damaged entry needs repair.
     if runtime_matches(&path, source) {
-        prune_cache(&root, &path, &catalog);
-        return Ok(NodeRuntimeFile {
-            path,
-            _lease: Some(lease),
-            _temporary: None,
-        });
+        maintain_cache(&root, &path, &catalog);
+        return cached_runtime_file(path, lease);
     }
     lease.unlock()?;
 
@@ -138,10 +233,25 @@ fn cached_runtime(home: &Path, source: &[u8]) -> io::Result<NodeRuntimeFile> {
             "cached config runtime disappeared before use",
         ));
     }
-    prune_cache(&root, &path, &catalog);
+    maintain_cache(&root, &path, &catalog);
+    cached_runtime_file(path, lease)
+}
+
+fn cached_runtime_file(path: PathBuf, lease: File) -> io::Result<NodeRuntimeFile> {
+    let metadata = runtime_metadata(&path).ok_or_else(|| {
+        io::Error::new(
+            ErrorKind::NotFound,
+            "cached config runtime disappeared before metadata capture",
+        )
+    })?;
+    let runtime = SharedRuntime::new(CachedRuntime {
+        path: path.clone(),
+        _lease: lease,
+        metadata,
+    });
     Ok(NodeRuntimeFile {
         path,
-        _lease: Some(lease),
+        _lease: Some(runtime),
         _temporary: None,
     })
 }
@@ -163,8 +273,14 @@ fn temporary_runtime(source: &[u8]) -> io::Result<NodeRuntimeFile> {
 }
 
 fn ensure_private_directory(path: &Path) -> io::Result<()> {
-    fs::create_dir_all(path)?;
-    let metadata = fs::symlink_metadata(path)?;
+    let metadata = match fs::symlink_metadata(path) {
+        Ok(metadata) => metadata,
+        Err(error) if error.kind() == ErrorKind::NotFound => {
+            fs::create_dir_all(path)?;
+            fs::symlink_metadata(path)?
+        }
+        Err(error) => return Err(error),
+    };
     if !metadata.is_dir() || metadata.file_type().is_symlink() {
         return Err(io::Error::new(
             ErrorKind::InvalidInput,
@@ -174,27 +290,48 @@ fn ensure_private_directory(path: &Path) -> io::Result<()> {
     #[cfg(unix)]
     {
         use std::os::unix::fs::PermissionsExt;
-        fs::set_permissions(path, fs::Permissions::from_mode(0o700))?;
+        if metadata.permissions().mode() & 0o077 != 0 {
+            fs::set_permissions(path, fs::Permissions::from_mode(0o700))?;
+        }
     }
     Ok(())
 }
 
 fn open_lease(path: &Path) -> io::Result<File> {
-    let file = match private_open_options().create_new(true).open(path) {
-        Ok(file) => file,
-        Err(error) if error.kind() == ErrorKind::AlreadyExists => {
-            let metadata = fs::symlink_metadata(path)?;
-            if !metadata.is_file() || metadata.file_type().is_symlink() {
-                return Err(io::Error::new(
-                    ErrorKind::InvalidInput,
-                    "config runtime lease is not an owned file",
-                ));
+    match fs::symlink_metadata(path) {
+        Ok(metadata) => open_existing_lease(path, &metadata),
+        Err(error) if error.kind() == ErrorKind::NotFound => {
+            match private_open_options().create_new(true).open(path) {
+                Ok(file) => {
+                    set_private_file_permissions(&file)?;
+                    Ok(file)
+                }
+                Err(error) if error.kind() == ErrorKind::AlreadyExists => {
+                    let metadata = fs::symlink_metadata(path)?;
+                    open_existing_lease(path, &metadata)
+                }
+                Err(error) => Err(error),
             }
-            private_open_options().open(path)?
         }
-        Err(error) => return Err(error),
-    };
-    set_private_file_permissions(&file)?;
+        Err(error) => Err(error),
+    }
+}
+
+fn open_existing_lease(path: &Path, metadata: &fs::Metadata) -> io::Result<File> {
+    if !metadata.is_file() || metadata.file_type().is_symlink() {
+        return Err(io::Error::new(
+            ErrorKind::InvalidInput,
+            "config runtime lease is not an owned file",
+        ));
+    }
+    let file = private_open_options().open(path)?;
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        if metadata.permissions().mode() & 0o077 != 0 {
+            set_private_file_permissions(&file)?;
+        }
+    }
     Ok(file)
 }
 
@@ -249,6 +386,17 @@ fn runtime_matches(path: &Path, source: &[u8]) -> bool {
         && fs::read(path).is_ok_and(|bytes| bytes == source)
 }
 
+fn runtime_metadata(path: &Path) -> Option<RuntimeMetadata> {
+    let metadata = fs::symlink_metadata(path).ok()?;
+    if !metadata.is_file() || metadata.file_type().is_symlink() {
+        return None;
+    }
+    Some(RuntimeMetadata {
+        len: metadata.len(),
+        modified: metadata.modified().ok(),
+    })
+}
+
 fn remove_invalid_runtime(path: &Path) -> io::Result<()> {
     match fs::symlink_metadata(path) {
         Ok(metadata) if metadata.file_type().is_symlink() || !metadata.is_file() => {
@@ -281,11 +429,14 @@ fn publish_runtime(root: &Path, path: &Path, hash: &str, source: &[u8]) -> io::R
     Ok(())
 }
 
-fn recover_interrupted_writes(root: &Path, catalog: &File) {
+fn maintain_cache(root: &Path, current: &Path, catalog: &File) {
+    // Never wait for the catalog while holding a runtime lease: a constructor
+    // may hold the catalog shared while it waits for this runtime exclusively.
     if catalog.try_lock().is_err() {
         return;
     }
     recover_interrupted_writes_locked(root);
+    prune_cache_locked(root, current);
     let _ = catalog.unlock();
 }
 
@@ -343,16 +494,6 @@ fn recover_interrupted_writes_locked(root: &Path) {
         drop(file);
         let _ = fs::remove_file(path);
     }
-}
-
-fn prune_cache(root: &Path, current: &Path, catalog: &File) {
-    // Never wait for the catalog while holding a runtime lease: a constructor
-    // may hold the catalog shared while it waits for this runtime exclusively.
-    if catalog.try_lock().is_err() {
-        return;
-    }
-    prune_cache_locked(root, current);
-    let _ = catalog.unlock();
 }
 
 fn prune_cache_locked(root: &Path, current: &Path) {

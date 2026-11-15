@@ -278,6 +278,25 @@ fn live_runtime_is_reused_and_stale_identities_are_bounded() {
 }
 
 #[test]
+fn process_cache_reuses_the_validated_runtime_and_shared_lease() {
+    let cache = tempfile::tempdir().unwrap();
+    let source = super::runtime_source(SHARED_PROCESS_SCRIPT);
+    let first = super::process_runtime(cache.path(), &source).unwrap();
+    let second = super::process_runtime(cache.path(), &source).unwrap();
+    assert_eq!(first.path(), second.path());
+    assert!(super::SharedRuntime::ptr_eq(
+        first._lease.as_ref().unwrap(),
+        second._lease.as_ref().unwrap()
+    ));
+    drop(first);
+    drop(second);
+    super::process_cache()
+        .lock()
+        .unwrap()
+        .retain(|entry| entry.home != cache.path());
+}
+
+#[test]
 fn another_process_can_reuse_a_live_runtime() {
     let cache = tempfile::tempdir().unwrap();
     let result = cache.path().join("child-runtime-path");
@@ -535,8 +554,9 @@ fn runtime_source_identity_preserves_authored_errors_across_retries() {
     let authored_source = "throw new Error('authored-specificreason 日本語');\n";
     fs::write(&config, authored_source).unwrap();
     let script = "const { pathToFileURL } = await import('node:url');\nawait import(pathToFileURL(process.argv[1]).href);\n";
-    let first = runtime(cache.path(), script);
-    let second = runtime(cache.path(), script);
+    let source = super::runtime_source(script);
+    let first = super::process_runtime(cache.path(), &source).unwrap();
+    let second = super::process_runtime(cache.path(), &source).unwrap();
     assert_eq!(first.path(), second.path());
     let output = first.command(&config).output().unwrap();
     let repeated = second.command(&config).output().unwrap();
@@ -581,6 +601,12 @@ fn runtime_source_identity_preserves_authored_errors_across_retries() {
     let changed_path = first.command(&other_config).output().unwrap();
     assert_eq!(changed_path.status.code(), Some(1));
     assert_ne!(changed_path.stderr, output.stderr);
+    drop(first);
+    drop(second);
+    super::process_cache()
+        .lock()
+        .unwrap()
+        .retain(|entry| entry.home != cache.path());
 }
 
 #[test]
@@ -609,7 +635,7 @@ fn runtime_storage_benchmark() {
             let runtime = if lane == "base" {
                 super::temporary_runtime(&source).unwrap()
             } else {
-                super::cached_runtime(&cache, &source).unwrap()
+                super::process_runtime(&cache, &source).unwrap()
             };
             let actual = fs::read(runtime.path()).unwrap();
             assert_eq!(actual, source);
