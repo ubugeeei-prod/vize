@@ -28,8 +28,8 @@ interface ReviewedCase {
 }
 
 interface ScorecardParityOptions {
-  compare(input: Fixture, args?: string[], oracles?: Oracle[]): Result;
-  updatedReporter(): string;
+  compare: (input: Fixture, args?: string[], oracles?: Oracle[]) => Result;
+  updatedReporter: () => string;
 }
 
 const nodeCommand = path.join(root, `${command}.ts`);
