@@ -255,7 +255,7 @@ function rawRun(report: LintProjectReport, project: RegistryProject): RawLinterR
     version: 1,
     project: report.project,
     tool: "linter",
-    exitCode: hasErrors ? 1 : 0,
+    exitCode: parsed.length === 0 ? 2 : hasErrors ? 1 : 0,
     stdout: JSON.stringify(parsed),
     stderr: report.files.comparedCount === 0 ? noFilesLinterStderr(project.vueGlobs) : "",
     parsed,
@@ -332,7 +332,7 @@ function matrix(
     registryPath: "tests/_fixtures/vue-ecosystem-fixtures.json",
     evidence: {
       commitSha: sourceRevision,
-      runtime: { name: "rust-script", version: "rustc 1.90.0" },
+      runtime: { name: "node", version: "24.0.0" },
       machine: {
         platform: "linux",
         arch: "x64",
