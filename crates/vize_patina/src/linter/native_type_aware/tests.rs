@@ -1,6 +1,7 @@
 pub(in crate::linter::native_type_aware) mod assertion;
 mod empty_tuple_runtime;
 mod macro_positions;
+mod no_base_to_string_record_index;
 mod opt_in;
 mod options_api;
 mod runtime;
@@ -29,7 +30,6 @@ fn require_typed_props_uses_corsa() {
     if !corsa_available() {
         return;
     }
-
     let linter = Linter::with_preset(LintPreset::Opinionated);
     let source = r#"<script setup lang="ts">
 defineProps(['msg', 'count'])

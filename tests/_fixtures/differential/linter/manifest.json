@@ -4276,6 +4276,37 @@
       }
     },
     {
+      "id": "linter/no-base-to-string-record-index-13004",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "no-base-to-string-record-index-13004",
+        "files": [
+          {
+            "path": "Keyed.vue.txt",
+            "role": "issue-authored-reproduction-and-negative-control",
+            "sha256": "7f30b6216d93767a35e135ab15fc9f97123e1dde2e6b2a9ff89535a3e15abe46"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/no-unused-emit-wrappers-12597",
       "state": "active",
       "targets": [
