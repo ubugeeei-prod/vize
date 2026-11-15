@@ -1,12 +1,12 @@
 //! #13000: no-implied-eval accepts every whole type with a call signature.
-use super::{corsa_available, failure_context, lint_sfc_with_corsa};
+use super::super::{corsa_available, failure_context, lint_sfc_with_corsa};
 use crate::{LintPreset, Linter, Severity};
 use serde_json::json;
 use std::path::Path;
 
 const RULE: &str = "type/no-implied-eval";
 const SOURCE: &str = include_str!(
-    "../../../../../../tests/_fixtures/differential/linter/no-implied-eval-callable-13000/src/Timers.vue.txt"
+    "../../../../../../../tests/_fixtures/differential/linter/no-implied-eval-callable-13000/src/Timers.vue.txt"
 );
 
 #[test]
@@ -26,7 +26,7 @@ fn callable_composites_match_typescript_eslint() {
     std::fs::write(
         project.path().join("tsconfig.json"),
         include_str!(
-            "../../../../../../tests/_fixtures/differential/linter/no-implied-eval-callable-13000/tsconfig.json"
+            "../../../../../../../tests/_fixtures/differential/linter/no-implied-eval-callable-13000/tsconfig.json"
         ),
     )
     .expect("tsconfig");
