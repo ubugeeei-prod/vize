@@ -1,16 +1,25 @@
 import assert from "node:assert/strict";
-import { spawnSync, type SpawnSyncReturns } from "node:child_process";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import { createRequire } from "node:module";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  createFixtureCommands,
+  installFixture,
+  installSourceCliLauncher,
+  installSourceArchive as installSourcePackage,
+  runNodeModulesCacheProbes,
+  type FixtureInstaller,
+  type TaskRunOptions,
+  type TaskRunReceipt,
+} from "./task-cache-fixture.ts";
 
 const builder = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const root = path.resolve(builder, "../../..");
 const provider = process.env.VIZE_TASK_CACHE_PROVIDER ?? "1.4.0";
-const installer = process.env.VIZE_TASK_CACHE_INSTALLER ?? "npm";
+const installer = (process.env.VIZE_TASK_CACHE_INSTALLER ?? "npm") as FixtureInstaller;
 assert.match(installer, /^(?:bun|npm)$/u, "supported fixture installer");
 const published = process.argv[2];
 const preflight = process.env.VIZE_TASK_CACHE_PREFLIGHT === "1";
@@ -34,26 +43,6 @@ const evidence = path.join(
   "target/differential/viteplus-task-cache",
   `${provider}${published ? `-published-${published}` : sourceCli ? (preflight ? "-source-cli-preflight" : "-source-cli") : ""}.json`,
 );
-interface TaskRunOptions {
-  hit?: boolean;
-  status?: number;
-  diagnostic?: RegExp;
-  args?: string[];
-  unchanged?: boolean;
-}
-interface TaskRunReceipt {
-  label: string;
-  task: string;
-  args: string[];
-  status: number | null;
-  stdout: string;
-  stderr: string;
-  details: string;
-  cacheHit: boolean;
-  before: Record<string, string>;
-  after: Record<string, string>;
-  milliseconds: number;
-}
 const rows: TaskRunReceipt[] = [];
 let packageLock: unknown;
 let sourceArchive: { filename: string; sha256: string } | undefined;
@@ -63,27 +52,11 @@ let privateStorage: { root: string; files: { path: string; bytes: number }[] } |
 let privateStorageInspection: { root: string; entries: string[] } | undefined;
 const env: NodeJS.ProcessEnv = { ...process.env, NO_COLOR: "1", FORCE_COLOR: "0" };
 if (privateCache) env.XDG_CACHE_HOME = privateCache;
+const { command, requireSuccess } = createFixtureCommands(directory, env);
 const write = (file: string, contents: string): void => {
   fs.mkdirSync(path.dirname(path.join(directory, file)), { recursive: true });
   fs.writeFileSync(path.join(directory, file), contents);
 };
-function command(binary: string, args: string[], cwd = directory): SpawnSyncReturns<string> {
-  const result = spawnSync(binary, args, {
-    cwd,
-    env,
-    encoding: "utf8",
-    timeout: 180_000,
-    maxBuffer: 16 * 1024 * 1024,
-  });
-  assert.equal(result.error, undefined, result.error?.message);
-  assert.equal(result.signal, null);
-  return result;
-}
-function requireSuccess(binary: string, args: string[], cwd?: string): SpawnSyncReturns<string> {
-  const result = command(binary, args, cwd);
-  assert.equal(result.status, 0, `${args.join(" ")}\n${result.stdout}\n${result.stderr}`);
-  return result;
-}
 function snapshot(): Record<string, string> {
   return Object.fromEntries(
     ["src/App.vue", "src/value.ts", "lint-policy.ts", "vite.config.ts"].map((file) => [
@@ -117,31 +90,9 @@ try {
       2,
     ),
   );
-  const install = (fresh = false): void => {
-    if (installer === "bun") {
-      requireSuccess("bun", ["install", "--no-progress", ...(fresh ? ["--frozen-lockfile"] : [])]);
-    } else {
-      requireSuccess("npm", [
-        fresh ? "ci" : "install",
-        "--legacy-peer-deps",
-        "--no-audit",
-        "--no-fund",
-      ]);
-    }
-  };
-  const installSourceArchive = (archive: string): void => {
-    // npm's no-save overlay avoids changing either package manager's manifest
-    // or lockfile while replacing only the package built from this checkout.
-    requireSuccess("npm", [
-      "install",
-      "--no-save",
-      "--package-lock=false",
-      "--legacy-peer-deps",
-      "--no-audit",
-      "--no-fund",
-      archive,
-    ]);
-  };
+  const install = (fresh = false): void => installFixture(requireSuccess, installer, fresh);
+  const installSourceArchive = (archive: string): void =>
+    installSourcePackage(requireSuccess, archive);
   install();
   const require = createRequire(path.join(directory, "package.json"));
   if (!published) {
@@ -197,31 +148,12 @@ try {
     sha256: createHash("sha256").update(lockfileContents).digest("hex"),
   };
   if (sourceCli) {
-    assert.equal(process.platform, "linux");
-    const expected = process.env.VIZE_TASK_CACHE_SOURCE_BINARY_SHA256;
-    assert.ok(expected && /^[a-f0-9]{64}$/u.test(expected));
-    const hash = createHash("sha256");
-    for await (const chunk of fs.createReadStream(sourceCli)) hash.update(chunk);
-    assert.equal(hash.digest("hex"), expected, "the exact verified source CLI executes");
-    const receipt = process.env.VIZE_TASK_CACHE_SOURCE_RECEIPT;
-    assert.ok(receipt);
-    const launcher = path.resolve(path.dirname(require.resolve("vize")), "../bin/vize");
-    const originalLauncher = fs.readFileSync(launcher, "utf8");
-    // Only this disposable install's launcher delegates to the real, verified
-    // Rust CLI. Its original arguments, environment and all streams pass through.
-    fs.writeFileSync(
-      launcher,
-      `#!/usr/bin/env node\nimport { spawn } from "node:child_process";\nconsole.error("VIZE_TASK_CACHE_SOURCE_ENV " + JSON.stringify({ cwd: process.cwd(), xdgCacheHome: process.env.XDG_CACHE_HOME, tmpdir: process.env.TMPDIR, argv: process.argv.slice(2) }));\nconst child = spawn(${JSON.stringify(sourceCli)}, process.argv.slice(2), { stdio: "inherit" });\nconst stop = (signal) => { if (!child.killed) child.kill(signal); };\nprocess.on("SIGTERM", () => stop("SIGTERM"));\nprocess.on("SIGINT", () => stop("SIGINT"));\nchild.on("error", (error) => { throw error; });\nchild.on("exit", (code, signal) => {\n  if (signal) process.kill(process.pid, signal);\n  else process.exitCode = code ?? 1;\n});\n`,
+    sourceCliReceipt = await installSourceCliLauncher(
+      sourceCli,
+      process.env.VIZE_TASK_CACHE_SOURCE_BINARY_SHA256,
+      process.env.VIZE_TASK_CACHE_SOURCE_RECEIPT,
+      require,
     );
-    sourceCliReceipt = {
-      verified: JSON.parse(fs.readFileSync(receipt, "utf8")) as unknown,
-      launcher: {
-        path: launcher,
-        original: originalLauncher,
-        originalSha256: createHash("sha256").update(originalLauncher).digest("hex"),
-        delegatedSha256: createHash("sha256").update(fs.readFileSync(launcher)).digest("hex"),
-      },
-    };
   }
   const vp = require.resolve("vite-plus/package.json").replace(/package\.json$/u, "bin/vp");
   const cleanVue =
@@ -419,49 +351,18 @@ try {
     };
   }
   if (!preflight) {
-    const probe = (label: string, mutate: () => void): void => {
-      mutate();
-      for (const task of cachedTasks) {
-        run(`${label}-${task}`, task);
-        const row = rows.at(-1)!;
-        if (!row.cacheHit) unexpectedMisses.push(row.label);
-      }
-    };
-    const dependencyProbe = path.join(nodeModules, "task-cache-install-probe");
-    probe("node-modules-entry-added", () => {
-      fs.mkdirSync(dependencyProbe);
-      fs.writeFileSync(path.join(dependencyProbe, "package.json"), "{}\n");
-    });
-    probe("node-modules-entry-removed", () => {
-      fs.rmSync(dependencyProbe, { recursive: true });
-    });
-    probe("tool-cache-added", () => {
-      fs.mkdirSync(toolCache);
-      fs.writeFileSync(path.join(toolCache, "result.json"), "{}\n");
-    });
-    probe("tool-cache-removed", () => {
-      fs.rmSync(toolCache, { recursive: true });
-    });
-    probe("vite-task-cache-churn", () => {
-      write("node_modules/.vite/task-cache/v18/external-probe.json", "{}\n");
-    });
-
-    const taskCache = path.join(nodeModules, ".vite/task-cache");
-    const preservedTaskCache = path.join(artifactsDirectory, "task-cache");
-    assert.ok(fs.existsSync(taskCache), "Vite Task cache exists before fresh install");
-    fs.cpSync(taskCache, preservedTaskCache, { recursive: true });
-    fs.rmSync(nodeModules, { recursive: true });
-    install(true);
-    if (sourceArchivePath) installSourceArchive(sourceArchivePath);
-    fs.mkdirSync(path.dirname(taskCache), { recursive: true });
-    fs.cpSync(preservedTaskCache, taskCache, { recursive: true });
-    probe("fresh-install-with-restored-task-cache", () => {});
-
-    assert.deepEqual(
+    runNodeModulesCacheProbes({
+      directory,
+      artifactsDirectory,
+      nodeModules,
+      cachedTasks,
       unexpectedMisses,
-      [],
-      `node_modules-only changes must retain read-only task cache entries: ${unexpectedMisses.join(", ")}`,
-    );
+      rows,
+      run,
+      install,
+      installSourceArchive,
+      sourceArchivePath,
+    });
 
     fs.appendFileSync(path.join(directory, lockfile), "\n");
     run("lockfile-change", "verify:lint", { hit: false });
