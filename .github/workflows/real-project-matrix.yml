@@ -264,8 +264,10 @@ jobs:
         continue-on-error: true
         env:
           LINT_DIVERGENCE_MODE: ${{ inputs.lint_divergence_mode || 'enforce' }}
+          NODE_OPTIONS: --max-old-space-size=6144
         run: |
-          node tools/commands/fixtures/lint-divergence-report.ts \
+          /usr/bin/time --verbose --output "$FIXTURE_REPORT_DIR/lint-divergence-resource.txt" \
+            node tools/commands/fixtures/lint-divergence-report.ts \
             --shard-index "$FIXTURE_SHARD_INDEX" --shard-count "$FIXTURE_SHARD_COUNT" \
             --all-mapped-rules --measure-coverage-gap --budget-mode "$LINT_DIVERGENCE_MODE" \
             --vize-bin target/ci/vize --timeout-ms 600000 \
