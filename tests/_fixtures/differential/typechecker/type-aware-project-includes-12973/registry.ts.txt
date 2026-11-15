@@ -1,5 +1,0 @@
-export interface Registry {
-  base: true;
-}
-
-export declare const labels: Readonly<Record<keyof Registry, string>>;
