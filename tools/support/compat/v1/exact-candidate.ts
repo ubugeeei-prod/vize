@@ -427,6 +427,14 @@ function assertHostAdmission(
     admission.rows.every((row) => row.candidateSource === candidateSource),
     `${admission.host.id}: foreign candidate source`,
   );
+  assert.ok(
+    admission.rows.every(
+      (row) =>
+        row.candidateRuns.length === 0 ||
+        (row.candidateRuns.length === 1 && row.candidateRuns[0] === runIdentity.run),
+    ),
+    `${admission.host.id}: foreign candidate run`,
+  );
 }
 
 export function admitV1ExactCandidate(

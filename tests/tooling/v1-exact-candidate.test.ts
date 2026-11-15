@@ -256,6 +256,20 @@ void test("external admissions cannot change the candidate source", () => {
   );
 });
 
+void test("external admission envelopes cannot replace row run identity", () => {
+  const hostAdmissions = admissions(completeBundle());
+  const foreignRun = runIdentity.run + 1;
+  for (const admission of hostAdmissions) admission.candidateRun = foreignRun;
+  assert.throws(
+    () =>
+      admitV1ExactCandidate(matrix, candidate, hostAdmissions, {
+        run: foreignRun,
+        runAttempt: runIdentity.runAttempt,
+      }),
+    /foreign candidate run/u,
+  );
+});
+
 void test("the receipt digest binds canonical receipt payloads", () => {
   const firstBundle = completeBundle();
   const secondBundle = completeBundle();
