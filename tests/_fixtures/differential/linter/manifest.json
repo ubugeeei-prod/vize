@@ -7627,6 +7627,7 @@
             "dialects": [
               "vue3-sfc",
               "html-template",
+              "js",
               "ts"
             ],
             "selector": "linter manifest pinned authored sources"
