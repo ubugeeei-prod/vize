@@ -29,10 +29,12 @@ export class FakeAuthoredLspSession {
   private readonly nullMethod: string | null;
   private readonly emitDeletedDependencyDiagnostics: boolean;
   private readonly emitStaleDeletedDependencyDiagnostics: boolean;
+  private readonly emitStaleRepairDiagnostics: boolean;
   private readonly throwOnClose: boolean;
   private readonly workspace: string;
   private fileDeleted = false;
   private staleDeletedDependencyDiagnosticsPending = false;
+  private staleRepairDiagnosticsPending = false;
 
   constructor(
     workspace: string,
@@ -41,6 +43,7 @@ export class FakeAuthoredLspSession {
     lifecycle: FakeAuthoredLspLifecycle = DEFAULT_LIFECYCLE,
     emitDeletedDependencyDiagnostics = true,
     emitStaleDeletedDependencyDiagnostics = false,
+    emitStaleRepairDiagnostics = false,
   ) {
     this.workspace = workspace;
     this.nullMethod = nullMethod;
@@ -48,6 +51,7 @@ export class FakeAuthoredLspSession {
     this.lifecycle = lifecycle;
     this.emitDeletedDependencyDiagnostics = emitDeletedDependencyDiagnostics;
     this.emitStaleDeletedDependencyDiagnostics = emitStaleDeletedDependencyDiagnostics;
+    this.emitStaleRepairDiagnostics = emitStaleRepairDiagnostics;
   }
 
   seedDocument(relativeFile: string, text: string, version = 1): void {
@@ -94,6 +98,13 @@ export class FakeAuthoredLspSession {
         text: payload.contentChanges?.[0]?.text ?? "",
         version: document.version ?? 0,
       });
+      if (
+        this.fileDeleted &&
+        this.emitStaleRepairDiagnostics &&
+        !(payload.contentChanges?.[0]?.text ?? "").includes(this.lifecycle.renamedImportSpecifier)
+      ) {
+        this.staleRepairDiagnosticsPending = true;
+      }
       this.events.push(`${method}:${document.version}:${file}`);
     } else if (method === "textDocument/didClose") {
       if (this.throwOnClose) throw new Error("cleanup transport failed");
@@ -174,6 +185,35 @@ export class FakeAuthoredLspSession {
         }
         this.events.push(
           `${method}:${stale.document.version}:${fileName(stale.uri)}:stale-delete-skipped`,
+        );
+      }
+    }
+    if (this.staleRepairDiagnosticsPending) {
+      this.staleRepairDiagnosticsPending = false;
+      const repaired = notifications.find(
+        ({ uri }) => fileName(uri) === this.lifecycle.importerFile,
+      );
+      if (repaired != null) {
+        const stalePayload = {
+          ...repaired.payload,
+          diagnostics: [
+            {
+              code: 2304,
+              message: "Cannot find name 'staleRepair'.",
+              range: range(0, 0, 1),
+              severity: 1,
+              source: "vize/types",
+            },
+          ],
+        };
+        if (predicate(stalePayload)) {
+          this.events.push(
+            `${method}:${repaired.document.version}:${fileName(repaired.uri)}:stale-repair`,
+          );
+          return stalePayload;
+        }
+        this.events.push(
+          `${method}:${repaired.document.version}:${fileName(repaired.uri)}:stale-repair-skipped`,
         );
       }
     }

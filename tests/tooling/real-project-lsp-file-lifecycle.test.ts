@@ -45,6 +45,7 @@ const childValue = 1
     },
     true,
     true,
+    true,
   );
   session.seedDocument(oracle.componentBoundary.importerFile, importerSource);
   const tagOffset = importerSource.indexOf("Child />");
@@ -96,6 +97,10 @@ const childValue = 1
     assert.ok(
       session.events.some((event) => event.endsWith(":stale-delete-skipped")),
       "delete diagnostics wait must skip stale same-version payloads",
+    );
+    assert.ok(
+      session.events.some((event) => event.endsWith(":stale-repair-skipped")),
+      "repair diagnostics wait must skip incomplete same-version payloads",
     );
     assert.equal(fs.existsSync(path.join(workspace, "$OracleChild.vue")), false);
     assert.equal(fs.existsSync(path.join(workspace, "$OracleRenamedChild.vue")), false);
