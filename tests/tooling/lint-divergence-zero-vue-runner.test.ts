@@ -4,10 +4,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 
-import {
-  resolveBaselineRuntime,
-  runBaseline,
-} from "../../tools/support/compat/fixtures/lint-divergence-baseline.mjs";
+import { runBaseline } from "../../tools/support/compat/fixtures/lint-divergence-baseline.mjs";
+import { resolveScorecardRuntime } from "../../tools/support/compat/fixtures/lint-divergence-scorecard.ts";
 
 import { runLintDivergenceReport } from "../../tools/support/compat/fixtures/lint-divergence-report.mjs";
 import { baselineScript } from "../../tools/support/fixtures/lint_divergence/runtime.ts";
@@ -260,7 +258,7 @@ test("both actual ESLint entry points validate mapped rules without linting an e
       baselineScript,
       "the actual TypeScript runner's retained ESLint entry point must exist",
     );
-    const runtime = resolveBaselineRuntime();
+    const runtime = resolveScorecardRuntime();
     for (const rules of [
       { "vue/no-such-mapped-rule": "warn" },
       { "vue/no-v-html": ["warn", { invalidOption: true }] },

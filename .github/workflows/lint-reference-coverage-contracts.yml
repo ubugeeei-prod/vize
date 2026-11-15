@@ -37,6 +37,7 @@ on:
       - ".config/nextest.toml"
       - "crates/vize_patina/src/preset/snapshots/vize_patina__preset__tests__lint_preset_rule_membership.snap"
       - "tests/tooling/support/lint-report-parity*"
+      - "tests/tooling/support/lint-report-scorecard-parity.ts"
       - "tests/tooling/_helpers/lint-report-*"
       - "tests/tooling/real-project-matrix-workflow.test.ts"
       - "tools/benchmarks/scripts/package.json"

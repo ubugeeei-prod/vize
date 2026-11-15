@@ -6,10 +6,10 @@ import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { test } from "node:test";
 import {
-  resolveBaselineRuntime,
   runBaseline,
   selectComparableRules,
 } from "../../tools/support/compat/fixtures/lint-divergence-baseline.mjs";
+import { resolveScorecardRuntime } from "../../tools/support/compat/fixtures/lint-divergence-scorecard.ts";
 import { collectBaselineFindings } from "../../tools/support/compat/fixtures/lint-divergence-records.ts";
 import { evaluateBudget } from "../../tools/support/compat/fixtures/lint-divergence-budget.ts";
 import { baselineScript as candidate } from "../../tools/support/fixtures/lint_divergence/runtime.ts";
@@ -23,7 +23,7 @@ assert.ok(candidate);
 assert.equal(digest(frozen), originals.beforeScriptSha256);
 assert.equal(originals.inputs.length, 8);
 assert.equal(new Set(originals.inputs.map((input) => input.project)).size, 6);
-const runtime = resolveBaselineRuntime();
+const runtime = resolveScorecardRuntime();
 const rules = selectComparableRules(
   JSON.parse(fs.readFileSync(path.join(root, "tests/_fixtures/patina-eslint-vue-rule-map.json"))),
   "ecosystem",
