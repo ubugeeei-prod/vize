@@ -451,7 +451,9 @@ fn reserve_cache_capacity(root: &Path, current: &Path, catalog: &File) {
     if catalog.try_lock().is_err() {
         return;
     }
-    recover_interrupted_writes_locked(root);
+    // The target lease is already open but its runtime is not published yet.
+    // Recovery would mistake that stable lease for an orphan and unlink it,
+    // splitting later constructors onto a different file identity.
     prune_cache_locked(root, current, CACHE_LIMIT.saturating_sub(1));
     let _ = catalog.unlock();
 }
