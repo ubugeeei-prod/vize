@@ -5,6 +5,8 @@ import test from "node:test";
 import {
   type BurstSample,
   type SerialSample,
+  PAIR_ORDER_SEED,
+  balancedOrders,
   frame,
   markdown,
   median,
@@ -29,6 +31,7 @@ const cell = (
     label: "linux-ext4",
     sfcs: 1000,
     serialFiles: 4,
+    replicates: 1,
     builds: ["base", "head"],
     bursts: new Map([
       ["base", [burst(200), burst(220), burst(210)]],
@@ -55,6 +58,21 @@ test("medians and quantiles ignore input order", () => {
   assert.ok(Number.isNaN(median([])));
 });
 
+test("each seeded replicate measures both orders exactly once", () => {
+  const builds = ["base", "head"];
+  const observed = Array.from({ length: 5 }, (_, replicate) => {
+    const [first, inverse] = balancedOrders(builds, replicate);
+    assert.deepEqual(inverse, [...first].reverse());
+    for (const build of builds) {
+      assert.equal([first[0], inverse[0]].filter((candidate) => candidate === build).length, 1);
+      assert.equal([first[1], inverse[1]].filter((candidate) => candidate === build).length, 1);
+    }
+    return first.join("");
+  });
+  assert.deepEqual(observed, ["basehead", "headbase", "headbase", "basehead", "basehead"]);
+  assert.equal(PAIR_ORDER_SEED, 0x13018);
+});
+
 test("identical answers publish medians and signed head deltas", () => {
   const result = cell({
     bursts: [burst(100), burst(110), burst(105)],
@@ -63,9 +81,13 @@ test("identical answers publish medians and signed head deltas", () => {
   assert.equal(result.failure, undefined);
   assert.equal(result.outputsIdentical, true);
   assert.equal(result.builds[1]?.burstWallMs, 105);
+  assert.equal(result.builds[1]?.serialRawSamples, 8);
+  assert.equal(result.builds[1]?.serialSessions, 2);
   const report = markdown("linux-ext4", [result]);
   assert.match(report, /\| head \| 105 \(-50\.0%\) \(100–110\)/);
   assert.match(report, /\| base \| 210 \(200–220\)/);
+  assert.match(report, /1 balanced replicates \(AB\+BA, seed 0x13018\)/);
+  assert.match(report, /2 serial sessions\/build × 4 transforms = 8 raw latency samples\/build/);
 });
 
 test("a build that answers differently publishes no timing unless allowed", () => {
@@ -102,6 +124,7 @@ test("the workflow measures every filesystem from one build per platform", () =>
     /WSLENV: SIZES\/u:RUNS\/u:ALLOW\/u:REFERENCE\/u:WSL_MOUNT_ROOT\/u:GITHUB_STEP_SUMMARY\/u/,
   );
   assert.match(workflow, /cargo build --profile ci-opt -p vize --bin vize/);
+  assert.match(workflow, /description: Balanced AB\+BA replicates per build/);
 });
 
 test("the syscall census reads strace lines and collapses generated spellings", async () => {
