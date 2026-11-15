@@ -436,12 +436,12 @@ void test("the reusable Action publishes the same plan or admission artifact", (
     );
     writeFileSync(
       path.join(binaryDirectory, "node"),
-      '#!/usr/bin/env bash\nset -euo pipefail\nprintf "%s\\n" "$@" > "$NODE_ARGUMENTS_LOG"\nfound=false\nfor argument in "$@"; do\n  if [ "$argument" = --candidate ]; then found=true; fi\ndone\n$found\n',
+      '#!/usr/bin/env bash\nset -euo pipefail\nprintf "%s\\n" "$@" > "$NODE_ARGUMENTS_LOG"\narguments=("$@")\nrequired=(--source --candidate --mode)\ncase "$2" in\n  plan) required+=(--run --attempt --shards --output) ;;\n  validate-bundles) required+=(--bundles) ;;\n  admit) required+=(--bundles --output) ;;\n  *) exit 2 ;;\nesac\nfor required_argument in "${required[@]}"; do\n  found=false\n  for ((index = 0; index < ${#arguments[@]}; index++)); do\n    if [ "${arguments[$index]}" = "$required_argument" ]; then\n      value_index=$((index + 1))\n      test -n "${arguments[$value_index]:-}"\n      found=true\n    fi\n  done\n  $found\ndone\n',
     );
     chmodSync(path.join(binaryDirectory, "git"), 0o755);
     chmodSync(path.join(binaryDirectory, "node"), 0o755);
 
-    const runDriver = (script: string, operation: string) =>
+    const runDriver = (script: string, operation: string, overrides: Record<string, string> = {}) =>
       spawnSync("bash", ["-euo", "pipefail", "-c", script], {
         cwd: temporary,
         encoding: "utf8",
@@ -459,14 +459,16 @@ void test("the reusable Action publishes the same plan or admission artifact", (
           ENFORCE_COMPLETE: "false",
           GITHUB_OUTPUT: output,
           NODE_ARGUMENTS_LOG: argumentsLog,
+          ...overrides,
         },
       });
 
-    for (const [operation, command] of [
-      ["plan", "plan"],
-      ["validate", "validate-bundles"],
-      ["admit", "admit"],
+    for (const [operation, command, outputPath] of [
+      ["plan", "plan", ".qualification/v1-five-case/plan.json"],
+      ["validate", "validate-bundles", bundlesDirectory],
+      ["admit", "admit", ".qualification/v1-five-case/admission.json"],
     ] as const) {
+      writeFileSync(output, "");
       const result = runDriver(driver.run!, operation);
       assert.equal(result.status, 0, `${operation}: ${result.stderr}`);
       const arguments_ = readFileSync(argumentsLog, "utf8").split("\n");
@@ -478,18 +480,25 @@ void test("the reusable Action publishes the same plan or admission artifact", (
       assert.ok(arguments_.includes(candidateSha), operation);
       assert.ok(arguments_.includes("--mode"), operation);
       assert.ok(arguments_.includes("pr"), operation);
+      if (operation === "plan") {
+        assert.ok(arguments_.includes("--run"), operation);
+        assert.ok(arguments_.includes("44000000000"), operation);
+        assert.ok(arguments_.includes("--attempt"), operation);
+        assert.ok(arguments_.includes("1"), operation);
+        assert.ok(arguments_.includes("--shards"), operation);
+        assert.ok(arguments_.includes("8"), operation);
+      } else {
+        assert.ok(arguments_.includes("--bundles"), operation);
+        assert.ok(arguments_.includes(bundlesDirectory), operation);
+      }
+      assert.equal(readFileSync(output, "utf8").trim(), `output_path=${outputPath}`);
     }
 
     const invalidOperation = runDriver(driver.run!, "not-an-operation");
     assert.notEqual(invalidOperation.status, 0);
     assert.match(invalidOperation.stderr, /operation must be plan, validate, or admit/u);
 
-    const missingCandidateScript = driver.run!.replace(
-      /\s+--candidate "\$CANDIDATE_SHA" \\\n/u,
-      "\n",
-    );
-    assert.notEqual(missingCandidateScript, driver.run);
-    const missingCandidate = runDriver(missingCandidateScript, "plan");
+    const missingCandidate = runDriver(driver.run!, "plan", { CANDIDATE_SHA: "" });
     assert.notEqual(missingCandidate.status, 0);
   } finally {
     rmSync(temporary, { recursive: true, force: true });
