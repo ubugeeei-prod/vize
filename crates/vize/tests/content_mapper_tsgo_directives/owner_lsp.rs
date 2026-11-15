@@ -83,8 +83,10 @@ fn run_session(
     std::fs::write(&path, &calibration).unwrap();
     std::fs::write(retained.join("OwnerComp.vue"), owners::COMPONENT).unwrap();
     let stop = AtomicBool::new(false);
+    let shutting_down = AtomicBool::new(false);
     let editor = rpc::EditorResponder::default();
     let transcript = Mutex::new(Vec::<Value>::new());
+    let responder_failures = Mutex::new(Vec::<String>::new());
     std::thread::scope(|scope| {
         let _stop = rpc::StopOnDrop(&stop);
         corsa::runtime::block_on(async {
@@ -98,8 +100,10 @@ fn run_session(
             let responding = client.clone();
             let events = responding.subscribe();
             let stop_ref = &stop;
+            let shutting_down_ref = &shutting_down;
             let editor_ref = &editor;
             let log = &transcript;
+            let response_failures = &responder_failures;
             let log_path = retained.join("server-transcript.json");
             let responder = scope.spawn(move || {
                 while !stop_ref.load(Ordering::Relaxed) {
@@ -116,6 +120,12 @@ fn run_session(
                                     "error":format!("{error:?}")
                                 }));
                                 write_json(log_path.clone(), &*log.lock().unwrap());
+                                if !shutting_down_ref.load(Ordering::Acquire) {
+                                    response_failures.lock().unwrap().push(format!(
+                                        "{} responder failed before shutdown: {error:?}",
+                                        log_path.display()
+                                    ));
+                                }
                                 break;
                             }
                         }
@@ -256,6 +266,7 @@ fn run_session(
                     ));
                 }
             }
+            shutting_down.store(true, Ordering::Release);
             let closed = client.graceful_close().await;
             write_json(
                 retained.join("shutdown.json"),
@@ -263,6 +274,7 @@ fn run_session(
             );
             stop.store(true, Ordering::Relaxed);
             responder.join().unwrap();
+            failures.extend(responder_failures.lock().unwrap().drain(..));
             closed.unwrap();
         });
     });
