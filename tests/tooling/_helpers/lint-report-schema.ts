@@ -273,7 +273,10 @@ const reviewedScorecardTransitions: Readonly<
     nativePacketSha256: "208dbdcd5ae68be6b45d5eda85c39ff0e77b9e528dd50274659f50237094c3a0",
   },
 };
-function normalizeReviewedCoverageIdentity(expected: ProjectReport, actual: ProjectReport): boolean {
+function normalizeReviewedCoverageIdentity(
+  expected: ProjectReport,
+  actual: ProjectReport,
+): boolean {
   const expectedExpectations = expected.divergence.referenceCoverageExpectations,
     actualExpectations = actual.divergence.referenceCoverageExpectations;
   if (expectedExpectations.length === 0 || actualExpectations.length !== 0) return false;
@@ -420,7 +423,8 @@ function assertScorecardIdentityTransition(expected: Result, actual: Result) {
     const expectedIndex = expected.files["lint-divergence-summary.json"],
       actualIndex = actual.files["lint-divergence-summary.json"];
     assert.ok(
-      typeof expectedIndex === "object" && expectedIndex.schema === "vize.fixtureLintDivergenceIndex",
+      typeof expectedIndex === "object" &&
+        expectedIndex.schema === "vize.fixtureLintDivergenceIndex",
     );
     assert.ok(
       typeof actualIndex === "object" && actualIndex.schema === "vize.fixtureLintDivergenceIndex",
