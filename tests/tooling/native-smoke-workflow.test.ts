@@ -143,6 +143,7 @@ void test("the complete workflow retains the original setup and token-law proven
     "cargo build --profile ci -p vize",
     "--max 2.36",
     "--runtime-checks",
+    "--bun-runtime-checks",
     "node --test tests/tooling/native-build-token.test.ts",
   ])
     assert.throws(() => authenticateWorkflow(source.replace(removed, "removed-command")), {

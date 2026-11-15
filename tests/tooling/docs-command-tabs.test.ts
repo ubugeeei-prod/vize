@@ -56,7 +56,7 @@ void test("installed binaries, one-off tools, and project scripts stay distinct"
   );
   assert.equal(
     choices(source)![4].command,
-    "bun x --no-install vize check\nbun x vize init --dry-run\nbun run typecheck\n",
+    "bun run --bun vize check\nbun x --bun vize init --dry-run\nbun run typecheck\n",
   );
 });
 

@@ -243,7 +243,12 @@ test("release install smoke can run runtime checks for Vize packages", () => {
   );
 
   assert.match(script, /--runtime-checks/);
+  assert.match(script, /--bun-runtime-checks/);
   assert.match(script, /--content-mapper-checks/);
+  assert.match(script, /--bun-runtime-checks requires --runtime-checks/);
+  assert.match(runtimeScript, /delete peers\["typescript-native"\]/);
+  assert.match(script, /Bun runtime behavior differs from Node/);
+  assert.match(script, /Bun and Node diagnostics\/generated output are identical/);
   // vize declares its Corsa runtime itself, so the fresh-install smoke must not
   // manually add the retired native-preview package as a project runtime peer.
   assert.doesNotMatch(smokeSources, /"@typescript\/native-preview":/);

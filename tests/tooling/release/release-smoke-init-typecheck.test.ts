@@ -57,6 +57,7 @@ function invertTypescriptDriverSuccessor(current: string, original: string): str
   );
   replaceOnce(
     `  assert.deepEqual(Object.keys(context.peers).sort(), [
+    "oxlint",
     "typescript",
     "typescript-native",
     "vite",
