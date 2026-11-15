@@ -5,6 +5,11 @@ import { join } from "node:path";
 import { type TestContext, test } from "node:test";
 
 import { parseGnuTime, runOrder } from "../../tools/benchmarks/scripts/typecheck-scaling.ts";
+import {
+  assertPairedDigests,
+  packetDigest,
+  pairedOrder,
+} from "../../tools/benchmarks/scripts/typecheck-scaling-paired.ts";
 import type { Plant } from "../../tools/benchmarks/scripts/scale-project-generator.ts";
 import {
   type Diagnostic,
@@ -69,6 +74,35 @@ void test("focused Corsa topology lanes pin one checker and the selected server 
       "1",
     ]);
   }
+});
+
+void test("paired scaling alternates roles and refuses any complete packet mismatch", () => {
+  assert.deepEqual(
+    Array.from({ length: 5 }, (_, cycle) => pairedOrder(cycle)),
+    [
+      ["base", "head"],
+      ["head", "base"],
+      ["base", "head"],
+      ["head", "base"],
+      ["base", "head"],
+    ],
+  );
+  const packet = {
+    files: [{ file: "src/App.vue", diagnostics: ["error:1:1 [TS2322] mismatch"] }],
+    errorCount: 1,
+    warningCount: 0,
+    fileCount: 1,
+  };
+  const exact = packetDigest(packet);
+  assert.equal(assertPairedDigests([{ packetDigest: exact }, { packetDigest: exact }]), exact);
+  assert.throws(
+    () =>
+      assertPairedDigests([
+        { packetDigest: exact },
+        { packetDigest: packetDigest({ ...packet, errorCount: 2 }) },
+      ]),
+    /complete diagnostic packets differ/u,
+  );
 });
 
 void test("focused Corsa topology comparisons require every exact diagnostic fingerprint", () => {

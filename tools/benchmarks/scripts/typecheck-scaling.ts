@@ -100,14 +100,14 @@ function gnuTimeVersion(): string {
 export const runOrder = <T>(items: readonly T[], run: number): T[] =>
   run % 2 === 0 ? [...items] : [...items].reverse();
 
-type Measured = {
+export type Measured = {
   output: ProcessOutput;
   wallMs: number;
   cpuMs: number | null;
   maxRssKb: number | null;
 };
 
-function measure(
+export function measure(
   bin: string,
   args: string[],
   cwd: string,
