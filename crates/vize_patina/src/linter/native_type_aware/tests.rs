@@ -11,6 +11,7 @@ mod typescript_constituents;
 mod typescript_jsdoc_callee;
 mod typescript_parity;
 mod typescript_promises;
+mod typescript_restrict_plus_nullish;
 mod typescript_shapes;
 mod typescript_type_parameters;
 mod typescript_type_shapes;
@@ -50,7 +51,6 @@ defineEmits(['save'])
     let result = lint_sfc_with_corsa(&linter, source, "Component.vue");
     assert_reports(&result, RULE_REQUIRE_TYPED_EMITS);
 }
-
 #[test]
 fn require_typed_emits_accepts_quoted_colon_key_and_reports_runtime_array() {
     if !corsa_available() {
