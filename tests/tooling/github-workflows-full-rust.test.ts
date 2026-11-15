@@ -255,8 +255,8 @@ void test("full-only extraction preserves all seventeen complete original job ob
   const full = parse(readRepoFile(".github/workflows/full-qualification.yml"));
   const original = structuredClone(full.jobs);
   assert.deepEqual(original["nuxt-module-qualification"], {
-    name: "Nuxt module qualification",
-    uses: "./.github/workflows/nuxt3-module-build.yml",
+    name: "Nuxt and Vite release products",
+    uses: "./.github/workflows/nuxt-vite-release-products.yml",
   });
   delete original["nuxt-module-qualification"];
   const workspace = original["full-rust-workspace"];
