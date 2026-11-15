@@ -40,7 +40,7 @@
 //! ```
 
 use self::async_setup::async_component_names;
-use self::self_name::{define_options_name, file_stem};
+use self::self_name::{define_options_name, file_stem, options_api_name};
 use crate::context::LintContext;
 use crate::diagnostic::{LintDiagnostic, Severity};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
@@ -163,6 +163,11 @@ impl RequireComponentRegistration {
         ctx.analysis()
             .and_then(define_options_name)
             .is_some_and(|name| setup_name_matches(tag, name))
+            || ctx
+                .sfc_scripts()
+                .and_then(|scripts| scripts.script())
+                .and_then(|parsed| options_api_name(&parsed.program))
+                .is_some_and(|name| component_name_matches(tag, name))
     }
 
     fn is_template_visible_imported_component(
@@ -210,6 +215,25 @@ impl RequireComponentRegistration {
             .component_registrations
             .iter()
             .any(|registration| component_name_matches(tag, registration.name.as_str()))
+    }
+
+    fn is_script_setup_binding(&self, ctx: &LintContext<'_>, tag: &str) -> bool {
+        let Some(analysis) = art::analysis(ctx) else {
+            return false;
+        };
+        analysis.bindings.is_script_setup
+            && analysis.bindings.iter().any(|(name, binding_type)| {
+                matches!(
+                    binding_type,
+                    BindingType::SetupLet
+                        | BindingType::SetupMaybeRef
+                        | BindingType::SetupRef
+                        | BindingType::SetupReactiveConst
+                        | BindingType::SetupConst
+                        | BindingType::LiteralConst
+                        | BindingType::ExternalModule
+                ) && template_binding_matches(tag, name)
+            })
     }
 }
 
@@ -261,7 +285,8 @@ impl Rule for RequireComponentRegistration {
                 if art::analysis(ctx).is_some_and(|analysis| {
                     self.is_template_visible_imported_component(ctx, analysis, &tag)
                         || self.is_options_api_registered_component(analysis, &tag)
-                }) || options_api_registers(ctx, &tag)
+                }) || self.is_script_setup_binding(ctx, &tag)
+                    || options_api_registers(ctx, &tag)
                     || async_components
                         .iter()
                         .any(|name| setup_name_matches(&tag, name))

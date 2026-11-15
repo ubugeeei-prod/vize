@@ -125,8 +125,8 @@ impl<'a> PropVisitor<'a> {
         if let Some(types) = &call.type_arguments
             && let Some(ty) = types.params.first()
         {
-            if let Some(props) = self.props_from_type(ty, 4) {
-                self.props.extend(props);
+            if let Some(props) = self.props_from_type(ty, 16) {
+                self.extend_props(props);
             }
             return;
         }
@@ -194,8 +194,24 @@ impl<'a> PropVisitor<'a> {
         }
         match ty {
             TSType::TSTypeLiteral(literal) => Some(self.members(&literal.members)),
+            TSType::TSIntersectionType(intersection) => Some(
+                intersection
+                    .types
+                    .iter()
+                    .filter_map(|ty| self.props_from_type(ty, depth - 1))
+                    .flatten()
+                    .collect(),
+            ),
+            TSType::TSUnionType(union) => Some(
+                union
+                    .types
+                    .iter()
+                    .filter_map(|ty| self.props_from_type(ty, depth - 1))
+                    .flatten()
+                    .collect(),
+            ),
             TSType::TSParenthesizedType(inner) => {
-                self.props_from_type(&inner.type_annotation, depth)
+                self.props_from_type(&inner.type_annotation, depth - 1)
             }
             TSType::TSTypeReference(reference) => {
                 let TSTypeName::IdentifierReference(identifier) = &reference.type_name else {
@@ -244,7 +260,7 @@ impl<'a> PropVisitor<'a> {
     ) -> Option<Vec<Prop>> {
         match statement {
             Statement::TSInterfaceDeclaration(interface) if interface.id.name == name => {
-                Some(self.members(&interface.body.body))
+                Some(self.interface_props(interface, depth))
             }
             Statement::TSTypeAliasDeclaration(alias) if alias.id.name == name => {
                 self.props_from_type(&alias.type_annotation, depth)
@@ -257,7 +273,7 @@ impl<'a> PropVisitor<'a> {
                         Declaration::TSInterfaceDeclaration(interface)
                             if interface.id.name == name =>
                         {
-                            Some(self.members(&interface.body.body))
+                            Some(self.interface_props(interface, depth))
                         }
                         Declaration::TSTypeAliasDeclaration(alias) if alias.id.name == name => {
                             self.props_from_type(&alias.type_annotation, depth)
@@ -266,6 +282,32 @@ impl<'a> PropVisitor<'a> {
                     })
             }
             _ => None,
+        }
+    }
+
+    fn interface_props(
+        &self,
+        interface: &oxc_ast::ast::TSInterfaceDeclaration<'a>,
+        depth: u8,
+    ) -> Vec<Prop> {
+        let mut props = self.members(&interface.body.body);
+        if depth == 0 {
+            return props;
+        }
+        for heritage in &interface.extends {
+            let Expression::Identifier(identifier) = &heritage.expression else {
+                continue;
+            };
+            if let Some(inherited) = self.lookup(identifier.name.as_str(), depth - 1) {
+                props.extend(inherited);
+            }
+        }
+        props
+    }
+
+    fn extend_props(&mut self, props: Vec<Prop>) {
+        for prop in props {
+            self.note(&prop.name, prop.span, prop.anchor);
         }
     }
 

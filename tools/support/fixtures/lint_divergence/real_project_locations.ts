@@ -36,13 +36,12 @@ export const realProjectLocationRules: Readonly<Record<string, RuleLocationRule>
     subject(positive, negative) {
       const prop = propCommentName(positive.message);
       return prop !== undefined &&
-        prop === propCommentName(negative.message) &&
-        containsRange(negative, positive)
+        prop === propCommentName(negative.message)
         ? `prop:${prop}`
         : null;
     },
     reason:
-      "Patina reports the authored prop name while eslint-plugin-vue reports the complete prop declaration.",
+      "Patina reports the authored prop name in its declaration while eslint-plugin-vue reports the complete declaration or destructured binding.",
   },
   "vue/quote-props": {
     subject: (positive, negative) =>

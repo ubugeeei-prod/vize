@@ -302,6 +302,37 @@ await test("the scorecard mirrors resolved vue-router global components", async 
   }
 });
 
+await test("the scorecard mirrors resolved Nuxt global components", async () => {
+  const input = fixture(
+    "nuxt-components.vue",
+    "<template><NuxtLayout /><NuxtPage /><MissingCard /></template>\n",
+  );
+  const selected = { "vue/no-undef-components": "warn" };
+  const nuxt = path.join(input.cwd, "node_modules/nuxt");
+  fs.mkdirSync(nuxt, { recursive: true });
+  fs.writeFileSync(path.join(nuxt, "package.json"), '{"name":"nuxt","version":"0.0.0"}\n');
+  try {
+    const packet = await scorecard(input, selected);
+    assert.deepEqual(
+      packet.results[0].messages.map((message) => message.message),
+      ["The '<MissingCard>' component has been used, but not defined."],
+    );
+
+    fs.rmSync(path.join(input.cwd, "node_modules"), { recursive: true, force: true });
+    const control = await scorecard(input, selected);
+    assert.deepEqual(
+      control.results[0].messages.map((message) => message.message),
+      [
+        "The '<NuxtLayout>' component has been used, but not defined.",
+        "The '<NuxtPage>' component has been used, but not defined.",
+        "The '<MissingCard>' component has been used, but not defined.",
+      ],
+    );
+  } finally {
+    input.clean();
+  }
+});
+
 await test("vue-router qualification follows each linted file's resolution boundary", async () => {
   const input = fixture("control.vue", "<template />\n");
   const withRouter = "packages/with-router/src/App.vue";

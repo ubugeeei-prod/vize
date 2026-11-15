@@ -167,6 +167,35 @@ test("real-project rule anchors retain complete packets without creating false p
   assert.equal(result.summary.ruleLocationDivergenceCount, 3);
 });
 
+test("prop comment anchors follow the named prop across type and destructuring sites", () => {
+  const result = compare(
+    [
+      {
+        file: "src/CodeInput.vue",
+        ruleId: "vue/require-prop-comment",
+        severity: 1,
+        ...span(64, 3, 64, 13),
+        message:
+          '[vize:vue/require-prop-comment] The "modelValue" property should have a JSDoc comment.',
+      },
+    ],
+    [
+      eslintResult("src/CodeInput.vue", [
+        {
+          ruleId: "vue/require-prop-comment",
+          severity: 1,
+          ...span(93, 3, 93, 34),
+          message: 'The "modelValue" property should have a JSDoc comment.',
+        },
+      ]),
+    ],
+  );
+
+  assert.deepEqual(result.falsePositives, []);
+  assert.deepEqual(result.falseNegatives, []);
+  assert.equal(result.ruleLocationDivergences[0].subject, "prop:modelValue");
+});
+
 test("unused component location anchors are paired by component identity", () => {
   const result = compare(
     [

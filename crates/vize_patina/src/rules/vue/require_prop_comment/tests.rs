@@ -43,3 +43,40 @@ fn an_unresolved_import_is_skipped_and_a_runtime_prop_is_checked() {
     let commented = "<script>\nexport default { props: { /** The rendered size. */\nsize: String } }\n</script>\n";
     assert!(messages(commented).is_empty(), "{commented}");
 }
+
+#[test]
+fn local_members_survive_unresolved_intersections_and_interface_heritage() {
+    let intersection = r#"<script setup lang="ts">
+import type { ExternalProps } from "./external";
+type LocalProps = { local: string };
+defineProps<ExternalProps & LocalProps & { inline: number }>();
+</script>
+"#;
+    assert_eq!(
+        messages(intersection)
+            .into_iter()
+            .map(|(_, message)| message)
+            .collect::<Vec<_>>(),
+        vec![
+            "The \"local\" property should have a JSDoc comment.",
+            "The \"inline\" property should have a JSDoc comment.",
+        ]
+    );
+
+    let heritage = r#"<script setup lang="ts">
+interface BaseProps { inherited: string }
+interface Props extends BaseProps { own: string }
+defineProps<Props>();
+</script>
+"#;
+    assert_eq!(
+        messages(heritage)
+            .into_iter()
+            .map(|(_, message)| message)
+            .collect::<Vec<_>>(),
+        vec![
+            "The \"own\" property should have a JSDoc comment.",
+            "The \"inherited\" property should have a JSDoc comment.",
+        ]
+    );
+}

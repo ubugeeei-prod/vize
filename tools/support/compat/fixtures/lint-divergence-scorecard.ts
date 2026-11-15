@@ -111,9 +111,10 @@ export function configureScorecardRules(rules: Rules): Rules {
 /**
  * Run the current scorecard with per-file project context.
  *
- * The native CLI treats RouterLink and RouterView as globals only when vue-router
- * resolves from the linted file. Partitioning by that exact boundary keeps one
- * parse per file and at most two ESLint instances per bounded producer shard.
+ * The native CLI treats components installed by vue-router and Nuxt as globals
+ * only when their package resolves from the linted file. Partitioning by those
+ * exact boundaries keeps one parse per file and at most four ESLint instances
+ * per bounded producer shard.
  */
 export async function runScorecardBaseline(
   runtime: ScorecardRuntime,
@@ -160,14 +161,26 @@ export async function runScorecardBaseline(
 }
 
 const routerComponentPattern = "^(?:RouterLink|RouterView)$";
+const nuxtComponentPattern =
+  "^(?:Nuxt|NuxtChild|NuxtPage|NuxtLayout|NuxtLink|NuxtLoadingIndicator|NuxtErrorBoundary|NuxtWelcome|NuxtIsland|NuxtRouteAnnouncer|ClientOnly|DevOnly|NoSsr)$";
 
 function baselineGroups(cwd: string, files: readonly string[], rules: Rules): BaselineGroup[] {
   if (files.length === 0) return [{ files: [], rules }];
   const groups = new Map<string, BaselineGroup>(),
-    packageResolutionCache = new Map<string, boolean>();
+    routerResolutionCache = new Map<string, boolean>(),
+    nuxtResolutionCache = new Map<string, boolean>();
   for (const file of files) {
-    const contextual = withResolvedRouterComponents(cwd, file, rules, packageResolutionCache),
-      key = contextual === rules ? "default" : "vue-router",
+    const contexts: string[] = [];
+    let contextual = rules;
+    if (packageIsResolvableFrom(cwd, file, "vue-router", routerResolutionCache)) {
+      contextual = withIgnoredComponents(contextual, routerComponentPattern);
+      contexts.push("vue-router");
+    }
+    if (packageIsResolvableFrom(cwd, file, "nuxt", nuxtResolutionCache)) {
+      contextual = withIgnoredComponents(contextual, nuxtComponentPattern);
+      contexts.push("nuxt");
+    }
+    const key = contexts.join("+") || "default",
       group = groups.get(key) ?? { files: [], rules: contextual };
     group.files.push(file);
     groups.set(key, group);
@@ -175,27 +188,18 @@ function baselineGroups(cwd: string, files: readonly string[], rules: Rules): Ba
   return [...groups.values()];
 }
 
-function withResolvedRouterComponents(
-  cwd: string,
-  file: string,
-  rules: Rules,
-  packageResolutionCache: Map<string, boolean>,
-): Rules {
+function withIgnoredComponents(rules: Rules, componentPattern: string): Rules {
   const setting = rules["vue/no-undef-components"];
-  if (
-    setting === undefined ||
-    !packageIsResolvableFrom(cwd, file, "vue-router", packageResolutionCache)
-  )
-    return rules;
+  if (setting === undefined) return rules;
   const severity = Array.isArray(setting) ? setting[0] : setting,
     supplied = Array.isArray(setting) && isPlainObject(setting[1]) ? setting[1] : {},
     ignorePatterns = Array.isArray(supplied.ignorePatterns) ? supplied.ignorePatterns : [];
-  if (ignorePatterns.includes(routerComponentPattern)) return rules;
+  if (ignorePatterns.includes(componentPattern)) return rules;
   return {
     ...rules,
     "vue/no-undef-components": [
       severity,
-      { ...supplied, ignorePatterns: [...ignorePatterns, routerComponentPattern] },
+      { ...supplied, ignorePatterns: [...ignorePatterns, componentPattern] },
     ],
   };
 }

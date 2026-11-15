@@ -366,6 +366,31 @@ defineOptions({ name: "TreeItem" });
 }
 
 #[test]
+fn options_api_name_allows_recursive_self_reference() {
+    let result = create_linter().lint_sfc(
+        r#"<template><var-tree-menu-option /></template>
+<script lang="ts">
+import { defineComponent } from "vue";
+export default defineComponent({ name: "VarTreeMenuOption" });
+</script>"#,
+        "TreeMenuOption.vue",
+    );
+    assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
+}
+
+#[test]
+fn tsx_setup_values_are_visible_to_the_template() {
+    let result = create_linter().lint_sfc(
+        r#"<template><Row /></template>
+<script lang="tsx" setup>
+const Row = ({ value }) => <div>{value}</div>;
+</script>"#,
+        "DetailedView.vue",
+    );
+    assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
+}
+
+#[test]
 fn snake_case_tags_do_not_resolve_to_pascal_case_imports() {
     let linter = create_linter();
     let sfc = r#"<script setup lang="ts">

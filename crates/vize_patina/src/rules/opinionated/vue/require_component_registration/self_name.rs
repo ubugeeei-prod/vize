@@ -5,6 +5,10 @@
 //! name or by the name declared via `defineOptions({ name })` — a documented
 //! Vue feature for recursive components that needs no import.
 
+use oxc_ast::ast::{
+    Argument, ExportDefaultDeclarationKind, Expression, ObjectExpression, ObjectPropertyKind,
+    Program, PropertyKey, Statement,
+};
 use vize_croquis::Croquis;
 use vize_croquis::macros::MacroKind;
 
@@ -23,6 +27,63 @@ pub(super) fn define_options_name(analysis: &Croquis) -> Option<&str> {
         .iter()
         .find(|call| matches!(call.kind, MacroKind::DefineOptions))?;
     options_name_property(call.runtime_args.as_ref()?.as_str())
+}
+
+/// The static component name declared by the Options API default export.
+pub(super) fn options_api_name(program: &Program<'_>) -> Option<&str> {
+    for statement in &program.body {
+        let Statement::ExportDefaultDeclaration(export) = statement else {
+            continue;
+        };
+        let object = match &export.declaration {
+            ExportDefaultDeclarationKind::ObjectExpression(object) => Some(object.as_ref()),
+            ExportDefaultDeclarationKind::CallExpression(call)
+                if matches!(
+                    call.callee.get_inner_expression(),
+                    Expression::Identifier(identifier)
+                        if matches!(identifier.name.as_str(), "defineComponent" | "defineNuxtComponent")
+                ) =>
+            {
+                call.arguments.first().and_then(argument_object)
+            }
+            _ => None,
+        }?;
+        return object_name(object);
+    }
+    None
+}
+
+fn argument_object(argument: &Argument<'_>) -> Option<&ObjectExpression<'_>> {
+    match argument.as_expression()?.get_inner_expression() {
+        Expression::ObjectExpression(object) => Some(object.as_ref()),
+        _ => None,
+    }
+}
+
+fn object_name(object: &ObjectExpression<'_>) -> Option<&str> {
+    for property in &object.properties {
+        let ObjectPropertyKind::ObjectProperty(property) = property else {
+            continue;
+        };
+        let name_key = match &property.key {
+            PropertyKey::StaticIdentifier(identifier) if !property.computed => {
+                identifier.name == "name"
+            }
+            PropertyKey::StringLiteral(literal) => literal.value == "name",
+            _ => false,
+        };
+        if !name_key {
+            continue;
+        }
+        return match property.value.get_inner_expression() {
+            Expression::StringLiteral(literal) => Some(literal.value.as_str()),
+            Expression::TemplateLiteral(template) => {
+                template.single_quasi().map(|value| value.as_str())
+            }
+            _ => None,
+        };
+    }
+    None
 }
 
 /// Pragmatic scan of a `defineOptions` argument source for a `name` property
@@ -84,7 +145,10 @@ fn options_name_property(args: &str) -> Option<&str> {
 
 #[cfg(test)]
 mod tests {
-    use super::{file_stem, options_name_property};
+    use super::{file_stem, options_api_name, options_name_property};
+    use oxc_allocator::Allocator;
+    use oxc_parser::Parser;
+    use oxc_span::SourceType;
 
     #[test]
     fn extracts_name_property() {
@@ -115,5 +179,17 @@ mod tests {
         assert_eq!(file_stem("src/components/tree-item.vue"), "tree-item");
         assert_eq!(file_stem("App.vue"), "App");
         assert_eq!(file_stem(r"win\path\Item.vue"), "Item");
+    }
+
+    #[test]
+    fn extracts_options_api_name() {
+        let allocator = Allocator::default();
+        for source in [
+            "export default { name: 'TreeItem' }",
+            "export default defineComponent({ name: `TreeItem` })",
+        ] {
+            let parsed = Parser::new(&allocator, source, SourceType::ts()).parse();
+            assert_eq!(options_api_name(&parsed.program), Some("TreeItem"));
+        }
     }
 }
