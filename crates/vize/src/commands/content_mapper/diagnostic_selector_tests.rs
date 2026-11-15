@@ -6,7 +6,8 @@ use super::test_support::{
 
 #[test]
 fn loose_component_prop_selectors_are_sent_only_to_negotiated_hosts() {
-    let source = r#"<script setup lang="ts">
+    let source = r#"<!-- @checkUnknownProps false -->
+<script setup lang="ts">
 import Child from "./Child.vue";
 </script>
 <template><Child :items="[1, 2]" :buffer="200" /></template>
