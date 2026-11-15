@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { isAbsolute, join } from "node:path";
+import { componentRegistrationBaselineIntentionalReason } from "../../fixtures/lint_divergence/component_registration_intentional.ts";
 import { realProjectLocationRules } from "../../fixtures/lint_divergence/real_project_locations.ts";
 
 import {
@@ -883,6 +884,8 @@ function baselineIntentionalReason(finding: LintRecord, cwd: string): string | n
   } catch {
     return null;
   }
+  const componentRegistration = componentRegistrationBaselineIntentionalReason(finding, source);
+  if (componentRegistration !== null) return componentRegistration;
   if (
     hasUtsScript(source) &&
     ["script/define-props-destructuring", "vue/define-props-destructuring"].includes(finding.ruleId)

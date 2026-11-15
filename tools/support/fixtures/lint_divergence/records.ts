@@ -1,4 +1,5 @@
 import path from "node:path";
+import { componentRegistrationBaselineIntentionalReason } from "./component_registration_intentional.ts";
 import { realProjectLocationDivergence } from "./real_project_locations.ts";
 import {
   byteOrder,
@@ -191,6 +192,10 @@ export function baselineIntentionalReason(
   finding: LintRecord,
   source?: string | null,
 ): string | null {
+  if (source !== undefined && source !== null) {
+    const componentRegistration = componentRegistrationBaselineIntentionalReason(finding, source);
+    if (componentRegistration !== null) return componentRegistration;
+  }
   if (finding.ruleId === "vue/no-shared-component-data")
     return "Patina intentionally merges vue/no-shared-component-data and vue/no-deprecated-data-object-declaration into one diagnostic for the same invalid data option.";
   if (

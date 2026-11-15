@@ -80,3 +80,54 @@ defineProps<Props>();
         ]
     );
 }
+
+#[test]
+fn sibling_script_types_keep_their_authored_comments_and_spans() {
+    let source = r#"<script lang="ts">
+import type { ExternalProps } from "./external";
+interface LocalBase { inherited: string }
+export interface Props<T> extends ExternalProps, LocalBase {
+  /** The visible value. */
+  value: T;
+  label?: string;
+}
+</script>
+
+<script setup lang="ts" generic="T extends string">
+defineProps<Props<T>>();
+</script>
+"#;
+    assert_eq!(
+        messages(source),
+        vec![
+            (
+                source.find("inherited: string").unwrap() as u32,
+                "The \"inherited\" property should have a JSDoc comment.".into(),
+            ),
+            (
+                source.find("label?: string").unwrap() as u32,
+                "The \"label\" property should have a JSDoc comment.".into(),
+            ),
+        ]
+    );
+}
+
+#[test]
+fn sibling_setup_declarations_win_over_same_named_module_types() {
+    let source = r#"<script lang="ts">
+interface Props { moduleOnly: string }
+</script>
+
+<script setup lang="ts">
+interface Props { setupOnly: string }
+defineProps<Props>();
+</script>
+"#;
+    assert_eq!(
+        messages(source),
+        vec![(
+            source.find("setupOnly: string").unwrap() as u32,
+            "The \"setupOnly\" property should have a JSDoc comment.".into(),
+        )]
+    );
+}

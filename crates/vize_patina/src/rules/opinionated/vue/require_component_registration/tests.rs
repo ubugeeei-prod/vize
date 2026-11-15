@@ -224,6 +224,30 @@ export default {
 }
 
 #[test]
+fn test_allows_lower_camel_options_api_registration_keys() {
+    let linter = create_linter();
+    let sfc = r#"<script>
+export default {
+  components: {
+    userMain: () => import('./user-main.vue'),
+  },
+}
+</script>
+
+<template>
+  <user-main />
+</template>
+"#;
+    let result = linter.lint_sfc(sfc, "App.vue");
+
+    assert!(
+        result.diagnostics.is_empty(),
+        "Vue resolves a lower-camel registration key from a kebab tag: {:?}",
+        result.diagnostics
+    );
+}
+
+#[test]
 fn test_allows_plain_script_component_imports_when_script_setup_is_present() {
     let linter = create_linter();
     let sfc = r#"<script lang="ts">
