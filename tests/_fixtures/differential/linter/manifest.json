@@ -4307,6 +4307,49 @@
       }
     },
     {
+      "id": "linter/no-implied-eval-callable-13000",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "no-implied-eval-callable-13000",
+        "files": [
+          {
+            "path": "src/Timers.vue.txt",
+            "role": "issue-authored-composite-callable-reproduction-and-string-control",
+            "sha256": "5234b463053fde72912c6afccee8249148e809c2791f0be216e92bdf421b072e"
+          },
+          {
+            "path": "tsconfig.json",
+            "role": "issue-authored-bundler-resolution-config",
+            "sha256": "58a7b95ded5405fa3e811fa60c74459a8ac19b08153682a3a2212ec946671451"
+          },
+          {
+            "path": "vize-lint.config.mjs.txt",
+            "role": "issue-authored-type-aware-lint-config",
+            "sha256": "5e08e514c461f2e9db379fc7b1103d43e8de61712db2e644473ea68faa467812"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/no-unused-emit-wrappers-12597",
       "state": "active",
       "targets": [
