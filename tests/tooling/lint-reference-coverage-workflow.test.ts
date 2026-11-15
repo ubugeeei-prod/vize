@@ -116,6 +116,7 @@ test("native preset documentation earns its whole law without dropping earlier c
     "tests/tooling/lint-reference-coverage-workflow.test.ts",
     "tests/tooling/lint-reference-coverage.test.mjs",
     "tests/tooling/lint-baseline-script-language.test.mjs",
+    "tests/tooling/lint-baseline-shards.test.ts",
     "tests/tooling/lint-preset-default-warnings-source.test.mjs",
     "tests/tooling/patina-legacy-instance-api-reference.test.mjs",
     "tests/tooling/lint-divergence-processor.test.mjs",

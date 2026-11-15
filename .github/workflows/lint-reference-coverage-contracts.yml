@@ -31,7 +31,7 @@ on:
       - "tests/_fixtures/lint-preset-default-warnings/**"
       - "tests/tooling/lint-reference-*.test.*"
       - "tests/tooling/lint-divergence*.test.*"
-      - "tests/tooling/lint-baseline-script-language.test.mjs"
+      - "tests/tooling/lint-baseline-*.test.*"
       - "tests/tooling/lint-preset-default-warnings-source.test.mjs"
       - "tests/tooling/patina-legacy-instance-api-reference.test.mjs"
       - ".config/nextest.toml"
@@ -86,6 +86,7 @@ jobs:
           --skipLibCheck --allowImportingTsExtensions
           tools/commands/fixtures/lint-divergence-report.ts
           tools/support/fixtures/lint_reference_coverage.ts
+          tests/tooling/lint-baseline-shards.test.ts
           tests/tooling/lint-reference-classifier.test.ts
           tests/tooling/lint-reference-coverage-workflow.test.ts
           tests/tooling/_helpers/lint-report-rust-parity.ts
@@ -103,6 +104,7 @@ jobs:
           tests/tooling/lint-reference-coverage-workflow.test.ts
           tests/tooling/lint-reference-coverage.test.mjs
           tests/tooling/lint-baseline-script-language.test.mjs
+          tests/tooling/lint-baseline-shards.test.ts
           tests/tooling/lint-preset-default-warnings-source.test.mjs
           tests/tooling/patina-legacy-instance-api-reference.test.mjs
           tests/tooling/lint-divergence-processor.test.mjs
@@ -114,8 +116,11 @@ jobs:
           tests/tooling/lint-divergence-report.test.ts
           tests/tooling/real-project-matrix-workflow.test.ts
           tests/tooling/docs-all-lint-rules.test.ts
-      - name: Require zero and one-file report custody on Bun
-        run: bun test tests/tooling/lint-divergence-zero-vue-runner.test.ts
+      - name: Require bounded aggregation and report custody on Bun
+        run: >-
+          bun test
+          tests/tooling/lint-baseline-shards.test.ts
+          tests/tooling/lint-divergence-zero-vue-runner.test.ts
       - name: Retain every real process and whole report comparison
         if: ${{ always() }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

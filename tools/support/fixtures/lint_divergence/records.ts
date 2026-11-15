@@ -461,9 +461,39 @@ function dynamicComponentIsNativeOnly(finding: LintRecord, source: string): bool
   ]);
   return values.every((value) => native.has(value));
 }
+const patinaIntentionalRuleIds = new Set([
+  "script/custom-event-name-casing",
+  "script/define-emits-declaration",
+  "script/define-props-declaration",
+  "script/define-props-destructuring",
+  "script/no-boolean-default",
+  "script/no-deprecated-delete-set",
+  "script/no-deprecated-dollar-listeners-api",
+  "script/no-deprecated-dollar-scopedslots-api",
+  "script/no-deprecated-events-api",
+  "script/no-ref-as-operand",
+  "script/no-side-effects-in-computed-properties",
+  "script/one-component-per-file",
+  "script/prefer-use-template-ref",
+  "script/require-default-prop",
+  "script/require-prop-types",
+  "script/require-valid-default-prop",
+  "script/return-in-computed-property",
+  "vue/multi-word-component-names",
+  "vue/no-bare-strings-in-template",
+  "vue/no-mutating-props",
+  "vue/no-reserved-component-names",
+  "vue/no-setup-props-reactivity-loss",
+  "vue/no-static-inline-styles",
+  "vue/no-unused-components",
+  "vue/no-unused-vars",
+  "vue/require-v-for-key",
+  "vue/v-slot-style",
+]);
 export function patinaIntentionalReason(finding: LintRecord, source: string): string | null {
   if (hasUtsScript(source))
     return "Patina preserves linting for Vue files with UTS scripts; vue-eslint-parser rejects the UTS block before eslint-plugin-vue can run mapped rules.";
+  if (!patinaIntentionalRuleIds.has(finding.ruleId)) return null;
   if (finding.ruleId === "vue/no-setup-props-reactivity-loss")
     return "Patina's complete contract follows root-scope prop values through nested containers, call arguments, and assignments that eslint-plugin-vue does not inspect.";
   if (

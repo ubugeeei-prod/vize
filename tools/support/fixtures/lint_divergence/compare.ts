@@ -100,12 +100,14 @@ export function compareLintFindings(
   cwd: string,
   ruleMap: Json,
   patinaFindings: Json[],
-  eslintResults: Json[],
+  eslintResults: Json[] | ReturnType<typeof collectBaselineFindings>,
   context: JsonObject,
 ): JsonObject {
   const index = indexRuleMap(ruleMap),
     patina = collectPatinaFindings(patinaFindings, cwd),
-    baseline = collectBaselineFindings(eslintResults, cwd);
+    baseline = Array.isArray(eslintResults)
+      ? collectBaselineFindings(eslintResults, cwd)
+      : eslintResults;
   const selectedRules = object(get(context, "rules")) ?? {};
   const selectedTargets = new Set(
     Object.keys(selectedRules).flatMap((upstream) => {
@@ -113,13 +115,27 @@ export function compareLintFindings(
       return typeof target === "string" ? [target] : [];
     }),
   );
+  const sources = new Map<string, string | null>(),
+    progress = (phase: string) => {
+      if (process.env.VIZE_LINT_BASELINE_PROGRESS !== "1") return;
+      const memory = process.memoryUsage();
+      console.log(
+        `Lint comparison ${phase}: ${memory.heapUsed} heap bytes, ${memory.rss} RSS bytes`,
+      );
+    };
   const sourceFor = (file: string): string | null => {
+    const cached = sources.get(file);
+    if (cached !== undefined || sources.has(file)) return cached ?? null;
+    let source: string | null;
     try {
-      return readText(path.join(cwd, file));
+      source = readText(path.join(cwd, file));
     } catch {
-      return null;
+      source = null;
     }
+    sources.set(file, source);
+    return source;
   };
+  progress("collected packets");
   const expectations: Json[] = eligibleReferenceCoverage(project, context, sourceFor).map(
     (entry) => {
       const finding = entry.finding as Json;
@@ -163,20 +179,19 @@ export function compareLintFindings(
       }
     } else throw new Error(`${finding.ruleId} has unsupported status ${JSON.stringify(status)}`);
   }
+  progress("classified baseline");
   const uniqueComparableBaseline = dedupeBaselineFindings(comparableBaseline);
   const comparablePatina: LintRecord[] = [],
     patinaOnlyRuleFindings: Json[] = [],
     patinaOutsideBaselineSurface: Json[] = [];
-  const sources = new Map<string, string | null>(),
-    coveredCases = new Set<string>();
+  const coveredCases = new Set<string>();
   const measuredFiles = new Set(
     (Array.isArray(context.files) ? context.files : []).filter(
       (file): file is string => typeof file === "string",
     ),
   );
   for (const finding of patina) {
-    if (!sources.has(finding.file)) sources.set(finding.file, sourceFor(finding.file));
-    const source = sources.get(finding.file) ?? null;
+    const source = sourceFor(finding.file);
     if (source !== null && outsideBaselineSurface(finding, source))
       patinaOutsideBaselineSurface.push(recordValue(finding));
     else if (selectedTargets.has(finding.ruleId)) {
@@ -195,6 +210,7 @@ export function compareLintFindings(
       } else comparablePatina.push(finding);
     } else patinaOnlyRuleFindings.push(recordValue(finding));
   }
+  progress("classified patina");
   const candidateGroups = groupByIdentity(comparablePatina),
     expectedGroups = groupByIdentity(uniqueComparableBaseline);
   const shared: Json[] = [],
@@ -228,11 +244,23 @@ export function compareLintFindings(
     falsePositives.push(...candidates.slice(common));
     falseNegatives.push(...expected.slice(common));
   }
+  progress("paired exact identities");
   const ruleLocationDivergences = sortValues(
     pairRuleLocationDivergences(falsePositives, falseNegatives),
   );
+  progress("paired rule locations");
+  if (process.env.VIZE_LINT_BASELINE_PROGRESS === "1")
+    console.log(
+      `Lint comparison classifying ${falsePositives.length} false positives and ${falseNegatives.length} false negatives`,
+    );
+  let generalVisited = 0;
   for (let index = falsePositives.length - 1; index >= 0; index--) {
     const finding = falsePositives[index];
+    if (process.env.VIZE_LINT_BASELINE_PROGRESS === "1")
+      console.log(
+        `Lint comparison general intentional classifier ${generalVisited} at ${index}: ${finding.file} ${finding.ruleId}`,
+      );
+    generalVisited++;
     // A reporter finding outside the reconciled corpus is always an
     // over-report. Source-based semantic classifiers have no authority over a
     // file the two providers were not asked to compare.
@@ -248,8 +276,10 @@ export function compareLintFindings(
     falsePositives.splice(index, 1);
     intentionalDivergences.push({ ...recordValue(finding), reason });
   }
+  progress("classified general intentional divergences");
   for (let index = falsePositives.length - 1; index >= 0; index--) {
     const finding = falsePositives[index];
+    if (index % 1000 === 0) progress(`unused-component classifier at ${index}`);
     if (!measuredFiles.has(finding.file)) continue;
     if (reviewedReferenceFindings.has(canonicalJson(recordValue(finding)))) continue;
     if (finding.ruleId !== "vue/no-unused-components") continue;
@@ -259,8 +289,10 @@ export function compareLintFindings(
     falsePositives.splice(index, 1);
     intentionalDivergences.push({ ...recordValue(finding), reason });
   }
+  progress("classified unused-component divergences");
   falsePositives.sort(compareRecords);
   falseNegatives.sort(compareRecords);
+  progress("classified intentional divergences");
   const ratio = (count: number, total: number) => (total === 0 ? 0 : count / total),
     scoredPatinaCount = shared.length + falsePositives.length + ruleLocationDivergences.length;
   const summary: JsonObject = {
@@ -303,6 +335,7 @@ export function compareLintFindings(
     patinaOutsideBaselineSurface: sortValues(patinaOutsideBaselineSurface),
     documentedDivergences: [],
   };
+  progress("sorted report packets");
   return {
     schema: "vize.fixtureLintDivergence",
     version: 1,
