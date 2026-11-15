@@ -222,6 +222,11 @@ test("benchmark tasks gate both single-server and sharded typecheck paths", () =
     assert.ok(sharded);
     assert.deepEqual(sharded.args, ["check", ".", "--quiet", "--tsconfig", tsconfig]);
     assert.equal(
+      sharded.threads,
+      "max",
+      "the max lane must leave Rayon unpinned as well as auto-sizing Corsa servers",
+    );
+    assert.equal(
       sharded.allowNonZeroExit,
       true,
       "type-check diagnostics are benchmarked even when the corpus reports errors",
