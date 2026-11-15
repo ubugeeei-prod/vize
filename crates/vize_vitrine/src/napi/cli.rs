@@ -14,3 +14,8 @@ pub fn run_cli(args: Vec<String>) -> Result<()> {
     vize::cli::run_from_args(args);
     Ok(())
 }
+
+#[napi(js_name = "supportsCliConfigStdin")]
+pub fn supports_cli_config_stdin() -> bool {
+    true
+}

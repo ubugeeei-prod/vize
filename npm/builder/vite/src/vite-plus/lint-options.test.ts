@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { defineConfig } from "../vite-plus.ts";
 import { resolveConfigExport } from "../config.ts";
@@ -23,22 +22,16 @@ void test("lint.vue carries execution settings through native config without for
   const metadata = (resolved as ConfigWithVizeTasks)[taskConfigKey]!;
   assert.deepEqual((await resolveConfigExport(metadata.config!)).linter, linter);
   const calls: string[][] = [];
-  await runTools("lint", ["src"], metadata, "vp", "native", async (_command, args) => {
+  await runTools("lint", ["src"], metadata, "vp", "native", async (_command, args, stdin) => {
     calls.push(args);
     if (args[0] === "native") {
-      const file = args[args.indexOf("--config") + 1];
-      assert.deepEqual(JSON.parse(readFileSync(file, "utf8")).vue.linter, linter);
+      assert.deepEqual(JSON.parse(stdin!).vue.linter, linter);
     }
     return 0;
   });
-  assert.deepEqual(
-    calls.map((args) =>
-      args[0] === "native" ? [...args.slice(0, 3), "<temporary config>", ...args.slice(4)] : args,
-    ),
-    [
-      ["native", "lint", "--config", "<temporary config>", "src"],
-      ["vp", "lint", "src"],
-    ],
-  );
+  assert.deepEqual(calls, [
+    ["native", "lint", "--config-stdin", "src"],
+    ["vp", "lint", "src"],
+  ]);
   for (const key of Object.keys(linter)) assert.ok(!(key in (resolved.lint ?? {})));
 });

@@ -10,7 +10,7 @@ mod compiler_keys;
 mod formatter;
 pub use formatter::{
     LoadedFormatterSnapshot, load_config_with_formatter_options_and_source,
-    try_load_formatter_snapshot,
+    try_load_formatter_snapshot, try_load_formatter_snapshot_from_serialized,
 };
 mod discovery;
 mod failure_identity;
@@ -50,7 +50,7 @@ type BeforeConfigRead<'a> = Option<&'a mut (dyn FnMut(&[PathBuf]) + 'a)>;
 
 use checked::load_raw_config_checked;
 use discovery::{CONFIG_FILE_NAMES, resolve_dir_path, resolve_file_path, search_directories};
-use parse::{parse_raw_config_file, try_parse_raw_candidate};
+use parse::{explicit_vite_json_bytes, parse_raw_config_file, try_parse_raw_candidate};
 
 use super::{
     ConfigDocument, ConfigEntryFiles, ConfigEntryIgnore, ConfigExperimentalVueFlags,
@@ -142,6 +142,27 @@ pub fn try_load_project_config_with_source(
     path: Option<&Path>,
 ) -> Result<LoadedProjectConfig, std::string::String> {
     load_raw_config_checked(path).map(project_config_snapshot)
+}
+
+/// Load one already-evaluated Vite-shaped JSON document without materializing a file.
+pub fn try_load_project_config_from_serialized(
+    json: &[u8],
+    source_path: PathBuf,
+) -> Result<LoadedProjectConfig, std::string::String> {
+    load_raw_config_from_serialized(json, source_path).map(project_config_snapshot)
+}
+
+fn load_raw_config_from_serialized(
+    json: &[u8],
+    source_path: PathBuf,
+) -> Result<LoadedRawConfig, std::string::String> {
+    let config = explicit_vite_json_bytes(json, &source_path).map_err(|error| {
+        crate::cstr!("failed to parse {}: {error}", source_path.display()).into_string()
+    })?;
+    Ok(LoadedRawConfig {
+        config,
+        source_path: Some(source_path),
+    })
 }
 
 fn project_config_snapshot(loaded: LoadedRawConfig) -> LoadedProjectConfig {

@@ -15,7 +15,7 @@ const environmentNames = [
   "TSRS_EXECUTABLE",
 ] as const;
 
-function fixture() {
+function fixture(options: { supportsConfigStdin?: boolean } = {}) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-cli-user-runtime-"));
   const packageRoot = path.join(root, "node_modules", "vize");
   const platformPackage = "@typescript/typescript-" + process.platform + "-" + process.arch;
@@ -49,9 +49,15 @@ function fixture() {
   );
   fs.writeFileSync(
     path.join(stub, "index.cjs"),
-    "exports.runCli = (args) => process.stdout.write(JSON.stringify({args, environment: Object.fromEntries(" +
-      JSON.stringify(environmentNames) +
-      ".map(name => [name, process.env[name] ?? null]))}));\n",
+    `const fs = require("node:fs");
+${options.supportsConfigStdin ? "exports.supportsCliConfigStdin = () => true;" : ""}
+exports.runCli = (args) => {
+  const config = args.indexOf("--config");
+  const result = { args, environment: Object.fromEntries(${JSON.stringify(environmentNames)}.map(name => [name, process.env[name] ?? null])) };
+  if (config >= 0) result.configPayload = fs.readFileSync(args[config + 1], "utf8");
+  process.stdout.write(JSON.stringify(result));
+};
+`,
   );
   const installed = path.join(packageRoot, "bin", "vize");
   fs.cpSync(fileURLToPath(new URL("../dist", import.meta.url)), path.join(packageRoot, "dist"), {
@@ -59,7 +65,7 @@ function fixture() {
   });
   fs.mkdirSync(path.dirname(installed), { recursive: true });
   fs.copyFileSync(fileURLToPath(new URL("../bin/vize", import.meta.url)), installed);
-  const run = (args: string[], override: Record<string, string> = {}) => {
+  const run = (args: string[], override: Record<string, string> = {}, input?: string) => {
     const environment = { ...process.env };
     for (const name of environmentNames) delete environment[name];
     Object.assign(environment, override);
@@ -76,7 +82,7 @@ function fixture() {
       input:
         args[0] === "content-mapper"
           ? `Content-Length: ${initialize.length}\r\n\r\n${initialize}`
-          : "",
+          : (input ?? ""),
     });
     assert.equal(result.status, 0, result.stderr);
     assert.equal(result.stderr, "");
@@ -86,6 +92,7 @@ function fixture() {
         : result.stdout;
     return JSON.parse(stdout) as {
       args: string[];
+      configPayload?: string;
       environment: Record<string, string | null>;
     };
   };
@@ -106,6 +113,31 @@ test("CLI, LSP, mapper and syntax-only commands delegate without selecting a sta
     }
   } finally {
     f.remove();
+  }
+});
+
+test("stdin config transport falls back only for a native addon without the capability", () => {
+  const payload = '{"vue":{"formatter":{"singleQuote":true}}}';
+  const stale = fixture();
+  try {
+    const result = stale.run(["fmt", "--config-stdin", "--check", "App.vue"], {}, payload);
+    const config = result.args.indexOf("--config");
+    assert.ok(config >= 0);
+    assert.equal(result.args.includes("--config-stdin"), false);
+    assert.equal(result.configPayload, payload);
+    assert.equal(fs.existsSync(result.args[config + 1]), false);
+  } finally {
+    stale.remove();
+  }
+
+  const current = fixture({ supportsConfigStdin: true });
+  try {
+    const args = ["fmt", "--config-stdin", "--check", "App.vue"];
+    const result = current.run(args, {}, payload);
+    assert.deepEqual(result.args, args);
+    assert.equal(result.configPayload, undefined);
+  } finally {
+    current.remove();
   }
 });
 

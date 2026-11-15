@@ -21,15 +21,18 @@ pub(crate) fn run_direct(args: &CheckArgs) {
     let project_config = if args.no_config {
         crate::config::LoadedProjectConfig::default()
     } else {
-        crate::config::try_load_project_config_with_source(args.config.as_deref()).unwrap_or_else(
-            |error| {
-                eprintln!("\x1b[31mError:\x1b[0m {error}");
-                eprintln!(
-                    "Hint: use `vize check --no-config` to type-check without loading project configuration."
-                );
-                std::process::exit(2);
-            },
-        )
+        let loaded = if args.config_stdin {
+            crate::commands::config_stdin::project()
+        } else {
+            crate::config::try_load_project_config_with_source(args.config.as_deref())
+        };
+        loaded.unwrap_or_else(|error| {
+            eprintln!("\x1b[31mError:\x1b[0m {error}");
+            eprintln!(
+                "Hint: use `vize check --no-config` to type-check without loading project configuration."
+            );
+            std::process::exit(2);
+        })
     };
     let experimental_vue = project_config.document.experimental_vue_flags();
     let compiler_template_syntax = project_config.document.compiler_template_syntax();

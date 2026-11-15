@@ -224,11 +224,16 @@ export function currentAddon(root, receipt, require) {
   };
 }
 
-export function childFrame(command, argv, env, cwd, frame) {
+export function childFrame(command, argv, env, cwd, frame, stdin) {
   return new Promise((resolve) => {
     const stdout = [],
       stderr = [];
-    const child = spawn(command, argv, { cwd, env, stdio: ["ignore", "pipe", "pipe"] });
+    const child = spawn(command, argv, {
+      cwd,
+      env,
+      stdio: [stdin === undefined ? "ignore" : "pipe", "pipe", "pipe"],
+    });
+    if (stdin !== undefined) child.stdin.end(stdin);
     const timeout = setTimeout(() => {
       frame.timedOut = true;
       child.kill("SIGTERM");

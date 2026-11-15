@@ -29,6 +29,8 @@ const typeResolutionBatchClassExport =
   "module.exports.TypeResolutionBatch = nativeBinding.TypeResolutionBatch;\n";
 const typeResolutionBatchFunctionExport =
   "module.exports.beginTypeResolutionBatch = nativeBinding.beginTypeResolutionBatch;\n";
+const configStdinCapabilityExport =
+  "module.exports.supportsCliConfigStdin = nativeBinding.supportsCliConfigStdin;\n";
 const sha256 = (body: Buffer) => createHash("sha256").update(body).digest("hex");
 
 /** Keep the original authenticated loader law through the exact public additions. */
@@ -67,6 +69,15 @@ export function originalNativeLoaderModule(name: string, body: Buffer): Buffer {
     "type-resolution batch function export retains its canonical initialization position",
   );
   assert.equal(text.split(addedExports).length, 2, "exact project API export addition");
+  assert.equal(
+    text.split(
+      "module.exports.runCli = nativeBinding.runCli;\n" +
+        configStdinCapabilityExport +
+        "module.exports.scopeViteCssForPipeline = nativeBinding.scopeViteCssForPipeline;\n",
+    ).length,
+    2,
+    "config stdin capability retains its canonical initialization position",
+  );
   const before =
     "module.exports.typeCheckWithVirtualTsVisitors = nativeBinding.typeCheckWithVirtualTsVisitors;\n";
   const after =
@@ -81,6 +92,7 @@ export function originalNativeLoaderModule(name: string, body: Buffer): Buffer {
       .replace(typeResolutionBatchWrapper, "")
       .replace(typeResolutionBatchClassExport, "")
       .replace(typeResolutionBatchFunctionExport, "")
+      .replace(configStdinCapabilityExport, "")
       .replace(addedExports, ""),
   );
   assert.equal(original.length, reference.bytes, "complete original native loader length");
