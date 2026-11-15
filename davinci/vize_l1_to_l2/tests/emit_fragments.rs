@@ -125,8 +125,7 @@ const { toDisplayString: _toDisplayString, openBlock: _openBlock, createElementB
 
 function render(_ctx, _cache, $props, $setup, $data, $options) {
   return (_openBlock(), _createElementBlock(_Fragment, null, [
-    _createTextVNode(\"hello \"),
-    _toDisplayString(msg)
+    _createTextVNode(\"hello \" + _toDisplayString(msg), 1 /* TEXT */)
   ], 64 /* STABLE_FRAGMENT */))
 }"
     );

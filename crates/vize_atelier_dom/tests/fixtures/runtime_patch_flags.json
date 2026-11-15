@@ -8,6 +8,18 @@
     "template": "<span class=\"badge\">Hi {{ label }}</span>"
   },
   {
+    "name": "root-fragment-interpolation",
+    "template": "{{ label }}\n<span>!</span>"
+  },
+  {
+    "name": "root-fragment-trailing-interpolation",
+    "template": "<span>!</span>\n{{ label }}"
+  },
+  {
+    "name": "root-fragment-comment-boundary",
+    "template": "{{ label }}<!-- retained --><span>!</span>"
+  },
+  {
     "name": "scoped-slot-closure",
     "template": "<MyList :items=\"items\"><template #default=\"{ item }\"><MyChip :tone=\"item.tone\">{{ item.name }}</MyChip></template></MyList>"
   }
