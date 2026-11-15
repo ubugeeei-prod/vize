@@ -96,7 +96,7 @@ const startHere = [
 
 export function workflowGroupId(file: string): WorkflowGroupId {
   if (
-    /^(check(?:-|\.)|pr-|full-|title-policy|rust-pr-target-seed|merge-queue|e2e|canonical-corpus|real-project-matrix)/.test(
+    /^(check(?:-|\.)|pr-|full-|v1-supported-matrix|title-policy|rust-pr-target-seed|merge-queue|e2e|canonical-corpus|real-project-matrix)/.test(
       file,
     )
   ) {

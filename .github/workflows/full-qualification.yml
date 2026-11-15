@@ -6,6 +6,10 @@ on:
 permissions: { contents: read }
 env: { CARGO_TERM_COLOR: always, FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true }
 jobs:
+  v1-supported-matrix:
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    uses: ./.github/workflows/v1-supported-matrix.yml
+    with: { enforce_complete: true }
   full-source-cli:
     if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
     uses: ./.github/workflows/full-source-cli.yml
