@@ -76,10 +76,11 @@ fn fill_authored_enum_binding(
         if !enum_kinds.contains(&part.kind) {
             enum_kinds.push(part.kind.clone());
         }
-        let flags = ENUM_LITERAL
-            | (part.kind == "number")
-                .then_some(NUMBER_LITERAL)
-                .unwrap_or_default();
+        let flags = if part.kind == "number" {
+            ENUM_LITERAL | NUMBER_LITERAL
+        } else {
+            ENUM_LITERAL
+        };
         let id = vize_l0::cstr!("authored-enum:{}:{}", part.enum_id, part.kind);
         part_ids.push(id.clone());
         if let Some(detail_parts) = node
