@@ -183,18 +183,18 @@ async fn open_canonical_virtual_project_document_with_scope(
         .map(|(path, content)| (path.clone(), &**content))
         .collect::<Vec<_>>();
     if include_workspace {
-        let sources =
-            same_typescript_project(ctx, ctx.state.discover_workspace_project_sources().await)
-                .into_iter()
-                .filter(|(uri, _)| uri != ctx.uri && !uri.path().ends_with(".art.vue"))
-                .filter_map(|(uri, source)| Some((uri.to_file_path().ok()?, source)))
-                .collect::<Vec<_>>();
-        let requested = sources
-            .iter()
-            .map(|(path, content)| (path.clone(), content.as_str()))
-            .collect::<Vec<_>>();
+        let sources = same_typescript_project(
+            ctx,
+            ctx.state
+                .discover_workspace_project_source_snapshots()
+                .await,
+        )
+        .into_iter()
+        .filter(|(uri, _)| uri != ctx.uri && !uri.path().ends_with(".art.vue"))
+        .filter_map(|(uri, source)| Some((uri.to_file_path().ok()?, source)))
+        .collect::<Vec<_>>();
         return super::open::open_canonical_virtual_document_with_sources_strict(
-            ctx, bridge, &overlays, &requested,
+            ctx, bridge, &overlays, &sources,
         )
         .await
         .map_err(CanonicalProjectOpenError::Primary);
