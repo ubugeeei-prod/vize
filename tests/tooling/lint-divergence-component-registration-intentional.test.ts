@@ -1,7 +1,13 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import path from "node:path";
 import { test } from "node:test";
 
+import { compareLintFindings } from "../../tools/support/compat/fixtures/lint-divergence.ts";
 import { componentRegistrationBaselineIntentionalReason } from "../../tools/support/fixtures/lint_divergence/component_registration_intentional.ts";
+import { compareLintFindings as compareSuccessor } from "../../tools/support/fixtures/lint_divergence/compare.ts";
+import { get, list, type Json } from "../../tools/support/fixtures/lint_divergence/value.ts";
+import { currentContext, cwd, eslintResult, span } from "./_helpers/lint-divergence-fixture.ts";
 
 const finding = (tag: string, ruleId = "vue/no-undef-components") => ({
   ruleId,
@@ -55,4 +61,80 @@ test("unrelated source shapes stay in the scored baseline", () => {
   ];
   for (const [candidate, source] of controls)
     assert.equal(componentRegistrationBaselineIntentionalReason(candidate, source), null);
+});
+
+test("reviewed registrations retain their complete baseline packet in both comparators", () => {
+  const file = "src/Recursive.vue",
+    filename = path.join(cwd, file),
+    map = {
+      upstream: { package: "eslint-plugin-vue", version: "10.9.2" },
+      entries: {
+        "vue/no-undef-components": {
+          status: "mapped",
+          patinaRule: "vue/require-component-registration",
+        },
+      },
+    },
+    packet = {
+      ruleId: "vue/no-undef-components",
+      severity: 1,
+      ...span(4, 3, 4, 20),
+      message: "The '<RouteTreeBranch>' component has been used, but not defined.",
+    },
+    baseline = [eslintResult(file, [packet])],
+    source = `<script setup lang="ts">
+defineOptions({ name: "RouteTreeBranch" });
+</script>
+<template><RouteTreeBranch /></template>`;
+  fs.mkdirSync(path.dirname(filename), { recursive: true });
+  fs.writeFileSync(filename, source);
+  try {
+    const compatible = compareLintFindings({
+        projectId: "fixture",
+        cwd,
+        ruleMap: map,
+        patinaFindings: [],
+        eslintResults: baseline,
+      }),
+      successor = compareSuccessor(
+        "fixture",
+        cwd,
+        map as Json,
+        [],
+        baseline as unknown as Json[],
+        currentContext(map, [file]),
+      );
+    for (const result of [
+      {
+        falseNegatives: compatible.falseNegatives,
+        intentionalDivergences: compatible.intentionalDivergences,
+      },
+      {
+        falseNegatives: list(successor.falseNegatives),
+        intentionalDivergences: list(successor.intentionalDivergences),
+      },
+    ]) {
+      assert.deepEqual(result.falseNegatives, []);
+      assert.equal(result.intentionalDivergences.length, 1);
+      const [reviewed] = result.intentionalDivergences;
+      assert.deepEqual(
+        {
+          file: get(reviewed as Json, "file"),
+          ruleId: get(reviewed as Json, "ruleId"),
+          severity: get(reviewed as Json, "severity"),
+          line: get(reviewed as Json, "line"),
+          column: get(reviewed as Json, "column"),
+          endLine: get(reviewed as Json, "endLine"),
+          endColumn: get(reviewed as Json, "endColumn"),
+          message: get(reviewed as Json, "message"),
+        },
+        { file, ...packet, severity: "warning" },
+      );
+      const reason = get(reviewed as Json, "reason");
+      if (typeof reason !== "string") throw new TypeError("divergence reason must be a string");
+      assert.match(reason, /recursively/u);
+    }
+  } finally {
+    fs.rmSync(filename, { force: true });
+  }
 });
