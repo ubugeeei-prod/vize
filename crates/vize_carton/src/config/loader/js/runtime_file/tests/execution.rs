@@ -62,7 +62,7 @@ fn orphan_lease_symlink_is_not_opened_or_removed() {
     let root = super::super::cache_root(cache.path());
     let foreign = cache.path().join("foreign.lock");
     fs::write(&foreign, "foreign").unwrap();
-    let orphan = root.join(format!("{}.lease", "a".repeat(64)));
+    let orphan = root.join(crate::cstr!("{}.lease", "a".repeat(64)).as_str());
     symlink(&foreign, &orphan).unwrap();
 
     drop(runtime(cache.path(), "process.stdout.write('recover');"));
