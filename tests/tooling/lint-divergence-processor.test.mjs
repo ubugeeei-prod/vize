@@ -8,11 +8,14 @@ import path from "node:path";
 import { test } from "node:test";
 import {
   baselineConfig,
-  resolveBaselineRuntime,
   retainEnabledFindings,
   runBaseline,
   selectComparableRules,
 } from "../../tools/support/compat/fixtures/lint-divergence-baseline.mjs";
+import {
+  baselineProviderPackage,
+  resolveScorecardRuntime,
+} from "../../tools/support/compat/fixtures/lint-divergence-scorecard.ts";
 import { collectBaselineFindings } from "../../tools/support/compat/fixtures/lint-divergence-records.ts";
 import {
   assertBudgetsPassed,
@@ -23,15 +26,20 @@ import { baselineScript as embedded } from "../../tools/support/fixtures/lint_di
 const root = path.resolve(import.meta.dirname, "../..");
 const digest = (body) => createHash("sha256").update(body).digest("hex");
 const requireFromBench = createRequire(path.join(root, "tools/benchmarks/scripts/package.json"));
-const runtime = resolveBaselineRuntime();
+const runtime = resolveScorecardRuntime();
 const providers = Object.fromEntries(
-  ["eslint", "eslint-plugin-vue", "vue-eslint-parser", "@typescript-eslint/parser"].map((name) => {
-    const manifest = requireFromBench.resolve(`${name}/package.json`);
-    const entrypoint = requireFromBench.resolve(name);
+  [
+    ["eslint", "eslint"],
+    ["eslint-plugin-vue", baselineProviderPackage],
+    ["vue-eslint-parser", "vue-eslint-parser"],
+    ["@typescript-eslint/parser", "@typescript-eslint/parser"],
+  ].map(([name, packageName]) => {
+    const manifest = requireFromBench.resolve(`${packageName}/package.json`);
+    const entrypoint = requireFromBench.resolve(packageName);
     return [
       name,
       {
-        version: requireFromBench(`${name}/package.json`).version,
+        version: requireFromBench(`${packageName}/package.json`).version,
         manifest,
         manifestSha256: digest(fs.readFileSync(manifest)),
         entrypoint,
@@ -48,7 +56,7 @@ const defaults = selectComparableRules(ruleMap, "ecosystem").rules;
 const base = runtime.plugin.configs["flat/base"].find(
   (config) => config.name === "vue/base/setup-for-vue",
 );
-assert.equal(runtime.version, "10.9.2");
+assert.equal(runtime.version, "10.12.0");
 assert.equal(base.processor, "vue/vue");
 assert.equal(runtime.plugin.processors.vue, runtime.plugin.processors[".vue"]);
 const producer = fs.readFileSync(
