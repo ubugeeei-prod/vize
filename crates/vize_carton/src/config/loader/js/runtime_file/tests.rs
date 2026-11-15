@@ -2,7 +2,6 @@ use super::NodeRuntimeFile;
 use std::{
     env,
     fs::{self, OpenOptions},
-    hint::black_box,
     io::Write,
     path::{Path, PathBuf},
     process::{Child, Command, ExitStatus},
@@ -10,13 +9,11 @@ use std::{
     time::{Duration, Instant},
 };
 
+mod benchmark;
+mod execution;
+
 const SHARED_PROCESS_SCRIPT: &str = "process.stdout.write('shared process');";
 const SYMLINK_PROCESS_SCRIPT: &str = "process.stdout.write('owned');";
-const BENCHMARK_SCRIPT: &str = concat!(
-    include_str!("../../vite-runtime.mjs"),
-    include_str!("../../module-runtime.mjs"),
-    include_str!("../../config-inputs.mjs")
-);
 
 fn runtime(cache_home: &Path, script: &str) -> NodeRuntimeFile {
     NodeRuntimeFile::new_with_cache_home(script, cache_home).unwrap()
@@ -74,135 +71,6 @@ fn wait_for_signal(path: &Path) {
         assert!(Instant::now() < deadline, "fixture signal timed out");
         thread::sleep(Duration::from_millis(10));
     }
-}
-
-#[test]
-fn large_evaluator_is_a_private_file_instead_of_a_command_argument() {
-    let cache = tempfile::tempdir().unwrap();
-    let script = " ".repeat(70_000);
-    assert!(script.encode_utf16().count() > 32_767);
-    let runtime = runtime(cache.path(), &script);
-    assert!(runtime.is_cached());
-    let config = std::path::Path::new("vite.config.ts");
-    let command = runtime.command(config);
-    let args: Vec<_> = command.get_args().collect();
-    assert_eq!(args.len(), 2);
-    assert_eq!(args.first().copied(), Some(runtime.path().as_os_str()));
-    assert_eq!(args.last().copied(), Some(config.as_os_str()));
-    let argument_units: usize = args
-        .iter()
-        .map(|arg| arg.to_string_lossy().encode_utf16().count() + 3)
-        .sum();
-    assert!(argument_units < 4_096);
-    let actual = fs::read(runtime.path()).unwrap();
-    assert_eq!(
-        &actual[..super::ARGV_COMPATIBILITY.len()],
-        super::ARGV_COMPATIBILITY
-    );
-    let script_end = super::ARGV_COMPATIBILITY.len() + script.len();
-    assert_eq!(
-        &actual[super::ARGV_COMPATIBILITY.len()..script_end],
-        script.as_bytes()
-    );
-    assert_eq!(
-        &actual[script_end..],
-        b"\n//# sourceURL=vize:config-runtime\n"
-    );
-    #[cfg(unix)]
-    {
-        use std::os::unix::fs::PermissionsExt;
-        assert_eq!(
-            fs::metadata(runtime.path()).unwrap().permissions().mode() & 0o077,
-            0
-        );
-        assert_eq!(
-            fs::metadata(super::cache_root(cache.path()))
-                .unwrap()
-                .permissions()
-                .mode()
-                & 0o077,
-            0
-        );
-    }
-}
-
-#[test]
-fn file_execution_preserves_unicode_paths_cache_marker_and_cwd() {
-    let root = tempfile::tempdir().unwrap();
-    let runtime_cache = root.path().join("cache space 日本語");
-    let project = root.path().join("space 日本語 🐱");
-    fs::create_dir(&project).unwrap();
-    let config = project.join("vite.config.ts");
-    let cache = root.path().join("compile cache");
-    fs::create_dir(&cache).unwrap();
-    let mut script = " ".repeat(70_000);
-    script.push_str(
-        r#"
-process.stdout.write(JSON.stringify({ argv: process.argv.slice(1), cwd: process.cwd() }));
-"#,
-    );
-    for cached in [false, true] {
-        let runtime = runtime(&runtime_cache, &script);
-        let mut command = runtime.command(&config);
-        if cached {
-            command.arg(&cache);
-        }
-        command.arg("--observe-config-inputs");
-        let output = command
-            .output()
-            .expect("Node is required for config runtime transport tests");
-        assert!(
-            output.status.success(),
-            "{}",
-            String::from_utf8_lossy(&output.stderr)
-        );
-        let result: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
-        let expected = if cached {
-            serde_json::json!([config, cache, "--observe-config-inputs"])
-        } else {
-            serde_json::json!([config, "--observe-config-inputs"])
-        };
-        assert_eq!(result["argv"], expected);
-        let cwd = std::path::Path::new(result["cwd"].as_str().unwrap());
-        assert_eq!(cwd.canonicalize().unwrap(), project.canonicalize().unwrap());
-    }
-}
-
-#[test]
-fn file_runtime_keeps_stdin_available_for_the_real_observation_handshake() {
-    let project = tempfile::tempdir().unwrap();
-    let cache = tempfile::tempdir().unwrap();
-    let config = project.path().join("vite.config.ts");
-    let mut script = " ".repeat(70_000);
-    script.push_str(
-        r#"
-process.stdout.write("B2\n[]");
-const { value: ack, done } = await process.stdin[Symbol.asyncIterator]().next();
-if (done || ack.length !== 1 || ack[0] !== 6) throw new Error("missing config acknowledgement");
-process.stdout.write("R\n" + JSON.stringify(process.argv.slice(1)));
-process.stdin.destroy();
-"#,
-    );
-    let runtime = runtime(cache.path(), &script);
-    let mut command = runtime.command(&config);
-    let mut phases = 0;
-    let output =
-        super::super::super::js_observation::evaluate_observed(&mut command, &mut |paths| {
-            assert!(paths.is_empty());
-            phases += 1;
-        })
-        .unwrap();
-    assert!(
-        output.status.success(),
-        "{}",
-        String::from_utf8_lossy(&output.stderr)
-    );
-    assert_eq!(phases, 1);
-    let actual: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
-    assert_eq!(
-        actual,
-        serde_json::json!([config, "--observe-config-inputs"])
-    );
 }
 
 #[test]
@@ -295,7 +163,6 @@ fn process_cache_reuses_the_validated_runtime_and_shared_lease() {
         .unwrap()
         .retain(|entry| entry.home != cache.path());
 }
-
 #[test]
 fn another_process_can_reuse_a_live_runtime() {
     let cache = tempfile::tempdir().unwrap();
@@ -611,79 +478,4 @@ fn runtime_source_identity_preserves_authored_errors_across_retries() {
         .lock()
         .unwrap()
         .retain(|entry| entry.home != cache.path());
-}
-
-#[test]
-#[ignore = "production storage benchmark invoked explicitly by Actions"]
-fn runtime_storage_benchmark() {
-    let lane = env::var("VIZE_RUNTIME_BENCH_LANE").unwrap();
-    assert!(matches!(lane.as_str(), "base" | "head"));
-    let samples = env::var("VIZE_RUNTIME_BENCH_SAMPLES")
-        .unwrap()
-        .parse::<usize>()
-        .unwrap();
-    let iterations = env::var("VIZE_RUNTIME_BENCH_ITERATIONS")
-        .unwrap()
-        .parse::<usize>()
-        .unwrap();
-    assert!(samples > 0 && iterations > 0);
-    let output = PathBuf::from(env::var_os("VIZE_RUNTIME_BENCH_OUTPUT").unwrap());
-    let owner = tempfile::tempdir().unwrap();
-    let source = super::runtime_source(BENCHMARK_SCRIPT);
-    let mut timings = Vec::with_capacity(samples * iterations);
-
-    for sample in 0..samples {
-        let cache = owner.path().join(crate::cstr!("sample-{sample}").as_str());
-        for _ in 0..iterations {
-            let started = Instant::now();
-            let runtime = if lane == "base" {
-                super::temporary_runtime(&source).unwrap()
-            } else {
-                super::process_runtime(&cache, &source).unwrap()
-            };
-            let actual = fs::read(runtime.path()).unwrap();
-            assert_eq!(actual, source);
-            drop(black_box(actual));
-            drop(runtime);
-            timings.push(started.elapsed().as_secs_f64() * 1_000.0);
-        }
-    }
-
-    timings.sort_by(f64::total_cmp);
-    let invocations = samples * iterations;
-    let percentile = |fraction: f64| timings[(timings.len() as f64 * fraction).ceil() as usize - 1];
-    let cached = lane == "head";
-    let source_writes = if cached { samples } else { invocations };
-    let retained_files = if cached { samples * 3 } else { 0 };
-    let report = serde_json::json!({
-        "schema": 1,
-        "implementation": "production-rust",
-        "lane": lane,
-        "samples": samples,
-        "iterations": iterations,
-        "invocations": invocations,
-        "payloadBytes": source.len(),
-        "sourceSha256": super::sha256_hex(&source),
-        "wallMs": {
-            "p50": percentile(0.5),
-            "p95": percentile(0.95),
-            "total": timings.iter().sum::<f64>(),
-        },
-        "storage": {
-            "regularFilesCreated": if cached { samples * 3 } else { invocations },
-            "sourceWrites": source_writes,
-            "writtenBytes": source_writes * source.len(),
-            "retainedFiles": retained_files,
-            "retainedBytes": if cached { samples * source.len() } else { 0 },
-            "perIsolatedSample": {
-                "regularFilesCreated": if cached { 3 } else { iterations },
-                "sourceWrites": if cached { 1 } else { iterations },
-                "writtenBytes": if cached { source.len() } else { iterations * source.len() },
-                "retainedFiles": if cached { 3 } else { 0 },
-                "retainedBytes": if cached { source.len() } else { 0 },
-            },
-        },
-    });
-    fs::write(output, serde_json::to_vec_pretty(&report).unwrap()).unwrap();
-    println!("{report}");
 }
