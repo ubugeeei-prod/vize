@@ -1,7 +1,9 @@
 name: Inspect sharded type-aware evidence
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - bench/no-implied-eval-sharded-13000
 
 permissions:
   actions: read
@@ -16,7 +18,7 @@ jobs:
           name: patina-project-batch
           path: evidence
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          run-id: "43726614652"
+          run-id: "43727628529"
       - name: Publish retained boundary
         run: |
           escape() {
@@ -35,6 +37,9 @@ jobs:
           done
           if [[ -f evidence/samples.jsonl ]]; then
             echo "::notice title=completed samples::$(escape "$(cat evidence/samples.jsonl)")"
+          fi
+          if [[ -f evidence/progress.jsonl ]]; then
+            echo "::notice title=progress receipts::$(escape "$(cat evidence/progress.jsonl)")"
           fi
           {
             echo "## Retained sharded boundary"
