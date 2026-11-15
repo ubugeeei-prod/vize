@@ -427,13 +427,13 @@ async fn load(
         if !query.member_methods.is_empty() {
             fact.member_methods = Some(trees.member_methods(response, &query.member_methods).await);
         }
-        if let Some(computed) = query.computed_member {
-            if let (Some(object), Some(property)) = (
+        if let Some(computed) = query.computed_member
+            && let (Some(object), Some(property)) = (
                 response_at(&computed.object),
                 response_at(&computed.property),
-            ) {
-                fact.direct_method = trees.computed_method(object, property).await;
-            }
+            )
+        {
+            fact.direct_method = trees.computed_method(object, property).await;
         }
         if query.parts {
             fact.type_parts = probe.parts(memo, response).await?;
