@@ -2,7 +2,7 @@
 
 use std::path::{Path, PathBuf};
 
-use vize_l0::{String, cstr};
+use vize_l0::{FxHashMap, String, cstr};
 
 use super::super::path_cache::CanonicalPathCache;
 use super::ImportFileOptions;
@@ -20,13 +20,58 @@ pub(super) fn absolutize(
     Some(canonical_paths.canonicalize(&joined))
 }
 
-pub(super) fn resolve_relative_import(
-    dir: &Path,
-    specifier: &str,
-    canonical_paths: &mut CanonicalPathCache,
-    options: ImportFileOptions,
-) -> Option<PathBuf> {
-    resolve_import_base(&dir.join(specifier), canonical_paths, options)
+/// Positive local import edges resolved during one check invocation.
+///
+/// The look-ahead frontier, the ordered authored walk and overlapping
+/// registration closures traverse the same relative edges. A successful
+/// resolution is stable enough to share between those traversals, while a
+/// negative answer deliberately remains uncached so a file created between
+/// collections is still discovered. Cached targets are revalidated before
+/// reuse so deletion or extension replacement follows the original probes.
+#[derive(Default)]
+pub(super) struct LocalImportResolutionCache {
+    resolved: FxHashMap<(ImportFileOptions, PathBuf), PathBuf>,
+    #[cfg(test)]
+    hits: usize,
+    #[cfg(test)]
+    probes: usize,
+}
+
+impl LocalImportResolutionCache {
+    pub(super) fn resolve(
+        &mut self,
+        base: &Path,
+        canonical_paths: &mut CanonicalPathCache,
+        options: ImportFileOptions,
+    ) -> Option<PathBuf> {
+        let key = (options, base.to_path_buf());
+        if let Some(target) = self.resolved.get(&key)
+            && target.is_file()
+        {
+            #[cfg(test)]
+            {
+                self.hits += 1;
+            }
+            return Some(target.clone());
+        }
+        // A stale positive may otherwise hide a replacement with another
+        // extension. Negative answers are never inserted in the first place.
+        self.resolved.remove(&key);
+        #[cfg(test)]
+        {
+            self.probes += 1;
+        }
+        let resolved = resolve_import_base(base, canonical_paths, options);
+        if let Some(target) = resolved.as_ref() {
+            self.resolved.insert(key, target.clone());
+        }
+        resolved
+    }
+
+    #[cfg(test)]
+    pub(super) fn stats(&self) -> (usize, usize, usize) {
+        (self.resolved.len(), self.hits, self.probes)
+    }
 }
 
 /// Resolution on the authored import walk is the hot path, so consulted
