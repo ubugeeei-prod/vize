@@ -153,6 +153,7 @@ jobs:
     env:
       BASE_SHA: ${{ inputs.base_sha }}
       HEAD_SHA: ${{ inputs.sha }}
+      DRIVER_SHA: ${{ github.workflow_sha }}
       SIZES: ${{ inputs.sizes }}
       CARGO_INCREMENTAL: "0"
       CARGO_BUILD_JOBS: "8"
@@ -167,7 +168,7 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           path: driver
-          ref: ${{ github.workflow_sha }}
+          ref: ${{ env.DRIVER_SHA }}
           persist-credentials: false
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
@@ -184,7 +185,7 @@ jobs:
           set -euo pipefail
           [[ "$(git -C base rev-parse HEAD)" == "$BASE_SHA" ]]
           [[ "$(git -C head rev-parse HEAD)" == "$HEAD_SHA" ]]
-          [[ "$(git -C driver rev-parse HEAD)" == "${{ github.workflow_sha }}" ]]
+          [[ "$(git -C driver rev-parse HEAD)" == "$DRIVER_SHA" ]]
           mkdir -p paired-scaling/build
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with: { toolchain: "1.99.1" }
