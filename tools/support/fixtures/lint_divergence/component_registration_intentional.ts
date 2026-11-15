@@ -1,5 +1,4 @@
-import fs from "node:fs";
-import path from "node:path";
+import { createHash } from "node:crypto";
 
 interface BaselineComponentFinding {
   readonly ruleId: string;
@@ -9,10 +8,18 @@ interface BaselineComponentFinding {
 interface PatinaComponentFinding {
   readonly file: string;
   readonly ruleId: string;
+  readonly severity: string;
   readonly line: number | bigint;
   readonly column: number | bigint;
   readonly endLine: number | bigint;
   readonly endColumn: number | bigint;
+  readonly message: string;
+}
+
+export interface ReviewedPatinaComponentFinding extends PatinaComponentFinding {
+  readonly project: string;
+  readonly sourceSha256: string;
+  readonly reason: string;
 }
 
 const componentMessage =
@@ -161,79 +168,72 @@ function objectArguments(source: string, callee: RegExp): Array<[number, number]
 
 const comparableName = (name: string) => name.replaceAll("-", "").toLowerCase();
 
-function authoredFindingText(finding: PatinaComponentFinding, source: string): string | null {
-  const line = Number(finding.line),
-    endLine = Number(finding.endLine),
-    column = Number(finding.column),
-    endColumn = Number(finding.endColumn);
-  if (
-    !Number.isSafeInteger(line) ||
-    !Number.isSafeInteger(endLine) ||
-    !Number.isSafeInteger(column) ||
-    !Number.isSafeInteger(endColumn) ||
-    line !== endLine ||
-    line < 1 ||
-    column < 1 ||
-    endColumn < column
-  )
-    return null;
-  const authoredLine = source.split("\n")[line - 1];
-  return authoredLine?.slice(column - 1, endColumn - 1) ?? null;
-}
-
-function regularFile(filename: string): boolean {
-  try {
-    return fs.statSync(filename).isFile();
-  } catch {
-    return false;
-  }
-}
-
-const nuxtConfigNames = [
-  "nuxt.config.ts",
-  "nuxt.config.js",
-  "nuxt.config.mjs",
-  "nuxt.config.cjs",
-  "nuxt.config.mts",
-  "nuxt.config.cts",
+const reviewedPatinaComponentFindings: readonly ReviewedPatinaComponentFinding[] = [
+  {
+    project: "alexandrie",
+    file: "frontend/app/pages/(public)/doc/[id]/index.vue",
+    sourceSha256: "92fa7c5337036fdb84e5e37e713c3dbb2d713818709c5f6a86395451a65211d4",
+    ruleId: "vue/require-component-registration",
+    severity: "warning",
+    line: 29,
+    column: 6,
+    endLine: 29,
+    endColumn: 11,
+    message:
+      "[vize:vue/require-component-registration] Component is used but not explicitly imported",
+    reason:
+      "Alexandrie's pinned Nuxt app auto-registers app/components/Error.vue for this exact authored <Error> packet; eslint-plugin-vue instead treats Error as an in-scope JavaScript global.",
+  },
+  {
+    project: "alexandrie",
+    file: "frontend/app/pages/dashboard/docs/[id].vue",
+    sourceSha256: "56ceeed14f2ea09f9410b9510dba0477e3a2c3efcdd00d8bfec660378f4d9d59",
+    ruleId: "vue/require-component-registration",
+    severity: "warning",
+    line: 16,
+    column: 6,
+    endLine: 16,
+    endColumn: 11,
+    message:
+      "[vize:vue/require-component-registration] Component is used but not explicitly imported",
+    reason:
+      "Alexandrie's pinned Nuxt app auto-registers app/components/Error.vue for this exact authored <Error> packet; eslint-plugin-vue instead treats Error as an in-scope JavaScript global.",
+  },
 ];
 
-function nearestNuxtRoot(cwd: string, file: string): string | null {
-  const workspace = path.resolve(cwd);
-  let current = path.dirname(path.resolve(workspace, file));
-  for (;;) {
-    if (nuxtConfigNames.some((name) => regularFile(path.join(current, name)))) return current;
-    if (current === workspace) return null;
-    const parent = path.dirname(current);
-    const relative = path.relative(workspace, parent);
-    if (
-      parent === current ||
-      path.isAbsolute(relative) ||
-      relative === ".." ||
-      relative.startsWith(`..${path.sep}`)
-    )
-      return null;
-    current = parent;
-  }
+function exactInteger(value: number | bigint): bigint | null {
+  if (typeof value === "bigint") return value;
+  return Number.isSafeInteger(value) ? BigInt(value) : null;
 }
+
+const sameInteger = (actual: number | bigint, expected: number | bigint) => {
+  const left = exactInteger(actual),
+    right = exactInteger(expected);
+  return left !== null && right !== null && left === right;
+};
 
 export function componentRegistrationPatinaIntentionalReason(
   finding: PatinaComponentFinding,
   source: string,
-  cwd: string,
+  project: string,
+  reviewed: readonly ReviewedPatinaComponentFinding[] = reviewedPatinaComponentFindings,
 ): string | null {
-  if (
-    finding.ruleId !== "vue/require-component-registration" ||
-    authoredFindingText(finding, source) !== "Error"
-  )
-    return null;
-  const nuxtRoot = nearestNuxtRoot(cwd, finding.file);
-  if (nuxtRoot === null) return null;
-  const componentExists = ["app/components/Error.vue", "components/Error.vue"].some((file) =>
-    regularFile(path.join(nuxtRoot, file)),
-  );
-  if (!componentExists) return null;
-  return "The nearest Nuxt app auto-registers its authored Error.vue component for the <Error> tag; eslint-plugin-vue instead treats Error as an in-scope JavaScript global.";
+  if (finding.ruleId !== "vue/require-component-registration") return null;
+  const sourceSha256 = createHash("sha256").update(source).digest("hex"),
+    match = reviewed.find(
+      (entry) =>
+        entry.project === project &&
+        entry.file === finding.file &&
+        entry.sourceSha256 === sourceSha256 &&
+        entry.ruleId === finding.ruleId &&
+        entry.severity === finding.severity &&
+        sameInteger(entry.line, finding.line) &&
+        sameInteger(entry.column, finding.column) &&
+        sameInteger(entry.endLine, finding.endLine) &&
+        sameInteger(entry.endColumn, finding.endColumn) &&
+        entry.message === finding.message,
+    );
+  return match?.reason ?? null;
 }
 
 function defineOptionsNamesSelf(source: string, tag: string): boolean {

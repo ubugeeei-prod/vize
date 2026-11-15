@@ -5,7 +5,10 @@ import {
   componentRegistrationBaselineIntentionalReason,
   componentRegistrationPatinaIntentionalReason,
 } from "../../fixtures/lint_divergence/component_registration_intentional.ts";
-import { realProjectLocationRules } from "../../fixtures/lint_divergence/real_project_locations.ts";
+import {
+  realProjectLocationDivergence,
+  realProjectLocationRules,
+} from "../../fixtures/lint_divergence/real_project_locations.ts";
 
 import {
   byteOrder,
@@ -230,7 +233,7 @@ export function compareLintFindings({
     const finding = falsePositives[index];
     if (finding === undefined) continue;
     if (finding.ruleId === "vue/no-unused-components") continue;
-    const reason = patinaIntentionalReason(finding, cwd);
+    const reason = patinaIntentionalReason(finding, cwd, projectId);
     if (reason === null) continue;
     falsePositives.splice(index, 1);
     intentionalDivergences.push({ ...finding, reason });
@@ -238,7 +241,7 @@ export function compareLintFindings({
   for (let index = falsePositives.length - 1; index >= 0; index -= 1) {
     const finding = falsePositives[index];
     if (finding?.ruleId !== "vue/no-unused-components") continue;
-    const reason = patinaIntentionalReason(finding, cwd);
+    const reason = patinaIntentionalReason(finding, cwd, projectId);
     if (reason === null) continue;
     falsePositives.splice(index, 1);
     intentionalDivergences.push({ ...finding, reason });
@@ -302,7 +305,7 @@ function dedupeBaselineFindings(records: readonly Compared[]): Compared[] {
   });
 }
 
-function patinaIntentionalReason(finding: LintRecord, cwd: string): string | null {
+function patinaIntentionalReason(finding: LintRecord, cwd: string, project: string): string | null {
   let source: string;
   try {
     source = readFileSync(join(cwd, finding.file), "utf8");
@@ -311,7 +314,7 @@ function patinaIntentionalReason(finding: LintRecord, cwd: string): string | nul
   }
   if (hasUtsScript(source))
     return "Patina preserves linting for Vue files with UTS scripts; vue-eslint-parser rejects the UTS block before eslint-plugin-vue can run mapped rules.";
-  const componentReason = componentRegistrationPatinaIntentionalReason(finding, source, cwd);
+  const componentReason = componentRegistrationPatinaIntentionalReason(finding, source, project);
   if (componentReason !== null) return componentReason;
   if (finding.ruleId === "vue/no-setup-props-reactivity-loss")
     return "Patina's complete contract follows root-scope prop values through nested containers, call arguments, and assignments that eslint-plugin-vue does not inspect.";
@@ -1184,7 +1187,7 @@ function pairRuleLocationDivergences(
   for (let positiveIndex = 0; positiveIndex < falsePositives.length;) {
     const positive = falsePositives[positiveIndex];
     if (positive === undefined) break;
-    const match = findRuleLocationDivergence(positive, falseNegatives);
+    const match = findRuleLocationDivergence(positive, falsePositives, falseNegatives);
     if (match == null) {
       positiveIndex += 1;
       continue;
@@ -1199,6 +1202,7 @@ function pairRuleLocationDivergences(
 
 function findRuleLocationDivergence(
   positive: Compared,
+  falsePositives: readonly Compared[],
   falseNegatives: readonly Compared[],
 ): RuleLocationMatch | null {
   const rule = ruleLocationDivergenceRules[positive.ruleId];
@@ -1213,9 +1217,18 @@ function findRuleLocationDivergence(
     ) {
       continue;
     }
-    const subject = rule.subject(positive, negative);
+    const sharedRule = realProjectLocationRules[positive.ruleId],
+      shared =
+        sharedRule === undefined
+          ? null
+          : realProjectLocationDivergence(positive, negative, falsePositives, falseNegatives),
+      subject = sharedRule === undefined ? rule.subject(positive, negative) : shared?.subject;
     if (subject == null) continue;
-    return { negativeIndex, reason: rule.reason, subject };
+    return {
+      negativeIndex,
+      reason: shared?.reason ?? rule.reason,
+      subject,
+    };
   }
   return null;
 }

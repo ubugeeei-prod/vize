@@ -196,6 +196,37 @@ test("prop comment anchors follow the named prop across type and destructuring s
   assert.equal(result.ruleLocationDivergences[0].subject, "prop:modelValue");
 });
 
+test("same-named prop comments in distinct contracts stay unpaired", () => {
+  const message = 'The "title" property should have a JSDoc comment.',
+    result = compare(
+      [
+        {
+          file: "src/Cards.vue",
+          ruleId: "vue/require-prop-comment",
+          severity: 1,
+          ...span(4, 3, 4, 8),
+          message: `[vize:vue/require-prop-comment] ${message}`,
+        },
+        {
+          file: "src/Cards.vue",
+          ruleId: "vue/require-prop-comment",
+          severity: 1,
+          ...span(14, 3, 14, 8),
+          message: `[vize:vue/require-prop-comment] ${message}`,
+        },
+      ],
+      [
+        eslintResult("src/Cards.vue", [
+          { ruleId: "vue/require-prop-comment", severity: 1, ...span(24, 3, 24, 22), message },
+          { ruleId: "vue/require-prop-comment", severity: 1, ...span(34, 3, 34, 22), message },
+        ]),
+      ],
+    );
+  assert.equal(result.ruleLocationDivergences.length, 0);
+  assert.equal(result.falsePositives.length, 2);
+  assert.equal(result.falseNegatives.length, 2);
+});
+
 test("unused component location anchors are paired by component identity", () => {
   const result = compare(
     [

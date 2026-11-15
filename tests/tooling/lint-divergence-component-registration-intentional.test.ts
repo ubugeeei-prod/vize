@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -11,7 +12,7 @@ import {
 } from "../../tools/support/fixtures/lint_divergence/component_registration_intentional.ts";
 import { compareLintFindings as compareSuccessor } from "../../tools/support/fixtures/lint_divergence/compare.ts";
 import { get, list, type Json } from "../../tools/support/fixtures/lint_divergence/value.ts";
-import { currentContext, cwd, eslintResult, span } from "./_helpers/lint-divergence-fixture.ts";
+import { currentContext, span } from "./_helpers/lint-divergence-fixture.ts";
 
 const finding = (tag: string, ruleId = "vue/no-undef-components") => ({
   ruleId,
@@ -94,8 +95,9 @@ test("unrelated source shapes stay in the scored baseline", () => {
 });
 
 test("reviewed registrations retain their complete baseline packet in both comparators", () => {
-  const file = "src/Icon.vue",
-    filename = path.join(cwd, file),
+  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "vize-patina-baseline-component-")),
+    file = "src/Icon.vue",
+    filename = path.join(workspace, file),
     map = {
       upstream: { package: "eslint-plugin-vue", version: "10.9.2" },
       entries: {
@@ -111,7 +113,7 @@ test("reviewed registrations retain their complete baseline packet in both compa
       ...span(6, 3, 6, 18),
       message: "The '<edit-1-icon>' component has been used, but not defined.",
     },
-    baseline = [eslintResult(file, [packet])],
+    baseline = [{ filePath: filename, messages: [packet] }],
     source = `<script>
 import { Edit1Icon } from "tdesign-icons-vue";
 export default { components: { Edit1Icon } };
@@ -124,14 +126,14 @@ export default { components: { Edit1Icon } };
   try {
     const compatible = compareLintFindings({
         projectId: "fixture",
-        cwd,
+        cwd: workspace,
         ruleMap: map,
         patinaFindings: [],
         eslintResults: baseline,
       }),
       successor = compareSuccessor(
         "fixture",
-        cwd,
+        workspace,
         map as Json,
         [],
         baseline as unknown as Json[],
@@ -168,131 +170,47 @@ export default { components: { Edit1Icon } };
       assert.match(reason, /numeric kebab/u);
     }
   } finally {
-    fs.rmSync(filename, { force: true });
+    fs.rmSync(workspace, { recursive: true, force: true });
   }
 });
 
-test("Nuxt component-directory evidence retains complete Patina packets in both comparators", () => {
-  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "vize-patina-nuxt-component-")),
-    file = "frontend/app/pages/doc.vue",
-    filename = path.join(workspace, file),
-    source = `<template>
+test("reviewed Patina packets require exact project, source hash, and complete diagnostics", () => {
+  const source = `<template>
   <Error :error="error" />
 </template>`,
     packet = {
-      file,
+      file: "frontend/app/pages/doc.vue",
       ruleId: "vue/require-component-registration",
       severity: "warning",
       ...span(2, 4, 2, 9),
-      message: "Component is used but not explicitly imported",
+      message:
+        "[vize:vue/require-component-registration] Component is used but not explicitly imported",
     },
-    map = {
-      upstream: { package: "eslint-plugin-vue", version: "10.9.2" },
-      entries: {
-        "vue/no-undef-components": {
-          status: "mapped",
-          patinaRule: "vue/require-component-registration",
-        },
-      },
-    },
-    baseline = [{ filePath: filename, messages: [] }];
-  fs.mkdirSync(path.dirname(filename), { recursive: true });
-  fs.mkdirSync(path.join(workspace, "frontend/app/components"), { recursive: true });
-  fs.writeFileSync(filename, source);
-  fs.writeFileSync(path.join(workspace, "frontend/nuxt.config.ts"), "export default {}\n");
-  fs.writeFileSync(path.join(workspace, "frontend/app/components/Error.vue"), "<template />\n");
-  try {
-    assert.match(
-      componentRegistrationPatinaIntentionalReason(packet, source, workspace) ?? "",
-      /Nuxt app/u,
-    );
-    const compatible = compareLintFindings({
-        projectId: "fixture",
-        cwd: workspace,
-        ruleMap: map,
-        patinaFindings: [packet],
-        eslintResults: baseline,
-      }),
-      successor = compareSuccessor(
-        "fixture",
-        workspace,
-        map as Json,
-        [packet],
-        baseline as unknown as Json[],
-        currentContext(map, [file]),
-      );
-    for (const result of [
+    reviewed = [
       {
-        falsePositives: compatible.falsePositives,
-        intentionalDivergences: compatible.intentionalDivergences,
+        project: "fixture",
+        sourceSha256: createHash("sha256").update(source).digest("hex"),
+        ...packet,
+        reason: "exact reviewed Nuxt component packet",
       },
-      {
-        falsePositives: list(successor.falsePositives),
-        intentionalDivergences: list(successor.intentionalDivergences),
-      },
-    ]) {
-      assert.deepEqual(result.falsePositives, []);
-      assert.equal(result.intentionalDivergences.length, 1);
-      const [reviewed] = result.intentionalDivergences;
-      assert.deepEqual(
-        {
-          file: get(reviewed as Json, "file"),
-          ruleId: get(reviewed as Json, "ruleId"),
-          severity: get(reviewed as Json, "severity"),
-          line: get(reviewed as Json, "line"),
-          column: get(reviewed as Json, "column"),
-          endLine: get(reviewed as Json, "endLine"),
-          endColumn: get(reviewed as Json, "endColumn"),
-          message: get(reviewed as Json, "message"),
-        },
-        packet,
-      );
-      const reason = get(reviewed as Json, "reason");
-      if (typeof reason !== "string") throw new TypeError("divergence reason must be a string");
-      assert.match(reason, /Error\.vue/u);
-    }
-  } finally {
-    fs.rmSync(workspace, { recursive: true, force: true });
-  }
-});
-
-test("Nuxt component-directory classification fails closed", () => {
-  const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "vize-patina-nuxt-controls-")),
-    file = "frontend/app/pages/doc.vue",
-    source = `<template>
-  <Error />
-</template>`,
-    finding = {
-      file,
-      ruleId: "vue/require-component-registration",
-      ...span(2, 4, 2, 9),
-    };
-  fs.mkdirSync(path.join(workspace, "frontend/app/pages"), { recursive: true });
-  fs.mkdirSync(path.join(workspace, "frontend/components"), { recursive: true });
-  try {
-    assert.equal(componentRegistrationPatinaIntentionalReason(finding, source, workspace), null);
-    fs.writeFileSync(path.join(workspace, "frontend/nuxt.config.ts"), "export default {}\n");
-    assert.equal(componentRegistrationPatinaIntentionalReason(finding, source, workspace), null);
-    fs.writeFileSync(path.join(workspace, "frontend/components/Error.vue"), "<template />\n");
+    ];
+  assert.equal(
+    componentRegistrationPatinaIntentionalReason(packet, source, "fixture", reviewed),
+    reviewed[0]?.reason,
+  );
+  for (const [finding, candidateSource, project] of [
+    [{ ...packet, column: 3 }, source, "fixture"],
+    [{ ...packet, endColumn: 10 }, source, "fixture"],
+    [{ ...packet, line: Number.NaN }, source, "fixture"],
+    [{ ...packet, severity: "error" }, source, "fixture"],
+    [{ ...packet, message: `${packet.message}.` }, source, "fixture"],
+    [{ ...packet, file: "frontend/app/pages/other.vue" }, source, "fixture"],
+    [{ ...packet, ruleId: "vue/no-unused-components" }, source, "fixture"],
+    [packet, `${source}\n`, "fixture"],
+    [packet, source, "other-project"],
+  ] as const)
     assert.equal(
-      componentRegistrationPatinaIntentionalReason(
-        { ...finding, column: 3, endColumn: 9 },
-        source,
-        workspace,
-      ),
+      componentRegistrationPatinaIntentionalReason(finding, candidateSource, project, reviewed),
       null,
     );
-    assert.equal(
-      componentRegistrationPatinaIntentionalReason(
-        { ...finding, ruleId: "vue/no-unused-components" },
-        source,
-        workspace,
-      ),
-      null,
-    );
-    fs.writeFileSync(path.join(workspace, "frontend/app/nuxt.config.ts"), "export default {}\n");
-    assert.equal(componentRegistrationPatinaIntentionalReason(finding, source, workspace), null);
-  } finally {
-    fs.rmSync(workspace, { recursive: true, force: true });
-  }
 });

@@ -54,9 +54,16 @@ export const realProjectLocationRules: Readonly<Record<string, RuleLocationRule>
 export function realProjectLocationDivergence(
   positive: LocationRecord,
   negative: LocationRecord,
+  positives: readonly LocationRecord[] = [positive],
+  negatives: readonly LocationRecord[] = [negative],
 ): RuleLocationMatch | null {
   const rule = realProjectLocationRules[positive.ruleId];
   if (rule === undefined) return null;
+  if (
+    positive.ruleId === "vue/require-prop-comment" &&
+    !hasUniquePropCommentPair(positive, negatives, positives)
+  )
+    return null;
   const subject = rule.subject(positive, negative);
   return subject === null
     ? null
@@ -64,6 +71,20 @@ export function realProjectLocationDivergence(
         subject,
         reason: rule.reason,
       };
+}
+
+function hasUniquePropCommentPair(
+  positive: LocationRecord,
+  negatives: readonly LocationRecord[],
+  positives: readonly LocationRecord[],
+): boolean {
+  const prop = propCommentName(positive.message);
+  if (prop === undefined) return false;
+  const samePacketClass = (record: LocationRecord) =>
+    record.ruleId === positive.ruleId && propCommentName(record.message) === prop;
+  return (
+    positives.filter(samePacketClass).length === 1 && negatives.filter(samePacketClass).length === 1
+  );
 }
 
 function containsRange(outer: LocationRecord, inner: LocationRecord): boolean {

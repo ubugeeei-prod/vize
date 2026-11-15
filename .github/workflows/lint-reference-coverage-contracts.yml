@@ -89,6 +89,8 @@ jobs:
           tools/support/fixtures/lint_reference_coverage.ts
           tests/tooling/lint-baseline-shards.test.ts
           tests/tooling/lint-composed-contract-bounds.test.ts
+          tests/tooling/lint-divergence-component-registration-intentional.test.ts
+          tests/tooling/lint-divergence-rule-location.test.ts
           tests/tooling/lint-reference-classifier.test.ts
           tests/tooling/lint-reference-coverage-workflow.test.ts
           tests/tooling/_helpers/lint-report-rust-parity.ts
@@ -111,7 +113,9 @@ jobs:
           tests/tooling/lint-preset-default-warnings-source.test.mjs
           tests/tooling/patina-legacy-instance-api-reference.test.mjs
           tests/tooling/lint-divergence-processor.test.mjs
+          tests/tooling/lint-divergence-component-registration-intentional.test.ts
           tests/tooling/lint-divergence-raw-errors.test.ts
+          tests/tooling/lint-divergence-rule-location.test.ts
           tests/tooling/lint-divergence-surface-classes.test.ts
           tests/tooling/lint-divergence-pug-surface.test.ts
           tests/tooling/lint-divergence-zero-vue-runner.test.ts

@@ -502,12 +502,12 @@ const patinaIntentionalRuleIds = new Set([
 export function patinaIntentionalReason(
   finding: LintRecord,
   source: string,
-  cwd?: string,
+  project?: string,
 ): string | null {
   if (hasUtsScript(source))
     return "Patina preserves linting for Vue files with UTS scripts; vue-eslint-parser rejects the UTS block before eslint-plugin-vue can run mapped rules.";
-  if (cwd !== undefined) {
-    const componentReason = componentRegistrationPatinaIntentionalReason(finding, source, cwd);
+  if (project !== undefined) {
+    const componentReason = componentRegistrationPatinaIntentionalReason(finding, source, project);
     if (componentReason !== null) return componentReason;
   }
   if (!patinaIntentionalRuleIds.has(finding.ruleId)) return null;
@@ -1219,7 +1219,12 @@ export function pairRuleLocationDivergences(
         };
         break;
       }
-      const realProjectLocation = realProjectLocationDivergence(positive, negative);
+      const realProjectLocation = realProjectLocationDivergence(
+        positive,
+        negative,
+        positives,
+        negatives,
+      );
       if (realProjectLocation !== null) {
         match = { index, ...realProjectLocation };
         break;
