@@ -1,7 +1,9 @@
 name: Inspect sharded type-aware evidence
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - bench/no-implied-eval-sharded-13000
 
 permissions:
   actions: read
@@ -16,7 +18,7 @@ jobs:
           name: patina-project-batch
           path: evidence
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          run-id: "43725427972"
+          run-id: "43726614652"
       - name: Publish retained boundary
         run: |
           escape() {
