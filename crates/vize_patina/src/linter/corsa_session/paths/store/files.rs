@@ -1,5 +1,7 @@
 use super::walk::{glob_match, is_declaration_file, parse_jsonc, slash_path, walk_glob};
-use super::{Path, PathBuf, String, ToCompactString, Value};
+use super::{
+    Path, PathBuf, String, ToCompactString, TsconfigOwnershipCache, TsconfigSourceKind, Value,
+};
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{Declaration, Statement, TSModuleDeclarationName};
 use oxc_parser::Parser;
@@ -11,10 +13,7 @@ pub(super) fn ambient_program_files(project_root: &Path, tsconfig: &Path) -> Vec
     let mut files = selection.declarations;
     let mut sources = selection.source_candidates;
     if selection.needs_authoritative_source_scan {
-        sources.extend(vize_canon::batch::tsconfig_included_source_files(
-            tsconfig,
-            project_root,
-        ));
+        sources.extend(owned_typescript_sources(project_root, tsconfig));
     }
     sources.sort();
     sources.dedup();
@@ -35,6 +34,20 @@ pub(super) fn ambient_program_files(project_root: &Path, tsconfig: &Path) -> Vec
     files.sort();
     files.dedup();
     files
+}
+
+fn owned_typescript_sources(project_root: &Path, tsconfig: &Path) -> Vec<PathBuf> {
+    let mut candidates = Vec::new();
+    for pattern in ["*.ts", "*.tsx", "*.mts", "*.cts"] {
+        walk_glob(project_root, &["**", pattern], &mut candidates);
+    }
+    candidates.sort();
+    candidates.dedup();
+    let mut ownership = TsconfigOwnershipCache::default();
+    candidates
+        .into_iter()
+        .filter(|path| ownership.project_owns_source(tsconfig, path, TsconfigSourceKind::Typed))
+        .collect()
 }
 
 fn is_typescript_source(path: &Path) -> bool {
@@ -220,7 +233,7 @@ mod tests {
     }
 
     #[test]
-    fn inherited_program_membership_uses_the_shared_tsconfig_authority() {
+    fn inherited_program_membership_uses_the_tsconfig_ownership_authority() {
         let root = tempfile::tempdir().unwrap();
         write(
             root.path(),

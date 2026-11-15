@@ -134,7 +134,7 @@ pub use tsconfig_gen::{
     ConfigurationObservations, TsconfigOwnershipCache, TsconfigOwnershipOptions,
     TsconfigOwnershipSnapshot, TsconfigSourceKind, TsconfigWildcard, TsconfigWildcardUsage,
     UnresolvedExtends, snapshot_tsconfig_compiler_options, snapshot_tsconfig_vue_compiler_options,
-    snapshot_tsconfig_vue_target, tsconfig_included_source_files,
+    snapshot_tsconfig_vue_target,
 };
 mod tsconfig_paths;
 // The Corsa session key (P5-8) digests the same `extends` chain.
