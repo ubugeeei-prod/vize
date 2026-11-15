@@ -36,12 +36,16 @@ export function runLoaderUnits(source: string, evidence: string): void {
     "runtime_source_identity_preserves_authored_errors_across_retries",
   ])
     assert.ok(result.stdout.includes(name + " ... ok"), "required actual-Node test: " + name);
-  const count = result.stdout.match(/test result: ok\. ([1-9]\d*) passed; 0 failed;/);
-  assert.ok(count);
-  assert.ok(Number(count[1]) >= 5 && Number(count[1]) < 500);
+  const passed = Math.max(
+    ...Array.from(
+      result.stdout.matchAll(/test result: ok\. ([1-9]\d*) passed; 0 failed;/g),
+      (match) => Number(match[1]),
+    ),
+  );
+  assert.ok(passed >= 5 && passed < 500);
   record.json("required-unit-summary.json", {
     actualNode: node.stdout.trim(),
-    passed: Number(count[1]),
+    passed,
     requiredTransportCases: 5,
     status: "pass",
   });
