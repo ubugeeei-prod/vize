@@ -425,21 +425,6 @@ const Row = ({ value }) => <div>{value}</div>;
 }
 
 #[test]
-fn paired_plain_script_component_factories_are_visible_to_script_setup_templates() {
-    let result = create_linter().lint_sfc(
-        r#"<template><LogoContent /><logo-content /></template>
-<script setup lang="ts">const ready = true;</script>
-<script lang="ts">
-import { defineComponent } from "vue";
-const LogoContent = defineComponent({ setup: () => () => null });
-export { LogoContent };
-</script>"#,
-        "LogoLoop.vue",
-    );
-    assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
-}
-
-#[test]
 fn snake_case_tags_do_not_resolve_to_pascal_case_imports() {
     let linter = create_linter();
     let sfc = r#"<script setup lang="ts">

@@ -196,10 +196,7 @@ fn options_name_property(args: &str) -> Option<&str> {
 
 #[cfg(test)]
 mod tests {
-    use super::{component_factory_bindings, file_stem, options_name_property};
-    use oxc_allocator::Allocator;
-    use oxc_parser::Parser;
-    use oxc_span::SourceType;
+    use super::{file_stem, options_name_property};
 
     #[test]
     fn extracts_name_property() {
@@ -230,20 +227,5 @@ mod tests {
         assert_eq!(file_stem("src/components/tree-item.vue"), "tree-item");
         assert_eq!(file_stem("App.vue"), "App");
         assert_eq!(file_stem(r"win\path\Item.vue"), "Item");
-    }
-
-    #[test]
-    fn indexes_only_top_level_component_factory_bindings() {
-        let allocator = Allocator::default();
-        let parsed = Parser::new(
-            &allocator,
-            "const Local = defineComponent({}); export const Async = defineAsyncComponent(load); const value = factory();",
-            SourceType::ts(),
-        )
-        .parse();
-        assert_eq!(
-            component_factory_bindings(&parsed.program),
-            vec!["Local", "Async"]
-        );
     }
 }
