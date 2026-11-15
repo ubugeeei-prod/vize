@@ -41,6 +41,11 @@ jobs:
             detail="$(wc -c evidence/base-cohort-authority.stdout "$file"; sha256sum evidence/base-cohort-authority.stdout "$file"; cmp -l evidence/base-cohort-authority.stdout "$file" | head -n 20 || true)"
             echo "::notice title=$(basename "$file") diff::$(escape "$detail")"
           done
+          profiles=(evidence/*.profile.json)
+          if [[ -f "${profiles[0]}" ]]; then
+            detail="$(jq -s '{files:length,truncations:(map(.truncation)|unique),requestSpans:(map([.spans[]|select(.key|startswith("corsa.request."))]|length)),invalid:(map([.spans[]|select(.key|startswith("corsa.request."))|select(.attribution.stage!="patina" or .attribution.pass=="other" or (.count|type)!="number" or .count<=0)|{key,attribution,count}]))}' "${profiles[@]}")"
+            echo "::notice title=profile vector validity::$(escape "$detail")"
+          fi
           {
             echo "## Retained sharded boundary"
             echo
