@@ -348,12 +348,7 @@ function normalizeReviewedCoverageIdentity(
   assert.equal(actual.divergence.summary.patinaOutsideBaselineSurfaceCount, 0);
   assert.equal(actual.divergence.summary.referenceCoverageIntegrityErrorCount, 0);
   assert.deepEqual(
-    without(object(actual.budget), [
-      "falsePositivePassed",
-      "passed",
-      "unusableReason",
-      "verdict",
-    ]),
+    without(object(actual.budget), ["falsePositivePassed", "passed", "unusableReason", "verdict"]),
     without(object(expected.budget), [
       "falsePositivePassed",
       "passed",
