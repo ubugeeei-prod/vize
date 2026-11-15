@@ -18,16 +18,20 @@ pub(super) fn ambient_program_files(project_root: &Path, tsconfig: &Path) -> Vec
     }
     sources.sort();
     sources.dedup();
-    files.extend(sources.into_par_iter().filter_map(|path| {
-        if !is_typescript_source(&path) {
-            return None;
-        }
-        let content = std::fs::read_to_string(&path).ok()?;
-        is_module_augmentation(&path, &content).then(|| {
-            let canonical = std::fs::canonicalize(&path).unwrap_or(path);
-            slash_path(&canonical)
+    let augmentations = sources
+        .into_par_iter()
+        .filter_map(|path| {
+            if !is_typescript_source(&path) {
+                return None;
+            }
+            let content = std::fs::read_to_string(&path).ok()?;
+            is_module_augmentation(&path, &content).then(|| {
+                let canonical = std::fs::canonicalize(&path).unwrap_or(path);
+                slash_path(&canonical)
+            })
         })
-    }));
+        .collect::<Vec<_>>();
+    files.extend(augmentations);
     files.sort();
     files.dedup();
     files
