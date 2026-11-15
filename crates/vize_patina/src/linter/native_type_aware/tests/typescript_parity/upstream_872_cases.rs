@@ -88,7 +88,7 @@ fn selected_typescript_eslint_872_cases_match() {
 
         let linter = linters.entry(case.rule.clone()).or_insert_with(|| {
             Linter::with_preset(LintPreset::Opinionated)
-                .with_enabled_rules(Some(vec![case.rule.clone()]))
+                .with_enabled_rules(Some(vec![case.rule.clone().into()]))
         });
         let result =
             lint_sfc_with_corsa(linter, &source, path.to_str().expect("UTF-8 fixture path"));
