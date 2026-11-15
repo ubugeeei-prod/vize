@@ -6,8 +6,8 @@ use serde::Serialize;
 use serde::ser::{SerializeStruct, Serializer};
 use serde_json::{Value, json};
 use vize_canon::{
-    ContentMapperDiagnostic, ContentMapperDiagnosticDirective, ContentMapperDiagnosticDirectives,
-    ContentMapperSpan, ContentMapperTransform, ContentMapperUnusedExpectDiagnostic,
+    ContentMapperDiagnostic, ContentMapperDiagnosticDirectives, ContentMapperSpan,
+    ContentMapperTransform, ContentMapperUnusedExpectDiagnostic,
 };
 
 /// Room for `Content-Length: <u64>\r\n\r\n` ahead of the body.
@@ -16,7 +16,8 @@ const HEADER_ROOM: usize = 40;
 /// TypeScript `spanmap.FeatureAll`; a five-element span tuple decodes to it.
 const SPAN_FEATURES_ALL: usize = (1 << 20) - 1;
 
-/// Ignore directive policy; the host reads a tuple's sixth element only for expect.
+/// Ignore directive policy; the sixth element is omitted when it has no
+/// negotiated diagnostic-code selector.
 const DIRECTIVE_POLICY_IGNORE: usize = 0;
 
 pub(super) fn encode_result(id: &Value, result: impl Serialize) -> io::Result<Vec<u8>> {
@@ -44,6 +45,7 @@ pub(super) fn encode_result(id: &Value, result: impl Serialize) -> io::Result<Ve
 pub(super) fn encode_transform(
     id: &Value,
     transform: &ContentMapperTransform,
+    diagnostic_code_selectors: bool,
 ) -> io::Result<Vec<u8>> {
     let ContentMapperTransform {
         text,
@@ -64,7 +66,12 @@ pub(super) fn encode_transform(
     frame.extend_from_slice(br#","jsonrpc":"2.0","result":{"#);
     if let Some(directives) = diagnostic_directives {
         frame.extend_from_slice(br#""diagnosticDirectives":"#);
-        push_directives(&mut frame, directives, text)?;
+        push_directives(
+            &mut frame,
+            directives,
+            text,
+            diagnostic_code_selectors,
+        )?;
         frame.push(b',');
     }
     frame.extend_from_slice(br#""diagnostics":"#);
@@ -163,13 +170,14 @@ fn push_spans(out: &mut Vec<u8>, spans: &[ContentMapperSpan]) {
     out.push(b']');
 }
 
-/// Directive table with sorted keys. An ignore tuple drops its unused-expect
-/// index, which the host never reads for that policy, and an ignore that
-/// [`suppresses_nothing`] is not sent.
+/// Directive table with sorted keys. A legacy ignore tuple drops its empty
+/// policy value, a selected ignore is sent only after capability negotiation,
+/// and an ignore that [`suppresses_nothing`] is not sent.
 fn push_directives(
     out: &mut Vec<u8>,
     directives: &ContentMapperDiagnosticDirectives,
     text: &str,
+    diagnostic_code_selectors: bool,
 ) -> io::Result<()> {
     let ContentMapperDiagnosticDirectives {
         unused_expect_directive_diagnostics,
@@ -177,7 +185,14 @@ fn push_directives(
     } = directives;
     out.extend_from_slice(br#"{"directives":["#);
     let mut first = true;
-    for ContentMapperDiagnosticDirective(tuple) in directives {
+    for directive in directives {
+        let tuple = &directive.0;
+        let selected_ignore = directive.diagnostic_code().is_some();
+        // Never degrade a code-selected ignore to range-only suppression for a
+        // host that did not explicitly advertise selector support.
+        if selected_ignore && !diagnostic_code_selectors {
+            continue;
+        }
         if tuple[4] == DIRECTIVE_POLICY_IGNORE && suppresses_nothing(text, tuple[2], tuple[3]) {
             continue;
         }
@@ -185,7 +200,7 @@ fn push_directives(
             out.push(b',');
         }
         first = false;
-        let width = if tuple[4] == DIRECTIVE_POLICY_IGNORE {
+        let width = if tuple[4] == DIRECTIVE_POLICY_IGNORE && !selected_ignore {
             5
         } else {
             6
@@ -326,6 +341,14 @@ impl Serialize for Sorted<'_, ContentMapperUnusedExpectDiagnostic> {
 /// ignore directives.
 #[cfg(test)]
 pub(in crate::commands::content_mapper) fn wire_value(transform: &ContentMapperTransform) -> Value {
+    wire_value_with_capabilities(transform, false)
+}
+
+#[cfg(test)]
+fn wire_value_with_capabilities(
+    transform: &ContentMapperTransform,
+    diagnostic_code_selectors: bool,
+) -> Value {
     let mut value = serde_json::to_value(transform).unwrap_or_default();
     if let Some(result) = value.as_object_mut() {
         result.remove("semanticLinks");
@@ -344,14 +367,6 @@ pub(in crate::commands::content_mapper) fn wire_value(transform: &ContentMapperT
         5,
         SPAN_FEATURES_ALL,
     );
-    narrow(
-        value
-            .get_mut("diagnosticDirectives")
-            .and_then(|table| table.get_mut("directives"))
-            .and_then(Value::as_array_mut),
-        4,
-        DIRECTIVE_POLICY_IGNORE,
-    );
     if let Some(rows) = value
         .get_mut("diagnosticDirectives")
         .and_then(|table| table.get_mut("directives"))
@@ -360,9 +375,23 @@ pub(in crate::commands::content_mapper) fn wire_value(transform: &ContentMapperT
         rows.retain(|row| {
             let column =
                 |index: usize| row.get(index).and_then(Value::as_u64).unwrap_or(0) as usize;
+            if column(4) == DIRECTIVE_POLICY_IGNORE
+                && column(5) != 0
+                && !diagnostic_code_selectors
+            {
+                return false;
+            }
             !(column(4) == DIRECTIVE_POLICY_IGNORE
                 && suppresses_nothing(transform.text.as_str(), column(2), column(3)))
         });
+        for row in rows {
+            if let Some(tuple) = row.as_array_mut()
+                && tuple.get(4) == Some(&json!(DIRECTIVE_POLICY_IGNORE))
+                && tuple.get(5) == Some(&json!(0))
+            {
+                tuple.truncate(5);
+            }
+        }
     }
     value
 }

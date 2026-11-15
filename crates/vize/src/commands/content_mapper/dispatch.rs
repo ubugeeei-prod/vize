@@ -98,6 +98,7 @@ struct TransformJob {
     file_name: vize_l0::String,
     content: vize_l0::String,
     settings: ProjectSettings,
+    diagnostic_code_selectors: bool,
 }
 
 /// Serve the protocol. `initialized` means the launcher already answered
@@ -106,6 +107,7 @@ pub(super) fn serve<R: BufRead, W: Write + Send>(
     reader: &mut R,
     writer: &mut W,
     initialized: bool,
+    diagnostic_code_selectors: bool,
     order: ReplyOrder,
 ) -> io::Result<()> {
     let workers = thread::available_parallelism()
@@ -117,6 +119,7 @@ pub(super) fn serve<R: BufRead, W: Write + Send>(
         thread::Builder::new(),
         std::iter::repeat_n(TRANSFORM_WORKER_STACK_BYTES, workers),
         initialized,
+        diagnostic_code_selectors,
         order,
     )
     .map(|_| ())
@@ -154,6 +157,7 @@ fn serve_with_worker_plan<R: BufRead, W: Write + Send>(
         writer_builder,
         worker_stacks,
         false,
+        false,
         ReplyOrder::Request,
     )
 }
@@ -164,6 +168,7 @@ fn serve_with_plan<R: BufRead, W: Write + Send>(
     writer_builder: thread::Builder,
     worker_stacks: impl ExactSizeIterator<Item = usize>,
     initialized: bool,
+    diagnostic_code_selectors: bool,
     order: ReplyOrder,
 ) -> io::Result<WorkerPoolReceipt> {
     let write_error = Mutex::new(None::<io::Error>);
@@ -217,6 +222,7 @@ fn serve_with_plan<R: BufRead, W: Write + Send>(
                     &progress,
                     inflight_limit,
                     initialized,
+                    diagnostic_code_selectors,
                 )
             }),
         };
@@ -269,6 +275,7 @@ fn read_loop<R: BufRead>(
     progress: &WriteProgress,
     inflight_limit: std::num::NonZeroUsize,
     mut initialized: bool,
+    mut diagnostic_code_selectors: bool,
 ) -> io::Result<()> {
     let mut projects = ProjectRegistry::new(super::mode::ProjectionMode::from_env());
     let mut seq = 0_u64;
@@ -291,7 +298,12 @@ fn read_loop<R: BufRead>(
         match request.method.as_str() {
             "initialize" => {
                 progress.wait_until(seq)?;
-                let frame = initialize(id, request.params, &mut initialized)?;
+                let frame = initialize(
+                    id,
+                    request.params,
+                    &mut initialized,
+                    &mut diagnostic_code_selectors,
+                )?;
                 reply(done, &mut seq, &frame)?;
             }
             "openProject" | "closeProject" | "transform" if !initialized => {
@@ -308,7 +320,15 @@ fn read_loop<R: BufRead>(
                 let frame = close_project(id, request.params, &mut projects)?;
                 reply(done, &mut seq, &frame)?;
             }
-            "transform" => dispatch_transform(id, request.params, &projects, jobs, done, &mut seq)?,
+            "transform" => dispatch_transform(
+                id,
+                request.params,
+                &projects,
+                jobs,
+                done,
+                &mut seq,
+                diagnostic_code_selectors,
+            )?,
             _ => {
                 let message = cstr!("Method not found: {}", request.method);
                 let frame = encode_error(&id, -32601, &message)?;
@@ -326,7 +346,12 @@ fn reply(done: &Sender<(u64, Vec<u8>)>, seq: &mut u64, frame: &[u8]) -> io::Resu
     Ok(())
 }
 
-fn initialize(id: Value, params: Value, initialized: &mut bool) -> io::Result<Vec<u8>> {
+fn initialize(
+    id: Value,
+    params: Value,
+    initialized: &mut bool,
+    diagnostic_code_selectors: &mut bool,
+) -> io::Result<Vec<u8>> {
     let params = match serde_json::from_value::<InitializeParams>(params) {
         Ok(params) => params,
         Err(error) => {
@@ -341,6 +366,9 @@ fn initialize(id: Value, params: Value, initialized: &mut bool) -> io::Result<Ve
         return encode_error(&id, -32602, "Vize requires the utf-8 position encoding");
     }
     *initialized = true;
+    *diagnostic_code_selectors = params
+        .capabilities
+        .diagnostic_directive_code_selectors;
     encode_result(
         &id,
         json!({"positionEncoding": "utf-8", "diagnosticSource": "vize"}),
@@ -387,6 +415,7 @@ fn dispatch_transform(
     jobs: &Sender<TransformJob>,
     done: &Sender<(u64, Vec<u8>)>,
     seq: &mut u64,
+    diagnostic_code_selectors: bool,
 ) -> io::Result<()> {
     let params = match serde_json::from_value::<TransformParams>(params) {
         Ok(params) => params,
@@ -405,6 +434,7 @@ fn dispatch_transform(
         file_name: params.file_name,
         content: params.content,
         settings,
+        diagnostic_code_selectors,
     };
     *seq += 1;
     jobs.send(job)
@@ -416,7 +446,9 @@ fn transform_frame(job: &TransformJob, sources: &ContentMapperTypeSources) -> io
         Path::new(job.file_name.as_str()),
         job.settings.skip_lib_check,
     ) {
-        Ok(Some(result)) => return encode_transform(&job.id, &result),
+        Ok(Some(result)) => {
+            return encode_transform(&job.id, &result, job.diagnostic_code_selectors);
+        }
         Ok(None) => {}
         Err(error) => {
             let message = cstr!("Cannot read shipped declaration: {error}");
@@ -431,7 +463,11 @@ fn transform_frame(job: &TransformJob, sources: &ContentMapperTypeSources) -> io
         &job.settings.project_context,
         sources,
     ) {
-        Ok(result) => encode_transform(&job.id, &result.with_semantic_diagnostics()),
+        Ok(result) => encode_transform(
+            &job.id,
+            &result.with_semantic_diagnostics(),
+            job.diagnostic_code_selectors,
+        ),
         Err(error) => {
             let message = cstr!("Transform failed: {error}");
             encode_error(&job.id, -32603, &message)

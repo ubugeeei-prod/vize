@@ -90,7 +90,7 @@ function initializeProblem(params: unknown): string | null {
   if (typeof params !== "object" || params === null || Array.isArray(params)) {
     return "Invalid initialize params: expected an object";
   }
-  const { locale, positionEncodings } = params as Record<string, unknown>;
+  const { capabilities, locale, positionEncodings } = params as Record<string, unknown>;
   if (locale !== undefined && locale !== null && typeof locale !== "string") {
     return "Invalid initialize params: `locale` must be a string";
   }
@@ -100,19 +100,28 @@ function initializeProblem(params: unknown): string | null {
   if (!Array.isArray(positionEncodings) || positionEncodings.some((e) => typeof e !== "string")) {
     return "Invalid initialize params: `positionEncodings` must be a string array";
   }
+  if (capabilities !== undefined) {
+    if (typeof capabilities !== "object" || capabilities === null || Array.isArray(capabilities)) {
+      return "Invalid initialize params: `capabilities` must be an object";
+    }
+    const selector = (capabilities as Record<string, unknown>).diagnosticDirectiveCodeSelectors;
+    if (selector !== undefined && typeof selector !== "boolean") {
+      return "Invalid initialize params: `diagnosticDirectiveCodeSelectors` must be a boolean";
+    }
+  }
   if (!positionEncodings.includes("utf-8")) return "Vize requires the utf-8 position encoding";
   return null;
 }
 
 /**
- * Answer the stream until `initialize` succeeds. `true` means the native
- * server takes over initialized; `false` means the host closed the stream
- * first and there is nothing to serve.
+ * Answer the stream until `initialize` succeeds. The returned arguments carry
+ * negotiated capabilities into the native server. `null` means the host
+ * closed the stream first and there is nothing to serve.
  */
-export function answerContentMapperInitialize(): boolean {
+export function answerContentMapperInitialize(): readonly string[] | null {
   for (;;) {
     const body = readFrame();
-    if (body === null) return false;
+    if (body === null) return null;
     let request: Record<string, unknown>;
     try {
       const parsed: unknown = JSON.parse(body.toString("utf8"));
@@ -134,7 +143,11 @@ export function answerContentMapperInitialize(): boolean {
           jsonrpc: "2.0",
           result: { diagnosticSource: "vize", positionEncoding: "utf-8" },
         });
-        return true;
+        const capabilities = request.params as Record<string, unknown>;
+        const supportsCodeSelectors = (
+          capabilities.capabilities as Record<string, unknown> | undefined
+        )?.diagnosticDirectiveCodeSelectors === true;
+        return supportsCodeSelectors ? ["--diagnostic-directive-code-selectors"] : [];
       }
       fail(id, -32602, problem);
     } else if (["openProject", "closeProject", "transform"].includes(request.method as string)) {
