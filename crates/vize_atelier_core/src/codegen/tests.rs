@@ -1,5 +1,6 @@
 //! Snapshot and assertion tests for codegen.
 
+mod root_fragment;
 mod source_map_identity;
 
 use crate::compile;
@@ -27,7 +28,6 @@ fn test_codegen_simple_element() {
 
 #[test]
 fn test_codegen_interpolation() {
-    // When prefix_identifiers is false (default), expressions are not prefixed with _ctx.
     let result = compile!("<div>{{ msg }}</div>");
     assert_codegen_snapshot!(result);
 }
@@ -191,41 +191,6 @@ fn root_siblings_drop_indentation_newlines() {
     let result = compile!("<span>a</span>\n  <span>b</span>");
     let output = result_output(&result);
     assert!(!output.contains("_createTextVNode()"), "{output}");
-}
-
-#[test]
-fn root_fragment_interpolation_is_a_dynamic_text_vnode() {
-    let result = compile!("{{ label }}\n<span>!</span>");
-    let output = result_output(&result);
-
-    assert!(
-        output.contains("_createTextVNode(_toDisplayString(label) + \" \", 1 /* TEXT */)"),
-        "a root interpolation must remain in the fragment's dynamic children:\n{output}",
-    );
-    assert_eq!(output.matches("1 /* TEXT */").count(), 1, "{output}");
-}
-
-#[test]
-fn root_fragment_interpolation_keeps_text_run_boundaries() {
-    for (source, expected) in [
-        (
-            "<span>!</span>\n{{ label }}",
-            "_createTextVNode(\" \" + _toDisplayString(label), 1 /* TEXT */)",
-        ),
-        (
-            "{{ label }}<!-- retained --><span>!</span>",
-            "_createTextVNode(_toDisplayString(label), 1 /* TEXT */)",
-        ),
-        (
-            "{{ label }}<!-- @vize:forget marker --><span>!</span>",
-            "_createTextVNode(_toDisplayString(label), 1 /* TEXT */)",
-        ),
-    ] {
-        let result = compile!(source);
-        let output = result_output(&result);
-        assert!(output.contains(expected), "{source}:\n{output}");
-        assert_eq!(output.matches("1 /* TEXT */").count(), 1, "{source}");
-    }
 }
 
 #[test]

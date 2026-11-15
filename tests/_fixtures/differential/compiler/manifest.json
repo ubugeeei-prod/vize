@@ -2642,7 +2642,7 @@
       },
       "reference": {
         "path": "root-fragment-interpolation-13024/module.expected.txt",
-        "sha256": "4eb6833ef85da0738c8af7bc6f8f9e49ef706be5d1ae80c70344cae474bb5d27",
+        "sha256": "a29b72fbc18ba343503c368423bdffacfa651d5f87f4cd783eb230b9272d6abc",
         "source": "https://github.com/ubugeeei-prod/vize/issues/13024; crates/vize_atelier_dom/tests/runtime_patch_flags.rs:static_root_props_keep_text_patch_flags"
       },
       "adapters": {

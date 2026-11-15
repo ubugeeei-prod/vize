@@ -182,8 +182,18 @@ fn emit_fragment(cx: &mut EmitCx<'_>, root: &Region<'_>) -> Result<(), EmitError
             // Keep the established DEV_ROOT_FRAGMENT classification even
             // though compound text is now emitted as one patchable vnode.
             compound_text |= run.iter().any(is_compound);
-            start_item(cx, &mut first);
-            emit_create_text_vnode(cx, run)?;
+            if run
+                .iter()
+                .any(|candidate| matches!(candidate, Op::Interpolation(_)))
+            {
+                start_item(cx, &mut first);
+                emit_create_text_vnode(cx, run)?;
+            } else {
+                // Preserve the shipped output for static-only root text runs.
+                for candidate in run {
+                    emit_units(cx, candidate, &mut first)?;
+                }
+            }
             continue;
         }
 

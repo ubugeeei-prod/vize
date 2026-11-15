@@ -33,7 +33,7 @@ pub(crate) fn generate_child_refs_force_array(
     ctx: &mut CodegenContext,
     children: &[&TemplateChildNode<'_>],
 ) {
-    generate_effective_children_inner(ctx, children, true);
+    generate_effective_children_inner(ctx, children, true, false);
 }
 
 /// Check if a child node is a directive comment that should be stripped.
@@ -53,13 +53,14 @@ fn generate_children_inner(
         .filter(|c| !is_directive_comment(c))
         .collect();
 
-    generate_effective_children_inner(ctx, &effective, force_array);
+    generate_effective_children_inner(ctx, &effective, force_array, true);
 }
 
 fn generate_effective_children_inner(
     ctx: &mut CodegenContext,
     effective: &[&TemplateChildNode<'_>],
     force_array: bool,
+    merge_static_text_runs: bool,
 ) {
     if effective.is_empty() {
         ctx.push("null");
@@ -162,6 +163,21 @@ fn generate_effective_children_inner(
             let has_interp = run
                 .iter()
                 .any(|c| matches!(c, TemplateChildNode::Interpolation(_)));
+
+            // Compatibility root fragments historically kept adjacent static
+            // text nodes separate. Only normalize a root run when doing so is
+            // required to make an interpolation a patchable text VNode.
+            if !has_interp && !merge_static_text_runs {
+                for child in run {
+                    if !first_output {
+                        ctx.push(",");
+                    }
+                    ctx.newline();
+                    first_output = false;
+                    generate_node(ctx, child);
+                }
+                continue;
+            }
 
             let create_text = ctx.helper(RuntimeHelper::CreateText);
             ctx.use_helper(RuntimeHelper::CreateText);

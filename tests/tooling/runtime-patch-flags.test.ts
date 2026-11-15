@@ -108,7 +108,7 @@ test(
         assert.deepEqual(await executeScopedSlot(capture.code), expected, capture.name);
         continue;
       }
-      assert.match(capture.code, /, 1 \/\* TEXT \*\/\)\)/, capture.name);
+      assert.match(capture.code, /, 1 \/\* TEXT \*\/\)/, capture.name);
       const rootText =
         capture.name === "root-fragment-interpolation"
           ? '_createTextVNode(_toDisplayString(_ctx.label) + " ", 1 /* TEXT */)'
