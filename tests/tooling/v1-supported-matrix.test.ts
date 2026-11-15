@@ -138,19 +138,20 @@ void test("the Content Mapper v1 obligation inventory is complete, owned and fai
   assert.equal(qualification.qualificationIssue, 13071);
   assert.equal(qualification.qualification, "gap");
   assert.match(qualification.pinnedTypeScriptRevision, /^[0-9a-f]{40}$/u);
-  assert.equal(qualification.counts.semantic, 15);
+  assert.equal(qualification.counts.semantic, 16);
   assert.equal(qualification.counts.protocolFeatures, 20);
   assert.equal(qualification.counts.diagnostics, 4);
   assert.equal(qualification.counts.lifecycle, 1);
   assert.equal(qualification.counts.performance, 1);
   assert.equal(qualification.counts.runtimeAndCorpus, 2);
-  assert.equal(qualification.counts.unbound, 43);
+  assert.equal(qualification.counts.unbound, 44);
 
   const obligations = [
     ...qualification.semantic,
     ...qualification.protocolFeatures,
     ...qualification.diagnostics,
     ...qualification.lifecycle,
+    ...qualification.performance,
     ...qualification.runtimeAndCorpus,
   ];
   const ids = new Set<string>();
@@ -163,6 +164,7 @@ void test("the Content Mapper v1 obligation inventory is complete, owned and fai
     assert.deepEqual(obligation.receipts, [], obligation.id);
     assert.equal(obligation.qualification, "unbound", obligation.id);
     assert.ok(obligation.issues.length > 0, obligation.id);
+    assert.ok(obligation.evidenceCandidates.length > 0, obligation.id);
     for (const evidence of obligation.evidenceCandidates)
       assert.ok(existsSync(path.join(root, evidence)), `${obligation.id}: missing ${evidence}`);
   }
@@ -180,13 +182,6 @@ void test("the Content Mapper v1 obligation inventory is complete, owned and fai
   assert.deepEqual(performance.scales, [1_000, 5_000, 20_000]);
   assert.equal(performance.packetIdentity, "required");
   assert.equal(performance.baseHeadComparison, "required");
-  assert.equal(performance.candidateSource, null);
-  assert.equal(performance.candidateRun, null);
-  assert.deepEqual(performance.receipts, []);
-  assert.equal(performance.qualification, "unbound");
-  assert.ok(performance.issues.length > 0);
-  for (const evidence of performance.evidenceCandidates)
-    assert.ok(existsSync(path.join(root, evidence)), `performance: missing ${evidence}`);
   assert.deepEqual(qualification.lifecycle[0].operations, [
     "open",
     "edit",
@@ -209,6 +204,7 @@ void test("the Content Mapper v1 obligation inventory is complete, owned and fai
       state: "blocked-upstream",
     },
   ]);
+  assert.ok(qualification.producerProtocol.evidenceCandidates.length > 0);
   for (const evidence of qualification.producerProtocol.evidenceCandidates)
     assert.ok(existsSync(path.join(root, evidence)), `producer protocol: missing ${evidence}`);
 });
@@ -235,7 +231,6 @@ void test("Content Mapper interop examples preserve the v1 support boundary", ()
   assert.deepEqual(
     matrix.contentMapper.boundaryExamples.map(({ id, disposition }) => [id, disposition]),
     [
-      ["vue-sfc-jsx-tsx", "required-v1"],
       ["tsrx", "outside-v1"],
       ["svelte", "outside-v1"],
       ["astro", "outside-v1"],
@@ -243,6 +238,7 @@ void test("Content Mapper interop examples preserve the v1 support boundary", ()
   );
   for (const boundary of matrix.contentMapper.boundaryExamples) {
     assert.ok(boundary.reason.length > 0, boundary.id);
+    assert.ok(boundary.evidenceCandidates.length > 0, boundary.id);
     for (const evidence of boundary.evidenceCandidates)
       assert.ok(existsSync(path.join(root, evidence)), `${boundary.id}: missing ${evidence}`);
   }

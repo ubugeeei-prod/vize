@@ -163,6 +163,12 @@ const semanticObligations = [
       "crates/vize/tests/content_mapper_tsgo_cli/incomplete_tags.rs",
     ],
   },
+  {
+    id: "vue-sfc-jsx-tsx",
+    requirement: "JSX and TSX embedded in a Vue SFC retain exact script and template diagnostics.",
+    issues: [13018],
+    evidenceCandidates: ["crates/vize/tests/content_mapper_tsgo_cli/tsx_script_syntax.rs"],
+  },
 ] as const;
 
 const diagnosticObligations = [
@@ -208,12 +214,6 @@ const diagnosticObligations = [
 ] as const;
 
 const boundaryExamples = [
-  {
-    id: "vue-sfc-jsx-tsx",
-    disposition: "required-v1",
-    reason: "JSX and TSX embedded in a Vue SFC are part of the v1 Vue typechecker surface.",
-    evidenceCandidates: ["crates/vize/tests/content_mapper_tsgo_cli/tsx_script_syntax.rs"],
-  },
   {
     id: "tsrx",
     disposition: "outside-v1",
@@ -289,22 +289,21 @@ export function buildContentMapperV1Qualification(root: string, requiredCases: r
     ),
   ];
   const performance = [
-    {
-      id: "cold-warm-edit",
-      measurements: ["cold", "warm", "no-op", "leaf-edit", "dependency-edit", "p95", "rss"],
-      scales: [1_000, 5_000, 20_000],
-      issues: [10620, 12102, 12109],
-      evidenceCandidates: [
-        ".github/workflows/content-mapper-replay.yml",
-        ".github/workflows/content-mapper-cold-start.yml",
-      ],
-      packetIdentity: "required",
-      baseHeadComparison: "required",
-      candidateSource: null,
-      candidateRun: null,
-      receipts: [] as string[],
-      qualification: "unbound",
-    },
+    unbound(
+      {
+        id: "cold-warm-edit",
+        measurements: ["cold", "warm", "no-op", "leaf-edit", "dependency-edit", "p95", "rss"],
+        scales: [1_000, 5_000, 20_000],
+        issues: [10620, 12102, 12109],
+        evidenceCandidates: [
+          ".github/workflows/content-mapper-replay.yml",
+          ".github/workflows/content-mapper-cold-start.yml",
+        ],
+        packetIdentity: "required",
+        baseHeadComparison: "required",
+      },
+      requiredCases,
+    ),
   ];
   const runtimeAndCorpus = [
     unbound(

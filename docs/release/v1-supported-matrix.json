@@ -13125,6 +13125,27 @@
         "candidateRun": null,
         "receipts": [],
         "qualification": "unbound"
+      },
+      {
+        "id": "vue-sfc-jsx-tsx",
+        "requirement": "JSX and TSX embedded in a Vue SFC retain exact script and template diagnostics.",
+        "issues": [
+          13018
+        ],
+        "evidenceCandidates": [
+          "crates/vize/tests/content_mapper_tsgo_cli/tsx_script_syntax.rs"
+        ],
+        "requiredCases": [
+          "positive",
+          "negative",
+          "boundary",
+          "malformed-edit",
+          "repair"
+        ],
+        "candidateSource": null,
+        "candidateRun": null,
+        "receipts": [],
+        "qualification": "unbound"
       }
     ],
     "protocolFeatures": [
@@ -13706,6 +13727,13 @@
         ],
         "packetIdentity": "required",
         "baseHeadComparison": "required",
+        "requiredCases": [
+          "positive",
+          "negative",
+          "boundary",
+          "malformed-edit",
+          "repair"
+        ],
         "candidateSource": null,
         "candidateRun": null,
         "receipts": [],
@@ -13758,14 +13786,6 @@
     ],
     "boundaryExamples": [
       {
-        "id": "vue-sfc-jsx-tsx",
-        "disposition": "required-v1",
-        "reason": "JSX and TSX embedded in a Vue SFC are part of the v1 Vue typechecker surface.",
-        "evidenceCandidates": [
-          "crates/vize/tests/content_mapper_tsgo_cli/tsx_script_syntax.rs"
-        ]
-      },
-      {
         "id": "tsrx",
         "disposition": "outside-v1",
         "reason": "TSRX is a pinned differential oracle, not a Content Mapper input claim.",
@@ -13791,13 +13811,13 @@
       }
     ],
     "counts": {
-      "semantic": 15,
+      "semantic": 16,
       "protocolFeatures": 20,
       "diagnostics": 4,
       "lifecycle": 1,
       "performance": 1,
       "runtimeAndCorpus": 2,
-      "unbound": 43
+      "unbound": 44
     }
   },
   "environments": {
