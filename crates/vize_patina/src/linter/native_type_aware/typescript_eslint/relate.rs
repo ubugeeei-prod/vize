@@ -158,14 +158,19 @@ pub(super) fn apply(nodes: &mut [LintNode], pending: &Pending, reply: Option<&Re
         }
     }
     for (index, key) in pending.defaults.iter().enumerate() {
-        let same = reply
-            .and_then(|reply| reply.defaults.get(index))
-            .copied()
-            .flatten();
+        let answer = reply.and_then(|reply| reply.defaults.get(index));
+        if let Some(count) = answer.and_then(|answer| answer.parameter_count) {
+            push(*key, "__typeParameterCount", json!(count));
+        }
+        push(
+            *key,
+            "__lastTypeParameterHasDefault",
+            json!(answer.is_some_and(|answer| answer.last_has_default)),
+        );
         push(
             *key,
             "__lastTypeArgumentEqualsDefault",
-            json!(same == Some(true)),
+            json!(answer.and_then(|answer| answer.same) == Some(true)),
         );
     }
     for (index, key) in pending.deprecations.iter().enumerate() {

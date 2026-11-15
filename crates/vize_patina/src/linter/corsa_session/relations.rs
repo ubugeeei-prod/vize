@@ -10,6 +10,7 @@ use vize_l0::{FxHashMap, FxHashSet, String as CompactString};
 
 mod checker;
 mod contextual;
+mod default_arguments;
 mod deprecation;
 mod unchanged;
 
@@ -29,9 +30,9 @@ pub(in crate::linter) struct RelationRequest {
     /// `isTypeAssignableTo(typeAt(source), typeAt(target))`.
     pub assignable: Vec<(Span, Span)>,
     pub deprecations: Vec<DeprecationAsk>,
-    /// `no-unnecessary-type-arguments`: whether a type argument is its type
-    /// parameter's default (`(argument, default)`).
-    pub defaults: Vec<(Span, Span)>,
+    /// `no-unnecessary-type-arguments`: the last explicit argument and the
+    /// declaration that owns its matching type parameter.
+    pub defaults: Vec<DefaultAsk>,
 }
 
 /// Replies aligned with the request lists.
@@ -43,7 +44,31 @@ pub(in crate::linter) struct RelationReply {
     pub returns: Vec<ReturnReply>,
     pub assignable: Vec<Option<bool>>,
     pub deprecations: Vec<Option<Deprecation>>,
-    pub defaults: Vec<Option<bool>>,
+    pub defaults: Vec<DefaultReply>,
+}
+
+/// One explicit type argument that may equal its parameter's default.
+pub(in crate::linter) struct DefaultAsk {
+    pub argument: Span,
+    /// The local declaration's default. Cross-file declarations resolve this
+    /// from the checker-owned declaration instead.
+    pub local_default: Option<Span>,
+    pub owner: Span,
+    /// The call-like node whose resolved signature selects an overload.
+    pub call: Option<Span>,
+    pub argument_index: usize,
+    pub constructed: bool,
+    /// Known for a declaration in the current script. Imported declarations
+    /// recover this from checker-owned syntax.
+    pub parameter_count: Option<usize>,
+}
+
+/// Checker facts consumed by `no-unnecessary-type-arguments`.
+#[derive(Clone, Default)]
+pub(in crate::linter) struct DefaultReply {
+    pub same: Option<bool>,
+    pub parameter_count: Option<usize>,
+    pub last_has_default: bool,
 }
 
 /// How the operand of an assertion reads as a literal (`isConceptuallyLiteral`).
@@ -230,7 +255,7 @@ impl RelationReply {
             returns: vec![ReturnReply::default(); request.returns.len()],
             assignable: vec![None; request.assignable.len()],
             deprecations: vec![None; request.deprecations.len()],
-            defaults: vec![None; request.defaults.len()],
+            defaults: vec![DefaultReply::default(); request.defaults.len()],
         }
     }
 }
@@ -287,9 +312,16 @@ pub(super) fn spans(request: &RelationRequest, translate: &dyn Fn(Span) -> Span)
         add(*source);
         add(*target);
     }
-    for (argument, default) in &request.defaults {
-        add(*argument);
-        add(*default);
+    for ask in &request.defaults {
+        add(ask.argument);
+        if let Some(default) = ask.local_default {
+            add(default);
+        } else {
+            add(ask.owner);
+            if let Some(call) = ask.call {
+                add(call);
+            }
+        }
     }
     for ask in &request.deprecations {
         add(ask.node);
@@ -382,21 +414,39 @@ pub(super) async fn answer(
         };
         reply.assignable.push(value);
     }
-    for (argument, default) in &request.defaults {
-        let value = match (
-            located.ty(translate(*argument)),
-            located.ty(translate(*default)),
-        ) {
-            // A bare name in type position can type as the error type; two
-            // of those are not proof the argument is the default.
-            (Some(argument), Some(default))
-                if (argument.flags | default.flags) & flags::ANY == 0 =>
-            {
-                Some(checker.same_type(argument, default).await)
-            }
-            _ => None,
+    let mut default_cache = default_arguments::Cache::default();
+    let default_symbol_nodes = request
+        .defaults
+        .iter()
+        .filter(|ask| ask.local_default.is_none() && ask.call.is_none())
+        .filter_map(|ask| located.handle(translate(ask.owner)).cloned())
+        .collect::<Vec<_>>();
+    let mut default_symbols = if default_symbol_nodes.is_empty() {
+        Vec::new()
+    } else {
+        checker.symbols_at(default_symbol_nodes).await
+    }
+    .into_iter();
+    for ask in &request.defaults {
+        let symbol = if ask.local_default.is_none()
+            && ask.call.is_none()
+            && located.handle(translate(ask.owner)).is_some()
+        {
+            default_symbols.next().flatten()
+        } else {
+            None
         };
-        reply.defaults.push(value);
+        reply.defaults.push(
+            default_arguments::check(
+                &mut checker,
+                &located,
+                ask,
+                translate,
+                symbol,
+                &mut default_cache,
+            )
+            .await,
+        );
     }
     if !request.deprecations.is_empty() {
         let nodes = request

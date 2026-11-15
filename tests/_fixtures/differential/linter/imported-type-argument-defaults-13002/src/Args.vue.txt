@@ -1,0 +1,22 @@
+<script setup lang="ts">
+import { Explicit, host, type Option, type Required, Store, load, overloaded } from "./types";
+
+type Local<T = unknown> = T;
+
+const importedOption: Option<unknown> = { value: undefined };
+const importedLoad = load<unknown>();
+const importedStore = new Store<string>();
+const importedOverload = overloaded<unknown>();
+const importedMethod = host.querySelector<Element>("main");
+const localValue: Local<unknown> = undefined;
+const element = document.querySelector<Element>("main");
+
+const changed: Option<string> = { value: "kept" };
+const required: Required<unknown> = { value: undefined };
+const explicit = new Explicit<string>("kept");
+const specific = document.querySelector<HTMLElement>("main");
+</script>
+
+<template>
+  <p>{{ importedOption.value }} {{ importedLoad }} {{ importedStore.value }} {{ importedOverload }} {{ importedMethod }} {{ localValue }} {{ element }} {{ changed.value }} {{ required.value }} {{ explicit.value }} {{ specific }}</p>
+</template>

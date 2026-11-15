@@ -4408,6 +4408,48 @@
       }
     },
     {
+      "id": "linter/imported-type-argument-defaults-13002",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "imported-type-argument-defaults-13002",
+        "files": [
+          {
+            "path": "src/Args.vue.txt",
+            "role": "issue-reported-reproduction-and-maintainer-acceptance-controls",
+            "sha256": "d57a95334083aab9f777bb31b7ce7c84d59ee916252cd92ac56ddc5f9661945a"
+          },
+          {
+            "path": "src/types.ts",
+            "role": "issue-authored-support-module",
+            "sha256": "668e0b79b9ca080e775aae6ee1d921818502e15b88975fc4777bb63e44717977"
+          },
+          {
+            "path": "tsconfig.json",
+            "role": "issue-compatible-typescript-configuration",
+            "sha256": "240d4a075d2223ef2135e651e760cb688878de493339595e67fd9cad12596044"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/no-unnecessary-type-assertion-readonly-13001",
       "state": "active",
       "targets": [

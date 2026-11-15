@@ -10,6 +10,15 @@ use oxc_span::GetSpan;
 /// Default spans of a declaration's type parameters, `None` without a default.
 pub(super) type Defaults = Vec<Option<(u32, u32)>>;
 
+/// Whether a generic owner is imported, locally supported, or intentionally
+/// excluded by the existing local-declaration policy.
+#[derive(Debug, PartialEq, Eq)]
+pub(super) enum DefaultBinding {
+    External,
+    Local(Defaults),
+    Skip,
+}
+
 /// What the declaration of a referenced identifier says about its use.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(super) enum Binding {
@@ -97,7 +106,7 @@ pub(super) fn resolve(program: &Program<'_>, references: &[(u32, u32)]) -> Vec<B
 pub(super) fn type_parameter_defaults(
     program: &Program<'_>,
     names: &[((u32, u32), bool)],
-) -> Vec<Option<Defaults>> {
+) -> Vec<DefaultBinding> {
     if names.is_empty() {
         return Vec::new();
     }
@@ -110,7 +119,7 @@ pub(super) fn type_parameter_defaults(
     names
         .iter()
         .map(|&((start, end), constructed)| {
-            let symbol = nodes.iter().find_map(|node| match node.kind() {
+            let Some(symbol) = nodes.iter().find_map(|node| match node.kind() {
                 AstKind::IdentifierReference(identifier)
                     if identifier.span.start == start && identifier.span.end == end =>
                 {
@@ -120,9 +129,11 @@ pub(super) fn type_parameter_defaults(
                         .and_then(|reference| scoping.get_reference(reference).symbol_id())
                 }
                 _ => None,
-            })?;
+            }) else {
+                return DefaultBinding::External;
+            };
             if !scoping.symbol_redeclarations(symbol).is_empty() {
-                return None;
+                return DefaultBinding::Skip;
             }
             let parameters = match semantic.symbol_declaration(symbol).kind() {
                 AstKind::TSTypeAliasDeclaration(alias) => alias.type_parameters.as_deref(),
@@ -133,14 +144,20 @@ pub(super) fn type_parameter_defaults(
                             if method.kind == MethodDefinitionKind::Constructor)
                     });
                     if constructed && has_constructor {
-                        return None;
+                        return DefaultBinding::Skip;
                     }
                     class.type_parameters.as_deref()
                 }
                 AstKind::Function(function) => function.type_parameters.as_deref(),
-                _ => return None,
-            }?;
-            Some(
+                AstKind::ImportSpecifier(_)
+                | AstKind::ImportDefaultSpecifier(_)
+                | AstKind::ImportNamespaceSpecifier(_) => return DefaultBinding::External,
+                _ => return DefaultBinding::Skip,
+            };
+            let Some(parameters) = parameters else {
+                return DefaultBinding::Skip;
+            };
+            DefaultBinding::Local(
                 parameters
                     .params
                     .iter()
@@ -159,7 +176,7 @@ pub(super) fn type_parameter_defaults(
 #[cfg(test)]
 mod tests {
     use super::super::super::tree;
-    use super::{Binding, Defaults};
+    use super::{Binding, DefaultBinding};
 
     fn resolve(source: &str, tsx: bool, references: &[(u32, u32)]) -> Vec<Binding> {
         tree::collect_with(source, tsx, &[], |_, ast| super::resolve(ast, references)).1
@@ -169,7 +186,7 @@ mod tests {
         source: &str,
         tsx: bool,
         names: &[((u32, u32), bool)],
-    ) -> Vec<Option<Defaults>> {
+    ) -> Vec<DefaultBinding> {
         tree::collect_with(source, tsx, &[], |_, ast| {
             super::type_parameter_defaults(ast, names)
         })
@@ -226,12 +243,14 @@ mod tests {
                 (at(source, "Map"), false),
             ],
         );
-        let defaults = found[0].as_ref().unwrap();
+        let DefaultBinding::Local(defaults) = &found[0] else {
+            panic!("expected local defaults");
+        };
         let default = defaults[0].unwrap();
         assert_eq!(
             source.get(default.0 as usize..default.1 as usize),
             Some("number")
         );
-        assert_eq!(found[1], None);
+        assert_eq!(found[1], DefaultBinding::External);
     }
 }

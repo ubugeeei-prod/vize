@@ -1,0 +1,33 @@
+export interface Option<T = unknown> {
+  value: T;
+}
+
+export function load<T = unknown>(): T | undefined {
+  return undefined;
+}
+
+export class Store<T = string> {
+  value?: T;
+}
+
+export class Explicit<T = string> {
+  constructor(public value: T) {}
+}
+
+export interface Required<T> {
+  value: T;
+}
+
+export function overloaded<T = unknown>(value?: T): T | undefined;
+export function overloaded(value?: unknown): unknown {
+  return value;
+}
+
+export interface QueryHost {
+  querySelector<K extends keyof HTMLElementTagNameMap>(
+    selectors: K,
+  ): HTMLElementTagNameMap[K] | null;
+  querySelector<E extends Element = Element>(selectors: string): E | null;
+}
+
+export declare const host: QueryHost;

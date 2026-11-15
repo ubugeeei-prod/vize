@@ -228,3 +228,5 @@ fn line_column(source: &str, offset: u32) -> (u32, u32) {
     }
     (line, column)
 }
+
+include!("no_unnecessary_type_arguments_imported.rs");

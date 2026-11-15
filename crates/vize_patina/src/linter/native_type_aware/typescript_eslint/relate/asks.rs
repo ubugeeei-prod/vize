@@ -21,6 +21,13 @@ const TYPE_ARGUMENTS: &str = "no-unnecessary-type-arguments";
 /// A node and the key it sits under in its parent.
 type Ancestor<'a> = (&'a Value, &'a str);
 
+struct Instantiation<'v> {
+    list: &'v Value,
+    owner: Span,
+    call: Option<Span>,
+    constructed: bool,
+}
+
 struct Walk<'a, 'm, 'v> {
     rules: &'a [&'a str],
     map: &'m dyn Fn(Span) -> Option<Span>,
@@ -29,7 +36,7 @@ struct Walk<'a, 'm, 'v> {
     identifiers: Vec<(usize, Span)>,
     /// Type argument lists, the name they instantiate, and whether that name
     /// is constructed with `new`.
-    instantiations: Vec<(&'v Value, Span, bool)>,
+    instantiations: Vec<Instantiation<'v>>,
 }
 
 pub(super) fn collect(
@@ -51,12 +58,16 @@ pub(super) fn collect(
     let instantiations = std::mem::take(&mut walk.instantiations);
     let names = instantiations
         .iter()
-        .map(|(_, name, constructed)| (*name, *constructed))
+        .map(|item| (item.owner, item.constructed))
         .collect::<Vec<_>>();
     let defaults = binding::type_parameter_defaults(ast, &names);
-    for ((list, _, _), defaults) in instantiations.into_iter().zip(defaults) {
-        if let Some(defaults) = defaults {
-            walk.type_arguments(list, &defaults);
+    for (item, defaults) in instantiations.into_iter().zip(defaults) {
+        match defaults {
+            binding::DefaultBinding::External => walk.type_arguments(item, None),
+            binding::DefaultBinding::Local(defaults) => {
+                walk.type_arguments(item, Some(&defaults));
+            }
+            binding::DefaultBinding::Skip => {}
         }
     }
     let identifiers = std::mem::take(&mut walk.identifiers);
@@ -92,6 +103,14 @@ fn span(value: &Value) -> Option<Span> {
     let start = u32::try_from(value.get("start")?.as_u64()?).ok()?;
     let end = u32::try_from(value.get("end")?.as_u64()?).ok()?;
     Some((start, end))
+}
+
+fn symbol_span(value: &Value) -> Option<Span> {
+    match kind(value) {
+        "MemberExpression" => value.get("property").and_then(span),
+        "TSQualifiedName" => value.get("right").and_then(span),
+        _ => span(value),
+    }
 }
 
 fn key(value: &Value) -> Option<Key> {
@@ -240,7 +259,8 @@ impl<'v> Walk<'_, '_, 'v> {
 
     /// `checkTSArgsAndParameters`: compare the last argument with its
     /// parameter's default.
-    fn type_arguments(&mut self, list: &Value, defaults: &[Option<Span>]) {
+    fn type_arguments(&mut self, item: Instantiation<'_>, defaults: Option<&[Option<Span>]>) {
+        let list = item.list;
         let Some(arguments) = list.get("params").and_then(Value::as_array) else {
             return;
         };
@@ -248,8 +268,14 @@ impl<'v> Walk<'_, '_, 'v> {
         else {
             return;
         };
-        let Some(Some(default)) = defaults.get(arguments.len() - 1) else {
-            return;
+        let local_default = match defaults {
+            Some(defaults) => {
+                let Some(Some(default)) = defaults.get(arguments.len() - 1) else {
+                    return;
+                };
+                Some(*default)
+            }
+            None => None,
         };
         let ranges = arguments
             .iter()
@@ -262,18 +288,30 @@ impl<'v> Walk<'_, '_, 'v> {
                 "__typeArgumentListRange",
                 json!({ "start": list_span.0, "end": list_span.1 }),
             ),
-            ("__typeParameterCount", json!(defaults.len())),
-            ("__lastTypeParameterHasDefault", json!(true)),
         ];
-        let pair = (|| Some(((self.map)(span(last)?)?, (self.map)(*default)?)))();
-        let Some(pair) = pair else {
+        let ask = (|| {
+            let local_default = match local_default {
+                Some(default) => Some((self.map)(default)?),
+                None => None,
+            };
+            Some(crate::linter::corsa_session::DefaultAsk {
+                argument: (self.map)(span(last)?)?,
+                local_default,
+                owner: (self.map)(item.owner)?,
+                call: item.call.and_then(self.map),
+                argument_index: arguments.len() - 1,
+                constructed: item.constructed,
+                parameter_count: defaults.map(|defaults| defaults.len()),
+            })
+        })();
+        let Some(ask) = ask else {
             return;
         };
         for (field, value) in fixed {
             self.pending.fixed.push((key, field, value));
         }
         self.pending.defaults.push(key);
-        self.pending.request.defaults.push(pair);
+        self.pending.request.defaults.push(ask);
     }
 
     /// A type argument list whose instantiated name may resolve to a local
@@ -282,7 +320,7 @@ impl<'v> Walk<'_, '_, 'v> {
         let Some(&(parent, field)) = ancestors.last() else {
             return;
         };
-        let name = match (kind(parent), field) {
+        let owner = match (kind(parent), field) {
             ("TSTypeReference", "typeArguments") => parent.get("typeName"),
             ("TSClassImplements" | "TSInterfaceHeritage", "typeArguments") => {
                 parent.get("expression")
@@ -294,14 +332,21 @@ impl<'v> Walk<'_, '_, 'v> {
             ("TaggedTemplateExpression", "typeArguments") => parent.get("tag"),
             _ => None,
         };
-        let Some(name) = name
-            .filter(|name| kind(name) == "Identifier")
-            .and_then(span)
-        else {
+        let Some(owner) = owner.and_then(symbol_span) else {
             return;
         };
-        self.instantiations
-            .push((value, name, kind(parent) == "NewExpression"));
+        let call = matches!(
+            kind(parent),
+            "CallExpression" | "NewExpression" | "TaggedTemplateExpression"
+        )
+        .then_some(span(parent))
+        .flatten();
+        self.instantiations.push(Instantiation {
+            list: value,
+            owner,
+            call,
+            constructed: kind(parent) == "NewExpression",
+        });
     }
 }
 
