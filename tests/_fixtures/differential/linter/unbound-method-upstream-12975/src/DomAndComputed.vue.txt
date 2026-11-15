@@ -1,0 +1,25 @@
+<script lang="ts">
+const { alert } = window;
+const blurred = window.blur;
+
+class Foo {
+  bazz() {}
+}
+class Bar {
+  bazz = 1;
+}
+declare const union: Foo | Bar;
+declare const literalKey: "bazz";
+declare const foo: Foo;
+declare const typedKey: keyof Foo;
+
+const unionMethod = union[literalKey];
+const typedMethod = foo[typedKey];
+const templateMethod = foo[`ba${"zz"}`];
+
+void alert;
+void blurred;
+void unionMethod;
+void typedMethod;
+void templateMethod;
+</script>

@@ -4,6 +4,8 @@
 use super::{corsa_available, lint_sfc_with_corsa};
 use crate::{LintPreset, Linter};
 
+mod upstream_872_cases;
+
 const SOURCE: &str = r#"<script lang="ts">
 declare const maybe: (() => void) | undefined;
 declare const text: string;

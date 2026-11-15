@@ -78,6 +78,9 @@ pub(in crate::linter) struct ExpressionQuery {
     pub tree: u8,
     /// Property names whose method declarations to describe on this type.
     pub member_methods: Vec<CompactString>,
+    /// Receiver and key ranges for a computed member whose key has no static
+    /// AST value. Both ranges share this document's existing type batch.
+    pub computed_member: Option<ComputedMemberQuery>,
     /// Load the union constituents of a type node's type.
     pub parts: bool,
     /// Probe whether a type node's type is (or holds) the empty object type.
@@ -134,6 +137,9 @@ impl ExpressionQuery {
                 self.member_methods.push(name);
             }
         }
+        if self.computed_member.is_none() {
+            self.computed_member = other.computed_member;
+        }
         self.parts |= other.parts;
         self.empty_object |= other.empty_object;
     }
@@ -153,6 +159,13 @@ pub(in crate::linter) struct HeritageQuery {
     pub base_types: bool,
     /// Non-static member names of the class or interface.
     pub members: Vec<CompactString>,
+}
+
+/// Operand ranges for a computed member access.
+#[derive(Clone, Copy, Debug)]
+pub(in crate::linter) struct ComputedMemberQuery {
+    pub object: (u32, u32),
+    pub property: (u32, u32),
 }
 
 /// Facts a typescript-eslint rule reads off one expression.
@@ -203,6 +216,8 @@ pub(in crate::linter) struct ExpressionFact {
     pub tree: Option<Value>,
     /// Method facts per requested member name, when the query asked for any.
     pub member_methods: Option<Value>,
+    /// Method facts for the property symbol resolved at this member access.
+    pub direct_method: Option<Value>,
     /// The type is the checker's `error` type. Set for `parts` queries.
     pub error_type: bool,
     /// Union constituents (`boolean` kept whole). Set for `parts` queries.
@@ -411,6 +426,14 @@ async fn load(
         }
         if !query.member_methods.is_empty() {
             fact.member_methods = Some(trees.member_methods(response, &query.member_methods).await);
+        }
+        if let Some(computed) = query.computed_member
+            && let (Some(object), Some(property)) = (
+                response_at(&computed.object),
+                response_at(&computed.property),
+            )
+        {
+            fact.direct_method = trees.computed_method(object, property).await;
         }
         if query.parts {
             fact.type_parts = probe.parts(memo, response).await?;

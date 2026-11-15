@@ -1,0 +1,290 @@
+{
+  "schema": "vize.typescript-eslint.selected-corpus",
+  "version": 1,
+  "upstream": {
+    "repository": "typescript-eslint/typescript-eslint",
+    "release": "v8.72.2",
+    "commit": "12e452f0292212bf9bf443b3988ec230f4ae7097",
+    "testPathTemplate": "packages/eslint-plugin/tests/rules/{rule}.test.ts"
+  },
+  "issue": 12975,
+  "caseCount": 46,
+  "cases": [
+    {
+      "id": "no-deprecated.invalid[43]",
+      "rule": "type/no-deprecated",
+      "expectedDiagnostics": 1,
+      "code": "\ndeclare class A {\n  /** @deprecated */\n  b(): string;\n}\n\ndeclare const a: A;\nconst key = 'b';\n\na[key];\n      "
+    },
+    {
+      "id": "no-deprecated.invalid[48]",
+      "rule": "type/no-deprecated",
+      "expectedDiagnostics": 1,
+      "code": "\ndeclare class A {\n  /** @deprecated */\n  b(): string;\n}\n\ndeclare const a: A;\nconst key = 'b';\n\na[`${key}`];\n      "
+    },
+    {
+      "id": "no-deprecated.invalid[49]",
+      "rule": "type/no-deprecated",
+      "expectedDiagnostics": 1,
+      "code": "\ndeclare class A {\n  /** @deprecated */\n  computed(): string;\n}\n\ndeclare const a: A;\nconst k1 = 'comp';\nconst k2 = 'uted';\n\na[`${k1}${k2}`];\n      "
+    },
+    {
+      "id": "prefer-promise-reject-errors.valid[36]",
+      "rule": "type/prefer-promise-reject-errors",
+      "expectedDiagnostics": 0,
+      "code": "new Promise((resolve, { apply }) => {});"
+    },
+    {
+      "id": "unbound-method.valid[30]",
+      "rule": "type/unbound-method",
+      "expectedDiagnostics": 0,
+      "code": "\nconst { alert } = window;\n    "
+    },
+    {
+      "id": "unbound-method.valid[31]",
+      "rule": "type/unbound-method",
+      "expectedDiagnostics": 0,
+      "code": "\nlet b = window.blur;\n    "
+    },
+    {
+      "id": "unbound-method.invalid[0]",
+      "rule": "type/unbound-method",
+      "expectedDiagnostics": 1,
+      "code": "\nclass Console {\n  log(str) {\n    process.stdout.write(str);\n  }\n}\n\nconst console = new Console();\n\nPromise.resolve().then(console.log);\n      "
+    },
+    {
+      "id": "unbound-method.invalid[1]",
+      "rule": "type/unbound-method",
+      "expectedDiagnostics": 1,
+      "code": "\nimport { console } from './class';\nconst x = console.log;\n      "
+    },
+    {
+      "id": "unbound-method.invalid[18]",
+      "rule": "type/unbound-method",
+      "expectedDiagnostics": 1,
+      "code": "const x = Promise.all;"
+    },
+    {
+      "id": "unbound-method.invalid[20]",
+      "rule": "type/unbound-method",
+      "expectedDiagnostics": 1,
+      "code": "\nclass Foo extends Number {\n  static parseInt = function (string: string, radix?: number): number {};\n}\nconst foo = Foo;\n['1', '2', '3'].map(foo.parseInt);\n      "
+    },
+    {
+      "id": "unbound-method.invalid[21]",
+      "rule": "type/unbound-method",
+      "expectedDiagnostics": 1,
+      "code": "\ndeclare const foo: Number;\nconst x = foo.toFixed;\n      "
+    },
+    {
+      "id": "unbound-method.invalid[22]",
+      "rule": "type/unbound-method",
+      "expectedDiagnostics": 1,
+      "code": "\ndeclare const foo: Object;\nconst x = foo.hasOwnProperty;\n      "
+    },
+    {
+      "id": "unbound-method.invalid[23]",
+      "rule": "type/unbound-method",
+      "expectedDiagnostics": 1,
+      "code": "\ndeclare const foo: String;\nconst x = foo.slice;\n      "
+    },
+    {
+      "id": "unbound-method.invalid[24]",
+      "rule": "type/unbound-method",
+      "expectedDiagnostics": 1,
+      "code": "\ndeclare const foo: Date;\nconst x = foo.getTime;\n      "
+    },
+    {
+      "id": "unbound-method.invalid[25]",
+      "rule": "type/unbound-method",
+      "expectedDiagnostics": 1,
+      "code": "\nclass Foo extends Number {}\nconst x = Foo.parseInt;\n      "
+    },
+    {
+      "id": "unbound-method.invalid[26]",
+      "rule": "type/unbound-method",
+      "expectedDiagnostics": 1,
+      "code": "\nclass Foo extends String {}\nconst x = Foo.fromCharCode;\n      "
+    },
+    {
+      "id": "unbound-method.invalid[27]",
+      "rule": "type/unbound-method",
+      "expectedDiagnostics": 1,
+      "code": "\nclass Foo extends Object {}\nconst x = Foo.defineProperty;\n      "
+    },
+    {
+      "id": "unbound-method.invalid[28]",
+      "rule": "type/unbound-method",
+      "expectedDiagnostics": 1,
+      "code": "\nclass Foo extends Date {}\nconst x = Foo.parse;\n      "
+    },
+    {
+      "id": "unbound-method.invalid[29]",
+      "rule": "type/unbound-method",
+      "expectedDiagnostics": 1,
+      "code": "\nclass Foo {\n  unbound = function () {};\n}\nconst unbound = new Foo().unbound;\n      "
+    },
+    {
+      "id": "unbound-method.invalid[30]",
+      "rule": "type/unbound-method",
+      "expectedDiagnostics": 1,
+      "code": "\nclass Foo {\n  unbound = function (this: Foo) {};\n}\nconst unbound = new Foo().unbound;\n      "
+    },
+    {
+      "id": "unbound-method.invalid[32]",
+      "rule": "type/unbound-method",
+      "expectedDiagnostics": 1,
+      "code": "\nclass Foo {\n  unbound = function () {};\n}\nconst { unbound } = new Foo();\n      "
+    },
+    {
+      "id": "unbound-method.invalid[34]",
+      "rule": "type/unbound-method",
+      "expectedDiagnostics": 1,
+      "code": "\nclass Foo {\n  unbound = function () {};\n}\nlet unbound;\n({ unbound } = new Foo());\n      "
+    },
+    {
+      "id": "unbound-method.invalid[35]",
+      "rule": "type/unbound-method",
+      "expectedDiagnostics": 1,
+      "code": "\nclass Foo {\n  unbound = function () {};\n}\nfunction foo({ unbound }: Foo = new Foo()) {}\n      "
+    },
+    {
+      "id": "unbound-method.invalid[36]",
+      "rule": "type/unbound-method",
+      "expectedDiagnostics": 1,
+      "code": "\nclass Foo {\n  unbound = function () {};\n}\ndeclare const bar: Foo;\nfunction foo({ unbound }: Foo = bar) {}\n      "
+    },
+    {
+      "id": "unbound-method.invalid[37]",
+      "rule": "type/unbound-method",
+      "expectedDiagnostics": 1,
+      "code": "\nclass Foo {\n  unbound = function () {};\n}\ndeclare const bar: Foo;\nfunction foo({ unbound }: Foo = { unbound: () => {} }) {}\n      "
+    },
+    {
+      "id": "unbound-method.invalid[39]",
+      "rule": "type/unbound-method",
+      "expectedDiagnostics": 1,
+      "code": "\nclass Foo {\n  unbound = function () {};\n}\nfunction foo({ unbound }: Foo) {}\n      "
+    },
+    {
+      "id": "unbound-method.invalid[40]",
+      "rule": "type/unbound-method",
+      "expectedDiagnostics": 1,
+      "code": "\nclass Foo {\n  unbound = function () {};\n}\nfunction bar(cb: (arg: Foo) => void) {}\nbar(({ unbound }) => {});\n      "
+    },
+    {
+      "id": "unbound-method.invalid[41]",
+      "rule": "type/unbound-method",
+      "expectedDiagnostics": 1,
+      "code": "\nclass Foo {\n  unbound = function () {};\n}\nfunction bar(cb: (arg: { unbound: () => void }) => void) {}\nbar(({ unbound } = new Foo()) => {});\n      "
+    },
+    {
+      "id": "unbound-method.invalid[42]",
+      "rule": "type/unbound-method",
+      "expectedDiagnostics": 1,
+      "code": "\nclass Foo {\n  unbound = function () {};\n}\nfor (const { unbound } of [new Foo(), new Foo()]) {\n}\n      "
+    },
+    {
+      "id": "unbound-method.invalid[43]",
+      "rule": "type/unbound-method",
+      "expectedDiagnostics": 1,
+      "code": "\nclass Foo {\n  unbound = function () {};\n\n  foo({ unbound }: Foo) {}\n}\n      "
+    },
+    {
+      "id": "unbound-method.invalid[44]",
+      "rule": "type/unbound-method",
+      "expectedDiagnostics": 1,
+      "code": "\nclass Foo {\n  unbound = function () {};\n}\nclass Bar {\n  unbound = function () {};\n}\nfunction foo({ unbound }: Foo | Bar) {}\n      "
+    },
+    {
+      "id": "unbound-method.invalid[45]",
+      "rule": "type/unbound-method",
+      "expectedDiagnostics": 1,
+      "code": "\nclass Foo {\n  unbound = function () {};\n}\nfunction foo({ unbound }: { unbound: () => string } | Foo) {}\n      "
+    },
+    {
+      "id": "unbound-method.invalid[46]",
+      "rule": "type/unbound-method",
+      "expectedDiagnostics": 1,
+      "code": "\nclass Foo {\n  unbound = function () {};\n}\nclass Bar {\n  unbound = () => {};\n}\nfunction foo({ unbound }: Foo | Bar) {}\n      "
+    },
+    {
+      "id": "unbound-method.invalid[47]",
+      "rule": "type/unbound-method",
+      "expectedDiagnostics": 1,
+      "code": "\nclass Foo {\n  unbound = function () {};\n}\nconst foo = ({ unbound }: Foo & { foo: () => 'bar' }) => {};\n      "
+    },
+    {
+      "id": "unbound-method.invalid[48]",
+      "rule": "type/unbound-method",
+      "expectedDiagnostics": 1,
+      "code": "\nclass Foo {\n  unbound = function () {};\n}\nclass Bar {\n  unbound = () => {};\n}\nconst foo = ({ unbound }: (Foo & { foo: () => 'bar' }) | Bar) => {};\n      "
+    },
+    {
+      "id": "unbound-method.invalid[49]",
+      "rule": "type/unbound-method",
+      "expectedDiagnostics": 1,
+      "code": "\nclass Foo {\n  unbound = function () {};\n}\nclass Bar {\n  unbound = () => {};\n}\nconst foo = ({ unbound }: Foo & Bar) => {};\n      "
+    },
+    {
+      "id": "unbound-method.invalid[50]",
+      "rule": "type/unbound-method",
+      "expectedDiagnostics": 1,
+      "code": "\nclass Foo {\n  unbound = function () {};\n\n  other = function () {};\n}\nclass Bar {\n  unbound = () => {};\n}\nconst foo = ({ unbound, ...rest }: Foo & Bar) => {};\n      "
+    },
+    {
+      "id": "unbound-method.invalid[53]",
+      "rule": "type/unbound-method",
+      "expectedDiagnostics": 1,
+      "code": "\nclass Foo {\n  floor = function () {};\n}\n\nconst { floor } = Math.random() > 0.5 ? new Foo() : Math;\n      "
+    },
+    {
+      "id": "unbound-method.invalid[56]",
+      "rule": "type/unbound-method",
+      "expectedDiagnostics": 1,
+      "code": "\nimport { console } from './class';\nconst { log } = console;\n      "
+    },
+    {
+      "id": "unbound-method.invalid[57]",
+      "rule": "type/unbound-method",
+      "expectedDiagnostics": 1,
+      "code": "const { all } = Promise;"
+    },
+    {
+      "id": "unbound-method.invalid[65]",
+      "rule": "type/unbound-method",
+      "expectedDiagnostics": 1,
+      "code": "\nclass Foo {\n  bazz() {}\n}\nclass Bar {\n  bazz = 1;\n}\ndeclare const union: Foo | Bar;\ndeclare const bazz: 'bazz';\nconst bound = union[bazz];\n      "
+    },
+    {
+      "id": "unbound-method.invalid[67]",
+      "rule": "type/unbound-method",
+      "expectedDiagnostics": 1,
+      "code": "\nclass Foo {\n  bazz() {}\n}\ndeclare const foo: Foo;\ndeclare const bazz: keyof Foo;\nconst bound = foo[bazz];\n      "
+    },
+    {
+      "id": "unbound-method.invalid[68]",
+      "rule": "type/unbound-method",
+      "expectedDiagnostics": 1,
+      "code": "\nclass Foo {\n  bazz() {}\n}\ndeclare const foo: Foo;\nconst bound = foo[`ba${'zz'}`];\n      "
+    },
+    {
+      "id": "unbound-method.invalid[70]",
+      "rule": "type/unbound-method",
+      "expectedDiagnostics": 1,
+      "code": "\nconst collator = new Intl.Collator('en');\nconst f = collator.resolvedOptions;\nf();\n      "
+    },
+    {
+      "id": "use-unknown-in-catch-callback-variable.valid[17]",
+      "rule": "type/use-unknown-in-catch-callback-variable",
+      "expectedDiagnostics": 0,
+      "code": "\nPromise.resolve().catch((...{ find }: [unknown]) => {\n  console.log(find);\n});\n    "
+    },
+    {
+      "id": "use-unknown-in-catch-callback-variable.invalid[23]",
+      "rule": "type/use-unknown-in-catch-callback-variable",
+      "expectedDiagnostics": 1,
+      "code": "\nPromise.resolve().catch((...{ find }: [string]) => {\n  console.log(find);\n});\n      "
+    }
+  ]
+}

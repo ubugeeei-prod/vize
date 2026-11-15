@@ -38,6 +38,7 @@ const PROPERTY_DECLARATION: u16 = 173;
 const METHOD_SIGNATURE: u16 = 174;
 const METHOD_DECLARATION: u16 = 175;
 const FUNCTION_EXPRESSION: u16 = 219;
+const FUNCTION_DECLARATION: u16 = 263;
 const PROPERTY_ASSIGNMENT: u16 = 303;
 
 /// Nesting depth of the shape tree. Deep enough for `T[]` inside a union

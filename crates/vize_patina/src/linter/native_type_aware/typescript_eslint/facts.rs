@@ -134,6 +134,10 @@ fn apply_node(node: &mut LintNode, facts: &FxHashMap<(u32, u32), &ExpressionFact
             node.fields
                 .insert("__memberMethods".into(), members.clone());
         }
+        if let Some(method) = &fact.direct_method {
+            node.fields
+                .insert("__unboundMethodInfo".into(), method.clone());
+        }
         promise::apply(node, fact);
         type_node_fields(node, fact);
     }
