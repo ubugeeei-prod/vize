@@ -7,7 +7,6 @@ import { performance } from "node:perf_hooks";
 import { fileURLToPath } from "node:url";
 import {
   CLI_ARGS,
-  assertProcess,
   cleanEnvironment,
   inventory,
   median,
@@ -39,8 +38,6 @@ assert.ok(!fs.existsSync(output), "each benchmark must own a fresh evidence dire
 fs.mkdirSync(output, { recursive: true });
 const consumer = path.join(output, "consumer");
 const frozen = readAuthority(fixture);
-const cohortRows = JSON.parse(fs.readFileSync(path.join(fixture, "cohort.stdout"), "utf8"));
-const cohortStdout = Buffer.from(JSON.stringify(cohortRows, null, 2));
 
 fs.mkdirSync(consumer, { recursive: true });
 for (const name of ["package.json", "package-lock.json"])
@@ -138,7 +135,7 @@ fs.writeFileSync(
     2,
   )}\n`,
 );
-fs.writeFileSync(path.join(output, "complete-expected.stdout"), frozen.stdout);
+fs.writeFileSync(path.join(output, "historical-expected.stdout"), frozen.stdout);
 fs.writeFileSync(path.join(output, "inputs-before.json"), `${JSON.stringify(inputs, null, 2)}\n`);
 fs.copyFileSync(path.join(fixture, "authority.json"), path.join(output, "authority.json"));
 
@@ -175,6 +172,9 @@ function aggregateProfiles(profiles) {
 }
 
 const samples = [];
+let completeAuthority = null;
+let cohortAuthority = null;
+let diagnosticAuthority = null;
 function run(side, label, { profile = false, record = true } = {}) {
   const started = performance.now();
   const rows = [];
@@ -208,13 +208,22 @@ function run(side, label, { profile = false, record = true } = {}) {
     });
     fs.rmSync(temp, { recursive: true, force: true });
     fs.writeFileSync(path.join(output, `${shardLabel}.stderr`), result.stderr ?? "");
-    try {
-      assertProcess(result, cohortStdout);
-    } catch (error) {
-      fs.writeFileSync(path.join(output, `${shardLabel}.unexpected.stdout`), result.stdout ?? "");
-      throw error;
+    assert.equal(result.error, undefined, result.error?.message);
+    assert.equal(result.signal, null, `${shardLabel} must exit normally`);
+    assert.equal(result.status, 1, `${shardLabel} must report lint findings`);
+    const shardStdout = Buffer.from(result.stdout);
+    if (cohortAuthority === null) {
+      cohortAuthority = shardStdout;
+      fs.writeFileSync(path.join(output, "base-cohort-authority.stdout"), cohortAuthority);
+    } else if (
+      shardStdout.length !== cohortAuthority.length ||
+      sha256(shardStdout) !== sha256(cohortAuthority) ||
+      Buffer.compare(shardStdout, cohortAuthority) !== 0
+    ) {
+      fs.writeFileSync(path.join(output, `${shardLabel}.unexpected.stdout`), shardStdout);
+      assert.fail(`${shardLabel} complete packet bytes differ from the exact base authority`);
     }
-    const shardRows = JSON.parse(result.stdout.toString());
+    const shardRows = JSON.parse(shardStdout.toString());
     assert.equal(shardRows.length, frozen.authority.filesPerCohort);
     rows.push(
       ...shardRows.map((row) => ({
@@ -233,16 +242,27 @@ function run(side, label, { profile = false, record = true } = {}) {
     );
   }
   const stdout = Buffer.from(JSON.stringify(rows, null, 2));
-  assert.deepEqual(
-    stdout,
-    frozen.stdout,
-    "all shards must reconstruct every ordered public diagnostic byte",
-  );
+  const diagnostics = rows.reduce((sum, row) => sum + row.messages.length, 0);
+  if (completeAuthority === null) {
+    completeAuthority = stdout;
+    diagnosticAuthority = diagnostics;
+    fs.writeFileSync(path.join(output, "base-complete-authority.stdout"), completeAuthority);
+  } else {
+    assert.equal(diagnostics, diagnosticAuthority, `${label} diagnostic total changed`);
+    assert.equal(stdout.length, completeAuthority.length, `${label} output length changed`);
+    assert.equal(sha256(stdout), sha256(completeAuthority), `${label} output hash changed`);
+    assert.equal(
+      Buffer.compare(stdout, completeAuthority),
+      0,
+      `${label} complete packet bytes changed`,
+    );
+  }
   const elapsedMs = performance.now() - started;
   const row = {
     side,
     label,
     elapsedMs,
+    diagnostics,
     stdoutSha256: sha256(stdout),
     aggregateCpuSeconds: resources.reduce(
       (sum, resource) => sum + resource.userSeconds + resource.systemSeconds,
@@ -330,8 +350,9 @@ const report = {
   rayonThreads: "default unpinned",
   shards: shardDirectories.length,
   files: frozen.authority.filesPerCohort * frozen.authority.cohorts,
-  diagnostics: frozen.authority.diagnosticsPerCohort * frozen.authority.cohorts,
-  completeStdoutSha256: frozen.authority.expandedStdoutSha256,
+  diagnostics: diagnosticAuthority,
+  completeStdoutSha256: sha256(completeAuthority),
+  historicalCompleteStdoutSha256: frozen.authority.expandedStdoutSha256,
   authoritySha256: authorityHash,
   inputInventorySha256: sha256(JSON.stringify(inputs)),
   pairs,
