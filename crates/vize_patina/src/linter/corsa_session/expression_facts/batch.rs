@@ -223,13 +223,18 @@ pub(super) async fn apply_symbols(
 
 /// Declaration handles carry a lower-cased path; the wire file may be a URI.
 pub(super) fn same_file(path: &str, file: &str) -> bool {
+    use std::path::Path;
+
     let file = file.strip_prefix("file://").unwrap_or(file);
-    path.eq_ignore_ascii_case(file)
+    let path = vize_l0::typescript_project::normalize_path_lexically(Path::new(path));
+    let file = vize_l0::typescript_project::normalize_path_lexically(Path::new(file));
+    path.to_string_lossy()
+        .eq_ignore_ascii_case(&file.to_string_lossy())
 }
 
 #[cfg(test)]
 mod tests {
-    use super::is_empty_tuple_runtime_panic;
+    use super::{is_empty_tuple_runtime_panic, same_file};
 
     const EMPTY_TUPLE_PANIC: &str = "rpc error -32603: panic: interface conversion: \
         checker.TypeData is *checker.TypeReference, not *checker.TupleType; \
@@ -243,6 +248,14 @@ mod tests {
         ));
         assert!(!is_empty_tuple_runtime_panic(
             "interface conversion: checker.TypeData is *checker.TypeReference"
+        ));
+    }
+
+    #[test]
+    fn same_file_normalizes_virtual_parent_segments() {
+        assert!(same_file(
+            "/workspace/.vize/session/src/App.vue.patina.ts",
+            "/workspace/crates/vize_patina/../../.vize/session/src/App.vue.patina.ts"
         ));
     }
 }

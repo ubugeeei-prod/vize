@@ -1,12 +1,74 @@
 //! unbound-method member facts: the receiver's symbol and how each property is declared (`checkIfMethod`).
 use super::{
-    FUNCTION_EXPRESSION, INTERSECTION, JsonMap, METHOD_DECLARATION, METHOD_SIGNATURE, OBJECT,
-    PROPERTY_ASSIGNMENT, PROPERTY_DECLARATION, SYMBOL_CLASS, Shapes, UNION, VOID,
+    FUNCTION_DECLARATION, FUNCTION_EXPRESSION, INTERSECTION, JsonMap, METHOD_DECLARATION,
+    METHOD_SIGNATURE, OBJECT, PROPERTY_ASSIGNMENT, PROPERTY_DECLARATION, SYMBOL_CLASS, Shapes,
+    UNION, VOID,
 };
 use corsa::api::{NodeHandle, TypeResponse};
 use serde_json::{Map, Value, json};
 
 impl Shapes<'_> {
+    /// Method facts for a computed access whose key type resolves to one or
+    /// more string/number literals. This reuses the receiver and method caches
+    /// used by static member access.
+    pub(in super::super) async fn computed_method(
+        &mut self,
+        receiver: &TypeResponse,
+        key: &TypeResponse,
+    ) -> Option<Value> {
+        let mut names = Vec::new();
+        let key_parts = if key.flags & UNION != 0 {
+            self.session.constituents(key).await
+        } else {
+            vec![key.clone()]
+        };
+        for part in key_parts {
+            let name = match &part.value {
+                Some(Value::String(value)) => Some(vize_l0::String::from(value.as_str())),
+                Some(Value::Number(value)) => Some(vize_l0::cstr!("{value}")),
+                _ => None,
+            };
+            if let Some(name) = name
+                && !names.contains(&name)
+            {
+                names.push(name);
+            }
+        }
+        if names.is_empty() {
+            return None;
+        }
+        let facts = self.member_methods(receiver, &names).await;
+        let members = facts.get("members")?.as_object()?;
+        let mut safe_method = None;
+        let mut static_method = None;
+        for name in &names {
+            let parts = members.get(name.as_str())?.get("parts")?.as_array()?;
+            for part in parts.iter().filter_map(Value::as_object) {
+                if part.get("isMethod").and_then(Value::as_bool) != Some(true) {
+                    continue;
+                }
+                let value = Value::Object(part.clone());
+                let this_is_void = part
+                    .get("thisArgIsVoid")
+                    .and_then(Value::as_bool)
+                    .unwrap_or(false);
+                let is_static = part
+                    .get("isStatic")
+                    .and_then(Value::as_bool)
+                    .unwrap_or(false);
+                if !this_is_void && !is_static {
+                    return Some(value);
+                }
+                if !this_is_void && static_method.is_none() {
+                    static_method = Some(value);
+                } else if safe_method.is_none() {
+                    safe_method = Some(value);
+                }
+            }
+        }
+        static_method.or(safe_method)
+    }
+
     /// unbound-method facts for `names` on this receiver type: the receiver's
     /// symbol, and per union/intersection constituent how each property is
     /// declared (`checkIfMethod`).
@@ -40,6 +102,7 @@ impl Shapes<'_> {
             let parts = parts.as_deref().unwrap_or_default();
             let mut infos = Vec::with_capacity(parts.len());
             let mut property_lib = None;
+            let mut default_library_function = false;
             for part in parts {
                 let property = client
                     .get_property_of_type(
@@ -55,12 +118,15 @@ impl Shapes<'_> {
                     infos.push(Value::Null);
                     continue;
                 };
-                if property_lib.is_none() {
-                    property_lib = Some(
-                        !property.declarations.is_empty()
-                            && property.declarations.iter().all(is_default_library),
-                    );
-                }
+                let from_default_library = !property.declarations.is_empty()
+                    && property.declarations.iter().all(is_default_library);
+                property_lib = Some(property_lib.unwrap_or(true) && from_default_library);
+                default_library_function |= from_default_library
+                    && property
+                        .value_declaration
+                        .as_ref()
+                        .and_then(declaration_kind)
+                        == Some(FUNCTION_DECLARATION);
                 let info = match self.method_cache.get(&property.id) {
                     Some(info) => info.clone(),
                     None => {
@@ -70,6 +136,17 @@ impl Shapes<'_> {
                     }
                 };
                 infos.push(info);
+            }
+            // TypeScript 7 splits DOM globals such as `alert` into a `Window`
+            // method and a global function. The TypeScript 5 symbol observed by
+            // the pinned typescript-eslint corpus uses the merged, safe function
+            // declaration as its value declaration.
+            if ty.flags & INTERSECTION != 0
+                && property_lib == Some(true)
+                && default_library_function
+            {
+                infos.clear();
+                infos.push(json!({ "isMethod": false }));
             }
             let member = json!({ "parts": infos, "propertyLib": property_lib });
             self.member_cache.insert(key, member.clone());
@@ -147,7 +224,10 @@ impl Shapes<'_> {
 
     /// typescript-eslint's `checkIfMethod`/`checkMethod` inputs for one
     /// property symbol.
-    async fn method_info(&self, property: &corsa::api::SymbolResponse) -> Value {
+    pub(in super::super) async fn method_info(
+        &self,
+        property: &corsa::api::SymbolResponse,
+    ) -> Value {
         let kind = property
             .value_declaration
             .as_ref()

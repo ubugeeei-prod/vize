@@ -9,7 +9,9 @@ mod members;
 use super::checker::{self, Needs as CheckerNeeds};
 use super::promise::{self, PromiseRules};
 use super::type_shape;
-use crate::linter::corsa_session::{ExpressionQuery, Facets, HeritageQuery, detail};
+use crate::linter::corsa_session::{
+    ComputedMemberQuery, ExpressionQuery, Facets, HeritageQuery, detail,
+};
 use corsa::lint::LintNode;
 use members::{accessed_name, is_receiver_position, pattern_keys};
 use serde_json::Value;
@@ -233,14 +235,22 @@ fn callee_query(node: &LintNode, wants: Wants, plan: &mut Planner) {
 /// unbound-method reads the accessed property on the receiver's type, and
 /// the destructured properties on a pattern's initializer.
 fn member_queries(node: &LintNode, plan: &mut Planner) {
-    if node.kind == "MemberExpression"
-        && !is_receiver_position(node)
-        && let (Some(object), Some(name)) = (node.child("object"), accessed_name(node))
-    {
-        let mut query = ExpressionQuery::at(object.range.start, object.range.end);
-        query.symbols = object.kind == "Identifier";
-        query.member_methods = vec![name];
-        plan.push(query);
+    if node.kind == "MemberExpression" && !is_receiver_position(node) {
+        if let (Some(object), Some(name)) = (node.child("object"), accessed_name(node)) {
+            let mut query = ExpressionQuery::at(object.range.start, object.range.end);
+            query.symbols = object.kind == "Identifier";
+            query.member_methods = vec![name];
+            plan.push(query);
+        } else if node.field_bool("computed") == Some(true)
+            && let (Some(object), Some(property)) = (node.child("object"), node.child("property"))
+        {
+            let mut query = ExpressionQuery::at(node.range.start, node.range.end);
+            query.computed_member = Some(ComputedMemberQuery {
+                object: (object.range.start, object.range.end),
+                property: (property.range.start, property.range.end),
+            });
+            plan.push(query);
+        }
     }
     if node.kind == "ObjectPattern"
         && let Some(range) = node.fields.get("__initRange")

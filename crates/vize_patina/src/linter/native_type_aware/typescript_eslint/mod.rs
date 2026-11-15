@@ -17,7 +17,7 @@ use vize_l0::{FxHashSet, String as CompactString};
 use super::{CorsaTypeAwareSession, LintResult, Linter, RULE_NO_FLOATING_PROMISES, push_warning};
 use crate::diagnostic::LintDiagnostic;
 use crate::linter::corsa_session::{
-    ExpressionFact, ExpressionQuery, PredicateRequest as ShapeCall,
+    ComputedMemberQuery, ExpressionFact, ExpressionQuery, PredicateRequest as ShapeCall,
 };
 use corsa::lint::LintNode;
 use facts::{Wants, queries};
@@ -160,10 +160,17 @@ pub(super) fn evaluate(
                 });
                 request
             });
+            let computed_member = query.computed_member.and_then(|request| {
+                Some(ComputedMemberQuery {
+                    object: map(request.object)?,
+                    property: map(request.property)?,
+                })
+            });
             generated.push(ExpressionQuery {
                 start,
                 end,
                 shape,
+                computed_member,
                 ..query.clone()
             });
             used.push(index);
