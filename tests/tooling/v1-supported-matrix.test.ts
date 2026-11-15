@@ -20,6 +20,8 @@ void test("the committed v1 support manifest is generated from the audited inven
   assert.equal(matrix.schema, "vize.v1-qualification-manifest.v1");
   assert.equal(matrix.counts.declaredCombinations, matrix.combinations.length);
   assert.equal(matrix.counts.caseObligations, matrix.combinations.length * V1_CASES.length);
+  assert.equal(matrix.counts.caseSelectors, matrix.counts.caseObligations);
+  assert.equal(matrix.caseSelectors.length, matrix.counts.caseObligations);
   assert.equal(
     matrix.counts.hostRuntimeCombinations,
     matrix.environments.hostRuntimeCombinations.length,
@@ -331,4 +333,30 @@ void test("qualification receipts require exact source, fixture, dependency, run
   ]);
   for (const producer of matrix.identityContracts.producers)
     assert.ok(existsSync(path.join(root, producer)), `missing identity producer ${producer}`);
+  assert.deepEqual(
+    Object.keys(matrix.caseReceiptIdentityContracts).toSorted(),
+    [
+      "source",
+      "candidate",
+      "actions",
+      "fixture",
+      "dependency",
+      "runtime",
+      "binary",
+      "packet",
+      "receipt",
+    ].toSorted(),
+  );
+  for (const side of ["source", "candidate"] as const)
+    assert.deepEqual(
+      matrix.caseReceiptIdentityContracts.packet[side].toSorted(),
+      [
+        "diagnosticsSha256",
+        "authoredRangesSha256",
+        "editsSha256",
+        "generatedOutputSha256",
+        "orderingSha256",
+        "exitBehaviorSha256",
+      ].toSorted(),
+    );
 });

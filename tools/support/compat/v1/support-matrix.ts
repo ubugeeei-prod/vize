@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
@@ -8,6 +9,15 @@ import { cliReleasePlatforms, nativeReleasePlatforms } from "../../github/releas
 import { buildContentMapperV1Qualification } from "./content-mapper-qualification.ts";
 
 export const V1_CASES = ["positive", "negative", "boundary", "malformed-edit", "repair"] as const;
+export const V1_FIVE_CASE_SELECTOR_SCHEMA = "vize.v1-five-case-selector.v1" as const;
+export const V1_FIVE_CASE_PACKET_HASH_FIELDS = [
+  "diagnosticsSha256",
+  "authoredRangesSha256",
+  "editsSha256",
+  "generatedOutputSha256",
+  "orderingSha256",
+  "exitBehaviorSha256",
+] as const;
 export const V1_TOPOLOGIES = [
   "monorepo",
   "project-reference",
@@ -17,7 +27,7 @@ export const V1_TOPOLOGIES = [
   "symlink",
 ] as const;
 
-type V1Case = (typeof V1_CASES)[number];
+export type V1Case = (typeof V1_CASES)[number];
 type Topology = (typeof V1_TOPOLOGIES)[number];
 type Profile = {
   id: string;
@@ -32,6 +42,45 @@ type Profile = {
   evidence: readonly string[];
   condition?: string;
 };
+
+export interface V1FiveCaseSelectorBody {
+  schema: typeof V1_FIVE_CASE_SELECTOR_SCHEMA;
+  id: string;
+  combinationId: string;
+  case: V1Case;
+  owner: string;
+  surface: "compiler" | "integration" | "linter" | "typechecker" | "lsp-editor";
+  product: string;
+  vue: "2.7" | "3.x" | "3.6+-vapor";
+  backend: "host-vdom" | "vdom" | "vapor" | "analysis";
+  sourceKind: string;
+  requiredQualificationSets: string[];
+  evidenceCandidates: string[];
+  packetHashFields: (typeof V1_FIVE_CASE_PACKET_HASH_FIELDS)[number][];
+}
+
+export interface V1FiveCaseSelector extends V1FiveCaseSelectorBody {
+  selectorSha256: string;
+  qualification: "unbound";
+  receiptIds: string[];
+}
+
+function canonicalize(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(canonicalize);
+  if (value != null && typeof value === "object")
+    return Object.fromEntries(
+      Object.entries(value as Record<string, unknown>)
+        .toSorted(([left], [right]) => left.localeCompare(right))
+        .map(([key, entry]) => [key, canonicalize(entry)]),
+    );
+  return value;
+}
+
+export function digestV1FiveCaseSelector(selector: V1FiveCaseSelectorBody): string {
+  return createHash("sha256")
+    .update(JSON.stringify(canonicalize(selector)))
+    .digest("hex");
+}
 
 const lintSourceKinds = [
   "vue",
@@ -378,6 +427,19 @@ function qualifiedBaseline(profile: Profile): string {
   return "shipping-vue@3.5.42-differential-vue@3.5.35";
 }
 
+function nativeHostPlatform(target: string): {
+  os: "darwin" | "linux" | "win32";
+  architecture: "arm64" | "x64";
+  libc: "glibc" | "msvc" | "musl" | "none";
+} {
+  const architecture = target.startsWith("aarch64-") ? "arm64" : "x64";
+  if (target.endsWith("-apple-darwin")) return { os: "darwin", architecture, libc: "none" };
+  if (target.endsWith("-windows-msvc")) return { os: "win32", architecture, libc: "msvc" };
+  if (target.endsWith("-linux-gnu")) return { os: "linux", architecture, libc: "glibc" };
+  if (target.endsWith("-linux-musl")) return { os: "linux", architecture, libc: "musl" };
+  throw new Error(`Unsupported native target identity: ${target}`);
+}
+
 export function buildV1SupportMatrix(root = process.cwd()) {
   const nativeManifest = manifest(path.join(root, "npm/native/package.json"));
   const cliManifest = manifest(path.join(root, "npm/cli/package.json"));
@@ -413,17 +475,43 @@ export function buildV1SupportMatrix(root = process.cwd()) {
       })),
     )
     .toSorted((left, right) => left.id.localeCompare(right.id));
+  const caseSelectors: V1FiveCaseSelector[] = combinations.flatMap((combination) =>
+    V1_CASES.map((caseId) => {
+      const body: V1FiveCaseSelectorBody = {
+        schema: V1_FIVE_CASE_SELECTOR_SCHEMA,
+        id: `${combination.id}/${caseId}`,
+        combinationId: combination.id,
+        case: caseId,
+        owner: combination.owner,
+        surface: combination.surface,
+        product: combination.product,
+        vue: combination.vue,
+        backend: combination.backend,
+        sourceKind: combination.sourceKind,
+        requiredQualificationSets: [...combination.requiredQualificationSets],
+        evidenceCandidates: [...combination.evidence],
+        packetHashFields: [...V1_FIVE_CASE_PACKET_HASH_FIELDS],
+      };
+      return {
+        ...body,
+        selectorSha256: digestV1FiveCaseSelector(body),
+        qualification: "unbound",
+        receiptIds: [],
+      };
+    }),
+  );
 
   const nodeHosts = nativeTargets.flatMap((target) =>
     (target.endsWith("-musl") ? ["24"] : ["22", "24"]).map((version) => ({
       runtime: "node",
       version,
       target,
+      ...nativeHostPlatform(target),
     })),
   );
   const bunHosts = nativeTargets
     .filter((target) => !target.endsWith("-musl"))
-    .map((target) => ({ runtime: "bun", version: bun, target }));
+    .map((target) => ({ runtime: "bun", version: bun, target, ...nativeHostPlatform(target) }));
   const packageManagers = Object.values(PACKAGE_MANAGERS)
     .map(({ id, binary, corepackSpec, lockfile }) => ({
       id,
@@ -492,6 +580,9 @@ export function buildV1SupportMatrix(root = process.cwd()) {
       runtime: "node",
       version: "24.14.0",
       target: "wsl2-ubuntu-24.04-x64",
+      os: "linux",
+      architecture: "x64",
+      libc: "glibc",
       filesystems: ["ext4", "windows-mount"],
       observedSurfaces: ["content-mapper", "lsp-server"],
     },
@@ -693,6 +784,8 @@ export function buildV1SupportMatrix(root = process.cwd()) {
     releaseReady,
     coverageSemantics: {
       combinations: "Declared source support and conditions, not execution credit.",
+      caseSelectors:
+        "Stable five-case selector identities. They grant no credit without exact admitted receipts.",
       requiredRows: "Required product by Vue by host by runtime rows. A gap is release-blocking.",
       evidenceSnapshots:
         "Historical or manual context only until joined to one exact candidate row.",
@@ -718,6 +811,7 @@ export function buildV1SupportMatrix(root = process.cwd()) {
       bun,
     },
     combinations,
+    caseSelectors,
     requiredRows,
     evidenceSnapshots,
     knownGaps,
@@ -776,6 +870,21 @@ export function buildV1SupportMatrix(root = process.cwd()) {
         ".github/workflows/typecheck-wsl2.yml",
       ],
     },
+    caseReceiptIdentityContracts: {
+      source: "40-character source SHA",
+      candidate: "40-character candidate SHA",
+      actions: ["run ID", "run attempt", "job", "shard index", "shard total"],
+      fixture: "sha256",
+      dependency: "sha256",
+      runtime: ["name", "version", "target", "OS", "architecture", "libc", "Vue line"],
+      binary: ["source sha256", "candidate sha256"],
+      packet: {
+        source: [...V1_FIVE_CASE_PACKET_HASH_FIELDS],
+        candidate: [...V1_FIVE_CASE_PACKET_HASH_FIELDS],
+        passedContract: "source and candidate packet hashes must be identical",
+      },
+      receipt: "canonical sha256",
+    },
     unsupported: [
       {
         combination: "vue-2.7/vapor",
@@ -811,6 +920,7 @@ export function buildV1SupportMatrix(root = process.cwd()) {
     counts: {
       declaredCombinations: combinations.length,
       caseObligations: combinations.length * V1_CASES.length,
+      caseSelectors: caseSelectors.length,
       hostRuntimeCombinations: hostRuntimeCombinations.length,
       requiredRows: requiredRows.length,
       completeRequiredRows: requiredRows.filter(({ qualification }) => qualification === "complete")
