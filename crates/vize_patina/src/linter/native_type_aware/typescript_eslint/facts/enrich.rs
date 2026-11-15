@@ -109,7 +109,7 @@ fn merge_string_facts(node: &mut LintNode, key: &str, facts: Vec<String>) {
     };
     for fact in facts {
         if !values.iter().any(|value| value.as_str() == Some(&fact)) {
-            values.push(Value::String(fact));
+            values.push(Value::String(fact.as_str().to_owned()));
         }
     }
 }
