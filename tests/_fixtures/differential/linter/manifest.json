@@ -3101,6 +3101,64 @@
       }
     },
     {
+      "id": "linter/dynamic-import-module-namespace-13003",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "dynamic-import-module-namespace-13003",
+        "files": [
+          {
+            "path": "src/api.ts",
+            "role": "third-party-module-dependency",
+            "sha256": "0583ca86dfe9719b7c392bb6f46924bb5c4bd400a57f35b2c6b739975870c66f"
+          },
+          {
+            "path": "src/Child.vue",
+            "role": "third-party-component-dependency",
+            "sha256": "312003bf2227368e6ec7638e8421359c7161d97f364fd8f669cfd6d0cfba6a0b"
+          },
+          {
+            "path": "src/Lazy.vue",
+            "role": "third-party-reproduction",
+            "sha256": "fbdcbe83206592883190ccf49140b9292e02f42e7b2b0f8575b7defafb0cadcc"
+          },
+          {
+            "path": "src/LazyAlone.vue",
+            "role": "third-party-negative-control",
+            "sha256": "e1af4edda3a96af66b2a4d744418552e04cee8644eab4c49fb8bcf5137076bf0"
+          },
+          {
+            "path": "tsconfig.json",
+            "role": "third-party-project-config",
+            "sha256": "58a7b95ded5405fa3e811fa60c74459a8ac19b08153682a3a2212ec946671451"
+          },
+          {
+            "path": "vize-lint.config.mjs",
+            "role": "third-party-type-aware-lint-config",
+            "sha256": "29e71302f6d387b1bb4fb2a52acceb7d574668f8d68d2857ca6a54148bd1abe0"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/ecosystem-host-rules-11772",
       "state": "active",
       "targets": [

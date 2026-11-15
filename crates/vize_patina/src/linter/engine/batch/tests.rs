@@ -157,6 +157,82 @@ fn batch_keeps_script_jsx_options_suppression_and_input_order() {
 }
 
 #[test]
+fn component_imports_preserve_dynamic_module_namespace_packets() {
+    let Some(runtime) = runtime() else { return };
+    let project = tempfile::tempdir().unwrap();
+    let source_dir = project.path().join("src");
+    std::fs::create_dir(&source_dir).unwrap();
+    std::fs::write(project.path().join("package.json"), "{}").unwrap();
+    std::fs::write(
+        project.path().join("tsconfig.json"),
+        include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../tests/_fixtures/differential/linter/dynamic-import-module-namespace-13003/tsconfig.json"
+        )),
+    )
+    .unwrap();
+    std::fs::write(
+        source_dir.join("api.ts"),
+        include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../tests/_fixtures/differential/linter/dynamic-import-module-namespace-13003/src/api.ts"
+        )),
+    )
+    .unwrap();
+    std::fs::write(
+        source_dir.join("Child.vue"),
+        include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../tests/_fixtures/differential/linter/dynamic-import-module-namespace-13003/src/Child.vue"
+        )),
+    )
+    .unwrap();
+    let with_child = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../tests/_fixtures/differential/linter/dynamic-import-module-namespace-13003/src/Lazy.vue"
+    ));
+    let alone = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../tests/_fixtures/differential/linter/dynamic-import-module-namespace-13003/src/LazyAlone.vue"
+    ));
+    let with_child_path = source_dir.join("Lazy.vue");
+    let alone_path = source_dir.join("LazyAlone.vue");
+    std::fs::write(&with_child_path, with_child).unwrap();
+    std::fs::write(&alone_path, alone).unwrap();
+    let with_child_path = with_child_path.to_str().unwrap();
+    let alone_path = alone_path.to_str().unwrap();
+    let linter = Linter::with_preset(LintPreset::Opinionated)
+        .with_corsa_path(Some(runtime))
+        .with_type_aware_lint(true)
+        .with_enabled_rules(Some(
+            [
+                "type/no-unsafe-argument",
+                "type/no-unsafe-assignment",
+                "type/no-unsafe-call",
+                "type/no-unsafe-member-access",
+                "type/no-unsafe-return",
+            ]
+            .into_iter()
+            .map(Into::into)
+            .collect(),
+        ));
+    let actual = Linter::lint_prepared_batch(vec![
+        (&linter, linter.prepare_sfc(with_child, with_child_path)),
+        (&linter, linter.prepare_sfc(alone, alone_path)),
+    ]);
+
+    assert_eq!(
+        actual.iter().map(complete).collect::<Vec<_>>(),
+        vec![
+            expected(with_child_path, vec![]),
+            expected(alone_path, vec![])
+        ],
+        "the static SFC edge must not erase the identical dynamic module namespace"
+    );
+    Linter::finish_type_aware_lint(std::slice::from_ref(&linter), &[]);
+}
+
+#[test]
 fn batch_does_not_start_a_checker_for_files_without_queries() {
     let absent = std::path::Path::new("/nonexistent-patina-runtime");
     let linter = configured(absent);
