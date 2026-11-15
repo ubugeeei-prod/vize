@@ -240,8 +240,9 @@ pub(super) fn evaluate(
                 let Some(vize_name) = static_rule(rule) else {
                     continue;
                 };
-                let mut prepared = present::prepare(rule, node);
-                if let Some(configured) = options::for_rule(options, rule) {
+                let configured = options::for_rule(options, rule);
+                let mut prepared = present::prepare(rule, node, configured.as_ref());
+                if let Some(configured) = configured {
                     prepared.fields.insert("__ruleOptions".into(), configured);
                 }
                 for diagnostic in
