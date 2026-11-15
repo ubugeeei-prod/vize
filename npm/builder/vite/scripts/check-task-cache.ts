@@ -10,6 +10,8 @@ import { fileURLToPath } from "node:url";
 const builder = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const root = path.resolve(builder, "../../..");
 const provider = process.env.VIZE_TASK_CACHE_PROVIDER ?? "1.4.0";
+const installer = process.env.VIZE_TASK_CACHE_INSTALLER ?? "npm";
+assert.match(installer, /^(?:bun|npm)$/u, "supported fixture installer");
 const published = process.argv[2];
 const preflight = process.env.VIZE_TASK_CACHE_PREFLIGHT === "1";
 let configPreflight: unknown;
@@ -21,6 +23,9 @@ const publicVersion = published ?? "0.595.0";
 const sourceCli = process.env.VIZE_TASK_CACHE_SOURCE_CLI || undefined;
 assert.ok(!published || !sourceCli, "public acceptance never replaces a published CLI");
 const directory = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "vize-task-cache-")));
+const artifactsDirectory = fs.realpathSync(
+  fs.mkdtempSync(path.join(os.tmpdir(), "vize-task-cache-artifacts-")),
+);
 const privateCache = sourceCli
   ? fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "vize-task-private-cache-")))
   : undefined;
@@ -44,6 +49,7 @@ interface TaskRunReceipt {
   stdout: string;
   stderr: string;
   details: string;
+  cacheHit: boolean;
   before: Record<string, string>;
   after: Record<string, string>;
   milliseconds: number;
@@ -51,6 +57,7 @@ interface TaskRunReceipt {
 const rows: TaskRunReceipt[] = [];
 let packageLock: unknown;
 let sourceArchive: { filename: string; sha256: string } | undefined;
+let sourceArchivePath: string | undefined;
 let sourceCliReceipt: unknown;
 let privateStorage: { root: string; files: { path: string; bytes: number }[] } | undefined;
 let privateStorageInspection: { root: string; entries: string[] } | undefined;
@@ -95,6 +102,7 @@ try {
         name: "task-cache-consumer",
         private: true,
         type: "module",
+        packageManager: installer === "bun" ? "bun@1.3.14" : "npm@11.11.0",
         scripts: { check: "node --version" },
         dependencies: {
           "vite-plus": provider,
@@ -109,7 +117,29 @@ try {
       2,
     ),
   );
-  requireSuccess("npm", ["install", "--legacy-peer-deps", "--no-audit", "--no-fund"]);
+  const install = (fresh = false): void => {
+    if (installer === "bun") {
+      requireSuccess("bun", ["install", "--no-progress", ...(fresh ? ["--frozen-lockfile"] : [])]);
+    } else {
+      requireSuccess("npm", [
+        fresh ? "ci" : "install",
+        "--legacy-peer-deps",
+        "--no-audit",
+        "--no-fund",
+      ]);
+    }
+  };
+  const installSourceArchive = (archive: string): void => {
+    requireSuccess(installer, [
+      installer === "bun" ? "add" : "install",
+      "--no-save",
+      ...(installer === "bun"
+        ? ["--no-progress"]
+        : ["--legacy-peer-deps", "--no-audit", "--no-fund"]),
+      archive,
+    ]);
+  };
+  install();
   const require = createRequire(path.join(directory, "package.json"));
   if (!published) {
     // Bundle the actual source integration and task runner into a real package.
@@ -150,17 +180,19 @@ try {
         .update(fs.readFileSync(path.join(packed, archive.filename)))
         .digest("hex"),
     };
-    requireSuccess("npm", [
-      "install",
-      "--legacy-peer-deps",
-      "--no-audit",
-      "--no-fund",
-      path.join(packed, archive.filename),
-    ]);
+    sourceArchivePath = path.join(artifactsDirectory, archive.filename);
+    fs.copyFileSync(path.join(packed, archive.filename), sourceArchivePath);
+    installSourceArchive(sourceArchivePath);
     // Build inputs are outside the consumer's source discovery scope.
     fs.rmSync(packed, { recursive: true, force: true });
   }
-  packageLock = JSON.parse(fs.readFileSync(path.join(directory, "package-lock.json"), "utf8"));
+  const lockfile = installer === "bun" ? "bun.lock" : "package-lock.json";
+  const lockfileContents = fs.readFileSync(path.join(directory, lockfile));
+  packageLock = {
+    file: lockfile,
+    bytes: lockfileContents.byteLength,
+    sha256: createHash("sha256").update(lockfileContents).digest("hex"),
+  };
   if (sourceCli) {
     assert.equal(process.platform, "linux");
     const expected = process.env.VIZE_TASK_CACHE_SOURCE_BINARY_SHA256;
@@ -260,6 +292,9 @@ try {
   }
   // Initialize the provider's summary before checks enumerate the project.
   requireSuccess(process.execPath, [vp, "run", "warmup"]);
+  const nodeModules = path.join(directory, "node_modules");
+  const toolCache = path.join(nodeModules, ".cache");
+  fs.rmSync(toolCache, { recursive: true, force: true });
   function run(
     label: string,
     task: string,
@@ -276,6 +311,7 @@ try {
     const details = command(process.execPath, [vp, "run", "--last-details"]);
     const after = snapshot();
     const output = result.stdout + result.stderr;
+    const replayed = /cache hit, replaying/u.test(result.stdout + result.stderr);
     rows.push({
       label,
       task,
@@ -284,12 +320,12 @@ try {
       stdout: result.stdout,
       stderr: result.stderr,
       details: details.stdout + details.stderr,
+      cacheHit: replayed,
       before,
       after,
       milliseconds: performance.now() - start,
     });
     assert.equal(result.status, status, `${label}\n${output}`);
-    const replayed = /cache hit, replaying/u.test(output);
     if (hit !== undefined) assert.equal(replayed, hit, `${label}\n${output}`);
     if (diagnostic) assert.match(output, diagnostic, label);
     if (unchanged) assert.deepEqual(after, before, `${label}: checks preserve authored files`);
@@ -331,7 +367,9 @@ try {
   }
   // Real installed tools normalize the fixture before the read-only oracles.
   if (!preflight) run("initial-format", "fmt", { unchanged: false });
-  for (const task of ["verify:lint", "fmt:check", "typecheck", "vize:check"]) {
+  const cachedTasks = ["verify:lint", "fmt:check", "typecheck", "vize:check"];
+  const unexpectedMisses: string[] = [];
+  for (const task of cachedTasks) {
     run(`${task}-cold`, task, { hit: false });
     if (task === "typecheck" && privateCache) {
       const row = rows.find((selected) => selected.label === "typecheck-cold");
@@ -362,7 +400,14 @@ try {
       assert.ok(files.length > 0, "typecheck uses the new private batch store outside the project");
       privateStorage = { root: storage, files };
     }
-    if (!preflight) run(`${task}-hit`, task, { hit: true });
+    if (!preflight) {
+      run(`${task}-hit`, task);
+      const hit = rows.at(-1)!;
+      if (!hit.cacheHit) unexpectedMisses.push(hit.label);
+      // Stabilize the control implementation so every following mutation starts
+      // with an independently proven cache entry.
+      run(`${task}-settled-hit`, task, { hit: true });
+    }
   }
   if (privateCache) {
     privateStorageInspection = {
@@ -371,6 +416,54 @@ try {
     };
   }
   if (!preflight) {
+    const probe = (label: string, mutate: () => void): void => {
+      mutate();
+      for (const task of cachedTasks) {
+        run(`${label}-${task}`, task);
+        const row = rows.at(-1)!;
+        if (!row.cacheHit) unexpectedMisses.push(row.label);
+      }
+    };
+    const dependencyProbe = path.join(nodeModules, "task-cache-install-probe");
+    probe("node-modules-entry-added", () => {
+      fs.mkdirSync(dependencyProbe);
+      fs.writeFileSync(path.join(dependencyProbe, "package.json"), "{}\n");
+    });
+    probe("node-modules-entry-removed", () => {
+      fs.rmSync(dependencyProbe, { recursive: true });
+    });
+    probe("tool-cache-added", () => {
+      fs.mkdirSync(toolCache);
+      fs.writeFileSync(path.join(toolCache, "result.json"), "{}\n");
+    });
+    probe("tool-cache-removed", () => {
+      fs.rmSync(toolCache, { recursive: true });
+    });
+    probe("vite-task-cache-churn", () => {
+      write("node_modules/.vite/task-cache/v18/external-probe.json", "{}\n");
+    });
+
+    const taskCache = path.join(nodeModules, ".vite/task-cache");
+    const preservedTaskCache = path.join(artifactsDirectory, "task-cache");
+    assert.ok(fs.existsSync(taskCache), "Vite Task cache exists before fresh install");
+    fs.cpSync(taskCache, preservedTaskCache, { recursive: true });
+    fs.rmSync(nodeModules, { recursive: true });
+    install(true);
+    if (sourceArchivePath) installSourceArchive(sourceArchivePath);
+    fs.mkdirSync(path.dirname(taskCache), { recursive: true });
+    fs.cpSync(preservedTaskCache, taskCache, { recursive: true });
+    probe("fresh-install-with-restored-task-cache", () => {});
+
+    assert.deepEqual(
+      unexpectedMisses,
+      [],
+      `node_modules-only changes must retain read-only task cache entries: ${unexpectedMisses.join(", ")}`,
+    );
+
+    fs.appendFileSync(path.join(directory, lockfile), "\n");
+    run("lockfile-change", "verify:lint", { hit: false });
+    run("lockfile-change-hit", "verify:lint", { hit: true });
+
     write("src/value.ts", 'export const value: string = "hello";\ndebugger;\n');
     run("source-change", "verify:lint", { hit: false });
     run("source-change-hit", "verify:lint", { hit: true });
@@ -476,6 +569,7 @@ try {
           imageVersion: process.env.ImageVersion,
         },
         provider,
+        installer,
         preflight,
         configPreflight,
         publicVersion,
@@ -494,6 +588,7 @@ try {
   );
   // Keep the independent streams and file fingerprints, remove only our fixture.
   fs.rmSync(directory, { recursive: true, force: true });
+  fs.rmSync(artifactsDirectory, { recursive: true, force: true });
   if (privateCache) fs.rmSync(privateCache, { recursive: true, force: true });
   console.log(`Evidence: ${evidence}`);
 }
