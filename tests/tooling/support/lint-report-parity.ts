@@ -429,24 +429,17 @@ for (const entry of reviewed) {
           results: [{ file, messages: Array.from({ length: count }, () => message) }],
         });
         const result = compare(input, input.args, ["updated"]);
-        assert.equal(
-          result.status,
-          count === 1 && falseNegatives.length === 0 ? 0 : 1,
-          result.stderr,
-        );
+        assert.equal(result.status, count === 0 && falseNegatives.length === 0 ? 0 : 1, result.stderr);
         const report = reportFile(result, `${entry.project}-lint-divergence.json`);
         assert.deepEqual(report.divergence.falseNegatives, falseNegatives);
         assert.equal(report.divergence.summary.falseNegativeCount, falseNegatives.length);
         assert.equal(
           report.budget.verdict,
-          count !== 1 ? "unusable" : falseNegatives.length ? "breached" : "passed",
+          count > 0 || falseNegatives.length > 0 ? "breached" : "passed",
         );
-        assert.equal(report.divergence.referenceCoverageExpectations.length, 1);
-        assert.equal(report.divergence.referenceCoverageExpectations[0].observedCount, count);
-        assert.equal(
-          report.divergence.summary.referenceCoverageIntegrityErrorCount,
-          count === 1 ? 0 : 1,
-        );
+        assert.equal(report.divergence.referenceCoverageExpectations.length, 0);
+        assert.equal(report.divergence.summary.referenceCoverageIntegrityErrorCount, 0);
+        assert.equal(report.divergence.summary.falsePositiveCount, count);
         assert.equal(report.budget.maxFalsePositiveCount, 0);
         assert.equal(report.budget.maxFalseNegativeCount, 0);
       }

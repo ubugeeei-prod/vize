@@ -19,6 +19,42 @@ import {
 import type { Args } from "./selection.ts";
 import type { BaselineRuleSetting } from "./compare.ts";
 
+const baselineProviderPackage = "eslint-plugin-vue-scorecard";
+
+function resolveScorecardHostRuntime(root: string) {
+  const benchPackageJson = path.join(root, "tools/benchmarks/scripts/package.json"),
+    requireFromBench = createRequire(benchPackageJson),
+    benchManifest = readJson(benchPackageJson),
+    ruleMap = readJson(path.join(root, "tests/_fixtures/patina-eslint-vue-rule-map.json")),
+    providerManifest = requireFromBench(`${baselineProviderPackage}/package.json`) as Json,
+    providerName = text(get(providerManifest, "name")),
+    providerVersion = text(get(providerManifest, "version")),
+    upstreamPackage = text(get(ruleMap, "upstream", "package")),
+    upstreamVersion = text(get(ruleMap, "upstream", "version")),
+    declared = text(get(benchManifest, "devDependencies", baselineProviderPackage));
+  if (upstreamPackage !== "eslint-plugin-vue") throw new Error("lint rule-map package drifted");
+  if (providerName !== upstreamPackage) throw new Error("lint baseline package name drifted");
+  if (declared !== `npm:${upstreamPackage}@${providerVersion}`)
+    throw new Error(`${baselineProviderPackage} must be an exact npm alias pin`);
+  if (providerVersion !== upstreamVersion)
+    throw new Error(`${baselineProviderPackage} version must match the lint rule map`);
+  const packageVersion = (name: string): string => {
+    const version = text(get(requireFromBench(`${name}/package.json`) as Json, "version"));
+    if (!version) throw new Error(`${name} package must record a version`);
+    return version;
+  };
+  return {
+    plugin: requireFromBench(baselineProviderPackage) as { rules: Record<string, unknown> },
+    version: providerVersion,
+    runtimeVersions: {
+      eslint: packageVersion("eslint"),
+      "eslint-plugin-vue": providerVersion,
+      "vue-eslint-parser": packageVersion("vue-eslint-parser"),
+      "@typescript-eslint/parser": packageVersion("@typescript-eslint/parser"),
+    },
+  };
+}
+
 export interface Launch {
   command: string;
   prefix: string[];
@@ -125,7 +161,7 @@ export function runPatina(cwd: string, project: Json, args: Args, launch: Launch
 }
 
 export const baselineScript =
-  '\nimport { createRequire } from "node:module";\nimport { readFileSync } from "node:fs";\nimport { baselineConfig } from "./tools/support/compat/fixtures/lint-divergence-baseline.mjs";\nconst input = JSON.parse(readFileSync(0, "utf8"));\nconst requireFromBench = createRequire(input.benchPackageJson);\nconst ESLint = requireFromBench("eslint").ESLint;\nconst plugin = requireFromBench("eslint-plugin-vue");\nconst vueParser = requireFromBench("vue-eslint-parser");\nconst scriptParser = requireFromBench("@typescript-eslint/parser");\nconst manifest = requireFromBench("eslint-plugin-vue/package.json");\nconst eslint = new ESLint({\n  cwd: input.cwd,\n  passOnNoPatterns: input.files.length === 0,\n  overrideConfigFile: true,\n  overrideConfig: baselineConfig({ vueParser, scriptParser, plugin }, input.rules),\n  errorOnUnmatchedPattern: false\n});\nif (input.files.length === 0) {\n  await eslint.calculateConfigForFile("__vize_empty_vue_config__.vue");\n}\nconst results = await eslint.lintFiles(input.files);\nconst enabled = new Set(Object.keys(input.rules));\nlet droppedConfigMessageCount = 0;\nconst retained = results.map((result) => ({\n  ...result,\n  messages: result.messages.filter((message) => {\n    if (message.ruleId == null || enabled.has(message.ruleId)) return true;\n    droppedConfigMessageCount += 1;\n    return false;\n  })\n}));\nconst runtimeVersions = Object.fromEntries(\n  ["eslint", "eslint-plugin-vue", "vue-eslint-parser", "@typescript-eslint/parser"]\n    .map(name => [name, requireFromBench(`${name}/package.json`).version])\n);\nprocess.stdout.write(JSON.stringify({ version: manifest.version, runtimeVersions, rawResults: results, results: retained, droppedConfigMessageCount }));\n';
+  '\nimport { readFileSync } from "node:fs";\nimport { baselineConfig } from "./tools/support/compat/fixtures/lint-divergence-baseline.mjs";\nimport { resolveScorecardRuntime } from "./tools/support/compat/fixtures/lint-divergence-scorecard.ts";\nconst input = JSON.parse(readFileSync(0, "utf8"));\nconst runtime = resolveScorecardRuntime();\nconst eslint = new runtime.ESLint({\n  cwd: input.cwd,\n  passOnNoPatterns: input.files.length === 0,\n  overrideConfigFile: true,\n  overrideConfig: baselineConfig(runtime, input.rules),\n  errorOnUnmatchedPattern: false\n});\nif (input.files.length === 0) {\n  await eslint.calculateConfigForFile("__vize_empty_vue_config__.vue");\n}\nconst results = await eslint.lintFiles(input.files);\nconst enabled = new Set(Object.keys(input.rules));\nlet droppedConfigMessageCount = 0;\nconst retained = results.map((result) => ({\n  ...result,\n  messages: result.messages.filter((message) => {\n    if (message.ruleId == null || enabled.has(message.ruleId)) return true;\n    droppedConfigMessageCount += 1;\n    return false;\n  })\n}));\nprocess.stdout.write(JSON.stringify({ version: runtime.version, runtimeVersions: runtime.runtimeVersions, rawResults: results, results: retained, droppedConfigMessageCount }));\n';
 
 export function runEslintBaseline(
   root: string,
@@ -133,25 +169,17 @@ export function runEslintBaseline(
   files: string[],
   rules: Record<string, BaselineRuleSetting>,
 ) {
-  const requireFromBench = createRequire(path.join(root, "tools/benchmarks/scripts/package.json")),
-    plugin = requireFromBench("eslint-plugin-vue") as {
-      rules: Record<string, unknown>;
-    },
+  const runtime = resolveScorecardHostRuntime(root),
+    plugin = runtime.plugin,
     availableRules = Object.fromEntries(
       Object.entries(rules).filter(([name]) =>
         Object.hasOwn(plugin.rules, name.replace(/^vue\//u, "")),
       ),
     );
   if (!Object.keys(availableRules).length) {
-    const version = get(
-      readJson(path.join(root, "tests/_fixtures/patina-eslint-vue-rule-map.json")),
-      "upstream",
-      "version",
-    );
-    if (typeof version !== "string") throw new Error("rule map must record upstream version");
     const results = files.map((file): Json => ({ filePath: path.join(cwd, file), messages: [] }));
     return {
-      version,
+      version: runtime.version,
       runtimeVersions: {},
       rules: availableRules,
       rawResults: results,
@@ -160,7 +188,6 @@ export function runEslintBaseline(
     };
   }
   const input: Json = {
-    benchPackageJson: path.join(root, "tools/benchmarks/scripts/package.json"),
     cwd,
     files,
     rules: availableRules,
