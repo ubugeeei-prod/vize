@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -66,6 +66,7 @@ export async function runLintDivergenceReport(argv = process.argv.slice(2)) {
   if (projects.length === 0) throw new Error("No linter-covered project matched the selection");
 
   mkdirSync(args.outputDir, { recursive: true });
+  removePriorArtifacts(args.outputDir, projects);
   const evidence = collectRunEvidence();
   const artifacts = [];
   for (const project of projects) {
@@ -104,7 +105,7 @@ async function measureProject(context) {
     throw new Error(`${project.id} matched no Vue files`);
   }
 
-  const patinaFindings = runPatina(context, cwd, files);
+  const patinaFindings = files.length === 0 ? [] : runPatina(context, cwd, files);
   const startedAt = Date.now();
   const baselineRun = await runBaseline(runtime, cwd, files, rules);
   const eslintResults = baselineRun.results;
@@ -147,6 +148,17 @@ async function measureProject(context) {
   writeFileSync(markdownPath, renderMarkdown(artifact));
   process.stdout.write(`Wrote ${relative(repoRoot, jsonPath)}\n`);
   return artifact;
+}
+
+function removePriorArtifacts(outputDir, projects) {
+  for (const filename of [
+    "lint-divergence-summary.json",
+    ...projects.flatMap((project) => [
+      `${project.id}-lint-divergence.json`,
+      `${project.id}-lint-divergence.md`,
+    ]),
+  ])
+    rmSync(join(outputDir, filename), { force: true });
 }
 
 /**
