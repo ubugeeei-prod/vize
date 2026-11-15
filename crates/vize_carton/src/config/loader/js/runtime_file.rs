@@ -213,37 +213,37 @@ fn cached_runtime(home: &Path, source: &[u8]) -> io::Result<NodeRuntimeFile> {
     let hash = sha256_hex(source);
     let path = root.join(crate::cstr!("{hash}.mjs").as_str());
     let lease_path = root.join(crate::cstr!("{hash}.lease").as_str());
+
+    // Reserve an eviction slot before opening the target lease. Once the
+    // catalog's shared boundary below is entered, it stays intact until the
+    // runtime lease is validated, so maintenance cannot replace that lease
+    // with a different file identity.
+    reserve_cache_capacity(&root, &path, &catalog);
     let lease = open_shared_lease(&catalog, &lease_path)?;
 
     // Cache hits are readers. Keeping their lease shared lets the same
     // evaluator be reused by nested loads and other processes without an
     // exclusive-lock cycle. Only a missing or damaged entry needs repair.
-    if runtime_matches(&path, source) {
-        maintain_cache(&root, &path, &catalog);
-        return cached_runtime_file(path, lease);
-    }
-    lease.unlock()?;
-
-    // Make room before publishing while no runtime lease is held. The
-    // operation stays non-blocking: another constructor may own the catalog,
-    // in which case the ordinary post-publish maintenance remains the bounded
-    // follow-up. Reserving on a quiet miss prevents the try-only maintenance
-    // policy from retaining one avoidable overflow after this constructor.
-    reserve_cache_capacity(&root, &path, &catalog);
-
-    lock_exclusive_lease(&catalog, &lease)?;
-    if !runtime_matches(&path, source) {
-        remove_invalid_runtime(&path)?;
-        publish_runtime(&root, &path, &hash, source)?;
-    }
-    lease.unlock()?;
-    lease.lock_shared()?;
-    if !runtime_matches(&path, source) {
-        return Err(io::Error::new(
-            ErrorKind::NotFound,
-            "cached config runtime disappeared before use",
-        ));
-    }
+    let validate = (|| {
+        if runtime_matches(&path, source) {
+            return Ok(());
+        }
+        lease.unlock()?;
+        lease.try_lock()?;
+        if !runtime_matches(&path, source) {
+            remove_invalid_runtime(&path)?;
+            publish_runtime(&root, &path, &hash, source)?;
+        }
+        lease.unlock()?;
+        lease.try_lock_shared()?;
+        runtime_matches(&path, source).then_some(()).ok_or_else(|| {
+            io::Error::new(
+                ErrorKind::NotFound,
+                "cached config runtime disappeared before use",
+            )
+        })
+    })();
+    finish_catalog_operation(&catalog, validate)?;
     maintain_cache(&root, &path, &catalog);
     cached_runtime_file(path, lease)
 }
@@ -347,17 +347,15 @@ fn open_existing_lease(path: &Path, metadata: &fs::Metadata) -> io::Result<File>
 }
 
 fn open_shared_lease(catalog: &File, path: &Path) -> io::Result<File> {
-    catalog.lock_shared()?;
+    catalog.try_lock_shared()?;
     let result = open_lease(path).and_then(|lease| {
-        lease.lock_shared()?;
+        lease.try_lock_shared()?;
         Ok(lease)
     });
-    finish_catalog_operation(catalog, result)
-}
-
-fn lock_exclusive_lease(catalog: &File, lease: &File) -> io::Result<()> {
-    catalog.lock_shared()?;
-    finish_catalog_operation(catalog, lease.lock())
+    if result.is_err() {
+        let _ = catalog.unlock();
+    }
+    result
 }
 
 fn finish_catalog_operation<T>(catalog: &File, result: io::Result<T>) -> io::Result<T> {

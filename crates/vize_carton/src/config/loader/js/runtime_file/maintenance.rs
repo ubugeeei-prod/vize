@@ -21,10 +21,9 @@ pub(super) fn reserve_cache_capacity(root: &Path, current: &Path, catalog: &File
     if catalog.try_lock().is_err() {
         return;
     }
-    // The target lease is already open but its runtime is not published yet.
-    // Recovery would mistake that stable lease for an orphan and unlink it,
-    // splitting later constructors onto a different file identity.
-    prune_cache_locked(root, current, CACHE_LIMIT.saturating_sub(1));
+    if !is_runtime_entry(current) {
+        prune_cache_locked(root, current, CACHE_LIMIT.saturating_sub(1));
+    }
     let _ = catalog.unlock();
 }
 
@@ -68,6 +67,12 @@ fn recover_interrupted_writes_locked(root: &Path) {
         if fs::symlink_metadata(&runtime)
             .is_ok_and(|metadata| metadata.is_file() && !metadata.file_type().is_symlink())
         {
+            continue;
+        }
+        let Ok(metadata) = fs::symlink_metadata(&path) else {
+            continue;
+        };
+        if !metadata.is_file() || metadata.file_type().is_symlink() {
             continue;
         }
         let Ok(file) = private_open_options().open(&path) else {

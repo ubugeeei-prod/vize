@@ -154,14 +154,25 @@ jobs:
         if: runner.os == 'Linux'
         shell: bash
         run: |
-          for lane in base head; do
-            VIZE_RUNTIME_BENCH_LANE="$lane" \
-              VIZE_RUNTIME_BENCH_SAMPLES=21 \
-              VIZE_RUNTIME_BENCH_ITERATIONS=64 \
-              VIZE_RUNTIME_BENCH_OUTPUT="$RUNNER_TEMP/config-runtime-$lane.json" \
-              /usr/bin/time --verbose --output="$RUNNER_TEMP/config-runtime-$lane.time.txt" \
-              cargo test --locked -p vize_carton --lib runtime_storage_benchmark \
-                -- --ignored --nocapture
+          for round in 1 2 3; do
+            if (( round % 2 == 1 )); then
+              lanes=(base head)
+            else
+              lanes=(head base)
+            fi
+            order="${lanes[0]}-${lanes[1]}"
+            for position in 0 1; do
+              lane="${lanes[$position]}"
+              VIZE_RUNTIME_BENCH_LANE="$lane" \
+                VIZE_RUNTIME_BENCH_ROUND="$round" \
+                VIZE_RUNTIME_BENCH_ORDER="$order" \
+                VIZE_RUNTIME_BENCH_SAMPLES=21 \
+                VIZE_RUNTIME_BENCH_ITERATIONS=64 \
+                VIZE_RUNTIME_BENCH_OUTPUT="$RUNNER_TEMP/config-runtime-$round-$position-$lane.json" \
+                /usr/bin/time --verbose --output="$RUNNER_TEMP/config-runtime-$round-$position-$lane.time.txt" \
+                cargo test --locked -p vize_carton --lib runtime_storage_benchmark \
+                  -- --ignored --nocapture
+            done
           done
           cat "$RUNNER_TEMP"/config-runtime-*.json "$RUNNER_TEMP"/config-runtime-*.time.txt
       - name: Retain config runtime storage counts and timings

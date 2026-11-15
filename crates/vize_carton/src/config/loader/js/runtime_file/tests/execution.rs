@@ -52,6 +52,69 @@ fn large_evaluator_is_a_private_file_instead_of_a_command_argument() {
     }
 }
 
+#[cfg(unix)]
+#[test]
+fn orphan_lease_symlink_is_not_opened_or_removed() {
+    use std::os::unix::fs::symlink;
+
+    let cache = tempfile::tempdir().unwrap();
+    drop(runtime(cache.path(), "process.stdout.write('prepare');"));
+    let root = super::super::cache_root(cache.path());
+    let foreign = cache.path().join("foreign.lock");
+    fs::write(&foreign, "foreign").unwrap();
+    let orphan = root.join(format!("{}.lease", "a".repeat(64)));
+    symlink(&foreign, &orphan).unwrap();
+
+    drop(runtime(cache.path(), "process.stdout.write('recover');"));
+
+    assert_eq!(fs::read_to_string(foreign).unwrap(), "foreign");
+    assert!(
+        fs::symlink_metadata(orphan)
+            .unwrap()
+            .file_type()
+            .is_symlink()
+    );
+}
+
+#[test]
+fn busy_catalog_uses_a_scoped_fallback_without_waiting() {
+    let cache = tempfile::tempdir().unwrap();
+    drop(runtime(cache.path(), "process.stdout.write('prepare');"));
+    let catalog = super::super::open_lease(
+        &super::super::cache_root(cache.path()).join(super::super::CATALOG_LEASE),
+    )
+    .unwrap();
+    catalog.lock().unwrap();
+
+    let fallback = runtime(cache.path(), "process.stdout.write('busy catalog');");
+    let path = fallback.path().to_path_buf();
+    assert!(!fallback.is_cached());
+    drop(fallback);
+    assert!(!path.exists());
+    catalog.unlock().unwrap();
+}
+
+#[test]
+fn live_reader_does_not_deadlock_damaged_runtime_repair() {
+    let cache = tempfile::tempdir().unwrap();
+    let script = "process.stdout.write('repair after reader');";
+    let reader = runtime(cache.path(), script);
+    let path = reader.path().to_path_buf();
+    fs::write(&path, "partial").unwrap();
+
+    let fallback = runtime(cache.path(), script);
+    assert!(!fallback.is_cached());
+    drop(fallback);
+    drop(reader);
+
+    let repaired = runtime(cache.path(), script);
+    assert!(repaired.is_cached());
+    assert_eq!(
+        fs::read(path).unwrap(),
+        super::super::runtime_source(script)
+    );
+}
+
 #[test]
 fn file_execution_preserves_unicode_paths_cache_marker_and_cwd() {
     let root = tempfile::tempdir().unwrap();
