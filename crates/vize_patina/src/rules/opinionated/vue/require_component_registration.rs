@@ -332,7 +332,7 @@ fn croquis_script_setup_bindings(ctx: &LintContext<'_>) -> Vec<String> {
                 (runtime_value
                     && analysis
                         .binding_spans
-                        .get(*name)
+                        .get(name)
                         .is_some_and(|&(start, end)| {
                             scope.span.start <= start && end <= scope.span.end
                         }))
