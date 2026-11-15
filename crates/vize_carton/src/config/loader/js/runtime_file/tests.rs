@@ -2,17 +2,78 @@ use super::NodeRuntimeFile;
 use std::{
     env,
     fs::{self, OpenOptions},
+    hint::black_box,
     io::Write,
     path::{Path, PathBuf},
-    process::Command,
+    process::{Child, Command, ExitStatus},
     thread,
     time::{Duration, Instant},
 };
 
 const SHARED_PROCESS_SCRIPT: &str = "process.stdout.write('shared process');";
+const SYMLINK_PROCESS_SCRIPT: &str = "process.stdout.write('owned');";
+const BENCHMARK_SCRIPT: &str = concat!(
+    include_str!("../../vite-runtime.mjs"),
+    include_str!("../../module-runtime.mjs"),
+    include_str!("../../config-inputs.mjs")
+);
 
 fn runtime(cache_home: &Path, script: &str) -> NodeRuntimeFile {
     NodeRuntimeFile::new_with_cache_home(script, cache_home).unwrap()
+}
+
+fn fixture_command(cache: &Path, mode: &str, result: &Path) -> Command {
+    let mut command = Command::new(env::current_exe().unwrap());
+    command
+        .arg("runtime_cache_process_fixture")
+        .arg("--ignored")
+        .arg("--nocapture")
+        .env("VIZE_RUNTIME_FIXTURE_CACHE", cache)
+        .env("VIZE_RUNTIME_FIXTURE_MODE", mode)
+        .env("VIZE_RUNTIME_FIXTURE_RESULT", result);
+    command
+}
+
+fn wait_for_path(path: &Path, child: &mut Child) {
+    let deadline = Instant::now() + Duration::from_secs(10);
+    loop {
+        if path.exists() {
+            return;
+        }
+        if let Some(status) = child.try_wait().unwrap() {
+            assert!(status.success(), "fixture exited before its ready marker");
+            panic!("fixture exited without its ready marker");
+        }
+        if Instant::now() >= deadline {
+            child.kill().unwrap();
+            child.wait().unwrap();
+            panic!("fixture did not publish its ready marker");
+        }
+        thread::sleep(Duration::from_millis(10));
+    }
+}
+
+fn wait_for_child(child: &mut Child) -> ExitStatus {
+    let deadline = Instant::now() + Duration::from_secs(10);
+    loop {
+        if let Some(status) = child.try_wait().unwrap() {
+            return status;
+        }
+        if Instant::now() >= deadline {
+            child.kill().unwrap();
+            child.wait().unwrap();
+            panic!("fixture process did not exit");
+        }
+        thread::sleep(Duration::from_millis(10));
+    }
+}
+
+fn wait_for_signal(path: &Path) {
+    let deadline = Instant::now() + Duration::from_secs(10);
+    while !path.exists() {
+        assert!(Instant::now() < deadline, "fixture signal timed out");
+        thread::sleep(Duration::from_millis(10));
+    }
 }
 
 #[test]
@@ -221,26 +282,10 @@ fn another_process_can_reuse_a_live_runtime() {
     let cache = tempfile::tempdir().unwrap();
     let result = cache.path().join("child-runtime-path");
     let held = runtime(cache.path(), SHARED_PROCESS_SCRIPT);
-    let mut child = Command::new(env::current_exe().unwrap())
-        .arg("runtime_cache_process_fixture")
-        .arg("--ignored")
-        .arg("--nocapture")
-        .env("VIZE_RUNTIME_FIXTURE_CACHE", cache.path())
-        .env("VIZE_RUNTIME_FIXTURE_RESULT", &result)
+    let mut child = fixture_command(cache.path(), "reuse", &result)
         .spawn()
         .unwrap();
-    let deadline = Instant::now() + Duration::from_secs(10);
-    let status = loop {
-        if let Some(status) = child.try_wait().unwrap() {
-            break status;
-        }
-        if Instant::now() >= deadline {
-            child.kill().unwrap();
-            child.wait().unwrap();
-            panic!("another process blocked while reusing a live runtime");
-        }
-        thread::sleep(Duration::from_millis(10));
-    };
+    let status = wait_for_child(&mut child);
     assert!(status.success());
     assert_eq!(
         fs::read_to_string(result).unwrap(),
@@ -253,12 +298,160 @@ fn another_process_can_reuse_a_live_runtime() {
 fn runtime_cache_process_fixture() {
     let cache = PathBuf::from(env::var_os("VIZE_RUNTIME_FIXTURE_CACHE").unwrap());
     let result = PathBuf::from(env::var_os("VIZE_RUNTIME_FIXTURE_RESULT").unwrap());
-    let runtime = runtime(&cache, SHARED_PROCESS_SCRIPT);
-    fs::write(
-        result,
-        runtime.path().file_name().unwrap().to_str().unwrap(),
-    )
-    .unwrap();
+    match env::var("VIZE_RUNTIME_FIXTURE_MODE").unwrap().as_str() {
+        "reuse" => {
+            let runtime = runtime(&cache, SHARED_PROCESS_SCRIPT);
+            fs::write(
+                result,
+                runtime.path().file_name().unwrap().to_str().unwrap(),
+            )
+            .unwrap();
+        }
+        "crash-partial" => {
+            let root = super::cache_root(&cache);
+            let partial = root.join("crashed.tmp");
+            let mut file = super::private_open_options()
+                .create_new(true)
+                .open(partial)
+                .unwrap();
+            file.lock().unwrap();
+            file.write_all(b"partial").unwrap();
+            fs::write(result, b"ready").unwrap();
+            thread::sleep(Duration::from_secs(30));
+            panic!("crash fixture was not terminated");
+        }
+        "old-fd" => {
+            let root = super::cache_root(&cache);
+            let source = super::runtime_source(SHARED_PROCESS_SCRIPT);
+            let hash = super::sha256_hex(&source);
+            let catalog = super::open_lease(&root.join(super::CATALOG_LEASE)).unwrap();
+            catalog.lock_shared().unwrap();
+            let lease =
+                super::open_lease(&root.join(crate::cstr!("{hash}.lease").as_str())).unwrap();
+            fs::write(result.with_extension("ready"), b"ready").unwrap();
+            wait_for_signal(&result.with_extension("advance"));
+            lease.lock_shared().unwrap();
+            catalog.unlock().unwrap();
+            fs::write(result.with_extension("locked"), b"locked").unwrap();
+            wait_for_signal(&result.with_extension("release"));
+            assert!(super::runtime_matches(
+                &root.join(crate::cstr!("{hash}.mjs").as_str()),
+                &source
+            ));
+        }
+        "symlink" => {
+            let runtime = runtime(&cache, SYMLINK_PROCESS_SCRIPT);
+            fs::write(
+                result,
+                if runtime.is_cached() {
+                    b"cached".as_slice()
+                } else {
+                    b"temporary".as_slice()
+                },
+            )
+            .unwrap();
+        }
+        mode => panic!("unknown fixture mode: {mode}"),
+    }
+}
+
+#[test]
+fn catalog_prevents_old_descriptor_split_during_bounded_eviction() {
+    let cache = tempfile::tempdir().unwrap();
+    drop(runtime(cache.path(), SHARED_PROCESS_SCRIPT));
+    for identity in 0..3 {
+        drop(runtime(
+            cache.path(),
+            crate::cstr!("process.stdout.write('seed-{identity}');").as_str(),
+        ));
+    }
+
+    let result = cache.path().join("old-descriptor");
+    let ready = result.with_extension("ready");
+    let locked = result.with_extension("locked");
+    let mut child = fixture_command(cache.path(), "old-fd", &result)
+        .spawn()
+        .unwrap();
+    wait_for_path(&ready, &mut child);
+
+    // The child has opened the old lease but intentionally has not locked it.
+    // Constructors may proceed under the catalog's shared boundary, while
+    // eviction must skip until that descriptor owns its runtime lease.
+    for identity in 0..3 {
+        drop(runtime(
+            cache.path(),
+            crate::cstr!("process.stdout.write('transition-{identity}');").as_str(),
+        ));
+    }
+    fs::write(result.with_extension("advance"), b"advance").unwrap();
+    wait_for_path(&locked, &mut child);
+
+    drop(runtime(
+        cache.path(),
+        "process.stdout.write('while-old-lease-is-live');",
+    ));
+    let source = super::runtime_source(SHARED_PROCESS_SCRIPT);
+    let hash = super::sha256_hex(&source);
+    let root = super::cache_root(cache.path());
+    assert!(root.join(crate::cstr!("{hash}.mjs").as_str()).exists());
+
+    fs::write(result.with_extension("release"), b"release").unwrap();
+    assert!(wait_for_child(&mut child).success());
+    drop(runtime(
+        cache.path(),
+        "process.stdout.write('after-old-lease-release');",
+    ));
+    let entries: Vec<_> = fs::read_dir(root)
+        .unwrap()
+        .map(|entry| entry.unwrap().path())
+        .collect();
+    assert_eq!(
+        entries
+            .iter()
+            .filter(|path| path.extension().is_some_and(|extension| extension == "mjs"))
+            .count(),
+        super::CACHE_LIMIT
+    );
+    assert_eq!(
+        entries
+            .iter()
+            .filter(|path| path
+                .extension()
+                .is_some_and(|extension| extension == "lease"))
+            .count(),
+        super::CACHE_LIMIT
+    );
+    assert!(
+        entries
+            .iter()
+            .any(|path| path.ends_with(super::CATALOG_LEASE))
+    );
+}
+
+#[test]
+fn process_crash_releases_partial_write_for_recovery() {
+    let cache = tempfile::tempdir().unwrap();
+    drop(runtime(cache.path(), "process.stdout.write('prepare');"));
+    let result = cache.path().join("crash-ready");
+    let partial = super::cache_root(cache.path()).join("crashed.tmp");
+    let mut child = fixture_command(cache.path(), "crash-partial", &result)
+        .spawn()
+        .unwrap();
+    wait_for_path(&result, &mut child);
+
+    drop(runtime(
+        cache.path(),
+        "process.stdout.write('while-partial-is-live');",
+    ));
+    assert!(partial.exists());
+    child.kill().unwrap();
+    assert!(!child.wait().unwrap().success());
+
+    drop(runtime(
+        cache.path(),
+        "process.stdout.write('after-process-crash');",
+    ));
+    assert!(!partial.exists());
 }
 
 #[test]
@@ -311,7 +504,7 @@ fn symlink_runtime_leaf_is_rejected_without_mutating_its_target() {
     use std::os::unix::fs::symlink;
 
     let cache = tempfile::tempdir().unwrap();
-    let cached = runtime(cache.path(), "process.stdout.write('owned');");
+    let cached = runtime(cache.path(), SYMLINK_PROCESS_SCRIPT);
     let path = cached.path().to_path_buf();
     drop(cached);
     fs::remove_file(&path).unwrap();
@@ -319,8 +512,12 @@ fn symlink_runtime_leaf_is_rejected_without_mutating_its_target() {
     fs::write(&foreign, "foreign").unwrap();
     symlink(&foreign, &path).unwrap();
 
-    let fallback = runtime(cache.path(), "process.stdout.write('owned');");
-    assert!(!fallback.is_cached());
+    let result = cache.path().join("symlink-result");
+    let mut child = fixture_command(cache.path(), "symlink", &result)
+        .spawn()
+        .unwrap();
+    assert!(wait_for_child(&mut child).success());
+    assert_eq!(fs::read_to_string(result).unwrap(), "temporary");
     assert_eq!(fs::read_to_string(&foreign).unwrap(), "foreign");
     assert!(
         fs::symlink_metadata(&path)
@@ -384,4 +581,79 @@ fn runtime_source_identity_preserves_authored_errors_across_retries() {
     let changed_path = first.command(&other_config).output().unwrap();
     assert_eq!(changed_path.status.code(), Some(1));
     assert_ne!(changed_path.stderr, output.stderr);
+}
+
+#[test]
+#[ignore = "production storage benchmark invoked explicitly by Actions"]
+fn runtime_storage_benchmark() {
+    let lane = env::var("VIZE_RUNTIME_BENCH_LANE").unwrap();
+    assert!(matches!(lane.as_str(), "base" | "head"));
+    let samples = env::var("VIZE_RUNTIME_BENCH_SAMPLES")
+        .unwrap()
+        .parse::<usize>()
+        .unwrap();
+    let iterations = env::var("VIZE_RUNTIME_BENCH_ITERATIONS")
+        .unwrap()
+        .parse::<usize>()
+        .unwrap();
+    assert!(samples > 0 && iterations > 0);
+    let output = PathBuf::from(env::var_os("VIZE_RUNTIME_BENCH_OUTPUT").unwrap());
+    let owner = tempfile::tempdir().unwrap();
+    let source = super::runtime_source(BENCHMARK_SCRIPT);
+    let mut timings = Vec::with_capacity(samples * iterations);
+
+    for sample in 0..samples {
+        let cache = owner.path().join(crate::cstr!("sample-{sample}").as_str());
+        for _ in 0..iterations {
+            let started = Instant::now();
+            let runtime = if lane == "base" {
+                super::temporary_runtime(&source).unwrap()
+            } else {
+                super::cached_runtime(&cache, &source).unwrap()
+            };
+            let actual = fs::read(runtime.path()).unwrap();
+            assert_eq!(actual, source);
+            drop(black_box(actual));
+            drop(runtime);
+            timings.push(started.elapsed().as_secs_f64() * 1_000.0);
+        }
+    }
+
+    timings.sort_by(f64::total_cmp);
+    let invocations = samples * iterations;
+    let percentile = |fraction: f64| timings[(timings.len() as f64 * fraction).ceil() as usize - 1];
+    let cached = lane == "head";
+    let source_writes = if cached { samples } else { invocations };
+    let retained_files = if cached { samples * 3 } else { 0 };
+    let report = serde_json::json!({
+        "schema": 1,
+        "implementation": "production-rust",
+        "lane": lane,
+        "samples": samples,
+        "iterations": iterations,
+        "invocations": invocations,
+        "payloadBytes": source.len(),
+        "sourceSha256": super::sha256_hex(&source),
+        "wallMs": {
+            "p50": percentile(0.5),
+            "p95": percentile(0.95),
+            "total": timings.iter().sum::<f64>(),
+        },
+        "storage": {
+            "regularFilesCreated": if cached { samples * 3 } else { invocations },
+            "sourceWrites": source_writes,
+            "writtenBytes": source_writes * source.len(),
+            "retainedFiles": retained_files,
+            "retainedBytes": if cached { samples * source.len() } else { 0 },
+            "perIsolatedSample": {
+                "regularFilesCreated": if cached { 3 } else { iterations },
+                "sourceWrites": if cached { 1 } else { iterations },
+                "writtenBytes": if cached { source.len() } else { iterations * source.len() },
+                "retainedFiles": if cached { 3 } else { 0 },
+                "retainedBytes": if cached { source.len() } else { 0 },
+            },
+        },
+    });
+    fs::write(output, serde_json::to_vec_pretty(&report).unwrap()).unwrap();
+    println!("{report}");
 }

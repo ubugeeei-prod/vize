@@ -18,6 +18,7 @@ const ARGV_COMPATIBILITY: &[u8] = b"process.argv.splice(1, 1);\n";
 // Authored module paths and complete stderr bytes keep their native identities.
 const SOURCE_IDENTITY: &[u8] = b"\n//# sourceURL=vize:config-runtime\n";
 const CACHE_DIRECTORY: &str = "config-runtime-v1";
+const CATALOG_LEASE: &str = "catalog.lock";
 const CACHE_LIMIT: usize = 4;
 
 pub(super) struct NodeRuntimeFile {
@@ -103,19 +104,19 @@ fn cached_runtime(home: &Path, source: &[u8]) -> io::Result<NodeRuntimeFile> {
     let root = cache_root(home);
     ensure_private_directory(&vize)?;
     ensure_private_directory(&root)?;
-    recover_interrupted_writes(&root);
+    let catalog = open_lease(&root.join(CATALOG_LEASE))?;
+    recover_interrupted_writes(&root, &catalog);
 
     let hash = sha256_hex(source);
     let path = root.join(crate::cstr!("{hash}.mjs").as_str());
     let lease_path = root.join(crate::cstr!("{hash}.lease").as_str());
-    let lease = open_lease(&lease_path)?;
+    let lease = open_shared_lease(&catalog, &lease_path)?;
 
     // Cache hits are readers. Keeping their lease shared lets the same
     // evaluator be reused by nested loads and other processes without an
     // exclusive-lock cycle. Only a missing or damaged entry needs repair.
-    lease.lock_shared()?;
     if runtime_matches(&path, source) {
-        prune_cache(&root, &path);
+        prune_cache(&root, &path, &catalog);
         return Ok(NodeRuntimeFile {
             path,
             _lease: Some(lease),
@@ -124,7 +125,7 @@ fn cached_runtime(home: &Path, source: &[u8]) -> io::Result<NodeRuntimeFile> {
     }
     lease.unlock()?;
 
-    lease.lock()?;
+    lock_exclusive_lease(&catalog, &lease)?;
     if !runtime_matches(&path, source) {
         remove_invalid_runtime(&path)?;
         publish_runtime(&root, &path, &hash, source)?;
@@ -137,7 +138,7 @@ fn cached_runtime(home: &Path, source: &[u8]) -> io::Result<NodeRuntimeFile> {
             "cached config runtime disappeared before use",
         ));
     }
-    prune_cache(&root, &path);
+    prune_cache(&root, &path, &catalog);
     Ok(NodeRuntimeFile {
         path,
         _lease: Some(lease),
@@ -195,6 +196,31 @@ fn open_lease(path: &Path) -> io::Result<File> {
     };
     set_private_file_permissions(&file)?;
     Ok(file)
+}
+
+fn open_shared_lease(catalog: &File, path: &Path) -> io::Result<File> {
+    catalog.lock_shared()?;
+    let result = open_lease(path).and_then(|lease| {
+        lease.lock_shared()?;
+        Ok(lease)
+    });
+    finish_catalog_operation(catalog, result)
+}
+
+fn lock_exclusive_lease(catalog: &File, lease: &File) -> io::Result<()> {
+    catalog.lock_shared()?;
+    finish_catalog_operation(catalog, lease.lock())
+}
+
+fn finish_catalog_operation<T>(catalog: &File, result: io::Result<T>) -> io::Result<T> {
+    let unlock = catalog.unlock();
+    match result {
+        Ok(value) => {
+            unlock?;
+            Ok(value)
+        }
+        Err(error) => Err(error),
+    }
 }
 
 fn private_open_options() -> OpenOptions {
@@ -255,7 +281,15 @@ fn publish_runtime(root: &Path, path: &Path, hash: &str, source: &[u8]) -> io::R
     Ok(())
 }
 
-fn recover_interrupted_writes(root: &Path) {
+fn recover_interrupted_writes(root: &Path, catalog: &File) {
+    if catalog.try_lock().is_err() {
+        return;
+    }
+    recover_interrupted_writes_locked(root);
+    let _ = catalog.unlock();
+}
+
+fn recover_interrupted_writes_locked(root: &Path) {
     let Ok(entries) = fs::read_dir(root) else {
         return;
     };
@@ -311,7 +345,17 @@ fn recover_interrupted_writes(root: &Path) {
     }
 }
 
-fn prune_cache(root: &Path, current: &Path) {
+fn prune_cache(root: &Path, current: &Path, catalog: &File) {
+    // Never wait for the catalog while holding a runtime lease: a constructor
+    // may hold the catalog shared while it waits for this runtime exclusively.
+    if catalog.try_lock().is_err() {
+        return;
+    }
+    prune_cache_locked(root, current);
+    let _ = catalog.unlock();
+}
+
+fn prune_cache_locked(root: &Path, current: &Path) {
     let Ok(entries) = fs::read_dir(root) else {
         return;
     };

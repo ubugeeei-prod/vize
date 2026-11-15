@@ -18,7 +18,6 @@ on:
       - "npm/linter/oxlint/**"
       - "crates/vize_carton/src/config/loader/js/runtime_file.rs"
       - "crates/vize_carton/src/config/loader/js/runtime_file/tests.rs"
-      - "tools/benchmarks/scripts/config-runtime-storage.ts"
       - "tests/tooling/release/release-smoke-*"
       - "tests/tooling/legacy-fix-fixture-report.test.ts"
       - "tests/tooling/support/release-smoke-*"
@@ -156,10 +155,13 @@ jobs:
         shell: bash
         run: |
           for lane in base head; do
-            /usr/bin/time --verbose --output="$RUNNER_TEMP/config-runtime-$lane.time.txt" \
-              node tools/benchmarks/scripts/config-runtime-storage.ts \
-                --lane="$lane" --samples=21 --iterations=64 \
-                > "$RUNNER_TEMP/config-runtime-$lane.json"
+            VIZE_RUNTIME_BENCH_LANE="$lane" \
+              VIZE_RUNTIME_BENCH_SAMPLES=21 \
+              VIZE_RUNTIME_BENCH_ITERATIONS=64 \
+              VIZE_RUNTIME_BENCH_OUTPUT="$RUNNER_TEMP/config-runtime-$lane.json" \
+              /usr/bin/time --verbose --output="$RUNNER_TEMP/config-runtime-$lane.time.txt" \
+              cargo test --locked -p vize_carton --lib runtime_storage_benchmark \
+                -- --ignored --nocapture
           done
           cat "$RUNNER_TEMP"/config-runtime-*.json "$RUNNER_TEMP"/config-runtime-*.time.txt
       - name: Retain config runtime storage counts and timings
