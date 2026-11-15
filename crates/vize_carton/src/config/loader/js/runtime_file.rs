@@ -323,9 +323,8 @@ fn is_runtime_entry(path: &Path) -> bool {
     let Some(name) = path.file_name().and_then(|name| name.to_str()) else {
         return false;
     };
-    name.len() == 68
-        && name.ends_with(".mjs")
-        && name[..64].bytes().all(|byte| byte.is_ascii_hexdigit())
+    name.strip_suffix(".mjs")
+        .is_some_and(|stem| stem.len() == 64 && stem.bytes().all(|byte| byte.is_ascii_hexdigit()))
         && fs::symlink_metadata(path)
             .is_ok_and(|metadata| metadata.is_file() && !metadata.file_type().is_symlink())
 }
@@ -355,8 +354,7 @@ fn remove_inactive_runtime(path: &Path) -> bool {
 fn sha256_hex(source: &[u8]) -> std::string::String {
     let mut hex = std::string::String::with_capacity(64);
     for byte in Sha256::digest(source) {
-        use std::fmt::Write as _;
-        write!(&mut hex, "{byte:02x}").expect("writing to a string cannot fail");
+        hex.push_str(crate::cstr!("{byte:02x}").as_str());
     }
     hex
 }
