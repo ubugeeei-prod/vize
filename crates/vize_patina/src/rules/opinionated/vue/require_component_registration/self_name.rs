@@ -30,7 +30,7 @@ pub(super) fn define_options_name(analysis: &Croquis) -> Option<&str> {
 }
 
 /// The static component name declared by the Options API default export.
-pub(super) fn options_api_name(program: &Program<'_>) -> Option<&str> {
+pub(super) fn options_api_name<'a>(program: &'a Program<'_>) -> Option<&'a str> {
     for statement in &program.body {
         let Statement::ExportDefaultDeclaration(export) = statement else {
             continue;
@@ -53,14 +53,16 @@ pub(super) fn options_api_name(program: &Program<'_>) -> Option<&str> {
     None
 }
 
-fn argument_object(argument: &Argument<'_>) -> Option<&ObjectExpression<'_>> {
+fn argument_object<'a, 'alloc>(
+    argument: &'a Argument<'alloc>,
+) -> Option<&'a ObjectExpression<'alloc>> {
     match argument.as_expression()?.get_inner_expression() {
         Expression::ObjectExpression(object) => Some(object.as_ref()),
         _ => None,
     }
 }
 
-fn object_name(object: &ObjectExpression<'_>) -> Option<&str> {
+fn object_name<'a>(object: &'a ObjectExpression<'_>) -> Option<&'a str> {
     for property in &object.properties {
         let ObjectPropertyKind::ObjectProperty(property) = property else {
             continue;

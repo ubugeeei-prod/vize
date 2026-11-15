@@ -35,8 +35,7 @@ export const realProjectLocationRules: Readonly<Record<string, RuleLocationRule>
   "vue/require-prop-comment": {
     subject(positive, negative) {
       const prop = propCommentName(positive.message);
-      return prop !== undefined &&
-        prop === propCommentName(negative.message)
+      return prop !== undefined && prop === propCommentName(negative.message)
         ? `prop:${prop}`
         : null;
     },
