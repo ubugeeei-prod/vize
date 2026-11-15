@@ -53,6 +53,14 @@ on:
         options:
           - enforce
           - record-only
+      lint_baseline_reference_mode:
+        description: "ESLint scorecard memory mode; unbounded-6g is diagnostic only"
+        required: false
+        default: "bounded"
+        type: choice
+        options:
+          - bounded
+          - unbounded-6g
       lsp_mode:
         description: "LSP lifecycle gate handling"
         required: false
@@ -264,13 +272,23 @@ jobs:
         continue-on-error: true
         env:
           LINT_DIVERGENCE_MODE: ${{ inputs.lint_divergence_mode || 'enforce' }}
+          LINT_BASELINE_REFERENCE_MODE: ${{ inputs.lint_baseline_reference_mode || 'bounded' }}
+          LINT_BASELINE_SHARD_MAX_BYTES: "8388608"
+          LINT_BASELINE_SHARD_MAX_FILES: "32"
+          LINT_BASELINE_SHARD_MAX_OUTPUT_BYTES: "268435456"
+          NODE_OPTIONS: ${{ inputs.lint_baseline_reference_mode == 'unbounded-6g' && '--max-old-space-size=6144' || '' }}
+          VIZE_LINT_BASELINE_PROGRESS: "1"
+          VIZE_LINT_BASELINE_UNBOUNDED: ${{ inputs.lint_baseline_reference_mode == 'unbounded-6g' && '1' || '0' }}
         run: |
-          node tools/commands/fixtures/lint-divergence-report.ts \
+          /usr/bin/time --verbose --output "$FIXTURE_REPORT_DIR/lint-divergence-resource.txt" \
+            node tools/commands/fixtures/lint-divergence-report.ts \
             --shard-index "$FIXTURE_SHARD_INDEX" --shard-count "$FIXTURE_SHARD_COUNT" \
             --all-mapped-rules --measure-coverage-gap --budget-mode "$LINT_DIVERGENCE_MODE" \
             --vize-bin target/ci/vize --timeout-ms 600000 \
             --output-dir "$FIXTURE_REPORT_DIR"
           test -s "$FIXTURE_REPORT_DIR/lint-divergence-summary.json"
+          LC_ALL=C sha256sum "$FIXTURE_REPORT_DIR"/*-lint-divergence.json \
+            > "$FIXTURE_REPORT_DIR/lint-divergence-hashes.txt"
 
       - name: Record linter deletion-readiness evidence
         if: ${{ !cancelled() }}
@@ -373,6 +391,7 @@ jobs:
           name: real-project-matrix-${{ matrix.shard }}
           path: ${{ env.FIXTURE_REPORT_DIR }}
           if-no-files-found: error
+          include-hidden-files: false
           retention-days: 30
 
       - name: Upload source-bound LSP wire evidence

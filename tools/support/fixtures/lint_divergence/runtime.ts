@@ -5,12 +5,10 @@ import os from "node:os";
 import { spawnSync } from "node:child_process";
 import {
   get,
-  number,
   object,
   projectString,
   projectStrings,
   readJson,
-  text,
   errorMessage,
   parseJsonSource,
   canonicalJson,
@@ -18,10 +16,21 @@ import {
 } from "./value.ts";
 import type { Args } from "./selection.ts";
 import type { BaselineRuleSetting } from "./compare.ts";
+import { collectBaselineFindings, type LintRecord } from "./records.ts";
+import {
+  baselineAuthoritySha256,
+  BaselineShardAccumulator,
+  DEFAULT_BASELINE_SHARD_LIMITS,
+  partitionBaselineFiles,
+  type BaselineShardLimits,
+} from "./baseline_shards.ts";
 
 export interface Launch {
   command: string;
   prefix: string[];
+}
+export interface BaselineRawSink {
+  append(results: readonly Json[]): void;
 }
 function exitStatus(status: number | null): number {
   const value = status ?? 1;
@@ -125,13 +134,61 @@ export function runPatina(cwd: string, project: Json, args: Args, launch: Launch
 }
 
 export const baselineScript =
-  '\nimport { createRequire } from "node:module";\nimport { readFileSync } from "node:fs";\nimport { baselineConfig } from "./tools/support/compat/fixtures/lint-divergence-baseline.mjs";\nconst input = JSON.parse(readFileSync(0, "utf8"));\nconst requireFromBench = createRequire(input.benchPackageJson);\nconst ESLint = requireFromBench("eslint").ESLint;\nconst plugin = requireFromBench("eslint-plugin-vue");\nconst vueParser = requireFromBench("vue-eslint-parser");\nconst scriptParser = requireFromBench("@typescript-eslint/parser");\nconst manifest = requireFromBench("eslint-plugin-vue/package.json");\nconst eslint = new ESLint({\n  cwd: input.cwd,\n  passOnNoPatterns: input.files.length === 0,\n  overrideConfigFile: true,\n  overrideConfig: baselineConfig({ vueParser, scriptParser, plugin }, input.rules),\n  errorOnUnmatchedPattern: false\n});\nif (input.files.length === 0) {\n  await eslint.calculateConfigForFile("__vize_empty_vue_config__.vue");\n}\nconst results = await eslint.lintFiles(input.files);\nconst enabled = new Set(Object.keys(input.rules));\nlet droppedConfigMessageCount = 0;\nconst retained = results.map((result) => ({\n  ...result,\n  messages: result.messages.filter((message) => {\n    if (message.ruleId == null || enabled.has(message.ruleId)) return true;\n    droppedConfigMessageCount += 1;\n    return false;\n  })\n}));\nconst runtimeVersions = Object.fromEntries(\n  ["eslint", "eslint-plugin-vue", "vue-eslint-parser", "@typescript-eslint/parser"]\n    .map(name => [name, requireFromBench(`${name}/package.json`).version])\n);\nprocess.stdout.write(JSON.stringify({ version: manifest.version, runtimeVersions, rawResults: results, results: retained, droppedConfigMessageCount }));\n';
+  '\nimport { createRequire } from "node:module";\nimport { readFileSync } from "node:fs";\nimport { baselineConfig } from "./tools/support/compat/fixtures/lint-divergence-baseline.mjs";\nconst input = JSON.parse(readFileSync(0, "utf8"));\nconst requireFromBench = createRequire(input.benchPackageJson);\nconst ESLint = requireFromBench("eslint").ESLint;\nconst plugin = requireFromBench("eslint-plugin-vue");\nconst vueParser = requireFromBench("vue-eslint-parser");\nconst scriptParser = requireFromBench("@typescript-eslint/parser");\nconst manifest = requireFromBench("eslint-plugin-vue/package.json");\nconst eslint = new ESLint({\n  cwd: input.cwd,\n  passOnNoPatterns: input.files.length === 0,\n  overrideConfigFile: true,\n  overrideConfig: baselineConfig({ vueParser, scriptParser, plugin }, input.rules),\n  errorOnUnmatchedPattern: false\n});\nif (input.files.length === 0) {\n  await eslint.calculateConfigForFile("__vize_empty_vue_config__.vue");\n}\nconst results = await eslint.lintFiles(input.files);\nconst runtimeVersions = Object.fromEntries(\n  ["eslint", "eslint-plugin-vue", "vue-eslint-parser", "@typescript-eslint/parser"]\n    .map(name => [name, requireFromBench(`${name}/package.json`).version])\n);\nif (input.rawOnly) {\n  process.stdout.write(JSON.stringify({ version: manifest.version, runtimeVersions, rawResults: results }));\n} else {\n  const enabled = new Set(Object.keys(input.rules));\n  let droppedConfigMessageCount = 0;\n  const retained = results.map((result) => ({\n    ...result,\n    messages: result.messages.filter((message) => {\n      if (message.ruleId == null || enabled.has(message.ruleId)) return true;\n      droppedConfigMessageCount += 1;\n      return false;\n    })\n  }));\n  process.stdout.write(JSON.stringify({ version: manifest.version, runtimeVersions, rawResults: results, results: retained, droppedConfigMessageCount }));\n}\n';
+
+function retainAvailableRuleMessages(
+  parsed: Json,
+  rules: Record<string, BaselineRuleSetting>,
+  label: string,
+): Json {
+  const output = object(parsed),
+    rawResults = get(output, "rawResults"),
+    enabled = new Set(Object.keys(rules));
+  if (!output) throw new Error(`${label} output must be an object`);
+  if (!Array.isArray(rawResults)) throw new Error(`${label}.rawResults must be an array`);
+  let droppedConfigMessageCount = 0;
+  const results = rawResults.map((result, resultIndex): Json => {
+    const resultObject = object(result),
+      messages = get(result, "messages");
+    if (!resultObject) throw new Error(`${label}.rawResults[${resultIndex}] must be an object`);
+    if (!Array.isArray(messages))
+      throw new Error(`${label}.rawResults[${resultIndex}].messages must be an array`);
+    const retained = messages.filter((message) => {
+      const ruleId = get(message, "ruleId");
+      if (ruleId === null || (typeof ruleId === "string" && enabled.has(ruleId))) return true;
+      droppedConfigMessageCount++;
+      return false;
+    });
+    return retained.length === messages.length ? result : { ...resultObject, messages: retained };
+  });
+  return { ...output, results, droppedConfigMessageCount };
+}
+
+function hasParseError(result: Json): boolean {
+  const messages = get(result, "messages");
+  return Array.isArray(messages) && messages.some((message) => get(message, "ruleId") === null);
+}
+
+function logBaselineIdentity(
+  authoritySha256: string,
+  merged: ReturnType<BaselineShardAccumulator["finish"]>,
+): void {
+  if (process.env.VIZE_LINT_BASELINE_PROGRESS !== "1") return;
+  console.log(
+    `ESLint baseline complete: authoritySha256=${authoritySha256}, ` +
+      `rawPacketCount=${merged.rawPacketCount}, rawPacketSha256=${merged.rawPacketSha256}, ` +
+      `retainedPacketCount=${merged.retainedPacketCount}, ` +
+      `retainedPacketSha256=${merged.retainedPacketSha256}`,
+  );
+}
 
 export function runEslintBaseline(
   root: string,
   cwd: string,
   files: string[],
   rules: Record<string, BaselineRuleSetting>,
+  limits: BaselineShardLimits | null = DEFAULT_BASELINE_SHARD_LIMITS,
+  rawSink?: BaselineRawSink,
 ) {
   const requireFromBench = createRequire(path.join(root, "tools/benchmarks/scripts/package.json")),
     plugin = requireFromBench("eslint-plugin-vue") as {
@@ -141,7 +198,8 @@ export function runEslintBaseline(
       Object.entries(rules).filter(([name]) =>
         Object.hasOwn(plugin.rules, name.replace(/^vue\//u, "")),
       ),
-    );
+    ),
+    authoritySha256 = baselineAuthoritySha256(cwd, files, availableRules as Json);
   if (!Object.keys(availableRules).length) {
     const version = get(
       readJson(path.join(root, "tests/_fixtures/patina-eslint-vue-rule-map.json")),
@@ -150,48 +208,136 @@ export function runEslintBaseline(
     );
     if (typeof version !== "string") throw new Error("rule map must record upstream version");
     const results = files.map((file): Json => ({ filePath: path.join(cwd, file), messages: [] }));
+    const accumulator = new BaselineShardAccumulator(cwd, files, {
+      retainRawResults: rawSink === undefined,
+      retainResults: rawSink === undefined,
+    });
+    accumulator.add({
+      files,
+      output: {
+        version,
+        runtimeVersions: {},
+        rawResults: results,
+        results,
+        droppedConfigMessageCount: 0,
+      },
+    });
+    const merged = accumulator.finish();
+    if (baselineAuthoritySha256(cwd, files, availableRules as Json) !== authoritySha256)
+      throw new Error("baseline file or rule authority changed during measurement");
+    logBaselineIdentity(authoritySha256, merged);
+    rawSink?.append(results);
     return {
       version,
       runtimeVersions: {},
       rules: availableRules,
-      rawResults: results,
-      results,
+      rawResults: rawSink ? [] : results,
+      results: rawSink ? [] : results,
       droppedConfigMessageCount: 0,
+      authoritySha256,
+      rawPacketCount: merged.rawPacketCount,
+      rawPacketSha256: merged.rawPacketSha256,
+      retainedPacketCount: merged.retainedPacketCount,
+      retainedPacketSha256: merged.retainedPacketSha256,
+      classification: collectBaselineFindings(results, cwd),
+      parseErrorResults: [],
     };
   }
-  const input: Json = {
-    benchPackageJson: path.join(root, "tools/benchmarks/scripts/package.json"),
-    cwd,
-    files,
-    rules: availableRules,
-  };
-  const output = spawnSync("node", ["--input-type=module", "--eval", baselineScript], {
-    cwd: root,
-    input: canonicalJson(input),
-    maxBuffer: Infinity,
-  });
-  if (output.error) throw new Error(`eslint baseline failed to start: ${output.error.message}`);
-  if (output.status !== 0)
-    throw new Error(
-      `eslint baseline exited ${exitStatus(output.status)}:\n${output.stdout.toString("utf8")}${output.stderr.toString("utf8")}`,
-    );
-  let parsed: Json;
-  try {
-    parsed = parseOutput(output.stdout);
-  } catch (error) {
-    throw new Error(`eslint baseline produced invalid JSON: ${errorMessage(error)}`);
+  const shards =
+    limits === null
+      ? [{ files: [...files], sourceBytes: 0 }]
+      : partitionBaselineFiles(cwd, files, limits);
+  const accumulator = new BaselineShardAccumulator(cwd, files, {
+      retainRawResults: rawSink === undefined,
+      retainResults: rawSink === undefined,
+    }),
+    classification = {
+      findings: [] as LintRecord[],
+      parseErrorCount: 0,
+      excludedNonVueCount: 0,
+      invalidRangeCount: 0,
+    },
+    parseErrorResults: Json[] = [];
+  let baselineOutputBytes = 0;
+  for (let index = 0; index < shards.length; index++) {
+    const shard = shards[index],
+      input: Json = {
+        benchPackageJson: path.join(root, "tools/benchmarks/scripts/package.json"),
+        cwd,
+        files: shard.files,
+        rawOnly: true,
+        rules: availableRules,
+      },
+      output = spawnSync("node", ["--input-type=module", "--eval", baselineScript], {
+        cwd: root,
+        input: canonicalJson(input),
+        maxBuffer: limits?.maxOutputBytes ?? Infinity,
+      });
+    if (output.error)
+      throw new Error(`eslint baseline shard ${index} failed to start: ${output.error.message}`);
+    if (output.status !== 0)
+      throw new Error(
+        `eslint baseline shard ${index} exited ${exitStatus(output.status)}:\n${output.stdout.toString("utf8")}${output.stderr.toString("utf8")}`,
+      );
+    let parsed: Json;
+    try {
+      parsed = parseOutput(output.stdout);
+    } catch (error) {
+      throw new Error(
+        `eslint baseline shard ${index} produced invalid JSON: ${errorMessage(error)}`,
+      );
+    }
+    const retainedOutput = retainAvailableRuleMessages(
+        parsed,
+        availableRules,
+        `eslint baseline shard ${index}`,
+      ),
+      rawResults = get(retainedOutput, "rawResults"),
+      results = get(retainedOutput, "results");
+    if (!Array.isArray(rawResults) || !Array.isArray(results))
+      throw new Error(`eslint baseline shard ${index} must carry complete results`);
+    accumulator.add({
+      files: shard.files,
+      output: retainedOutput,
+    });
+    rawSink?.append(rawResults);
+    if (rawSink) {
+      const shardClassification = collectBaselineFindings(results, cwd);
+      for (const finding of shardClassification.findings) classification.findings.push(finding);
+      classification.parseErrorCount += shardClassification.parseErrorCount;
+      classification.excludedNonVueCount += shardClassification.excludedNonVueCount;
+      classification.invalidRangeCount += shardClassification.invalidRangeCount;
+      for (const result of results) {
+        if (hasParseError(result)) parseErrorResults.push(result);
+      }
+    }
+    baselineOutputBytes += output.stdout.byteLength;
+    if (process.env.VIZE_LINT_BASELINE_PROGRESS === "1") {
+      const memory = process.memoryUsage();
+      console.log(
+        `ESLint baseline shard ${index + 1}/${shards.length}: ${shard.files.length} files, ` +
+          `${output.stdout.byteLength} bytes, ${baselineOutputBytes} cumulative bytes, ` +
+          `${memory.heapUsed} heap bytes, ${memory.rss} RSS bytes`,
+      );
+    }
   }
-  const rawResults = get(parsed, "rawResults"),
-    results = get(parsed, "results");
-  if (!Array.isArray(rawResults))
-    throw new Error("eslint baseline must retain complete raw results");
-  if (!Array.isArray(results)) throw new Error("eslint baseline result must list results");
+  const merged = accumulator.finish();
+  if (baselineAuthoritySha256(cwd, files, availableRules as Json) !== authoritySha256)
+    throw new Error("baseline file or rule authority changed during measurement");
+  logBaselineIdentity(authoritySha256, merged);
   return {
-    rawResults,
-    results,
+    rawResults: merged.rawResults,
+    results: merged.results,
     rules: availableRules,
-    runtimeVersions: get(parsed, "runtimeVersions"),
-    version: text(get(parsed, "version")),
-    droppedConfigMessageCount: number(get(parsed, "droppedConfigMessageCount")),
+    runtimeVersions: merged.runtimeVersions,
+    version: merged.version,
+    droppedConfigMessageCount: merged.droppedConfigMessageCount,
+    authoritySha256,
+    rawPacketCount: merged.rawPacketCount,
+    rawPacketSha256: merged.rawPacketSha256,
+    retainedPacketCount: merged.retainedPacketCount,
+    retainedPacketSha256: merged.retainedPacketSha256,
+    classification: rawSink ? classification : collectBaselineFindings(merged.results, cwd),
+    parseErrorResults: rawSink ? parseErrorResults : merged.results.filter(hasParseError),
   };
 }
