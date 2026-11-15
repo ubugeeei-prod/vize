@@ -1,0 +1,14 @@
+<script setup lang="ts">
+import { ORIGIN, type Point } from "./types";
+
+declare const box: DOMRectReadOnly;
+
+const draft = ORIGIN as Point;
+draft.x = 1;
+const rect = box as DOMRect;
+rect.x = 0;
+</script>
+
+<template>
+  <p>{{ draft.x }} {{ rect.x }}</p>
+</template>

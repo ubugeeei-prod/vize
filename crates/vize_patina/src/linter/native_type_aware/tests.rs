@@ -2,6 +2,7 @@ pub(in crate::linter::native_type_aware) mod assertion;
 mod empty_tuple_runtime;
 mod macro_positions;
 mod no_base_to_string_record_index;
+mod no_unnecessary_type_assertion_readonly;
 mod opt_in;
 mod options_api;
 mod runtime;
@@ -56,7 +57,6 @@ fn require_typed_emits_accepts_quoted_colon_key_and_reports_runtime_array() {
     if !corsa_available() {
         return;
     }
-
     let linter = Linter::with_preset(LintPreset::Opinionated);
     let typed_source = r#"<script setup lang="ts">
 defineEmits<{ "update:open": [value: boolean] }>()
