@@ -266,7 +266,7 @@ export function compareLintFindings(
     if (reviewedReferenceFindings.has(canonicalJson(recordValue(finding)))) continue;
     if (finding.ruleId === "vue/no-unused-components") continue;
     const source = sources.get(finding.file) ?? null;
-    const reason = source === null ? null : patinaIntentionalReason(finding, source);
+    const reason = source === null ? null : patinaIntentionalReason(finding, source, cwd);
     if (reason === null) continue;
     falsePositives.splice(index, 1);
     intentionalDivergences.push({ ...recordValue(finding), reason });
@@ -279,7 +279,7 @@ export function compareLintFindings(
     if (reviewedReferenceFindings.has(canonicalJson(recordValue(finding)))) continue;
     if (finding.ruleId !== "vue/no-unused-components") continue;
     const source = sources.get(finding.file) ?? null;
-    const reason = source === null ? null : patinaIntentionalReason(finding, source);
+    const reason = source === null ? null : patinaIntentionalReason(finding, source, cwd);
     if (reason === null) continue;
     falsePositives.splice(index, 1);
     intentionalDivergences.push({ ...recordValue(finding), reason });

@@ -1,6 +1,18 @@
+import fs from "node:fs";
+import path from "node:path";
+
 interface BaselineComponentFinding {
   readonly ruleId: string;
   readonly message: string;
+}
+
+interface PatinaComponentFinding {
+  readonly file: string;
+  readonly ruleId: string;
+  readonly line: number | bigint;
+  readonly column: number | bigint;
+  readonly endLine: number | bigint;
+  readonly endColumn: number | bigint;
 }
 
 const componentMessage =
@@ -148,6 +160,81 @@ function objectArguments(source: string, callee: RegExp): Array<[number, number]
 }
 
 const comparableName = (name: string) => name.replaceAll("-", "").toLowerCase();
+
+function authoredFindingText(finding: PatinaComponentFinding, source: string): string | null {
+  const line = Number(finding.line),
+    endLine = Number(finding.endLine),
+    column = Number(finding.column),
+    endColumn = Number(finding.endColumn);
+  if (
+    !Number.isSafeInteger(line) ||
+    !Number.isSafeInteger(endLine) ||
+    !Number.isSafeInteger(column) ||
+    !Number.isSafeInteger(endColumn) ||
+    line !== endLine ||
+    line < 1 ||
+    column < 1 ||
+    endColumn < column
+  )
+    return null;
+  const authoredLine = source.split("\n")[line - 1];
+  return authoredLine?.slice(column - 1, endColumn - 1) ?? null;
+}
+
+function regularFile(filename: string): boolean {
+  try {
+    return fs.statSync(filename).isFile();
+  } catch {
+    return false;
+  }
+}
+
+const nuxtConfigNames = [
+  "nuxt.config.ts",
+  "nuxt.config.js",
+  "nuxt.config.mjs",
+  "nuxt.config.cjs",
+  "nuxt.config.mts",
+  "nuxt.config.cts",
+];
+
+function nearestNuxtRoot(cwd: string, file: string): string | null {
+  const workspace = path.resolve(cwd);
+  let current = path.dirname(path.resolve(workspace, file));
+  for (;;) {
+    if (nuxtConfigNames.some((name) => regularFile(path.join(current, name)))) return current;
+    if (current === workspace) return null;
+    const parent = path.dirname(current);
+    const relative = path.relative(workspace, parent);
+    if (
+      parent === current ||
+      path.isAbsolute(relative) ||
+      relative === ".." ||
+      relative.startsWith(`..${path.sep}`)
+    )
+      return null;
+    current = parent;
+  }
+}
+
+export function componentRegistrationPatinaIntentionalReason(
+  finding: PatinaComponentFinding,
+  source: string,
+  cwd: string,
+): string | null {
+  if (
+    finding.ruleId !== "vue/require-component-registration" ||
+    authoredFindingText(finding, source) !== "Error"
+  )
+    return null;
+  const nuxtRoot = nearestNuxtRoot(cwd, finding.file);
+  if (nuxtRoot === null) return null;
+  const componentExists = ["app/components/Error.vue", "components/Error.vue"].some((file) =>
+    regularFile(path.join(nuxtRoot, file)),
+  );
+  if (!componentExists) return null;
+  return "The nearest Nuxt app auto-registers its authored Error.vue component for the <Error> tag; eslint-plugin-vue instead treats Error as an in-scope JavaScript global.";
+}
 
 function defineOptionsNamesSelf(source: string, tag: string): boolean {
   for (const [open, close] of objectArguments(source, /\bdefineOptions\b/gu)) {

@@ -1,5 +1,8 @@
 import path from "node:path";
-import { componentRegistrationBaselineIntentionalReason } from "./component_registration_intentional.ts";
+import {
+  componentRegistrationBaselineIntentionalReason,
+  componentRegistrationPatinaIntentionalReason,
+} from "./component_registration_intentional.ts";
 import { realProjectLocationDivergence } from "./real_project_locations.ts";
 import {
   byteOrder,
@@ -496,9 +499,17 @@ const patinaIntentionalRuleIds = new Set([
   "vue/require-v-for-key",
   "vue/v-slot-style",
 ]);
-export function patinaIntentionalReason(finding: LintRecord, source: string): string | null {
+export function patinaIntentionalReason(
+  finding: LintRecord,
+  source: string,
+  cwd?: string,
+): string | null {
   if (hasUtsScript(source))
     return "Patina preserves linting for Vue files with UTS scripts; vue-eslint-parser rejects the UTS block before eslint-plugin-vue can run mapped rules.";
+  if (cwd !== undefined) {
+    const componentReason = componentRegistrationPatinaIntentionalReason(finding, source, cwd);
+    if (componentReason !== null) return componentReason;
+  }
   if (!patinaIntentionalRuleIds.has(finding.ruleId)) return null;
   if (finding.ruleId === "vue/no-setup-props-reactivity-loss")
     return "Patina's complete contract follows root-scope prop values through nested containers, call arguments, and assignments that eslint-plugin-vue does not inspect.";

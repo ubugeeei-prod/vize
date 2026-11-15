@@ -1,7 +1,10 @@
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { isAbsolute, join } from "node:path";
-import { componentRegistrationBaselineIntentionalReason } from "../../fixtures/lint_divergence/component_registration_intentional.ts";
+import {
+  componentRegistrationBaselineIntentionalReason,
+  componentRegistrationPatinaIntentionalReason,
+} from "../../fixtures/lint_divergence/component_registration_intentional.ts";
 import { realProjectLocationRules } from "../../fixtures/lint_divergence/real_project_locations.ts";
 
 import {
@@ -308,6 +311,8 @@ function patinaIntentionalReason(finding: LintRecord, cwd: string): string | nul
   }
   if (hasUtsScript(source))
     return "Patina preserves linting for Vue files with UTS scripts; vue-eslint-parser rejects the UTS block before eslint-plugin-vue can run mapped rules.";
+  const componentReason = componentRegistrationPatinaIntentionalReason(finding, source, cwd);
+  if (componentReason !== null) return componentReason;
   if (finding.ruleId === "vue/no-setup-props-reactivity-loss")
     return "Patina's complete contract follows root-scope prop values through nested containers, call arguments, and assignments that eslint-plugin-vue does not inspect.";
   if (
