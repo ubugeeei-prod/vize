@@ -375,6 +375,28 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
+      - name: Expose bounded benchmark receipts
+        if: always() && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.patina_project_batch))
+        run: |
+          escape() {
+            local value="$1"
+            value="${value//'%'/'%25'}"
+            value="${value//$'\n'/'%0A'}"
+            value="${value//$'\r'/'%0D'}"
+            printf '%s' "$value"
+          }
+          if [[ -f benchmark-results.json ]]; then
+            receipt="$(jq -c '{baseLabel,headLabel,fileCount,runs,warmups,thresholdPercent,budget,results:[(.results // [])[]|{id,baseMs,headMs,rate,changePercent,status,thresholdPercent}]}' benchmark-results.json)"
+            echo "::notice title=standard paired receipt::$(escape "$receipt")"
+          fi
+          if [[ -f patina-project-batch/measurement.json ]]; then
+            receipt="$(jq -c '{baseSha,headSha,harnessSha,shards,files,diagnostics,completeStdoutSha256,inputInventorySha256,pairs,baseMedianMs,headMedianMs,pairedMedianRatio,changePercent,baseMedianAggregateCpuSeconds,headMedianAggregateCpuSeconds,pairedMedianCpuRatio,cpuChangePercent,baseMedianMaximumShardRssKiB,headMedianMaximumShardRssKiB,pairedMedianRssRatio,rssChangePercent,requestCountTotal}' patina-project-batch/measurement.json)"
+            echo "::notice title=sharded type-aware receipt::$(escape "$receipt")"
+          elif [[ -f patina-project-batch/samples.jsonl ]]; then
+            receipt="$(jq -sc '[.[]|{side,label,elapsedMs,diagnostics,stdoutSha256,aggregateCpuSeconds,maximumShardRssKiB,requestCount:(.requestPhaseCounts // [] | map(.count) | add)}]' patina-project-batch/samples.jsonl)"
+            echo "::notice title=sharded type-aware boundary::$(escape "$receipt")"
+          fi
+
       - name: Observe CSS completion and hover on existing base and head CLIs
         if: steps.base-integrity.outputs.skip != 'true' && steps.validate-base.outcome == 'success' && steps.build-base.outcome != 'failure'
         run: >-
