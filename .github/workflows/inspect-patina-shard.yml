@@ -21,6 +21,23 @@ jobs:
           run-id: "43725427972"
       - name: Publish retained boundary
         run: |
+          escape() {
+            local value="$1"
+            value="${value//'%'/'%25'}"
+            value="${value//$'\n'/'%0A'}"
+            value="${value//$'\r'/'%0D'}"
+            printf '%s' "$value"
+          }
+          listing="$(find evidence -maxdepth 2 -type f -printf '%f %s bytes\n' | sort)"
+          echo "::notice title=retained files::$(escape "$listing")"
+          for file in evidence/*.stderr evidence/*.rss.txt; do
+            [[ -f "$file" ]] || continue
+            detail="$(tail -n 80 "$file")"
+            echo "::notice title=$(basename "$file")::$(escape "$detail")"
+          done
+          if [[ -f evidence/samples.jsonl ]]; then
+            echo "::notice title=completed samples::$(escape "$(cat evidence/samples.jsonl)")"
+          fi
           {
             echo "## Retained sharded boundary"
             echo
