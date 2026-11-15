@@ -53,6 +53,7 @@ pub(super) fn prepare(
     let mut visited = FxHashMap::<PathBuf, PathBuf>::default();
     let mut queue = vec![(authored, String::from(source), None, SourceType::tsx())];
     while let Some((path, text, target, source_type)) = queue.pop() {
+        let component_document = target.is_some();
         let allocator = Allocator::default();
         let parsed = Parser::new(&allocator, &text, source_type).parse();
         if target.is_some() && !parsed.diagnostics.is_empty() {
@@ -118,7 +119,7 @@ pub(super) fn prepare(
                     }
                     target
                 }
-            } else if relative {
+            } else if relative && component_document {
                 dependency
             } else {
                 continue;
