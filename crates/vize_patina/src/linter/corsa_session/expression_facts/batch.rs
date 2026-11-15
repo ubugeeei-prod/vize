@@ -226,6 +226,9 @@ pub(super) fn same_file(path: &str, file: &str) -> bool {
     use std::path::Path;
 
     let file = file.strip_prefix("file://").unwrap_or(file);
+    if path.eq_ignore_ascii_case(file) {
+        return true;
+    }
     let path = vize_l0::typescript_project::normalize_path_lexically(Path::new(path));
     let file = vize_l0::typescript_project::normalize_path_lexically(Path::new(file));
     path.to_string_lossy()
