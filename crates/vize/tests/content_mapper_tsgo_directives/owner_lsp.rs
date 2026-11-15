@@ -83,8 +83,11 @@ fn run_session(
     std::fs::write(&path, &calibration).unwrap();
     std::fs::write(retained.join("OwnerComp.vue"), owners::COMPONENT).unwrap();
     let stop = AtomicBool::new(false);
+    let shutting_down = AtomicBool::new(false);
     let editor = rpc::EditorResponder::default();
     let transcript = Mutex::new(Vec::<Value>::new());
+    let responder_failures = Mutex::new(Vec::<String>::new());
+    let response_phase = Mutex::new(());
     std::thread::scope(|scope| {
         let _stop = rpc::StopOnDrop(&stop);
         corsa::runtime::block_on(async {
@@ -98,8 +101,11 @@ fn run_session(
             let responding = client.clone();
             let events = responding.subscribe();
             let stop_ref = &stop;
+            let shutting_down_ref = &shutting_down;
             let editor_ref = &editor;
             let log = &transcript;
+            let response_failures = &responder_failures;
+            let response_phase_ref = &response_phase;
             let log_path = retained.join("server-transcript.json");
             let responder = scope.spawn(move || {
                 while !stop_ref.load(Ordering::Relaxed) {
@@ -108,7 +114,29 @@ fn run_session(
                             let result = editor_ref.respond_to(method.as_str(), &params);
                             log.lock().unwrap().push(json!({"direction":"server-request", "id":id, "method":method, "params":params, "response":result}));
                             write_json(log_path.clone(), &*log.lock().unwrap());
-                            responding.respond(id, result).unwrap();
+                            let response = {
+                                let _response_phase = response_phase_ref.lock().unwrap();
+                                let response = responding.respond(id, result);
+                                if let Err(error) = &response
+                                    && !shutting_down_ref.load(Ordering::Relaxed)
+                                {
+                                    response_failures.lock().unwrap().push(format!(
+                                        "{} responder failed before shutdown: {error:?}",
+                                        log_path.display()
+                                    ));
+                                }
+                                response
+                            };
+                            if let Err(error) = response {
+                                // A late watch request can race the successful graceful close.
+                                // The main thread still requires that close itself to succeed.
+                                log.lock().unwrap().push(json!({
+                                    "direction":"response-error",
+                                    "error":format!("{error:?}")
+                                }));
+                                write_json(log_path.clone(), &*log.lock().unwrap());
+                                break;
+                            }
                         }
                         Ok(InboundEvent::Notification { method, params }) => {
                             log.lock().unwrap().push(json!({"direction":"server-notification", "method":method, "params":params}));
@@ -247,6 +275,10 @@ fn run_session(
                     ));
                 }
             }
+            {
+                let _response_phase = response_phase.lock().unwrap();
+                shutting_down.store(true, Ordering::Relaxed);
+            }
             let closed = client.graceful_close().await;
             write_json(
                 retained.join("shutdown.json"),
@@ -254,6 +286,7 @@ fn run_session(
             );
             stop.store(true, Ordering::Relaxed);
             responder.join().unwrap();
+            failures.extend(responder_failures.lock().unwrap().drain(..));
             closed.unwrap();
         });
     });
