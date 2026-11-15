@@ -53,6 +53,8 @@ const ruleMap = JSON.parse(
 );
 const rules = selectComparableRules(ruleMap, "ecosystem", { includeUnimplemented: true }).rules;
 const defaults = selectComparableRules(ruleMap, "ecosystem").rules;
+const allMapped = selectComparableRules(ruleMap, null).rules;
+assert.deepEqual(allMapped["vue/quote-props"], ["warn", "as-needed"]);
 const base = runtime.plugin.configs["flat/base"].find(
   (config) => config.name === "vue/base/setup-for-vue",
 );
@@ -221,6 +223,99 @@ for (const [name, body] of Object.entries(controls)) {
     }
   });
 }
+
+await test("the scorecard applies Patina's as-needed quote-props policy", async () => {
+  const input = fixture(
+    "quote-props.vue",
+    "<template><div :value=\"{ 'quoted': one, unquoted: two }\" /></template>\n",
+  );
+  const selected = { "vue/quote-props": allMapped["vue/quote-props"] };
+  try {
+    for (const packet of await paired(input, selected)) {
+      const findings = packet.results[0].messages.filter(
+        (message) => message.ruleId === "vue/quote-props",
+      );
+      assert.equal(findings.length, 1);
+      assert.equal(findings[0].message, "Unnecessarily quoted property 'quoted' found.");
+    }
+  } finally {
+    input.clean();
+  }
+});
+
+await test("the scorecard mirrors resolved vue-router global components", async () => {
+  const input = fixture(
+    "router-components.vue",
+    "<template><RouterLink /><RouterView /><MissingCard /></template>\n",
+  );
+  const selected = { "vue/no-undef-components": "warn" };
+  const router = path.join(input.cwd, "node_modules/vue-router");
+  fs.mkdirSync(router, { recursive: true });
+  fs.writeFileSync(path.join(router, "package.json"), '{"name":"vue-router","version":"0.0.0"}\n');
+  try {
+    const measured = [
+      actual(input, selected),
+      JSON.parse(JSON.stringify(await runBaseline(runtime, input.cwd, [input.filename], selected))),
+    ];
+    for (const packet of measured) {
+      assert.deepEqual(
+        packet.results[0].messages.map((message) => [message.ruleId, message.message]),
+        [
+          [
+            "vue/no-undef-components",
+            "The '<MissingCard>' component has been used, but not defined.",
+          ],
+        ],
+      );
+    }
+
+    fs.rmSync(path.join(input.cwd, "node_modules"), { recursive: true, force: true });
+    const control = await runBaseline(runtime, input.cwd, [input.filename], selected);
+    assert.deepEqual(
+      control.results[0].messages.map((message) => message.message),
+      [
+        "The '<RouterLink>' component has been used, but not defined.",
+        "The '<RouterView>' component has been used, but not defined.",
+        "The '<MissingCard>' component has been used, but not defined.",
+      ],
+    );
+  } finally {
+    input.clean();
+  }
+});
+
+await test("vue-router qualification follows each linted file's resolution boundary", async () => {
+  const input = fixture("control.vue", "<template />\n");
+  const withRouter = "packages/with-router/src/App.vue";
+  const withoutRouter = "packages/without-router/src/App.vue";
+  const router = path.join(input.cwd, "packages/with-router/node_modules/vue-router");
+  for (const file of [withRouter, withoutRouter]) {
+    fs.mkdirSync(path.dirname(path.join(input.cwd, file)), { recursive: true });
+    fs.writeFileSync(path.join(input.cwd, file), "<template><RouterView /></template>\n");
+  }
+  fs.mkdirSync(router, { recursive: true });
+  fs.writeFileSync(path.join(router, "package.json"), '{"name":"vue-router","version":"0.0.0"}\n');
+  try {
+    const run = await runBaseline(runtime, input.cwd, [withRouter, withoutRouter], {
+      "vue/no-undef-components": "warn",
+    });
+    assert.deepEqual(
+      run.results.map((result) => ({
+        file: path.relative(input.cwd, result.filePath),
+        findings: result.messages.map((message) => message.message),
+      })),
+      [
+        { file: withRouter, findings: [] },
+        {
+          file: withoutRouter,
+          findings: ["The '<RouterView>' component has been used, but not defined."],
+        },
+      ],
+    );
+  } finally {
+    input.clean();
+  }
+});
 
 await test("the complete original pinned ThemeIcon no longer leaks processor controls", async () => {
   const original = JSON.parse(

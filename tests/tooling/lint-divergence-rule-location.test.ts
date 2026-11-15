@@ -61,6 +61,112 @@ test("known rule-owned location anchors are classified without hiding both range
   assert.equal(result.summary.falseNegativeRatio, 0);
 });
 
+test("real-project rule anchors retain complete packets without creating false parity gaps", () => {
+  const result = compare(
+    [
+      {
+        file: "src/Card.vue",
+        ruleId: "vue/require-component-registration",
+        severity: 1,
+        ...span(20, 6, 20, 17),
+        message:
+          "[vize:vue/require-component-registration] Component is used but not explicitly imported",
+      },
+      {
+        file: "src/Card.vue",
+        ruleId: "vue/require-prop-comment",
+        severity: 1,
+        ...span(3, 3, 3, 8),
+        message:
+          '[vize:vue/require-prop-comment] The "title" property should have a JSDoc comment.',
+      },
+      {
+        file: "src/Card.vue",
+        ruleId: "vue/quote-props",
+        severity: 1,
+        ...span(12, 18, 12, 25),
+        message: "[vize:vue/quote-props] Unnecessarily quoted object property",
+      },
+    ],
+    [
+      eslintResult("src/Card.vue", [
+        {
+          ruleId: "vue/no-undef-components",
+          severity: 1,
+          ...span(20, 5, 20, 31),
+          message: "The '<MissingCard>' component has been used, but not defined.",
+        },
+        {
+          ruleId: "vue/require-prop-comment",
+          severity: 1,
+          ...span(3, 3, 3, 22),
+          message: 'The "title" property should have a JSDoc comment.',
+        },
+        {
+          ruleId: "vue/quote-props",
+          severity: 1,
+          ...span(12, 18, 12, 34),
+          message: "Unnecessarily quoted property 'label' found.",
+        },
+      ]),
+    ],
+  );
+
+  assert.deepEqual(result.falsePositives, []);
+  assert.deepEqual(result.falseNegatives, []);
+  assert.deepEqual(
+    result.ruleLocationDivergences
+      .map(({ ruleId, subject, patina, baseline }) => ({
+        ruleId,
+        subject,
+        patina,
+        baseline,
+      }))
+      .sort((left, right) => left.patina.line - right.patina.line),
+    [
+      {
+        ruleId: "vue/require-prop-comment",
+        subject: "prop:title",
+        patina: {
+          ...span(3, 3, 3, 8),
+          message:
+            '[vize:vue/require-prop-comment] The "title" property should have a JSDoc comment.',
+        },
+        baseline: {
+          ...span(3, 3, 3, 22),
+          message: 'The "title" property should have a JSDoc comment.',
+        },
+      },
+      {
+        ruleId: "vue/quote-props",
+        subject: "property:12:18",
+        patina: {
+          ...span(12, 18, 12, 25),
+          message: "[vize:vue/quote-props] Unnecessarily quoted object property",
+        },
+        baseline: {
+          ...span(12, 18, 12, 34),
+          message: "Unnecessarily quoted property 'label' found.",
+        },
+      },
+      {
+        ruleId: "vue/require-component-registration",
+        subject: "component-tag:20:6",
+        patina: {
+          ...span(20, 6, 20, 17),
+          message:
+            "[vize:vue/require-component-registration] Component is used but not explicitly imported",
+        },
+        baseline: {
+          ...span(20, 5, 20, 31),
+          message: "The '<MissingCard>' component has been used, but not defined.",
+        },
+      },
+    ],
+  );
+  assert.equal(result.summary.ruleLocationDivergenceCount, 3);
+});
+
 test("unused component location anchors are paired by component identity", () => {
   const result = compare(
     [
