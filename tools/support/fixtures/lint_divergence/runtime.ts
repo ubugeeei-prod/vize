@@ -169,6 +169,19 @@ function hasParseError(result: Json): boolean {
   return Array.isArray(messages) && messages.some((message) => get(message, "ruleId") === null);
 }
 
+function logBaselineIdentity(
+  authoritySha256: string,
+  merged: ReturnType<BaselineShardAccumulator["finish"]>,
+): void {
+  if (process.env.VIZE_LINT_BASELINE_PROGRESS !== "1") return;
+  console.log(
+    `ESLint baseline complete: authoritySha256=${authoritySha256}, ` +
+      `rawPacketCount=${merged.rawPacketCount}, rawPacketSha256=${merged.rawPacketSha256}, ` +
+      `retainedPacketCount=${merged.retainedPacketCount}, ` +
+      `retainedPacketSha256=${merged.retainedPacketSha256}`,
+  );
+}
+
 export function runEslintBaseline(
   root: string,
   cwd: string,
@@ -210,6 +223,9 @@ export function runEslintBaseline(
       },
     });
     const merged = accumulator.finish();
+    if (baselineAuthoritySha256(cwd, files, availableRules as Json) !== authoritySha256)
+      throw new Error("baseline file or rule authority changed during measurement");
+    logBaselineIdentity(authoritySha256, merged);
     rawSink?.append(results);
     return {
       version,
@@ -308,6 +324,7 @@ export function runEslintBaseline(
   const merged = accumulator.finish();
   if (baselineAuthoritySha256(cwd, files, availableRules as Json) !== authoritySha256)
     throw new Error("baseline file or rule authority changed during measurement");
+  logBaselineIdentity(authoritySha256, merged);
   return {
     rawResults: merged.rawResults,
     results: merged.results,
