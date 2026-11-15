@@ -41,27 +41,25 @@ fn selected(transform: &ContentMapperTransform) -> Vec<[usize; 6]> {
 #[test]
 fn loose_mode_selects_only_ts2353_at_exact_component_literal_keys() {
     let result = transform(SOURCE, false);
-    let selected = selected(&result);
-    for attribute in ["items", "buffer"] {
-        let original = SOURCE.find(&format!(":{attribute}=")).unwrap() + 1;
-        let generated_text = format!("\"{attribute}\": ");
-        let generated = result
-            .text
-            .find(&generated_text)
-            .unwrap_or_else(|| panic!("missing canonical {attribute} entry:\n{}", result.text));
-        assert!(
-            selected.contains(&[
+    let expected = ["items", "buffer"]
+        .map(|attribute| {
+            let original = SOURCE.find(&format!(":{attribute}=")).unwrap() + 1;
+            let generated_text = format!("\"{attribute}\": ");
+            let generated = result
+                .text
+                .find(&generated_text)
+                .unwrap_or_else(|| panic!("missing canonical {attribute} entry:\n{}", result.text));
+            [
                 original,
                 attribute.len(),
                 generated,
                 generated + attribute.len() + 2,
                 0,
                 2353,
-            ]),
-            "{attribute}: {selected:#?}\n{}",
-            result.text,
-        );
-    }
+            ]
+        })
+        .to_vec();
+    assert_eq!(selected(&result), expected, "{}", result.text);
 }
 
 #[test]

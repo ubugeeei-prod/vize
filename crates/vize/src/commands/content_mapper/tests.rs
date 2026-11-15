@@ -127,18 +127,27 @@ import Child from "./Child.vue";
     let tuples = negotiated[2]["result"]["diagnosticDirectives"]["directives"]
         .as_array()
         .unwrap();
-    for attribute in ["items", "buffer"] {
-        let original = source.find(&format!(":{attribute}=")).unwrap() + 1;
-        let generated = text.find(&format!("\"{attribute}\": ")).unwrap();
-        assert!(tuples.contains(&json!([
-            original,
-            attribute.len(),
-            generated,
-            generated + attribute.len() + 2,
-            0,
-            2353,
-        ])));
-    }
+    let selected = tuples
+        .iter()
+        .filter(|tuple| tuple.as_array().is_some_and(|tuple| tuple.len() == 6))
+        .filter(|tuple| tuple[4] == 0 && tuple[5] == 2353)
+        .cloned()
+        .collect::<Vec<_>>();
+    let expected = ["items", "buffer"]
+        .map(|attribute| {
+            let original = source.find(&format!(":{attribute}=")).unwrap() + 1;
+            let generated = text.find(&format!("\"{attribute}\": ")).unwrap();
+            json!([
+                original,
+                attribute.len(),
+                generated,
+                generated + attribute.len() + 2,
+                0,
+                2353,
+            ])
+        })
+        .to_vec();
+    assert_eq!(selected, expected);
 }
 
 #[test]
