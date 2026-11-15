@@ -366,7 +366,9 @@ defineOptions({ name: "RouteTreeBranch" });
         },
         { file, ...packet, severity: "warning" },
       );
-      assert.match(String(get(reviewed as Json, "reason")), /recursively/u);
+      const reason = get(reviewed as Json, "reason");
+      if (typeof reason !== "string") throw new TypeError("divergence reason must be a string");
+      assert.match(reason, /recursively/u);
     }
   } finally {
     fs.rmSync(filename, { force: true });
