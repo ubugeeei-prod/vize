@@ -57,6 +57,9 @@ type Foo = {
     [Keys.A]: number | null;
     [Keys.B]: number;
 };
+type Handler = {
+    [Keys.A](): void;
+};
 "#,
     );
 
@@ -68,6 +71,15 @@ type Foo = {
     assert!(
         !foo.hoisted,
         "a computed type key cannot outlive its setup-scope enum"
+    );
+    let handler = result
+        .type_exports
+        .iter()
+        .find(|export| export.name.as_str() == "Handler")
+        .expect("Handler type export");
+    assert!(
+        !handler.hoisted,
+        "a computed method key cannot outlive its setup-scope enum"
     );
 }
 
