@@ -192,17 +192,18 @@ void test("PR and release plans partition the same stable selector IDs exactly o
 });
 
 void test("one exact candidate admits all 440 selectors without granting unrelated gaps", () => {
-  const admitted = admitV1FiveCaseReceipts(
-    matrix,
-    { sourceSha, candidateSha, mode: "release" },
-    [completeBundle()],
-  );
+  const admitted = admitV1FiveCaseReceipts(matrix, { sourceSha, candidateSha, mode: "release" }, [
+    completeBundle(),
+  ]);
   assert.equal(admitted.counts.admittedCaseSelectors, 440);
   assert.equal(admitted.counts.missingCaseSelectors, 0);
   assert.equal(admitted.counts.skippedCaseSelectors, 0);
   assert.equal(admitted.counts.staleCaseSelectors, 0);
   assert.equal(admitted.counts.unsupportedCaseSelectors, 0);
-  assert.equal(admitted.caseSelectors.every(({ receiptState }) => receiptState === "complete"), true);
+  assert.equal(
+    admitted.caseSelectors.every(({ receiptState }) => receiptState === "complete"),
+    true,
+  );
   assert.equal(admitted.knownGaps.find(({ id }) => id === "case-packet-join")?.state, "complete");
   assert.equal(admitted.counts.blockingGaps, matrix.counts.blockingGaps - 1);
   assert.equal(admitted.releaseReady, false);
@@ -216,10 +217,7 @@ void test("missing, skipped, stale and unsupported selector evidence stay distin
   const base = receiptsExcept(selected.id);
 
   const missing = admitV1FiveCaseReceipts(matrix, exactIdentity, [bundle("bundle:missing", base)]);
-  assert.equal(
-    missing.caseSelectors.find(({ id }) => id === selected.id)?.receiptState,
-    "missing",
-  );
+  assert.equal(missing.caseSelectors.find(({ id }) => id === selected.id)?.receiptState, "missing");
 
   for (const outcome of ["skipped", "unsupported"] as const) {
     const admitted = admitV1FiveCaseReceipts(matrix, exactIdentity, [
@@ -256,7 +254,9 @@ void test("receipt, runtime and bundle identities reject partial or duplicate ev
   const invalidRuntime = receipt(selected, { runtimeSha256: "0".repeat(64) });
   assert.throws(
     () =>
-      validateV1FiveCaseReceiptBundles(matrix, [bundle("bundle:invalid-runtime", [invalidRuntime])]),
+      validateV1FiveCaseReceiptBundles(matrix, [
+        bundle("bundle:invalid-runtime", [invalidRuntime]),
+      ]),
     /runtime digest/u,
   );
 
@@ -294,11 +294,9 @@ void test("selector, candidate and Vue identity changes cannot receive current c
     id: `stale-selector:${selected.id}`,
     selectorSha256: "9".repeat(64),
   });
-  const admitted = admitV1FiveCaseReceipts(
-    matrix,
-    { sourceSha, candidateSha, mode: "release" },
-    [bundle("bundle:stale-selector", [...rest, staleSelector])],
-  );
+  const admitted = admitV1FiveCaseReceipts(matrix, { sourceSha, candidateSha, mode: "release" }, [
+    bundle("bundle:stale-selector", [...rest, staleSelector]),
+  ]);
   assert.equal(admitted.caseSelectors.find(({ id }) => id === selected.id)?.receiptState, "stale");
 
   const wrongRuntime = receipt(selected, {
@@ -313,7 +311,8 @@ void test("selector, candidate and Vue identity changes cannot receive current c
     },
   });
   assert.throws(
-    () => validateV1FiveCaseReceiptBundles(matrix, [bundle("bundle:wrong-runtime", [wrongRuntime])]),
+    () =>
+      validateV1FiveCaseReceiptBundles(matrix, [bundle("bundle:wrong-runtime", [wrongRuntime])]),
     /unknown host\/runtime identity/u,
   );
 });

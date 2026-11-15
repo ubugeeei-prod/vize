@@ -76,7 +76,9 @@ function canonicalize(value: unknown): unknown {
 }
 
 export function digestV1FiveCaseSelector(selector: V1FiveCaseSelectorBody): string {
-  return createHash("sha256").update(JSON.stringify(canonicalize(selector))).digest("hex");
+  return createHash("sha256")
+    .update(JSON.stringify(canonicalize(selector)))
+    .digest("hex");
 }
 
 const lintSourceKinds = [

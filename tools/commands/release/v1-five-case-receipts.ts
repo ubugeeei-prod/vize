@@ -56,7 +56,8 @@ function mode(args: readonly string[]): V1FiveCaseMode {
 function githubOutput(entries: Record<string, string | number>): void {
   const filename = process.env.GITHUB_OUTPUT;
   if (!filename) return;
-  for (const [name, value] of Object.entries(entries)) appendFileSync(filename, `${name}=${value}\n`);
+  for (const [name, value] of Object.entries(entries))
+    appendFileSync(filename, `${name}=${value}\n`);
 }
 
 function plan(args: readonly string[]): void {

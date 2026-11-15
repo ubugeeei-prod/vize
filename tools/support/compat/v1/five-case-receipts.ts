@@ -16,19 +16,13 @@ const SOURCE_SHA = /^[0-9a-f]{40}$/u;
 const RECEIPT_ID = /^[a-z0-9][a-z0-9._:/@+-]*$/u;
 
 export const V1_FIVE_CASE_RECEIPT_SCHEMA = "vize.v1-five-case-receipt.v1" as const;
-export const V1_FIVE_CASE_RECEIPT_BUNDLE_SCHEMA =
-  "vize.v1-five-case-receipt-bundle.v1" as const;
+export const V1_FIVE_CASE_RECEIPT_BUNDLE_SCHEMA = "vize.v1-five-case-receipt-bundle.v1" as const;
 export const V1_FIVE_CASE_SHARD_PLAN_SCHEMA = "vize.v1-five-case-shard-plan.v1" as const;
 export const V1_FIVE_CASE_ADMISSION_SCHEMA = "vize.v1-five-case-admission.v1" as const;
 
 export type V1FiveCaseMode = "pr" | "release";
 export type V1FiveCaseReceiptOutcome = "passed" | "skipped" | "unsupported";
-export type V1FiveCaseReceiptState =
-  | "complete"
-  | "missing"
-  | "skipped"
-  | "stale"
-  | "unsupported";
+export type V1FiveCaseReceiptState = "complete" | "missing" | "skipped" | "stale" | "unsupported";
 
 export interface V1FiveCaseRuntimeIdentity {
   name: string;
@@ -119,7 +113,9 @@ function canonicalize(value: unknown): unknown {
 }
 
 export function digestV1FiveCaseValue(value: unknown): string {
-  return createHash("sha256").update(JSON.stringify(canonicalize(value))).digest("hex");
+  return createHash("sha256")
+    .update(JSON.stringify(canonicalize(value)))
+    .digest("hex");
 }
 
 export function sealV1FiveCaseReceipt(body: V1FiveCaseReceiptBody): V1FiveCaseReceipt {
@@ -141,8 +137,12 @@ function assertHash(name: string, value: string, receiptId: string): void {
 }
 
 function selectorBody(selector: V1FiveCaseSelector): V1FiveCaseSelectorBody {
-  const { selectorSha256: _selectorSha256, qualification: _qualification, receiptIds: _ids, ...body } =
-    selector;
+  const {
+    selectorSha256: _selectorSha256,
+    qualification: _qualification,
+    receiptIds: _ids,
+    ...body
+  } = selector;
   return body;
 }
 
@@ -164,7 +164,9 @@ export function validateV1FiveCaseSelectorRegistry(matrix: SupportMatrix): void 
     matrix.combinations.length * V1_CASES.length,
     "five-case selector count",
   );
-  const combinations = new Map(matrix.combinations.map((combination) => [combination.id, combination]));
+  const combinations = new Map(
+    matrix.combinations.map((combination) => [combination.id, combination]),
+  );
   const selectorIds = new Set<string>();
   const owned = new Map<string, Set<string>>();
   for (const selector of matrix.caseSelectors) {
@@ -180,7 +182,11 @@ export function validateV1FiveCaseSelectorRegistry(matrix: SupportMatrix): void 
     assert.equal(selector.vue, combination.vue, selector.id);
     assert.equal(selector.backend, combination.backend, selector.id);
     assert.equal(selector.sourceKind, combination.sourceKind, selector.id);
-    assert.deepEqual(selector.requiredQualificationSets, combination.requiredQualificationSets, selector.id);
+    assert.deepEqual(
+      selector.requiredQualificationSets,
+      combination.requiredQualificationSets,
+      selector.id,
+    );
     assert.deepEqual(selector.evidenceCandidates, combination.evidence, selector.id);
     assert.deepEqual(selector.packetHashFields, V1_FIVE_CASE_PACKET_HASH_FIELDS, selector.id);
     assert.equal(
@@ -193,9 +199,16 @@ export function validateV1FiveCaseSelectorRegistry(matrix: SupportMatrix): void 
     cases.add(selector.case);
     owned.set(selector.combinationId, cases);
   }
-  assert.deepEqual([...owned.keys()].toSorted(compareText), [...combinations.keys()].toSorted(compareText));
+  assert.deepEqual(
+    [...owned.keys()].toSorted(compareText),
+    [...combinations.keys()].toSorted(compareText),
+  );
   for (const [combinationId, cases] of owned)
-    assert.deepEqual([...cases].toSorted(compareText), [...V1_CASES].toSorted(compareText), combinationId);
+    assert.deepEqual(
+      [...cases].toSorted(compareText),
+      [...V1_CASES].toSorted(compareText),
+      combinationId,
+    );
 }
 
 function assertRuntime(matrix: SupportMatrix, receipt: V1FiveCaseReceipt): void {
@@ -248,7 +261,10 @@ function assertReceipt(matrix: SupportMatrix, receipt: V1FiveCaseReceipt): void 
     `${receipt.id}: runAttempt`,
   );
   assert.ok(receipt.job.trim().length > 0, `${receipt.id}: job`);
-  assert.ok(Number.isSafeInteger(receipt.shardTotal) && receipt.shardTotal > 0, `${receipt.id}: shardTotal`);
+  assert.ok(
+    Number.isSafeInteger(receipt.shardTotal) && receipt.shardTotal > 0,
+    `${receipt.id}: shardTotal`,
+  );
   assert.ok(
     Number.isSafeInteger(receipt.shardIndex) &&
       receipt.shardIndex >= 0 &&
@@ -256,7 +272,9 @@ function assertReceipt(matrix: SupportMatrix, receipt: V1FiveCaseReceipt): void 
     `${receipt.id}: shardIndex`,
   );
   assert.ok(
-    receipt.outcome === "passed" || receipt.outcome === "skipped" || receipt.outcome === "unsupported",
+    receipt.outcome === "passed" ||
+      receipt.outcome === "skipped" ||
+      receipt.outcome === "unsupported",
     `${receipt.id}: outcome`,
   );
   if (receipt.outcome === "passed") assert.equal(receipt.reason, null, `${receipt.id}: reason`);
@@ -292,7 +310,10 @@ function assertBundle(matrix: SupportMatrix, bundle: V1FiveCaseReceiptBundle): v
     Number.isSafeInteger(bundle.runAttempt) && bundle.runAttempt > 0,
     `${bundle.id}: runAttempt`,
   );
-  assert.ok(Number.isSafeInteger(bundle.shardTotal) && bundle.shardTotal > 0, `${bundle.id}: shardTotal`);
+  assert.ok(
+    Number.isSafeInteger(bundle.shardTotal) && bundle.shardTotal > 0,
+    `${bundle.id}: shardTotal`,
+  );
   assert.ok(
     Number.isSafeInteger(bundle.shardIndex) &&
       bundle.shardIndex >= 0 &&
@@ -454,9 +475,9 @@ export function admitV1FiveCaseReceipts(
       ...identity,
       registrySha256,
       bundleSha256: digestV1FiveCaseValue(
-        bundles.map(({ id, bundleSha256 }) => [id, bundleSha256]).toSorted(([left], [right]) =>
-          left.localeCompare(right),
-        ),
+        bundles
+          .map(({ id, bundleSha256 }) => [id, bundleSha256])
+          .toSorted(([left], [right]) => left.localeCompare(right)),
       ),
     },
     caseSelectors,
