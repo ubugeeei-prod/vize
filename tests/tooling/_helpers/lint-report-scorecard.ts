@@ -39,6 +39,35 @@ function without(fields: Fields, keys: readonly string[]): Fields {
   return Object.fromEntries(Object.entries(fields).filter(([key]) => !keys.includes(key)));
 }
 
+function expectedIndexBudget(projects: Array<{ project: string; budget: Fields }>): Fields {
+  const failed = projects.filter(({ budget }) => budget.passed !== true);
+  return {
+    status: failed.length === 0 ? "success" : "failure",
+    passed: failed.length === 0,
+    projectCount: projects.length,
+    passedCount: projects.length - failed.length,
+    failedCount: failed.length,
+    unusableCount: failed.filter(({ budget }) => budget.verdict === "unusable").length,
+    breachedCount: failed.filter(({ budget }) => budget.verdict === "breached").length,
+    failedProjects: failed.map(({ project }) => project),
+  };
+}
+
+function budgetFailure(project: string, budget: Fields, summary: Fields): string {
+  if (budget.verdict === "unusable")
+    return `Lint divergence baseline is unusable for ${project}: ${String(budget.unusableReason)}`;
+  const breaches: string[] = [];
+  if (budget.falsePositivePassed !== true)
+    breaches.push(
+      `${String(summary.falsePositiveCount)} false positives exceed maxFalsePositiveCount 0`,
+    );
+  if (budget.falseNegativePassed !== true)
+    breaches.push(
+      `${String(summary.falseNegativeCount)} false negatives exceed maxFalseNegativeCount 0`,
+    );
+  return `Lint divergence budget breached for ${project}: ${breaches.join("; ")}`;
+}
+
 function normalizeReviewedCoverageIdentity(
   expected: ProjectReport,
   actual: ProjectReport,
@@ -130,10 +159,11 @@ function normalizeReviewedCoverageIdentity(
       "verdict",
     ]),
   );
-  assert.equal(
-    helpers.object(actual.budget).falsePositivePassed,
-    actual.divergence.falsePositives.length === 0,
-  );
+  const actualBudget = helpers.object(actual.budget);
+  assert.equal(actualBudget.falsePositivePassed, false);
+  assert.equal(actualBudget.unusableReason, null);
+  assert.equal(actualBudget.verdict, "breached");
+  assert.equal(actualBudget.passed, false);
   return true;
 }
 
@@ -148,7 +178,18 @@ export function assertScorecardIdentityTransition(
     scorecardVersion = scorecardVersions["eslint-plugin-vue"];
   assert.equal(historicalVersion, "10.9.2");
   assert.equal(scorecardVersion, "10.12.0");
-  let reviewedCoverageIdentityChanged = false;
+  const reviewedTransitions = new Map<
+    string,
+    {
+      actualBudget: Fields;
+      actualSummary: Fields;
+      expectedBudget: Fields;
+      expectedMarkdown: string;
+      expectedSummary: Fields;
+      file: string;
+      markdownName: string;
+    }
+  >();
   for (const [file, actualArtifact] of Object.entries(actual.files)) {
     if (
       !file.endsWith("-lint-divergence.json") ||
@@ -165,7 +206,6 @@ export function assertScorecardIdentityTransition(
       "raw" in expectedArtifact && "raw" in actualArtifact
         ? normalizeReviewedCoverageIdentity(expectedArtifact, actualArtifact, helpers)
         : false;
-    reviewedCoverageIdentityChanged ||= changed;
     if (actualArtifact.baseline.comparedRuleCount === 0) {
       assert.equal(actualArtifact.baseline.version, expectedArtifact.baseline.version);
       assert.deepEqual(actualArtifact.baseline.runtimeVersions, {});
@@ -188,12 +228,20 @@ export function assertScorecardIdentityTransition(
     assert.equal(actualMarkdown.split(actualLine).length, 2);
     actual.files[markdownName] = actualMarkdown.replace(actualLine, expectedLine);
     if (changed) {
-      actualArtifact.divergence = structuredClone(expectedArtifact.divergence);
-      actualArtifact.budget = structuredClone(expectedArtifact.budget);
-      actual.files[markdownName] = expectedMarkdown;
+      const project = file.replace(/-lint-divergence\.json$/u, "");
+      assert.equal(reviewedTransitions.has(project), false);
+      reviewedTransitions.set(project, {
+        actualBudget: structuredClone(helpers.object(actualArtifact.budget)),
+        actualSummary: structuredClone(helpers.object(actualArtifact.divergence.summary)),
+        expectedBudget: structuredClone(helpers.object(expectedArtifact.budget)),
+        expectedMarkdown,
+        expectedSummary: structuredClone(helpers.object(expectedArtifact.divergence.summary)),
+        file,
+        markdownName,
+      });
     }
   }
-  if (reviewedCoverageIdentityChanged) {
+  if (reviewedTransitions.size > 0) {
     const expectedIndex = expected.files["lint-divergence-summary.json"],
       actualIndex = actual.files["lint-divergence-summary.json"];
     assert.ok(
@@ -208,7 +256,98 @@ export function assertScorecardIdentityTransition(
       actualIndex.projects.map((project) => project.project),
       expectedIndex.projects.map((project) => project.project),
     );
-    actual.files["lint-divergence-summary.json"] = structuredClone(expectedIndex);
+    const projectEvidence = (
+      result: Result,
+      project: string,
+      transitionSide: "actual" | "expected",
+    ) => {
+      const transition = reviewedTransitions.get(project);
+      if (transition)
+        return {
+          budget: transitionSide === "actual" ? transition.actualBudget : transition.expectedBudget,
+          summary:
+            transitionSide === "actual" ? transition.actualSummary : transition.expectedSummary,
+        };
+      const artifact = result.files[`${project}-lint-divergence.json`];
+      assert.ok(
+        typeof artifact === "object" && artifact.schema === "vize.fixtureLintDivergenceRun",
+      );
+      return {
+        budget: helpers.object(artifact.budget),
+        summary: helpers.object(artifact.divergence.summary),
+      };
+    };
+    const actualProjects = actualIndex.projects.map((row) => {
+      const project = String(row.project),
+        evidence = projectEvidence(actual, project, "actual");
+      assert.deepEqual(row, { project, ...evidence.summary });
+      if (!reviewedTransitions.has(project)) {
+        const expectedRow = expectedIndex.projects.find(
+          (candidate) => String(candidate.project) === project,
+        );
+        assert.deepEqual(row, expectedRow, `${project}: unrelated index row changed`);
+      }
+      return { project, budget: evidence.budget };
+    });
+    const expectedProjects = expectedIndex.projects.map((row) => {
+      const project = String(row.project),
+        evidence = projectEvidence(expected, project, "expected");
+      assert.deepEqual(row, { project, ...evidence.summary });
+      return { project, budget: evidence.budget };
+    });
+    const actualTotals = helpers.object(actualIndex.totals),
+      expectedTotals = helpers.object(expectedIndex.totals);
+    assert.deepEqual(Object.keys(actualTotals), Object.keys(expectedTotals));
+    for (const key of Object.keys(actualTotals)) {
+      assert.equal(
+        actualTotals[key],
+        actualIndex.projects.reduce((sum, row) => sum + Number(row[key] ?? 0), 0),
+        `actual index total drifted: ${key}`,
+      );
+      assert.equal(
+        expectedTotals[key],
+        expectedIndex.projects.reduce((sum, row) => sum + Number(row[key] ?? 0), 0),
+        `expected index total drifted: ${key}`,
+      );
+    }
+    assert.deepEqual(helpers.object(actualIndex.budget), expectedIndexBudget(actualProjects));
+    assert.deepEqual(helpers.object(expectedIndex.budget), expectedIndexBudget(expectedProjects));
+    const failed = actualIndex.projects
+      .map((row) => {
+        const project = String(row.project),
+          evidence = projectEvidence(actual, project, "actual");
+        return { project, ...evidence };
+      })
+      .filter(({ budget }) => budget.passed !== true);
+    assert.equal(actual.status, 1);
+    assert.equal(
+      actual.stderr,
+      `Lint divergence budget failed for ${failed.length} project(s):\n${failed
+        .map(({ project, budget, summary }) => budgetFailure(project, budget, summary))
+        .join("\n")}\n`,
+    );
+    for (const [project, transition] of reviewedTransitions) {
+      const row = actualIndex.projects.find((candidate) => String(candidate.project) === project),
+        expectedRow = expectedIndex.projects.find(
+          (candidate) => String(candidate.project) === project,
+        );
+      assert.ok(row && expectedRow);
+      for (const key of Object.keys(row)) delete row[key];
+      Object.assign(row, structuredClone(expectedRow));
+      const actualArtifact = actual.files[transition.file],
+        expectedArtifact = expected.files[transition.file];
+      assert.ok(
+        typeof actualArtifact === "object" &&
+          actualArtifact.schema === "vize.fixtureLintDivergenceRun" &&
+          typeof expectedArtifact === "object" &&
+          expectedArtifact.schema === "vize.fixtureLintDivergenceRun",
+      );
+      actualArtifact.divergence = structuredClone(expectedArtifact.divergence);
+      actualArtifact.budget = structuredClone(expectedArtifact.budget);
+      actual.files[transition.markdownName] = transition.expectedMarkdown;
+    }
+    for (const key of Object.keys(actualTotals)) actualTotals[key] = expectedTotals[key];
+    actualIndex.budget = structuredClone(expectedIndex.budget);
     actual.status = expected.status;
     actual.stderr = expected.stderr;
   }

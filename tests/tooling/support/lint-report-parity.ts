@@ -459,6 +459,46 @@ for (const entry of reviewed) {
     }
   });
 }
+test("scorecard eligibility rejects inconsistent budgets, index totals and exit packets", () => {
+  const input = fixture();
+  try {
+    const entry = reviewed[0];
+    fs.rmSync(path.join(input.directory, "App.vue"));
+    input.write(
+      entry.finding.file,
+      fs.readFileSync(path.join(root, contractDirectory, entry.source), "utf8"),
+    );
+    const project = input.project(entry.project, {
+      revision: entry.revision,
+      vueGlobs: [entry.finding.file],
+      expectedVueFileCount: 1,
+    });
+    const { file, ...message } = entry.finding;
+    input.configure([project], { results: [{ file, messages: [message] }] });
+    const expected = runReporter(input, frozen.paths.updated, input.args, "updated"),
+      actual = runReporter(input, nodeCommand);
+    assertParity(expected, actual, "updated");
+    const rejects = (mutate: (result: typeof actual) => void) => {
+      const corrupted = structuredClone(actual);
+      mutate(corrupted);
+      assert.throws(() => assertParity(expected, corrupted, "updated"));
+    };
+    rejects((result) => {
+      const budget = reportFile(result, `${entry.project}-lint-divergence.json`).budget;
+      budget.passed = true;
+      budget.verdict = "passed";
+    });
+    rejects((result) => {
+      indexFile(result).totals.falsePositiveCount++;
+    });
+    rejects((result) => {
+      result.status = 0;
+      result.stderr = "";
+    });
+  } finally {
+    input.clean();
+  }
+});
 test("unmeasured foreign reviewed source is scored: explicit correction to updated Rust membership bug", () => {
   const input = fixture();
   try {
