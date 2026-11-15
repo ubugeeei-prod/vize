@@ -1,4 +1,4 @@
-//! #12972: frozen typescript-eslint 8.72.2 residual corpus.
+/// #12972: frozen typescript-eslint 8.72.2 residual corpus.
 use serde::Deserialize;
 
 use super::{corsa_available, lint_sfc_with_corsa};
