@@ -10,6 +10,7 @@ use vize_l0::{String, cstr};
 pub(super) fn prepare(rule: &str, node: &LintNode, configured: Option<&Value>) -> LintNode {
     let mut owned = node.clone();
     match rule {
+        "no-unsafe-return" => expose_awaited_any(&mut owned),
         "no-base-to-string" => {
             constrain_stringified_types(&mut owned);
             supply_tostring_argument(&mut owned);
@@ -21,6 +22,42 @@ pub(super) fn prepare(rule: &str, node: &LintNode, configured: Option<&Value>) -
         _ => {}
     }
     owned
+}
+
+/// Corsa's current `no-unsafe-return` reader can unwrap a top-level
+/// `Promise<T>`, while the checker can also identify thenables hidden behind
+/// unions, intersections and inherited aliases. Present that already-proven
+/// fact as a Promise reference on this rule's private clone. The original
+/// checker identity and constituents stay intact for explicit-return and
+/// assignment comparisons.
+fn expose_awaited_any(node: &mut LintNode) {
+    let returned = match node.kind.as_str() {
+        "ReturnStatement" => node.children.get_mut("argument"),
+        "ArrowFunctionExpression" => node.children.get_mut("body"),
+        _ => None,
+    };
+    let Some(returned) = returned else {
+        return;
+    };
+    let Some(awaited) = returned.fields.get("__unsafeReturnAwaitedAny").cloned() else {
+        return;
+    };
+    let Some(detail) = returned
+        .fields
+        .get_mut("__typeDetail")
+        .and_then(Value::as_object_mut)
+    else {
+        return;
+    };
+    let object_flags = detail
+        .get("objectFlags")
+        .and_then(Value::as_u64)
+        .unwrap_or_default();
+    detail.insert("objectFlags".into(), Value::from(object_flags | 4));
+    detail.insert("text".into(), Value::from("Promise<any>"));
+    detail.insert("typeArguments".into(), Value::Array(vec![awaited]));
+    detail.insert("isArray".into(), Value::Bool(false));
+    detail.insert("isTuple".into(), Value::Bool(false));
 }
 
 fn disallows_nullish(configured: Option<&Value>) -> bool {

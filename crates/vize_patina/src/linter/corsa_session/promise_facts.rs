@@ -6,6 +6,7 @@
 //! type names. Every answer is memoized per type handle.
 mod awaitable;
 mod builtins;
+mod unsafe_return;
 use super::checker_memo::CheckerMemo;
 use corsa::api::{SignatureResponse, SymbolHandle, SymbolResponse, TypeHandle, TypeResponse};
 use vize_l0::{FxHashMap, String as CompactString};
