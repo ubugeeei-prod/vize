@@ -149,6 +149,33 @@ fn assert_loose_packet(actual: Option<Diagnostics>) {
     );
 }
 
+fn check_strict_packet() -> Option<Diagnostics> {
+    let root = create_project_case(
+        "library-generic-fallback-strict",
+        &[("src/libs.ts", LIBS), ("src/App.vue", APP)],
+    );
+    std::fs::write(
+        root.join("tsconfig.json"),
+        r#"{
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "noEmit": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "target": "ESNext",
+    "types": []
+  },
+  "vueCompilerOptions": { "checkUnknownProps": true },
+  "include": ["src/**/*.vue", "src/**/*.ts"]
+}"#,
+    )
+    .unwrap();
+    let diagnostics = snapshot_project_diagnostics(&root);
+    let _ = std::fs::remove_dir_all(root);
+    diagnostics
+}
+
 #[test]
 fn old_library_generic_props_follow_the_loose_unknown_props_policy() {
     if resolve_test_tsgo_binary().is_none() {
@@ -161,6 +188,30 @@ fn old_library_generic_props_follow_the_loose_unknown_props_policy() {
         r#"
   "vueCompilerOptions": { "checkUnknownProps": false },"#,
     ));
+}
+
+#[test]
+fn strict_mode_retains_the_complete_excess_property_packet() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+
+    assert_eq!(
+        check_strict_packet().expect("the native checker should be available"),
+        vec![
+            (
+                "src/App.vue".into(),
+                Some(2353),
+                r#"6:32:error Object literal may only specify known properties, and '"buffer"' does not exist in type 'Props<number>'."#.into(),
+            ),
+            (
+                "src/App.vue".into(),
+                Some(2353),
+                r#"10:32:error Object literal may only specify known properties, and '"dataIndex"' does not exist in type 'Props<number>'."#.into(),
+            ),
+        ],
+        "strict mode must retain both authored TS2353 rows and exact spans",
+    );
 }
 
 #[test]

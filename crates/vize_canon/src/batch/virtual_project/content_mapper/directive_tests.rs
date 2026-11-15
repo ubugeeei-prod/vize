@@ -7,6 +7,7 @@ use super::protocol::{DIRECTIVE_POLICY_EXPECT, DIRECTIVE_POLICY_IGNORE};
 mod directive_exact;
 mod disjoint;
 mod inference_copies;
+mod loose_library_props;
 mod navigation_blocks;
 mod unchecked_prop_values;
 

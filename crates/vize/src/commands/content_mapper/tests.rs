@@ -90,6 +90,58 @@ fn selector_capability_does_not_change_initialize_or_unselected_transform_payloa
 }
 
 #[test]
+fn loose_component_prop_selectors_are_sent_only_to_negotiated_hosts() {
+    let source = r#"<script setup lang="ts">
+import Child from "./Child.vue";
+</script>
+<template><Child :items="[1, 2]" :buffer="200" /></template>
+"#;
+    let requests = |initialize| {
+        frames(&[
+            initialize,
+            open_project_request(2, Value::Null, json!({})),
+            transform_request(3, source),
+        ])
+    };
+    let legacy = exchange(&requests(initialize_request()));
+    let negotiated = exchange(&requests(json!({
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "initialize",
+        "params": {
+            "positionEncodings": ["utf-8"],
+            "capabilities": { "diagnosticDirectiveCodeSelectors": true }
+        }
+    })));
+
+    let legacy = legacy[2]["result"]["diagnosticDirectives"]["directives"]
+        .as_array()
+        .unwrap();
+    assert!(
+        legacy
+            .iter()
+            .all(|tuple| tuple.as_array().unwrap().len() == 5)
+    );
+
+    let text = negotiated[2]["result"]["text"].as_str().unwrap();
+    let tuples = negotiated[2]["result"]["diagnosticDirectives"]["directives"]
+        .as_array()
+        .unwrap();
+    for attribute in ["items", "buffer"] {
+        let original = source.find(&format!(":{attribute}=")).unwrap() + 1;
+        let generated = text.find(&format!("\"{attribute}\": ")).unwrap();
+        assert!(tuples.contains(&json!([
+            original,
+            attribute.len(),
+            generated,
+            generated + attribute.len() + 2,
+            0,
+            2353,
+        ])));
+    }
+}
+
+#[test]
 fn parse_errors_are_successful_transform_results() {
     let input = frames(&[
         initialize_request(),

@@ -1,4 +1,5 @@
 use super::VirtualFile;
+use crate::batch::component_literal_key::authenticate_component_literal_key;
 use crate::virtual_ts::{ProjectionFeatures, ProjectionMapping, VizeMapping};
 
 /// Authenticate the one excess-property diagnostic loose mode may discard.
@@ -56,32 +57,10 @@ fn authenticated_component_key(
     let Some(row) = narrowest_row(mapping, generated_start) else {
         return false;
     };
-    if row.1 != ProjectionFeatures::ALL {
-        return false;
-    }
-    let span = row.0;
-    let Some(entry) = generated.get(span.gen_range.clone()) else {
-        return false;
-    };
-    let Some(key_length) = quoted_key_length(entry) else {
-        return false;
-    };
-    let key = span.gen_range.start..span.gen_range.start + key_length;
-    if generated_start != key.start || generated_end > key.end {
-        return false;
-    }
-    let Some(authored) = span
-        .sub_spans
-        .iter()
-        .find(|sub_span| sub_span.gen_range == key)
-        .map(|sub_span| {
-            let base = mapping.authored_base();
-            sub_span.src_range.start + base..sub_span.src_range.end + base
+    authenticate_component_literal_key(source, generated, row.0, row.1, mapping.authored_base())
+        .is_some_and(|key| {
+            generated_start == key.generated.start && generated_end <= key.generated.end
         })
-    else {
-        return false;
-    };
-    is_authored_attribute_key(source, authored)
 }
 
 fn narrowest_row(
@@ -93,76 +72,6 @@ fn narrowest_row(
         .filter(|row| row.span.gen_range.contains(&generated))
         .min_by_key(|row| row.span.gen_range.len())
         .map(|row| (row.span, row.meta.features))
-}
-
-/// Length of an emitted quoted property key, including both quotes.
-fn quoted_key_length(entry: &str) -> Option<usize> {
-    let bytes = entry.as_bytes();
-    if bytes.first() != Some(&b'"') {
-        return None;
-    }
-    let mut escaped = false;
-    for (index, byte) in bytes.iter().copied().enumerate().skip(1) {
-        if escaped {
-            escaped = false;
-            continue;
-        }
-        match byte {
-            b'\\' => escaped = true,
-            b'"' if entry
-                .get(index + 1..)
-                .is_some_and(|tail| tail.starts_with(": ")) =>
-            {
-                return Some(index + 1);
-            }
-            _ => {}
-        }
-    }
-    None
-}
-
-fn is_authored_attribute_key(source: &str, key: std::ops::Range<usize>) -> bool {
-    let Some(token) = source.get(key.clone()) else {
-        return false;
-    };
-    if token.is_empty()
-        || token.bytes().any(|byte| {
-            byte.is_ascii_whitespace() || matches!(byte, b'"' | b'\'' | b'<' | b'>' | b'=')
-        })
-    {
-        return false;
-    }
-    let Some(before) = source.get(..key.start) else {
-        return false;
-    };
-    let Some(tag_start) = before.rfind('<') else {
-        return false;
-    };
-    if before.rfind('>').is_some_and(|end| end > tag_start) {
-        return false;
-    }
-    let Some(tag_head) = source.get(tag_start + 1..key.start) else {
-        return false;
-    };
-    if tag_head.starts_with(['/', '!', '?']) || !ends_outside_quotes(tag_head) {
-        return false;
-    }
-    source.get(key.end..).is_some_and(|after| {
-        after.is_empty() || after.starts_with(['=', '.', ' ', '\t', '\r', '\n', '/', '>'])
-    })
-}
-
-fn ends_outside_quotes(tag_head: &str) -> bool {
-    let mut quote = None;
-    for byte in tag_head.bytes() {
-        match quote {
-            Some(open) if byte == open => quote = None,
-            Some(_) => {}
-            None if matches!(byte, b'"' | b'\'') => quote = Some(byte),
-            None => {}
-        }
-    }
-    quote.is_none()
 }
 
 #[cfg(test)]
