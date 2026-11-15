@@ -108,7 +108,10 @@ const version = __APP_VERSION__;
 "#,
     );
 
-    assert_clean(&lint(project.path(), &runtime, "src/App.vue"), "src/App.vue");
+    assert_clean(
+        &lint(project.path(), &runtime, "src/App.vue"),
+        "src/App.vue",
+    );
 
     write(project.path(), "tsconfig.json", r#"{"files":[]}"#);
     write(
@@ -116,7 +119,10 @@ const version = __APP_VERSION__;
         "lint.json",
         r#"{"vue":{"typeChecker":{"tsconfig":"tsconfig.app.json"},"linter":{"preset":"incremental","typeAware":true,"rules":{"type/no-unsafe-template-binding":"warn"}}}}"#,
     );
-    assert_clean(&lint(project.path(), &runtime, "src/App.vue"), "src/App.vue");
+    assert_clean(
+        &lint(project.path(), &runtime, "src/App.vue"),
+        "src/App.vue",
+    );
 }
 
 #[test]
@@ -187,7 +193,10 @@ const result = unsafeValue.run();
 "#,
     );
 
-    assert_clean(&lint(project.path(), &runtime, "src/Use.vue"), "src/Use.vue");
+    assert_clean(
+        &lint(project.path(), &runtime, "src/Use.vue"),
+        "src/Use.vue",
+    );
 
     let unsafe_output = lint(project.path(), &runtime, "src/Unsafe.vue");
     assert_eq!(

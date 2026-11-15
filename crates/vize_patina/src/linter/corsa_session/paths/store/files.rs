@@ -167,7 +167,11 @@ mod tests {
             "tsconfig.json",
             r#"{"include":["src/**/*.ts"],"exclude":["src/excluded.ts"]}"#,
         );
-        write(root.path(), "src/env.d.ts", "declare const build: string;\n");
+        write(
+            root.path(),
+            "src/env.d.ts",
+            "declare const build: string;\n",
+        );
         write(
             root.path(),
             "src/augment.ts",
