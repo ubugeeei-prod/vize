@@ -1,9 +1,7 @@
 name: Inspect sharded type-aware evidence
 
 on:
-  push:
-    branches:
-      - bench/no-implied-eval-sharded-13000
+  workflow_dispatch:
 
 permissions:
   actions: read

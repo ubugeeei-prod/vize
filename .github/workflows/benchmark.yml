@@ -1,6 +1,9 @@
 name: Benchmark
 
 on:
+  push:
+    branches:
+      - bench/no-implied-eval-sharded-13000
   schedule:
     - cron: "29 5 * * 2"
   # Dispatch records its head SHA from --ref, so validation rejects mismatches.
@@ -40,7 +43,7 @@ env:
   CARGO_TERM_COLOR: always
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   BENCHMARK_BASE_SHA: ${{ github.event_name == 'push' && '8a663701c0c8baa8a9be4a9912b0b4aaabbb097e' || github.event_name == 'schedule' && 'cea92c7994b4b84c1e42ed74c023b17c0c54090d' || github.event_name == 'workflow_dispatch' && inputs.base_sha || github.event.pull_request.base.sha }}
-  BENCHMARK_HEAD_SHA: ${{ github.event_name == 'push' && '526953edb9e739570414ace91154440d2012b760' || github.event_name == 'schedule' && github.sha || github.event_name == 'workflow_dispatch' && inputs.head_sha || github.event.pull_request.head.sha }}
+  BENCHMARK_HEAD_SHA: ${{ github.event_name == 'push' && '2ee046c4bbad27164e53a830c98b171c8f1e397d' || github.event_name == 'schedule' && github.sha || github.event_name == 'workflow_dispatch' && inputs.head_sha || github.event.pull_request.head.sha }}
   # Keep the fastest lane above the runner's noise floor (#1411).
   VIZE_BENCH_FILE_COUNT: 1000
   VIZE_BENCH_RUNS: 10
