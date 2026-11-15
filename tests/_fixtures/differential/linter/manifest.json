@@ -4492,6 +4492,37 @@
       }
     },
     {
+      "id": "linter/no-unsafe-enum-assignment-12994",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "no-unsafe-enum-assignment-12994",
+        "files": [
+          {
+            "path": "Matrix.vue.txt",
+            "role": "qualified-enum-regression-matrix-and-controls",
+            "sha256": "0107f03e3aa033307581d8b5769ee0e3628bf197af3a03de67c712a27fa3c24d"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "ts"
+            ],
+            "selector": "exact Rust diagnostic-packet test"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/no-unused-emit-wrappers-12597",
       "state": "active",
       "targets": [

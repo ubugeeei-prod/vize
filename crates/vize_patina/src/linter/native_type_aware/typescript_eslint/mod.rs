@@ -115,6 +115,11 @@ pub(super) fn evaluate(
         .flatten()
         .collect::<FxHashSet<_>>();
     listeners.insert("VariableDeclarator");
+    if corsa_rules.contains(&"no-unsafe-enum-assignment") {
+        // The upstream rule also listens to computed member access. Corsa's
+        // compact listener is supplemented by the paired checker relation.
+        listeners.insert("MemberExpression");
+    }
     if wants.empty_object() {
         listeners.extend(gaps::EMPTY_OBJECT_LISTENERS);
     }
@@ -267,10 +272,10 @@ pub(super) fn evaluate(
         for gap in gaps::reports(&collected) {
             let start = script.offset.saturating_add(gap.start);
             let end = script.offset.saturating_add(gap.end);
-            if seen.insert((gap.rule, start, end, gap.message.into())) {
+            if seen.insert((gap.rule, start, end, gap.message.clone())) {
                 push_warning(
                     result,
-                    LintDiagnostic::warn(gap.rule, gap.message, start, end),
+                    LintDiagnostic::warn(gap.rule, gap.message.as_str(), start, end),
                 );
             }
         }

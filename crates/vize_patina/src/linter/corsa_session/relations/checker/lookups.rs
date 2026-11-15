@@ -39,11 +39,17 @@ impl Checker<'_> {
         &mut self,
         symbol: &SymbolResponse,
     ) -> Option<TypeResponse> {
-        self.session
+        if let Some(ty) = self.symbol_types.get(&symbol.id) {
+            return ty.clone();
+        }
+        let ty = self
+            .session
             .get_type_of_symbol(symbol.id.clone())
             .await
             .ok()
-            .flatten()
+            .flatten();
+        self.symbol_types.insert(symbol.id.clone(), ty.clone());
+        ty
     }
 
     pub(in super::super) async fn signatures(

@@ -1,10 +1,11 @@
 //! The typescript-eslint check corsa does not ship.
 use super::tree::Collected;
 use corsa::lint::LintNode;
+use vize_l0::String as CompactString;
 
 pub(super) struct Gap {
     pub rule: &'static str,
-    pub message: &'static str,
+    pub message: CompactString,
     pub start: u32,
     pub end: u32,
 }
@@ -18,6 +19,7 @@ pub(super) fn reports(collected: &Collected) -> Vec<Gap> {
         if let Some(gap) = generated_empty(node) {
             gaps.push(gap);
         }
+        unsafe_enums(node, &mut gaps);
     }
     gaps
 }
@@ -41,8 +43,44 @@ fn generated_empty(node: &LintNode) -> Option<Gap> {
     }
     Some(Gap {
         rule: "type/no-generated-empty-object-type",
-        message: "This type resolves to `{}`, the empty object type. This was likely not intentional.",
+        message:
+            "This type resolves to `{}`, the empty object type. This was likely not intentional."
+                .into(),
         start: node.range.start,
         end: node.range.end,
     })
+}
+
+fn unsafe_enums(node: &LintNode, gaps: &mut Vec<Gap>) {
+    for report in node
+        .fields
+        .get("__unsafeEnumReports")
+        .and_then(serde_json::Value::as_array)
+        .into_iter()
+        .flatten()
+    {
+        let Some(start) = report
+            .get("start")
+            .and_then(serde_json::Value::as_u64)
+            .and_then(|value| u32::try_from(value).ok())
+        else {
+            continue;
+        };
+        let Some(end) = report
+            .get("end")
+            .and_then(serde_json::Value::as_u64)
+            .and_then(|value| u32::try_from(value).ok())
+        else {
+            continue;
+        };
+        let Some(message) = report.get("message").and_then(serde_json::Value::as_str) else {
+            continue;
+        };
+        gaps.push(Gap {
+            rule: "type/no-unsafe-enum-assignment",
+            message: CompactString::from(message),
+            start,
+            end,
+        });
+    }
 }

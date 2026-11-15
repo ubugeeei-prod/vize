@@ -15,8 +15,9 @@ pub(in crate::linter) use expression_facts::{
     ComputedMemberQuery, ExpressionFact, ExpressionQuery, Facets, HeritageQuery, PathStep, detail,
 };
 pub(in crate::linter) use relations::{
-    AssertionAsk, AssertionContext, ContextSource, DeprecationAsk, DeprecationKind, Literal,
-    NonNullAsk, PropertyContext, RelationReply, RelationRequest, ReturnAsk, Shape, Span,
+    AssertionAsk, AssertionContext, ContextSource, DeprecationAsk, DeprecationKind,
+    EnumCallArgument, EnumCallAsk, EnumCheckAsk, EnumMismatch, EnumReceiver, HeritageSource,
+    Literal, NonNullAsk, PropertyContext, RelationReply, RelationRequest, ReturnAsk, Shape, Span,
     flags as type_flags,
 };
 pub(in crate::linter) use type_shape::{PredicateRequest, ShapeRequest};
