@@ -440,10 +440,14 @@ fn catalog_prevents_old_descriptor_split_during_bounded_eviction() {
             .count(),
         super::CACHE_LIMIT
     );
-    assert!(
+    assert_eq!(
         entries
             .iter()
-            .any(|path| path.ends_with(super::CATALOG_LEASE))
+            .filter(|path| path
+                .file_name()
+                .is_some_and(|name| name == super::CATALOG_LEASE))
+            .count(),
+        1
     );
 }
 
