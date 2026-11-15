@@ -30,7 +30,6 @@ fn require_typed_props_uses_corsa() {
     if !corsa_available() {
         return;
     }
-
     let linter = Linter::with_preset(LintPreset::Opinionated);
     let source = r#"<script setup lang="ts">
 defineProps(['msg', 'count'])
