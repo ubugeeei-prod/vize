@@ -155,8 +155,7 @@ export function smokeReleaseInstall(argv: readonly string[]): number {
       installable,
       options.runtimeChecks || options.contentMapperChecks,
     );
-    if (options.runtimeChecks)
-      runRuntimeChecks(install, installable, packages, temporary, "node", options.bunRuntimeChecks);
+    if (options.runtimeChecks) runRuntimeChecks(install, installable, packages, temporary, "node");
     if (options.bunRuntimeChecks) {
       const bunInstall = installPackedPackages(temporary, installable, true, "bun");
       // Compare the runtimes against one immutable dependency graph.  The

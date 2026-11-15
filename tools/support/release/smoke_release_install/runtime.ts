@@ -303,6 +303,7 @@ export function runRuntimeChecks(
       runCommand(runtime, [vizeBin, "fmt", "src/Format.vue", "--write", "--no-config"], installDir);
       observations.format = fs.readFileSync(path.join(installDir, "src/Format.vue"), "utf8");
       console.log(`${runtimePrefix}: vize fmt`);
+      fs.rmSync(path.join(installDir, "vize-build"), { force: true, recursive: true });
       runCommand(
         runtime,
         [vizeBin, "build", "src/App.vue", "--output", "vize-build", "--no-config"],

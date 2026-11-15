@@ -12,7 +12,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../.
 const smokeCommand = path.join(root, "tools/commands/release/npm/smoke-release-install.ts");
 
 test("Bun install and Node/Bun parity execute through the configured runtime", () => {
-  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-bun-runtime-smoke-test-"));
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize bun runtime smoke test-"));
   try {
     const log = path.join(tempDir, "runtime.jsonl");
     const realNpm = resolvePathCommand("npm");
@@ -24,7 +24,7 @@ test("Bun install and Node/Bun parity execute through the configured runtime", (
       NPM_BIN: npmStub,
       NODE_OPTIONS:
         process.platform === "win32"
-          ? [process.env.NODE_OPTIONS, `--require=${path.join(tempDir, "bun-runtime-hook.cjs")}`]
+          ? [process.env.NODE_OPTIONS, `--require="${path.join(tempDir, "bun-runtime-hook.cjs")}"`]
               .filter(Boolean)
               .join(" ")
           : process.env.NODE_OPTIONS,
