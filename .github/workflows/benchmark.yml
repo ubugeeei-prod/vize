@@ -15,7 +15,7 @@ on:
         required: true
         type: string
       patina_project_batch:
-        description: Measure the frozen 1210-file type-aware project batch and exact RPC counts
+        description: Measure the frozen 1210-file type-aware project batch in deterministic shards
         required: false
         default: false
         type: boolean
@@ -356,7 +356,7 @@ jobs:
             patina-project-batch/*.jsonl
             patina-project-batch/*.stdout
             patina-project-batch/*.stderr
-            patina-project-batch/*.rss.txt
+            patina-project-batch/*.resource.txt
             patina-project-batch/summary.md
             patina-project-batch/dependency-install.log
           if-no-files-found: error
