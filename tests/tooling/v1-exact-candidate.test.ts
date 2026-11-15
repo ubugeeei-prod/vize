@@ -20,10 +20,7 @@ function hash(value: string): string {
   return createHash("sha256").update(value).digest("hex");
 }
 
-function receipt(
-  id: string,
-  overrides: Partial<V1ExactCandidateReceipt>,
-): V1ExactCandidateReceipt {
+function receipt(id: string, overrides: Partial<V1ExactCandidateReceipt>): V1ExactCandidateReceipt {
   return {
     schema: V1_EXACT_CANDIDATE_RECEIPT_SCHEMA,
     id,

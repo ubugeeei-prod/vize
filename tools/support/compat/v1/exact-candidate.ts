@@ -7,8 +7,7 @@ const SHA256 = /^[0-9a-f]{64}$/u;
 const SOURCE_SHA = /^[0-9a-f]{40}$/u;
 const RECEIPT_ID = /^[a-z0-9][a-z0-9._:/@+-]*$/u;
 
-export const V1_EXACT_CANDIDATE_RECEIPT_SCHEMA =
-  "vize.v1-exact-candidate-receipt.v1" as const;
+export const V1_EXACT_CANDIDATE_RECEIPT_SCHEMA = "vize.v1-exact-candidate-receipt.v1" as const;
 export const V1_EXACT_CANDIDATE_BUNDLE_SCHEMA =
   "vize.v1-exact-candidate-receipt-bundle.v1" as const;
 export const V1_EXACT_CANDIDATE_HOST_ADMISSION_SCHEMA =
@@ -247,15 +246,17 @@ function admitRow(
       receipt.classification === "qualification-set" && receipt.source === candidateSource,
   );
   const missingQualification = requiredQualificationSets(matrix, row).flatMap((set) =>
-    expectedQualificationEnvironments(matrix, set).filter(
-      (environment) =>
-        !qualification.some(
-          (receipt) =>
-            receipt.qualificationSet === set &&
-            receipt.environment === environment &&
-            receipt.outcome === "passed",
-        ),
-    ).map((environment) => `${set}/${environment}`),
+    expectedQualificationEnvironments(matrix, set)
+      .filter(
+        (environment) =>
+          !qualification.some(
+            (receipt) =>
+              receipt.qualificationSet === set &&
+              receipt.environment === environment &&
+              receipt.outcome === "passed",
+          ),
+      )
+      .map((environment) => `${set}/${environment}`),
   );
   const qualificationEvidence = qualification.filter((receipt) =>
     requiredQualificationSets(matrix, row).some(
@@ -365,7 +366,10 @@ export function admitV1ExactCandidate(
       rows.set(row.id, row);
     }
   }
-  assert.deepEqual([...hostIds].toSorted(compareText), expectedHosts.map(({ id }) => id));
+  assert.deepEqual(
+    [...hostIds].toSorted(compareText),
+    expectedHosts.map(({ id }) => id),
+  );
   assert.deepEqual(
     [...rows.keys()].toSorted(compareText),
     matrix.requiredRows.map(({ id }) => id).toSorted(compareText),
@@ -391,11 +395,7 @@ export function admitV1ExactCandidate(
       candidateSource,
       hostPlans: expectedHosts.length,
       receiptDigest: createHash("sha256")
-        .update(
-          JSON.stringify(
-            requiredRows.map(({ id, evidence }) => [id, evidence]),
-          ),
-        )
+        .update(JSON.stringify(requiredRows.map(({ id, evidence }) => [id, evidence])))
         .digest("hex"),
     },
     requiredRows,
