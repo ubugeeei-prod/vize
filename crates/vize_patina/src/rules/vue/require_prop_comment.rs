@@ -14,6 +14,7 @@ use oxc_ast::ast::{
 };
 use oxc_ast_visit::{Visit, walk};
 use oxc_span::{GetSpan, Span};
+use std::collections::{HashMap, HashSet};
 use vize_l0::{String, cstr};
 
 static META: RuleMeta = RuleMeta {
@@ -73,14 +74,18 @@ struct ScriptBlock<'a> {
 
 fn collect_blocks(blocks: &[ScriptBlock<'_>]) -> Vec<(String, u32, u32)> {
     let mut findings = Vec::new();
+    let mut resolver = TypeResolver::new(blocks);
     for (current, current_block) in blocks.iter().enumerate() {
-        let mut visitor = PropVisitor {
-            blocks,
-            current,
-            props: Vec::new(),
+        let props = {
+            let mut visitor = PropVisitor {
+                resolver: &mut resolver,
+                current,
+                props: Vec::new(),
+            };
+            visitor.visit_program(current_block.program);
+            visitor.props
         };
-        visitor.visit_program(current_block.program);
-        findings.extend(visitor.props.into_iter().filter_map(|prop| {
+        findings.extend(props.into_iter().filter_map(|prop| {
             let block = blocks.get(prop.block)?;
             if has_jsdoc(block.source, &block.program.comments, prop.anchor) {
                 return None;
@@ -98,6 +103,7 @@ fn collect_blocks(blocks: &[ScriptBlock<'_>]) -> Vec<(String, u32, u32)> {
     findings
 }
 
+#[derive(Clone)]
 struct Prop {
     name: String,
     span: Span,
@@ -105,13 +111,13 @@ struct Prop {
     block: usize,
 }
 
-struct PropVisitor<'ctx, 'ast> {
-    blocks: &'ctx [ScriptBlock<'ast>],
+struct PropVisitor<'resolver, 'ctx, 'ast> {
+    resolver: &'resolver mut TypeResolver<'ctx, 'ast>,
     current: usize,
     props: Vec<Prop>,
 }
 
-impl<'ctx, 'ast> Visit<'ast> for PropVisitor<'ctx, 'ast> {
+impl<'resolver, 'ctx, 'ast> Visit<'ast> for PropVisitor<'resolver, 'ctx, 'ast> {
     fn visit_call_expression(&mut self, call: &CallExpression<'ast>) {
         match callee_name(&call.callee) {
             Some("defineProps") => self.define_props(call),
@@ -132,12 +138,12 @@ impl<'ctx, 'ast> Visit<'ast> for PropVisitor<'ctx, 'ast> {
     }
 }
 
-impl<'ctx, 'ast> PropVisitor<'ctx, 'ast> {
+impl<'resolver, 'ctx, 'ast> PropVisitor<'resolver, 'ctx, 'ast> {
     fn define_props(&mut self, call: &CallExpression<'ast>) {
         if let Some(types) = &call.type_arguments
             && let Some(ty) = types.params.first()
         {
-            if let Some(props) = self.props_from_type(ty, 16, self.current) {
+            if let Some(props) = self.resolver.props_from_type(ty, 16, self.current) {
                 self.extend_props(props);
             }
             return;
@@ -205,130 +211,6 @@ impl<'ctx, 'ast> PropVisitor<'ctx, 'ast> {
         }
     }
 
-    fn props_from_type(&self, ty: &TSType<'ast>, depth: u8, block: usize) -> Option<Vec<Prop>> {
-        if depth == 0 {
-            return None;
-        }
-        match ty {
-            TSType::TSTypeLiteral(literal) => Some(self.members(&literal.members, block)),
-            TSType::TSIntersectionType(intersection) => Some(
-                intersection
-                    .types
-                    .iter()
-                    .filter_map(|ty| self.props_from_type(ty, depth - 1, block))
-                    .flatten()
-                    .collect(),
-            ),
-            TSType::TSUnionType(union) => Some(
-                union
-                    .types
-                    .iter()
-                    .filter_map(|ty| self.props_from_type(ty, depth - 1, block))
-                    .flatten()
-                    .collect(),
-            ),
-            TSType::TSParenthesizedType(inner) => {
-                self.props_from_type(&inner.type_annotation, depth - 1, block)
-            }
-            TSType::TSTypeReference(reference) => {
-                let TSTypeName::IdentifierReference(identifier) = &reference.type_name else {
-                    return None;
-                };
-                self.lookup(identifier.name.as_str(), depth - 1, block)
-            }
-            _ => None,
-        }
-    }
-
-    fn members(&self, members: &[TSSignature<'ast>], block: usize) -> Vec<Prop> {
-        let mut props = Vec::new();
-        for member in members {
-            match member {
-                TSSignature::TSPropertySignature(signature) => {
-                    if let Some(prop) = named(&signature.key, signature.span.start, block) {
-                        props.push(prop);
-                    }
-                }
-                TSSignature::TSMethodSignature(signature) => {
-                    if let Some(prop) = named(&signature.key, signature.span.start, block) {
-                        props.push(prop);
-                    }
-                }
-                _ => {}
-            }
-        }
-        props
-    }
-
-    fn lookup(&self, name: &str, depth: u8, origin: usize) -> Option<Vec<Prop>> {
-        for block in (0..self.blocks.len()).map(|index| (origin + index) % self.blocks.len()) {
-            let Some(script_block) = self.blocks.get(block) else {
-                continue;
-            };
-            for statement in &script_block.program.body {
-                if let Some(props) = self.declaration_props(statement, name, depth, block) {
-                    return Some(props);
-                }
-            }
-        }
-        None
-    }
-
-    fn declaration_props(
-        &self,
-        statement: &Statement<'ast>,
-        name: &str,
-        depth: u8,
-        block: usize,
-    ) -> Option<Vec<Prop>> {
-        match statement {
-            Statement::TSInterfaceDeclaration(interface) if interface.id.name == name => {
-                Some(self.interface_props(interface, depth, block))
-            }
-            Statement::TSTypeAliasDeclaration(alias) if alias.id.name == name => {
-                self.props_from_type(&alias.type_annotation, depth, block)
-            }
-            Statement::ExportNamedDeclaration(export) => {
-                export
-                    .declaration
-                    .as_ref()
-                    .and_then(|declaration| match declaration {
-                        Declaration::TSInterfaceDeclaration(interface)
-                            if interface.id.name == name =>
-                        {
-                            Some(self.interface_props(interface, depth, block))
-                        }
-                        Declaration::TSTypeAliasDeclaration(alias) if alias.id.name == name => {
-                            self.props_from_type(&alias.type_annotation, depth, block)
-                        }
-                        _ => None,
-                    })
-            }
-            _ => None,
-        }
-    }
-
-    fn interface_props(
-        &self,
-        interface: &oxc_ast::ast::TSInterfaceDeclaration<'ast>,
-        depth: u8,
-        block: usize,
-    ) -> Vec<Prop> {
-        let mut props = self.members(&interface.body.body, block);
-        if depth == 0 {
-            return props;
-        }
-        for heritage in &interface.extends {
-            let Expression::Identifier(identifier) = &heritage.expression else {
-                continue;
-            };
-            if let Some(inherited) = self.lookup(identifier.name.as_str(), depth - 1, block) {
-                props.extend(inherited);
-            }
-        }
-        props
-    }
-
     fn extend_props(&mut self, props: Vec<Prop>) {
         for prop in props {
             self.note(&prop.name, prop.span, prop.anchor, prop.block);
@@ -356,6 +238,212 @@ impl<'ctx, 'ast> PropVisitor<'ctx, 'ast> {
             anchor,
             block,
         });
+    }
+}
+
+#[derive(Clone, Copy)]
+enum LocalTypeDeclaration<'ast> {
+    Interface(usize, &'ast oxc_ast::ast::TSInterfaceDeclaration<'ast>),
+    Alias(usize, &'ast oxc_ast::ast::TSTypeAliasDeclaration<'ast>),
+}
+
+impl LocalTypeDeclaration<'_> {
+    fn block(self) -> usize {
+        match self {
+            Self::Interface(block, _) | Self::Alias(block, _) => block,
+        }
+    }
+}
+
+struct TypeResolver<'ctx, 'ast> {
+    blocks: &'ctx [ScriptBlock<'ast>],
+    declarations: HashMap<String, Vec<LocalTypeDeclaration<'ast>>>,
+    cache: HashMap<(usize, String, u8), Option<Vec<Prop>>>,
+    visiting: HashSet<(usize, String)>,
+    cycle_hits: usize,
+}
+
+impl<'ctx, 'ast> TypeResolver<'ctx, 'ast> {
+    fn new(blocks: &'ctx [ScriptBlock<'ast>]) -> Self {
+        let mut declarations: HashMap<String, Vec<LocalTypeDeclaration<'ast>>> = HashMap::new();
+        for (block, script) in blocks.iter().enumerate() {
+            for statement in &script.program.body {
+                let declaration = match statement {
+                    Statement::TSInterfaceDeclaration(interface) => Some((
+                        interface.id.name.as_str(),
+                        LocalTypeDeclaration::Interface(block, interface),
+                    )),
+                    Statement::TSTypeAliasDeclaration(alias) => Some((
+                        alias.id.name.as_str(),
+                        LocalTypeDeclaration::Alias(block, alias),
+                    )),
+                    Statement::ExportNamedDeclaration(export) => export
+                        .declaration
+                        .as_ref()
+                        .and_then(|declaration| match declaration {
+                            Declaration::TSInterfaceDeclaration(interface) => Some((
+                                interface.id.name.as_str(),
+                                LocalTypeDeclaration::Interface(block, interface),
+                            )),
+                            Declaration::TSTypeAliasDeclaration(alias) => Some((
+                                alias.id.name.as_str(),
+                                LocalTypeDeclaration::Alias(block, alias),
+                            )),
+                            _ => None,
+                        }),
+                    _ => None,
+                };
+                if let Some((name, declaration)) = declaration {
+                    declarations
+                        .entry(String::from(name))
+                        .or_default()
+                        .push(declaration);
+                }
+            }
+        }
+        Self {
+            blocks,
+            declarations,
+            cache: HashMap::new(),
+            visiting: HashSet::new(),
+            cycle_hits: 0,
+        }
+    }
+
+    fn props_from_type(&mut self, ty: &TSType<'ast>, depth: u8, block: usize) -> Option<Vec<Prop>> {
+        if depth == 0 {
+            return None;
+        }
+        match ty {
+            TSType::TSTypeLiteral(literal) => Some(self.members(&literal.members, block)),
+            TSType::TSIntersectionType(intersection) => {
+                Some(self.composite_props(&intersection.types, depth - 1, block))
+            }
+            TSType::TSUnionType(union) => {
+                Some(self.composite_props(&union.types, depth - 1, block))
+            }
+            TSType::TSParenthesizedType(inner) => {
+                self.props_from_type(&inner.type_annotation, depth - 1, block)
+            }
+            TSType::TSTypeReference(reference) => {
+                let TSTypeName::IdentifierReference(identifier) = &reference.type_name else {
+                    return None;
+                };
+                self.lookup(identifier.name.as_str(), depth - 1, block)
+            }
+            _ => None,
+        }
+    }
+
+    fn composite_props(&mut self, types: &[TSType<'ast>], depth: u8, block: usize) -> Vec<Prop> {
+        let mut props = Vec::new();
+        for ty in types {
+            if let Some(found) = self.props_from_type(ty, depth, block) {
+                extend_unique(&mut props, found);
+            }
+        }
+        props
+    }
+
+    fn members(&self, members: &[TSSignature<'ast>], block: usize) -> Vec<Prop> {
+        let mut props = Vec::new();
+        for member in members {
+            match member {
+                TSSignature::TSPropertySignature(signature) => {
+                    if let Some(prop) = named(&signature.key, signature.span.start, block) {
+                        props.push(prop);
+                    }
+                }
+                TSSignature::TSMethodSignature(signature) => {
+                    if let Some(prop) = named(&signature.key, signature.span.start, block) {
+                        props.push(prop);
+                    }
+                }
+                _ => {}
+            }
+        }
+        props
+    }
+
+    fn lookup(&mut self, name: &str, depth: u8, origin: usize) -> Option<Vec<Prop>> {
+        let key = (origin, String::from(name), depth);
+        if let Some(cached) = self.cache.get(&key) {
+            return cached.clone();
+        }
+        let visiting = (origin, String::from(name));
+        if !self.visiting.insert(visiting.clone()) {
+            self.cycle_hits += 1;
+            return Some(Vec::new());
+        }
+        let cycle_hits = self.cycle_hits;
+        let candidates = self.declarations.get(name);
+        let mut declaration = None;
+        for block in (0..self.blocks.len()).map(|index| (origin + index) % self.blocks.len()) {
+            if let Some(candidate) = candidates
+                .and_then(|entries| entries.iter().find(|entry| entry.block() == block))
+                .copied()
+            {
+                declaration = Some(candidate);
+                break;
+            }
+        }
+        let result = declaration.map(|declaration| self.declaration_props(declaration, depth));
+        self.visiting.remove(&visiting);
+        // A cycle cut is path-dependent. Caching the partial result would make
+        // a later lookup incorrectly inherit whichever edge happened to be
+        // active first, so only memoize fully acyclic expansions.
+        if self.cycle_hits == cycle_hits {
+            self.cache.insert(key, result.clone());
+        }
+        result
+    }
+
+    fn declaration_props(
+        &mut self,
+        declaration: LocalTypeDeclaration<'ast>,
+        depth: u8,
+    ) -> Vec<Prop> {
+        match declaration {
+            LocalTypeDeclaration::Interface(block, interface) => {
+                self.interface_props(interface, depth, block)
+            }
+            LocalTypeDeclaration::Alias(block, alias) => self
+                .props_from_type(&alias.type_annotation, depth, block)
+                .unwrap_or_default(),
+        }
+    }
+
+    fn interface_props(
+        &mut self,
+        interface: &oxc_ast::ast::TSInterfaceDeclaration<'ast>,
+        depth: u8,
+        block: usize,
+    ) -> Vec<Prop> {
+        let mut props = self.members(&interface.body.body, block);
+        if depth == 0 {
+            return props;
+        }
+        for heritage in &interface.extends {
+            let Expression::Identifier(identifier) = &heritage.expression else {
+                continue;
+            };
+            if let Some(inherited) = self.lookup(identifier.name.as_str(), depth - 1, block) {
+                extend_unique(&mut props, inherited);
+            }
+        }
+        props
+    }
+}
+
+fn extend_unique(props: &mut Vec<Prop>, incoming: Vec<Prop>) {
+    for prop in incoming {
+        if props
+            .iter()
+            .any(|existing| existing.block == prop.block && existing.span == prop.span)
+        {
+            continue;
+        }
+        props.push(prop);
     }
 }
 

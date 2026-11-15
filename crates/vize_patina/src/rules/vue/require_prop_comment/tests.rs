@@ -1,5 +1,10 @@
 use crate::linter::Linter;
 use crate::preset::LintPreset;
+use oxc_allocator::Allocator;
+use oxc_parser::Parser;
+use oxc_span::SourceType;
+
+use super::{ScriptBlock, TypeResolver};
 
 fn messages(source: &str) -> Vec<(u32, String)> {
     Linter::with_preset(LintPreset::Incremental)
@@ -129,5 +134,69 @@ defineProps<Props>();
             source.find("setupOnly: string").unwrap() as u32,
             "The \"setupOnly\" property should have a JSDoc comment.".into(),
         )]
+    );
+}
+
+#[test]
+fn repeated_alias_dags_and_cycles_resolve_each_authored_prop_once() {
+    let mut source = String::from(
+        r#"<script setup lang="ts">
+type P0 = { leaf: string };
+"#,
+    );
+    // Stay inside the rule's existing depth budget while still constructing
+    // the 64-path DAG that used to repeat the same leaf diagnostic.
+    for depth in 1..=6 {
+        source.push_str(&format!(
+            "type P{depth} = P{} & P{};\n",
+            depth - 1,
+            depth - 1
+        ));
+    }
+    source.push_str(
+        r#"interface CycleA extends CycleB { alpha: string }
+interface CycleB extends CycleA { beta: string }
+defineProps<P6 & CycleA>();
+</script>
+"#,
+    );
+    assert_eq!(
+        messages(&source)
+            .into_iter()
+            .map(|(_, message)| message)
+            .collect::<Vec<_>>(),
+        vec![
+            "The \"leaf\" property should have a JSDoc comment.",
+            "The \"alpha\" property should have a JSDoc comment.",
+            "The \"beta\" property should have a JSDoc comment.",
+        ]
+    );
+}
+
+#[test]
+fn cyclic_interface_expansions_are_independent_of_lookup_order() {
+    let allocator = Allocator::default();
+    let source = "interface CycleA extends CycleB { alpha: string }\ninterface CycleB extends CycleA { beta: string }";
+    let parsed = Parser::new(&allocator, source, SourceType::ts()).parse();
+    let blocks = [ScriptBlock {
+        program: &parsed.program,
+        source,
+        offset: 0,
+    }];
+    let mut resolver = TypeResolver::new(&blocks);
+    let names = |props: Vec<super::Prop>| {
+        props
+            .into_iter()
+            .map(|prop| prop.name.to_string())
+            .collect::<Vec<_>>()
+    };
+
+    assert_eq!(
+        names(resolver.lookup("CycleA", 16, 0).unwrap()),
+        ["alpha", "beta"]
+    );
+    assert_eq!(
+        names(resolver.lookup("CycleB", 16, 0).unwrap()),
+        ["beta", "alpha"]
     );
 }

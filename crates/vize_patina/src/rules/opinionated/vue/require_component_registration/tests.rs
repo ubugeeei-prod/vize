@@ -403,13 +403,13 @@ export default defineComponent({ name: "VarTreeMenuOption" });
 }
 
 #[test]
-fn options_api_filename_alone_does_not_register_the_component() {
+fn options_api_filename_allows_recursive_self_reference() {
     let result = create_linter().lint_sfc(
         r#"<template><x-icon /></template>
 <script>export default {}</script>"#,
         "XIcon.vue",
     );
-    assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
+    assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
 }
 
 #[test]
@@ -420,6 +420,21 @@ fn tsx_setup_values_are_visible_to_the_template() {
 const Row = ({ value }) => <div>{value}</div>;
 </script>"#,
         "DetailedView.vue",
+    );
+    assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
+}
+
+#[test]
+fn paired_plain_script_component_factories_are_visible_to_script_setup_templates() {
+    let result = create_linter().lint_sfc(
+        r#"<template><LogoContent /><logo-content /></template>
+<script setup lang="ts">const ready = true;</script>
+<script lang="ts">
+import { defineComponent } from "vue";
+const LogoContent = defineComponent({ setup: () => () => null });
+export { LogoContent };
+</script>"#,
+        "LogoLoop.vue",
     );
     assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
 }

@@ -6,8 +6,8 @@
 //! Vue feature for recursive components that needs no import.
 
 use oxc_ast::ast::{
-    Argument, ExportDefaultDeclarationKind, Expression, ObjectExpression, ObjectPropertyKind,
-    Program, PropertyKey, Statement,
+    Argument, BindingPattern, Declaration, ExportDefaultDeclarationKind, Expression,
+    ObjectExpression, ObjectPropertyKind, Program, PropertyKey, Statement, VariableDeclaration,
 };
 use vize_croquis::Croquis;
 use vize_croquis::macros::MacroKind;
@@ -51,6 +51,55 @@ pub(super) fn options_api_name<'a>(program: &'a Program<'_>) -> Option<&'a str> 
         return object_name(object);
     }
     None
+}
+
+/// Component factory bindings authored in the paired normal script live at
+/// module scope and are visible to the script-setup template compiler.
+pub(super) fn component_factory_bindings<'a>(program: &'a Program<'a>) -> Vec<&'a str> {
+    let mut bindings = Vec::new();
+    for statement in &program.body {
+        let declaration = match statement {
+            Statement::VariableDeclaration(declaration) => Some(declaration.as_ref()),
+            Statement::ExportNamedDeclaration(export) => {
+                export
+                    .declaration
+                    .as_ref()
+                    .and_then(|declaration| match declaration {
+                        Declaration::VariableDeclaration(declaration) => Some(declaration.as_ref()),
+                        _ => None,
+                    })
+            }
+            _ => None,
+        };
+        if let Some(declaration) = declaration {
+            component_variables(declaration, &mut bindings);
+        }
+    }
+    bindings
+}
+
+fn component_variables<'a>(declaration: &'a VariableDeclaration<'a>, bindings: &mut Vec<&'a str>) {
+    for declarator in &declaration.declarations {
+        let BindingPattern::BindingIdentifier(identifier) = &declarator.id else {
+            continue;
+        };
+        let Some(Expression::CallExpression(call)) = declarator
+            .init
+            .as_ref()
+            .map(Expression::get_inner_expression)
+        else {
+            continue;
+        };
+        let Expression::Identifier(callee) = call.callee.get_inner_expression() else {
+            continue;
+        };
+        if matches!(
+            callee.name.as_str(),
+            "defineComponent" | "defineNuxtComponent" | "defineAsyncComponent"
+        ) {
+            bindings.push(identifier.name.as_str());
+        }
+    }
 }
 
 fn argument_object<'a, 'alloc>(
@@ -147,7 +196,10 @@ fn options_name_property(args: &str) -> Option<&str> {
 
 #[cfg(test)]
 mod tests {
-    use super::{file_stem, options_name_property};
+    use super::{component_factory_bindings, file_stem, options_name_property};
+    use oxc_allocator::Allocator;
+    use oxc_parser::Parser;
+    use oxc_span::SourceType;
 
     #[test]
     fn extracts_name_property() {
@@ -178,5 +230,20 @@ mod tests {
         assert_eq!(file_stem("src/components/tree-item.vue"), "tree-item");
         assert_eq!(file_stem("App.vue"), "App");
         assert_eq!(file_stem(r"win\path\Item.vue"), "Item");
+    }
+
+    #[test]
+    fn indexes_only_top_level_component_factory_bindings() {
+        let allocator = Allocator::default();
+        let parsed = Parser::new(
+            &allocator,
+            "const Local = defineComponent({}); export const Async = defineAsyncComponent(load); const value = factory();",
+            SourceType::ts(),
+        )
+        .parse();
+        assert_eq!(
+            component_factory_bindings(&parsed.program),
+            vec!["Local", "Async"]
+        );
     }
 }

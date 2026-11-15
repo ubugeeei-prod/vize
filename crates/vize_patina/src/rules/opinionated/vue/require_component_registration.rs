@@ -40,7 +40,9 @@
 //! ```
 
 use self::async_setup::async_component_names;
-use self::self_name::{define_options_name, file_stem, options_api_name};
+use self::self_name::{
+    component_factory_bindings, define_options_name, file_stem, options_api_name,
+};
 use crate::context::LintContext;
 use crate::diagnostic::{LintDiagnostic, Severity};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
@@ -149,29 +151,21 @@ impl RequireComponentRegistration {
 
     /// Whether `tag` refers to the component itself.
     ///
-    /// A `<script setup>` component can reference itself by its
-    /// filename-derived name or by the name declared via
-    /// `defineOptions({ name })` — a documented Vue feature for recursive
-    /// components that needs no import (importing yourself is not possible
-    /// without an alias).
+    /// Vue derives a recursive self name from the filename for every SFC.
+    /// Script-setup components may also declare an alias through
+    /// `defineOptions({ name })`, and Options API components through `name`.
     fn is_self_reference(&self, ctx: &LintContext<'_>, tag: &str) -> bool {
-        let descriptor = ctx.sfc_descriptor();
-        let has_script_setup = descriptor.is_some_and(|sfc| sfc.script_setup.is_some());
-        let has_plain_script = descriptor.is_some_and(|sfc| sfc.script.is_some());
-        if has_script_setup || !has_plain_script {
-            let stem = file_stem(ctx.filename);
-            if !stem.is_empty()
-                && setup_name_matches(tag, capitalize(camelize(stem).as_str()).as_str())
-            {
-                return true;
-            }
-            if ctx
-                .analysis()
-                .and_then(define_options_name)
-                .is_some_and(|name| setup_name_matches(tag, name))
-            {
-                return true;
-            }
+        let stem = file_stem(ctx.filename);
+        if !stem.is_empty() && setup_name_matches(tag, capitalize(camelize(stem).as_str()).as_str())
+        {
+            return true;
+        }
+        if ctx
+            .analysis()
+            .and_then(define_options_name)
+            .is_some_and(|name| setup_name_matches(tag, name))
+        {
+            return true;
         }
         ctx.sfc_scripts()
             .and_then(|scripts| scripts.script())
@@ -260,6 +254,7 @@ impl Rule for RequireComponentRegistration {
         });
         if !uses_art_bindings {
             setup_bindings.extend(croquis_script_setup_bindings(ctx));
+            setup_bindings.extend(plain_script_component_bindings(ctx));
         }
 
         // Registration is project context, never a guess based on a tag prefix.
@@ -307,6 +302,24 @@ impl Rule for RequireComponentRegistration {
             }
         }
     }
+}
+
+fn plain_script_component_bindings(ctx: &LintContext<'_>) -> Vec<String> {
+    let paired_scripts = ctx
+        .sfc_descriptor()
+        .is_some_and(|descriptor| descriptor.script.is_some() && descriptor.script_setup.is_some());
+    if !paired_scripts {
+        return Vec::new();
+    }
+    ctx.sfc_scripts()
+        .and_then(|scripts| scripts.script())
+        .map(|parsed| {
+            component_factory_bindings(&parsed.program)
+                .into_iter()
+                .map(ToCompactString::to_compact_string)
+                .collect()
+        })
+        .unwrap_or_default()
 }
 
 fn croquis_script_setup_bindings(ctx: &LintContext<'_>) -> Vec<String> {
