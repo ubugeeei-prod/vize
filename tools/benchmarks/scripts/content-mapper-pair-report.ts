@@ -38,6 +38,7 @@ export type Cell = {
   serialFiles: number;
   replicates: number;
   orderSeed: number;
+  ordersPerReplicate: number;
   burstSamplesPerBuild: number;
   builds: BuildSummary[];
   outputsIdentical: boolean;
@@ -48,20 +49,23 @@ export type Cell = {
 export const PAIR_ORDER_SEED = 0x13018;
 
 /**
- * Return one order and its inverse. Each replicate therefore measures every
- * build once in every position, while the seed varies which order runs first.
+ * Two-build comparisons use AB+BA. Larger comparisons add every rotation and
+ * its inverse so each build occupies every position and relative order equally.
  */
 export function balancedOrders<T>(
   values: readonly T[],
   replicate: number,
   seed = PAIR_ORDER_SEED,
-): [T[], T[]] {
+): T[][] {
   let mixed = (seed + Math.imul(replicate + 1, 0x9e3779b9)) >>> 0;
   mixed ^= mixed >>> 16;
   mixed = Math.imul(mixed, 0x21f0aaad) >>> 0;
   mixed ^= mixed >>> 15;
   const first = (mixed & 1) === 0 ? [...values] : [...values].reverse();
-  return [first, [...first].reverse()];
+  if (first.length <= 2) return [first, [...first].reverse()];
+  const rotations = (order: readonly T[]) =>
+    order.map((_, offset) => [...order.slice(offset), ...order.slice(0, offset)]);
+  return [...rotations(first), ...rotations([...first].reverse())];
 }
 
 /** One JSON-RPC message with its `Content-Length` header. */
@@ -153,6 +157,8 @@ export function summarizeCell(input: {
     serialFiles: input.serialFiles,
     replicates: input.replicates,
     orderSeed: input.orderSeed ?? PAIR_ORDER_SEED,
+    ordersPerReplicate:
+      (input.bursts.get(input.builds[0] ?? "")?.length ?? 0) / input.replicates,
     burstSamplesPerBuild: input.bursts.get(input.builds[0] ?? "")?.length ?? 0,
     builds,
     outputsIdentical,
@@ -172,9 +178,13 @@ const delta = (value: number | undefined, base: number | undefined): string =>
 export function markdown(label: string, cells: readonly Cell[]): string {
   const lines = [`### Content mapper pair: ${label}`, ""];
   for (const cell of cells) {
+    const schedule =
+      cell.ordersPerReplicate === 2
+        ? "AB+BA"
+        : `${cell.ordersPerReplicate} position-balanced orders`;
     lines.push(
       `**${cell.sfcs} SFCs**, ${cell.replicates} balanced replicates ` +
-        `(AB+BA, seed 0x${cell.orderSeed.toString(16)}): ` +
+        `(${schedule}, seed 0x${cell.orderSeed.toString(16)}): ` +
         `${cell.burstSamplesPerBuild} burst samples/build; ` +
         `${cell.builds[0]?.serialSessions ?? 0} serial sessions/build × ${cell.serialFiles} transforms ` +
         `= ${cell.builds[0]?.serialRawSamples ?? 0} raw latency samples/build. ` +

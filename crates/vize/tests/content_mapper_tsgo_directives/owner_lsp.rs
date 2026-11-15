@@ -87,6 +87,7 @@ fn run_session(
     let editor = rpc::EditorResponder::default();
     let transcript = Mutex::new(Vec::<Value>::new());
     let responder_failures = Mutex::new(Vec::<String>::new());
+    let response_phase = Mutex::new(());
     std::thread::scope(|scope| {
         let _stop = rpc::StopOnDrop(&stop);
         corsa::runtime::block_on(async {
@@ -104,6 +105,7 @@ fn run_session(
             let editor_ref = &editor;
             let log = &transcript;
             let response_failures = &responder_failures;
+            let response_phase_ref = &response_phase;
             let log_path = retained.join("server-transcript.json");
             let responder = scope.spawn(move || {
                 while !stop_ref.load(Ordering::Relaxed) {
@@ -112,7 +114,20 @@ fn run_session(
                             let result = editor_ref.respond_to(method.as_str(), &params);
                             log.lock().unwrap().push(json!({"direction":"server-request", "id":id, "method":method, "params":params, "response":result}));
                             write_json(log_path.clone(), &*log.lock().unwrap());
-                            if let Err(error) = responding.respond(id, result) {
+                            let response = {
+                                let _response_phase = response_phase_ref.lock().unwrap();
+                                let response = responding.respond(id, result);
+                                if let Err(error) = &response
+                                    && !shutting_down_ref.load(Ordering::Relaxed)
+                                {
+                                    response_failures.lock().unwrap().push(format!(
+                                        "{} responder failed before shutdown: {error:?}",
+                                        log_path.display()
+                                    ));
+                                }
+                                response
+                            };
+                            if let Err(error) = response {
                                 // A late watch request can race the successful graceful close.
                                 // The main thread still requires that close itself to succeed.
                                 log.lock().unwrap().push(json!({
@@ -120,12 +135,6 @@ fn run_session(
                                     "error":format!("{error:?}")
                                 }));
                                 write_json(log_path.clone(), &*log.lock().unwrap());
-                                if !shutting_down_ref.load(Ordering::Acquire) {
-                                    response_failures.lock().unwrap().push(format!(
-                                        "{} responder failed before shutdown: {error:?}",
-                                        log_path.display()
-                                    ));
-                                }
                                 break;
                             }
                         }
@@ -266,7 +275,10 @@ fn run_session(
                     ));
                 }
             }
-            shutting_down.store(true, Ordering::Release);
+            {
+                let _response_phase = response_phase.lock().unwrap();
+                shutting_down.store(true, Ordering::Relaxed);
+            }
             let closed = client.graceful_close().await;
             write_json(
                 retained.join("shutdown.json"),
