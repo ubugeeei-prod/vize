@@ -1,0 +1,6 @@
+<script lang="ts">
+async function foo(): Promise<any> {
+  return {} as any;
+}
+export {};
+</script>

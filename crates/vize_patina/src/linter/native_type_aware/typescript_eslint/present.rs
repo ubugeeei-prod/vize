@@ -1,4 +1,6 @@
 //! Report ranges aligned with typescript-eslint.
+mod require_await;
+
 use std::collections::BTreeMap;
 
 use corsa::lint::{LintNode, TextRange};
@@ -12,6 +14,7 @@ pub(super) fn prepare(rule: &str, node: &LintNode, configured: Option<&Value>) -
             constrain_stringified_types(&mut owned);
             supply_tostring_argument(&mut owned);
         }
+        "require-await" => require_await::expose_non_thenable_any_returns(&mut owned),
         "restrict-plus-operands" if disallows_nullish(configured) => {
             expose_nullish_union_flags(&mut owned);
         }
