@@ -46,7 +46,29 @@ fn callable_composites_match_typescript_eslint() {
     let packets = result
         .diagnostics
         .iter()
-        .map(|diagnostic| serde_json::to_value(diagnostic).expect("diagnostic packet"))
+        .map(|diagnostic| {
+            json!({
+                "rule_name": diagnostic.rule_name,
+                "severity": diagnostic.severity,
+                "message": diagnostic.message.as_str(),
+                "start": diagnostic.start,
+                "end": diagnostic.end,
+                "help": diagnostic.help.as_deref(),
+                "labels": diagnostic.labels.iter().map(|label| json!({
+                    "message": label.message.as_str(),
+                    "start": label.start,
+                    "end": label.end,
+                })).collect::<Vec<_>>(),
+                "fix": diagnostic.fix.as_ref().map(|fix| json!({
+                    "message": fix.message.as_str(),
+                    "edits": fix.edits.iter().map(|edit| json!({
+                        "start": edit.start,
+                        "end": edit.end,
+                        "new_text": edit.new_text.as_str(),
+                    })).collect::<Vec<_>>(),
+                })),
+            })
+        })
         .collect::<Vec<_>>();
 
     assert_eq!(
