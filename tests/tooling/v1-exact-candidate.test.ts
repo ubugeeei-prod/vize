@@ -111,7 +111,10 @@ void test("the host plan is generated once from every required row", () => {
 void test("one exact candidate admits all host rows without granting unrelated v1 gaps", () => {
   const admitted = admitV1ExactCandidate(matrix, candidate, admissions(completeBundle()));
   assert.equal(admitted.counts.completeRequiredRows, 420);
-  assert.equal(admitted.requiredRows.every(({ receiptState }) => receiptState === "complete"), true);
+  assert.equal(
+    admitted.requiredRows.every(({ receiptState }) => receiptState === "complete"),
+    true,
+  );
   assert.equal(admitted.knownGaps.find(({ id }) => id === "host-runtime-join")?.state, "complete");
   assert.equal(admitted.counts.blockingGaps, matrix.counts.blockingGaps - 1);
   assert.equal(admitted.releaseReady, false);

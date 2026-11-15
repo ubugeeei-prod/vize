@@ -148,7 +148,8 @@ export function validateV1ExactCandidateReceiptBundle(
     assertReceipt(receipt);
     assert.ok(!receiptIds.has(receipt.id), `duplicate receipt ID: ${receipt.id}`);
     receiptIds.add(receipt.id);
-    if (receipt.row) assert.ok(rowIds.has(receipt.row), `${receipt.id}: unknown row ${receipt.row}`);
+    if (receipt.row)
+      assert.ok(rowIds.has(receipt.row), `${receipt.id}: unknown row ${receipt.row}`);
   }
 }
 
@@ -231,16 +232,19 @@ function admitRow(
     (receipt) => receipt.source === candidateSource && receiptIdentityMatchesRow(receipt, row),
   );
   const positive = exact.filter(
-    ({ classification, outcome }) => classification === "automated-positive" && outcome === "passed",
+    ({ classification, outcome }) =>
+      classification === "automated-positive" && outcome === "passed",
   );
   const negative = exact.filter(
-    ({ classification, outcome }) => classification === "automated-negative" && outcome === "passed",
+    ({ classification, outcome }) =>
+      classification === "automated-negative" && outcome === "passed",
   );
   const manual = exact.filter(
     ({ classification, outcome }) => classification === "manual" && outcome === "passed",
   );
   const qualification = receipts.filter(
-    (receipt) => receipt.classification === "qualification-set" && receipt.source === candidateSource,
+    (receipt) =>
+      receipt.classification === "qualification-set" && receipt.source === candidateSource,
   );
   const missingQualification = requiredQualificationSets(matrix, row).flatMap((set) =>
     expectedQualificationEnvironments(matrix, set).filter(
@@ -316,7 +320,9 @@ export function admitV1ExactCandidateHost(
     schema: V1_EXACT_CANDIDATE_HOST_ADMISSION_SCHEMA,
     candidateSource,
     host,
-    rows: host.rowIds.map((id) => admitRow(matrix, byId.get(id)!, candidateSource, bundle.receipts)),
+    rows: host.rowIds.map((id) =>
+      admitRow(matrix, byId.get(id)!, candidateSource, bundle.receipts),
+    ),
   };
 }
 
@@ -325,7 +331,11 @@ function assertHostAdmission(
   candidateSource: string,
 ): void {
   assert.equal(admission.schema, V1_EXACT_CANDIDATE_HOST_ADMISSION_SCHEMA);
-  assert.equal(admission.candidateSource, candidateSource, `${admission.host.id}: candidate source`);
+  assert.equal(
+    admission.candidateSource,
+    candidateSource,
+    `${admission.host.id}: candidate source`,
+  );
   assert.deepEqual(
     admission.rows.map(({ id }) => id).toSorted(compareText),
     admission.host.rowIds,
