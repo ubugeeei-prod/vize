@@ -12694,6 +12694,17 @@
   ],
   "knownGaps": [
     {
+      "id": "content-mapper-v1-qualification",
+      "owner": "typechecker/vize_canon-content-mapper",
+      "issues": [
+        13018,
+        13071
+      ],
+      "state": "blocking",
+      "summary": "Content Mapper semantic, protocol, lifecycle, performance and real-project obligations are not joined to one exact candidate.",
+      "exitCondition": "Every contentMapper obligation has exact positive, negative, boundary, malformed-edit and repair receipts for one candidate source."
+    },
+    {
       "id": "case-packet-join",
       "owner": "testing/v1-qualification",
       "issues": [
@@ -12746,6 +12757,1049 @@
       "exitCondition": "Each advertised editor has an explicitly scoped required scenario and exact candidate receipt without order normalization."
     }
   ],
+  "contentMapper": {
+    "schema": "vize.content-mapper-v1-qualification.v1",
+    "parentIssue": 13018,
+    "qualificationIssue": 13071,
+    "qualification": "gap",
+    "pinnedTypeScriptRevision": "d6c4afddb2c55f4a9dea7b59293a99a8fdea1799",
+    "producerProtocol": {
+      "diagnosticCodeSelectors": "negotiated",
+      "legacyPayload": "byte-identical-without-capability",
+      "evidenceCandidates": [
+        "crates/vize_canon/src/batch/virtual_project/content_mapper/protocol.rs",
+        "crates/vize/src/commands/content_mapper/dispatch/wire.rs"
+      ]
+    },
+    "upstreamBlockers": [
+      {
+        "id": "grouped-disjoint-expect-usage",
+        "issue": 6258,
+        "state": "blocked-upstream"
+      },
+      {
+        "id": "diagnostic-code-selector-consumer",
+        "issue": 13057,
+        "external": "microsoft/TypeScript#65517",
+        "state": "blocked-upstream"
+      }
+    ],
+    "semantic": [
+      {
+        "id": "vue-lines",
+        "requirement": "Vue 2.7 host and current Vue 3 SFC diagnostics remain exact.",
+        "issues": [
+          13018
+        ],
+        "evidenceCandidates": [
+          ".github/workflows/content-mapper-conformance.yml",
+          "crates/vize/tests/check_vue2_vuetify_props_cli.rs"
+        ],
+        "requiredCases": [
+          "positive",
+          "negative",
+          "boundary",
+          "malformed-edit",
+          "repair"
+        ],
+        "candidateSource": null,
+        "candidateRun": null,
+        "receipts": [],
+        "qualification": "unbound"
+      },
+      {
+        "id": "script-setup",
+        "requirement": "Script setup bindings, macros and public local types retain authored diagnostics.",
+        "issues": [
+          13018
+        ],
+        "evidenceCandidates": [
+          "crates/vize/tests/content_mapper_tsgo_cli/props_binding.rs",
+          "crates/vize/tests/content_mapper_tsgo_cli/setup_local_public_types.rs"
+        ],
+        "requiredCases": [
+          "positive",
+          "negative",
+          "boundary",
+          "malformed-edit",
+          "repair"
+        ],
+        "candidateSource": null,
+        "candidateRun": null,
+        "receipts": [],
+        "qualification": "unbound"
+      },
+      {
+        "id": "options-api",
+        "requirement": "Options API instance bindings and diagnostics retain source ownership.",
+        "issues": [
+          11655,
+          13018
+        ],
+        "evidenceCandidates": [
+          "crates/vize/tests/content_mapper_tsgo_cli/options_api_diagnostics.rs",
+          "crates/vize/src/commands/content_mapper/tests.rs"
+        ],
+        "requiredCases": [
+          "positive",
+          "negative",
+          "boundary",
+          "malformed-edit",
+          "repair"
+        ],
+        "candidateSource": null,
+        "candidateRun": null,
+        "receipts": [],
+        "qualification": "unbound"
+      },
+      {
+        "id": "generics",
+        "requirement": "Generic components preserve declared inference, fallthrough and authored errors.",
+        "issues": [
+          11655,
+          13021,
+          13057
+        ],
+        "evidenceCandidates": [
+          "crates/vize/tests/content_mapper_tsgo_cli/reported_generic_components.rs",
+          "crates/vize/tests/content_mapper_tsgo_cli/generic_constructor_slots.rs"
+        ],
+        "requiredCases": [
+          "positive",
+          "negative",
+          "boundary",
+          "malformed-edit",
+          "repair"
+        ],
+        "candidateSource": null,
+        "candidateRun": null,
+        "receipts": [],
+        "qualification": "unbound"
+      },
+      {
+        "id": "slots",
+        "requirement": "Slot declarations, destructuring and payload diagnostics are neither hidden nor repeated.",
+        "issues": [
+          11655,
+          13018
+        ],
+        "evidenceCandidates": [
+          "crates/vize/tests/content_mapper_tsgo_cli/generic_constructor_slots.rs",
+          "crates/vize/tests/content_mapper_tsgo_cli/replayed_pattern_duplicates.rs"
+        ],
+        "requiredCases": [
+          "positive",
+          "negative",
+          "boundary",
+          "malformed-edit",
+          "repair"
+        ],
+        "candidateSource": null,
+        "candidateRun": null,
+        "receipts": [],
+        "qualification": "unbound"
+      },
+      {
+        "id": "emits",
+        "requirement": "Declared, open and dynamic emit payloads retain their exact contracts.",
+        "issues": [
+          11655,
+          13018
+        ],
+        "evidenceCandidates": [
+          "crates/vize/tests/content_mapper_tsgo_cli/setup_local_public_types.rs",
+          "crates/vize/tests/content_mapper_tsgo_cli/reported_model_events_11390_11391.rs"
+        ],
+        "requiredCases": [
+          "positive",
+          "negative",
+          "boundary",
+          "malformed-edit",
+          "repair"
+        ],
+        "candidateSource": null,
+        "candidateRun": null,
+        "receipts": [],
+        "qualification": "unbound"
+      },
+      {
+        "id": "v-model",
+        "requirement": "Model props and update events retain value and listener diagnostics.",
+        "issues": [
+          13018
+        ],
+        "evidenceCandidates": [
+          "crates/vize/tests/content_mapper_tsgo_cli/template_model_props.rs",
+          "crates/vize/tests/content_mapper_tsgo_cli/reported_model_props_11359.rs"
+        ],
+        "requiredCases": [
+          "positive",
+          "negative",
+          "boundary",
+          "malformed-edit",
+          "repair"
+        ],
+        "candidateSource": null,
+        "candidateRun": null,
+        "receipts": [],
+        "qualification": "unbound"
+      },
+      {
+        "id": "diagnostic-directives",
+        "requirement": "Ignore, skip and expect directives suppress only their authored diagnostic owners.",
+        "issues": [
+          6258,
+          13057
+        ],
+        "evidenceCandidates": [
+          "crates/vize/tests/content_mapper_tsgo_cli/directive_tables.rs",
+          "crates/vize/tests/content_mapper_tsgo_directives.rs"
+        ],
+        "requiredCases": [
+          "positive",
+          "negative",
+          "boundary",
+          "malformed-edit",
+          "repair"
+        ],
+        "candidateSource": null,
+        "candidateRun": null,
+        "receipts": [],
+        "qualification": "unbound"
+      },
+      {
+        "id": "css-modules",
+        "requirement": "CSS module options and template access retain exact diagnostics.",
+        "issues": [
+          13018
+        ],
+        "evidenceCandidates": [
+          "tools/support/compat/content-mapper/official-css-options.ts",
+          "tests/tooling/canon-css-module-contracts.test.ts"
+        ],
+        "requiredCases": [
+          "positive",
+          "negative",
+          "boundary",
+          "malformed-edit",
+          "repair"
+        ],
+        "candidateSource": null,
+        "candidateRun": null,
+        "receipts": [],
+        "qualification": "unbound"
+      },
+      {
+        "id": "native-elements-events",
+        "requirement": "Native attributes and events remain distinct from component props and emits.",
+        "issues": [
+          11655,
+          13018
+        ],
+        "evidenceCandidates": [
+          ".github/workflows/public-native-events.yml",
+          "crates/vize/tests/content_mapper_tsgo_cli/shared_helpers_performance/open_component_event_contracts.rs"
+        ],
+        "requiredCases": [
+          "positive",
+          "negative",
+          "boundary",
+          "malformed-edit",
+          "repair"
+        ],
+        "candidateSource": null,
+        "candidateRun": null,
+        "receipts": [],
+        "qualification": "unbound"
+      },
+      {
+        "id": "aliases",
+        "requirement": "Path, import and template aliases resolve through the opened project.",
+        "issues": [
+          12102,
+          13018
+        ],
+        "evidenceCandidates": [
+          ".github/workflows/template-alias-paired-11822.yml",
+          "crates/vize/tests/check_default_imports_cli/aliased_diagnostics.rs"
+        ],
+        "requiredCases": [
+          "positive",
+          "negative",
+          "boundary",
+          "malformed-edit",
+          "repair"
+        ],
+        "candidateSource": null,
+        "candidateRun": null,
+        "receipts": [],
+        "qualification": "unbound"
+      },
+      {
+        "id": "package-exports",
+        "requirement": "Imported SFC packages and declarations preserve importer-scoped resolution.",
+        "issues": [
+          12102,
+          13018
+        ],
+        "evidenceCandidates": [
+          "crates/vize/tests/content_mapper_tsgo_cli/shipped_declarations_12968.rs",
+          ".github/workflows/content-mapper-conformance.yml"
+        ],
+        "requiredCases": [
+          "positive",
+          "negative",
+          "boundary",
+          "malformed-edit",
+          "repair"
+        ],
+        "candidateSource": null,
+        "candidateRun": null,
+        "receipts": [],
+        "qualification": "unbound"
+      },
+      {
+        "id": "project-references",
+        "requirement": "Referenced projects are checked once without dropping cross-project diagnostics.",
+        "issues": [
+          12102,
+          12109
+        ],
+        "evidenceCandidates": [
+          "crates/vize/tests/content_mapper_tsgo_package_references.rs",
+          "crates/vize/src/commands/check/tsconfig_inputs/tests/reference_programs.rs"
+        ],
+        "requiredCases": [
+          "positive",
+          "negative",
+          "boundary",
+          "malformed-edit",
+          "repair"
+        ],
+        "candidateSource": null,
+        "candidateRun": null,
+        "receipts": [],
+        "qualification": "unbound"
+      },
+      {
+        "id": "nuxt-generated-types",
+        "requirement": "Nuxt-generated aliases and ambient types participate in the mapper project.",
+        "issues": [
+          11104,
+          13018
+        ],
+        "evidenceCandidates": [
+          ".github/workflows/nuxt-generated-membership.yml",
+          "crates/vize/tests/check_canon_nuxt_parity_cli.rs"
+        ],
+        "requiredCases": [
+          "positive",
+          "negative",
+          "boundary",
+          "malformed-edit",
+          "repair"
+        ],
+        "candidateSource": null,
+        "candidateRun": null,
+        "receipts": [],
+        "qualification": "unbound"
+      },
+      {
+        "id": "independent-project-diagnostics",
+        "requirement": "An SFC transform failure never hides diagnostics from another project file.",
+        "issues": [
+          13018
+        ],
+        "evidenceCandidates": [
+          "crates/vize/tests/content_mapper_tsgo_cli/semantic_compile_errors_12522.rs",
+          "crates/vize/tests/content_mapper_tsgo_cli/incomplete_tags.rs"
+        ],
+        "requiredCases": [
+          "positive",
+          "negative",
+          "boundary",
+          "malformed-edit",
+          "repair"
+        ],
+        "candidateSource": null,
+        "candidateRun": null,
+        "receipts": [],
+        "qualification": "unbound"
+      }
+    ],
+    "protocolFeatures": [
+      {
+        "id": "Hover",
+        "issues": [
+          13018
+        ],
+        "evidenceCandidates": [
+          "crates/vize_canon/src/batch/virtual_project/content_mapper/span_features.rs",
+          "crates/vize_canon/src/batch/virtual_project/content_mapper/tests/protocol.rs"
+        ],
+        "requiredCases": [
+          "positive",
+          "negative",
+          "boundary",
+          "malformed-edit",
+          "repair"
+        ],
+        "candidateSource": null,
+        "candidateRun": null,
+        "receipts": [],
+        "qualification": "unbound"
+      },
+      {
+        "id": "SignatureHelp",
+        "issues": [
+          13018
+        ],
+        "evidenceCandidates": [
+          "crates/vize_canon/src/batch/virtual_project/content_mapper/span_features.rs",
+          "crates/vize_canon/src/batch/virtual_project/content_mapper/tests/protocol.rs"
+        ],
+        "requiredCases": [
+          "positive",
+          "negative",
+          "boundary",
+          "malformed-edit",
+          "repair"
+        ],
+        "candidateSource": null,
+        "candidateRun": null,
+        "receipts": [],
+        "qualification": "unbound"
+      },
+      {
+        "id": "Completion",
+        "issues": [
+          13018
+        ],
+        "evidenceCandidates": [
+          "crates/vize_canon/src/batch/virtual_project/content_mapper/span_features.rs",
+          "crates/vize_canon/src/batch/virtual_project/content_mapper/tests/protocol.rs"
+        ],
+        "requiredCases": [
+          "positive",
+          "negative",
+          "boundary",
+          "malformed-edit",
+          "repair"
+        ],
+        "candidateSource": null,
+        "candidateRun": null,
+        "receipts": [],
+        "qualification": "unbound"
+      },
+      {
+        "id": "Definition",
+        "issues": [
+          13018
+        ],
+        "evidenceCandidates": [
+          "crates/vize_canon/src/batch/virtual_project/content_mapper/span_features.rs",
+          "crates/vize_canon/src/batch/virtual_project/content_mapper/tests/protocol.rs"
+        ],
+        "requiredCases": [
+          "positive",
+          "negative",
+          "boundary",
+          "malformed-edit",
+          "repair"
+        ],
+        "candidateSource": null,
+        "candidateRun": null,
+        "receipts": [],
+        "qualification": "unbound"
+      },
+      {
+        "id": "TypeDefinition",
+        "issues": [
+          13018
+        ],
+        "evidenceCandidates": [
+          "crates/vize_canon/src/batch/virtual_project/content_mapper/span_features.rs",
+          "crates/vize_canon/src/batch/virtual_project/content_mapper/tests/protocol.rs"
+        ],
+        "requiredCases": [
+          "positive",
+          "negative",
+          "boundary",
+          "malformed-edit",
+          "repair"
+        ],
+        "candidateSource": null,
+        "candidateRun": null,
+        "receipts": [],
+        "qualification": "unbound"
+      },
+      {
+        "id": "Implementation",
+        "issues": [
+          13018
+        ],
+        "evidenceCandidates": [
+          "crates/vize_canon/src/batch/virtual_project/content_mapper/span_features.rs",
+          "crates/vize_canon/src/batch/virtual_project/content_mapper/tests/protocol.rs"
+        ],
+        "requiredCases": [
+          "positive",
+          "negative",
+          "boundary",
+          "malformed-edit",
+          "repair"
+        ],
+        "candidateSource": null,
+        "candidateRun": null,
+        "receipts": [],
+        "qualification": "unbound"
+      },
+      {
+        "id": "References",
+        "issues": [
+          13018
+        ],
+        "evidenceCandidates": [
+          "crates/vize_canon/src/batch/virtual_project/content_mapper/span_features.rs",
+          "crates/vize_canon/src/batch/virtual_project/content_mapper/tests/protocol.rs"
+        ],
+        "requiredCases": [
+          "positive",
+          "negative",
+          "boundary",
+          "malformed-edit",
+          "repair"
+        ],
+        "candidateSource": null,
+        "candidateRun": null,
+        "receipts": [],
+        "qualification": "unbound"
+      },
+      {
+        "id": "DocumentHighlights",
+        "issues": [
+          13018
+        ],
+        "evidenceCandidates": [
+          "crates/vize_canon/src/batch/virtual_project/content_mapper/span_features.rs",
+          "crates/vize_canon/src/batch/virtual_project/content_mapper/tests/protocol.rs"
+        ],
+        "requiredCases": [
+          "positive",
+          "negative",
+          "boundary",
+          "malformed-edit",
+          "repair"
+        ],
+        "candidateSource": null,
+        "candidateRun": null,
+        "receipts": [],
+        "qualification": "unbound"
+      },
+      {
+        "id": "Rename",
+        "issues": [
+          13018
+        ],
+        "evidenceCandidates": [
+          "crates/vize_canon/src/batch/virtual_project/content_mapper/span_features.rs",
+          "crates/vize_canon/src/batch/virtual_project/content_mapper/tests/protocol.rs"
+        ],
+        "requiredCases": [
+          "positive",
+          "negative",
+          "boundary",
+          "malformed-edit",
+          "repair"
+        ],
+        "candidateSource": null,
+        "candidateRun": null,
+        "receipts": [],
+        "qualification": "unbound"
+      },
+      {
+        "id": "CallHierarchy",
+        "issues": [
+          13018
+        ],
+        "evidenceCandidates": [
+          "crates/vize_canon/src/batch/virtual_project/content_mapper/span_features.rs",
+          "crates/vize_canon/src/batch/virtual_project/content_mapper/tests/protocol.rs"
+        ],
+        "requiredCases": [
+          "positive",
+          "negative",
+          "boundary",
+          "malformed-edit",
+          "repair"
+        ],
+        "candidateSource": null,
+        "candidateRun": null,
+        "receipts": [],
+        "qualification": "unbound"
+      },
+      {
+        "id": "CodeActions",
+        "issues": [
+          13018
+        ],
+        "evidenceCandidates": [
+          "crates/vize_canon/src/batch/virtual_project/content_mapper/span_features.rs",
+          "crates/vize_canon/src/batch/virtual_project/content_mapper/tests/protocol.rs"
+        ],
+        "requiredCases": [
+          "positive",
+          "negative",
+          "boundary",
+          "malformed-edit",
+          "repair"
+        ],
+        "candidateSource": null,
+        "candidateRun": null,
+        "receipts": [],
+        "qualification": "unbound"
+      },
+      {
+        "id": "Formatting",
+        "issues": [
+          13018
+        ],
+        "evidenceCandidates": [
+          "crates/vize_canon/src/batch/virtual_project/content_mapper/span_features.rs",
+          "crates/vize_canon/src/batch/virtual_project/content_mapper/tests/protocol.rs"
+        ],
+        "requiredCases": [
+          "positive",
+          "negative",
+          "boundary",
+          "malformed-edit",
+          "repair"
+        ],
+        "candidateSource": null,
+        "candidateRun": null,
+        "receipts": [],
+        "qualification": "unbound"
+      },
+      {
+        "id": "InlayHints",
+        "issues": [
+          13018
+        ],
+        "evidenceCandidates": [
+          "crates/vize_canon/src/batch/virtual_project/content_mapper/span_features.rs",
+          "crates/vize_canon/src/batch/virtual_project/content_mapper/tests/protocol.rs"
+        ],
+        "requiredCases": [
+          "positive",
+          "negative",
+          "boundary",
+          "malformed-edit",
+          "repair"
+        ],
+        "candidateSource": null,
+        "candidateRun": null,
+        "receipts": [],
+        "qualification": "unbound"
+      },
+      {
+        "id": "SemanticTokens",
+        "issues": [
+          13018
+        ],
+        "evidenceCandidates": [
+          "crates/vize_canon/src/batch/virtual_project/content_mapper/span_features.rs",
+          "crates/vize_canon/src/batch/virtual_project/content_mapper/tests/protocol.rs"
+        ],
+        "requiredCases": [
+          "positive",
+          "negative",
+          "boundary",
+          "malformed-edit",
+          "repair"
+        ],
+        "candidateSource": null,
+        "candidateRun": null,
+        "receipts": [],
+        "qualification": "unbound"
+      },
+      {
+        "id": "FoldingRanges",
+        "issues": [
+          13018
+        ],
+        "evidenceCandidates": [
+          "crates/vize_canon/src/batch/virtual_project/content_mapper/span_features.rs",
+          "crates/vize_canon/src/batch/virtual_project/content_mapper/tests/protocol.rs"
+        ],
+        "requiredCases": [
+          "positive",
+          "negative",
+          "boundary",
+          "malformed-edit",
+          "repair"
+        ],
+        "candidateSource": null,
+        "candidateRun": null,
+        "receipts": [],
+        "qualification": "unbound"
+      },
+      {
+        "id": "SelectionRanges",
+        "issues": [
+          13018
+        ],
+        "evidenceCandidates": [
+          "crates/vize_canon/src/batch/virtual_project/content_mapper/span_features.rs",
+          "crates/vize_canon/src/batch/virtual_project/content_mapper/tests/protocol.rs"
+        ],
+        "requiredCases": [
+          "positive",
+          "negative",
+          "boundary",
+          "malformed-edit",
+          "repair"
+        ],
+        "candidateSource": null,
+        "candidateRun": null,
+        "receipts": [],
+        "qualification": "unbound"
+      },
+      {
+        "id": "LinkedEditing",
+        "issues": [
+          13018
+        ],
+        "evidenceCandidates": [
+          "crates/vize_canon/src/batch/virtual_project/content_mapper/span_features.rs",
+          "crates/vize_canon/src/batch/virtual_project/content_mapper/tests/protocol.rs"
+        ],
+        "requiredCases": [
+          "positive",
+          "negative",
+          "boundary",
+          "malformed-edit",
+          "repair"
+        ],
+        "candidateSource": null,
+        "candidateRun": null,
+        "receipts": [],
+        "qualification": "unbound"
+      },
+      {
+        "id": "AutoInsert",
+        "issues": [
+          13018
+        ],
+        "evidenceCandidates": [
+          "crates/vize_canon/src/batch/virtual_project/content_mapper/span_features.rs",
+          "crates/vize_canon/src/batch/virtual_project/content_mapper/tests/protocol.rs"
+        ],
+        "requiredCases": [
+          "positive",
+          "negative",
+          "boundary",
+          "malformed-edit",
+          "repair"
+        ],
+        "candidateSource": null,
+        "candidateRun": null,
+        "receipts": [],
+        "qualification": "unbound"
+      },
+      {
+        "id": "DocumentSymbols",
+        "issues": [
+          13018
+        ],
+        "evidenceCandidates": [
+          "crates/vize_canon/src/batch/virtual_project/content_mapper/span_features.rs",
+          "crates/vize_canon/src/batch/virtual_project/content_mapper/tests/protocol.rs"
+        ],
+        "requiredCases": [
+          "positive",
+          "negative",
+          "boundary",
+          "malformed-edit",
+          "repair"
+        ],
+        "candidateSource": null,
+        "candidateRun": null,
+        "receipts": [],
+        "qualification": "unbound"
+      },
+      {
+        "id": "CodeLens",
+        "issues": [
+          13018
+        ],
+        "evidenceCandidates": [
+          "crates/vize_canon/src/batch/virtual_project/content_mapper/span_features.rs",
+          "crates/vize_canon/src/batch/virtual_project/content_mapper/tests/protocol.rs"
+        ],
+        "requiredCases": [
+          "positive",
+          "negative",
+          "boundary",
+          "malformed-edit",
+          "repair"
+        ],
+        "candidateSource": null,
+        "candidateRun": null,
+        "receipts": [],
+        "qualification": "unbound"
+      }
+    ],
+    "diagnostics": [
+      {
+        "id": "authored-packets-and-spans",
+        "requirement": "Codes, categories, messages, files, authored spans, ordering and exit status are exact.",
+        "issues": [
+          11655,
+          13037
+        ],
+        "evidenceCandidates": [
+          "tests/tooling/content-mapper-replay.test.ts",
+          "crates/vize/tests/content_mapper_tsgo_cli/unicode_prop_bindings.rs"
+        ],
+        "requiredCases": [
+          "positive",
+          "negative",
+          "boundary",
+          "malformed-edit",
+          "repair"
+        ],
+        "candidateSource": null,
+        "candidateRun": null,
+        "receipts": [],
+        "qualification": "unbound"
+      },
+      {
+        "id": "related-information",
+        "requirement": "Related information retains its authored file and range without generated leakage.",
+        "issues": [
+          13018,
+          13037
+        ],
+        "evidenceCandidates": [
+          ".github/workflows/content-mapper-conformance.yml",
+          "tests/tooling/content-mapper-admission-hosts.test.ts"
+        ],
+        "requiredCases": [
+          "positive",
+          "negative",
+          "boundary",
+          "malformed-edit",
+          "repair"
+        ],
+        "candidateSource": null,
+        "candidateRun": null,
+        "receipts": [],
+        "qualification": "unbound"
+      },
+      {
+        "id": "suppression-ownership",
+        "requirement": "Suppression is selected by authored ownership and never widens to a generated range.",
+        "issues": [
+          6258,
+          13021,
+          13057
+        ],
+        "evidenceCandidates": [
+          "crates/vize_canon/src/batch/virtual_project/content_mapper/directives.rs",
+          "crates/vize/src/commands/content_mapper/dispatch/wire.rs"
+        ],
+        "requiredCases": [
+          "positive",
+          "negative",
+          "boundary",
+          "malformed-edit",
+          "repair"
+        ],
+        "candidateSource": null,
+        "candidateRun": null,
+        "receipts": [],
+        "qualification": "unbound"
+      },
+      {
+        "id": "generated-file-filtering",
+        "requirement": "Generated helpers and virtual files never replace source diagnostics.",
+        "issues": [
+          13018,
+          13037
+        ],
+        "evidenceCandidates": [
+          "tests/tooling/content-mapper-instance-globals-packet-authority.test.ts",
+          "crates/vize/tests/content_mapper_tsgo_cli/semantic_compile_errors_12522.rs"
+        ],
+        "requiredCases": [
+          "positive",
+          "negative",
+          "boundary",
+          "malformed-edit",
+          "repair"
+        ],
+        "candidateSource": null,
+        "candidateRun": null,
+        "receipts": [],
+        "qualification": "unbound"
+      }
+    ],
+    "lifecycle": [
+      {
+        "id": "monotonic-project-revision",
+        "operations": [
+          "open",
+          "edit",
+          "save",
+          "close",
+          "create",
+          "rename",
+          "delete"
+        ],
+        "requirement": "Every file and overlay transition belongs to one monotonic project revision.",
+        "issues": [
+          12102,
+          13018
+        ],
+        "evidenceCandidates": [
+          "crates/vize/src/commands/content_mapper/project.rs",
+          "tests/tooling/real-project-lsp-file-lifecycle.test.ts"
+        ],
+        "requiredCases": [
+          "positive",
+          "negative",
+          "boundary",
+          "malformed-edit",
+          "repair"
+        ],
+        "candidateSource": null,
+        "candidateRun": null,
+        "receipts": [],
+        "qualification": "unbound"
+      }
+    ],
+    "performance": [
+      {
+        "id": "cold-warm-edit",
+        "measurements": [
+          "cold",
+          "warm",
+          "no-op",
+          "leaf-edit",
+          "dependency-edit",
+          "p95",
+          "rss"
+        ],
+        "scales": [
+          1000,
+          5000,
+          20000
+        ],
+        "issues": [
+          10620,
+          12102,
+          12109
+        ],
+        "evidenceCandidates": [
+          ".github/workflows/content-mapper-replay.yml",
+          ".github/workflows/content-mapper-cold-start.yml"
+        ],
+        "packetIdentity": "required",
+        "baseHeadComparison": "required",
+        "candidateSource": null,
+        "candidateRun": null,
+        "receipts": [],
+        "qualification": "unbound"
+      }
+    ],
+    "runtimeAndCorpus": [
+      {
+        "id": "node-bun-hosts",
+        "issues": [
+          13038
+        ],
+        "evidenceCandidates": [
+          ".github/workflows/pr-js-checks.yml",
+          "npm/cli/tests/content-mapper-bun.test.ts"
+        ],
+        "requiredCases": [
+          "positive",
+          "negative",
+          "boundary",
+          "malformed-edit",
+          "repair"
+        ],
+        "candidateSource": null,
+        "candidateRun": null,
+        "receipts": [],
+        "qualification": "unbound"
+      },
+      {
+        "id": "real-projects",
+        "issues": [
+          13044
+        ],
+        "evidenceCandidates": [
+          ".github/workflows/real-project-matrix.yml",
+          ".github/workflows/real-project-matrix-differential.yml"
+        ],
+        "requiredCases": [
+          "positive",
+          "negative",
+          "boundary",
+          "malformed-edit",
+          "repair"
+        ],
+        "candidateSource": null,
+        "candidateRun": null,
+        "receipts": [],
+        "qualification": "unbound"
+      }
+    ],
+    "boundaryExamples": [
+      {
+        "id": "vue-sfc-jsx-tsx",
+        "disposition": "required-v1",
+        "reason": "JSX and TSX embedded in a Vue SFC are part of the v1 Vue typechecker surface.",
+        "evidenceCandidates": [
+          "crates/vize/tests/content_mapper_tsgo_cli/tsx_script_syntax.rs"
+        ]
+      },
+      {
+        "id": "tsrx",
+        "disposition": "outside-v1",
+        "reason": "TSRX is a pinned differential oracle, not a Content Mapper input claim.",
+        "evidenceCandidates": [
+          "tests/tooling/tsrx-oracle.test.ts"
+        ]
+      },
+      {
+        "id": "svelte",
+        "disposition": "outside-v1",
+        "reason": "The Svelte proof of concept is compiler boundary evidence and remains unsupported input.",
+        "evidenceCandidates": [
+          "examples/poc-svelte/README.md"
+        ]
+      },
+      {
+        "id": "astro",
+        "disposition": "outside-v1",
+        "reason": "The Astro proof of concept is compiler boundary evidence and remains unsupported input.",
+        "evidenceCandidates": [
+          "examples/poc-astro/README.md"
+        ]
+      }
+    ],
+    "counts": {
+      "semantic": 15,
+      "protocolFeatures": 20,
+      "diagnostics": 4,
+      "lifecycle": 1,
+      "performance": 1,
+      "runtimeAndCorpus": 2,
+      "unbound": 43
+    }
+  },
   "environments": {
     "nativeTargets": [
       "aarch64-apple-darwin",
@@ -13149,7 +14203,7 @@
     "hostRuntimeCombinations": 21,
     "requiredRows": 420,
     "completeRequiredRows": 0,
-    "blockingGaps": 5,
+    "blockingGaps": 6,
     "packageManagers": 5,
     "freshProjectCells": 11,
     "editors": 6,

@@ -5,6 +5,7 @@ import { PACKAGE_MANAGERS } from "../npm/smoke-release-init-managers.ts";
 import { FRESH_INIT_MATRIX } from "../npm/smoke-release-init-shapes.ts";
 import { editorReleasePlatforms } from "../../release/editor-platforms.ts";
 import { cliReleasePlatforms, nativeReleasePlatforms } from "../../github/release-platforms.ts";
+import { buildContentMapperV1Qualification } from "./content-mapper-qualification.ts";
 
 export const V1_CASES = ["positive", "negative", "boundary", "malformed-edit", "repair"] as const;
 export const V1_TOPOLOGIES = [
@@ -622,6 +623,16 @@ export function buildV1SupportMatrix(root = process.cwd()) {
     .toSorted((left, right) => left.id.localeCompare(right.id));
   const knownGaps = [
     {
+      id: "content-mapper-v1-qualification",
+      owner: "typechecker/vize_canon-content-mapper",
+      issues: [13018, 13071],
+      state: "blocking",
+      summary:
+        "Content Mapper semantic, protocol, lifecycle, performance and real-project obligations are not joined to one exact candidate.",
+      exitCondition:
+        "Every contentMapper obligation has exact positive, negative, boundary, malformed-edit and repair receipts for one candidate source.",
+    },
+    {
       id: "case-packet-join",
       owner: "testing/v1-qualification",
       issues: [13037],
@@ -670,9 +681,11 @@ export function buildV1SupportMatrix(root = process.cwd()) {
         "Each advertised editor has an explicitly scoped required scenario and exact candidate receipt without order normalization.",
     },
   ];
+  const contentMapper = buildContentMapperV1Qualification(root, V1_CASES);
   const releaseReady =
     requiredRows.every(({ qualification }) => qualification === "complete") &&
-    knownGaps.every(({ state }) => state !== "blocking");
+    knownGaps.every(({ state }) => state !== "blocking") &&
+    contentMapper.qualification === "complete";
 
   return {
     schema: "vize.v1-qualification-manifest.v1",
@@ -708,6 +721,7 @@ export function buildV1SupportMatrix(root = process.cwd()) {
     requiredRows,
     evidenceSnapshots,
     knownGaps,
+    contentMapper,
     environments: {
       nativeTargets,
       releasedNativeTargets,
