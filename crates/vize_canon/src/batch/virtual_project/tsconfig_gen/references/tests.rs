@@ -295,7 +295,7 @@ fn included_sources_follow_file_symlinks_and_skip_dangling_ones() {
     std::os::unix::fs::symlink(base.join("src/real.ts"), base.join("src/linked.ts")).unwrap();
     std::os::unix::fs::symlink(base.join("src/missing.ts"), base.join("src/dangling.ts")).unwrap();
 
-    let sources = super::included_sources(&base.join("tsconfig.json"), &base);
+    let sources = super::tsconfig_included_source_files(&base.join("tsconfig.json"), &base);
     // A file symlink canonicalizes to its target, so it collapses into it.
     assert_eq!(
         sources,
