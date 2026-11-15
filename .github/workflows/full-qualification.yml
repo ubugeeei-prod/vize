@@ -395,5 +395,5 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: ./.github/actions/vscode-host-smoke
   nuxt-module-qualification:
-    name: Nuxt module qualification
-    uses: ./.github/workflows/nuxt3-module-build.yml
+    name: Nuxt and Vite release products
+    uses: ./.github/workflows/nuxt-vite-release-products.yml
