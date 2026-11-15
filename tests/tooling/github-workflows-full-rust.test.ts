@@ -254,6 +254,12 @@ void test("expensive original-profile comparison is opt-in and requested parity 
 void test("full-only extraction preserves all seventeen complete original job objects", () => {
   const full = parse(readRepoFile(".github/workflows/full-qualification.yml"));
   const original = structuredClone(full.jobs);
+  assert.deepEqual(original["v1-supported-matrix"], {
+    if: "${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}",
+    uses: "./.github/workflows/v1-supported-matrix.yml",
+    with: { enforce_complete: true },
+  });
+  delete original["v1-supported-matrix"];
   assert.deepEqual(original["nuxt-module-qualification"], {
     name: "Nuxt and Vite release products",
     uses: "./.github/workflows/nuxt-vite-release-products.yml",
