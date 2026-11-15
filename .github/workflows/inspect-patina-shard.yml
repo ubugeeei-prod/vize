@@ -30,16 +30,11 @@ jobs:
           }
           listing="$(find evidence -maxdepth 2 -type f -printf '%f %s bytes\n' | sort)"
           echo "::notice title=retained files::$(escape "$listing")"
-          for file in evidence/*.stderr evidence/*.rss.txt; do
-            [[ -f "$file" ]] || continue
-            detail="$(tail -n 80 "$file")"
-            echo "::notice title=$(basename "$file")::$(escape "$detail")"
-          done
-          if [[ -f evidence/samples.jsonl ]]; then
-            echo "::notice title=completed samples::$(escape "$(cat evidence/samples.jsonl)")"
-          fi
           if [[ -f evidence/progress.jsonl ]]; then
             echo "::notice title=progress receipts::$(escape "$(cat evidence/progress.jsonl)")"
+          fi
+          if [[ -f evidence/samples.jsonl ]]; then
+            echo "::notice title=completed samples::$(escape "$(cat evidence/samples.jsonl)")"
           fi
           {
             echo "## Retained sharded boundary"
