@@ -120,10 +120,30 @@ function assertRouteMappings(source: string, result: Transform) {
     assert.equal(generated.subarray(found[0], found[0] + binding).toString(), "route");
     return found[0];
   };
+  // LF setup lines may share one linear verbatim run; CRLF keeps one span per line.
+  // Both forms must project each access onto the same exact authored bytes.
+  for (const { length, originalStart, generatedStart } of scriptAccesses) {
+    const owners = result.mappings.filter(
+      ([, , at, mappedLength, kind, features]) =>
+        kind === 0 &&
+        features === allFeatures &&
+        at <= originalStart &&
+        at + mappedLength >= originalStart + length,
+    );
+    assert.equal(owners.length, 1, "one verbatim setup mapping owns the route access");
+    const [at, mappedLength, originalAt, originalLength] = owners[0];
+    assert.equal(mappedLength, originalLength, "verbatim setup mapping keeps equal byte lengths");
+    assert.equal(
+      at + originalStart - originalAt,
+      generatedStart,
+      "joined and split setup spans project the same exact UTF-8 byte range",
+    );
+    assert.deepEqual(
+      generated.subarray(generatedStart, generatedStart + length),
+      authored.subarray(originalStart, originalStart + length),
+    );
+  }
   const expected = [
-    ...scriptAccesses.map((it) =>
-      span(it.generatedStart, it.originalStart, it.length, allFeatures),
-    ),
     ...templateAccesses.flatMap(({ length, originalStart: at, generatedStart }) => [
       span(projection(at, templateUseFeatures), at, binding, templateUseFeatures),
       span(projection(at, templateHoverFeatures), at, binding, templateHoverFeatures),
@@ -131,18 +151,17 @@ function assertRouteMappings(source: string, result: Transform) {
       span(generatedStart + binding, at + binding, length - binding, allFeatures),
     ]),
   ];
-  const accesses = [...scriptAccesses, ...templateAccesses];
   const byGenerated = (left: Span, right: Span) => left[0] - right[0];
   assert.deepEqual(
     result.mappings
       .filter((it) =>
-        accesses.some(
+        templateAccesses.some(
           ({ length, originalStart }) => it[2] >= originalStart && it[2] < originalStart + length,
         ),
       )
       .sort(byGenerated),
     expected.sort(byGenerated),
-    "all seven route accesses retain exact UTF-8 protocol spans",
+    "both template route accesses retain exact UTF-8 protocol spans",
   );
 }
 

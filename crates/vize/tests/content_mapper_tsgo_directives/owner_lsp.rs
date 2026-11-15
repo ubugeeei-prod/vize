@@ -108,7 +108,16 @@ fn run_session(
                             let result = editor_ref.respond_to(method.as_str(), &params);
                             log.lock().unwrap().push(json!({"direction":"server-request", "id":id, "method":method, "params":params, "response":result}));
                             write_json(log_path.clone(), &*log.lock().unwrap());
-                            responding.respond(id, result).unwrap();
+                            if let Err(error) = responding.respond(id, result) {
+                                // A late watch request can race the successful graceful close.
+                                // The main thread still requires that close itself to succeed.
+                                log.lock().unwrap().push(json!({
+                                    "direction":"response-error",
+                                    "error":format!("{error:?}")
+                                }));
+                                write_json(log_path.clone(), &*log.lock().unwrap());
+                                break;
+                            }
                         }
                         Ok(InboundEvent::Notification { method, params }) => {
                             log.lock().unwrap().push(json!({"direction":"server-notification", "method":method, "params":params}));
