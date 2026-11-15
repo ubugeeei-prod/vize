@@ -44,3 +44,51 @@ declare enum AmbientStatus {
     );
     assert!(!result.bindings.contains("AmbientStatus"));
 }
+
+#[test]
+fn computed_type_keys_stay_with_setup_enums() {
+    let result = parse_script_setup(
+        r#"
+enum Keys {
+    A = "A",
+    B = "B",
+}
+type Foo = {
+    [Keys.A]: number | null;
+    [Keys.B]: number;
+};
+"#,
+    );
+
+    let foo = result
+        .type_exports
+        .iter()
+        .find(|export| export.name.as_str() == "Foo")
+        .expect("Foo type export");
+    assert!(
+        !foo.hoisted,
+        "a computed type key cannot outlive its setup-scope enum"
+    );
+}
+
+#[test]
+fn imported_computed_type_keys_remain_hoistable() {
+    let result = parse_script_setup(
+        r#"
+import { Keys } from "./keys";
+type Foo = {
+    [Keys.A]: number;
+};
+"#,
+    );
+
+    let foo = result
+        .type_exports
+        .iter()
+        .find(|export| export.name.as_str() == "Foo")
+        .expect("Foo type export");
+    assert!(
+        foo.hoisted,
+        "module-scope imports must not move otherwise hoistable types into setup"
+    );
+}
