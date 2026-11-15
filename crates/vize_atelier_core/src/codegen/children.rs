@@ -23,6 +23,19 @@ pub fn generate_children_force_array(ctx: &mut CodegenContext, children: &[Templ
     generate_children_inner(ctx, children, true);
 }
 
+/// Generate an already-filtered child list in array form.
+///
+/// Root codegen trims edge whitespace and directive comments before deciding
+/// whether it needs a fragment, so it owns references rather than a contiguous
+/// child slice. Keep that policy in the root while sharing the same text-run
+/// normalization used by every other child array.
+pub(crate) fn generate_child_refs_force_array(
+    ctx: &mut CodegenContext,
+    children: &[&TemplateChildNode<'_>],
+) {
+    generate_effective_children_inner(ctx, children, true);
+}
+
 /// Check if a child node is a directive comment that should be stripped.
 #[inline]
 pub(crate) fn is_directive_comment(child: &TemplateChildNode<'_>) -> bool {
@@ -40,13 +53,21 @@ fn generate_children_inner(
         .filter(|c| !is_directive_comment(c))
         .collect();
 
+    generate_effective_children_inner(ctx, &effective, force_array);
+}
+
+fn generate_effective_children_inner(
+    ctx: &mut CodegenContext,
+    effective: &[&TemplateChildNode<'_>],
+    force_array: bool,
+) {
     if effective.is_empty() {
         ctx.push("null");
         return;
     }
 
     // Check if single text/interpolation child can be inlined (unless forced to array)
-    if !force_array && let [single] = effective.as_slice() {
+    if !force_array && let [single] = effective {
         match *single {
             TemplateChildNode::Text(text) => {
                 ctx.push("\"");
