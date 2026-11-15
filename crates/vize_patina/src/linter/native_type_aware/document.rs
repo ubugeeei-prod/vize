@@ -176,7 +176,8 @@ fn shadow_captured_ambient_consts(document: &mut TypeAwareDocument) {
         .find("// ========== Setup Scope ==========")
         .unwrap_or(document.content.len());
     let mut shadows = Vec::new();
-    for line in document.content[..setup].lines() {
+    let module = document.content.get(..setup).unwrap_or_default();
+    for line in module.lines() {
         let Some(rest) = line.strip_prefix("declare const ") else {
             continue;
         };
@@ -209,16 +210,25 @@ fn shadow_captured_ambient_consts(document: &mut TypeAwareDocument) {
             continue;
         }
         let alias = vize_l0::cstr!("type {prefix}type_{index} = ");
-        let Some(alias_start) = document.content[setup..].find(alias.as_str()) else {
+        let Some(alias_start) = document
+            .content
+            .get(setup..)
+            .and_then(|source| source.find(alias.as_str()))
+        else {
             continue;
         };
         let alias_start = setup + alias_start;
-        let Some(alias_end) = document.content[alias_start..].find('\n') else {
+        let Some(alias_end) = document
+            .content
+            .get(alias_start..)
+            .and_then(|source| source.find('\n'))
+        else {
             continue;
         };
-        if !document.content[alias_start..alias_start + alias_end]
-            .trim_end()
-            .ends_with(';')
+        if !document
+            .content
+            .get(alias_start..alias_start + alias_end)
+            .is_some_and(|source| source.trim_end().ends_with(';'))
         {
             continue;
         }
