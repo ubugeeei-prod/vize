@@ -14,8 +14,7 @@ use oxc_ast::ast::{
 };
 use oxc_ast_visit::{Visit, walk};
 use oxc_span::{GetSpan, Span};
-use std::collections::{HashMap, HashSet};
-use vize_l0::{String, cstr};
+use vize_l0::{FxHashMap, FxHashSet, String, cstr};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/require-prop-comment",
@@ -257,15 +256,16 @@ impl LocalTypeDeclaration<'_> {
 
 struct TypeResolver<'ctx, 'ast> {
     blocks: &'ctx [ScriptBlock<'ast>],
-    declarations: HashMap<String, Vec<LocalTypeDeclaration<'ast>>>,
-    cache: HashMap<(usize, String, u8), Option<Vec<Prop>>>,
-    visiting: HashSet<(usize, String)>,
+    declarations: FxHashMap<String, Vec<LocalTypeDeclaration<'ast>>>,
+    cache: FxHashMap<(usize, String, u8), Option<Vec<Prop>>>,
+    visiting: FxHashSet<(usize, String)>,
     cycle_hits: usize,
 }
 
 impl<'ctx, 'ast> TypeResolver<'ctx, 'ast> {
     fn new(blocks: &'ctx [ScriptBlock<'ast>]) -> Self {
-        let mut declarations: HashMap<String, Vec<LocalTypeDeclaration<'ast>>> = HashMap::new();
+        let mut declarations: FxHashMap<String, Vec<LocalTypeDeclaration<'ast>>> =
+            FxHashMap::default();
         for (block, script) in blocks.iter().enumerate() {
             for statement in &script.program.body {
                 let declaration = match statement {
@@ -304,8 +304,8 @@ impl<'ctx, 'ast> TypeResolver<'ctx, 'ast> {
         Self {
             blocks,
             declarations,
-            cache: HashMap::new(),
-            visiting: HashSet::new(),
+            cache: FxHashMap::default(),
+            visiting: FxHashSet::default(),
             cycle_hits: 0,
         }
     }
