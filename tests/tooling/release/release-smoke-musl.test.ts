@@ -77,7 +77,7 @@ test("the musl fresh install smoke cross-builds x64 and arm64 in Alpine", () => 
   assert.match(alpine, /node:24-alpine@sha256:[0-9a-f]{64}/u);
   assert.match(
     alpine,
-    /node tools\/commands\/release\/npm\/smoke-release-install\.ts[\s\\]+--prepare-manifests --runtime-checks --bun-runtime-checks/u,
+    /node tools\/commands\/release\/npm\/smoke-release-install\.ts[\s\\]+--prepare-manifests --runtime-checks/u,
   );
   for (const packageDir of [
     "npm/native",

@@ -16,6 +16,7 @@ import { isFile, runCommand, writeJsonPretty } from "./process.ts";
 import { preparePublishManifest } from "./prepare.ts";
 import {
   RUNTIME_PEER_DEPENDENCIES,
+  bunRuntimePeerDependencies,
   runInstalledContentMapperChecks,
   runRuntimeChecks,
 } from "./runtime.ts";
@@ -97,7 +98,11 @@ function installPackedPackages(
   for (const pkg of packages)
     dependencies[pkg.name] =
       packageManager === "bun" ? pathToFileURL(pkg.tarball).href : `file:${pkg.tarball}`;
-  if (runtimePeers) Object.assign(dependencies, RUNTIME_PEER_DEPENDENCIES);
+  if (runtimePeers)
+    Object.assign(
+      dependencies,
+      packageManager === "bun" ? bunRuntimePeerDependencies() : RUNTIME_PEER_DEPENDENCIES,
+    );
   writeJsonPretty(path.join(install, "package.json"), {
     name: "vize-release-install-smoke",
     private: true,

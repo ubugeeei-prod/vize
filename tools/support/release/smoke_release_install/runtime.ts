@@ -25,6 +25,15 @@ export const RUNTIME_PEER_DEPENDENCIES = {
   vue: "3.5.34",
 };
 
+export function bunRuntimePeerDependencies(): Record<string, string> {
+  const peers: Record<string, string> = { ...RUNTIME_PEER_DEPENDENCIES };
+  // The packed CLI already owns the stable native TypeScript platform runtime.
+  // Injecting the separate mapper-host beta alias makes Bun correctly prefer
+  // that project provider, whose newer API is not the LSP compatibility target.
+  delete peers["typescript-native"];
+  return peers;
+}
+
 type RuntimeKind = "bun" | "node";
 export interface RuntimeObservations {
   build: Record<string, string>;
