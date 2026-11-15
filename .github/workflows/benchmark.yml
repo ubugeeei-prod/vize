@@ -151,6 +151,7 @@ jobs:
         if: ${{ github.event_name != 'pull_request' }}
         env:
           RUN_HEAD_SHA: ${{ github.sha }}
+          EVENT_NAME: ${{ github.event_name }}
         run: |
           full_sha='^[0-9a-f]{40}$'
           if [[ ! "$BENCHMARK_BASE_SHA" =~ $full_sha ]]; then
