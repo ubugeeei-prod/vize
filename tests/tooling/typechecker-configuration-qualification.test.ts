@@ -7,7 +7,10 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { gunzipSync } from "node:zlib";
 
-import { typecheckerRunStatus } from "../../tools/support/compat/fixtures/typechecker-qualification.ts";
+import {
+  typecheckerRunStatus,
+  typecheckerSetupFailure,
+} from "../../tools/support/compat/fixtures/typechecker-qualification.ts";
 import { runTool } from "../../tools/support/compat/fixtures/tool-matrix-run.mjs";
 import { validateTypecheckerOutput } from "../../tools/support/compat/fixtures/tool-matrix-typechecker.ts";
 import { readAndValidateVizeRun } from "../../tools/support/compat/fixtures/typecheck-divergence-report-inputs.mjs";
@@ -91,6 +94,29 @@ void test("project inputs and generated dependencies block qualification with ex
   ] as const) {
     assert.equal(typecheckerRunStatus(1, parsed([{ file, diagnostics: [diagnostic] }])), expected);
   }
+});
+
+void test("setup failures classify only pinned non-JSON configuration errors", () => {
+  const cases = [
+    [
+      "tsconfig-preparation",
+      "vize check: generated types are missing\nError: Failed to prepare type checker tsconfig: IO error: Cannot resolve extended tsconfig './.nuxt/tsconfig.json'\n",
+    ],
+    [
+      "workspace-alias-overlap",
+      "Building Corsa virtual project...\nError: IO error: Workspace package alias overlaps another package link\n",
+    ],
+    [
+      "unavailable-type-input",
+      "Running Corsa diagnostics...\nError: corsa error (exit code 2): error TS2688: Cannot find type definition file for '@intlify/unplugin-vue-i18n/messages'.\n",
+    ],
+  ] as const;
+  for (const [kind, stderr] of cases) {
+    assert.equal(typecheckerSetupFailure(1, "", stderr)?.kind, kind);
+    assert.equal(typecheckerSetupFailure(0, "", stderr), null);
+    assert.equal(typecheckerSetupFailure(1, "{}", stderr), null);
+  }
+  assert.equal(typecheckerSetupFailure(1, "", "Error: unexpected typechecker failure\n"), null);
 });
 
 void test("matrix execution preserves full configuration packets and coverage", () => {
@@ -182,6 +208,42 @@ void test("matrix execution preserves full configuration packets and coverage", 
       () => reduceShards([scratch], ["typechecker"]),
       new Error(
         "configuration/typechecker payload cannot qualify semantic checking: unavailable project inputs",
+      ),
+    );
+  } finally {
+    fs.rmSync(fixture, { recursive: true, force: true });
+    fs.rmSync(scratch, { recursive: true, force: true });
+  }
+});
+
+void test("setup-only packets remain rejected as non-semantic qualification", () => {
+  const fixture = fs.mkdtempSync(path.join(root, "tests/_fixtures/qualification-setup-"));
+  const scratch = fs.mkdtempSync(path.join(os.tmpdir(), "vize-qualification-setup-"));
+  try {
+    fs.mkdirSync(path.join(fixture, "src"));
+    fs.writeFileSync(path.join(fixture, "src/App.vue"), "<template />\n");
+    const executable = path.join(scratch, "vize.mjs");
+    fs.writeFileSync(
+      executable,
+      'process.stderr.write("Error: IO error: Workspace package alias overlaps another package link\\n"); process.exit(1);\n',
+    );
+    const project = {
+      id: "setup-configuration",
+      fixturePath: path.relative(root, fixture),
+      vueGlobs: ["src/**/*.vue"],
+    };
+    const run = runTool(
+      project,
+      "typechecker",
+      { dryRun: false, timeoutMs: 5_000 },
+      { command: process.execPath, prefix: [executable], label: "fixture-vize" },
+      scratch,
+    );
+    const summary = { projects: [{ id: project.id, runs: [run] }] };
+    assert.throws(
+      () => readAndValidateVizeRun(scratch, project, summary),
+      new Error(
+        "configuration-only typechecker run is not semantic qualification for setup-configuration",
       ),
     );
   } finally {

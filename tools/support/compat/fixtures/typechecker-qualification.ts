@@ -7,6 +7,11 @@ const unavailableInputCodes = new Set([
 
 export type TypecheckerRunStatus = "ok" | "configuration" | "findings";
 
+export interface TypecheckerSetupFailure {
+  readonly kind: "tsconfig-preparation" | "workspace-alias-overlap" | "unavailable-type-input";
+  readonly message: string;
+}
+
 interface QualificationPacket {
   readonly files?: unknown;
 }
@@ -14,6 +19,34 @@ interface QualificationPacket {
 interface QualificationFile {
   readonly file?: unknown;
   readonly diagnostics?: unknown;
+}
+
+export function typecheckerSetupFailure(
+  exitCode: number | null,
+  stdout: string,
+  stderr: string,
+): TypecheckerSetupFailure | null {
+  if (exitCode !== 1 || stdout !== "" || stderr === "") return null;
+  const candidates = [
+    {
+      kind: "tsconfig-preparation" as const,
+      pattern: /^Error: Failed to prepare type checker tsconfig: .+$/mu,
+    },
+    {
+      kind: "workspace-alias-overlap" as const,
+      pattern: /^Error: IO error: Workspace package alias overlaps another package link$/mu,
+    },
+    {
+      kind: "unavailable-type-input" as const,
+      pattern:
+        /^Error: corsa error \(exit code 2\): error TS(?:2307|2318|2688|2792|5083|6053|6059|6305|6307|18002|18003): .+$/mu,
+    },
+  ];
+  for (const candidate of candidates) {
+    const match = candidate.pattern.exec(stderr);
+    if (match != null) return { kind: candidate.kind, message: match[0] };
+  }
+  return null;
 }
 
 export function typecheckerRunStatus(

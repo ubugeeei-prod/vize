@@ -51,7 +51,7 @@ test("linter oracle accepts exact error, warning, clean, and zero-file reports",
   clean[0].warningCount = 0;
   validateLinterOutput({ id: "clean" }, clean, 0);
 
-  validateLinterOutput({ id: "no-sfc", expectedVueFileCount: 0 }, [], 0, []);
+  validateLinterOutput({ id: "no-sfc", expectedVueFileCount: 0 }, [], 2, []);
 });
 
 test("linter oracle requires every fixture input and rejects substitutions", () => {
@@ -265,6 +265,47 @@ test("fixture tool matrix records linter schema failures", () => {
     assert.match(run.failure, /non-empty fixture linted zero Vue files/);
     const raw = JSON.parse(fs.readFileSync(path.resolve(root, run.outputPath as string), "utf8"));
     assert.match(raw.validationError, /non-empty fixture linted zero Vue files/);
+  } finally {
+    fs.rmSync(fixtureDir, { recursive: true, force: true });
+    fs.rmSync(fakeDir, { recursive: true, force: true });
+    fs.rmSync(reportDir, { recursive: true, force: true });
+  }
+});
+
+test("fixture tool matrix preserves the zero-file linter contract", () => {
+  const fixtureDir = fs.mkdtempSync(path.join(root, "tests", "_fixtures", "tool-matrix-zero-"));
+  const fakeDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-linter-zero-"));
+  const reportDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-linter-zero-report-"));
+  const executable = path.join(fakeDir, "fake-vize.mjs");
+  fs.writeFileSync(
+    executable,
+    `#!/usr/bin/env node
+process.stdout.write("[]");
+process.stderr.write('No .vue, .html, .htm, .js, .mjs, .cjs, .ts, .mts, .cts, .jsx, or .tsx files found matching patterns: ["**/*.vue"]\\n');
+process.exit(2);\n`,
+  );
+  fs.chmodSync(executable, 0o755);
+
+  try {
+    const run = runTool(
+      {
+        id: "linter-zero-fixture",
+        fixturePath: path.relative(root, fixtureDir),
+        vueGlobs: ["**/*.vue"],
+        expectedVueFileCount: 0,
+      },
+      "linter",
+      { dryRun: false, timeoutMs: 5_000 },
+      { command: executable, prefix: [], label: executable },
+      reportDir,
+    );
+    assert.deepEqual(
+      { status: run.status, exitCode: run.exitCode, fileCount: run.fileCount },
+      { status: "ok", exitCode: 2, fileCount: 0 },
+    );
+    const raw = JSON.parse(fs.readFileSync(path.resolve(root, run.outputPath as string), "utf8"));
+    assert.deepEqual(raw.parsed, []);
+    assert.equal(raw.exitCode, 2);
   } finally {
     fs.rmSync(fixtureDir, { recursive: true, force: true });
     fs.rmSync(fakeDir, { recursive: true, force: true });

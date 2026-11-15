@@ -274,6 +274,52 @@ process.stdout.write(JSON.stringify({ files: [], programs: [], errorCount: 0, wa
   }
 });
 
+test("fixture tool matrix classifies setup failures before JSON parsing", () => {
+  const fixtureDir = fs.mkdtempSync(
+    path.join(root, "tests", "_fixtures", "tool-matrix-typechecker-setup-"),
+  );
+  const fakeDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-typechecker-setup-"));
+  const reportDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-typechecker-setup-report-"));
+  const executable = path.join(fakeDir, "fake-vize.mjs");
+  fs.mkdirSync(path.join(fixtureDir, "src"), { recursive: true });
+  fs.writeFileSync(path.join(fixtureDir, "src", "App.vue"), "<template />\n");
+  fs.writeFileSync(
+    executable,
+    `#!/usr/bin/env node
+process.stderr.write("Error: IO error: Workspace package alias overlaps another package link\\n");
+process.exit(1);\n`,
+  );
+  fs.chmodSync(executable, 0o755);
+
+  try {
+    const run = runTool(
+      {
+        id: "typechecker-setup-fixture",
+        fixturePath: path.relative(root, fixtureDir),
+        vueGlobs: ["**/*.vue"],
+      },
+      "typechecker",
+      { dryRun: false, timeoutMs: 5_000 },
+      { command: executable, prefix: [], label: executable },
+      reportDir,
+    );
+    assert.deepEqual(
+      { status: run.status, exitCode: run.exitCode, fileCount: run.fileCount },
+      { status: "configuration", exitCode: 1, fileCount: null },
+    );
+    const raw = JSON.parse(fs.readFileSync(path.resolve(root, run.outputPath as string), "utf8"));
+    assert.deepEqual(raw.configurationError, {
+      kind: "workspace-alias-overlap",
+      message: "Error: IO error: Workspace package alias overlaps another package link",
+    });
+    assert.equal("parseError" in raw, false);
+  } finally {
+    fs.rmSync(fixtureDir, { recursive: true, force: true });
+    fs.rmSync(fakeDir, { recursive: true, force: true });
+    fs.rmSync(reportDir, { recursive: true, force: true });
+  }
+});
+
 test("fixture tool matrix rejects partial typechecker coverage", () => {
   const fixtureDir = fs.mkdtempSync(
     path.join(root, "tests", "_fixtures", "tool-matrix-typechecker-partial-"),
