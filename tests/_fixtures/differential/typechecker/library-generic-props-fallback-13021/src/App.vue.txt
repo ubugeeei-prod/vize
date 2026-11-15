@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import { NoFallback } from "./libs";
+
+const items = [{ id: "one", name: "Alpha", downloads: 1 }];
+</script>
+
+<template>
+  <NoFallback :items="items" :item-size="44" :buffer="200" />
+</template>
