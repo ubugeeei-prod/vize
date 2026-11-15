@@ -24,10 +24,30 @@ function skipTrivia(source: string, start: number, end = source.length): number 
   return index;
 }
 
-function quoted(source: string, start: number, end: number): [string, number] | null {
+function templateExpressionEnd(source: string, open: number, end: number): number | null {
+  let depth = 0;
+  for (let index = open; index < end; index += 1) {
+    const character = source[index];
+    if (character === '"' || character === "'" || character === "`") {
+      const result = quoted(source, index, end);
+      if (result === null) return null;
+      index = result[1] - 1;
+    } else if (source.startsWith("//", index) || source.startsWith("/*", index)) {
+      index = skipTrivia(source, index, end) - 1;
+    } else if (character === "{") {
+      depth += 1;
+    } else if (character === "}" && --depth === 0) {
+      return index;
+    }
+  }
+  return null;
+}
+
+function quoted(source: string, start: number, end: number): [string, number, boolean] | null {
   const quote = source[start];
   if (quote !== '"' && quote !== "'" && quote !== "`") return null;
-  let value = "";
+  let value = "",
+    interpolated = false;
   for (let index = start + 1; index < end; index += 1) {
     const character = source[index];
     if (character === "\\") {
@@ -36,9 +56,13 @@ function quoted(source: string, start: number, end: number): [string, number] | 
       value += escaped;
       index += 1;
     } else if (character === quote) {
-      return [value, index + 1];
+      return [value, index + 1, interpolated];
     } else if (quote === "`" && character === "$" && source[index + 1] === "{") {
-      return null;
+      const close = templateExpressionEnd(source, index + 1, end);
+      if (close === null) return null;
+      value += source.slice(index, close + 1);
+      interpolated = true;
+      index = close;
     } else {
       value += character;
     }
@@ -75,6 +99,7 @@ function propertyValue(source: string, open: number, close: number, wanted: stri
     const literal = quoted(source, index, close);
     let key: string;
     if (literal !== null) {
+      if (literal[2]) return null;
       [key, index] = literal;
     } else {
       const identifier = /^[A-Za-z_$][\w$]*/u.exec(source.slice(index, close));
@@ -129,7 +154,8 @@ function defineOptionsNamesSelf(source: string, tag: string): boolean {
     const value = propertyValue(source, open, close, "name");
     if (value === null) continue;
     const literal = quoted(source, value, close);
-    if (literal !== null && comparableName(literal[0]) === comparableName(tag)) return true;
+    if (literal !== null && !literal[2] && comparableName(literal[0]) === comparableName(tag))
+      return true;
   }
   return false;
 }
@@ -149,8 +175,10 @@ function decoratorRegisters(source: string, tag: string): boolean {
       }
       const literal = quoted(source, cursor, componentsClose);
       let key: string;
-      if (literal !== null) [key, cursor] = literal;
-      else {
+      if (literal !== null) {
+        if (literal[2]) break;
+        [key, cursor] = literal;
+      } else {
         const identifier = /^[A-Za-z_$][\w$]*/u.exec(source.slice(cursor, componentsClose));
         if (identifier === null) break;
         key = identifier[0];
@@ -182,8 +210,10 @@ function optionsApiRegistersNumericKebab(source: string, tag: string): boolean {
       }
       const literal = quoted(source, cursor, componentsClose);
       let key: string;
-      if (literal !== null) [key, cursor] = literal;
-      else {
+      if (literal !== null) {
+        if (literal[2]) break;
+        [key, cursor] = literal;
+      } else {
         const identifier = /^[A-Za-z_$][\w$]*/u.exec(source.slice(cursor, componentsClose));
         if (identifier === null) break;
         key = identifier[0];

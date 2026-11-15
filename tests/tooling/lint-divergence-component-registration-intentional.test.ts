@@ -46,12 +46,17 @@ defineOptions({ inheritAttrs: false, name: "RouteTreeBranch" });
 });
 
 test("numeric kebab tags retain their Options API runtime registration", () => {
-  const source = `<script>
-import { Edit1Icon } from "tdesign-icons-vue";
-export default {
-  components: { Edit1Icon },
-};
-</script>`;
+  const source = [
+    "<script>",
+    'import { Edit1Icon } from "tdesign-icons-vue";',
+    "export default {",
+    "  components: { Edit1Icon },",
+    "  computed: {",
+    "    value() { return `${this.prefix}-${`nested-${this.suffix}`}`; },",
+    "  },",
+    "};",
+    "</script>",
+  ].join("\n");
 
   assert.match(
     componentRegistrationBaselineIntentionalReason(finding("edit-1-icon"), source) ?? "",
@@ -69,6 +74,7 @@ test("unrelated source shapes stay in the scored baseline", () => {
     [finding("missing"), "@Component({ components: { present } })"],
     [finding("timer"), "const options = { components: { timer } }; @Component({}) class Home {}"],
     [finding("TreeItem"), 'defineOptions({ name: dynamicName }); const name = "TreeItem";'],
+    [finding("TreeItem"), "defineOptions({ name: `Tree${suffix}` });"],
     [finding("edit-1-icon"), "const options = { components: { Edit1Icon } }; export default {};"],
     [
       { ruleId: "vue/no-unused-components", message: finding("timer").message },
