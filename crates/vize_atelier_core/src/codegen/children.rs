@@ -168,12 +168,11 @@ fn generate_effective_children_inner(
             // text nodes separate. Only normalize a root run when doing so is
             // required to make an interpolation a patchable text VNode.
             if !has_interp && !merge_static_text_runs {
-                for child in run {
-                    if !first_output {
+                for (index, child) in run.iter().enumerate() {
+                    if index > 0 {
                         ctx.push(",");
+                        ctx.newline();
                     }
-                    ctx.newline();
-                    first_output = false;
                     generate_node(ctx, child);
                 }
                 continue;
