@@ -145,6 +145,7 @@ fn project<'a>(
         content: output.code,
         mapping: output.mapping,
     };
+    shadow_captured_ambient_consts(&mut document);
     super::expression_bindings::hoist_type_imports(&mut document, script_text);
     if !component_only {
         super::expression_bindings::bind_template_expressions_from_source(
@@ -158,6 +159,81 @@ fn project<'a>(
     // pinned in Canon snapshots, so only this checker document changes.
     keep_any_out_of_boolean_keys(&mut document);
     document
+}
+
+/// Keep a setup-local ambient const's authored type available to checker probes.
+///
+/// Canon evaluates an ambient declaration's setup-local type in `__setup` and
+/// exposes that capture through `ReturnType<typeof __setup>` at module scope.
+/// An authored setup expression that reads the same const then creates a type
+/// cycle through its enclosing function, and TypeScript resolves the value to
+/// an unusable type. The lint-only document can shadow that module declaration
+/// at the capture site: the original declaration is a const, and the capture
+/// alias is its exact authored type.
+fn shadow_captured_ambient_consts(document: &mut TypeAwareDocument) {
+    let setup = document
+        .content
+        .find("// ========== Setup Scope ==========")
+        .unwrap_or(document.content.len());
+    let mut shadows = Vec::new();
+    for line in document.content[..setup].lines() {
+        let Some(rest) = line.strip_prefix("declare const ") else {
+            continue;
+        };
+        let Some((name, ty)) = rest.split_once(": ") else {
+            continue;
+        };
+        if name.is_empty()
+            || !name
+                .bytes()
+                .all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'_' | b'$'))
+        {
+            continue;
+        }
+        let Some(capture_start) = ty.find("[\"") else {
+            continue;
+        };
+        let capture = &ty[capture_start + 2..];
+        let Some(capture_end) = capture.find("\"]") else {
+            continue;
+        };
+        let capture = &capture[..capture_end];
+        let Some((prefix, index)) = capture.rsplit_once("capture_") else {
+            continue;
+        };
+        if !prefix.starts_with("__vize_ambient_")
+            || prefix.chars().any(char::is_whitespace)
+            || index.is_empty()
+            || !index.bytes().all(|byte| byte.is_ascii_digit())
+        {
+            continue;
+        }
+        let alias = vize_l0::cstr!("type {prefix}type_{index} = ");
+        let Some(alias_start) = document.content[setup..].find(alias.as_str()) else {
+            continue;
+        };
+        let alias_start = setup + alias_start;
+        let Some(alias_end) = document.content[alias_start..].find('\n') else {
+            continue;
+        };
+        if !document.content[alias_start..alias_start + alias_end]
+            .trim_end()
+            .ends_with(';')
+        {
+            continue;
+        }
+        let at = alias_start + alias_end + 1;
+        let text = vize_l0::cstr!("  const {name}: {prefix}type_{index} = null!;\n");
+        shadows.push((at, text));
+    }
+    shadows.sort_unstable_by_key(|(at, _)| *at);
+    shadows.dedup_by(|left, right| left.0 == right.0 && left.1 == right.1);
+    for (at, text) in shadows.into_iter().rev() {
+        document
+            .mapping
+            .note_generated_replacement(at, 0, text.len());
+        document.content.insert_str(at, text.as_str());
+    }
 }
 
 #[expect(
@@ -236,6 +312,61 @@ fn keep_any_out_of_boolean_keys(document: &mut TypeAwareDocument) {
 mod tests {
     use super::{BOOLEAN_KEY_PATCHED, project_type_aware};
     use crate::linter::native_type_aware::markers::marker_insert_offset;
+
+    #[test]
+    fn captured_ambient_const_keeps_its_setup_local_type_for_checker_queries() {
+        let source = r#"<script setup lang="ts">
+enum Fruit { Apple = 'apple' }
+type Branded = (string & { brand: void }) | Fruit;
+declare const value: Branded;
+value === 'other';
+</script>"#;
+        let descriptor =
+            vize_atelier_sfc::parse_sfc(source, vize_atelier_sfc::SfcParseOptions::default())
+                .expect("sfc");
+        let script = descriptor.script_setup.as_ref().expect("script setup");
+        let document = project_type_aware(
+            &descriptor,
+            script.content.as_ref(),
+            None,
+            script.loc.start as u32,
+            0,
+            "Ambient.vue",
+        );
+        let setup = document
+            .content
+            .find("// ========== Setup Scope ==========")
+            .expect("setup scope");
+        let shadow = document
+            .content
+            .find("const value: __vize_ambient_0_type_0 = null!;")
+            .expect("typed local shadow");
+        assert!(
+            shadow > setup,
+            "shadow must stay local:\n{}",
+            document.content
+        );
+
+        let comparison = source.find("value === 'other'").expect("comparison");
+        let authored = comparison - document.mapping.authored_base();
+        let generated = document
+            .mapping
+            .spans()
+            .iter()
+            .find_map(|span| {
+                (span.src_range.start <= authored && authored < span.src_range.end)
+                    .then(|| span.gen_range.start + authored - span.src_range.start)
+            })
+            .expect("mapped comparison value");
+        assert_eq!(
+            &document.content[generated..generated + "value".len()],
+            "value"
+        );
+        assert!(
+            generated > shadow,
+            "authored read must resolve through the shadow"
+        );
+    }
 
     #[test]
     fn canon_document_closes_setup_where_markers_insert() {
