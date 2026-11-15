@@ -24,15 +24,76 @@ export function assertTypedContextWrapperMappings(
   ];
   assert.equal(
     digest(producer),
-    "e70d9c79f81b29616c97f2ad334f081ef48b05be88141fefc6909aa6bfdae367",
+    "4faaf62203dc7d08d7b7e32c1495cdb3c1a6058b1b0cca0a9e0bbc6975f53a9c",
     "unqualified content-mapper producer",
   );
+  const looseFallthroughSuccessors = [
+    [
+      `use directives::{
+    sfc_diagnostic_directives, with_component_prop_echoes, with_generic_echoes,
+    with_loose_library_prop_fallthrough, with_owned_input_echoes,
+};
+`,
+      `use directives::{
+    sfc_diagnostic_directives, with_component_prop_echoes, with_generic_echoes,
+    with_owned_input_echoes,
+};
+`,
+    ],
+    [
+      `    let descriptor = prepare_script_blocks(descriptor);
+    let loose_unknown_props =
+        !super::vue_compiler_comments::apply(content, transform_options.virtual_ts_check_options())
+            .check_unknown_props;
+    let suppress_typescript_diagnostics =
+`,
+      `    let descriptor = prepare_script_blocks(descriptor);
+    let suppress_typescript_diagnostics =
+`,
+    ],
+    [
+      `                    let directives = with_component_prop_echoes(
+                        directives,
+                        &code,
+                        &mappings,
+                        &callback_primaries,
+                    );
+                    with_loose_library_prop_fallthrough(
+                        directives,
+                        content,
+                        &code,
+                        &mappings,
+                        &mapping_meta,
+                        loose_unknown_props,
+                    )
+`,
+      `                    with_component_prop_echoes(directives, &code, &mappings, &callback_primaries)
+`,
+    ],
+  ] as const;
+  let looseFallthroughPredecessor = currentProducer;
+  for (const [successor, predecessor] of looseFallthroughSuccessors) {
+    assert.equal(
+      looseFallthroughPredecessor.split(successor).length,
+      2,
+      "finite loose-fallthrough producer successor",
+    );
+    looseFallthroughPredecessor = looseFallthroughPredecessor.replace(successor, predecessor);
+  }
   assert.equal(
-    currentProducer.split(verbatimRunSuccessor).length,
+    digest(looseFallthroughPredecessor),
+    "e70d9c79f81b29616c97f2ad334f081ef48b05be88141fefc6909aa6bfdae367",
+    "finite loose-fallthrough producer successor",
+  );
+  assert.equal(
+    looseFallthroughPredecessor.split(verbatimRunSuccessor).length,
     2,
     "finite verbatim-run producer successor",
   );
-  let checkModePredecessor = currentProducer.replace(verbatimRunSuccessor, "    spans\n");
+  let checkModePredecessor = looseFallthroughPredecessor.replace(
+    verbatimRunSuccessor,
+    "    spans\n",
+  );
   assert.equal(
     digest(checkModePredecessor),
     "23000f014edd106b8ffe1cb1ebd9424f783a5cbd879cabf435f4bcfaffd51580",
