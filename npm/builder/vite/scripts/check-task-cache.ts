@@ -130,12 +130,15 @@ try {
     }
   };
   const installSourceArchive = (archive: string): void => {
-    requireSuccess(installer, [
-      installer === "bun" ? "add" : "install",
+    // npm's no-save overlay avoids changing either package manager's manifest
+    // or lockfile while replacing only the package built from this checkout.
+    requireSuccess("npm", [
+      "install",
       "--no-save",
-      ...(installer === "bun"
-        ? ["--no-progress"]
-        : ["--legacy-peer-deps", "--no-audit", "--no-fund"]),
+      "--package-lock=false",
+      "--legacy-peer-deps",
+      "--no-audit",
+      "--no-fund",
       archive,
     ]);
   };

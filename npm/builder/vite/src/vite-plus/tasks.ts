@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
@@ -21,6 +21,13 @@ const tasks: VizeTask[] = [
 ];
 type Tasks = NonNullable<NonNullable<UserConfig["run"]>["tasks"]>;
 const readOnlyTasks = new Set<VizeTask>(["lint", "fmt:check", "check", "typecheck"]);
+const lockfilesByPackageManager = {
+  bun: ["bun.lock", "bun.lockb"],
+  npm: ["npm-shrinkwrap.json", "package-lock.json"],
+  pnpm: ["pnpm-lock.yaml"],
+  yarn: ["yarn.lock"],
+} as const;
+const allLockfiles = Object.values(lockfilesByPackageManager).flat();
 
 export function createTasks(
   existing: Tasks = {},
@@ -31,8 +38,11 @@ export function createTasks(
   // Package export resolution survives pack's shared chunks and nested installs.
   const runner = fileURLToPath(import.meta.resolve("@vizejs/vite-plugin/internal/vite-plus-task"));
   let scripts: Record<string, string> = {};
+  let packageManager: string | undefined;
   try {
-    scripts = JSON.parse(readFileSync(path.resolve("package.json"), "utf8")).scripts ?? {};
+    const manifest = JSON.parse(readFileSync(path.resolve("package.json"), "utf8"));
+    scripts = manifest.scripts ?? {};
+    packageManager = manifest.packageManager;
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
   }
@@ -49,18 +59,38 @@ export function createTasks(
     // Only the package-owned absolute path enters the task shell command.
     const command = `node ${quote(runner)} ${task}`;
     result[name] =
-      taskCache && readOnlyTasks.has(task) ? cachedTask(command) : { command, cache: false };
+      taskCache && readOnlyTasks.has(task)
+        ? cachedTask(command, lockfileInputs(packageManager))
+        : { command, cache: false };
   }
   return result;
 }
 
-function cachedTask(command: string): Tasks[string] {
+function lockfileInputs(packageManager?: string): string[] {
+  const declared = packageManager?.split("@", 1)[0];
+  if (declared && declared in lockfilesByPackageManager) {
+    return [...lockfilesByPackageManager[declared as keyof typeof lockfilesByPackageManager]];
+  }
+  const present = allLockfiles.filter((file) => existsSync(path.resolve(file)));
+  // If installation has not created a lockfile yet, retain every supported name
+  // so the first one becomes an input without requiring a config change.
+  return present.length > 0 ? present : [...allLockfiles];
+}
+
+function cachedTask(command: string, lockfiles: string[]): Tasks[string] {
   const require = createRequire(path.resolve("package.json"));
   const { version } = JSON.parse(readFileSync(require.resolve("vite-plus/package.json"), "utf8"));
   const cache = {
-    // Keep automatic tracking of source, imported config, dependencies and new
-    // directory entries; only exclude the native tools' generated work files.
-    input: [{ auto: true }, "!node_modules/.vize/**", "!**/.vize/**"],
+    // Installed dependency contents belong to the selected package manager's
+    // lockfile. Keep automatic source/config discovery without fingerprinting
+    // package-manager and tool caches under any workspace's node_modules.
+    input: [
+      { auto: true },
+      "!**/node_modules",
+      "!**/node_modules/**",
+      "!**/.vize/**",
+      ...lockfiles,
+    ],
     // Read-only checks have no outputs to restore. In particular, forwarding
     // --fix must never make a later cache hit overwrite authored source.
     output: [],
