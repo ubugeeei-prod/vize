@@ -1,8 +1,10 @@
 import { spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import { constants } from "node:os";
 import path from "node:path";
 import { isDeepStrictEqual } from "node:util";
+import { pathToFileURL } from "node:url";
 import { readPackageJson, resolveInstalledBin, type PackageInfo } from "./manifest.ts";
 import {
   assertExecutable,
@@ -15,12 +17,25 @@ import {
 } from "./process.ts";
 
 export const RUNTIME_PEER_DEPENDENCIES = {
+  oxlint: "1.78.0",
   typescript: "6.0.3",
   "typescript-native": "npm:typescript@7.1.0-beta",
   vite: "^8.0.0",
   "vite-plus": "0.1.24",
   vue: "3.5.34",
 };
+
+type RuntimeKind = "bun" | "node";
+export interface RuntimeObservations {
+  build: Record<string, string>;
+  check: string;
+  format: string;
+  lint: string;
+  lsp: "clean";
+  native: string;
+  oxlint?: string;
+  vite: Record<string, string>;
+}
 
 // These complete scripts retain the reviewed child-process bytes.
 export const NATIVE_RUNTIME_SCRIPT = `
@@ -39,6 +54,75 @@ const required = require("@vizejs/native");
     }
   }
 })().catch((error) => { console.error(error); process.exit(1); });
+`;
+export const NATIVE_RUNTIME_OBSERVATION_SCRIPT = `
+const native = require("@vizejs/native");
+const result = native.compileSfc(
+  '<template><div>{{ msg }}</div></template><script setup lang="ts">const msg: string = "ok";</script>',
+  { filename: "Smoke.vue", isTs: true },
+);
+process.stdout.write(JSON.stringify(result));
+`;
+export const LSP_RUNTIME_SCRIPT = String.raw`
+import { spawn } from "node:child_process";
+import { readFileSync } from "node:fs";
+import { pathToFileURL } from "node:url";
+const [runtime, bin, root, app] = JSON.parse(process.env.VIZE_SMOKE_LSP_CONTEXT);
+const child = spawn(runtime, [bin, "lsp"], { cwd: root, stdio: ["pipe", "pipe", "pipe"] });
+let buffer = Buffer.alloc(0);
+let stderr = "";
+let settled = false;
+const timer = setTimeout(() => finish(new Error("LSP smoke timed out\n" + stderr)), 60_000);
+function send(message) {
+  const body = Buffer.from(JSON.stringify({ jsonrpc: "2.0", ...message }));
+  child.stdin.write(Buffer.concat([Buffer.from("Content-Length: " + body.length + "\r\n\r\n"), body]));
+}
+function finish(error) {
+  if (settled) return;
+  settled = true;
+  clearTimeout(timer);
+  if (error) {
+    console.error(error);
+    child.kill();
+    process.exitCode = 1;
+  }
+}
+child.stderr.on("data", chunk => { stderr = (stderr + chunk).slice(-4000); });
+child.stdout.on("data", chunk => {
+  buffer = Buffer.concat([buffer, chunk]);
+  for (;;) {
+    const header = buffer.indexOf("\r\n\r\n");
+    if (header < 0) return;
+    const length = Number(/Content-Length: (\d+)/i.exec(buffer.subarray(0, header).toString())?.[1]);
+    if (buffer.length < header + 4 + length) return;
+    const message = JSON.parse(buffer.subarray(header + 4, header + 4 + length).toString());
+    buffer = buffer.subarray(header + 4 + length);
+    if (message.id === 1) {
+      send({ method: "initialized", params: {} });
+      send({ method: "textDocument/didOpen", params: { textDocument: {
+        uri: pathToFileURL(app).href, languageId: "vue", version: 1, text: readFileSync(app, "utf8")
+      } } });
+    } else if (message.method === "textDocument/publishDiagnostics" &&
+      message.params.uri === pathToFileURL(app).href) {
+      if (message.params.diagnostics?.length)
+        return finish(new Error("LSP smoke reported diagnostics: " + JSON.stringify(message.params.diagnostics)));
+      send({ id: 2, method: "shutdown", params: null });
+    } else if (message.id === 2) {
+      send({ method: "exit", params: null });
+    }
+  }
+});
+child.on("exit", code => {
+  if (!settled && code !== 0) return finish(new Error("LSP exited " + code + "\n" + stderr));
+  if (!settled) {
+    settled = true;
+    clearTimeout(timer);
+  }
+});
+const rootUri = pathToFileURL(root).href;
+send({ id: 1, method: "initialize", params: {
+  processId: process.pid, rootUri, workspaceFolders: [{ uri: rootUri, name: "root" }], capabilities: {}
+} });
 `;
 export const INIT_SCRIPT = `
 import { pathToFileURL } from "node:url";
@@ -100,41 +184,147 @@ function runInitChecks(
   }
 }
 
+function normalizeRuntimeText(text: string, installDir: string): string {
+  return text
+    .replaceAll(pathToFileURL(installDir).href, "file:///VIZE_PROJECT")
+    .replaceAll(installDir, "/VIZE_PROJECT")
+    .replaceAll(installDir.replaceAll("\\", "/"), "/VIZE_PROJECT");
+}
+
+function treeObservation(directory: string, installDir: string): Record<string, string> {
+  const result: Record<string, string> = {};
+  const visit = (current: string) => {
+    for (const entry of fs
+      .readdirSync(current, { withFileTypes: true })
+      .sort((a, b) => a.name.localeCompare(b.name))) {
+      const filename = path.join(current, entry.name);
+      if (entry.isDirectory()) visit(filename);
+      else if (entry.isFile()) {
+        const relative = path.relative(directory, filename).replaceAll(path.sep, "/");
+        const normalized = normalizeRuntimeText(fs.readFileSync(filename, "utf8"), installDir);
+        result[relative] = createHash("sha256").update(normalized).digest("hex");
+      }
+    }
+  };
+  visit(directory);
+  return result;
+}
+
+function runLspRuntimeCheck(runtime: string, vizeBin: string, installDir: string) {
+  const app = path.join(installDir, "src/App.vue");
+  const context = JSON.stringify([runtime, vizeBin, installDir, app]);
+  const command = process.env.NODE_BIN ?? "node";
+  const script = `process.env.VIZE_SMOKE_LSP_CONTEXT=${JSON.stringify(context)};\n${LSP_RUNTIME_SCRIPT}`;
+  runCommand(command, ["--input-type=module", "--eval", script], installDir);
+}
+
 export function runRuntimeChecks(
   installDir: string,
   packages: readonly PackageInfo[],
   allPackages: readonly PackageInfo[],
   tempDir: string,
-): void {
+  kind: RuntimeKind = "node",
+  fullProducts = false,
+): RuntimeObservations {
   writeRuntimeSmokeProject(installDir);
-  const node = process.env.NODE_BIN ?? "node";
+  const runtime =
+    kind === "bun" ? (process.env.BUN_BIN ?? "bun") : (process.env.NODE_BIN ?? "node");
+  const runtimePrefix = kind === "bun" ? "runtime (Bun)" : "runtime";
+  const observations: RuntimeObservations = {
+    build: {},
+    check: "",
+    format: "",
+    lint: "",
+    lsp: "clean",
+    native: "",
+    vite: {},
+  };
   if (packages.some((entry) => entry.name === "@vizejs/native")) {
-    runCommand(node, ["-e", NATIVE_RUNTIME_SCRIPT], installDir);
-    console.log("runtime: @vizejs/native require/import compileSfc");
+    runCommand(runtime, ["-e", NATIVE_RUNTIME_SCRIPT], installDir);
+    observations.native = normalizeRuntimeText(
+      runCommand(runtime, ["-e", NATIVE_RUNTIME_OBSERVATION_SCRIPT], installDir),
+      installDir,
+    );
+    console.log(`${runtimePrefix}: @vizejs/native require/import compileSfc`);
   }
   if (packages.some((entry) => entry.name === "vize")) {
     const vizeBin = resolveInstalledBin(installDir, "vize", "vize");
-    runCommand(node, [vizeBin, "--version"], installDir);
-    console.log("runtime: vize --version");
-    runCommand(
-      node,
-      [vizeBin, "check", "src/App.vue", "--format", "json", "--quiet", "--no-config"],
+    runCommand(runtime, [vizeBin, "--version"], installDir);
+    console.log(`${runtimePrefix}: vize --version`);
+    observations.check = normalizeRuntimeText(
+      runCommand(
+        runtime,
+        [vizeBin, "check", "src/App.vue", "--format", "json", "--quiet", "--no-config"],
+        installDir,
+      ),
       installDir,
     );
-    console.log("runtime: vize check");
-    runCommand(
-      node,
-      [vizeBin, "lint", "src/App.vue", "--format", "json", "--quiet", "--no-config"],
+    console.log(`${runtimePrefix}: vize check`);
+    observations.lint = normalizeRuntimeText(
+      runCommand(
+        runtime,
+        [vizeBin, "lint", "src/App.vue", "--format", "json", "--quiet", "--no-config"],
+        installDir,
+      ),
       installDir,
     );
-    console.log("runtime: vize lint");
-    runInitChecks(installDir, vizeBin, packages, allPackages, tempDir);
+    console.log(`${runtimePrefix}: vize lint`);
+    if (fullProducts) {
+      runCommand(runtime, [vizeBin, "fmt", "src/Format.vue", "--write", "--no-config"], installDir);
+      observations.format = fs.readFileSync(path.join(installDir, "src/Format.vue"), "utf8");
+      console.log(`${runtimePrefix}: vize fmt`);
+      runCommand(
+        runtime,
+        [vizeBin, "build", "src/App.vue", "--output", "vize-build", "--no-config"],
+        installDir,
+      );
+      observations.build = treeObservation(path.join(installDir, "vize-build"), installDir);
+      console.log(`${runtimePrefix}: vize build`);
+      runLspRuntimeCheck(runtime, vizeBin, installDir);
+      console.log(`${runtimePrefix}: vize lsp`);
+    }
+    if (kind === "node") runInitChecks(installDir, vizeBin, packages, allPackages, tempDir);
+    else {
+      runCommand(
+        runtime,
+        [
+          vizeBin,
+          "init",
+          "--yes",
+          "--no-lint",
+          "--vite",
+          "--fmt",
+          "--typecheck",
+          "--no-editor",
+          "--dry-run",
+          "--package-manager",
+          "bun",
+        ],
+        installDir,
+      );
+      console.log("runtime (Bun): vize init --package-manager bun");
+    }
   }
   if (packages.some((entry) => entry.name === "@vizejs/vite-plugin")) {
     const viteBin = resolveInstalledBin(installDir, "vite", "vite");
-    runCommand(node, [viteBin, "build"], installDir);
-    console.log("runtime: @vizejs/vite-plugin vite build");
+    runCommand(runtime, [viteBin, "build"], installDir);
+    observations.vite = treeObservation(path.join(installDir, "dist"), installDir);
+    if (kind === "node") console.log("runtime: @vizejs/vite-plugin vite build");
+    else console.log("runtime (Bun): @vizejs/vite-plugin vite build");
   }
+  if (fullProducts && packages.some((entry) => entry.name === "oxlint-plugin-vize")) {
+    const oxlintVize = resolveInstalledBin(installDir, "oxlint-plugin-vize", "oxlint-vize");
+    observations.oxlint = normalizeRuntimeText(
+      runCommand(
+        runtime,
+        [oxlintVize, "-c", ".oxlintrc.json", "-f", "json", "src/Oxlint.vue"],
+        installDir,
+      ),
+      installDir,
+    );
+    console.log(`${runtimePrefix}: oxlint-vize`);
+  }
+  return observations;
 }
 
 function writeText(filename: string, source: string): void {
@@ -172,6 +362,11 @@ export function writeRuntimeSmokeProject(installDir: string): void {
     },
     include: ["src/**/*.ts", "src/**/*.vue"],
   });
+  writeJsonPretty(path.join(installDir, ".oxlintrc.json"), {
+    plugins: ["vue"],
+    jsPlugins: ["oxlint-plugin-vize"],
+    rules: { "vize/vue/no-v-html": "warn" },
+  });
   writeText(
     path.join(installDir, "vite.config.mjs"),
     'import { defineConfig } from "vite";\nimport vize from "@vizejs/vite-plugin";\n\nexport default defineConfig({\n  plugins: [vize()],\n  build: { outDir: "dist", emptyOutDir: true },\n});\n',
@@ -183,6 +378,14 @@ export function writeRuntimeSmokeProject(installDir: string): void {
   writeText(
     path.join(sourceDir, "main.ts"),
     'import { createApp } from "vue";\nimport App from "./App.vue";\n\ncreateApp(App).mount("#app");\n',
+  );
+  writeText(
+    path.join(sourceDir, "Format.vue"),
+    '<template><p>{{message}}</p></template><script setup lang="ts">const message:string="format"</script>\n',
+  );
+  writeText(
+    path.join(sourceDir, "Oxlint.vue"),
+    '<template>\n  <div v-html="body" />\n</template>\n\n<script setup lang="ts">\nconst body = "<strong>unsafe</strong>";\n</script>\n',
   );
 }
 

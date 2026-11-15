@@ -53,6 +53,9 @@ export function assertMuslFreshInstallSuccessor(historical: string, current: str
     `${nodeCommand} --prepare-manifests npm/native`,
     `${rustCommand} --prepare-manifests npm/native`,
   );
+  const bunRuntimeChecks = "--runtime-checks --bun-runtime-checks";
+  assert.equal(sealed.split(bunRuntimeChecks).length, 4, "three packed Bun runtime checks");
+  sealed = sealed.replaceAll(bunRuntimeChecks, "--runtime-checks");
   assert.equal(sealed.split(`${nodeCommand} --prepare-manifests --runtime-checks`).length, 3);
   sealed = sealed.replaceAll(
     `${nodeCommand} --prepare-manifests --runtime-checks`,

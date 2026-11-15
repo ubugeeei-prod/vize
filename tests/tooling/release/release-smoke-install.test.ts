@@ -243,7 +243,15 @@ test("release install smoke can run runtime checks for Vize packages", () => {
   );
 
   assert.match(script, /--runtime-checks/);
+  assert.match(script, /--bun-runtime-checks/);
   assert.match(script, /--content-mapper-checks/);
+  assert.match(script, /--bun-runtime-checks requires --runtime-checks/);
+  assert.match(
+    script,
+    /runCommand\(process\.env\.BUN_BIN \?\? "bun", \["install", "--ignore-scripts"\]/,
+  );
+  assert.match(script, /Bun runtime behavior differs from Node/);
+  assert.match(script, /Bun and Node diagnostics\/generated output are identical/);
   // vize declares its Corsa runtime itself, so the fresh-install smoke must not
   // manually add the retired native-preview package as a project runtime peer.
   assert.doesNotMatch(smokeSources, /"@typescript\/native-preview":/);
@@ -288,6 +296,13 @@ test("release install smoke can run runtime checks for Vize packages", () => {
   assert.match(smokeSources, /viteBin, "build"/);
   assert.match(smokeSources, /vite:\s*"\^8\.0\.0"/);
   assert.match(smokeSources, /runtime: @vizejs\/vite-plugin vite build/);
+  assert.match(runtimeScript, /"fmt", "src\/Format\.vue", "--write", "--no-config"/);
+  assert.match(runtimeScript, /"build", "src\/App\.vue", "--output", "vize-build"/);
+  assert.match(runtimeScript, /runLspRuntimeCheck\(runtime, vizeBin, installDir\)/);
+  assert.match(
+    runtimeScript,
+    /resolveInstalledBin\(installDir, "oxlint-plugin-vize", "oxlint-vize"\)/,
+  );
   // The combined install must request optional deps explicitly so that an
   // inherited `omit=optional` config does not silently drop platform-specific
   // native bindings (e.g. rolldown).

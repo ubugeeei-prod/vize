@@ -1,6 +1,8 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { isDeepStrictEqual } from "node:util";
+import { pathToFileURL } from "node:url";
 import {
   assertInstalledPackage,
   assertNoWorkspaceProtocols,
@@ -19,6 +21,7 @@ import {
 } from "./runtime.ts";
 
 interface Options {
+  bunRuntimeChecks: boolean;
   contentMapperChecks: boolean;
   keepTemp: boolean;
   packageDirs: string[];
@@ -27,6 +30,7 @@ interface Options {
 }
 function parseArgs(argv: readonly string[]): Options {
   const options: Options = {
+    bunRuntimeChecks: false,
     contentMapperChecks: false,
     keepTemp: false,
     packageDirs: [],
@@ -35,6 +39,9 @@ function parseArgs(argv: readonly string[]): Options {
   };
   for (const arg of argv) {
     switch (arg) {
+      case "--bun-runtime-checks":
+        options.bunRuntimeChecks = true;
+        break;
       case "--content-mapper-checks":
         options.contentMapperChecks = true;
         break;
@@ -58,8 +65,10 @@ function parseArgs(argv: readonly string[]): Options {
   }
   if (!options.packageDirs.length)
     throw new Error(
-      "Usage: node tools/commands/release/npm/smoke-release-install.ts [--prepare-manifests] [--runtime-checks] [--content-mapper-checks] [--keep-temp] <package-dir>...",
+      "Usage: node tools/commands/release/npm/smoke-release-install.ts [--prepare-manifests] [--runtime-checks] [--bun-runtime-checks] [--content-mapper-checks] [--keep-temp] <package-dir>...",
     );
+  if (options.bunRuntimeChecks && !options.runtimeChecks)
+    throw new Error("--bun-runtime-checks requires --runtime-checks for Node/Bun parity");
   return options;
 }
 function packPackage(directory: string, packs: string): string {
@@ -80,30 +89,36 @@ function installPackedPackages(
   temporary: string,
   packages: readonly PackageInfo[],
   runtimePeers: boolean,
+  packageManager: "bun" | "npm" = "npm",
 ): string {
-  const install = path.join(temporary, "install"),
+  const install = path.join(temporary, packageManager === "bun" ? "install-bun" : "install"),
     dependencies: Record<string, string> = {};
   fs.mkdirSync(install, { recursive: true });
-  for (const pkg of packages) dependencies[pkg.name] = `file:${pkg.tarball}`;
+  for (const pkg of packages)
+    dependencies[pkg.name] =
+      packageManager === "bun" ? pathToFileURL(pkg.tarball).href : `file:${pkg.tarball}`;
   if (runtimePeers) Object.assign(dependencies, RUNTIME_PEER_DEPENDENCIES);
   writeJsonPretty(path.join(install, "package.json"), {
     name: "vize-release-install-smoke",
     private: true,
     dependencies,
   });
-  runCommand(
-    process.env.NPM_BIN ?? "npm",
-    [
-      "install",
-      "--ignore-scripts",
-      "--package-lock=false",
-      "--no-audit",
-      "--fund=false",
-      "--legacy-peer-deps",
-      "--include=optional",
-    ],
-    install,
-  );
+  if (packageManager === "bun")
+    runCommand(process.env.BUN_BIN ?? "bun", ["install", "--ignore-scripts"], install);
+  else
+    runCommand(
+      process.env.NPM_BIN ?? "npm",
+      [
+        "install",
+        "--ignore-scripts",
+        "--package-lock=false",
+        "--no-audit",
+        "--fund=false",
+        "--legacy-peer-deps",
+        "--include=optional",
+      ],
+      install,
+    );
   for (const pkg of packages) assertInstalledPackage(path.join(install, "node_modules"), pkg);
   return install;
 }
@@ -135,7 +150,32 @@ export function smokeReleaseInstall(argv: readonly string[]): number {
       installable,
       options.runtimeChecks || options.contentMapperChecks,
     );
-    if (options.runtimeChecks) runRuntimeChecks(install, installable, packages, temporary);
+    const nodeObservations = options.runtimeChecks
+      ? runRuntimeChecks(
+          install,
+          installable,
+          packages,
+          temporary,
+          "node",
+          options.bunRuntimeChecks,
+        )
+      : undefined;
+    if (options.bunRuntimeChecks) {
+      const bunInstall = installPackedPackages(temporary, installable, true, "bun");
+      const bunObservations = runRuntimeChecks(
+        bunInstall,
+        installable,
+        packages,
+        temporary,
+        "bun",
+        true,
+      );
+      if (!isDeepStrictEqual(bunObservations, nodeObservations))
+        throw new Error(
+          `Bun runtime behavior differs from Node\nNode: ${JSON.stringify(nodeObservations, null, 2)}\nBun: ${JSON.stringify(bunObservations, null, 2)}`,
+        );
+      console.log("runtime: Bun and Node diagnostics/generated output are identical");
+    }
     if (options.contentMapperChecks) runInstalledContentMapperChecks(install);
     console.log(`smoked ${installable.length}/${packages.length} package tarballs`);
     return 0;

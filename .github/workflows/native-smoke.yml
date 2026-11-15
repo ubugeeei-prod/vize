@@ -223,7 +223,7 @@ jobs:
           VIZE_SMOKE_TIMING_FILE: ${{ runner.temp }}/packed-smoke-timing.jsonl
         shell: bash
         run: |
-          node tools/commands/release/npm/smoke-release-install.ts --prepare-manifests --runtime-checks \
+          node tools/commands/release/npm/smoke-release-install.ts --prepare-manifests --runtime-checks --bun-runtime-checks \
             npm/native npm/native/npm/* \
             npm/cli npm/builder/vite
       - name: Fresh packed Nuxt init, check, and LSP smoke
@@ -233,7 +233,7 @@ jobs:
         shell: bash
         run: |
           read -ra js <<< "$RELEASE_JS_PACKAGES"
-          node tools/commands/release/npm/smoke-release-install.ts --prepare-manifests --runtime-checks \
+          node tools/commands/release/npm/smoke-release-install.ts --prepare-manifests --runtime-checks --bun-runtime-checks \
             npm/native npm/native/npm/* "${js[@]}"
       - name: Retain packed smoke timing
         if: always()
@@ -314,7 +314,7 @@ jobs:
               corepack enable
               npm install --global --allow-scripts=bun bun@1.3.14 vite-plus@0.1.24
               node tools/commands/release/npm/smoke-release-install.ts \
-                --prepare-manifests --runtime-checks \
+                --prepare-manifests --runtime-checks --bun-runtime-checks \
                 npm/native "npm/native/npm/$NATIVE_PLATFORM" \
                 npm/cli npm/builder/vite \
                 2>&1 | tee /evidence/musl-smoke.log
