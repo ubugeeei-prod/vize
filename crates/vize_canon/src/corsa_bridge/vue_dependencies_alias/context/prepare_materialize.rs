@@ -61,7 +61,8 @@ pub(super) fn materialize_cached_revision(
     mirror.restore_editor_package_links(&previous);
     source_catalog = cache.include_source_catalog(mirror.virtual_root(), sources);
     let expected_files = mirror.expected_materialized_files();
-    let package_links = mirror.desired_package_links();
+    let workspace_alias_plan = mirror.workspace_alias_plan();
+    let package_links = mirror.desired_package_links(&workspace_alias_plan);
     let member_query_paths = mirror.editor_query_paths(&source_path);
     union.query_paths.extend(member_query_paths.iter().cloned());
     source_catalog = source_catalog.retaining_live_files(&expected_files, &union.files);
@@ -71,12 +72,13 @@ pub(super) fn materialize_cached_revision(
     let current = if narrow {
         mirror.materialize_fingerprint_hit(&previous)
     } else {
-        let current = mirror.materialize_editor_union(
+        let current = mirror.materialize_editor_union_with_plan(
             &previous,
             &union.files,
             &union.package_links,
             &union.query_paths,
             union.requires_arbitrary_extensions,
+            workspace_alias_plan,
         );
         mirror.discard_incremental_materialization();
         current

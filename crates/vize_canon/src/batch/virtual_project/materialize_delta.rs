@@ -82,12 +82,16 @@ impl VirtualProject {
         &mut self,
     ) -> CorsaResult<IncrementalMaterialization> {
         let install_roots = self.workspace_install_roots()?;
-        let full_topology_rebuild = self.incremental_link_topology_dirty;
+        let workspace_alias_plan = self.workspace_alias_plan();
+        let full_topology_rebuild = self.incremental_link_topology_dirty
+            || workspace_alias_plan.revision != self.materialized_workspace_alias_plan.revision;
         let local_link_patch = (!full_topology_rebuild
             && !self.incremental_package_link_scopes.is_empty())
-        .then(|| self.prepare_incremental_package_link_patch());
-        let desired_links = full_topology_rebuild.then(|| self.desired_package_links());
+        .then(|| self.prepare_incremental_package_link_patch(&workspace_alias_plan));
+        let desired_links =
+            full_topology_rebuild.then(|| self.desired_package_links(&workspace_alias_plan));
         let retire = self.validate_incremental_workspace_links(
+            &workspace_alias_plan,
             desired_links.as_ref(),
             local_link_patch.as_ref(),
         )?;
@@ -164,15 +168,11 @@ impl VirtualProject {
             self.write_owned_candidate(path)?;
         }
 
-        self.ensure_workspace_alias_targets()?;
+        self.ensure_workspace_alias_targets(&workspace_alias_plan)?;
         if let Some(desired) = desired_links.as_ref() {
             materialize_package_links(desired)?;
-            self.materialized_package_links = desired.clone();
-            self.rebuild_materialized_package_link_owners();
-            self.incremental_link_topology_dirty = false;
-        } else if let Some(patch) = local_link_patch {
+        } else if let Some(patch) = local_link_patch.as_ref() {
             materialize_package_links(&patch.desired)?;
-            self.commit_incremental_package_link_patch(patch);
         }
 
         let mut delta = MaterializedFileDelta {
@@ -194,7 +194,22 @@ impl VirtualProject {
         delta.deleted.sort();
         // Commit link custody only after the complete incremental snapshot can
         // be observed. Any failure above leaves the prior receipt intact.
-        self.write_package_link_receipt(&self.materialized_package_links)?;
+        if let Some(desired) = desired_links {
+            self.write_package_link_receipt(&desired)?;
+            self.commit_materialized_package_links(desired, workspace_alias_plan);
+        } else if let Some(patch) = local_link_patch {
+            self.write_package_link_receipt_entries(
+                self.materialized_package_links
+                    .iter()
+                    .filter(|(path, _)| !patch.candidates.contains(*path))
+                    .chain(patch.desired.iter()),
+            )?;
+            self.commit_incremental_package_link_patch(patch);
+            self.materialized_workspace_alias_plan = workspace_alias_plan;
+        } else {
+            self.write_package_link_receipt(&self.materialized_package_links)?;
+            self.materialized_workspace_alias_plan = workspace_alias_plan;
+        }
         self.retired_package_shadow_paths.clear();
         Ok(IncrementalMaterialization {
             delta,

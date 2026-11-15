@@ -14,6 +14,7 @@ use crate::batch::materialize_fs::{
 use crate::batch::runtime_deps::materialize_runtime_dependencies;
 
 use super::package_node_modules::materialize_package_node_modules;
+use super::workspace_aliases::WorkspaceAliasPlan;
 use super::{
     AUTO_IMPORT_STUBS_FILE, MODULE_AUGMENTATION_STUBS_FILE, PACKAGE_BOUNDARY_FILE,
     VUE_MODULE_STUBS_FILE, VirtualProject,
@@ -30,29 +31,51 @@ impl VirtualProject {
     /// rewrite entirely, which avoids needless write IO and keeps mtimes stable
     /// so TypeScript's own filesystem caches are not invalidated.
     pub fn materialize(&self) -> CorsaResult<()> {
+        let workspace_alias_plan = self.workspace_alias_plan();
         self.materialize_snapshot(
             &FxHashSet::default(),
             &Default::default(),
             None,
             false,
             false,
+            workspace_alias_plan,
         )
         .map(|_| ())
+    }
+
+    /// Cold materialization for a persistent checker. The completed link and
+    /// alias authority is published only after every filesystem write and the
+    /// custody receipt succeed.
+    pub(crate) fn materialize_persistent(&mut self) -> CorsaResult<()> {
+        let workspace_alias_plan = self.workspace_alias_plan();
+        let (package_links, workspace_alias_plan) = self.materialize_snapshot(
+            &FxHashSet::default(),
+            &Default::default(),
+            None,
+            false,
+            false,
+            workspace_alias_plan,
+        )?;
+        self.commit_materialized_package_links(package_links, workspace_alias_plan);
+        Ok(())
     }
 
     /// [`Self::materialize`] for one CLI check that runs right after it, with
     /// the program roots listed literally (see `write_literal_tsconfig_file`).
     pub(crate) fn materialize_for_cli(&self) -> CorsaResult<()> {
+        let workspace_alias_plan = self.workspace_alias_plan();
         self.materialize_snapshot(
             &FxHashSet::default(),
             &Default::default(),
             None,
             false,
             true,
+            workspace_alias_plan,
         )
         .map(|_| ())
     }
 
+    #[cfg(test)]
     pub(crate) fn materialize_editor_union(
         &self,
         previous: &super::MaterializedFileSnapshot,
@@ -61,13 +84,34 @@ impl VirtualProject {
         query_paths: &[PathBuf],
         preserved_arbitrary_extensions: bool,
     ) -> CorsaResult<super::MaterializedFileSnapshot> {
+        let workspace_alias_plan = self.workspace_alias_plan();
+        self.materialize_editor_union_with_plan(
+            previous,
+            preserved_files,
+            preserved_package_links,
+            query_paths,
+            preserved_arbitrary_extensions,
+            workspace_alias_plan,
+        )
+    }
+
+    pub(crate) fn materialize_editor_union_with_plan(
+        &self,
+        previous: &super::MaterializedFileSnapshot,
+        preserved_files: &FxHashSet<PathBuf>,
+        preserved_package_links: &vize_carton::FxHashMap<PathBuf, PathBuf>,
+        query_paths: &[PathBuf],
+        preserved_arbitrary_extensions: bool,
+        workspace_alias_plan: WorkspaceAliasPlan,
+    ) -> CorsaResult<super::MaterializedFileSnapshot> {
         let _lock = super::super::materialize_lock::MaterializeLock::acquire(&self.virtual_root)?;
-        let package_links = self.materialize_snapshot(
+        let (package_links, _) = self.materialize_snapshot(
             preserved_files,
             preserved_package_links,
             Some(query_paths),
             preserved_arbitrary_extensions,
             false,
+            workspace_alias_plan,
         )?;
         let mut expected_files = self.expected_materialized_files();
         expected_files.extend(preserved_files.iter().cloned());
@@ -87,23 +131,25 @@ impl VirtualProject {
         query_paths: Option<&[PathBuf]>,
         preserved_arbitrary_extensions: bool,
         literal_roots: bool,
-    ) -> CorsaResult<vize_carton::FxHashMap<PathBuf, PathBuf>> {
+        workspace_alias_plan: WorkspaceAliasPlan,
+    ) -> CorsaResult<(vize_carton::FxHashMap<PathBuf, PathBuf>, WorkspaceAliasPlan)> {
         // A checkout owns one durable mirror, but deleted worktrees otherwise
         // leave their full mirrors in the user cache forever. Maintenance is
         // deliberately best-effort: a cache failure must never fail a check.
         super::cache_gc::maintain_project_cache(&self.virtual_root);
         let mut expected_files = self.expected_materialized_files();
         expected_files.extend(preserved_files.iter().cloned());
-        let owned_files = self.workspace_cold_owned_files(&expected_files);
+        let owned_files = self.workspace_cold_owned_files(&workspace_alias_plan, &expected_files);
         self.prepare_owned_batch_writes(&owned_files)?;
-        self.validate_workspace_alias_targets(&owned_files)?;
-        let workspace_alias_claims = self.workspace_alias_claims();
+        self.validate_workspace_alias_targets(&workspace_alias_plan, &owned_files)?;
+        let workspace_alias_claims = self.workspace_alias_claims(&workspace_alias_plan);
         let mut link_claims = expected_files.clone();
         link_claims.extend(workspace_alias_claims.iter().cloned());
         link_claims.extend(
             self.preserved_workspace_alias_claims(preserved_package_links, &expected_files)?,
         );
-        let mut desired_package_links = self.desired_package_links_for_files(&link_claims);
+        let mut desired_package_links =
+            self.desired_package_links_for_files(&link_claims, &workspace_alias_plan);
         for (path, target) in preserved_package_links {
             // An owned alias supersedes an external link at that exact leaf,
             // while its bytes live at the private target. Parent links still
@@ -134,7 +180,11 @@ impl VirtualProject {
                 })
                 .or_insert_with(|| target.clone());
         }
-        let retire = self.validate_workspace_alias_links(&desired_package_links, &owned_files)?;
+        let retire = self.validate_workspace_alias_links(
+            &workspace_alias_plan,
+            &desired_package_links,
+            &owned_files,
+        )?;
         self.retire_workspace_cache_links(retire)?;
         let package_links = desired_package_links
             .iter()
@@ -183,7 +233,7 @@ impl VirtualProject {
                 &runtime_preserved,
             )
         )?;
-        self.ensure_workspace_alias_targets()?;
+        self.ensure_workspace_alias_targets(&workspace_alias_plan)?;
         profile!(
             "canon.project.package_deps",
             materialize_package_node_modules(&package_links)
@@ -310,7 +360,7 @@ impl VirtualProject {
         // its live lock. Keep parallel cache maintenance from reclaiming that
         // freshly completed result in the hand-off window.
         super::cache_gc::record_project_cache_access(&self.virtual_root);
-        Ok(desired_package_links)
+        Ok((desired_package_links, workspace_alias_plan))
     }
 
     pub(super) fn write_package_boundary(&self) -> CorsaResult<()> {

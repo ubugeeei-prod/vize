@@ -18,7 +18,16 @@ import {
   isolateUniqueVueUsePackages,
 } from "./typecheck-baseline-isolation-unique.ts";
 import { applyIsolatedTypecheckOverlays } from "./typecheck-baseline-outside-overlays.ts";
-import { selectTypecheckPerformanceProjects } from "./typecheck-performance-shard.mjs";
+import {
+  commandOptions,
+  installArguments,
+  packageManagerRunner,
+  qualifyLockfileBytes,
+  runPackageManager,
+} from "./typecheck-package-manager.mjs";
+import { prepareTypecheckSetupProject } from "./typecheck-setup-prepare.mjs";
+
+export { installArguments } from "./typecheck-package-manager.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(here, "..", "..", "..", "..");
@@ -27,28 +36,44 @@ const defaultRegistry = join(repoRoot, "tests", "_fixtures", "vue-ecosystem-fixt
 export async function runTypecheckDependencyPrepare(argv = process.argv.slice(2)) {
   const args = parseArgs(argv);
   const registry = readJson(args.registry);
-  const selected = selectTypecheckPerformanceProjects(registry, args);
+  const selected = selectTypecheckDependencyProjects(registry, args);
   const commitSha = requireCommitSha(process.env.GITHUB_SHA);
   requireDirectory(args.outputDir);
   if (selected.length === 0) {
     process.stdout.write(
-      `No typecheck performance projects selected for shard ${args.shardIndex}/${args.shardCount}\n`,
+      `No typecheck performance projects selected or setup projects selected for shard ${args.shardIndex}/${args.shardCount}\n`,
     );
     return [];
   }
   const artifacts = [];
   for (const project of selected) {
-    artifacts.push(await prepareProjectDependencies({ args, commitSha, project }));
+    artifacts.push(
+      project.typecheckPerformance?.enabled === true
+        ? await preparePerformanceProject({ args, commitSha, project })
+        : await prepareTypecheckSetupProject({ args, commitSha, project, repoRoot }),
+    );
   }
   return artifacts;
 }
 
-async function prepareProjectDependencies({ args, commitSha, project }) {
+function selectTypecheckDependencyProjects(registry, { shardIndex, shardCount }) {
+  if (!Array.isArray(registry?.projects)) throw new Error("Fixture registry must list projects");
+  return registry.projects.filter(
+    (project, index) =>
+      index % shardCount === shardIndex &&
+      (project.typecheckPerformance?.enabled === true || project.typecheckSetup?.enabled === true),
+  );
+}
+
+async function preparePerformanceProject({ args, commitSha, project }) {
   const fixtureRoot = resolve(repoRoot, project.fixturePath);
   validateTypecheckPerformanceTarget(project, fixtureRoot);
   const performance = project.typecheckPerformance;
   const lockfilePath = resolve(fixtureRoot, performance.lockfile);
   const lockfileBefore = readFileSync(lockfilePath);
+  const qualifiedLockfile = qualifyLockfileBytes(performance.packageManager, lockfileBefore, {
+    workspacePackages: performance.workspacePackages,
+  });
   requireCleanFixture(fixtureRoot, "before dependency installation");
 
   const manager = performance.packageManager;
@@ -70,30 +95,43 @@ async function prepareProjectDependencies({ args, commitSha, project }) {
     );
   }
 
-  const installArgs = installArguments(manager, fixtureRoot);
-  const startedAt = Date.now();
-  const install = await runPackageManager(managerRunner, installArgs, {
-    cwd: fixtureRoot,
-    encoding: "utf8",
-    env: {
-      ...process.env,
-      CI: "true",
-      npm_config_ignore_scripts: "true",
-      YARN_ENABLE_SCRIPTS: "false",
-    },
-    maxBuffer: 1024 * 1024 * 1024,
-    timeout: args.timeoutMs,
+  const installArgs = installArguments(manager, fixtureRoot, performance.packageManagerVersion, {
+    nodeLinker: performance.nodeLinker,
+    workspacePackages: performance.workspacePackages,
   });
+  const startedAt = Date.now();
+  const transformedLockfile = !lockfileBefore.equals(qualifiedLockfile);
+  if (transformedLockfile) writeFileSync(lockfilePath, qualifiedLockfile);
+  let install;
+  let lockfileAfter;
+  try {
+    install = await runPackageManager(managerRunner, installArgs, {
+      cwd: fixtureRoot,
+      encoding: "utf8",
+      env: {
+        ...process.env,
+        CI: "true",
+        npm_config_ignore_scripts: "true",
+        YARN_ENABLE_SCRIPTS: "false",
+      },
+      maxBuffer: 1024 * 1024 * 1024,
+      timeout: args.timeoutMs,
+    });
+    lockfileAfter = readFileSync(lockfilePath);
+  } finally {
+    if (transformedLockfile) writeFileSync(lockfilePath, lockfileBefore);
+  }
   const durationMs = Date.now() - startedAt;
   if (install.error != null) {
     throw new Error(`${managerRunner.label} install failed to run: ${errorMessage(install.error)}`);
   }
   if (install.status !== 0) {
-    throw new Error(`${managerRunner.label} install exited with status ${install.status}`);
+    throw new Error(
+      `${managerRunner.label} install exited with status ${install.status}${commandDiagnostic(install)}`,
+    );
   }
 
-  const lockfileAfter = readFileSync(lockfilePath);
-  if (!lockfileBefore.equals(lockfileAfter)) {
+  if (!qualifiedLockfile.equals(lockfileAfter)) {
     throw new Error(`${manager} install modified frozen lockfile ${performance.lockfile}`);
   }
   requireCleanFixture(fixtureRoot, "after dependency installation");
@@ -111,7 +149,7 @@ async function prepareProjectDependencies({ args, commitSha, project }) {
   requireCleanFixture(fixtureRoot, "after baseline preparation");
   const artifact = {
     schema: "vize.fixtureTypecheckDependencyInstall",
-    version: 2,
+    version: 3,
     project: project.id,
     revision: project.revision,
     evidence: {
@@ -121,9 +159,16 @@ async function prepareProjectDependencies({ args, commitSha, project }) {
     packageManager: { name: manager, version: detectedVersion },
     lockfile: {
       path: performance.lockfile,
-      sizeBytes: lockfileAfter.byteLength,
-      sha256: sha256(lockfileAfter),
+      sizeBytes: lockfileBefore.byteLength,
+      sha256: sha256(lockfileBefore),
     },
+    qualificationLockfile: transformedLockfile
+      ? {
+          mode: "pnpm-injected-workspace-packages",
+          sizeBytes: qualifiedLockfile.byteLength,
+          sha256: sha256(qualifiedLockfile),
+        }
+      : null,
     install: {
       command: [manager, ...installArgs],
       durationMs,
@@ -246,58 +291,6 @@ function validateMisskeyDeclarations(fixtureRoot) {
   }
 }
 
-export function installArguments(manager, fixtureRoot) {
-  const ignoreParentWorkspace =
-    manager === "pnpm" && !existsSync(join(fixtureRoot, "pnpm-workspace.yaml"));
-  return {
-    npm: ["ci", "--ignore-scripts", "--prefer-offline", "--no-audit", "--no-fund"],
-    pnpm: [
-      "install",
-      "--frozen-lockfile",
-      "--ignore-scripts",
-      "--prefer-offline",
-      ...(ignoreParentWorkspace ? ["--ignore-workspace"] : []),
-    ],
-    yarn: ["install", "--immutable", "--mode=skip-build"],
-  }[manager];
-}
-
-function packageManagerRunner(manager, version) {
-  if (manager === "pnpm" || manager === "yarn") {
-    return {
-      manager,
-      command: "corepack",
-      prefixArgs: [`${manager}@${version}`],
-      label: `${manager}@${version}`,
-    };
-  }
-  return { manager, command: manager, prefixArgs: [], label: manager };
-}
-
-function runPackageManager(runner, args, options) {
-  if (runner.prefixArgs.length === 0) {
-    return runTypecheckCommand(runner.command, args, commandOptions(options));
-  }
-  // Fixtures intentionally carry the pinned package-manager contract in the
-  // registry, not package.json. Prevent Corepack from walking up to the
-  // repository root and applying Vize's own packageManager field instead.
-  const env = { ...process.env, ...options.env, COREPACK_ENABLE_PROJECT_SPEC: "0" };
-  return runTypecheckCommand(
-    runner.command,
-    [...runner.prefixArgs, ...args],
-    commandOptions({ ...options, env }),
-  );
-}
-
-function commandOptions(options) {
-  return {
-    cwd: options.cwd,
-    env: options.env ?? process.env,
-    maxBuffer: options.maxBuffer,
-    timeoutMs: options.timeout,
-  };
-}
-
 function requireCleanFixture(fixtureRoot, phase) {
   const status = spawnSync("git", ["status", "--porcelain=v1", "--untracked-files=no"], {
     cwd: fixtureRoot,
@@ -373,6 +366,17 @@ function sha256(value) {
 
 function errorMessage(error) {
   return error instanceof Error ? error.message : String(error);
+}
+
+const ansiSgrPattern = new RegExp(`${String.fromCharCode(27)}\\[[0-9;]*m`, "gu");
+
+function commandDiagnostic(result) {
+  const lines = [result.stderr, result.stdout]
+    .flatMap((stream) => String(stream ?? "").split(/\r?\n/u))
+    .map((line) => line.replace(ansiSgrPattern, "").trim())
+    .filter(Boolean);
+  const line = lines.find((candidate) => candidate.includes("ERR_")) ?? lines[0];
+  return line == null ? "" : `: ${line.slice(0, 500)}`;
 }
 
 const entrypoint = process.argv[1]

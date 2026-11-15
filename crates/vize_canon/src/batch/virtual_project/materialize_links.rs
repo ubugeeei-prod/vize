@@ -9,6 +9,7 @@ use super::canonical_paths::{CanonicalPathGuard, canonical_path};
 use super::package_node_modules::{
     PackageNodeModulesLink, package_node_modules_links_with_passthrough,
 };
+use super::workspace_aliases::WorkspaceAliasPlan;
 
 impl VirtualProject {
     pub(super) fn preserved_package_link_overlaps_files(
@@ -33,9 +34,23 @@ impl VirtualProject {
             .clone_from(snapshot.package_links());
     }
 
+    #[cfg(test)]
     pub(crate) fn capture_materialized_package_links(&mut self) {
-        self.materialized_package_links = self.desired_package_links();
-        self.rebuild_materialized_package_link_owners();
+        let workspace_alias_plan = self.workspace_alias_plan();
+        self.materialized_package_links = self.desired_package_links(&workspace_alias_plan);
+        self.rebuild_materialized_package_link_owners(&workspace_alias_plan);
+        self.materialized_workspace_alias_plan = workspace_alias_plan;
+        self.incremental_link_topology_dirty = false;
+    }
+
+    pub(super) fn commit_materialized_package_links(
+        &mut self,
+        links: vize_carton::FxHashMap<PathBuf, PathBuf>,
+        workspace_alias_plan: WorkspaceAliasPlan,
+    ) {
+        self.materialized_package_links = links;
+        self.rebuild_materialized_package_link_owners(&workspace_alias_plan);
+        self.materialized_workspace_alias_plan = workspace_alias_plan;
         self.incremental_link_topology_dirty = false;
     }
 
@@ -52,20 +67,25 @@ impl VirtualProject {
         )
     }
 
-    pub(crate) fn desired_package_links(&self) -> vize_carton::FxHashMap<PathBuf, PathBuf> {
+    pub(crate) fn desired_package_links(
+        &self,
+        workspace_alias_plan: &WorkspaceAliasPlan,
+    ) -> vize_carton::FxHashMap<PathBuf, PathBuf> {
         let expected_files = self.expected_materialized_files();
-        self.desired_package_links_for_files(&expected_files)
+        self.desired_package_links_for_files(&expected_files, workspace_alias_plan)
     }
 
     pub(super) fn package_links_for_files(
         &self,
         expected_files: &FxHashSet<PathBuf>,
+        workspace_alias_plan: &WorkspaceAliasPlan,
     ) -> Vec<PackageNodeModulesLink> {
         let mut claims = expected_files.clone();
-        claims.extend(self.workspace_alias_claims());
+        claims.extend(self.workspace_alias_claims(workspace_alias_plan));
         let mut links = self.package_node_modules_links(&claims);
         links.extend(self.package_shadow_dependency_links(&claims));
-        links.extend(self.workspace_alias_links());
+        links.extend(workspace_alias_plan.links.iter().cloned());
+        self.rebase_owned_workspace_alias_descendants(&mut links, &workspace_alias_plan.targets);
         links.sort_by(|left, right| {
             (&left.virtual_dir, &left.real_dir).cmp(&(&right.virtual_dir, &right.real_dir))
         });
@@ -76,9 +96,10 @@ impl VirtualProject {
     pub(super) fn desired_package_links_for_files(
         &self,
         expected_files: &FxHashSet<PathBuf>,
+        workspace_alias_plan: &WorkspaceAliasPlan,
     ) -> vize_carton::FxHashMap<PathBuf, PathBuf> {
         let _canonical_paths = CanonicalPathGuard::enter();
-        let links = self.package_links_for_files(expected_files);
+        let links = self.package_links_for_files(expected_files, workspace_alias_plan);
         let mut desired = vize_carton::FxHashMap::default();
         for link in links {
             let real_dir = if self.authored_workspace_alias_target(&link.real_dir) {
@@ -88,6 +109,10 @@ impl VirtualProject {
             };
             desired.entry(link.virtual_dir).or_insert(real_dir);
         }
+        // A resolved workspace alias is the identity authority at its exact
+        // path. Ordinary package discovery can propose the same leaf, but it
+        // must not displace the private target after canonicalization.
+        desired.extend(workspace_alias_plan.targets.clone());
         desired
     }
 

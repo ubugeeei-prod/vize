@@ -33,6 +33,8 @@
         "compareTo": "vue-tsc",
         "packageManager": "pnpm",
         "packageManagerVersion": "11.5.0",
+        "nodeLinker": "hoisted",
+        "workspacePackages": "injected",
         "lockfile": "pnpm-lock.yaml",
         "hangTimeoutMs": 2400000,
         "corpusGlobs": ["playground/src/**/*.vue"],
@@ -2843,6 +2845,14 @@
       "license": { "spdx": "Apache-2.0", "files": ["LICENSE"] },
       "vueGlobs": ["**/*.vue"],
       "tsconfig": "frontend/tsconfig.json",
+      "typecheckSetup": {
+        "enabled": true,
+        "workingDirectory": "frontend",
+        "packageManager": "pnpm",
+        "packageManagerVersion": "10.33.4",
+        "lockfile": "pnpm-lock.yaml",
+        "requiredOutputs": ["node_modules/@intlify/unplugin-vue-i18n/package.json"]
+      },
       "coverage": ["compiler","linter","typechecker","formatter","syntax-highlighter","lsp"],
       "diff": "e2e-vrt"
     },
@@ -3897,6 +3907,15 @@
       "license": { "spdx": "AGPL-3.0-only", "files": ["LICENSE"] },
       "vueGlobs": ["**/*.vue"],
       "tsconfig": "frontend/tsconfig.json",
+      "typecheckSetup": {
+        "enabled": true,
+        "workingDirectory": "frontend",
+        "packageManager": "yarn",
+        "packageManagerVersion": "1.22.22",
+        "lockfile": "yarn.lock",
+        "prepare": ["yarn", "nuxt", "prepare"],
+        "requiredOutputs": [".nuxt/tsconfig.json"]
+      },
       "coverage": ["compiler","linter","typechecker","formatter","syntax-highlighter","lsp"],
       "diff": "e2e-vrt"
     },

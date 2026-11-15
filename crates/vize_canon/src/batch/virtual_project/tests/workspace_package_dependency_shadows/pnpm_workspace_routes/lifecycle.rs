@@ -23,9 +23,10 @@ struct DiskReceipt {
 }
 
 fn disk_receipt(project: &VirtualProject) -> DiskReceipt {
+    let workspace_alias_plan = project.workspace_alias_plan();
     assert_eq!(
         project.materialized_package_links,
-        project.desired_package_links()
+        project.desired_package_links(&workspace_alias_plan)
     );
     let mut files = project
         .expected_materialized_files()
@@ -57,6 +58,7 @@ fn disk_receipt(project: &VirtualProject) -> DiskReceipt {
 pub(super) fn assert_warm_matches_cold(project: &mut VirtualProject, root: &Path) {
     // Capture physical bytes/links BEFORE a full materialize can repair them.
     let warm = disk_receipt(project);
+    let warm_alias_plan = project.materialized_workspace_alias_plan.clone();
     let noop = project.materialize_incremental_delta().unwrap();
     assert!(noop.delta.is_empty());
     assert_eq!(noop.considered, 0, "no claim/refcount dirtiness may leak");
@@ -64,6 +66,15 @@ pub(super) fn assert_warm_matches_cold(project: &mut VirtualProject, root: &Path
     let rows = mapping_rows(project);
     let mut cold = load(root);
     cold.capture_materialized_package_links();
+    assert_eq!(
+        project.materialized_workspace_alias_plan.links,
+        cold.materialized_workspace_alias_plan.links
+    );
+    assert_eq!(
+        project.materialized_workspace_alias_plan.targets,
+        cold.materialized_workspace_alias_plan.targets
+    );
+    assert_eq!(project.materialized_workspace_alias_plan, warm_alias_plan);
     assert_eq!(rows, mapping_rows(&cold));
     let cold_disk = disk_receipt(&cold);
     assert_eq!(warm.links, cold_disk.links);

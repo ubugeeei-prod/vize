@@ -86,6 +86,7 @@ impl VirtualProject {
             incremental_dependency_nodes_reconciled: 0,
             incremental_shadow_bindings_rebuilt: 0,
             materialized_package_links: FxHashMap::default(),
+            materialized_workspace_alias_plan: Default::default(),
             materialized_package_link_scopes: FxHashMap::default(),
             materialized_package_link_owners: FxHashMap::default(),
             package_link_scope_files: FxHashMap::default(),

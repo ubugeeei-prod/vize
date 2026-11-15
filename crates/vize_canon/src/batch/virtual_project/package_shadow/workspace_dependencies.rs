@@ -228,7 +228,7 @@ impl VirtualProject {
                 })
             });
             if let Some(target) = shared_target {
-                topology.aliases.insert(shadow.clone(), target.clone());
+                topology.insert_selected_workspace_alias(shadow.clone(), target.clone());
                 // Pin the target's authored files and raw manifest under this
                 // owner too; another binding's refresh/removal cannot dangle it.
                 self.collect_route_shadow_topology(dependency, target, traversal, topology, plan);

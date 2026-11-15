@@ -222,7 +222,7 @@ fn editor_union_preserves_alias_claims_when_only_the_previous_snapshot_owns_them
     let root = temp.path().canonicalize().unwrap();
     let project = load(&root);
     let files = project.expected_materialized_files();
-    let links = project.desired_package_links();
+    let links = project.desired_package_links(&project.workspace_alias_plan());
     let aliases = project.workspace_alias_links();
     assert!(!aliases.is_empty());
     let before = aliases

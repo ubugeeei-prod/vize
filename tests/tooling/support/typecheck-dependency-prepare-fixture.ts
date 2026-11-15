@@ -116,7 +116,7 @@ export function writeManager(
 ) {
   fs.writeFileSync(
     pathname,
-    `#!/usr/bin/env node
+    `#!${process.execPath}
 import fs from "node:fs";
 const rawArgs = process.argv.slice(2);
 const expectedSpec = ${JSON.stringify(options.spec ?? null)};

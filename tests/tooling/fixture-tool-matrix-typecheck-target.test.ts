@@ -1,10 +1,30 @@
 import assert from "node:assert/strict";
+import { Buffer } from "node:buffer";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 
 import { validateTypecheckPerformanceTarget } from "../../tools/support/compat/fixtures/tool-matrix-typecheck-target.ts";
+import { qualifyLockfileBytes } from "../../tools/support/compat/fixtures/typecheck-package-manager.mjs";
+
+test("pnpm qualification lockfiles use the canonical injected workspace setting", () => {
+  const source = Buffer.from(
+    "lockfileVersion: '9.0'\n\nsettings:\n  autoInstallPeers: true\n  excludeLinksFromLockfile: false\n\nimporters:\n",
+  );
+  const qualified = qualifyLockfileBytes("pnpm", source, {
+    workspacePackages: "injected",
+  });
+  assert.equal(
+    qualified.toString(),
+    "lockfileVersion: '9.0'\n\nsettings:\n  autoInstallPeers: true\n  excludeLinksFromLockfile: false\n  injectWorkspacePackages: true\n\nimporters:\n",
+  );
+  assert.equal(
+    qualifyLockfileBytes("pnpm", qualified, { workspacePackages: "injected" }),
+    qualified,
+  );
+  assert.equal(qualifyLockfileBytes("pnpm", source), source);
+});
 
 test("fixture tool matrix requires an exact baseline tsconfig for performance targets", () => {
   const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), "vize-typecheck-target-"));
@@ -33,6 +53,19 @@ test("fixture tool matrix requires an exact baseline tsconfig for performance ta
             ...project.typecheckPerformance,
             packageManager: "yarn",
             lockfile: "yarn.lock",
+          },
+        },
+        fixtureRoot,
+      ),
+    );
+    assert.doesNotThrow(() =>
+      validateTypecheckPerformanceTarget(
+        {
+          ...project,
+          typecheckPerformance: {
+            ...project.typecheckPerformance,
+            nodeLinker: "hoisted",
+            workspacePackages: "injected",
           },
         },
         fixtureRoot,
@@ -145,6 +178,47 @@ test("fixture tool matrix requires an exact baseline tsconfig for performance ta
           },
         },
         /exact semantic version/,
+      ],
+      [
+        {
+          ...project,
+          typecheckPerformance: { ...project.typecheckPerformance, nodeLinker: "isolated" },
+        },
+        /nodeLinker must be hoisted/,
+      ],
+      [
+        {
+          ...project,
+          typecheckPerformance: {
+            ...project.typecheckPerformance,
+            workspacePackages: "linked",
+          },
+        },
+        /workspacePackages must be injected/,
+      ],
+      [
+        {
+          ...project,
+          typecheckPerformance: {
+            ...project.typecheckPerformance,
+            packageManager: "yarn",
+            lockfile: "yarn.lock",
+            workspacePackages: "injected",
+          },
+        },
+        /workspacePackages must be injected/,
+      ],
+      [
+        {
+          ...project,
+          typecheckPerformance: {
+            ...project.typecheckPerformance,
+            packageManager: "yarn",
+            lockfile: "yarn.lock",
+            nodeLinker: "hoisted",
+          },
+        },
+        /nodeLinker must be hoisted/,
       ],
       [
         {

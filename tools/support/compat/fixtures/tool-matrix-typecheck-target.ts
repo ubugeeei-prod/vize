@@ -58,6 +58,18 @@ export function validateTypecheckPerformanceTarget(
   if (performance.lockfile !== lockfile) {
     invalid(project, `lockfile must be ${lockfile} for ${String(manager)}`);
   }
+  if (
+    performance.nodeLinker !== undefined &&
+    (manager !== "pnpm" || performance.nodeLinker !== "hoisted")
+  ) {
+    invalid(project, "nodeLinker must be hoisted and is only supported for pnpm");
+  }
+  if (
+    performance.workspacePackages !== undefined &&
+    (manager !== "pnpm" || performance.workspacePackages !== "injected")
+  ) {
+    invalid(project, "workspacePackages must be injected and is only supported for pnpm");
+  }
   requireFile(project, fixtureRoot, performance.lockfile, "lockfile");
   const baseline = performance.baseline as Readonly<Record<string, unknown>> | null | undefined;
   if (baseline == null) return;

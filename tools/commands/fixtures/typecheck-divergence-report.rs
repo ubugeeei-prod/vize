@@ -29,6 +29,8 @@ use vize_tool_support::common;
 use vize_tool_support::fixtures::typechecker_qualification;
 mod project_deadline;
 use project_deadline::ProjectContext;
+mod typecheck_dependency_preparation;
+use typecheck_dependency_preparation::read_and_validate_dependency_preparation;
 
 #[derive(Debug)]
 struct Args {
@@ -942,79 +944,6 @@ fn typechecker_setup_failure(payload: &Value) -> Option<Value> {
         }
     }
     None
-}
-
-fn read_and_validate_dependency_preparation(
-    root: &Path,
-    report_dir: &Path,
-    project: &Value,
-    summary: &Value,
-) -> Result<Value, String> {
-    let project_id = project_string(project, "id")?;
-    let path = report_dir.join(format!("{project_id}-typecheck-dependencies.json"));
-    let raw = common::read_text(&path).map_err(|_| {
-        format!("Missing typecheck dependency preparation evidence for {project_id}")
-    })?;
-    let artifact = serde_json::from_str::<Value>(&raw).map_err(|error| {
-        format!("Invalid typecheck dependency preparation JSON for {project_id}: {error}")
-    })?;
-    if artifact.get("schema").and_then(Value::as_str)
-        != Some("vize.fixtureTypecheckDependencyInstall")
-        || artifact.get("version").and_then(Value::as_u64) != Some(2)
-        || artifact.get("project").and_then(Value::as_str) != Some(project_id.as_str())
-        || artifact.get("revision") != project.get("revision")
-        || artifact.pointer("/evidence/commitSha") != summary.pointer("/evidence/commitSha")
-    {
-        return Err(format!(
-            "Typecheck dependency preparation identity is invalid for {project_id}"
-        ));
-    }
-    let fixture_root = root.join(project_string(project, "fixturePath")?);
-    let lockfile_path = artifact
-        .pointer("/lockfile/path")
-        .and_then(Value::as_str)
-        .ok_or_else(|| {
-            format!("Typecheck dependency lockfile evidence is invalid for {project_id}")
-        })?;
-    let lockfile = fs::read(fixture_root.join(lockfile_path)).map_err(|error| {
-        format!("Typecheck dependency lockfile evidence is invalid for {project_id}: {error}")
-    })?;
-    if artifact
-        .pointer("/lockfile/sizeBytes")
-        .and_then(Value::as_u64)
-        != Some(lockfile.len() as u64)
-        || artifact.pointer("/lockfile/sha256").and_then(Value::as_str)
-            != Some(sha256_bytes(&lockfile).as_str())
-    {
-        return Err(format!(
-            "Typecheck dependency lockfile evidence is invalid for {project_id}"
-        ));
-    }
-    Ok(json!({
-        "schema": "vize.fixtureTypecheckPreparationEvidence",
-        "version": 1,
-        "payloadSha256": sha256(&raw),
-        "packageManager": artifact["packageManager"],
-        "lockfile": artifact["lockfile"],
-        "install": {
-            "command": artifact.pointer("/install/command").cloned().unwrap_or(Value::Null),
-            "exitCode": artifact.pointer("/install/exitCode").cloned().unwrap_or(Value::Null),
-            "stdoutSha256": artifact.pointer("/install/stdoutSha256").cloned().unwrap_or(Value::Null),
-            "stderrSha256": artifact.pointer("/install/stderrSha256").cloned().unwrap_or(Value::Null),
-        },
-        "baselinePrepare": artifact.get("baselinePrepare").and_then(|value| {
-            if value.is_null() {
-                Some(Value::Null)
-            } else {
-                Some(json!({
-                    "command": value.get("command").cloned().unwrap_or(Value::Null),
-                    "exitCode": value.get("exitCode").cloned().unwrap_or(Value::Null),
-                    "stdoutSha256": value.get("stdoutSha256").cloned().unwrap_or(Value::Null),
-                    "stderrSha256": value.get("stderrSha256").cloned().unwrap_or(Value::Null),
-                }))
-            }
-        }).unwrap_or(Value::Null),
-    }))
 }
 
 fn materialize_baseline_project(

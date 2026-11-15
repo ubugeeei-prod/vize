@@ -347,6 +347,8 @@ pub struct VirtualProject {
     /// Each logical link scope owns only the paths below that importer/package
     /// boundary, so a warm route patch never rescans unrelated source roots.
     materialized_package_links: FxHashMap<PathBuf, PathBuf>,
+    /// Alias identities committed by the last complete materialization.
+    materialized_workspace_alias_plan: workspace_aliases::WorkspaceAliasPlan,
     materialized_package_link_scopes: FxHashMap<PathBuf, FxHashMap<PathBuf, PathBuf>>,
     materialized_package_link_owners: FxHashMap<PathBuf, FxHashMap<PathBuf, PathBuf>>,
     package_link_scope_files: FxHashMap<PathBuf, FxHashMap<PathBuf, usize>>,

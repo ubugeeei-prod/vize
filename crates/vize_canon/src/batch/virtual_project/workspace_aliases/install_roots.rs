@@ -4,15 +4,15 @@ use std::path::{Path, PathBuf};
 
 use vize_carton::{FxHashMap, FxHashSet};
 
-use super::VirtualProject;
+use super::{VirtualProject, WorkspaceAliasPlan};
 use crate::batch::error::CorsaResult;
 
 impl VirtualProject {
     pub(in super::super) fn workspace_cold_owned_files(
         &self,
+        workspace_alias_plan: &WorkspaceAliasPlan,
         expected_files: &FxHashSet<PathBuf>,
     ) -> FxHashSet<PathBuf> {
-        let aliases = self.workspace_alias_links();
         let mut owned = expected_files.clone();
         // Cold GC preserves current alias destinations without visiting their
         // retired descendants. Expected/union files are never excluded.
@@ -20,7 +20,8 @@ impl VirtualProject {
             self.retired_package_shadow_paths
                 .iter()
                 .filter(|path| {
-                    !aliases
+                    !workspace_alias_plan
+                        .links
                         .iter()
                         .any(|alias| path.starts_with(&alias.virtual_dir))
                 })

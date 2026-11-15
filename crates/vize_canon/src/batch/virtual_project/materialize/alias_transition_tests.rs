@@ -80,7 +80,7 @@ fn editor_union_replaces_external_link_with_owned_workspace_alias() {
     assert!(files.contains(&alias.real_dir.join("package.json")));
     assert!(
         project
-            .workspace_alias_claims()
+            .workspace_alias_claims(&project.workspace_alias_plan())
             .contains(&alias.virtual_dir.join("package.json"))
     );
     fs::remove_file(&alias.virtual_dir).unwrap();
