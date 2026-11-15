@@ -155,19 +155,28 @@ impl RequireComponentRegistration {
     /// components that needs no import (importing yourself is not possible
     /// without an alias).
     fn is_self_reference(&self, ctx: &LintContext<'_>, tag: &str) -> bool {
-        let stem = file_stem(ctx.filename);
-        if !stem.is_empty() && setup_name_matches(tag, capitalize(camelize(stem).as_str()).as_str())
-        {
-            return true;
+        let script_setup = ctx
+            .sfc_descriptor()
+            .is_some_and(|descriptor| descriptor.script_setup.is_some());
+        if script_setup {
+            let stem = file_stem(ctx.filename);
+            if !stem.is_empty()
+                && setup_name_matches(tag, capitalize(camelize(stem).as_str()).as_str())
+            {
+                return true;
+            }
+            if ctx
+                .analysis()
+                .and_then(define_options_name)
+                .is_some_and(|name| setup_name_matches(tag, name))
+            {
+                return true;
+            }
         }
-        ctx.analysis()
-            .and_then(define_options_name)
-            .is_some_and(|name| setup_name_matches(tag, name))
-            || ctx
-                .sfc_scripts()
-                .and_then(|scripts| scripts.script())
-                .and_then(|parsed| options_api_name(&parsed.program))
-                .is_some_and(|name| component_name_matches(tag, name))
+        ctx.sfc_scripts()
+            .and_then(|scripts| scripts.script())
+            .and_then(|parsed| options_api_name(&parsed.program))
+            .is_some_and(|name| component_name_matches(tag, name))
     }
 
     fn is_template_visible_imported_component(

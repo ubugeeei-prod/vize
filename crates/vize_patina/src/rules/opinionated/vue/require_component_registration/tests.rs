@@ -379,6 +379,16 @@ export default defineComponent({ name: "VarTreeMenuOption" });
 }
 
 #[test]
+fn options_api_filename_alone_does_not_register_the_component() {
+    let result = create_linter().lint_sfc(
+        r#"<template><x-icon /></template>
+<script>export default {}</script>"#,
+        "XIcon.vue",
+    );
+    assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
+}
+
+#[test]
 fn tsx_setup_values_are_visible_to_the_template() {
     let result = create_linter().lint_sfc(
         r#"<template><Row /></template>
