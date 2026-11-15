@@ -204,6 +204,13 @@ assert_eq!(outcome.telemetry().finding_count(), 1);
 snapshot identity, output identity, finding count, and invalidation-boundary
 counts for reporters, CI, and editor integrations.
 
+`execute_cached_capability_measured` keeps process-local latency separate from
+that deterministic outcome. Its versioned telemetry records cache-load,
+analysis, cache-store, and end-to-end nanoseconds; analysis and store latency
+are explicitly absent on a cache hit. Consumers can export these measurements
+to observability and performance budgets without putting nondeterministic
+timing into a persisted `DoctorReport`.
+
 `PersistentCapabilitySnapshot` is the store-neutral boundary for filesystem and
 remote caches. It emits identical versioned JSON bytes for identical validated
 snapshots, binds the complete snapshot payload to a SHA-256 identity, and

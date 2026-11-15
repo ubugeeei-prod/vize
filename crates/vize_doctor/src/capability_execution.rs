@@ -2,6 +2,7 @@
 
 mod filesystem_cache;
 mod layered_cache;
+mod measurement;
 mod remote_cache;
 mod telemetry;
 #[cfg(test)]
@@ -25,6 +26,10 @@ pub use filesystem_cache::{
 pub use layered_cache::{
     LayeredCapabilitySnapshotCache, LayeredCapabilitySnapshotCacheError,
     LayeredCapabilitySnapshotTier,
+};
+pub use measurement::{
+    CapabilityExecutionLatencyTelemetry, DOCTOR_CAPABILITY_EXECUTION_LATENCY_TELEMETRY_VERSION,
+    MeasuredCapabilityExecution, execute_cached_capability_measured,
 };
 pub use remote_cache::{
     RemoteCapabilitySnapshotCache, RemoteCapabilitySnapshotCacheError,
