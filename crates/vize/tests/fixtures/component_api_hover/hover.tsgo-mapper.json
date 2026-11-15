@@ -18,7 +18,7 @@
   "array prop": {
     "contents": {
       "kind": "markdown",
-      "value": "```typescript\n(property) \"title\"?: unknown\n```"
+      "value": "```typescript\n(property) \"title\"?: unknown\n```\n"
     },
     "range": {
       "end": {
