@@ -7605,6 +7605,74 @@
       }
     },
     {
+      "id": "linter/type-aware-project-includes-12973",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "type-aware-project-includes-12973",
+        "files": [
+          {
+            "path": "Use.vue.txt",
+            "role": "third-party-issue-authored-reproduction",
+            "sha256": "0fc8e6905bdfdd6076cebc190bf7750d765b1756537c5797cf777f557b80d029"
+          },
+          {
+            "path": "registry.ts.txt",
+            "role": "third-party-issue-authored-imported-module",
+            "sha256": "6275d8c366cb80029d5de3fc2da0ae338d66ef735808a507857d66ebbbaba2cc"
+          },
+          {
+            "path": "augment.ts.txt",
+            "role": "third-party-issue-authored-unimported-module-augmentation",
+            "sha256": "2c37007602d2fe4300bc7d93629a44a3d4c94a473f7b5e575454b8a1fcf08fed"
+          },
+          {
+            "path": "env.d.ts.txt",
+            "role": "third-party-issue-authored-ambient-declarations",
+            "sha256": "116a4dd2d46f400e2d98efdde1a49583bc393637d0bb02550da97f5dc478c2e6"
+          },
+          {
+            "path": "tsconfig.json",
+            "role": "third-party-issue-authored-project-membership",
+            "sha256": "58a7b95ded5405fa3e811fa60c74459a8ac19b08153682a3a2212ec946671451"
+          },
+          {
+            "path": "vize-lint.config.mjs.txt",
+            "role": "third-party-issue-authored-type-aware-lint-config",
+            "sha256": "6c5aefeeb285ad390b1b7ac21348c872f5241b848a06c0d114de68147b3e2461"
+          },
+          {
+            "path": "expected-clean-packet.json",
+            "role": "complete-public-cli-packet",
+            "sha256": "b6f9df56b06850679b78b050474f6313dd7fd7416e8bf23e73f6c1fa9b2ac8fd"
+          },
+          {
+            "path": "Unsafe.vue.txt",
+            "role": "authored-any-positive-control",
+            "sha256": "c0ebfc72ad0409f562a10e24a15c11b889f0ec721e0ad285bdcfdacaa185f4c3"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/type-aware-runtime-initialization-11147",
       "state": "active",
       "targets": [
