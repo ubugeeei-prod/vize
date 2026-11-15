@@ -32,7 +32,7 @@ export function runLoaderUnits(source: string, evidence: string): void {
     "large_evaluator_is_a_private_file_instead_of_a_command_argument",
     "file_execution_preserves_unicode_paths_cache_marker_and_cwd",
     "file_runtime_keeps_stdin_available_for_the_real_observation_handshake",
-    "temporary_module_is_removed_after_success_or_child_failure",
+    "unavailable_cache_uses_a_scoped_fallback_on_success_or_child_failure",
     "runtime_source_identity_preserves_authored_errors_across_retries",
   ])
     assert.ok(result.stdout.includes(name + " ... ok"), "required actual-Node test: " + name);
