@@ -288,10 +288,10 @@ function attach(next: WebcamMediaStreamLike): void {
 }
 
 async function refreshDevices(): Promise<void> {
-  const enumerate = resolveHost()?.enumerateDevices;
-  if (enumerate === undefined) return;
+  const mediaHost = resolveHost();
+  if (mediaHost?.enumerateDevices === undefined) return;
   try {
-    const listed = await enumerate.call(resolveHost());
+    const listed = await mediaHost.enumerateDevices();
     devices.value = toWebcamDevices(listed, resolvedMessages.value.deviceFallback);
   } catch {
     // Enumeration is best-effort; the current list stays in place.

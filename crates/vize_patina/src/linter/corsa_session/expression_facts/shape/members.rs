@@ -1,8 +1,7 @@
 //! unbound-method member facts: the receiver's symbol and how each property is declared (`checkIfMethod`).
 use super::{
     FUNCTION_EXPRESSION, INTERSECTION, JsonMap, METHOD_DECLARATION, METHOD_SIGNATURE, OBJECT,
-    PROPERTY_ASSIGNMENT, PROPERTY_DECLARATION, SHORTHAND_PROPERTY_ASSIGNMENT, SYMBOL_CLASS, Shapes,
-    UNION, VOID,
+    PROPERTY_ASSIGNMENT, PROPERTY_DECLARATION, SYMBOL_CLASS, Shapes, UNION, VOID,
 };
 use corsa::api::{NodeHandle, TypeResponse};
 use serde_json::{Map, Value, json};
@@ -154,16 +153,11 @@ impl Shapes<'_> {
             .as_ref()
             .and_then(declaration_kind);
         let method_like = matches!(kind, Some(METHOD_SIGNATURE | METHOD_DECLARATION));
-        let property_like = matches!(
+        let function_property_like = matches!(
             kind,
-            Some(
-                PROPERTY_DECLARATION
-                    | PROPERTY_ASSIGNMENT
-                    | SHORTHAND_PROPERTY_ASSIGNMENT
-                    | FUNCTION_EXPRESSION
-            )
+            Some(PROPERTY_DECLARATION | PROPERTY_ASSIGNMENT | FUNCTION_EXPRESSION)
         );
-        if !method_like && !property_like {
+        if !method_like && !function_property_like {
             return json!({ "isMethod": false });
         }
         let snapshot = self.session.snapshot().handle.clone();
@@ -195,8 +189,9 @@ impl Shapes<'_> {
         // A property is a method only when initialized with a `function`
         // expression; arrow functions keep their lexical `this`.
         let is_method = method_like
-            || signature.declaration.as_ref().and_then(declaration_kind)
-                == Some(FUNCTION_EXPRESSION);
+            || (function_property_like
+                && signature.declaration.as_ref().and_then(declaration_kind)
+                    == Some(FUNCTION_EXPRESSION));
         let queried_this_parameter = client
             .get_this_parameter_of_signature(
                 snapshot.clone(),
@@ -313,21 +308,31 @@ mod tests {
     use corsa::api::NodeHandle;
 
     use super::{
-        FUNCTION_EXPRESSION, PROPERTY_ASSIGNMENT, SHORTHAND_PROPERTY_ASSIGNMENT, declaration_kind,
+        FUNCTION_EXPRESSION, METHOD_DECLARATION, METHOD_SIGNATURE, PROPERTY_ASSIGNMENT,
+        PROPERTY_DECLARATION, declaration_kind,
     };
 
     #[test]
     fn typescript_seven_distinguishes_function_expressions_from_arrows() {
         let function = NodeHandle::from("42.219./workspace/composables.ts");
         let arrow = NodeHandle::from("43.220./workspace/composables.ts");
-        let property = NodeHandle::from("44.303./workspace/composables.ts");
-        let shorthand = NodeHandle::from("45.304./workspace/composables.ts");
+        let property_declaration = NodeHandle::from("44.173./workspace/composables.ts");
+        let method_signature = NodeHandle::from("45.174./workspace/composables.ts");
+        let method_declaration = NodeHandle::from("46.175./workspace/composables.ts");
+        let property = NodeHandle::from("47.303./workspace/composables.ts");
+        let shorthand = NodeHandle::from("48.304./workspace/composables.ts");
         assert_eq!(declaration_kind(&function), Some(FUNCTION_EXPRESSION));
         assert_ne!(declaration_kind(&arrow), Some(FUNCTION_EXPRESSION));
-        assert_eq!(declaration_kind(&property), Some(PROPERTY_ASSIGNMENT));
         assert_eq!(
-            declaration_kind(&shorthand),
-            Some(SHORTHAND_PROPERTY_ASSIGNMENT)
+            declaration_kind(&property_declaration),
+            Some(PROPERTY_DECLARATION)
         );
+        assert_eq!(declaration_kind(&method_signature), Some(METHOD_SIGNATURE));
+        assert_eq!(
+            declaration_kind(&method_declaration),
+            Some(METHOD_DECLARATION)
+        );
+        assert_eq!(declaration_kind(&property), Some(PROPERTY_ASSIGNMENT));
+        assert_eq!(declaration_kind(&shorthand), Some(304));
     }
 }

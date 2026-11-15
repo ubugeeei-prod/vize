@@ -15,6 +15,7 @@ mod typescript_shapes;
 mod typescript_type_parameters;
 mod typescript_type_shapes;
 mod unbound_method_composable;
+mod unbound_method_declarations;
 use super::{
     RULE_NO_FLOATING_PROMISES, RULE_NO_REACTIVITY_LOSS, RULE_NO_UNSAFE_TEMPLATE_BINDING,
     RULE_REQUIRE_TYPED_EMITS, RULE_REQUIRE_TYPED_PROPS, lint_sfc_with_corsa,
@@ -42,7 +43,6 @@ fn require_typed_emits_uses_corsa() {
     if !corsa_available() {
         return;
     }
-
     let linter = Linter::with_preset(LintPreset::Opinionated);
     let source = r#"<script setup lang="ts">
 defineEmits(['save'])
