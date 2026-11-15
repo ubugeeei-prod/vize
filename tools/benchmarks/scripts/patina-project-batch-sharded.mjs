@@ -11,7 +11,6 @@ import {
   inventory,
   median,
   parseRss,
-  profileCounts,
   readAuthority,
   sha256,
 } from "./patina-project-batch-lib.mjs";
@@ -157,7 +156,26 @@ function parseGnuTime(text) {
 function aggregateProfiles(profiles) {
   const aggregate = new Map();
   for (const profile of profiles) {
-    for (const row of profileCounts(profile)) {
+    assert.deepEqual(
+      profile.truncation,
+      { dropped_spans: 0, dropped_counters: 0 },
+      "truncated telemetry cannot prove the request vector",
+    );
+    assert.ok(Array.isArray(profile.spans));
+    const rows = profile.spans
+      .filter((span) => span.key.startsWith("corsa.request."))
+      .map((span) => {
+        assert.equal(span.attribution?.stage, "patina");
+        assert.equal(span.attribution?.block, "jsonrpc");
+        assert.ok(typeof span.attribution?.pass === "string" && span.attribution.pass.length > 0);
+        assert.ok(Number.isSafeInteger(span.count) && span.count > 0);
+        return {
+          key: span.key,
+          attribution: span.attribution,
+          count: span.count,
+        };
+      });
+    for (const row of rows) {
       const identity = JSON.stringify([row.key, row.attribution]);
       const current = aggregate.get(identity) ?? { ...row, count: 0 };
       current.count += row.count;
@@ -383,7 +401,7 @@ const report = {
   rssScope:
     "Sequential immutable cohorts; maximumShardRssKiB is the largest GNU time peak RSS among all ten shards, while CPU is summed across every shard.",
   profileScope:
-    "Two untimed profile passes per side; every 31-phase checker request vector is summed across all shards and must repeat and match between base and head.",
+    "Two untimed profile passes per side; every checker request span, including the explicit other bucket, is summed across all shards and must repeat and match between base and head.",
 };
 fs.writeFileSync(path.join(output, "measurement.json"), `${JSON.stringify(report, null, 2)}\n`);
 fs.writeFileSync(
