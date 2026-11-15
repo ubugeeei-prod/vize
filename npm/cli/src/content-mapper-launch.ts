@@ -144,9 +144,9 @@ export function answerContentMapperInitialize(): readonly string[] | null {
           result: { diagnosticSource: "vize", positionEncoding: "utf-8" },
         });
         const capabilities = request.params as Record<string, unknown>;
-        const supportsCodeSelectors = (
-          capabilities.capabilities as Record<string, unknown> | undefined
-        )?.diagnosticDirectiveCodeSelectors === true;
+        const supportsCodeSelectors =
+          (capabilities.capabilities as Record<string, unknown> | undefined)
+            ?.diagnosticDirectiveCodeSelectors === true;
         return supportsCodeSelectors ? ["--diagnostic-directive-code-selectors"] : [];
       }
       fail(id, -32602, problem);

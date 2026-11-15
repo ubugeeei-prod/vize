@@ -117,9 +117,7 @@ impl ContentMapperDiagnosticDirective {
     /// The selected TypeScript diagnostic code for an ignore directive.
     pub const fn diagnostic_code(&self) -> Option<usize> {
         let tuple = &self.0;
-        if tuple[4] == DIRECTIVE_POLICY_IGNORE
-            && tuple[5] != DIRECTIVE_DIAGNOSTIC_CODE_NONE
-        {
+        if tuple[4] == DIRECTIVE_POLICY_IGNORE && tuple[5] != DIRECTIVE_DIAGNOSTIC_CODE_NONE {
             Some(tuple[5])
         } else {
             None

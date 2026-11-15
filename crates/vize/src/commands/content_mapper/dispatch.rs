@@ -10,7 +10,7 @@ use std::thread;
 use std::time::{Duration, Instant};
 
 use serde::Serialize;
-use serde_json::{Value, json};
+use serde_json::Value;
 use vize_canon::{
     ContentMapperTypeSources, generate_vue_content_mapper_transform_with_type_sources,
 };
@@ -19,10 +19,12 @@ use vize_l0::cstr;
 use super::project::{
     CloseProjectParams, OpenProjectParams, ProjectRegistry, ProjectSettings, resolve_open_project,
 };
-use super::{InitializeParams, Request, TransformParams, read_frame};
+use super::{Request, TransformParams, read_frame};
 
+mod initialize;
 mod replies;
 mod wire;
+use initialize::initialize;
 pub(super) use replies::ReplyOrder;
 use replies::{WriteProgress, write_replies};
 #[cfg(all(test, target_os = "linux", target_pointer_width = "64"))]
@@ -344,35 +346,6 @@ fn reply(done: &Sender<(u64, Vec<u8>)>, seq: &mut u64, frame: &[u8]) -> io::Resu
         .map_err(|_| io::Error::other("content-mapper writer stopped"))?;
     *seq += 1;
     Ok(())
-}
-
-fn initialize(
-    id: Value,
-    params: Value,
-    initialized: &mut bool,
-    diagnostic_code_selectors: &mut bool,
-) -> io::Result<Vec<u8>> {
-    let params = match serde_json::from_value::<InitializeParams>(params) {
-        Ok(params) => params,
-        Err(error) => {
-            return encode_error(&id, -32602, &cstr!("Invalid initialize params: {error}"));
-        }
-    };
-    if !params
-        .position_encodings
-        .iter()
-        .any(|encoding| encoding == "utf-8")
-    {
-        return encode_error(&id, -32602, "Vize requires the utf-8 position encoding");
-    }
-    *initialized = true;
-    *diagnostic_code_selectors = params
-        .capabilities
-        .diagnostic_directive_code_selectors;
-    encode_result(
-        &id,
-        json!({"positionEncoding": "utf-8", "diagnosticSource": "vize"}),
-    )
 }
 
 fn open_project(id: Value, params: Value, projects: &mut ProjectRegistry) -> io::Result<Vec<u8>> {

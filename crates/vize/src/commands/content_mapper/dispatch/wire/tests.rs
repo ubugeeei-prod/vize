@@ -78,9 +78,9 @@ fn every_feature_spans_and_ignore_directives_drop_their_sixth_element() {
 fn code_selected_ignores_require_the_negotiated_capability() {
     let mut transform = transform(true);
     let table = transform.diagnostic_directives.as_mut().unwrap();
-    table.directives.push(
-        ContentMapperDiagnosticDirective::ignore_with_diagnostic_code(7, 4, 0, 5, 2353),
-    );
+    table
+        .directives
+        .push(ContentMapperDiagnosticDirective::ignore_with_diagnostic_code(7, 4, 0, 5, 2353));
 
     let legacy = encode_transform(&json!(1), &transform, false).unwrap();
     assert_eq!(

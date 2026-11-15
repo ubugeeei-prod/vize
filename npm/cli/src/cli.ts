@@ -56,12 +56,7 @@ try {
     const capabilityArgs = answerContentMapperInitialize();
     if (capabilityArgs !== null) {
       const native = require("@vizejs/native") as typeof import("@vizejs/native");
-      native.runCli([
-        ...args,
-        "--initialized",
-        "--reply-when-ready",
-        ...capabilityArgs,
-      ]);
+      native.runCli([...args, "--initialized", "--reply-when-ready", ...capabilityArgs]);
     }
   } else {
     assertMatchingNativeVersion();

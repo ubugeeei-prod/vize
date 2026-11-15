@@ -66,12 +66,7 @@ pub(super) fn encode_transform(
     frame.extend_from_slice(br#","jsonrpc":"2.0","result":{"#);
     if let Some(directives) = diagnostic_directives {
         frame.extend_from_slice(br#""diagnosticDirectives":"#);
-        push_directives(
-            &mut frame,
-            directives,
-            text,
-            diagnostic_code_selectors,
-        )?;
+        push_directives(&mut frame, directives, text, diagnostic_code_selectors)?;
         frame.push(b',');
     }
     frame.extend_from_slice(br#""diagnostics":"#);
@@ -375,9 +370,7 @@ fn wire_value_with_capabilities(
         rows.retain(|row| {
             let column =
                 |index: usize| row.get(index).and_then(Value::as_u64).unwrap_or(0) as usize;
-            if column(4) == DIRECTIVE_POLICY_IGNORE
-                && column(5) != 0
-                && !diagnostic_code_selectors
+            if column(4) == DIRECTIVE_POLICY_IGNORE && column(5) != 0 && !diagnostic_code_selectors
             {
                 return false;
             }
