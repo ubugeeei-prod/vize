@@ -20165,6 +20165,55 @@
           }
         ]
       }
+    },
+    {
+      "id": "typechecker/type-aware-project-includes-12973/default-program",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "file": "src/Use.vue",
+          "path": "type-aware-project-includes-12973/Use.vue.txt",
+          "sha256": "0fc8e6905bdfdd6076cebc190bf7750d765b1756537c5797cf777f557b80d029"
+        },
+        {
+          "file": "src/registry.ts",
+          "path": "type-aware-project-includes-12973/registry.ts.txt",
+          "sha256": "6275d8c366cb80029d5de3fc2da0ae338d66ef735808a507857d66ebbbaba2cc"
+        },
+        {
+          "file": "src/augment.ts",
+          "path": "type-aware-project-includes-12973/augment.ts.txt",
+          "sha256": "2c37007602d2fe4300bc7d93629a44a3d4c94a473f7b5e575454b8a1fcf08fed"
+        },
+        {
+          "file": "src/env.d.ts",
+          "path": "type-aware-project-includes-12973/env.d.ts.txt",
+          "sha256": "116a4dd2d46f400e2d98efdde1a49583bc393637d0bb02550da97f5dc478c2e6"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "type-aware-project-includes-12973/tsconfig.json.txt",
+          "sha256": "58a7b95ded5405fa3e811fa60c74459a8ac19b08153682a3a2212ec946671451"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
     }
   ],
   "protocolCases": [
