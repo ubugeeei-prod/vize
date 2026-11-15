@@ -2,7 +2,6 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { isDeepStrictEqual } from "node:util";
-import { pathToFileURL } from "node:url";
 import {
   assertInstalledPackage,
   assertNoWorkspaceProtocols,
@@ -91,13 +90,20 @@ function installPackedPackages(
   packages: readonly PackageInfo[],
   runtimePeers: boolean,
   packageManager: "bun" | "npm" = "npm",
+  overridePackages: readonly PackageInfo[] = packages,
 ): string {
   const install = path.join(temporary, packageManager === "bun" ? "install-bun" : "install"),
+    packed: Record<string, string> = {},
     dependencies: Record<string, string> = {};
   fs.mkdirSync(install, { recursive: true });
-  for (const pkg of packages)
-    dependencies[pkg.name] =
-      packageManager === "bun" ? pathToFileURL(pkg.tarball).href : `file:${pkg.tarball}`;
+  for (const pkg of overridePackages) {
+    const tarball =
+      packageManager === "bun"
+        ? `file:${path.relative(install, pkg.tarball).replaceAll(path.sep, "/")}`
+        : `file:${pkg.tarball}`;
+    packed[pkg.name] = tarball;
+  }
+  for (const pkg of packages) dependencies[pkg.name] = packed[pkg.name];
   if (runtimePeers)
     Object.assign(
       dependencies,
@@ -107,6 +113,10 @@ function installPackedPackages(
     name: "vize-release-install-smoke",
     private: true,
     dependencies,
+    // Bun does not reuse a top-level file tarball to satisfy an exact
+    // transitive version. Pin the entire unpublished release graph locally so
+    // the pre-publish gate never consults the registry for its candidate.
+    ...(packageManager === "bun" ? { overrides: packed } : {}),
   });
   if (packageManager === "bun")
     runCommand(process.env.BUN_BIN ?? "bun", ["install", "--ignore-scripts"], install);
@@ -157,7 +167,7 @@ export function smokeReleaseInstall(argv: readonly string[]): number {
     );
     if (options.runtimeChecks) runRuntimeChecks(install, installable, packages, temporary, "node");
     if (options.bunRuntimeChecks) {
-      const bunInstall = installPackedPackages(temporary, installable, true, "bun");
+      const bunInstall = installPackedPackages(temporary, installable, true, "bun", packages);
       // Compare the runtimes against one immutable dependency graph.  The
       // historical Node smoke intentionally installs the mapper-host beta,
       // while the product LSP owns its stable bundled provider.  Reusing the

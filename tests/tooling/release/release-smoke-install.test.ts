@@ -41,6 +41,40 @@ test("release install smoke packs and installs local package tarballs", () => {
   }
 });
 
+const bunCommand = process.env.BUN_BIN ?? "bun";
+const bunAvailable = spawnSync(bunCommand, ["--version"], { encoding: "utf8" }).status === 0;
+
+test(
+  "Bun resolves unpublished exact transitive dependencies from the packed graph",
+  { skip: !bunAvailable && "Bun is not installed" },
+  () => {
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-release-smoke-test-"));
+    try {
+      const dependencyDir = writePackage(tempDir, "dependency", {
+        name: "@vizejs/smoke-dependency",
+        version: "1.0.0",
+      });
+      const packageDir = writePackage(tempDir, "package", {
+        dependencies: {
+          "@vizejs/smoke-dependency": "1.0.0",
+        },
+        name: "@vizejs/smoke-package",
+        version: "1.0.0",
+      });
+
+      const result = runSmokeArgs(
+        ["--runtime-checks", "--bun-runtime-checks", packageDir, dependencyDir],
+        { env: { BUN_BIN: bunCommand } },
+      );
+
+      assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`.trim());
+      assert.match(result.stdout, /smoked 2\/2 package tarballs/);
+    } finally {
+      fs.rmSync(tempDir, { force: true, recursive: true });
+    }
+  },
+);
+
 test("release install smoke canonicalizes symlinked temp directories", () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-release-smoke-test-"));
   try {
