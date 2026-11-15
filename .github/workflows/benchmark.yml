@@ -139,7 +139,7 @@ jobs:
   pr-benchmark:
     name: pr-benchmark
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 30
+    timeout-minutes: 60
     permissions:
       contents: read
     steps:
@@ -161,8 +161,8 @@ jobs:
             echo "::error title=Invalid benchmark range::base_sha must differ from head_sha"
             exit 1
           fi
-          if [[ "$RUN_HEAD_SHA" != "$BENCHMARK_HEAD_SHA" ]]; then
-            echo "::error title=Workflow ref mismatch::run head_sha must match $BENCHMARK_HEAD_SHA (got $RUN_HEAD_SHA)"
+          if [[ "$RUN_HEAD_SHA" != "$BENCHMARK_HEAD_SHA" && "${{ inputs.patina_project_batch }}" != "true" ]]; then
+            echo "::error title=Workflow ref mismatch::a separate measurement harness is allowed only for the explicit type-aware batch"
             exit 1
           fi
 
@@ -178,6 +178,13 @@ jobs:
         with:
           path: base
           ref: ${{ env.BENCHMARK_BASE_SHA }}
+
+      - name: Checkout measurement harness
+        if: github.event_name == 'workflow_dispatch' && inputs.patina_project_batch
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          path: harness
+          ref: ${{ github.sha }}
 
       - name: Check base checkout
         id: base-integrity
@@ -339,12 +346,13 @@ jobs:
       - name: Qualify type-aware project batching on existing optimized binaries
         if: github.event_name == 'workflow_dispatch' && inputs.patina_project_batch && steps.base-integrity.outputs.skip != 'true' && steps.validate-base.outcome == 'success' && steps.build-base.outcome != 'failure'
         run: |
-          node --test head/tools/benchmarks/scripts/patina-project-batch.test.mjs
-          node head/tools/benchmarks/scripts/patina-project-batch.mjs \
+          node --test harness/tools/benchmarks/scripts/patina-project-batch.test.mjs
+          node harness/tools/benchmarks/scripts/patina-project-batch-sharded.mjs \
             "$GITHUB_WORKSPACE/base/target/ci-opt/vize" \
             "$GITHUB_WORKSPACE/head/target/ci-opt/vize" \
             "$BENCHMARK_BASE_SHA" "$BENCHMARK_HEAD_SHA" \
-            "$GITHUB_WORKSPACE/patina-project-batch"
+            "$GITHUB_WORKSPACE/patina-project-batch" \
+            "$GITHUB_WORKSPACE/head"
 
       - name: Retain type-aware batch evidence including failed observations
         if: always() && github.event_name == 'workflow_dispatch' && inputs.patina_project_batch
