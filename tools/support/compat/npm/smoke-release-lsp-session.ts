@@ -42,7 +42,9 @@ const logDir = process.env.VIZE_SMOKE_LSP_LOG_DIR;
 const lspStarted = performance.now();
 let diagnosticNotifications = 0;
 let lastDiagnosticAt = 0;
-const server = spawn(process.execPath, [path.join(root, "node_modules/vize/bin/vize"), "lsp"], {
+const serverRuntime = process.env.VIZE_SMOKE_LSP_RUNTIME ?? process.execPath;
+const serverBin = process.env.VIZE_SMOKE_LSP_BIN ?? path.join(root, "node_modules/vize/bin/vize");
+const server = spawn(serverRuntime, [serverBin, "lsp"], {
   cwd: root,
   stdio: ["pipe", "pipe", "pipe"],
   env: { ...process.env, VIZE_TRACE_EDITOR_PREPARATION: "1" },
