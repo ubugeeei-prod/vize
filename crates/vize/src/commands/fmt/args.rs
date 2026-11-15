@@ -29,6 +29,10 @@ pub struct FmtArgs {
     #[arg(long)]
     pub no_config: bool,
 
+    /// Read an already-evaluated Vite config as JSON from stdin.
+    #[arg(long, hide = true, conflicts_with_all = ["config", "no_config"])]
+    pub config_stdin: bool,
+
     /// Use single quotes instead of double quotes
     #[arg(long, num_args = 0..=1, default_missing_value = "true", require_equals = true)]
     pub single_quote: Option<bool>,

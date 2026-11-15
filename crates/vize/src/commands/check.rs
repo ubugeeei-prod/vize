@@ -37,6 +37,21 @@ pub struct CheckArgs {
     #[arg(long)]
     pub no_config: bool,
 
+    /// Read an already-evaluated Vite config as JSON from stdin.
+    #[cfg_attr(
+        unix,
+        arg(
+            long,
+            hide = true,
+            conflicts_with_all = ["config", "no_config", "socket"]
+        )
+    )]
+    #[cfg_attr(
+        not(unix),
+        arg(long, hide = true, conflicts_with_all = ["config", "no_config"])
+    )]
+    pub config_stdin: bool,
+
     /// Connect to check-server via Unix socket (faster for repeated checks, Unix only)
     #[cfg(unix)]
     #[arg(long, short)]

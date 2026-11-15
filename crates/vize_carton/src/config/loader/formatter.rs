@@ -1,6 +1,7 @@
 //! Formatter settings projected from one host config read.
 use super::{
-    LoadedConfigWithFeatures, LoadedRawConfig, load_raw_config_checked, load_raw_config_with_source,
+    LoadedConfigWithFeatures, LoadedRawConfig, load_raw_config_checked,
+    load_raw_config_from_serialized, load_raw_config_with_source,
 };
 use crate::config::{
     CompilerConfigEntry, ConfigEntryFiles, ConfigEntryIgnore, FormatterProfile,
@@ -41,6 +42,14 @@ pub fn try_load_formatter_snapshot(
     path: Option<&Path>,
 ) -> Result<LoadedFormatterSnapshot, std::string::String> {
     load_raw_config_checked(path).map(snapshot)
+}
+
+/// Load formatter settings from one already-evaluated Vite-shaped JSON document.
+pub fn try_load_formatter_snapshot_from_serialized(
+    json: &[u8],
+    source_path: PathBuf,
+) -> Result<LoadedFormatterSnapshot, std::string::String> {
+    load_raw_config_from_serialized(json, source_path).map(snapshot)
 }
 
 fn snapshot(loaded: LoadedRawConfig) -> LoadedFormatterSnapshot {
