@@ -119,9 +119,7 @@ for (let sample = 0; sample < samples; sample += 1) {
 const sameStorage = (key: "cache" | "temporary") => {
   const first = observations[0][key];
   assert.ok(
-    observations.every(
-      (observation) => JSON.stringify(observation[key]) === JSON.stringify(first),
-    ),
+    observations.every((observation) => JSON.stringify(observation[key]) === JSON.stringify(first)),
   );
   return first;
 };

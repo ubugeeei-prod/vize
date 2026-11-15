@@ -46,7 +46,7 @@ void test("rule discovery uses a bounded owned cache without process-temporary f
     binary,
     'import fs from "node:fs";\n' +
       'fs.appendFileSync(process.env.VIZE_RULE_CATALOG_TEST_COUNTER, "spawn\\n");\n' +
-      'process.stdout.write(JSON.stringify([' +
+      "process.stdout.write(JSON.stringify([" +
       '{ scope: "vue", value: "no-v-html" }, ' +
       '{ scope: "eslint", value: "eqeqeq" }]));\n',
   );
@@ -87,10 +87,7 @@ void test("rule discovery uses a bounded owned cache without process-temporary f
       .readdirSync(catalogs)
       .find((name) => name.endsWith(".json") && name !== "package.json");
     assert.ok(catalog);
-    assert.equal(
-      fs.statSync(path.join(catalogs, catalog)).mode & 0o777,
-      0o600,
-    );
+    assert.equal(fs.statSync(path.join(catalogs, catalog)).mode & 0o777, 0o600);
   }
 
   // Forget process memory: the second request must be served by the published
@@ -132,7 +129,10 @@ void test("rule discovery uses a bounded owned cache without process-temporary f
     fs.readdirSync(catalogs).filter((name) => /^[a-f0-9]{64}\.json$/u.test(name)).length,
     8,
   );
-  assert.equal(fs.readdirSync(catalogs).some((name) => name.endsWith(".tmp")), false);
+  assert.equal(
+    fs.readdirSync(catalogs).some((name) => name.endsWith(".tmp")),
+    false,
+  );
 });
 
 function restoreEnvironment(name: string, value: string | undefined): void {
