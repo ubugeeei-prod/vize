@@ -4,6 +4,7 @@
 use super::{corsa_available, lint_sfc_with_corsa};
 use crate::{LintPreset, Linter};
 
+mod no_implied_eval_callable;
 mod upstream_872_cases;
 
 const SOURCE: &str = r#"<script lang="ts">
