@@ -122,13 +122,7 @@ function assertRouteMappings(source: string, result: Transform) {
     return found[0];
   };
   // LF joins setup lines and CRLF splits them; both project the same exact authored bytes.
-  assertLinearVerbatimMappings(
-    authored,
-    generated,
-    result.mappings,
-    scriptAccesses,
-    allFeatures,
-  );
+  assertLinearVerbatimMappings(authored, generated, result.mappings, scriptAccesses, allFeatures);
   const expected = templateAccesses.flatMap(({ length, originalStart: at, generatedStart }) => [
     span(projection(at, templateUseFeatures), at, binding, templateUseFeatures),
     span(projection(at, templateHoverFeatures), at, binding, templateHoverFeatures),
