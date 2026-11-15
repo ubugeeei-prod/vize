@@ -26,46 +26,51 @@ export function prepareScriptlessWorkaroundFiles(
   const pathReplacements = new Map<string, string>();
   const locations = new Map<string, BridgeLocations>();
   let counter = 0;
-
-  for (const filename of filenames) {
-    const source = fs.readFileSync(filename, "utf8");
-    const isStandaloneHtml = isStandaloneHtmlFile(filename);
-    const relativeFilename = path.relative(cwd, filename);
+  const cleanup = () => {
     if (tempDir == null) {
-      const created = createWorkaroundTempDir(nodeModulesDir, tempRoot);
-      tempDir = created.tempDir;
-      createdNodeModules = created.createdNodeModules;
+      return;
     }
-    const tempBasename = isStandaloneHtml
-      ? `${path.basename(filename)}.vue`
-      : path.basename(filename);
-    const tempFilename = path.join(tempDir, `${counter}-${tempBasename}`);
-    counter += 1;
 
-    fs.mkdirSync(path.dirname(tempFilename), { recursive: true });
-    const bridge = prepareWorkaroundSource(source, filename);
-    fs.writeFileSync(tempFilename, bridge.source);
+    fs.rmSync(tempDir, { force: true, recursive: true });
+    removeEmptyDirectory(tempRoot);
+    removeEmptyDirectory(path.dirname(tempRoot));
+    if (createdNodeModules) {
+      removeEmptyDirectory(nodeModulesDir);
+    }
+  };
 
-    ignoreArgs.push("--ignore-pattern", toCliPath(relativeFilename));
-    tempArgs.push(tempFilename);
-    registerPathReplacementVariants(pathReplacements, cwd, tempFilename, filename);
-    registerLocationVariants(locations, cwd, tempFilename, bridge.locations);
+  try {
+    for (const filename of filenames) {
+      const source = fs.readFileSync(filename, "utf8");
+      const isStandaloneHtml = isStandaloneHtmlFile(filename);
+      const relativeFilename = path.relative(cwd, filename);
+      if (tempDir == null) {
+        const created = createWorkaroundTempDir(nodeModulesDir, tempRoot);
+        tempDir = created.tempDir;
+        createdNodeModules = created.createdNodeModules;
+      }
+      const tempBasename = isStandaloneHtml
+        ? `${path.basename(filename)}.vue`
+        : path.basename(filename);
+      const tempFilename = path.join(tempDir, `${counter}-${tempBasename}`);
+      counter += 1;
+
+      const bridge = prepareWorkaroundSource(source, filename);
+      fs.writeFileSync(tempFilename, bridge.source);
+
+      ignoreArgs.push("--ignore-pattern", toCliPath(relativeFilename));
+      tempArgs.push(tempFilename);
+      registerPathReplacementVariants(pathReplacements, cwd, tempFilename, filename);
+      registerLocationVariants(locations, cwd, tempFilename, bridge.locations);
+    }
+  } catch (error) {
+    cleanup();
+    throw error;
   }
 
   return {
     appendedArgs: [...ignoreArgs, ...tempArgs],
-    cleanup() {
-      if (tempDir == null) {
-        return;
-      }
-
-      fs.rmSync(tempDir, { force: true, recursive: true });
-      removeEmptyDirectory(tempRoot);
-      removeEmptyDirectory(path.dirname(tempRoot));
-      if (createdNodeModules) {
-        removeEmptyDirectory(nodeModulesDir);
-      }
-    },
+    cleanup,
     pathReplacements,
     locations,
     usedScriptlessWorkaround: pathReplacements.size > 0,

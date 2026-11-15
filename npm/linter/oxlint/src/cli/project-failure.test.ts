@@ -67,6 +67,19 @@ void test("HTML-only inputs retain the legacy adapter and complete original sour
   for (const file of files) assert.equal(fs.readFileSync(file, "utf8"), bytes);
 });
 
+void test("partial carrier preparation removes every owned temporary path", (t) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-partial-carrier-"));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const existing = path.join(root, "Existing.vue");
+  fs.writeFileSync(existing, "<template />\n");
+
+  assert.throws(
+    () => prepareScriptlessWorkaroundFiles(root, [existing, path.join(root, "Missing.vue")]),
+    /ENOENT/u,
+  );
+  assert.deepEqual(fs.readdirSync(root), ["Existing.vue"]);
+});
+
 for (const selectedVue of [true, false])
   void test(`mixed HTML/Vue inputs retain raw reports and refuse transport with Vue selected=${selectedVue}`, async (t) => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-mixed-html-"));
