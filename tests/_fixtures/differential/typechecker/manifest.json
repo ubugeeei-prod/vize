@@ -14638,6 +14638,55 @@
       }
     },
     {
+      "id": "typechecker/regression/expect-unpacketed-owners-6258",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "expect-unpacketed-owners-6258/Controls.vue.txt",
+          "sha256": "f7bb58588dce31f1bdaf29a4d8a6aa7123ae5cc34ea969f4b8c639a8f6254cce",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "expect-unpacketed-owners-6258/Frame.vue.txt",
+          "sha256": "77d3388c856d5cb788d36365fc2fd7f5b82ce909d83890a4f26ff71458f57973",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "expect-unpacketed-owners-6258/InputBesideBoundSibling.vue.txt",
+          "sha256": "002b5c16ed150db9d565c4b4bbb27cc4b8117b0b4049b5d5972fe65099465355",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "expect-unpacketed-owners-6258/Item.vue.txt",
+          "sha256": "596db761c902ede6d0ccdd201b8fd584359dc8e27bb3407624f09c57e35f2d89",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "expect-unpacketed-owners-6258/VForInSlot.vue.txt",
+          "sha256": "ad62877409ef469a550b5f11706fa60722c5dd03849163f4c3179b672affc6d1",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::expect_unpacketed_owners_6258::expect_owns_unpacketed_listeners_and_replayed_checks; reported #6258 @vue-expect-error above a component with v-for inside a slot and above a native element with a binding and a listener beside a bound sibling, plus a slot sibling's prop error and a sibling's native binding error that must stay visible and an expectation without an error that is unused. Input-only registration, no diagnostic pack."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/fallthrough-generic-12458",
       "state": "active",
       "targets": [
