@@ -1,30 +1,129 @@
-//! A single Node child pauses before each actual configuration load phase.
+//! The Node child that evaluates a config, read up to its result line.
 //!
-//! Only phase path lists are bounded. The final native JSON payload retains
-//! the ordinary loader's size semantics. This blocking transport runs solely
-//! on the caller's configuration worker, never on an async executor thread.
+//! The child writes its result as one line of JSON (`JSON.stringify` never
+//! emits a raw newline) and exits. The host stops reading at that line and
+//! gives the child a bounded grace to exit before it kills it, so a timer,
+//! server or process the config leaves behind never keeps the host waiting.
+//! An observing child first pauses before each actual load phase. Only phase
+//! path lists are bounded; the result line keeps the ordinary loader's size
+//! semantics. This blocking transport runs solely on the caller's
+//! configuration worker, never on an async executor thread.
 
 use std::{
     fmt,
-    io::{self, BufReader, ErrorKind, Read, Write},
+    io::{self, BufRead, BufReader, ErrorKind, Read, Write},
     path::PathBuf,
     process::{Child, Command, ExitStatus, Output, Stdio},
-    thread::{self, JoinHandle},
+    sync::mpsc::{self, Receiver, RecvTimeoutError},
+    thread,
+    time::{Duration, Instant},
 };
 
 const MAX_PHASE_BYTES: usize = 64 * 1024;
+/// How long a child may take to exit, or its stderr to end, once its result is in.
+pub(super) const EXIT_GRACE: Duration = Duration::from_secs(2);
+/// Sees the paths of each load phase before the child reads them.
+type PhaseObserver<'a, 'b> = Option<&'a mut (dyn FnMut(&[PathBuf]) + 'b)>;
 
-struct ObservedChild {
-    child: Child,
-    stderr: Option<JoinHandle<io::Result<Vec<u8>>>>,
+/// One evaluation child after its result line or its stdout EOF.
+pub(super) struct ChildOutput {
+    pub(super) status: ExitStatus,
+    /// The result line without its newline, or every byte before EOF.
+    pub(super) stdout: Vec<u8>,
+    /// The child kept running after a complete result line, so the host killed it.
+    pub(super) stopped_after_result: bool,
+    stderr: StderrDrain,
 }
 
-/// Keep the original process evidence even when its final JSON never arrived.
+impl ChildOutput {
+    /// The complete process evidence. Stderr is collected only when a caller
+    /// needs it, for at most the exit grace, so a stderr handle that a
+    /// grandchild inherited cannot block the host.
+    pub(super) fn into_output(self) -> io::Result<Output> {
+        Ok(Output {
+            status: self.status,
+            stdout: self.stdout,
+            stderr: self.stderr.collect()?,
+        })
+    }
+}
+
+/// Stderr read on its own thread so the child never blocks on it.
+pub(super) struct StderrDrain {
+    chunks: Receiver<io::Result<Vec<u8>>>,
+    bytes: Vec<u8>,
+    error: Option<io::Error>,
+    ended: bool,
+}
+
+impl StderrDrain {
+    pub(super) fn start(mut stderr: impl Read + Send + 'static) -> Self {
+        let (sender, receiver) = mpsc::channel();
+        thread::spawn(move || {
+            loop {
+                let mut chunk = vec![0; 8192];
+                let read = match stderr.read(&mut chunk) {
+                    Ok(0) => break,
+                    Ok(read) => read,
+                    Err(error) if error.kind() == ErrorKind::Interrupted => continue,
+                    Err(error) => {
+                        let _ = sender.send(Err(error));
+                        break;
+                    }
+                };
+                chunk.truncate(read);
+                // A host that stopped listening releases the pipe.
+                if sender.send(Ok(chunk)).is_err() {
+                    break;
+                }
+            }
+        });
+        Self {
+            chunks: receiver,
+            bytes: Vec::new(),
+            error: None,
+            ended: false,
+        }
+    }
+
+    /// Keep what arrives until EOF or `deadline`.
+    fn read_until(&mut self, deadline: Instant) {
+        while !self.ended {
+            match self
+                .chunks
+                .recv_timeout(deadline.saturating_duration_since(Instant::now()))
+            {
+                Ok(Ok(chunk)) => self.bytes.extend_from_slice(&chunk),
+                Ok(Err(error)) => {
+                    self.error.get_or_insert(error);
+                }
+                Err(RecvTimeoutError::Disconnected) => self.ended = true,
+                Err(RecvTimeoutError::Timeout) => return,
+            }
+        }
+    }
+
+    /// Every byte up to EOF, or up to the exit grace.
+    pub(super) fn collect(mut self) -> io::Result<Vec<u8>> {
+        self.read_until(Instant::now() + EXIT_GRACE);
+        match self.error {
+            Some(error) => Err(error),
+            None => Ok(self.bytes),
+        }
+    }
+}
+
+struct EvaluationChild {
+    child: Child,
+    stderr: Option<StderrDrain>,
+}
+
+/// Keep the original process evidence even when its result never arrived.
 #[derive(Debug)]
-struct ObservationFailure {
-    cause: io::Error,
-    status: io::Result<ExitStatus>,
-    stderr: io::Result<Vec<u8>>,
+pub(super) struct ObservationFailure {
+    pub(super) cause: io::Error,
+    pub(super) status: io::Result<ExitStatus>,
+    pub(super) stderr: io::Result<Vec<u8>>,
 }
 
 impl fmt::Display for ObservationFailure {
@@ -55,13 +154,11 @@ impl std::error::Error for ObservationFailure {
     }
 }
 
-impl ObservedChild {
-    fn drain_stderr(&mut self) -> io::Result<Vec<u8>> {
+impl EvaluationChild {
+    fn take_stderr(&mut self) -> io::Result<StderrDrain> {
         self.stderr
             .take()
-            .ok_or_else(|| io::Error::other("Missing config stderr drain"))?
-            .join()
-            .map_err(|_| io::Error::other("Config stderr drain panicked"))?
+            .ok_or_else(|| io::Error::other("Missing config stderr drain"))
     }
 
     fn stop(&mut self) -> io::Result<ExitStatus> {
@@ -74,11 +171,39 @@ impl ObservedChild {
         }
     }
 
+    /// Wait at most the exit grace, then kill. Reports whether it had to kill.
+    fn exit(&mut self) -> io::Result<(ExitStatus, bool)> {
+        let deadline = Instant::now() + EXIT_GRACE;
+        let mut pause = Duration::from_micros(20);
+        loop {
+            if let Some(status) = self.child.try_wait()? {
+                return Ok((status, false));
+            }
+            let now = Instant::now();
+            if now >= deadline {
+                let _ = self.child.kill();
+                return Ok((self.child.wait()?, true));
+            }
+            match self.stderr.as_mut() {
+                // Stderr ends as the child exits, unless another process
+                // inherited it; check the child at least every millisecond.
+                Some(stderr) if !stderr.ended => {
+                    stderr.read_until((now + Duration::from_millis(1)).min(deadline));
+                }
+                // Reaping follows the closed descriptors within moments.
+                _ => {
+                    thread::sleep(pause.min(deadline - now));
+                    pause = pause.saturating_mul(2).min(Duration::from_millis(1));
+                }
+            }
+        }
+    }
+
     fn failure(&mut self, cause: io::Error) -> io::Error {
         // Collect both results before returning either error. Stderr remains
-        // joined even if reaping fails, and the cause never replaces its bytes.
+        // drained even if reaping fails, and the cause never replaces its bytes.
         let status = self.stop();
-        let stderr = self.drain_stderr();
+        let stderr = self.take_stderr().and_then(StderrDrain::collect);
         io::Error::new(
             cause.kind(),
             ObservationFailure {
@@ -90,40 +215,40 @@ impl ObservedChild {
     }
 }
 
-impl Drop for ObservedChild {
+impl Drop for EvaluationChild {
     fn drop(&mut self) {
-        // Callback unwinding also owns kill/reap and the stderr join.
+        // Callback unwinding also owns kill/reap and the stderr drain.
         let _ = self.stop();
         if let Some(stderr) = self.stderr.take() {
-            let _ = stderr.join();
+            let _ = stderr.collect();
         }
     }
 }
 
-pub(super) fn evaluate_observed(
+/// Run one evaluation child up to its result line. With `before_read`, the
+/// child pauses before each load phase until the callback has seen its paths.
+pub(super) fn evaluate(
     command: &mut Command,
-    before_read: &mut dyn FnMut(&[PathBuf]),
-) -> io::Result<Output> {
+    before_read: PhaseObserver<'_, '_>,
+) -> io::Result<ChildOutput> {
+    match before_read {
+        Some(_) => command.arg("--observe-config-inputs").stdin(Stdio::piped()),
+        None => command.stdin(Stdio::null()),
+    };
     let child = command
-        .arg("--observe-config-inputs")
-        .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .spawn()?;
-    let mut process = ObservedChild {
+    let mut process = EvaluationChild {
         child,
         stderr: None,
     };
-    let mut stderr = process
+    let stderr = process
         .child
         .stderr
         .take()
         .ok_or_else(|| io::Error::other("Missing piped config stderr"))?;
-    process.stderr = Some(thread::spawn(move || {
-        let mut bytes = Vec::new();
-        stderr.read_to_end(&mut bytes)?;
-        Ok(bytes)
-    }));
+    process.stderr = Some(StderrDrain::start(stderr));
     let mut stdout = BufReader::new(
         process
             .child
@@ -131,29 +256,28 @@ pub(super) fn evaluate_observed(
             .take()
             .ok_or_else(|| io::Error::other("Missing piped config stdout"))?,
     );
-    let mut stdin = process
-        .child
-        .stdin
-        .take()
-        .ok_or_else(|| io::Error::other("Missing piped config stdin"))?;
-    let phases = read_phases(&mut stdout, &mut stdin, before_read);
-    drop(stdin);
-    let payload = phases.and_then(|()| {
-        let mut payload = Vec::new();
-        stdout.read_to_end(&mut payload)?;
-        Ok(payload)
-    });
+    if let Some(before_read) = before_read {
+        let phases = match process.child.stdin.take() {
+            Some(mut stdin) => read_phases(&mut stdout, &mut stdin, before_read),
+            None => Err(io::Error::other("Missing piped config stdin")),
+        };
+        phases.map_err(|cause| process.failure(cause))?;
+    }
+    let mut result = Vec::new();
+    let read = stdout.read_until(b'\n', &mut result);
+    // Bytes after the result line, and stdout's EOF, are never awaited.
     drop(stdout);
-    let payload = payload.map_err(|cause| process.failure(cause))?;
-    let status = process
-        .child
-        .wait()
-        .map_err(|cause| process.failure(cause))?;
-    let stderr = process.drain_stderr()?;
-    Ok(Output {
+    read.map_err(|cause| process.failure(cause))?;
+    let delivered = result.last() == Some(&b'\n');
+    if delivered {
+        result.pop();
+    }
+    let (status, killed) = process.exit().map_err(|cause| process.failure(cause))?;
+    Ok(ChildOutput {
         status,
-        stdout: payload,
-        stderr,
+        stdout: result,
+        stopped_after_result: killed && delivered,
+        stderr: process.take_stderr()?,
     })
 }
 
@@ -203,240 +327,4 @@ fn read_phases(
         stdin.flush()?;
     }
     Ok(())
-}
-
-#[cfg(test)]
-mod tests {
-    use super::{ObservationFailure, evaluate_observed};
-    use std::{path::PathBuf, process::Command};
-
-    #[test]
-    fn drains_stderr_while_waiting_for_the_phase_ack_and_preserves_large_final_payload() {
-        let directory = tempfile::tempdir().unwrap();
-        let path = directory.path().join("policy.mjs");
-        let encoded = serde_json::to_string(&[&path]).unwrap();
-        let script = crate::cstr!(
-            r#"
-const frame = Buffer.from({encoded:?});
-process.stderr.write('e'.repeat(100000));
-process.stdout.write(`B${{frame.length}}\n`);
-process.stdout.write(frame);
-process.stdin.once('data', ack => {{
-  if (ack.length !== 1 || ack[0] !== 6) process.exit(2);
-  process.stdout.end('R\n' + 'x'.repeat(100000));
-  process.stdin.destroy();
-}});
-"#
-        );
-        let mut command = Command::new("node");
-        command
-            .arg("-e")
-            .arg(script)
-            .arg("--")
-            .arg("config-fixture");
-        let mut observed = Vec::new();
-        let output = evaluate_observed(&mut command, &mut |paths| {
-            observed.extend_from_slice(paths);
-        })
-        .unwrap();
-        assert!(output.status.success());
-        assert_eq!(observed, vec![path]);
-        assert_eq!(output.stdout, vec![b'x'; 100000]);
-        assert_eq!(output.stderr, vec![b'e'; 100000]);
-    }
-
-    #[test]
-    fn rejects_truncated_or_oversized_phases_and_reaps_the_child() {
-        for frame in [
-            "B65537\n",
-            "B-1\n",
-            "Bwat\n",
-            "B10\n[]",
-            "B1",
-            "",
-            "B5\n[\".\"]",
-        ] {
-            let mut command = Command::new("node");
-            command
-                .arg("-e")
-                .arg(crate::cstr!("process.stderr.write(\"malformed-specificreason\\n\"); process.stdout.write({frame:?});"))
-                .arg("--")
-                .arg("config-fixture");
-            let mut observed: Vec<PathBuf> = Vec::new();
-            let error = evaluate_observed(&mut command, &mut |paths| {
-                observed.extend_from_slice(paths);
-            })
-            .expect_err("accepted invalid config phase");
-            let failure = error
-                .get_ref()
-                .unwrap()
-                .downcast_ref::<ObservationFailure>()
-                .unwrap();
-            assert_eq!(
-                failure.stderr.as_ref().unwrap().as_slice(),
-                b"malformed-specificreason\n",
-                "lost stderr for {frame:?}"
-            );
-            assert!(failure.status.is_ok());
-            assert!(observed.is_empty());
-        }
-    }
-
-    #[test]
-    fn exit_before_final_payload_retains_actual_status_and_stderr() {
-        let mut command = Command::new("node");
-        command
-            .arg("-e")
-            .arg("console.error('specificreason 日本語'); process.exit(17);")
-            .arg("--")
-            .arg("config-fixture");
-        let error =
-            evaluate_observed(&mut command, &mut |_| panic!("no phase emitted")).unwrap_err();
-        let failure = error
-            .get_ref()
-            .unwrap()
-            .downcast_ref::<ObservationFailure>()
-            .unwrap();
-        assert_eq!(failure.status.as_ref().unwrap().code(), Some(17));
-        assert_eq!(
-            failure.stderr.as_ref().unwrap().as_slice(),
-            "specificreason 日本語\n".as_bytes()
-        );
-        assert_eq!(failure.cause.kind(), std::io::ErrorKind::UnexpectedEof);
-        let status = if cfg!(windows) {
-            "exit code: 17"
-        } else {
-            "exit status: 17"
-        };
-        assert_eq!(
-            crate::cstr!("{error}"),
-            crate::cstr!(
-                "node failed to load config: specificreason 日本語 ({status}; observation transport: failed to fill whole buffer)"
-            )
-        );
-    }
-
-    #[test]
-    fn startup_exception_before_finally_retains_actual_diagnostic_and_status() {
-        // Independent Node execution owns the complete default exception packet,
-        // including runtime-specific internal stack frames. Keep the actual throw
-        // and argv identical; this oracle never calls the observation transport.
-        let mut direct = Command::new("node");
-        direct
-            .arg("-e")
-            .arg("throw new Error('startup-specificreason');")
-            .arg("--")
-            .arg("config-fixture")
-            .arg("--observe-config-inputs")
-            .stdin(std::process::Stdio::piped());
-        let baseline = direct.output().unwrap();
-        assert_eq!(baseline.status.code(), Some(1));
-        assert_eq!(baseline.stdout.as_slice(), b"");
-        let stderr = std::str::from_utf8(&baseline.stderr).unwrap();
-        // Node emits CRLF on Windows. Parse only this independent diagnostic
-        // header as lines; the observation transport must still preserve every
-        // byte of the original packet, as asserted below.
-        let mut diagnostic_lines = stderr.lines();
-        assert_eq!(diagnostic_lines.next(), Some("[eval]:1"));
-        assert_eq!(
-            diagnostic_lines.next(),
-            Some("throw new Error('startup-specificreason');")
-        );
-        assert_eq!(diagnostic_lines.next(), Some("^"));
-        assert_eq!(diagnostic_lines.next(), Some(""));
-        assert_eq!(
-            diagnostic_lines.next(),
-            Some("Error: startup-specificreason")
-        );
-
-        let mut command = Command::new("node");
-        command
-            .arg("-e")
-            .arg("throw new Error('startup-specificreason');")
-            .arg("--")
-            .arg("config-fixture");
-        let error =
-            evaluate_observed(&mut command, &mut |_| panic!("no phase emitted")).unwrap_err();
-        let failure = error
-            .get_ref()
-            .unwrap()
-            .downcast_ref::<ObservationFailure>()
-            .unwrap();
-        assert_eq!(command.get_program(), direct.get_program());
-        assert_eq!(
-            command.get_args().collect::<Vec<_>>(),
-            direct.get_args().collect::<Vec<_>>()
-        );
-        assert_eq!(command.get_current_dir(), direct.get_current_dir());
-        assert_eq!(
-            command.get_envs().collect::<Vec<_>>(),
-            direct.get_envs().collect::<Vec<_>>()
-        );
-        assert_eq!(failure.status.as_ref().unwrap(), &baseline.status);
-        assert_eq!(failure.stderr.as_ref().unwrap(), &baseline.stderr);
-        assert_eq!(failure.cause.kind(), std::io::ErrorKind::UnexpectedEof);
-        assert_eq!(
-            crate::cstr!("{}", failure.cause),
-            "failed to fill whole buffer"
-        );
-        assert_eq!(
-            crate::cstr!("{error}"),
-            crate::cstr!(
-                "node failed to load config: {} ({}; observation transport: failed to fill whole buffer)",
-                stderr
-                    .strip_suffix(if cfg!(windows) { "\r\n" } else { "\n" })
-                    .unwrap(),
-                baseline.status
-            )
-        );
-    }
-
-    #[test]
-    fn callback_panic_kills_and_reaps_the_child_and_joins_its_stderr_drain() {
-        let directory = tempfile::tempdir().unwrap();
-        let path = directory.path().join("child.pid");
-        let encoded = serde_json::to_string(&[&path]).unwrap();
-        let mut command = Command::new("node");
-        command
-            .arg("-e")
-            .arg(crate::cstr!(
-                r#"
-const fs = require('node:fs');
-const paths = {encoded};
-fs.writeFileSync(paths[0], String(process.pid));
-process.stderr.write('e'.repeat(100000));
-const frame = Buffer.from(JSON.stringify(paths));
-process.stdout.write(`B${{frame.length}}\n`);
-process.stdout.write(frame);
-setInterval(() => {{}}, 1000);
-"#
-            ))
-            .arg("--")
-            .arg("config-fixture");
-        let panic = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-            let _ = evaluate_observed(&mut command, &mut |paths| {
-                assert_eq!(paths, std::slice::from_ref(&path));
-                panic!("configuration observer panic");
-            });
-        }));
-        assert!(panic.is_err());
-        let pid = std::fs::read_to_string(path)
-            .unwrap()
-            .parse::<u32>()
-            .unwrap();
-        let status = Command::new("node")
-            .arg("-e")
-            .arg(crate::cstr!(
-                r#"
-try {{ process.kill({pid}, 0); process.exit(1); }}
-catch (error) {{ process.exit(error.code === 'ESRCH' ? 0 : 2); }}
-"#
-            ))
-            .status()
-            .unwrap();
-        assert!(
-            status.success(),
-            "configuration child {pid} survived or was not reaped"
-        );
-    }
 }

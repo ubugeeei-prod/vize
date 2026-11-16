@@ -26,6 +26,8 @@ mod js_literal;
 #[cfg(test)]
 mod js_literal_tests;
 mod js_observation;
+#[cfg(test)]
+mod js_observation_tests;
 mod jsx;
 mod language_server;
 #[cfg(test)]

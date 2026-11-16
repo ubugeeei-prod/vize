@@ -15,7 +15,9 @@ const configPath = process.argv[1];
 console.log = (...args) => console.error(...args);
 const namespace = await importConfigModule(configPath);
 const exported = namespace.default ?? namespace;
-process.stdout.write(JSON.stringify(await inspectViteConfigPlugins(exported)));
+const inspection = JSON.stringify(await inspectViteConfigPlugins(exported));
+// One line, then exit: a timer the config left running must not keep it alive.
+process.stdout.write(inspection + "\n", () => process.exit());
 "#;
 
 /// Evaluate the discovered or explicit Vite config and return its plan inspection.
@@ -31,16 +33,18 @@ pub fn inspect_config_plugins(path: Option<&Path>) -> Result<serde_json::Value, 
     let runtime = NodeRuntimeFile::new(&script).map_err(|error| {
         crate::cstr!("failed to prepare the config runtime: {error}").into_string()
     })?;
-    let output = runtime
-        .command(&config_path)
-        .output()
+    let child = super::js_observation::evaluate(&mut runtime.command(&config_path), None)
         .map_err(|error| crate::cstr!("failed to start node: {error}").into_string())?;
-    if !output.status.success() {
+    // Only a complete inspection is written, so a stopped child delivered one.
+    if !child.status.success() && !child.stopped_after_result {
+        let output = child
+            .into_output()
+            .map_err(|error| crate::cstr!("failed to read node: {error}").into_string())?;
         return Err(String::from_utf8_lossy(&output.stderr)
             .trim_end()
             .to_owned());
     }
-    serde_json::from_slice(&output.stdout)
+    serde_json::from_slice(&child.stdout)
         .map_err(|error| crate::cstr!("unreadable plugin inspection: {error}").into_string())
 }
 
