@@ -94,10 +94,10 @@ pub(super) fn declarations(ctx: &LintContext<'_>) -> Vec<Declaration> {
         let owned = crate::linter::analyze_descriptor_for_lint(
             &scripts,
             None,
-            Some(crate::linter::MacroTypeResolution {
-                filename: ctx.filename,
-                sources: ctx.type_sources(),
-            }),
+            Some(crate::linter::MacroTypeResolution::new(
+                ctx.type_sources(),
+                ctx.filename,
+            )),
             false,
             false,
         );
