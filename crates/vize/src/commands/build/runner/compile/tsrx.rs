@@ -183,6 +183,7 @@ mod tests {
                 "components.tsrx",
                 "mount/attributes.tsrx",
                 "mount/counter.tsrx",
+                "mount/default.tsrx",
                 "mount/dynamic.tsrx",
                 "mount/loops.tsrx",
                 "mount/returns.tsrx",

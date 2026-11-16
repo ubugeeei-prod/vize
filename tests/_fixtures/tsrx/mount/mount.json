@@ -188,6 +188,13 @@
       "component": "Pick",
       "props": { "label": "a" },
       "steps": [{ "props": { "label": "b" } }]
+    },
+    {
+      "id": "default/app",
+      "file": "tests/_fixtures/tsrx/mount/default.tsrx",
+      "component": "default",
+      "props": { "title": "a", "count": 1 },
+      "steps": [{ "props": { "count": 2 } }, { "props": { "title": "b" } }]
     }
   ]
 }

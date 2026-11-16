@@ -3,8 +3,11 @@
 //! A component is a function whose body is a statement container (`@{ … }`),
 //! or that returns markup (`{ setup; return <markup>; }`, `() => <markup>`),
 //! and whose static name starts with an uppercase ASCII letter: a function
-//! declaration, or a `const`/`let` declarator initialized with an arrow or a
-//! function expression, optionally exported. Setup returns nothing but the
+//! declaration (optionally the named default export), or a `const`/`let`
+//! declarator initialized with an arrow or a function expression, optionally
+//! exported. An anonymous default export is not a component in the reference
+//! (it runs as a functional component whose destructured props never update)
+//! and stays refused. Setup returns nothing but the
 //! render: an earlier `return` would decide the output once, at setup, and is
 //! refused (`EarlyReturn`). Its props follow the pinned
 //! reference (`vue-jsx-vapor` macros): the keys of a destructured first
@@ -13,8 +16,9 @@
 
 use alloc::vec::Vec;
 use oxc_ast::ast::{
-    ArrowFunctionExpression, BindingPattern, Class, Declaration, Expression, FormalParameters,
-    Function, FunctionBody, PropertyKey, ReturnStatement, Statement, VariableDeclaration,
+    ArrowFunctionExpression, BindingPattern, Class, Declaration, ExportDefaultDeclarationKind,
+    Expression, FormalParameters, Function, FunctionBody, PropertyKey, ReturnStatement, Statement,
+    VariableDeclaration,
 };
 use oxc_ast_visit::Visit;
 use oxc_syntax::scope::ScopeFlags;
@@ -29,8 +33,8 @@ pub(super) struct Component<'a> {
     pub name: &'a str,
     /// The host range the definition replaces.
     pub span: Span,
-    /// A function declaration, which becomes a `const` declaration.
-    pub declaration: bool,
+    /// How the definition replaces its host range.
+    pub form: Form,
     /// From the function start through the parameter list's `(`.
     pub head: Span,
     pub params: &'a FormalParameters<'a>,
@@ -52,6 +56,17 @@ impl<'a> Component<'a> {
             (None, _) => None,
         }
     }
+}
+
+/// Where a component is defined.
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub(super) enum Form {
+    /// A function declaration, which becomes a `const` declaration.
+    Declaration,
+    /// A declarator's initializer, which stays an expression.
+    Initializer,
+    /// `export default function Name`, which exports the expression.
+    ExportDefault,
 }
 
 /// How a component reads its props.
@@ -86,14 +101,21 @@ pub(super) fn collect<'a>(
     for statement in &module.program().body {
         match statement {
             Statement::FunctionDeclaration(function) => {
-                declaration(module, function, &mut found)?;
+                declaration(module, function, Form::Declaration, &mut found)?;
             }
             Statement::VariableDeclaration(variables) => {
                 declarators(module, variables, &mut found)?;
             }
+            Statement::ExportDefaultDeclaration(export) => {
+                if let ExportDefaultDeclarationKind::FunctionDeclaration(function) =
+                    &export.declaration
+                {
+                    declaration(module, function, Form::ExportDefault, &mut found)?;
+                }
+            }
             Statement::ExportNamedDeclaration(export) => match &export.declaration {
                 Some(Declaration::FunctionDeclaration(function)) => {
-                    declaration(module, function, &mut found)?;
+                    declaration(module, function, Form::Declaration, &mut found)?;
                 }
                 Some(Declaration::VariableDeclaration(variables)) => {
                     declarators(module, variables, &mut found)?;
@@ -117,6 +139,7 @@ pub(super) fn collect<'a>(
 fn declaration<'a>(
     module: &'a TsrxModule<'a>,
     function: &'a Function<'a>,
+    form: Form,
     found: &mut Vec<Component<'a>>,
 ) -> Result<(), (EmitIssue, Span)> {
     let (Some(id), Some(body)) = (&function.id, &function.body) else {
@@ -132,10 +155,7 @@ fn declaration<'a>(
         false,
         function.r#async || function.generator,
     )? {
-        found.push(Component {
-            declaration: true,
-            ..component
-        });
+        found.push(Component { form, ..component });
     }
     Ok(())
 }
@@ -216,7 +236,7 @@ fn component<'a>(
     let mut component = Component {
         name,
         span,
-        declaration: false,
+        form: Form::Initializer,
         head: Span::new(span.start, params_span.start),
         params,
         tail: Span::new(

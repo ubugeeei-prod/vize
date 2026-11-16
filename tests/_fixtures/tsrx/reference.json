@@ -185,6 +185,11 @@
       "error": null
     },
     {
+      "file": "tests/_fixtures/tsrx/mount/default.tsrx",
+      "code": "import { defineVaporComponent } from 'vue-jsx-vapor';\n\nconst Badge = defineVaporComponent(function Badge(props: { text: string }) {\n\treturn <b class=\"badge\">{props.text}</b>;\n});\n\nexport default defineVaporComponent(function App({ title, count }: { title: string; count: number }) {\n\tconst heading = title.toUpperCase();\n\n\treturn <section class=\"app\"><h1>{heading}</h1><Badge text={title} /><p>{count}</p></section>;\n});",
+      "error": null
+    },
+    {
       "file": "tests/_fixtures/tsrx/mount/dynamic.tsrx",
       "code": "import { defineVaporComponent } from 'vue-jsx-vapor';\nimport { ref } from 'vue';\n\nconst Child = defineVaporComponent(function Child(props: { label: string }) {\n\treturn <span class=\"child\">{props.label}</span>;\n});\n\nexport const Host = defineVaporComponent(function Host({ tag }: { tag: string }) {\n\treturn <>{(() => {\n\t\t\tconst TsrxDynamic_1 = tag;\n\n\t\t\treturn <TsrxDynamic_1 class=\"host\" data-tag={tag}>{'dynamic '}<b>{tag}</b></TsrxDynamic_1>;\n\t\t})()}</>;\n});\n\nexport const Toggle = defineVaporComponent(function Toggle() {\n\tconst tag = ref<'section' | 'article'>('section');\n\n\treturn <><>{(() => {\n\t\t\t\tconst TsrxDynamic_2 = tag.value;\n\n\t\t\t\treturn <TsrxDynamic_2 class=\"toggle\">{tag.value}</TsrxDynamic_2>;\n\t\t\t})()}</><button onClick={() => {\n\t\t\ttag.value = tag.value === 'section' ? 'article' : 'section';\n\t\t}}>\n\t\t\ttoggle\n\t\t</button></>;\n});\n\nexport const Pick = defineVaporComponent(function Pick({ label }: { label: string }) {\n\tconst component = Child;\n\n\treturn <>{(() => {\n\t\t\tconst TsrxDynamic_3 = component;\n\n\t\t\treturn <TsrxDynamic_3 label={label} />;\n\t\t})()}</>;\n});",
       "error": null
