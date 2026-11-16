@@ -44,6 +44,7 @@ mod props_binding;
 mod pug_refusal;
 mod quoted_generic_parameters;
 mod recovered_attribute_boundary_11731;
+mod registered_components_13111;
 mod replayed_pattern_duplicates;
 mod reported_dynamic_targets;
 mod reported_expression_duplicates_11374;
