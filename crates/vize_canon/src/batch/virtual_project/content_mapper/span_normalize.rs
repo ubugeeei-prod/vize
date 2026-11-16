@@ -1,11 +1,13 @@
 //! Protocol-valid normalization for overlapping authored projections.
 
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::BTreeSet;
 use std::ops::Range;
 
 use super::{ContentMapperSpanKind, SpanCandidate};
 
+mod coverage;
 mod runs;
+use coverage::CoverageIndex;
 pub(super) use runs::join_verbatim_runs;
 
 fn ranges_overlap(left: &Range<usize>, right: &Range<usize>) -> bool {
@@ -16,17 +18,37 @@ pub(super) fn normalize(candidates: Vec<SpanCandidate>) -> Vec<SpanCandidate> {
     // A split verbatim piece takes its generated length from its original. When
     // both lengths agree, as every projected verbatim span's do, pieces stay
     // inside their candidate and accepted ranges stay disjoint.
-    if candidates.iter().all(|candidate| {
-        candidate.kind != ContentMapperSpanKind::Verbatim
-            || candidate.generated.len() == candidate.original.len()
-    }) {
-        normalize_with::<DisjointIndex>(candidates)
+    let bound = candidates.iter().fold(0, |bound, candidate| {
+        bound
+            .max(candidate.generated.end)
+            .max(candidate.original.end)
+    });
+    if u32::try_from(bound).is_ok()
+        && candidates.iter().all(|candidate| {
+            candidate.kind != ContentMapperSpanKind::Verbatim
+                || candidate.generated.len() == candidate.original.len()
+        })
+    {
+        normalize_with::<CoverageIndex>(candidates)
     } else {
         normalize_with::<LengthClassIndex>(candidates)
     }
 }
 
-trait RangeIndex: Default {
+/// Accepted ranges, which are pairwise non-overlapping or equal: a generated
+/// range is accepted only when it overlaps none, and an original only when every
+/// range it overlaps is the same range (split pieces are disjoint). When no
+/// split piece can leave its candidate, distinct non-empty ranges are therefore
+/// disjoint, which [`CoverageIndex`] relies on. An empty range `p..p` still
+/// overlaps a probe that strictly contains `p` under [`ranges_overlap`], so
+/// empties are kept apart by position.
+trait RangeIndex {
+    /// An index of generated ranges ending at most at `bound`; it only answers
+    /// [`RangeIndex::overlaps`].
+    fn for_generated(bound: usize) -> Self;
+    /// An index of original ranges ending at most at `bound`; it only answers
+    /// [`RangeIndex::collect_overlapping`].
+    fn for_original(bound: usize) -> Self;
     fn insert(&mut self, range: &Range<usize>);
     fn overlaps(&self, probe: &Range<usize>) -> bool;
     /// Append every indexed range overlapping `probe`, each once, unordered.
@@ -34,6 +56,15 @@ trait RangeIndex: Default {
 }
 
 fn normalize_with<Index: RangeIndex>(mut candidates: Vec<SpanCandidate>) -> Vec<SpanCandidate> {
+    let (generated_bound, original_bound) =
+        candidates
+            .iter()
+            .fold((0, 0), |(generated, original), candidate| {
+                (
+                    generated.max(candidate.generated.end),
+                    original.max(candidate.original.end),
+                )
+            });
     candidates.sort_by_key(|candidate| {
         (
             candidate.generated.len(),
@@ -43,8 +74,8 @@ fn normalize_with<Index: RangeIndex>(mut candidates: Vec<SpanCandidate>) -> Vec<
     });
 
     let mut accepted: Vec<SpanCandidate> = Vec::with_capacity(candidates.len());
-    let mut generated = Index::default();
-    let mut original = Index::default();
+    let mut generated = Index::for_generated(generated_bound);
+    let mut original = Index::for_original(original_bound);
     let mut overlaps = Vec::new();
     for candidate in candidates {
         if generated.overlaps(&candidate.generated) {
@@ -67,58 +98,6 @@ fn normalize_with<Index: RangeIndex>(mut candidates: Vec<SpanCandidate>) -> Vec<
         }
     }
     accepted
-}
-
-/// Accepted ranges, which are pairwise non-overlapping or equal: a generated
-/// range is accepted only when it overlaps none, and an original only when every
-/// range it overlaps is the same range (split pieces are disjoint). Distinct
-/// non-empty ranges are therefore disjoint, so their ends ascend with their
-/// starts and every overlap of a probe is one contiguous run ending at the last
-/// start before the probe's end. An empty range `p..p` still overlaps a probe
-/// that strictly contains `p` under [`ranges_overlap`], so empties are kept
-/// apart by position.
-#[derive(Default)]
-struct DisjointIndex {
-    ends: BTreeMap<usize, usize>,
-    empties: BTreeSet<usize>,
-}
-
-impl RangeIndex for DisjointIndex {
-    fn insert(&mut self, range: &Range<usize>) {
-        if range.is_empty() {
-            self.empties.insert(range.start);
-        } else {
-            self.ends.insert(range.start, range.end);
-        }
-    }
-
-    fn overlaps(&self, probe: &Range<usize>) -> bool {
-        self.ends
-            .range(..probe.end)
-            .next_back()
-            .is_some_and(|(_, &end)| end > probe.start)
-            || self.empty_overlap(probe).next().is_some()
-    }
-
-    fn collect_overlapping(&self, probe: &Range<usize>, out: &mut Vec<Range<usize>>) {
-        for (&start, &end) in self.ends.range(..probe.end).rev() {
-            if end <= probe.start {
-                break;
-            }
-            out.push(start..end);
-        }
-        out.extend(self.empty_overlap(probe).map(|&at| at..at));
-    }
-}
-
-impl DisjointIndex {
-    fn empty_overlap<'a>(&'a self, probe: &Range<usize>) -> impl Iterator<Item = &'a usize> {
-        let low = probe.start.saturating_add(1);
-        (low < probe.end)
-            .then(|| self.empties.range(low..probe.end))
-            .into_iter()
-            .flatten()
-    }
 }
 
 /// Accepted ranges bucketed by length class, for inputs whose split pieces may
@@ -152,6 +131,14 @@ impl LengthClassIndex {
 }
 
 impl RangeIndex for LengthClassIndex {
+    fn for_generated(_bound: usize) -> Self {
+        Self::default()
+    }
+
+    fn for_original(_bound: usize) -> Self {
+        Self::default()
+    }
+
     fn insert(&mut self, range: &Range<usize>) {
         let class = range.len().bit_width() as usize;
         if self.classes.len() <= class {
