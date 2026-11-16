@@ -167,6 +167,27 @@
       "component": "Typed",
       "props": { "size": 1, "label": "go" },
       "steps": [{ "click": "button" }, { "props": { "size": 2 } }, { "click": "button" }, { "props": { "label": "stop" } }]
+    },
+    {
+      "id": "dynamic/host",
+      "file": "tests/_fixtures/tsrx/mount/dynamic.tsrx",
+      "component": "Host",
+      "props": { "tag": "section" },
+      "steps": [{ "props": { "tag": "article" } }, { "props": { "tag": "section" } }]
+    },
+    {
+      "id": "dynamic/toggle",
+      "file": "tests/_fixtures/tsrx/mount/dynamic.tsrx",
+      "component": "Toggle",
+      "props": {},
+      "steps": [{ "click": "button" }, { "click": "button" }]
+    },
+    {
+      "id": "dynamic/pick",
+      "file": "tests/_fixtures/tsrx/mount/dynamic.tsrx",
+      "component": "Pick",
+      "props": { "label": "a" },
+      "steps": [{ "props": { "label": "b" } }]
     }
   ]
 }

@@ -101,6 +101,17 @@ impl<'a> RegionBuilder<'_, 'a> {
         self.builder.parts.features = self.builder.parts.features.observing(family);
     }
 
+    /// Attach a binding whose name the lowering supplies, at the authored
+    /// value's `span`.
+    pub(crate) fn synthesized_bind(
+        &mut self,
+        name: &'a str,
+        value: ExprRef<'a>,
+        span: Span,
+    ) -> Result<NodeId, ArtifactError> {
+        self.builder.synthesized_bind(name, value, span)
+    }
+
     /// Attach an object spread before this owner's children.
     pub fn spread(&mut self, value: ExprRef<'a>, span: Span) -> Result<NodeId, ArtifactError> {
         self.builder.spread(value, span)

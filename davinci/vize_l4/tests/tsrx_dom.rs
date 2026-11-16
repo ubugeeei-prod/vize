@@ -7,9 +7,10 @@ mod cases {
     use std::path::Path;
     use vize_l4::lang::tsrx::{CompileOptions, Target, compile};
 
-    const MODULES: [&str; 7] = [
+    const MODULES: [&str; 8] = [
         "attributes",
         "counter",
+        "dynamic",
         "loops",
         "returns",
         "slots",
