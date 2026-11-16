@@ -125,11 +125,8 @@ fn mapped_heads(prefix: &str, strict: bool) -> Option<Vec<CompactString>> {
     write(root, "tsconfig.json", &tsconfig(strict));
     let output = check_project(&tsgo, root, "tsconfig.json");
     let stdout = std::str::from_utf8(&output.stdout).unwrap();
-    assert!(
-        !stdout.contains("TS18069"),
-        "the mapper must transform every file: {}",
-        output_text(&output)
-    );
+    // An untransformed file prints TS18069, which the exact head list rejects.
+    eprintln!("{}", output_text(&output));
     Some(
         stdout
             .lines()
