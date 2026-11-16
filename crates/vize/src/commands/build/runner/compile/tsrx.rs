@@ -123,7 +123,7 @@ mod tests {
             "2:3 [unsupported] Switch is not supported in TSRX modules yet\n11:5 [unsupported] Try is not supported in TSRX modules yet"
         );
 
-        let arrow = "export const App = () => <p>hi</p>;\n";
+        let arrow = "export const app = () => <p>hi</p>;\n";
         for erase_types in [false, true] {
             assert_eq!(
                 refusal(arrow, erase_types).as_str(),
@@ -183,6 +183,7 @@ mod tests {
                 "mount/attributes.tsrx",
                 "mount/counter.tsrx",
                 "mount/loops.tsrx",
+                "mount/returns.tsrx",
                 "mount/values.tsrx",
                 "syntax-arrow-generic.tsrx",
                 "syntax-asi.tsrx",

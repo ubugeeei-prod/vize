@@ -190,6 +190,11 @@
       "error": null
     },
     {
+      "file": "tests/_fixtures/tsrx/mount/returns.tsrx",
+      "code": "import { defineVaporComponent } from 'vue-jsx-vapor';\nimport { ref } from 'vue';\n\nconst Child = defineVaporComponent(function Child(props: { text: string }) {\n\treturn <b class=\"child\">{props.text}</b>;\n});\n\nexport const Plain = defineVaporComponent(function Plain({ label, count }: { label: string; count: number }) {\n\tconst upper = label.toUpperCase();\n\n\treturn <p class=\"plain\" data-count={count}>{upper}: <Child text={label} /></p>;\n});\n\nexport const Arrow = defineVaporComponent(({ count }: { count: number }) => <span data-count={count}>{count * 2}</span>);\n\nexport const Grow = (props: { items: string[] }) => {\n\tconst size = ref(1);\n\n\treturn <div><button onClick={() => size.value += 1}>grow</button><p>{props.items.slice(0, size.value).join(',')}</p></div>;\n};",
+      "error": null
+    },
+    {
       "file": "tests/_fixtures/tsrx/mount/values.tsrx",
       "code": "import { defineVaporComponent } from 'vue-jsx-vapor';\n\nexport const Values = defineVaporComponent(function Values(\n\t{ text, count, flag, items }: { text: string; count: number; flag: boolean; items: string[] }\n) {\n\treturn <ul><li>Text: {text}</li><li>{count} and {count + 1}</li><li>{flag ? 'on' : 'off'}</li><li>{flag ? null : 0}</li><li>{items.join(', ')}</li></ul>;\n});",
       "error": null

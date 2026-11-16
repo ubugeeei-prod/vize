@@ -96,8 +96,8 @@ pub enum EmitIssue {
     /// [`CompileOptions::erase_types`] was requested without the
     /// `typescript` feature, or the compiled module could not be erased.
     TypeErasure,
-    /// DOM: markup outside the `@{ … }` body of a top-level component, a
-    /// function whose name starts with an uppercase letter.
+    /// DOM: markup outside the body or the returned value of a top-level
+    /// component, a function whose name starts with an uppercase letter.
     OutsideComponent,
     /// DOM: parameters other than none, one identifier, or one object pattern
     /// of plain keys without defaults or rest.
@@ -111,6 +111,9 @@ pub enum EmitIssue {
     AsyncComponent,
     /// DOM: a component body without a rendered node.
     NoRender,
+    /// DOM: a `return` in a component's setup before its render, which would
+    /// pick the output once, at setup.
+    EarlyReturn,
     /// DOM: a directive prologue or hashbang, which the runtime import would
     /// displace.
     Directive,

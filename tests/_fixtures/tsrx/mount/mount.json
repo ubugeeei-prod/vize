@@ -67,6 +67,27 @@
       "component": "Values",
       "props": { "text": "x", "count": 1, "flag": false, "items": ["a", "b"] },
       "steps": [{ "props": { "flag": true } }, { "props": { "count": 5, "text": "" } }, { "props": { "items": [] } }]
+    },
+    {
+      "id": "returns/plain",
+      "file": "tests/_fixtures/tsrx/mount/returns.tsrx",
+      "component": "Plain",
+      "props": { "label": "ab", "count": 1 },
+      "steps": [{ "props": { "count": 2 } }, { "props": { "label": "cd" } }]
+    },
+    {
+      "id": "returns/arrow",
+      "file": "tests/_fixtures/tsrx/mount/returns.tsrx",
+      "component": "Arrow",
+      "props": { "count": 1 },
+      "steps": [{ "props": { "count": 2 } }, { "props": { "count": 0 } }]
+    },
+    {
+      "id": "returns/grow",
+      "file": "tests/_fixtures/tsrx/mount/returns.tsrx",
+      "component": "Grow",
+      "props": { "items": ["a", "b", "c"] },
+      "steps": [{ "click": "button" }, { "props": { "items": ["x", "y", "z"] } }, { "click": "button" }]
     }
   ]
 }

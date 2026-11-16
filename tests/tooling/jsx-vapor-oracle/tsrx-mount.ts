@@ -243,12 +243,13 @@ const runtimes = { vue: Vue, "vue-jsx-vapor": vaporRuntime, "/vue-jsx-vapor/prop
 
 export async function mountRow(row: MountRow, vizeCode: string) {
   const source = readFileSync(join(repoRoot, row.file), "utf8");
+  // Both pipelines keep host TypeScript (the reference leaves it in functions it
+  // does not wrap); erase it the way a bundler's TS stage would.
   const reference = evaluate(
-    await referenceCode(source, row.file),
+    stripTypeScriptTypes(await referenceCode(source, row.file)),
     `${row.id}.reference.mjs`,
     runtimes,
   );
-  // Vize keeps host TypeScript; erase it the way a bundler's TS stage would.
   const vize = evaluate(stripTypeScriptTypes(vizeCode), `${row.id}.vize.mjs`, { vue: Vue });
   return {
     id: row.id,

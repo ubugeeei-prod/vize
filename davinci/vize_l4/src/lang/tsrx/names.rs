@@ -1,5 +1,5 @@
-//! The names one component body reads and declares, over the retained host
-//! AST of its setup statements and of every embedded markup expression.
+//! The names one component reads and declares, over the retained host AST of
+//! its setup statements and of every embedded markup expression.
 //! Type positions are skipped: they hold no runtime reads.
 
 use alloc::vec::Vec;
@@ -9,10 +9,10 @@ use oxc_ast::ast::{
 };
 use oxc_ast_visit::{Visit, walk};
 use vize_l0::Span;
-use vize_l1::markup::tsrx::{
-    Attribute, AttributeValue, Block, Child, Element, Node, Region, TagName,
-};
+use vize_l1::markup::tsrx::{Attribute, AttributeValue, Block, Child, Element, Node, TagName};
 use vize_l2::lang::tsrx::is_component;
+
+use super::component::Component;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(super) enum Use<'a> {
@@ -41,14 +41,20 @@ pub(super) struct Names<'a> {
 }
 
 impl<'a> Names<'a> {
-    /// Every name a component body region reads, declares or uses as a tag.
-    pub(super) fn of_component(source: &'a str, region: &'a Region<'a>) -> Self {
+    /// Every name a component's setup and markup read, declare or use as a tag.
+    pub(super) fn of_component(source: &'a str, component: &Component<'a>) -> Self {
         let mut collector = Collector {
             names: Self::default(),
             source,
-            setup: false,
+            setup: component.body.is_some(),
         };
-        collector.node(&region.node);
+        if let Some(body) = component.body {
+            for statement in &body.statements {
+                collector.visit_statement(statement);
+            }
+            collector.setup = false;
+        }
+        collector.node(&component.region.node);
         collector.names
     }
 
