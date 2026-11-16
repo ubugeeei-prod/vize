@@ -392,6 +392,7 @@ fn command_line_hosts_get_the_check_projection_under_its_own_identity() {
         json!({ "project": directory.path() }),
         json!({ "watch": true }),
         json!({ "build": true }),
+        json!({ "project": config, "noEmit": true }),
     ] {
         let mut options = editor_options.clone();
         options
@@ -402,6 +403,11 @@ fn command_line_hosts_get_the_check_projection_under_its_own_identity() {
         check["params"]["compilerOptions"] = options;
         let (check_identity, check_text, check_widths) = open_and_transform(check);
         assert_eq!(check_widths, [5], "{cli_flag}");
+        // Only a host that emits nothing gets generated trivia collapsed.
+        let no_emit = cli_flag.get("noEmit").is_some();
+        // Only the note that closes the user's setup code marks a section and stays.
+        let notes = check_text.matches("// @vize-map: ").count();
+        assert_eq!(notes <= 1, no_emit, "{cli_flag}: {check_text}");
         assert_eq!(
             check_identity,
             cstr!("{editor_identity}:check"),

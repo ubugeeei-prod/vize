@@ -145,6 +145,7 @@ mod check_workspace_vue_cli;
 mod config_cache_cli;
 mod config_init_cli;
 mod config_stdin_cli;
+mod content_mapper_check_trivia_cli;
 mod content_mapper_declaration_fallthrough_cli;
 mod content_mapper_declaration_map_support;
 mod content_mapper_frames_cli;
