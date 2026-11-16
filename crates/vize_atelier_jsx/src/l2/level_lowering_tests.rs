@@ -56,6 +56,14 @@ const SHAPES: &[&str] = &[
     "const A = () => <Card v-show={on}><i v-html={h} /><b v-text={t} v-focus /></Card>;",
     "const A = () => <p><a v-mark:left={v} /><a v-mark={[v, 'top', ['a', 'b']]} /><a v-mark={[v, f]} /></p>;",
     "const A = () => <component is={view} v-show={on} v-focus />;",
+    "import Card from './c';\nconst A = () => <Card>\n  {(item) => <li>{item}</li>}\n</Card>;",
+    "const A = () => <List>{function ({ id }) { return <i id={id} />; }}</List>;",
+    "const A = () => <Card>{{ header: () => <h1>T</h1>, 'footer': (p) => <><i>{p}</i><b /></>, body() { return ok ? <i /> : <b />; } }}</Card>;",
+    "const A = () => <Card>{{}}</Card>;",
+    "const A = () => <List>{(rows) => rows.map((r) => <li key={r.id}>{r.name}</li>)}</List>;",
+    "const A = () => <Outer>{() => <Inner>{(x) => <b>{x}</b>}</Inner>}</Outer>;",
+    "const A = () => <Card v-slots={slots} title=\"t\" x={1}>text</Card>;",
+    "const A = () => <Card vSlots={(own.slots)}>{(p) => <i>{p}</i>}</Card>;",
 ];
 
 /// TSX spellings of the structural shapes.
