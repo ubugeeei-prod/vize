@@ -309,7 +309,27 @@ export type $PropChecker<C, P, T> =
             ? __F
             : (props: $ComponentCheckProps<P, T>) => void
       : $IsLibraryGenericExport<C> extends true
-        ? C
+        ? string extends keyof T
+          ? [
+              keyof {
+                [
+                  K in keyof T as string extends K
+                    ? never
+                    : number extends K
+                      ? never
+                      : symbol extends K
+                        ? never
+                        : K
+                ]: 0;
+              },
+            ] extends [never]
+            ? [C] extends [(props: infer __L, ...args: any[]) => any]
+              ? string extends keyof __L
+                ? C
+                : C | ((props: T) => void)
+              : C
+            : C
+          : C
         : (props: $ComponentCheckProps<P, T>) => void;
 export type $PropValue<
   P,

@@ -11,11 +11,12 @@ use crate::virtual_ts::{ProjectionFeatures, ProjectionMapping, VizeMapping};
 /// copies serve diagnostics only and therefore fail the `ALL` feature gate;
 /// value/nested-object diagnostics do not begin in the key range.
 ///
-/// In loose codegen every `$PropChecker` branch has an open record tail except
-/// the direct `$IsLibraryGenericExport<C> extends true ? C` branch. A TS2353 on
-/// this canonical key therefore proves that branch was selected. A false or
-/// `true | false` result does not extend `true`, so non-library and union cases
-/// retain the open tail and cannot reach this suppression.
+/// In loose codegen every `$PropChecker` branch has an open record tail. The
+/// library branch gains it from `C | ((props: T) => void)` when the declaration
+/// predates `__VLS_PROPS_FALLBACK` (#13021), so the checker itself no longer
+/// reports this TS2353 on any host. This filter stays as the backstop shared
+/// with the negotiated content-mapper selector; it never widens what loose
+/// mode accepts beyond an authenticated authored attribute key.
 pub(super) fn is_authored_component_literal_key(
     file: &VirtualFile,
     generated_start: u32,

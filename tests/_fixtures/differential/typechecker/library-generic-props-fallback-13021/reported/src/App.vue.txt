@@ -1,0 +1,13 @@
+<script setup lang="ts">
+import { NoCtx, NoFallback, WithFallback } from "./libs";
+</script>
+
+<template>
+  <NoFallback :items="[1, 2]" :buffer="200" />
+  <WithFallback :items="[1, 2]" :buffer="200" />
+  <NoCtx :items="[1, 2]" :buffer="200" />
+
+  <NoFallback :items="[1, 2]" :data-index="0" />
+  <WithFallback :items="[1, 2]" :data-index="0" />
+  <NoCtx :items="[1, 2]" :data-index="0" />
+</template>

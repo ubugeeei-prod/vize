@@ -1,0 +1,111 @@
+{
+  "schema": "vize.libraryPropsFallthroughSource.v1",
+  "issue": 13021,
+  "credit": {
+    "compiled": false,
+    "native": false,
+    "performance": false
+  },
+  "files": [
+    {
+      "path": "crates/vize_canon/src/virtual_ts/helpers/declarations/component-checks.d.ts.txt",
+      "before": {
+        "bytes": 9690,
+        "sha256": "7632b2ed72c6ce9048446b9c91e9b4518167528fc4b85a974cafecf6904991f4"
+      },
+      "after": {
+        "bytes": 9973,
+        "sha256": "3cadca9da07781aee395b0c2f40fc3fb7362253ae6f2ca12b28138e111069103"
+      },
+      "hunks": [
+        {
+          "before": "export type $PropChecker<C, P, T> = $IsAny<C> extends true ? (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? $IsAny<__F> extends true ? (props: $ComponentCheckProps<P, T>) => void : unknown extends __F ? (props: $ComponentCheckProps<P, T>) => void : __F extends (...args: any[]) => any ? __F : (props: $ComponentCheckProps<P, T>) => void : $IsLibraryGenericExport<C> extends true ? C : (props: $ComponentCheckProps<P, T>) => void;",
+          "after": "export type $PropChecker<C, P, T> = $IsAny<C> extends true ? (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? $IsAny<__F> extends true ? (props: $ComponentCheckProps<P, T>) => void : unknown extends __F ? (props: $ComponentCheckProps<P, T>) => void : __F extends (...args: any[]) => any ? __F : (props: $ComponentCheckProps<P, T>) => void : $IsLibraryGenericExport<C> extends true ? string extends keyof T ? [keyof { [K in keyof T as string extends K ? never : number extends K ? never : symbol extends K ? never : K]: 0 }] extends [never] ? [C] extends [(props: infer __L, ...args: any[]) => any] ? string extends keyof __L ? C : C | ((props: T) => void) : C : C : C : (props: $ComponentCheckProps<P, T>) => void;"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/virtual-ts.d.ts",
+      "before": {
+        "bytes": 18097,
+        "sha256": "fc5d0e8c02ed7827130baeebdbdda4c15d2abe45d1ea123be2e461af7014c45f"
+      },
+      "after": {
+        "bytes": 18712,
+        "sha256": "68fa25b8e3e970a4465ca8c8901e64bd0f42e44324f30f41c000247f9d9119a8"
+      },
+      "hunks": [
+        {
+          "before": "      : $IsLibraryGenericExport<C> extends true\n        ? C",
+          "after": "      : $IsLibraryGenericExport<C> extends true\n        ? string extends keyof T\n          ? [\n              keyof {\n                [\n                  K in keyof T as string extends K\n                    ? never\n                    : number extends K\n                      ? never\n                      : symbol extends K\n                        ? never\n                        : K\n                ]: 0;\n              },\n            ] extends [never]\n            ? [C] extends [(props: infer __L, ...args: any[]) => any]\n              ? string extends keyof __L\n                ? C\n                : C | ((props: T) => void)\n              : C\n            : C\n          : C"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/virtual-ts.d.mts",
+      "before": {
+        "bytes": 18097,
+        "sha256": "fc5d0e8c02ed7827130baeebdbdda4c15d2abe45d1ea123be2e461af7014c45f"
+      },
+      "after": {
+        "bytes": 18712,
+        "sha256": "68fa25b8e3e970a4465ca8c8901e64bd0f42e44324f30f41c000247f9d9119a8"
+      },
+      "hunks": [
+        {
+          "before": "      : $IsLibraryGenericExport<C> extends true\n        ? C",
+          "after": "      : $IsLibraryGenericExport<C> extends true\n        ? string extends keyof T\n          ? [\n              keyof {\n                [\n                  K in keyof T as string extends K\n                    ? never\n                    : number extends K\n                      ? never\n                      : symbol extends K\n                        ? never\n                        : K\n                ]: 0;\n              },\n            ] extends [never]\n            ? [C] extends [(props: infer __L, ...args: any[]) => any]\n              ? string extends keyof __L\n                ? C\n                : C | ((props: T) => void)\n              : C\n            : C\n          : C"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/virtual-ts.d.cts",
+      "before": {
+        "bytes": 18097,
+        "sha256": "fc5d0e8c02ed7827130baeebdbdda4c15d2abe45d1ea123be2e461af7014c45f"
+      },
+      "after": {
+        "bytes": 18712,
+        "sha256": "68fa25b8e3e970a4465ca8c8901e64bd0f42e44324f30f41c000247f9d9119a8"
+      },
+      "hunks": [
+        {
+          "before": "      : $IsLibraryGenericExport<C> extends true\n        ? C",
+          "after": "      : $IsLibraryGenericExport<C> extends true\n        ? string extends keyof T\n          ? [\n              keyof {\n                [\n                  K in keyof T as string extends K\n                    ? never\n                    : number extends K\n                      ? never\n                      : symbol extends K\n                        ? never\n                        : K\n                ]: 0;\n              },\n            ] extends [never]\n            ? [C] extends [(props: infer __L, ...args: any[]) => any]\n              ? string extends keyof __L\n                ? C\n                : C | ((props: T) => void)\n              : C\n            : C\n          : C"
+        }
+      ]
+    }
+  ],
+  "compiledPreamble": {
+    "before": {
+      "bytes": 58193,
+      "sha256": "e9e4d173622a004b7578fdf871e1ebddd61cf0a5c51ed51dca13a0fd2c956936"
+    },
+    "after": {
+      "bytes": 58476,
+      "sha256": "fb91fda0f12cd2c1c90bbc05d2637e8523c35f9a8a85a1899a786a76ba0f0ac5"
+    },
+    "hunks": [
+      {
+        "before": "export type $PropChecker<C, P, T> = $IsAny<C> extends true ? (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? $IsAny<__F> extends true ? (props: $ComponentCheckProps<P, T>) => void : unknown extends __F ? (props: $ComponentCheckProps<P, T>) => void : __F extends (...args: any[]) => any ? __F : (props: $ComponentCheckProps<P, T>) => void : $IsLibraryGenericExport<C> extends true ? C : (props: $ComponentCheckProps<P, T>) => void;",
+        "after": "export type $PropChecker<C, P, T> = $IsAny<C> extends true ? (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? $IsAny<__F> extends true ? (props: $ComponentCheckProps<P, T>) => void : unknown extends __F ? (props: $ComponentCheckProps<P, T>) => void : __F extends (...args: any[]) => any ? __F : (props: $ComponentCheckProps<P, T>) => void : $IsLibraryGenericExport<C> extends true ? string extends keyof T ? [keyof { [K in keyof T as string extends K ? never : number extends K ? never : symbol extends K ? never : K]: 0 }] extends [never] ? [C] extends [(props: infer __L, ...args: any[]) => any] ? string extends keyof __L ? C : C | ((props: T) => void) : C : C : C : (props: $ComponentCheckProps<P, T>) => void;"
+      }
+    ]
+  },
+  "compiledStrictPreamble": {
+    "before": {
+      "bytes": 57984,
+      "sha256": "34977be86bcc81f2f7fe1c75c3511c4799e7c582b7a5ea0ebabaf7316f5d8526"
+    },
+    "after": {
+      "bytes": 58267,
+      "sha256": "5a5163ea62bf6ba3b55e05f05f4f5324e4779c6e04f843319ab8a1714880720a"
+    },
+    "hunks": [
+      {
+        "before": "export type $PropChecker<C, P, T> = $IsAny<C> extends true ? (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? $IsAny<__F> extends true ? (props: $ComponentCheckProps<P, T>) => void : unknown extends __F ? (props: $ComponentCheckProps<P, T>) => void : __F extends (...args: any[]) => any ? __F : (props: $ComponentCheckProps<P, T>) => void : $IsLibraryGenericExport<C> extends true ? C : (props: $ComponentCheckProps<P, T>) => void;",
+        "after": "export type $PropChecker<C, P, T> = $IsAny<C> extends true ? (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? $IsAny<__F> extends true ? (props: $ComponentCheckProps<P, T>) => void : unknown extends __F ? (props: $ComponentCheckProps<P, T>) => void : __F extends (...args: any[]) => any ? __F : (props: $ComponentCheckProps<P, T>) => void : $IsLibraryGenericExport<C> extends true ? string extends keyof T ? [keyof { [K in keyof T as string extends K ? never : number extends K ? never : symbol extends K ? never : K]: 0 }] extends [never] ? [C] extends [(props: infer __L, ...args: any[]) => any] ? string extends keyof __L ? C : C | ((props: T) => void) : C : C : C : (props: $ComponentCheckProps<P, T>) => void;"
+      }
+    ]
+  }
+}

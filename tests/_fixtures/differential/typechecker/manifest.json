@@ -6869,7 +6869,7 @@
       "sourceRevision": "f06d427619f943bf1192cfafbae65de537e464d0",
       "packReference": {
         "path": "library-generic-props-fallback-13021/cases.json",
-        "sha256": "0e4a696ad75fbbbfaf801f63204127a14f50aed6e91b38ac23450435231d0327"
+        "sha256": "c749f3fbc0a338e6f72a12b5686547962e8e7cd68a9d653626c63543b7a10bb6"
       },
       "inputs": [
         {
@@ -6922,7 +6922,7 @@
       "sourceRevision": "f06d427619f943bf1192cfafbae65de537e464d0",
       "packReference": {
         "path": "library-generic-props-fallback-13021/cases.json",
-        "sha256": "0e4a696ad75fbbbfaf801f63204127a14f50aed6e91b38ac23450435231d0327"
+        "sha256": "c749f3fbc0a338e6f72a12b5686547962e8e7cd68a9d653626c63543b7a10bb6"
       },
       "inputs": [
         {
@@ -6964,6 +6964,180 @@
           "severity": 1,
           "code": 2322,
           "message": "Type 'string' is not assignable to type 'ItemSizeValue<{ id: string; name: string; downloads: number; }> | undefined'."
+        }
+      ]
+    },
+    {
+      "id": "typechecker/library-generic-props-fallback-13021/reported-default-loose",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "library-generic-props-fallback-13021",
+      "case": "reported-default-loose",
+      "test": "library_generic_props_fallback::old_library_generic_props_follow_the_unknown_props_policy",
+      "regressionCommit": "f06d427619f943bf1192cfafbae65de537e464d0",
+      "sourceRevision": "f06d427619f943bf1192cfafbae65de537e464d0",
+      "packReference": {
+        "path": "library-generic-props-fallback-13021/cases.json",
+        "sha256": "c749f3fbc0a338e6f72a12b5686547962e8e7cd68a9d653626c63543b7a10bb6"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "library-generic-props-fallback-13021/reported/tsconfig.json.txt",
+          "sha256": "8280441d912b4f9ebdaa3b500f4493f81faa044ee712c9b996a23e1fe4bae2af"
+        },
+        {
+          "file": "src/libs.ts",
+          "path": "library-generic-props-fallback-13021/reported/src/libs.ts.txt",
+          "sha256": "6ab74c4afe8577dc5cc3685e4d421956ad4d3d474abb36e88b3db6d4497f0be7"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "library-generic-props-fallback-13021/reported/src/App.vue.txt",
+          "sha256": "f2ce77e4bcdabdb187a94d11ab49eb31d1f591d0995df2fe525a871e7f637024"
+        },
+        {
+          "file": "src/Wrong.vue",
+          "path": "library-generic-props-fallback-13021/reported/src/Wrong.vue.txt",
+          "sha256": "55c7122a99cab74e34950e98cd4d416375387feb64bad380b184d622176fedc1"
+        },
+        {
+          "file": "src/MissingRequired.vue",
+          "path": "library-generic-props-fallback-13021/reported/src/MissingRequired.vue.txt",
+          "sha256": "e5d64323b7ac0830c3ac379042331cf08ef1caf13a9fb81229bb7eabdfe146e1"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "diagnostics": [
+        {
+          "file": "src/MissingRequired.vue",
+          "line": 6,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{ buffer: number; }' is not assignable to parameter of type '{ items: unknown[]; } & VNodeProps & AllowedComponentProps & ComponentCustomProps & Record<string, unknown>'.\nProperty 'items' is missing in type '{ buffer: number; }' but required in type '{ items: unknown[]; }'."
+        },
+        {
+          "file": "src/MissingRequired.vue",
+          "line": 7,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{ buffer: number; }' is not assignable to parameter of type '{ items: unknown[]; } & VNodeProps & AllowedComponentProps & ComponentCustomProps & Record<string, unknown>'.\nProperty 'items' is missing in type '{ buffer: number; }' but required in type '{ items: unknown[]; }'."
+        },
+        {
+          "file": "src/Wrong.vue",
+          "line": 6,
+          "column": 16,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type 'unknown[]'."
+        }
+      ]
+    },
+    {
+      "id": "typechecker/library-generic-props-fallback-13021/reported-strict",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "library-generic-props-fallback-13021",
+      "case": "reported-strict",
+      "test": "library_generic_props_fallback::old_library_generic_props_follow_the_unknown_props_policy",
+      "regressionCommit": "f06d427619f943bf1192cfafbae65de537e464d0",
+      "sourceRevision": "f06d427619f943bf1192cfafbae65de537e464d0",
+      "packReference": {
+        "path": "library-generic-props-fallback-13021/cases.json",
+        "sha256": "c749f3fbc0a338e6f72a12b5686547962e8e7cd68a9d653626c63543b7a10bb6"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "library-generic-props-fallback-13021/reported/tsconfig.strict.json.txt",
+          "sha256": "f5cd675998737d23a36eae24ef34ea1554ddf857638c76318cdba4014f7b551f"
+        },
+        {
+          "file": "src/libs.ts",
+          "path": "library-generic-props-fallback-13021/reported/src/libs.ts.txt",
+          "sha256": "6ab74c4afe8577dc5cc3685e4d421956ad4d3d474abb36e88b3db6d4497f0be7"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "library-generic-props-fallback-13021/reported/src/App.vue.txt",
+          "sha256": "f2ce77e4bcdabdb187a94d11ab49eb31d1f591d0995df2fe525a871e7f637024"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 6,
+          "column": 32,
+          "severity": 1,
+          "code": 2353,
+          "message": "Object literal may only specify known properties, and '\"buffer\"' does not exist in type 'Props<number>'."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 7,
+          "column": 34,
+          "severity": 1,
+          "code": 2353,
+          "message": "Object literal may only specify known properties, and '\"buffer\"' does not exist in type '{ items: number[]; } & VNodeProps & AllowedComponentProps & ComponentCustomProps'."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 10,
+          "column": 32,
+          "severity": 1,
+          "code": 2353,
+          "message": "Object literal may only specify known properties, and '\"dataIndex\"' does not exist in type 'Props<number>'."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 11,
+          "column": 34,
+          "severity": 1,
+          "code": 2353,
+          "message": "Object literal may only specify known properties, and '\"dataIndex\"' does not exist in type '{ items: number[]; } & VNodeProps & AllowedComponentProps & ComponentCustomProps'."
         }
       ]
     },

@@ -271,11 +271,21 @@ fn append_prop_check_helpers_text(
     // function returning `VNode & { __ctx?: ... }`. Extracting its props
     // instantiates the generics with their constraints, so it is called
     // directly instead, as vue-tsc does, and TypeScript infers them.
+    //
+    // vue-tsc >= 3.1.5 (@vue/language-core) ends such a declaration's props
+    // with the `__VLS_PROPS_FALLBACK` term, which is an open record while
+    // `checkUnknownProps` is off. Older emitters omit it, so their props stay
+    // closed (#13021). Loose mode is the bare open tail `T`: a string index and
+    // no named attribute (strict tails always name Vue's public attrs). There,
+    // calling `C | ((props: T) => void)` supplies the missing term: TypeScript
+    // keeps C's generic signature, so inference and per-prop value errors are
+    // unchanged, and intersects the parameters into `Props<X> & T`. Strict
+    // files and declarations that already carry an index signature call `C`.
     ts.push_str(
         "  type $IsLibraryGenericExport<C> = C extends { __vizeCheck: any } | { readonly __vizeComponentMarker: true } ? false : C extends (...args: any[]) => infer __R ? 0 extends (1 & __R) ? false : '__ctx' extends keyof __R ? true : false : false;\n",
     );
     ts.push_str(
-        "  type $PropChecker<C, P, T = $ComponentCheckTail<C>> = $IsAny<C> extends true ? (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? $IsAny<__F> extends true ? (props: $ComponentCheckProps<P, T>) => void : unknown extends __F ? (props: $ComponentCheckProps<P, T>) => void : __F extends (...args: any[]) => any ? __F : (props: $ComponentCheckProps<P, T>) => void : $IsLibraryGenericExport<C> extends true ? C : (props: $ComponentCheckProps<P, T>) => void;\n",
+        "  type $PropChecker<C, P, T = $ComponentCheckTail<C>> = $IsAny<C> extends true ? (props: { readonly [K in keyof P]: P[K] } & Record<string, unknown>) => void : C extends { __vizeCheck: infer __F } ? $IsAny<__F> extends true ? (props: $ComponentCheckProps<P, T>) => void : unknown extends __F ? (props: $ComponentCheckProps<P, T>) => void : __F extends (...args: any[]) => any ? __F : (props: $ComponentCheckProps<P, T>) => void : $IsLibraryGenericExport<C> extends true ? string extends keyof T ? [keyof { [K in keyof T as string extends K ? never : number extends K ? never : symbol extends K ? never : K]: 0 }] extends [never] ? [C] extends [(props: infer __L, ...args: any[]) => any] ? string extends keyof __L ? C : C | ((props: T) => void) : C : C : C : (props: $ComponentCheckProps<P, T>) => void;\n",
     );
     ts.push_str(
         "  type $PropValue<P, K extends PropertyKey, F = unknown, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? F : __V;\n",
