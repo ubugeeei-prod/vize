@@ -1,0 +1,9 @@
+import type { PropType } from "vue";
+
+export const sharedProps = {
+  label: { type: String as PropType<string>, required: true as const },
+};
+
+export const widenedProps = {
+  label: { type: String as PropType<string>, required: true },
+};

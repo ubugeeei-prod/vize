@@ -1,0 +1,14 @@
+<script setup lang="ts">
+const props = defineProps({
+  asConst: { type: String, required: true as const },
+  angleConst: { type: String, required: <const>true },
+  parenthesized: { type: String, required: (true) },
+  satisfied: { type: String, required: true satisfies boolean },
+  asTrue: { type: String, required: true as true },
+});
+const values: string[] = [props.asConst, props.angleConst, props.parenthesized, props.satisfied, props.asTrue];
+</script>
+
+<template>
+  <p>{{ asConst.length + angleConst.length + parenthesized.length + satisfied.length + asTrue.length }} {{ values }}</p>
+</template>

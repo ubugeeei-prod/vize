@@ -1,0 +1,7 @@
+<script setup lang="ts">
+defineProps({ label: { type: String, required: true as boolean } });
+</script>
+
+<template>
+  <p>{{ label.length }}</p>
+</template>

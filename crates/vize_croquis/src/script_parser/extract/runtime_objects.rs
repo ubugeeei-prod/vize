@@ -1,6 +1,4 @@
-use oxc_ast::ast::{
-    Expression, ObjectExpression, ObjectPropertyKind, TSType, TSTypeName, VariableDeclarationKind,
-};
+use oxc_ast::ast::{Expression, ObjectExpression, ObjectPropertyKind, VariableDeclarationKind};
 
 use crate::macros::{EmitDefinition, PropDefinition};
 use vize_carton::CompactString;
@@ -83,14 +81,9 @@ pub(super) fn has_runtime_type_assertion(mut expression: &Expression<'_>) -> boo
     }
 }
 
-pub(super) fn is_const_type_assertion(annotation: &TSType<'_>) -> bool {
-    // `as const`/`<const>` preserve the literal's callable annotations. They
-    // cannot replace them with an asserted function or object type.
-    matches!(annotation, TSType::TSTypeReference(reference)
-        if reference.type_arguments.is_none()
-            && matches!(&reference.type_name, TSTypeName::IdentifierReference(identifier)
-                if identifier.name == "const"))
-}
+// `as const`/`<const>` preserve the literal's callable annotations. They
+// cannot replace them with an asserted function or object type.
+pub(super) use crate::script_parser::is_const_type_assertion;
 
 fn collect_runtime_object_literal(
     result: &ScriptParseResult,

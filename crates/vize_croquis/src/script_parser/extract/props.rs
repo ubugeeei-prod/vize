@@ -346,9 +346,9 @@ pub(in crate::script_parser) fn detect_required_prop(value: &Expression<'_>) -> 
         for prop in obj.properties.iter() {
             if let ObjectPropertyKind::ObjectProperty(p) = prop
                 && runtime_object_property_name(&p.key) == Some("required")
-                && let Expression::BooleanLiteral(b) = &p.value
+                && let Some(required) = crate::script_parser::literal_boolean_type(&p.value)
             {
-                return b.value;
+                return required;
             }
         }
     }
