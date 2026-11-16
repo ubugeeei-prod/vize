@@ -14,6 +14,7 @@ mod read_source;
 mod rich;
 mod routes;
 mod stdout;
+mod tsrx;
 mod warnings;
 
 #[cfg(test)]

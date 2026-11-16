@@ -79,6 +79,7 @@ Lint のレポートには、ソースの構文解析や型情報を使うプロ
 | `parser/template`            | [テンプレート構文とパーサーの回復](../rules/reference/parser-template.md)         |
 | `parser/sfc`                 | [単一ファイルコンポーネントの構造](../rules/reference/parser-sfc.md)              |
 | `parser/jsx`                 | [JSX/TSX の構文解析と変換](../rules/reference/parser-jsx.md)                      |
+| `parser/tsrx`                | [TSRX の構文解析と変換](../rules/reference/parser-tsrx.md)                        |
 | `type/project-configuration` | [TypeScript プロジェクトの設定](../rules/reference/type-project-configuration.md) |
 
 <span id="unused-disable-directives"></span>

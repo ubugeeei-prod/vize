@@ -266,6 +266,7 @@ mod lint_solution_tsconfig_cli;
 mod lint_storybook_tsx_cli;
 mod lint_strict_boolean_cli;
 mod lint_supported_targets_cli;
+mod lint_tsrx_cli;
 mod lint_unchecked_indexed_access_cli;
 mod lint_undefined_refs_cli;
 mod lint_unknown_rule_ids_cli;
