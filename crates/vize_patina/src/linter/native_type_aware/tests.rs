@@ -79,7 +79,6 @@ defineEmits(["update:open"])
         "runtime-only emits should still be reported",
     );
 }
-
 #[test]
 fn no_floating_promises_uses_corsa() {
     if !corsa_available() {
