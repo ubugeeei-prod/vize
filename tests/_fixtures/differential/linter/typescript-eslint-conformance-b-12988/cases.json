@@ -17,7 +17,7 @@
       "typescript": "6.0.3"
     }
   },
-  "description": "Literal cases of packages/eslint-plugin/tests/rules/*.test.ts that the five third-party conformance reports list as divergent under default options, each linted as the only code of one SFC (`mode`: a plain `<script lang=\"ts\">` followed by `export {};`, or `<script setup lang=\"ts\">`). `expected` lists the lines (and, where the report quotes it, the message) typescript-eslint reports; the reports render no-unsafe-argument's backquoted type names as quotes, the oracle keeps the rule's own backquotes. A `blocked` case records what vize reports until the named issue lands.",
+  "description": "Literal cases of packages/eslint-plugin/tests/rules/*.test.ts that the five third-party conformance reports list as divergent under default options, each linted as the only code of one SFC (`mode`: a plain TypeScript script block followed by `export {};`, or a TypeScript script setup block). `expected` lists the lines (and, where the report quotes it, the message) typescript-eslint reports; the reports render no-unsafe-argument's backquoted type names as quotes, the oracle keeps the rule's own backquotes. A `blocked` case records what vize reports until the named issue lands.",
   "caseCount": 44,
   "cases": [
     {

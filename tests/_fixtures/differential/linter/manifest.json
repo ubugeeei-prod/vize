@@ -8307,9 +8307,14 @@
         "root": "typescript-eslint-conformance-b-12988",
         "files": [
           {
+            "path": "Reported.vue.txt",
+            "role": "issue-reported-reproductions-and-negative-controls",
+            "sha256": "df38c7260ed78b9fb1892ab61bf940366ced5a368e5194ae4582030b120049ec"
+          },
+          {
             "path": "cases.json",
             "role": "upstream-immutable-oracle",
-            "sha256": "e4cc913dbb08eb702cb5739d6aa962c0a05a0215e0df371fb05eeab65164196e"
+            "sha256": "29005a4d37b70a7708b02959fd41916946108ec6dd99e6c8a7e251de6e7fb608"
           }
         ]
       },
@@ -8323,7 +8328,7 @@
               "vue3-sfc",
               "ts"
             ],
-            "selector": "native_type_aware::tests::typescript_parity::upstream_872_conformance_b; lints the 44 typescript-eslint v8.72.2 cases of #12988, #12989, #12990, #12991 and #12993 as plain <script lang=\"ts\"> and, where they fit, <script setup lang=\"ts\"> SFCs, and requires the upstream report lines; await-thenable.valid[68] stays pinned to vize's current result until #13002."
+            "selector": "linter manifest pinned authored sources"
           }
         ]
       }

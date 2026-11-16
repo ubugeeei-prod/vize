@@ -1,0 +1,45 @@
+<script setup lang="ts">
+// #12988 no-misused-promises: implemented, inherited and disposed void returns.
+interface Sync {
+  setThing(): void;
+}
+class Implements implements Sync {
+  async setThing(): Promise<void> {}
+}
+class Base {
+  setThing(): void {}
+}
+interface ExtendsSetupClass extends Base {
+  setThing(): Promise<void>;
+}
+using disposed = {
+  async [Symbol.dispose]() {},
+};
+
+// #12989 no-misused-spread: class declarations, and an expando function
+// (negative control).
+class Spread {}
+const spreadClass = { ...Spread };
+function expando() {}
+expando.prop = 1;
+const spreadExpando = { ...expando };
+
+// #12990 no-unnecessary-template-expression.
+type Letter = "A" | "B";
+type Interpolated = `${Letter}`;
+
+// #12991 no-unnecessary-type-arguments: aliased and merged declarations.
+type Pairs = Map<string, string>;
+type Defaulted<T = Pairs> = T;
+type Explicit = Defaulted<Map<string, string>>;
+interface Merged {}
+declare var Merged: {
+  new <T = string>(type: T): any;
+};
+class FromMerged extends Merged<string> {}
+
+// #12993 no-unsafe-argument after a variadic tuple spread.
+declare function takes(...args: [string, string]): void;
+declare const head: [string, ...string[]];
+takes(...head, 1 as any);
+</script>
