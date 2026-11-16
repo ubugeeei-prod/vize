@@ -11,6 +11,7 @@ use vize_l0::Span;
 use vize_l2::file::{FileArtifact, ScriptUnit};
 use vize_l2::lang::js::JsxFile;
 
+mod control;
 mod helpers;
 mod mapping;
 mod module;

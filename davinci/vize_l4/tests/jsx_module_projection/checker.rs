@@ -25,7 +25,7 @@ fn written_helpers(projected: &TsDocument) -> Vec<String> {
         }
     }
     generated.push_str(&text[cursor..]);
-    let mut names: Vec<String> = generated
+    generated
         .split(|ch: char| !(ch.is_ascii_alphanumeric() || ch == '_' || ch == '$'))
         .filter(|word| {
             word.starts_with("__vize")
@@ -34,8 +34,7 @@ fn written_helpers(projected: &TsDocument) -> Vec<String> {
                     .is_some_and(|rest| rest.starts_with(|ch: char| ch.is_ascii_uppercase()))
         })
         .map(String::from)
-        .collect();
-    names
+        .collect()
 }
 
 #[test]

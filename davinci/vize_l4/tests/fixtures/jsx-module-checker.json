@@ -177,6 +177,103 @@
           "at": 45
         }
       ]
+    },
+    {
+      "id": "conditional-narrowing",
+      "kind": "tsx",
+      "source": "export const View = (props: { item?: { label: string } }) => <div>{props.item ? <p title={props.item.label} /> : <span />}</div>;\n",
+      "diagnostics": []
+    },
+    {
+      "id": "conditional-unknown-condition",
+      "kind": "tsx",
+      "source": "export const View = () => <div>{missing ? <p /> : <span />}</div>;\n",
+      "diagnostics": [
+        {
+          "code": 2304,
+          "category": 1,
+          "message": "Cannot find name 'missing'.",
+          "authored": "missing",
+          "at": 32
+        }
+      ]
+    },
+    {
+      "id": "else-if-chain",
+      "kind": "tsx",
+      "source": "export const View = (props: { a: boolean; b: boolean; n: number }) => <>{props.a ? <i /> : props.b ? <b title={props.n} /> : <s />}</>;\n",
+      "diagnostics": [
+        {
+          "code": 2345,
+          "category": 1,
+          "message": "Argument of type 'number' is not assignable to parameter of type 'string'.",
+          "authored": "props.n",
+          "at": 111
+        }
+      ]
+    },
+    {
+      "id": "and-proved-boolean",
+      "kind": "tsx",
+      "source": "const shown = true;\nexport const View = (props: { n: number }) => <div>{shown && <p title={props.n} />}</div>;\n",
+      "diagnostics": [
+        {
+          "code": 2345,
+          "category": 1,
+          "message": "Argument of type 'number' is not assignable to parameter of type 'string'.",
+          "authored": "props.n",
+          "at": 91
+        }
+      ]
+    },
+    {
+      "id": "map-alias-types",
+      "kind": "tsx",
+      "source": "export const View = (props: { xs: number[] }) => <ul>{props.xs.map((x, i) => <li title={x} key={i} />)}</ul>;\n",
+      "diagnostics": [
+        {
+          "code": 2345,
+          "category": 1,
+          "message": "Argument of type 'number' is not assignable to parameter of type 'string'.",
+          "authored": "x",
+          "at": 88
+        }
+      ]
+    },
+    {
+      "id": "map-block-body",
+      "kind": "tsx",
+      "source": "export const View = (props: { xs: string[] }) => <ul>{props.xs.map((x) => { return <li title={x.missing} />; })}</ul>;\n",
+      "diagnostics": [
+        {
+          "code": 2339,
+          "category": 1,
+          "message": "Property 'missing' does not exist on type 'string'.",
+          "authored": "missing",
+          "at": 96
+        }
+      ]
+    },
+    {
+      "id": "map-non-array",
+      "kind": "tsx",
+      "source": "export const View = (props: { count: number }) => <ul>{props.count.map((x) => <li />)}</ul>;\n",
+      "diagnostics": [
+        {
+          "code": 2339,
+          "category": 1,
+          "message": "Property 'map' does not exist on type 'number'.",
+          "authored": "map",
+          "at": 67
+        },
+        {
+          "code": 7006,
+          "category": 1,
+          "message": "Parameter 'x' implicitly has an 'any' type.",
+          "authored": "x",
+          "at": 72
+        }
+      ]
     }
   ]
 }
