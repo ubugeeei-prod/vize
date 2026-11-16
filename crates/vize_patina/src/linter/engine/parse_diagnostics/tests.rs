@@ -315,3 +315,28 @@ fn configured_incremental_rules_keep_parser_diagnostics_in_the_baseline() {
             .all(|diagnostic| diagnostic.rule_name != TEMPLATE_PARSE_RULE)
     );
 }
+
+#[test]
+fn character_references_follow_tag_quote_and_comment_state() {
+    // A `>` inside a quoted value keeps the tag open; quotes outside a tag,
+    // comments and expressions never hold a reportable reference.
+    let source = "<p title=\"a > b &unknown;\" data-x='&amp' alt=&bogus;>x &amp y ' &zz; \"</p><!-- &bad; --><p>&copy &#65 {{ a && b }}</p><input value=\"&#0;\"><b>&</b>";
+    let actual = l1(source);
+    assert_eq!(
+        actual
+            .iter()
+            .map(|diagnostic| (
+                diagnostic.message.as_str(),
+                &source[diagnostic.start as usize..diagnostic.end as usize]
+            ))
+            .collect::<Vec<_>>(),
+        vec![
+            ("Unknown named character reference.", "&unknown;"),
+            ("Missing semicolon after character reference.", "&amp"),
+            ("Unknown named character reference.", "&bogus;"),
+            ("Missing semicolon after character reference.", "&amp"),
+            ("Unknown named character reference.", "&zz;"),
+            ("Null character reference.", "&#0;"),
+        ]
+    );
+}

@@ -20,15 +20,20 @@ fn append_entity_diagnostics(
     source: &str,
     template: &L2Template<'_>,
 ) {
+    let bytes = source.as_bytes();
+    // Every diagnostic here starts at an `&`.
+    if memchr::memchr(b'&', bytes).is_none() {
+        return;
+    }
     let mut expression_spans = Vec::new();
     template.for_each_expression_span(|span| expression_spans.push(span));
     expression_spans.sort_unstable_by_key(|span| (span.start, span.end));
 
-    let bytes = source.as_bytes();
     let mut index = 0usize;
     let mut in_tag = false;
     let mut quote = None;
-    while index < bytes.len() {
+    while let Some(next) = next_significant(bytes, index, in_tag, quote) {
+        index = next;
         if !in_tag && bytes.get(index..index.saturating_add(4)) == Some(b"<!--") {
             index = bytes
                 .get(index + 4..)
@@ -114,6 +119,21 @@ fn append_entity_diagnostics(
         }
         index += 1;
     }
+}
+
+/// The first byte at or after `index` that can change the scan's tag, quote
+/// or comment state, or start a character reference. Every other byte only
+/// advances the scan.
+fn next_significant(bytes: &[u8], index: usize, in_tag: bool, quote: Option<u8>) -> Option<usize> {
+    let tail = bytes.get(index..)?;
+    let offset = match (in_tag, quote) {
+        (false, _) => memchr::memchr2(b'<', b'&', tail),
+        (true, Some(quote)) => memchr::memchr2(quote, b'&', tail),
+        (true, None) => tail
+            .iter()
+            .position(|byte| matches!(byte, b'>' | b'\'' | b'"' | b'&')),
+    }?;
+    Some(index + offset)
 }
 
 fn invalid_expression_spans(template: &L2Template<'_>) -> Vec<Span> {
