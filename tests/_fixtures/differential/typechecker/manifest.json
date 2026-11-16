@@ -13418,6 +13418,85 @@
       }
     },
     {
+      "id": "typechecker/registered-components-13111/reported-project",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "registered-components-13111/src/Child.vue.txt",
+          "role": "issue-authored-child",
+          "sha256": "71589ef64aa81aa8deb6d85ba71de964170a2f59e24a8c185f08db8115ae463d"
+        },
+        {
+          "path": "registered-components-13111/src/Mixed.vue.txt",
+          "role": "script-setup-with-components-option",
+          "sha256": "6871b80e63c107173e936b9b0dbacb9e4e7e378ba675df52e947819ec9159743"
+        },
+        {
+          "path": "registered-components-13111/src/MixedWrong.vue.txt",
+          "role": "script-setup-precision-and-unknown-control",
+          "sha256": "18a2249ad39230c89631062fdd507e73e9988165d7d7b9c9ccafdef413eec6b0"
+        },
+        {
+          "path": "registered-components-13111/src/Registered.vue.txt",
+          "role": "issue-authored-regression",
+          "sha256": "cbd51a2566c335fe9a73c2f6df852f3d37957c71ea6a88669b64c5950f786456"
+        },
+        {
+          "path": "registered-components-13111/src/Shapes.vue.txt",
+          "role": "registered-value-shapes",
+          "sha256": "94a958ffeab4f6b26dcb0e77aacfa927a1d29e998ed755fbd25ab45e57e988e1"
+        },
+        {
+          "path": "registered-components-13111/src/TsButton.ts.txt",
+          "role": "ts-define-component-value",
+          "sha256": "580bdc22b8080e23ad9fcc308c01b6e76d5a40d2e62c7c6bbf3c64532cf95bab"
+        },
+        {
+          "path": "registered-components-13111/src/Wrong.vue.txt",
+          "role": "registered-prop-precision-and-unknown-control",
+          "sha256": "4125ffd9667de22093485973202259611a8564dc605412568dfbad2b98907e78"
+        },
+        {
+          "path": "registered-components-13111/src/menu-library.d.ts.txt",
+          "role": "library-component-value",
+          "sha256": "3930344eba89e60d32fcbc72d7907e265f3dd14bb67d099ee10e93a01c494c6a"
+        },
+        {
+          "path": "registered-components-13111/src/ui.ts.txt",
+          "role": "member-value-namespace",
+          "sha256": "1ee738b823a6b45f178bd2e98be64ae92730aed0838961dc8e954187413893e4"
+        },
+        {
+          "path": "registered-components-13111/tsconfig.disabled.json.txt",
+          "role": "check-unknown-components-disabled-config",
+          "sha256": "42a0e6cb2137c3b5040b9e0e6df228dcbf2e881954a6fa7ac023d12c560f2fb0"
+        },
+        {
+          "path": "registered-components-13111/tsconfig.json.txt",
+          "role": "issue-authored-config",
+          "sha256": "e4f91e86f3d004a103333eca0f24ae8c261d4835c6eefbb93e587519aef38ad5"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::registered_components_13111::registered_component_keys_are_known_and_typed_by_their_values and check_registered_components_cli::check_types_registered_component_keys_by_their_values; exact #13111 project plus value-shape, `<script setup>`, precision and unknown-tag controls, with and without `checkUnknownComponents`. Input-only registration; no native parity claim."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/annotated-slot-props",
       "state": "active",
       "targets": [
