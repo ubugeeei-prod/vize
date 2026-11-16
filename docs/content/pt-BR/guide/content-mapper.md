@@ -54,11 +54,51 @@ vp install -D vize
 Executar processos de mapper externos exige opt-in explícito:
 
 ```bash
-tsgo --runExternalCode --noEmit -p tsconfig.json
+tsc --runExternalCode --noEmit -p tsconfig.json
 ```
 
 No VS Code, a extensão do Vize registra o suporte a `.vue` no host content-mapper do TypeScript 7
 automaticamente em workspaces confiáveis — o mesmo mapper passa a alimentar o editor.
+
+### Referências de projeto (tsconfig no estilo solution)
+
+Templates como o `create-vue` usam uma raiz no estilo solution: o `tsconfig.json` não lista nenhum
+arquivo e referencia `tsconfig.app.json` e `tsconfig.node.json`. Os arquivos `.vue` pertencem ao
+`tsconfig.app.json`. Duas regras valem nesse layout:
+
+- Declare `contentMappers` em cada projeto referenciado que inclui arquivos `.vue`. A opção vale
+  por projeto, e os projetos referenciados não a herdam da raiz. Um mapper declarado apenas na
+  raiz não mapeia nenhum arquivo `.vue`. Já a herança via `extends` funciona, então uma
+  configuração base compartilhada que esses projetos estendem pode declará-la uma única vez.
+- Verifique os projetos referenciados, não a raiz. Uma raiz com `"files": []` não contém nenhum
+  arquivo, então `tsc --runExternalCode --noEmit -p tsconfig.json` não verifica nada e termina com
+  sucesso.
+
+No `tsconfig.app.json`:
+
+```json
+{
+  "extends": "@vue/tsconfig/tsconfig.dom.json",
+  "include": ["env.d.ts", "src/**/*", "src/**/*.vue"],
+  "contentMappers": [
+    {
+      "package": "vize",
+      "extensions": [".vue"]
+    }
+  ]
+}
+```
+
+Depois, faça o build de todos os projetos referenciados ou verifique diretamente o projeto da
+aplicação:
+
+```bash
+tsc -b --runExternalCode
+tsc --runExternalCode --noEmit -p tsconfig.app.json
+```
+
+O [`vize check`](./cli.md#check) não precisa de configuração extra aqui: ele seleciona o projeto
+referenciado que contém cada arquivo `.vue`.
 
 ## Opções
 
