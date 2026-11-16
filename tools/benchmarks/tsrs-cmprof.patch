@@ -1,0 +1,265 @@
+diff --git a/crates/tsrs_contentmapper/src/hostimpl.rs b/crates/tsrs_contentmapper/src/hostimpl.rs
+index f401780..ec0b61e 100644
+--- a/crates/tsrs_contentmapper/src/hostimpl.rs
++++ b/crates/tsrs_contentmapper/src/hostimpl.rs
+@@ -1463,6 +1463,8 @@ impl Host for HostImpl {
+     // when the context passed to New is cancelled.
+     // hostimpl.go:798
+     fn close(&self) -> Result<(), Error> {
++        let close_start = tsrs_core::cmprof::now();
++        let _dump = DumpOnDrop(close_start);
+         let _lifecycle = write(&self.lifecycle_mu);
+         let closers: Vec<Arc<dyn Closer>> = {
+             let mut state = lock(&self.mu);
+@@ -1684,8 +1686,12 @@ impl HostImpl {
+             content: request.content.to_string(),
+             project_handle: project_handle.to_string(),
+         };
++        let call_start = tsrs_core::cmprof::now();
+         let raw = conn.call(METHOD_TRANSFORM, Some(&params.marshal_json()));
++        tsrs_core::cmprof::record("transform_call", call_start, request.content.len() as u64);
+         mapper_timing.finish_request(&mapper_timing.transform, start);
++        let decode_start = tsrs_core::cmprof::now();
++        let decode_guard = DecodeRecord(decode_start);
+         let raw = match raw {
+             Ok(raw) => raw,
+             Err(err) => {
+@@ -1696,11 +1702,17 @@ impl HostImpl {
+                 .into());
+             }
+         };
+-        match decode_transform_result(raw, request.content, &position_encoding, &diagnostic_source)
+-        {
++        let decoded = match decode_transform_result(
++            raw,
++            request.content,
++            &position_encoding,
++            &diagnostic_source,
++        ) {
+             Ok(decoded) => Ok(decoded),
+             Err(err) => Err(new_transform_error(TransformErrorKind::Response, Some(err)).into()),
+-        }
++        };
++        drop(decode_guard);
++        decoded
+     }
+ 
+     // connFor returns the connection for a mapper's identity, spawning its process on first use. Mappers
+@@ -2199,6 +2211,23 @@ fn decode_transform_result(
+     Ok(result)
+ }
+ 
++struct DumpOnDrop(u64);
++
++impl Drop for DumpOnDrop {
++    fn drop(&mut self) {
++        tsrs_core::cmprof::record("host_close", self.0, 0);
++        tsrs_core::cmprof::dump();
++    }
++}
++
++struct DecodeRecord(u64);
++
++impl Drop for DecodeRecord {
++    fn drop(&mut self) {
++        tsrs_core::cmprof::record("transform_decode", self.0, 0);
++    }
++}
++
+ // hostimpl.go:1170
+ fn decode_mapped_output<'a>(
+     output: MappedOutput,
+@@ -2219,9 +2248,12 @@ fn decode_mapped_output<'a>(
+     let mappings = match &output.mappings {
+         Some(raw) => {
+             // Go hands spanmap.Unmarshal the member's raw bytes.
++            let spanmap_start = tsrs_core::cmprof::now();
+             let raw = json::marshal(raw).map_err(Error::Other)?;
+             let mappings = tsrs_spanmap::unmarshal(raw.as_bytes()).map_err(Error::Other)?;
+-            normalize_mappings(&mappings, &virtual_positions, &original_positions)?
++            let normalized = normalize_mappings(&mappings, &virtual_positions, &original_positions)?;
++            tsrs_core::cmprof::record("spanmap", spanmap_start, raw.len() as u64);
++            normalized
+         }
+         None => tsrs_spanmap::new(&[]),
+     };
+diff --git a/crates/tsrs_contentmapper/src/transform.rs b/crates/tsrs_contentmapper/src/transform.rs
+index f2944f3..f426a3c 100644
+--- a/crates/tsrs_contentmapper/src/transform.rs
++++ b/crates/tsrs_contentmapper/src/transform.rs
+@@ -51,13 +51,17 @@ pub fn parse_result(
+     let Some(mappings) = result.mappings else {
+         return Err(new_transform_error(TransformErrorKind::Mappings, None).into());
+     };
++    let validate_start = tsrs_core::cmprof::now();
+     if let Some(problem) = mappings.validate(&result.text, content) {
+         return Err(problem.into());
+     }
++    tsrs_core::cmprof::record("validate", validate_start, result.text.len() as u64);
+     let virtual_extension = result.virtual_extension;
+     if !is_supported_virtual_extension(&virtual_extension) {
+         return Err(new_transform_error(TransformErrorKind::Response, None).into());
+     }
++    let parse_start = tsrs_core::cmprof::now();
++    let text_len = result.text.len() as u64;
+     let base_parse_options = parse_options;
+     let virtual_file_name = format!("{}{}", base_parse_options.file_name, virtual_extension);
+     let mut parse_options = base_parse_options.clone();
+@@ -70,6 +74,7 @@ pub fn parse_result(
+         result.text,
+         get_script_kind_from_file_name(&virtual_file_name),
+     );
++    tsrs_core::cmprof::record("parse_vts", parse_start, text_len);
+     if !result.diagnostics.is_empty() {
+         // The runner produces diagnostics without a source file (it doesn't have one yet); associate
+         // them with the file now so they are reported against it.
+diff --git a/crates/tsrs_core/src/cmprof.rs b/crates/tsrs_core/src/cmprof.rs
+new file mode 100644
+index 0000000..002d924
+--- /dev/null
++++ b/crates/tsrs_core/src/cmprof.rs
+@@ -0,0 +1,75 @@
++// Local profiling patch (not for upstream): content-mapper event timeline, written to $TSRS_CM_PROFILE on dump().
++use std::sync::atomic::{AtomicU64, Ordering};
++use std::sync::{Mutex, OnceLock};
++use std::time::Instant;
++
++struct Event {
++    kind: &'static str,
++    thread: u64,
++    start: u64,
++    end: u64,
++    bytes: u64,
++}
++
++fn epoch() -> Instant {
++    static EPOCH: OnceLock<Instant> = OnceLock::new();
++    *EPOCH.get_or_init(Instant::now)
++}
++
++fn events() -> &'static Mutex<Vec<Event>> {
++    static EVENTS: OnceLock<Mutex<Vec<Event>>> = OnceLock::new();
++    EVENTS.get_or_init(|| Mutex::new(Vec::with_capacity(1 << 16)))
++}
++
++pub fn enabled() -> bool {
++    static ON: OnceLock<bool> = OnceLock::new();
++    *ON.get_or_init(|| {
++        let _ = epoch();
++        std::env::var_os("TSRS_CM_PROFILE").is_some()
++    })
++}
++
++pub fn now() -> u64 {
++    if !enabled() {
++        return 0;
++    }
++    epoch().elapsed().as_nanos() as u64
++}
++
++fn thread_id() -> u64 {
++    static NEXT: AtomicU64 = AtomicU64::new(1);
++    thread_local!(static ID: u64 = NEXT.fetch_add(1, Ordering::Relaxed));
++    ID.with(|id| *id)
++}
++
++pub fn record(kind: &'static str, start: u64, bytes: u64) {
++    if !enabled() {
++        return;
++    }
++    let end = now();
++    let event = Event { kind, thread: thread_id(), start, end, bytes };
++    events().lock().unwrap_or_else(std::sync::PoisonError::into_inner).push(event);
++}
++
++pub fn record_duration(kind: &'static str, d: std::time::Duration) {
++    if !enabled() {
++        return;
++    }
++    let end = now();
++    record_at(kind, end.saturating_sub(d.as_nanos() as u64), end, 0);
++}
++
++fn record_at(kind: &'static str, start: u64, end: u64, bytes: u64) {
++    let event = Event { kind, thread: thread_id(), start, end, bytes };
++    events().lock().unwrap_or_else(std::sync::PoisonError::into_inner).push(event);
++}
++
++pub fn dump() {
++    let Some(path) = std::env::var_os("TSRS_CM_PROFILE") else { return };
++    let events = events().lock().unwrap_or_else(std::sync::PoisonError::into_inner);
++    let mut out = String::from("kind,thread,start_ns,end_ns,bytes\n");
++    for e in events.iter() {
++        out.push_str(&format!("{},{},{},{},{}\n", e.kind, e.thread, e.start, e.end, e.bytes));
++    }
++    let _ = std::fs::write(path, out);
++}
+diff --git a/crates/tsrs_core/src/lib.rs b/crates/tsrs_core/src/lib.rs
+index b77ce33..d03afff 100644
+--- a/crates/tsrs_core/src/lib.rs
++++ b/crates/tsrs_core/src/lib.rs
+@@ -35,6 +35,7 @@ pub mod gocompat;
+ pub mod goslices;
+ pub mod jsnum;
+ pub mod json;
++pub mod cmprof;
+ pub mod lazymembers;
+ pub mod memsplit;
+ pub mod phases;
+diff --git a/crates/tsrs_core/src/phases.rs b/crates/tsrs_core/src/phases.rs
+index 745e8a5..79837aa 100644
+--- a/crates/tsrs_core/src/phases.rs
++++ b/crates/tsrs_core/src/phases.rs
+@@ -15,6 +15,7 @@ pub enum PhaseValue {
+ static PHASES: Mutex<Vec<(&'static str, PhaseValue)>> = Mutex::new(Vec::new());
+ 
+ pub fn record(name: &'static str, d: Duration) {
++    crate::cmprof::record_duration(name, d);
+     let mut phases = PHASES.lock().unwrap();
+     match phases.iter_mut().find(|(n, _)| *n == name) {
+         Some((_, PhaseValue::Time(t))) => *t += d,
+diff --git a/crates/tsrs_ipc/src/jsonrpc/baseproto.rs b/crates/tsrs_ipc/src/jsonrpc/baseproto.rs
+index 81bec41..a7a83af 100644
+--- a/crates/tsrs_ipc/src/jsonrpc/baseproto.rs
++++ b/crates/tsrs_ipc/src/jsonrpc/baseproto.rs
+@@ -35,6 +35,7 @@ impl<R: Read> Reader<R> {
+     // baseproto.go:34
+     // Read reads the next message payload.
+     pub fn read(&mut self) -> Result<Vec<u8>, Error> {
++        let header_start = tsrs_core::cmprof::now();
+         let mut content_length: i64 = 0;
+ 
+         loop {
+@@ -78,10 +79,15 @@ impl<R: Read> Reader<R> {
+ 
+         // io.ReadFull: io.EOF when no byte arrives, io.ErrUnexpectedEOF when some do.
+         let content_length = content_length as u64;
++        tsrs_core::cmprof::record("frame_header", header_start, 0);
++        let body_start = tsrs_core::cmprof::now();
+         let mut data =
+             Vec::with_capacity(content_length.min(MAX_INITIAL_CONTENT_CAPACITY) as usize);
+         match (&mut self.r).take(content_length).read_to_end(&mut data) {
+-            Ok(n) if n as u64 == content_length => Ok(data),
++            Ok(n) if n as u64 == content_length => {
++                tsrs_core::cmprof::record("frame_body", body_start, n as u64);
++                Ok(data)
++            }
+             Ok(0) => Err(Error::wrap("jsonrpc: read content: ", eof())),
+             Ok(_) => Err(Error::new("jsonrpc: read content: unexpected EOF")),
+             Err(err) => Err(Error::new(format!("jsonrpc: read content: {err}"))),
+diff --git a/crates/tsrs_ipc/src/protocol_jsonrpc.rs b/crates/tsrs_ipc/src/protocol_jsonrpc.rs
+index 2dac45f..d93ddce 100644
+--- a/crates/tsrs_ipc/src/protocol_jsonrpc.rs
++++ b/crates/tsrs_ipc/src/protocol_jsonrpc.rs
+@@ -30,7 +30,10 @@ impl<R: Read + Send, W: Write + Send> Protocol for JSONRPCProtocol<R, W> {
+     // protocol_jsonrpc.go:28
+     fn read_message(&self) -> Result<Message, Error> {
+         let data = lock(&self.reader).read()?;
+-        Message::unmarshal(&data)
++        let parse = tsrs_core::cmprof::now();
++        let message = Message::unmarshal(&data);
++        tsrs_core::cmprof::record("frame_parse", parse, data.len() as u64);
++        message
+     }
+ 
+     // protocol_jsonrpc.go:43
