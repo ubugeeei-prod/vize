@@ -8,6 +8,7 @@ mod debug;
 mod origins;
 mod ref_value_declaration;
 mod ref_values;
+mod setup_values;
 
 use crate::croquis::{
     BindingMetadata, ComponentRegistration, ComponentShape, Croquis, NuxtPageLayout,
@@ -70,6 +71,8 @@ pub(crate) struct RuntimeObjectLiteral {
     pub emits: Vec<EmitDefinition>,
     pub emit_validator_signatures: FxHashMap<CompactString, Vec<CompactString>>,
     pub emit_validator_type_annotations: FxHashMap<CompactString, Vec<CompactString>>,
+    /// A prop type names a constructor value.
+    pub reads_prop_values: bool,
 }
 
 /// Result of parsing a script setup block
@@ -178,6 +181,9 @@ pub struct ScriptParseResult {
     pub(crate) type_export_type_refs: Vec<FxHashSet<CompactString>>,
     /// Static runtime object literal metadata available to macro spread args.
     pub(crate) runtime_object_literals: FxHashMap<CompactString, RuntimeObjectLiteral>,
+    /// A recorded prop type names a constructor value, so its binding scope
+    /// is checked once the whole script is known.
+    pub(crate) reads_prop_values: bool,
     /// Authoritative Options API options-object descriptor, when resolved.
     pub(crate) options_descriptor: Option<OptionsDescriptor>,
     /// Whether component options disable attribute inheritance.
@@ -301,17 +307,8 @@ impl ScriptParseResult {
             &self.binding_spans,
             &self.import_statements,
         );
-        let setup_value = |key: &str| {
-            bindings.contains_key(key)
-                && !module_values.contains(key)
-                && !spans.get(key).is_some_and(|(start, end)| {
-                    // Bindings whose declaration site falls inside an import
-                    // statement are module-scoped imports, not setup values.
-                    imports
-                        .iter()
-                        .any(|imp| *start >= imp.start && *end <= imp.end)
-                })
-        };
+        let setup_value =
+            |key: &str| setup_values::is_setup_value(bindings, module_values, spans, imports, key);
         let (type_namespace_values, setup_script) =
             (&self.type_namespace_values, !self.is_non_setup_script);
         for (idx, (value_refs, type_refs)) in self

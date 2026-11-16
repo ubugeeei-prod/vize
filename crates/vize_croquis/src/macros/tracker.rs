@@ -139,6 +139,16 @@ impl MacroTracker {
         true
     }
 
+    /// Forget each prop type `unresolvable` rejects, keeping the prop itself.
+    #[inline]
+    pub(crate) fn forget_prop_types(&mut self, mut unresolvable: impl FnMut(&str) -> bool) {
+        for prop in &mut self.props {
+            if prop.prop_type.as_deref().is_some_and(&mut unresolvable) {
+                prop.prop_type = None;
+            }
+        }
+    }
+
     /// Get a prop's written declaration range, relative to its script block.
     #[inline]
     pub fn prop_declaration(&self, name: &str) -> Option<(u32, u32)> {

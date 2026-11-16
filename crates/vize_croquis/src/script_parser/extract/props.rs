@@ -9,7 +9,9 @@ use vize_carton::{CompactString, String};
 use vize_relief::BindingType;
 
 use super::super::ScriptParseResult;
-use super::props_type::{runtime_ctor_type, runtime_prop_type_from_ts_type};
+use super::props_type::{
+    runtime_ctor_type, runtime_prop_type_from_ts_type, runtime_value_prop_type,
+};
 
 pub fn extract_props_from_type(
     result: &mut ScriptParseResult,
@@ -140,12 +142,14 @@ fn extract_props_from_object(
                 let Some(name) = runtime_object_property_name(&p.key) else {
                     continue;
                 };
+                let prop_type =
+                    extract_runtime_prop_type(&p.value, source, &mut result.reads_prop_values);
                 add_runtime_prop_with_declaration(
                     result,
                     PropDefinition {
                         name: CompactString::new(name),
                         required: detect_required_prop(&p.value),
-                        prop_type: extract_runtime_prop_type(&p.value, source),
+                        prop_type,
                         default_value: extract_runtime_prop_default(&p.value, source),
                     },
                     p.span.start,
@@ -156,13 +160,14 @@ fn extract_props_from_object(
                 let Expression::Identifier(identifier) = &spread.argument else {
                     continue;
                 };
-                let Some(props) = result
+                let Some((props, reads_values)) = result
                     .runtime_object_literals
                     .get(identifier.name.as_str())
-                    .map(|literal| literal.props.clone())
+                    .map(|literal| (literal.props.clone(), literal.reads_prop_values))
                 else {
                     continue;
                 };
+                result.reads_prop_values |= reads_values;
                 for prop in props {
                     add_runtime_prop(result, prop);
                 }
@@ -223,17 +228,24 @@ fn record_prop_binding(result: &mut ScriptParseResult, name: &str) {
     }
 }
 
+/// `reads_value` is set when the type names a constructor value, the only
+/// shape whose binding scope is checked once the whole script is known.
 pub(in crate::script_parser) fn extract_runtime_prop_type(
     value: &Expression<'_>,
     source: &str,
+    reads_value: &mut bool,
 ) -> Option<CompactString> {
     match value {
-        Expression::Identifier(id) => runtime_ctor_type(id.name.as_str()).map(CompactString::new),
+        Expression::Identifier(id) => runtime_ctor_type(id.name.as_str())
+            .map(CompactString::new)
+            .or_else(|| runtime_value_prop_type(value, reads_value)),
+        Expression::StaticMemberExpression(_) => runtime_value_prop_type(value, reads_value),
         Expression::ArrayExpression(arr) => {
             let mut union = String::default();
             let mut has_type = false;
             for elem in arr.elements.iter() {
-                let Some(prop_type) = extract_runtime_prop_type_from_array_element(elem, source)
+                let Some(prop_type) =
+                    extract_runtime_prop_type_from_array_element(elem, source, reads_value)
                 else {
                     continue;
                 };
@@ -256,22 +268,23 @@ pub(in crate::script_parser) fn extract_runtime_prop_type(
                 return None;
             };
             (runtime_object_property_name(&prop.key) == Some("type"))
-                .then(|| extract_runtime_prop_type(&prop.value, source))
+                .then(|| extract_runtime_prop_type(&prop.value, source, reads_value))
                 .flatten()
         }),
         Expression::TSAsExpression(ts_as) => {
             runtime_prop_type_from_ts_type(&ts_as.type_annotation, source)
-                .or_else(|| extract_runtime_prop_type(&ts_as.expression, source))
+                .or_else(|| extract_runtime_prop_type(&ts_as.expression, source, reads_value))
         }
         Expression::TSSatisfiesExpression(ts_satisfies) => {
-            runtime_prop_type_from_ts_type(&ts_satisfies.type_annotation, source)
-                .or_else(|| extract_runtime_prop_type(&ts_satisfies.expression, source))
+            runtime_prop_type_from_ts_type(&ts_satisfies.type_annotation, source).or_else(|| {
+                extract_runtime_prop_type(&ts_satisfies.expression, source, reads_value)
+            })
         }
         Expression::TSNonNullExpression(ts_non_null) => {
-            extract_runtime_prop_type(&ts_non_null.expression, source)
+            extract_runtime_prop_type(&ts_non_null.expression, source, reads_value)
         }
         Expression::ParenthesizedExpression(paren) => {
-            extract_runtime_prop_type(&paren.expression, source)
+            extract_runtime_prop_type(&paren.expression, source, reads_value)
         }
         _ => None,
     }
@@ -280,11 +293,19 @@ pub(in crate::script_parser) fn extract_runtime_prop_type(
 fn extract_runtime_prop_type_from_array_element(
     value: &oxc_ast::ast::ArrayExpressionElement<'_>,
     source: &str,
+    reads_value: &mut bool,
 ) -> Option<CompactString> {
     match value {
-        oxc_ast::ast::ArrayExpressionElement::Identifier(id) => {
-            runtime_ctor_type(id.name.as_str()).map(CompactString::new)
-        }
+        oxc_ast::ast::ArrayExpressionElement::Identifier(id) => runtime_ctor_type(id.name.as_str())
+            .map(CompactString::new)
+            .or_else(|| {
+                value
+                    .as_expression()
+                    .and_then(|value| runtime_value_prop_type(value, reads_value))
+            }),
+        oxc_ast::ast::ArrayExpressionElement::StaticMemberExpression(_) => value
+            .as_expression()
+            .and_then(|value| runtime_value_prop_type(value, reads_value)),
         oxc_ast::ast::ArrayExpressionElement::StringLiteral(_) => {
             Some(CompactString::new("string"))
         }
@@ -302,17 +323,18 @@ fn extract_runtime_prop_type_from_array_element(
         }
         oxc_ast::ast::ArrayExpressionElement::TSAsExpression(ts_as) => {
             runtime_prop_type_from_ts_type(&ts_as.type_annotation, source)
-                .or_else(|| extract_runtime_prop_type(&ts_as.expression, source))
+                .or_else(|| extract_runtime_prop_type(&ts_as.expression, source, reads_value))
         }
         oxc_ast::ast::ArrayExpressionElement::TSSatisfiesExpression(ts_satisfies) => {
-            runtime_prop_type_from_ts_type(&ts_satisfies.type_annotation, source)
-                .or_else(|| extract_runtime_prop_type(&ts_satisfies.expression, source))
+            runtime_prop_type_from_ts_type(&ts_satisfies.type_annotation, source).or_else(|| {
+                extract_runtime_prop_type(&ts_satisfies.expression, source, reads_value)
+            })
         }
         oxc_ast::ast::ArrayExpressionElement::TSNonNullExpression(ts_non_null) => {
-            extract_runtime_prop_type(&ts_non_null.expression, source)
+            extract_runtime_prop_type(&ts_non_null.expression, source, reads_value)
         }
         oxc_ast::ast::ArrayExpressionElement::ParenthesizedExpression(paren) => {
-            extract_runtime_prop_type(&paren.expression, source)
+            extract_runtime_prop_type(&paren.expression, source, reads_value)
         }
         _ => None,
     }
