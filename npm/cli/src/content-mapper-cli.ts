@@ -11,11 +11,12 @@ const require = createRequire(import.meta.url);
 try {
   // Reply before package probing and addon loading; the host's `initialize`
   // wait is fixed (#12530), and neither changes these static capabilities.
-  if (answerContentMapperInitialize()) {
+  const capabilityArgs = answerContentMapperInitialize();
+  if (capabilityArgs !== null) {
     assertMatchingNativeVersion();
     const native = require("@vizejs/native") as typeof import("@vizejs/native");
     // The host pairs replies by id, so each one goes out once it is ready.
-    native.runCli(["content-mapper", "--initialized", "--reply-when-ready"]);
+    native.runCli(["content-mapper", "--initialized", "--reply-when-ready", ...capabilityArgs]);
   }
 } catch (error) {
   if (error instanceof ContentMapperFramingError) {

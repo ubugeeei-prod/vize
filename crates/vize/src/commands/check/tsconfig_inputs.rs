@@ -46,7 +46,8 @@ mod tests;
 
 pub(crate) use ambient::{
     collect_ambient_declaration_files, collect_declaration_reference_graph,
-    collect_hidden_ambient_declaration_files, collect_tsconfig_type_declaration_files,
+    collect_explicit_nuxt_import_manifests, collect_hidden_ambient_declaration_files,
+    collect_tsconfig_type_declaration_files,
 };
 pub(super) use jsonc::parse_jsonc_value;
 pub(crate) use loader::{TsconfigInputCache, load_tsconfig_declaration_options};
@@ -100,6 +101,15 @@ pub(crate) fn tsconfig_project_graph_allows_js(
         .project_paths(tsconfig_path)
         .iter()
         .any(|project| tsconfig_allows_js(project, cache))
+}
+
+/// Whether the selected program declares the global `useTemplateRef` as
+/// Vue's own export. Declaration reference edges are part of the program too.
+pub(crate) fn declares_vue_template_ref_global(files: &[PathBuf]) -> bool {
+    collect_declaration_reference_graph(files)
+        .iter()
+        .filter_map(|path| std::fs::read_to_string(path).ok())
+        .any(|source| vize_canon::batch::declares_vue_template_ref_global(&source))
 }
 
 fn collect_default_check_files_inner(

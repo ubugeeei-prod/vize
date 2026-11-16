@@ -5,9 +5,13 @@
 //! Void renders GET links as anchors and mutation links as buttons. Static
 //! method typos or GET-only props on mutation links are easy to catch locally.
 
-use super::void_link_require_href::{has_named_prop, is_void_link_in_context, static_attr_value};
+use super::void_link_require_href::{
+    has_named_markup_prop, has_named_prop, is_void_link_in_context, is_void_link_in_markup_context,
+    static_attr_value, static_markup_attr_value,
+};
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::{MarkupContext, MarkupElement, MarkupRule, MarkupTraversal};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::ElementNode;
 
@@ -22,9 +26,55 @@ static META: RuleMeta = RuleMeta {
 /// Implements the `ecosystem/void-link-valid-method` lint rule.
 pub struct VoidLinkValidMethod;
 
+impl MarkupRule for VoidLinkValidMethod {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn traversal(&self) -> MarkupTraversal {
+        MarkupTraversal::Elements
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        if !is_void_link_in_markup_context(ctx, element.tag()) {
+            return;
+        }
+
+        let Some(method) = static_markup_attr_value(element, "method") else {
+            return;
+        };
+        if !is_valid_method(method) {
+            ctx.lint().warn_at_with_help(
+                "Void Vue Link uses an unknown navigation method",
+                element.range(),
+                "Use one of `GET`, `POST`, `PUT`, `PATCH`, or `DELETE` for the static `method` prop.",
+            );
+            return;
+        }
+
+        if is_get(method) {
+            return;
+        }
+
+        if has_named_markup_prop(element, "prefetch")
+            || has_named_markup_prop(element, "reloadDocument")
+        {
+            ctx.lint().warn_at_with_help(
+                "Void Vue Link GET-only props are ignored on mutation links",
+                element.range(),
+                "Remove `prefetch` and `reloadDocument`, or switch the Link method back to `GET`.",
+            );
+        }
+    }
+}
+
 impl Rule for VoidLinkValidMethod {
     fn meta(&self) -> &'static RuleMeta {
         &META
+    }
+
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {

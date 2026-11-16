@@ -34,11 +34,12 @@ const REFERENCE: u32 = 1 << 2;
 const SYMBOL_CLASS: u32 = 1 << 5;
 const SYMBOL_INTERFACE: u32 = 1 << 6;
 // TypeScript 7 SyntaxKind values.
-const PROPERTY_DECLARATION: u16 = 174;
-const METHOD_SIGNATURE: u16 = 175;
-const METHOD_DECLARATION: u16 = 176;
-const FUNCTION_EXPRESSION: u16 = 220;
-const PROPERTY_ASSIGNMENT: u16 = 304;
+const PROPERTY_DECLARATION: u16 = 173;
+const METHOD_SIGNATURE: u16 = 174;
+const METHOD_DECLARATION: u16 = 175;
+const FUNCTION_EXPRESSION: u16 = 219;
+const FUNCTION_DECLARATION: u16 = 263;
+const PROPERTY_ASSIGNMENT: u16 = 303;
 
 /// Nesting depth of the shape tree. Deep enough for `T[]` inside a union
 /// inside a constraint.
@@ -73,6 +74,9 @@ pub(in crate::linter) mod detail {
     pub(in crate::linter) const OBJECT_KIND: u8 = 1 << 4;
     /// Where `toString`, `toLocaleString` and `valueOf` come from.
     pub(in crate::linter) const TO_STRING: u8 = 1 << 5;
+    /// Whether exactly the root type has call signatures. Unlike `CALLABLE`,
+    /// this is not inherited by union parts or generic constraints.
+    pub(in crate::linter) const ROOT_CALLABLE: u8 = 1 << 6;
 }
 
 /// Builds and caches shape trees for one snapshot.
@@ -152,6 +156,24 @@ impl<'a> Shapes<'a> {
                 out.insert("constraint".into(), shape);
             }
         }
+        // no-implied-eval asks for call signatures on the whole handler type.
+        // Union, intersection and constrained type-parameter roots can be
+        // callable without carrying TypeFlags.Object. Other rules retain the
+        // object-only query below, including on nested parts and constraints.
+        if depth == 0 && details & detail::ROOT_CALLABLE != 0 {
+            let signatures = self
+                .session
+                .client()
+                .get_signatures_of_type(
+                    self.session.snapshot().handle.clone(),
+                    self.session.project_handle(),
+                    ty.id.clone(),
+                    0,
+                )
+                .await
+                .unwrap_or_default();
+            out.insert("callable".into(), json!(!signatures.is_empty()));
+        }
         if flags & OBJECT != 0 {
             self.object_facts(ty, depth, details, &mut out).await;
         }
@@ -211,7 +233,7 @@ impl<'a> Shapes<'a> {
                 ),
             );
         }
-        if details & detail::CALLABLE != 0 {
+        if details & detail::CALLABLE != 0 && (depth != 0 || details & detail::ROOT_CALLABLE == 0) {
             let signatures = client
                 .get_signatures_of_type(snapshot.clone(), project.clone(), ty.id.clone(), 0)
                 .await

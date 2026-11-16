@@ -99,6 +99,11 @@ export const frenchRules7 = {
     "label est déjà une chaîne, donc String(label) ne change ni son type ni sa valeur.",
     "count est un nombre, donc String(count) le convertit en chaîne.",
   ],
+  "type/no-unnecessary-type-parameters": [
+    "Interdire les paramètres de type qui ne sont pas utilisés plus d’une fois.",
+    "T n’apparaît qu’une fois dans la signature et n’exprime donc aucune relation entre les types.",
+    "T relie le type du paramètre au type de retour.",
+  ],
   "type/no-unsafe-argument": [
     "Interdire de passer une valeur de type `any` à une fonction.",
     "anyValue est any et il est passé à un paramètre qui attend number.",

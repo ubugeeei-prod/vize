@@ -69,7 +69,7 @@ Ajoutées par `happy-path`, le préréglage par défaut.
 | <span id="type-require-typed-emits"></span>[`type/require-typed-emits`](./reference/type-require-typed-emits.md) | Exiger une définition de type pour defineEmits. |  |
 | <span id="type-require-typed-props"></span>[`type/require-typed-props`](./reference/type-require-typed-props.md) | Exiger une définition de type pour defineProps. |  |
 
-## Préréglages plus stricts (61)
+## Préréglages plus stricts (62)
 
 Seulement dans `opinionated`, `nuxt` ou `ecosystem`. La colonne Préréglages indique lesquels.
 
@@ -116,6 +116,7 @@ Seulement dans `opinionated`, `nuxt` ou `ecosystem`. La colonne Préréglages in
 | <span id="type-no-unnecessary-type-arguments"></span>[`type/no-unnecessary-type-arguments`](./reference/type-no-unnecessary-type-arguments.md) | Interdire un argument de type égal à la valeur par défaut. | `nuxt`, `opinionated` |  |
 | <span id="type-no-unnecessary-type-assertion"></span>[`type/no-unnecessary-type-assertion`](./reference/type-no-unnecessary-type-assertion.md) | Interdire une assertion de type qui ne change pas le type de l’expression. | `nuxt`, `opinionated` |  |
 | <span id="type-no-unnecessary-type-conversion"></span>[`type/no-unnecessary-type-conversion`](./reference/type-no-unnecessary-type-conversion.md) | Interdire une conversion qui ne change ni le type ni la valeur de l’expression. | `nuxt`, `opinionated` |  |
+| <span id="type-no-unnecessary-type-parameters"></span>[`type/no-unnecessary-type-parameters`](./reference/type-no-unnecessary-type-parameters.md) | Interdire les paramètres de type qui ne sont pas utilisés plus d’une fois. | `nuxt`, `opinionated` |  |
 | <span id="type-no-unsafe-argument"></span>[`type/no-unsafe-argument`](./reference/type-no-unsafe-argument.md) | Interdire de passer une valeur de type `any` à une fonction. | `nuxt`, `opinionated` |  |
 | <span id="type-no-unsafe-assignment"></span>[`type/no-unsafe-assignment`](./reference/type-no-unsafe-assignment.md) | Interdire d’affecter une valeur any à une cible plus précise. | `nuxt`, `opinionated` |  |
 | <span id="type-no-unsafe-call"></span>[`type/no-unsafe-call`](./reference/type-no-unsafe-call.md) | Interdire d’appeler une valeur typée any. | `nuxt`, `opinionated` |  |

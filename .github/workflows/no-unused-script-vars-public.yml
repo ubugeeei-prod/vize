@@ -1,0 +1,83 @@
+name: Public unused script vars acceptance
+run-name: Public unused script vars @ ${{ inputs.version || github.event.pull_request.head.sha || github.sha }}
+on:
+  pull_request:
+    paths:
+      - .github/workflows/no-unused-script-vars-public.yml
+      - tools/support/release/no_unused_script_vars_public/**
+      - tests/tooling/no-unused-script-vars-public.test.ts
+      - tests/_fixtures/differential/linter/no-unused-script-vars-12999/**
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Exact published version containing the reported fix
+        required: true
+        type: string
+      candidate:
+        description: Immutable release tag commit
+        required: true
+        type: string
+      source:
+        description: Sole parent of the release tag commit
+        required: true
+        type: string
+      producer_run:
+        description: Completed successful Release run
+        required: true
+        type: string
+permissions: { contents: read, actions: read }
+env:
+  SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+concurrency:
+  group: no-unused-script-vars-public-${{ github.event.pull_request.number || inputs.version || github.ref }}
+  cancel-in-progress: false
+defaults:
+  run: { shell: bash }
+jobs:
+  controls:
+    name: Exact packet and provenance refusal controls
+    runs-on: blacksmith-8vcpu-ubuntu-2404
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ env.SOURCE_SHA }}", persist-credentials: false }
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "24.14.0", package-manager-cache: false }
+      - name: Verify exact packets and reject non-release requests
+        run: node --test tests/tooling/no-unused-script-vars-public.test.ts
+
+  published:
+    needs: controls
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    name: Fresh Bun public CLI exact packets
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      GH_TOKEN: ${{ github.token }}
+      PUBLIC_VERSION: ${{ inputs.version }}
+      PUBLIC_CANDIDATE: ${{ inputs.candidate }}
+      PUBLIC_SOURCE: ${{ inputs.source }}
+      PRODUCER_RUN: ${{ inputs.producer_run }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ env.SOURCE_SHA }}", persist-credentials: false }
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with: { bun-version: "1.3.14" }
+      - name: Authenticate the immutable release tag and successful producer
+        run: |
+          git fetch --force --no-tags --depth=2 origin "refs/tags/v$PUBLIC_VERSION"
+          node tools/support/release/no_unused_script_vars_public/authority.ts \
+            "$PUBLIC_VERSION" "$PUBLIC_CANDIDATE" "$PUBLIC_SOURCE" "$PRODUCER_RUN"
+      - name: Install vize from public npm and require every reported packet under Bun
+        run: >-
+          bun tools/support/release/no_unused_script_vars_public/run.ts
+          "$PUBLIC_VERSION" "$PUBLIC_CANDIDATE" "$PUBLIC_SOURCE" "$PRODUCER_RUN"
+          "$RUNNER_TEMP/no-unused-script-vars-public"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        if: always()
+        with:
+          name: no-unused-script-vars-public-${{ inputs.version }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/no-unused-script-vars-public/proof/
+          if-no-files-found: error
+          retention-days: 90

@@ -30,6 +30,7 @@ const typeAwareRules = [
   "type/no-unnecessary-type-arguments",
   "type/no-unnecessary-type-assertion",
   "type/no-unnecessary-type-conversion",
+  "type/no-unnecessary-type-parameters",
   "type/no-unsafe-argument",
   "type/no-unsafe-assignment",
   "type/no-unsafe-call",
@@ -67,8 +68,8 @@ const opinionatedVueAdditions = [
 export function inverseScriptUnusedAndTypeAwarePresets(name: string, body: Buffer): Buffer {
   if (name === membershipPath) {
     identity(body, {
-      bytes: 39683,
-      sha256: "a5b5849b77cdc7f3c38e90cea2f5ac9d5311bd017c0c74108ee835a9cda68b9b",
+      bytes: 39769,
+      sha256: "d093ed93fcd632850cf06003918a7d67ab073ea582bfe6f8cbd0ccb562152df4",
     });
     const text = body.toString();
     const at = text.indexOf("{");

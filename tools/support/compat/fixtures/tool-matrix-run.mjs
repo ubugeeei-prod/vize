@@ -1,15 +1,6 @@
 import { spawn, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import {
-  existsSync,
-  globSync,
-  mkdtempSync,
-  readFileSync,
-  readdirSync,
-  rmSync,
-  statSync,
-  writeFileSync,
-} from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -27,13 +18,13 @@ import {
   collectVueInputPaths,
   prepareScriptSourceScope,
 } from "./tool-matrix-inputs.ts";
-import { validateLinterOutput } from "./tool-matrix-linter.ts";
+import { validateLinterOutput, zeroFileLinterStderr } from "./tool-matrix-linter.ts";
 import { validatedFileCount } from "./tool-matrix-metrics.ts";
 import {
   summarizeTypecheckerCoverage,
   validateTypecheckerOutput,
 } from "./tool-matrix-typechecker.ts";
-import { typecheckerRunStatus } from "./typechecker-qualification.ts";
+import { typecheckerRunStatus, typecheckerSetupFailure } from "./typechecker-qualification.ts";
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "..", "..");
 export function runTool(project, tool, args, launch, outputDir) {
   const prepared = prepareToolRun(project, tool, args, launch, outputDir);
@@ -191,9 +182,13 @@ function completeToolRun({
     stdout,
     stderr,
   };
+  const setupFailure =
+    tool === "typechecker" ? typecheckerSetupFailure(result.status, stdout, stderr) : null;
   if (result.signal != null) payload.signal = result.signal;
   if (result.error != null) {
     payload.spawnError = errorMessage(result.error);
+  } else if (setupFailure != null) {
+    payload.configurationError = setupFailure;
   } else if (tool === "compiler" && (result.status === 0 || result.status === 1)) {
     try {
       payload.compilerArtifacts = inspectCompilerArtifacts(
@@ -205,7 +200,10 @@ function completeToolRun({
     } catch (error) {
       payload.validationError = errorMessage(error);
     }
-  } else if (tool !== "formatter" && (result.status === 0 || result.status === 1)) {
+  } else if (
+    tool !== "formatter" &&
+    (result.status === 0 || result.status === 1 || (tool === "linter" && result.status === 2))
+  ) {
     try {
       payload.parsed = JSON.parse(stdout);
     } catch (error) {
@@ -244,6 +242,14 @@ function completeToolRun({
     if (tool === "linter" && payload.parseError == null) {
       try {
         validateLinterOutput(project, payload.parsed, result.status, expectedToolFiles);
+        if (
+          result.status === 2 &&
+          (project.expectedVueFileCount !== 0 ||
+            payload.parsed.length !== 0 ||
+            stderr !== zeroFileLinterStderr(project.vueGlobs))
+        ) {
+          throw new Error("exit code 2 is not an exact zero-file result");
+        }
       } catch (error) {
         payload.validationError = errorMessage(error);
       }
@@ -269,7 +275,18 @@ function completeToolRun({
   if (result.error != null) {
     return { ...completed, status: "failed", failure: errorMessage(result.error) };
   }
+  if (setupFailure != null) {
+    return { ...completed, status: "configuration" };
+  }
   if (result.status !== 0 && result.status !== 1) {
+    if (
+      tool === "linter" &&
+      result.status === 2 &&
+      payload.validationError == null &&
+      payload.parseError == null
+    ) {
+      return { ...completed, fileCount: 0, coverage: null, status: "ok" };
+    }
     return { ...completed, status: "failed", failure: failureOutput(result) };
   }
   if (payload.validationError != null) {
@@ -434,15 +451,7 @@ function writeProgress(write, event, fields) {
 }
 
 function inspectCompilerArtifacts(cwd, patterns, expectedFileCount, outputDir) {
-  const inputPaths = [
-    ...new Set(
-      patterns.flatMap((pattern) =>
-        globSync(pattern, { cwd, exclude: [".yarn/**", "**/node_modules/**"] })
-          .filter((entry) => statSync(resolve(cwd, entry)).isFile())
-          .map((entry) => entry.replaceAll("\\", "/")),
-      ),
-    ),
-  ].sort((left, right) => left.localeCompare(right));
+  const inputPaths = collectVueInputPaths(cwd, patterns);
   if (expectedFileCount != null && inputPaths.length !== expectedFileCount) {
     throw new Error(
       `compiler input count mismatch: expected ${expectedFileCount}, matched ${inputPaths.length}`,

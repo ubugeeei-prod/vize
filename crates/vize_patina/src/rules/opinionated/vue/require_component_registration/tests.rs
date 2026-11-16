@@ -224,6 +224,30 @@ export default {
 }
 
 #[test]
+fn test_allows_lower_camel_options_api_registration_keys() {
+    let linter = create_linter();
+    let sfc = r#"<script>
+export default {
+  components: {
+    userMain: () => import('./user-main.vue'),
+  },
+}
+</script>
+
+<template>
+  <user-main />
+</template>
+"#;
+    let result = linter.lint_sfc(sfc, "App.vue");
+
+    assert!(
+        result.diagnostics.is_empty(),
+        "Vue resolves a lower-camel registration key from a kebab tag: {:?}",
+        result.diagnostics
+    );
+}
+
+#[test]
 fn test_allows_plain_script_component_imports_when_script_setup_is_present() {
     let linter = create_linter();
     let sfc = r#"<script lang="ts">
@@ -363,6 +387,41 @@ defineOptions({ name: "TreeItem" });
     let result = linter.lint_sfc(sfc, "tree-item.vue");
 
     assert_eq!(result.warning_count, 1);
+}
+
+#[test]
+fn options_api_name_allows_recursive_self_reference() {
+    let result = create_linter().lint_sfc(
+        r#"<template><var-tree-menu-option /></template>
+<script lang="ts">
+import { defineComponent } from "vue";
+export default defineComponent({ name: "VarTreeMenuOption" });
+</script>"#,
+        "TreeMenuOption.vue",
+    );
+    assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
+}
+
+#[test]
+fn options_api_filename_allows_recursive_self_reference() {
+    let result = create_linter().lint_sfc(
+        r#"<template><x-icon /></template>
+<script>export default {}</script>"#,
+        "XIcon.vue",
+    );
+    assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
+}
+
+#[test]
+fn tsx_setup_values_are_visible_to_the_template() {
+    let result = create_linter().lint_sfc(
+        r#"<template><Row /></template>
+<script lang="tsx" setup>
+const Row = ({ value }) => <div>{value}</div>;
+</script>"#,
+        "DetailedView.vue",
+    );
+    assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
 }
 
 #[test]

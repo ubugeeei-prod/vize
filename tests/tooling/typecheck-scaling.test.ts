@@ -5,6 +5,11 @@ import { join } from "node:path";
 import { type TestContext, test } from "node:test";
 
 import { parseGnuTime, runOrder } from "../../tools/benchmarks/scripts/typecheck-scaling.ts";
+import {
+  assertPairedDigests,
+  packetDigest,
+  pairedOrder,
+} from "../../tools/benchmarks/scripts/typecheck-scaling-paired.ts";
 import type { Plant } from "../../tools/benchmarks/scripts/scale-project-generator.ts";
 import {
   type Diagnostic,
@@ -23,6 +28,7 @@ import {
   rowOf,
   sampleDeviation,
 } from "../../tools/benchmarks/scripts/typecheck-scaling-report.ts";
+import { growthBudget } from "../../tools/benchmarks/scripts/typecheck-scaling-budget.ts";
 import {
   niceCeiling,
   renderScalingSvg,
@@ -68,6 +74,35 @@ void test("focused Corsa topology lanes pin one checker and the selected server 
       "1",
     ]);
   }
+});
+
+void test("paired scaling alternates roles and refuses any complete packet mismatch", () => {
+  assert.deepEqual(
+    Array.from({ length: 5 }, (_, cycle) => pairedOrder(cycle)),
+    [
+      ["base", "head"],
+      ["head", "base"],
+      ["base", "head"],
+      ["head", "base"],
+      ["base", "head"],
+    ],
+  );
+  const packet = {
+    files: [{ file: "src/App.vue", diagnostics: ["error:1:1 [TS2322] mismatch"] }],
+    errorCount: 1,
+    warningCount: 0,
+    fileCount: 1,
+  };
+  const exact = packetDigest(packet);
+  assert.equal(assertPairedDigests([{ packetDigest: exact }, { packetDigest: exact }]), exact);
+  assert.throws(
+    () =>
+      assertPairedDigests([
+        { packetDigest: exact },
+        { packetDigest: packetDigest({ ...packet, errorCount: 2 }) },
+      ]),
+    /complete diagnostic packets differ/u,
+  );
 });
 
 void test("focused Corsa topology comparisons require every exact diagnostic fingerprint", () => {
@@ -287,6 +322,101 @@ void test("growth flags per-SFC growth and steps, and refused cells never contri
   assert.match(summary, /## Refused \(1\)/u);
   assert.match(summary, /\| vize-check \| 20000 \| 15\.00 \| 1\.50 \| 60\.00 \| 6\.00 \|/u);
   assert.match(summary, /\*\*superlinear\*\*: per-SFC CPU ×3\.00 from 1000 to 20000/u);
+  assert.match(summary, /## Vize growth budget/u);
+  assert.match(summary, /\*\*failed\*\*/u);
+});
+
+void test("a positive marginal cost after a zero baseline fails closed", () => {
+  const cells = [
+    cell("vize-check", 1000, 1000, 100_000),
+    cell("vize-check", 5000, 1000, 500_000),
+    cell("vize-check", 20000, 30000, 2_000_000),
+  ];
+  const growth = growthOf(cells.map(rowOf));
+  assert.equal(growth[0]?.step.cpuMs, Number.POSITIVE_INFINITY);
+  const budget = growthBudget(growth);
+  assert.equal(budget.status, "failed");
+  assert.deepEqual(
+    budget.failures.map((entry) => [entry.metric, entry.shape, entry.value]),
+    [["cpuMs", "step", "infinite"]],
+  );
+  assert.match(renderSummary(results(cells)), /marginal step CPU \| ×∞ .* \*\*fail\*\*/u);
+  assert.equal(JSON.parse(JSON.stringify(budget)).failures[0]?.value, "infinite");
+});
+
+void test("Vize growth fails closed except for the exact bounded historical declaration", () => {
+  const declared = growthBudget([
+    {
+      tool: "vize-check",
+      kind: "vue",
+      label: "vize check",
+      vize: true,
+      sizes: [1000, 5000, 20000],
+      perSfc: { wallMs: 1, cpuMs: 1.7, rssKb: 1 },
+      step: { wallMs: 1, cpuMs: 1.75, rssKb: 1 },
+      flags: ["known CPU curve"],
+    },
+  ]);
+  assert.equal(declared.status, "passed");
+  assert.deepEqual(
+    declared.checked
+      .filter((entry) => entry.declaration)
+      .map((entry) => [entry.shape, entry.ceiling]),
+    [
+      ["perSfc", 1.8],
+      ["step", 1.8],
+    ],
+  );
+
+  const wrongSizes = growthBudget([
+    {
+      tool: "vize-check",
+      kind: "vue",
+      label: "vize check",
+      vize: true,
+      sizes: [1000, 4000, 20000],
+      perSfc: { wallMs: 1, cpuMs: 1.7, rssKb: 1 },
+      step: { wallMs: 1, cpuMs: 1.75, rssKb: 1 },
+      flags: ["undeclared CPU curve"],
+    },
+  ]);
+  assert.equal(wrongSizes.status, "failed");
+  assert.equal(wrongSizes.failures.length, 2);
+  assert.ok(wrongSizes.failures.every((entry) => entry.declaration === null));
+
+  const exceeded = growthBudget([
+    {
+      tool: "vize-check",
+      kind: "vue",
+      label: "vize check",
+      vize: true,
+      sizes: [1000, 5000, 20000],
+      perSfc: { wallMs: 1, cpuMs: 1.81, rssKb: 1 },
+      step: { wallMs: 1, cpuMs: 1.81, rssKb: 1 },
+      flags: ["bounded CPU curve regressed"],
+    },
+  ]);
+  assert.equal(exceeded.status, "failed");
+  assert.ok(exceeded.failures.every((entry) => entry.ceiling === 1.8));
+
+  const reference = growthBudget([
+    {
+      tool: "vue-tsc",
+      kind: "vue",
+      label: "vue-tsc",
+      vize: false,
+      sizes: [1000, 5000, 20000],
+      perSfc: { wallMs: 3, cpuMs: 3, rssKb: 3 },
+      step: { wallMs: 3, cpuMs: 3, rssKb: 3 },
+      flags: ["reference curve"],
+    },
+  ]);
+  assert.deepEqual(reference, {
+    status: "passed",
+    defaultCeiling: 1.5,
+    checked: [],
+    failures: [],
+  });
 });
 
 void test("performance targets require exact diagnostics and every cold and warm threshold", () => {

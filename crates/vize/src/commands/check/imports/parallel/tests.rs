@@ -205,6 +205,69 @@ fn frontier_looks_ahead_through_relative_edges_before_the_walk_reaches_them() {
         "b's package import resolves before the walk pops b"
     );
     assert_eq!(packages.metrics().cache_misses, 1);
+    assert_eq!(
+        session.local_resolution_stats(),
+        (2, 0, 2),
+        "entry -> a and a -> b are each probed once during look-ahead"
+    );
+
+    let discovered = collect_transitive_local_imports_with_session(
+        &[entry],
+        base,
+        &mut canonical_paths,
+        false,
+        None,
+        &mut packages,
+        &mut session,
+    );
+    assert_eq!(discovered.authored.len(), 2);
+    assert_eq!(
+        session.local_resolution_stats(),
+        (2, 2, 2),
+        "the ordered walk reuses both positive look-ahead edges without probing again"
+    );
+}
+
+#[test]
+fn unresolved_local_edge_is_reprobed_after_its_target_is_created() {
+    let root = tempfile::tempdir().unwrap();
+    let base = root.path();
+    let entry = write(base, "src/entry.ts", "import './created';\n");
+
+    let mut packages = PackageRouteResolver::default();
+    let mut canonical_paths = CanonicalPathCache::default();
+    let mut session = LocalImportSession::new(&mut packages);
+    let entry = canonical_paths.canonicalize(&entry);
+    super::prepare_frontier(
+        &entry,
+        &[],
+        &mut session,
+        &packages,
+        None,
+        ImportFileOptions::from(false),
+        &mut canonical_paths,
+    );
+    assert_eq!(session.local_resolution_stats(), (0, 0, 1));
+
+    let created = write(base, "src/created.ts", "export const created = true;\n")
+        .canonicalize()
+        .unwrap();
+    let discovered = collect_transitive_local_imports_with_session(
+        &[entry],
+        base,
+        &mut canonical_paths,
+        false,
+        None,
+        &mut packages,
+        &mut session,
+    );
+
+    assert_eq!(discovered.authored, vec![created]);
+    assert_eq!(
+        session.local_resolution_stats(),
+        (1, 0, 2),
+        "a negative answer must not hide a target created between collections"
+    );
 }
 
 #[test]

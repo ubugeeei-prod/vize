@@ -34,6 +34,29 @@ pub(in crate::batch::executor) fn unsharded_checker_count(
     )
 }
 
+/// Cap the number of default-width programs that run at once so their checker
+/// pools fit inside one machine budget. An explicit width is an opt-in to the
+/// caller's own sizing and keeps every program eligible to run.
+pub(in crate::batch::executor) fn program_concurrency_limit(
+    programs: usize,
+    explicit: Option<usize>,
+) -> usize {
+    let explicit = explicit
+        .filter(|count| *count > 0)
+        .or_else(|| explicit_checker_count(std::env::var("VIZE_CHECKERS").ok().as_deref()));
+    if explicit.is_some() {
+        return programs.max(1);
+    }
+    let threads = std::thread::available_parallelism().map_or(1, std::num::NonZero::get);
+    resolve_program_concurrency_limit(programs, threads)
+}
+
+fn resolve_program_concurrency_limit(programs: usize, threads: usize) -> usize {
+    programs
+        .max(1)
+        .min((threads.max(1) / UNSHARDED_CHECKER_WIDTH).max(1))
+}
+
 /// Pure half of [`unsharded_checker_count`].
 fn resolve_unsharded_checker_count(
     explicit: Option<usize>,
@@ -83,7 +106,10 @@ pub(super) fn rejects_checkers_flag(diagnostics: &[Diagnostic]) -> bool {
 
 #[cfg(test)]
 mod tests {
-    use super::{explicit_checker_count, parse_checker_count, resolve_unsharded_checker_count};
+    use super::{
+        explicit_checker_count, parse_checker_count, resolve_program_concurrency_limit,
+        resolve_unsharded_checker_count,
+    };
 
     /// The default is pinned, not machine-derived — the whole point of #3905.
     #[test]
@@ -115,6 +141,14 @@ mod tests {
             resolve_unsharded_checker_count(None, Some("wide"), 32, 1),
             super::UNSHARDED_CHECKER_WIDTH
         );
+    }
+
+    #[test]
+    fn default_width_programs_fit_inside_one_machine_budget() {
+        assert_eq!(resolve_program_concurrency_limit(8, 32), 4);
+        assert_eq!(resolve_program_concurrency_limit(2, 32), 2);
+        assert_eq!(resolve_program_concurrency_limit(8, 4), 1);
+        assert_eq!(resolve_program_concurrency_limit(0, 0), 1);
     }
 
     #[test]

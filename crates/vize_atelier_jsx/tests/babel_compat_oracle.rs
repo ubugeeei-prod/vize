@@ -6,7 +6,7 @@
 //! JSX/TSX input per row, plus the babel plugin options it is compiled with.
 //! `tests/babel_compat/fixtures/babel-output.json` is the **recorded output of
 //! the real `@vue/babel-plugin-jsx`** for every one of those rows, produced by
-//! `tests/babel_compat/oracle.mjs` against the pinned plugin version.
+//! `tests/babel_compat/oracle.ts` against the pinned plugin version.
 //!
 //! # Which oracle each assertion uses
 //!

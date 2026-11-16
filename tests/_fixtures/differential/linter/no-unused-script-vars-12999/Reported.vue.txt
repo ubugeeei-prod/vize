@@ -1,0 +1,47 @@
+<script setup lang="ts">
+/*global a */
+/* global foobar, foo, bar */
+/* global multiline,
+   multilineFoo,
+   multilineBar
+ */
+/* global a$fooz, $foo */
+/* globals another$fooz, $ */
+/*globals $compact*/
+/* global global*/
+/*global writable:true*/
+/*global 変数, 数*/
+/*global 𠮷𩸽, 𠮷*/
+/*global
+newline*/
+
+foobar;
+multiline;
+a$fooz;
+another$fooz;
+変数;
+𠮷𩸽;
+writable;
+
+declare function register(callback: (value: number) => void): void;
+declare function consume(value: object): void;
+
+consume({
+  set value(required) {
+    return;
+  },
+});
+
+function retain(callback: (value: number) => void) {
+  callback = (function () {
+    function stored(value: number) {
+      callback(value);
+    }
+    register(stored);
+  })();
+}
+
+retain(() => {});
+</script>
+
+<template><div /></template>

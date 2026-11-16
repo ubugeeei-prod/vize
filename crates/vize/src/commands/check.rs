@@ -17,7 +17,7 @@ mod path_cache;
 mod patterns;
 mod reporting;
 pub(crate) mod runner;
-mod tsconfig_inputs;
+pub(in crate::commands) mod tsconfig_inputs;
 
 use clap::Args;
 use std::path::PathBuf;
@@ -36,6 +36,21 @@ pub struct CheckArgs {
     /// Do not load a config file
     #[arg(long)]
     pub no_config: bool,
+
+    /// Read an already-evaluated Vite config as JSON from stdin.
+    #[cfg_attr(
+        unix,
+        arg(
+            long,
+            hide = true,
+            conflicts_with_all = ["config", "no_config", "socket"]
+        )
+    )]
+    #[cfg_attr(
+        not(unix),
+        arg(long, hide = true, conflicts_with_all = ["config", "no_config"])
+    )]
+    pub config_stdin: bool,
 
     /// Connect to check-server via Unix socket (faster for repeated checks, Unix only)
     #[cfg(unix)]

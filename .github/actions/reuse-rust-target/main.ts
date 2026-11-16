@@ -21,7 +21,7 @@ try {
     appendFileSync(process.env.GITHUB_STATE, `target=${target}\n`);
   const elapsed = Math.round(performance.now() - started);
   console.log(
-    `Rust source mtimes (${result.reason}): ${result.restored} restored, ${result.changed} newer than ${result.floor} in ${elapsed} ms.`,
+    `Rust source mtimes (${result.reason}): ${result.restored} restored, ${result.changed} newer than ${result.floor}, ${result.invalidated} fingerprints invalidated (${result.invalidation}) in ${elapsed} ms.`,
   );
 } catch (error) {
   if (record && target) rmSync(join(target, manifestName), { force: true });

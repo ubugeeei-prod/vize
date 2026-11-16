@@ -55,6 +55,11 @@ pub struct CorsaExecutor {
 }
 
 impl CorsaExecutor {
+    /// Resolve the program-level admission limit for one machine budget.
+    pub fn program_concurrency_limit(programs: usize, checker_count: Option<usize>) -> usize {
+        cli::program_concurrency_limit(programs, checker_count)
+    }
+
     pub fn new(root: &Path) -> Result<Self, CorsaNotFoundError> {
         Self::with_corsa_path(root, None)
     }

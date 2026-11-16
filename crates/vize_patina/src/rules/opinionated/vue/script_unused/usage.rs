@@ -247,6 +247,15 @@ impl<'s, 'a> Usage<'s, 'a> {
 
     /// ESLint `isStorableFunction`: the function value may outlive the write.
     fn storable(&self, function: NodeId, rhs: Span) -> bool {
+        // A declaration stores its function value in the enclosing scope. The
+        // shared `Function` AST kind is the declaration itself, not one of the
+        // parents visited by the loop below.
+        if matches!(
+            self.nodes.kind(function),
+            AstKind::Function(function) if function.is_declaration()
+        ) {
+            return true;
+        }
         let mut node_span = self.span(function);
         let mut current = function;
         loop {

@@ -1,0 +1,7 @@
+<script setup lang="ts">
+const all = Promise.all([]);
+</script>
+
+<template>
+  <p>{{ all }}</p>
+</template>

@@ -19,6 +19,7 @@ mod dispatch;
 mod helper_abi;
 mod mode;
 mod project;
+mod shipped_declaration;
 
 const MAX_MESSAGE_BYTES: usize = 64 * 1024 * 1024;
 const MAX_HEADER_BYTES: usize = 8 * 1024;
@@ -30,6 +31,10 @@ pub struct ContentMapperArgs {
     /// covers that load (#12530).
     #[arg(long, hide = true)]
     initialized: bool,
+    /// The launcher negotiated diagnostic-code selectors before loading the
+    /// native addon. This is only valid together with `--initialized`.
+    #[arg(long, hide = true, requires = "initialized")]
+    diagnostic_directive_code_selectors: bool,
     /// Write each reply once it is ready instead of in request order. The
     /// TypeScript hosts pair replies by id, so their launcher asks for this.
     #[arg(long, hide = true)]
@@ -47,7 +52,13 @@ pub fn run(args: ContentMapperArgs) {
     };
     #[cfg(feature = "profiling")]
     let allocation_report = allocation_report::start();
-    let served = dispatch::serve(&mut reader, &mut writer, args.initialized, order);
+    let served = dispatch::serve(
+        &mut reader,
+        &mut writer,
+        args.initialized,
+        args.diagnostic_directive_code_selectors,
+        order,
+    );
     #[cfg(feature = "profiling")]
     allocation_report::finish(allocation_report);
     if let Err(error) = served {
@@ -110,6 +121,15 @@ struct InitializeParams {
     #[expect(dead_code, reason = "read via Debug snapshots")]
     locale: Option<CompactString>,
     position_encodings: Vec<CompactString>,
+    #[serde(default)]
+    capabilities: InitializeCapabilities,
+}
+
+#[derive(Default, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct InitializeCapabilities {
+    #[serde(default)]
+    diagnostic_directive_code_selectors: bool,
 }
 
 #[derive(Deserialize)]
@@ -122,7 +142,7 @@ struct TransformParams {
 
 #[cfg(test)]
 fn serve<R: BufRead, W: io::Write + Send>(reader: &mut R, writer: &mut W) -> io::Result<()> {
-    dispatch::serve(reader, writer, false, dispatch::ReplyOrder::Request)
+    dispatch::serve(reader, writer, false, false, dispatch::ReplyOrder::Request)
 }
 
 fn read_frame<R: BufRead>(reader: &mut R) -> io::Result<Option<Vec<u8>>> {
@@ -203,6 +223,9 @@ mod test_support;
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(test)]
+mod diagnostic_selector_tests;
 
 #[cfg(test)]
 mod project_tests;

@@ -25,12 +25,33 @@ fn linter() -> Linter {
     linter
         .registry
         .register(Box::new(crate::rules::vue::NoBareStringsInTemplate));
+    linter
+        .registry
+        .register(Box::new(crate::rules::vue::NoCustomModifiersOnVModel));
+    linter
+        .registry
+        .register(Box::new(crate::rules::ecosystem::NuxtPreferNuxtLink));
+    linter
+        .registry
+        .register(Box::new(crate::rules::ecosystem::RouterLinkRequireTo));
+    linter
+        .registry
+        .register(Box::new(crate::rules::ecosystem::VoidLinkRequireHref));
+    linter
+        .registry
+        .register(Box::new(crate::rules::ecosystem::VoidLinkValidMethod));
+    linter
+        .registry
+        .register(Box::new(crate::rules::ecosystem::VueRouterPreferNamedLink));
     linter.registry.mark_has_exit_element_rules();
     linter
 }
 
 fn compare_template(source: &str) {
-    let prefix = "<script setup>const note = '日本語😀'</script>\r\n<template>";
+    // Keep the authored fixture from being the only SFC root. RouterLink-like
+    // components may inherit a navigation target only in that SFC-specific
+    // position, while the raw-template baseline has no descriptor to model it.
+    let prefix = "<script setup>const note = '日本語😀'</script>\r\n<template><div/>";
     let sfc = format!("{prefix}{source}</template>");
     let linter = linter();
     let mut expected = linter.lint_template_relief(source, "test.vue");
@@ -56,6 +77,43 @@ fn compare_template(source: &str) {
 
 #[test]
 fn migrated_sfc_rules_preserve_diagnostics_and_fixes() {
+    for (sfc, expected_rule) in [
+        (
+            r#"<template><MyComponent v-model.custom="value"/></template>"#,
+            "vue/no-custom-modifiers-on-v-model",
+        ),
+        (
+            r#"<template><div/><RouterLink/></template>"#,
+            "ecosystem/router-link-require-to",
+        ),
+        (
+            r#"<template><RouterLink to="/users"/></template>"#,
+            "ecosystem/vue-router-prefer-named-link",
+        ),
+        (
+            r#"<template><a href="/settings">Settings</a></template>"#,
+            "ecosystem/nuxt-prefer-nuxt-link",
+        ),
+        (
+            r#"<script setup>import { Link } from "@void/vue";</script><template><Link/></template>"#,
+            "ecosystem/void-link-require-href",
+        ),
+        (
+            r#"<script setup>import { Link } from "@void/vue";</script><template><Link href="/posts" method="CREATE"/></template>"#,
+            "ecosystem/void-link-valid-method",
+        ),
+    ] {
+        let result = linter().lint_sfc(sfc, "test.vue");
+        assert!(
+            result
+                .diagnostics
+                .iter()
+                .any(|diagnostic| diagnostic.rule_name == expected_rule),
+            "{expected_rule}: {:?}",
+            result.diagnostics
+        );
+    }
+
     for source in [
         r#"<div  style="color:red"><textarea>{{ message }}</textarea><button>go</button></div>"#,
         r#"<a href="https://example.com" target="_blank">go</a><iframe src="/frame"/><input disabled="true"/><div contenteditable="invalid"/>"#,
@@ -70,6 +128,15 @@ fn migrated_sfc_rules_preserve_diagnostics_and_fixes() {
         r#"<p>日本語😀</p><input @keyup.13.27="submit"/><input @keyup.0.13="submit"/><input @keyup.13suffix="submit"/>"#,
         r#"<Foo><template slot="header" slot-scope="props" scope="legacy">x</template><div :slot="name"/></Foo>"#,
         r#"<MyComponent inline-template/><router-link tag="button" :tag="el"/><div is="MyComponent" :is="something"/>"#,
+        r#"<component/><div v-is="'MyComponent'"/>"#,
+        r#"<button v-on:click.stop="submit"/><Card><template v-slot:header="props">x</template></Card>"#,
+        r#"<MyComponent v-model.custom="value" v-html="content"/><component is="div" v-text="content"/>"#,
+        r#"<MyComponent myProp="value" :otherProp="value"/><slot :el$="el$"/><template :bad$="bad$"/>"#,
+        r#"<div v-pre:arg/><div v-pre.mod/><div v-pre="raw"/>"#,
+        r#"<RouterLink/><RouterLink to="/docs"/><NuxtLink href="/guide"/>"#,
+        r#"<RouterLink to="/users"/><RouterLink :to="'/settings'"/><RouterLink :to="{ path: '/account' }"/>"#,
+        r#"<a href="/settings">Settings</a><a href="/report.pdf" download>Report</a>"#,
+        r#"<!-- from "@void/vue" --><Link/><Link href="/posts" method="CREATE"/><Link href="/posts" method="DELETE" prefetch/>"#,
         "<!-- eslint-disable-next-line vue/prefer-props-shorthand -->\n<MyComponent :foo=\"foo\"/>",
         "<!-- eslint-disable-next-line vue/no-useless-v-bind -->\n<div :title=\"'static'\"/>",
         "<!-- eslint-disable-next-line vue/no-multiple-objects-in-class -->\n<div :class=\"[{ active }, { hidden }]\"/>",
@@ -82,8 +149,22 @@ fn migrated_sfc_rules_preserve_diagnostics_and_fixes() {
         "<!-- eslint-disable-next-line vue/no-deprecated-slot-scope-attribute -->\n<template slot-scope=\"props\"/>",
         "<!-- eslint-disable-next-line vue/no-deprecated-scope-attribute -->\n<template scope=\"props\"/>",
         "<!-- eslint-disable-next-line vue/no-deprecated-inline-template -->\n<MyComponent inline-template/>",
-        "<!-- eslint-disable-next-line vue/no-deprecated-router-link-tag-prop -->\n<router-link tag=\"button\"/>",
+        "<!-- eslint-disable-next-line vue/no-deprecated-router-link-tag-prop -->\n<router-link tag=\"button\" to=\"/legacy\"/>",
         "<!-- eslint-disable-next-line vue/no-deprecated-html-element-is -->\n<div is=\"MyComponent\"/>",
+        "<!-- eslint-disable-next-line vue/require-component-is -->\n<component/>",
+        "<!-- eslint-disable-next-line vue/no-deprecated-v-is -->\n<div v-is=\"'MyComponent'\"/>",
+        "<!-- eslint-disable-next-line vue/v-on-style -->\n<button v-on:click=\"submit\"/>",
+        "<!-- eslint-disable-next-line vue/v-slot-style -->\n<Card><template v-slot:header>header</template></Card>",
+        "<!-- eslint-disable-next-line vue/no-custom-modifiers-on-v-model -->\n<MyComponent v-model.custom=\"value\"/>",
+        "<!-- eslint-disable-next-line vue/no-v-text-v-html-on-component -->\n<MyComponent v-html=\"content\"/>",
+        "<!-- eslint-disable-next-line vue/attribute-hyphenation -->\n<MyComponent myProp=\"value\"/>",
+        "<!-- eslint-disable-next-line vue/valid-attribute-name -->\n<slot :el$=\"el$\"/>",
+        "<!-- eslint-disable-next-line vue/valid-v-pre -->\n<div v-pre:arg/>",
+        "<!-- eslint-disable-next-line ecosystem/router-link-require-to -->\n<RouterLink/>",
+        "<!-- eslint-disable-next-line ecosystem/void-link-require-href -->\n<!-- from \"@void/vue\" --><Link/>",
+        "<!-- eslint-disable-next-line ecosystem/void-link-valid-method -->\n<!-- from \"@void/vue\" --><Link href=\"/posts\" method=\"CREATE\"/>",
+        "<!-- eslint-disable-next-line ecosystem/vue-router-prefer-named-link -->\n<RouterLink to=\"/users\"/>",
+        "<!-- eslint-disable-next-line ecosystem/nuxt-prefer-nuxt-link -->\n<a href=\"/settings\">Settings</a>",
         r#"<div v-pre><textarea>{{ raw }}</textarea></div>"#,
     ] {
         compare_template(source);

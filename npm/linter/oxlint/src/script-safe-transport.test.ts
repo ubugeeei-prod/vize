@@ -168,10 +168,10 @@ void test("safe carriers preserve complete original packets and activate malform
   const safe = prepareWorkaroundSource(source, original);
   const guards = [
     safe.source.replace(
-      /(<!--vize-original-source:)([a-f0-9])/u,
+      /(<!--vize-original-file:)([a-f0-9])/u,
       (_, prefix: string, value: string) => prefix + (value === "0" ? "1" : "0"),
     ),
-    safe.source.replace(/:([A-Za-z0-9_-]*)-->$/u, ":%-->"),
+    safe.source.replace(/-->$/u, ":%-->"),
     safe.source.replace(
       Buffer.from(original).toString("base64url"),
       Buffer.from(path.join(root, "Other.vue")).toString("base64url"),
@@ -189,7 +189,7 @@ void test("safe carriers preserve complete original packets and activate malform
     assert.equal(report.diagnostics.length, 1);
     assert.equal(report.diagnostics[0].code, undefined);
     assert.equal(report.diagnostics[0].severity, "error");
-    assert.match(report.diagnostics[0].message, /Invalid Vize|carrier bytes|original file bytes/u);
+    assert.match(report.diagnostics[0].message, /Invalid Vize|original file bytes/u);
   }
   assert.equal(fs.readFileSync(original, "utf8"), source);
   fs.unlinkSync(configPath);

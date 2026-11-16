@@ -9,7 +9,7 @@ import {
   summarizeTypecheckerCoverage,
   validateTypecheckerOutput,
 } from "./tool-matrix-typechecker.ts";
-import { typecheckerRunStatus } from "./typechecker-qualification.ts";
+import { typecheckerRunStatus, typecheckerSetupFailure } from "./typechecker-qualification.ts";
 
 /**
  * The matrix artifacts a divergence run is allowed to trust, split out of
@@ -63,6 +63,47 @@ export function readAndValidateVizeRun(reportDir, project, summary) {
   }
   const rawPayload = readFileSync(artifactPath, "utf8");
   const payload = JSON.parse(rawPayload);
+  if (
+    payload.schema !== "vize.fixtureToolRun" ||
+    payload.version !== 1 ||
+    payload.project !== project.id ||
+    payload.tool !== "typechecker" ||
+    payload.exitCode !== runs[0].exitCode
+  ) {
+    throw new Error(`Fixture matrix typechecker artifact identity is invalid for ${project.id}`);
+  }
+  const setupFailure = typecheckerSetupFailure(payload.exitCode, payload.stdout, payload.stderr);
+  if (setupFailure != null || payload.configurationError != null) {
+    const expectedSetupKeys = [
+      "configurationError",
+      "exitCode",
+      "project",
+      "schema",
+      "stderr",
+      "stdout",
+      "tool",
+      "version",
+    ];
+    if (JSON.stringify(Object.keys(payload).sort()) !== JSON.stringify(expectedSetupKeys)) {
+      throw new Error(
+        `Fixture matrix typechecker setup artifact keys are invalid for ${project.id}`,
+      );
+    }
+    if (
+      setupFailure == null ||
+      canonicalJson(setupFailure) !== canonicalJson(payload.configurationError) ||
+      runs[0].status !== "configuration" ||
+      runs[0].fileCount !== null ||
+      runs[0].coverage !== null
+    ) {
+      throw new Error(
+        `Fixture matrix typechecker setup evidence is inconsistent for ${project.id}`,
+      );
+    }
+    throw new Error(
+      `configuration-only typechecker run is not semantic qualification for ${project.id}`,
+    );
+  }
   const expectedKeys = [
     "exitCode",
     "parsed",
@@ -76,15 +117,6 @@ export function readAndValidateVizeRun(reportDir, project, summary) {
   ];
   if (JSON.stringify(Object.keys(payload).sort()) !== JSON.stringify(expectedKeys)) {
     throw new Error(`Fixture matrix typechecker artifact keys are invalid for ${project.id}`);
-  }
-  if (
-    payload.schema !== "vize.fixtureToolRun" ||
-    payload.version !== 1 ||
-    payload.project !== project.id ||
-    payload.tool !== "typechecker" ||
-    payload.exitCode !== runs[0].exitCode
-  ) {
-    throw new Error(`Fixture matrix typechecker artifact identity is invalid for ${project.id}`);
   }
   let stdout;
   try {

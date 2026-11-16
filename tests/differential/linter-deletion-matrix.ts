@@ -116,7 +116,7 @@ function validateMatrixEvidence(matrix: FixtureToolMatrix, sourceRevision: strin
   assert.equal(matrix.evidence.commitSha, sourceRevision);
   const runtime = record(matrix.evidence.runtime, "matrix.evidence.runtime");
   exactKeys(runtime, ["name", "version"], "matrix.evidence.runtime");
-  assert.equal(runtime.name, "rust-script");
+  assert.equal(runtime.name, "node");
   nonempty(runtime.version, "matrix.evidence.runtime.version");
   const machine = record(matrix.evidence.machine, "matrix.evidence.machine");
   exactKeys(
@@ -237,7 +237,7 @@ export function validateFixtureToolMatrix(
     assert.equal(run.cwd, registryProject.fixturePath);
     nonempty(run.outputPath, `${project.id}.matrix.linter.outputPath`);
     integer(run.durationMs, `${project.id}.matrix.linter.durationMs`);
-    assert([0, 1].includes(run.exitCode));
+    assert([0, 1, 2].includes(run.exitCode));
     integer(run.fileCount, `${project.id}.matrix.linter.fileCount`);
     assert.equal(run.coverage, null);
     runs.set(project.id, run);
@@ -333,7 +333,7 @@ export function validateRawLinterRun(
   assert.equal(raw.version, 1);
   assert.equal(raw.project, projectId);
   assert.equal(raw.tool, "linter");
-  assert([0, 1].includes(raw.exitCode));
+  assert([0, 1, 2].includes(raw.exitCode));
   assert.equal(raw.exitCode, matrixRun.exitCode);
   assert(Array.isArray(raw.parsed));
   assert.deepEqual(
@@ -393,8 +393,8 @@ export function validateRawLinterRun(
     (sum, result) => sum + integer(result.errorCount, `${projectId}.parsed.errorCount`),
     0,
   );
-  const expectedExitCode = errors > 0 ? 1 : 0;
+  const expectedExitCode = parsedFiles.length === 0 ? 2 : errors > 0 ? 1 : 0;
   assert.equal(raw.exitCode, expectedExitCode, `${projectId}: linter exit code drifted`);
-  assert.equal(matrixRun.status, expectedExitCode === 0 ? "ok" : "findings");
+  assert.equal(matrixRun.status, expectedExitCode === 1 ? "findings" : "ok");
   return unmatchedPatterns;
 }

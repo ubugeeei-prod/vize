@@ -69,7 +69,7 @@ fn canonical_config_keeps_wide_group_order_and_complete_cli_fixed_points() {
     let spread_expected = "<template>\n  <div z-early=\"e\" a-late=\"l\" v-bind=\"attrs\" z-early=\"s\" a-late=\"r\"></div>\n</template>\n";
     let event =
         "<template>\n  <div a-late=\"l\" @click=\"run\" z-early=\"e\"></div>\n</template>\n";
-    // Listener order is runtime-observable, so it retains its authored slot.
+    // A static-argument listener is an authored-order boundary.
     let event_expected = event;
     let duplicate =
         "<template>\n  <div a-late=\"l\" z-early=\"e\" a-late=\"r\"></div>\n</template>\n";

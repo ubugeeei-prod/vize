@@ -62,4 +62,4 @@ Lancez ensuite `vp run lint`.
 
 - [Règles de l’écosystème et de Nuxt](../ecosystem.md)
 - [Toutes les règles](../all.md)
-- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ecosystem/void_link_valid_method.rs#L14)
+- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ecosystem/void_link_valid_method.rs#L18)

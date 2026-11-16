@@ -79,6 +79,7 @@ pub fn run(args: ReadyArgs) {
             write: true,
             config: args.config.clone(),
             no_config: args.no_config,
+            config_stdin: false,
             single_quote: None,
             jsx_single_quote: None,
             quote_props: None,
@@ -119,6 +120,7 @@ pub fn run(args: ReadyArgs) {
             fix: false,
             config: args.config.clone(),
             no_config: args.no_config,
+            config_stdin: false,
             format: "text".into(),
             locale: "en".into(),
             max_warnings: None,
@@ -185,6 +187,7 @@ fn check_args(args: &ReadyArgs) -> CheckArgs {
         patterns: check_patterns(args),
         config: args.config.clone(),
         no_config: args.no_config,
+        config_stdin: false,
         #[cfg(unix)]
         socket: None,
         tsconfig: args.tsconfig.clone(),

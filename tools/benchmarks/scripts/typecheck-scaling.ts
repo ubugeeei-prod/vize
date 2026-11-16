@@ -51,11 +51,13 @@ import {
   type Sample,
   type ScalingResults,
   renderSummary,
+  scalingBudget,
 } from "./typecheck-scaling-report.ts";
 import { renderScalingSvg } from "./typecheck-scaling-svg.ts";
 import { writeRunReceipt } from "./typecheck-scaling-receipt.ts";
 import { NUXT_APP_DIR, prepareNuxtBenchInstall } from "./nuxt-bench-app.ts";
 import { VIZE_NUXT_MODULE, nuxtConfig } from "./scale-project-nuxt.ts";
+import { formatGrowthBudgetFailures } from "./typecheck-scaling-budget.ts";
 import {
   ALL_TOOLS,
   NUXT_BUILD,
@@ -98,14 +100,14 @@ function gnuTimeVersion(): string {
 export const runOrder = <T>(items: readonly T[], run: number): T[] =>
   run % 2 === 0 ? [...items] : [...items].reverse();
 
-type Measured = {
+export type Measured = {
   output: ProcessOutput;
   wallMs: number;
   cpuMs: number | null;
   maxRssKb: number | null;
 };
 
-function measure(
+export function measure(
   bin: string,
   args: string[],
   cwd: string,
@@ -346,7 +348,9 @@ function main(): void {
     cells: [],
   };
   const save = () => {
+    const budget = scalingBudget(results.cells);
     writeFileSync(join(out, "results.json"), `${JSON.stringify(results, null, 1)}\n`);
+    writeFileSync(join(out, "growth-budget.json"), `${JSON.stringify(budget, null, 1)}\n`);
     writeFileSync(join(out, "summary.md"), renderSummary(results));
     writeFileSync(join(out, "scaling.svg"), renderScalingSvg(results));
   };
@@ -483,6 +487,11 @@ function main(): void {
   const refused = results.cells.filter((cell) => cell.refused);
   if (refused.length > 0) {
     console.error(`::error::${refused.length} cell(s) refused; see summary.md`);
+    process.exitCode = 1;
+  }
+  const failures = scalingBudget(results.cells).failures;
+  if (failures.length > 0) {
+    console.error(formatGrowthBudgetFailures(failures));
     process.exitCode = 1;
   }
 }

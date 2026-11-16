@@ -9,7 +9,17 @@ on:
       - "tools/commands/release/npm/smoke-release-install.ts"
       - "tools/support/release/smoke_release_install/**"
       - "tools/support/compat/npm/smoke-*"
+      - "tools/support/compat/github/legacy-fix-fixture-report.ts"
+      - "tools/support/compat/github/native-beta-dto-fixtures.ts"
+      - "tools/support/compat/github/report-legacy-fix-fixtures.ts"
+      - "npm/cli/**"
+      - "npm/native/**"
+      - "npm/builder/vite/**"
+      - "npm/linter/oxlint/**"
+      - "crates/vize_carton/src/config/loader/js/runtime_file.rs"
+      - "crates/vize_carton/src/config/loader/js/runtime_file/tests.rs"
       - "tests/tooling/release/release-smoke-*"
+      - "tests/tooling/legacy-fix-fixture-report.test.ts"
       - "tests/tooling/support/release-smoke-*"
       - "tests/tooling/github-workflows-release-build.test.ts"
       - "tests/tooling/release/release-workflow.test.ts"
@@ -23,6 +33,97 @@ concurrency:
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 jobs:
+  bun-planner:
+    name: Shared source planner on Bun 1.3.14
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - uses: ./.github/actions/setup-runtime-package-managers
+      - name: Execute the shared planner contract through Bun
+        shell: bash
+        run: |
+          for phase in cold warm; do
+            /usr/bin/time --verbose --output="$RUNNER_TEMP/bun-planner-$phase.txt" \
+              bun test tests/tooling/legacy-fix-fixture-report.test.ts
+          done
+          cat "$RUNNER_TEMP"/bun-planner-*.txt
+      - name: Retain Bun planner timing and RSS
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: bun-planner-performance
+          path: ${{ runner.temp }}/bun-planner-*.txt
+          if-no-files-found: error
+          retention-days: 14
+
+  node-planner-baseline:
+    name: Shared source planner on Node 24.14.0
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - uses: ./.github/actions/setup-runtime-package-managers
+      - name: Execute the shared planner baseline through Node
+        shell: bash
+        run: |
+          for phase in cold warm; do
+            /usr/bin/time --verbose --output="$RUNNER_TEMP/node-planner-$phase.txt" \
+              node --test tests/tooling/legacy-fix-fixture-report.test.ts
+          done
+          cat "$RUNNER_TEMP"/node-planner-*.txt
+      - name: Retain Node planner timing and RSS
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: node-planner-performance
+          path: ${{ runner.temp }}/node-planner-*.txt
+          if-no-files-found: error
+          retention-days: 14
+
+  bun-products:
+    name: Packed products on Bun 1.3.14
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - uses: ./.github/actions/setup-runtime-package-managers
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable }
+      - uses: ./.github/actions/setup-wild-http-recovery
+        with: { wild-version: "0.9.0" }
+      - uses: ./.github/actions/setup-rust-sticky-cache
+        with:
+          key: bun-products
+          cache-key-suffix: ${{ runner.os }}-${{ runner.arch }}
+      - uses: ./.github/actions/setup-rust-script
+      - name: Install product build dependencies
+        shell: bash
+        run: >-
+          vp install --frozen-lockfile --prefer-offline
+          --filter . --filter '@vize/tools'
+          --filter './npm/native...'
+          --filter './npm/cli...'
+          --filter './npm/builder/vite...'
+          --filter './npm/linter/oxlint...'
+      - name: Build native provider and Bun-facing packages
+        shell: bash
+        run: |
+          vp run --filter './npm/native' build:ci
+          node tools/support/github/stage-built-native-packages.ts npm/native
+          vp run --filter './npm/cli' build
+          vp run --filter './npm/builder/vite' build
+          vp run --filter './npm/linter/oxlint' build
+      - name: Compare packed Node and Bun product behavior
+        shell: bash
+        run: >-
+          node tools/commands/release/npm/smoke-release-install.ts
+          --prepare-manifests --runtime-checks --bun-runtime-checks
+          npm/native npm/native/npm/* npm/cli npm/builder/vite npm/linter/oxlint
+
   contracts:
     name: Release smoke contracts (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
@@ -40,6 +141,50 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with: { persist-credentials: false }
       - uses: ./.github/actions/setup-runtime-package-managers
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: stable }
+      - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32 # v2
+        with:
+          shared-key: config-runtime-storage-${{ runner.os }}-${{ runner.arch }}
+          cache-workspace-crates: "true"
+      - name: Verify owned config runtime storage and locking
+        shell: bash
+        run: cargo test --locked -p vize_carton --lib runtime_file::tests -- --nocapture
+      - name: Measure config runtime storage lifecycle
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          for round in 1 2 3; do
+            if (( round % 2 == 1 )); then
+              lanes=(base head)
+            else
+              lanes=(head base)
+            fi
+            order="${lanes[0]}-${lanes[1]}"
+            for position in 0 1; do
+              lane="${lanes[$position]}"
+              VIZE_RUNTIME_BENCH_LANE="$lane" \
+                VIZE_RUNTIME_BENCH_ROUND="$round" \
+                VIZE_RUNTIME_BENCH_ORDER="$order" \
+                VIZE_RUNTIME_BENCH_SAMPLES=21 \
+                VIZE_RUNTIME_BENCH_ITERATIONS=64 \
+                VIZE_RUNTIME_BENCH_OUTPUT="$RUNNER_TEMP/config-runtime-$round-$position-$lane.json" \
+                /usr/bin/time --verbose --output="$RUNNER_TEMP/config-runtime-$round-$position-$lane.time.txt" \
+                cargo test --locked -p vize_carton --lib runtime_storage_benchmark \
+                  -- --ignored --nocapture
+            done
+          done
+          cat "$RUNNER_TEMP"/config-runtime-*.json "$RUNNER_TEMP"/config-runtime-*.time.txt
+      - name: Retain config runtime storage counts and timings
+        if: ${{ !cancelled() && runner.os == 'Linux' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: config-runtime-storage-${{ github.sha }}-${{ github.run_attempt }}-${{ runner.os }}
+          path: |
+            ${{ runner.temp }}/config-runtime-*.json
+            ${{ runner.temp }}/config-runtime-*.time.txt
+          if-no-files-found: error
+          retention-days: 14
       - name: Install source contract dependencies
         shell: bash
         run: >-
@@ -53,4 +198,4 @@ jobs:
         run: node --test tests/tooling/release/release-smoke-public-native.test.ts tests/tooling/native-build-token.test.ts tests/tooling/native-binding-identity.test.ts
       - name: Require release caller and fresh-project workflow wiring
         shell: bash
-        run: node --test tests/tooling/github-workflows-release-build.test.ts tests/tooling/release/release-workflow.test.ts tests/tooling/release/release-smoke-init-fresh.test.ts tests/tooling/release/release-smoke-init-toolchain.test.ts tests/tooling/release/release-smoke-musl.test.ts
+        run: node --test tests/tooling/github-workflows-release-build.test.ts tests/tooling/release/release-workflow.test.ts tests/tooling/release/release-smoke-init-fresh.test.ts tests/tooling/release/release-smoke-init-toolchain.test.ts tests/tooling/release/release-smoke-init-workspace.test.ts tests/tooling/release/release-smoke-musl.test.ts

@@ -187,18 +187,30 @@ The literal tasks above are uncached by default. Read-only `lint`, `fmt:check`,
 const check = {
   command: "vize-vp-task check",
   cache: {
-    input: [{ auto: true }, "!node_modules/.vize/**", "!**/.vize/**"],
+    input: [
+      { auto: true },
+      "!**/node_modules",
+      "!**/node_modules/**",
+      "!**/.vize/**",
+      "pnpm-lock.yaml",
+    ],
     output: [],
   },
 };
 ```
 
 Vite+ automatically tracks source files, configuration imports, dependencies, and
-directory entries. Generated `node_modules/.vize/**` and `**/.vize/**` files are
-excluded from cache inputs, and checks never restore output files. Source-writing
-tasks such as `fmt` and `lint:fix` remain uncached. Passing `--fix` to a cached
-check still runs on changed inputs, including reintroducing the same unformatted
-source after a previous fix.
+directory entries. Generated tasks exclude every workspace's `node_modules` tree
+and count the active package manager's lockfile instead. In a workspace package,
+the workspace-root lockfile is resolved from the workspace root; a package-local
+lockfile remains relative to that package. The `packageManager` field selects
+`bun.lock` / `bun.lockb`, `npm-shrinkwrap.json` / `package-lock.json`,
+`pnpm-lock.yaml`, or `yarn.lock`; without that field, present lockfiles are
+selected. Generated `**/.vize/**` files are also excluded, and
+checks never restore output files. Source-writing tasks such as `fmt` and
+`lint:fix` remain uncached. Passing `--fix` to a cached check still runs on
+changed inputs, including reintroducing the same unformatted source after a
+previous fix.
 
 > [!WARNING]
 > Custom tasks use `vp run`. Built-in `vp check`, `vp lint`, and `vp fmt` do not

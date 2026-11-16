@@ -1,0 +1,7 @@
+<template>
+  <x-icon />
+</template>
+
+<script>
+export default {};
+</script>

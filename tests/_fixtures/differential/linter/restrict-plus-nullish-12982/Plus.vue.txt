@@ -1,0 +1,20 @@
+<script setup lang="ts">
+declare const label: string | undefined;
+declare const maybeNull: string | null;
+declare const count: number | undefined;
+declare const flag: boolean;
+
+const a = label + "!";
+const b = "#" + maybeNull;
+const c = "n=" + count;
+let total = "";
+total += label;
+function suffix(text?: string): string {
+  return text + "!";
+}
+const d = "on: " + flag;
+</script>
+
+<template>
+  <p>{{ a }} {{ b }} {{ c }} {{ d }} {{ total }} {{ suffix() }}</p>
+</template>

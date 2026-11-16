@@ -11,6 +11,7 @@ mod promise;
 mod queries;
 mod scan;
 mod shape;
+mod type_parameters;
 mod type_shape;
 use crate::linter::corsa_session::{ExpressionFact, ExpressionQuery};
 use corsa::lint::LintNode;
@@ -22,6 +23,7 @@ pub(super) fn prepare(source: &str, collected: &mut Collected) {
     for node in &mut collected.nodes {
         stamp(node);
     }
+    type_parameters::prepare(source, &mut collected.nodes, &collected.program);
     enums::stamp_merged_enums(&collected.program, source, &mut collected.nodes);
 }
 
@@ -41,6 +43,7 @@ pub(super) fn apply(nodes: &mut [LintNode], facts: &[ExpressionFact], queries: &
     for node in nodes {
         apply_node(node, &by_range);
         checker::stamp_listener(node, &by_range);
+        type_parameters::apply(node, &by_range);
         module_this::stamp_module_this(node);
     }
 }
@@ -116,6 +119,10 @@ fn apply_node(node: &mut LintNode, facts: &FxHashMap<(u32, u32), &ExpressionFact
         if let Some(detail) = &fact.detail {
             node.fields.insert("__typeDetail".into(), detail.clone());
         }
+        if let Some(awaited) = &fact.promise_any {
+            node.fields
+                .insert("__unsafeReturnAwaitedAny".into(), awaited.clone());
+        }
         if let Some((call, construct)) = fact.function_signatures {
             node.fields
                 .insert("__callSignatureCount".into(), json!(call));
@@ -131,6 +138,10 @@ fn apply_node(node: &mut LintNode, facts: &FxHashMap<(u32, u32), &ExpressionFact
         if let Some(members) = &fact.member_methods {
             node.fields
                 .insert("__memberMethods".into(), members.clone());
+        }
+        if let Some(method) = &fact.direct_method {
+            node.fields
+                .insert("__unboundMethodInfo".into(), method.clone());
         }
         promise::apply(node, fact);
         type_node_fields(node, fact);

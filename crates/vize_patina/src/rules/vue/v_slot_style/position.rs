@@ -7,7 +7,7 @@
 //! is longform, and a bare `v-slot` is its own style.
 
 use super::VSlotStyleOption;
-use vize_relief::{DirectiveNode, ElementNode, ExpressionNode};
+use crate::markup::{MarkupDirective, MarkupElement};
 
 /// Which of the three configurable positions a `v-slot` occupies.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -21,18 +21,15 @@ pub(super) enum SlotPosition {
 }
 
 pub(super) fn slot_position(
-    element: &ElementNode<'_>,
-    argument: &Option<ExpressionNode<'_>>,
-    static_argument: Option<&str>,
+    element: &MarkupElement<'_>,
+    directive: &MarkupDirective<'_>,
 ) -> SlotPosition {
-    let is_default = match argument {
-        None => true,
-        Some(_) => static_argument == Some("default"),
-    };
+    let is_default =
+        directive.argument_range().is_none() || directive.is_static_arg_exact("default");
     if !is_default {
         return SlotPosition::Named;
     }
-    if element.tag == "template" {
+    if element.is_tag("template") {
         SlotPosition::DefaultOnTemplate
     } else {
         SlotPosition::AtComponent
@@ -40,10 +37,10 @@ pub(super) fn slot_position(
 }
 
 /// The style the directive is authored in.
-pub(super) fn actual_style(source: &str, directive: &DirectiveNode<'_>) -> VSlotStyleOption {
+pub(super) fn actual_style(source: &str, directive: &MarkupDirective<'_>) -> VSlotStyleOption {
     if slot_name(source, directive).starts_with('#') {
         VSlotStyleOption::Shorthand
-    } else if directive.arg.is_some() {
+    } else if directive.argument_range().is_some() {
         VSlotStyleOption::Longform
     } else {
         VSlotStyleOption::VSlot
@@ -52,14 +49,20 @@ pub(super) fn actual_style(source: &str, directive: &DirectiveNode<'_>) -> VSlot
 
 /// The authored directive name and argument, without the value — the text
 /// upstream substitutes into its message as `actual`.
-pub(super) fn slot_argument<'a>(source: &'a str, directive: &DirectiveNode<'_>) -> Option<&'a str> {
+pub(super) fn slot_argument<'a>(
+    source: &'a str,
+    directive: &MarkupDirective<'_>,
+) -> Option<&'a str> {
     let text = slot_name(source, directive);
     (!text.is_empty()).then_some(text)
 }
 
 /// The argument exactly as authored, brackets and all, which is what upstream
 /// reads off the argument node for its message. `None` means the default slot.
-pub(super) fn argument_text<'a>(source: &'a str, directive: &DirectiveNode<'_>) -> Option<&'a str> {
+pub(super) fn argument_text<'a>(
+    source: &'a str,
+    directive: &MarkupDirective<'_>,
+) -> Option<&'a str> {
     let name = slot_name(source, directive);
     let argument = match name.strip_prefix('#') {
         Some(rest) => rest,
@@ -68,9 +71,10 @@ pub(super) fn argument_text<'a>(source: &'a str, directive: &DirectiveNode<'_>) 
     (!argument.is_empty()).then_some(argument)
 }
 
-fn slot_name<'a>(source: &'a str, directive: &DirectiveNode<'_>) -> &'a str {
-    let start = directive.loc.span.start as usize;
-    let end = directive.loc.span.end as usize;
+fn slot_name<'a>(source: &'a str, directive: &MarkupDirective<'_>) -> &'a str {
+    let range = directive.range();
+    let start = range.start as usize;
+    let end = range.end as usize;
     source.get(start..end).map_or("", name_of)
 }
 

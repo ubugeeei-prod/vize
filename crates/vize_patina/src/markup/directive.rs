@@ -89,6 +89,21 @@ impl<'a> MarkupDirective<'a> {
         self.name() == expected
     }
 
+    /// Whether the authored directive starts with the exact parser prefix.
+    ///
+    /// This distinguishes shorthand (`@`, `#`) from longform (`v-on`,
+    /// `v-slot`) without trusting a recovered Relief directive whose raw name
+    /// is unavailable. JSX projections have no Vue directive prefix.
+    pub fn has_authored_prefix(&self, expected: &str) -> bool {
+        match self.inner {
+            MarkupDirectiveInner::Relief(node) => node.raw_name == Some(expected),
+            MarkupDirectiveInner::L2(_) | MarkupDirectiveInner::Surface { .. } => self
+                .authored()
+                .is_some_and(|(attr, _)| attr.name.text.starts_with(expected)),
+            MarkupDirectiveInner::Jsx { .. } => false,
+        }
+    }
+
     /// The normalized [`MarkupBindingKind`] this directive represents.
     pub fn kind(&self) -> MarkupBindingKind {
         match self.inner {

@@ -40,7 +40,9 @@
 //! ```
 
 use self::async_setup::async_component_names;
-use self::self_name::{define_options_name, file_stem};
+use self::self_name::{
+    component_factory_bindings, define_options_name, file_stem, options_api_name,
+};
 use crate::context::LintContext;
 use crate::diagnostic::{LintDiagnostic, Severity};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
@@ -149,19 +151,25 @@ impl RequireComponentRegistration {
 
     /// Whether `tag` refers to the component itself.
     ///
-    /// A `<script setup>` component can reference itself by its
-    /// filename-derived name or by the name declared via
-    /// `defineOptions({ name })` — a documented Vue feature for recursive
-    /// components that needs no import (importing yourself is not possible
-    /// without an alias).
+    /// Vue derives a recursive self name from the filename for every SFC.
+    /// Script-setup components may also declare an alias through
+    /// `defineOptions({ name })`, and Options API components through `name`.
     fn is_self_reference(&self, ctx: &LintContext<'_>, tag: &str) -> bool {
         let stem = file_stem(ctx.filename);
         if !stem.is_empty() && setup_name_matches(tag, capitalize(camelize(stem).as_str()).as_str())
         {
             return true;
         }
-        ctx.analysis()
+        if ctx
+            .analysis()
             .and_then(define_options_name)
+            .is_some_and(|name| setup_name_matches(tag, name))
+        {
+            return true;
+        }
+        ctx.sfc_scripts()
+            .and_then(|scripts| scripts.script())
+            .and_then(|parsed| options_api_name(&parsed.program))
             .is_some_and(|name| setup_name_matches(tag, name))
     }
 
@@ -223,7 +231,8 @@ impl Rule for RequireComponentRegistration {
         let mut used_components: Vec<(String, u32, u32)> = Vec::new();
         collect_components(root, &mut used_components);
         let art_bindings = art::setup_bindings(ctx);
-        let async_components = if art_bindings.is_some() {
+        let uses_art_bindings = art_bindings.is_some();
+        let async_components = if uses_art_bindings {
             Vec::new()
         } else {
             ctx.sfc_descriptor()
@@ -231,7 +240,7 @@ impl Rule for RequireComponentRegistration {
                 .map(async_component_names)
                 .unwrap_or_default()
         };
-        let setup_bindings: Vec<String> = art_bindings.unwrap_or_else(|| {
+        let mut setup_bindings: Vec<String> = art_bindings.unwrap_or_else(|| {
             ctx.sfc_descriptor()
                 .and_then(|descriptor| descriptor.script_setup.as_ref())
                 .map(|script| {
@@ -243,6 +252,10 @@ impl Rule for RequireComponentRegistration {
                 })
                 .unwrap_or_default()
         });
+        if !uses_art_bindings {
+            setup_bindings.extend(croquis_script_setup_bindings(ctx));
+            setup_bindings.extend(plain_script_component_bindings(ctx));
+        }
 
         // Registration is project context, never a guess based on a tag prefix.
         for (tag, start, end) in used_components {
@@ -289,6 +302,57 @@ impl Rule for RequireComponentRegistration {
             }
         }
     }
+}
+
+fn plain_script_component_bindings(ctx: &LintContext<'_>) -> Vec<String> {
+    let paired_scripts = ctx
+        .sfc_descriptor()
+        .is_some_and(|descriptor| descriptor.script.is_some() && descriptor.script_setup.is_some());
+    if !paired_scripts {
+        return Vec::new();
+    }
+    ctx.sfc_scripts()
+        .and_then(|scripts| scripts.script())
+        .map(|parsed| {
+            component_factory_bindings(&parsed.program)
+                .into_iter()
+                .map(ToCompactString::to_compact_string)
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
+fn croquis_script_setup_bindings(ctx: &LintContext<'_>) -> Vec<String> {
+    let Some(analysis) = art::analysis(ctx) else {
+        return Vec::new();
+    };
+    analysis
+        .scopes
+        .iter()
+        .filter(|scope| scope.kind == ScopeKind::ScriptSetup)
+        .flat_map(|scope| {
+            analysis.bindings.iter().filter_map(|(name, binding_type)| {
+                let runtime_value = matches!(
+                    binding_type,
+                    BindingType::SetupLet
+                        | BindingType::SetupMaybeRef
+                        | BindingType::SetupRef
+                        | BindingType::SetupReactiveConst
+                        | BindingType::SetupConst
+                        | BindingType::LiteralConst
+                        | BindingType::ExternalModule
+                );
+                (runtime_value
+                    && analysis
+                        .binding_spans
+                        .get(name)
+                        .is_some_and(|&(start, end)| {
+                            scope.span.start <= start && end <= scope.span.end
+                        }))
+                .then(|| name.to_compact_string())
+            })
+        })
+        .collect()
 }
 
 /// Collect all element tags from the template

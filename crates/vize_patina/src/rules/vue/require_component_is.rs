@@ -21,8 +21,9 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::{MarkupContext, MarkupElement, MarkupRule, MarkupTraversal};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::{ElementNode, ExpressionNode, PropNode};
+use vize_relief::ElementNode;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/require-component-is",
@@ -37,23 +38,38 @@ static META: RuleMeta = RuleMeta {
 pub struct RequireComponentIs;
 
 impl RequireComponentIs {
-    fn has_is_attribute(element: &ElementNode) -> bool {
-        for prop in &element.props {
-            match prop {
-                PropNode::Attribute(_) => {}
-                PropNode::Directive(dir) => {
-                    // Check for :is or v-bind:is
-                    if dir.name == "bind"
-                        && let Some(ExpressionNode::Simple(arg)) = &dir.arg
-                        && arg.is_static
-                        && arg.content == "is"
-                    {
-                        return true;
-                    }
-                }
+    fn has_is_attribute(element: &MarkupElement<'_>) -> bool {
+        let mut found = false;
+        element.walk_directives(&mut |directive| {
+            if directive.name_eq("bind") && directive.is_static_arg_exact("is") {
+                found = true;
             }
+        });
+        found
+    }
+
+    fn check_element(ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
+        if element.is_unqualified_tag_exact("component") && !Self::has_is_attribute(element) {
+            ctx.error_at_with_help(
+                ctx.t("vue/require-component-is.message"),
+                element.range(),
+                ctx.t("vue/require-component-is.help"),
+            );
         }
-        false
+    }
+}
+
+impl MarkupRule for RequireComponentIs {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn traversal(&self) -> MarkupTraversal {
+        MarkupTraversal::Elements
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        Self::check_element(ctx.lint(), element);
     }
 }
 
@@ -62,18 +78,12 @@ impl Rule for RequireComponentIs {
         &META
     }
 
-    fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        if element.tag != "component" {
-            return;
-        }
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
+    }
 
-        if !Self::has_is_attribute(element) {
-            ctx.error_with_help(
-                ctx.t("vue/require-component-is.message"),
-                &element.loc,
-                ctx.t("vue/require-component-is.help"),
-            );
-        }
+    fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
+        Self::check_element(ctx, &MarkupElement::new(element));
     }
 }
 

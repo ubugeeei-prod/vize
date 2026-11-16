@@ -251,6 +251,12 @@ pub(crate) static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "禁止悬空（未处理）的 Promise",
     ),
     (
+        "type/no-unnecessary-type-parameters.description",
+        "Disallow type parameters that are not used more than once.",
+        "型同士の関係を表さず、一度しか使われない型パラメータを禁止する。",
+        "禁止未使用超过一次、不能表达类型关系的类型参数。",
+    ),
+    (
         "type/no-reactivity-loss.description",
         "Disallow plain snapshots of reactive values across assignments and calls",
         "代入や関数呼び出しでリアクティブな値がただのスナップショットになることを禁止する",

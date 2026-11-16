@@ -59,6 +59,7 @@ test("real-project workflow publishes and uploads the shard evidence it produced
     name: "real-project-matrix-${{ matrix.shard }}",
     path: "${{ env.FIXTURE_REPORT_DIR }}",
     "if-no-files-found": "error",
+    "include-hidden-files": false,
     "retention-days": 30,
   });
 });

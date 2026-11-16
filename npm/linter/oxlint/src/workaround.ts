@@ -10,6 +10,7 @@ const SCRIPTLESS_WORKAROUND_CLOSE_TAG = "</script>";
 const SCRIPTLESS_WORKAROUND_FILENAME_ATTR = `data-${SCRIPTLESS_WORKAROUND_MARKER}="`;
 const LOCATION_BRIDGE_MARKER = "/*vize-location-bridge*/";
 const ORIGINAL_PAYLOAD_PREFIX = "<!--vize-original-source:";
+const ORIGINAL_REFERENCE_PREFIX = "<!--vize-original-file:";
 
 export const SCRIPTLESS_WORKAROUND_TRACKING = {
   strategy: "synthetic-script-setup-bridge",
@@ -52,12 +53,14 @@ export function appendScriptlessWorkaround(source: string, filename: string): st
   return prepareWorkaroundSource(source, filename).source;
 }
 
-/** Keep original coordinates in one safe host script and an exact source payload. */
+/** Keep original coordinates in one safe host script and a bound reference to the source file. */
 export function prepareWorkaroundSource(source: string, filename: string) {
   const openTag = `${SCRIPTLESS_WORKAROUND_OPEN_TAG_PREFIX}${encodeWorkaroundFilename(filename)}">`;
   const script = `${openTag}${createWhitespaceMirror(source)}${LOCATION_BRIDGE_MARKER}</script>\n`;
+  const filenameDigest = valueDigest(filename);
+  const sourceDigest = valueDigest(source);
   return {
-    source: `${script}${ORIGINAL_PAYLOAD_PREFIX}${createHash("sha256").update(filename).update("\0").update(source).digest("hex")}:${Buffer.from(source, "utf8").toString("base64url")}-->`,
+    source: `${script}${ORIGINAL_REFERENCE_PREFIX}${filenameDigest}:${sourceDigest}-->`,
     locations: {
       source,
       scriptStart: openTag.length,
@@ -94,8 +97,24 @@ export function resolveWorkaroundSource(
 
   const decodedFilename =
     decodeWorkaroundFilename(workaroundBlock.encodedFilename) ?? fallbackFilename;
-  const strippedSource = workaroundBlock.originalSource ?? source.slice(strippedSourceStart);
-  if (readOriginalSource && readOriginalSource(decodedFilename) !== strippedSource)
+  let strippedSource: string;
+  if (workaroundBlock.referencesOriginal) {
+    if (readOriginalSource == null)
+      throw new Error("Vize original-file carrier requires an original source reader.");
+    strippedSource = readOriginalSource(decodedFilename);
+    if (
+      valueDigest(strippedSource) !== workaroundBlock.referenceSourceDigest ||
+      workaroundBlock.mirror !== createWhitespaceMirror(strippedSource) + LOCATION_BRIDGE_MARKER
+    )
+      throw new Error("Vize carrier source no longer matches the original file bytes.");
+  } else {
+    strippedSource = workaroundBlock.originalSource ?? source.slice(strippedSourceStart);
+  }
+  if (
+    !workaroundBlock.referencesOriginal &&
+    readOriginalSource &&
+    readOriginalSource(decodedFilename) !== strippedSource
+  )
     throw new Error("Vize carrier source no longer matches the original file bytes.");
 
   return {
@@ -105,9 +124,14 @@ export function resolveWorkaroundSource(
   };
 }
 
-function getPrependedWorkaroundBlock(
-  source: string,
-): { closeTagEnd: number; encodedFilename: string; originalSource?: string } | null {
+function getPrependedWorkaroundBlock(source: string): {
+  closeTagEnd: number;
+  encodedFilename: string;
+  mirror: string;
+  originalSource?: string;
+  referenceSourceDigest?: string;
+  referencesOriginal: boolean;
+} | null {
   if (!source.startsWith(SCRIPTLESS_WORKAROUND_OPEN_TAG_PREFIX)) {
     return null;
   }
@@ -138,6 +162,8 @@ function getPrependedWorkaroundBlock(
   }
   const tail = source.slice(strippedSourceStart);
   let originalSource: string | undefined;
+  let referenceSourceDigest: string | undefined;
+  let referencesOriginal = false;
   if (tail.startsWith(ORIGINAL_PAYLOAD_PREFIX)) {
     const payload = /^<!--vize-original-source:([a-f0-9]{64}):([A-Za-z0-9_-]*)-->$/u.exec(tail);
     if (payload == null) throw new Error("Invalid Vize original-source carrier payload.");
@@ -147,21 +173,34 @@ function getPrependedWorkaroundBlock(
     originalSource = Buffer.from(payload[2], "base64url").toString("utf8");
     if (
       Buffer.from(originalSource, "utf8").toString("base64url") !== payload[2] ||
-      createHash("sha256")
-        .update(originalFilename)
-        .update("\0")
-        .update(originalSource)
-        .digest("hex") !== payload[1] ||
+      carrierDigest(originalFilename, originalSource) !== payload[1] ||
       firstBlock.content !== createWhitespaceMirror(originalSource) + LOCATION_BRIDGE_MARKER
     )
       throw new Error(
         "Vize original-source carrier bytes do not match their complete source mirror.",
       );
+  } else if (tail.startsWith(ORIGINAL_REFERENCE_PREFIX)) {
+    const reference = /^<!--vize-original-file:([a-f0-9]{64}):([a-f0-9]{64})-->$/u.exec(tail);
+    if (reference == null) throw new Error("Invalid Vize original-file carrier reference.");
+    const originalFilename = decodeWorkaroundFilename(encodedFilename);
+    if (originalFilename == null || encodeWorkaroundFilename(originalFilename) !== encodedFilename)
+      throw new Error("Invalid Vize original-file carrier filename.");
+    if (valueDigest(originalFilename) !== reference[1])
+      throw new Error("Invalid Vize original-file carrier filename digest.");
+    referenceSourceDigest = reference[2];
+    referencesOriginal = true;
   } else if (firstBlock.content !== createWhitespaceMirror(tail) + LOCATION_BRIDGE_MARKER) {
     return null;
   }
 
-  return { closeTagEnd, encodedFilename, originalSource };
+  return {
+    closeTagEnd,
+    encodedFilename,
+    mirror: firstBlock.content,
+    originalSource,
+    referenceSourceDigest,
+    referencesOriginal,
+  };
 }
 
 function sourceStartAfterSyntheticBlock(source: string, closeTagEnd: number): number | null {
@@ -196,8 +235,17 @@ function encodedFilenameFromWorkaroundOpenTag(openTag: string): string | null {
 
 function createWhitespaceMirror(source: string): string {
   // Oxlint loc columns and Patina's NAPI locations both count UTF-16 units.
-  // Keep both halves of an astral character, rather than collapsing it to one space.
-  return source.replaceAll(/[^\r\n]/gu, (character) => (character.length === 2 ? "  " : " "));
+  // Replace whole line runs so the hot path allocates per line, while the
+  // repeated space retains every UTF-16 code unit (including surrogate pairs).
+  return source.replaceAll(/[^\r\n]+/g, (run) => " ".repeat(run.length));
+}
+
+function carrierDigest(filename: string, source: string): string {
+  return createHash("sha256").update(filename).update("\0").update(source).digest("hex");
+}
+
+function valueDigest(value: string): string {
+  return createHash("sha256").update(value).digest("hex");
 }
 
 function encodeWorkaroundFilename(filename: string): string {
@@ -247,11 +295,9 @@ if (import.meta.vitest) {
       const appended = appendScriptlessWorkaround(source, filename);
 
       expect(appended).toMatch(/oxlint-plugin-vize-scriptless/u);
-      expect(resolveWorkaroundSource(appended, "/Users/example/fallback.vue")).toEqual({
-        filename,
-        source,
-        usesOriginalLocations: true,
-      });
+      expect(
+        resolveWorkaroundSource(appended, "/Users/example/fallback.vue", () => source),
+      ).toEqual({ filename, source, usesOriginalLocations: true });
     });
 
     it("does not strip real script setup blocks that mimic the marker", () => {

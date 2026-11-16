@@ -1,7 +1,7 @@
 //! Template root fragments: empty → `null`, a unique non-compound
-//! root stays a block / leaf, two or more generate_node children
-//! (or one compound interpolation, which L2 merged and codegen
-//! walks as separate L1 children) wrap in
+//! root stays a block / leaf, and multiple children (or one compound
+//! interpolation, which L2 merged and codegen walks as separate L1
+//! children) wrap in
 //! `_createElementBlock(_Fragment, …, 64 /* STABLE_FRAGMENT */)`.
 
 use vize_l0::PatchFlags;
@@ -148,26 +148,62 @@ fn emit_fragment(cx: &mut EmitCx<'_>, root: &Region<'_>) -> Result<(), EmitError
     let bounds = meaningful_bounds(root);
     let mut non_comment_children = 0usize;
     let mut compound_text = false;
-    for (index, op) in root.ops.iter().enumerate() {
+    let ops = root.ops.as_slice();
+    let mut index = 0usize;
+    while let Some(op) = ops.get(index) {
         if super::annotations::skip(cx, op) {
+            index += 1;
             continue;
         }
         if let Op::Element(element) = op
             && sfc_style::is_carrier_element(element)
         {
             sfc_style::skip_carrier(cx, element);
+            index += 1;
             continue;
         }
         if is_whitespace_text(op) && !is_internal_whitespace(index, bounds) {
             let _id = cx.walk.mint();
+            index += 1;
             continue;
         }
+
+        if is_fragment_text_run_op(op) {
+            let start = index;
+            index += 1;
+            while ops.get(index).is_some_and(|candidate| {
+                is_fragment_text_run_op(candidate)
+                    && (!is_whitespace_text(candidate) || is_internal_whitespace(index, bounds))
+            }) {
+                index += 1;
+            }
+            let run = ops.get(start..index).unwrap_or_default();
+            non_comment_children += run.len();
+            // Keep the established DEV_ROOT_FRAGMENT classification even
+            // though compound text is now emitted as one patchable vnode.
+            compound_text |= run.iter().any(is_compound);
+            if run
+                .iter()
+                .any(|candidate| matches!(candidate, Op::Interpolation(_)))
+            {
+                start_item(cx, &mut first);
+                emit_create_text_vnode(cx, run)?;
+            } else {
+                // Preserve the shipped output for static-only root text runs.
+                for candidate in run {
+                    emit_units(cx, candidate, &mut first)?;
+                }
+            }
+            continue;
+        }
+
         if !matches!(op, Op::Comment(_)) {
             // Compound text emits several sibling values, not a single root.
             non_comment_children += 1;
             compound_text |= is_compound(op);
         }
         emit_units(cx, op, &mut first)?;
+        index += 1;
     }
     cx.buf.deindent();
     cx.buf.newline();
@@ -318,4 +354,8 @@ fn is_compound(op: &Op<'_>) -> bool {
                 ExprRef::Opaque(opaque) if opaque.reason == OpaqueReason::Compound
             )
     )
+}
+
+fn is_fragment_text_run_op(op: &Op<'_>) -> bool {
+    matches!(op, Op::Text(_) | Op::Interpolation(_))
 }

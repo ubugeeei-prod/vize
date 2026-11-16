@@ -179,6 +179,7 @@ export const LINT_RULE_NAMES = [
   "type/no-unnecessary-type-arguments",
   "type/no-unnecessary-type-assertion",
   "type/no-unnecessary-type-conversion",
+  "type/no-unnecessary-type-parameters",
   "type/no-unsafe-argument",
   "type/no-unsafe-assignment",
   "type/no-unsafe-call",

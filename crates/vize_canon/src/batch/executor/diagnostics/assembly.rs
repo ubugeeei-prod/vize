@@ -17,6 +17,9 @@ use crate::projection::{
     assemble::is_reportable, assemble_diagnostics,
 };
 
+mod loose_library_props;
+use loose_library_props::is_authored_component_literal_key;
+
 /// A backend diagnostic in the coordinates of the file the checker saw.
 #[derive(Debug, Clone)]
 pub(in crate::batch::executor) struct RawDiagnostic {
@@ -103,6 +106,12 @@ impl DiagnosticMapper<'_> {
                 .and_then(|(line, column)| self.virtual_offset(file, line, column))
                 .unwrap_or(start)
                 .max(start);
+            if raw.code == Some(2353)
+                && project.uses_props_fallback_for(&file.virtual_path)
+                && is_authored_component_literal_key(file, start, end, project)
+            {
+                continue;
+            }
             let group = groups.entry(file.original_path.clone()).or_default();
             let document = group.document(file);
             group.finished.push(FinishedDiagnostic {

@@ -24,6 +24,7 @@ import { runInitFailureChecks } from "./smoke-release-init-failures.ts";
 import { PACKAGE_MANAGERS } from "./smoke-release-init-managers.ts";
 import { withPoisonedVizePath } from "./smoke-release-path-poison.ts";
 import { runProjectLspSession, runWorkspacePackageCheck } from "./smoke-release-init-workspace.ts";
+import { WORKSPACE_PACKAGE_MANAGERS } from "./smoke-release-init-workspace-roots.ts";
 import { recordPackedInstallReceipt } from "./smoke-release-init-receipt.ts";
 import {
   packedDownloadBytes,
@@ -335,5 +336,7 @@ export function runFreshProjectInitChecks(context) {
     ran += 1;
   }
   if (ran === 0) console.log("runtime: fresh-project init matrix skipped (packages not packed)");
-  else runWorkspacePackageCheck({ ...context, freshRoot });
+  else
+    for (const manager of WORKSPACE_PACKAGE_MANAGERS)
+      runWorkspacePackageCheck({ ...context, freshRoot }, manager);
 }

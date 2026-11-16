@@ -17,7 +17,7 @@ use vize_l0::{FxHashSet, String as CompactString};
 use super::{CorsaTypeAwareSession, LintResult, Linter, RULE_NO_FLOATING_PROMISES, push_warning};
 use crate::diagnostic::LintDiagnostic;
 use crate::linter::corsa_session::{
-    ExpressionFact, ExpressionQuery, PredicateRequest as ShapeCall,
+    ComputedMemberQuery, ExpressionFact, ExpressionQuery, PredicateRequest as ShapeCall,
 };
 use corsa::lint::LintNode;
 use facts::{Wants, queries};
@@ -160,10 +160,17 @@ pub(super) fn evaluate(
                 });
                 request
             });
+            let computed_member = query.computed_member.and_then(|request| {
+                Some(ComputedMemberQuery {
+                    object: map(request.object)?,
+                    property: map(request.property)?,
+                })
+            });
             generated.push(ExpressionQuery {
                 start,
                 end,
                 shape,
+                computed_member,
                 ..query.clone()
             });
             used.push(index);
@@ -233,8 +240,9 @@ pub(super) fn evaluate(
                 let Some(vize_name) = static_rule(rule) else {
                     continue;
                 };
-                let mut prepared = present::prepare(rule, node);
-                if let Some(configured) = options::for_rule(options, rule) {
+                let configured = options::for_rule(options, rule);
+                let mut prepared = present::prepare(rule, node, configured.as_ref());
+                if let Some(configured) = configured {
                     prepared.fields.insert("__ruleOptions".into(), configured);
                 }
                 for diagnostic in
@@ -242,13 +250,16 @@ pub(super) fn evaluate(
                 {
                     let (raw_start, raw_end) =
                         present::range(rule, node, diagnostic.range.start, diagnostic.range.end);
+                    let message = present::message(
+                        rule,
+                        node,
+                        diagnostic.range.start,
+                        diagnostic.message.into(),
+                    );
                     let start = script.offset.saturating_add(raw_start);
                     let end = script.offset.saturating_add(raw_end);
-                    if seen.insert((vize_name, start, end, diagnostic.message.clone())) {
-                        push_warning(
-                            result,
-                            LintDiagnostic::warn(vize_name, diagnostic.message, start, end),
-                        );
+                    if seen.insert((vize_name, start, end, message.clone())) {
+                        push_warning(result, LintDiagnostic::warn(vize_name, message, start, end));
                     }
                 }
             }
@@ -256,7 +267,7 @@ pub(super) fn evaluate(
         for gap in gaps::reports(&collected) {
             let start = script.offset.saturating_add(gap.start);
             let end = script.offset.saturating_add(gap.end);
-            if seen.insert((gap.rule, start, end, gap.message.to_owned())) {
+            if seen.insert((gap.rule, start, end, gap.message.into())) {
                 push_warning(
                     result,
                     LintDiagnostic::warn(gap.rule, gap.message, start, end),

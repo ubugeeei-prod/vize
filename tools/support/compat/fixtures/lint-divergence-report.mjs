@@ -1,14 +1,18 @@
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import {
-  resolveBaselineRuntime,
-  runBaseline,
+  baselineConfig,
   selectAvailableRules,
   selectComparableRules,
 } from "./lint-divergence-baseline.mjs";
+import {
+  configureScorecardRules,
+  resolveScorecardRuntime,
+  runScorecardBaseline,
+} from "./lint-divergence-scorecard.ts";
 import {
   assertBudgetsPassed,
   attachBudget,
@@ -48,12 +52,12 @@ export async function runLintDivergenceReport(argv = process.argv.slice(2)) {
   const registry = readJson(args.registry);
   const ruleMap = readJson(ruleMapPath);
   const ledger = readLedger();
-  const runtime = resolveBaselineRuntime();
+  const runtime = resolveScorecardRuntime();
   const launch = resolveVizeLaunch(args.vizeBin, false);
   const selection = selectComparableRules(ruleMap, args.preset, {
     includeUnimplemented: args.measureCoverageGap,
   });
-  const rules = selectAvailableRules(runtime, selection.rules);
+  const rules = configureScorecardRules(selectAvailableRules(runtime, selection.rules));
   const { skippedByPreset } = selection;
   const mappedRuleCount = Object.values(ruleMap.entries).filter(
     (entry) => entry.status === "mapped",
@@ -66,6 +70,7 @@ export async function runLintDivergenceReport(argv = process.argv.slice(2)) {
   if (projects.length === 0) throw new Error("No linter-covered project matched the selection");
 
   mkdirSync(args.outputDir, { recursive: true });
+  removePriorArtifacts(args.outputDir, projects);
   const evidence = collectRunEvidence();
   const artifacts = [];
   for (const project of projects) {
@@ -104,9 +109,9 @@ async function measureProject(context) {
     throw new Error(`${project.id} matched no Vue files`);
   }
 
-  const patinaFindings = runPatina(context, cwd, files);
+  const patinaFindings = files.length === 0 ? [] : runPatina(context, cwd, files);
   const startedAt = Date.now();
-  const baselineRun = await runBaseline(runtime, cwd, files, rules);
+  const baselineRun = await runScorecardBaseline(runtime, baselineConfig, cwd, files, rules);
   const eslintResults = baselineRun.results;
   const baselineDurationMs = Date.now() - startedAt;
   reconcileCorpus(project.id, files, eslintResults, cwd);
@@ -147,6 +152,17 @@ async function measureProject(context) {
   writeFileSync(markdownPath, renderMarkdown(artifact));
   process.stdout.write(`Wrote ${relative(repoRoot, jsonPath)}\n`);
   return artifact;
+}
+
+function removePriorArtifacts(outputDir, projects) {
+  for (const filename of [
+    "lint-divergence-summary.json",
+    ...projects.flatMap((project) => [
+      `${project.id}-lint-divergence.json`,
+      `${project.id}-lint-divergence.md`,
+    ]),
+  ])
+    rmSync(join(outputDir, filename), { force: true });
 }
 
 /**

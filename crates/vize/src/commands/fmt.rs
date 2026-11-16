@@ -110,6 +110,11 @@ pub fn run(args: FmtArgs) {
     let start = Instant::now();
     let snapshot = if args.no_config {
         config::LoadedFormatterSnapshot::default()
+    } else if args.config_stdin {
+        crate::commands::config_stdin::formatter().unwrap_or_else(|error| {
+            eprintln!("Invalid formatter configuration: {error}");
+            std::process::exit(2);
+        })
     } else {
         config::try_load_formatter_snapshot(args.config.as_deref()).unwrap_or_else(|error| {
             eprintln!("Invalid formatter configuration: {error}");

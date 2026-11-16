@@ -10,7 +10,10 @@ use std::{path::Path, path::PathBuf, process::Command, process::Output};
 
 use serde_json::{Value, json};
 
-use super::{TSGO_ENV, check_project, install_mapper_manifest, install_vue_package, output_text};
+use super::{
+    TSGO_ENV, check_project, install_mapper_manifest, install_vue_package, output_text,
+    workspace_root,
+};
 
 const ORIGINAL: &str = include_str!(
     "../../../../../tests/_fixtures/differential/typechecker/ambient-template-ref-10980/Probe.vue.txt"
@@ -22,6 +25,11 @@ const CONFIG: &str = include_str!(
     "../../../../../tests/_fixtures/differential/typechecker/ambient-template-ref-10980/tsconfig.json.txt"
 );
 const FOCUS_ERROR: &str = "Property 'focus' does not exist on type '{}'.";
+const VUE_AMBIENT: &str = r#"export {};
+declare global {
+  const useTemplateRef: typeof import("vue").useTemplateRef;
+}
+"#;
 
 #[derive(Clone, Copy)]
 enum Route {
@@ -212,5 +220,99 @@ fn ambient_template_ref_retains_native_cli_and_mapper_errors_through_repairs() {
             capture(project.path(), route, case, "real-vue-import", &output);
             assert_diagnostics(route, &output, &[], false);
         }
+    }
+}
+
+#[test]
+fn vue_owned_ambient_template_ref_reaches_the_content_mapper() {
+    let Some(native) = std::env::var_os(TSGO_ENV).map(PathBuf::from) else {
+        eprintln!("skipping Vue ambient composable conformance: {TSGO_ENV} is not set");
+        return;
+    };
+    assert!(native.is_file(), "{TSGO_ENV} must name an executable");
+    let project = tempfile::tempdir().unwrap();
+    install_mapper_manifest(project.path());
+    install_vue_package(project.path());
+    std::fs::write(project.path().join("global.d.ts"), VUE_AMBIENT).unwrap();
+    std::fs::write(project.path().join("Probe.vue"), ORIGINAL).unwrap();
+    for (case, composables, expected) in [
+        ("default", None, Vec::new()),
+        (
+            "disabled",
+            Some([].as_slice()),
+            vec![format!("3:32 [TS2339] {FOCUS_ERROR}")],
+        ),
+        (
+            "configured",
+            Some(["useTemplateRef"].as_slice()),
+            Vec::new(),
+        ),
+    ] {
+        std::fs::write(
+            project.path().join("tsconfig.json"),
+            serde_json::to_vec_pretty(&config(composables, true)).unwrap(),
+        )
+        .unwrap();
+
+        let output = run(Route::Mapper, &native, project.path());
+        capture(project.path(), Route::Mapper, case, "vue-owned", &output);
+        let expected = expected.iter().map(String::as_str).collect::<Vec<_>>();
+        assert_diagnostics(Route::Mapper, &output, &expected, true);
+    }
+}
+
+#[test]
+fn reported_auto_imported_dom_and_component_refs_match_explicit_imports() {
+    let Some(native) = std::env::var_os(TSGO_ENV).map(PathBuf::from) else {
+        eprintln!("skipping reported auto-import conformance: {TSGO_ENV} is not set");
+        return;
+    };
+    assert!(native.is_file(), "{TSGO_ENV} must name an executable");
+    let fixture = workspace_root().join(
+        "tests/_fixtures/differential/typechecker/content-mapper-auto-import-template-ref-12970",
+    );
+    let cases_root = workspace_root().join("target/vize-tests/tests");
+    std::fs::create_dir_all(&cases_root).unwrap();
+    let project = tempfile::Builder::new()
+        .prefix("content-mapper-auto-import-template-ref-")
+        .tempdir_in(cases_root)
+        .unwrap();
+    install_mapper_manifest(project.path());
+    install_vue_package(project.path());
+    for name in [
+        "tsconfig.json",
+        "src/auto-imports.d.ts",
+        "src/child.vue",
+        "src/auto-imported.vue",
+        "src/imported.vue",
+    ] {
+        let source = fixture.join(format!("{name}.txt"));
+        let target = project.path().join(name);
+        std::fs::create_dir_all(target.parent().unwrap()).unwrap();
+        std::fs::copy(source, target).unwrap();
+    }
+
+    let output = check_project(&native, project.path(), "tsconfig.json");
+    assert!(output.status.success(), "{}", output_text(&output));
+    assert_eq!(output.stdout, b"", "{}", output_text(&output));
+    assert_eq!(output.stderr, b"", "{}", output_text(&output));
+
+    for name in ["src/auto-imported.vue", "src/imported.vue"] {
+        let path = project.path().join(name);
+        let source = std::fs::read_to_string(&path).unwrap();
+        let probe = source.replace(
+            "child.value?.focus()",
+            "element.value?.__vizeMissingElement\nchild.value?.__vizeMissingComponent",
+        );
+        assert_ne!(probe, source);
+        std::fs::write(path, probe).unwrap();
+    }
+    let output = check_project(&native, project.path(), "tsconfig.json");
+    assert_eq!(output.status.code(), Some(2), "{}", output_text(&output));
+    assert_eq!(output.stderr, b"", "{}", output_text(&output));
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert_eq!(stdout.matches("error TS2339").count(), 4, "{stdout}");
+    for property in ["__vizeMissingElement", "__vizeMissingComponent"] {
+        assert_eq!(stdout.matches(property).count(), 2, "{stdout}");
     }
 }

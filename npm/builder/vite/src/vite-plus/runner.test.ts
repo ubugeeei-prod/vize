@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
-import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
-import { runTools, withConfigMetadataResolution } from "./runner.ts";
+import { runNative, runTools, withConfigMetadataResolution } from "./runner.ts";
 import type { VizeTaskConfig } from "./types.ts";
 
 async function project(run: () => Promise<void>) {
@@ -14,7 +14,6 @@ async function project(run: () => Promise<void>) {
     writeFileSync("App.vue", "<template><div /></template>\n");
     writeFileSync("script.ts", "export const value = 1\n");
     await run();
-    assert.ok(!readdirSync(dir).some((name) => name.startsWith(".vize-vp-")));
   } finally {
     process.chdir(cwd);
     rmSync(dir, { recursive: true, force: true });
@@ -66,13 +65,12 @@ void test("check runs native checks, native lint and Oxlint, and both formatters
       metadata,
       "consumer/vp",
       "vize/bin",
-      async (command, args) => {
+      async (command, args, stdin) => {
         assert.equal(command, process.execPath);
         calls.push(args);
         if (args[0] === "vize/bin") {
-          const file = args[args.indexOf("--config") + 1];
-          assert.equal(path.dirname(file), os.tmpdir());
-          assert.equal(JSON.parse(readFileSync(file, "utf8")).vue.linter.preset, "essential");
+          assert.ok(args.includes("--config-stdin"));
+          assert.equal(JSON.parse(stdin!).vue.linter.preset, "essential");
         }
         return args[1] === "lint" ? 1 : 0;
       },
@@ -89,7 +87,7 @@ void test("check runs native checks, native lint and Oxlint, and both formatters
       ],
     );
     assert.deepEqual(commands, ["check", "lint", "fmt"]);
-    assert.deepEqual(calls[3].slice(4), ["--check", "App.vue"]);
+    assert.deepEqual(calls[3].slice(3), ["--check", "App.vue"]);
     assert.deepEqual(calls[4], ["consumer/vp", "fmt", "--check"]);
   });
 });
@@ -105,7 +103,7 @@ void test("formatting owns only selected Vue files and never expands an empty li
     assert.deepEqual(calls, [["vp", "fmt", "--write", "script.ts"]]);
     calls.length = 0;
     await runTools("fmt", ["App.vue"], { config: {}, options: {} }, "vp", "native", execute);
-    assert.deepEqual(calls[0].slice(4), ["--write", "App.vue"]);
+    assert.deepEqual(calls[0].slice(3), ["--write", "App.vue"]);
     assert.equal(calls.length, 1);
     calls.length = 0;
     await runTools(
@@ -116,7 +114,7 @@ void test("formatting owns only selected Vue files and never expands an empty li
       "native",
       execute,
     );
-    assert.deepEqual(calls[0].slice(4), ["--check", "App.vue"]);
+    assert.deepEqual(calls[0].slice(3), ["--check", "App.vue"]);
     assert.deepEqual(calls[1], ["vp", "fmt", "--check", "script.ts"]);
   });
 });
@@ -161,7 +159,7 @@ void test("fmt.ignorePatterns excludes Vue files from check and write, even for 
     for (const task of ["fmt:check", "fmt"] as const) {
       calls.length = 0;
       await runTools(task, [], metadata, "vp", "native", execute);
-      assert.deepEqual(calls[0].slice(4), [
+      assert.deepEqual(calls[0].slice(3), [
         task === "fmt:check" ? "--check" : "--write",
         "App.vue",
       ]);
@@ -189,7 +187,7 @@ void test("vue.ignores excludes Vue files before native fmt can warn about them"
       vueFmtIgnorePatterns: ["legacy/**"],
     };
     await runTools("fmt:check", [], metadata, "vp", "native", execute);
-    assert.deepEqual(calls[0].slice(4), ["--check", "App.vue"]);
+    assert.deepEqual(calls[0].slice(3), ["--check", "App.vue"]);
     assert.ok(!calls.some((args) => args.some((arg) => arg.includes("legacy/"))));
     calls.length = 0;
     await runTools("check", [], metadata, "vp", "native", execute);
@@ -212,10 +210,9 @@ void test("lint presentation and ordered host ignores reach only the native lint
       },
       "vp",
       "native",
-      async (_, args) => {
+      async (_, args, stdin) => {
         if (args[0] === "native") {
-          const file = args[args.indexOf("--config") + 1];
-          assert.deepEqual(JSON.parse(readFileSync(file, "utf8")).vue.ignores, [
+          assert.deepEqual(JSON.parse(stdin!).vue.ignores, [
             path.resolve("**/*.ts").replaceAll("\\", "/"),
             `!${path.resolve("src/**/*.ts").replaceAll("\\", "/")}`,
             path.resolve("generated/**").replaceAll("\\", "/"),
@@ -227,7 +224,7 @@ void test("lint presentation and ordered host ignores reach only the native lint
         return 0;
       },
     );
-    assert.deepEqual(calls[0].slice(4), ["--locale", "ja", "--help-level", "short", "App.vue"]);
+    assert.deepEqual(calls[0].slice(3), ["--locale", "ja", "--help-level", "short", "App.vue"]);
     assert.deepEqual(calls[1], ["vp", "lint", "App.vue"]);
   });
 });
@@ -240,7 +237,7 @@ void test("lint fix reaches both engines and native opt-outs restore Vite+ owner
       return 0;
     };
     await runTools("lint:fix", ["script.ts"], { config: {}, options: {} }, "vp", "native", execute);
-    assert.deepEqual(calls[0].slice(4), ["--fix", "script.ts"]);
+    assert.deepEqual(calls[0].slice(3), ["--fix", "script.ts"]);
     assert.deepEqual(calls[1], ["vp", "lint", "--fix", "script.ts"]);
     calls.length = 0;
     await runTools(
@@ -258,7 +255,7 @@ void test("lint fix reaches both engines and native opt-outs restore Vite+ owner
   });
 });
 
-void test("exceptions and interrupts remove native config and stop subsequent tools", async () => {
+void test("exceptions and interrupts stop subsequent tools", async () => {
   await project(async () => {
     for (const interrupted of [false, true]) {
       let count = 0;
@@ -271,8 +268,32 @@ void test("exceptions and interrupts remove native config and stop subsequent to
         interrupted ? /interrupted/ : /spawn failed/,
       );
       assert.equal(count, 1);
-      assert.ok(!readdirSync(".").some((name) => name.startsWith(".vize-vp-")));
     }
+  });
+});
+
+void test("published CLIs without the stdin marker retain legacy file transport", async () => {
+  await project(async () => {
+    const native = path.resolve("legacy/bin/vize");
+    mkdirSync(path.dirname(native), { recursive: true });
+    writeFileSync(native, "legacy native placeholder\n");
+    let transported = "";
+    await runNative(
+      "check",
+      ["App.vue"],
+      { config: {}, options: {} },
+      native,
+      async (_, args, stdin) => {
+        assert.equal(stdin, undefined);
+        assert.deepEqual(args.slice(0, 3), [native, "check", "--config"]);
+        transported = args[3];
+        assert.deepEqual(JSON.parse(readFileSync(transported, "utf8")), {
+          vue: { basePath: process.cwd(), entries: [] },
+        });
+        return 0;
+      },
+    );
+    assert.throws(() => readFileSync(transported));
   });
 });
 
@@ -289,18 +310,18 @@ void test("check --fix routes fixes only to lint and format and loads existing s
       { options: {} },
       "vp",
       "native",
-      async (_, args) => {
+      async (_, args, stdin) => {
         calls.push(args);
         if (args[0] === "native") {
-          const config = JSON.parse(readFileSync(args[3], "utf8"));
+          const config = JSON.parse(stdin!);
           assert.equal(config.vue.formatter.singleQuote, true);
         }
         return 0;
       },
     );
-    assert.deepEqual(calls[0].slice(4), ["App.vue"]);
-    assert.deepEqual(calls[1].slice(4), ["--fix", "App.vue"]);
-    assert.deepEqual(calls[3].slice(4), ["--write", "App.vue"]);
+    assert.deepEqual(calls[0].slice(3), ["App.vue"]);
+    assert.deepEqual(calls[1].slice(3), ["--fix", "App.vue"]);
+    assert.deepEqual(calls[3].slice(3), ["--write", "App.vue"]);
     assert.equal(calls.length, 4);
   });
 });

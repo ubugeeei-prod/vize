@@ -40,7 +40,12 @@ export async function runPublicViteFormatter(root) {
   const receipt = validateNativeHistoryBuild(nativeDir, JSON.parse(receiptBytes));
   const custody = currentAddon(root, receipt, require);
   const launcher = path.join(root, "npm/cli/bin/vize");
-  const packed = ["npm/cli/bin/vize", "npm/cli/dist/cli.mjs", "npm/cli/dist/config.mjs"];
+  const packed = [
+    "npm/cli/bin/vize",
+    "npm/cli/bin/config-stdin-v1",
+    "npm/cli/dist/cli.mjs",
+    "npm/cli/dist/config.mjs",
+  ];
   const packageArtifacts = Object.fromEntries(
     packed.map((file) => [file, bytes(fs.readFileSync(path.join(root, file)))]),
   );
@@ -71,7 +76,7 @@ export async function runPublicViteFormatter(root) {
   const env = { command: "fmt", mode: "production" };
   const report = {
     schema: "vize.public-vite-formatter-result",
-    version: 2,
+    version: 3,
     buildReceipt: receipt,
     preparation: custody.preparation,
     originalViteSources,
@@ -184,25 +189,22 @@ export async function runPublicViteFormatter(root) {
           cleanup: null,
         };
         row.passes.push(pass);
-        let tempFile;
         try {
           pass.returnedStatus = await runNative(
             "fmt",
             [flag, "UserCard.vue"],
             metadata,
             undefined,
-            async (command, argv) => {
-              tempFile = argv[3];
+            async (command, argv, stdin) => {
               pass.request = {
                 command,
                 argv,
-                configPath: tempFile,
-                configBefore: bytes(fs.readFileSync(tempFile)),
+                configPath: null,
+                stdin: bytes(Buffer.from(stdin)),
               };
               assert.equal(command, process.execPath);
-              assert.deepEqual(argv, [launcher, "fmt", "--config", tempFile, flag, "UserCard.vue"]);
-              assert.equal(path.dirname(tempFile), os.tmpdir());
-              assert.deepEqual(pass.request.configBefore, bytes(Buffer.from(transported)));
+              assert.deepEqual(argv, [launcher, "fmt", "--config-stdin", flag, "UserCard.vue"]);
+              assert.deepEqual(pass.request.stdin, bytes(Buffer.from(transported)));
               const destination = path.join(loadCapture, `${index}.json`);
               const childEnv = {
                 ...process.env,
@@ -230,16 +232,10 @@ export async function runPublicViteFormatter(root) {
               };
               pass.process = frame;
               persist();
-              const status = await childFrame(command, argv, childEnv, workspace, frame);
+              const status = await childFrame(command, argv, childEnv, workspace, frame, stdin);
               persist();
               pass.observationErrors = [];
               for (const [label, observe] of [
-                [
-                  "temporary-config",
-                  () => {
-                    pass.request.configAfter = bytes(fs.readFileSync(tempFile));
-                  },
-                ],
                 [
                   "actual-load",
                   () => {
@@ -290,18 +286,17 @@ export async function runPublicViteFormatter(root) {
                   ({ key, valueType }) => key === "runCli" && valueType === "function",
                 ),
               );
-              assert.deepEqual(pass.request.configAfter, pass.request.configBefore);
               return status;
             },
           );
         } finally {
           pass.cleanup = {
-            configPath: tempFile ?? null,
-            deleted: tempFile ? !fs.existsSync(tempFile) : null,
+            configPath: null,
+            deleted: null,
           };
           persist();
         }
-        assert.equal(pass.cleanup.deleted, true);
+        assert.deepEqual(pass.cleanup, { configPath: null, deleted: null });
         assert.equal(pass.process.processError, null);
         assert.equal(pass.process.timedOut, false);
         assert.equal(pass.process.signal, null);

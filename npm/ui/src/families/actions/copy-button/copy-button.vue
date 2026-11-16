@@ -149,9 +149,11 @@ function focusTarget(target: unknown, options?: FocusOptions): void {
 }
 
 async function writeTextWithNavigatorClipboard(nextValue: string): Promise<void> {
-  const writeText = globalThis.navigator?.clipboard?.writeText;
-  if (typeof writeText !== "function") throw new Error(COPY_BUTTON_CLIPBOARD_UNAVAILABLE);
-  await writeText.call(globalThis.navigator.clipboard, nextValue);
+  const clipboard = globalThis.navigator?.clipboard;
+  if (typeof clipboard?.writeText !== "function") {
+    throw new Error(COPY_BUTTON_CLIPBOARD_UNAVAILABLE);
+  }
+  await clipboard.writeText(nextValue);
 }
 
 function hasText(nextValue: string | undefined): boolean {

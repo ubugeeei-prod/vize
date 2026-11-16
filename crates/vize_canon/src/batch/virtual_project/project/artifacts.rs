@@ -159,6 +159,15 @@ impl VirtualProject {
         !self.props_fallback_files.is_empty()
     }
 
+    /// Whether this exact projected source leaves `checkUnknownProps` off.
+    ///
+    /// The program-wide fallback declaration is shared, but diagnostic policy
+    /// remains per source because an SFC compiler comment can override the
+    /// project option.
+    pub(crate) fn uses_props_fallback_for(&self, virtual_path: &Path) -> bool {
+        self.props_fallback_files.contains(virtual_path)
+    }
+
     fn reconcile_props_fallback(&mut self, before: bool) {
         if before != self.uses_props_fallback() {
             self.incremental_materialized_candidates

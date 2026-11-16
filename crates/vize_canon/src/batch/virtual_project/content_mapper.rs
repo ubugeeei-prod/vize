@@ -23,12 +23,11 @@ pub use protocol::{
     ContentMapperTransform, ContentMapperUnusedExpectDiagnostic,
 };
 
+mod directive_table;
 mod directives;
 mod unmapped_ignores;
-use directives::{
-    sfc_diagnostic_directives, with_component_prop_echoes, with_generic_echoes,
-    with_owned_input_echoes,
-};
+use directive_table::content_mapper_diagnostic_directives;
+use directives::with_owned_input_echoes;
 
 mod component_name;
 use component_name::content_mapper_component_name;
@@ -146,6 +145,9 @@ fn transform_with_shared_sources(
     };
 
     let descriptor = prepare_script_blocks(descriptor);
+    let loose_unknown_props =
+        !super::vue_compiler_comments::apply(content, transform_options.virtual_ts_check_options())
+            .check_unknown_props;
     let suppress_typescript_diagnostics =
         !transform_options.check_javascript && descriptor_is_unchecked_javascript(&descriptor);
     let use_tsx = descriptor_uses_jsx_script(&descriptor);
@@ -267,18 +269,19 @@ fn transform_with_shared_sources(
         diagnostic_directives: with_owned_input_echoes(
             (!authored.is_derived())
                 .then(|| {
-                    let directives = with_generic_echoes(
-                        sfc_diagnostic_directives(
-                            content,
-                            &code,
-                            &descriptor,
-                            &spans,
-                            &diagnostic_echoes,
-                            &diagnostic_primaries,
-                        ),
+                    content_mapper_diagnostic_directives(
+                        content,
+                        &code,
+                        &descriptor,
+                        &spans,
+                        &diagnostic_echoes,
+                        &diagnostic_primaries,
                         generic_copies.as_ref(),
-                    );
-                    with_component_prop_echoes(directives, &code, &mappings, &callback_primaries)
+                        &mappings,
+                        &mapping_meta,
+                        &callback_primaries,
+                        loose_unknown_props,
+                    )
                 })
                 .flatten(),
             &diagnostic_echoes,
@@ -477,10 +480,6 @@ fn candidate(
         kind: alias::span_kind(generated, generated_range, original_text),
     })
 }
-fn ranges_overlap(left: &Range<usize>, right: &Range<usize>) -> bool {
-    left.start < right.end && right.start < left.end
-}
-
 #[expect(clippy::string_slice, reason = "tests assert by panicking")]
 #[expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 #[cfg(test)]

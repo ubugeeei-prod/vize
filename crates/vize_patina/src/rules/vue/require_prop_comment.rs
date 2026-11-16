@@ -1,8 +1,5 @@
 //! vue/require-prop-comment
-//!
-//! Each declared prop needs an immediately preceding JSDoc comment. Inline
-//! type-literal members and same-file interfaces are checked. An unresolved
-//! imported type is skipped.
+//! Checks local prop declarations for immediately preceding JSDoc comments.
 
 use crate::context::LintContext;
 use crate::diagnostic::{LintDiagnostic, Severity};
@@ -14,7 +11,7 @@ use oxc_ast::ast::{
 };
 use oxc_ast_visit::{Visit, walk};
 use oxc_span::{GetSpan, Span};
-use vize_l0::{String, cstr};
+use vize_l0::{FxHashMap, FxHashSet, String, cstr};
 
 static META: RuleMeta = RuleMeta {
     name: "vue/require-prop-comment",
@@ -41,23 +38,23 @@ impl Rule for RequirePropComment {
             let Some(scripts) = ctx.sfc_scripts() else {
                 return;
             };
-            let mut findings = Vec::new();
+            let mut blocks = Vec::with_capacity(2);
             if let (Some(block), Some(parsed)) = (&descriptor.script, scripts.script()) {
-                findings.extend(collect_block(
-                    &parsed.program,
-                    block.content.as_ref(),
-                    block.loc.start as u32,
-                ));
+                blocks.push(ScriptBlock {
+                    program: &parsed.program,
+                    source: block.content.as_ref(),
+                    offset: block.loc.start as u32,
+                });
             }
             if let (Some(block), Some(parsed)) = (&descriptor.script_setup, scripts.script_setup())
             {
-                findings.extend(collect_block(
-                    &parsed.program,
-                    block.content.as_ref(),
-                    block.loc.start as u32,
-                ));
+                blocks.push(ScriptBlock {
+                    program: &parsed.program,
+                    source: block.content.as_ref(),
+                    offset: block.loc.start as u32,
+                });
             }
-            findings
+            collect_blocks(&blocks)
         };
         for (message, start, end) in findings {
             ctx.report_in_sfc(LintDiagnostic::warn(META.name, message, start, end));
@@ -65,42 +62,59 @@ impl Rule for RequirePropComment {
     }
 }
 
-fn collect_block(program: &Program<'_>, source: &str, offset: u32) -> Vec<(String, u32, u32)> {
-    let mut visitor = PropVisitor {
-        program,
-        props: Vec::new(),
-    };
-    visitor.visit_program(program);
-    visitor
-        .props
-        .into_iter()
-        .filter(|prop| !has_jsdoc(source, &program.comments, prop.anchor))
-        .map(|prop| {
-            (
+struct ScriptBlock<'a> {
+    program: &'a Program<'a>,
+    source: &'a str,
+    offset: u32,
+}
+
+fn collect_blocks(blocks: &[ScriptBlock<'_>]) -> Vec<(String, u32, u32)> {
+    let mut findings = Vec::new();
+    let mut resolver = TypeResolver::new(blocks);
+    for (current, current_block) in blocks.iter().enumerate() {
+        let props = {
+            let mut visitor = PropVisitor {
+                resolver: &mut resolver,
+                current,
+                props: Vec::new(),
+            };
+            visitor.visit_program(current_block.program);
+            visitor.props
+        };
+        findings.extend(props.into_iter().filter_map(|prop| {
+            let block = blocks.get(prop.block)?;
+            if has_jsdoc(block.source, &block.program.comments, prop.anchor) {
+                return None;
+            }
+            Some((
                 cstr!(
                     "The \"{}\" property should have a JSDoc comment.",
                     prop.name
                 ),
-                offset + prop.span.start,
-                offset + prop.span.end,
-            )
-        })
-        .collect()
+                block.offset + prop.span.start,
+                block.offset + prop.span.end,
+            ))
+        }));
+    }
+    findings
 }
 
+#[derive(Clone)]
 struct Prop {
     name: String,
     span: Span,
     anchor: u32,
+    block: usize,
 }
 
-struct PropVisitor<'a> {
-    program: &'a Program<'a>,
+struct PropVisitor<'resolver, 'ctx, 'ast> {
+    resolver: &'resolver mut TypeResolver<'ctx, 'ast>,
+    current: usize,
     props: Vec<Prop>,
 }
 
-impl<'a> Visit<'a> for PropVisitor<'a> {
-    fn visit_call_expression(&mut self, call: &CallExpression<'a>) {
+impl<'resolver, 'ctx, 'ast> Visit<'ast> for PropVisitor<'resolver, 'ctx, 'ast> {
+    fn visit_call_expression(&mut self, call: &CallExpression<'ast>) {
         match callee_name(&call.callee) {
             Some("defineProps") => self.define_props(call),
             Some("defineComponent") => self.component_arguments(call),
@@ -111,7 +125,7 @@ impl<'a> Visit<'a> for PropVisitor<'a> {
 
     fn visit_export_default_declaration(
         &mut self,
-        declaration: &oxc_ast::ast::ExportDefaultDeclaration<'a>,
+        declaration: &oxc_ast::ast::ExportDefaultDeclaration<'ast>,
     ) {
         if let ExportDefaultDeclarationKind::ObjectExpression(object) = &declaration.declaration {
             self.props_option(object);
@@ -120,13 +134,13 @@ impl<'a> Visit<'a> for PropVisitor<'a> {
     }
 }
 
-impl<'a> PropVisitor<'a> {
-    fn define_props(&mut self, call: &CallExpression<'a>) {
+impl<'resolver, 'ctx, 'ast> PropVisitor<'resolver, 'ctx, 'ast> {
+    fn define_props(&mut self, call: &CallExpression<'ast>) {
         if let Some(types) = &call.type_arguments
             && let Some(ty) = types.params.first()
         {
-            if let Some(props) = self.props_from_type(ty, 4) {
-                self.props.extend(props);
+            if let Some(props) = self.resolver.props_from_type(ty, 16, self.current) {
+                self.extend_props(props);
             }
             return;
         }
@@ -135,13 +149,13 @@ impl<'a> PropVisitor<'a> {
         }
     }
 
-    fn component_arguments(&mut self, call: &CallExpression<'a>) {
+    fn component_arguments(&mut self, call: &CallExpression<'ast>) {
         if let Some(Argument::ObjectExpression(object)) = call.arguments.first() {
             self.props_option(object);
         }
     }
 
-    fn props_option(&mut self, object: &oxc_ast::ast::ObjectExpression<'a>) {
+    fn props_option(&mut self, object: &oxc_ast::ast::ObjectExpression<'ast>) {
         for property in &object.properties {
             let ObjectPropertyKind::ObjectProperty(property) = property else {
                 continue;
@@ -155,7 +169,7 @@ impl<'a> PropVisitor<'a> {
                         let ObjectPropertyKind::ObjectProperty(prop) = prop else {
                             continue;
                         };
-                        self.note_key(&prop.key, prop.span.start);
+                        self.note_key(&prop.key, prop.span.start, self.current);
                     }
                 }
                 Expression::ArrayExpression(array) => self.array_names(array),
@@ -164,14 +178,14 @@ impl<'a> PropVisitor<'a> {
         }
     }
 
-    fn runtime_argument(&mut self, argument: &Argument<'a>) {
+    fn runtime_argument(&mut self, argument: &Argument<'ast>) {
         match argument {
             Argument::ObjectExpression(object) => {
                 for property in &object.properties {
                     let ObjectPropertyKind::ObjectProperty(property) = property else {
                         continue;
                     };
-                    self.note_key(&property.key, property.span.start);
+                    self.note_key(&property.key, property.span.start, self.current);
                 }
             }
             Argument::ArrayExpression(array) => self.array_names(array),
@@ -179,45 +193,166 @@ impl<'a> PropVisitor<'a> {
         }
     }
 
-    fn array_names(&mut self, array: &oxc_ast::ast::ArrayExpression<'a>) {
+    fn array_names(&mut self, array: &oxc_ast::ast::ArrayExpression<'ast>) {
         for element in &array.elements {
             let ArrayExpressionElement::StringLiteral(literal) = element else {
                 continue;
             };
-            self.note(&literal.value, literal.span, literal.span.start);
+            self.note(
+                &literal.value,
+                literal.span,
+                literal.span.start,
+                self.current,
+            );
         }
     }
 
-    fn props_from_type(&self, ty: &TSType<'a>, depth: u8) -> Option<Vec<Prop>> {
+    fn extend_props(&mut self, props: Vec<Prop>) {
+        for prop in props {
+            self.note(&prop.name, prop.span, prop.anchor, prop.block);
+        }
+    }
+
+    fn note_key(&mut self, key: &PropertyKey<'ast>, anchor: u32, block: usize) {
+        if let Some(prop) = named(key, anchor, block) {
+            self.note(&prop.name, prop.span, prop.anchor, prop.block);
+        }
+    }
+
+    fn note(&mut self, name: &str, span: Span, anchor: u32, block: usize) {
+        if name.is_empty()
+            || self
+                .props
+                .iter()
+                .any(|prop| prop.block == block && prop.span.start == span.start)
+        {
+            return;
+        }
+        self.props.push(Prop {
+            name: String::from(name),
+            span,
+            anchor,
+            block,
+        });
+    }
+}
+
+#[derive(Clone, Copy)]
+enum LocalTypeDeclaration<'ast> {
+    Interface(usize, &'ast oxc_ast::ast::TSInterfaceDeclaration<'ast>),
+    Alias(usize, &'ast oxc_ast::ast::TSTypeAliasDeclaration<'ast>),
+}
+
+impl LocalTypeDeclaration<'_> {
+    fn block(self) -> usize {
+        match self {
+            Self::Interface(block, _) | Self::Alias(block, _) => block,
+        }
+    }
+}
+
+struct TypeResolver<'ctx, 'ast> {
+    blocks: &'ctx [ScriptBlock<'ast>],
+    declarations: FxHashMap<String, Vec<LocalTypeDeclaration<'ast>>>,
+    cache: FxHashMap<(usize, String, u8), Option<Vec<Prop>>>,
+    visiting: FxHashSet<(usize, String)>,
+    cycle_hits: usize,
+}
+
+impl<'ctx, 'ast> TypeResolver<'ctx, 'ast> {
+    fn new(blocks: &'ctx [ScriptBlock<'ast>]) -> Self {
+        let mut declarations: FxHashMap<String, Vec<LocalTypeDeclaration<'ast>>> =
+            FxHashMap::default();
+        for (block, script) in blocks.iter().enumerate() {
+            for statement in &script.program.body {
+                let declaration = match statement {
+                    Statement::TSInterfaceDeclaration(interface) => Some((
+                        interface.id.name.as_str(),
+                        LocalTypeDeclaration::Interface(block, interface),
+                    )),
+                    Statement::TSTypeAliasDeclaration(alias) => Some((
+                        alias.id.name.as_str(),
+                        LocalTypeDeclaration::Alias(block, alias),
+                    )),
+                    Statement::ExportNamedDeclaration(export) => export
+                        .declaration
+                        .as_ref()
+                        .and_then(|declaration| match declaration {
+                            Declaration::TSInterfaceDeclaration(interface) => Some((
+                                interface.id.name.as_str(),
+                                LocalTypeDeclaration::Interface(block, interface),
+                            )),
+                            Declaration::TSTypeAliasDeclaration(alias) => Some((
+                                alias.id.name.as_str(),
+                                LocalTypeDeclaration::Alias(block, alias),
+                            )),
+                            _ => None,
+                        }),
+                    _ => None,
+                };
+                if let Some((name, declaration)) = declaration {
+                    declarations
+                        .entry(String::from(name))
+                        .or_default()
+                        .push(declaration);
+                }
+            }
+        }
+        Self {
+            blocks,
+            declarations,
+            cache: FxHashMap::default(),
+            visiting: FxHashSet::default(),
+            cycle_hits: 0,
+        }
+    }
+
+    fn props_from_type(&mut self, ty: &TSType<'ast>, depth: u8, block: usize) -> Option<Vec<Prop>> {
         if depth == 0 {
             return None;
         }
         match ty {
-            TSType::TSTypeLiteral(literal) => Some(self.members(&literal.members)),
+            TSType::TSTypeLiteral(literal) => Some(self.members(&literal.members, block)),
+            TSType::TSIntersectionType(intersection) => {
+                Some(self.composite_props(&intersection.types, depth - 1, block))
+            }
+            TSType::TSUnionType(union) => {
+                Some(self.composite_props(&union.types, depth - 1, block))
+            }
             TSType::TSParenthesizedType(inner) => {
-                self.props_from_type(&inner.type_annotation, depth)
+                self.props_from_type(&inner.type_annotation, depth - 1, block)
             }
             TSType::TSTypeReference(reference) => {
                 let TSTypeName::IdentifierReference(identifier) = &reference.type_name else {
                     return None;
                 };
-                self.lookup(identifier.name.as_str(), depth - 1)
+                self.lookup(identifier.name.as_str(), depth - 1, block)
             }
             _ => None,
         }
     }
 
-    fn members(&self, members: &[TSSignature<'a>]) -> Vec<Prop> {
+    fn composite_props(&mut self, types: &[TSType<'ast>], depth: u8, block: usize) -> Vec<Prop> {
+        let mut props = Vec::new();
+        for ty in types {
+            if let Some(found) = self.props_from_type(ty, depth, block) {
+                extend_unique(&mut props, found);
+            }
+        }
+        props
+    }
+
+    fn members(&self, members: &[TSSignature<'ast>], block: usize) -> Vec<Prop> {
         let mut props = Vec::new();
         for member in members {
             match member {
                 TSSignature::TSPropertySignature(signature) => {
-                    if let Some(prop) = named(&signature.key, signature.span.start) {
+                    if let Some(prop) = named(&signature.key, signature.span.start, block) {
                         props.push(prop);
                     }
                 }
                 TSSignature::TSMethodSignature(signature) => {
-                    if let Some(prop) = named(&signature.key, signature.span.start) {
+                    if let Some(prop) = named(&signature.key, signature.span.start, block) {
                         props.push(prop);
                     }
                 }
@@ -227,67 +362,93 @@ impl<'a> PropVisitor<'a> {
         props
     }
 
-    fn lookup(&self, name: &str, depth: u8) -> Option<Vec<Prop>> {
-        for statement in &self.program.body {
-            if let Some(props) = self.declaration_props(statement, name, depth) {
-                return Some(props);
+    fn lookup(&mut self, name: &str, depth: u8, origin: usize) -> Option<Vec<Prop>> {
+        let key = (origin, String::from(name), depth);
+        if let Some(cached) = self.cache.get(&key) {
+            return cached.clone();
+        }
+        let visiting = (origin, String::from(name));
+        if !self.visiting.insert(visiting.clone()) {
+            self.cycle_hits += 1;
+            return Some(Vec::new());
+        }
+        let cycle_hits = self.cycle_hits;
+        let candidates = self.declarations.get(name);
+        let mut declaration = None;
+        for block in (0..self.blocks.len()).map(|index| (origin + index) % self.blocks.len()) {
+            if let Some(candidate) = candidates
+                .and_then(|entries| entries.iter().find(|entry| entry.block() == block))
+                .copied()
+            {
+                declaration = Some(candidate);
+                break;
             }
         }
-        None
+        let result = declaration.map(|declaration| self.declaration_props(declaration, depth));
+        self.visiting.remove(&visiting);
+        // A cycle cut is path-dependent. Caching the partial result would make
+        // a later lookup incorrectly inherit whichever edge happened to be
+        // active first, so only memoize fully acyclic expansions.
+        if self.cycle_hits == cycle_hits {
+            self.cache.insert(key, result.clone());
+        }
+        result
     }
 
     fn declaration_props(
-        &self,
-        statement: &Statement<'a>,
-        name: &str,
+        &mut self,
+        declaration: LocalTypeDeclaration<'ast>,
         depth: u8,
-    ) -> Option<Vec<Prop>> {
-        match statement {
-            Statement::TSInterfaceDeclaration(interface) if interface.id.name == name => {
-                Some(self.members(&interface.body.body))
+    ) -> Vec<Prop> {
+        match declaration {
+            LocalTypeDeclaration::Interface(block, interface) => {
+                self.interface_props(interface, depth, block)
             }
-            Statement::TSTypeAliasDeclaration(alias) if alias.id.name == name => {
-                self.props_from_type(&alias.type_annotation, depth)
-            }
-            Statement::ExportNamedDeclaration(export) => {
-                export
-                    .declaration
-                    .as_ref()
-                    .and_then(|declaration| match declaration {
-                        Declaration::TSInterfaceDeclaration(interface)
-                            if interface.id.name == name =>
-                        {
-                            Some(self.members(&interface.body.body))
-                        }
-                        Declaration::TSTypeAliasDeclaration(alias) if alias.id.name == name => {
-                            self.props_from_type(&alias.type_annotation, depth)
-                        }
-                        _ => None,
-                    })
-            }
-            _ => None,
+            LocalTypeDeclaration::Alias(block, alias) => self
+                .props_from_type(&alias.type_annotation, depth, block)
+                .unwrap_or_default(),
         }
     }
 
-    fn note_key(&mut self, key: &PropertyKey<'a>, anchor: u32) {
-        if let Some(prop) = named(key, anchor) {
-            self.note(&prop.name, prop.span, prop.anchor);
+    fn interface_props(
+        &mut self,
+        interface: &oxc_ast::ast::TSInterfaceDeclaration<'ast>,
+        depth: u8,
+        block: usize,
+    ) -> Vec<Prop> {
+        let mut props = self.members(&interface.body.body, block);
+        if depth == 0 {
+            return props;
         }
-    }
-
-    fn note(&mut self, name: &str, span: Span, anchor: u32) {
-        if name.is_empty() || self.props.iter().any(|prop| prop.span.start == span.start) {
-            return;
+        let mut seen = FxHashSet::default();
+        for heritage in &interface.extends {
+            let Expression::Identifier(identifier) = &heritage.expression else {
+                continue;
+            };
+            if !seen.insert(identifier.name.as_str()) {
+                continue;
+            }
+            if let Some(inherited) = self.lookup(identifier.name.as_str(), depth - 1, block) {
+                extend_unique(&mut props, inherited);
+            }
         }
-        self.props.push(Prop {
-            name: String::from(name),
-            span,
-            anchor,
-        });
+        props
     }
 }
 
-fn named(key: &PropertyKey<'_>, anchor: u32) -> Option<Prop> {
+fn extend_unique(props: &mut Vec<Prop>, incoming: Vec<Prop>) {
+    for prop in incoming {
+        if props
+            .iter()
+            .any(|existing| existing.block == prop.block && existing.span == prop.span)
+        {
+            continue;
+        }
+        props.push(prop);
+    }
+}
+
+fn named(key: &PropertyKey<'_>, anchor: u32, block: usize) -> Option<Prop> {
     let name = match key {
         PropertyKey::StaticIdentifier(identifier) => identifier.name.as_str(),
         PropertyKey::StringLiteral(literal) => literal.value.as_str(),
@@ -298,6 +459,7 @@ fn named(key: &PropertyKey<'_>, anchor: u32) -> Option<Prop> {
         name: String::from(name),
         span,
         anchor: anchor.min(span.start),
+        block,
     })
 }
 

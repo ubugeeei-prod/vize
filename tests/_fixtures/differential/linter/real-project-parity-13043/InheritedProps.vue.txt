@@ -1,0 +1,15 @@
+<script setup lang="ts">
+interface BaseProps {
+  inherited: string;
+}
+
+interface Props extends BaseProps {
+  own: string;
+}
+
+defineProps<Props>();
+</script>
+
+<template>
+  <p>{{ inherited }} {{ own }}</p>
+</template>

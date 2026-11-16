@@ -1,0 +1,8 @@
+<script setup lang="ts">
+declare const unsafeValue: any;
+const result = unsafeValue.run();
+</script>
+
+<template>
+  <p>{{ result }}</p>
+</template>

@@ -277,9 +277,15 @@ test("runtime writer preserves the complete stable Node project fixture", () =>
         '<template>\n  <button class="smoke" @click="count++">{{ label }} {{ count }}</button>\n</template>\n\n<script setup lang="ts">\nimport { ref } from "vue";\n\nconst label: string = "vize smoke";\nconst count = ref(0);\n</script>\n\n<style scoped>\n.smoke {\n  color: #0f766e;\n}\n</style>\n',
       "main.ts":
         'import { createApp } from "vue";\nimport App from "./App.vue";\n\ncreateApp(App).mount("#app");\n',
+      "Format.vue":
+        '<template><p>{{message}}</p></template><script setup lang="ts">const message:string="format"</script>\n',
+      "Oxlint.vue":
+        '<template>\n  <div v-html="body" />\n</template>\n\n<script setup lang="ts">\nconst body = "<strong>unsafe</strong>";\n</script>\n',
     } as const;
     for (const [filename, expected] of Object.entries(expectedSources)) {
-      const directory = filename === "App.vue" || filename === "main.ts" ? "src" : "";
+      const directory = ["App.vue", "Format.vue", "Oxlint.vue", "main.ts"].includes(filename)
+        ? "src"
+        : "";
       assert.equal(fs.readFileSync(path.join(f.install, directory, filename), "utf8"), expected);
     }
     assert.equal(

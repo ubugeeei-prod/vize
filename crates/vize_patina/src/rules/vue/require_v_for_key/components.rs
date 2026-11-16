@@ -4,7 +4,9 @@ use crate::markup::{MarkupBindingKind, MarkupElement};
 use vize_l0::is_native_tag;
 use vize_relief::{ElementNode, ExpressionNode, PropNode};
 
-pub(super) fn markup_element_is_custom_component(element: &MarkupElement<'_>) -> bool {
+pub(in crate::rules::vue) fn markup_element_is_custom_component(
+    element: &MarkupElement<'_>,
+) -> bool {
     if element.is_component() || !is_native_tag(element.tag()) || element.has_directive("is") {
         return true;
     }

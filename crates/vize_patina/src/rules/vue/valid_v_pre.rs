@@ -23,8 +23,10 @@ mod open_tag;
 
 use crate::context::LintContext;
 use crate::diagnostic::{LintDiagnostic, Severity};
+use crate::ir::ByteRange;
+use crate::markup::{MarkupContext, MarkupElement, MarkupRule, MarkupTraversal};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use open_tag::{AuthoredAttribute, authored_attributes};
+use open_tag::{AuthoredAttribute, authored_attribute, authored_attributes};
 use vize_relief::{ElementNode, RootNode, TemplateChildNode};
 
 static META: RuleMeta = RuleMeta {
@@ -38,9 +40,29 @@ static META: RuleMeta = RuleMeta {
 /// Enforce valid v-pre directives
 pub struct ValidVPre;
 
+impl MarkupRule for ValidVPre {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn traversal(&self) -> MarkupTraversal {
+        MarkupTraversal::Elements
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        element.walk_authored_directive_ranges("pre", &mut |range| {
+            check_authored_directive(ctx.lint(), range);
+        });
+    }
+}
+
 impl Rule for ValidVPre {
     fn meta(&self) -> &'static RuleMeta {
         &META
+    }
+
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
     }
 
     // The parser consumes `v-pre` while it freezes the element, so the
@@ -77,6 +99,21 @@ fn check_opening_tag(ctx: &mut LintContext, element: &ElementNode) -> bool {
         return false;
     };
 
+    report(ctx, span.start, v_pre);
+    true
+}
+
+fn check_authored_directive(ctx: &mut LintContext<'_>, range: ByteRange) {
+    let Some(source) = ctx.source.get(range.start as usize..range.end as usize) else {
+        return;
+    };
+    let Some(v_pre) = authored_attribute(source).and_then(VPre::parse) else {
+        return;
+    };
+    report(ctx, range.start, v_pre);
+}
+
+fn report(ctx: &mut LintContext<'_>, offset: u32, v_pre: VPre) {
     let mut report = |key: &str, range: (usize, usize)| {
         let (Ok(start), Ok(end)) = (u32::try_from(range.0), u32::try_from(range.1)) else {
             return;
@@ -85,8 +122,8 @@ fn check_opening_tag(ctx: &mut LintContext, element: &ElementNode) -> bool {
             LintDiagnostic::warn(
                 META.name,
                 ctx.t(key).as_ref(),
-                span.start.saturating_add(start),
-                span.start.saturating_add(end),
+                offset.saturating_add(start),
+                offset.saturating_add(end),
             )
             .with_help(ctx.t("vue/valid-v-pre.help").as_ref()),
         );
@@ -100,7 +137,6 @@ fn check_opening_tag(ctx: &mut LintContext, element: &ElementNode) -> bool {
     if let Some(value) = v_pre.value {
         report("vue/valid-v-pre.unexpected_value", value);
     }
-    true
 }
 
 /// The pieces of one authored `v-pre` attribute, as byte ranges in the tag.

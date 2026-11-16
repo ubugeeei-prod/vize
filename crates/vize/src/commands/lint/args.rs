@@ -57,6 +57,10 @@ pub struct LintArgs {
     #[arg(long)]
     pub no_config: bool,
 
+    /// Read an already-evaluated Vite config as JSON from stdin.
+    #[arg(long, hide = true, conflicts_with_all = ["config", "no_config"])]
+    pub config_stdin: bool,
+
     /// Output format (text, rich, ansi, plain, json, stylish, markdown, html, agent)
     #[arg(short, long, default_value = "text")]
     pub format: String,
