@@ -54,7 +54,7 @@ vp install -D vize
 Executar processos de mapper externos exige opt-in explícito:
 
 ```bash
-tsgo --runExternalCode --noEmit -p tsconfig.json
+tsc --runExternalCode --noEmit -p tsconfig.json
 ```
 
 No VS Code, a extensão do Vize registra o suporte a `.vue` no host content-mapper do TypeScript 7

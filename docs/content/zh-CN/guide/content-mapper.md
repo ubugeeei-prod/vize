@@ -52,7 +52,7 @@ vp install -D vize
 运行外部映射器进程需要显式选择加入:
 
 ```bash
-tsgo --runExternalCode --noEmit -p tsconfig.json
+tsc --runExternalCode --noEmit -p tsconfig.json
 ```
 
 在 VS Code 中,受信任的工作区里 Vize 扩展会自动向 TypeScript 7 content-mapper

@@ -54,7 +54,7 @@ vp install -D vize
 L'exécution de processus mappers externes exige un opt-in explicite :
 
 ```bash
-tsgo --runExternalCode --noEmit -p tsconfig.json
+tsc --runExternalCode --noEmit -p tsconfig.json
 ```
 
 Dans VS Code, l'extension Vize enregistre automatiquement la prise en charge de `.vue` auprès de
