@@ -37,6 +37,8 @@ export declare function admitPluginPlan(
   options?: { output?: string },
 ): void;
 
+export declare function refuseUnimplementedCapabilities(plan: PluginPlan): void;
+
 export declare function verifyPluginPlan(json: string, expectedDigest?: string): PluginPlan;
 
 export declare function inspectPluginPlan(

@@ -334,6 +334,7 @@ mod musea_static_build_cli;
 mod options_api_props_long_comment_cli;
 mod options_api_props_spread_cli;
 mod plain_script_cli;
+mod plugin_config_cli;
 mod project_config_cli;
 mod prop_name_casing_options_cli;
 mod props_destructuring_original_cli;

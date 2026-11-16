@@ -35,6 +35,10 @@ mod lint_features;
 mod lsp_snapshot;
 mod parse;
 mod pkl;
+mod plugin_inspect;
+#[cfg(test)]
+mod plugin_plan_tests;
+pub use plugin_inspect::inspect_config_plugins;
 #[cfg(test)]
 mod project_settings_tests;
 #[cfg(test)]

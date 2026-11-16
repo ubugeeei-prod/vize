@@ -130,6 +130,10 @@ pub(crate) struct RawVizeConfig {
         deserialize_with = "deserialize_project_root"
     )]
     pub project_root: Option<String>,
+    /// Canonical plugin plan projected by a Vite host from `vue.plugins`.
+    /// Hosts verify it before use; it is never an authored config field.
+    #[serde(rename = "__vizePluginPlan")]
+    pub(crate) plugin_plan: Option<serde_json::Value>,
     #[serde(rename = "basePath")]
     pub base_path: Option<String>,
     pub files: Option<Vec<String>>,
@@ -250,6 +254,7 @@ impl RawVizeConfig {
         let RawVizeConfig {
             schema,
             project_root: _,
+            plugin_plan: _,
             base_path: _,
             files: _,
             dialect,
