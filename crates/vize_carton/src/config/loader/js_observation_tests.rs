@@ -295,11 +295,7 @@ process.stdout.write('{{"value":2}}\n', () => process.exit(3));
         .status();
     assert_eq!(output.status.code(), Some(3));
     assert_eq!(output.stdout, br#"{"value":2}"#);
-    assert!(
-        output.stderr.starts_with(b"child-specificreason"),
-        "{:?}",
-        String::from_utf8_lossy(&output.stderr)
-    );
+    assert_eq!(output.stderr, b"child-specificreason\n");
     // Stdout was never read to EOF; stderr waited at most the grace.
     assert!(
         started.elapsed() < EXIT_GRACE * 4,
@@ -369,25 +365,41 @@ fn editor_hosts_load_a_config_that_leaves_a_timer_or_server_running() {
     }
 }
 
+/// The child's exit status behind a failed evaluation.
+fn exit_code(error: &(dyn std::error::Error + 'static)) -> Option<i32> {
+    let error = error.downcast_ref::<std::io::Error>()?.get_ref()?;
+    match error.downcast_ref::<ObservationFailure>() {
+        Some(failure) => failure.status.as_ref().ok()?.code(),
+        None => error
+            .downcast_ref::<super::failure_identity::NodeEvaluationFailure>()?
+            .status()
+            .code(),
+    }
+}
+
 #[test]
 fn a_config_that_never_settles_fails_on_every_host_instead_of_hanging() {
     for observed in [false, true] {
         let root = tempfile::tempdir().unwrap();
         let path = root.path().join("vite.config.mjs");
         std::fs::write(&path, "export default new Promise(() => {});\n").unwrap();
-        let snapshot = within(move || {
-            if observed {
-                load_lsp_config_snapshot_observed(Some(&path), &mut |_| {})
-            } else {
-                load_lsp_config_snapshot(Some(&path))
-            }
+        let code = within(move || {
+            let mut observe = |_: &[PathBuf]| {};
+            let mut before_read: super::BeforeConfigRead<'_> =
+                observed.then_some(&mut observe as &mut dyn FnMut(&[PathBuf]));
+            super::js::parse_js_config_observed(
+                &path,
+                &mut Vec::new(),
+                &mut false,
+                &mut before_read,
+                None,
+                false,
+            )
+            .map(|_| ())
+            .map_err(|error| exit_code(error.as_ref()))
         });
-        assert!(!snapshot.valid);
-        let error = snapshot.error.unwrap();
-        assert!(
-            error.contains("unsettled top-level await"),
-            "observed={observed}: {error}"
-        );
+        // Node's own exit for a top-level await that can never settle.
+        assert_eq!(code, Err(Some(13)), "observed={observed}");
     }
 }
 

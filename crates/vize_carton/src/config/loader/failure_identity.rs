@@ -57,6 +57,13 @@ impl fmt::Display for NodeEvaluationFailure {
 
 impl Error for NodeEvaluationFailure {}
 
+#[cfg(test)]
+impl NodeEvaluationFailure {
+    pub(super) fn status(&self) -> ExitStatus {
+        self.output.status
+    }
+}
+
 pub(super) fn from_error(error: &(dyn Error + 'static)) -> Option<ConfigLoadFailureIdentity> {
     error
         .downcast_ref::<io::Error>()?
