@@ -1,11 +1,12 @@
 //! #13111: a key of the `components` option is a known component typed by its value.
 
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 use super::{
-    TSGO_ENV, check_project, copy_fixture, install_mapper_manifest, install_vue_package,
-    output_text, workspace_root,
+    TSGO_ENV, check_project, install_mapper_manifest, install_vue_package, output_text,
+    workspace_root,
 };
+use crate::check_registered_components_cli::{FIXTURE, copy_pinned_project};
 
 const PRECISION: [&str; 4] = [
     "src/MixedWrong.vue(14,13): error TS2322: Type 'number' is not assignable to type 'string'.",
@@ -42,15 +43,13 @@ fn registered_component_keys_are_known_and_typed_by_their_values() {
         tsgo.display()
     );
 
-    let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("tests/fixtures/content_mapper_registered_components_13111");
     let cases_root = workspace_root().join("target/vize-tests/tests");
     std::fs::create_dir_all(&cases_root).unwrap();
     let project = tempfile::Builder::new()
         .prefix("content-mapper-registered-components-13111-")
         .tempdir_in(cases_root)
         .unwrap();
-    copy_fixture(&fixture, project.path());
+    copy_pinned_project(&workspace_root().join(FIXTURE), project.path());
     install_mapper_manifest(project.path());
     install_vue_package(project.path());
 

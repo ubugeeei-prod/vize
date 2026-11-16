@@ -1,10 +1,10 @@
-//! #13111 through `vize check`: the content-mapper fixture's registered
-//! components are known and typed by their registered values.
+//! #13111 through `vize check`: keys of the `components` option are known
+//! components typed by their registered values.
 #![cfg(test)]
 #![expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
 #![expect(clippy::disallowed_types, reason = "fixtures use std strings")]
 use crate::check_canon_recent_issues_cli::{
-    link_workspace_vue, resolve_test_corsa_path, unique_case_dir,
+    link_workspace_vue, resolve_test_corsa_path, unique_case_dir, workspace_root,
 };
 use crate::support::corsa_requirement;
 
@@ -12,10 +12,9 @@ use std::{path::Path, process::Command};
 
 use vize_l0::cstr;
 
-const FIXTURE: &str = concat!(
-    env!("CARGO_MANIFEST_DIR"),
-    "/tests/fixtures/content_mapper_registered_components_13111"
-);
+/// The pinned #13111 project; `content_mapper_tsgo_cli` checks the same bytes.
+pub(crate) const FIXTURE: &str =
+    "tests/_fixtures/differential/typechecker/registered-components-13111";
 
 const PRECISION: [&str; 4] = [
     "src/MixedWrong.vue error:14:13 [TS2322] Type 'number' is not assignable to type 'string'. (source: <Aliased :label=\"count\" />; binding: 'label')",
@@ -28,15 +27,17 @@ const UNKNOWN: [&str; 2] = [
     "src/Wrong.vue error:16:4 [TS2339] Property 'NotRegistered' does not exist on type '{}'. (source: <NotRegistered />)",
 ];
 
-fn copy_dir(source: &Path, target: &Path) {
+/// Copy the pinned `<file>.txt` inputs to `<file>`.
+pub(crate) fn copy_pinned_project(source: &Path, target: &Path) {
     std::fs::create_dir_all(target).unwrap();
     for entry in std::fs::read_dir(source).unwrap() {
         let entry = entry.unwrap();
-        let destination = target.join(entry.file_name());
+        let name = entry.file_name().into_string().unwrap();
         if entry.file_type().unwrap().is_dir() {
-            copy_dir(&entry.path(), &destination);
+            copy_pinned_project(&entry.path(), &target.join(name));
         } else {
-            std::fs::copy(entry.path(), destination).unwrap();
+            let name = name.strip_suffix(".txt").unwrap();
+            std::fs::copy(entry.path(), target.join(name)).unwrap();
         }
     }
 }
@@ -75,7 +76,7 @@ fn check_types_registered_component_keys_by_their_values() {
     };
     let project_root = unique_case_dir("registered-components-13111");
     let _ = std::fs::remove_dir_all(&project_root);
-    copy_dir(Path::new(FIXTURE), &project_root);
+    copy_pinned_project(&workspace_root().join(FIXTURE), &project_root);
     link_workspace_vue(&project_root).unwrap();
 
     let mut expected: Vec<_> = PRECISION.iter().chain(&UNKNOWN).copied().collect();
