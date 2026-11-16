@@ -8298,6 +8298,42 @@
       }
     },
     {
+      "id": "linter/typescript-eslint-conformance-b-12988",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "typescript-eslint-conformance-b-12988",
+        "files": [
+          {
+            "path": "Reported.vue.txt",
+            "role": "issue-reported-reproductions-and-negative-controls",
+            "sha256": "df38c7260ed78b9fb1892ab61bf940366ced5a368e5194ae4582030b120049ec"
+          },
+          {
+            "path": "cases.json",
+            "role": "upstream-immutable-oracle",
+            "sha256": "29005a4d37b70a7708b02959fd41916946108ec6dd99e6c8a7e251de6e7fb608"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/unbound-method-composable-12943",
       "state": "active",
       "targets": [

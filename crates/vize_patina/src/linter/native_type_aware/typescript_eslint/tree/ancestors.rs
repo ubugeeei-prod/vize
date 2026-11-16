@@ -98,6 +98,11 @@ pub(super) fn ancestor_fact(
     if value.get("optional").and_then(Value::as_bool) == Some(true) {
         fact.insert("optional".into(), json!(true));
     }
+    if kind == "VariableDeclaration"
+        && let Some(declaration) = value.get("kind").and_then(Value::as_str)
+    {
+        fact.insert("declarationKind".into(), json!(declaration));
+    }
     if matches!(kind, "ClassDeclaration" | "ClassExpression") {
         if let Some(name) = value
             .get("id")

@@ -72,6 +72,7 @@ pub(super) fn position_kind<'a>(node: &'a LintNode, role: Option<(&str, &str)>) 
         "VariableDeclarator" if matches!(role, Some(("AwaitUsingDeclaration", _))) => {
             "AwaitUsingDeclarator"
         }
+        "VariableDeclarator" if is_disposable_declarator(node) => DISPOSABLE_DECLARATOR,
         kind => kind,
     }
 }
@@ -223,17 +224,42 @@ pub(super) fn is_promise_method(member: &LintNode) -> bool {
         })
 }
 
+/// The promise position of a `VariableDeclarator` whose initializer
+/// no-misused-promises checks for a thenable `[Symbol.dispose]`.
+pub(super) const DISPOSABLE_DECLARATOR: &str = "DisposableDeclarator";
+
+/// A `using` declarator, or one whose binding is annotated.
+pub(super) fn is_disposable_declarator(node: &LintNode) -> bool {
+    node.kind == "VariableDeclarator"
+        && (node
+            .child("id")
+            .is_some_and(|id| id.child("typeAnnotation").is_some())
+            || declaration_kind(node) == Some("using"))
+}
+
+/// The `kind` of a listener declarator's `VariableDeclaration`.
+pub(in crate::linter::native_type_aware::typescript_eslint) fn declaration_kind(
+    node: &LintNode,
+) -> Option<&str> {
+    node.fields
+        .get("__ancestorFacts")?
+        .as_array()?
+        .last()?
+        .get("declarationKind")?
+        .as_str()
+}
+
 /// The promise facts the enabled rules read at a syntax position, mirroring
 /// where each typescript-eslint rule asks the checker.
 pub(super) fn facets(position: Option<(&str, &str)>, rules: PromiseRules) -> Facets {
-    const FLOATING: u16 = Facets::PROMISE | Facets::PROMISE_ARRAY;
+    const FLOATING: u32 = Facets::PROMISE | Facets::PROMISE_ARRAY;
     // `checksConditionals` with every `flagUnions` mode.
-    const CONDITIONAL: u16 = Facets::ALWAYS_THENABLE | Facets::THENABLE | Facets::MATCHING_UNION;
+    const CONDITIONAL: u32 = Facets::ALWAYS_THENABLE | Facets::THENABLE | Facets::MATCHING_UNION;
     let Some((parent, key)) = position else {
         return Facets::default();
     };
     let mut wanted = 0;
-    let mut want = |enabled: bool, facets: u16| {
+    let mut want = |enabled: bool, facets: u32| {
         if enabled {
             wanted |= facets;
         }
@@ -305,6 +331,7 @@ pub(super) fn facets(position: Option<(&str, &str)>, rules: PromiseRules) -> Fac
             | "TSAbstractMethodDefinition"
             | "TSAbstractPropertyDefinition"
             | "AccessorProperty"
+            | "TSAbstractAccessorProperty"
             | "TSMethodSignature"
             | "TSPropertySignature",
             "key",
@@ -312,6 +339,17 @@ pub(super) fn facets(position: Option<(&str, &str)>, rules: PromiseRules) -> Fac
         ("VariableDeclarator" | "AwaitUsingDeclarator", "id")
         | ("AssignmentExpression", "left") => {
             want(rules.misused, Facets::VOID_FUNCTION);
+        }
+        // A `using` or annotated declarator, whose `[Symbol.dispose]` members
+        // `checkVariableDeclaration` compares.
+        (DISPOSABLE_DECLARATOR, "init") => {
+            want(
+                rules.misused,
+                Facets::RETURNS_THENABLE | Facets::DISPOSE_THENABLE,
+            );
+        }
+        (DISPOSABLE_DECLARATOR, "id") => {
+            want(rules.misused, Facets::VOID_FUNCTION | Facets::DISPOSE_VOID);
         }
         ("PromiseMethodCallee", "object") => {
             want(rules.misused, Facets::ARRAY_OR_TUPLE);
@@ -374,6 +412,8 @@ pub(super) fn apply(node: &mut LintNode, fact: &ExpressionFact) {
         put("matchingPromiseUnion", promise.matching_promise_union);
         put("flaggableHandler", promise.flaggable_handler);
         put("arrayOrTuple", promise.array_or_tuple);
+        put("disposeThenable", promise.dispose_thenable);
+        put("disposeVoid", promise.dispose_void);
         if let Some(awaitable) = promise.awaitable {
             facts.insert("awaitable".into(), json!(awaitable.as_str()));
             node.fields

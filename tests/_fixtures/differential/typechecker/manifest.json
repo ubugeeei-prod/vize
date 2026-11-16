@@ -15837,6 +15837,34 @@
       }
     },
     {
+      "id": "typechecker/regression/plain-script-expando-12989",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "plain-script-expando-12989/Expando.vue.txt",
+          "sha256": "9f99b0ba8fbbbdd5227e312b7c14aec603f30d103b3b2a93b82d2bf92d51d0b0",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "ts"
+            ],
+            "selector": "virtual_ts::generator::script_module::namespace_hoist::tests::expando_functions_stay_beside_their_property_assignments; a plain <script> function whose top-level statements assign its properties stays inside __setup() beside them, so the checker keeps the expando members (#12989 no-misused-spread valid[22]/valid[24]); a namespace merge partner still moves to module scope. Input-only registration."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/prepared-type-only-import-facts",
       "state": "active",
       "targets": [

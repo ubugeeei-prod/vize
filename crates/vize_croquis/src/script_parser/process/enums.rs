@@ -22,6 +22,9 @@ pub(super) fn process_enum_declaration(
     result.refuse_occurrences();
 
     let name = enumeration.id.name.as_str();
+    result
+        .type_namespace_values
+        .insert(CompactString::new(name));
     result.bindings.add(name, BindingType::SetupConst);
     result.binding_spans.insert(
         CompactString::new(name),

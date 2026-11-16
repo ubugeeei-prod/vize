@@ -10,6 +10,7 @@ mod paths;
 mod requests;
 mod shape;
 mod signatures;
+mod widening;
 
 pub(in crate::linter) use super::promise_facts::Facets;
 pub(in crate::linter) use paths::PathStep;
@@ -65,6 +66,9 @@ pub(in crate::linter) struct ExpressionQuery {
     /// For a call-like node: argument positions whose resolved parameter types
     /// to load (0 loads none).
     pub call_positions: u32,
+    /// With `call_positions`: also load the type an argument after a variadic
+    /// tuple spread meets (`FunctionSignature.consumeRemainingArguments`).
+    pub call_rest: bool,
     /// For a function-like node: load its call signatures' return types.
     /// `Some(true)` reads them off the contextual type when there is one.
     pub function_returns: Option<bool>,
@@ -121,6 +125,7 @@ impl ExpressionQuery {
             self.heritage = other.heritage;
         }
         self.call_positions = self.call_positions.max(other.call_positions);
+        self.call_rest |= other.call_rest;
         self.function_returns = match (self.function_returns, other.function_returns) {
             (Some(left), Some(right)) => Some(left || right),
             (left, right) => left.or(right),
@@ -150,12 +155,6 @@ impl ExpressionQuery {
         }
         self.parts |= other.parts;
         self.empty_object |= other.empty_object;
-    }
-
-    /// Resolve this range to the outermost node with the same span: a type
-    /// reference and its name share one, and only the reference is typed.
-    fn widens(&self) -> bool {
-        self.parts || self.empty_object
     }
 }
 
@@ -289,23 +288,23 @@ type Located = (
 );
 
 /// Query ranges are UTF-16 offsets into `source`; `extra` are more UTF-16
-/// spans (relation operands) typed in the same batch.
+/// spans (relation operands) typed in the same batch, each with its widening.
 async fn load(
     memo: &CheckerMemo<'_>,
     file: &str,
     source: &str,
     ranges: &[(u32, u32)],
     queries: &[ExpressionQuery],
-    extra: &[(u32, u32)],
+    extra: &[((u32, u32), bool)],
 ) -> corsa::Result<(Vec<ExpressionFact>, Option<Located>)> {
     let session = memo.session();
     let mut spans = ranges.to_vec();
-    spans.extend_from_slice(extra);
+    spans.extend(extra.iter().map(|(span, _)| *span));
     let mut widen = queries
         .iter()
         .map(ExpressionQuery::widens)
         .collect::<Vec<_>>();
-    widen.resize(spans.len(), false);
+    widen.extend(extra.iter().map(|(_, widen)| *widen));
     let (responses, handles) = type_responses(session, file, source, &spans, &widen).await?;
     if responses.len() != spans.len() {
         return Err(corsa::CorsaError::Protocol(
@@ -383,7 +382,7 @@ async fn load(
                 fact.call = signatures::resolved_parameters(
                     memo,
                     location.clone(),
-                    query.call_positions,
+                    (query.call_positions, query.call_rest),
                     &mut details,
                 )
                 .await?;

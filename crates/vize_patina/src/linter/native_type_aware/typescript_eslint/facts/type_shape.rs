@@ -49,6 +49,7 @@ fn walk(
             entry.member = request.member;
         }
         entry.call |= request.call;
+        entry.type_node |= request.type_node;
         entry.array |= request.array;
         entry.returns |= request.returns;
         if entry.keys_from.is_none() {
@@ -77,6 +78,7 @@ fn walk(
                 || node.kind == "TSTemplateLiteralType");
             let request = ShapeRequest {
                 returns: index == 0 && key == "arguments" && is_predicate_call(node),
+                type_node: node.kind == "TSTemplateLiteralType" && key == "types",
                 ..ShapeRequest::default()
             };
             walk(child, wanted, request, operand, predicates);

@@ -262,6 +262,9 @@ fn process_class_declaration(result: &mut ScriptParseResult, class: &Class<'_>) 
     }
     if let Some(id) = &class.id {
         let name = id.name.as_str();
+        result
+            .type_namespace_values
+            .insert(CompactString::new(name));
         result.bindings.add(name, BindingType::SetupConst);
         result
             .binding_spans
