@@ -205,7 +205,7 @@ export function preflight(read: Reader, exists: Exists): string {
   let lock = read("Cargo.lock");
   for (const dependency of ["once_cell", "rustc-hash"])
     requireState(
-      lockPackage(lock, "vize_l0").includes(` "${dependency}",\n`),
+      new RegExp(`^ "${dependency}(?: [^"]+)?",$`, "mu").test(lockPackage(lock, "vize_l0")),
       "retained core dependency: " + dependency,
     );
   for (const [name, additions] of edges) {
@@ -219,12 +219,14 @@ export function preflight(read: Reader, exists: Exists): string {
     );
     const dependencies = new Set(lines);
     for (const dependency of additions) {
-      const edge = ` "${dependency}",`;
+      const matchingEdges = lines.filter((line) =>
+        new RegExp(`^ "${dependency}(?: [^"]+)?",$`, "u").test(line),
+      );
       requireState(
-        old ? !dependencies.has(edge) : dependencies.has(edge),
+        old ? matchingEdges.length === 0 : matchingEdges.length === 1,
         "unexpected lock ownership: " + name + " -> " + dependency,
       );
-      dependencies.add(edge);
+      if (old) dependencies.add(` "${dependency}",`);
     }
     lock = lock.replace(
       entry,

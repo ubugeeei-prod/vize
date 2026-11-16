@@ -24,6 +24,8 @@ def increment():
     <p v-else>Keep clicking</p>
     <input v-model="name" />
     <p>{{ f"Hello, {name}! {len(items)} steps." }}</p>
+    <p class="forecast">Next doubled: {{ (count + 1) * 2 }}</p>
+    <p class="first">First: {{ items[0].upper() }}</p>
     <ul>
       <li v-for="item in items">{{ item.upper() }}</li>
     </ul>
