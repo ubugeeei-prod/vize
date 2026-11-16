@@ -7,6 +7,7 @@ import { test } from "node:test";
 import { parse } from "yaml";
 import { deletionReadinessAdapters } from "../differential/deletion-readiness-adapters.ts";
 import { recordLinterDeletionShard } from "../differential/linter-deletion-recorder.ts";
+import type { RegistryProject } from "../differential/linter-deletion-schema.ts";
 import { linterProjects } from "../differential/linter-deletion-verifier.ts";
 
 void test("Matrix records the blocked preflight without registering linter deletion credit", () => {
@@ -72,7 +73,7 @@ void test("the recorder fails closed on a missing or corrupt project lint artifa
   const root = path.resolve(import.meta.dirname, "../.."),
     registry = JSON.parse(
       fs.readFileSync(path.join(root, "tests/_fixtures/vue-ecosystem-fixtures.json"), "utf8"),
-    ) as { projects: Array<{ id: string; coverage: string[]; vueGlobs: string[] }> },
+    ) as { projects: RegistryProject[] },
     selected = linterProjects(registry.projects, 0, 22),
     reportDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-linter-deletion-missing-")),
     environment = ["GITHUB_SHA", "FIXTURE_SHARD_INDEX", "FIXTURE_SHARD_COUNT"] as const,
