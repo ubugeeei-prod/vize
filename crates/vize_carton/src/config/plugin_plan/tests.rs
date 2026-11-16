@@ -43,11 +43,14 @@ fn the_registry_parses_and_names_every_capability_consumer_as_a_product() {
             "vue.directive"
         ]
     );
-    for capability in registry.capabilities.values() {
-        for product in capability.consumers.iter().chain(&capability.admitted_by) {
-            assert!(registry.products.contains(product), "{product}");
-        }
-    }
+    let unknown: Vec<&str> = registry
+        .capabilities
+        .values()
+        .flat_map(|capability| capability.consumers.iter().chain(&capability.admitted_by))
+        .filter(|product| !registry.products.contains(product))
+        .map(|product| product.as_str())
+        .collect();
+    assert_eq!(unknown, Vec::<&str>::new());
 }
 
 /// Every plan the JS resolver produced verifies natively with the same digest.
@@ -85,8 +88,9 @@ fn tampered_and_stale_plans_fail_closed_with_the_shared_codes() {
             Some(code) => {
                 let error = result.expect_err(path.to_str().unwrap());
                 assert_eq!(error.code, code, "{}: {error}", path.display());
-                assert!(
-                    crate::cstr!("{error}").starts_with(crate::cstr!("[plugin/{code}] ").as_str())
+                assert_eq!(
+                    crate::cstr!("{error}"),
+                    crate::cstr!("[plugin/{code}] {}: {}", error.subject, error.message)
                 );
             }
         }
