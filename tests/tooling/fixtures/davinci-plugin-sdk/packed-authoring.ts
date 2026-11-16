@@ -20,6 +20,12 @@ import {
   runVisitorFixture,
   type VisitorEvent,
 } from "@vizejs/plugin-sdk/visitor";
+import {
+  PLUGIN_API_VERSION,
+  PLUGIN_ENTRY,
+  defineVizePlugin,
+  type VizePluginEntry,
+} from "@vizejs/plugin-sdk/v2";
 
 export const plugin = definePlugin({
   name: "packed-types",
@@ -349,3 +355,37 @@ export function refusedHookFamilies() {
     output: () => [{ start: 0, end: 0, text: "bad" }],
   });
 }
+
+export const designSystem = defineVizePlugin<{ strict: boolean }>({
+  apiVersion: PLUGIN_API_VERSION,
+  stability: "experimental",
+  name: "@acme/packed-design-system",
+  version: "1",
+  supports: { outputs: ["vdom", "ssr"], runtimes: ["node", "bun"] },
+  setup(api, options) {
+    api.lint.rule({
+      id: "no-raw-color",
+      meta: { messages: { raw: "Use {token}." }, defaultLevel: "warn", fixable: "safe" },
+      visit: ["ui.bind"],
+      demands: ["templateScopes"],
+      run(context) {
+        const node = context.nodes[0];
+        if (node && options.strict) context.report({ node, messageId: "raw", fix: node.name });
+        // @ts-expect-error message IDs are the declared message keys
+        if (node) context.report({ node, messageId: "missing" });
+      },
+    });
+    api.sfc.block("design", { lang: "json" });
+    api.vue.directive("track", { modifiers: { once: { optional: true, default: false } } });
+  },
+});
+designSystem({ strict: true }) satisfies VizePluginEntry;
+designSystem({ strict: true })[PLUGIN_ENTRY].apiVersion satisfies 2;
+// @ts-expect-error options are canonical data, not callbacks
+defineVizePlugin<{ run: () => void }>({
+  apiVersion: 2,
+  stability: "experimental",
+  name: "bad",
+  version: "1",
+  setup() {},
+});

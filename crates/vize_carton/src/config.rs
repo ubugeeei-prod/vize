@@ -9,6 +9,7 @@ pub mod formatter_lint_plan;
 mod loader;
 #[cfg(feature = "lint-glob")]
 pub mod matcher;
+pub mod plugin_plan;
 mod project;
 pub use loader::{
     ConfigEvaluationSession, ConfigLoadFailureIdentity, LoadedConfig, LoadedConfigEntryFiles,

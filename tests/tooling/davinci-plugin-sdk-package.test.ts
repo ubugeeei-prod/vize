@@ -12,6 +12,9 @@ for (const policy of ["default", "offline"] as const) {
     assert.equal(result.package, "@vizejs/plugin-sdk");
     assert.equal(result.declarations, true);
     assert.equal(result.nativeInterop, true);
-    assert.match(result.runtime, /runtime exports: 8 root, fixes, sandbox and visitor verified/);
+    assert.match(
+      result.runtime,
+      /runtime exports: 8 root, fixes, sandbox, visitor and v2 verified/,
+    );
   });
 }

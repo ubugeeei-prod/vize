@@ -1,0 +1,75 @@
+{
+  "entries": [
+    {
+      "manifest": {
+        "after": [],
+        "apiVersion": 2,
+        "backend": "js",
+        "before": [],
+        "cacheInputs": [],
+        "capabilities": [
+          {
+            "id": "lint.rule",
+            "required": true,
+            "schemaVersion": 1,
+            "data": {
+              "id": "a",
+              "messages": {
+                "found": "Found {name}."
+              },
+              "visit": [
+                "ui.element"
+              ]
+            }
+          }
+        ],
+        "fingerprint": "5555555555555555555555555555555555555555555555555555555555555555",
+        "name": "alpha",
+        "options": {},
+        "permissions": [],
+        "stability": "experimental",
+        "supports": {},
+        "version": "1.0.0"
+      }
+    },
+    {
+      "manifest": {
+        "after": [],
+        "apiVersion": 2,
+        "backend": "js",
+        "before": [],
+        "cacheInputs": [],
+        "capabilities": [
+          {
+            "id": "lint.rule",
+            "required": true,
+            "schemaVersion": 1,
+            "data": {
+              "id": "b",
+              "messages": {
+                "found": "Found {name}."
+              },
+              "visit": [
+                "ui.element"
+              ]
+            }
+          }
+        ],
+        "fingerprint": "5555555555555555555555555555555555555555555555555555555555555555",
+        "name": "alpha",
+        "options": {},
+        "permissions": [],
+        "stability": "experimental",
+        "supports": {},
+        "version": "1.0.0"
+      }
+    }
+  ],
+  "runtime": "node",
+  "expect": {
+    "error": {
+      "code": "duplicate-name",
+      "message": "[plugin/duplicate-name] alpha: listed at vue.plugins[0] and vue.plugins[1]"
+    }
+  }
+}

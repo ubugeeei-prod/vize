@@ -1,0 +1,63 @@
+{
+  "entries": [
+    {
+      "manifest": {
+        "after": [],
+        "apiVersion": 2,
+        "backend": "js",
+        "before": [],
+        "cacheInputs": [],
+        "capabilities": [
+          {
+            "id": "vue.directive",
+            "required": true,
+            "schemaVersion": 1,
+            "data": {
+              "name": "track"
+            }
+          }
+        ],
+        "fingerprint": "4444444444444444444444444444444444444444444444444444444444444444",
+        "name": "@acme/tracking",
+        "options": {},
+        "permissions": [],
+        "stability": "experimental",
+        "supports": {},
+        "version": "1.0.0"
+      }
+    },
+    {
+      "manifest": {
+        "after": [],
+        "apiVersion": 2,
+        "backend": "js",
+        "before": [],
+        "cacheInputs": [],
+        "capabilities": [
+          {
+            "id": "vue.directive",
+            "required": true,
+            "schemaVersion": 1,
+            "data": {
+              "name": "track"
+            }
+          }
+        ],
+        "fingerprint": "5555555555555555555555555555555555555555555555555555555555555555",
+        "name": "@other/tracking",
+        "options": {},
+        "permissions": [],
+        "stability": "experimental",
+        "supports": {},
+        "version": "1.0.0"
+      }
+    }
+  ],
+  "runtime": "node",
+  "expect": {
+    "error": {
+      "code": "owner-conflict",
+      "message": "[plugin/owner-conflict] vue.directive:track: claimed by both @acme/tracking and @other/tracking"
+    }
+  }
+}

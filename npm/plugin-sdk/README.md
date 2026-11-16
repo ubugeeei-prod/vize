@@ -5,6 +5,55 @@ output hooks. Install `@vizejs/native` **0.474.0 or newer** to execute plugins.
 The optional native peer lets this package install independently for authoring;
 its helpers alone do not compile or lint Vue files. Node 22 or newer is required.
 
+## Experimental plugin API v2
+
+> [!WARNING]
+> API v2 is incubating ([#13074](https://github.com/ubugeeei-prod/vize/issues/13074)).
+> Its manifest, plan and capability schemas may change between releases. API v1
+> below is frozen and unaffected.
+
+`@vizejs/plugin-sdk/v2` defines one plugin for every Vize product. A factory
+call runs `setup` once and records contributions; it never receives source files.
+
+```ts
+import { defineVizePlugin } from "@vizejs/plugin-sdk/v2";
+
+export const designSystem = defineVizePlugin<{ strict: boolean }>({
+  apiVersion: 2,
+  stability: "experimental",
+  name: "@acme/design-system",
+  version: "0.1.0",
+  cacheInputs: [],
+  setup(api, options) {
+    api.lint.rule({
+      id: "no-raw-color",
+      meta: { messages: { raw: "Use a design token." }, defaultLevel: "warn" },
+      visit: ["ui.bind"],
+      run(context) {
+        for (const node of context.nodes) {
+          if (options.strict && node.name === "color") context.report({ node, messageId: "raw" });
+        }
+      },
+    });
+  },
+});
+```
+
+The entry carries lowered, plain-data manifest and its callbacks. The Vize host,
+not this package, validates the manifest and resolves `vue.plugins` into one
+canonical immutable plan: capabilities and their schema versions, the stable
+`before`/`after` order, exclusive ownership claims, backend, supported outputs
+and runtimes, permissions and cache inputs. Unknown required capabilities,
+unsupported schemas, cycles, owner conflicts, missing callbacks, non-canonical
+options (only JSON with safe integers), unavailable backends and stale plans all
+fail closed with a `[plugin/<code>]` error. Only the `js` backend exists during
+incubation; `native` and `wasm` refuse instead of falling back.
+
+`api.sfc.block` and `api.vue.directive` declare ownership only: every product
+that would consume them refuses the plan until it implements them. v1
+`definePlugin` rule plugins may also appear in `vue.plugins`; the host records
+them through an adapter and executes the original plugin unchanged.
+
 ## Typed visitor capability descriptors
 
 `@vizejs/plugin-sdk/visitor` defines the stable versioned descriptor boundary for

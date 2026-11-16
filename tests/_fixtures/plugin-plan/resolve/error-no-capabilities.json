@@ -1,0 +1,28 @@
+{
+  "entries": [
+    {
+      "manifest": {
+        "after": [],
+        "apiVersion": 2,
+        "backend": "js",
+        "before": [],
+        "cacheInputs": [],
+        "capabilities": [],
+        "fingerprint": "5555555555555555555555555555555555555555555555555555555555555555",
+        "name": "alpha",
+        "options": {},
+        "permissions": [],
+        "stability": "experimental",
+        "supports": {},
+        "version": "1.0.0"
+      }
+    }
+  ],
+  "runtime": "node",
+  "expect": {
+    "error": {
+      "code": "manifest-invalid",
+      "message": "[plugin/manifest-invalid] alpha: capabilities must be a non-empty array"
+    }
+  }
+}
