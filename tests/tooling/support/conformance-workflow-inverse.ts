@@ -37,9 +37,23 @@ function restoreLibraryFallthroughSuite(workflow: string): string {
   return workflow.replace(libraryFallthroughFilter, "");
 }
 
+// The packaged library-generic data-attr suite followed #13021's.
+const packagedDataAttrFilter = " content_mapper_tsgo_cli::packaged_generic_data_attrs::";
+
+function restorePackagedDataAttrSuite(workflow: string): string {
+  assert.equal(workflow.split(packagedDataAttrFilter).length, 2, "packaged data-attr suite");
+  const appended = libraryFallthroughFilter + packagedDataAttrFilter + " --nocapture\n";
+  assert.equal(workflow.split(appended).length, 2, "packaged data-attr suite command");
+  return workflow.replace(packagedDataAttrFilter, "");
+}
+
 /** Restores content-mapper-conformance.yml before its sealed command-local edits. */
 export function restoreConformanceWorkflow(workflow: string): string {
   return restoreConformanceNativeStaging(
-    restoreFallthroughValueSuite(restoreExactTsgoTimeout(restoreLibraryFallthroughSuite(workflow))),
+    restoreFallthroughValueSuite(
+      restoreExactTsgoTimeout(
+        restoreLibraryFallthroughSuite(restorePackagedDataAttrSuite(workflow)),
+      ),
+    ),
   );
 }
