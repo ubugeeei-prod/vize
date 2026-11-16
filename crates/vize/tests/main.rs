@@ -82,6 +82,7 @@ mod check_nuxt_bridge_shims_cli;
 mod check_nuxt_composition_api_cli;
 mod check_nuxt_composition_api_plugin_augmentation_cli;
 mod check_nuxt_legacy_tsconfig_cli;
+mod check_nuxt_manifest_ambient_cli;
 mod check_nuxt_monorepo_cli;
 mod check_nuxt_tsconfig_failure_cli;
 mod check_nuxt_tsconfig_isolation_cli;
