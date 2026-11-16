@@ -302,6 +302,13 @@
       "component": "Cards",
       "props": { "rows": [{ "id": 1, "text": "a" }] },
       "steps": [{ "props": { "rows": [] } }, { "props": { "rows": [{ "id": 2, "text": "b" }] } }]
+    },
+    {
+      "id": "directive/client",
+      "file": "tests/_fixtures/tsrx/mount/directive.tsrx",
+      "component": "Client",
+      "props": { "label": "n" },
+      "steps": [{ "click": "button" }, { "props": { "label": "m" } }, { "click": "button" }]
     }
   ]
 }

@@ -118,9 +118,6 @@ pub enum EmitIssue {
     /// DOM: a `return` in a component's setup before its render, which would
     /// pick the output once, at setup.
     EarlyReturn,
-    /// DOM: a directive prologue or hashbang, which the runtime import would
-    /// displace.
-    Directive,
     /// DOM: a host name equal to one the target writes (`__props`, `_ctx`, a
     /// helper alias).
     GeneratedName,

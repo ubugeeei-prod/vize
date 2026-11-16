@@ -234,6 +234,26 @@ fn dom_prop_defaults_renames_and_rest_follow_the_reference_props_options() {
 }
 
 #[test]
+fn dom_hashbangs_and_directive_prologues_stay_before_the_runtime_import() {
+    let source = "#!/usr/bin/env node\n'use client'; // keep\n\"use strict\";\nexport function A() @{\n\t<p />\n}\n";
+    assert_eq!(
+        compile(source, &OPTIONS).unwrap().code.as_str(),
+        "#!/usr/bin/env node\n'use client'; // keep\n\"use strict\";\nimport { defineComponent as _defineComponent, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\";\nexport const A = /* @__PURE__ */ _defineComponent(function A() {\n\treturn (_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"p\"))\n};\n});\n"
+    );
+    let source = "#!/usr/bin/env node";
+    assert_eq!(
+        compile(source, &OPTIONS).unwrap().code.as_str(),
+        "#!/usr/bin/env node\nimport { defineComponent as _defineComponent } from \"vue\";\n"
+    );
+    // A statement on the directive's line starts after the import.
+    let source = "'use client'; export function A() @{\n\t<p />\n}\n";
+    assert_eq!(
+        compile(source, &OPTIONS).unwrap().code.as_str(),
+        "'use client';\nimport { defineComponent as _defineComponent, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\";\n export const A = /* @__PURE__ */ _defineComponent(function A() {\n\treturn (_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"p\"))\n};\n});\n"
+    );
+}
+
+#[test]
 fn dom_components_keep_host_code_and_read_destructured_props_through_the_instance() {
     let source = "const unit = \"px\";\nexport function Box({ size }: { size: number }) @{\n\tconst label = size + unit;\n\t<div title={label}>{size}</div>\n}\n";
     let code = compile(source, &OPTIONS).unwrap().code;
