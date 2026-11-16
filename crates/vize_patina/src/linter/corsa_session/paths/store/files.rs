@@ -10,7 +10,12 @@ use augmentation::is_module_augmentation;
 
 pub(super) fn ambient_program_files(project_root: &Path, tsconfig: &Path) -> Vec<String> {
     let selection = configured_program_files(tsconfig);
-    let mut files = selection.declarations;
+    let spelling = ProgramRootSpelling::new(project_root);
+    let mut files = selection
+        .declarations
+        .iter()
+        .map(|path| spelling.file_name(path))
+        .collect::<Vec<_>>();
     let mut sources = selection.source_candidates;
     if selection.needs_authoritative_source_scan {
         sources.extend(owned_typescript_sources(project_root, tsconfig));
@@ -24,7 +29,7 @@ pub(super) fn ambient_program_files(project_root: &Path, tsconfig: &Path) -> Vec
                 return None;
             }
             let content = std::fs::read_to_string(&path).ok()?;
-            is_module_augmentation(&content).then(|| program_file_name(&path))
+            is_module_augmentation(&content).then(|| spelling.file_name(&path))
         })
         .collect::<Vec<_>>();
     files.extend(augmentations);
@@ -34,12 +39,38 @@ pub(super) fn ambient_program_files(project_root: &Path, tsconfig: &Path) -> Vec
 }
 
 /// The root-file spelling the session program must share with the module
-/// graph that the linted SFC reaches. `std::fs::canonicalize` answers with a
-/// `\\?\` verbatim path on Windows; Corsa reads that as a different (UNC)
-/// root, so the included `env.d.ts` or augmentation never joined the program
-/// that resolves `./registry` under `C:/...` (#13077).
-fn program_file_name(path: &Path) -> String {
-    slash_path(&vize_l0::path::canonicalize_non_verbatim(path))
+/// graph that the linted SFC reaches (#13077).
+///
+/// That graph is spelled from the session's project root, which comes from
+/// the current directory as the OS reports it, and TypeScript resolves an
+/// SFC's `./registry` under that spelling. A root file spelled differently is
+/// a different file to Corsa, so its `declare module "./registry"` augments
+/// another module identity. On Windows `std::fs::canonicalize` differs from
+/// the working-directory spelling twice over: it answers with a `\\?\`
+/// verbatim path (read by Corsa as the UNC root `//?/C:/`), and it expands
+/// 8.3 short names and junctions that the current directory keeps. Files
+/// inside the project are therefore spelled from the session root; only files
+/// outside it keep their non-verbatim canonical spelling.
+struct ProgramRootSpelling<'a> {
+    project_root: &'a Path,
+    canonical_root: PathBuf,
+}
+
+impl<'a> ProgramRootSpelling<'a> {
+    fn new(project_root: &'a Path) -> Self {
+        Self {
+            project_root,
+            canonical_root: vize_l0::path::canonicalize_non_verbatim(project_root),
+        }
+    }
+
+    fn file_name(&self, path: &Path) -> String {
+        let canonical = vize_l0::path::canonicalize_non_verbatim(path);
+        match canonical.strip_prefix(&self.canonical_root) {
+            Ok(relative) => slash_path(&self.project_root.join(relative)),
+            Err(_) => slash_path(&canonical),
+        }
+    }
 }
 
 fn owned_typescript_sources(project_root: &Path, tsconfig: &Path) -> Vec<PathBuf> {
@@ -63,7 +94,7 @@ fn is_typescript_source(path: &Path) -> bool {
 }
 
 struct ProgramFileSelection {
-    declarations: Vec<String>,
+    declarations: Vec<PathBuf>,
     source_candidates: Vec<PathBuf>,
     needs_authoritative_source_scan: bool,
 }
@@ -115,7 +146,7 @@ fn configured_program_files(tsconfig: &Path) -> ProgramFileSelection {
             continue;
         }
         if is_declaration_file(&path) {
-            declarations.push(program_file_name(&path));
+            declarations.push(path);
         } else if is_typescript_source(&path) {
             source_candidates.push(path);
         }
@@ -138,11 +169,12 @@ mod tests {
     use super::{String, ambient_program_files};
     use std::{fs, path::Path};
 
-    /// Program files are absolute and spelled from the canonical project
-    /// root, never from a Windows `\\?\` verbatim root (#13077).
+    /// Program files are absolute and spelled from the session project root
+    /// exactly as given, never canonicalized away from it (a macOS temp dir
+    /// sits behind the `/var` symlink, a Windows one behind an 8.3 name) and
+    /// never from a Windows `\\?\` verbatim root (#13077).
     fn relative_to(root: &Path, files: &[String]) -> Vec<String> {
-        let canonical = vize_l0::path::canonicalize_non_verbatim(root);
-        let prefix = canonical.to_string_lossy().replace('\\', "/");
+        let prefix = root.to_string_lossy().replace('\\', "/");
         files
             .iter()
             .map(|path| {
@@ -231,6 +263,33 @@ mod tests {
         let files = ambient_program_files(root.path(), &root.path().join("tsconfig.json"));
         let relative = relative_to(root.path(), &files);
         assert_eq!(relative, vec!["src/augment.ts"]);
+    }
+
+    /// The Windows split of #13077, modelled with a symlinked project root:
+    /// the session reaches the project through the link, so the included
+    /// augmentation must be spelled through the link too, not through the
+    /// canonical target (where Corsa would see a second `registry.ts`).
+    #[cfg(unix)]
+    #[test]
+    fn program_roots_keep_the_session_project_root_spelling() {
+        let temp = tempfile::tempdir().unwrap();
+        let real = temp.path().join("real");
+        write(&real, "tsconfig.json", r#"{"include":["src/**/*.ts"]}"#);
+        write(&real, "src/env.d.ts", "declare const build: string;\n");
+        write(
+            &real,
+            "src/augment.ts",
+            "import './registry';\ndeclare module './registry' { interface Registry { extra: true } }\n",
+        );
+        let linked = temp.path().join("linked");
+        std::os::unix::fs::symlink(&real, &linked).unwrap();
+
+        let files = ambient_program_files(&linked, &linked.join("tsconfig.json"));
+
+        assert_eq!(
+            relative_to(&linked, &files),
+            vec!["src/augment.ts", "src/env.d.ts"]
+        );
     }
 }
 

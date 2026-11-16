@@ -327,11 +327,9 @@ mod tests {
             .iter()
             .filter_map(|entry| entry.as_str())
             .collect();
-        // Program roots use the plain canonical spelling, never `\\?\` (#13077).
-        let canonical =
-            |path: &str| slash_display(&vize_l0::path::canonicalize_non_verbatim(&root.join(path)));
-        let env = canonical("src/env.d.ts");
-        let hidden = canonical("src/hidden.d.ts");
+        // Program roots keep the session project-root spelling, never `\\?\` (#13077).
+        let env = slash_display(&root.join("src/env.d.ts"));
+        let hidden = slash_display(&root.join("src/hidden.d.ts"));
         assert!(files.contains(&env.as_str()), "{files:?}");
         assert!(
             !files.iter().any(|file| file.ends_with("skip.ts")),
