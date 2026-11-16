@@ -215,7 +215,7 @@ fn projected_imports_escape_both_quotes_and_preserve_unicode_query_offsets() {
             .find("const marker = Child;")
             .expect("rewritten marker") as u32;
         assert_eq!(prepared.source_map.get_virtual_offset(before), after);
-        let utf16 = super::super::probe::byte_offset_to_utf16_offset(&rewritten, after);
+        let utf16 = super::super::utf16::byte_offset_to_utf16_offset(&rewritten, after);
         assert_eq!(
             utf16,
             rewritten
