@@ -27,9 +27,19 @@ function restoreFallthroughValueSuite(workflow: string): string {
   return workflow.replace(fallthroughFilter, "");
 }
 
+// #13021 appended its library-generic fallthrough suite after #12458's.
+const libraryFallthroughFilter = " content_mapper_tsgo_cli::library_generic_fallthrough_13021::";
+
+function restoreLibraryFallthroughSuite(workflow: string): string {
+  assert.equal(workflow.split(libraryFallthroughFilter).length, 2, "library fallthrough suite");
+  const appended = fallthroughFilter + libraryFallthroughFilter + " --nocapture\n";
+  assert.equal(workflow.split(appended).length, 2, "library fallthrough suite command");
+  return workflow.replace(libraryFallthroughFilter, "");
+}
+
 /** Restores content-mapper-conformance.yml before its sealed command-local edits. */
 export function restoreConformanceWorkflow(workflow: string): string {
   return restoreConformanceNativeStaging(
-    restoreFallthroughValueSuite(restoreExactTsgoTimeout(workflow)),
+    restoreFallthroughValueSuite(restoreExactTsgoTimeout(restoreLibraryFallthroughSuite(workflow))),
   );
 }
