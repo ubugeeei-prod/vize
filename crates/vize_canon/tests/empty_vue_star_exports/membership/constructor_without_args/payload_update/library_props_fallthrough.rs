@@ -1,11 +1,11 @@
 //! Invert the #13021 library-generic fallthrough tail (`C | ((props: T) => void)`
-//! for a loose declaration without `__VLS_PROPS_FALLBACK`) before older custody.
+//! under the bare loose check tail) before older custody.
 use super::support;
 use serde_json::{Value, json};
 use std::fs;
 
 const RECORD: &str = "tests/_fixtures/tooling/library-props-fallthrough-13021.json";
-const RECORD_SHA: &str = "60a46c81160f70f3956f0ac032753898b2001c95baf079be64f72a242f1b8677";
+const RECORD_SHA: &str = "293f93006ba3a022888d8f98e6648222713f0d8c73b67fcb0b3f05d05072ffba";
 
 fn record() -> Value {
     let bytes = fs::read(support::repository().join(RECORD)).unwrap();

@@ -131,15 +131,15 @@
         },
         {
           "path": "virtual-ts.d.cts",
-          "sha256": "68fa25b8e3e970a4465ca8c8901e64bd0f42e44324f30f41c000247f9d9119a8"
+          "sha256": "43c2912b8a888f801cae2fbc44ff30070141287eef5a1ef3ecad42b3220212c3"
         },
         {
           "path": "virtual-ts.d.mts",
-          "sha256": "68fa25b8e3e970a4465ca8c8901e64bd0f42e44324f30f41c000247f9d9119a8"
+          "sha256": "43c2912b8a888f801cae2fbc44ff30070141287eef5a1ef3ecad42b3220212c3"
         },
         {
           "path": "virtual-ts.d.ts",
-          "sha256": "68fa25b8e3e970a4465ca8c8901e64bd0f42e44324f30f41c000247f9d9119a8"
+          "sha256": "43c2912b8a888f801cae2fbc44ff30070141287eef5a1ef3ecad42b3220212c3"
         }
       ]
     },
@@ -191,7 +191,7 @@
         },
         {
           "path": "virtual-ts.d.ts",
-          "sha256": "68fa25b8e3e970a4465ca8c8901e64bd0f42e44324f30f41c000247f9d9119a8"
+          "sha256": "43c2912b8a888f801cae2fbc44ff30070141287eef5a1ef3ecad42b3220212c3"
         }
       ]
     },
@@ -239,7 +239,7 @@
         },
         {
           "path": "virtual-ts.d.ts",
-          "sha256": "68fa25b8e3e970a4465ca8c8901e64bd0f42e44324f30f41c000247f9d9119a8"
+          "sha256": "43c2912b8a888f801cae2fbc44ff30070141287eef5a1ef3ecad42b3220212c3"
         }
       ]
     }

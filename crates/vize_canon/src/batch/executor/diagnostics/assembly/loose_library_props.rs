@@ -12,8 +12,9 @@ use crate::virtual_ts::{ProjectionFeatures, ProjectionMapping, VizeMapping};
 /// value/nested-object diagnostics do not begin in the key range.
 ///
 /// In loose codegen every `$PropChecker` branch has an open record tail. The
-/// library branch gains it from `C | ((props: T) => void)` when the declaration
-/// predates `__VLS_PROPS_FALLBACK` (#13021), so the checker itself no longer
+/// library branch gains it from `C | ((props: T) => void)`, which supplies the
+/// term a declaration predating `__VLS_PROPS_FALLBACK` lacks (#13021), so the
+/// checker itself no longer
 /// reports this TS2353 on any host. This filter stays as the backstop shared
 /// with the negotiated content-mapper selector; it never widens what loose
 /// mode accepts beyond an authenticated authored attribute key.
