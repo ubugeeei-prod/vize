@@ -54,6 +54,7 @@ use super::profile_facts::{self, FileProfileFacts, StatsCacheStatus};
 use super::settings::CompileFileSettings;
 
 mod errors;
+mod tsrx;
 pub(super) use errors::check_compile_result;
 
 /// The ICE-guarded per-file compile (P2-13, charter #30): an injected panic
@@ -169,6 +170,9 @@ fn compile_file_inner(
 
     let file_size = source.len();
     stats.total_bytes.fetch_add(file_size, Ordering::Relaxed);
+    if vize_l0::dialect::FileKind::of_path(path) == Some(vize_l0::dialect::FileKind::Tsrx) {
+        return tsrx::compile_tsrx_file(path, &source, settings, file_start);
+    }
 
     let filename: String = path
         .file_name()
