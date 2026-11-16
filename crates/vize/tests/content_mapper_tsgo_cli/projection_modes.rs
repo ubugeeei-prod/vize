@@ -67,6 +67,9 @@ fn check_projection_reports_the_editor_diagnostics() {
         "content_mapper_projection_modes",
         "content_mapper_diagnostic_parity",
         "content_mapper_unknown_options_10218",
+        // Missing slot names: the check names them through type-only indexed
+        // accesses, the editor through destructuring.
+        "content_mapper_projection_slot_names",
     ] {
         let project = tempfile::Builder::new()
             .prefix("content-mapper-projection-modes-")

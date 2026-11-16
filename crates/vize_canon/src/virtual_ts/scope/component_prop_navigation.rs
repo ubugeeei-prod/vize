@@ -217,24 +217,28 @@ fn emit_slot_references(
                 ctx.syntactic_type_only_imported_names,
                 usage.name.as_str(),
             );
-            if ctx.hoist_shared_preamble {
-                let navigation_slots =
-                    crate::virtual_ts::helpers::shared_types::NAVIGATION_SLOTS.select(true);
+            let navigation_slots = crate::virtual_ts::helpers::shared_types::NAVIGATION_SLOTS
+                .select(ctx.hoist_shared_preamble);
+            if ctx.type_only_slot_references {
                 vize_l0::emit_ts!(
                     ts,
-                    "  const {slots_ref} = undefined as unknown as {navigation_slots}<typeof {component_ref}>;\n"
+                    "  type {slots_ref} = {navigation_slots}<typeof {component_ref}>;\n"
                 );
             } else {
                 vize_l0::emit_ts!(
                     ts,
-                    "  const {slots_ref} = undefined as unknown as $NavigationSlots<typeof {component_ref}>;\n"
+                    "  const {slots_ref} = undefined as unknown as {navigation_slots}<typeof {component_ref}>;\n"
                 );
             }
             emitted_slots_ref = true;
         }
 
-        let identifier = is_ts_identifier(slot.name.as_str());
-        if identifier {
+        let identifier = !ctx.type_only_slot_references && is_ts_identifier(slot.name.as_str());
+        if ctx.type_only_slot_references {
+            // An indexed access names the slot as the destructuring does and
+            // reports a missing one identically, without a flow node.
+            vize_l0::emit_ts!(ts, "  void (undefined as unknown as {slots_ref}[");
+        } else if identifier {
             ts.push_str("  const { ");
         } else {
             // Native quoted binding keys use string-literal search rather than
@@ -253,7 +257,9 @@ fn emit_slot_references(
             push_ts_single_quoted_literal(ts, slot.name.as_str())
         };
         let access_end = ts.len();
-        if identifier {
+        if ctx.type_only_slot_references {
+            ts.push_str("]);\n");
+        } else if identifier {
             vize_l0::emit_ts!(
                 ts,
                 ": __vize_slot_nav_{idx}_{slot_index} }} = {slots_ref};\n  void __vize_slot_nav_{idx}_{slot_index};\n"
