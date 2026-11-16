@@ -3,6 +3,7 @@ use std::path::{Path, PathBuf};
 use vize_carton::FxHashMap;
 
 pub use vize_l0::typescript_ownership::TsconfigSourceKind;
+use vize_l0::typescript_ownership::source_spellings;
 pub(super) use vize_l0::typescript_ownership::unique_owner;
 
 use super::{graph, spec::SpecCache};
@@ -68,24 +69,20 @@ impl TsconfigOwnershipCache {
         source_path: &Path,
         source_kind: TsconfigSourceKind,
     ) -> bool {
-        self.project_owns_normalized_source(
-            tsconfig_path,
-            &graph::normalize_path(source_path),
-            source_kind,
-        )
+        self.project_owns_spellings(tsconfig_path, &source_spellings(source_path), source_kind)
     }
 
-    fn project_owns_normalized_source(
+    fn project_owns_spellings(
         &mut self,
         tsconfig_path: &Path,
-        source_path: &Path,
+        spellings: &[PathBuf],
         source_kind: TsconfigSourceKind,
     ) -> bool {
         let case_sensitive = self.options.case_sensitive;
         let Some(spec) = self.specs.load(tsconfig_path) else {
             return false;
         };
-        spec.includes_normalized(source_path, case_sensitive, source_kind)
+        spec.includes_any(spellings, case_sensitive, source_kind)
     }
 
     /// The inherited `compilerOptions.allowJs` for one effective project.
@@ -104,16 +101,34 @@ impl TsconfigOwnershipCache {
         source_path: &Path,
         source_kind: TsconfigSourceKind,
     ) -> PathBuf {
-        let source_path = graph::normalize_path(source_path);
-        self.effective_config_for_normalized_source(tsconfig_path, &source_path, source_kind)
+        self.effective_config_for_spellings(
+            tsconfig_path,
+            &source_spellings(source_path),
+            source_kind,
+        )
     }
 
     /// [`Self::effective_config_for_source`] for a source the caller has
-    /// already canonicalized, as `canonicalize` would spell it.
+    /// already canonicalized, as `canonicalize` would spell it. A source the
+    /// caller reached through a symlinked directory below its config should
+    /// use [`Self::effective_config_for_source`] instead.
     pub fn effective_config_for_normalized_source(
         &mut self,
         tsconfig_path: &Path,
         source_path: &Path,
+        source_kind: TsconfigSourceKind,
+    ) -> PathBuf {
+        self.effective_config_for_spellings(
+            tsconfig_path,
+            std::slice::from_ref(&source_path.to_path_buf()),
+            source_kind,
+        )
+    }
+
+    fn effective_config_for_spellings(
+        &mut self,
+        tsconfig_path: &Path,
+        spellings: &[PathBuf],
         source_kind: TsconfigSourceKind,
     ) -> PathBuf {
         let projects = self.project_paths(tsconfig_path);
@@ -122,7 +137,7 @@ impl TsconfigOwnershipCache {
             .cloned()
             .unwrap_or_else(|| self.specs.normalize(tsconfig_path));
         unique_owner(&root, &projects, |project| {
-            self.project_owns_normalized_source(project, source_path, source_kind)
+            self.project_owns_spellings(project, spellings, source_kind)
         })
     }
 }

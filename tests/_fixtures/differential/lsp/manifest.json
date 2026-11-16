@@ -3706,6 +3706,75 @@
       }
     },
     {
+      "id": "lsp/regression/owning-project-paths-13090",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "owning-project-paths-13090",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "4a5315deed8fd2b1f8ca6b7139faa65abe4269a44ce6fe56d585b72bec519f3f"
+          },
+          {
+            "path": "Child.vue.txt",
+            "sha256": "9dd8733e272ce6dc306e9ed65adcfcf56eb195e69d47dc315160ad73beae52e8"
+          },
+          {
+            "path": "app-format.ts.txt",
+            "sha256": "f8b21a2510089f6c8d7cae1d0fa2faee7792390bd95e6df1da6cd653bd28c263"
+          },
+          {
+            "path": "app-props.ts.txt",
+            "sha256": "1ee7918ffbdacf5b78073302e128591440a340e28e45117062e9d7d9216222a2"
+          },
+          {
+            "path": "node-props.ts.txt",
+            "sha256": "877e5785d7dd3e35bd87d71d6fadc368e6834365a42ff21913ad19fe3ce6cc89"
+          },
+          {
+            "path": "tsconfig.json.txt",
+            "sha256": "ffb0dc1a99504f4d50c09d8699f2848abc5222d1a089570ebb3acaa358583846"
+          },
+          {
+            "path": "tsconfig.node.json.txt",
+            "sha256": "de9f28471abc936fec2a131523b0817a93f7eed8aa475978c6c7584a29b5c435"
+          },
+          {
+            "path": "tsconfig.app.json.txt",
+            "sha256": "5873ede22f2aec7e03c664f55f1090f61fc6565400384c8babe8150d22f4e7db"
+          }
+        ]
+      },
+      "case": {
+        "path": "owning-project-paths-13090/case.json",
+        "sha256": "8de151baba47c56cf00c9ec97896bf171baa5e34ab041463cd71fccef001f000"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "lsp/regression/precise-template-suppression-12022",
       "state": "active",
       "targets": [
