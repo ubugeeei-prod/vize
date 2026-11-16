@@ -22,6 +22,7 @@ mod dom;
 mod erase;
 mod names;
 mod props;
+mod scopes;
 
 /// The emission target.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -109,7 +110,9 @@ pub enum EmitIssue {
     /// DOM: the props identifier read other than as `props.key`, or a
     /// destructured prop used as a component tag.
     PropsValue,
-    /// DOM: a destructured prop name declared again inside the component.
+    /// DOM: a destructured prop's local declared again in the component's own
+    /// scope (its setup outside nested functions and blocks). Nested scopes
+    /// shadow it as in JavaScript.
     ShadowedProp,
     /// DOM: an `async` or generator component.
     AsyncComponent,
