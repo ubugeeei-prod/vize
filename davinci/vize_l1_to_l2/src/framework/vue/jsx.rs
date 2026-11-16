@@ -7,20 +7,26 @@
 //! landed yet is a typed [`JsxRefusal`], never a degraded op.
 
 mod attributes;
+mod boolean;
 mod children;
+mod control_flow;
 #[cfg(test)]
 mod tests;
 
+pub use boolean::BooleanBindings;
 pub use children::clean_text;
 
 use oxc_ast::ast::{JSXElement, JSXFragment};
 use oxc_semantic::Scoping;
 use vize_l0::dialect::JsxSemantics;
+use vize_l0::id::NodeId;
 use vize_l0::side_table::SideTable;
 use vize_l0::{Allocator, Span};
 use vize_l2::artifact::{ArtifactParts, LoweringFeatures, OpFamily};
 use vize_l2::component::{ComponentDef, Exec, RenderScope};
+use vize_l2::expr::ExprRef;
 use vize_l2::op::Region;
+use vize_l2::scope::{ScopeFacts, ScopeTag};
 
 /// How deeply a dialect interprets JavaScript around JSX.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -89,6 +95,17 @@ impl JsxDialect {
     }
 }
 
+/// The facts of one module that every render root lowers against.
+#[derive(Debug, Clone, Copy)]
+pub struct JsxFile<'a, 's> {
+    /// The whole module, which every span indexes.
+    pub source: &'a str,
+    /// The module's semantic pass: component tags resolve through it.
+    pub scoping: Option<&'s Scoping>,
+    /// The module's provably boolean `const`s, for structural `&&`.
+    pub booleans: &'s BooleanBindings,
+}
+
 /// An outermost JSX render root.
 #[derive(Debug, Clone, Copy)]
 pub enum JsxRoot<'r, 'x> {
@@ -114,7 +131,8 @@ pub enum JsxRefusal {
     /// A `v-*` directive, `v-slots` or an attribute value holding JSX.
     Attribute,
     /// A child shape whose op has not landed (expression children outside
-    /// the sole-child position, control flow, spreads, slot idioms).
+    /// the sole-child position, `&&` over a value, a non-element branch,
+    /// spreads, slot idioms).
     Child,
     /// A span outside the source.
     Span,
@@ -123,15 +141,31 @@ pub enum JsxRefusal {
 struct Cx<'a, 's> {
     allocator: &'a Allocator,
     dialect: JsxDialect,
-    source: &'a str,
-    scoping: Option<&'s Scoping>,
+    file: JsxFile<'a, 's>,
     op_count: u32,
+    next_scope: u32,
+    scopes: SideTable<ScopeFacts>,
     features: LoweringFeatures,
 }
 
 impl<'a> Cx<'a, '_> {
-    fn mint(&mut self) {
+    /// Count one op and return its page-order id.
+    fn mint(&mut self) -> Option<NodeId> {
+        let id = NodeId::from_index(self.op_count);
         self.op_count = self.op_count.saturating_add(1);
+        id
+    }
+
+    fn mint_scope(&mut self) -> ScopeTag {
+        let tag = ScopeTag::from_index(self.next_scope);
+        self.next_scope = self.next_scope.saturating_add(1);
+        tag
+    }
+
+    fn attach_scope(&mut self, node: Option<NodeId>, facts: ScopeFacts) {
+        if let Some(id) = node {
+            self.scopes.insert(id, facts);
+        }
     }
 
     fn observe(&mut self, family: OpFamily) {
@@ -139,9 +173,19 @@ impl<'a> Cx<'a, '_> {
     }
 
     fn slice(&self, span: oxc_span::Span) -> Result<&'a str, JsxRefusal> {
-        self.source
+        self.file
+            .source
             .get(span.start as usize..span.end as usize)
             .ok_or(JsxRefusal::Span)
+    }
+
+    /// The authored expression at `at`.
+    fn expr(&self, at: oxc_span::Span) -> Result<ExprRef<'a>, JsxRefusal> {
+        Ok(ExprRef::parse_js_in(
+            self.allocator,
+            self.slice(at)?,
+            span(at),
+        ))
     }
 }
 
@@ -151,13 +195,10 @@ const fn span(span: oxc_span::Span) -> Span {
 
 /// Lower one render root into its component definition.
 ///
-/// `source` is the whole module the root's spans index; `scoping` resolves
-/// component tags to lexical bindings, as the Program's semantic pass built
-/// it.
+/// `file` holds the facts of the module the root belongs to.
 pub fn lower_component<'a>(
     allocator: &'a Allocator,
-    source: &'a str,
-    scoping: Option<&Scoping>,
+    file: &JsxFile<'a, '_>,
     dialect: &JsxDialect,
     component: JsxComponent<'a>,
     root: JsxRoot<'_, '_>,
@@ -168,9 +209,10 @@ pub fn lower_component<'a>(
     let mut cx = Cx {
         allocator,
         dialect: *dialect,
-        source,
-        scoping,
+        file: *file,
         op_count: 0,
+        next_scope: 0,
+        scopes: SideTable::new(),
         features: LoweringFeatures::EMPTY,
     };
     let (ops, root_span) = match root {
@@ -191,9 +233,9 @@ pub fn lower_component<'a>(
         scope: RenderScope::Lexical,
         span: span(root_span),
         body: ArtifactParts {
-            scopes: SideTable::new(),
+            scopes: cx.scopes,
             features: cx.features,
-            ..ArtifactParts::new(source, Region { ops })
+            ..ArtifactParts::new(file.source, Region { ops })
         },
         op_count: cx.op_count,
     })

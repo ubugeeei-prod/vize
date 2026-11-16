@@ -39,9 +39,25 @@ const SHAPES: &[&str] = &[
     "const A = () => <template><i /></template>;",
     "const A = () => <div><><i /><>{'x'}</></></div>;",
     "function A() { const Local = () => null; return <Local />; }",
+    "const on = a > 1;\nconst A = () => <div>{on && <i />}{!x && <b>{y}</b>}</div>;",
+    "const A = () => <p>{a ? <i /> : (b) ? <b /> : <s />}</p>;",
+    "const A = () => <p>{a ? (b ? <i /> : <b />) : <s />}</p>;",
+    "const A = () => <ul>{xs.map((x, i) => <li key={i}>{x}</li>)}</ul>;",
+    "const A = () => <ul>{xs.map(function ({ id }) { return <li id={id} />; })}</ul>;",
+    "const A = () => <ul>{rows.map(() => ok ? <i /> : <b />)}</ul>;",
+    "const A = () => <ul>{rows.map((r) => r.items.map((c) => <li>{c}</li>))}</ul>;",
+    "import Card from './c';\nconst A = () => <Card>{a ? <i /> : <b />}</Card>;",
+    "const A = () => <Free>{xs.map((x) => <i>{x}</i>)}text</Free>;",
 ];
 
-fn sources() -> Vec<(vize_l0::String, JsxLang)> {
+/// TSX spellings of the structural shapes.
+const TSX_SHAPES: &[&str] = &[
+    "const A = () => <ul>{(xs as Item[]).map((x: Item, i: number) => <li key={i}>{x.id}</li>)}</ul>;",
+    "const A = () => <p>{(a satisfies boolean) ? <i /> : <b />}</p>;",
+];
+
+/// Every case, and whether each of its roots must take the level lowering.
+fn sources() -> Vec<(vize_l0::String, JsxLang, bool)> {
     let mut sources = Vec::new();
     for corpus in [VAPOR_CORPUS, BABEL_CORPUS] {
         let corpus: Value = serde_json::from_str(corpus).expect("corpus JSON");
@@ -51,17 +67,26 @@ fn sources() -> Vec<(vize_l0::String, JsxLang)> {
             } else {
                 JsxLang::Jsx
             };
-            sources.push((case["source"].as_str().expect("source").into(), lang));
+            sources.push((case["source"].as_str().expect("source").into(), lang, false));
         }
     }
-    sources.extend(SHAPES.iter().map(|source| ((*source).into(), JsxLang::Jsx)));
+    sources.extend(
+        SHAPES
+            .iter()
+            .map(|source| ((*source).into(), JsxLang::Jsx, true)),
+    );
+    sources.extend(
+        TSX_SHAPES
+            .iter()
+            .map(|source| ((*source).into(), JsxLang::Tsx, true)),
+    );
     sources
 }
 
 #[test]
 fn level_lowering_matches_the_relief_projection() {
     let (mut roots, mut native) = (0, 0);
-    for (source, lang) in sources() {
+    for (source, lang, shape) in sources() {
         let allocator = Allocator::new();
         let source = allocator.alloc_str(&source);
         let (lowered, _) = lower_source_with_compat(
@@ -78,12 +103,11 @@ fn level_lowering_matches_the_relief_projection() {
         );
         for root in &lowered.roots {
             roots += 1;
-            let Ok(level) = root.l2.as_ref() else {
+            let level = root.l2.as_ref().ok().filter(|level| level.native);
+            assert!(level.is_some() || !shape, "not level-lowered: {source}");
+            let Some(level) = level else {
                 continue;
             };
-            if !level.native {
-                continue;
-            }
             native += 1;
             let projected = try_lower_root(&allocator, source, &root.root)
                 .expect("the projection admits every root the level lowering admits");
@@ -106,5 +130,4 @@ fn level_lowering_matches_the_relief_projection() {
         }
     }
     println!("level-lowered {native} of {roots} roots");
-    assert!(native >= SHAPES.len(), "{native} of {roots}");
 }
