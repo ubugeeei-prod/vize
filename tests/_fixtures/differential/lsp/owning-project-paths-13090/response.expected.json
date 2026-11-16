@@ -1,0 +1,41 @@
+[
+  {
+    "range": {
+      "start": {
+        "line": 1,
+        "character": 31
+      },
+      "end": {
+        "line": 1,
+        "character": 40
+      }
+    },
+    "target": "${workspace}/src/props.ts"
+  },
+  {
+    "range": {
+      "start": {
+        "line": 2,
+        "character": 28
+      },
+      "end": {
+        "line": 2,
+        "character": 38
+      }
+    },
+    "target": "${workspace}/src/format.ts"
+  },
+  {
+    "range": {
+      "start": {
+        "line": 3,
+        "character": 18
+      },
+      "end": {
+        "line": 3,
+        "character": 31
+      }
+    },
+    "target": "${workspace}/src/Child.vue"
+  }
+]
