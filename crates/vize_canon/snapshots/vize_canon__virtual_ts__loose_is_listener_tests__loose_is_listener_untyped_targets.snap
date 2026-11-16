@@ -186,7 +186,7 @@ const take = (value: unknown) => value
   // @ts-ignore Inference-only dynamic target/props; the canonical component-props call owns diagnostics.
   const __vize_emit_props_0 = (undefined as unknown as __target_0_emit_resolver)(target)({
   });
-  type __target_7_pick_inferred_emit_args = __target_7__library extends true ? (typeof __vize_emit_props_0 extends { __ctx?: infer __X } ? NonNullable<__X> extends { props: infer __P } ? __P : {} : {}) extends { onPick?: (...args: infer __A) => any } ? __A : unknown[] : typeof __vize_emit_props_0 extends { readonly __vizeLooseListener: infer __L extends unknown[] } ? __L : typeof __vize_emit_props_0 extends { onPick?: (...args: infer __A) => any } ? __A : unknown[];
+  type __target_7_pick_inferred_emit_args = __vizeInferredEmitArgs<__target_7__library, typeof __vize_emit_props_0, "onPick", true>;
   type __target_7_pick_contextless_listener = __target_7__library extends true ? false : typeof __vize_emit_props_0 extends { readonly __vizeLooseListener: unknown[] } ? true : false;
   type __target_7_pick_static_emit_args = __target_7__emit_props extends infer __B ? __B extends [infer __EP] ? __EP extends { onPick?: (...args: infer __A) => any } ? __A : unknown[] : unknown[] : never;
   type __target_7_pick_emit_args = unknown[] extends __target_7_pick_inferred_emit_args ? __target_7_pick_static_emit_args : __target_7_pick_inferred_emit_args;
@@ -218,7 +218,7 @@ const take = (value: unknown) => value
   // @ts-ignore Inference-only dynamic target/props; the canonical component-props call owns diagnostics.
   const __vize_emit_props_1 = (undefined as unknown as __node_1_emit_resolver)(node)({
   });
-  type __node_8_pick_inferred_emit_args = __node_8__library extends true ? (typeof __vize_emit_props_1 extends { __ctx?: infer __X } ? NonNullable<__X> extends { props: infer __P } ? __P : {} : {}) extends { onPick?: (...args: infer __A) => any } ? __A : unknown[] : typeof __vize_emit_props_1 extends { readonly __vizeLooseListener: infer __L extends unknown[] } ? __L : typeof __vize_emit_props_1 extends { onPick?: (...args: infer __A) => any } ? __A : unknown[];
+  type __node_8_pick_inferred_emit_args = __vizeInferredEmitArgs<__node_8__library, typeof __vize_emit_props_1, "onPick", true>;
   type __node_8_pick_contextless_listener = __node_8__library extends true ? false : typeof __vize_emit_props_1 extends { readonly __vizeLooseListener: unknown[] } ? true : false;
   type __node_8_pick_static_emit_args = __node_8__emit_props extends infer __B ? __B extends [infer __EP] ? __EP extends { onPick?: (...args: infer __A) => any } ? __A : unknown[] : unknown[] : never;
   type __node_8_pick_emit_args = unknown[] extends __node_8_pick_inferred_emit_args ? __node_8_pick_static_emit_args : __node_8_pick_inferred_emit_args;
@@ -250,7 +250,7 @@ const take = (value: unknown) => value
   // @ts-ignore Inference-only dynamic target/props; the canonical component-props call owns diagnostics.
   const __vize_emit_props_2 = (undefined as unknown as __loose_2_emit_resolver)(loose)({
   });
-  type __loose_9_pick_inferred_emit_args = __loose_9__library extends true ? (typeof __vize_emit_props_2 extends { __ctx?: infer __X } ? NonNullable<__X> extends { props: infer __P } ? __P : {} : {}) extends { onPick?: (...args: infer __A) => any } ? __A : unknown[] : typeof __vize_emit_props_2 extends { readonly __vizeLooseListener: infer __L extends unknown[] } ? __L : typeof __vize_emit_props_2 extends { onPick?: (...args: infer __A) => any } ? __A : unknown[];
+  type __loose_9_pick_inferred_emit_args = __vizeInferredEmitArgs<__loose_9__library, typeof __vize_emit_props_2, "onPick", true>;
   type __loose_9_pick_contextless_listener = __loose_9__library extends true ? false : typeof __vize_emit_props_2 extends { readonly __vizeLooseListener: unknown[] } ? true : false;
   type __loose_9_pick_static_emit_args = __loose_9__emit_props extends infer __B ? __B extends [infer __EP] ? __EP extends { onPick?: (...args: infer __A) => any } ? __A : unknown[] : unknown[] : never;
   type __loose_9_pick_emit_args = unknown[] extends __loose_9_pick_inferred_emit_args ? __loose_9_pick_static_emit_args : __loose_9_pick_inferred_emit_args;
@@ -282,7 +282,7 @@ const take = (value: unknown) => value
   // @ts-ignore Inference-only dynamic target/props; the canonical component-props call owns diagnostics.
   const __vize_emit_props_3 = (undefined as unknown as __tag_3_emit_resolver)(tag)({
   });
-  type __tag_10_pick_inferred_emit_args = __tag_10__library extends true ? (typeof __vize_emit_props_3 extends { __ctx?: infer __X } ? NonNullable<__X> extends { props: infer __P } ? __P : {} : {}) extends { onPick?: (...args: infer __A) => any } ? __A : unknown[] : typeof __vize_emit_props_3 extends { readonly __vizeLooseListener: infer __L extends unknown[] } ? __L : typeof __vize_emit_props_3 extends { onPick?: (...args: infer __A) => any } ? __A : unknown[];
+  type __tag_10_pick_inferred_emit_args = __vizeInferredEmitArgs<__tag_10__library, typeof __vize_emit_props_3, "onPick", true>;
   type __tag_10_pick_contextless_listener = __tag_10__library extends true ? false : typeof __vize_emit_props_3 extends { readonly __vizeLooseListener: unknown[] } ? true : false;
   type __tag_10_pick_static_emit_args = __tag_10__emit_props extends infer __B ? __B extends [infer __EP] ? __EP extends { onPick?: (...args: infer __A) => any } ? __A : unknown[] : unknown[] : never;
   type __tag_10_pick_emit_args = unknown[] extends __tag_10_pick_inferred_emit_args ? __tag_10_pick_static_emit_args : __tag_10_pick_inferred_emit_args;
@@ -312,7 +312,7 @@ const take = (value: unknown) => value
   // @ts-ignore Inference-only dynamic target/props; the canonical component-props call owns diagnostics.
   const __vize_emit_props_4 = (undefined as unknown as ____vize_dynamic_is_230_4_emit_resolver)(__vize_dynamic_is_230)({
   });
-  type ____vize_dynamic_is_230_11_pick_inferred_emit_args = ____vize_dynamic_is_230_11__library extends true ? (typeof __vize_emit_props_4 extends { __ctx?: infer __X } ? NonNullable<__X> extends { props: infer __P } ? __P : {} : {}) extends { onPick?: (...args: infer __A) => any } ? __A : unknown[] : typeof __vize_emit_props_4 extends { readonly __vizeLooseListener: infer __L extends unknown[] } ? __L : typeof __vize_emit_props_4 extends { onPick?: (...args: infer __A) => any } ? __A : unknown[];
+  type ____vize_dynamic_is_230_11_pick_inferred_emit_args = __vizeInferredEmitArgs<____vize_dynamic_is_230_11__library, typeof __vize_emit_props_4, "onPick", true>;
   type ____vize_dynamic_is_230_11_pick_contextless_listener = ____vize_dynamic_is_230_11__library extends true ? false : typeof __vize_emit_props_4 extends { readonly __vizeLooseListener: unknown[] } ? true : false;
   type ____vize_dynamic_is_230_11_pick_static_emit_args = ____vize_dynamic_is_230_11__emit_props extends infer __B ? __B extends [infer __EP] ? __EP extends { onPick?: (...args: infer __A) => any } ? __A : unknown[] : unknown[] : never;
   type ____vize_dynamic_is_230_11_pick_emit_args = unknown[] extends ____vize_dynamic_is_230_11_pick_inferred_emit_args ? ____vize_dynamic_is_230_11_pick_static_emit_args : ____vize_dynamic_is_230_11_pick_inferred_emit_args;
@@ -450,6 +450,7 @@ const take = (value: unknown) => value
       void __vize_required_slots_4;
     },
   ];
+  type __vizeInferredEmitArgs<L, EP, K extends PropertyKey, Loose = false> = NoInfer<L> extends true ? (NoInfer<EP> extends { __ctx?: infer __X } ? NonNullable<__X> extends { props: infer __P } ? __P : {} : {}) extends { [Q in K]?: (...args: infer __A) => any } ? __A : unknown[] : NoInfer<EP> extends { readonly __vizeLooseListener: infer __L extends unknown[] } ? ([Loose] extends [true] ? __L : unknown[]) : NoInfer<EP> extends { [Q in K]?: (...args: infer __A) => any } ? __A : unknown[];
 
   // Mark used components as referenced
   void target;
