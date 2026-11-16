@@ -156,6 +156,7 @@ function propertyValue(source: string, open: number, close: number, wanted: stri
 function objectArguments(source: string, callee: RegExp): Array<[number, number]> {
   const objects: Array<[number, number]> = [];
   for (const match of source.matchAll(callee)) {
+    if (!executableOffset(source, match.index ?? 0)) continue;
     let open = skipTrivia(source, (match.index ?? 0) + match[0].length);
     if (source[open] !== "(") continue;
     open = skipTrivia(source, open + 1);
@@ -164,6 +165,70 @@ function objectArguments(source: string, callee: RegExp): Array<[number, number]
     if (close !== null) objects.push([open, close]);
   }
   return objects;
+}
+
+function executableOffset(source: string, offset: number): boolean {
+  for (let index = 0; index < offset;) {
+    const character = source[index];
+    if (character === '"' || character === "'" || character === "`") {
+      const result = quoted(source, index, source.length);
+      if (result === null) return false;
+      if (offset < result[1]) return false;
+      index = result[1];
+    } else if (source.startsWith("//", index)) {
+      const newline = source.indexOf("\n", index + 2),
+        end = newline < 0 ? source.length : newline + 1;
+      if (offset < end) return false;
+      index = end;
+    } else if (source.startsWith("/*", index)) {
+      const close = source.indexOf("*/", index + 2),
+        end = close < 0 ? source.length : close + 2;
+      if (offset < end) return false;
+      index = end;
+    } else index += 1;
+  }
+  return true;
+}
+
+function nextProperty(source: string, start: number, close: number): number {
+  let depth = 0;
+  for (let index = start; index < close; index += 1) {
+    const character = source[index];
+    if (character === '"' || character === "'" || character === "`") {
+      const result = quoted(source, index, close);
+      if (result === null) return close;
+      index = result[1] - 1;
+    } else if (source.startsWith("//", index) || source.startsWith("/*", index)) {
+      index = skipTrivia(source, index, close) - 1;
+    } else if (character === "{" || character === "[" || character === "(") depth += 1;
+    else if (character === "}" || character === "]" || character === ")") depth -= 1;
+    else if (character === "," && depth === 0) return index + 1;
+  }
+  return close;
+}
+
+function componentMapRegisters(source: string, open: number, close: number, tag: string): boolean {
+  for (let cursor = open + 1; cursor < close;) {
+    cursor = skipTrivia(source, cursor, close);
+    if (source[cursor] === ",") {
+      cursor += 1;
+      continue;
+    }
+    const literal = quoted(source, cursor, close);
+    let key: string;
+    if (literal !== null) {
+      if (literal[2]) return false;
+      [key, cursor] = literal;
+    } else {
+      const identifier = /^[A-Za-z_$][\w$]*/u.exec(source.slice(cursor, close));
+      if (identifier === null) return false;
+      key = identifier[0];
+      cursor += key.length;
+    }
+    if (comparableName(key) === comparableName(tag)) return true;
+    cursor = nextProperty(source, cursor, close);
+  }
+  return false;
 }
 
 const comparableName = (name: string) => name.replaceAll("-", "").toLowerCase();
@@ -253,27 +318,7 @@ function decoratorRegisters(source: string, tag: string): boolean {
     if (components === null || source[components] !== "{") continue;
     const componentsClose = matchingBrace(source, components, close);
     if (componentsClose === null) continue;
-    let cursor = components + 1;
-    while (cursor < componentsClose) {
-      cursor = skipTrivia(source, cursor, componentsClose);
-      if (source[cursor] === ",") {
-        cursor += 1;
-        continue;
-      }
-      const literal = quoted(source, cursor, componentsClose);
-      let key: string;
-      if (literal !== null) {
-        if (literal[2]) break;
-        [key, cursor] = literal;
-      } else {
-        const identifier = /^[A-Za-z_$][\w$]*/u.exec(source.slice(cursor, componentsClose));
-        if (identifier === null) break;
-        key = identifier[0];
-        cursor += key.length;
-      }
-      if (comparableName(key) === comparableName(tag)) return true;
-      while (cursor < componentsClose && source[cursor] !== ",") cursor += 1;
-    }
+    if (componentMapRegisters(source, components, componentsClose, tag)) return true;
   }
   return false;
 }
@@ -281,6 +326,7 @@ function decoratorRegisters(source: string, tag: string): boolean {
 function optionsApiRegistersNumericKebab(source: string, tag: string): boolean {
   if (!/-\d/u.test(tag)) return false;
   for (const match of source.matchAll(/\bexport\s+default\b/gu)) {
+    if (!executableOffset(source, match.index ?? 0)) continue;
     const open = skipTrivia(source, (match.index ?? 0) + match[0].length);
     if (source[open] !== "{") continue;
     const close = matchingBrace(source, open);
@@ -289,26 +335,7 @@ function optionsApiRegistersNumericKebab(source: string, tag: string): boolean {
     if (components === null || source[components] !== "{") continue;
     const componentsClose = matchingBrace(source, components, close);
     if (componentsClose === null) continue;
-    for (let cursor = components + 1; cursor < componentsClose;) {
-      cursor = skipTrivia(source, cursor, componentsClose);
-      if (source[cursor] === ",") {
-        cursor += 1;
-        continue;
-      }
-      const literal = quoted(source, cursor, componentsClose);
-      let key: string;
-      if (literal !== null) {
-        if (literal[2]) break;
-        [key, cursor] = literal;
-      } else {
-        const identifier = /^[A-Za-z_$][\w$]*/u.exec(source.slice(cursor, componentsClose));
-        if (identifier === null) break;
-        key = identifier[0];
-        cursor += key.length;
-      }
-      if (comparableName(key) === comparableName(tag)) return true;
-      while (cursor < componentsClose && source[cursor] !== ",") cursor += 1;
-    }
+    if (componentMapRegisters(source, components, componentsClose, tag)) return true;
   }
   return false;
 }

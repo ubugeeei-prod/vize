@@ -170,7 +170,7 @@ impl RequireComponentRegistration {
         ctx.sfc_scripts()
             .and_then(|scripts| scripts.script())
             .and_then(|parsed| options_api_name(&parsed.program))
-            .is_some_and(|name| component_name_matches(tag, name))
+            .is_some_and(|name| setup_name_matches(tag, name))
     }
 
     fn is_template_visible_imported_component(

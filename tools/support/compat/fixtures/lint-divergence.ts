@@ -6,8 +6,10 @@ import {
   componentRegistrationPatinaIntentionalReason,
 } from "../../fixtures/lint_divergence/component_registration_intentional.ts";
 import {
+  indexRealProjectLocationSource,
   realProjectLocationDivergence,
   realProjectLocationRules,
+  type RealProjectLocationSource,
 } from "../../fixtures/lint_divergence/real_project_locations.ts";
 
 import {
@@ -228,7 +230,7 @@ export function compareLintFindings({
     falsePositives,
     falseNegatives,
   );
-  const ruleLocationDivergences = pairRuleLocationDivergences(falsePositives, falseNegatives);
+  const ruleLocationDivergences = pairRuleLocationDivergences(falsePositives, falseNegatives, cwd);
   for (let index = falsePositives.length - 1; index >= 0; index -= 1) {
     const finding = falsePositives[index];
     if (finding === undefined) continue;
@@ -1182,12 +1184,26 @@ function documentedSide(value: unknown, label: string): DocumentedSide {
 function pairRuleLocationDivergences(
   falsePositives: Compared[],
   falseNegatives: Compared[],
+  cwd: string,
 ): RuleLocationDivergence[] {
+  const sources = new Map<string, RealProjectLocationSource | null>();
+  const sourceFor = (file: string): RealProjectLocationSource | null => {
+    if (sources.has(file)) return sources.get(file) ?? null;
+    let source: string | null;
+    try {
+      source = readFileSync(join(cwd, file), "utf8");
+    } catch {
+      source = null;
+    }
+    const indexed = source === null ? null : indexRealProjectLocationSource(source);
+    sources.set(file, indexed);
+    return indexed;
+  };
   const paired: RuleLocationDivergence[] = [];
   for (let positiveIndex = 0; positiveIndex < falsePositives.length;) {
     const positive = falsePositives[positiveIndex];
     if (positive === undefined) break;
-    const match = findRuleLocationDivergence(positive, falsePositives, falseNegatives);
+    const match = findRuleLocationDivergence(positive, falsePositives, falseNegatives, sourceFor);
     if (match == null) {
       positiveIndex += 1;
       continue;
@@ -1204,6 +1220,7 @@ function findRuleLocationDivergence(
   positive: Compared,
   falsePositives: readonly Compared[],
   falseNegatives: readonly Compared[],
+  sourceFor: (file: string) => RealProjectLocationSource | null,
 ): RuleLocationMatch | null {
   const rule = ruleLocationDivergenceRules[positive.ruleId];
   if (rule == null) return null;
@@ -1221,7 +1238,13 @@ function findRuleLocationDivergence(
       shared =
         sharedRule === undefined
           ? null
-          : realProjectLocationDivergence(positive, negative, falsePositives, falseNegatives),
+          : realProjectLocationDivergence(
+              positive,
+              negative,
+              falsePositives,
+              falseNegatives,
+              positive.ruleId === "vue/require-prop-comment" ? sourceFor(positive.file) : null,
+            ),
       subject = sharedRule === undefined ? rule.subject(positive, negative) : shared?.subject;
     if (subject == null) continue;
     return {

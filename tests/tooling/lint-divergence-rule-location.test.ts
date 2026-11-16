@@ -2,7 +2,16 @@ import assert from "node:assert/strict";
 import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { test } from "node:test";
 
-import { compare, cwd, eslintResult, span } from "./_helpers/lint-divergence-fixture.ts";
+import { compareLintFindings as compareSuccessor } from "../../tools/support/fixtures/lint_divergence/compare.ts";
+import { get, list, type Json } from "../../tools/support/fixtures/lint_divergence/value.ts";
+import {
+  compare,
+  cwd,
+  currentContext,
+  eslintResult,
+  ruleMap,
+  span,
+} from "./_helpers/lint-divergence-fixture.ts";
 
 test("known rule-owned location anchors are classified without hiding both ranges", () => {
   const result = compare(
@@ -168,32 +177,56 @@ test("real-project rule anchors retain complete packets without creating false p
 });
 
 test("prop comment anchors follow the named prop across type and destructuring sites", () => {
-  const result = compare(
-    [
-      {
-        file: "src/CodeInput.vue",
-        ruleId: "vue/require-prop-comment",
-        severity: 1,
-        ...span(64, 3, 64, 13),
-        message:
-          '[vize:vue/require-prop-comment] The "modelValue" property should have a JSDoc comment.',
-      },
-    ],
-    [
-      eslintResult("src/CodeInput.vue", [
+  const file = "src/CodeInput.vue",
+    path = `${cwd}/${file}`;
+  mkdirSync(`${cwd}/src`, { recursive: true });
+  writeFileSync(
+    path,
+    "const {\n  modelValue,\n} = defineProps<Props>()\ntype Props = {\n  modelValue: string\n}\n",
+  );
+  try {
+    const patina = [
         {
+          file,
           ruleId: "vue/require-prop-comment",
           severity: 1,
-          ...span(93, 3, 93, 34),
-          message: 'The "modelValue" property should have a JSDoc comment.',
+          ...span(5, 3, 5, 13),
+          message:
+            '[vize:vue/require-prop-comment] The "modelValue" property should have a JSDoc comment.',
         },
-      ]),
-    ],
-  );
+      ],
+      baseline = [
+        eslintResult(file, [
+          {
+            ruleId: "vue/require-prop-comment",
+            severity: 1,
+            ...span(2, 3, 2, 14),
+            message: 'The "modelValue" property should have a JSDoc comment.',
+          },
+        ]),
+      ],
+      result = compare(patina, baseline),
+      successor = compareSuccessor(
+        "fixture",
+        cwd,
+        ruleMap as Json,
+        patina,
+        baseline as unknown as Json[],
+        currentContext(ruleMap, [file]),
+      );
 
-  assert.deepEqual(result.falsePositives, []);
-  assert.deepEqual(result.falseNegatives, []);
-  assert.equal(result.ruleLocationDivergences[0].subject, "prop:modelValue");
+    assert.deepEqual(result.falsePositives, []);
+    assert.deepEqual(result.falseNegatives, []);
+    assert.equal(result.ruleLocationDivergences[0].subject, "prop:modelValue");
+    assert.equal(list(successor.falsePositives).length, 0);
+    assert.equal(list(successor.falseNegatives).length, 0);
+    assert.equal(
+      get(list(successor.ruleLocationDivergences)[0] as Json, "subject"),
+      "prop:modelValue",
+    );
+  } finally {
+    rmSync(path);
+  }
 });
 
 test("same-named prop comments in distinct contracts stay unpaired", () => {
@@ -225,6 +258,78 @@ test("same-named prop comments in distinct contracts stay unpaired", () => {
   assert.equal(result.ruleLocationDivergences.length, 0);
   assert.equal(result.falsePositives.length, 2);
   assert.equal(result.falseNegatives.length, 2);
+});
+
+test("a singleton same-named prop outside its declaration stays unpaired", () => {
+  const message = 'The "title" property should have a JSDoc comment.',
+    result = compare(
+      [
+        {
+          file: "src/Card.vue",
+          ruleId: "vue/require-prop-comment",
+          severity: 1,
+          ...span(4, 3, 4, 8),
+          message: `[vize:vue/require-prop-comment] ${message}`,
+        },
+      ],
+      [
+        eslintResult("src/Card.vue", [
+          { ruleId: "vue/require-prop-comment", severity: 1, ...span(14, 3, 14, 22), message },
+        ]),
+      ],
+    );
+  assert.equal(result.ruleLocationDivergences.length, 0);
+  assert.equal(result.falsePositives.length, 1);
+  assert.equal(result.falseNegatives.length, 1);
+});
+
+test("prop comment uniqueness is scoped to each file", () => {
+  const message = 'The "title" property should have a JSDoc comment.',
+    findings = ["A", "B"].map((name) => ({
+      file: `src/${name}.vue`,
+      ruleId: "vue/require-prop-comment",
+      severity: 1,
+      ...span(4, 3, 4, 8),
+      message: `[vize:vue/require-prop-comment] ${message}`,
+    })),
+    result = compare(
+      findings,
+      ["A", "B"].map((name) =>
+        eslintResult(`src/${name}.vue`, [
+          { ruleId: "vue/require-prop-comment", severity: 1, ...span(4, 3, 4, 22), message },
+        ]),
+      ),
+    );
+  assert.equal(result.ruleLocationDivergences.length, 2);
+  assert.deepEqual(result.falsePositives, []);
+  assert.deepEqual(result.falseNegatives, []);
+});
+
+test("nested quote-props packets require the same property-key anchor", () => {
+  const result = compare(
+    [
+      {
+        file: "src/Nested.vue",
+        ruleId: "vue/quote-props",
+        severity: 1,
+        ...span(2, 16, 2, 30),
+        message: "[vize:vue/quote-props] Unnecessarily quoted object property",
+      },
+    ],
+    [
+      eslintResult("src/Nested.vue", [
+        {
+          ruleId: "vue/quote-props",
+          severity: 1,
+          ...span(2, 3, 2, 35),
+          message: "Unnecessarily quoted property 'outer' found.",
+        },
+      ]),
+    ],
+  );
+  assert.equal(result.ruleLocationDivergences.length, 0);
+  assert.equal(result.falsePositives.length, 1);
+  assert.equal(result.falseNegatives.length, 1);
 });
 
 test("unused component location anchors are paired by component identity", () => {

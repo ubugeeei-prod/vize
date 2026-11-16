@@ -3,7 +3,11 @@ import {
   componentRegistrationBaselineIntentionalReason,
   componentRegistrationPatinaIntentionalReason,
 } from "./component_registration_intentional.ts";
-import { realProjectLocationDivergence } from "./real_project_locations.ts";
+import {
+  indexRealProjectLocationSource,
+  realProjectLocationDivergence,
+  type RealProjectLocationSource,
+} from "./real_project_locations.ts";
 import {
   byteOrder,
   get,
@@ -1148,7 +1152,16 @@ function unusedComponentName(message: string): string | undefined {
 export function pairRuleLocationDivergences(
   positives: LintRecord[],
   negatives: LintRecord[],
+  sourceFor: (file: string) => string | null = () => null,
 ): Json[] {
+  const sources = new Map<string, RealProjectLocationSource | null>();
+  const locationSourceFor = (file: string): RealProjectLocationSource | null => {
+    if (sources.has(file)) return sources.get(file) ?? null;
+    const source = sourceFor(file),
+      indexed = source === null ? null : indexRealProjectLocationSource(source);
+    sources.set(file, indexed);
+    return indexed;
+  };
   const pairs: Json[] = [];
   let i = 0;
   while (i < positives.length) {
@@ -1224,6 +1237,7 @@ export function pairRuleLocationDivergences(
         negative,
         positives,
         negatives,
+        positive.ruleId === "vue/require-prop-comment" ? locationSourceFor(positive.file) : null,
       );
       if (realProjectLocation !== null) {
         match = { index, ...realProjectLocation };

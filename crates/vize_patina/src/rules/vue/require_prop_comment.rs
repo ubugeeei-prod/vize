@@ -1,8 +1,5 @@
 //! vue/require-prop-comment
-//!
-//! Each declared prop needs an immediately preceding JSDoc comment. Inline
-//! type-literal members and same-file interfaces are checked. An unresolved
-//! imported type is skipped.
+//! Checks local prop declarations for immediately preceding JSDoc comments.
 
 use crate::context::LintContext;
 use crate::diagnostic::{LintDiagnostic, Severity};
@@ -423,10 +420,14 @@ impl<'ctx, 'ast> TypeResolver<'ctx, 'ast> {
         if depth == 0 {
             return props;
         }
+        let mut seen = FxHashSet::default();
         for heritage in &interface.extends {
             let Expression::Identifier(identifier) = &heritage.expression else {
                 continue;
             };
+            if !seen.insert(identifier.name.as_str()) {
+                continue;
+            }
             if let Some(inherited) = self.lookup(identifier.name.as_str(), depth - 1, block) {
                 extend_unique(&mut props, inherited);
             }

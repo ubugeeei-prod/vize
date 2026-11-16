@@ -247,7 +247,7 @@ export function compareLintFindings(
   }
   progress("paired exact identities");
   const ruleLocationDivergences = sortValues(
-    pairRuleLocationDivergences(falsePositives, falseNegatives),
+    pairRuleLocationDivergences(falsePositives, falseNegatives, sourceFor),
   );
   progress("paired rule locations");
   if (process.env.VIZE_LINT_BASELINE_PROGRESS === "1")

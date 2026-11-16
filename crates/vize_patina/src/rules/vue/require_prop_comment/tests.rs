@@ -196,7 +196,26 @@ fn cyclic_interface_expansions_are_independent_of_lookup_order() {
         ["alpha", "beta"]
     );
     assert_eq!(
-        names(resolver.lookup("CycleB", 16, 0).unwrap()),
+        names(resolver.lookup("CycleB", 15, 0).unwrap()),
         ["beta", "alpha"]
+    );
+}
+
+#[test]
+fn repeated_interface_heritage_is_expanded_once() {
+    let source = r#"<script setup lang="ts">
+interface Shared { leaf: string }
+interface Props extends Shared, Shared { own: string }
+defineProps<Props>();
+</script>"#;
+    assert_eq!(
+        messages(source)
+            .into_iter()
+            .map(|(_, message)| message)
+            .collect::<Vec<_>>(),
+        [
+            "The \"leaf\" property should have a JSDoc comment.",
+            "The \"own\" property should have a JSDoc comment.",
+        ]
     );
 }

@@ -39,6 +39,43 @@ export default class Home extends Vue {}
     );
 });
 
+test("component map scanning skips nested values", () => {
+  const decorator = "@Component({ components: { Present: pick(First, Ghost) } })";
+  assert.match(
+    componentRegistrationBaselineIntentionalReason(finding("Present"), decorator) ?? "",
+    /decorator/u,
+  );
+  assert.equal(componentRegistrationBaselineIntentionalReason(finding("Ghost"), decorator), null);
+
+  const options = "export default { components: { Edit1Icon: pick(First, Ghost2Icon) } }";
+  assert.match(
+    componentRegistrationBaselineIntentionalReason(finding("edit-1-icon"), options) ?? "",
+    /numeric kebab/u,
+  );
+  assert.equal(
+    componentRegistrationBaselineIntentionalReason(finding("ghost-2-icon"), options),
+    null,
+  );
+});
+
+test("registration-like text in comments and strings stays scored", () => {
+  for (const source of [
+    '// defineOptions({ name: "TreeItem" })',
+    'const text = "defineOptions({ name: \\\"TreeItem\\\" })"',
+    "/* @Component({ components: { Ghost } }) */",
+    'const text = "@Component({ components: { Ghost } })"',
+    "// export default { components: { Edit1Icon } }",
+    'const text = "export default { components: { Edit1Icon } }"',
+  ]) {
+    const tag = source.includes("TreeItem")
+      ? "TreeItem"
+      : source.includes("Edit1Icon")
+        ? "edit-1-icon"
+        : "Ghost";
+    assert.equal(componentRegistrationBaselineIntentionalReason(finding(tag), source), null);
+  }
+});
+
 test("defineOptions names retain Vue's recursive self identity", () => {
   const source = `<script setup lang="ts">
 defineOptions({ inheritAttrs: false, name: "RouteTreeBranch" });
