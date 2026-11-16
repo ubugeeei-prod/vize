@@ -318,6 +318,11 @@ pub(super) struct ComponentPropsContext<'a, 'template> {
     pub(super) hoist_shared_preamble: bool,
     pub(super) preserve_event_navigation: bool,
     pub(super) omit_navigation_references: bool,
+    /// Slot-name checks without navigation are type-only statements: no
+    /// declaration enters the template control flow every later reference
+    /// walks. Only without type parameters in scope, where indexing and
+    /// destructuring report the same diagnostic.
+    pub(super) type_only_slot_references: bool,
     pub(super) check_unknown_events: bool,
     pub(super) strict_v_model: bool,
     pub(super) component_binding_check: ComponentBindingCheck<'a>,

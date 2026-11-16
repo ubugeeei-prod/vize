@@ -88,6 +88,18 @@ void test("a recording replays byte for byte, and a file it lacks is an error", 
   );
 });
 
+void test("expressions-only drops check-projection slot names with their alias", () => {
+  const text = [
+    "  type __vize_slots_nav_2 = $NavigationSlots<typeof Panel>;",
+    "  void (undefined as unknown as __vize_slots_nav_2['title']);",
+  ].join("\n");
+  const ablated = ablateText(text);
+  assert.equal(Buffer.byteLength(ablated.text), Buffer.byteLength(text));
+  assert.match(ablated.text, /^ {2}type __vize_slots_nav_2 = any {2,};$/mu);
+  assert.match(ablated.text, /^ +$/mu);
+  assert.deepEqual(ablated.counts, { type: 1, blank: 1 });
+});
+
 void test("expressions-only keeps every name and length and drops tuples inside rewritten typing", (t) => {
   const text = [
     "type __vize_Props_12 = { a: string; b: number };",
