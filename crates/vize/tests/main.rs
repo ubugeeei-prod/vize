@@ -13,6 +13,7 @@ mod build_sfc_errors_cli;
 mod build_stage_dump;
 mod build_stage_dump_safety;
 mod build_style_preprocessors_cli;
+mod build_tsrx_cli;
 mod build_vue2_duplicate_attribute_cli;
 mod build_vue2_preserve_cli;
 mod build_whitespace_cli;
