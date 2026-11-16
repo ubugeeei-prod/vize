@@ -5416,7 +5416,6 @@ dependencies = [
  "tempfile",
  "thiserror 2.0.21",
  "vize_armature",
- "vize_atelier_core",
  "vize_atelier_jsx",
  "vize_atelier_sfc",
  "vize_canon",
