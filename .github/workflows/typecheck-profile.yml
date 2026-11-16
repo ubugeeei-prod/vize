@@ -27,7 +27,7 @@ on:
         type: string
         default: ""
       lanes:
-        description: Comma-separated lanes (tsc, tsrs, tsrs-dwarf, check)
+        description: Comma-separated lanes (tsc, tsrs, tsrs-dwarf, tsrs-source, check)
         type: string
         default: "tsc,tsrs,check"
       frequency:
@@ -159,6 +159,27 @@ jobs:
             (cd "$RUNNER_TEMP/profile-$role" && vp run --filter './npm/cli' build)
             file "$RUNNER_TEMP/profile-$role"/npm/native/*.node
           done
+      # The tsrs-source lane: tsrs at TSRS_SOURCE_REF built with line tables,
+      # frame pointers and its symbol table, so perf names and unwinds it.
+      - name: Build tsrs from source
+        if: contains(env.LANES, 'tsrs-source')
+        env:
+          TSRS_SOURCE_REF: v0.23.0
+        run: |
+          set -euo pipefail
+          git submodule update --init --depth 1 -- upstream/tsrs
+          git -C upstream/tsrs fetch --no-tags --depth 1 origin "refs/tags/$TSRS_SOURCE_REF:refs/tags/$TSRS_SOURCE_REF"
+          git -C upstream/tsrs checkout --detach "$TSRS_SOURCE_REF"
+          # Bench branch only: the local content-mapper timeline patch (TSRS_CM_PROFILE).
+          git -C upstream/tsrs apply "$GITHUB_WORKSPACE/tools/benchmarks/tsrs-cmprof.patch"
+          cd upstream/tsrs
+          RUSTFLAGS="-C force-frame-pointers=yes" CARGO_TARGET_DIR="$RUNNER_TEMP/tsrs-target" \
+            cargo build --locked --profile prof -p tsrs_cli --bin tsrs \
+              --config 'profile.prof.inherits="release"' --config 'profile.prof.lto="thin"' \
+              --config 'profile.prof.codegen-units=16' --config 'profile.prof.debug="line-tables-only"' \
+              --config 'profile.prof.strip="none"'
+          "$RUNNER_TEMP/tsrs-target/prof/tsrs" --version
+          echo "VIZE_PROFILE_TSRS_BIN=$RUNNER_TEMP/tsrs-target/prof/tsrs" >> "$GITHUB_ENV"
       - name: Profile the lanes
         run: |
           set -euo pipefail
@@ -168,6 +189,13 @@ jobs:
             --corpora "$CORPORA" --lanes "$LANES" --frequency "$FREQUENCY" \
             --perf "$PERF_BIN" --flamegraph "$RUNNER_TEMP/flamegraph" \
             --work "$RUNNER_TEMP/profile-work" --out "$RUNNER_TEMP/profile-out"
+      - name: Record tsrs content-mapper timelines
+        if: contains(env.LANES, 'tsrs-source')
+        run: |
+          set -euo pipefail
+          npm ci --prefix tools/benchmarks/typecheck-hosts-tsrs-0.23 --ignore-scripts --no-audit --no-fund
+          node tools/benchmarks/scripts/tsrs-timeline-run.ts "$RUNNER_TEMP/profile-work" "$RUNNER_TEMP/profile-out/timeline" \
+            "$VIZE_PROFILE_TSRS_BIN" "$GITHUB_WORKSPACE/tools/benchmarks/typecheck-hosts-tsrs-0.23/node_modules/@tsrs/linux-x64-gnu/tsrs" 7
       - name: Write job summary
         if: always()
         run: |
