@@ -2,13 +2,15 @@
 //! types a function's call signatures declare.
 use super::super::checker_memo::CheckerMemo;
 use super::details::{DetailCache, type_detail};
-use corsa::api::{NodeHandle, TypeResponse};
+use corsa::api::{NodeHandle, SignatureResponse, TypeResponse};
 use serde_json::{Value, json};
 
 // TypeScript 7 SignatureFlags / SignatureKind.
 const HAS_REST_PARAMETER: u32 = 1;
 const CALL_SIGNATURE: i32 = 0;
 const CONSTRUCT_SIGNATURE: i32 = 1;
+/// TypeScript 7 `TypeFlags.Boolean`.
+const BOOLEAN: u32 = 1 << 8;
 /// TypeScript 7 `TypeFlags.Union`.
 const UNION: u32 = 1 << 27;
 /// Calls with more argument positions than this keep only the first ones.
@@ -66,26 +68,30 @@ pub(super) async fn resolved_parameters(
     })))
 }
 
-/// `{ contextual, signatures: [{ texts, detail }], ownSignatures? }`: the
-/// return type of every call signature of the function's contextual type
+/// `{ contextual, signatures: [{ texts, detail, predicate? }], ownSignatures? }`:
+/// the return type of every call signature of the function's contextual type
 /// (function expressions and arrows, when one exists) or of its own type.
 /// With a contextual type, `ownSignatures` holds the function's own ones too.
+/// With `predicates`, a signature with a type predicate (written or inferred)
+/// describes the predicate's type as `predicate`.
 pub(super) async fn function_returns(
     session: &CheckerMemo<'_>,
     own: &TypeResponse,
     location: Option<NodeHandle>,
+    predicates: bool,
     cache: &mut DetailCache,
 ) -> corsa::Result<Value> {
     let contextual = match location {
         Some(location) => session.contextual_type(&location).await,
         None => None,
     };
-    let returns = signature_returns(session, contextual.as_ref().unwrap_or(own), cache).await?;
+    let function_type = contextual.as_ref().unwrap_or(own);
+    let returns = signature_returns(session, function_type, predicates, cache).await?;
     Ok(match contextual {
         Some(_) => json!({
             "contextual": true,
             "signatures": returns,
-            "ownSignatures": signature_returns(session, own, cache).await?,
+            "ownSignatures": signature_returns(session, own, predicates, cache).await?,
         }),
         None => json!({ "contextual": false, "signatures": returns }),
     })
@@ -94,6 +100,7 @@ pub(super) async fn function_returns(
 async fn signature_returns(
     session: &CheckerMemo<'_>,
     function_type: &TypeResponse,
+    predicates: bool,
     cache: &mut DetailCache,
 ) -> corsa::Result<Vec<Value>> {
     // tsutils `getCallSignaturesOfType`: a union contributes the signatures of
@@ -119,16 +126,47 @@ async fn signature_returns(
             .get_return_type_of_signature(
                 session.snapshot().handle.clone(),
                 session.project_handle(),
-                signature.id,
+                signature.id.clone(),
             )
             .await
             .ok()
             .flatten();
-        if let Some(return_type) = return_type {
-            returns.push(described(session, &return_type, cache).await?);
+        let Some(return_type) = return_type else {
+            continue;
+        };
+        let mut described_return = described(session, &return_type, cache).await?;
+        // Only a `boolean` return can carry a type predicate.
+        if predicates
+            && return_type.flags & BOOLEAN != 0
+            && let Some(predicate) = predicate_type(session, &signature).await
+            && let Value::Object(fields) = &mut described_return
+        {
+            fields.insert(
+                "predicate".into(),
+                described(session, &predicate, cache).await?,
+            );
         }
+        returns.push(described_return);
     }
     Ok(returns)
+}
+
+/// `checker.getTypePredicateOfSignature(signature)?.type`.
+async fn predicate_type(
+    session: &CheckerMemo<'_>,
+    signature: &SignatureResponse,
+) -> Option<TypeResponse> {
+    session
+        .client()
+        .get_type_predicate_of_signature(
+            session.snapshot().handle.clone(),
+            session.project_handle(),
+            signature.id.clone(),
+        )
+        .await
+        .ok()
+        .flatten()
+        .and_then(|predicate| predicate.r#type)
 }
 
 async fn described(

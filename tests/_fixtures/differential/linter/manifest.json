@@ -4585,6 +4585,54 @@
       }
     },
     {
+      "id": "linter/no-unnecessary-type-parameters-13084",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "no-unnecessary-type-parameters-13084",
+        "files": [
+          {
+            "path": "src/Inferred.vue.txt",
+            "role": "issue-authored-inferred-signature-reproduction",
+            "sha256": "8fb37575e6e0a10efd25464ac006378f7f929f9f9f27f0f4ad011fe49294e750"
+          },
+          {
+            "path": "src/Property.vue.txt",
+            "role": "issue-authored-class-property-reproduction",
+            "sha256": "45ee3ca20fe8a39631f700c6a98f62d1e583b9700b6d9a78c846e1dfcce89d50"
+          },
+          {
+            "path": "tsconfig.json",
+            "role": "issue-authored-typescript-configuration",
+            "sha256": "58a7b95ded5405fa3e811fa60c74459a8ac19b08153682a3a2212ec946671451"
+          },
+          {
+            "path": "vize-lint.config.mjs.txt",
+            "role": "issue-authored-linter-configuration",
+            "sha256": "d38c2f9348e4988d699022c91267a74c5577fc801cfa472378d3a190bf75bc81"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/no-unsafe-enum-comparison-12995",
       "state": "active",
       "targets": [

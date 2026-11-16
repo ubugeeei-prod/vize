@@ -7,11 +7,13 @@
 //! constraint or contextual type are fetched once whichever family asks.
 mod details;
 mod paths;
+mod requests;
 mod shape;
 mod signatures;
 
 pub(in crate::linter) use super::promise_facts::Facets;
 pub(in crate::linter) use paths::PathStep;
+pub(in crate::linter) use requests::{ComputedMemberQuery, HeritageQuery};
 pub(in crate::linter) use shape::detail;
 
 mod batch;
@@ -66,6 +68,8 @@ pub(in crate::linter) struct ExpressionQuery {
     /// For a function-like node: load its call signatures' return types.
     /// `Some(true)` reads them off the contextual type when there is one.
     pub function_returns: Option<bool>,
+    /// With `function_returns`: also load each signature's type predicate.
+    pub predicates: bool,
     /// Load the checker's contextual type at this node, with its detail.
     pub contextual: bool,
     /// Load checker details (flags, constituents, constraint, references).
@@ -121,6 +125,7 @@ impl ExpressionQuery {
             (Some(left), Some(right)) => Some(left || right),
             (left, right) => left.or(right),
         };
+        self.predicates |= other.predicates;
         self.contextual |= other.contextual;
         self.detail |= other.detail;
         self.promise_any |= other.promise_any;
@@ -152,23 +157,6 @@ impl ExpressionQuery {
     fn widens(&self) -> bool {
         self.parts || self.empty_object
     }
-}
-
-/// Heritage lookups for no-misused-promises' `checksVoidReturn.inheritedMethods`.
-#[derive(Clone, Debug)]
-pub(in crate::linter) struct HeritageQuery {
-    /// Read the heritage types as the base types of the declared type
-    /// (`extends`); otherwise the expression type is the heritage type.
-    pub base_types: bool,
-    /// Non-static member names of the class or interface.
-    pub members: Vec<CompactString>,
-}
-
-/// Operand ranges for a computed member access.
-#[derive(Clone, Copy, Debug)]
-pub(in crate::linter) struct ComputedMemberQuery {
-    pub object: (u32, u32),
-    pub property: (u32, u32),
 }
 
 /// Facts a typescript-eslint rule reads off one expression.
@@ -411,6 +399,7 @@ async fn load(
                     memo,
                     response,
                     location.filter(|_| contextual).cloned(),
+                    query.predicates,
                     &mut details,
                 )
                 .await?,

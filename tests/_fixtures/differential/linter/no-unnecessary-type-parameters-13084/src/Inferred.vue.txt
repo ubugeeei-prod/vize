@@ -1,0 +1,14 @@
+<script setup lang="ts">
+import { computed } from "vue";
+
+const { maybe, seed } = defineProps<{ maybe: readonly (string | undefined)[]; seed: number }>();
+
+const present = <T,>(value: T | null | undefined) => value != null;
+const orSelf = <T,>(value: T, other = value) => String(other);
+const lengths = computed(() => maybe.filter(present).map((item) => item.length));
+const text = computed(() => orSelf(seed));
+</script>
+
+<template>
+  <p>{{ lengths }} {{ text }}</p>
+</template>
