@@ -72,11 +72,15 @@ export function beforeLibraryPropsFallthroughIn(current: string): string {
   return current.replace(after, () => before);
 }
 
-/** The embedded `$PropChecker` library branch before and after #13021. */
+/**
+ * The embedded `$PropChecker` library branch before and after #13021. The
+ * fragments stop at the next `(props: ` so the content mapper's public helper
+ * names (`ComponentPropsForTemplate`) cannot hide them.
+ */
 export const previousLibraryPropChecker =
-  "$IsLibraryGenericExport<C> extends true ? C : (props: $ComponentCheckProps<P, T>) => void;";
+  "=> void : $IsLibraryGenericExport<C> extends true ? C : (props: ";
 export const currentLibraryPropChecker =
-  "$IsLibraryGenericExport<C> extends true ? [keyof { [K in keyof T as string extends K ? never : K]: 0 }] extends [never] ? C | ((props: T) => void) : C : (props: $ComponentCheckProps<P, T>) => void;";
+  "=> void : $IsLibraryGenericExport<C> extends true ? [keyof { [K in keyof T as string extends K ? never : K]: 0 }] extends [never] ? C | ((props: T) => void) : C : (props: ";
 
 /** The embedded library-branch transition, when a packet crosses it. */
 export function certifyLibraryPropChecker(before: Buffer, after: Buffer) {
