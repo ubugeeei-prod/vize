@@ -36,6 +36,19 @@ pub(super) fn lint_source_with_optional_fix(
     Ok((source, result, fixed))
 }
 
+/// Lint `source` and apply the built-in fixes until stable, without writing.
+pub(super) fn relint_with_fixes(
+    linter: &Linter,
+    path: &Path,
+    source: String,
+    filename: &str,
+) -> (String, LintResult) {
+    let result = lint_source(linter, path, &source, filename);
+    fix_until_stable(source, result, |source| {
+        lint_source(linter, path, source, filename)
+    })
+}
+
 pub(super) fn fix_until_stable(
     mut source: String,
     mut result: LintResult,

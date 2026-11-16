@@ -330,3 +330,123 @@ fn plugin_rules_are_configured_at_the_root_only() {
         )
     );
 }
+
+#[test]
+fn fix_applies_safe_plugin_fixes_and_relints_the_changed_files() {
+    let dir = project("{}", "{ token: \"$brand\" }");
+    let output = vize(
+        dir.path(),
+        &[
+            "lint",
+            "Button.vue",
+            "--fix",
+            "--format",
+            "json",
+            "--profile",
+        ],
+    );
+    assert_eq!(
+        fs::read_to_string(dir.path().join("Button.vue")).unwrap(),
+        "<template>\n  <button color>Go</button>\n</template>\n"
+    );
+    assert_eq!(plugin_messages(&output), json!([]));
+    // The second crossing re-lints only the fixed file and finds nothing left.
+    assert_eq!(receipt(&output)["crossings"], 2);
+    assert_eq!(receipt(&output)["documents"], 2);
+}
+
+#[test]
+fn fix_never_applies_unsafe_plugin_fixes() {
+    let dir = project("{}", "{ token: \"$brand\" }");
+    let config = fs::read_to_string(dir.path().join("vite.config.mjs"))
+        .unwrap()
+        .replace("fixable: \"safe\"", "fixable: \"unsafe\"");
+    fs::write(dir.path().join("vite.config.mjs"), config).unwrap();
+    let output = vize(
+        dir.path(),
+        &[
+            "lint",
+            "Button.vue",
+            "--fix",
+            "--format",
+            "json",
+            "--profile",
+        ],
+    );
+    assert_eq!(
+        fs::read_to_string(dir.path().join("Button.vue")).unwrap(),
+        BUTTON
+    );
+    assert_eq!(
+        plugin_messages(&output),
+        json!([[
+            "Button.vue",
+            "@acme/design/no-raw-color",
+            1,
+            "[vize:@acme/design/no-raw-color] Use $brand instead of 'red'.",
+            2,
+            11,
+            2,
+            25
+        ]])
+    );
+    assert_eq!(receipt(&output)["crossings"], 1);
+}
+
+#[test]
+fn fix_leaves_a_file_unchanged_when_built_in_fixes_revert_the_plugin_fix() {
+    let dir = tempfile::tempdir().unwrap();
+    fs::write(
+        dir.path().join("vite.config.mjs"),
+        "import { pathToFileURL } from \"node:url\";\n\
+         const { defineVizePlugin } = await import(pathToFileURL(process.env.VIZE_TEST_PLUGIN_SDK).href);\n\
+         const quotes = defineVizePlugin({\n\
+           apiVersion: 2, stability: \"experimental\", name: \"@acme/quotes\", version: \"1.0.0\",\n\
+           setup(api) {\n\
+             api.lint.rule({\n\
+               id: \"single\",\n\
+               meta: { messages: { q: \"Use single quotes.\" }, defaultLevel: \"warn\", fixable: \"safe\" },\n\
+               visit: [\"ui.bind\"],\n\
+               run(context) {\n\
+                 for (const node of context.nodes) context.report({ node, messageId: \"q\", fix: `:${node.name}='${node.value}'` });\n\
+               },\n\
+             });\n\
+           },\n\
+         });\n\
+         export default { vue: { plugins: [quotes()] } };\n",
+    )
+    .unwrap();
+    let source = "<template>\n  <div :class=\"cls\"></div>\n</template>\n<script setup lang=\"ts\">\nconst cls = \"a\";\n</script>\n";
+    fs::write(dir.path().join("Quotes.vue"), source).unwrap();
+    let output = vize(
+        dir.path(),
+        &[
+            "lint",
+            "Quotes.vue",
+            "--fix",
+            "--format",
+            "json",
+            "--profile",
+        ],
+    );
+    // `vue/html-quotes` restores the double quotes, so nothing is written and
+    // no further pass runs.
+    assert_eq!(
+        fs::read_to_string(dir.path().join("Quotes.vue")).unwrap(),
+        source
+    );
+    assert_eq!(receipt(&output)["crossings"], 1);
+    assert_eq!(
+        plugin_messages(&output),
+        json!([[
+            "Quotes.vue",
+            "@acme/quotes/single",
+            1,
+            "[vize:@acme/quotes/single] Use single quotes.",
+            2,
+            8,
+            2,
+            20
+        ]])
+    );
+}

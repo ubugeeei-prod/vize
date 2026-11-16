@@ -10,6 +10,7 @@
 //! document, and every job crosses into the trusted JS sidecar in one request
 //! per lint run. Reports map back to host-owned authored spans.
 
+mod fix;
 mod receipt;
 mod reports;
 
@@ -132,11 +133,27 @@ impl PluginLint {
     ) -> Result<PluginLintReceipt, String> {
         let started = Instant::now();
         let mut receipt = PluginLintReceipt::new(self.jobs.len());
+        let receipt_result = self.pass(results, None, &mut receipt);
+        receipt.finish(started);
+        receipt_result.map(|()| receipt)
+    }
+
+    /// One plugin pass over `only` (or every result): one sidecar crossing.
+    fn pass(
+        &self,
+        results: &mut [super::cross_file::CliLintFileResult],
+        only: Option<&[usize]>,
+        receipt: &mut PluginLintReceipt,
+    ) -> Result<(), String> {
         // Lowering and fact computation are per document, so they run in parallel.
         let lowered = results
             .par_iter()
             .enumerate()
-            .filter(|(_, (path, ..))| path.extension().is_some_and(|extension| extension == "vue"))
+            .filter(|(index, (path, ..))| {
+                // `only` is ascending: fix passes collect it in file order.
+                only.is_none_or(|only| only.binary_search(index).is_ok())
+                    && path.extension().is_some_and(|extension| extension == "vue")
+            })
             .map(|(index, (_, filename, source, _))| {
                 let Ok(document) = PluginDocument::build(source, filename) else {
                     return Ok(Err(filename.clone()));
@@ -178,10 +195,9 @@ impl PluginLint {
             }
             documents.push((index, document));
         }
-        receipt.documents = documents.len();
+        receipt.documents += documents.len();
         if documents.is_empty() {
-            receipt.finish(started);
-            return Ok(receipt);
+            return Ok(());
         }
         let request = serde_json::json!({
             "digest": self.digest.as_str(),
@@ -234,8 +250,7 @@ impl PluginLint {
                 }
             }
         }
-        receipt.finish(started);
-        Ok(receipt)
+        Ok(())
     }
 }
 

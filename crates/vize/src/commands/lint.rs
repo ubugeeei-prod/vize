@@ -30,7 +30,7 @@ use collect::{
     resolve_lint_config_path,
 };
 use entry_rules::{LintProjectContext, LinterRuleResolver};
-use fix::lint_source_with_optional_fix;
+use fix::{lint_source_with_optional_fix, relint_with_fixes};
 use rayon::prelude::*;
 use read_source::read_lint_source;
 use routes::apply_cross_file_lint;
@@ -253,10 +253,29 @@ pub fn run(mut args: LintArgs) {
     };
     let (mut results, quiet_totals) = lint_run.into_parts();
     let plugin_receipt = plugin_lint.as_ref().map(|plugins| {
-        plugins.run(&mut results).unwrap_or_else(|error| {
+        let fail = |error: String| -> ! {
             eprintln!("\x1b[31mError:\x1b[0m {error}");
             std::process::exit(2);
-        })
+        };
+        let mut receipt = plugins
+            .run(&mut results)
+            .unwrap_or_else(|error| fail(error));
+        if args.fix {
+            let config_by_path: vize_l0::FxHashMap<&Path, usize> = files
+                .iter()
+                .map(PathBuf::as_path)
+                .zip(resolved_rules.file_config_indices.iter().copied())
+                .collect();
+            plugins
+                .fix(&mut results, &mut receipt, |path, source, filename| {
+                    let linter = config_by_path
+                        .get(path)
+                        .and_then(|index| linters.get(*index))?;
+                    Some(relint_with_fixes(linter, path, source, filename))
+                })
+                .unwrap_or_else(|error| fail(error));
+        }
+        receipt
     });
     let lint_time = lint_start.elapsed();
 
