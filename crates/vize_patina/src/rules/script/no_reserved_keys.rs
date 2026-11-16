@@ -22,8 +22,8 @@
 
 use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta, SfcScriptContext, no_dupe_keys};
 use crate::diagnostic::{LintDiagnostic, Severity};
+use crate::linter::sfc_scripts::BlockSemantic;
 use oxc_ast::ast::Program;
-use oxc_semantic::SemanticBuilder;
 use oxc_span::Span;
 use vize_croquis::script_parser::collect_options_descriptor;
 use vize_croquis::{OptionGroup, OptionMember};
@@ -76,7 +76,7 @@ impl ScriptRule for NoReservedKeys {
         if !sfc.is_script_setup {
             return;
         }
-        let built = SemanticBuilder::new().with_build_nodes(true).build(program);
+        let built = BlockSemantic::of(sfc.semantic_of(program), program, true);
         if !built.diagnostics.is_empty()
             || no_dupe_keys::setup::macro_shadowed(program, &built.semantic, "defineProps")
         {

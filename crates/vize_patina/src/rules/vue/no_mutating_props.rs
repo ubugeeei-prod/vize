@@ -71,8 +71,10 @@ impl NoMutatingProps {
             .and_then(|scripts| scripts.script_setup())
             .filter(|parsed| !parsed.panicked && parsed.diagnostics.is_empty())
         {
-            let (runtime_props, runtime_locals) =
-                script_mutations::runtime_prop_scope(&parsed.program);
+            let (runtime_props, runtime_locals) = script_mutations::runtime_prop_scope(
+                &parsed.program,
+                ctx.script_semantic_of(&parsed.program),
+            );
             prop_names.extend(runtime_props);
             local_bindings.extend(runtime_locals);
         }
@@ -252,6 +254,7 @@ impl Rule for NoMutatingProps {
                 script_mutations::find_prop_mutations(
                     script_setup.content.as_ref(),
                     &parsed.program,
+                    ctx.script_semantic_of(&parsed.program),
                 ),
             )
         };

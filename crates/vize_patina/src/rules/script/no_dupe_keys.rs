@@ -126,14 +126,7 @@ impl NoDupeKeys {
         // Preserve every pre-existing Options descriptor diagnostic in this
         // block before adding the compiler-owned setup namespace check.
         self.check_program(program, source, offset, result);
-        setup::check(
-            program,
-            source,
-            offset,
-            module,
-            sfc.resolved_type_world,
-            result,
-        );
+        setup::check(program, source, offset, module, sfc, result);
     }
 }
 

@@ -69,7 +69,8 @@ pub(in crate::linter) fn prepare_with_descriptor<'a>(
     let allocator =
         vize_l0::Allocator::with_capacity((source.len() * 4).max(linter.initial_capacity));
     let script_allocator = oxc_allocator::Allocator::default();
-    let scripts = crate::linter::sfc_scripts::lint_scripts(&script_allocator, descriptor);
+    let parses = crate::linter::sfc_scripts::lint_scripts(&script_allocator, descriptor);
+    let scripts = crate::linter::sfc_scripts::ScriptSemantics::new(&parses);
     let template_ast = descriptor.template.as_ref().map(|template| {
         let l2 = crate::markup::L2Template::lower(&allocator, &template.content);
         let has_fatal_parse_errors = linter.has_fatal_template_parse_errors(&l2);
@@ -101,7 +102,7 @@ pub(in crate::linter) fn prepare_with_descriptor<'a>(
     };
     let analysis = profile!("patina.type_aware.croquis", {
         super::super::engine::analyze_descriptor_for_lint_with_template(
-            &scripts,
+            &parses,
             template_ast
                 .as_ref()
                 .and_then(|(l2, _, has_fatal)| (!*has_fatal).then_some(l2)),
