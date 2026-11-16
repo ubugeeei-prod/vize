@@ -396,4 +396,44 @@ mod tests {
             vec![("@/*".to_string(), "./node/*".to_string())]
         );
     }
+
+    #[cfg(unix)]
+    #[test]
+    fn retargeting_a_symlinked_directory_selects_the_owner_again() {
+        let dir = temp_dir();
+        let root = dir.path();
+        for owned in ["app-src", "node-src"] {
+            fs::create_dir_all(root.join(owned)).unwrap();
+            fs::write(root.join(owned).join("App.vue"), "<template />\n").unwrap();
+        }
+        fs::write(
+            root.join("tsconfig.json"),
+            r#"{ "files": [], "references": [{ "path": "./tsconfig.node.json" }, { "path": "./tsconfig.app.json" }] }"#,
+        )
+        .unwrap();
+        fs::write(
+            root.join("tsconfig.node.json"),
+            r#"{ "compilerOptions": { "paths": { "@/*": ["./node-src/*"] } }, "include": ["node-src/**/*.vue"] }"#,
+        )
+        .unwrap();
+        fs::write(
+            root.join("tsconfig.app.json"),
+            r#"{ "compilerOptions": { "paths": { "@/*": ["./app-src/*"] } }, "include": ["app-src/**/*.vue"] }"#,
+        )
+        .unwrap();
+        let link = root.join("current");
+        let entries = |target: &str| {
+            let _ = fs::remove_file(&link);
+            std::os::unix::fs::symlink(root.join(target), &link).unwrap();
+            super::project_paths(&link.join("App.vue")).unwrap().entries
+        };
+        assert_eq!(
+            entries("app-src"),
+            vec![("@/*".to_string(), "./app-src/*".to_string())]
+        );
+        assert_eq!(
+            entries("node-src"),
+            vec![("@/*".to_string(), "./node-src/*".to_string())]
+        );
+    }
 }

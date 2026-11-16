@@ -21,7 +21,9 @@ use std::time::SystemTime;
 
 use serde_json::Value;
 use vize_l0::FxHashMap;
-use vize_l0::typescript_ownership::{ProjectReferenceGraph, TsconfigSourceKind, normalize_path};
+use vize_l0::typescript_ownership::{
+    ProjectReferenceGraph, TsconfigSourceKind, normalize_path, source_spellings,
+};
 use vize_l0::typescript_project::{CompilerConfigHost, parse_jsonc_value};
 
 type Stamp = Option<(Option<SystemTime>, u64)>;
@@ -57,7 +59,9 @@ impl CompilerConfigHost for FileHost {
 struct Capture {
     graph: ProjectReferenceGraph,
     stamps: Vec<(PathBuf, Stamp)>,
-    owners: Mutex<FxHashMap<PathBuf, Option<PathBuf>>>,
+    /// Owners keyed by every spelling of the importer, so retargeting a
+    /// symlinked directory on its path selects again.
+    owners: Mutex<FxHashMap<Vec<PathBuf>, Option<PathBuf>>>,
 }
 
 impl Capture {
@@ -105,20 +109,22 @@ pub(super) fn owning_reference(shell: &Path, source: &Path) -> Option<PathBuf> {
     if !capture.graph.has_references() {
         return None;
     }
-    if let Some(owner) = capture.owners.lock().ok()?.get(source) {
+    let spellings = source_spellings(source);
+    if let Some(owner) = capture.owners.lock().ok()?.get(&spellings) {
         return owner.clone();
     }
-    let owner = select(&capture.graph, shell, source);
-    capture
-        .owners
-        .lock()
-        .ok()?
-        .insert(source.to_path_buf(), owner.clone());
+    let owner = select(&capture.graph, shell, &spellings, source);
+    capture.owners.lock().ok()?.insert(spellings, owner.clone());
     owner
 }
 
-fn select(graph: &ProjectReferenceGraph, shell: &Path, source: &Path) -> Option<PathBuf> {
-    let owner = graph.select(source, TsconfigSourceKind::for_path(source))?;
+fn select(
+    graph: &ProjectReferenceGraph,
+    shell: &Path,
+    spellings: &[PathBuf],
+    source: &Path,
+) -> Option<PathBuf> {
+    let owner = graph.select_spellings(spellings, TsconfigSourceKind::for_path(source))?;
     if graph.projects().first() == Some(&owner) {
         return None;
     }
