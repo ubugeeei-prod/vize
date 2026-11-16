@@ -20,6 +20,8 @@ pub(super) enum Rules {
         messages: FxHashMap<String, String>,
         /// `meta.docs`, shown as help.
         docs: Option<String>,
+        /// `meta.fixable === "safe"`: `--fix` may apply its fixes.
+        safe_fixes: bool,
     },
     /// A v1 plugin's rules by public ID; `None` is configured off.
     V1 {
@@ -56,6 +58,7 @@ impl Rules {
             severity,
             messages,
             docs,
+            safe_fixes: field(data, "fixable").as_str() == Some("safe"),
         }))
     }
 
@@ -127,6 +130,7 @@ impl Rules {
                 severity,
                 messages,
                 docs,
+                ..
             } => {
                 let invalid = |detail: &str| cstr!("[plugin/report-invalid] {id}: {detail}");
                 let reports = reports
@@ -171,6 +175,18 @@ impl Rules {
 
 /// Public IDs of the enabled rules, interned.
 impl Rules {
+    /// The rule ID when `--fix` may apply this rule's fixes.
+    pub(super) fn safe_fix_id(&self) -> Option<&'static str> {
+        match self {
+            Self::V2 {
+                id,
+                safe_fixes: true,
+                ..
+            } => Some(id),
+            _ => None,
+        }
+    }
+
     pub(super) fn ids(&self) -> Vec<&'static str> {
         match self {
             Self::V2 { id, .. } => vec![id],

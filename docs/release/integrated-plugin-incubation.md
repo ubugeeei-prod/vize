@@ -13,7 +13,7 @@
 | API v1 packet freeze                                       | done (#13122)                            |
 | v2 manifest, canonical plan, validation, inspector views   | done (#13124)                            |
 | `vue.plugins` resolved from `vite.config.*`                | done                                     |
-| custom lint (`lint.rule`, adapted v1 rules) in `vize lint` | done; LSP refuses, `--fix` next          |
+| custom lint (`lint.rule`, adapted v1 rules) in `vize lint` | done, incl. `--fix`; LSP refuses         |
 | custom directive (`vue.directive`)                         | declared only; every consumer refuses it |
 | custom block (`sfc.custom-block`)                          | declared only; every consumer refuses it |
 
@@ -122,6 +122,14 @@ invalidating a plan that is valid today.
 - **Receipt.** `vize lint --profile` prints a `vize_plugin_receipt:` JSON
   line: crossings, documents, request and response bytes, sidecar time, and per
   job the batches, records, batch bytes, reports and JavaScript time.
-- **Not yet.** The LSP refuses plans containing plugin lint rules, and
-  `--fix` does not apply plugin fixes yet. Templates that the plugin records
-  cannot represent are skipped and listed in the receipt.
+- **Fixes.** A fix replaces the reported record's authored span: the whole
+  attribute for `ui.bind`, and the whole text run (adjacent text and every
+  mustache) for `ui.interpolation`. `--fix` applies only the fixes of rules
+  declared `fixable: "safe"`. It never applies unsafe fixes or v1 suggestions.
+  Each pass fixes, re-lints (built-in rules and their fixes) and writes the
+  changed files in parallel, one write per file. The plugins then see only
+  those files, at one more crossing per pass, for at most five passes. A file
+  whose plugin fix the built-in fixes revert is left unwritten.
+- **Not yet.** The LSP refuses plans that contain plugin lint rules. Templates
+  that the plugin records cannot represent are skipped and listed in the
+  receipt.
