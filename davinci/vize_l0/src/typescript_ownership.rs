@@ -13,10 +13,11 @@ use std::path::{Path, PathBuf};
 
 use serde_json::Value;
 
-use crate::typescript_project::{CompilerConfigHost, normalize_path_lexically};
-use crate::{FxHashMap, FxHashSet};
+use crate::typescript_project::normalize_path_lexically;
 
+mod graph;
 mod wildcard;
+pub use graph::ProjectReferenceGraph;
 pub use wildcard::{TsconfigWildcard, TsconfigWildcardUsage};
 
 /// Whether membership also requires the owning project to enable `allowJs`.
@@ -144,6 +145,18 @@ impl OwnershipSpec {
     /// The inherited `compilerOptions.allowJs`, when any config declares it.
     pub fn allow_js(&self) -> Option<bool> {
         self.allow_js
+    }
+
+    /// Membership of a source met under any of its [`source_spellings`].
+    pub fn includes_any(
+        &self,
+        spellings: &[PathBuf],
+        case_sensitive: bool,
+        source_kind: TsconfigSourceKind,
+    ) -> bool {
+        spellings
+            .iter()
+            .any(|spelling| self.includes_normalized(spelling, case_sensitive, source_kind))
     }
 
     /// Membership of a path already passed through [`normalize_path`].
@@ -286,6 +299,48 @@ pub fn normalize_path(path: &Path) -> PathBuf {
     crate::path::canonicalize_non_verbatim(&normalize_path_lexically(path))
 }
 
+/// Every spelling under which a project's specs may meet `source`.
+///
+/// Configs are compared by their [`normalize_path`] spelling, but a spec
+/// keeps the literal directories of an `include` below that config as
+/// written, as TypeScript's directory walk spells them. A source is
+/// therefore matched with each symlinked ancestor resolved in turn and the
+/// components below it kept as written: a symlinked `src` (or a symlinked
+/// directory under `**`) still lies under `<config dir>/src`, while a
+/// symlinked ancestor of the config directory, such as macOS `/var`,
+/// meets the canonical config spelling. The last spelling is the fully
+/// canonical one, which `files` entries use. Without symlinks this is one
+/// spelling, the source itself.
+pub fn source_spellings(source: &Path) -> Vec<PathBuf> {
+    // A relative source is spelled from the working directory, as
+    // canonicalization would resolve it.
+    let lexical = normalize_path_lexically(&if source.is_absolute() {
+        source.to_path_buf()
+    } else {
+        std::env::current_dir().map_or_else(|_| source.to_path_buf(), |cwd| cwd.join(source))
+    });
+    let mut spellings = vec![lexical.clone()];
+    let mut prefix = PathBuf::new();
+    for component in lexical.components() {
+        prefix.push(component);
+        crate::micro_count!("fs.symlink_metadata.calls", 1);
+        let is_symlink = std::fs::symlink_metadata(&prefix)
+            .is_ok_and(|metadata| metadata.file_type().is_symlink());
+        if !is_symlink {
+            continue;
+        }
+        let resolved = normalize_path(&prefix);
+        let spelling = match lexical.strip_prefix(&prefix) {
+            Ok(rest) if !rest.as_os_str().is_empty() => resolved.join(rest),
+            _ => resolved,
+        };
+        if !spellings.contains(&spelling) {
+            spellings.push(spelling);
+        }
+    }
+    spellings
+}
+
 /// Match TypeScript's host policy: Windows is insensitive; other hosts probe
 /// the filesystem containing the running checker by swapping the executable
 /// path's ASCII case. This preserves case-sensitive macOS volumes instead of
@@ -309,122 +364,6 @@ pub fn host_uses_case_sensitive_file_names() -> bool {
         })
         .collect::<crate::String>();
     swapped == spelled || !Path::new(swapped.as_str()).exists()
-}
-
-/// One solution graph read through a host's observed configuration reads:
-/// the root followed by every transitive reference, with each project's spec.
-#[derive(Clone, Debug)]
-pub struct ProjectReferenceGraph {
-    projects: Vec<PathBuf>,
-    specs: FxHashMap<PathBuf, OwnershipSpec>,
-    case_sensitive: bool,
-}
-
-impl ProjectReferenceGraph {
-    /// Read the graph rooted at `root`. Missing references are dropped and an
-    /// unreadable config owns nothing, as TypeScript reports and skips them.
-    pub fn load<H: CompilerConfigHost + ?Sized>(root: &Path, host: &H) -> Self {
-        let mut loader = SpecLoader {
-            host,
-            values: FxHashMap::default(),
-            active: FxHashSet::default(),
-            completed: FxHashMap::default(),
-        };
-        let mut projects = Vec::new();
-        let mut seen = FxHashSet::default();
-        let mut pending = vec![normalize_path(root)];
-        while let Some(project) = pending.pop() {
-            if !seen.insert(project.clone()) {
-                continue;
-            }
-            projects.push(project.clone());
-            let Some(config) = loader.read(&project) else {
-                continue;
-            };
-            // Depth-first in declaration order: push in reverse.
-            let mut references = reference_entries(&config)
-                .into_iter()
-                .filter_map(|reference| {
-                    reference_config_candidates(&project, reference)
-                        .into_iter()
-                        .find(|candidate| {
-                            host.observe(candidate);
-                            candidate.is_file()
-                        })
-                        .map(|candidate| normalize_path(&candidate))
-                })
-                .collect::<Vec<_>>();
-            references.reverse();
-            pending.extend(references);
-        }
-        let specs = projects
-            .iter()
-            .filter_map(|project| Some((project.clone(), loader.load(project)?)))
-            .collect();
-        Self {
-            projects,
-            specs,
-            case_sensitive: host_uses_case_sensitive_file_names(),
-        }
-    }
-
-    /// Whether the root references any project at all.
-    pub fn has_references(&self) -> bool {
-        self.projects.len() > 1
-    }
-
-    /// The root followed by every transitive reference.
-    pub fn projects(&self) -> &[PathBuf] {
-        &self.projects
-    }
-
-    /// The project owning a source already passed through [`normalize_path`].
-    pub fn select_normalized(&self, source: &Path, kind: TsconfigSourceKind) -> Option<PathBuf> {
-        let root = self.projects.first()?;
-        Some(unique_owner(root, &self.projects, |project| {
-            self.specs
-                .get(project)
-                .is_some_and(|spec| spec.includes_normalized(source, self.case_sensitive, kind))
-        }))
-    }
-}
-
-struct SpecLoader<'a, H: CompilerConfigHost + ?Sized> {
-    host: &'a H,
-    /// Each config is read once, for both the graph walk and its spec.
-    values: FxHashMap<PathBuf, Option<Value>>,
-    active: FxHashSet<PathBuf>,
-    completed: FxHashMap<PathBuf, Option<OwnershipSpec>>,
-}
-
-impl<H: CompilerConfigHost + ?Sized> SpecLoader<'_, H> {
-    fn read(&mut self, config: &Path) -> Option<Value> {
-        self.values
-            .entry(config.to_path_buf())
-            .or_insert_with(|| self.host.read_jsonc_observed(config).ok())
-            .clone()
-    }
-
-    fn load(&mut self, config: &Path) -> Option<OwnershipSpec> {
-        let config = normalize_path(config);
-        if let Some(cached) = self.completed.get(&config) {
-            return cached.clone();
-        }
-        if !self.active.insert(config.clone()) {
-            return None;
-        }
-        let loaded = self.read(&config).map(|value| {
-            let parents = extends_entries(&value)
-                .into_iter()
-                .filter_map(|parent| self.host.resolve_extends(&config, parent))
-                .filter_map(|parent| self.load(&parent))
-                .collect::<Vec<_>>();
-            OwnershipSpec::from_config(&config, &value, parents)
-        });
-        self.active.remove(&config);
-        self.completed.insert(config, loaded.clone());
-        loaded
-    }
 }
 
 fn string_array<'a>(config: &'a Value, name: &str) -> Option<Vec<&'a str>> {

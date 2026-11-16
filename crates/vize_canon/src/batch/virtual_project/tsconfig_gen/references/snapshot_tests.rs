@@ -436,3 +436,30 @@ fn issue_13090_solution_gives_its_sfcs_the_referenced_app_paths() {
     let options = snapshot.compiler_options(&app).unwrap();
     assert_eq!(options.options["paths"]["@/*"][0], "src/*");
 }
+
+#[cfg(unix)]
+#[test]
+fn a_symlinked_source_directory_stays_owned_by_its_including_project() {
+    let temporary = tempfile::tempdir().unwrap();
+    let base = temporary.path().canonicalize().unwrap();
+    let root = base.join("app");
+    let shared = base.join("shared/src");
+    write(&shared, "nested/Deep.vue", "<template />");
+    let config = write(
+        &root,
+        "tsconfig.json",
+        r#"{"files":[],"references":[{"path":"node.json"},{"path":"app.json"}]}"#,
+    );
+    std::os::unix::fs::symlink(&shared, root.join("src")).unwrap();
+    write(&root, "node.json", r#"{"include":["vite.config.ts"]}"#);
+    let app = write(&root, "app.json", r#"{"include":["src/**/*.vue"]}"#);
+    let source = root.join("src/nested/Deep.vue");
+    let snapshot = TsconfigOwnershipSnapshot::capture(&config).unwrap();
+    assert_eq!(snapshot.select(&source, TsconfigSourceKind::Typed), app);
+    let mut cache = super::TsconfigOwnershipCache::default();
+    assert_eq!(
+        cache.effective_config_for_source(&config, &source, TsconfigSourceKind::Typed),
+        app
+    );
+    assert!(cache.project_owns_source(&app, &source, TsconfigSourceKind::Typed));
+}

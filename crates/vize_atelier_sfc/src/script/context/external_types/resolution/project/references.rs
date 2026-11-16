@@ -14,9 +14,7 @@ use std::path::{Path, PathBuf};
 use std::sync::atomic::AtomicU64;
 use std::sync::{Arc, LazyLock, RwLock};
 
-use vize_carton::typescript_ownership::{
-    ProjectReferenceGraph, TsconfigSourceKind, normalize_path as normalize_ownership_path,
-};
+use vize_carton::typescript_ownership::{ProjectReferenceGraph, TsconfigSourceKind};
 use vize_carton::{FxHashMap, String};
 
 use super::super::super::super::batch_epoch::current_batch_epoch;
@@ -64,10 +62,9 @@ pub(super) fn owner(shell: &Path, file: &Path) -> Result<PathBuf, String> {
     if !capture.graph.has_references() {
         return Ok(shell.to_path_buf());
     }
-    let source = normalize_ownership_path(file);
     Ok(capture
         .graph
-        .select_normalized(&source, TsconfigSourceKind::for_path(&source))
+        .select(file, TsconfigSourceKind::for_path(file))
         .filter(|selected| capture.graph.projects().first() != Some(selected))
         .unwrap_or_else(|| shell.to_path_buf()))
 }
