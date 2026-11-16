@@ -24,6 +24,7 @@ use oxc_ast_visit::Visit;
 use oxc_syntax::scope::ScopeFlags;
 use vize_l0::Span;
 use vize_l1::markup::tsrx::{Node, Region, RegionSite, TsrxModule};
+use vize_l2::lang::tsrx::TsrxRegion;
 
 use super::EmitIssue;
 use super::names::Names;
@@ -92,10 +93,11 @@ impl Props<'_> {
     }
 }
 
-/// Every top-level component of the module, in source order. A body region
-/// that is not a component body is refused.
+/// Every top-level component of the module, in source order. A lowered
+/// region (`regions`) that is not a component body is refused.
 pub(super) fn collect<'a>(
     module: &'a TsrxModule<'a>,
+    regions: &[TsrxRegion<'_>],
 ) -> Result<Vec<Component<'a>>, (EmitIssue, Span)> {
     let mut found = Vec::new();
     for statement in &module.program().body {
@@ -125,12 +127,12 @@ pub(super) fn collect<'a>(
             _ => {}
         }
     }
-    for region in module.regions() {
+    for region in regions {
         if !found
             .iter()
-            .any(|component| core::ptr::eq(component.region, region))
+            .any(|component| component.region.span == region.span())
         {
-            return Err((EmitIssue::OutsideComponent, region.span));
+            return Err((EmitIssue::OutsideComponent, region.span()));
         }
     }
     Ok(found)
@@ -263,7 +265,7 @@ fn component<'a>(
     if let Some(early) = returns.0 {
         return Err((EmitIssue::EarlyReturn, early));
     }
-    component.props = props(module.program().source_text, &component)?;
+    component.props = props(module, &component)?;
     Ok(Some(component))
 }
 
@@ -300,7 +302,10 @@ impl<'a> Visit<'a> for Returns {
     fn visit_class(&mut self, _: &Class<'a>) {}
 }
 
-fn props<'a>(source: &'a str, component: &Component<'a>) -> Result<Props<'a>, (EmitIssue, Span)> {
+fn props<'a>(
+    module: &'a TsrxModule<'a>,
+    component: &Component<'a>,
+) -> Result<Props<'a>, (EmitIssue, Span)> {
     let params = component.params;
     let refuse = Err((EmitIssue::Parameters, span(params.span)));
     if params.rest.is_some() || params.items.len() > 1 {
@@ -312,7 +317,7 @@ fn props<'a>(source: &'a str, component: &Component<'a>) -> Result<Props<'a>, (E
     if param.initializer.is_some() || !param.decorators.is_empty() {
         return refuse;
     }
-    let names = Names::of_component(source, component);
+    let names = Names::of_component(module, component);
     match &param.pattern {
         BindingPattern::BindingIdentifier(id) => {
             let name = id.name.as_str();

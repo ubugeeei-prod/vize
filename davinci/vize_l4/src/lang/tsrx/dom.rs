@@ -37,14 +37,15 @@ pub(super) fn module<'a>(
     if !module.program().directives.is_empty() || module.program().hashbang.is_some() {
         return Err(fail(EmitIssue::Directive, Span::new(0, 0)));
     }
-    let components = component::collect(module).map_err(|(issue, span)| fail(issue, span))?;
+    let components = component::collect(module, artifacts.regions())
+        .map_err(|(issue, span)| fail(issue, span))?;
     let mut helpers = RuntimeHelpers::default();
     let mut renders = Vec::with_capacity(components.len());
     for (component, region) in components.iter().zip(artifacts.into_regions()) {
         if component.region.span != region.span() {
             return Err(fail(EmitIssue::OutsideComponent, region.span()));
         }
-        let names = Names::of_component(source, component);
+        let names = Names::of_component(module, component);
         if component.render().is_none() {
             return Err(fail(EmitIssue::NoRender, component.region.span));
         }

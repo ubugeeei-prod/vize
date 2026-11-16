@@ -97,7 +97,9 @@ pub enum EmitIssue {
     /// `typescript` feature, or the compiled module could not be erased.
     TypeErasure,
     /// DOM: markup outside the body or the returned value of a top-level
-    /// component, a function whose name starts with an uppercase letter.
+    /// component, a function whose name starts with an uppercase letter, or
+    /// held by a value other than a conditional's arm (`{n && <b />}`,
+    /// `.map()` callbacks).
     OutsideComponent,
     /// DOM: parameters other than none, one identifier, or one object pattern
     /// of plain keys without defaults or rest.

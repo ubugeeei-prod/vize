@@ -200,6 +200,11 @@
       "error": null
     },
     {
+      "file": "tests/_fixtures/tsrx/mount/nested.tsrx",
+      "code": "import { defineVaporComponent } from 'vue-jsx-vapor';\nimport { ref } from 'vue';\n\nexport const Toggle = defineVaporComponent(function Toggle({ on, n }: { on: boolean; n: number }) {\n\treturn <><h1>{n}</h1>{on ? <em class=\"on\">yes {n}</em> : <span>no</span>}</>;\n});\n\nconst Modes__static1 = <hr />;\n\nexport const Modes = defineVaporComponent(function Modes({ mode, label }: { mode: string; label: string }) {\n\treturn <>{mode === 'a'\n\t\t\t? <Badge text={label} />\n\t\t\t: mode === 'b' ? <b>{label}</b> : null}{Modes__static1}</>;\n});\n\nconst Badge = defineVaporComponent(function Badge({ text }: { text: string }) {\n\treturn <i class=\"badge\">{text}</i>;\n});\n\nexport const Guard = defineVaporComponent(function Guard({ count, label }: { count: number; label: string }) {\n\treturn <>{count > 0 && <p data-label={label}>{label}</p>}</>;\n});\n\nexport const Disclosure = defineVaporComponent(function Disclosure({ title }: { title: string }) {\n\tconst open = ref(false);\n\n\treturn <><button onClick={() => open.value = !open.value}>{title}</button>{open.value && title.length > 3\n\t\t\t? <section class=\"long\">{title}</section>\n\t\t\t: open.value ? <section>short</section> : null}</>;\n});",
+      "error": null
+    },
+    {
       "file": "tests/_fixtures/tsrx/mount/returns.tsrx",
       "code": "import { defineVaporComponent } from 'vue-jsx-vapor';\nimport { ref } from 'vue';\n\nconst Child = defineVaporComponent(function Child(props: { text: string }) {\n\treturn <b class=\"child\">{props.text}</b>;\n});\n\nexport const Plain = defineVaporComponent(function Plain({ label, count }: { label: string; count: number }) {\n\tconst upper = label.toUpperCase();\n\n\treturn <p class=\"plain\" data-count={count}>{upper}: <Child text={label} /></p>;\n});\n\nexport const Arrow = defineVaporComponent(({ count }: { count: number }) => <span data-count={count}>{count * 2}</span>);\n\nexport const Grow = (props: { items: string[] }) => {\n\tconst size = ref(1);\n\n\treturn <div><button onClick={() => size.value += 1}>grow</button><p>{props.items.slice(0, size.value).join(',')}</p></div>;\n};",
       "error": null

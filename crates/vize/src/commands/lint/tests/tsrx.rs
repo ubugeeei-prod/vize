@@ -36,6 +36,19 @@ export function Footer() @{
 }
 
 #[test]
+fn conditional_arms_are_linted_as_branches_of_the_enclosing_region() {
+    let source = "export function Avatar({ ok, src }: { ok: boolean; src: string }) @{
+  <p>{ok ? <img  src={src} /> : null}</p>
+}
+";
+    let result = lint_tsrx(&Linter::new(), source, "Avatar.tsrx");
+    assert_eq!(
+        rows(&result),
+        [("a11y/alt-text", 80, 98), ("vue/no-multi-spaces", 84, 86)]
+    );
+}
+
+#[test]
 fn a_module_with_an_unsupported_construct_reports_every_one_and_lints_no_region() {
     let source = "export function A() @{
   <div  class=\"a\">

@@ -116,6 +116,16 @@ fn dom_markup_outside_a_component_body_is_refused_at_its_region() {
             "export function App() @{\n\tconst x = <i />;\n\t<p />\n}\n",
             "<i />",
         ),
+        // A value that holds markup: `n` may render `0`, and `.map()` waits
+        // for its loop lowering.
+        (
+            "export function App({ n }: { n: number }) @{\n\t<p>{n && <i />}</p>\n}\n",
+            "<i />",
+        ),
+        (
+            "export function App({ xs }: { xs: string[] }) @{\n\t<p>{xs.map((x) => <i>{x}</i>)}</p>\n}\n",
+            "<i>{x}</i>",
+        ),
     ] {
         let [diagnostic] = diagnostics(source, &OPTIONS).try_into().unwrap();
         assert_eq!(diagnostic.code, Code::Emit(EmitIssue::OutsideComponent));
@@ -124,6 +134,29 @@ fn dom_markup_outside_a_component_body_is_refused_at_its_region() {
             Some(region)
         );
     }
+}
+
+#[test]
+fn dom_conditionals_over_nested_markup_render_its_branches_with_the_props_it_reads() {
+    let source = "export function A({ ok, n, label }: { ok: boolean; n: number; label: string }) @{\n\t<>\n\t\t{ok ? <b title={label}>{n}</b> : n > 1 ? <i /> : null}\n\t\t{n === 0 && <s>none</s>}\n\t</>\n}\n";
+    assert_eq!(
+        compile(source, &OPTIONS).unwrap().code.as_str(),
+        "import { defineComponent as _defineComponent, createElementVNode as _createElementVNode, Fragment as _Fragment, createCommentVNode as _createCommentVNode } from \"vue\";\nexport const A = /* @__PURE__ */ _defineComponent(function A(__props) {\n\treturn (_ctx, _cache) => {\n  return (_createElementVNode(_Fragment, null, [\n    (__props.ok)\n      ? (_createElementVNode(\"b\", {\n        key: 0,\n        title: __props.label\n      }, [\n        __props.n\n      ], 8 /* PROPS */, [\"title\"]))\n      : (__props.n > 1)\n        ? (_createElementVNode(\"i\", { key: 1 }))\n      : _createCommentVNode(\"v-if\", true),\n    (__props.n === 0)\n      ? (_createElementVNode(\"s\", { key: 2 }, \"none\"))\n      : _createCommentVNode(\"v-if\", true)\n  ], 64 /* STABLE_FRAGMENT */))\n};\n}, { props: [\"ok\", \"n\", \"label\"] });\n"
+    );
+
+    // Nested markup declares names like any other markup.
+    let source = "export function A({ ok, x }: { ok: boolean; x: string[] }) @{\n\t<p>{ok ? <ul>@for (const x of [1]) { <li>{x}</li> }</ul> : null}</p>\n}\n";
+    let [diagnostic] = diagnostics(source, &OPTIONS).try_into().unwrap();
+    assert_eq!(diagnostic.code, Code::Emit(EmitIssue::ShadowedProp));
+    assert_eq!(
+        source.get(diagnostic.start as usize..diagnostic.end as usize),
+        Some("x")
+    );
+
+    // A conditional as a branch's only node is refused by the DOM emitter.
+    let source = "export function A({ a, b }: { a: boolean; b: boolean }) @{\n\t<p>{a ? (b ? <i /> : <s />) : null}</p>\n}\n";
+    let [diagnostic] = diagnostics(source, &OPTIONS).try_into().unwrap();
+    assert_eq!(diagnostic.code, Code::Emit(EmitIssue::Dom));
 }
 
 #[test]

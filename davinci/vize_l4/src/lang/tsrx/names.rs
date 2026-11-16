@@ -1,15 +1,18 @@
 //! The names one component reads and declares, over the retained host AST of
-//! its setup statements and of every embedded markup expression.
+//! its setup statements and of every embedded markup expression, the markup of
+//! regions nested in those expressions included.
 //! Type positions are skipped: they hold no runtime reads.
 
 use alloc::vec::Vec;
 use oxc_ast::ast::{
-    BindingIdentifier, ComputedMemberExpression, Expression, IdentifierReference, ObjectProperty,
-    Program, StaticMemberExpression, TSType,
+    BindingIdentifier, ComputedMemberExpression, Expression, IdentifierReference, JSXFragment,
+    ObjectProperty, Program, StaticMemberExpression, TSType,
 };
 use oxc_ast_visit::{Visit, walk};
 use vize_l0::Span;
-use vize_l1::markup::tsrx::{Attribute, AttributeValue, Block, Child, Element, Node, TagName};
+use vize_l1::markup::tsrx::{
+    Attribute, AttributeValue, Block, Child, Element, Node, RegionSite, TagName, TsrxModule,
+};
 use vize_l2::lang::tsrx::is_component;
 
 use super::component::Component;
@@ -42,10 +45,11 @@ pub(super) struct Names<'a> {
 
 impl<'a> Names<'a> {
     /// Every name a component's setup and markup read, declare or use as a tag.
-    pub(super) fn of_component(source: &'a str, component: &Component<'a>) -> Self {
+    pub(super) fn of_component(module: &'a TsrxModule<'a>, component: &Component<'a>) -> Self {
         let mut collector = Collector {
             names: Self::default(),
-            source,
+            source: module.program().source_text,
+            module: Some(module),
             setup: component.body.is_some(),
         };
         if let Some(body) = component.body {
@@ -63,6 +67,7 @@ impl<'a> Names<'a> {
         let mut collector = Collector {
             names: Self::default(),
             source: program.source_text,
+            module: None,
             setup: false,
         };
         collector.visit_program(program);
@@ -130,6 +135,8 @@ impl<'a> Names<'a> {
 struct Collector<'a> {
     names: Names<'a>,
     source: &'a str,
+    /// Where nested regions are found; `None` stops at their placeholders.
+    module: Option<&'a TsrxModule<'a>>,
     setup: bool,
 }
 
@@ -287,4 +294,18 @@ impl<'a> Visit<'a> for Collector<'a> {
     }
 
     fn visit_ts_type(&mut self, _: &TSType<'a>) {}
+
+    /// A region nested in markup: its markup. A placeholder in setup is the
+    /// returned region, visited as markup, or refused markup.
+    fn visit_jsx_fragment(&mut self, it: &JSXFragment<'a>) {
+        let region = self
+            .module
+            .filter(|_| !self.setup && it.children.is_empty())
+            .and_then(|module| module.region(Span::new(it.span.start, it.span.end)))
+            .filter(|region| region.site == RegionSite::Expression);
+        match region {
+            Some(region) => self.node(&region.node),
+            None => walk::walk_jsx_fragment(self, it),
+        }
+    }
 }

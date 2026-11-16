@@ -23,6 +23,10 @@
 //!   the neutral bare attribute. `{expr}` and `{name}` become `ui.bind`, and
 //!   `{...expr}` becomes an object-spread `ui.bind`. Spans keep authored order.
 //! - `@if`/`@else` becomes `ui.if`.
+//! - A `{expr}` child that is a conditional over nested regions
+//!   (`{a ? <A /> : <B />}`, `{a && <A />}` with a provably boolean `a`)
+//!   becomes `ui.if` over their markup ([`nested`]); those regions are part
+//!   of the enclosing artifact.
 //! - `@for` becomes `ui.for` with the retained host head (`HostFor`): the
 //!   authored left side, `index`, `key`, `await`, and the `@empty` region.
 //! - A function-body region (`@{ … }`) lowers only its render node. Its setup
@@ -43,6 +47,7 @@ use crate::expr::js::{JsCoordinateError, JsCoordinates};
 
 mod check;
 mod emit;
+mod nested;
 mod text;
 
 /// Why a module, or one construct in it, is refused.
@@ -106,7 +111,8 @@ impl<'a> TsrxRegion<'a> {
     }
 }
 
-/// Every region of one module, lowered, in source order.
+/// Every region of one module, lowered, in source order, except the nested
+/// regions lowered into an enclosing region's artifact.
 pub struct TsrxArtifacts<'a> {
     module: &'a TsrxModule<'a>,
     regions: Vec<TsrxRegion<'a>>,
@@ -150,7 +156,17 @@ pub fn lower<'a>(
         return Err(issues);
     }
     let mut regions = Vec::with_capacity(module.regions().len());
+    let cx = emit::Context {
+        allocator,
+        source,
+        module,
+        folded: nested::Folded::default(),
+    };
     for region in module.regions() {
+        // An enclosing region starts first, so its folded regions are known.
+        if cx.folded.borrow().contains(&region.span) {
+            continue;
+        }
         let fail = |kind| {
             alloc::vec![TsrxIssue {
                 kind,
@@ -159,12 +175,7 @@ pub fn lower<'a>(
         };
         let mut builder = Builder::new(allocator, source)
             .map_err(|error| fail(TsrxIssueKind::Artifact(error)))?;
-        emit::region(
-            &emit::Context { allocator, source },
-            region,
-            &mut builder.region(),
-        )
-        .map_err(|issue| alloc::vec![issue])?;
+        emit::region(&cx, region, &mut builder.region()).map_err(|issue| alloc::vec![issue])?;
         let artifact = builder
             .finish()
             .map_err(|rejected| fail(TsrxIssueKind::Artifact(rejected.error)))?;
