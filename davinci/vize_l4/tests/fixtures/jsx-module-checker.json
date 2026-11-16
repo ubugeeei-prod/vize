@@ -1,0 +1,182 @@
+{
+  "cases": [
+    {
+      "id": "native-prop-value",
+      "kind": "tsx",
+      "source": "export const View = () => <div title={1} id=\"x\" />;\n",
+      "diagnostics": [
+        {
+          "code": 2345,
+          "category": 1,
+          "message": "Argument of type 'number' is not assignable to parameter of type 'string'.",
+          "authored": "1",
+          "at": 38
+        }
+      ]
+    },
+    {
+      "id": "listener-suffix",
+      "kind": "tsx",
+      "source": "export const View = () => <button onClickCapture={(event: KeyboardEvent) => event.key} />;\n",
+      "diagnostics": [
+        {
+          "code": 2345,
+          "category": 1,
+          "message": "Argument of type '(event: KeyboardEvent) => string' is not assignable to parameter of type '(payload: PointerEvent) => void'.\n  Types of parameters 'event' and 'payload' are incompatible.\n    Type 'PointerEvent' is missing the following properties from type 'KeyboardEvent': charCode, code, isComposing, key, and 8 more.",
+          "authored": "(event: KeyboardEvent) => event.key",
+          "at": 50
+        }
+      ]
+    },
+    {
+      "id": "listener-suffix-clean",
+      "kind": "tsx",
+      "source": "export const View = () => <input onInputPassive={(event: Event) => event.target} onKeydownCapture={(event: KeyboardEvent) => event.key} />;\n",
+      "diagnostics": []
+    },
+    {
+      "id": "spread-non-object",
+      "kind": "tsx",
+      "source": "const count = 1;\nexport const View = () => <div {...count} />;\n",
+      "diagnostics": [
+        {
+          "code": 2698,
+          "category": 1,
+          "message": "Spread types may only be created from object types.",
+          "authored": "{...count}",
+          "at": 48
+        }
+      ]
+    },
+    {
+      "id": "spread-object",
+      "kind": "tsx",
+      "source": "const attrs = { id: 'a' };\nexport const View = () => <div {...attrs} title=\"t\" />;\n",
+      "diagnostics": []
+    },
+    {
+      "id": "child-unknown-name",
+      "kind": "tsx",
+      "source": "export const View = () => <p>{missing}</p>;\n",
+      "diagnostics": [
+        {
+          "code": 2304,
+          "category": 1,
+          "message": "Cannot find name 'missing'.",
+          "authored": "missing",
+          "at": 30
+        }
+      ]
+    },
+    {
+      "id": "script-error",
+      "kind": "tsx",
+      "source": "const count: number = 'one';\nexport const View = () => <div title={String(count)} />;\n",
+      "diagnostics": [
+        {
+          "code": 2322,
+          "category": 1,
+          "message": "Type 'string' is not assignable to type 'number'.",
+          "authored": "count",
+          "at": 6
+        }
+      ]
+    },
+    {
+      "id": "root-value-type",
+      "kind": "tsx",
+      "source": "function label(value: string) { return value; }\nlabel(<div />);\nexport {};\n",
+      "diagnostics": [
+        {
+          "code": 2345,
+          "category": 1,
+          "message": "Argument of type 'VNode<RendererNode, RendererElement, { [key: string]: any; }>' is not assignable to parameter of type 'string'.",
+          "authored": "<div />",
+          "at": 54
+        }
+      ]
+    },
+    {
+      "id": "narrowing-kept",
+      "kind": "tsx",
+      "source": "export const View = (props: { item?: { label: string } }) => props.item && <p title={props.item.label} />;\n",
+      "diagnostics": []
+    },
+    {
+      "id": "style-object",
+      "kind": "tsx",
+      "source": "export const View = () => <div style={{ color: 1 }} />;\n",
+      "diagnostics": [
+        {
+          "code": 2345,
+          "category": 1,
+          "message": "Argument of type '{ color: number; }' is not assignable to parameter of type 'StyleValue'.\n  Types of property 'color' are incompatible.\n    Type 'number' is not assignable to type 'Color | undefined'.",
+          "authored": "{ color: 1 }",
+          "at": 38
+        }
+      ]
+    },
+    {
+      "id": "unknown-attributes-unchecked",
+      "kind": "tsx",
+      "source": "export const View = () => <><div data-id={1} foo={2} aria-label=\"a\" /><x-card size={3} /></>;\n",
+      "diagnostics": []
+    },
+    {
+      "id": "reserved-key",
+      "kind": "tsx",
+      "source": "export const View = () => <div key={{}} />;\n",
+      "diagnostics": [
+        {
+          "code": 2345,
+          "category": 1,
+          "message": "Argument of type '{}' is not assignable to parameter of type 'PropertyKey | undefined'.",
+          "authored": "{}",
+          "at": 36
+        }
+      ]
+    },
+    {
+      "id": "svg-attribute",
+      "kind": "tsx",
+      "source": "export const Icon = () => <svg viewBox={24}><path d=\"M0\" /></svg>;\n",
+      "diagnostics": [
+        {
+          "code": 2345,
+          "category": 1,
+          "message": "Argument of type 'number' is not assignable to parameter of type 'string'.",
+          "authored": "24",
+          "at": 40
+        }
+      ]
+    },
+    {
+      "id": "unicode-offsets",
+      "kind": "tsx",
+      "source": "/* 😀 */ const 日本語 = 1;\nexport const View = () => <div title={日本語}>{日本語.toFixed()}</div>;\n",
+      "diagnostics": [
+        {
+          "code": 2345,
+          "category": 1,
+          "message": "Argument of type 'number' is not assignable to parameter of type 'string'.",
+          "authored": "日本語",
+          "at": 70
+        }
+      ]
+    },
+    {
+      "id": "js-module",
+      "kind": "jsx",
+      "source": "export const View = () => <div title=\"x\" id={1}>{2}</div>;\n",
+      "diagnostics": [
+        {
+          "code": 2345,
+          "category": 1,
+          "message": "Argument of type 'number' is not assignable to parameter of type 'string'.",
+          "authored": "1",
+          "at": 45
+        }
+      ]
+    }
+  ]
+}

@@ -469,6 +469,9 @@ l4	emit	davinci/vize_l4/src/targets/dom/tests/props.rs	1	2	0	0	0	0	0	0
 l4	emit	davinci/vize_l4/src/targets/dom/tests.rs	1	6	0	0	0	0	0	0
 l4	-	davinci/vize_l4/src/targets/ssr/write.rs	0	0	1	1	0	0	0	0
 l4	-	davinci/vize_l4/src/targets/static_class.rs	0	0	1	2	0	0	0	0
+l4	analysis	davinci/vize_l4/src/targets/ts/module.rs	1	4	0	0	0	0	0	0
+l4	-	davinci/vize_l4/src/targets/ts/ops.rs	0	0	1	0	0	0	0	0
+l4	emit	davinci/vize_l4/src/targets/ts/output.rs	1	5	0	0	0	0	0	0
 l4	-	davinci/vize_l4/src/targets/vapor/model.rs	0	0	1	1	0	0	0	0
 l4	emit	davinci/vize_l4/src/targets/vue2/access.rs	1	2	1	3	0	0	0	0
 l4	-	davinci/vize_l4/src/targets/vue2/names.rs	0	0	1	4	0	0	0	0
