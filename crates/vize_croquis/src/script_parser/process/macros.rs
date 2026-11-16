@@ -27,6 +27,7 @@ use super::bindings::{
 mod define_model_destructure;
 mod injection;
 mod object_origins;
+mod props_object;
 
 use injection::{extract_inject_call_from_torefs, is_inject_call};
 use object_origins::record_object_pattern_property_origins;
@@ -65,11 +66,7 @@ pub(in crate::script_parser) fn process_variable_declarator(
                             .register(CompactString::new(name), ReactiveKind::Ref, at);
                     }
                     if matches!(macro_kind, MacroKind::DefineProps | MacroKind::WithDefaults) {
-                        result.reactivity.register(
-                            CompactString::new(name),
-                            ReactiveKind::Readonly,
-                            id.span.start,
-                        );
+                        props_object::register(result, name, id.span.start);
                     }
                     result.bindings.add(name, binding_type);
                     // Walk into the call's callback arguments to track nested scopes

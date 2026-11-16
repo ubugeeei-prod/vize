@@ -115,18 +115,27 @@ impl RelativePathSpec {
 /// One tsconfig `include` or `exclude` entry, matched with Canon's
 /// TypeScript semantics so collection and ownership agree (#10819).
 #[derive(Debug, Clone)]
-pub(super) struct GlobSpec(TsconfigWildcard);
+pub(super) struct GlobSpec(TsconfigWildcard, bool);
 
 /// The CLI keeps its platform policy: only Windows folds case.
 const CASE_SENSITIVE: bool = !cfg!(windows);
 
 impl GlobSpec {
     pub(super) fn include(config_dir: &Path, value: &str) -> Option<Self> {
-        TsconfigWildcard::new(config_dir, value, TsconfigWildcardUsage::Include).map(Self)
+        TsconfigWildcard::new(config_dir, value, TsconfigWildcardUsage::Include)
+            .map(|wildcard| Self(wildcard, names_hidden_segment_after_wildcard(value)))
     }
 
     pub(super) fn exclude(config_dir: &Path, value: &str) -> Option<Self> {
-        TsconfigWildcard::new(config_dir, value, TsconfigWildcardUsage::Exclude).map(Self)
+        TsconfigWildcard::new(config_dir, value, TsconfigWildcardUsage::Exclude)
+            .map(|wildcard| Self(wildcard, false))
+    }
+
+    /// Whether a literal dot-directory segment follows a wildcard segment
+    /// (`apps/*/.nuxt/**/*.d.ts`), so the hidden directories it reaches are
+    /// found only by walking the wildcard part.
+    pub(super) fn names_hidden_segment_after_wildcard(&self) -> bool {
+        self.1
     }
 
     /// The literal directory `tsc` starts walking this entry from.
@@ -155,6 +164,15 @@ impl GlobSpec {
     pub(super) fn matches(&self, path: &Path) -> bool {
         self.0.matches(path, CASE_SENSITIVE)
     }
+}
+
+fn names_hidden_segment_after_wildcard(spec: &str) -> bool {
+    let is_wildcard = |segment: &str| segment.contains(['*', '?']);
+    spec.split(['/', '\\'])
+        .skip_while(|segment| !is_wildcard(segment))
+        .any(|segment| {
+            !is_wildcard(segment) && segment.starts_with('.') && !matches!(segment, "." | "..")
+        })
 }
 
 #[derive(Debug, Clone, Copy, Default)]

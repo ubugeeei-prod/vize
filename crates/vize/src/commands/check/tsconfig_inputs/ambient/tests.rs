@@ -65,9 +65,11 @@ fn content_mapper_ambient_collection_opens_only_declaration_inputs() {
         &mut TsconfigInputCache::default(),
     );
 
+    // The reference-only manifest is part of the program graph too: editing
+    // its references changes ownership, so it is watched (#13093).
     assert_eq!(
         relative_paths(&project_root, &files),
-        vec!["src/template-ref.d.ts"]
+        vec!["src/auto-imports.d.ts", "src/template-ref.d.ts"]
     );
     let _ = std::fs::remove_dir_all(&root);
 }

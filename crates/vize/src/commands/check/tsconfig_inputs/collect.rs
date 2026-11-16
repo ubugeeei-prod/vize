@@ -153,6 +153,7 @@ pub(super) fn explicit_hidden_include_roots(
         if let Some(root) = hidden_pattern_root(include) {
             push_hidden_include_root(&mut roots, &mut seen, root);
         }
+        push_wildcard_hidden_roots(&mut roots, &mut seen, include);
     }
 
     roots
@@ -175,9 +176,53 @@ pub(super) fn explicit_hidden_pattern_roots(includes: &[GlobSpec]) -> Vec<PathBu
         if let Some(root) = hidden_pattern_root(include) {
             push_hidden_include_root(&mut roots, &mut seen, root);
         }
+        push_wildcard_hidden_roots(&mut roots, &mut seen, include);
     }
 
     roots
+}
+
+/// Hidden directories an include reaches through a wildcard before its
+/// literal dot-directory segment, such as `apps/site/.nuxt` for
+/// `apps/*/.nuxt/**/*.d.ts`.
+///
+/// `tsc` expands the wildcard part itself, never entering a dot-directory or
+/// a package folder there, and then matches the literal segment. Walk the
+/// same directories and keep each hidden child the include names; the
+/// include's own matcher still decides which files below it are selected.
+fn push_wildcard_hidden_roots(
+    roots: &mut Vec<PathBuf>,
+    seen: &mut FxHashSet<PathBuf>,
+    include: &GlobSpec,
+) {
+    if !include.names_hidden_segment_after_wildcard() {
+        return;
+    }
+    let Some(base) = include.walk_base() else {
+        return;
+    };
+    let mut pending = vec![base.to_path_buf()];
+    while let Some(directory) = pending.pop() {
+        let Ok(entries) = std::fs::read_dir(&directory) else {
+            continue;
+        };
+        for entry in entries.flatten() {
+            if !entry.file_type().is_ok_and(|kind| kind.is_dir()) {
+                continue;
+            }
+            let path = entry.path();
+            let Some(name) = path.file_name().and_then(|name| name.to_str()) else {
+                continue;
+            };
+            if is_hidden_path_segment(name) {
+                if include.names_literal_segment(name) {
+                    push_hidden_include_root(roots, seen, &path);
+                }
+            } else if !is_package_folder(name) {
+                pending.push(path);
+            }
+        }
+    }
 }
 
 fn push_hidden_include_root(roots: &mut Vec<PathBuf>, seen: &mut FxHashSet<PathBuf>, root: &Path) {

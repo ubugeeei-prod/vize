@@ -1,0 +1,7 @@
+<script setup lang="ts">
+const { title, ...props } = defineProps<{ title: string; label: string }>();
+</script>
+
+<template>
+  <p>{{ title }} {{ props.label.toUpperCase() }} {{ props.title }}</p>
+</template>
