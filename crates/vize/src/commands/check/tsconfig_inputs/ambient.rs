@@ -8,20 +8,21 @@ use std::{
 use vize_l0::FxHashSet;
 
 use super::NODE_MODULES_DIR;
-use super::collect::explicit_hidden_include_roots;
+use super::collect_default_check_files_inner;
 use super::glob::normalize_input_path;
 use super::loader::TsconfigInputCache;
-use super::matching::{
-    is_nuxt_import_manifest_path, matches_tsconfig_patterns, path_has_component,
-};
+use super::matching::{is_nuxt_import_manifest_path, path_has_component};
 use super::type_references::{
     collect_tsconfig_type_packages, reference_type_packages,
     resolve_type_package_declaration_files, resolve_type_reference_declaration_files,
 };
-use super::{collect_default_check_files_for_tsconfig, collect_default_check_files_inner};
 
+mod content_mapper;
 mod top_level;
 
+pub(crate) use content_mapper::{
+    collect_content_mapper_ambient_declarations, collect_selected_nuxt_import_manifests,
+};
 use top_level::has_top_level_import_or_export;
 
 /// Collect ambient declaration files that belong to the tsconfig
@@ -51,106 +52,6 @@ pub(crate) fn collect_ambient_declaration_files(
         collect_tsconfig_type_declaration_files(&project_root, tsconfig_path);
     files.extend(explicit_type_declarations.iter().cloned());
     collect_ambient_declaration_files_from(project_root, files, explicit_type_declarations, None)
-}
-
-/// Collect the declaration graph that decides content-mapper ownership.
-///
-/// Under a content mapper `tsc` loads the program itself, so every configured
-/// declaration is in scope together with everything it references, including
-/// Nuxt's import manifests and reference-only manifests such as
-/// `.nuxt/nuxt.d.ts`. `vize check` keeps those out of its forwarded ambient
-/// roots, but that forwarding filter must not hide a manifest's Vue-owned
-/// `useTemplateRef` from the mapper (#13093). Ordinary source modules are
-/// never opened, so `openProject` stays cheap, and every returned file can
-/// change the result and is therefore watched.
-pub(crate) fn collect_content_mapper_ambient_declarations(
-    project_root: &Path,
-    tsconfig_path: &Path,
-    cache: &mut TsconfigInputCache,
-) -> Vec<PathBuf> {
-    let project_root = normalize_input_path(project_root);
-    let mut roots = Vec::new();
-    let mut seen = FxHashSet::default();
-    let mut manifests = Vec::new();
-    // One pass over the same program projects `collect_default_check_files_inner`
-    // walks: a solution-style root expands into its references, and each
-    // project contributes the Nuxt manifests its own `files`/`include` select.
-    for (index, project) in cache.project_paths(tsconfig_path).iter().enumerate() {
-        if index == 1 && !roots.is_empty() {
-            break;
-        }
-        collect_default_check_files_for_tsconfig(
-            &project_root,
-            project,
-            true,
-            false,
-            cache,
-            &mut roots,
-            &mut seen,
-        );
-        manifests.extend(collect_selected_nuxt_import_manifests(
-            &project_root,
-            project,
-            cache,
-        ));
-    }
-    roots.retain(|path| is_declaration_file(path));
-    roots.extend(collect_tsconfig_type_declaration_files(
-        &project_root,
-        Some(tsconfig_path),
-    ));
-    roots.extend(manifests);
-    let mut graph = collect_declaration_reference_graph(&roots)
-        .into_iter()
-        .filter(|path| path.is_file())
-        .collect::<Vec<_>>();
-    graph.sort();
-    graph
-}
-
-/// Nuxt import manifests the tsconfig itself selects through `files` or
-/// `include`.
-///
-/// Input collection never returns these generated declarations, yet `tsc`
-/// loads a manifest a tsconfig names. A manifest lives directly in a `.nuxt`
-/// directory or in its `types` child, and an include reaches a dot-directory
-/// only through a literal segment, so the candidates are the manifest paths
-/// of each `.nuxt` directory on an explicit hidden include root, kept when the
-/// tsconfig's own patterns select them.
-pub(crate) fn collect_selected_nuxt_import_manifests(
-    project_root: &Path,
-    tsconfig_path: &Path,
-    cache: &mut TsconfigInputCache,
-) -> Vec<PathBuf> {
-    let Some(spec) = cache.load(tsconfig_path).cloned() else {
-        return Vec::new();
-    };
-    let mut manifests = spec
-        .files
-        .iter()
-        .map(|file| normalize_input_path(&file.resolve()))
-        .filter(|path| path.is_file() && is_nuxt_import_manifest_path(path))
-        .collect::<Vec<_>>();
-    let excludes = spec.effective_excludes();
-    for root in explicit_hidden_include_roots(project_root, &spec.includes) {
-        let nuxt_dirs = root
-            .ancestors()
-            .filter(|dir| dir.file_name().is_some_and(|name| name == ".nuxt"));
-        for nuxt_dir in nuxt_dirs {
-            for dir in [nuxt_dir.to_path_buf(), nuxt_dir.join("types")] {
-                for name in ["imports.d.ts", "imports.d.mts", "imports.d.cts"] {
-                    let candidate = dir.join(name);
-                    if candidate.is_file()
-                        && matches_tsconfig_patterns(&candidate, &spec.includes, &excludes)
-                        && !manifests.contains(&candidate)
-                    {
-                        manifests.push(candidate);
-                    }
-                }
-            }
-        }
-    }
-    manifests
 }
 
 pub(crate) fn collect_hidden_ambient_declaration_files(

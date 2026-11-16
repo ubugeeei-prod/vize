@@ -183,4 +183,30 @@ pub(super) struct FileCollectionOptions {
     pub(super) include_hidden: bool,
     pub(super) include_js: bool,
     pub(super) include_jsx: bool,
+    pub(super) selection: InputSelection,
+}
+
+/// Which of a program's inputs a collection returns.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub(super) enum InputSelection {
+    /// Every input.
+    #[default]
+    All,
+    /// Only declaration files. The walk rejects any other entry by its
+    /// directory-entry name, before it is matched, normalized, or stat'd, so
+    /// the cost does not grow with the program's ordinary inputs.
+    Declarations,
+    /// At most one input: whether the program selects any input at all. The
+    /// walk stops at the first match.
+    Any,
+}
+
+/// How one tsconfig program's inputs are collected.
+#[derive(Debug, Clone, Copy, Default)]
+pub(super) struct ProgramInputOptions {
+    /// Also collect below hidden directories the tsconfig's location or an
+    /// include names, as ambient declaration collection needs.
+    pub(super) include_hidden_tsconfig_roots: bool,
+    pub(super) include_jsx: bool,
+    pub(super) selection: InputSelection,
 }
