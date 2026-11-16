@@ -244,3 +244,6 @@ mod frame_tests;
 
 #[cfg(test)]
 mod typed_router_tests;
+
+#[cfg(test)]
+mod open_project_cost_tests;

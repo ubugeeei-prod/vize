@@ -25,6 +25,11 @@ pub(super) fn is_declaration_path(path: &Path) -> bool {
     check_patterns::is_declaration_path(path)
 }
 
+/// [`is_declaration_path`] for a bare directory-entry name.
+pub(super) fn is_declaration_name(name: &std::ffi::OsStr) -> bool {
+    is_declaration_path(Path::new(name))
+}
+
 pub(super) fn is_hidden_path_segment(segment: &str) -> bool {
     segment.starts_with('.') && segment != "." && segment != ".."
 }
