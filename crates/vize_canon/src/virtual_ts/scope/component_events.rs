@@ -8,6 +8,7 @@ mod generic_inference;
 mod handler_context;
 mod inference_declarations;
 mod inference_helpers;
+mod inferred_args_alias;
 mod listener_contract;
 mod listener_relations;
 mod listener_return;
@@ -20,6 +21,9 @@ pub(crate) use emit_resolver_share::{
 };
 pub(crate) use inference_declarations::EmitInferenceDeclarations;
 pub(crate) use inference_helpers::emit_event_inference_helpers;
+pub(crate) use inferred_args_alias::{
+    flush as flush_inferred_args_alias, reset as reset_inferred_args_alias,
+};
 
 use vize_carton::{CompactString, FxHashMap, FxHashSet, String, cstr};
 use vize_croquis::{Croquis, EventHandlerScopeData, Scope};
