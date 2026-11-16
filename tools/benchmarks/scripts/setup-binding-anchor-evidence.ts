@@ -18,10 +18,7 @@ import {
   type Edit,
 } from "../../support/compat/content-mapper/projection-byte-relocation.ts";
 import { certifyFallthroughSourceFields } from "../../support/compat/content-mapper/shared-usage-gates-transition.ts";
-import {
-  currentLibraryPropChecker,
-  previousLibraryPropChecker,
-} from "../../support/compat/content-mapper/library-props-fallthrough-transition.ts";
+import { certifyLibraryPropChecker } from "../../support/compat/content-mapper/library-props-fallthrough-transition.ts";
 
 const directory = process.argv[2];
 assert.ok(directory);
@@ -61,12 +58,9 @@ function certifyDocument(before: CompleteDocument, after: CompleteDocument) {
     currentEmbeddedWithDefaults,
     "embedded withDefaults docs return",
   );
-  const libraryChecker = certifiedTransition(
+  const libraryChecker = certifyLibraryPropChecker(
     Buffer.from(before.code),
     Buffer.from(after.code),
-    previousLibraryPropChecker,
-    currentLibraryPropChecker,
-    "embedded library-generic fallthrough tail",
   );
   const edits: Edit[] = [
     ...(withDefaults ? [withDefaults] : []),

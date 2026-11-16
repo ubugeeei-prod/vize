@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
+import { certifiedTransition } from "./canonical-helper-transition.ts";
 
 type Identity = { bytes: number; sha256: string };
 type Hunk = { before: string; after: string };
@@ -76,3 +77,14 @@ export const previousLibraryPropChecker =
   "$IsLibraryGenericExport<C> extends true ? C : (props: $ComponentCheckProps<P, T>) => void;";
 export const currentLibraryPropChecker =
   "$IsLibraryGenericExport<C> extends true ? [keyof { [K in keyof T as string extends K ? never : K]: 0 }] extends [never] ? C | ((props: T) => void) : C : (props: $ComponentCheckProps<P, T>) => void;";
+
+/** The embedded library-branch transition, when a packet crosses it. */
+export function certifyLibraryPropChecker(before: Buffer, after: Buffer) {
+  return certifiedTransition(
+    before,
+    after,
+    previousLibraryPropChecker,
+    currentLibraryPropChecker,
+    "embedded library-generic fallthrough tail",
+  );
+}

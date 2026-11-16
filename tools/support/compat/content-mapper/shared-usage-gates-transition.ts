@@ -6,12 +6,24 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
+import { certifiedTransition } from "./canonical-helper-transition.ts";
 
 export const sharedUsageGatesRecord = "tests/_fixtures/tooling/shared-usage-gates.json";
 const recordSha256 = "a3f2d9708e62ef286879cc7c6f7160176c555c24cebe84223234abb5a01482d7";
 
 export const previousAttrValueKeySet = `type $AttrValue<R, K, C, V, P = R & (C extends { __vizeEmitProps?: infer E } ? 0 extends (1 & E) ? {} : NonNullable<E> : {}) & import("vue").VNodeProps & import("vue").AllowedComponentProps & import("vue").ComponentCustomProps, __V = P extends unknown ? (K extends keyof P ? P[K] : never) : never> = [__V] extends [never] ? (C extends { readonly __vizeComponentMarker: true; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: infer A } ? 0 extends (1 & A) ? {} : NonNullable<A> : {}) extends infer F ? K extends keyof F ? {} extends Pick<F, K> ? V : unknown : V : V : unknown;\n`;
 export const currentAttrValueKeySet = `type $AttrValue<R, K, C, V, P = never> = K extends ([P] extends [never] ? (R extends unknown ? keyof R : never) | keyof (C extends { __vizeEmitProps?: infer E } ? 0 extends (1 & E) ? {} : NonNullable<E> : {}) | keyof import("vue").VNodeProps | keyof import("vue").AllowedComponentProps | keyof import("vue").ComponentCustomProps : keyof P) ? unknown : (C extends { readonly __vizeComponentMarker: true; readonly __vizeHasFallthroughProps: true; readonly __vizeFallthroughProps?: infer A } ? 0 extends (1 & A) ? {} : NonNullable<A> : {}) extends infer F ? K extends keyof F ? {} extends Pick<F, K> ? V : unknown : V : V;\n`;
+
+/** The key-set `$AttrValue` transition, when a packet crosses it. */
+export function certifyAttrValueKeySet(before: Buffer, after: Buffer) {
+  return certifiedTransition(
+    before,
+    after,
+    previousAttrValueKeySet,
+    currentAttrValueKeySet,
+    "key-set attr value",
+  );
+}
 
 type Identity = { bytes: number; sha256: string };
 type Entry = {

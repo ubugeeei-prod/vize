@@ -53,10 +53,10 @@ import { certifyComponentExportTransition } from "./component-export-transition.
 import { dedentEdits } from "./setup-dedent.ts";
 import { writeConstructorProjectionReceipt } from "./constructor-projection-receipt.ts";
 import {
+  certifyAttrValueKeySet,
   certifyFallthroughSourceFields,
-  currentAttrValueKeySet,
-  previousAttrValueKeySet,
 } from "./shared-usage-gates-transition.ts";
+import { certifyLibraryPropChecker } from "./library-props-fallthrough-transition.ts";
 const digest = (bytes: Uint8Array) => createHash("sha256").update(bytes).digest("hex");
 type Link = {
   sourceStart: number;
@@ -193,18 +193,12 @@ function relocationEdits(
       currentSharedWithDefaults,
       "shared withDefaults authored return",
     ),
+    certifyAttrValueKeySet(before, after),
+    certifyLibraryPropChecker(before, after),
   ])
     if (transition) certifiedEdits.push(transition);
   const emitTransition = certifyEmitOverloadInventory(before, after, assets.emitOverloads);
   if (emitTransition) certifiedEdits.push(emitTransition);
-  const attrValueTransition = certifiedTransition(
-    before,
-    after,
-    previousAttrValueKeySet,
-    currentAttrValueKeySet,
-    "key-set attr value",
-  );
-  if (attrValueTransition) certifiedEdits.push(attrValueTransition);
   certifiedEdits.push(...certifyFallthroughSourceFields(before, after));
   const componentConstructorTransition = certifyComponentConstructorTransition(before, after);
   if (componentConstructorTransition) certifiedEdits.push(componentConstructorTransition);
