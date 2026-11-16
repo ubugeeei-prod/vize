@@ -4408,6 +4408,99 @@
       }
     },
     {
+      "id": "linter/no-unnecessary-type-assertion-12992",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "no-unnecessary-type-assertion-12992",
+        "files": [
+          {
+            "path": "Controls.ts.txt",
+            "role": "unchanged-assertion-negative-controls",
+            "sha256": "cf3661265c6553c067c832b0043fde6fa8c3257a46b8180554f4253a838ebf3f"
+          },
+          {
+            "path": "cases.json",
+            "role": "upstream-immutable-oracle",
+            "sha256": "45ed09c1edb45636be807a73c9c084a81f98908490f19c77e19b768443255f2a"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/no-unnecessary-type-assertion-13085-13086",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "no-unnecessary-type-assertion-13085-13086",
+        "files": [
+          {
+            "path": "src/AnyNonNull.vue.txt",
+            "role": "issue-authored-any-operand-reproduction",
+            "sha256": "df95fc29a8088c94fb7efc53c462b73a55510ce06febd3b22f1424e7a3c8ea1f"
+          },
+          {
+            "path": "src/Arrow.vue.txt",
+            "role": "issue-authored-arrow-type-parameter-reproduction",
+            "sha256": "63025e518820bd7adae575bfcdca1dd31a4e86556f4854d8a66ba2cb4cb63c2f"
+          },
+          {
+            "path": "src/NonNull.vue.txt",
+            "role": "issue-authored-generic-component-reproduction",
+            "sha256": "ec26ec67a50a384a4bf0f93cd8f957b66cdcfb78287e9fc7199cfb1a59500fd7"
+          },
+          {
+            "path": "src/helpers.ts.txt",
+            "role": "issue-authored-support-module",
+            "sha256": "afffd417f7f5aeb05dc1b951240b11510c12ef8b237538d18cdcfedf708819c7"
+          },
+          {
+            "path": "tsconfig.json",
+            "role": "issue-authored-typescript-configuration",
+            "sha256": "58a7b95ded5405fa3e811fa60c74459a8ac19b08153682a3a2212ec946671451"
+          },
+          {
+            "path": "vize-lint.config.mjs.txt",
+            "role": "issue-authored-linter-configuration",
+            "sha256": "4b39201815135e48a80ed2ff70da6f674a658d15f42afa56c36515e89b7e84dc"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/no-unnecessary-type-assertion-readonly-13001",
       "state": "active",
       "targets": [

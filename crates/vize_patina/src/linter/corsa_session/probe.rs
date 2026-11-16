@@ -9,7 +9,7 @@ use vize_l0::{FxHashMap, String, profile};
 
 const SNAPSHOT_REGISTRY_NOT_FOUND: &str = "not found in snapshot registry";
 
-mod signature_parameters;
+pub(super) mod signature_parameters;
 
 impl CorsaTypeAwareSession {
     /// Resolve all type probes for one virtual document with batched position

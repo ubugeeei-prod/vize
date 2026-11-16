@@ -88,16 +88,24 @@ pub(super) async fn non_null(
     } else {
         actual.clone()
     };
-    let constrained_flags = if constrained.id == actual.id {
+    let mut constrained_flags = if constrained.id == actual.id {
         actual_flags
     } else {
         checker.union_flags(&constrained).await
     };
+    // `getBaseConstraintOfType` has no answer for a type parameter without a
+    // constraint, yet its implicit constraint is `unknown`: `T` may be `null`
+    // or `undefined`, and `x!` is what makes it `NonNullable<T>`.
+    let unconstrained = actual_flags & flags::TYPE_PARAMETER != 0
+        && has_unconstrained_parameter(checker, &actual).await;
+    if unconstrained {
+        constrained_flags |= flags::UNKNOWN;
+    }
     let mut reply = NonNullReply {
         typed: true,
         actual: actual_flags,
         constrained: constrained_flags,
-        constrained_differs: constrained.id != actual.id,
+        constrained_differs: constrained.id != actual.id || unconstrained,
         contextual: None,
         declared_matches: false,
     };
@@ -122,6 +130,22 @@ pub(super) async fn non_null(
         reply.contextual = Some(checker.union_flags(&contextual).await);
     }
     reply
+}
+
+/// A union part (or the type itself) is a type parameter the checker finds no
+/// base constraint for.
+async fn has_unconstrained_parameter(checker: &mut Checker<'_>, ty: &TypeResponse) -> bool {
+    for part in checker.union_parts(ty).await {
+        if part.flags & flags::TYPE_PARAMETER != 0
+            && checker
+                .base_constraint(&part)
+                .await
+                .is_none_or(|constraint| constraint.id == part.id)
+        {
+            return true;
+        }
+    }
+    false
 }
 
 pub(super) async fn returns(

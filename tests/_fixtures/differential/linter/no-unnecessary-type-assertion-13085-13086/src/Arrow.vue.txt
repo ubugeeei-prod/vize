@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import { takesObject } from "./helpers";
+
+const label = <T,>(value: T) => takesObject(value!);
+</script>
+
+<template>
+  <p>{{ label(1) }}</p>
+</template>

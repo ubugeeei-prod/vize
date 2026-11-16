@@ -124,11 +124,16 @@ fn static_kind(kind: &str) -> Option<&'static str> {
     })
 }
 
-/// The annotated type node of `TSTypeAnnotation` wrappers.
+/// The annotated type node of `TSTypeAnnotation` wrappers. ESTree spells a
+/// missing annotation as `null`, which is no annotation.
 fn annotation_type(value: &Value) -> Option<&Value> {
-    let annotation = value.get("typeAnnotation")?;
+    let annotation = value
+        .get("typeAnnotation")
+        .filter(|annotation| !annotation.is_null())?;
     if kind(annotation) == "TSTypeAnnotation" {
-        annotation.get("typeAnnotation")
+        annotation
+            .get("typeAnnotation")
+            .filter(|annotation| !annotation.is_null())
     } else {
         Some(annotation)
     }
