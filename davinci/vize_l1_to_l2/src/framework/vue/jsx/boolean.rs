@@ -1,4 +1,4 @@
-//! Conservative runtime boolean proofs for structural JSX `&&` lowering.
+//! Conservative runtime boolean proofs for structural `&&` lowering.
 
 use oxc_ast::ast::{
     BindingPattern, Expression, Program, UnaryOperator, VariableDeclarationKind, VariableDeclarator,
@@ -8,28 +8,32 @@ use oxc_semantic::Scoping;
 use oxc_syntax::symbol::SymbolId;
 use vize_l0::FxHashSet;
 
-use super::Lowerer;
+/// The `const` bindings of a module whose initializer is provably boolean.
+#[derive(Debug, Default)]
+pub struct BooleanBindings(FxHashSet<SymbolId>);
 
-#[derive(Default)]
-pub(super) struct BooleanBindings(FxHashSet<SymbolId>);
-
-impl Lowerer<'_, '_, '_> {
-    pub(crate) fn collect_boolean_bindings(&mut self, program: &Program<'_>) {
+impl BooleanBindings {
+    /// Collect every provably boolean `const` of `program`, in one walk.
+    #[must_use]
+    pub fn collect(program: &Program<'_>, scoping: Option<&Scoping>) -> Self {
         let mut collector = Collector {
-            scoping: self.scoping.as_ref(),
-            bindings: &mut self.boolean_bindings,
+            scoping,
+            bindings: Self::default(),
         };
         collector.visit_program(program);
+        collector.bindings
     }
 
-    pub(super) fn is_provably_boolean(&self, expression: &Expression<'_>) -> bool {
-        is_boolean(expression, self.scoping.as_ref(), &self.boolean_bindings)
+    /// Whether `expression` always evaluates to a boolean.
+    #[must_use]
+    pub fn proves(&self, expression: &Expression<'_>, scoping: Option<&Scoping>) -> bool {
+        is_boolean(expression, scoping, self)
     }
 }
 
-struct Collector<'a> {
-    scoping: Option<&'a Scoping>,
-    bindings: &'a mut BooleanBindings,
+struct Collector<'s> {
+    scoping: Option<&'s Scoping>,
+    bindings: BooleanBindings,
 }
 
 impl<'a> Visit<'a> for Collector<'_> {
@@ -38,7 +42,7 @@ impl<'a> Visit<'a> for Collector<'_> {
             && let BindingPattern::BindingIdentifier(binding) = &declaration.id
             && let Some(symbol) = binding.symbol_id.get()
             && let Some(initializer) = &declaration.init
-            && is_boolean(initializer, self.scoping, self.bindings)
+            && is_boolean(initializer, self.scoping, &self.bindings)
         {
             self.bindings.0.insert(symbol);
         }
