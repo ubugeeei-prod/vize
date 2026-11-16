@@ -187,6 +187,24 @@ pub(in crate::commands::check) fn detect(
     path_aliases
 }
 
+/// Whether Nuxt detection for `cwd` supplies `declaration` itself.
+///
+/// A detected Nuxt project reads its generated directory into auto-import
+/// stubs (or the documented fallback stubs), so the program must not load
+/// those generated declarations a second time. Outside a detected project
+/// nothing replaces them, and a tsconfig-selected one stays a program root.
+pub(in crate::commands::check) fn supplies_generated_declaration(
+    cwd: &Path,
+    declaration: &Path,
+) -> bool {
+    if !is_nuxt_project_root(cwd) {
+        return false;
+    }
+    let canonical =
+        |path: &Path| std::fs::canonicalize(path).unwrap_or_else(|_| path.to_path_buf());
+    canonical(declaration).starts_with(canonical(resolve_nuxt_generated_dir(cwd).path()))
+}
+
 pub(in crate::commands::check) fn is_nuxt_project_root(cwd: &Path) -> bool {
     cwd.join("nuxt.config.ts").exists()
         || cwd.join("nuxt.config.js").exists()

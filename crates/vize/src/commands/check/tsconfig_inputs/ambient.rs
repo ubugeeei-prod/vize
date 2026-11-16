@@ -117,7 +117,7 @@ pub(crate) fn collect_content_mapper_ambient_declarations(
 /// only through a literal segment, so the candidates are the manifest paths
 /// of each `.nuxt` directory on an explicit hidden include root, kept when the
 /// tsconfig's own patterns select them.
-fn collect_selected_nuxt_import_manifests(
+pub(crate) fn collect_selected_nuxt_import_manifests(
     project_root: &Path,
     tsconfig_path: &Path,
     cache: &mut TsconfigInputCache,

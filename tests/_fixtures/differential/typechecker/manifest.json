@@ -11586,6 +11586,55 @@
       }
     },
     {
+      "id": "typechecker/check-nuxt-manifest-ambient-13093/reported-project",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "check-nuxt-manifest-ambient-13093/imports.d.ts.txt",
+          "sha256": "c42bd36a3e638103bf381c9cb017b4a5df2e0eadf82a597430dd822cc4835fcc",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "check-nuxt-manifest-ambient-13093/src/child.vue.txt",
+          "sha256": "89729280c470f0599beb1d6bd8c97ca696a43412f42e8a53d0e694253f3a7c11",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "check-nuxt-manifest-ambient-13093/src/form.vue.txt",
+          "sha256": "1f6ca7e52a12abe181cc1db246f87f1b8873d6902e731c40bcf732fd37eefa28",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "check-nuxt-manifest-ambient-13093/src/parent.vue.txt",
+          "sha256": "6cb4e5f6e97c1d1f5f3ca345b6a73a840063f89ecc967703836c0b930194956b",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "check-nuxt-manifest-ambient-13093/tsconfig.json.txt",
+          "sha256": "a0eaf30046e6e224650d381de2ce87d59c7ccf787753355aa163b3e40c53be7d",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "check_nuxt_manifest_ambient_cli::selected_nuxt_import_manifests_declare_their_globals_with_or_without_nuxt_detection; exact #13093 project under plain `vize check`: a tsconfig-selected Nuxt import manifest (`files`/`include`, both manifest paths) stays a program root without Nuxt detection and owns `useTemplateRef` with it. Input-only registration; no native parity credit."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/component-value-anchor-reuse",
       "state": "active",
       "targets": [
