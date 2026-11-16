@@ -6,6 +6,7 @@ import path from "node:path";
 export const COMPILER_PROJECT_ROOT = "imported-props-path-alias-11794";
 export const CONDITIONS_PROJECT_ROOT = "macro-export-conditions-11918";
 export const STAR_EXPORT_PROJECT_ROOT = "star-export-shadow-pruning-12059";
+export const REFERENCED_PATHS_PROJECT_ROOT = "imported-props-referenced-paths-13090";
 export const COMPILER_PROJECT_ADAPTER = "compiler-cli-ssr-project-v1";
 export const COMPILER_PROJECT_CONTRACT = "compiler-ssr-project-module-bytes-v1";
 const inputs = [
@@ -27,6 +28,13 @@ const starExportInputs = [
   ["types/Props.ts.txt", "dependency", "types/Props.ts"],
   ["types/Unused.ts.txt", "dependency", "types/Unused.ts"],
 ] as const;
+const referencedPathsInputs = [
+  ["Layout.vue.txt", "entry", "Layout.vue"],
+  ["tsconfig.json.txt", "config", "tsconfig.json"],
+  ["tsconfig.node.json.txt", "config", "tsconfig.node.json"],
+  ["tsconfig.app.json.txt", "config", "tsconfig.app.json"],
+  ["src/FooProps.ts.txt", "dependency", "src/FooProps.ts"],
+] as const;
 const cohorts = new Map<
   string,
   { inputs: readonly (readonly [string, string, string])[]; selector: string }
@@ -39,6 +47,13 @@ const cohorts = new Map<
   [
     STAR_EXPORT_PROJECT_ROOT,
     { inputs: starExportInputs, selector: "explicit types shadowing star exports" },
+  ],
+  [
+    REFERENCED_PATHS_PROJECT_ROOT,
+    {
+      inputs: referencedPathsInputs,
+      selector: "TypeScript paths of the referenced project owning the entry",
+    },
   ],
 ]);
 type ProjectCase = {

@@ -6726,6 +6726,64 @@
       }
     },
     {
+      "id": "linter/referenced-tsconfig-paths-13090",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "referenced-tsconfig-paths-13090",
+        "files": [
+          {
+            "path": "src/Alias.vue.txt",
+            "role": "issue-authored-alias-regression",
+            "sha256": "ca711e7e71660ae75ba96124d45a4b6c3e3f9303c8736a9db30f4bbca505863a"
+          },
+          {
+            "path": "src/Relative.vue.txt",
+            "role": "issue-authored-relative-control",
+            "sha256": "67e636061e7e05a0b1234a3a61f8ac813d96b80de3d9bdd0036fdeef50cf6a0b"
+          },
+          {
+            "path": "src/props.ts.txt",
+            "role": "issue-authored-props-type",
+            "sha256": "a447c34bc5a69ebadfb809094cf6cde019c0ad6aab57ce51d99a2995d74ac4bb"
+          },
+          {
+            "path": "tsconfig.app.json.txt",
+            "role": "issue-authored-referenced-project-config",
+            "sha256": "16ab9bf51b9c20acd3e18040d3e6ca3116220470cb9a4c5e91b4b72f1ed08068"
+          },
+          {
+            "path": "tsconfig.json.txt",
+            "role": "issue-authored-solution-config",
+            "sha256": "b6d51d37a8d51b993bd758b7043fa9233eea24d34a4041198ff73c063d9ed66c"
+          },
+          {
+            "path": "vize-lint.config.mjs.txt",
+            "role": "issue-authored-lint-config",
+            "sha256": "cbc848c8cfe362f90e8c98026e189d965cc7f473ed20ce821c12b9cc0b4c81e4"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/regression/closed-link-component-20261105",
       "state": "active",
       "targets": [

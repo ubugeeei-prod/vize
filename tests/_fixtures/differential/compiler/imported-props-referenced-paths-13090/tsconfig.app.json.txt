@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["Layout.vue", "src/**/*.ts"]
+}

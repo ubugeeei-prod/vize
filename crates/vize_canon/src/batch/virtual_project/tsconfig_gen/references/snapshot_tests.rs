@@ -407,3 +407,32 @@ fn ownership_snapshot_uses_the_host_case_policy_and_requires_absolute_roots() {
             if message == "project ownership capture requires an absolute selected config path"
     ));
 }
+
+#[test]
+fn issue_13090_solution_gives_its_sfcs_the_referenced_app_paths() {
+    let fixture = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../tests/_fixtures/differential/typechecker/referenced-tsconfig-paths-13090");
+    let temporary = tempfile::tempdir().unwrap();
+    let root = temporary.path().canonicalize().unwrap();
+    for file in [
+        "tsconfig.json",
+        "tsconfig.app.json",
+        "src/Alias.vue",
+        "src/Relative.vue",
+        "src/props.ts",
+    ] {
+        let source = std::fs::read_to_string(fixture.join(file).with_added_extension("txt"));
+        write(&root, file, &source.unwrap());
+    }
+    let config = root.join("tsconfig.json");
+    let app = root.join("tsconfig.app.json");
+    let snapshot = TsconfigOwnershipSnapshot::capture(&config).unwrap();
+    for sfc in ["src/Alias.vue", "src/Relative.vue"] {
+        assert_eq!(
+            snapshot.select(&root.join(sfc), TsconfigSourceKind::Typed),
+            app
+        );
+    }
+    let options = snapshot.compiler_options(&app).unwrap();
+    assert_eq!(options.options["paths"]["@/*"][0], "src/*");
+}
