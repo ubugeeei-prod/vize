@@ -24,7 +24,7 @@ const unusedLocal = 1
 }
 
 #[test]
-fn used_props_rest_binding_is_anchored_before_the_template_shadow() {
+fn used_props_rest_binding_stays_visible_to_the_template() {
     let source = r#"<script lang="ts">
 type Foo = {
   a: string
@@ -56,16 +56,27 @@ const { foo, fooKey, ...props } = defineProps<{
     )
     .expect("transform");
 
-    let anchor = result
-        .text
-        .find("// Anchor before the template scope shadows `props`\n  void props;")
-        .expect("the authored rest binding must be read before template scope");
-    let template = result
-        .text
-        .find("function __template()")
-        .expect("template scope");
-    assert!(
-        anchor < template,
-        "the in-template `props` binding is synthetic"
+    // Vue resolves the template `props` to the authored rest object (#13087),
+    // so the template reads it directly instead of a synthetic shadow.
+    assert_eq!(
+        result
+            .text
+            .matches("// Anchor before the template scope shadows `props`")
+            .count(),
+        0,
+        "{}",
+        result.text
+    );
+    assert_eq!(
+        result.text.matches("  const props: ").count(),
+        0,
+        "{}",
+        result.text
+    );
+    assert_eq!(
+        result.text.matches("  const __vize_props: ").count(),
+        1,
+        "{}",
+        result.text
     );
 }

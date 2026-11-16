@@ -11760,6 +11760,55 @@
       }
     },
     {
+      "id": "typechecker/content-mapper-nuxt-template-ref-13093/reported-project",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "content-mapper-nuxt-template-ref-13093/imports.d.ts.txt",
+          "sha256": "c42bd36a3e638103bf381c9cb017b4a5df2e0eadf82a597430dd822cc4835fcc",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "content-mapper-nuxt-template-ref-13093/src/child.vue.txt",
+          "sha256": "89729280c470f0599beb1d6bd8c97ca696a43412f42e8a53d0e694253f3a7c11",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "content-mapper-nuxt-template-ref-13093/src/form.vue.txt",
+          "sha256": "1f6ca7e52a12abe181cc1db246f87f1b8873d6902e731c40bcf732fd37eefa28",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "content-mapper-nuxt-template-ref-13093/src/parent.vue.txt",
+          "sha256": "6cb4e5f6e97c1d1f5f3ca345b6a73a840063f89ecc967703836c0b930194956b",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "content-mapper-nuxt-template-ref-13093/tsconfig.json.txt",
+          "sha256": "abad3473ba9161e5357ad5f9172ce7885eb708158c8d473693d9b67cc5847850",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::nuxt_manifest_template_ref_13093::nuxt_import_manifests_type_dom_and_component_template_refs; exact #13093 Nuxt import manifest (`.nuxt/types/imports.d.ts`, `.nuxt/imports.d.ts`, direct and `nuxt.d.ts` reference) DOM and component refs. Input-only registration; no native parity credit."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/dynamic-component-event-names-11140",
       "state": "active",
       "targets": [
@@ -18213,6 +18262,60 @@
               "ts"
             ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/template-authored-bindings-13087/reported-project",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "template-authored-bindings-13087/tsconfig.json.txt",
+          "sha256": "58a7b95ded5405fa3e811fa60c74459a8ac19b08153682a3a2212ec946671451",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "template-authored-bindings-13087/src/PropsName.vue.txt",
+          "sha256": "de78f93ca655ed89a089a37fbbac5a0d335d1c08f5c7f0bf066de33cd57b9b4c",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "template-authored-bindings-13087/src/PropsObject.vue.txt",
+          "sha256": "67cb63c0173a854d9b18fc156f6ee07d6803ecfb789e46cf57bbc20ae96be4a9",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "template-authored-bindings-13087/src/ContextMembers.vue.txt",
+          "sha256": "b52f58506ac9a0c3f8428af8adfcbdecfe43f97e7d3902d6865b1df8b9a0d30d",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "template-authored-bindings-13087/src/PropsControl.vue.txt",
+          "sha256": "e9821d97bf8daf8f6ed56aa8851eac0ff4fb9f0b5b44049c21d54723430b0a4c",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "template-authored-bindings-13087/src/PropsRest.vue.txt",
+          "sha256": "ed3f4886391405d3a94c44518d92ef1845ce8a3d6d1e1548e9bf2e8237c23933",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "check_canon_recent_issues_cli::check_authored_template_bindings_win_over_generated_context_names; content_mapper_tsgo_cli::template_authored_bindings_13087::authored_template_bindings_resolve_under_the_content_mapper; exact #13087 setup-const `props` reproductions plus `$attrs`/`$emit` context members and props-object/rest controls. Input-only registration; no native parity credit."
           }
         ]
       }

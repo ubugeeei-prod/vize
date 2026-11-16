@@ -72,6 +72,7 @@ fn contexts() -> Vec<ContextCase> {
                         rich.then_some("{ node: Element | undefined }"),
                         rich.then_some("(void 0) as unknown as (...args: unknown[]) => void"),
                     ),
+                    None,
                 );
                 if rich {
                     let attrs: Vec<_> = text

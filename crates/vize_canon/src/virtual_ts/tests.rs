@@ -32,7 +32,7 @@ mod unused_refs;
 mod vif_chain;
 mod vif_chain_listener_contract_scope;
 fn template_context(options: &VirtualTsOptions, dialect: VueVersion) -> vize_carton::String {
-    generate_template_context(options, dialect, false, false, (None, None, None))
+    generate_template_context(options, dialect, false, false, (None, None, None), None)
 }
 fn assert_virtual_ts_snapshot(name: &str, value: &str) {
     insta::with_settings!({ snapshot_path => "../../snapshots" }, {

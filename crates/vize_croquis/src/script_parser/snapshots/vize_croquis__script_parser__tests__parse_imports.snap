@@ -1,6 +1,5 @@
 ---
 source: crates/vize_croquis/src/script_parser/tests.rs
-assertion_line: 297
 expression: result
 ---
 ScriptParseResult {
@@ -26,6 +25,7 @@ ScriptParseResult {
         slots: [],
         art: None,
         props_destructure: None,
+        props_object_local: None,
         top_level_awaits: [],
         next_id: 0,
         define_props_idx: None,

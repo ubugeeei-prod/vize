@@ -154,6 +154,113 @@ const { props, size } = useField()
     );
 }
 
+const PROPS_SHADOW_ANCHOR: &str = "  // Anchor before the template scope shadows `props`";
+
+/// #13087: Vue's binding metadata resolves a template `props` to any authored
+/// binding of that name (`setup-const`, `setup-let`, `setup-reactive-const`,
+/// a prop or rest object), so only the props object itself may share it.
+#[test]
+fn authored_setup_bindings_named_props_win_over_template_props_object() {
+    let generated = "  const props: __DefineProps<Props> = {} as __DefineProps<Props>;";
+    let internal = "  const __vize_props: __DefineProps<Props> = {} as __DefineProps<Props>;";
+    for (case, script) in [
+        (
+            "arrow",
+            "const { seed } = defineProps<{ seed: number }>()\nconst props = (value: number) => value + seed\n",
+        ),
+        (
+            "object",
+            "defineProps<{ seed: number }>()\nconst props = { title: 'Name' }\n",
+        ),
+        (
+            "function",
+            "defineProps<{ seed: number }>()\nfunction props(value: number) { return value }\n",
+        ),
+        (
+            "let",
+            "defineProps<{ seed: number }>()\nlet props = { title: 'Name' }\n",
+        ),
+        (
+            "reactive",
+            "import { reactive } from 'vue'\ndefineProps<{ seed: number }>()\nconst props = reactive({ title: 'Name' })\n",
+        ),
+        (
+            "rest",
+            "const { seed, ...props } = defineProps<{ seed: number; title: string }>()\n",
+        ),
+        ("prop", "defineProps<{ props: string; seed: number }>()\n"),
+    ] {
+        let code = generate_template_code(script, "<p>{{ props }} {{ seed }}</p>", true);
+        assert_eq!(exact_line_count(&code, generated), 0, "{case}:\n{code}");
+        assert_eq!(exact_line_count(&code, internal), 1, "{case}:\n{code}");
+        assert_eq!(
+            exact_line_count(&code, PROPS_SHADOW_ANCHOR),
+            0,
+            "{case}: an unshadowed binding needs no anchor:\n{code}"
+        );
+    }
+    let prop = generate_template_code(
+        "defineProps<{ props: string; seed: number }>()\n",
+        "<p>{{ props }}</p>",
+        true,
+    );
+    assert_eq!(
+        exact_line_count(&prop, r#"  const props = __vize_props["props"];"#),
+        1,
+        "a prop named `props` resolves to the prop value:\n{prop}"
+    );
+}
+
+#[test]
+fn props_object_binding_keeps_its_template_name() {
+    for script in [
+        "const props = defineProps<{ seed: number }>()\n",
+        "const props = withDefaults(defineProps<{ seed?: number }>(), { seed: 1 })\n",
+    ] {
+        let code = generate_template_code(script, "<p>{{ props.seed }}</p>", true);
+        let declared = |prefix: &str| code.lines().filter(|line| line.starts_with(prefix)).count();
+        assert_eq!(declared("  const props: "), 1, "{script}:\n{code}");
+        assert_eq!(declared("  const __vize_props: "), 0, "{script}:\n{code}");
+        assert_eq!(
+            exact_line_count(&code, PROPS_SHADOW_ANCHOR),
+            1,
+            "{script}:\n{code}"
+        );
+    }
+}
+
+/// #13087: an authored `<script setup>` binding of a template-context name
+/// (`$attrs`, `$slots`, `$refs`, `$emit`) is what Vue's compiled template
+/// reads (`$setup.$attrs`), so the context does not redeclare it.
+#[test]
+fn authored_setup_bindings_win_over_template_context_members() {
+    let names = ["$attrs", "$slots", "$refs", "$emit"];
+    let mut script = vize_carton::String::default();
+    for name in names {
+        script.push_str(&vize_carton::cstr!("const {name} = {{ title: 1 }}\n"));
+    }
+    let template =
+        "<p>{{ $attrs.title }} {{ $slots.title }} {{ $refs.title }} {{ $emit.title }}</p>";
+    let code = generate_template_code(&script, template, true);
+    for name in names {
+        let declaration = vize_carton::cstr!("    const {name}");
+        let redeclared = code
+            .lines()
+            .filter(|line| {
+                line.strip_prefix(declaration.as_str())
+                    .is_some_and(|rest| rest.starts_with([' ', ':']))
+            })
+            .count();
+        assert_eq!(redeclared, 0, "{name}:\n{code}");
+    }
+    let unbound = generate_template_code("const title = 1\n", template, true);
+    assert_eq!(
+        exact_line_count(&unbound, "    const $attrs = __ctx.$attrs;"),
+        1,
+        "{unbound}"
+    );
+}
+
 /// The template-ref registry targets: hoisted modules name the shared SDK
 /// declarations, whose bodies are byte-for-byte the per-file ones that the
 /// embedded and editor modules keep.

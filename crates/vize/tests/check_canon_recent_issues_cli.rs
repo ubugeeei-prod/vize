@@ -394,3 +394,78 @@ defineProps<FooProps>()
 
     let _ = std::fs::remove_dir_all(&project_root);
 }
+
+const TEMPLATE_BINDINGS_FIXTURE: &str = concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../tests/_fixtures/differential/typechecker/template-authored-bindings-13087/"
+);
+
+/// #13087: a `<script setup>` binding named `props`, `$attrs` or `$emit` is
+/// what Vue's binding metadata resolves the template name to, so it is not
+/// shadowed by the props object or the instance context. Only the genuine
+/// misses on the props object and on a rest object remain.
+#[test]
+fn check_authored_template_bindings_win_over_generated_context_names() {
+    let Some(corsa_path) = corsa_requirement::required_or_skip(resolve_test_corsa_path()) else {
+        return;
+    };
+    let project_root = unique_case_dir("template-authored-bindings-13087");
+    let _ = std::fs::remove_dir_all(&project_root);
+    std::fs::create_dir_all(project_root.join("src")).unwrap();
+    link_workspace_vue(&project_root).unwrap();
+    for name in [
+        "tsconfig.json",
+        "src/PropsName.vue",
+        "src/PropsObject.vue",
+        "src/ContextMembers.vue",
+        "src/PropsControl.vue",
+        "src/PropsRest.vue",
+    ] {
+        let source =
+            std::fs::read(Path::new(TEMPLATE_BINDINGS_FIXTURE).join(cstr!("{name}.txt").as_str()))
+                .unwrap();
+        std::fs::write(project_root.join(name), source).unwrap();
+    }
+
+    let output = Command::new(env!("CARGO_BIN_EXE_vize"))
+        .current_dir(&project_root)
+        .env("CORSA_PATH", &corsa_path)
+        .args(["check", "--tsconfig", "tsconfig.json", "--format", "json"])
+        .output()
+        .unwrap();
+    let stdout = std::str::from_utf8(&output.stdout).unwrap();
+    let json: serde_json::Value = serde_json::from_str(stdout).unwrap();
+    let diagnostics: Vec<(String, String)> = json["files"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .flat_map(|file| {
+            let name = file["file"].as_str().unwrap().replace('\\', "/");
+            file["diagnostics"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(move |diagnostic| {
+                    let text = diagnostic.as_str().unwrap();
+                    let head = text.split(" on type").next().unwrap().to_owned();
+                    (name.clone(), head)
+                })
+        })
+        .collect();
+    assert_eq!(
+        diagnostics,
+        vec![
+            (
+                "src/PropsControl.vue".to_owned(),
+                "error:6:42 [TS2339] Property 'missing' does not exist".to_owned()
+            ),
+            (
+                "src/PropsRest.vue".to_owned(),
+                "error:6:59 [TS2339] Property 'title' does not exist".to_owned()
+            ),
+        ],
+        "{stdout}"
+    );
+
+    let _ = std::fs::remove_dir_all(&project_root);
+}
