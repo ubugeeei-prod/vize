@@ -246,6 +246,17 @@ test("defineProps links require a direct type member and the owning destructure"
         patina: span(4, 3, 4, 8),
         baseline: span(1, 9, 1, 14),
       },
+      {
+        source:
+          'const {\n  title,\n} = defineProps<Props>()\ntype Props = {\n  note: "title"\n  title: string\n}\n',
+        patina: span(5, 10, 5, 15),
+        baseline: span(2, 3, 2, 8),
+      },
+      {
+        source: 'type Props = {\n  note: "title"\n}\n',
+        patina: span(2, 10, 2, 15),
+        baseline: span(2, 3, 2, 16),
+      },
     ];
   mkdirSync(`${cwd}/src`, { recursive: true });
   try {

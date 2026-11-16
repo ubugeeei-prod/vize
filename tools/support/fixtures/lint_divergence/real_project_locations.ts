@@ -84,11 +84,10 @@ export function realProjectLocationDivergence(
 ): RuleLocationMatch | null {
   const rule = realProjectLocationRules[positive.ruleId];
   if (rule === undefined) return null;
-  if (
-    positive.ruleId === "vue/require-prop-comment" &&
-    !hasUniquePropCommentPair(positive, negatives, positives)
-  )
-    return null;
+  if (positive.ruleId === "vue/require-prop-comment") {
+    if (!hasUniquePropCommentPair(positive, negatives, positives)) return null;
+    if (source !== null && !recordStartsExecutable(source, positive)) return null;
+  }
   const subject =
     positive.ruleId === "vue/require-prop-comment" &&
     source !== null &&
@@ -155,6 +154,14 @@ function linkedDefinePropsDeclarations(
           isDirectTypeMember(context.source, body, positiveStart),
       ),
   );
+}
+
+function recordStartsExecutable(
+  context: RealProjectLocationSource,
+  record: LocationRecord,
+): boolean {
+  const offset = sourceOffset(context.source, record.line, record.column);
+  return offset !== null && executableOffset(context.source, offset);
 }
 
 export function indexRealProjectLocationSource(source: string): RealProjectLocationSource {
