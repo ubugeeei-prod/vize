@@ -205,6 +205,11 @@
       "error": null
     },
     {
+      "file": "tests/_fixtures/tsrx/mount/props.tsrx",
+      "code": "import {\n\tnormalize_spread_props_for_ref_attr as __normalize_spread_props_for_ref_attr\n} from '@tsrx/vue/ref';\n\nimport { defineVaporComponent } from 'vue-jsx-vapor';\n\nconst FALLBACK = 'fallback';\n\nexport const Defaults = defineVaporComponent(function Defaults(\n\t{\n\t\tlabel = 'none',\n\t\tcount = 1,\n\t\tflag = false,\n\t\ttags = ['a'],\n\t\tformat = (n: number) => `#${n}`,\n\t\tfallback = FALLBACK\n\t}: { \n\t\tlabel?: string;\n\t\tcount?: number;\n\t\tflag?: boolean;\n\t\ttags?: string[];\n\t\tformat?: (n: number) => string;\n\t\tfallback?: string\n\t }\n) {\n\treturn <p data-flag={String(flag)}>{label}: {format(count)} {tags.join(',')} {fallback}</p>;\n});\n\nexport const Renamed = defineVaporComponent(function Renamed(\n\t{ label: text, count: n = 2 }: { label: string; count?: number }\n) {\n\tconst doubled = n * 2;\n\n\treturn <p title={text}>{text}: {n} {doubled} {String(({ text }).text)}</p>;\n});\n\nexport const Rest = defineVaporComponent(function Rest({ label, ...rest }: { label: string }) {\n\tlet Rest__spread_props1 = __normalize_spread_props_for_ref_attr(rest);\n\n\treturn <p {...Rest__spread_props1} ref={Rest__spread_props1?.ref}>{label}</p>;\n});",
+      "error": null
+    },
+    {
       "file": "tests/_fixtures/tsrx/mount/returns.tsrx",
       "code": "import { defineVaporComponent } from 'vue-jsx-vapor';\nimport { ref } from 'vue';\n\nconst Child = defineVaporComponent(function Child(props: { text: string }) {\n\treturn <b class=\"child\">{props.text}</b>;\n});\n\nexport const Plain = defineVaporComponent(function Plain({ label, count }: { label: string; count: number }) {\n\tconst upper = label.toUpperCase();\n\n\treturn <p class=\"plain\" data-count={count}>{upper}: <Child text={label} /></p>;\n});\n\nexport const Arrow = defineVaporComponent(({ count }: { count: number }) => <span data-count={count}>{count * 2}</span>);\n\nexport const Grow = (props: { items: string[] }) => {\n\tconst size = ref(1);\n\n\treturn <div><button onClick={() => size.value += 1}>grow</button><p>{props.items.slice(0, size.value).join(',')}</p></div>;\n};",
       "error": null

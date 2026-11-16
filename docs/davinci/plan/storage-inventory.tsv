@@ -503,7 +503,8 @@ l2	lower	davinci/vize_l2/src/lang/tsrx/nested.rs	1	0	0	0	0	0	0	0
 l2	analysis	davinci/vize_l2/src/lang/tsrx/tests.rs	1	2	1	3	0	0	0	0
 l2	-	davinci/vize_l2/src/lang/tsrx/text.rs	0	0	1	2	0	0	0	0
 l4	emit	davinci/vize_l4/src/lang/tsrx.rs	1	2	1	7	0	0	0	0
-l4	emit	davinci/vize_l4/src/lang/tsrx/component.rs	1	7	0	0	0	0	0	0
-l4	emit	davinci/vize_l4/src/lang/tsrx/dom.rs	1	4	1	5	0	0	0	0
+l4	emit	davinci/vize_l4/src/lang/tsrx/component.rs	1	4	0	0	0	0	0	0
+l4	emit	davinci/vize_l4/src/lang/tsrx/dom.rs	1	4	1	7	0	0	0	0
 l4	-	davinci/vize_l4/src/lang/tsrx/erase.rs	0	0	1	4	0	0	0	0
 l4	analysis	davinci/vize_l4/src/lang/tsrx/names.rs	1	10	0	0	0	0	0	0
+l4	emit	davinci/vize_l4/src/lang/tsrx/props.rs	1	7	0	0	0	0	0	0
