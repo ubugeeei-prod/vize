@@ -8,7 +8,9 @@
 //! The pass is planned once from the verified plugin plan. Disabled rules add
 //! no work. Enabled jobs share one record lowering and fact computation per
 //! document, and every job crosses into the trusted JS sidecar in one request
-//! per lint run. Reports map back to host-owned authored spans.
+//! per pass. The sidecar starts when the pass is planned, so Node startup and
+//! config evaluation overlap the built-in lint pass, and `--fix` passes reuse
+//! it. Reports map back to host-owned authored spans.
 
 mod fix;
 mod receipt;
@@ -75,7 +77,7 @@ struct Job {
 }
 
 pub(super) struct PluginLint {
-    config_path: PathBuf,
+    sidecar: std::sync::Mutex<crate::config::PluginLintSidecar>,
     digest: String,
     jobs: Vec<Job>,
 }
@@ -112,7 +114,9 @@ impl PluginLint {
                 .collect(),
         );
         Ok(Some(Self {
-            config_path: sidecar_config(config_path)?,
+            sidecar: std::sync::Mutex::new(crate::config::PluginLintSidecar::start(
+                &sidecar_config(config_path)?,
+            )?),
             digest: plan.digest().into(),
             jobs,
         }))
@@ -210,8 +214,14 @@ impl PluginLint {
         });
         let request = serde_json::to_vec(&request).map_err(|error| cstr!("{error}"))?;
         let sidecar = Instant::now();
-        let response =
-            crate::config::run_plugin_lint(&self.config_path, &request).map_err(String::from)?;
+        let response = self
+            .sidecar
+            .lock()
+            .map_err(|_| {
+                String::from("[plugin/plan-invalid] plan: the plugin lint sidecar is unavailable")
+            })?
+            .request(&request)
+            .map_err(String::from)?;
         receipt.record_crossing(request.len(), response.len(), sidecar.elapsed());
         let response: Value = serde_json::from_slice(&response)
             .map_err(|error| cstr!("[plugin/plan-invalid] unreadable sidecar response: {error}"))?;

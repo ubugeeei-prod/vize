@@ -115,13 +115,16 @@ invalidating a plan that is valid today.
   `meta.defaultLevel` (default `off`) and a v1 rule warns. Plugin rules cannot
   be configured in `entries[]`. Rules that are off add no work.
 - **One crossing.** Every enabled job and every Vue document travel in one
-  request to a trusted Node sidecar. The sidecar re-evaluates `vite.config.*`
-  and refuses a plan whose digest differs (`plan-stale`). Each rule runs once
-  per document. Reports name visited records; the host owns spans, severity,
-  message rendering (`{name}` placeholders from bounded `data`) and ordering.
+  request to a trusted Node sidecar. The sidecar starts as soon as a plugin rule
+  is enabled, so Node startup and its own `vite.config.*` evaluation overlap the
+  built-in pass. One process serves every pass of the run. It refuses a plan
+  whose digest differs (`plan-stale`). Each rule runs once per document.
+  Reports name visited records; the host owns spans, severity, message
+  rendering (`{name}` placeholders from bounded `data`) and ordering.
 - **Receipt.** `vize lint --profile` prints a `vize_plugin_receipt:` JSON
-  line: crossings, documents, request and response bytes, sidecar time, and per
-  job the batches, records, batch bytes, reports and JavaScript time.
+  line: crossings, processes, documents, request and response bytes, sidecar
+  round-trip time, and per job the batches, records, batch bytes, reports and
+  JavaScript time.
 - **Fixes.** A fix replaces the reported record's authored span: the whole
   attribute for `ui.bind`, and the whole text run (adjacent text and every
   mustache) for `ui.interpolation`. `--fix` applies only the fixes of rules
