@@ -21,6 +21,7 @@ use super::project::{
 };
 use super::{Request, TransformParams, read_frame};
 
+mod compact;
 mod initialize;
 mod replies;
 mod wire;
@@ -440,7 +441,10 @@ fn transform_frame(job: &TransformJob, sources: &ContentMapperTypeSources) -> io
         &job.settings.project_context,
         sources,
     ) {
-        Ok(result) => encode_transform(&job.id, &result.with_semantic_diagnostics(), reads),
+        Ok(result) => {
+            let result = compact::for_host(result.with_semantic_diagnostics(), &job.settings);
+            encode_transform(&job.id, &result, reads)
+        }
         Err(error) => {
             let message = cstr!("Transform failed: {error}");
             encode_error(&job.id, -32603, &message)
@@ -450,6 +454,9 @@ fn transform_frame(job: &TransformJob, sources: &ContentMapperTypeSources) -> io
 
 #[cfg(all(test, target_os = "linux", target_pointer_width = "64"))]
 mod tests;
+
+#[cfg(test)]
+mod compact_tests;
 
 #[cfg(test)]
 mod type_source_tests {
