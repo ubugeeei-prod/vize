@@ -6,11 +6,17 @@
 //! replaced by its emitted code. A module, construct, target or option that is
 //! not supported yet is refused with typed diagnostics at authored byte ranges;
 //! there is never partial output.
+//!
+//! The DOM target emits Vue components ([`dom`]). SSR and Vapor are refused.
 
 use alloc::{vec, vec::Vec};
 use vize_l0::{Allocator, String, cstr};
 use vize_l1::markup::tsrx;
 use vize_l2::lang::tsrx::{TsrxIssueKind, lower};
+
+mod component;
+mod dom;
+mod names;
 
 /// The emission target.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -83,6 +89,42 @@ pub enum EmitIssue {
     SourceMap,
     /// [`CompileOptions::erase_types`] was requested.
     TypeErasure,
+    /// DOM: markup outside the `@{ … }` body of a top-level component, a
+    /// function whose name starts with an uppercase letter.
+    OutsideComponent,
+    /// DOM: parameters other than none, one identifier, or one object pattern
+    /// of plain keys without defaults or rest.
+    Parameters,
+    /// DOM: the props identifier read other than as `props.key`, or a
+    /// destructured prop used as a component tag.
+    PropsValue,
+    /// DOM: a destructured prop name declared again inside the component.
+    ShadowedProp,
+    /// DOM: an `async` or generator component.
+    AsyncComponent,
+    /// DOM: a component body without a rendered node.
+    NoRender,
+    /// DOM: a directive prologue or hashbang, which the runtime import would
+    /// displace.
+    Directive,
+    /// DOM: a host name equal to one the target writes (`__props`, `_ctx`, a
+    /// helper alias).
+    GeneratedName,
+    /// DOM: the shared DOM emitter refused the region.
+    Dom,
+}
+
+impl Failure {
+    fn emit(issue: EmitIssue, span: vize_l0::Span) -> Self {
+        Self {
+            diagnostics: vec![Diagnostic {
+                code: Code::Emit(issue),
+                message: cstr!("{issue:?} is not emitted for the DOM target yet"),
+                start: span.start,
+                end: span.end,
+            }],
+        }
+    }
 }
 
 /// Compile one `.tsrx` module.
@@ -100,32 +142,38 @@ pub fn compile(source: &str, options: &CompileOptions<'_>) -> Result<Compiled, F
             diagnostics: module.diagnostics().iter().map(syntax).collect(),
         });
     }
-    if let Err(issues) = lower(&allocator, &module) {
-        return Err(Failure {
-            diagnostics: issues
-                .into_iter()
-                .map(|issue| Diagnostic {
-                    code: Code::Lowering(issue.kind),
-                    message: cstr!("{:?} is not supported in TSRX modules yet", issue.kind),
-                    start: issue.span.start,
-                    end: issue.span.end,
-                })
-                .collect(),
-        });
-    }
+    let artifacts = match lower(&allocator, &module) {
+        Ok(artifacts) => artifacts,
+        Err(issues) => {
+            return Err(Failure {
+                diagnostics: issues
+                    .into_iter()
+                    .map(|issue| Diagnostic {
+                        code: Code::Lowering(issue.kind),
+                        message: cstr!("{:?} is not supported in TSRX modules yet", issue.kind),
+                        start: issue.span.start,
+                        end: issue.span.end,
+                    })
+                    .collect(),
+            });
+        }
+    };
     let whole = |code: Code, message: String| Diagnostic {
         code,
         message,
         start: 0,
         end: u32::try_from(source.len()).unwrap_or(u32::MAX),
     };
-    let mut diagnostics = vec![whole(
-        Code::Target(options.target),
-        cstr!(
-            "{:?} emission of TSRX modules is not supported yet",
-            options.target
-        ),
-    )];
+    let mut diagnostics = Vec::new();
+    if options.target != Target::Dom {
+        diagnostics.push(whole(
+            Code::Target(options.target),
+            cstr!(
+                "{:?} emission of TSRX modules is not supported yet",
+                options.target
+            ),
+        ));
+    }
     if options.source_map {
         diagnostics.push(whole(
             Code::Emit(EmitIssue::SourceMap),
@@ -138,7 +186,11 @@ pub fn compile(source: &str, options: &CompileOptions<'_>) -> Result<Compiled, F
             cstr!("type erasure of TSRX modules is not supported yet"),
         ));
     }
-    Err(Failure { diagnostics })
+    if !diagnostics.is_empty() {
+        return Err(Failure { diagnostics });
+    }
+    let code = dom::module(&allocator, &module, artifacts)?;
+    Ok(Compiled { code, map: None })
 }
 
 fn syntax(diagnostic: &oxc_diagnostics::OxcDiagnostic) -> Diagnostic {
@@ -160,68 +212,4 @@ fn syntax(diagnostic: &oxc_diagnostics::OxcDiagnostic) -> Diagnostic {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::{Code, CompileOptions, Diagnostic, EmitIssue, Target, compile};
-    use vize_l2::lang::tsrx::TsrxIssueKind;
-
-    const OPTIONS: CompileOptions<'static> = CompileOptions {
-        filename: "App.tsrx",
-        target: Target::Dom,
-        source_map: false,
-        erase_types: false,
-    };
-
-    fn diagnostics(source: &str, options: &CompileOptions<'_>) -> Vec<Diagnostic> {
-        compile(source, options).unwrap_err().diagnostics
-    }
-
-    #[test]
-    fn syntax_errors_carry_the_reference_code_and_offset() {
-        // tests/_fixtures/tsrx/errors/code-block-return.tsrx: TSRX2001 at 62..74.
-        let source = include_str!("../../../../tests/_fixtures/tsrx/errors/code-block-return.tsrx");
-        let [diagnostic] = diagnostics(source, &OPTIONS).try_into().unwrap();
-        assert_eq!(diagnostic.code, Code::Syntax("TSRX2001".into()));
-        assert_eq!((diagnostic.start, diagnostic.end), (62, 74));
-    }
-
-    #[test]
-    fn unsupported_constructs_are_refused_at_their_span() {
-        let source = "export function List({ items }: { items: string[] }) @{\n\t@for (const item of items) {\n\t\t<li>{item}</li>\n\t}\n}\n";
-        let [diagnostic] = diagnostics(source, &OPTIONS).try_into().unwrap();
-        assert_eq!(diagnostic.code, Code::Lowering(TsrxIssueKind::For));
-        assert_eq!(
-            source.get(diagnostic.start as usize..diagnostic.end as usize),
-            Some("@for (const item of items) {\n\t\t<li>{item}</li>\n\t}")
-        );
-    }
-
-    #[test]
-    fn unsupported_targets_and_options_are_each_refused_over_the_module() {
-        let source = "export const App = () => <p class=\"x\">hi</p>;\n";
-        let whole = (0, source.len() as u32);
-        for target in [Target::Dom, Target::Ssr, Target::Vapor] {
-            let options = CompileOptions { target, ..OPTIONS };
-            let [diagnostic] = diagnostics(source, &options).try_into().unwrap();
-            assert_eq!(diagnostic.code, Code::Target(target));
-            assert_eq!((diagnostic.start, diagnostic.end), whole);
-        }
-
-        let options = CompileOptions {
-            source_map: true,
-            erase_types: true,
-            ..OPTIONS
-        };
-        let refused: Vec<_> = diagnostics(source, &options)
-            .into_iter()
-            .map(|diagnostic| (diagnostic.code, (diagnostic.start, diagnostic.end)))
-            .collect();
-        assert_eq!(
-            refused,
-            [
-                (Code::Target(Target::Dom), whole),
-                (Code::Emit(EmitIssue::SourceMap), whole),
-                (Code::Emit(EmitIssue::TypeErasure), whole),
-            ]
-        );
-    }
-}
+mod tests;
