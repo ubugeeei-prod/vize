@@ -17,6 +17,7 @@ pub(in crate::linter::native_type_aware::typescript_eslint) struct PromiseRules 
     pub throw_error: bool,
     pub require_await: bool,
     pub catch_callback: bool,
+    pub void_operator: bool,
 }
 
 impl PromiseRules {
@@ -33,6 +34,7 @@ impl PromiseRules {
             throw_error: rules.contains(&"only-throw-error"),
             require_await: rules.contains(&"require-await"),
             catch_callback: rules.contains(&"use-unknown-in-catch-callback-variable"),
+            void_operator: rules.contains(&"no-meaningless-void-operator"),
         }
     }
 
@@ -45,6 +47,32 @@ impl PromiseRules {
             || self.throw_error
             || self.require_await
             || self.catch_callback
+            || self.void_operator
+    }
+}
+
+/// The kind a node lends its children's promise positions. Aggregator
+/// arrays, promise-method receivers, `void` operands and `await using`
+/// declarators are positions of their own: the rules ask the checker
+/// something there that the plain node kind does not imply.
+pub(super) fn position_kind<'a>(node: &'a LintNode, role: Option<(&str, &str)>) -> &'a str {
+    match node.kind.as_str() {
+        "ArrayExpression" if matches!(role, Some(("CallExpression", "arguments"))) => {
+            "ArgumentArray"
+        }
+        "MemberExpression"
+            if matches!(role, Some(("CallExpression", "callee"))) && is_promise_method(node) =>
+        {
+            "PromiseMethodCallee"
+        }
+        "UnaryExpression" if node.field_str("operator") == Some("void") => "VoidExpression",
+        "VariableDeclaration" if node.field_str("kind") == Some("await using") => {
+            "AwaitUsingDeclaration"
+        }
+        "VariableDeclarator" if matches!(role, Some(("AwaitUsingDeclaration", _))) => {
+            "AwaitUsingDeclarator"
+        }
+        kind => kind,
     }
 }
 
@@ -241,10 +269,16 @@ pub(super) fn facets(position: Option<(&str, &str)>, rules: PromiseRules) -> Fac
             | "ConditionalExpression",
             "test",
         ) => want(rules.misused, CONDITIONAL),
-        ("LogicalExpression", "left" | "right") | ("UnaryExpression", "argument") => {
+        ("LogicalExpression", "left" | "right")
+        | ("UnaryExpression" | "VoidExpression", "argument") => {
             want(rules.catch_callback, Facets::CATCH_HANDLER);
             want(rules.misused, CONDITIONAL);
             want(rules.floating, FLOATING);
+            // no-meaningless-void-operator's `isThenableType` on a `void` operand.
+            want(
+                rules.void_operator && parent == "VoidExpression",
+                Facets::THENABLE,
+            );
         }
         ("SpreadElement", "argument") => want(rules.misused, Facets::THENABLE),
         ("ArgumentArray", "elements") => want(rules.await_thenable, Facets::AGGREGATOR),
@@ -259,6 +293,12 @@ pub(super) fn facets(position: Option<(&str, &str)>, rules: PromiseRules) -> Fac
         ("VariableDeclarator", "init")
         | ("AssignmentExpression", "right")
         | ("Property", "value") => want(rules.misused, Facets::RETURNS_THENABLE),
+        // await-thenable's `await using` check: some constituent declares
+        // `[Symbol.asyncDispose]`.
+        ("AwaitUsingDeclarator", "init") => {
+            want(rules.misused, Facets::RETURNS_THENABLE);
+            want(rules.await_thenable, Facets::ASYNC_DISPOSABLE);
+        }
         (
             "MethodDefinition"
             | "PropertyDefinition"
@@ -269,7 +309,8 @@ pub(super) fn facets(position: Option<(&str, &str)>, rules: PromiseRules) -> Fac
             | "TSPropertySignature",
             "key",
         ) => want(rules.misused, Facets::RETURNS_THENABLE),
-        ("VariableDeclarator", "id") | ("AssignmentExpression", "left") => {
+        ("VariableDeclarator" | "AwaitUsingDeclarator", "id")
+        | ("AssignmentExpression", "left") => {
             want(rules.misused, Facets::VOID_FUNCTION);
         }
         ("PromiseMethodCallee", "object") => {

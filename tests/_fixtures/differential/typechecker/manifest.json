@@ -12301,6 +12301,39 @@
       "diagnostics": []
     },
     {
+      "id": "typechecker/hoisted-jsdoc-12985/reported-project",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "hoisted-jsdoc-12985/src/Alias.vue.txt",
+          "role": "issue-authored-setup-regression",
+          "sha256": "463efc56bff28e3a2edc01b11a45316838bbd3179eee76c2e4a9eef7793fbd69"
+        },
+        {
+          "path": "hoisted-jsdoc-12985/src/Plain.vue.txt",
+          "role": "upstream-plain-script-regression",
+          "sha256": "06953422d86a6d7aa5b89fe0ffd10e6c4733e7492c9cf68c1c408371c3944e7a"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "ts"
+            ],
+            "selector": "virtual_ts::generator::spans::hoisted_jsdoc_tests; exact #12985 setup alias and typescript-eslint plain-script no-deprecated declarations. Input-only registration; no native parity claim."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/jsx-child-expression-control-6890",
       "state": "active",
       "targets": [

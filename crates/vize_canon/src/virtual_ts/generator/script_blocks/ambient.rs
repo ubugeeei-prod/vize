@@ -262,6 +262,8 @@ pub(super) fn extend_module_spans(
         .into_iter()
         .zip(blocked)
         .filter_map(|(span, blocked)| (!blocked).then_some((span.start, span.end)))
+        // The declaration's JSDoc moves with it.
+        .map(|span| super::super::spans::with_leading_jsdoc(script, span))
         .collect();
     module_spans.extend(include_leading_ts_directive_comments(script, spans));
     *module_spans = super::super::spans::merge_overlapping_spans(std::mem::take(module_spans));

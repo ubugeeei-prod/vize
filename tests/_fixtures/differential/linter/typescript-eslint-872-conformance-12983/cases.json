@@ -1,0 +1,294 @@
+{
+  "schema": "vize.typescript-eslint.selected-corpus",
+  "version": 1,
+  "issues": [
+    12983,
+    12984,
+    12985,
+    12986,
+    12987
+  ],
+  "upstream": {
+    "repository": "typescript-eslint/typescript-eslint",
+    "release": "v8.72.2",
+    "commit": "12e452f0292212bf9bf443b3988ec230f4ae7097",
+    "testPathTemplate": "packages/eslint-plugin/tests/rules/{rule}.test.ts"
+  },
+  "note": "expectedLines are 1-based lines of `code`, as typescript-eslint 8.72.2 reports them. `block` is the SFC block the case is linted in; `script` cases get a trailing `export {};`.",
+  "caseCount": 32,
+  "cases": [
+    {
+      "id": "await-thenable.invalid[21]",
+      "rule": "type/await-thenable",
+      "block": "script",
+      "code": "declare const disposable: Disposable;\nasync function foo() {\n  await using d = disposable;\n}",
+      "expectedLines": [
+        3
+      ]
+    },
+    {
+      "id": "await-thenable.invalid[22]",
+      "rule": "type/await-thenable",
+      "block": "script",
+      "code": "async function foo() {\n  await using _ = {\n    async [Symbol.dispose]() {},\n  };\n}",
+      "expectedLines": [
+        2
+      ]
+    },
+    {
+      "id": "await-thenable.invalid[23]",
+      "rule": "type/await-thenable",
+      "block": "script",
+      "code": "declare const disposable: Disposable;\ndeclare const asyncDisposable: AsyncDisposable;\nasync function foo() {\n  await using a = disposable,\n    b = asyncDisposable,\n    c = disposable,\n    d = asyncDisposable,\n    e = disposable;\n}",
+      "expectedLines": [
+        4,
+        6,
+        8
+      ]
+    },
+    {
+      "id": "await-thenable.invalid[24]",
+      "rule": "type/await-thenable",
+      "block": "script",
+      "code": "declare const anee: any;\ndeclare const disposable: Disposable;\nasync function foo() {\n  await using a = anee,\n    b = disposable;\n}",
+      "expectedLines": [
+        5
+      ]
+    },
+    {
+      "id": "no-base-to-string.valid[90]",
+      "rule": "type/no-base-to-string",
+      "block": "script",
+      "code": "declare const a: {\n  [Symbol.toPrimitive](): string;\n};\n\n`${a}`;",
+      "expectedLines": []
+    },
+    {
+      "id": "no-base-to-string.valid[116]",
+      "rule": "type/no-base-to-string",
+      "block": "script",
+      "code": "const String = (value: unknown) => 'safe';\nString({});",
+      "expectedLines": []
+    },
+    {
+      "id": "no-base-to-string.valid[117]",
+      "rule": "type/no-base-to-string",
+      "block": "script",
+      "code": "const String = (value: unknown) => 'safe';\nfunction f() {\n  String({});\n}",
+      "expectedLines": []
+    },
+    {
+      "id": "no-base-to-string.valid[118]",
+      "rule": "type/no-base-to-string",
+      "block": "script",
+      "code": "function String(value: unknown) {\n  return 'safe';\n}\nfunction f() {\n  String({});\n}",
+      "expectedLines": []
+    },
+    {
+      "id": "no-base-to-string.valid[156]",
+      "rule": "type/no-base-to-string",
+      "block": "script",
+      "code": "function String(value) {\n  return value;\n}\ndeclare const myValue: object;\nString(myValue);",
+      "expectedLines": []
+    },
+    {
+      "id": "no-deprecated.invalid[27]",
+      "rule": "type/no-deprecated",
+      "block": "script",
+      "code": "/** @deprecated */\ndeclare const test: string;\nconst myObj = {\n  prop: test,\n};",
+      "expectedLines": [
+        4
+      ]
+    },
+    {
+      "id": "no-deprecated.invalid[28]",
+      "rule": "type/no-deprecated",
+      "block": "script",
+      "code": "/** @deprecated */\ndeclare const test: string;\nconst myObj = {\n  deep: {\n    prop: test,\n  },\n};",
+      "expectedLines": [
+        5
+      ]
+    },
+    {
+      "id": "no-deprecated.invalid[29]",
+      "rule": "type/no-deprecated",
+      "block": "script",
+      "code": "/** @deprecated */\ndeclare const test: string;\nconst bar = {\n  test,\n};",
+      "expectedLines": [
+        4
+      ]
+    },
+    {
+      "id": "no-deprecated.invalid[32]",
+      "rule": "type/no-deprecated",
+      "block": "script",
+      "code": "/** @deprecated */\ndeclare const a: string[];\nconst [b] = [a];",
+      "expectedLines": [
+        3
+      ]
+    },
+    {
+      "id": "no-deprecated.invalid[69]",
+      "rule": "type/no-deprecated",
+      "block": "script",
+      "code": "/** @deprecated */\ntype A = string[];\n\ndeclare const a: A;\n\nconst [b] = a;",
+      "expectedLines": [
+        4
+      ]
+    },
+    {
+      "id": "no-deprecated.invalid[92]",
+      "rule": "type/no-deprecated",
+      "block": "script",
+      "code": "/** @deprecated */\nexport type A = string;\nexport type B = string;\nexport type C = string;\n\nexport type D = A | B | C;",
+      "expectedLines": [
+        6
+      ]
+    },
+    {
+      "id": "no-deprecated.invalid[136]",
+      "rule": "type/no-deprecated",
+      "block": "script",
+      "code": "/** @deprecated */\ninterface Foo {}\n\nclass Bar implements Foo {}",
+      "expectedLines": [
+        4
+      ]
+    },
+    {
+      "id": "no-deprecated.invalid[137]",
+      "rule": "type/no-deprecated",
+      "block": "script",
+      "code": "/** @deprecated */\ninterface Foo {}\n\nexport class Bar implements Foo {}",
+      "expectedLines": [
+        4
+      ]
+    },
+    {
+      "id": "no-deprecated.invalid[138]",
+      "rule": "type/no-deprecated",
+      "block": "script",
+      "code": "/** @deprecated */\ninterface Foo {}\n\ninterface Baz {}\n\nexport class Bar implements Baz, Foo {}",
+      "expectedLines": [
+        6
+      ]
+    },
+    {
+      "id": "no-deprecated.invalid[141]",
+      "rule": "type/no-deprecated",
+      "block": "script",
+      "code": "/** @deprecated */\nfunction a(): object {\n  return {};\n}\n\nexport default a();",
+      "expectedLines": [
+        6
+      ],
+      "vizeGap": "A lone <script>'s `export default <expr>` is projected as `const __default__ = <expr>` on one mapping row of a different length, so no checker fact maps back to the expression."
+    },
+    {
+      "id": "no-deprecated.invalid[36]",
+      "rule": "type/no-deprecated",
+      "block": "setup",
+      "code": "/** @deprecated */\ndeclare class A {}\n\nnew A();",
+      "expectedLines": [
+        4
+      ]
+    },
+    {
+      "id": "no-deprecated.invalid[40]",
+      "rule": "type/no-deprecated",
+      "block": "setup",
+      "code": "/** @deprecated */\ndeclare class A {\n  constructor();\n}\n\nnew A();",
+      "expectedLines": [
+        6
+      ]
+    },
+    {
+      "id": "no-deprecated.invalid[87]",
+      "rule": "type/no-deprecated",
+      "block": "setup",
+      "code": "/** @deprecated */\ndeclare function a(...args: unknown[]): string;\n\na``;",
+      "expectedLines": [
+        4
+      ]
+    },
+    {
+      "id": "issue-12985.local-type-alias",
+      "rule": "type/no-deprecated",
+      "block": "setup",
+      "code": "/** @deprecated use Next */\ntype Old = { a: number };\nconst first = 1;\nconst value: Old = { a: first };\nconst second = first + value.a;",
+      "expectedLines": [
+        4
+      ]
+    },
+    {
+      "id": "no-implied-eval.valid[44]",
+      "rule": "type/no-implied-eval",
+      "block": "script",
+      "code": "function setTimeout(input: string, value: number) {}\n\nsetTimeout('', 0);",
+      "expectedLines": []
+    },
+    {
+      "id": "no-implied-eval.valid[46]",
+      "rule": "type/no-implied-eval",
+      "block": "script",
+      "code": "function setTimeout() {}\n\n{\n  setTimeout(100);\n}",
+      "expectedLines": []
+    },
+    {
+      "id": "no-implied-eval.valid[47]",
+      "rule": "type/no-implied-eval",
+      "block": "script",
+      "code": "function setTimeout() {}\n\n{\n  setTimeout(\"alert('evil!')\");\n}",
+      "expectedLines": []
+    },
+    {
+      "id": "no-floating-promises.valid[38]",
+      "rule": "type/no-meaningless-void-operator",
+      "block": "script",
+      "code": "declare const promiseArray: Array<Promise<unknown>>;\nvoid promiseArray;",
+      "expectedLines": [
+        2
+      ]
+    },
+    {
+      "id": "control.await-thenable.async-disposable",
+      "rule": "type/await-thenable",
+      "block": "script",
+      "code": "declare const asyncDisposable: AsyncDisposable;\ndeclare const either: AsyncDisposable | Disposable;\nasync function foo() {\n  await using a = asyncDisposable;\n  await using b = either;\n  using c = {} as Disposable;\n}",
+      "expectedLines": []
+    },
+    {
+      "id": "control.no-base-to-string.global-string",
+      "rule": "type/no-base-to-string",
+      "block": "script",
+      "code": "String({});",
+      "expectedLines": [
+        1
+      ]
+    },
+    {
+      "id": "control.no-implied-eval.global-set-timeout",
+      "rule": "type/no-implied-eval",
+      "block": "script",
+      "code": "setTimeout(\"alert('evil!')\");",
+      "expectedLines": [
+        1
+      ]
+    },
+    {
+      "id": "control.no-meaningless-void-operator.thenables",
+      "rule": "type/no-meaningless-void-operator",
+      "block": "script",
+      "code": "declare const promise: Promise<unknown>;\ndeclare const thenable: { then(onfulfilled: () => void): void };\ndeclare const promiseOrArray: Promise<unknown> | Promise<unknown>[];\nvoid [promise];\nvoid promise;\nvoid thenable;\nvoid promiseOrArray;\nvoid 0;",
+      "expectedLines": [
+        4
+      ]
+    },
+    {
+      "id": "control.no-deprecated.jsdoc-stays-with-its-declaration",
+      "rule": "type/no-deprecated",
+      "block": "setup",
+      "code": "/** Current API. */\ntype Next = { a: number };\n/**\n * @deprecated use Next\n */\ntype Old = { a: number };\nconst value: Old = { a: 1 };\nconst next: Next = value;",
+      "expectedLines": [
+        7
+      ]
+    }
+  ]
+}

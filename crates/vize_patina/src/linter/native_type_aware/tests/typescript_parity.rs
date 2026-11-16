@@ -7,6 +7,7 @@ use crate::{LintDiagnostic, LintPreset, Linter, Severity};
 mod no_implied_eval_callable;
 mod no_unnecessary_type_assertion;
 mod upstream_872_cases;
+mod upstream_872_conformance_12983;
 mod upstream_872_no_unsafe_return_12996;
 
 const SOURCE: &str = r#"<script lang="ts">

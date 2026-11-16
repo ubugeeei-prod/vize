@@ -1,5 +1,6 @@
 //! Report ranges aligned with typescript-eslint.
 mod require_await;
+mod void_operator;
 
 use std::collections::BTreeMap;
 
@@ -16,6 +17,7 @@ pub(super) fn prepare(rule: &str, node: &LintNode, configured: Option<&Value>) -
             supply_tostring_argument(&mut owned);
         }
         "require-await" => require_await::expose_non_thenable_any_returns(&mut owned),
+        "no-meaningless-void-operator" => void_operator::expose_thenable_operand(&mut owned),
         "restrict-plus-operands" if disallows_nullish(configured) => {
             expose_nullish_union_flags(&mut owned);
         }
