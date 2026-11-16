@@ -1,5 +1,5 @@
 //! Snapshot-local, flow-sensitive boolean facts from the actual checker.
-use super::{CorsaTypeAwareSession, errors::compact_error, probe::byte_offset_to_utf16_offset};
+use super::{CorsaTypeAwareSession, errors::compact_error, utf16::Utf16Offsets};
 use corsa::fast::ToCompactString as _;
 use corsa::{
     api::{ProjectSession, TypeHandle, TypeResponse},
@@ -69,10 +69,8 @@ async fn classify_batch(
     targets: &[u32],
     ranges: &[(u32, u32)],
 ) -> corsa::Result<Vec<Option<Vec<Value>>>> {
-    let positions = targets
-        .iter()
-        .map(|&at| byte_offset_to_utf16_offset(source, at))
-        .collect();
+    let utf16 = Utf16Offsets::new(source);
+    let positions = targets.iter().map(|&at| utf16.get(at)).collect();
     let responses = session
         .client()
         .get_types_at_positions(
@@ -106,12 +104,7 @@ async fn classify_batch(
         .ok_or_else(|| corsa::CorsaError::Protocol("Missing boolean checker source file".into()))?;
     let ranges: Vec<_> = ranges
         .iter()
-        .map(|&(start, end)| {
-            (
-                byte_offset_to_utf16_offset(source, start),
-                byte_offset_to_utf16_offset(source, end),
-            )
-        })
+        .map(|&(start, end)| (utf16.get(start), utf16.get(end)))
         .collect();
     let locations = nodes::locations(encoded.as_bytes(), source, &ranges)?;
     let responses = session
