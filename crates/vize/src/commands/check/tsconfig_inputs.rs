@@ -218,7 +218,14 @@ fn collect_default_check_files_for_tsconfig(
         if selected_enough(files) {
             return;
         }
-        let resolved = normalize_input_path(&file.resolve());
+        let named = file.resolve();
+        // `tsc` reads a root by the name the tsconfig spells, so the name
+        // alone rules out an ordinary input before any filesystem access. The
+        // canonical path must still name a declaration as well.
+        if selection == InputSelection::Declarations && !is_declaration_path(&named) {
+            continue;
+        }
+        let resolved = normalize_input_path(&named);
         if vize_carton::path::is_git_metadata_path(&resolved)
             || (selection == InputSelection::Declarations && !is_declaration_path(&resolved))
         {

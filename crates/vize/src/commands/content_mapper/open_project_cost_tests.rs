@@ -137,3 +137,29 @@ fn solution_style_root_still_expands_into_referenced_declarations() {
     assert_eq!(identity.rsplit_once(':').unwrap().1, "1", "{identity}");
     assert_eq!(relative(&root, &examined), vec!["app/src/env.d.ts"]);
 }
+
+#[test]
+fn explicit_files_are_ruled_out_by_name_before_any_filesystem_access() {
+    let directory = tempfile::tempdir().unwrap();
+    let root = canonicalize_non_verbatim(directory.path());
+    write_ordinary_inputs(&root, "src");
+    write(&root, "src/env.d.ts", VUE_TEMPLATE_REF);
+    let mut files = (0..ORDINARY_INPUTS)
+        .map(|index| json!(cstr!("src/m{index}.ts")))
+        .collect::<Vec<_>>();
+    files.push(json!("src/env.d.ts"));
+    let config = root.join("tsconfig.json");
+    std::fs::write(
+        &config,
+        serde_json::to_vec(&json!({ "files": files })).unwrap(),
+    )
+    .unwrap();
+
+    let (result, examined) = open_project(&root, &config);
+
+    // Neither the declaration pass nor the Nuxt manifest pass canonicalizes
+    // or stats a listed ordinary input.
+    assert_eq!(relative(&root, &examined), vec!["src/env.d.ts"]);
+    let identity = result["configIdentity"].as_str().unwrap();
+    assert_eq!(identity.rsplit_once(':').unwrap().1, "1", "{identity}");
+}
