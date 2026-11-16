@@ -296,6 +296,13 @@ impl DiagnosticOwnership {
         }
     }
 
+    /// Every generated range a later text rewrite must keep whole.
+    pub(crate) fn generated_ranges(&self) -> impl Iterator<Item = &Range<usize>> {
+        self.callback_primaries
+            .iter()
+            .chain(self.rows.iter().map(|row| &row.generated))
+    }
+
     /// Follow a generated rewrite. `remap` returns the new range and whether
     /// it moved as one copied run; any other row loses its proof only.
     pub(crate) fn note_generated_rewrite(
