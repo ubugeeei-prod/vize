@@ -125,6 +125,12 @@ pub(crate) static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "禁止不改变表达式类型或值的转换",
     ),
     (
+        "type/no-unnecessary-type-parameters.description",
+        "Disallow type parameters that are not used more than once.",
+        "複数回使用されない型パラメーターを禁止する",
+        "禁止未被多次使用的类型参数",
+    ),
+    (
         "type/no-unsafe-argument.description",
         "Disallow calling a function with a value of type `any`.",
         "`any` 型の値を関数に渡すことを禁止する",
