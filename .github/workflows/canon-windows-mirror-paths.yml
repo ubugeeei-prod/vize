@@ -72,6 +72,11 @@ jobs:
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$EXPECTED_SOURCE"
           node --input-type=module -e 'import assert from "node:assert/strict"; for (const name of ["CORSA_PATH","CORSA_EXECUTABLE","TSGO_PATH","TSGO_EXECUTABLE","TSRS_PATH","TSRS_EXECUTABLE"]) assert.ok(!process.env[name], `ambient ${name} refused`);'
+          # The receipt describes this run only. Run-output pruning of a reused
+          # target is Linux-only, and a target restored from the Actions cache
+          # on Windows can still hold an earlier run's receipt, which the
+          # exclusive (`wx`) write would refuse.
+          rm -f target/nextest/full/native-runtime-provider.json
           GITHUB_SHA="$EXPECTED_SOURCE" vp exec node tools/support/compat/github/full-rust-runtime.ts
       - name: Detach dangling mirror links from facts about the link itself
         run: |

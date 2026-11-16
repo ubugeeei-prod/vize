@@ -143,3 +143,49 @@ fn removal_errors_name_the_cache_entry_and_keep_the_os_kind() {
     );
     assert_eq!(error.to_string().as_str(), expected.as_str());
 }
+
+/// `symlink_package_dir` prefers a directory symlink and only falls back to a
+/// junction, so a runner that may create symlinks never exercises the
+/// junction that stock Windows installs get (#13088). Create one directly.
+#[cfg(windows)]
+#[test]
+fn a_dangling_junction_is_removed_without_touching_the_mirror() {
+    let temp = tempfile::tempdir().unwrap();
+    let target = package(temp.path(), "extra");
+    let live = package(temp.path(), "vue");
+    let node_modules = temp.path().join("mirror/node_modules");
+    std::fs::create_dir_all(&node_modules).unwrap();
+    let stale = node_modules.join("extra");
+    let kept = node_modules.join("vue");
+    junction::create(&target, &stale).unwrap();
+    junction::create(&live, &kept).unwrap();
+    assert_eq!(entry_kind(&stale), Removal::DirectoryLink);
+
+    std::fs::remove_dir_all(&target).unwrap();
+    assert!(std::fs::metadata(&stale).is_err());
+    assert_eq!(entry_kind(&stale), Removal::DirectoryLink);
+    // The pre-fix fallback: unlinking a dangling junction as a file.
+    assert_eq!(
+        std::fs::remove_file(&stale)
+            .map_err(|error| error.kind())
+            .err(),
+        Some(std::io::ErrorKind::PermissionDenied)
+    );
+
+    prune_unexpected_entries(
+        &node_modules,
+        &FxHashSet::default(),
+        std::slice::from_ref(&kept),
+    )
+    .unwrap();
+
+    assert_eq!(missing(&stale), Some(std::io::ErrorKind::NotFound));
+    assert_eq!(
+        std::fs::read_to_string(kept.join("package.json")).unwrap(),
+        "{}"
+    );
+    assert_eq!(
+        std::fs::read_to_string(live.join("package.json")).unwrap(),
+        "{}"
+    );
+}
