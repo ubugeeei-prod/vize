@@ -21,6 +21,7 @@ mod dom;
 #[cfg(feature = "typescript")]
 mod erase;
 mod names;
+mod props;
 
 /// The emission target.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -102,7 +103,8 @@ pub enum EmitIssue {
     /// `.map()` callbacks).
     OutsideComponent,
     /// DOM: parameters other than none, one identifier, or one object pattern
-    /// of plain keys without defaults or rest.
+    /// of static keys, each bound to a name with an optional default the
+    /// reference types, and an optional rest name (see `props.rs`).
     Parameters,
     /// DOM: the props identifier read other than as `props.key`, or a
     /// destructured prop used as a component tag.

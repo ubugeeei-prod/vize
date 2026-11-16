@@ -17,15 +17,16 @@ use vize_l1_to_l2::pass::{TransformProfile, run_transform_with_profile};
 use vize_l1_to_l2::{LegacyCaps, Lowered};
 use vize_l2::lang::tsrx::TsrxArtifacts;
 
-use super::component::{self, Component, Form, Props};
+use super::component::{self, Component, Form};
 use super::names::{Names, Use};
+use super::props::{Options, Props};
 use super::{EmitIssue, Failure};
 use crate::targets::dom::artifact::{
     BindingKind, BindingTable, DomEmitMode, DomEmitOptions, RuntimeHelpers, emit_dom_with_options,
 };
 
 /// Names the module writes besides the runtime helpers.
-const GENERATED: [&str; 4] = ["__props", "_ctx", "_cache", "_defineComponent"];
+const GENERATED: [&str; 5] = ["__props", "_ctx", "_cache", "_defineComponent", "_useAttrs"];
 
 pub(super) fn module<'a>(
     allocator: &'a Allocator,
@@ -113,6 +114,12 @@ pub(super) fn module<'a>(
 
     let mut out = String::with_capacity(source.len() * 2);
     out.push_str("import { defineComponent as _defineComponent");
+    if components
+        .iter()
+        .any(|component| component.props.rest().is_some())
+    {
+        out.push_str(", useAttrs as _useAttrs");
+    }
     for (name, alias) in helpers.imports() {
         out.push_str(", ");
         out.push_str(name);
@@ -130,23 +137,23 @@ pub(super) fn module<'a>(
     Ok(out)
 }
 
-/// Lexical names, with destructured props read through `__props`.
+/// Lexical names, with destructured props read through `__props` and a
+/// renamed prop read as its key.
 fn bindings(names: &Names<'_>, props: &Props<'_>) -> BindingTable {
-    let destructured = match props {
-        Props::Destructured { keys, .. } => keys.as_slice(),
-        _ => &[],
-    };
     let free = names.free();
+    let kind = |name: &str| match props.local(name) {
+        Some(prop) if prop.key == name => BindingKind::Props,
+        Some(_) => BindingKind::PropsAliased,
+        None => BindingKind::SetupConst,
+    };
     BindingTable::new(
-        free.iter().map(|name| {
-            let kind = if destructured.contains(name) {
-                BindingKind::Props
-            } else {
-                BindingKind::SetupConst
-            };
-            (*name, kind)
+        free.iter().map(|name| (*name, kind(name))),
+        free.iter().filter_map(|name| {
+            props
+                .local(name)
+                .filter(|prop| prop.key != prop.local)
+                .map(|prop| (prop.local, prop.key))
         }),
-        [],
         true,
     )
 }
@@ -178,26 +185,77 @@ fn definition(
     }
     out.push_str(slice(source, component.tail.start, component.tail.end));
     body(out, source, component, names, render);
-    let keys = component.props.keys();
-    if !keys.is_empty() {
-        out.push_str(", { props: [");
-        for (index, key) in keys.iter().enumerate() {
-            if index > 0 {
-                out.push_str(", ");
-            }
-            vize_l0::js_string::push_js_string_literal(out, key);
-        }
-        out.push_str("] }");
-    }
+    options(out, &component.props);
     out.push(')');
     if component.form != Form::Initializer {
         out.push(';');
     }
 }
 
+/// `, { inheritAttrs: false, props: … }`: a list of keys, or an object when a
+/// prop has runtime options.
+fn options(out: &mut String, props: &Props<'_>) {
+    let declared = props.declared();
+    let inherit = props.rest().is_none();
+    if declared.is_empty() && inherit {
+        return;
+    }
+    out.push_str(", { ");
+    if !inherit {
+        out.push_str("inheritAttrs: false");
+        if !declared.is_empty() {
+            out.push_str(", ");
+        }
+    }
+    if !declared.is_empty() {
+        let object = declared.iter().any(|(_, options)| options.is_some());
+        out.push_str(if object { "props: { " } else { "props: [" });
+        for (index, (key, options)) in declared.iter().enumerate() {
+            if index > 0 {
+                out.push_str(", ");
+            }
+            vize_l0::js_string::push_js_string_literal(out, key);
+            if object {
+                out.push_str(": ");
+                match options {
+                    Some(options) => prop_options(out, options),
+                    None => out.push_str("null"),
+                }
+            }
+        }
+        out.push_str(if object { " }" } else { "]" });
+    }
+    out.push_str(" }");
+}
+
+fn prop_options(out: &mut String, options: &Options<'_>) {
+    out.push_str("{ ");
+    if options.required {
+        out.push_str("required: true, ");
+    }
+    if let Some(type_) = options.type_ {
+        out.push_str("type: ");
+        out.push_str(type_);
+        out.push_str(", ");
+    }
+    out.push_str("default: ");
+    if options.factory {
+        out.push_str("() => (");
+        out.push_str(options.default);
+        out.push(')');
+    } else {
+        out.push_str(options.default);
+    }
+    if options.skip_factory {
+        out.push_str(", skipFactory: true");
+    }
+    out.push_str(" }");
+}
+
 /// `@{ setup <render> }` → `{ setup return (_ctx, _cache) => …; }`, and
 /// `{ setup return <render>; }` → `{ setup return (_ctx, _cache) => …; }`,
-/// with destructured props in setup read through `__props`.
+/// with destructured props in setup read through `__props` and a rest
+/// element bound first, to the attributes.
 fn body(
     out: &mut String,
     source: &str,
@@ -216,23 +274,29 @@ fn body(
         Some(_) => (region, "", component.tail.end, component.span.end),
     };
     let mut cursor = start;
-    if let Props::Destructured { keys, .. } = &component.props {
-        let mut reads: Vec<_> = names
-            .reads
-            .iter()
-            .filter(|read| read.setup && keys.contains(&read.name))
-            .collect();
-        reads.sort_by_key(|read| read.span.start);
-        for read in reads {
-            out.push_str(slice(source, cursor, read.span.start));
-            if read.use_ == Use::Shorthand {
-                out.push_str(read.name);
-                out.push_str(": ");
-            }
-            out.push_str("__props.");
+    if let Some(rest) = component.props.rest() {
+        // The copied range opens the body's `{`.
+        cursor += 1;
+        out.push_str("{ const ");
+        out.push_str(rest);
+        out.push_str(" = _useAttrs();");
+    }
+    let mut reads: Vec<_> = names
+        .reads
+        .iter()
+        .filter(|read| read.setup)
+        .filter_map(|read| Some((read, component.props.local(read.name)?)))
+        .collect();
+    reads.sort_by_key(|(read, _)| read.span.start);
+    for (read, prop) in reads {
+        out.push_str(slice(source, cursor, read.span.start));
+        if read.use_ == Use::Shorthand {
             out.push_str(read.name);
-            cursor = read.span.end;
+            out.push_str(": ");
         }
+        out.push_str("__props.");
+        out.push_str(prop.key);
+        cursor = read.span.end;
     }
     out.push_str(slice(source, cursor, rendered.start));
     out.push_str(prefix);

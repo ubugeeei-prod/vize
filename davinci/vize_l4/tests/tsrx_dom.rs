@@ -7,13 +7,14 @@ mod cases {
     use std::path::Path;
     use vize_l4::lang::tsrx::{CompileOptions, Target, compile};
 
-    const MODULES: [&str; 10] = [
+    const MODULES: [&str; 11] = [
         "attributes",
         "counter",
         "default",
         "dynamic",
         "loops",
         "nested",
+        "props",
         "returns",
         "slots",
         "typed",

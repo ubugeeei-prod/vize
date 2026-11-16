@@ -237,6 +237,41 @@
       "component": "Disclosure",
       "props": { "title": "menu" },
       "steps": [{ "click": "button" }, { "props": { "title": "abc" } }, { "props": { "title": "abcd" } }, { "click": "button" }]
+    },
+    {
+      "id": "props/defaults",
+      "file": "tests/_fixtures/tsrx/mount/props.tsrx",
+      "component": "Defaults",
+      "props": { "label": "a" },
+      "steps": [{ "props": { "label": "b" } }]
+    },
+    {
+      "id": "props/cast",
+      "file": "tests/_fixtures/tsrx/mount/props.tsrx",
+      "component": "Defaults",
+      "props": { "flag": "", "count": 3, "tags": ["x", "y"] },
+      "steps": [{ "props": { "count": 4 } }, { "props": { "flag": false } }]
+    },
+    {
+      "id": "props/renamed",
+      "file": "tests/_fixtures/tsrx/mount/props.tsrx",
+      "component": "Renamed",
+      "props": { "label": "a", "count": 3 },
+      "steps": [{ "props": { "label": "b" } }, { "props": { "count": 5 } }]
+    },
+    {
+      "id": "props/renamed-default",
+      "file": "tests/_fixtures/tsrx/mount/props.tsrx",
+      "component": "Renamed",
+      "props": { "label": "a" },
+      "steps": [{ "props": { "label": "b" } }]
+    },
+    {
+      "id": "props/rest",
+      "file": "tests/_fixtures/tsrx/mount/props.tsrx",
+      "component": "Rest",
+      "props": { "label": "a", "title": "t", "data-x": "1" },
+      "steps": [{ "props": { "title": "u" } }, { "props": { "label": "b" } }]
     }
   ]
 }

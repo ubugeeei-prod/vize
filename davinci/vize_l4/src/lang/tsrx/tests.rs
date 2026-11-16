@@ -166,16 +166,34 @@ fn dom_component_parameters_outside_the_props_profile_are_refused() {
             "export function A(a, b) @{\n\t<p />\n}\n",
             EmitIssue::Parameters,
         ),
+        // The reference drops these defaults.
         (
-            "export function A({ a = 1 }) @{\n\t<p />\n}\n",
+            "export function A({ a = -1 }) @{\n\t<p>{a}</p>\n}\n",
             EmitIssue::Parameters,
         ),
         (
-            "export function A({ a, ...rest }) @{\n\t<p />\n}\n",
+            "export function A({ a = f() }) @{\n\t<p>{a}</p>\n}\n",
+            EmitIssue::Parameters,
+        ),
+        // Options are evaluated outside the component.
+        (
+            "export function A({ a, b = () => a }) @{\n\t<p>{b()}</p>\n}\n",
             EmitIssue::Parameters,
         ),
         (
-            "export function A({ a: b }) @{\n\t<p>{b}</p>\n}\n",
+            "export function A({ a: { b } }) @{\n\t<p>{b}</p>\n}\n",
+            EmitIssue::Parameters,
+        ),
+        (
+            "export function A({ 'a': a }) @{\n\t<p>{a}</p>\n}\n",
+            EmitIssue::Parameters,
+        ),
+        (
+            "export function A({ a: b, b: c }) @{\n\t<p>{b}{c}</p>\n}\n",
+            EmitIssue::Parameters,
+        ),
+        (
+            "export const A = ({ a, ...rest }) => <p {...rest}>{a}</p>;\n",
             EmitIssue::Parameters,
         ),
         (
@@ -202,6 +220,15 @@ fn dom_component_parameters_outside_the_props_profile_are_refused() {
         let [diagnostic] = diagnostics(source, &OPTIONS).try_into().unwrap();
         assert_eq!(diagnostic.code, Code::Emit(issue), "{source}");
     }
+}
+
+#[test]
+fn dom_prop_defaults_renames_and_rest_follow_the_reference_props_options() {
+    let source = "export function A({ a = 'x'!, b: c = undefined, d = null, e = {}, ...rest }: Props) {\n\tconst f = { c };\n\treturn <p {...rest}>{a}{c}{d}{e}{f.c}</p>;\n}\n";
+    assert_eq!(
+        compile(source, &OPTIONS).unwrap().code.as_str(),
+        "import { defineComponent as _defineComponent, useAttrs as _useAttrs, createElementVNode as _createElementVNode, normalizeProps as _normalizeProps, guardReactiveProps as _guardReactiveProps } from \"vue\";\nexport const A = /* @__PURE__ */ _defineComponent(function A(__props) { const rest = _useAttrs();\n\tconst f = { c: __props.b };\n\treturn (_ctx, _cache) => {\n  return (_createElementVNode(\"p\", _normalizeProps(_guardReactiveProps(rest)), [\n    __props.a,\n    __props.b,\n    __props.d,\n    __props.e,\n    f.c\n  ], 16 /* FULL_PROPS */))\n};\n}, { inheritAttrs: false, props: { \"a\": { required: true, type: String, default: 'x' }, \"b\": { default: undefined }, \"d\": { default: null }, \"e\": { type: Object, default: () => ({}) } } });\n"
+    );
 }
 
 #[test]
