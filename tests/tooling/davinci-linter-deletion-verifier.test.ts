@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import type { LintSummary } from "../differential/linter-deletion-schema.ts";
+import { canonicalSha256, type LintSummary } from "../differential/linter-deletion-schema.ts";
 import {
   assessLinterDeletionShard,
   validateLinterDeletionArtifact,
@@ -132,7 +132,13 @@ void test("a declared zero-Vue project records a zero-count artifact without pro
     code: "linter-unmatched-patterns",
     detail: 'without-vue: unmatched explicit lint patterns ["**/*.vue"]',
   });
-  assert.throws(() => validateLinterDeletionArtifact(forged));
+  forged.sha256 = canonicalSha256(
+    Object.fromEntries(Object.entries(forged).filter(([key]) => key !== "sha256")),
+  );
+  assert.throws(
+    () => validateLinterDeletionArtifact(forged),
+    /linter deletion blocker projection drifted/u,
+  );
 
   const scopeDrift = assessLinterDeletionShard(
     control({ projects: { "without-vue": { comparedFileCount: 1 } } }),
