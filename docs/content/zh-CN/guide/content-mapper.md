@@ -58,6 +58,43 @@ tsgo --runExternalCode --noEmit -p tsconfig.json
 在 VS Code 中,受信任的工作区里 Vize 扩展会自动向 TypeScript 7 content-mapper
 宿主注册 `.vue` 支持,同一个映射器也随之驱动编辑器。
 
+### 项目引用(解决方案式 tsconfig)
+
+`create-vue` 等模板使用解决方案式的根配置:`tsconfig.json` 本身不列出任何文件,只引用
+`tsconfig.app.json` 和 `tsconfig.node.json`。`.vue` 文件属于 `tsconfig.app.json`。
+这种结构下有两条规则:
+
+- 在每个包含 `.vue` 文件的被引用项目中声明 `contentMappers`。该选项按项目生效,被引用的项目
+  不会从根配置继承它。只在根配置中声明的映射器不会映射任何 `.vue` 文件。不过通过 `extends`
+  的继承是有效的,因此可以在这些项目共同继承的基础配置中只声明一次。
+- 检查被引用的项目,而不是根配置。带有 `"files": []` 的根配置不包含任何文件,因此
+  `tsc --runExternalCode --noEmit -p tsconfig.json` 什么也不检查,并直接以成功状态退出。
+
+在 `tsconfig.app.json` 中:
+
+```json
+{
+  "extends": "@vue/tsconfig/tsconfig.dom.json",
+  "include": ["env.d.ts", "src/**/*", "src/**/*.vue"],
+  "contentMappers": [
+    {
+      "package": "vize",
+      "extensions": [".vue"]
+    }
+  ]
+}
+```
+
+然后构建所有被引用的项目,或直接检查应用项目:
+
+```bash
+tsc -b --runExternalCode
+tsc --runExternalCode --noEmit -p tsconfig.app.json
+```
+
+[`vize check`](./cli.md#check) 在这种结构下无需额外配置:它会自行选择拥有各个 `.vue` 文件的
+被引用项目。
+
 ## 选项
 
 映射器条目接受一个 `options` 对象:

@@ -103,6 +103,11 @@ tsc --runExternalCode --noEmit -p tsconfig.json
 tsrs --runExternalCode --noEmit -p tsconfig.json
 ```
 
+A solution-style `tsconfig.json` with `"files": []` and `references` contains no files, so
+`-p tsconfig.json` checks nothing. Put the mapper in the referenced project that includes `.vue`
+files and run `tsc -b --runExternalCode`, or pass that project, such as `-p tsconfig.app.json`. See
+[Project references](./content-mapper.md#project-references-solution-style-tsconfig).
+
 `vize check` is the packaged checker. Run it from the project root when you want that command.
 For package-specific monorepo checks, run from the package directory.
 

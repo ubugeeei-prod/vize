@@ -61,6 +61,46 @@ Dans VS Code, l'extension Vize enregistre automatiquement la prise en charge de 
 l'hôte content-mapper TypeScript 7 dans les espaces de travail approuvés — le même mapper alimente
 alors l'éditeur.
 
+### Références de projet (tsconfig de type solution)
+
+Les templates comme `create-vue` utilisent une racine de type solution : `tsconfig.json` ne liste
+aucun fichier et référence `tsconfig.app.json` et `tsconfig.node.json`. Les fichiers `.vue`
+appartiennent à `tsconfig.app.json`. Deux règles s'appliquent dans cette organisation :
+
+- Déclarez `contentMappers` dans chaque projet référencé qui inclut des fichiers `.vue`. L'option
+  s'applique par projet, et les projets référencés ne l'héritent pas de la racine. Un mapper
+  déclaré uniquement dans la racine ne mappe aucun fichier `.vue`. L'héritage via `extends`
+  fonctionne en revanche : une configuration de base partagée, étendue par ces projets, peut la
+  déclarer une seule fois.
+- Vérifiez les projets référencés, pas la racine. Une racine avec `"files": []` ne contient aucun
+  fichier, donc `tsc --runExternalCode --noEmit -p tsconfig.json` ne vérifie rien et se termine
+  avec succès.
+
+Dans `tsconfig.app.json` :
+
+```json
+{
+  "extends": "@vue/tsconfig/tsconfig.dom.json",
+  "include": ["env.d.ts", "src/**/*", "src/**/*.vue"],
+  "contentMappers": [
+    {
+      "package": "vize",
+      "extensions": [".vue"]
+    }
+  ]
+}
+```
+
+Construisez ensuite tous les projets référencés, ou vérifiez directement le projet de l'application :
+
+```bash
+tsc -b --runExternalCode
+tsc --runExternalCode --noEmit -p tsconfig.app.json
+```
+
+[`vize check`](./cli.md#check) ne demande aucune configuration supplémentaire ici : il sélectionne
+le projet référencé qui possède chaque fichier `.vue`.
+
 ## Options
 
 Une entrée de mapper accepte un objet `options` :

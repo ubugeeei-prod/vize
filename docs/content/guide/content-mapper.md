@@ -74,6 +74,44 @@ In VS Code, when a trusted workspace uses a content-mapper-enabled TypeScript ho
 extension registers `.vue` support automatically. The same mapper then powers the editor.
 Turn on `js/ts.contentMappers.enabled` when the editor asks for it.
 
+### Project references (solution-style tsconfig)
+
+Templates such as `create-vue` use a solution-style root: `tsconfig.json` lists no files and
+references `tsconfig.app.json` and `tsconfig.node.json`. The `.vue` files belong to
+`tsconfig.app.json`. Two rules apply in this layout:
+
+- Declare `contentMappers` in each referenced project that includes `.vue` files. The option
+  applies per project, and referenced projects do not inherit it from the root. A mapper declared
+  only in the root maps no `.vue` files. Inheritance through `extends` does work, so a shared base
+  config that those projects extend can declare it once.
+- Check the referenced projects, not the root. A root with `"files": []` contains no files, so
+  `tsc --runExternalCode --noEmit -p tsconfig.json` checks nothing and exits successfully.
+
+In `tsconfig.app.json`:
+
+```json
+{
+  "extends": "@vue/tsconfig/tsconfig.dom.json",
+  "include": ["env.d.ts", "src/**/*", "src/**/*.vue"],
+  "contentMappers": [
+    {
+      "package": "vize",
+      "extensions": [".vue"]
+    }
+  ]
+}
+```
+
+Then build every referenced project, or check the app project directly:
+
+```bash
+tsc -b --runExternalCode
+tsc --runExternalCode --noEmit -p tsconfig.app.json
+```
+
+[`vize check`](./cli.md#check) needs no extra setup here: it selects the referenced project that
+owns each `.vue` file.
+
 ## Options
 
 A mapper entry accepts an `options` object:
