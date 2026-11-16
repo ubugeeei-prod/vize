@@ -7,7 +7,7 @@ use super::{
     LintResult, Linter, active_builtin_script_rule_entries, entry_may_match,
     has_active_builtin_script_rules, merge_script_result, resolved_rule, run_builtin_script_rule,
 };
-use crate::linter::sfc_scripts::SfcScripts;
+use crate::linter::sfc_scripts::ScriptSemantics;
 use crate::rules::script::{
     EmitsModuleScript, NoDupeKeys, NoDupeKeysModuleScript, NoDuplicateAttrInheritance,
     ReturnInEmitsValidator, ScriptLintResult, SfcScriptContext,
@@ -27,7 +27,7 @@ fn descriptor_may_have_typed_macros(descriptor: &SfcDescriptor<'_>) -> bool {
 pub(crate) fn append_builtin_script_diagnostics<'a>(
     linter: &Linter,
     descriptor: &SfcDescriptor<'a>,
-    scripts: &SfcScripts<'_>,
+    scripts: &ScriptSemantics<'_, '_>,
     result: &mut LintResult,
     template_ast: Option<(&crate::markup::L2Template<'_>, u32)>,
 ) {
@@ -44,7 +44,7 @@ pub(crate) fn append_builtin_script_diagnostics<'a>(
 pub(crate) fn append_builtin_script_diagnostics_with_template_context<'a>(
     linter: &Linter,
     descriptor: &SfcDescriptor<'a>,
-    scripts: &SfcScripts<'_>,
+    scripts: &ScriptSemantics<'_, '_>,
     result: &mut LintResult,
     template_ast: Option<(&crate::markup::L2Template<'_>, u32)>,
     mut template_context: Option<&mut crate::context::LintContext<'_>>,
@@ -187,7 +187,7 @@ pub(crate) fn append_builtin_script_diagnostics_with_template_context<'a>(
                 *setup_matches && resolved_rule(linter, entry).uses_ast()
             })
         })
-        .and_then(|_| scripts.script_setup());
+        .and_then(|_| scripts.parses().script_setup());
 
     // Only the actual active return-validator rule can request normal-script
     // ownership evidence. Other rules retain their existing dispatch and parse
@@ -238,7 +238,7 @@ pub(crate) fn append_builtin_script_diagnostics_with_template_context<'a>(
                     *script_matches && resolved_rule(linter, entry).uses_ast()
                 })
         })
-        .and_then(|_| scripts.script());
+        .and_then(|_| scripts.parses().script());
     let needs_component_bindings = template_references.as_ref().is_some_and(|(references, _)| {
         references.references().iter().any(|reference| {
             reference.owner == vize_croquis::drawer::TemplateReferenceOwner::ComponentContext
@@ -269,7 +269,7 @@ pub(crate) fn append_builtin_script_diagnostics_with_template_context<'a>(
         && descriptor_may_have_typed_macros(descriptor))
     .then(|| {
         crate::linter::engine::analyze_descriptor_for_lint(
-            scripts,
+            scripts.parses(),
             None,
             Some(crate::linter::engine::MacroTypeResolution {
                 filename: result.filename.as_str(),
@@ -348,6 +348,7 @@ pub(crate) fn append_builtin_script_diagnostics_with_template_context<'a>(
         sibling_program: None,
         sibling_offset: None,
         resolved_type_world,
+        scripts: Some(scripts),
     };
 
     let setup_program = script_setup_parsed

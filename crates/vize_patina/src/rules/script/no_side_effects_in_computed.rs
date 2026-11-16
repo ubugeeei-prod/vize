@@ -53,7 +53,7 @@
 //! }
 //! ```
 
-use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
+use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta, SfcScriptContext};
 use crate::diagnostic::{LintDiagnostic, Severity};
 use oxc_ast::ast::{
     Argument, BindingPattern, CallExpression, ExportDefaultDeclarationKind, Expression, Function,
@@ -118,13 +118,33 @@ impl ScriptRule for NoSideEffectsInComputed {
         offset: usize,
         result: &mut ScriptLintResult,
     ) {
-        if let Some(options) = find_component_options(program)
-            && let Some(computed) = find_computed_object(options)
-        {
-            check_computed_object(computed, offset, result);
-        }
-        composition::check_program(program, offset, result);
+        check(program, None, offset, result);
     }
+
+    fn check_program_with_sfc<'a>(
+        &self,
+        program: &'a Program<'a>,
+        _source: &str,
+        offset: usize,
+        sfc: SfcScriptContext<'_>,
+        result: &mut ScriptLintResult,
+    ) {
+        check(program, sfc.semantic_of(program), offset, result);
+    }
+}
+
+fn check<'a>(
+    program: &'a Program<'a>,
+    shared: Option<&'a oxc_semantic::SemanticBuilderReturn<'a>>,
+    offset: usize,
+    result: &mut ScriptLintResult,
+) {
+    if let Some(options) = find_component_options(program)
+        && let Some(computed) = find_computed_object(options)
+    {
+        check_computed_object(computed, offset, result);
+    }
+    composition::check_program(program, shared, offset, result);
 }
 
 fn check_computed_object(

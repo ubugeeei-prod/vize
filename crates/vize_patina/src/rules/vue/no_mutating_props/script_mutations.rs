@@ -10,6 +10,7 @@ mod depth;
 pub(super) use self::depth::ScriptPropMutationKind;
 use self::depth::{MutationOperation, PropBindingKind, script_mutation_kind};
 
+use crate::linter::sfc_scripts::BlockSemantic;
 use oxc_ast::ast::{
     Argument, AssignmentExpression, BindingPattern, CallExpression, Expression, Function,
     IdentifierReference, ObjectPropertyKind, Program, PropertyKey, SimpleAssignmentTarget,
@@ -22,7 +23,7 @@ use oxc_ast_visit::{
         walk_update_expression,
     },
 };
-use oxc_semantic::{Scoping, SemanticBuilder};
+use oxc_semantic::{Scoping, SemanticBuilder, SemanticBuilderReturn};
 use oxc_span::{GetSpan, Span};
 use oxc_syntax::operator::UnaryOperator;
 use oxc_syntax::symbol::SymbolId;
@@ -46,12 +47,17 @@ pub(super) struct ScriptPropMutation {
     pub(super) kind: ScriptPropMutationKind,
 }
 
-pub(super) fn find_prop_mutations(source: &str, program: &Program<'_>) -> Vec<ScriptPropMutation> {
+pub(super) fn find_prop_mutations<'a>(
+    source: &str,
+    program: &'a Program<'a>,
+    shared: Option<&'a SemanticBuilderReturn<'a>>,
+) -> Vec<ScriptPropMutation> {
     if memchr::memmem::find(source.as_bytes(), b"defineProps").is_none() {
         return Vec::new();
     }
 
-    let semantic = SemanticBuilder::new().build(program).semantic;
+    let built = BlockSemantic::of(shared, program, false);
+    let semantic = &built.semantic;
     let scoping = semantic.scoping();
     let prop_symbols = collect_prop_symbols(program, scoping);
     if prop_symbols.is_empty() {
@@ -149,8 +155,12 @@ fn collect_parameter_symbols(
 /// against a clean, statically analyzable `defineProps({ ... })` declaration.
 /// A derived ref such as `useVModel(props, "value")` is returned as a local
 /// binding so it can shadow the runtime prop of the same name.
-pub(super) fn runtime_prop_scope(program: &Program<'_>) -> (FxHashSet<String>, FxHashSet<String>) {
-    let semantic = SemanticBuilder::new().build(program).semantic;
+pub(super) fn runtime_prop_scope<'a>(
+    program: &'a Program<'a>,
+    shared: Option<&'a SemanticBuilderReturn<'a>>,
+) -> (FxHashSet<String>, FxHashSet<String>) {
+    let built = BlockSemantic::of(shared, program, false);
+    let semantic = &built.semantic;
     let scoping = semantic.scoping();
     let mut props = FxHashSet::default();
     let mut locals = FxHashSet::default();

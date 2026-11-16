@@ -288,6 +288,14 @@ impl<'a> LintContext<'a> {
         self.sfc_scripts
     }
 
+    /// The block semantic pass the engine shares for `program`, if any.
+    pub(crate) fn script_semantic_of(
+        &self,
+        program: &oxc_ast::ast::Program<'_>,
+    ) -> Option<&'a oxc_semantic::SemanticBuilderReturn<'a>> {
+        self.sfc_scripts?.semantic_of(program)
+    }
+
     /// Set SSR mode.
     #[inline]
     pub fn set_ssr_mode(&mut self, mode: SsrMode) {
