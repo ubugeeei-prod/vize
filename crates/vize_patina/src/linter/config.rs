@@ -333,6 +333,32 @@ impl Linter {
             .collect()
     }
 
+    /// [`Self::markup_rules`] for the rules named in `names`, reading the
+    /// registry's ranks for that list instead of scanning every rule.
+    pub(crate) fn named_markup_rules(
+        &self,
+        count: usize,
+        names: &'static [&'static str],
+    ) -> Vec<crate::markup::RankedMarkupRule<'_>> {
+        let rules = self.registry.rules();
+        let rule_names = self.rule_names();
+        self.registry
+            .markup_ranks_named(names)
+            .iter()
+            .copied()
+            .filter(|&rank| rank < count)
+            .filter(|&rank| {
+                rule_names
+                    .get(rank)
+                    .is_some_and(|name| self.is_rule_enabled(name))
+            })
+            .filter_map(|rank| {
+                let rule = rules.get(rank)?.as_markup_rule()?;
+                Some(crate::markup::RankedMarkupRule::new(rank, rule))
+            })
+            .collect()
+    }
+
     /// Close type-aware sessions and delete this process's session directories.
     ///
     /// `vize lint` exits with `process::exit` when diagnostics fail, which skips
