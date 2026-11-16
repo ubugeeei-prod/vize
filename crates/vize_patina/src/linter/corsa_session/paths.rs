@@ -149,10 +149,16 @@ mod tests {
 
     #[test]
     fn virtual_file_mirrors_the_authored_package_directory() {
-        let package = Path::new("/workspace/ui");
+        // An absolute root on every platform: `/workspace` has no drive on Windows.
+        let package = if cfg!(windows) {
+            Path::new(r"C:\workspace\ui")
+        } else {
+            Path::new("/workspace/ui")
+        };
         let session = package.join(".vize/patina/session-1-0");
+        let source = package.join("src").join("components").join("Button.vue");
         assert_eq!(
-            virtual_file_path(&session, package, "/workspace/ui/src/components/Button.vue",),
+            virtual_file_path(&session, package, &source.to_string_lossy()),
             session.join("src/components/Button.vue.patina.ts")
         );
     }
@@ -268,7 +274,7 @@ mod tests {
             Some(&root.join("tsconfig.json")),
         ))
         .unwrap();
-        let canonical = std::fs::canonicalize(&root).unwrap();
+        let canonical = vize_l0::path::canonicalize_non_verbatim(&root);
         let options = &value["compilerOptions"];
         assert_eq!(
             Path::new(options["baseUrl"].as_str().unwrap()),
@@ -322,11 +328,8 @@ mod tests {
             .filter_map(|entry| entry.as_str())
             .collect();
         // Program roots use the plain canonical spelling, never `\\?\` (#13077).
-        let canonical = |path: &str| {
-            slash_display(&vize_carton::path::canonicalize_non_verbatim(
-                &root.join(path),
-            ))
-        };
+        let canonical =
+            |path: &str| slash_display(&vize_l0::path::canonicalize_non_verbatim(&root.join(path)));
         let env = canonical("src/env.d.ts");
         let hidden = canonical("src/hidden.d.ts");
         assert!(files.contains(&env.as_str()), "{files:?}");
@@ -374,7 +377,7 @@ mod tests {
 
         let value: serde_json::Value =
             serde_json::from_str(&session_tsconfig_contents(&root, Some(&selected))).unwrap();
-        let canonical = std::fs::canonicalize(&root).unwrap();
+        let canonical = vize_l0::path::canonicalize_non_verbatim(&root);
         assert_eq!(
             Path::new(
                 value["compilerOptions"]["paths"]["@/*"][0]

@@ -39,7 +39,7 @@ pub(super) fn ambient_program_files(project_root: &Path, tsconfig: &Path) -> Vec
 /// root, so the included `env.d.ts` or augmentation never joined the program
 /// that resolves `./registry` under `C:/...` (#13077).
 fn program_file_name(path: &Path) -> String {
-    slash_path(&vize_carton::path::canonicalize_non_verbatim(path))
+    slash_path(&vize_l0::path::canonicalize_non_verbatim(path))
 }
 
 fn owned_typescript_sources(project_root: &Path, tsconfig: &Path) -> Vec<PathBuf> {
@@ -141,7 +141,7 @@ mod tests {
     /// Program files are absolute and spelled from the canonical project
     /// root, never from a Windows `\\?\` verbatim root (#13077).
     fn relative_to(root: &Path, files: &[String]) -> Vec<String> {
-        let canonical = vize_carton::path::canonicalize_non_verbatim(root);
+        let canonical = vize_l0::path::canonicalize_non_verbatim(root);
         let prefix = canonical.to_string_lossy().replace('\\', "/");
         files
             .iter()
