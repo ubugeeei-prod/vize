@@ -7,8 +7,8 @@ use serde_json::Value;
 use super::field;
 use crate::plugin_batch::{batch::diagnostics, document::PluginDocument};
 use crate::{Fix, LintDiagnostic, Severity, TextEdit};
-use vize_carton::config::LintRuleSeverity;
 use vize_carton::config::plugin_plan::{PlannedCapability, PlannedPlugin};
+use vize_l0::config::LintRuleSeverity;
 use vize_l0::{FxHashMap, String, cstr};
 
 /// The enabled rules of one job.

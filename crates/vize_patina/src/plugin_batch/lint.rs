@@ -14,8 +14,8 @@
 mod rules;
 
 use serde_json::Value;
-use vize_carton::config::LintRuleSeverity;
 use vize_carton::config::plugin_plan::{PlannedCapability, PlannedPlugin, VerifiedPluginPlan};
+use vize_l0::config::LintRuleSeverity;
 use vize_l0::fact::FactManager;
 use vize_l0::{FxHashMap, FxHashSet, String, cstr};
 
