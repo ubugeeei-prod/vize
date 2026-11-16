@@ -178,6 +178,35 @@ export const PHASE_RULES: PhaseRule[] = [
     phase: "host: Go GC (background)",
     all: [/^runtime\.(?:gcBgMarkWorker|bgsweep|bgscavenge|gcDrain)/u],
   },
+  // tsrs built from source: the same host phases by crate.
+  { phase: "host: IPC JSON", all: [/\btsrs_ipc::/u, /\btsrs_core::json::/u] },
+  {
+    phase: "host: mapper reply decode",
+    all: [/\btsrs_contentmapper::/u, /\b(?:tsrs_core::json::|tsrs_spanmap::spanmap::unmarshal)/u],
+  },
+  {
+    phase: "host: mapper span/directive apply",
+    all: [
+      /\btsrs_contentmapper::hostimpl::(?:decode_mapped_output|normalize|new_position_normalizer|PositionNormalizer)|\btsrs_spanmap::/u,
+    ],
+  },
+  {
+    phase: "host: parse mapped SFC",
+    all: [/\btsrs_contentmapper::/u, /\btsrs_(?:parser|scanner)::/u],
+  },
+  { phase: "host: IPC framing/io", all: [/\btsrs_ipc::/u] },
+  { phase: "host: mapper client other", all: [/\btsrs_contentmapper::/u] },
+  { phase: "host: parse", all: [/\btsrs_(?:parser|scanner)::/u] },
+  { phase: "host: bind", all: [/\btsrs_binder::/u] },
+  { phase: "host: check", all: [/\btsrs_checker::/u] },
+  {
+    phase: "host: emit/diagnostics",
+    all: [/\btsrs_(?:printer|diagnostics|transformers|declarations)::/u],
+  },
+  {
+    phase: "host: program/module resolution",
+    all: [/\btsrs_(?:compiler|module|modulespecifiers|vfs|tsoptions|execute|incremental)::/u],
+  },
   // Vize, mapper and `vize check`: the parsers it calls first, then the
   // generation that calls them, then the wire, the batch project and Corsa.
   {

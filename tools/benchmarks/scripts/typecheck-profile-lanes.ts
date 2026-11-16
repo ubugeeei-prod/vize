@@ -80,6 +80,20 @@ export const LANES: Record<string, Lane> = {
   // mapper's stacks whole; dwarf is the variant that tries to unwind tsrs.
   tsrs: tsrsLane("fp", "tsrs --fast + Vize mapper"),
   "tsrs-dwarf": tsrsLane("dwarf", "tsrs --fast + Vize mapper (dwarf unwinding)"),
+  // tsrs built from source with symbols and frame pointers
+  // (VIZE_PROFILE_TSRS_BIN): perf names and unwinds its frames.
+  "tsrs-source": {
+    label: "tsrs --fast (source build) + Vize mapper",
+    shape: "host",
+    callGraph: "fp",
+    command: ({ project }, extra) => {
+      const bin = process.env.VIZE_PROFILE_TSRS_BIN;
+      if (!bin) throw new Error("the tsrs-source lane needs VIZE_PROFILE_TSRS_BIN");
+      return [bin, ...HOST_FLAGS, "--fast", ...extra, "-p", vizeMapper(project)];
+    },
+    diagnostics: hostDiagnostics,
+    stats: hostStats,
+  },
   check: {
     label: "vize check (Corsa/tsgo)",
     shape: "check",
