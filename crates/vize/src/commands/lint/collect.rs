@@ -174,7 +174,8 @@ fn collect_lint_files_from_dir(
         return false;
     }
     let explicitly_selected = matcher.map(|matcher| matcher.explicit_directories());
-    for entry in WalkBuilder::new(dir)
+    let mut walker = WalkBuilder::new(dir);
+    walker
         .standard_filters(true)
         .hidden(skip_hidden)
         .filter_entry(move |entry| {
@@ -182,18 +183,25 @@ fn collect_lint_files_from_dir(
                 && (entry.depth() == 0
                     || !entry.file_type().is_some_and(|kind| kind.is_dir())
                     || !is_default_excluded_dir(entry, explicitly_selected))
-        })
-        .build()
-    {
-        let Ok(entry) = entry else {
-            continue;
-        };
-        let path = entry.path();
-        if path.is_file() && matcher.is_none_or(|matcher| matcher.matches(path)) {
-            matched |= add_lint_file(path, ignore_set, files, seen) == LintFileOutcome::Added;
-        }
+        });
+    let selected = |entry: &DirEntry| {
+        is_lint_candidate(entry) && matcher.is_none_or(|matcher| matcher.matches(entry.path()))
+    };
+    for path in walk::candidates(&mut walker, selected) {
+        matched |= add_lint_file(&path, ignore_set, files, seen) == LintFileOutcome::Added;
     }
     matched
+}
+
+/// A walked file with a lintable extension. The walk already knows each
+/// entry's type, so only a link needs a `stat` to see whether it names a file.
+fn is_lint_candidate(entry: &DirEntry) -> bool {
+    is_lintable_path(entry.path())
+        && match entry.file_type() {
+            Some(kind) if kind.is_file() => true,
+            Some(kind) if !kind.is_symlink() => false,
+            _ => entry.path().is_file(),
+        }
 }
 
 /// Generated and dependency trees are never part of a broad lint discovery.
@@ -339,7 +347,12 @@ fn normalize_lint_glob_pattern(pattern: &str) -> String {
 }
 
 fn normalize_lint_path(path: &Path) -> String {
-    strip_lint_current_dir_prefix(&path.to_string_lossy().replace('\\', "/"))
+    let text = path.to_string_lossy();
+    if text.contains('\\') {
+        strip_lint_current_dir_prefix(&text.replace('\\', "/"))
+    } else {
+        strip_lint_current_dir_prefix(&text)
+    }
 }
 
 fn strip_lint_current_dir_prefix(value: &str) -> String {
@@ -373,6 +386,7 @@ fn lint_glob_match_options() -> MatchOptions {
 
 #[cfg(test)]
 mod tests;
+mod walk;
 
 fn absolute_config_dir(config_dir: &Path) -> PathBuf {
     let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
