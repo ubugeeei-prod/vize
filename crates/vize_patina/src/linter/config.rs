@@ -121,7 +121,7 @@ pub struct Linter {
     pub(crate) type_aware_tsconfig: Option<PathBuf>,
     /// One disk view for imported macro types, shared by every file this
     /// linter lints. `None` gives each file a fresh view.
-    pub(crate) type_sources: Option<vize_atelier_sfc::script::TypeSourceSnapshot>,
+    pub(crate) type_sources: Option<super::run_type_sources::RunTypeSources>,
 }
 
 impl Linter {
@@ -239,9 +239,10 @@ impl Linter {
     /// Read each file that imported macro types reach at most once for this
     /// linter's lifetime, instead of once per linted SFC. Only for hosts whose
     /// sources do not change while the linter lives, such as one CLI run.
+    /// Relative filenames name files under the working directory at this call.
     #[inline]
     pub fn with_run_scoped_type_sources(mut self) -> Self {
-        self.type_sources = Some(vize_atelier_sfc::script::TypeSourceSnapshot::default());
+        self.type_sources = Some(super::run_type_sources::RunTypeSources::for_current_dir());
         self
     }
 
@@ -252,10 +253,7 @@ impl Linter {
         filename: &'a str,
     ) -> Option<super::engine::MacroTypeResolution<'a>> {
         self.has_resolved_macro_type_demand()
-            .then_some(super::engine::MacroTypeResolution {
-                filename,
-                sources: self.type_sources.as_ref(),
-            })
+            .then(|| super::engine::MacroTypeResolution::new(self.type_sources.as_ref(), filename))
     }
 
     /// Get the current locale.

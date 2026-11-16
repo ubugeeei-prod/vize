@@ -160,10 +160,25 @@ pub(crate) struct TemplateRuleEnv<'a> {
 
 /// Where an SFC's imported macro types resolve: its path, and the disk view a
 /// run shares across files (`None` reads a fresh view for this SFC).
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 pub(crate) struct MacroTypeResolution<'a> {
-    pub filename: &'a str,
+    pub filename: std::borrow::Cow<'a, str>,
     pub sources: Option<&'a vize_atelier_sfc::script::TypeSourceSnapshot>,
+}
+
+impl<'a> MacroTypeResolution<'a> {
+    /// `filename`'s resolution through the run's view, if the linter has one.
+    pub(crate) fn new(
+        sources: Option<&'a crate::linter::run_type_sources::RunTypeSources>,
+        filename: &'a str,
+    ) -> Self {
+        Self {
+            filename: sources.map_or(std::borrow::Cow::Borrowed(filename), |sources| {
+                sources.importer(filename)
+            }),
+            sources: sources.map(|sources| &sources.snapshot),
+        }
+    }
 }
 
 pub(crate) fn analyze_descriptor_for_lint(
@@ -201,7 +216,7 @@ pub(crate) fn analyze_descriptor_for_lint_with_template(
                 scripts,
                 template,
                 options,
-                resolve.filename,
+                &resolve.filename,
                 resolve.sources,
             )
         }
@@ -253,7 +268,7 @@ pub(super) fn analyze_descriptor_for_component_reads(
                 scripts,
                 template,
                 options,
-                resolve.filename,
+                &resolve.filename,
                 resolve.sources,
             )
         }
