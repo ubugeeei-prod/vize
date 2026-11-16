@@ -13,7 +13,7 @@ use super::glob::normalize_input_path;
 use super::loader::TsconfigInputCache;
 use super::matching::{is_nuxt_import_manifest_path, path_has_component};
 use super::type_references::{
-    collect_tsconfig_type_packages, reference_type_packages,
+    collect_tsconfig_type_packages, reference_directive_lines, reference_type_packages,
     resolve_type_package_declaration_files, resolve_type_reference_declaration_files,
 };
 
@@ -120,8 +120,7 @@ fn collect_ambient_declaration_files_from(
         if is_configured_file
             && visible_files.is_some_and(|visible| !visible.contains(&path))
             && is_reference_manifest
-            && content
-                .lines()
+            && reference_directive_lines(&content)
                 .any(|line| reference_path_attribute(line).is_some())
         {
             hidden_reference_roots.push(path.clone());
@@ -160,19 +159,33 @@ fn collect_ambient_declaration_files_from(
 pub(crate) fn collect_declaration_reference_graph(
     configured_files: &[PathBuf],
 ) -> FxHashSet<PathBuf> {
+    collect_declaration_reference_graph_reading(configured_files, |_| {})
+}
+
+/// [`collect_declaration_reference_graph`], handing `read` the content of every
+/// declaration in the graph as it is read, so a caller that inspects them
+/// reads each file once.
+pub(crate) fn collect_declaration_reference_graph_reading(
+    configured_files: &[PathBuf],
+    mut read: impl FnMut(&str),
+) -> FxHashSet<PathBuf> {
     // Reuse the program's already collected roots. Do not walk the workspace
     // or parse its configuration again for generated-stub discovery.
     let mut files = configured_files.to_vec();
     // Configured roots may live outside the app (Nuxt's custom buildDir).
     // Their explicit references retain membership across that boundary.
-    follow_declaration_references(None, &mut files);
+    follow_declaration_references(None, &mut files, &mut read);
     files
         .into_iter()
         .filter(|path| is_declaration_file(path))
         .collect()
 }
 
-fn follow_declaration_references(project_root: Option<&Path>, files: &mut Vec<PathBuf>) {
+fn follow_declaration_references(
+    project_root: Option<&Path>,
+    files: &mut Vec<PathBuf>,
+    read: &mut dyn FnMut(&str),
+) {
     let mut seen = files.iter().cloned().collect::<FxHashSet<_>>();
     let mut index = 0;
     while let Some(path) = files.get(index).cloned() {
@@ -183,6 +196,7 @@ fn follow_declaration_references(project_root: Option<&Path>, files: &mut Vec<Pa
         let Ok(content) = fs::read_to_string(&path) else {
             continue;
         };
+        read(&content);
         for referenced in reference_path_declaration_files(&path, &content, project_root) {
             if seen.insert(referenced.clone()) {
                 files.push(referenced);
@@ -310,8 +324,7 @@ fn reference_path_declaration_files(
     let Some(base_dir) = path.parent() else {
         return Vec::new();
     };
-    content
-        .lines()
+    reference_directive_lines(content)
         .filter_map(reference_path_attribute)
         .filter_map(|reference| {
             let resolved = normalize_input_path(&base_dir.join(reference));

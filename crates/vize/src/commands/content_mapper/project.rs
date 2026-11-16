@@ -21,7 +21,6 @@ use vize_l0::{FxHashMap, String as CompactString, cstr};
 use super::mode::ProjectionMode;
 use crate::commands::check::tsconfig_inputs::{
     TsconfigInputCache, collect_content_mapper_ambient_declarations,
-    declares_vue_template_ref_global,
 };
 
 /// Mapper diagnostic code for an options value that is not an object.
@@ -142,9 +141,10 @@ pub(super) fn resolve_open_project(
         let config = Path::new(params.config_file_name.as_str());
         let project_root = config.parent().unwrap_or(Path::new("."));
         let mut input_cache = TsconfigInputCache::default();
-        ambient_declarations =
+        let ambient =
             collect_content_mapper_ambient_declarations(project_root, config, &mut input_cache);
-        declares_vue_template_ref_global(&ambient_declarations)
+        ambient_declarations = ambient.files;
+        ambient.declares_vue_template_ref
     };
     configuration.transform_options = configuration
         .transform_options

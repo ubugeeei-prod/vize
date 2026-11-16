@@ -99,6 +99,9 @@ dirs.workspace = true
 # Process allocator for native CLI hot paths
 mimalloc.workspace = true
 
+# Triple-slash directive scans over declaration files
+memchr.workspace = true
+
 # Exclusive same-directory temporary files for atomic source replacement
 tempfile.workspace = true
 sha2.workspace = true
