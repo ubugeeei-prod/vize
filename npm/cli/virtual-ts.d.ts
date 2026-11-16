@@ -179,8 +179,6 @@ export type $RequiredFallthroughProps<C, __F = $FallthroughProps<C>, __K = $Requ
   ? {}
   : { [K in keyof __F as K extends __K ? K : never]: __F[K] };
 type $ComponentCheckProps<P, T> = { readonly [K in keyof P]: P[K] } & T;
-type $NamedTailKeys<T> = keyof { [K in keyof T as string extends K ? never : K]: 0 };
-type $LibraryPropChecker<C, T> = [$NamedTailKeys<T>] extends [never] ? C | ((props: T) => void) : C;
 type $PublicProps<C> = C extends abstract new (...args: any[]) => infer __I
   ? $IsAny<__I> extends true
     ? Record<string, unknown>
@@ -311,7 +309,9 @@ export type $PropChecker<C, P, T> =
             ? __F
             : (props: $ComponentCheckProps<P, T>) => void
       : $IsLibraryGenericExport<C> extends true
-        ? $LibraryPropChecker<C, T>
+        ? [$LiteralKeys<T>] extends [never]
+          ? C | ((props: T) => void)
+          : C
         : (props: $ComponentCheckProps<P, T>) => void;
 export type $PropValue<
   P,

@@ -5,7 +5,7 @@ use serde_json::{Value, json};
 use std::fs;
 
 const RECORD: &str = "tests/_fixtures/tooling/library-props-fallthrough-13021.json";
-const RECORD_SHA: &str = "293f93006ba3a022888d8f98e6648222713f0d8c73b67fcb0b3f05d05072ffba";
+const RECORD_SHA: &str = "2f7eececab23cb5dd4db6640993ec4b130396abd31f203a3d08f1240542ca30f";
 
 fn record() -> Value {
     let bytes = fs::read(support::repository().join(RECORD)).unwrap();

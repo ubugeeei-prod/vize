@@ -22,7 +22,7 @@ const recordBytes = readFileSync(
 );
 assert.equal(
   createHash("sha256").update(recordBytes).digest("hex"),
-  "293f93006ba3a022888d8f98e6648222713f0d8c73b67fcb0b3f05d05072ffba",
+  "2f7eececab23cb5dd4db6640993ec4b130396abd31f203a3d08f1240542ca30f",
 );
 const record = JSON.parse(recordBytes.toString("utf8")) as Record;
 assert.equal(record.schema, "vize.libraryPropsFallthroughSource.v1");
