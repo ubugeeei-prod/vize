@@ -93,3 +93,9 @@ coordinate hashes are derived relocation.
 verbatim lines across their shared line breaks into one span per run (issue
 #12431). Every generated text is unchanged; the content mapper reports one
 mapping fewer, so only its mapping count and coordinate hashes move.
+
+`successor-authored-component-infer-13113` records #13113 on top of
+`successor-verbatim-runs-12789`: the content mapper binds the authored default
+export by inference (`$AuthoredComponent extends infer A extends object ? … &
+A & …`). Its text shrinks by 1 byte and later mapping coordinates move by it;
+Canon, Maestro and every count are unchanged.

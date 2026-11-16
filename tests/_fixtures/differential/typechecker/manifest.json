@@ -16175,6 +16175,65 @@
       }
     },
     {
+      "id": "typechecker/regression/options-array-native-root-13113",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "options-array-native-root-13113/OptionsNativeRoot.vue.txt",
+          "sha256": "107bbafa54999db08c3491142dfc215d0f19cdb6a67cf5346a43d8a824008726",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "options-array-native-root-13113/OptionsFragmentRoot.vue.txt",
+          "sha256": "0f8170a3d7aa06c945b8649d5de82e8683019b0d67a34d2464848fcd7859698c",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "options-array-native-root-13113/SetupNativeRoot.vue.txt",
+          "sha256": "279727b8e4bf2b1213bab82ba45fae6c9c8282d6bbb246dd361013c6f317479a",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "options-array-native-root-13113/TsComponent.ts.txt",
+          "sha256": "67b45e7566776912eff9c0835c2eea82e46a0c6ec4df6a673612851f0af21b74",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "options-array-native-root-13113/Parent.vue.txt",
+          "sha256": "e6e29e0127567b9c9beef273927aedd5ca26c921237aab1b6f78637b3a4567c3",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "options-array-native-root-13113/Controls.vue.txt",
+          "sha256": "57459203a075c51c5dc47c9b30e01dc59eba0911c62e312cab82ec05e38810ed",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "options-array-native-root-13113/tsconfig.json.txt",
+          "sha256": "8280441d912b4f9ebdaa3b500f4493f81faa044ee712c9b996a23e1fe4bae2af",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::options_array_native_root_13113::standard_tsgo_types_options_array_emits_on_a_native_root_child; the reporter's four children and parent plus undeclared and DOM event controls on the Options API native-root child, checked through tsc 7.1 with the Vize mapper in embedded and published-SDK installs"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/package-import-redirects-11317",
       "state": "active",
       "targets": [

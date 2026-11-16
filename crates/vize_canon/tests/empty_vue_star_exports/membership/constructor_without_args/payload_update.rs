@@ -3,6 +3,7 @@ use super::support;
 use serde_json::{Value, json};
 use std::fs;
 
+mod authored_component_infer;
 mod canon_leftovers;
 mod check_mode_generator;
 mod checker_augmentations;
