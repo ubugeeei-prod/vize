@@ -43,7 +43,13 @@ fn lint(project: &Path, runtime: &str, source: &str) -> std::process::Output {
 }
 
 fn assert_clean(output: &std::process::Output, source: &str) {
-    assert_eq!(output.status.code(), Some(0), "stderr: {:?}", output.stderr);
+    assert_eq!(
+        output.status.code(),
+        Some(0),
+        "stdout: {}\nstderr: {}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
     assert_eq!(output.stderr, b"");
     let reports: Value = serde_json::from_slice(&output.stdout).unwrap();
     assert_eq!(
