@@ -105,7 +105,7 @@ vize build --ssr
 vize build --profile src
 ```
 
-`vize build` compiles `.vue` and `.tsrx` files. A TSRX module goes through the TSRX compiler, which reports every syntax error and every construct or target it does not support yet at its line and column; a refused module never gets compiled code (with `--continue-on-error` it gets the same empty fallback module as any failed file). The default pattern (`./**/*.vue`) selects `.vue` files only.
+`vize build` compiles `.vue` and `.tsrx` files. A TSRX module goes through the TSRX compiler, which reports every syntax error and every construct or target it does not support yet at its line and column; a refused module never gets compiled code (with `--continue-on-error` it gets the same empty fallback module as any failed file). Its TypeScript is erased as in `.vue` scripts (`.js` output) unless `--script-ext preserve` keeps it (`.ts` output). The default pattern (`./**/*.vue`) selects `.vue` files only.
 
 Key options:
 

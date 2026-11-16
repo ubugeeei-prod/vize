@@ -75,13 +75,11 @@ fn unsupported_targets_and_options_are_each_refused_over_the_module() {
         erase_types: true,
         ..OPTIONS
     };
-    assert_eq!(
-        refused(&options),
-        [
-            (Code::Emit(EmitIssue::SourceMap), whole),
-            (Code::Emit(EmitIssue::TypeErasure), whole),
-        ]
-    );
+    let mut expected = vec![(Code::Emit(EmitIssue::SourceMap), whole)];
+    if !cfg!(feature = "typescript") {
+        expected.push((Code::Emit(EmitIssue::TypeErasure), whole));
+    }
+    assert_eq!(refused(&options), expected);
     let options = CompileOptions {
         target: Target::Ssr,
         source_map: true,
@@ -167,4 +165,38 @@ fn dom_components_keep_host_code_and_read_destructured_props_through_the_instanc
         code.as_str(),
         "import { defineComponent as _defineComponent, createElementVNode as _createElementVNode } from \"vue\";\nconst unit = \"px\";\nexport const Box = /* @__PURE__ */ _defineComponent(function Box(__props) {\n\tconst label = __props.size + unit;\n\treturn (_ctx, _cache) => {\n  return (_createElementVNode(\"div\", { title: label }, [\n    __props.size\n  ], 8 /* PROPS */, [\"title\"]))\n};\n}, { props: [\"size\"] });\n"
     );
+}
+
+#[cfg(feature = "typescript")]
+#[test]
+fn erased_modules_print_javascript_and_refuse_what_the_erasure_cannot_keep() {
+    let erase = CompileOptions {
+        erase_types: true,
+        ..OPTIONS
+    };
+    let source = "import type { Size } from \"./size\";\nconst unit: string = \"px\";\nexport function Box({ size }: { size: Size }) @{\n\tconst label = (size as number) + unit;\n\t<div title={label}>{size}</div>\n}\n";
+    assert_eq!(
+        compile(source, &erase).unwrap().code.as_str(),
+        "import { defineComponent as _defineComponent, createElementVNode as _createElementVNode } from \"vue\";\nconst unit = \"px\";\nexport const Box = /* @__PURE__ */ _defineComponent(function Box(__props) {\n  const label = __props.size + unit;\n  return (_ctx, _cache) => {\n    return _createElementVNode(\"div\", { title: label }, [__props.size], 8, [\"title\"]);\n  };\n}, { props: [\"size\"] });\n"
+    );
+
+    for (source, message) in [
+        (
+            "const tab = \"\\t\";\nexport function A() @{\n\t<p>{tab}</p>\n}\n",
+            "type erasure of TSRX modules does not keep a tab character inside a literal yet",
+        ),
+        (
+            "let a = 1;\nlet a = 2;\nexport function A() @{\n\t<p>{a}</p>\n}\n",
+            "type erasure of the compiled TSRX module failed (semantic): Identifier `a` has already been declared",
+        ),
+    ] {
+        let [diagnostic] = diagnostics(source, &erase).try_into().unwrap();
+        assert_eq!(
+            diagnostic.code,
+            Code::Emit(EmitIssue::TypeErasure),
+            "{source}"
+        );
+        assert_eq!(diagnostic.message.as_str(), message, "{source}");
+        assert_eq!((diagnostic.start, diagnostic.end), (0, source.len() as u32));
+    }
 }
