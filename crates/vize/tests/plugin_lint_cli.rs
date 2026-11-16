@@ -350,8 +350,10 @@ fn fix_applies_safe_plugin_fixes_and_relints_the_changed_files() {
         "<template>\n  <button color>Go</button>\n</template>\n"
     );
     assert_eq!(plugin_messages(&output), json!([]));
-    // The second crossing re-lints only the fixed file and finds nothing left.
+    // The second crossing re-lints only the fixed file and finds nothing left,
+    // in the same sidecar process.
     assert_eq!(receipt(&output)["crossings"], 2);
+    assert_eq!(receipt(&output)["processes"], 1);
     assert_eq!(receipt(&output)["documents"], 2);
 }
 

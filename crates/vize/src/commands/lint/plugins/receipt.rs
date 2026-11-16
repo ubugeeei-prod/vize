@@ -76,6 +76,8 @@ impl PluginLintReceipt {
     pub(crate) fn to_json(&self, labels: &[(&str, &str)]) -> serde_json::Value {
         serde_json::json!({
             "crossings": self.crossings,
+            // One sidecar process serves every crossing of the run.
+            "processes": 1,
             "documents": self.documents,
             "jobs": self.jobs.iter().zip(labels).map(|(cost, (plugin, key))| serde_json::json!({
                 "batchBytes": cost.batch_bytes,
