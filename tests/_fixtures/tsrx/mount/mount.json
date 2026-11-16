@@ -62,6 +62,71 @@
       ]
     },
     {
+      "id": "loops/values",
+      "file": "tests/_fixtures/tsrx/mount/loops.tsrx",
+      "component": "Values",
+      "props": { "items": ["a", "b", "c"] },
+      "steps": [
+        { "props": { "items": ["c", "a", "b"] } },
+        { "props": { "items": ["c", "d", "b"] } },
+        { "props": { "items": ["b"] } },
+        { "props": { "items": [] } },
+        { "props": { "items": ["e", "b"] } }
+      ]
+    },
+    {
+      "id": "loops/indexed",
+      "file": "tests/_fixtures/tsrx/mount/loops.tsrx",
+      "component": "Indexed",
+      "props": { "items": ["a", "b", "c"] },
+      "steps": [
+        { "props": { "items": ["c", "a", "b"] } },
+        { "props": { "items": ["c", "d", "b"] } },
+        { "props": { "items": ["b"] } },
+        { "props": { "items": [] } },
+        { "props": { "items": ["e", "b"] } }
+      ]
+    },
+    {
+      "id": "loops/owned",
+      "file": "tests/_fixtures/tsrx/mount/loops.tsrx",
+      "component": "Owned",
+      "props": { "rows": [{ "id": 1, "text": "a" }, { "id": 2, "text": "b" }, { "id": 3, "text": "c" }] },
+      "steps": [
+        { "props": { "rows": [{ "id": 3, "text": "c" }, { "id": 1, "text": "a" }, { "id": 2, "text": "b" }] } },
+        { "props": { "rows": [{ "id": 3, "text": "c" }, { "id": 4, "text": "d" }, { "id": 2, "text": "B" }] } },
+        { "props": { "rows": [{ "id": 2, "text": "B" }] } },
+        { "props": { "rows": [] } },
+        { "props": { "rows": [{ "id": 5, "text": "e" }, { "id": 2, "text": "b" }] } }
+      ]
+    },
+    {
+      "id": "loops/terms",
+      "file": "tests/_fixtures/tsrx/mount/loops.tsrx",
+      "component": "Terms",
+      "props": { "rows": [{ "id": 1, "text": "a" }, { "id": 2, "text": "b" }, { "id": 3, "text": "c" }] },
+      "steps": [
+        { "props": { "rows": [{ "id": 3, "text": "c" }, { "id": 1, "text": "a" }, { "id": 2, "text": "b" }] } },
+        { "props": { "rows": [{ "id": 3, "text": "c" }, { "id": 4, "text": "d" }, { "id": 2, "text": "B" }] } },
+        { "props": { "rows": [{ "id": 2, "text": "B" }] } },
+        { "props": { "rows": [] } },
+        { "props": { "rows": [{ "id": 5, "text": "e" }, { "id": 2, "text": "b" }] } }
+      ]
+    },
+    {
+      "id": "loops/labels",
+      "file": "tests/_fixtures/tsrx/mount/loops.tsrx",
+      "component": "Labels",
+      "props": { "items": ["a", "b", "c"] },
+      "steps": [
+        { "props": { "items": ["c", "a", "b"] } },
+        { "props": { "items": ["c", "d", "b"] } },
+        { "props": { "items": ["b"] } },
+        { "props": { "items": [] } },
+        { "props": { "items": ["e", "b"] } }
+      ]
+    },
+    {
       "id": "values/updates",
       "file": "tests/_fixtures/tsrx/mount/values.tsrx",
       "component": "Values",
