@@ -127,9 +127,10 @@ impl ProductionDocument {
                     }
                 }
                 let allocator = Allocator::new();
-                let root = descriptor.template.as_ref().map(|template| {
-                    vize_armature::parse(&allocator, template.content.as_ref()).0
-                });
+                let root = descriptor
+                    .template
+                    .as_ref()
+                    .map(|template| vize_armature::parse(&allocator, template.content.as_ref()).0);
                 let generic = descriptor
                     .script_setup
                     .as_ref()
