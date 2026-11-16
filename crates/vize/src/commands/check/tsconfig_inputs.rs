@@ -61,6 +61,8 @@ pub(crate) use type_references::{
     collect_tsconfig_type_packages, reference_type_packages, resolve_type_package_declaration_files,
 };
 
+#[cfg(test)]
+pub(crate) use collect::walk_probe;
 use collect::{
     collect_supported_files_for_include_roots, collect_supported_files_with_options,
     explicit_hidden_include_roots, explicit_hidden_pattern_roots,
@@ -70,7 +72,9 @@ use matching::{
     SupportedFileOptions, is_declaration_path, is_generated_codegen_declaration_path,
     is_nuxt_import_manifest_path, is_supported_check_file_with_options,
 };
-use spec::{FileCollectionOptions, GlobSpec, TsconfigInputSpec};
+use spec::{
+    FileCollectionOptions, GlobSpec, InputSelection, ProgramInputOptions, TsconfigInputSpec,
+};
 
 const TARGET_DIR: &str = "target";
 const NODE_MODULES_DIR: &str = "node_modules";
@@ -129,8 +133,14 @@ fn collect_default_check_files_inner(
                 include_hidden: false,
                 include_js: false,
                 include_jsx,
+                selection: InputSelection::All,
             },
         );
+    };
+    let options = ProgramInputOptions {
+        include_hidden_tsconfig_roots,
+        include_jsx,
+        selection: InputSelection::All,
     };
 
     let mut files = Vec::new();
@@ -149,8 +159,7 @@ fn collect_default_check_files_inner(
         collect_default_check_files_for_tsconfig(
             project_root,
             tsconfig_path,
-            include_hidden_tsconfig_roots,
-            include_jsx,
+            options,
             cache,
             &mut files,
             &mut seen,
@@ -161,24 +170,62 @@ fn collect_default_check_files_inner(
     files
 }
 
-fn collect_default_check_files_for_tsconfig(
+/// Whether a tsconfig program selects any input of its own, which keeps
+/// `tsc -p` from expanding its references (see
+/// [`collect_default_check_files_inner`]). The walk stops at the first input.
+fn tsconfig_selects_any_input(
     project_root: &Path,
     tsconfig_path: &Path,
     include_hidden_tsconfig_roots: bool,
-    include_jsx: bool,
+    cache: &mut TsconfigInputCache,
+) -> bool {
+    let mut files = Vec::new();
+    collect_default_check_files_for_tsconfig(
+        project_root,
+        tsconfig_path,
+        ProgramInputOptions {
+            include_hidden_tsconfig_roots,
+            include_jsx: false,
+            selection: InputSelection::Any,
+        },
+        cache,
+        &mut files,
+        &mut FxHashSet::default(),
+    );
+    !files.is_empty()
+}
+
+fn collect_default_check_files_for_tsconfig(
+    project_root: &Path,
+    tsconfig_path: &Path,
+    options: ProgramInputOptions,
     cache: &mut TsconfigInputCache,
     files: &mut Vec<PathBuf>,
     seen: &mut FxHashSet<PathBuf>,
 ) {
+    let ProgramInputOptions {
+        include_hidden_tsconfig_roots,
+        include_jsx,
+        selection,
+    } = options;
     let default_spec = TsconfigInputSpec::default();
     let spec = cache.load(tsconfig_path).unwrap_or(&default_spec);
     let include_js = spec.allow_js.unwrap_or(false);
+    let selected_enough =
+        |files: &Vec<PathBuf>| selection == InputSelection::Any && !files.is_empty();
 
     for file in &spec.files {
+        if selected_enough(files) {
+            return;
+        }
         let resolved = normalize_input_path(&file.resolve());
-        if vize_carton::path::is_git_metadata_path(&resolved) {
+        if vize_carton::path::is_git_metadata_path(&resolved)
+            || (selection == InputSelection::Declarations && !is_declaration_path(&resolved))
+        {
             continue;
         }
+        #[cfg(test)]
+        collect::walk_probe::record(&resolved);
         if resolved.is_file()
             && is_supported_check_file_with_options(
                 &resolved,
@@ -223,12 +270,16 @@ fn collect_default_check_files_for_tsconfig(
                 include_hidden: false,
                 include_js,
                 include_jsx,
+                selection,
             },
         );
         for path in collected {
             if !is_generated_codegen_declaration_path(&path) && seen.insert(path.clone()) {
                 files.push(path);
             }
+        }
+        if selected_enough(files) {
+            return;
         }
         // A tsconfig that names a dot-directory literally — VitePress
         // `.vitepress`, Storybook `.storybook` — puts those files in the
@@ -240,6 +291,9 @@ fn collect_default_check_files_for_tsconfig(
             explicit_hidden_pattern_roots(includes)
         };
         for root in hidden_roots {
+            if selected_enough(files) {
+                return;
+            }
             for path in collect_supported_files_with_options(
                 &root,
                 includes,
@@ -249,6 +303,7 @@ fn collect_default_check_files_for_tsconfig(
                     include_hidden: true,
                     include_js,
                     include_jsx,
+                    selection,
                 },
             ) {
                 // Declaration files under a hidden root are ambient program

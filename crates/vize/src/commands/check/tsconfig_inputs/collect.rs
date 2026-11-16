@@ -8,11 +8,12 @@ use vize_l0::FxHashSet;
 use super::glob::{normalize_input_path, normalize_walked_path};
 use super::implicit_exclude::is_package_folder;
 use super::matching::{
-    SupportedFileOptions, is_generated_codegen_declaration_path, is_generated_path,
-    is_hidden_path_segment, is_nuxt_import_manifest_path, is_supported_check_file_with_options,
-    matches_tsconfig_patterns, should_skip_generated_for_root,
+    SupportedFileOptions, is_declaration_name, is_generated_codegen_declaration_path,
+    is_generated_path, is_hidden_path_segment, is_nuxt_import_manifest_path,
+    is_supported_check_file_with_options, matches_tsconfig_patterns,
+    should_skip_generated_for_root,
 };
-use super::spec::{FileCollectionOptions, GlobSpec};
+use super::spec::{FileCollectionOptions, GlobSpec, InputSelection};
 
 pub(super) fn collect_supported_files_with_options(
     root: &Path,
@@ -33,8 +34,16 @@ pub(super) fn collect_supported_files_with_options(
         .standard_filters(options.respect_ignore_files)
         .hidden(!options.include_hidden)
         .filter_entry(move |entry| {
-            let path = entry.path();
             let directory = entry.file_type().is_some_and(|kind| kind.is_dir());
+            // A declaration-only walk decides by the entry's name, so an
+            // ordinary input costs its directory entry and nothing more.
+            if options.selection == InputSelection::Declarations
+                && !directory
+                && !is_declaration_name(entry.file_name())
+            {
+                return false;
+            }
+            let path = entry.path();
             !vize_carton::path::is_git_metadata_path(path)
                 && (!directory
                     || ((!skip_generated || !is_generated_path(path))
@@ -50,6 +59,10 @@ pub(super) fn collect_supported_files_with_options(
         Box::new(move |entry| {
             if let Ok(entry) = entry {
                 let path = entry.path();
+                #[cfg(test)]
+                if !entry.file_type().is_some_and(|kind| kind.is_dir()) {
+                    walk_probe::record(path);
+                }
                 if is_supported_check_file_with_options(
                     path,
                     SupportedFileOptions {
@@ -64,6 +77,9 @@ pub(super) fn collect_supported_files_with_options(
                     && let Ok(mut collected) = collected.lock()
                 {
                     collected.push(normalize_walked_path(root, &normalized_root, path));
+                    if options.selection == InputSelection::Any {
+                        return ignore::WalkState::Quit;
+                    }
                 }
             }
             ignore::WalkState::Continue
@@ -132,6 +148,9 @@ pub(super) fn collect_supported_files_for_include_roots(
             if seen_files.insert(path.clone()) {
                 files.push(path);
             }
+        }
+        if options.selection == InputSelection::Any && !files.is_empty() {
+            break;
         }
     }
     files.sort();
@@ -257,3 +276,7 @@ fn hidden_pattern_root(include: &GlobSpec) -> Option<&Path> {
         })
         .then(|| include.base_dir())
 }
+
+/// Test-only record of the files a walk examined past their directory entry.
+#[cfg(test)]
+pub(crate) mod walk_probe;
