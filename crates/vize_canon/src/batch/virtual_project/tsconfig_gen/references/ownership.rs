@@ -2,6 +2,9 @@ use std::path::{Path, PathBuf};
 
 use vize_carton::FxHashMap;
 
+pub use vize_l0::typescript_ownership::TsconfigSourceKind;
+pub(super) use vize_l0::typescript_ownership::unique_owner;
+
 use super::{graph, spec::SpecCache};
 
 /// Host path semantics used while matching tsconfig ownership.
@@ -26,43 +29,9 @@ impl TsconfigOwnershipOptions {
 impl Default for TsconfigOwnershipOptions {
     fn default() -> Self {
         Self {
-            case_sensitive: host_uses_case_sensitive_file_names(),
+            case_sensitive: vize_l0::typescript_ownership::host_uses_case_sensitive_file_names(),
         }
     }
-}
-
-/// Match TypeScript's host policy: Windows is insensitive; other hosts probe
-/// the filesystem containing the running checker by swapping the executable
-/// path's ASCII case. This preserves case-sensitive macOS volumes instead of
-/// hard-coding an operating-system guess.
-fn host_uses_case_sensitive_file_names() -> bool {
-    if cfg!(windows) {
-        return false;
-    }
-    let Ok(executable) = std::env::current_exe() else {
-        return !cfg!(target_os = "macos");
-    };
-    let spelled = executable.to_string_lossy();
-    let swapped = spelled
-        .chars()
-        .map(|character| {
-            if character.is_ascii_lowercase() {
-                character.to_ascii_uppercase()
-            } else {
-                character.to_ascii_lowercase()
-            }
-        })
-        .collect::<vize_carton::String>();
-    swapped == spelled || !Path::new(&swapped).exists()
-}
-
-/// Whether membership also requires the owning project to enable `allowJs`.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum TsconfigSourceKind {
-    /// Vue files and the TypeScript family.
-    Typed,
-    /// `.js`, `.jsx`, `.mjs`, and `.cjs` inputs.
-    JavaScript,
 }
 
 /// Run-scoped parsed ownership graph. There is no process-global state: HMR
@@ -123,7 +92,7 @@ impl TsconfigOwnershipCache {
     pub fn project_allows_js(&mut self, tsconfig_path: &Path) -> bool {
         self.specs
             .load(tsconfig_path)
-            .and_then(|spec| spec.allow_js)
+            .and_then(|spec| spec.allow_js())
             .unwrap_or(false)
     }
 
@@ -156,22 +125,4 @@ impl TsconfigOwnershipCache {
             self.project_owns_normalized_source(project, source_path, source_kind)
         })
     }
-}
-
-pub(super) fn unique_owner<'a>(
-    root: &Path,
-    projects: impl IntoIterator<Item = &'a PathBuf>,
-    mut owns: impl FnMut(&Path) -> bool,
-) -> PathBuf {
-    let mut owner = None;
-    for project in projects {
-        if !owns(project) {
-            continue;
-        }
-        if owner.is_some() {
-            return root.to_path_buf();
-        }
-        owner = Some(project);
-    }
-    owner.cloned().unwrap_or_else(|| root.to_path_buf())
 }

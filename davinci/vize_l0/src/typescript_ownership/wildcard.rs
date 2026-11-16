@@ -18,7 +18,7 @@ use std::{
     path::{Component, Path, PathBuf},
 };
 
-use vize_carton::String as CompactString;
+use crate::String as CompactString;
 
 /// `commonPackageFolders` in TypeScript's `utilities.ts`.
 const PACKAGE_FOLDERS: [&str; 3] = ["node_modules", "bower_components", "jspm_packages"];

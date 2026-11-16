@@ -13,11 +13,10 @@ pub(super) mod graph;
 mod ownership;
 mod snapshot;
 mod spec;
-mod wildcard;
 
 pub use ownership::{TsconfigOwnershipCache, TsconfigOwnershipOptions, TsconfigSourceKind};
 pub use snapshot::TsconfigOwnershipSnapshot;
-pub use wildcard::{TsconfigWildcard, TsconfigWildcardUsage};
+pub use vize_l0::typescript_ownership::{TsconfigWildcard, TsconfigWildcardUsage};
 
 use super::super::tsconfig_paths::{
     normalize_path_lexically, parse_jsonc_value, resolve_extended_tsconfig_path,

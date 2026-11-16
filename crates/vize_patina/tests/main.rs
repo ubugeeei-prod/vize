@@ -84,6 +84,7 @@ mod public_vue_imports_8090;
 mod pug_template_lint;
 mod ref_factory_identity;
 mod ref_member_access;
+mod referenced_tsconfig_paths_13090;
 mod report_history;
 mod require_explicit_emits_parity;
 mod require_v_for_key_object_bind;

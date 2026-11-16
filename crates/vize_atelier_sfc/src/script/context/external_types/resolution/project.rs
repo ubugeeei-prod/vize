@@ -20,6 +20,8 @@ use super::super::{FileStamp, file_stamp};
 mod host;
 use host::FileHost;
 
+mod references;
+
 type Observations = Vec<(PathBuf, FileStamp)>;
 
 #[derive(Debug)]
@@ -63,11 +65,16 @@ impl Project {
     /// Watched discovery candidates include absent nearer configs so hosts can
     /// invalidate a previously inferred project when a user config appears.
     pub fn discovery_inputs(file: &Path) -> Result<Vec<PathBuf>, String> {
-        Ok(discovery_for_file(file)?
+        let discovery = discovery_for_file(file)?;
+        let mut inputs: Vec<PathBuf> = discovery
             .observations
             .iter()
             .map(|(path, _)| path.clone())
-            .collect())
+            .collect();
+        if let Some(shell) = discovery.config.as_deref() {
+            inputs.extend(references::inputs(shell)?);
+        }
+        Ok(inputs)
     }
 
     /// Imported macro types are a TypeScript concern. Runtime-only SFCs do
@@ -195,8 +202,22 @@ fn fresh(observations: &Observations, validated: &AtomicU64, epoch: u64) -> bool
     }
 }
 
+/// The project TypeScript gives `file`: the nearest `tsconfig.json`, or the
+/// project it references that owns `file` when that config is a solution.
 pub(crate) fn for_file(file: &Path) -> Result<Option<Arc<Project>>, String> {
-    discover_for_file(file)?.as_deref().map(load).transpose()
+    let Some(shell) = discover_for_file(file)? else {
+        return Ok(None);
+    };
+    load(&references::owner(&shell, &absolute(file)?)?).map(Some)
+}
+
+fn absolute(file: &Path) -> Result<PathBuf, String> {
+    if file.is_absolute() {
+        return Ok(file.to_path_buf());
+    }
+    Ok(std::env::current_dir()
+        .map_err(|error| cstr!("cannot select TypeScript project: {error}"))?
+        .join(file))
 }
 
 fn discover_for_file(file: &Path) -> Result<Option<PathBuf>, String> {
@@ -204,13 +225,7 @@ fn discover_for_file(file: &Path) -> Result<Option<PathBuf>, String> {
 }
 
 fn discovery_for_file(file: &Path) -> Result<Arc<Discovery>, String> {
-    let absolute = if file.is_absolute() {
-        file.to_path_buf()
-    } else {
-        std::env::current_dir()
-            .map_err(|error| cstr!("cannot select TypeScript project: {error}"))?
-            .join(file)
-    };
+    let absolute = absolute(file)?;
     let Some(directory) = absolute.parent() else {
         return Ok(Arc::new(Discovery {
             config: None,

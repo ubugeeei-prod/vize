@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import type { CardProps } from "./props.ts";
+
+const { count, featured = false, label = "x" } = defineProps<CardProps>();
+</script>
+
+<template>
+  <p>{{ label }} {{ count }} {{ featured }}</p>
+</template>
