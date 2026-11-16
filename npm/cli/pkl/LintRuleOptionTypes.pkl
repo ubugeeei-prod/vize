@@ -214,6 +214,7 @@ class PreferPromiseRejectErrorsOptions {
 /// `type/unbound-method`, as in typescript-eslint.
 class UnboundMethodOptions {
   ignoreStatic: Boolean = false
+  checkGlobalObjectMethods: Boolean = false
 }
 
 class NoUnusedScriptVarsOptions {

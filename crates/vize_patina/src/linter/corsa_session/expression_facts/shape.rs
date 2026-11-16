@@ -4,6 +4,7 @@
 //! constituents, type-parameter constraints, array elements, base types and
 //! where `toString` comes from. Rendered type text cannot answer those
 //! questions, so the host sends them as a small JSON tree (`__typeShape`).
+mod global_object;
 mod members;
 use super::super::checker_memo::CheckerMemo;
 use corsa::api::{DocumentIdentifier, NodeHandle, TypeHandle, TypeResponse};

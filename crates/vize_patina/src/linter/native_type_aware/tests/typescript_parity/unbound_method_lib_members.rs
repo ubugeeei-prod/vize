@@ -2,7 +2,9 @@
 //! the member are declared, not from a name table or from the whole symbol.
 use super::super::{corsa_available, lint_sfc_with_corsa};
 use crate::{LintPreset, Linter};
+use serde_json::json;
 use std::path::Path;
+use vize_l0::config::TypeAwareRuleOptions;
 
 const RULE: &str = "type/unbound-method";
 
@@ -18,6 +20,9 @@ const AUGMENT: &str = r#"declare global {
   }
   interface Array<T> {
     last(): T | undefined;
+  }
+  interface Window {
+    track(event: string): void;
   }
 }
 
@@ -57,6 +62,8 @@ const viaView = view.setTimeout;
 const viaDocument = document.defaultView?.setTimeout;
 const storage = window.localStorage.getItem;
 const parentTimer = parent.setTimeout;
+const computed = window["setTimeout"];
+const track = window.track;
 </script>
 
 <template>
@@ -65,6 +72,7 @@ const parentTimer = parent.setTimeout;
     {{ push }} {{ kept }} {{ parseJson }} {{ last }} {{ revive }} {{ half }} {{ pause }}
     {{ escape }} {{ pattern }} {{ wrapped }} {{ nested }} {{ timer }} {{ matchMedia }}
     {{ frame }} {{ viaView }} {{ viaDocument }} {{ storage }} {{ parentTimer }}
+    {{ computed }} {{ track }}
   </p>
 </template>"#;
 
@@ -102,30 +110,44 @@ fn library_members_follow_their_declarations() {
     let component = source_dir.join("Members.vue");
     std::fs::write(&component, COMPONENT).expect("component");
 
-    let linter =
-        Linter::with_preset(LintPreset::Opinionated).with_enabled_rules(Some(vec![RULE.into()]));
-    let result = lint_sfc_with_corsa(
-        &linter,
-        COMPONENT,
-        component.to_str().expect("UTF-8 component path"),
-    );
-    let reported = result
-        .diagnostics
-        .iter()
-        .filter(|diagnostic| diagnostic.rule_name == RULE)
-        .map(|diagnostic| {
-            COMPONENT
-                .get(diagnostic.start as usize..diagnostic.end as usize)
-                .unwrap_or_default()
-        })
-        .collect::<Vec<_>>();
+    let path = component.to_str().expect("UTF-8 component path");
+    let reported = |check_global_object_methods: bool| {
+        let options: TypeAwareRuleOptions = serde_json::from_value(json!({
+            (RULE): { "checkGlobalObjectMethods": check_global_object_methods }
+        }))
+        .expect("type-aware options");
+        let linter = Linter::with_preset(LintPreset::Opinionated)
+            .with_enabled_rules(Some(vec![RULE.into()]))
+            .with_type_aware_rule_options(options);
+        let result = lint_sfc_with_corsa(&linter, COMPONENT, path);
+        result
+            .diagnostics
+            .iter()
+            .filter(|diagnostic| diagnostic.rule_name == RULE)
+            .map(|diagnostic| {
+                COMPONENT
+                    .get(diagnostic.start as usize..diagnostic.end as usize)
+                    .unwrap_or_default()
+            })
+            .collect::<Vec<_>>()
+    };
+    // Members the augmentation adds are not the library's (#13082), and a
+    // `Storage` or another frame's `Window` is not the global object.
+    let always = [
+        "ids.last",
+        "json.reviveAll",
+        "window.localStorage.getItem",
+        "parent.setTimeout",
+        "window.track",
+    ];
+    assert_eq!(reported(false), always);
+    // typescript-eslint also reports the global object's platform methods,
+    // which `Window` declares as methods (#13083).
     assert_eq!(
-        reported,
+        reported(true),
         [
-            // Members the augmentation adds are not the library's.
             "ids.last",
             "json.reviveAll",
-            // `Window` declares these as methods (#13083).
             "window.setTimeout",
             "matchMedia",
             "self.requestAnimationFrame",
@@ -133,8 +155,8 @@ fn library_members_follow_their_declarations() {
             "document.defaultView?.setTimeout",
             "window.localStorage.getItem",
             "parent.setTimeout",
-        ],
-        "{:#?}",
-        result.diagnostics
+            "window[\"setTimeout\"]",
+            "window.track",
+        ]
     );
 }

@@ -41,12 +41,18 @@ impl Shapes<'_> {
         let mut safe_method = None;
         let mut static_method = None;
         for name in &names {
-            let parts = members.get(name.as_str())?.get("parts")?.as_array()?;
+            let member = members.get(name.as_str())?;
+            let global = member.get("globalObjectMember").cloned();
+            let parts = member.get("parts")?.as_array()?;
             for part in parts.iter().filter_map(Value::as_object) {
                 if part.get("isMethod").and_then(Value::as_bool) != Some(true) {
                     continue;
                 }
-                let value = Value::Object(part.clone());
+                let mut value = part.clone();
+                if let Some(global) = &global {
+                    value.insert("globalObjectMember".into(), global.clone());
+                }
+                let value = Value::Object(value);
                 let this_is_void = part
                     .get("thisArgIsVoid")
                     .and_then(Value::as_bool)
@@ -136,7 +142,16 @@ impl Shapes<'_> {
                 infos.clear();
                 infos.push(json!({ "isMethod": false }));
             }
-            let member = json!({ "parts": infos, "propertyLib": property_lib });
+            // A platform operation of the global object falls back to the
+            // global when called without a receiver (WebIDL). The rule
+            // decides whether to trust that (`checkGlobalObjectMethods`).
+            let global_object_member = property_lib == Some(true)
+                && out.get("receiverGlobalObject").and_then(Value::as_bool) == Some(true);
+            let member = if global_object_member {
+                json!({ "parts": infos, "propertyLib": property_lib, "globalObjectMember": true })
+            } else {
+                json!({ "parts": infos, "propertyLib": property_lib })
+            };
             self.member_cache.insert(key, member.clone());
             members.insert(name.as_str().into(), member);
         }
@@ -185,6 +200,9 @@ impl Shapes<'_> {
             let mut bases = Vec::new();
             self.collect_bases(ty.id.clone(), 0, &mut bases).await;
             out.insert("receiverBases".into(), json!(bases));
+        }
+        if self.is_global_object(ty, &out).await {
+            out.insert("receiverGlobalObject".into(), json!(true));
         }
         out
     }

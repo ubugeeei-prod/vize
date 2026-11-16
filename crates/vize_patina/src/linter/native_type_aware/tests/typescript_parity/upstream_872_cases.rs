@@ -21,16 +21,6 @@ const TSCONFIG: &str = r#"{
 }
 "#;
 
-/// Upstream verdicts that rest on its fixture project having no `DOM` lib
-/// (`"lib": ["es2015", "es2017", "esnext"]`), where `window` has no type. An
-/// SFC is always checked with `DOM`, and there `Window` declares `alert` and
-/// `blur` as methods: typescript-eslint v8.72.2 reports both once `DOM` is in
-/// `lib` (#13083). The corpus keeps the upstream data; this is the DOM verdict.
-const DOM_VERDICTS: &[(&str, usize)] = &[
-    ("unbound-method.valid[30]", 1),
-    ("unbound-method.valid[31]", 1),
-];
-
 const CLASS_FIXTURE: &str = r#"// typescript-eslint v8.72.2 tests/fixtures/class.ts
 export class Error {}
 export const console = { log() {} };
@@ -107,11 +97,7 @@ fn selected_typescript_eslint_872_cases_match() {
             .iter()
             .filter(|diagnostic| diagnostic.rule_name == case.rule)
             .count();
-        let expected = DOM_VERDICTS
-            .iter()
-            .find(|(id, _)| *id == case.id)
-            .map_or(case.expected_diagnostics, |(_, verdict)| *verdict);
-        if actual != expected {
+        if actual != case.expected_diagnostics {
             let findings = result
                 .diagnostics
                 .iter()
@@ -125,7 +111,7 @@ fn selected_typescript_eslint_872_cases_match() {
                 .join(" | ");
             mismatches.push(format!(
                 "{} expected {} diagnostic(s), got {actual}: {findings}",
-                case.id, expected
+                case.id, case.expected_diagnostics
             ));
         }
     }

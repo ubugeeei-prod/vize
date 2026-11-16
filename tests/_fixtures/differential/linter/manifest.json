@@ -8312,6 +8312,11 @@
             "sha256": "0cedffe792978a16699c7b45870ae2ece36a1b5177ff15cb3bbce8e372b75b03"
           },
           {
+            "path": "vize-lint.check-global-object.config.mjs.txt",
+            "role": "typescript-eslint-global-object-method-option-config",
+            "sha256": "6a27f02095c4ec5cd59271eaf8432ca53831aff2746a5d3a731f6ae5f0aaaff4"
+          },
+          {
             "path": "vize-lint.config.mjs.txt",
             "role": "issue-authored-type-aware-lint-config",
             "sha256": "83f81c9dfc7601d0ae6b754e063f31c77a77c5496a8057e1a04f9505c4a13f2c"
