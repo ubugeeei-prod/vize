@@ -9,7 +9,7 @@ use std::{fs, path::Path, process::Command};
 use vize_l4::lang::tsrx::{CompileOptions, Target, compile};
 
 const BADGE: &str = "export function Badge({ text }: { text: string }) @{\n  <span class=\"badge\">{text}</span>\n}\n";
-const ARROW: &str = "export const Arrow = () => <span>hi</span>;\n";
+const ARROW: &str = "export const arrow = () => <span>hi</span>;\n";
 const APP: &str = "<template>\n  <div>ok</div>\n</template>\n";
 const OUTSIDE: &str = "1:28 [unsupported] OutsideComponent is not emitted for the DOM target yet";
 

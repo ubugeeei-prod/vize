@@ -1,7 +1,8 @@
 //! TSRX modules on the virtual-DOM target (Vue profile).
 //!
 //! Host code is copied byte for byte. Each component definition becomes
-//! `defineComponent(function Name(params) { setup; return (_ctx, _cache) => render }, { props })`:
+//! `defineComponent(function Name(params) { setup; return (_ctx, _cache) => render }, { props })`
+//! (an arrow's markup body becomes `(params) => (_ctx, _cache) => render`):
 //! setup statements run once per instance, as in the reference's
 //! `defineVaporComponent`, and the render closure is the region emitted by the
 //! shared L2 DOM emitter. Markup names are lexical: every name a region reads
@@ -11,7 +12,7 @@
 use alloc::vec::Vec;
 use vize_l0::pass::NoObserver;
 use vize_l0::{Allocator, Span, String};
-use vize_l1::markup::tsrx::{Node, TsrxModule};
+use vize_l1::markup::tsrx::TsrxModule;
 use vize_l1_to_l2::pass::{TransformProfile, run_transform_with_profile};
 use vize_l1_to_l2::{LegacyCaps, Lowered};
 use vize_l2::lang::tsrx::TsrxArtifacts;
@@ -43,11 +44,8 @@ pub(super) fn module<'a>(
         if component.region.span != region.span() {
             return Err(fail(EmitIssue::OutsideComponent, region.span()));
         }
-        let names = Names::of_component(source, component.region);
-        let Node::CodeBlock(block) = &component.region.node else {
-            return Err(fail(EmitIssue::NoRender, component.region.span));
-        };
-        if block.render.is_none() {
+        let names = Names::of_component(source, component);
+        if component.render().is_none() {
             return Err(fail(EmitIssue::NoRender, component.region.span));
         }
         let table = bindings(&names, &component.props);
@@ -193,8 +191,9 @@ fn definition(
     }
 }
 
-/// `@{ setup <render> }` → `{ setup return (_ctx, _cache) => …; }`, with
-/// destructured props in setup read through `__props`.
+/// `@{ setup <render> }` → `{ setup return (_ctx, _cache) => …; }`, and
+/// `{ setup return <render>; }` → `{ setup return (_ctx, _cache) => …; }`,
+/// with destructured props in setup read through `__props`.
 fn body(
     out: &mut String,
     source: &str,
@@ -202,16 +201,17 @@ fn body(
     names: &Names<'_>,
     render: &str,
 ) {
+    let Some(render_node) = component.render() else {
+        return;
+    };
     let region = component.region.span;
-    let Node::CodeBlock(block) = &component.region.node else {
-        return;
+    // The replaced range, its replacement's prefix, and the copied range.
+    let (rendered, prefix, start, end) = match component.body {
+        // Skip the `@` of `@{`.
+        None => (render_node.span(), "return ", region.start + 1, region.end),
+        Some(_) => (region, "", component.tail.end, component.span.end),
     };
-    let Some(render_node) = &block.render else {
-        return;
-    };
-    let rendered = render_node.span();
-    // Skip the `@` of `@{`.
-    let mut cursor = region.start + 1;
+    let mut cursor = start;
     if let Props::Destructured { keys, .. } = &component.props {
         let mut reads: Vec<_> = names
             .reads
@@ -231,10 +231,12 @@ fn body(
         }
     }
     out.push_str(slice(source, cursor, rendered.start));
-    out.push_str("return ");
+    out.push_str(prefix);
     out.push_str(render);
-    out.push(';');
-    out.push_str(slice(source, rendered.end, region.end));
+    if component.body.is_none() {
+        out.push(';');
+    }
+    out.push_str(slice(source, rendered.end, end));
 }
 
 fn slice(source: &str, start: u32, end: u32) -> &str {

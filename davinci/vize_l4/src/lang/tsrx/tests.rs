@@ -98,9 +98,15 @@ fn unsupported_targets_and_options_are_each_refused_over_the_module() {
 fn dom_markup_outside_a_component_body_is_refused_at_its_region() {
     for (source, region) in [
         (
-            "export const App = () => <p class=\"x\">hi</p>;\n",
+            "export const view = () => <p class=\"x\">hi</p>;\n",
             "<p class=\"x\">hi</p>",
         ),
+        ("export function view() {\n\treturn <p />;\n}\n", "<p />"),
+        (
+            "export function App() {\n\tconst x = <i />;\n\treturn <p />;\n}\n",
+            "<i />",
+        ),
+        ("export function App() {\n\treturn [<p />];\n}\n", "<p />"),
         ("export function view() @{\n\t<p />\n}\n", "@{\n\t<p />\n}"),
         (
             "export function App() @{\n\tconst x = <i />;\n\t<p />\n}\n",
@@ -145,6 +151,10 @@ fn dom_component_parameters_outside_the_props_profile_are_refused() {
         ),
         (
             "export async function A() @{\n\t<p />\n}\n",
+            EmitIssue::AsyncComponent,
+        ),
+        (
+            "export const A = async () => <p />;\n",
             EmitIssue::AsyncComponent,
         ),
         (
@@ -198,5 +208,40 @@ fn erased_modules_print_javascript_and_refuse_what_the_erasure_cannot_keep() {
         );
         assert_eq!(diagnostic.message.as_str(), message, "{source}");
         assert_eq!((diagnostic.start, diagnostic.end), (0, source.len() as u32));
+    }
+}
+
+#[test]
+fn dom_components_returning_markup_read_setup_once_and_render_the_returned_value() {
+    let source = "const unit = \"px\";\nexport function Box({ size }: { size: number }) {\n\tconst label = size + unit;\n\tconst pick = () => {\n\t\treturn label;\n\t};\n\treturn (\n\t\t<div title={pick()}>{size}</div>\n\t);\n}\nexport const Tag = ({ text }: { text: string }) => <b>{text}</b>;\n";
+    let code = compile(source, &OPTIONS).unwrap().code;
+    assert_eq!(
+        code.as_str(),
+        "import { defineComponent as _defineComponent, createElementVNode as _createElementVNode } from \"vue\";\nconst unit = \"px\";\nexport const Box = /* @__PURE__ */ _defineComponent(function Box(__props) {\n\tconst label = __props.size + unit;\n\tconst pick = () => {\n\t\treturn label;\n\t};\n\treturn (\n\t\t(_ctx, _cache) => {\n  return (_createElementVNode(\"div\", { title: pick() }, [\n    __props.size\n  ], 8 /* PROPS */, [\"title\"]))\n}\n\t);\n}, { props: [\"size\"] });\nexport const Tag = /* @__PURE__ */ _defineComponent((__props) => (_ctx, _cache) => {\n  return (_createElementVNode(\"b\", null, [\n    __props.text\n  ]))\n}, { props: [\"text\"] });\n"
+    );
+}
+
+#[test]
+fn dom_setup_returns_before_the_render_are_refused() {
+    for (source, early) in [
+        (
+            "export function A({ x }: { x: boolean }) @{\n\tif (!x) {\n\t\treturn null;\n\t}\n\t<p />\n}\n",
+            "return null;",
+        ),
+        (
+            "export function A({ x }: { x: boolean }) {\n\tif (x) return null;\n\treturn <p />;\n}\n",
+            "return null;",
+        ),
+    ] {
+        let [diagnostic] = diagnostics(source, &OPTIONS).try_into().unwrap();
+        assert_eq!(
+            diagnostic.code,
+            Code::Emit(EmitIssue::EarlyReturn),
+            "{source}"
+        );
+        assert_eq!(
+            source.get(diagnostic.start as usize..diagnostic.end as usize),
+            Some(early)
+        );
     }
 }
