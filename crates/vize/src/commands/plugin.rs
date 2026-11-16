@@ -24,10 +24,10 @@ pub struct InspectArgs {
 pub fn run(args: PluginArgs) {
     match args.command {
         PluginCommand::Inspect(args) => {
-            match vize_carton::config::inspect_config_plugins(args.config.as_deref()) {
+            match crate::config::inspect_config_plugins(args.config.as_deref()) {
                 Ok(inspection) => match serde_json::to_string_pretty(&inspection) {
                     Ok(json) => println!("{json}"),
-                    Err(error) => fail(&vize_carton::cstr!("{error}")),
+                    Err(error) => fail(&vize_l0::cstr!("{error}")),
                 },
                 Err(error) => fail(&error),
             }

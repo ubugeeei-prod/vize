@@ -21,7 +21,7 @@ fn project(plugins: &str, setup: &str) -> tempfile::TempDir {
     let dir = tempfile::tempdir().unwrap();
     fs::write(
         dir.path().join("vite.config.mjs"),
-        vize_carton::cstr!(
+        vize_l0::cstr!(
             "import {{ pathToFileURL }} from \"node:url\";\n\
              const {{ defineVizePlugin }} = await import(pathToFileURL(process.env.VIZE_TEST_PLUGIN_SDK).href);\n\
              const plugin = (name, setup) => defineVizePlugin({{ apiVersion: 2, stability: \"experimental\", name, version: \"1.0.0\", setup }});\n\
