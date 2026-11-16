@@ -10,6 +10,7 @@ mod restrict_plus_generic_intersection;
 mod unbound_method_lib_members;
 mod upstream_872_cases;
 mod upstream_872_conformance_12983;
+mod upstream_872_conformance_b;
 mod upstream_872_no_unsafe_return_12996;
 
 const SOURCE: &str = r#"<script lang="ts">

@@ -8298,6 +8298,37 @@
       }
     },
     {
+      "id": "linter/typescript-eslint-conformance-b-12988",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "typescript-eslint-conformance-b-12988",
+        "files": [
+          {
+            "path": "cases.json",
+            "role": "upstream-immutable-oracle",
+            "sha256": "e4cc913dbb08eb702cb5739d6aa962c0a05a0215e0df371fb05eeab65164196e"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "ts"
+            ],
+            "selector": "native_type_aware::tests::typescript_parity::upstream_872_conformance_b; lints the 44 typescript-eslint v8.72.2 cases of #12988, #12989, #12990, #12991 and #12993 as plain <script lang=\"ts\"> and, where they fit, <script setup lang=\"ts\"> SFCs, and requires the upstream report lines; await-thenable.valid[68] stays pinned to vize's current result until #13002."
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/unbound-method-composable-12943",
       "state": "active",
       "targets": [

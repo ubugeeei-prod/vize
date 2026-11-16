@@ -16,13 +16,15 @@ const UNION: u32 = 1 << 27;
 /// Calls with more argument positions than this keep only the first ones.
 const MAX_POSITIONS: u32 = 64;
 
-/// `{ parameterCount, hasRest, positions: [{ texts, detail } | null] }` for the
-/// signature `getResolvedSignature` picks at a call-like node. `positions[i]`
-/// is the type of argument position `i`, rest parameters expanded.
+/// `{ parameterCount, hasRest, positions: [{ texts, detail } | null], rest? }`
+/// for the signature `getResolvedSignature` picks at a call-like node.
+/// `positions[i]` is the type of argument position `i`, rest parameters
+/// expanded. With `with_rest`, `rest` is the type every argument after a
+/// variadic tuple spread meets (`null` without a rest parameter).
 pub(super) async fn resolved_parameters(
     session: &CheckerMemo<'_>,
     location: NodeHandle,
-    positions: u32,
+    (positions, with_rest): (u32, bool),
     cache: &mut DetailCache,
 ) -> corsa::Result<Option<Value>> {
     let signature = session
@@ -61,11 +63,68 @@ pub(super) async fn resolved_parameters(
             None => Value::Null,
         });
     }
-    Ok(Some(json!({
+    let mut parameters = json!({
         "parameterCount": count,
         "hasRest": has_rest,
         "positions": types,
-    })))
+    });
+    if with_rest && let Some(object) = parameters.as_object_mut() {
+        let rest = match rest_type(session, &signature, has_rest).await {
+            Some(rest) => described(session, &rest, cache).await?,
+            None => Value::Null,
+        };
+        object.insert("rest".into(), rest);
+    }
+    Ok(Some(parameters))
+}
+
+/// `FunctionSignature`'s rest type once the remaining arguments are consumed:
+/// the last element of a tuple rest parameter, else the rest parameter's
+/// element type (both on its base constraint).
+async fn rest_type(
+    session: &CheckerMemo<'_>,
+    signature: &SignatureResponse,
+    has_rest: bool,
+) -> Option<TypeResponse> {
+    if !has_rest {
+        return None;
+    }
+    let client = session.client();
+    let snapshot = session.snapshot().handle.clone();
+    let project = session.project_handle();
+    // The resolved signature's own parameter handles are registered only
+    // once the runtime lists them (`getParametersOfSignature`).
+    let parameter = client
+        .get_parameters_of_signature(snapshot.clone(), project.clone(), signature.id.clone())
+        .await
+        .ok()?
+        .pop()?;
+    let declared = client
+        .get_type_of_symbol(snapshot.clone(), project.clone(), parameter.id)
+        .await
+        .ok()??;
+    let constrained = session.base_constraint(&declared).await.unwrap_or(declared);
+    // Tuple references carry their element flags; `isTupleType` is not
+    // served by every runtime.
+    let tuple = !constrained.element_flags.is_empty()
+        || constrained.fixed_length.is_some()
+        || client
+            .is_tuple_type(snapshot.clone(), project.clone(), constrained.id.clone())
+            .await
+            .unwrap_or(false);
+    if tuple {
+        return client
+            .get_type_arguments(snapshot, project, constrained.id)
+            .await
+            .ok()?
+            .pop();
+    }
+    let index = i32::try_from(signature.parameters.len().saturating_sub(1)).ok()?;
+    client
+        .get_parameter_type(snapshot, project, signature.id.clone(), index)
+        .await
+        .ok()
+        .flatten()
 }
 
 /// `{ contextual, signatures: [{ texts, detail, predicate? }], ownSignatures? }`:

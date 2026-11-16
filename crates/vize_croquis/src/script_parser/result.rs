@@ -161,6 +161,9 @@ pub struct ScriptParseResult {
     /// Type exports may reference these through `typeof` without being
     /// demoted into `__setup()`.
     pub(crate) module_value_bindings: FxHashSet<CompactString>,
+    /// Classes and runtime enums: values that also declare a type, so a type
+    /// naming one depends on where its value is declared.
+    pub(crate) type_namespace_values: FxHashSet<CompactString>,
     /// Value names referenced from type position (for example `typeof X` or
     /// `[Keys.A]`) in each `type_exports` entry, indexed in parallel with
     /// `type_exports`. Used by
@@ -292,19 +295,40 @@ impl ScriptParseResult {
         // up front (O(imports × bindings)), test each referenced name's
         // declaration span against the import ranges on demand — `refs` is
         // tiny, so this is O(refs × imports).
-        for (idx, value_refs) in self.type_export_typeof_refs.iter().enumerate() {
-            let touches_setup_value = value_refs.iter().any(|name| {
-                let key = name.as_str();
-                self.bindings.bindings.contains_key(key)
-                    && !self.module_value_bindings.contains(key)
-                    && !self.binding_spans.get(key).is_some_and(|(start, end)| {
-                        // Bindings whose declaration site falls inside an import
-                        // statement are module-scoped imports, not setup values.
-                        self.import_statements
-                            .iter()
-                            .any(|imp| *start >= imp.start && *end <= imp.end)
-                    })
-            });
+        let (bindings, module_values, spans, imports) = (
+            &self.bindings.bindings,
+            &self.module_value_bindings,
+            &self.binding_spans,
+            &self.import_statements,
+        );
+        let setup_value = |key: &str| {
+            bindings.contains_key(key)
+                && !module_values.contains(key)
+                && !spans.get(key).is_some_and(|(start, end)| {
+                    // Bindings whose declaration site falls inside an import
+                    // statement are module-scoped imports, not setup values.
+                    imports
+                        .iter()
+                        .any(|imp| *start >= imp.start && *end <= imp.end)
+                })
+        };
+        let (type_namespace_values, setup_script) =
+            (&self.type_namespace_values, !self.is_non_setup_script);
+        for (idx, (value_refs, type_refs)) in self
+            .type_export_typeof_refs
+            .iter()
+            .zip(&self.type_export_type_refs)
+            .enumerate()
+        {
+            // A setup `class` or `enum` is a setup value as much as a type: a
+            // type naming it (`interface I extends SetupClass`) resolves only
+            // beside it, inside the setup function.
+            let names_setup_class = setup_script
+                && type_refs
+                    .iter()
+                    .any(|name| type_namespace_values.contains(name) && setup_value(name.as_str()));
+            let touches_setup_value =
+                names_setup_class || value_refs.iter().any(|name| setup_value(name.as_str()));
             if touches_setup_value && let Some(te) = self.type_exports.get_mut(idx) {
                 te.hoisted = false;
             }

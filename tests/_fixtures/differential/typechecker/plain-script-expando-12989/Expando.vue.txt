@@ -1,0 +1,21 @@
+<script lang="ts">
+// #12989: typescript-eslint v8.72.2 no-misused-spread valid[22] and valid[24].
+// TypeScript reads `f.prop = 1` as a property of `f` only beside `f`, so the
+// functions stay inside `__setup()` with their assignments.
+function f() {}
+
+f.prop = 1;
+
+const o = { ...f };
+
+function* generator() {}
+
+generator.prop = 1;
+
+const g = { ...generator };
+
+// Negative control: a function without assignments keeps its module identity.
+export function plain() {}
+
+export {};
+</script>

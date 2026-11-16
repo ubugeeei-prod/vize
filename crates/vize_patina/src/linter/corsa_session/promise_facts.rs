@@ -6,6 +6,7 @@
 //! type names. Every answer is memoized per type handle.
 mod awaitable;
 mod builtins;
+mod dispose;
 mod unsafe_return;
 use super::checker_memo::CheckerMemo;
 use corsa::api::{SignatureResponse, SymbolHandle, SymbolResponse, TypeHandle, TypeResponse};
@@ -24,6 +25,8 @@ const INTERSECTION: u32 = 1 << 28;
 // TypeParameter | Index | IndexedAccess | Conditional | Substitution.
 const INSTANTIABLE: u32 = TYPE_PARAMETER | (1 << 21) | (1 << 25) | (1 << 26) | (1 << 24);
 // ObjectFlags.
+const OBJECT_CLASS: u32 = 1 << 0;
+const OBJECT_INTERFACE: u32 = 1 << 1;
 const REFERENCE: u32 = 1 << 2;
 const TUPLE: u32 = 1 << 3;
 // SymbolFlags.
@@ -58,31 +61,35 @@ impl Awaitable {
 /// Which promise facts a query wants, as a bit set. The host asks only for
 /// what the enabled rules read at that syntax position.
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
-pub(in crate::linter) struct Facets(pub u16);
+pub(in crate::linter) struct Facets(pub u32);
 
 impl Facets {
-    pub(in crate::linter) const AWAITABLE: u16 = 1;
-    pub(in crate::linter) const THENABLE: u16 = 1 << 1;
-    pub(in crate::linter) const ALWAYS_THENABLE: u16 = 1 << 2;
-    pub(in crate::linter) const RETURNS_THENABLE: u16 = 1 << 3;
-    pub(in crate::linter) const VOID_FUNCTION: u16 = 1 << 4;
-    pub(in crate::linter) const PROMISE: u16 = 1 << 5;
-    pub(in crate::linter) const PROMISE_ARRAY: u16 = 1 << 6;
-    pub(in crate::linter) const CALLABLE: u16 = 1 << 7;
-    pub(in crate::linter) const ERROR: u16 = 1 << 8;
-    pub(in crate::linter) const PROMISE_CONSTRUCTOR: u16 = 1 << 9;
+    pub(in crate::linter) const AWAITABLE: u32 = 1;
+    pub(in crate::linter) const THENABLE: u32 = 1 << 1;
+    pub(in crate::linter) const ALWAYS_THENABLE: u32 = 1 << 2;
+    pub(in crate::linter) const RETURNS_THENABLE: u32 = 1 << 3;
+    pub(in crate::linter) const VOID_FUNCTION: u32 = 1 << 4;
+    pub(in crate::linter) const PROMISE: u32 = 1 << 5;
+    pub(in crate::linter) const PROMISE_ARRAY: u32 = 1 << 6;
+    pub(in crate::linter) const CALLABLE: u32 = 1 << 7;
+    pub(in crate::linter) const ERROR: u32 = 1 << 8;
+    pub(in crate::linter) const PROMISE_CONSTRUCTOR: u32 = 1 << 9;
     /// await-thenable's promise aggregator input facts.
-    pub(in crate::linter) const AGGREGATOR: u16 = 1 << 10;
-    pub(in crate::linter) const ASYNC_ITERABLE: u16 = 1 << 11;
-    pub(in crate::linter) const ASYNC_DISPOSABLE: u16 = 1 << 12;
+    pub(in crate::linter) const AGGREGATOR: u32 = 1 << 10;
+    pub(in crate::linter) const ASYNC_ITERABLE: u32 = 1 << 11;
+    pub(in crate::linter) const ASYNC_DISPOSABLE: u32 = 1 << 12;
     /// no-misused-promises `hasMatchingPromiseTypeArgument`.
-    pub(in crate::linter) const MATCHING_UNION: u16 = 1 << 13;
+    pub(in crate::linter) const MATCHING_UNION: u32 = 1 << 13;
     /// use-unknown-in-catch-callback-variable `isFlaggableHandlerType`.
-    pub(in crate::linter) const CATCH_HANDLER: u16 = 1 << 14;
+    pub(in crate::linter) const CATCH_HANDLER: u32 = 1 << 14;
     /// `isArrayMethodCallWithPredicate`'s array or tuple receiver.
-    pub(in crate::linter) const ARRAY_OR_TUPLE: u16 = 1 << 15;
+    pub(in crate::linter) const ARRAY_OR_TUPLE: u32 = 1 << 15;
+    /// A `[Symbol.dispose]` member returns a thenable (`using` initializers).
+    pub(in crate::linter) const DISPOSE_THENABLE: u32 = 1 << 16;
+    /// A `[Symbol.dispose]` member returns void (annotated variables).
+    pub(in crate::linter) const DISPOSE_VOID: u32 = 1 << 17;
 
-    pub(in crate::linter) const fn has(self, facet: u16) -> bool {
+    pub(in crate::linter) const fn has(self, facet: u32) -> bool {
         self.0 & facet != 0
     }
 
@@ -132,12 +139,16 @@ pub(in crate::linter) struct PromiseFacts {
     pub flaggable_handler: Option<bool>,
     /// A union or intersection part of the constrained type is an array or tuple.
     pub array_or_tuple: Option<bool>,
+    /// `hasWellKnownSymbolWithThenableReturn(..., 'dispose')`.
+    pub dispose_thenable: Option<bool>,
+    /// `hasWellKnownSymbolWithVoidReturn(..., 'dispose')`.
+    pub dispose_void: Option<bool>,
 }
 
 /// Memoized checker walks for one snapshot.
 pub(in crate::linter) struct PromiseChecker<'a> {
     session: &'a CheckerMemo<'a>,
-    facts: FxHashMap<(TypeHandle, u16), PromiseFacts>,
+    facts: FxHashMap<(TypeHandle, u32), PromiseFacts>,
     thenable: FxHashMap<TypeHandle, bool>,
     apparent: FxHashMap<TypeHandle, TypeResponse>,
     signatures: FxHashMap<(TypeHandle, i32), Vec<SignatureResponse>>,
@@ -228,6 +239,12 @@ impl<'a> PromiseChecker<'a> {
         }
         if wants.has(Facets::ASYNC_DISPOSABLE) {
             facts.async_disposable = Some(self.some_part_has_symbol(ty, "asyncDispose").await?);
+        }
+        if wants.has(Facets::DISPOSE_THENABLE) {
+            facts.dispose_thenable = Some(self.dispose_returns(ty, true).await?);
+        }
+        if wants.has(Facets::DISPOSE_VOID) {
+            facts.dispose_void = Some(self.dispose_returns(ty, false).await?);
         }
         self.facts.insert(key, facts);
         Ok(facts)
@@ -320,8 +337,15 @@ impl<'a> PromiseChecker<'a> {
         let snapshot = self.session.snapshot().handle.clone();
         let project = self.session.project_handle();
         let heritage = if base_types {
-            // A class expression's type is its constructor.
-            let constructors = self.signatures(ty, CONSTRUCT).await?;
+            // A class's type is its constructor; an interface's type is the
+            // declared type itself, whose own construct signatures (`new ():
+            // T` members) say nothing about its bases.
+            let declared = ty.object_flags.unwrap_or(0) & (OBJECT_CLASS | OBJECT_INTERFACE) != 0;
+            let constructors = if declared {
+                Vec::new()
+            } else {
+                self.signatures(ty, CONSTRUCT).await?
+            };
             let instance = match constructors.first() {
                 Some(signature) => self
                     .return_type(signature)
@@ -338,17 +362,37 @@ impl<'a> PromiseChecker<'a> {
         };
         let mut found = Vec::new();
         for base in &heritage {
+            // `getMemberIfExists`: the type symbol's own members first (a
+            // `typeof SomeClass` heritage names the instance members there),
+            // then the type's properties.
+            let symbol_members = match client
+                .get_symbol_of_type_in_project(snapshot.clone(), project.clone(), base.id.clone())
+                .await
+            {
+                Ok(Some(symbol)) => client
+                    .get_members_of_symbol_in_project(snapshot.clone(), project.clone(), symbol.id)
+                    .await
+                    .unwrap_or_default(),
+                _ => Vec::new(),
+            };
             let mut text = None;
             for name in members {
-                let property = client
-                    .get_property_of_type(
-                        snapshot.clone(),
-                        project.clone(),
-                        base.id.clone(),
-                        name.as_str(),
-                    )
-                    .await
-                    .unwrap_or_default();
+                let own = symbol_members
+                    .iter()
+                    .find(|member| member.name == name.as_str())
+                    .cloned();
+                let property = match own {
+                    Some(member) => Some(member),
+                    None => client
+                        .get_property_of_type(
+                            snapshot.clone(),
+                            project.clone(),
+                            base.id.clone(),
+                            name.as_str(),
+                        )
+                        .await
+                        .unwrap_or_default(),
+                };
                 let Some(property) = property else {
                     continue;
                 };

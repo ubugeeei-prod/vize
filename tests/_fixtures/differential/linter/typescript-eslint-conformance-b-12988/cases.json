@@ -1,0 +1,587 @@
+{
+  "schema": "vize.typescript-eslint.immutable-oracle",
+  "version": 1,
+  "issues": [
+    12988,
+    12989,
+    12990,
+    12991,
+    12993
+  ],
+  "upstream": {
+    "repository": "typescript-eslint/typescript-eslint",
+    "release": "v8.72.2",
+    "commit": "12e452f0292212bf9bf443b3988ec230f4ae7097",
+    "runtime": {
+      "eslint": "10.14.0",
+      "typescript": "6.0.3"
+    }
+  },
+  "description": "Literal cases of packages/eslint-plugin/tests/rules/*.test.ts that the five third-party conformance reports list as divergent under default options, each linted as the only code of one SFC (`mode`: a plain `<script lang=\"ts\">` followed by `export {};`, or `<script setup lang=\"ts\">`). `expected` lists the lines (and, where the report quotes it, the message) typescript-eslint reports; the reports render no-unsafe-argument's backquoted type names as quotes, the oracle keeps the rule's own backquotes. A `blocked` case records what vize reports until the named issue lands.",
+  "caseCount": 44,
+  "cases": [
+    {
+      "issue": 12988,
+      "rule": "type/no-misused-promises",
+      "id": "no-misused-promises.valid[96]",
+      "mode": "script",
+      "code": "interface MyInterface {\n  setThing(): void;\n}\n\nclass MyClassImplementsMyInterface implements MyInterface {\n  async setThing(): Promise<void> {\n    await Promise.resolve();\n  }\n}",
+      "expected": [
+        {
+          "line": 6,
+          "message": "Promise-returning method provided where a void return was expected by extended/implemented type 'MyInterface'."
+        }
+      ]
+    },
+    {
+      "issue": 12988,
+      "rule": "type/no-misused-promises",
+      "id": "no-misused-promises.valid[98]",
+      "mode": "script",
+      "code": "interface MyInterface {\n  setThing(): void;\n}\n\nabstract class MyAbstractClassImplementsMyInterface implements MyInterface {\n  abstract setThing(): Promise<void>;\n}",
+      "expected": [
+        {
+          "line": 6,
+          "message": "Promise-returning method provided where a void return was expected by extended/implemented type 'MyInterface'."
+        }
+      ]
+    },
+    {
+      "issue": 12988,
+      "rule": "type/no-misused-promises",
+      "id": "no-misused-promises.valid[100]",
+      "mode": "script",
+      "code": "type MyTypeLiteralsIntersection = { setThing(): void } & { thing: number };\n\nclass MyClass implements MyTypeLiteralsIntersection {\n  thing = 1;\n  async setThing(): Promise<void> {\n    await Promise.resolve();\n  }\n}",
+      "expected": [
+        {
+          "line": 5,
+          "message": "Promise-returning method provided where a void return was expected by extended/implemented type 'MyTypeLiteralsIntersection'."
+        }
+      ]
+    },
+    {
+      "issue": 12988,
+      "rule": "type/no-misused-promises",
+      "id": "no-misused-promises.invalid[70]",
+      "mode": "script",
+      "code": "interface MyInterface {\n  setThing(): void;\n}\n\nclass MyInterfaceSubclass implements MyInterface {\n  async setThing(): Promise<void> {\n    await Promise.resolve();\n  }\n}",
+      "expected": [
+        {
+          "line": 6,
+          "message": "Promise-returning method provided where a void return was expected by extended/implemented type 'MyInterface'."
+        }
+      ]
+    },
+    {
+      "issue": 12988,
+      "rule": "type/no-misused-promises",
+      "id": "no-misused-promises.invalid[71]",
+      "mode": "script",
+      "code": "interface MyInterface {\n  setThing(): void;\n}\n\nabstract class MyAbstractClassImplementsMyInterface implements MyInterface {\n  abstract setThing(): Promise<void>;\n}",
+      "expected": [
+        {
+          "line": 6,
+          "message": "Promise-returning method provided where a void return was expected by extended/implemented type 'MyInterface'."
+        }
+      ]
+    },
+    {
+      "issue": 12988,
+      "rule": "type/no-misused-promises",
+      "id": "no-misused-promises.invalid[73]",
+      "mode": "script",
+      "code": "abstract class MyClass {\n  abstract accessor setThing: () => void;\n}\n\nabstract class MySubclassExtendsMyClass extends MyClass {\n  abstract accessor setThing: () => Promise<void>;\n}",
+      "expected": [
+        {
+          "line": 6,
+          "message": "Promise-returning method provided where a void return was expected by extended/implemented type 'MyClass'."
+        }
+      ]
+    },
+    {
+      "issue": 12988,
+      "rule": "type/no-misused-promises",
+      "id": "no-misused-promises.invalid[75]",
+      "mode": "script",
+      "code": "type MyTypeIntersection = { setThing(): void } & { thing: number };\n\nclass MyClassImplementsMyTypeIntersection implements MyTypeIntersection {\n  thing = 1;\n  async setThing(): Promise<void> {\n    await Promise.resolve();\n  }\n}",
+      "expected": [
+        {
+          "line": 5,
+          "message": "Promise-returning method provided where a void return was expected by extended/implemented type 'MyTypeIntersection'."
+        }
+      ]
+    },
+    {
+      "issue": 12988,
+      "rule": "type/no-misused-promises",
+      "id": "no-misused-promises.invalid[82]",
+      "mode": "script",
+      "code": "const MyClassExpression = class {\n  setThing(): void {\n    return;\n  }\n};\ntype MyClassExpressionType = typeof MyClassExpression;\n\ninterface MyInterfaceExtendsMyClassExpression extends MyClassExpressionType {\n  setThing(): Promise<void>;\n}",
+      "expected": [
+        {
+          "line": 9,
+          "message": "Promise-returning method provided where a void return was expected by extended/implemented type 'typeof MyClassExpression'."
+        }
+      ]
+    },
+    {
+      "issue": 12988,
+      "rule": "type/no-misused-promises",
+      "id": "no-misused-promises.invalid[83]",
+      "mode": "script",
+      "code": "interface MySyncInterface {\n  (): void;\n  (arg: string): void;\n  new (): void;\n  [key: string]: () => void;\n  [key: number]: () => void;\n  myMethod(): void;\n}\ninterface MyAsyncInterface extends MySyncInterface {\n  (): Promise<void>;\n  (arg: string): Promise<void>;\n  new (): Promise<void>;\n  [key: string]: () => Promise<void>;\n  [key: number]: () => Promise<void>;\n  myMethod(): Promise<void>;\n}",
+      "expected": [
+        {
+          "line": 15,
+          "message": "Promise-returning method provided where a void return was expected by extended/implemented type 'MySyncInterface'."
+        }
+      ]
+    },
+    {
+      "issue": 12988,
+      "rule": "type/no-misused-promises",
+      "id": "no-misused-promises.invalid[84]",
+      "mode": "script",
+      "code": "interface MyCall {\n  (): void;\n  (arg: string): void;\n}\n\ninterface MyIndex {\n  [key: string]: () => void;\n  [key: number]: () => void;\n}\n\ninterface MyConstruct {\n  new (): void;\n  new (arg: string): void;\n}\n\ninterface MyMethods {\n  doSyncThing(): void;\n  doOtherSyncThing(): void;\n}\ninterface MyInterface extends MyCall, MyIndex, MyConstruct, MyMethods {\n  (): void;\n  (arg: string): Promise<void>;\n  new (): void;\n  new (arg: string): void;\n  [key: string]: () => Promise<void>;\n  [key: number]: () => void;\n  doSyncThing(): Promise<void>;\n  doAsyncThing(): Promise<void>;\n}",
+      "expected": [
+        {
+          "line": 27,
+          "message": "Promise-returning method provided where a void return was expected by extended/implemented type 'MyMethods'."
+        }
+      ]
+    },
+    {
+      "issue": 12988,
+      "rule": "type/no-misused-promises",
+      "id": "no-misused-promises.invalid[85]",
+      "mode": "script",
+      "code": "interface MyCall {\n  (): void;\n  (arg: string): void;\n}\n\ninterface MyIndex {\n  [key: string]: () => void;\n  [key: number]: () => void;\n}\n\ninterface MyConstruct {\n  new (): void;\n  new (arg: string): void;\n}\n\ninterface MyMethods {\n  doOtherSyncThing(): void;\n  syncMethodProperty: () => void;\n}\ninterface MyInterface extends MyCall, MyIndex, MyConstruct, MyMethods {\n  (): void;\n  (arg: string): Promise<void>;\n  new (): void;\n  new (arg: string): void;\n  [key: string]: () => Promise<void>;\n  [key: number]: () => void;\n  doAsyncThing(): Promise<void>;\n  syncMethodProperty: () => Promise<void>;\n}",
+      "expected": [
+        {
+          "line": 28,
+          "message": "Promise-returning method provided where a void return was expected by extended/implemented type 'MyMethods'."
+        }
+      ]
+    },
+    {
+      "issue": 12988,
+      "rule": "type/no-misused-promises",
+      "id": "no-misused-promises.invalid[104]",
+      "mode": "script",
+      "code": "interface Disposable {\n  [Symbol.dispose](): void;\n}\n\nconst a = {\n  async [Symbol.dispose]() {},\n};\nconst b: Disposable = a;",
+      "expected": [
+        {
+          "line": 8,
+          "message": "Promise-returning function provided to variable where a void return was expected."
+        }
+      ]
+    },
+    {
+      "issue": 12988,
+      "rule": "type/no-misused-promises",
+      "id": "no-misused-promises.invalid[105]",
+      "mode": "script",
+      "code": "using c = {\n  async [Symbol.dispose]() {},\n};",
+      "expected": [
+        {
+          "line": 1,
+          "message": "Promise-returning function provided to variable where a void return was expected."
+        }
+      ]
+    },
+    {
+      "issue": 12988,
+      "rule": "type/no-misused-promises",
+      "id": "no-misused-promises.invalid[106]",
+      "mode": "script",
+      "code": "const d = {\n  async [Symbol.dispose]() {},\n};\nusing e = d;",
+      "expected": [
+        {
+          "line": 4,
+          "message": "Promise-returning function provided to variable where a void return was expected."
+        }
+      ]
+    },
+    {
+      "issue": 12988,
+      "rule": "type/no-misused-promises",
+      "id": "await-thenable.valid[19]",
+      "mode": "script",
+      "code": "using foo = {\n  async [Symbol.dispose]() {},\n};\n\nexport {};",
+      "expected": [
+        {
+          "line": 1,
+          "message": "Promise-returning function provided to variable where a void return was expected."
+        }
+      ]
+    },
+    {
+      "issue": 12988,
+      "rule": "type/no-misused-promises",
+      "id": "no-misused-promises.invalid[79]",
+      "mode": "script",
+      "code": "interface MyAsyncInterface {\n  setThing(): Promise<void>;\n}\n\ninterface MySyncInterface {\n  setThing(): void;\n}\n\nclass MyClass {\n  setThing(): void {\n    return;\n  }\n}\n\nclass MySubclass extends MyClass implements MyAsyncInterface, MySyncInterface {\n  async setThing(): Promise<void> {\n    await Promise.resolve();\n  }\n}",
+      "expected": [
+        {
+          "line": 16,
+          "message": "Promise-returning method provided where a void return was expected by extended/implemented type 'MyClass'."
+        },
+        {
+          "line": 16,
+          "message": "Promise-returning method provided where a void return was expected by extended/implemented type 'MySyncInterface'."
+        }
+      ]
+    },
+    {
+      "issue": 12988,
+      "rule": "type/no-misused-promises",
+      "id": "no-misused-promises.valid[86]",
+      "mode": "setup",
+      "code": "class MyClass {\n  setThing(): void {\n    return;\n  }\n}\n\ninterface MyInterfaceExtendsMyClass extends MyClass {\n  setThing(): Promise<void>;\n}",
+      "expected": [
+        {
+          "line": 8
+        }
+      ]
+    },
+    {
+      "issue": 12988,
+      "rule": "type/no-misused-promises",
+      "id": "no-misused-promises.valid[92]",
+      "mode": "setup",
+      "code": "abstract class MyAbstractClass {\n  abstract setThing(): void;\n}\n\ninterface MyInterfaceExtendsMyAbstractClass extends MyAbstractClass {\n  setThing(): Promise<void>;\n}",
+      "expected": [
+        {
+          "line": 6
+        }
+      ]
+    },
+    {
+      "issue": 12988,
+      "rule": "type/no-misused-promises",
+      "id": "no-misused-promises.invalid[66]",
+      "mode": "setup",
+      "code": "class MyClass {\n  setThing(): void {\n    return;\n  }\n}\n\ninterface MyInterfaceExtendsMyClass extends MyClass {\n  setThing(): Promise<void>;\n}",
+      "expected": [
+        {
+          "line": 8
+        }
+      ]
+    },
+    {
+      "issue": 12988,
+      "rule": "type/no-misused-promises",
+      "id": "no-misused-promises.invalid[69]",
+      "mode": "setup",
+      "code": "abstract class MyAbstractClass {\n  abstract setThing(): void;\n}\n\ninterface MyInterfaceExtendsMyAbstractClass extends MyAbstractClass {\n  setThing(): Promise<void>;\n}",
+      "expected": [
+        {
+          "line": 6
+        }
+      ]
+    },
+    {
+      "issue": 12988,
+      "rule": "type/no-misused-promises",
+      "id": "no-misused-promises.invalid[78]",
+      "mode": "setup",
+      "code": "class MyClass {\n  setThing(): void {\n    return;\n  }\n}\n\nclass MyOtherClass {\n  setThing(): void {\n    return;\n  }\n}\n\ninterface MyInterface extends MyClass, MyOtherClass {\n  setThing(): Promise<void>;\n}",
+      "expected": [
+        {
+          "line": 14
+        },
+        {
+          "line": 14
+        }
+      ]
+    },
+    {
+      "issue": 12989,
+      "rule": "type/no-misused-spread",
+      "id": "no-misused-spread.valid[39]",
+      "mode": "script",
+      "code": "const a = {\n  ...class A {\n    static value = 1;\n  },\n};",
+      "expected": [
+        {
+          "line": 2,
+          "message": "Using the spread operator on class declarations will spread only their static properties, and will lose their class prototype."
+        }
+      ]
+    },
+    {
+      "issue": 12989,
+      "rule": "type/no-misused-spread",
+      "id": "no-misused-spread.invalid[80]",
+      "mode": "script",
+      "code": "class A {}\n\nconst o = { ...A };",
+      "expected": [
+        {
+          "line": 3,
+          "message": "Using the spread operator on class declarations will spread only their static properties, and will lose their class prototype."
+        }
+      ]
+    },
+    {
+      "issue": 12989,
+      "rule": "type/no-misused-spread",
+      "id": "no-misused-spread.invalid[81]",
+      "mode": "script",
+      "code": "const A = class {};\n\nconst o = { ...A };",
+      "expected": [
+        {
+          "line": 3,
+          "message": "Using the spread operator on class declarations will spread only their static properties, and will lose their class prototype."
+        }
+      ]
+    },
+    {
+      "issue": 12989,
+      "rule": "type/no-misused-spread",
+      "id": "no-misused-spread.invalid[82]",
+      "mode": "script",
+      "code": "class Declaration {\n  declaration?: boolean;\n}\nconst Expression = class {\n  expression?: boolean;\n};\n\ndeclare const either: typeof Declaration | typeof Expression;\n\nconst o = { ...either };",
+      "expected": [
+        {
+          "line": 10,
+          "message": "Using the spread operator on class declarations will spread only their static properties, and will lose their class prototype."
+        }
+      ]
+    },
+    {
+      "issue": 12989,
+      "rule": "type/no-misused-spread",
+      "id": "no-misused-spread.invalid[84]",
+      "mode": "script",
+      "code": "const a = {\n  ...class A {\n    static value = 1;\n    nonStatic = 2;\n  },\n};",
+      "expected": [
+        {
+          "line": 2,
+          "message": "Using the spread operator on class declarations will spread only their static properties, and will lose their class prototype."
+        }
+      ]
+    },
+    {
+      "issue": 12989,
+      "rule": "type/no-misused-spread",
+      "id": "no-misused-spread.invalid[85]",
+      "mode": "script",
+      "code": "const a = { ...(class A { static value = 1 }) }",
+      "expected": [
+        {
+          "line": 1,
+          "message": "Using the spread operator on class declarations will spread only their static properties, and will lose their class prototype."
+        }
+      ]
+    },
+    {
+      "issue": 12989,
+      "rule": "type/no-misused-spread",
+      "id": "no-misused-spread.valid[22]",
+      "mode": "script",
+      "code": "function f() {}\n\nf.prop = 1;\n\nconst o = { ...f };",
+      "expected": []
+    },
+    {
+      "issue": 12989,
+      "rule": "type/no-misused-spread",
+      "id": "no-misused-spread.valid[24]",
+      "mode": "script",
+      "code": "function* generator() {}\n\ngenerator.prop = 1;\n\nconst o = { ...generator };",
+      "expected": []
+    },
+    {
+      "issue": 12989,
+      "rule": "type/no-misused-spread",
+      "id": "no-misused-spread.valid[22]",
+      "mode": "setup",
+      "code": "function f() {}\n\nf.prop = 1;\n\nconst o = { ...f };",
+      "expected": []
+    },
+    {
+      "issue": 12989,
+      "rule": "type/no-misused-spread",
+      "id": "no-misused-spread.valid[24]",
+      "mode": "setup",
+      "code": "function* generator() {}\n\ngenerator.prop = 1;\n\nconst o = { ...generator };",
+      "expected": []
+    },
+    {
+      "issue": 12990,
+      "rule": "type/no-unnecessary-template-expression",
+      "id": "no-unnecessary-template-expression.invalid[112]",
+      "mode": "script",
+      "code": "type Foo = 'A' | 'B';\ntype Bar = `${Foo}`;",
+      "expected": [
+        {
+          "line": 2,
+          "message": "Template literal expression is unnecessary and can be simplified."
+        }
+      ]
+    },
+    {
+      "issue": 12990,
+      "rule": "type/no-unnecessary-template-expression",
+      "id": "no-unnecessary-template-expression.invalid[113]",
+      "mode": "script",
+      "code": "type Foo = 'A' | 'B';\ntype Bar = `${`${Foo}`}`;",
+      "expected": [
+        {
+          "line": 2,
+          "message": "Template literal expression is unnecessary and can be simplified."
+        },
+        {
+          "line": 2,
+          "message": "Template literal expression is unnecessary and can be simplified."
+        }
+      ]
+    },
+    {
+      "issue": 12991,
+      "rule": "type/no-unnecessary-type-arguments",
+      "id": "no-unnecessary-type-arguments.invalid[13]",
+      "mode": "script",
+      "code": "type A = Map<string, string>;\ntype B<T = A> = T;\ntype C = B<A>;",
+      "expected": [
+        {
+          "line": 3,
+          "message": "This is the default value for this type parameter, so it can be omitted."
+        }
+      ]
+    },
+    {
+      "issue": 12991,
+      "rule": "type/no-unnecessary-type-arguments",
+      "id": "no-unnecessary-type-arguments.invalid[14]",
+      "mode": "script",
+      "code": "type A = Map<string, string>;\ntype B<T = A> = T;\ntype C = B<Map<string, string>>;",
+      "expected": [
+        {
+          "line": 3,
+          "message": "This is the default value for this type parameter, so it can be omitted."
+        }
+      ]
+    },
+    {
+      "issue": 12991,
+      "rule": "type/no-unnecessary-type-arguments",
+      "id": "no-unnecessary-type-arguments.invalid[15]",
+      "mode": "script",
+      "code": "type A = Map<string, string>;\ntype B = Map<string, string>;\ntype C<T = A> = T;\ntype D = C<B>;",
+      "expected": [
+        {
+          "line": 4,
+          "message": "This is the default value for this type parameter, so it can be omitted."
+        }
+      ]
+    },
+    {
+      "issue": 12991,
+      "rule": "type/no-unnecessary-type-arguments",
+      "id": "no-unnecessary-type-arguments.invalid[16]",
+      "mode": "script",
+      "code": "type A = Map<string, string>;\ntype B = A;\ntype C = Map<string, string>;\ntype D = C;\ntype E<T = B> = T;\ntype F = E<D>;",
+      "expected": [
+        {
+          "line": 6,
+          "message": "This is the default value for this type parameter, so it can be omitted."
+        }
+      ]
+    },
+    {
+      "issue": 12991,
+      "rule": "type/no-unnecessary-type-arguments",
+      "id": "no-unnecessary-type-arguments.invalid[17]",
+      "mode": "script",
+      "code": "interface Foo {}\ndeclare var Foo: {\n  new <T = string>(type: T): any;\n};\nclass Bar extends Foo<string> {}",
+      "expected": [
+        {
+          "line": 5,
+          "message": "This is the default value for this type parameter, so it can be omitted."
+        }
+      ]
+    },
+    {
+      "issue": 12991,
+      "rule": "type/no-unnecessary-type-arguments",
+      "id": "no-unnecessary-type-arguments.invalid[18]",
+      "mode": "script",
+      "code": "declare var Foo: {\n  new <T = string>(type: T): any;\n};\ninterface Foo {}\nclass Bar extends Foo<string> {}",
+      "expected": [
+        {
+          "line": 5,
+          "message": "This is the default value for this type parameter, so it can be omitted."
+        }
+      ]
+    },
+    {
+      "issue": 12991,
+      "rule": "type/no-unnecessary-type-arguments",
+      "id": "no-unnecessary-type-arguments.invalid[19]",
+      "mode": "script",
+      "code": "class Foo<T> {}\ninterface Foo<T = string> {}\nclass Bar implements Foo<string> {}",
+      "expected": [
+        {
+          "line": 3,
+          "message": "This is the default value for this type parameter, so it can be omitted."
+        }
+      ]
+    },
+    {
+      "issue": 12991,
+      "rule": "type/no-unnecessary-type-arguments",
+      "id": "no-unnecessary-type-arguments.invalid[20]",
+      "mode": "script",
+      "code": "class Foo<T = string> {}\nnamespace Foo {\n  export class Bar {}\n}\nclass Bar extends Foo<string> {}",
+      "expected": [
+        {
+          "line": 5,
+          "message": "This is the default value for this type parameter, so it can be omitted."
+        }
+      ]
+    },
+    {
+      "issue": 12991,
+      "rule": "type/no-unnecessary-type-arguments",
+      "id": "await-thenable.valid[68]",
+      "mode": "script",
+      "code": "declare const x: Generator<unknown>;\nPromise.all(x);",
+      "expected": [
+        {
+          "line": 1,
+          "message": "This is the default value for this type parameter, so it can be omitted."
+        }
+      ],
+      "blocked": {
+        "issue": 13002,
+        "reason": "The default of a type parameter declared in a lib.*.d.ts file needs the checker's getDefaultFromTypeParameter, which the supported TypeScript 7.0.2 native runtime does not serve.",
+        "vize": []
+      }
+    },
+    {
+      "issue": 12993,
+      "rule": "type/no-unsafe-argument",
+      "id": "no-unsafe-argument.invalid[0]",
+      "mode": "script",
+      "code": "declare function foo(...args: [string, string]): void;\n\ndeclare const spread: [string, ...string[]];\nfoo(...spread, 1 as any);",
+      "expected": [
+        {
+          "line": 4,
+          "message": "Unsafe argument of type `any` assigned to a parameter of type `string`."
+        }
+      ]
+    },
+    {
+      "issue": 12993,
+      "rule": "type/no-unsafe-argument",
+      "id": "no-unsafe-argument.invalid[14]",
+      "mode": "script",
+      "code": "declare function foo(arg1: string, arg2: number, ...rest: string[]): void;\n\nconst x = [1, 2] as [number, ...number[]];\nfoo('a', ...x, 1 as any);",
+      "expected": [
+        {
+          "line": 4,
+          "message": "Unsafe argument of type `any` assigned to a parameter of type `string`."
+        }
+      ]
+    }
+  ]
+}

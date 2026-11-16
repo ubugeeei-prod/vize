@@ -77,6 +77,8 @@ pub(in crate::linter) struct ShapeRequest {
     /// Generated ranges of the callee and of the arguments before the first
     /// spread when this is a call: record its type predicate.
     pub predicate: Option<PredicateRequest>,
+    /// The range is a type node, typed as the type it names.
+    pub type_node: bool,
 }
 
 impl ShapeRequest {
@@ -94,6 +96,7 @@ impl ShapeRequest {
         if self.predicate.is_none() {
             self.predicate = other.predicate;
         }
+        self.type_node |= other.type_node;
     }
 }
 
