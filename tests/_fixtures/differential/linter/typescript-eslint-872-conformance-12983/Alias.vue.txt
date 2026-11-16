@@ -1,0 +1,11 @@
+<script setup lang="ts">
+/** @deprecated use Next */
+type Old = { a: number };
+const first = 1;
+const value: Old = { a: first };
+const second = first + value.a;
+</script>
+
+<template>
+  <p>{{ second }}</p>
+</template>

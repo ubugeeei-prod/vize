@@ -20,7 +20,7 @@ use vize_croquis::{Croquis, ScopeKind, TypeExport};
 
 use super::generics::HoistedGenericAliases;
 use super::script_module::{NamespaceHoistPlan, ScriptModulePlan};
-use super::spans::merge_overlapping_spans;
+use super::spans::{merge_overlapping_spans, with_leading_jsdoc};
 use crate::virtual_ts::generic_parameters::GenericParameters;
 
 /// Where each authored declaration of a two-block SFC lives once the virtual
@@ -138,7 +138,7 @@ impl ScriptBlockScopes {
                 && !aliases
                     .is_some_and(|aliases| aliases.keeps_in_setup((export.start, export.end)))
             {
-                spans.push((export.start, export.end));
+                spans.push(hoisted_span(script, export));
             }
         }
         merge_overlapping_spans(spans)
@@ -155,9 +155,16 @@ impl ScriptBlockScopes {
             .type_exports
             .iter()
             .filter(|export| export.hoisted && !self.shadows_classic_name(export, script))
-            .map(|export| ((export.start, export.end), export.name.as_str()))
+            .map(|export| (hoisted_span(script, export), export.name.as_str()))
             .collect()
     }
+}
+
+/// The module-scope span of a hoisted type declaration: the declaration and
+/// the JSDoc that documents it.
+fn hoisted_span(script: Option<&str>, export: &TypeExport) -> (u32, u32) {
+    let span = (export.start, export.end);
+    script.map_or(span, |script| with_leading_jsdoc(script, span))
 }
 
 /// Whether the classic-block binding whose identifier starts at `start` also
