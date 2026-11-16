@@ -10,11 +10,8 @@ use vize_l2::op::{Attribute, BindOp, BindingOp, DynamicName, OnOp};
 
 use super::children::contains_jsx;
 use super::directives::directive;
-use super::slots::{forwarded_slots, slots_object};
+use super::slots::{SlotsAttribute, V_SLOTS, slots_attribute, slots_object};
 use super::{Cx, JsxRefusal, span};
-
-/// `v-slots` and the camelCase spelling the JSX dialects accept too.
-const V_SLOTS: [&str; 2] = ["v-slots", "vSlots"];
 
 /// Whose attributes these are: a directive lowers by its owner's kind.
 #[derive(Clone, Copy)]
@@ -30,8 +27,8 @@ pub(super) enum Owner<'a, 'r, 'x> {
 pub(super) struct Props<'a> {
     pub(super) attributes: Vec<'a, Attribute<'a>>,
     pub(super) bindings: Vec<'a, BindingOp<'a>>,
-    /// A forwarded `v-slots` value, which binds after every other prop.
-    slots: Option<oxc_span::Span>,
+    /// The `v-slots` attribute, which lowers after the other props.
+    slots: Option<SlotsAttribute>,
 }
 
 impl<'a> Props<'a> {
@@ -41,6 +38,11 @@ impl<'a> Props<'a> {
             bindings: Vec::new_in(&allocator),
             slots: None,
         }
+    }
+
+    /// Whether a `v-slots` object appends templates to the children.
+    pub(super) const fn has_slot_templates(&self) -> bool {
+        matches!(self.slots, Some(SlotsAttribute::Templates))
     }
 
     /// Whether the props name a dynamic component's `is`.
@@ -75,7 +77,7 @@ pub(super) fn props<'a>(
             }
         }
     }
-    if let Some(at) = out.slots {
+    if let Some(SlotsAttribute::Forwarded(at)) = out.slots {
         cx.mint();
         out.bindings.push(slots_object(cx, at)?);
     }
@@ -93,8 +95,8 @@ fn attribute<'a>(
         JSXAttributeName::NamespacedName(name) => cx.slice(name.namespace.span)?,
     };
     if V_SLOTS.contains(&head) {
-        let at = forwarded_slots(attribute, owner)?;
-        return match out.slots.replace(at) {
+        let slots = slots_attribute(attribute, owner)?;
+        return match out.slots.replace(slots) {
             None => Ok(()),
             Some(_) => Err(JsxRefusal::Attribute),
         };

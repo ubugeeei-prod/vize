@@ -64,6 +64,7 @@ const SHAPES: &[&str] = &[
     "const A = () => <Outer>{() => <Inner>{(x) => <b>{x}</b>}</Inner>}</Outer>;",
     "const A = () => <Card v-slots={slots} title=\"t\" x={1}>text</Card>;",
     "const A = () => <Card vSlots={(own.slots)}>{(p) => <i>{p}</i>}</Card>;",
+    "const A = () => <Card title=\"t\" v-slots={{ header: () => <h1>T</h1>, footer: (p) => <i>{p}</i> }}><b /></Card>;",
 ];
 
 /// TSX spellings of the structural shapes.
