@@ -32,11 +32,11 @@ use vize_croquis::types::world::{TypeExportBinding, TypeModule, TypeModuleRefere
 
 use super::external_types::resolution::path_key;
 use super::{ScriptCompileContext, TypeSourceSnapshot};
+use cells::Follow;
 pub(super) use cells::{ResolvedSlot, Wanted};
 
 const MAX_MODULES: usize = 512;
 type ModuleSource = (Arc<str>, bool);
-type PendingModule = (PathBuf, Option<ModuleSource>);
 type ParsedTypeModule = (TypeModule, FxHashSet<vize_carton::CompactString>);
 
 /// One module with every import, export and star-export target resolved
@@ -46,7 +46,7 @@ type ParsedTypeModule = (TypeModule, FxHashSet<vize_carton::CompactString>);
 #[derive(Debug)]
 pub(super) struct ResolvedDependency {
     module: Arc<TypeModule>,
-    follow: Vec<PathBuf>,
+    follow: Vec<Follow>,
     /// Whether a walk has offered `follow` to walks that would otherwise wait.
     offered: AtomicBool,
 }
@@ -107,49 +107,88 @@ impl ScriptCompileContext {
             root_module: root_module.clone(),
             ..ResolvedTypeWorld::default()
         };
-        let mut pending: Vec<PendingModule> =
-            vec![(path, Some((Arc::<str>::from(source.as_str()), is_tsx)))];
-        let mut visited = FxHashSet::default();
-        while let Some((path, source)) = pending.pop() {
-            let identity = path_key(&path);
-            if !visited.insert(identity.clone()) {
+        // Root text belongs to this caller, including unsaved buffers and
+        // combined normal/setup scripts. Never reuse it by path. Immutable
+        // snapshot dependencies share one resolved module per snapshot.
+        let (module, needed_imports) = parse::parse_shared_module(&source, source_type(is_tsx));
+        let root = Arc::new(resolve_module_targets(
+            module,
+            &needed_imports,
+            &path,
+            sources,
+        ));
+        world.modules.insert(root_module, Arc::clone(&root.module));
+        let mut walk = Walk::default();
+        walk.queue(root, world.modules.len(), sources);
+        // Every visited module enters `world.modules`, so its keys are the
+        // visited set.
+        while let Some((dependency, index)) = walk.next() {
+            let Some(follow) = walk
+                .held
+                .get(dependency)
+                .and_then(|dependency| dependency.follow.get(index))
+            else {
+                continue;
+            };
+            if world.modules.contains_key(follow.identity.as_str()) {
                 continue;
             }
+            let identity = follow.identity.clone();
             if world.modules.len() >= MAX_MODULES {
                 world
                     .modules
                     .insert(identity, Arc::new(TypeModule::default()));
                 continue;
             }
-            // Root text belongs to this caller, including unsaved buffers and
-            // combined normal/setup scripts. Never reuse it by path. Immutable
-            // snapshot dependencies share one resolved module per snapshot.
-            let resolved = match source {
-                Some((source, is_tsx)) => {
-                    let (module, needed_imports) =
-                        parse::parse_shared_module(&source, source_type(is_tsx));
-                    Arc::new(resolve_module_targets(
-                        module,
-                        &needed_imports,
-                        &path,
-                        sources,
-                    ))
-                }
-                None => {
-                    let Some(resolved) = read_resolved_dependency(&path, sources) else {
-                        world
-                            .modules
-                            .insert(identity, Arc::new(TypeModule::default()));
-                        continue;
-                    };
-                    resolved
-                }
+            let Some(resolved) = cells::read(follow, sources, resolve_dependency) else {
+                world
+                    .modules
+                    .insert(identity, Arc::new(TypeModule::default()));
+                continue;
             };
-            pending.extend(resolved.follow.iter().cloned().map(|path| (path, None)));
             world.modules.insert(identity, Arc::clone(&resolved.module));
-            resolved.offer(world.modules.len(), pending.len(), sources);
+            walk.queue(resolved, world.modules.len(), sources);
         }
         world
+    }
+}
+
+/// One world's depth-first stack over the follow lists of the modules it
+/// visited, popped in the order a stack of every single follow pops.
+#[derive(Default)]
+struct Walk {
+    held: Vec<Arc<ResolvedDependency>>,
+    /// A held module and how many of its follows remain, the next one last.
+    pending: Vec<(usize, usize)>,
+    /// Follows still pending across `pending`.
+    queued: usize,
+}
+
+impl Walk {
+    fn queue(
+        &mut self,
+        dependency: Arc<ResolvedDependency>,
+        visited: usize,
+        sources: &TypeSourceSnapshot,
+    ) {
+        let count = dependency.follow.len();
+        self.queued += count;
+        dependency.offer(visited, self.queued, sources);
+        if count > 0 {
+            self.pending.push((self.held.len(), count));
+            self.held.push(dependency);
+        }
+    }
+
+    fn next(&mut self) -> Option<(usize, usize)> {
+        let (dependency, left) = self.pending.last_mut()?;
+        *left = left.saturating_sub(1);
+        let next = (*dependency, *left);
+        if *left == 0 {
+            self.pending.pop();
+        }
+        self.queued = self.queued.saturating_sub(1);
+        Some(next)
     }
 }
 
@@ -182,7 +221,7 @@ fn resolve_module_targets(
                 if let Some(import) = module.imports.get(local)
                     && let Some(target) = &import.target.module
                 {
-                    follow.push(PathBuf::from(target.as_str()));
+                    follow.push(Follow::new(PathBuf::from(target.as_str())));
                 }
             }
         }
@@ -198,14 +237,6 @@ fn resolve_module_targets(
         follow,
         offered: AtomicBool::new(false),
     }
-}
-
-/// Resolve a dependency once per snapshot; later worlds reuse the `Arc`.
-fn read_resolved_dependency(
-    path: &Path,
-    sources: &TypeSourceSnapshot,
-) -> Option<Arc<ResolvedDependency>> {
-    cells::read(path, sources, resolve_dependency)
 }
 
 fn resolve_dependency(
@@ -237,14 +268,15 @@ fn source_type(is_tsx: bool) -> SourceType {
 fn resolve_target(
     target: &mut TypeModuleReference,
     current: &Path,
-    follow: &mut Vec<PathBuf>,
+    follow: &mut Vec<Follow>,
     should_follow: bool,
     sources: &TypeSourceSnapshot,
 ) {
     if let Some(path) = sources.resolve_import_from_identity(current, &target.specifier) {
-        target.module = Some(path_key(&path));
+        let follows = Follow::new(path);
+        target.module = Some(follows.identity.clone());
         if should_follow {
-            follow.push(path);
+            follow.push(follows);
         }
     }
 }
