@@ -97,3 +97,45 @@ fn unselected_or_excluded_nuxt_import_manifests_do_not_own_the_vue_template_ref(
         );
     }
 }
+
+/// A solution-style root (Nuxt's generated `tsconfig.json`) expands into its
+/// references exactly as input collection does, so a manifest a referenced
+/// project selects owns the ref. A root with its own inputs does not.
+#[test]
+fn referenced_projects_select_nuxt_import_manifests_like_input_collection() {
+    for (root_config, owned) in [
+        (
+            r#"{"files":[],"references":[{"path":"./tsconfig.app.json"}]}"#,
+            true,
+        ),
+        (
+            r#"{"include":["src/**/*.vue"],"references":[{"path":"./tsconfig.app.json"}]}"#,
+            false,
+        ),
+    ] {
+        let directory = tempfile::tempdir().unwrap();
+        let root = directory.path().canonicalize().unwrap();
+        write(&root, ".nuxt/types/imports.d.ts", VUE_TEMPLATE_REF);
+        write(&root, "src/form.vue", "<template><form /></template>\n");
+        write(
+            &root,
+            "tsconfig.app.json",
+            r#"{"files":[".nuxt/types/imports.d.ts"],"include":["src/**/*.vue"]}"#,
+        );
+
+        let files = collect(&root, root_config);
+        assert_eq!(
+            files
+                .iter()
+                .filter(|path| **path == root.join(".nuxt/types/imports.d.ts"))
+                .count(),
+            usize::from(owned),
+            "{root_config}: {files:?}"
+        );
+        assert_eq!(
+            declares_vue_template_ref_global(&files),
+            owned,
+            "{root_config}: {files:?}"
+        );
+    }
+}

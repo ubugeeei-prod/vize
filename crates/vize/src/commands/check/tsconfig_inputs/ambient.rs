@@ -9,7 +9,6 @@ use vize_l0::FxHashSet;
 
 use super::NODE_MODULES_DIR;
 use super::collect::explicit_hidden_include_roots;
-use super::collect_default_check_files_inner;
 use super::glob::normalize_input_path;
 use super::loader::TsconfigInputCache;
 use super::matching::{
@@ -19,6 +18,7 @@ use super::type_references::{
     collect_tsconfig_type_packages, reference_type_packages,
     resolve_type_package_declaration_files, resolve_type_reference_declaration_files,
 };
+use super::{collect_default_check_files_for_tsconfig, collect_default_check_files_inner};
 
 mod top_level;
 
@@ -69,18 +69,37 @@ pub(crate) fn collect_content_mapper_ambient_declarations(
     cache: &mut TsconfigInputCache,
 ) -> Vec<PathBuf> {
     let project_root = normalize_input_path(project_root);
-    let mut roots =
-        collect_default_check_files_inner(&project_root, Some(tsconfig_path), true, false, cache);
+    let mut roots = Vec::new();
+    let mut seen = FxHashSet::default();
+    let mut manifests = Vec::new();
+    // One pass over the same program projects `collect_default_check_files_inner`
+    // walks: a solution-style root expands into its references, and each
+    // project contributes the Nuxt manifests its own `files`/`include` select.
+    for (index, project) in cache.project_paths(tsconfig_path).iter().enumerate() {
+        if index == 1 && !roots.is_empty() {
+            break;
+        }
+        collect_default_check_files_for_tsconfig(
+            &project_root,
+            project,
+            true,
+            false,
+            cache,
+            &mut roots,
+            &mut seen,
+        );
+        manifests.extend(collect_selected_nuxt_import_manifests(
+            &project_root,
+            project,
+            cache,
+        ));
+    }
     roots.retain(|path| is_declaration_file(path));
     roots.extend(collect_tsconfig_type_declaration_files(
         &project_root,
         Some(tsconfig_path),
     ));
-    roots.extend(collect_selected_nuxt_import_manifests(
-        &project_root,
-        tsconfig_path,
-        cache,
-    ));
+    roots.extend(manifests);
     let mut graph = collect_declaration_reference_graph(&roots)
         .into_iter()
         .filter(|path| path.is_file())
