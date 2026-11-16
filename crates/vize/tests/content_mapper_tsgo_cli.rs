@@ -27,6 +27,7 @@ mod incomplete_tags;
 mod inference_copy_bodies_11451_11452;
 mod javascript_check_js;
 mod let_anchor_assignment;
+mod library_generic_fallthrough_13021;
 mod listener_anchor_11657;
 mod long_prop_kebab_case;
 mod memo_expression;

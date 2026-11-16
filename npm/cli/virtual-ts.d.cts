@@ -309,7 +309,9 @@ export type $PropChecker<C, P, T> =
             ? __F
             : (props: $ComponentCheckProps<P, T>) => void
       : $IsLibraryGenericExport<C> extends true
-        ? C
+        ? [$LiteralKeys<T>] extends [never]
+          ? C | ((props: T) => void)
+          : C
         : (props: $ComponentCheckProps<P, T>) => void;
 export type $PropValue<
   P,

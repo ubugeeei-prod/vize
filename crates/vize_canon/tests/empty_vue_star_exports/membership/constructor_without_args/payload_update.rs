@@ -30,6 +30,7 @@ mod jsx_exact_keys;
 mod lib_type_qualification;
 mod lib_type_qualification_listeners;
 mod lib_type_shadowing_audit;
+mod library_props_fallthrough;
 mod listener_contract;
 mod listener_relations;
 mod loose_emit_sdk;
