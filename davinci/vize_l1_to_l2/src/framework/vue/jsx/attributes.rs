@@ -10,10 +10,11 @@ use vize_l2::op::{Attribute, BindOp, BindingOp, DynamicName, OnOp};
 
 use super::children::contains_jsx;
 use super::directives::directive;
+use super::slots::{forwarded_slots, slots_object};
 use super::{Cx, JsxRefusal, span};
 
-/// The camelCase spelling of `v-slots`, which the JSX dialects accept too.
-const V_SLOTS_ALIAS: &str = "vSlots";
+/// `v-slots` and the camelCase spelling the JSX dialects accept too.
+const V_SLOTS: [&str; 2] = ["v-slots", "vSlots"];
 
 /// Whose attributes these are: a directive lowers by its owner's kind.
 #[derive(Clone, Copy)]
@@ -29,6 +30,8 @@ pub(super) enum Owner<'a, 'r, 'x> {
 pub(super) struct Props<'a> {
     pub(super) attributes: Vec<'a, Attribute<'a>>,
     pub(super) bindings: Vec<'a, BindingOp<'a>>,
+    /// A forwarded `v-slots` value, which binds after every other prop.
+    slots: Option<oxc_span::Span>,
 }
 
 impl<'a> Props<'a> {
@@ -36,6 +39,7 @@ impl<'a> Props<'a> {
         Self {
             attributes: Vec::new_in(&allocator),
             bindings: Vec::new_in(&allocator),
+            slots: None,
         }
     }
 
@@ -71,6 +75,10 @@ pub(super) fn props<'a>(
             }
         }
     }
+    if let Some(at) = out.slots {
+        cx.mint();
+        out.bindings.push(slots_object(cx, at)?);
+    }
     Ok(())
 }
 
@@ -84,9 +92,12 @@ fn attribute<'a>(
         JSXAttributeName::Identifier(name) => cx.slice(name.span)?,
         JSXAttributeName::NamespacedName(name) => cx.slice(name.namespace.span)?,
     };
-    // `v-slots` and its alias wait for the slot slice.
-    if head == V_SLOTS_ALIAS {
-        return Err(JsxRefusal::Attribute);
+    if V_SLOTS.contains(&head) {
+        let at = forwarded_slots(attribute, owner)?;
+        return match out.slots.replace(at) {
+            None => Ok(()),
+            Some(_) => Err(JsxRefusal::Attribute),
+        };
     }
     if head.starts_with("v-") {
         return directive(cx, attribute, owner, out);

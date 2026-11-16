@@ -16,6 +16,7 @@ mod model;
 mod module;
 #[cfg(test)]
 mod module_tests;
+mod slots;
 #[cfg(test)]
 mod tests;
 
