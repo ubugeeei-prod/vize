@@ -1,0 +1,5 @@
+export interface KeyRegistry {
+  seed: true;
+}
+
+export declare const ts: Readonly<Record<keyof KeyRegistry, string>>;

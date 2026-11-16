@@ -1,0 +1,10 @@
+<script setup lang="ts">
+import { ts } from "lib/table";
+
+const seed = ts.seed.toUpperCase();
+const account = ts.account.toUpperCase();
+</script>
+
+<template>
+  <p>{{ seed }} {{ account }}</p>
+</template>

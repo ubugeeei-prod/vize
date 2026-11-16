@@ -107,6 +107,7 @@ mod check_pug_template_cli;
 mod check_ref_enum_template_cli;
 mod check_reference_path_cli;
 mod check_reference_types_cli;
+mod check_removed_node_modules_package_cli;
 mod check_reported_declarations_11364_11365_cli;
 mod check_server_cli;
 mod check_server_reuse_cli;

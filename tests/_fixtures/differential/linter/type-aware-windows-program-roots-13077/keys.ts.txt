@@ -1,0 +1,7 @@
+declare module "lib/table" {
+  interface KeyRegistry {
+    account: true;
+  }
+}
+
+export const TAG = "us";
