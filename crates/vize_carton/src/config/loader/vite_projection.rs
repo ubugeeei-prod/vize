@@ -4,7 +4,7 @@
 //! throwing. `None` sends the config back to Node, which also owns every
 //! error message, so a refused setting surfaces exactly as before.
 
-use std::sync::OnceLock;
+use std::{borrow::Cow, sync::OnceLock};
 
 use serde_json::{Map, Value};
 
@@ -48,6 +48,8 @@ pub(super) fn project(source: &Object, explicit: bool, root: &str) -> Option<Val
     type_checker.insert("jsxTypecheck".into(), Value::Bool(true));
     config.insert("typeChecker".into(), Value::Object(type_checker));
     if let Some(vue) = source.get("vue") {
+        let vue = without_empty_plugins(vue)?;
+        let vue = vue.as_ref();
         let schema = schema()?;
         if check(vue, schema, schema)? {
             overlay(&mut config, flat(normalize(vue.as_object()?)?)?);
@@ -58,6 +60,26 @@ pub(super) fn project(source: &Object, explicit: bool, root: &str) -> Option<Val
     let mut config = project_paths(config, root, false)?;
     config.insert("__vizeProjectRoot".into(), Value::String(root.into()));
     Some(Value::Object(config))
+}
+
+/// `vue.plugins` resolves through the JS plugin plan. Only a list without
+/// entries is literal; it projects exactly like an absent list.
+fn without_empty_plugins(vue: &Value) -> Option<Cow<'_, Value>> {
+    let Some(plugins) = vue.as_object().and_then(|object| object.get("plugins")) else {
+        return Some(Cow::Borrowed(vue));
+    };
+    let Value::Array(entries) = plugins else {
+        return None;
+    };
+    if !entries
+        .iter()
+        .all(|entry| matches!(entry, Value::Null | Value::Bool(false)))
+    {
+        return None;
+    }
+    let mut object = vue.as_object()?.clone();
+    object.remove("plugins");
+    Some(Cow::Owned(Value::Object(object)))
 }
 
 /// `rejectLegacyConfig`: retired inheritance and `vize:` sections throw.

@@ -11,8 +11,8 @@
 | Slice                                                    | State                                    |
 | -------------------------------------------------------- | ---------------------------------------- |
 | API v1 packet freeze                                     | done (#13122)                            |
-| v2 manifest, canonical plan, validation, inspector views | done                                     |
-| `vue.plugins` resolved from `vite.config.*`              | planned                                  |
+| v2 manifest, canonical plan, validation, inspector views | done (#13124)                            |
+| `vue.plugins` resolved from `vite.config.*`              | done                                     |
 | custom lint (`lint.rule`)                                | planned                                  |
 | custom directive (`vue.directive`)                       | declared only; every consumer refuses it |
 | custom block (`sfc.custom-block`)                        | declared only; every consumer refuses it |
@@ -36,6 +36,14 @@
   plans that Rust must refuse).
 - v1 freeze: `tests/tooling/davinci-plugin-api-v1-freeze.test.ts` with
   `tests/tooling/fixtures/davinci-plugin-sdk/api-v1-packets.json`.
+
+- Configuration: the shared projector (`loader/vite-runtime.mjs`) resolves
+  `vue.plugins` once for Vite, Vite+, Nuxt, the CLI and the LSP. A non-empty plan
+  travels as the host-only `__vizePluginPlan: { digest, plan }` key. In-process
+  JS hosts read the resolved plan, with its callbacks, under
+  `Symbol.for("vize.plugin.plan")`. Every native document parse verifies the
+  plan. `vize plugin inspect [--config <path>]` prints the plan and per-product
+  admission.
 
 Every refusal is a `[plugin/<code>] <subject>: <message>` error. JS and Rust
 use the same codes.
@@ -73,6 +81,19 @@ invalidating a plan that is valid today.
   `supports.runtimes`.
 - **Permissions.** `env` keys and `fs.read` paths are declared and inspectable.
   They do not sandbox trusted JavaScript.
+- **Empty plans.** An absent list, `[]` and a list of only skipped entries all
+  project byte-identically to a config without plugins: no key, no file, no
+  callback. The plugin host (`loader/plugin-host.js`) is imported only when a
+  list has an entry, and the native runtime carries it as a lazily imported
+  `data:` module, so configs without plugins never parse or evaluate it.
+- **Global refusal.** Until a capability is implemented by some product, every
+  product refuses a plan that contains it at config load. `vize plugin inspect`
+  still reports the plan with its refused capabilities.
+- **Composition.** A later `withVue({ plugins })` replaces the list, like other
+  Vue option arrays.
+- **Serialized configs.** A serialized Vite config (`--config-stdin`) may carry
+  only the resolved `__vizePluginPlan`. Raw entries lost their callbacks, so they
+  are refused.
 - **Directives.** Names are kebab-case and cannot shadow a built-in directive.
   Modifiers normalize to `{ optional: true, default: false }`. A required
   modifier with a default is refused.

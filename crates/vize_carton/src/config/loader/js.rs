@@ -14,8 +14,8 @@ use std::{
 
 use crate::config::ConfigDocument;
 
-mod runtime_file;
-mod runtime_source;
+pub(super) mod runtime_file;
+pub(super) mod runtime_source;
 
 use runtime_file::NodeRuntimeFile;
 
@@ -62,7 +62,7 @@ pub(super) fn parse_js_config_observed(
         let value = serde_json::from_slice(&json)?;
         let normalized = crate::config::normalize_public_config_value(value)
             .map_err(|error| IoError::new(ErrorKind::InvalidData, error))?;
-        let mut document: ConfigDocument = serde_json::from_value(normalized.clone())?;
+        let mut document = super::parse::verified(serde_json::from_value(normalized.clone())?)?;
         document.set_evaluated_policy(normalized);
         document.set_config_dependencies(dependencies);
         return Ok(document);

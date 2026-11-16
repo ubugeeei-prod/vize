@@ -177,6 +177,14 @@ pub(super) fn explicit_vite_json_bytes(
             std::io::Error::new(std::io::ErrorKind::InvalidInput, "vue: must be object").into(),
         );
     };
+    if vue.contains_key("plugins") {
+        // Serialized entries lost their callbacks; only the projected plan travels.
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::InvalidInput,
+            "[plugin/entry-invalid] vue.plugins: serialized configs carry the resolved __vizePluginPlan, not plugin entries",
+        )
+        .into());
+    }
     let mut projected = vue.clone();
     if let Some(version) = projected.remove("version") {
         projected.insert("vue".into(), serde_json::json!({ "version": version }));
@@ -195,9 +203,17 @@ pub(super) fn explicit_vite_json_bytes(
         .entry("jsxTypecheck")
         .or_insert(serde_json::Value::Bool(true));
     reject_custom_config_extends(&serde_json::Value::Object(projected.clone()))?;
-    Ok(serde_json::from_value(serde_json::Value::Object(
+    verified(serde_json::from_value(serde_json::Value::Object(
         projected,
     ))?)
+}
+
+/// A projected plugin plan must verify before any product reads the document.
+pub(super) fn verified(
+    document: ConfigDocument,
+) -> Result<ConfigDocument, Box<dyn std::error::Error>> {
+    crate::config::plugin_plan::document_plugin_plan(&document)?;
+    Ok(document)
 }
 
 fn reject_custom_config_extends(
@@ -236,9 +252,9 @@ pub(super) fn document_from_json(
     {
         let value: serde_json::Value = serde_json::from_slice(json)?;
         reject_custom_config_extends(&value)?;
-        return Ok(serde_json::from_value::<ConfigDocument>(value)?);
+        return verified(serde_json::from_value::<ConfigDocument>(value)?);
     }
-    Ok(serde_json::from_slice::<ConfigDocument>(json)?)
+    verified(serde_json::from_slice::<ConfigDocument>(json)?)
 }
 
 /// Parse a discovered candidate and map recoverable failures to `None`.

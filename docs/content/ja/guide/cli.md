@@ -88,6 +88,7 @@ vize [COMMAND]
 | `inspector`      | プレイグラウンドのコンパイラーインスペクター用データを作成する                             |
 | `clean`          | Vize が生成したキャッシュを削除する                                                        |
 | `lib`            | バージョンを指定して UI・composable のソースを取り込む（[Lib Pull ガイド](./lib-pull.md)） |
+| `plugin`         | 実験的な Plugin API v2 のプランを確認する                                                  |
 | `ready`          | `fmt`、`lint`、`check`、`build` を実行する                                                 |
 | `upgrade`        | インストール済み CLI を更新する                                                            |
 | `check-server`   | Unix JSON-RPC の型チェックサーバーを起動する                                               |
@@ -367,6 +368,20 @@ vize clean path/to/project
 | `-q, --quiet`                       | 状態の出力を抑える                                     |
 
 <a id="準備ができて"></a>
+
+## プラグイン
+
+```bash
+vize plugin inspect
+vize plugin inspect --config path/to/vite.config.ts
+```
+
+`vize plugin inspect` は `vite.config.*` を評価し、`vue.plugins` から解決された正規のプラグインプランを
+JSON で出力します。プラグインの順序、所有権の宣言、ケーパビリティ、オプション、パーミッション、
+キャッシュ入力、プロダクトごとの受け入れ状況を含みます。Plugin API v2 は実験的な API です
+([状況](https://github.com/ubugeeei-prod/vize/blob/main/docs/release/integrated-plugin-incubation.md))。
+ほかのコマンドは、まだどの Vize プロダクトも実装していないケーパビリティを含むプランを拒否します。
+`inspect` は理由を確認できるよう、そのようなプランも表示します。
 
 ## 準備状況の確認
 

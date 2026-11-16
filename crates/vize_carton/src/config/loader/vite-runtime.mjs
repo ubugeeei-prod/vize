@@ -166,7 +166,8 @@ export async function projectViteConfigSource(source, env, configDir) {
   if (env.command !== "build" && env.command !== "serve") env = { ...env, command: "serve" };
   rejectLegacyConfig(source);
   const selected = normalizeVueConfigOptions(source);
-  const canonical = selected === undefined ? {} : flatVueOptions(selected);
+  const plugins = await resolveVuePlugins(selected);
+  const canonical = selected === undefined ? {} : flatVueOptions(withoutPlugins(selected));
   const overrides = {};
   if (object(source.compiler)) {
     const { vueVersion, ...compiler } = source.compiler;
@@ -219,7 +220,60 @@ export async function projectViteConfigSource(source, env, configDir) {
   }
   const root = typeof source.root === "string" ? resolve(configDir ?? ".", source.root) : configDir;
   const config = overlayVueOptions(merge(projectConfigDefaults(), overrides), canonical);
-  return root ? { ...projectPaths(config, root, false), __vizeProjectRoot: root } : config;
+  return withPluginPlan(
+    root ? { ...projectPaths(config, root, false), __vizeProjectRoot: root } : config,
+    plugins,
+  );
+}
+
+// A separate function, so configs without plugins never compile the host import.
+function pluginHost() {
+  return import("./plugin-host.js");
+}
+
+/** In-process hosts read the resolved plan, including callbacks, under this key. */
+export const RESOLVED_PLUGIN_PLAN = Symbol.for("vize.plugin.plan");
+
+// `vue.plugins` is resolved once into the canonical plan. A list without entries
+// never loads the plugin host and leaves the projection byte-identical; a
+// non-empty plan travels as canonical data.
+async function resolveVuePlugins(selected) {
+  const entries = object(selected) ? selected.plugins : undefined;
+  if (entries === undefined) return undefined;
+  if (Array.isArray(entries) && entries.every((entry) => entry === false || entry == null))
+    return undefined;
+  const host = await pluginHost();
+  const resolved = host.resolvePluginPlan(entries);
+  if (host.isEmptyPluginPlan(resolved.plan)) return undefined;
+  host.refuseUnimplementedCapabilities(resolved.plan);
+  return resolved;
+}
+
+function withPluginPlan(config, resolved) {
+  if (resolved === undefined) return config;
+  const projected = {
+    ...config,
+    __vizePluginPlan: { digest: resolved.digest, plan: resolved.plan },
+  };
+  Object.defineProperty(projected, RESOLVED_PLUGIN_PLAN, { value: resolved });
+  return projected;
+}
+
+function withoutPlugins(selected) {
+  if (!object(selected) || !Object.hasOwn(selected, "plugins")) return selected;
+  const { plugins: _plugins, ...rest } = selected;
+  return rest;
+}
+
+/** `vize plugin inspect`: the plan and per-product admission, refused capabilities included. */
+export async function inspectViteConfigPlugins(exported, env) {
+  const source = await resolveViteConfigSource(exported, env);
+  rejectLegacyConfig(source);
+  const selected = normalizeVueConfigOptions(source);
+  const host = await pluginHost();
+  return host.inspectPluginPlan(
+    host.resolvePluginPlan(object(selected) ? selected.plugins : undefined),
+  );
 }
 
 // `*.vue` and `**/*.vue` match Vue files at every depth.
@@ -234,7 +288,8 @@ function excludesEveryVueFile(pattern) {
 export function vueConfigOptions(source) {
   const selected = source.vue;
   if (selected !== undefined) {
-    validateVueOption(selected, vueOptionSchema, "vue");
+    // The plugin resolver owns `plugins`; entries carry callbacks, not schema data.
+    validateVueOption(withoutPlugins(selected), vueOptionSchema, "vue");
     assertVueActionAliases(selected, "vue");
   }
   return selected;
