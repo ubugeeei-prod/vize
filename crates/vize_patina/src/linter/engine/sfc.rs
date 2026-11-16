@@ -112,7 +112,7 @@ impl Linter {
                     super::rule_sets::analyze_descriptor_for_component_reads(
                         scripts,
                         Some(&l2),
-                        self.has_resolved_macro_type_demand().then_some(filename),
+                        self.macro_type_resolution(filename),
                         self.has_unused_bindings_demand(),
                         derived,
                     )
@@ -120,7 +120,7 @@ impl Linter {
                     super::rule_sets::analyze_descriptor_for_lint_with_template(
                         scripts,
                         Some(&l2),
-                        self.has_resolved_macro_type_demand().then_some(filename),
+                        self.macro_type_resolution(filename),
                         self.has_unused_bindings_demand(),
                         derived,
                     )

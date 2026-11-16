@@ -158,20 +158,28 @@ pub(crate) struct TemplateRuleEnv<'a> {
     pub facade_rules: &'static [&'static str],
 }
 
+/// Where an SFC's imported macro types resolve: its path, and the disk view a
+/// run shares across files (`None` reads a fresh view for this SFC).
+#[derive(Clone, Copy)]
+pub(crate) struct MacroTypeResolution<'a> {
+    pub filename: &'a str,
+    pub sources: Option<&'a vize_atelier_sfc::script::TypeSourceSnapshot>,
+}
+
 pub(crate) fn analyze_descriptor_for_lint(
     scripts: &SfcScripts<'_>,
     template: Option<&L2Template<'_>>,
-    resolve_filename: Option<&str>,
+    resolve: Option<MacroTypeResolution<'_>>,
     unused: bool,
     derived: bool,
 ) -> Croquis {
-    analyze_descriptor_for_lint_with_template(scripts, template, resolve_filename, unused, derived)
+    analyze_descriptor_for_lint_with_template(scripts, template, resolve, unused, derived)
 }
 
 pub(crate) fn analyze_descriptor_for_lint_with_template(
     scripts: &SfcScripts<'_>,
     template: Option<&L2Template<'_>>,
-    resolve_filename: Option<&str>,
+    resolve: Option<MacroTypeResolution<'_>>,
     unused: bool,
     derived: bool,
 ) -> Croquis {
@@ -187,10 +195,14 @@ pub(crate) fn analyze_descriptor_for_lint_with_template(
         options
     };
     let template = template.map(crate::markup::L2Template::lint_template);
-    match resolve_filename {
-        Some(filename) => {
+    match resolve {
+        Some(resolve) => {
             vize_atelier_sfc::croquis::analyze_sfc_descriptor_with_lint_template_resolved(
-                scripts, template, options, filename,
+                scripts,
+                template,
+                options,
+                resolve.filename,
+                resolve.sources,
             )
         }
         None => vize_atelier_sfc::croquis::analyze_sfc_descriptor_with_lint_template(
@@ -203,7 +215,7 @@ pub(crate) fn analyze_descriptor_for_lint_with_template(
 pub(super) fn analyze_descriptor_for_component_reads(
     scripts: &SfcScripts<'_>,
     template: Option<&L2Template<'_>>,
-    resolve_filename: Option<&str>,
+    resolve: Option<MacroTypeResolution<'_>>,
     unused: bool,
     derived: bool,
 ) -> Croquis {
@@ -220,11 +232,7 @@ pub(super) fn analyze_descriptor_for_component_reads(
         })
     {
         return analyze_descriptor_for_lint_with_template(
-            scripts,
-            template,
-            resolve_filename,
-            unused,
-            derived,
+            scripts, template, resolve, unused, derived,
         );
     }
     let options = SfcCroquisOptions::lint_demand();
@@ -239,10 +247,14 @@ pub(super) fn analyze_descriptor_for_component_reads(
         options
     };
     let template = template.map(crate::markup::L2Template::lint_template);
-    let (mut analysis, packet) = match resolve_filename {
-        Some(filename) => {
+    let (mut analysis, packet) = match resolve {
+        Some(resolve) => {
             vize_atelier_sfc::croquis::analyze_sfc_descriptor_with_lint_template_and_occurrences_resolved(
-                scripts, template, options, filename,
+                scripts,
+                template,
+                options,
+                resolve.filename,
+                resolve.sources,
             )
         }
         None => {
