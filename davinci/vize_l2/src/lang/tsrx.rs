@@ -11,7 +11,9 @@
 //! - Elements and components: a member tag or a name that does not start
 //!   with a lowercase ASCII letter is a component. The namespace follows
 //!   `svg`, `math` and `foreignObject`. A component's children are its
-//!   default slot.
+//!   default slot. A dynamic tag `<{expr}>` is the dynamic `component` whose
+//!   `is` binding is `expr` at `{expr}`, the shape JSX value tags lower to:
+//!   an element for a string, else a component.
 //! - Fragments are flattened into the enclosing region.
 //! - Text follows the JSX whitespace rules. Normalized-empty text produces no op.
 //! - A `{expr}` child becomes `ui.jsx-child`: it renders text, a node or a list,
@@ -54,8 +56,6 @@ pub enum TsrxIssueKind {
     Switch,
     /// `@try`/`@pending`/`@catch`, which needs a boundary op.
     Try,
-    /// `<{expr}>`, which needs a dynamic tag op.
-    DynamicTag,
     /// `<style>`/`<script>` bodies, which need TSRX style scoping.
     RawText,
     /// A character reference in text or in a quoted attribute value.

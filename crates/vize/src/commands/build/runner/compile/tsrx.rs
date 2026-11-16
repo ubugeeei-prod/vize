@@ -180,8 +180,10 @@ mod tests {
         assert_eq!(
             emitted,
             [
+                "components.tsrx",
                 "mount/attributes.tsrx",
                 "mount/counter.tsrx",
+                "mount/dynamic.tsrx",
                 "mount/loops.tsrx",
                 "mount/returns.tsrx",
                 "mount/slots.tsrx",

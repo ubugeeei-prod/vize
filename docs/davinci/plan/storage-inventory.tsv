@@ -131,7 +131,7 @@ l2	-	davinci/vize_l2/src/lang/foreign.rs	0	0	0	0	1	1	0	0
 l2	contract	davinci/vize_l2/src/artifact.rs	1	1	0	0	0	0	0	0
 l2	contract	davinci/vize_l2/src/artifact/builder.rs	1	2	0	0	10	0	0	0
 l2	-	davinci/vize_l2/src/artifact/builder/region.rs	0	0	0	0	3	0	0	0
-l2	-	davinci/vize_l2/src/artifact/builder/binding.rs	0	0	0	0	2	0	0	0
+l2	-	davinci/vize_l2/src/artifact/builder/binding.rs	0	0	0	0	1	0	0	0
 l2	analysis	davinci/vize_l2/src/artifact/builder/binding/tests.rs	1	0	0	0	1	6	0	0
 l2	-	davinci/vize_l2/src/artifact/builder/conditional.rs	0	0	0	0	5	0	0	0
 l2	analysis	davinci/vize_l2/src/artifact/builder/tests.rs	2	0	1	6	1	8	0	0

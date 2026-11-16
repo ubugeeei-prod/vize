@@ -198,7 +198,6 @@ fn unsupported_constructs_refuse_the_module_at_their_spans() {
             TsrxIssueKind::Try,
             "@try { <C /> } @catch (error) { <p>failed</p> }",
         ),
-        (TsrxIssueKind::DynamicTag, "{tag}"),
         (
             TsrxIssueKind::RawText,
             "<style>{`.x { color: red }`}</style>",
@@ -296,4 +295,26 @@ fn reference_corpus_lowers_or_refuses_only_owned_constructs() {
         }
     }
     assert!(lowered > 0);
+}
+
+#[test]
+fn dynamic_tags_lower_to_the_dynamic_component_bound_at_their_tag() {
+    let source = "function D({ tag }) @{\n\t<{tag} class=\"x\">hi</{tag}>\n}\n";
+    let regions = dumps(source);
+    let [(RegionSite::FunctionBody, page)] = regions.as_slice() else {
+        panic!("{regions:?}");
+    };
+    assert_eq!(
+        page,
+        r#"[l2-dump-v2]
+ops=3
+
+[l2-dump-v2.ops]
+ui.component component @24:51
+  attr class="x" @31:40
+  ui.bind name="is" value=js("tag" @26:29) @25:30
+  ui.text "hi" @41:43
+
+"#
+    );
 }
