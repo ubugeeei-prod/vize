@@ -6,6 +6,8 @@ use crate::{LintDiagnostic, LintPreset, Linter, Severity};
 
 mod no_implied_eval_callable;
 mod no_unnecessary_type_assertion;
+mod restrict_plus_generic_intersection;
+mod unbound_method_lib_members;
 mod upstream_872_cases;
 mod upstream_872_conformance_12983;
 mod upstream_872_no_unsafe_return_12996;

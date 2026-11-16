@@ -7102,6 +7102,54 @@
       }
     },
     {
+      "id": "linter/restrict-plus-generic-intersection-13080",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "restrict-plus-generic-intersection-13080",
+        "files": [
+          {
+            "path": "src/Narrowed.vue.txt",
+            "role": "issue-authored-generic-function-narrowing-reproduction",
+            "sha256": "570a66db92fc6729afdcdc9d659dee4600951956e73aae938dab2a0b88ef0916"
+          },
+          {
+            "path": "src/NarrowedProp.vue.txt",
+            "role": "issue-authored-generic-component-prop-reproduction",
+            "sha256": "79e2f3902c128122285460ece6135f1c1599824c7a1d84bfb4cb7451be55fb15"
+          },
+          {
+            "path": "tsconfig.json",
+            "role": "issue-authored-bundler-resolution-config",
+            "sha256": "58a7b95ded5405fa3e811fa60c74459a8ac19b08153682a3a2212ec946671451"
+          },
+          {
+            "path": "vize-lint.config.mjs.txt",
+            "role": "issue-authored-strict-plus-operand-options",
+            "sha256": "6a450c940a8c640307e1711f60460bccb4cc1dc5c91c03285cf195d9d096a7b7"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/restrict-plus-nullish-12982",
       "state": "active",
       "targets": [
@@ -8257,6 +8305,74 @@
             "path": "tsconfig.json",
             "role": "issue-authored-bundler-resolution-config",
             "sha256": "240d4a075d2223ef2135e651e760cb688878de493339595e67fd9cad12596044"
+          },
+          {
+            "path": "vize-lint.config.mjs.txt",
+            "role": "issue-authored-type-aware-lint-config",
+            "sha256": "83f81c9dfc7601d0ae6b754e063f31c77a77c5496a8057e1a04f9505c4a13f2c"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/unbound-method-lib-members-13081",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "unbound-method-lib-members-13081",
+        "files": [
+          {
+            "path": "src/Escape.vue.txt",
+            "role": "issue-authored-regexp-escape-reproduction",
+            "sha256": "bf8d51085768f8bca1b324018ca5f7159f021571b5bb68021f27c29895cc3bc6"
+          },
+          {
+            "path": "src/Plain.vue.txt",
+            "role": "issue-authored-merged-builtin-reproduction",
+            "sha256": "7a11fac90eb4964cfbac07118d73ab4b06751b92b7908a7a35e027278ceaa750"
+          },
+          {
+            "path": "src/Uses.vue.txt",
+            "role": "issue-authored-augmentation-importer",
+            "sha256": "fd2a4312c762b321012064e112e1afa49eabb2cbed649c7696311bd4127c03da"
+          },
+          {
+            "path": "src/WindowReceiver.vue.txt",
+            "role": "issue-authored-window-receiver-reproduction",
+            "sha256": "be976d1aedb82f1e55a6b64e2b6c9928bb0d3abce8f4ee79e1d71a5c08ef8add"
+          },
+          {
+            "path": "src/augment.ts.txt",
+            "role": "issue-authored-global-augmentation",
+            "sha256": "af9065bad4bcc67437b4ccb49057614ff88bd2f1a59eafa91026668d78941181"
+          },
+          {
+            "path": "tsconfig.json",
+            "role": "issue-authored-bundler-resolution-config",
+            "sha256": "0cedffe792978a16699c7b45870ae2ece36a1b5177ff15cb3bbce8e372b75b03"
+          },
+          {
+            "path": "vize-lint.check-global-object.config.mjs.txt",
+            "role": "typescript-eslint-global-object-method-option-config",
+            "sha256": "6a27f02095c4ec5cd59271eaf8432ca53831aff2746a5d3a731f6ae5f0aaaff4"
           },
           {
             "path": "vize-lint.config.mjs.txt",

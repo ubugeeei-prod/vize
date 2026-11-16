@@ -391,6 +391,9 @@ pub struct PreferPromiseRejectErrorsOptions {
 pub struct UnboundMethodOptions {
     /// Skip static methods.
     pub ignore_static: bool,
+    /// Also report library methods read from the global object (`window`,
+    /// `self`, `globalThis`), as typescript-eslint does.
+    pub check_global_object_methods: bool,
 }
 
 /// Declares [`TypeAwareRuleOptions`] from one list of `(field, rule, type)`.

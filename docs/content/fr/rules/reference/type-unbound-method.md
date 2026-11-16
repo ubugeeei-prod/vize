@@ -67,6 +67,12 @@ export default defineConfig({}).withVue({
 
 Lancez ensuite `vp run lint`.
 
+## Différences avec typescript-eslint
+
+Les méthodes de la bibliothèque lues sur l’objet global ne sont pas signalées. Cela concerne un receveur typé `Window & typeof globalThis` ou `typeof globalThis`, y compris `window.setTimeout`, `const { matchMedia } = window`, `self.requestAnimationFrame` et `document.defaultView?.setTimeout`. Une opération de la plateforme appelée sans receveur utilise l’objet global, donc ces références fonctionnent telles quelles. Une méthode que votre code ajoute à `Window` reste signalée. Il en va de même pour le `Window` d’un autre cadre (`parent.setTimeout`) et pour la méthode d’un objet atteint par l’objet global (`window.localStorage.getItem`). Avec `checkGlobalObjectMethods: true`, ces références sont signalées comme dans typescript-eslint.
+
+Un objet natif auquel une déclaration est fusionnée (`declare global { interface Math {} }`) garde son exemption, et `RegExp.escape` est exempté par tout chemin vers le constructeur `RegExp`. L’exemption suit les déclarations de la bibliothèque TypeScript, et non la version de Node.js qui exécute le linter.
+
 ## Voir aussi
 
 - [Règles de type et de script](../type-and-script.md)
