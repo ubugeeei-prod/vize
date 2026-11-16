@@ -31,6 +31,20 @@ fn static_event_directives_preserve_authored_order() {
 }
 
 #[test]
+fn event_directives_keep_their_authored_slots_and_reach_a_fixed_point() {
+    for source in [
+        r#"<button class="task" @click="castEnd" tabindex="0" @keypress.enter="edit">open</button>"#,
+        r#"<LewPopover @show="showHandle" @hide="hideHandle" />"#,
+        r#"<Draggable @start="dragging = true" @end="onSortEnd" />"#,
+    ] {
+        let first = format(source);
+        let second = format(&first);
+        assert_eq!(first.as_str(), source);
+        assert_eq!(second, first);
+    }
+}
+
+#[test]
 fn v_bind_object_and_dynamic_argument_stay_fixed() {
     let formatted = format(r#"<div class="b" id="a" v-bind="obj" title="t"></div>"#);
     assert_eq!(
