@@ -68,7 +68,8 @@ const cohorts = new Map<
     REFERENCED_EXTENDS_PROJECT_ROOT,
     {
       inputs: referencedExtendsInputs,
-      selector: "baseUrl-less TypeScript paths inherited by the referenced project owning the entry",
+      selector:
+        "baseUrl-less TypeScript paths inherited by the referenced project owning the entry",
     },
   ],
 ]);
