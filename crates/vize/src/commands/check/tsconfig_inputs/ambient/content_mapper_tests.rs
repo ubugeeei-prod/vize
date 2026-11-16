@@ -139,3 +139,31 @@ fn referenced_projects_select_nuxt_import_manifests_like_input_collection() {
         );
     }
 }
+
+/// A wildcard before the literal `.nuxt` segment (`apps/*/.nuxt/**/*.d.ts`)
+/// still selects each app's manifest, as it does for `tsc`.
+#[test]
+fn wildcard_prefixed_nuxt_includes_select_each_app_manifest() {
+    let directory = tempfile::tempdir().unwrap();
+    let root = directory.path().canonicalize().unwrap();
+    write(&root, "apps/site/.nuxt/imports.d.ts", VUE_TEMPLATE_REF);
+    write(
+        &root,
+        "apps/site/src/form.vue",
+        "<template><form /></template>\n",
+    );
+
+    let files = collect(
+        &root,
+        r#"{"include":["apps/*/src/**/*.vue","apps/*/.nuxt/**/*.d.ts"]}"#,
+    );
+    assert_eq!(
+        files
+            .iter()
+            .filter(|path| **path == root.join("apps/site/.nuxt/imports.d.ts"))
+            .count(),
+        1,
+        "{files:?}"
+    );
+    assert!(declares_vue_template_ref_global(&files), "{files:?}");
+}
