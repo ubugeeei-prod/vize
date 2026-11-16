@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import { sharedProps } from "./props";
+
+defineProps(sharedProps);
+</script>
+
+<template>
+  <p>{{ label }}</p>
+</template>

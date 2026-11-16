@@ -4,6 +4,8 @@ use vize_atelier_sfc::{SfcDescriptor, croquis::merge_resolved_props_into_croquis
 use vize_carton::FxHashSet;
 use vize_croquis::{BindingType, Croquis, macros::PropDefinition};
 
+#[cfg(all(test, unix))]
+mod bare_specifier_tests;
 mod cache;
 mod default_props;
 mod imports;

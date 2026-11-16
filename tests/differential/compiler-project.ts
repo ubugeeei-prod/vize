@@ -8,6 +8,7 @@ export const CONDITIONS_PROJECT_ROOT = "macro-export-conditions-11918";
 export const STAR_EXPORT_PROJECT_ROOT = "star-export-shadow-pruning-12059";
 export const REFERENCED_PATHS_PROJECT_ROOT = "imported-props-referenced-paths-13090";
 export const REFERENCED_EXTENDS_PROJECT_ROOT = "imported-props-referenced-extends-13090";
+export const SOURCE_EXPORTS_PROJECT_ROOT = "imported-props-source-exports-13110";
 export const COMPILER_PROJECT_ADAPTER = "compiler-cli-ssr-project-v1";
 export const COMPILER_PROJECT_CONTRACT = "compiler-ssr-project-module-bytes-v1";
 const inputs = [
@@ -44,6 +45,12 @@ const referencedExtendsInputs = [
   ["config/tsconfig.base.json.txt", "config", "config/tsconfig.base.json"],
   ["src/FooProps.ts.txt", "dependency", "src/FooProps.ts"],
 ] as const;
+const sourceExportsInputs = [
+  ["Layout.vue.txt", "entry", "Layout.vue"],
+  ["tsconfig.json.txt", "config", "tsconfig.json"],
+  ["lib.package.json.txt", "dependency", "node_modules/source-first/package.json"],
+  ["lib.index.ts.txt", "dependency", "node_modules/source-first/src/index.ts"],
+] as const;
 const cohorts = new Map<
   string,
   { inputs: readonly (readonly [string, string, string])[]; selector: string }
@@ -70,6 +77,13 @@ const cohorts = new Map<
       inputs: referencedExtendsInputs,
       selector:
         "baseUrl-less TypeScript paths inherited by the referenced project owning the entry",
+    },
+  ],
+  [
+    SOURCE_EXPORTS_PROJECT_ROOT,
+    {
+      inputs: sourceExportsInputs,
+      selector: "a package exporting its TypeScript source without declarations",
     },
   ],
 ]);

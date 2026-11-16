@@ -8,6 +8,8 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_carton::{CompactString, FxHashMap, FxHashSet, ToCompactString};
 
+use super::RuntimePropResolveCache;
+
 #[derive(Clone)]
 pub(super) struct RuntimeImport {
     pub(super) source: CompactString,
@@ -120,62 +122,36 @@ pub(super) fn collect_top_level_values<'a>(
     values
 }
 
-pub(super) fn resolve_runtime_import_path(current_file: &Path, specifier: &str) -> Option<PathBuf> {
+pub(super) fn resolve_runtime_import_path(
+    current_file: &Path,
+    specifier: &str,
+    cache: &RuntimePropResolveCache,
+) -> Option<PathBuf> {
     if specifier.starts_with('#') || specifier.starts_with("node:") {
         return None;
     }
-
-    let candidate = if let Some(rest) = specifier.strip_prefix("@/") {
-        let src = current_file
-            .parent()?
-            .ancestors()
-            .find(|path| path.file_name().is_some_and(|name| name == "src"))?;
-        src.join(rest)
-    } else if specifier.starts_with('/') {
-        PathBuf::from(specifier)
-    } else if specifier.starts_with('.') {
-        current_file.parent()?.join(specifier)
-    } else {
-        return resolve_workspace_package_runtime_import_path(current_file, specifier);
-    };
-
-    resolve_runtime_candidate(candidate)
-}
-
-fn resolve_workspace_package_runtime_import_path(
-    current_file: &Path,
-    specifier: &str,
-) -> Option<PathBuf> {
-    let package_path = workspace_package_subpath(specifier)?;
-    for ancestor in current_file.parent()?.ancestors() {
-        let packages = ancestor.join("packages");
-        if !packages.is_dir() {
-            continue;
-        }
-        if let Some(path) = resolve_runtime_candidate(packages.join(&package_path)) {
-            return Some(path);
-        }
+    if specifier.starts_with('.') {
+        return resolve_runtime_candidate(current_file.parent()?.join(specifier));
     }
-    None
-}
-
-fn workspace_package_subpath(specifier: &str) -> Option<PathBuf> {
-    let mut parts = specifier.split('/').filter(|part| !part.is_empty());
-    let first = parts.next()?;
-    if first.starts_with('@') {
-        let package = parts.next()?;
-        let mut path = PathBuf::from(package);
-        for part in parts {
-            path.push(part);
-        }
-        Some(path)
-    } else {
-        let mut path = PathBuf::from(first);
-        for part in parts {
-            path.push(part);
-        }
-        Some(path)
+    if specifier.starts_with('/') {
+        return resolve_runtime_candidate(PathBuf::from(specifier));
     }
+
+    // Bare specifiers resolve like imported prop types: tsconfig `paths`
+    // first, then the `node_modules` package (workspace links included)
+    // through its manifest entry points.
+    cache
+        .type_sources
+        .resolve_import(current_file, specifier)
+        .or_else(|| {
+            // `@/` without a `paths` entry keeps the `src/` convention.
+            let rest = specifier.strip_prefix("@/")?;
+            let src = current_file
+                .parent()?
+                .ancestors()
+                .find(|path| path.file_name().is_some_and(|name| name == "src"))?;
+            resolve_runtime_candidate(src.join(rest))
+        })
 }
 
 fn resolve_runtime_candidate(candidate: PathBuf) -> Option<PathBuf> {

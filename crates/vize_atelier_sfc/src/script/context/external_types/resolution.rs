@@ -10,7 +10,7 @@ mod conditions;
 mod exports_patterns;
 pub(crate) mod project;
 
-use self::exports_patterns::{ExportsTypes, exports_types_entry};
+use self::exports_patterns::{ExportsTypes, exports_root_types_entry, exports_types_entry};
 
 const RESOLVE_EXTENSIONS: &[&str] = &[
     ".ts", ".tsx", ".d.ts", ".mts", ".cts", ".js", ".jsx", ".vue",
@@ -324,9 +324,9 @@ fn resolve_package_types_with_conditions(
     subpath: &str,
     conditions: &[String],
 ) -> Option<PathBuf> {
-    let manifest = std::fs::read_to_string(package_dir.join("package.json")).ok();
+    let raw = std::fs::read_to_string(package_dir.join("package.json")).ok();
     if !conditions.is_empty()
-        && let Some(raw) = manifest.as_deref()
+        && let Some(raw) = raw.as_deref()
     {
         match conditions::resolve(
             package_dir,
@@ -340,8 +340,19 @@ fn resolve_package_types_with_conditions(
             None => {}
         }
     }
-    let manifest: Option<serde_json::Value> =
-        manifest.and_then(|raw| serde_json::from_str(&raw).ok());
+    let manifest: Option<serde_json::Value> = raw
+        .as_deref()
+        .and_then(|raw| serde_json::from_str(raw).ok());
+    // When no declaration entry resolves, the `exports` target `bundler`
+    // resolution selects: source-first workspace packages export their TS.
+    let bundler_entry = || {
+        conditions::bundler_entry(
+            package_dir,
+            raw.as_deref()?,
+            subpath,
+            resolve_candidate_path,
+        )
+    };
 
     if subpath.is_empty() {
         if let Some(manifest) = &manifest {
@@ -358,6 +369,9 @@ fn resolve_package_types_with_conditions(
                 .and_then(|value| value.as_str())
                 && let Some(path) = resolve_candidate_path(package_dir.join(types))
             {
+                return Some(path);
+            }
+            if let Some(path) = bundler_entry() {
                 return Some(path);
             }
 
@@ -389,36 +403,11 @@ fn resolve_package_types_with_conditions(
             }
             None => {}
         }
+        if let Some(path) = bundler_entry() {
+            return Some(path);
+        }
     }
     resolve_candidate_path(package_dir.join(subpath))
-}
-
-/// Find the `types` condition for the package root. The root entry is either
-/// the explicit `"."` subpath or, when no subpath keys are present, a condition
-/// map placed directly under `exports`.
-fn exports_root_types_entry(manifest: &serde_json::Value) -> Option<String> {
-    let exports = manifest.get("exports")?;
-    if let Some(root) = exports.get(".") {
-        return find_types_condition(root);
-    }
-    let conditions = exports.as_object()?;
-    if conditions.keys().any(|key| key.starts_with('.')) {
-        return None;
-    }
-    find_types_condition(exports)
-}
-
-/// Read a `types` condition out of an `exports` value; conditions may nest.
-fn find_types_condition(value: &serde_json::Value) -> Option<String> {
-    match value {
-        serde_json::Value::Object(map) => {
-            if let Some(types) = map.get("types").and_then(|value| value.as_str()) {
-                return Some(types.to_compact_string());
-            }
-            map.values().find_map(find_types_condition)
-        }
-        _ => None,
-    }
 }
 
 pub(super) fn resolve_at_src_alias(current_file: &Path, specifier: &str) -> Option<PathBuf> {
