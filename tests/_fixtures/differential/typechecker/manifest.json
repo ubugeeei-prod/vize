@@ -17649,6 +17649,46 @@
       }
     },
     {
+      "id": "typechecker/removed-node-modules-package-13088",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "test": "check_removed_node_modules_package_cli::removing_a_package_between_checks_drops_its_stale_mirror_link",
+      "inputs": [
+        {
+          "file": "src/App.vue",
+          "path": "removed-node-modules-package-13088/App.vue.txt",
+          "sha256": "120165d86d50d24d997bb38300c8890edbae1cdde1290e371a42a0fd89af4ebe"
+        },
+        {
+          "file": "tsconfig.json",
+          "path": "removed-node-modules-package-13088/tsconfig.json.txt",
+          "sha256": "bc269749354565a20985658140766cc92af67fbdf420d25087f6bf791e5f3bb1"
+        },
+        {
+          "file": "steps.json",
+          "path": "removed-node-modules-package-13088/steps.json",
+          "sha256": "a3aaaf8248680eab8db57ee177b3bbf0bf1452c1a87d69a6e049eb18a81f5319"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "Source CLI check reruns after a top-level node_modules package is removed; the stale project-mirror link (a junction on Windows) is detached."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/reported-model-events-11390",
       "state": "active",
       "targets": [
