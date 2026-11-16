@@ -1,0 +1,35 @@
+{
+  "entries": [
+    {
+      "manifest": {
+        "after": [],
+        "apiVersion": 2,
+        "backend": "js",
+        "before": [],
+        "cacheInputs": [],
+        "capabilities": [
+          {
+            "id": "lint.future",
+            "required": true,
+            "schemaVersion": 1,
+            "data": {}
+          }
+        ],
+        "fingerprint": "2222222222222222222222222222222222222222222222222222222222222222",
+        "name": "@acme/future",
+        "options": {},
+        "permissions": [],
+        "stability": "experimental",
+        "supports": {},
+        "version": "1.0.0"
+      }
+    }
+  ],
+  "runtime": "node",
+  "expect": {
+    "error": {
+      "code": "capability-unknown",
+      "message": "[plugin/capability-unknown] @acme/future: unknown capability `lint.future`"
+    }
+  }
+}

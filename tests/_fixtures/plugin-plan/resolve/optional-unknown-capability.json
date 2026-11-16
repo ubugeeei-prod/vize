@@ -1,0 +1,134 @@
+{
+  "entries": [
+    {
+      "manifest": {
+        "after": [],
+        "apiVersion": 2,
+        "backend": "js",
+        "before": [],
+        "cacheInputs": [],
+        "capabilities": [
+          {
+            "id": "lint.future",
+            "required": false,
+            "schemaVersion": 1,
+            "data": {}
+          },
+          {
+            "id": "lint.rule",
+            "required": true,
+            "schemaVersion": 1,
+            "data": {
+              "id": "present",
+              "messages": {
+                "found": "Found {name}."
+              },
+              "visit": [
+                "ui.element"
+              ]
+            }
+          },
+          {
+            "id": "lint.rule",
+            "required": false,
+            "schemaVersion": 9,
+            "data": {
+              "id": "later",
+              "messages": {
+                "found": "Found {name}."
+              },
+              "visit": [
+                "ui.element"
+              ]
+            }
+          }
+        ],
+        "fingerprint": "2222222222222222222222222222222222222222222222222222222222222222",
+        "name": "@acme/future",
+        "options": {},
+        "permissions": [],
+        "stability": "experimental",
+        "supports": {},
+        "version": "1.0.0"
+      }
+    }
+  ],
+  "runtime": "node",
+  "expect": {
+    "digest": "c3b6d884666dfb733aa6a2bec053b40a4813a99d3edfcf89fa82bb92f8d77d83",
+    "plan": {
+      "claims": [
+        {
+          "key": "lint.rule:@acme/future/present",
+          "owner": "@acme/future"
+        }
+      ],
+      "planSchema": 1,
+      "plugins": [
+        {
+          "after": [],
+          "apiVersion": 2,
+          "backend": "js",
+          "before": [],
+          "cacheInputs": [],
+          "capabilities": [
+            {
+              "data": {
+                "defaultLevel": "off",
+                "demands": [],
+                "docs": "",
+                "documents": [
+                  "template"
+                ],
+                "fixable": "none",
+                "id": "present",
+                "messages": {
+                  "found": "Found {name}."
+                },
+                "visit": [
+                  "ui.element"
+                ]
+              },
+              "id": "lint.rule",
+              "key": "@acme/future/present",
+              "required": true,
+              "schemaVersion": 1
+            }
+          ],
+          "fingerprint": "2222222222222222222222222222222222222222222222222222222222222222",
+          "index": 0,
+          "name": "@acme/future",
+          "options": {},
+          "permissions": [],
+          "skipped": [
+            {
+              "id": "lint.future",
+              "schemaVersion": 1
+            },
+            {
+              "id": "lint.rule",
+              "schemaVersion": 9
+            }
+          ],
+          "stability": "experimental",
+          "supports": {
+            "outputs": [
+              "ssr",
+              "vapor",
+              "vdom"
+            ],
+            "runtimes": [
+              "bun",
+              "node"
+            ],
+            "vue": [
+              "2",
+              "3"
+            ]
+          },
+          "version": "1.0.0"
+        }
+      ]
+    }
+  }
+}

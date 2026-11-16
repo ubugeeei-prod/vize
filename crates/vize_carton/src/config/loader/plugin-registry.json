@@ -1,0 +1,96 @@
+{
+  "planSchema": 1,
+  "apiVersions": [1, 2],
+  "products": ["compiler", "typecheck", "lint", "format", "lsp"],
+  "backends": ["js", "native", "wasm"],
+  "admittedBackends": ["js"],
+  "capabilities": {
+    "lint.plugin-v1": {
+      "schemaVersions": [1],
+      "apiVersions": [1],
+      "consumers": ["lint", "lsp"],
+      "callbacks": ["run"],
+      "admittedBy": []
+    },
+    "lint.rule": {
+      "schemaVersions": [1],
+      "apiVersions": [2],
+      "consumers": ["lint", "lsp"],
+      "callbacks": ["run"],
+      "admittedBy": []
+    },
+    "sfc.custom-block": {
+      "schemaVersions": [1],
+      "apiVersions": [2],
+      "consumers": ["compiler", "typecheck", "lint", "format", "lsp"],
+      "callbacks": [],
+      "admittedBy": []
+    },
+    "vue.directive": {
+      "schemaVersions": [1],
+      "apiVersions": [2],
+      "consumers": ["compiler", "typecheck", "lint", "lsp"],
+      "callbacks": [],
+      "admittedBy": []
+    }
+  },
+  "lintDocuments": ["template"],
+  "recordKinds": [
+    "ui.element",
+    "ui.component",
+    "ui.text",
+    "ui.interpolation",
+    "ui.comment",
+    "ui.if",
+    "ui.for",
+    "ui.slot",
+    "ui.bind",
+    "ui.on",
+    "ui.model",
+    "ui.slot-content",
+    "vue.directive",
+    "vue.css-bind",
+    "vue.sync",
+    "vue.slot-scope",
+    "vue.once",
+    "vue.memo",
+    "vue.show",
+    "vue.html",
+    "vue.text",
+    "vue.cloak"
+  ],
+  "factGroups": [
+    "templateScopes",
+    "bindings",
+    "undefined-refs",
+    "component-usages",
+    "reactivity",
+    "provide-inject",
+    "race-conditions",
+    "unused-bindings",
+    "component-signature",
+    "prop-types",
+    "emit-types",
+    "slot-types",
+    "reactivity-classes",
+    "component-references"
+  ],
+  "reservedDirectives": [
+    "bind",
+    "cloak",
+    "else",
+    "else-if",
+    "for",
+    "html",
+    "if",
+    "is",
+    "memo",
+    "model",
+    "on",
+    "once",
+    "pre",
+    "show",
+    "slot",
+    "text"
+  ]
+}
