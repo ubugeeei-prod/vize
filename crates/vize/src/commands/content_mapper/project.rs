@@ -20,8 +20,8 @@ use vize_l0::{FxHashMap, String as CompactString, cstr};
 
 use super::mode::ProjectionMode;
 use crate::commands::check::tsconfig_inputs::{
-    TsconfigInputCache, collect_ambient_declaration_files, collect_explicit_nuxt_import_manifests,
-    declares_vue_template_ref_global,
+    TsconfigInputCache, collect_content_mapper_ambient_declarations,
+    collect_explicit_nuxt_import_manifests, declares_vue_template_ref_global,
 };
 
 /// Mapper diagnostic code for an options value that is not an object.
@@ -143,7 +143,7 @@ pub(super) fn resolve_open_project(
         let project_root = config.parent().unwrap_or(Path::new("."));
         let mut input_cache = TsconfigInputCache::default();
         ambient_declarations =
-            collect_ambient_declaration_files(project_root, Some(config), &mut input_cache);
+            collect_content_mapper_ambient_declarations(project_root, config, &mut input_cache);
         let mut ownership_declarations = ambient_declarations.clone();
         ownership_declarations.extend(collect_explicit_nuxt_import_manifests(
             config,
