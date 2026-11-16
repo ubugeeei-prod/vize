@@ -145,6 +145,59 @@ ui.element li @76:91
 }
 
 #[test]
+fn conditionals_over_nested_regions_fold_them_into_branches() {
+    let source = "function A({ a, b, n }) @{
+\t<p>
+\t\t{a ? (b ? <i /> : null) : <b>{n}</b>}
+\t\t{n > 0 && <>x</>}
+\t\t{n && <s />}
+\t</p>
+}
+";
+    let regions = dumps(source);
+    // `{n && <s />}` may render `0`: it stays a value, its region standalone.
+    let [
+        (RegionSite::FunctionBody, outer),
+        (RegionSite::Expression, value),
+    ] = regions.as_slice()
+    else {
+        panic!("{regions:?}");
+    };
+    assert_eq!(
+        outer,
+        r#"[l2-dump-v2]
+ops=9
+
+[l2-dump-v2.ops]
+ui.element p @28:112
+  ui.if @34:71
+    branch js("a" @35:36) @35:57
+      ui.if @39:57
+        branch js("b" @40:41) @40:49
+          ui.element i @44:49
+    branch @60:70
+      ui.element b @60:70
+        ui.jsx-child js("n" @64:65) @63:66
+  ui.if @74:91
+    branch js("n > 0" @75:80) @75:90
+      ui.text "x" @86:87
+  ui.jsx-child js("n && <s />" @95:105) @94:106
+
+"#
+    );
+    assert_eq!(
+        value,
+        r#"[l2-dump-v2]
+ops=1
+
+[l2-dump-v2.ops]
+ui.element s @100:105
+
+"#
+    );
+}
+
+#[test]
 fn retained_expressions_project_absolute_host_spans() {
     let source = "const a = <p title={x + y}>{z}</p>;";
     let allocator = Allocator::default();
@@ -275,7 +328,15 @@ fn reference_corpus_lowers_or_refuses_only_owned_constructs() {
         assert!(module.is_clean(), "{}", path.display());
         match lower(&allocator, &module) {
             Ok(artifacts) => {
-                assert_eq!(artifacts.regions().len(), module.regions().len());
+                // Every region is lowered, or folded into an enclosing one.
+                for region in module.regions() {
+                    let lowered_at = |span: vize_l0::Span| {
+                        artifacts.regions().iter().any(|lowered| {
+                            lowered.span().start <= span.start && span.end <= lowered.span().end
+                        })
+                    };
+                    assert!(lowered_at(region.span), "{}", path.display());
+                }
                 lowered += 1;
             }
             Err(issues) => {

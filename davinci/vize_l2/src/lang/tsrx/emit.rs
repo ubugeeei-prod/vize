@@ -4,8 +4,10 @@ use oxc_span::GetSpan;
 use vize_l0::{Allocator, Span};
 use vize_l1::markup::tsrx::{
     Attribute, AttributeValue, Block, Child, Element, For, Node, Region, RegionSite, TagName,
+    TsrxModule,
 };
 
+use super::nested::{self, Folded};
 use super::{TsrxIssue, TsrxIssueKind, expression, is_component, text};
 use crate::artifact::{ArtifactError, HostForHead, OpFamily, RegionBuilder};
 use crate::expr::ExprRef;
@@ -17,6 +19,9 @@ const DYNAMIC_COMPONENT: &str = "component";
 pub(super) struct Context<'a> {
     pub allocator: &'a Allocator,
     pub source: &'a str,
+    pub module: &'a TsrxModule<'a>,
+    /// Nested regions lowered into this artifact.
+    pub folded: Folded,
 }
 
 type Result<T = ()> = core::result::Result<T, TsrxIssue>;
@@ -35,7 +40,7 @@ pub(super) fn region<'a>(
     }
 }
 
-fn node<'a>(
+pub(super) fn node<'a>(
     cx: &Context<'a>,
     node_: &'a Node<'a>,
     namespace: Namespace,
@@ -275,6 +280,9 @@ fn children<'a>(
             Child::Comment(_) => {}
             Child::Expression(child) => {
                 if let Some(value) = &child.expression {
+                    if nested::conditional(cx, value, child.span, namespace, region)? {
+                        continue;
+                    }
                     let value = ExprRef::Js(expression(cx.allocator, cx.source, value)?);
                     artifact(region.child_value(value, child.span).err(), child.span)
                         .map_or(Ok(()), Err)?;

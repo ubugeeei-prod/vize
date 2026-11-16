@@ -195,6 +195,48 @@
       "component": "default",
       "props": { "title": "a", "count": 1 },
       "steps": [{ "props": { "count": 2 } }, { "props": { "title": "b" } }]
+    },
+    {
+      "id": "nested/toggle",
+      "file": "tests/_fixtures/tsrx/mount/nested.tsrx",
+      "component": "Toggle",
+      "props": { "on": true, "n": 1 },
+      "steps": [{ "props": { "n": 2 } }, { "props": { "on": false } }, { "props": { "n": 3 } }, { "props": { "on": true } }]
+    },
+    {
+      "id": "nested/chain",
+      "file": "tests/_fixtures/tsrx/mount/nested.tsrx",
+      "component": "Modes",
+      "props": { "mode": "a", "label": "x" },
+      "steps": [
+        { "props": { "label": "y" } },
+        { "props": { "mode": "b" } },
+        { "props": { "label": "z" } },
+        { "props": { "mode": "c" } },
+        { "props": { "mode": "a" } }
+      ]
+    },
+    {
+      "id": "nested/guard",
+      "file": "tests/_fixtures/tsrx/mount/nested.tsrx",
+      "component": "Guard",
+      "props": { "count": 0, "label": "x" },
+      "steps": [{ "props": { "count": 1 } }, { "props": { "label": "y" } }, { "props": { "count": 0 } }, { "props": { "count": 2 } }]
+    },
+    {
+      "id": "nested/recount",
+      "file": "tests/_fixtures/tsrx/mount/nested.tsrx",
+      "component": "Guard",
+      "expected": "#13176",
+      "props": { "count": 1, "label": "x" },
+      "steps": [{ "props": { "count": 2 } }]
+    },
+    {
+      "id": "nested/click",
+      "file": "tests/_fixtures/tsrx/mount/nested.tsrx",
+      "component": "Disclosure",
+      "props": { "title": "menu" },
+      "steps": [{ "click": "button" }, { "props": { "title": "abc" } }, { "props": { "title": "abcd" } }, { "click": "button" }]
     }
   ]
 }

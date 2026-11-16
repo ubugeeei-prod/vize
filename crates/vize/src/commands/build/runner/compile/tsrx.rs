@@ -186,6 +186,7 @@ mod tests {
                 "mount/default.tsrx",
                 "mount/dynamic.tsrx",
                 "mount/loops.tsrx",
+                "mount/nested.tsrx",
                 "mount/returns.tsrx",
                 "mount/slots.tsrx",
                 "mount/typed.tsrx",
