@@ -99,11 +99,11 @@ pub(super) fn forget_corsa_vue_files(state: &ServerState, deleted: &[PathBuf]) {
     if deleted.is_empty() {
         return;
     }
-    // Deleted Vue sources can leave generated files inside Corsa's private
-    // materialized mirror. Retire the bridge without waiting on its worker:
-    // file-event notifications must not stall behind an in-flight typecheck.
-    // The next diagnostics pass rebuilds that mirror from the current disk.
-    state.retire_corsa_bridge_for_deleted_vue_files();
+    // Forget only the removed graph members. The caller's deferred disk-state
+    // invalidation makes the next Corsa request synchronize their exact
+    // materialized deletion delta without respawning the backend or dropping
+    // still-open sibling overlays.
+    state.forget_deleted_corsa_vue_files(deleted);
 }
 
 fn file_path(uri: &str) -> Option<PathBuf> {

@@ -146,6 +146,17 @@ pub(super) fn detail_at(needs: Needs, parent: &LintNode, key: &str) -> bool {
     }
 }
 
+/// Whether `no-unsafe-return` asks for the checker-awaited type at this
+/// position. This extra walk is deliberately narrower than `detail_at`: no
+/// other rule pays for it, and non-return expressions remain unchanged.
+pub(super) fn promise_any_at(needs: Needs, parent: &LintNode, key: &str) -> bool {
+    needs.detail.returns
+        && matches!(
+            (parent.kind.as_str(), key),
+            ("ReturnStatement", "argument") | ("ArrowFunctionExpression", "body")
+        )
+}
+
 /// no-unsafe-enum-assignment reads a type assertion's own type as the
 /// receiver of its expression.
 pub(super) fn detail_on_self(node: &LintNode, needs: Needs) -> bool {

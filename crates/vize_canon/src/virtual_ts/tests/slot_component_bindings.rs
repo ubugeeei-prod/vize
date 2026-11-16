@@ -250,7 +250,7 @@ type BadgeInstance = typeof ElBadge
     assert_eq!(
         declared_const_lines(&output.code, "$Component_el_badge"),
         [
-            "declare const $Component_el_badge: $GlobalComponentFallback & $GlobalComponent<\"ElBadge\", \"elBadge\", \"el-badge\">;"
+            "declare const $Component_el_badge: $GlobalComponent<\"ElBadge\", \"elBadge\", \"el-badge\">;"
         ],
         "{}",
         output.code,
@@ -288,9 +288,7 @@ fn unresolved_slot_host_uses_vue_global_components_fallback() {
 
     assert_eq!(
         declared_const_lines(&output.code, "el_badge"),
-        [
-            "declare const el_badge: $GlobalComponentFallback & $GlobalComponent<\"ElBadge\", \"elBadge\", \"el-badge\">;"
-        ],
+        ["declare const el_badge: $GlobalComponent<\"ElBadge\", \"elBadge\", \"el-badge\">;"],
         "{}",
         output.code,
     );

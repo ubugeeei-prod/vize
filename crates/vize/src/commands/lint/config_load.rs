@@ -22,11 +22,15 @@ pub(super) fn load(args: &mut LintArgs) -> LoadedLintConfig {
     if args.no_config {
         return LoadedLintConfig::default();
     }
-    let loaded = crate::config::try_load_project_config_with_source(args.config.as_deref())
-        .unwrap_or_else(|error| {
-            eprintln!("\x1b[31mError:\x1b[0m {error}");
-            std::process::exit(2);
-        });
+    let loaded = if args.config_stdin {
+        crate::commands::config_stdin::project()
+    } else {
+        crate::config::try_load_project_config_with_source(args.config.as_deref())
+    }
+    .unwrap_or_else(|error| {
+        eprintln!("\x1b[31mError:\x1b[0m {error}");
+        std::process::exit(2);
+    });
     let document = loaded.document;
     let compatibility = document.compiler_compatibility_vue_version();
     let vapor = document.compiler_vapor();

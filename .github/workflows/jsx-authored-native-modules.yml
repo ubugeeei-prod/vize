@@ -64,6 +64,7 @@ jobs:
       CARGO_INCREMENTAL: "0"
       QUALIFICATION_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
       BASE_SHA: ${{ github.event.pull_request.base.sha || github.sha }}
+      RUSTUP_TOOLCHAIN: "1.100.0"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:

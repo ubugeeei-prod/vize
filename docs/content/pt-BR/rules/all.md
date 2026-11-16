@@ -5,7 +5,7 @@ description: "Todas as regras do linter do Vize, agrupadas por categoria. Abra u
 
 # Todas as regras de lint
 
-## Regras Vue (168)
+## Regras Vue (169)
 
 | Regra | O que verifica | Predefinição | Correção automática |
 | --- | --- | --- | --- |
@@ -128,6 +128,7 @@ description: "Todas as regras do linter do Vize, agrupadas por categoria. Abra u
 | <span id="vue-prefer-const"></span>[`vue/prefer-const`](./reference/vue-prefer-const.md) | Exigir const para vínculos que o script e o template nunca reatribuem. | `nuxt`, `opinionated` |  |
 | <span id="vue-prefer-prop-type-boolean-first"></span>[`vue/prefer-prop-type-boolean-first`](./reference/vue-prefer-prop-type-boolean-first.md) | Exige `Boolean` na primeira posição da lista de construtores de tipo das props. | — |  |
 | <span id="vue-prefer-props-shorthand"></span>[`vue/prefer-props-shorthand`](./reference/vue-prefer-props-shorthand.md) | Recomendar sintaxe abreviada para props (Vue 3.4+). | `nuxt`, `opinionated` | ✓ |
+| <span id="vue-prefer-single-event-payload"></span>[`vue/prefer-single-event-payload`](./reference/vue-prefer-single-event-payload.md) | Exige um único argumento de payload ao emitir eventos personalizados. | — |  |
 | <span id="vue-prefer-template"></span>[`vue/prefer-template`](./reference/vue-prefer-template.md) | Prefere template literals à concatenação de strings. | — |  |
 | <span id="vue-prefer-true-attribute-shorthand"></span>[`vue/prefer-true-attribute-shorthand`](./reference/vue-prefer-true-attribute-shorthand.md) | Preferir a forma abreviada para um atributo booleano vinculado a `true`. | `nuxt`, `opinionated` |  |
 | <span id="vue-prefer-v-model"></span>[`vue/prefer-v-model`](./reference/vue-prefer-v-model.md) | Prefere v-model a um bind e listener update equivalentes. | — |  |
@@ -178,7 +179,7 @@ description: "Todas as regras do linter do Vize, agrupadas por categoria. Abra u
 | <span id="vue-warn-custom-block"></span>[`vue/warn-custom-block`](./reference/vue-warn-custom-block.md) | Alertar sobre blocos personalizados em arquivos SFC. | `nuxt`, `opinionated` |  |
 | <span id="vue-warn-custom-directive"></span>[`vue/warn-custom-directive`](./reference/vue-warn-custom-directive.md) | Alertar sobre diretivas personalizadas que precisam de registro. | `nuxt`, `opinionated` |  |
 
-## Regras de tipo e script (123)
+## Regras de tipo e script (124)
 
 | Regra | O que verifica | Predefinição | Correção automática |
 | --- | --- | --- | --- |
@@ -282,6 +283,7 @@ description: "Todas as regras do linter do Vize, agrupadas por categoria. Abra u
 | <span id="type-no-unnecessary-type-arguments"></span>[`type/no-unnecessary-type-arguments`](./reference/type-no-unnecessary-type-arguments.md) | Proibir argumentos de tipo iguais ao valor padrão. | `nuxt`, `opinionated` |  |
 | <span id="type-no-unnecessary-type-assertion"></span>[`type/no-unnecessary-type-assertion`](./reference/type-no-unnecessary-type-assertion.md) | Proibir asserções de tipo que não mudam o tipo da expressão. | `nuxt`, `opinionated` |  |
 | <span id="type-no-unnecessary-type-conversion"></span>[`type/no-unnecessary-type-conversion`](./reference/type-no-unnecessary-type-conversion.md) | Proibir conversões que não mudam o tipo nem o valor da expressão. | `nuxt`, `opinionated` |  |
+| <span id="type-no-unnecessary-type-parameters"></span>[`type/no-unnecessary-type-parameters`](./reference/type-no-unnecessary-type-parameters.md) | Proibir parâmetros de tipo que não são usados mais de uma vez. | `nuxt`, `opinionated` |  |
 | <span id="type-no-unsafe-argument"></span>[`type/no-unsafe-argument`](./reference/type-no-unsafe-argument.md) | Proibir chamar uma função com um valor do tipo `any`. | `nuxt`, `opinionated` |  |
 | <span id="type-no-unsafe-assignment"></span>[`type/no-unsafe-assignment`](./reference/type-no-unsafe-assignment.md) | Proibir atribuir valores any a alvos mais específicos. | `nuxt`, `opinionated` |  |
 | <span id="type-no-unsafe-call"></span>[`type/no-unsafe-call`](./reference/type-no-unsafe-call.md) | Proibir chamar valores tipados como any. | `nuxt`, `opinionated` |  |
@@ -425,8 +427,6 @@ description: "Todas as regras do linter do Vize, agrupadas por categoria. Abra u
 | <span id="petite-vue-valid-v-scope"></span>[`petite-vue/valid-v-scope`](./reference/petite-vue-valid-v-scope.md) | Exigir que v-scope vincule um objeto literal. | — |  |
 
 ## Regras entre arquivos (66)
-
-Ative estas verificações com `crossFile: true` em `linter`, passado a `withVue`, ou execute `vize lint --cross-file`. Os diagnósticos aparecem como `vize:croquis/cf/<name>`; configure-os em `linter.rules` como `croquis/cf/<name>`, sem `vize:`.
 
 | Regra | O que verifica | Status |
 | --- | --- | --- |

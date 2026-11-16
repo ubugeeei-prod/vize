@@ -1,0 +1,18 @@
+export default {
+  vue: {
+    linter: {
+      preset: "incremental",
+      rules: { "type/restrict-plus-operands": "error" },
+      ruleOptions: {
+        "type/restrict-plus-operands": {
+          allowAny: false,
+          allowBoolean: false,
+          allowNullish: false,
+          allowNumberAndString: true,
+          allowRegExp: false,
+        },
+      },
+      typeAware: true,
+    },
+  },
+};

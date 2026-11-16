@@ -970,6 +970,55 @@
       }
     },
     {
+      "id": "lsp/fix-history/vue-file-deletion-warm-state-13010",
+      "state": "active",
+      "targets": [
+        "stdio"
+      ],
+      "inputs": {
+        "root": "vue-file-deletion-warm-state-13010",
+        "files": [
+          {
+            "path": "Entry.vue.txt",
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+          },
+          {
+            "path": "Importer.vue.txt",
+            "sha256": "9171dacd07766ca3265823e45fd2dcc182b37a6db7ed6e47aff827c5507b2688"
+          },
+          {
+            "path": "Child.vue.txt",
+            "sha256": "e2dfe48de81be5cbea5b7e9deb0ef763a68d1dd67b7f36c5ccc17b6e6bf3b4a2"
+          }
+        ]
+      },
+      "case": {
+        "path": "vue-file-deletion-warm-state-13010/case.json",
+        "sha256": "7c1592c25b3487f9c41fe76fdf43aa4ac55ee79acb5b5b18e0b8ec83019488cf"
+      },
+      "requestCount": 1,
+      "initializationOptions": {
+        "editor": true,
+        "lint": false,
+        "typecheck": false
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "LSP manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "lsp/fix-history/workspace-symbol-qualification-11153",
       "state": "active",
       "targets": [

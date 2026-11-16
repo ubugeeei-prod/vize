@@ -37,7 +37,7 @@ const selectors = [
     name: "pr-source-checks",
     file: ".github/workflows/pr-source-checks.yml",
     jobs: ["pr-source-plan", "ci-selection-tests"],
-    original: "660eee19156f5ec124d70852c5777ec2a95025f14aa95cd0b6b07ce33d8a1007",
+    original: "8e0cd4235906c25bbe58bc670fd2689c070aacd7321d6b770764c11ecfcc41fb",
   },
 ] as const;
 const workflows = selectors.map((specification) => {

@@ -4,7 +4,7 @@ title: ESLint rule migration map
 
 # ESLint rule migration map
 
-The committed ESLint mapping records 256 rule IDs: 198 mapped, 3 intentional divergences, and 55 unimplemented. A mapped ID identifies a Vize rule; it does not guarantee identical options, findings, fixes, or coverage.
+The committed ESLint mapping records 256 rule IDs: 200 mapped, 2 intentional divergences, and 54 unimplemented. A mapped ID identifies a Vize rule; it does not guarantee identical options, findings, fixes, or coverage.
 
 When ESLint remains the host, prefer the [`eslint.config.mjs` flat-config integration](../guide/tool-integrations.md#eslint-flat-config). The Vite+ configuration below is the native-task alternative.
 
@@ -213,7 +213,7 @@ For option conversion, see [Rule Options](./options.md) and [props destructuring
 | `vue/prefer-import-from-vue` | [`script/prefer-import-from-vue`](./reference/script-prefer-import-from-vue.md) | mapped |
 | `vue/prefer-prop-type-boolean-first` | [`vue/prefer-prop-type-boolean-first`](./reference/vue-prefer-prop-type-boolean-first.md) | mapped |
 | `vue/prefer-separate-static-class` | [`vapor/prefer-static-class`](./reference/vapor-prefer-static-class.md) | mapped |
-| `vue/prefer-single-event-payload` | — | unimplemented |
+| `vue/prefer-single-event-payload` | [`vue/prefer-single-event-payload`](./reference/vue-prefer-single-event-payload.md) | mapped |
 | `vue/prefer-template` | [`vue/prefer-template`](./reference/vue-prefer-template.md) | mapped |
 | `vue/prefer-true-attribute-shorthand` | [`vue/prefer-true-attribute-shorthand`](./reference/vue-prefer-true-attribute-shorthand.md) | mapped |
 | `vue/prefer-use-template-ref` | [`script/prefer-use-template-ref`](./reference/script-prefer-use-template-ref.md) | mapped |
@@ -258,7 +258,7 @@ For option conversion, see [Rule Options](./options.md) and [props destructuring
 | `vue/v-for-delimiter-style` | — | unimplemented |
 | `vue/v-if-else-key` | [`vue/v-if-else-key`](./reference/vue-v-if-else-key.md) | mapped |
 | `vue/v-on-event-hyphenation` | [`vue/v-on-event-hyphenation`](./reference/vue-v-on-event-hyphenation.md) | mapped |
-| `vue/v-on-handler-style` | — | intentional-divergence |
+| `vue/v-on-handler-style` | [`vue/v-on-handler-style`](./reference/vue-v-on-handler-style.md) | mapped |
 | `vue/v-on-style` | [`vue/v-on-style`](./reference/vue-v-on-style.md) | mapped |
 | `vue/v-slot-style` | [`vue/v-slot-style`](./reference/vue-v-slot-style.md) | mapped |
 | `vue/valid-attribute-name` | [`vue/valid-attribute-name`](./reference/vue-valid-attribute-name.md) | mapped |

@@ -1,0 +1,93 @@
+name: V1 qualification manifest
+
+on:
+  pull_request:
+    paths:
+      - .github/actions/setup-runtime-package-managers/action.yml
+      - .github/workflows/**
+      - .prettierignore
+      - crates/vize/**
+      - crates/vize_atelier_dom/**
+      - crates/vize_atelier_jsx/**
+      - crates/vize_atelier_vapor/**
+      - crates/vize_canon/**
+      - crates/vize_maestro/**
+      - crates/vize_patina/**
+      - docs/release/v1-supported-matrix.json
+      - editors/**
+      - npm/builder/vite/**
+      - npm/cli/package.json
+      - npm/framework/nuxt/**
+      - npm/linter/oxlint/**
+      - npm/native/package.json
+      - pnpm-workspace.yaml
+      - tools/commands/release/v1-support-matrix.ts
+      - tools/commands/release/v1-exact-candidate.ts
+      - tools/support/compat/v1/**
+      - tools/support/compat/npm/smoke-release-init-managers.ts
+      - tools/support/compat/npm/smoke-release-init-shapes.ts
+      - tools/support/github/release-platforms.ts
+      - tools/support/release/editor-platforms.ts
+      - tests/tooling/v1-supported-matrix.test.ts
+      - tests/tooling/v1-exact-candidate.test.ts
+  workflow_call:
+    inputs:
+      enforce_complete:
+        description: Reject every unresolved v1 qualification row
+        required: false
+        type: boolean
+        default: false
+  workflow_dispatch:
+    inputs:
+      enforce_complete:
+        description: Reject every unresolved v1 qualification row
+        required: false
+        type: boolean
+        default: false
+
+permissions: { contents: read }
+concurrency:
+  group: v1-supported-matrix-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  inventory-contract:
+    name: Generated fail-closed inventory contract
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 5
+    env:
+      SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with: { node-version: "24", package-manager-cache: false }
+      - name: Verify the exact source checkout
+        shell: bash
+        run: test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+      - name: Reject a stale generated manifest
+        run: node tools/commands/release/v1-support-matrix.ts --check
+      - name: Verify closed support, boundary and identity inventories
+        run: >-
+          node --test
+          tests/tooling/v1-supported-matrix.test.ts
+          tests/tooling/v1-exact-candidate.test.ts
+      - name: Retain the complete exact-head coverage plan
+        shell: bash
+        run: |
+          mkdir -p .qualification
+          node tools/commands/release/v1-exact-candidate.ts plan \
+            --candidate "$SOURCE_SHA" \
+            --output .qualification/v1-exact-candidate-plan.json
+      - name: Upload the exact-head coverage receipt
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: v1-exact-candidate-plan-${{ github.event.pull_request.head.sha || github.sha }}
+          path: .qualification/v1-exact-candidate-plan.json
+          if-no-files-found: error
+          retention-days: 30
+      - name: Enforce complete exact-candidate qualification
+        if: ${{ inputs.enforce_complete }}
+        run: node tools/commands/release/v1-support-matrix.ts --check --enforce-complete

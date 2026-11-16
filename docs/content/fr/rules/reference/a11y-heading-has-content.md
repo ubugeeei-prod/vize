@@ -9,7 +9,7 @@ Exiger un contenu accessible pour les éléments de titre.
 
 | Gravité par défaut | Préréglages | Correction automatique | Options |
 | --- | --- | --- | --- |
-| `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | Non | Aucune |
+| `warning` | `happy-path`, `nuxt`, `ecosystem`, `opinionated` | Non | [Options des règles](/rules/options.md) |
 
 Champ d’application : Templates et blocs des SFC Vue, avec le contexte du script requis par la règle.
 
@@ -53,5 +53,6 @@ Lancez ensuite `vp run lint`.
 ## Voir aussi
 
 - [Règles d’accessibilité](../accessibility.md)
+- [Options des règles](/rules/options.md)
 - [Toutes les règles](../all.md)
-- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/heading_has_content.rs#L20)
+- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/heading_has_content.rs#L21)

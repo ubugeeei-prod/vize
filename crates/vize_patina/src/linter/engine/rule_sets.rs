@@ -53,6 +53,7 @@ pub(super) const SHARED_SFC_DESCRIPTOR_RULES: &[&str] = &[
     "vue/no-define-model-default",
     "vue/no-props-shadow",
     "vue/no-shadow-native-events",
+    "vue/prefer-single-event-payload",
     "vue/require-default-export",
     "vue/require-macro-variable-name",
     "vue/require-prop-comment",

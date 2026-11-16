@@ -26,6 +26,7 @@ jobs:
     env:
       BASE_SHA: ${{ github.event.pull_request.base.sha }}
       HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      RUSTUP_TOOLCHAIN: "1.100.0"
       CARGO_BUILD_JOBS: "24"
       CARGO_INCREMENTAL: "0"
       RAYON_NUM_THREADS: "8"
@@ -59,6 +60,7 @@ jobs:
             source_root="$GITHUB_WORKSPACE"
             if [[ "$role" == base ]]; then source_root="$RUNNER_TEMP/binding-base"; fi
             git -C "$source_root" rev-parse HEAD > "$RUNNER_TEMP/binding-evidence/$role.source"
+            (cd "$source_root" && rustc -Vv) > "$RUNNER_TEMP/binding-evidence/$role-rustc.txt"
             cmp "$observer" "$source_root/$observer"
             (cd "$source_root" && CARGO_TARGET_DIR="$RUNNER_TEMP/binding-$role-target" cargo test --locked --profile ci-opt -p vize_benchmarks --test setup_binding_anchor_profile --no-run --message-format=json) > "$RUNNER_TEMP/binding-evidence/$role-build.jsonl"
             python3 - "$role" <<'PY'
@@ -73,7 +75,6 @@ jobs:
           PY
           done
           node --input-type=module -e 'import fs from "node:fs"; const p=process.env.RUNNER_TEMP+"/binding-evidence/";const x=Object.fromEntries(["base","head"].map(k=>[k,JSON.parse(fs.readFileSync(p+k+"-binary.json"))]));if(x.base.sha256===x.head.sha256)throw Error("identical binaries");fs.writeFileSync(p+"binaries.json",JSON.stringify(x,null,2));'
-          rustc -Vv > "$RUNNER_TEMP/binding-evidence/rustc.txt"
       - name: Compare fresh generation packets and allocation pressure
         run: |
           set -euo pipefail

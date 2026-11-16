@@ -1,7 +1,19 @@
 //! Overlapping each program's native check with the next program's preparation.
 
 use std::path::PathBuf;
+use std::sync::mpsc;
 use std::thread::ScopedJoinHandle;
+
+struct CompletionSignal {
+    index: usize,
+    sender: mpsc::Sender<usize>,
+}
+
+impl Drop for CompletionSignal {
+    fn drop(&mut self) {
+        let _ = self.sender.send(self.index);
+    }
+}
 
 /// Prepare `items` in order and run each prepared check on its own thread while
 /// the next item prepares. `program_concurrency` is the upper bound on checks
@@ -10,6 +22,7 @@ use std::thread::ScopedJoinHandle;
 /// preparation error stops preparing.
 pub(super) fn prepare_and_check_overlapped<T, P, R, E>(
     items: Vec<T>,
+    program_concurrency: usize,
     mut prepare: impl FnMut(T, usize) -> Result<Option<P>, E>,
     key: impl Fn(&P) -> PathBuf,
     check: impl Fn(P) -> R + Sync,
@@ -20,10 +33,11 @@ where
 {
     let check = &check;
     std::thread::scope(|scope| {
+        let (completion_sender, completion_receiver) = mpsc::channel();
         let mut results = Vec::new();
         let mut running: Vec<(usize, PathBuf, ScopedJoinHandle<'_, R>)> = Vec::new();
         let mut error = None;
-        let program_concurrency = items.len().max(1);
+        let program_concurrency = program_concurrency.max(1);
         for item in items {
             let prepared = match prepare(item, program_concurrency) {
                 Ok(Some(prepared)) => prepared,
@@ -41,7 +55,35 @@ where
             for (index, _, handle) in shared {
                 finish(&mut results, index, handle);
             }
-            running.push((results.len(), root, scope.spawn(move || check(prepared))));
+            while running.len() >= program_concurrency {
+                let finished = loop {
+                    let completed_index = match completion_receiver.recv() {
+                        Ok(completed_index) => completed_index,
+                        // Every running handle owns a sender. Disconnection is
+                        // only possible after they are all gone, so this is a
+                        // defensive shutdown fallback rather than admission.
+                        Err(_) => break 0,
+                    };
+                    if let Some(position) = running
+                        .iter()
+                        .position(|(index, _, _)| *index == completed_index)
+                    {
+                        break position;
+                    }
+                };
+                let (index, _, handle) = running.remove(finished);
+                finish(&mut results, index, handle);
+            }
+            let index = results.len();
+            let sender = completion_sender.clone();
+            running.push((
+                index,
+                root,
+                scope.spawn(move || {
+                    let _completion = CompletionSignal { index, sender };
+                    check(prepared)
+                }),
+            ));
             results.push(None);
         }
         for (index, _, handle) in running {
@@ -64,7 +106,7 @@ fn finish<R>(results: &mut [Option<R>], index: usize, handle: ScopedJoinHandle<'
 mod tests {
     use std::path::PathBuf;
     use std::sync::Mutex;
-    use std::sync::atomic::{AtomicBool, Ordering};
+    use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
     use std::sync::mpsc;
     use std::time::Duration;
 
@@ -76,6 +118,7 @@ mod tests {
         let second_prepared = Mutex::new(second_prepared);
         let (results, error) = prepare_and_check_overlapped(
             vec![0, 1],
+            2,
             |item: usize, concurrency| {
                 assert_eq!(concurrency, 2);
                 if item == 1 {
@@ -102,6 +145,7 @@ mod tests {
         let prepared = Mutex::new(Vec::new());
         let (results, error) = prepare_and_check_overlapped(
             vec![0, 1, 2, 3],
+            4,
             |item: usize, concurrency| {
                 assert_eq!(concurrency, 4);
                 prepared.lock().unwrap().push(item);
@@ -123,5 +167,50 @@ mod tests {
         assert_eq!(results, vec![(0, true), (1, true)]);
         assert_eq!(error, Some("failed"));
         assert_eq!(*prepared.lock().unwrap(), vec![0, 1, 2, 3]);
+    }
+
+    #[test]
+    fn checks_stay_within_the_program_limit() {
+        let active = AtomicUsize::new(0);
+        let peak = AtomicUsize::new(0);
+        let (started_sender, started_receiver) = mpsc::channel();
+        let (release_sender, release_receiver) = mpsc::channel();
+        let release_receiver = Mutex::new(release_receiver);
+        let coordinator = std::thread::spawn(move || {
+            let both_started = (0..2).all(|_| {
+                started_receiver
+                    .recv_timeout(Duration::from_secs(10))
+                    .is_ok()
+            });
+            for _ in 0..4 {
+                let _ = release_sender.send(());
+            }
+            both_started
+        });
+        let (results, error) = prepare_and_check_overlapped(
+            vec![0, 1, 2, 3],
+            2,
+            |item, concurrency| {
+                assert_eq!(concurrency, 2);
+                Ok::<_, ()>(Some(item))
+            },
+            |item| PathBuf::from(item.to_string()),
+            |item| {
+                let current = active.fetch_add(1, Ordering::SeqCst) + 1;
+                peak.fetch_max(current, Ordering::SeqCst);
+                let _ = started_sender.send(());
+                release_receiver
+                    .lock()
+                    .unwrap()
+                    .recv_timeout(Duration::from_secs(10))
+                    .unwrap();
+                active.fetch_sub(1, Ordering::SeqCst);
+                item
+            },
+        );
+        assert!(coordinator.join().unwrap());
+        assert_eq!(results, [0, 1, 2, 3]);
+        assert_eq!(error, None);
+        assert_eq!(peak.load(Ordering::SeqCst), 2);
     }
 }

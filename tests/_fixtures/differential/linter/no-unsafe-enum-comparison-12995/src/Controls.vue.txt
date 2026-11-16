@@ -1,0 +1,10 @@
+<script setup lang="ts">
+enum Fruit {
+  Apple = 'apple',
+}
+type BrandedString = string & { __escapedIdentifier: void };
+declare const branded: BrandedString;
+declare const fruitOrBrand: Fruit | BrandedString;
+branded === 'someArbitraryValue';
+fruitOrBrand === Fruit.Apple;
+</script>

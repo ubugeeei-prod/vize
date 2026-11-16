@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { mkdtempSync, rmSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
@@ -26,8 +26,9 @@ void test("Vite+ tasks use one project projection with JSX defaults and explicit
     assert.deepEqual(formatter.formatter, { printWidth: 90, singleQuote: true });
     let checks = 0;
     assert.equal(
-      await runNative("check", [], metadata, "native", async (_command, argv) => {
-        const transported = JSON.parse(readFileSync(argv[3], "utf8")).vue;
+      await runNative("check", [], metadata, "native", async (_command, argv, stdin) => {
+        assert.deepEqual(argv, ["native", "check", "--config-stdin"]);
+        const transported = JSON.parse(stdin!).vue;
         assert.equal(transported.typeChecker.jsxTypecheck, true);
         assert.equal(transported.formatter.singleQuote, true);
         checks++;

@@ -1,0 +1,11 @@
+<script setup lang="ts">
+const users = [{ name: "Alice" }]
+</script>
+
+<template>
+  <DataList :items="users">
+    <template #item="{ item }">
+      {{ item.name }}
+    </template>
+  </DataList>
+</template>

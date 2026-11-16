@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
-import { analyseProfile } from "./profile-analysis.mjs";
+import { analyseProfile } from "./profile-analysis.ts";
 
 const [destination, profiles] = process.argv.slice(2).map((entry) => path.resolve(entry));
 const sha = (bytes) => createHash("sha256").update(bytes).digest("hex");

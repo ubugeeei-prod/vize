@@ -5,9 +5,9 @@ permissions: { contents: read, pull-requests: read, actions: read }
 env: { CARGO_TERM_COLOR: always, FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true }
 jobs:
   nuxt-module-qualification:
-    name: Nuxt module qualification
+    name: Nuxt and Vite release products
     if: ${{ github.event_name == 'merge_group' }}
-    uses: ./.github/workflows/nuxt3-module-build.yml
+    uses: ./.github/workflows/nuxt-vite-release-products.yml
   pr-source-plan:
     name: Plan PR source checks
     if: ${{ github.event_name == 'pull_request' || github.event_name == 'merge_group' }}

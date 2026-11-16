@@ -139,7 +139,7 @@ SFC のテンプレート・ディレクティブ・コンポーネント・各�
 | <span id="vue-warn-custom-block"></span>[`vue/warn-custom-block`](./reference/vue-warn-custom-block.md) | SFC のカスタムブロックを検出します。 | `nuxt`, `opinionated` |  |
 | <span id="vue-warn-custom-directive"></span>[`vue/warn-custom-directive`](./reference/vue-warn-custom-directive.md) | 登録が必要なカスタムディレクティブを検出します。 | `nuxt`, `opinionated` |  |
 
-## 個別に有効化 (59)
+## 個別に有効化 (60)
 
 どのプリセットにも含まれません。`withVue` に渡す `linter.rules` でルール名を指定して有効にします。
 
@@ -194,6 +194,7 @@ SFC のテンプレート・ディレクティブ・コンポーネント・各�
 | <span id="vue-no-v-for-template-key"></span>[`vue/no-v-for-template-key`](./reference/vue-no-v-for-template-key.md) | Vue 2 の互換性のため、template v-for の key を実体のある子に指定します。 |  |
 | <span id="vue-object-shorthand"></span>[`vue/object-shorthand`](./reference/vue-object-shorthand.md) | テンプレート式のオブジェクトに短縮プロパティ記法を使います。 |  |
 | <span id="vue-prefer-prop-type-boolean-first"></span>[`vue/prefer-prop-type-boolean-first`](./reference/vue-prefer-prop-type-boolean-first.md) | prop の型コンストラクター配列で Boolean を先頭に置きます。 |  |
+| <span id="vue-prefer-single-event-payload"></span>[`vue/prefer-single-event-payload`](./reference/vue-prefer-single-event-payload.md) | カスタムイベントのペイロードを1つにまとめます。 |  |
 | <span id="vue-prefer-template"></span>[`vue/prefer-template`](./reference/vue-prefer-template.md) | 文字列連結の代わりにテンプレートリテラルを使います。 |  |
 | <span id="vue-prefer-v-model"></span>[`vue/prefer-v-model`](./reference/vue-prefer-v-model.md) | 対応する bind と update リスナーを v-model にまとめます。 |  |
 | <span id="vue-quote-props"></span>[`vue/quote-props`](./reference/vue-quote-props.md) | 不要な引用符付きオブジェクトプロパティを検出します。 |  |

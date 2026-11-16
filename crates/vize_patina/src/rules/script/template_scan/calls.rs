@@ -8,7 +8,7 @@ use oxc_ast_visit::{
     walk::{walk_arrow_function_expression, walk_call_expression},
 };
 use oxc_parser::Parser;
-use oxc_span::{SourceType, Span};
+use oxc_span::{GetSpan, SourceType, Span};
 
 use crate::markup::surface_source::DecodedSource;
 
@@ -29,6 +29,9 @@ pub(crate) struct TemplateCall<'a> {
     pub(crate) start: u32,
     /// Exclusive end of [`TemplateCall::start`].
     pub(crate) end: u32,
+    /// The third argument through the last, relative to the template block:
+    /// the payload values beyond the first in `$emit(name, a, b)`.
+    pub(crate) arguments_after_second: Option<(u32, u32)>,
     /// Arrow-function parameters whose scope contains this call.
     local_bindings: Vec<&'a str>,
 }
@@ -101,6 +104,10 @@ pub(super) fn for_each_call(source: &DecodedSource<'_>, visit: &mut impl FnMut(T
             callee_end: source.start + callee_span.end,
             start: source.start + span.start,
             end: source.start + span.end,
+            arguments_after_second: call
+                .arguments_after_second
+                .and_then(|span| source.authored_span(span))
+                .map(|span| (source.start + span.start, source.start + span.end)),
             local_bindings: call.local_bindings,
         });
     }
@@ -111,6 +118,7 @@ struct CollectedCall<'a> {
     callee_span: Span,
     first_string_argument: Option<(&'a str, Span)>,
     span: Span,
+    arguments_after_second: Option<Span>,
     local_bindings: Vec<&'a str>,
 }
 
@@ -147,6 +155,10 @@ impl<'a> Visit<'a> for CallCollector<'a> {
                     _ => None,
                 },
                 span: it.span,
+                arguments_after_second: it.arguments.get(2).map(|third| {
+                    let last = it.arguments.last().map_or(third.span(), GetSpan::span);
+                    Span::new(third.span().start, last.end)
+                }),
                 local_bindings: self.local_bindings.clone(),
             });
         }

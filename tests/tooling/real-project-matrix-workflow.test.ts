@@ -23,6 +23,7 @@ test("real-project workflow schedules every balanced fixture shard nightly", () 
     "core_tools_timeout_ms",
     "typecheck_dependencies_mode",
     "lint_divergence_mode",
+    "lint_baseline_reference_mode",
     "lsp_mode",
     "typecheck_divergence_mode",
     "davinci_dom_corpus_mode",
@@ -59,6 +60,13 @@ test("real-project workflow schedules every balanced fixture shard nightly", () 
     default: "enforce",
     type: "choice",
     options: ["enforce", "record-only"],
+  });
+  assert.deepEqual(dispatch.inputs?.lint_baseline_reference_mode, {
+    description: "ESLint scorecard memory mode; unbounded-6g is diagnostic only",
+    required: false,
+    default: "bounded",
+    type: "choice",
+    options: ["bounded", "unbounded-6g"],
   });
   assert.deepEqual(dispatch.inputs?.lsp_mode, {
     description: "LSP lifecycle gate handling",
@@ -339,7 +347,8 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
     "the hydrated fixture corpus must be measured against the lint baseline",
   );
   for (const pattern of [
-    /^node tools\/commands\/fixtures\/lint-divergence-report\.ts \\\n/,
+    /\/usr\/bin\/time --verbose --output "\$FIXTURE_REPORT_DIR\/lint-divergence-resource\.txt"/,
+    /node tools\/commands\/fixtures\/lint-divergence-report\.ts \\\n/,
     /--shard-index "\$FIXTURE_SHARD_INDEX"/,
     /--shard-count "\$FIXTURE_SHARD_COUNT"/,
     /--all-mapped-rules/,
@@ -349,6 +358,7 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
     /--timeout-ms 600000/,
     /--output-dir "\$FIXTURE_REPORT_DIR"/,
     /test -s "\$FIXTURE_REPORT_DIR\/lint-divergence-summary\.json"/,
+    /sha256sum "\$FIXTURE_REPORT_DIR"\/\*-lint-divergence\.json/,
   ]) {
     assert.match(lintDivergence.run ?? "", pattern);
   }
@@ -356,6 +366,24 @@ test("real-project workflow hydrates only its shard and runs every core tool", (
     lintDivergence.env?.LINT_DIVERGENCE_MODE,
     "${{ inputs.lint_divergence_mode || 'enforce' }}",
   );
+  assert.equal(
+    lintDivergence.env?.LINT_BASELINE_REFERENCE_MODE,
+    "${{ inputs.lint_baseline_reference_mode || 'bounded' }}",
+  );
+  assert.equal(lintDivergence.env?.LINT_BASELINE_SHARD_MAX_FILES, "32");
+  assert.equal(lintDivergence.env?.LINT_BASELINE_SHARD_MAX_OUTPUT_BYTES, "268435456");
+  assert.equal(lintDivergence.env?.LINT_BASELINE_SHARD_MAX_BYTES, "8388608");
+  assert.equal(
+    lintDivergence.env?.NODE_OPTIONS,
+    "${{ inputs.lint_baseline_reference_mode == 'unbounded-6g' && '--max-old-space-size=6144' || '' }}",
+  );
+  assert.equal(lintDivergence.env?.VIZE_LINT_BASELINE_PROGRESS, "1");
+  assert.equal(
+    lintDivergence.env?.VIZE_LINT_BASELINE_UNBOUNDED,
+    "${{ inputs.lint_baseline_reference_mode == 'unbounded-6g' && '1' || '0' }}",
+  );
+  const shardUpload = findStep(steps, "Upload shard report");
+  assert.equal(shardUpload.with?.["include-hidden-files"], false);
   assert.ok(
     syntaxHighlighterIndex < glyphPropertiesIndex,
     "the hydrated fixture corpus must run through the shipped syntax highlighter",

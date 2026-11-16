@@ -56,4 +56,4 @@ Lancez ensuite `vp run lint`.
 
 - [Règles de l’écosystème et de Nuxt](../ecosystem.md)
 - [Toutes les règles](../all.md)
-- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ecosystem/router_link_require_to.rs#L14)
+- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/ecosystem/router_link_require_to.rs#L15)

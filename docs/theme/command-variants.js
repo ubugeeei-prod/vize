@@ -6,7 +6,9 @@
     npm: "npm exec --",
     pnpm: "pnpm exec",
     yarn: "yarn exec",
-    bun: "bun x --no-install",
+    // Bun otherwise honors Vize's Node shebang and starts Node. Keep the
+    // generated Bun tab on Bun's runtime, not merely its package manager.
+    bun: "bun run --bun",
     aube: "aube exec",
   };
   const once = {
@@ -14,7 +16,7 @@
     npm: "npx",
     pnpm: "pnpm dlx",
     yarn: "yarn dlx",
-    bun: "bun x",
+    bun: "bun x --bun",
     aube: "aube dlx",
   };
   const add = {
@@ -44,11 +46,14 @@
       return { kind: tokens.length ? "add" : "install", args };
     }
     match =
-      /^(?:vp exec|npm exec --|pnpm exec|yarn exec|bun x --no-install|aube exec)\s+(.+)$/.exec(
+      /^(?:vp exec|npm exec --|pnpm exec|yarn exec|bun run --bun|bun x --no-install|aube exec)\s+(.+)$/.exec(
         command,
       );
     if (match) return { kind: "local", args: match[1] };
-    match = /^(?:vpx|npx|pnpm dlx|yarn dlx|bunx|bun x|aube dlx|aubx)\s+(.+)$/.exec(command);
+    match =
+      /^(?:vpx|npx|pnpm dlx|yarn dlx|bunx(?: --bun)?|bun x(?: --bun)?|aube dlx|aubx)\s+(.+)$/.exec(
+        command,
+      );
     if (match) return { kind: "once", args: match[1] };
     match = /^vp (run\s+.+|dev|build|test|check|lint|fmt)(\s.*)?$/.exec(command);
     if (match) return { kind: "vite", args: command };

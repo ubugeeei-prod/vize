@@ -35,6 +35,8 @@ on:
       - tools/support/compat/nuxt/nuxt2-typecheck.ts
       - tools/support/compat/nuxt/fixtures/nuxt2-typecheck/**
       - tools/support/compat/nuxt/nuxt-auto-init-config.ts
+  # The required merge-queue source report calls this exact host campaign.
+  workflow_call:
   workflow_dispatch:
 
 permissions:

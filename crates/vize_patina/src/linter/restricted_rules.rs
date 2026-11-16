@@ -64,6 +64,19 @@ impl Linter {
         self
     }
 
+    /// Configure every `a11y/anchor-has-content` option.
+    pub fn with_anchor_has_content_options(
+        mut self,
+        options: &vize_l0::config::AnchorHasContentOptions,
+    ) -> Self {
+        if self.registry.has_rule("a11y/anchor-has-content") {
+            self.registry.replace(Box::new(
+                crate::rules::a11y::AnchorHasContent::from_options(options),
+            ));
+        }
+        self
+    }
+
     /// Configure components that render a native form control for labels.
     pub fn with_label_control_components(mut self, components: Vec<String>) -> Self {
         if self.registry.has_rule("a11y/label-has-for") {

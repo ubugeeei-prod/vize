@@ -1,0 +1,11 @@
+<script setup lang="ts">
+enum Fruit {
+  Apple = 'apple',
+}
+type __String =
+  | (string & { __escapedIdentifier: void })
+  | (void & { __escapedIdentifier: void })
+  | Fruit;
+declare const weirdString: __String;
+weirdString === 'someArbitraryValue';
+</script>

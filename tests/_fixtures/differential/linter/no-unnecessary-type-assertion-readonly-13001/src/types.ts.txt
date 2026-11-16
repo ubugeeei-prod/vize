@@ -1,0 +1,11 @@
+export interface Point {
+  x: number;
+  y: number;
+}
+
+export interface ReadonlyPoint {
+  readonly x: number;
+  readonly y: number;
+}
+
+export const ORIGIN: ReadonlyPoint = { x: 0, y: 0 };

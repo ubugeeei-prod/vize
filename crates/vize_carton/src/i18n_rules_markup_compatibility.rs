@@ -278,4 +278,10 @@ pub(crate) static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "指定した版で未対応の Vue.js 構文を禁止する",
         "禁止在指定版本上使用不受支持的 Vue.js 语法",
     ),
+    (
+        "vue/prefer-single-event-payload.description",
+        "Enforce passing a single argument to custom event emissions",
+        "カスタムイベントの発行で渡すペイロードを1つにすることを強制する",
+        "强制自定义事件只传递单个负载参数",
+    ),
 ];

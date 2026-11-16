@@ -26,7 +26,7 @@ use vize_croquis::naming::{is_kebab_case_loose, is_pascal_case, to_pascal_case};
 use vize_l0::{Span, is_html_tag, is_math_ml_tag, is_svg_tag};
 use vize_relief::ElementNode;
 
-use super::component_registration::options_api_registers;
+use super::component_registration::options_api_registers_with_authored_pascal_key;
 
 mod fix;
 
@@ -196,7 +196,7 @@ fn check_element<'a>(
                     &analysis.template_component_registrations;
                 registrations.contains(&name, analysis.bindings.is_script_setup)
             })
-            && !options_api_registers(ctx, tag)
+            && !options_api_registers_with_authored_pascal_key(ctx, tag)
         {
             return;
         }

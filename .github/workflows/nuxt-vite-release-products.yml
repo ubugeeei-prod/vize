@@ -1,0 +1,29 @@
+name: Nuxt and Vite release products
+
+# One required merge-queue edge owns the complete supported integration set.
+# The child workflows remain independently dispatchable for diagnostics, while
+# this closed list makes a missing generation or Vite host a release failure.
+on: { workflow_call: null }
+
+permissions: { contents: read }
+
+jobs:
+  nuxt2-webpack:
+    name: Nuxt 2 webpack product
+    uses: ./.github/workflows/nuxt2-module-build.yml
+
+  nuxt2-bridge:
+    name: Nuxt 2 Bridge webpack and Vite products
+    uses: ./.github/workflows/nuxt2-bridge-module-build.yml
+
+  nuxt-modern-vite:
+    name: Nuxt 3, 4 and 5 Vite products
+    uses: ./.github/workflows/nuxt3-module-build.yml
+
+  nuxt4-styles:
+    name: Nuxt 4 style products
+    uses: ./.github/workflows/nuxt-style-build.yml
+
+  vite-plus-types:
+    name: Vite and Vite+ public types
+    uses: ./.github/workflows/vite-plus-type-compat.yml

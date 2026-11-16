@@ -9,7 +9,7 @@ Enforce writing v-on handlers as method references.
 
 | Default severity | Presets | Automatic fix | Options |
 | --- | --- | --- | --- |
-| `warning` | `nuxt`, `opinionated` | No | None |
+| `warning` | `nuxt`, `opinionated` | No | [Rule options](../options.md) |
 
 Applies to: Vue SFC templates and blocks, with script context where the rule requires it.
 
@@ -56,5 +56,6 @@ Then run `vp run lint`.
 ## Related
 
 - [Vue rules](../vue.md)
+- [Rule options](../options.md)
 - [All rules](../all.md)
-- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_on_handler_style.rs#L31)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vue/v_on_handler_style.rs#L38)

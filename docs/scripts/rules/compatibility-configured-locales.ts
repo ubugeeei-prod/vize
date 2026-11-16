@@ -68,6 +68,11 @@ export const configuredPackets: Record<Locale, Record<string, Packet>> = {
       "defineModel 需要比配置版本更新的 Vue。",
       "组件不使用受版本限制的宏。",
     ],
+    "vue/prefer-single-event-payload": [
+      "强制自定义事件只传递单个负载参数。",
+      "move 事件声明并发出两个负载值，内联监听器只能收到 x。",
+      "move 事件传递一个对象，所有监听器都能收到两个坐标。",
+    ],
   },
   "pt-BR": {
     "vue/max-props": [
@@ -135,6 +140,11 @@ export const configuredPackets: Record<Locale, Record<string, Packet>> = {
       "defineModel exige um Vue mais novo do que a versão configurada.",
       "O componente não usa macros limitadas por versão.",
     ],
+    "vue/prefer-single-event-payload": [
+      "Exige um único argumento de payload ao emitir eventos personalizados.",
+      "O evento move declara e emite dois valores, e um listener inline só recebe x.",
+      "O evento move envia um objeto, e todo listener recebe as duas coordenadas.",
+    ],
   },
   fr: {
     "vue/max-props": [
@@ -201,6 +211,11 @@ export const configuredPackets: Record<Locale, Record<string, Packet>> = {
       "Interdit une syntaxe encore non prise en charge sur la version Vue.js configurée.",
       "defineModel exige un Vue plus récent que la version configurée.",
       "Le composant n'utilise pas de macro limitée par version.",
+    ],
+    "vue/prefer-single-event-payload": [
+      "Impose un seul argument de charge utile pour les événements personnalisés.",
+      "L'événement move déclare et émet deux valeurs, et un écouteur en ligne ne reçoit que x.",
+      "L'événement move transmet un objet, et chaque écouteur reçoit les deux coordonnées.",
     ],
   },
 };

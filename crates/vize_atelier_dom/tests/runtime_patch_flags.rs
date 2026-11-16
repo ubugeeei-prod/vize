@@ -60,7 +60,7 @@ fn static_root_props_keep_text_patch_flags() {
         }));
     }
 
-    assert_eq!(capture.len(), 3);
+    assert_eq!(capture.len(), 6);
     if let Some(path) = std::env::var_os("VIZE_RUNTIME_PATCH_FLAGS_CAPTURE") {
         std::fs::write(path, serde_json::to_vec_pretty(&capture).unwrap()).unwrap();
     }

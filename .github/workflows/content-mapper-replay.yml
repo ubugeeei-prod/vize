@@ -107,6 +107,7 @@ jobs:
     env:
       BASE: ${{ needs.resolve.outputs.base }}
       HEAD: ${{ needs.resolve.outputs.head }}
+      RUSTUP_TOOLCHAIN: "1.100.0"
       VARIANT: ${{ matrix.variant }}
       PROFILE_INPUT: ${{ github.event_name == 'push' || inputs.profile }}
     steps:
@@ -145,9 +146,10 @@ jobs:
             sha=$BASE; [[ $side == head ]] && sha=$HEAD
             git fetch --no-tags --depth=1 "https://github.com/$GITHUB_REPOSITORY.git" "$sha"
             git worktree add --detach "$RUNNER_TEMP/src-$side" "$sha"
+            mkdir -p "replay-bin/$VARIANT/$side"
+            (cd "$RUNNER_TEMP/src-$side" && rustc -Vv) > "replay-bin/$VARIANT/$side-rustc.txt"
             # One target directory: the second build recompiles only what differs.
             (cd "$RUNNER_TEMP/src-$side" && CARGO_TARGET_DIR="$target" cargo build "${args[@]}")
-            mkdir -p "replay-bin/$VARIANT/$side"
             cp "$target/ci-opt/vize" "replay-bin/$VARIANT/$side/"
           done
           ls -l replay-bin/*/*

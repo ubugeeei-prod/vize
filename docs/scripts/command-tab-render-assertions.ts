@@ -54,7 +54,7 @@ export async function verifyCommandTabs(page: Page, route: string) {
         "npx vize init",
         "pnpm dlx vize init",
         "yarn dlx vize init",
-        "bun x vize init",
+        "bun x --bun vize init",
         "aube dlx vize init",
       ]
     : [

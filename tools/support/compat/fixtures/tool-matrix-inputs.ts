@@ -20,20 +20,44 @@ export function collectVueInputPaths(cwd: string, patterns: readonly string[]): 
 }
 
 export function collectInputPaths(cwd: string, patterns: readonly string[]): string[] {
-  return [
-    ...new Set(
-      patterns.flatMap((pattern) =>
-        expandHiddenRecursiveGlobs(pattern).flatMap((expanded) =>
-          globSync(expanded, { cwd, exclude: [".yarn/**", "**/node_modules/**"] }),
-        ),
-      ),
-    ),
-  ]
+  return [...new Set(patterns.flatMap((pattern) => collectPatternPaths(cwd, pattern)))]
     .filter((entry) => statSync(resolve(cwd, entry)).isFile())
     .map((entry) => entry.replaceAll("\\", "/"))
     .map((file) => ({ file, bytes: Buffer.from(file) }))
     .sort((left, right) => Buffer.compare(left.bytes, right.bytes))
     .map(({ file }) => file);
+}
+
+function collectPatternPaths(cwd: string, pattern: string): string[] {
+  const normalized = pattern.replaceAll("\\", "/"),
+    match = /^(.*)\*\*\/\*\.([A-Za-z0-9]+)$/.exec(normalized);
+  if (match == null || match[1].includes("*") || match[1].includes("?")) {
+    return expandHiddenRecursiveGlobs(pattern).flatMap((expanded) =>
+      globSync(expanded, { cwd, exclude: [".git/**", ".yarn/**", "**/node_modules/**"] }),
+    );
+  }
+
+  const prefix = match[1].replace(/\/$/, ""),
+    root = resolve(cwd, prefix),
+    extension = `.${match[2]}`,
+    files: string[] = [];
+  if (!statSync(root, { throwIfNoEntry: false })?.isDirectory()) return files;
+  function walk(directory: string): void {
+    for (const entry of readdirSync(directory, { withFileTypes: true })) {
+      if (entry.isDirectory()) {
+        if ([".git", ".yarn", "node_modules"].includes(entry.name)) continue;
+        walk(resolve(directory, entry.name));
+      } else if (
+        entry.name.endsWith(extension) &&
+        (entry.isFile() ||
+          (entry.isSymbolicLink() && statSync(resolve(directory, entry.name)).isFile()))
+      ) {
+        files.push(relative(cwd, resolve(directory, entry.name)).replaceAll("\\", "/"));
+      }
+    }
+  }
+  walk(root);
+  return files;
 }
 
 function expandHiddenRecursiveGlobs(pattern: string): string[] {

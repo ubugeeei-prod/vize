@@ -36,6 +36,27 @@ pub(crate) struct MacroEntry {
     pub(crate) span: Span,
     /// Declared in the sibling script block rather than the linted one.
     pub(crate) sibling: bool,
+    /// From the second payload value to the last, when the declaration has
+    /// more than one: eslint-plugin-vue's `prefer-single-event-payload` range.
+    pub(crate) extra_payload: Option<Span>,
+}
+
+/// The span from the `from`-th node to the last one, if there is a `from`-th.
+pub(super) fn tail_span(mut spans: impl Iterator<Item = Span>, from: usize) -> Option<Span> {
+    let first = spans.nth(from)?;
+    let last = spans.last().unwrap_or(first);
+    Some(Span::new(first.start, last.end))
+}
+
+/// The spans of a parameter list, a rest parameter included.
+pub(super) fn param_spans<'p>(
+    params: &'p oxc_ast::ast::FormalParameters<'_>,
+) -> impl Iterator<Item = Span> + 'p {
+    params
+        .items
+        .iter()
+        .map(GetSpan::span)
+        .chain(params.rest.iter().map(|rest| rest.span))
 }
 
 #[derive(Default)]
@@ -49,12 +70,23 @@ pub(super) struct Collect {
 
 impl Collect {
     pub(super) fn push(&mut self, name: Option<CompactString>, span: Span) {
+        self.push_payload(name, span, None);
+    }
+
+    /// [`Self::push`] with the range of the payload values after the first.
+    pub(super) fn push_payload(
+        &mut self,
+        name: Option<CompactString>,
+        span: Span,
+        extra_payload: Option<Span>,
+    ) {
         match name {
             Some(name) => {
                 self.entries.push(MacroEntry {
                     name: name.clone(),
                     span,
                     sibling: self.sibling,
+                    extra_payload,
                 });
                 self.names.insert(name);
             }
@@ -171,13 +203,14 @@ pub(super) fn define_value_into(expression: &Expression<'_>, collect: &mut Colle
     match expression.without_parentheses() {
         Expression::ObjectExpression(object) => {
             for property in &object.properties {
-                let name = match property {
-                    ObjectPropertyKind::ObjectProperty(property) => {
-                        property_name(&property.key, property.computed)
-                    }
-                    ObjectPropertyKind::SpreadProperty(_) => None,
+                let (name, extra_payload) = match property {
+                    ObjectPropertyKind::ObjectProperty(property) => (
+                        property_name(&property.key, property.computed),
+                        validator_payload(&property.value),
+                    ),
+                    ObjectPropertyKind::SpreadProperty(_) => (None, None),
                 };
-                collect.push(name, property.span());
+                collect.push_payload(name, property.span(), extra_payload);
             }
         }
         Expression::ArrayExpression(array) => {
@@ -194,6 +227,16 @@ pub(super) fn define_value_into(expression: &Expression<'_>, collect: &mut Colle
         _ => return false,
     }
     true
+}
+
+/// A validator's parameters after the first: `(x, y) => true` declares `y`.
+fn validator_payload(value: &Expression<'_>) -> Option<Span> {
+    let params = match value.without_parentheses() {
+        Expression::ArrowFunctionExpression(function) => &function.params,
+        Expression::FunctionExpression(function) => &function.params,
+        _ => return None,
+    };
+    tail_span(param_spans(params), 1)
 }
 
 /// Every named event a top-level `defineEmits` call declares, with its node.

@@ -88,6 +88,7 @@ jobs:
     env:
       VIZE_CSS_MAP_BASE_SHA: ${{ inputs.base_sha }}
       CARGO_INCREMENTAL: "0"
+      RUSTUP_TOOLCHAIN: "1.100.0"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:

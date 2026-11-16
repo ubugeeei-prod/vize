@@ -26,6 +26,7 @@ jobs:
       CARGO_INCREMENTAL: "0"
       QUALIFICATION_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
       BASE_SHA: ${{ github.event.pull_request.base.sha || github.sha }}
+      RUSTUP_TOOLCHAIN: "1.100.0"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
@@ -58,6 +59,8 @@ jobs:
           cp "$observer" "$baseline/$observer"
           cmp "$observer" "$baseline/$observer"
           git -C "$baseline" diff --exit-code -- crates/*/src
+          (cd "$baseline" && rustc -Vv) > "$RUNNER_TEMP/jsx-backend-origins/base-rustc.txt"
+          rustc -Vv > "$RUNNER_TEMP/jsx-backend-origins/head-rustc.txt"
           (cd "$baseline" && CARGO_TARGET_DIR="$RUNNER_TEMP/jsx-origin-base-target" VIZE_JSX_DEFAULT_PROFILE_CAPTURE="$RUNNER_TEMP/jsx-backend-origins/base-profile.json" cargo test --locked --profile ci -p vize_atelier_jsx --test backend_codegen_profile -- --nocapture)
           VIZE_JSX_DEFAULT_PROFILE_CAPTURE="$RUNNER_TEMP/jsx-backend-origins/head-profile.json" cargo test --locked --profile ci -p vize_atelier_jsx --test backend_codegen_profile -- --nocapture
           git rev-parse HEAD HEAD^{tree} > "$RUNNER_TEMP/jsx-backend-origins/head-source.txt"

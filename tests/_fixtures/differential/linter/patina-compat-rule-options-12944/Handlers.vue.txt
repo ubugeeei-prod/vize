@@ -1,0 +1,31 @@
+<script setup lang="ts">
+import { ref } from "vue";
+
+const items = [{ id: 1 }, { id: 2 }];
+const count = ref(0);
+
+function pick(item: { id: number }): void {
+  console.info(item.id);
+}
+function open(index: number, event: Event): void {
+  console.info(index, event.type);
+}
+function send(): void {
+  console.info("send");
+}
+</script>
+
+<template>
+  <ul>
+    <li v-for="item in items" :key="item.id">
+      <button type="button" @click="() => pick(item)">pick</button>
+    </li>
+    <li v-for="(item, index) in items" :key="item.id">
+      <button type="button" @click="(event: Event) => open(index, event)">open</button>
+    </li>
+  </ul>
+  <button type="button" @click="send">a</button>
+  <button type="button" @click="() => send()">b</button>
+  <button type="button" @click="send()">c</button>
+  <button type="button" @click="count++">d</button>
+</template>

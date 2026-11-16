@@ -22,7 +22,7 @@ use oxc_span::{GetSpan, Span};
 use oxc_syntax::symbol::SymbolId;
 use vize_l0::{CompactString, ToCompactString};
 
-use super::declared::{Collect, Emits, define_value_into};
+use super::declared::{Collect, Emits, define_value_into, param_spans, tail_span};
 
 /// Which parse a node belongs to.
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -347,11 +347,24 @@ fn collect_members(members: &[TSSignature<'_>], collect: &mut Collect) {
                 }
             }
             TSSignature::TSPropertySignature(property) => {
-                collect.push(type_key(&property.key), property.span);
+                // `move: [x: number, y: number]` carries `y` beyond one payload.
+                let payload = match property
+                    .type_annotation
+                    .as_ref()
+                    .map(|annotation| &annotation.type_annotation)
+                {
+                    Some(TSType::TSTupleType(tuple)) => {
+                        tail_span(tuple.element_types.iter().map(GetSpan::span), 1)
+                    }
+                    _ => None,
+                };
+                collect.push_payload(type_key(&property.key), property.span, payload);
             }
-            TSSignature::TSMethodSignature(method) => {
-                collect.push(type_key(&method.key), method.span)
-            }
+            TSSignature::TSMethodSignature(method) => collect.push_payload(
+                type_key(&method.key),
+                method.span,
+                tail_span(param_spans(&method.params), 1),
+            ),
             _ => {}
         }
     }
@@ -392,9 +405,11 @@ fn event_names(params: &FormalParameters<'_>, span: Span, collect: &mut Collect)
         TSType::TSUnionType(union) => union.types.iter().collect(),
         ty => vec![ty],
     };
+    // `(e: 'move', x: number, y: number)` carries `y` beyond one payload.
+    let payload = tail_span(param_spans(params), 2);
     for ty in types {
         if let Some(name) = literal_type(ty) {
-            collect.push(Some(name), span);
+            collect.push_payload(Some(name), span, payload);
         }
     }
 }

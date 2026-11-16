@@ -1,12 +1,74 @@
 //! unbound-method member facts: the receiver's symbol and how each property is declared (`checkIfMethod`).
 use super::{
-    FUNCTION_EXPRESSION, INTERSECTION, JsonMap, METHOD_DECLARATION, METHOD_SIGNATURE, OBJECT,
-    PROPERTY_ASSIGNMENT, PROPERTY_DECLARATION, SYMBOL_CLASS, Shapes, UNION, VOID,
+    FUNCTION_DECLARATION, FUNCTION_EXPRESSION, INTERSECTION, JsonMap, METHOD_DECLARATION,
+    METHOD_SIGNATURE, OBJECT, PROPERTY_ASSIGNMENT, PROPERTY_DECLARATION, SYMBOL_CLASS, Shapes,
+    UNION, VOID,
 };
 use corsa::api::{NodeHandle, TypeResponse};
 use serde_json::{Map, Value, json};
 
 impl Shapes<'_> {
+    /// Method facts for a computed access whose key type resolves to one or
+    /// more string/number literals. This reuses the receiver and method caches
+    /// used by static member access.
+    pub(in super::super) async fn computed_method(
+        &mut self,
+        receiver: &TypeResponse,
+        key: &TypeResponse,
+    ) -> Option<Value> {
+        let mut names = Vec::new();
+        let key_parts = if key.flags & UNION != 0 {
+            self.session.constituents(key).await
+        } else {
+            vec![key.clone()]
+        };
+        for part in key_parts {
+            let name = match &part.value {
+                Some(Value::String(value)) => Some(vize_l0::String::from(value.as_str())),
+                Some(Value::Number(value)) => Some(vize_l0::cstr!("{value}")),
+                _ => None,
+            };
+            if let Some(name) = name
+                && !names.contains(&name)
+            {
+                names.push(name);
+            }
+        }
+        if names.is_empty() {
+            return None;
+        }
+        let facts = self.member_methods(receiver, &names).await;
+        let members = facts.get("members")?.as_object()?;
+        let mut safe_method = None;
+        let mut static_method = None;
+        for name in &names {
+            let parts = members.get(name.as_str())?.get("parts")?.as_array()?;
+            for part in parts.iter().filter_map(Value::as_object) {
+                if part.get("isMethod").and_then(Value::as_bool) != Some(true) {
+                    continue;
+                }
+                let value = Value::Object(part.clone());
+                let this_is_void = part
+                    .get("thisArgIsVoid")
+                    .and_then(Value::as_bool)
+                    .unwrap_or(false);
+                let is_static = part
+                    .get("isStatic")
+                    .and_then(Value::as_bool)
+                    .unwrap_or(false);
+                if !this_is_void && !is_static {
+                    return Some(value);
+                }
+                if !this_is_void && static_method.is_none() {
+                    static_method = Some(value);
+                } else if safe_method.is_none() {
+                    safe_method = Some(value);
+                }
+            }
+        }
+        static_method.or(safe_method)
+    }
+
     /// unbound-method facts for `names` on this receiver type: the receiver's
     /// symbol, and per union/intersection constituent how each property is
     /// declared (`checkIfMethod`).
@@ -40,6 +102,7 @@ impl Shapes<'_> {
             let parts = parts.as_deref().unwrap_or_default();
             let mut infos = Vec::with_capacity(parts.len());
             let mut property_lib = None;
+            let mut default_library_function = false;
             for part in parts {
                 let property = client
                     .get_property_of_type(
@@ -55,12 +118,15 @@ impl Shapes<'_> {
                     infos.push(Value::Null);
                     continue;
                 };
-                if property_lib.is_none() {
-                    property_lib = Some(
-                        !property.declarations.is_empty()
-                            && property.declarations.iter().all(is_default_library),
-                    );
-                }
+                let from_default_library = !property.declarations.is_empty()
+                    && property.declarations.iter().all(is_default_library);
+                property_lib = Some(property_lib.unwrap_or(true) && from_default_library);
+                default_library_function |= from_default_library
+                    && property
+                        .value_declaration
+                        .as_ref()
+                        .and_then(declaration_kind)
+                        == Some(FUNCTION_DECLARATION);
                 let info = match self.method_cache.get(&property.id) {
                     Some(info) => info.clone(),
                     None => {
@@ -70,6 +136,17 @@ impl Shapes<'_> {
                     }
                 };
                 infos.push(info);
+            }
+            // TypeScript 7 splits DOM globals such as `alert` into a `Window`
+            // method and a global function. The TypeScript 5 symbol observed by
+            // the pinned typescript-eslint corpus uses the merged, safe function
+            // declaration as its value declaration.
+            if ty.flags & INTERSECTION != 0
+                && property_lib == Some(true)
+                && default_library_function
+            {
+                infos.clear();
+                infos.push(json!({ "isMethod": false }));
             }
             let member = json!({ "parts": infos, "propertyLib": property_lib });
             self.member_cache.insert(key, member.clone());
@@ -147,14 +224,20 @@ impl Shapes<'_> {
 
     /// typescript-eslint's `checkIfMethod`/`checkMethod` inputs for one
     /// property symbol.
-    async fn method_info(&self, property: &corsa::api::SymbolResponse) -> Value {
+    pub(in super::super) async fn method_info(
+        &self,
+        property: &corsa::api::SymbolResponse,
+    ) -> Value {
         let kind = property
             .value_declaration
             .as_ref()
             .and_then(declaration_kind);
         let method_like = matches!(kind, Some(METHOD_SIGNATURE | METHOD_DECLARATION));
-        let property_like = matches!(kind, Some(PROPERTY_DECLARATION | PROPERTY_ASSIGNMENT));
-        if !method_like && !property_like {
+        let function_property_like = matches!(
+            kind,
+            Some(PROPERTY_DECLARATION | PROPERTY_ASSIGNMENT | FUNCTION_EXPRESSION)
+        );
+        if !method_like && !function_property_like {
             return json!({ "isMethod": false });
         }
         let snapshot = self.session.snapshot().handle.clone();
@@ -186,27 +269,91 @@ impl Shapes<'_> {
         // A property is a method only when initialized with a `function`
         // expression; arrow functions keep their lexical `this`.
         let is_method = method_like
-            || signature.declaration.as_ref().and_then(declaration_kind)
-                == Some(FUNCTION_EXPRESSION);
-        let first_param_is_this =
-            signature.this_parameter.is_some() || signature.this_parameter_symbol.is_some();
+            || (function_property_like
+                && signature.declaration.as_ref().and_then(declaration_kind)
+                    == Some(FUNCTION_EXPRESSION));
+        let queried_this_parameter = client
+            .get_this_parameter_of_signature(
+                snapshot.clone(),
+                project.clone(),
+                signature.id.clone(),
+            )
+            .await
+            .ok()
+            .flatten();
+        let ordinary_this_parameter = if signature.this_parameter.is_none()
+            && signature.this_parameter_symbol.is_none()
+            && queried_this_parameter.is_none()
+        {
+            let parameters = if signature.parameter_symbols.is_empty() {
+                client
+                    .get_parameters_of_signature(
+                        snapshot.clone(),
+                        project.clone(),
+                        signature.id.clone(),
+                    )
+                    .await
+                    .unwrap_or_default()
+            } else {
+                signature.parameter_symbols.clone()
+            };
+            parameters
+                .into_iter()
+                .find(|parameter| parameter.name == "this")
+        } else {
+            None
+        };
+        let this_parameter_symbol = signature
+            .this_parameter_symbol
+            .as_ref()
+            .or(queried_this_parameter.as_ref())
+            .or(ordinary_this_parameter.as_ref());
+        let this_parameter = signature
+            .this_parameter
+            .clone()
+            .or_else(|| this_parameter_symbol.map(|parameter| parameter.id.clone()));
+        let first_param_is_this = this_parameter.is_some();
         let this_arg_is_void = if signature
             .this_parameter_type_texts
             .iter()
             .any(|text| text.trim() == "void")
         {
             true
-        } else if let Some(this_parameter) = signature.this_parameter.clone() {
-            client
-                .get_type_of_symbol(
-                    self.session.snapshot().handle.clone(),
-                    self.session.project_handle(),
-                    this_parameter,
-                )
+        } else if let Some(this_parameter) = this_parameter {
+            let mut this_type = client
+                .get_type_of_symbol(snapshot.clone(), project.clone(), this_parameter.clone())
                 .await
                 .ok()
-                .flatten()
-                .is_some_and(|this_type| this_type.flags == VOID)
+                .flatten();
+            if let Some(location) =
+                this_parameter_symbol.and_then(|parameter| parameter.declarations.first())
+                && !this_type.as_ref().is_some_and(|ty| ty.flags & VOID != 0)
+            {
+                this_type = client
+                    .get_type_of_symbol_at_location(
+                        snapshot,
+                        project,
+                        this_parameter,
+                        location.clone(),
+                    )
+                    .await
+                    .ok()
+                    .flatten()
+                    .or(this_type);
+            }
+            if let Some(this_type) = this_type {
+                this_type.flags & VOID != 0
+                    || this_type.texts.iter().any(|text| text.trim() == "void")
+                    || self
+                        .session
+                        .render_type_texts(&this_type)
+                        .await
+                        .unwrap_or_default()
+                        .iter()
+                        .any(|text| text.trim() == "void")
+            } else {
+                false
+            }
         } else {
             false
         };
@@ -234,4 +381,38 @@ pub(super) fn is_default_library(handle: &NodeHandle) -> bool {
         let name = path.rsplit('/').next().unwrap_or_default();
         name.starts_with("lib.") && name.ends_with(".d.ts")
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use corsa::api::NodeHandle;
+
+    use super::{
+        FUNCTION_EXPRESSION, METHOD_DECLARATION, METHOD_SIGNATURE, PROPERTY_ASSIGNMENT,
+        PROPERTY_DECLARATION, declaration_kind,
+    };
+
+    #[test]
+    fn typescript_seven_distinguishes_function_expressions_from_arrows() {
+        let function = NodeHandle::from("42.219./workspace/composables.ts");
+        let arrow = NodeHandle::from("43.220./workspace/composables.ts");
+        let property_declaration = NodeHandle::from("44.173./workspace/composables.ts");
+        let method_signature = NodeHandle::from("45.174./workspace/composables.ts");
+        let method_declaration = NodeHandle::from("46.175./workspace/composables.ts");
+        let property = NodeHandle::from("47.303./workspace/composables.ts");
+        let shorthand = NodeHandle::from("48.304./workspace/composables.ts");
+        assert_eq!(declaration_kind(&function), Some(FUNCTION_EXPRESSION));
+        assert_ne!(declaration_kind(&arrow), Some(FUNCTION_EXPRESSION));
+        assert_eq!(
+            declaration_kind(&property_declaration),
+            Some(PROPERTY_DECLARATION)
+        );
+        assert_eq!(declaration_kind(&method_signature), Some(METHOD_SIGNATURE));
+        assert_eq!(
+            declaration_kind(&method_declaration),
+            Some(METHOD_DECLARATION)
+        );
+        assert_eq!(declaration_kind(&property), Some(PROPERTY_ASSIGNMENT));
+        assert_eq!(declaration_kind(&shorthand), Some(304));
+    }
 }

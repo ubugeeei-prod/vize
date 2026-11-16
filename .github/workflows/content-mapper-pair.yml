@@ -1,7 +1,7 @@
 name: Content mapper pair
 run-name: "Content mapper pair ${{ inputs.head }} vs ${{ inputs.base }} (${{ inputs.sizes }})"
 # Two commits answer one content-mapper request stream on Linux, WSL2 (ext4 and
-# the Windows mount) and native Windows, alternating builds per run.
+# the Windows mount) and native Windows, balancing both build orders per replicate.
 on:
   workflow_dispatch:
     inputs:
@@ -18,7 +18,7 @@ on:
         type: string
         default: "1000,5000"
       runs:
-        description: Alternating recorded runs per build
+        description: Balanced AB+BA replicates per build
         type: string
         default: "5"
       allow_output_change:
@@ -76,6 +76,7 @@ jobs:
     env:
       BASE: ${{ inputs.base }}
       HEAD: ${{ inputs.head }}
+      RUSTUP_TOOLCHAIN: "1.100.0"
       PAIR_OS: linux
       PAIR_EXE: vize
     steps: &build-steps
@@ -100,10 +101,12 @@ jobs:
         run: |
           set -euo pipefail
           target="$RUNNER_TEMP/pair-target"
+          mkdir -p pair-bin
           for side in base head; do
             sha=$BASE; [[ $side == head ]] && sha=$HEAD
             git fetch --no-tags --depth=1 "https://github.com/$GITHUB_REPOSITORY.git" "$sha"
             git worktree add --detach "$RUNNER_TEMP/src-$side" "$sha"
+            (cd "$RUNNER_TEMP/src-$side" && rustc -Vv) > "pair-bin/$side-rustc.txt"
             # One target directory: the second build recompiles only what differs.
             (cd "$RUNNER_TEMP/src-$side" && CARGO_TARGET_DIR="$target" cargo build --profile ci-opt -p vize --bin vize)
             mkdir -p "pair-bin/$side"

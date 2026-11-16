@@ -6,13 +6,15 @@
 //! enabled rules and of each node's role (parent kind and key), and one query
 //! per range carries every family's needs.
 mod members;
+mod tree;
 use super::checker::{self, Needs as CheckerNeeds};
 use super::promise::{self, PromiseRules};
 use super::type_shape;
-use crate::linter::corsa_session::{ExpressionQuery, Facets, HeritageQuery, detail};
+use crate::linter::corsa_session::{ComputedMemberQuery, ExpressionQuery, Facets, HeritageQuery};
 use corsa::lint::LintNode;
 use members::{accessed_name, is_receiver_position, pattern_keys};
 use serde_json::Value;
+use tree::{TreeNeeds, wants_tree};
 use vize_l0::{FxHashMap, FxHashSet, String};
 
 /// What the enabled rules read, by fact family.
@@ -29,6 +31,8 @@ pub(in super::super) struct Wants {
     type_parts: bool,
     /// The empty-object probe on intersections and generic references.
     empty_object: bool,
+    /// Inferred signature/member types for no-unnecessary-type-parameters.
+    type_parameters: bool,
 }
 
 impl Wants {
@@ -60,6 +64,7 @@ impl Wants {
             type_parts: has("no-redundant-type-constituents")
                 || has("no-duplicate-type-constituents"),
             empty_object,
+            type_parameters: has("no-unnecessary-type-parameters"),
         }
     }
 
@@ -127,6 +132,8 @@ struct Role<'a> {
     tree: u8,
     /// `__typeDetail`.
     detail: bool,
+    /// Awaited-`any` discrimination for `no-unsafe-return`.
+    promise_any: bool,
 }
 
 fn collect(
@@ -136,6 +143,9 @@ fn collect(
     members: &FxHashSet<(u32, u32)>,
     plan: &mut Planner,
 ) {
+    if wants.type_parameters && node.kind == "TSTypeParameterDeclaration" {
+        type_parameter_queries(node, plan);
+    }
     let rules = wants.promise;
     let mut own = ExpressionQuery::at(node.range.start, node.range.end);
     own.promise = promise_facets(node, role.promise, rules);
@@ -145,6 +155,7 @@ fn collect(
         own.heritage = promise::heritage_query(node);
     }
     own.detail = role.detail || checker::detail_on_self(node, wants.checker);
+    own.promise_any = role.promise_any;
     own.tree = role.tree;
     if wants.tree.members && node.kind == "ObjectPattern" {
         own.member_methods = pattern_keys(node);
@@ -188,6 +199,7 @@ fn collect(
         promise: None,
         tree: wants_tree(wants.tree, node, key, index),
         detail: checker::detail_at(wants.checker, node, key),
+        promise_any: checker::promise_any_at(wants.checker, node, key),
     };
     for (key, child) in &node.children {
         let role = Role {
@@ -206,6 +218,8 @@ fn collect(
         }
     }
 }
+
+include!("queries/type_parameters.rs");
 
 /// The callee (or tag) of a call: its signatures, `Function` signature
 /// counts and void-expecting argument positions.
@@ -233,14 +247,22 @@ fn callee_query(node: &LintNode, wants: Wants, plan: &mut Planner) {
 /// unbound-method reads the accessed property on the receiver's type, and
 /// the destructured properties on a pattern's initializer.
 fn member_queries(node: &LintNode, plan: &mut Planner) {
-    if node.kind == "MemberExpression"
-        && !is_receiver_position(node)
-        && let (Some(object), Some(name)) = (node.child("object"), accessed_name(node))
-    {
-        let mut query = ExpressionQuery::at(object.range.start, object.range.end);
-        query.symbols = object.kind == "Identifier";
-        query.member_methods = vec![name];
-        plan.push(query);
+    if node.kind == "MemberExpression" && !is_receiver_position(node) {
+        if let (Some(object), Some(name)) = (node.child("object"), accessed_name(node)) {
+            let mut query = ExpressionQuery::at(object.range.start, object.range.end);
+            query.symbols = object.kind == "Identifier";
+            query.member_methods = vec![name];
+            plan.push(query);
+        } else if node.field_bool("computed") == Some(true)
+            && let (Some(object), Some(property)) = (node.child("object"), node.child("property"))
+        {
+            let mut query = ExpressionQuery::at(node.range.start, node.range.end);
+            query.computed_member = Some(ComputedMemberQuery {
+                object: (object.range.start, object.range.end),
+                property: (property.range.start, property.range.end),
+            });
+            plan.push(query);
+        }
     }
     if node.kind == "ObjectPattern"
         && let Some(range) = node.fields.get("__initRange")
@@ -347,117 +369,4 @@ fn type_members(node: &LintNode, members: &mut FxHashSet<(u32, u32)>) {
 fn may_generate_empty_object(node: &LintNode) -> bool {
     node.kind == "TSIntersectionType"
         || (node.kind == "TSTypeReference" && node.child("typeArguments").is_some())
-}
-
-/// Type tree details (`detail::*`, `0` for none) the enabled rules need per
-/// position, and whether unbound-method needs member facts.
-#[derive(Clone, Copy, Default)]
-struct TreeNeeds {
-    /// `+` / `+=` operands (restrict-plus-operands, no-base-to-string).
-    plus_operands: u8,
-    /// Template literal expressions (restrict-template-expressions,
-    /// no-base-to-string).
-    template_expressions: u8,
-    /// First call/`new` arguments: the `String()` argument (no-base-to-string)
-    /// and eval-like handlers (no-implied-eval).
-    first_argument: u8,
-    /// Receivers of `toString`, `toLocaleString` and `join`
-    /// (no-base-to-string).
-    stringified_receiver: u8,
-    /// The `Function` callee (no-implied-eval).
-    function_callee: u8,
-    /// `void` arguments (no-meaningless-void-operator).
-    void_argument: u8,
-    /// Spread arguments (no-misused-spread).
-    spread_argument: u8,
-    /// Accessed and destructured members (unbound-method).
-    members: bool,
-}
-
-impl TreeNeeds {
-    fn from_rules(rules: &[&str]) -> Self {
-        let has = |name: &str| rules.contains(&name);
-        let when = |enabled: bool, details: u8| {
-            if enabled {
-                detail::STRUCTURE | details
-            } else {
-                0
-            }
-        };
-        let to_string = when(
-            has("no-base-to-string"),
-            detail::TO_STRING | detail::ELEMENTS | detail::BASES,
-        );
-        let implied_eval = has("no-implied-eval");
-        Self {
-            plus_operands: to_string | when(has("restrict-plus-operands"), 0),
-            template_expressions: to_string
-                | when(
-                    has("restrict-template-expressions"),
-                    detail::SYMBOL | detail::ELEMENTS | detail::BASES,
-                ),
-            first_argument: to_string | when(implied_eval, detail::SYMBOL | detail::CALLABLE),
-            stringified_receiver: to_string,
-            function_callee: when(implied_eval, detail::SYMBOL),
-            void_argument: when(has("no-meaningless-void-operator"), 0),
-            spread_argument: when(
-                has("no-misused-spread"),
-                detail::SYMBOL
-                    | detail::ELEMENTS
-                    | detail::BASES
-                    | detail::CALLABLE
-                    | detail::OBJECT_KIND,
-            ),
-            members: has("unbound-method"),
-        }
-    }
-}
-
-/// Type tree details an enabled rule needs for a child position.
-fn wants_tree(needs: TreeNeeds, parent: &LintNode, key: &str, index: usize) -> u8 {
-    match parent.kind.as_str() {
-        "BinaryExpression"
-            if parent.field_str("operator") == Some("+") && matches!(key, "left" | "right") =>
-        {
-            needs.plus_operands
-        }
-        "AssignmentExpression"
-            if parent.field_str("operator") == Some("+=") && matches!(key, "left" | "right") =>
-        {
-            needs.plus_operands
-        }
-        "TemplateLiteral" if key == "expressions" => needs.template_expressions,
-        "CallExpression" | "NewExpression" if key == "arguments" && index == 0 => {
-            needs.first_argument
-        }
-        "CallExpression" | "NewExpression"
-            if key == "callee" && parent.child("callee").is_some_and(names_function) =>
-        {
-            needs.function_callee
-        }
-        "UnaryExpression" if key == "argument" => needs.void_argument,
-        "SpreadElement" | "JSXSpreadAttribute" if key == "argument" => needs.spread_argument,
-        "MemberExpression"
-            if key == "object"
-                && parent
-                    .child("property")
-                    .and_then(|property| property.field_str("name"))
-                    .is_some_and(|name| matches!(name, "toString" | "toLocaleString" | "join")) =>
-        {
-            needs.stringified_receiver
-        }
-        _ => 0,
-    }
-}
-
-/// `Function` or `<global>.Function`, the constructor no-implied-eval checks.
-fn names_function(callee: &LintNode) -> bool {
-    match callee.kind.as_str() {
-        "Identifier" => callee.field_str("name") == Some("Function"),
-        "MemberExpression" => callee.child("property").is_some_and(|property| {
-            property.field_str("name") == Some("Function")
-                || property.field_str("value") == Some("Function")
-        }),
-        _ => false,
-    }
 }

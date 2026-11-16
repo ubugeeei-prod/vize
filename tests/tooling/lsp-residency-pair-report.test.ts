@@ -113,8 +113,10 @@ void test("paired residency workflow binds one exact parent and preserves raw al
   assert.match(workflow, /test "\$\(git rev-parse "\$SOURCE_SHA\^"\)" = "\$BASE_SHA"/u);
   assert.match(
     workflow,
-    /git diff --exit-code "\$BASE_SHA" "\$SOURCE_SHA" -- Cargo\.lock pnpm-lock\.yaml package\.json rust-toolchain\.toml/u,
+    /git diff --exit-code "\$BASE_SHA" "\$SOURCE_SHA" -- Cargo\.lock pnpm-lock\.yaml package\.json/u,
   );
+  assert.match(workflow, /RUSTUP_TOOLCHAIN: "1\.100\.0"/u);
+  assert.match(workflow, /rustc -Vv > "\$OBSERVATION_ROOT\/\$\{role\}-rustc\.txt"/u);
   assert.match(workflow, /for round in 0 1 2 3/u);
   assert.match(
     workflow,

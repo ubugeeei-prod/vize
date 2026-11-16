@@ -29,8 +29,9 @@ pub use loader::{
     load_config_with_source, load_language_server_unstable_flags, load_lib_config_with_source,
     load_linter_config, load_linter_execution_with_source, load_linter_rule_options,
     load_lsp_config_snapshot, load_lsp_config_snapshot_observed, load_project_config_with_source,
-    try_load_formatter_snapshot, try_load_linter_execution_with_project,
-    try_load_linter_execution_with_source, try_load_project_config_from_root,
+    try_load_formatter_snapshot, try_load_formatter_snapshot_from_serialized,
+    try_load_linter_execution_with_project, try_load_linter_execution_with_source,
+    try_load_project_config_from_root, try_load_project_config_from_serialized,
     try_load_project_config_with_source, validate_explicit_config_path,
 };
 pub use project::ProjectModel;

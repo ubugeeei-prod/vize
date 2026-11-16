@@ -12,3 +12,31 @@ function TextGap() { return createTextVNode(' ') }
     let result = linter.lint_sfc(sfc, "LocalParts.vue");
     assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
 }
+
+#[test]
+fn paired_plain_script_component_factories_are_visible_to_script_setup_templates() {
+    let result = create_linter().lint_sfc(
+        r#"<template><LogoContent /><logo-content /></template>
+<script setup lang="ts">const ready = true;</script>
+<script lang="ts">
+import { defineComponent } from "vue";
+const LogoContent = defineComponent({ setup: () => () => null });
+export { LogoContent };
+</script>"#,
+        "LogoLoop.vue",
+    );
+    assert!(result.diagnostics.is_empty(), "{:?}", result.diagnostics);
+}
+
+#[test]
+fn options_api_name_uses_vue_self_reference_spelling() {
+    let result = create_linter().lint_sfc(
+        r#"<template><var_tree_menu_option /></template>
+<script lang="ts">
+import { defineComponent } from "vue";
+export default defineComponent({ name: "VarTreeMenuOption" });
+</script>"#,
+        "OtherName.vue",
+    );
+    assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
+}

@@ -188,7 +188,7 @@ function run(base, head, destination) {
     builds: [],
     order: ["base", "head", "head", "base"],
     note: "Report-only optimized source comparison and map-off/on overhead; no instruction-ceiling or universal performance claim.",
-    toolchain: execFileSync("rustc", ["-Vv"], { encoding: "utf8" }),
+    toolchain: process.env.RUSTUP_TOOLCHAIN,
     node: process.version,
   };
   const retain = () => write(path.join(destination, "receipt.json"), receipt);
@@ -256,13 +256,23 @@ function run(base, head, destination) {
         ]),
       ),
       cargoLockSha256: digest(path.join(root, "Cargo.lock")),
+      rustc: execFileSync("rustc", ["-Vv"], {
+        cwd: root,
+        env: { ...process.env, RUSTUP_TOOLCHAIN: "1.100.0" },
+        encoding: "utf8",
+      }),
     };
     receipt.builds.push(identity);
     retain();
     command(
       argv,
       nativeDir,
-      { ...process.env, CARGO_TARGET_DIR: target, VIZE_NATIVE_BUILD_TOKEN: token },
+      {
+        ...process.env,
+        CARGO_TARGET_DIR: target,
+        VIZE_NATIVE_BUILD_TOKEN: token,
+        RUSTUP_TOOLCHAIN: "1.100.0",
+      },
       path.join(destination, `${side}-build.log`),
     );
     assert.equal(git(root, "diff", "--name-only", "HEAD"), "");

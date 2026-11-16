@@ -5,7 +5,9 @@
 
 use serde::{Deserialize, Serialize};
 
+use super::real_project_allowances::HeadingHasContentOptions;
 use super::script_unused::{NoUnusedScriptVarsOptions, PreferConstOptions};
+use super::v_on_handler_style::VOnHandlerStyleConfig;
 use crate::String;
 
 /// `vue/max-props`. Absent or zero means unlimited.
@@ -193,6 +195,18 @@ pub struct ConfiguredVueRuleOptions {
     /// `vue/prefer-const`.
     #[serde(rename = "vue/prefer-const", skip_serializing_if = "Option::is_none")]
     pub prefer_const: Option<PreferConstOptions>,
+    /// `vue/v-on-handler-style`.
+    #[serde(
+        rename = "vue/v-on-handler-style",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub v_on_handler_style: Option<VOnHandlerStyleConfig>,
+    /// `a11y/heading-has-content`.
+    #[serde(
+        rename = "a11y/heading-has-content",
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub heading_has_content: Option<HeadingHasContentOptions>,
 }
 
 impl ConfiguredVueRuleOptions {
@@ -213,6 +227,8 @@ impl ConfiguredVueRuleOptions {
             && self.no_unsupported_features.is_none()
             && self.no_unused_script_vars.is_none()
             && self.prefer_const.is_none()
+            && self.v_on_handler_style.is_none()
+            && self.heading_has_content.is_none()
     }
 
     /// Apply a later config layer.
@@ -261,6 +277,12 @@ impl ConfiguredVueRuleOptions {
         }
         if overlay.prefer_const.is_some() {
             self.prefer_const = overlay.prefer_const.clone();
+        }
+        if overlay.v_on_handler_style.is_some() {
+            self.v_on_handler_style = overlay.v_on_handler_style;
+        }
+        if overlay.heading_has_content.is_some() {
+            self.heading_has_content = overlay.heading_has_content.clone();
         }
     }
 }

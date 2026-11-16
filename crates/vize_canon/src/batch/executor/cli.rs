@@ -30,7 +30,7 @@ mod syntax_abort;
 mod union_find;
 
 use checkers::rejects_checkers_flag;
-pub(super) use checkers::{checker_count, unsharded_checker_count};
+pub(super) use checkers::{checker_count, program_concurrency_limit, unsharded_checker_count};
 use diagnostic_paths::CliPathResolver;
 use file_diagnostics::{Decoded, parse_cli_diagnostic_line};
 use global_scope::RecordedBuildInfo;

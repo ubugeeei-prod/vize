@@ -139,7 +139,7 @@ Seulement dans `opinionated`, `nuxt` ou `ecosystem`. La colonne Préréglages in
 | <span id="vue-warn-custom-block"></span>[`vue/warn-custom-block`](./reference/vue-warn-custom-block.md) | Signaler les blocs personnalisés dans les fichiers SFC. | `nuxt`, `opinionated` |  |
 | <span id="vue-warn-custom-directive"></span>[`vue/warn-custom-directive`](./reference/vue-warn-custom-directive.md) | Signaler les directives personnalisées nécessitant un enregistrement. | `nuxt`, `opinionated` |  |
 
-## À activer (59)
+## À activer (60)
 
 Dans aucun préréglage. Activez-les par leur nom dans `linter.rules`, passé à `withVue`.
 
@@ -194,6 +194,7 @@ Dans aucun préréglage. Activez-les par leur nom dans `linter.rules`, passé à
 | <span id="vue-no-v-for-template-key"></span>[`vue/no-v-for-template-key`](./reference/vue-no-v-for-template-key.md) | Exige de placer la key de `template v-for` sur un enfant réel pour assurer la compatibilité avec Vue 2. |  |
 | <span id="vue-object-shorthand"></span>[`vue/object-shorthand`](./reference/vue-object-shorthand.md) | Exige la syntaxe courte des propriétés d'objet dans le template. |  |
 | <span id="vue-prefer-prop-type-boolean-first"></span>[`vue/prefer-prop-type-boolean-first`](./reference/vue-prefer-prop-type-boolean-first.md) | Exige que `Boolean` soit le premier constructeur dans la liste des types d'une prop. |  |
+| <span id="vue-prefer-single-event-payload"></span>[`vue/prefer-single-event-payload`](./reference/vue-prefer-single-event-payload.md) | Impose un seul argument de charge utile pour les événements personnalisés. |  |
 | <span id="vue-prefer-template"></span>[`vue/prefer-template`](./reference/vue-prefer-template.md) | Préfère les littéraux de gabarit à la concaténation. |  |
 | <span id="vue-prefer-v-model"></span>[`vue/prefer-v-model`](./reference/vue-prefer-v-model.md) | Préfère v-model à une paire bind et update équivalente. |  |
 | <span id="vue-quote-props"></span>[`vue/quote-props`](./reference/vue-quote-props.md) | Interdit les guillemets inutiles sur les propriétés d'objet. |  |

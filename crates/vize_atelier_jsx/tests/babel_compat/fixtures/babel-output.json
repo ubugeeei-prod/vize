@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "description": "Recorded @vue/babel-plugin-jsx output for every case in corpus.json. Generated — do not hand-edit; re-record with oracle.mjs --write.",
+  "description": "Recorded @vue/babel-plugin-jsx output for every case in corpus.json. Generated — do not hand-edit; re-record with oracle.ts --write.",
   "pluginVersion": "2.0.1",
   "cases": {
     "options/transform_on_off": {

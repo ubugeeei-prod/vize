@@ -3,11 +3,12 @@ use super::{
     ToCompactString, Value, cstr, remove_session_root,
 };
 use vize_canon::{TsconfigOwnershipCache, TsconfigSourceKind};
+use vize_l0::profile;
 
 mod files;
 mod walk;
 
-use files::ambient_declaration_files;
+use files::ambient_program_files;
 
 pub(super) fn session_store_root(project_root: &Path) -> PathBuf {
     project_root.join(".vize").join("patina")
@@ -186,7 +187,10 @@ pub(in super::super) fn session_tsconfig_contents(
     let mut value = stub_tsconfig_value();
     if let Some(tsconfig) = tsconfig {
         overlay_user_compiler_options(&mut value, project_root, tsconfig);
-        let declarations = ambient_declaration_files(tsconfig);
+        let declarations = profile!(
+            "patina.corsa_session.ambient_program_files",
+            ambient_program_files(project_root, tsconfig)
+        );
         if !declarations.is_empty() {
             insert_files(&mut value, &declarations);
         }

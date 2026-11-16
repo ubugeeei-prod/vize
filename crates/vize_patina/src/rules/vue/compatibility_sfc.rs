@@ -2,6 +2,7 @@
 
 mod content;
 mod enforce_style_attribute;
+mod event_payload;
 mod events;
 mod next_tick_style;
 mod no_define_model_default;
@@ -11,6 +12,7 @@ mod sort_keys;
 
 pub use content::NoContentOutsideBlock;
 pub use enforce_style_attribute::{EnforceStyleAttribute, StyleAttribute};
+pub use event_payload::PreferSingleEventPayload;
 pub use events::NoShadowNativeEvents;
 pub use next_tick_style::NextTickStyle;
 pub use no_define_model_default::NoDefineModelDefault;

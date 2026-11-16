@@ -43,6 +43,7 @@ jobs:
       SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
       BASE_SHA: ${{ github.event.pull_request.base.sha || inputs.compare_ref }}
       OBSERVATION_ROOT: ${{ github.workspace }}/target/differential/lsp-residency-pair
+      RUSTUP_TOOLCHAIN: "1.100.0"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
@@ -56,7 +57,7 @@ jobs:
           [[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
           test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
           test "$(git rev-parse "$SOURCE_SHA^")" = "$BASE_SHA"
-          git diff --exit-code "$BASE_SHA" "$SOURCE_SHA" -- Cargo.lock pnpm-lock.yaml package.json rust-toolchain.toml
+          git diff --exit-code "$BASE_SHA" "$SOURCE_SHA" -- Cargo.lock pnpm-lock.yaml package.json
       - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
         with:
           node-version-file: package.json
@@ -83,6 +84,7 @@ jobs:
             target="${RUNNER_TEMP}/${role}-target"
             git checkout --detach "$sha"
             test "$(git rev-parse HEAD)" = "$sha"
+            rustc -Vv > "$OBSERVATION_ROOT/${role}-rustc.txt"
             CARGO_TARGET_DIR="$target" cargo build --locked --profile ci-opt -p vize --features profiling --message-format=json-render-diagnostics > "$OBSERVATION_ROOT/${role}-build.jsonl" 2> "$OBSERVATION_ROOT/${role}-build.stderr"
             vp exec node tools/support/compat/davinci/lsp-build-identity.ts "$target/ci-opt/vize" ci-opt "$OBSERVATION_ROOT/${role}-build.jsonl" "$OBSERVATION_ROOT/${role}-build-identity.json"
           done

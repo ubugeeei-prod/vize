@@ -56,6 +56,8 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         // Default-prop and ARIA role compatibility add nine literal fixtures.
         + 9
         // Accessibility and explicit-slot parity add one literal fixture.
+        + 1
+        // Native `is` attributes retain attribute-name validation.
         + 1,
     // Original 1057/87 census plus non-literal calls in valid_v_slot (3 + 1),
     // require_toggle_inside_transition (3), the v-else-if/v-is/v-pre rules (38
@@ -239,7 +241,11 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         // Whole-template esquery matching adds one helper-driven fixture call.
         + 1
         // Configurable component-name exemptions add four exact-name calls.
-        + 4,
+        + 4
+        // The v-on-handler-style option tests add one helper-driven call.
+        + 1
+        // Native `is` attribute-name coverage adds one literal call.
+        + 1,
     rule_fixture_skipped: 87
         + 4
         + 3
@@ -295,7 +301,9 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         // The whole-template esquery observation remains a scanner skip.
         + 1
         // Two new parity observations remain helper-driven scanner skips.
-        + 2,
+        + 2
+        // The v-on-handler-style option observation is a helper-driven skip.
+        + 1,
     matrix: 90,
     template_lines: 6316 + 233 + 5 + 10 + 25 + 7 - 49
         + 31
@@ -350,7 +358,9 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         // Default-prop and ARIA role compatibility retain eighty-eight trace lines.
         + 88
         // Accessibility and explicit-slot parity retain six trace lines.
-        + 6,
+        + 6
+        // Native `is` attribute-name coverage retains five trace lines.
+        + 5,
     restructured: 0,
     jsx: JsxComparison {
         roots: 14,

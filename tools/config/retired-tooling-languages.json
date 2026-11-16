@@ -57,7 +57,6 @@
     "lean": [],
     "mbt": [],
     "mjs": [
-      "crates/vize_atelier_jsx/tests/babel_compat/oracle.mjs",
       "editors/vscode/test/css-hover-current-packets.mjs",
       "editors/vscode/test/css-hover-literal-current-packets.mjs",
       "editors/vscode/test/css-hover-source-custody.mjs",
@@ -723,10 +722,8 @@
       "tools/support/compat/nuxt/prior-host-context.mjs",
       "tools/support/compat/nuxt/source-binding.mjs",
       "tools/support/compat/parcel/host.mjs",
-      "tools/support/compat/parcel/native-analysis.mjs",
       "tools/support/compat/parcel/native-target.mjs",
       "tools/support/compat/parcel/native-target.test.mjs",
-      "tools/support/compat/parcel/profile-analysis.mjs",
       "tools/support/compat/parcel/profile.mjs",
       "tools/support/compat/vite-style-relative-imports.mjs",
       "tools/support/compat/vuefes/passive-failure-sidecar.browser.test.mjs",

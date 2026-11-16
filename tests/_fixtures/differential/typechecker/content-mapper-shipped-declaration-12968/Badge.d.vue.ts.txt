@@ -1,0 +1,8 @@
+export interface BadgeProps { label: string }
+export function format(value: string): string;
+export const palette: readonly string[];
+declare const Badge: new () => {
+  $props: BadgeProps;
+  $slots: { header(props: { label: string }): unknown };
+};
+export default Badge;

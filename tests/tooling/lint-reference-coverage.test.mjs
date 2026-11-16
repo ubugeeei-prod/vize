@@ -11,6 +11,7 @@ import {
   baselineConfig,
   resolveBaselineRuntime,
 } from "../../tools/support/compat/fixtures/lint-divergence-baseline.mjs";
+import { resolveScorecardRuntime } from "../../tools/support/compat/fixtures/lint-divergence-scorecard.ts";
 import { eligibleReferenceCoverage } from "../../tools/support/fixtures/lint_reference_coverage.ts";
 
 const root = path.resolve(import.meta.dirname, "../..");
@@ -147,6 +148,7 @@ await test("pinned reference AST and visitors miss only the two proven coverage 
 
 await test("actual report retains complete raw packets and scores a neighboring changed source", () => {
   const cwd = fs.mkdtempSync(path.join(os.tmpdir(), "vize-reference-coverage-"));
+  const scorecardVersions = resolveScorecardRuntime().runtimeVersions;
   try {
     for (const entry of contract.cases) {
       const projectDir = path.join(cwd, entry.project);
@@ -213,37 +215,32 @@ await test("actual report retains complete raw packets and scores a neighboring 
         { file: entry.finding.file, messages: [entry.finding] },
       ]);
       assert.equal(packet.raw.eslintResults.length, 1);
-      assert.deepEqual(packet.baseline.runtimeVersions, entry.runtimeVersions);
-      const covered = packet.divergence.patinaOutsideBaselineSurface;
-      assert.equal(covered.length, 1);
-      const { referenceCoverage, ...retained } = covered[0];
-      assert.deepEqual(retained, entry.finding);
-      assert.equal(referenceCoverage.category, "reference-coverage-gap");
-      assert.equal(referenceCoverage.sourceSha256, entry.sourceSha256);
-      assert.deepEqual(packet.divergence.falsePositives, []);
+      assert.deepEqual(packet.baseline.runtimeVersions, scorecardVersions);
+      assert.deepEqual(packet.divergence.patinaOutsideBaselineSurface, []);
+      assert.deepEqual(packet.divergence.falsePositives, [entry.finding]);
       assert.equal(packet.budget.maxFalsePositiveCount, 0);
       assert.equal(packet.budget.maxFalseNegativeCount, 0);
       assert.equal(packet.divergence.summary.referenceCoverageIntegrityErrorCount, 0);
-      assert.equal(packet.divergence.referenceCoverageExpectations.length, 1);
-      assert.equal(packet.divergence.referenceCoverageExpectations[0].observedCount, 1);
+      assert.deepEqual(packet.divergence.referenceCoverageExpectations, []);
+      assert.equal(packet.budget.verdict, "breached");
+      const hasFalseNegatives = packet.divergence.falseNegatives.length > 0;
       const allMapped = run([entry.finding], "record-only", 0, "all-mapped");
       assert.equal(allMapped.preset, "all-mapped");
-      assert.deepEqual(allMapped.divergence.falsePositives, []);
-      assert.equal(allMapped.divergence.referenceCoverageExpectations.length, 1);
-      assert.equal(allMapped.divergence.referenceCoverageExpectations[0].observedCount, 1);
-      const missing = run([], "enforce", 1);
+      assert.deepEqual(allMapped.divergence.falsePositives, [entry.finding]);
+      assert.deepEqual(allMapped.divergence.referenceCoverageExpectations, []);
+      const missing = run([], "enforce", hasFalseNegatives ? 1 : 0);
       assert.deepEqual(missing.raw.patinaFindings, []);
-      assert.equal(missing.divergence.referenceCoverageExpectations[0].observedCount, 0);
-      assert.equal(missing.divergence.summary.referenceCoverageIntegrityErrorCount, 1);
-      assert.equal(missing.budget.verdict, "unusable");
-      assert.equal(missing.budget.passed, false);
-      assert.match(missing.budget.unusableReason, /expected exactly one native finding/);
+      assert.deepEqual(missing.divergence.falseNegatives, packet.divergence.falseNegatives);
+      assert.deepEqual(missing.divergence.referenceCoverageExpectations, []);
+      assert.equal(missing.divergence.summary.referenceCoverageIntegrityErrorCount, 0);
+      assert.equal(missing.budget.verdict, hasFalseNegatives ? "breached" : "passed");
+      assert.equal(missing.budget.passed, !hasFalseNegatives);
       const duplicated = run([entry.finding, entry.finding]);
       assert.equal(duplicated.raw.patinaFindings.length, 2);
-      assert.equal(duplicated.divergence.patinaOutsideBaselineSurface.length, 1);
-      assert.deepEqual(duplicated.divergence.falsePositives, [entry.finding]);
-      assert.equal(duplicated.divergence.referenceCoverageExpectations[0].observedCount, 2);
-      assert.equal(duplicated.budget.verdict, "unusable");
+      assert.deepEqual(duplicated.divergence.patinaOutsideBaselineSurface, []);
+      assert.deepEqual(duplicated.divergence.falsePositives, [entry.finding, entry.finding]);
+      assert.deepEqual(duplicated.divergence.referenceCoverageExpectations, []);
+      assert.equal(duplicated.budget.verdict, "breached");
       // A file may remain on disk while the actual measured corpus excludes it.
       // The complete native answer must then stay scored, with no integrity exemption.
       const registered = fs.readFileSync(registry, "utf8");

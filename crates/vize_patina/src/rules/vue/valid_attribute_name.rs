@@ -21,8 +21,9 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::{MarkupContext, MarkupDirective, MarkupElement, MarkupRule, MarkupTraversal};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::{ElementNode, ElementType, ExpressionNode, PropNode};
+use vize_relief::ElementNode;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/valid-attribute-name",
@@ -42,6 +43,53 @@ impl ValidAttributeName {
     fn is_valid_attribute_name(name: &str) -> bool {
         let mut chars = name.chars();
         chars.next().is_some_and(is_xml_name_start) && chars.all(is_xml_name_continue)
+    }
+
+    fn check(ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
+        if element.is_component() {
+            return;
+        }
+        element.walk_attributes(&mut |attribute| {
+            let name = attribute.name();
+            if !matches!(name.as_bytes().first(), Some(b'@' | b':' | b'#'))
+                && !Self::is_valid_attribute_name(name)
+            {
+                ctx.error_at_with_help(
+                    ctx.t_fmt("vue/valid-attribute-name.message", &[("name", name)]),
+                    attribute.name_range(),
+                    ctx.t("vue/valid-attribute-name.help"),
+                );
+            }
+        });
+        element.walk_directives(&mut |directive: MarkupDirective<'_>| {
+            if !directive.name_eq("bind") {
+                return;
+            }
+            let Some(name) = directive.arg_name() else {
+                return;
+            };
+            if directive.is_static_arg_exact(name) && !Self::is_valid_attribute_name(name) {
+                ctx.error_at_with_help(
+                    ctx.t_fmt("vue/valid-attribute-name.message", &[("name", name)]),
+                    directive.range(),
+                    ctx.t("vue/valid-attribute-name.help"),
+                );
+            }
+        });
+    }
+}
+
+impl MarkupRule for ValidAttributeName {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn traversal(&self) -> MarkupTraversal {
+        MarkupTraversal::Elements
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        Self::check(ctx.lint(), element);
     }
 }
 
@@ -77,43 +125,19 @@ impl Rule for ValidAttributeName {
         &META
     }
 
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
+    }
+
+    // Invalid JSX attribute syntax exists only through parser recovery. Keep
+    // that recovery-owned shape in the lowered lane instead of charging the
+    // direct projection for a check it cannot authoritatively decide.
+    fn jsx_needs_lowering(&self) -> bool {
+        true
+    }
+
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        if element.tag_type == ElementType::Component {
-            return;
-        }
-        for prop in &element.props {
-            match prop {
-                // Directive shorthand inside a v-pre subtree is deliberately
-                // retained as a plain attribute by the template parser. The
-                // upstream rule does not inspect that raw subtree.
-                PropNode::Attribute(attr)
-                    if !matches!(attr.name.as_bytes().first(), Some(b'@' | b':' | b'#'))
-                        && !Self::is_valid_attribute_name(attr.name) =>
-                {
-                    ctx.error_with_help(
-                        ctx.t_fmt("vue/valid-attribute-name.message", &[("name", attr.name)]),
-                        &attr.name_loc,
-                        ctx.t("vue/valid-attribute-name.help"),
-                    );
-                }
-                PropNode::Directive(directive) if directive.name == "bind" => {
-                    let Some(ExpressionNode::Simple(argument)) = directive.arg.as_ref() else {
-                        continue;
-                    };
-                    if argument.is_static && !Self::is_valid_attribute_name(argument.content) {
-                        ctx.error_with_help(
-                            ctx.t_fmt(
-                                "vue/valid-attribute-name.message",
-                                &[("name", argument.content)],
-                            ),
-                            &directive.loc,
-                            ctx.t("vue/valid-attribute-name.help"),
-                        );
-                    }
-                }
-                _ => {}
-            }
-        }
+        Self::check(ctx, &MarkupElement::new(element));
     }
 }
 
@@ -164,5 +188,16 @@ mod tests {
     fn test_invalid_name_is_ignored_on_component() {
         let result = create_linter().lint_template(r#"<MyComponent :el$="el$" />"#, "test.vue");
         assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
+    fn test_invalid_name_on_native_element_with_is_attribute() {
+        let result =
+            create_linter().lint_template(r#"<button is="x-button" bad$="value" />"#, "test.vue");
+        assert_eq!(result.error_count, 1);
+        assert_eq!(
+            result.diagnostics[0].message,
+            "Attribute name 'bad$' is invalid"
+        );
     }
 }

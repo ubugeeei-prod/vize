@@ -11,7 +11,7 @@ import {
   validateScopedConfig,
   validateSelectionPaths,
 } from "./scoped-config.ts";
-import { resolveWorkaroundSource } from "../workaround.ts";
+import { readOriginalWorkaroundSource, resolveWorkaroundSource } from "../workaround.ts";
 import { withoutLintTargets } from "./args.ts";
 import { collectVueLikeFilesFromTargets } from "./files.ts";
 import { registerLocationVariants, registerPathReplacementVariants } from "./workaround-files.ts";
@@ -185,11 +185,14 @@ void test("scoped mirror keeps original whole config/source and ordered namespac
   try {
     const copy = mirror.originalsToCopies.get(file);
     assert.ok(copy);
-    assert.deepEqual(resolveWorkaroundSource(fs.readFileSync(copy, "utf8"), copy), {
-      filename: file,
-      source,
-      usesOriginalLocations: true,
-    });
+    assert.deepEqual(
+      resolveWorkaroundSource(fs.readFileSync(copy, "utf8"), copy, readOriginalWorkaroundSource),
+      {
+        filename: file,
+        source,
+        usesOriginalLocations: true,
+      },
+    );
     const prefix = copy.slice(0, -"app/pages/About.vue".length);
     assert.deepEqual(JSON.parse(fs.readFileSync(mirror.sibling, "utf8")), {
       ...original,

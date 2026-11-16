@@ -302,13 +302,17 @@ impl ServerState {
         }
     }
 
-    /// Drop the cached editor session after a Vue file disappears on disk.
-    /// Its private mirror is rebuilt by the next Corsa request. This must not
-    /// wait for the old worker while handling the file-operation notification.
-    pub(crate) fn retire_corsa_bridge_for_deleted_vue_files(&self) {
+    /// Forget deleted Vue graph members without discarding the warm backend.
+    ///
+    /// The following disk-state invalidation makes the next Corsa request
+    /// synchronize the materialized deletion delta. Retiring the whole bridge
+    /// here loses every still-open sibling overlay between a file event and
+    /// that request, and also abandons the old private mirror before its worker
+    /// can complete a clean shutdown.
+    pub(crate) fn forget_deleted_corsa_vue_files(&self, deleted: &[PathBuf]) {
         let bridge = { self.corsa_bridge.read().clone() };
         if let Some(bridge) = bridge {
-            self.retire_corsa_bridge(&bridge);
+            bridge.forget_cached_vue_virtual_documents(deleted);
         }
     }
 

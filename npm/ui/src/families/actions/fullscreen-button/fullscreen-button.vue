@@ -226,19 +226,17 @@ const platformFullscreenController: FullscreenButtonController = {
     return getPlatformDocument()?.fullscreenElement ?? null;
   },
   requestFullscreen(targetElement) {
-    const requestFullscreen = targetElement.requestFullscreen;
-    if (typeof requestFullscreen !== "function") {
+    if (typeof targetElement.requestFullscreen !== "function") {
       throw new Error(FULLSCREEN_BUTTON_ACTION_UNAVAILABLE);
     }
-    return requestFullscreen.call(targetElement);
+    return targetElement.requestFullscreen();
   },
   exitFullscreen() {
     const platformDocument = getPlatformDocument();
-    const exitFullscreen = platformDocument?.exitFullscreen;
-    if (typeof exitFullscreen !== "function") {
+    if (typeof platformDocument?.exitFullscreen !== "function") {
       throw new Error(FULLSCREEN_BUTTON_ACTION_UNAVAILABLE);
     }
-    return exitFullscreen.call(platformDocument);
+    return platformDocument.exitFullscreen();
   },
 };
 

@@ -74,6 +74,7 @@ jobs:
   const jobs = callee.slice(header.length);
   const ids = [...jobs.matchAll(/^  ([a-z0-9-]+):$/gm)].map((match) => match[1]);
   assert.deepEqual(ids, [
+    "v1-supported-matrix",
     "full-source-cli",
     "tooling-plan",
     "test-scripts",

@@ -6853,6 +6853,121 @@
       }
     },
     {
+      "id": "typechecker/library-generic-props-fallback-13021/loose-fallthrough-valid",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "library-generic-props-fallback-13021",
+      "case": "loose-fallthrough-valid",
+      "test": "library_generic_props_fallback::old_library_generic_props_follow_the_unknown_props_policy",
+      "regressionCommit": "f06d427619f943bf1192cfafbae65de537e464d0",
+      "sourceRevision": "f06d427619f943bf1192cfafbae65de537e464d0",
+      "packReference": {
+        "path": "library-generic-props-fallback-13021/cases.json",
+        "sha256": "0e4a696ad75fbbbfaf801f63204127a14f50aed6e91b38ac23450435231d0327"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "library-generic-props-fallback-13021/tsconfig.json.txt",
+          "sha256": "696b818eccc4e1c15b2e4bd38a0baa9717e330f7444da3acb40cee49569bae56"
+        },
+        {
+          "file": "src/libs.ts",
+          "path": "library-generic-props-fallback-13021/src/libs.ts.txt",
+          "sha256": "1a03ac72d1bd04f1df514099135d7d5295e506835b092c5a5d6db38be0856ec1"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "library-generic-props-fallback-13021/src/App.vue.txt",
+          "sha256": "a5df76e910a3c1d6d53868e0bab67e871a5c565f1e4e9c9c9414065d5803456a"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "diagnostics": []
+    },
+    {
+      "id": "typechecker/library-generic-props-fallback-13021/declared-generic-prop-stays-inferred",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "library-generic-props-fallback-13021",
+      "case": "declared-generic-prop-stays-inferred",
+      "test": "library_generic_props_fallback::old_library_generic_props_follow_the_unknown_props_policy",
+      "regressionCommit": "f06d427619f943bf1192cfafbae65de537e464d0",
+      "sourceRevision": "f06d427619f943bf1192cfafbae65de537e464d0",
+      "packReference": {
+        "path": "library-generic-props-fallback-13021/cases.json",
+        "sha256": "0e4a696ad75fbbbfaf801f63204127a14f50aed6e91b38ac23450435231d0327"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "library-generic-props-fallback-13021/tsconfig.json.txt",
+          "sha256": "696b818eccc4e1c15b2e4bd38a0baa9717e330f7444da3acb40cee49569bae56"
+        },
+        {
+          "file": "src/libs.ts",
+          "path": "library-generic-props-fallback-13021/src/libs.ts.txt",
+          "sha256": "1a03ac72d1bd04f1df514099135d7d5295e506835b092c5a5d6db38be0856ec1"
+        },
+        {
+          "file": "src/Wrong.vue",
+          "path": "library-generic-props-fallback-13021/src/Wrong.vue.txt",
+          "sha256": "f4adfe6b720f8d460c1ade297af6d1f8e168db2b5cb0388179c33f7523907579"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      },
+      "diagnostics": [
+        {
+          "file": "src/Wrong.vue",
+          "line": 8,
+          "column": 31,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'string' is not assignable to type 'ItemSizeValue<{ id: string; name: string; downloads: number; }> | undefined'."
+        }
+      ]
+    },
+    {
       "id": "typechecker/listener-attribute-parity-9852/class-style-and-spread-listeners",
       "state": "active",
       "targets": [
@@ -11542,6 +11657,109 @@
       }
     },
     {
+      "id": "typechecker/content-mapper-auto-import-template-ref-12970/reported-project",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "content-mapper-auto-import-template-ref-12970/src/auto-imported.vue.txt",
+          "sha256": "41714ea4049ad8ea13762afed004105f5dd7a5b5dd11737c98f85b1bbef3a024",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "content-mapper-auto-import-template-ref-12970/src/auto-imports.d.ts.txt",
+          "sha256": "c42bd36a3e638103bf381c9cb017b4a5df2e0eadf82a597430dd822cc4835fcc",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "content-mapper-auto-import-template-ref-12970/src/child.vue.txt",
+          "sha256": "89729280c470f0599beb1d6bd8c97ca696a43412f42e8a53d0e694253f3a7c11",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "content-mapper-auto-import-template-ref-12970/src/imported.vue.txt",
+          "sha256": "dbb2916385f0ba845b425febb085d1aa637c0bd514fd6b508ddb778a31d8d702",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "content-mapper-auto-import-template-ref-12970/tsconfig.json.txt",
+          "sha256": "d1850185b1c15499f69dc0f935c7b5b0918c411b4f62e2d8398584250e2c6e8b",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::support::ambient_template_ref::reported_auto_imported_dom_and_component_refs_match_explicit_imports; exact #12970 auto-imported template refs and explicit-import controls. Input-only registration; no native parity credit."
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/content-mapper-global-generic-library-slots-12971/reported-project",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "global-generic-library-slots-12971/src/components.d.ts.txt",
+          "sha256": "6497b6e15b1c4fb80dd27aa837b203d7a5314d7d1c23849ffad515f0f9b21e2d",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "global-generic-library-slots-12971/src/global.vue.txt",
+          "sha256": "dbd0c56e868b0bbefd05ed82f71e35ea0251dd1c71a6eb11394cc3b34ac7268b",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "global-generic-library-slots-12971/src/imported.vue.txt",
+          "sha256": "cfef14eb93a3fd9cb15fdbbf3fd156f73560b8ce35f0e8b3cdeb8098ddf41706",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "global-generic-library-slots-12971/src/lib/data-list.d.ts.txt",
+          "sha256": "a42eec291188e95978c4cb0315eb9c65298c6e13bc0fb7847a1b1d6906df6d8d",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "global-generic-library-slots-12971/src/lib/data-list.js.txt",
+          "sha256": "fc00d19bc94e10c24f07bd9be1c2bb24d4978856963c5a68745338ecbf131dfc",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "global-generic-library-slots-12971/tsconfig.json.txt",
+          "sha256": "d1850185b1c15499f69dc0f935c7b5b0918c411b4f62e2d8398584250e2c6e8b",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::global_components::globally_registered_generic_library_component_preserves_slot_inference; exact #12971 globally registered compiled generic function component and explicit-import control. Input-only registration; no native parity credit."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/dynamic-component-event-names-11140",
       "state": "active",
       "targets": [
@@ -13627,6 +13845,60 @@
               "ts"
             ],
             "selector": "direct-child-helper-abi-11809.ts consumes the pinned eight-case SDK mutation plan and the original two SFC inputs under both installed native hosts. Exact TS2322 and empty stderr are required in all sixteen cases, with declaration bytes restored after each contrast. Source acceptance is pending Actions; no original reporter installation cause or native parity credit is claimed."
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/regression/content-mapper-shipped-declaration-12968",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "content-mapper-shipped-declaration-12968/App.vue.txt",
+          "sha256": "61617869a883536ca57c29575ec34a219035e5317b9efca8c782feaf0dfded72",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "content-mapper-shipped-declaration-12968/Badge.d.vue.ts.txt",
+          "sha256": "13a8c15eaf5fff54db0d77c97409f33f017375ea11d9d3d9526683ddd30a9a70",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "content-mapper-shipped-declaration-12968/Badge.vue.txt",
+          "sha256": "1d7214504962c27a1ae5ebb852101dd6a75b36a9b078e1be37de54e0cdf15f33",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "content-mapper-shipped-declaration-12968/index.d.ts.txt",
+          "sha256": "e96cd706e93a83fc88d2799ff741bcbb1b1f3fbbf5b4ce88caa672071f3cc8c9",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "content-mapper-shipped-declaration-12968/package.json.txt",
+          "sha256": "933074f9cd74a0d53ffbd1a83f2bd56eec5a247256b60cd3e64c60e676505387",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "content-mapper-shipped-declaration-12968/tsconfig.json.txt",
+          "sha256": "0100b10f4f610b701968917e818a949569fa4d728fe531cd462a40e71a56b3e9",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::shipped_declarations_12968::packaged_sfc_uses_its_declaration_without_hiding_consumer_errors; reported #12968 package whose compiled Badge.vue shadows its adjacent .d.vue.ts unless the mapper projects the shipped declaration. The exact TypeScript host checks named types, bare values, props and slots with skipLibCheck both enabled and disabled. Input-only registration; no native parity claim."
           }
         ]
       }
@@ -17613,6 +17885,45 @@
               "ts"
             ],
             "selector": "Required actual source CLI beta content-mapper protocol; a scoped-slot parameter narrowed by v-if stays narrowed inside an arrow-function listener."
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/setup-enum-computed-keys-12998/reported-project",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "setup-enum-computed-keys-12998/src/Keyed.vue.txt",
+          "role": "issue-authored-setup-regression",
+          "sha256": "6a24604c7a04e29111252ae82e4714dcc76355590e8ff2fb20fad66e1d68a5d8"
+        },
+        {
+          "path": "setup-enum-computed-keys-12998/src/Plain.vue.txt",
+          "role": "issue-authored-plain-script-control",
+          "sha256": "580ba52fd6690ecc76982abebe71b674a962153a2dcfb2448172e4bb6465f7d6"
+        },
+        {
+          "path": "setup-enum-computed-keys-12998/tsconfig.json.txt",
+          "role": "issue-authored-project-config",
+          "sha256": "58a7b95ded5405fa3e811fa60c74459a8ac19b08153682a3a2212ec946671451"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "sfc_typecheck::tests::setup_enum_computed_keys::computed_keys_stay_with_setup_enum; exact #12998 setup regression and plain-script control. Input-only registration; no native parity claim."
           }
         ]
       }

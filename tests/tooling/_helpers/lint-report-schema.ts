@@ -5,6 +5,7 @@ import fs from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
 import type { Result } from "./lint-report-rust-parity.ts";
+import { assertScorecardIdentityTransition } from "./lint-report-scorecard.ts";
 export const root = path.resolve(import.meta.dirname, "../../..");
 export const command = "tools/commands/fixtures/lint-divergence-report";
 export const contractDirectory = "tests/_fixtures/differential/linter/reference-coverage-8849";
@@ -44,7 +45,7 @@ export const referenceFixtures = JSON.parse(
 };
 assert.equal(referenceFixtures.original.ref, originalRef);
 assert.equal(referenceFixtures.updated.ref, updatedRef);
-type Fields = Record<string, unknown>;
+export type Fields = Record<string, unknown>;
 interface Finding extends Fields {
   file: string;
   line: number | bigint;
@@ -54,7 +55,7 @@ interface Raw {
   patinaFindings: Finding[];
   patinaResults: (Fields & { file: string; messages: Fields[] })[];
 }
-interface Divergence extends Fields {
+export interface Divergence extends Fields {
   schema: string;
   version: number;
   sha256: string;
@@ -63,10 +64,12 @@ interface Divergence extends Fields {
   falsePositives: Finding[];
   falseNegatives: (Finding & { upstreamRuleId: string })[];
   intentionalDivergences: (Finding & { reason: string })[];
+  patinaOutsideBaselineSurface: Finding[];
 }
 interface Baseline {
   durationMs?: number;
   runtimeVersions?: unknown;
+  version: string;
   comparedRuleCount: number;
   parseErrorResults: Fields[];
 }
@@ -80,7 +83,7 @@ interface BaseReport {
   evidence: { runtime?: unknown };
   budget: Budget;
 }
-interface ProjectReport extends BaseReport {
+export interface ProjectReport extends BaseReport {
   schema: "vize.fixtureLintDivergenceRun";
   baseline: Baseline;
   raw: Raw;
@@ -90,7 +93,7 @@ interface ProjectReport extends BaseReport {
 interface IndexReport extends BaseReport {
   schema: "vize.fixtureLintDivergenceIndex";
   totals: Record<string, number>;
-  projects: Record<string, number>[];
+  projects: Array<{ project: string } & Record<string, unknown>>;
 }
 interface OriginalProjectReport extends Omit<ProjectReport, "raw" | "divergence"> {
   divergence: Omit<Divergence, "referenceCoverageExpectations">;
@@ -230,13 +233,22 @@ function hostSeams(result: Result, rust: boolean) {
     }
   }
 }
-function removeOriginalAdditions(artifact: ProjectReport) {
+function runtimeVersions(provider: string): Record<string, string> {
   const require = createRequire(path.join(root, "tools/benchmarks/scripts/package.json"));
-  const versions = Object.fromEntries(
-    ["eslint", "eslint-plugin-vue", "vue-eslint-parser", "@typescript-eslint/parser"].map(
-      (name) => [name, object(require(`${name}/package.json`) as unknown).version],
-    ),
-  );
+  const version = (packageName: string): string => {
+    const value = object(require(`${packageName}/package.json`) as unknown).version;
+    assert.equal(typeof value, "string");
+    return value as string;
+  };
+  return {
+    eslint: version("eslint"),
+    "eslint-plugin-vue": version(provider),
+    "vue-eslint-parser": version("vue-eslint-parser"),
+    "@typescript-eslint/parser": version("@typescript-eslint/parser"),
+  };
+}
+function removeOriginalAdditions(artifact: ProjectReport) {
+  const versions = runtimeVersions("eslint-plugin-vue");
   assert.deepEqual(
     artifact.baseline.runtimeVersions,
     artifact.baseline.comparedRuleCount ? versions : {},
@@ -275,6 +287,13 @@ export function assertParity(expected: Result, actual: Result, oracle: Oracle) {
   }
   hostSeams(expected, true);
   hostSeams(actual, false);
+  assertScorecardIdentityTransition(expected, actual, {
+    assertDigest,
+    canonical,
+    markdown,
+    object,
+    runtimeVersions,
+  });
   if (/^warning: stripping debug info with `rust-objcopy` failed:[\s\S]+$/u.test(expected.stderr))
     expected.stderr = "";
   if (oracle === "original") {

@@ -51,6 +51,7 @@ jobs:
       SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
       BASE_SHA: ${{ github.event.pull_request.base.sha || inputs.compare_ref }}
       OBSERVATION_ROOT: ${{ github.workspace }}/target/differential/overlay-graphs
+      RUSTUP_TOOLCHAIN: "1.100.0"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
@@ -87,6 +88,7 @@ jobs:
             printf '\n#[cfg(test)]\nmod overlay_profile;\n' >> crates/vize_canon/src/corsa_bridge/vue_dependencies_alias/context/cache.rs
           fi
           git rev-parse HEAD > "$OBSERVATION_ROOT/before-source.txt"
+          rustc -Vv > "$OBSERVATION_ROOT/before-rustc.txt"
           git diff --binary > "$OBSERVATION_ROOT/before-instrumentation.patch"
           sha256sum "$profile" > "$OBSERVATION_ROOT/before-instrumentation.sha256"
           cargo test --locked --profile ci -p vize_canon --lib --no-run --message-format=json > "$OBSERVATION_ROOT/before-build.jsonl" 2> "$OBSERVATION_ROOT/before-build.stderr"
@@ -102,6 +104,7 @@ jobs:
           if ! git cat-file -e "$BASE_SHA:$profile" 2>/dev/null; then rm "$profile"; else git restore "$profile"; fi
           git checkout --detach "$SOURCE_SHA"
           test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          rustc -Vv > "$OBSERVATION_ROOT/after-rustc.txt"
           test -z "$(git status --porcelain --untracked-files=no)"
       - name: Assert all cache, source map and lifecycle regressions at the literal candidate
         run: |

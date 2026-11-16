@@ -20,7 +20,8 @@ use crate::rules::script::vue_object::VueObjects;
 use oxc_ast::ast::{BindingPattern, ObjectExpression, Program};
 use oxc_ast_visit::{Visit, walk};
 use oxc_parser::ParserReturn;
-use oxc_semantic::SemanticBuilder;
+use oxc_semantic::{Semantic, SemanticBuilder};
+use oxc_syntax::symbol::SymbolId;
 use vize_l0::{String, cstr};
 use vize_relief::RootNode;
 
@@ -90,12 +91,12 @@ fn clean<'p>(parsed: Option<&'p ParserReturn<'p>>) -> Option<&'p Program<'p>> {
         .map(|parsed| &parsed.program)
 }
 
-fn setup_program<'a>(ctx: &LintContext<'a>) -> Option<&'a Program<'a>> {
+pub(super) fn setup_program<'a>(ctx: &LintContext<'a>) -> Option<&'a Program<'a>> {
     clean(ctx.sfc_scripts()?.script_setup())
 }
 
 /// Upstream's template check names the binding of `const x = defineEmits()`.
-fn setup_emit_binding<'a>(program: &'a Program<'a>) -> Option<&'a str> {
+pub(super) fn setup_emit_binding<'a>(program: &'a Program<'a>) -> Option<&'a str> {
     setup_macros(program)
         .into_iter()
         .filter(|found| found.name == "defineEmits")
@@ -105,15 +106,19 @@ fn setup_emit_binding<'a>(program: &'a Program<'a>) -> Option<&'a str> {
         })
 }
 
-struct Block<'a> {
-    program: &'a Program<'a>,
-    source: &'a str,
-    offset: u32,
+/// One parsed script block and where its text starts in the SFC.
+pub(super) struct Block<'a> {
+    pub(super) program: &'a Program<'a>,
+    pub(super) source: &'a str,
+    pub(super) offset: u32,
 }
 
-fn script_findings(ctx: &LintContext<'_>) -> Vec<(String, ByteRange)> {
+/// The cleanly parsed `<script>` and `<script setup>` blocks.
+pub(super) fn script_blocks<'c>(
+    ctx: &'c LintContext<'_>,
+) -> (Option<Block<'c>>, Option<Block<'c>>) {
     let (Some(descriptor), Some(scripts)) = (ctx.sfc_descriptor(), ctx.sfc_scripts()) else {
-        return Vec::new();
+        return (None, None);
     };
     let script = descriptor
         .script
@@ -133,6 +138,11 @@ fn script_findings(ctx: &LintContext<'_>) -> Vec<(String, ByteRange)> {
             source: block.content.as_ref(),
             offset: block.loc.start as u32,
         });
+    (script, setup)
+}
+
+fn script_findings(ctx: &LintContext<'_>) -> Vec<(String, ByteRange)> {
+    let (script, setup) = script_blocks(ctx);
     let mut findings = Vec::new();
     if let Some(block) = &script {
         block_findings(ctx, block, None, &mut findings);
@@ -143,17 +153,24 @@ fn script_findings(ctx: &LintContext<'_>) -> Vec<(String, ByteRange)> {
     findings
 }
 
-/// `sibling` is `Some` for `<script setup>`, holding the plain `<script>`.
-fn block_findings(
+/// What one script block declares, and what its emit calls dispatch through.
+pub(super) struct BlockEmits {
+    /// Each named declaration with the SFC offset of the block it sits in.
+    pub(super) declared: Vec<(MacroEntry, u32)>,
+    /// The symbol of `const emit = defineEmits()`.
+    pub(super) setup_emit: Option<SymbolId>,
+    pub(super) objects: VueObjects,
+}
+
+/// Collect `block`'s declared events: the `defineEmits` macros of `<script
+/// setup>` and every Vue object's `emits` option. `sibling` is `Some` for
+/// `<script setup>`, holding the plain `<script>`.
+pub(super) fn for_block_emits<'a>(
     ctx: &LintContext<'_>,
-    block: &Block<'_>,
+    block: &Block<'a>,
     sibling: Option<Option<&Block<'_>>>,
-    findings: &mut Vec<(String, ByteRange)>,
+    visit: impl FnOnce(&Semantic<'a>, BlockEmits),
 ) {
-    // `emit`, `$emit`, `emits` and `defineEmits` all contain it.
-    if !block.source.contains("mit") {
-        return;
-    }
     let built = SemanticBuilder::new()
         .with_build_nodes(true)
         .build(block.program);
@@ -196,26 +213,57 @@ fn block_findings(
     declared.extend(options.entries);
 
     let sibling_offset = sibling.flatten().map(|sibling| sibling.offset);
-    for entry in declared.into_iter().filter(|entry| is_native(&entry.name)) {
-        let offset = match (entry.sibling, sibling_offset) {
-            (true, Some(offset)) => offset,
-            _ => block.offset,
-        };
-        findings.push((
-            entry.name.as_str().into(),
-            absolute_range(offset, entry.span),
-        ));
+    let declared = declared
+        .into_iter()
+        .map(|entry| {
+            let offset = match (entry.sibling, sibling_offset) {
+                (true, Some(offset)) => offset,
+                _ => block.offset,
+            };
+            (entry, offset)
+        })
+        .collect();
+    visit(
+        semantic,
+        BlockEmits {
+            declared,
+            setup_emit,
+            objects,
+        },
+    );
+}
+
+/// `sibling` is `Some` for `<script setup>`, holding the plain `<script>`.
+fn block_findings(
+    ctx: &LintContext<'_>,
+    block: &Block<'_>,
+    sibling: Option<Option<&Block<'_>>>,
+    findings: &mut Vec<(String, ByteRange)>,
+) {
+    // `emit`, `$emit`, `emits` and `defineEmits` all contain it.
+    if !block.source.contains("mit") {
+        return;
     }
-    let calls = dispatched_events(block.program, semantic, &objects, setup_emit);
-    for (name, span) in calls.into_iter().filter(|(name, _)| is_native(name)) {
-        findings.push((name.as_str().into(), absolute_range(block.offset, span)));
-    }
+    for_block_emits(ctx, block, sibling, |semantic, emits| {
+        for (entry, offset) in emits.declared {
+            if is_native(&entry.name) {
+                findings.push((
+                    entry.name.as_str().into(),
+                    absolute_range(offset, entry.span),
+                ));
+            }
+        }
+        let calls = dispatched_events(block.program, semantic, &emits.objects, emits.setup_emit);
+        for (name, span) in calls.into_iter().filter(|(name, _)| is_native(name)) {
+            findings.push((name.as_str().into(), absolute_range(block.offset, span)));
+        }
+    });
 }
 
 /// The `emits` option of every Vue object.
-struct OptionsEmits<'o> {
-    objects: &'o VueObjects,
-    entries: Vec<MacroEntry>,
+pub(super) struct OptionsEmits<'o> {
+    pub(super) objects: &'o VueObjects,
+    pub(super) entries: Vec<MacroEntry>,
 }
 
 impl<'a> Visit<'a> for OptionsEmits<'_> {

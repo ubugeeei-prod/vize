@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
-  "description": "Differential-oracle corpus for @vue/babel-plugin-jsx compatibility (see BABEL_COMPAT_INVENTORY.md). Each case is one JSX/TSX input plus the babel plugin options it is compiled with. Babel's output for every case is recorded in babel-output.json by tests/babel_compat/oracle.mjs against the pinned plugin version; that recorded output is the committed ground truth so the Rust oracle test (tests/babel_compat_oracle.rs) runs offline with no Node/babel dependency.",
+  "description": "Differential-oracle corpus for @vue/babel-plugin-jsx compatibility (see BABEL_COMPAT_INVENTORY.md). Each case is one JSX/TSX input plus the babel plugin options it is compiled with. Babel's output for every case is recorded in babel-output.json by tests/babel_compat/oracle.ts against the pinned plugin version; that recorded output is the committed ground truth so the Rust oracle test (tests/babel_compat_oracle.rs) runs offline with no Node/babel dependency.",
   "oracle": {
     "plugin": "@vue/babel-plugin-jsx",
     "pluginVersion": "2.0.1",
     "babelCore": "7.29.0",
-    "regenerate": "node crates/vize_atelier_jsx/tests/babel_compat/oracle.mjs --write",
-    "verify": "node crates/vize_atelier_jsx/tests/babel_compat/oracle.mjs --check"
+    "regenerate": "node crates/vize_atelier_jsx/tests/babel_compat/oracle.ts --write",
+    "verify": "node crates/vize_atelier_jsx/tests/babel_compat/oracle.ts --check"
   },
   "dialectCoverage": {
     "state": "source-inspected",

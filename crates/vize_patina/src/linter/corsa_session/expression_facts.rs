@@ -70,6 +70,8 @@ pub(in crate::linter) struct ExpressionQuery {
     pub contextual: bool,
     /// Load checker details (flags, constituents, constraint, references).
     pub detail: bool,
+    /// Resolve the awaited `any` behind a thenable return expression.
+    pub promise_any: bool,
     /// Member paths into the type (destructuring patterns) whose types to load.
     pub paths: Vec<Vec<PathStep>>,
     /// Describe the constrained type as a `__typeShape` fact.
@@ -78,6 +80,9 @@ pub(in crate::linter) struct ExpressionQuery {
     pub tree: u8,
     /// Property names whose method declarations to describe on this type.
     pub member_methods: Vec<CompactString>,
+    /// Receiver and key ranges for a computed member whose key has no static
+    /// AST value. Both ranges share this document's existing type batch.
+    pub computed_member: Option<ComputedMemberQuery>,
     /// Load the union constituents of a type node's type.
     pub parts: bool,
     /// Probe whether a type node's type is (or holds) the empty object type.
@@ -118,6 +123,7 @@ impl ExpressionQuery {
         };
         self.contextual |= other.contextual;
         self.detail |= other.detail;
+        self.promise_any |= other.promise_any;
         if self.paths.is_empty() {
             self.paths = other.paths;
         }
@@ -133,6 +139,9 @@ impl ExpressionQuery {
             if !self.member_methods.contains(&name) {
                 self.member_methods.push(name);
             }
+        }
+        if self.computed_member.is_none() {
+            self.computed_member = other.computed_member;
         }
         self.parts |= other.parts;
         self.empty_object |= other.empty_object;
@@ -153,6 +162,13 @@ pub(in crate::linter) struct HeritageQuery {
     pub base_types: bool,
     /// Non-static member names of the class or interface.
     pub members: Vec<CompactString>,
+}
+
+/// Operand ranges for a computed member access.
+#[derive(Clone, Copy, Debug)]
+pub(in crate::linter) struct ComputedMemberQuery {
+    pub object: (u32, u32),
+    pub property: (u32, u32),
 }
 
 /// Facts a typescript-eslint rule reads off one expression.
@@ -188,6 +204,8 @@ pub(in crate::linter) struct ExpressionFact {
     pub heritage_voids: Vec<(CompactString, CompactString)>,
     /// Checker details of the type (flags, union parts, enum identity, constraint).
     pub detail: Option<Value>,
+    /// Checker detail of the `any` awaited from a thenable return expression.
+    pub promise_any: Option<Value>,
     /// Resolved-signature parameter types, for `ExpressionQuery::call_positions`.
     pub call: Option<Value>,
     /// Signature return types, for `ExpressionQuery::function_returns`.
@@ -203,6 +221,8 @@ pub(in crate::linter) struct ExpressionFact {
     pub tree: Option<Value>,
     /// Method facts per requested member name, when the query asked for any.
     pub member_methods: Option<Value>,
+    /// Method facts for the property symbol resolved at this member access.
+    pub direct_method: Option<Value>,
     /// The type is the checker's `error` type. Set for `parts` queries.
     pub error_type: bool,
     /// Union constituents (`boolean` kept whole). Set for `parts` queries.
@@ -360,6 +380,16 @@ async fn load(
         if query.detail {
             fact.detail = Some(type_detail(memo, response, &mut details).await?);
         }
+        if query.promise_any
+            && !detail_exposes_promise(fact.detail.as_ref())
+            && fact
+                .property_names
+                .iter()
+                .any(|property| property == "then")
+            && let Some(awaited) = promises.promise_any_awaited(response).await?
+        {
+            fact.promise_any = Some(type_detail(memo, &awaited, &mut details).await?);
+        }
         if let Some(location) = location {
             if query.call_positions > 0 {
                 fact.call = signatures::resolved_parameters(
@@ -412,6 +442,14 @@ async fn load(
         if !query.member_methods.is_empty() {
             fact.member_methods = Some(trees.member_methods(response, &query.member_methods).await);
         }
+        if let Some(computed) = query.computed_member
+            && let (Some(object), Some(property)) = (
+                response_at(&computed.object),
+                response_at(&computed.property),
+            )
+        {
+            fact.direct_method = trees.computed_method(object, property).await;
+        }
         if query.parts {
             fact.type_parts = probe.parts(memo, response).await?;
             fact.error_type = probe.is_error(response);
@@ -428,6 +466,25 @@ async fn load(
         apply_symbols(session, file, ranges, queries, &mut facts).await;
     }
     Ok((facts, located))
+}
+
+/// The current rule reader already unwraps ordinary `Promise<T>` and
+/// `PromiseLike<T>` references. Avoid a structural checker walk unless the
+/// thenable is hidden behind a composite or a differently named alias.
+fn detail_exposes_promise(detail: Option<&Value>) -> bool {
+    const REFERENCE: u64 = 1 << 2;
+    detail.is_some_and(|detail| {
+        detail
+            .get("objectFlags")
+            .and_then(Value::as_u64)
+            .is_some_and(|flags| flags & REFERENCE != 0)
+            && detail
+                .get("text")
+                .and_then(Value::as_str)
+                .is_some_and(|text| {
+                    text.starts_with("Promise<") || text.starts_with("PromiseLike<")
+                })
+    })
 }
 
 fn byte_offset_to_utf16_offset(source: &str, byte_offset: u32) -> u32 {

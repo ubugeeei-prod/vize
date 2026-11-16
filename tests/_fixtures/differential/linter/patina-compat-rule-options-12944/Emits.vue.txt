@@ -1,0 +1,15 @@
+<script setup lang="ts">
+const emit = defineEmits<{
+  move: [x: number, y: number];
+  select: [id: string];
+}>();
+
+function report(): void {
+  emit("move", 1, 2);
+  emit("select", "a");
+}
+</script>
+
+<template>
+  <button type="button" @click="report">report</button>
+</template>

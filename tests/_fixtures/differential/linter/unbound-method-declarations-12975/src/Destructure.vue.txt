@@ -1,0 +1,15 @@
+<script setup lang="ts">
+import { usePanel, useShorthand, useTyped } from "./composables";
+
+const { close } = useShorthand();
+const { load } = useTyped();
+const { save } = useTyped();
+const { toggle } = usePanel();
+</script>
+
+<template>
+  <button type="button" @click="close">close</button>
+  <button type="button" @click="load">load</button>
+  <button type="button" @click="save">save</button>
+  <button type="button" @click="toggle">toggle</button>
+</template>

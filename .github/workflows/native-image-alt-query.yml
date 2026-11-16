@@ -26,6 +26,7 @@ jobs:
       RUSTC_WORKSPACE_WRAPPER: ""
       BASE_SHA: ${{ github.event.pull_request.base.sha }}
       HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      RUSTUP_TOOLCHAIN: "1.100.0"
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
@@ -65,7 +66,8 @@ jobs:
           cmp "$support" "$baseline/$support"
           git -C "$baseline" diff --exit-code -- crates/vize_patina/src Cargo.lock
           git diff --exit-code "$BASE_SHA" "$HEAD_SHA" -- Cargo.lock
-          rustc -Vv > "$capture/rustc.txt"
+          (cd "$baseline" && rustc -Vv) > "$capture/base-rustc.txt"
+          rustc -Vv > "$capture/head-rustc.txt"
           uname -a > "$capture/platform.txt"
           sha256sum "$observer" "$support" Cargo.lock > "$capture/observer-and-lock.sha256"
           base_target="$RUNNER_TEMP/native-image-alt-targets/$BASE_SHA"

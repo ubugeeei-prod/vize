@@ -106,7 +106,7 @@ impl Linter {
             self = self.with_no_bare_strings_allowlist(value.allowlist.clone());
         }
         if let Some(value) = options.anchor_has_content() {
-            self = self.with_anchor_accessible_children(value.accessible_children.clone());
+            self = self.with_anchor_has_content_options(value);
         }
         if let Some(value) = options.label_has_for() {
             self = self.with_label_control_components(value.control_components.clone());

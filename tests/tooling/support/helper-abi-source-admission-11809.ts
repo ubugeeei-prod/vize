@@ -55,7 +55,8 @@ export function assertSourceProtocolAdmission(responses: readonly unknown[], con
     ],
   );
 
-  const watched = new Set([config]);
+  const ambientDeclaration = fs.realpathSync(path.join(project, "src/globals.d.ts"));
+  const watched = new Set([config, ambientDeclaration]);
   const fingerprint = createHash("sha256");
   function selectedPackage(logical: string) {
     const metadata = fs.realpathSync(logical);
@@ -110,7 +111,7 @@ export function assertSourceProtocolAdmission(responses: readonly unknown[], con
     id: 2,
     jsonrpc: "2.0",
     result: {
-      configIdentity: `vize-content-mapper-v1:${base}:sdk:${fingerprint.digest("hex")}`,
+      configIdentity: `vize-content-mapper-v1:${base}:sdk:${fingerprint.digest("hex")}:ambient-vue-template-ref:0`,
       watchedFiles: [...watched].sort(),
     },
   });

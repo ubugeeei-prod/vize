@@ -323,4 +323,11 @@ export const vueCompatibilityExplanations: readonly ExplanationRecord[] = [
     "defineModel は設定した版より新しい Vue を必要とします。",
     "コンポーネントは版で制限されるマクロを使いません。",
   ],
+  [
+    "vue/prefer-single-event-payload",
+    "The move event declares and emits two payload values, so an inline listener only receives x.",
+    "The move event carries one object, so every listener receives both coordinates.",
+    "move イベントが2つのペイロードを宣言して発行しており、インラインのリスナーは x しか受け取れません。",
+    "move イベントは1つのオブジェクトを渡すので、どのリスナーも両方の座標を受け取ります。",
+  ],
 ];

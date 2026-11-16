@@ -5,7 +5,7 @@ description: "Vize のリンターに含まれるすべてのルールを、カ�
 
 # 全 lint ルール
 
-## Vue ルール (168)
+## Vue ルール (169)
 
 | ルール | 検出する内容 | プリセット | 自動修正 |
 | --- | --- | --- | --- |
@@ -128,6 +128,7 @@ description: "Vize のリンターに含まれるすべてのルールを、カ�
 | <span id="vue-prefer-const"></span>[`vue/prefer-const`](./reference/vue-prefer-const.md) | スクリプトとテンプレートが再代入しないバインディングを const にします。 | `nuxt`, `opinionated` |  |
 | <span id="vue-prefer-prop-type-boolean-first"></span>[`vue/prefer-prop-type-boolean-first`](./reference/vue-prefer-prop-type-boolean-first.md) | prop の型コンストラクター配列で Boolean を先頭に置きます。 | — |  |
 | <span id="vue-prefer-props-shorthand"></span>[`vue/prefer-props-shorthand`](./reference/vue-prefer-props-shorthand.md) | Vue 3.4 の同名 prop バインディングの省略形を使います。 | `nuxt`, `opinionated` | ✓ |
+| <span id="vue-prefer-single-event-payload"></span>[`vue/prefer-single-event-payload`](./reference/vue-prefer-single-event-payload.md) | カスタムイベントのペイロードを1つにまとめます。 | — |  |
 | <span id="vue-prefer-template"></span>[`vue/prefer-template`](./reference/vue-prefer-template.md) | 文字列連結の代わりにテンプレートリテラルを使います。 | — |  |
 | <span id="vue-prefer-true-attribute-shorthand"></span>[`vue/prefer-true-attribute-shorthand`](./reference/vue-prefer-true-attribute-shorthand.md) | true を指定するバインディングを真偽属性の省略形にします。 | `nuxt`, `opinionated` |  |
 | <span id="vue-prefer-v-model"></span>[`vue/prefer-v-model`](./reference/vue-prefer-v-model.md) | 対応する bind と update リスナーを v-model にまとめます。 | — |  |
@@ -178,7 +179,7 @@ description: "Vize のリンターに含まれるすべてのルールを、カ�
 | <span id="vue-warn-custom-block"></span>[`vue/warn-custom-block`](./reference/vue-warn-custom-block.md) | SFC のカスタムブロックを検出します。 | `nuxt`, `opinionated` |  |
 | <span id="vue-warn-custom-directive"></span>[`vue/warn-custom-directive`](./reference/vue-warn-custom-directive.md) | 登録が必要なカスタムディレクティブを検出します。 | `nuxt`, `opinionated` |  |
 
-## 型と script のルール (123)
+## 型と script のルール (124)
 
 | ルール | 検出する内容 | プリセット | 自動修正 |
 | --- | --- | --- | --- |
@@ -282,6 +283,7 @@ description: "Vize のリンターに含まれるすべてのルールを、カ�
 | <span id="type-no-unnecessary-type-arguments"></span>[`type/no-unnecessary-type-arguments`](./reference/type-no-unnecessary-type-arguments.md) | 既定値と同じ型引数を検出します。 | `nuxt`, `opinionated` |  |
 | <span id="type-no-unnecessary-type-assertion"></span>[`type/no-unnecessary-type-assertion`](./reference/type-no-unnecessary-type-assertion.md) | 式の型を変えない型アサーションを検出します。 | `nuxt`, `opinionated` |  |
 | <span id="type-no-unnecessary-type-conversion"></span>[`type/no-unnecessary-type-conversion`](./reference/type-no-unnecessary-type-conversion.md) | 型も値も変えない変換を検出します。 | `nuxt`, `opinionated` |  |
+| <span id="type-no-unnecessary-type-parameters"></span>[`type/no-unnecessary-type-parameters`](./reference/type-no-unnecessary-type-parameters.md) | 型同士の関係を表さない不要な型パラメータを検出します。 | `nuxt`, `opinionated` |  |
 | <span id="type-no-unsafe-argument"></span>[`type/no-unsafe-argument`](./reference/type-no-unsafe-argument.md) | `any` 型の値を関数引数に渡している箇所を検出します。 | `nuxt`, `opinionated` |  |
 | <span id="type-no-unsafe-assignment"></span>[`type/no-unsafe-assignment`](./reference/type-no-unsafe-assignment.md) | any 型の値をより具体的な型へ代入している箇所を検出します。 | `nuxt`, `opinionated` |  |
 | <span id="type-no-unsafe-call"></span>[`type/no-unsafe-call`](./reference/type-no-unsafe-call.md) | any 型の値を呼び出している箇所を検出します。 | `nuxt`, `opinionated` |  |
@@ -425,8 +427,6 @@ description: "Vize のリンターに含まれるすべてのルールを、カ�
 | <span id="petite-vue-valid-v-scope"></span>[`petite-vue/valid-v-scope`](./reference/petite-vue-valid-v-scope.md) | v-scope に値を指定する場合は、オブジェクトリテラルにします。 | — |  |
 
 ## ファイル間ルール (66)
-
-`withVue` に渡す `linter` に `crossFile: true` を指定するか、`vize lint --cross-file` を実行すると有効になります。診断は `vize:croquis/cf/<name>` と表示されます。`linter.rules` では `vize:` を除いた `croquis/cf/<name>` で設定します。
 
 | ルール | 検出する内容 | 対応状況 |
 | --- | --- | --- |

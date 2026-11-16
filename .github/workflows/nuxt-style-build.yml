@@ -4,9 +4,7 @@ on:
     branches: [main, davinci]
   push:
     branches: [main, davinci]
-  merge_group:
-    types: [checks_requested]
-    branches: [main]
+  workflow_call:
   schedule:
     - cron: "29 3 * * *"
   workflow_dispatch:

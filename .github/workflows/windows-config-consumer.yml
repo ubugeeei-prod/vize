@@ -113,6 +113,8 @@ jobs:
           cache-workspace-crates: "true"
       - name: Require all config loader tests and package the exact source NAPI image
         run: node tools/support/config/windows_consumer/build-sdk.ts "$GITHUB_WORKSPACE" "$RUNNER_TEMP/config-sdk" "$RUNNER_TEMP/config-sdk-build"
+      - name: Require root module specifier ownership
+        run: cargo test --locked --profile ci -p vize_patina --lib linter::corsa_session::vue_dependencies::tests::root_specifiers::root_component_rewrite_preserves_non_vue_module_specifiers -- --exact
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
           repository: kazupon/ox-jsdoc

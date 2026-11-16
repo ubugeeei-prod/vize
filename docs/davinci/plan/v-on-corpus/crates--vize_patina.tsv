@@ -7,6 +7,7 @@ crates/vize_patina/src/linter/engine/sfc/facade/tests.rs	@click.native.stop
 crates/vize_patina/src/linter/engine/sfc/facade/tests.rs	@keyup.13.27
 crates/vize_patina/src/linter/engine/sfc/facade/tests.rs	@keyup.0.13
 crates/vize_patina/src/linter/engine/sfc/facade/tests.rs	@keyup.13suffix
+crates/vize_patina/src/linter/engine/sfc/facade/tests.rs	v-on:click.stop
 crates/vize_patina/src/linter/engine/sfc/facade/tests.rs	@click.native
 crates/vize_patina/src/linter/engine/sfc/facade/tests.rs	@keyup.13
 crates/vize_patina/src/linter/tests/relief_parity/a11y.rs	v-on:click.stop

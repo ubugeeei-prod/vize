@@ -139,7 +139,7 @@ Só em `opinionated`, `nuxt` ou `ecosystem`. A coluna Predefinições mostra qua
 | <span id="vue-warn-custom-block"></span>[`vue/warn-custom-block`](./reference/vue-warn-custom-block.md) | Alertar sobre blocos personalizados em arquivos SFC. | `nuxt`, `opinionated` |  |
 | <span id="vue-warn-custom-directive"></span>[`vue/warn-custom-directive`](./reference/vue-warn-custom-directive.md) | Alertar sobre diretivas personalizadas que precisam de registro. | `nuxt`, `opinionated` |  |
 
-## Opcionais (59)
+## Opcionais (60)
 
 Não fazem parte de nenhuma predefinição. Ative pelo nome em `linter.rules`, passado a `withVue`.
 
@@ -194,6 +194,7 @@ Não fazem parte de nenhuma predefinição. Ative pelo nome em `linter.rules`, p
 | <span id="vue-no-v-for-template-key"></span>[`vue/no-v-for-template-key`](./reference/vue-no-v-for-template-key.md) | Exige que a key de `template v-for` fique em um filho real para manter compatibilidade com Vue 2. |  |
 | <span id="vue-object-shorthand"></span>[`vue/object-shorthand`](./reference/vue-object-shorthand.md) | Exige propriedades abreviadas nos objetos do template. |  |
 | <span id="vue-prefer-prop-type-boolean-first"></span>[`vue/prefer-prop-type-boolean-first`](./reference/vue-prefer-prop-type-boolean-first.md) | Exige `Boolean` na primeira posição da lista de construtores de tipo das props. |  |
+| <span id="vue-prefer-single-event-payload"></span>[`vue/prefer-single-event-payload`](./reference/vue-prefer-single-event-payload.md) | Exige um único argumento de payload ao emitir eventos personalizados. |  |
 | <span id="vue-prefer-template"></span>[`vue/prefer-template`](./reference/vue-prefer-template.md) | Prefere template literals à concatenação de strings. |  |
 | <span id="vue-prefer-v-model"></span>[`vue/prefer-v-model`](./reference/vue-prefer-v-model.md) | Prefere v-model a um bind e listener update equivalentes. |  |
 | <span id="vue-quote-props"></span>[`vue/quote-props`](./reference/vue-quote-props.md) | Proíbe aspas desnecessárias em propriedades de objetos. |  |

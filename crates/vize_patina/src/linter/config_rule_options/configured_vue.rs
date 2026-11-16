@@ -1,7 +1,8 @@
 //! Apply the configurable Vue rule options by replacing the registered rules.
 
 use super::super::config::Linter;
-use crate::rules::opinionated::vue::{NoUnusedScriptVars, PreferConst};
+use crate::rules::a11y::HeadingHasContent;
+use crate::rules::opinionated::vue::{NoUnusedScriptVars, PreferConst, VOnHandlerStyle};
 use crate::rules::vue::configured::{
     MaxProps, MaxTemplateDepth, NoRestrictedBlock, NoRestrictedCallAfterAwait, NoRestrictedClass,
     NoRestrictedComponentNames, NoRestrictedComponentOptions, NoRestrictedCustomEvent,
@@ -85,6 +86,20 @@ pub(super) fn apply(mut linter: Linter, options: &ConfiguredVueRuleOptions) -> L
         linter
             .registry
             .replace(Box::new(PreferConst::from_options(value)));
+    }
+    if let Some(value) = options.v_on_handler_style
+        && linter.registry.has_rule("vue/v-on-handler-style")
+    {
+        linter
+            .registry
+            .replace(Box::new(VOnHandlerStyle::from_options(value)));
+    }
+    if let Some(value) = &options.heading_has_content
+        && linter.registry.has_rule("a11y/heading-has-content")
+    {
+        linter
+            .registry
+            .replace(Box::new(HeadingHasContent::from_options(value)));
     }
     linter
 }

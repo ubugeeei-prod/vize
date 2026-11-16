@@ -4,7 +4,7 @@ title: ESLint ルール移行対応表
 
 # ESLint ルール移行対応表
 
-コミットされた対応記録は 256 件で、対応付け 198 件、意図的な差異 3 件、未実装 55 件です。「対応」はルール名の対応を示し、オプション・検出・修正・適用範囲の完全な一致を保証しません。
+コミットされた対応記録は 256 件で、対応付け 200 件、意図的な差異 2 件、未実装 54 件です。「対応」はルール名の対応を示し、オプション・検出・修正・適用範囲の完全な一致を保証しません。
 
 ESLint を実行基盤として残す場合は、[`eslint.config.mjs` の flat config 連携](../guide/tool-integrations.md#eslint-の-flat-config)を優先してください。以下の Vite+ 設定は、ネイティブタスクを使う場合の代替です。
 
@@ -213,7 +213,7 @@ Vite+ の設定では Vize のルールを `withVue` の `linter.rules` に指�
 | `vue/prefer-import-from-vue` | [`script/prefer-import-from-vue`](./reference/script-prefer-import-from-vue.md) | 対応付け |
 | `vue/prefer-prop-type-boolean-first` | [`vue/prefer-prop-type-boolean-first`](./reference/vue-prefer-prop-type-boolean-first.md) | 対応付け |
 | `vue/prefer-separate-static-class` | [`vapor/prefer-static-class`](./reference/vapor-prefer-static-class.md) | 対応付け |
-| `vue/prefer-single-event-payload` | — | 未実装 |
+| `vue/prefer-single-event-payload` | [`vue/prefer-single-event-payload`](./reference/vue-prefer-single-event-payload.md) | 対応付け |
 | `vue/prefer-template` | [`vue/prefer-template`](./reference/vue-prefer-template.md) | 対応付け |
 | `vue/prefer-true-attribute-shorthand` | [`vue/prefer-true-attribute-shorthand`](./reference/vue-prefer-true-attribute-shorthand.md) | 対応付け |
 | `vue/prefer-use-template-ref` | [`script/prefer-use-template-ref`](./reference/script-prefer-use-template-ref.md) | 対応付け |
@@ -258,7 +258,7 @@ Vite+ の設定では Vize のルールを `withVue` の `linter.rules` に指�
 | `vue/v-for-delimiter-style` | — | 未実装 |
 | `vue/v-if-else-key` | [`vue/v-if-else-key`](./reference/vue-v-if-else-key.md) | 対応付け |
 | `vue/v-on-event-hyphenation` | [`vue/v-on-event-hyphenation`](./reference/vue-v-on-event-hyphenation.md) | 対応付け |
-| `vue/v-on-handler-style` | — | 意図的な差異 |
+| `vue/v-on-handler-style` | [`vue/v-on-handler-style`](./reference/vue-v-on-handler-style.md) | 対応付け |
 | `vue/v-on-style` | [`vue/v-on-style`](./reference/vue-v-on-style.md) | 対応付け |
 | `vue/v-slot-style` | [`vue/v-slot-style`](./reference/vue-v-slot-style.md) | 対応付け |
 | `vue/valid-attribute-name` | [`vue/valid-attribute-name`](./reference/vue-valid-attribute-name.md) | 対応付け |

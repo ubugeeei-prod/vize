@@ -6,6 +6,10 @@ on:
 permissions: { contents: read }
 env: { CARGO_TERM_COLOR: always, FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true }
 jobs:
+  v1-supported-matrix:
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
+    uses: ./.github/workflows/v1-supported-matrix.yml
+    with: { enforce_complete: true }
   full-source-cli:
     if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
     uses: ./.github/workflows/full-source-cli.yml
@@ -395,5 +399,5 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
       - uses: ./.github/actions/vscode-host-smoke
   nuxt-module-qualification:
-    name: Nuxt module qualification
-    uses: ./.github/workflows/nuxt3-module-build.yml
+    name: Nuxt and Vite release products
+    uses: ./.github/workflows/nuxt-vite-release-products.yml

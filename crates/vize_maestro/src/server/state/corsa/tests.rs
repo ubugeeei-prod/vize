@@ -7,6 +7,7 @@
 
 use std::os::unix::fs::PermissionsExt;
 use std::path::Path;
+use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
@@ -79,6 +80,20 @@ fn configured_state(root: &Path, backend: &Path, timeout_ms: u64) -> ServerState
     state.set_workspace_root(root.to_owned());
     state.load_lsp_config(root);
     state
+}
+
+#[test]
+fn deleting_vue_members_preserves_the_warm_backend_owner() {
+    let state = ServerState::new();
+    let bridge = Arc::new(vize_canon::CorsaBridge::new());
+    *state.corsa_bridge.write() = Some(Arc::clone(&bridge));
+
+    state.forget_deleted_corsa_vue_files(&[PathBuf::from("/workspace/Retired.vue")]);
+
+    assert!(
+        state.owns_corsa_bridge(&bridge),
+        "a file deletion must invalidate graph membership, not the whole backend"
+    );
 }
 
 #[test]

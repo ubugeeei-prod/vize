@@ -34,3 +34,40 @@ export default defineConfig({}).withVue({
 ```
 
 検査対象のリスナー形式は [Vue ルールのオプション](./options-vue.md#vue-v-on-event-hyphenation)を参照してください。
+
+<span id="vue-v-on-handler-style"></span>
+
+## `vue/v-on-handler-style`
+
+Vize の既定の `"method"` は、`@click="save"` や `@click="form.save"` のようなメソッド参照だけを
+許可します。eslint-plugin-vue の書き方も、同じ意味のオプションとして指定できます。
+
+- `["method", "inline-function"]` は eslint-plugin-vue の既定です。メソッド参照を優先し、メソッド参照
+  では書けない場所ではインライン関数を許可します。`() => pick(item)` のように、`v-for` やスロットの
+  変数を読み、自身の引数をそのまま渡すだけではないハンドラが該当します。
+- `["method", "inline"]` は、その場所で `pick(item)` のようなインラインハンドラを許可します。
+- `"inline-function"` と `"inline"` は、すべてのハンドラにその書き方を求めます。
+
+`ignoreIncludesComment: true` は、eslint-plugin-vue と同じく、コメントを含むハンドラをメソッド参照の
+優先から外します。`"method"` だけの場合、そのハンドラは報告しません。`foo.bar` のようなメンバー参照は
+報告しません。メッセージは eslint-plugin-vue と同じです。
+
+```ts
+const ruleOptions = {
+  "vue/v-on-handler-style": { style: ["method", "inline-function"], ignoreIncludesComment: true },
+};
+```
+
+報告される（`["method", "inline-function"]` の場合）:
+
+```vue
+<button @click="() => send()">Send</button>
+<button @click="count++">Add</button>
+```
+
+許可される（`["method", "inline-function"]` の場合）:
+
+```vue
+<button @click="send">Send</button>
+<li v-for="item in items" :key="item.id"><button @click="() => pick(item)">Pick</button></li>
+```

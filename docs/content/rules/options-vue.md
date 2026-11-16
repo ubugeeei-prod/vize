@@ -467,16 +467,8 @@ const ruleOptions = { "vue/no-bare-strings-in-template": { allowlist: ["Cancel",
 Bad: `<span>Submit</span>`
 Good: `<span>Cancel</span>`
 
-## `a11y/anchor-has-content`
-
-Use `accessibleChildren` for design-system components that always render accessible content; PascalCase and kebab-case are equivalent.
-
-```ts
-const ruleOptions = { "a11y/anchor-has-content": { accessibleChildren: ["RetryImage"] } };
-```
-
-Bad: `<a href="/retry"><UnknownImage /></a>`
-Good: `<a href="/retry"><RetryImage /></a>`
+The content options of `a11y/anchor-has-content` and `a11y/heading-has-content` are under
+[content options](./options.md#a11y-content-options).
 
 ## `a11y/label-has-for`
 

@@ -666,7 +666,48 @@
         "a11y/anchor-has-content": {
           "type": "object",
           "properties": {
+            "components": {
+              "default": [],
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
             "accessibleChildren": {
+              "default": [],
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "accessibleDirectives": {
+              "default": [],
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "a11y/heading-has-content": {
+          "type": "object",
+          "properties": {
+            "components": {
+              "default": [],
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "accessibleChildren": {
+              "default": [],
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "accessibleDirectives": {
               "default": [],
               "type": "array",
               "items": {
@@ -2174,6 +2215,48 @@
             }
           },
           "additionalProperties": false
+        },
+        "vue/v-on-handler-style": {
+          "oneOf": [
+            {
+              "type": "string",
+              "enum": ["method", "inline", "inline-function"]
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "enum": ["method", "inline", "inline-function"]
+              },
+              "uniqueItems": true
+            },
+            {
+              "type": "object",
+              "properties": {
+                "style": {
+                  "oneOf": [
+                    {
+                      "type": "string",
+                      "enum": ["method", "inline", "inline-function"]
+                    },
+                    {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "enum": ["method", "inline", "inline-function"]
+                      },
+                      "uniqueItems": true
+                    }
+                  ]
+                },
+                "ignoreIncludesComment": {
+                  "default": false,
+                  "type": "boolean"
+                }
+              },
+              "additionalProperties": false
+            }
+          ]
         },
         "vue/enforce-style-attribute": {
           "type": "object",

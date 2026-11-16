@@ -4,15 +4,14 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 
-import {
-  resolveBaselineRuntime,
-  runBaseline,
-} from "../../tools/support/compat/fixtures/lint-divergence-baseline.mjs";
+import { runBaseline } from "../../tools/support/compat/fixtures/lint-divergence-baseline.mjs";
+import { resolveScorecardRuntime } from "../../tools/support/compat/fixtures/lint-divergence-scorecard.ts";
 
 import { runLintDivergenceReport } from "../../tools/support/compat/fixtures/lint-divergence-report.mjs";
 import { baselineScript } from "../../tools/support/fixtures/lint_divergence/runtime.ts";
 
 const root = path.resolve(import.meta.dirname, "../..");
+const isBun = "Bun" in globalThis;
 
 function fixture() {
   fs.mkdirSync(path.join(root, "target"), { recursive: true });
@@ -90,14 +89,24 @@ test("both real reporters enforce an explicitly expected zero-Vue corpus", async
   try {
     fs.writeFileSync(path.join(input.directory, "Unrelated.js"), "export const =\n");
     const args = input.writeRegistry(0);
+    const reportDirectory = path.join(input.directory, "report");
+    fs.mkdirSync(reportDirectory, { recursive: true });
+    for (const file of [
+      "zero-vue-lint-divergence.json",
+      "zero-vue-lint-divergence.md",
+      "lint-divergence-summary.json",
+    ])
+      fs.writeFileSync(path.join(reportDirectory, file), "stale\n");
     const measured = report(args);
     assert.equal(measured.status, 0, `${measured.stdout}\n${measured.stderr}`);
-    const artifactPath = path.join(input.directory, "report", "zero-vue-lint-divergence.json");
+    const artifactPath = path.join(reportDirectory, "zero-vue-lint-divergence.json");
     const actual = JSON.parse(fs.readFileSync(artifactPath, "utf8"));
     const [compatible] = await runLintDivergenceReport(args);
     for (const artifact of [actual, compatible]) {
+      assert.equal(artifact.revision, "0".repeat(40));
       assert.deepEqual(artifact.files, { comparedCount: 0, expectedCount: 0 });
       assert.ok(artifact.baseline.comparedRuleCount > 0);
+      assert.match(artifact.divergence.sha256, /^[0-9a-f]{64}$/u);
       assert.equal(artifact.divergence.summary.falsePositiveCount, 0);
       assert.equal(artifact.divergence.summary.falseNegativeCount, 0);
       assert.equal(artifact.divergence.summary.baselineParseErrorCount, 0);
@@ -113,7 +122,7 @@ test("both real reporters enforce an explicitly expected zero-Vue corpus", async
     assert.equal(index.projectCount, 1);
     assert.equal(index.budget.passed, true);
     assert.equal(index.budget.unusableCount, 0);
-    assert.equal(fs.readFileSync(input.marker, "utf8").trim().split("\n").length, 2);
+    assert.equal(fs.existsSync(input.marker), false);
   } finally {
     input.clean();
   }
@@ -122,7 +131,8 @@ test("both real reporters enforce an explicitly expected zero-Vue corpus", async
 test("the TypeScript reporter runs Patina's all preset for all mapped rules", () => {
   const input = fixture();
   try {
-    const args = [...input.writeRegistry(0), "--all-mapped-rules"];
+    fs.writeFileSync(path.join(input.directory, "App.vue"), "<template><p /></template>\n");
+    const args = [...input.writeRegistry(1), "--all-mapped-rules"];
     const measured = report(args);
     assert.equal(measured.status, 0, `${measured.stdout}\n${measured.stderr}`);
     const [invocation] = fs
@@ -176,6 +186,37 @@ test("an expected zero-Vue fixture containing a Vue input fails before either li
   }
 });
 
+test("a rejected zero-Vue fixture cannot retain prior report custody", async () => {
+  const input = fixture();
+  try {
+    fs.writeFileSync(path.join(input.directory, "Unexpected.vue"), "<template><p/></template>\n");
+    const args = input.writeRegistry(0);
+    const reportDirectory = path.join(input.directory, "report");
+    const files = [
+      "zero-vue-lint-divergence.json",
+      "zero-vue-lint-divergence.md",
+      "lint-divergence-summary.json",
+    ];
+    const seed = () => {
+      fs.mkdirSync(reportDirectory, { recursive: true });
+      for (const file of files) fs.writeFileSync(path.join(reportDirectory, file), "stale\n");
+    };
+    seed();
+    const measured = report(args);
+    assert.equal(measured.status, 1, `${measured.stdout}\n${measured.stderr}`);
+    for (const file of files) assert.equal(fs.existsSync(path.join(reportDirectory, file)), false);
+    seed();
+    await assert.rejects(
+      runLintDivergenceReport(args),
+      /zero-vue matched 1 Vue files, expected 0/u,
+    );
+    for (const file of files) assert.equal(fs.existsSync(path.join(reportDirectory, file)), false);
+    assert.equal(fs.existsSync(input.marker), false);
+  } finally {
+    input.clean();
+  }
+});
+
 test("a nonempty Vue surface still enforces its actual mapped diagnostic budget", async () => {
   const input = fixture();
   try {
@@ -187,12 +228,14 @@ test("a nonempty Vue surface still enforces its actual mapped diagnostic budget"
     const measured = report(args);
     assert.equal(measured.status, 1, `${measured.stdout}\n${measured.stderr}`);
     assert.match(measured.stderr, /Lint divergence budget breached for zero-vue/u);
+    assert.equal(fs.readFileSync(input.marker, "utf8").trim().split("\n").length, 1);
     const artifactPath = path.join(input.directory, "report", "zero-vue-lint-divergence.json");
     const actual = JSON.parse(fs.readFileSync(artifactPath, "utf8"));
     await assert.rejects(
       runLintDivergenceReport(args),
       /Lint divergence budget breached for zero-vue/u,
     );
+    assert.equal(fs.readFileSync(input.marker, "utf8").trim().split("\n").length, 2);
     const compatible = JSON.parse(fs.readFileSync(artifactPath, "utf8"));
     for (const artifact of [actual, compatible]) {
       assert.deepEqual(artifact.files, { comparedCount: 1, expectedCount: 1 });
@@ -208,13 +251,14 @@ test("a nonempty Vue surface still enforces its actual mapped diagnostic budget"
 });
 
 test("both actual ESLint entry points validate mapped rules without linting an empty corpus", async () => {
+  if (isBun) return;
   const input = fixture();
   try {
     assert.ok(
       baselineScript,
       "the actual TypeScript runner's retained ESLint entry point must exist",
     );
-    const runtime = resolveBaselineRuntime();
+    const runtime = resolveScorecardRuntime();
     for (const rules of [
       { "vue/no-such-mapped-rule": "warn" },
       { "vue/no-v-html": ["warn", { invalidOption: true }] },

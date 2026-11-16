@@ -1,12 +1,16 @@
 name: Type-check scaling
-run-name: "Type-check scaling ${{ inputs.sha }} (${{ inputs.sizes }}; tools ${{ inputs.tools || 'default' }}; giant ${{ inputs.giant_blocks }}; monorepo ${{ inputs.monorepo_sfcs }}; nuxt ${{ inputs.nuxt_sizes }})"
+run-name: "Type-check scaling ${{ inputs.base_sha && format('{0} -> {1}', inputs.base_sha, inputs.sha) || inputs.sha }} (${{ inputs.sizes }}; tools ${{ inputs.tools || 'default' }}; giant ${{ inputs.giant_blocks }}; monorepo ${{ inputs.monorepo_sfcs }}; nuxt ${{ inputs.nuxt_sizes }})"
 on:
   workflow_dispatch:
     inputs:
       sha:
-        description: Full 40-hex commit to build and measure
+        description: Full 40-hex commit to build and measure (paired head when base_sha is set)
         type: string
         required: true
+      base_sha:
+        description: Optional full base commit; enables one-runner alternating paired qualification
+        type: string
+        default: ""
       sizes:
         description: Comma-separated SFC counts of the single generated projects
         type: string
@@ -39,7 +43,7 @@ on:
       - tests/tooling/typecheck-scaling*.test.ts
 permissions: { contents: read }
 concurrency:
-  group: typecheck-scaling-${{ github.event.pull_request.number || inputs.sha }}-${{ inputs.sizes }}-${{ inputs.tools || 'default' }}-${{ inputs.giant_blocks }}-${{ inputs.monorepo_sfcs }}
+  group: typecheck-scaling-${{ github.event.pull_request.number || inputs.sha }}-${{ inputs.base_sha || 'single' }}-${{ inputs.sizes }}-${{ inputs.tools || 'default' }}-${{ inputs.giant_blocks }}-${{ inputs.monorepo_sfcs }}
   cancel-in-progress: true
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -47,7 +51,7 @@ env:
   CARGO_INCREMENTAL: "0"
 jobs:
   measure:
-    if: github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'workflow_dispatch' && inputs.base_sha == ''
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 330
     env:
@@ -142,3 +146,96 @@ jobs:
             ${{ runner.temp }}/build-native.log
           if-no-files-found: warn
           retention-days: 30
+  paired:
+    if: github.event_name == 'workflow_dispatch' && inputs.base_sha != ''
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 180
+    env:
+      BASE_SHA: ${{ inputs.base_sha }}
+      HEAD_SHA: ${{ inputs.sha }}
+      DRIVER_SHA: ${{ github.workflow_sha }}
+      SIZES: ${{ inputs.sizes }}
+      CARGO_INCREMENTAL: "0"
+      CARGO_BUILD_JOBS: "8"
+      GOMAXPROCS: "8"
+    steps:
+      - name: Validate paired inputs
+        run: |
+          set -euo pipefail
+          [[ "$BASE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$HEAD_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$SIZES" == "1000,5000,20000" ]]
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          path: driver
+          ref: ${{ env.DRIVER_SHA }}
+          persist-credentials: false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          path: base
+          ref: ${{ env.BASE_SHA }}
+          persist-credentials: false
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with:
+          path: head
+          ref: ${{ env.HEAD_SHA }}
+          persist-credentials: false
+      - name: Record exact source pair
+        run: |
+          set -euo pipefail
+          [[ "$(git -C base rev-parse HEAD)" == "$BASE_SHA" ]]
+          [[ "$(git -C head rev-parse HEAD)" == "$HEAD_SHA" ]]
+          [[ "$(git -C driver rev-parse HEAD)" == "$DRIVER_SHA" ]]
+          mkdir -p paired-scaling/build
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with: { toolchain: "1.99.1" }
+      - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
+        with: { wild-version: "0.9.0" }
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with:
+          node-version-file: driver/package.json
+          run-install: false
+      - name: Install the pinned measurement provider
+        working-directory: driver
+        run: vp install --frozen-lockfile --prefer-offline
+      - name: Test paired order, diagnostic identity and nonlinear controls
+        working-directory: driver
+        run: node --test tests/tooling/typecheck-scaling.test.ts tools/benchmarks/scripts/pr-performance-build.test.ts
+      - name: Build source binaries in independent fresh targets
+        run: |
+          set -euo pipefail
+          for role in base head; do
+            target="$RUNNER_TEMP/paired-scaling-$role-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+            node driver/tools/benchmarks/scripts/pr-performance-build.ts \
+              --source-root "$GITHUB_WORKSPACE/$role" --target-dir "$target" \
+              --binary "$target/ci-opt/vize" --role "$role" \
+              --receipt "$GITHUB_WORKSPACE/paired-scaling/build/$role.json"
+          done
+      - name: Measure five alternating paired cycles on one runner
+        run: |
+          node driver/tools/benchmarks/scripts/typecheck-scaling-paired.ts \
+            --base-bin "$RUNNER_TEMP/paired-scaling-base-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT/ci-opt/vize" \
+            --head-bin "$RUNNER_TEMP/paired-scaling-head-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT/ci-opt/vize" \
+            --base-source "$BASE_SHA" --head-source "$HEAD_SHA" \
+            --provider-root "$GITHUB_WORKSPACE/driver" \
+            --build-receipts "$GITHUB_WORKSPACE/paired-scaling/build" \
+            --sizes "$SIZES" --runs 5 \
+            --runner blacksmith-32vcpu-ubuntu-2404 \
+            --run-url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+            --work "$RUNNER_TEMP/paired-scaling-work" \
+            --out "$GITHUB_WORKSPACE/paired-scaling/measurements"
+      - name: Write paired summary
+        if: always()
+        run: |
+          if [[ -f paired-scaling/measurements/summary.md ]]; then
+            cat paired-scaling/measurements/summary.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: typecheck-scaling-paired-${{ github.run_id }}
+          path: |
+            paired-scaling/build/*.json
+            paired-scaling/measurements/
+          if-no-files-found: warn
+          retention-days: 90

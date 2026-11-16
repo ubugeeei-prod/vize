@@ -108,7 +108,7 @@ export function runProfile(base, head, output) {
     order: ["base", "head", "head", "base"],
     profile: "ci-opt: opt3/thinLTO/cgu16",
     note: "report-only optimized source evidence; no normal CI or ceiling qualification",
-    toolchain: execFileSync("rustc", ["-Vv"], { encoding: "utf8" }),
+    toolchain: process.env.RUSTUP_TOOLCHAIN,
     node: process.version,
     driverSha256: digest(fileURLToPath(import.meta.url)),
     fixtureSha256: digest(fileURLToPath(new URL("./sfc-member-fixtures.mjs", import.meta.url))),
@@ -175,13 +175,23 @@ export function runProfile(base, head, output) {
         ),
         cargoLockSha256: digest(path.join(root, "Cargo.lock")),
         command: args,
+        rustc: execFileSync("rustc", ["-Vv"], {
+          cwd: root,
+          env: { ...process.env, RUSTUP_TOOLCHAIN: "1.100.0" },
+          encoding: "utf8",
+        }),
       };
       receipt.builds.push(identity);
       retain();
       command(
         args,
         native,
-        { ...process.env, CARGO_TARGET_DIR: target, VIZE_NATIVE_BUILD_TOKEN: token },
+        {
+          ...process.env,
+          CARGO_TARGET_DIR: target,
+          VIZE_NATIVE_BUILD_TOKEN: token,
+          RUSTUP_TOOLCHAIN: "1.100.0",
+        },
         path.join(output, side + "-build.log"),
       );
       const binaries = fs.readdirSync(native).filter((file) => file.endsWith(".node"));

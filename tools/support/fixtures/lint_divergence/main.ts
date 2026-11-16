@@ -11,17 +11,16 @@ import {
   type Launch,
 } from "./runtime.ts";
 import { collectVueInputPaths, parseArgs, selectedProjects, type Args } from "./selection.ts";
+import { BaselineArtifactStage, removeStagedBaselineArtifacts } from "./baseline_stage.ts";
 import {
   errorMessage,
   get,
-  list,
   object,
   projectString,
   readJson,
   relativePath,
   repoRoot,
   unsigned,
-  writeJson,
   writeText,
   type Json,
   type JsonObject,
@@ -52,6 +51,17 @@ function hydrated(directory: string): boolean {
     return false;
   }
 }
+function removePriorArtifacts(outputDir: string, projects: Json[]): void {
+  removeStagedBaselineArtifacts(outputDir);
+  for (const filename of [
+    "lint-divergence-summary.json",
+    ...projects.flatMap((project) => {
+      const id = projectString(project, "id");
+      return [`${id}-lint-divergence.json`, `${id}-lint-divergence.md`];
+    }),
+  ])
+    fs.rmSync(path.join(outputDir, filename), { force: true });
+}
 function measureProject(
   root: string,
   args: Args,
@@ -72,56 +82,80 @@ function measureProject(
   if (expectedCount === 0 && files.length)
     throw new Error(`${id} matched ${files.length} Vue files, expected 0`);
   if (!files.length && expectedCount !== 0) throw new Error(`${id} matched no Vue files`);
-  const patina = runPatina(cwd, project, args, launch, files);
-  const started = performance.now(),
-    baseline = runEslintBaseline(root, cwd, files, comparable.rules),
-    duration = Math.floor(performance.now() - started),
-    selectedPreset = args.preset ?? "all-mapped";
-  const baselineRules = object(baseline.rules);
-  if (!baselineRules) throw new Error("baseline must report its available rules");
-  reconcileCorpus(id, files, baseline.results, cwd);
-  const divergence = compareLintFindings(id, cwd, ruleMap, patina.findings, baseline.results, {
-    revision: get(project, "revision"),
-    preset: selectedPreset,
-    runtimeVersions: baseline.runtimeVersions,
-    rules: baselineRules,
-    files,
-  });
-  const artifact: JsonObject = {
-    schema: "vize.fixtureLintDivergenceRun",
-    version: 2,
-    project: id,
-    revision: get(project, "revision"),
-    preset: selectedPreset,
-    evidence,
-    files: { comparedCount: files.length, expectedCount },
-    baseline: {
-      package: get(ruleMap, "upstream", "package"),
-      version: baseline.version,
-      runtimeVersions: baseline.runtimeVersions,
-      comparedRuleCount: Object.keys(baselineRules).length,
-      mappedRuleCount: comparable.mappedRuleCount,
-      skippedByPresetCount: comparable.skippedByPresetCount,
-      droppedConfigMessageCount: baseline.droppedConfigMessageCount,
-      durationMs: duration,
-      parseErrorResults: baseline.results.filter((result) =>
-        list(get(result, "messages")).some((message) => get(message, "ruleId") === null),
-      ),
-    },
-    raw: {
-      patinaResults: patina.results,
-      patinaFindings: patina.findings,
-      eslintResults: baseline.rawResults,
-    },
-    divergence,
-  };
-  artifact.budget = evaluateBudget(artifact);
+  const patina =
+    files.length === 0
+      ? { results: [], findings: [] }
+      : runPatina(cwd, project, args, launch, files);
   const json = path.join(args.outputDir, `${id}-lint-divergence.json`),
-    markdown = path.join(args.outputDir, `${id}-lint-divergence.md`);
-  writeJson(json, artifact);
-  writeText(markdown, renderMarkdown(artifact));
-  console.log(`Wrote ${relativePath(root, json)}`);
-  return artifact;
+    markdown = path.join(args.outputDir, `${id}-lint-divergence.md`),
+    stage = new BaselineArtifactStage(args.outputDir);
+  try {
+    const started = performance.now(),
+      baseline = runEslintBaseline(
+        root,
+        cwd,
+        files,
+        comparable.rules,
+        process.env.VIZE_LINT_BASELINE_UNBOUNDED === "1" ? null : undefined,
+        stage,
+      ),
+      duration = Math.floor(performance.now() - started),
+      selectedPreset = args.preset ?? "all-mapped";
+    const baselineRules = object(baseline.rules);
+    if (!baselineRules) throw new Error("baseline must report its available rules");
+    if (baseline.results.length) reconcileCorpus(id, files, baseline.results, cwd);
+    const divergence = compareLintFindings(
+      id,
+      cwd,
+      ruleMap,
+      patina.findings,
+      baseline.classification,
+      {
+        revision: get(project, "revision"),
+        preset: selectedPreset,
+        runtimeVersions: baseline.runtimeVersions,
+        rules: baselineRules,
+        files,
+      },
+    );
+    const artifact: JsonObject = {
+      schema: "vize.fixtureLintDivergenceRun",
+      version: 2,
+      project: id,
+      revision: get(project, "revision"),
+      preset: selectedPreset,
+      evidence,
+      files: { comparedCount: files.length, expectedCount },
+      baseline: {
+        package: get(ruleMap, "upstream", "package"),
+        version: baseline.version,
+        runtimeVersions: baseline.runtimeVersions,
+        comparedRuleCount: Object.keys(baselineRules).length,
+        mappedRuleCount: comparable.mappedRuleCount,
+        skippedByPresetCount: comparable.skippedByPresetCount,
+        droppedConfigMessageCount: baseline.droppedConfigMessageCount,
+        durationMs: duration,
+        parseErrorResults: baseline.parseErrorResults,
+      },
+      raw: {
+        patinaResults: patina.results,
+        patinaFindings: patina.findings,
+        eslintResults: [],
+      },
+      divergence,
+    };
+    artifact.budget = evaluateBudget(artifact);
+    stage.writeArtifact(json, artifact);
+    writeText(markdown, renderMarkdown(artifact));
+    console.log(`Wrote ${relativePath(root, json)}`);
+    return artifact;
+  } catch (error) {
+    fs.rmSync(json, { force: true });
+    fs.rmSync(markdown, { force: true });
+    throw error;
+  } finally {
+    stage.cleanup();
+  }
 }
 
 /** Execute the complete measured report; no compatibility implementation runs. */
@@ -148,6 +182,7 @@ export function runLintDivergenceReport(argv: string[] = process.argv.slice(2)):
   } catch (error) {
     throw new Error(`cannot create ${args.outputDir}: ${errorMessage(error)}`);
   }
+  removePriorArtifacts(args.outputDir, projects);
   const artifacts: Json[] = [];
   for (const project of projects) {
     const artifact = measureProject(root, args, launch, evidence, ruleMap, comparable, project);

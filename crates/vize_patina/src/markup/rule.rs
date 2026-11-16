@@ -35,6 +35,8 @@ pub enum MarkupTraversal {
     ElementsAndInterpolations,
     /// Visit bindings without empty element, directive or text callbacks.
     Bindings,
+    /// Visit directive-like bindings without unrelated callbacks.
+    Directives,
     /// Visit authored attributes and list scopes without unrelated callbacks.
     AttributesAndLists,
     /// All work happens in `enter_document`; no tree walk is needed.
@@ -69,8 +71,11 @@ impl MarkupTraversal {
         matches!(self, Self::Full | Self::ElementsAndInterpolations)
     }
 
-    /// `enter_directive` and `enter_conditional`.
-    pub(crate) const fn is_full(self) -> bool {
+    pub(crate) const fn enters_directives(self) -> bool {
+        matches!(self, Self::Full | Self::Directives)
+    }
+
+    pub(crate) const fn enters_conditionals(self) -> bool {
         matches!(self, Self::Full)
     }
 }

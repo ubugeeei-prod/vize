@@ -6,7 +6,7 @@ use super::super::session::{AliasScope, LocalImportSession};
 use super::{
     CanonicalPathCache, ImportFileOptions, Path, PathAliasResolver, RegistrationFrontier,
     extract_module_specifier_occurrences, is_declaration_file, is_relative_specifier,
-    resolve_import_base, resolve_relative_import,
+    resolve_import_base,
 };
 
 pub(super) fn source_needs_virtual_registration(
@@ -110,9 +110,15 @@ pub(super) fn source_needs_virtual_registration(
             let specifier = occurrence.specifier.clone();
             let candidate = Path::new(specifier.as_str());
             let resolved = if is_relative_specifier(&specifier) {
-                resolve_relative_import(dir, &specifier, canonical_paths, options)
+                session.local_resolutions.resolve(
+                    &dir.join(specifier.as_str()),
+                    canonical_paths,
+                    options,
+                )
             } else if candidate.is_absolute() {
-                resolve_import_base(candidate, canonical_paths, options)
+                session
+                    .local_resolutions
+                    .resolve(candidate, canonical_paths, options)
             } else {
                 // The frontier resolved most of these already; a miss resolves
                 // once and stays for the walk and the other closures.
