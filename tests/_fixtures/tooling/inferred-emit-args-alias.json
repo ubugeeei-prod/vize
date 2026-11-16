@@ -1,0 +1,52 @@
+{
+  "schema": "vize.inferredEmitArgsAliasSource.v1",
+  "credit": {
+    "compiled": false,
+    "native": false,
+    "performance": false
+  },
+  "files": [
+    {
+      "path": "crates/vize_canon/src/virtual_ts/scope/component_events/generic_inference.rs",
+      "before": {
+        "bytes": 20155,
+        "sha256": "9423a52f0760614d8f9d0af1c41af8d6f9a76feedbceaf839dcd2a389461567f"
+      },
+      "after": {
+        "bytes": 20161,
+        "sha256": "1901575511a8020706ddb7328448e457c3879b9b3359f8946097553488944e28"
+      },
+      "hunks": [
+        {
+          "before": "    // `:is` is not a passed prop. A listener-only `<component :is>` still has\n    // to call the factory: a loose target returns `$LooseEmitProps`. Its marker\n    // must remain distinct from an actual declared empty tuple. Other components need a valued\n    // prop or a spread before that call infers anything.\n    let has_inference_prop = !usage.spread_props.is_empty()\n        || usage.props.iter().any(|prop| {\n            !prop.name_is_dynamic\n                && prop.name.as_str() != \"key\"\n                && prop.name.as_str() != \"ref\"\n                && prop.value.is_some()\n        });\n",
+          "after": "    let has_inference_prop = has_inference_prop(&usage);\n"
+        },
+        {
+          "before": "    let loose_args = if dynamic_component || !ctx.contextual_listener {\n        \"__L\"\n    } else {\n        \"unknown[]\"\n    };\n    let lib_non_nullable = crate::virtual_ts::generated_names::lib(\"NonNullable\");\n    append!(\n        *ts,\n        \"{indent}type {inferred_args} = {library} extends true ? (typeof {emit_props} extends {{ __ctx?: infer __X }} ? {lib_non_nullable}<__X> extends {{ props: infer __P }} ? __P : {{}} : {{}}) extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : unknown[] : typeof {emit_props} extends {{ readonly __vizeLooseListener: infer __L extends unknown[] }} ? {loose_args} : typeof {emit_props} extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : unknown[];\\n\",\n    );\n",
+          "after": "    let loose = dynamic_component || !ctx.contextual_listener;\n    let inferred =\n        super::inferred_args_alias::arguments(library, emit_props.as_str(), prop_key, loose);\n    append!(*ts, \"{indent}type {inferred_args} = {inferred};\\n\");\n"
+        },
+        {
+          "before": "",
+          "after": "/// `:is` is not a passed prop. A listener-only `<component :is>` still has\n/// to call the factory: a loose target returns `$LooseEmitProps`. Its marker\n/// must remain distinct from an actual declared empty tuple. Other components\n/// need a valued prop or a spread before that call infers anything.\nfn has_inference_prop(usage: &ComponentUsage) -> bool {\n    !usage.spread_props.is_empty()\n        || usage.props.iter().any(|prop| {\n            !prop.name_is_dynamic\n                && prop.name.as_str() != \"key\"\n                && prop.name.as_str() != \"ref\"\n                && prop.value.is_some()\n        })\n}\n\n/// Whether a listener on `usage` names inferred emit arguments.\npub(super) fn infers_emit_args(\n    template_ast: Option<&vize_relief::RootNode<'_>>,\n    usage: &ComponentUsage,\n) -> bool {\n    has_inference_prop(usage)\n        || crate::virtual_ts::scope::is_owned_dynamic_component_alias(template_ast, usage)\n        || crate::virtual_ts::scope::is_owned_named_dynamic_component(template_ast, usage)\n}\n\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/scope/component_events.rs",
+      "before": {
+        "bytes": 22908,
+        "sha256": "d18990600883589a2a00df0408df493ef74d0015a14203c3c72888eba07e325e"
+      },
+      "after": {
+        "bytes": 22944,
+        "sha256": "e5d7199c2bcb207d96bcc0e2c5fef9973404ff782b7f20100f5bccf5d623e226"
+      },
+      "hunks": [
+        {
+          "before": "",
+          "after": "pub(super) mod inferred_args_alias;\n"
+        }
+      ]
+    }
+  ]
+}

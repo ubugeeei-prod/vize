@@ -8,6 +8,7 @@ mod generic_inference;
 mod handler_context;
 mod inference_declarations;
 mod inference_helpers;
+pub(super) mod inferred_args_alias;
 mod listener_contract;
 mod listener_relations;
 mod listener_return;

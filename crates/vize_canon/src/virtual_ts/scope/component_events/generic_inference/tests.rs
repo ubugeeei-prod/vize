@@ -128,3 +128,29 @@ fn listeners_sharing_a_visible_declaration_do_not_redeclare_it() {
         assert_eq!(emit_props_declarations(&code), 1, "{template}\n{code}");
     }
 }
+
+/// A single listener keeps its inline conditional; two or more share the
+/// module's alias, declared once.
+#[test]
+fn inferred_emit_args_share_the_alias_from_two_listeners() {
+    let one = generate(r#"<Child :value="value" @save="onSave" /><Child @save="onSave" />"#);
+    assert_eq!(one.matches("__vizeInferredEmitArgs").count(), 0, "{one}");
+    assert_eq!(
+        one.matches("_save_inferred_emit_args = __Child_").count(),
+        1,
+        "{one}"
+    );
+    let two =
+        generate(r#"<Child :value="value" @save="onSave" /><Child :value="1" @save="onSave" />"#);
+    assert_eq!(
+        two.matches("  type __vizeInferredEmitArgs<").count(),
+        1,
+        "{two}"
+    );
+    assert_eq!(
+        two.matches("_save_inferred_emit_args = __vizeInferredEmitArgs<__Child_")
+            .count(),
+        2,
+        "{two}"
+    );
+}

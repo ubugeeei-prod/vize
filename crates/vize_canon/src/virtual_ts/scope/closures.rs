@@ -114,6 +114,14 @@ pub(super) fn emit_scope_closures(
         SlotOutletChecks::default()
     };
     slot_outlets.emit_helpers(ts);
+    super::component_events::inferred_args_alias::reset(
+        super::component_events::inferred_args_alias::uses(
+            summary,
+            options.template_ast,
+            check_options,
+            |scope| slot_outlets.covers_event_handler_scope(scope.span.start, scope.span.end),
+        ),
+    );
     let expression_plan = profile!("canon.virtual_ts.component_prop_expression_ranges", {
         collect_component_prop_expression_ranges(summary, &options, &slot_outlets)
     });
@@ -464,5 +472,6 @@ pub(super) fn emit_scope_closures(
     }
     slot_outlets.emit_root_result(ts, summary, &record);
     super::component_events::flush_emit_resolvers(ts);
+    super::component_events::inferred_args_alias::flush(ts);
     super::component_slots::flush_slot_contracts(ts);
 }

@@ -21,7 +21,7 @@ use vize_croquis::{EventHandlerScopeData, Scope};
 use crate::virtual_ts::helpers::get_dom_event_type;
 
 mod component_scope;
-mod event_targets;
+pub(super) mod event_targets;
 
 use super::context::{EventHandlerExprContext, ScopeGenContext};
 use super::event_handler::{event_name_source_range, generate_event_handler_expressions};

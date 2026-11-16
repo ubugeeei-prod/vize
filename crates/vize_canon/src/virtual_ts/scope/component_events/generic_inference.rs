@@ -59,17 +59,7 @@ pub(super) fn generate_inferred_emit_args(
         crate::virtual_ts::scope::is_owned_dynamic_component_alias(ctx.template_ast, &usage);
     let dynamic_component = dynamic_alias
         || crate::virtual_ts::scope::is_owned_named_dynamic_component(ctx.template_ast, &usage);
-    // `:is` is not a passed prop. A listener-only `<component :is>` still has
-    // to call the factory: a loose target returns `$LooseEmitProps`. Its marker
-    // must remain distinct from an actual declared empty tuple. Other components need a valued
-    // prop or a spread before that call infers anything.
-    let has_inference_prop = !usage.spread_props.is_empty()
-        || usage.props.iter().any(|prop| {
-            !prop.name_is_dynamic
-                && prop.name.as_str() != "key"
-                && prop.name.as_str() != "ref"
-                && prop.value.is_some()
-        });
+    let has_inference_prop = has_inference_prop(&usage);
     if !has_inference_prop && !dynamic_component {
         return None;
     }
@@ -367,16 +357,10 @@ pub(super) fn generate_inferred_emit_args(
     let prop_key = ctx.prop_key;
     // A loose static emit has no declared runtime arity. Preserve the normal
     // listener-prop fallback; dynamic targets keep their contextual marker.
-    let loose_args = if dynamic_component || !ctx.contextual_listener {
-        "__L"
-    } else {
-        "unknown[]"
-    };
-    let lib_non_nullable = crate::virtual_ts::generated_names::lib("NonNullable");
-    append!(
-        *ts,
-        "{indent}type {inferred_args} = {library} extends true ? (typeof {emit_props} extends {{ __ctx?: infer __X }} ? {lib_non_nullable}<__X> extends {{ props: infer __P }} ? __P : {{}} : {{}}) extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : unknown[] : typeof {emit_props} extends {{ readonly __vizeLooseListener: infer __L extends unknown[] }} ? {loose_args} : typeof {emit_props} extends {{ {prop_key}?: (...args: infer __A) => any }} ? __A : unknown[];\n",
-    );
+    let loose = dynamic_component || !ctx.contextual_listener;
+    let inferred =
+        super::inferred_args_alias::arguments(library, emit_props.as_str(), prop_key, loose);
+    append!(*ts, "{indent}type {inferred_args} = {inferred};\n");
     let contextless_listener = (ctx.contextual_listener && dynamic_component).then(|| {
         let contextless_listener = cstr!(
         "__{}_{}_{}_contextless_listener",
@@ -446,6 +430,30 @@ fn inference_entries<'u>(
         });
     }
     entries
+}
+
+/// `:is` is not a passed prop. A listener-only `<component :is>` still has
+/// to call the factory: a loose target returns `$LooseEmitProps`. Its marker
+/// must remain distinct from an actual declared empty tuple. Other components
+/// need a valued prop or a spread before that call infers anything.
+fn has_inference_prop(usage: &ComponentUsage) -> bool {
+    !usage.spread_props.is_empty()
+        || usage.props.iter().any(|prop| {
+            !prop.name_is_dynamic
+                && prop.name.as_str() != "key"
+                && prop.name.as_str() != "ref"
+                && prop.value.is_some()
+        })
+}
+
+/// Whether a listener on `usage` names inferred emit arguments.
+pub(super) fn infers_emit_args(
+    template_ast: Option<&vize_relief::RootNode<'_>>,
+    usage: &ComponentUsage,
+) -> bool {
+    has_inference_prop(usage)
+        || crate::virtual_ts::scope::is_owned_dynamic_component_alias(template_ast, usage)
+        || crate::virtual_ts::scope::is_owned_named_dynamic_component(template_ast, usage)
 }
 
 pub(super) fn find_component_usage_for_event(

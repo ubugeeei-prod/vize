@@ -44,7 +44,7 @@ pub(super) fn dynamic_component_custom_event(
     )
 }
 
-pub(super) fn vnode_hook_signature(event_name: &str) -> Option<(&'static str, &'static str)> {
+pub(in crate::virtual_ts::scope) fn vnode_hook_signature(event_name: &str) -> Option<(&'static str, &'static str)> {
     if !is_vnode_hook(event_name) {
         return None;
     }
