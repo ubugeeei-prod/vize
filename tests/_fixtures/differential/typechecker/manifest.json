@@ -18742,6 +18742,85 @@
       }
     },
     {
+      "id": "typechecker/workspace-runtime-props-13110/reported-project",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "workspace-runtime-props-13110/package.json.txt",
+          "role": "issue-authored-workspace-root",
+          "sha256": "646beb19b625005899fbe022bb2301c6b5097001dd3245ff5b3e201a644eb78b"
+        },
+        {
+          "path": "workspace-runtime-props-13110/pnpm-workspace.yaml.txt",
+          "role": "issue-authored-workspace-packages",
+          "sha256": "ba137cab9022ca514e424dd1937e81936911ad65c267acf613a9e8f50d142843"
+        },
+        {
+          "path": "workspace-runtime-props-13110/tsconfig.json.txt",
+          "role": "issue-authored-config",
+          "sha256": "8280441d912b4f9ebdaa3b500f4493f81faa044ee712c9b996a23e1fe4bae2af"
+        },
+        {
+          "path": "workspace-runtime-props-13110/index.ts.txt",
+          "role": "issue-authored-runtime-props",
+          "sha256": "3053de185a6674b15e8e9ef898dda147a47864f9f05e4d8fb7810c9c3bd7cd94"
+        },
+        {
+          "path": "workspace-runtime-props-13110/fake-props/package.json.txt",
+          "role": "issue-authored-package-outside-packages",
+          "sha256": "bdf1ad4bb967675e8844ed2a36c4f4e5eedb537de5aef391d95cc19b0fa60481"
+        },
+        {
+          "path": "workspace-runtime-props-13110/packages/in-packages/package.json.txt",
+          "role": "issue-authored-folder-named-package-control",
+          "sha256": "fb4ed9ffe06610e128e73712033033b6cf840440f6caecb9bcecb3aaa92cb0c7"
+        },
+        {
+          "path": "workspace-runtime-props-13110/packages/some-folder/package.json.txt",
+          "role": "issue-authored-renamed-folder-package",
+          "sha256": "6a60d14a077f205d74e2d4ae19e714613433d889aee341b1dad8c3c814a1bcd9"
+        },
+        {
+          "path": "workspace-runtime-props-13110/src/RelativeProps.vue.txt",
+          "role": "issue-authored-relative-control",
+          "sha256": "204ee076432ee2255a5ad31d3750e937749932d461f4875e9ea56b9f620faed9"
+        },
+        {
+          "path": "workspace-runtime-props-13110/src/InPackagesProps.vue.txt",
+          "role": "issue-authored-folder-named-control",
+          "sha256": "4006391280d63b2c69a3978b0bedf1280028ab1180d5c25f7258cdd95c267bb8"
+        },
+        {
+          "path": "workspace-runtime-props-13110/src/RenamedFolderProps.vue.txt",
+          "role": "issue-authored-renamed-folder-regression",
+          "sha256": "8272cd49259094e7aa06dcedd39e1b38cdd961b8b3af69d00210516bea51c26f"
+        },
+        {
+          "path": "workspace-runtime-props-13110/src/PackageProps.vue.txt",
+          "role": "issue-authored-outside-packages-regression",
+          "sha256": "dc71e13246a902f62e967d17d2c9ef023f85227ba3ae727aecc3f9a885f5a129"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::workspace_runtime_props_13110::standard_tsgo_reads_runtime_props_from_workspace_packages; exact #13110 pnpm workspace with relative, packages/<name>, renamed-folder and outside-packages rows. Input-only registration; no native parity claim."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/typed-import-meta/project-import-meta-types",
       "targets": [
         "batch"

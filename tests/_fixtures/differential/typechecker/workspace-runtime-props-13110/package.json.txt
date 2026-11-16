@@ -1,0 +1,14 @@
+{
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "fake-props": "workspace:*",
+    "in-packages": "workspace:*",
+    "renamed-props": "workspace:*",
+    "typescript": "6.0.3",
+    "typescript-native": "npm:typescript@7.1.0-beta",
+    "vize": "0.766.0",
+    "vue": "3.5.43",
+    "vue-tsc": "3.3.11"
+  }
+}
