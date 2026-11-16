@@ -1,4 +1,5 @@
 use core::fmt::Write;
+use std::collections::BTreeSet;
 
 use poc_support::Error;
 use poc_support::vue::{Binding, Bindings};
@@ -33,11 +34,24 @@ pub(crate) fn script(source: &str, base: u32) -> Result<(String, String, Binding
     ))
 }
 
-#[derive(Default)]
 struct LoweredScript {
     imports: String,
     body: String,
     bindings: Bindings,
+    declared_names: BTreeSet<String>,
+    ref_names: BTreeSet<String>,
+}
+
+impl Default for LoweredScript {
+    fn default() -> Self {
+        Self {
+            imports: String::default(),
+            body: String::default(),
+            bindings: Bindings::default(),
+            declared_names: BTreeSet::default(),
+            ref_names: [String::from("ref")].into_iter().collect(),
+        }
+    }
 }
 
 impl LoweredScript {
@@ -74,6 +88,17 @@ impl LoweredScript {
             if index > 0 {
                 self.imports.push_str(", ");
             }
+            let local_name = alias.asname.as_ref().unwrap_or(&alias.name);
+            if !is_js_binding(local_name.as_str())
+                || !self
+                    .declared_names
+                    .insert(String::from(local_name.as_str()))
+            {
+                return Err(unsupported(source, base, alias.range));
+            }
+            if alias.name.as_str() == "ref" {
+                self.ref_names.insert(String::from(local_name.as_str()));
+            }
             self.imports.push_str(alias.name.as_str());
             if let Some(asname) = &alias.asname {
                 write!(self.imports, " as {asname}")
@@ -106,9 +131,14 @@ impl LoweredScript {
         let Some(ast::Expr::Name(target)) = node.targets.first() else {
             return Err(unsupported(source, base, node.range));
         };
+        if !is_js_binding(target.id.as_str())
+            || !self.declared_names.insert(String::from(target.id.as_str()))
+        {
+            return Err(unsupported(source, base, target.range));
+        }
         let value = emit::expression(&node.value)
             .map_err(|()| unsupported(source, base, node.value.range()))?;
-        let kind = if matches!(node.value.as_ref(), ast::Expr::Call(call) if matches!(call.func.as_ref(), ast::Expr::Name(name) if name.id.as_str() == "ref"))
+        let kind = if matches!(node.value.as_ref(), ast::Expr::Call(call) if matches!(call.func.as_ref(), ast::Expr::Name(name) if self.ref_names.iter().any(|ref_name| ref_name == name.id.as_str())))
         {
             Binding::Ref
         } else {
@@ -134,11 +164,21 @@ impl LoweredScript {
         {
             return Err(unsupported(source, base, node.range));
         }
+        if !is_js_binding(node.name.as_str())
+            || !self.declared_names.insert(String::from(node.name.as_str()))
+        {
+            return Err(unsupported(source, base, node.range));
+        }
         write!(self.body, "function {}(", node.name)
             .map_err(|_| unsupported(source, base, node.range))?;
         let mut first = true;
+        let mut local_names = BTreeSet::default();
         for argument in node.args.posonlyargs.iter().chain(&node.args.args) {
-            if argument.default.is_some() || argument.def.annotation.is_some() {
+            if argument.default.is_some()
+                || argument.def.annotation.is_some()
+                || !is_js_binding(argument.def.arg.as_str())
+                || !local_names.insert(String::from(argument.def.arg.as_str()))
+            {
                 return Err(unsupported(source, base, argument.def.range));
             }
             if !first {
@@ -149,7 +189,7 @@ impl LoweredScript {
         }
         self.body.push_str(") {\n");
         for statement in &node.body {
-            lower_function_statement(statement, &mut self.body, source, base)?;
+            lower_function_statement(statement, &mut self.body, &mut local_names, source, base)?;
         }
         self.body.push_str("}\n");
         self.bindings.declare(node.name.as_str(), Binding::Plain);
@@ -171,6 +211,7 @@ impl LoweredScript {
 fn lower_function_statement(
     statement: &ast::Stmt,
     body: &mut String,
+    local_names: &mut BTreeSet<String>,
     source: &str,
     base: u32,
 ) -> Result<(), Error> {
@@ -194,14 +235,33 @@ fn lower_function_statement(
                 .targets
                 .first()
                 .ok_or_else(|| unsupported(source, base, node.range))?;
-            let target =
-                emit::expression(target).map_err(|()| unsupported(source, base, target.range()))?;
             let value = emit::expression(&node.value)
                 .map_err(|()| unsupported(source, base, node.value.range()))?;
-            writeln!(body, "  {target} = {value};")
-                .map_err(|_| unsupported(source, base, node.range))
+            if let ast::Expr::Name(name) = target {
+                if !is_js_binding(name.id.as_str()) {
+                    return Err(unsupported(source, base, target.range()));
+                }
+                let declaration = if local_names.insert(String::from(name.id.as_str())) {
+                    "let "
+                } else {
+                    ""
+                };
+                writeln!(body, "  {declaration}{} = {value};", name.id)
+                    .map_err(|_| unsupported(source, base, node.range))
+            } else {
+                let target = emit::expression(target)
+                    .map_err(|()| unsupported(source, base, target.range()))?;
+                writeln!(body, "  {target} = {value};")
+                    .map_err(|_| unsupported(source, base, node.range))
+            }
         }
         ast::Stmt::AugAssign(node) => {
+            if let ast::Expr::Name(name) = node.target.as_ref()
+                && (!is_js_binding(name.id.as_str())
+                    || !local_names.iter().any(|local| local == name.id.as_str()))
+            {
+                return Err(unsupported(source, base, node.target.range()));
+            }
             let target = emit::expression(&node.target)
                 .map_err(|()| unsupported(source, base, node.target.range()))?;
             let value = emit::expression(&node.value)
@@ -213,6 +273,61 @@ fn lower_function_statement(
         }
         _ => Err(unsupported(source, base, statement.range())),
     }
+}
+
+fn is_js_binding(name: &str) -> bool {
+    let mut characters = name.chars();
+    if !characters
+        .next()
+        .is_some_and(|character| character.is_ascii_alphabetic() || matches!(character, '_' | '$'))
+        || !characters
+            .all(|character| character.is_ascii_alphanumeric() || matches!(character, '_' | '$'))
+    {
+        return false;
+    }
+    !matches!(
+        name,
+        "await"
+            | "break"
+            | "case"
+            | "catch"
+            | "class"
+            | "const"
+            | "continue"
+            | "debugger"
+            | "default"
+            | "delete"
+            | "do"
+            | "else"
+            | "enum"
+            | "export"
+            | "extends"
+            | "false"
+            | "finally"
+            | "for"
+            | "function"
+            | "if"
+            | "import"
+            | "in"
+            | "instanceof"
+            | "let"
+            | "new"
+            | "null"
+            | "return"
+            | "static"
+            | "super"
+            | "switch"
+            | "this"
+            | "throw"
+            | "true"
+            | "try"
+            | "typeof"
+            | "var"
+            | "void"
+            | "while"
+            | "with"
+            | "yield"
+    )
 }
 
 fn assignment_operator(operator: ast::Operator) -> Option<&'static str> {

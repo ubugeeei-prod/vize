@@ -44,10 +44,19 @@ fn emit(expr: &ast::Expr, out: &mut dyn Write, parent: u8) -> Result<(), ()> {
             emit_joined(&node.values, operator, out, precedence)?;
         }
         ast::Expr::BinOp(node) => {
-            emit(&node.left, out, precedence)?;
+            let is_power = node.op == ast::Operator::Pow;
+            emit(
+                &node.left,
+                out,
+                precedence.saturating_add(u8::from(is_power)),
+            )?;
             let operator = binary_operator(node.op).ok_or(())?;
             write!(out, " {operator} ").map_err(|_| ())?;
-            emit(&node.right, out, precedence.saturating_add(1))?;
+            emit(
+                &node.right,
+                out,
+                precedence.saturating_add(u8::from(!is_power)),
+            )?;
         }
         ast::Expr::UnaryOp(node) => {
             let operator = match node.op {
@@ -57,7 +66,16 @@ fn emit(expr: &ast::Expr, out: &mut dyn Write, parent: u8) -> Result<(), ()> {
                 ast::UnaryOp::Invert => return Err(()),
             };
             out.write_str(operator).map_err(|_| ())?;
-            emit(&node.operand, out, precedence)?;
+            let nested_sign = matches!(node.op, ast::UnaryOp::UAdd | ast::UnaryOp::USub)
+                && matches!(node.operand.as_ref(), ast::Expr::UnaryOp(operand) if matches!(operand.op, ast::UnaryOp::UAdd | ast::UnaryOp::USub));
+            let nested_power = matches!(node.op, ast::UnaryOp::UAdd | ast::UnaryOp::USub)
+                && matches!(node.operand.as_ref(), ast::Expr::BinOp(operand) if operand.op == ast::Operator::Pow);
+            let operand_parent = if nested_power {
+                PREC_PRIMARY
+            } else {
+                precedence.saturating_add(u8::from(nested_sign))
+            };
+            emit(&node.operand, out, operand_parent)?;
         }
         ast::Expr::IfExp(node) => {
             emit(&node.test, out, PREC_OR)?;
@@ -67,10 +85,14 @@ fn emit(expr: &ast::Expr, out: &mut dyn Write, parent: u8) -> Result<(), ()> {
             emit(&node.orelse, out, PREC_TERNARY)?;
         }
         ast::Expr::Compare(node) if node.ops.len() == 1 && node.comparators.len() == 1 => {
-            emit(&node.left, out, precedence)?;
+            emit(&node.left, out, precedence.saturating_add(1))?;
             let operator = node.ops.first().and_then(compare_operator).ok_or(())?;
             write!(out, " {operator} ").map_err(|_| ())?;
-            emit(node.comparators.first().ok_or(())?, out, precedence)?;
+            emit(
+                node.comparators.first().ok_or(())?,
+                out,
+                precedence.saturating_add(1),
+            )?;
         }
         ast::Expr::Call(node) => emit_call(node, out)?,
         ast::Expr::Attribute(node) => {
@@ -153,7 +175,12 @@ fn emit_joined_string(values: &[ast::Expr], out: &mut dyn Write) -> Result<(), (
         match value {
             ast::Expr::Constant(node) => match &node.value {
                 ast::Constant::Str(text) => out
-                    .write_str(&text.replace('`', "\\`").replace("${", "\\${"))
+                    .write_str(
+                        &text
+                            .replace('\\', "\\\\")
+                            .replace('`', "\\`")
+                            .replace("${", "\\${"),
+                    )
                     .map_err(|_| ())?,
                 _ => return Err(()),
             },
