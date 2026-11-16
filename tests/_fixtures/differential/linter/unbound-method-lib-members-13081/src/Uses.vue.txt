@@ -1,0 +1,7 @@
+<script setup lang="ts">
+import { augmented } from "./augment";
+</script>
+
+<template>
+  <p>{{ augmented }}</p>
+</template>

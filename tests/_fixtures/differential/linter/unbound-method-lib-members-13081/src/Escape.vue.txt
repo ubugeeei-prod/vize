@@ -1,0 +1,15 @@
+<script setup lang="ts">
+import { ref } from "vue";
+
+const terms = ref(["a.b"]);
+const escape = RegExp.escape;
+const pattern = terms.value.map(RegExp.escape).join("|");
+const wrapped = terms.value.map((term) => RegExp.escape(term)).join("|");
+const parse = Number.parseFloat;
+const half = Math.f16round;
+const pause = Atomics.pause;
+</script>
+
+<template>
+  <p>{{ [escape, pattern, wrapped, parse, half, pause].length }}</p>
+</template>

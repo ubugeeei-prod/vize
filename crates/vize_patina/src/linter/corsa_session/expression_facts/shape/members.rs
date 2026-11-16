@@ -1,8 +1,7 @@
 //! unbound-method member facts: the receiver's symbol and how each property is declared (`checkIfMethod`).
 use super::{
-    FUNCTION_DECLARATION, FUNCTION_EXPRESSION, INTERSECTION, JsonMap, METHOD_DECLARATION,
-    METHOD_SIGNATURE, OBJECT, PROPERTY_ASSIGNMENT, PROPERTY_DECLARATION, SYMBOL_CLASS, Shapes,
-    UNION, VOID,
+    FUNCTION_EXPRESSION, INTERSECTION, JsonMap, METHOD_DECLARATION, METHOD_SIGNATURE, OBJECT,
+    PROPERTY_ASSIGNMENT, PROPERTY_DECLARATION, SYMBOL_CLASS, Shapes, UNION, VOID,
 };
 use corsa::api::{NodeHandle, TypeResponse};
 use serde_json::{Map, Value, json};
@@ -102,7 +101,6 @@ impl Shapes<'_> {
             let parts = parts.as_deref().unwrap_or_default();
             let mut infos = Vec::with_capacity(parts.len());
             let mut property_lib = None;
-            let mut default_library_function = false;
             for part in parts {
                 let property = client
                     .get_property_of_type(
@@ -118,15 +116,12 @@ impl Shapes<'_> {
                     infos.push(Value::Null);
                     continue;
                 };
-                let from_default_library = !property.declarations.is_empty()
-                    && property.declarations.iter().all(is_default_library);
-                property_lib = Some(property_lib.unwrap_or(true) && from_default_library);
-                default_library_function |= from_default_library
-                    && property
-                        .value_declaration
-                        .as_ref()
-                        .and_then(declaration_kind)
-                        == Some(FUNCTION_DECLARATION);
+                // `isSymbolFromDefaultLibrary`: a declaration merged into a
+                // library member elsewhere does not make the member the user's.
+                property_lib = Some(
+                    property_lib.unwrap_or(false)
+                        || declared_in_default_library(&property.declarations),
+                );
                 let info = match self.method_cache.get(&property.id) {
                     Some(info) => info.clone(),
                     None => {
@@ -137,14 +132,7 @@ impl Shapes<'_> {
                 };
                 infos.push(info);
             }
-            // TypeScript 7 splits DOM globals such as `alert` into a `Window`
-            // method and a global function. The TypeScript 5 symbol observed by
-            // the pinned typescript-eslint corpus uses the merged, safe function
-            // declaration as its value declaration.
-            if ty.flags & INTERSECTION != 0
-                && property_lib == Some(true)
-                && default_library_function
-            {
+            if property_lib == Some(true) && is_bound_static_side(&out) {
                 infos.clear();
                 infos.push(json!({ "isMethod": false }));
             }
@@ -190,10 +178,7 @@ impl Shapes<'_> {
             out.insert("receiverSymbol".into(), json!(symbol.name));
             out.insert(
                 "receiverLib".into(),
-                json!(
-                    !symbol.declarations.is_empty()
-                        && symbol.declarations.iter().all(is_default_library)
-                ),
+                json!(declared_in_default_library(&symbol.declarations)),
             );
         }
         if ty.flags & OBJECT != 0 {
@@ -374,9 +359,33 @@ pub(super) fn declaration_kind(handle: &NodeHandle) -> Option<u16> {
     handle.as_str().split('.').nth(1)?.parse().ok()
 }
 
+/// typescript-eslint's `isSymbolFromDefaultLibrary`: some declaration of the
+/// symbol lives in a default library file. Declaration merging (`declare
+/// global { interface Math {} }`) adds declarations; it does not move the
+/// library's own ones.
+pub(super) fn declared_in_default_library(declarations: &[NodeHandle]) -> bool {
+    declarations.iter().any(is_default_library)
+}
+
+/// Library static sides whose library members never read `this`, besides the
+/// `SUPPORTED_GLOBAL_TYPES` the rule already exempts by type. typescript-eslint
+/// exempts `RegExp`'s own members only by the name of the global, from a table
+/// of the members its Node has, so `RegExp.escape` depended on the Node version
+/// and `window.RegExp.escape` was reported everywhere.
+const BOUND_STATIC_SIDES: &[&str] = &["RegExpConstructor"];
+
+/// The receiver is one of [`BOUND_STATIC_SIDES`], declared by the library.
+fn is_bound_static_side(receiver: &JsonMap) -> bool {
+    receiver.get("receiverLib").and_then(Value::as_bool) == Some(true)
+        && receiver
+            .get("receiverSymbol")
+            .and_then(Value::as_str)
+            .is_some_and(|symbol| BOUND_STATIC_SIDES.contains(&symbol))
+}
+
 /// Whether a declaration lives in one of TypeScript's bundled `lib.*.d.ts`
 /// files.
-pub(super) fn is_default_library(handle: &NodeHandle) -> bool {
+fn is_default_library(handle: &NodeHandle) -> bool {
     handle.declaring_path().is_some_and(|path| {
         let name = path.rsplit('/').next().unwrap_or_default();
         name.starts_with("lib.") && name.ends_with(".d.ts")
