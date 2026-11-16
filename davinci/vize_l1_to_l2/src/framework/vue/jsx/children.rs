@@ -12,7 +12,7 @@ use vize_l2::op::{
     TextOp,
 };
 
-use super::attributes::{Props, props};
+use super::attributes::{Owner, Props, props};
 use super::control_flow::control_flow;
 use super::{Cx, JsxRefusal, span};
 
@@ -48,7 +48,15 @@ pub(super) fn element<'a>(
             &cx.allocator,
         )));
     }
-    props(cx, &opening.attributes, &mut lowered)?;
+    // A lowercase `<component is>` keeps element directives, as in templates.
+    let owner = match tag {
+        Tag::Element(tag) => Owner::Element {
+            tag,
+            items: &opening.attributes,
+        },
+        Tag::Named(_) | Tag::Value(_) => Owner::Component,
+    };
+    props(cx, &opening.attributes, owner, &mut lowered)?;
     let mut ops = Vec::new_in(&cx.allocator);
     match tag {
         Tag::Element(_) => element_children(cx, &element.children, &mut ops)?,

@@ -11,6 +11,8 @@ mod attributes;
 mod boolean;
 mod children;
 mod control_flow;
+mod directives;
+mod model;
 mod module;
 #[cfg(test)]
 mod module_tests;
@@ -136,7 +138,8 @@ pub enum JsxRefusal {
     Dialect,
     /// A namespaced, `this` or `<style>` tag.
     Tag,
-    /// A `v-*` directive, `v-slots` or an attribute value holding JSX.
+    /// A `v-*` directive whose lowering has not landed (`v-slots`, `v-if`,
+    /// `_` modifiers, …) or an attribute value holding JSX.
     Attribute,
     /// A child shape whose op has not landed (expression children outside
     /// the sole-child position, `&&` over a value, a non-element branch,

@@ -117,7 +117,7 @@ fn components_are_every_definition_or_the_first_refusal() {
         Ok(alloc::vec![Span::new(10, 15), Span::new(27, 37)])
     );
     assert_eq!(
-        spans("const a = <i />;\nconst b = <div v-show={x} />;\nconst c = <div>a {b}</div>;"),
+        spans("const a = <i />;\nconst b = <div v-once />;\nconst c = <div>a {b}</div>;"),
         Err(JsxRefusal::Attribute)
     );
 }
