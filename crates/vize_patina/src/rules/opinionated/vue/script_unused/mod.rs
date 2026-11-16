@@ -4,6 +4,7 @@ mod art_use;
 mod classify;
 mod decide;
 mod exports;
+mod global_directives;
 mod no_unused_script_vars;
 mod options;
 mod prefer_const;
@@ -23,5 +24,7 @@ mod tests_art;
 mod tests_cross;
 #[cfg(test)]
 mod tests_issue;
+#[cfg(test)]
+mod tests_reported;
 #[cfg(test)]
 mod tests_tse;

@@ -5,6 +5,10 @@
 //! name or by the name declared via `defineOptions({ name })` — a documented
 //! Vue feature for recursive components that needs no import.
 
+use oxc_ast::ast::{
+    Argument, BindingPattern, Declaration, ExportDefaultDeclarationKind, Expression,
+    ObjectExpression, ObjectPropertyKind, Program, PropertyKey, Statement, VariableDeclaration,
+};
 use vize_croquis::Croquis;
 use vize_croquis::macros::MacroKind;
 
@@ -23,6 +27,114 @@ pub(super) fn define_options_name(analysis: &Croquis) -> Option<&str> {
         .iter()
         .find(|call| matches!(call.kind, MacroKind::DefineOptions))?;
     options_name_property(call.runtime_args.as_ref()?.as_str())
+}
+
+/// The static component name declared by the Options API default export.
+pub(super) fn options_api_name<'a>(program: &'a Program<'_>) -> Option<&'a str> {
+    for statement in &program.body {
+        let Statement::ExportDefaultDeclaration(export) = statement else {
+            continue;
+        };
+        let object = match &export.declaration {
+            ExportDefaultDeclarationKind::ObjectExpression(object) => Some(object.as_ref()),
+            ExportDefaultDeclarationKind::CallExpression(call)
+                if matches!(
+                    call.callee.get_inner_expression(),
+                    Expression::Identifier(identifier)
+                        if matches!(identifier.name.as_str(), "defineComponent" | "defineNuxtComponent")
+                ) =>
+            {
+                call.arguments.first().and_then(argument_object)
+            }
+            _ => None,
+        }?;
+        return object_name(object);
+    }
+    None
+}
+
+/// Component factory bindings authored in the paired normal script live at
+/// module scope and are visible to the script-setup template compiler.
+pub(super) fn component_factory_bindings<'a>(program: &'a Program<'a>) -> Vec<&'a str> {
+    let mut bindings = Vec::new();
+    for statement in &program.body {
+        let declaration = match statement {
+            Statement::VariableDeclaration(declaration) => Some(declaration.as_ref()),
+            Statement::ExportNamedDeclaration(export) => {
+                export
+                    .declaration
+                    .as_ref()
+                    .and_then(|declaration| match declaration {
+                        Declaration::VariableDeclaration(declaration) => Some(declaration.as_ref()),
+                        _ => None,
+                    })
+            }
+            _ => None,
+        };
+        if let Some(declaration) = declaration {
+            component_variables(declaration, &mut bindings);
+        }
+    }
+    bindings
+}
+
+fn component_variables<'a>(declaration: &'a VariableDeclaration<'a>, bindings: &mut Vec<&'a str>) {
+    for declarator in &declaration.declarations {
+        let BindingPattern::BindingIdentifier(identifier) = &declarator.id else {
+            continue;
+        };
+        let Some(Expression::CallExpression(call)) = declarator
+            .init
+            .as_ref()
+            .map(Expression::get_inner_expression)
+        else {
+            continue;
+        };
+        let Expression::Identifier(callee) = call.callee.get_inner_expression() else {
+            continue;
+        };
+        if matches!(
+            callee.name.as_str(),
+            "defineComponent" | "defineNuxtComponent" | "defineAsyncComponent"
+        ) {
+            bindings.push(identifier.name.as_str());
+        }
+    }
+}
+
+fn argument_object<'a, 'alloc>(
+    argument: &'a Argument<'alloc>,
+) -> Option<&'a ObjectExpression<'alloc>> {
+    match argument.as_expression()?.get_inner_expression() {
+        Expression::ObjectExpression(object) => Some(object.as_ref()),
+        _ => None,
+    }
+}
+
+fn object_name<'a>(object: &'a ObjectExpression<'_>) -> Option<&'a str> {
+    for property in &object.properties {
+        let ObjectPropertyKind::ObjectProperty(property) = property else {
+            continue;
+        };
+        let name_key = match &property.key {
+            PropertyKey::StaticIdentifier(identifier) if !property.computed => {
+                identifier.name == "name"
+            }
+            PropertyKey::StringLiteral(literal) => literal.value == "name",
+            _ => false,
+        };
+        if !name_key {
+            continue;
+        }
+        return match property.value.get_inner_expression() {
+            Expression::StringLiteral(literal) => Some(literal.value.as_str()),
+            Expression::TemplateLiteral(template) => {
+                template.single_quasi().map(|value| value.as_str())
+            }
+            _ => None,
+        };
+    }
+    None
 }
 
 /// Pragmatic scan of a `defineOptions` argument source for a `name` property

@@ -9,6 +9,7 @@ import {
   V1_CASES,
   V1_TOPOLOGIES,
 } from "../../tools/support/compat/v1/support-matrix.ts";
+import { CONTENT_MAPPER_PROTOCOL_FEATURES } from "../../tools/support/compat/v1/content-mapper-qualification.ts";
 
 const root = path.resolve(import.meta.dirname, "../..");
 const output = path.join(root, "docs/release/v1-supported-matrix.json");
@@ -19,6 +20,8 @@ void test("the committed v1 support manifest is generated from the audited inven
   assert.equal(matrix.schema, "vize.v1-qualification-manifest.v1");
   assert.equal(matrix.counts.declaredCombinations, matrix.combinations.length);
   assert.equal(matrix.counts.caseObligations, matrix.combinations.length * V1_CASES.length);
+  assert.equal(matrix.counts.caseSelectors, matrix.counts.caseObligations);
+  assert.equal(matrix.caseSelectors.length, matrix.counts.caseObligations);
   assert.equal(
     matrix.counts.hostRuntimeCombinations,
     matrix.environments.hostRuntimeCombinations.length,
@@ -130,6 +133,119 @@ void test("every blocking gap has one owner and a machine-checkable exit contrac
   }
 });
 
+void test("the Content Mapper v1 obligation inventory is complete, owned and fails closed", () => {
+  const qualification = matrix.contentMapper;
+  assert.equal(qualification.schema, "vize.content-mapper-v1-qualification.v1");
+  assert.equal(qualification.parentIssue, 13018);
+  assert.equal(qualification.qualificationIssue, 13071);
+  assert.equal(qualification.qualification, "gap");
+  assert.match(qualification.pinnedTypeScriptRevision, /^[0-9a-f]{40}$/u);
+  assert.equal(qualification.counts.semantic, 16);
+  assert.equal(qualification.counts.protocolFeatures, 20);
+  assert.equal(qualification.counts.diagnostics, 4);
+  assert.equal(qualification.counts.lifecycle, 1);
+  assert.equal(qualification.counts.performance, 1);
+  assert.equal(qualification.counts.runtimeAndCorpus, 2);
+  assert.equal(qualification.counts.unbound, 44);
+
+  const obligations = [
+    ...qualification.semantic,
+    ...qualification.protocolFeatures,
+    ...qualification.diagnostics,
+    ...qualification.lifecycle,
+    ...qualification.performance,
+    ...qualification.runtimeAndCorpus,
+  ];
+  const ids = new Set<string>();
+  for (const obligation of obligations) {
+    assert.ok(!ids.has(obligation.id), `duplicate Content Mapper obligation ${obligation.id}`);
+    ids.add(obligation.id);
+    assert.deepEqual(obligation.requiredCases, V1_CASES, obligation.id);
+    assert.equal(obligation.candidateSource, null, obligation.id);
+    assert.equal(obligation.candidateRun, null, obligation.id);
+    assert.deepEqual(obligation.receipts, [], obligation.id);
+    assert.equal(obligation.qualification, "unbound", obligation.id);
+    assert.ok(obligation.issues.length > 0, obligation.id);
+    assert.ok(obligation.evidenceCandidates.length > 0, obligation.id);
+    for (const evidence of obligation.evidenceCandidates)
+      assert.ok(existsSync(path.join(root, evidence)), `${obligation.id}: missing ${evidence}`);
+  }
+
+  const performance = qualification.performance[0];
+  assert.deepEqual(performance.measurements, [
+    "cold",
+    "warm",
+    "no-op",
+    "leaf-edit",
+    "dependency-edit",
+    "p95",
+    "rss",
+  ]);
+  assert.deepEqual(performance.scales, [1_000, 5_000, 20_000]);
+  assert.equal(performance.packetIdentity, "required");
+  assert.equal(performance.baseHeadComparison, "required");
+  assert.deepEqual(qualification.lifecycle[0].operations, [
+    "open",
+    "edit",
+    "save",
+    "close",
+    "create",
+    "rename",
+    "delete",
+  ]);
+  assert.deepEqual(qualification.upstreamBlockers, [
+    {
+      id: "grouped-disjoint-expect-usage",
+      issue: 6258,
+      state: "blocked-upstream",
+    },
+    {
+      id: "diagnostic-code-selector-consumer",
+      issue: 13057,
+      external: "microsoft/TypeScript#65517",
+      state: "blocked-upstream",
+    },
+  ]);
+  assert.ok(qualification.producerProtocol.evidenceCandidates.length > 0);
+  for (const evidence of qualification.producerProtocol.evidenceCandidates)
+    assert.ok(existsSync(path.join(root, evidence)), `producer protocol: missing ${evidence}`);
+});
+
+void test("Content Mapper protocol features match the pinned Rust protocol contract", () => {
+  assert.deepEqual(
+    matrix.contentMapper.protocolFeatures.map(({ id }) => id),
+    CONTENT_MAPPER_PROTOCOL_FEATURES,
+  );
+  const source = readFileSync(
+    path.join(root, "crates/vize_canon/src/batch/virtual_project/content_mapper/span_features.rs"),
+    "utf8",
+  );
+  const enumBody = /enum ContentMapperSpanFeature \{(?<body>[\s\S]*?)\n\}/u.exec(source)?.groups
+    ?.body;
+  assert.ok(enumBody, "missing ContentMapperSpanFeature enum");
+  const rustFeatures = [...enumBody.matchAll(/^\s{4}([A-Za-z]+) = 1 << \d+,$/gmu)].map(
+    ([, name]) => name,
+  );
+  assert.deepEqual(rustFeatures, CONTENT_MAPPER_PROTOCOL_FEATURES);
+});
+
+void test("Content Mapper interop examples preserve the v1 support boundary", () => {
+  assert.deepEqual(
+    matrix.contentMapper.boundaryExamples.map(({ id, disposition }) => [id, disposition]),
+    [
+      ["tsrx", "outside-v1"],
+      ["svelte", "outside-v1"],
+      ["astro", "outside-v1"],
+    ],
+  );
+  for (const boundary of matrix.contentMapper.boundaryExamples) {
+    assert.ok(boundary.reason.length > 0, boundary.id);
+    assert.ok(boundary.evidenceCandidates.length > 0, boundary.id);
+    for (const evidence of boundary.evidenceCandidates)
+      assert.ok(existsSync(path.join(root, evidence)), `${boundary.id}: missing ${evidence}`);
+  }
+});
+
 void test("Vapor and legacy support remain explicit boundaries", () => {
   for (const combination of matrix.combinations) {
     if (combination.backend === "vapor") assert.equal(combination.vue, "3.6+-vapor");
@@ -217,4 +333,30 @@ void test("qualification receipts require exact source, fixture, dependency, run
   ]);
   for (const producer of matrix.identityContracts.producers)
     assert.ok(existsSync(path.join(root, producer)), `missing identity producer ${producer}`);
+  assert.deepEqual(
+    Object.keys(matrix.caseReceiptIdentityContracts).toSorted(),
+    [
+      "source",
+      "candidate",
+      "actions",
+      "fixture",
+      "dependency",
+      "runtime",
+      "binary",
+      "packet",
+      "receipt",
+    ].toSorted(),
+  );
+  for (const side of ["source", "candidate"] as const)
+    assert.deepEqual(
+      matrix.caseReceiptIdentityContracts.packet[side].toSorted(),
+      [
+        "diagnosticsSha256",
+        "authoredRangesSha256",
+        "editsSha256",
+        "generatedOutputSha256",
+        "orderingSha256",
+        "exitBehaviorSha256",
+      ].toSorted(),
+    );
 });

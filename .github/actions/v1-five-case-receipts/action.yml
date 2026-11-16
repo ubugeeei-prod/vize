@@ -1,0 +1,120 @@
+name: V1 five-case receipt admission
+description: Plan or admit the shared 440-selector v1 five-case receipt registry
+
+inputs:
+  operation:
+    description: plan, validate, or admit
+    required: true
+  source-sha:
+    description: Exact source SHA checked out by the caller
+    required: true
+  candidate-sha:
+    description: Exact candidate SHA owned by the receipt set
+    required: true
+  mode:
+    description: pr or release
+    required: true
+  run-id:
+    description: Actions run ID that owns the plan
+    required: true
+  run-attempt:
+    description: Actions run attempt that owns the plan
+    required: true
+  shard-count:
+    description: Deterministic selector shard count
+    required: false
+    default: "8"
+  bundles-directory:
+    description: Directory containing mergeable receipt bundle JSON files for admission
+    required: false
+    default: ""
+  enforce-complete:
+    description: Fail unless every selector has an exact passed receipt
+    required: false
+    default: "false"
+  artifact-name:
+    description: Immutable artifact name for the generated plan or admission
+    required: true
+
+outputs:
+  registry-digest:
+    description: SHA-256 of every stable selector ID and selector digest
+    value: ${{ steps.driver.outputs.registry_digest }}
+  bundle-digest:
+    description: SHA-256 of every admitted mergeable bundle
+    value: ${{ steps.driver.outputs.bundle_digest }}
+  selector-count:
+    description: Number of selectors in the shared registry
+    value: ${{ steps.driver.outputs.selector_count }}
+  admitted-count:
+    description: Number of selectors admitted from exact passed receipts
+    value: ${{ steps.driver.outputs.admitted_count }}
+  output-path:
+    description: Generated plan or admission JSON path
+    value: ${{ steps.driver.outputs.output_path }}
+
+runs:
+  using: composite
+  steps:
+    - name: Verify exact source and run the shared receipt driver
+      id: driver
+      shell: bash
+      env:
+        OPERATION: ${{ inputs.operation }}
+        SOURCE_SHA: ${{ inputs.source-sha }}
+        CANDIDATE_SHA: ${{ inputs.candidate-sha }}
+        MODE: ${{ inputs.mode }}
+        RUN_IDENTITY: ${{ inputs.run-id }}
+        RUN_ATTEMPT: ${{ inputs.run-attempt }}
+        SHARD_COUNT: ${{ inputs.shard-count }}
+        BUNDLES_DIRECTORY: ${{ inputs.bundles-directory }}
+        ENFORCE_COMPLETE: ${{ inputs.enforce-complete }}
+      run: |
+        set -euo pipefail
+        test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+        mkdir -p .qualification/v1-five-case
+        if [ "$OPERATION" = plan ]; then
+          output=.qualification/v1-five-case/plan.json
+          node tools/commands/release/v1-five-case-receipts.ts plan \
+            --source "$SOURCE_SHA" \
+            --candidate "$CANDIDATE_SHA" \
+            --mode "$MODE" \
+            --run "$RUN_IDENTITY" \
+            --attempt "$RUN_ATTEMPT" \
+            --shards "$SHARD_COUNT" \
+            --output "$output"
+        elif [ "$OPERATION" = validate ]; then
+          test -n "$BUNDLES_DIRECTORY"
+          test -d "$BUNDLES_DIRECTORY"
+          output=$BUNDLES_DIRECTORY
+          node tools/commands/release/v1-five-case-receipts.ts validate-bundles \
+            --source "$SOURCE_SHA" \
+            --candidate "$CANDIDATE_SHA" \
+            --mode "$MODE" \
+            --bundles "$BUNDLES_DIRECTORY"
+        elif [ "$OPERATION" = admit ]; then
+          test -n "$BUNDLES_DIRECTORY"
+          test -d "$BUNDLES_DIRECTORY"
+          output=.qualification/v1-five-case/admission.json
+          args=(
+            admit
+            --source "$SOURCE_SHA"
+            --candidate "$CANDIDATE_SHA"
+            --mode "$MODE"
+            --bundles "$BUNDLES_DIRECTORY"
+            --output "$output"
+          )
+          if [ "$ENFORCE_COMPLETE" = true ]; then args+=(--enforce-complete); fi
+          node tools/commands/release/v1-five-case-receipts.ts "${args[@]}"
+        else
+          echo "operation must be plan, validate, or admit" >&2
+          exit 1
+        fi
+        echo "output_path=$output" >> "$GITHUB_OUTPUT"
+    - name: Publish immutable five-case plan or admission
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: ${{ steps.driver.outputs.output_path }}
+        if-no-files-found: error
+        retention-days: 30

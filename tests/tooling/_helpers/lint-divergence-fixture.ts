@@ -29,6 +29,15 @@ export const ruleMap = {
       patinaRule: "script/define-props-destructuring",
     },
     "vue/require-v-for-key": { status: "mapped", patinaRule: "vue/require-v-for-key" },
+    "vue/no-undef-components": {
+      status: "mapped",
+      patinaRule: "vue/require-component-registration",
+    },
+    "vue/require-prop-comment": {
+      status: "mapped",
+      patinaRule: "vue/require-prop-comment",
+    },
+    "vue/quote-props": { status: "mapped", patinaRule: "vue/quote-props" },
     "vue/no-unused-components": { status: "mapped", patinaRule: "vue/no-unused-components" },
     "vue/attributes-order": { status: "mapped", patinaRule: "vue/attribute-order" },
     "vue/no-undef-properties": { status: "unimplemented", issue: 3223 },

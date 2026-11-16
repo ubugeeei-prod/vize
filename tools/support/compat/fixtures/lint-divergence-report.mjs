@@ -4,11 +4,15 @@ import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import {
-  resolveBaselineRuntime,
-  runBaseline,
+  baselineConfig,
   selectAvailableRules,
   selectComparableRules,
 } from "./lint-divergence-baseline.mjs";
+import {
+  configureScorecardRules,
+  resolveScorecardRuntime,
+  runScorecardBaseline,
+} from "./lint-divergence-scorecard.ts";
 import {
   assertBudgetsPassed,
   attachBudget,
@@ -48,12 +52,12 @@ export async function runLintDivergenceReport(argv = process.argv.slice(2)) {
   const registry = readJson(args.registry);
   const ruleMap = readJson(ruleMapPath);
   const ledger = readLedger();
-  const runtime = resolveBaselineRuntime();
+  const runtime = resolveScorecardRuntime();
   const launch = resolveVizeLaunch(args.vizeBin, false);
   const selection = selectComparableRules(ruleMap, args.preset, {
     includeUnimplemented: args.measureCoverageGap,
   });
-  const rules = selectAvailableRules(runtime, selection.rules);
+  const rules = configureScorecardRules(selectAvailableRules(runtime, selection.rules));
   const { skippedByPreset } = selection;
   const mappedRuleCount = Object.values(ruleMap.entries).filter(
     (entry) => entry.status === "mapped",
@@ -107,7 +111,7 @@ async function measureProject(context) {
 
   const patinaFindings = files.length === 0 ? [] : runPatina(context, cwd, files);
   const startedAt = Date.now();
-  const baselineRun = await runBaseline(runtime, cwd, files, rules);
+  const baselineRun = await runScorecardBaseline(runtime, baselineConfig, cwd, files, rules);
   const eslintResults = baselineRun.results;
   const baselineDurationMs = Date.now() - startedAt;
   reconcileCorpus(project.id, files, eslintResults, cwd);

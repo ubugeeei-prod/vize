@@ -7,9 +7,9 @@
 use oxc_ast::ast::{
     ArrowFunctionExpression, BindingIdentifier, BindingPattern, CatchClause, Class, ClassElement,
     Expression, ForInStatement, ForOfStatement, ForStatementLeft, FormalParameters, Function,
-    ImportDeclaration, ImportDeclarationSpecifier, Statement, TSEnumDeclaration,
-    TSGlobalDeclaration, TSImportEqualsDeclaration, TSInterfaceDeclaration, TSModuleDeclaration,
-    TSModuleDeclarationBody, TSModuleDeclarationName, TSTypeAliasDeclaration,
+    ImportDeclaration, ImportDeclarationSpecifier, ObjectProperty, PropertyKind, Statement,
+    TSEnumDeclaration, TSGlobalDeclaration, TSImportEqualsDeclaration, TSInterfaceDeclaration,
+    TSModuleDeclaration, TSModuleDeclarationBody, TSModuleDeclarationName, TSTypeAliasDeclaration,
     TSTypeParameterDeclaration, VariableDeclarationKind, VariableDeclarator,
 };
 use oxc_ast_visit::{Visit, walk};
@@ -88,6 +88,7 @@ struct Classifier {
     group: u32,
     ambient: u32,
     dotted: Vec<Span>,
+    object_setters: FxHashSet<u32>,
 }
 
 struct Note {
@@ -292,6 +293,19 @@ impl Classifier {
 }
 
 impl<'a> Visit<'a> for Classifier {
+    fn visit_object_property(&mut self, property: &ObjectProperty<'a>) {
+        // The generic OXC visitor supplies accessor scope flags for class
+        // methods, but an object-literal setter reaches its function through
+        // `Expression` and loses that flag. Remember exactly that function;
+        // nested functions in the setter remain ordinary functions.
+        if property.kind == PropertyKind::Set
+            && let Expression::FunctionExpression(function) = &property.value
+        {
+            self.object_setters.insert(function.span.start);
+        }
+        walk::walk_object_property(self, property);
+    }
+
     fn visit_variable_declarator(&mut self, declarator: &VariableDeclarator<'a>) {
         let kind = match declarator.kind {
             VariableDeclarationKind::Let => Kind::Let,
@@ -346,7 +360,11 @@ impl<'a> Visit<'a> for Classifier {
         if let Some(params) = &function.type_parameters {
             self.note_type_params(params);
         }
-        if function.body.is_some() && !function.declare && !flags.is_set_accessor() {
+        if function.body.is_some()
+            && !function.declare
+            && !flags.is_set_accessor()
+            && !self.object_setters.contains(&function.span.start)
+        {
             self.note_params(&function.params);
         }
         walk::walk_function(self, function, flags);

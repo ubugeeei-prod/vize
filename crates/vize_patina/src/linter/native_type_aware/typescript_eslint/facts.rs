@@ -119,6 +119,10 @@ fn apply_node(node: &mut LintNode, facts: &FxHashMap<(u32, u32), &ExpressionFact
         if let Some(detail) = &fact.detail {
             node.fields.insert("__typeDetail".into(), detail.clone());
         }
+        if let Some(awaited) = &fact.promise_any {
+            node.fields
+                .insert("__unsafeReturnAwaitedAny".into(), awaited.clone());
+        }
         if let Some((call, construct)) = fact.function_signatures {
             node.fields
                 .insert("__callSignatureCount".into(), json!(call));

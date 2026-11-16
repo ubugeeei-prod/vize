@@ -28,8 +28,8 @@ surfaces and are not routine CI-refactor targets.
 
 | Group | Area                                                                                   | Workflows |
 | ----- | -------------------------------------------------------------------------------------- | --------- |
-| 01    | [Pull request orchestration](#01-pull-request-orchestration)                           | 21        |
-| 02    | [Release and public acceptance](#02-release-and-public-acceptance)                     | 35        |
+| 01    | [Pull request orchestration](#01-pull-request-orchestration)                           | 22        |
+| 02    | [Release and public acceptance](#02-release-and-public-acceptance)                     | 36        |
 | 03    | [Benchmarks and profiling](#03-benchmarks-and-profiling)                               | 39        |
 | 04    | [Type checking and content mapping](#04-type-checking-and-content-mapping)             | 16        |
 | 05    | [Language services and editors](#05-language-services-and-editors)                     | 23        |
@@ -66,7 +66,8 @@ Start here for required checks, change planning, merge queues, and full qualific
 | 01.18 | Real Project Matrix                | [`real-project-matrix.yml`](./real-project-matrix.yml)                           |
 | 01.19 | Seed PR Rust target                | [`rust-pr-target-seed.yml`](./rust-pr-target-seed.yml)                           |
 | 01.20 | Title Policy                       | [`title-policy.yml`](./title-policy.yml)                                         |
-| 01.21 | V1 qualification manifest          | [`v1-supported-matrix.yml`](./v1-supported-matrix.yml)                           |
+| 01.21 | V1 exact candidate admission       | [`v1-exact-candidate.yml`](./v1-exact-candidate.yml)                             |
+| 01.22 | V1 qualification manifest          | [`v1-supported-matrix.yml`](./v1-supported-matrix.yml)                           |
 
 ## 02 Release and public acceptance
 
@@ -81,34 +82,35 @@ Publication, registry, and installed-consumer evidence. Trusted-publishing workf
 | 02.05 | JSR package checks                        | [`jsr-package.yml`](./jsr-package.yml)                                                     |
 | 02.06 | Public JSR types and runtime capabilities | [`jsr-public-types.yml`](./jsr-public-types.yml)                                           |
 | 02.07 | Shipped Linux LSP resource comparison     | [`lsp-release-resources.yml`](./lsp-release-resources.yml)                                 |
-| 02.08 | Nuxt public runtime dependencies          | [`nuxt-public-dependencies.yml`](./nuxt-public-dependencies.yml)                           |
-| 02.09 | Nuxt and Vite release products            | [`nuxt-vite-release-products.yml`](./nuxt-vite-release-products.yml)                       |
-| 02.10 | Public attribute ignore acceptance        | [`patina-attribute-ignore-public.yml`](./patina-attribute-ignore-public.yml)               |
-| 02.11 | Public strict boolean runtime acceptance  | [`patina-boolean-public.yml`](./patina-boolean-public.yml)                                 |
-| 02.12 | pkg.pr.new                                | [`pkg-pr-new.yml`](./pkg-pr-new.yml)                                                       |
-| 02.13 | Published plain-script import acceptance  | [`plain-script-import-public-acceptance.yml`](./plain-script-import-public-acceptance.yml) |
-| 02.14 | Published JSX child values                | [`public-jsx-child-values.yml`](./public-jsx-child-values.yml)                             |
-| 02.15 | Public native event casing                | [`public-native-events.yml`](./public-native-events.yml)                                   |
-| 02.16 | Public typechecker consumer               | [`public-typechecker-consumer.yml`](./public-typechecker-consumer.yml)                     |
-| 02.17 | Published original ambient template ref   | [`published-ambient-template-ref.yml`](./published-ambient-template-ref.yml)               |
-| 02.18 | Published component ARIA                  | [`published-component-aria.yml`](./published-component-aria.yml)                           |
-| 02.19 | Published computed event names            | [`published-computed-event-names.yml`](./published-computed-event-names.yml)               |
-| 02.20 | Published original constructor 27         | [`published-constructor-original27.yml`](./published-constructor-original27.yml)           |
-| 02.21 | Published fresh project                   | [`published-fresh-project.yml`](./published-fresh-project.yml)                             |
-| 02.22 | Published human reports 11252 and 11253   | [`published-human-reports-11252-11253.yml`](./published-human-reports-11252-11253.yml)     |
-| 02.23 | Published slot instance NoAny             | [`published-slot-instance-noany.yml`](./published-slot-instance-noany.yml)                 |
-| 02.24 | Published slot provider controls          | [`published-slot-provider.yml`](./published-slot-provider.yml)                             |
-| 02.25 | Queue release gates                       | [`queue-release-gates.yml`](./queue-release-gates.yml)                                     |
-| 02.26 | Release build cache                       | [`release-build-cache.yml`](./release-build-cache.yml)                                     |
-| 02.27 | Release cadence                           | [`release-cadence.yml`](./release-cadence.yml)                                             |
-| 02.28 | Release contracts                         | [`release-contracts.yml`](./release-contracts.yml)                                         |
-| 02.29 | Release JSR                               | [`release-jsr.yml`](./release-jsr.yml)                                                     |
-| 02.30 | Prepare npm first-publish handoff         | [`release-npm-bootstrap.yml`](./release-npm-bootstrap.yml)                                 |
-| 02.31 | Release smoke contracts                   | [`release-smoke-contracts.yml`](./release-smoke-contracts.yml)                             |
-| 02.32 | Release verify                            | [`release-verify.yml`](./release-verify.yml)                                               |
-| 02.33 | Release Zed host                          | [`release-zed-host.yml`](./release-zed-host.yml)                                           |
-| 02.34 | Release                                   | [`release.yml`](./release.yml)                                                             |
-| 02.35 | Published TypeScript provider acceptance  | [`typescript-provider-public.yml`](./typescript-provider-public.yml)                       |
+| 02.08 | Public unused script vars acceptance      | [`no-unused-script-vars-public.yml`](./no-unused-script-vars-public.yml)                   |
+| 02.09 | Nuxt public runtime dependencies          | [`nuxt-public-dependencies.yml`](./nuxt-public-dependencies.yml)                           |
+| 02.10 | Nuxt and Vite release products            | [`nuxt-vite-release-products.yml`](./nuxt-vite-release-products.yml)                       |
+| 02.11 | Public attribute ignore acceptance        | [`patina-attribute-ignore-public.yml`](./patina-attribute-ignore-public.yml)               |
+| 02.12 | Public strict boolean runtime acceptance  | [`patina-boolean-public.yml`](./patina-boolean-public.yml)                                 |
+| 02.13 | pkg.pr.new                                | [`pkg-pr-new.yml`](./pkg-pr-new.yml)                                                       |
+| 02.14 | Published plain-script import acceptance  | [`plain-script-import-public-acceptance.yml`](./plain-script-import-public-acceptance.yml) |
+| 02.15 | Published JSX child values                | [`public-jsx-child-values.yml`](./public-jsx-child-values.yml)                             |
+| 02.16 | Public native event casing                | [`public-native-events.yml`](./public-native-events.yml)                                   |
+| 02.17 | Public typechecker consumer               | [`public-typechecker-consumer.yml`](./public-typechecker-consumer.yml)                     |
+| 02.18 | Published original ambient template ref   | [`published-ambient-template-ref.yml`](./published-ambient-template-ref.yml)               |
+| 02.19 | Published component ARIA                  | [`published-component-aria.yml`](./published-component-aria.yml)                           |
+| 02.20 | Published computed event names            | [`published-computed-event-names.yml`](./published-computed-event-names.yml)               |
+| 02.21 | Published original constructor 27         | [`published-constructor-original27.yml`](./published-constructor-original27.yml)           |
+| 02.22 | Published fresh project                   | [`published-fresh-project.yml`](./published-fresh-project.yml)                             |
+| 02.23 | Published human reports 11252 and 11253   | [`published-human-reports-11252-11253.yml`](./published-human-reports-11252-11253.yml)     |
+| 02.24 | Published slot instance NoAny             | [`published-slot-instance-noany.yml`](./published-slot-instance-noany.yml)                 |
+| 02.25 | Published slot provider controls          | [`published-slot-provider.yml`](./published-slot-provider.yml)                             |
+| 02.26 | Queue release gates                       | [`queue-release-gates.yml`](./queue-release-gates.yml)                                     |
+| 02.27 | Release build cache                       | [`release-build-cache.yml`](./release-build-cache.yml)                                     |
+| 02.28 | Release cadence                           | [`release-cadence.yml`](./release-cadence.yml)                                             |
+| 02.29 | Release contracts                         | [`release-contracts.yml`](./release-contracts.yml)                                         |
+| 02.30 | Release JSR                               | [`release-jsr.yml`](./release-jsr.yml)                                                     |
+| 02.31 | Prepare npm first-publish handoff         | [`release-npm-bootstrap.yml`](./release-npm-bootstrap.yml)                                 |
+| 02.32 | Release smoke contracts                   | [`release-smoke-contracts.yml`](./release-smoke-contracts.yml)                             |
+| 02.33 | Release verify                            | [`release-verify.yml`](./release-verify.yml)                                               |
+| 02.34 | Release Zed host                          | [`release-zed-host.yml`](./release-zed-host.yml)                                           |
+| 02.35 | Release                                   | [`release.yml`](./release.yml)                                                             |
+| 02.36 | Published TypeScript provider acceptance  | [`typescript-provider-public.yml`](./typescript-provider-public.yml)                       |
 
 ## 03 Benchmarks and profiling
 

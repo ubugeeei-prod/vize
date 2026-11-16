@@ -21,7 +21,10 @@ use super::protocol::{
     ContentMapperDiagnosticDirective, ContentMapperDiagnosticDirectives, ContentMapperSpan,
     ContentMapperUnusedExpectDiagnostic, DIRECTIVE_POLICY_EXPECT, DIRECTIVE_POLICY_IGNORE,
 };
-use crate::virtual_ts::{ATTR_VALUE_REFERENCE, NAMED_PROP_DIAGNOSTIC_MARKER, VizeMapping};
+use crate::batch::component_literal_key::authenticate_component_literal_key;
+use crate::virtual_ts::{
+    ATTR_VALUE_REFERENCE, NAMED_PROP_DIAGNOSTIC_MARKER, ProjectionMeta, VizeMapping,
+};
 
 /// Mapper diagnostic code for an unused `@vue-expect-error` directive.
 const UNUSED_EXPECT_CODE: i32 = 4;
@@ -255,6 +258,61 @@ pub(super) fn with_component_prop_echoes(
             directives.directives.push(echo);
         }
     }
+    directives
+        .directives
+        .sort_unstable_by_key(|directive| directive.0[2]);
+    Some(directives)
+}
+
+/// In loose mode, old generic library declarations can close their direct
+/// props branch even though Vue accepts undeclared fallthrough attributes.
+/// Select only TS2353 at the canonical props-literal key; the negotiated
+/// selector keeps value/inference diagnostics and unnegotiated hosts unchanged.
+pub(super) fn with_loose_library_prop_fallthrough(
+    directives: Option<ContentMapperDiagnosticDirectives>,
+    source: &str,
+    generated: &str,
+    mappings: &[VizeMapping],
+    metadata: &[ProjectionMeta],
+    enabled: bool,
+) -> Option<ContentMapperDiagnosticDirectives> {
+    if !enabled {
+        return directives;
+    }
+    let mut selected = mappings
+        .iter()
+        .enumerate()
+        .filter_map(|(index, mapping)| {
+            let features = metadata.get(index).copied().unwrap_or_default().features;
+            authenticate_component_literal_key(source, generated, mapping, features, 0)
+        })
+        .map(|key| {
+            ContentMapperDiagnosticDirective::ignore_with_diagnostic_code(
+                key.authored.start,
+                key.authored.len(),
+                key.generated.start,
+                key.generated.end,
+                2353,
+            )
+        })
+        .collect::<Vec<_>>();
+    selected.sort_unstable_by_key(|directive| directive.0[2]);
+    selected.dedup_by_key(|directive| (directive.0[2], directive.0[3]));
+    if selected.is_empty() {
+        return directives;
+    }
+    let mut directives = directives.unwrap_or(ContentMapperDiagnosticDirectives {
+        unused_expect_directive_diagnostics: Vec::new(),
+        directives: Vec::new(),
+    });
+    selected.retain(|candidate| {
+        let [_, _, start, end, _, _] = candidate.0;
+        !directives.directives.iter().any(|existing| {
+            let [_, _, existing_start, existing_end, _, _] = existing.0;
+            start < existing_end && existing_start < end
+        })
+    });
+    directives.directives.extend(selected);
     directives
         .directives
         .sort_unstable_by_key(|directive| directive.0[2]);
