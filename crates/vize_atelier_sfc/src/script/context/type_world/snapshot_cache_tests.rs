@@ -226,6 +226,56 @@ fn warmed_dependency_facts_do_not_expand_the_world_admission_limit() {
 }
 
 #[test]
+fn a_capped_world_admits_modules_in_depth_first_stack_order() {
+    // `all` star-exports `x` then `y`; each re-exports 300 leaves. The walk
+    // pops `y` and all its leaves first, then `x` and its leaves from the
+    // last one down, so the cap falls inside `x`'s lowest leaves.
+    let dir = tempfile::tempdir().unwrap();
+    let mut overlays = vec![(
+        dir.path().join("all.ts"),
+        Arc::<str>::from("export * from './x';\nexport * from './y';\n"),
+    )];
+    for side in ["x", "y"] {
+        let mut barrel = vize_carton::String::default();
+        for index in 0..300 {
+            barrel.push_str(&cstr!("export * from './{side}{index}';\n"));
+            overlays.push((
+                dir.path().join(cstr!("{side}{index}.ts").as_str()),
+                Arc::<str>::from(cstr!("export type {side}{index} = {index};").as_str()),
+            ));
+        }
+        overlays.push((
+            dir.path().join(cstr!("{side}.ts").as_str()),
+            Arc::<str>::from(barrel.as_str()),
+        ));
+    }
+    let sources = TypeSourceSnapshot::new(overlays);
+    let filename = dir.path().join("Host.vue");
+    let world = ScriptCompileContext::new("import type { All } from './all'; type Root = All")
+        .resolve_type_world_with_sources(filename.to_str().unwrap(), None, false, &sources);
+
+    assert_eq!(world.modules.len(), 1 + 1 + 2 + 600);
+    let mut capped: Vec<_> = world
+        .modules
+        .iter()
+        .filter(|(_, module)| !module.complete)
+        .map(|(key, _)| {
+            vize_carton::String::from(
+                std::path::Path::new(key.as_str())
+                    .file_name()
+                    .unwrap()
+                    .to_str()
+                    .unwrap(),
+            )
+        })
+        .collect();
+    capped.sort();
+    let mut expected: Vec<_> = (0..=91).map(|index| cstr!("x{index}.ts")).collect();
+    expected.sort();
+    assert_eq!(capped, expected);
+}
+
+#[test]
 fn dependency_modules_are_resolved_once_per_snapshot_and_shared_between_worlds() {
     let dir = tempfile::tempdir().unwrap();
     std::fs::write(
