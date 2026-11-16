@@ -58,20 +58,6 @@ export function admitPluginPlan(plan, product, options) {
   );
 }
 
-/** Refuse a capability that no Vize product implements yet, whichever product loads it. */
-export function refuseUnimplementedCapabilities(plan) {
-  for (const plugin of plan.plugins) {
-    for (const capability of plugin.capabilities) {
-      if (PLUGIN_REGISTRY.capabilities[capability.id].admittedBy.length !== 0) continue;
-      throw new VizePluginPlanError(
-        "capability-unadmitted",
-        plugin.name,
-        `no Vize product implements ${capability.id} \`${capability.key}\` yet; run \`vize plugin inspect\` for the plan`,
-      );
-    }
-  }
-}
-
 /** Re-read canonical plan bytes; non-canonical or stale bytes fail closed. */
 export function verifyPluginPlan(json, expectedDigest) {
   let parsed;

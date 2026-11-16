@@ -84,8 +84,10 @@ invalidating a plan that is valid today.
 - **Empty plans.** An absent list, `[]` and a list of only skipped entries all
   project byte-identically to a config without plugins: no key, no file, no
   callback. The plugin host (`loader/plugin-host.js`) is imported only when a
-  list has an entry, and the native runtime carries it as a lazily imported
+  list has an entry. The native config runtime carries it as a lazily imported
   `data:` module, so configs without plugins never parse or evaluate it.
+  Inspection and other plugin tools (`loader/plugin-tools.js`) are only in the
+  separate tooling runtime.
 - **Global refusal.** Until a capability is implemented by some product, every
   product refuses a plan that contains it at config load. `vize plugin inspect`
   still reports the plan with its refused capabilities.

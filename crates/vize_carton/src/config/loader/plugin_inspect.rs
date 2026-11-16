@@ -21,7 +21,7 @@ process.stdout.write(JSON.stringify(await inspectViteConfigPlugins(exported)));
 /// Evaluate the discovered or explicit Vite config and return its plan inspection.
 pub fn inspect_config_plugins(path: Option<&Path>) -> Result<serde_json::Value, String> {
     let config_path = vite_config_path(path)?;
-    let runtime = super::js::runtime_source::vite_runtime().map_err(String::from)?;
+    let runtime = super::js::runtime_source::vite_tools_runtime().map_err(String::from)?;
     let script = [
         runtime.as_str(),
         include_str!("module-runtime.mjs"),

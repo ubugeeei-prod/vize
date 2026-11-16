@@ -103,6 +103,20 @@ export function callbackKey(plugin, capability, key, name) {
   return `${plugin}\u0000${capability}\u0000${key}\u0000${name}`;
 }
 
+/** Refuse a capability that no Vize product implements yet, whichever product loads it. */
+export function refuseUnimplementedCapabilities(plan) {
+  for (const plugin of plan.plugins) {
+    for (const capability of plugin.capabilities) {
+      if (PLUGIN_REGISTRY.capabilities[capability.id].admittedBy.length !== 0) continue;
+      throw new VizePluginPlanError(
+        "capability-unadmitted",
+        plugin.name,
+        `no Vize product implements ${capability.id} \`${capability.key}\` yet; run \`vize plugin inspect\` for the plan`,
+      );
+    }
+  }
+}
+
 /** An empty plan has no observable product behavior. */
 export function isEmptyPluginPlan(plan) {
   return plan.plugins.length === 0;

@@ -97,3 +97,6 @@ export declare function callbackKey(
 ): string;
 
 export declare function isEmptyPluginPlan(plan: PluginPlan): boolean;
+
+/** Refuse a capability that no Vize product implements yet. */
+export declare function refuseUnimplementedCapabilities(plan: PluginPlan): void;
