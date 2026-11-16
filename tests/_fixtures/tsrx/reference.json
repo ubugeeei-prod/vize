@@ -200,6 +200,11 @@
       "error": null
     },
     {
+      "file": "tests/_fixtures/tsrx/mount/typed.tsrx",
+      "code": "import { defineVaporComponent } from 'vue-jsx-vapor';\nimport { ref } from 'vue';\n\nexport const Typed = defineVaporComponent(function Typed({ size, label }: { size: number; label?: string }) {\n\tconst count = ref<number>(0);\n\n\treturn <button class=\"typed\" data-size={size as unknown as string} onClick={(event: Event) => count.value += event.type === 'click' ? size : 0}>{label!.toUpperCase()}: {count.value satisfies number + 1}<i>{['a', 'b'].map((x: string): string => x + size).join(',')}</i></button>;\n});",
+      "error": null
+    },
+    {
       "file": "tests/_fixtures/tsrx/mount/values.tsrx",
       "code": "import { defineVaporComponent } from 'vue-jsx-vapor';\n\nexport const Values = defineVaporComponent(function Values(\n\t{ text, count, flag, items }: { text: string; count: number; flag: boolean; items: string[] }\n) {\n\treturn <ul><li>Text: {text}</li><li>{count} and {count + 1}</li><li>{flag ? 'on' : 'off'}</li><li>{flag ? null : 0}</li><li>{items.join(', ')}</li></ul>;\n});",
       "error": null
