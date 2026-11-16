@@ -1,5 +1,14 @@
 import path from "node:path";
 import {
+  componentRegistrationBaselineIntentionalReason,
+  componentRegistrationPatinaIntentionalReason,
+} from "./component_registration_intentional.ts";
+import {
+  indexRealProjectLocationSource,
+  realProjectLocationDivergence,
+  type RealProjectLocationSource,
+} from "./real_project_locations.ts";
+import {
   byteOrder,
   get,
   requiredString,
@@ -190,6 +199,10 @@ export function baselineIntentionalReason(
   finding: LintRecord,
   source?: string | null,
 ): string | null {
+  if (source !== undefined && source !== null) {
+    const componentRegistration = componentRegistrationBaselineIntentionalReason(finding, source);
+    if (componentRegistration !== null) return componentRegistration;
+  }
   if (finding.ruleId === "vue/no-shared-component-data")
     return "Patina intentionally merges vue/no-shared-component-data and vue/no-deprecated-data-object-declaration into one diagnostic for the same invalid data option.";
   if (
@@ -490,9 +503,17 @@ const patinaIntentionalRuleIds = new Set([
   "vue/require-v-for-key",
   "vue/v-slot-style",
 ]);
-export function patinaIntentionalReason(finding: LintRecord, source: string): string | null {
+export function patinaIntentionalReason(
+  finding: LintRecord,
+  source: string,
+  project?: string,
+): string | null {
   if (hasUtsScript(source))
     return "Patina preserves linting for Vue files with UTS scripts; vue-eslint-parser rejects the UTS block before eslint-plugin-vue can run mapped rules.";
+  if (project !== undefined) {
+    const componentReason = componentRegistrationPatinaIntentionalReason(finding, source, project);
+    if (componentReason !== null) return componentReason;
+  }
   if (!patinaIntentionalRuleIds.has(finding.ruleId)) return null;
   if (finding.ruleId === "vue/no-setup-props-reactivity-loss")
     return "Patina's complete contract follows root-scope prop values through nested containers, call arguments, and assignments that eslint-plugin-vue does not inspect.";
@@ -1131,7 +1152,16 @@ function unusedComponentName(message: string): string | undefined {
 export function pairRuleLocationDivergences(
   positives: LintRecord[],
   negatives: LintRecord[],
+  sourceFor: (file: string) => string | null = () => null,
 ): Json[] {
+  const sources = new Map<string, RealProjectLocationSource | null>();
+  const locationSourceFor = (file: string): RealProjectLocationSource | null => {
+    if (sources.has(file)) return sources.get(file) ?? null;
+    const source = sourceFor(file),
+      indexed = source === null ? null : indexRealProjectLocationSource(source);
+    sources.set(file, indexed);
+    return indexed;
+  };
   const pairs: Json[] = [];
   let i = 0;
   while (i < positives.length) {
@@ -1202,13 +1232,15 @@ export function pairRuleLocationDivergences(
         };
         break;
       }
-      if (positive.ruleId === "vue/require-component-is") {
-        match = {
-          index,
-          subject: "component-without-is",
-          reason:
-            "both tools report the same dynamic component without is; Patina reports the element while eslint-plugin-vue extends the range through recovered following content.",
-        };
+      const realProjectLocation = realProjectLocationDivergence(
+        positive,
+        negative,
+        positives,
+        negatives,
+        positive.ruleId === "vue/require-prop-comment" ? locationSourceFor(positive.file) : null,
+      );
+      if (realProjectLocation !== null) {
+        match = { index, ...realProjectLocation };
         break;
       }
       if (

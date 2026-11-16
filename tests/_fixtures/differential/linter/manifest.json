@@ -6494,6 +6494,55 @@
       }
     },
     {
+      "id": "linter/real-project-parity-13043",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "real-project-parity-13043",
+        "files": [
+          {
+            "path": "InheritedProps.vue.txt",
+            "role": "real-project-local-interface-heritage-reproduction",
+            "sha256": "729f1f62de19325047176c10aebf4afc5a89f09f6eb098327d10c72bda9dfa34"
+          },
+          {
+            "path": "OptionsSelf.vue.txt",
+            "role": "real-project-options-api-self-name-reproduction",
+            "sha256": "be606c4892d6f3638c52d8ccd9194bea1f085445bcdaf7b081e5db0b275a9325"
+          },
+          {
+            "path": "Setup.vue.txt",
+            "role": "real-project-setup-binding-and-intersection-reproduction",
+            "sha256": "21cdf60261f082f5a377443a0463ef6fe4501b4fefc01806233f45be2a25d3d8"
+          },
+          {
+            "path": "XIcon.vue.txt",
+            "role": "real-project-options-api-filename-negative-control",
+            "sha256": "40164ebd807c09db889cc2dea35a1aae580ec22d8606500c84311881e5166520"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "js",
+              "ts",
+              "tsx"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/real-project-rule-accuracy-12069",
       "state": "active",
       "targets": [

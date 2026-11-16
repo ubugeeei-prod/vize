@@ -30,7 +30,7 @@ import {
   JsonFloat,
 } from "./value.ts";
 
-export type BaselineRuleSetting = string | [string, JsonObject];
+export type BaselineRuleSetting = string | [string, Json];
 
 function baselineRuleSetting(upstream: string, severity: string): BaselineRuleSetting {
   // Patina deliberately makes the Vue 3.5 destructuring preference stronger
@@ -42,6 +42,7 @@ function baselineRuleSetting(upstream: string, severity: string): BaselineRuleSe
   if (upstream === "vue/match-component-file-name") {
     return [severity, { extensions: ["jsx", "vue"] }];
   }
+  if (upstream === "vue/quote-props") return [severity, "as-needed"];
   return severity;
 }
 
@@ -246,7 +247,7 @@ export function compareLintFindings(
   }
   progress("paired exact identities");
   const ruleLocationDivergences = sortValues(
-    pairRuleLocationDivergences(falsePositives, falseNegatives),
+    pairRuleLocationDivergences(falsePositives, falseNegatives, sourceFor),
   );
   progress("paired rule locations");
   if (process.env.VIZE_LINT_BASELINE_PROGRESS === "1")
@@ -265,7 +266,7 @@ export function compareLintFindings(
     if (reviewedReferenceFindings.has(canonicalJson(recordValue(finding)))) continue;
     if (finding.ruleId === "vue/no-unused-components") continue;
     const source = sources.get(finding.file) ?? null;
-    const reason = source === null ? null : patinaIntentionalReason(finding, source);
+    const reason = source === null ? null : patinaIntentionalReason(finding, source, project);
     if (reason === null) continue;
     falsePositives.splice(index, 1);
     intentionalDivergences.push({ ...recordValue(finding), reason });
@@ -278,7 +279,7 @@ export function compareLintFindings(
     if (reviewedReferenceFindings.has(canonicalJson(recordValue(finding)))) continue;
     if (finding.ruleId !== "vue/no-unused-components") continue;
     const source = sources.get(finding.file) ?? null;
-    const reason = source === null ? null : patinaIntentionalReason(finding, source);
+    const reason = source === null ? null : patinaIntentionalReason(finding, source, project);
     if (reason === null) continue;
     falsePositives.splice(index, 1);
     intentionalDivergences.push({ ...recordValue(finding), reason });
