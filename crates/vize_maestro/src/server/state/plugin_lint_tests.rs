@@ -4,15 +4,18 @@
 use std::path::Path;
 use std::time::{Duration, Instant};
 
-use tower_lsp::lsp_types::{Diagnostic, NumberOrString, Position, Range, Url};
+use tower_lsp::lsp_types::{
+    CodeActionOrCommand, Diagnostic, NumberOrString, Position, Range, TextEdit, Url,
+};
 
-use crate::ide::DiagnosticService;
+use crate::ide::{CodeActionService, DiagnosticService, IdeContext};
 use crate::server::ServerState;
 
 const BUTTON: &str = "<template>\n  <button :color=\"'red'\">Go</button>\n</template>\n";
 
 /// A config whose plugin rules misbehave for chosen file names. Every
-/// evaluation of the config appends one line to `evaluations.log`.
+/// evaluation of the config appends one line to `evaluations.log`, and every
+/// rule run one line to `runs.log`.
 fn project(rules: &str) -> tempfile::TempDir {
     let dir = tempfile::tempdir().unwrap();
     let sdk = Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -20,6 +23,7 @@ fn project(rules: &str) -> tempfile::TempDir {
         .canonicalize()
         .unwrap();
     let log = dir.path().join("evaluations.log");
+    let runs = dir.path().join("runs.log");
     let config = vize_l0::cstr!(
         r#"import {{ appendFileSync }} from "node:fs";
 import {{ pathToFileURL }} from "node:url";
@@ -30,13 +34,14 @@ const design = defineVizePlugin({{
   setup(api, options) {{
     api.lint.rule({{
       id: "no-raw-color",
-      meta: {{ messages: {{ raw: "Use {{token}} instead of {{value}}." }}, defaultLevel: "warn" }},
+      meta: {{ messages: {{ raw: "Use {{token}} instead of {{value}}." }}, defaultLevel: "warn", fixable: "safe" }},
       visit: ["ui.bind"],
       run(context) {{
+        appendFileSync({runs:?}, "x\n");
         if (context.file.endsWith("Throw.vue")) throw new Error("rule-specificreason");
         if (context.file.endsWith("Loop.vue")) for (;;) {{}}
         for (const node of context.nodes) {{
-          if (node.name === "color") context.report({{ node, messageId: "raw", data: {{ token: options.token, value: node.value }} }});
+          if (node.name === "color") context.report({{ node, messageId: "raw", data: {{ token: options.token, value: node.value }}, fix: "color" }});
         }}
       }},
     }});
@@ -45,6 +50,7 @@ const design = defineVizePlugin({{
 export default {{ vue: {{ plugins: [design({{ token: "$brand" }})], linter: {{ preset: "essential", rules: {rules} }} }} }};
 "#,
         log = log,
+        runs = runs,
         sdk = sdk,
     );
     std::fs::write(dir.path().join("vite.config.mjs"), config.as_str()).unwrap();
@@ -52,7 +58,11 @@ export default {{ vue: {{ plugins: [design({{ token: "$brand" }})], linter: {{ p
 }
 
 fn evaluations(dir: &Path) -> usize {
-    std::fs::read_to_string(dir.join("evaluations.log"))
+    lines(dir, "evaluations.log")
+}
+
+fn lines(dir: &Path, name: &str) -> usize {
+    std::fs::read_to_string(dir.join(name))
         .unwrap_or_default()
         .lines()
         .count()
@@ -201,4 +211,43 @@ fn a_newer_document_version_cancels_the_wait() {
         assert!(started.elapsed() < Duration::from_secs(2));
         edit.join().unwrap();
     });
+}
+
+#[test]
+fn safe_plugin_fixes_are_preferred_quick_fixes_without_another_crossing() {
+    let dir = project("{}");
+    let state = ServerState::new();
+    state.load_workspace_config(dir.path());
+    let uri = open(&state, dir.path(), "Button.vue", BUTTON, 1);
+    let found = plugin_diagnostics(&state, &uri);
+    assert_eq!(found.len(), 1, "{found:#?}");
+    assert_eq!(lines(dir.path(), "runs.log"), 1);
+
+    let ctx = IdeContext::new(&state, &uri, BUTTON.find(":color").unwrap()).unwrap();
+    let actions =
+        CodeActionService::code_actions_for_diagnostics(&ctx, found[0].range, &found[..1]);
+    let fixes: Vec<_> = actions
+        .iter()
+        .filter_map(|action| match action {
+            CodeActionOrCommand::CodeAction(action)
+                if action.title == "Fix: Apply the @acme/design/no-raw-color fix" =>
+            {
+                Some(action)
+            }
+            _ => None,
+        })
+        .collect();
+    assert_eq!(fixes.len(), 1, "{actions:#?}");
+    assert_eq!(fixes[0].is_preferred, Some(true));
+    assert_eq!(fixes[0].diagnostics.as_deref(), Some(&found[..1]));
+    let edits = &fixes[0].edit.as_ref().unwrap().changes.as_ref().unwrap()[&uri];
+    assert_eq!(
+        edits,
+        &vec![TextEdit {
+            range: range(1, 10, 24),
+            new_text: "color".into(),
+        }]
+    );
+    // The same text reuses the answer the diagnostics already crossed for.
+    assert_eq!(lines(dir.path(), "runs.log"), 1);
 }

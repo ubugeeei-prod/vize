@@ -7,7 +7,8 @@
 //! or it is stopped and restarted on the next lint. A newer document version
 //! cancels the wait and the late answer is skipped. After repeated failures
 //! the host reports the last one instead of restarting until the config
-//! changes.
+//! changes. The last answer for each document text is kept, so its
+//! diagnostics, hover and code actions cross into JS once.
 
 #![expect(
     clippy::disallowed_types,
@@ -21,7 +22,7 @@ use parking_lot::Mutex;
 use vize_carton::config::plugin_plan::document_plugin_plan;
 use vize_carton::config::{PluginLintSidecar, SidecarBudget, SidecarReply};
 use vize_l0::config::{ConfigDocument, LintRuleSeverity};
-use vize_l0::{FxHashMap, cstr};
+use vize_l0::{FxHashMap, FxHashSet, cstr};
 use vize_patina::LintDiagnostic;
 use vize_patina::plugin_batch::lint::PluginLintJobs;
 
@@ -32,6 +33,8 @@ const BUDGET: SidecarBudget = SidecarBudget {
 };
 /// Consecutive sidecar failures before the host stops restarting it.
 const MAX_FAILURES: u32 = 3;
+/// Documents whose last answer is kept.
+const ANSWERED_DOCUMENTS: usize = 256;
 
 /// The result of one document's plugin pass.
 pub(crate) enum PluginLintOutcome {
@@ -46,7 +49,11 @@ pub(crate) enum PluginLintOutcome {
 pub(crate) struct PluginLintHost {
     config: PathBuf,
     jobs: Result<PluginLintJobs, String>,
+    /// Rules declared `fixable: "safe"`; their fixes are preferred actions.
+    safe_fixes: FxHashSet<&'static str>,
     slot: Mutex<Slot>,
+    /// The last diagnostics per filename, with the exact text they answer.
+    answered: Mutex<FxHashMap<String, (String, Vec<LintDiagnostic>)>>,
 }
 
 #[derive(Default)]
@@ -81,8 +88,13 @@ impl PluginLintHost {
         });
         Some(Self {
             config: config.unwrap_or_default(),
+            safe_fixes: jobs
+                .as_ref()
+                .map(PluginLintJobs::safe_fix_ids)
+                .unwrap_or_default(),
             jobs,
             slot: Mutex::default(),
+            answered: Mutex::default(),
         })
     }
 
@@ -97,6 +109,11 @@ impl PluginLintHost {
             Ok(jobs) => jobs,
             Err(error) => return PluginLintOutcome::Failed(error.clone()),
         };
+        if let Some((text, diagnostics)) = self.answered.lock().get(filename)
+            && text == source
+        {
+            return PluginLintOutcome::Diagnostics(diagnostics.clone());
+        }
         let lowered = match jobs.lower(source, filename) {
             Ok(Some(lowered)) => lowered,
             // The plugin records cannot represent this template; `vize lint` skips it too.
@@ -143,12 +160,19 @@ impl PluginLintHost {
             Ok(SidecarReply::Answer(answer)) => {
                 slot.failures = 0;
                 match jobs.answers(&answer, &[&lowered]) {
-                    Ok(answers) => PluginLintOutcome::Diagnostics(
-                        answers
+                    Ok(answers) => {
+                        let diagnostics: Vec<_> = answers
                             .into_iter()
                             .flat_map(|answer| answer.documents.into_iter().flatten())
-                            .collect(),
-                    ),
+                            .collect();
+                        drop(slot);
+                        let mut answered = self.answered.lock();
+                        if answered.len() >= ANSWERED_DOCUMENTS {
+                            answered.clear();
+                        }
+                        answered.insert(filename.into(), (source.into(), diagnostics.clone()));
+                        PluginLintOutcome::Diagnostics(diagnostics)
+                    }
                     Err(error) => PluginLintOutcome::Failed(error.into_string()),
                 }
             }
@@ -187,6 +211,31 @@ impl Slot {
 }
 
 impl super::ServerState {
+    /// Plugin diagnostics of one Vue document that carry a fix, each with
+    /// whether its rule is declared safe.
+    pub(crate) fn plugin_lint_fixes(
+        &self,
+        uri: &tower_lsp::lsp_types::Url,
+        content: &str,
+    ) -> Vec<(LintDiagnostic, bool)> {
+        let Some(host) = self.plugin_lint_for_uri(uri) else {
+            return Vec::new();
+        };
+        let version = self.documents.version(uri);
+        let cancelled = || self.documents.version(uri) != version;
+        match host.lint(content, uri.path(), &cancelled) {
+            PluginLintOutcome::Diagnostics(found) => found
+                .into_iter()
+                .filter(|diagnostic| diagnostic.fix.is_some())
+                .map(|diagnostic| {
+                    let safe = host.safe_fixes.contains(diagnostic.rule_name);
+                    (diagnostic, safe)
+                })
+                .collect(),
+            PluginLintOutcome::Cancelled | PluginLintOutcome::Failed(_) => Vec::new(),
+        }
+    }
+
     /// Add the plugin lint diagnostics of one Vue document. A failure is one
     /// error at the start of the document, never a silent skip.
     pub(crate) fn extend_plugin_lint_diagnostics(
