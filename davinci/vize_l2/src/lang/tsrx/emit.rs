@@ -1,12 +1,13 @@
 //! Canonical construction for checked regions, in authored preorder.
 
+use oxc_span::GetSpan;
 use vize_l0::{Allocator, Span};
 use vize_l1::markup::tsrx::{
-    Attribute, AttributeValue, Block, Child, Element, Node, Region, RegionSite, TagName,
+    Attribute, AttributeValue, Block, Child, Element, For, Node, Region, RegionSite, TagName,
 };
 
 use super::{TsrxIssue, TsrxIssueKind, expression, is_component, text};
-use crate::artifact::{ArtifactError, RegionBuilder};
+use crate::artifact::{ArtifactError, HostForHead, RegionBuilder};
 use crate::expr::ExprRef;
 use crate::op::{self, Namespace};
 
@@ -69,9 +70,50 @@ fn node<'a>(
                 .map_err(|error| issue(TsrxIssueKind::Artifact(error), conditional.span))?;
             failure.map_or(Ok(()), Err)
         }
+        Node::For(each) => host_for(cx, each, namespace, builder),
         // Refused by the check pass before construction starts.
-        Node::For(_) | Node::Switch(_) | Node::Try(_) => Err(unchecked(node_.span())),
+        Node::Switch(_) | Node::Try(_) => Err(unchecked(node_.span())),
     }
+}
+
+/// `@for (left of right; index i; key k) { … } @empty { … }`: a `ui.for` with
+/// the retained host head, whose `@empty` block is the loop's empty region.
+fn host_for<'a>(
+    cx: &Context<'a>,
+    each: &'a For<'a>,
+    namespace: Namespace,
+    builder: &mut RegionBuilder<'_, 'a>,
+) -> Result {
+    let collection = expression(cx.allocator, cx.source, &each.right)?;
+    let key = match &each.key {
+        Some(key) => Some(ExprRef::Js(expression(cx.allocator, cx.source, key)?)),
+        None => None,
+    };
+    let left = each.left.span();
+    let head = HostForHead {
+        left: &each.left,
+        left_text: slice(cx, Span::new(left.start, left.end))?,
+        collection,
+        index: each.index.as_ref(),
+        key,
+        r#await: each.r#await,
+    };
+    let mut failure = None;
+    builder
+        .host_for(head, each.span, |regions, _| {
+            let built = regions.body(|region, _| {
+                failure = block(cx, &each.body, namespace, region).err();
+            });
+            failure = failure.or(artifact(built.err(), each.body.span));
+            if let (None, Some(empty)) = (&failure, &each.empty) {
+                let built = regions.empty(|region, _| {
+                    failure = block(cx, empty, namespace, region).err();
+                });
+                failure = failure.or(artifact(built.err(), empty.span));
+            }
+        })
+        .map_err(|error| issue(TsrxIssueKind::Artifact(error), each.span))?;
+    failure.map_or(Ok(()), Err)
 }
 
 fn block<'a>(

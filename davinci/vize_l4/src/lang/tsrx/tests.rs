@@ -23,12 +23,21 @@ fn syntax_errors_carry_the_reference_code_and_offset() {
 
 #[test]
 fn unsupported_constructs_are_refused_at_their_span() {
-    let source = "export function List({ items }: { items: string[] }) @{\n\t@for (const item of items) {\n\t\t<li>{item}</li>\n\t}\n}\n";
+    let source = "export function Pick({ mode }: { mode: string }) @{\n\t@switch (mode) { @case 'a': { <b /> } }\n}\n";
     let [diagnostic] = diagnostics(source, &OPTIONS).try_into().unwrap();
-    assert_eq!(diagnostic.code, Code::Lowering(TsrxIssueKind::For));
+    assert_eq!(diagnostic.code, Code::Lowering(TsrxIssueKind::Switch));
     assert_eq!(
         source.get(diagnostic.start as usize..diagnostic.end as usize),
-        Some("@for (const item of items) {\n\t\t<li>{item}</li>\n\t}")
+        Some("@switch (mode) { @case 'a': { <b /> } }")
+    );
+
+    // `@for` lowers onto a host loop, which the DOM emitter refuses.
+    let source = "export function List({ items }: { items: string[] }) @{\n\t@for (const item of items) {\n\t\t<li>{item}</li>\n\t}\n}\n";
+    let [diagnostic] = diagnostics(source, &OPTIONS).try_into().unwrap();
+    assert_eq!(diagnostic.code, Code::Emit(EmitIssue::Dom));
+    assert_eq!(
+        source.get(diagnostic.start as usize..diagnostic.end as usize),
+        Some("@{\n\t@for (const item of items) {\n\t\t<li>{item}</li>\n\t}\n}")
     );
 }
 
