@@ -82,21 +82,29 @@ fn emit_for_scoped(
     if let Some(span) = wrapper.and_then(|wrapper| wrapper.runtime_directive) {
         return Err(EmitError::unsupported_at(Reason::TemplateUnwrapShape, span));
     }
-    let wrapper_key = match wrapper.and_then(|wrapper| wrapper.key.as_ref()) {
-        Some(key) => Some(super::tpl::wrapper_key_js(cx, key)?),
-        None => None,
+    // A host loop body of several nodes renders a keyed fragment per item, as
+    // a `<template v-for>` does.
+    let host_fragment = for_op.host.as_ref().filter(|_| for_op.region.ops.len() > 1);
+    let wrapper_key = match (
+        wrapper.and_then(|wrapper| wrapper.key.as_ref()),
+        host_fragment,
+    ) {
+        (Some(key), _) => Some(super::tpl::wrapper_key_js(cx, key)?),
+        (None, Some(host)) => host::item_key(cx, host, None, for_op.span)?,
+        (None, None) => None,
     };
     let wrapper_attrs = wrapper
         .map(|wrapper| wrapper.attributes.as_slice())
         .unwrap_or(&[]);
     let wrapper_class = wrapper.and_then(|wrapper| wrapper.class.as_ref());
-    let from_template = wrapper.is_some();
+    let from_template = wrapper.is_some() || host_fragment.is_some();
     let item_memo = if from_template {
         None
     } else {
         plain_item_memo(&for_op.region.ops)
     };
-    let host_keyed = for_op.host.as_ref().is_some_and(|host| host.key.is_some());
+    // Host loops key every item (`host::item_key`).
+    let host_keyed = for_op.host.is_some();
     let (bind_len, keyed) = if from_template {
         (0, wrapper_key.is_some())
     } else {

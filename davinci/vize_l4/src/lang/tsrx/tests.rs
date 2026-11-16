@@ -31,23 +31,23 @@ fn unsupported_constructs_are_refused_at_their_span() {
         Some("@switch (mode) { @case 'a': { <b /> } }")
     );
 
-    // An unkeyed `@for` lowers onto a host loop the DOM emitter refuses.
-    let source = "export function List({ items }: { items: string[] }) @{\n\t@for (const item of items) {\n\t\t<li>{item}</li>\n\t}\n}\n";
+    // A destructured item without a key or an index has no value to key by.
+    let source = "export function List({ items }: { items: { a: string }[] }) @{\n\t@for (const { a } of items) {\n\t\t<li>{a}</li>\n\t}\n}\n";
     let [diagnostic] = diagnostics(source, &OPTIONS).try_into().unwrap();
     assert_eq!(diagnostic.code, Code::Emit(EmitIssue::Dom));
     assert_eq!(
         source.get(diagnostic.start as usize..diagnostic.end as usize),
-        Some("@{\n\t@for (const item of items) {\n\t\t<li>{item}</li>\n\t}\n}")
+        Some("@{\n\t@for (const { a } of items) {\n\t\t<li>{a}</li>\n\t}\n}")
     );
 }
 
 #[test]
-fn dom_host_loops_outside_the_keyed_profile_are_refused() {
+fn dom_host_loops_outside_the_emitted_shapes_are_refused() {
     for body in [
         "@for (const item of items; key item) {\n\t\t<li>{item}</li>\n\t} @empty {\n\t\t<li>none</li>\n\t}",
         "@for (const item: string of items; key item) {\n\t\t<li>{item}</li>\n\t}",
         "@for (const item of items; key item) {\n\t\t<li key={item}>{item}</li>\n\t}",
-        "@for (const item of items; key item) {\n\t\t<><b>{item}</b><i /></>\n\t}",
+        "@for (const item of items) {\n\t\t@if (item) {\n\t\t\t<b>{item}</b>\n\t\t}\n\t}",
     ] {
         let source =
             format!("export function List({{ items }}: {{ items: string[] }}) @{{\n\t{body}\n}}\n");

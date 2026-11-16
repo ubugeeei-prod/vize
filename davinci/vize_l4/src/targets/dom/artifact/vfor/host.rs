@@ -1,12 +1,14 @@
 //! Host-language loops (`ForOp::host`, TSRX `@for`): the `renderList`
-//! callback takes the authored left-side pattern and the `index` binding, and
-//! the head's `key` keys each item.
+//! callback takes the authored left-side pattern and the `index` binding.
+//! Every item is keyed, as in the TSRX Vue profile's `VaporFor`: by the head's
+//! `key`, else by the item's own `key`, else by the `index` binding, else by
+//! the item value itself. A body of several nodes renders a keyed fragment
+//! per item.
 //!
-//! Refused (`HostForLoop`): a loop without a head `key` (the TSRX Vue
-//! profile keys those items by value, which a VDOM loop does not), `@empty`,
-//! `for await`, an assignment or annotated left side, a key on both the head
-//! and the item, and items the head key cannot reach (slot outlets, `v-memo`
-//! items, `<template>` wrappers).
+//! Refused (`HostForLoop`): `@empty`, `for await`, an assignment or
+//! annotated left side, a key on both the head and the item, a destructured
+//! item without a key or an index (its value has no name), and items a loop
+//! key cannot reach (slot outlets, `v-memo` items, `<template>` wrappers).
 
 use oxc_span::GetSpan;
 use vize_l0::String;
@@ -27,7 +29,7 @@ pub(super) fn emit_for(
     fragment_key: Option<&str>,
 ) -> Result<(), EmitError> {
     let refuse = || EmitError::unsupported_at(Reason::HostForLoop, for_op.span);
-    if host.key.is_none() || host.r#await || host.empty.is_some() {
+    if host.r#await || host.empty.is_some() {
         return Err(refuse());
     }
     let wrapped = id.is_some_and(|id| cx.for_wrappers.get(id).is_some());
@@ -67,18 +69,44 @@ pub(super) fn emit_for(
     result
 }
 
-/// The head's `key`, which the item must not repeat.
+/// The item's key: the head's `key` (which the item must not repeat), the
+/// item's own, the `index` binding, or the item value's binding.
 pub(super) fn item_key(
     cx: &EmitCx<'_>,
     host: &HostFor<'_>,
     own: Option<String>,
     span: vize_l0::Span,
 ) -> Result<Option<String>, EmitError> {
-    let (None, Some(ExprRef::Js(js))) = (own, &host.key) else {
-        return Err(EmitError::unsupported_at(Reason::HostForLoop, span));
-    };
-    if cx.prefixing() {
-        return cx.prefixed_js(js, Site::Expression).map(Some);
+    let refuse = || EmitError::unsupported_at(Reason::HostForLoop, span);
+    match (own, &host.key) {
+        (None, Some(ExprRef::Js(js))) => {
+            if cx.prefixing() {
+                return cx.prefixed_js(js, Site::Expression).map(Some);
+            }
+            Ok(Some(String::from(js_expr_source(js).as_str())))
+        }
+        (Some(own), None) => Ok(Some(own)),
+        (None, None) => {
+            if let Some(index) = host.index {
+                return Ok(Some(String::from(index.name.as_str())));
+            }
+            let value = value_binding(host).ok_or_else(refuse)?;
+            Ok(Some(String::from(value)))
+        }
+        _ => Err(refuse()),
     }
-    Ok(Some(String::from(js_expr_source(js).as_str())))
+}
+
+/// The left side's name when it binds the whole item.
+fn value_binding<'a>(host: &HostFor<'a>) -> Option<&'a str> {
+    let oxc_ast::ast::ForStatementLeft::VariableDeclaration(declaration) = host.left else {
+        return None;
+    };
+    match declaration.declarations.as_slice() {
+        [declarator] => match &declarator.id {
+            oxc_ast::ast::BindingPattern::BindingIdentifier(id) => Some(id.name.as_str()),
+            _ => None,
+        },
+        _ => None,
+    }
 }
