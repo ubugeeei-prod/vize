@@ -287,7 +287,8 @@ fn is_js_binding(name: &str) -> bool {
     }
     !matches!(
         name,
-        "await"
+        "len"
+            | "await"
             | "break"
             | "case"
             | "catch"

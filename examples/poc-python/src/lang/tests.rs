@@ -67,6 +67,15 @@ fn javascript_binding_names_and_top_level_redeclarations_are_rejected() {
     assert!(script("def valid(default):\n    return default\n", 0).is_err());
     assert!(script("from vue import ref as default\n", 0).is_err());
     assert!(script("count = 0\ncount = 1\n", 0).is_err());
+    assert!(script("len = callback\n", 0).is_err());
+    assert!(script("def length(len):\n    return len([1, 2])\n", 0).is_err());
+    assert!(
+        script(
+            "def length(callback):\n    len = callback\n    return len([1, 2])\n",
+            0
+        )
+        .is_err()
+    );
 }
 
 #[test]
