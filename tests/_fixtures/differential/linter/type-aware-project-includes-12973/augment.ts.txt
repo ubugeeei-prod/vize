@@ -1,0 +1,7 @@
+import "./registry";
+
+declare module "./registry" {
+  interface Registry {
+    extra: true;
+  }
+}

@@ -9,7 +9,7 @@ use vize_l0::String;
 use super::directives::directive_head;
 use super::directives::{should_format_expression, static_directive_argument};
 use vize_l1::dialect::vue3::DirectiveKind;
-use vize_l1::markup::{ArgSyntax, DirectiveName, DirectivePrefix};
+use vize_l1::markup::{DirectiveName, DirectivePrefix};
 mod render;
 #[cfg(test)]
 use render::write_rendered_attribute;
@@ -39,10 +39,9 @@ pub(crate) fn sort_attributes(
     attrs: &mut [ParsedAttribute],
     options: &FormatOptions,
 ) {
-    // Runtime bindings and custom directive hooks can observe authored order,
-    // while a bare `v-bind`/`v-on` object or a dynamic argument can also merge
-    // with its neighbors. Keep each boundary fixed and sort only the literal
-    // runs between them.
+    // Vue directives can observe authored order or change how neighboring
+    // attributes are compiled. Keep each directive boundary fixed and sort
+    // only the literal runs between them.
     for segment in attrs.split_mut(|attr| attr.order_sensitive) {
         // Empty and singleton groups already have their only possible order.
         if segment.len() < 2 {
@@ -122,27 +121,14 @@ fn has_native_attribute_semantic_ranks(tag_name: &str) -> bool {
     matches!(tag_name, "button")
 }
 
-/// A runtime binding, custom directive, dynamic argument, or mustache-backed
-/// attribute can observe authored order or expand to runtime names, so each
-/// bounds a sortable run.
+/// A Vue directive or mustache-backed attribute can observe authored order or
+/// expand to runtime names, so each bounds a sortable run.
 pub(crate) fn is_order_sensitive_attribute(
     head: Option<&DirectiveName>,
     kind: Option<DirectiveKind>,
     value: Option<&str>,
 ) -> bool {
-    let bounds_by_directive = match (head, kind) {
-        (Some(head), Some(kind)) => match head.arg {
-            Some(ArgSyntax::Dynamic(_)) => true,
-            None => matches!(
-                kind,
-                DirectiveKind::Bind | DirectiveKind::On | DirectiveKind::Custom
-            ),
-            Some(ArgSyntax::Static(_)) => {
-                matches!(kind, DirectiveKind::Bind | DirectiveKind::Custom)
-            }
-        },
-        _ => false,
-    };
+    let bounds_by_directive = matches!((head, kind), (Some(_), Some(_)));
     // The value is scanned only when the directive itself does not decide.
     bounds_by_directive || value.is_some_and(opens_mustache)
 }

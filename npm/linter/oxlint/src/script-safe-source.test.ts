@@ -26,6 +26,8 @@ for (const entry of manifest.cases)
     assert.equal(createHash("sha256").update(source).digest("hex"), entry.sha256);
     const filename = `/original/${entry.originalFilename}`;
     const carrier = prepareWorkaroundSource(source, filename);
+    assert.match(carrier.source, /<!--vize-original-file:[a-f0-9]{64}:[a-f0-9]{64}-->$/u);
+    assert.doesNotMatch(carrier.source, /<!--vize-original-source:/u);
     assert.deepEqual(
       extractSfcBlocks(carrier.source).map((block) => block.kind),
       ["script-setup"],
@@ -39,15 +41,31 @@ for (const entry of manifest.cases)
     );
   });
 
-it("rejects modified base64, source checksum, filename and whitespace before native input", () => {
+it("keeps legacy payload carriers readable without writing them for new work", () => {
+  const source = '<template>\n<div v-html="html"/>\n</template>\n';
+  const filename = "/original/Static.vue";
+  const current = prepareWorkaroundSource(source, filename).source;
+  const digest = createHash("sha256").update(filename).update("\0").update(source).digest("hex");
+  const legacy = current.replace(
+    /<!--vize-original-file:[a-f0-9]{64}:[a-f0-9]{64}-->$/u,
+    `<!--vize-original-source:${digest}:${Buffer.from(source).toString("base64url")}-->`,
+  );
+  assert.deepEqual(resolveWorkaroundSource(legacy, "/carrier.vue"), {
+    filename,
+    source,
+    usesOriginalLocations: true,
+  });
+});
+
+it("rejects modified reference, source checksum, filename and whitespace before native input", () => {
   const source = '<template>\n<div v-html="html"/>\n</template>\n';
   const filename = "/original/Static.vue";
   const carrier = prepareWorkaroundSource(source, filename);
   const changedDigest = carrier.source.replace(
-    /(<!--vize-original-source:)([a-f0-9])/u,
+    /(<!--vize-original-file:)([a-f0-9])/u,
     (_, prefix: string, value: string) => prefix + (value === "0" ? "1" : "0"),
   );
-  const changedBase64 = carrier.source.replace(/:([A-Za-z0-9_-]*)-->$/u, ":%-->");
+  const changedReference = carrier.source.replace(/-->$/u, ":%-->");
   const changedFilename = carrier.source.replace(
     Buffer.from(filename).toString("base64url"),
     Buffer.from("/original/Other.vue").toString("base64url"),
@@ -56,17 +74,21 @@ it("rejects modified base64, source checksum, filename and whitespace before nat
     carrier.source.slice(0, carrier.locations.scriptStart) +
     "\t" +
     carrier.source.slice(carrier.locations.scriptStart + 1);
-  for (const changed of [changedDigest, changedBase64, changedFilename, changedMirror])
+  for (const changed of [changedDigest, changedReference, changedFilename, changedMirror])
     assert.throws(
       () => resolveWorkaroundSource(changed, "/carrier.vue", () => source),
-      /Invalid Vize|carrier bytes/u,
+      /Invalid Vize|original file bytes/u,
     );
 
   const forged = prepareWorkaroundSource(source.replaceAll("html", "evil"), filename);
   assert.throws(
     () => resolveWorkaroundSource(forged.source, "/carrier.vue", () => source),
     /original file bytes/u,
-    "a self-consistent forged payload cannot override original authority",
+    "a self-consistent forged reference cannot override original authority",
+  );
+  assert.throws(
+    () => resolveWorkaroundSource(carrier.source, "/carrier.vue"),
+    /requires an original source reader/u,
   );
 });
 

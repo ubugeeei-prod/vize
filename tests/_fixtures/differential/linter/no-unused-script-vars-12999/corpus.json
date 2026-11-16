@@ -1,0 +1,88 @@
+{
+  "schema": "vize.no-unused-script-vars.corpus",
+  "version": 1,
+  "typescriptEslint": "8.72.2",
+  "eslint": "10.14.0",
+  "vueEslintParser": "10.4.2",
+  "options": {
+    "args": "after-used",
+    "argsIgnorePattern": "^_",
+    "vars": "all",
+    "varsIgnorePattern": "^_"
+  },
+  "globalCases": [
+    {
+      "id": "eslint-invalid-5",
+      "code": "/*global a */",
+      "diagnostics": [{ "name": "a", "marker": "/*global a */", "line": 1 }]
+    },
+    {
+      "id": "eslint-invalid-52",
+      "code": "/* global foobar, foo, bar */\nfoobar;",
+      "diagnostics": [
+        { "name": "foo", "marker": "/* global foobar, foo, bar */", "line": 1 },
+        { "name": "bar", "marker": "/* global foobar, foo, bar */", "line": 1 }
+      ]
+    },
+    {
+      "id": "eslint-invalid-53",
+      "code": "/* global foobar,\n   foo,\n   bar\n */\nfoobar;",
+      "diagnostics": [
+        { "name": "foo", "marker": "   foo,", "line": 2 },
+        { "name": "bar", "marker": "   bar", "line": 3 }
+      ]
+    },
+    {
+      "id": "eslint-invalid-61",
+      "code": "/* global a$fooz,$foo */\na$fooz;",
+      "diagnostics": [{ "name": "$foo", "marker": "/* global a$fooz,$foo */", "line": 1 }]
+    },
+    {
+      "id": "eslint-invalid-62",
+      "code": "/* globals a$fooz, $ */\na$fooz;",
+      "diagnostics": [{ "name": "$", "marker": "/* globals a$fooz, $ */", "line": 1 }]
+    },
+    {
+      "id": "eslint-invalid-63",
+      "code": "/*globals $foo*/",
+      "diagnostics": [{ "name": "$foo", "marker": "/*globals $foo*/", "line": 1 }]
+    },
+    {
+      "id": "eslint-invalid-64",
+      "code": "/* global global*/",
+      "diagnostics": [{ "name": "global", "marker": "/* global global*/", "line": 1 }]
+    },
+    {
+      "id": "eslint-invalid-65",
+      "code": "/*global foo:true*/",
+      "diagnostics": [{ "name": "foo", "marker": "/*global foo:true*/", "line": 1 }]
+    },
+    {
+      "id": "eslint-invalid-66",
+      "code": "/*global 変数, 数*/\n\n変数;",
+      "diagnostics": [{ "name": "数", "marker": "/*global 変数, 数*/", "line": 1 }]
+    },
+    {
+      "id": "eslint-invalid-67",
+      "code": "/*global 𠮷𩸽, 𠮷*/\n𠮷𩸽;",
+      "diagnostics": [{ "name": "𠮷", "marker": "/*global 𠮷𩸽, 𠮷*/", "line": 1 }]
+    },
+    {
+      "id": "eslint-invalid-101",
+      "code": "/*global\nfoo*/",
+      "diagnostics": [{ "name": "foo", "marker": "foo*/", "line": 2 }]
+    }
+  ],
+  "quietCase": {
+    "id": "eslint-valid-4-and-124",
+    "code": "f({\n  set foo(a) {\n    return;\n  },\n});\nfunction foo(cb) {\n  cb = (function () {\n    function something(a) {\n      cb(1 + a);\n    }\n    register(something);\n  })();\n}\nfoo();"
+  },
+  "oppositeCase": {
+    "id": "ordinary-method-and-direct-iife",
+    "code": "f({\n  foo(a) {\n    return;\n  },\n});\nfunction direct(cb) {\n  cb = (function () {\n    cb(1);\n  })();\n}\ndirect();"
+  },
+  "boundaryCase": {
+    "id": "directive-boundaries-and-values",
+    "code": "/*global used, _ignored, writable: true */\n// global lineCommentIsProse\n/* globalization blockCommentIsProse */\nconst text = \"/*global stringLiteralIsNotAComment */\";\nused;\nwritable;\nconsole.log(text);"
+  }
+}

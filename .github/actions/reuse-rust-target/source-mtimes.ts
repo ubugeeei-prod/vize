@@ -50,6 +50,8 @@ export type RestoreResult =
       floor: number;
       restored: number;
       changed: number;
+      invalidated: number;
+      invalidation: string;
       manifest: string;
     };
 
@@ -79,9 +81,7 @@ const exactSeconds = (stat: BigIntStats, value: number) =>
   stat.mtimeNs === BigInt(value) * 1_000_000_000n;
 const ceilSeconds = (stat: BigIntStats) => Number((stat.mtimeNs + 999_999_999n) / 1_000_000_000n);
 
-/** The newest fingerprint written into a target directory, in whole seconds. */
-export function newestFingerprint(target: string): number {
-  let newest = 0;
+function visitFingerprintDirectories(target: string, visitor: (path: string) => void): void {
   const visit = (directory: string, depth: number) => {
     let entries: Dirent[];
     try {
@@ -93,16 +93,83 @@ export function newestFingerprint(target: string): number {
       if (!entry.isDirectory()) continue;
       const path = join(directory, entry.name);
       if (entry.name === ".fingerprint") {
-        for (const unit of readdirSync(path)) {
-          newest = Math.max(newest, ceilSeconds(lstatSync(join(path, unit), { bigint: true })));
-        }
+        visitor(path);
       } else if (depth < 4 && !skippedTargetDirectories.has(entry.name)) {
         visit(path, depth + 1);
       }
     }
   };
   visit(target, 0);
+}
+
+/** The newest fingerprint written into a target directory, in whole seconds. */
+export function newestFingerprint(target: string): number {
+  let newest = 0;
+  visitFingerprintDirectories(target, (path) => {
+    for (const unit of readdirSync(path)) {
+      const unitPath = join(path, unit);
+      const unitStat = lstatSync(unitPath, { bigint: true });
+      newest = Math.max(newest, ceilSeconds(unitStat));
+      // Cargo writes freshness evidence after creating the unit directory.
+      // The directory mtime therefore does not bound the mtimes of its
+      // files, especially when a build crosses a whole-second boundary.
+      if (!unitStat.isDirectory()) continue;
+      for (const evidence of readdirSync(unitPath)) {
+        newest = Math.max(
+          newest,
+          ceilSeconds(lstatSync(join(unitPath, evidence), { bigint: true })),
+        );
+      }
+    }
+  });
   return newest;
+}
+
+/** Keep dependency artifacts, but never trust workspace outputs without custody. */
+function invalidateUnownedWorkspaceArtifacts(
+  root: string,
+  target: string,
+): { removed: number; reason: string } {
+  if (newestFingerprint(target) === 0) return { removed: 0, reason: "no fingerprints" };
+  let owners: Set<string>;
+  try {
+    const metadata = JSON.parse(
+      execFileSync("cargo", ["metadata", "--no-deps", "--format-version", "1"], {
+        cwd: root,
+        encoding: "utf8",
+        stdio: ["ignore", "pipe", "pipe"],
+      }),
+    ) as {
+      packages: Array<{ id: string; name: string; targets: Array<{ name: string }> }>;
+      workspace_members: string[];
+    };
+    const members = new Set(metadata.workspace_members);
+    const names = metadata.packages
+      .filter(({ id }) => members.has(id))
+      .flatMap(({ name, targets }) => [name, ...targets.map((target) => target.name)]);
+    owners = new Set(names.flatMap((name) => [name, name.replaceAll("-", "_")]));
+  } catch (error) {
+    // Source mtimes remain the conservative fallback outside a Cargo workspace.
+    const detail = error instanceof Error ? error.message.split("\n", 1)[0] : String(error);
+    return { removed: 0, reason: `metadata unavailable: ${detail}` };
+  }
+  let removed = 0;
+  const seen: string[] = [];
+  visitFingerprintDirectories(target, (path) => {
+    for (const unit of readdirSync(path)) {
+      if (seen.length < 5) seen.push(unit);
+      const match = /^(.*)-[0-9a-f]{16}$/u.exec(unit);
+      if (match?.[1] && owners.has(match[1])) {
+        rmSync(join(path, unit), { recursive: true });
+        removed++;
+      }
+    }
+  });
+  const reason =
+    removed > 0
+      ? `removed ${removed} workspace fingerprint(s)`
+      : `no owner match; owners=${[...owners].slice(0, 5).join(",")}; units=${seen.join(",")}`;
+  return { removed, reason };
 }
 
 function isObject(value: unknown): value is Record<string, unknown> {
@@ -194,6 +261,14 @@ export function restoreSourceMtimes({
   const { manifest, reason } = sharedSecondary
     ? { manifest: null, reason: "another target directory shares this work tree" }
     : readManifest(file, root);
+  let invalidated = 0;
+  let invalidation = "authorized manifest";
+  if (!manifest) {
+    const outcomes = [invalidateUnownedWorkspaceArtifacts(root, targetPath)];
+    if (sharedSecondary) outcomes.push(invalidateUnownedWorkspaceArtifacts(root, secondaryPath));
+    invalidated = outcomes.reduce((total, outcome) => total + outcome.removed, 0);
+    invalidation = outcomes.map((outcome) => outcome.reason).join("; ");
+  }
   const recorded = manifest?.files ?? {};
   // Whole seconds keep restored values exact; the fingerprint and manifest
   // bounds, not the clock, keep a changed file newer than every artifact.
@@ -243,7 +318,17 @@ export function restoreSourceMtimes({
   }
   if (record)
     writeManifest(file, { schema, version, root, state: "pending", updatedAt: floor, files: next });
-  return { applied: true, reason, root, floor, restored, changed, manifest: file };
+  return {
+    applied: true,
+    reason,
+    root,
+    floor,
+    restored,
+    changed,
+    invalidated,
+    invalidation,
+    manifest: file,
+  };
 }
 
 /**

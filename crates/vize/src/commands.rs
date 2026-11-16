@@ -4,6 +4,7 @@ pub mod check;
 #[cfg(unix)]
 pub mod check_server;
 pub mod clean;
+pub(crate) mod config_stdin;
 pub mod content_mapper;
 pub mod curator;
 pub(crate) mod davinci_ice;

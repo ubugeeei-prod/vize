@@ -1,0 +1,6 @@
+<script lang="ts">
+import { console } from "./class";
+
+const referenced = console.log;
+void referenced;
+</script>

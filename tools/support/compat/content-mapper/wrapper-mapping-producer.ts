@@ -7,10 +7,143 @@ export function assertWrapperMappingProducer(producer: Uint8Array): void {
   const digest = (bytes: string | Uint8Array) => createHash("sha256").update(bytes).digest("hex");
   assert.equal(
     digest(producer),
-    "e70d9c79f81b29616c97f2ad334f081ef48b05be88141fefc6909aa6bfdae367",
+    "e05df54b6db5727e5eb15d52d57b2b799a7852ef8e22e1ff4dc9f87f1a1a44d5",
     "unqualified #11675 wrapper mapping producer",
   );
   let historical = Buffer.from(producer).toString("utf8");
+  for (const [successor, predecessor] of [
+    [
+      `mod directive_table;
+mod directives;
+mod unmapped_ignores;
+use directive_table::content_mapper_diagnostic_directives;
+use directives::with_owned_input_echoes;
+`,
+      `mod directives;
+mod unmapped_ignores;
+use directives::{
+    sfc_diagnostic_directives, with_component_prop_echoes, with_generic_echoes,
+    with_loose_library_prop_fallthrough, with_owned_input_echoes,
+};
+`,
+    ],
+    [
+      `                    content_mapper_diagnostic_directives(
+                        content,
+                        &code,
+                        &descriptor,
+                        &spans,
+                        &diagnostic_echoes,
+                        &diagnostic_primaries,
+                        generic_copies.as_ref(),
+                        &mappings,
+                        &mapping_meta,
+                        &callback_primaries,
+                        loose_unknown_props,
+                    )
+`,
+      `                    let directives = with_generic_echoes(
+                        sfc_diagnostic_directives(
+                            content,
+                            &code,
+                            &descriptor,
+                            &spans,
+                            &diagnostic_echoes,
+                            &diagnostic_primaries,
+                        ),
+                        generic_copies.as_ref(),
+                    );
+                    let directives = with_component_prop_echoes(
+                        directives,
+                        &code,
+                        &mappings,
+                        &callback_primaries,
+                    );
+                    with_loose_library_prop_fallthrough(
+                        directives,
+                        content,
+                        &code,
+                        &mappings,
+                        &mapping_meta,
+                        loose_unknown_props,
+                    )
+`,
+    ],
+    [
+      `    })
+}
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
+`,
+      `    })
+}
+fn ranges_overlap(left: &Range<usize>, right: &Range<usize>) -> bool {
+    left.start < right.end && right.start < left.end
+}
+
+#[expect(clippy::string_slice, reason = "tests assert by panicking")]
+`,
+    ],
+  ] as const) {
+    assert.equal(historical.split(successor).length, 2);
+    historical = historical.replace(successor, predecessor);
+  }
+  assert.equal(
+    digest(historical),
+    "4faaf62203dc7d08d7b7e32c1495cdb3c1a6058b1b0cca0a9e0bbc6975f53a9c",
+    "certified qualification-refactor wrapper successor",
+  );
+  for (const [successor, predecessor] of [
+    [
+      `use directives::{
+    sfc_diagnostic_directives, with_component_prop_echoes, with_generic_echoes,
+    with_loose_library_prop_fallthrough, with_owned_input_echoes,
+};
+`,
+      `use directives::{
+    sfc_diagnostic_directives, with_component_prop_echoes, with_generic_echoes,
+    with_owned_input_echoes,
+};
+`,
+    ],
+    [
+      `    let descriptor = prepare_script_blocks(descriptor);
+    let loose_unknown_props =
+        !super::vue_compiler_comments::apply(content, transform_options.virtual_ts_check_options())
+            .check_unknown_props;
+    let suppress_typescript_diagnostics =
+`,
+      `    let descriptor = prepare_script_blocks(descriptor);
+    let suppress_typescript_diagnostics =
+`,
+    ],
+    [
+      `                    let directives = with_component_prop_echoes(
+                        directives,
+                        &code,
+                        &mappings,
+                        &callback_primaries,
+                    );
+                    with_loose_library_prop_fallthrough(
+                        directives,
+                        content,
+                        &code,
+                        &mappings,
+                        &mapping_meta,
+                        loose_unknown_props,
+                    )
+`,
+      `                    with_component_prop_echoes(directives, &code, &mappings, &callback_primaries)
+`,
+    ],
+  ] as const) {
+    assert.equal(historical.split(successor).length, 2);
+    historical = historical.replace(successor, predecessor);
+  }
+  assert.equal(
+    digest(historical),
+    "e70d9c79f81b29616c97f2ad334f081ef48b05be88141fefc6909aa6bfdae367",
+    "certified loose-fallthrough wrapper successor",
+  );
   // The verbatim-run successor returns the joined spans in place of `spans`.
   const verbatimRun = "    span_normalize::join_verbatim_runs(source, generated, spans)\n";
   assert.equal(historical.split(verbatimRun).length, 2);

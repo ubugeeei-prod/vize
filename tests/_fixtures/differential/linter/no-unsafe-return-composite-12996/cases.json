@@ -1,0 +1,51 @@
+{
+  "schema": "vize.typescript-eslint.immutable-oracle",
+  "version": 1,
+  "issue": 12996,
+  "upstream": {
+    "repository": "typescript-eslint/typescript-eslint",
+    "release": "v8.72.2",
+    "commit": "12e452f0292212bf9bf443b3988ec230f4ae7097",
+    "testPath": "packages/eslint-plugin/tests/rules/no-unsafe-return.test.ts",
+    "testSha256": "1e9863a00bf155ab56738b1ab034d2fffc078c47fad52019087bc769d657b43b",
+    "rulePath": "packages/eslint-plugin/src/rules/no-unsafe-return.ts",
+    "ruleSha256": "ef081072888c864315bf35806bdb707c75f183ceea98650c2a068007bb416cc8",
+    "discriminatorPath": "packages/type-utils/src/discriminateAnyType.ts",
+    "discriminatorSha256": "92f58494c0dff44322e5a048a648074f17eb6fef72e51ba36b05408a4ddc2804"
+  },
+  "cases": [
+    {
+      "id": "no-unsafe-return.invalid[33]",
+      "code": "async function foo() {\n  return {} as Promise<any> | Promise<object>;\n}",
+      "expected": {
+        "line": 2,
+        "column": 3,
+        "endLine": 2,
+        "endColumn": 47,
+        "message": "Unsafe return of a value of type `Promise<any>`."
+      }
+    },
+    {
+      "id": "no-unsafe-return.invalid[35]",
+      "code": "async function foo() {\n  return {} as Promise<any> & { __brand: 'any' };\n}",
+      "expected": {
+        "line": 2,
+        "column": 3,
+        "endLine": 2,
+        "endColumn": 50,
+        "message": "Unsafe return of a value of type `Promise<any>`."
+      }
+    },
+    {
+      "id": "no-unsafe-return.invalid[36]",
+      "code": "interface Alias<T> extends Promise<any> {\n  foo: 'bar';\n}\n\ndeclare const value: Alias<number>;\nasync function foo() {\n  return value;\n}",
+      "expected": {
+        "line": 7,
+        "column": 3,
+        "endLine": 7,
+        "endColumn": 16,
+        "message": "Unsafe return of a value of type `Promise<any>`."
+      }
+    }
+  ]
+}

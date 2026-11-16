@@ -6,10 +6,10 @@ use crate::ide::IdeContext;
 /// If the governing config is missing, preserve the inferred-project fallback
 /// and search the discovered workspace surface. A configured project that does
 /// not own the query must not donate any workspace sources to that query.
-pub(in super::super) fn same_typescript_project(
+pub(in super::super) fn same_typescript_project<Text>(
     ctx: &IdeContext<'_>,
-    sources: Vec<(Url, std::string::String)>,
-) -> Vec<(Url, std::string::String)> {
+    sources: Vec<(Url, Text)>,
+) -> Vec<(Url, Text)> {
     let Some(source_path) = ctx.uri.to_file_path().ok() else {
         return sources;
     };
@@ -142,11 +142,11 @@ mod javascript_admission_tests {
             )
             .unwrap();
             let sources = vec![
-                (script_uri.clone(), "export const value = 1;".into()),
-                (outside.clone(), "export const foreign = 2;".into()),
+                (script_uri.clone(), "export const value = 1;".to_string()),
+                (outside.clone(), "export const foreign = 2;".to_string()),
             ];
             let expected = if allow_js {
-                vec![(script_uri.clone(), "export const value = 1;".into())]
+                vec![(script_uri.clone(), "export const value = 1;".to_string())]
             } else {
                 Vec::new()
             };

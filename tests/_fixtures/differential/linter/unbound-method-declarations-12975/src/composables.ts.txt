@@ -1,0 +1,16 @@
+export function useShorthand() {
+  const close = function (): void {};
+  return { close };
+}
+
+export function useTyped(): { load: () => void; save(): void } {
+  return { load: () => {}, save() {} };
+}
+
+export class Panel {
+  toggle = function (): void {};
+}
+
+export function usePanel(): Panel {
+  return new Panel();
+}

@@ -1,0 +1,17 @@
+<template>
+  <Row :value="inline" />
+</template>
+
+<script setup lang="tsx">
+import type { ExternalProps } from "./external";
+
+type LocalProps = {
+  local: string;
+};
+
+const { inline, local } = defineProps<
+  ExternalProps & LocalProps & { inline: number }
+>();
+
+const Row = ({ value }: { value: number }) => <div>{value}</div>;
+</script>

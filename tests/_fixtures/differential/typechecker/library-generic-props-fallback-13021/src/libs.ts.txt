@@ -1,0 +1,14 @@
+import type { PublicProps, VNode } from "vue";
+
+export type ItemSizeValue<T> = number | ((item: T) => number);
+type Props<T> = {
+  items: T[];
+  itemSize?: ItemSizeValue<T>;
+} & PublicProps;
+
+export declare const NoFallback: <T>(
+  props: Props<T>,
+  ctx?: { attrs: any; slots: {}; emit: () => void },
+  expose?: unknown,
+  setup?: Promise<{ props: Props<T> }>,
+) => VNode & { __ctx?: { props: Props<T>; attrs: any } };

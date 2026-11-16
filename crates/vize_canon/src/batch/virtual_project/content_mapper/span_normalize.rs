@@ -3,10 +3,14 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::ops::Range;
 
-use super::{ContentMapperSpanKind, SpanCandidate, ranges_overlap};
+use super::{ContentMapperSpanKind, SpanCandidate};
 
 mod runs;
 pub(super) use runs::join_verbatim_runs;
+
+fn ranges_overlap(left: &Range<usize>, right: &Range<usize>) -> bool {
+    left.start < right.end && right.start < left.end
+}
 
 pub(super) fn normalize(candidates: Vec<SpanCandidate>) -> Vec<SpanCandidate> {
     // A split verbatim piece takes its generated length from its original. When

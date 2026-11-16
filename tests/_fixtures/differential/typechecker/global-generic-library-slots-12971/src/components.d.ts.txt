@@ -1,0 +1,6 @@
+export {}
+declare module "vue" {
+  interface GlobalComponents {
+    DataList: typeof import("./lib/data-list.js")["default"]
+  }
+}

@@ -91,7 +91,10 @@ export function canonicalJson(value: Json, pretty = false): string {
   return encode(value, 0);
 }
 export function sortValues(values: Json[]): Json[] {
-  return values.sort((a, b) => byteOrder(canonicalJson(a), canonicalJson(b)));
+  const keyed = values.map((value, index) => ({ value, index, key: canonicalJson(value) }));
+  keyed.sort((a, b) => byteOrder(a.key, b.key) || a.index - b.index);
+  for (let index = 0; index < keyed.length; index++) values[index] = keyed[index].value;
+  return values;
 }
 export function sha256(value: string): string {
   return createHash("sha256").update(value).digest("hex");

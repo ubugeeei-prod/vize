@@ -6,8 +6,56 @@
 
 use vize_carton::config::{
     VueVersion, load_config, load_config_entry_ignores_with_source,
-    load_config_with_features_and_source, load_config_with_source, validate_explicit_config_path,
+    load_config_with_features_and_source, load_config_with_source,
+    try_load_formatter_snapshot_from_serialized, try_load_project_config_from_serialized,
+    validate_explicit_config_path,
 };
+
+#[test]
+fn serialized_vite_config_matches_explicit_json_projection_without_a_file() {
+    let source = std::env::temp_dir().join(".vize-vp-stdin.json");
+    let json = br#"{
+        "vue": {
+            "version": "2.7",
+            "formatter": { "singleQuote": true, "printWidth": 91 },
+            "linter": { "preset": "essential" },
+            "typeChecker": { "strict": true, "jsxTypecheck": false }
+        }
+    }"#;
+
+    let project = try_load_project_config_from_serialized(json, source.clone()).unwrap();
+    assert_eq!(project.source_path.as_deref(), Some(source.as_path()));
+    assert_eq!(project.project_root, None);
+    assert_eq!(
+        project.document.linter().preset.as_deref(),
+        Some("essential")
+    );
+    let (config, features) = project.document.into_config_and_features();
+    assert!(config.formatter.single_quote);
+    assert_eq!(config.formatter.print_width, 91);
+    assert!(config.type_checker.strict);
+    assert_eq!(features.vue_version, Some(VueVersion::V2_7));
+    assert!(!features.type_checker_jsx_typecheck);
+
+    let formatter = try_load_formatter_snapshot_from_serialized(json, source.clone()).unwrap();
+    assert_eq!(
+        formatter.loaded.source_path.as_deref(),
+        Some(source.as_path())
+    );
+    assert!(formatter.loaded.config.formatter.single_quote);
+    assert_eq!(formatter.loaded.config.formatter.print_width, 91);
+}
+
+#[test]
+fn serialized_vite_config_rejects_retired_top_level_native_shape() {
+    let error = try_load_project_config_from_serialized(
+        br#"{ "formatter": { "singleQuote": true } }"#,
+        std::env::temp_dir().join(".vize-vp-stdin.json"),
+    )
+    .unwrap_err();
+
+    assert!(error.contains("move Vue settings to vue: in vite.config.*"));
+}
 
 #[test]
 fn loads_pkl_defaults() {

@@ -211,8 +211,8 @@ type EmojiPickerRootSetupExpose = Omit<EmojiPickerRootExpose<T>, "activeItem" | 
 
 const exposed = {
   activeItem,
-  focusGrid: context.focusGrid,
-  setSearch: context.setSearch,
+  focusGrid: () => context.focusGrid(),
+  setSearch: (text: string) => context.setSearch(text),
   skinTone: toneState.value,
 } satisfies EmojiPickerRootSetupExpose;
 

@@ -29,6 +29,7 @@
 //! - Filesystem cache writes are bounded, immutable, atomic, and safe under competing writers.
 //! - Remote stores own transport only; Doctor revalidates response metadata and envelope bytes.
 //! - Layered caches promote validated backing hits and publish durable winners before front copies.
+//! - Process-local capability latency stays separate from deterministic reports.
 //!
 //! # Example
 //!
@@ -84,14 +85,16 @@ pub use cache_identity::{
     CapabilityInvalidationTelemetry, DOCTOR_CAPABILITY_CACHE_IDENTITY_VERSION,
 };
 pub use capability_execution::{
-    CapabilityExecutionCacheStatus, CapabilityExecutionError, CapabilityExecutionOutcome,
-    CapabilityExecutionTelemetry, CapabilitySnapshotCache,
+    CapabilityExecutionCacheStatus, CapabilityExecutionError, CapabilityExecutionLatencyTelemetry,
+    CapabilityExecutionOutcome, CapabilityExecutionTelemetry, CapabilitySnapshotCache,
+    DOCTOR_CAPABILITY_EXECUTION_LATENCY_TELEMETRY_VERSION,
     DOCTOR_FILESYSTEM_CAPABILITY_CACHE_LAYOUT_VERSION, FilesystemCapabilitySnapshotCache,
     FilesystemCapabilitySnapshotCacheError, LayeredCapabilitySnapshotCache,
     LayeredCapabilitySnapshotCacheError, LayeredCapabilitySnapshotTier,
-    MemoryCapabilitySnapshotCache, MemoryCapabilitySnapshotCacheError,
+    MeasuredCapabilityExecution, MemoryCapabilitySnapshotCache, MemoryCapabilitySnapshotCacheError,
     RemoteCapabilitySnapshotCache, RemoteCapabilitySnapshotCacheError,
     RemoteCapabilitySnapshotObject, RemoteCapabilitySnapshotStore, execute_cached_capability,
+    execute_cached_capability_measured,
 };
 pub use capability_snapshot::{
     CapabilitySnapshot, CapabilitySnapshotError, DOCTOR_CAPABILITY_SNAPSHOT_FORMAT_VERSION,

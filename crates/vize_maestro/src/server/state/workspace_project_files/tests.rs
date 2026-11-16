@@ -1,4 +1,5 @@
 use super::{FileChangeType, FileEvent, ServerState, Url};
+use std::sync::Arc;
 
 #[test]
 fn project_inventory_is_lazy_reuses_paths_and_reads_current_closed_or_dirty_text() {
@@ -54,6 +55,94 @@ fn project_inventory_is_lazy_reuses_paths_and_reads_current_closed_or_dirty_text
         let next_root = tempfile::tempdir().unwrap();
         state.set_workspace_root(next_root.path().to_owned());
         assert_eq!(state.discover_workspace_project_sources().await, Vec::new());
+    });
+}
+
+#[test]
+fn watched_project_inventory_shares_closed_text_and_invalidates_from_exact_events() {
+    crate::runtime::block_on(async {
+        let root = tempfile::tempdir().unwrap();
+        let path = root.path().join("module.ts");
+        std::fs::write(&path, "export const before = 1;").unwrap();
+        let uri = Url::from_file_path(&path).unwrap();
+        let state = ServerState::new();
+        state.set_workspace_root(root.path().to_owned());
+        assert_eq!(
+            state.discover_workspace_project_sources().await,
+            vec![(uri.clone(), "export const before = 1;".into())]
+        );
+        state.set_corsa_disk_watcher_registered();
+
+        let first = state.discover_workspace_project_source_snapshots().await;
+        let warm = state.discover_workspace_project_source_snapshots().await;
+        assert!(Arc::ptr_eq(&first[0].1, &warm[0].1));
+
+        std::fs::write(&path, "export const saved = 2;").unwrap();
+        let before_event = state.discover_workspace_project_source_snapshots().await;
+        assert!(Arc::ptr_eq(&first[0].1, &before_event[0].1));
+        state.observe_workspace_project_file_events(&[FileEvent {
+            uri: uri.clone(),
+            typ: FileChangeType::CHANGED,
+        }]);
+        let saved = state.discover_workspace_project_source_snapshots().await;
+        assert_eq!(saved[0].1.as_ref(), "export const saved = 2;");
+        assert!(!Arc::ptr_eq(&first[0].1, &saved[0].1));
+
+        state.documents.open(
+            uri.clone(),
+            "export const dirty = 3;".into(),
+            1,
+            "typescript".into(),
+        );
+        let dirty = state.discover_workspace_project_source_snapshots().await;
+        assert_eq!(dirty[0].1.as_ref(), "export const dirty = 3;");
+        std::fs::write(&path, "export const final_saved = 4;").unwrap();
+        state.invalidate_workspace_project_source_contents();
+        assert_eq!(
+            state.discover_workspace_project_source_snapshots().await[0]
+                .1
+                .as_ref(),
+            "export const dirty = 3;"
+        );
+        state.documents.close(&uri);
+        state.invalidate_workspace_project_source_contents();
+        let closed = state.discover_workspace_project_source_snapshots().await;
+        assert_eq!(closed[0].1.as_ref(), "export const final_saved = 4;");
+        assert!(!Arc::ptr_eq(&saved[0].1, &closed[0].1));
+    });
+}
+
+#[test]
+fn watched_project_inventory_retries_a_changed_event_during_initial_read() {
+    crate::runtime::block_on(async {
+        let root = tempfile::tempdir().unwrap();
+        let path = root.path().join("module.ts");
+        std::fs::write(&path, "export const before = 1;").unwrap();
+        let uri = Url::from_file_path(&path).unwrap();
+        let state = ServerState::new();
+        state.set_workspace_root(root.path().to_owned());
+        assert_eq!(
+            state.discover_workspace_project_sources().await,
+            vec![(uri.clone(), "export const before = 1;".into())]
+        );
+        state.set_corsa_disk_watcher_registered();
+        let (reached, waiting) = futures::channel::oneshot::channel();
+        let (resume, paused) = futures::channel::oneshot::channel();
+        *state.workspace_project_files.read_pause.write() = Some((reached, paused));
+        let mutation = async {
+            waiting.await.unwrap();
+            std::fs::write(&path, "export const after = 2;").unwrap();
+            state.observe_workspace_project_file_events(&[FileEvent {
+                uri: uri.clone(),
+                typ: FileChangeType::CHANGED,
+            }]);
+            resume.send(()).unwrap();
+        };
+        let (sources, ()) = futures::join!(
+            state.discover_workspace_project_source_snapshots(),
+            mutation
+        );
+        assert_eq!(sources[0].1.as_ref(), "export const after = 2;");
     });
 }
 

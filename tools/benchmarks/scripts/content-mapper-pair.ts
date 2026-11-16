@@ -8,8 +8,10 @@
  * - serial: one transform at a time, as an editor sends them; every request
  *   starts a fresh snapshot, so filesystem probes are paid per request.
  *
- * Runs rotate the build order. A cell whose builds or runs disagree on the
- * response bytes publishes no timing unless `--allow-output-change` is set.
+ * Each replicate records one order and its deterministic inverse, so both
+ * builds occupy every session position equally. A cell whose builds or runs
+ * disagree on the response bytes publishes no timing unless
+ * `--allow-output-change` is set.
  * Burst CPU and peak memory come from GNU time (Linux), BSD time (macOS) or
  * the process object (Windows).
  *
@@ -38,6 +40,8 @@ import {
   type BurstSample,
   type Cell,
   type SerialSample,
+  PAIR_ORDER_SEED,
+  balancedOrders,
   frame,
   markdown,
   summarizeCell,
@@ -311,16 +315,19 @@ async function main(): Promise<void> {
         : Promise.resolve(burst(build, project, stream, scratch));
     for (const build of all) await measure(build);
     const serialMessages = messages.slice(0, 2 + Math.min(serialFiles, files.length));
-    for (let run = 0; run < runs; run++) {
-      const order = run % 2 === 0 ? all : [...all].reverse();
-      for (const build of order) bursts.get(build.id)?.push(await measure(build));
-      for (const build of order)
-        serials.get(build.id)?.push(await serial(build, project, serialMessages));
+    for (let replicate = 0; replicate < runs; replicate++) {
+      for (const order of balancedOrders(all, replicate, PAIR_ORDER_SEED)) {
+        for (const build of order) bursts.get(build.id)?.push(await measure(build));
+        for (const build of order)
+          serials.get(build.id)?.push(await serial(build, project, serialMessages));
+      }
     }
     const cell = summarizeCell({
       label: values.label,
       sfcs,
       serialFiles: serialMessages.length - 2,
+      replicates: runs,
+      orderSeed: PAIR_ORDER_SEED,
       builds: builds.map((b) => b.id),
       references: references.map((b) => b.id),
       bursts,

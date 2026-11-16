@@ -1,0 +1,6 @@
+<script lang="ts">
+async function promisedAny(): Promise<any> {
+  return Promise.resolve<any>({});
+}
+export {};
+</script>

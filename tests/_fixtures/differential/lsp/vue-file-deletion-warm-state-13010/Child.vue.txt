@@ -1,0 +1,4 @@
+<script setup lang="ts">
+const childValue = 1
+</script>
+<template>{{ childValue }}</template>

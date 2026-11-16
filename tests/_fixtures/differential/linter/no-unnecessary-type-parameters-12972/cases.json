@@ -1,0 +1,2484 @@
+{
+  "schemaVersion": 1,
+  "issue": {
+    "number": 12972,
+    "url": "https://github.com/ubugeeei-prod/vize/issues/12972"
+  },
+  "upstream": {
+    "repository": "https://github.com/typescript-eslint/typescript-eslint",
+    "tag": "v8.72.2",
+    "commit": "12e452f0292212bf9bf443b3988ec230f4ae7097",
+    "rule": "@typescript-eslint/no-unnecessary-type-parameters",
+    "runtime": {
+      "eslint": "10.14.0",
+      "typescript": "6.0.3",
+      "parser": "@typescript-eslint/parser@8.72.2"
+    }
+  },
+  "selection": {
+    "caseCount": 212,
+    "classifications": {
+      "missed": 59,
+      "extra": 145,
+      "other-lines": 8
+    },
+    "description": "The 212 literal cases reported as divergent in issue #12972, re-extracted by test file, suite, and zero-based index."
+  },
+  "cases": [
+    {
+      "id": "no-unnecessary-type-parameters.test.ts:invalid[22]",
+      "file": "no-unnecessary-type-parameters.test.ts",
+      "suite": "invalid",
+      "index": 22,
+      "classification": "missed",
+      "code": "\nfunction getLength<T extends { length: number }>(x: T) {\n  return x.length;\n}\n      ",
+      "expected": [
+        {
+          "line": 2,
+          "column": 20,
+          "endLine": 2,
+          "endColumn": 48,
+          "message": "Type parameter T is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "no-unnecessary-type-parameters.test.ts:invalid[23]",
+      "file": "no-unnecessary-type-parameters.test.ts",
+      "suite": "invalid",
+      "index": 23,
+      "classification": "missed",
+      "code": "\ninterface Lengthy {\n  length: number;\n}\nfunction getLength<T extends Lengthy>(x: T) {\n  return x.length;\n}\n      ",
+      "expected": [
+        {
+          "line": 5,
+          "column": 20,
+          "endLine": 5,
+          "endColumn": 37,
+          "message": "Type parameter T is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "no-unnecessary-type-parameters.test.ts:invalid[57]",
+      "file": "no-unnecessary-type-parameters.test.ts",
+      "suite": "invalid",
+      "index": 57,
+      "classification": "missed",
+      "code": "\ndeclare function setItem<T>(T): T;\n      ",
+      "expected": [
+        {
+          "line": 2,
+          "column": 26,
+          "endLine": 2,
+          "endColumn": 27,
+          "message": "Type parameter T is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "no-unnecessary-type-parameters.test.ts:invalid[61]",
+      "file": "no-unnecessary-type-parameters.test.ts",
+      "suite": "invalid",
+      "index": 61,
+      "classification": "missed",
+      "code": "\nclass Joiner {\n  join<T extends number>(els: T[]) {\n    return els.map(el => '' + el).join(',');\n  }\n}\n      ",
+      "expected": [
+        {
+          "line": 3,
+          "column": 8,
+          "endLine": 3,
+          "endColumn": 24,
+          "message": "Type parameter T is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "no-unnecessary-type-parameters.test.ts:invalid[62]",
+      "file": "no-unnecessary-type-parameters.test.ts",
+      "suite": "invalid",
+      "index": 62,
+      "classification": "missed",
+      "code": "\nfunction join<T extends string | number>(els: T[]) {\n  return els.map(el => '' + el).join(',');\n}\n      ",
+      "expected": [
+        {
+          "line": 2,
+          "column": 15,
+          "endLine": 2,
+          "endColumn": 40,
+          "message": "Type parameter T is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "no-unnecessary-type-parameters.test.ts:invalid[63]",
+      "file": "no-unnecessary-type-parameters.test.ts",
+      "suite": "invalid",
+      "index": 63,
+      "classification": "missed",
+      "code": "\nfunction join<T extends string & number>(els: T[]) {\n  return els.map(el => '' + el).join(',');\n}\n      ",
+      "expected": [
+        {
+          "line": 2,
+          "column": 15,
+          "endLine": 2,
+          "endColumn": 40,
+          "message": "Type parameter T is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "no-unnecessary-type-parameters.test.ts:invalid[64]",
+      "file": "no-unnecessary-type-parameters.test.ts",
+      "suite": "invalid",
+      "index": 64,
+      "classification": "missed",
+      "code": "\nfunction join<T extends (string & number) | boolean>(els: T[]) {\n  return els.map(el => '' + el).join(',');\n}\n      ",
+      "expected": [
+        {
+          "line": 2,
+          "column": 15,
+          "endLine": 2,
+          "endColumn": 52,
+          "message": "Type parameter T is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "no-unnecessary-type-parameters.test.ts:invalid[65]",
+      "file": "no-unnecessary-type-parameters.test.ts",
+      "suite": "invalid",
+      "index": 65,
+      "classification": "missed",
+      "code": "\nfunction join<T extends (string | number)>(els: T[]) {\n  return els.map(el => '' + el).join(',');\n}\n      ",
+      "expected": [
+        {
+          "line": 2,
+          "column": 15,
+          "endLine": 2,
+          "endColumn": 42,
+          "message": "Type parameter T is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "no-unnecessary-type-parameters.test.ts:invalid[66]",
+      "file": "no-unnecessary-type-parameters.test.ts",
+      "suite": "invalid",
+      "index": 66,
+      "classification": "missed",
+      "code": "\nfunction join<T extends { hoge: string } | { hoge: number }>(els: T['hoge'][]) {\n  return els.map(el => '' + el).join(',');\n}\n      ",
+      "expected": [
+        {
+          "line": 2,
+          "column": 15,
+          "endLine": 2,
+          "endColumn": 60,
+          "message": "Type parameter T is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "no-unnecessary-type-parameters.test.ts:valid[0]",
+      "file": "no-unnecessary-type-parameters.test.ts",
+      "suite": "valid",
+      "index": 0,
+      "classification": "extra",
+      "code": "\nclass ClassyArray<T> {\n  arr: T[];\n}\n    ",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-parameters.test.ts:valid[5]",
+      "file": "no-unnecessary-type-parameters.test.ts",
+      "suite": "valid",
+      "index": 5,
+      "classification": "extra",
+      "code": "\nclass Box<T> {\n  val: T | null = null;\n  get() {\n    return this.val;\n  }\n}\n    ",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-parameters.test.ts:valid[6]",
+      "file": "no-unnecessary-type-parameters.test.ts",
+      "suite": "valid",
+      "index": 6,
+      "classification": "extra",
+      "code": "\nclass Joiner<T extends string | number> {\n  join(els: T[]) {\n    return els.map(el => '' + el).join(',');\n  }\n}\n    ",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-parameters.test.ts:valid[12]",
+      "file": "no-unnecessary-type-parameters.test.ts",
+      "suite": "valid",
+      "index": 12,
+      "classification": "extra",
+      "code": "type Fn = <T>(input: T) => typeof input;",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-parameters.test.ts:valid[13]",
+      "file": "no-unnecessary-type-parameters.test.ts",
+      "suite": "valid",
+      "index": 13,
+      "classification": "extra",
+      "code": "type Fn = <T>(input: T) => keyof typeof input;",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-parameters.test.ts:valid[14]",
+      "file": "no-unnecessary-type-parameters.test.ts",
+      "suite": "valid",
+      "index": 14,
+      "classification": "extra",
+      "code": "type Fn = <T>(input: Partial<T>) => typeof input;",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-parameters.test.ts:valid[32]",
+      "file": "no-unnecessary-type-parameters.test.ts",
+      "suite": "valid",
+      "index": 32,
+      "classification": "extra",
+      "code": "\nfunction doStuff<K, V>(map: Map<K, V>, key: K) {\n  let v = map.get(key);\n  v = 1;\n  map.set(key, v);\n  return v;\n}\n    ",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-parameters.test.ts:valid[33]",
+      "file": "no-unnecessary-type-parameters.test.ts",
+      "suite": "valid",
+      "index": 33,
+      "classification": "extra",
+      "code": "\nfunction makeMap<K, V>() {\n  return new Map<K, V>();\n}\n    ",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-parameters.test.ts:valid[34]",
+      "file": "no-unnecessary-type-parameters.test.ts",
+      "suite": "valid",
+      "index": 34,
+      "classification": "extra",
+      "code": "\nfunction makeMap<K, V>(ks: K[], vs: V[]) {\n  const r = new Map<K, V>();\n  ks.forEach((k, i) => {\n    r.set(k, vs[i]);\n  });\n  return r;\n}\n    ",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-parameters.test.ts:valid[35]",
+      "file": "no-unnecessary-type-parameters.test.ts",
+      "suite": "valid",
+      "index": 35,
+      "classification": "extra",
+      "code": "\nfunction arrayOfPairs<T>() {\n  return [] as [T, T][];\n}\n    ",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-parameters.test.ts:valid[41]",
+      "file": "no-unnecessary-type-parameters.test.ts",
+      "suite": "valid",
+      "index": 41,
+      "classification": "extra",
+      "code": "\ninterface ItemProps<T> {\n  item: readonly T;\n  onSelect: (item: T) => void;\n}\nfunction ItemComponent<T>(props: ItemProps<T>) {}\n    ",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-parameters.test.ts:valid[42]",
+      "file": "no-unnecessary-type-parameters.test.ts",
+      "suite": "valid",
+      "index": 42,
+      "classification": "extra",
+      "code": "\nfunction useFocus<T extends HTMLOrSVGElement>(): [\n  React.RefObject<T>,\n  () => void,\n];\n    ",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-parameters.test.ts:valid[45]",
+      "file": "no-unnecessary-type-parameters.test.ts",
+      "suite": "valid",
+      "index": 45,
+      "classification": "extra",
+      "code": "\nfunction getData<T>(url: string): Promise<T | null> {\n  return Promise.resolve(null);\n}\n    ",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-parameters.test.ts:valid[47]",
+      "file": "no-unnecessary-type-parameters.test.ts",
+      "suite": "valid",
+      "index": 47,
+      "classification": "extra",
+      "code": "\nfunction getData<T extends string>(url: string): Promise<`a${T}b`> {\n  return Promise.resolve(null);\n}\n    ",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-parameters.test.ts:valid[48]",
+      "file": "no-unnecessary-type-parameters.test.ts",
+      "suite": "valid",
+      "index": 48,
+      "classification": "extra",
+      "code": "\nasync function getData<T>(url: string): Promise<T | null> {\n  return null;\n}\n    ",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-parameters.test.ts:valid[58]",
+      "file": "no-unnecessary-type-parameters.test.ts",
+      "suite": "valid",
+      "index": 58,
+      "classification": "extra",
+      "code": "declare function makeSet<K>(): Set<K>;",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-parameters.test.ts:valid[59]",
+      "file": "no-unnecessary-type-parameters.test.ts",
+      "suite": "valid",
+      "index": 59,
+      "classification": "extra",
+      "code": "declare function makeSet<K>(): [Set<K>];",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-parameters.test.ts:valid[60]",
+      "file": "no-unnecessary-type-parameters.test.ts",
+      "suite": "valid",
+      "index": 60,
+      "classification": "extra",
+      "code": "declare function makeSets<K>(): Set<K>[];",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-parameters.test.ts:valid[61]",
+      "file": "no-unnecessary-type-parameters.test.ts",
+      "suite": "valid",
+      "index": 61,
+      "classification": "extra",
+      "code": "declare function makeSets<K>(): [Set<K>][];",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-parameters.test.ts:valid[62]",
+      "file": "no-unnecessary-type-parameters.test.ts",
+      "suite": "valid",
+      "index": 62,
+      "classification": "extra",
+      "code": "declare function makeMap<K, V>(): Map<K, V>;",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-parameters.test.ts:valid[63]",
+      "file": "no-unnecessary-type-parameters.test.ts",
+      "suite": "valid",
+      "index": 63,
+      "classification": "extra",
+      "code": "declare function makeMap<K, V>(): [Map<K, V>];",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-parameters.test.ts:valid[64]",
+      "file": "no-unnecessary-type-parameters.test.ts",
+      "suite": "valid",
+      "index": 64,
+      "classification": "extra",
+      "code": "declare function makeArray<T>(): T[];",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-parameters.test.ts:valid[65]",
+      "file": "no-unnecessary-type-parameters.test.ts",
+      "suite": "valid",
+      "index": 65,
+      "classification": "extra",
+      "code": "declare function makeArrayNullish<T>(): (T | null)[];",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-parameters.test.ts:valid[70]",
+      "file": "no-unnecessary-type-parameters.test.ts",
+      "suite": "valid",
+      "index": 70,
+      "classification": "extra",
+      "code": "declare function fetchJson<T>(url: string): Promise<T>;",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-parameters.test.ts:valid[71]",
+      "file": "no-unnecessary-type-parameters.test.ts",
+      "suite": "valid",
+      "index": 71,
+      "classification": "extra",
+      "code": "declare function fetchJsonTuple<T>(url: string): Promise<[T]>;",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-parameters.test.ts:valid[73]",
+      "file": "no-unnecessary-type-parameters.test.ts",
+      "suite": "valid",
+      "index": 73,
+      "classification": "extra",
+      "code": "declare function useFocus<T extends HTMLOrSVGElement>(): [React.RefObject<T>];",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-parameters.test.ts:valid[74]",
+      "file": "no-unnecessary-type-parameters.test.ts",
+      "suite": "valid",
+      "index": 74,
+      "classification": "extra",
+      "code": "\ndeclare function useFocus<T extends HTMLOrSVGElement>(): {\n  ref: React.RefObject<T>;\n};\n    ",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-parameters.test.ts:valid[75]",
+      "file": "no-unnecessary-type-parameters.test.ts",
+      "suite": "valid",
+      "index": 75,
+      "classification": "extra",
+      "code": "\ninterface TwoMethods<T> {\n  a(x: T): void;\n  b(x: T): void;\n}\n\ndeclare function two<T>(props: TwoMethods<T>): void;\n    ",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-parameters.test.ts:valid[78]",
+      "file": "no-unnecessary-type-parameters.test.ts",
+      "suite": "valid",
+      "index": 78,
+      "classification": "extra",
+      "code": "\ntype AsMutable<T extends readonly unknown[]> = {\n  -readonly [Key in keyof T]: T[Key];\n};\n\ndeclare function makeMutable<T>(input: T): MakeMutable<typeof input>;\n    ",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-parameters.test.ts:valid[79]",
+      "file": "no-unnecessary-type-parameters.test.ts",
+      "suite": "valid",
+      "index": 79,
+      "classification": "extra",
+      "code": "\ntype ValueNulls<U extends string> = {} & {\n  [P in U]: null;\n};\n\ndeclare function invert<T extends string>(obj: T): ValueNulls<T>;\n    ",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-parameters.test.ts:valid[80]",
+      "file": "no-unnecessary-type-parameters.test.ts",
+      "suite": "valid",
+      "index": 80,
+      "classification": "extra",
+      "code": "\ninterface Middle {\n  inner: boolean;\n}\n\ntype Conditional<T extends Middle> = {} & (T['inner'] extends true ? {} : {});\n\nfunction withMiddle<T extends Middle = Middle>(options: T): Conditional<T> {\n  return options;\n}\n    ",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-parameters.test.ts:valid[85]",
+      "file": "no-unnecessary-type-parameters.test.ts",
+      "suite": "valid",
+      "index": 85,
+      "classification": "extra",
+      "code": "\ntype Foo<T, S> = S extends 'somebody'\n  ? T extends 'once'\n    ? 'told'\n    : 'me'\n  : never;\n\ndeclare function foo<T>(data: T): <S>(other: S) => Foo<T, S>;\n    ",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-parameters.test.ts:valid[86]",
+      "file": "no-unnecessary-type-parameters.test.ts",
+      "suite": "valid",
+      "index": 86,
+      "classification": "extra",
+      "code": "\ntype Foo<T, S> = S extends 'somebody'\n  ? T extends 'once'\n    ? 'told'\n    : 'me'\n  : never;\n\ndeclare function foo<T>(data: T): <S>(other: S) => Foo<S, T>;\n    ",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-parameters.test.ts:valid[96]",
+      "file": "no-unnecessary-type-parameters.test.ts",
+      "suite": "valid",
+      "index": 96,
+      "classification": "extra",
+      "code": "\ntype Identity<T> = T;\n\ntype Mapped<T, Value> = Identity<{ [P in keyof T]: Value }>;\n\ndeclare function sillyFoo<Data, Value>(\n  c: Value,\n): (data: Data) => Mapped<Data, Value>;\n    ",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-parameters.test.ts:valid[97]",
+      "file": "no-unnecessary-type-parameters.test.ts",
+      "suite": "valid",
+      "index": 97,
+      "classification": "extra",
+      "code": "\ntype Silly<T> = { [P in keyof T]: T[P] };\n\ntype SillyFoo<T, Value> = Silly<{ [P in keyof T]: Value }>;\n\ntype Foo<T, Value> = { [P in keyof T]: Value };\n\ndeclare function foo<T, Constant>(data: T, c: Constant): Foo<T, Constant>;\ndeclare function foo<T, Constant>(c: Constant): (data: T) => Foo<T, Constant>;\n\ndeclare function sillyFoo<T, Constant>(\n  data: T,\n  c: Constant,\n): SillyFoo<T, Constant>;\ndeclare function sillyFoo<T, Constant>(\n  c: Constant,\n): (data: T) => SillyFoo<T, Constant>;\n    ",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-parameters.test.ts:invalid[59]",
+      "file": "no-unnecessary-type-parameters.test.ts",
+      "suite": "invalid",
+      "index": 59,
+      "classification": "other-lines",
+      "code": "\ntype Compute<A> = A extends Function ? A : { [K in keyof A]: Compute<A[K]> };\ntype Equal<X, Y> =\n  (<T1>() => T1 extends Compute<X> ? 1 : 2) extends\n    (<T2>() => T2 extends Compute<Y> ? 1 : 2)\n  ? true\n  : false;\n      ",
+      "expected": [
+        {
+          "line": 4,
+          "column": 5,
+          "endLine": 4,
+          "endColumn": 7,
+          "message": "Type parameter T1 is used only once in the function signature."
+        },
+        {
+          "line": 5,
+          "column": 7,
+          "endLine": 5,
+          "endColumn": 9,
+          "message": "Type parameter T2 is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "no-base-to-string.test.ts:valid[163]",
+      "file": "no-base-to-string.test.ts",
+      "suite": "valid",
+      "index": 163,
+      "classification": "missed",
+      "code": "\nfunction foo<T extends string>(array: T[]) {\n  return array.join();\n}\n    ",
+      "expected": [
+        {
+          "line": 2,
+          "column": 14,
+          "endLine": 2,
+          "endColumn": 30,
+          "message": "Type parameter T is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "no-base-to-string.test.ts:valid[174]",
+      "file": "no-base-to-string.test.ts",
+      "suite": "valid",
+      "index": 174,
+      "classification": "missed",
+      "code": "\nfunction foo<T extends string>(array: T[]) {\n  return String(array);\n}\n    ",
+      "expected": [
+        {
+          "line": 2,
+          "column": 14,
+          "endLine": 2,
+          "endColumn": 30,
+          "message": "Type parameter T is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "no-base-to-string.test.ts:valid[184]",
+      "file": "no-base-to-string.test.ts",
+      "suite": "valid",
+      "index": 184,
+      "classification": "missed",
+      "code": "\nfunction foo<T extends string>(array: T[]) {\n  return array.toString();\n}\n    ",
+      "expected": [
+        {
+          "line": 2,
+          "column": 14,
+          "endLine": 2,
+          "endColumn": 30,
+          "message": "Type parameter T is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "no-base-to-string.test.ts:valid[194]",
+      "file": "no-base-to-string.test.ts",
+      "suite": "valid",
+      "index": 194,
+      "classification": "missed",
+      "code": "\nfunction foo<T extends string>(array: T[]) {\n  return `${array}`;\n}\n    ",
+      "expected": [
+        {
+          "line": 2,
+          "column": 14,
+          "endLine": 2,
+          "endColumn": 30,
+          "message": "Type parameter T is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "no-base-to-string.test.ts:invalid[36]",
+      "file": "no-base-to-string.test.ts",
+      "suite": "invalid",
+      "index": 36,
+      "classification": "missed",
+      "code": "\ntype Bar = Record<string, string>;\nfunction foo<T extends string | Bar>(array: T[]) {\n  return array.join();\n}\n      ",
+      "expected": [
+        {
+          "line": 3,
+          "column": 14,
+          "endLine": 3,
+          "endColumn": 36,
+          "message": "Type parameter T is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "no-base-to-string.test.ts:invalid[50]",
+      "file": "no-base-to-string.test.ts",
+      "suite": "invalid",
+      "index": 50,
+      "classification": "missed",
+      "code": "\ntype Bar = Record<string, string>;\nfunction foo<T extends string | Bar>(array: T[]) {\n  return String(array);\n}\n      ",
+      "expected": [
+        {
+          "line": 3,
+          "column": 14,
+          "endLine": 3,
+          "endColumn": 36,
+          "message": "Type parameter T is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "no-base-to-string.test.ts:invalid[66]",
+      "file": "no-base-to-string.test.ts",
+      "suite": "invalid",
+      "index": 66,
+      "classification": "missed",
+      "code": "\ntype Bar = Record<string, string>;\nfunction foo<T extends string | Bar>(array: T[]) {\n  return array.toString();\n}\n      ",
+      "expected": [
+        {
+          "line": 3,
+          "column": 14,
+          "endLine": 3,
+          "endColumn": 36,
+          "message": "Type parameter T is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "no-base-to-string.test.ts:invalid[80]",
+      "file": "no-base-to-string.test.ts",
+      "suite": "invalid",
+      "index": 80,
+      "classification": "missed",
+      "code": "\ntype Bar = Record<string, string>;\nfunction foo<T extends string | Bar>(array: T[]) {\n  return `${array}`;\n}\n      ",
+      "expected": [
+        {
+          "line": 3,
+          "column": 14,
+          "endLine": 3,
+          "endColumn": 36,
+          "message": "Type parameter T is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "no-misused-spread.test.ts:invalid[1]",
+      "file": "no-misused-spread.test.ts",
+      "suite": "invalid",
+      "index": 1,
+      "classification": "missed",
+      "code": "\nfunction withText<Text extends string>(text: Text) {\n  return [...text];\n}\n      ",
+      "expected": [
+        {
+          "line": 2,
+          "column": 19,
+          "endLine": 2,
+          "endColumn": 38,
+          "message": "Type parameter Text is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "no-unnecessary-condition.test.ts:valid[30]",
+      "file": "no-unnecessary-condition.test.ts",
+      "suite": "valid",
+      "index": 30,
+      "classification": "missed",
+      "code": "\nfunction test<T extends string>(t: T) {\n  return t ? 'yes' : 'no';\n}\n    ",
+      "expected": [
+        {
+          "line": 2,
+          "column": 15,
+          "endLine": 2,
+          "endColumn": 31,
+          "message": "Type parameter T is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "no-unnecessary-condition.test.ts:valid[31]",
+      "file": "no-unnecessary-condition.test.ts",
+      "suite": "valid",
+      "index": 31,
+      "classification": "missed",
+      "code": "\n// Naked type param\nfunction test<T>(t: T) {\n  return t ? 'yes' : 'no';\n}\n    ",
+      "expected": [
+        {
+          "line": 3,
+          "column": 15,
+          "endLine": 3,
+          "endColumn": 16,
+          "message": "Type parameter T is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "no-unnecessary-condition.test.ts:valid[32]",
+      "file": "no-unnecessary-condition.test.ts",
+      "suite": "valid",
+      "index": 32,
+      "classification": "missed",
+      "code": "\n// Naked type param in union\nfunction test<T>(t: T | []) {\n  return t ? 'yes' : 'no';\n}\n    ",
+      "expected": [
+        {
+          "line": 3,
+          "column": 15,
+          "endLine": 3,
+          "endColumn": 16,
+          "message": "Type parameter T is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "no-unnecessary-condition.test.ts:invalid[30]",
+      "file": "no-unnecessary-condition.test.ts",
+      "suite": "invalid",
+      "index": 30,
+      "classification": "missed",
+      "code": "\nfunction test<T extends object>(t: T) {\n  return t ? 'yes' : 'no';\n}\n      ",
+      "expected": [
+        {
+          "line": 2,
+          "column": 15,
+          "endLine": 2,
+          "endColumn": 31,
+          "message": "Type parameter T is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "no-unnecessary-condition.test.ts:invalid[31]",
+      "file": "no-unnecessary-condition.test.ts",
+      "suite": "invalid",
+      "index": 31,
+      "classification": "missed",
+      "code": "\nfunction test<T extends false>(t: T) {\n  return t ? 'yes' : 'no';\n}\n      ",
+      "expected": [
+        {
+          "line": 2,
+          "column": 15,
+          "endLine": 2,
+          "endColumn": 30,
+          "message": "Type parameter T is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "no-unnecessary-condition.test.ts:invalid[32]",
+      "file": "no-unnecessary-condition.test.ts",
+      "suite": "invalid",
+      "index": 32,
+      "classification": "missed",
+      "code": "\nfunction test<T extends 'a' | 'b'>(t: T) {\n  return t ? 'yes' : 'no';\n}\n      ",
+      "expected": [
+        {
+          "line": 2,
+          "column": 15,
+          "endLine": 2,
+          "endColumn": 34,
+          "message": "Type parameter T is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "no-unnecessary-condition.test.ts:invalid[90]",
+      "file": "no-unnecessary-condition.test.ts",
+      "suite": "invalid",
+      "index": 90,
+      "classification": "missed",
+      "code": "\nfunction test<T>(a: T extends string ? 'a' : 'b') {\n  return a ? 'yes' : 'no';\n}\n      ",
+      "expected": [
+        {
+          "line": 2,
+          "column": 15,
+          "endLine": 2,
+          "endColumn": 16,
+          "message": "Type parameter T is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "no-unnecessary-condition.test.ts:invalid[95]",
+      "file": "no-unnecessary-condition.test.ts",
+      "suite": "invalid",
+      "index": 95,
+      "classification": "missed",
+      "code": "\nfunction test<T extends null>(a: T) {\n  return a ?? 'default';\n}\n      ",
+      "expected": [
+        {
+          "line": 2,
+          "column": 15,
+          "endLine": 2,
+          "endColumn": 29,
+          "message": "Type parameter T is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "no-unnecessary-template-expression.test.ts:valid[47]",
+      "file": "no-unnecessary-template-expression.test.ts",
+      "suite": "valid",
+      "index": 47,
+      "classification": "missed",
+      "code": "\nfunction getTpl<T>(input: T) {\n  return `${input}`;\n}\n    ",
+      "expected": [
+        {
+          "line": 2,
+          "column": 17,
+          "endLine": 2,
+          "endColumn": 18,
+          "message": "Type parameter T is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "no-unnecessary-type-conversion.test.ts:invalid[12]",
+      "file": "no-unnecessary-type-conversion.test.ts",
+      "suite": "invalid",
+      "index": 12,
+      "classification": "missed",
+      "code": "\nfunction f<T extends string>(x: T) {\n  return String(x);\n}\n      ",
+      "expected": [
+        {
+          "line": 2,
+          "column": 12,
+          "endLine": 2,
+          "endColumn": 28,
+          "message": "Type parameter T is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "no-unnecessary-type-conversion.test.ts:invalid[13]",
+      "file": "no-unnecessary-type-conversion.test.ts",
+      "suite": "invalid",
+      "index": 13,
+      "classification": "missed",
+      "code": "\nfunction f<T extends number>(x: T) {\n  return Number(x);\n}\n      ",
+      "expected": [
+        {
+          "line": 2,
+          "column": 12,
+          "endLine": 2,
+          "endColumn": 28,
+          "message": "Type parameter T is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "no-unnecessary-type-conversion.test.ts:invalid[14]",
+      "file": "no-unnecessary-type-conversion.test.ts",
+      "suite": "invalid",
+      "index": 14,
+      "classification": "missed",
+      "code": "\nfunction f<T extends boolean>(x: T) {\n  return Boolean(x);\n}\n      ",
+      "expected": [
+        {
+          "line": 2,
+          "column": 12,
+          "endLine": 2,
+          "endColumn": 29,
+          "message": "Type parameter T is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "no-unnecessary-type-conversion.test.ts:invalid[15]",
+      "file": "no-unnecessary-type-conversion.test.ts",
+      "suite": "invalid",
+      "index": 15,
+      "classification": "missed",
+      "code": "\nfunction f<T extends bigint>(x: T) {\n  return BigInt(x);\n}\n      ",
+      "expected": [
+        {
+          "line": 2,
+          "column": 12,
+          "endLine": 2,
+          "endColumn": 28,
+          "message": "Type parameter T is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "no-unsafe-unary-minus.test.ts:valid[10]",
+      "file": "no-unsafe-unary-minus.test.ts",
+      "suite": "valid",
+      "index": 10,
+      "classification": "missed",
+      "code": "<T,>(t: T & number) => -t;",
+      "expected": [
+        {
+          "line": 1,
+          "column": 2,
+          "endLine": 1,
+          "endColumn": 3,
+          "message": "Type parameter T is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "no-unsafe-unary-minus.test.ts:valid[13]",
+      "file": "no-unsafe-unary-minus.test.ts",
+      "suite": "valid",
+      "index": 13,
+      "classification": "missed",
+      "code": "<T extends number>(t: T) => -t;",
+      "expected": [
+        {
+          "line": 1,
+          "column": 2,
+          "endLine": 1,
+          "endColumn": 18,
+          "message": "Type parameter T is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "no-unsafe-unary-minus.test.ts:invalid[8]",
+      "file": "no-unsafe-unary-minus.test.ts",
+      "suite": "invalid",
+      "index": 8,
+      "classification": "missed",
+      "code": "<T,>(t: T) => -t;",
+      "expected": [
+        {
+          "line": 1,
+          "column": 2,
+          "endLine": 1,
+          "endColumn": 3,
+          "message": "Type parameter T is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "restrict-plus-operands.test.ts:valid[23]",
+      "file": "restrict-plus-operands.test.ts",
+      "suite": "valid",
+      "index": 23,
+      "classification": "missed",
+      "code": "\nfunction foo<T extends string>(a: T) {\n  return a + '';\n}\n    ",
+      "expected": [
+        {
+          "line": 2,
+          "column": 14,
+          "endLine": 2,
+          "endColumn": 30,
+          "message": "Type parameter T is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "restrict-plus-operands.test.ts:valid[24]",
+      "file": "restrict-plus-operands.test.ts",
+      "suite": "valid",
+      "index": 24,
+      "classification": "missed",
+      "code": "\nfunction foo<T extends 'a' | 'b'>(a: T) {\n  return a + '';\n}\n    ",
+      "expected": [
+        {
+          "line": 2,
+          "column": 14,
+          "endLine": 2,
+          "endColumn": 33,
+          "message": "Type parameter T is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "restrict-plus-operands.test.ts:valid[25]",
+      "file": "restrict-plus-operands.test.ts",
+      "suite": "valid",
+      "index": 25,
+      "classification": "missed",
+      "code": "\nfunction foo<T extends number>(a: T) {\n  return a + 1;\n}\n    ",
+      "expected": [
+        {
+          "line": 2,
+          "column": 14,
+          "endLine": 2,
+          "endColumn": 30,
+          "message": "Type parameter T is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "restrict-plus-operands.test.ts:valid[26]",
+      "file": "restrict-plus-operands.test.ts",
+      "suite": "valid",
+      "index": 26,
+      "classification": "missed",
+      "code": "\nfunction foo<T extends 1>(a: T) {\n  return a + 1;\n}\n    ",
+      "expected": [
+        {
+          "line": 2,
+          "column": 14,
+          "endLine": 2,
+          "endColumn": 25,
+          "message": "Type parameter T is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "restrict-plus-operands.test.ts:invalid[20]",
+      "file": "restrict-plus-operands.test.ts",
+      "suite": "invalid",
+      "index": 20,
+      "classification": "missed",
+      "code": "\nfunction foo<T extends string>(a: T) {\n  return a + 1;\n}\n      ",
+      "expected": [
+        {
+          "line": 2,
+          "column": 14,
+          "endLine": 2,
+          "endColumn": 30,
+          "message": "Type parameter T is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "restrict-plus-operands.test.ts:invalid[21]",
+      "file": "restrict-plus-operands.test.ts",
+      "suite": "invalid",
+      "index": 21,
+      "classification": "missed",
+      "code": "\nfunction foo<T extends 'a' | 'b'>(a: T) {\n  return a + 1;\n}\n      ",
+      "expected": [
+        {
+          "line": 2,
+          "column": 14,
+          "endLine": 2,
+          "endColumn": 33,
+          "message": "Type parameter T is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "restrict-plus-operands.test.ts:invalid[22]",
+      "file": "restrict-plus-operands.test.ts",
+      "suite": "invalid",
+      "index": 22,
+      "classification": "missed",
+      "code": "\nfunction foo<T extends number>(a: T) {\n  return a + '';\n}\n      ",
+      "expected": [
+        {
+          "line": 2,
+          "column": 14,
+          "endLine": 2,
+          "endColumn": 30,
+          "message": "Type parameter T is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "restrict-plus-operands.test.ts:invalid[23]",
+      "file": "restrict-plus-operands.test.ts",
+      "suite": "invalid",
+      "index": 23,
+      "classification": "missed",
+      "code": "\nfunction foo<T extends 1>(a: T) {\n  return a + '';\n}\n      ",
+      "expected": [
+        {
+          "line": 2,
+          "column": 14,
+          "endLine": 2,
+          "endColumn": 25,
+          "message": "Type parameter T is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "restrict-template-expressions.test.ts:valid[3]",
+      "file": "restrict-template-expressions.test.ts",
+      "suite": "valid",
+      "index": 3,
+      "classification": "missed",
+      "code": "\nfunction test<T extends string>(arg: T) {\n  return `arg = ${arg}`;\n}\n    ",
+      "expected": [
+        {
+          "line": 2,
+          "column": 15,
+          "endLine": 2,
+          "endColumn": 31,
+          "message": "Type parameter T is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "restrict-template-expressions.test.ts:valid[4]",
+      "file": "restrict-template-expressions.test.ts",
+      "suite": "valid",
+      "index": 4,
+      "classification": "missed",
+      "code": "\nfunction test<T extends string & { _kind: 'MyBrandedString' }>(arg: T) {\n  return `arg = ${arg}`;\n}\n    ",
+      "expected": [
+        {
+          "line": 2,
+          "column": 15,
+          "endLine": 2,
+          "endColumn": 62,
+          "message": "Type parameter T is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "restrict-template-expressions.test.ts:valid[10]",
+      "file": "restrict-template-expressions.test.ts",
+      "suite": "valid",
+      "index": 10,
+      "classification": "missed",
+      "code": "\nfunction test<T extends number>(arg: T) {\n  return `arg = ${arg}`;\n}\n      ",
+      "expected": [
+        {
+          "line": 2,
+          "column": 15,
+          "endLine": 2,
+          "endColumn": 31,
+          "message": "Type parameter T is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "restrict-template-expressions.test.ts:valid[11]",
+      "file": "restrict-template-expressions.test.ts",
+      "suite": "valid",
+      "index": 11,
+      "classification": "missed",
+      "code": "\nfunction test<T extends number & { _kind: 'MyBrandedNumber' }>(arg: T) {\n  return `arg = ${arg}`;\n}\n      ",
+      "expected": [
+        {
+          "line": 2,
+          "column": 15,
+          "endLine": 2,
+          "endColumn": 62,
+          "message": "Type parameter T is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "restrict-template-expressions.test.ts:valid[12]",
+      "file": "restrict-template-expressions.test.ts",
+      "suite": "valid",
+      "index": 12,
+      "classification": "missed",
+      "code": "\nfunction test<T extends bigint>(arg: T) {\n  return `arg = ${arg}`;\n}\n      ",
+      "expected": [
+        {
+          "line": 2,
+          "column": 15,
+          "endLine": 2,
+          "endColumn": 31,
+          "message": "Type parameter T is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "restrict-template-expressions.test.ts:valid[13]",
+      "file": "restrict-template-expressions.test.ts",
+      "suite": "valid",
+      "index": 13,
+      "classification": "missed",
+      "code": "\nfunction test<T extends string | number>(arg: T) {\n  return `arg = ${arg}`;\n}\n      ",
+      "expected": [
+        {
+          "line": 2,
+          "column": 15,
+          "endLine": 2,
+          "endColumn": 40,
+          "message": "Type parameter T is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "restrict-template-expressions.test.ts:valid[16]",
+      "file": "restrict-template-expressions.test.ts",
+      "suite": "valid",
+      "index": 16,
+      "classification": "missed",
+      "code": "\nfunction test<T extends boolean>(arg: T) {\n  return `arg = ${arg}`;\n}\n      ",
+      "expected": [
+        {
+          "line": 2,
+          "column": 15,
+          "endLine": 2,
+          "endColumn": 32,
+          "message": "Type parameter T is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "restrict-template-expressions.test.ts:valid[17]",
+      "file": "restrict-template-expressions.test.ts",
+      "suite": "valid",
+      "index": 17,
+      "classification": "missed",
+      "code": "\nfunction test<T extends string | boolean>(arg: T) {\n  return `arg = ${arg}`;\n}\n      ",
+      "expected": [
+        {
+          "line": 2,
+          "column": 15,
+          "endLine": 2,
+          "endColumn": 41,
+          "message": "Type parameter T is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "restrict-template-expressions.test.ts:valid[20]",
+      "file": "restrict-template-expressions.test.ts",
+      "suite": "valid",
+      "index": 20,
+      "classification": "missed",
+      "code": "\nfunction test<T extends string[]>(arg: T) {\n  return `arg = ${arg}`;\n}\n      ",
+      "expected": [
+        {
+          "line": 2,
+          "column": 15,
+          "endLine": 2,
+          "endColumn": 33,
+          "message": "Type parameter T is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "restrict-template-expressions.test.ts:valid[23]",
+      "file": "restrict-template-expressions.test.ts",
+      "suite": "valid",
+      "index": 23,
+      "classification": "missed",
+      "code": "\nfunction test<T extends [string, string]>(arg: T) {\n  return `arg = ${arg}`;\n}\n      ",
+      "expected": [
+        {
+          "line": 2,
+          "column": 15,
+          "endLine": 2,
+          "endColumn": 41,
+          "message": "Type parameter T is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "restrict-template-expressions.test.ts:valid[34]",
+      "file": "restrict-template-expressions.test.ts",
+      "suite": "valid",
+      "index": 34,
+      "classification": "missed",
+      "code": "\nfunction test<T extends null | undefined>(arg: T) {\n  return `arg = ${arg}`;\n}\n      ",
+      "expected": [
+        {
+          "line": 2,
+          "column": 15,
+          "endLine": 2,
+          "endColumn": 41,
+          "message": "Type parameter T is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "restrict-template-expressions.test.ts:valid[35]",
+      "file": "restrict-template-expressions.test.ts",
+      "suite": "valid",
+      "index": 35,
+      "classification": "missed",
+      "code": "\nfunction test<T extends string | null>(arg: T) {\n  return `arg = ${arg}`;\n}\n      ",
+      "expected": [
+        {
+          "line": 2,
+          "column": 15,
+          "endLine": 2,
+          "endColumn": 38,
+          "message": "Type parameter T is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "restrict-template-expressions.test.ts:valid[39]",
+      "file": "restrict-template-expressions.test.ts",
+      "suite": "valid",
+      "index": 39,
+      "classification": "missed",
+      "code": "\nfunction test<T extends RegExp>(arg: T) {\n  return `arg = ${arg}`;\n}\n      ",
+      "expected": [
+        {
+          "line": 2,
+          "column": 15,
+          "endLine": 2,
+          "endColumn": 31,
+          "message": "Type parameter T is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "restrict-template-expressions.test.ts:valid[40]",
+      "file": "restrict-template-expressions.test.ts",
+      "suite": "valid",
+      "index": 40,
+      "classification": "missed",
+      "code": "\nfunction test<T extends string | RegExp>(arg: T) {\n  return `arg = ${arg}`;\n}\n      ",
+      "expected": [
+        {
+          "line": 2,
+          "column": 15,
+          "endLine": 2,
+          "endColumn": 40,
+          "message": "Type parameter T is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "restrict-template-expressions.test.ts:valid[45]",
+      "file": "restrict-template-expressions.test.ts",
+      "suite": "valid",
+      "index": 45,
+      "classification": "missed",
+      "code": "\ntype All = string | number | boolean | null | undefined | RegExp | never;\nfunction test<T extends All>(arg: T) {\n  return `arg = ${arg}`;\n}\n      ",
+      "expected": [
+        {
+          "line": 3,
+          "column": 15,
+          "endLine": 3,
+          "endColumn": 28,
+          "message": "Type parameter T is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "restrict-template-expressions.test.ts:invalid[16]",
+      "file": "restrict-template-expressions.test.ts",
+      "suite": "invalid",
+      "index": 16,
+      "classification": "missed",
+      "code": "\nfunction test<T extends {}>(arg: T) {\n  return `arg = ${arg}`;\n}\n      ",
+      "expected": [
+        {
+          "line": 2,
+          "column": 15,
+          "endLine": 2,
+          "endColumn": 27,
+          "message": "Type parameter T is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "restrict-template-expressions.test.ts:invalid[22]",
+      "file": "restrict-template-expressions.test.ts",
+      "suite": "invalid",
+      "index": 22,
+      "classification": "missed",
+      "code": "\nfunction test<T extends any>(arg: T) {\n  return `arg = ${arg}`;\n}\n      ",
+      "expected": [
+        {
+          "line": 2,
+          "column": 15,
+          "endLine": 2,
+          "endColumn": 28,
+          "message": "Type parameter T is used only once in the function signature."
+        }
+      ]
+    },
+    {
+      "id": "await-thenable.test.ts:valid[11]",
+      "file": "await-thenable.test.ts",
+      "suite": "valid",
+      "index": 11,
+      "classification": "extra",
+      "code": "\n// https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/types/bluebird/index.d.ts\n// Type definitions for bluebird 3.5\n// Project: https://github.com/petkaantonov/bluebird\n// Definitions by: Leonard Hecker <https://github.com/lhecker>\n// Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped\n// TypeScript Version: 2.8\n\n/*!\n * The code following this comment originates from:\n *   https://github.com/types/npm-bluebird\n *\n * Note for browser users: use bluebird-global typings instead of this one\n * if you want to use Bluebird via the global Promise symbol.\n *\n * Licensed under:\n *   The MIT License (MIT)\n *\n *   Copyright (c) 2016 unional\n *\n *   Permission is hereby granted, free of charge, to any person obtaining a copy\n *   of this software and associated documentation files (the \"Software\"), to deal\n *   in the Software without restriction, including without limitation the rights\n *   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell\n *   copies of the Software, and to permit persons to whom the Software is\n *   furnished to do so, subject to the following conditions:\n *\n *   The above copyright notice and this permission notice shall be included in\n *   all copies or substantial portions of the Software.\n *\n *   THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\n *   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\n *   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\n *   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\n *   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\n *   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN\n *   THE SOFTWARE.\n */\n\ntype Constructor<E> = new (...args: any[]) => E;\ntype CatchFilter<E> = ((error: E) => boolean) | (object & E);\ntype IterableItem<R> = R extends Iterable<infer U> ? U : never;\ntype IterableOrNever<R> = Extract<R, Iterable<any>>;\ntype Resolvable<R> = R | PromiseLike<R>;\ntype IterateFunction<T, R> = (\n  item: T,\n  index: number,\n  arrayLength: number,\n) => Resolvable<R>;\n\ndeclare class Bluebird<R> implements PromiseLike<R> {\n  then<U>(\n    onFulfill?: (value: R) => Resolvable<U>,\n    onReject?: (error: any) => Resolvable<U>,\n  ): Bluebird<U>; // For simpler signature help.\n  then<TResult1 = R, TResult2 = never>(\n    onfulfilled?: ((value: R) => Resolvable<TResult1>) | null,\n    onrejected?: ((reason: any) => Resolvable<TResult2>) | null,\n  ): Bluebird<TResult1 | TResult2>;\n}\n\ndeclare const bluebird: Bluebird;\n\nasync function test() {\n  await bluebird;\n}\n    ",
+      "expected": []
+    },
+    {
+      "id": "await-thenable.test.ts:valid[37]",
+      "file": "await-thenable.test.ts",
+      "suite": "valid",
+      "index": 37,
+      "classification": "extra",
+      "code": "\nfunction f<T>(x: Array<Promise<T>>) {\n  Promise.all(x);\n}\n      ",
+      "expected": []
+    },
+    {
+      "id": "await-thenable.test.ts:valid[45]",
+      "file": "await-thenable.test.ts",
+      "suite": "valid",
+      "index": 45,
+      "classification": "extra",
+      "code": "\nfunction f<T>(x: [Promise<T>]) {\n  Promise.all(x);\n}\n      ",
+      "expected": []
+    },
+    {
+      "id": "await-thenable.test.ts:valid[52]",
+      "file": "await-thenable.test.ts",
+      "suite": "valid",
+      "index": 52,
+      "classification": "extra",
+      "code": "\nfunction f<T>(x: Iterable<Promise<T>>) {\n  Promise.all(x);\n}\n      ",
+      "expected": []
+    },
+    {
+      "id": "await-thenable.test.ts:valid[53]",
+      "file": "await-thenable.test.ts",
+      "suite": "valid",
+      "index": 53,
+      "classification": "extra",
+      "code": "\nfunction f<T extends Promise<unknown>>(x: Iterable<T>) {\n  Promise.all(x);\n}\n      ",
+      "expected": []
+    },
+    {
+      "id": "await-thenable.test.ts:valid[63]",
+      "file": "await-thenable.test.ts",
+      "suite": "valid",
+      "index": 63,
+      "classification": "extra",
+      "code": "\ninterface MyArray<Unused, T> extends Array<T> {}\ndeclare const x: MyArray<null, Promise<void>>;\n\nPromise.all(x);\n      ",
+      "expected": []
+    },
+    {
+      "id": "await-thenable.test.ts:invalid[43]",
+      "file": "await-thenable.test.ts",
+      "suite": "invalid",
+      "index": 43,
+      "classification": "extra",
+      "code": "\ninterface MyArray<Unused, T> extends Array<T> {}\ndeclare const x: MyArray<Promise<void>, null>;\n\nPromise.all(x);\n      ",
+      "expected": []
+    },
+    {
+      "id": "no-array-delete.test.ts:invalid[12]",
+      "file": "no-array-delete.test.ts",
+      "suite": "invalid",
+      "index": 12,
+      "classification": "extra",
+      "code": "\ndeclare function getArray<T extends number>(): T[];\ndelete getArray()[0];\n      ",
+      "expected": []
+    },
+    {
+      "id": "no-base-to-string.test.ts:valid[148]",
+      "file": "no-base-to-string.test.ts",
+      "suite": "valid",
+      "index": 148,
+      "classification": "extra",
+      "code": "\ninterface MyError<T> {}\ndeclare const error: MyError<number>;\nerror.toString();\n      ",
+      "expected": []
+    },
+    {
+      "id": "no-base-to-string.test.ts:valid[149]",
+      "file": "no-base-to-string.test.ts",
+      "suite": "valid",
+      "index": 149,
+      "classification": "extra",
+      "code": "\ntype MyError<T> = {};\ndeclare const error: MyError<number>;\nerror.toString();\n      ",
+      "expected": []
+    },
+    {
+      "id": "no-base-to-string.test.ts:valid[203]",
+      "file": "no-base-to-string.test.ts",
+      "suite": "valid",
+      "index": 203,
+      "classification": "extra",
+      "code": "\ntype Constructable<Entity> = abstract new (...args: any[]) => Entity;\n\ninterface GuildChannel {\n  toString(): `<#${string}>`;\n}\n\ndeclare const foo: Constructable<GuildChannel & { bar: 1 }>;\nclass ExtendedGuildChannel extends foo {}\ndeclare const bb: ExtendedGuildChannel;\nbb.toString();\n    ",
+      "expected": []
+    },
+    {
+      "id": "no-base-to-string.test.ts:valid[204]",
+      "file": "no-base-to-string.test.ts",
+      "suite": "valid",
+      "index": 204,
+      "classification": "extra",
+      "code": "\ntype Constructable<Entity> = abstract new (...args: any[]) => Entity;\n\ninterface GuildChannel {\n  toString(): `<#${string}>`;\n}\n\ndeclare const foo: Constructable<{ bar: 1 } & GuildChannel>;\nclass ExtendedGuildChannel extends foo {}\ndeclare const bb: ExtendedGuildChannel;\nbb.toString();\n    ",
+      "expected": []
+    },
+    {
+      "id": "no-confusing-void-expression.test.ts:invalid[49]",
+      "file": "no-confusing-void-expression.test.ts",
+      "suite": "invalid",
+      "index": 49,
+      "classification": "extra",
+      "code": "\nconst aa = async <T,>(): Promise<T> => console.log('foo');\n      ",
+      "expected": []
+    },
+    {
+      "id": "no-confusing-void-expression.test.ts:invalid[50]",
+      "file": "no-confusing-void-expression.test.ts",
+      "suite": "invalid",
+      "index": 50,
+      "classification": "extra",
+      "code": "\nconst bb = async <T,>(): Promise<T | void> => console.log('foo');\n      ",
+      "expected": []
+    },
+    {
+      "id": "no-confusing-void-expression.test.ts:invalid[52]",
+      "file": "no-confusing-void-expression.test.ts",
+      "suite": "invalid",
+      "index": 52,
+      "classification": "extra",
+      "code": "\nconst dd = async <T extends undefined>(): Promise<T> => console.log('foo');\n      ",
+      "expected": []
+    },
+    {
+      "id": "no-confusing-void-expression.test.ts:invalid[53]",
+      "file": "no-confusing-void-expression.test.ts",
+      "suite": "invalid",
+      "index": 53,
+      "classification": "extra",
+      "code": "\nconst ee = async <T extends unknown>(): Promise<T> => console.log('foo');\n      ",
+      "expected": []
+    },
+    {
+      "id": "no-duplicate-type-constituents.test.ts:invalid[8]",
+      "file": "no-duplicate-type-constituents.test.ts",
+      "suite": "invalid",
+      "index": 8,
+      "classification": "extra",
+      "code": "\ntype IsArray<T> = T extends any[] ? true : false;\ntype ActuallyDuplicated = IsArray<number> | IsArray<string>;\n      ",
+      "expected": []
+    },
+    {
+      "id": "no-floating-promises.test.ts:valid[43]",
+      "file": "no-floating-promises.test.ts",
+      "suite": "valid",
+      "index": 43,
+      "classification": "extra",
+      "code": "\nclass SafePromise<T> extends Promise<T> {}\nlet promise: { a: SafePromise<number> } = { a: Promise.resolve(5) };\npromise.a;\n      ",
+      "expected": []
+    },
+    {
+      "id": "no-floating-promises.test.ts:valid[44]",
+      "file": "no-floating-promises.test.ts",
+      "suite": "valid",
+      "index": 44,
+      "classification": "extra",
+      "code": "\nclass SafePromise<T> extends Promise<T> {}\nlet promise: SafePromise<number> = Promise.resolve(5);\npromise;\n      ",
+      "expected": []
+    },
+    {
+      "id": "no-floating-promises.test.ts:valid[51]",
+      "file": "no-floating-promises.test.ts",
+      "suite": "valid",
+      "index": 51,
+      "classification": "extra",
+      "code": "\nclass SafePromise<T> extends Promise<T> {}\nlet promise: () => SafePromise<number> = async () => 5;\n0 || promise();\n      ",
+      "expected": []
+    },
+    {
+      "id": "no-floating-promises.test.ts:valid[52]",
+      "file": "no-floating-promises.test.ts",
+      "suite": "valid",
+      "index": 52,
+      "classification": "extra",
+      "code": "\nclass SafePromise<T> extends Promise<T> {}\nlet promise: () => SafePromise<number> = async () => 5;\nnull ?? promise();\n      ",
+      "expected": []
+    },
+    {
+      "id": "no-floating-promises.test.ts:valid[54]",
+      "file": "no-floating-promises.test.ts",
+      "suite": "valid",
+      "index": 54,
+      "classification": "extra",
+      "code": "\ntype Foo<T> = Promise<T> & { hey?: string };\ndeclare const arrayOrPromiseTuple: Foo<unknown>[];\narrayOrPromiseTuple;\n      ",
+      "expected": []
+    },
+    {
+      "id": "no-floating-promises.test.ts:valid[55]",
+      "file": "no-floating-promises.test.ts",
+      "suite": "valid",
+      "index": 55,
+      "classification": "extra",
+      "code": "\ntype Foo<T> = Promise<T> & { hey?: string };\ndeclare const arrayOrPromiseTuple: [Foo<unknown>, 5];\narrayOrPromiseTuple;\n      ",
+      "expected": []
+    },
+    {
+      "id": "no-floating-promises.test.ts:valid[69]",
+      "file": "no-floating-promises.test.ts",
+      "suite": "valid",
+      "index": 69,
+      "classification": "extra",
+      "code": "\ninterface SafePromise<T> extends Promise<T> {\n  brand: 'safe';\n}\n\ndeclare const createSafePromise: () => SafePromise<string>;\ncreateSafePromise();\n      ",
+      "expected": []
+    },
+    {
+      "id": "no-floating-promises.test.ts:valid[76]",
+      "file": "no-floating-promises.test.ts",
+      "suite": "valid",
+      "index": 76,
+      "classification": "extra",
+      "code": "\ninterface CustomNode<P> {\n  getNextNode: () => CustomNode<P>;\n}\n\ndeclare const createNode: () => {\n  getNextNode: <T>() => CustomNode<T>;\n};\n\nfunction wrapNode<T>(getNode: () => CustomNode<T>) {\n  return getNode;\n}\n\n(async () => {\n  wrapNode(() => {\n    const node = createNode();\n\n    return wrapNode<typeof node.getNextNode<any>>(node.getNextNode);\n  });\n})().catch(() => {});\n    ",
+      "expected": []
+    },
+    {
+      "id": "no-floating-promises.test.ts:invalid[124]",
+      "file": "no-floating-promises.test.ts",
+      "suite": "invalid",
+      "index": 124,
+      "classification": "extra",
+      "code": "\nclass SafePromise<T> extends Promise<T> {}\nlet promise: SafePromise<number> = Promise.resolve(5);\npromise.catch();\n      ",
+      "expected": []
+    },
+    {
+      "id": "no-floating-promises.test.ts:invalid[125]",
+      "file": "no-floating-promises.test.ts",
+      "suite": "invalid",
+      "index": 125,
+      "classification": "extra",
+      "code": "\nclass UnsafePromise<T> extends Promise<T> {}\nlet promise: () => UnsafePromise<number> = async () => 5;\npromise().finally();\n      ",
+      "expected": []
+    },
+    {
+      "id": "no-floating-promises.test.ts:invalid[128]",
+      "file": "no-floating-promises.test.ts",
+      "suite": "invalid",
+      "index": 128,
+      "classification": "extra",
+      "code": "\ntype Foo<T> = Promise<T> & { hey?: string };\ndeclare const arrayOrPromiseTuple: Foo<unknown>[];\narrayOrPromiseTuple;\n      ",
+      "expected": []
+    },
+    {
+      "id": "no-floating-promises.test.ts:invalid[130]",
+      "file": "no-floating-promises.test.ts",
+      "suite": "invalid",
+      "index": 130,
+      "classification": "extra",
+      "code": "\ntype Foo<T> = Promise<T> & { hey?: string };\ndeclare const arrayOrPromiseTuple: [Foo<unknown>, 5];\narrayOrPromiseTuple;\n      ",
+      "expected": []
+    },
+    {
+      "id": "no-floating-promises.test.ts:invalid[138]",
+      "file": "no-floating-promises.test.ts",
+      "suite": "invalid",
+      "index": 138,
+      "classification": "extra",
+      "code": "\nclass MyPromise<T> extends Promise<T> {}\ndeclare const createMyPromise: () => MyPromise<number>;\ncreateMyPromise();\n      ",
+      "expected": []
+    },
+    {
+      "id": "no-floating-promises.test.ts:invalid[139]",
+      "file": "no-floating-promises.test.ts",
+      "suite": "invalid",
+      "index": 139,
+      "classification": "extra",
+      "code": "\nclass MyPromise<T> extends Promise<T> {\n  additional: string;\n}\ndeclare const createMyPromise: () => MyPromise<number>;\ncreateMyPromise();\n      ",
+      "expected": []
+    },
+    {
+      "id": "no-floating-promises.test.ts:invalid[150]",
+      "file": "no-floating-promises.test.ts",
+      "suite": "invalid",
+      "index": 150,
+      "classification": "extra",
+      "code": "\ninterface CustomNode<P> {\n  getNextNode: () => CustomNode<P>;\n}\n\ndeclare const createNode: () => {\n  getNextNode: <T>() => CustomNode<T>;\n};\n\nfunction wrapNode<T>(getNode: () => CustomNode<T>) {\n  return getNode;\n}\n\n(async () => {\n  wrapNode(() => {\n    const node = createNode();\n\n    return wrapNode<typeof node.getNextNode<any>>(node.getNextNode);\n  });\n})();\n      ",
+      "expected": []
+    },
+    {
+      "id": "no-generated-empty-object-type.test.ts:valid[10]",
+      "file": "no-generated-empty-object-type.test.ts",
+      "suite": "valid",
+      "index": 10,
+      "classification": "extra",
+      "code": "\ntype Data = { name: string; value: number };\ntype Data2 = { name: string };\ntype DistributiveOmit<T, K extends PropertyKey> = T extends unknown\n  ? Omit<T, K>\n  : never;\ntype Expected = DistributiveOmit<Data | Data2, 'name'> & {\n  other: string;\n};\n    ",
+      "expected": []
+    },
+    {
+      "id": "no-generated-empty-object-type.test.ts:valid[14]",
+      "file": "no-generated-empty-object-type.test.ts",
+      "suite": "valid",
+      "index": 14,
+      "classification": "extra",
+      "code": "\ntype Keys<T> = T extends infer U ? keyof U : never;\ntype Mapped<T extends object> = { [Key in Keys<T>]: Key };\ntype Referenced<T extends object> = Mapped<T>;\n    ",
+      "expected": []
+    },
+    {
+      "id": "no-generated-empty-object-type.test.ts:valid[15]",
+      "file": "no-generated-empty-object-type.test.ts",
+      "suite": "valid",
+      "index": 15,
+      "classification": "extra",
+      "code": "\ntype Keys<T> = T extends infer U ? keyof U : never;\ntype Mapped<T extends object> = { [Key in Keys<T>]: Key };\ntype Indexed<T extends object> = Mapped<T>[Keys<T>];\n    ",
+      "expected": []
+    },
+    {
+      "id": "no-generated-empty-object-type.test.ts:valid[16]",
+      "file": "no-generated-empty-object-type.test.ts",
+      "suite": "valid",
+      "index": 16,
+      "classification": "extra",
+      "code": "\ntype Keys<T> = T extends infer U ? keyof U : never;\ntype Remapped<T extends object> = {\n  [Key in Keys<T> as `get${string & Key}`]: () => void;\n};\ntype Referenced<T extends object> = Remapped<T>;\n    ",
+      "expected": []
+    },
+    {
+      "id": "no-generated-empty-object-type.test.ts:valid[17]",
+      "file": "no-generated-empty-object-type.test.ts",
+      "suite": "valid",
+      "index": 17,
+      "classification": "extra",
+      "code": "\ntype Keys<T> = T extends infer U ? keyof U : never;\ntype ReadonlyMapped<T extends object> = { readonly [Key in Keys<T>]: number };\ntype Referenced<T extends object> = ReadonlyMapped<T>;\n    ",
+      "expected": []
+    },
+    {
+      "id": "no-generated-empty-object-type.test.ts:invalid[7]",
+      "file": "no-generated-empty-object-type.test.ts",
+      "suite": "invalid",
+      "index": 7,
+      "classification": "extra",
+      "code": "\ntype Data = { name: string; value: number };\ntype Data2 = { name: string };\ntype DistributiveOmit<T, K extends PropertyKey> = T extends unknown\n  ? Omit<T, K>\n  : never;\ntype Unexpected = DistributiveOmit<Data | Data2, 'name'>;\n      ",
+      "expected": []
+    },
+    {
+      "id": "no-misused-promises.test.ts:valid[101]",
+      "file": "no-misused-promises.test.ts",
+      "suite": "valid",
+      "index": 101,
+      "classification": "extra",
+      "code": "\ntype MyGenericType<IsAsync extends boolean = true> = IsAsync extends true\n  ? { setThing(): Promise<void> }\n  : { setThing(): void };\n\ninterface MyAsyncInterface extends MyGenericType {\n  setThing(): Promise<void>;\n}\n      ",
+      "expected": []
+    },
+    {
+      "id": "no-misused-promises.test.ts:valid[102]",
+      "file": "no-misused-promises.test.ts",
+      "suite": "valid",
+      "index": 102,
+      "classification": "extra",
+      "code": "\ntype MyGenericType<IsAsync extends boolean = true> = IsAsync extends true\n  ? { setThing(): Promise<void> }\n  : { setThing(): void };\n\ninterface MyAsyncInterface extends MyGenericType<false> {\n  setThing(): Promise<void>;\n}\n      ",
+      "expected": []
+    },
+    {
+      "id": "no-misused-promises.test.ts:invalid[76]",
+      "file": "no-misused-promises.test.ts",
+      "suite": "invalid",
+      "index": 76,
+      "classification": "extra",
+      "code": "\ntype MyGenericType<IsAsync extends boolean = true> = IsAsync extends true\n  ? { setThing(): Promise<void> }\n  : { setThing(): void };\n\ninterface MyAsyncInterface extends MyGenericType<false> {\n  setThing(): Promise<void>;\n}\n      ",
+      "expected": []
+    },
+    {
+      "id": "no-misused-promises.test.ts:invalid[92]",
+      "file": "no-misused-promises.test.ts",
+      "suite": "invalid",
+      "index": 92,
+      "classification": "extra",
+      "code": "\ninterface Foo<T> {\n  (callback: () => T): void;\n  (callback: () => number): void;\n}\ndeclare const foo: Foo<void>;\n\nfoo(async () => {});\n      ",
+      "expected": []
+    },
+    {
+      "id": "no-misused-promises.test.ts:invalid[114]",
+      "file": "no-misused-promises.test.ts",
+      "suite": "invalid",
+      "index": 114,
+      "classification": "extra",
+      "code": "\ntype MyType<T> = { value: T };\ndeclare const f: () => MyType<number> | Promise<MyType<number>>;\nif (f()) {\n}\n      ",
+      "expected": []
+    },
+    {
+      "id": "no-misused-promises.test.ts:invalid[116]",
+      "file": "no-misused-promises.test.ts",
+      "suite": "invalid",
+      "index": 116,
+      "classification": "extra",
+      "code": "\ntype MyType<T> = { value: T };\ntype PromiseType<T> = { value: T };\ndeclare const f: () => MyType<number> | Promise<PromiseType<number>>;\nif (f()) {\n}\n      ",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-condition.test.ts:valid[35]",
+      "file": "no-unnecessary-condition.test.ts",
+      "suite": "valid",
+      "index": 35,
+      "classification": "extra",
+      "code": "\nconst fromPromise = async <T,>(promise: Promise<T>) => {\n  const value = await promise;\n  return value ? 1 : 2;\n};\n    ",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-condition.test.ts:valid[121]",
+      "file": "no-unnecessary-condition.test.ts",
+      "suite": "valid",
+      "index": 121,
+      "classification": "extra",
+      "code": "\ntype BrandedKey<S extends string> = S & { __brand: string };\ntype Foo = { [key: string]: string; foo: 'foo'; bar: 'bar' } | null;\ntype Key = BrandedKey<'bar'> | BrandedKey<'foo'>;\ndeclare const foo: Foo;\ndeclare const key: Key;\nfoo?.[key].trim();\n    ",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-condition.test.ts:valid[124]",
+      "file": "no-unnecessary-condition.test.ts",
+      "suite": "valid",
+      "index": 124,
+      "classification": "extra",
+      "code": "\ntype BrandedKey<S extends string> = S & { __brand: string };\ntype Foo = { [key: string]: string; foo: 'foo'; bar: 'bar' } | null;\ntype Key = BrandedKey<'bar'> | BrandedKey<'foo'> | BrandedKey<'baz'>;\ndeclare const foo: Foo;\ndeclare const key: Key;\nfoo?.[key]?.trim();\n    ",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-condition.test.ts:valid[126]",
+      "file": "no-unnecessary-condition.test.ts",
+      "suite": "valid",
+      "index": 126,
+      "classification": "extra",
+      "code": "\ntype BrandedKey<S extends string> = S & { __brand: string };\ntype Foo = { [key: string]: string; foo: 'foo'; bar: 'bar' } | null;\ntype Key = BrandedKey<'bar'> | BrandedKey<'foo'>;\ndeclare const foo: Foo;\ndeclare const key: Key;\nfoo?.[key].trim();\n      ",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-condition.test.ts:valid[129]",
+      "file": "no-unnecessary-condition.test.ts",
+      "suite": "valid",
+      "index": 129,
+      "classification": "extra",
+      "code": "\ntype BrandedKey<S extends string> = S & { __brand: string };\ntype Foo = { [key: string]: string; foo: 'foo'; bar: 'bar' } | null;\ntype Key = BrandedKey<'bar'> | BrandedKey<'foo'> | BrandedKey<'baz'>;\ndeclare const foo: Foo;\ndeclare const key: Key;\nfoo?.[key]?.trim();\n      ",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-condition.test.ts:valid[156]",
+      "file": "no-unnecessary-condition.test.ts",
+      "suite": "valid",
+      "index": 156,
+      "classification": "extra",
+      "code": "\nfunction get<Obj, Key extends keyof Obj>(obj: Obj, key: Key) {\n  const value = obj[key];\n  if (value) {\n    return value;\n  }\n  throw new Error('BOOM!');\n}\n\nget({ foo: null }, 'foo');\n    ",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-template-expression.test.ts:valid[66]",
+      "file": "no-unnecessary-template-expression.test.ts",
+      "suite": "valid",
+      "index": 66,
+      "classification": "extra",
+      "code": "type T<A extends string> = `${A}`;",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-arguments.test.ts:valid[25]",
+      "file": "no-unnecessary-type-arguments.test.ts",
+      "suite": "valid",
+      "index": 25,
+      "classification": "extra",
+      "code": "\ninterface I<T = number> {}\nclass Impl implements I<string> {}\n    ",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-arguments.test.ts:valid[31]",
+      "file": "no-unnecessary-type-arguments.test.ts",
+      "suite": "valid",
+      "index": 31,
+      "classification": "extra",
+      "code": "type Foo<T> = import('foo').Foo<T>;",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-arguments.test.ts:valid[33]",
+      "file": "no-unnecessary-type-arguments.test.ts",
+      "suite": "valid",
+      "index": 33,
+      "classification": "extra",
+      "code": "\ninterface Bar<T = number> {}\nclass Foo<T = number> implements Bar<T> {}\n    ",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-arguments.test.ts:valid[37]",
+      "file": "no-unnecessary-type-arguments.test.ts",
+      "suite": "valid",
+      "index": 37,
+      "classification": "extra",
+      "code": "\ntype A<T = Element> = T;\ntype B = A<HTMLInputElement>;\n    ",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-arguments.test.ts:valid[38]",
+      "file": "no-unnecessary-type-arguments.test.ts",
+      "suite": "valid",
+      "index": 38,
+      "classification": "extra",
+      "code": "\ntype A<T = Map<string, string>> = T;\ntype B = A<Map<string, number>>;\n    ",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-arguments.test.ts:valid[39]",
+      "file": "no-unnecessary-type-arguments.test.ts",
+      "suite": "valid",
+      "index": 39,
+      "classification": "extra",
+      "code": "\ntype A = Map<string, string>;\ntype B<T = A> = T;\ntype C2 = B<Map<string, number>>;\n    ",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-arguments.test.ts:valid[40]",
+      "file": "no-unnecessary-type-arguments.test.ts",
+      "suite": "valid",
+      "index": 40,
+      "classification": "extra",
+      "code": "\ninterface Foo<T = string> {}\ndeclare var Foo: {\n  new <T>(type: T): any;\n};\nclass Bar extends Foo<string> {}\n    ",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-arguments.test.ts:valid[41]",
+      "file": "no-unnecessary-type-arguments.test.ts",
+      "suite": "valid",
+      "index": 41,
+      "classification": "extra",
+      "code": "\ninterface Foo<T = string> {}\nclass Foo<T> {}\nclass Bar extends Foo<string> {}\n    ",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-arguments.test.ts:invalid[6]",
+      "file": "no-unnecessary-type-arguments.test.ts",
+      "suite": "invalid",
+      "index": 6,
+      "classification": "extra",
+      "code": "\ninterface I<T = number> {}\nclass Impl implements I<number> {}\n      ",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-arguments.test.ts:invalid[12]",
+      "file": "no-unnecessary-type-arguments.test.ts",
+      "suite": "invalid",
+      "index": 12,
+      "classification": "extra",
+      "code": "\ntype A<T = Map<string, string>> = T;\ntype B = A<Map<string, string>>;\n      ",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-arguments.test.ts:invalid[13]",
+      "file": "no-unnecessary-type-arguments.test.ts",
+      "suite": "invalid",
+      "index": 13,
+      "classification": "extra",
+      "code": "\ntype A = Map<string, string>;\ntype B<T = A> = T;\ntype C = B<A>;\n      ",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-arguments.test.ts:invalid[14]",
+      "file": "no-unnecessary-type-arguments.test.ts",
+      "suite": "invalid",
+      "index": 14,
+      "classification": "extra",
+      "code": "\ntype A = Map<string, string>;\ntype B<T = A> = T;\ntype C = B<Map<string, string>>;\n      ",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-arguments.test.ts:invalid[15]",
+      "file": "no-unnecessary-type-arguments.test.ts",
+      "suite": "invalid",
+      "index": 15,
+      "classification": "extra",
+      "code": "\ntype A = Map<string, string>;\ntype B = Map<string, string>;\ntype C<T = A> = T;\ntype D = C<B>;\n      ",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-arguments.test.ts:invalid[16]",
+      "file": "no-unnecessary-type-arguments.test.ts",
+      "suite": "invalid",
+      "index": 16,
+      "classification": "extra",
+      "code": "\ntype A = Map<string, string>;\ntype B = A;\ntype C = Map<string, string>;\ntype D = C;\ntype E<T = B> = T;\ntype F = E<D>;\n      ",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-arguments.test.ts:invalid[17]",
+      "file": "no-unnecessary-type-arguments.test.ts",
+      "suite": "invalid",
+      "index": 17,
+      "classification": "extra",
+      "code": "\ninterface Foo {}\ndeclare var Foo: {\n  new <T = string>(type: T): any;\n};\nclass Bar extends Foo<string> {}\n      ",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-arguments.test.ts:invalid[18]",
+      "file": "no-unnecessary-type-arguments.test.ts",
+      "suite": "invalid",
+      "index": 18,
+      "classification": "extra",
+      "code": "\ndeclare var Foo: {\n  new <T = string>(type: T): any;\n};\ninterface Foo {}\nclass Bar extends Foo<string> {}\n      ",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-assertion.test.ts:valid[0]",
+      "file": "no-unnecessary-type-assertion.test.ts",
+      "suite": "valid",
+      "index": 0,
+      "classification": "extra",
+      "code": "\ntype RecursiveMethod<Options = {}> = (<NewOptions = {}>(\n  options: NewOptions,\n) => RecursiveMethod<Options & NewOptions>) &\n  ((command: string) => Promise<void>);\n\ndeclare const recursiveMethod: RecursiveMethod;\ndeclare const value: object;\n\nvalue as unknown as typeof recursiveMethod;\n    ",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-assertion.test.ts:valid[1]",
+      "file": "no-unnecessary-type-assertion.test.ts",
+      "suite": "valid",
+      "index": 1,
+      "classification": "extra",
+      "code": "\ntype RecursiveMethod<Options = {}> = (<NewOptions = {}>(\n  options: NewOptions,\n) => RecursiveMethod<Options & NewOptions>) &\n  ((command: string) => Promise<void>);\n\ndeclare const value: object;\n\nvalue as unknown as RecursiveMethod & { extra: true };\n    ",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-assertion.test.ts:valid[2]",
+      "file": "no-unnecessary-type-assertion.test.ts",
+      "suite": "valid",
+      "index": 2,
+      "classification": "extra",
+      "code": "\ntype RecursiveMethod<Options = {}> = (<NewOptions = {}>(\n  options: NewOptions,\n) => RecursiveMethod<Options & NewOptions>) &\n  ((command: string) => Promise<void>);\n\ndeclare const recursiveMethod: RecursiveMethod;\n\nrecursiveMethod as RecursiveMethod & {};\n    ",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-assertion.test.ts:valid[31]",
+      "file": "no-unnecessary-type-assertion.test.ts",
+      "suite": "valid",
+      "index": 31,
+      "classification": "extra",
+      "code": "\ntype Data<T> = { value?: T };\ntype ValueType<TData> = TData extends Data<infer T> ? T : never;\n\nexport const foo = <TData extends Data<any>>(data: TData) => {\n  const getValue = () => data.value as ValueType<TData> | undefined;\n  const value: ValueType<TData> = getValue()!;\n  return value;\n};\n    ",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-assertion.test.ts:valid[117]",
+      "file": "no-unnecessary-type-assertion.test.ts",
+      "suite": "valid",
+      "index": 117,
+      "classification": "extra",
+      "code": "\ninterface ReadonlyMap<K, V> {\n  get(key: K): V | undefined;\n}\ntype T = { get<K>(key: K): K };\ndeclare const x: ReadonlyMap<string, string>;\ndeclare let y: T;\ny = x as T;\n    ",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-assertion.test.ts:valid[125]",
+      "file": "no-unnecessary-type-assertion.test.ts",
+      "suite": "valid",
+      "index": 125,
+      "classification": "extra",
+      "code": "\ntype Accessor<T> = () => T;\ndeclare function inner<T>(): Accessor<T>;\nfunction outer<T>(): Accessor<T> {\n  return inner<string>() as Accessor<any>;\n}\n    ",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-assertion.test.ts:valid[126]",
+      "file": "no-unnecessary-type-assertion.test.ts",
+      "suite": "valid",
+      "index": 126,
+      "classification": "extra",
+      "code": "\ninterface InjectionConstraint<T> {}\ntype InjectionKey<T> = symbol & InjectionConstraint<T>;\ndeclare function inject<T>(key: InjectionKey<T>): T;\nconst context = Symbol('ctx') as InjectionKey<{ value: string }>;\ninject(context).value;\n    ",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-assertion.test.ts:valid[129]",
+      "file": "no-unnecessary-type-assertion.test.ts",
+      "suite": "valid",
+      "index": 129,
+      "classification": "extra",
+      "code": "\nfunction fn<T extends { type: string }, K extends string, V>(\n  node: T,\n): T & Record<K, V> {\n  return node as T & Record<K, V>;\n}\n    ",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-assertion.test.ts:valid[133]",
+      "file": "no-unnecessary-type-assertion.test.ts",
+      "suite": "valid",
+      "index": 133,
+      "classification": "extra",
+      "code": "\ntype Test<T extends Record<string, unknown>> = {};\n\nfunction inferred<T extends Test<never>[]>(_input: {\n  addons?: T;\n}): {\n  options: T extends Test<infer C>[] ? C : never;\n} {\n  return {\n    options: {} as T extends Test<infer C>[] ? C : never,\n  };\n}\n\nconst test = inferred({\n  addons: [{} as Test<{ parameters: { potato: boolean } }>],\n});\n\nconsole.log(test.options.parameters.potato);\n    ",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-assertion.test.ts:invalid[95]",
+      "file": "no-unnecessary-type-assertion.test.ts",
+      "suite": "invalid",
+      "index": 95,
+      "classification": "extra",
+      "code": "\ntype Json = string | number | boolean | null | { [key: string]: Json } | Json[];\ntype Tables<T extends 'my_table'> = { my_table: { my_column: Json } }[T];\ndeclare const updatedColumn: Json;\nconst result = updatedColumn as unknown as Tables<'my_table'>['my_column'];\n      ",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-assertion.test.ts:invalid[96]",
+      "file": "no-unnecessary-type-assertion.test.ts",
+      "suite": "invalid",
+      "index": 96,
+      "classification": "extra",
+      "code": "\ninterface T {\n  a: string;\n}\ndeclare function fn<U extends T>(args: Pick<U, 'a'>): void;\nfn<T>({ a: '' as string });\n      ",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-assertion.test.ts:invalid[127]",
+      "file": "no-unnecessary-type-assertion.test.ts",
+      "suite": "invalid",
+      "index": 127,
+      "classification": "extra",
+      "code": "\ntype Storage = {\n  list<T = unknown>(): Promise<Map<string, T>>;\n};\ndeclare const db: Storage;\nconst results = (await db.list()) as Map<string, Uint8Array>;\n      ",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-assertion.test.ts:invalid[128]",
+      "file": "no-unnecessary-type-assertion.test.ts",
+      "suite": "invalid",
+      "index": 128,
+      "classification": "extra",
+      "code": "\ntype Storage = {\n  list<T = unknown>(): Promise<Map<string, T>>;\n};\ndeclare const db: Storage;\nconst results = (alert(), db.list()) as Promise<Map<string, Uint8Array>>;\n      ",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-assertion.test.ts:invalid[129]",
+      "file": "no-unnecessary-type-assertion.test.ts",
+      "suite": "invalid",
+      "index": 129,
+      "classification": "extra",
+      "code": "\ntype Storage = {\n  list<T = unknown>(): Promise<Map<string, T>>;\n};\ndeclare const db: Storage;\nconst results = db?.list() as Promise<Map<string, Uint8Array>>;\n      ",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-assertion.test.ts:invalid[130]",
+      "file": "no-unnecessary-type-assertion.test.ts",
+      "suite": "invalid",
+      "index": 130,
+      "classification": "extra",
+      "code": "\ntype Storage = {\n  list<T = unknown>(): Promise<Map<string, T>>;\n};\ndeclare const db: Storage;\nconst results = (await db?.list()) as Map<string, Uint8Array>;\n      ",
+      "expected": []
+    },
+    {
+      "id": "no-unnecessary-type-assertion.test.ts:invalid[131]",
+      "file": "no-unnecessary-type-assertion.test.ts",
+      "suite": "invalid",
+      "index": 131,
+      "classification": "extra",
+      "code": "\ntype Storage = {\n  list<T = unknown>(): Promise<Map<string, T>> | undefined;\n};\ndeclare const db: Storage;\nconst results = db.list()! as Promise<Map<string, Uint8Array>>;\n      ",
+      "expected": []
+    },
+    {
+      "id": "no-unsafe-enum-assignment.test.ts:valid[81]",
+      "file": "no-unsafe-enum-assignment.test.ts",
+      "suite": "valid",
+      "index": 81,
+      "classification": "extra",
+      "code": "\nenum Fruit {\n  Apple,\n}\n\ninterface Box<T> {\n  fruit: T;\n}\n\nfunction takesInterfaceBox<T extends Fruit>(box: Box<T>): Box<T> {\n  return box;\n}\n\ntakesInterfaceBox({ fruit: Fruit.Apple });\n    ",
+      "expected": []
+    },
+    {
+      "id": "no-unsafe-enum-assignment.test.ts:valid[82]",
+      "file": "no-unsafe-enum-assignment.test.ts",
+      "suite": "valid",
+      "index": 82,
+      "classification": "extra",
+      "code": "\nenum Fruit {\n  Apple,\n}\n\nclass Box<T> {\n  constructor(public fruit: T) {}\n}\n\nconst box: Box<Fruit> = new Box(Fruit.Apple);\nvoid box;\n    ",
+      "expected": []
+    },
+    {
+      "id": "no-unsafe-enum-assignment.test.ts:valid[84]",
+      "file": "no-unsafe-enum-assignment.test.ts",
+      "suite": "valid",
+      "index": 84,
+      "classification": "extra",
+      "code": "\nenum Fruit {\n  Apple,\n}\n\ninterface Basket<T> {\n  fruit: T;\n}\n\nclass BasketImpl<T extends Fruit> implements Basket<T> {\n  fruit: T;\n\n  constructor(fruit: T) {\n    this.fruit = fruit;\n  }\n}\n\nvoid new BasketImpl(Fruit.Apple);\n    ",
+      "expected": []
+    },
+    {
+      "id": "no-unsafe-enum-assignment.test.ts:valid[121]",
+      "file": "no-unsafe-enum-assignment.test.ts",
+      "suite": "valid",
+      "index": 121,
+      "classification": "extra",
+      "code": "\ntype Unwrap<T> = T extends (infer U)[] ? U : T;\n\ninterface Schema<T> {\n  in: Schema<Unwrap<T>>;\n  out: Schema<Unwrap<T>[]>;\n}\n\ndeclare function register(schema: Schema<unknown>): void;\n\nfunction forward<T>(schema: Schema<T>) {\n  register(schema);\n}\n    ",
+      "expected": []
+    },
+    {
+      "id": "no-unsafe-enum-assignment.test.ts:valid[122]",
+      "file": "no-unsafe-enum-assignment.test.ts",
+      "suite": "valid",
+      "index": 122,
+      "classification": "extra",
+      "code": "\nenum Fruit {\n  Apple,\n}\n\ntype Unwrap<T> = T extends (infer U)[] ? U : T;\n\ninterface Schema<T> {\n  in: Schema<Unwrap<T>>;\n  out: Schema<Unwrap<T>[]>;\n}\n\ndeclare function register(schema: Schema<{ fruit: Fruit }>): void;\n\nfunction forward<T extends { fruit: Fruit }>(schema: Schema<T>) {\n  register(schema);\n}\n    ",
+      "expected": []
+    },
+    {
+      "id": "no-unsafe-enum-assignment.test.ts:invalid[56]",
+      "file": "no-unsafe-enum-assignment.test.ts",
+      "suite": "invalid",
+      "index": 56,
+      "classification": "extra",
+      "code": "\nenum Fruit {\n  Apple,\n}\n\nclass Box<T extends Fruit> {\n  constructor(public fruit: T) {}\n}\n\nnew Box(1);\n      ",
+      "expected": []
+    },
+    {
+      "id": "no-unsafe-enum-assignment.test.ts:invalid[63]",
+      "file": "no-unsafe-enum-assignment.test.ts",
+      "suite": "invalid",
+      "index": 63,
+      "classification": "extra",
+      "code": "\nenum Fruit {\n  Apple,\n}\n\nclass Box<T extends { fruit: Fruit }> {\n  constructor(public value: T) {}\n}\n\nnew Box({ fruit: 1 });\n      ",
+      "expected": []
+    },
+    {
+      "id": "no-unsafe-enum-assignment.test.ts:invalid[73]",
+      "file": "no-unsafe-enum-assignment.test.ts",
+      "suite": "invalid",
+      "index": 73,
+      "classification": "extra",
+      "code": "\nenum Fruit {\n  Apple,\n}\n\ntype Box<T> = { fruit: T };\n\nfunction takesAliasBox<T extends Fruit>(box: Box<T>): void {}\n\ntakesAliasBox({ fruit: 1 });\n      ",
+      "expected": []
+    },
+    {
+      "id": "no-unsafe-enum-assignment.test.ts:invalid[74]",
+      "file": "no-unsafe-enum-assignment.test.ts",
+      "suite": "invalid",
+      "index": 74,
+      "classification": "extra",
+      "code": "\nenum Fruit {\n  Apple,\n}\n\ninterface Box<T> {\n  fruit: T;\n}\n\nconst box: Box<Fruit> = { fruit: 1 };\nvoid box;\n      ",
+      "expected": []
+    },
+    {
+      "id": "no-unsafe-enum-assignment.test.ts:invalid[75]",
+      "file": "no-unsafe-enum-assignment.test.ts",
+      "suite": "invalid",
+      "index": 75,
+      "classification": "extra",
+      "code": "\nenum Fruit {\n  Apple,\n}\n\nclass Box<T> {\n  constructor(public fruit: T) {}\n}\n\nconst box: Box<Fruit> = new Box(1);\nvoid box;\n      ",
+      "expected": []
+    },
+    {
+      "id": "no-unsafe-enum-assignment.test.ts:invalid[76]",
+      "file": "no-unsafe-enum-assignment.test.ts",
+      "suite": "invalid",
+      "index": 76,
+      "classification": "extra",
+      "code": "\nenum Fruit {\n  Apple,\n}\n\nasync function getBox<T extends { fruit: Fruit }>(): Promise<T> {\n  return { fruit: 1 };\n}\n      ",
+      "expected": []
+    },
+    {
+      "id": "no-unsafe-enum-assignment.test.ts:invalid[77]",
+      "file": "no-unsafe-enum-assignment.test.ts",
+      "suite": "invalid",
+      "index": 77,
+      "classification": "extra",
+      "code": "\nenum Fruit {\n  Apple,\n}\n\ninterface Basket<T> {\n  fruit: T;\n}\n\nclass BasketImpl implements Basket<Fruit> {\n  fruit = 1;\n}\n      ",
+      "expected": []
+    },
+    {
+      "id": "no-unsafe-enum-assignment.test.ts:invalid[79]",
+      "file": "no-unsafe-enum-assignment.test.ts",
+      "suite": "invalid",
+      "index": 79,
+      "classification": "extra",
+      "code": "\nenum Fruit {\n  Apple,\n}\n\ninterface Basket<T> {\n  fruit: T;\n}\n\nclass BasketImpl<T extends Fruit> implements Basket<T> {\n  fruit = 1;\n}\n      ",
+      "expected": []
+    },
+    {
+      "id": "no-unsafe-enum-assignment.test.ts:invalid[129]",
+      "file": "no-unsafe-enum-assignment.test.ts",
+      "suite": "invalid",
+      "index": 129,
+      "classification": "extra",
+      "code": "\nenum Fruit {\n  Apple,\n}\n\ninterface NumberBox<T> {\n  fruit: number;\n  value: T;\n}\n\ninterface FruitBox<T> {\n  fruit: Fruit;\n  value: T;\n}\n\nfunction getFruitBox<T>(box: NumberBox<T>): FruitBox<T> {\n  return box;\n}\n      ",
+      "expected": []
+    },
+    {
+      "id": "no-unsafe-return.test.ts:valid[15]",
+      "file": "no-unsafe-return.test.ts",
+      "suite": "valid",
+      "index": 15,
+      "classification": "extra",
+      "code": "\ntype Foo<T = number> = { prop: T };\nfunction foo(): Foo {\n  return { prop: 1 } as Foo<number>;\n}\n    ",
+      "expected": []
+    },
+    {
+      "id": "no-unsafe-return.test.ts:valid[23]",
+      "file": "no-unsafe-return.test.ts",
+      "suite": "valid",
+      "index": 23,
+      "classification": "extra",
+      "code": "\ntype Wrapper<T> = { inner: T };\ntype Extractor<D extends Wrapper<any>> = D extends Wrapper<infer V> ? V : never;\nconst fn =\n  <D extends Wrapper<any>>(foo: Extractor<D>) =>\n  () =>\n    foo;\n    ",
+      "expected": []
+    },
+    {
+      "id": "no-unsafe-return.test.ts:invalid[24]",
+      "file": "no-unsafe-return.test.ts",
+      "suite": "invalid",
+      "index": 24,
+      "classification": "extra",
+      "code": "\ntype Awaited<T> = Promise<T>;\ndeclare const value: Awaited<any>;\nasync function foo(): Promise<number> {\n  return value;\n}\nexport {};\n      ",
+      "expected": []
+    },
+    {
+      "id": "no-unsafe-return.test.ts:invalid[36]",
+      "file": "no-unsafe-return.test.ts",
+      "suite": "invalid",
+      "index": 36,
+      "classification": "extra",
+      "code": "\ninterface Alias<T> extends Promise<any> {\n  foo: 'bar';\n}\n\ndeclare const value: Alias<number>;\nasync function foo() {\n  return value;\n}\n      ",
+      "expected": []
+    },
+    {
+      "id": "only-throw-error.test.ts:invalid[29]",
+      "file": "only-throw-error.test.ts",
+      "suite": "invalid",
+      "index": 29,
+      "classification": "extra",
+      "code": "\nfunction foo<T>(fn: () => Promise<T>) {\n  const promise = fn();\n  const res = promise.then(() => {}).catch(() => {});\n  throw res;\n}\n      ",
+      "expected": []
+    },
+    {
+      "id": "prefer-promise-reject-errors.test.ts:valid[24]",
+      "file": "prefer-promise-reject-errors.test.ts",
+      "suite": "valid",
+      "index": 24,
+      "classification": "extra",
+      "code": "\ntype Wrapper<T> = { foo: Readonly<T>[] };\ndeclare const foo: Wrapper<Error>['foo'][5];\nPromise.reject(foo);\n    ",
+      "expected": []
+    },
+    {
+      "id": "prefer-promise-reject-errors.test.ts:valid[57]",
+      "file": "prefer-promise-reject-errors.test.ts",
+      "suite": "valid",
+      "index": 57,
+      "classification": "extra",
+      "code": "\ntype Wrapper<T> = { foo: Readonly<T>[] };\ndeclare const foo: Wrapper<Error>['foo'][5];\nnew Promise((resolve, reject) => reject(foo));\n    ",
+      "expected": []
+    },
+    {
+      "id": "prefer-promise-reject-errors.test.ts:invalid[30]",
+      "file": "prefer-promise-reject-errors.test.ts",
+      "suite": "invalid",
+      "index": 30,
+      "classification": "extra",
+      "code": "\ntype FakeReadonly<T> = { 'fake readonly': T };\ndeclare const foo: FakeReadonly<Error>;\nPromise.reject(foo);\n      ",
+      "expected": []
+    },
+    {
+      "id": "prefer-promise-reject-errors.test.ts:invalid[39]",
+      "file": "prefer-promise-reject-errors.test.ts",
+      "suite": "invalid",
+      "index": 39,
+      "classification": "extra",
+      "code": "\ntype Wrapper<T> = { foo: Readonly<T>[] };\ndeclare const foo: Wrapper<Error | 'error'>['foo'][5];\nPromise.reject(foo);\n      ",
+      "expected": []
+    },
+    {
+      "id": "prefer-promise-reject-errors.test.ts:invalid[61]",
+      "file": "prefer-promise-reject-errors.test.ts",
+      "suite": "invalid",
+      "index": 61,
+      "classification": "extra",
+      "code": "\ntype FakeReadonly<T> = { 'fake readonly': T };\ndeclare const foo: FakeReadonly<Error>;\nnew Promise((resolve, reject) => reject(foo));\n      ",
+      "expected": []
+    },
+    {
+      "id": "prefer-promise-reject-errors.test.ts:invalid[70]",
+      "file": "prefer-promise-reject-errors.test.ts",
+      "suite": "invalid",
+      "index": 70,
+      "classification": "extra",
+      "code": "\ntype Wrapper<T> = { foo: Readonly<T>[] };\ndeclare const foo: Wrapper<Error | 'error'>['foo'][5];\nnew Promise((resolve, reject) => reject(foo));\n      ",
+      "expected": []
+    },
+    {
+      "id": "prefer-return-this-type.test.ts:invalid[11]",
+      "file": "prefer-return-this-type.test.ts",
+      "suite": "invalid",
+      "index": 11,
+      "classification": "extra",
+      "code": "\nclass Animal<T> {\n  eat(): Animal<T> {\n    console.log(\"I'm moving!\");\n    return this;\n  }\n}\n      ",
+      "expected": []
+    },
+    {
+      "id": "return-await.test.ts:invalid[43]",
+      "file": "return-await.test.ts",
+      "suite": "invalid",
+      "index": 43,
+      "classification": "extra",
+      "code": "\nasync function test<T>(): Promise<T> {\n  const res = await fetch('...');\n  try {\n    return res.json() as Promise<T>;\n  } catch (err) {\n    throw Error('Request Failed.');\n  }\n}\n      ",
+      "expected": []
+    },
+    {
+      "id": "no-base-to-string.test.ts:valid[153]",
+      "file": "no-base-to-string.test.ts",
+      "suite": "valid",
+      "index": 153,
+      "classification": "other-lines",
+      "code": "\nclass BaseError extends Error {\n  code?: string;\n}\n\nclass Boom<T> extends BaseError {\n  details: T;\n}\n\nfunction bar<T>(error: Boom<T>) {\n  console.log(error.toString());\n}\n      ",
+      "expected": [
+        {
+          "line": 6,
+          "column": 12,
+          "endLine": 6,
+          "endColumn": 13,
+          "message": "Type parameter T is used only once in the class signature."
+        }
+      ]
+    },
+    {
+      "id": "no-unnecessary-type-arguments.test.ts:valid[32]",
+      "file": "no-unnecessary-type-arguments.test.ts",
+      "suite": "valid",
+      "index": 32,
+      "classification": "other-lines",
+      "code": "\nclass Bar<T = number> {}\nclass Foo<T = number> extends Bar<T> {}\n    ",
+      "expected": [
+        {
+          "line": 2,
+          "column": 11,
+          "endLine": 2,
+          "endColumn": 21,
+          "message": "Type parameter T is never used in the class signature."
+        }
+      ]
+    },
+    {
+      "id": "no-unnecessary-type-arguments.test.ts:valid[35]",
+      "file": "no-unnecessary-type-arguments.test.ts",
+      "suite": "valid",
+      "index": 35,
+      "classification": "other-lines",
+      "code": "\ninterface Bar<T = number> {}\nclass Foo<T = number> implements Bar<string> {}\n    ",
+      "expected": [
+        {
+          "line": 3,
+          "column": 11,
+          "endLine": 3,
+          "endColumn": 21,
+          "message": "Type parameter T is never used in the class signature."
+        }
+      ]
+    },
+    {
+      "id": "no-unnecessary-type-arguments.test.ts:valid[42]",
+      "file": "no-unnecessary-type-arguments.test.ts",
+      "suite": "valid",
+      "index": 42,
+      "classification": "other-lines",
+      "code": "\nclass Foo<T = string> {}\ninterface Foo<T> {}\nclass Bar implements Foo<string> {}\n    ",
+      "expected": [
+        {
+          "line": 2,
+          "column": 11,
+          "endLine": 2,
+          "endColumn": 21,
+          "message": "Type parameter T is never used in the class signature."
+        }
+      ]
+    },
+    {
+      "id": "no-unnecessary-type-arguments.test.ts:invalid[8]",
+      "file": "no-unnecessary-type-arguments.test.ts",
+      "suite": "invalid",
+      "index": 8,
+      "classification": "other-lines",
+      "code": "\ninterface Bar<T = string> {}\nclass Foo<T = number> implements Bar<string> {}\n      ",
+      "expected": [
+        {
+          "line": 3,
+          "column": 11,
+          "endLine": 3,
+          "endColumn": 21,
+          "message": "Type parameter T is never used in the class signature."
+        }
+      ]
+    },
+    {
+      "id": "no-unnecessary-type-arguments.test.ts:invalid[19]",
+      "file": "no-unnecessary-type-arguments.test.ts",
+      "suite": "invalid",
+      "index": 19,
+      "classification": "other-lines",
+      "code": "\nclass Foo<T> {}\ninterface Foo<T = string> {}\nclass Bar implements Foo<string> {}\n      ",
+      "expected": [
+        {
+          "line": 2,
+          "column": 11,
+          "endLine": 2,
+          "endColumn": 12,
+          "message": "Type parameter T is never used in the class signature."
+        }
+      ]
+    },
+    {
+      "id": "no-unnecessary-type-assertion.test.ts:valid[128]",
+      "file": "no-unnecessary-type-assertion.test.ts",
+      "suite": "valid",
+      "index": 128,
+      "classification": "other-lines",
+      "code": "\ntype BasePayload = { id: string };\n\nabstract class AbstractHandler {\n  constructor(_ctx: { token: number }) {}\n}\n\nabstract class AbstractPayloadHandler<\n  TPayload extends BasePayload = BasePayload,\n> extends AbstractHandler {}\n\ntype HandlerCtor = new (ctx: { token: number }) => AbstractHandler;\n\ndeclare const registeredHandlers: HandlerCtor[];\n\nfunction example<TItem extends BasePayload>(\n  handlerClass: typeof AbstractPayloadHandler<TItem>,\n) {\n  registeredHandlers.includes(\n    handlerClass as new (...args: any[]) => AbstractPayloadHandler<TItem>,\n  );\n}\n    ",
+      "expected": [
+        {
+          "line": 9,
+          "column": 3,
+          "endLine": 9,
+          "endColumn": 45,
+          "message": "Type parameter TPayload is never used in the class signature."
+        }
+      ]
+    }
+  ],
+  "oracle": {
+    "casesWithDiagnostics": 67,
+    "diagnosticCount": 68
+  }
+}

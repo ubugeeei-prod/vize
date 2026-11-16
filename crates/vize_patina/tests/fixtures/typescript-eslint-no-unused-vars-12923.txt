@@ -166,8 +166,7 @@ a$fooz;
 --- typescript-eslint
 line 3: '$' is defined but never used.
 --- vize
---- kept
-`/* globals */` comments declare ESLint globals; vize does not read ESLint configuration comments.
+line 3: '$' is defined but never used. Allowed unused vars must match /^_/u
 === eslint invalid[63] (missed)
 --- sfc
 <script setup lang="ts">
@@ -178,8 +177,7 @@ line 3: '$' is defined but never used.
 --- typescript-eslint
 line 2: '$foo' is defined but never used.
 --- vize
---- kept
-`/* globals */` comments declare ESLint globals; vize does not read ESLint configuration comments.
+line 2: '$foo' is defined but never used. Allowed unused vars must match /^_/u
 === eslint invalid[83] (missed)
 --- sfc
 <script setup lang="ts">

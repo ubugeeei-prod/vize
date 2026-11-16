@@ -1,5 +1,5 @@
 use serde_json::{Value, json};
-use vize_l0::cstr;
+use vize_l0::{cstr, path::canonicalize_non_verbatim};
 
 use super::mode::ProjectionMode;
 use super::test_support::{
@@ -23,6 +23,44 @@ fn inferred_project_returns_dynamic_config_identity_without_file_discovery() {
     );
     assert!(responses[1]["result"].get("watchedFiles").is_none());
     assert!(responses[1]["result"].get("optionDiagnostics").is_none());
+}
+
+#[test]
+fn directly_selected_nuxt_import_manifest_can_own_vue_template_ref() {
+    let directory = tempfile::tempdir().unwrap();
+    let generated = directory.path().join(".nuxt/imports.d.ts");
+    std::fs::create_dir_all(generated.parent().unwrap()).unwrap();
+    std::fs::write(
+        &generated,
+        r#"export {};
+declare global {
+  const useTemplateRef: typeof import("vue").useTemplateRef;
+}
+"#,
+    )
+    .unwrap();
+    let config = directory.path().join("tsconfig.json");
+    std::fs::write(&config, r#"{"files":[".nuxt/imports.d.ts"]}"#).unwrap();
+
+    let responses = exchange(&frames(&[
+        initialize_request(),
+        configured_open(2, "nuxt", &config),
+    ]));
+    let result = &responses[1]["result"];
+    let config_identity = result["configIdentity"].as_str().unwrap();
+    let (identity_prefix, ambient_template_ref) = config_identity.rsplit_once(':').unwrap();
+    assert_eq!(ambient_template_ref, "1");
+    assert_eq!(
+        identity_prefix.rsplit_once(':').unwrap().1,
+        "ambient-vue-template-ref"
+    );
+    let watched = result["watchedFiles"].as_array().unwrap();
+    let generated = canonicalize_non_verbatim(&generated);
+    assert!(
+        watched
+            .iter()
+            .any(|path| path.as_str() == generated.to_str())
+    );
 }
 
 #[test]

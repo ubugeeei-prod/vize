@@ -51,8 +51,8 @@ export function inverseRuleOptions12944(name: string, body: Buffer): Buffer {
   }
   if (name === membershipPath) {
     identity(body, {
-      bytes: 39722,
-      sha256: "b5125bd36dfafd95b9cc499b00bfcb37e07492574c1604e13c918acb91e31985",
+      bytes: 39808,
+      sha256: "abee0c1b443a26a723be362e702d086cff8fac9fab46ee48247573a7cee3e948",
     });
     const text = body.toString();
     const at = text.indexOf("{");
@@ -61,8 +61,8 @@ export function inverseRuleOptions12944(name: string, body: Buffer): Buffer {
     table.opt_in.splice(table.opt_in.indexOf(portedRule), 1);
     const predecessor = Buffer.concat([Buffer.from(text.slice(0, at)), jsonBytes(table)]);
     identity(predecessor, {
-      bytes: 39683,
-      sha256: "a5b5849b77cdc7f3c38e90cea2f5ac9d5311bd017c0c74108ee835a9cda68b9b",
+      bytes: 39769,
+      sha256: "d093ed93fcd632850cf06003918a7d67ab073ea582bfe6f8cbd0ccb562152df4",
     });
     return predecessor;
   }

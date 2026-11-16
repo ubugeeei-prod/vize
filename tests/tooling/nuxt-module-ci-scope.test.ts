@@ -69,9 +69,9 @@ test("merge, main and manual runs retain every extended campaign and source rece
   const source = parse(readRepoFile(".github", "workflows", "pr-source-checks.yml"));
   const check = parse(readRepoFile(".github", "workflows", "check.yml"));
   assert.deepEqual(source.jobs["nuxt-module-qualification"], {
-    name: "Nuxt module qualification",
+    name: "Nuxt and Vite release products",
     if: "${{ github.event_name == 'merge_group' }}",
-    uses: "./.github/workflows/nuxt3-module-build.yml",
+    uses: "./.github/workflows/nuxt-vite-release-products.yml",
   });
   const condition = source.jobs["nuxt-module-qualification"].if.slice(3, -2);
   for (const event of [
@@ -114,6 +114,56 @@ test("merge, main and manual runs retain every extended campaign and source rece
       }
     }
   }
+});
+
+test("the required integration product edge closes every supported Nuxt and Vite host", () => {
+  const products = parse(
+    readRepoFile(".github", "workflows", "nuxt-vite-release-products.yml"),
+  ) as {
+    on: Record<string, unknown>;
+    jobs: Record<string, { name?: string; uses?: string }>;
+  };
+  assert.ok(Object.hasOwn(products.on, "workflow_call"));
+  assert.deepEqual(products.jobs, {
+    "nuxt2-webpack": {
+      name: "Nuxt 2 webpack product",
+      uses: "./.github/workflows/nuxt2-module-build.yml",
+    },
+    "nuxt2-bridge": {
+      name: "Nuxt 2 Bridge webpack and Vite products",
+      uses: "./.github/workflows/nuxt2-bridge-module-build.yml",
+    },
+    "nuxt-modern-vite": {
+      name: "Nuxt 3, 4 and 5 Vite products",
+      uses: "./.github/workflows/nuxt3-module-build.yml",
+    },
+    "nuxt4-styles": {
+      name: "Nuxt 4 style products",
+      uses: "./.github/workflows/nuxt-style-build.yml",
+    },
+    "vite-plus-types": {
+      name: "Vite and Vite+ public types",
+      uses: "./.github/workflows/vite-plus-type-compat.yml",
+    },
+  });
+  for (const job of Object.values(products.jobs)) {
+    assert.ok(job.uses);
+    const child = parse(readRepoFile(...job.uses!.replace("./", "").split("/"))) as {
+      on: Record<string, unknown>;
+    };
+    assert.ok(Object.hasOwn(child.on, "workflow_call"), job.uses);
+    assert.equal(
+      Object.hasOwn(child.on, "merge_group"),
+      false,
+      `${job.uses} must have one merge-queue owner`,
+    );
+  }
+
+  const full = parse(readRepoFile(".github", "workflows", "full-qualification.yml"));
+  assert.deepEqual(full.jobs["nuxt-module-qualification"], {
+    name: "Nuxt and Vite release products",
+    uses: "./.github/workflows/nuxt-vite-release-products.yml",
+  });
 });
 
 test("closed Nuxt campaign inventory rejects missing original or new runtime lanes", () => {

@@ -1,0 +1,30 @@
+export function useArrow() {
+  const copy = (): void => {};
+  return { copy };
+}
+
+export function useAsyncArrow() {
+  const save = async (): Promise<void> => {
+    await Promise.resolve();
+  };
+  return { save };
+}
+
+export function useArrowProperty() {
+  return { open: (): void => {} };
+}
+
+export function useFunctionDeclaration() {
+  function load(): void {}
+  return { load };
+}
+
+export function useFunctionExpression() {
+  return { close: function (): void {} };
+}
+
+export function useMethodShorthand() {
+  return {
+    reset(): void {},
+  };
+}

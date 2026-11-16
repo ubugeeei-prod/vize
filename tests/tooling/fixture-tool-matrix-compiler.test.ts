@@ -143,6 +143,14 @@ test("fixture tool matrix mirrors compiler roots when validating artifact paths"
       output: "src/nested/App.json",
     },
     {
+      name: "hidden directory",
+      vueGlobs: ["**/*.vue"],
+      source: "docs/.vitepress/theme/Layout.vue",
+      extraDirectories: [],
+      ignoredSources: [],
+      output: "docs/.vitepress/theme/Layout.json",
+    },
+    {
       name: "multiple existing roots",
       vueGlobs: ["apps/**/*.vue", "packages/**/*.vue"],
       source: "apps/admin/App.vue",

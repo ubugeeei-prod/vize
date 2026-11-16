@@ -5,6 +5,8 @@ import test from "node:test";
 import {
   type BurstSample,
   type SerialSample,
+  PAIR_ORDER_SEED,
+  balancedOrders,
   frame,
   markdown,
   median,
@@ -19,7 +21,10 @@ const burst = (wallMs: number, outputSha = "a"): BurstSample => ({
   outputBytes: 1_000_000,
   outputSha,
 });
-const serial = (outputSha = "s"): SerialSample => ({ latencies: [1, 2, 3, 4], outputSha });
+const serial = (outputSha = "s", latencies = [1, 2, 3, 4]): SerialSample => ({
+  latencies,
+  outputSha,
+});
 
 const cell = (
   head: { bursts: BurstSample[]; serials: SerialSample[] },
@@ -29,9 +34,10 @@ const cell = (
     label: "linux-ext4",
     sfcs: 1000,
     serialFiles: 4,
+    replicates: 1,
     builds: ["base", "head"],
     bursts: new Map([
-      ["base", [burst(200), burst(220), burst(210)]],
+      ["base", [burst(200), burst(220)]],
       ["head", head.bursts],
     ]),
     serials: new Map([
@@ -55,22 +61,67 @@ test("medians and quantiles ignore input order", () => {
   assert.ok(Number.isNaN(median([])));
 });
 
+test("each seeded replicate measures both orders exactly once", () => {
+  const builds = ["base", "head"];
+  const observed = Array.from({ length: 5 }, (_, replicate) => {
+    const [first, inverse] = balancedOrders(builds, replicate);
+    assert.deepEqual(inverse, [...first].reverse());
+    for (const build of builds) {
+      assert.equal([first[0], inverse[0]].filter((candidate) => candidate === build).length, 1);
+      assert.equal([first[1], inverse[1]].filter((candidate) => candidate === build).length, 1);
+    }
+    return first.join("");
+  });
+  assert.deepEqual(observed, ["basehead", "headbase", "headbase", "basehead", "basehead"]);
+  assert.equal(PAIR_ORDER_SEED, 0x13018);
+});
+
+test("reference-enabled replicates balance every position and relative order", () => {
+  const builds = ["base", "head", "reference"];
+  for (let replicate = 0; replicate < 5; replicate++) {
+    const orders = balancedOrders(builds, replicate);
+    assert.equal(orders.length, 6);
+    for (const build of builds) {
+      assert.deepEqual(
+        orders.map((order) => order.indexOf(build)).sort((left, right) => left - right),
+        [0, 0, 1, 1, 2, 2],
+      );
+    }
+    for (const left of builds) {
+      for (const right of builds.filter((build) => build !== left)) {
+        assert.equal(
+          orders.filter((order) => order.indexOf(left) < order.indexOf(right)).length,
+          orders.length / 2,
+        );
+      }
+    }
+  }
+});
+
 test("identical answers publish medians and signed head deltas", () => {
   const result = cell({
-    bursts: [burst(100), burst(110), burst(105)],
-    serials: [serial(), serial()],
+    bursts: [burst(100), burst(110)],
+    serials: [serial("s", [1, 1, 1, 1]), serial("s", [9, 9, 9, 9])],
   });
   assert.equal(result.failure, undefined);
   assert.equal(result.outputsIdentical, true);
   assert.equal(result.builds[1]?.burstWallMs, 105);
+  assert.equal(result.builds[1]?.serialRawSamples, 8);
+  assert.equal(result.builds[1]?.serialSessions, 2);
+  assert.equal(result.builds[1]?.serialP50Ms, 9);
+  assert.equal(result.builds[1]?.serialP95Ms, 9);
+  assert.equal(result.builds[1]?.serialSessionP50Ms, 5);
+  assert.equal(result.builds[1]?.serialSessionP95Ms, 5);
   const report = markdown("linux-ext4", [result]);
   assert.match(report, /\| head \| 105 \(-50\.0%\) \(100–110\)/);
   assert.match(report, /\| base \| 210 \(200–220\)/);
+  assert.match(report, /1 balanced replicates \(AB\+BA, seed 0x13018\)/);
+  assert.match(report, /2 serial sessions\/build × 4 transforms = 8 raw latency samples\/build/);
 });
 
 test("a build that answers differently publishes no timing unless allowed", () => {
   const changed = {
-    bursts: [burst(100, "b"), burst(110, "b"), burst(105, "b")],
+    bursts: [burst(100, "b"), burst(110, "b")],
     serials: [serial("t"), serial("t")],
   };
   const refused = cell(changed);
@@ -83,7 +134,7 @@ test("a build that answers differently publishes no timing unless allowed", () =
 
 test("runs of one build that disagree always fail the cell", () => {
   const flaky = cell(
-    { bursts: [burst(100), burst(110, "other"), burst(105)], serials: [serial(), serial()] },
+    { bursts: [burst(100), burst(110, "other")], serials: [serial(), serial()] },
     true,
   );
   assert.equal(flaky.failure, "head answered runs differently");
@@ -102,6 +153,7 @@ test("the workflow measures every filesystem from one build per platform", () =>
     /WSLENV: SIZES\/u:RUNS\/u:ALLOW\/u:REFERENCE\/u:WSL_MOUNT_ROOT\/u:GITHUB_STEP_SUMMARY\/u/,
   );
   assert.match(workflow, /cargo build --profile ci-opt -p vize --bin vize/);
+  assert.match(workflow, /description: Balanced AB\+BA replicates per build/);
 });
 
 test("the syscall census reads strace lines and collapses generated spellings", async () => {

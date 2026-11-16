@@ -1,6 +1,9 @@
 // One closed API/SourceFile ABI registration, outside authored-language rates.
 import { createHash } from "node:crypto";
-import { stripTypeScriptTypes } from "node:module";
+// Bun does not expose Node's experimental named export. A namespace import
+// keeps unrelated planner contracts loadable while Node retains the exact
+// transform used to authenticate the registered producer bytes below.
+import * as nodeModule from "node:module";
 import { watcherSuccessor, postAckDependencies } from "./native-beta-dto-current-custody.ts";
 const currentAuthorityPath = "tools/support/compat/github/native-beta-dto-current-custody.ts";
 const currentAuthoritySha256 = "f6458f16081d6e883a585d2866223a82b8ec3049324f7c6a75a970f999405333";
@@ -85,7 +88,7 @@ const before = "13fa41356d075047a229f580014b637d3bbeb57f";
 const betaCommit = "3e9236361fa97a9e6c685f4833ac457ae2d8c50a";
 const sha = (value: Buffer) => createHash("sha256").update(value).digest("hex");
 const runtime = (source: Buffer) =>
-  stripTypeScriptTypes(source.toString("utf8"), { mode: "transform" });
+  nodeModule.stripTypeScriptTypes(source.toString("utf8"), { mode: "transform" });
 // One explicit current observer successor. This does not rewrite the original
 // producer identity or equate the distinct root and SDK watcher registrations.
 

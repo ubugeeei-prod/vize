@@ -378,20 +378,26 @@ export function runProjectLocalCheck(
   projectRoot: string,
   extra: readonly string[],
   env: NodeJS.ProcessEnv = {},
+  runtime = process.execPath,
+  vizeBin = projectLocalVizeBin(projectRoot),
 ): ProcessResult {
-  return runResult(process.execPath, [projectLocalVizeBin(projectRoot), "check", ...extra], {
+  return runResult(runtime, [vizeBin, "check", ...extra], {
     cwd: projectRoot,
     env: projectEnv(env),
   });
 }
 
-export function checkReport(projectRoot: string): MachineCheckReport {
-  const args = [projectLocalVizeBin(projectRoot), "check", "--format", "json", "--quiet"];
-  const result = runResult(process.execPath, args, {
+export function checkReport(
+  projectRoot: string,
+  runtime = process.execPath,
+  vizeBin = projectLocalVizeBin(projectRoot),
+): MachineCheckReport {
+  const args = [vizeBin, "check", "--format", "json", "--quiet"];
+  const result = runResult(runtime, args, {
     cwd: projectRoot,
     env: projectEnv(),
   });
-  return machineCheckReport(process.execPath, args, projectRoot, result);
+  return machineCheckReport(runtime, args, projectRoot, result);
 }
 
 export function reportedDiagnostics(
@@ -410,9 +416,20 @@ export function reportedDiagnostics(
  * A `CORSA_PATH` that does not exist must fail closed and name that path.
  * SGR sequences are stripped and path separators normalised before comparing.
  */
-export function assertMissingCorsaGuidance(projectRoot: string, manager: PackageManager): void {
+export function assertMissingCorsaGuidance(
+  projectRoot: string,
+  manager: PackageManager,
+  runtime = process.execPath,
+  vizeBin = projectLocalVizeBin(projectRoot),
+): void {
   const missing = path.join(projectRoot, "no-such-corsa-runtime");
-  const direct = runProjectLocalCheck(projectRoot, ["--quiet"], { CORSA_PATH: missing });
+  const direct = runProjectLocalCheck(
+    projectRoot,
+    ["--quiet"],
+    { CORSA_PATH: missing },
+    runtime,
+    vizeBin,
+  );
   assert.notEqual(direct.status, 0, "a missing Corsa runtime silently disabled type checking");
   const message = renderOutput(direct).replaceAll(ANSI_SGR, "").replaceAll("\\", "/");
   assert.equal(

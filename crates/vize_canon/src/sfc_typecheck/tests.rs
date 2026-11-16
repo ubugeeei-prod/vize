@@ -1,14 +1,14 @@
 //! Tests for SFC type checking.
 #![cfg(test)]
-mod heritage_props;
-mod sfc_grammar;
-
 mod emit_props;
 mod fallthrough_ranges;
+mod heritage_props;
 mod optional_chain_props;
 #[cfg(feature = "legacy")]
 mod options_api_required_props;
 mod options_api_setup_spread;
+mod setup_enum_computed_keys;
+mod sfc_grammar;
 mod with_defaults;
 use super::{
     SfcTypeCheckOptions, SfcTypeCheckResult, SfcTypeDiagnostic, SfcTypeSeverity, type_check_sfc,

@@ -6,6 +6,7 @@ use oxc_syntax::symbol::SymbolId;
 use vize_l0::{CompactString, FxHashMap, FxHashSet, String, cstr};
 
 use super::classify::{BindingInfo, Classified, Kind, ParamSlot, classify};
+use super::global_directives;
 use super::options::{
     Args, Caught, Destructuring, Pattern, PreferConstOptions, UnusedOptions, Vars, allowance,
     used_allowance,
@@ -83,7 +84,15 @@ pub(super) fn analyze(
         .collect();
     let mut findings = Vec::new();
     match which {
-        Which::Unused => unused_findings(&classified, &seen, scoping, unused, &mut findings),
+        Which::Unused => {
+            unused_findings(&classified, &seen, scoping, unused, &mut findings);
+            findings.extend(global_directives::findings(
+                program,
+                &semantic,
+                sibling_reads,
+                unused,
+            ));
+        }
         Which::PreferConst => {
             prefer_findings(&classified, &seen, scoping, &usage, prefer, &mut findings);
         }

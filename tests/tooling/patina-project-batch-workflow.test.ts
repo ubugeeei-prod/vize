@@ -10,7 +10,7 @@ import { readRepoFile } from "./support/github-workflows.ts";
 void test("type-aware batch qualification stays optional and reuses exact optimized binaries", () => {
   const workflow = parse(readRepoFile(".github", "workflows", "benchmark.yml"));
   assert.deepEqual(workflow.on.workflow_dispatch.inputs.patina_project_batch, {
-    description: "Measure the frozen 1210-file type-aware project batch and exact RPC counts",
+    description: "Measure the frozen 1210-file type-aware project batch in deterministic shards",
     required: false,
     default: false,
     type: "boolean",
@@ -50,7 +50,7 @@ void test("type-aware batch qualification stays optional and reuses exact optimi
     "patina-project-batch/*.jsonl",
     "patina-project-batch/*.stdout",
     "patina-project-batch/*.stderr",
-    "patina-project-batch/*.rss.txt",
+    "patina-project-batch/*.resource.txt",
     "patina-project-batch/summary.md",
     "patina-project-batch/dependency-install.log",
   ]);

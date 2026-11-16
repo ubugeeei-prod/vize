@@ -1,6 +1,7 @@
 name: Vite+ Type Compatibility
 
 on:
+  workflow_call:
   push:
     branches: [main, davinci]
     paths:

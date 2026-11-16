@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { relocateTaskConfig } from "./config-paths.ts";
@@ -17,11 +16,9 @@ void test("task configs retain original scopes outside the project directory", a
     ],
   };
   const original = structuredClone(config);
-  let serialized = "";
-  await runNative("lint", ["src"], { config, options: {} }, "native", async (_, args) => {
-    serialized = args[3];
-    assert.notEqual(path.dirname(serialized), root);
-    const loaded = JSON.parse(readFileSync(serialized, "utf8")).vue;
+  await runNative("lint", ["src"], { config, options: {} }, "native", async (_, args, stdin) => {
+    assert.deepEqual(args, ["native", "lint", "--config-stdin", "src"]);
+    const loaded = JSON.parse(stdin!).vue;
     assert.equal(loaded.ignores[0], `${root}/gen/**`);
     assert.ok(
       loaded.entries.every((entry: { basePath: string }) => path.isAbsolute(entry.basePath)),
@@ -39,7 +36,6 @@ void test("task configs retain original scopes outside the project directory", a
     return 0;
   });
   assert.deepEqual(config, original);
-  assert.throws(() => readFileSync(serialized));
 });
 
 void test("absolute and negated patterns survive relocation and empty configs work", () => {

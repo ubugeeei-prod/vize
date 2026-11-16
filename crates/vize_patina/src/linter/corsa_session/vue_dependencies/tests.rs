@@ -1,6 +1,8 @@
 use super::{PathAliases, materialize, prepare};
 use vize_l0::{String, cstr};
 
+mod root_specifiers;
+
 #[test]
 fn self_and_mutual_imports_never_alias_lint_probe_documents() {
     for mutual in [false, true] {

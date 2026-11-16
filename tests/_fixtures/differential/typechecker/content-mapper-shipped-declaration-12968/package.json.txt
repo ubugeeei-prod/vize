@@ -1,0 +1,4 @@
+{
+  "name": "fake-ui",
+  "types": "index.d.ts"
+}

@@ -796,6 +796,45 @@ fn read_and_validate_vize_run(
     let payload = serde_json::from_str::<Value>(&raw_payload).map_err(|error| {
         format!("Fixture matrix typechecker JSON is invalid for {project_id}: {error}")
     })?;
+    if payload.get("schema").and_then(Value::as_str) != Some("vize.fixtureToolRun")
+        || payload.get("version").and_then(Value::as_u64) != Some(1)
+        || payload.get("project").and_then(Value::as_str) != Some(project_id.as_str())
+        || payload.get("tool").and_then(Value::as_str) != Some("typechecker")
+        || payload.get("exitCode") != runs[0].get("exitCode")
+    {
+        return Err(format!(
+            "Fixture matrix typechecker artifact identity is invalid for {project_id}"
+        ));
+    }
+    let setup_failure = typechecker_setup_failure(&payload);
+    if setup_failure.is_some() || payload.get("configurationError").is_some() {
+        require_exact_keys(
+            &payload,
+            &[
+                "configurationError",
+                "exitCode",
+                "project",
+                "schema",
+                "stderr",
+                "stdout",
+                "tool",
+                "version",
+            ],
+            &format!("Fixture matrix typechecker setup artifact keys are invalid for {project_id}"),
+        )?;
+        if setup_failure.as_ref() != payload.get("configurationError")
+            || runs[0].get("status").and_then(Value::as_str) != Some("configuration")
+            || !runs[0].get("fileCount").is_some_and(Value::is_null)
+            || !runs[0].get("coverage").is_some_and(Value::is_null)
+        {
+            return Err(format!(
+                "Fixture matrix typechecker setup evidence is inconsistent for {project_id}"
+            ));
+        }
+        return Err(format!(
+            "configuration-only typechecker run is not semantic qualification for {project_id}"
+        ));
+    }
     require_exact_keys(
         &payload,
         &[
@@ -811,16 +850,6 @@ fn read_and_validate_vize_run(
         ],
         &format!("Fixture matrix typechecker artifact keys are invalid for {project_id}"),
     )?;
-    if payload.get("schema").and_then(Value::as_str) != Some("vize.fixtureToolRun")
-        || payload.get("version").and_then(Value::as_u64) != Some(1)
-        || payload.get("project").and_then(Value::as_str) != Some(project_id.as_str())
-        || payload.get("tool").and_then(Value::as_str) != Some("typechecker")
-        || payload.get("exitCode") != runs[0].get("exitCode")
-    {
-        return Err(format!(
-            "Fixture matrix typechecker artifact identity is invalid for {project_id}"
-        ));
-    }
     let stdout =
         serde_json::from_str::<Value>(payload.get("stdout").and_then(Value::as_str).unwrap_or(""))
             .map_err(|_| {
@@ -880,6 +909,39 @@ fn read_and_validate_vize_run(
         "fileCount": payload.pointer("/parsed/fileCount").and_then(Value::as_u64).unwrap_or(0),
     });
     Ok(VizeRun { payload, source })
+}
+
+fn typechecker_setup_failure(payload: &Value) -> Option<Value> {
+    if payload.get("exitCode").and_then(Value::as_i64) != Some(1)
+        || payload.get("stdout").and_then(Value::as_str) != Some("")
+    {
+        return None;
+    }
+    let stderr = payload.get("stderr").and_then(Value::as_str)?;
+    for line in stderr.lines() {
+        let kind = if line.starts_with("Error: Failed to prepare type checker tsconfig: ") {
+            Some("tsconfig-preparation")
+        } else if line == "Error: IO error: Workspace package alias overlaps another package link" {
+            Some("workspace-alias-overlap")
+        } else if let Some(rest) = line.strip_prefix("Error: corsa error (exit code 2): error TS") {
+            let code = rest
+                .split(':')
+                .next()
+                .and_then(|value| value.parse::<u32>().ok());
+            match code {
+                Some(
+                    2307 | 2318 | 2688 | 2792 | 5083 | 6053 | 6059 | 6305 | 6307 | 18002 | 18003,
+                ) => Some("unavailable-type-input"),
+                _ => None,
+            }
+        } else {
+            None
+        };
+        if let Some(kind) = kind {
+            return Some(json!({"kind":kind,"message":line}));
+        }
+    }
+    None
 }
 
 fn read_and_validate_dependency_preparation(

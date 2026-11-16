@@ -1,0 +1,39 @@
+{
+  "rule": "type/restrict-plus-operands",
+  "severity": "error",
+  "help": null,
+  "labels": [],
+  "fix": null,
+  "diagnostics": [
+    {
+      "line": 7,
+      "column": 11,
+      "message": "Invalid operand for a '+' operation. Operands must each be a number or string. Got `string | undefined`."
+    },
+    {
+      "line": 8,
+      "column": 17,
+      "message": "Invalid operand for a '+' operation. Operands must each be a number or string. Got `string | null`."
+    },
+    {
+      "line": 9,
+      "column": 18,
+      "message": "Invalid operand for a '+' operation. Operands must each be a number or string. Got `number | undefined`."
+    },
+    {
+      "line": 11,
+      "column": 10,
+      "message": "Invalid operand for a '+' operation. Operands must each be a number or string. Got `string | undefined`."
+    },
+    {
+      "line": 13,
+      "column": 10,
+      "message": "Invalid operand for a '+' operation. Operands must each be a number or string. Got `string | undefined`."
+    },
+    {
+      "line": 15,
+      "column": 20,
+      "message": "Invalid operand for a '+' operation. Operands must each be a number or string. Got `boolean`."
+    }
+  ]
+}

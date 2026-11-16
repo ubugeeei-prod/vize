@@ -111,6 +111,7 @@ module.exports.rewriteViteDynamicTemplateImports = nativeBinding.rewriteViteDyna
 module.exports.rewriteViteImportMetaGlobBase = nativeBinding.rewriteViteImportMetaGlobBase;
 module.exports.rewriteViteStaticAssetUrls = nativeBinding.rewriteViteStaticAssetUrls;
 module.exports.runCli = nativeBinding.runCli;
+module.exports.supportsCliConfigStdin = nativeBinding.supportsCliConfigStdin;
 module.exports.scopeViteCssForPipeline = nativeBinding.scopeViteCssForPipeline;
 module.exports.shouldApplyViteDefineInVirtualModule =
   nativeBinding.shouldApplyViteDefineInVirtualModule;

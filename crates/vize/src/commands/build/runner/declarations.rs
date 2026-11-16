@@ -29,6 +29,7 @@ fn declaration_check_args(args: &BuildArgs, patterns: Vec<std::string::String>) 
         patterns,
         config: args.config.clone(),
         no_config: args.no_config,
+        config_stdin: false,
         #[cfg(unix)]
         socket: None,
         tsconfig: None,

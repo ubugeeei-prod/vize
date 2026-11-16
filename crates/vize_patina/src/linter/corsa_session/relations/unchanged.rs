@@ -4,7 +4,8 @@
 //! answers "changed", so an assertion is never reported on a guess.
 use super::Literal;
 use super::checker::{CALL, CONSTRUCT, Checker, flags};
-use corsa::api::{TypeHandle, TypeResponse};
+use crate::linter::corsa_session::boolean::checker_node_text;
+use corsa::api::{NodeHandle, SymbolResponse, TypeHandle, TypeResponse};
 use vize_l0::{FxHashSet, String as CompactString};
 
 /// Types visited by one `typeContains` walk before it gives up.
@@ -167,7 +168,200 @@ async fn mentions_readonly(checker: &mut Checker<'_>, ty: &TypeResponse) -> bool
         .render_type_texts(ty)
         .await
         .unwrap_or_default();
-    texts.is_empty() || texts.iter().any(|text| text.contains("readonly"))
+    if texts.is_empty() || texts.iter().any(|text| text.contains("readonly")) {
+        return true;
+    }
+    // Named interfaces and classes render as only their name. Inspect the
+    // declarations already attached to their property symbols so a readonly
+    // member cannot disappear behind `ReadonlyPoint` or `DOMRectReadOnly`.
+    for property in checker.properties(ty).await {
+        if property_mentions_readonly(checker, &property).await {
+            return true;
+        }
+    }
+    false
+}
+
+async fn property_mentions_readonly(checker: &mut Checker<'_>, property: &SymbolResponse) -> bool {
+    for declaration in property
+        .declarations
+        .iter()
+        .chain(property.value_declaration.iter())
+    {
+        let Some(path) = declaration.declaring_path() else {
+            continue;
+        };
+        let Some(encoded) = checker.source_file(path.as_str()).await else {
+            continue;
+        };
+        if declaration_text(encoded.as_bytes(), declaration).is_some_and(has_readonly_modifier) {
+            return true;
+        }
+    }
+    false
+}
+
+fn declaration_text<'a>(data: &'a [u8], declaration: &NodeHandle) -> Option<&'a str> {
+    let (text, pos, end) = match declaration.parse() {
+        Ok(parsed) => {
+            let (text, _, _) = checker_node_text(data, 1).ok()?;
+            (text, parsed.pos, parsed.end)
+        }
+        Err(_) => {
+            let index = declaration
+                .as_str()
+                .split('.')
+                .next()?
+                .parse::<usize>()
+                .ok()?;
+            checker_node_text(data, index).ok()?
+        }
+    };
+    let start = utf16_to_byte(text, pos)?;
+    let stop = utf16_to_byte(text, end)?;
+    text.get(start..stop)
+}
+
+fn utf16_to_byte(text: &str, offset: u32) -> Option<usize> {
+    let mut units = 0u32;
+    for (index, character) in text.char_indices() {
+        if units >= offset {
+            return Some(index);
+        }
+        units += character.len_utf16() as u32;
+    }
+    (units >= offset).then_some(text.len())
+}
+
+/// Whether one property declaration has a top-level `readonly` modifier.
+///
+/// Comments and strings do not count, and scanning stops at the property's
+/// type/value delimiter so nested readonly members cannot affect the owner.
+fn has_readonly_modifier(declaration: &str) -> bool {
+    let bytes = declaration.as_bytes();
+    let mut index = 0usize;
+    let mut parens = 0usize;
+    let mut brackets = 0usize;
+    let mut braces = 0usize;
+    while let Some(&byte) = bytes.get(index) {
+        match byte {
+            b' ' | b'\t' | b'\r' | b'\n' => index += 1,
+            b'/' if bytes.get(index + 1) == Some(&b'/') => {
+                index += 2;
+                while bytes.get(index).is_some_and(|byte| *byte != b'\n') {
+                    index += 1;
+                }
+            }
+            b'/' if bytes.get(index + 1) == Some(&b'*') => {
+                index += 2;
+                while bytes.get(index..index.saturating_add(2)) != Some(b"*/") {
+                    if index >= bytes.len() {
+                        break;
+                    }
+                    index += 1;
+                }
+                index = (index + 2).min(bytes.len());
+            }
+            quote @ (b'\'' | b'"' | b'`') => {
+                index += 1;
+                while let Some(&byte) = bytes.get(index) {
+                    if byte == b'\\' {
+                        index = (index + 2).min(bytes.len());
+                    } else if byte == quote {
+                        index += 1;
+                        break;
+                    } else {
+                        index += 1;
+                    }
+                }
+            }
+            b'(' => {
+                parens += 1;
+                index += 1;
+            }
+            b')' => {
+                parens = parens.saturating_sub(1);
+                index += 1;
+            }
+            b'[' => {
+                brackets += 1;
+                index += 1;
+            }
+            b']' => {
+                brackets = brackets.saturating_sub(1);
+                index += 1;
+            }
+            b'{' => {
+                braces += 1;
+                index += 1;
+            }
+            b'}' => {
+                braces = braces.saturating_sub(1);
+                index += 1;
+            }
+            b':' | b'=' | b'?' | b'!' | b';' | b','
+                if parens == 0 && brackets == 0 && braces == 0 =>
+            {
+                return false;
+            }
+            byte if is_identifier_byte(byte) => {
+                let start = index;
+                index += 1;
+                while bytes.get(index).copied().is_some_and(is_identifier_byte) {
+                    index += 1;
+                }
+                if parens == 0
+                    && brackets == 0
+                    && braces == 0
+                    && bytes.get(start..index) == Some(b"readonly")
+                {
+                    index = skip_trivia(bytes, index);
+                    return bytes
+                        .get(index)
+                        .copied()
+                        .is_some_and(is_property_name_start);
+                }
+            }
+            _ => index += 1,
+        }
+    }
+    false
+}
+
+fn skip_trivia(bytes: &[u8], mut index: usize) -> usize {
+    loop {
+        while bytes
+            .get(index)
+            .is_some_and(|byte| matches!(byte, b' ' | b'\t' | b'\r' | b'\n'))
+        {
+            index += 1;
+        }
+        if bytes.get(index..index.saturating_add(2)) == Some(b"//") {
+            index += 2;
+            while bytes.get(index).is_some_and(|byte| *byte != b'\n') {
+                index += 1;
+            }
+        } else if bytes.get(index..index.saturating_add(2)) == Some(b"/*") {
+            index += 2;
+            while bytes.get(index..index.saturating_add(2)) != Some(b"*/") {
+                if index >= bytes.len() {
+                    break;
+                }
+                index += 1;
+            }
+            index = (index + 2).min(bytes.len());
+        } else {
+            return index;
+        }
+    }
+}
+
+fn is_identifier_byte(byte: u8) -> bool {
+    byte.is_ascii_alphanumeric() || matches!(byte, b'_' | b'$')
+}
+
+fn is_property_name_start(byte: u8) -> bool {
+    is_identifier_byte(byte) || !byte.is_ascii() || matches!(byte, b'\'' | b'"' | b'[' | b'#')
 }
 
 async fn same_type_arguments(
@@ -214,4 +408,39 @@ pub(super) async fn contains(checker: &mut Checker<'_>, ty: &TypeResponse, mask:
         }
     }
     Found::No
+}
+
+#[cfg(test)]
+mod tests {
+    use super::has_readonly_modifier;
+
+    #[test]
+    fn readonly_modifier_is_distinct_from_names_comments_and_nested_types() {
+        for declaration in [
+            "readonly x: number",
+            "public readonly x = 1",
+            "readonly /* generated */ [key: string]: number",
+            "@sealed({ readonly: true }) declare readonly #value: number",
+            "readonly π: number",
+        ] {
+            assert!(
+                has_readonly_modifier(declaration),
+                "expected readonly modifier in {declaration:?}"
+            );
+        }
+        for declaration in [
+            "readonly: number",
+            "readonly(): void",
+            "readonly<T>(): T",
+            "// readonly x\nvalue: number",
+            "value: { readonly nested: number }",
+            "[readonly]: number",
+            "value = { readonly: true }",
+        ] {
+            assert!(
+                !has_readonly_modifier(declaration),
+                "did not expect readonly modifier in {declaration:?}"
+            );
+        }
+    }
 }

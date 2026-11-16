@@ -25,9 +25,12 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::{Fix, LintDiagnostic, Severity, TextEdit};
+use crate::ir::ByteRange;
+use crate::markup::{MarkupContext, MarkupElement, MarkupRule, MarkupTraversal};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_l0::{Span, String, ToCompactString, camelize, hyphenate, is_native_tag};
-use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, PropNode};
+use crate::rules::vue::require_v_for_key::markup_element_is_custom_component;
+use vize_l0::{String, ToCompactString, camelize, hyphenate};
+use vize_relief::ElementNode;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/attribute-hyphenation",
@@ -149,25 +152,6 @@ impl AttributeHyphenation {
         }
     }
 
-    fn is_custom_component(element: &ElementNode<'_>) -> bool {
-        let tag = element.tag;
-        // Custom components are either:
-        // 1. PascalCase (starts with uppercase)
-        // 2. Contains hyphen (kebab-case component)
-        // 3. Not a known native HTML/SVG/MathML element
-        // 4. A native element with an `is` customization
-        if tag.chars().next().is_some_and(|c| c.is_uppercase()) {
-            return true;
-        }
-        if tag.contains('-') {
-            return true;
-        }
-        if !is_native_tag(tag) {
-            return true;
-        }
-        element.props.iter().any(Self::is_customized_builtin)
-    }
-
     fn should_ignore(&self, name: &str) -> bool {
         if SVG_ATTRIBUTES_WEIRD_CASE
             .iter()
@@ -179,17 +163,6 @@ impl AttributeHyphenation {
         self.ignore
             .iter()
             .any(|pattern| name.contains(pattern.as_str()))
-    }
-
-    fn static_directive_arg<'a>(dir: &DirectiveNode<'a>) -> Option<&'a str> {
-        if !matches!(dir.name, "bind" | "model") {
-            return None;
-        }
-
-        match dir.arg.as_ref()? {
-            ExpressionNode::Simple(s) if s.is_static => Some(s.content),
-            _ => None,
-        }
     }
 
     fn requires_hyphenation(name: &str) -> bool {
@@ -210,15 +183,88 @@ impl AttributeHyphenation {
         name.contains('-')
     }
 
-    fn is_customized_builtin(prop: &PropNode<'_>) -> bool {
-        match prop {
-            PropNode::Attribute(attr) => attr.name == "is",
-            PropNode::Directive(dir) if dir.name == "is" => true,
-            PropNode::Directive(dir) if dir.name == "bind" => {
-                Self::static_directive_arg(dir) == Some("is")
-            }
-            PropNode::Directive(_) => false,
+    fn check(&self, ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
+        if !markup_element_is_custom_component(element)
+            || self
+                .ignore_tags
+                .iter()
+                .any(|tag| tag.as_str() == element.tag())
+        {
+            return;
         }
+
+        element.walk_attributes(&mut |attribute| {
+            self.check_name(
+                ctx,
+                attribute.name(),
+                attribute.name_range(),
+                attribute.range(),
+            );
+        });
+        element.walk_directives(&mut |directive| {
+            if !matches!(directive.name(), "bind" | "model") {
+                return;
+            }
+            let Some(name) = directive.arg_name() else {
+                return;
+            };
+            if !directive.is_static_arg_exact(name) {
+                return;
+            }
+            let Some(name_range) = directive.argument_range() else {
+                return;
+            };
+            self.check_name(ctx, name, name_range, directive.range());
+        });
+    }
+
+    fn check_name(
+        &self,
+        ctx: &mut LintContext<'_>,
+        name: &str,
+        name_range: ByteRange,
+        range: ByteRange,
+    ) {
+        if self.should_ignore(name)
+            || name.starts_with("v-")
+            || name.starts_with('@')
+            || name.starts_with('#')
+        {
+            return;
+        }
+        match self.style {
+            HyphenationStyle::Always if Self::requires_hyphenation(name) => report(
+                ctx,
+                "vue/attribute-hyphenation.message",
+                "vue/attribute-hyphenation.help",
+                range,
+                name_range,
+                hyphenate(name),
+            ),
+            HyphenationStyle::Never if Self::forbids_hyphenation(name) => report(
+                ctx,
+                "vue/attribute-hyphenation.message_never",
+                "vue/attribute-hyphenation.help_never",
+                range,
+                name_range,
+                camelize(name),
+            ),
+            HyphenationStyle::Always | HyphenationStyle::Never => {}
+        }
+    }
+}
+
+impl MarkupRule for AttributeHyphenation {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn traversal(&self) -> MarkupTraversal {
+        MarkupTraversal::Elements
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        self.check(ctx.lint(), element);
     }
 }
 
@@ -227,69 +273,12 @@ impl Rule for AttributeHyphenation {
         &META
     }
 
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
+    }
+
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        // Only check custom components
-        if !Self::is_custom_component(element)
-            || self
-                .ignore_tags
-                .iter()
-                .any(|tag| tag.as_str() == element.tag)
-        {
-            return;
-        }
-
-        for prop in &element.props {
-            // Like eslint-plugin-vue, report the whole attribute and fix only its name.
-            let (name, name_loc, loc) = match prop {
-                PropNode::Attribute(attr) => (attr.name, &attr.name_loc, &attr.loc),
-                PropNode::Directive(dir) => {
-                    let Some(ExpressionNode::Simple(arg)) = dir.arg.as_ref() else {
-                        continue;
-                    };
-                    if !matches!(dir.name, "bind" | "model") || !arg.is_static {
-                        continue;
-                    }
-                    (arg.content, &arg.loc, &dir.loc)
-                }
-            };
-
-            // Skip ignored attributes
-            if self.should_ignore(name) {
-                continue;
-            }
-
-            // Skip directive shorthand attributes when they were parsed as plain attributes.
-            if name.starts_with("v-") || name.starts_with('@') || name.starts_with('#') {
-                continue;
-            }
-
-            match self.style {
-                HyphenationStyle::Always => {
-                    if Self::requires_hyphenation(name) {
-                        report(
-                            ctx,
-                            "vue/attribute-hyphenation.message",
-                            "vue/attribute-hyphenation.help",
-                            loc.span,
-                            name_loc.span,
-                            hyphenate(name),
-                        );
-                    }
-                }
-                HyphenationStyle::Never => {
-                    if Self::forbids_hyphenation(name) {
-                        report(
-                            ctx,
-                            "vue/attribute-hyphenation.message_never",
-                            "vue/attribute-hyphenation.help_never",
-                            loc.span,
-                            name_loc.span,
-                            camelize(name),
-                        );
-                    }
-                }
-            }
-        }
+        self.check(ctx, &MarkupElement::new(element));
     }
 }
 
@@ -297,15 +286,15 @@ fn report(
     ctx: &mut LintContext<'_>,
     message: &str,
     help: &str,
-    span: Span,
-    name: Span,
+    range: ByteRange,
+    name: ByteRange,
     replacement: impl Into<String>,
 ) {
     let message = ctx.t(message).into_owned();
     let help = ctx.t(help).into_owned();
     let edit = TextEdit::replace(name.start, name.end, replacement);
     ctx.report(
-        LintDiagnostic::warn(META.name, message, span.start, span.end)
+        LintDiagnostic::warn(META.name, message, range.start, range.end)
             .with_help(help.clone())
             .with_fix(Fix::new(help, edit)),
     );

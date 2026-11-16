@@ -52,6 +52,7 @@ export function runFreshProjectInitChecks(context) {
   }
   assert.ok(fs.statSync(context.vizeBin).isFile());
   assert.deepEqual(Object.keys(context.peers).sort(), [
+    "oxlint",
     "typescript",
     "typescript-native",
     "vite",

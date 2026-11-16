@@ -186,7 +186,7 @@ fn vue3_stub_and_slot_provenance_share_pascal_camel_authored_order_without_chang
             .filter_map(|line| line.strip_prefix("declare const "))
             .collect::<Vec<_>>(),
         [
-            "registry_child: $GlobalComponentFallback & $GlobalComponent<\"RegistryChild\", \"registryChild\", \"registry-child\">;"
+            "registry_child: $GlobalComponent<\"RegistryChild\", \"registryChild\", \"registry-child\">;"
         ]
     );
     let (owners, vue2) = emit("", template, true, VirtualTsOptions::default());
@@ -195,8 +195,6 @@ fn vue3_stub_and_slot_provenance_share_pascal_camel_authored_order_without_chang
         vue2.lines()
             .filter_map(|line| line.strip_prefix("declare const "))
             .collect::<Vec<_>>(),
-        [
-            "registry_child: $GlobalComponentFallback & $GlobalComponent<\"registry-child\", \"RegistryChild\">;"
-        ]
+        ["registry_child: $GlobalComponent<\"registry-child\", \"RegistryChild\">;"]
     );
 }

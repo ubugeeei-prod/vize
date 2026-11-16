@@ -1,0 +1,19 @@
+<script setup lang="ts">
+interface Router {
+  push(to: string): Promise<void>;
+  replace: (to: string) => void;
+}
+declare function useRouter(): Router;
+declare const controller: AbortController;
+declare const when: Date;
+
+const seen = new Set<string>();
+const kept = ["a"].filter(seen.has);
+const { push, replace } = useRouter();
+const stamp = when.getTime;
+setTimeout(controller.abort, 10);
+</script>
+
+<template>
+  <p>{{ kept.length }} {{ push }} {{ replace }} {{ stamp }}</p>
+</template>

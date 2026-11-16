@@ -1,0 +1,15 @@
+<script setup lang="ts">
+import Child from "./child.vue"
+import { useTemplateRef } from "vue"
+
+const element = useTemplateRef("element")
+const child = useTemplateRef("child")
+
+const element1: HTMLDivElement | null = element.value
+child.value?.focus()
+</script>
+
+<template>
+  <div ref="element" />
+  <Child ref="child" />
+</template>

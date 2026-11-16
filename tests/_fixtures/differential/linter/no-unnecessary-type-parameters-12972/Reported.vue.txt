@@ -1,0 +1,12 @@
+<script lang="ts">
+function getLength<T extends { length: number }>(value: T) {
+  return value.length;
+}
+
+class SafePromise<T> extends Promise<T> {}
+
+interface Factory<T> {}
+declare const Factory: {
+  new <T>(value: T): Factory<T>;
+};
+</script>

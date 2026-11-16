@@ -1,0 +1,14 @@
+<template>
+  <var-tree-menu-option v-if="nested" />
+</template>
+
+<script lang="ts">
+import { defineComponent } from "vue";
+
+export default defineComponent({
+  name: "VarTreeMenuOption",
+  props: {
+    nested: Boolean,
+  },
+});
+</script>

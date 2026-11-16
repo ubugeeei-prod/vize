@@ -1,5 +1,6 @@
 import { spawn } from "node:child_process";
 import { randomUUID } from "node:crypto";
+import { existsSync } from "node:fs";
 import { rm, writeFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import os from "node:os";
@@ -11,7 +12,7 @@ import { loadConfig, resolveConfigExport } from "../config.ts";
 import { resolveVitePlus } from "./runtime.ts";
 import { relocateTaskConfig } from "./config-paths.ts";
 
-export type Execute = (command: string, args: string[]) => Promise<number>;
+export type Execute = (command: string, args: string[], stdin?: string) => Promise<number>;
 
 /** Mark only the config read as metadata resolution and restore the caller environment. */
 export async function withConfigMetadataResolution<T>(load: () => Promise<T>): Promise<T> {
@@ -135,9 +136,17 @@ export async function runTask(argv: string[]): Promise<number> {
   return runTools(task as VizeTask, args, metadata, vp, native, execute);
 }
 
-export async function execute(command: string, args: string[]): Promise<number> {
+export async function execute(command: string, args: string[], stdin?: string): Promise<number> {
   return new Promise((resolve) => {
-    const child = spawn(command, args, { stdio: "inherit" });
+    const child = spawn(command, args, {
+      stdio: stdin === undefined ? "inherit" : ["pipe", "inherit", "inherit"],
+    });
+    if (stdin !== undefined) {
+      child.stdin?.on("error", (error: NodeJS.ErrnoException) => {
+        if (error.code !== "EPIPE") console.error(error.message);
+      });
+      child.stdin?.end(stdin);
+    }
     const forwardInt = () => child.kill("SIGINT");
     const forwardTerm = () => child.kill("SIGTERM");
     process.on("SIGINT", forwardInt);
@@ -163,6 +172,13 @@ export function nativeBinary(): string {
   return path.resolve(path.dirname(require.resolve("vize")), "../bin/vize");
 }
 
+const CONFIG_STDIN_MARKER = "config-stdin-v1";
+
+/** Preserve compatibility with published CLI packages from before stdin transport. */
+export function nativeSupportsConfigStdin(native: string): boolean {
+  return !existsSync(native) || existsSync(path.join(path.dirname(native), CONFIG_STDIN_MARKER));
+}
+
 export async function runNative(
   command: "check" | "lint" | "fmt",
   argv: string[],
@@ -184,19 +200,24 @@ export async function runNative(
           ignores: [...metadata.lintIgnorePatterns, ...(config.ignores ?? [])],
         }
       : config;
+  const payload = JSON.stringify({ vue: relocateTaskConfig(taskConfig, process.cwd()) });
+  const lintOptions =
+    command === "lint"
+      ? [
+          ...(metadata.lintLocale ? ["--locale", metadata.lintLocale] : []),
+          ...(metadata.lintHelpLevel ? ["--help-level", metadata.lintHelpLevel] : []),
+        ]
+      : [];
+  if (nativeSupportsConfigStdin(native))
+    return spawn(
+      process.execPath,
+      [native, command, "--config-stdin", ...lintOptions, ...argv],
+      payload,
+    );
+
   const file = path.join(os.tmpdir(), `.vize-vp-${randomUUID()}.json`);
   try {
-    await writeFile(file, JSON.stringify({ vue: relocateTaskConfig(taskConfig, process.cwd()) }), {
-      flag: "wx",
-      mode: 0o600,
-    });
-    const lintOptions =
-      command === "lint"
-        ? [
-            ...(metadata.lintLocale ? ["--locale", metadata.lintLocale] : []),
-            ...(metadata.lintHelpLevel ? ["--help-level", metadata.lintHelpLevel] : []),
-          ]
-        : [];
+    await writeFile(file, payload, { flag: "wx", mode: 0o600 });
     return await spawn(process.execPath, [
       native,
       command,

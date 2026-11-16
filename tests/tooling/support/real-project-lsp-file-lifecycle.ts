@@ -166,10 +166,28 @@ export async function exerciseAuthoredFileLifecycle(
 
     currentVersion += 1;
     changeDocument(session, importer.uri, importer.source, currentVersion);
-    const repaired = await waitForDiagnostics(session, importer.uri, currentVersion, timeoutMs());
+    const baselineRepairDiagnostics = normalizeLifecycleRepairDiagnostics(
+      baselineDiagnostics,
+      lifecycle,
+    );
+    const repaired = await waitForDiagnostics(
+      session,
+      importer.uri,
+      currentVersion,
+      timeoutMs(),
+      (diagnostics) => {
+        const repairedDiagnostics = normalizeLifecycleRepairDiagnostics(diagnostics, lifecycle);
+        return (
+          repairedDiagnostics.length === baselineRepairDiagnostics.length &&
+          repairedDiagnostics.every(
+            (diagnostic, index) => diagnostic === baselineRepairDiagnostics[index],
+          )
+        );
+      },
+    );
     assert.deepEqual(
       normalizeLifecycleRepairDiagnostics(repaired, lifecycle),
-      normalizeLifecycleRepairDiagnostics(baselineDiagnostics, lifecycle),
+      baselineRepairDiagnostics,
       "file lifecycle repair must restore owned importer diagnostics exactly",
     );
     const restoredDefinition = await expectDefinition(

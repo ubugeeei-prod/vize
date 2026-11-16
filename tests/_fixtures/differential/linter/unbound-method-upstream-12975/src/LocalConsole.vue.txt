@@ -1,0 +1,10 @@
+<script lang="ts">
+class Console {
+  log(value: string) {
+    void value;
+  }
+}
+
+const console = new Console();
+Promise.resolve().then(console.log);
+</script>

@@ -1,0 +1,21 @@
+<script setup lang="ts">
+interface Badge {
+  count: number;
+}
+
+function generic<K extends string>(map: Record<K, Badge>, key: K): string {
+  return String(map[key]);
+}
+function joined<K extends string>(map: Record<K, Badge>, keys: K[]): string {
+  return keys.map((key) => map[key]).join(",");
+}
+function partial<K extends string>(map: Partial<Record<K, Badge>>, key: K): string {
+  return String(map[key]);
+}
+function plain(map: Record<"a" | "b", Badge>, key: "a" | "b"): string {
+  return String(map[key]);
+}
+function safe<K extends string>(map: Record<K, string>, key: K): string {
+  return String(map[key]);
+}
+</script>

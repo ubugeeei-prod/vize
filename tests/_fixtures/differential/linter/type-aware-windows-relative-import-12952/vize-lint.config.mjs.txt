@@ -1,0 +1,13 @@
+export default {
+  vue: {
+    linter: {
+      preset: "incremental",
+      rules: {
+        "type/no-floating-promises": "error",
+        "type/restrict-plus-operands": "error",
+      },
+      ruleOptions: { "type/restrict-plus-operands": { allowAny: false } },
+      typeAware: true,
+    },
+  },
+};

@@ -5,7 +5,6 @@ import fs from "node:fs";
 import path from "node:path";
 import { after, before, test } from "node:test";
 import {
-  assertMembershipCorrection,
   assertParity,
   command,
   contractDirectory,
@@ -23,6 +22,7 @@ import {
   type Oracle,
   type Fixture,
 } from "../_helpers/lint-report-rust-parity.ts";
+import { registerScorecardParityTests } from "./lint-report-scorecard-parity.ts";
 let frozen: ReturnType<typeof materializeFrozenReporters>;
 before(() => {
   frozen = materializeFrozenReporters();
@@ -38,6 +38,7 @@ function compare(input: Fixture, args = input.args, oracles: Oracle[] = ["origin
   }
   return successor;
 }
+registerScorecardParityTests({ compare, updatedReporter: () => frozen.paths.updated });
 test("source-bound schema custody accepts complete legacy packets and strictly checks modern reports", () => {
   const input = fixture();
   try {
@@ -283,12 +284,19 @@ test("u64 diagnostic ranges and arbitrary raw i64/u64 keys retain every source d
     input.clean();
   }
 });
-test("zero input requires an explicit integer zero and preserves all refusal side effects", () => {
+test("zero input bypasses Patina while retaining exact reports and refusal side effects", () => {
   const input = fixture();
   try {
     fs.rmSync(path.join(input.directory, "App.vue"));
     input.configure([input.project("parity", { expectedVueFileCount: 0 })], { results: [] });
-    const result = compare(input);
+    const result = runReporter(input, nodeCommand);
+    assert.deepEqual(result.processes, []);
+    for (const oracle of ["original", "updated"] as const) {
+      const measured = runReporter(input, frozen.paths[oracle], input.args, oracle);
+      assert.equal(measured.processes.length, 1);
+      measured.processes = [];
+      assertParity(measured, result, oracle);
+    }
     assert.equal(result.status, 0, result.stderr);
     assert.deepEqual(reportFile(result, "parity-lint-divergence.json").files, {
       comparedCount: 0,
@@ -383,93 +391,6 @@ test("named invalid JSON scalar vectors refuse before artifacts, including shado
         }
       }
     }
-  } finally {
-    input.clean();
-  }
-});
-interface ReviewedCase {
-  id: string;
-  project: string;
-  revision: string;
-  source: string;
-  finding: { file: string; [key: string]: unknown };
-}
-const reviewedValue: unknown = JSON.parse(
-  fs.readFileSync(path.join(root, contractDirectory, "contract.json"), "utf8"),
-);
-const reviewedCases = object(reviewedValue).cases;
-assert.ok(Array.isArray(reviewedCases));
-const reviewed = reviewedCases.map((value: unknown): ReviewedCase => {
-  const row = object(value);
-  for (const key of ["id", "project", "revision", "source"])
-    assert.equal(typeof row[key], "string");
-  assert.equal(typeof object(row.finding).file, "string");
-  return row as unknown as ReviewedCase;
-});
-for (const entry of reviewed) {
-  test(`updated real Rust and TS preserve full reviewed case ${entry.id} and missing/duplicate findings`, () => {
-    const input = fixture();
-    try {
-      fs.rmSync(path.join(input.directory, "App.vue"));
-      input.write(
-        entry.finding.file,
-        fs.readFileSync(path.join(root, contractDirectory, entry.source), "utf8"),
-      );
-      const project = input.project(entry.project, {
-        revision: entry.revision,
-        vueGlobs: [entry.finding.file],
-        expectedVueFileCount: 1,
-      });
-      const { file, ...message } = entry.finding;
-      const expectedNegatives = object(referenceFixtures).reviewedUnrelatedFalseNegatives;
-      const falseNegatives = object(expectedNegatives)[entry.id];
-      assert.ok(Array.isArray(falseNegatives));
-      for (const count of [1, 0, 2]) {
-        input.configure([project], {
-          results: [{ file, messages: Array.from({ length: count }, () => message) }],
-        });
-        const result = compare(input, input.args, ["updated"]);
-        assert.equal(
-          result.status,
-          count === 1 && falseNegatives.length === 0 ? 0 : 1,
-          result.stderr,
-        );
-        const report = reportFile(result, `${entry.project}-lint-divergence.json`);
-        assert.deepEqual(report.divergence.falseNegatives, falseNegatives);
-        assert.equal(report.divergence.summary.falseNegativeCount, falseNegatives.length);
-        assert.equal(
-          report.budget.verdict,
-          count !== 1 ? "unusable" : falseNegatives.length ? "breached" : "passed",
-        );
-        assert.equal(report.divergence.referenceCoverageExpectations.length, 1);
-        assert.equal(report.divergence.referenceCoverageExpectations[0].observedCount, count);
-        assert.equal(
-          report.divergence.summary.referenceCoverageIntegrityErrorCount,
-          count === 1 ? 0 : 1,
-        );
-        assert.equal(report.budget.maxFalsePositiveCount, 0);
-        assert.equal(report.budget.maxFalseNegativeCount, 0);
-      }
-    } finally {
-      input.clean();
-    }
-  });
-}
-test("unmeasured foreign reviewed source is scored: explicit correction to updated Rust membership bug", () => {
-  const input = fixture();
-  try {
-    const entry = reviewed[0];
-    input.write(
-      entry.finding.file,
-      fs.readFileSync(path.join(root, contractDirectory, entry.source), "utf8"),
-    );
-    const { file, ...message } = entry.finding;
-    input.configure([input.project(entry.project, { revision: entry.revision })], {
-      results: [{ file, messages: [message] }],
-    });
-    const old = runReporter(input, frozen.paths.updated, input.args, "updated");
-    const actual = runReporter(input, nodeCommand);
-    assertMembershipCorrection(old, actual, object(entry));
   } finally {
     input.clean();
   }

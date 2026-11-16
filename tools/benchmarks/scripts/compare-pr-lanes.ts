@@ -167,6 +167,7 @@ export function makeTasks(inputDir: string, taskFilter: string): BenchmarkLane[]
       // measured by the tool benchmark. This catches regressions hidden by the
       // single-server lane without weakening the single-program signal above.
       args: ["check", pattern, "--quiet", "--tsconfig", tsconfig],
+      threads: "max",
       allowNonZeroExit: true,
       enabled: existsSync(tsconfig),
     },

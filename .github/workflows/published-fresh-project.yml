@@ -144,3 +144,169 @@ jobs:
           path: ${{ runner.temp }}/published-fresh-project
           if-no-files-found: error
           retention-days: 90
+
+  # Bun owns both the package graph and the production server here. Keeping
+  # the project outside the checkout makes a workspace fallback impossible.
+  public-nuxt-bun:
+    name: Public fresh Nuxt (bun, linux-x64-gnu)
+    needs: resolve
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2
+        with: { bun-version: "1.3.14" }
+      - name: Install, build and serve the exact public Nuxt integration with Bun
+        env:
+          RELEASE_VERSION: ${{ needs.resolve.outputs.version }}
+          PROJECT: ${{ runner.temp }}/vize-public-nuxt-bun
+          DEPLOY: ${{ runner.temp }}/vize-public-nuxt-deploy
+          EVIDENCE: ${{ runner.temp }}/published-fresh-nuxt
+          NPM_CONFIG_REGISTRY: https://registry.npmjs.org/
+        run: |
+          set -euo pipefail
+          [[ "$RELEASE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          mkdir -p "$PROJECT/app" "$EVIDENCE"
+          bun -e '
+            const root = process.env.PROJECT;
+            const version = process.env.RELEASE_VERSION;
+            await Bun.write(`${root}/package.json`, `${JSON.stringify({
+              name: "vize-public-nuxt-bun",
+              private: true,
+              type: "module",
+              scripts: { build: "nuxt build" },
+              dependencies: {
+                "@vizejs/nuxt": version,
+                nuxt: "4.6.4",
+                vue: "3.5.43",
+              },
+            }, null, 2)}\n`);
+            await Bun.write(`${root}/nuxt.config.ts`, `export default defineNuxtConfig({\n  compatibilityDate: "2025-07-15",\n  devtools: { enabled: false },\n  modules: ["@vizejs/nuxt"],\n  vize: { lint: false },\n});\n`);
+            await Bun.write(`${root}/app/app.vue`, `<script setup lang="ts">\nconst marker: string = "vize-public-nuxt-bun";\n</script>\n\n<template>\n  <main id="public-nuxt-marker">{{ marker }}</main>\n</template>\n\n<style scoped>\nmain { color: rgb(12 34 56); }\n</style>\n`);
+          '
+
+          install_started=$(date +%s%N)
+          (cd "$PROJECT" && bun install --no-progress)
+          install_ms=$(( ($(date +%s%N) - install_started) / 1000000 ))
+          build_started=$(date +%s%N)
+          (cd "$PROJECT" && bun run build)
+          build_ms=$(( ($(date +%s%N) - build_started) / 1000000 ))
+          mkdir -p "$DEPLOY"
+          cp -R "$PROJECT/.output/server" "$DEPLOY/server"
+          cp -R "$PROJECT/.output/public" "$DEPLOY/public"
+          runtime_install_started=$(date +%s%N)
+          (cd "$DEPLOY/server" && bun install --no-progress --production)
+          runtime_install_ms=$(( ($(date +%s%N) - runtime_install_started) / 1000000 ))
+          cp "$DEPLOY/server/package.json" "$EVIDENCE/server-package.json"
+
+          server_pid=
+          cleanup() {
+            status=$?
+            trap - EXIT
+            if [[ -n "$server_pid" ]]; then
+              kill "$server_pid" 2>/dev/null || :
+              wait "$server_pid" 2>/dev/null || :
+            fi
+            exit "$status"
+          }
+          trap cleanup EXIT
+          trap 'exit 130' INT
+          trap 'exit 143' TERM
+          (
+            cd "$DEPLOY/server"
+            NITRO_HOST=127.0.0.1 NITRO_PORT=3210 bun index.mjs
+          ) > "$EVIDENCE/server.log" 2>&1 &
+          server_pid=$!
+          for _ in $(seq 1 60); do
+            if curl --fail --silent --show-error http://127.0.0.1:3210/ \
+              > "$EVIDENCE/response.html"; then
+              break
+            fi
+            sleep 0.5
+          done
+          grep -F 'vize-public-nuxt-bun' "$EVIDENCE/response.html"
+
+          INSTALL_MS="$install_ms" BUILD_MS="$build_ms" \
+            RUNTIME_INSTALL_MS="$runtime_install_ms" bun -e '
+            import assert from "node:assert/strict";
+            import { createHash } from "node:crypto";
+            const project = process.env.PROJECT;
+            const deploy = process.env.DEPLOY;
+            const evidence = process.env.EVIDENCE;
+            const version = process.env.RELEASE_VERSION;
+            const packages = {};
+            for await (const path of new Bun.Glob("node_modules/**/package.json").scan({
+              cwd: project,
+              onlyFiles: true,
+            })) {
+              const manifest = await Bun.file(`${project}/${path}`).json();
+              if (manifest.name === "vize" || manifest.name?.startsWith("@vizejs/")) {
+                assert.equal(manifest.version, version, `${manifest.name} version differs`);
+                packages[manifest.name] = manifest.version;
+              }
+            }
+            for (const name of ["@vizejs/native", "@vizejs/nuxt", "@vizejs/vite-plugin", "vize"])
+              assert.equal(packages[name], version, `${name} is absent from the public graph`);
+            const lock = await Bun.file(`${project}/bun.lock`).text();
+            assert.equal(lock.includes("workspace:"), false, "public lock contains a workspace edge");
+            assert.equal(lock.includes("file:"), false, "public lock contains a file edge");
+            const runtimeManifestText = await Bun.file(`${deploy}/server/package.json`).text();
+            const runtimeManifest = JSON.parse(runtimeManifestText);
+            const runtimeDependencies = runtimeManifest.dependencies ?? {};
+            assert.ok(Object.keys(runtimeDependencies).length > 0, "deployment graph is empty");
+            for (const [name, specifier] of Object.entries(runtimeDependencies)) {
+              assert.match(specifier, /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/, `${name} is local`);
+              const installed = await Bun.file(
+                `${deploy}/server/node_modules/${name}/package.json`,
+              ).json();
+              assert.equal(installed.version, specifier, `${name} deployment version differs`);
+            }
+            const runtimePackages = new Map();
+            for await (const path of new Bun.Glob("server/node_modules/**/package.json").scan({
+              cwd: deploy,
+              onlyFiles: true,
+            })) {
+              const manifest = await Bun.file(`${deploy}/${path}`).json();
+              if (typeof manifest.name !== "string" || typeof manifest.version !== "string") continue;
+              const versions = runtimePackages.get(manifest.name) ?? new Set();
+              versions.add(manifest.version);
+              runtimePackages.set(manifest.name, versions);
+            }
+            const runtimeInventory = `${JSON.stringify(Object.fromEntries(
+              [...runtimePackages]
+                .sort(([a], [b]) => a.localeCompare(b))
+                .map(([name, versions]) => [name, [...versions].sort()]),
+            ), null, 2)}\n`;
+            await Bun.write(`${evidence}/server-packages.json`, runtimeInventory);
+            const response = await Bun.file(`${evidence}/response.html`).text();
+            let assets = 0;
+            for await (const _ of new Bun.Glob("**/*").scan({
+              cwd: `${project}/.output/public/_nuxt`,
+              onlyFiles: true,
+            })) assets++;
+            assert.ok(assets > 0, "Nuxt emitted no Vite client assets");
+            await Bun.write(`${evidence}/receipt.json`, `${JSON.stringify({
+              schema: "vize.published-fresh-nuxt-bun.v1",
+              version,
+              bun: Bun.version,
+              nuxt: "4.6.4",
+              vue: "3.5.43",
+              packages: Object.fromEntries(Object.entries(packages).sort()),
+              assets,
+              installMs: Number(process.env.INSTALL_MS),
+              buildMs: Number(process.env.BUILD_MS),
+              runtimeInstallMs: Number(process.env.RUNTIME_INSTALL_MS),
+              runtimeDependencies: Object.keys(runtimeDependencies).length,
+              lockSha256: createHash("sha256").update(lock).digest("hex"),
+              runtimeManifestSha256: createHash("sha256").update(runtimeManifestText).digest("hex"),
+              runtimeInventorySha256: createHash("sha256").update(runtimeInventory).digest("hex"),
+              responseSha256: createHash("sha256").update(response).digest("hex"),
+            }, null, 2)}\n`);
+          '
+      - name: Retain the public Nuxt and Bun receipt
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: published-fresh-nuxt-bun-${{ needs.resolve.outputs.version }}
+          path: ${{ runner.temp }}/published-fresh-nuxt
+          if-no-files-found: error
+          retention-days: 90

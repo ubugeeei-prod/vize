@@ -7,6 +7,7 @@ import { test } from "node:test";
 
 import {
   type Editor,
+  clientCapabilities,
   completionLabels,
   lspLocations,
   workspaceEditLocations,
@@ -51,6 +52,13 @@ test("owned Node mapper probes reserve heap for the full generated corpus", () =
     "server.js",
   ]);
   assert.deepEqual(probeMapperCommand(["mapper", "--stdio"]), ["mapper", "--stdio"]);
+});
+
+test("editor measurements confirm watched workspace inputs", () => {
+  assert.deepEqual(clientCapabilities().workspace.didChangeWatchedFiles, {
+    dynamicRegistration: true,
+    relativePatternSupport: true,
+  });
 });
 
 test("owned probe manifests retain mapper settings and pin the expanded Node command", () => {

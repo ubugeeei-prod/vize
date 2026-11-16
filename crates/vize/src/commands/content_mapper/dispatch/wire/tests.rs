@@ -51,7 +51,7 @@ fn transform_frames_match_the_sorted_value_envelope() {
     for full in [true, false] {
         for id in [json!(7), json!("req-1"), json!(null)] {
             assert_eq!(
-                encode_transform(&id, &transform(full)).unwrap(),
+                encode_transform(&id, &transform(full), false).unwrap(),
                 encode_result(&id, super::wire_value(&transform(full))).unwrap(),
             );
         }
@@ -60,7 +60,7 @@ fn transform_frames_match_the_sorted_value_envelope() {
 
 #[test]
 fn every_feature_spans_and_ignore_directives_drop_their_sixth_element() {
-    let frame = encode_transform(&json!(1), &transform(true)).unwrap();
+    let frame = encode_transform(&json!(1), &transform(true), false).unwrap();
     let text = std::str::from_utf8(&frame).unwrap();
     let (_, body) = text.split_once("\r\n\r\n").unwrap();
     let value: serde_json::Value = serde_json::from_str(body).unwrap();
@@ -71,6 +71,45 @@ fn every_feature_spans_and_ignore_directives_drop_their_sixth_element() {
     assert_eq!(
         value["result"]["diagnosticDirectives"]["directives"],
         json!([[0, 0, 0, 1, 0], [1, 2, 3, 4, 1, 0]])
+    );
+}
+
+#[test]
+fn code_selected_ignores_require_the_negotiated_capability() {
+    let mut transform = transform(true);
+    let table = transform.diagnostic_directives.as_mut().unwrap();
+    table
+        .directives
+        .push(ContentMapperDiagnosticDirective::ignore_with_diagnostic_code(7, 4, 0, 5, 2353));
+
+    let legacy = encode_transform(&json!(1), &transform, false).unwrap();
+    assert_eq!(
+        legacy,
+        encode_result(&json!(1), super::wire_value(&transform)).unwrap()
+    );
+    let legacy_text = std::str::from_utf8(&legacy).unwrap();
+    let (_, legacy_body) = legacy_text.split_once("\r\n\r\n").unwrap();
+    let legacy_value: serde_json::Value = serde_json::from_str(legacy_body).unwrap();
+    assert_eq!(
+        legacy_value["result"]["diagnosticDirectives"]["directives"],
+        json!([[0, 0, 0, 1, 0], [1, 2, 3, 4, 1, 0]])
+    );
+
+    let negotiated = encode_transform(&json!(1), &transform, true).unwrap();
+    assert_eq!(
+        negotiated,
+        encode_result(
+            &json!(1),
+            super::wire_value_with_capabilities(&transform, true)
+        )
+        .unwrap()
+    );
+    let negotiated_text = std::str::from_utf8(&negotiated).unwrap();
+    let (_, negotiated_body) = negotiated_text.split_once("\r\n\r\n").unwrap();
+    let negotiated_value: serde_json::Value = serde_json::from_str(negotiated_body).unwrap();
+    assert_eq!(
+        negotiated_value["result"]["diagnosticDirectives"]["directives"],
+        json!([[0, 0, 0, 1, 0], [1, 2, 3, 4, 1, 0], [7, 4, 0, 5, 0, 2353]])
     );
 }
 
@@ -94,7 +133,7 @@ fn ignores_over_whitespace_only_stay_off_the_wire() {
             ContentMapperDiagnosticDirective([0, 0, 12, 12, 0, 0]),
         ],
     });
-    let frame = encode_transform(&json!(1), &transform).unwrap();
+    let frame = encode_transform(&json!(1), &transform, false).unwrap();
     let text = std::str::from_utf8(&frame).unwrap();
     let (_, body) = text.split_once("\r\n\r\n").unwrap();
     let value: serde_json::Value = serde_json::from_str(body).unwrap();
@@ -110,7 +149,7 @@ fn ignores_over_whitespace_only_stay_off_the_wire() {
 
 #[test]
 fn semantic_links_stay_off_the_wire() {
-    let frame = encode_transform(&json!(1), &transform(true)).unwrap();
+    let frame = encode_transform(&json!(1), &transform(true), false).unwrap();
     let text = std::str::from_utf8(&frame).unwrap();
     let (_, body) = text.split_once("\r\n\r\n").unwrap();
     let value: serde_json::Value = serde_json::from_str(body).unwrap();

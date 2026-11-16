@@ -25,6 +25,14 @@ const messageKeysWithHelp = [
 
 type Rec = Readonly<Record<string, unknown>>;
 
+const lintExtensions = ".vue, .html, .htm, .js, .mjs, .cjs, .ts, .mts, .cts, .jsx, or .tsx";
+
+export function zeroFileLinterStderr(patterns: readonly string[]): string {
+  return `No ${lintExtensions} files found matching patterns: [${patterns
+    .map((pattern) => JSON.stringify(pattern))
+    .join(", ")}]\n`;
+}
+
 export function validateLinterOutput(
   project: { readonly expectedVueFileCount?: number },
   output: unknown,
@@ -112,7 +120,7 @@ export function validateLinterOutput(
     }
   }
 
-  const expectedExitCode = totalErrors > 0 ? 1 : 0;
+  const expectedExitCode = project.expectedVueFileCount === 0 ? 2 : totalErrors > 0 ? 1 : 0;
   if (exitCode !== expectedExitCode) {
     invalid(`exit code ${String(exitCode)} does not match expected ${expectedExitCode}`);
   }

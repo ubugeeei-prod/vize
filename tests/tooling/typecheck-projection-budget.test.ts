@@ -53,7 +53,7 @@ test("projection proof rejects missing, errored and unstable transforms and fail
   assert.throws(() => assertOwnedProjectionBudget(budget(9, 11)), /A\.vue/u);
   assert.throws(
     () => ownedProbeRows(line(12), "/input", 2, ["A.vue", "B.vue"]),
-    /not every expected SFC reached the mapper/u,
+    /actual transformed SFC set differs from authored input/u,
   );
   assert.throws(
     () => ownedProbeRows(line(12) + line(13), "/input", 1, ["A.vue"]),
@@ -73,6 +73,34 @@ test("projection proof rejects missing, errored and unstable transforms and fail
     () =>
       compareOwnedProjections(base, ownedProbeRows(line(12, "B.vue"), "/input", 1, ["B.vue"]), vue),
     /head\/Vue transformed SFC set differs/u,
+  );
+  const dependency = JSON.stringify({
+    pid: 1,
+    fileName: "/provider/node_modules/nuxt/dist/app/components/nuxt-error-boundary.vue",
+    bytes: 40,
+    sourceBytes: 60,
+    templateBytes: 20,
+  });
+  assert.deepEqual(
+    ownedProbeRows(line(12) + dependency, "/input", 1, ["A.vue"]).map((row) => row.file),
+    ["A.vue", "external:node_modules/nuxt/dist/app/components/nuxt-error-boundary.vue"],
+  );
+  assert.throws(
+    () =>
+      ownedProbeRows(
+        line(12) +
+          JSON.stringify({
+            pid: 1,
+            fileName: "/provider/src/Unexpected.vue",
+            bytes: 40,
+            sourceBytes: 60,
+            templateBytes: 20,
+          }),
+        "/input",
+        1,
+        ["A.vue"],
+      ),
+    /unexpected transformed input/u,
   );
   assert.throws(
     () =>

@@ -116,7 +116,14 @@ pub(super) fn parse_explicit_vite_config_file_with_compile_cache(
 
 fn explicit_vite_json(path: &Path) -> Result<ConfigDocument, Box<dyn std::error::Error>> {
     let content = std::fs::read(path)?;
-    let value: serde_json::Value = serde_json::from_slice(&content)?;
+    explicit_vite_json_bytes(&content, path)
+}
+
+pub(super) fn explicit_vite_json_bytes(
+    content: &[u8],
+    path: &Path,
+) -> Result<ConfigDocument, Box<dyn std::error::Error>> {
+    let value: serde_json::Value = serde_json::from_slice(content)?;
     reject_custom_config_extends(&value)?;
     let Some(source) = value.as_object() else {
         return Err(std::io::Error::new(
@@ -146,7 +153,7 @@ fn explicit_vite_json(path: &Path) -> Result<ConfigDocument, Box<dyn std::error:
         .iter()
         .any(|key| source.contains_key(*key))
     {
-        return document_from_json(&content, path);
+        return document_from_json(content, path);
     }
     if [
         "linter",

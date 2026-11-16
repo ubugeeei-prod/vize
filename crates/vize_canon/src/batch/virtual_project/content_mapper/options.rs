@@ -15,6 +15,7 @@ pub struct ContentMapperTransformOptions {
     /// Project only what diagnostics read, as `vize check` does.
     pub(super) diagnostics_only: bool,
     pub(in crate::batch::virtual_project) configured_global_template_ref: bool,
+    pub(in crate::batch::virtual_project) global_template_ref_explicit: bool,
     /// The project's `vueCompilerOptions`, resolved exactly as `vize check`
     /// resolves them (`vue_check_options::resolve`, #11688).
     pub(in crate::batch::virtual_project) checks: VirtualTsCheckOptions,
@@ -31,6 +32,7 @@ impl Default for ContentMapperTransformOptions {
             shared_virtual_module: false,
             diagnostics_only: false,
             configured_global_template_ref: false,
+            global_template_ref_explicit: false,
             checks: VirtualTsCheckOptions::default(),
         }
     }
@@ -104,5 +106,15 @@ impl ContentMapperTransformOptions {
     #[must_use]
     pub const fn diagnostics_only(self) -> bool {
         self.diagnostics_only
+    }
+
+    /// Admit a program declaration only when `vueCompilerOptions` did not
+    /// explicitly decide which global names own template-ref inference.
+    #[must_use]
+    pub const fn with_ambient_global_template_ref(mut self, declared: bool) -> Self {
+        if !self.global_template_ref_explicit {
+            self.configured_global_template_ref = declared;
+        }
+        self
     }
 }

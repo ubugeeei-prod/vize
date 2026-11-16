@@ -63,6 +63,8 @@ impl MaestroServer {
         let uri = params.text_document.uri;
         self.state.documents.close(&uri);
         #[cfg(feature = "native")]
+        self.state.invalidate_workspace_project_source_contents();
+        #[cfg(feature = "native")]
         if let Some(scheduler) = &self.initial_diagnostics {
             scheduler.discard_closed(&uri, &self.state.documents);
         }
