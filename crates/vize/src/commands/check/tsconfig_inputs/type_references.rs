@@ -15,11 +15,28 @@ mod tsconfig_types;
 pub(crate) use tsconfig_types::collect_tsconfig_type_packages;
 
 pub(crate) fn reference_type_packages(content: &str) -> Vec<std::string::String> {
-    content
-        .lines()
+    reference_directive_lines(content)
         .filter_map(reference_types_attribute)
         .map(std::string::String::from)
         .collect()
+}
+
+/// The lines of `content`, as [`str::lines`] splits them, that contain
+/// `<reference`. Only those can hold a triple-slash reference directive, and
+/// a declaration's other lines are skipped without being split.
+pub(crate) fn reference_directive_lines(content: &str) -> impl Iterator<Item = &str> {
+    let bytes = content.as_bytes();
+    let mut next_line = 0;
+    memchr::memmem::find_iter(bytes, b"<reference").filter_map(move |hit| {
+        if hit < next_line {
+            return None;
+        }
+        let before = bytes.get(..hit).unwrap_or_default();
+        let start = memchr::memrchr(b'\n', before).map_or(0, |newline| newline + 1);
+        let after = bytes.get(hit..).unwrap_or_default();
+        next_line = memchr::memchr(b'\n', after).map_or(bytes.len(), |newline| hit + newline + 1);
+        content.get(start..)?.lines().next()
+    })
 }
 
 pub(crate) fn resolve_type_package_declaration_files(
@@ -281,7 +298,7 @@ fn collect_package_declaration_graph(entry: &Path, package_root: &Path) -> Vec<P
         let Some(base_dir) = path.parent() else {
             continue;
         };
-        for reference in content.lines().filter_map(reference_path_attribute) {
+        for reference in reference_directive_lines(&content).filter_map(reference_path_attribute) {
             let referenced = normalize_path_lexically(&base_dir.join(reference));
             if referenced.starts_with(&package_root)
                 && is_declaration_path(&referenced)
