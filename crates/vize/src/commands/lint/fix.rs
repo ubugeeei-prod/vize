@@ -3,6 +3,7 @@
 use std::path::Path;
 
 use super::collect::{is_plain_script_path, is_standalone_html_path};
+use super::tsrx::{is_tsrx_path, lint_tsrx};
 use crate::commands::atomic_write::atomic_write;
 use vize_l0::{String, ToCompactString, profiler::global_profiler};
 use vize_patina::{JsxLang, LintResult, Linter, TextEdit};
@@ -69,6 +70,8 @@ fn lint_source(linter: &Linter, path: &Path, source: &str, filename: &str) -> Li
         empty_lint_result(filename)
     } else if let Some(lang) = jsx_lang_for_path(path) {
         linter.lint_jsx(source, filename, lang)
+    } else if is_tsrx_path(path) {
+        lint_tsrx(linter, source, filename)
     } else {
         linter.lint_sfc(source, filename)
     }

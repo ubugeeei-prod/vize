@@ -51,7 +51,7 @@ void test("linter preflight rejects reduced, stale, stitched and forged evidence
     unmatchedPatternsLinterStderr(["missing-a/**/*.vue", "missing-b/**/*.vue", "src/**/*.vue"]),
     unmatchedPatternsLinterStderr(["missing-b/**/*.vue", "missing-a/**/*.vue"]),
     unmatchedPatternsLinterStderr(["missing-a/**/*.vue", "missing-a/**/*.vue"]),
-    'Warning: no .vue, .html, .htm, .js, .mjs, .cjs, .ts, .mts, .cts, .jsx, or .tsx files found matching patterns: ["missing-a/**/*.vue","missing-b/**/*.vue"]\n',
+    'Warning: no .vue, .html, .htm, .js, .mjs, .cjs, .ts, .mts, .cts, .jsx, .tsx, or .tsrx files found matching patterns: ["missing-a/**/*.vue","missing-b/**/*.vue"]\n',
   ]) {
     const warningDrift = control();
     warningDrift.registryProjects[0].vueGlobs = [

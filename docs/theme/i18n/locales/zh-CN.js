@@ -55,6 +55,7 @@
       "/rules/reference/parser-template": "模板语法错误",
       "/rules/reference/parser-sfc": "SFC 语法错误",
       "/rules/reference/parser-jsx": "JSX 语法错误",
+      "/rules/reference/parser-tsrx": "TSRX 语法错误",
       "/rules/reference/type-project-configuration": "项目配置错误",
       "/guide/check-performance": "类型检查性能",
       "/guide/oxlint": "Oxlint 插件",

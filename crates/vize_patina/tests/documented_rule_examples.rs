@@ -37,6 +37,7 @@ fn verify_examples(type_aware: bool) {
         "parser-template.md",
         "parser-sfc.md",
         "parser-jsx.md",
+        "parser-tsrx.md",
         "type-project-configuration.md",
     ];
     assert_eq!(
