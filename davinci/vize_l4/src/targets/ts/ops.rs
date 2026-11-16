@@ -9,13 +9,15 @@
 //! - `ui.bind` spread: `({ ...(value) })`, the object spread rule.
 //! - `ui.on`: the native element's `onName` prop, checked like a binding.
 //! - `ui.jsx-child`: `(value)`.
+//! - `ui.if` / `ui.for` authored as script: see [`super::control`].
 //!
 //! `ui.text` and static attributes write nothing, as today.
 
 use vize_l2::component::ComponentDef;
 use vize_l2::expr::ExprRef;
-use vize_l2::op::{BindOp, BindingOp, DynamicName, OnHandlerRef, OnOp, Op, Region};
+use vize_l2::op::{BindOp, BindingOp, DynamicName, ElementOp, OnHandlerRef, OnOp, Op, Region};
 
+use super::control;
 use super::helpers::{NATIVE_ELEMENT_PROP, RE_RENDER_ROOT};
 use super::module::{Cx, JsxModuleRefusal};
 use super::output::LinkRole;
@@ -27,7 +29,7 @@ const LISTENER_OPTIONS: [&str; 3] = ["capture", "once", "passive"];
 pub(super) fn root(cx: &mut Cx<'_>, root: &ComponentDef<'_>) -> Result<(), JsxModuleRefusal> {
     cx.anchor(root.span, LinkRole::Expression, |cx| {
         cx.out.push("([");
-        let mut items = Items { first: true };
+        let mut items = Items::new();
         region(cx, &root.body.root, &mut items)?;
         cx.out.push("] as unknown as ");
         cx.out.push(RE_RENDER_ROOT);
@@ -36,13 +38,17 @@ pub(super) fn root(cx: &mut Cx<'_>, root: &ComponentDef<'_>) -> Result<(), JsxMo
     })
 }
 
-/// Separates the array items of one root.
-struct Items {
+/// Separates the items of one array.
+pub(super) struct Items {
     first: bool,
 }
 
 impl Items {
-    fn next(&mut self, cx: &mut Cx<'_>) {
+    pub(super) const fn new() -> Self {
+        Self { first: true }
+    }
+
+    pub(super) fn next(&mut self, cx: &mut Cx<'_>) {
         if !self.first {
             cx.out.push(", ");
         }
@@ -60,12 +66,7 @@ fn region(cx: &mut Cx<'_>, region: &Region<'_>, items: &mut Items) -> Result<(),
 fn op(cx: &mut Cx<'_>, op: &Op<'_>, items: &mut Items) -> Result<(), JsxModuleRefusal> {
     match op {
         Op::Text(_) => Ok(()),
-        Op::Element(element) => {
-            for binding in &element.bindings {
-                native_binding(cx, element.tag, binding, items)?;
-            }
-            region(cx, &element.children, items)
-        }
+        Op::Element(element) => self::element(cx, element, items),
         Op::JsxChildValue(child) => {
             items.next(cx);
             cx.out.push("(");
@@ -75,13 +76,26 @@ fn op(cx: &mut Cx<'_>, op: &Op<'_>, items: &mut Items) -> Result<(), JsxModuleRe
         }
         // The owner-object helper for components is not published yet.
         Op::Component(_) => Err(JsxModuleRefusal::UnpublishedHelper(op.mnemonic())),
-        Op::Interpolation(_)
-        | Op::Comment(_)
-        | Op::If(_)
-        | Op::For(_)
-        | Op::OriginalFor(_)
-        | Op::Slot(_) => Err(JsxModuleRefusal::Unsupported(op.mnemonic())),
+        Op::If(_) | Op::For(_) => {
+            items.next(cx);
+            control::child(cx, op)
+        }
+        Op::Interpolation(_) | Op::Comment(_) | Op::OriginalFor(_) | Op::Slot(_) => {
+            Err(JsxModuleRefusal::Unsupported(op.mnemonic()))
+        }
     }
+}
+
+/// A native element's checks and then its children's items.
+pub(super) fn element(
+    cx: &mut Cx<'_>,
+    element: &ElementOp<'_>,
+    items: &mut Items,
+) -> Result<(), JsxModuleRefusal> {
+    for binding in &element.bindings {
+        native_binding(cx, element.tag, binding, items)?;
+    }
+    region(cx, &element.children, items)
 }
 
 fn native_binding(
@@ -215,7 +229,10 @@ fn quoted(cx: &mut Cx<'_>, prefix: &str, name: &str) -> Result<(), JsxModuleRefu
 }
 
 /// An authored JavaScript expression, verbatim at its own span.
-fn expression(cx: &mut Cx<'_>, expression: &ExprRef<'_>) -> Result<(), JsxModuleRefusal> {
+pub(super) fn expression(
+    cx: &mut Cx<'_>,
+    expression: &ExprRef<'_>,
+) -> Result<(), JsxModuleRefusal> {
     let (text, span) = match expression {
         ExprRef::Js(js) => (js.source, js.span),
         ExprRef::Opaque(opaque) => (opaque.source, opaque.span),

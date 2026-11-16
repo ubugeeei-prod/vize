@@ -39,6 +39,8 @@ pub enum JsxModuleRefusal {
     Name,
     /// A verbatim run would carry authored markup.
     NestedMarkup,
+    /// An op's authored parts are not ordered spans inside it.
+    Span,
 }
 
 /// Project a JSX/TSX module and the L2 definitions of its outermost roots.
@@ -114,7 +116,8 @@ impl Cx<'_> {
         Ok(())
     }
 
-    fn script(&mut self, span: Span) -> Result<(), JsxModuleRefusal> {
+    /// Write the authored script at `span`, unless empty.
+    pub(super) fn script(&mut self, span: Span) -> Result<(), JsxModuleRefusal> {
         if span.start >= span.end {
             return Ok(());
         }

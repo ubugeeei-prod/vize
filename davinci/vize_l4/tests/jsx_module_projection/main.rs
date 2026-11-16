@@ -1,6 +1,7 @@
 //! JSX/TSX modules projected from the L2 definitions of their markup roots.
 
 mod checker;
+mod control_flow;
 mod support;
 
 use vize_l0::{Allocator, Span};
@@ -159,12 +160,21 @@ fn unprojected_families_and_mismatched_roots_refuse_without_a_document() {
             JsxModuleRefusal::UnpublishedHelper("ui.component"),
         ),
         (
-            "declare const ok: boolean; const v = <div>{ok ? <a /> : <b />}</div>;",
-            JsxModuleRefusal::Unsupported("ui.if"),
+            "declare const ok: boolean; const v = <div>{ok ? <Foo /> : <b />}</div>;",
+            JsxModuleRefusal::UnpublishedHelper("ui.component"),
         ),
         (
-            "declare const xs: string[]; const v = <ul>{xs.map((x) => <li title={x} />)}</ul>;",
-            JsxModuleRefusal::Unsupported("ui.for"),
+            "declare const xs: string[]; const v = <ul>{xs.map((x) => <Item title={x} />)}</ul>;",
+            JsxModuleRefusal::UnpublishedHelper("ui.component"),
+        ),
+        // Markup outside a region would be copied as script.
+        (
+            "const v = <ul>{[<a />].map((x) => <li />)}</ul>;",
+            JsxModuleRefusal::NestedMarkup,
+        ),
+        (
+            "const v = <p>{(<a />) ? <b /> : <i />}</p>;",
+            JsxModuleRefusal::NestedMarkup,
         ),
     ] {
         let arena = Allocator::default();
