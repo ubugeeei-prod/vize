@@ -36,6 +36,8 @@ mod lsp_snapshot;
 mod parse;
 mod pkl;
 mod plugin_inspect;
+mod plugin_lint;
+pub use plugin_lint::run_plugin_lint;
 #[cfg(test)]
 mod plugin_plan_tests;
 pub use plugin_inspect::inspect_config_plugins;

@@ -118,7 +118,18 @@ fn load_snapshot(
 ) -> LoadedLspConfig {
     let attempt =
         load_raw_editor_config_attempt_with_compile_cache(path, before_read, compile_cache);
-    let (loaded, error) = match attempt.outcome {
+    // An editor that cannot honor a plugin capability refuses the plan visibly.
+    let outcome = attempt.outcome.and_then(|loaded| {
+        match crate::config::plugin_plan::document_plugin_plan(&loaded.config) {
+            Ok(Some(plan)) => plan
+                .admit("lsp", None)
+                .map(|()| loaded)
+                .map_err(|error| crate::cstr!("{error}").into_string()),
+            Ok(None) => Ok(loaded),
+            Err(error) => Err(crate::cstr!("{error}").into_string()),
+        }
+    });
+    let (loaded, error) = match outcome {
         Ok(loaded) => (loaded, None),
         Err(error) => {
             eprintln!("Warning: Failed to load editor project configuration: {error}");

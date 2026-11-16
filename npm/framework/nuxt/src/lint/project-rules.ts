@@ -144,6 +144,7 @@ async function readProjectConfig(rootDir: string): Promise<ProjectConfig> {
   if (!loaded) return { entries: [] };
   const parsed = loaded.source;
   const rawVue = parsed.vue && typeof parsed.vue === "object" ? parsed.vue : undefined;
+  refusePluginEntries(rawVue);
   const rawLinter = rawVue && "linter" in rawVue ? projectLinter(rawVue.linter) : undefined;
   const entries = rawVue && "entries" in rawVue ? projectEntries(rawVue.entries) : [];
   return {
@@ -152,6 +153,17 @@ async function readProjectConfig(rootDir: string): Promise<ProjectConfig> {
     oxlint: parsed.lint,
     oxlintConfigDir: loaded.configDir,
   };
+}
+
+// The generated Oxlint config cannot host plugin API v2 rules; ignoring them
+// would silently drop configured lint, so a plugin list fails closed here.
+function refusePluginEntries(vue: object | undefined): void {
+  const plugins = vue && "plugins" in vue ? vue.plugins : undefined;
+  if (Array.isArray(plugins) && plugins.every((entry) => entry === false || entry == null)) return;
+  if (plugins === undefined) return;
+  throw new Error(
+    "[plugin/capability-unadmitted] vue.plugins: the Nuxt Oxlint integration does not run plugin lint rules yet; run `vize lint` for them",
+  );
 }
 
 function projectLinter(value: unknown): ProjectLinterConfig | undefined {
