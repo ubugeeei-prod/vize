@@ -8,13 +8,12 @@
 //! built-in lint pass. Later passes (`--fix`) reuse the process.
 
 use std::{
-    io::{BufRead, BufReader, Read, Write},
+    io::{BufRead, BufReader, Write},
     path::Path,
     process::{Child, ChildStdin, ChildStdout, Stdio},
-    thread::JoinHandle,
 };
 
-use super::js::runtime_file::NodeRuntimeFile;
+use super::{js::runtime_file::NodeRuntimeFile, js_observation::StderrDrain};
 
 const SIDECAR: &str = r#"
 const configPath = process.argv[1];
@@ -40,7 +39,7 @@ pub struct PluginLintSidecar {
     child: Child,
     stdin: Option<ChildStdin>,
     stdout: BufReader<ChildStdout>,
-    stderr: Option<JoinHandle<Vec<u8>>>,
+    stderr: Option<StderrDrain>,
     _runtime: NodeRuntimeFile,
 }
 
@@ -64,24 +63,19 @@ impl PluginLintSidecar {
             .stderr(Stdio::piped())
             .spawn()
             .map_err(|error| crate::cstr!("failed to start node: {error}").into_string())?;
-        let (Some(stdin), Some(stdout), Some(mut stderr)) =
+        let (Some(stdin), Some(stdout), Some(stderr)) =
             (child.stdin.take(), child.stdout.take(), child.stderr.take())
         else {
             let _ = child.kill();
             let _ = child.wait();
             return Err("failed to connect to the plugin lint sidecar".into());
         };
-        // Plugin output goes to stderr; drain it so the process never blocks on it.
-        let stderr = std::thread::spawn(move || {
-            let mut output = Vec::new();
-            let _ = stderr.read_to_end(&mut output);
-            output
-        });
         Ok(Self {
             child,
             stdin: Some(stdin),
             stdout: BufReader::new(stdout),
-            stderr: Some(stderr),
+            // Plugin output goes to stderr; drain it so the process never blocks on it.
+            stderr: Some(StderrDrain::start(stderr)),
             _runtime: runtime,
         })
     }
@@ -112,7 +106,7 @@ impl PluginLintSidecar {
         let stderr = self
             .stderr
             .take()
-            .and_then(|stderr| stderr.join().ok())
+            .and_then(|stderr| stderr.collect().ok())
             .unwrap_or_default();
         let stderr = String::from_utf8_lossy(&stderr);
         // Surface the plugin refusal itself, not the Node stack around it.
