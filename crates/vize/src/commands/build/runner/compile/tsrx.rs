@@ -94,6 +94,7 @@ fn report(source: &str, diagnostics: &[Diagnostic]) -> String {
 #[cfg(test)]
 mod tests {
     use super::{CompileOptions, Target, compile, report};
+    use vize_atelier_sfc::compile_script::typescript::transform_typescript_to_js;
 
     fn refusal(source: &str, erase_types: bool) -> vize_l0::String {
         let options = CompileOptions {
@@ -123,13 +124,75 @@ mod tests {
         );
 
         let arrow = "export const App = () => <p>hi</p>;\n";
+        for erase_types in [false, true] {
+            assert_eq!(
+                refusal(arrow, erase_types).as_str(),
+                "1:26 [unsupported] OutsideComponent is not emitted for the DOM target yet"
+            );
+        }
+        let tab = "const tab = \"\\t\";\nexport function A() @{\n  <p>{tab}</p>\n}\n";
         assert_eq!(
-            refusal(arrow, false).as_str(),
-            "1:26 [unsupported] OutsideComponent is not emitted for the DOM target yet"
+            refusal(tab, true).as_str(),
+            "1:1 [unsupported] type erasure of TSRX modules does not keep a tab character inside a literal yet"
         );
+    }
+
+    /// `--script-ext downcompile` erases a module as the `.vue` script erasure
+    /// erases the same TypeScript, over every fixture the DOM target emits.
+    #[test]
+    fn erased_modules_equal_the_script_erasure_of_their_typescript_output() {
+        let root =
+            std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../tests/_fixtures/tsrx");
+        let mut files: Vec<_> = ["", "mount"]
+            .into_iter()
+            .flat_map(|dir| std::fs::read_dir(root.join(dir)).unwrap())
+            .map(|entry| entry.unwrap().path())
+            .filter(|path| path.extension().is_some_and(|ext| ext == "tsrx"))
+            .collect();
+        files.sort();
+        let mut emitted = Vec::new();
+        for path in files {
+            let source = std::fs::read_to_string(&path).unwrap();
+            let options = |erase_types| CompileOptions {
+                filename: "fixture.tsrx",
+                target: Target::Dom,
+                source_map: false,
+                erase_types,
+            };
+            let Ok(typescript) = compile(&source, &options(false)) else {
+                continue;
+            };
+            let erased = compile(&source, &options(true)).unwrap();
+            let name = path
+                .strip_prefix(&root)
+                .unwrap()
+                .iter()
+                .map(|part| part.to_str().unwrap())
+                .collect::<Vec<_>>()
+                .join("/");
+            assert_eq!(
+                erased.code.as_str(),
+                transform_typescript_to_js(&typescript.code).as_str(),
+                "{name}"
+            );
+            emitted.push(name);
+        }
         assert_eq!(
-            refusal(arrow, true).as_str(),
-            "1:1 [unsupported] type erasure of TSRX modules is not supported yet"
+            emitted,
+            [
+                "mount/attributes.tsrx",
+                "mount/counter.tsrx",
+                "mount/loops.tsrx",
+                "mount/values.tsrx",
+                "syntax-arrow-generic.tsrx",
+                "syntax-asi.tsrx",
+                "syntax-compare.tsrx",
+                "syntax-empty-container.tsrx",
+                "syntax-for-destructure.tsrx",
+                "syntax-gt-text.tsrx",
+                "syntax-trailing-semi-render.tsrx",
+                "syntax-url-text.tsrx",
+            ]
         );
     }
 }

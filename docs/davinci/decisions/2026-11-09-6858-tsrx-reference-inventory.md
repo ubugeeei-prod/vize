@@ -38,7 +38,12 @@ Pin: `tsrx-org/tsrx` at `b09820a9b6b6ed44e640be8cca89b3debbb23491` (tag
 
 ## Specification and implementation disagreements
 
-None is recorded yet. When a reference behavior differs from the
-specification draft, it gets a row here with both behaviors and the issue that
-decides it. Until a maintainer decides otherwise, the pinned reference behavior
-is the Vue profile's behavior, because parity is measured against it.
+When a reference behavior differs from the specification draft, it gets a row
+here with both behaviors and the issue that decides it. Unless a row decides
+otherwise, the pinned reference behavior is the Vue profile's behavior, because
+parity is measured against it. A row that follows the specification keeps its
+mounted-parity rows as expected differences linked to the deciding issue.
+
+| Case                                                                                    | Specification                            | Pinned reference                                                                                                                                                                                      | Vue profile                                                                                                                      | Decided by                                                       |
+| --------------------------------------------------------------------------------------- | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| A component or fragment child inside an element (`<ul>@for (…; key …) { <li /> }</ul>`) | JSX text rules: no text beside the child | `vue-jsx-vapor` 3.2.26 anchors the child at a `" "` text placeholder (`_template("<ul> ", 1)`, `setNodes`) that stays in the DOM for the component's lifetime: a runtime artifact, not TSRX semantics | Follows the specification and renders no text. Mount row `loops/nested` (`tests/_fixtures/tsrx/mount/mount.json`) stays expected | #13142, option A (2026-11-17; the maintainer may still choose B) |

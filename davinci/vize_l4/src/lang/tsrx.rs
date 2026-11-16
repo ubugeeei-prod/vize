@@ -8,6 +8,8 @@
 //! there is never partial output.
 //!
 //! The DOM target emits Vue components ([`dom`]). SSR and Vapor are refused.
+//! With the `typescript` feature, [`CompileOptions::erase_types`] erases the
+//! compiled module's TypeScript; without it, the option is refused.
 
 use alloc::{vec, vec::Vec};
 use vize_l0::{Allocator, String, cstr};
@@ -16,6 +18,8 @@ use vize_l2::lang::tsrx::{TsrxIssueKind, lower};
 
 mod component;
 mod dom;
+#[cfg(feature = "typescript")]
+mod erase;
 mod names;
 
 /// The emission target.
@@ -37,8 +41,9 @@ pub struct CompileOptions<'a> {
     pub target: Target,
     /// Produce a Source Map v3 in [`Compiled::map`].
     pub source_map: bool,
-    /// Erase host TypeScript syntax so the output is JavaScript, over the same
-    /// single parse. When `false`, host code is copied verbatim (TypeScript).
+    /// Erase TypeScript syntax so the output is JavaScript, as the repository's
+    /// `.vue` script erasure prints it. When `false`, host code is copied
+    /// verbatim (TypeScript).
     pub erase_types: bool,
 }
 
@@ -85,9 +90,11 @@ pub enum Code {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[non_exhaustive]
 pub enum EmitIssue {
-    /// [`CompileOptions::source_map`] was requested.
+    /// [`CompileOptions::source_map`] was requested. The shared DOM emitter
+    /// records no span links, so render code would stay unmapped.
     SourceMap,
-    /// [`CompileOptions::erase_types`] was requested.
+    /// [`CompileOptions::erase_types`] was requested without the
+    /// `typescript` feature, or the compiled module could not be erased.
     TypeErasure,
     /// DOM: markup outside the `@{ … }` body of a top-level component, a
     /// function whose name starts with an uppercase letter.
@@ -180,16 +187,24 @@ pub fn compile(source: &str, options: &CompileOptions<'_>) -> Result<Compiled, F
             cstr!("source maps of TSRX modules are not supported yet"),
         ));
     }
-    if options.erase_types {
+    if options.erase_types && !cfg!(feature = "typescript") {
         diagnostics.push(whole(
             Code::Emit(EmitIssue::TypeErasure),
-            cstr!("type erasure of TSRX modules is not supported yet"),
+            cstr!("type erasure of TSRX modules needs the `typescript` feature"),
         ));
     }
     if !diagnostics.is_empty() {
         return Err(Failure { diagnostics });
     }
     let code = dom::module(&allocator, &module, artifacts)?;
+    #[cfg(feature = "typescript")]
+    let code = if options.erase_types {
+        erase::erase(&code).map_err(|message| Failure {
+            diagnostics: vec![whole(Code::Emit(EmitIssue::TypeErasure), message)],
+        })?
+    } else {
+        code
+    };
     Ok(Compiled { code, map: None })
 }
 
