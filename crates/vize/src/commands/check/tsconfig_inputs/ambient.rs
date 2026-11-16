@@ -50,6 +50,28 @@ pub(crate) fn collect_ambient_declaration_files(
     collect_ambient_declaration_files_from(project_root, files, explicit_type_declarations, None)
 }
 
+/// Collect only declaration roots that can affect content-mapper ownership.
+///
+/// The mapper's `useTemplateRef` ownership classifier follows declaration
+/// references and ignores ordinary source modules. Filtering before ambient
+/// inspection avoids opening every configured `.ts` input during
+/// `openProject`, while retaining every file that can change the result and
+/// therefore still needs to be watched.
+pub(crate) fn collect_content_mapper_ambient_declarations(
+    project_root: &Path,
+    tsconfig_path: &Path,
+    cache: &mut TsconfigInputCache,
+) -> Vec<PathBuf> {
+    let project_root = normalize_input_path(project_root);
+    let mut files =
+        collect_default_check_files_inner(&project_root, Some(tsconfig_path), true, false, cache);
+    files.retain(|path| is_declaration_file(path));
+    let explicit_type_declarations =
+        collect_tsconfig_type_declaration_files(&project_root, Some(tsconfig_path));
+    files.extend(explicit_type_declarations.iter().cloned());
+    collect_ambient_declaration_files_from(project_root, files, explicit_type_declarations, None)
+}
+
 /// Return explicitly selected Nuxt import manifests for ownership discovery.
 ///
 /// These generated declarations must not be forwarded as ambient program
