@@ -98,11 +98,19 @@ pub(crate) fn collect_selected_nuxt_import_manifests(
     let Some(spec) = cache.load(tsconfig_path).cloned() else {
         return Vec::new();
     };
+    // The spelled name rules out every other `files` entry before it is
+    // canonicalized or stat'd; the canonical path must still be a manifest.
     let mut manifests = spec
         .files
         .iter()
-        .map(|file| normalize_input_path(&file.resolve()))
-        .filter(|path| path.is_file() && is_nuxt_import_manifest_path(path))
+        .map(|file| file.resolve())
+        .filter(|named| is_nuxt_import_manifest_path(named))
+        .map(|named| normalize_input_path(&named))
+        .filter(|path| {
+            #[cfg(test)]
+            super::super::collect::walk_probe::record(path);
+            is_nuxt_import_manifest_path(path) && path.is_file()
+        })
         .collect::<Vec<_>>();
     let excludes = spec.effective_excludes();
     for root in explicit_hidden_include_roots(project_root, &spec.includes) {
