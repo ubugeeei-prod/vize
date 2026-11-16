@@ -5,7 +5,16 @@ use vize_canon::{
     ContentMapperUnusedExpectDiagnostic,
 };
 
-use super::{encode_error, encode_result, encode_transform};
+use super::{HostReads, encode_error, encode_result, encode_transform};
+
+const EDITOR: HostReads = HostReads {
+    code_selectors: false,
+    geometry_only: false,
+};
+const SELECTORS: HostReads = HostReads {
+    code_selectors: true,
+    geometry_only: false,
+};
 
 fn transform(full: bool) -> ContentMapperTransform {
     ContentMapperTransform {
@@ -51,7 +60,7 @@ fn transform_frames_match_the_sorted_value_envelope() {
     for full in [true, false] {
         for id in [json!(7), json!("req-1"), json!(null)] {
             assert_eq!(
-                encode_transform(&id, &transform(full), false).unwrap(),
+                encode_transform(&id, &transform(full), EDITOR).unwrap(),
                 encode_result(&id, super::wire_value(&transform(full))).unwrap(),
             );
         }
@@ -60,7 +69,7 @@ fn transform_frames_match_the_sorted_value_envelope() {
 
 #[test]
 fn every_feature_spans_and_ignore_directives_drop_their_sixth_element() {
-    let frame = encode_transform(&json!(1), &transform(true), false).unwrap();
+    let frame = encode_transform(&json!(1), &transform(true), EDITOR).unwrap();
     let text = std::str::from_utf8(&frame).unwrap();
     let (_, body) = text.split_once("\r\n\r\n").unwrap();
     let value: serde_json::Value = serde_json::from_str(body).unwrap();
@@ -74,6 +83,44 @@ fn every_feature_spans_and_ignore_directives_drop_their_sixth_element() {
     );
 }
 
+/// A command-line check maps diagnostics by geometry alone, so no span
+/// carries its feature mask; directives and text are unchanged.
+#[test]
+fn geometry_only_hosts_read_five_element_spans() {
+    for code_selectors in [false, true] {
+        let reads = HostReads {
+            code_selectors,
+            geometry_only: true,
+        };
+        let frame = encode_transform(&json!(1), &transform(true), reads).unwrap();
+        assert_eq!(
+            frame,
+            encode_result(&json!(1), super::wire_value_for(&transform(true), reads)).unwrap()
+        );
+        let text = std::str::from_utf8(&frame).unwrap();
+        let (_, body) = text.split_once("\r\n\r\n").unwrap();
+        let value: serde_json::Value = serde_json::from_str(body).unwrap();
+        assert_eq!(
+            value["result"]["mappings"],
+            json!([[0, 5, 10, 5, 0], [5, 1, 15, 1, 1], [6, 2, 16, 2, 0]])
+        );
+        let editor = encode_transform(
+            &json!(1),
+            &transform(true),
+            HostReads {
+                code_selectors,
+                geometry_only: false,
+            },
+        )
+        .unwrap();
+        let editor_text = std::str::from_utf8(&editor).unwrap();
+        let (_, editor_body) = editor_text.split_once("\r\n\r\n").unwrap();
+        let mut editor_value: serde_json::Value = serde_json::from_str(editor_body).unwrap();
+        editor_value["result"]["mappings"] = value["result"]["mappings"].clone();
+        assert_eq!(value, editor_value);
+    }
+}
+
 #[test]
 fn code_selected_ignores_require_the_negotiated_capability() {
     let mut transform = transform(true);
@@ -82,7 +129,7 @@ fn code_selected_ignores_require_the_negotiated_capability() {
         .directives
         .push(ContentMapperDiagnosticDirective::ignore_with_diagnostic_code(7, 4, 0, 5, 2353));
 
-    let legacy = encode_transform(&json!(1), &transform, false).unwrap();
+    let legacy = encode_transform(&json!(1), &transform, EDITOR).unwrap();
     assert_eq!(
         legacy,
         encode_result(&json!(1), super::wire_value(&transform)).unwrap()
@@ -95,14 +142,10 @@ fn code_selected_ignores_require_the_negotiated_capability() {
         json!([[0, 0, 0, 1, 0], [1, 2, 3, 4, 1, 0]])
     );
 
-    let negotiated = encode_transform(&json!(1), &transform, true).unwrap();
+    let negotiated = encode_transform(&json!(1), &transform, SELECTORS).unwrap();
     assert_eq!(
         negotiated,
-        encode_result(
-            &json!(1),
-            super::wire_value_with_capabilities(&transform, true)
-        )
-        .unwrap()
+        encode_result(&json!(1), super::wire_value_for(&transform, SELECTORS)).unwrap()
     );
     let negotiated_text = std::str::from_utf8(&negotiated).unwrap();
     let (_, negotiated_body) = negotiated_text.split_once("\r\n\r\n").unwrap();
@@ -133,7 +176,7 @@ fn ignores_over_whitespace_only_stay_off_the_wire() {
             ContentMapperDiagnosticDirective([0, 0, 12, 12, 0, 0]),
         ],
     });
-    let frame = encode_transform(&json!(1), &transform, false).unwrap();
+    let frame = encode_transform(&json!(1), &transform, EDITOR).unwrap();
     let text = std::str::from_utf8(&frame).unwrap();
     let (_, body) = text.split_once("\r\n\r\n").unwrap();
     let value: serde_json::Value = serde_json::from_str(body).unwrap();
@@ -149,7 +192,7 @@ fn ignores_over_whitespace_only_stay_off_the_wire() {
 
 #[test]
 fn semantic_links_stay_off_the_wire() {
-    let frame = encode_transform(&json!(1), &transform(true), false).unwrap();
+    let frame = encode_transform(&json!(1), &transform(true), EDITOR).unwrap();
     let text = std::str::from_utf8(&frame).unwrap();
     let (_, body) = text.split_once("\r\n\r\n").unwrap();
     let value: serde_json::Value = serde_json::from_str(body).unwrap();
@@ -210,13 +253,13 @@ fn spans_match_serde_json() {
         ContentMapperSpan([1, 12_345, 7, 0, 65_536, 4_294_967_296]),
     ];
     let mut out = Vec::new();
-    super::push_spans(&mut out, &spans);
+    super::push_spans(&mut out, &spans, false);
     assert_eq!(
         std::str::from_utf8(&out).unwrap(),
         serde_json::to_string(&spans).unwrap()
     );
     let mut empty = Vec::new();
-    super::push_spans(&mut empty, &[]);
+    super::push_spans(&mut empty, &[], false);
     assert_eq!(empty, b"[]");
 }
 

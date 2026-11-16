@@ -346,17 +346,27 @@ const NAVIGATION_MARKERS: [(&str, usize, usize); 5] = [
     ("__vize_slots_nav_", 2, 2),
 ];
 
-/// The open reply's identity and the transform's text for one openProject.
-fn open_and_transform(request: Value) -> (vize_l0::String, vize_l0::String) {
+/// The open reply's identity, the transform's text and its span tuple widths
+/// for one openProject.
+fn open_and_transform(request: Value) -> (vize_l0::String, vize_l0::String, Vec<usize>) {
     let responses = exchange(&frames(&[
         initialize_request(),
         request,
         transform_request(3, NAVIGATED_SOURCE),
     ]));
     let field = |value: &Value| vize_l0::String::from(value.as_str().unwrap());
+    let mut widths: Vec<usize> = responses[2]["result"]["mappings"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|span| span.as_array().unwrap().len())
+        .collect();
+    widths.sort_unstable();
+    widths.dedup();
     (
         field(&responses[1]["result"]["configIdentity"]),
         field(&responses[2]["result"]["text"]),
+        widths,
     )
 }
 
@@ -373,7 +383,9 @@ fn command_line_hosts_get_the_check_projection_under_its_own_identity() {
     });
     let mut editor = configured_open(2, "p1", &config);
     editor["params"]["compilerOptions"] = editor_options.clone();
-    let (editor_identity, editor_text) = open_and_transform(editor);
+    let (editor_identity, editor_text, editor_widths) = open_and_transform(editor);
+    // The editor reads span features; a command-line check maps by geometry.
+    assert_eq!(editor_widths, [5, 6]);
 
     for cli_flag in [
         json!({ "project": config }),
@@ -388,7 +400,8 @@ fn command_line_hosts_get_the_check_projection_under_its_own_identity() {
             .extend(cli_flag.as_object().unwrap().clone());
         let mut check = configured_open(2, "p1", &config);
         check["params"]["compilerOptions"] = options;
-        let (check_identity, check_text) = open_and_transform(check);
+        let (check_identity, check_text, check_widths) = open_and_transform(check);
+        assert_eq!(check_widths, [5], "{cli_flag}");
         assert_eq!(
             check_identity,
             cstr!("{editor_identity}:check"),
@@ -418,7 +431,7 @@ fn tsconfig_options_the_editor_host_forwards_keep_the_editor_projection() {
     std::fs::write(&config, "{}").unwrap();
     let mut plain = configured_open(2, "p1", &config);
     plain["params"]["compilerOptions"] = json!({ "configFilePath": config });
-    let (plain_identity, plain_text) = open_and_transform(plain);
+    let (plain_identity, plain_text, _) = open_and_transform(plain);
     // TypeScript 7.1's language server forwards these from a tsconfig; only
     // `watch`, `listFilesOnly`, `showConfig`, `help` and `locale` are refused.
     let mut forwarded = configured_open(2, "p1", &config);
@@ -431,7 +444,7 @@ fn tsconfig_options_the_editor_host_forwards_keep_the_editor_projection() {
         "pretty": false,
         "runExternalCode": true
     });
-    let (forwarded_identity, forwarded_text) = open_and_transform(forwarded);
+    let (forwarded_identity, forwarded_text, _) = open_and_transform(forwarded);
     assert_eq!(forwarded_identity, plain_identity);
     assert_eq!(forwarded_text, plain_text);
 }

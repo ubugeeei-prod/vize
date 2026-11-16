@@ -20,6 +20,17 @@ const SPAN_FEATURES_ALL: usize = (1 << 20) - 1;
 /// negotiated diagnostic-code selector.
 const DIRECTIVE_POLICY_IGNORE: usize = 0;
 
+/// What the host reads from a transform reply.
+#[derive(Clone, Copy, Debug, Default)]
+pub(super) struct HostReads {
+    /// The host negotiated diagnostic-code selectors.
+    pub(super) code_selectors: bool,
+    /// A command-line check maps diagnostics by span geometry alone
+    /// (`spanmap.VirtualToOriginalSpan`). Features only steer editor
+    /// operations, so every span goes out as a five-element tuple.
+    pub(super) geometry_only: bool,
+}
+
 pub(super) fn encode_result(id: &Value, result: impl Serialize) -> io::Result<Vec<u8>> {
     // The original server's json! envelope recursively ordered every object
     // through Value. Preserve opaque nested fields as well as envelope keys.
@@ -45,7 +56,7 @@ pub(super) fn encode_result(id: &Value, result: impl Serialize) -> io::Result<Ve
 pub(super) fn encode_transform(
     id: &Value,
     transform: &ContentMapperTransform,
-    diagnostic_code_selectors: bool,
+    reads: HostReads,
 ) -> io::Result<Vec<u8>> {
     let ContentMapperTransform {
         text,
@@ -66,7 +77,7 @@ pub(super) fn encode_transform(
     frame.extend_from_slice(br#","jsonrpc":"2.0","result":{"#);
     if let Some(directives) = diagnostic_directives {
         frame.extend_from_slice(br#""diagnosticDirectives":"#);
-        push_directives(&mut frame, directives, text, diagnostic_code_selectors)?;
+        push_directives(&mut frame, directives, text, reads.code_selectors)?;
         frame.push(b',');
     }
     frame.extend_from_slice(br#""diagnostics":"#);
@@ -74,7 +85,7 @@ pub(super) fn encode_transform(
     frame.extend_from_slice(br#","extension":"#);
     push_json_str(&mut frame, extension);
     frame.extend_from_slice(br#","mappings":"#);
-    push_spans(&mut frame, mappings);
+    push_spans(&mut frame, mappings, reads.geometry_only);
     frame.extend_from_slice(br#","text":"#);
     push_json_str(&mut frame, text);
     frame.extend_from_slice(b"}}");
@@ -152,14 +163,19 @@ fn push_escaped(out: &mut Vec<u8>, bytes: &[u8], run: &mut usize, index: usize) 
 }
 
 /// `[[a,b,c,d,e,f],...]` without a serializer call per number. A span with
-/// every feature drops its mask, as `spanmap.Marshal` writes it.
-fn push_spans(out: &mut Vec<u8>, spans: &[ContentMapperSpan]) {
+/// every feature drops its mask, as `spanmap.Marshal` writes it, and so does
+/// every span a geometry-only host reads.
+fn push_spans(out: &mut Vec<u8>, spans: &[ContentMapperSpan], geometry_only: bool) {
     out.push(b'[');
     for (row, ContentMapperSpan(span)) in spans.iter().enumerate() {
         if row > 0 {
             out.push(b',');
         }
-        let width = if span[5] == SPAN_FEATURES_ALL { 5 } else { 6 };
+        let width = if geometry_only || span[5] == SPAN_FEATURES_ALL {
+            5
+        } else {
+            6
+        };
         push_row(out, span.get(..width).unwrap_or(span));
     }
     out.push(b']');
@@ -336,14 +352,15 @@ impl Serialize for Sorted<'_, ContentMapperUnusedExpectDiagnostic> {
 /// ignore directives.
 #[cfg(test)]
 pub(in crate::commands::content_mapper) fn wire_value(transform: &ContentMapperTransform) -> Value {
-    wire_value_with_capabilities(transform, false)
+    wire_value_for(transform, HostReads::default())
 }
 
 #[cfg(test)]
-fn wire_value_with_capabilities(
-    transform: &ContentMapperTransform,
-    diagnostic_code_selectors: bool,
-) -> Value {
+fn wire_value_for(transform: &ContentMapperTransform, reads: HostReads) -> Value {
+    let HostReads {
+        code_selectors: diagnostic_code_selectors,
+        geometry_only,
+    } = reads;
     let mut value = serde_json::to_value(transform).unwrap_or_default();
     if let Some(result) = value.as_object_mut() {
         result.remove("semanticLinks");
@@ -357,6 +374,18 @@ fn wire_value_with_capabilities(
             }
         }
     };
+    if geometry_only {
+        for row in value
+            .get_mut("mappings")
+            .and_then(Value::as_array_mut)
+            .into_iter()
+            .flatten()
+        {
+            if let Some(tuple) = row.as_array_mut() {
+                tuple.truncate(5);
+            }
+        }
+    }
     narrow(
         value.get_mut("mappings").and_then(Value::as_array_mut),
         5,
