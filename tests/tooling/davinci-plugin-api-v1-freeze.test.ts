@@ -61,7 +61,7 @@ const labels = defineFactProvider({
   provides: ["labels/tags"],
   cacheInputs: [],
   provide(batch) {
-    return { "labels/tags": batch.nodes.map((node) => [node.id, node.name]) };
+    return { "labels/tags": batch.nodes.map((node) => [node.id, node.name ?? null] as const) };
   },
 });
 
@@ -152,14 +152,14 @@ function outputCase(family: "formatter" | "output") {
       ? defineOutputPlugin({
           name: "license",
           version: "1.0.0",
-          family,
+          family: "output",
           cacheInputs: [],
-          output: () => [{ placement: "prepend", comment: "Copyright 日本語🎨" }],
+          output: () => [{ placement: "prepend", comment: "Copyright 日本語🎨" }] as const,
         })
       : defineOutputPlugin({
           name: "spacing",
           version: "1.0.0",
-          family,
+          family: "formatter",
           cacheInputs: [],
           output: () => [],
         });
