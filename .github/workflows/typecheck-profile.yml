@@ -27,7 +27,7 @@ on:
         type: string
         default: ""
       lanes:
-        description: Comma-separated lanes (tsc, tsrs, tsrs-dwarf, check)
+        description: Comma-separated lanes (tsc, tsrs, tsrs-dwarf, tsrs-source, check)
         type: string
         default: "tsc,tsrs,check"
       frequency:
@@ -159,6 +159,25 @@ jobs:
             (cd "$RUNNER_TEMP/profile-$role" && vp run --filter './npm/cli' build)
             file "$RUNNER_TEMP/profile-$role"/npm/native/*.node
           done
+      # The tsrs-source lane: tsrs at TSRS_SOURCE_REF built with line tables,
+      # frame pointers and its symbol table, so perf names and unwinds it.
+      - name: Build tsrs from source
+        if: contains(env.LANES, 'tsrs-source')
+        env:
+          TSRS_SOURCE_REF: v0.23.0
+        run: |
+          set -euo pipefail
+          git submodule update --init --depth 1 -- upstream/tsrs
+          git -C upstream/tsrs fetch --no-tags --depth 1 origin "refs/tags/$TSRS_SOURCE_REF:refs/tags/$TSRS_SOURCE_REF"
+          git -C upstream/tsrs checkout --detach "$TSRS_SOURCE_REF"
+          cd upstream/tsrs
+          RUSTFLAGS="-C force-frame-pointers=yes" CARGO_TARGET_DIR="$RUNNER_TEMP/tsrs-target" \
+            cargo build --locked --profile prof -p tsrs_cli --bin tsrs \
+              --config 'profile.prof.inherits="release"' --config 'profile.prof.lto="thin"' \
+              --config 'profile.prof.codegen-units=16' --config 'profile.prof.debug="line-tables-only"' \
+              --config 'profile.prof.strip="none"'
+          "$RUNNER_TEMP/tsrs-target/prof/tsrs" --version
+          echo "VIZE_PROFILE_TSRS_BIN=$RUNNER_TEMP/tsrs-target/prof/tsrs" >> "$GITHUB_ENV"
       - name: Profile the lanes
         run: |
           set -euo pipefail
