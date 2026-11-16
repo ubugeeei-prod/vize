@@ -185,6 +185,11 @@
       "error": null
     },
     {
+      "file": "tests/_fixtures/tsrx/mount/loops.tsrx",
+      "code": "import { defineVaporComponent, VaporFor } from 'vue-jsx-vapor';\n\nexport const Rows = defineVaporComponent(function Rows({ rows }: { rows: { id: number; text: string }[] }) {\n\treturn <VaporFor in={rows} getKey={(row, i) => row.id}>{(row, i) => <li class=\"row\">{i.value}: {row.value.text}</li>}</VaporFor>;\n});\n\nexport const Pairs = defineVaporComponent(function Pairs({ rows }: { rows: { id: number; text: string }[] }) {\n\treturn <VaporFor in={rows} getKey={({ id, text }) => id}>{(__vapor_item) => <Pair id={__vapor_item.value.id} text={__vapor_item.value.text} />}</VaporFor>;\n});\n\nconst Pair = defineVaporComponent(function Pair({ id, text }: { id: number; text: string }) {\n\treturn <p data-id={id}>{text}</p>;\n});\n\nexport const Nested = defineVaporComponent(function Nested({ rows }: { rows: { id: number; text: string }[] }) {\n\treturn <ul>{<VaporFor in={rows} getKey={(row) => row.id}>{(row) => <li>{row.value.text}</li>}</VaporFor>}</ul>;\n});",
+      "error": null
+    },
+    {
       "file": "tests/_fixtures/tsrx/mount/values.tsrx",
       "code": "import { defineVaporComponent } from 'vue-jsx-vapor';\n\nexport const Values = defineVaporComponent(function Values(\n\t{ text, count, flag, items }: { text: string; count: number; flag: boolean; items: string[] }\n) {\n\treturn <ul><li>Text: {text}</li><li>{count} and {count + 1}</li><li>{flag ? 'on' : 'off'}</li><li>{flag ? null : 0}</li><li>{items.join(', ')}</li></ul>;\n});",
       "error": null

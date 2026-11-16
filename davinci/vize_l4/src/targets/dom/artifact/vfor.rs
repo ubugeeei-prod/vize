@@ -5,6 +5,7 @@ use vize_l0::id::NodeId;
 use vize_l2::expr::ExprRef;
 use vize_l2::op::{ForOp, Op, VueMemoOp};
 
+mod host;
 mod keys;
 
 use super::EmitCx;
@@ -23,8 +24,8 @@ pub(super) fn emit_for(
     id: Option<NodeId>,
     fragment_key: Option<&str>,
 ) -> Result<(), EmitError> {
-    if for_op.host.is_some() {
-        return Err(EmitError::unsupported_at(Reason::HostForLoop, for_op.span));
+    if let Some(host) = &for_op.host {
+        return host::emit_for(cx, for_op, host, id, fragment_key);
     }
     let source_raw = js_source(&for_op.binding.source)?;
     let source_prefixed;
@@ -95,17 +96,18 @@ fn emit_for_scoped(
     } else {
         plain_item_memo(&for_op.region.ops)
     };
+    let host_keyed = for_op.host.as_ref().is_some_and(|host| host.key.is_some());
     let (bind_len, keyed) = if from_template {
         (0, wrapper_key.is_some())
     } else {
         match for_op.region.ops.as_slice() {
             [Op::Element(element)] => (
                 element.bindings.len(),
-                has_dynamic_item_key(&element.bindings),
+                host_keyed || has_dynamic_item_key(&element.bindings),
             ),
             [Op::Component(component)] => (
                 component.bindings.len(),
-                has_dynamic_item_key(&component.bindings),
+                host_keyed || has_dynamic_item_key(&component.bindings),
             ),
             [Op::Slot(slot)] => (slot.bindings.len(), has_dynamic_item_key(&slot.bindings)),
             [Op::OriginalFor(original)] => {
@@ -282,10 +284,18 @@ fn emit_plain_item(
     match for_op.region.ops.as_slice() {
         [Op::Element(element)] => {
             let key = item_key_js(cx, &element.attributes, &element.bindings)?;
+            let key = match &for_op.host {
+                Some(host) => host::item_key(cx, host, key, for_op.span)?,
+                None => key,
+            };
             super::emit_for_item_call(cx, element, id, stable, key.as_deref())
         }
         [Op::Component(component)] => {
             let key = item_key_js(cx, &component.attributes, &component.bindings)?;
+            let key = match &for_op.host {
+                Some(host) => host::item_key(cx, host, key, for_op.span)?,
+                None => key,
+            };
             super::component::emit_for_item(cx, component, id, key.as_deref())
         }
         [Op::Slot(slot)] => super::outlet::emit_outlet(cx, slot, None, false),

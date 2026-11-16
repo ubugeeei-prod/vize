@@ -22,6 +22,46 @@
       "steps": [{ "props": { "value": "abcd" } }, { "props": { "disabled": true, "tone": "warn" } }, { "props": { "name": "user" } }]
     },
     {
+      "id": "loops/rows",
+      "file": "tests/_fixtures/tsrx/mount/loops.tsrx",
+      "component": "Rows",
+      "props": { "rows": [{ "id": 1, "text": "a" }, { "id": 2, "text": "b" }, { "id": 3, "text": "c" }] },
+      "steps": [
+        { "props": { "rows": [{ "id": 3, "text": "c" }, { "id": 1, "text": "a" }, { "id": 2, "text": "b" }] } },
+        { "props": { "rows": [{ "id": 3, "text": "c" }, { "id": 4, "text": "d" }, { "id": 2, "text": "B" }] } },
+        { "props": { "rows": [{ "id": 2, "text": "B" }] } },
+        { "props": { "rows": [] } },
+        { "props": { "rows": [{ "id": 5, "text": "e" }, { "id": 2, "text": "b" }] } }
+      ]
+    },
+    {
+      "id": "loops/pairs",
+      "file": "tests/_fixtures/tsrx/mount/loops.tsrx",
+      "component": "Pairs",
+      "props": { "rows": [{ "id": 1, "text": "a" }, { "id": 2, "text": "b" }, { "id": 3, "text": "c" }] },
+      "steps": [
+        { "props": { "rows": [{ "id": 3, "text": "c" }, { "id": 1, "text": "a" }, { "id": 2, "text": "b" }] } },
+        { "props": { "rows": [{ "id": 3, "text": "c" }, { "id": 4, "text": "d" }, { "id": 2, "text": "B" }] } },
+        { "props": { "rows": [{ "id": 2, "text": "B" }] } },
+        { "props": { "rows": [] } },
+        { "props": { "rows": [{ "id": 5, "text": "e" }, { "id": 2, "text": "b" }] } }
+      ]
+    },
+    {
+      "id": "loops/nested",
+      "file": "tests/_fixtures/tsrx/mount/loops.tsrx",
+      "component": "Nested",
+      "expected": "#13142",
+      "props": { "rows": [{ "id": 1, "text": "a" }, { "id": 2, "text": "b" }, { "id": 3, "text": "c" }] },
+      "steps": [
+        { "props": { "rows": [{ "id": 3, "text": "c" }, { "id": 1, "text": "a" }, { "id": 2, "text": "b" }] } },
+        { "props": { "rows": [{ "id": 3, "text": "c" }, { "id": 4, "text": "d" }, { "id": 2, "text": "B" }] } },
+        { "props": { "rows": [{ "id": 2, "text": "B" }] } },
+        { "props": { "rows": [] } },
+        { "props": { "rows": [{ "id": 5, "text": "e" }, { "id": 2, "text": "b" }] } }
+      ]
+    },
+    {
       "id": "values/updates",
       "file": "tests/_fixtures/tsrx/mount/values.tsrx",
       "component": "Values",

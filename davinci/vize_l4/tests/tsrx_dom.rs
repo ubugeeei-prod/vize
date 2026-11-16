@@ -7,7 +7,7 @@ mod cases {
     use std::path::Path;
     use vize_l4::lang::tsrx::{CompileOptions, Target, compile};
 
-    const MODULES: [&str; 3] = ["attributes", "counter", "values"];
+    const MODULES: [&str; 4] = ["attributes", "counter", "loops", "values"];
 
     #[test]
     fn mounted_parity_modules_emit_their_committed_dom_output() {

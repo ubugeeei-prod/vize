@@ -155,6 +155,8 @@ export interface MountRow {
   component: string;
   props: Record<string, unknown>;
   steps: Step[];
+  /** The issue that tracks a known difference; the row must still differ. */
+  expected?: string;
 }
 
 function observe(parent: any): unknown[] {
