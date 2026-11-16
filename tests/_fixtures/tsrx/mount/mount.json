@@ -272,6 +272,36 @@
       "component": "Rest",
       "props": { "label": "a", "title": "t", "data-x": "1" },
       "steps": [{ "props": { "title": "u" } }, { "props": { "label": "b" } }]
+    },
+    {
+      "id": "empty/fill",
+      "file": "tests/_fixtures/tsrx/mount/empty.tsrx",
+      "component": "List",
+      "props": { "items": ["a"] },
+      "steps": [{ "props": { "items": [] } }, { "props": { "items": ["b", "c"] } }]
+    },
+    {
+      "id": "empty/toggle",
+      "file": "tests/_fixtures/tsrx/mount/empty.tsrx",
+      "component": "List",
+      "expected": "#13180",
+      "props": { "items": [] },
+      "steps": [{ "props": { "items": ["a", "b"] } }, { "props": { "items": [] } }]
+    },
+    {
+      "id": "empty/update",
+      "file": "tests/_fixtures/tsrx/mount/empty.tsrx",
+      "component": "List",
+      "expected": "#13180",
+      "props": { "items": ["a", "b"] },
+      "steps": [{ "props": { "items": ["b", "a", "c"] } }]
+    },
+    {
+      "id": "empty/components",
+      "file": "tests/_fixtures/tsrx/mount/empty.tsrx",
+      "component": "Cards",
+      "props": { "rows": [{ "id": 1, "text": "a" }] },
+      "steps": [{ "props": { "rows": [] } }, { "props": { "rows": [{ "id": 2, "text": "b" }] } }]
     }
   ]
 }

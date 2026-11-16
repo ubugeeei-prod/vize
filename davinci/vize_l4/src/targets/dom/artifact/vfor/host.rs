@@ -3,16 +3,21 @@
 //! Every item is keyed, as in the TSRX Vue profile's `VaporFor`: by the head's
 //! `key`, else by the item's own `key`, else by the `index` binding, else by
 //! the item value itself. A body of several nodes renders a keyed fragment
-//! per item.
+//! per item. A type annotation on the left side is erased with the rest.
 //!
-//! Refused (`HostForLoop`): `@empty`, `for await`, an assignment or
-//! annotated left side, a key on both the head and the item, a destructured
-//! item without a key or an index (its value has no name), and items a loop
-//! key cannot reach (slot outlets, `v-memo` items, `<template>` wrappers).
+//! `@empty` renders when the collection has no items, as the reference tests
+//! it: `(items).length !== 0 ? <loop> : <empty>`, a keyed branch pair like
+//! `v-if`/`v-else`, whose empty branch is one element or component.
+//!
+//! Refused (`HostForLoop`): `for await`, an assignment left side, a key on
+//! both the head and the item, a destructured item without a key or an index
+//! (its value has no name), items a loop key cannot reach (slot outlets,
+//! `v-memo` items, `<template>` wrappers), and an `@empty` region of other
+//! shapes or on a loop that is itself a branch.
 
 use oxc_span::GetSpan;
-use vize_l0::String;
 use vize_l0::id::NodeId;
+use vize_l0::{String, ToCompactString};
 use vize_l2::expr::ExprRef;
 use vize_l2::op::{ForOp, HostFor, Op};
 
@@ -29,7 +34,7 @@ pub(super) fn emit_for(
     fragment_key: Option<&str>,
 ) -> Result<(), EmitError> {
     let refuse = || EmitError::unsupported_at(Reason::HostForLoop, for_op.span);
-    if host.r#await || host.empty.is_some() {
+    if host.r#await || (host.empty.is_some() && fragment_key.is_some()) {
         return Err(refuse());
     }
     let wrapped = id.is_some_and(|id| cx.for_wrappers.get(id).is_some());
@@ -45,7 +50,7 @@ pub(super) fn emit_for(
     let [declarator] = declaration.declarations.as_slice() else {
         return Err(refuse());
     };
-    if declarator.init.is_some() || declarator.type_annotation.is_some() {
+    if declarator.init.is_some() {
         return Err(refuse());
     }
     let pattern = declarator.id.span();
@@ -62,11 +67,63 @@ pub(super) fn emit_for(
     } else {
         source_raw.as_str()
     };
+    let Some(empty) = &host.empty else {
+        return emit_loop(cx, for_op, id, fragment_key, source, value, index);
+    };
+    let empty_root = match empty.ops.as_slice() {
+        [root @ (Op::Element(_) | Op::Component(_))] => root,
+        _ => return Err(refuse()),
+    };
+    cx.use_open_block();
+    let loop_key = next_branch_key(cx);
+    let empty_key = next_branch_key(cx);
+    cx.buf.push("(");
+    cx.buf.push(source);
+    cx.buf.push(").length !== 0");
+    cx.buf.indent();
+    cx.buf.newline();
+    cx.buf.push("? ");
+    emit_loop(cx, for_op, id, Some(&loop_key), source, value, index)?;
+    cx.buf.newline();
+    cx.buf.push(": ");
+    // The walk visits the empty region after the body.
+    let empty_id = cx.walk.mint();
+    match empty_root {
+        Op::Element(element) => {
+            cx.walk.skip(element.bindings.len());
+            super::super::emit_if_branch_call(cx, element, &empty_key, empty_id)?;
+        }
+        Op::Component(component) => {
+            cx.walk.skip(component.bindings.len());
+            super::super::component::emit_if_branch(cx, component, &empty_key, empty_id)?;
+        }
+        _ => return Err(refuse()),
+    }
+    cx.buf.deindent();
+    Ok(())
+}
+
+fn emit_loop(
+    cx: &mut EmitCx<'_>,
+    for_op: &ForOp<'_>,
+    id: Option<NodeId>,
+    fragment_key: Option<&str>,
+    source: &str,
+    value: &str,
+    index: Option<&str>,
+) -> Result<(), EmitError> {
     // Arrays pass the index second, where a directive loop binds its key.
     let prefix_mark = cx.enter_host_for_scope([Some(value), index, None]);
     let result = emit_for_scoped(cx, for_op, id, fragment_key, source, value, index, None);
     cx.leave_scope(prefix_mark);
     result
+}
+
+/// The next key of the enclosing `v-if` chain counter.
+fn next_branch_key(cx: &mut EmitCx<'_>) -> String {
+    let key = cx.if_branch_key;
+    cx.if_branch_key = cx.if_branch_key.saturating_add(1);
+    key.to_compact_string()
 }
 
 /// The item's key: the head's `key` (which the item must not repeat), the

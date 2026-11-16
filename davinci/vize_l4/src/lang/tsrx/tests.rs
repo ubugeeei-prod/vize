@@ -44,8 +44,10 @@ fn unsupported_constructs_are_refused_at_their_span() {
 #[test]
 fn dom_host_loops_outside_the_emitted_shapes_are_refused() {
     for body in [
-        "@for (const item of items; key item) {\n\t\t<li>{item}</li>\n\t} @empty {\n\t\t<li>none</li>\n\t}",
-        "@for (const item: string of items; key item) {\n\t\t<li>{item}</li>\n\t}",
+        // An `@empty` region of several nodes, or on a loop that is a branch.
+        "@for (const item of items; key item) {\n\t\t<li>{item}</li>\n\t} @empty {\n\t\t<><li>none</li><li>yet</li></>\n\t}",
+        "@if (items) {\n\t\t@for (const item of items; key item) {\n\t\t\t<li>{item}</li>\n\t\t} @empty {\n\t\t\t<li>none</li>\n\t\t}\n\t}",
+        "@for await (const item of items; key item) {\n\t\t<li>{item}</li>\n\t}",
         "@for (const item of items; key item) {\n\t\t<li key={item}>{item}</li>\n\t}",
         "@for (const item of items) {\n\t\t@if (item) {\n\t\t\t<b>{item}</b>\n\t\t}\n\t}",
     ] {
