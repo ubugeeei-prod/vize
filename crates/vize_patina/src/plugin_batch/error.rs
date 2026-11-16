@@ -14,22 +14,46 @@ pub enum HostError {
     Split(String),
     /// A manifest demanded a fact group the host does not expose.
     UnknownFact {
+        /// The refused plugin.
         plugin: String,
+        /// The undeclared fact group.
         name: String,
+        /// The fact groups the host exposes.
         known: &'static [&'static str],
     },
     /// A manifest listed a node kind L2 does not have.
-    UnknownKind { plugin: String, kind: String },
+    UnknownKind {
+        /// The refused plugin.
+        plugin: String,
+        /// The unknown record kind.
+        kind: String,
+    },
     /// Caching needs an explicit, unique list of plugin-owned ambient inputs.
-    InvalidCacheInputs { plugin: String, detail: String },
+    InvalidCacheInputs {
+        /// The refused plugin.
+        plugin: String,
+        /// What is wrong with the declaration.
+        detail: String,
+    },
     /// A plugin's `run` returned something other than a report array.
-    BadReports { plugin: String, detail: String },
+    BadReports {
+        /// The refused plugin.
+        plugin: String,
+        /// What is wrong with the reports.
+        detail: String,
+    },
     /// Identical plugin inputs produced different diagnostics or fixes.
-    Nondeterministic { plugin: String },
+    Nondeterministic {
+        /// The refused plugin.
+        plugin: String,
+    },
     /// A report named a node id outside the document.
     UnknownNode {
+        /// The refused plugin.
         plugin: String,
+        /// The reporting rule.
         rule: String,
+        /// The unknown node id.
         node: u32,
     },
 }

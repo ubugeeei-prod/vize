@@ -77,12 +77,9 @@ mod lint {
     reason = "the N-API callers are not linked in this test configuration"
 )]
 mod plugin_sdk {
-    mod batch;
-    mod document;
-    mod error;
-    mod facts;
+    use vize_patina::plugin_batch::{batch, document, error, facts};
+
     mod plugin_cache;
-    mod production;
     mod providers;
     mod tests;
 }

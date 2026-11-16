@@ -41,6 +41,7 @@ pub struct PluginNode {
     /// it never crosses (a plugin cannot report a range the file lacks).
     #[serde(skip)]
     pub start: u32,
+    /// File-absolute exclusive end of the range.
     #[serde(skip)]
     pub end: u32,
     /// Tag, component or static binding name.
@@ -61,8 +62,11 @@ pub struct PluginNode {
 /// The authored text of a `ui.for`'s three alias positions.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct ForAlias {
+    /// The item alias.
     pub value: String,
+    /// The second alias (Vue's key position).
     pub key: Option<String>,
+    /// The third alias (the index position).
     pub index: Option<String>,
 }
 
@@ -70,9 +74,13 @@ pub struct ForAlias {
 /// lowering attached.
 #[derive(Debug)]
 pub struct PluginDocument {
+    /// The file name reports and keys use.
     pub filename: String,
+    /// The authored SFC source.
     pub source: String,
+    /// Lazily computed production (Croquis) analysis.
     pub production: super::production::ProductionDocument,
+    /// Page-order L2 records.
     pub nodes: Vec<PluginNode>,
     /// `lowered.artifact.scopes` names per binding-introducing op, in id order.
     pub scopes: Vec<(u32, Vec<String>)>,
