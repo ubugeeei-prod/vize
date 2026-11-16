@@ -195,6 +195,11 @@
       "error": null
     },
     {
+      "file": "tests/_fixtures/tsrx/mount/slots.tsrx",
+      "code": "import { defineVaporComponent } from 'vue-jsx-vapor';\nimport { useSlots } from 'vue';\n\nconst Card = defineVaporComponent(function Card() {\n\tconst slots = useSlots();\n\n\treturn <>{slots.default?.()}</>;\n});\n\nexport const Panel = defineVaporComponent(function Panel({ title, count }: { title: string; count: number }) {\n\treturn <Card><h2 class=\"title\">{title}</h2><p>count: {count}</p></Card>;\n});",
+      "error": null
+    },
+    {
       "file": "tests/_fixtures/tsrx/mount/values.tsrx",
       "code": "import { defineVaporComponent } from 'vue-jsx-vapor';\n\nexport const Values = defineVaporComponent(function Values(\n\t{ text, count, flag, items }: { text: string; count: number; flag: boolean; items: string[] }\n) {\n\treturn <ul><li>Text: {text}</li><li>{count} and {count + 1}</li><li>{flag ? 'on' : 'off'}</li><li>{flag ? null : 0}</li><li>{items.join(', ')}</li></ul>;\n});",
       "error": null

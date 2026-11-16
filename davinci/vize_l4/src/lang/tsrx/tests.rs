@@ -245,3 +245,12 @@ fn dom_setup_returns_before_the_render_are_refused() {
         );
     }
 }
+
+#[test]
+fn dom_component_children_are_its_default_slot() {
+    let source = "function Child() @{\n\t<p />\n}\nexport function A({ x }: { x: string }) @{\n\t<Child>hello {x}<b>bold</b></Child>\n}\n";
+    assert_eq!(
+        compile(source, &OPTIONS).unwrap().code.as_str(),
+        "import { defineComponent as _defineComponent, createElementVNode as _createElementVNode, createVNode as _createVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, createTextVNode as _createTextVNode, withCtx as _withCtx } from \"vue\";\nconst Child = /* @__PURE__ */ _defineComponent(function Child() {\n\treturn (_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"p\"))\n};\n});\nexport const A = /* @__PURE__ */ _defineComponent(function A(__props) {\n\treturn (_ctx, _cache) => {\n  return (_createVNode(Child, null, {\n    default: _withCtx(() => [\n      _createTextVNode(\"hello \"),\n      __props.x,\n      _createElementVNode(\"b\", null, \"bold\")\n    ]),\n    _: 2 /* DYNAMIC */\n  }, 1024 /* DYNAMIC_SLOTS */))\n};\n}, { props: [\"x\"] });\n"
+    );
+}

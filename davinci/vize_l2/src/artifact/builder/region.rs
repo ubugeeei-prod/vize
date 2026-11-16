@@ -95,6 +95,12 @@ impl<'a> RegionBuilder<'_, 'a> {
         self.builder.bind(name, name_span, value, span)
     }
 
+    /// Record that the lowering built an op of `family`, which selects the
+    /// passes that publish its facts (a component's slot grouping).
+    pub(crate) fn observe(&mut self, family: crate::artifact::OpFamily) {
+        self.builder.parts.features = self.builder.parts.features.observing(family);
+    }
+
     /// Attach an object spread before this owner's children.
     pub fn spread(&mut self, value: ExprRef<'a>, span: Span) -> Result<NodeId, ArtifactError> {
         self.builder.spread(value, span)

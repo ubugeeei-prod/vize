@@ -88,6 +88,13 @@
       "component": "Grow",
       "props": { "items": ["a", "b", "c"] },
       "steps": [{ "click": "button" }, { "props": { "items": ["x", "y", "z"] } }, { "click": "button" }]
+    },
+    {
+      "id": "slots/default",
+      "file": "tests/_fixtures/tsrx/mount/slots.tsrx",
+      "component": "Panel",
+      "props": { "title": "a", "count": 1 },
+      "steps": [{ "props": { "count": 2 } }, { "props": { "title": "b" } }]
     }
   ]
 }
