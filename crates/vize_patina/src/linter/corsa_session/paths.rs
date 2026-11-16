@@ -321,8 +321,14 @@ mod tests {
             .iter()
             .filter_map(|entry| entry.as_str())
             .collect();
-        let env = slash_display(&std::fs::canonicalize(root.join("src/env.d.ts")).unwrap());
-        let hidden = slash_display(&std::fs::canonicalize(root.join("src/hidden.d.ts")).unwrap());
+        // Program roots use the plain canonical spelling, never `\\?\` (#13077).
+        let canonical = |path: &str| {
+            slash_display(&vize_carton::path::canonicalize_non_verbatim(
+                &root.join(path),
+            ))
+        };
+        let env = canonical("src/env.d.ts");
+        let hidden = canonical("src/hidden.d.ts");
         assert!(files.contains(&env.as_str()), "{files:?}");
         assert!(
             !files.iter().any(|file| file.ends_with("skip.ts")),

@@ -1,0 +1,8 @@
+/// <reference types="vue" />
+
+declare const __BUILD__: string;
+
+declare module "virtual:table" {
+  const table: Readonly<Record<string, string>>;
+  export default table;
+}

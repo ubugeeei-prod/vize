@@ -24,16 +24,22 @@ pub(super) fn ambient_program_files(project_root: &Path, tsconfig: &Path) -> Vec
                 return None;
             }
             let content = std::fs::read_to_string(&path).ok()?;
-            is_module_augmentation(&content).then(|| {
-                let canonical = std::fs::canonicalize(&path).unwrap_or(path);
-                slash_path(&canonical)
-            })
+            is_module_augmentation(&content).then(|| program_file_name(&path))
         })
         .collect::<Vec<_>>();
     files.extend(augmentations);
     files.sort();
     files.dedup();
     files
+}
+
+/// The root-file spelling the session program must share with the module
+/// graph that the linted SFC reaches. `std::fs::canonicalize` answers with a
+/// `\\?\` verbatim path on Windows; Corsa reads that as a different (UNC)
+/// root, so the included `env.d.ts` or augmentation never joined the program
+/// that resolves `./registry` under `C:/...` (#13077).
+fn program_file_name(path: &Path) -> String {
+    slash_path(&vize_carton::path::canonicalize_non_verbatim(path))
 }
 
 fn owned_typescript_sources(project_root: &Path, tsconfig: &Path) -> Vec<PathBuf> {
@@ -109,8 +115,7 @@ fn configured_program_files(tsconfig: &Path) -> ProgramFileSelection {
             continue;
         }
         if is_declaration_file(&path) {
-            let absolute = std::fs::canonicalize(&path).unwrap_or(path);
-            declarations.push(slash_path(&absolute));
+            declarations.push(program_file_name(&path));
         } else if is_typescript_source(&path) {
             source_candidates.push(path);
         }
@@ -130,8 +135,25 @@ fn configured_program_files(tsconfig: &Path) -> ProgramFileSelection {
 
 #[cfg(test)]
 mod tests {
-    use super::ambient_program_files;
+    use super::{String, ambient_program_files};
     use std::{fs, path::Path};
+
+    /// Program files are absolute and spelled from the canonical project
+    /// root, never from a Windows `\\?\` verbatim root (#13077).
+    fn relative_to(root: &Path, files: &[String]) -> Vec<String> {
+        let canonical = vize_carton::path::canonicalize_non_verbatim(root);
+        let prefix = canonical.to_string_lossy().replace('\\', "/");
+        files
+            .iter()
+            .map(|path| {
+                path.as_str()
+                    .strip_prefix(prefix.as_str())
+                    .and_then(|relative| relative.strip_prefix('/'))
+                    .unwrap_or_else(|| panic!("{path} is not under {prefix}"))
+                    .into()
+            })
+            .collect()
+    }
 
     fn write(root: &Path, path: &str, content: &str) {
         let path = root.join(path);
@@ -179,16 +201,7 @@ mod tests {
         );
 
         let files = ambient_program_files(root.path(), &root.path().join("tsconfig.json"));
-        let relative: Vec<_> = files
-            .iter()
-            .map(|path| {
-                Path::new(path)
-                    .strip_prefix(root.path())
-                    .unwrap()
-                    .to_string_lossy()
-                    .replace('\\', "/")
-            })
-            .collect();
+        let relative = relative_to(root.path(), &files);
         assert_eq!(
             relative,
             vec!["src/augment.ts", "src/env.d.ts", "src/global.ts"]
@@ -216,16 +229,7 @@ mod tests {
         );
 
         let files = ambient_program_files(root.path(), &root.path().join("tsconfig.json"));
-        let relative: Vec<_> = files
-            .iter()
-            .map(|path| {
-                Path::new(path)
-                    .strip_prefix(root.path())
-                    .unwrap()
-                    .to_string_lossy()
-                    .replace('\\', "/")
-            })
-            .collect();
+        let relative = relative_to(root.path(), &files);
         assert_eq!(relative, vec!["src/augment.ts"]);
     }
 }

@@ -154,11 +154,31 @@ pub(super) fn slash_path(path: &Path) -> String {
             std::path::Component::CurDir => {}
             std::path::Component::ParentDir => rendered.push_str("/.."),
             std::path::Component::Prefix(prefix) => {
-                rendered.push_str(&prefix.as_os_str().to_string_lossy());
+                push_program_prefix(&mut rendered, prefix.kind(), prefix.as_os_str());
             }
         }
     }
     rendered
+}
+
+/// Render a Windows path prefix the way TypeScript spells program roots.
+/// Verbatim prefixes (`\\?\C:`, `\\?\UNC\server\share`) name the same file as
+/// their plain form, but a `//?/C:/...` file name would be a different UNC
+/// root to Corsa, so they are written as `C:` and `//server/share`.
+fn push_program_prefix(rendered: &mut String, kind: std::path::Prefix<'_>, raw: &std::ffi::OsStr) {
+    match kind {
+        std::path::Prefix::VerbatimDisk(drive) => {
+            rendered.push(char::from(drive));
+            rendered.push(':');
+        }
+        std::path::Prefix::VerbatimUNC(server, share) | std::path::Prefix::UNC(server, share) => {
+            rendered.push_str("//");
+            rendered.push_str(&server.to_string_lossy());
+            rendered.push('/');
+            rendered.push_str(&share.to_string_lossy());
+        }
+        _ => rendered.push_str(&raw.to_string_lossy()),
+    }
 }
 
 pub(super) fn parse_jsonc(content: &str) -> Option<Value> {
@@ -259,4 +279,66 @@ fn strip_trailing_commas(content: &str) -> String {
         output.push(ch);
     }
     output
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{String, push_program_prefix, slash_path};
+    use std::ffi::OsStr;
+    use std::path::{Path, Prefix};
+
+    fn rendered(kind: Prefix<'_>, raw: &str) -> String {
+        let mut rendered = String::new("");
+        push_program_prefix(&mut rendered, kind, OsStr::new(raw));
+        rendered
+    }
+
+    #[test]
+    fn verbatim_windows_prefixes_render_as_their_plain_program_roots() {
+        // #13077: `\\?\C:` became `//?/C:` in Corsa, a different root from
+        // the `C:/...` spelling the SFC import graph uses.
+        assert_eq!(rendered(Prefix::VerbatimDisk(b'C'), "\\\\?\\C:"), "C:");
+        assert_eq!(rendered(Prefix::Disk(b'd'), "d:"), "d:");
+        assert_eq!(
+            rendered(
+                Prefix::VerbatimUNC(OsStr::new("server"), OsStr::new("share")),
+                "\\\\?\\UNC\\server\\share"
+            ),
+            "//server/share"
+        );
+        assert_eq!(
+            rendered(
+                Prefix::UNC(OsStr::new("server"), OsStr::new("share")),
+                "\\\\server\\share"
+            ),
+            "//server/share"
+        );
+        assert_eq!(
+            rendered(Prefix::DeviceNS(OsStr::new("pipe")), "\\\\.\\pipe"),
+            "\\\\.\\pipe"
+        );
+    }
+
+    #[test]
+    fn slash_paths_never_carry_a_verbatim_prefix() {
+        if cfg!(windows) {
+            assert_eq!(
+                slash_path(Path::new("\\\\?\\C:\\work\\app\\src\\env.d.ts")),
+                "C:/work/app/src/env.d.ts"
+            );
+            assert_eq!(
+                slash_path(Path::new("\\\\?\\UNC\\server\\share\\app\\env.d.ts")),
+                "//server/share/app/env.d.ts"
+            );
+            assert_eq!(
+                slash_path(Path::new("C:\\work\\app\\src\\env.d.ts")),
+                "C:/work/app/src/env.d.ts"
+            );
+        } else {
+            assert_eq!(
+                slash_path(Path::new("/work/app/src/env.d.ts")),
+                "/work/app/src/env.d.ts"
+            );
+        }
+    }
 }
