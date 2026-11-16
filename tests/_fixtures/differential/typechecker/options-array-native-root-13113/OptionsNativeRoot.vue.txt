@@ -1,0 +1,11 @@
+<script lang="ts">
+import { defineComponent } from "vue";
+
+export default defineComponent({
+  emits: ["change"],
+});
+</script>
+
+<template>
+  <button type="button" @click="$emit('change', 1)">x</button>
+</template>

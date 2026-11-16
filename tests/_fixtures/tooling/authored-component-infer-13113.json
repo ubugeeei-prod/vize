@@ -1,0 +1,32 @@
+{
+  "schema": "vize.authoredComponentInferSource.v1",
+  "issue": 13113,
+  "credit": {
+    "compiled": false,
+    "native": false,
+    "performance": false
+  },
+  "files": [
+    {
+      "path": "crates/vize_canon/src/virtual_ts/generator/component_export.rs",
+      "before": {
+        "bytes": 17246,
+        "sha256": "816f52f22d490d3828ce2a9d50db0cee843c19d76f67ac087d8345dff409d2c3"
+      },
+      "after": {
+        "bytes": 17625,
+        "sha256": "f0f42c0d9365153763552cd0b7a0526f0789ae8c3593ab0257729f356c17ea10"
+      },
+      "hunks": [
+        {
+          "before": "        \"$AuthoredComponent & \"\n",
+          "after": "        \"A & \"\n"
+        },
+        {
+          "before": "    if authored_default != AuthoredDefaultKind::None {\n        // A normal script may export a primitive. Adding the generated Vue\n        // constructor to that value would change its authored public type.\n        ts.push_str(\"$AuthoredComponent extends object ? \");\n    }\n",
+          "after": "    // A normal script may export a primitive. Adding the generated Vue\n    // constructor to that value would change its authored public type.\n    match authored_default {\n        AuthoredDefaultKind::None => {}\n        // Bind the authored value by inference: a true branch that names the\n        // check type keeps it as a substitution type, and `keyof` over the\n        // component then stays deferred in every consumer (#13113).\n        AuthoredDefaultKind::Component => {\n            ts.push_str(\"$AuthoredComponent extends infer A extends object ? \");\n        }\n        AuthoredDefaultKind::Options => ts.push_str(\"$AuthoredComponent extends object ? \"),\n    }\n"
+        }
+      ]
+    }
+  ]
+}

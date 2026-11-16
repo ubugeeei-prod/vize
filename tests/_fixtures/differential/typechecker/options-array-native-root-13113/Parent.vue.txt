@@ -1,0 +1,15 @@
+<script setup lang="ts">
+import OptionsFragmentRoot from "./OptionsFragmentRoot.vue";
+import OptionsNativeRoot from "./OptionsNativeRoot.vue";
+import SetupNativeRoot from "./SetupNativeRoot.vue";
+import { TsComponent } from "./TsComponent";
+
+const log = (value: unknown) => console.log(value);
+</script>
+
+<template>
+  <OptionsNativeRoot @change="(a) => log(a)" />
+  <OptionsFragmentRoot @change="(b) => log(b)" />
+  <SetupNativeRoot @change="(c) => log(c)" />
+  <TsComponent @change="(d) => log(d)" />
+</template>
