@@ -67,8 +67,11 @@ pub(super) fn collect_prop_decorator(
     });
 
     let required = !optional && options.is_some_and(detect_required_prop);
-    let prop_type = declared_type
-        .or_else(|| options.and_then(|options| extract_runtime_prop_type(options, source)));
+    let prop_type = declared_type.or_else(|| {
+        options.and_then(|options| {
+            extract_runtime_prop_type(options, source, &mut result.reads_prop_values)
+        })
+    });
     let default_value = options.and_then(|options| extract_runtime_prop_default(options, source));
 
     result.macros.add_prop(PropDefinition {

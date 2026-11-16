@@ -108,7 +108,11 @@ fn collect_runtime_object_literal(
                 literal.props.push(PropDefinition {
                     name: CompactString::new(name),
                     required: props::detect_required_prop(&property.value),
-                    prop_type: props::extract_runtime_prop_type(&property.value, source),
+                    prop_type: props::extract_runtime_prop_type(
+                        &property.value,
+                        source,
+                        &mut literal.reads_prop_values,
+                    ),
                     default_value: props::extract_runtime_prop_default(&property.value, source),
                 });
                 literal.emits.push(EmitDefinition {

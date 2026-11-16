@@ -9,6 +9,7 @@ const TSGO_ENV: &str = "VIZE_TEST_CONTENT_MAPPER_TSGO";
 const JAVASCRIPT_TSC_ENV: &str = "VIZE_TEST_CONTENT_MAPPER_JAVASCRIPT_TSC";
 const VUE_ENV: &str = "VIZE_TEST_CONTENT_MAPPER_VUE";
 
+mod class_prop_constructor_13112;
 mod commented_vif_11378;
 mod component_listener_narrowing_11730;
 mod component_v_for_source;

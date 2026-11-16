@@ -7,6 +7,7 @@ use crate::{Croquis, ScopeData, ScopeKind};
 use vize_carton::{SmallVec, String, append, cstr};
 
 mod names;
+mod runtime_prop_helpers;
 use names::Names;
 
 /// Result of declaration generation.
@@ -158,6 +159,7 @@ fn emit_props_alias(ts: &mut String, summary: &Croquis, head: &str, generic_decl
     }
 
     if !summary.macros.props().is_empty() {
+        runtime_prop_helpers::emit(ts, summary.macros.props());
         append!(*ts, "{head}{generic_decl} = {{\n");
         for prop in summary.macros.props() {
             let key = property_key(prop.name.as_str());
