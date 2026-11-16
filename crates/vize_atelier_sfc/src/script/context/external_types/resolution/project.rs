@@ -65,16 +65,19 @@ impl Project {
     /// Watched discovery candidates include absent nearer configs so hosts can
     /// invalidate a previously inferred project when a user config appears.
     pub fn discovery_inputs(file: &Path) -> Result<Vec<PathBuf>, String> {
-        let discovery = discovery_for_file(file)?;
-        let mut inputs: Vec<PathBuf> = discovery
+        Ok(discovery_for_file(file)?
             .observations
             .iter()
             .map(|(path, _)| path.clone())
-            .collect();
-        if let Some(shell) = discovery.config.as_deref() {
-            inputs.extend(references::inputs(shell)?);
-        }
-        Ok(inputs)
+            .collect())
+    }
+
+    /// Configs read or probed while discovery chose the referenced project
+    /// that owns `file`. A host-selected project owns its own watch inputs.
+    pub(crate) fn reference_inputs(file: &Path) -> Result<Vec<PathBuf>, String> {
+        discover_for_file(file)?
+            .as_deref()
+            .map_or_else(|| Ok(Vec::new()), references::inputs)
     }
 
     /// Imported macro types are a TypeScript concern. Runtime-only SFCs do
