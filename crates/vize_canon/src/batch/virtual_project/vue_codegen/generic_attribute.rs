@@ -78,6 +78,16 @@ impl GenericCopies {
         }
     }
 
+    /// Move every echo through a monotone generated-offset rewrite.
+    pub(in crate::batch::virtual_project) fn remap_generated(
+        &mut self,
+        remap: impl Fn(usize) -> usize,
+    ) {
+        for echo in &mut self.echoes {
+            *echo = remap(echo.start)..remap(echo.end);
+        }
+    }
+
     /// The generated text `[start, start + old_len)` grew to `new_len` bytes.
     pub(in crate::batch::virtual_project) fn note_generated_replacement(
         &mut self,

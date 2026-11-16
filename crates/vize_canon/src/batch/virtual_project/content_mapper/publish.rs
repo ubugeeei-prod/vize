@@ -9,6 +9,8 @@ use crate::virtual_ts::{VizeMapping, VizeSemanticLink};
 
 use super::super::vue_codegen::generic_attribute::GenericCopies;
 
+mod sdk_namespace;
+
 const PRIVATE_MODULE: &str = "vize:virtual-ts";
 const PUBLISHED_MODULE: &str = "vize/virtual-ts";
 pub(super) const TYPESCRIPT_NOCHECK_DIRECTIVE: &str = "// @ts-nocheck\n";
@@ -23,7 +25,7 @@ pub(super) fn publish_content_mapper_text(
     mappings: &mut [VizeMapping],
     semantic_links: &mut [VizeSemanticLink],
     prop_default_key_links: &mut [VizeSemanticLink],
-    generic_copies: Option<&mut GenericCopies>,
+    mut generic_copies: Option<&mut GenericCopies>,
     diagnostic_ownership: Option<&DiagnosticOwnershipCollector>,
     share_virtual_module: bool,
 ) {
@@ -33,12 +35,22 @@ pub(super) fn publish_content_mapper_text(
         mappings,
         semantic_links,
         prop_default_key_links,
-        generic_copies,
+        generic_copies.as_deref_mut(),
         diagnostic_ownership,
     );
     if !share_virtual_module {
         return;
     }
+    let authored_lines = reference_type_directive_ranges(code);
+    sdk_namespace::name_sdk_through_namespace(
+        code,
+        mappings,
+        semantic_links,
+        prop_default_key_links,
+        generic_copies,
+        diagnostic_ownership,
+        &authored_lines,
+    );
     debug_assert_eq!(PRIVATE_MODULE.len(), PUBLISHED_MODULE.len());
     let starts = memchr::memmem::find_iter(code.as_bytes(), PRIVATE_MODULE).collect::<Vec<_>>();
     for start in starts.into_iter().rev() {
