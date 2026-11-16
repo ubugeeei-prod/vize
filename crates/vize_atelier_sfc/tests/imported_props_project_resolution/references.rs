@@ -83,3 +83,29 @@ fn a_source_no_referenced_project_owns_keeps_the_solution_root() {
     let error = compile_source(project.path(), "<script setup lang=\"ts\">import type { FooProps } from '@/models/FooProps'; defineProps<FooProps>();</script>").expect_err("an unowned SFC has no alias");
     assert_eq!(error.code.as_deref(), Some("V_SFC_TYPE_RESOLUTION"));
 }
+
+#[cfg(unix)]
+#[test]
+fn a_symlinked_source_directory_stays_owned_by_its_including_project() {
+    let temporary = tempfile::tempdir().expect("project");
+    let root = temporary.path().join("app");
+    let shared = temporary.path().join("shared/src");
+    std::fs::create_dir_all(&root).expect("project root");
+    write(&shared, "models/FooProps.ts", PROPS);
+    std::os::unix::fs::symlink(&shared, root.join("src")).expect("symlinked src");
+    solution(
+        &root,
+        r#"{"compilerOptions":{"paths":{"@/*":["./src/*"]}},"include":["src/**/*.ts","src/**/*.vue"]}"#,
+    );
+    // The node project's alias names a different props type: selecting it
+    // instead of the owning app project changes the runtime constructor.
+    write(
+        &root,
+        "node/models/FooProps.ts",
+        "export interface FooProps { bar?: string }",
+    );
+    assert_eq!(
+        compile(&root, "src/Linked.vue", "@/models/FooProps", false),
+        expected()
+    );
+}

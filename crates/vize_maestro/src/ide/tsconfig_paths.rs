@@ -346,4 +346,54 @@ mod tests {
             vec![("@/*".to_string(), "./node/*".to_string())]
         );
     }
+
+    #[cfg(unix)]
+    #[test]
+    fn a_symlinked_source_directory_stays_owned_by_its_including_project() {
+        let dir = temp_dir();
+        let root = dir.path().join("app");
+        let shared = dir.path().join("shared/src");
+        fs::create_dir_all(&root).unwrap();
+        fs::create_dir_all(shared.join("nested")).unwrap();
+        fs::write(shared.join("App.vue"), "<template />\n").unwrap();
+        fs::write(shared.join("nested/Deep.vue"), "<template />\n").unwrap();
+        std::os::unix::fs::symlink(&shared, root.join("src")).unwrap();
+        fs::write(
+            root.join("tsconfig.json"),
+            r#"{ "files": [], "references": [{ "path": "./tsconfig.node.json" }, { "path": "./tsconfig.app.json" }] }"#,
+        )
+        .unwrap();
+        fs::write(
+            root.join("tsconfig.node.json"),
+            r#"{ "compilerOptions": { "paths": { "@/*": ["./node/*"] } }, "include": ["vite.config.*"] }"#,
+        )
+        .unwrap();
+        fs::write(
+            root.join("tsconfig.app.json"),
+            r#"{ "compilerOptions": { "paths": { "@/*": ["./src/*"] } }, "include": ["src/**/*.vue"] }"#,
+        )
+        .unwrap();
+
+        for source in ["src/App.vue", "src/nested/Deep.vue"] {
+            let paths = super::project_paths(&root.join(source)).unwrap();
+            assert_eq!(paths.anchor, root, "{source}");
+            assert_eq!(
+                paths.entries,
+                vec![("@/*".to_string(), "./src/*".to_string())],
+                "{source}"
+            );
+        }
+
+        // The captured graph is reused only while its configs are unchanged.
+        fs::write(
+            root.join("tsconfig.app.json"),
+            r#"{ "compilerOptions": { "paths": { "@/*": ["./src/*"] } }, "include": [] }"#,
+        )
+        .unwrap();
+        let unowned = super::project_paths(&root.join("src/App.vue")).unwrap();
+        assert_eq!(
+            unowned.entries,
+            vec![("@/*".to_string(), "./node/*".to_string())]
+        );
+    }
 }
