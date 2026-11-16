@@ -7,6 +7,8 @@ use crate::context::LintContext;
 use crate::diagnostic::Severity;
 use crate::markup::MarkupRule;
 use crate::preset::LintPreset;
+use std::borrow::Cow;
+use std::sync::OnceLock;
 use vize_relief::{DirectiveNode, ElementNode, ForNode, IfNode, InterpolationNode, RootNode};
 
 /// Rule category for organization
@@ -152,6 +154,9 @@ pub struct RuleRegistry {
     has_exit_element_rules: bool,
     /// Prefix before the unmodified built-in ecosystem suffix.
     ecosystem_template_prefix: Option<usize>,
+    /// [`Self::markup_ranks_named`] for the first name list asked, until a
+    /// rule is registered or replaced.
+    named_markup_ranks: OnceLock<(&'static [&'static str], Vec<usize>)>,
 }
 
 impl RuleRegistry {
@@ -164,6 +169,7 @@ impl RuleRegistry {
             rule_names: Vec::new(),
             has_exit_element_rules: true,
             ecosystem_template_prefix: None,
+            named_markup_ranks: OnceLock::new(),
         }
     }
 
@@ -174,18 +180,21 @@ impl RuleRegistry {
             rule_names: Vec::with_capacity(capacity),
             has_exit_element_rules: false,
             ecosystem_template_prefix: None,
+            named_markup_ranks: OnceLock::new(),
         }
     }
 
     /// Register a rule
     pub fn register(&mut self, rule: Box<dyn Rule>) {
         self.ecosystem_template_prefix = None;
+        self.named_markup_ranks = OnceLock::new();
         self.rule_names.push(rule.meta().name);
         self.rules.push(rule);
     }
 
     pub(crate) fn replace(&mut self, rule: Box<dyn Rule>) {
         self.ecosystem_template_prefix = None;
+        self.named_markup_ranks = OnceLock::new();
         let rule_name = rule.meta().name;
         if let Some(slot) = self
             .rule_names
@@ -240,6 +249,27 @@ impl RuleRegistry {
             .filter(|(name, _)| wanted.contains(name))
             .map(|(_, rule)| rule)
             .collect()
+    }
+
+    /// Ranks, in registry order, of the rules named in `names` that expose
+    /// a [`MarkupRule`] projection. Only rule identity decides it, so the
+    /// answer for a lint-run-long name list is computed once.
+    pub(crate) fn markup_ranks_named(&self, names: &'static [&'static str]) -> Cow<'_, [usize]> {
+        let compute = || {
+            self.rules
+                .iter()
+                .zip(&self.rule_names)
+                .enumerate()
+                .filter(|(_, (rule, name))| rule.as_markup_rule().is_some() && names.contains(name))
+                .map(|(rank, _)| rank)
+                .collect::<Vec<_>>()
+        };
+        let (list, ranks) = self.named_markup_ranks.get_or_init(|| (names, compute()));
+        if std::ptr::eq(*list, names) {
+            Cow::Borrowed(ranks)
+        } else {
+            Cow::Owned(compute())
+        }
     }
 
     /// Whether any registered rule exposes a [`MarkupRule`] projection.

@@ -209,6 +209,7 @@ mod battery;
 mod binding_order;
 mod callback_order;
 mod content_model;
+mod rule_ranks;
 mod stylesheet;
 mod text_order;
 
