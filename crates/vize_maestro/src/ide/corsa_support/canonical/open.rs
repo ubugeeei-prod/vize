@@ -1,4 +1,5 @@
 use std::path::PathBuf;
+use std::sync::Arc;
 
 use tower_lsp::lsp_types::Url;
 use vize_canon::{CorsaBridge, CorsaBridgeError, CorsaVueWorkspaceRequest};
@@ -78,7 +79,7 @@ pub(super) async fn open_canonical_virtual_document_with_sources_strict(
     ctx: &IdeContext<'_>,
     bridge: &CorsaBridge,
     overlays: &[(PathBuf, &str)],
-    requested_sources: &[(PathBuf, &str)],
+    requested_sources: &[(PathBuf, Arc<str>)],
 ) -> Result<Option<CanonicalVirtualDocument>, CorsaBridgeError> {
     if !ctx.uri.path().ends_with(".vue") || ctx.uri.path().ends_with(".art.vue") {
         return Ok(None);
@@ -88,11 +89,15 @@ pub(super) async fn open_canonical_virtual_document_with_sources_strict(
         tracing::warn!(uri = %ctx.uri, "canonical document skipped: URI is not a file path");
         return Ok(None);
     };
+    let requested_source_refs = requested_sources
+        .iter()
+        .map(|(path, content)| (path.clone(), content.as_ref()))
+        .collect::<Vec<_>>();
     let virtual_ts_options = ctx.state.editor_virtual_ts_options().await;
     let options = ctx.state.canonical_vue_document_options();
     // Projecting a whole workspace takes long enough to starve every other
     // native request, so the transaction owner builds it between attempts.
-    if !requested_sources.is_empty()
+    if !requested_source_refs.is_empty()
         && ctx.state.workspace_preparation.is_armed()
         && !bridge.vue_virtual_workspace_is_prepared(
             &source_path,
@@ -100,7 +105,7 @@ pub(super) async fn open_canonical_virtual_document_with_sources_strict(
             options,
             overlays,
             &virtual_ts_options,
-            requested_sources,
+            &requested_source_refs,
         )
     {
         let preparation = bridge.prepare_vue_virtual_workspace(CorsaVueWorkspaceRequest {
@@ -114,7 +119,7 @@ pub(super) async fn open_canonical_virtual_document_with_sources_strict(
             virtual_ts_options: virtual_ts_options.clone(),
             requested_sources: requested_sources
                 .iter()
-                .map(|(path, content)| (path.clone(), (*content).into()))
+                .map(|(path, content)| (path.clone(), Arc::clone(content)))
                 .collect(),
         });
         ctx.state
@@ -122,7 +127,7 @@ pub(super) async fn open_canonical_virtual_document_with_sources_strict(
             .defer(Box::pin(preparation))
             .await;
     }
-    let initial = requested_sources
+    let initial = requested_source_refs
         .is_empty()
         .then(|| ctx.take_initial_canonical_document(bridge))
         .flatten();
@@ -136,7 +141,7 @@ pub(super) async fn open_canonical_virtual_document_with_sources_strict(
                 options,
                 overlays,
                 &virtual_ts_options,
-                requested_sources,
+                &requested_source_refs,
             )
             .await?
     } else {
@@ -147,7 +152,7 @@ pub(super) async fn open_canonical_virtual_document_with_sources_strict(
                 options,
                 overlays,
                 &virtual_ts_options,
-                requested_sources,
+                &requested_source_refs,
             )
             .await?
     };

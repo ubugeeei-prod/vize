@@ -1,0 +1,16 @@
+<script lang="ts">
+type Awaited<T> = T extends null | undefined
+  ? T
+  : T extends object & { then(onfulfilled: infer F, ...args: infer _): any }
+    ? F extends (value: infer V, ...args: infer _) => any
+      ? Awaited<V>
+      : never
+    : T;
+
+declare const value: Awaited<Promise<Promise<any>>>;
+async function foo(): Promise<number> {
+  return value;
+}
+
+export {};
+</script>

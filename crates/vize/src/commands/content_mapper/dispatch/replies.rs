@@ -161,6 +161,7 @@ mod tests {
             &mut BufReader::new(Cursor::new(input)),
             &mut output,
             false,
+            false,
             order,
         )
         .unwrap();

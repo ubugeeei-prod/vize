@@ -7,6 +7,7 @@ use super::super::imports_aliases::PathAliasResolver;
 use super::ImportFileOptions;
 use super::cache::{PackageLookupCache, ResolutionContextCache};
 use super::registration::VirtualRegistrationCache;
+use super::resolution::LocalImportResolutionCache;
 
 /// The inputs a `paths` target depends on: the alias configuration and the
 /// import options of the walk that resolved it. Walks sharing one session may
@@ -66,6 +67,9 @@ pub(in crate::commands::check) struct LocalImportSession {
     pub(super) registration_cache: VirtualRegistrationCache,
     pub(super) resolution_contexts: ResolutionContextCache,
     pub(super) package_lookups: PackageLookupCache,
+    /// Positive relative/absolute source edges shared by look-ahead, the
+    /// ordered walk and overlapping registration closures in this invocation.
+    pub(super) local_resolutions: LocalImportResolutionCache,
     /// `paths` alias targets per [`AliasScope`], shared by the import walk and
     /// every registration closure it scans under the same scope.
     alias_targets_by_scope: FxHashMap<AliasScope, FxHashMap<String, Option<PathBuf>>>,
@@ -120,5 +124,10 @@ impl LocalImportSession {
     #[cfg(test)]
     pub(super) fn module_specifier_entries(&self) -> usize {
         self.registration_cache.module_specifiers.len()
+    }
+
+    #[cfg(test)]
+    pub(super) fn local_resolution_stats(&self) -> (usize, usize, usize) {
+        self.local_resolutions.stats()
     }
 }

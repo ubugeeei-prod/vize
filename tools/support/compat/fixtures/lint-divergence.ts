@@ -1,6 +1,16 @@
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { isAbsolute, join } from "node:path";
+import {
+  componentRegistrationBaselineIntentionalReason,
+  componentRegistrationPatinaIntentionalReason,
+} from "../../fixtures/lint_divergence/component_registration_intentional.ts";
+import {
+  indexRealProjectLocationSource,
+  realProjectLocationDivergence,
+  realProjectLocationRules,
+  type RealProjectLocationSource,
+} from "../../fixtures/lint_divergence/real_project_locations.ts";
 
 import {
   byteOrder,
@@ -220,12 +230,12 @@ export function compareLintFindings({
     falsePositives,
     falseNegatives,
   );
-  const ruleLocationDivergences = pairRuleLocationDivergences(falsePositives, falseNegatives);
+  const ruleLocationDivergences = pairRuleLocationDivergences(falsePositives, falseNegatives, cwd);
   for (let index = falsePositives.length - 1; index >= 0; index -= 1) {
     const finding = falsePositives[index];
     if (finding === undefined) continue;
     if (finding.ruleId === "vue/no-unused-components") continue;
-    const reason = patinaIntentionalReason(finding, cwd);
+    const reason = patinaIntentionalReason(finding, cwd, projectId);
     if (reason === null) continue;
     falsePositives.splice(index, 1);
     intentionalDivergences.push({ ...finding, reason });
@@ -233,7 +243,7 @@ export function compareLintFindings({
   for (let index = falsePositives.length - 1; index >= 0; index -= 1) {
     const finding = falsePositives[index];
     if (finding?.ruleId !== "vue/no-unused-components") continue;
-    const reason = patinaIntentionalReason(finding, cwd);
+    const reason = patinaIntentionalReason(finding, cwd, projectId);
     if (reason === null) continue;
     falsePositives.splice(index, 1);
     intentionalDivergences.push({ ...finding, reason });
@@ -297,7 +307,7 @@ function dedupeBaselineFindings(records: readonly Compared[]): Compared[] {
   });
 }
 
-function patinaIntentionalReason(finding: LintRecord, cwd: string): string | null {
+function patinaIntentionalReason(finding: LintRecord, cwd: string, project: string): string | null {
   let source: string;
   try {
     source = readFileSync(join(cwd, finding.file), "utf8");
@@ -306,6 +316,8 @@ function patinaIntentionalReason(finding: LintRecord, cwd: string): string | nul
   }
   if (hasUtsScript(source))
     return "Patina preserves linting for Vue files with UTS scripts; vue-eslint-parser rejects the UTS block before eslint-plugin-vue can run mapped rules.";
+  const componentReason = componentRegistrationPatinaIntentionalReason(finding, source, project);
+  if (componentReason !== null) return componentReason;
   if (finding.ruleId === "vue/no-setup-props-reactivity-loss")
     return "Patina's complete contract follows root-scope prop values through nested containers, call arguments, and assignments that eslint-plugin-vue does not inspect.";
   if (
@@ -882,6 +894,8 @@ function baselineIntentionalReason(finding: LintRecord, cwd: string): string | n
   } catch {
     return null;
   }
+  const componentRegistration = componentRegistrationBaselineIntentionalReason(finding, source);
+  if (componentRegistration !== null) return componentRegistration;
   if (
     hasUtsScript(source) &&
     ["script/define-props-destructuring", "vue/define-props-destructuring"].includes(finding.ruleId)
@@ -1170,12 +1184,26 @@ function documentedSide(value: unknown, label: string): DocumentedSide {
 function pairRuleLocationDivergences(
   falsePositives: Compared[],
   falseNegatives: Compared[],
+  cwd: string,
 ): RuleLocationDivergence[] {
+  const sources = new Map<string, RealProjectLocationSource | null>();
+  const sourceFor = (file: string): RealProjectLocationSource | null => {
+    if (sources.has(file)) return sources.get(file) ?? null;
+    let source: string | null;
+    try {
+      source = readFileSync(join(cwd, file), "utf8");
+    } catch {
+      source = null;
+    }
+    const indexed = source === null ? null : indexRealProjectLocationSource(source);
+    sources.set(file, indexed);
+    return indexed;
+  };
   const paired: RuleLocationDivergence[] = [];
   for (let positiveIndex = 0; positiveIndex < falsePositives.length;) {
     const positive = falsePositives[positiveIndex];
     if (positive === undefined) break;
-    const match = findRuleLocationDivergence(positive, falseNegatives);
+    const match = findRuleLocationDivergence(positive, falsePositives, falseNegatives, sourceFor);
     if (match == null) {
       positiveIndex += 1;
       continue;
@@ -1190,7 +1218,9 @@ function pairRuleLocationDivergences(
 
 function findRuleLocationDivergence(
   positive: Compared,
+  falsePositives: readonly Compared[],
   falseNegatives: readonly Compared[],
+  sourceFor: (file: string) => RealProjectLocationSource | null,
 ): RuleLocationMatch | null {
   const rule = ruleLocationDivergenceRules[positive.ruleId];
   if (rule == null) return null;
@@ -1204,9 +1234,24 @@ function findRuleLocationDivergence(
     ) {
       continue;
     }
-    const subject = rule.subject(positive, negative);
+    const sharedRule = realProjectLocationRules[positive.ruleId],
+      shared =
+        sharedRule === undefined
+          ? null
+          : realProjectLocationDivergence(
+              positive,
+              negative,
+              falsePositives,
+              falseNegatives,
+              positive.ruleId === "vue/require-prop-comment" ? sourceFor(positive.file) : null,
+            ),
+      subject = sharedRule === undefined ? rule.subject(positive, negative) : shared?.subject;
     if (subject == null) continue;
-    return { negativeIndex, reason: rule.reason, subject };
+    return {
+      negativeIndex,
+      reason: shared?.reason ?? rule.reason,
+      subject,
+    };
   }
   return null;
 }
@@ -1252,13 +1297,7 @@ const ruleLocationDivergenceRules: Readonly<Record<string, RuleLocationRule>> = 
       return `define-props:${positive.line}:${negative.line}`;
     },
   },
-  "vue/require-component-is": {
-    reason:
-      "both tools report the same dynamic component without is; Patina reports the element while eslint-plugin-vue extends the range through recovered following content.",
-    subject() {
-      return "component-without-is";
-    },
-  },
+  ...realProjectLocationRules,
   "script/require-valid-default-prop": {
     reason:
       "both tools reject the same prop default; Patina reports the complete default expression while eslint-plugin-vue reports the returned value.",

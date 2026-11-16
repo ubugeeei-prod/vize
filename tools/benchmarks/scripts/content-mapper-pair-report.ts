@@ -24,7 +24,11 @@ export type BuildSummary = {
   burstPeakMiB?: number;
   serialP50Ms: number;
   serialP95Ms: number;
+  serialSessionP50Ms: number;
+  serialSessionP95Ms: number;
   serialTotalMs: number;
+  serialSessions: number;
+  serialRawSamples: number;
   outputBytes: number;
 };
 
@@ -32,11 +36,37 @@ export type Cell = {
   label: string;
   sfcs: number;
   serialFiles: number;
-  runs: number;
+  replicates: number;
+  orderSeed: number;
+  ordersPerReplicate: number;
+  burstSamplesPerBuild: number;
   builds: BuildSummary[];
   outputsIdentical: boolean;
   failure?: string;
 };
+
+/** Fixed across hosts so every replicate gets the same deterministic AB/BA order. */
+export const PAIR_ORDER_SEED = 0x13018;
+
+/**
+ * Two-build comparisons use AB+BA. Larger comparisons add every rotation and
+ * its inverse so each build occupies every position and relative order equally.
+ */
+export function balancedOrders<T>(
+  values: readonly T[],
+  replicate: number,
+  seed = PAIR_ORDER_SEED,
+): T[][] {
+  let mixed = (seed + Math.imul(replicate + 1, 0x9e3779b9)) >>> 0;
+  mixed ^= mixed >>> 16;
+  mixed = Math.imul(mixed, 0x21f0aaad) >>> 0;
+  mixed ^= mixed >>> 15;
+  const first = (mixed & 1) === 0 ? [...values] : [...values].reverse();
+  if (first.length <= 2) return [first, [...first].reverse()];
+  const rotations = (order: readonly T[]) =>
+    order.map((_, offset) => [...order.slice(offset), ...order.slice(0, offset)]);
+  return [...rotations(first), ...rotations([...first].reverse())];
+}
 
 /** One JSON-RPC message with its `Content-Length` header. */
 export function frame(message: unknown): Buffer {
@@ -66,6 +96,8 @@ export function summarizeCell(input: {
   label: string;
   sfcs: number;
   serialFiles: number;
+  replicates: number;
+  orderSeed?: number;
   builds: string[];
   references?: string[];
   bursts: Map<string, BurstSample[]>;
@@ -97,6 +129,8 @@ export function summarizeCell(input: {
     const cpu = defined(bursts.map((sample) => sample.cpuSeconds));
     const peak = defined(bursts.map((sample) => sample.peakMiB));
     const latencies = serials.flatMap((sample) => sample.latencies);
+    const sessionP50s = serials.map((sample) => quantile(sample.latencies, 0.5));
+    const sessionP95s = serials.map((sample) => quantile(sample.latencies, 0.95));
     return {
       id,
       ...(references.includes(id)
@@ -109,7 +143,11 @@ export function summarizeCell(input: {
       burstPeakMiB: peak.length ? median(peak) : undefined,
       serialP50Ms: quantile(latencies, 0.5),
       serialP95Ms: quantile(latencies, 0.95),
+      serialSessionP50Ms: median(sessionP50s),
+      serialSessionP95Ms: median(sessionP95s),
       serialTotalMs: median(serials.map((sample) => sample.latencies.reduce((a, b) => a + b, 0))),
+      serialSessions: serials.length,
+      serialRawSamples: latencies.length,
       outputBytes: bursts[0]?.outputBytes ?? 0,
     };
   });
@@ -117,7 +155,10 @@ export function summarizeCell(input: {
     label: input.label,
     sfcs: input.sfcs,
     serialFiles: input.serialFiles,
-    runs: input.bursts.get(input.builds[0] ?? "")?.length ?? 0,
+    replicates: input.replicates,
+    orderSeed: input.orderSeed ?? PAIR_ORDER_SEED,
+    ordersPerReplicate: (input.bursts.get(input.builds[0] ?? "")?.length ?? 0) / input.replicates,
+    burstSamplesPerBuild: input.bursts.get(input.builds[0] ?? "")?.length ?? 0,
     builds,
     outputsIdentical,
     failure,
@@ -136,8 +177,16 @@ const delta = (value: number | undefined, base: number | undefined): string =>
 export function markdown(label: string, cells: readonly Cell[]): string {
   const lines = [`### Content mapper pair: ${label}`, ""];
   for (const cell of cells) {
+    const schedule =
+      cell.ordersPerReplicate === 2
+        ? "AB+BA"
+        : `${cell.ordersPerReplicate} position-balanced orders`;
     lines.push(
-      `**${cell.sfcs} SFCs**, ${cell.runs} alternating runs; serial: ${cell.serialFiles} transforms. ` +
+      `**${cell.sfcs} SFCs**, ${cell.replicates} balanced replicates ` +
+        `(${schedule}, seed 0x${cell.orderSeed.toString(16)}): ` +
+        `${cell.burstSamplesPerBuild} burst samples/build; ` +
+        `${cell.builds[0]?.serialSessions ?? 0} serial sessions/build × ${cell.serialFiles} transforms ` +
+        `= ${cell.builds[0]?.serialRawSamples ?? 0} raw latency samples/build. ` +
         (cell.failure
           ? `**No timing published: ${cell.failure}.**`
           : cell.outputsIdentical
@@ -148,7 +197,7 @@ export function markdown(label: string, cells: readonly Cell[]): string {
     if (cell.failure) continue;
     const first = cell.builds[0];
     lines.push(
-      "| build | burst wall ms (min–max) | burst CPU s | peak MiB | serial p50 ms | serial p95 ms | serial total ms | response MB |",
+      "| build | burst wall ms (min–max) | burst CPU s | peak MiB | serial pooled p50/p95 ms | per-session median p50/p95 ms | session total median ms | response MB |",
       "|---|---|---|---|---|---|---|---|",
     );
     for (const build of cell.builds) {
@@ -157,8 +206,8 @@ export function markdown(label: string, cells: readonly Cell[]): string {
         `| ${build.reference ? `${build.id} (reference${build.errors ? `, ${build.errors} errors` : ""})` : build.id} | ${fixed(build.burstWallMs, 0)}${delta(build.burstWallMs, base?.burstWallMs)} (${fixed(build.burstWallMin, 0)}–${fixed(build.burstWallMax, 0)}) ` +
           `| ${fixed(build.burstCpuSeconds, 2)}${delta(build.burstCpuSeconds, base?.burstCpuSeconds)} ` +
           `| ${fixed(build.burstPeakMiB, 1)}${delta(build.burstPeakMiB, base?.burstPeakMiB)} ` +
-          `| ${fixed(build.serialP50Ms, 2)}${delta(build.serialP50Ms, base?.serialP50Ms)} ` +
-          `| ${fixed(build.serialP95Ms, 2)}${delta(build.serialP95Ms, base?.serialP95Ms)} ` +
+          `| ${fixed(build.serialP50Ms, 2)}${delta(build.serialP50Ms, base?.serialP50Ms)} / ${fixed(build.serialP95Ms, 2)}${delta(build.serialP95Ms, base?.serialP95Ms)} ` +
+          `| ${fixed(build.serialSessionP50Ms, 2)}${delta(build.serialSessionP50Ms, base?.serialSessionP50Ms)} / ${fixed(build.serialSessionP95Ms, 2)}${delta(build.serialSessionP95Ms, base?.serialSessionP95Ms)} ` +
           `| ${fixed(build.serialTotalMs, 0)}${delta(build.serialTotalMs, base?.serialTotalMs)} ` +
           `| ${fixed(build.outputBytes / 1e6, 2)} |`,
       );

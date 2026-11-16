@@ -10,6 +10,7 @@ import {
   experimentalRouterPage,
   prepareExperimentalRouterProject,
 } from "./support/router-experimental-provider.ts";
+import { assertLinearVerbatimMappings } from "./support/content-mapper-span-oracle.ts";
 import { sixElementTuples } from "../../tools/support/compat/content-mapper/wire-tuples.ts";
 
 type Packet = {
@@ -120,29 +121,25 @@ function assertRouteMappings(source: string, result: Transform) {
     assert.equal(generated.subarray(found[0], found[0] + binding).toString(), "route");
     return found[0];
   };
-  const expected = [
-    ...scriptAccesses.map((it) =>
-      span(it.generatedStart, it.originalStart, it.length, allFeatures),
-    ),
-    ...templateAccesses.flatMap(({ length, originalStart: at, generatedStart }) => [
-      span(projection(at, templateUseFeatures), at, binding, templateUseFeatures),
-      span(projection(at, templateHoverFeatures), at, binding, templateHoverFeatures),
-      span(generatedStart, at, binding, allFeatures & ~templateHoverFeatures),
-      span(generatedStart + binding, at + binding, length - binding, allFeatures),
-    ]),
-  ];
-  const accesses = [...scriptAccesses, ...templateAccesses];
+  // LF joins setup lines and CRLF splits them; both project the same exact authored bytes.
+  assertLinearVerbatimMappings(authored, generated, result.mappings, scriptAccesses, allFeatures);
+  const expected = templateAccesses.flatMap(({ length, originalStart: at, generatedStart }) => [
+    span(projection(at, templateUseFeatures), at, binding, templateUseFeatures),
+    span(projection(at, templateHoverFeatures), at, binding, templateHoverFeatures),
+    span(generatedStart, at, binding, allFeatures & ~templateHoverFeatures),
+    span(generatedStart + binding, at + binding, length - binding, allFeatures),
+  ]);
   const byGenerated = (left: Span, right: Span) => left[0] - right[0];
   assert.deepEqual(
     result.mappings
       .filter((it) =>
-        accesses.some(
+        templateAccesses.some(
           ({ length, originalStart }) => it[2] >= originalStart && it[2] < originalStart + length,
         ),
       )
       .sort(byGenerated),
     expected.sort(byGenerated),
-    "all seven route accesses retain exact UTF-8 protocol spans",
+    "both template route accesses retain exact UTF-8 protocol spans",
   );
 }
 

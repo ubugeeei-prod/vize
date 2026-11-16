@@ -79,6 +79,7 @@ pub(super) fn exchange_initialized(input: &[u8]) -> Vec<Value> {
         &mut reader,
         &mut output,
         true,
+        false,
         super::dispatch::ReplyOrder::Request,
     )
     .unwrap();

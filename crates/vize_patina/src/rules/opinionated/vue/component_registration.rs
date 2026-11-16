@@ -10,14 +10,14 @@ use oxc_ast::ast::{
     Argument, BindingPattern, ExportDefaultDeclarationKind, Expression, ImportDeclarationSpecifier,
     ObjectExpression, ObjectPropertyKind, Program, PropertyKey, Statement,
 };
-use vize_croquis::naming::to_pascal_case;
+use vize_croquis::naming::{names_match, to_pascal_case};
 use vize_l0::FxHashMap;
 
 pub(super) fn options_api_registers(ctx: &LintContext<'_>, tag: &str) -> bool {
     ctx.sfc_scripts()
         .and_then(|scripts| scripts.script())
         .is_some_and(|parsed| {
-            program_registers(&parsed.program, tag)
+            program_registers(&parsed.program, tag, RegistrationKeyPolicy::Runtime)
                 || (ctx
                     .sfc_descriptor()
                     .is_some_and(|descriptor| descriptor.script_setup.is_some())
@@ -25,7 +25,24 @@ pub(super) fn options_api_registers(ctx: &LintContext<'_>, tag: &str) -> bool {
         })
 }
 
-fn program_registers(program: &Program<'_>, tag: &str) -> bool {
+pub(super) fn options_api_registers_with_authored_pascal_key(
+    ctx: &LintContext<'_>,
+    tag: &str,
+) -> bool {
+    ctx.sfc_scripts()
+        .and_then(|scripts| scripts.script())
+        .is_some_and(|parsed| {
+            program_registers(&parsed.program, tag, RegistrationKeyPolicy::AuthoredPascal)
+        })
+}
+
+#[derive(Clone, Copy)]
+enum RegistrationKeyPolicy {
+    Runtime,
+    AuthoredPascal,
+}
+
+fn program_registers(program: &Program<'_>, tag: &str, policy: RegistrationKeyPolicy) -> bool {
     let mut bindings = FxHashMap::default();
     for statement in &program.body {
         let Statement::VariableDeclaration(declaration) = statement else {
@@ -51,12 +68,21 @@ fn program_registers(program: &Program<'_>, tag: &str) -> bool {
                     let ObjectPropertyKind::ObjectProperty(property) = property else {
                         return false;
                     };
-                    // eslint-plugin-vue compares the PascalCase form of the
-                    // authored tag with the registration key itself. Preserve
-                    // that asymmetry: a lower-camel shorthand such as
-                    // `{ svgIcon }` does not make `<svg-icon>` a target of the
-                    // default registered-components-only policy.
-                    static_key_name(&property.key).is_some_and(|name| to_pascal_case(tag) == name)
+                    static_key_name(&property.key).is_some_and(|name| match policy {
+                        // Vue resolves Options API registration keys across
+                        // kebab, lower-camel and Pascal spellings.
+                        RegistrationKeyPolicy::Runtime => {
+                            tag == name
+                                || names_match(tag, name)
+                                || to_pascal_case(tag).as_str() == name
+                        }
+                        // eslint-plugin-vue's registered-components-only
+                        // casing policy instead compares the Pascal form of
+                        // the authored tag to the authored registration key.
+                        RegistrationKeyPolicy::AuthoredPascal => {
+                            to_pascal_case(tag).as_str() == name
+                        }
+                    })
                 })
             })
     })

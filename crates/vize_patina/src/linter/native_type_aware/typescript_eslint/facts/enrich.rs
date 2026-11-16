@@ -4,13 +4,24 @@ use corsa::lint::LintNode;
 use serde_json::{Value, json};
 use vize_l0::{FxHashMap, FxHashSet, String};
 
+const ENUM_LITERAL: u32 = 1 << 15;
+const NUMBER_LITERAL: u32 = 1 << 11;
+
 pub(super) fn apply(source: &str, nodes: &mut [LintNode], program: &Value) {
     let functions = scan::local_functions(program, source);
     let enums = super::shape::enum_members(program);
     let objects = super::shape::object_literal_bindings(program);
     let bindings = super::shape::annotated_bindings(program, source);
+    let binding_enums = super::shape::annotated_binding_enum_parts(program, &enums, &bindings);
     for node in nodes {
-        walk(node, &functions, &enums, &objects, &bindings);
+        walk(
+            node,
+            &functions,
+            &enums,
+            &objects,
+            &bindings,
+            &binding_enums,
+        );
     }
 }
 
@@ -20,6 +31,7 @@ fn walk(
     enums: &FxHashMap<String, FxHashMap<String, String>>,
     objects: &FxHashSet<String>,
     bindings: &FxHashMap<String, String>,
+    binding_enums: &FxHashMap<String, Vec<super::shape::AuthoredEnumPart>>,
 ) {
     if node.kind == "CallExpression" {
         fill_call(node, functions, objects);
@@ -33,14 +45,88 @@ fn walk(
     if !node.fields.contains_key("__enumTypeIds") {
         fill_primitive_side(node);
     }
+    fill_authored_enum_binding(node, binding_enums);
     for child in node.children.values_mut() {
-        walk(child, functions, enums, objects, bindings);
+        walk(child, functions, enums, objects, bindings, binding_enums);
     }
     for children in node.child_lists.values_mut() {
         for child in children {
-            walk(child, functions, enums, objects, bindings);
+            walk(child, functions, enums, objects, bindings, binding_enums);
         }
     }
+}
+
+fn fill_authored_enum_binding(
+    node: &mut LintNode,
+    bindings: &FxHashMap<String, Vec<super::shape::AuthoredEnumPart>>,
+) {
+    if node.kind != "Identifier" || detail_has_enum(node) {
+        return;
+    }
+    let Some(parts) = node.field_str("name").and_then(|name| bindings.get(name)) else {
+        return;
+    };
+    let mut enum_ids = Vec::new();
+    let mut enum_kinds = Vec::new();
+    let mut part_ids = Vec::new();
+    for part in parts {
+        if !enum_ids.contains(&part.enum_id) {
+            enum_ids.push(part.enum_id.clone());
+        }
+        if !enum_kinds.contains(&part.kind) {
+            enum_kinds.push(part.kind.clone());
+        }
+        let flags = if part.kind == "number" {
+            ENUM_LITERAL | NUMBER_LITERAL
+        } else {
+            ENUM_LITERAL
+        };
+        let id = vize_l0::cstr!("authored-enum:{}:{}", part.enum_id, part.kind);
+        part_ids.push(id.clone());
+        if let Some(detail_parts) = node
+            .fields
+            .get_mut("__typeDetail")
+            .and_then(|detail| detail.get_mut("parts"))
+            .and_then(serde_json::Value::as_array_mut)
+        {
+            detail_parts.push(json!({
+                "id": id,
+                "flags": flags,
+                "memberFlags": flags,
+                "enumId": part.enum_id,
+                "enumText": part.enum_id,
+            }));
+        }
+    }
+    merge_string_facts(node, "__enumTypeIds", enum_ids);
+    merge_string_facts(node, "__unionPartTypeIds", part_ids);
+    merge_string_facts(node, "__unionPartEnumValueKinds", enum_kinds);
+}
+
+fn merge_string_facts(node: &mut LintNode, key: &str, facts: Vec<String>) {
+    let values = node.fields.entry(key.into()).or_insert_with(|| json!([]));
+    let Some(values) = values.as_array_mut() else {
+        return;
+    };
+    for fact in facts {
+        if !values.iter().any(|value| value.as_str() == Some(&fact)) {
+            values.push(Value::String(fact.as_str().to_owned()));
+        }
+    }
+}
+
+fn detail_has_enum(node: &LintNode) -> bool {
+    node.fields
+        .get("__typeDetail")
+        .and_then(|detail| detail.get("parts"))
+        .and_then(serde_json::Value::as_array)
+        .is_some_and(|parts| {
+            parts.iter().any(|part| {
+                part.get("flags")
+                    .and_then(serde_json::Value::as_u64)
+                    .is_some_and(|flags| flags & u64::from(ENUM_LITERAL) != 0)
+            })
+        })
 }
 
 fn fill_call(
@@ -214,4 +300,56 @@ fn string_like(texts: &[impl AsRef<str>]) -> bool {
             part == "string" || part.starts_with('"') || part.starts_with('\'')
         })
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::super::super::tree;
+    use super::apply;
+    use serde_json::{Value, json};
+
+    fn enum_ids(source: &str) -> Vec<String> {
+        let mut collected = tree::collect(source, false, &["BinaryExpression"]);
+        let Some(left) = collected
+            .nodes
+            .first_mut()
+            .and_then(|node| node.children.get_mut("left"))
+        else {
+            return Vec::new();
+        };
+        left.fields.insert(
+            "__typeDetail".into(),
+            json!({
+                "id": "projected",
+                "flags": 1,
+                "parts": [{ "id": "projected", "flags": 1 }],
+            }),
+        );
+        let program = collected.program.clone();
+        apply(source, &mut collected.nodes, &program);
+        collected
+            .nodes
+            .first()
+            .and_then(|node| node.child("left"))
+            .and_then(|left| left.fields.get("__typeDetail"))
+            .and_then(|detail| detail.get("parts"))
+            .and_then(Value::as_array)
+            .into_iter()
+            .flatten()
+            .filter_map(|part| part.get("enumId").and_then(Value::as_str))
+            .map(String::from)
+            .collect()
+    }
+
+    #[test]
+    fn direct_union_enum_constituent_repairs_a_projected_binding() {
+        let source = "enum Fruit { Apple = 'apple' }\ntype Branded = (string & { brand: void }) | Fruit;\ndeclare const value: Branded;\nvalue === 'other';";
+        assert_eq!(enum_ids(source), ["Fruit"]);
+    }
+
+    #[test]
+    fn branded_string_without_an_enum_is_not_promoted() {
+        let source = "type Branded = string & { brand: void };\ndeclare const value: Branded;\nvalue === 'other';";
+        assert!(enum_ids(source).is_empty());
+    }
 }

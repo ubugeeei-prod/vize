@@ -1,7 +1,7 @@
 name: Content mapper pair
 run-name: "Content mapper pair ${{ inputs.head }} vs ${{ inputs.base }} (${{ inputs.sizes }})"
 # Two commits answer one content-mapper request stream on Linux, WSL2 (ext4 and
-# the Windows mount) and native Windows, alternating builds per run.
+# the Windows mount) and native Windows, balancing both build orders per replicate.
 on:
   workflow_dispatch:
     inputs:
@@ -18,7 +18,7 @@ on:
         type: string
         default: "1000,5000"
       runs:
-        description: Alternating recorded runs per build
+        description: Balanced AB+BA replicates per build
         type: string
         default: "5"
       allow_output_change:

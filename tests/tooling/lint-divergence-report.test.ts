@@ -15,10 +15,14 @@ import { test } from "node:test";
 
 import {
   baselineConfig,
-  resolveBaselineRuntime,
   retainEnabledFindings,
   selectComparableRules,
 } from "../../tools/support/compat/fixtures/lint-divergence-baseline.mjs";
+import {
+  assertBaselineIdentity,
+  baselineProviderPackage,
+  resolveScorecardRuntime,
+} from "../../tools/support/compat/fixtures/lint-divergence-scorecard.ts";
 import { renderMarkdown } from "../../tools/support/compat/fixtures/lint-divergence-markdown.ts";
 import {
   reconcileCorpus,
@@ -53,6 +57,35 @@ const ruleMap = {
     "vue/no-undef-properties": { status: "unimplemented", issue: 3223 },
   },
 };
+
+test("the real-project baseline identity fails closed", () => {
+  const benchManifest = {
+    devDependencies: { [baselineProviderPackage]: "npm:eslint-plugin-vue@10.12.0" },
+  };
+  const providerManifest = { name: "eslint-plugin-vue", version: "10.12.0" };
+  const map = { upstream: { package: "eslint-plugin-vue", version: "10.12.0" } };
+  assert.doesNotThrow(() => assertBaselineIdentity(benchManifest, providerManifest, map));
+  assert.throws(
+    () => assertBaselineIdentity(benchManifest, { ...providerManifest, version: "10.9.2" }, map),
+    /must be an exact npm alias pin/u,
+  );
+  assert.throws(
+    () =>
+      assertBaselineIdentity(
+        { devDependencies: { [baselineProviderPackage]: "^10.12.0" } },
+        providerManifest,
+        map,
+      ),
+    /must be an exact npm alias pin/u,
+  );
+  assert.throws(
+    () =>
+      assertBaselineIdentity(benchManifest, providerManifest, {
+        upstream: { package: "eslint-plugin-vue", version: "10.9.2" },
+      }),
+    /version must match the lint rule map/u,
+  );
+});
 
 test("only mapped rules the preset activates are comparable, at patina's severity", () => {
   const { rules, skippedByPreset } = selectComparableRules(ruleMap, "ecosystem");
@@ -201,7 +234,7 @@ test("the runner classifies a real divergence over a synthetic pinned project", 
     t.skip("set VIZE_TEST_BIN to exercise the runner against the real binary");
     return;
   }
-  const runtime = resolveBaselineRuntime();
+  const runtime = resolveScorecardRuntime();
   assert.equal(runtime.version, readRuleMap().upstream.version);
 
   const fixtureDir = fs.mkdtempSync(path.join(repoRoot, "target", "lint-divergence-fixture-"));

@@ -1,16 +1,15 @@
-//! Collects identifiers referenced via `typeof X` in type position.
+//! Collects value identifiers referenced from type position.
 //!
 //! Used by virtual-TS generation to decide whether a `type` / `interface`
-//! declaration may be hoisted to module scope. If the body of a type
-//! declaration uses `typeof X` and `X` is a setup-scope value binding
-//! (i.e. a `const`/`let`/`var`/function declared inside `<script setup>`),
-//! the declaration must stay in the setup function — otherwise the
-//! generated TS at module level cannot resolve `X` and TS reports
-//! `Cannot find name 'X'`.
+//! declaration may be hoisted to module scope. `typeof X` and computed type
+//! members such as `[Keys.A]` both read values. When that value is declared
+//! inside `<script setup>`, the declaration must stay in the setup function;
+//! otherwise generated module-level TS cannot resolve it.
 
 use oxc_ast::ast::{
-    Expression, TSInterfaceDeclaration, TSType, TSTypeAliasDeclaration, TSTypeName,
-    TSTypeQueryExprName, TSTypeReference,
+    Expression, IdentifierReference, PropertyKey, TSInterfaceDeclaration, TSMethodSignature,
+    TSPropertySignature, TSType, TSTypeAliasDeclaration, TSTypeName, TSTypeQueryExprName,
+    TSTypeReference,
 };
 use oxc_ast_visit::{Visit, walk};
 use vize_carton::{CompactString, FxHashSet};
@@ -21,14 +20,14 @@ pub(crate) struct TypeDependencyRefs {
     pub type_refs: FxHashSet<CompactString>,
 }
 
-/// Visitor that records the leftmost identifier of every `typeof X[.Y.Z]`
-/// it encounters inside a TypeScript type tree.
+/// Visitor that records value and type dependencies inside a TypeScript type
+/// tree without confusing ordinary type names with runtime reads.
 #[derive(Default)]
-pub(crate) struct TypeofValueRefs {
+pub(crate) struct TypeDependencyCollector {
     pub refs: TypeDependencyRefs,
 }
 
-impl<'a> Visit<'a> for TypeofValueRefs {
+impl<'a> Visit<'a> for TypeDependencyCollector {
     fn visit_ts_type_reference(&mut self, it: &TSTypeReference<'a>) {
         record_type_name_root(&it.type_name, &mut self.refs.type_refs);
         walk::walk_ts_type_reference(self, it);
@@ -58,6 +57,38 @@ impl<'a> Visit<'a> for TypeofValueRefs {
         }
         walk::walk_ts_type_query_expr_name(self, it);
     }
+
+    fn visit_ts_property_signature(&mut self, it: &TSPropertySignature<'a>) {
+        if it.computed {
+            record_computed_key_refs(&it.key, &mut self.refs.typeof_value_refs);
+        }
+        walk::walk_ts_property_signature(self, it);
+    }
+
+    fn visit_ts_method_signature(&mut self, it: &TSMethodSignature<'a>) {
+        if it.computed {
+            record_computed_key_refs(&it.key, &mut self.refs.typeof_value_refs);
+        }
+        walk::walk_ts_method_signature(self, it);
+    }
+}
+
+/// A computed key is an expression, so collect every referenced identifier.
+/// Static member names are `IdentifierName` nodes and are deliberately not
+/// included: `[Keys.A]` records only `Keys`, while `[Keys[A]]` records both
+/// runtime bindings.
+struct ComputedKeyValueRefs<'r> {
+    refs: &'r mut FxHashSet<CompactString>,
+}
+
+impl<'a> Visit<'a> for ComputedKeyValueRefs<'_> {
+    fn visit_identifier_reference(&mut self, it: &IdentifierReference<'a>) {
+        self.refs.insert(CompactString::new(it.name.as_str()));
+    }
+}
+
+fn record_computed_key_refs(key: &PropertyKey<'_>, refs: &mut FxHashSet<CompactString>) {
+    ComputedKeyValueRefs { refs }.visit_property_key(key);
 }
 
 fn record_type_name_root(name: &TSTypeName<'_>, refs: &mut FxHashSet<CompactString>) {
@@ -84,7 +115,7 @@ fn record_expression_root(expr: &Expression<'_>, refs: &mut FxHashSet<CompactStr
 /// (`type X = ...`), including its generic parameter constraints and
 /// default types.
 pub(crate) fn collect_from_type_alias(decl: &TSTypeAliasDeclaration<'_>) -> TypeDependencyRefs {
-    let mut visitor = TypeofValueRefs::default();
+    let mut visitor = TypeDependencyCollector::default();
     visitor.visit_ts_type(&decl.type_annotation);
     if let Some(params) = &decl.type_parameters {
         for param in params.params.iter() {
@@ -103,7 +134,7 @@ pub(crate) fn collect_from_type_alias(decl: &TSTypeAliasDeclaration<'_>) -> Type
 /// (`interface X { ... }`), including its extends clauses and generic
 /// parameter constraints / defaults.
 pub(crate) fn collect_from_interface(decl: &TSInterfaceDeclaration<'_>) -> TypeDependencyRefs {
-    let mut visitor = TypeofValueRefs::default();
+    let mut visitor = TypeDependencyCollector::default();
     visitor.visit_ts_interface_body(&decl.body);
     for clause in decl.extends.iter() {
         record_expression_root(&clause.expression, &mut visitor.refs.type_refs);
@@ -138,7 +169,7 @@ pub(crate) fn collect_from_declaration(decl: &oxc_ast::ast::Declaration<'_>) -> 
 
 /// Check only a type subtree reached by the existing demanded value walk.
 pub(crate) fn has_value_type_reads(annotation: &TSType<'_>) -> bool {
-    let mut visitor = TypeofValueRefs::default();
+    let mut visitor = TypeDependencyCollector::default();
     visitor.visit_ts_type(annotation);
     !visitor.refs.typeof_value_refs.is_empty()
 }

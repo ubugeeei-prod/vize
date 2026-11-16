@@ -10,9 +10,9 @@
 
 import { PLANT_MULTIPLICITY_NOTES } from "./scale-project-plants.ts";
 import type { ScaleKind } from "./scale-project-generator.ts";
+import { GROWTH_LIMIT, type GrowthBudgetEntry, growthBudget } from "./typecheck-scaling-budget.ts";
 import type { Provenance, ToolId } from "./typecheck-scaling-tools.ts";
 
-export const GROWTH_LIMIT = 1.5;
 export const MAPPER_SPEEDUP_TARGET = 100;
 export const MAPPER_MEMORY_TARGET = 10;
 export const TSRS_WALL_TARGET_MS = 500;
@@ -207,13 +207,16 @@ export type Growth = {
   sizes: number[];
   /** Per-SFC value at the largest size over the smallest. */
   perSfc: Record<Metric, number | null>;
-  /** Marginal cost per added SFC, last interval over the first; null with fewer than three sizes. */
+  /** Marginal cost per added SFC, last interval over the first; null only without three complete sizes. */
   step: Record<Metric, number | null>;
   flags: string[];
 };
 
-const ratio = (a: number | null, b: number | null): number | null =>
-  a == null || b == null || !(b > 0) ? null : a / b;
+const ratio = (a: number | null, b: number | null): number | null => {
+  if (a == null || b == null) return null;
+  if (b > 0) return a / b;
+  return a > 0 ? Number.POSITIVE_INFINITY : 1;
+};
 
 /** Growth per tool and project kind (vue, nuxt) over the sizes that measured. */
 export function growthOf(rows: Row[]): Growth[] {
@@ -259,27 +262,33 @@ export function growthOf(rows: Row[]): Growth[] {
       const value = growth.perSfc[metric];
       if (value != null && value > GROWTH_LIMIT) {
         growth.flags.push(
-          `per-SFC ${name} ×${value.toFixed(2)} from ${first.cell.sfcs} to ${last.cell.sfcs}`,
+          `per-SFC ${name} ${times(value)} from ${first.cell.sfcs} to ${last.cell.sfcs}`,
         );
       }
       const jump = growth.step[metric];
       if (jump != null && jump > GROWTH_LIMIT) {
-        growth.flags.push(`marginal ${name} per SFC steps ×${jump.toFixed(2)}`);
+        growth.flags.push(`marginal ${name} per SFC steps ${times(jump)}`);
       }
     }
     return [growth];
   });
 }
 
+export function scalingBudget(cells: readonly Cell[]) {
+  return growthBudget(growthOf(cells.map(rowOf)));
+}
+
 const fixed = (value: number | null, digits: number, scale = 1) =>
   value == null ? "n/a" : (value / scale).toFixed(digits);
 const count = (value: number | null) =>
   value == null ? "n/a" : Math.round(value).toLocaleString("en-US");
-const times = (value: number | null) => (value == null ? "n/a" : `×${value.toFixed(2)}`);
+const times = (value: number | null) =>
+  value == null ? "n/a" : Number.isFinite(value) ? `×${value.toFixed(2)}` : "×∞";
 
 export function renderSummary(results: ScalingResults): string {
   const rows = results.cells.map(rowOf);
   const growth = growthOf(rows);
+  const budget = growthBudget(growth);
   const targets = performanceTargets(results.cells);
   const refused = results.cells.filter((cell) => cell.refused);
   const lines = [
@@ -374,6 +383,25 @@ export function renderSummary(results: ScalingResults): string {
       ...growth.map(
         (g) =>
           `| ${g.label} | ${g.sizes.join(", ")} | ${times(g.perSfc.cpuMs)} | ${times(g.perSfc.rssKb)} | ${times(g.perSfc.wallMs)} | ${times(g.step.cpuMs)} | ${times(g.step.rssKb)} | ${g.flags.length > 0 ? `**superlinear**: ${g.flags.join("; ")}` : "linear"} |`,
+      ),
+      "",
+    );
+  }
+  if (budget.checked.length > 0) {
+    const coordinate = (entry: GrowthBudgetEntry) =>
+      `${entry.shape === "perSfc" ? "per-SFC" : "marginal step"} ${
+        entry.metric === "cpuMs" ? "CPU" : "RSS"
+      }`;
+    lines.push(
+      "## Vize growth budget",
+      "",
+      `**${budget.status}**. Vize-owned CPU and RSS growth must stay at or below ×${GROWTH_LIMIT.toFixed(2)} unless an exact tool/kind/size/metric declaration supplies an explicit bounded ceiling. Reference-tool curves are observations only.`,
+      "",
+      "| Tool | Kind / sizes | Coordinate | Ratio | Ceiling | Declaration | Verdict |",
+      "| --- | --- | --- | ---: | ---: | --- | --- |",
+      ...budget.checked.map(
+        (entry) =>
+          `| ${entry.tool} | ${entry.kind} ${entry.sizes.join(", ")} | ${coordinate(entry)} | ${entry.value === "infinite" ? "×∞" : `×${entry.value.toFixed(2)}`} | ×${entry.ceiling.toFixed(2)} | ${entry.declaration ?? "none"} | ${entry.ok ? "pass" : "**fail**"} |`,
       ),
       "",
     );

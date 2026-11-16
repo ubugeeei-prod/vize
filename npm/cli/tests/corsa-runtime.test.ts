@@ -275,7 +275,10 @@ test(
           jsonrpc: "2.0",
           id: 1,
           method: "initialize",
-          params: { positionEncodings: ["utf-16", "utf-8"] },
+          params: {
+            positionEncodings: ["utf-16", "utf-8"],
+            capabilities: { diagnosticDirectiveCodeSelectors: true },
+          },
         }),
       );
       assert.deepEqual(await run.reply(), {
@@ -293,7 +296,12 @@ test(
       assert.deepEqual(await run.reply(), {
         id: 2,
         result: {
-          args: ["content-mapper", "--initialized", "--reply-when-ready"],
+          args: [
+            "content-mapper",
+            "--initialized",
+            "--reply-when-ready",
+            "--diagnostic-directive-code-selectors",
+          ],
           method: "openProject",
         },
       });
@@ -321,7 +329,18 @@ test("an uninitialized stream gets the native replies and never loads the addon"
         params: { positionEncodings: ["utf-16"] },
       }),
     );
-    run.child.stdin.write(frame({ jsonrpc: "2.0", id: 4, method: "initialize", params: {} }));
+    run.child.stdin.write(
+      frame({
+        jsonrpc: "2.0",
+        id: 4,
+        method: "initialize",
+        params: {
+          positionEncodings: ["utf-8"],
+          capabilities: { diagnosticDirectiveCodeSelectors: 2353 },
+        },
+      }),
+    );
+    run.child.stdin.write(frame({ jsonrpc: "2.0", id: 5, method: "initialize", params: {} }));
     const error = async () => (await run.reply()).error as { code: number; message: string };
     assert.deepEqual(await error(), { code: -32002, message: "Content mapper is not initialized" });
     assert.equal((await error()).code, -32700);
@@ -329,6 +348,10 @@ test("an uninitialized stream gets the native replies and never loads the addon"
     assert.deepEqual(await error(), {
       code: -32602,
       message: "Vize requires the utf-8 position encoding",
+    });
+    assert.deepEqual(await error(), {
+      code: -32602,
+      message: "Invalid initialize params: `diagnosticDirectiveCodeSelectors` must be a boolean",
     });
     assert.deepEqual(await error(), {
       code: -32602,

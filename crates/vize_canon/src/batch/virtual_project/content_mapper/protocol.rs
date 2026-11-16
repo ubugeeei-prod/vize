@@ -76,11 +76,54 @@ pub const DIRECTIVE_POLICY_IGNORE: usize = 0;
 /// Policy for directives that must suppress at least one diagnostic.
 pub const DIRECTIVE_POLICY_EXPECT: usize = 1;
 
+/// No diagnostic-code selector is attached to an ignore directive.
+pub const DIRECTIVE_DIAGNOSTIC_CODE_NONE: usize = 0;
+
 /// A mapped diagnostic directive tuple:
 /// `[originalStart, originalLength, virtualStart, virtualEnd, policy,
-/// unusedExpectDirectiveIndex]`.
+/// policyValue]`.
+///
+/// `policyValue` is the unused-expect diagnostic index for expect directives.
+/// For ignore directives it is an optional TypeScript diagnostic-code selector,
+/// where zero means no selector. The wire encoder only sends an ignore selector
+/// to hosts that advertised support during `initialize`.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 pub struct ContentMapperDiagnosticDirective(pub [usize; 6]);
+
+impl ContentMapperDiagnosticDirective {
+    /// Builds an ignore directive that can suppress only `diagnostic_code`.
+    ///
+    /// A selected directive must never be encoded as a range-only ignore when
+    /// the host did not advertise selector support.
+    pub const fn ignore_with_diagnostic_code(
+        original_start: usize,
+        original_length: usize,
+        virtual_start: usize,
+        virtual_end: usize,
+        diagnostic_code: usize,
+    ) -> Self {
+        assert!(diagnostic_code != DIRECTIVE_DIAGNOSTIC_CODE_NONE);
+        assert!(diagnostic_code <= i32::MAX as usize);
+        Self([
+            original_start,
+            original_length,
+            virtual_start,
+            virtual_end,
+            DIRECTIVE_POLICY_IGNORE,
+            diagnostic_code,
+        ])
+    }
+
+    /// The selected TypeScript diagnostic code for an ignore directive.
+    pub const fn diagnostic_code(&self) -> Option<usize> {
+        let tuple = &self.0;
+        if tuple[4] == DIRECTIVE_POLICY_IGNORE && tuple[5] != DIRECTIVE_DIAGNOSTIC_CODE_NONE {
+            Some(tuple[5])
+        } else {
+            None
+        }
+    }
+}
 
 pub(super) fn protocol_semantic_links(
     links: &[crate::virtual_ts::VizeSemanticLink],

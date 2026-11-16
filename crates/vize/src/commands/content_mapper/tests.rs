@@ -64,6 +64,32 @@ fn negotiates_utf8_without_legacy_protocol_version() {
 }
 
 #[test]
+fn selector_capability_does_not_change_initialize_or_unselected_transform_payloads() {
+    let source = "<template><div /></template>";
+    let legacy = exchange(&frames(&[
+        initialize_request(),
+        open_project_request(2, Value::Null, json!({})),
+        transform_request(3, source),
+    ]));
+    let negotiated = exchange(&frames(&[
+        json!({
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "initialize",
+            "params": {
+                "positionEncodings": ["utf-8"],
+                "capabilities": { "diagnosticDirectiveCodeSelectors": true }
+            }
+        }),
+        open_project_request(2, Value::Null, json!({})),
+        transform_request(3, source),
+    ]));
+
+    assert_eq!(negotiated[0], legacy[0]);
+    assert_eq!(negotiated[2], legacy[2]);
+}
+
+#[test]
 fn parse_errors_are_successful_transform_results() {
     let input = frames(&[
         initialize_request(),

@@ -4,10 +4,10 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import {
-  resolveBaselineRuntime,
   runBaseline,
   selectComparableRules,
 } from "../../tools/support/compat/fixtures/lint-divergence-baseline.mjs";
+import { resolveScorecardRuntime } from "../../tools/support/compat/fixtures/lint-divergence-scorecard.ts";
 
 const root = path.resolve(import.meta.dirname, "../..");
 
@@ -68,7 +68,7 @@ await test("the actual TypeScript report preserves complete raw fatal results be
     ).rules;
     const expected = JSON.parse(
       JSON.stringify(
-        (await runBaseline(resolveBaselineRuntime(), cwd, ["Malformed.vue"], rules)).results,
+        (await runBaseline(resolveScorecardRuntime(), cwd, ["Malformed.vue"], rules)).results,
       ),
     );
     assert.deepEqual(report.baseline.parseErrorResults, expected);

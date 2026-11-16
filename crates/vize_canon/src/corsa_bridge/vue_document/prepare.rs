@@ -26,7 +26,7 @@ pub struct CorsaVueWorkspaceRequest {
     pub options: CorsaVueVirtualDocumentOptions,
     pub overlays: Vec<(PathBuf, Arc<str>)>,
     pub virtual_ts_options: VirtualTsOptions,
-    pub requested_sources: Vec<(PathBuf, Box<str>)>,
+    pub requested_sources: Vec<(PathBuf, Arc<str>)>,
 }
 
 struct PreparationInputs {

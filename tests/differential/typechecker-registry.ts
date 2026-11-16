@@ -91,6 +91,8 @@ export const TYPECHECKER_TESTS = {
   "incomplete-script-setup-recovery-10200": "pins_incomplete_setup_import_corpus",
   "inferred-project-tsconfig-9718": "inferred_project_tsconfig_preserves_owned_batch_inputs",
   "jsx-prop-token-ranges-10494": "jsx_prop_tokens_preserve_complete_batch_diagnostics",
+  "library-generic-props-fallback-13021":
+    "library_generic_props_fallback::old_library_generic_props_follow_the_unknown_props_policy",
   "listener-attribute-parity-9852": "listener_keeps_class_style_and_spread_attribute_parity",
   "literal-reference-paths-10551": "literal_reference_paths_preserve_complete_authored_diagnostics",
   "long-prop-kebab-case-10423": "long_prop_keys_preserve_static_and_async_listener_diagnostics",
@@ -214,6 +216,7 @@ export const sourceRevisions = {
   "incomplete-script-setup-recovery-10200": "4a555b0aae0a394fbe4cedc08092638975f06a2a",
   "inferred-project-tsconfig-9718": "f95557dadaab83dc0f7d4a7613bdb7ed4e59d323",
   "jsx-prop-token-ranges-10494": "aaeeb1c1264a319737fa11e56971c9d73064d6a3",
+  "library-generic-props-fallback-13021": "f06d427619f943bf1192cfafbae65de537e464d0",
   "listener-attribute-parity-9852": "11cb03950bc8d2a4e9cb8d164b0aaca79e302291",
   "literal-reference-paths-10551": "0a7f029e3be412a89232bd82127d3ac9bb058514",
   "long-prop-kebab-case-10423": "d8849fab885cb40b9516889a464549fd29af3f92",

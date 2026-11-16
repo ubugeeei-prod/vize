@@ -6,6 +6,7 @@ import {
   mkdirSync,
   readFileSync,
   readdirSync,
+  statSync,
   writeFileSync,
 } from "node:fs";
 import { join, resolve } from "node:path";
@@ -271,6 +272,7 @@ function samePath(value: unknown, expected: string): boolean {
   };
   return key(value) === key(expected);
 }
+let ownedRuntime: { path: string; bytes: number; sha256: string } | undefined;
 function transport(label: string, required: boolean): void {
   const directory = join(record.root, "trace-" + label);
   const frames = readdirSync(directory)
@@ -291,9 +293,28 @@ function transport(label: string, required: boolean): void {
     } else {
       assert.equal(execArgs.includes("-e"), false);
       const script = asRecord(frame.script);
-      assert.equal(args[1], script.path);
+      const scriptPath = asString(script.path);
+      assert.equal(args[1], scriptPath);
       assert.equal(samePath(args[2], config), true);
-      assert.equal(existsSync(asString(script.path)), false, "temporary runtime file is removed");
+      assert.match(
+        scriptPath.replaceAll("\\", "/"),
+        /\/vize\/config-runtime-v1\/[0-9a-f]{64}\.mjs$/iu,
+      );
+      assert.equal(existsSync(scriptPath), true, "owned runtime remains reusable");
+      const runtime = readFileSync(scriptPath);
+      const identity = {
+        path: scriptPath,
+        bytes: runtime.length,
+        sha256: sha256(runtime),
+      };
+      assert.equal(identity.bytes, asNumber(script.bytes));
+      assert.equal(identity.sha256, asString(script.sha256));
+      assert.equal(runtime.toString("utf8"), asString(script.wholeText));
+      assert.ok(runtime.toString("utf8").startsWith("process.argv.splice(1, 1);\n"));
+      assert.ok(runtime.toString("utf8").endsWith("\n//# sourceURL=vize:config-runtime\n"));
+      if (process.platform !== "win32") assert.equal(statSync(scriptPath).mode & 0o077, 0);
+      if (ownedRuntime) assert.deepEqual(identity, ownedRuntime);
+      else ownedRuntime = identity;
       const exit = readJsonRecord(join(directory, String(frame.pid) + "-exit.json"));
       assert.equal(
         samePath(asArray(exit.argv)[1], config),
