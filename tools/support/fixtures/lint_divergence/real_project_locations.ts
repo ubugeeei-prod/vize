@@ -172,7 +172,7 @@ export function indexRealProjectLocationSource(source: string): RealProjectLocat
   }
   const typeBodies: TypeBody[] = [],
     declaration =
-      /\b(?:type\s+([A-Za-z_$][\w$]*)\s*=|interface\s+([A-Za-z_$][\w$]*)(?:\s+extends[^\{]+)?)\s*\{/gu;
+      /\b(?:type\s+([A-Za-z_$][\w$]*)\s*=|interface\s+([A-Za-z_$][\w$]*)(?:\s+extends[^{]+)?)\s*\{/gu;
   for (const match of source.matchAll(declaration)) {
     const start = match.index ?? 0,
       name = match[1] ?? match[2],
