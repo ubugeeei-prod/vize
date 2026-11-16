@@ -48,6 +48,10 @@ enum Owner<'a> {
         body: Option<Region<'a>>,
     },
     HostRegion,
+    /// An array callback loop, whose children are its region.
+    CallbackFor {
+        binding: crate::op::ForBinding<'a>,
+    },
 }
 
 impl Owner<'_> {
@@ -60,11 +64,14 @@ impl Owner<'_> {
                 | Self::Branch { .. }
                 | Self::HostFor { .. }
                 | Self::HostRegion
+                | Self::CallbackFor { .. }
         )
     }
 }
 
 mod binding;
+mod callback_for;
+pub use callback_for::CallbackForHead;
 mod close;
 mod conditional;
 pub use conditional::BranchBuilder;

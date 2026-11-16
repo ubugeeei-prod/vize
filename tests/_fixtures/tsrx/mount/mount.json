@@ -316,6 +316,28 @@
       "component": "Shadow",
       "props": { "label": "p", "items": ["a", "bb"] },
       "steps": [{ "props": { "label": "q" } }, { "props": { "items": ["ccc"] } }]
+    },
+    {
+      "id": "map/items",
+      "file": "tests/_fixtures/tsrx/mount/map.tsrx",
+      "component": "Items",
+      "props": { "items": ["a", "b"] },
+      "steps": []
+    },
+    {
+      "id": "map/update",
+      "file": "tests/_fixtures/tsrx/mount/map.tsrx",
+      "component": "Items",
+      "expected": "#13176",
+      "props": { "items": ["a", "b"] },
+      "steps": [{ "props": { "items": ["a", "b", "c"] } }]
+    },
+    {
+      "id": "map/click",
+      "file": "tests/_fixtures/tsrx/mount/map.tsrx",
+      "component": "Rows",
+      "props": { "rows": [{ "id": 0, "text": "a" }, { "id": 1, "text": "b" }] },
+      "steps": [{ "click": "button" }, { "click": "button" }]
     }
   ]
 }

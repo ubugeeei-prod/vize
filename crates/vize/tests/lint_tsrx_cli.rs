@@ -170,7 +170,7 @@ fn fix_rewrites_every_region_and_converges() {
         "List.tsrx",
         "export function List({ items }: { items: string[] }) @{
   <ul  class=\"list\">
-    {items.map((item) => <li  title={item}>{item}</li>)}
+    {items.map((item) => <li  key={item} title={item}>{item}</li>)}
   </ul>
 }
 
@@ -189,7 +189,7 @@ export function Footer() @{
         fs::read_to_string(project.path().join("List.tsrx")).unwrap(),
         "export function List({ items }: { items: string[] }) @{
   <ul class=\"list\">
-    {items.map((item) => <li title={item}>{item}</li>)}
+    {items.map((item) => <li key={item} title={item}>{item}</li>)}
   </ul>
 }
 
