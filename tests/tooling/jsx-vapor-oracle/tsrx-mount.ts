@@ -66,6 +66,15 @@ function link(code: string, filename: string, runtimes: Record<string, string>):
         });
         path.replaceWithMultiple(declarations);
       },
+      ExportDefaultDeclaration(path: NodePath<T.ExportDefaultDeclaration>) {
+        const declaration = path.node.declaration;
+        assert.ok(!t.isTSDeclareFunction(declaration), filename);
+        const value = t.isExpression(declaration) ? declaration : t.toExpression(declaration);
+        path.replaceWith(
+          t.variableDeclaration("const", [t.variableDeclarator(t.identifier("__default"), value)]),
+        );
+        exported.push("default: __default");
+      },
       ExportNamedDeclaration(path: NodePath<T.ExportNamedDeclaration>) {
         const declaration = path.node.declaration;
         if (!declaration) {

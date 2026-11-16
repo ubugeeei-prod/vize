@@ -109,6 +109,10 @@ fn dom_markup_outside_a_component_body_is_refused_at_its_region() {
         ("export function App() {\n\treturn [<p />];\n}\n", "<p />"),
         ("export function view() @{\n\t<p />\n}\n", "@{\n\t<p />\n}"),
         (
+            "export default function () @{\n\t<p />\n}\n",
+            "@{\n\t<p />\n}",
+        ),
+        (
             "export function App() @{\n\tconst x = <i />;\n\t<p />\n}\n",
             "<i />",
         ),

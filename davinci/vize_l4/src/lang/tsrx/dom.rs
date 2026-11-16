@@ -17,7 +17,7 @@ use vize_l1_to_l2::pass::{TransformProfile, run_transform_with_profile};
 use vize_l1_to_l2::{LegacyCaps, Lowered};
 use vize_l2::lang::tsrx::TsrxArtifacts;
 
-use super::component::{self, Component, Props};
+use super::component::{self, Component, Form, Props};
 use super::names::{Names, Use};
 use super::{EmitIssue, Failure};
 use crate::targets::dom::artifact::{
@@ -157,7 +157,7 @@ fn definition(
     names: &Names<'_>,
     render: &str,
 ) {
-    if component.declaration {
+    if component.form == Form::Declaration {
         out.push_str("const ");
         out.push_str(component.name);
         out.push_str(" = ");
@@ -189,7 +189,7 @@ fn definition(
         out.push_str("] }");
     }
     out.push(')');
-    if component.declaration {
+    if component.form != Form::Initializer {
         out.push(';');
     }
 }
