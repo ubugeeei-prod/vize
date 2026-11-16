@@ -112,3 +112,36 @@ void test("linter preflight records every diagnostic and corpus gap", () => {
     ),
   );
 });
+
+void test("a declared zero-Vue project records a zero-count artifact without project blockers", () => {
+  const artifact = assessLinterDeletionShard(control()),
+    zero = artifact.projects.find((project) => project.id === "without-vue")!;
+  assert.equal(zero.expectedFileCount, 0);
+  assert.equal(zero.reportedExpectedFileCount, 0);
+  assert.equal(zero.comparedFileCount, 0);
+  assert.deepEqual(zero.unmatchedPatterns, ["**/*.vue"]);
+  assert.deepEqual(zero.budget, { verdict: "passed", passed: true, unusableReason: null });
+  assert.deepEqual(
+    artifact.blockers.filter((blocker) => blocker.detail.startsWith("without-vue: ")),
+    [],
+  );
+  assert.doesNotThrow(() => validateLinterDeletionArtifact(artifact));
+
+  const forged = structuredClone(artifact);
+  forged.blockers.push({
+    code: "linter-unmatched-patterns",
+    detail: 'without-vue: unmatched explicit lint patterns ["**/*.vue"]',
+  });
+  assert.throws(() => validateLinterDeletionArtifact(forged));
+
+  const scopeDrift = assessLinterDeletionShard(
+    control({ projects: { "without-vue": { comparedFileCount: 1 } } }),
+  );
+  assert(
+    scopeDrift.blockers.some(
+      (blocker) =>
+        blocker.code === "linter-project-scope" &&
+        blocker.detail === "without-vue: compared 1 file(s), expected 0",
+    ),
+  );
+});

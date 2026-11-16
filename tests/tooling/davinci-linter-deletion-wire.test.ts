@@ -6,6 +6,8 @@ import path from "node:path";
 import { test } from "node:test";
 import { parse } from "yaml";
 import { deletionReadinessAdapters } from "../differential/deletion-readiness-adapters.ts";
+import { recordLinterDeletionShard } from "../differential/linter-deletion-recorder.ts";
+import { linterProjects } from "../differential/linter-deletion-verifier.ts";
 
 void test("Matrix records the blocked preflight without registering linter deletion credit", () => {
   const workflow = parse(
@@ -64,4 +66,54 @@ void test("Matrix records the blocked preflight without registering linter delet
     fs.rmSync(root, { recursive: true, force: true });
   }
   assert.deepEqual(Object.keys(deletionReadinessAdapters), ["formatter"]);
+});
+
+void test("the recorder fails closed on a missing or corrupt project lint artifact", () => {
+  const root = path.resolve(import.meta.dirname, "../.."),
+    registry = JSON.parse(
+      fs.readFileSync(path.join(root, "tests/_fixtures/vue-ecosystem-fixtures.json"), "utf8"),
+    ) as { projects: Array<{ id: string; coverage: string[]; vueGlobs: string[] }> },
+    selected = linterProjects(registry.projects, 0, 22),
+    reportDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-linter-deletion-missing-")),
+    environment = ["GITHUB_SHA", "FIXTURE_SHARD_INDEX", "FIXTURE_SHARD_COUNT"] as const,
+    saved = environment.map((name) => process.env[name]);
+  assert(selected.length > 1);
+  const absent = selected[selected.length - 1].id;
+  try {
+    Object.assign(process.env, {
+      GITHUB_SHA: "a".repeat(40),
+      FIXTURE_SHARD_INDEX: "0",
+      FIXTURE_SHARD_COUNT: "22",
+    });
+    fs.writeFileSync(
+      path.join(reportDir, "summary.json"),
+      JSON.stringify({
+        projects: selected.map((project) => ({
+          id: project.id,
+          runs: [{ tool: "linter", outputPath: path.join(reportDir, `${project.id}-linter.json`) }],
+        })),
+      }),
+    );
+    for (const project of selected) {
+      fs.writeFileSync(path.join(reportDir, `${project.id}-linter.json`), "{}\n");
+      if (project.id !== absent)
+        fs.writeFileSync(path.join(reportDir, `${project.id}-lint-divergence.json`), "{}\n");
+    }
+    assert.throws(
+      () => recordLinterDeletionShard(root, reportDir),
+      new RegExp(`^Error: ${absent}: lint divergence artifact is missing: `, "u"),
+    );
+    fs.writeFileSync(path.join(reportDir, `${absent}-lint-divergence.json`), "{");
+    assert.throws(
+      () => recordLinterDeletionShard(root, reportDir),
+      new RegExp(`^Error: ${absent}: lint divergence artifact is not valid JSON: `, "u"),
+    );
+    assert.equal(fs.existsSync(path.join(reportDir, "linter-deletion-readiness.json")), false);
+  } finally {
+    environment.forEach((name, index) => {
+      if (saved[index] === undefined) delete process.env[name];
+      else process.env[name] = saved[index];
+    });
+    fs.rmSync(reportDir, { recursive: true, force: true });
+  }
 });
