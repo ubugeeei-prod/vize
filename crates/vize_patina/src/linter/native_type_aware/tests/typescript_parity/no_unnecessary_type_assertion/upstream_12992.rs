@@ -3,7 +3,7 @@
 //! are mutually assignable, an overloaded receiver whose parameter is the same
 //! in every overload still accepts the operand, and an assertion that
 //! contextually types a function keeps the `any` its parameters infer.
-use super::{CONTEXTUAL, RULE, UNCHANGED, lint, project, reports};
+use super::{CONTEXTUAL, UNCHANGED, lint, project, reports};
 use crate::linter::native_type_aware::tests::{corsa_available, failure_context};
 use serde::Deserialize;
 use serde_json::Value;
