@@ -1,0 +1,12 @@
+enum Color {
+  Red,
+  Green,
+}
+
+declare const color: Color;
+declare const count: number;
+
+const sameEnum = color as Color;
+const sameNumber = count as number;
+
+export { sameEnum, sameNumber };

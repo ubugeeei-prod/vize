@@ -1,0 +1,14 @@
+<script setup lang="ts" generic="T = unknown">
+import { computed } from "vue";
+
+import { takesObject } from "./helpers";
+
+const { value } = defineProps<{ value: T }>();
+
+const label = computed(() => takesObject(value!));
+const spelled = computed(() => takesObject(value as NonNullable<T>));
+</script>
+
+<template>
+  <p>{{ label }} {{ spelled }}</p>
+</template>

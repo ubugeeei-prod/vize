@@ -50,6 +50,9 @@ pub(super) async fn is_type_unchanged(
     if has_index_signature(checker, uncast).await != has_index_signature(checker, cast).await {
         return false;
     }
+    if number_to_enum(checker, uncast, cast).await {
+        return false;
+    }
     if contains(checker, uncast, flags::ANY).await != Found::No
         || contains(checker, cast, flags::ANY).await != Found::No
     {
@@ -117,6 +120,27 @@ pub(super) async fn is_empty_object_type(checker: &mut Checker<'_>, ty: &TypeRes
         && checker.signatures(ty, CALL).await.is_empty()
         && checker.signatures(ty, CONSTRUCT).await.is_empty()
         && checker.index_info_count(ty).await == 0
+}
+
+/// `isNumberToEnumAssertion`: `number` and a numeric enum are mutually
+/// assignable, yet the assertion changes the type (`values[+key as Color]`
+/// compiles where `values[+key]` does not).
+async fn number_to_enum(
+    checker: &mut Checker<'_>,
+    uncast: &TypeResponse,
+    cast: &TypeResponse,
+) -> bool {
+    let uncast_parts = checker.union_parts(uncast).await;
+    let cast_parts = checker.union_parts(cast).await;
+    let enumerated =
+        |parts: &[TypeResponse]| parts.iter().any(|part| part.flags & flags::ENUM_LIKE != 0);
+    let plain_number = |parts: &[TypeResponse]| {
+        parts
+            .iter()
+            .any(|part| part.flags & flags::NUMBER_LIKE != 0 && part.flags & flags::ENUM_LIKE == 0)
+    };
+    (enumerated(&cast_parts) && plain_number(&uncast_parts))
+        || (enumerated(&uncast_parts) && plain_number(&cast_parts))
 }
 
 async fn has_index_signature(checker: &mut Checker<'_>, ty: &TypeResponse) -> bool {

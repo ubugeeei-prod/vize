@@ -1,0 +1,100 @@
+{
+  "schema": "vize.typescript-eslint.immutable-oracle",
+  "version": 1,
+  "issue": 12992,
+  "upstream": {
+    "repository": "typescript-eslint/typescript-eslint",
+    "release": "v8.72.2",
+    "commit": "12e452f0292212bf9bf443b3988ec230f4ae7097",
+    "testPath": "packages/eslint-plugin/tests/rules/no-unnecessary-type-assertion.test.ts",
+    "testSha256": "b29063233c64f40d055d2d3acac7f8ac849d57a38ca844ed045f2b5823013e1d",
+    "rulePath": "packages/eslint-plugin/src/rules/no-unnecessary-type-assertion.ts",
+    "ruleSha256": "1ac2f8d7a3acb9b4170f876badcec01d6b7bce4078bb98b46d5e45444a6236de",
+    "otherTests": [
+      {
+        "path": "packages/eslint-plugin/tests/rules/no-unsafe-enum-assignment.test.ts",
+        "sha256": "2781d1206f96395d87b39c162294e36db36613dd24d6eb72b90444394c422982"
+      },
+      {
+        "path": "packages/eslint-plugin/tests/rules/use-unknown-in-catch-callback-variable.test.ts",
+        "sha256": "f7bb7b1054d515bb86c967e68ab617acc7c6012ee7472bdfa481c1a25073f0a1"
+      }
+    ]
+  },
+  "cases": [
+    {
+      "id": "no-unnecessary-type-assertion.invalid[104]",
+      "code": "interface A {\n  a: string;\n}\ninterface B extends A {\n  b: string;\n}\ndeclare function fn(a: A): A;\ndeclare function fn(a: A): A | undefined;\ndeclare const a: A;\nfn(a as B);",
+      "messageIds": [
+        "contextuallyUnnecessary"
+      ]
+    },
+    {
+      "id": "no-unnecessary-type-assertion.invalid[105]",
+      "code": "declare const a: string[];\ndeclare const b: readonly string[];\nconst fileNames: string[] = a.concat(b as string[]);",
+      "messageIds": [
+        "contextuallyUnnecessary"
+      ]
+    },
+    {
+      "id": "no-unnecessary-type-assertion.valid[136]",
+      "code": "enum Color {\n  Red,\n  Green,\n  Blue,\n}\n\ndeclare const values: Record<Color, string>;\ndeclare const valueStr: string;\nvalues[+valueStr as Color] = 'updated';",
+      "messageIds": []
+    },
+    {
+      "id": "no-unnecessary-type-assertion.valid[137]",
+      "code": "enum Color {\n  Red,\n  Green,\n  Blue,\n}\n\ndeclare const values: Record<Color, string>;\ndeclare const valueStr: string;\nconst color = +valueStr as Color;\nvalues[color] = 'updated';",
+      "messageIds": []
+    },
+    {
+      "id": "no-unnecessary-type-assertion.valid[138]",
+      "code": "enum Color {\n  Red,\n  Green,\n  Blue,\n}\n\ndeclare const value: number;\nconst color = <Color>value;",
+      "messageIds": []
+    },
+    {
+      "id": "no-unnecessary-type-assertion.valid[139]",
+      "code": "enum Color {\n  Red,\n  Green,\n  Blue,\n}\n\ndeclare const color: Color;\nconst value = color as number;",
+      "messageIds": []
+    },
+    {
+      "id": "no-unnecessary-type-assertion.valid[140]",
+      "code": "enum Color {\n  Red,\n  Green,\n  Blue,\n}\n\ndeclare const value: Color | number;\nconst color = value as Color;",
+      "messageIds": []
+    },
+    {
+      "id": "no-unnecessary-type-assertion.valid[141]",
+      "code": "enum Direction {\n  Up = 1,\n  Down,\n}\n\ndeclare const value: number | undefined;\nconst direction = value as Direction | undefined;",
+      "messageIds": []
+    },
+    {
+      "id": "no-unnecessary-type-assertion.valid[142]",
+      "code": "enum Computed {\n  Length = 'abc'.length,\n}\n\ndeclare const value: number;\nconst computed = value as Computed;",
+      "messageIds": []
+    },
+    {
+      "id": "no-unnecessary-type-assertion.valid[143]",
+      "code": "enum Color {\n  Red,\n  Green,\n  Blue,\n}\n\ndeclare const value: Color | 5;\nconst other = value as Color | number;",
+      "messageIds": []
+    },
+    {
+      "id": "no-unnecessary-type-assertion.valid[144]",
+      "code": "enum Color {\n  Red,\n  Green,\n  Blue,\n}\n\ndeclare const value: number;\nconst other = value as Color | 5;",
+      "messageIds": []
+    },
+    {
+      "id": "no-unnecessary-type-assertion.valid[145]",
+      "code": "enum Color {\n  Red,\n  Green,\n  Blue,\n}\n\ndeclare const value: Color | 5;\nconst other = value as number;",
+      "messageIds": []
+    },
+    {
+      "id": "no-unsafe-enum-assignment.valid[98]",
+      "code": "enum Flags {\n  Read = 1 << 0,\n  Write = 1 << 1,\n}\n\nconst combined = (Flags.Read | Flags.Write) as Flags;",
+      "messageIds": []
+    },
+    {
+      "id": "use-unknown-in-catch-callback-variable.valid[30]",
+      "code": "type InvalidHandler = (arg: any) => void;\nPromise.resolve().catch(<InvalidHandler>(\n  function (err /* awkward spot for comment */) {\n    throw err;\n  }\n));",
+      "messageIds": []
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+<script setup lang="ts">
+import { computed } from "vue";
+
+class Holder<T> {
+  value = undefined as T | undefined;
+}
+
+class Slot<T> {
+  value?: T;
+}
+
+const made = computed(() => [new Holder<number>().value, new Slot<number>().value]);
+</script>
+
+<template>
+  <p>{{ made.length }}</p>
+</template>

@@ -1,0 +1,17 @@
+<script setup lang="ts">
+declare const payload: any;
+declare const text: string;
+declare const takesObject: (value: {}) => string;
+
+const direct = payload!;
+const parsed = JSON.parse(text)!;
+const state = history.state!;
+let later = payload!;
+const member = payload!.label;
+const typed: string = payload!;
+const passed = takesObject(payload!);
+</script>
+
+<template>
+  <p>{{ direct }} {{ parsed }} {{ state }} {{ later }} {{ member }} {{ typed }} {{ passed }}</p>
+</template>
