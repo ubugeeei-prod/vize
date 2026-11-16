@@ -35,9 +35,6 @@ pub(super) fn module<'a>(
 ) -> Result<String, Failure> {
     let source = module.program().source_text;
     let fail = |issue: EmitIssue, span: Span| Failure::emit(issue, span);
-    if !module.program().directives.is_empty() || module.program().hashbang.is_some() {
-        return Err(fail(EmitIssue::Directive, Span::new(0, 0)));
-    }
     let components = component::collect(module, artifacts.regions())
         .map_err(|(issue, span)| fail(issue, span))?;
     let mut helpers = RuntimeHelpers::default();
@@ -113,6 +110,13 @@ pub(super) fn module<'a>(
     }
 
     let mut out = String::with_capacity(source.len() * 2);
+    // A hashbang and the directive prologue stay first, so directives keep
+    // their meaning (#13131); the runtime import follows their line.
+    let mut cursor = prologue_end(module.program());
+    out.push_str(slice(source, 0, cursor));
+    if cursor > 0 && !out.ends_with('\n') {
+        out.push('\n');
+    }
     out.push_str("import { defineComponent as _defineComponent");
     if components
         .iter()
@@ -127,7 +131,6 @@ pub(super) fn module<'a>(
         out.push_str(alias);
     }
     out.push_str(" } from \"vue\";\n");
-    let mut cursor = 0;
     for (component, (names, render)) in components.iter().zip(&renders) {
         out.push_str(slice(source, cursor, component.span.start));
         definition(&mut out, source, component, names, render);
@@ -135,6 +138,29 @@ pub(super) fn module<'a>(
     }
     out.push_str(slice(source, cursor, source.len() as u32));
     Ok(out)
+}
+
+/// Where the line of the hashbang or the last directive ends (after its
+/// line break, unless a statement starts on that line), or 0.
+fn prologue_end(program: &oxc_ast::ast::Program<'_>) -> u32 {
+    let end = program
+        .directives
+        .last()
+        .map(|directive| directive.span.end)
+        .or(program.hashbang.as_ref().map(|hashbang| hashbang.span.end))
+        .unwrap_or(0);
+    if end == 0 {
+        return 0;
+    }
+    let rest = program.source_text.get(end as usize..).unwrap_or_default();
+    let line = match rest.find('\n') {
+        Some(line) => end + line as u32 + 1,
+        None => program.source_text.len() as u32,
+    };
+    match program.body.first() {
+        Some(first) if oxc_span::GetSpan::span(first).start < line => end,
+        _ => line,
+    }
 }
 
 /// Lexical names, with destructured props read through `__props` and a
