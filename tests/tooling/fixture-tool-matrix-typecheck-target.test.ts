@@ -6,7 +6,7 @@ import path from "node:path";
 import { test } from "node:test";
 
 import { validateTypecheckPerformanceTarget } from "../../tools/support/compat/fixtures/tool-matrix-typecheck-target.ts";
-import { qualifyLockfileBytes } from "../../tools/support/compat/fixtures/typecheck-package-manager.mjs";
+import { qualifyLockfileBytes } from "../../tools/support/compat/fixtures/typecheck-package-manager.ts";
 
 test("pnpm qualification lockfiles use the canonical injected workspace setting", () => {
   const source = Buffer.from(

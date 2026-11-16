@@ -5,10 +5,16 @@ import { join } from "node:path";
 import { runTypecheckCommand } from "./typecheck-command-runner.mjs";
 
 export function installArguments(
-  manager,
-  fixtureRoot,
-  managerVersion = null,
-  { nodeLinker = null, workspacePackages = null } = {},
+  manager: "npm" | "pnpm" | "yarn",
+  fixtureRoot: string,
+  managerVersion: string | null = null,
+  {
+    nodeLinker = null,
+    workspacePackages = null,
+  }: {
+    nodeLinker?: string | null;
+    workspacePackages?: string | null;
+  } = {},
 ) {
   const ignoreParentWorkspace =
     manager === "pnpm" && !existsSync(join(fixtureRoot, "pnpm-workspace.yaml"));
@@ -39,13 +45,11 @@ export function installArguments(
   }[manager];
 }
 
-/**
- * @param {string} manager
- * @param {Buffer} sourceBytes
- * @param {{ workspacePackages?: string | null }} [options]
- * @returns {Buffer}
- */
-export function qualifyLockfileBytes(manager, sourceBytes, { workspacePackages = null } = {}) {
+export function qualifyLockfileBytes(
+  manager: string,
+  sourceBytes: Buffer,
+  { workspacePackages = null }: { workspacePackages?: string | null } = {},
+) {
   if (manager !== "pnpm" || workspacePackages !== "injected") return sourceBytes;
   const source = sourceBytes.toString("utf8");
   if (!Buffer.from(source, "utf8").equals(sourceBytes)) {
@@ -62,6 +66,7 @@ export function qualifyLockfileBytes(manager, sourceBytes, { workspacePackages =
   if (configured.length > 1 || !validSetting) {
     throw new Error("pnpm lockfile has an invalid injectWorkspacePackages setting");
   }
+  if (configured[0]?.[1] === "true") return sourceBytes;
   const eol = settings.includes("\r\n") ? "\r\n" : "\n";
   const qualifiedSettings =
     configured.length === 1
@@ -73,7 +78,7 @@ export function qualifyLockfileBytes(manager, sourceBytes, { workspacePackages =
   return Buffer.from(source.replace(settings, qualifiedSettings), "utf8");
 }
 
-export function packageManagerRunner(manager, version) {
+export function packageManagerRunner(manager: "npm" | "pnpm" | "yarn", version: string) {
   if (manager === "pnpm" || manager === "yarn") {
     return {
       manager,
@@ -85,7 +90,21 @@ export function packageManagerRunner(manager, version) {
   return { manager, command: manager, prefixArgs: [], label: manager };
 }
 
-export function runPackageManager(runner, args, options) {
+type CommandOptions = {
+  cwd: string;
+  encoding?: "utf8";
+  env?: NodeJS.ProcessEnv;
+  maxBuffer?: number;
+  timeout?: number;
+};
+
+type PackageManagerRunner = ReturnType<typeof packageManagerRunner>;
+
+export function runPackageManager(
+  runner: PackageManagerRunner,
+  args: string[],
+  options: CommandOptions,
+) {
   if (runner.prefixArgs.length === 0) {
     return runTypecheckCommand(runner.command, args, commandOptions(options));
   }
@@ -100,7 +119,7 @@ export function runPackageManager(runner, args, options) {
   );
 }
 
-export function commandOptions(options) {
+export function commandOptions(options: CommandOptions) {
   return {
     cwd: options.cwd,
     env: options.env ?? process.env,

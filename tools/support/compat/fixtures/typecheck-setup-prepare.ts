@@ -7,9 +7,36 @@ import {
   installArguments,
   packageManagerRunner,
   runPackageManager,
-} from "./typecheck-package-manager.mjs";
+} from "./typecheck-package-manager.ts";
 
-export async function prepareTypecheckSetupProject({ args, commitSha, project, repoRoot }) {
+type SetupProject = {
+  id: string;
+  revision: string;
+  fixturePath: string;
+  typecheckSetup?: {
+    enabled?: boolean;
+    workingDirectory?: string;
+    packageManager: "npm" | "pnpm" | "yarn";
+    packageManagerVersion: string;
+    lockfile: string;
+    prepare?: string[] | null;
+    requiredOutputs: string[];
+  };
+};
+
+type PrepareArguments = { outputDir: string; timeoutMs: number };
+
+export async function prepareTypecheckSetupProject({
+  args,
+  commitSha,
+  project,
+  repoRoot,
+}: {
+  args: PrepareArguments;
+  commitSha: string;
+  project: SetupProject;
+  repoRoot: string;
+}) {
   const fixtureRoot = resolve(repoRoot, project.fixturePath);
   const setup = validateTypecheckSetupTarget(project, fixtureRoot);
   const workingDirectory = resolve(fixtureRoot, setup.workingDirectory);
@@ -106,14 +133,14 @@ export async function prepareTypecheckSetupProject({ args, commitSha, project, r
   return artifact;
 }
 
-function validateTypecheckSetupTarget(project, fixtureRoot) {
+function validateTypecheckSetupTarget(project: SetupProject, fixtureRoot: string) {
   const setup = project.typecheckSetup;
   if (setup?.enabled !== true) {
     throw new Error(
       `Invalid typecheck setup target for ${String(project.id)}: enabled must be true`,
     );
   }
-  const invalid = (message) => {
+  const invalid = (message: string): never => {
     throw new Error(`Invalid typecheck setup target for ${String(project.id)}: ${message}`);
   };
   const workingDirectory = setup.workingDirectory ?? ".";
@@ -160,7 +187,11 @@ function validateTypecheckSetupTarget(project, fixtureRoot) {
   return { ...setup, workingDirectory };
 }
 
-function requireNormalizedRelativePath(value, label, invalid) {
+function requireNormalizedRelativePath(
+  value: unknown,
+  label: string,
+  invalid: (message: string) => never,
+) {
   if (
     typeof value !== "string" ||
     value.length === 0 ||
@@ -174,7 +205,19 @@ function requireNormalizedRelativePath(value, label, invalid) {
   }
 }
 
-async function runRecordedCommand({ command, cwd, label, managerRunner, timeoutMs }) {
+async function runRecordedCommand({
+  command,
+  cwd,
+  label,
+  managerRunner,
+  timeoutMs,
+}: {
+  command: string[];
+  cwd: string;
+  label: string;
+  managerRunner: ReturnType<typeof packageManagerRunner>;
+  timeoutMs: number;
+}) {
   const startedAt = Date.now();
   const result = await runPackageManager(managerRunner, command.slice(1), {
     cwd,
@@ -201,7 +244,7 @@ async function runRecordedCommand({ command, cwd, label, managerRunner, timeoutM
   };
 }
 
-function requireCleanFixture(fixtureRoot, phase) {
+function requireCleanFixture(fixtureRoot: string, phase: string) {
   const status = spawnSync("git", ["status", "--porcelain=v1", "--untracked-files=no"], {
     cwd: fixtureRoot,
     encoding: "utf8",
@@ -213,10 +256,10 @@ function requireCleanFixture(fixtureRoot, phase) {
   if (status.stdout !== "") throw new Error(`Fixture tracked source changed ${phase}`);
 }
 
-function sha256(value) {
+function sha256(value: string | NodeJS.ArrayBufferView) {
   return createHash("sha256").update(value).digest("hex");
 }
 
-function errorMessage(error) {
+function errorMessage(error: unknown) {
   return error instanceof Error ? error.message : String(error);
 }

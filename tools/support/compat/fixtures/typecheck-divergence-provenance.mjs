@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-import { installArguments, qualifyLockfileBytes } from "./typecheck-package-manager.mjs";
+import { installArguments, qualifyLockfileBytes } from "./typecheck-package-manager.ts";
 import {
   buildSeededMutation,
   executeSeededMutationOracle,

@@ -24,10 +24,10 @@ import {
   packageManagerRunner,
   qualifyLockfileBytes,
   runPackageManager,
-} from "./typecheck-package-manager.mjs";
-import { prepareTypecheckSetupProject } from "./typecheck-setup-prepare.mjs";
+} from "./typecheck-package-manager.ts";
+import { prepareTypecheckSetupProject } from "./typecheck-setup-prepare.ts";
 
-export { installArguments } from "./typecheck-package-manager.mjs";
+export { installArguments } from "./typecheck-package-manager.ts";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(here, "..", "..", "..", "..");
