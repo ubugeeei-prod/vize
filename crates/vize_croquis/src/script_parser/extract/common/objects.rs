@@ -36,11 +36,7 @@ pub(in crate::script_parser::extract) fn object_bool_property(
     object: &ObjectExpression<'_>,
     name: &str,
 ) -> Option<bool> {
-    let value = object_property(object, name)?;
-    match value {
-        Expression::BooleanLiteral(literal) => Some(literal.value),
-        _ => None,
-    }
+    crate::script_parser::literal_boolean_type(object_property(object, name)?)
 }
 
 pub(in crate::script_parser::extract) fn object_expression_source_property(

@@ -18356,6 +18356,65 @@
       }
     },
     {
+      "id": "typechecker/runtime-required-wrappers-13110/reported-shapes",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "runtime-required-wrappers-13110/tsconfig.json.txt",
+          "role": "issue-authored-config",
+          "sha256": "8280441d912b4f9ebdaa3b500f4493f81faa044ee712c9b996a23e1fe4bae2af"
+        },
+        {
+          "path": "runtime-required-wrappers-13110/src/props.ts.txt",
+          "role": "issue-authored-runtime-props-with-widened-control",
+          "sha256": "1cbb60e193570898c3ef1083508ce3bf769772eb464f11ec911ecc3616114551"
+        },
+        {
+          "path": "runtime-required-wrappers-13110/src/Imported.vue.txt",
+          "role": "issue-authored-imported-as-const-regression",
+          "sha256": "c7703dd7b632076d1619a3ef54d4419e745706528de81d4f21a9a8808d0636c3"
+        },
+        {
+          "path": "runtime-required-wrappers-13110/src/Wrapped.vue.txt",
+          "role": "literal-preserving-wrapper-regressions",
+          "sha256": "f9545b3624e1ade88993931362341bea30341704e712990fbba762c25a77057d"
+        },
+        {
+          "path": "runtime-required-wrappers-13110/src/Controls.vue.txt",
+          "role": "widened-imported-required-control",
+          "sha256": "ac10105b253c04a7ee48be6c119b9254588d62e318381600fb76110c3e248714"
+        },
+        {
+          "path": "runtime-required-wrappers-13110/src/AsBoolean.vue.txt",
+          "role": "as-boolean-optional-control",
+          "sha256": "2877fc28534d0893645bd654f2122baa213399eed2ac60bd1832df0a3774a67d"
+        },
+        {
+          "path": "runtime-required-wrappers-13110/src/Parent.vue.txt",
+          "role": "parent-missing-required-props",
+          "sha256": "9cd9030d6c7738889dd0d128007e7d4c4620dbf7a7935cad48a218e128900065"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::runtime_required_wrappers::standard_tsgo_keeps_required_literals_through_value_preserving_wrappers; #13110 `required: true as const` plus parenthesized, satisfies, <const> and `as true` wrappers, with `as boolean` and widened-import controls. Input-only registration; no native parity claim."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/runtime/project-native-runtime-authority-10694",
       "state": "active",
       "targets": [

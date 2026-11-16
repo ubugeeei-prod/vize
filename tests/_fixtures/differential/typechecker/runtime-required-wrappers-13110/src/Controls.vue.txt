@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import { widenedProps } from "./props";
+
+defineProps(widenedProps);
+</script>
+
+<template>
+  <p>{{ label.length }}</p>
+</template>
