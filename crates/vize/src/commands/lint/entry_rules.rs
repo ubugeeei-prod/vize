@@ -113,6 +113,11 @@ impl ResolvedLinterRuleGroups {
                     .with_vapor_mode(features.vapor)
                     .with_custom_elements(custom_elements.clone())
                     .with_config_rule_options(rule_options);
+                // `--fix` rewrites inputs mid-run, so each file then reads
+                // imported types from disk as it lints.
+                if !args.fix {
+                    linter = linter.with_run_scoped_type_sources();
+                }
                 if let Some(globals) = component_registration_globals(
                     rule_options.component_registration_globals(),
                     *vue_router_available,

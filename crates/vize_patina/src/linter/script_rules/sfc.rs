@@ -271,7 +271,10 @@ pub(crate) fn append_builtin_script_diagnostics_with_template_context<'a>(
         crate::linter::engine::analyze_descriptor_for_lint(
             scripts,
             None,
-            Some(result.filename.as_str()),
+            Some(crate::linter::engine::MacroTypeResolution {
+                filename: result.filename.as_str(),
+                sources: linter.type_sources.as_ref(),
+            }),
             false,
             false,
         )

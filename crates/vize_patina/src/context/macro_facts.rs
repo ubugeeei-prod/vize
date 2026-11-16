@@ -2,12 +2,14 @@
 
 use super::LintContext;
 use std::cell::OnceCell;
+use vize_atelier_sfc::script::TypeSourceSnapshot;
 use vize_croquis::types::ResolvedTypeWorld;
 use vize_l1::markup::SurfaceTree;
 
 #[derive(Default)]
 pub(crate) struct MacroFacts<'a> {
     template_surface: Option<&'a SurfaceTree<'a>>,
+    type_sources: Option<&'a TypeSourceSnapshot>,
     world: OnceCell<Option<ResolvedTypeWorld>>,
 }
 
@@ -22,6 +24,18 @@ impl<'a> LintContext<'a> {
     #[inline]
     pub(crate) fn template_surface(&self) -> Option<&'a SurfaceTree<'a>> {
         self.macro_facts.template_surface
+    }
+
+    /// Resolve imported macro types against the linter's shared disk view.
+    #[inline]
+    pub(crate) fn set_type_sources(&mut self, sources: Option<&'a TypeSourceSnapshot>) {
+        self.macro_facts.type_sources = sources;
+    }
+
+    /// The disk view imported macro types resolve against, when shared.
+    #[inline]
+    pub(crate) fn type_sources(&self) -> Option<&'a TypeSourceSnapshot> {
+        self.macro_facts.type_sources
     }
 
     /// The cross-file world that resolves the SFC's imported macro types.
@@ -39,10 +53,20 @@ impl<'a> LintContext<'a> {
         self.macro_facts
             .world
             .get_or_init(|| {
-                vize_atelier_sfc::croquis::resolve_descriptor_type_world(
-                    self.sfc_descriptor()?,
-                    self.filename,
-                )
+                let descriptor = self.sfc_descriptor()?;
+                match self.macro_facts.type_sources {
+                    Some(sources) => {
+                        vize_atelier_sfc::croquis::resolve_descriptor_type_world_with_sources(
+                            descriptor,
+                            self.filename,
+                            sources,
+                        )
+                    }
+                    None => vize_atelier_sfc::croquis::resolve_descriptor_type_world(
+                        descriptor,
+                        self.filename,
+                    ),
+                }
             })
             .as_ref()
     }

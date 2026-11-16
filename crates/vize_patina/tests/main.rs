@@ -92,6 +92,7 @@ mod require_v_for_key_slot_fallback;
 mod reserved_prefix_8090;
 mod reserved_suppression_8090;
 mod return_prefilter_8090;
+mod run_scoped_type_sources;
 mod runtime_prop_defaults_8564;
 mod scoped_slots_template;
 mod script_frame_spans;

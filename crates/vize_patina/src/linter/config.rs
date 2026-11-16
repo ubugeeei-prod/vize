@@ -119,6 +119,9 @@ pub struct Linter {
     /// Optional project config selected by `typeChecker.tsconfig`.
     #[cfg(not(target_arch = "wasm32"))]
     pub(crate) type_aware_tsconfig: Option<PathBuf>,
+    /// One disk view for imported macro types, shared by every file this
+    /// linter lints. `None` gives each file a fresh view.
+    pub(crate) type_sources: Option<vize_atelier_sfc::script::TypeSourceSnapshot>,
 }
 
 impl Linter {
@@ -231,6 +234,28 @@ impl Linter {
     pub fn with_type_aware_tsconfig(mut self, path: Option<PathBuf>) -> Self {
         self.type_aware_tsconfig = path;
         self
+    }
+
+    /// Read each file that imported macro types reach at most once for this
+    /// linter's lifetime, instead of once per linted SFC. Only for hosts whose
+    /// sources do not change while the linter lives, such as one CLI run.
+    #[inline]
+    pub fn with_run_scoped_type_sources(mut self) -> Self {
+        self.type_sources = Some(vize_atelier_sfc::script::TypeSourceSnapshot::default());
+        self
+    }
+
+    /// Where an SFC's imported macro types resolve, when a rule needs them.
+    #[inline]
+    pub(crate) fn macro_type_resolution<'a>(
+        &'a self,
+        filename: &'a str,
+    ) -> Option<super::engine::MacroTypeResolution<'a>> {
+        self.has_resolved_macro_type_demand()
+            .then_some(super::engine::MacroTypeResolution {
+                filename,
+                sources: self.type_sources.as_ref(),
+            })
     }
 
     /// Get the current locale.
