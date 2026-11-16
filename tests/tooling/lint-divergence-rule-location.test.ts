@@ -229,6 +229,68 @@ test("prop comment anchors follow the named prop across type and destructuring s
   }
 });
 
+test("defineProps links require a direct type member and the owning destructure", () => {
+  const file = "src/CodeInput.vue",
+    path = `${cwd}/${file}`,
+    message = 'The "title" property should have a JSDoc comment.',
+    controls = [
+      {
+        source:
+          "const {\n  title,\n} = defineProps<Props>()\ntype Props = {\n  title: string\n  config: {\n    title: string\n  }\n}\n",
+        patina: span(7, 5, 7, 10),
+        baseline: span(2, 3, 2, 8),
+      },
+      {
+        source:
+          "const { title } = otherObject\nconst { other } = defineProps<Props>()\ntype Props = {\n  title: string\n  other: string\n}\n",
+        patina: span(4, 3, 4, 8),
+        baseline: span(1, 9, 1, 14),
+      },
+    ];
+  mkdirSync(`${cwd}/src`, { recursive: true });
+  try {
+    for (const control of controls) {
+      writeFileSync(path, control.source);
+      const patina = [
+          {
+            file,
+            ruleId: "vue/require-prop-comment",
+            severity: 1,
+            ...control.patina,
+            message: `[vize:vue/require-prop-comment] ${message}`,
+          },
+        ],
+        baseline = [
+          eslintResult(file, [
+            {
+              ruleId: "vue/require-prop-comment",
+              severity: 1,
+              ...control.baseline,
+              message,
+            },
+          ]),
+        ],
+        result = compare(patina, baseline),
+        successor = compareSuccessor(
+          "fixture",
+          cwd,
+          ruleMap as Json,
+          patina,
+          baseline as unknown as Json[],
+          currentContext(ruleMap, [file]),
+        );
+      assert.equal(result.ruleLocationDivergences.length, 0);
+      assert.equal(result.falsePositives.length, 1);
+      assert.equal(result.falseNegatives.length, 1);
+      assert.equal(list(successor.ruleLocationDivergences).length, 0);
+      assert.equal(list(successor.falsePositives).length, 1);
+      assert.equal(list(successor.falseNegatives).length, 1);
+    }
+  } finally {
+    rmSync(path);
+  }
+});
+
 test("same-named prop comments in distinct contracts stay unpaired", () => {
   const message = 'The "title" property should have a JSDoc comment.',
     result = compare(

@@ -151,24 +151,25 @@ function linkedDefinePropsDeclarations(
         (body) =>
           body.name === destructure.typeName &&
           positiveStart > body.open &&
-          positiveStart < body.close,
+          positiveStart < body.close &&
+          isDirectTypeMember(context.source, body, positiveStart),
       ),
   );
 }
 
 export function indexRealProjectLocationSource(source: string): RealProjectLocationSource {
   const destructures: DestructuredProps[] = [],
-    pattern =
-      /\b(?:const|let|var)\s*\{([\s\S]*?)\}\s*=\s*defineProps\s*<\s*([A-Za-z_$][\w$]*)\s*>\s*\(/gu;
+    pattern = /\b(?:const|let|var)\s*\{/gu;
   for (const match of source.matchAll(pattern)) {
     const start = match.index ?? 0,
-      typeName = match[2];
-    if (!executableOffset(source, start) || typeName === undefined) continue;
-    destructures.push({
-      open: source.indexOf("{", start),
-      close: start + match[0].lastIndexOf("}"),
-      typeName,
-    });
+      open = start + match[0].lastIndexOf("{"),
+      close = matchingBrace(source, open);
+    if (!executableOffset(source, start) || close === null) continue;
+    const assignment = /^\s*=\s*defineProps\s*<\s*([A-Za-z_$][\w$]*)\s*>\s*\(/u.exec(
+        source.slice(close + 1),
+      ),
+      typeName = assignment?.[1];
+    if (typeName !== undefined) destructures.push({ open, close, typeName });
   }
   const typeBodies: TypeBody[] = [],
     declaration =
@@ -182,6 +183,33 @@ export function indexRealProjectLocationSource(source: string): RealProjectLocat
     typeBodies.push({ open, close, name });
   }
   return { source, destructures, typeBodies };
+}
+
+function isDirectTypeMember(source: string, body: TypeBody, offset: number): boolean {
+  let braces = 1,
+    brackets = 0,
+    parentheses = 0;
+  for (let index = body.open + 1; index < offset;) {
+    const character = source[index];
+    if (character === '"' || character === "'" || character === "`") {
+      index = quotedEnd(source, index);
+    } else if (source.startsWith("//", index)) {
+      const newline = source.indexOf("\n", index + 2);
+      index = newline < 0 ? source.length : newline + 1;
+    } else if (source.startsWith("/*", index)) {
+      const close = source.indexOf("*/", index + 2);
+      index = close < 0 ? source.length : close + 2;
+    } else {
+      if (character === "{") braces += 1;
+      else if (character === "}") braces -= 1;
+      else if (character === "[") brackets += 1;
+      else if (character === "]") brackets -= 1;
+      else if (character === "(") parentheses += 1;
+      else if (character === ")") parentheses -= 1;
+      index += 1;
+    }
+  }
+  return braces === 1 && brackets === 0 && parentheses === 0;
 }
 
 function executableOffset(source: string, offset: number): boolean {

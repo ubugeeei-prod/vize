@@ -62,6 +62,8 @@ test("registration-like text in comments and strings stays scored", () => {
   for (const source of [
     '// defineOptions({ name: "TreeItem" })',
     'const text = "defineOptions({ name: \\\"TreeItem\\\" })"',
+    '<!-- defineOptions({ name: "TreeItem" }) -->',
+    '<!-- defineOptions({ name: "TreeItem" })',
     "/* @Component({ components: { Ghost } }) */",
     'const text = "@Component({ components: { Ghost } })"',
     "// export default { components: { Edit1Icon } }",

@@ -185,6 +185,11 @@ function executableOffset(source: string, offset: number): boolean {
         end = close < 0 ? source.length : close + 2;
       if (offset < end) return false;
       index = end;
+    } else if (source.startsWith("<!--", index)) {
+      const close = source.indexOf("-->", index + 4),
+        end = close < 0 ? source.length : close + 3;
+      if (offset < end) return false;
+      index = end;
     } else index += 1;
   }
   return true;
