@@ -4,17 +4,25 @@
 //! A dialect is resolved once per file from the L0 descriptor and is a const
 //! composition of [`JsxFeatures`]. Every admitted construct produces the op
 //! the equivalent template produces; a construct whose lowering has not
-//! landed yet is a typed [`JsxRefusal`], never a degraded op.
+//! landed yet is a typed [`JsxRefusal`], never a degraded op. A module lowers
+//! through [`lower_module`], one definition per outermost root.
 
 mod attributes;
 mod boolean;
 mod children;
 mod control_flow;
+mod module;
+#[cfg(test)]
+mod module_tests;
 #[cfg(test)]
 mod tests;
 
 pub use boolean::BooleanBindings;
 pub use children::clean_text;
+pub use module::{
+    EnteredFunction, FunctionNode, JsxModule, ModuleOptions, ModuleRoot, ModuleVisitor,
+    PrologueIssue, RootContext, lower_module, walk_module,
+};
 
 use oxc_ast::ast::{JSXElement, JSXFragment};
 use oxc_semantic::Scoping;
