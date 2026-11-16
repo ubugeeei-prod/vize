@@ -254,3 +254,18 @@ fn dom_component_children_are_its_default_slot() {
         "import { defineComponent as _defineComponent, createElementVNode as _createElementVNode, createVNode as _createVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, createTextVNode as _createTextVNode, withCtx as _withCtx } from \"vue\";\nconst Child = /* @__PURE__ */ _defineComponent(function Child() {\n\treturn (_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"p\"))\n};\n});\nexport const A = /* @__PURE__ */ _defineComponent(function A(__props) {\n\treturn (_ctx, _cache) => {\n  return (_createVNode(Child, null, {\n    default: _withCtx(() => [\n      _createTextVNode(\"hello \"),\n      __props.x,\n      _createElementVNode(\"b\", null, \"bold\")\n    ]),\n    _: 2 /* DYNAMIC */\n  }, 1024 /* DYNAMIC_SLOTS */))\n};\n}, { props: [\"x\"] });\n"
     );
 }
+
+#[test]
+fn dom_markup_expressions_are_erased_as_typescript() {
+    let source = "export function A({ size }: { size: number }) @{\n\t<p title={size as unknown as string} onClick={(e: Event) => e}>{size!}</p>\n}\n";
+    let compiled = compile(source, &OPTIONS);
+    if cfg!(feature = "typescript") {
+        assert_eq!(
+            compiled.unwrap().code.as_str(),
+            "import { defineComponent as _defineComponent, createElementVNode as _createElementVNode } from \"vue\";\nexport const A = /* @__PURE__ */ _defineComponent(function A(__props) {\n\treturn (_ctx, _cache) => {\n  return (_createElementVNode(\"p\", {\n    title: __props.size,\n    onClick: (e) => e\n  }, [\n    __props.size\n  ], 8 /* PROPS */, [\"title\", \"onClick\"]))\n};\n}, { props: [\"size\"] });\n"
+        );
+    } else {
+        let [diagnostic] = compiled.unwrap_err().diagnostics.try_into().unwrap();
+        assert_eq!(diagnostic.code, Code::Emit(EmitIssue::Dom));
+    }
+}

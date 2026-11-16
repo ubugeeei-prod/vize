@@ -185,6 +185,7 @@ mod tests {
                 "mount/loops.tsrx",
                 "mount/returns.tsrx",
                 "mount/slots.tsrx",
+                "mount/typed.tsrx",
                 "mount/values.tsrx",
                 "syntax-arrow-generic.tsrx",
                 "syntax-asi.tsrx",
@@ -192,6 +193,7 @@ mod tests {
                 "syntax-empty-container.tsrx",
                 "syntax-for-destructure.tsrx",
                 "syntax-gt-text.tsrx",
+                "syntax-template-literal-attr.tsrx",
                 "syntax-trailing-semi-render.tsrx",
                 "syntax-url-text.tsrx",
             ]

@@ -74,6 +74,9 @@ pub(super) fn module<'a>(
                 inline: true,
                 component_name: Some(component.name),
                 bindings: Some(&table),
+                // Markup expressions are TypeScript; without the feature the
+                // emitter refuses the ones that are not JavaScript.
+                is_ts: cfg!(feature = "typescript"),
                 ..DomEmitOptions::DEFAULT
             },
         )
