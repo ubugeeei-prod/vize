@@ -22,11 +22,55 @@ use crate::virtual_ts::script_facts::ScriptBindings;
 pub(super) fn stable_render_flow(root: &vize_relief::RootNode<'_>) -> bool {
     profile!(
         "canon.virtual_ts.root_expect.render_flow",
-        stable_children(&root.children)
+        stable_children(&root.children, false)
     )
 }
 
-fn stable_children(children: &[vize_relief::TemplateChildNode<'_>]) -> bool {
+/// The same proof for a check that moves within its own block chain rather
+/// than to the template's end. A loop is admitted when its source is a stable
+/// read and its aliases are plain names: it evaluates nothing else, so every
+/// replay of it declares the same aliases and the outer flow is unchanged.
+/// Loop headers are read from Croquis, which the emitter replays them from.
+pub(in crate::virtual_ts::scope) fn stable_render_flow_with_loops(
+    root: &vize_relief::RootNode<'_>,
+    summary: &vize_croquis::Croquis,
+) -> bool {
+    profile!("canon.virtual_ts.expect_splice.render_flow", {
+        stable_children(&root.children, true)
+            && summary.scopes.iter().all(|scope| {
+                let vize_croquis::ScopeData::VFor(data) = scope.data() else {
+                    return true;
+                };
+                let plain = |alias: &str| {
+                    let mut chars = alias.trim().chars();
+                    chars
+                        .next()
+                        .is_some_and(|first| first == '_' || first == '$' || first.is_alphabetic())
+                        && chars.all(|next| next == '_' || next == '$' || next.is_alphanumeric())
+                };
+                // Destructuring defaults and computed keys run during render.
+                plain(data.value_alias.as_str())
+                    && [&data.key_alias, &data.index_alias]
+                        .into_iter()
+                        .flatten()
+                        .all(|alias| plain(alias.as_str()))
+                    && stable_source(data.source.as_str())
+            })
+    })
+}
+
+fn stable_source(source: &str) -> bool {
+    let allocator = Allocator::new();
+    Parser::new(&allocator, source, SourceType::ts())
+        .parse_expression()
+        .is_ok_and(|expression| {
+            let mut effects = RenderEffects(false);
+            effects.visit_expression(&expression);
+            !effects.0
+        })
+}
+
+fn stable_children(children: &[vize_relief::TemplateChildNode<'_>], loops: bool) -> bool {
     use vize_relief::{ExpressionNode, PropNode, TemplateChildNode};
     children.iter().all(|child| match child {
         TemplateChildNode::Interpolation(node) => stable_expression(&node.content),
@@ -39,22 +83,22 @@ fn stable_children(children: &[vize_relief::TemplateChildNode<'_>]) -> bool {
                     return true;
                 }
                 if directive.name == "for" {
-                    return false;
+                    return loops;
                 }
                 let argument = directive.arg.as_ref().is_none_or(|arg| {
                     matches!(arg, ExpressionNode::Simple(arg) if arg.is_static)
                         || stable_expression(arg)
                 });
                 argument && directive.exp.as_ref().is_none_or(stable_expression)
-            }) && stable_children(&element.children)
+            }) && stable_children(&element.children, loops)
         }
         TemplateChildNode::If(node) => node.branches.iter().all(|branch| {
             branch.condition.as_ref().is_none_or(stable_expression)
-                && stable_children(&branch.children)
+                && stable_children(&branch.children, loops)
         }),
         // A loop has its own declaration/CFA environment; don't move a root
         // packet across an unproved replay of that environment.
-        TemplateChildNode::For(_) => false,
+        TemplateChildNode::For(node) => loops && stable_children(&node.children, loops),
         _ => true,
     })
 }
@@ -101,7 +145,7 @@ impl<'a> Visit<'a> for RenderEffects {
 /// The cache is generation-local, and its key includes the lexical scope and
 /// the exact authored expression identity. Ordinary generation never creates
 /// ASTs or owned names through this helper.
-pub(super) struct RelocationSafety<'a> {
+pub(in crate::virtual_ts::scope) struct RelocationSafety<'a> {
     script: Option<&'a str>,
     bindings: ScriptBindings<'a>,
     initialized: OnceCell<FxHashSet<String>>,
@@ -109,7 +153,10 @@ pub(super) struct RelocationSafety<'a> {
 }
 
 impl<'a> RelocationSafety<'a> {
-    pub(super) fn new(script: Option<&'a str>, bindings: ScriptBindings<'a>) -> Self {
+    pub(in crate::virtual_ts::scope) fn new(
+        script: Option<&'a str>,
+        bindings: ScriptBindings<'a>,
+    ) -> Self {
         Self {
             script,
             bindings,
@@ -131,7 +178,7 @@ impl<'a> RelocationSafety<'a> {
     /// A listener is read during render only as a reference. A callback or an
     /// inline statement is created there, and its body runs later, so moving
     /// its creation cannot change what the body sees.
-    pub(super) fn deferred_handler(&self, handler: &str) -> bool {
+    pub(in crate::virtual_ts::scope) fn deferred_handler(&self, handler: &str) -> bool {
         match classify_event_handler(handler) {
             EventHandlerExpression::Reference => {
                 self.bindings.binding_type(handler.trim()) == Some(BindingType::SetupConst)

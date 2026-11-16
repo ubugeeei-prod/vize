@@ -181,6 +181,8 @@ pub(crate) struct ScopeGenContext<'a, 'template> {
     /// Guarded handlers also key by their generated lexical block, because an
     /// alias declared in one sibling `if` is not visible from the next one.
     pub(crate) event_contracts: &'a RefCell<FxHashMap<EventContractKey, u32>>,
+    /// `@vue-expect-error` owners whose later checks follow their bindings.
+    pub(super) expect_splices: &'a super::expect_owner_splices::ExpectOwnerSplices<'a, 'template>,
 }
 
 pub(crate) struct ScopeGenerationOptions<'a, 'template> {
