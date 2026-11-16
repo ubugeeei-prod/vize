@@ -4,7 +4,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { PLUGIN_REGISTRY } from "../../crates/vize_carton/src/config/loader/plugin-plan.js";
 import {
   RESOLVED_PLUGIN_PLAN,
   inspectViteConfigPlugins,
@@ -59,18 +58,21 @@ test("empty plugin lists project byte-identically to absent ones", async () => {
   }
 });
 
+const routes = defineVizePlugin({
+  apiVersion: 2,
+  stability: "experimental",
+  name: "@acme/routes",
+  version: "1.0.0",
+  setup(api) {
+    api.sfc.block("route", { lang: "json" });
+  },
+});
+
 test("capabilities no product implements fail closed in every projection", async () => {
-  await assert.rejects(
-    projectViteConfigSource({ vue: { plugins: [design({ strict: true })] } }, undefined, "/p"),
-    {
-      code: "capability-unadmitted",
-      message:
-        "[plugin/capability-unadmitted] @acme/design: no Vize product implements lint.rule `@acme/design/no-raw-color` yet; run `vize plugin inspect` for the plan",
-    },
-  );
-  const v1 = definePlugin({ name: "legacy", version: "1", cacheInputs: [], rules: { check() {} } });
-  await assert.rejects(projectViteConfigSource({ vue: { plugins: [v1] } }), {
+  await assert.rejects(projectViteConfigSource({ vue: { plugins: [routes()] } }, undefined, "/p"), {
     code: "capability-unadmitted",
+    message:
+      "[plugin/capability-unadmitted] @acme/routes: no Vize product implements sfc.custom-block `route:json` yet; run `vize plugin inspect` for the plan",
   });
   await assert.rejects(projectViteConfigSource({ vue: { plugins: {} } }), {
     message: "[plugin/entry-invalid] vue.plugins: must be an array",
@@ -81,38 +83,31 @@ test("capabilities no product implements fail closed in every projection", async
 });
 
 test("an admitted plan travels as canonical data with its in-process handle", async () => {
-  const capability = PLUGIN_REGISTRY.capabilities["lint.rule"]!;
-  const admitted = capability.admittedBy;
-  (capability as { admittedBy: readonly string[] }).admittedBy = ["lint"];
-  try {
-    const entry = design({ strict: true });
-    const projected = (await projectViteConfigSource(
-      { vue: { plugins: [entry], linter: { preset: "essential" } } },
-      undefined,
-      "/p",
-    )) as Record<string | symbol, unknown>;
-    const resolved = projected[RESOLVED_PLUGIN_PLAN] as { digest: string; json: string };
-    assert.deepEqual(Object.keys(projected), [
-      "typeChecker",
-      "linter",
-      "__vizeProjectRoot",
-      "__vizePluginPlan",
-    ]);
-    assert.deepEqual(projected.__vizePluginPlan, {
-      digest: resolved.digest,
-      plan: JSON.parse(resolved.json),
-    });
-    assert.equal(JSON.stringify(JSON.parse(JSON.stringify(projected))), JSON.stringify(projected));
-    const absent = await projectViteConfigSource(
-      { vue: { linter: { preset: "essential" } } },
-      undefined,
-      "/p",
-    );
-    const { __vizePluginPlan: _plan, ...rest } = projected;
-    assert.equal(JSON.stringify(rest), JSON.stringify(absent));
-  } finally {
-    (capability as { admittedBy: readonly string[] }).admittedBy = admitted;
-  }
+  const v1 = definePlugin({ name: "legacy", version: "1", cacheInputs: [], rules: { check() {} } });
+  const projected = (await projectViteConfigSource(
+    { vue: { plugins: [design({ strict: true }), v1], linter: { preset: "essential" } } },
+    undefined,
+    "/p",
+  )) as Record<string | symbol, unknown>;
+  const resolved = projected[RESOLVED_PLUGIN_PLAN] as { digest: string; json: string };
+  assert.deepEqual(Object.keys(projected), [
+    "typeChecker",
+    "linter",
+    "__vizeProjectRoot",
+    "__vizePluginPlan",
+  ]);
+  assert.deepEqual(projected.__vizePluginPlan, {
+    digest: resolved.digest,
+    plan: JSON.parse(resolved.json),
+  });
+  assert.equal(JSON.stringify(JSON.parse(JSON.stringify(projected))), JSON.stringify(projected));
+  const absent = await projectViteConfigSource(
+    { vue: { linter: { preset: "essential" } } },
+    undefined,
+    "/p",
+  );
+  const { __vizePluginPlan: _plan, ...rest } = projected;
+  assert.equal(JSON.stringify(rest), JSON.stringify(absent));
 });
 
 test("inspection reports the plan and every refused capability", async () => {
@@ -121,7 +116,8 @@ test("inspection reports the plan and every refused capability", async () => {
     { mode: "production", command: "build" },
   );
   assert.deepEqual(inspection.order, ["@acme/design"]);
-  assert.equal(inspection.admission.lint?.status, "refused");
+  assert.equal(inspection.admission.lint?.status, "ready");
+  assert.equal(inspection.admission.lsp?.status, "refused");
   assert.equal(inspection.admission.format?.status, "unused");
   assert.deepEqual(inspection.plugins[0]?.options, { strict: false });
   const empty = await inspectViteConfigPlugins({ vue: {} });

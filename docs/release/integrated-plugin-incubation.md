@@ -8,14 +8,14 @@
 
 ## Status
 
-| Slice                                                    | State                                    |
-| -------------------------------------------------------- | ---------------------------------------- |
-| API v1 packet freeze                                     | done (#13122)                            |
-| v2 manifest, canonical plan, validation, inspector views | done (#13124)                            |
-| `vue.plugins` resolved from `vite.config.*`              | done                                     |
-| custom lint (`lint.rule`)                                | planned                                  |
-| custom directive (`vue.directive`)                       | declared only; every consumer refuses it |
-| custom block (`sfc.custom-block`)                        | declared only; every consumer refuses it |
+| Slice                                                      | State                                    |
+| ---------------------------------------------------------- | ---------------------------------------- |
+| API v1 packet freeze                                       | done (#13122)                            |
+| v2 manifest, canonical plan, validation, inspector views   | done (#13124)                            |
+| `vue.plugins` resolved from `vite.config.*`                | done                                     |
+| custom lint (`lint.rule`, adapted v1 rules) in `vize lint` | done; LSP refuses, `--fix` next          |
+| custom directive (`vue.directive`)                         | declared only; every consumer refuses it |
+| custom block (`sfc.custom-block`)                          | declared only; every consumer refuses it |
 
 ## Where the contract lives
 
@@ -99,3 +99,29 @@ invalidating a plan that is valid today.
 - **Directives.** Names are kebab-case and cannot shadow a built-in directive.
   Modifiers normalize to `{ optional: true, default: false }`. A required
   modifier with a default is refused.
+
+## Plugin lint rules
+
+`vize lint` (and the Vite+ lint task, which runs it) executes admitted
+`lint.rule` capabilities and v1 `definePlugin` rule plugins listed in
+`vue.plugins`.
+
+- **Records and facts.** Schema 1 rules visit the same public L2 template
+  records and demand the same native fact groups as plugin API v1. The host
+  builds them with `vize_patina::plugin_batch`, so an adapted v1 plugin receives
+  byte-identical batches.
+- **Severity.** The root `vue.linter.rules` sets each plugin rule ID
+  (`<plugin>/<rule>`) to `off`, `warn` or `error`. Otherwise a v2 rule uses
+  `meta.defaultLevel` (default `off`) and a v1 rule warns. Plugin rules cannot
+  be configured in `entries[]`. Rules that are off add no work.
+- **One crossing.** Every enabled job and every Vue document travel in one
+  request to a trusted Node sidecar. The sidecar re-evaluates `vite.config.*`
+  and refuses a plan whose digest differs (`plan-stale`). Each rule runs once
+  per document. Reports name visited records; the host owns spans, severity,
+  message rendering (`{name}` placeholders from bounded `data`) and ordering.
+- **Receipt.** `vize lint --profile` prints a `vize_plugin_receipt:` JSON
+  line: crossings, documents, request and response bytes, sidecar time, and per
+  job the batches, records, batch bytes, reports and JavaScript time.
+- **Not yet.** The LSP refuses plans containing plugin lint rules, and
+  `--fix` does not apply plugin fixes yet. Templates that the plugin records
+  cannot represent are skipped and listed in the receipt.

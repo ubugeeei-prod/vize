@@ -235,6 +235,13 @@ function pluginTools() {
   return import("./plugin-tools.js");
 }
 
+/** The native lint sidecar: run plugin lint jobs against an authored Vite export. */
+export async function runViteConfigPluginLint(exported, configPath, request) {
+  const projected = await resolveViteConfigExport(exported, undefined, resolve(configPath, ".."));
+  const tools = await pluginTools();
+  return tools.runPluginLintJobs(projected[RESOLVED_PLUGIN_PLAN], request);
+}
+
 /** In-process hosts read the resolved plan, including callbacks, under this key. */
 export const RESOLVED_PLUGIN_PLAN = Symbol.for("vize.plugin.plan");
 

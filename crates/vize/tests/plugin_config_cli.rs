@@ -87,14 +87,14 @@ fn empty_plugin_lists_keep_lint_output_and_exit_status_identical() {
 #[test]
 fn unimplemented_capabilities_fail_closed_and_stay_inspectable() {
     let dir = project(
-        ", plugins: [design({ strict: true })]",
-        "const design = (options) => plugin(\"@acme/design\", (api) => {\n  void options;\n  api.lint.rule({ id: \"no-raw-color\", meta: { messages: { raw: \"Use a token.\" } }, visit: [\"ui.bind\"], run() {} });\n})(options);",
+        ", plugins: [routes({ strict: true })]",
+        "const routes = (options) => plugin(\"@acme/routes\", (api) => {\n  void options;\n  api.sfc.block(\"route\", { lang: \"json\" });\n})(options);",
     );
     let lint = vize(dir.path(), &["lint", "src"]);
     assert_eq!(lint.status.code(), Some(2));
     assert_eq!(
         plugin_error(&lint),
-        "[plugin/capability-unadmitted] @acme/design: no Vize product implements lint.rule `@acme/design/no-raw-color` yet; run `vize plugin inspect` for the plan"
+        "[plugin/capability-unadmitted] @acme/routes: no Vize product implements sfc.custom-block `route:json` yet; run `vize plugin inspect` for the plan"
     );
     let inspect = vize(dir.path(), &["plugin", "inspect"]);
     assert_eq!(
@@ -104,14 +104,14 @@ fn unimplemented_capabilities_fail_closed_and_stay_inspectable() {
         String::from_utf8_lossy(&inspect.stderr)
     );
     let inspection: Value = serde_json::from_slice(&inspect.stdout).unwrap();
-    assert_eq!(inspection["order"], serde_json::json!(["@acme/design"]));
+    assert_eq!(inspection["order"], serde_json::json!(["@acme/routes"]));
     assert_eq!(inspection["planSchema"], 1);
     assert_eq!(inspection["admission"]["lint"]["status"], "refused");
-    assert_eq!(inspection["admission"]["compiler"]["status"], "unused");
+    assert_eq!(inspection["admission"]["compiler"]["status"], "refused");
     assert_eq!(inspection["digest"].as_str().map(str::len), Some(64));
     assert_eq!(
         inspection["plugins"][0]["capabilities"][0]["key"],
-        "@acme/design/no-raw-color"
+        "route:json"
     );
     assert_eq!(
         inspection["plugins"][0]["options"],

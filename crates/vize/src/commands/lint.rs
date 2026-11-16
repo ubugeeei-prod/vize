@@ -9,6 +9,7 @@ mod cross_file;
 mod entry_rules;
 mod fix;
 mod patterns;
+mod plugins;
 mod profile;
 mod read_source;
 mod rich;
@@ -60,6 +61,7 @@ pub fn run(mut args: LintArgs) {
         features: linter_features,
         project_root,
         custom_elements,
+        plugins: plugin_lint,
     } = config_load::load(&mut args);
     let config_time = start.elapsed();
     crate::config::write_schema_for_config(loaded_config.source_path.as_deref());
@@ -156,7 +158,9 @@ pub fn run(mut args: LintArgs) {
 
     let lint_start = Instant::now();
     let cross_file_enabled = args.cross_file || args.cross_file_tree || args.cross_file_complexity;
-    let retain_file_results = should_retain_file_results(render_details, cross_file_enabled);
+    // Plugin rules map onto retained sources; without plugins nothing changes.
+    let retain_file_results =
+        should_retain_file_results(render_details, cross_file_enabled) || plugin_lint.is_some();
     let lint_run = if !args.fix
         && linters
             .iter()
@@ -248,6 +252,12 @@ pub fn run(mut args: LintArgs) {
             )
     };
     let (mut results, quiet_totals) = lint_run.into_parts();
+    let plugin_receipt = plugin_lint.as_ref().map(|plugins| {
+        plugins.run(&mut results).unwrap_or_else(|error| {
+            eprintln!("\x1b[31mError:\x1b[0m {error}");
+            std::process::exit(2);
+        })
+    });
     let lint_time = lint_start.elapsed();
 
     let mut cross_file_report = None;
@@ -314,6 +324,14 @@ pub fn run(mut args: LintArgs) {
         cross_file_report.as_deref(),
     );
 
+    if let (true, Some(plugins), Some(receipt)) =
+        (args.profile, plugin_lint.as_ref(), plugin_receipt.as_ref())
+    {
+        eprintln!(
+            "vize_plugin_receipt: {}",
+            receipt.to_json(&plugins.labels())
+        );
+    }
     if args.profile {
         profile::ProfileContext {
             args: &args,
