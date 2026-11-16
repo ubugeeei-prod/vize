@@ -19,6 +19,7 @@ impl WorkspaceFolderConfig {
             global_ignores: Vec::new(),
             project_ignores: None,
             features: Default::default(),
+            plugin_lint: None,
         }
     }
 
@@ -72,6 +73,12 @@ impl WorkspaceFolderConfig {
                 )
             })
             .collect();
+        let plugin_lint = super::super::plugin_lint::PluginLintHost::plan(
+            document,
+            source_path,
+            &plan.plan.base.rules,
+        )
+        .map(std::sync::Arc::new);
         Self {
             valid: true,
             root,
@@ -80,6 +87,7 @@ impl WorkspaceFolderConfig {
             global_ignores,
             project_ignores,
             features,
+            plugin_lint,
         }
     }
 }

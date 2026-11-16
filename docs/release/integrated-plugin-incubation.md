@@ -8,14 +8,14 @@
 
 ## Status
 
-| Slice                                                      | State                                    |
-| ---------------------------------------------------------- | ---------------------------------------- |
-| API v1 packet freeze                                       | done (#13122)                            |
-| v2 manifest, canonical plan, validation, inspector views   | done (#13124)                            |
-| `vue.plugins` resolved from `vite.config.*`                | done                                     |
-| custom lint (`lint.rule`, adapted v1 rules) in `vize lint` | done, incl. `--fix`; LSP refuses         |
-| custom directive (`vue.directive`)                         | declared only; every consumer refuses it |
-| custom block (`sfc.custom-block`)                          | declared only; every consumer refuses it |
+| Slice                                                    | State                                    |
+| -------------------------------------------------------- | ---------------------------------------- |
+| API v1 packet freeze                                     | done (#13122)                            |
+| v2 manifest, canonical plan, validation, inspector views | done (#13124)                            |
+| `vue.plugins` resolved from `vite.config.*`              | done                                     |
+| custom lint (`lint.rule`, adapted v1 rules)              | done: `vize lint` incl. `--fix`, the LSP |
+| custom directive (`vue.directive`)                       | declared only; every consumer refuses it |
+| custom block (`sfc.custom-block`)                        | declared only; every consumer refuses it |
 
 ## Where the contract lives
 
@@ -133,6 +133,16 @@ invalidating a plan that is valid today.
   changed files in parallel, one write per file. The plugins then see only
   those files, at one more crossing per pass, for at most five passes. A file
   whose plugin fix the built-in fixes revert is left unwritten.
-- **Not yet.** The LSP refuses plans that contain plugin lint rules. Templates
-  that the plugin records cannot represent are skipped and listed in the
-  receipt.
+- **Editor.** The language server runs the same jobs on every Vue document it
+  lints. A config generation that enables plugin rules owns one sidecar,
+  started on the first lint. Edits reuse it and never start a process. Each
+  lint sends one document with every job. The sidecar must resolve its config
+  within 30 s and answer within 2 s, or it is stopped and restarted on the
+  next lint. A newer document version cancels the wait, and the late answer
+  is skipped. A planning error, a rule failure or a timeout is one error at
+  the start of the document (code `plugin`). After three consecutive sidecar
+  failures the server reports the last one until the config changes. A rule
+  failure is answered, so the sidecar keeps running.
+- **Not yet.** Templates that the plugin records cannot represent are skipped
+  (and listed in the CLI receipt). The editor offers no plugin fixes as code
+  actions yet.

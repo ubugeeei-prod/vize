@@ -9,4 +9,5 @@ pub mod batch;
 pub mod document;
 pub mod error;
 pub mod facts;
+pub mod lint;
 pub mod production;

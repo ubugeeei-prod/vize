@@ -17,6 +17,9 @@ mod lint_hover;
 mod module_links;
 #[cfg(feature = "experimental-source-navigation")]
 mod native_names;
+mod plugin_lint;
+#[cfg(test)]
+mod plugin_lint_tests;
 #[cfg(feature = "native")]
 mod project_contexts;
 mod resident;

@@ -117,7 +117,7 @@ test("inspection reports the plan and every refused capability", async () => {
   );
   assert.deepEqual(inspection.order, ["@acme/design"]);
   assert.equal(inspection.admission.lint?.status, "ready");
-  assert.equal(inspection.admission.lsp?.status, "refused");
+  assert.equal(inspection.admission.lsp?.status, "ready");
   assert.equal(inspection.admission.format?.status, "unused");
   assert.deepEqual(inspection.plugins[0]?.options, { strict: false });
   const empty = await inspectViteConfigPlugins({ vue: {} });

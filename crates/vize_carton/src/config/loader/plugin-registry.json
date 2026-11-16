@@ -10,14 +10,14 @@
       "apiVersions": [1],
       "consumers": ["lint", "lsp"],
       "callbacks": ["run"],
-      "admittedBy": ["lint"]
+      "admittedBy": ["lint", "lsp"]
     },
     "lint.rule": {
       "schemaVersions": [1],
       "apiVersions": [2],
       "consumers": ["lint", "lsp"],
       "callbacks": ["run"],
-      "admittedBy": ["lint"]
+      "admittedBy": ["lint", "lsp"]
     },
     "sfc.custom-block": {
       "schemaVersions": [1],

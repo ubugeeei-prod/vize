@@ -7,7 +7,7 @@ import { readFile } from "node:fs/promises";
 const pins = {
   validator: "e7cd857464b449579d288fd20e75549875404389200fa40a1bd9517ec4e2ab83",
   runtime: "0bb73d5f28813a5045f23cf739256ea408093218202596220b7f43639d9d7b0b",
-  assembled: "fb8b733516976369f5dbe2dfc2a7c78d873a9fbee407486f462c3276f4cd816f",
+  assembled: "cc2aef7973b51f8df74a6b9cfcdb9192eea2d6d9ee28db55067c74bdfc31438b",
 } as const;
 // Statically spliced modules and the lazily imported config plugin host, in the
 // native config-runtime assembly order (runtime_source.rs `OWNED`, `PLUGIN_HOST`).

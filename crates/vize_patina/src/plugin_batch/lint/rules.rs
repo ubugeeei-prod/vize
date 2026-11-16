@@ -5,11 +5,11 @@ use std::sync::{Mutex, OnceLock};
 use serde_json::Value;
 
 use super::field;
-use crate::config::LintRuleSeverity;
-use crate::config::plugin_plan::{PlannedCapability, PlannedPlugin};
+use crate::plugin_batch::{batch::diagnostics, document::PluginDocument};
+use crate::{Fix, LintDiagnostic, Severity, TextEdit};
+use vize_carton::config::LintRuleSeverity;
+use vize_carton::config::plugin_plan::{PlannedCapability, PlannedPlugin};
 use vize_l0::{FxHashMap, String, cstr};
-use vize_patina::plugin_batch::{batch::diagnostics, document::PluginDocument};
-use vize_patina::{Fix, LintDiagnostic, Severity, TextEdit};
 
 /// The enabled rules of one job.
 pub(super) enum Rules {
