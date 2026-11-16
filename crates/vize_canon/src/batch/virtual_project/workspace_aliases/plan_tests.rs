@@ -172,6 +172,70 @@ fn cross_topology_identical_aliases_deduplicate() {
 }
 
 #[test]
+fn equally_owned_alias_prefers_the_private_descendant_target() {
+    let plan = plan_from_topologies(
+        vec![
+            (
+                vec![link("alias", "workspace/shared")],
+                FxHashMap::from_iter([(
+                    PathBuf::from("alias"),
+                    WorkspaceAliasAuthority::SelectedWorkspaceDependency,
+                )]),
+            ),
+            (
+                vec![link("alias", "workspace/layout/tabbar/node_modules/shared")],
+                FxHashMap::from_iter([(
+                    PathBuf::from("alias"),
+                    WorkspaceAliasAuthority::SelectedWorkspaceDependency,
+                )]),
+            ),
+        ],
+        &Default::default(),
+    );
+    assert_eq!(
+        plan.links,
+        vec![link("alias", "workspace/layout/tabbar/node_modules/shared")]
+    );
+}
+
+#[test]
+fn later_collapsed_alias_prefers_the_private_descendant_target() {
+    let plan = plan(
+        vec![
+            link("alias", "workspace/owned"),
+            link("alias/shared", "workspace/shared"),
+            link(
+                "workspace/owned/shared",
+                "workspace/layout/tabbar/node_modules/shared",
+            ),
+        ],
+        Default::default(),
+    );
+    assert_eq!(
+        plan.targets.get(Path::new("workspace/owned/shared")),
+        Some(&PathBuf::from(
+            "workspace/layout/tabbar/node_modules/shared"
+        ))
+    );
+}
+
+#[test]
+fn target_chain_follows_a_rebased_alias_identity() {
+    let plan = plan(
+        vec![
+            link("root", "workspace/owned"),
+            link("root/preferences", "workspace/private/preferences"),
+            link("consumer/preferences", "workspace/owned/preferences"),
+        ],
+        Default::default(),
+    );
+    assert_eq!(
+        plan.targets.get(Path::new("consumer/preferences")),
+        Some(&PathBuf::from("workspace/private/preferences"))
+    );
+}
+
+#[test]
 fn equal_authority_parent_conflict_stays_fail_closed() {
     let plan = plan(
         vec![

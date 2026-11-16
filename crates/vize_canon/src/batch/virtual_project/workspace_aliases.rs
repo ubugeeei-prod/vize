@@ -236,10 +236,7 @@ impl VirtualProject {
     }
 
     pub(super) fn workspace_alias_claims(&self, plan: &WorkspaceAliasPlan) -> FxHashSet<PathBuf> {
-        plan.links
-            .iter()
-            .map(|alias| alias.virtual_dir.join("package.json"))
-            .collect()
+        rebase::claims_with_source_coordinates(&plan.targets)
     }
 
     pub(super) fn install_workspace_alias_scopes(
@@ -358,7 +355,12 @@ impl VirtualProject {
             if links.get(&alias.virtual_dir) != Some(&alias.real_dir) {
                 return Err(std::io::Error::new(
                     std::io::ErrorKind::InvalidData,
-                    "Workspace package link plan omits an owned alias",
+                    format!(
+                        "Workspace package link plan omits an owned alias: {} -> {}; planned target: {:?}",
+                        alias.virtual_dir.display(),
+                        alias.real_dir.display(),
+                        links.get(&alias.virtual_dir),
+                    ),
                 )
                 .into());
             }
@@ -385,10 +387,17 @@ impl VirtualProject {
             if !target.starts_with(&self.virtual_root) {
                 continue;
             }
-            if !alias.starts_with(&self.virtual_root) || link_paths.alias_overlaps(alias, target) {
+            let overlap = link_paths.alias_overlap_path(alias, target);
+            if !alias.starts_with(&self.virtual_root) || overlap.is_some() {
                 return Err(std::io::Error::new(
                     std::io::ErrorKind::InvalidData,
-                    "Workspace package alias overlaps another package link",
+                    format!(
+                        "Workspace package alias overlaps another package link: {} -> {}; conflicting link: {:?} -> {:?}",
+                        alias.display(),
+                        target.display(),
+                        overlap,
+                        overlap.as_ref().and_then(|path| links.get(path)),
+                    ),
                 )
                 .into());
             }

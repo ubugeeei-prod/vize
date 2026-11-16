@@ -30,7 +30,7 @@ struct StagedAlias {
 #[derive(Debug)]
 struct TargetGroup {
     target: PathBuf,
-    priority: (usize, WorkspaceAliasAuthority),
+    priority: (usize, WorkspaceAliasAuthority, usize),
     candidates: Vec<WorkspaceAliasCandidate>,
 }
 
@@ -38,9 +38,10 @@ struct TargetGroup {
 ///
 /// A rejected duplicate traversal must not contribute children to the
 /// selected parent's namespace. Processing virtual path depths root-first
-/// gives every child one immutable set of selected parent links. Equal
-/// rebase-depth and authority conflicts remain present so plan validation
-/// rejects them instead of selecting by iteration.
+/// gives every child one immutable set of selected parent links. Target depth
+/// preserves a private descendant over a package-root bridge. Fully equal
+/// priorities remain present so plan validation rejects them instead of
+/// selecting by iteration.
 pub(super) fn plan_aliases(mut raw: Vec<WorkspaceAliasCandidate>) -> Vec<PackageNodeModulesLink> {
     raw.sort_by(|left, right| {
         left.raw_alias
@@ -128,6 +129,7 @@ pub(super) fn plan_aliases(mut raw: Vec<WorkspaceAliasCandidate>) -> Vec<Package
                 let mut priority = (
                     staged_candidate.rebase_depth,
                     staged_candidate.candidate.insertion_authority,
+                    target.components().count(),
                 );
                 let mut candidates = vec![staged_candidate.candidate];
                 while let Some(staged_candidate) =
@@ -136,6 +138,7 @@ pub(super) fn plan_aliases(mut raw: Vec<WorkspaceAliasCandidate>) -> Vec<Package
                     priority = priority.max((
                         staged_candidate.rebase_depth,
                         staged_candidate.candidate.insertion_authority,
+                        target.components().count(),
                     ));
                     candidates.push(staged_candidate.candidate);
                 }
@@ -178,6 +181,38 @@ pub(super) fn plan_aliases(mut raw: Vec<WorkspaceAliasCandidate>) -> Vec<Package
             link.real_dir = target;
         }
     }
+    let deepest_targets = links.iter().fold(
+        FxHashMap::<PathBuf, usize>::default(),
+        |mut depths, link| {
+            let depth = link.real_dir.components().count();
+            depths
+                .entry(link.virtual_dir.clone())
+                .and_modify(|selected| *selected = (*selected).max(depth))
+                .or_insert(depth);
+            depths
+        },
+    );
+    links.retain(|link| {
+        deepest_targets.get(&link.virtual_dir) == Some(&link.real_dir.components().count())
+    });
+    let mut final_targets = FxHashMap::default();
+    let mut conflicts = FxHashSet::default();
+    for link in &links {
+        if final_targets
+            .insert(link.virtual_dir.clone(), link.real_dir.clone())
+            .is_some_and(|old| old != link.real_dir)
+        {
+            conflicts.insert(link.virtual_dir.clone());
+        }
+    }
+    for conflict in conflicts {
+        final_targets.remove(&conflict);
+    }
+    for link in &mut links {
+        if let Some(target) = target_path(&link.real_dir, &final_targets) {
+            link.real_dir = target;
+        }
+    }
     links
 }
 
@@ -191,6 +226,47 @@ pub(super) fn descendants_with_owned_priority(
             .get(&link.virtual_dir)
             .is_none_or(|target| target == &link.real_dir)
     });
+}
+
+/// Include the source coordinates hidden by parent alias rebasing.
+///
+/// Dependency-link collection runs before links are moved through owned
+/// aliases. A nested owned claim at `target/node_modules/pkg` must therefore
+/// also protect `alias/node_modules/pkg`; otherwise the source package's whole
+/// `node_modules` directory can be linked over the later nested alias.
+pub(super) fn claims_with_source_coordinates(
+    aliases: &FxHashMap<PathBuf, PathBuf>,
+) -> FxHashSet<PathBuf> {
+    let mut aliases = aliases.iter().collect::<Vec<_>>();
+    aliases.sort_by(|left, right| left.0.cmp(right.0));
+    let mut claims = FxHashSet::default();
+    let mut pending = aliases
+        .iter()
+        .map(|(alias, _)| (alias.join("package.json"), vec![false; aliases.len()]))
+        .collect::<Vec<_>>();
+    let mut explored = FxHashSet::default();
+    while let Some((claim, visited)) = pending.pop() {
+        if !explored.insert((claim.clone(), visited.clone())) {
+            continue;
+        }
+        claims.insert(claim.clone());
+        for (index, (alias, target)) in aliases.iter().enumerate() {
+            if visited[index] {
+                continue;
+            }
+            let Ok(suffix) = claim.strip_prefix(target) else {
+                continue;
+            };
+            let source = alias.join(suffix);
+            if source == claim {
+                continue;
+            }
+            let mut next_visited = visited.clone();
+            next_visited[index] = true;
+            pending.push((source, next_visited));
+        }
+    }
+    claims
 }
 
 fn descendant_path(original: &Path, aliases: &FxHashMap<PathBuf, PathBuf>) -> Option<PathBuf> {
@@ -280,6 +356,27 @@ mod tests {
                 link("sibling/node_modules/shared", "real/shared"),
             ]
         );
+    }
+
+    #[test]
+    fn nested_claims_include_the_parent_alias_source_coordinate() {
+        let aliases = FxHashMap::from_iter([
+            (
+                PathBuf::from("consumer/popup"),
+                PathBuf::from("owned/popup"),
+            ),
+            (
+                PathBuf::from("owned/popup/node_modules/preferences"),
+                PathBuf::from("owned/preferences"),
+            ),
+        ]);
+        let claims = claims_with_source_coordinates(&aliases);
+        assert!(claims.contains(Path::new(
+            "consumer/popup/node_modules/preferences/package.json"
+        )));
+        assert!(claims.contains(Path::new(
+            "owned/popup/node_modules/preferences/package.json"
+        )));
     }
 
     #[test]
