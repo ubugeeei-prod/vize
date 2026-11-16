@@ -34,6 +34,9 @@ vize_l1.workspace = true
 # The L2 template-complexity pass behind `vue/max-template-complexity`.
 vize_l1_to_l2.workspace = true
 vize_l2.workspace = true
+# Plugin record batches (`plugin_batch`): template parsing and effect facts.
+vize_atelier_core.workspace = true
+vize_l3.workspace = true
 
 # OXC for JS/TS parsing and diagnostics
 oxc_allocator.workspace = true

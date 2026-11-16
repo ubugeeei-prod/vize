@@ -33,14 +33,11 @@
     reason = "N-API values cross the boundary as std `String`s"
 )]
 
-mod batch;
-mod document;
-mod error;
-mod facts;
 mod plugin_cache;
-mod production;
 mod providers;
 mod proxy;
+
+use vize_patina::plugin_batch::{batch, document, error, facts};
 #[cfg(test)]
 mod tests;
 

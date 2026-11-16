@@ -32,6 +32,7 @@ use vize_l0::Allocator;
 use vize_l0::fact::Demand;
 use vize_l2::summary::{AlphaPages, Facet};
 
+/// Production (Croquis) fact groups a plugin may demand.
 pub const GROUPS: &[&str] = &[
     Bindings::NAME,
     UndefinedRefs::NAME,
@@ -54,6 +55,7 @@ struct ProductionAnalysis {
     generic: Option<String>,
 }
 
+/// The document's production analysis, computed on the first demand.
 pub struct ProductionDocument {
     croquis: OnceLock<Result<ProductionAnalysis, HostError>>,
     alpha: OnceLock<Result<AlphaPages, HostError>>,
@@ -77,6 +79,11 @@ impl core::fmt::Debug for ProductionDocument {
     }
 }
 impl ProductionDocument {
+    /// The Croquis analysis of `source`, computed once.
+    ///
+    /// # Errors
+    ///
+    /// Refuses sources the production analysis cannot read.
     pub fn get(&self, source: &str) -> Result<&Croquis, HostError> {
         self.analysis(source)
             .map(|analysis| &analysis.context.croquis)
@@ -157,6 +164,11 @@ impl FactConsumer for PluginFacts {
         .with(UnusedBindings::ID);
 }
 
+/// Serialize the demanded production fact groups of `document`.
+///
+/// # Errors
+///
+/// Refuses demands the production analysis cannot answer.
 pub fn project(
     document: &PluginDocument,
     names: &[String],

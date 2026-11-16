@@ -48,7 +48,9 @@ impl FactGroup for TemplateScopes {
 /// One name a scope binds.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct ScopeEntry {
+    /// The bound name.
     pub name: String,
+    /// `value`, `key`, `index` or `slot`.
     pub position: &'static str,
 }
 

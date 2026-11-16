@@ -109,6 +109,7 @@ mod linter;
 pub mod markup;
 pub mod native;
 pub mod output;
+pub mod plugin_batch;
 mod preset;
 mod rule;
 pub mod rule_contracts;

@@ -59,12 +59,15 @@ pub const NODE_KINDS: &[&str] = &[
 /// A plugin manifest as the host reads it.
 #[derive(Debug, Clone, Copy)]
 pub struct PluginSpec<'p> {
+    /// Plugin name; rule IDs are `<name>/<rule>`.
     pub name: &'p str,
+    /// Plugin version, part of every content key.
     pub version: &'p str,
     /// The SDK's digest of the plugin's own code (rule sources).
     pub fingerprint: &'p str,
     /// Node kinds to batch; `None` batches every kind.
     pub visit: Option<&'p [String]>,
+    /// Fact groups the batch carries.
     pub demands: &'p [String],
 }
 
@@ -81,7 +84,9 @@ struct Batch<'d> {
 /// A built batch: the JSON text and how many nodes it carries.
 #[derive(Debug)]
 pub struct BuiltBatch {
+    /// The serialized batch delivered to the plugin.
     pub json: String,
+    /// Records in the batch.
     pub nodes: u32,
 }
 
@@ -148,16 +153,26 @@ struct Report {
 /// One plugin diagnostic, anchored on the host's own span for the node.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PluginDiagnostic {
+    /// `<plugin>/<rule>`.
     pub rule_id: String,
+    /// The reporting plugin.
     pub plugin: String,
+    /// The rendered message.
     pub message: String,
+    /// Replacement text for the whole reported span.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub fix: Option<String>,
+    /// Authored UTF-8 byte range start.
     pub start: u32,
+    /// Authored UTF-8 byte range end.
     pub end: u32,
+    /// One-based start line.
     pub line: u32,
+    /// One-based start column.
     pub column: u32,
+    /// One-based end line.
     pub end_line: u32,
+    /// One-based end column.
     pub end_column: u32,
 }
 
