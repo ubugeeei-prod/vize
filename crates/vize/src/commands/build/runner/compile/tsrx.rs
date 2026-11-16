@@ -184,6 +184,7 @@ mod tests {
                 "mount/counter.tsrx",
                 "mount/loops.tsrx",
                 "mount/returns.tsrx",
+                "mount/slots.tsrx",
                 "mount/values.tsrx",
                 "syntax-arrow-generic.tsrx",
                 "syntax-asi.tsrx",

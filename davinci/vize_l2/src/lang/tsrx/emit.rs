@@ -7,7 +7,7 @@ use vize_l1::markup::tsrx::{
 };
 
 use super::{TsrxIssue, TsrxIssueKind, expression, is_component, text};
-use crate::artifact::{ArtifactError, HostForHead, RegionBuilder};
+use crate::artifact::{ArtifactError, HostForHead, OpFamily, RegionBuilder};
 use crate::expr::ExprRef;
 use crate::op::{self, Namespace};
 
@@ -169,6 +169,9 @@ fn element<'a>(
             .err();
     };
     let built = if is_component(name) {
+        // Its children are its default slot, which the slot grouping pass
+        // builds only when the lowering reports a slot carrier.
+        builder.observe(OpFamily::SlotCarrier);
         builder.component(name, attributes, element.span, |region, _| {
             body(region, parent);
         })

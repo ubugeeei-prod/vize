@@ -10,7 +10,8 @@
 //!
 //! - Elements and components: a member tag or a name that does not start
 //!   with a lowercase ASCII letter is a component. The namespace follows
-//!   `svg`, `math` and `foreignObject`.
+//!   `svg`, `math` and `foreignObject`. A component's children are its
+//!   default slot.
 //! - Fragments are flattened into the enclosing region.
 //! - Text follows the JSX whitespace rules. Normalized-empty text produces no op.
 //! - A `{expr}` child becomes `ui.jsx-child`: it renders text, a node or a list,
