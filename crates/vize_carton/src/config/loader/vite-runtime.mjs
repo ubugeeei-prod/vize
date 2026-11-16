@@ -226,9 +226,13 @@ export async function projectViteConfigSource(source, env, configDir) {
   );
 }
 
-// A separate function, so configs without plugins never compile the host import.
+// Separate functions, so configs without plugins never compile these imports.
 function pluginHost() {
   return import("./plugin-host.js");
+}
+
+function pluginTools() {
+  return import("./plugin-tools.js");
 }
 
 /** In-process hosts read the resolved plan, including callbacks, under this key. */
@@ -270,8 +274,8 @@ export async function inspectViteConfigPlugins(exported, env) {
   const source = await resolveViteConfigSource(exported, env);
   rejectLegacyConfig(source);
   const selected = normalizeVueConfigOptions(source);
-  const host = await pluginHost();
-  return host.inspectPluginPlan(
+  const [host, tools] = await Promise.all([pluginHost(), pluginTools()]);
+  return tools.inspectPluginPlan(
     host.resolvePluginPlan(object(selected) ? selected.plugins : undefined),
   );
 }

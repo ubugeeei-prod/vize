@@ -21,11 +21,11 @@ fn complete_product_sources_and_native_assembly_keep_their_exact_postimages() {
     );
     assert_eq!(
         digest(super::super::VITE_RUNTIME.as_bytes()),
-        "7f8d8264168123d70c8429a998b0c3e9931ba7abf4cf28b2677293e028816f45"
+        "9eb5a44f8143498c6e208f5f5e484cd6208f6dd26222793e8831f601f328cb07"
     );
     assert_eq!(
         digest(vite_runtime().unwrap().as_bytes()),
-        "c5aef161453268dd936d2b49fbb7ce5134861bff941a1bcec76e8bfcb0a3659f"
+        "5d98a0ac5eee521493861b986a433c08c1611f02dcf76eed4f7ba6d5a3d69cab"
     );
 }
 
@@ -67,50 +67,41 @@ process.stdout.write(JSON.stringify(rows));
 }
 
 #[test]
-fn owned_modules_share_one_scope_and_the_plugin_host_loads_lazily() {
-    let assembled = vite_runtime().unwrap();
-    assert_eq!(assembled.matches(" from \"./").count(), 0);
-    assert_eq!(assembled.matches("import(\"./").count(), 0);
+fn owned_modules_share_one_scope_and_plugin_modules_load_lazily() {
+    let config = vite_runtime().unwrap();
+    let tools = super::vite_tools_runtime().unwrap();
+    let lazy = "import(\"data:text/javascript;charset=utf-8,\" + encodeURIComponent(";
+    for runtime in [&config, &tools] {
+        assert_eq!(runtime.matches(" from \"./").count(), 0);
+        assert_eq!(runtime.matches("import(\"./").count(), 0);
+    }
+    assert_eq!(config.matches(lazy).count(), 1);
+    assert_eq!(config.matches(super::TOOLS_UNAVAILABLE).count(), 1);
+    assert_eq!(tools.matches(lazy).count(), 2);
     assert_eq!(
-        assembled
-            .matches("import(\"data:text/javascript;base64,")
-            .count(),
-        1
-    );
-    assert_eq!(
-        super::assemble("import { x } from \"./unowned.js\";\nexport const y = x;\n"),
+        super::assemble(
+            "import { x } from \"./unowned.js\";\nexport const y = x;\n",
+            false
+        ),
         Err("unowned relative import in the product runtime")
     );
     assert_eq!(
-        super::assemble("import { x } from \"./vite-runtime-validation.js\"\n"),
+        super::assemble(
+            "import { x } from \"./vite-runtime-validation.js\"\n",
+            false
+        ),
         Err("unterminated import in the product runtime")
     );
     let builtin = "import { resolve } from \"node:path\";\nexport { resolve };\n";
     assert_eq!(
-        super::assemble(builtin).unwrap(),
-        crate::cstr!("{}{builtin}", super::assemble("").unwrap())
+        super::assemble(builtin, false).unwrap(),
+        crate::cstr!("{}{builtin}", super::assemble("", false).unwrap())
     );
-    let mut encoded = vize_l0::String::default();
-    super::base64(b"vize\xff\x00", &mut encoded);
-    assert_eq!(encoded, "dml6Zf8A");
 }
 
-#[test]
-fn the_lazy_plugin_host_resolves_and_inspects_inside_the_private_module() {
-    let mut script = vite_runtime().unwrap();
-    script.push_str(
-        r#"
-const rows = [];
-try { await projectViteConfigSource({ vue: { plugins: [{ name: "x", version: "1" }] } }); }
-catch (error) { rows.push(error.message); }
-rows.push(JSON.stringify(await projectViteConfigSource({ vue: { plugins: [false, null] } })));
-const inspection = await inspectViteConfigPlugins({ vue: {} });
-rows.push(inspection.order.length, inspection.digest.length, inspection.admission.lint.status);
-process.stdout.write(JSON.stringify(rows));
-"#,
-    );
+fn run(script: &str) -> serde_json::Value {
     let project = tempfile::tempdir().unwrap();
-    let runtime = super::super::runtime_file::NodeRuntimeFile::new(&script).unwrap();
+    let runtime = super::super::runtime_file::NodeRuntimeFile::new(script).unwrap();
     let output = runtime
         .command(&project.path().join("vite.config.mjs"))
         .output()
@@ -121,14 +112,36 @@ process.stdout.write(JSON.stringify(rows));
         "{}",
         String::from_utf8_lossy(&output.stderr)
     );
+    serde_json::from_slice(&output.stdout).unwrap()
+}
+
+#[test]
+fn lazy_plugin_modules_resolve_and_inspect_inside_the_private_modules() {
+    let mut config = vite_runtime().unwrap();
+    config.push_str(
+        r#"
+const rows = [];
+try { await projectViteConfigSource({ vue: { plugins: [{ name: "x", version: "1" }] } }); }
+catch (error) { rows.push(error.message); }
+rows.push(JSON.stringify(await projectViteConfigSource({ vue: { plugins: [false, null] } })));
+try { await inspectViteConfigPlugins({ vue: {} }); } catch (error) { rows.push(error.message); }
+process.stdout.write(JSON.stringify(rows));
+"#,
+    );
     assert_eq!(
-        serde_json::from_slice::<serde_json::Value>(&output.stdout).unwrap(),
+        run(&config),
         serde_json::json!([
             "[plugin/entry-invalid] vue.plugins[0]: expected a defineVizePlugin entry or a v1 definePlugin rule plugin; other v1 hooks keep their native APIs",
             "{\"typeChecker\":{\"jsxTypecheck\":true}}",
-            0,
-            64,
-            "unused"
+            "plugin tools are not part of the config runtime"
         ])
     );
+    let mut tools = super::vite_tools_runtime().unwrap();
+    tools.push_str(
+        r#"
+const inspection = await inspectViteConfigPlugins({ vue: {} });
+process.stdout.write(JSON.stringify([inspection.order.length, inspection.digest.length, inspection.admission.lint.status]));
+"#,
+    );
+    assert_eq!(run(&tools), serde_json::json!([0, 64, "unused"]));
 }

@@ -6,19 +6,17 @@ import { readFile } from "node:fs/promises";
 // runtime_source unit. Both observers execute that same dependency-free body.
 const pins = {
   validator: "e7cd857464b449579d288fd20e75549875404389200fa40a1bd9517ec4e2ab83",
-  runtime: "7f8d8264168123d70c8429a998b0c3e9931ba7abf4cf28b2677293e028816f45",
-  assembled: "c5aef161453268dd936d2b49fbb7ce5134861bff941a1bcec76e8bfcb0a3659f",
+  runtime: "9eb5a44f8143498c6e208f5f5e484cd6208f6dd26222793e8831f601f328cb07",
+  assembled: "5d98a0ac5eee521493861b986a433c08c1611f02dcf76eed4f7ba6d5a3d69cab",
 } as const;
-// Statically spliced modules and the lazily imported plugin host bundle,
-// in the native assembly order (runtime_source.rs `OWNED` and `PLUGIN_HOST`).
+// Statically spliced modules and the lazily imported config plugin host, in the
+// native config-runtime assembly order (runtime_source.rs `OWNED`, `PLUGIN_HOST`).
 const owned = ["vite-runtime-validation.js"] as const;
-const pluginHost = [
-  "plugin-canonical.js",
-  "plugin-capabilities.js",
-  "plugin-plan.js",
-  "plugin-inspect.js",
-] as const;
+const pluginHost = ["plugin-canonical.js", "plugin-capabilities.js", "plugin-plan.js"] as const;
 const pluginHostImport = 'import("./plugin-host.js")';
+const pluginToolsImport = 'import("./plugin-tools.js")';
+const toolsUnavailable =
+  'Promise.reject(new Error("plugin tools are not part of the config runtime"))';
 const hash = (value: string) => createHash("sha256").update(value).digest("hex");
 
 /** Mirror runtime_source.rs: drop owned imports and re-export lists, inline the registry. */
@@ -87,12 +85,17 @@ export async function nativeLoaderScript(): Promise<string> {
   const bundle = hostModules
     .map((module) => `${appendModule(module, pluginHost, true, registry)}\n`)
     .join("");
-  const body = appendModule(runtime, owned, false, registry).replaceAll(
-    pluginHostImport,
-    `import("data:text/javascript;base64,${Buffer.from(bundle).toString("base64")}")`,
-  );
+  const body = appendModule(runtime, owned, false, registry)
+    .replaceAll(
+      pluginHostImport,
+      `import("data:text/javascript;charset=utf-8," + encodeURIComponent(${JSON.stringify(bundle)}))`,
+    )
+    .replaceAll(pluginToolsImport, toolsUnavailable);
   const assembled =
     modules.map((module) => `${appendModule(module, owned, true, registry)}\n`).join("") + body;
   assert.equal(hash(assembled), pins.assembled);
-  return [assembled, ...bodies.slice(1), scripts[0]![1]].join("");
+  const script = [assembled, ...bodies.slice(1), scripts[0]![1]].join("");
+  // Observers pass this body as one `node -e` argument; Linux caps one at 128 KiB.
+  assert.ok(Buffer.byteLength(script) < 128 * 1024, "the config runtime exceeds one argv string");
+  return script;
 }

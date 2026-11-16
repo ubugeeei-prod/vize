@@ -2,9 +2,11 @@
 //!
 //! The validator shares the runtime's module scope: owned relative imports and
 //! owned re-export lists are removed and every other relative import is
-//! refused. The plugin host is bundled the same way into one module that the
-//! runtime imports lazily from a `data:` URL, so a config without plugins never
-//! parses or evaluates it. Built-in imports stay.
+//! refused. Plugin modules are bundled the same way into modules the runtime
+//! imports lazily from `data:` URLs, so a config without plugins never parses
+//! or evaluates them. The config runtime carries only the plan host; the
+//! tooling runtime (`vize plugin inspect`) also carries the plugin tools.
+//! Built-in imports stay.
 
 const VALIDATION: &str = include_str!("../vite-runtime-validation.js");
 const REGISTRY: &str = include_str!("../plugin-registry.json");
@@ -12,27 +14,38 @@ const REGISTRY: &str = include_str!("../plugin-registry.json");
 /// Statically spliced into the runtime scope.
 const OWNED: [(&str, &str); 1] = [("./vite-runtime-validation.js", VALIDATION)];
 
-/// The lazily imported plugin host, in dependency order. Together these export
-/// every name `plugin-host.js` re-exports.
-const PLUGIN_HOST: [(&str, &str); 4] = [
-    (
-        "./plugin-canonical.js",
-        include_str!("../plugin-canonical.js"),
-    ),
-    (
-        "./plugin-capabilities.js",
-        include_str!("../plugin-capabilities.js"),
-    ),
-    ("./plugin-plan.js", include_str!("../plugin-plan.js")),
-    ("./plugin-inspect.js", include_str!("../plugin-inspect.js")),
-];
-const PLUGIN_HOST_IMPORT: &str = "import(\"./plugin-host.js\")";
+const CANONICAL: (&str, &str) = (
+    "./plugin-canonical.js",
+    include_str!("../plugin-canonical.js"),
+);
+const CAPABILITIES: (&str, &str) = (
+    "./plugin-capabilities.js",
+    include_str!("../plugin-capabilities.js"),
+);
+const PLAN: (&str, &str) = ("./plugin-plan.js", include_str!("../plugin-plan.js"));
+const INSPECT: (&str, &str) = ("./plugin-inspect.js", include_str!("../plugin-inspect.js"));
 
+/// `plugin-host.js`: everything config evaluation needs, in dependency order.
+const PLUGIN_HOST: [(&str, &str); 3] = [CANONICAL, CAPABILITIES, PLAN];
+/// `plugin-tools.js`: the host plus inspection, in dependency order.
+const PLUGIN_TOOLS: [(&str, &str); 4] = [CANONICAL, CAPABILITIES, PLAN, INSPECT];
+
+const PLUGIN_HOST_IMPORT: &str = "import(\"./plugin-host.js\")";
+const PLUGIN_TOOLS_IMPORT: &str = "import(\"./plugin-tools.js\")";
+const TOOLS_UNAVAILABLE: &str =
+    "Promise.reject(new Error(\"plugin tools are not part of the config runtime\"))";
+
+/// The config evaluation runtime.
 pub(in crate::config::loader) fn vite_runtime() -> Result<vize_l0::String, &'static str> {
-    assemble(super::VITE_RUNTIME)
+    assemble(super::VITE_RUNTIME, false)
 }
 
-fn assemble(runtime: &str) -> Result<vize_l0::String, &'static str> {
+/// The runtime of `vize plugin inspect`, which also carries the plugin tools.
+pub(in crate::config::loader) fn vite_tools_runtime() -> Result<vize_l0::String, &'static str> {
+    assemble(super::VITE_RUNTIME, true)
+}
+
+fn assemble(runtime: &str, tools: bool) -> Result<vize_l0::String, &'static str> {
     let mut source = vize_l0::String::with_capacity(VALIDATION.len() + runtime.len() + 1);
     for (_, module) in OWNED {
         append_module(module, &OWNED, true, &mut source)?;
@@ -41,18 +54,38 @@ fn assemble(runtime: &str) -> Result<vize_l0::String, &'static str> {
     let mut body = vize_l0::String::with_capacity(runtime.len());
     append_module(runtime, &OWNED, false, &mut body)?;
     if body.contains(PLUGIN_HOST_IMPORT) {
-        let mut bundle = vize_l0::String::default();
-        for (_, module) in PLUGIN_HOST {
-            append_module(module, &PLUGIN_HOST, true, &mut bundle)?;
-            bundle.push('\n');
-        }
-        let mut url = vize_l0::String::from("import(\"data:text/javascript;base64,");
-        base64(bundle.as_bytes(), &mut url);
-        url.push_str("\")");
-        body = body.replace(PLUGIN_HOST_IMPORT, &url).into();
+        body = body
+            .replace(PLUGIN_HOST_IMPORT, &lazy_import(&PLUGIN_HOST)?)
+            .into();
+    }
+    if body.contains(PLUGIN_TOOLS_IMPORT) {
+        let replacement = if tools {
+            lazy_import(&PLUGIN_TOOLS)?
+        } else {
+            TOOLS_UNAVAILABLE.into()
+        };
+        body = body.replace(PLUGIN_TOOLS_IMPORT, &replacement).into();
     }
     source.push_str(&body);
     Ok(source)
+}
+
+/// A dynamic import of one bundled module. The source travels as a JSON string
+/// literal and is URL-encoded only when the import actually runs.
+fn lazy_import(modules: &[(&str, &str)]) -> Result<vize_l0::String, &'static str> {
+    let mut bundle = vize_l0::String::default();
+    for (_, module) in modules {
+        append_module(module, modules, true, &mut bundle)?;
+        bundle.push('\n');
+    }
+    let literal = serde_json::to_string(bundle.as_str())
+        .map_err(|_| "unencodable plugin module in the product runtime")?;
+    let mut import = vize_l0::String::from(
+        "import(\"data:text/javascript;charset=utf-8,\" + encodeURIComponent(",
+    );
+    import.push_str(&literal);
+    import.push_str("))");
+    Ok(import)
 }
 
 /// Copy one module, resolving its relative imports against `owned`.
@@ -117,27 +150,6 @@ fn import_end(text: &str) -> Option<usize> {
 fn specifier(statement: &str) -> Option<&str> {
     let (_, after) = statement.rsplit_once(" from \"")?;
     after.split_once('"').map(|(specifier, _)| specifier)
-}
-
-/// Standard padded base64, as `Buffer.prototype.toString("base64")` writes it.
-fn base64(bytes: &[u8], output: &mut vize_l0::String) {
-    const ALPHABET: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-    let symbol =
-        |index: u32| char::from(ALPHABET.get(index as usize & 63).copied().unwrap_or(b'='));
-    for chunk in bytes.chunks(3) {
-        let [first, second, third] = [0, 1, 2].map(|index| chunk.get(index).copied());
-        let value = (u32::from(first.unwrap_or(0)) << 16)
-            | (u32::from(second.unwrap_or(0)) << 8)
-            | u32::from(third.unwrap_or(0));
-        output.push(symbol(value >> 18));
-        output.push(symbol(value >> 12));
-        output.push(if second.is_some() {
-            symbol(value >> 6)
-        } else {
-            '='
-        });
-        output.push(if third.is_some() { symbol(value) } else { '=' });
-    }
 }
 
 #[cfg(test)]
