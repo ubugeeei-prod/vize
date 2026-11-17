@@ -7,6 +7,13 @@ import {
   currentDefaultNativeType,
   previousDefaultNativeType,
 } from "./with-defaults-undefined-transition.ts";
+import {
+  certifyGenericSlotPayloadAsset,
+  currentEmbeddedGenericSlotPayload,
+  currentGenericSlotPayload,
+  previousEmbeddedGenericSlotPayload,
+  previousGenericSlotPayload,
+} from "./generic-slot-payload-transition.ts";
 
 const runtimePropPath = "crates/vize_canon/src/virtual_ts/helpers/declarations/core-types.d.ts.txt";
 export const previousRuntimeProp =
@@ -66,6 +73,20 @@ export function certifyHelperDeclarationEdits(before: Buffer, after: Buffer) {
       currentDefaultNativeType,
       "withDefaults undefined default",
     ),
+    certifiedTransition(
+      before,
+      after,
+      previousGenericSlotPayload,
+      currentGenericSlotPayload,
+      "shared generic-host slot payload",
+    ),
+    certifiedTransition(
+      before,
+      after,
+      previousEmbeddedGenericSlotPayload,
+      currentEmbeddedGenericSlotPayload,
+      "embedded generic-host slot payload",
+    ),
   ];
 }
 
@@ -82,6 +103,7 @@ export function certifyCanonicalAssets(
     assert.ok(before && after);
     if (before.equals(after)) continue;
     if (certifyWithDefaultsUndefinedAsset(file, before, after)) continue;
+    if (certifyGenericSlotPayloadAsset(file, before, after)) continue;
     const label = `canonical helper body changed: ${file}`;
     if (file !== runtimePropPath) {
       const proof = certifyJsxWitnessChange(file, before, after);

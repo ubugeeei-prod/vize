@@ -49,6 +49,9 @@ export function beforeGenericSlotPayload(file: string, current: string): string 
 /** The shared payload declarations, as a compiled preamble holds them. */
 export const previousGenericSlotPayload = record.files[0]!.hunks[0]!.before.trimEnd();
 export const currentGenericSlotPayload = record.files[0]!.hunks[0]!.after.trimEnd();
+/** The per-file (embedded) payload declarations. */
+export const previousEmbeddedGenericSlotPayload = record.files[1]!.hunks[0]!.before.trimEnd();
+export const currentEmbeddedGenericSlotPayload = record.files[1]!.hunks[0]!.after.trimEnd();
 
 /** Whether a canonical helper asset changed by exactly the recorded #13239 edit. */
 export function certifyGenericSlotPayloadAsset(
