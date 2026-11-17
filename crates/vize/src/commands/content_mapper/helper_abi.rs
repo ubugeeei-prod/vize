@@ -210,14 +210,14 @@ fn supports_sdk_resolution(
         return false;
     }
     if compiler_options.get("paths").is_some() || compiler_options.get("baseUrl").is_some() {
-        for specifier in IMPORTS {
-            let Some(candidates) = super::super::check::imports_aliases::mapper_override_candidates(
-                config_file_name,
-                compiler_options,
-                specifier,
-            ) else {
-                return false;
-            };
+        let Some(per_import) = super::super::check::imports_aliases::mapper_override_candidates(
+            config_file_name,
+            compiler_options,
+            IMPORTS,
+        ) else {
+            return false;
+        };
+        for candidates in per_import {
             for candidate in candidates {
                 let Some(parent) = candidate.parent() else {
                     return false;
