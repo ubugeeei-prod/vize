@@ -27460,6 +27460,45 @@
       }
     },
     {
+      "id": "typechecker/regression/slot-outlet-loose-payload-4979",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "slot-outlet-loose-payload-4979/Child.vue.txt",
+          "sha256": "d595f1c1fd615805b832de34c185006b07fc51716f02e3f336176a1b72f2a344",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "slot-outlet-loose-payload-4979/Parent.vue.txt",
+          "sha256": "4f3e68ab7c3eed657fd544f511119e531b434ffa6cc38cad22f8dbeec2aa7b6b",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "slot-outlet-loose-payload-4979/tsconfig.json.txt",
+          "sha256": "8617e41a46ceaecf45f4041f3147f809739a32624d8a4a96839fa2f62990a170",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "vize_canon batch::type_checker::tests::recent_issues::slot_outlet_loose_payload::slot_outlet_excess_keys_survive_the_loose_component_key_filter; upstream vue-language-tools #4979: a <slot> payload's undeclared key stays TS2353 under the loose unknown-props policy while an undeclared component attribute stays forgiven"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/slot-outlet-props-option",
       "state": "active",
       "targets": [
