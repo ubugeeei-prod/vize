@@ -91,6 +91,13 @@ pub(super) fn virtual_file_path(
     output
 }
 
+/// Whether this process has named a session directory. Session directories
+/// carry the allocating process id, so before the first allocation there is
+/// none of this process's to remove.
+pub(super) fn allocated_any_session_root() -> bool {
+    SESSION_COUNTER.load(Ordering::Relaxed) != 0
+}
+
 pub(super) fn allocate_session_root(project_root: &Path) -> PathBuf {
     let session_name = next_session_directory_name();
     cleanup_stale_session_roots(project_root);
