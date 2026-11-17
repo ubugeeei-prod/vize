@@ -96,9 +96,9 @@ const fire = defineEmits(['save'])
 }
 
 #[test]
-fn test_sfc_template_dynamic_event_name_still_warns() {
-    // A dynamic event name cannot be matched to a declared name; the template
-    // treatment mirrors the script-side handling of `emit(name)`.
+fn test_sfc_template_dynamic_event_name_may_emit_every_event() {
+    // A dynamic event name may dispatch any declared event, so none can be
+    // proven unused; the template mirrors the script-side `emit(name)`.
     let sfc = r#"<script setup>
 const emit = defineEmits(['save'])
 const name = 'save'
@@ -108,7 +108,7 @@ const name = 'save'
   <button @click="emit(name)">Save</button>
 </template>
 "#;
-    assert_eq!(lint_sfc(sfc).warning_count, 1);
+    assert_eq!(lint_sfc(sfc).warning_count, 0);
 }
 
 #[test]
