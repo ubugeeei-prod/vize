@@ -4,6 +4,14 @@ import {
   componentRegistrationPatinaIntentionalReason,
 } from "./component_registration_intentional.ts";
 import {
+  booleanDefaultFromImportedContract,
+  duplicateKeyFromImportedContract,
+  importedPropCollisionReason,
+  importedPropContractReason,
+  requiredDefaultFromImportedContract,
+  templateShadowFromImportedContract,
+} from "./imported_prop_contract.ts";
+import {
   indexRealProjectLocationSource,
   realProjectLocationDivergence,
   type RealProjectLocationSource,
@@ -484,6 +492,7 @@ const patinaIntentionalRuleIds = new Set([
   "script/no-deprecated-dollar-listeners-api",
   "script/no-deprecated-dollar-scopedslots-api",
   "script/no-deprecated-events-api",
+  "script/no-dupe-keys",
   "script/no-ref-as-operand",
   "script/no-side-effects-in-computed-properties",
   "script/one-component-per-file",
@@ -498,6 +507,7 @@ const patinaIntentionalRuleIds = new Set([
   "vue/no-reserved-component-names",
   "vue/no-setup-props-reactivity-loss",
   "vue/no-static-inline-styles",
+  "vue/no-template-shadow",
   "vue/no-unused-components",
   "vue/no-unused-vars",
   "vue/require-v-for-key",
@@ -556,6 +566,8 @@ export function patinaIntentionalReason(
     typedDefaultComesFromComposedContract(finding, source)
   )
     return "Patina resolves optional props inherited through local interface heritage or intersections; eslint-plugin-vue does not expand that composed prop contract.";
+  const importedContract = importedPropContractFinding(finding, source);
+  if (importedContract !== null) return importedContract;
   if (
     finding.ruleId === "script/no-boolean-default" &&
     findingInsideSameFileDefaultsSpread(finding, source)
@@ -923,6 +935,25 @@ function findingInsideScriptBlock(finding: LintRecord, source: string): boolean 
   const content = source.indexOf(">", open) + 1;
   const close = source.indexOf("</script>", content);
   return content > 0 && content <= offset && (close < 0 || offset < close);
+}
+
+function importedPropContractFinding(finding: LintRecord, source: string): string | null {
+  const start = findingOffset(finding, source),
+    end = findingEndOffset(finding, source);
+  if (start === null || end === null || end < start) return null;
+  const accepted =
+    finding.ruleId === "script/require-default-prop"
+      ? requiredDefaultFromImportedContract(finding.message, start, end, source)
+      : finding.ruleId === "script/no-boolean-default"
+        ? booleanDefaultFromImportedContract(start, end, source)
+        : null;
+  if (accepted !== null) return accepted ? importedPropContractReason : null;
+  const collides =
+    finding.ruleId === "script/no-dupe-keys"
+      ? duplicateKeyFromImportedContract(finding.message, start, end, source)
+      : finding.ruleId === "vue/no-template-shadow" &&
+        templateShadowFromImportedContract(finding.message, start, source);
+  return collides ? importedPropCollisionReason : null;
 }
 
 function findingOffset(finding: LintRecord, source: string): number | null {
