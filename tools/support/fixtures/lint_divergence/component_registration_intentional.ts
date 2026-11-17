@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 
 interface BaselineComponentFinding {
+  readonly file?: string;
   readonly ruleId: string;
   readonly message: string;
 }
@@ -345,6 +346,21 @@ function optionsApiRegistersNumericKebab(source: string, tag: string): boolean {
   return false;
 }
 
+/**
+ * Vue's template compiler names an SFC after its file (`capitalize(camelize(base))`)
+ * and resolves a tag with that name to the component itself when nothing else
+ * registers it.
+ */
+function fileNamesSelf(file: string | undefined, tag: string): boolean {
+  const base = /([^/\\]+)\.vue$/u.exec(file ?? "")?.[1];
+  if (base === undefined) return false;
+  const selfName = (name: string) => {
+    const camel = name.replace(/-(\w)/gu, (_, character: string) => character.toUpperCase());
+    return camel.charAt(0).toUpperCase() + camel.slice(1);
+  };
+  return selfName(tag) === selfName(base);
+}
+
 export function componentRegistrationBaselineIntentionalReason(
   finding: BaselineComponentFinding,
   source: string,
@@ -352,6 +368,8 @@ export function componentRegistrationBaselineIntentionalReason(
   if (finding.ruleId !== "vue/no-undef-components") return null;
   const tag = componentMessage.exec(finding.message)?.[1];
   if (tag === undefined) return null;
+  if (fileNamesSelf(finding.file, tag))
+    return "The tag names the component's own file, which Vue's template compiler resolves as a self-reference; eslint-plugin-vue does not read the file name.";
   if (defineOptionsNamesSelf(source, tag))
     return "The component renders itself recursively by its defineOptions name, which Vue resolves; eslint-plugin-vue does not read that name.";
   if (decoratorRegisters(source, tag))

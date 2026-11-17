@@ -89,6 +89,18 @@ defineOptions({ inheritAttrs: false, name: "RouteTreeBranch" });
   );
 });
 
+test("a tag naming the component's own file is Vue's self-reference", () => {
+  const source = "<template><x-icon /></template>\n<script>\nexport default {}\n</script>";
+  const inFile = (file: string, tag: string) =>
+    componentRegistrationBaselineIntentionalReason({ ...finding(tag), file }, source);
+  assert.match(inFile("src/demos/XIcon.vue", "x-icon") ?? "", /own file/u);
+  assert.match(inFile("docs/AtomSpinner.vue", "AtomSpinner") ?? "", /own file/u);
+  assert.match(inFile("docs/atom-spinner.vue", "atom-spinner") ?? "", /own file/u);
+  assert.equal(inFile("src/demos/Icon.vue", "x-icon"), null);
+  assert.equal(inFile("src/demos/XIcons.vue", "x-icon"), null);
+  assert.equal(componentRegistrationBaselineIntentionalReason(finding("x-icon"), source), null);
+});
+
 test("numeric kebab tags retain their Options API runtime registration", () => {
   const source = [
     "<script>",
