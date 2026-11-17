@@ -17992,6 +17992,43 @@
       }
     },
     {
+      "id": "linter/no-dupe-keys-model-binding-12336",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "no-dupe-keys-model-binding-12336",
+        "files": [
+          {
+            "path": "CardCreationDialog.vue.txt",
+            "role": "real-project-matrix-reduction",
+            "sha256": "584754ba69b2692fd2b1efd8520c1c05599840650818977ad5eff01145145c6e"
+          },
+          {
+            "path": "rules.json",
+            "role": "rule-options",
+            "sha256": "39c6f1da0e4cac67c484ed90cb7fd0f3b86c92923a6c15162b2111639c4aa484"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/no-implied-eval-callable-13000",
       "state": "active",
       "targets": [
