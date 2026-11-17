@@ -30,6 +30,7 @@ in the archived phase-6 plans. Production compiler and editor work takes priorit
 
 ## Where to start
 
+The goal and the rules that follow from it are in the [charter](./charter.md).
 Whether Davinci is complete is decided by the [completion gates](./completion-gates.md);
 run `node tools/commands/davinci/completion-gates.ts --issues` for the current state.
 

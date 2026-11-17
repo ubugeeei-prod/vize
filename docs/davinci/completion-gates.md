@@ -5,7 +5,8 @@ roadmaps [#6826](https://github.com/ubugeeei-prod/vize/issues/6826) (levels),
 [#6827](https://github.com/ubugeeei-prod/vize/issues/6827) (products),
 [#6828](https://github.com/ubugeeei-prod/vize/issues/6828) (legacy deletion),
 [#6829](https://github.com/ubugeeei-prod/vize/issues/6829) (inputs and frameworks) and
-[#6830](https://github.com/ubugeeei-prod/vize/issues/6830) (CI) as checks.
+[#6830](https://github.com/ubugeeei-prod/vize/issues/6830) (CI) as checks. The goal
+they measure, and the rules each gate enforces, are in the [charter](./charter.md).
 
 ```sh
 node tools/commands/davinci/completion-gates.ts            # measured gates
