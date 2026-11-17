@@ -399,8 +399,8 @@ mod tests {
 
     #[test]
     fn an_attribute_name_ends_before_its_value() {
-        let text = "<Panel :behavior=\"x\" @close.stop />";
+        let text = "<Panel :behavior=\"x\" data-panel-id />";
         assert_eq!(text.get(8..attribute_end(text, 8)), Some("behavior"));
-        assert_eq!(text.get(21..attribute_end(text, 21)), Some("@close.stop"));
+        assert_eq!(text.get(21..attribute_end(text, 21)), Some("data-panel-id"));
     }
 }
