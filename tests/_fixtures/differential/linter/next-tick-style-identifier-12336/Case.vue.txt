@@ -1,0 +1,30 @@
+<script>
+import Vue, { nextTick as tick } from 'vue'
+
+export default {
+  methods: {
+    first() {
+      const that = this
+      this.$nextTick(() => this.measure())
+      that.$nextTick(this.measure)
+      Vue.nextTick(this.measure)
+      tick(() => undefined)
+    },
+    second() {
+      var that = this
+      setTimeout(function () {
+        that.$nextTick(() => undefined)
+      })
+      this.$refs.child.$nextTick(() => undefined)
+    },
+    async third() {
+      await this.$nextTick()
+      this.$nextTick()?.then(() => undefined)
+    },
+  },
+}
+</script>
+
+<template>
+  <p>x</p>
+</template>
