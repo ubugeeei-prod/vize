@@ -6,7 +6,7 @@ use crate::options::{FormatOptions, javascript_line_width};
 use crate::template::literal_lines::Representation;
 use crate::template::literal_spans::ValueLines;
 use oxc_allocator::Allocator as OxcAllocator;
-use oxc_ast::ast::{Expression, Statement};
+use oxc_ast::ast::{Expression, Program, Statement};
 use oxc_formatter::{QuoteStyle, format_program, parse_for_format};
 use oxc_span::SourceType;
 use unicode_width::UnicodeWidthStr;
@@ -212,95 +212,157 @@ fn format_expression_with_layout(
         if !parsed.diagnostics.is_empty() {
             return None;
         }
+        let budgeted = |argument: &Expression<'_>, depth| {
+            format_with_value_budget(
+                oxc_allocator,
+                &parsed.program,
+                argument,
+                (trimmed, depth),
+                options,
+                quote_style,
+            )
+        };
 
         if let Some(depth) = attribute_depth
             && let [Statement::ExpressionStatement(statement)] = parsed.program.body.as_slice()
             && let Expression::UnaryExpression(unary) = &statement.expression
-            && (matches!(&unary.argument, Expression::CallExpression(_))
+        {
+            let budget_shape = matches!(
+                &unary.argument,
+                Expression::BinaryExpression(_)
+                    | Expression::LogicalExpression(_)
+                    | Expression::StaticMemberExpression(_)
+                    | Expression::ComputedMemberExpression(_)
+                    | Expression::PrivateFieldExpression(_)
+                    | Expression::ChainExpression(_)
+            );
+            if matches!(&unary.argument, Expression::CallExpression(_))
                 || (options.canonical_directive_layout
                     && matches!(
                         &unary.argument,
                         Expression::ConditionalExpression(_) | Expression::ObjectExpression(_)
                     ))
-                || (matches!(
-                    &unary.argument,
-                    Expression::BinaryExpression(_)
-                        | Expression::LogicalExpression(_)
-                        | Expression::StaticMemberExpression(_)
-                        | Expression::ComputedMemberExpression(_)
-                        | Expression::PrivateFieldExpression(_)
-                        | Expression::ChainExpression(_)
-                ) && (options.canonical_directive_layout
-                    || attribute_layout.is_some_and(|(name, value, trimmed)| {
-                        value_uses_standalone_layout(name, value, trimmed, options, depth)
-                    }))))
-        {
-            // Retained direct calls already consume the attribute-value budget.
-            // Apply that budget to the other expression shapes when the value
-            // is authored on its own line or its inline attribute would
-            // overflow onto one. Formatting the wrapper program would otherwise
-            // measure that standalone value from column 0 and let it overflow
-            // by its full indentation.
-            let value_indent = (depth + 2) * options.tab_width as usize;
-            let width = options
-                .print_width
-                .saturating_sub(value_indent as u32)
-                .max(1);
-            // Construct the options with the width this branch actually uses,
-            // without validating a configured width that would be discarded.
-            let mut oxc_options =
-                options.to_oxc_format_options_with_line_width(javascript_line_width(width));
-            if let Some(quote_style) = quote_style {
-                oxc_options.quote_style = quote_style;
-            }
-            let code =
-                oxc_formatter::format_unary_argument(oxc_allocator, &parsed.program, oxc_options)?
-                    .print()
-                    .ok()?
-                    .into_code();
-            let code = trim_expression(&code);
-            let inner = expression_wrapper::unwrap_argument(code, &parsed.program, trimmed)?;
-            let removed_generated_group = inner.text.len() != code.len();
-            let code = if removed_generated_group
-                && !matches!(&unary.argument, Expression::ConditionalExpression(_))
+                || (budget_shape
+                    && (options.canonical_directive_layout
+                        || attribute_layout.is_some_and(|(name, value, trimmed)| {
+                            value_uses_standalone_layout(name, value, trimmed, options, depth)
+                        })))
             {
-                strip_generated_group_indent(inner.text, options)
-            } else {
-                trim_expression(inner.text).to_compact_string()
-            };
-            let owns_attribute_lines = !matches!(&unary.argument, Expression::ObjectExpression(_))
-                && (code.contains('\n')
-                    || (options.end_of_line == crate::EndOfLine::Cr && code.contains('\r')));
-            return Some(FormattedExpression {
-                code,
-                retained_bare_sequence: inner.retained_bare_sequence,
-                owns_attribute_lines,
-            });
+                return budgeted(&unary.argument, depth);
+            }
+            if budget_shape && let Some((name, ..)) = attribute_layout {
+                // The authored bytes fit or span lines, but the printed value may
+                // still overflow its attribute line. The template printer then
+                // moves it onto its own line, where the next pass applies the
+                // budget; apply it now so both passes print the same value.
+                let formatted = format_unbudgeted(
+                    oxc_allocator,
+                    &parsed.program,
+                    trimmed,
+                    options,
+                    quote_style,
+                )?;
+                let code = formatted.code.as_str();
+                if !code.contains(['\r', '\n'])
+                    && value_uses_standalone_layout(name, code, code, options, depth)
+                {
+                    return budgeted(&unary.argument, depth);
+                }
+                return Some(formatted);
+            }
         }
-        let mut oxc_options = options.to_oxc_format_options();
-        if let Some(quote_style) = quote_style {
-            oxc_options.quote_style = quote_style;
-        }
-        let formatted = format_program(oxc_allocator, &parsed.program, oxc_options, None)
-            .print()
-            .ok()?
-            .into_code();
+        format_unbudgeted(
+            oxc_allocator,
+            &parsed.program,
+            trimmed,
+            options,
+            quote_style,
+        )
+    })
+}
 
-        // Extract the expression back from the formatted output.
-        // preserve_parens is false, so the formatter may remove the wrapping parens.
-        // Expected forms:  "void expression;\n"  or  "void (expression);\n"
-        let formatted = formatted.trim();
-        let formatted = formatted.strip_suffix(';').unwrap_or(formatted);
-        let inner = formatted.strip_prefix("void ").unwrap_or(formatted);
+/// Format the wrapper's argument within the line left after the attribute's
+/// standalone value indentation.
+fn format_with_value_budget(
+    oxc_allocator: &OxcAllocator,
+    program: &Program<'_>,
+    argument: &Expression<'_>,
+    (trimmed, depth): (&str, usize),
+    options: &FormatOptions,
+    quote_style: Option<QuoteStyle>,
+) -> Option<FormattedExpression> {
+    // Retained direct calls already consume the attribute-value budget.
+    // Apply that budget to the other expression shapes when the value
+    // is authored on its own line or its inline attribute would
+    // overflow onto one. Formatting the wrapper program would otherwise
+    // measure that standalone value from column 0 and let it overflow
+    // by its full indentation.
+    let value_indent = (depth + 2) * options.tab_width as usize;
+    let width = options
+        .print_width
+        .saturating_sub(value_indent as u32)
+        .max(1);
+    // Construct the options with the width this branch actually uses,
+    // without validating a configured width that would be discarded.
+    let mut oxc_options =
+        options.to_oxc_format_options_with_line_width(javascript_line_width(width));
+    if let Some(quote_style) = quote_style {
+        oxc_options.quote_style = quote_style;
+    }
+    let code = oxc_formatter::format_unary_argument(oxc_allocator, program, oxc_options)?
+        .print()
+        .ok()?
+        .into_code();
+    let code = trim_expression(&code);
+    let inner = expression_wrapper::unwrap_argument(code, program, trimmed)?;
+    let removed_generated_group = inner.text.len() != code.len();
+    let code =
+        if removed_generated_group && !matches!(argument, Expression::ConditionalExpression(_)) {
+            strip_generated_group_indent(inner.text, options)
+        } else {
+            trim_expression(inner.text).to_compact_string()
+        };
+    let owns_attribute_lines = !matches!(argument, Expression::ObjectExpression(_))
+        && (code.contains('\n')
+            || (options.end_of_line == crate::EndOfLine::Cr && code.contains('\r')));
+    Some(FormattedExpression {
+        code,
+        retained_bare_sequence: inner.retained_bare_sequence,
+        owns_attribute_lines,
+    })
+}
 
-        // The retained AST distinguishes the wrapper from authored call/member
-        // parentheses and sequences whose grouping Vue consumers require.
-        let inner = expression_wrapper::unwrap_argument(inner, &parsed.program, trimmed)?;
+/// Format the wrapper program at the configured print width.
+fn format_unbudgeted(
+    oxc_allocator: &OxcAllocator,
+    program: &Program<'_>,
+    trimmed: &str,
+    options: &FormatOptions,
+    quote_style: Option<QuoteStyle>,
+) -> Option<FormattedExpression> {
+    let mut oxc_options = options.to_oxc_format_options();
+    if let Some(quote_style) = quote_style {
+        oxc_options.quote_style = quote_style;
+    }
+    let formatted = format_program(oxc_allocator, program, oxc_options, None)
+        .print()
+        .ok()?
+        .into_code();
 
-        Some(FormattedExpression {
-            code: trim_expression(inner.text).to_compact_string(),
-            retained_bare_sequence: inner.retained_bare_sequence,
-            owns_attribute_lines: false,
-        })
+    // Extract the expression back from the formatted output.
+    // preserve_parens is false, so the formatter may remove the wrapping parens.
+    // Expected forms:  "void expression;\n"  or  "void (expression);\n"
+    let formatted = formatted.trim();
+    let formatted = formatted.strip_suffix(';').unwrap_or(formatted);
+    let inner = formatted.strip_prefix("void ").unwrap_or(formatted);
+
+    // The retained AST distinguishes the wrapper from authored call/member
+    // parentheses and sequences whose grouping Vue consumers require.
+    let inner = expression_wrapper::unwrap_argument(inner, program, trimmed)?;
+
+    Some(FormattedExpression {
+        code: trim_expression(inner.text).to_compact_string(),
+        retained_bare_sequence: inner.retained_bare_sequence,
+        owns_attribute_lines: false,
     })
 }
