@@ -98,12 +98,19 @@ pub(crate) fn dependencies_to_napi(dependencies: &[impl AsRef<str>]) -> Option<V
     assert.equal(blob(reference), "96073dbb55954781d825974cb3beff77b3fb9085");
     return reference;
   }
-  if (
-    file !== "crates/vize_atelier_sfc/src/compile/entry/root_match.rs" ||
-    blob(bytes) !== "ebff50833e6b9b5fb2998bc7adf8a3874160eaf3"
-  )
-    return bytes;
+  if (file !== "crates/vize_atelier_sfc/src/compile/entry/root_match.rs") return bytes;
   let text = Buffer.from(bytes).toString("utf8");
+  // #13231 resolves the template lang through the block-language registry.
+  if (blob(bytes) === "33e52e3d7b419f1af96562e7bbe078d9d6dfb54a") {
+    const current =
+      "    if template.src.is_some()\n        || !vize_l1::container::lang::is_html_template(template.lang.as_deref())\n    {\n";
+    assert.equal(text.split(current).length, 2, "unique reviewed block-language edit");
+    text = text.replace(
+      current,
+      '    if template.src.is_some() || template.lang.as_deref().is_some_and(|lang| lang != "html") {\n',
+    );
+    assert.equal(blob(Buffer.from(text)), "ebff50833e6b9b5fb2998bc7adf8a3874160eaf3");
+  } else if (blob(bytes) !== "ebff50833e6b9b5fb2998bc7adf8a3874160eaf3") return bytes;
   for (const [current, reference] of [
     [
       "    Allocator, ParseMode, ParserOptions, PropNode, TemplateChildNode,",

@@ -244,7 +244,7 @@ fn failed_and_empty_content_keep_the_block_without_inventing_children() {
 #[test]
 fn html_markup_uses_original_html_spans_and_other_langs_remain_explicitly_block_only() {
     for lang in ["html", "HTML"] {
-        let html = outline(&format!(
+        let html = outline(&vize_l0::cstr!(
             "<template lang=\"{lang}\"><section><Widget>{{{{value}}}}</Widget></section></template>"
         ));
         assert_eq!(html[0].children.as_ref().unwrap()[0].name, "section");

@@ -56,7 +56,7 @@ pub enum TemplateLang {
     /// The HTML-tokenizer family (htmlish): the Vue template profile in an
     /// SFC and the document profile in an `.html` file.
     Html,
-    /// The pug surface (`vize_l1::pug`), lowered to a derived Vue template,
+    /// The pug surface (`vize_l1::markup::pug`), lowered to a derived Vue template,
     /// with the language version the author named.
     Pug(PugProfile),
 }

@@ -169,7 +169,10 @@ fn pug_view(source: &str) -> Option<SfcView> {
     use vize_l1::container::lang::{TemplateLang, sfc_template_lang, template_lang};
     // The registry reads the template's `lang` from the L1 container walk
     // (stopping at the template), so HTML SFCs never pay for the descriptor.
-    if matches!(sfc_template_lang(source), None | Some(Ok(TemplateLang::Html))) {
+    if matches!(
+        sfc_template_lang(source),
+        None | Some(Ok(TemplateLang::Html))
+    ) {
         return None;
     }
     let descriptor = vize_atelier_sfc::parse_sfc(source, Default::default()).ok()?;

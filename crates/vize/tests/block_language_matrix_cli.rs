@@ -29,7 +29,7 @@ const TEMPLATE_ALIASES: [&str; 4] = ["pug", "jade", "PUG", "Jade"];
 fn pug_sfc(lang: &str) -> String {
     format!(
         "<script setup lang=\"ts\">\nconst items = [1, 2];\nconst count = 1;\n</script>\n\n\
-         <template lang=\"{lang}\">\nul\n  li(v-for=\"item in items\") {{{{ item }}}}\n  \
+         <template lang=\"{lang}\">\ndiv\n  ul\n    li(v-for=\"item in items\") {{{{ item }}}}\n  \
          p(:title=\"count.trim()\") {{{{ count }}}}\n</template>\n"
     )
 }
@@ -62,12 +62,22 @@ const STYLE_GROUPS: [(&[Option<&str>], &str); 5] = [
     ),
 ];
 
-fn style_sfc(lang: Option<&str>, body: &str) -> String {
+/// A scoped style block in `lang`; with `module`, a CSS-module block the
+/// template reads through `$style` instead. A CSS module's generated file
+/// name carries the block offset (which a longer `lang` shifts) and the
+/// spelled `lang` as its extension, as Vite's does, so compile output is
+/// compared on scoped blocks.
+fn style_sfc(lang: Option<&str>, body: &str, module: bool) -> String {
     let lang = lang.map_or(String::new(), |lang| format!(" lang=\"{lang}\""));
+    let (attribute, title) = if module {
+        ("module", " :title=\"$style.a\"")
+    } else {
+        ("scoped", "")
+    };
     format!(
         "<script setup lang=\"ts\">\nconst ok = true;\n</script>\n\n\
-         <template><div class=\"a\" :title=\"$style.a\" /></template>\n\n\
-         <style module{lang}>\n{body}</style>\n"
+         <template><div class=\"a\"{title} /></template>\n\n\
+         <style {attribute}{lang}>\n{body}</style>\n"
     )
 }
 
@@ -193,7 +203,7 @@ fn every_style_alias_compiles_lints_and_formats_as_its_language() {
         let mut formats = Vec::new();
         for lang in aliases {
             let spelling = lang.unwrap_or("(absent)").to_owned();
-            let source = style_sfc(*lang, body);
+            let source = style_sfc(*lang, body, false);
             compiles.push((spelling.clone(), compiled(&source)));
             lints.push((spelling.clone(), linted(&source)));
             formats.push((spelling, formatted(&source)));
@@ -260,7 +270,7 @@ fn every_template_and_style_alias_checks_the_same() {
         let mut styles = Vec::new();
         for (index, lang) in aliases.iter().enumerate() {
             let name = format!("Style{group}x{index}.vue");
-            let source = style_sfc(*lang, body).replace("$style.a", "$style.missing");
+            let source = style_sfc(*lang, body, true).replace("$style.a", "$style.missing");
             fs::write(root.path().join(&name), source).unwrap();
             let spelling = lang.unwrap_or("(absent)").to_owned();
             styles.push((spelling, checked(root.path(), &corsa, &name)));
@@ -298,7 +308,7 @@ fn every_template_and_style_alias_serves_the_same_editor_answers() {
     for (aliases, body) in STYLE_GROUPS {
         let mut styles = Vec::new();
         for lang in aliases {
-            let source = style_sfc(*lang, body);
+            let source = style_sfc(*lang, body, true);
             let diagnostics = fixture.change(&source, version);
             version += 1;
             let colors = fixture.request("textDocument/documentColor", &source, "ff0000");

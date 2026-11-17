@@ -43,7 +43,10 @@ impl Linter {
         // The registry reads the template's `lang` from the L1 container walk
         // (stopping at the template), so only pug SFCs and templates in an
         // unsupported lang pay for the descriptor here.
-        if matches!(sfc_template_lang(source), None | Some(Ok(TemplateLang::Html))) {
+        if matches!(
+            sfc_template_lang(source),
+            None | Some(Ok(TemplateLang::Html))
+        ) {
             return None;
         }
         let options = SfcParseOptions {
