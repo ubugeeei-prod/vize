@@ -34,13 +34,15 @@ struct AliasEntry {
 /// directory and parses the governing tsconfig.
 pub(super) struct Importer<'a> {
     path: &'a Path,
+    roots: &'a AliasRoots,
     aliases: std::cell::OnceCell<Option<Vec<AliasEntry>>>,
 }
 
 impl<'a> Importer<'a> {
-    pub(super) fn new(path: &'a Path) -> Self {
+    pub(super) fn new(path: &'a Path, roots: &'a AliasRoots) -> Self {
         Self {
             path,
+            roots,
             aliases: std::cell::OnceCell::new(),
         }
     }
@@ -53,7 +55,7 @@ impl<'a> Importer<'a> {
     fn aliases(&self) -> Option<&[AliasEntry]> {
         self.aliases
             .get_or_init(|| {
-                let mut aliases = project_aliases(self.path)?;
+                let mut aliases = project_aliases(self.path, self.roots)?;
                 aliases.sort_by_key(|alias| std::cmp::Reverse(alias.pattern_prefix.len()));
                 Some(aliases)
             })
@@ -179,7 +181,7 @@ fn probe_alias_target(
 
 /// The `paths` aliases governing `source_path`, resolved by the shared
 /// reader (nearest tsconfig, references-follow, string-aware jsonc).
-fn project_aliases(source_path: &Path) -> Option<Vec<AliasEntry>> {
+fn project_aliases(source_path: &Path, roots: &AliasRoots) -> Option<Vec<AliasEntry>> {
     let mut aliases = Vec::new();
     if let Some(paths) = crate::ide::tsconfig_paths::project_paths(source_path) {
         for (pattern, target) in &paths.entries {
@@ -195,7 +197,8 @@ fn project_aliases(source_path: &Path) -> Option<Vec<AliasEntry>> {
             });
         }
     }
-    if let Some(root) = nearest_nuxt_root(source_path) {
+    let directory = source_path.parent()?;
+    if let Some(root) = roots.nuxt_root(directory) {
         for pattern_prefix in ["~/", "@/"] {
             for target_base in [root.join("app"), root.clone(), root.join("src")] {
                 aliases.push(AliasEntry {
@@ -205,7 +208,7 @@ fn project_aliases(source_path: &Path) -> Option<Vec<AliasEntry>> {
             }
         }
     }
-    if let Some(root) = nearest_project_src_root(source_path) {
+    if let Some(root) = roots.project_src_root(directory) {
         aliases.push(AliasEntry {
             pattern_prefix: "@/".to_string(),
             target_base: normalize_path_buf(&root.join("src")),
@@ -214,10 +217,19 @@ fn project_aliases(source_path: &Path) -> Option<Vec<AliasEntry>> {
     (!aliases.is_empty()).then_some(aliases)
 }
 
-fn nearest_nuxt_root(file: &Path) -> Option<PathBuf> {
-    file.ancestors()
-        .skip(1)
-        .find(|dir| {
+/// The Nuxt and project `src` roots above each directory one rename scan
+/// visits. They depend only on the directory, so every importer in it, and
+/// every directory below it, reuses one probe of each ancestor.
+#[derive(Default)]
+pub(super) struct AliasRoots {
+    nuxt: dashmap::DashMap<PathBuf, Option<PathBuf>>,
+    project_src: dashmap::DashMap<PathBuf, Option<PathBuf>>,
+}
+
+impl AliasRoots {
+    /// The nearest directory at or above `dir` with a Nuxt config.
+    fn nuxt_root(&self, dir: &Path) -> Option<PathBuf> {
+        nearest(&self.nuxt, dir, &|dir| {
             [
                 "nuxt.config.ts",
                 "nuxt.config.mts",
@@ -227,14 +239,33 @@ fn nearest_nuxt_root(file: &Path) -> Option<PathBuf> {
             .iter()
             .any(|config| dir.join(config).is_file())
         })
-        .map(Path::to_path_buf)
+    }
+
+    /// The nearest directory at or above `dir` with a `src` directory and a
+    /// project marker.
+    fn project_src_root(&self, dir: &Path) -> Option<PathBuf> {
+        nearest(&self.project_src, dir, &|dir| {
+            dir.join("src").is_dir() && has_project_source_alias_marker(dir)
+        })
+    }
 }
 
-fn nearest_project_src_root(file: &Path) -> Option<PathBuf> {
-    file.ancestors()
-        .skip(1)
-        .find(|dir| dir.join("src").is_dir() && has_project_source_alias_marker(dir))
-        .map(Path::to_path_buf)
+fn nearest(
+    memo: &dashmap::DashMap<PathBuf, Option<PathBuf>>,
+    dir: &Path,
+    matches: &dyn Fn(&Path) -> bool,
+) -> Option<PathBuf> {
+    if let Some(found) = memo.get(dir) {
+        return found.clone();
+    }
+    let found = if matches(dir) {
+        Some(dir.to_path_buf())
+    } else {
+        dir.parent()
+            .and_then(|parent| nearest(memo, parent, matches))
+    };
+    memo.insert(dir.to_path_buf(), found.clone());
+    found
 }
 
 fn has_project_source_alias_marker(dir: &Path) -> bool {

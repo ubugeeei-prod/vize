@@ -38,6 +38,12 @@ pub(super) struct RenameTarget {
     new_path: PathBuf,
 }
 
+/// One rename request's targets, and the alias roots its importers share.
+struct RenameScan {
+    targets: Vec<RenameTarget>,
+    roots: super::alias::AliasRoots,
+}
+
 #[derive(Clone, Copy)]
 enum ImporterKind {
     Vue,
@@ -73,8 +79,11 @@ fn collect_import_rename_edits_inner(
     renames: &[FileRename],
     only_vue_importers: bool,
 ) -> Option<WorkspaceEdit> {
-    let rename_targets = rename_targets(renames);
-    if rename_targets.is_empty() {
+    let scan = RenameScan {
+        targets: rename_targets(renames),
+        roots: super::alias::AliasRoots::default(),
+    };
+    if scan.targets.is_empty() {
         return None;
     }
 
@@ -102,7 +111,7 @@ fn collect_import_rename_edits_inner(
             let changes = &changes;
             let seen_paths = &seen_paths;
             let open_documents = &open_documents;
-            let rename_targets = &rename_targets;
+            let scan = &scan;
 
             Box::new(move |entry| {
                 let Ok(entry) = entry else {
@@ -119,7 +128,7 @@ fn collect_import_rename_edits_inner(
                 }
 
                 if let Some((uri, edits)) =
-                    process_importer_path(state, owner, path, kind, rename_targets, open_documents)
+                    process_importer_path(state, owner, path, kind, scan, open_documents)
                     && let Ok(mut changes) = changes.lock()
                 {
                     changes.insert(uri, edits);
@@ -145,7 +154,7 @@ fn collect_import_rename_edits_inner(
             &path,
             &document.source,
             kind,
-            &rename_targets,
+            &scan,
         ) && let Ok(mut changes) = changes.lock()
         {
             changes.insert(uri, edits);
@@ -169,7 +178,7 @@ fn process_importer_path(
     owner: Option<&Arc<ServerState>>,
     path: &Path,
     kind: ImporterKind,
-    rename_targets: &[RenameTarget],
+    scan: &RenameScan,
     open_documents: &OpenDocumentSnapshots,
 ) -> Option<(Url, Vec<TextEdit>)> {
     let normalized_path = normalize_path_buf(path);
@@ -181,21 +190,13 @@ fn process_importer_path(
             &normalized_path,
             &document.source,
             kind,
-            rename_targets,
+            scan,
         );
     }
 
     let uri = Url::from_file_path(&normalized_path).ok()?;
     let source = fs::read_to_string(&normalized_path).ok()?;
-    process_source(
-        state,
-        owner,
-        uri,
-        &normalized_path,
-        &source,
-        kind,
-        rename_targets,
-    )
+    process_source(state, owner, uri, &normalized_path, &source, kind, scan)
 }
 
 fn process_source(
@@ -205,9 +206,10 @@ fn process_source(
     path: &Path,
     source: &str,
     kind: ImporterKind,
-    rename_targets: &[RenameTarget],
+    scan: &RenameScan,
 ) -> Option<(Url, Vec<TextEdit>)> {
-    let importer = super::alias::Importer::new(path);
+    let rename_targets = scan.targets.as_slice();
+    let importer = super::alias::Importer::new(path, &scan.roots);
     let moved = apply_all_path_renames(path, rename_targets);
     let stays = moved.is_none();
     let future_path = moved.unwrap_or_else(|| normalize_path_buf(path));
