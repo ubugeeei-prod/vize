@@ -321,6 +321,28 @@ for (const spec of arg("scenarios", "mk,mk-json,mk-all,bench,ta").split(",")) {
       write(["", `callgrind ${annotate[1]} inclusive=${inclusive}:`, "", "```", ...lines, "```", ""].join("\n"));
     }
   }
+  // `paths-<mk|mk-json|one>`: which paths one run stats or opens, grouped by the final component.
+  const pathsSpec = /^paths-(mk|mk-json|one)$/.exec(spec);
+  if (pathsSpec) {
+    const args = { mk: ["lint", "src"], "mk-json": ["lint", "src", "--format", "json"], one: ["lint", "src/components/MkButton.vue"] }[pathsSpec[1]] as string[];
+    const traceFile = `/tmp/paths-${pathsSpec[1]}.txt`;
+    spawnSync("strace", ["-f", "-e", "trace=statx,openat,newfstatat,stat,lstat,access,readlink,getdents64", "-o", traceFile, bins.base, ...args], {
+      cwd: mk,
+      maxBuffer: 1 << 30,
+      env: { ...process.env, RAYON_NUM_THREADS: "1" },
+    });
+    const counts = new Map<string, number>();
+    for (const line of readFileSync(traceFile, "utf8").split("\n")) {
+      const match = /(\w+)\((?:AT_FDCWD|\d+), "([^"]*)".*= (-?\d+)( \w+)?/.exec(line);
+      if (!match) continue;
+      const tail = match[2].split("/").slice(-1)[0] || match[2];
+      const shape = /\.(vue|ts|tsx|js|mjs|cjs|json)$/.test(tail) && !/^(package|tsconfig|jsconfig|vize\.config|\.vizerc)/.test(tail) ? `*.${tail.split(".").pop()}` : tail;
+      const key = `${match[1]} ${match[3].startsWith("-") ? `ERR${match[4] ?? ""}` : "ok"} ${shape}`;
+      counts.set(key, (counts.get(key) ?? 0) + 1);
+    }
+    const top = [...counts].sort((a, b) => b[1] - a[1]).slice(0, 40).map(([key, count]) => `${String(count).padStart(7)} ${key}`);
+    write(["", `paths touched by ${pathsSpec[1]} (1 thread):`, "", "```", ...top, "```", ""].join("\n"));
+  }
   if (spec === "bench") scenario("1000-SFC benchmark `lint .` (text)", bench, ["lint", "."], runs);
   if (spec === "ta")
     scenario(
