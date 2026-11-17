@@ -996,6 +996,31 @@ function refCallUnderTypeAssertion(finding: LintRecord, source: string): boolean
   }
 }
 
+/**
+ * vue/no-parsing-error reports a zero-width point; Patina ranges the token.
+ * The point must sit on the same line within Patina's range, and the error
+ * code must name Patina's message (`missing-whitespace-between-attributes`
+ * for "Missing whitespace between attributes"). An expression error has no
+ * code and pairs with Patina's expression error.
+ */
+function parseErrorPointInRange(positive: LintRecord, negative: LintRecord): boolean {
+  if (
+    negative.line !== negative.endLine ||
+    negative.column !== negative.endColumn ||
+    positive.line !== negative.line ||
+    positive.endLine !== positive.line ||
+    negative.column < positive.column ||
+    negative.column > positive.endColumn
+  )
+    return false;
+  const patina = positive.message.replace(/^\[[^\]]*\]\s*/u, "").toLowerCase();
+  const code = /^Parsing error: (?:x-)?([a-z]+(?:-[a-z]+)+)\.$/u.exec(negative.message)?.[1];
+  return code === undefined
+    ? negative.message.startsWith("Parsing error: ") &&
+        patina.startsWith("error parsing javascript expression")
+    : patina.startsWith(code.replaceAll("-", " "));
+}
+
 function findingInScriptSetup(finding: LintRecord, source: string): boolean {
   const offset = findingOffset(finding, source);
   if (offset === null) return false;
@@ -1339,6 +1364,15 @@ export function pairRuleLocationDivergences(
           subject: `button:${positive.line}:${negative.column}`,
           reason:
             "patina reports the complete button opening element while eslint-plugin-vue reports only the invalid type attribute value.",
+        };
+        break;
+      }
+      if (positive.ruleId === "parser/template" && parseErrorPointInRange(positive, negative)) {
+        match = {
+          index,
+          subject: `parse-error:${negative.line}:${negative.column}`,
+          reason:
+            "both tools report the same template parse error; eslint-plugin-vue reports a zero-width point inside the token Patina ranges.",
         };
         break;
       }
