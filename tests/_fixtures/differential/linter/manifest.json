@@ -16420,6 +16420,42 @@
       }
     },
     {
+      "id": "linter/enforce-style-attribute-element-12336",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "enforce-style-attribute-element-12336",
+        "files": [
+          {
+            "path": "Case.vue.txt",
+            "role": "real-project-matrix-reduction",
+            "sha256": "093e83b91e8b0eee2b92b1412df210c21dac938c4a4c575df5e07d2049f1e5a5"
+          },
+          {
+            "path": "options.json",
+            "role": "rule-options",
+            "sha256": "dfb20315f4ccc644e42a3b63b441a92000aff077b9c25a72aaee713bc5695f74"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/explicit-slots-imported-intersection-12599",
       "state": "active",
       "targets": [
