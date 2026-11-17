@@ -2,6 +2,7 @@ import path from "node:path";
 import {
   componentRegistrationBaselineIntentionalReason,
   componentRegistrationPatinaIntentionalReason,
+  decoratorRegisteredCasingReason,
 } from "./component_registration_intentional.ts";
 import {
   indexRealProjectLocationSource,
@@ -492,6 +493,7 @@ const patinaIntentionalRuleIds = new Set([
   "script/require-prop-types",
   "script/require-valid-default-prop",
   "script/return-in-computed-property",
+  "vue/component-name-in-template-casing",
   "vue/multi-word-component-names",
   "vue/no-bare-strings-in-template",
   "vue/no-mutating-props",
@@ -515,6 +517,12 @@ export function patinaIntentionalReason(
     if (componentReason !== null) return componentReason;
   }
   if (!patinaIntentionalRuleIds.has(finding.ruleId)) return null;
+  const casing = decoratorRegisteredCasingReason(
+    finding.ruleId,
+    source.slice(findingOffset(finding, source) ?? source.length),
+    source,
+  );
+  if (casing !== null) return casing;
   if (finding.ruleId === "vue/no-setup-props-reactivity-loss")
     return "Patina's complete contract follows root-scope prop values through nested containers, call arguments, and assignments that eslint-plugin-vue does not inspect.";
   if (
