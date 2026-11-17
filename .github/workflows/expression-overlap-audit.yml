@@ -182,8 +182,14 @@ jobs:
           cases = json.loads((baseline/'cases/manifest.json').read_text())
           for case in cases:
               name = case['name']
-              for suffix in ['packets.txt', 'admission.json']:
-                  assert (baseline/f'{name}.{suffix}').read_bytes() == (candidate/f'{name}.{suffix}').read_bytes(), f'{name}: full {suffix} changed'
+              assert (baseline/f'{name}.packets.txt').read_bytes() == (candidate/f'{name}.packets.txt').read_bytes(), f'{name}: full packets.txt changed'
+              # The baseline source predates #12772, whose guard rejects the
+              # retained `ee<ep>!!!` inputs before parsing. A required case keeps
+              # its complete admission; every other case must stay rejected.
+              if case['require_admission']:
+                  assert (baseline/f'{name}.admission.json').read_bytes() == (candidate/f'{name}.admission.json').read_bytes(), f'{name}: full admission.json changed'
+              else:
+                  assert not json.loads((candidate/f'{name}.admission.json').read_text())['safe'], f'{name}: admission no longer rejects it'
           def instructions(directory, name):
               for line in (directory/f'{name}.callgrind').read_text().splitlines():
                   if line.startswith('summary: '):
@@ -201,5 +207,5 @@ jobs:
           assert large < small * 3, ('shared parser work is still superlinear', small, large)
           for case in ['issue-10845.input', 'issue-10845.min.input', 'issue-10845.slow-1.input', 'issue-10845.slow-2.input', '10401-append-greater.input']:
               assert (candidate/f'{case}.asan.exit').read_text().strip() == '0', case
-          print(f'All {len(cases)*40} complete packets match; admission and sanitizer budgets are unchanged.')
+          print(f'All {len(cases)*40} complete packets match; required admission, rejected inputs and sanitizer budgets hold.')
           PY
