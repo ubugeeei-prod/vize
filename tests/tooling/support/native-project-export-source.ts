@@ -33,10 +33,10 @@ const pluginLintSessionExport =
   "module.exports.PluginLintSession = nativeBinding.PluginLintSession;\n";
 const configStdinCapabilityExport =
   "module.exports.supportsCliConfigStdin = nativeBinding.supportsCliConfigStdin;\n";
-const compileTsrxExport = "module.exports.compileTsrx = nativeBinding.compileTsrx;\n";
 // #13074: Vite hosts register a resolved `vue.plugins` plan once.
 const registerPluginPlanExport =
   "module.exports.registerPluginPlan = nativeBinding.registerPluginPlan;\n";
+const compileTsrxExport = "module.exports.compileTsrx = nativeBinding.compileTsrx;\n";
 const sha256 = (body: Buffer) => createHash("sha256").update(body).digest("hex");
 
 /** Keep the original authenticated loader law through the exact public additions. */
