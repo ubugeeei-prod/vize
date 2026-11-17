@@ -17669,6 +17669,38 @@
       }
     },
     {
+      "id": "linter/no-props-shadow-sibling-script-12336",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "no-props-shadow-sibling-script-12336",
+        "files": [
+          {
+            "path": "AccordionItem.vue.txt",
+            "role": "real-project-matrix-reduction",
+            "sha256": "693f50545db0d35e410419685abcd317b97a574ad119285704a3c5e24dca8ddd"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/no-unnecessary-type-assertion-12992",
       "state": "active",
       "targets": [

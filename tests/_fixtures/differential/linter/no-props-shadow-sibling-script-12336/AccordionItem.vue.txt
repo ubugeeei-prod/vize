@@ -1,0 +1,22 @@
+<script lang="ts">
+import type { CollapsibleRootProps } from '../Collapsible'
+
+export interface AccordionItemProps
+  extends Omit<CollapsibleRootProps, 'open' | 'defaultOpen'> {
+  disabled?: boolean
+  items?: string[]
+  value: string
+}
+</script>
+
+<script setup lang="ts">
+import { computed } from 'vue'
+
+const props = withDefaults(defineProps<AccordionItemProps>(), { disabled: false })
+const disabled = computed(() => props.disabled)
+const items: string[] = Array(10)
+</script>
+
+<template>
+  <div :data-disabled="disabled">{{ items.length }}</div>
+</template>
