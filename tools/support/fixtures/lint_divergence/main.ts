@@ -165,9 +165,6 @@ function measureMirror(
       revision: get(project, "revision"),
       preset: selectedPreset,
       evidence,
-      patinaRuleOptions: Object.fromEntries(
-        ruleOptions.overrides.map(({ patinaRule, options }) => [patinaRule, options]),
-      ),
       files: { comparedCount: files.length, expectedCount },
       baseline: {
         package: get(ruleMap, "upstream", "package"),
@@ -231,18 +228,23 @@ export function runLintDivergenceReport(argv: string[] = process.argv.slice(2)):
   }
   removePriorArtifacts(args.outputDir, projects);
   const artifacts: Json[] = [];
-  for (const project of projects) {
-    const artifact = measureProject(
-      root,
-      args,
-      launch,
-      evidence,
-      ruleMap,
-      comparable,
-      project,
-      ruleOptions,
-    );
-    if (artifact !== null) artifacts.push(artifact);
+  try {
+    for (const project of projects) {
+      const artifact = measureProject(
+        root,
+        args,
+        launch,
+        evidence,
+        ruleMap,
+        comparable,
+        project,
+        ruleOptions,
+      );
+      if (artifact !== null) artifacts.push(artifact);
+    }
+  } finally {
+    if (ruleOptions.config !== null)
+      fs.rmSync(path.dirname(ruleOptions.config), { recursive: true, force: true });
   }
   writeIndex(root, args.outputDir, args.preset, evidence, artifacts);
   assertBudgetsPassed(artifacts, args.budgetMode);
