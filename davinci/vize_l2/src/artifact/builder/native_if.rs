@@ -4,7 +4,7 @@ use super::{ArtifactError, Builder, Frame, Owner, check};
 use crate::lang::js::NativeConditionalInput;
 use crate::op::{IfOp, Op, Region};
 use vize_l0::{Span, id::NodeId};
-use vize_l1::markup::NativeAttributeElse;
+use vize_l1::markup::AttributeElse;
 
 impl<'a> Builder<'a> {
     pub(super) fn begin_native_if(
@@ -51,7 +51,7 @@ impl<'a> Builder<'a> {
     pub(super) fn begin_native_else(
         &mut self,
         node: NodeId,
-        input: &NativeAttributeElse<'a>,
+        input: &AttributeElse<'a>,
     ) -> Result<(), ArtifactError> {
         let frame = self
             .frames

@@ -2,7 +2,7 @@
 
 #[derive(Clone, Copy)]
 #[repr(u8)]
-pub(crate) enum LintTagFact {
+pub(crate) enum TagKindFact {
     Element = 1,
     Component = 2,
     Slot = 3,
@@ -11,7 +11,7 @@ pub(crate) enum LintTagFact {
     InheritedTemplate = 6,
 }
 
-impl LintTagFact {
+impl TagKindFact {
     pub(crate) fn from_aux(aux: u8) -> Option<Self> {
         match (aux >> 1) & 7 {
             1 => Some(Self::Element),
@@ -27,8 +27,8 @@ impl LintTagFact {
 
 /// Private facts captured together by one original selected opening event.
 #[derive(Default)]
-pub(crate) struct LintHeaderFact {
-    pub kind: Option<LintTagFact>,
+pub(crate) struct HeaderFacts {
+    pub kind: Option<TagKindFact>,
     pub literal: bool,
     pub table_context: bool,
     pub recovery_context: bool,

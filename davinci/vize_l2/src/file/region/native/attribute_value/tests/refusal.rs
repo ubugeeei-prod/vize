@@ -194,7 +194,7 @@ fn original_literal_for_collection_keeps_value_owner_but_refuses_unchanged_colle
     };
     same(
         refusal.kind,
-        vize_l1::embed::syntax::NativeForRefusal::CollectionShape,
+        vize_l1::embed::syntax::ForRefusal::CollectionShape,
     )?;
     same(refusal.operand().raw_value(), "item in 2")?;
     same(file.artifact().node_count(), 0)?;

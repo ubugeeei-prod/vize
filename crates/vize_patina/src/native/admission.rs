@@ -1,7 +1,7 @@
 //! One original child traversal for the bounded complete parser-output profile.
 
 use vize_l0::{SmallVec, Span, is_html_tag, is_math_ml_tag, is_svg_tag};
-use vize_l1::markup::{NativeChildren, NativeComponent, NativeLintTagKind, SurfaceChild, Token};
+use vize_l1::markup::{ChildrenView, NativeComponent, SurfaceChild, TagFactsKind, Token};
 
 use super::{
     attribute, header, header_rules,
@@ -64,7 +64,7 @@ fn checked_token(component: &NativeComponent<'_>, token: &Token<'_>) -> Result<S
 
 pub(in crate::native) fn children<'o, 'a>(
     component: &'o NativeComponent<'a>,
-    children: NativeChildren<'o, 'a>,
+    children: ChildrenView<'o, 'a>,
     profile: NativeTemplateAttributeProfile,
     visit_element: &mut impl FnMut(&NativeTemplateElement<'o, 'a>) -> Result<(), Refusal>,
 ) -> Result<(), Refusal> {
@@ -82,7 +82,7 @@ pub(in crate::native) fn children<'o, 'a>(
 
 pub(in crate::native) fn children_with_text_profile<'o, 'a>(
     component: &'o NativeComponent<'a>,
-    children: NativeChildren<'o, 'a>,
+    children: ChildrenView<'o, 'a>,
     profile: NativeTemplateAttributeProfile,
     text_profile: NativeTemplateTextProfile,
     visit_element: &mut impl FnMut(&NativeTemplateElement<'o, 'a>) -> Result<(), Refusal>,
@@ -99,7 +99,7 @@ pub(in crate::native) fn children_with_text_profile<'o, 'a>(
 
 pub(in crate::native) fn children_with_owner_profile<'o, 'a>(
     component: &'o NativeComponent<'a>,
-    children: NativeChildren<'o, 'a>,
+    children: ChildrenView<'o, 'a>,
     profile: NativeTemplateAttributeProfile,
     text_profile: NativeTemplateTextProfile,
     owner_profile: NativeTemplateOwnerProfile,
@@ -119,7 +119,7 @@ pub(in crate::native) fn children_with_owner_profile<'o, 'a>(
 
 fn walk<'o, 'a>(
     component: &'o NativeComponent<'a>,
-    children: NativeChildren<'o, 'a>,
+    children: ChildrenView<'o, 'a>,
     profile: NativeTemplateAttributeProfile,
     text_profile: NativeTemplateTextProfile,
     owner_profile: NativeTemplateOwnerProfile,
@@ -175,7 +175,7 @@ fn walk<'o, 'a>(
                     } else {
                         select::check(owner_profile, parent, &element, &attributes, opening)?
                     };
-                    if receipt.kind() != NativeLintTagKind::Element
+                    if receipt.kind() != TagFactsKind::Element
                         || receipt.header_is_literal()
                         || element.surface().open.is_verbatim()
                         || !is_html_tag(tag)

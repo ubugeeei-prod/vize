@@ -4,10 +4,10 @@ use crate::expr::JsExpr;
 use crate::expr::js::{JsCoordinateError, JsCoordinates, JsSegment};
 use vize_l0::Vec;
 use vize_l1::embed::DecodeSegmentKind;
-use vize_l1::markup::NativeInterpolationView;
+use vize_l1::markup::InterpolationView;
 
 pub(super) fn retain<'a>(
-    original: &NativeInterpolationView<'_, 'a>,
+    original: &InterpolationView<'_, 'a>,
 ) -> Result<&'a JsExpr<'a>, JsCoordinateError> {
     let selected = original.selected();
     let allocator = selected.component().allocator();

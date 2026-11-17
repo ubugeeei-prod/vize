@@ -6,7 +6,7 @@ use vize_glyph::native_doc::{
     UnsupportedSyntax, observed_native_template_document,
 };
 use vize_l0::{Allocator, Span};
-use vize_l1::markup::NativeInterpolationError;
+use vize_l1::markup::InterpolationError;
 use vize_l1::markup::SurfaceChild;
 
 use super::{SCRIPTS, selected};
@@ -190,11 +190,11 @@ fn genuine_observation_failure_is_kept_without_inventing_a_current_operand() {
         ObservedNativeTemplateRefusal::Interpolation {
             offset: 9,
             index: 1,
-            kind: NativeInterpolationError::RecoveredComponent,
+            kind: InterpolationError::RecoveredComponent,
         }
     );
     let actual = failure.interpolation_failure().unwrap();
-    assert_eq!(actual.kind(), NativeInterpolationError::RecoveredComponent);
+    assert_eq!(actual.kind(), InterpolationError::RecoveredComponent);
     assert!(actual.syntax().is_none());
     let root = core::ptr::from_ref(failure.operands()[0].syntax().expression().unwrap());
     let (same, prefix, refusal, unexpected) = failure.into_parts();
@@ -209,7 +209,7 @@ fn genuine_observation_failure_is_kept_without_inventing_a_current_operand() {
         ObservedNativeTemplateRefusal::Interpolation { index: 1, .. }
     ));
     let actual = unexpected.unwrap();
-    assert_eq!(actual.kind(), NativeInterpolationError::RecoveredComponent);
+    assert_eq!(actual.kind(), InterpolationError::RecoveredComponent);
     assert!(actual.syntax().is_none());
     assert_eq!(same.component().block().source(), "{{1n}}<p>{{b}}");
     assert!(core::ptr::eq(

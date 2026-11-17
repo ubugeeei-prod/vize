@@ -8,7 +8,7 @@ use crate::lang::js::{NativeInterpolationInput, NativeTemplateIssueKind as Kind}
 use crate::resolution::Usage;
 use core::ops::DerefMut;
 use vize_l0::id::NodeId;
-use vize_l1::markup::{NativeChild, NativeTemplateComponent};
+use vize_l1::markup::{ChildView, NativeTemplateComponent};
 
 mod observe;
 pub(super) use observe::construct as observe;
@@ -18,7 +18,7 @@ mod interruption;
 
 pub(super) fn construct<'a: 'b, 'b, R>(
     selected: &NativeTemplateComponent<'a>,
-    child: NativeChild<'_, 'a>,
+    child: ChildView<'_, 'a>,
     input: NativeInterpolationInput<'a>,
     region: &mut FileRegion<'_, 'b, 'a, R, NativeVisibility>,
     check: Result<(), Kind>,
@@ -73,7 +73,7 @@ where
 /// result stays parked even if this narrower whole-If profile rejects it.
 pub(super) fn checked_primitive<'a: 'b, 'b, R>(
     selected: &NativeTemplateComponent<'a>,
-    child: NativeChild<'_, 'a>,
+    child: ChildView<'_, 'a>,
     region: &mut FileRegion<'_, 'b, 'a, R, NativeVisibility>,
 ) -> Result<NodeId, Kind>
 where

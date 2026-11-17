@@ -9,13 +9,13 @@ use vize_l0::{
 };
 use vize_l1::{
     container::{Vue, vue::DescriptorOptions},
-    markup::{NativeChildren, NativeTemplateComponent, SurfaceParseOptions},
+    markup::{ChildrenView, NativeTemplateComponent, SurfaceParseOptions},
 };
 use vize_patina::native::{NativeLintFinding, NativeSyntaxLint};
 
 fn collect<'a>(
     lint: &NativeSyntaxLint<'_, 'a>,
-    children: NativeChildren<'_, 'a>,
+    children: ChildrenView<'_, 'a>,
     messages: &impl MessageLookup,
     output: &mut Vec<NativeLintFinding>,
 ) -> Result<()> {

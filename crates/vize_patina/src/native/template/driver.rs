@@ -2,7 +2,7 @@
 
 use crate::{LintResult, Linter};
 use vize_l0::{Allocator, SourceRoot, String, config::VueVersion};
-use vize_l1::markup::NativeLintComponent;
+use vize_l1::markup::ComponentTagFacts;
 
 use super::super::admission;
 
@@ -51,7 +51,7 @@ impl Linter {
         let block = SourceRoot::new(source)
             .map_err(NativeTemplateLintRefusal::Source)?
             .whole_block();
-        let root = NativeLintComponent::parse_in(allocator, block)
+        let root = ComponentTagFacts::parse_in(allocator, block)
             .map_err(NativeTemplateLintRefusal::Parse)?;
         admission::component(root.component())?;
         let mut context = NativeTemplateLintContext::new(self, &root, filename);

@@ -9,9 +9,9 @@ use vize_l1::{
     },
     embed::{
         EmbedSource,
-        syntax::{NativeSyntax, ProgramOptions, parse_program_once},
+        syntax::{EmbedSyntax, ProgramOptions, parse_program_once},
     },
-    markup::{NativeTemplateComponent, NativeTemplateGrammar, SurfaceParseOptions},
+    markup::{NativeTemplateComponent, SurfaceParseOptions, TemplateGrammar},
 };
 use vize_l2::lang::js::{
     NativeTemplateIssue, NativeTemplateIssueKind as Kind, NativeTemplateOwner,
@@ -67,7 +67,7 @@ fn syntax<'a>(
     arena: &'a Allocator,
     view: &DescriptorObservation<'a>,
     setup: bool,
-) -> Result<NativeSyntax<'a>, &'static str> {
+) -> Result<EmbedSyntax<'a>, &'static str> {
     let admitted = view.admitted().map_err(|_| "descriptor")?;
     let script = if setup {
         admitted.setup()
@@ -90,7 +90,7 @@ fn original_text_comment_order_file_identity_and_moved_owner() -> Result<(), &'s
     {
         let mut walk = owner.begin().map_err(|_| "begin")?;
         let selected = walk.selected();
-        equal(selected.grammar(), NativeTemplateGrammar::JavaScriptModule)?;
+        equal(selected.grammar(), TemplateGrammar::JavaScriptModule)?;
         for child in selected.children() {
             walk.child(child).map_err(|_| "child")?;
         }
@@ -249,7 +249,7 @@ fn intrinsic_ts_setup_receipt_is_from_the_actual_selected_program() -> Result<()
     {
         let mut walk = owner.begin().map_err(|_| "begin")?;
         let selected = walk.selected();
-        equal(selected.grammar(), NativeTemplateGrammar::TypeScriptModule)?;
+        equal(selected.grammar(), TemplateGrammar::TypeScriptModule)?;
         for child in selected.children() {
             walk.child(child).map_err(|_| "child")?;
         }

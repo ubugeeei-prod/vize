@@ -9,7 +9,7 @@ use vize_l1::container::{
 };
 use vize_l1::embed::{
     Embed, EmbedSource, Grammar, Lang, Shape,
-    syntax::{NativeSyntax, ProgramOptions, RetainedExpression, parse_once, parse_program_once},
+    syntax::{EmbedSyntax, ProgramOptions, RetainedExpression, parse_once, parse_program_once},
 };
 use vize_l1::markup::SurfaceParseOptions;
 use vize_l2::{
@@ -29,7 +29,7 @@ impl TemplatePolicy for LexicalValues {
 
 pub struct Observed<'a> {
     descriptor: DescriptorObservation<'a>,
-    syntax: NativeSyntax<'a>,
+    syntax: EmbedSyntax<'a>,
 }
 
 impl<'a> Observed<'a> {

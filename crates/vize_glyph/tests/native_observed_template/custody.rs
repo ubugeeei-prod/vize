@@ -6,7 +6,7 @@ use vize_glyph::native_doc::{
     print,
 };
 use vize_l0::Allocator;
-use vize_l1::markup::NativeInterpolationOperand;
+use vize_l1::markup::InterpolationOperand;
 
 use super::{SCRIPTS, WIDTHS, options, preobserved, selected};
 
@@ -20,7 +20,7 @@ fn owned_ordered_ast_comments_maps_spans_and_pure_metadata_survive_carrier_and_v
         let owner = selected(&arena, &source);
         let carrier = observed_native_template_document(&owner, &arena).unwrap();
         assert_eq!(carrier.operands().len(), 3);
-        let observe = |operands: &[NativeInterpolationOperand<'_>]| {
+        let observe = |operands: &[InterpolationOperand<'_>]| {
             operands
                 .iter()
                 .map(|operand| {
@@ -226,7 +226,7 @@ fn transferred_operands_keep_original_owner_authority_and_reject_foreign_equal_b
 
 #[test]
 fn bare_doc_transfer_can_release_observation_and_selection_wrappers_with_source_and_arena_alive() {
-    assert!(core::mem::needs_drop::<NativeInterpolationOperand<'_>>());
+    assert!(core::mem::needs_drop::<InterpolationOperand<'_>>());
     let arena = Allocator::default();
     let source = "<template>{{&#49;&#110;}}</template>";
     let document = {

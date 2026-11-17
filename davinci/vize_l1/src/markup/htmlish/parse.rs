@@ -230,7 +230,9 @@ pub(crate) fn construct<'a, const RAW: bool>(
     Option<SurfaceTree<'a>>,
     Vec<'a, SurfaceError>,
 ) {
-    construct_with_lint_and_diagnostics::<RAW, false>(allocator, source, authored, false, record)
+    construct_with_tag_facts_and_diagnostics::<RAW, false>(
+        allocator, source, authored, false, record,
+    )
 }
 
 fn construct_with_diagnostics<'a, const RAW: bool>(
@@ -244,7 +246,7 @@ fn construct_with_diagnostics<'a, const RAW: bool>(
     Option<SurfaceTree<'a>>,
     Vec<'a, SurfaceError>,
 ) {
-    construct_with_lint_and_diagnostics::<RAW, false>(
+    construct_with_tag_facts_and_diagnostics::<RAW, false>(
         allocator,
         source,
         authored,
@@ -255,7 +257,7 @@ fn construct_with_diagnostics<'a, const RAW: bool>(
 
 /// The selected native owner may retain already-resolved lint-header facts.
 /// Other constructors instantiate the unchanged const-false path.
-pub(crate) fn construct_with_lint<'a, const RAW: bool, const LINT: bool>(
+pub(crate) fn construct_with_tag_facts<'a, const RAW: bool, const TAG_FACTS: bool>(
     allocator: &'a Allocator,
     source: &'a str,
     authored: bool,
@@ -265,10 +267,12 @@ pub(crate) fn construct_with_lint<'a, const RAW: bool, const LINT: bool>(
     Option<SurfaceTree<'a>>,
     Vec<'a, SurfaceError>,
 ) {
-    construct_with_lint_and_diagnostics::<RAW, LINT>(allocator, source, authored, false, record)
+    construct_with_tag_facts_and_diagnostics::<RAW, TAG_FACTS>(
+        allocator, source, authored, false, record,
+    )
 }
 
-fn construct_with_lint_and_diagnostics<'a, const RAW: bool, const LINT: bool>(
+fn construct_with_tag_facts_and_diagnostics<'a, const RAW: bool, const TAG_FACTS: bool>(
     allocator: &'a Allocator,
     source: &'a str,
     authored: bool,
@@ -294,15 +298,15 @@ fn construct_with_lint_and_diagnostics<'a, const RAW: bool, const LINT: bool>(
     // directive heads separately. Ordinary surface callers also retain the
     // historical lexer-only contract; replacing product owners opt in to the
     // complete parser/template vector explicitly.
-    let (tree, repaired) = if LINT || !structural_diagnostics {
+    let (tree, repaired) = if TAG_FACTS || !structural_diagnostics {
         let mut ignored = Vec::new_in(&allocator);
-        build::<RAW, LINT, false>(allocator, source, &events, &mut ignored, true)
+        build::<RAW, TAG_FACTS, false>(allocator, source, &events, &mut ignored, true)
     } else {
-        build::<RAW, LINT, true>(allocator, source, &events, &mut errors, true)
+        build::<RAW, TAG_FACTS, true>(allocator, source, &events, &mut errors, true)
     };
     let authored = (authored && repaired).then(|| {
         let mut ignored = Vec::new_in(&allocator);
-        build::<RAW, LINT, false>(allocator, source, &events, &mut ignored, false).0
+        build::<RAW, TAG_FACTS, false>(allocator, source, &events, &mut ignored, false).0
     });
     errors.sort_by_key(|error| error.encounter);
     debug_assert!(

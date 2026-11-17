@@ -4,21 +4,18 @@ use oxc_ast::ast::{BindingPattern, Expression};
 use oxc_parser::{AdmittedExpression, AdmittedParameters, ParseOptions};
 use vize_l0::Span;
 
-use super::{NativeForHead, NativeForRefusal, same_text};
+use super::{ForHead, ForRefusal, same_text};
 use crate::embed::syntax::ProgramOptions;
 
-pub(super) fn refused(head: &NativeForHead<'_>) -> Option<NativeForRefusal> {
+pub(super) fn refused(head: &ForHead<'_>) -> Option<ForRefusal> {
     if let Some(hole) = head.hole {
-        return Some(NativeForRefusal::Head(hole));
+        return Some(ForRefusal::Head(hole));
     }
     check(head).err()
 }
 
-fn check(head: &NativeForHead<'_>) -> Result<(), NativeForRefusal> {
-    let origin = head
-        .origin
-        .as_ref()
-        .ok_or(NativeForRefusal::UnpreparedSource)?;
+fn check(head: &ForHead<'_>) -> Result<(), ForRefusal> {
+    let origin = head.origin.as_ref().ok_or(ForRefusal::UnpreparedSource)?;
     let outer_whitespace = |ch: char| ch.is_whitespace() || ch == '\u{feff}';
     if origin.value.chars().next().is_some_and(outer_whitespace)
         || origin
@@ -27,101 +24,101 @@ fn check(head: &NativeForHead<'_>) -> Result<(), NativeForRefusal> {
             .next_back()
             .is_some_and(outer_whitespace)
     {
-        return Err(NativeForRefusal::OuterWhitespace);
+        return Err(ForRefusal::OuterWhitespace);
     }
     if head.source.decode_map().is_some() {
-        return Err(NativeForRefusal::EntityOutput);
+        return Err(ForRefusal::EntityOutput);
     }
     let aliases = head
         .aliases()
         .and_then(Result::ok)
-        .ok_or(NativeForRefusal::StockProfile)?;
+        .ok_or(ForRefusal::StockProfile)?;
     let collection = head
         .collection()
         .and_then(Result::ok)
-        .ok_or(NativeForRefusal::StockProfile)?;
+        .ok_or(ForRefusal::StockProfile)?;
     let parameters = aliases
         .admitted_parameters()
-        .ok_or(NativeForRefusal::StockProfile)?;
+        .ok_or(ForRefusal::StockProfile)?;
     let expression = collection
         .admitted_expression()
-        .ok_or(NativeForRefusal::StockProfile)?;
+        .ok_or(ForRefusal::StockProfile)?;
     if !stock_matches(head, &parameters, &expression) {
-        return Err(NativeForRefusal::StockProfile);
+        return Err(ForRefusal::StockProfile);
     }
     if aliases.comments().next().is_some() || collection.comments().next().is_some() {
-        return Err(NativeForRefusal::Comment);
+        return Err(ForRefusal::Comment);
     }
     let formals = parameters.parameters();
     let count = formals.items.len();
     if !(1..=2).contains(&count) {
-        return Err(NativeForRefusal::AliasCount(count));
+        return Err(ForRefusal::AliasCount(count));
     }
     if formals.rest.is_some() {
-        return Err(NativeForRefusal::AliasShape);
+        return Err(ForRefusal::AliasShape);
     }
-    let first = formals.items.first().ok_or(NativeForRefusal::AliasShape)?;
-    let last = formals.items.last().ok_or(NativeForRefusal::AliasShape)?;
+    let first = formals.items.first().ok_or(ForRefusal::AliasShape)?;
+    let last = formals.items.last().ok_or(ForRefusal::AliasShape)?;
     let first_span = aliases
         .decoded_span(first.span)
-        .map_err(|_| NativeForRefusal::AliasShape)?;
+        .map_err(|_| ForRefusal::AliasShape)?;
     let last_span = aliases
         .decoded_span(last.span)
-        .map_err(|_| NativeForRefusal::AliasShape)?;
+        .map_err(|_| ForRefusal::AliasShape)?;
     if first_span.start != 0 || last_span.end as usize != aliases.source().text().len() {
-        return Err(NativeForRefusal::AliasShape);
+        return Err(ForRefusal::AliasShape);
     }
     for formal in &formals.items {
         let BindingPattern::BindingIdentifier(identifier) = &formal.pattern else {
-            return Err(NativeForRefusal::AliasShape);
+            return Err(ForRefusal::AliasShape);
         };
         if formal.span != identifier.span
             || formal.initializer.is_some()
             || formal.type_annotation.is_some()
         {
-            return Err(NativeForRefusal::AliasShape);
+            return Err(ForRefusal::AliasShape);
         }
         let span = aliases
             .decoded_span(identifier.span)
-            .map_err(|_| NativeForRefusal::AliasShape)?;
+            .map_err(|_| ForRefusal::AliasShape)?;
         let spelling = aliases
             .source()
             .text()
             .get(span.start as usize..span.end as usize)
-            .ok_or(NativeForRefusal::AliasShape)?;
+            .ok_or(ForRefusal::AliasShape)?;
         if spelling != identifier.name.as_str() {
-            return Err(NativeForRefusal::EscapedSpelling);
+            return Err(ForRefusal::EscapedSpelling);
         }
         if identifier.name.as_str() == "_ctx" {
-            return Err(NativeForRefusal::RenderContextName);
+            return Err(ForRefusal::RenderContextName);
         }
     }
     let Expression::Identifier(identifier) = expression.expression() else {
-        return Err(NativeForRefusal::CollectionShape);
+        return Err(ForRefusal::CollectionShape);
     };
     let span = collection
         .decoded_span(identifier.span)
-        .map_err(|_| NativeForRefusal::CollectionShape)?;
+        .map_err(|_| ForRefusal::CollectionShape)?;
     if span
         != Span::new(
             0,
             u32::try_from(collection.source().text().len())
-                .map_err(|_| NativeForRefusal::CollectionShape)?,
+                .map_err(|_| ForRefusal::CollectionShape)?,
         )
     {
-        return Err(NativeForRefusal::CollectionShape);
+        return Err(ForRefusal::CollectionShape);
     }
     if collection.source().text() != identifier.name.as_str() {
-        return Err(NativeForRefusal::EscapedSpelling);
+        return Err(ForRefusal::EscapedSpelling);
     }
     if identifier.name.as_str() == "_ctx" {
-        return Err(NativeForRefusal::RenderContextName);
+        return Err(ForRefusal::RenderContextName);
     }
     Ok(())
 }
 
 pub(super) fn stock_matches(
-    head: &NativeForHead<'_>,
+    head: &ForHead<'_>,
     aliases: &AdmittedParameters<'_, '_>,
     collection: &AdmittedExpression<'_, '_>,
 ) -> bool {

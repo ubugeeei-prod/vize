@@ -153,8 +153,8 @@ fn raw_interpolation_width_is_disjoint_from_quote_and_opening_aux() {
 }
 
 #[test]
-fn selected_lint_tag_aux_never_changes_mode_quotes_width_or_event_layout() {
-    use crate::markup::htmlish::surface::{LintHeaderFact, LintTagFact};
+fn selected_tag_facts_aux_never_changes_mode_quotes_width_or_event_layout() {
+    use crate::markup::htmlish::surface::{HeaderFacts, TagKindFact};
     let allocator = Allocator::new();
     let (mut events, mut errors) = record(&allocator, "", true, false);
     let mut recorder = Recorder {
@@ -163,22 +163,22 @@ fn selected_lint_tag_aux_never_changes_mode_quotes_width_or_event_layout() {
     };
     for kind in [EventKind::OpenTagEnd, EventKind::SelfClosingTag] {
         for fact in [
-            LintTagFact::Element,
-            LintTagFact::Component,
-            LintTagFact::Slot,
-            LintTagFact::Template,
-            LintTagFact::AmbiguousVerbatim,
-            LintTagFact::InheritedTemplate,
+            TagKindFact::Element,
+            TagKindFact::Component,
+            TagKindFact::Slot,
+            TagKindFact::Template,
+            TagKindFact::AmbiguousVerbatim,
+            TagKindFact::InheritedTemplate,
         ] {
             for verbatim in [false, true] {
                 for literal in [false, true] {
                     for table_context in [false, true] {
                         for recovery_context in [false, true] {
-                            recorder.opening_end_with_lint(
+                            recorder.opening_end_with_tag_facts(
                                 kind,
                                 19,
                                 verbatim,
-                                LintHeaderFact {
+                                HeaderFacts {
                                     kind: Some(fact),
                                     literal,
                                     table_context,
@@ -189,10 +189,10 @@ fn selected_lint_tag_aux_never_changes_mode_quotes_width_or_event_layout() {
                             assert_eq!(event.kind, kind);
                             assert_eq!((event.start, event.end), (19, 19));
                             assert_eq!(event.is_verbatim_opening(), verbatim);
-                            assert_eq!(event.lint_tag().unwrap() as u8, fact as u8);
-                            assert_eq!(event.lint_header_is_literal(), literal);
-                            assert_eq!(event.lint_in_table_context(), table_context);
-                            assert_eq!(event.lint_in_recovery_context(), recovery_context);
+                            assert_eq!(event.tag_facts().unwrap() as u8, fact as u8);
+                            assert_eq!(event.header_is_literal(), literal);
+                            assert_eq!(event.in_table_context(), table_context);
+                            assert_eq!(event.in_recovery_context(), recovery_context);
                         }
                     }
                 }
@@ -201,10 +201,10 @@ fn selected_lint_tag_aux_never_changes_mode_quotes_width_or_event_layout() {
         recorder.opening_end(kind, 23, false);
         let ordinary = recorder.events.last().unwrap();
         assert_eq!(ordinary.aux, 0);
-        assert!(ordinary.lint_tag().is_none());
-        assert!(!ordinary.lint_header_is_literal());
-        assert!(!ordinary.lint_in_table_context());
-        assert!(!ordinary.lint_in_recovery_context());
+        assert!(ordinary.tag_facts().is_none());
+        assert!(!ordinary.header_is_literal());
+        assert!(!ordinary.in_table_context());
+        assert!(!ordinary.in_recovery_context());
     }
     assert_eq!(core::mem::size_of::<Event>(), 12);
     assert_eq!(events.len(), 194);

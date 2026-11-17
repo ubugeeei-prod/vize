@@ -3,19 +3,19 @@
 use vize_l0::{Allocator, Span, Vec};
 
 use crate::markup::htmlish::event::Recorder;
-use crate::markup::htmlish::parse::{SurfaceError, SurfaceParseOptions, construct_with_lint};
-use crate::markup::htmlish::surface::{LintTagFact, SurfaceTree};
+use crate::markup::htmlish::parse::{SurfaceError, SurfaceParseOptions, construct_with_tag_facts};
+use crate::markup::htmlish::surface::{SurfaceTree, TagKindFact};
 use crate::markup::{Component, DirectiveNameError, LexOptions, Lexer};
 
-use super::{DirectiveKind, VueDirectives, is_lint_component};
+use super::{DirectiveKind, VueDirectives, is_component_tag};
 use crate::dialect::vue::surface::{HeaderPolicy, LexicalScope, SurfacePolicy, sink::VueSink};
 use crate::markup::directive::DirectiveSyntax;
 
-struct Vue3Policy<const LINT: bool>;
+struct Vue3Policy<const TAG_FACTS: bool>;
 
-impl<const LINT: bool> SurfacePolicy for Vue3Policy<LINT> {
+impl<const TAG_FACTS: bool> SurfacePolicy for Vue3Policy<TAG_FACTS> {
     type Boundary = DirectiveAdmission;
-    const LINT_TAGS: bool = LINT;
+    const RECORD_TAG_FACTS: bool = TAG_FACTS;
     const LEXICAL_SCOPE: LexicalScope = LexicalScope::Authored;
 
     fn pre(raw: &str, offset: u32, source: &str) -> Result<bool, Self::Boundary> {
@@ -30,7 +30,7 @@ impl<const LINT: bool> SurfacePolicy for Vue3Policy<LINT> {
             })
     }
 
-    fn lint_header(raw: &str, offset: u32, source: &str) -> Result<HeaderPolicy, Self::Boundary> {
+    fn header_facts(raw: &str, offset: u32, source: &str) -> Result<HeaderPolicy, Self::Boundary> {
         VueDirectives
             .decompose(raw, offset)
             .map(|head| {
@@ -56,29 +56,29 @@ impl<const LINT: bool> SurfacePolicy for Vue3Policy<LINT> {
             })
     }
 
-    fn lint_tag(
+    fn tag_facts(
         tag: &str,
         structural_template: bool,
         verbatim: bool,
         exact_pre: bool,
         inherited: bool,
-    ) -> Option<LintTagFact> {
+    ) -> Option<TagKindFact> {
         // Lexical pre heads may accept modifiers/arguments that default lint
         // freezing does not. Preserve the mode and refuse that semantic gap.
         Some(if verbatim && !exact_pre {
-            LintTagFact::AmbiguousVerbatim
+            TagKindFact::AmbiguousVerbatim
         } else if inherited && tag == "template" {
             // The registered facade may expose a synthetic L2 Template carrier
             // here. Its category cannot be proved by a literal original header.
-            LintTagFact::InheritedTemplate
+            TagKindFact::InheritedTemplate
         } else if tag == "slot" {
-            LintTagFact::Slot
+            TagKindFact::Slot
         } else if tag == "template" && structural_template {
-            LintTagFact::Template
-        } else if is_lint_component(tag, !verbatim) {
-            LintTagFact::Component
+            TagKindFact::Template
+        } else if is_component_tag(tag, !verbatim) {
+            TagKindFact::Component
         } else {
-            LintTagFact::Element
+            TagKindFact::Element
         })
     }
 }
@@ -148,14 +148,14 @@ pub fn parse_component_with_authored<'a>(
 }
 
 /// Private genuine selected-owner construction; no caller can supply facts.
-pub(crate) fn parse_component_with_lint<'a>(
+pub(crate) fn parse_component_with_tag_facts<'a>(
     allocator: &'a Allocator,
     source: &'a str,
 ) -> Result<ComponentParse<'a>, ComponentSourceError> {
     projection::<true>(allocator, source, SurfaceParseOptions::default(), false)
 }
 
-fn projection<'a, const LINT: bool>(
+fn projection<'a, const TAG_FACTS: bool>(
     allocator: &'a Allocator,
     source: &'a str,
     options: SurfaceParseOptions,
@@ -165,11 +165,18 @@ fn projection<'a, const LINT: bool>(
         return Err(ComponentSourceError::SourceTooLarge);
     }
     let mut unsupported = Vec::new_in(&allocator);
-    let (tree, authored, errors) =
-        construct_with_lint::<false, LINT>(allocator, source, authored, |events, errors| {
+    let (tree, authored, errors) = construct_with_tag_facts::<false, TAG_FACTS>(
+        allocator,
+        source,
+        authored,
+        |events, errors| {
             let recorder = Recorder { events, errors };
-            let sink =
-                VueSink::<Vue3Policy<LINT>>::new(allocator, source, recorder, &mut unsupported);
+            let sink = VueSink::<Vue3Policy<TAG_FACTS>>::new(
+                allocator,
+                source,
+                recorder,
+                &mut unsupported,
+            );
             Lexer::<Component, _>::new(
                 source,
                 sink,
@@ -179,7 +186,8 @@ fn projection<'a, const LINT: bool>(
                 },
             )
             .run();
-        });
+        },
+    );
     Ok(ComponentParse {
         tree,
         authored,

@@ -1,18 +1,18 @@
 use super::child::Parent;
-use super::{NativeChildren, NativeComponent};
+use super::{ChildrenView, NativeComponent};
 use crate::markup::{Attribute, Element};
 
 mod names;
-pub use names::{NativeElementClosingName, NativeElementNameRefusal, NativeElementNames};
+pub use names::{ElementClosingName, ElementNameRefusal, ElementNames};
 
 /// Original element derived only from an authenticated child projection.
-pub struct NativeElement<'o, 'a> {
+pub struct ElementView<'o, 'a> {
     component: &'o NativeComponent<'a>,
     parent: Parent<'o, 'a>,
     ordinal: usize,
     element: &'o Element<'a>,
 }
-impl<'o, 'a> NativeElement<'o, 'a> {
+impl<'o, 'a> ElementView<'o, 'a> {
     pub(super) fn from_child(
         component: &'o NativeComponent<'a>,
         parent: Parent<'o, 'a>,
@@ -46,12 +46,12 @@ impl<'o, 'a> NativeElement<'o, 'a> {
         self.element
     }
     #[must_use]
-    pub fn children(&self) -> NativeChildren<'o, 'a> {
-        NativeChildren::element(self.component, self.element)
+    pub fn children(&self) -> ChildrenView<'o, 'a> {
+        ChildrenView::element(self.component, self.element)
     }
     #[must_use]
-    pub fn attributes(&self) -> NativeAttributes<'o, 'a> {
-        NativeAttributes {
+    pub fn attributes(&self) -> AttributesView<'o, 'a> {
+        AttributesView {
             component: self.component,
             element: self.element,
             attributes: self.element.open.attrs.iter().enumerate(),
@@ -60,16 +60,16 @@ impl<'o, 'a> NativeElement<'o, 'a> {
 }
 
 /// Actual opening-header iteration with a short original-owner borrow.
-pub struct NativeAttributes<'o, 'a> {
+pub struct AttributesView<'o, 'a> {
     component: &'o NativeComponent<'a>,
     element: &'o Element<'a>,
     attributes: core::iter::Enumerate<core::slice::Iter<'o, Attribute<'a>>>,
 }
-impl<'o, 'a> Iterator for NativeAttributes<'o, 'a> {
-    type Item = NativeAttribute<'o, 'a>;
+impl<'o, 'a> Iterator for AttributesView<'o, 'a> {
+    type Item = AttributeView<'o, 'a>;
     fn next(&mut self) -> Option<Self::Item> {
         let (ordinal, attribute) = self.attributes.next()?;
-        Some(NativeAttribute {
+        Some(AttributeView {
             component: self.component,
             element: self.element,
             ordinal,
@@ -80,21 +80,21 @@ impl<'o, 'a> Iterator for NativeAttributes<'o, 'a> {
         self.attributes.size_hint()
     }
 }
-impl ExactSizeIterator for NativeAttributes<'_, '_> {}
+impl ExactSizeIterator for AttributesView<'_, '_> {}
 
 /// Full immutable original Attribute, not an arbitrary same-span carrier.
-pub struct NativeAttribute<'o, 'a> {
+pub struct AttributeView<'o, 'a> {
     component: &'o NativeComponent<'a>,
     element: &'o Element<'a>,
     ordinal: usize,
     attribute: &'o Attribute<'a>,
 }
-impl<'o, 'a> NativeAttribute<'o, 'a> {
+impl<'o, 'a> AttributeView<'o, 'a> {
     /// Borrow the same original header event for observation before consumption.
     /// The projection cannot outlive this token or change its ordinal/membership.
     #[must_use]
-    pub fn reborrow(&self) -> NativeAttribute<'_, 'a> {
-        NativeAttribute {
+    pub fn reborrow(&self) -> AttributeView<'_, 'a> {
+        AttributeView {
             component: self.component,
             element: self.element,
             ordinal: self.ordinal,

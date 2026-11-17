@@ -9,8 +9,8 @@ use vize_l0::{
 use vize_l1::{
     container::{Vue, vue::DescriptorOptions},
     markup::{
-        NativeChildren, NativeElement, NativeTemplateComponent, SurfaceParseOptions,
-        check_fidelity, render,
+        ChildrenView, ElementView, NativeTemplateComponent, SurfaceParseOptions, check_fidelity,
+        render,
     },
 };
 use vize_patina::{
@@ -52,7 +52,7 @@ impl HeaderRule {
     pub fn check<'a>(
         self,
         lint: &NativeSyntaxLint<'_, 'a>,
-        element: &NativeElement<'_, 'a>,
+        element: &ElementView<'_, 'a>,
         messages: &impl MessageLookup,
     ) -> Result<Vec<NativeLintFinding>, NativeLintRefusal> {
         match self {
@@ -187,7 +187,7 @@ pub fn parser(severity: &str, message: &str, range: Span) -> Value {
 // opt-in product entry inspects just the supplied element and does no walk.
 fn collect<'a>(
     lint: &NativeSyntaxLint<'_, 'a>,
-    children: NativeChildren<'_, 'a>,
+    children: ChildrenView<'_, 'a>,
     locale: Locale,
     rule: HeaderRule,
     output: &mut Vec<NativeLintFinding>,

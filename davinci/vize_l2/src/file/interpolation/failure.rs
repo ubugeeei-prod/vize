@@ -2,7 +2,7 @@
 
 use crate::file::{FileArtifact, RejectedFile};
 use vize_l0::Span;
-use vize_l1::markup::NativeInterpolationFailure;
+use vize_l1::markup::InterpolationFailure;
 
 /// Only the private original-child receiver constructs these normally owned rows.
 ///
@@ -13,15 +13,15 @@ use vize_l1::markup::NativeInterpolationFailure;
 /// ```
 /// ```compile_fail
 /// use vize_l0::Span;
-/// use vize_l1::markup::NativeInterpolationFailure;
+/// use vize_l1::markup::InterpolationFailure;
 /// use vize_l2::file::NativeFileInterpolationFailure;
-/// fn forge<'a>(failure: NativeInterpolationFailure<'a>) {
+/// fn forge<'a>(failure: InterpolationFailure<'a>) {
 ///     let _ = NativeFileInterpolationFailure { span: Span::new(0, 1), failure };
 /// }
 /// ```
 pub struct NativeFileInterpolationFailure<'a> {
     pub(crate) span: Span,
-    pub(crate) failure: NativeInterpolationFailure<'a>,
+    pub(crate) failure: InterpolationFailure<'a>,
 }
 
 impl<'a> NativeFileInterpolationFailure<'a> {
@@ -31,7 +31,7 @@ impl<'a> NativeFileInterpolationFailure<'a> {
     }
 
     #[must_use]
-    pub const fn failure(&self) -> &NativeInterpolationFailure<'a> {
+    pub const fn failure(&self) -> &InterpolationFailure<'a> {
         &self.failure
     }
 }

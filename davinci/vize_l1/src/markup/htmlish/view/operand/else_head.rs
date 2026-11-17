@@ -1,8 +1,8 @@
 //! A valueless original Else header is an owner, never an empty expression.
 
 use super::{
-    Attribute, Element, NativeAttribute, NativeAttributeHead, NativeAttributeOperandError,
-    NativeTemplateComponent, NativeTemplateGrammar, Origin,
+    Attribute, AttributeHead, AttributeOperandError, AttributeView, Element,
+    NativeTemplateComponent, Origin, TemplateGrammar,
 };
 use crate::markup::{DirectivePrefix, ElementClose};
 use vize_l0::{SourceBlock, Span};
@@ -11,14 +11,14 @@ use vize_l0::{SourceBlock, Span};
 /// It grants no sibling, body, File or target completion authority.
 ///
 /// ```compile_fail
-/// use vize_l1::markup::NativeAttributeElse;
+/// use vize_l1::markup::AttributeElse;
 /// fn requires_clone<T: Clone>() {}
-/// requires_clone::<NativeAttributeElse<'static>>();
+/// requires_clone::<AttributeElse<'static>>();
 /// ```
-pub struct NativeAttributeElse<'a> {
+pub struct AttributeElse<'a> {
     block: SourceBlock<'a>,
     template_index: usize,
-    grammar: NativeTemplateGrammar,
+    grammar: TemplateGrammar,
     element: *const Element<'a>,
     attribute: *const Attribute<'a>,
     ordinal: usize,
@@ -27,15 +27,15 @@ pub struct NativeAttributeElse<'a> {
     element_span: Span,
 }
 
-impl<'a> NativeAttributeHead<'_, 'a> {
+impl<'a> AttributeHead<'_, 'a> {
     /// Reuse this sealed head's original membership and dialect decomposition.
     /// This path neither prepares a value nor calls an expression parser.
-    pub fn observe_else(&self) -> Result<NativeAttributeElse<'a>, NativeAttributeOperandError> {
+    pub fn observe_else(&self) -> Result<AttributeElse<'a>, AttributeOperandError> {
         let selected = self.selected();
         let attribute = self.attribute();
         let surface = attribute.surface();
         let Some(directive) = self.directive() else {
-            return Err(NativeAttributeOperandError::UnsupportedDirective);
+            return Err(AttributeOperandError::UnsupportedDirective);
         };
         if directive.prefix != DirectivePrefix::Full
             || directive.arg.is_some()
@@ -46,14 +46,14 @@ impl<'a> NativeAttributeHead<'_, 'a> {
             || surface.eq.is_some()
             || surface.value.is_some()
         {
-            return Err(NativeAttributeOperandError::UnsupportedDirective);
+            return Err(AttributeOperandError::UnsupportedDirective);
         }
         let block = selected.component().block();
         let element = attribute.element();
         let opening =
             block
                 .span_of(element.open.lt_name.text)
-                .ok_or(NativeAttributeOperandError::Source(
+                .ok_or(AttributeOperandError::Source(
                     crate::embed::SourceError::InvalidAuthoredSpan,
                 ))?;
         let ending = match &element.close {
@@ -61,8 +61,8 @@ impl<'a> NativeAttributeHead<'_, 'a> {
             ElementClose::NotExpected => block.span_of(element.open.gt.text),
             ElementClose::Missing | ElementClose::Implicit => None,
         }
-        .ok_or(NativeAttributeOperandError::UnexpectedShape)?;
-        Ok(NativeAttributeElse {
+        .ok_or(AttributeOperandError::UnexpectedShape)?;
+        Ok(AttributeElse {
             block,
             template_index: selected.template_index(),
             grammar: selected.grammar(),
@@ -76,7 +76,7 @@ impl<'a> NativeAttributeHead<'_, 'a> {
     }
 }
 
-impl<'a> NativeAttributeElse<'a> {
+impl<'a> AttributeElse<'a> {
     #[must_use]
     pub const fn name_span(&self) -> Span {
         self.name_span
@@ -94,8 +94,8 @@ impl<'a> NativeAttributeElse<'a> {
     pub fn admitted_for<'s>(
         &'s self,
         selected: &'s NativeTemplateComponent<'a>,
-        attribute: NativeAttribute<'s, 'a>,
-    ) -> Option<NativeAttributeElseView<'s, 'a>> {
+        attribute: AttributeView<'s, 'a>,
+    ) -> Option<AttributeElseView<'s, 'a>> {
         let block = selected.component().block();
         let surface = attribute.surface();
         if Origin::check_original_header(selected, &attribute).is_err()
@@ -114,7 +114,7 @@ impl<'a> NativeAttributeElse<'a> {
         {
             return None;
         }
-        Some(NativeAttributeElseView {
+        Some(AttributeElseView {
             owner: self,
             selected,
             attribute,
@@ -123,14 +123,14 @@ impl<'a> NativeAttributeElse<'a> {
 }
 
 /// A short original header join, without whole branch or sibling authority.
-pub struct NativeAttributeElseView<'s, 'a> {
-    owner: &'s NativeAttributeElse<'a>,
+pub struct AttributeElseView<'s, 'a> {
+    owner: &'s AttributeElse<'a>,
     selected: &'s NativeTemplateComponent<'a>,
-    attribute: NativeAttribute<'s, 'a>,
+    attribute: AttributeView<'s, 'a>,
 }
-impl<'s, 'a> NativeAttributeElseView<'s, 'a> {
+impl<'s, 'a> AttributeElseView<'s, 'a> {
     #[must_use]
-    pub const fn owner(&self) -> &'s NativeAttributeElse<'a> {
+    pub const fn owner(&self) -> &'s AttributeElse<'a> {
         self.owner
     }
     #[must_use]
@@ -138,7 +138,7 @@ impl<'s, 'a> NativeAttributeElseView<'s, 'a> {
         self.selected
     }
     #[must_use]
-    pub fn attribute(&self) -> &NativeAttribute<'s, 'a> {
+    pub fn attribute(&self) -> &AttributeView<'s, 'a> {
         &self.attribute
     }
 }

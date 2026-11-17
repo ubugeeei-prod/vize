@@ -3,7 +3,7 @@
 use oxc_ast::ast::{Expression, PropertyKey};
 use oxc_span::GetSpan;
 use vize_l0::{Allocator, SourceRoot, Span};
-use vize_l1::markup::htmlish::document::NativeDocument;
+use vize_l1::markup::htmlish::document::ParsedDocument;
 
 use super::{PetiteDirectiveKind as Kind, PetiteDocument, PetiteScopeShape};
 use crate::expr::{ExprRef, OpaqueReason};
@@ -12,7 +12,7 @@ use crate::expr::{ExprRef, OpaqueReason};
 fn scope_and_effect_keep_distinct_l2_meanings() {
     let allocator = Allocator::default();
     let source = r#"<div v-scope="{ count: 0 }" v-effect="count++; count += 1"></div>"#;
-    let owner = NativeDocument::lex_in(&allocator, SourceRoot::new(source).unwrap());
+    let owner = ParsedDocument::lex_in(&allocator, SourceRoot::new(source).unwrap());
     let document = PetiteDocument::lower_in(&allocator, &owner).unwrap();
     let mut directives = document.directives();
 
@@ -41,7 +41,7 @@ fn scope_and_effect_keep_distinct_l2_meanings() {
 fn decoded_entities_retain_exact_authored_js_coordinates() {
     let allocator = Allocator::default();
     let source = r#"<div v-scope="{ label: '&amp;' }"></div>"#;
-    let owner = NativeDocument::lex_in(&allocator, SourceRoot::new(source).unwrap());
+    let owner = ParsedDocument::lex_in(&allocator, SourceRoot::new(source).unwrap());
     let document = PetiteDocument::lower_in(&allocator, &owner).unwrap();
     let directive = document.directives().next().unwrap();
     assert_eq!(directive.value().unwrap().decoded(), "{ label: '&' }");
@@ -69,7 +69,7 @@ fn decoded_entities_retain_exact_authored_js_coordinates() {
 fn empty_and_non_object_scopes_are_distinct() {
     let allocator = Allocator::default();
     let source = "<main v-scope><i v-scope='count'></i><b v-effect=\"\"></b></main>";
-    let owner = NativeDocument::lex_in(&allocator, SourceRoot::new(source).unwrap());
+    let owner = ParsedDocument::lex_in(&allocator, SourceRoot::new(source).unwrap());
     let document = PetiteDocument::lower_in(&allocator, &owner).unwrap();
     let mut directives = document.directives();
     assert_eq!(
@@ -87,7 +87,7 @@ fn empty_and_non_object_scopes_are_distinct() {
 #[test]
 fn lexical_failure_refuses_the_whole_semantic_view() {
     let allocator = Allocator::default();
-    let owner = NativeDocument::lex_in(
+    let owner = ParsedDocument::lex_in(
         &allocator,
         SourceRoot::new("<div v-scope='unterminated").unwrap(),
     );

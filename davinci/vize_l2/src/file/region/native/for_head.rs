@@ -9,7 +9,7 @@ use crate::lang::js::{NativeForInput, file::native::NativeTemplateIssueKind as K
 use crate::resolution::{ForResolutionErrorKind, ResolutionErrorKind, resolve_for_facts};
 use core::ops::DerefMut;
 use vize_l0::Span;
-use vize_l1::markup::{NativeAttribute, NativeTemplateComponent};
+use vize_l1::markup::{AttributeView, NativeTemplateComponent};
 
 pub(super) struct ObservedFor {
     pub(super) index: usize,
@@ -22,7 +22,7 @@ where
     pub(super) fn observe_for(
         &mut self,
         selected: &NativeTemplateComponent<'a>,
-        attribute: NativeAttribute<'_, 'a>,
+        attribute: AttributeView<'_, 'a>,
     ) -> Result<ObservedFor, Kind> {
         let block = selected.component().block();
         let name_span = block

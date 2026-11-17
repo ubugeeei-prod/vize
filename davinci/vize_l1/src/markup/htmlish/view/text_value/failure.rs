@@ -1,4 +1,4 @@
-use super::{NativeChild, NativeTextValueError};
+use super::{ChildView, TextValueError};
 use crate::markup::{SurfaceChild, Token};
 use vize_l0::{SourceBlock, Span};
 
@@ -6,15 +6,15 @@ use vize_l0::{SourceBlock, Span};
 /// The selected Component continues to own its surface and parser diagnostics.
 /// These neutral observations cannot be joined as an admitted text value.
 #[derive(Debug)]
-pub struct NativeTextValueFailure<'a> {
-    kind: NativeTextValueError,
+pub struct TextValueFailure<'a> {
+    kind: TextValueError,
     block: SourceBlock<'a>,
     ordinal: usize,
     token: Option<Token<'a>>,
     parent_tag: Option<&'a str>,
 }
-impl<'a> NativeTextValueFailure<'a> {
-    pub(super) fn original(kind: NativeTextValueError, child: &NativeChild<'_, 'a>) -> Self {
+impl<'a> TextValueFailure<'a> {
+    pub(super) fn original(kind: TextValueError, child: &ChildView<'_, 'a>) -> Self {
         Self {
             kind,
             block: child.component().block(),
@@ -27,7 +27,7 @@ impl<'a> NativeTextValueFailure<'a> {
         }
     }
     #[must_use]
-    pub const fn kind(&self) -> NativeTextValueError {
+    pub const fn kind(&self) -> TextValueError {
         self.kind
     }
     /// Foreign-child refusal retains that child's actual original source.

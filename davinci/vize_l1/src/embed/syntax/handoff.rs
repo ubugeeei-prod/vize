@@ -8,7 +8,7 @@ use oxc_span::SourceType;
 use vize_l0::Span;
 
 use super::{
-    CommentView, DiagnosticView, EmbedHole, EmbedSource, Grammar, NativeSyntax, Shape, SourceError,
+    CommentView, DiagnosticView, EmbedHole, EmbedSource, EmbedSyntax, Grammar, Shape, SourceError,
     coordinates::Coordinates,
 };
 
@@ -98,8 +98,8 @@ impl<'a> RetainedExpression<'a> {
 }
 
 pub(super) fn into_expression<'a>(
-    mut syntax: NativeSyntax<'a>,
-) -> Result<RetainedExpression<'a>, Box<NativeSyntax<'a>>> {
+    mut syntax: EmbedSyntax<'a>,
+) -> Result<RetainedExpression<'a>, Box<EmbedSyntax<'a>>> {
     if syntax.grammar.shape != Shape::Expr {
         return Err(Box::new(syntax));
     }
@@ -114,7 +114,7 @@ pub(super) fn into_expression<'a>(
     } else {
         None
     };
-    let NativeSyntax {
+    let EmbedSyntax {
         grammar,
         source_type,
         coordinates,

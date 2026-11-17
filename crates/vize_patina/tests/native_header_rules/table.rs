@@ -16,7 +16,7 @@ fn original_foster_notice_refuses_the_whole_header_before_any_lookup() {
         let lint = NativeSyntaxLint::new(&owner).unwrap();
         let table = owner.children().next().unwrap().into_element().unwrap();
         let element = table.children().next().unwrap().into_element().unwrap();
-        let receipt = element.lint_tag().unwrap();
+        let receipt = element.tag_facts().unwrap();
         assert!(receipt.in_table_context());
         for rule in HeaderRule::ALL {
             assert_eq!(
@@ -76,7 +76,7 @@ fn valid_table_descendants_keep_truthful_conservative_refusal() {
         assert_eq!(
             rule.check(&lint, &input, &NeverLookup).err(),
             Some(NativeLintRefusal::TableContext {
-                span: input.lint_tag().unwrap().span()
+                span: input.tag_facts().unwrap().span()
             })
         );
         for locale in LOCALES {

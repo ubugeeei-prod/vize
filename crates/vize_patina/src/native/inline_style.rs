@@ -4,12 +4,12 @@ use vize_l0::{
     SmallVec, Span,
     diag::{Advisory, Diagnostic, DiagnosticPart, MessageLookup, PartKind, Stage},
 };
-use vize_l1::markup::NativeElement;
+use vize_l1::markup::ElementView;
 
 use super::{NO_INLINE_STYLE_RULE, NativeLintFinding, NativeLintRefusal, header, header_rules};
 
 pub(super) fn check(
-    element: &NativeElement<'_, '_>,
+    element: &ElementView<'_, '_>,
     messages: &impl MessageLookup,
 ) -> Result<Vec<NativeLintFinding>, NativeLintRefusal> {
     let mut matches: SmallVec<[Span; 4]> = SmallVec::new();

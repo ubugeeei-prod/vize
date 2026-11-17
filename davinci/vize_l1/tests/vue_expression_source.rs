@@ -6,7 +6,7 @@ use vize_l0::{Allocator, Span};
 use vize_l1::embed::{
     DecodeSegmentKind, Embed, Grammar, Lang, Shape, SourceError, prepare_attribute_value,
     prepare_vue_interpolation_in,
-    syntax::{NativeSyntax, parse_once},
+    syntax::{EmbedSyntax, parse_once},
 };
 
 #[cfg(test)]
@@ -16,7 +16,7 @@ fn content(file: &str) -> Span {
 }
 
 #[cfg(test)]
-fn syntax<'a>(allocator: &'a Allocator, file: &'a str) -> NativeSyntax<'a> {
+fn syntax<'a>(allocator: &'a Allocator, file: &'a str) -> EmbedSyntax<'a> {
     let source = prepare_vue_interpolation_in(allocator, file, content(file)).unwrap();
     parse_once(
         allocator,

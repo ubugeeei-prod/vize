@@ -1,6 +1,6 @@
 use super::support::{selected, span};
 use vize_l0::{Allocator, cstr};
-use vize_l1::markup::NativeLintTagRefusal;
+use vize_l1::markup::TagFactsRefusal;
 use vize_patina::native::{
     NativeLintRefusal, NativeSyntaxLint, header_facts::NativeHeaderFactError,
 };
@@ -64,7 +64,7 @@ fn ambiguous_modified_pre_and_inherited_template_cannot_mint_counterexamples() {
         assert_eq!(
             lint.header_facts(&element).err(),
             Some(NativeHeaderFactError::Header(NativeLintRefusal::LintTag {
-                reason: NativeLintTagRefusal::AmbiguousVerbatim
+                reason: TagFactsRefusal::AmbiguousVerbatim
             }))
         );
     }
@@ -77,7 +77,7 @@ fn ambiguous_modified_pre_and_inherited_template_cannot_mint_counterexamples() {
     assert_eq!(
         lint.header_facts(&element).err(),
         Some(NativeHeaderFactError::Header(NativeLintRefusal::LintTag {
-            reason: NativeLintTagRefusal::InheritedTemplate
+            reason: TagFactsRefusal::InheritedTemplate
         }))
     );
 }
@@ -102,7 +102,7 @@ fn original_table_context_cannot_mint_partial_header_facts() {
         for _ in 1..depth {
             element = element.children().next().unwrap().into_element().unwrap();
         }
-        let receipt = element.lint_tag().unwrap();
+        let receipt = element.tag_facts().unwrap();
         assert!(receipt.in_table_context());
         assert_eq!(
             receipt.span(),
@@ -166,7 +166,7 @@ fn original_pre_recovery_discrepancies_refuse_before_any_fact_artifact() {
                 .into_element()
                 .unwrap();
         }
-        let receipt = original.lint_tag().unwrap();
+        let receipt = original.tag_facts().unwrap();
         assert!(receipt.header_is_literal());
         assert!(receipt.in_recovery_context());
         let lint = NativeSyntaxLint::new(&owner).unwrap();
@@ -196,7 +196,7 @@ fn original_over_limit_pre_cannot_issue_a_partial_counterexample_base() {
         original = original.children().next().unwrap().into_element().unwrap();
     }
     let meta = original.children().next().unwrap().into_element().unwrap();
-    let receipt = meta.lint_tag().unwrap();
+    let receipt = meta.tag_facts().unwrap();
     assert!(receipt.header_is_literal());
     assert!(receipt.in_recovery_context());
     let lint = NativeSyntaxLint::new(&owner).unwrap();

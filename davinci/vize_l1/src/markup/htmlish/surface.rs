@@ -6,10 +6,8 @@
 //! tokens, [`ElementClose::Missing`], [`SurfaceChild::Unexpected`] — are
 //! the crate-level hole policy's clauses 1 and 2 (see the crate docs).
 
+pub(crate) use tag_facts::{HeaderFacts, TagKindFact};
 use vize_l0::{Box, Vec};
-
-mod lint_tag;
-pub(crate) use lint_tag::{LintHeaderFact, LintTagFact};
 
 /// Whether a token's syntax is present in the source or a typed hole.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -39,10 +37,10 @@ pub struct Token<'a> {
     pub status: TokenStatus,
     verbatim_opening: bool,
     raw_interpolation: bool,
-    lint_tag: Option<LintTagFact>,
-    lint_header_literal: bool,
-    lint_table_context: bool,
-    lint_recovery_context: bool,
+    tag_facts: Option<TagKindFact>,
+    header_facts_literal: bool,
+    header_table_context: bool,
+    header_recovery_context: bool,
     ignored_start: bool,
 }
 
@@ -68,10 +66,10 @@ impl<'a> Token<'a> {
             status: TokenStatus::Present,
             verbatim_opening: false,
             raw_interpolation: false,
-            lint_tag: None,
-            lint_header_literal: false,
-            lint_table_context: false,
-            lint_recovery_context: false,
+            tag_facts: None,
+            header_facts_literal: false,
+            header_table_context: false,
+            header_recovery_context: false,
             ignored_start: false,
         }
     }
@@ -84,10 +82,10 @@ impl<'a> Token<'a> {
             status: TokenStatus::Missing,
             verbatim_opening: false,
             raw_interpolation: false,
-            lint_tag: None,
-            lint_header_literal: false,
-            lint_table_context: false,
-            lint_recovery_context: false,
+            tag_facts: None,
+            header_facts_literal: false,
+            header_table_context: false,
+            header_recovery_context: false,
             ignored_start: false,
         }
     }
@@ -104,17 +102,17 @@ impl<'a> Token<'a> {
         self.ignored_start = true;
     }
 
-    pub(crate) fn mark_lint_tag(
+    pub(crate) fn mark_tag_facts(
         &mut self,
-        fact: Option<LintTagFact>,
+        fact: Option<TagKindFact>,
         header_literal: bool,
         table_context: bool,
         recovery_context: bool,
     ) {
-        self.lint_tag = fact;
-        self.lint_header_literal = header_literal;
-        self.lint_table_context = table_context;
-        self.lint_recovery_context = recovery_context;
+        self.tag_facts = fact;
+        self.header_facts_literal = header_literal;
+        self.header_table_context = table_context;
+        self.header_recovery_context = recovery_context;
     }
 
     pub fn is_missing(&self) -> bool {
@@ -196,20 +194,20 @@ pub struct OpenTag<'a> {
 }
 
 impl OpenTag<'_> {
-    pub(crate) fn lint_tag(&self) -> Option<LintTagFact> {
-        self.lt_name.lint_tag
+    pub(crate) fn tag_facts(&self) -> Option<TagKindFact> {
+        self.lt_name.tag_facts
     }
 
-    pub(crate) fn lint_header_is_literal(&self) -> bool {
-        self.lt_name.lint_header_literal
+    pub(crate) fn header_is_literal(&self) -> bool {
+        self.lt_name.header_facts_literal
     }
 
-    pub(crate) fn lint_in_table_context(&self) -> bool {
-        self.lt_name.lint_table_context
+    pub(crate) fn in_table_context(&self) -> bool {
+        self.lt_name.header_table_context
     }
 
-    pub(crate) fn lint_in_recovery_context(&self) -> bool {
-        self.lt_name.lint_recovery_context
+    pub(crate) fn in_recovery_context(&self) -> bool {
+        self.lt_name.header_recovery_context
     }
 
     /// The native dialect's resolved lexical mode for this opening tag.
@@ -314,3 +312,5 @@ const _: () = {
     assert!(size_of::<SurfaceChild<'_>>() == 48);
     assert!(size_of::<SurfaceTree<'_>>() == 40);
 };
+
+mod tag_facts;

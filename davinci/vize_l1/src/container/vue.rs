@@ -15,8 +15,8 @@ mod scan;
 
 pub use descriptor::{
     AdmittedDescriptor, DescriptorIssue, DescriptorIssueCode, DescriptorObservation,
-    DescriptorOptions, DescriptorRefusal, NativeTemplateFrameNameRefusal, NativeTemplateFrameNames,
-    ScriptRole, ScriptView, StyleView, TemplateOnlyDescriptor, TemplateView,
+    DescriptorOptions, DescriptorRefusal, ScriptRole, ScriptView, StyleView,
+    TemplateFrameNameRefusal, TemplateFrameNames, TemplateOnlyDescriptor, TemplateView,
     Vue1DescriptorObservation, Vue1DescriptorRefusal, Vue1TemplateView,
     Vue2DescriptorExpressionPool, Vue2DescriptorObservation, Vue2DescriptorRefusal,
     Vue2RetainedTemplateView, Vue2TemplateView,

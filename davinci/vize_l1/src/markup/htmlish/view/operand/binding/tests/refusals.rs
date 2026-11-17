@@ -1,5 +1,5 @@
 use super::selected;
-use crate::markup::{ArgSyntax, NativeAttributeOperandError, NativeConditionKind};
+use crate::markup::{ArgSyntax, AttributeOperandError, ConditionKind};
 use vize_l0::{Allocator, Span};
 
 #[test]
@@ -77,7 +77,7 @@ fn recognized_unsupported_binding_shapes_refuse_without_preparing_the_original_v
         assert_eq!(head.condition_kind(), None);
         assert_eq!(
             head.static_binding().err(),
-            Some(NativeAttributeOperandError::UnsupportedDirective)
+            Some(AttributeOperandError::UnsupportedDirective)
         );
         if raw == ":[key]tail" {
             assert_eq!(
@@ -93,7 +93,7 @@ fn recognized_unsupported_binding_shapes_refuse_without_preparing_the_original_v
         let conditional = head.observe_expression().err().unwrap();
         assert_eq!(
             conditional.kind(),
-            NativeAttributeOperandError::UnsupportedDirective
+            AttributeOperandError::UnsupportedDirective
         );
         assert!(conditional.syntax().is_none());
         assert_eq!(arena.allocated_bytes(), before);
@@ -108,12 +108,12 @@ fn plain_other_directive_families_and_original_condition_kind_are_not_binding_re
         (
             "<template><p v-if='ready'/></template>",
             "v-if",
-            Some(NativeConditionKind::If),
+            Some(ConditionKind::If),
         ),
         (
             "<template><p v-else-if='ready'/></template>",
             "v-else-if",
-            Some(NativeConditionKind::ElseIf),
+            Some(ConditionKind::ElseIf),
         ),
         ("<template><p v-show='ready'/></template>", "v-show", None),
         ("<template><p v-on:id='ready'/></template>", "v-on:id", None),
@@ -158,27 +158,27 @@ fn original_recovery_and_verbatim_precede_static_shape_value_and_foreign_header_
         (
             "<template><p :id='ready'></template>",
             0,
-            NativeAttributeOperandError::RecoveredComponent,
+            AttributeOperandError::RecoveredComponent,
         ),
         (
             "<template><p v-pre :id.prop='ready'/></template>",
             1,
-            NativeAttributeOperandError::Verbatim,
+            AttributeOperandError::Verbatim,
         ),
         (
             "<template><p v-pre :id/></template>",
             1,
-            NativeAttributeOperandError::Verbatim,
+            AttributeOperandError::Verbatim,
         ),
         (
             "<template><p v-pre :id='ready'></template>",
             1,
-            NativeAttributeOperandError::RecoveredComponent,
+            AttributeOperandError::RecoveredComponent,
         ),
         (
             "<template><p :id= ></p></template>",
             0,
-            NativeAttributeOperandError::RecoveredComponent,
+            AttributeOperandError::RecoveredComponent,
         ),
     ] {
         let arena = Allocator::default();
@@ -207,7 +207,7 @@ fn original_recovery_and_verbatim_precede_static_shape_value_and_foreign_header_
         recovered
             .observe_attribute_head(element.attributes().next().unwrap())
             .err(),
-        Some(NativeAttributeOperandError::ForeignComponent)
+        Some(AttributeOperandError::ForeignComponent)
     );
     assert_eq!(arena.allocated_bytes(), before);
     assert_eq!(
@@ -232,7 +232,7 @@ fn original_recovery_and_verbatim_precede_static_shape_value_and_foreign_header_
             .unwrap()
             .static_binding()
             .err(),
-        Some(NativeAttributeOperandError::UnsupportedDirective)
+        Some(AttributeOperandError::UnsupportedDirective)
     );
     assert_eq!(arena.allocated_bytes(), before);
     assert_eq!(limited.component().block().root_source(), source.as_str());
@@ -264,15 +264,12 @@ fn supported_static_head_without_value_retains_actual_incomplete_failure_before_
         let binding = head.static_binding().unwrap().unwrap();
         assert_eq!(binding.argument_span(), argument);
         let failure = binding.observe_expression().err().unwrap();
-        assert_eq!(failure.kind(), NativeAttributeOperandError::IncompleteValue);
+        assert_eq!(failure.kind(), AttributeOperandError::IncompleteValue);
         assert!(failure.syntax().is_none());
         assert_eq!(arena.allocated_bytes(), before);
         let mut parked = alloc::vec![failure];
         parked.reserve(32);
-        assert_eq!(
-            parked[0].kind(),
-            NativeAttributeOperandError::IncompleteValue
-        );
+        assert_eq!(parked[0].kind(), AttributeOperandError::IncompleteValue);
         assert!(parked[0].syntax().is_none());
         assert_eq!(owner.component().block().root_source(), source);
     }

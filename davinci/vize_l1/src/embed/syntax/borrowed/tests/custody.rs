@@ -197,7 +197,7 @@ fn original_owner_moves_before_borrow_and_short_reborrows_preserve_root_and_drop
         assert_eq!(view.comments().next().unwrap().text(), Ok("/*keep*/"));
     }
     assert_eq!(arena.allocated_bytes(), before);
-    assert!(core::mem::needs_drop::<super::super::super::NativeSyntax<'_>>());
+    assert!(core::mem::needs_drop::<super::super::super::EmbedSyntax<'_>>());
     let Expression::BinaryExpression(binary) = owner.expression().unwrap() else {
         panic!("original binary")
     };

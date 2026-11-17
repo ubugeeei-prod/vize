@@ -5,7 +5,7 @@ use crate::{
 };
 use vize_l0::SmallVec;
 
-fn view<'o, 'a>(root: &'o NativeLintComponent<'a>) -> NativeTemplateElement<'o, 'a> {
+fn view<'o, 'a>(root: &'o ComponentTagFacts<'a>) -> NativeTemplateElement<'o, 'a> {
     let element = root.children().next().unwrap().into_element().unwrap();
     let mut attributes = SmallVec::new();
     for original in element.attributes() {
@@ -41,8 +41,8 @@ fn concrete_focus_root_and_element_callbacks_refuse_same_buffer_foreign_owner_ev
         "<div autofocus accesskey='h'/>",
     ] {
         let block = SourceRoot::new(source).unwrap().whole_block();
-        let original = NativeLintComponent::parse_in(&allocator, block).unwrap();
-        let foreign = NativeLintComponent::parse_in(&allocator, block).unwrap();
+        let original = ComponentTagFacts::parse_in(&allocator, block).unwrap();
+        let foreign = ComponentTagFacts::parse_in(&allocator, block).unwrap();
         let foreign_view = view(&foreign);
         let configured = Linter::new();
         for (rule, callback) in [
@@ -91,11 +91,9 @@ fn authentic_same_owner_proofs_keep_full_physical_attribute_range_and_empty_root
             18,
         ),
     ] {
-        let root = NativeLintComponent::parse_in(
-            &allocator,
-            SourceRoot::new(source).unwrap().whole_block(),
-        )
-        .unwrap();
+        let root =
+            ComponentTagFacts::parse_in(&allocator, SourceRoot::new(source).unwrap().whole_block())
+                .unwrap();
         let element = view(&root);
         let configured = Linter::new();
         let mut context = NativeTemplateLintContext::new(&configured, &root, "exact.vue");

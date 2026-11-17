@@ -194,7 +194,7 @@ fn constant_full_capture_generic_and_zero_occurrence_literal_preserve_distinct_p
     };
     assert_eq!(
         input.kind,
-        vize_l1::embed::syntax::NativeForRefusal::CollectionShape
+        vize_l1::embed::syntax::ForRefusal::CollectionShape
     );
     assert_eq!(input.operand().raw_value(), "item in 2");
     assert!(

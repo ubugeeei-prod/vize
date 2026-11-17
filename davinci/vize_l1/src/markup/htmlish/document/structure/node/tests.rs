@@ -1,7 +1,7 @@
 use alloc::vec::Vec;
 use vize_l0::{Allocator, SourceRoot, Span, String};
 
-use super::{DocumentHtmlElement, DocumentHtmlNode, NativeDocument, Refusal};
+use super::{DocumentHtmlElement, DocumentHtmlNode, ParsedDocument, Refusal};
 
 mod custody;
 
@@ -42,7 +42,7 @@ fn every_original_body_node_matches_the_whole_actual_chromium_census() {
         let name = case["name"].as_str().expect("original case name");
         let source = case["source"].as_str().expect("whole original HTML");
         let arena = Allocator::default();
-        let owner = NativeDocument::lex_in(&arena, SourceRoot::new(source).unwrap());
+        let owner = ParsedDocument::lex_in(&arena, SourceRoot::new(source).unwrap());
         let tree = owner.html_structure().expect(name);
         let refusal = case["bodyNodeRefusal"] == true;
         let actual: Vec<_> = tree
@@ -88,7 +88,7 @@ fn unsupported_comment_frames_vue_and_general_tree_policies_keep_typed_refusals(
     for body in ["<!-->", "<!--->", "<!--a<!--b-->", "<!--a--!>"] {
         let source = envelope(body);
         let arena = Allocator::default();
-        let owner = NativeDocument::lex_in(&arena, SourceRoot::new(&source).unwrap());
+        let owner = ParsedDocument::lex_in(&arena, SourceRoot::new(&source).unwrap());
         assert!(owner.tokens().count() > 0);
         assert!(
             matches!(
@@ -101,7 +101,7 @@ fn unsupported_comment_frames_vue_and_general_tree_policies_keep_typed_refusals(
     for body in ["{{ x }}", "<div v-scope=state></div>"] {
         let source = envelope(body);
         let arena = Allocator::default();
-        let owner = NativeDocument::lex_in(&arena, SourceRoot::new(&source).unwrap());
+        let owner = ParsedDocument::lex_in(&arena, SourceRoot::new(&source).unwrap());
         assert_eq!(owner.html_structure().unwrap_err(), Refusal::VueSyntax);
     }
     for (body, refusal) in [
@@ -110,7 +110,7 @@ fn unsupported_comment_frames_vue_and_general_tree_policies_keep_typed_refusals(
     ] {
         let source = envelope(body);
         let arena = Allocator::default();
-        let owner = NativeDocument::lex_in(&arena, SourceRoot::new(&source).unwrap());
+        let owner = ParsedDocument::lex_in(&arena, SourceRoot::new(&source).unwrap());
         assert_eq!(owner.html_structure().unwrap_err(), refusal, "{body}");
     }
 }
@@ -119,7 +119,7 @@ fn unsupported_comment_frames_vue_and_general_tree_policies_keep_typed_refusals(
 fn outer_insertion_modes_refuse_nodes_without_rejecting_existing_ancestry() {
     let source = "<!DOCTYPE html><html><head></head><body><div>x</div></body>&#13;</html>\n";
     let arena = Allocator::default();
-    let owner = NativeDocument::lex_in(&arena, SourceRoot::new(source).unwrap());
+    let owner = ParsedDocument::lex_in(&arena, SourceRoot::new(source).unwrap());
     let tree = owner
         .html_structure()
         .expect("existing ancestry still admitted");
@@ -166,7 +166,7 @@ fn real_nested_callback_workload_reads_only_direct_nodes_and_original_scalar_pay
     body.push_str("end</div><br>right");
     let source = envelope(&body);
     let arena = Allocator::default();
-    let owner = NativeDocument::lex_in(&arena, SourceRoot::new(&source).unwrap());
+    let owner = ParsedDocument::lex_in(&arena, SourceRoot::new(&source).unwrap());
     let tree = owner.html_structure().unwrap();
     let body = tree
         .elements()

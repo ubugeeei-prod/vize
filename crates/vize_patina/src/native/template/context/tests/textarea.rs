@@ -34,8 +34,8 @@ fn original_closed_textarea_proof_is_post_body_foreign_safe_and_callback_bound()
     let allocator = Allocator::new();
     let source = "<textarea>plain</textarea>";
     let block = SourceRoot::new(source).unwrap().whole_block();
-    let root = NativeLintComponent::parse_in(&allocator, block).unwrap();
-    let foreign = NativeLintComponent::parse_in(&allocator, block).unwrap();
+    let root = ComponentTagFacts::parse_in(&allocator, block).unwrap();
+    let foreign = ComponentTagFacts::parse_in(&allocator, block).unwrap();
     let linter = Linter::new();
     let mut owners = 0;
     admission::children_with_owner_profile(
@@ -81,11 +81,9 @@ fn invalid_hidden_body_never_dispatches_owner_and_a_bare_header_proves_nothing()
         "<textarea hidden>&amp;</textarea>",
         "<textarea hidden>{{value}}</textarea>",
     ] {
-        let root = NativeLintComponent::parse_in(
-            &allocator,
-            SourceRoot::new(source).unwrap().whole_block(),
-        )
-        .unwrap();
+        let root =
+            ComponentTagFacts::parse_in(&allocator, SourceRoot::new(source).unwrap().whole_block())
+                .unwrap();
         let mut callbacks = 0;
         assert!(
             admission::children_with_owner_profile(
@@ -105,7 +103,7 @@ fn invalid_hidden_body_never_dispatches_owner_and_a_bare_header_proves_nothing()
     }
     let source = "<textarea hidden></textarea>";
     let root =
-        NativeLintComponent::parse_in(&allocator, SourceRoot::new(source).unwrap().whole_block())
+        ComponentTagFacts::parse_in(&allocator, SourceRoot::new(source).unwrap().whole_block())
             .unwrap();
     let original = root.children().next().unwrap().into_element().unwrap();
     let view = NativeTemplateElement::new(original, vize_l0::SmallVec::new());

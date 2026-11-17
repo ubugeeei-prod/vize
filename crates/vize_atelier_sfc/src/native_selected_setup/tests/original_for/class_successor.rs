@@ -2,7 +2,7 @@
 use super::*;
 use serde_json::{Value, json};
 use vize_l0::Span;
-use vize_l1::markup::NativeAttributeValue;
+use vize_l1::markup::AttributeValueOperand;
 use vize_l2::file::FileArtifact;
 use vize_l2::file::NativeFileAttributeValueState;
 use vize_l3::decision::dom::{DomRejection, DomUnsupported};
@@ -194,7 +194,7 @@ fn file_observation(file: &FileArtifact<'_>, source: &str) -> Value {
     })
 }
 
-fn value_observation(value: &NativeAttributeValue<'_>, original_source: &str) -> Value {
+fn value_observation(value: &AttributeValueOperand<'_>, original_source: &str) -> Value {
     let source = value.source();
     let decode_map = source.decode_map().map(|map| {
         map.segments()

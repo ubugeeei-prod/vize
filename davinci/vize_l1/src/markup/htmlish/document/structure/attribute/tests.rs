@@ -2,7 +2,7 @@ use alloc::vec::Vec;
 use vize_l0::{Allocator, SourceRoot, String, ToCompactString};
 
 use super::super::DocumentHtmlStructure;
-use super::super::{DocumentHtmlRefusal, NativeDocument};
+use super::super::{DocumentHtmlRefusal, ParsedDocument};
 use crate::markup::{QuoteType, htmlish::document::DocumentLexicalRefusal};
 
 const CORPUS: &str = include_str!("../../../../../../tests/fixtures/document/html-attributes.json");
@@ -27,7 +27,7 @@ fn original_static_attributes_match_the_actual_chromium_census() {
         let name = case["name"].as_str().expect("case name");
         let source = case["source"].as_str().expect("whole original HTML");
         let allocator = Allocator::default();
-        let owner = NativeDocument::lex_in(&allocator, root(source));
+        let owner = ParsedDocument::lex_in(&allocator, root(source));
         let tree = owner.html_structure().expect(name);
         let actual: Vec<Vec<(String, String)>> = tree
             .elements()
@@ -58,7 +58,7 @@ fn original_static_attributes_match_the_actual_chromium_census() {
 fn quote_and_empty_content_geometry_stays_in_original_bytes() {
     let source = envelope("<div A   B='' C = \"\" D=日本語 E='&amp;' F=http://x/></div>");
     let allocator = Allocator::default();
-    let owner = NativeDocument::lex_in(&allocator, root(&source));
+    let owner = ParsedDocument::lex_in(&allocator, root(&source));
     let tree = owner.html_structure().expect("original HTML");
     let element = tree.elements().nth(3).expect("original div");
     let attributes: Vec<_> = element.attributes().collect();
@@ -94,7 +94,7 @@ fn quote_and_empty_content_geometry_stays_in_original_bytes() {
 fn original_attribute_receipts_survive_owner_and_structure_moves() {
     let source = envelope("<div DATA-X='&NotEqualTilde;'></div>");
     let allocator = Allocator::default();
-    let owner = NativeDocument::lex_in(&allocator, root(&source));
+    let owner = ParsedDocument::lex_in(&allocator, root(&source));
     let moved = owner;
     let tree = moved.html_structure().expect("moved genuine owner");
     let moved_tree = tree;
@@ -116,8 +116,8 @@ fn equal_buffers_do_not_transfer_attribute_owner_authority() {
     let source = envelope("<div x='&amp;'></div>");
     let first_arena = Allocator::default();
     let second_arena = Allocator::default();
-    let first = NativeDocument::lex_in(&first_arena, root(&source));
-    let second = NativeDocument::lex_in(&second_arena, root(&source));
+    let first = ParsedDocument::lex_in(&first_arena, root(&source));
+    let second = ParsedDocument::lex_in(&second_arena, root(&source));
     let first_tree = first.html_structure().expect("first genuine tree");
     let second_tree = second.html_structure().expect("second genuine tree");
     let first_element = first_tree.elements().nth(3).expect("first div");
@@ -143,7 +143,7 @@ fn duplicate_boolean_values_and_interleaved_entities_keep_first_original_frame()
         "<div X x='second' Y='&NotEqualTilde;&amp;z' y='fourth'></div><span X='sibling'></span>",
     );
     let allocator = Allocator::default();
-    let owner = NativeDocument::lex_in(&allocator, root(&source));
+    let owner = ParsedDocument::lex_in(&allocator, root(&source));
     let tree = owner
         .html_structure()
         .expect("original duplicate attributes");
@@ -182,7 +182,7 @@ fn recovered_pending_vue_and_unsupported_original_frames_never_mint_attributes()
     ] {
         let source = envelope(body);
         let allocator = Allocator::default();
-        let owner = NativeDocument::lex_in(&allocator, root(&source));
+        let owner = ParsedDocument::lex_in(&allocator, root(&source));
         assert!(
             matches!(owner.html_structure(), Err(DocumentHtmlRefusal::Lexical(_))),
             "{body}"
@@ -191,7 +191,7 @@ fn recovered_pending_vue_and_unsupported_original_frames_never_mint_attributes()
     for body in ["<div v-scope=state></div>", "<div :x='y'></div>"] {
         let source = envelope(body);
         let allocator = Allocator::default();
-        let owner = NativeDocument::lex_in(&allocator, root(&source));
+        let owner = ParsedDocument::lex_in(&allocator, root(&source));
         assert_eq!(
             owner.html_structure().unwrap_err(),
             DocumentHtmlRefusal::VueSyntax
@@ -199,7 +199,7 @@ fn recovered_pending_vue_and_unsupported_original_frames_never_mint_attributes()
     }
     let source = envelope("<div a=\"x\"b=y></div>");
     let allocator = Allocator::default();
-    let owner = NativeDocument::lex_in(&allocator, root(&source));
+    let owner = ParsedDocument::lex_in(&allocator, root(&source));
     assert_eq!(
         owner.html_structure().unwrap_err(),
         DocumentHtmlRefusal::Lexical(DocumentLexicalRefusal::RecoveredSyntax)
@@ -224,7 +224,7 @@ fn actual_common_prefix_attribute_iteration_stays_inside_count_and_byte_admissio
         body.push_str("></div>");
         let source = envelope(&body);
         let allocator = Allocator::default();
-        let owner = NativeDocument::lex_in(&allocator, root(&source));
+        let owner = ParsedDocument::lex_in(&allocator, root(&source));
         assert!(owner.normal_completion().is_ok());
         if count > DocumentHtmlStructure::MAX_ATTRIBUTES {
             assert!(matches!(
@@ -257,7 +257,7 @@ fn actual_common_prefix_attribute_iteration_stays_inside_count_and_byte_admissio
     body.push_str("></div>");
     let source = envelope(&body);
     let allocator = Allocator::default();
-    let owner = NativeDocument::lex_in(&allocator, root(&source));
+    let owner = ParsedDocument::lex_in(&allocator, root(&source));
     assert!(matches!(
         owner.html_structure(),
         Err(DocumentHtmlRefusal::AttributeCountLimit(_))
@@ -277,7 +277,7 @@ fn exact_opening_byte_limit_iterates_values_and_over_limit_retains_original_refu
         body.push_str("</div>");
         let source = envelope(&body);
         let allocator = Allocator::default();
-        let owner = NativeDocument::lex_in(&allocator, root(&source));
+        let owner = ParsedDocument::lex_in(&allocator, root(&source));
         assert!(owner.normal_completion().is_ok());
         if extra > 0 {
             assert!(matches!(

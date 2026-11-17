@@ -5,7 +5,7 @@ use vize_l0::{SourceRoot, Span};
 use vize_l1::embed::{
     Embed, EmbedSource, Grammar, Lang, Shape, prepare_attribute_value,
     prepare_vue_interpolation_in,
-    syntax::{NativeForHead, NativeForInput, RetainedHandlerBody, RetainedSlotParams, parse_once},
+    syntax::{ForHead, ForInput, RetainedHandlerBody, RetainedSlotParams, parse_once},
 };
 use vize_relief::{
     JsExpression, RetainedJsAst, RootNode, SimpleExpressionNode, errors::CompilerError,
@@ -40,7 +40,7 @@ pub enum TemplateSyntaxRole {
 pub enum TemplateSyntax<'a> {
     Expression(Option<JsExpression<'a>>),
     Slot(Option<RetainedJsAst<'a>>),
-    For(std::boxed::Box<NativeForHead<'a>>),
+    For(std::boxed::Box<ForHead<'a>>),
     /// The original complete expression of a named event, at original offsets.
     HandlerExpression(JsExpression<'a>),
     Handler(std::boxed::Box<RetainedHandlerBody<'a>>),
@@ -312,10 +312,9 @@ impl<'a> Parser<'a> {
                 .ok()
                 .and_then(|root| {
                     let raw = self.source.get(span.start as usize..span.end as usize)?;
-                    NativeForInput::attribute_in(self.allocator, root.whole_block(), raw, Lang::Ts)
-                        .ok()
+                    ForInput::attribute_in(self.allocator, root.whole_block(), raw, Lang::Ts).ok()
                 })
-                .map(NativeForInput::observe);
+                .map(ForInput::observe);
             let (source, syntax) = match owner {
                 Some(owner) if owner.source().text() == cooked => (
                     Some(owner.source()),

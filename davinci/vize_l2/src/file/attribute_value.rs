@@ -5,7 +5,7 @@ use crate::lang::js::NativeTemplateIssueKind;
 use crate::op::{Attribute, ElementOp};
 use core::ptr::NonNull;
 use vize_l0::id::NodeId;
-use vize_l1::markup::{NativeAttributeValue, NativeAttributeValueFailure};
+use vize_l1::markup::{AttributeValueFailure, AttributeValueOperand};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum NativeFileAttributeValueState {
@@ -22,7 +22,7 @@ pub enum NativeFileAttributeValueState {
 /// clone::<NativeFileAttributeValue<'static>>();
 /// ```
 pub struct NativeFileAttributeValue<'a> {
-    pub(crate) observation: Result<NativeAttributeValue<'a>, NativeAttributeValueFailure<'a>>,
+    pub(crate) observation: Result<AttributeValueOperand<'a>, AttributeValueFailure<'a>>,
     pub(crate) state: NativeFileAttributeValueState,
     pub(crate) slot: usize,
     pub(crate) name: &'a str,
@@ -31,11 +31,11 @@ pub struct NativeFileAttributeValue<'a> {
 }
 impl<'a> NativeFileAttributeValue<'a> {
     #[must_use]
-    pub fn observation(&self) -> Option<&NativeAttributeValue<'a>> {
+    pub fn observation(&self) -> Option<&AttributeValueOperand<'a>> {
         self.observation.as_ref().ok()
     }
     #[must_use]
-    pub fn failure(&self) -> Option<&NativeAttributeValueFailure<'a>> {
+    pub fn failure(&self) -> Option<&AttributeValueFailure<'a>> {
         self.observation.as_ref().err()
     }
     #[must_use]
@@ -117,7 +117,7 @@ impl<'f, 'a> FileAttributeValue<'f, 'a> {
         self.slot
     }
     #[must_use]
-    pub fn observation(self) -> Option<&'f NativeAttributeValue<'a>> {
+    pub fn observation(self) -> Option<&'f AttributeValueOperand<'a>> {
         self.file
             .facts
             .native_attribute_values

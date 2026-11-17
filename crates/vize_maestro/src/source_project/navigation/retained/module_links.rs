@@ -4,7 +4,7 @@ use super::super::{SnapshotRefusal, worker::module_links::Request};
 use super::{Control, NavigationRefusal, RetainedNavigation, coordinates};
 use tower_lsp::lsp_types::{DocumentLink, Range, Url};
 use vize_l0::{SourceBlock, Span, String};
-use vize_l1::embed::syntax::NativeSyntax;
+use vize_l1::embed::syntax::EmbedSyntax;
 use vize_l2::{
     file::FileArtifact,
     lang::js::{ModuleSourceError, OriginalModuleSources, ProgramInput, ProgramInputError},
@@ -81,7 +81,7 @@ impl ModuleOperands {
 }
 
 pub(super) fn admit<'f, 'p, 'a>(
-    syntax: &'p NativeSyntax<'a>,
+    syntax: &'p EmbedSyntax<'a>,
     block: SourceBlock<'a>,
     file: &'f FileArtifact<'a>,
 ) -> Admission<'f, 'p, 'a> {

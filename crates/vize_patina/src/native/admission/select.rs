@@ -3,7 +3,7 @@
 use super::{NativeTemplateAttribute, NativeTemplateOwnerProfile, Refusal};
 use crate::native::template::NativeTemplateAttributeKind;
 use vize_l0::Span;
-use vize_l1::markup::{ElementClose, NativeElement};
+use vize_l1::markup::{ElementClose, ElementView};
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(super) enum Parent {
@@ -16,7 +16,7 @@ pub(super) enum Parent {
 pub(super) fn check(
     profile: NativeTemplateOwnerProfile,
     parent: Parent,
-    element: &NativeElement<'_, '_>,
+    element: &ElementView<'_, '_>,
     attributes: &[NativeTemplateAttribute<'_, '_>],
     opening: Span,
 ) -> Result<Parent, Refusal> {

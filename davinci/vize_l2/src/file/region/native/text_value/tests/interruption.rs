@@ -109,7 +109,7 @@ fn fault_after_full_foreign_failure_park_keeps_original_source_and_failure_kind(
     let failure = record.failure().ok_or("actual parked failure")?;
     same(
         failure.kind(),
-        vize_l1::markup::NativeTextValueError::ForeignComponent,
+        vize_l1::markup::TextValueError::ForeignComponent,
     )?;
     same(failure.token().ok_or("full Text token")?.text, "&amp;lt;")?;
     check(core::ptr::eq(failure.block().root_source(), source))?;

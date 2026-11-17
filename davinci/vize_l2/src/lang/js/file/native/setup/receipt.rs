@@ -1,10 +1,10 @@
 //! A short original setup/Program/unit join, without a second syntax walk.
 
-use super::{NativeSyntax, NativeTemplateFile};
+use super::{EmbedSyntax, NativeTemplateFile};
 use crate::file::{FileArtifact, ScopeId, ScriptUnit, ScriptUnitId};
 use oxc_parser::AdmittedProgram;
 use vize_l0::Span;
-use vize_l1::markup::NativeScriptSelection;
+use vize_l1::markup::ScriptSelection;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum NativeSetupIssueKind {
@@ -50,9 +50,9 @@ pub struct NativeSetupIssue {
 /// ```
 /// A caller cannot replace the real Program with a foreign parse:
 /// ```compile_fail
-/// use vize_l1::embed::syntax::NativeSyntax;
+/// use vize_l1::embed::syntax::EmbedSyntax;
 /// use vize_l2::lang::js::NativeTemplateFile;
-/// fn pair<'a>(owner: &NativeTemplateFile<'a>, foreign: NativeSyntax<'a>) {
+/// fn pair<'a>(owner: &NativeTemplateFile<'a>, foreign: EmbedSyntax<'a>) {
 ///     let _ = owner.setup(foreign);
 /// }
 /// ```
@@ -66,8 +66,8 @@ pub struct NativeSetupIssue {
 /// ```
 pub struct NativeSelectedSetup<'owner, 'arena> {
     owner: &'owner NativeTemplateFile<'arena>,
-    syntax: &'owner NativeSyntax<'arena>,
-    selected: NativeScriptSelection<'owner, 'arena>,
+    syntax: &'owner EmbedSyntax<'arena>,
+    selected: ScriptSelection<'owner, 'arena>,
     program: AdmittedProgram<'owner, 'arena>,
     unit: &'owner ScriptUnit,
     file: &'owner FileArtifact<'arena>,
@@ -78,11 +78,11 @@ impl<'owner, 'arena> NativeSelectedSetup<'owner, 'arena> {
         self.owner
     }
     #[must_use]
-    pub fn syntax(&self) -> &'owner NativeSyntax<'arena> {
+    pub fn syntax(&self) -> &'owner EmbedSyntax<'arena> {
         self.syntax
     }
     #[must_use]
-    pub fn selected(&self) -> &NativeScriptSelection<'owner, 'arena> {
+    pub fn selected(&self) -> &ScriptSelection<'owner, 'arena> {
         &self.selected
     }
     #[must_use]

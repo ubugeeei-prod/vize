@@ -11,9 +11,9 @@ mod native_lint_tag {
     use vize_l1::{
         container::{Vue, vue::DescriptorOptions},
         markup::{
-            Element, ElementClose, NativeChildren, NativeComponent, NativeLintTagKind as Kind,
-            NativeLintTagRefusal as Refusal, NativeTemplateComponent, NativeTemplateGrammar,
-            OpenTag, SurfaceParseOptions, SurfaceTree, Token, check_fidelity, render,
+            ChildrenView, Element, ElementClose, NativeComponent, NativeTemplateComponent, OpenTag,
+            SurfaceParseOptions, SurfaceTree, TagFactsKind as Kind, TagFactsRefusal as Refusal,
+            TemplateGrammar, Token, check_fidelity, render,
         },
     };
 
@@ -40,12 +40,12 @@ mod native_lint_tag {
 
     fn collect<'a>(
         component: &NativeComponent<'a>,
-        children: NativeChildren<'_, 'a>,
+        children: ChildrenView<'_, 'a>,
         output: &mut Vec<(&'a str, Result<Kind, Refusal>)>,
     ) {
         for child in children {
             if let Some(element) = child.into_element() {
-                let kind = element.lint_tag().map(|receipt| {
+                let kind = element.tag_facts().map(|receipt| {
                     assert!(core::ptr::eq(receipt.component(), component));
                     assert!(core::ptr::eq(receipt.element(), element.surface()));
                     let block = component.block();

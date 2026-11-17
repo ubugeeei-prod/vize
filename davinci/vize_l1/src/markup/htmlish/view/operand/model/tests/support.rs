@@ -1,6 +1,6 @@
 use crate::container::Vue;
 use crate::container::vue::DescriptorOptions;
-use crate::markup::{NativeAttributeModelExpression, NativeTemplateComponent};
+use crate::markup::{AttributeModelExpression, NativeTemplateComponent};
 use vize_l0::config::{VueDialect, VueVersion};
 use vize_l0::{Allocator, Span};
 
@@ -28,7 +28,7 @@ pub(super) fn selected<'a>(arena: &'a Allocator, source: &'a str) -> NativeTempl
 pub(super) fn observe<'a>(
     selected: &NativeTemplateComponent<'a>,
     ordinal: usize,
-) -> NativeAttributeModelExpression<'a> {
+) -> AttributeModelExpression<'a> {
     let element = selected.children().next().unwrap().into_element().unwrap();
     let head = selected
         .observe_attribute_head(element.attributes().nth(ordinal).unwrap())
@@ -39,7 +39,7 @@ pub(super) fn observe<'a>(
 }
 
 pub(super) fn assert_original<'a>(
-    operand: &NativeAttributeModelExpression<'a>,
+    operand: &AttributeModelExpression<'a>,
     selected: &NativeTemplateComponent<'a>,
     ordinal: usize,
 ) {

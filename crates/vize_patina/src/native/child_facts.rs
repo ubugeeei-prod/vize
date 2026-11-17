@@ -10,7 +10,7 @@ use vize_l0::{
     },
     fact::{FactConsumer, FactError, FactManager, FactTable, FactView},
 };
-use vize_l1::markup::NativeChild;
+use vize_l1::markup::ChildView;
 
 use super::{
     NativeLintRefusal,
@@ -68,7 +68,7 @@ struct Evidence {
 /// ```
 pub struct NativeChildFacts<'s, 'o, 'a> {
     header: &'s NativeHeaderFacts<'o, 'a>,
-    original: NativeChild<'s, 'a>,
+    original: ChildView<'s, 'a>,
     manager: FactManager<'static, Evidence>,
 }
 
@@ -77,7 +77,7 @@ impl<'o, 'a> NativeHeaderFacts<'o, 'a> {
     /// No caller key, source, span, category or arbitrary body tree is accepted.
     pub fn child_facts<'s>(
         &'s self,
-        child: NativeChild<'s, 'a>,
+        child: ChildView<'s, 'a>,
     ) -> Result<NativeChildFacts<'s, 'o, 'a>, NativeChildFactError> {
         if !core::ptr::eq(self.owner().component(), child.component()) {
             return Err(NativeChildFactError::ForeignChild);
@@ -126,7 +126,7 @@ impl<'s, 'o, 'a> NativeChildFacts<'s, 'o, 'a> {
     }
     /// Reborrows the original supplied direct child.
     #[must_use]
-    pub fn original(&self) -> NativeChild<'_, 'a> {
+    pub fn original(&self) -> ChildView<'_, 'a> {
         self.original.reborrow()
     }
     /// Opens the fact view declared by the consumer's demand.

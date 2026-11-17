@@ -50,10 +50,8 @@ impl<'o, 'a> TemplateView<'o, 'a> {
     /// assert_eq!((names.opening(), names.closing()), (Span::new(1, 9), Span::new(13, 21)));
     /// assert!(names.accepts(&view));
     /// ```
-    pub fn frame_names(
-        self,
-    ) -> Result<NativeTemplateFrameNames<'o, 'a>, NativeTemplateFrameNameRefusal> {
-        use NativeTemplateFrameNameRefusal::{IncompleteBoundary, SourceMismatch};
+    pub fn frame_names(self) -> Result<TemplateFrameNames<'o, 'a>, TemplateFrameNameRefusal> {
+        use TemplateFrameNameRefusal::{IncompleteBoundary, SourceMismatch};
         let selected = self.owner.template.as_ref().ok_or(IncompleteBoundary)?;
         if !core::ptr::eq(selected, self.selected) {
             return Err(SourceMismatch);
@@ -81,7 +79,7 @@ impl<'o, 'a> TemplateView<'o, 'a> {
         {
             return Err(SourceMismatch);
         }
-        Ok(NativeTemplateFrameNames {
+        Ok(TemplateFrameNames {
             owner: self.owner,
             selected,
             root,
@@ -93,7 +91,7 @@ impl<'o, 'a> TemplateView<'o, 'a> {
 /// Original descriptor admission refuses missing, uncertain or self-closed frames.
 /// A receipt never infers geometry from a public capture or whole closing span.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum NativeTemplateFrameNameRefusal {
+pub enum TemplateFrameNameRefusal {
     IncompleteBoundary,
     SourceMismatch,
 }
@@ -104,8 +102,8 @@ pub enum NativeTemplateFrameNameRefusal {
 ///
 /// A public capture or caller coordinates cannot mint a receipt:
 /// ```compile_fail
-/// use vize_l1::container::vue::NativeTemplateFrameNames;
-/// let _ = NativeTemplateFrameNames { owner: todo!(), selected: todo!(), root: todo!(), names: todo!() };
+/// use vize_l1::container::vue::TemplateFrameNames;
+/// let _ = TemplateFrameNames { owner: todo!(), selected: todo!(), root: todo!(), names: todo!() };
 /// ```
 /// The original descriptor must remain alive:
 /// ```compile_fail
@@ -161,20 +159,20 @@ pub enum NativeTemplateFrameNameRefusal {
 /// ```
 /// Receipts cannot detach a shared ownership handle:
 /// ```compile_fail
-/// use vize_l1::container::vue::NativeTemplateFrameNames;
+/// use vize_l1::container::vue::TemplateFrameNames;
 /// fn requires_clone<T: Clone>() {}
-/// requires_clone::<NativeTemplateFrameNames<'static, 'static>>();
+/// requires_clone::<TemplateFrameNames<'static, 'static>>();
 /// ```
-pub struct NativeTemplateFrameNames<'o, 'a> {
+pub struct TemplateFrameNames<'o, 'a> {
     owner: &'o DescriptorObservation<'a>,
     selected: &'o TemplateSelection<'a>,
     root: SourceRoot<'a>,
     names: &'o TemplateNamePair,
 }
 
-impl core::fmt::Debug for NativeTemplateFrameNames<'_, '_> {
+impl core::fmt::Debug for TemplateFrameNames<'_, '_> {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        f.debug_struct("NativeTemplateFrameNames")
+        f.debug_struct("TemplateFrameNames")
             .field("container_index", &self.container_index())
             .field("opening", &self.opening())
             .field("closing", &self.closing())
@@ -182,7 +180,7 @@ impl core::fmt::Debug for NativeTemplateFrameNames<'_, '_> {
     }
 }
 
-impl<'o, 'a> NativeTemplateFrameNames<'o, 'a> {
+impl<'o, 'a> TemplateFrameNames<'o, 'a> {
     #[must_use]
     pub fn template(&self) -> TemplateView<'o, 'a> {
         TemplateView {

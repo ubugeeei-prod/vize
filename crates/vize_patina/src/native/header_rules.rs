@@ -4,7 +4,7 @@ use vize_l0::{
     SmallVec, Span, String,
     diag::{Advisory, Diagnostic, DiagnosticPart, MessageLookup, PartKind, Stage},
 };
-use vize_l1::markup::{NativeAttribute, NativeElement, NativeLintTag, NativeLintTagKind};
+use vize_l1::markup::{AttributeView, ElementView, TagFacts, TagFactsKind};
 
 use super::{
     NO_ACCESS_KEY_RULE, NO_AUTOFOCUS_RULE, NO_DISTRACTING_ELEMENTS_RULE, NativeLintFinding,
@@ -12,9 +12,9 @@ use super::{
 };
 
 pub(super) fn inspect(
-    element: &NativeElement<'_, '_>,
+    element: &ElementView<'_, '_>,
     mut visit: impl FnMut(header::Binding<'_>),
-) -> Result<(NativeLintTagKind, Span), NativeLintRefusal> {
+) -> Result<(TagFactsKind, Span), NativeLintRefusal> {
     let (receipt, opening) = inspect_attributes(element, |_, binding| visit(binding))?;
     Ok((receipt.kind(), opening))
 }
@@ -22,9 +22,9 @@ pub(super) fn inspect(
 /// One strict original-header iteration, shared by facts and advisory rules.
 /// The callback receives the real attribute projection and its checked binding.
 pub(super) fn inspect_attributes<'o, 'a>(
-    element: &NativeElement<'o, 'a>,
-    mut visit: impl FnMut(&NativeAttribute<'o, 'a>, header::Binding<'a>),
-) -> Result<(NativeLintTag<'o, 'a>, Span), NativeLintRefusal> {
+    element: &ElementView<'o, 'a>,
+    mut visit: impl FnMut(&AttributeView<'o, 'a>, header::Binding<'a>),
+) -> Result<(TagFacts<'o, 'a>, Span), NativeLintRefusal> {
     inspect_checked::<false>(element, |checked, binding| {
         let binding = checked.narrow(binding)?;
         visit(checked.original(), binding);
@@ -35,12 +35,12 @@ pub(super) fn inspect_attributes<'o, 'a>(
 /// The same original iteration under an explicit caller-owned binding policy.
 /// Wider use requires the bare driver's clean whole-component admission.
 pub(super) fn inspect_checked<'o, 'a, const WIDE: bool>(
-    element: &NativeElement<'o, 'a>,
+    element: &ElementView<'o, 'a>,
     visit: impl FnMut(
         header::CheckedAttribute<'o, 'a>,
         header::AttributeBinding<'a>,
     ) -> Result<(), NativeLintRefusal>,
-) -> Result<(NativeLintTag<'o, 'a>, Span), NativeLintRefusal> {
+) -> Result<(TagFacts<'o, 'a>, Span), NativeLintRefusal> {
     inspect_with(
         element,
         |element, original| {
@@ -55,20 +55,20 @@ pub(super) fn inspect_checked<'o, 'a, const WIDE: bool>(
 }
 
 pub(super) fn inspect_events<'o, 'a>(
-    element: &NativeElement<'o, 'a>,
+    element: &ElementView<'o, 'a>,
     visit: impl FnMut(
         header::CheckedAttribute<'o, 'a>,
         header::AttributeBinding<'a>,
     ) -> Result<(), NativeLintRefusal>,
-) -> Result<(NativeLintTag<'o, 'a>, Span), NativeLintRefusal> {
+) -> Result<(TagFacts<'o, 'a>, Span), NativeLintRefusal> {
     inspect_with(element, header::event_binding, visit)
 }
 
 fn inspect_with<'o, 'a>(
-    element: &NativeElement<'o, 'a>,
+    element: &ElementView<'o, 'a>,
     mut binding: impl FnMut(
-        &NativeElement<'o, 'a>,
-        NativeAttribute<'o, 'a>,
+        &ElementView<'o, 'a>,
+        AttributeView<'o, 'a>,
     ) -> Result<
         (
             header::CheckedAttribute<'o, 'a>,
@@ -80,9 +80,9 @@ fn inspect_with<'o, 'a>(
         header::CheckedAttribute<'o, 'a>,
         header::AttributeBinding<'a>,
     ) -> Result<(), NativeLintRefusal>,
-) -> Result<(NativeLintTag<'o, 'a>, Span), NativeLintRefusal> {
+) -> Result<(TagFacts<'o, 'a>, Span), NativeLintRefusal> {
     let receipt = element
-        .lint_tag()
+        .tag_facts()
         .map_err(|reason| NativeLintRefusal::LintTag { reason })?;
     if receipt.in_table_context() {
         return Err(NativeLintRefusal::TableContext {
@@ -124,7 +124,7 @@ struct AttributeRule {
 }
 
 fn attribute_rule(
-    element: &NativeElement<'_, '_>,
+    element: &ElementView<'_, '_>,
     messages: &impl MessageLookup,
     rule: AttributeRule,
 ) -> Result<Vec<NativeLintFinding>, NativeLintRefusal> {
@@ -137,7 +137,7 @@ fn attribute_rule(
         }
         _ => {}
     })?;
-    if kind == NativeLintTagKind::Component {
+    if kind == TagFactsKind::Component {
         return Ok(Vec::new());
     }
     Ok(matches
@@ -154,7 +154,7 @@ fn attribute_rule(
 }
 
 pub(super) fn no_autofocus(
-    element: &NativeElement<'_, '_>,
+    element: &ElementView<'_, '_>,
     messages: &impl MessageLookup,
 ) -> Result<Vec<NativeLintFinding>, NativeLintRefusal> {
     attribute_rule(
@@ -170,7 +170,7 @@ pub(super) fn no_autofocus(
 }
 
 pub(super) fn no_access_key(
-    element: &NativeElement<'_, '_>,
+    element: &ElementView<'_, '_>,
     messages: &impl MessageLookup,
 ) -> Result<Vec<NativeLintFinding>, NativeLintRefusal> {
     attribute_rule(
@@ -186,12 +186,12 @@ pub(super) fn no_access_key(
 }
 
 pub(super) fn no_distracting_elements(
-    element: &NativeElement<'_, '_>,
+    element: &ElementView<'_, '_>,
     messages: &impl MessageLookup,
 ) -> Result<Option<NativeLintFinding>, NativeLintRefusal> {
     let (kind, range) = inspect(element, |_| {})?;
     let tag = element.surface().tag();
-    if kind == NativeLintTagKind::Component || !matches!(tag, "marquee" | "blink") {
+    if kind == TagFactsKind::Component || !matches!(tag, "marquee" | "blink") {
         return Ok(None);
     }
     let template = messages.lookup("a11y/no-distracting-elements.message");

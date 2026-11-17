@@ -84,7 +84,7 @@ fn complete_original_control_and_handler_files_remain_vapor_target_refusals() {
 
 #[test]
 fn original_numeric_for_keeps_its_precise_source_refusal_before_vapor() {
-    use vize_l1::embed::syntax::NativeForRefusal;
+    use vize_l1::embed::syntax::ForRefusal;
     use vize_l2::file::RejectedFileFor;
     let arena = Allocator::default();
     let source = "<script setup>let count=1</script><template><div v-for='item in 2'/></template>";
@@ -100,7 +100,7 @@ fn original_numeric_for_keeps_its_precise_source_refusal_before_vapor() {
     let [RejectedFileFor::Syntax(head)] = file.rejected_for_heads() else {
         panic!("retain the genuine refused numeric collection")
     };
-    assert_eq!(head.kind, NativeForRefusal::CollectionShape);
+    assert_eq!(head.kind, ForRefusal::CollectionShape);
     let syntax = head.operand().syntax();
     assert_eq!(syntax.source().text(), "item in 2");
     assert!(core::ptr::eq(syntax.source().authored_root(), source));

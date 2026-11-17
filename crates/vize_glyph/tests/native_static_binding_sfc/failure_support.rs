@@ -4,7 +4,7 @@ use vize_glyph::native_doc::{
     LineEnding, NativeSfcObservation, NativeSfcRefusal, ObservedNativeTemplateRefusal,
 };
 use vize_l0::Span;
-use vize_l1::markup::{NativeConditionKind, SurfaceChild};
+use vize_l1::markup::{ConditionKind, SurfaceChild};
 
 pub(super) fn refused(owner: &NativeSfcObservation<'_>, source: &str, expected: NativeSfcRefusal) {
     assert_eq!(owner.source(), source);
@@ -65,7 +65,7 @@ pub(super) fn prefix(
     assert_eq!(identifier.name.as_str(), "first");
     assert_eq!(identifier.span, oxc_span::Span::new(2, 7));
     let conditional = &owner.attribute_operands()[0];
-    assert_eq!(conditional.kind(), NativeConditionKind::If);
+    assert_eq!(conditional.kind(), ConditionKind::If);
     assert_eq!(conditional.name_span(), Span::new(41, 45));
     assert_eq!(conditional.value_span(), Span::new(47, 49));
     assert_eq!(conditional.raw_value(), "ok");

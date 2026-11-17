@@ -1,18 +1,18 @@
-use super::{Allocator, ForHeadInput, Lang, NativeForRefusal, observe};
+use super::{Allocator, ForHeadInput, ForRefusal, Lang, observe};
 
 #[test]
 fn unsupported_native_families_preserve_the_whole_head_and_both_owners() {
     let arena = Allocator::default();
     for (text, kind) in [
-        ("(item,key,index) in items", NativeForRefusal::AliasCount(3)),
-        ("item in items.values", NativeForRefusal::CollectionShape),
-        ("item in /*kept*/items", NativeForRefusal::Comment),
-        ("item in _ctx", NativeForRefusal::RenderContextName),
-        (r"\u0061 in items", NativeForRefusal::EscapedSpelling),
-        ("item in it&#101;ms", NativeForRefusal::EntityOutput),
+        ("(item,key,index) in items", ForRefusal::AliasCount(3)),
+        ("item in items.values", ForRefusal::CollectionShape),
+        ("item in /*kept*/items", ForRefusal::Comment),
+        ("item in _ctx", ForRefusal::RenderContextName),
+        (r"\u0061 in items", ForRefusal::EscapedSpelling),
+        ("item in it&#101;ms", ForRefusal::EntityOutput),
     ] {
         let syntax = observe(&arena, text, Lang::Js);
-        assert_eq!(syntax.native_refusal(), Some(kind), "{text}");
+        assert_eq!(syntax.for_refusal(), Some(kind), "{text}");
         let aliases = syntax
             .aliases()
             .unwrap()
@@ -58,7 +58,7 @@ fn unsupported_native_families_preserve_the_whole_head_and_both_owners() {
             map
         );
         assert_eq!(rejected.syntax().comments().count(), comments);
-        assert_eq!(rejected.into_syntax().native_refusal(), Some(kind));
+        assert_eq!(rejected.into_syntax().for_refusal(), Some(kind));
     }
 }
 
@@ -67,7 +67,7 @@ fn original_diagnostics_and_comments_are_retained_on_syntax_refusal() {
     let arena = Allocator::default();
     let text = "item in /x/uv /*kept*/";
     let syntax = observe(&arena, text, Lang::Js);
-    let kind = syntax.native_refusal().unwrap();
+    let kind = syntax.for_refusal().unwrap();
     let before: alloc::vec::Vec<_> = syntax
         .diagnostics()
         .map(|(part, diagnostic)| {

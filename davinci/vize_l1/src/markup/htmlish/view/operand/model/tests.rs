@@ -7,9 +7,7 @@ mod trim;
 use support::{assert_original, observe, selected, source_span, value_span};
 
 use crate::embed::{DecodeSegmentKind, Grammar, Lang, Shape, syntax::EmbedHole};
-use crate::markup::{
-    NativeAttributeModelExpression, NativeAttributeOperandError, NativeTemplateGrammar,
-};
+use crate::markup::{AttributeModelExpression, AttributeOperandError, TemplateGrammar};
 use alloc::vec::Vec;
 use oxc_ast::ast::{CommentKind, Expression, TSType};
 use oxc_span::GetSpan;
@@ -23,13 +21,13 @@ fn actual_js_and_ts_module_heads_keep_original_unicode_profiles_and_ast_coordina
             "<!--雪🌸-->\r\n<template><input title=x v-model='draft'/></template>",
             "draft",
             Lang::Js,
-            NativeTemplateGrammar::JavaScriptModule,
+            TemplateGrammar::JavaScriptModule,
         ),
         (
             "<script setup lang='ts'>let draft:string='x'</script>\r\n<template><input title=x v-model='draft as string'/></template>",
             "draft as string",
             Lang::Ts,
-            NativeTemplateGrammar::TypeScriptModule,
+            TemplateGrammar::TypeScriptModule,
         ),
     ] {
         let owner = selected(&arena, source);
@@ -246,7 +244,7 @@ fn sibling_ordinal_same_buffer_and_equal_byte_owners_cannot_join_the_original_mo
         let before = arena.allocated_bytes();
         assert_eq!(
             owner.observe_attribute_head(attribute).err(),
-            Some(NativeAttributeOperandError::ForeignComponent)
+            Some(AttributeOperandError::ForeignComponent)
         );
         assert_eq!(arena.allocated_bytes(), before);
     }
@@ -280,9 +278,7 @@ fn parked_movement_and_owner_drop_preserve_original_ast_and_syntax_transfer() {
     assert_eq!(syntax.diagnostics().count(), 0);
     assert_eq!(syntax.hole(), None);
     assert!(syntax.admitted_expression().is_some());
-    assert!(core::mem::needs_drop::<
-        NativeAttributeModelExpression<'static>,
-    >());
+    assert!(core::mem::needs_drop::<AttributeModelExpression<'static>>());
 }
 
 #[test]
@@ -315,7 +311,7 @@ fn model_arguments_and_unsupported_modifiers_refuse_before_any_value_preparation
         let head = owner.observe_attribute_head(attribute).unwrap();
         assert_eq!(
             head.model().err(),
-            Some(NativeAttributeOperandError::UnsupportedDirective)
+            Some(AttributeOperandError::UnsupportedDirective)
         );
         assert_eq!(arena.allocated_bytes(), before);
         assert_eq!(
@@ -367,10 +363,7 @@ fn other_families_and_old_conditional_entry_keep_their_separate_contracts() {
     assert!(head.static_binding().unwrap().is_none());
     let before = arena.allocated_bytes();
     let failure = head.observe_expression().err().unwrap();
-    assert_eq!(
-        failure.kind(),
-        NativeAttributeOperandError::UnsupportedDirective
-    );
+    assert_eq!(failure.kind(), AttributeOperandError::UnsupportedDirective);
     assert!(failure.syntax().is_none());
     assert_eq!(arena.allocated_bytes(), before);
 }
@@ -391,7 +384,7 @@ fn missing_value_and_parse_holes_keep_actual_failure_and_complete_stock_diagnost
         .observe_expression()
         .err()
         .unwrap();
-    assert_eq!(failure.kind(), NativeAttributeOperandError::IncompleteValue);
+    assert_eq!(failure.kind(), AttributeOperandError::IncompleteValue);
     assert!(failure.syntax().is_none());
     assert_eq!(arena.allocated_bytes(), before);
     for (raw, message, end) in [
@@ -460,12 +453,12 @@ fn unquoted_value_and_original_recovery_verbatim_boundaries_remain_truthful() {
         (
             "<template><div v-model='draft'></template>",
             0,
-            NativeAttributeOperandError::RecoveredComponent,
+            AttributeOperandError::RecoveredComponent,
         ),
         (
             "<template><input v-pre v-model='draft'/></template>",
             1,
-            NativeAttributeOperandError::Verbatim,
+            AttributeOperandError::Verbatim,
         ),
     ] {
         let owner = selected(&arena, source);

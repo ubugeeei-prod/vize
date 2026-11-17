@@ -1,5 +1,5 @@
 use super::selected;
-use crate::markup::{NativeAttributeOperandError, NativeConditionKind};
+use crate::markup::{AttributeOperandError, ConditionKind};
 use vize_l0::Allocator;
 
 #[test]
@@ -8,22 +8,22 @@ fn original_header_recovery_and_verbatim_precede_head_and_expression_selection()
         (
             "<template><p v-if='ready'></template>",
             0,
-            NativeAttributeOperandError::RecoveredComponent,
+            AttributeOperandError::RecoveredComponent,
         ),
         (
             "<template><p v-pre v-if.foo='ready'/></template>",
             1,
-            NativeAttributeOperandError::Verbatim,
+            AttributeOperandError::Verbatim,
         ),
         (
             "<template><p v-pre v-if/></template>",
             1,
-            NativeAttributeOperandError::Verbatim,
+            AttributeOperandError::Verbatim,
         ),
         (
             "<template><p v-pre v-if='ready'></template>",
             1,
-            NativeAttributeOperandError::RecoveredComponent,
+            AttributeOperandError::RecoveredComponent,
         ),
     ] {
         let arena = Allocator::default();
@@ -66,10 +66,7 @@ fn unsupported_parts_remain_metadata_and_cannot_prepare_a_conditional_value() {
         assert_eq!(head.name_block().source(), name);
         assert_eq!(head.condition_kind(), None);
         let failure = head.observe_expression().err().unwrap();
-        assert_eq!(
-            failure.kind(),
-            NativeAttributeOperandError::UnsupportedDirective
-        );
+        assert_eq!(failure.kind(), AttributeOperandError::UnsupportedDirective);
         assert!(failure.syntax().is_none());
         assert_eq!(arena.allocated_bytes(), before);
         let old = selected
@@ -93,10 +90,10 @@ fn head_can_exist_without_value_but_original_complete_value_refusal_stays_first(
     let head = selected
         .observe_attribute_head(attribute.reborrow())
         .unwrap();
-    assert_eq!(head.condition_kind(), Some(NativeConditionKind::If));
+    assert_eq!(head.condition_kind(), Some(ConditionKind::If));
     assert_eq!(head.name_block().source(), "v-if");
     let failure = head.observe_expression().err().unwrap();
-    assert_eq!(failure.kind(), NativeAttributeOperandError::IncompleteValue);
+    assert_eq!(failure.kind(), AttributeOperandError::IncompleteValue);
     assert!(failure.syntax().is_none());
     assert_eq!(arena.allocated_bytes(), before);
     let old = selected
@@ -130,10 +127,7 @@ fn long_vue_argument_keeps_original_head_and_semantic_refusal() {
         .observe_attribute_expression(attribute)
         .err()
         .unwrap();
-    assert_eq!(
-        old.kind(),
-        NativeAttributeOperandError::UnsupportedDirective
-    );
+    assert_eq!(old.kind(), AttributeOperandError::UnsupportedDirective);
     assert!(old.syntax().is_none());
     assert_eq!(arena.allocated_bytes(), before);
     assert_eq!(selected.component().block().root_source(), source.as_str());
@@ -151,13 +145,13 @@ fn foreign_membership_precedes_the_selected_owners_own_recovery() {
     let attribute = element.attributes().next().unwrap();
     assert_eq!(
         recovered.observe_attribute_head(attribute.reborrow()).err(),
-        Some(NativeAttributeOperandError::ForeignComponent)
+        Some(AttributeOperandError::ForeignComponent)
     );
     let old = recovered
         .observe_attribute_expression(attribute)
         .err()
         .unwrap();
-    assert_eq!(old.kind(), NativeAttributeOperandError::ForeignComponent);
+    assert_eq!(old.kind(), AttributeOperandError::ForeignComponent);
     assert!(old.syntax().is_none());
     assert_eq!(
         recovered.component().block().root_source(),

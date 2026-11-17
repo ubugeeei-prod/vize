@@ -68,10 +68,7 @@ fn nontext_nested_and_sibling_events_keep_original_observations_and_never_mint()
             return Err("full L1 Result retained");
         };
         let failure = record.failure().ok_or("original NotText failure")?;
-        same(
-            failure.kind(),
-            vize_l1::markup::NativeTextValueError::NotText,
-        )?;
+        same(failure.kind(), vize_l1::markup::TextValueError::NotText)?;
         check(core::ptr::eq(failure.block().root_source(), source))?;
         same(file.artifact().node_count(), 0)?;
         check(!file.is_complete() && original.view().is_err())?;

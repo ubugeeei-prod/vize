@@ -1,8 +1,8 @@
-use super::{NativeAttributeHandler, NativeAttributeOperandError};
+use super::{AttributeHandler, AttributeOperandError};
 use crate::container::Vue;
 use crate::container::vue::DescriptorOptions;
 use crate::embed::{Lang, Shape, syntax::EmbedHole};
-use crate::markup::{NativeTemplateComponent, NativeTemplateGrammar};
+use crate::markup::{NativeTemplateComponent, TemplateGrammar};
 use oxc_ast::ast::{Expression, Statement};
 use oxc_span::GetSpan;
 use vize_l0::{
@@ -25,7 +25,7 @@ fn selected<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateComponen
         .unwrap()
 }
 
-fn observe<'a>(owner: &NativeTemplateComponent<'a>, ordinal: usize) -> NativeAttributeHandler<'a> {
+fn observe<'a>(owner: &NativeTemplateComponent<'a>, ordinal: usize) -> AttributeHandler<'a> {
     let element = owner.children().next().unwrap().into_element().unwrap();
     owner
         .observe_attribute_handler(element.attributes().nth(ordinal).unwrap())
@@ -132,7 +132,7 @@ fn selected_setup_only_ts_is_intrinsic_and_js_syntax_failure_keeps_complete_owne
     let value = "const value: number = 1; return value;";
     let ts = "<template><button @click='const value: number = 1; return value;'/></template><script setup lang=ts>const n=1</script>";
     let owner = selected(&arena, ts);
-    assert_eq!(owner.grammar(), NativeTemplateGrammar::TypeScriptModule);
+    assert_eq!(owner.grammar(), TemplateGrammar::TypeScriptModule);
     let operand = observe(&owner, 0);
     assert_eq!(operand.raw_value(), value);
     assert_eq!(operand.syntax().grammar().lang, Lang::Ts);
@@ -201,7 +201,7 @@ fn siblings_nested_attributes_and_independent_equal_byte_parse_cannot_admit() {
         .observe_attribute_handler(foreign.attributes().next().unwrap())
         .err()
         .unwrap();
-    assert_eq!(error.kind(), NativeAttributeOperandError::ForeignComponent);
+    assert_eq!(error.kind(), AttributeOperandError::ForeignComponent);
 }
 
 #[test]
@@ -226,8 +226,8 @@ fn unsupported_heads_and_incomplete_values_refuse_before_decoding_or_parsing() {
         assert!(
             matches!(
                 failure.kind(),
-                NativeAttributeOperandError::UnsupportedDirective
-                    | NativeAttributeOperandError::IncompleteValue
+                AttributeOperandError::UnsupportedDirective
+                    | AttributeOperandError::IncompleteValue
             ),
             "{source}: {:?}",
             failure.kind()
@@ -243,11 +243,11 @@ fn verbatim_and_recovered_original_carriers_grant_no_handler_admission() {
     for (source, expected) in [
         (
             "<template><button v-pre @click='return count'/></template>",
-            NativeAttributeOperandError::Verbatim,
+            AttributeOperandError::Verbatim,
         ),
         (
             "<template><button @click='return count'></template>",
-            NativeAttributeOperandError::RecoveredComponent,
+            AttributeOperandError::RecoveredComponent,
         ),
     ] {
         let owner = selected(&arena, source);

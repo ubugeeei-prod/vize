@@ -3,7 +3,7 @@
 use serde_json::{Value, json};
 use vize_l0::{Allocator, Namespace, SourceRoot, String};
 use vize_l1::markup::htmlish::document::{
-    DocumentHtmlNode, DocumentHtmlRefusal as Refusal, NativeDocument,
+    DocumentHtmlNode, DocumentHtmlRefusal as Refusal, ParsedDocument,
 };
 
 const CORPUS: &str = include_str!("fixtures/document/html-disclosure-elements.json");
@@ -24,7 +24,7 @@ fn disclosure_element_packets_retain_the_complete_browser_and_legacy_tree() {
         let label = case["name"].as_str().unwrap();
         let source = case["source"].as_str().unwrap();
         let arena = Allocator::default();
-        let owner = NativeDocument::lex_in(&arena, SourceRoot::new(source).unwrap());
+        let owner = ParsedDocument::lex_in(&arena, SourceRoot::new(source).unwrap());
         let tree = owner.html_structure().expect(label);
         let elements: Vec<_> = tree.elements().collect();
         let actual_elements: Vec<_> = elements
@@ -95,7 +95,7 @@ fn paragraph_closing_recovery_keeps_the_legacy_fallback_boundary() {
         "<!DOCTYPE html><html><head></head><body><p>lead<summary>heading</summary></body></html>",
     ] {
         let arena = Allocator::default();
-        let owner = NativeDocument::lex_in(&arena, SourceRoot::new(source).unwrap());
+        let owner = ParsedDocument::lex_in(&arena, SourceRoot::new(source).unwrap());
         assert!(
             matches!(owner.html_structure(), Err(Refusal::ImpliedEnd(_))),
             "{source}"

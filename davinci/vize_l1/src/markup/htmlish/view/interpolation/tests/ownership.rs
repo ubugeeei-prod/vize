@@ -1,6 +1,6 @@
 use super::{Allocator, selected};
 use crate::embed::Lang;
-use crate::markup::NativeTemplateGrammar;
+use crate::markup::TemplateGrammar;
 use oxc_span::GetSpan;
 
 #[test]
@@ -150,7 +150,7 @@ fn setup_typescript_profile_is_selected_without_caller_language() {
     let operand = owner
         .observe_interpolation_expression(owner.children().next().unwrap())
         .unwrap();
-    assert_eq!(owner.grammar(), NativeTemplateGrammar::TypeScriptModule);
+    assert_eq!(owner.grammar(), TemplateGrammar::TypeScriptModule);
     assert_eq!(operand.syntax().grammar().lang, Lang::Ts);
     assert!(operand.syntax().source_type().is_typescript());
     assert!(operand.syntax().source_type().is_module());
@@ -215,6 +215,6 @@ fn normally_owned_hole_observations_survive_pending_callback_unwind() {
     assert!(retained.syntax().diagnostics().count() > 0);
     assert!(retained.syntax().hole().is_some());
     assert!(core::mem::needs_drop::<
-        crate::markup::NativeInterpolationOperand<'_>,
+        crate::markup::InterpolationOperand<'_>,
     >());
 }

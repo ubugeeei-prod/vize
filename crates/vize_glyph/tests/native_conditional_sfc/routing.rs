@@ -8,7 +8,7 @@ use vize_glyph::native_doc::{
     observed_native_template_document_with_policy, print,
 };
 use vize_l0::{Allocator, Span};
-use vize_l1::markup::NativeInterpolationError;
+use vize_l1::markup::InterpolationError;
 
 #[test]
 fn original_v_pre_negative_route_preserves_opaque_bytes_and_strict_value_refusal() {
@@ -74,7 +74,7 @@ fn recovered_header_static_and_valued_refusal_precedence_matches_unchanged_stric
         NativeSfcRefusal::Template(ObservedNativeTemplateRefusal::Interpolation {
             offset: 10,
             index: 0,
-            kind: NativeInterpolationError::RecoveredComponent,
+            kind: InterpolationError::RecoveredComponent,
         }),
         NativeSfcRefusal::Template(ObservedNativeTemplateRefusal::Document {
             index: 0,
@@ -105,7 +105,7 @@ fn recovered_header_static_and_valued_refusal_precedence_matches_unchanged_stric
                 NativeSfcRefusal::Template(ObservedNativeTemplateRefusal::Interpolation { .. })
             ) {
                 let failure = owner.interpolation_failure().unwrap();
-                assert_eq!(failure.kind(), NativeInterpolationError::RecoveredComponent);
+                assert_eq!(failure.kind(), InterpolationError::RecoveredComponent);
                 assert!(failure.syntax().is_none());
             } else {
                 assert!(owner.interpolation_failure().is_none());

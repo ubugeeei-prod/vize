@@ -39,7 +39,7 @@ impl Linter {
             .then(|| vize_l0::SourceRoot::new(source).ok())
             .flatten()
             .map(|root| {
-                vize_l1::markup::htmlish::document::NativeDocument::lex_in(&allocator, root)
+                vize_l1::markup::htmlish::document::ParsedDocument::lex_in(&allocator, root)
             });
         let petite_document = native_document.as_ref().and_then(|owner| {
             vize_l2::dialect::petite::PetiteDocument::lower_in(&allocator, owner).ok()

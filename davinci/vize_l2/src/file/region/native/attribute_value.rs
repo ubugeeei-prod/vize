@@ -11,7 +11,7 @@ use core::{
     ptr::NonNull,
 };
 use vize_l0::{Span, id::NodeId};
-use vize_l1::markup::{NativeAttribute, NativeElement, NativeTemplateComponent};
+use vize_l1::markup::{AttributeView, ElementView, NativeTemplateComponent};
 
 pub(super) struct PreparedAttributes<'a> {
     range: Range<usize>,
@@ -29,7 +29,7 @@ where
         prepared: &PreparedAttributes<'a>,
         attributes: &[Attribute<'a>],
         selected: &NativeTemplateComponent<'a>,
-        original: &NativeElement<'_, 'a>,
+        original: &ElementView<'_, 'a>,
     ) -> bool {
         let [attribute] = attributes else {
             return false;
@@ -75,7 +75,7 @@ where
     pub(super) fn observe_attribute_value(
         &mut self,
         selected: &NativeTemplateComponent<'a>,
-        original: NativeAttribute<'_, 'a>,
+        original: AttributeView<'_, 'a>,
         slot: usize,
     ) -> Result<Attribute<'a>, Kind> {
         let block = selected.component().block();

@@ -4,7 +4,7 @@ use vize_l0::{
 };
 use vize_l1::embed::{
     EmbedSource,
-    syntax::{NativeSyntax, ProgramOptions, parse_program_once},
+    syntax::{EmbedSyntax, ProgramOptions, parse_program_once},
 };
 use vize_l1::{
     container::{
@@ -23,7 +23,7 @@ mod vue_setup_cases;
 
 struct Observed<'a> {
     descriptor: DescriptorObservation<'a>,
-    syntax: NativeSyntax<'a>,
+    syntax: EmbedSyntax<'a>,
 }
 
 impl<'a> Observed<'a> {

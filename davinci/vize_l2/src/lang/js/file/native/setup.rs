@@ -8,7 +8,7 @@ use crate::file::ScriptUnitId;
 use alloc::boxed::Box;
 use vize_l1::embed::{
     EmbedSource,
-    syntax::{NativeSyntax, ProgramOptions, parse_program_once},
+    syntax::{EmbedSyntax, ProgramOptions, parse_program_once},
 };
 
 mod bindings;
@@ -26,9 +26,9 @@ impl<'a> NativeTemplateOwner<'a> {
     /// one selected slot. This grants no whole-SFC or target completion.
     ///
     /// ```compile_fail
-    /// use vize_l1::embed::syntax::NativeSyntax;
+    /// use vize_l1::embed::syntax::EmbedSyntax;
     /// use vize_l2::lang::js::NativeTemplateOwner;
-    /// fn pair<'a>(owner: &mut NativeTemplateOwner<'a>, syntax: NativeSyntax<'a>) {
+    /// fn pair<'a>(owner: &mut NativeTemplateOwner<'a>, syntax: EmbedSyntax<'a>) {
     ///     owner.parse_setup_program(syntax);
     /// }
     /// ```
@@ -117,7 +117,7 @@ impl<'a> NativeTemplateOwner<'a> {
     /// Original stock syntax remains available after syntax/admission failure.
     /// This getter alone grants no completed File or setup eligibility.
     #[must_use]
-    pub fn retained_setup(&self) -> Option<&NativeSyntax<'a>> {
+    pub fn retained_setup(&self) -> Option<&EmbedSyntax<'a>> {
         self.retained_setup.as_deref()
     }
 }
@@ -125,7 +125,7 @@ impl<'a> NativeTemplateOwner<'a> {
 impl<'a> NativeTemplateFile<'a> {
     /// The same normally owned Program, comments and full diagnostics after move.
     #[must_use]
-    pub fn retained_setup(&self) -> Option<&NativeSyntax<'a>> {
+    pub fn retained_setup(&self) -> Option<&EmbedSyntax<'a>> {
         self.retained_setup.as_deref()
     }
 

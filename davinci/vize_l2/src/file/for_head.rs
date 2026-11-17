@@ -7,7 +7,7 @@ use crate::resolution::{
     BindingId, ForAliasDeclaration, ForAliasRole, ForResolution, ForResolutionError,
 };
 use alloc::boxed::Box;
-use vize_l1::markup::NativeAttributeForHeadFailure;
+use vize_l1::markup::AttributeForHeadFailure;
 
 pub(crate) struct ForRecord<'a> {
     pub original: Option<core::ptr::NonNull<OriginalForOp<'a>>>,
@@ -32,7 +32,7 @@ pub(crate) struct TemplateDeclarationRow {
 
 #[derive(Debug)]
 pub enum RejectedFileFor<'a> {
-    Observation(NativeAttributeForHeadFailure<'a>),
+    Observation(AttributeForHeadFailure<'a>),
     Syntax(Box<RejectedNativeForInput<'a>>),
     Resolution {
         input: Box<NativeForInput<'a>>,

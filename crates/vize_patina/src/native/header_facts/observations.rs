@@ -1,5 +1,5 @@
 use vize_l0::{Span, String};
-use vize_l1::markup::NativeLintTagKind;
+use vize_l1::markup::TagFactsKind;
 
 /// Checked authored binding category, with opaque values left uninterpreted.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -18,7 +18,7 @@ pub struct NativeHeaderFact {
     pub(super) tag: String,
     pub(super) span: Span,
     pub(super) opening: Span,
-    pub(super) kind: NativeLintTagKind,
+    pub(super) kind: TagFactsKind,
     pub(super) literal: bool,
 }
 impl NativeHeaderFact {
@@ -39,7 +39,7 @@ impl NativeHeaderFact {
     }
     /// Returns the producer-classified lint tag kind.
     #[must_use]
-    pub fn kind(&self) -> NativeLintTagKind {
+    pub fn kind(&self) -> TagFactsKind {
         self.kind
     }
     /// Reports whether the header belongs to a literal `v-pre` context.

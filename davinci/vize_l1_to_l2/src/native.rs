@@ -9,7 +9,7 @@ use alloc::boxed::Box;
 use alloc::vec::Vec;
 use vize_l0::diag::{Advisory, Diagnostic, Stage};
 use vize_l0::{Allocator, SourceBlock, SourceRoot, Span, String, id::NodeId};
-use vize_l1::embed::syntax::{EmbedHole, NativeSyntax, RetainedExpression};
+use vize_l1::embed::syntax::{EmbedHole, EmbedSyntax, RetainedExpression};
 use vize_l1::embed::{Lang, SourceError};
 use vize_l1::markup::{ComponentParse, DirectiveNameError};
 use vize_l1::markup::{SurfaceChild, Token};
@@ -75,7 +75,7 @@ pub struct NativeLowered<'a> {
     pub component: ComponentParse<'a>,
     pub embeds: Vec<NativeEmbed<'a>>,
     /// Retain the original owning observations even on an unexpected shape.
-    pub rejected_syntax: Vec<NativeSyntax<'a>>,
+    pub rejected_syntax: Vec<EmbedSyntax<'a>>,
 }
 
 impl NativeLowered<'_> {
@@ -140,7 +140,7 @@ struct Context<'component, 'a> {
     holes: &'component mut Vec<NativeHole>,
     diagnostics: &'component mut Vec<Diagnostic>,
     embeds: &'component mut Vec<NativeEmbed<'a>>,
-    rejected_syntax: &'component mut Vec<NativeSyntax<'a>>,
+    rejected_syntax: &'component mut Vec<EmbedSyntax<'a>>,
 }
 
 impl<'a> Context<'_, 'a> {
