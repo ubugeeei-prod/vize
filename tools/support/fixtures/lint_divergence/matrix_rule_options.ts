@@ -1,5 +1,6 @@
-// Patina rule options the lint divergence matrix uses in place of Patina's
-// own defaults.
+// The config the lint divergence matrix passes to Patina: rule options used
+// in place of Patina's own defaults, and the Vue dialect a user's config
+// would select for the project.
 //
 // A configurable rule whose documented Patina default differs from
 // eslint-plugin-vue's runs in the matrix with eslint-plugin-vue's default
@@ -76,19 +77,43 @@ function documentedSource(
   return source;
 }
 
-/** A config file that applies the overrides, or `null` when there are none. */
-export function writeMatrixRuleOptionsConfig(
+/**
+ * The Vue 2 or 2.7 dialect of a project whose compatibility-ledger evidence
+ * (pinned packages, test oracles, registry notes) proves only that major, as
+ * `vue.version` in its config would select it. A Vue 3 project, a project
+ * that mixes majors, or one without evidence keeps Patina's default.
+ */
+export function matrixVueVersion(ledger: Json, fixturePath: string): "2" | "2.7" | null {
+  const fixtures = get(ledger, "fixtures");
+  if (!Array.isArray(fixtures)) return null;
+  const fixture = fixtures.find((entry) => get(entry, "fixturePath") === fixturePath);
+  const evidence = get(fixture ?? null, "dialectCoverage", "evidence");
+  const majors = new Set<string>();
+  for (const claim of Array.isArray(evidence) ? evidence : []) {
+    const dialects = get(claim, "dialects");
+    for (const dialect of Array.isArray(dialects) ? dialects : [])
+      if (typeof dialect === "string" && /^vue[23](?:\.7)?-sfc$/u.test(dialect))
+        majors.add(dialect);
+  }
+  if (majors.size !== 1) return null;
+  return majors.has("vue2-sfc") ? "2" : majors.has("vue2.7-sfc") ? "2.7" : null;
+}
+
+/** A config file for one project, or `null` when it would be empty. */
+export function writeMatrixConfig(
   overrides: readonly MatrixRuleOption[],
+  vueVersion: string | null,
 ): string | null {
-  if (overrides.length === 0) return null;
+  if (overrides.length === 0 && vueVersion === null) return null;
   const ruleOptions = Object.fromEntries(
     overrides.map(({ patinaRule, options }) => [patinaRule, options]),
   );
+  const vue = {
+    ...(vueVersion === null ? {} : { version: vueVersion }),
+    ...(overrides.length === 0 ? {} : { linter: { ruleOptions } }),
+  };
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), "vize-lint-matrix-options-"));
   const file = path.join(directory, "vize.lint-matrix.config.mjs");
-  fs.writeFileSync(
-    file,
-    `export default ${JSON.stringify({ vue: { linter: { ruleOptions } } })};\n`,
-  );
+  fs.writeFileSync(file, `export default ${JSON.stringify({ vue })};\n`);
   return file;
 }
