@@ -60,8 +60,8 @@ export function withoutHostRuntimeReferences(source: string, relativePath: strin
       "host_plugin_plan",
     );
   }
-  if (file === "crates/vize_maestro/src/server/state/plugin_lint.rs") {
-    // The editor drives Carton's plugin sidecar for the plan Carton verified.
+  if (file === "crates/vize_patina/src/plugin_batch/lint/host.rs") {
+    // The per-document host drives Carton's plugin sidecar for the plan Carton verified.
     storage = storage.replace(
       /^use vize_carton::config::plugin_plan::document_plugin_plan;$/gmu,
       "host_plugin_plan",
@@ -69,6 +69,13 @@ export function withoutHostRuntimeReferences(source: string, relativePath: strin
     storage = storage.replace(
       /^use vize_carton::config::\{PluginLintSidecar, SidecarBudget, SidecarReply\};$/gmu,
       "host_plugin_sidecar",
+    );
+  }
+  if (file === "crates/vize_vitrine/src/napi/plugin_lint.rs") {
+    // Oxlint's plugin session loads its config through the same checked Carton loader.
+    storage = storage.replace(
+      /\bvize_carton::config::try_load_project_config_with_source\b(?=\()/gu,
+      "host_config_loader",
     );
   }
   if (file === "crates/vize/src/lint_plan/matcher.rs") {

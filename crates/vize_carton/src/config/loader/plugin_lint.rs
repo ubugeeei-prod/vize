@@ -46,6 +46,9 @@ for await (const chunk of process.stdin) {
   }
   if (start < chunk.length) pending.push(chunk.subarray(start));
 }
+// The host closed stdin: it is done or gone, so timers the config left must
+// not keep this process alive after it.
+process.exit(0);
 "#;
 
 /// How often a waiting request checks its cancellation.

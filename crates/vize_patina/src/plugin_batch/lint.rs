@@ -11,6 +11,8 @@
     reason = "plugin batch specs and JSON values carry std strings"
 )]
 
+#[cfg(not(target_arch = "wasm32"))]
+pub mod host;
 mod rules;
 
 use serde_json::Value;
