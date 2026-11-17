@@ -108,6 +108,39 @@ test("authored LSP oracle fails closed when an enabled feature returns no result
   }
 });
 
+test("authored LSP oracle compares a dependency repair with its complete publication", async () => {
+  const workspace = createFixtureWorkspace("vize-authored-lsp-repair-");
+  const session = new FakeAuthoredLspSession(workspace);
+  session.staleDependencyRepair = "partial";
+  try {
+    await exerciseAuthoredLspOracle(session, workspace, fixtureOracle());
+    assert.ok(
+      session.events.includes(
+        "textDocument/publishDiagnostics:4:FeatureChild.vue:stale-dependency-repair-skipped",
+      ),
+      "dependency repair must skip the partial publication's moved probe-era type answer",
+    );
+    assert.deepEqual(session.openFiles, []);
+  } finally {
+    fs.rmSync(workspace, { recursive: true, force: true });
+  }
+});
+
+test("authored LSP oracle rejects a dependency repair that keeps probe-era diagnostics", async () => {
+  const workspace = createFixtureWorkspace("vize-authored-lsp-stale-repair-");
+  const session = new FakeAuthoredLspSession(workspace);
+  session.staleDependencyRepair = "terminal";
+  try {
+    await assert.rejects(
+      () => exerciseAuthoredLspOracle(session, workspace, fixtureOracle()),
+      /Diagnostics observed for \S+\/FeatureChild\.vue version 4: .*vizeOracleProbe/,
+    );
+    assert.deepEqual(session.openFiles, []);
+  } finally {
+    fs.rmSync(workspace, { recursive: true, force: true });
+  }
+});
+
 for (const [name, labels, failure] of [
   ["accepts the complete declared event", ["v-if", "active", "@update:modelValue"], null],
   ["rejects a missing declared event", ["v-if", "active"], /completion set size drifted/],

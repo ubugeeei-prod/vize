@@ -34,6 +34,7 @@ export { assertOracleFilesAreInCorpus } from "./real-project-lsp-authored-oracle
 import type { AuthoredLspExerciseEvidence, LspAuthoredOracle } from "./real-project-lsp-report.ts";
 import { authoredAnchorEvidence } from "./real-project-lsp-report-authored.ts";
 import { exerciseAuthoredFileLifecycle } from "./real-project-lsp-file-lifecycle.ts";
+import { waitForDiagnostics as waitForMatchingDiagnostics } from "./real-project-lsp-file-lifecycle-utils.ts";
 import { exerciseAuthoredImporterOverlay } from "./real-project-lsp-importer-overlay.ts";
 
 const diagnosticsTimeoutMs = 120_000;
@@ -274,15 +275,24 @@ export async function exerciseAuthoredLspOracle(
 
     const repairedChildVersion = changedChildVersion + 1;
     change(session, childDocument.uri, childDocument.source, repairedChildVersion);
-    const repaired = await waitForDiagnostics(
+    // An edit first publishes lint with the last type answer moved to the new
+    // text (#11579), so its messages can still name the probe. Wait for the
+    // same-version complete publication, as the file lifecycle repair does.
+    const baselineDependencyDiagnostics = normalizeDiagnostics(
+      dependencyBaselineDiagnostics.diagnostics,
+    );
+    const repaired = await waitForMatchingDiagnostics(
       session,
       childDocument.uri,
       repairedChildVersion,
       timeoutMs(),
+      (payload) =>
+        JSON.stringify(normalizeDiagnostics(payload.diagnostics)) ===
+        JSON.stringify(baselineDependencyDiagnostics),
     );
     assert.deepEqual(
       normalizeDiagnostics(repaired.diagnostics),
-      normalizeDiagnostics(dependencyBaselineDiagnostics.diagnostics),
+      baselineDependencyDiagnostics,
       "dependency repair must restore diagnostics exactly",
     );
     const repairedLabels = await requestCompletion(
