@@ -220,7 +220,8 @@ pub(crate) fn append_builtin_css_diagnostics(
     for style in &descriptor.styles {
         // External styles (`<style src="...">`) have no inline content to lint.
         // A `lang` with no style dialect stays opaque.
-        let Some(language) = vize_l1::container::lang::style_lang(style.lang.as_deref()).ok() else {
+        let Some(language) = vize_l1::container::lang::style_lang(style.lang.as_deref()).ok()
+        else {
             continue;
         };
         if style.src.is_some() || !css_linter.reads(language) {
