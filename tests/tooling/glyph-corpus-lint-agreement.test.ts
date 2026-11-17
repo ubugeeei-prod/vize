@@ -1,7 +1,7 @@
 // Corpus-wide glyph/patina lint-agreement: `vize fmt` output must not
 // introduce lint findings that were absent before formatting. Findings are
-// compared per file as (ruleId -> count) multisets between the pristine
-// fixture tree and a formatted copy, both linted with the ecosystem preset;
+// compared per file as (ruleId -> count) multisets between a pristine and a
+// formatted mirror of the fixture, both linted with the ecosystem preset;
 // counts may shrink (formatting can legitimately fix findings) but any rule
 // whose count grows is a violation. Positions are ignored because formatting
 // moves lines. Absent fixtures are skipped; the weekly Real Project Matrix
@@ -23,6 +23,12 @@ import {
   withFormattedWorkspace,
   writeGlyphCorpusPropertyEvidence,
 } from "../../tools/support/compat/fixtures/glyph-corpus.ts";
+import {
+  assertNoEnclosingContext,
+  createIsolatedWorkspaceRoot,
+  mirrorProjectContext,
+  withPristineWorkspace,
+} from "../../tools/support/compat/fixtures/glyph-corpus-context.ts";
 
 type CorpusProject = {
   id: string;
@@ -107,8 +113,17 @@ function sweepProject(
 ): void {
   const files = collectProjectVueFiles(project) as string[];
   if (files.length === 0) return;
-  const baseline = lintTree(launch, project.fixtureDir, project.vueGlobs);
-  withFormattedWorkspace(project, files, launch, (workspace: { workspaceDir: string }) => {
+  // Both sides lint the same mirrored project at sibling paths outside the
+  // checkout, so only the Vue bytes differ and nothing above them resolves.
+  const root = createIsolatedWorkspaceRoot();
+  const compare = (workspace: { workspaceDir: string }): void => {
+    const baseline = withPristineWorkspace(
+      project.fixtureDir,
+      files,
+      workspace.workspaceDir,
+      (workspaceDir) => lintTree(launch, workspaceDir, project.vueGlobs),
+    );
+    mirrorProjectContext(project.fixtureDir, workspace.workspaceDir, files);
     const formatted = lintTree(launch, workspace.workspaceDir, project.vueGlobs);
     for (const file of files) {
       const introduced = introducedFindings(baseline.get(file) ?? [], formatted.get(file) ?? []);
@@ -140,7 +155,12 @@ function sweepProject(
         detail: real.map((entry) => entry.detail).join("\n"),
       });
     }
-  });
+  };
+  try {
+    withFormattedWorkspace(project, files, launch, compare, root);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
 }
 
 test("glyph corpus lint-agreement holds for every hydrated fixture", () => {
@@ -226,6 +246,114 @@ test("glyph corpus lint-agreement machinery accepts the real formatter", () => {
     assert.equal(counters.files, 1);
   } finally {
     fs.rmSync(project.fixtureDir, { recursive: true, force: true });
+  }
+});
+
+test("glyph corpus lint-agreement machinery lints in the fixture's project context", () => {
+  // `open` is a prop only once `./types` resolves; without it the SSR rule
+  // reads the browser global. The formatter must not be blamed for that.
+  const project = makeSyntheticProject([
+    ["src/types.ts", "export interface MenuProps {\n  open?: boolean;\n}\n"],
+    [
+      "src/Menu.vue",
+      "<script setup lang=\"ts\">\nimport type { MenuProps } from './types'\ndefineProps<MenuProps>()\n</script>\n\n<template>\n  <span>{{ open ? 'Close' : 'Open' }}</span>\n</template>\n",
+    ],
+    ["package.json", '{ "name": "synthetic" }\n'],
+    ["docs/notes.md", "# kept\n"],
+  ]);
+  try {
+    const violations: Violation[] = [];
+    const counters = { files: 0, skipped: 0 };
+    sweepProject(project, resolveGlyphLaunch(), violations, counters);
+    assert.deepEqual(violations, []);
+    assert.equal(counters.files, 1);
+    // Removing the workspace unlinks the mirrored entries only.
+    for (const file of ["src/types.ts", "package.json", "docs/notes.md"]) {
+      assert.ok(fs.existsSync(path.join(project.fixtureDir, file)), file);
+    }
+  } finally {
+    fs.rmSync(project.fixtureDir, { recursive: true, force: true });
+  }
+});
+
+test("glyph corpus lint-agreement ignores packages the fixture's checkout encloses", () => {
+  // In the repository, `tests/node_modules` sits above every fixture. Types it
+  // happens to provide must not reach the baseline alone.
+  const outerDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-glyph-enclosed-"));
+  const fixtureDir = path.join(outerDir, "fixture");
+  const files: Array<[string, string]> = [
+    ["node_modules/menu-lib/package.json", '{ "name": "menu-lib", "types": "index.d.ts" }\n'],
+    ["node_modules/menu-lib/index.d.ts", "export interface MenuProps {\n  open?: boolean;\n}\n"],
+    [
+      "fixture/src/Menu.vue",
+      "<script setup lang=\"ts\">\nimport type { MenuProps } from 'menu-lib'\ndefineProps<MenuProps>()\n</script>\n\n<template>\n  <span>{{ open ? 'Close' : 'Open' }}</span>\n</template>\n",
+    ],
+  ];
+  for (const [file, content] of files) {
+    fs.mkdirSync(path.dirname(path.join(outerDir, file)), { recursive: true });
+    fs.writeFileSync(path.join(outerDir, file), content);
+  }
+  try {
+    const violations: Violation[] = [];
+    const counters = { files: 0, skipped: 0 };
+    const project = {
+      id: "synthetic-enclosed",
+      fixtureDir,
+      hydrated: true,
+      vueGlobs: ["src/**/*.vue"],
+    };
+    sweepProject(project, resolveGlyphLaunch(), violations, counters);
+    assert.deepEqual(violations, []);
+    assert.equal(counters.files, 1);
+  } finally {
+    fs.rmSync(outerDir, { recursive: true, force: true });
+  }
+});
+
+test("glyph corpus lint-agreement workspaces sit under no enclosing package", () => {
+  const root = createIsolatedWorkspaceRoot();
+  const outerDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-glyph-enclosing-"));
+  try {
+    assert.doesNotThrow(() => assertNoEnclosingContext(path.join(root, "workspace")));
+    fs.mkdirSync(path.join(outerDir, "node_modules"));
+    fs.mkdirSync(path.join(outerDir, "inner"));
+    assert.throws(
+      () => assertNoEnclosingContext(path.join(outerDir, "inner")),
+      /is enclosed by .*node_modules/,
+    );
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+    fs.rmSync(outerDir, { recursive: true, force: true });
+  }
+});
+
+test("glyph corpus lint-agreement mirrors only entries the workspace does not own", () => {
+  const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-glyph-context-"));
+  const workspaceDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-glyph-context-ws-"));
+  try {
+    for (const [file, content] of [
+      ["src/App.vue", "pristine"],
+      ["src/types.ts", "types"],
+      ["lib/util.ts", "util"],
+      [".git", "gitdir: elsewhere"],
+    ]) {
+      fs.mkdirSync(path.dirname(path.join(fixtureDir, file)), { recursive: true });
+      fs.writeFileSync(path.join(fixtureDir, file), content);
+    }
+    fs.mkdirSync(path.join(workspaceDir, "src"));
+    fs.writeFileSync(path.join(workspaceDir, "src/App.vue"), "formatted");
+    mirrorProjectContext(fixtureDir, workspaceDir, ["src/App.vue"]);
+    assert.equal(fs.readFileSync(path.join(workspaceDir, "src/App.vue"), "utf8"), "formatted");
+    assert.equal(fs.readFileSync(path.join(workspaceDir, "src/types.ts"), "utf8"), "types");
+    assert.equal(fs.readFileSync(path.join(workspaceDir, "lib/util.ts"), "utf8"), "util");
+    assert.ok(fs.lstatSync(path.join(workspaceDir, "src")).isDirectory());
+    assert.ok(!fs.existsSync(path.join(workspaceDir, ".git")));
+    fs.rmSync(workspaceDir, { recursive: true, force: true });
+    assert.equal(fs.readFileSync(path.join(fixtureDir, "lib/util.ts"), "utf8"), "util");
+    assert.equal(fs.readFileSync(path.join(fixtureDir, "src/App.vue"), "utf8"), "pristine");
+  } finally {
+    fs.rmSync(fixtureDir, { recursive: true, force: true });
+    fs.rmSync(workspaceDir, { recursive: true, force: true });
   }
 });
 
