@@ -1,0 +1,3 @@
+{
+  "vue/no-content-outside-block": "warn"
+}
