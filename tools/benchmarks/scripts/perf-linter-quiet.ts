@@ -254,6 +254,15 @@ for (const spec of arg("scenarios", "mk,mk-json,mk-all,bench,ta").split(",")) {
   if (spec === "one") scenario("misskey one SFC `lint src/components/MkButton.vue`", mk, ["lint", "src/components/MkButton.vue"], runs);
   if (spec === "ir-ver") irScenario("`vize --version` instructions", mk, ["--version"]);
   if (spec === "ir-one") irScenario("one SFC instructions", mk, ["lint", "src/components/MkButton.vue"]);
+  if (spec === "phases" || spec === "phases-json") {
+    const extra = spec === "phases-json" ? ["--format", "json"] : [];
+    for (let round = 0; round < 3; round++) {
+      const result = spawnSync(bins.base, ["lint", "src", ...extra, "--profile"], { cwd: mk, maxBuffer: 1 << 30 });
+      const text = `${result.stdout?.toString() ?? ""}\n${result.stderr?.toString() ?? ""}`.replace(/\x1b\[[0-9;]*m/g, "");
+      const lines = text.split("\n").filter((line) => /Total wall time|^  (load config|collect files|lint wall|render output|untracked wall|cumulative work) /.test(line));
+      write(["", `phases ${spec} round ${round}:`, "", "```", ...lines, "```", ""].join("\n"));
+    }
+  }
   if (spec === "bench") scenario("1000-SFC benchmark `lint .` (text)", bench, ["lint", "."], runs);
   if (spec === "ta")
     scenario(
