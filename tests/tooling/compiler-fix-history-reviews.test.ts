@@ -4,7 +4,13 @@ import fs from "node:fs";
 import path from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
-import { validateHistoryReviews } from "../../tools/commands/fixtures/compiler-fix-history.ts";
+import {
+  COHORT,
+  DISPOSITIONS,
+  readCohort,
+  readDispositions,
+  validateHistoryReviews,
+} from "../../tools/commands/fixtures/compiler-fix-history.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const indexPath = path.join(root, "docs/davinci/plan/compiler-fix-history.tsv");
@@ -32,7 +38,7 @@ void test("bounded compiler history reviews stay tied to complete differential f
   );
 
   const receipt = JSON.parse(fs.readFileSync(receiptPath, "utf8"));
-  assert.equal(receipt.version, 3);
+  assert.equal(receipt.version, 4);
   assert.equal(receipt.nonMergeFixSubjects, rows.length);
   assert.equal(receipt.boundedReviewedFixtureScopes, reviewed.reviews.size);
   assert.equal(receipt.wholeFixReviewedSubjects, 0);
@@ -45,4 +51,52 @@ void test("bounded compiler history reviews stay tied to complete differential f
     sha256: reviewed.sha256,
     differentialManifests: reviewed.manifests,
   });
+});
+
+void test("current-API compiler oracles and dispositions match the history index", () => {
+  const index = fs.readFileSync(indexPath, "utf8");
+  const [header, ...rows] = index.trimEnd().split("\n");
+  const columns = header.split("\t");
+  const sha = columns.indexOf("fix_sha");
+  const status = columns.indexOf("review");
+  const references = columns.indexOf("fixture_references");
+  const indexed = new Map(rows.map((line) => line.split("\t")).map((row) => [row[sha], row]));
+  const cohort = readCohort(root);
+  const pinned = new Set(cohort.map((fixture) => fixture.history));
+  for (const fixture of cohort) {
+    const row = indexed.get(fixture.history);
+    assert(row, fixture.id);
+    assert(row[references].split(";").includes(`compiler/current-api/${fixture.id}@${COHORT}`));
+  }
+  const reviewed = "fixture-linked;bounded-semantic-scope-reviewed;whole-fix-review-pending";
+  for (const [commit, row] of indexed) {
+    if (row[status] === "current-api-pinned") assert(pinned.has(commit), commit);
+    else if (pinned.has(commit)) assert.equal(row[status], reviewed, commit);
+  }
+  const dispositions = readDispositions(root);
+  for (const [commit, state] of dispositions) assert.equal(indexed.get(commit)?.[status], state);
+  assert.equal(
+    rows.filter((line) => line.split("\t")[status] === "no-compile-behavior").length,
+    dispositions.size,
+  );
+
+  const receipt = JSON.parse(fs.readFileSync(receiptPath, "utf8"));
+  assert.deepEqual(receipt.currentApiCohort, {
+    path: COHORT,
+    sha256: digest(fs.readFileSync(path.join(root, COHORT), "utf8")),
+  });
+  assert.deepEqual(receipt.dispositions, {
+    path: DISPOSITIONS,
+    sha256: digest(fs.readFileSync(path.join(root, DISPOSITIONS), "utf8")),
+  });
+  assert.equal(
+    receipt.currentApiPinnedFixSubjects,
+    rows.filter((line) => line.split("\t")[status] === "current-api-pinned").length,
+  );
+  assert.equal(receipt.noCompileBehaviorFixSubjects, dispositions.size);
+  const runner = fs.readFileSync(
+    path.join(root, "crates/vize_atelier_sfc/tests/compile_history.rs"),
+    "utf8",
+  );
+  assert.equal(Number(/assert_eq!\(cases\.len\(\), (\d+),/.exec(runner)?.[1]), cohort.length);
 });

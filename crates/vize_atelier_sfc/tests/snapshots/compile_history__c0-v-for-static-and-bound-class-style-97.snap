@@ -1,0 +1,32 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c0-v-for-static-and-bound-class-style-97",
+    history: "572e9bcae38e5a4f3b4375b78ae3c00a89112cdd",
+    source: "<li v-for=\"item in items\" :key=\"item.id\" class=\"row\" :class=\"{ active: item.active }\" style=\"color: red\" :style=\"{ width: item.width }\">{{ item.label }}</li>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        inline_template: None,
+        mode: None,
+        prefix_identifiers: Some(
+            true,
+        ),
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { toDisplayString as _toDisplayString, normalizeClass as _normalizeClass, normalizeStyle as _normalizeStyle, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, renderList as _renderList } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(_ctx.items, (item) => {\n    return (_openBlock(), _createElementBlock(\"li\", {\n      key: item.id,\n      class: _normalizeClass([\"row\", { active: item.active }]),\n      style: _normalizeStyle([{\"color\":\"red\"}, { width: item.width }])\n    }, _toDisplayString(item.label), 7 /* TEXT, CLASS, STYLE */))\n  }), 128 /* KEYED_FRAGMENT */))\n}",
+    map: None,
+}

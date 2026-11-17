@@ -132,3 +132,40 @@ contains an excluded research ledger and must remain unpublished. These
 historical pins and fresh Actions are separate evidence. Whole-history
 semantic review, remaining target/dialect gaps and the product-switch gate
 remain unfinished; #6880 stays open and native compiler credit stays zero.
+
+## Current public API oracles (2026-11-17)
+
+Index rows become `current-api-pinned` when a case in
+[`compile-history/cases.json`](../../../crates/vize_atelier_sfc/tests/fixtures/compile-history/cases.json)
+names the fix. Each case compiles one authored input through a public entry:
+`compile_sfc` for a whole SFC (DOM, SSR or Vapor target), or
+`compile_template_with_options` for bare DOM markup. A small option set covers
+production output, preserved TypeScript, inline templates, codegen mode,
+identifier prefixing, static hoisting, handler caching, comments and source
+maps. `crates/vize_atelier_sfc/tests/compile_history.rs` snapshots every public
+result field: code, CSS, map, errors, warnings, bindings, macro artifacts and
+dependencies for an SFC, or errors, preamble, code and map for a template. It
+also pins each case's error count.
+
+A fix whose change has no compiled-output effect (CLI plumbing, LSP-only work,
+or a refactor with byte-identical output) is recorded in
+[`compiler-fix-history-dispositions.json`](../plan/compiler-fix-history-dispositions.json)
+as `no-compile-behavior`. Each entry gives the reason and the current tests
+that cover the change.
+
+Register cases and dispositions only with the script. It rewrites the cohort,
+the dispositions, the runner's cohort-size pin and the regenerated index and
+receipt:
+
+```sh
+vp node tools/commands/fixtures/compiler-fix-history-case.ts register [--errors FILE] SPEC.json...
+INSTA_UPDATE=always cargo test -p vize_atelier_sfc --test compile_history
+```
+
+The runner reports every mismatched error count at once, as an
+`id -> observed` object that `--errors` accepts.
+
+Pin only correct behavior. If an input's current output contradicts the fix's
+own expectation, leave the input out and report it as a possible regression;
+do not re-pin it. These oracles are legacy regression evidence and grant no
+native acceptance.

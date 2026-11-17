@@ -1,0 +1,46 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c0-v-for-static-and-bound-class-style-vapor-97",
+    history: "572e9bcae38e5a4f3b4375b78ae3c00a89112cdd",
+    source: "<script setup lang=\"ts\">\nconst items = [{ id: 1, active: true, width: \"10px\", label: \"a\" }];\n</script>\n\n<template>\n  <ul>\n    <li v-for=\"item in items\" :key=\"item.id\" class=\"row\" :class=\"{ active: item.active }\" style=\"color: red\" :style=\"{ width: item.width }\">{{ item.label }}</li>\n  </ul>\n</template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "vapor",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        inline_template: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { defineVaporComponent as _defineVaporComponent } from 'vue'\nimport { txt as _txt, toDisplayString as _toDisplayString, setText as _setText, setClass as _setClass, setStyle as _setStyle, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createFor as _createFor, template as _template } from 'vue';\n\nconst t0 = _template(\"<li> </li>\")\nconst t1 = _template(\"<ul></ul>\", true)\n\nfunction render(_ctx, $props, $emit, $attrs, $slots) {\n  const n0 = t1()\n  _setInsertionState(n0)\n  const n1 = _createFor(() => (_ctx.items), (_for_item0) => {\n    const n3 = t0()\n    const x3 = _txt(n3)\n    _renderEffect(() => {\n      _setClass(n3, [\"row\", { active: _for_item0.value.active }])\n      _setStyle(n3, [\"color: red\", { width: _for_item0.value.width }])\n      _setText(x3, _toDisplayString(_for_item0.value.label))\n    })\n    return n3\n  }, (item) => (item.id), 9 /* FAST_REMOVE, IS_SINGLE_NODE */)\n  return n0\n}\nconst __vaporRender = render\n\nexport default /*@__PURE__*/_defineVaporComponent({\n  __name: 'History',\n  render: __vaporRender,\n  setup(__props, { expose: __expose }) {\n  __expose();\n\nconst items = [{\n  id: 1,\n  active: true,\n  width: \"10px\",\n  label: \"a\"\n}];\n\nconst __returned__ = { items }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n})",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "items": SetupConst,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)
