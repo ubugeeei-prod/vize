@@ -1,10 +1,8 @@
-name: PR performance observation
+name: PR performance observation (css style-lane quiet-runner bench)
 
 # Measurements only. This workflow is deliberately independent of Check,
 # merge_group, release gates, and the existing historical benchmark budgets.
 on:
-  pull_request:
-    types: [opened, synchronize, reopened]
   workflow_dispatch:
     inputs:
       base_sha:
@@ -15,10 +13,15 @@ on:
         description: Exact authored head commit; independent of the measurement driver
         required: true
         type: string
+      runs:
+        description: Interleaved runs per side
+        required: false
+        type: string
+        default: "15"
 
 permissions: { contents: read }
 concurrency:
-  group: pr-performance-observation-${{ github.event.pull_request.number || github.ref }}
+  group: style-lane-quiet-${{ github.run_id }}
   cancel-in-progress: true
 env:
   BASE_SHA: ${{ github.event.pull_request.base.sha || inputs.base_sha }}
@@ -34,7 +37,7 @@ jobs:
   observe:
     name: Performance observations (optional)
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 50
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
@@ -87,9 +90,6 @@ jobs:
       - name: Install one pinned physical dependency provider
         working-directory: driver
         run: vp install --frozen-lockfile --prefer-offline
-      - name: Validate measurement and source custody controls
-        working-directory: driver
-        run: node --test tests/tooling/pr-performance-observation.test.ts tools/benchmarks/scripts/pr-performance-observation.test.ts tools/benchmarks/scripts/pr-performance-build.test.ts
       - name: Build normal source binaries in independent fresh targets
         run: |
           set -euo pipefail
@@ -108,56 +108,41 @@ jobs:
           const pair = verifyPrPerformanceBuildPair('performance-observation/build/base.json', 'performance-observation/build/head.json');
           writeFileSync('performance-observation/build/pair.json', JSON.stringify(pair, null, 2) + '\n');
           JS
-      - name: Generate identical public inputs and pin the native runtime
+      - name: Install Callgrind for exact instruction counts
+        run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends valgrind
+      - name: Prepare real-project and benchmark corpora
         working-directory: driver
         run: |
-          node --input-type=module <<'JS'
-          import { appendFileSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
-          import { createRequire } from 'node:module';
-          import { dirname, join, resolve } from 'node:path';
-          import { generateCorpus } from './tools/benchmarks/scripts/generate.mjs';
-          const require = createRequire(resolve('tests/package.json'));
-          const vue = dirname(realpathSync(require.resolve('vue/package.json')));
-          const corsa = realpathSync('node_modules/@typescript/typescript-linux-x64/lib/tsc');
-          const dir = join(process.env.RUNNER_TEMP, 'pr-performance-inputs');
-          generateCorpus({ fileCount: 1000, benchDir: dir });
-          const config = JSON.parse(readFileSync(join(dir, 'tsconfig.json'), 'utf8'));
-          config.compilerOptions.paths.vue = [vue];
-          writeFileSync(join(dir, 'tsconfig.json'), JSON.stringify(config, null, 2) + '\n');
-          appendFileSync(process.env.GITHUB_ENV, `OBSERVATION_INPUT=${dir}\nOBSERVATION_VUE=${vue}\nOBSERVATION_CORSA=${corsa}\n`);
-          JS
-      - name: Observe alternating latency, separate memory, and binary sizes
+          set -euo pipefail
+          git submodule update --init --depth 1 -- tests/_fixtures/_git/misskey tests/_fixtures/_git/n8n tests/_fixtures/_git/nuxt-ui tests/_fixtures/_git/reka-ui
+          root="$RUNNER_TEMP/style-lane"
+          mkdir -p "$root"
+          node --input-type=module -e "import('./tools/benchmarks/scripts/generate.mjs').then((m) => m.generateCorpus({ fileCount: 1000, benchDir: process.argv[1], log: () => {} }))" "$root/bench"
+          for corpus in misskey n8n nuxt-ui reka-ui; do
+            printf '%s: %s .vue files\n' "$corpus" "$(find "tests/_fixtures/_git/$corpus" -name '*.vue' -not -path '*/node_modules/*' | wc -l)"
+          done
+          echo "STYLE_LANE_ROOT=$root" >> "$GITHUB_ENV"
+      - name: Interleaved base/head lint measurements
         run: |
-          node driver/tools/benchmarks/scripts/pr-performance-observation.ts \
+          set -euo pipefail
+          {
+            echo "### css style-lane quiet-runner comparison"
+            echo
+            echo "Base \`$BASE_SHA\`, head \`$HEAD_SHA\`, both built by pr-performance-build.ts (ci-opt) with rustc $(rustc --version | cut -d' ' -f2). Runner: $(nproc) vCPU. \`vize lint . --no-config --preset P --format json\`, interleaved; Ir is Callgrind with RAYON_NUM_THREADS=1."
+            echo
+          } > "$RUNNER_TEMP/style-lane.md"
+          git_root="$GITHUB_WORKSPACE/driver/tests/_fixtures/_git"
+          node driver/tools/benchmarks/scripts/style-lane-quiet.ts \
             --base-bin "$RUNNER_TEMP/pr-performance-base-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT/ci-opt/vize" \
             --head-bin "$RUNNER_TEMP/pr-performance-head-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT/ci-opt/vize" \
-            --base-source "$BASE_SHA" --head-source "$HEAD_SHA" \
-            --input-dir "$OBSERVATION_INPUT" --vue-dir "$OBSERVATION_VUE" \
-            --corsa-path "$OBSERVATION_CORSA" --runs 5 --warmups 1 \
-            --out "$GITHUB_WORKSPACE/performance-observation/measurements" \
-            --build-receipts "$GITHUB_WORKSPACE/performance-observation/build"
-      - name: Publish the observation summary
-        if: always()
-        run: |
-          if [[ -f performance-observation/measurements/summary.md ]]; then
-            cat performance-observation/measurements/summary.md >> "$GITHUB_STEP_SUMMARY"
-          else
-            printf '%s\n' '### PR performance observation' '' 'No qualified comparison was produced. Inspect the failed measurement/build step and retained evidence; this is not a performance improvement.' >> "$GITHUB_STEP_SUMMARY"
-          fi
-      - name: Package evidence without traversing dependency symlinks
-        if: always()
-        run: |
-          if [[ -d performance-observation ]]; then
-            tar --exclude=node_modules --exclude=.vize --exclude=__out__ \
-              -czf performance-observation.tgz performance-observation
-          fi
+            --corpora "misskey=$git_root/misskey,n8n=$git_root/n8n,nuxt-ui=$git_root/nuxt-ui,reka-ui=$git_root/reka-ui,bench-1000=$STYLE_LANE_ROOT/bench" \
+            --presets default,opinionated,nuxt --ir bench-1000,reka-ui \
+            --runs "${{ inputs.runs }}" --out "$RUNNER_TEMP/style-lane.md"
+          cat "$RUNNER_TEMP/style-lane.md" >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: always()
         with:
-          name: pr-performance-${{ github.event.pull_request.number || 'manual' }}-${{ env.HEAD_SHA }}-${{ github.run_attempt }}
-          path: |
-            performance-observation.tgz
-            performance-observation/measurements/summary.md
-            performance-observation/measurements/report.json
+          name: style-lane-${{ env.HEAD_SHA }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/style-lane.md
           if-no-files-found: warn
-          retention-days: 90
+          retention-days: 30
