@@ -57,7 +57,12 @@ fn l2<'a>(doc: &'a L2Markup<'a>, ops: &'a [Op<'a>], visitor: &mut dyn FnMut(Mark
                     l2(doc, &branch.region.ops, visitor);
                 }
             }
-            Op::For(for_op) => l2(doc, &for_op.region.ops, visitor),
+            Op::For(for_op) => {
+                l2(doc, &for_op.region.ops, visitor);
+                if let Some(empty) = for_op.empty_region() {
+                    l2(doc, &empty.ops, visitor);
+                }
+            }
             Op::OriginalFor(for_op) => l2(doc, &for_op.region.ops, visitor),
             _ => walk_nodes(doc, core::slice::from_ref(op), visitor),
         }
