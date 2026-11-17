@@ -58,12 +58,6 @@ fn block(source: &str, block: &Block<'_>, issues: &mut Vec<TsrxIssue>) {
 }
 
 fn element(source: &str, element: &Element<'_>, issues: &mut Vec<TsrxIssue>) {
-    if let TagName::Dynamic { span, .. } = element.name {
-        issues.push(TsrxIssue {
-            kind: TsrxIssueKind::DynamicTag,
-            span,
-        });
-    }
     // Style and script elements need the TSRX style and script profile,
     // whichever body form the grammar recorded.
     if element.raw_text.is_some()

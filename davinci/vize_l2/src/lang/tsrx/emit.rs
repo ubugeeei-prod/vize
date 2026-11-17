@@ -4,16 +4,24 @@ use oxc_span::GetSpan;
 use vize_l0::{Allocator, Span};
 use vize_l1::markup::tsrx::{
     Attribute, AttributeValue, Block, Child, Element, For, Node, Region, RegionSite, TagName,
+    TsrxModule,
 };
 
+use super::nested::{self, Folded};
 use super::{TsrxIssue, TsrxIssueKind, expression, is_component, text};
-use crate::artifact::{ArtifactError, HostForHead, RegionBuilder};
+use crate::artifact::{ArtifactError, HostForHead, OpFamily, RegionBuilder};
 use crate::expr::ExprRef;
 use crate::op::{self, Namespace};
+
+/// The component a dynamic tag renders through.
+const DYNAMIC_COMPONENT: &str = "component";
 
 pub(super) struct Context<'a> {
     pub allocator: &'a Allocator,
     pub source: &'a str,
+    pub module: &'a TsrxModule<'a>,
+    /// Nested regions lowered into this artifact.
+    pub folded: Folded,
 }
 
 type Result<T = ()> = core::result::Result<T, TsrxIssue>;
@@ -32,7 +40,7 @@ pub(super) fn region<'a>(
     }
 }
 
-fn node<'a>(
+pub(super) fn node<'a>(
     cx: &Context<'a>,
     node_: &'a Node<'a>,
     namespace: Namespace,
@@ -137,13 +145,13 @@ fn element<'a>(
     parent: Namespace,
     builder: &mut RegionBuilder<'_, 'a>,
 ) -> Result {
-    let TagName::Static(name_span) = element.name else {
-        return Err(unchecked(element.span));
-    };
     if element.raw_text.is_some() {
         return Err(unchecked(element.span));
     }
-    let name = slice(cx, name_span)?;
+    let (name, tag) = match &element.name {
+        TagName::Static(span) => (slice(cx, *span)?, None),
+        TagName::Dynamic { span, expression } => (DYNAMIC_COMPONENT, Some((*span, expression))),
+    };
     let mut attributes = vize_l0::Vec::new_in(&cx.allocator);
     for attribute in &element.attributes {
         if let Attribute::Named { span, name, value } = attribute {
@@ -164,11 +172,15 @@ fn element<'a>(
     }
     let mut failure = None;
     let mut body = |region: &mut RegionBuilder<'_, 'a>, namespace: Namespace| {
-        failure = bindings(cx, &element.attributes, region)
+        failure = dynamic_tag(cx, tag, region)
+            .and_then(|()| bindings(cx, &element.attributes, region))
             .and_then(|()| children(cx, &element.children, namespace, region))
             .err();
     };
-    let built = if is_component(name) {
+    let built = if tag.is_some() || is_component(name) {
+        // Its children are its default slot, which the slot grouping pass
+        // builds only when the lowering reports a slot carrier.
+        builder.observe(OpFamily::SlotCarrier);
         builder.component(name, attributes, element.span, |region, _| {
             body(region, parent);
         })
@@ -189,6 +201,19 @@ fn element<'a>(
     failure
         .or(artifact(built.err(), element.span))
         .map_or(Ok(()), Err)
+}
+
+/// The tag of `<{expr}>`, bound as `is` at `{expr}`, before the attributes.
+fn dynamic_tag<'a>(
+    cx: &Context<'a>,
+    tag: Option<(Span, &'a oxc_ast::ast::Expression<'a>)>,
+    region: &mut RegionBuilder<'_, 'a>,
+) -> Result {
+    let Some((span, value)) = tag else {
+        return Ok(());
+    };
+    let value = ExprRef::Js(expression(cx.allocator, cx.source, value)?);
+    artifact(region.synthesized_bind("is", value, span).err(), span).map_or(Ok(()), Err)
 }
 
 fn bindings<'a>(
@@ -255,6 +280,9 @@ fn children<'a>(
             Child::Comment(_) => {}
             Child::Expression(child) => {
                 if let Some(value) = &child.expression {
+                    if nested::conditional(cx, value, child.span, namespace, region)? {
+                        continue;
+                    }
                     let value = ExprRef::Js(expression(cx.allocator, cx.source, value)?);
                     artifact(region.child_value(value, child.span).err(), child.span)
                         .map_or(Ok(()), Err)?;

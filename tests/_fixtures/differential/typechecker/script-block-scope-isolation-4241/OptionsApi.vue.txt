@@ -1,0 +1,21 @@
+<script lang="ts">
+import { defineComponent } from 'vue';
+
+const themes = ['light', 'dark'] as const;
+
+export type Theme = typeof themes[number];
+
+export default defineComponent({
+  name: 'OptionsApiHost',
+  inheritAttrs: false,
+});
+</script>
+
+<script lang="ts" setup>
+const props = defineProps<{ theme: Theme }>();
+const isDark = props.theme === 'dark';
+</script>
+
+<template>
+  <div>{{ isDark }}</div>
+</template>

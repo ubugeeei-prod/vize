@@ -8,14 +8,14 @@
 
 ## Status
 
-| Slice                                                    | State                                    |
-| -------------------------------------------------------- | ---------------------------------------- |
-| API v1 packet freeze                                     | done (#13122)                            |
-| v2 manifest, canonical plan, validation, inspector views | done (#13124)                            |
-| `vue.plugins` resolved from `vite.config.*`              | done                                     |
-| custom lint (`lint.rule`)                                | planned                                  |
-| custom directive (`vue.directive`)                       | declared only; every consumer refuses it |
-| custom block (`sfc.custom-block`)                        | declared only; every consumer refuses it |
+| Slice                                                    | State                                                 |
+| -------------------------------------------------------- | ----------------------------------------------------- |
+| API v1 packet freeze                                     | done (#13122)                                         |
+| v2 manifest, canonical plan, validation, inspector views | done (#13124)                                         |
+| `vue.plugins` resolved from `vite.config.*`              | done                                                  |
+| custom lint (`lint.rule`, adapted v1 rules)              | done: `vize lint` incl. `--fix`, LSP, Oxlint and Nuxt |
+| custom directive (`vue.directive`)                       | lint and LSP check modifiers; compiler, types pending |
+| custom block (`sfc.custom-block`)                        | declared only; every consumer refuses it              |
 
 ## Where the contract lives
 
@@ -74,7 +74,7 @@ invalidating a plan that is valid today.
 - **Capabilities.** An unknown or unsupported capability marked
   `required: false` is skipped and listed under `skipped`. A required one fails.
   A product refuses a plan containing a capability addressed to it that it does
-  not admit. No product admits a v2 capability until its slice lands.
+  not admit. A product admits a capability once it implements its part.
 - **Backends.** Only `js` is admitted. `native` and `wasm` fail with
   `backend-unavailable`, and there is no `auto`. Nothing falls back silently.
 - **Runtimes.** The resolving runtime (`node` or `bun`) must appear in
@@ -88,8 +88,9 @@ invalidating a plan that is valid today.
   `data:` module, so configs without plugins never parse or evaluate it.
   Inspection and other plugin tools (`loader/plugin-tools.js`) are only in the
   separate tooling runtime.
-- **Global refusal.** Until a capability is implemented by some product, every
-  product refuses a plan that contains it at config load. `vize plugin inspect`
+- **Global refusal.** Until every product that consumes a capability
+  implements it, every product refuses a plan that contains it at config load,
+  so no product silently ignores what another one honors. `vize plugin inspect`
   still reports the plan with its refused capabilities.
 - **Composition.** A later `withVue({ plugins })` replaces the list, like other
   Vue option arrays.
@@ -98,4 +99,75 @@ invalidating a plan that is valid today.
   are refused.
 - **Directives.** Names are kebab-case and cannot shadow a built-in directive.
   Modifiers normalize to `{ optional: true, default: false }`. A required
-  modifier with a default is refused.
+  modifier with a default is refused. `VerifiedPluginPlan::directives` lowers
+  every contract once into the native table that each consumer will read.
+  `normalized_modifiers` keeps a binding's authored modifiers in order and
+  appends every absent modifier that defaults to `true`, in canonical order. It
+  refuses unknown modifiers and missing required ones.
+  `vize lint`, the language server and the Oxlint integration check every
+  binding against its contract natively, without a sidecar, and report a
+  violation on the binding's authored span as `plugin/directive-contract`.
+  Lint and the LSP admit the capability; the plan still loads nowhere until the
+  compiler and the type checker implement it too.
+
+## Plugin lint rules
+
+`vize lint` (and the Vite+ lint task, which runs it) executes admitted
+`lint.rule` capabilities and v1 `definePlugin` rule plugins listed in
+`vue.plugins`.
+
+- **Records and facts.** Schema 1 rules visit the same public L2 template
+  records and demand the same native fact groups as plugin API v1. The host
+  builds them with `vize_patina::plugin_batch`, so an adapted v1 plugin receives
+  byte-identical batches.
+- **Severity.** The root `vue.linter.rules` sets each plugin rule ID
+  (`<plugin>/<rule>`) to `off`, `warn` or `error`. Otherwise a v2 rule uses
+  `meta.defaultLevel` (default `off`) and a v1 rule warns. Plugin rules cannot
+  be configured in `entries[]`. Rules that are off add no work.
+- **One crossing.** Every enabled job and every Vue document travel in one
+  request to a trusted Node sidecar. The sidecar starts as soon as a plugin rule
+  is enabled, so Node startup and its own `vite.config.*` evaluation overlap the
+  built-in pass. One process serves every pass of the run. It refuses a plan
+  whose digest differs (`plan-stale`). Each rule runs once per document.
+  Reports name visited records; the host owns spans, severity, message
+  rendering (`{name}` placeholders from bounded `data`) and ordering.
+- **Receipt.** `vize lint --profile` prints a `vize_plugin_receipt:` JSON
+  line: crossings, processes, documents, request and response bytes, sidecar
+  round-trip time, and per job the batches, records, batch bytes, reports and
+  JavaScript time.
+- **Fixes.** A fix replaces the reported record's authored span: the whole
+  attribute for `ui.bind`, and the whole text run (adjacent text and every
+  mustache) for `ui.interpolation`. `--fix` applies only the fixes of rules
+  declared `fixable: "safe"`. It never applies unsafe fixes or v1 suggestions.
+  Each pass fixes, re-lints (built-in rules and their fixes) and writes the
+  changed files in parallel, one write per file. The plugins then see only
+  those files, at one more crossing per pass, for at most five passes. A file
+  whose plugin fix the built-in fixes revert is left unwritten.
+- **Editor.** The language server runs the same jobs on every Vue document it
+  lints. A config generation that enables plugin rules owns one sidecar,
+  started on the first lint. Edits reuse it and never start a process. Each
+  lint sends one document with every job. The sidecar must resolve its config
+  within 30 s and answer within 2 s, or it is stopped and restarted on the
+  next lint. A newer document version cancels the wait, and the late answer
+  is skipped. A planning error, a rule failure or a timeout is one error at
+  the start of the document (code `plugin`). After three consecutive sidecar
+  failures the server reports the last one until the config changes. A rule
+  failure is answered, so the sidecar keeps running.
+- **Editor fixes.** A plugin diagnostic with a fix offers it as a quick fix,
+  preferred only when its rule is `fixable: "safe"`. The editor keeps the last
+  answer per document text, so diagnostics, hover and code actions of one text
+  cross into JS once.
+- **Oxlint and Nuxt.** oxlint-plugin-vize hosts the rules with
+  `settings.vize.pluginRules: true`. It runs the plugins of the nearest
+  `vite.config.*` above each Vue file. One native `PluginLintSession` per config
+  owns one sidecar for the whole Oxlint process, and each Vue file crosses into
+  it once. `vize/plugin-errors` reports the plugin diagnostics Vize resolved as
+  errors and `vize/plugin-warnings` the rest, so severity stays the one set in
+  `vue.linter.rules`. A session or rule failure is one error on the file. The
+  Nuxt lint config enables both rules and the setting when `vue.plugins` lists
+  entries. It keeps plugin rule IDs out of the Oxlint rule map, refuses them in
+  `entries[]`, and refuses capabilities lint does not implement. Like every
+  Oxlint rule on a `.vue` file, they run only for files with a `<script>`
+  block.
+- **Not yet.** Templates that the plugin records cannot represent are skipped
+  (and listed in the CLI receipt).

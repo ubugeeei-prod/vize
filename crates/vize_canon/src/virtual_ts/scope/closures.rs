@@ -225,6 +225,10 @@ pub(super) fn emit_scope_closures(
         hoist_shared_preamble: options.hoist_shared_preamble,
         preserve_event_navigation: options.preserve_event_navigation,
         omit_navigation_references: options.omit_navigation_references,
+        type_only_slot_references: options.omit_navigation_references
+            && options
+                .generic_parameters
+                .is_none_or(|generic| generic.parameters.is_empty()),
         check_unknown_events: check_options.check_unknown_events && check_options.check_emits,
         strict_v_model: check_options.strict_v_model && check_options.check_emits,
         component_binding_check: options.component_binding_check,

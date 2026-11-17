@@ -48,12 +48,30 @@ const SHAPES: &[&str] = &[
     "const A = () => <ul>{rows.map((r) => r.items.map((c) => <li>{c}</li>))}</ul>;",
     "import Card from './c';\nconst A = () => <Card>{a ? <i /> : <b />}</Card>;",
     "const A = () => <Free>{xs.map((x) => <i>{x}</i>)}text</Free>;",
+    "const A = () => <input v-model={val} />;",
+    "const A = () => <input type=\"checkbox\" value=\"a\" v-model_lazy_trim={c} />;",
+    "const A = () => <select v-model={[d, ['number']]}><option value=\"a\">a</option></select>;",
+    "const A = () => <textarea v-model={state.text} />;",
+    "import B from './b';\nconst A = () => <B v-model:title={t} v-model={[u, 'label', ['m']]} v-models={[[x], [y, 'y', ['n']]]} />;",
+    "const A = () => <Card v-show={on}><i v-html={h} /><b v-text={t} v-focus /></Card>;",
+    "const A = () => <p><a v-mark:left={v} /><a v-mark={[v, 'top', ['a', 'b']]} /><a v-mark={[v, f]} /></p>;",
+    "const A = () => <component is={view} v-show={on} v-focus />;",
+    "import Card from './c';\nconst A = () => <Card>\n  {(item) => <li>{item}</li>}\n</Card>;",
+    "const A = () => <List>{function ({ id }) { return <i id={id} />; }}</List>;",
+    "const A = () => <Card>{{ header: () => <h1>T</h1>, 'footer': (p) => <><i>{p}</i><b /></>, body() { return ok ? <i /> : <b />; } }}</Card>;",
+    "const A = () => <Card>{{}}</Card>;",
+    "const A = () => <List>{(rows) => rows.map((r) => <li key={r.id}>{r.name}</li>)}</List>;",
+    "const A = () => <Outer>{() => <Inner>{(x) => <b>{x}</b>}</Inner>}</Outer>;",
+    "const A = () => <Card v-slots={slots} title=\"t\" x={1}>text</Card>;",
+    "const A = () => <Card vSlots={(own.slots)}>{(p) => <i>{p}</i>}</Card>;",
+    "const A = () => <Card title=\"t\" v-slots={{ header: () => <h1>T</h1>, footer: (p) => <i>{p}</i> }}><b /></Card>;",
 ];
 
 /// TSX spellings of the structural shapes.
 const TSX_SHAPES: &[&str] = &[
     "const A = () => <ul>{(xs as Item[]).map((x: Item, i: number) => <li key={i}>{x.id}</li>)}</ul>;",
     "const A = () => <p>{(a satisfies boolean) ? <i /> : <b />}</p>;",
+    "const A = () => <input v-model={(state as S).value!} />;",
 ];
 
 /// Every case, and whether each of its roots must take the level lowering.
@@ -85,7 +103,7 @@ fn sources() -> Vec<(vize_l0::String, JsxLang, bool)> {
 
 #[test]
 fn level_lowering_matches_the_relief_projection() {
-    let (mut roots, mut native) = (0, 0);
+    let (mut roots, mut native, mut corpus) = (0, 0, (0, 0));
     for (source, lang, shape) in sources() {
         let allocator = Allocator::new();
         let source = allocator.alloc_str(&source);
@@ -103,12 +121,14 @@ fn level_lowering_matches_the_relief_projection() {
         );
         for root in &lowered.roots {
             roots += 1;
+            corpus.1 += usize::from(!shape);
             let level = root.l2.as_ref().ok().filter(|level| level.native);
             assert!(level.is_some() || !shape, "not level-lowered: {source}");
             let Some(level) = level else {
                 continue;
             };
             native += 1;
+            corpus.0 += usize::from(!shape);
             let projected = try_lower_root(&allocator, source, &root.root)
                 .expect("the projection admits every root the level lowering admits");
             assert_eq!(
@@ -129,5 +149,8 @@ fn level_lowering_matches_the_relief_projection() {
             );
         }
     }
-    println!("level-lowered {native} of {roots} roots");
+    println!(
+        "level-lowered {native} of {roots} roots, {} of {} oracle corpus roots",
+        corpus.0, corpus.1
+    );
 }

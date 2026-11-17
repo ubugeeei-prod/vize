@@ -19,7 +19,7 @@ use super::{
     clippy::panic_in_result_fn,
     reason = "the helper asserts a clean parse and returns the refusal under test"
 )]
-fn lower(source: &str, exec: Exec) -> Result<vize_l0::String, JsxRefusal> {
+pub(super) fn lower(source: &str, exec: Exec) -> Result<vize_l0::String, JsxRefusal> {
     let allocator = Allocator::new();
     let parsed = Parser::new(allocator.as_oxc(), source, SourceType::jsx()).parse();
     assert!(parsed.diagnostics.is_empty(), "{:?}", parsed.diagnostics);
@@ -128,6 +128,44 @@ fn describe(op: &Op<'_>, out: &mut vize_l0::String) {
                 Some(DynamicName::Dynamic(_)) => out.push_str(" :[]"),
             },
             BindingOp::On(on) => write!(out, " @{:?}{:?}", on.name, on.modifiers).unwrap(),
+            BindingOp::Model(model) => {
+                write!(out, " model={}", model.contract.read.source()).unwrap();
+                if let Some(DynamicName::Static(argument)) = model.argument {
+                    write!(out, ":{argument}").unwrap();
+                }
+                for attribute in &model.attributes {
+                    match attribute.value {
+                        Some(kind) => write!(out, "|{kind}").unwrap(),
+                        None => write!(out, ".{}", attribute.name).unwrap(),
+                    }
+                }
+            }
+            BindingOp::SlotContent(slot) => write!(
+                out,
+                " #{:?}({:?})",
+                slot.name,
+                slot.params.map(|params| params.source())
+            )
+            .unwrap(),
+            BindingOp::SlotsObject(slots) => {
+                write!(out, " slots={}", slots.value.source()).unwrap()
+            }
+            BindingOp::VueShow(show) => write!(out, " show={}", show.value.source()).unwrap(),
+            BindingOp::VueHtml(html) => {
+                write!(out, " html={:?}", html.value.map(|v| v.source())).unwrap();
+            }
+            BindingOp::VueText(text) => {
+                write!(out, " text={:?}", text.value.map(|v| v.source())).unwrap();
+            }
+            BindingOp::VueDirective(directive) => write!(
+                out,
+                " v-{}:{:?}{:?}={:?}",
+                directive.name,
+                directive.argument,
+                directive.modifiers,
+                directive.value.map(|v| v.source())
+            )
+            .unwrap(),
             other => panic!("unexpected {}", other.mnemonic()),
         }
     }
@@ -186,7 +224,32 @@ fn text_and_string_children_become_text_and_fragments_splice() {
 #[test]
 fn unlanded_constructs_refuse_the_whole_root() {
     for source in [
-        "const A = <div v-show={x} />;",
+        "const A = <div v-once />;",
+        "const A = <div v-if={x} />;",
+        "const A = <div v-show:x={x} />;",
+        "const A = <i v-show=\"x\" />;",
+        "const A = <i v-show={<b />} />;",
+        "const A = <a v-x:a_b={v} />;",
+        "const A = <a v-x_m={v} />;",
+        "const A = <B v-custom={v} />;",
+        "const A = <B v-html={h} />;",
+        "const A = <B v-model:a_m={v} />;",
+        "const A = <input v-model:a={v} />;",
+        "const A = <input v-model_foo={v} />;",
+        "const A = <input v-model={f()} />;",
+        "const A = <input v-model={[a][0]} />;",
+        "const A = <input type={t} v-model={v} />;",
+        "const A = <input type=\"file\" v-model={v} />;",
+        "const A = <input {...p} v-model={v} />;",
+        "const A = <div v-model={v} />;",
+        "const A = <B v-model />;",
+        "const A = <B v-model={[a, b]} />;",
+        "const A = <B v-model={[a, 'x', 'y']} />;",
+        "const A = <B v-model_trim={[a]} />;",
+        "const A = <B v-models={x} />;",
+        "const A = <B v-models={[]} />;",
+        "const A = <B v-models={[[a], [f()]]} />;",
+        "const A = <div v-models={[[a]]} />;",
         "const A = <Comp vSlots={{ default: () => 'x' }} />;",
         "const A = <div vSlots={slots} />;",
         "const A = <B vSlots:default={slots} />;",
@@ -283,28 +346,6 @@ fn map_calls_become_ui_for_with_their_parameters_in_scope() {
 }
 
 #[test]
-fn component_children_admit_control_flow_only() {
-    assert_eq!(
-        lower(
-            "import Card from './c';\nconst A = <Card>{a ? <i /> : <b />}</Card>;",
-            Exec::ReRender
-        )
-        .as_deref(),
-        Ok("ops=5 <C:component :is> if[ a? <i> else: <b> ] ")
-    );
-    for source in [
-        "const A = <Card>{() => <i />}</Card>;",
-        "const A = <Card>{{ default: () => <i /> }}</Card>;",
-    ] {
-        assert_eq!(
-            lower(source, Exec::ReRender),
-            Err(JsxRefusal::Child),
-            "{source}"
-        );
-    }
-}
-
-#[test]
 fn value_children_that_are_not_control_flow_stay_jsx_child_values() {
     assert_eq!(
         lower("const A = <p>{a ? 'x' : 'y'}{}</p>;", Exec::ReRender),
@@ -317,5 +358,43 @@ fn value_children_that_are_not_control_flow_stay_jsx_child_values() {
     assert_eq!(
         lower("const A = <p>{a || b}</p>;", Exec::ReRender).as_deref(),
         Ok("ops=2 <p> {a || b} ")
+    );
+}
+
+#[test]
+fn models_and_directives_become_the_template_ops() {
+    assert_eq!(
+        lower(
+            "const A = <p><input v-model={a.b} /><input type=\"checkbox\" v-model_lazy_trim={c} /><select v-model={[d, ['number']]} /></p>;",
+            Exec::ReRender
+        )
+        .as_deref(),
+        Ok("ops=7 <p> <input model=a.b|input> <input model=c|input.lazy.trim> <select model=d|select.number> ")
+    );
+    assert_eq!(
+        lower(
+            "import B from './b';\nconst A = <B v-model:title={t} v-model={[u, 'label', ['m']]} v-models={[[x], [y, 'y', ['n']]]} />;",
+            Exec::ReRender
+        )
+        .as_deref(),
+        Ok("ops=6 <C:component :is model=t:title|component model=u:label|component.m model=x|component model=y:y|component.n> ")
+    );
+    assert_eq!(
+        lower(
+            "const A = <Card v-show={on}><i v-html={h} /><b v-text={t} v-focus /></Card>;",
+            Exec::ReRender
+        )
+        .as_deref(),
+        Ok(
+            "ops=7 <C:Card show=on> <i html=Some(\"h\")> <b text=Some(\"t\") v-focus:NoneVec([])=None> "
+        )
+    );
+    assert_eq!(
+        lower(
+            "const A = <p><a v-mark:left={v} /><a v-mark={[v, 'top', ['a', 'b']]} /><a v-mark={[v, f]} /></p>;",
+            Exec::ReRender
+        )
+        .as_deref(),
+        Ok("ops=7 <p> <a v-mark:Some(Static(\"left\"))Vec([])=Some(\"v\")> <a v-mark:Some(Static(\"top\"))Vec([\"a\", \"b\"])=Some(\"v\")> <a v-mark:NoneVec([])=Some(\"[v, f]\")> ")
     );
 }

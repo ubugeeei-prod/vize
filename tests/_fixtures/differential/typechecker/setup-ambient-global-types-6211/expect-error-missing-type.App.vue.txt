@@ -1,0 +1,5 @@
+<script setup lang="ts">
+// @ts-expect-error missing type
+declare const value: Missing;
+</script>
+<template><div /></template>

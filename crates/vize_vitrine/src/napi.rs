@@ -34,6 +34,8 @@ mod lint_fix;
 #[cfg(feature = "napi")]
 mod plugin;
 #[cfg(feature = "napi")]
+mod plugin_lint;
+#[cfg(feature = "napi")]
 mod plugin_output;
 #[cfg(feature = "napi")]
 mod plugin_sdk;

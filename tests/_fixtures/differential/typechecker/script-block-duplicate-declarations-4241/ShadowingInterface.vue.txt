@@ -1,0 +1,18 @@
+<script lang="ts">
+const sizes = ['sm', 'lg'] as const;
+
+export type Size = typeof sizes[number];
+export const DEFAULT_SIZE: Size = 'sm';
+</script>
+
+<script lang="ts" setup>
+interface Size {
+  width: number;
+}
+
+const box: Size = { width: 1 };
+</script>
+
+<template>
+  <div>{{ box.width }}{{ DEFAULT_SIZE }}</div>
+</template>

@@ -66,6 +66,15 @@ function link(code: string, filename: string, runtimes: Record<string, string>):
         });
         path.replaceWithMultiple(declarations);
       },
+      ExportDefaultDeclaration(path: NodePath<T.ExportDefaultDeclaration>) {
+        const declaration = path.node.declaration;
+        assert.ok(!t.isTSDeclareFunction(declaration), filename);
+        const value = t.isExpression(declaration) ? declaration : t.toExpression(declaration);
+        path.replaceWith(
+          t.variableDeclaration("const", [t.variableDeclarator(t.identifier("__default"), value)]),
+        );
+        exported.push("default: __default");
+      },
       ExportNamedDeclaration(path: NodePath<T.ExportNamedDeclaration>) {
         const declaration = path.node.declaration;
         if (!declaration) {
@@ -239,7 +248,21 @@ export async function trace(
   }
 }
 
-const runtimes = { vue: Vue, "vue-jsx-vapor": vaporRuntime, "/vue-jsx-vapor/props": propsRuntime };
+// The reference's spread-props helper imports no Vue, so Node loads it as is.
+const refRuntime = (await import(
+  pathToFileURL(
+    createRequire(join(repoRoot, "tests", "tooling", "tsrx-oracle", "package.json")).resolve(
+      "@tsrx/vue/ref",
+    ),
+  ).href
+)) as Record<string, unknown>;
+
+const runtimes = {
+  vue: Vue,
+  "vue-jsx-vapor": vaporRuntime,
+  "/vue-jsx-vapor/props": propsRuntime,
+  "@tsrx/vue/ref": refRuntime,
+};
 
 export async function mountRow(row: MountRow, vizeCode: string) {
   const source = readFileSync(join(repoRoot, row.file), "utf8");

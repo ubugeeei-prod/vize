@@ -1,0 +1,8 @@
+<script setup lang="ts">
+const local = 'fixed';
+declare function label(value: typeof local): typeof local;
+declare function label(value: number): number;
+const a: 'fixed' = label(local);
+const b: number = label(1);
+</script>
+<template>{{ label }}</template>

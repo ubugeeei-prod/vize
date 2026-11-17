@@ -12,8 +12,9 @@ use vize_l2::op::{
     TextOp,
 };
 
-use super::attributes::{Props, props};
+use super::attributes::{Owner, Props, props};
 use super::control_flow::control_flow;
+use super::slots::{slot_children, v_slots_templates};
 use super::{Cx, JsxRefusal, span};
 
 /// The tag a dynamic component is rendered through.
@@ -48,14 +49,28 @@ pub(super) fn element<'a>(
             &cx.allocator,
         )));
     }
-    props(cx, &opening.attributes, &mut lowered)?;
+    // A lowercase `<component is>` keeps element directives, as in templates.
+    let owner = match tag {
+        Tag::Element(tag) => Owner::Element {
+            tag,
+            items: &opening.attributes,
+        },
+        Tag::Named(_) | Tag::Value(_) => Owner::Component,
+    };
+    props(cx, &opening.attributes, owner, &mut lowered)?;
     let mut ops = Vec::new_in(&cx.allocator);
     match tag {
         Tag::Element(_) => element_children(cx, &element.children, &mut ops)?,
-        // A component's children are its implicit default slot. The slot
-        // idioms (a sole function or object child) are expression children
-        // that are not control flow, which `push_children` refuses.
-        Tag::Named(_) | Tag::Value(_) => push_children(cx, &element.children, &mut ops)?,
+        // A component's children are slot templates for the slot idioms (a
+        // sole function or object child), else its implicit default slot.
+        Tag::Named(_) | Tag::Value(_) => {
+            if !slot_children(cx, &element.children, &mut ops)? {
+                push_children(cx, &element.children, &mut ops)?;
+            }
+            if lowered.has_slot_templates() {
+                v_slots_templates(cx, &opening.attributes, &mut ops)?;
+            }
+        }
     }
     let children = Region { ops };
     let element_span = span(element.span);

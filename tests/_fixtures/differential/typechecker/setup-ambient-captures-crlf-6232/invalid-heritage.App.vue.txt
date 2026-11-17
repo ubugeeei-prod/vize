@@ -1,0 +1,5 @@
+<script setup lang="ts">
+const Base = 1;
+declare class Label extends Base {}
+</script>
+<template><div /></template>

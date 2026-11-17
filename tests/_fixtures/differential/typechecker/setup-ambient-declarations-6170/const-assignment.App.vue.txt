@@ -1,0 +1,5 @@
+<script setup lang="ts">
+declare const label: string;
+label = 'next';
+</script>
+<template><div /></template>

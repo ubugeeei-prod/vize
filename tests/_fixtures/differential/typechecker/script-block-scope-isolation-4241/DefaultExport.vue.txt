@@ -1,0 +1,19 @@
+<script lang="ts">
+import { defineComponent } from 'vue';
+
+const levels = ['info', 'warn'] as const;
+
+export type Level = typeof levels[number];
+
+export default defineComponent({
+  inheritAttrs: false,
+});
+</script>
+
+<script lang="ts" setup>
+const props = defineProps<{ level: Level }>();
+</script>
+
+<template>
+  <div>{{ props.level }}</div>
+</template>

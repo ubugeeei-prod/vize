@@ -1,15 +1,15 @@
 //! Template and macro-type facts shared by SFC rules within one lint pass.
 
 use super::LintContext;
+use crate::linter::run_type_sources::RunTypeSources;
 use std::cell::OnceCell;
-use vize_atelier_sfc::script::TypeSourceSnapshot;
 use vize_croquis::types::ResolvedTypeWorld;
 use vize_l1::markup::SurfaceTree;
 
 #[derive(Default)]
 pub(crate) struct MacroFacts<'a> {
     template_surface: Option<&'a SurfaceTree<'a>>,
-    type_sources: Option<&'a TypeSourceSnapshot>,
+    type_sources: Option<&'a RunTypeSources>,
     world: OnceCell<Option<ResolvedTypeWorld>>,
 }
 
@@ -28,13 +28,13 @@ impl<'a> LintContext<'a> {
 
     /// Resolve imported macro types against the linter's shared disk view.
     #[inline]
-    pub(crate) fn set_type_sources(&mut self, sources: Option<&'a TypeSourceSnapshot>) {
+    pub(crate) fn set_type_sources(&mut self, sources: Option<&'a RunTypeSources>) {
         self.macro_facts.type_sources = sources;
     }
 
     /// The disk view imported macro types resolve against, when shared.
     #[inline]
-    pub(crate) fn type_sources(&self) -> Option<&'a TypeSourceSnapshot> {
+    pub(crate) fn type_sources(&self) -> Option<&'a RunTypeSources> {
         self.macro_facts.type_sources
     }
 
@@ -58,8 +58,8 @@ impl<'a> LintContext<'a> {
                     Some(sources) => {
                         vize_atelier_sfc::croquis::resolve_descriptor_type_world_with_sources(
                             descriptor,
-                            self.filename,
-                            sources,
+                            &sources.importer(self.filename),
+                            &sources.snapshot,
                         )
                     }
                     None => vize_atelier_sfc::croquis::resolve_descriptor_type_world(

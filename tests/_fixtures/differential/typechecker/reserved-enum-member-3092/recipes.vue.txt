@@ -1,0 +1,14 @@
+<template>
+  <p v-if="mode === MODES.export">{{ mode }}</p>
+</template>
+
+<script setup lang="ts">
+enum MODES {
+  tag = "tag",
+  category = "category",
+  export = "export",
+  delete = "delete",
+}
+
+const mode = MODES.export
+</script>

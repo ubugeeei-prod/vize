@@ -1,0 +1,26 @@
+<script lang="ts">
+import { defineComponent } from "vue";
+
+export default defineComponent({
+  name: "DiffViewer",
+});
+
+export enum DiffDisplayMode {
+  Unified = 'unified',
+  Split = 'split',
+}
+
+export const enum DiffMarker {
+  Added = 'added',
+}
+
+export class DiffCursor {
+  line = 0;
+}
+
+export const pageSize = 20;
+
+export function toPageCount(total: number) {
+  return total;
+}
+</script>

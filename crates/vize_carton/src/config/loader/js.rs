@@ -162,7 +162,11 @@ const beforeRead = observing ? async (paths) => {
   if (payload.length > 65536) throw new Error("Config observation frame exceeds 64 KiB");
   const frame = Buffer.concat([Buffer.from(`B${payload.length}\n`), payload]);
   await new Promise((resolve, reject) => process.stdout.write(frame, (error) => error ? reject(error) : resolve()));
+  // Only a pending acknowledgement keeps the process alive, so a config that
+  // never settles exits here exactly as it does without observation.
+  process.stdin.ref?.();
   const { value: ack, done } = await acknowledgements.next();
+  process.stdin.unref?.();
   if (done || ack.length !== 1 || ack[0] !== 6) {
     throw new Error("Config observation acknowledgement ended");
   }
@@ -204,8 +208,12 @@ evaluated = { config: config ?? {}, dependencies, watchDependencies: attemptedDe
   const result = evaluated ?? failure;
   if (stopRecording) result.inputs = stopRecording();
   if (configTimings) result.configEvaluationTimings = configTimings;
-  process.stdout.write(JSON.stringify(result));
+  // One line; the host stops reading at its newline.
+  await new Promise((resolve) => process.stdout.write(JSON.stringify(result) + "\n", resolve));
 }
+// The result is out. Timers, servers or promises the config left behind must
+// not keep this process, or the host waiting on it, alive.
+process.exit();
 "#,
     ]
     .concat();
@@ -242,11 +250,7 @@ evaluated = { config: config ?? {}, dependencies, watchDependencies: attemptedDe
     }
     let evaluation_started = SystemTime::now();
     let started = trace.then(std::time::Instant::now);
-    let output = if let Some(observe) = before_read.as_deref_mut() {
-        super::js_observation::evaluate_observed(&mut command, observe)?
-    } else {
-        command.output()?
-    };
+    let child = super::js_observation::evaluate(&mut command, before_read.as_deref_mut())?;
 
     let child_elapsed = started.map(|started| started.elapsed());
 
@@ -263,7 +267,7 @@ evaluated = { config: config ?? {}, dependencies, watchDependencies: attemptedDe
     #[derive(serde::Deserialize)]
     struct Evaluation {
         #[serde(default)]
-        config: serde_json::Value,
+        config: Option<serde_json::Value>,
         #[serde(default, rename = "watchDependenciesComplete")]
         complete: bool,
         #[serde(default, rename = "watchDependencies")]
@@ -276,7 +280,7 @@ evaluated = { config: config ?? {}, dependencies, watchDependencies: attemptedDe
         #[serde(default)]
         inputs: Option<RecordedInputs>,
     }
-    let evaluated = serde_json::from_slice::<Evaluation>(&output.stdout);
+    let evaluated = serde_json::from_slice::<Evaluation>(&child.stdout);
     if let Some(elapsed) = child_elapsed {
         let process = evaluated
             .as_ref()
@@ -314,7 +318,12 @@ evaluated = { config: config ?? {}, dependencies, watchDependencies: attemptedDe
         observed.extend(evaluated.dependencies.iter().map(PathBuf::from));
     }
 
-    if !output.status.success() {
+    // A child that had to be stopped after its complete value still delivered it.
+    let delivered = child.stopped_after_result
+        && evaluated
+            .as_ref()
+            .is_ok_and(|evaluated| evaluated.config.is_some());
+    if !child.status.success() && !delivered {
         let artifacts = evaluated
             .as_ref()
             .ok()
@@ -322,7 +331,11 @@ evaluated = { config: config ?? {}, dependencies, watchDependencies: attemptedDe
             .unwrap_or_default();
         return Err(Box::new(IoError::new(
             ErrorKind::InvalidData,
-            super::failure_identity::NodeEvaluationFailure::new(config_path, output, artifacts),
+            super::failure_identity::NodeEvaluationFailure::new(
+                config_path,
+                child.into_output()?,
+                artifacts,
+            ),
         )));
     }
 
@@ -335,7 +348,7 @@ evaluated = { config: config ?? {}, dependencies, watchDependencies: attemptedDe
         ..
     } = evaluated?;
     let evaluation = CachedEvaluation {
-        config,
+        config: config.unwrap_or_default(),
         complete: graph_complete,
         watch_dependencies,
         dependencies,

@@ -25,6 +25,7 @@ pub(crate) mod musea_rules;
 mod native_type_aware;
 mod restricted_rules;
 mod rule_selection;
+pub(crate) mod run_type_sources;
 pub(crate) mod script_rules;
 mod severity;
 pub(crate) mod sfc_scripts;

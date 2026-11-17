@@ -119,7 +119,7 @@ pub(in crate::linter::engine) fn dispatch_template_rules<'a>(
     let names = all_names.get(..input.rule_count).unwrap_or(all_names);
     let exit = linter.registry.has_exit_element_rules();
     let directives = TemplateCommentDirectives::new(input.l2.surface());
-    let selected = linter.markup_rules(input.rule_count, |name, _| input.rules.contains(&name));
+    let selected = linter.named_markup_rules(input.rule_count, input.rules);
 
     if selected.is_empty() {
         let mut visitor =

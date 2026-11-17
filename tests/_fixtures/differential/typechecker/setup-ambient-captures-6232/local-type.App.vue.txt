@@ -1,0 +1,7 @@
+<script setup lang="ts">
+const local = { text: 'fixed' };
+type Local = typeof local;
+declare const label: Local;
+const exact: string = label.text;
+</script>
+<template>{{ label }}</template>

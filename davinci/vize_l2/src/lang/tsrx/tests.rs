@@ -93,7 +93,7 @@ ui.element article @106:384
 }
 
 #[test]
-fn nested_regions_lower_separately_and_conditionals_keep_branch_order() {
+fn map_callbacks_fold_their_region_and_conditionals_keep_branch_order() {
     let source = "const view = (items: string[], ok: boolean) =>
 \t<ul>
 \t\t{items.map((item) => <li>{item}</li>)}
@@ -101,23 +101,20 @@ fn nested_regions_lower_separately_and_conditionals_keep_branch_order() {
 \t</ul>;
 ";
     let regions = dumps(source);
-    // The outer child keeps the nested region's placeholder in its retained
-    // expression; the nested region is its own artifact.
-    let [
-        (RegionSite::Expression, outer),
-        (RegionSite::Expression, inner),
-    ] = regions.as_slice()
-    else {
+    // The callback's region is the loop's region, in the enclosing artifact.
+    let [(RegionSite::Expression, page)] = regions.as_slice() else {
         panic!("{regions:?}");
     };
     assert_eq!(
-        outer,
+        page,
         r#"[l2-dump-v2]
-ops=9
+ops=11
 
 [l2-dump-v2.ops]
 ui.element ul @48:188
-  ui.jsx-child js("items.map((item) => <li>{item}</li>)" @56:92) @55:93
+  ui.for source=js("items" @56:61) value=opaque(for-value "item" @67:71) @55:93
+    ui.element li @76:91
+      ui.jsx-child js("item" @81:85) @80:86
   ui.if @96:181
     branch js("ok" @101:103) @96:119
       ui.element b @107:117
@@ -131,14 +128,56 @@ ui.element ul @48:188
 
 "#
     );
+}
+
+#[test]
+fn conditionals_over_nested_regions_fold_them_into_branches() {
+    let source = "function A({ a, b, n }) @{
+\t<p>
+\t\t{a ? (b ? <i /> : null) : <b>{n}</b>}
+\t\t{n > 0 && <>x</>}
+\t\t{n && <s />}
+\t</p>
+}
+";
+    let regions = dumps(source);
+    // `{n && <s />}` may render `0`: it stays a value, its region standalone.
+    let [
+        (RegionSite::FunctionBody, outer),
+        (RegionSite::Expression, value),
+    ] = regions.as_slice()
+    else {
+        panic!("{regions:?}");
+    };
     assert_eq!(
-        inner,
+        outer,
         r#"[l2-dump-v2]
-ops=2
+ops=9
 
 [l2-dump-v2.ops]
-ui.element li @76:91
-  ui.jsx-child js("item" @81:85) @80:86
+ui.element p @28:112
+  ui.if @34:71
+    branch js("a" @35:36) @35:57
+      ui.if @39:57
+        branch js("b" @40:41) @40:49
+          ui.element i @44:49
+    branch @60:70
+      ui.element b @60:70
+        ui.jsx-child js("n" @64:65) @63:66
+  ui.if @74:91
+    branch js("n > 0" @75:80) @75:90
+      ui.text "x" @86:87
+  ui.jsx-child js("n && <s />" @95:105) @94:106
+
+"#
+    );
+    assert_eq!(
+        value,
+        r#"[l2-dump-v2]
+ops=1
+
+[l2-dump-v2.ops]
+ui.element s @100:105
 
 "#
     );
@@ -198,7 +237,6 @@ fn unsupported_constructs_refuse_the_module_at_their_spans() {
             TsrxIssueKind::Try,
             "@try { <C /> } @catch (error) { <p>failed</p> }",
         ),
-        (TsrxIssueKind::DynamicTag, "{tag}"),
         (
             TsrxIssueKind::RawText,
             "<style>{`.x { color: red }`}</style>",
@@ -276,7 +314,15 @@ fn reference_corpus_lowers_or_refuses_only_owned_constructs() {
         assert!(module.is_clean(), "{}", path.display());
         match lower(&allocator, &module) {
             Ok(artifacts) => {
-                assert_eq!(artifacts.regions().len(), module.regions().len());
+                // Every region is lowered, or folded into an enclosing one.
+                for region in module.regions() {
+                    let lowered_at = |span: vize_l0::Span| {
+                        artifacts.regions().iter().any(|lowered| {
+                            lowered.span().start <= span.start && span.end <= lowered.span().end
+                        })
+                    };
+                    assert!(lowered_at(region.span), "{}", path.display());
+                }
                 lowered += 1;
             }
             Err(issues) => {
@@ -296,4 +342,26 @@ fn reference_corpus_lowers_or_refuses_only_owned_constructs() {
         }
     }
     assert!(lowered > 0);
+}
+
+#[test]
+fn dynamic_tags_lower_to_the_dynamic_component_bound_at_their_tag() {
+    let source = "function D({ tag }) @{\n\t<{tag} class=\"x\">hi</{tag}>\n}\n";
+    let regions = dumps(source);
+    let [(RegionSite::FunctionBody, page)] = regions.as_slice() else {
+        panic!("{regions:?}");
+    };
+    assert_eq!(
+        page,
+        r#"[l2-dump-v2]
+ops=3
+
+[l2-dump-v2.ops]
+ui.component component @24:51
+  attr class="x" @31:40
+  ui.bind name="is" value=js("tag" @26:29) @25:30
+  ui.text "hi" @41:43
+
+"#
+    );
 }

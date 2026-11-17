@@ -1,0 +1,4 @@
+<script setup lang="ts">
+declare const first: string; declare const second: typeof first; const after: string = second;
+</script>
+<template><div /></template>

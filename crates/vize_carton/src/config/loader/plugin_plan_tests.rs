@@ -34,7 +34,11 @@ fn documents_without_a_plan_are_unchanged() {
 
 #[test]
 fn projected_plans_verify_and_unimplemented_capabilities_fail_closed() {
-    let expect = fixture("lint-rule-defaults.json");
+    let admitted = fixture("lint-rule-defaults.json");
+    let projected = json!({ "digest": admitted["digest"], "plan": admitted["plan"] });
+    let loaded = serialized(json!({ "__vizePluginPlan": projected })).unwrap();
+    assert_eq!(loaded.document.plugin_plan(), Some(&projected));
+    let expect = fixture("declared-capabilities.json");
     let projected = json!({ "digest": expect["digest"], "plan": expect["plan"] });
     for result in [
         serialized(json!({ "__vizePluginPlan": projected })).map(|_| ()),
@@ -47,7 +51,7 @@ fn projected_plans_verify_and_unimplemented_capabilities_fail_closed() {
     ] {
         assert_eq!(
             plan_error(&result.unwrap_err()),
-            "[plugin/capability-unadmitted] @acme/design-system: no Vize product implements lint.rule `@acme/design-system/no-raw-color` yet; run `vize plugin inspect` for the plan"
+            "[plugin/capability-unadmitted] @acme/routes: no Vize product implements sfc.custom-block `route:json` yet; run `vize plugin inspect` for the plan"
         );
     }
 }
@@ -81,4 +85,24 @@ fn stale_malformed_and_unprojected_plans_fail_closed() {
             "{error}"
         );
     }
+}
+
+#[test]
+fn the_editor_admits_plugin_lint_rules() {
+    let dir = tempfile::tempdir().unwrap();
+    let sdk = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../npm/plugin-sdk/v2.js")
+        .canonicalize()
+        .unwrap();
+    let config = crate::cstr!(
+        "import {{ pathToFileURL }} from \"node:url\";\n\
+         const {{ defineVizePlugin }} = await import(pathToFileURL({}).href);\n\
+         const rule = defineVizePlugin({{ apiVersion: 2, stability: \"experimental\", name: \"@acme/r\", version: \"1\", setup(api) {{ api.lint.rule({{ id: \"x\", meta: {{ messages: {{ m: \"m\" }} }}, visit: [\"ui.element\"], run() {{}} }}); }} }});\n\
+         export default {{ vue: {{ plugins: [rule()] }} }};\n",
+        serde_json::to_string(&sdk.to_string_lossy()).unwrap()
+    );
+    std::fs::write(dir.path().join("vite.config.mjs"), config.as_str()).unwrap();
+    let snapshot = super::load_lsp_config_snapshot(Some(dir.path()));
+    assert!(snapshot.valid, "{:?}", snapshot.error);
+    assert!(snapshot.project.document.plugin_plan().is_some());
 }

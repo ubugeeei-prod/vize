@@ -1,18 +1,27 @@
 //! The names one component reads and declares, over the retained host AST of
-//! its setup statements and of every embedded markup expression.
-//! Type positions are skipped: they hold no runtime reads.
+//! its setup statements and of every embedded markup expression, the markup of
+//! regions nested in those expressions included.
+//! Type positions are skipped: they hold no runtime reads. A setup read that
+//! a nested scope's declaration shadows is marked, so it is not read as a prop
+//! ([`super::scopes`]); markup scopes are the DOM emitter's.
 
 use alloc::vec::Vec;
 use oxc_ast::ast::{
-    BindingIdentifier, ComputedMemberExpression, Expression, IdentifierReference, ObjectProperty,
-    Program, StaticMemberExpression, TSType,
+    ArrowFunctionExpression, BindingIdentifier, BlockStatement, CatchClause,
+    ComputedMemberExpression, Expression, ForInStatement, ForOfStatement, ForStatement, Function,
+    IdentifierReference, JSXFragment, ObjectProperty, Program, StaticMemberExpression,
+    SwitchStatement, TSType, VariableDeclaration, VariableDeclarationKind,
 };
 use oxc_ast_visit::{Visit, walk};
+use oxc_syntax::scope::ScopeFlags;
 use vize_l0::Span;
-use vize_l1::markup::tsrx::{Attribute, AttributeValue, Block, Child, Element, Node, TagName};
+use vize_l1::markup::tsrx::{
+    Attribute, AttributeValue, Block, Child, Element, Node, RegionSite, TagName, TsrxModule,
+};
 use vize_l2::lang::tsrx::is_component;
 
 use super::component::Component;
+use super::scopes;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(super) enum Use<'a> {
@@ -30,11 +39,15 @@ pub(super) struct Read<'a> {
     pub use_: Use<'a>,
     /// In a setup statement rather than in markup.
     pub setup: bool,
+    /// In setup, under a nested scope that declares the name.
+    pub shadowed: bool,
 }
 
 #[derive(Default)]
 pub(super) struct Names<'a> {
     pub reads: Vec<Read<'a>>,
+    /// Declarations of the component's own scope: its setup outside nested
+    /// scopes. Markup declares only in nested scopes.
     declared: Vec<(&'a str, Span)>,
     /// The base names of component tags (`Foo` of `<Foo.Bar>`).
     tags: Vec<(&'a str, Span)>,
@@ -42,11 +55,13 @@ pub(super) struct Names<'a> {
 
 impl<'a> Names<'a> {
     /// Every name a component's setup and markup read, declare or use as a tag.
-    pub(super) fn of_component(source: &'a str, component: &Component<'a>) -> Self {
+    pub(super) fn of_component(module: &'a TsrxModule<'a>, component: &Component<'a>) -> Self {
         let mut collector = Collector {
             names: Self::default(),
-            source,
+            source: module.program().source_text,
+            module: Some(module),
             setup: component.body.is_some(),
+            scopes: Vec::new(),
         };
         if let Some(body) = component.body {
             for statement in &body.statements {
@@ -63,7 +78,9 @@ impl<'a> Names<'a> {
         let mut collector = Collector {
             names: Self::default(),
             source: program.source_text,
+            module: None,
             setup: false,
+            scopes: Vec::new(),
         };
         collector.visit_program(program);
         let names = collector.names;
@@ -78,7 +95,9 @@ impl<'a> Names<'a> {
     pub(super) fn value_reads<'s>(&'s self, name: &'s str) -> impl Iterator<Item = Span> + 's {
         self.reads
             .iter()
-            .filter(move |read| read.name == name && !matches!(read.use_, Use::Member(_)))
+            .filter(move |read| {
+                read.name == name && !read.shadowed && !matches!(read.use_, Use::Member(_))
+            })
             .map(|read| read.span)
     }
 
@@ -88,6 +107,7 @@ impl<'a> Names<'a> {
         for read in &self.reads {
             if let Use::Member(key) = read.use_
                 && read.name == name
+                && !read.shadowed
                 && !keys.contains(&key)
             {
                 keys.push(key);
@@ -127,19 +147,39 @@ impl<'a> Names<'a> {
     }
 }
 
+impl<'a> Collector<'a> {
+    /// Visit a scope nested in the component's. Markup scopes are left to the
+    /// DOM emitter, which resolves markup names itself.
+    fn scoped(&mut self, function: bool, names: Vec<&'a str>, visit: impl FnOnce(&mut Self)) {
+        if !self.setup {
+            return visit(self);
+        }
+        self.scopes.push((function, names));
+        visit(self);
+        self.scopes.pop();
+    }
+}
+
 struct Collector<'a> {
     names: Names<'a>,
     source: &'a str,
+    /// Where nested regions are found; `None` stops at their placeholders.
+    module: Option<&'a TsrxModule<'a>>,
     setup: bool,
+    /// The names each setup scope nested in the component's declares, and
+    /// whether it is a function's (where a `var` stops).
+    scopes: Vec<(bool, Vec<&'a str>)>,
 }
 
 impl<'a> Collector<'a> {
     fn read(&mut self, it: &IdentifierReference<'a>, use_: Use<'a>) {
+        let name = it.name.as_str();
         self.names.reads.push(Read {
-            name: it.name.as_str(),
+            name,
             span: Span::new(it.span.start, it.span.end),
             use_,
             setup: self.setup,
+            shadowed: self.scopes.iter().any(|(_, scope)| scope.contains(&name)),
         });
     }
 
@@ -256,9 +296,102 @@ impl<'a> Visit<'a> for Collector<'a> {
     }
 
     fn visit_binding_identifier(&mut self, it: &BindingIdentifier<'a>) {
-        self.names
-            .declared
-            .push((it.name.as_str(), Span::new(it.span.start, it.span.end)));
+        if self.setup && self.scopes.is_empty() {
+            self.names
+                .declared
+                .push((it.name.as_str(), Span::new(it.span.start, it.span.end)));
+        }
+    }
+
+    /// A function expression's own name, then its parameters (their defaults
+    /// see only the parameters), then its body.
+    fn visit_function(&mut self, it: &Function<'a>, _: ScopeFlags) {
+        // A declaration's name binds in the enclosing scope.
+        if let Some(id) = it.id.as_ref().filter(|_| it.is_declaration()) {
+            self.visit_binding_identifier(id);
+        }
+        let name = it
+            .id
+            .as_ref()
+            .filter(|_| it.is_expression())
+            .map(|id| id.name.as_str());
+        self.scoped(true, name.into_iter().collect(), |this| {
+            this.scoped(true, scopes::params(&it.params), |this| {
+                this.visit_formal_parameters(&it.params);
+                if let Some(body) = &it.body {
+                    this.scoped(true, scopes::body(&body.statements), |this| {
+                        this.visit_function_body(body);
+                    });
+                }
+            });
+        });
+    }
+
+    fn visit_arrow_function_expression(&mut self, it: &ArrowFunctionExpression<'a>) {
+        self.scoped(true, scopes::params(&it.params), |this| {
+            this.visit_formal_parameters(&it.params);
+            this.scoped(true, scopes::body(&it.body.statements), |this| {
+                this.visit_function_body(&it.body);
+            });
+        });
+    }
+
+    fn visit_block_statement(&mut self, it: &BlockStatement<'a>) {
+        self.scoped(false, scopes::lexical(&it.body), |this| {
+            walk::walk_block_statement(this, it);
+        });
+    }
+
+    fn visit_switch_statement(&mut self, it: &SwitchStatement<'a>) {
+        let names = it
+            .cases
+            .iter()
+            .flat_map(|case| scopes::lexical(&case.consequent))
+            .collect();
+        self.scoped(false, names, |this| walk::walk_switch_statement(this, it));
+    }
+
+    fn visit_for_statement(&mut self, it: &ForStatement<'a>) {
+        self.scoped(false, scopes::for_init(it.init.as_ref()), |this| {
+            walk::walk_for_statement(this, it);
+        });
+    }
+
+    fn visit_for_in_statement(&mut self, it: &ForInStatement<'a>) {
+        self.scoped(false, scopes::for_left(&it.left), |this| {
+            walk::walk_for_in_statement(this, it);
+        });
+    }
+
+    fn visit_for_of_statement(&mut self, it: &ForOfStatement<'a>) {
+        self.scoped(false, scopes::for_left(&it.left), |this| {
+            walk::walk_for_of_statement(this, it);
+        });
+    }
+
+    fn visit_catch_clause(&mut self, it: &CatchClause<'a>) {
+        let mut names = Vec::new();
+        if let Some(param) = &it.param {
+            scopes::pattern(&param.pattern, &mut names);
+        }
+        self.scoped(false, names, |this| walk::walk_catch_clause(this, it));
+    }
+
+    /// A `var` outside every nested function declares in the component's scope.
+    fn visit_variable_declaration(&mut self, it: &VariableDeclaration<'a>) {
+        if self.setup
+            && it.kind == VariableDeclarationKind::Var
+            && !self.scopes.iter().any(|(function, _)| *function)
+        {
+            for declarator in &it.declarations {
+                for id in declarator.id.get_binding_identifiers() {
+                    self.names
+                        .declared
+                        .push((id.name.as_str(), Span::new(id.span.start, id.span.end)));
+                }
+            }
+        }
+        walk::walk_variable_declaration(self, it);
     }
 
     fn visit_static_member_expression(&mut self, it: &StaticMemberExpression<'a>) {
@@ -287,4 +420,18 @@ impl<'a> Visit<'a> for Collector<'a> {
     }
 
     fn visit_ts_type(&mut self, _: &TSType<'a>) {}
+
+    /// A region nested in markup: its markup. A placeholder in setup is the
+    /// returned region, visited as markup, or refused markup.
+    fn visit_jsx_fragment(&mut self, it: &JSXFragment<'a>) {
+        let region = self
+            .module
+            .filter(|_| !self.setup && it.children.is_empty())
+            .and_then(|module| module.region(Span::new(it.span.start, it.span.end)))
+            .filter(|region| region.site == RegionSite::Expression);
+        match region {
+            Some(region) => self.node(&region.node),
+            None => walk::walk_jsx_fragment(self, it),
+        }
+    }
 }

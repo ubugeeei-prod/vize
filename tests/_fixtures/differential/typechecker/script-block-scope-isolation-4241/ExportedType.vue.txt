@@ -1,0 +1,35 @@
+<script lang="ts">
+const notificationConfigTypes = ['all', 'list', 'never'] as const;
+
+export type NotificationConfig = {
+  type: Exclude<typeof notificationConfigTypes[number], 'list'>;
+} | {
+  type: 'list';
+  userListId: string;
+};
+</script>
+
+<script lang="ts" setup>
+const props = defineProps<{
+  value: NotificationConfig;
+  configurableTypes?: NotificationConfig['type'][];
+}>();
+
+const emit = defineEmits<{
+  (ev: 'update', result: NotificationConfig): void;
+}>();
+
+const labels: Record<typeof notificationConfigTypes[number], string> = {
+  all: 'all',
+  list: 'list',
+  never: 'never',
+};
+
+function save() {
+  emit('update', props.value);
+}
+</script>
+
+<template>
+  <div>{{ labels[props.value.type] }}<button @click="save">save</button></div>
+</template>

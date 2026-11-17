@@ -49,8 +49,9 @@ options (only JSON with safe integers), unavailable backends and stale plans all
 fail closed with a `[plugin/<code>]` error. Only the `js` backend exists during
 incubation; `native` and `wasm` refuse instead of falling back.
 
-`api.sfc.block` and `api.vue.directive` declare ownership only: every product
-that would consume them refuses the plan until it implements them. v1
+`api.sfc.block` and `api.vue.directive` are declared, not yet usable: every
+product refuses a plan that contains one until every product consuming it
+implements it. Lint and the language server already check directive modifiers. v1
 `definePlugin` rule plugins may also appear in `vue.plugins`; the host records
 them through an adapter and executes the original plugin unchanged.
 

@@ -21,6 +21,8 @@ mod dom;
 #[cfg(feature = "typescript")]
 mod erase;
 mod names;
+mod props;
+mod scopes;
 
 /// The emission target.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -97,15 +99,20 @@ pub enum EmitIssue {
     /// `typescript` feature, or the compiled module could not be erased.
     TypeErasure,
     /// DOM: markup outside the body or the returned value of a top-level
-    /// component, a function whose name starts with an uppercase letter.
+    /// component, a function whose name starts with an uppercase letter, or
+    /// held by a value other than a conditional's arm or a `.map()` callback's
+    /// result (`{n && <b />}`, `{render(<b />)}`).
     OutsideComponent,
     /// DOM: parameters other than none, one identifier, or one object pattern
-    /// of plain keys without defaults or rest.
+    /// of static keys, each bound to a name with an optional default the
+    /// reference types, and an optional rest name (see `props.rs`).
     Parameters,
     /// DOM: the props identifier read other than as `props.key`, or a
     /// destructured prop used as a component tag.
     PropsValue,
-    /// DOM: a destructured prop name declared again inside the component.
+    /// DOM: a destructured prop's local declared again in the component's own
+    /// scope (its setup outside nested functions and blocks). Nested scopes
+    /// shadow it as in JavaScript.
     ShadowedProp,
     /// DOM: an `async` or generator component.
     AsyncComponent,
@@ -114,9 +121,6 @@ pub enum EmitIssue {
     /// DOM: a `return` in a component's setup before its render, which would
     /// pick the output once, at setup.
     EarlyReturn,
-    /// DOM: a directive prologue or hashbang, which the runtime import would
-    /// displace.
-    Directive,
     /// DOM: a host name equal to one the target writes (`__props`, `_ctx`, a
     /// helper alias).
     GeneratedName,

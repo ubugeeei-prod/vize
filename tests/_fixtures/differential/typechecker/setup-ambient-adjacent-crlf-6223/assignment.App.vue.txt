@@ -1,0 +1,4 @@
+<script setup lang="ts">
+const before = '😀'; declare const label: string; const invalid: number = label;
+</script>
+<template><div /></template>

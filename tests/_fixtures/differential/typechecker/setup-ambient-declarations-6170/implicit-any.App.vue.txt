@@ -1,0 +1,4 @@
+<script setup lang="ts">
+declare const label;
+</script>
+<template><div /></template>

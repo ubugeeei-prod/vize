@@ -3,34 +3,37 @@
 //! A component is a function whose body is a statement container (`@{ … }`),
 //! or that returns markup (`{ setup; return <markup>; }`, `() => <markup>`),
 //! and whose static name starts with an uppercase ASCII letter: a function
-//! declaration, or a `const`/`let` declarator initialized with an arrow or a
-//! function expression, optionally exported. Setup returns nothing but the
+//! declaration (optionally the named default export), or a `const`/`let`
+//! declarator initialized with an arrow or a function expression, optionally
+//! exported. An anonymous default export is not a component in the reference
+//! (it runs as a functional component whose destructured props never update)
+//! and stays refused. Setup returns nothing but the
 //! render: an earlier `return` would decide the output once, at setup, and is
-//! refused (`EarlyReturn`). Its props follow the pinned
-//! reference (`vue-jsx-vapor` macros): the keys of a destructured first
-//! parameter, which are read reactively through `__props`, or every
-//! `props.name` read of an identifier first parameter.
+//! refused (`EarlyReturn`). Its props follow the pinned reference
+//! ([`super::props`]).
 
 use alloc::vec::Vec;
 use oxc_ast::ast::{
-    ArrowFunctionExpression, BindingPattern, Class, Declaration, Expression, FormalParameters,
-    Function, FunctionBody, PropertyKey, ReturnStatement, Statement, VariableDeclaration,
+    ArrowFunctionExpression, BindingPattern, Class, Declaration, ExportDefaultDeclarationKind,
+    Expression, FormalParameters, Function, FunctionBody, ReturnStatement, Statement,
+    VariableDeclaration,
 };
 use oxc_ast_visit::Visit;
 use oxc_syntax::scope::ScopeFlags;
 use vize_l0::Span;
 use vize_l1::markup::tsrx::{Node, Region, RegionSite, TsrxModule};
+use vize_l2::lang::tsrx::TsrxRegion;
 
 use super::EmitIssue;
-use super::names::Names;
+use super::props::{self, Props};
 
 /// One component whose body region is emitted.
 pub(super) struct Component<'a> {
     pub name: &'a str,
     /// The host range the definition replaces.
     pub span: Span,
-    /// A function declaration, which becomes a `const` declaration.
-    pub declaration: bool,
+    /// How the definition replaces its host range.
+    pub form: Form,
     /// From the function start through the parameter list's `(`.
     pub head: Span,
     pub params: &'a FormalParameters<'a>,
@@ -40,6 +43,8 @@ pub(super) struct Component<'a> {
     pub region: &'a Region<'a>,
     /// The host body whose return value is the region, `None` for `@{ … }`.
     pub body: Option<&'a FunctionBody<'a>>,
+    /// An arrow whose body is its returned expression.
+    pub expression: bool,
     pub props: Props<'a>,
 }
 
@@ -54,46 +59,42 @@ impl<'a> Component<'a> {
     }
 }
 
-/// How a component reads its props.
-pub(super) enum Props<'a> {
-    None,
-    /// `({ a, b }) => …`: the keys, read as `__props.key`.
-    Destructured {
-        param: Span,
-        keys: Vec<&'a str>,
-    },
-    /// `(props) => …`: every `props.name` read.
-    Identifier {
-        keys: Vec<&'a str>,
-    },
+/// Where a component is defined.
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub(super) enum Form {
+    /// A function declaration, which becomes a `const` declaration.
+    Declaration,
+    /// A declarator's initializer, which stays an expression.
+    Initializer,
+    /// `export default function Name`, which exports the expression.
+    ExportDefault,
 }
 
-impl Props<'_> {
-    pub(super) fn keys(&self) -> &[&str] {
-        match self {
-            Self::None => &[],
-            Self::Destructured { keys, .. } | Self::Identifier { keys, .. } => keys,
-        }
-    }
-}
-
-/// Every top-level component of the module, in source order. A body region
-/// that is not a component body is refused.
+/// Every top-level component of the module, in source order. A lowered
+/// region (`regions`) that is not a component body is refused.
 pub(super) fn collect<'a>(
     module: &'a TsrxModule<'a>,
+    regions: &[TsrxRegion<'_>],
 ) -> Result<Vec<Component<'a>>, (EmitIssue, Span)> {
     let mut found = Vec::new();
     for statement in &module.program().body {
         match statement {
             Statement::FunctionDeclaration(function) => {
-                declaration(module, function, &mut found)?;
+                declaration(module, function, Form::Declaration, &mut found)?;
             }
             Statement::VariableDeclaration(variables) => {
                 declarators(module, variables, &mut found)?;
             }
+            Statement::ExportDefaultDeclaration(export) => {
+                if let ExportDefaultDeclarationKind::FunctionDeclaration(function) =
+                    &export.declaration
+                {
+                    declaration(module, function, Form::ExportDefault, &mut found)?;
+                }
+            }
             Statement::ExportNamedDeclaration(export) => match &export.declaration {
                 Some(Declaration::FunctionDeclaration(function)) => {
-                    declaration(module, function, &mut found)?;
+                    declaration(module, function, Form::Declaration, &mut found)?;
                 }
                 Some(Declaration::VariableDeclaration(variables)) => {
                     declarators(module, variables, &mut found)?;
@@ -103,12 +104,12 @@ pub(super) fn collect<'a>(
             _ => {}
         }
     }
-    for region in module.regions() {
+    for region in regions {
         if !found
             .iter()
-            .any(|component| core::ptr::eq(component.region, region))
+            .any(|component| component.region.span == region.span())
         {
-            return Err((EmitIssue::OutsideComponent, region.span));
+            return Err((EmitIssue::OutsideComponent, region.span()));
         }
     }
     Ok(found)
@@ -117,6 +118,7 @@ pub(super) fn collect<'a>(
 fn declaration<'a>(
     module: &'a TsrxModule<'a>,
     function: &'a Function<'a>,
+    form: Form,
     found: &mut Vec<Component<'a>>,
 ) -> Result<(), (EmitIssue, Span)> {
     let (Some(id), Some(body)) = (&function.id, &function.body) else {
@@ -132,10 +134,7 @@ fn declaration<'a>(
         false,
         function.r#async || function.generator,
     )? {
-        found.push(Component {
-            declaration: true,
-            ..component
-        });
+        found.push(Component { form, ..component });
     }
     Ok(())
 }
@@ -216,7 +215,7 @@ fn component<'a>(
     let mut component = Component {
         name,
         span,
-        declaration: false,
+        form: Form::Initializer,
         head: Span::new(span.start, params_span.start),
         params,
         tail: Span::new(
@@ -225,6 +224,7 @@ fn component<'a>(
         ),
         region,
         body: host_body,
+        expression,
         props: Props::None,
     };
     // Setup statements, without the host body's final `return`.
@@ -243,7 +243,7 @@ fn component<'a>(
     if let Some(early) = returns.0 {
         return Err((EmitIssue::EarlyReturn, early));
     }
-    component.props = props(module.program().source_text, &component)?;
+    component.props = props::props(module, &component)?;
     Ok(Some(component))
 }
 
@@ -278,62 +278,6 @@ impl<'a> Visit<'a> for Returns {
     fn visit_arrow_function_expression(&mut self, _: &ArrowFunctionExpression<'a>) {}
 
     fn visit_class(&mut self, _: &Class<'a>) {}
-}
-
-fn props<'a>(source: &'a str, component: &Component<'a>) -> Result<Props<'a>, (EmitIssue, Span)> {
-    let params = component.params;
-    let refuse = Err((EmitIssue::Parameters, span(params.span)));
-    if params.rest.is_some() || params.items.len() > 1 {
-        return refuse;
-    }
-    let Some(param) = params.items.first() else {
-        return Ok(Props::None);
-    };
-    if param.initializer.is_some() || !param.decorators.is_empty() {
-        return refuse;
-    }
-    let names = Names::of_component(source, component);
-    match &param.pattern {
-        BindingPattern::BindingIdentifier(id) => {
-            let name = id.name.as_str();
-            if let Some(use_) = names.value_reads(name).next() {
-                return Err((EmitIssue::PropsValue, use_));
-            }
-            Ok(Props::Identifier {
-                keys: names.member_keys(name),
-            })
-        }
-        BindingPattern::ObjectPattern(pattern) => {
-            if pattern.rest.is_some() {
-                return refuse;
-            }
-            let mut keys = Vec::with_capacity(pattern.properties.len());
-            for property in &pattern.properties {
-                let (PropertyKey::StaticIdentifier(key), BindingPattern::BindingIdentifier(local)) =
-                    (&property.key, &property.value)
-                else {
-                    return refuse;
-                };
-                if property.computed || key.name != local.name {
-                    return refuse;
-                }
-                keys.push(key.name.as_str());
-            }
-            for key in &keys {
-                if let Some(redeclared) = names.declarations(key).next() {
-                    return Err((EmitIssue::ShadowedProp, redeclared));
-                }
-                if let Some(tag) = names.tags(key).next() {
-                    return Err((EmitIssue::PropsValue, tag));
-                }
-            }
-            Ok(Props::Destructured {
-                param: span(param.span),
-                keys,
-            })
-        }
-        _ => refuse,
-    }
 }
 
 fn span(span: oxc_span::Span) -> Span {

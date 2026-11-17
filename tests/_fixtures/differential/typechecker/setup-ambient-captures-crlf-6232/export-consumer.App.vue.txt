@@ -1,0 +1,7 @@
+<script setup lang="ts">
+const local = 'fixed';
+declare const label: typeof local;
+export type Label = typeof label;
+defineExpose({ label });
+</script>
+<template>{{ label }}</template>

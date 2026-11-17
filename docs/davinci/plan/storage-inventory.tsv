@@ -1,5 +1,6 @@
 scope	category	file	alloc_vec_direct	alloc_vec_bound	l0_string_direct	l0_string_bound	arena_vec_direct	arena_vec_bound	small_vec_direct	small_vec_bound
 l2	-	davinci/vize_l2/src/artifact/builder/close.rs	0	0	0	0	2	0	0	0
+l2	contract	davinci/vize_l2/src/artifact/builder/callback_for.rs	1	0	1	0	0	0	0	0
 l2	-	davinci/vize_l2/src/artifact/builder/native_if.rs	0	0	0	0	3	0	0	0
 l2	-	davinci/vize_l2/src/dialect/petite.rs	0	0	0	0	1	5	0	0
 l2	analysis	davinci/vize_l2/src/file/conditional.rs	4	0	0	0	0	0	0	0
@@ -8,6 +9,9 @@ l2	analysis	davinci/vize_l2/src/framework/vue/contract/events.rs	1	4	0	0	0	0	0	0
 l2	analysis	davinci/vize_l2/src/framework/vue/contract/props.rs	1	9	0	0	0	0	0	0
 l2	analysis	davinci/vize_l2/src/framework/vue/contract/types.rs	1	22	0	0	0	0	0	0
 l2	analysis	davinci/vize_l2/src/framework/vue/ordinary.rs	1	0	0	0	0	0	0	0
+l2	analysis	davinci/vize_l2/src/framework/vue/options.rs	1	15	0	0	0	0	0	0
+l2	analysis	davinci/vize_l2/src/framework/vue/options/class.rs	1	4	0	0	0	0	0	0
+l2	analysis	davinci/vize_l2/src/framework/vue/options/read.rs	1	16	0	0	0	0	0	0
 l2	analysis	davinci/vize_l2/src/framework/vue/setup.rs	1	6	0	0	0	0	0	0
 l2	analysis	davinci/vize_l2/src/framework/vue/setup/bindings.rs	1	8	0	0	0	0	0	0
 l2	analysis	davinci/vize_l2/src/framework/vue/setup/props.rs	1	6	0	0	0	0	0	0
@@ -131,7 +135,7 @@ l2	-	davinci/vize_l2/src/lang/foreign.rs	0	0	0	0	1	1	0	0
 l2	contract	davinci/vize_l2/src/artifact.rs	1	1	0	0	0	0	0	0
 l2	contract	davinci/vize_l2/src/artifact/builder.rs	1	2	0	0	10	0	0	0
 l2	-	davinci/vize_l2/src/artifact/builder/region.rs	0	0	0	0	3	0	0	0
-l2	-	davinci/vize_l2/src/artifact/builder/binding.rs	0	0	0	0	2	0	0	0
+l2	-	davinci/vize_l2/src/artifact/builder/binding.rs	0	0	0	0	1	0	0	0
 l2	analysis	davinci/vize_l2/src/artifact/builder/binding/tests.rs	1	0	0	0	1	6	0	0
 l2	-	davinci/vize_l2/src/artifact/builder/conditional.rs	0	0	0	0	5	0	0	0
 l2	analysis	davinci/vize_l2/src/artifact/builder/tests.rs	2	0	1	6	1	8	0	0
@@ -262,7 +266,7 @@ l4	-	davinci/vize_l4/src/targets/dom/artifact/tpl.rs	0	0	1	3	0	0	0	0
 l4	-	davinci/vize_l4/src/targets/dom/artifact/transform_expr.rs	0	0	1	4	0	0	0	0
 l4	-	davinci/vize_l4/src/targets/dom/artifact/vfor.rs	0	0	1	0	0	0	0	0
 l4	-	davinci/vize_l4/src/targets/dom/artifact/vfor/keys.rs	0	0	1	5	0	0	0	0
-l4	-	davinci/vize_l4/src/targets/dom/artifact/vfor/host.rs	0	0	1	5	0	0	0	0
+l4	-	davinci/vize_l4/src/targets/dom/artifact/vfor/host.rs	0	0	1	6	0	0	0	0
 l4	emit	davinci/vize_l4/src/targets/dom/artifact/vif/keys.rs	1	1	1	5	0	0	0	0
 l1_to_l2	lower	davinci/vize_l1_to_l2/src/dialect/vue/lower.rs	1	4	1	2	1	0	0	0
 l1_to_l2	lower	davinci/vize_l1_to_l2/src/native.rs	1	8	1	4	1	0	0	0
@@ -451,6 +455,11 @@ l1_to_l2	-	davinci/vize_l1_to_l2/src/framework/vue/jsx.rs	0	0	0	0	2	0	0	0
 l1_to_l2	-	davinci/vize_l1_to_l2/src/framework/vue/jsx/attributes.rs	0	0	1	0	1	8	0	0
 l1_to_l2	-	davinci/vize_l1_to_l2/src/framework/vue/jsx/children.rs	0	0	2	0	1	4	0	0
 l1_to_l2	lower	davinci/vize_l1_to_l2/src/framework/vue/jsx/control_flow.rs	1	0	1	1	1	4	0	0
+l1_to_l2	-	davinci/vize_l1_to_l2/src/framework/vue/jsx/directives.rs	0	0	0	0	1	2	0	0
+l1_to_l2	-	davinci/vize_l1_to_l2/src/framework/vue/jsx/model.rs	0	0	0	0	1	4	0	0
+l1_to_l2	lower	davinci/vize_l1_to_l2/src/framework/vue/jsx/module.rs	1	7	0	0	0	0	0	0
+l1_to_l2	analysis	davinci/vize_l1_to_l2/src/framework/vue/jsx/module_tests.rs	1	1	3	0	0	0	0	0
+l1_to_l2	lower	davinci/vize_l1_to_l2/src/framework/vue/jsx/slots.rs	1	0	1	1	1	7	0	0
 l1_to_l2	-	davinci/vize_l1_to_l2/src/framework/vue/jsx/tests.rs	0	0	3	0	0	0	0	0
 l1	analysis	davinci/vize_l1/src/markup/native/operand/model/tests.rs	1	4	1	0	0	0	0	0
 l2	-	davinci/vize_l2/src/artifact/builder/binding/model.rs	0	0	0	0	1	0	0	0
@@ -495,10 +504,13 @@ l1	-	davinci/vize_l1/src/markup/tsrx/tree.rs	0	0	0	0	1	6	0	0
 l2	lower	davinci/vize_l2/src/lang/tsrx.rs	1	5	0	0	0	0	0	0
 l2	lower	davinci/vize_l2/src/lang/tsrx/check.rs	1	5	0	0	0	0	0	0
 l2	-	davinci/vize_l2/src/lang/tsrx/emit.rs	0	0	0	0	1	0	0	0
+l2	lower	davinci/vize_l2/src/lang/tsrx/nested.rs	1	0	0	0	0	0	0	0
 l2	analysis	davinci/vize_l2/src/lang/tsrx/tests.rs	1	2	1	3	0	0	0	0
 l2	-	davinci/vize_l2/src/lang/tsrx/text.rs	0	0	1	2	0	0	0	0
 l4	emit	davinci/vize_l4/src/lang/tsrx.rs	1	2	1	7	0	0	0	0
-l4	emit	davinci/vize_l4/src/lang/tsrx/component.rs	1	7	0	0	0	0	0	0
-l4	emit	davinci/vize_l4/src/lang/tsrx/dom.rs	1	4	1	5	0	0	0	0
+l4	emit	davinci/vize_l4/src/lang/tsrx/component.rs	1	4	0	0	0	0	0	0
+l4	emit	davinci/vize_l4/src/lang/tsrx/dom.rs	1	4	1	7	0	0	0	0
 l4	-	davinci/vize_l4/src/lang/tsrx/erase.rs	0	0	1	4	0	0	0	0
-l4	analysis	davinci/vize_l4/src/lang/tsrx/names.rs	1	10	0	0	0	0	0	0
+l4	analysis	davinci/vize_l4/src/lang/tsrx/names.rs	1	16	0	0	0	0	0	0
+l4	emit	davinci/vize_l4/src/lang/tsrx/props.rs	1	7	0	0	0	0	0	0
+l4	analysis	davinci/vize_l4/src/lang/tsrx/scopes.rs	1	14	0	0	0	0	0	0

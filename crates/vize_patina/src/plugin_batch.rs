@@ -6,7 +6,9 @@
 //! native JS host (`@vizejs/native`) and the CLI build the same bytes here.
 
 pub mod batch;
+pub mod directives;
 pub mod document;
 pub mod error;
 pub mod facts;
+pub mod lint;
 pub mod production;

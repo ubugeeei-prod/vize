@@ -6,7 +6,7 @@ use super::{
     SfcTemplateLintInput, TemplateAnalysis, TemplateRuleEnv, extract_template_fast, offset_result,
 };
 use crate::linter::config::{LintResult, Linter};
-use crate::linter::sfc_scripts::{ScriptParses, SfcScripts, lint_scripts};
+use crate::linter::sfc_scripts::{ScriptParses, ScriptSemantics, lint_scripts};
 use crate::markup::L2Template;
 use vize_l0::dialect::VueDialect;
 use vize_l0::{Allocator, ToCompactString, profile};
@@ -15,7 +15,7 @@ impl Linter {
     pub(crate) fn lint_sfc_template_root<'a>(
         &self,
         input: SfcTemplateLintInput<'a>,
-        scripts: &'a SfcScripts<'_>,
+        scripts: &'a ScriptSemantics<'_, '_>,
     ) -> (LintResult, LintResult) {
         let mut script_result = empty_lint_result(input.filename);
         let valid_template = !matches!(&input.analysis, TemplateAnalysis::Disabled);
@@ -58,7 +58,7 @@ impl Linter {
         &self,
         filename: &str,
         descriptor: &vize_atelier_sfc::SfcDescriptor<'a>,
-        scripts: &SfcScripts<'_>,
+        scripts: &ScriptSemantics<'_, '_>,
         derived: bool,
     ) -> LintResult {
         let Some(template) = descriptor.template.as_ref() else {
@@ -110,7 +110,7 @@ impl Linter {
                     })
                 {
                     super::rule_sets::analyze_descriptor_for_component_reads(
-                        scripts,
+                        scripts.parses(),
                         Some(&l2),
                         self.macro_type_resolution(filename),
                         self.has_unused_bindings_demand(),
@@ -118,7 +118,7 @@ impl Linter {
                     )
                 } else {
                     super::rule_sets::analyze_descriptor_for_lint_with_template(
-                        scripts,
+                        scripts.parses(),
                         Some(&l2),
                         self.macro_type_resolution(filename),
                         self.has_unused_bindings_demand(),
@@ -214,15 +214,21 @@ impl Linter {
         let script_allocator = oxc_allocator::Allocator::default();
         let scripts =
             shared_descriptor.map(|descriptor| lint_scripts(&script_allocator, descriptor));
-        let shared = shared_descriptor.zip(scripts.as_ref());
+        let semantics = scripts.as_ref().map(ScriptSemantics::new);
+        let shared = shared_descriptor.zip(semantics.as_ref());
 
+        // SFC-level rules run before the template is lowered and analyzed. A
+        // pass shared from here would stay alive through both, so they keep
+        // running their own short-lived passes.
         let sfc_result = sfc_parse_result.unwrap_or_else(|| {
             profile!(
                 "patina.sfc.level_rules",
                 self.lint_sfc_level(
                     source,
                     filename,
-                    shared.map(|(descriptor, scripts)| (descriptor, scripts as &dyn ScriptParses)),
+                    shared_descriptor
+                        .zip(scripts.as_ref())
+                        .map(|(descriptor, scripts)| (descriptor, scripts as &dyn ScriptParses)),
                 )
             )
         });

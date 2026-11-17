@@ -14,7 +14,7 @@
     },
     "producer": {
       "path": "../../../../../crates/vize_patina/src/rules/script/no_reserved_keys.rs",
-      "sha256": "663923d54c47e1708ce26a8ede98bce7a54d86fddd564764a6e3628372a4b7c0"
+      "sha256": "12d4367a23e7767355bb8ea495b8c4a0cfcca7efe10f7c02b93013d20aac79a0"
     }
   },
   "routes": {

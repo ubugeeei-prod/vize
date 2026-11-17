@@ -98,14 +98,15 @@ fn authored_projection_reuses_ordinary_storage_and_holds_the_facade_budget() {
     let mut count = 0;
     for rule in registry.rules() {
         if let Some(rule) = rule.as_markup_rule() {
-            let metrics = measure(|| document.visit_with(rule, &mut context))
-                .expect("counting allocator installed");
+            // `None` means the counting allocator is not installed.
+            let calls =
+                measure(|| document.visit_with(rule, &mut context)).map(|metrics| metrics.calls);
             let expected = if rule.name() == "vue/permitted-contents" {
                 7
             } else {
                 0
             };
-            assert_eq!(metrics.calls, expected, "{} allocation budget", rule.name());
+            assert_eq!(calls, Some(expected), "{} allocation budget", rule.name());
             count += 1;
         }
     }
@@ -114,31 +115,37 @@ fn authored_projection_reuses_ordinary_storage_and_holds_the_facade_budget() {
 
     // Default class checks need no sets when no duplicate is possible. Keep
     // these complete source traversals inside the original zero-allocation gate.
-    let class_rule = registry
+    let class_rules = registry
         .rules()
         .iter()
-        .find(|rule| rule.meta().name == "html/no-duplicate-class")
-        .expect("static class checks enabled by default")
-        .as_markup_rule()
-        .unwrap();
-    for source in [
-        "<div class=\"\">Text</div>",
-        "<div class=\" \t\r\n\u{c} \">Text</div>",
-        "<div class=\"token\">Text</div>",
-        "<div class=\" \t 東京 \u{c}\r\n \">Text</div>",
-        "<div class=\"a\u{b}a\">Text</div>",
-        "<div class=\"a\u{a0}a\">Text</div>",
-    ] {
-        let allocator = Allocator::new();
-        let lowered = L2Template::lower(&allocator, source);
-        assert!(lowered.lowered().diagnostics.is_empty());
-        let markup = lowered.markup();
-        let document = MarkupDocument::from_l2(&markup, TemplateSyntax::Vue);
-        let mut lint = LintContext::new(&allocator, source, "class-budget.vue");
-        let mut context = MarkupContext::new(&mut lint, &document);
-        let metrics = measure(|| document.visit_with(class_rule, &mut context))
-            .expect("counting allocator installed");
-        assert_eq!(metrics.calls, 0, "empty/single token allocation: {source}");
-        assert_eq!(lint.error_count() + lint.warning_count(), 0, "{source}");
+        .filter(|rule| rule.meta().name == "html/no-duplicate-class")
+        .filter_map(|rule| rule.as_markup_rule())
+        .collect::<Vec<_>>();
+    assert_eq!(
+        class_rules.len(),
+        1,
+        "static class checks enabled by default as one markup rule"
+    );
+    for &class_rule in &class_rules {
+        for source in [
+            "<div class=\"\">Text</div>",
+            "<div class=\" \t\r\n\u{c} \">Text</div>",
+            "<div class=\"token\">Text</div>",
+            "<div class=\" \t 東京 \u{c}\r\n \">Text</div>",
+            "<div class=\"a\u{b}a\">Text</div>",
+            "<div class=\"a\u{a0}a\">Text</div>",
+        ] {
+            let allocator = Allocator::new();
+            let lowered = L2Template::lower(&allocator, source);
+            assert!(lowered.lowered().diagnostics.is_empty());
+            let markup = lowered.markup();
+            let document = MarkupDocument::from_l2(&markup, TemplateSyntax::Vue);
+            let mut lint = LintContext::new(&allocator, source, "class-budget.vue");
+            let mut context = MarkupContext::new(&mut lint, &document);
+            let calls = measure(|| document.visit_with(class_rule, &mut context))
+                .map(|metrics| metrics.calls);
+            assert_eq!(calls, Some(0), "empty/single token allocation: {source}");
+            assert_eq!(lint.error_count() + lint.warning_count(), 0, "{source}");
+        }
     }
 }

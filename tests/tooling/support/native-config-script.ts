@@ -6,8 +6,8 @@ import { readFile } from "node:fs/promises";
 // runtime_source unit. Both observers execute that same dependency-free body.
 const pins = {
   validator: "e7cd857464b449579d288fd20e75549875404389200fa40a1bd9517ec4e2ab83",
-  runtime: "9eb5a44f8143498c6e208f5f5e484cd6208f6dd26222793e8831f601f328cb07",
-  assembled: "5d98a0ac5eee521493861b986a433c08c1611f02dcf76eed4f7ba6d5a3d69cab",
+  runtime: "0bb73d5f28813a5045f23cf739256ea408093218202596220b7f43639d9d7b0b",
+  assembled: "908f23af458e06abb00d47565f294770fd8fa40d433c8bd44c5514ed0ee946a7",
 } as const;
 // Statically spliced modules and the lazily imported config plugin host, in the
 // native config-runtime assembly order (runtime_source.rs `OWNED`, `PLUGIN_HOST`).

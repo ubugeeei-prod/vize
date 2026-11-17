@@ -16,6 +16,22 @@ export declare class PluginDocumentHandle {
   scope(id: number): Array<ScopeEntryNapi> | null;
 }
 
+/** The plugin lint rules of one `vite.config.*`, linted one file at a time. */
+export declare class PluginLintSession {
+  /**
+   * Load `configFile` and plan its enabled plugin rules. Throws when the
+   * config or its plugin plan is invalid.
+   */
+  constructor(configFile: string);
+  /** Whether the config enables any plugin rule. */
+  get enabled(): boolean;
+  /**
+   * Lint one SFC with every enabled plugin rule. Throws on a planning,
+   * sidecar or rule failure.
+   */
+  lint(source: string, filename: string): any;
+}
+
 /** Compose output hooks with any native compiler's checked result. */
 export declare function applyOutputPlugins(
   compiled: CompileResult,
