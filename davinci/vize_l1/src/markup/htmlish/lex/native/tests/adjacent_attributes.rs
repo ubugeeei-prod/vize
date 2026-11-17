@@ -1,9 +1,9 @@
 use super::{LexErrorCode, LexOptions, Lexer, QuoteType, TestCallbacks, TokenEvent, tokenize};
-use crate::markup::VueComponent;
+use crate::framework::vue::VueTemplate;
 
 fn tokenize_vue(source: &str) -> TestCallbacks {
     let mut lexer =
-        Lexer::<VueComponent, _>::new(source, TestCallbacks::default(), LexOptions::default());
+        Lexer::<VueTemplate, _>::new(source, TestCallbacks::default(), LexOptions::default());
     lexer.run();
     lexer.into_sink()
 }
