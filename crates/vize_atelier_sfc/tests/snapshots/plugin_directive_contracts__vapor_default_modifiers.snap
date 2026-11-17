@@ -1,0 +1,7 @@
+---
+source: crates/vize_atelier_sfc/tests/plugin_directive_contracts.rs
+expression: "directive_calls(&result.code).join(\"\\n\")"
+---
+_withVaporDirectives(n0, [[_directive_track, () => (_ctx.payload), undefined, { "strict": true, "passive": true }]])
+_withVaporDirectives(n1, [[_directive_track, undefined, () => ("click"), { "once": true, "strict": true, "passive": true }]])
+_withVaporDirectives(n2, [[_directive_focus, undefined, undefined, { "x": true }]])

@@ -112,6 +112,14 @@ pub(super) fn compile_template_inner_with_sections<'a>(
     .or_else(|| {
         stage_options::source_may_contain_vize_directive_comment(source)
             .then_some(DomLegacyReason::DirectiveComment)
+    })
+    .or_else(|| {
+        (!options.directive_contracts.is_empty()
+            && stage_options::source_may_bind_declared_directive(
+                source,
+                &options.directive_contracts,
+            ))
+        .then_some(DomLegacyReason::DeclaredDirective)
     });
     let use_l2_emit = l2_refusal.is_none();
     let l2_custom_elements = custom_elements.clone();

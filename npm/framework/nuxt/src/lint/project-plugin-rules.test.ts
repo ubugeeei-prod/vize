@@ -81,7 +81,7 @@ export default { vue: { plugins: [track()] } };`,
   );
   await assert.rejects(readProjectLintRuleSets(directive, unexpectedPreset), {
     message:
-      "[plugin/capability-unadmitted] @acme/track: vue.directive `track` is not implemented by compiler, typecheck yet; run `vize plugin inspect` for the plan",
+      "[plugin/capability-unadmitted] @acme/track: vue.directive `track` is not implemented by typecheck yet; run `vize plugin inspect` for the plan",
   });
 
   const skipped = await temporaryRoot(t, "vize-nuxt-project-plugin-skipped-");

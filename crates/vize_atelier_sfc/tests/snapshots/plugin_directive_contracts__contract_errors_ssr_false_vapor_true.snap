@@ -1,0 +1,6 @@
+---
+source: crates/vize_atelier_sfc/tests/plugin_directive_contracts.rs
+expression: "format!(\"{:?}\\n{}\", error.code, error.message)"
+---
+Some("VAPOR_TEMPLATE_ERROR")
+Vapor template compilation errors: ["v-track does not declare the modifier `bogus` (declared by @acme/tracking)", "v-track requires the modifier `strict` (declared by @acme/tracking)"]

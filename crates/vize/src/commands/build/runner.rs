@@ -11,6 +11,7 @@ mod compile_stats;
 mod declarations;
 mod fallback;
 mod output;
+mod plugins;
 mod preprocess;
 mod profile_facts;
 mod settings;
@@ -143,6 +144,7 @@ pub(crate) fn run(args: BuildArgs) {
 
     let compile_start = Instant::now();
     let mut compile_settings = CompileFileSettings::resolve(&args, build_config);
+    compile_settings.admit_plugin_plan(planned_inputs.iter().map(|input| input.source.as_path()));
     if !stats_only {
         compile_settings.preprocessed_styles =
             preprocess::PreprocessedStyles::run(planned_inputs.iter().map(|input| &input.source));

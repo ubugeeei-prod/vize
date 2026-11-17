@@ -172,4 +172,16 @@ pub(crate) static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "このコードの診断には、パーサーが行った回復処理や互換性に関する通知を説明する個別のメッセージが付きます",
         "该代码的诊断会附带具体消息，说明解析器所做的恢复处理或兼容性提示",
     ),
+    (
+        "compiler/directive-contract.message",
+        "Directive binding breaks its declared contract.",
+        "ディレクティブのバインディングが宣言された契約に違反しています。",
+        "指令绑定违反了其声明的契约。",
+    ),
+    (
+        "compiler/directive-contract.help",
+        "use only the modifiers the plugin in `vue.plugins` declares for this directive, and add every required one; `vize plugin inspect` lists them",
+        "`vue.plugins` のプラグインがこのディレクティブに宣言した修飾子だけを使い、必須の修飾子をすべて付けてください。`vize plugin inspect` で一覧できます",
+        "只使用 `vue.plugins` 中的插件为该指令声明的修饰符，并添加所有必需的修饰符；`vize plugin inspect` 会列出它们",
+    ),
 ];

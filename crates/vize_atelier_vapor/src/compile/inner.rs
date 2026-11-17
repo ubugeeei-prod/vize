@@ -296,6 +296,7 @@ fn compile_vapor_inner_with_stack<'a, C: CaptureSink>(
         vapor: true,
         custom_renderer: options.custom_renderer,
         experimental_patterned_template: options.experimental_patterned_template,
+        directive_contracts: experimental_options.directive_contracts.clone(),
         ..Default::default()
     };
     let transform_errors =

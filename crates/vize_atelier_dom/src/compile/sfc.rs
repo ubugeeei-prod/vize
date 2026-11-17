@@ -77,7 +77,12 @@ pub(super) fn compile_template_inner_for_sfc_with_sections_captured<'a, C: Captu
         pipeline::L2EmitSelection::RequireSections,
         experimental_self_component,
     ) && !stage_options::source_may_contain_patterned_template_syntax(source)
-        && !stage_options::source_may_contain_vize_directive_comment(source);
+        && !stage_options::source_may_contain_vize_directive_comment(source)
+        && !(!options.directive_contracts.is_empty()
+            && stage_options::source_may_bind_declared_directive(
+                source,
+                &options.directive_contracts,
+            ));
 
     let force_compat_sections = if use_l2_emit
         && !codegen_opts.source_map

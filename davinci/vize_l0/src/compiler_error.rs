@@ -93,6 +93,9 @@ pub enum ErrorCode {
     SurrogateCharacterReference = 1007,
     /// A numeric character reference names a Unicode noncharacter.
     NoncharacterCharacterReference = 1008,
+    /// A custom directive binding breaks the contract a `vue.plugins` entry
+    /// declares for it: an undeclared or a missing required modifier.
+    DirectiveContract = 1009,
 }
 
 impl ErrorCode {
@@ -186,6 +189,7 @@ impl ErrorCode {
             Self::ControlCharacterReference => "Control character reference.",
             Self::SurrogateCharacterReference => "Surrogate character reference.",
             Self::NoncharacterCharacterReference => "Noncharacter character reference.",
+            Self::DirectiveContract => "Directive binding breaks its declared contract.",
         }
     }
 
@@ -228,6 +232,7 @@ impl ErrorCode {
     pub fn stage(self) -> Stage {
         match self {
             Self::ExtendPoint => Stage::Surface,
+            Self::DirectiveContract => Stage::Lowered,
             _ if self.is_parse_error() => Stage::Surface,
             _ if self.is_transform_error() => Stage::Lowered,
             _ => Stage::Emit,

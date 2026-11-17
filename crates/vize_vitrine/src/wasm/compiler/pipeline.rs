@@ -100,6 +100,7 @@ fn compile_internal_scoped(
             self_component: experimental_self_component,
             source_map: opts.source_map.unwrap_or(false),
             source_map_filename: opts.filename.clone().map(Into::into),
+            ..VaporCompilerExperimentalOptions::default()
         };
         let result = compile_vapor_with_custom_elements_template_syntax_and_experimental_options(
             &allocator,

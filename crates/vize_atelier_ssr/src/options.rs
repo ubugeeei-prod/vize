@@ -71,6 +71,10 @@ pub struct SsrCompilerOptions {
     /// binding metadata.
     #[serde(skip)]
     pub script_tables: Option<ScriptTables>,
+
+    /// Directive contracts from `vue.plugins` (#13074). Internal-only.
+    #[serde(skip)]
+    pub directive_contracts: vize_l0::config::DirectiveContracts,
 }
 
 #[cfg(test)]

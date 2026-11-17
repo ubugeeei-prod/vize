@@ -4,7 +4,8 @@ use std::path::{Path, PathBuf};
 use vize_atelier_core::{TemplateSyntaxMode, WhitespaceStrategy};
 use vize_l0::String;
 use vize_l0::config::{
-    CompilerConfigEntry, ConfigExperimentalVueFlags, ConfigFeatureFlags, VueVersion,
+    CompilerConfigEntry, ConfigExperimentalVueFlags, ConfigFeatureFlags, DirectiveContracts,
+    VueVersion,
 };
 use vize_l0::hash::hash_bytes;
 
@@ -23,6 +24,8 @@ pub(super) struct BuildConfigSettings {
     pub(super) custom_elements: Vec<String>,
     pub(super) dialect: Option<VueVersion>,
     pub(super) host_compiler: Option<bool>,
+    /// The verified `vue.plugins` plan, when the config declares one (#13074).
+    pub(super) plugin_plan: Option<crate::config::plugin_plan::VerifiedPluginPlan>,
     compiler_entries: Vec<CompilerConfigEntry>,
     config_dir: PathBuf,
 }
@@ -40,6 +43,7 @@ pub(super) fn load_build_config(no_config: bool, config: Option<&Path>) -> Build
             custom_elements: Vec::new(),
             dialect: None,
             host_compiler: None,
+            plugin_plan: None,
             compiler_entries: Vec::new(),
             config_dir: std::env::current_dir().unwrap_or_else(|_| PathBuf::from(".")),
         };
@@ -50,6 +54,7 @@ pub(super) fn load_build_config(no_config: bool, config: Option<&Path>) -> Build
             std::process::exit(1);
         });
     let document = loaded.document;
+    let plugin_plan = super::plugins::verified_plan(&document);
     let compiler_entries = document.compiler_entries();
     let config_dir = loaded
         .project_root
@@ -73,6 +78,7 @@ pub(super) fn load_build_config(no_config: bool, config: Option<&Path>) -> Build
         dialect: features.vue_version,
         features,
         host_compiler: document.compiler_host_compiler(),
+        plugin_plan,
         custom_elements: document.into_compiler_custom_elements(),
         compiler_entries,
         config_dir,
@@ -103,6 +109,10 @@ pub(super) struct CompileFileSettings {
     pub(super) vapor: bool,
     pub(super) custom_renderer: bool,
     pub(super) custom_elements: Vec<String>,
+    /// The verified `vue.plugins` plan, admitted once the inputs are known.
+    pub(super) plugin_plan: Option<crate::config::plugin_plan::VerifiedPluginPlan>,
+    /// `vue.plugins` directive contracts, shared by every file's compile.
+    pub(super) directive_contracts: DirectiveContracts,
     pub(super) template_syntax: TemplateSyntaxMode,
     pub(super) whitespace: WhitespaceStrategy,
     pub(super) legacy_line_breaks: bool,
@@ -212,6 +222,8 @@ impl CompileFileSettings {
             vapor,
             custom_renderer: args.custom_renderer,
             custom_elements: resolve_custom_elements(args, build_config.custom_elements),
+            plugin_plan: build_config.plugin_plan,
+            directive_contracts: DirectiveContracts::EMPTY,
             template_syntax: args
                 .template_syntax
                 .map(Into::into)

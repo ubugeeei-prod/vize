@@ -37,14 +37,16 @@ impl<'a> FrozenTemplate<'a> {
         allocator: &'a vize_l0::Allocator,
         tree: &vize_l1::markup::SurfaceTree<'a>,
         errors: &[vize_l1::markup::SurfaceError],
+        directive_contracts: &vize_l0::config::DirectiveContracts,
     ) -> Result<vize_l1_to_l2::Lowered<'a>, &'static str> {
         let source = vize_l0::SourceRoot::new(self.source).map_err(|_| FOREIGN_SOURCE)?;
-        vize_l1_to_l2::lower_with_frozen_element_spans(
+        vize_l1_to_l2::lower_with_frozen_element_spans_and_directives(
             allocator,
             tree,
             errors,
             source.whole_block(),
             self.spans,
+            directive_contracts,
         )
     }
 }
@@ -135,7 +137,12 @@ mod tests {
         assert!(parser_errors.is_empty(), "{parser_errors:?}");
         FrozenTemplate::new(&root, source, &carrier)
             .expect("original parser bundle")
-            .lower(arena, &tree, &errors)
+            .lower(
+                arena,
+                &tree,
+                &errors,
+                &vize_l0::config::NO_DIRECTIVE_CONTRACTS,
+            )
             .expect("complete opening custody")
     }
 
@@ -298,7 +305,14 @@ mod tests {
             let template =
                 FrozenTemplate::new(&root, source, &carrier).expect("actual original parser join");
             assert_eq!(
-                template.lower(&arena, &tree, &errors).err(),
+                template
+                    .lower(
+                        &arena,
+                        &tree,
+                        &errors,
+                        &vize_l0::config::NO_DIRECTIVE_CONTRACTS
+                    )
+                    .err(),
                 Some(message),
                 "{source}"
             );

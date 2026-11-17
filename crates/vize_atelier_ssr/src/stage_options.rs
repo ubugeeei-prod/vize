@@ -39,6 +39,7 @@ pub(crate) fn transform_options(options: &SsrCompilerOptions) -> TransformOption
         experimental_patterned_template: options.experimental_patterned_template,
         binding_metadata: options.binding_metadata.clone(),
         dialect: options.dialect,
+        directive_contracts: options.directive_contracts.clone(),
         ..Default::default()
     }
 }

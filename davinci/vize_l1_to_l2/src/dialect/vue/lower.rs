@@ -26,7 +26,7 @@ pub use element::{BranchKind, Structure, frozen_attribute_name, structure};
 
 pub use foreign::{ForeignDialect, lower_source_block_with_foreign_expressions};
 #[doc(hidden)]
-pub use frozen::lower_with_frozen_element_spans;
+pub use frozen::{lower_with_frozen_element_spans, lower_with_frozen_element_spans_and_directives};
 pub use if_keys::{BranchKey, BranchKeyKind, IfFacts, SAME_KEY_MESSAGE};
 
 // The one-scanner rule (#4365): the L2 passes re-derive binding names
@@ -165,6 +165,33 @@ pub fn lower_preserving_comments<'a>(
     )
 }
 
+/// [`lower`] honoring the directive contracts a `vue.plugins` plan declares
+/// (#13074): each binding gains its default modifiers, and a binding that
+/// breaks its contract leaves an error diagnostic.
+#[must_use]
+pub fn lower_with_directives<'a>(
+    allocator: &'a Allocator,
+    tree: &SurfaceTree<'a>,
+    errors: &[SurfaceError],
+    directive_contracts: &vize_l0::config::DirectiveContracts,
+) -> Lowered<'a> {
+    let Ok(root) = SourceRoot::new(tree.source) else {
+        return oversized_source(allocator, tree.source, LegacyCaps::VUE3);
+    };
+    lower_source_block_with_caps_and_comment_policy(
+        allocator,
+        tree,
+        errors,
+        root.whole_block(),
+        LegacyCaps::VUE3,
+        LowerPolicy::compile(false),
+        LowerCustomElements {
+            directives: directive_contracts,
+            ..LowerCustomElements::default()
+        },
+    )
+}
+
 #[doc(hidden)]
 pub fn lower_with_caps_and_comment_policy<'a, P: ProvenanceSink + Default>(
     allocator: &'a Allocator,
@@ -181,6 +208,7 @@ pub fn lower_with_caps_and_comment_policy<'a, P: ProvenanceSink + Default>(
     let custom_elements = LowerCustomElements {
         patterns: custom_element_patterns,
         predicate: custom_element_predicate,
+        directives: &vize_l0::config::NO_DIRECTIVE_CONTRACTS,
     };
     lower_source_block_with_caps_and_comment_policy(
         allocator,
@@ -224,10 +252,22 @@ pub fn lower_source_block_with_caps<'a>(
     )
 }
 
-#[derive(Clone, Copy, Default)]
+/// Host-declared element and directive tables.
+#[derive(Clone, Copy)]
 struct LowerCustomElements<'a> {
     patterns: &'a [String],
     predicate: Option<fn(&str) -> bool>,
+    directives: &'a vize_l0::config::DirectiveContracts,
+}
+
+impl Default for LowerCustomElements<'_> {
+    fn default() -> Self {
+        Self {
+            patterns: &[],
+            predicate: None,
+            directives: &vize_l0::config::NO_DIRECTIVE_CONTRACTS,
+        }
+    }
 }
 
 fn lower_source_block_with_caps_and_comment_policy<'a, P: ProvenanceSink + Default>(
@@ -244,7 +284,7 @@ fn lower_source_block_with_caps_and_comment_policy<'a, P: ProvenanceSink + Defau
             && tree.source.len() == block.source().len(),
         "the source block must be the exact string parsed into the L1 tree"
     );
-    let cx = cx::Cx::with_source_block_and_comment_policy(
+    let mut cx = cx::Cx::with_source_block_and_comment_policy(
         allocator,
         block,
         caps,
@@ -252,6 +292,7 @@ fn lower_source_block_with_caps_and_comment_policy<'a, P: ProvenanceSink + Defau
         custom_elements.patterns,
         custom_elements.predicate,
     );
+    cx.directive_contracts = custom_elements.directives.clone();
     finish::lower_in_context(cx, tree, errors, block)
 }
 

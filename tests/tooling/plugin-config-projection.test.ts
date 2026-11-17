@@ -90,7 +90,7 @@ test("capabilities no product implements fail closed in every projection", async
     {
       code: "capability-unadmitted",
       message:
-        "[plugin/capability-unadmitted] @acme/tracking: vue.directive `track` is not implemented by compiler, typecheck yet; run `vize plugin inspect` for the plan",
+        "[plugin/capability-unadmitted] @acme/tracking: vue.directive `track` is not implemented by typecheck yet; run `vize plugin inspect` for the plan",
     },
   );
   await assert.rejects(projectViteConfigSource({ vue: { plugins: {} } }), {

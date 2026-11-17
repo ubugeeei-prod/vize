@@ -7,7 +7,47 @@
 //! absent one is `false` unless its default is `true`. Unknown and missing
 //! required modifiers fail closed.
 
+use alloc::sync::Arc;
+
 use crate::String;
+
+/// The declared directives one compilation honors, cheap to clone into
+/// every file's options. Empty unless a plugin plan declares a directive.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub struct DirectiveContracts(Option<Arc<[DirectiveContract]>>);
+
+/// The empty table, for `const` option defaults.
+pub static NO_DIRECTIVE_CONTRACTS: DirectiveContracts = DirectiveContracts::EMPTY;
+
+impl DirectiveContracts {
+    pub const EMPTY: Self = Self(None);
+
+    #[must_use]
+    pub fn new(contracts: Vec<DirectiveContract>) -> Self {
+        if contracts.is_empty() {
+            return Self::EMPTY;
+        }
+        Self(Some(contracts.into()))
+    }
+
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.0.is_none()
+    }
+
+    #[must_use]
+    pub fn as_slice(&self) -> &[DirectiveContract] {
+        self.0.as_deref().unwrap_or_default()
+    }
+
+    /// The contract of `v-<name>`, when a plugin declares it.
+    #[must_use]
+    pub fn get(&self, name: &str) -> Option<&DirectiveContract> {
+        self.as_slice()
+            .iter()
+            .find(|contract| contract.name == name)
+    }
+}
 
 /// One declared directive, from the plugin that owns it.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -59,13 +99,8 @@ impl core::fmt::Display for DirectiveContractError {
 }
 
 impl DirectiveContract {
-    /// The modifiers a binding carries at runtime: the authored ones in
-    /// authored order, then every absent modifier that defaults to `true`, in
-    /// declared order. An unknown or missing required modifier is an error.
-    pub fn normalized_modifiers<'a>(
-        &'a self,
-        authored: &[&'a str],
-    ) -> Result<Vec<&'a str>, DirectiveContractError> {
+    /// Fail when `authored` names an undeclared modifier or omits a required one.
+    pub fn check(&self, authored: &[&str]) -> Result<(), DirectiveContractError> {
         if let Some(unknown) = authored.iter().find(|name| {
             !self
                 .modifiers
@@ -77,21 +112,44 @@ impl DirectiveContract {
                 modifier: (*unknown).into(),
             });
         }
-        let mut normalized = authored.to_vec();
-        for modifier in &self.modifiers {
-            if authored.contains(&modifier.name.as_str()) {
-                continue;
-            }
-            if !modifier.optional {
-                return Err(DirectiveContractError::MissingModifier {
-                    directive: self.name.clone(),
-                    modifier: modifier.name.clone(),
-                });
-            }
-            if modifier.default {
-                normalized.push(&modifier.name);
-            }
+        if let Some(missing) = self
+            .modifiers
+            .iter()
+            .find(|modifier| !modifier.optional && !authored.contains(&modifier.name.as_str()))
+        {
+            return Err(DirectiveContractError::MissingModifier {
+                directive: self.name.clone(),
+                modifier: missing.name.clone(),
+            });
         }
+        Ok(())
+    }
+
+    /// The absent modifiers that default to `true`, in declared order: what
+    /// the compiler appends after a valid binding's authored modifiers.
+    pub fn default_modifiers(
+        &self,
+        authored: &[&str],
+    ) -> Result<Vec<&str>, DirectiveContractError> {
+        self.check(authored)?;
+        Ok(self
+            .modifiers
+            .iter()
+            .filter(|modifier| modifier.default && !authored.contains(&modifier.name.as_str()))
+            .map(|modifier| modifier.name.as_str())
+            .collect())
+    }
+
+    /// The modifiers a binding carries at runtime: the authored ones in
+    /// authored order, then every absent modifier that defaults to `true`, in
+    /// declared order. An unknown or missing required modifier is an error.
+    pub fn normalized_modifiers<'a>(
+        &'a self,
+        authored: &[&'a str],
+    ) -> Result<Vec<&'a str>, DirectiveContractError> {
+        let defaults = self.default_modifiers(authored)?;
+        let mut normalized = authored.to_vec();
+        normalized.extend(defaults);
         Ok(normalized)
     }
 }

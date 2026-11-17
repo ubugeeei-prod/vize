@@ -1,0 +1,7 @@
+---
+source: crates/vize_atelier_sfc/tests/plugin_directive_contracts.rs
+expression: "directive_calls(&result.code).join(\"\\n\")"
+---
+[_directive_track, payload, void 0, { strict: true, passive: true }]
+[_directive_track, void 0, "click", { once: true, strict: true, passive: true }]
+[_directive_focus, void 0, void 0, { x: true }]

@@ -52,6 +52,15 @@ compiler/control-character-reference · 编译器错误
 
 帮助:
   请删除该引用，或写出想要显示的字符
+=== compiler/directive-contract
+compiler/directive-contract · 编译器错误
+指令绑定违反了其声明的契约。
+
+阶段: lowered
+严重级别: 错误
+
+帮助:
+  只使用 vue.plugins 中的插件为该指令声明的修饰符，并添加所有必需的修饰符；vize plugin inspect 会列出它们
 === compiler/duplicate-attribute
 compiler/duplicate-attribute · 编译器错误
 属性重复。

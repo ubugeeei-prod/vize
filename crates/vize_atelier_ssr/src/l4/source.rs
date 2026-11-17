@@ -67,11 +67,7 @@ fn lower_and_emit_plain(
             ..SurfaceParseOptions::default()
         },
     );
-    let lowered = match request.frozen {
-        Some((root, carrier)) => FrozenTemplate::new(root, source, carrier)
-            .and_then(|template| template.lower(allocator, &tree, &surface_errors)),
-        None => Ok(vize_l1_to_l2::lower(allocator, &tree, &surface_errors)),
-    };
+    let lowered = lower_request(allocator, source, &tree, &surface_errors, request);
     let s2 = match lowered {
         Ok(lowered) => lowered,
         Err(message) => {
@@ -189,11 +185,7 @@ fn lower_and_emit<C: CaptureSink>(
         vize_l1::markup::htmlish::render::render(&tree, &mut |part| text.push_str(part));
         text
     });
-    let lowered = match request.frozen {
-        Some((root, carrier)) => FrozenTemplate::new(root, source, carrier)
-            .and_then(|template| template.lower(allocator, &tree, &surface_errors)),
-        None => Ok(vize_l1_to_l2::lower(allocator, &tree, &surface_errors)),
-    };
+    let lowered = lower_request(allocator, source, &tree, &surface_errors, request);
     let s2 = match lowered {
         Ok(lowered) => lowered,
         Err(message) => {
@@ -274,4 +266,23 @@ fn lower_and_emit<C: CaptureSink>(
             ))
         },
     )
+}
+
+/// Lower one request, honoring the declared directive contracts (#13074).
+fn lower_request<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    tree: &vize_l1::markup::SurfaceTree<'a>,
+    errors: &[vize_l1::markup::SurfaceError],
+    request: &SsrL4Request<'a>,
+) -> Result<vize_l1_to_l2::Lowered<'a>, &'static str> {
+    let contracts = &request.options.directive_contracts;
+    match request.frozen {
+        Some((root, carrier)) => FrozenTemplate::new(root, source, carrier)
+            .and_then(|template| template.lower(allocator, tree, errors, contracts)),
+        None if contracts.is_empty() => Ok(vize_l1_to_l2::lower(allocator, tree, errors)),
+        None => Ok(vize_l1_to_l2::lower_with_directives(
+            allocator, tree, errors, contracts,
+        )),
+    }
 }

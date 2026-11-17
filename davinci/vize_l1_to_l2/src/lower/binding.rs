@@ -218,6 +218,9 @@ fn lower_custom<'a>(
     for modifier in &directive.modifiers {
         modifiers.push(modifier);
     }
+    if !cx.directive_contracts.is_empty() {
+        apply_contract(cx, directive.name, &mut modifiers, span);
+    }
     let value = attr_text(attr)
         .map(str::trim)
         .filter(|text| !text.is_empty())
@@ -254,6 +257,31 @@ fn lower_custom<'a>(
         },
         &cx.allocator,
     ))
+}
+
+/// Append the default modifiers a declared directive contract (#13074)
+/// gives an absent modifier. A binding that breaks its contract is an
+/// error, so the compiler refuses this lowering and the legacy transform
+/// reports the exact compile error.
+fn apply_contract<'a>(
+    cx: &mut Cx<'a, impl ProvenanceSink>,
+    name: &str,
+    modifiers: &mut Vec<'a, &'a str>,
+    span: Span,
+) {
+    let contracts = cx.directive_contracts.clone();
+    let Some(contract) = contracts.get(name) else {
+        return;
+    };
+    let authored: StdVec<&str> = modifiers.iter().copied().collect();
+    match contract.default_modifiers(&authored) {
+        Ok(defaults) => {
+            for modifier in defaults {
+                modifiers.push(cx.allocator.alloc_str(modifier));
+            }
+        }
+        Err(error) => cx.error(span, cstr!("{error} (declared by {})", contract.plugin)),
+    }
 }
 
 /// One `v-slot` spelling into the attached `ui.slot-content` op, exactly

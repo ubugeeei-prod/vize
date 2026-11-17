@@ -52,6 +52,15 @@ severity: error
 
 help:
   remove the reference, or write the intended visible character
+=== compiler/directive-contract
+compiler/directive-contract · compiler error
+Directive binding breaks its declared contract.
+
+stage: lowered
+severity: error
+
+help:
+  use only the modifiers the plugin in vue.plugins declares for this directive, and add every required one; vize plugin inspect lists them
 === compiler/duplicate-attribute
 compiler/duplicate-attribute · compiler error
 Duplicate attribute.

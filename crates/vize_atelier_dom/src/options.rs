@@ -84,6 +84,10 @@ pub struct DomCompilerOptions {
     /// binding metadata.
     #[serde(skip)]
     pub script_tables: Option<ScriptTables>,
+
+    /// Directive contracts from `vue.plugins` (#13074). Internal-only.
+    #[serde(skip)]
+    pub directive_contracts: vize_l0::config::DirectiveContracts,
 }
 
 impl Default for DomCompilerOptions {
@@ -106,6 +110,7 @@ impl Default for DomCompilerOptions {
             is_ts: false,
             dialect: VueVersion::V3,
             script_tables: None,
+            directive_contracts: vize_l0::config::DirectiveContracts::EMPTY,
         }
     }
 }
