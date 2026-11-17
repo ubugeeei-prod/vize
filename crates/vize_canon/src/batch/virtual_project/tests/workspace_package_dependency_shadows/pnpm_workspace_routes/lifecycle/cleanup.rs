@@ -145,7 +145,7 @@ fn current_shadow_src_and_preserved_union_src_decline_before_writes_or_gc() {
     let raw = root.join("packages/c/src");
     let before = raw_receipt(&root);
     let files = project.expected_materialized_files();
-    let links = project.desired_package_links();
+    let links = project.desired_package_links(&project.workspace_alias_plan());
     let util = project
         .find_by_original(&root.join("packages/c/src/util.ts"))
         .unwrap()
@@ -249,15 +249,21 @@ fn effective_plan_checks_unchanged_parent_overlap_before_known_bridge_retirement
         if local {
             project
                 .track_materialized_link_path(&project.virtual_root().join("unrelated/input.ts"));
-            let patch = project.prepare_incremental_package_link_patch();
+            let patch =
+                project.prepare_incremental_package_link_patch(&project.workspace_alias_plan());
             assert!(!patch.candidates.contains(&parent));
         }
         let previous = project.materialized_package_links.clone();
+        let previous_alias_plan = project.materialized_workspace_alias_plan.clone();
         let scopes = project.incremental_package_link_scopes.clone();
         let candidates = project.incremental_materialized_candidates.clone();
         let error = project.materialize_incremental_delta().unwrap_err();
         assert!(error.to_string().contains("overlaps another package link"));
         assert_eq!(project.materialized_package_links, previous);
+        assert_eq!(
+            project.materialized_workspace_alias_plan,
+            previous_alias_plan
+        );
         assert_eq!(project.incremental_package_link_scopes, scopes);
         assert_eq!(project.incremental_materialized_candidates, candidates);
         assert_eq!(fs::read_link(&parent).unwrap(), raw);
@@ -277,9 +283,14 @@ fn effective_plan_cannot_mask_a_missing_current_alias_with_validation_only_claim
     assert!(project.materialized_package_links.remove(&alias).is_some());
     let before = raw_receipt(&root);
     let previous = project.materialized_package_links.clone();
+    let previous_alias_plan = project.materialized_workspace_alias_plan.clone();
     let error = project.materialize_incremental_delta().unwrap_err();
     assert!(error.to_string().contains("plan omits an owned alias"));
     assert_eq!(project.materialized_package_links, previous);
+    assert_eq!(
+        project.materialized_workspace_alias_plan,
+        previous_alias_plan
+    );
     assert_eq!(fs::read_link(&alias).unwrap(), target);
     assert_raw_unchanged(&root, &before);
 }

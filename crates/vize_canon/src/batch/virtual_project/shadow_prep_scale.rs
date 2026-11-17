@@ -165,7 +165,8 @@ fn many_files_do_not_canonicalize_or_probe_once_per_package_pair() {
 
     reset_prep_counters();
     project.finalize_package_routes().unwrap();
-    let _ = project.validate_workspace_alias_targets(&FxHashSet::default());
+    let workspace_alias_plan = project.workspace_alias_plan();
+    let _ = project.validate_workspace_alias_targets(&workspace_alias_plan, &FxHashSet::default());
     let (canonicalizations, membership_probes) = prep_counters();
     let files = project.expected_materialized_files().len();
     let pairs = files * PACKAGES;

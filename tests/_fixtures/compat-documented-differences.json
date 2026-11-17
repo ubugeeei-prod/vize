@@ -307,7 +307,7 @@
       "column": 10,
       "vize": {
         "code": 2589,
-        "message": "Type instantiation is excessively deep and possibly infinite."
+        "message": "Type instantiation is excessively deep and possibly infinite. (source: <CountTo v-bind=\"props\" @started=\"onStarted\" @finished=\"onFinished\" />; binding: @started)"
       },
       "baseline": null,
       "issue": 3984,

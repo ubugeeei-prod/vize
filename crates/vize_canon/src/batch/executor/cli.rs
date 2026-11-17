@@ -258,7 +258,7 @@ fn is_global_diagnostic_line(line: &str) -> bool {
     digits > 0 && code.get(digits..).is_some_and(|rest| rest.starts_with(':'))
 }
 
-fn is_cli_diagnostic_line(line: &str) -> bool {
+pub(super) fn is_cli_diagnostic_line(line: &str) -> bool {
     let Some((prefix, suffix)) = line.split_once("): ") else {
         return false;
     };

@@ -23,37 +23,36 @@ impl LinkPathIndex {
         path.ancestors().any(|ancestor| self.set.contains(ancestor))
     }
 
-    /// Another link is an ancestor or descendant of `alias`, or an ancestor of
-    /// `target` (including an exact hit on `target`).
-    pub(super) fn alias_overlaps(&self, alias: &Path, target: &Path) -> bool {
-        if alias
+    pub(super) fn alias_overlap_path(&self, alias: &Path, target: &Path) -> Option<PathBuf> {
+        if let Some(ancestor) = alias
             .ancestors()
             .skip(1)
-            .any(|ancestor| self.set.contains(ancestor))
+            .find(|ancestor| self.set.contains(*ancestor))
         {
-            return true;
+            return Some(ancestor.to_path_buf());
         }
-        if self.has_strict_descendant(alias) {
-            return true;
+        if let Some(descendant) = self.strict_descendant(alias) {
+            return Some(descendant.clone());
         }
         if target != alias && self.set.contains(target) {
-            return true;
+            return Some(target.to_path_buf());
         }
         // `target.starts_with(alias)` is not an overlap: the previous scan
         // ignored the alias itself via `path != alias`.
         target
             .ancestors()
             .skip(1)
-            .any(|ancestor| ancestor != alias && self.set.contains(ancestor))
+            .find(|ancestor| *ancestor != alias && self.set.contains(*ancestor))
+            .map(Path::to_path_buf)
     }
 
-    fn has_strict_descendant(&self, prefix: &Path) -> bool {
+    fn strict_descendant(&self, prefix: &Path) -> Option<&PathBuf> {
         // The next path after `prefix` is the least strict descendant when
         // one exists; a later path cannot be a descendant if this one is not.
         let start = self.sorted.partition_point(|path| path.as_path() <= prefix);
         self.sorted
             .get(start)
-            .is_some_and(|path| path.starts_with(prefix))
+            .filter(|path| path.starts_with(prefix))
     }
 }
 

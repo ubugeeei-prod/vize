@@ -20,11 +20,19 @@ use super::canonical_paths::{CanonicalPathGuard, canonical_path};
 /// scope manifest.
 pub(super) const PRIVATE_PACKAGE_SCOPES_DIR: &str = "__vize_package_scopes__";
 
+#[derive(Clone, Copy, Debug, Default, Eq, Ord, PartialEq, PartialOrd)]
+pub(super) enum WorkspaceAliasAuthority {
+    #[default]
+    DuplicateTraversalBridge,
+    SelectedWorkspaceDependency,
+}
+
 #[derive(Clone, Default)]
 pub(super) struct PackageShadowTopology {
     pub(super) files: FxHashMap<PathBuf, PathBuf>,
     pub(super) manifests: FxHashMap<PathBuf, PathBuf>,
     pub(super) aliases: FxHashMap<PathBuf, PathBuf>,
+    alias_authorities: FxHashMap<PathBuf, WorkspaceAliasAuthority>,
     pub(super) install_roots: FxHashMap<PathBuf, PathBuf>,
     /// The route's own package when its importer lives inside it (a nested
     /// consumer such as a library's `docs/` app, or a self-reference): its
@@ -34,6 +42,29 @@ pub(super) struct PackageShadowTopology {
     pub(super) route_visits: usize,
     #[cfg(test)]
     pub(super) traversal_roots: usize,
+}
+
+impl PackageShadowTopology {
+    fn insert_duplicate_alias(&mut self, alias: PathBuf, target: PathBuf) {
+        if !self.aliases.contains_key(&alias) {
+            self.aliases.insert(alias.clone(), target);
+            self.alias_authorities
+                .insert(alias, WorkspaceAliasAuthority::DuplicateTraversalBridge);
+        }
+    }
+
+    fn insert_selected_workspace_alias(&mut self, alias: PathBuf, target: PathBuf) {
+        self.aliases.insert(alias.clone(), target);
+        self.alias_authorities
+            .insert(alias, WorkspaceAliasAuthority::SelectedWorkspaceDependency);
+    }
+
+    pub(super) fn alias_authority(&self, alias: &Path) -> WorkspaceAliasAuthority {
+        self.alias_authorities
+            .get(alias)
+            .copied()
+            .unwrap_or_default()
+    }
 }
 
 #[derive(Default)]
@@ -236,9 +267,7 @@ impl VirtualProject {
             PackageShadowEntry::Duplicate(primary_root) => {
                 if shadow_root != primary_root {
                     topology
-                        .aliases
-                        .entry(shadow_root.to_path_buf())
-                        .or_insert_with(|| primary_root.clone());
+                        .insert_duplicate_alias(shadow_root.to_path_buf(), primary_root.clone());
                 }
                 // A second specifier can select a different export target from
                 // the same manifest. Merge those leaf probes into the primary

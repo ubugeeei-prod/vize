@@ -5,6 +5,7 @@ import { resolveWithConfigDir } from "./typecheck-baseline-config-dir.ts";
 import { loadTsconfigExtendsChain } from "./typecheck-baseline-extends-chain.ts";
 import type { PathMappings } from "./typecheck-baseline-outside-vue-runtime-paths.ts";
 import {
+  declaredOverlayPaths,
   isolatedOverlayBaseUrl,
   isolatedTsconfigOverlayPath,
   pathMappingRoot,
@@ -96,7 +97,8 @@ export function applyIsolatedAliasOverlay(
     return overlay ?? null;
   }
   const paths = mergeLocalVueRuntimePaths(
-    mergePathRewrites(overlay?.paths ?? null, aliases),
+    mergePathRewrites(overlay?.paths ?? null, aliases) ??
+      (runtimePaths == null ? null : declaredOverlayPaths(fixtureRoot, sourcePath, configDir)),
     runtimePaths,
   );
   const typeRoots = overlay?.typeRoots ?? null;

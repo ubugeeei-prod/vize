@@ -1,0 +1,36 @@
+{
+  "schema": "vize.controlled-workspace-alias-descendant",
+  "id": "typechecker/regression/workspace-alias-descendant-13044",
+  "scope": "Controlled owned parent workspace alias plus nested private alias and a competing package-root dependency link at the same path; no private project source.",
+  "links": [
+    {
+      "virtualDir": "src/layouts/node_modules/@fixture/composables",
+      "realDir": "__owned/composables"
+    },
+    {
+      "virtualDir": "src/layouts/node_modules/@fixture/composables/node_modules/@fixture/shared",
+      "realDir": "__owned/tabbar-private-shared"
+    }
+  ],
+  "competingDependencyLinkAtAliasPath": {
+    "virtualDir": "src/layouts/node_modules/@fixture/composables/node_modules/@fixture/shared",
+    "realDir": "__owned/package-root-shared"
+  },
+  "expected": [
+    {
+      "virtualDir": "src/layouts/node_modules/@fixture/composables",
+      "realDir": "__owned/composables"
+    },
+    {
+      "virtualDir": "__owned/composables/node_modules/@fixture/shared",
+      "realDir": "__owned/tabbar-private-shared"
+    }
+  ],
+  "rejectedControls": [
+    "raw-parent",
+    "sibling-conflict",
+    "cycle",
+    "symlink-escape",
+    "unowned-ancestor"
+  ]
+}

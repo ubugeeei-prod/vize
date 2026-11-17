@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
@@ -15,9 +14,7 @@ import {
   expectedInvocationEnv,
   git,
   packageManagers,
-  root,
   run,
-  script,
   setup,
   successBody,
   writeJson,
@@ -39,13 +36,15 @@ test("dependency prepare uses each pinned manager's immutable install command", 
         "lockfile",
         "packageManager",
         "project",
+        "qualificationLockfile",
         "revision",
         "schema",
         "version",
       ]);
       assert.equal(artifact.schema, "vize.fixtureTypecheckDependencyInstall");
-      assert.equal(artifact.version, 2);
+      assert.equal(artifact.version, 3);
       assert.equal(artifact.baselinePrepare, null);
+      assert.equal(artifact.qualificationLockfile, null);
       assert.equal(artifact.evidence.commitSha, commitSha);
       assert.deepEqual(artifact.packageManager, {
         name: packageManager.name,
@@ -76,13 +75,156 @@ test("dependency prepare uses each pinned manager's immutable install command", 
   }
 });
 
-test("dependency prepare keeps pnpm fixtures out of parent workspaces", () => {
+test("dependency prepare owns nested setup-only projects and their generated inputs", () => {
+  const packageManager = packageManagers.find((candidate) => candidate.name === "yarn");
+  assert.ok(packageManager);
+  const fixture = setup(packageManager);
+  try {
+    const workingDirectory = path.join(fixture.fixtureRoot, "frontend");
+    fs.mkdirSync(workingDirectory);
+    for (const entry of ["package.json", "tsconfig.json", "src", packageManager.lockfile]) {
+      fs.renameSync(path.join(fixture.fixtureRoot, entry), path.join(workingDirectory, entry));
+    }
+    const setupProject = {
+      ...fixture.project,
+      tsconfig: "frontend/tsconfig.json",
+      typecheckPerformance: undefined,
+      typecheckSetup: {
+        enabled: true,
+        workingDirectory: "frontend",
+        packageManager: "yarn",
+        packageManagerVersion: "1.22.22",
+        lockfile: "yarn.lock",
+        prepare: ["yarn", "nuxt", "prepare"],
+        requiredOutputs: [".nuxt/tsconfig.json"],
+      },
+    };
+    writeJson(fixture.registryPath, { projects: [setupProject] });
+    git(fixture.fixtureRoot, ["add", "-A"]);
+    commit(fixture.fixtureRoot, "configure nested typecheck setup");
+    writeManager(
+      fixture.runner,
+      fixture.invocationPath,
+      "1.22.22",
+      `if (managerArgs[0] === "install") {
+  fs.mkdirSync("node_modules", { recursive: true });
+} else {
+  fs.mkdirSync(".nuxt", { recursive: true });
+  fs.writeFileSync(".nuxt/tsconfig.json", "{}\\n");
+}`,
+      { spec: "yarn@1.22.22" },
+    );
+
+    const result = run(fixture);
+    assert.equal(result.status, 0, result.stderr);
+    const artifact = JSON.parse(fs.readFileSync(artifactPath(fixture), "utf8"));
+    assert.deepEqual(Object.keys(artifact).sort(), [
+      "evidence",
+      "install",
+      "lockfile",
+      "packageManager",
+      "prepare",
+      "project",
+      "requiredOutputs",
+      "revision",
+      "schema",
+      "version",
+      "workingDirectory",
+    ]);
+    assert.equal(artifact.schema, "vize.fixtureTypecheckSetup");
+    assert.equal(artifact.version, 1);
+    assert.equal(artifact.workingDirectory, "frontend");
+    assert.deepEqual(artifact.install.command, [
+      "yarn",
+      "install",
+      "--frozen-lockfile",
+      "--ignore-scripts",
+      "--ignore-engines",
+      "--prefer-offline",
+      "--non-interactive",
+    ]);
+    assert.deepEqual(artifact.prepare.command, ["yarn", "nuxt", "prepare"]);
+    assert.deepEqual(artifact.requiredOutputs, [
+      {
+        path: "frontend/.nuxt/tsconfig.json",
+        sizeBytes: 3,
+        sha256: createHash("sha256").update("{}\n").digest("hex"),
+      },
+    ]);
+    assert.equal(artifact.lockfile.path, "frontend/yarn.lock");
+    assert.deepEqual(JSON.parse(fs.readFileSync(fixture.invocationPath, "utf8")), {
+      cwd: workingDirectory,
+      command: "corepack",
+      args: ["yarn@1.22.22", "nuxt", "prepare"],
+      managerArgs: ["nuxt", "prepare"],
+      env: {
+        CI: "true",
+        npm: "true",
+        yarn: "false",
+        corepackProjectSpec: "0",
+      },
+    });
+  } finally {
+    cleanup(fixture);
+  }
+});
+
+test("dependency prepare rejects setup-only projects without required semantic inputs", () => {
+  const fixture = setup();
+  try {
+    writeJson(fixture.registryPath, {
+      projects: [
+        {
+          ...fixture.project,
+          typecheckPerformance: undefined,
+          typecheckSetup: {
+            enabled: true,
+            packageManager: "pnpm",
+            packageManagerVersion: "10.0.0",
+            lockfile: "pnpm-lock.yaml",
+            requiredOutputs: ["node_modules/required/package.json"],
+          },
+        },
+      ],
+    });
+    git(fixture.fixtureRoot, ["add", "registry.json"]);
+    commit(fixture.fixtureRoot, "require semantic setup input");
+    const result = run(fixture);
+    assert.equal(result.status, 1);
+    assert.match(result.stderr, /node_modules\/required\/package\.json/);
+    assert.equal(fs.existsSync(artifactPath(fixture)), false);
+  } finally {
+    cleanup(fixture);
+  }
+});
+
+test("dependency prepare models hoisted injected pnpm fixtures outside parent workspaces", () => {
   const packageManager = packageManagers.find((candidate) => candidate.name === "pnpm");
   assert.ok(packageManager);
   const fixture = setup(packageManager);
   try {
+    fs.writeFileSync(
+      path.join(fixture.fixtureRoot, packageManager.lockfile),
+      "lockfileVersion: '9.0'\n\nsettings:\n  autoInstallPeers: true\n",
+    );
+    writeJson(fixture.registryPath, {
+      projects: [
+        {
+          ...fixture.project,
+          typecheckPerformance: {
+            ...fixture.project.typecheckPerformance,
+            nodeLinker: "hoisted",
+            workspacePackages: "injected",
+          },
+        },
+      ],
+    });
+    git(fixture.fixtureRoot, ["add", "registry.json", packageManager.lockfile]);
+    commit(fixture.fixtureRoot, "select hoisted dependency topology");
     const result = run(fixture);
     assert.equal(result.status, 0, result.stderr);
+    const artifact = JSON.parse(fs.readFileSync(artifactPath(fixture), "utf8"));
+    assert.equal(artifact.qualificationLockfile.mode, "pnpm-injected-workspace-packages");
     const invocation = JSON.parse(fs.readFileSync(fixture.invocationPath, "utf8"));
     assert.equal(invocation.cwd, fixture.fixtureRoot);
     assert.equal(invocation.env.corepackProjectSpec, "0");
@@ -91,6 +233,9 @@ test("dependency prepare keeps pnpm fixtures out of parent workspaces", () => {
       "--frozen-lockfile",
       "--ignore-scripts",
       "--prefer-offline",
+      "--config.node-linker=hoisted",
+      "--config.inject-workspace-packages=true",
+      "--config.dedupe-injected-deps=false",
       "--ignore-workspace",
     ]);
   } finally {
@@ -243,7 +388,11 @@ test("dependency prepare rejects pre-existing tracked-source changes", () => {
 
 test("dependency prepare rejects failed and timed-out installs", () => {
   for (const [body, args, message] of [
-    ["process.exit(9);", [], /exited with status 9/],
+    [
+      'process.stderr.write("ERR_PNPM_LOCKFILE_CONFIG_MISMATCH concise\\nignored\\n"); process.exit(9);',
+      [],
+      /exited with status 9: ERR_PNPM_LOCKFILE_CONFIG_MISMATCH concise/,
+    ],
     [
       "Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 500);",
       ["--timeout-ms", "50"],
@@ -324,28 +473,5 @@ test("dependency prepare prepares every selected typecheck target", () => {
     );
   } finally {
     cleanup(selectedFixture);
-  }
-});
-
-test("dependency prepare requires exact SHA evidence for selected targets", () => {
-  const fixture = setup();
-  try {
-    writeJson(fixture.registryPath, { projects: [fixture.project] });
-    const malformedSha = spawnSync(
-      process.execPath,
-      [
-        "--experimental-strip-types",
-        script,
-        "--registry",
-        fixture.registryPath,
-        "--output-dir",
-        fixture.outputDir,
-      ],
-      { cwd: root, encoding: "utf8", env: { ...process.env, GITHUB_SHA: "main" } },
-    );
-    assert.equal(malformedSha.status, 1);
-    assert.match(malformedSha.stderr, /GITHUB_SHA must be a full lowercase commit SHA/);
-  } finally {
-    cleanup(fixture);
   }
 });

@@ -28154,6 +28154,35 @@
       }
     },
     {
+      "id": "typechecker/regression/workspace-alias-descendant-13044",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "workspace-alias-descendant-13044/input.json",
+          "sha256": "1e57d1033317a7e5694f286bb715a5e5a3959e9fef28d1f5db60b7b6f29c82dc",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "workspace_aliases::rebase::tests::nested_owned_aliases_move_below_the_parent_target and workspace_aliases::rebase::tests::alias_cycles_and_owned_alias_links_stay_fail_closed; controlled owned parent alias and strict descendant dependency link plus cycle rejection, without private project source or a native diagnostic oracle"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/removed-node-modules-package-13088",
       "state": "active",
       "targets": [

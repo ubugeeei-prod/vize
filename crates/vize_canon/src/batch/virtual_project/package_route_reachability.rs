@@ -16,7 +16,7 @@ use super::dependency_scan::resolve_dependency_with_inputs;
 use super::is_vue_runtime_support_specifier;
 
 /// Cache and evidence identity for the fixed reachability work contract.
-pub const PACKAGE_REACHABILITY_BUDGET_REVISION: u8 = 2;
+pub const PACKAGE_REACHABILITY_BUDGET_REVISION: u8 = 3;
 
 // One route may inspect at most 128 package identities, source candidates, or
 // parses, 512 unique edges, 128 KiB per source, and 512 KiB total. Metadata is
@@ -232,8 +232,9 @@ where
     let mut recorded_lists = FxHashSet::default();
     let mut work = ReachabilityWork::default();
     let mut packages = FxHashSet::default();
-    if !route_graph::seed_route_graph(
+    match route_graph::seed_route_graph(
         route,
+        0,
         &mut packages,
         &mut queue,
         &mut queued,
@@ -241,14 +242,12 @@ where
         &mut work,
         budget,
     ) {
-        return finish(ReachabilityOutcome::BudgetExceeded, inputs, work, budget);
+        None => return finish(ReachabilityOutcome::BudgetExceeded, inputs, work, budget),
+        Some(true) => return finish(ReachabilityOutcome::ReachesVue, inputs, work, budget),
+        Some(false) => {}
     }
 
-    if queues_vue(&queue) {
-        return finish(ReachabilityOutcome::ReachesVue, inputs, work, budget);
-    }
-
-    while let Some((_, Reverse(path))) = queue.pop() {
+    while let Some((Reverse(depth), _, Reverse(path))) = queue.pop() {
         record_input(&mut inputs, &path);
         if work.files == budget.max_files {
             return finish(ReachabilityOutcome::BudgetExceeded, inputs, work, budget);
@@ -265,7 +264,7 @@ where
                 std::iter::once(&path).chain(
                     next.into_iter()
                         .take(remaining)
-                        .map(|(_, Reverse(path))| path),
+                        .map(|(_, _, Reverse(path))| path),
                 ),
                 budget.max_file_bytes,
             );
@@ -330,7 +329,11 @@ where
                         return finish(ReachabilityOutcome::BudgetExceeded, inputs, work, budget);
                     }
                     queued.insert(dependency.clone());
-                    queue.push((source_priority(dependency), Reverse(dependency.clone())));
+                    queue.push((
+                        Reverse(depth),
+                        source_priority(dependency),
+                        Reverse(dependency.clone()),
+                    ));
                 }
                 continue;
             }
@@ -348,8 +351,11 @@ where
             });
             record_list(&mut inputs, &mut recorded_lists, consulted);
             if let Some(nested) = nested {
-                if !route_graph::seed_route_graph(
+                // A dependency package is scanned one package hop deeper, so
+                // the importing package's own graph is exhausted first.
+                match route_graph::seed_route_graph(
                     nested,
+                    depth.saturating_add(1),
                     &mut packages,
                     &mut queue,
                     &mut queued,
@@ -357,10 +363,13 @@ where
                     &mut work,
                     budget,
                 ) {
-                    return finish(ReachabilityOutcome::BudgetExceeded, inputs, work, budget);
-                }
-                if queues_vue(&queue) {
-                    return finish(ReachabilityOutcome::ReachesVue, inputs, work, budget);
+                    None => {
+                        return finish(ReachabilityOutcome::BudgetExceeded, inputs, work, budget);
+                    }
+                    Some(true) => {
+                        return finish(ReachabilityOutcome::ReachesVue, inputs, work, budget);
+                    }
+                    Some(false) => {}
                 }
             }
         }
@@ -376,26 +385,27 @@ fn is_path_spelling(specifier: &str) -> bool {
         || Path::new(specifier).is_absolute()
 }
 
+/// Package hops from the scanned route first (fewest pops first), then source
+/// kind, then path. Without the hop order, a dependency's declaration chunks
+/// that sort before the importer's own files spend the whole budget first.
+type QueueEntry = (Reverse<u8>, u8, Reverse<PathBuf>);
+
+/// Queue `path` once; returns whether it is a `.vue` source.
 fn enqueue(
-    queue: &mut BinaryHeap<(u8, Reverse<PathBuf>)>,
+    queue: &mut BinaryHeap<QueueEntry>,
     queued: &mut FxHashSet<PathBuf>,
     path: PathBuf,
-) {
-    if queued.insert(path.clone()) {
-        queue.push((source_priority(&path), Reverse(path)));
+    depth: u8,
+) -> bool {
+    if !queued.insert(path.clone()) {
+        return false;
     }
+    let priority = source_priority(&path);
+    queue.push((Reverse(depth), priority, Reverse(path)));
+    priority == VUE_PRIORITY
 }
 
 const VUE_PRIORITY: u8 = 3;
-
-/// Whether any queued path is a `.vue` file. A scan returns as soon as one is
-/// queued, so none was ever popped, and `.vue` sorts first: checking the head
-/// replaces walking every queued path after each package seed.
-fn queues_vue(queue: &BinaryHeap<(u8, Reverse<PathBuf>)>) -> bool {
-    queue
-        .peek()
-        .is_some_and(|(priority, _)| *priority == VUE_PRIORITY)
-}
 
 fn source_priority(path: &Path) -> u8 {
     match path.extension().and_then(|extension| extension.to_str()) {

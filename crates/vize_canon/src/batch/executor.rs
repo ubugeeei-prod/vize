@@ -32,6 +32,7 @@ mod declaration_outputs;
 use declaration_outputs::rewrite_declaration_outputs;
 mod diagnostics;
 mod fallback;
+mod mirror_emit;
 mod option_probe;
 mod session;
 
@@ -254,7 +255,9 @@ impl CorsaExecutor {
                 .output()
         )?;
 
-        if !output.status.success() {
+        if !output.status.success()
+            && !(options.mirror_layout && mirror_emit::only_declaration_portability_errors(&output))
+        {
             let exit_code = output.status.code().unwrap_or(-1);
             #[expect(clippy::disallowed_types, reason = "from_utf8_lossy yields std Cow")]
             let stderr = std::string::String::from_utf8_lossy(&output.stderr);

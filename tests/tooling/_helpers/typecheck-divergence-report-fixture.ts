@@ -195,7 +195,7 @@ export function setup(options: FixtureOptions = {}) {
   });
   writeJson(path.join(reportDir, "fixture-typecheck-dependencies.json"), {
     schema: "vize.fixtureTypecheckDependencyInstall",
-    version: 2,
+    version: 3,
     project: "fixture",
     revision: project.revision,
     evidence: {
@@ -211,6 +211,7 @@ export function setup(options: FixtureOptions = {}) {
       sizeBytes: fs.readFileSync(path.join(fixtureRoot, "pnpm-lock.yaml")).byteLength,
       sha256: sha256(fs.readFileSync(path.join(fixtureRoot, "pnpm-lock.yaml"))),
     },
+    qualificationLockfile: null,
     install: {
       command: pnpmInstallCommand,
       durationMs: 1,

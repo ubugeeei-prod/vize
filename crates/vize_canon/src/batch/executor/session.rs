@@ -125,9 +125,8 @@ impl CorsaExecutor {
             } else {
                 profile!(
                     "canon.executor.materialize_incremental",
-                    project.materialize()
+                    project.materialize_persistent()
                 )?;
-                project.capture_materialized_package_links();
                 project.discard_incremental_materialization();
                 None
             };

@@ -79,10 +79,10 @@ fn editor_union_rejects_raw_parent_link_before_rewriting_real_pnpm_install() {
             false,
         )
         .unwrap_err();
-    assert_eq!(
-        error.to_string(),
-        "IO error: Workspace package alias overlaps another package link"
-    );
+    let message = error.to_string(); // Its detail names platform paths.
+    let head = message.split_once(" link: ").map(|(head, _)| head);
+    let expected = "IO error: Workspace package alias overlaps another package";
+    assert_eq!(head, Some(expected));
     assert_eq!(
         (
             fs::read_link(&raw_link).unwrap(),
@@ -222,7 +222,7 @@ fn editor_union_preserves_alias_claims_when_only_the_previous_snapshot_owns_them
     let root = temp.path().canonicalize().unwrap();
     let project = load(&root);
     let files = project.expected_materialized_files();
-    let links = project.desired_package_links();
+    let links = project.desired_package_links(&project.workspace_alias_plan());
     let aliases = project.workspace_alias_links();
     assert!(!aliases.is_empty());
     let before = aliases

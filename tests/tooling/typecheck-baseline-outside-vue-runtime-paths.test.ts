@@ -165,6 +165,34 @@ test("alias overlay writes Vue runtime paths and keeps hash aliases", () => {
   }
 });
 
+test("a runtime-only overlay keeps the source chain's own paths", () => {
+  // TypeScript replaces `paths` wholesale: an overlay that pins only the
+  // runtime packages dropped Vue Vben Admin's `#/*` alias for both tools.
+  const { fixtureRoot, outer } = scaffold();
+  try {
+    writeLocalRuntime(fixtureRoot, "vue");
+    const app = path.join(fixtureRoot, "app");
+    fs.mkdirSync(path.join(fixtureRoot, "config"), { recursive: true });
+    fs.mkdirSync(app, { recursive: true });
+    fs.writeFileSync(
+      path.join(fixtureRoot, "config/base.json"),
+      `${JSON.stringify({ compilerOptions: { paths: { "@shared/*": ["../shared/*"] } } })}\n`,
+    );
+    const sourcePath = path.join(app, "tsconfig.json");
+    fs.writeFileSync(
+      sourcePath,
+      `${JSON.stringify({ extends: "../config/base.json", compilerOptions: { paths: { "#/*": ["./src/*"] } } })}\n`,
+    );
+    const overlay = applyIsolatedAliasOverlay(fixtureRoot, sourcePath, null);
+    assert.deepEqual(JSON.parse(fs.readFileSync(overlay!.path, "utf8")), {
+      extends: "./tsconfig.json",
+      compilerOptions: { paths: { "#/*": ["./src/*"], vue: ["../node_modules/vue"] } },
+    });
+  } finally {
+    fs.rmSync(outer, { recursive: true, force: true });
+  }
+});
+
 test("materialized baseline pins Vue runtime paths relative to the generated config", () => {
   const { outer, fixtureRoot } = scaffold();
   try {

@@ -14,6 +14,7 @@ use crate::batch::materialize_fs::{
 use crate::batch::runtime_deps::materialize_runtime_dependencies;
 
 use super::package_node_modules::materialize_package_node_modules;
+use super::workspace_aliases::WorkspaceAliasPlan;
 use super::{
     AUTO_IMPORT_STUBS_FILE, MODULE_AUGMENTATION_STUBS_FILE, PACKAGE_BOUNDARY_FILE,
     VUE_MODULE_STUBS_FILE, VirtualProject,
@@ -30,29 +31,51 @@ impl VirtualProject {
     /// rewrite entirely, which avoids needless write IO and keeps mtimes stable
     /// so TypeScript's own filesystem caches are not invalidated.
     pub fn materialize(&self) -> CorsaResult<()> {
+        let workspace_alias_plan = self.workspace_alias_plan();
         self.materialize_snapshot(
             &FxHashSet::default(),
             &Default::default(),
             None,
             false,
             false,
+            workspace_alias_plan,
         )
         .map(|_| ())
+    }
+
+    /// Cold materialization for a persistent checker. The completed link and
+    /// alias authority is published only after every filesystem write and the
+    /// custody receipt succeed.
+    pub(crate) fn materialize_persistent(&mut self) -> CorsaResult<()> {
+        let workspace_alias_plan = self.workspace_alias_plan();
+        let (package_links, workspace_alias_plan) = self.materialize_snapshot(
+            &FxHashSet::default(),
+            &Default::default(),
+            None,
+            false,
+            false,
+            workspace_alias_plan,
+        )?;
+        self.commit_materialized_package_links(package_links, workspace_alias_plan);
+        Ok(())
     }
 
     /// [`Self::materialize`] for one CLI check that runs right after it, with
     /// the program roots listed literally (see `write_literal_tsconfig_file`).
     pub(crate) fn materialize_for_cli(&self) -> CorsaResult<()> {
+        let workspace_alias_plan = self.workspace_alias_plan();
         self.materialize_snapshot(
             &FxHashSet::default(),
             &Default::default(),
             None,
             false,
             true,
+            workspace_alias_plan,
         )
         .map(|_| ())
     }
 
+    #[cfg(test)]
     pub(crate) fn materialize_editor_union(
         &self,
         previous: &super::MaterializedFileSnapshot,
@@ -61,13 +84,34 @@ impl VirtualProject {
         query_paths: &[PathBuf],
         preserved_arbitrary_extensions: bool,
     ) -> CorsaResult<super::MaterializedFileSnapshot> {
+        let workspace_alias_plan = self.workspace_alias_plan();
+        self.materialize_editor_union_with_plan(
+            previous,
+            preserved_files,
+            preserved_package_links,
+            query_paths,
+            preserved_arbitrary_extensions,
+            workspace_alias_plan,
+        )
+    }
+
+    pub(crate) fn materialize_editor_union_with_plan(
+        &self,
+        previous: &super::MaterializedFileSnapshot,
+        preserved_files: &FxHashSet<PathBuf>,
+        preserved_package_links: &vize_carton::FxHashMap<PathBuf, PathBuf>,
+        query_paths: &[PathBuf],
+        preserved_arbitrary_extensions: bool,
+        workspace_alias_plan: WorkspaceAliasPlan,
+    ) -> CorsaResult<super::MaterializedFileSnapshot> {
         let _lock = super::super::materialize_lock::MaterializeLock::acquire(&self.virtual_root)?;
-        let package_links = self.materialize_snapshot(
+        let (package_links, _) = self.materialize_snapshot(
             preserved_files,
             preserved_package_links,
             Some(query_paths),
             preserved_arbitrary_extensions,
             false,
+            workspace_alias_plan,
         )?;
         let mut expected_files = self.expected_materialized_files();
         expected_files.extend(preserved_files.iter().cloned());
@@ -87,23 +131,25 @@ impl VirtualProject {
         query_paths: Option<&[PathBuf]>,
         preserved_arbitrary_extensions: bool,
         literal_roots: bool,
-    ) -> CorsaResult<vize_carton::FxHashMap<PathBuf, PathBuf>> {
+        workspace_alias_plan: WorkspaceAliasPlan,
+    ) -> CorsaResult<(vize_carton::FxHashMap<PathBuf, PathBuf>, WorkspaceAliasPlan)> {
         // A checkout owns one durable mirror, but deleted worktrees otherwise
         // leave their full mirrors in the user cache forever. Maintenance is
         // deliberately best-effort: a cache failure must never fail a check.
         super::cache_gc::maintain_project_cache(&self.virtual_root);
         let mut expected_files = self.expected_materialized_files();
         expected_files.extend(preserved_files.iter().cloned());
-        let owned_files = self.workspace_cold_owned_files(&expected_files);
+        let owned_files = self.workspace_cold_owned_files(&workspace_alias_plan, &expected_files);
         self.prepare_owned_batch_writes(&owned_files)?;
-        self.validate_workspace_alias_targets(&owned_files)?;
-        let workspace_alias_claims = self.workspace_alias_claims();
+        self.validate_workspace_alias_targets(&workspace_alias_plan, &owned_files)?;
+        let workspace_alias_claims = self.workspace_alias_claims(&workspace_alias_plan);
         let mut link_claims = expected_files.clone();
         link_claims.extend(workspace_alias_claims.iter().cloned());
         link_claims.extend(
             self.preserved_workspace_alias_claims(preserved_package_links, &expected_files)?,
         );
-        let mut desired_package_links = self.desired_package_links_for_files(&link_claims);
+        let mut desired_package_links =
+            self.desired_package_links_for_files(&link_claims, &workspace_alias_plan);
         for (path, target) in preserved_package_links {
             // An owned alias supersedes an external link at that exact leaf,
             // while its bytes live at the private target. Parent links still
@@ -134,7 +180,11 @@ impl VirtualProject {
                 })
                 .or_insert_with(|| target.clone());
         }
-        let retire = self.validate_workspace_alias_links(&desired_package_links, &owned_files)?;
+        let retire = self.validate_workspace_alias_links(
+            &workspace_alias_plan,
+            &desired_package_links,
+            &owned_files,
+        )?;
         self.retire_workspace_cache_links(retire)?;
         let package_links = desired_package_links
             .iter()
@@ -183,7 +233,7 @@ impl VirtualProject {
                 &runtime_preserved,
             )
         )?;
-        self.ensure_workspace_alias_targets()?;
+        self.ensure_workspace_alias_targets(&workspace_alias_plan)?;
         profile!(
             "canon.project.package_deps",
             materialize_package_node_modules(&package_links)
@@ -310,7 +360,7 @@ impl VirtualProject {
         // its live lock. Keep parallel cache maintenance from reclaiming that
         // freshly completed result in the hand-off window.
         super::cache_gc::record_project_cache_access(&self.virtual_root);
-        Ok(desired_package_links)
+        Ok((desired_package_links, workspace_alias_plan))
     }
 
     pub(super) fn write_package_boundary(&self) -> CorsaResult<()> {
@@ -392,84 +442,9 @@ impl VirtualProject {
 
         common
     }
-
-    pub(super) fn resolved_tsconfig_path(&self) -> Option<PathBuf> {
-        if let Some(snapshot) = self.compiler_configuration.as_ref() {
-            return snapshot.tsconfig_path().map(Path::to_path_buf);
-        }
-        if let Some(ref tsconfig_path) = self.tsconfig_path {
-            return Some(tsconfig_path.clone());
-        }
-
-        let tsconfig = self.project_root.join("tsconfig.json");
-        tsconfig.exists().then_some(tsconfig)
-    }
-
-    /// The configs whose contents govern this project's alias map: the
-    /// anchored tsconfig plus, for a solution-style shell, everything it
-    /// references (#3923 cache invalidation).
-    pub fn governing_config_paths(&self) -> Vec<PathBuf> {
-        if let Some(snapshot) = self.compiler_configuration.as_ref() {
-            return snapshot.dependencies().to_vec();
-        }
-        self.governing_config_paths_with_inputs(None)
-    }
-
-    pub(super) fn governing_config_paths_with_inputs(
-        &self,
-        inputs: Option<&super::tsconfig_gen::compiler_inputs::CompilerInputs>,
-    ) -> Vec<PathBuf> {
-        let Some(anchored) = self.resolved_tsconfig_path() else {
-            return Vec::new();
-        };
-        let mut config_roots = vec![anchored.clone()];
-        config_roots.extend(
-            super::tsconfig_gen::references::referenced_project_configs_with_inputs(
-                &anchored, inputs,
-            ),
-        );
-        let mut paths = config_roots.clone();
-        for config in config_roots {
-            if let Ok(flattened) =
-                self.load_compiler_options_flattened_with_inputs(Some(&config), inputs)
-            {
-                paths.extend(flattened.input_paths);
-            }
-            paths.extend(self.vue_target_manifest_path_with_inputs(&config, inputs));
-        }
-        paths.sort();
-        paths.dedup();
-        paths
-    }
-
-    /// Validate the selected editor owner's `extends` chain through the same
-    /// resolver used for compiler options. Referenced projects are separate
-    /// owners; their broader watcher graph remains `governing_config_paths`.
-    pub fn checked_config_chain_paths(&self) -> crate::batch::error::CorsaResult<Vec<PathBuf>> {
-        let Some(anchored) = self.resolved_tsconfig_path() else {
-            return Ok(Vec::new());
-        };
-        self.checked_compiler_config_paths(&anchored)
-    }
-
-    /// `extends` entries of the effective chain that TypeScript reports (TS6053)
-    /// and skips. Checking continues with the rest of the chain.
-    pub fn unresolved_tsconfig_extends(&self) -> Vec<super::UnresolvedExtends> {
-        let Some(anchored) = self.resolved_tsconfig_path() else {
-            return Vec::new();
-        };
-        self.load_compiler_options_flattened(Some(&anchored))
-            .map(|flattened| flattened.unresolved_extends)
-            .unwrap_or_default()
-    }
-
-    /// File that project-level (file-less) diagnostics are attributed to:
-    /// the effective tsconfig when one exists, otherwise the project root.
-    pub(crate) fn project_diagnostics_anchor(&self) -> PathBuf {
-        self.resolved_tsconfig_path()
-            .unwrap_or_else(|| self.project_root.clone())
-    }
 }
+
+mod config_paths;
 
 #[cfg(all(test, unix))]
 mod alias_transition_tests;

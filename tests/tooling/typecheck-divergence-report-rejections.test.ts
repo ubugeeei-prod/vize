@@ -55,6 +55,19 @@ test("typecheck divergence report rejects missing or mismatched preparation evid
         ),
       /lockfile evidence is invalid/,
     ],
+    [
+      (fixture: ReturnType<typeof setup>) =>
+        updateJson(
+          path.join(fixture.reportDir, "fixture-typecheck-dependencies.json"),
+          (artifact) =>
+            (artifact.qualificationLockfile = {
+              mode: "pnpm-injected-workspace-packages",
+              sizeBytes: 1,
+              sha256: "0".repeat(64),
+            }),
+        ),
+      /Unexpected typecheck qualification lockfile/,
+    ],
   ] as const) {
     const fixture = setup();
     try {

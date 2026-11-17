@@ -1,9 +1,11 @@
 //! Owned links to existing authored workspace shadows, never fresh type copies.
 
+mod candidates;
 #[cfg(test)]
 mod dirty_propagation_tests;
 mod install_roots;
 mod link_overlap;
+mod rebase;
 
 use std::path::{Path, PathBuf};
 
@@ -12,7 +14,7 @@ use vize_carton::{FxHashMap, FxHashSet};
 
 use super::VirtualProject;
 use super::package_node_modules::PackageNodeModulesLink;
-use super::package_shadow::PackageShadowTopology;
+use super::package_shadow::{PackageShadowTopology, WorkspaceAliasAuthority};
 use crate::batch::error::CorsaResult;
 
 const PACKAGE_LINK_RECEIPT_VERSION: u32 = 1;
@@ -28,6 +30,65 @@ struct PackageLinkReceipt {
 struct PackageLinkReceiptEntry {
     path: PathBuf,
     target: PathBuf,
+}
+
+/// One immutable workspace-alias authority for a materialization transaction.
+///
+/// Building the ownership graph is deliberately separated from consuming it:
+/// cold collection, affected-scope selection and validation must observe the
+/// same link identities. The revision changes only when those identities do,
+/// so a persistent materializer can invalidate an otherwise local patch.
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub(crate) struct WorkspaceAliasPlan {
+    pub(super) links: Vec<PackageNodeModulesLink>,
+    pub(super) targets: FxHashMap<PathBuf, PathBuf>,
+    pub(super) revision: u64,
+}
+
+#[derive(Clone, Debug)]
+pub(super) struct WorkspaceAliasCandidate {
+    pub(super) edge_id: usize,
+    pub(super) topology_id: usize,
+    pub(super) parent_edge_id: Option<usize>,
+    pub(super) raw_alias: PathBuf,
+    pub(super) target: PathBuf,
+    pub(super) insertion_authority: WorkspaceAliasAuthority,
+}
+
+impl WorkspaceAliasPlan {
+    fn next(candidates: Vec<WorkspaceAliasCandidate>, previous: &Self) -> Self {
+        let mut links = rebase::plan_aliases(candidates);
+        links.sort_by(|left, right| {
+            (&left.virtual_dir, &left.real_dir).cmp(&(&right.virtual_dir, &right.real_dir))
+        });
+        links.dedup();
+        let revision = if links == previous.links {
+            previous.revision
+        } else {
+            previous.revision.checked_add(1).unwrap_or(1)
+        };
+        let mut targets = FxHashMap::default();
+        let mut conflicts = FxHashSet::default();
+        for link in &links {
+            if targets
+                .insert(link.virtual_dir.clone(), link.real_dir.clone())
+                .is_some_and(|old| old != link.real_dir)
+            {
+                conflicts.insert(link.virtual_dir.clone());
+            }
+        }
+        // Equal-priority aliases never select an identity by map iteration.
+        // Keeping both links while removing the ambiguous lookup makes the
+        // existing completeness validator reject the transaction.
+        for conflict in conflicts {
+            targets.remove(&conflict);
+        }
+        Self {
+            links,
+            targets,
+            revision,
+        }
+    }
 }
 
 fn is_normalized_descendant(path: &Path, root: &Path) -> bool {
@@ -78,8 +139,14 @@ impl VirtualProject {
         &self,
         links: &FxHashMap<PathBuf, PathBuf>,
     ) -> CorsaResult<()> {
+        self.write_package_link_receipt_entries(links.iter())
+    }
+
+    pub(super) fn write_package_link_receipt_entries<'a>(
+        &self,
+        links: impl Iterator<Item = (&'a PathBuf, &'a PathBuf)>,
+    ) -> CorsaResult<()> {
         let mut entries = links
-            .iter()
             .filter_map(|(path, target)| {
                 let linked = std::fs::read_link(path).ok()?;
                 let linked = vize_carton::path::normalize_windows_verbatim_path(linked);
@@ -148,62 +215,28 @@ impl VirtualProject {
         }
     }
 
-    pub(super) fn workspace_alias_links(&self) -> Vec<PackageNodeModulesLink> {
-        let mut targets = FxHashMap::<_, FxHashSet<_>>::default();
-        for topology in self.package_shadow_artifacts.values() {
-            for (alias, target) in &topology.aliases {
-                targets
-                    .entry(alias.clone())
-                    .or_default()
-                    .insert(target.clone());
-            }
-        }
-        let unique_targets = targets
-            .into_iter()
-            .filter_map(|(alias, targets)| {
-                // Conflicting owners must not select a native identity by ordering.
-                if targets.len() != 1 {
-                    return None;
-                }
-                targets.into_iter().next().map(|target| (alias, target))
-            })
-            .collect::<FxHashMap<_, _>>();
-        unique_targets
-            .keys()
-            .filter_map(|alias| {
-                let mut real_dir = unique_targets.get(alias)?.clone();
-                let mut visited = FxHashSet::from_iter([alias.clone()]);
-                // A package-private shadow can reuse a visible workspace alias.
-                // Rebase through every such link so the final filesystem link
-                // points at owned shadow bytes instead of another symlink.
-                while let Some((bridge, target)) = real_dir
-                    .ancestors()
-                    .find_map(|candidate| unique_targets.get_key_value(candidate))
-                {
-                    if !visited.insert(bridge.clone()) {
-                        return None;
-                    }
-                    let suffix = real_dir.strip_prefix(bridge).ok()?;
-                    real_dir = target.join(suffix);
-                }
-                Some(PackageNodeModulesLink {
-                    virtual_dir: alias.clone(),
-                    real_dir,
-                })
-            })
-            .collect()
+    pub(crate) fn workspace_alias_plan(&self) -> WorkspaceAliasPlan {
+        WorkspaceAliasPlan::next(
+            self.raw_workspace_alias_candidates(),
+            &self.materialized_workspace_alias_plan,
+        )
     }
 
-    pub(super) fn workspace_alias_claims(&self) -> FxHashSet<PathBuf> {
-        self.package_shadow_artifacts
-            .values()
-            .flat_map(|topology| {
-                topology
-                    .aliases
-                    .keys()
-                    .map(|alias| alias.join("package.json"))
-            })
-            .collect()
+    #[cfg(test)]
+    pub(super) fn workspace_alias_links(&self) -> Vec<PackageNodeModulesLink> {
+        self.workspace_alias_plan().links
+    }
+
+    pub(super) fn rebase_owned_workspace_alias_descendants(
+        &self,
+        links: &mut Vec<PackageNodeModulesLink>,
+        workspace_alias_targets: &FxHashMap<PathBuf, PathBuf>,
+    ) {
+        rebase::descendants_with_owned_priority(links, workspace_alias_targets);
+    }
+
+    pub(super) fn workspace_alias_claims(&self, plan: &WorkspaceAliasPlan) -> FxHashSet<PathBuf> {
+        rebase::claims_with_source_coordinates(&plan.targets)
     }
 
     pub(super) fn install_workspace_alias_scopes(
@@ -259,6 +292,7 @@ impl VirtualProject {
 
     pub(super) fn validate_workspace_alias_targets(
         &self,
+        plan: &WorkspaceAliasPlan,
         extra_owned_files: &FxHashSet<PathBuf>,
     ) -> CorsaResult<Vec<PathBuf>> {
         let mut targets = FxHashMap::default();
@@ -285,8 +319,8 @@ impl VirtualProject {
         }
         let mut link_files = self.expected_materialized_files();
         link_files.extend(extra_owned_files.iter().cloned());
-        let links = self.desired_package_links_for_files(&link_files);
-        self.validate_workspace_alias_links(&links, extra_owned_files)
+        let links = self.desired_package_links_for_files(&link_files, plan);
+        self.validate_workspace_alias_links(plan, &links, extra_owned_files)
     }
 
     pub(super) fn preserved_workspace_alias_claims(
@@ -313,14 +347,20 @@ impl VirtualProject {
 
     pub(super) fn validate_workspace_alias_links(
         &self,
+        plan: &WorkspaceAliasPlan,
         links: &FxHashMap<PathBuf, PathBuf>,
         extra_owned_files: &FxHashSet<PathBuf>,
     ) -> CorsaResult<Vec<PathBuf>> {
-        for alias in self.workspace_alias_links() {
+        for alias in &plan.links {
             if links.get(&alias.virtual_dir) != Some(&alias.real_dir) {
                 return Err(std::io::Error::new(
                     std::io::ErrorKind::InvalidData,
-                    "Workspace package link plan omits an owned alias",
+                    vize_carton::cstr!(
+                        "Workspace package link plan omits an owned alias: {} -> {}; planned target: {:?}",
+                        alias.virtual_dir.display(),
+                        alias.real_dir.display(),
+                        links.get(&alias.virtual_dir),
+                    ),
                 )
                 .into());
             }
@@ -347,10 +387,17 @@ impl VirtualProject {
             if !target.starts_with(&self.virtual_root) {
                 continue;
             }
-            if !alias.starts_with(&self.virtual_root) || link_paths.alias_overlaps(alias, target) {
+            let overlap = link_paths.alias_overlap_path(alias, target);
+            if !alias.starts_with(&self.virtual_root) || overlap.is_some() {
                 return Err(std::io::Error::new(
                     std::io::ErrorKind::InvalidData,
-                    "Workspace package alias overlaps another package link",
+                    vize_carton::cstr!(
+                        "Workspace package alias overlaps another package link: {} -> {}; conflicting link: {:?} -> {:?}",
+                        alias.display(),
+                        target.display(),
+                        overlap,
+                        overlap.as_ref().and_then(|path| links.get(path)),
+                    ),
                 )
                 .into());
             }
@@ -429,10 +476,13 @@ impl VirtualProject {
         Ok(())
     }
 
-    pub(super) fn ensure_workspace_alias_targets(&self) -> CorsaResult<()> {
-        let retire = self.validate_workspace_alias_targets(&FxHashSet::default())?;
+    pub(super) fn ensure_workspace_alias_targets(
+        &self,
+        plan: &WorkspaceAliasPlan,
+    ) -> CorsaResult<()> {
+        let retire = self.validate_workspace_alias_targets(plan, &FxHashSet::default())?;
         self.retire_workspace_cache_links(retire)?;
-        for link in self.workspace_alias_links() {
+        for link in &plan.links {
             // Windows decides symlink_dir/file from target existence. The
             // planned authored root must exist before the first link is made.
             if self.authored_workspace_alias_target(&link.real_dir) {
@@ -442,3 +492,6 @@ impl VirtualProject {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod plan_tests;

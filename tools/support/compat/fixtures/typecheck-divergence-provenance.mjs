@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-import { installArguments } from "./typecheck-dependency-prepare.mjs";
+import { installArguments, qualifyLockfileBytes } from "./typecheck-package-manager.ts";
 import {
   buildSeededMutation,
   executeSeededMutationOracle,
@@ -47,6 +47,7 @@ export function readAndValidateDependencyPreparation({
       "lockfile",
       "packageManager",
       "project",
+      "qualificationLockfile",
       "revision",
       "schema",
       "version",
@@ -55,7 +56,7 @@ export function readAndValidateDependencyPreparation({
   );
   if (
     artifact.schema !== "vize.fixtureTypecheckDependencyInstall" ||
-    artifact.version !== 2 ||
+    artifact.version !== 3 ||
     artifact.project !== project.id ||
     artifact.revision !== project.revision ||
     artifact.evidence?.commitSha !== commitSha
@@ -66,6 +67,7 @@ export function readAndValidateDependencyPreparation({
   const performance = project.typecheckPerformance;
   assertPackageManager(artifact.packageManager, performance, project.id);
   assertLockfile(artifact.lockfile, performance, fixtureRoot, project.id);
+  assertQualificationLockfile(artifact.qualificationLockfile, performance, fixtureRoot, project.id);
   assertInstall(artifact.install, performance, fixtureRoot, project.id);
   assertBaselinePrepare(artifact.baselinePrepare, performance, project.id);
 
@@ -287,6 +289,31 @@ function assertLockfile(lockfile, performance, fixtureRoot, projectId) {
   }
 }
 
+function assertQualificationLockfile(qualification, performance, fixtureRoot, projectId) {
+  const source = readFileSync(resolve(fixtureRoot, performance.lockfile));
+  const expected = qualifyLockfileBytes(performance.packageManager, source, {
+    workspacePackages: performance.workspacePackages,
+  });
+  if (source.equals(expected)) {
+    if (qualification != null) {
+      throw new Error(`Unexpected typecheck qualification lockfile for ${projectId}`);
+    }
+    return;
+  }
+  requireExactKeys(
+    qualification,
+    ["mode", "sha256", "sizeBytes"],
+    "typecheck qualification lockfile evidence",
+  );
+  if (
+    qualification.mode !== "pnpm-injected-workspace-packages" ||
+    qualification.sizeBytes !== expected.byteLength ||
+    qualification.sha256 !== sha256(expected)
+  ) {
+    throw new Error(`Typecheck qualification lockfile evidence is invalid for ${projectId}`);
+  }
+}
+
 function assertInstall(install, performance, fixtureRoot, projectId) {
   requireExactKeys(
     install,
@@ -295,7 +322,15 @@ function assertInstall(install, performance, fixtureRoot, projectId) {
   );
   const expected = [
     performance.packageManager,
-    ...installArguments(performance.packageManager, fixtureRoot),
+    ...installArguments(
+      performance.packageManager,
+      fixtureRoot,
+      performance.packageManagerVersion,
+      {
+        nodeLinker: performance.nodeLinker,
+        workspacePackages: performance.workspacePackages,
+      },
+    ),
   ];
   if (
     JSON.stringify(install.command) !== JSON.stringify(expected) ||

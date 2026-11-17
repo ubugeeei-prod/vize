@@ -221,6 +221,42 @@ test("typecheck divergence report binds baseline evidence to the matrix artifact
   }
 });
 
+test("typecheck divergence report validates injected pnpm qualification bytes", () => {
+  const fixture = setup();
+  try {
+    const lockfilePath = path.join(fixture.fixtureRoot, "pnpm-lock.yaml");
+    const sourceLockfile = Buffer.from(
+      "lockfileVersion: '9.0'\nsettings:\n  autoInstallPeers: true\n",
+    );
+    const qualifiedLockfile = Buffer.from(
+      "lockfileVersion: '9.0'\nsettings:\n  autoInstallPeers: true\n  injectWorkspacePackages: true\n",
+    );
+    fs.writeFileSync(lockfilePath, sourceLockfile);
+    updateJson(
+      fixture.registryPath,
+      (registry) => (registry.projects[0].typecheckPerformance.workspacePackages = "injected"),
+    );
+    updateJson(path.join(fixture.reportDir, "fixture-typecheck-dependencies.json"), (artifact) => {
+      artifact.lockfile = {
+        path: "pnpm-lock.yaml",
+        sizeBytes: sourceLockfile.byteLength,
+        sha256: createHash("sha256").update(sourceLockfile).digest("hex"),
+      };
+      artifact.qualificationLockfile = {
+        mode: "pnpm-injected-workspace-packages",
+        sizeBytes: qualifiedLockfile.byteLength,
+        sha256: createHash("sha256").update(qualifiedLockfile).digest("hex"),
+      };
+    });
+
+    const result = run(fixture);
+    assert.equal(result.status, 0, result.stderr);
+    assert.deepEqual(fs.readFileSync(lockfilePath), sourceLockfile);
+  } finally {
+    cleanup(fixture);
+  }
+});
+
 test("typecheck divergence progress logging is opt-in", () => {
   const fixture = setup({ vizeDiagnostics: [], baselineOutput: "" });
   try {

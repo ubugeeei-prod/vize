@@ -49,7 +49,8 @@ impl VirtualProject {
             .collect::<Vec<_>>()
             .join("__")
             .into();
-        let links = self.desired_package_links();
+        let workspace_alias_plan = self.workspace_alias_plan();
+        let links = self.desired_package_links(&workspace_alias_plan);
         let typed_router = self.has_typed_router_imports();
         if !links.is_empty() || !self.package_shadow_manifests.is_empty() || typed_router {
             let mut links = links.into_iter().collect::<Vec<_>>();

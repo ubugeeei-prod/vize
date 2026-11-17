@@ -9,8 +9,9 @@ use vize_carton::{FxHashMap, FxHashSet};
 use crate::package_route::PackageRouteKey;
 
 use super::VirtualProject;
-use super::package_node_modules::merge_aware_node_modules_links;
+use super::package_node_modules::{PackageNodeModulesLink, merge_aware_node_modules_links};
 use super::package_shadow::PackageShadowTopology;
+use super::workspace_aliases::WorkspaceAliasPlan;
 
 pub(super) struct PackageLinkPatch {
     scope_links: FxHashMap<PathBuf, FxHashMap<PathBuf, PathBuf>>,
@@ -123,11 +124,14 @@ impl VirtualProject {
         self.remove_workspace_alias_claims(aliases);
     }
 
-    pub(super) fn prepare_incremental_package_link_patch(&self) -> PackageLinkPatch {
+    pub(super) fn prepare_incremental_package_link_patch(
+        &self,
+        workspace_alias_plan: &WorkspaceAliasPlan,
+    ) -> PackageLinkPatch {
         let mut scope_links = FxHashMap::default();
         let mut candidates = FxHashSet::default();
         for scope in &self.incremental_package_link_scopes {
-            let desired = self.package_links_for_scope(scope);
+            let desired = self.package_links_for_scope(scope, workspace_alias_plan);
             if let Some(previous) = self.materialized_package_link_scopes.get(scope) {
                 candidates.extend(previous.keys().cloned());
             }
@@ -141,7 +145,7 @@ impl VirtualProject {
             if let Some(target) = self.materialized_package_links.get(path) {
                 previous.insert(path.clone(), target.clone());
             }
-            let next = self.effective_link_target(path, &scope_links);
+            let next = self.effective_link_target(path, &scope_links, workspace_alias_plan);
             if let Some(target) = next {
                 desired.insert(path.clone(), target);
             }
@@ -195,7 +199,10 @@ impl VirtualProject {
         self.incremental_package_link_scopes.clear();
     }
 
-    pub(super) fn rebuild_materialized_package_link_owners(&mut self) {
+    pub(super) fn rebuild_materialized_package_link_owners(
+        &mut self,
+        workspace_alias_plan: &WorkspaceAliasPlan,
+    ) {
         self.materialized_package_link_scopes.clear();
         self.materialized_package_link_owners.clear();
         let scopes = self
@@ -204,7 +211,7 @@ impl VirtualProject {
             .cloned()
             .collect::<Vec<_>>();
         for scope in scopes {
-            let links = self.package_links_for_scope(&scope);
+            let links = self.package_links_for_scope(&scope, workspace_alias_plan);
             for (path, target) in &links {
                 self.materialized_package_link_owners
                     .entry(path.clone())
@@ -222,26 +229,46 @@ impl VirtualProject {
         &self,
         path: &Path,
         replacements: &FxHashMap<PathBuf, FxHashMap<PathBuf, PathBuf>>,
+        workspace_alias_plan: &WorkspaceAliasPlan,
     ) -> Option<PathBuf> {
-        let mut targets = self
-            .materialized_package_link_owners
-            .get(path)
-            .into_iter()
-            .flatten()
-            .filter(|(scope, _)| !replacements.contains_key(*scope))
-            .map(|(_, target)| target.clone())
-            .collect::<Vec<_>>();
-        targets.extend(
-            replacements
-                .values()
-                .filter_map(|links| links.get(path).cloned()),
-        );
-        targets.into_iter().min()
+        preferred_link_target(
+            path,
+            &workspace_alias_plan.targets,
+            self.materialized_package_link_owners
+                .get(path)
+                .into_iter()
+                .flatten()
+                .filter(|(scope, _)| !replacements.contains_key(*scope))
+                .map(|(_, target)| target.clone())
+                .chain(
+                    replacements
+                        .values()
+                        .filter_map(|links| links.get(path).cloned()),
+                ),
+        )
     }
 
-    fn package_links_for_scope(&self, scope: &Path) -> FxHashMap<PathBuf, PathBuf> {
+    fn package_links_for_scope(
+        &self,
+        scope: &Path,
+        workspace_alias_plan: &WorkspaceAliasPlan,
+    ) -> FxHashMap<PathBuf, PathBuf> {
         if let Some(aliases) = self.direct_workspace_alias_for_scope(scope) {
-            return aliases;
+            let mut links = aliases
+                .into_iter()
+                .map(|(virtual_dir, real_dir)| PackageNodeModulesLink {
+                    virtual_dir,
+                    real_dir,
+                })
+                .collect::<Vec<_>>();
+            self.rebase_owned_workspace_alias_descendants(
+                &mut links,
+                &workspace_alias_plan.targets,
+            );
+            return links
+                .into_iter()
+                .map(|link| (link.virtual_dir, link.real_dir))
+                .collect();
         }
         let Some(targets) = self.package_link_scope_targets.get(scope) else {
             return FxHashMap::default();
@@ -255,17 +282,19 @@ impl VirtualProject {
             return FxHashMap::default();
         };
         let files = self.package_link_scope_files.get(scope);
-        merge_aware_node_modules_links(
+        let mut links = merge_aware_node_modules_links(
             &real_dir,
             scope,
             files
                 .into_iter()
                 .flat_map(|files| files.keys())
                 .map(PathBuf::as_path),
-        )
-        .into_iter()
-        .map(|link| (link.virtual_dir, canonical_link_target(&link.real_dir)))
-        .collect()
+        );
+        self.rebase_owned_workspace_alias_descendants(&mut links, &workspace_alias_plan.targets);
+        links
+            .into_iter()
+            .map(|link| (link.virtual_dir, canonical_link_target(&link.real_dir)))
+            .collect()
     }
 
     fn add_package_link_target(&mut self, scope: &Path, target: &Path) {
@@ -331,6 +360,50 @@ impl VirtualProject {
         targets.sort();
         targets.dedup();
         (scopes, targets)
+    }
+}
+
+fn preferred_link_target(
+    path: &Path,
+    workspace_alias_targets: &FxHashMap<PathBuf, PathBuf>,
+    targets: impl Iterator<Item = PathBuf>,
+) -> Option<PathBuf> {
+    workspace_alias_targets
+        .get(path)
+        .cloned()
+        .or_else(|| targets.min())
+}
+
+#[cfg(test)]
+mod preferred_link_target_tests {
+    use super::*;
+
+    #[test]
+    fn resolved_workspace_alias_wins_incremental_owner_merge() {
+        let path = Path::new("alias/node_modules/shared");
+        let aliases =
+            FxHashMap::from_iter([(path.to_path_buf(), PathBuf::from("tabbar-private/shared"))]);
+        let targets = [
+            PathBuf::from("package-root/shared"),
+            PathBuf::from("tabbar-private/shared"),
+        ];
+        assert_eq!(
+            preferred_link_target(path, &aliases, targets.into_iter()),
+            Some(PathBuf::from("tabbar-private/shared"))
+        );
+    }
+
+    #[test]
+    fn ordinary_incremental_owners_keep_their_stable_minimum() {
+        let targets = [PathBuf::from("z/shared"), PathBuf::from("a/shared")];
+        assert_eq!(
+            preferred_link_target(
+                Path::new("ordinary"),
+                &FxHashMap::default(),
+                targets.into_iter()
+            ),
+            Some(PathBuf::from("a/shared"))
+        );
     }
 }
 

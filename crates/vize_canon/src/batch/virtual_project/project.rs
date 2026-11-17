@@ -1,7 +1,5 @@
-//! `VirtualProject` lifecycle: construction, configuration, and file
-//! registration. Registration delegates the expensive per-file work to
-//! [`super::build`] so it can run in parallel, then absorbs the results into
-//! the project's indexes.
+//! `VirtualProject` lifecycle. File registration delegates to [`super::build`]
+//! and then absorbs the results into the project's indexes.
 
 use std::borrow::Cow;
 use std::path::{Path, PathBuf};
@@ -86,6 +84,7 @@ impl VirtualProject {
             incremental_dependency_nodes_reconciled: 0,
             incremental_shadow_bindings_rebuilt: 0,
             materialized_package_links: FxHashMap::default(),
+            materialized_workspace_alias_plan: Default::default(),
             materialized_package_link_scopes: FxHashMap::default(),
             materialized_package_link_owners: FxHashMap::default(),
             package_link_scope_files: FxHashMap::default(),

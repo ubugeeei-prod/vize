@@ -16,7 +16,7 @@ import { resolveVuePackageDir } from "./check-gate-env.mjs";
 // The typed-router helper suffix never applies: these corpora do not opt in.
 export const BUILD_INFO_SOURCE = {
   path: "crates/vize_canon/src/batch/virtual_project/tsconfig_gen/config_anchor.rs",
-  sha256: "ad965db886edee7221bb91c786d9e7d07994775431da898c17dad844a61ae0cc",
+  sha256: "797a0745be4eeb820a4661d6cbd3f38e6f239540eb169315a56b93b6b1578fd9",
 };
 const CORPORA = new Set(["shared-barrel500", "shared-leaf501-default", "generated500"]);
 const NAMESPACE = ["compiler-sfc", "compiler-vapor"];
