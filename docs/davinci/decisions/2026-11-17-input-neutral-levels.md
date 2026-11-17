@@ -18,7 +18,8 @@ placed differently:
   (2.1k lines) contains its compile entry, component detection, the props
   shape (destructure, defaults, rest), the scope-shadowing rule, the names a
   component reads, host-code splicing and component wrapping. Its L1→L2
-  lowering lives in the L2 crate (`vize_l2::lang::tsrx`), not in `vize_l1_to_l2`.
+  lowering lived in the L2 crate (`vize_l2::lang::tsrx`), not in
+  `vize_l1_to_l2`, until step 5.
 - **JSX** lowers in `vize_l1_to_l2::framework::vue::jsx`, which is the right
   place. L3 then keeps a JSX-only decision projection (`vize_l3::jsx`). L4 has a
   top-level `vize_l4::jsx` module emitter, and `vize_l4::targets::ts::module`
@@ -367,7 +368,12 @@ other edit. A sibling branch rebases by re-running the same step on its own
 tree. Behavior-preserving edits follow in separate commits. Each PR proves
 parity with the existing corpora (compiler differential, mounted parity, the
 JSX oracles, the TSRX reference corpus, L1 fidelity), and its PR body carries
-`--profile ci-opt` instruction, wall-time and RSS numbers.
+`--profile ci-opt` instruction, wall-time and RSS numbers. A move is
+move-only only when the per-stage instruction counts
+(`level-instruction-counts.yml`) are identical to its base's. ci-opt splits
+each crate into 16 codegen units, so a module rename can shift a count
+without any code change. In that case both sides are measured again with
+one codegen unit, where they must be identical.
 
 | Step | Slice                                                                                                                                                                                                                                                | Kind                        |
 | ---: | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------- |
