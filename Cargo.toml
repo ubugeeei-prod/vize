@@ -321,7 +321,7 @@ codegen-units = 256
 [profile.ci-opt]
 inherits = "release"
 lto = "thin"
-codegen-units = 16
+codegen-units = 1
 
 # TS-44 measures the same stripped CLI payload shipped by the release job.
 [profile.ci-opt.package.vize]
