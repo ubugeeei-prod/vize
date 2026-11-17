@@ -1,6 +1,6 @@
 use vize_armature::{ExpressionNode, PropNode, TemplateChildNode, parse_document};
 use vize_l0::{Allocator, SourceRoot};
-use vize_l1::markup::document::NativeDocument;
+use vize_l1::markup::htmlish::document::NativeDocument;
 use vize_l2::dialect::petite::{PetiteDirective, PetiteDirectiveKind, PetiteDocument};
 
 fn expression<'a>(expression: &Option<ExpressionNode<'a>>) -> Option<&'a str> {

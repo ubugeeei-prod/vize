@@ -8,9 +8,9 @@ pub(crate) enum LexicalScope {
     Authored,
 }
 
-use crate::event::Recorder;
 use crate::markup::Sink;
-use crate::markup::surface::LintTagFact;
+use crate::markup::htmlish::event::Recorder;
+use crate::markup::htmlish::surface::LintTagFact;
 use vize_l0::Vec;
 
 #[derive(Default)]

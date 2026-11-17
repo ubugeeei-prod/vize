@@ -105,7 +105,7 @@ fn equal_source_foreign_owner_and_nonvoid_extent_cannot_mint_a_whole_void_findin
 #[test]
 fn authenticated_self_closed_nonvoid_header_has_a_complete_original_extent() {
     // ElementClose::NotExpected includes authored self-closing tags as well
-    // as HTML void tags (vize_l1::build::tag). The rule still selects input.
+    // as HTML void tags (vize_l1::markup::htmlish::build::tag). The rule still selects input.
     let allocator = Allocator::new();
     let source = "<div title='exact'/>";
     let root =

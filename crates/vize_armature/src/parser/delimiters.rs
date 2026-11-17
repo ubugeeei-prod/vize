@@ -2,7 +2,7 @@
 
 use super::{Parser, callbacks::ParserCallbacks};
 use vize_l0::{ErrorCode, Vec};
-use vize_l1::markup::lex::compat::adapter::CompatSink;
+use vize_l1::markup::htmlish::lex::compat::adapter::CompatSink;
 use vize_l1::markup::{Component, Delimiters, Document, LexOptions, Lexer, VueComponent};
 use vize_relief::{RootNode, errors::CompilerError, options::ParseMode};
 

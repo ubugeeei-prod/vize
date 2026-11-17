@@ -18,7 +18,7 @@
 use std::path::PathBuf;
 
 use vize_l0::{Allocator, String};
-use vize_l1::pug::{
+use vize_l1::markup::pug::{
     PugErrorCode, PugHoleCounts, PugNode, check_pug_fidelity, parse_pug, pug_hole_counts,
     render_pug,
 };
@@ -283,7 +283,7 @@ fn the_tree_follows_pug_structure() {
         panic!("a tag");
     };
     assert_eq!(list.tag_name(), "ul");
-    let vize_l1::pug::PugBlock::Nodes(items) = &list.block else {
+    let vize_l1::markup::pug::PugBlock::Nodes(items) = &list.block else {
         panic!("children");
     };
     // The `//-` comment is trivia: pug strips it, so it is not a node.

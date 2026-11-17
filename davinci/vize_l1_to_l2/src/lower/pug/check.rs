@@ -2,7 +2,7 @@
 //! an invalid expression wherever it appears.
 
 use vize_l0::{String, cstr};
-use vize_l1::pug::{
+use vize_l1::markup::pug::{
     PugAttrItem, PugBlock, PugHtmlItem, PugInline, PugNode, PugRefusal, PugTag, PugTagPart,
     PugText, PugTextPiece,
 };

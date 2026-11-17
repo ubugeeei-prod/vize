@@ -3,7 +3,7 @@
 use oxc_ast::ast::{Expression, PropertyKey};
 use oxc_span::GetSpan;
 use vize_l0::{Allocator, SourceRoot, Span};
-use vize_l1::markup::document::NativeDocument;
+use vize_l1::markup::htmlish::document::NativeDocument;
 
 use super::{PetiteDirectiveKind as Kind, PetiteDocument, PetiteScopeShape};
 use crate::expr::{ExprRef, OpaqueReason};

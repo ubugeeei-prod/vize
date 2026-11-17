@@ -2,9 +2,9 @@
 
 use vize_l0::{Allocator, Span, Vec};
 
-use crate::event::Recorder;
-use crate::markup::parse::{SurfaceError, SurfaceParseOptions, construct_with_lint};
-use crate::markup::surface::{LintTagFact, SurfaceTree};
+use crate::markup::htmlish::event::Recorder;
+use crate::markup::htmlish::parse::{SurfaceError, SurfaceParseOptions, construct_with_lint};
+use crate::markup::htmlish::surface::{LintTagFact, SurfaceTree};
 use crate::markup::{Component, DirectiveNameError, LexOptions, Lexer};
 
 use super::{DirectiveKind, VueDirectives, is_lint_component};

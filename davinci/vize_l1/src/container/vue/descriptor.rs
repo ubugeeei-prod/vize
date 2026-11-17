@@ -7,7 +7,7 @@ use vize_l0::config::{VueDialect, VueVersion};
 use vize_l0::{Allocator, FileDialect, SourceBlock, SourceRoot, Span, Vec};
 
 use super::super::{Container, ContainerError};
-use crate::{embed::Lang, markup::parse::SurfaceParseOptions};
+use crate::{embed::Lang, markup::htmlish::parse::SurfaceParseOptions};
 
 mod policy;
 mod template;

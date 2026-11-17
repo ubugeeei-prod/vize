@@ -6,10 +6,10 @@ use vize_l0::{Allocator, SourceBlock, SourceFrameError, SourceRoot, Vec};
 use super::text::{self, TextBinding, TextBoundary, TextBoundaryKind};
 use crate::dialect::LegacyVueVersion;
 use crate::dialect::vue::surface::{SurfacePolicy, sink::VueSink};
-use crate::event::Recorder;
 use crate::markup::entity::DecodedEntity;
-use crate::markup::parse::{SurfaceError, construct};
-use crate::markup::surface::SurfaceTree;
+use crate::markup::htmlish::event::Recorder;
+use crate::markup::htmlish::parse::{SurfaceError, construct};
+use crate::markup::htmlish::surface::SurfaceTree;
 use crate::markup::token::{LexErrorCode, LexMode, QuoteType};
 use crate::markup::{Component, LexOptions, Lexer, Sink};
 

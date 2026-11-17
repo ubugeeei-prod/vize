@@ -87,7 +87,7 @@ mod davinci_parity_tests {
             "<div v-scope=\"count"
         );
         let allocator = vize_l0::Allocator::default();
-        let owner = vize_l1::markup::document::NativeDocument::lex_in(
+        let owner = vize_l1::markup::htmlish::document::NativeDocument::lex_in(
             &allocator,
             vize_l0::SourceRoot::new(source).unwrap(),
         );

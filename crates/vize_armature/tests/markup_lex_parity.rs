@@ -5,7 +5,7 @@
 
 use vize_armature::tokenizer::{Callbacks, QuoteType as CompatQuote, Tokenizer};
 use vize_l0::{SmallVec, String, cstr};
-use vize_l1::markup::lex::compat::adapter::CompatSink;
+use vize_l1::markup::htmlish::lex::compat::adapter::CompatSink;
 use vize_l1::markup::token::{LexErrorCode, QuoteType as NativeQuote, Sink};
 use vize_l1::markup::{Component, Document, LexOptions, Lexer, Profile};
 use vize_relief::ErrorCode;

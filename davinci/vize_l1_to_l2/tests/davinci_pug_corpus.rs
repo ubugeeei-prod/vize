@@ -49,7 +49,7 @@ use sha2::{Digest, Sha256};
 use support::assert_sound;
 use vize_atelier_sfc::{SfcCompileOptions, SfcParseOptions, compile_sfc, parse_sfc};
 use vize_l0::Allocator;
-use vize_l1::pug::{check_pug_fidelity, parse_pug};
+use vize_l1::markup::pug::{check_pug_fidelity, parse_pug};
 use vize_l1_to_l2::lower::pug::lower_pug;
 
 fn fixture_root() -> PathBuf {

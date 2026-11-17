@@ -5,7 +5,7 @@ import path from "node:path";
 import { parseArgs } from "node:util";
 import { fileURLToPath } from "node:url";
 
-const old = "davinci/vize_l1/src/markup/parse.rs";
+const old = "davinci/vize_l1/src/markup/htmlish/parse.rs";
 const current = "davinci/vize_l1/src/dialect/vue3/surface.rs";
 
 function isOwner(file: string): boolean {

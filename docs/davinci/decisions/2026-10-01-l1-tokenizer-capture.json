@@ -5,15 +5,15 @@
   "freshProcessesMatched": true,
   "sourceIdentity": [
     {
-      "file": "davinci/vize_l1/src/markup/lex/compat/states.rs",
+      "file": "davinci/vize_l1/src/markup/htmlish/lex/compat/states.rs",
       "sha256": "36b3e4b4d55d2e0f4ea03662abc7a5792d3196c881d6b14482b9a0a2e4f8c85e"
     },
     {
-      "file": "davinci/vize_l1/src/markup/lex/compat/entity_decode.rs",
+      "file": "davinci/vize_l1/src/markup/htmlish/lex/compat/entity_decode.rs",
       "sha256": "9ecf12d3d3f811a27e6c96ba717459cd806225a87a626ec2f8d9318a6ed9112c"
     },
     {
-      "file": "davinci/vize_l1/src/markup/lex/compat/dynamic_arg.rs",
+      "file": "davinci/vize_l1/src/markup/htmlish/lex/compat/dynamic_arg.rs",
       "sha256": "a880c8c2ca4653f0b7cec1b17f7aab8c29272ea0e028eb661e806cc9e0b9c886"
     },
     {
