@@ -1,0 +1,71 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h7-template-emit-unused-everywhere-3209",
+    history: "a9077bff41f7a03cfeb0b90a0c32459fe047fe82",
+    source: "<script setup lang=\"ts\">\nconst emit = defineEmits<{ save: [] }>();\n</script>\n\n<template>\n  <button>Save</button>\n</template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "script/no-unused-emit-declarations",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "script/no-unused-emit-declarations",
+                severity: Warning,
+                message: "The 'save' event is declared but never emitted.",
+                start: 52,
+                end: 60,
+                help: Some(
+                    "Emit this event via the captured emit function, or remove it from the defineEmits declaration.",
+                ),
+                labels: [
+                    Label {
+                        message: "declared but never emitted",
+                        start: 52,
+                        end: 60,
+                    },
+                ],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "script/no-unused-emit-declarations",
+                    severity: Warning,
+                    message: "The 'save' event is declared but never emitted.",
+                    start: 52,
+                    end: 60,
+                    help: Some(
+                        "Emit this event via the captured emit function, or remove it from the defineEmits declaration.",
+                    ),
+                    labels: [
+                        Label {
+                            message: "declared but never emitted",
+                            start: 52,
+                            end: 60,
+                        },
+                    ],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

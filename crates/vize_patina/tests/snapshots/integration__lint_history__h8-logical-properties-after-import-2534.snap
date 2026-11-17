@@ -1,0 +1,83 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h8-logical-properties-after-import-2534",
+    history: "6131d0c8fd1ec53b1c6b870ea039dd953e3d6f30",
+    source: "<template><div/></template>\n<style scoped>\n@import \"~/design/styles/breakpoint.css\";\n\n.mp-snackbar {\n  position: fixed;\n  top: var(--space-4);\n  left: var(--space-4);\n  right: var(--space-4);\n}\n</style>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "css/prefer-logical-properties",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 2,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "css/prefer-logical-properties",
+                severity: Warning,
+                message: "Consider using logical properties for better RTL support",
+                start: 145,
+                end: 149,
+                help: Some(
+                    "Use logical properties like margin-inline-start instead of margin-left",
+                ),
+                labels: [],
+                fix: None,
+            },
+            LintDiagnostic {
+                rule_name: "css/prefer-logical-properties",
+                severity: Warning,
+                message: "Consider using logical properties for better RTL support",
+                start: 169,
+                end: 174,
+                help: Some(
+                    "Use logical properties like margin-inline-start instead of margin-left",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 2,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "css/prefer-logical-properties",
+                    severity: Warning,
+                    message: "Consider using logical properties for better RTL support",
+                    start: 145,
+                    end: 149,
+                    help: Some(
+                        "Use logical properties like margin-inline-start instead of margin-left",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+                LintDiagnostic {
+                    rule_name: "css/prefer-logical-properties",
+                    severity: Warning,
+                    message: "Consider using logical properties for better RTL support",
+                    start: 169,
+                    end: 174,
+                    help: Some(
+                        "Use logical properties like margin-inline-start instead of margin-left",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 2,
+        },
+    ),
+}

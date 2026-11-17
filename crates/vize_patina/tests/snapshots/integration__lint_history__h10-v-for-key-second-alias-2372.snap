@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h10-v-for-key-second-alias-2372",
+    history: "730b25076c78a48cb961e98339e6fb5c7f3fa0f9",
+    source: "<div v-for=\"(value, key, index) in items\" :key=\"key\"></div>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/valid-v-for",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

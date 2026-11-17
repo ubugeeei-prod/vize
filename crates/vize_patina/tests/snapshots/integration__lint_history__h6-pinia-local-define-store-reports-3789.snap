@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h6-pinia-local-define-store-reports-3789",
+    history: "01958d4bbb5c557439f6875c4680e475a133557c",
+    source: "\nconst useUserStore = defineStore('user', { state: () => ({ name: '' }) })\nconst { name } = useUserStore()\n",
+    filename: "History.ts",
+    entry: "script",
+    rule: "ecosystem/pinia-prefer-store-to-refs",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.ts",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "ecosystem/pinia-prefer-store-to-refs",
+                severity: Warning,
+                message: "Pinia stores should not be destructured directly",
+                start: 81,
+                end: 89,
+                help: Some(
+                    "Use `storeToRefs(store)` for state/getters and keep actions on the store object.",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.ts",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "ecosystem/pinia-prefer-store-to-refs",
+                    severity: Warning,
+                    message: "Pinia stores should not be destructured directly",
+                    start: 81,
+                    end: 89,
+                    help: Some(
+                        "Use `storeToRefs(store)` for state/getters and keep actions on the store object.",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

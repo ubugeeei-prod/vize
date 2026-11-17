@@ -1,0 +1,61 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h6-props-shorthand-default-cli-sfc-control-3792",
+    history: "486322ff3d90fa7d484cd663a31795fe8c2fcd14",
+    source: "<script setup>\nconst title = 'legacy'\n</script>\n\n<template>\n  <LegacyCard :title=\"title\" />\n</template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "vue/prefer-props-shorthand",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 1,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/prefer-props-shorthand",
+                severity: Warning,
+                message: "Use shorthand syntax for same-name prop binding",
+                start: 74,
+                end: 88,
+                help: Some(
+                    "Use shorthand prop syntax",
+                ),
+                labels: [],
+                fix: Some(
+                    Fix {
+                        message: "Use shorthand prop syntax",
+                        edits: [
+                            TextEdit {
+                                start: 80,
+                                end: 88,
+                                new_text: "",
+                            },
+                        ],
+                    },
+                ),
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [
+        Application {
+            diagnostic_index: 0,
+            source: "<script setup>\nconst title = 'legacy'\n</script>\n\n<template>\n  <LegacyCard :title />\n</template>\n",
+            result: LintResult {
+                filename: "History.vue",
+                diagnostics: [],
+                error_count: 0,
+                warning_count: 0,
+            },
+        },
+    ],
+    unchanged_requery: None,
+}

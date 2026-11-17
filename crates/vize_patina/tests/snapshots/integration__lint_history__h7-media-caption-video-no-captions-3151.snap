@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h7-media-caption-video-no-captions-3151",
+    history: "43bb1309b29d42e5f9eef7707536581addd82bba",
+    source: "<video src=\"movie.mp4\"></video>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "a11y/media-has-caption",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "a11y/media-has-caption",
+                severity: Warning,
+                message: "<video> elements must have a <track kind=\"captions\"> for accessibility",
+                start: 0,
+                end: 23,
+                help: Some(
+                    "**Fix:**\n```vue\n<video src=\"movie.mp4\">\n  <track kind=\"captions\" src=\"captions.vtt\" />\n</video>\n```\n\n**Alternatives:**\n- Add `muted` attribute for decorative media\n- Add `aria-label` for described media",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "a11y/media-has-caption",
+                    severity: Warning,
+                    message: "<video> elements must have a <track kind=\"captions\"> for accessibility",
+                    start: 0,
+                    end: 23,
+                    help: Some(
+                        "**Fix:**\n```vue\n<video src=\"movie.mp4\">\n  <track kind=\"captions\" src=\"captions.vtt\" />\n</video>\n```\n\n**Alternatives:**\n- Add `muted` attribute for decorative media\n- Add `aria-label` for described media",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

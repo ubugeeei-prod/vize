@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h5-prop-name-casing-template-attribute-4429",
+    history: "80bbc1007488009374a829428df4c10064a5f56e",
+    source: "<script setup>\ndefineProps({ myProp: String })\n</script>\n\n<template><Child myProp=\"x\" /></template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "vue/prop-name-casing",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

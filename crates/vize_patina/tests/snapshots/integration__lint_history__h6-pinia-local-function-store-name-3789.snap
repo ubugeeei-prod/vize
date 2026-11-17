@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h6-pinia-local-function-store-name-3789",
+    history: "01958d4bbb5c557439f6875c4680e475a133557c",
+    source: "\nexport function useCounterStore() {\n    return { count: ref(0), inc: () => {} }\n}\nconst { count, inc } = useCounterStore()\n",
+    filename: "History.ts",
+    entry: "script",
+    rule: "ecosystem/pinia-prefer-store-to-refs",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.ts",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.ts",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-nested-selectors-import-2274",
+    history: "c3aaf4cf821adbf6b6ec1199dd2d7ac63b6bc3a3",
+    source: "<template><div /></template>\n<style>\n@import \"x.css\";\n.foo { color: red; }\n</style>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "css/prefer-nested-selectors",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

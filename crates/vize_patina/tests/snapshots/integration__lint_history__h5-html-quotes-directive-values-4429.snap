@@ -1,0 +1,520 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h5-html-quotes-directive-values-4429",
+    history: "80bbc1007488009374a829428df4c10064a5f56e",
+    source: "<div v-if='ok' :class='cls' @click='go()' v-html='raw'></div>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/html-quotes",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 4,
+    fixes: 4,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/html-quotes",
+                severity: Warning,
+                message: "Expected double quotes but found single quotes",
+                start: 10,
+                end: 14,
+                help: Some(
+                    "Use consistent quote style for HTML attribute values.",
+                ),
+                labels: [],
+                fix: Some(
+                    Fix {
+                        message: "Use double quotes",
+                        edits: [
+                            TextEdit {
+                                start: 10,
+                                end: 11,
+                                new_text: "\"",
+                            },
+                            TextEdit {
+                                start: 13,
+                                end: 14,
+                                new_text: "\"",
+                            },
+                        ],
+                    },
+                ),
+            },
+            LintDiagnostic {
+                rule_name: "vue/html-quotes",
+                severity: Warning,
+                message: "Expected double quotes but found single quotes",
+                start: 22,
+                end: 27,
+                help: Some(
+                    "Use consistent quote style for HTML attribute values.",
+                ),
+                labels: [],
+                fix: Some(
+                    Fix {
+                        message: "Use double quotes",
+                        edits: [
+                            TextEdit {
+                                start: 22,
+                                end: 23,
+                                new_text: "\"",
+                            },
+                            TextEdit {
+                                start: 26,
+                                end: 27,
+                                new_text: "\"",
+                            },
+                        ],
+                    },
+                ),
+            },
+            LintDiagnostic {
+                rule_name: "vue/html-quotes",
+                severity: Warning,
+                message: "Expected double quotes but found single quotes",
+                start: 35,
+                end: 41,
+                help: Some(
+                    "Use consistent quote style for HTML attribute values.",
+                ),
+                labels: [],
+                fix: Some(
+                    Fix {
+                        message: "Use double quotes",
+                        edits: [
+                            TextEdit {
+                                start: 35,
+                                end: 36,
+                                new_text: "\"",
+                            },
+                            TextEdit {
+                                start: 40,
+                                end: 41,
+                                new_text: "\"",
+                            },
+                        ],
+                    },
+                ),
+            },
+            LintDiagnostic {
+                rule_name: "vue/html-quotes",
+                severity: Warning,
+                message: "Expected double quotes but found single quotes",
+                start: 49,
+                end: 54,
+                help: Some(
+                    "Use consistent quote style for HTML attribute values.",
+                ),
+                labels: [],
+                fix: Some(
+                    Fix {
+                        message: "Use double quotes",
+                        edits: [
+                            TextEdit {
+                                start: 49,
+                                end: 50,
+                                new_text: "\"",
+                            },
+                            TextEdit {
+                                start: 53,
+                                end: 54,
+                                new_text: "\"",
+                            },
+                        ],
+                    },
+                ),
+            },
+        ],
+        error_count: 0,
+        warning_count: 4,
+    },
+    applications: [
+        Application {
+            diagnostic_index: 0,
+            source: "<div v-if=\"ok\" :class='cls' @click='go()' v-html='raw'></div>",
+            result: LintResult {
+                filename: "History.vue",
+                diagnostics: [
+                    LintDiagnostic {
+                        rule_name: "vue/html-quotes",
+                        severity: Warning,
+                        message: "Expected double quotes but found single quotes",
+                        start: 22,
+                        end: 27,
+                        help: Some(
+                            "Use consistent quote style for HTML attribute values.",
+                        ),
+                        labels: [],
+                        fix: Some(
+                            Fix {
+                                message: "Use double quotes",
+                                edits: [
+                                    TextEdit {
+                                        start: 22,
+                                        end: 23,
+                                        new_text: "\"",
+                                    },
+                                    TextEdit {
+                                        start: 26,
+                                        end: 27,
+                                        new_text: "\"",
+                                    },
+                                ],
+                            },
+                        ),
+                    },
+                    LintDiagnostic {
+                        rule_name: "vue/html-quotes",
+                        severity: Warning,
+                        message: "Expected double quotes but found single quotes",
+                        start: 35,
+                        end: 41,
+                        help: Some(
+                            "Use consistent quote style for HTML attribute values.",
+                        ),
+                        labels: [],
+                        fix: Some(
+                            Fix {
+                                message: "Use double quotes",
+                                edits: [
+                                    TextEdit {
+                                        start: 35,
+                                        end: 36,
+                                        new_text: "\"",
+                                    },
+                                    TextEdit {
+                                        start: 40,
+                                        end: 41,
+                                        new_text: "\"",
+                                    },
+                                ],
+                            },
+                        ),
+                    },
+                    LintDiagnostic {
+                        rule_name: "vue/html-quotes",
+                        severity: Warning,
+                        message: "Expected double quotes but found single quotes",
+                        start: 49,
+                        end: 54,
+                        help: Some(
+                            "Use consistent quote style for HTML attribute values.",
+                        ),
+                        labels: [],
+                        fix: Some(
+                            Fix {
+                                message: "Use double quotes",
+                                edits: [
+                                    TextEdit {
+                                        start: 49,
+                                        end: 50,
+                                        new_text: "\"",
+                                    },
+                                    TextEdit {
+                                        start: 53,
+                                        end: 54,
+                                        new_text: "\"",
+                                    },
+                                ],
+                            },
+                        ),
+                    },
+                ],
+                error_count: 0,
+                warning_count: 3,
+            },
+        },
+        Application {
+            diagnostic_index: 1,
+            source: "<div v-if='ok' :class=\"cls\" @click='go()' v-html='raw'></div>",
+            result: LintResult {
+                filename: "History.vue",
+                diagnostics: [
+                    LintDiagnostic {
+                        rule_name: "vue/html-quotes",
+                        severity: Warning,
+                        message: "Expected double quotes but found single quotes",
+                        start: 10,
+                        end: 14,
+                        help: Some(
+                            "Use consistent quote style for HTML attribute values.",
+                        ),
+                        labels: [],
+                        fix: Some(
+                            Fix {
+                                message: "Use double quotes",
+                                edits: [
+                                    TextEdit {
+                                        start: 10,
+                                        end: 11,
+                                        new_text: "\"",
+                                    },
+                                    TextEdit {
+                                        start: 13,
+                                        end: 14,
+                                        new_text: "\"",
+                                    },
+                                ],
+                            },
+                        ),
+                    },
+                    LintDiagnostic {
+                        rule_name: "vue/html-quotes",
+                        severity: Warning,
+                        message: "Expected double quotes but found single quotes",
+                        start: 35,
+                        end: 41,
+                        help: Some(
+                            "Use consistent quote style for HTML attribute values.",
+                        ),
+                        labels: [],
+                        fix: Some(
+                            Fix {
+                                message: "Use double quotes",
+                                edits: [
+                                    TextEdit {
+                                        start: 35,
+                                        end: 36,
+                                        new_text: "\"",
+                                    },
+                                    TextEdit {
+                                        start: 40,
+                                        end: 41,
+                                        new_text: "\"",
+                                    },
+                                ],
+                            },
+                        ),
+                    },
+                    LintDiagnostic {
+                        rule_name: "vue/html-quotes",
+                        severity: Warning,
+                        message: "Expected double quotes but found single quotes",
+                        start: 49,
+                        end: 54,
+                        help: Some(
+                            "Use consistent quote style for HTML attribute values.",
+                        ),
+                        labels: [],
+                        fix: Some(
+                            Fix {
+                                message: "Use double quotes",
+                                edits: [
+                                    TextEdit {
+                                        start: 49,
+                                        end: 50,
+                                        new_text: "\"",
+                                    },
+                                    TextEdit {
+                                        start: 53,
+                                        end: 54,
+                                        new_text: "\"",
+                                    },
+                                ],
+                            },
+                        ),
+                    },
+                ],
+                error_count: 0,
+                warning_count: 3,
+            },
+        },
+        Application {
+            diagnostic_index: 2,
+            source: "<div v-if='ok' :class='cls' @click=\"go()\" v-html='raw'></div>",
+            result: LintResult {
+                filename: "History.vue",
+                diagnostics: [
+                    LintDiagnostic {
+                        rule_name: "vue/html-quotes",
+                        severity: Warning,
+                        message: "Expected double quotes but found single quotes",
+                        start: 10,
+                        end: 14,
+                        help: Some(
+                            "Use consistent quote style for HTML attribute values.",
+                        ),
+                        labels: [],
+                        fix: Some(
+                            Fix {
+                                message: "Use double quotes",
+                                edits: [
+                                    TextEdit {
+                                        start: 10,
+                                        end: 11,
+                                        new_text: "\"",
+                                    },
+                                    TextEdit {
+                                        start: 13,
+                                        end: 14,
+                                        new_text: "\"",
+                                    },
+                                ],
+                            },
+                        ),
+                    },
+                    LintDiagnostic {
+                        rule_name: "vue/html-quotes",
+                        severity: Warning,
+                        message: "Expected double quotes but found single quotes",
+                        start: 22,
+                        end: 27,
+                        help: Some(
+                            "Use consistent quote style for HTML attribute values.",
+                        ),
+                        labels: [],
+                        fix: Some(
+                            Fix {
+                                message: "Use double quotes",
+                                edits: [
+                                    TextEdit {
+                                        start: 22,
+                                        end: 23,
+                                        new_text: "\"",
+                                    },
+                                    TextEdit {
+                                        start: 26,
+                                        end: 27,
+                                        new_text: "\"",
+                                    },
+                                ],
+                            },
+                        ),
+                    },
+                    LintDiagnostic {
+                        rule_name: "vue/html-quotes",
+                        severity: Warning,
+                        message: "Expected double quotes but found single quotes",
+                        start: 49,
+                        end: 54,
+                        help: Some(
+                            "Use consistent quote style for HTML attribute values.",
+                        ),
+                        labels: [],
+                        fix: Some(
+                            Fix {
+                                message: "Use double quotes",
+                                edits: [
+                                    TextEdit {
+                                        start: 49,
+                                        end: 50,
+                                        new_text: "\"",
+                                    },
+                                    TextEdit {
+                                        start: 53,
+                                        end: 54,
+                                        new_text: "\"",
+                                    },
+                                ],
+                            },
+                        ),
+                    },
+                ],
+                error_count: 0,
+                warning_count: 3,
+            },
+        },
+        Application {
+            diagnostic_index: 3,
+            source: "<div v-if='ok' :class='cls' @click='go()' v-html=\"raw\"></div>",
+            result: LintResult {
+                filename: "History.vue",
+                diagnostics: [
+                    LintDiagnostic {
+                        rule_name: "vue/html-quotes",
+                        severity: Warning,
+                        message: "Expected double quotes but found single quotes",
+                        start: 10,
+                        end: 14,
+                        help: Some(
+                            "Use consistent quote style for HTML attribute values.",
+                        ),
+                        labels: [],
+                        fix: Some(
+                            Fix {
+                                message: "Use double quotes",
+                                edits: [
+                                    TextEdit {
+                                        start: 10,
+                                        end: 11,
+                                        new_text: "\"",
+                                    },
+                                    TextEdit {
+                                        start: 13,
+                                        end: 14,
+                                        new_text: "\"",
+                                    },
+                                ],
+                            },
+                        ),
+                    },
+                    LintDiagnostic {
+                        rule_name: "vue/html-quotes",
+                        severity: Warning,
+                        message: "Expected double quotes but found single quotes",
+                        start: 22,
+                        end: 27,
+                        help: Some(
+                            "Use consistent quote style for HTML attribute values.",
+                        ),
+                        labels: [],
+                        fix: Some(
+                            Fix {
+                                message: "Use double quotes",
+                                edits: [
+                                    TextEdit {
+                                        start: 22,
+                                        end: 23,
+                                        new_text: "\"",
+                                    },
+                                    TextEdit {
+                                        start: 26,
+                                        end: 27,
+                                        new_text: "\"",
+                                    },
+                                ],
+                            },
+                        ),
+                    },
+                    LintDiagnostic {
+                        rule_name: "vue/html-quotes",
+                        severity: Warning,
+                        message: "Expected double quotes but found single quotes",
+                        start: 35,
+                        end: 41,
+                        help: Some(
+                            "Use consistent quote style for HTML attribute values.",
+                        ),
+                        labels: [],
+                        fix: Some(
+                            Fix {
+                                message: "Use double quotes",
+                                edits: [
+                                    TextEdit {
+                                        start: 35,
+                                        end: 36,
+                                        new_text: "\"",
+                                    },
+                                    TextEdit {
+                                        start: 40,
+                                        end: 41,
+                                        new_text: "\"",
+                                    },
+                                ],
+                            },
+                        ),
+                    },
+                ],
+                error_count: 0,
+                warning_count: 3,
+            },
+        },
+    ],
+    unchanged_requery: None,
+}

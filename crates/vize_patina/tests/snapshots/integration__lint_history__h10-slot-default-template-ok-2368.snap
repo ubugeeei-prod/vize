@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h10-slot-default-template-ok-2368",
+    history: "94433e1c8b9a1a4439dae086b67fb5976ff351fe",
+    source: "<MyComponent>\n            <template #default=\"slotProps\">{{ slotProps }}</template>\n            <template #header>Header</template>\n        </MyComponent>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/valid-v-slot",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

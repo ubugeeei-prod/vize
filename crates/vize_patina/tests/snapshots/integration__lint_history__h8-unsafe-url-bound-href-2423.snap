@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h8-unsafe-url-bound-href-2423",
+    history: "4bc6cc8edec50c20233bcb462a750758ffd6839b",
+    source: "<a :href=\"userUrl\">Link</a>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/no-unsafe-url",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/no-unsafe-url",
+                severity: Warning,
+                message: "Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
+                start: 3,
+                end: 18,
+                help: Some(
+                    "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/no-unsafe-url",
+                    severity: Warning,
+                    message: "Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
+                    start: 3,
+                    end: 18,
+                    help: Some(
+                        "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

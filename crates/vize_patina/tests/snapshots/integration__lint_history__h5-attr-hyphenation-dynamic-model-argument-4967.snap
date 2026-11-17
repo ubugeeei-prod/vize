@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h5-attr-hyphenation-dynamic-model-argument-4967",
+    history: "80c4bfd6260bb2d891460a19a273ab5c28e5e8d4",
+    source: "<MyComponent v-model:[activeKey]=\"value\" />",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/attribute-hyphenation",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

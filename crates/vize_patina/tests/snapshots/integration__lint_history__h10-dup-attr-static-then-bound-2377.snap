@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h10-dup-attr-static-then-bound-2377",
+    history: "e3f4ffc87c09d7c3f09fba98ec1bdc849c19bbd3",
+    source: "<div id=\"foo\" :id=\"bar\"></div>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/no-duplicate-attributes",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/no-duplicate-attributes",
+                severity: Error,
+                message: "Duplicate attribute 'v-bind:id'",
+                start: 14,
+                end: 23,
+                help: Some(
+                    "Remove the duplicate attribute",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 1,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/no-duplicate-attributes",
+                    severity: Error,
+                    message: "Duplicate attribute 'v-bind:id'",
+                    start: 14,
+                    end: 23,
+                    help: Some(
+                        "Remove the duplicate attribute",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 1,
+            warning_count: 0,
+        },
+    ),
+}

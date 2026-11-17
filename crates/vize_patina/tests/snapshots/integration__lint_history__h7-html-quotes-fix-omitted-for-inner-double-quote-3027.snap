@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h7-html-quotes-fix-omitted-for-inner-double-quote-3027",
+    history: "6f6e87780f37a3540f3391afd945b480f7ba9098",
+    source: "<div title='say \"hi\"'></div>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/html-quotes",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/html-quotes",
+                severity: Warning,
+                message: "Expected double quotes but found single quotes",
+                start: 11,
+                end: 21,
+                help: Some(
+                    "Use consistent quote style for HTML attribute values.",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/html-quotes",
+                    severity: Warning,
+                    message: "Expected double quotes but found single quotes",
+                    start: 11,
+                    end: 21,
+                    help: Some(
+                        "Use consistent quote style for HTML attribute values.",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

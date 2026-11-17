@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h7-mutating-props-local-ref-shadows-prop-2927",
+    history: "7b11533440c8e2578aed1b4827852aa072d5655f",
+    source: "<script setup lang=\"ts\">\nimport { ref } from 'vue'\n\nconst props = defineProps<{ enabled?: boolean }>()\nconst enabled = ref(props.enabled)\n</script>\n\n<template>\n  <Switch v-model=\"enabled\" />\n</template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "vue/no-mutating-props",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

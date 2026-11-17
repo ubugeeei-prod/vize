@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h8-transition-appear-mixed-2445",
+    history: "c2c1f09e4eb6309df91d920472be0b8068815be8",
+    source: "\n        <Transition name=\"fade\" appear>\n          <div>loading</div>\n        </Transition>\n        <Transition name=\"fade\">\n          <div>static</div>\n        </Transition>\n        ",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/require-toggle-inside-transition",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/require-toggle-inside-transition",
+                severity: Error,
+                message: "the element inside `<transition>` is expected to have a toggle such as `v-if`, `v-show`, or a bound `:key`",
+                start: 135,
+                end: 140,
+                help: Some(
+                    "Add `v-if`, `v-show`, `v-else`, `v-else-if`, or a bound `:key`, or use a dynamic `<component :is>`; otherwise the element never enters or leaves and the `<transition>` does nothing.",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 1,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/require-toggle-inside-transition",
+                    severity: Error,
+                    message: "the element inside `<transition>` is expected to have a toggle such as `v-if`, `v-show`, or a bound `:key`",
+                    start: 135,
+                    end: 140,
+                    help: Some(
+                        "Add `v-if`, `v-show`, `v-else`, `v-else-if`, or a bound `:key`, or use a dynamic `<component :is>`; otherwise the element never enters or leaves and the `<transition>` does nothing.",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 1,
+            warning_count: 0,
+        },
+    ),
+}

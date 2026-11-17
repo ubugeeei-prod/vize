@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h6-nuxt-config-inversion-literal-keys-3768",
+    history: "7910a3c4b072b4f2652e4f4055fdc53a38119479",
+    source: "export default { zebra: 1, \"ssr\": true, modules: [], 'app': {}, css: [] }",
+    filename: "nuxt.config.ts",
+    entry: "script",
+    rule: "nuxt/nuxt-config-keys-order",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 1,
+}
+Observation {
+    initial: LintResult {
+        filename: "nuxt.config.ts",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "nuxt/nuxt-config-keys-order",
+                severity: Error,
+                message: "Expected config key \"zebra\" to come after \"ssr\"",
+                start: 17,
+                end: 25,
+                help: None,
+                labels: [],
+                fix: Some(
+                    Fix {
+                        message: "Sort Nuxt config keys",
+                        edits: [
+                            TextEdit {
+                                start: 16,
+                                end: 71,
+                                new_text: " modules: [], css: [], 'app': {}, \"ssr\": true, zebra: 1",
+                            },
+                        ],
+                    },
+                ),
+            },
+        ],
+        error_count: 1,
+        warning_count: 0,
+    },
+    applications: [
+        Application {
+            diagnostic_index: 0,
+            source: "export default { modules: [], css: [], 'app': {}, \"ssr\": true, zebra: 1 }",
+            result: LintResult {
+                filename: "nuxt.config.ts",
+                diagnostics: [],
+                error_count: 0,
+                warning_count: 0,
+            },
+        },
+    ],
+    unchanged_requery: None,
+}

@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-v-bind-supported-modifiers-2354",
+    history: "72c604cf72607947743d4826d586907618d44c72",
+    source: "<div :id.camel=\"id\" :value.prop=\"value\" :aria-label.attr=\"label\" :title.sync=\"title\"></div>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/valid-v-bind",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

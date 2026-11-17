@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h12-top-level-ref-script-setup-skipped-1682",
+    history: "82871f814f0f541b2de8dd5feaaa86ea80bd38e3",
+    source: "<script setup>\nconst count = ref(0)\n</script>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "script/no-top-level-ref-in-script",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

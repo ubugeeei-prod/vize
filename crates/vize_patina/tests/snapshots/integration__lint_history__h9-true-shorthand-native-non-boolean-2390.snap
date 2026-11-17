@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h9-true-shorthand-native-non-boolean-2390",
+    history: "bc0c34d9ddec008b9b6e315b69dd6e9d0b87cd39",
+    source: "<div :aria-hidden=\"true\" :data-active=\"true\" />",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/prefer-true-attribute-shorthand",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

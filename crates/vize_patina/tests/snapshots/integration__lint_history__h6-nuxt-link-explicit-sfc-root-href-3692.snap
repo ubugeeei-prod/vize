@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h6-nuxt-link-explicit-sfc-root-href-3692",
+    history: "75c858f4b1b59bcf826279a9a44c3e62cbea3e78",
+    source: "<template><a href=\"/\">Home</a></template>",
+    filename: "app/components/AppFooter.vue",
+    entry: "sfc",
+    rule: "ecosystem/nuxt-prefer-nuxt-link",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "app/components/AppFooter.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "ecosystem/nuxt-prefer-nuxt-link",
+                severity: Warning,
+                message: "Use NuxtLink for internal links",
+                start: 13,
+                end: 21,
+                help: Some(
+                    "Replace the anchor with `<NuxtLink to=\"...\">` so Nuxt can prefetch, route, and type-check the navigation target.",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "app/components/AppFooter.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "ecosystem/nuxt-prefer-nuxt-link",
+                    severity: Warning,
+                    message: "Use NuxtLink for internal links",
+                    start: 13,
+                    end: 21,
+                    help: Some(
+                        "Replace the anchor with `<NuxtLink to=\"...\">` so Nuxt can prefetch, route, and type-check the navigation target.",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h7-component-static-is-span-v-text-3211",
+    history: "f310d1cfdcc86110c868c55265489e77f45f187d",
+    source: "<component is=\"span\" v-text=\"content\" />",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/no-v-text-v-html-on-component",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-v-slot-duplicate-across-if-else-2352",
+    history: "4e85e71d12cacef33938d44ad16eacc1b83a429a",
+    source: "<MyComponent>\n                <template v-if=\"ok\" #header>Header A</template>\n                <template v-else #header>Header B</template>\n            </MyComponent>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/valid-v-slot",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

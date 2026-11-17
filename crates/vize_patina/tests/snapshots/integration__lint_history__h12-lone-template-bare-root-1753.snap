@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h12-lone-template-bare-root-1753",
+    history: "97e9daf20570b2e4c8b1bb19233b8f62094c6220",
+    source: "<template><div>content</div></template>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/no-lone-template",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/no-lone-template",
+                severity: Warning,
+                message: "`<template>` without directive is unnecessary",
+                start: 0,
+                end: 10,
+                help: Some(
+                    "Remove the `<template>` wrapper or add a directive (v-if, v-for, v-slot)",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/no-lone-template",
+                    severity: Warning,
+                    message: "`<template>` without directive is unnecessary",
+                    start: 0,
+                    end: 10,
+                    help: Some(
+                        "Remove the `<template>` wrapper or add a directive (v-if, v-for, v-slot)",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

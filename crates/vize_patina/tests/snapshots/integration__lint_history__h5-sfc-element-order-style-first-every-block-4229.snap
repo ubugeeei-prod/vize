@@ -1,0 +1,83 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h5-sfc-element-order-style-first-every-block-4229",
+    history: "4a6d20cd9f5b59f80b3c9c1d3bafc97fbac72a09",
+    source: "<style></style>\n<script setup></script>\n<template><div></div></template>",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "vue/sfc-element-order",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 2,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/sfc-element-order",
+                severity: Warning,
+                message: "<script setup> should come before <style>",
+                start: 16,
+                end: 39,
+                help: Some(
+                    "Recommended order: <script> and <template> (either order) -> <style>",
+                ),
+                labels: [],
+                fix: None,
+            },
+            LintDiagnostic {
+                rule_name: "vue/sfc-element-order",
+                severity: Warning,
+                message: "<template> should come before <style>",
+                start: 40,
+                end: 72,
+                help: Some(
+                    "Recommended order: <script> and <template> (either order) -> <style>",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 2,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/sfc-element-order",
+                    severity: Warning,
+                    message: "<script setup> should come before <style>",
+                    start: 16,
+                    end: 39,
+                    help: Some(
+                        "Recommended order: <script> and <template> (either order) -> <style>",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+                LintDiagnostic {
+                    rule_name: "vue/sfc-element-order",
+                    severity: Warning,
+                    message: "<template> should come before <style>",
+                    start: 40,
+                    end: 72,
+                    help: Some(
+                        "Recommended order: <script> and <template> (either order) -> <style>",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 2,
+        },
+    ),
+}

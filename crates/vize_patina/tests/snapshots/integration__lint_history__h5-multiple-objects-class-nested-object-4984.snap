@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h5-multiple-objects-class-nested-object-4984",
+    history: "b37d53cc62e902e089c176f23e9b5dce971003ce",
+    source: "<div :class=\"[{ a: { nested: true } }]\"></div>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/no-multiple-objects-in-class",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

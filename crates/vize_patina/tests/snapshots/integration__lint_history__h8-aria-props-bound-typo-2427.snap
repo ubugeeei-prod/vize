@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h8-aria-props-bound-typo-2427",
+    history: "5ef7bab20f1f51840130d5c4a76f58a8cf9af798",
+    source: "<input :aria-labeledby=\"labelId\" />",
+    filename: "History.vue",
+    entry: "template",
+    rule: "a11y/aria-props",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "a11y/aria-props",
+                severity: Error,
+                message: "Invalid ARIA attribute 'aria-labeledby'",
+                start: 7,
+                end: 32,
+                help: Some(
+                    "**Invalid attribute:** `aria-labeledby`\n\n**Did you mean:** `aria-labelledby`?\n\nThis is a common typo. ARIA attributes follow specific naming conventions from the WAI-ARIA specification.",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 1,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "a11y/aria-props",
+                    severity: Error,
+                    message: "Invalid ARIA attribute 'aria-labeledby'",
+                    start: 7,
+                    end: 32,
+                    help: Some(
+                        "**Invalid attribute:** `aria-labeledby`\n\n**Did you mean:** `aria-labelledby`?\n\nThis is a common typo. ARIA attributes follow specific naming conventions from the WAI-ARIA specification.",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 1,
+            warning_count: 0,
+        },
+    ),
+}

@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h6-unused-prop-eslint-marker-in-string-3520",
+    history: "6707962c0d57b37109814d206c374c843ac3f389",
+    source: "<script setup lang=\"ts\">\nconst marker = \"eslint-disable-next-line vue/no-unused-properties\"\ndefineProps<{ msg: string }>();\n</script>\n\n<template><div>hi</div></template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "vue/no-unused-properties",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/no-unused-properties",
+                severity: Warning,
+                message: "Prop 'msg' is defined but never used",
+                start: 106,
+                end: 117,
+                help: Some(
+                    "Remove unused prop or use it in your template/script",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/no-unused-properties",
+                    severity: Warning,
+                    message: "Prop 'msg' is defined but never used",
+                    start: 106,
+                    end: 117,
+                    help: Some(
+                        "Remove unused prop or use it in your template/script",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

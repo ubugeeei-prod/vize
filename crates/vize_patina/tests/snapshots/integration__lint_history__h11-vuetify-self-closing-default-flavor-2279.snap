@@ -1,0 +1,61 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-vuetify-self-closing-default-flavor-2279",
+    history: "6ef405f3e5f37930b67be2bdc1060355a5a8b1fc",
+    source: "<main><v-btn></v-btn></main>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/html-self-closing",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 1,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/html-self-closing",
+                severity: Warning,
+                message: "Empty component should be self-closing",
+                start: 6,
+                end: 13,
+                help: Some(
+                    "Use self-closing syntax",
+                ),
+                labels: [],
+                fix: Some(
+                    Fix {
+                        message: "Use self-closing syntax",
+                        edits: [
+                            TextEdit {
+                                start: 6,
+                                end: 21,
+                                new_text: "<v-btn />",
+                            },
+                        ],
+                    },
+                ),
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [
+        Application {
+            diagnostic_index: 0,
+            source: "<main><v-btn /></main>",
+            result: LintResult {
+                filename: "History.vue",
+                diagnostics: [],
+                error_count: 0,
+                warning_count: 0,
+            },
+        },
+    ],
+    unchanged_requery: None,
+}

@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h9-v-on-exact-static-control-2407",
+    history: "8ac20de86378ce9436ce4c076f4c6f205ff989cf",
+    source: "<button @click=\"handleClick\" @click.ctrl=\"handleCtrlClick\">Click</button>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/use-v-on-exact",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/use-v-on-exact",
+                severity: Warning,
+                message: "@click without .exact can also fire with additional system modifiers",
+                start: 8,
+                end: 14,
+                help: Some(
+                    "**Why:** Handlers can overlap when additional Ctrl/Shift/Alt/Meta keys are held. `.exact` allows the declared system modifiers and rejects additional ones.\n\n**Fix:**\n```vue\n<!-- Before -->\n<button @click=\"onClick\" @click.ctrl=\"onCtrlClick\" />\n\n<!-- After -->\n<button @click.exact=\"onClick\" @click.ctrl=\"onCtrlClick\" />\n```",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/use-v-on-exact",
+                    severity: Warning,
+                    message: "@click without .exact can also fire with additional system modifiers",
+                    start: 8,
+                    end: 14,
+                    help: Some(
+                        "**Why:** Handlers can overlap when additional Ctrl/Shift/Alt/Meta keys are held. `.exact` allows the declared system modifiers and rejects additional ones.\n\n**Fix:**\n```vue\n<!-- Before -->\n<button @click=\"onClick\" @click.ctrl=\"onCtrlClick\" />\n\n<!-- After -->\n<button @click.exact=\"onClick\" @click.ctrl=\"onCtrlClick\" />\n```",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

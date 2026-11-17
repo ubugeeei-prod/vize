@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h5-unused-properties-generic-model-modifiers-4515",
+    history: "42423d527c4ca32f346e228cc4cd6ad4b925ab62",
+    source: "<script setup lang=\"ts\" generic=\"T extends string | number\">\ndefineModel<T>({ default: \"\" as T });\ndefineProps<{\n  modelModifiers?: Record<string, boolean>;\n}>();\n</script>\n\n<template>\n  <label>generic input</label>\n</template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "vue/no-unused-properties",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

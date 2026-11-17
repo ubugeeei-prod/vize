@@ -1,0 +1,61 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h5-mustache-spacing-missing-close-4429",
+    history: "80bbc1007488009374a829428df4c10064a5f56e",
+    source: "<div>{{ text}}</div>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/mustache-interpolation-spacing",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 1,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/mustache-interpolation-spacing",
+                severity: Warning,
+                message: "Expected 1 space before '}}', but not found",
+                start: 12,
+                end: 14,
+                help: Some(
+                    "Add spaces: {{ value }}",
+                ),
+                labels: [],
+                fix: Some(
+                    Fix {
+                        message: "Add spaces: {{ value }}",
+                        edits: [
+                            TextEdit {
+                                start: 12,
+                                end: 12,
+                                new_text: " ",
+                            },
+                        ],
+                    },
+                ),
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [
+        Application {
+            diagnostic_index: 0,
+            source: "<div>{{ text }}</div>",
+            result: LintResult {
+                filename: "History.vue",
+                diagnostics: [],
+                error_count: 0,
+                warning_count: 0,
+            },
+        },
+    ],
+    unchanged_requery: None,
+}
