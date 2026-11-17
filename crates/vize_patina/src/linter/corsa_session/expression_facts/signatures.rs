@@ -27,16 +27,7 @@ pub(super) async fn resolved_parameters(
     (positions, with_rest): (u32, bool),
     cache: &mut DetailCache,
 ) -> corsa::Result<Option<Value>> {
-    let signature = session
-        .client()
-        .get_resolved_signature(
-            session.snapshot().handle.clone(),
-            session.project_handle(),
-            location,
-        )
-        .await
-        .ok()
-        .flatten();
+    let signature = session.resolved_signature(&location).await;
     let Some(signature) = signature else {
         return Ok(None);
     };
@@ -48,16 +39,8 @@ pub(super) async fn resolved_parameters(
             break;
         }
         let parameter = session
-            .client()
-            .get_parameter_type(
-                session.snapshot().handle.clone(),
-                session.project_handle(),
-                signature.id.clone(),
-                i32::try_from(index).unwrap_or(i32::MAX),
-            )
-            .await
-            .ok()
-            .flatten();
+            .parameter_type(&signature.id, i32::try_from(index).unwrap_or(i32::MAX))
+            .await;
         types.push(match parameter {
             Some(parameter) => described(session, &parameter, cache).await?,
             None => Value::Null,

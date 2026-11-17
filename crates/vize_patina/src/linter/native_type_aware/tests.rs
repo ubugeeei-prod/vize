@@ -9,6 +9,7 @@ mod runtime;
 mod severity;
 mod template_event_handlers;
 mod typescript_constituents;
+mod typescript_enum_assignment;
 mod typescript_jsdoc_callee;
 mod typescript_parity;
 mod typescript_promises;
@@ -78,7 +79,6 @@ defineEmits(["update:open"])
         "runtime-only emits should still be reported",
     );
 }
-
 #[test]
 fn no_floating_promises_uses_corsa() {
     if !corsa_available() {

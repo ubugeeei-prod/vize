@@ -74,6 +74,7 @@ mod typed_context_undefined;
 mod unicode_prop_bindings;
 mod unknown_options_10218;
 mod vfor_const_listener_narrowing_11973;
+mod with_defaults_undefined_13179;
 mod workspace_runtime_props_13110;
 
 use support::{

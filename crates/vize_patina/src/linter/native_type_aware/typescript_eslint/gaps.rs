@@ -2,10 +2,11 @@
 use super::tree::Collected;
 use corsa::lint::LintNode;
 use serde_json::Value;
+use vize_l0::String as CompactString;
 
 pub(super) struct Gap {
     pub rule: &'static str,
-    pub message: &'static str,
+    pub message: CompactString,
     pub start: u32,
     pub end: u32,
 }
@@ -21,6 +22,7 @@ pub(super) fn reports(collected: &Collected, misused: Option<Option<&Value>>) ->
         if let Some(gap) = generated_empty(node) {
             gaps.push(gap);
         }
+        unsafe_enums(node, &mut gaps);
         if checks_variables && let Some(gap) = thenable_dispose(node) {
             gaps.push(gap);
         }
@@ -70,7 +72,9 @@ fn thenable_dispose(node: &LintNode) -> Option<Gap> {
     }
     Some(Gap {
         rule: "type/no-misused-promises",
-        message: "Promise-returning function provided to variable where a void return was expected.",
+        message:
+            "Promise-returning function provided to variable where a void return was expected."
+                .into(),
         start: init.range.start,
         end: init.range.end,
     })
@@ -95,8 +99,44 @@ fn generated_empty(node: &LintNode) -> Option<Gap> {
     }
     Some(Gap {
         rule: "type/no-generated-empty-object-type",
-        message: "This type resolves to `{}`, the empty object type. This was likely not intentional.",
+        message:
+            "This type resolves to `{}`, the empty object type. This was likely not intentional."
+                .into(),
         start: node.range.start,
         end: node.range.end,
     })
+}
+
+fn unsafe_enums(node: &LintNode, gaps: &mut Vec<Gap>) {
+    for report in node
+        .fields
+        .get("__unsafeEnumReports")
+        .and_then(Value::as_array)
+        .into_iter()
+        .flatten()
+    {
+        let Some(start) = report
+            .get("start")
+            .and_then(Value::as_u64)
+            .and_then(|value| u32::try_from(value).ok())
+        else {
+            continue;
+        };
+        let Some(end) = report
+            .get("end")
+            .and_then(Value::as_u64)
+            .and_then(|value| u32::try_from(value).ok())
+        else {
+            continue;
+        };
+        let Some(message) = report.get("message").and_then(Value::as_str) else {
+            continue;
+        };
+        gaps.push(Gap {
+            rule: "type/no-unsafe-enum-assignment",
+            message: CompactString::from(message),
+            start,
+            end,
+        });
+    }
 }
