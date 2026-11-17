@@ -13,8 +13,9 @@ use super::glob::normalize_input_path;
 use super::loader::TsconfigInputCache;
 use super::matching::{is_nuxt_import_manifest_path, path_has_component};
 use super::type_references::{
-    collect_tsconfig_type_packages, reference_directive_lines, reference_type_packages,
-    resolve_type_package_declaration_files, resolve_type_reference_declaration_files,
+    DeclarationContents, collect_tsconfig_type_packages, reference_directive_lines,
+    reference_type_packages, resolve_type_package_declaration_files,
+    resolve_type_reference_declaration_files_reading,
 };
 
 mod content_mapper;
@@ -48,10 +49,20 @@ pub(crate) fn collect_ambient_declaration_files(
     let project_root = normalize_input_path(project_root);
     let mut files =
         collect_default_check_files_inner(&project_root, tsconfig_path, true, false, cache);
-    let explicit_type_declarations =
-        collect_tsconfig_type_declaration_files(&project_root, tsconfig_path);
+    let mut contents = DeclarationContents::default();
+    let explicit_type_declarations = collect_tsconfig_type_declaration_files_reading(
+        &project_root,
+        tsconfig_path,
+        &mut contents,
+    );
     files.extend(explicit_type_declarations.iter().cloned());
-    collect_ambient_declaration_files_from(project_root, files, explicit_type_declarations, None)
+    collect_ambient_declaration_files_from(
+        project_root,
+        files,
+        explicit_type_declarations,
+        contents,
+        None,
+    )
 }
 
 pub(crate) fn collect_hidden_ambient_declaration_files(
@@ -65,12 +76,17 @@ pub(crate) fn collect_hidden_ambient_declaration_files(
             .into_iter()
             .collect::<FxHashSet<_>>();
     let files = collect_default_check_files_inner(&project_root, tsconfig_path, true, false, cache);
-    let explicit_type_declarations =
-        collect_tsconfig_type_declaration_files(&project_root, tsconfig_path);
+    let mut contents = DeclarationContents::default();
+    let explicit_type_declarations = collect_tsconfig_type_declaration_files_reading(
+        &project_root,
+        tsconfig_path,
+        &mut contents,
+    );
     collect_ambient_declaration_files_from(
         project_root,
         files,
         explicit_type_declarations,
+        contents,
         Some(&visible),
     )
     .into_iter()
@@ -82,6 +98,7 @@ fn collect_ambient_declaration_files_from(
     project_root: PathBuf,
     mut files: Vec<PathBuf>,
     explicit_type_declarations: Vec<PathBuf>,
+    mut contents: DeclarationContents,
     visible_files: Option<&FxHashSet<PathBuf>>,
 ) -> Vec<PathBuf> {
     let configured_file_count = files.len();
@@ -101,7 +118,10 @@ fn collect_ambient_declaration_files_from(
     while let Some(path) = files.get(index).cloned() {
         let is_configured_file = index < configured_file_count;
         index += 1;
-        let Ok(content) = fs::read_to_string(&path) else {
+        let Some(content) = contents
+            .remove(&path)
+            .or_else(|| fs::read_to_string(&path).ok())
+        else {
             continue;
         };
         if !is_declaration_file(&path) {
@@ -131,7 +151,7 @@ fn collect_ambient_declaration_files_from(
                 files.push(referenced);
             }
         }
-        for referenced in reference_type_declaration_files(&path, &content) {
+        for referenced in reference_type_declaration_files(&path, &content, &mut contents) {
             if seen.insert(referenced.clone()) {
                 files.push(referenced);
             }
@@ -159,22 +179,28 @@ fn collect_ambient_declaration_files_from(
 pub(crate) fn collect_declaration_reference_graph(
     configured_files: &[PathBuf],
 ) -> FxHashSet<PathBuf> {
-    collect_declaration_reference_graph_reading(configured_files, |_| {})
+    collect_declaration_reference_graph_reading(
+        configured_files,
+        DeclarationContents::default(),
+        |_, _| {},
+    )
 }
 
-/// [`collect_declaration_reference_graph`], handing `read` the content of every
-/// declaration in the graph as it is read, so a caller that inspects them
-/// reads each file once.
+/// [`collect_declaration_reference_graph`], handing `read` the path and content
+/// of every declaration in the graph as it is read, so a caller that inspects
+/// them reads each file once. A declaration whose text is in `contents`
+/// (a package graph walk already read it) is taken from there, not read again.
 pub(crate) fn collect_declaration_reference_graph_reading(
     configured_files: &[PathBuf],
-    mut read: impl FnMut(&str),
+    mut contents: DeclarationContents,
+    mut read: impl FnMut(&Path, &str),
 ) -> FxHashSet<PathBuf> {
     // Reuse the program's already collected roots. Do not walk the workspace
     // or parse its configuration again for generated-stub discovery.
     let mut files = configured_files.to_vec();
     // Configured roots may live outside the app (Nuxt's custom buildDir).
     // Their explicit references retain membership across that boundary.
-    follow_declaration_references(None, &mut files, &mut read);
+    follow_declaration_references(None, &mut files, &mut contents, &mut read);
     files
         .into_iter()
         .filter(|path| is_declaration_file(path))
@@ -184,7 +210,8 @@ pub(crate) fn collect_declaration_reference_graph_reading(
 fn follow_declaration_references(
     project_root: Option<&Path>,
     files: &mut Vec<PathBuf>,
-    read: &mut dyn FnMut(&str),
+    contents: &mut DeclarationContents,
+    read: &mut dyn FnMut(&Path, &str),
 ) {
     let mut seen = files.iter().cloned().collect::<FxHashSet<_>>();
     let mut index = 0;
@@ -193,16 +220,19 @@ fn follow_declaration_references(
         if !is_declaration_file(&path) {
             continue;
         }
-        let Ok(content) = fs::read_to_string(&path) else {
+        let Some(content) = contents
+            .remove(&path)
+            .or_else(|| fs::read_to_string(&path).ok())
+        else {
             continue;
         };
-        read(&content);
+        read(&path, &content);
         for referenced in reference_path_declaration_files(&path, &content, project_root) {
             if seen.insert(referenced.clone()) {
                 files.push(referenced);
             }
         }
-        for referenced in reference_type_declaration_files(&path, &content) {
+        for referenced in reference_type_declaration_files(&path, &content, contents) {
             if seen.insert(referenced.clone()) {
                 files.push(referenced);
             }
@@ -218,6 +248,26 @@ pub(crate) fn collect_tsconfig_type_declaration_files(
     collect_tsconfig_type_packages(tsconfig_path)
         .into_iter()
         .flat_map(|package| resolve_type_package_declaration_files(search_start, package.as_str()))
+        .collect()
+}
+
+/// [`collect_tsconfig_type_declaration_files`], keeping in `contents` the text
+/// of every declaration the package graph walks read.
+pub(crate) fn collect_tsconfig_type_declaration_files_reading(
+    project_root: &Path,
+    tsconfig_path: Option<&Path>,
+    contents: &mut DeclarationContents,
+) -> Vec<PathBuf> {
+    let search_start = tsconfig_path.unwrap_or(project_root);
+    collect_tsconfig_type_packages(tsconfig_path)
+        .into_iter()
+        .flat_map(|package| {
+            resolve_type_reference_declaration_files_reading(
+                search_start,
+                package.as_str(),
+                contents,
+            )
+        })
         .collect()
 }
 
@@ -337,14 +387,18 @@ fn reference_path_declaration_files(
         .collect()
 }
 
-fn reference_type_declaration_files(path: &Path, content: &str) -> Vec<PathBuf> {
+fn reference_type_declaration_files(
+    path: &Path,
+    content: &str,
+    contents: &mut DeclarationContents,
+) -> Vec<PathBuf> {
     let Some(base_dir) = path.parent() else {
         return Vec::new();
     };
     reference_type_packages(content)
         .into_iter()
         .flat_map(|reference| {
-            resolve_type_reference_declaration_files(base_dir, reference.as_str())
+            resolve_type_reference_declaration_files_reading(base_dir, reference.as_str(), contents)
         })
         .collect()
 }
