@@ -1,0 +1,5 @@
+{
+  "vue/no-console": "warn",
+  "vue/require-default-export": "error",
+  "vue/require-prop-comment": "warn"
+}

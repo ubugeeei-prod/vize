@@ -1,0 +1,12 @@
+<script setup lang="ts">
+type Props = {
+  multiple?: false | undefined;
+  modelValue?: string,
+  pick(value: string): void
+}
+defineProps<Props>()
+</script>
+
+<template>
+  <div />
+</template>

@@ -1,8 +1,8 @@
 //! vue/require-default-export
 //!
 //! A component `<script>` that is not `<script setup>` must default-export
-//! the component. The report sits on the script content end, which is the
-//! `<` of `</script>`.
+//! the component. The report covers the `</script>` end tag, the last token
+//! of the program eslint-plugin-vue reports.
 
 use crate::context::LintContext;
 use crate::diagnostic::{LintDiagnostic, Severity};
@@ -73,12 +73,14 @@ impl Rule for RequireDefaultExport {
             } else {
                 "Missing default export."
             };
-            Some((message, script.loc.end as u32))
+            Some((message, script.loc.end as u32, script.loc.tag_end as u32))
         };
-        let Some((message, start)) = report else {
+        let Some((message, start, end)) = report else {
             return;
         };
-        let end = start.saturating_add(1).min(ctx.source.len() as u32);
+        let end = end
+            .max(start.saturating_add(1))
+            .min(ctx.source.len() as u32);
         ctx.report_in_sfc(LintDiagnostic::error(META.name, message, start, end));
     }
 }
@@ -176,6 +178,20 @@ mod tests {
                 "Missing default export.".into()
             )]
         );
+    }
+
+    #[test]
+    fn the_report_covers_the_script_end_tag() {
+        let source = "<script>\nconst label = 1\n</script  >\n<template />";
+        let result = Linter::with_preset(LintPreset::Incremental)
+            .with_enabled_rules(Some(vec!["vue/require-default-export".into()]))
+            .lint_sfc(source, "Export.vue");
+        let ranges: Vec<_> = result
+            .diagnostics
+            .iter()
+            .filter_map(|diagnostic| source.get(diagnostic.start as usize..diagnostic.end as usize))
+            .collect();
+        assert_eq!(ranges, ["</script  >"]);
     }
 
     #[test]
