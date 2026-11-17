@@ -327,6 +327,12 @@ codegen-units = 16
 [profile.ci-opt.package.vize]
 strip = "symbols"
 
+# Real-project matrix: release-speed LSP timings, keeping the assertion sweep over real projects.
+[profile.ci-matrix]
+inherits = "ci-opt"
+debug-assertions = true
+overflow-checks = true
+
 # Keep transitive upstream consumers (notably the formatter) on the same parser.
 # Published Vize crates use the direct vize_oxc_parser dependency above.
 [patch."https://github.com/oxc-project/oxc"]

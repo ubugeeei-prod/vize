@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import {
   BUILD_RECIPE,
   expectedBuildIdentity,
+  recipeBinaryRelativePath,
   validateBuildReceipt,
   type BuildIdentity,
 } from "../../../differential/build-receipt.ts";
@@ -62,16 +63,21 @@ const inventory = (root: string) => {
   });
 };
 
+/** The lifecycle step names the recipe it built; other callers keep the default. */
+const captureRecipe = (): string => process.env.VIZE_LSP_BUILD_RECIPE ?? BUILD_RECIPE;
+const expectedIdentity = (root: string, recipe: string) =>
+  expectedBuildIdentity(root, recipeBinaryRelativePath(recipe));
+
 /** Existing sticky-cache observations remain intact and cannot satisfy a fresh run. */
-export function snapshotSessionCaptures(root: string): Snapshot {
-  return { version: 1, binary: expectedBuildIdentity(root), prior: inventory(root) };
+export function snapshotSessionCaptures(root: string, recipe = captureRecipe()): Snapshot {
+  return { version: 1, binary: expectedIdentity(root, recipe), prior: inventory(root) };
 }
 
 /** Read already captured bytes only; this never invokes the CLI or sends an RPC. */
-export function verifySessionCaptures(root: string, snapshot: Snapshot) {
-  const expected = expectedBuildIdentity(root);
+export function verifySessionCaptures(root: string, snapshot: Snapshot, recipe = captureRecipe()) {
+  const expected = expectedIdentity(root, recipe);
   const receipt = read(path.join(root, `${expected.binaryPath}.differential-build.json`));
-  validateBuildReceipt(receipt, expected, BUILD_RECIPE);
+  validateBuildReceipt(receipt, expected, recipe);
   assert.equal(snapshot.version, 1);
   assert.deepEqual(snapshot.binary, expected);
   const current = inventory(root);
@@ -92,7 +98,7 @@ export function verifySessionCaptures(root: string, snapshot: Snapshot) {
     assert.equal(observation.state, "process-closed");
     assert.equal(observation.sourceRevision, expected.sourceRevision);
     assert.deepEqual(observation.binary, expected);
-    validateBuildReceipt(observation.buildReceipt, expected, BUILD_RECIPE);
+    validateBuildReceipt(observation.buildReceipt, expected, recipe);
     assert.deepEqual(observation.argv, ["lsp"]);
     assert.equal(observation.captureByteLimit, 16 * 1024 * 1024);
     const probe = observation.versionProbe;

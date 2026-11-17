@@ -212,7 +212,7 @@ jobs:
           done
           exit 1
       - name: Build Vize CLI
-        run: cargo build --profile ci -p vize
+        run: cargo build --profile ci-matrix -p vize
       - name: Classify pinned Misskey generated diagnostics
         if: ${{ !cancelled() && contains(matrix.name, 'misskey') }}
         env:
@@ -221,7 +221,7 @@ jobs:
           VIZE_TEST_REQUIRE_TSGO: "1"
           VIZE_TEST_FIX_HISTORY_CAPTURE_DIR: ${{ github.workspace }}/${{ env.FIXTURE_REPORT_DIR }}/misskey-generated-diagnostics-9516
         run: >-
-          cargo test --locked --profile ci -p vize_canon --lib
+          cargo test --locked --profile ci-matrix -p vize_canon --lib
           pinned_misskey_preserves_current_and_tuple_diagnostic_boundaries
           -- --nocapture --test-threads=1
       - name: Exercise real projects with every core tool
@@ -235,7 +235,7 @@ jobs:
           node tools/support/compat/fixtures/tool-matrix-report.ts \
             --shard-index "$FIXTURE_SHARD_INDEX" \
             --shard-count "$FIXTURE_SHARD_COUNT" \
-            --vize-bin target/ci/vize \
+            --vize-bin target/ci-matrix/vize \
             --timeout-ms "$CORE_TOOLS_TIMEOUT_MS" \
             --output-dir "$FIXTURE_REPORT_DIR"
 
@@ -247,11 +247,11 @@ jobs:
         env:
           CORSA_PATH: ${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc
           REAL_PROJECT_LSP_TIMEOUT_MS: "600000"
-          VIZE_LSP_BIN: target/ci/vize
+          VIZE_LSP_BIN: target/ci-matrix/vize
           VIZE_LSP_REQUIRE_SOURCE_BUILD: "1"
-          VIZE_LSP_BUILD_RECIPE: "cargo build --profile ci -p vize"
+          VIZE_LSP_BUILD_RECIPE: "cargo build --profile ci-matrix -p vize"
         run: |
-          node tests/differential/build-receipt.ts
+          node tests/differential/build-receipt.ts --profile-ci-matrix
           node tests/tooling/support/lsp/verify-session-captures.ts snapshot "$FIXTURE_REPORT_DIR/lsp-wire-before.json"
           printf '%s\n' 'Lifecycle timings include passive raw RPC recording; they are not paired performance acceptance.' > "$FIXTURE_REPORT_DIR/lsp-wire-timing-policy.txt"
           if [ ! -x "$CORSA_PATH" ]; then
@@ -264,6 +264,8 @@ jobs:
 
       - name: Validate source-bound LSP wire
         if: ${{ always() }}
+        env:
+          VIZE_LSP_BUILD_RECIPE: "cargo build --profile ci-matrix -p vize"
         run: node tests/tooling/support/lsp/verify-session-captures.ts verify "$FIXTURE_REPORT_DIR/lsp-wire-before.json" "$FIXTURE_REPORT_DIR/lsp-wire-integrity.json"
 
       - name: Measure real-project lint divergence
@@ -284,7 +286,7 @@ jobs:
             node tools/commands/fixtures/lint-divergence-report.ts \
             --shard-index "$FIXTURE_SHARD_INDEX" --shard-count "$FIXTURE_SHARD_COUNT" \
             --all-mapped-rules --measure-coverage-gap --budget-mode "$LINT_DIVERGENCE_MODE" \
-            --vize-bin target/ci/vize --timeout-ms 600000 \
+            --vize-bin target/ci-matrix/vize --timeout-ms 600000 \
             --output-dir "$FIXTURE_REPORT_DIR"
           test -s "$FIXTURE_REPORT_DIR/lint-divergence-summary.json"
           LC_ALL=C sha256sum "$FIXTURE_REPORT_DIR"/*-lint-divergence.json \
@@ -309,7 +311,7 @@ jobs:
         if: ${{ !cancelled() }}
         continue-on-error: true
         env:
-          VIZE_TEST_BIN: target/ci/vize
+          VIZE_TEST_BIN: target/ci-matrix/vize
         shell: bash
         run: |
           glyph_exit_code=0
@@ -357,7 +359,7 @@ jobs:
             --shard-index "$FIXTURE_SHARD_INDEX" \
             --shard-count "$FIXTURE_SHARD_COUNT" \
             --budget-mode "$BUDGET_MODE" \
-            --vize-bin target/ci/vize \
+            --vize-bin target/ci-matrix/vize \
             --vue-tsc-bin tests/node_modules/.bin/vue-tsc
       - name: Enforce all real-project surface verdicts
         id: surface_verdict
@@ -401,7 +403,7 @@ jobs:
           name: real-project-lsp-wire-${{ matrix.shard }}-${{ github.sha }}
           path: |
             target/differential/lsp-sessions
-            target/ci/vize.differential-build.json
+            target/ci-matrix/vize.differential-build.json
           if-no-files-found: error
           retention-days: 30
 

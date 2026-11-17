@@ -8,6 +8,7 @@ import { sha256 } from "./sha256.ts";
 export const BUILD_RECIPE = "cargo build --profile ci -p vize";
 export const PROFILE_BUILD_RECIPE = "cargo build --profile ci-opt -p vize --features profiling";
 export const SHIPPING_BUILD_RECIPE = "cargo build --release -p vize";
+export const MATRIX_BUILD_RECIPE = "cargo build --profile ci-matrix -p vize";
 // Source launchers retain their owned target/ci staging path; paired build
 // custody attests that this is a byte-exact copy of the actual release ELF.
 export const LEGACY_BUILD_RECIPE = `${BUILD_RECIPE} --features legacy`;
@@ -16,7 +17,8 @@ export type BuildRecipe =
   | typeof BUILD_RECIPE
   | typeof PROFILE_BUILD_RECIPE
   | typeof LEGACY_BUILD_RECIPE
-  | typeof SHIPPING_BUILD_RECIPE;
+  | typeof SHIPPING_BUILD_RECIPE
+  | typeof MATRIX_BUILD_RECIPE;
 
 /** Complete source/executable identity; additional receipt fields stay opaque. */
 export interface BuildIdentity {
@@ -42,9 +44,18 @@ function validateBuildRecipe(recipe: unknown): asserts recipe is BuildRecipe {
     recipe === BUILD_RECIPE ||
       recipe === PROFILE_BUILD_RECIPE ||
       recipe === LEGACY_BUILD_RECIPE ||
-      recipe === SHIPPING_BUILD_RECIPE,
+      recipe === SHIPPING_BUILD_RECIPE ||
+      recipe === MATRIX_BUILD_RECIPE,
     "unknown source-build recipe",
   );
+}
+
+/** The staging path a source-build recipe writes its CLI to. */
+export function recipeBinaryRelativePath(recipe: unknown = BUILD_RECIPE): string {
+  validateBuildRecipe(recipe);
+  if (recipe === PROFILE_BUILD_RECIPE) return binaryRelativePath("ci-opt");
+  if (recipe === MATRIX_BUILD_RECIPE) return binaryRelativePath("ci-matrix");
+  return binaryRelativePath();
 }
 export const binaryRelativePath = (profile = "ci"): string =>
   `target/${profile}/${process.platform === "win32" ? "vize.exe" : "vize"}`;
@@ -99,7 +110,7 @@ export function expectedBuildIdentity(
 // This receipt records that CI build; it never runs or builds the CLI itself.
 export function writeBuildReceipt(repoRoot: string, recipe: unknown = BUILD_RECIPE): string {
   validateBuildRecipe(recipe);
-  const binaryPath = binaryRelativePath(recipe === PROFILE_BUILD_RECIPE ? "ci-opt" : "ci");
+  const binaryPath = recipeBinaryRelativePath(recipe);
   const receipt: BuildReceipt = {
     schema: "vize.differential.build",
     version: 1,
@@ -115,14 +126,17 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   const args = process.argv.slice(2);
   assert.ok(
     args.length === 0 ||
-      (args.length === 1 && (args[0] === "--legacy" || args[0] === "--profile-ci-opt")),
+      (args.length === 1 &&
+        ["--legacy", "--profile-ci-opt", "--profile-ci-matrix"].includes(args[0]!)),
   );
   const recipe =
     args[0] === "--legacy"
       ? LEGACY_BUILD_RECIPE
       : args[0] === "--profile-ci-opt"
         ? PROFILE_BUILD_RECIPE
-        : BUILD_RECIPE;
+        : args[0] === "--profile-ci-matrix"
+          ? MATRIX_BUILD_RECIPE
+          : BUILD_RECIPE;
   console.log(
     writeBuildReceipt(path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../.."), recipe),
   );

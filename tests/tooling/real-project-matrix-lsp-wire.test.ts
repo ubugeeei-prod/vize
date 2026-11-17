@@ -17,7 +17,30 @@ const prefix =
 
 test("passive native LSP capture retains the complete original Matrix workflow", () => {
   const original = parse(originalBytes);
-  const current = parse(read("../../.github/workflows/real-project-matrix.yml"));
+  // Every matrix binary is the ci-matrix profile: release speed, so LSP
+  // timings match users' builds, with assertions kept. Pin that complete
+  // wiring, then invert it before comparing the original workflow.
+  const matrixText = read("../../.github/workflows/real-project-matrix.yml");
+  assert.equal(matrixText.includes("target/ci/vize"), false);
+  assert.equal(matrixText.includes("--profile ci -p"), false);
+  const inversions = [
+    ["cargo build --profile ci-matrix -p vize\n", "cargo build --profile ci -p vize\n", 1],
+    ['"cargo build --profile ci-matrix -p vize"', '"cargo build --profile ci -p vize"', 2],
+    ["--profile ci-matrix -p vize_canon", "--profile ci -p vize_canon", 1],
+    ["target/ci-matrix/vize", "target/ci/vize", 6],
+    ["build-receipt.ts --profile-ci-matrix\n", "build-receipt.ts\n", 1],
+  ] as const;
+  let invertedText = matrixText;
+  for (const [matrix, ci, count] of inversions) {
+    assert.equal(invertedText.split(matrix).length - 1, count, matrix);
+    invertedText = invertedText.split(matrix).join(ci);
+  }
+  const current = parse(invertedText);
+  const wireStep = current.jobs["real-project-matrix"].steps.find(
+    (step: { name?: string }) => step.name === "Validate source-bound LSP wire",
+  );
+  assert.deepEqual(wireStep.env, { VIZE_LSP_BUILD_RECIPE: "cargo build --profile ci -p vize" });
+  delete wireStep.env;
   assert.deepEqual(original.on.schedule, [{ cron: "37 5 * * 0" }]);
   assert.deepEqual(current.on.schedule, [{ cron: "37 5 * * *" }]);
   current.on.schedule = original.on.schedule;

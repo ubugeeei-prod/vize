@@ -5,6 +5,7 @@ import path from "node:path";
 import {
   BUILD_RECIPE,
   expectedBuildIdentity,
+  recipeBinaryRelativePath,
   validateBuildReceipt,
 } from "../../../differential/build-receipt.ts";
 import { root } from "./paths.ts";
@@ -66,13 +67,13 @@ export function resolveVizeLaunchCommand(
     const repoRoot = sourceBinding.repoRoot ?? root;
     assert.ok(envBinary, "VIZE_LSP_BIN is required for source-built LSP validation");
     const binary = path.resolve(repoRoot, envBinary);
-    const expected = expectedBuildIdentity(repoRoot);
+    const buildRecipe =
+      sourceBinding.buildRecipe ?? process.env.VIZE_LSP_BUILD_RECIPE ?? BUILD_RECIPE;
+    const expected = expectedBuildIdentity(repoRoot, recipeBinaryRelativePath(buildRecipe));
     assert.equal(binary, path.resolve(repoRoot, expected.binaryPath));
     const receipt = JSON.parse(
       fs.readFileSync(`${binary}.differential-build.json`, "utf8"),
     ) as Record<string, unknown>;
-    const buildRecipe =
-      sourceBinding.buildRecipe ?? process.env.VIZE_LSP_BUILD_RECIPE ?? BUILD_RECIPE;
     validateBuildReceipt(receipt, expected, buildRecipe);
     assert.ok(probe(binary), "the verified source-built LSP binary cannot launch");
     sourceBinding.onVerifiedLaunch?.({ binary, expected, receipt, buildRecipe, versionProbe });
