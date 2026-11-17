@@ -272,6 +272,19 @@ for (const spec of arg("scenarios", "mk,mk-json,mk-all,bench,ta").split(",")) {
   }
   if (spec === "ver") scenario("`vize --version` (process start)", mk, ["--version"], runs);
   if (spec === "one") scenario("misskey one SFC `lint src/components/MkButton.vue`", mk, ["lint", "src/components/MkButton.vue"], runs);
+  // `ta-one` / `ta-files-N`: type-aware lint over named files (an editor or lint-staged run).
+  const typeAware = ["--strict-reactivity", "--format", "json"];
+  if (spec === "ta-one")
+    scenario("misskey type-aware one SFC `MkButton.vue`", mkta, ["lint", "src/components/MkButton.vue", ...typeAware], runs);
+  const taNamed = /^ta-files-(\d+)$/.exec(spec);
+  if (taNamed) {
+    const names = readdirSync(join(mkta, "src/widgets"))
+      .filter((name) => name.endsWith(".vue"))
+      .sort()
+      .slice(0, Number(taNamed[1]))
+      .map((name) => `src/widgets/${name}`);
+    scenario(`${names.length} named widget SFCs, type-aware`, mkta, ["lint", ...names, ...typeAware], runs);
+  }
   if (spec === "ir-ver") irScenario("`vize --version` instructions", mk, ["--version"]);
   if (spec === "ir-one") irScenario("one SFC instructions", mk, ["lint", "src/components/MkButton.vue"]);
   if (spec === "phases" || spec === "phases-json") {
