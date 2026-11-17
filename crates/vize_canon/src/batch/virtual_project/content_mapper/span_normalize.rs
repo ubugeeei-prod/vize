@@ -5,7 +5,9 @@ use std::ops::Range;
 
 use super::{ContentMapperSpanKind, SpanCandidate};
 
+mod bits;
 mod runs;
+use bits::Bits;
 pub(super) use runs::join_verbatim_runs;
 
 fn ranges_overlap(left: &Range<usize>, right: &Range<usize>) -> bool {
@@ -20,20 +22,85 @@ pub(super) fn normalize(candidates: Vec<SpanCandidate>) -> Vec<SpanCandidate> {
         candidate.kind != ContentMapperSpanKind::Verbatim
             || candidate.generated.len() == candidate.original.len()
     }) {
-        normalize_with::<DisjointIndex>(candidates)
+        let end = |side: fn(&SpanCandidate) -> usize| candidates.iter().map(side).max();
+        let generated = Bits::new(end(|candidate| candidate.generated.end).unwrap_or(0));
+        let original = Checked {
+            bits: Bits::new(end(|candidate| candidate.original.end).unwrap_or(0)),
+            ranges: DisjointIndex::default(),
+        };
+        normalize_with(candidates, generated, original)
     } else {
-        normalize_with::<LengthClassIndex>(candidates)
+        normalize_with(
+            candidates,
+            LengthClassIndex::default(),
+            LengthClassIndex::default(),
+        )
     }
 }
 
-trait RangeIndex: Default {
+/// What the generated side needs: accepted ranges, and whether a probe
+/// overlaps one.
+trait Overlaps {
+    fn insert(&mut self, range: &Range<usize>);
+    fn overlaps(&self, probe: &Range<usize>) -> bool;
+}
+
+trait RangeIndex {
     fn insert(&mut self, range: &Range<usize>);
     fn overlaps(&self, probe: &Range<usize>) -> bool;
     /// Append every indexed range overlapping `probe`, each once, unordered.
     fn collect_overlapping(&self, probe: &Range<usize>, out: &mut Vec<Range<usize>>);
 }
 
-fn normalize_with<Index: RangeIndex>(mut candidates: Vec<SpanCandidate>) -> Vec<SpanCandidate> {
+impl<Index: RangeIndex> Overlaps for Index {
+    fn insert(&mut self, range: &Range<usize>) {
+        RangeIndex::insert(self, range);
+    }
+
+    fn overlaps(&self, probe: &Range<usize>) -> bool {
+        RangeIndex::overlaps(self, probe)
+    }
+}
+
+impl Overlaps for Bits {
+    fn insert(&mut self, range: &Range<usize>) {
+        Bits::insert(self, range);
+    }
+
+    fn overlaps(&self, probe: &Range<usize>) -> bool {
+        Bits::overlaps(self, probe)
+    }
+}
+
+/// [`DisjointIndex`] behind bits of the same ranges: most candidates overlap
+/// no accepted original, and the bits answer that without a tree walk.
+struct Checked {
+    bits: Bits,
+    ranges: DisjointIndex,
+}
+
+impl RangeIndex for Checked {
+    fn insert(&mut self, range: &Range<usize>) {
+        self.bits.insert(range);
+        self.ranges.insert(range);
+    }
+
+    fn overlaps(&self, probe: &Range<usize>) -> bool {
+        self.bits.overlaps(probe)
+    }
+
+    fn collect_overlapping(&self, probe: &Range<usize>, out: &mut Vec<Range<usize>>) {
+        if self.bits.overlaps(probe) {
+            self.ranges.collect_overlapping(probe, out);
+        }
+    }
+}
+
+fn normalize_with<Generated: Overlaps, Original: RangeIndex>(
+    mut candidates: Vec<SpanCandidate>,
+    mut generated: Generated,
+    mut original: Original,
+) -> Vec<SpanCandidate> {
     candidates.sort_by_key(|candidate| {
         (
             candidate.generated.len(),
@@ -43,8 +110,6 @@ fn normalize_with<Index: RangeIndex>(mut candidates: Vec<SpanCandidate>) -> Vec<
     });
 
     let mut accepted: Vec<SpanCandidate> = Vec::with_capacity(candidates.len());
-    let mut generated = Index::default();
-    let mut original = Index::default();
     let mut overlaps = Vec::new();
     for candidate in candidates {
         if generated.overlaps(&candidate.generated) {
@@ -56,13 +121,13 @@ fn normalize_with<Index: RangeIndex>(mut candidates: Vec<SpanCandidate>) -> Vec<
         // instead of allocating and immediately dropping a singleton Vec.
         if overlaps.is_empty() || overlaps.iter().all(|span| *span == candidate.original) {
             generated.insert(&candidate.generated);
-            original.insert(&candidate.original);
+            RangeIndex::insert(&mut original, &candidate.original);
             accepted.push(candidate);
             continue;
         }
         for piece in split_original_overlaps(candidate, &overlaps) {
             generated.insert(&piece.generated);
-            original.insert(&piece.original);
+            RangeIndex::insert(&mut original, &piece.original);
             accepted.push(piece);
         }
     }
