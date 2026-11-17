@@ -178,3 +178,18 @@ fn the_template_pre_check_only_short_cuts_html() {
         );
     }
 }
+
+#[test]
+fn a_repeated_lang_is_located_where_the_descriptor_reads_it() {
+    // The descriptor's attribute map keeps the last `lang`; so does the span.
+    let source = "<template lang=\"html\" lang=\"haml\">%p</template>";
+    let unsupported = sfc_template_lang(source)
+        .expect("template")
+        .expect_err("haml");
+    assert_eq!(unsupported.authored(), "haml");
+    let span = unsupported.span().expect("span");
+    assert_eq!(
+        source.get(span.start as usize..span.end as usize),
+        Some("haml")
+    );
+}

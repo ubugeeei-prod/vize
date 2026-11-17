@@ -106,19 +106,46 @@ impl Linter {
         let parses = crate::linter::sfc_scripts::lint_scripts(&script_allocator, descriptor);
         let scripts = crate::linter::sfc_scripts::ScriptSemantics::new(&parses);
         let mut result = self.lint_sfc_level(source, filename, Some((descriptor, &scripts)));
-        super::super::super::script_rules::append_builtin_script_diagnostics(
-            self,
-            descriptor,
-            &scripts,
-            &mut result,
-            None,
-        );
-        super::super::super::css_rules::append_builtin_css_diagnostics(
-            self,
-            descriptor,
-            &mut result,
-            None,
-        );
+        #[cfg(not(target_arch = "wasm32"))]
+        let type_aware = super::super::super::native_type_aware::has_active_type_aware_rules(self);
+        #[cfg(target_arch = "wasm32")]
+        let type_aware = false;
+        if type_aware {
+            // The native type-aware lane checks the scripts (and would read
+            // the template): give it the descriptor without its template.
+            #[cfg(not(target_arch = "wasm32"))]
+            {
+                let mut bare = descriptor.clone();
+                bare.template = None;
+                let scripts =
+                    super::super::super::native_type_aware::lint_sfc_with_corsa_descriptor(
+                        self,
+                        source,
+                        filename,
+                        Some(&bare),
+                        false,
+                    );
+                result = Self::merge_lint_results(scripts, result);
+            }
+        } else {
+            super::super::super::script_rules::append_builtin_script_diagnostics(
+                self,
+                descriptor,
+                &scripts,
+                &mut result,
+                None,
+            );
+            super::super::super::css_rules::append_builtin_css_diagnostics(
+                self,
+                descriptor,
+                &mut result,
+                None,
+            );
+        }
+        // Rejected `v-bind()` expressions in styles do not depend on the
+        // template grammar.
+        let style_allocator = vize_l0::Allocator::default();
+        self.append_style_parse_diagnostics(&mut result, &style_allocator, &descriptor.styles);
         let body_start = descriptor
             .template
             .as_ref()

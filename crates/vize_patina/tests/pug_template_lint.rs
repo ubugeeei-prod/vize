@@ -333,3 +333,37 @@ fn pinned_original_pug_and_jade_attribute_blocks_lint_like_their_html_twin() {
         assert_eq!(signature(&result), signature(&expected));
     }
 }
+
+#[test]
+fn an_unsupported_template_lang_keeps_script_style_and_style_parse_checks() {
+    let linter =
+        Linter::with_preset(vize_patina::LintPreset::Incremental).with_enabled_rules(Some(vec![
+            "script/prefer-ref-over-reactive".into(),
+            "css/no-important".into(),
+            "parser/template".into(),
+        ]));
+    let script_and_style = "<script setup>\nimport { reactive } from 'vue';\nconst state = reactive({ count: 0 });\n</script>\n\
+         <style>.item { color: red !important; }\n.x { color: v-bind(foo +); }</style>";
+    let summary = |result: &vize_patina::LintResult| -> Vec<(&str, u32, u32)> {
+        let mut found: Vec<_> = result
+            .diagnostics
+            .iter()
+            .map(|diagnostic| (diagnostic.rule_name, diagnostic.start, diagnostic.end))
+            .collect();
+        found.sort_by_key(|&(_, start, end)| (start, end));
+        found
+    };
+    // Same byte length, so every offset after the template lines up.
+    let html = format!("<template lang=\"html\"><div/></template>\n{script_and_style}");
+    let haml = format!("<template lang=\"haml\">%div  </template>\n{script_and_style}");
+    assert_eq!(html.len(), haml.len());
+    let from_html = linter.lint_sfc(&html, "Unsupported.vue");
+    let from_haml = linter.lint_sfc(&haml, "Unsupported.vue");
+    assert_eq!(
+        from_html.diagnostics.len(),
+        3,
+        "{:?}",
+        from_html.diagnostics
+    );
+    assert_eq!(summary(&from_haml), summary(&from_html));
+}

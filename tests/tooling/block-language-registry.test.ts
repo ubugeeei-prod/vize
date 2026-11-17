@@ -91,6 +91,21 @@ function isTestPath(relative: string): boolean {
   );
 }
 
+/** Brace depth change of one Rust line, outside strings, chars and comments. */
+function braceDelta(raw: string): number {
+  const code = raw
+    .replace(/r(#*)"[\s\S]*?"\1/g, '""')
+    .replace(/"(?:\\.|[^"\\])*"/g, '""')
+    .replace(/'(?:\\.|[^'\\])'/g, "' '")
+    .replace(/\/\/.*$/, "");
+  let delta = 0;
+  for (const char of code) {
+    if (char === "{") delta += 1;
+    if (char === "}") delta -= 1;
+  }
+  return delta;
+}
+
 /**
  * The lines of `source` that ship: comments and `#[cfg(test)]` modules
  * dropped, each with its 1-based line number.
@@ -103,10 +118,7 @@ export function shippedLines(source: string): Array<[number, string]> {
   for (const [index, raw] of lines.entries()) {
     const line = raw.trim();
     if (testDepth > 0) {
-      for (const char of raw) {
-        if (char === "{") testDepth += 1;
-        if (char === "}") testDepth -= 1;
-      }
+      testDepth += braceDelta(raw);
       continue;
     }
     if (/^#\[cfg\((?:all\()?test\b/.test(line)) {
@@ -117,11 +129,7 @@ export function shippedLines(source: string): Array<[number, string]> {
       if (line.startsWith("#[")) continue;
       pendingTest = false;
       if (/^(?:pub(?:\([^)]*\))?\s+)?mod\s+\w+\s*\{/.test(line)) {
-        testDepth = 0;
-        for (const char of raw) {
-          if (char === "{") testDepth += 1;
-          if (char === "}") testDepth -= 1;
-        }
+        testDepth = braceDelta(raw);
         continue;
       }
     }
@@ -131,12 +139,33 @@ export function shippedLines(source: string): Array<[number, string]> {
   return kept;
 }
 
-/** Every forbidden language check in one Rust source, as `line: shape`. */
+/**
+ * Every forbidden language check in one Rust source, as `line: shape`. A
+ * check rustfmt wrapped over several lines is matched on the shipped lines
+ * joined with single spaces, and reported at its first line.
+ */
 export function violations(source: string): string[] {
+  const shipped = shippedLines(source);
+  const window = 4;
+  const joined = (from: number, count: number) =>
+    shipped
+      .slice(from, from + count)
+      .map(([, piece]) => piece.trim())
+      .join(" ");
+  // The fewest lines from `from` that complete a match, or 0 for none.
+  const reach = (pattern: RegExp, from: number) => {
+    for (let count = 1; count <= window && from + count <= shipped.length; count += 1) {
+      if (pattern.test(joined(from, count))) return count;
+    }
+    return 0;
+  };
   const found: string[] = [];
-  for (const [line, text] of shippedLines(source)) {
+  for (const [index, [line, text]] of shipped.entries()) {
     for (const shape of SHAPES) {
-      if (shape.pattern.test(text)) found.push(`${line}: ${shape.name}: ${text.trim()}`);
+      const count = reach(shape.pattern, index);
+      // A match the next line completes alone belongs to that line.
+      if (count === 0 || (count > 1 && reach(shape.pattern, index + 1) === count - 1)) continue;
+      found.push(`${line}: ${shape.name}: ${text.trim()}`);
     }
   }
   return found;
@@ -169,9 +198,24 @@ void test("the gate recognizes every ad-hoc language check it replaced", () => {
     `const PREPROCESSOR_LANGS: [&str; 5] = ["scss", "sass", "less", "stylus", "styl"];`,
     `("scoped", None) | ("lang", Some("css"))`,
     `Some("html") if template => {}`,
+    `let pug = lang.eq_ignore_ascii_case(\n    "pug"\n);`,
   ]) {
     assert.equal(violations(removed).length > 0, true, removed);
   }
+});
+
+void test("a brace in a test module's string does not hide the shipped code after it", () => {
+  const source = [
+    "#[cfg(test)]",
+    "mod tests {",
+    '    const OPEN: &str = "{";',
+    "    const BRACE: char = '{';",
+    "}",
+    "fn shipped(lang: &str) -> bool {",
+    '    lang == "pug"',
+    "}",
+  ].join("\n");
+  assert.deepEqual(violations(source), ['7: equality with a language name: lang == "pug"']);
 });
 
 void test("the gate leaves tag names, test modules and comments alone", () => {

@@ -43,14 +43,15 @@ impl Vue {
         descriptor::observe_template_only(source)
     }
 
-    /// The file-absolute span of the value of the first `name` attribute of
-    /// the open tag starting at `at`, quotes excluded. `None` when there is
-    /// no open tag at `at`, no such attribute, or it has no value.
+    /// The file-absolute span of the value of the last `name` attribute of
+    /// the open tag starting at `at` (the one the descriptor's attribute map
+    /// keeps), quotes excluded. `None` when there is no open tag at `at`, no
+    /// such attribute, or it has no value.
     #[must_use]
     pub fn open_tag_attr_value(&self, source: &str, at: usize, name: &str) -> Option<Span> {
         let mut found = None;
         scan::read_open_boundary(source, at, |attr| {
-            if found.is_none() && attr.name == name {
+            if attr.name == name {
                 found = Some(attr);
             }
         })

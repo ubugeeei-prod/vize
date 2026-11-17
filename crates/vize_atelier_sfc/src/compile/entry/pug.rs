@@ -53,9 +53,11 @@ pub(super) fn prepare_pug_template<'d, 's>(
                 || point(&descriptor.source, template.loc.tag_start),
                 |span| {
                     let mut loc = point(&descriptor.source, span.start as usize);
-                    loc.end = span.end as usize;
-                    loc.tag_end = span.end as usize;
-                    loc.end_column += (span.end - span.start) as usize;
+                    let end = point(&descriptor.source, span.end as usize);
+                    loc.end = end.end;
+                    loc.tag_end = end.end;
+                    loc.end_line = end.end_line;
+                    loc.end_column = end.end_column;
                     loc
                 },
             );
