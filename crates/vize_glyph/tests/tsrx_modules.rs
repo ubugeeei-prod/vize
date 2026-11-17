@@ -53,7 +53,7 @@ fn assert_formats(name: &str, source: &str) -> vize_l0::String {
 #[test]
 fn every_valid_corpus_module_has_a_reviewed_idempotent_layout() {
     let files = corpus(".");
-    assert_eq!(files.len(), 18, "every valid corpus row must execute");
+    assert_eq!(files.len(), 19, "every valid corpus row must execute");
     for file in files {
         let name = file.file_name().unwrap().to_string_lossy().into_owned();
         let source = std::fs::read_to_string(&file).unwrap();
@@ -67,7 +67,7 @@ fn every_valid_corpus_module_has_a_reviewed_idempotent_layout() {
 #[test]
 fn every_error_corpus_module_is_refused() {
     let files = corpus("errors");
-    assert_eq!(files.len(), 15, "every error corpus row must execute");
+    assert_eq!(files.len(), 18, "every error corpus row must execute");
     for file in files {
         let source = std::fs::read_to_string(&file).unwrap();
         assert!(

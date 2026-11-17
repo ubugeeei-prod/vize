@@ -451,6 +451,25 @@ fn reference_corpus_rows_agree() {
 }
 
 #[test]
+fn tag_type_arguments_are_host_type_nodes_of_the_opening_tag() {
+    let source = "const v = <Box <Array<number>>>{x}</Box>;";
+    let allocator = Allocator::new();
+    let module = parse(&allocator, source);
+    assert!(module.is_clean(), "{:?}", module.diagnostics());
+    let Node::Element(element) = &only_region(&module).node else {
+        panic!("expected an element");
+    };
+    let arguments = element.type_arguments.as_ref().expect("type arguments");
+    let span = arguments.span;
+    assert_eq!(
+        text(source, Span::new(span.start, span.end)),
+        "<Array<number>>"
+    );
+    assert_eq!(arguments.params.len(), 1);
+    assert_eq!(text(source, element.closing.unwrap()), "</Box>");
+}
+
+#[test]
 fn host_parser_options_reach_embedded_code() {
     let source = "const a = <p>{(x)}</p>;";
     let allocator = Allocator::new();

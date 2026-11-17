@@ -103,8 +103,8 @@ inside JS/TS. `Parser::parse_with_markup(grammar)` registers a `MarkupGrammar`;
 the host hands it a JSX-position `<`, an `@` the grammar opens at an expression
 or statement start, or an `@` at a function or arrow body, and keeps an empty
 placeholder (fragment or body) with the region's span. `MarkupCursor` re-enters
-the same parser for embedded expressions, statements, for-of heads, bindings and
-parameters. While a grammar is registered, a line-start `<tag` ends the previous
+the same parser for embedded expressions, statements, for-of heads, bindings,
+parameters and tag type arguments. While a grammar is registered, a line-start `<tag` ends the previous
 expression. Every hook site tests the associated constant `ParserConfig::MARKUP`,
 which is `true` only for the private `MarkupParserConfig` that `parse_with_markup`
 uses, so the hooks are compiled out of every other parse; `parse_with_markup`

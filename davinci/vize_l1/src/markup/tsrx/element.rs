@@ -1,6 +1,6 @@
 //! Elements, fragments, attributes, text, comments and expression children.
 
-use oxc_ast::ast::Expression;
+use oxc_ast::ast::{Expression, TSTypeParameterInstantiation};
 use oxc_parser::{Kind, MarkupSite};
 use vize_l0::{Box, Span, Vec};
 
@@ -25,6 +25,16 @@ impl<'a> Scan<'_, '_, 'a> {
             )));
         }
         let (name, mut offset) = self.tag_name(start + 1)?;
+        // Only a static name takes type arguments, after optional trivia.
+        let open = skip_trivia(self.bytes(), offset);
+        let type_arguments = if matches!(name, TagName::Static(_)) && self.byte(open) == Some(b'<')
+        {
+            let arguments = self.type_arguments(open)?;
+            offset = arguments.span.end;
+            Some(arguments)
+        } else {
+            None
+        };
         let mut attributes = Vec::new_in(&self.alloc);
         let self_closing = loop {
             offset = skip_trivia(self.bytes(), offset);
@@ -53,6 +63,7 @@ impl<'a> Scan<'_, '_, 'a> {
             let element = Element {
                 span,
                 name,
+                type_arguments,
                 attributes,
                 children: Vec::new_in(&self.alloc),
                 raw_text: None,
@@ -75,6 +86,7 @@ impl<'a> Scan<'_, '_, 'a> {
         let element = Element {
             span,
             name,
+            type_arguments,
             attributes,
             children,
             raw_text,
@@ -120,13 +132,27 @@ impl<'a> Scan<'_, '_, 'a> {
                     let name = self.text(Span::new(offset, end));
                     return self.fail(error::namespaced_element(name, Span::new(offset - 1, end)));
                 }
-                if self.byte(end) == Some(b'<') {
-                    // Type arguments on a component tag are not supported yet.
-                    return self.fail(error::unexpected(Span::new(end, end + 1)));
-                }
                 Some((TagName::Static(Span::new(offset, end)), end))
             }
             _ => self.fail(error::unexpected(Span::new(offset, offset + 1))),
+        }
+    }
+
+    /// `<T, …>` after a static tag name, parsed by the host's type grammar
+    /// as the reference does for any tag (`<List<string> />`, `<div<T> />`).
+    fn type_arguments(&mut self, open: u32) -> Option<Box<'a, TSTypeParameterInstantiation<'a>>> {
+        // `<List<> />`: the reference reports the `<` as unexpected.
+        if self.byte(skip_trivia(self.bytes(), open + 1)) == Some(b'>') {
+            return self.fail(error::unexpected(Span::new(open, open + 1)));
+        }
+        self.seat(open)?;
+        let arguments = self.cursor.type_arguments();
+        if self.cursor.failed() {
+            return None;
+        }
+        match arguments {
+            Some(arguments) => Some(arguments),
+            None => self.fail(error::unexpected(Span::new(open, open + 1))),
         }
     }
 
