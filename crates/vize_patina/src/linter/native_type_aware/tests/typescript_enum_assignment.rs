@@ -12,6 +12,8 @@ const ASSIGNMENT: &str =
     "The value assigned here does not have a shared enum type with the expected enum 'Fruit'.";
 const ARGUMENT: &str =
     "The argument passed here does not have a shared enum type with the expected enum 'Fruit'.";
+const RETURN: &str =
+    "The value returned here does not have a shared enum type with the expected enum 'Fruit'.";
 const ACCESS_BOTH: &str = "The computed key used here does not have a shared enum type with the expected enum 'Fruit', 'Vegetable'.";
 
 #[test]
@@ -44,6 +46,10 @@ fn qualified_enum_flows_have_exact_packets_and_safe_controls() {
         (43, 13, ARGUMENT.to_string()),
         (44, 26, ARGUMENT.to_string()),
         (44, 38, ARGUMENT.to_string()),
+        // Recursive named interface members and a structural generic-box
+        // return (typescript-eslint `invalid[113]` and `invalid[129]`).
+        (55, 7, ASSIGNMENT.to_string()),
+        (66, 3, RETURN.to_string()),
         (70, 7, ASSIGNMENT.to_string()),
         (73, 3, ASSIGNMENT.to_string()),
         (81, 13, ARGUMENT.to_string()),

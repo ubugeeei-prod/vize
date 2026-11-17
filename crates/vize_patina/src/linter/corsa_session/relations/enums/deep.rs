@@ -45,11 +45,14 @@ fn deep_mismatch<'a>(
     within_generic_members: bool,
 ) -> Boxed<'a, bool> {
     Box::pin(async move {
-        if depth > MAX_DEPTH {
+        if depth > MAX_DEPTH || sender.id == receiver.id {
             return false;
         }
-        let sender = checker.base_constraint(&sender).await.unwrap_or(sender);
-        let receiver = checker.base_constraint(&receiver).await.unwrap_or(receiver);
+        let receiver = constrained(checker, receiver).await;
+        if !may_hold_enum(&receiver) {
+            return false;
+        }
+        let sender = constrained(checker, sender).await;
         if sender.id == receiver.id {
             return false;
         }
@@ -59,8 +62,14 @@ fn deep_mismatch<'a>(
         if direct_mismatch(checker, &sender, &receiver).await {
             return true;
         }
-        let sender_arguments = reference_arguments(checker, &sender).await;
+        // Each pair below is compared only when the receiver has that part,
+        // so the sender's side is not asked for in vain.
         let receiver_arguments = reference_arguments(checker, &receiver).await;
+        let sender_arguments = if receiver_arguments.is_empty() {
+            Vec::new()
+        } else {
+            reference_arguments(checker, &sender).await
+        };
         if sender_arguments.len() == receiver_arguments.len() {
             for (sender, receiver) in sender_arguments.into_iter().zip(receiver_arguments) {
                 if deep_mismatch(
@@ -82,10 +91,9 @@ fn deep_mismatch<'a>(
         if generic && within_generic_members {
             return false;
         }
-        if let (Some(sender), Some(receiver)) = (
-            number_index(checker, &sender).await,
-            number_index(checker, &receiver).await,
-        ) && deep_mismatch(
+        if let Some(receiver) = number_index(checker, &receiver).await
+            && let Some(sender) = number_index(checker, &sender).await
+            && deep_mismatch(
             checker,
             sender,
             receiver,
@@ -105,20 +113,27 @@ fn deep_mismatch<'a>(
         {
             return false;
         }
-        let sender = checker.apparent(&sender).await;
         let receiver = checker.apparent(&receiver).await;
+        let receiver_properties = checker.properties(&receiver).await;
+        if receiver_properties.is_empty() {
+            return false;
+        }
+        let sender = checker.apparent(&sender).await;
         let sender_properties = checker.properties(&sender).await;
-        for receiver_property in checker.properties(&receiver).await {
+        for receiver_property in receiver_properties {
             let Some(sender_property) = sender_properties
                 .iter()
                 .find(|property| property.name == receiver_property.name)
             else {
                 continue;
             };
-            let (Some(sender), Some(receiver)) = (
-                checker.type_of_symbol(sender_property).await,
-                checker.type_of_symbol(&receiver_property).await,
-            ) else {
+            let Some(receiver) = checker.type_of_symbol(&receiver_property).await else {
+                continue;
+            };
+            if sender_property.id == receiver_property.id || !may_hold_enum(&receiver) {
+                continue;
+            }
+            let Some(sender) = checker.type_of_symbol(sender_property).await else {
                 continue;
             };
             if deep_mismatch(
@@ -136,6 +151,24 @@ fn deep_mismatch<'a>(
         }
         false
     })
+}
+
+/// `getBaseConstraintOfType`, asked only of the types that can have a
+/// constraint other than themselves (type variables and compositions).
+async fn constrained(checker: &mut Checker<'_>, ty: TypeResponse) -> TypeResponse {
+    if ty.flags & (flags::INSTANTIABLE | flags::UNION) == 0 {
+        return ty;
+    }
+    checker.base_constraint(&ty).await.unwrap_or(ty)
+}
+
+/// Whether a receiver can hold an enum anywhere the relation reads: an enum
+/// or enum literal, a union, an object (members, type arguments, number
+/// index) or a type whose constraint may. Primitives, non-enum literals,
+/// `any`, `unknown`, `never` and `object` hold none, so no value assigned to
+/// them can be an unsafe enum flow.
+fn may_hold_enum(ty: &TypeResponse) -> bool {
+    ty.flags & (flags::ENUM_LIKE | flags::UNION | flags::OBJECT | flags::INSTANTIABLE) != 0
 }
 
 async fn direct_mismatch(

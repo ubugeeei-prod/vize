@@ -62,3 +62,59 @@ pub(in crate::linter) struct EnumCallArgument {
     pub expression: Span,
     pub spread: bool,
 }
+
+impl EnumCheckAsk {
+    /// Every node span the check reads, in the batch's location order.
+    pub(in crate::linter) fn each_span(&self, add: &mut impl FnMut(Span)) {
+        match self {
+            Self::Pair {
+                sender,
+                receiver,
+                safe_operands,
+            } => {
+                add(*sender);
+                match receiver {
+                    EnumReceiver::TypeAt(span) | EnumReceiver::Contextual(span) => add(*span),
+                }
+                for operand in safe_operands {
+                    add(*operand);
+                }
+            }
+            Self::Return {
+                function,
+                returned,
+                receiver,
+                ..
+            } => {
+                add(*function);
+                add(*returned);
+                if let Some(receiver) = receiver {
+                    add(*receiver);
+                }
+            }
+            Self::Heritage {
+                sender, sources, ..
+            } => {
+                add(*sender);
+                for source in sources {
+                    add(source.span);
+                }
+            }
+            Self::Computed { object, property } => {
+                add(*object);
+                add(*property);
+            }
+        }
+    }
+}
+
+impl EnumCallAsk {
+    /// Every node span the call check reads, in the batch's location order.
+    pub(in crate::linter) fn each_span(&self, add: &mut impl FnMut(Span)) {
+        add(self.call);
+        for argument in &self.arguments {
+            add(argument.node);
+            add(argument.expression);
+        }
+    }
+}

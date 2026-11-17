@@ -339,52 +339,10 @@ pub(super) fn spans(
         }
     }
     for ask in &request.enum_checks {
-        match ask {
-            EnumCheckAsk::Pair {
-                sender,
-                receiver,
-                safe_operands,
-            } => {
-                add(*sender);
-                match receiver {
-                    EnumReceiver::TypeAt(span) | EnumReceiver::Contextual(span) => add(*span),
-                }
-                for operand in safe_operands {
-                    add(*operand);
-                }
-            }
-            EnumCheckAsk::Return {
-                function,
-                returned,
-                receiver,
-                ..
-            } => {
-                add(*function);
-                add(*returned);
-                if let Some(receiver) = receiver {
-                    add(*receiver);
-                }
-            }
-            EnumCheckAsk::Heritage {
-                sender, sources, ..
-            } => {
-                add(*sender);
-                for source in sources {
-                    add(source.span);
-                }
-            }
-            EnumCheckAsk::Computed { object, property } => {
-                add(*object);
-                add(*property);
-            }
-        }
+        ask.each_span(&mut add);
     }
     for ask in &request.enum_calls {
-        add(ask.call);
-        for argument in &ask.arguments {
-            add(argument.node);
-            add(argument.expression);
-        }
+        ask.each_span(&mut add);
     }
     order
         .into_iter()

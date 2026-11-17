@@ -72,8 +72,9 @@ fn thenable_dispose(node: &LintNode) -> Option<Gap> {
     }
     Some(Gap {
         rule: "type/no-misused-promises",
-        message: "Promise-returning function provided to variable where a void return was expected."
-            .into(),
+        message:
+            "Promise-returning function provided to variable where a void return was expected."
+                .into(),
         start: init.range.start,
         end: init.range.end,
     })
