@@ -11,7 +11,7 @@ slot や子コンポーネントに対する scoped CSS のセレクターを検
 | --- | --- | --- | --- |
 | `warning` | `opinionated`, `nuxt` | なし | なし |
 
-適用範囲：プレーン CSS の style ブロック（scss・sass・less・stylus のブロックは対象外）。
+適用範囲：CSS・SCSS・Sass・Less・Stylus の style ブロック（書かれたまま。プリプロセッサは実行しません）。
 
 ## 悪い例
 

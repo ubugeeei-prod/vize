@@ -11,7 +11,7 @@ Recommander ::v-slotted() pour styliser le contenu des slots.
 | --- | --- | --- | --- |
 | `warning` | `opinionated`, `nuxt` | Non | Aucune |
 
-Champ d’application : Blocs style en CSS standard (les blocs scss, sass, less et stylus sont ignorés).
+Champ d’application : Blocs style CSS, SCSS, Sass, Less et Stylus, tels qu’écrits (sans préprocesseur).
 
 ## Mauvais
 

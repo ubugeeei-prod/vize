@@ -110,7 +110,7 @@ pub static RULE_CONTRACTS: &[RuleEntry] = &[
     row!("css/no-v-bind-performance", Exact, CSS_TEXT, Warning),
     row!("css/prefer-logical-properties", Exact, STYLE_STRUCTURE, Warning),
     row!("css/prefer-nested-selectors", Heuristic, CSS_TEXT, Warning),
-    row!("css/prefer-slotted", Heuristic, CSS_TEXT, Warning),
+    row!("css/prefer-slotted", Heuristic, STYLE_STRUCTURE, Warning),
     row!("css/require-font-display", Exact, STYLE_STRUCTURE, Warning),
     row!("ecosystem/nuxt-prefer-nuxt-link", Exact, ECOSYSTEM, Warning),
     row!("ecosystem/pinia-prefer-store-to-refs", Complete, ECOSYSTEM, Warning),

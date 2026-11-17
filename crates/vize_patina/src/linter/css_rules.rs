@@ -163,6 +163,7 @@ fn css_rule_for_name(rule_name: &str) -> Option<BuiltinCssRule> {
         RULE_NO_ID_SELECTORS => Some(Box::new(NoIdSelectors)),
         RULE_PREFER_LOGICAL_PROPERTIES => Some(Box::new(PreferLogicalProperties)),
         RULE_REQUIRE_FONT_DISPLAY => Some(Box::new(RequireFontDisplay)),
+        RULE_PREFER_SLOTTED => Some(Box::new(PreferSlotted)),
         _ => None,
     };
     if let Some(rule) = style {
@@ -174,7 +175,6 @@ fn css_rule_for_name(rule_name: &str) -> Option<BuiltinCssRule> {
         RULE_NO_V_BIND_PERFORMANCE => Box::new(NoVBindPerformance),
         RULE_NO_HARDCODED_VALUES => Box::new(NoHardcodedValues::default()),
         RULE_NO_UTILITY_CLASSES => Box::new(NoUtilityClasses),
-        RULE_PREFER_SLOTTED => Box::new(PreferSlotted),
         _ => return None,
     };
     Some(BuiltinCssRule::Css(rule))

@@ -11,7 +11,7 @@ Recommend ::v-slotted() for styling slot content.
 | --- | --- | --- | --- |
 | `warning` | `opinionated`, `nuxt` | No | None |
 
-Applies to: Plain CSS style blocks (scss, sass, less and stylus blocks are skipped).
+Applies to: CSS, SCSS, Sass, Less and Stylus style blocks, as written (not preprocessed).
 
 ## Bad
 
