@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 
 import {
+  crossCrateSteps,
   declaredNames,
   identifierRenames,
   modulePathOf,
@@ -11,6 +12,7 @@ import {
   renameIdentifiers,
   rewritePaths,
   rewriteRelativeFiles,
+  rewriteCrossCrate,
   rewriteRust,
   type Step,
   steps,
@@ -215,5 +217,45 @@ test("use trees and paths name what a package reaches", () => {
       ),
     ].sort(),
     ["A", "B", "C", "K", "S", "e", "f", "g"],
+  );
+});
+
+test("a cross-crate move rewrites paths inside and outside the moved module", () => {
+  const tsrx = crossCrateSteps["l2-tsrx-lowering"]!;
+  const inside = "davinci/vize_l2/src/lang/tsrx/emit.rs";
+  // Inside: paths into the module follow it, other crate paths name the old crate.
+  assert.equal(
+    rewriteCrossCrate(
+      "use crate::op::Namespace;\nuse crate::lang::tsrx::TsrxIssue;\nuse super::text;",
+      tsrx,
+      inside,
+      true,
+    ),
+    "use vize_l2::op::Namespace;\nuse crate::framework::vue::tsrx::TsrxIssue;\nuse super::text;",
+  );
+  // A `super::` chain that leaves the module becomes an absolute old-crate path.
+  assert.equal(
+    rewriteCrossCrate("use super::super::js::File;", tsrx, inside, true),
+    "use vize_l2::lang::js::File;",
+  );
+  // Outside: the old crate's path to it names the new crate.
+  assert.equal(
+    rewriteCrossCrate(
+      "use vize_l2::lang::tsrx::{TsrxIssueKind, lower};",
+      tsrx,
+      "davinci/vize_l4/src/lang/tsrx.rs",
+      false,
+    ),
+    "use vize_l1_to_l2::framework::vue::tsrx::{TsrxIssueKind, lower};",
+  );
+  // Inside the new crate it is a `crate::` path.
+  assert.equal(
+    rewriteCrossCrate(
+      "use vize_l2::lang::tsrx::lower;",
+      tsrx,
+      "davinci/vize_l1_to_l2/src/framework/vue/jsx.rs",
+      false,
+    ),
+    "use crate::framework::vue::tsrx::lower;",
   );
 });
