@@ -399,3 +399,9 @@ const emit = defineEmits<PickEmits>();
     );
     let _ = std::fs::remove_dir_all(&dir);
 }
+
+#[test]
+fn an_intersection_operand_on_its_own_line_is_not_a_prop() {
+    let sfc = "<script setup lang=\"ts\">\nimport type { FloatingOptions } from './types'\ndefineProps<\n  {\n    label?: string\n  } & (Single | Multi) &\n    FloatingOptions\n>()\n</script>\n\n<template><p /></template>\n";
+    assert_eq!(findings(sfc), none());
+}
