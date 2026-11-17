@@ -802,6 +802,42 @@
       }
     },
     {
+      "id": "linter/content-outside-block-elements-12336",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "content-outside-block-elements-12336",
+        "files": [
+          {
+            "path": "HTMLInstallCode.vue.txt",
+            "role": "real-project-matrix-reduction",
+            "sha256": "57ebd57ee7b9fd725adbec498d1d3c6dac0f43786f3d9b7483c8da3aba6facff"
+          },
+          {
+            "path": "rules.json",
+            "role": "rule-options",
+            "sha256": "79baf178946ef425b487ecc77c541933cc89f529384ec16aa82a2ba4d8d94734"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "js"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/contextual-function-return-type-11103",
       "state": "active",
       "targets": [
