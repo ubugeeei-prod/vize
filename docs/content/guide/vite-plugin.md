@@ -266,8 +266,8 @@ Every Vize tool resolves `lang` through one registry, ASCII case-insensitively: 
 #### Supported Pug and Jade subset
 
 Pug support is built into Vize; it does not execute the project's JavaScript or
-require a local `pug` package. `lang="jade"` is a case-insensitive alias for the
-same implementation. The supported deterministic subset includes:
+require a local `pug` package. `lang="jade"` is read by the same implementation
+under a jade 1.x profile. The supported deterministic subset includes:
 
 - elements, components, class/id shorthand, attributes, Vue directives,
   interpolation, slots and text blocks;
@@ -294,6 +294,25 @@ filters, filtered or rooted includes, and external `<template src>` Pug. Pug
 template autofixes are withheld because a derived HTML edit cannot always be
 mapped back losslessly, and there is no language-aware Pug printer. These
 boundaries apply equally to `pug` and `jade`.
+
+#### The jade profile
+
+Vue's own toolchain renders `lang="jade"` with the legacy `jade` 1.x package,
+not pug, and the two languages differ. Under `lang="jade"` Vize keeps the
+author's intent and says so, never silently; `lang="pug"` behaves exactly as
+pug 3 does.
+
+| jade 1.x construct | Vize under `lang="jade"` |
+| --- | --- |
+| `- each item in items` / `- for …` | Iterates, with a warning and a fix that drops the dash (pug 3 refuses it). |
+| a bodiless `mixin name(args)` | Calls the mixin, with a warning and a fix to `+name(args)`. |
+| `each item of items` | Iterates as pug 3 does, warning that jade 1.x renders a literal `<each>` element. |
+| `a(href="/users/#{id}")` | Keeps the text as written, warning that jade 1.x interpolates it at build time to `undefined`, with a fix to `` :href="`/users/${id}`" ``. |
+
+The compiler reports each as a `JADE_PROFILE` warning at the construct. The
+linter reports them, and the `lang` value itself, through
+`vue/prefer-pug-lang`, whose fix renames the `lang` to `pug` once nothing
+jade-only is left; configure or turn off that rule to keep jade.
 
 The Real Project Matrix exercises Pug-heavy applications including
 dho-web-client and Wave UI across compile, type-check, lint and format checks;

@@ -147,11 +147,45 @@ impl<'t> Emitter<'t> {
         let Some(name) = self.call_name(call) else {
             return;
         };
-        let Some(index) = self.mixins.defined.iter().position(|m| m.name == name) else {
-            self.error(head, super::refusal::undefined_mixin(&name));
+        let args_span = call.args.as_ref().map_or(head, |args| self.span(args));
+        let collected = self.collect(&call.tag);
+        let block = has_block(&call.tag).then_some(&call.tag);
+        self.invoke(&name, head, call.arguments(), args_span, &collected, block);
+    }
+
+    /// jade 1.x's legacy call: a bodiless `mixin name(args)` runs the mixin
+    /// with no attributes and no block.
+    pub(super) fn legacy_call(&mut self, definition: &'t PugRefused<'t>) {
+        let span = self.span(&definition.head);
+        let Some((name, args)) = head(definition.head.text) else {
+            self.error(span, String::from(super::refusal::MIXIN_HEAD));
             return;
         };
-        let args = match call.arguments() {
+        let collected = super::attrs::Collected {
+            classes: StdVec::new(),
+            entries: StdVec::new(),
+            class_at: None,
+            blocks: StdVec::new(),
+        };
+        self.invoke(name, span, args, span, &collected, None);
+    }
+
+    /// Run the mixin `name` with `args` (source), `collected` attributes and
+    /// the block of `block`'s tag.
+    fn invoke(
+        &mut self,
+        name: &str,
+        head: vize_l0::Span,
+        args: Option<&str>,
+        args_span: vize_l0::Span,
+        collected: &super::attrs::Collected<'_>,
+        block: Option<&'t PugTag<'t>>,
+    ) {
+        let Some(index) = self.mixins.defined.iter().position(|m| m.name == name) else {
+            self.error(head, super::refusal::undefined_mixin(name));
+            return;
+        };
+        let args = match args {
             None => StdVec::new(),
             Some(source) => match eval::expression(&self.scope, &cstr!("[{source}]")) {
                 Ok(evaluated) => match evaluated.value {
@@ -159,14 +193,12 @@ impl<'t> Emitter<'t> {
                     other => alloc::vec![other],
                 },
                 Err(reason) => {
-                    let span = call.args.as_ref().map_or(head, |args| self.span(args));
-                    self.error(span, super::refusal::call(&reason));
+                    self.error(args_span, super::refusal::call(&reason));
                     return;
                 }
             },
         };
-        let collected = self.collect(&call.tag);
-        let Some(attributes) = self.call_attributes(&collected) else {
+        let Some(attributes) = self.call_attributes(collected) else {
             return;
         };
         if self.mixins.depth >= MAX_DEPTH {
@@ -178,15 +210,13 @@ impl<'t> Emitter<'t> {
             return;
         }
         self.mixins.calls += 1;
-        let block = if has_block(&call.tag) {
-            let frame = self.scope.capture();
-            self.mixins.blocks.push(Block {
-                tag: &call.tag,
-                frame,
-            });
-            Value::Function(self.mixins.blocks.len() - 1)
-        } else {
-            Value::Undefined
+        let block = match block {
+            Some(tag) => {
+                let frame = self.scope.capture();
+                self.mixins.blocks.push(Block { tag, frame });
+                Value::Function(self.mixins.blocks.len() - 1)
+            }
+            None => Value::Undefined,
         };
         let Some(mixin) = self.mixins.defined.get(index) else {
             return;
@@ -206,7 +236,7 @@ impl<'t> Emitter<'t> {
             }
             Err(reason) => {
                 let span = self.span(&definition.head);
-                self.error(span, super::refusal::parameters(&name, &reason));
+                self.error(span, super::refusal::parameters(name, &reason));
             }
         }
         self.scope.leave(caller);

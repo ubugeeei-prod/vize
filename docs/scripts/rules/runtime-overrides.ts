@@ -183,6 +183,11 @@ export const runtimeOverrides: Record<string, RuleExample> = {
     template("<p>Notice</p>"),
     "crates/vize_patina/src/rules/opinionated/vue/no_template_lang.rs",
   ),
+  "vue/prefer-pug-lang": pair(
+    vue('<template lang="jade">\nul\n  - each item in [1, 2]\n    li= item\n</template>'),
+    vue('<template lang="pug">\nul\n  each item in [1, 2]\n    li= item\n</template>'),
+    "crates/vize_patina/src/rules/vue/prefer_pug_lang.rs",
+  ),
   "vue/no-preprocessor-lang": pair(
     vue(
       '<template><p>Notice</p></template>\n<style lang="scss">\n.notice { color: red; }\n</style>',

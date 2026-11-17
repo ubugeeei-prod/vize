@@ -64,6 +64,18 @@ impl Lexer<'_, '_> {
     /// Every pug keyword construct, in pug's dispatch order, as one
     /// rest-of-line `Keyword` token (plus pug's error where it throws).
     pub(super) fn keyword(&mut self) -> bool {
+        // jade 1.x reads `- each` / `- for` as iteration (pug 3 refuses
+        // the dash); the dash and its blanks lead the keyword token.
+        if self.jade {
+            let input = self.input().as_bytes();
+            if input.first() == Some(&b'-') {
+                let dash = 1 + spaces_after(input, 1);
+                let rest = input.get(dash..).unwrap_or_default();
+                if starts_word(rest, "each") || starts_word(rest, "for") {
+                    self.pos += dash;
+                }
+            }
+        }
         let input = self.input().as_bytes();
         let line = input.get(..self.line_end() - self.pos).unwrap_or_default();
         let malformed = |ok: bool| (!ok).then_some(PugErrorCode::MalformedKeyword);

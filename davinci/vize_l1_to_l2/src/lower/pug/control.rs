@@ -108,6 +108,7 @@ impl<'t> Emitter<'t> {
     }
 
     fn each(&mut self, head: &'t PugRefused<'t>, rest: &'t [PugNode<'t>]) -> usize {
+        self.jade_dash(head);
         let head_span = self.span(&head.head);
         let parsed = match each(head.head.text) {
             Ok(parsed) => parsed,
@@ -138,6 +139,7 @@ impl<'t> Emitter<'t> {
                 pair,
                 subject,
             } => {
+                self.jade_each_of(head);
                 self.each_of(head, &names, pair, subject);
                 0
             }

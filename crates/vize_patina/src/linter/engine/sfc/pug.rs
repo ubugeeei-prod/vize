@@ -16,8 +16,18 @@ use vize_l1_to_l2::lower::pug::PugBlockView;
 use crate::diagnostic::LintDiagnostic;
 use crate::linter::config::{LintResult, Linter};
 
+mod jade;
+
+/// A pug block's derived view and the jade profile's findings on its
+/// authored bytes (`vue/prefer-pug-lang`), added after the view's results
+/// map back.
+pub(in crate::linter::engine) struct PugView {
+    pub(in crate::linter::engine) view: PugBlockView,
+    jade: Vec<LintDiagnostic>,
+}
+
 pub(in crate::linter::engine) enum PugRoute {
-    View(PugBlockView),
+    View(PugView),
     Complete(LintResult),
 }
 
@@ -28,7 +38,7 @@ impl Linter {
         match self.route_pug_sfc(source, filename)? {
             PugRoute::Complete(result) => Some(result),
             PugRoute::View(view) => {
-                let result = self.lint_sfc_view(&view.source, filename, true);
+                let result = self.lint_sfc_view(&view.view.source, filename, true);
                 Some(map_result(&view, result))
             }
         }
@@ -58,9 +68,9 @@ impl Linter {
         if template.src.is_some() {
             return None;
         }
-        match template_lang(template.lang.as_deref()) {
+        let profile = match template_lang(template.lang.as_deref()) {
             Ok(TemplateLang::Html) => return None,
-            Ok(TemplateLang::Pug(_)) => {}
+            Ok(TemplateLang::Pug(profile)) => profile,
             // No in-tree grammar reads the body, so no template rule may
             // read it as HTML; the rest of the SFC still lints.
             Err(_) => {
@@ -71,25 +81,31 @@ impl Linter {
                     &[],
                 )));
             }
-        }
+        };
         let view = match vize_l0::profile!(
             "patina.sfc.pug.lower",
-            PugBlockView::new(source, template.loc.start..template.loc.end)
+            PugBlockView::new_profiled(source, template.loc.start..template.loc.end, profile)
         ) {
             Ok(view) => view,
             Err(refused) => {
                 // No partial tree is evidence for template-dependent rules.
                 // Script, style and SFC rules still inspect their original bytes,
                 // just as they do after a fatal HTML template parse error.
-                return Some(PugRoute::Complete(self.lint_sfc_without_template(
+                let mut result = self.lint_sfc_without_template(
                     source,
                     filename,
                     &descriptor,
                     &refused.diagnostics,
-                )));
+                );
+                let jade =
+                    self.jade_profile_diagnostics(source, template, profile, &refused.diagnostics);
+                add(&mut result, jade);
+                return Some(PugRoute::Complete(result));
             }
         };
-        Some(PugRoute::View(view))
+        let jade =
+            self.jade_profile_diagnostics(source, template, profile, &view.template.diagnostics);
+        Some(PugRoute::View(PugView { view, jade }))
     }
 
     /// Lint every block of the SFC except its template, which no grammar
@@ -166,10 +182,24 @@ impl Linter {
     }
 }
 
-pub(in crate::linter::engine) fn map_result(
-    view: &PugBlockView,
-    mut result: LintResult,
-) -> LintResult {
+/// Append findings, keeping the counts in step.
+fn add(result: &mut LintResult, diagnostics: Vec<LintDiagnostic>) {
+    for diagnostic in diagnostics {
+        match diagnostic.severity {
+            crate::Severity::Error => result.error_count += 1,
+            crate::Severity::Warning => result.warning_count += 1,
+        }
+        result.diagnostics.push(diagnostic);
+    }
+}
+
+pub(in crate::linter::engine) fn map_result(view: &PugView, result: LintResult) -> LintResult {
+    let mut result = map_view_result(&view.view, result);
+    add(&mut result, view.jade.clone());
+    result
+}
+
+fn map_view_result(view: &PugBlockView, mut result: LintResult) -> LintResult {
     for diagnostic in &mut result.diagnostics {
         (diagnostic.start, diagnostic.end) = view.to_host(diagnostic.start, diagnostic.end);
         for label in &mut diagnostic.labels {

@@ -92,6 +92,7 @@ mod no_template_target_blank;
 mod no_unsafe_url;
 mod no_unsandboxed_iframe;
 mod no_v_html;
+pub(crate) mod prefer_pug_lang;
 
 // Semantic analysis rules (require Croquis)
 mod no_mutating_props;
@@ -228,6 +229,7 @@ pub use no_template_target_blank::NoTemplateTargetBlank;
 pub use no_unsafe_url::NoUnsafeUrl;
 pub use no_unsandboxed_iframe::NoUnsandboxedIframe;
 pub use no_v_html::NoVHtml;
+pub use prefer_pug_lang::PreferPugLang;
 
 // Semantic analysis rules exports
 pub use no_mutating_props::{NoMutatingProps, NoMutatingPropsOptions};
