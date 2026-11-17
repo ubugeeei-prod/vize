@@ -21,28 +21,45 @@ mod capture;
 mod required_listener_events;
 pub(crate) use capture::WorkspaceCapturePolicy;
 
-/// Packs whose original tests enabled the Options API checker.
-const OPTIONS_API_PACKS: &[&str] = &[
-    "class-component-decorators-1434",
-    "no-space-default-export-3087",
+/// Hand-written packs whose original tests enabled the Options API checker.
+/// Tool-written packs declare their options in the registry instead.
+const AUTHORED_OPTIONS_API_PACKS: &[&str] = &[
     "options-api-any-instance",
-    "options-api-data-assignment-5644",
-    "options-api-method-body-anchors-3596",
-    "options-api-public-instance-members-4251",
     "options-api-reserved-component-reference",
-    "options-props-spread-setup-scope",
-    "options-runtime-props-value-scope-3089",
-    "options-setup-return-template-1897",
-    "options-setup-spread-bindings-2005",
-    "options-spread-only-computed-unused",
-    "options-template-dollar-props-4242",
-    "options-template-instance-bindings-1433",
-    "options-template-literal-bindings-3086",
-    "options-unknown-template-instance-3903",
     "required-default-props",
-    "runtime-mixin-required-props-3582",
     "setup-custom-properties",
 ];
+
+/// The checker and project options a pack must declare: a tool-written pack's
+/// registry entry, else the hand-written packs' original options.
+fn expected_options(
+    root: &Path,
+    name: &str,
+) -> (Option<serde_json::Value>, Option<serde_json::Value>) {
+    let registry: serde_json::Value = serde_json::from_slice(
+        &std::fs::read(
+            root.join("tests/_fixtures/differential/typechecker/fix-history-packs.json"),
+        )
+        .expect("the fix-history pack registry must exist"),
+    )
+    .expect("the fix-history pack registry must be JSON");
+    if let Some(entry) = registry.get(name) {
+        return (
+            entry.get("checkerOptions").cloned(),
+            entry.get("projectOptions").cloned(),
+        );
+    }
+    let checker = if AUTHORED_OPTIONS_API_PACKS.contains(&name) {
+        Some(serde_json::json!({"optionsApi": true}))
+    } else if name == "jsx-prop-token-ranges-10494" {
+        Some(serde_json::json!({"jsxTypecheck": true}))
+    } else {
+        None
+    };
+    let project =
+        (name == "authored-unused-symbols").then(|| serde_json::json!({"vuePackage": "absent"}));
+    (checker, project)
+}
 
 pub(crate) fn check_pack(
     name: &str,
@@ -119,13 +136,12 @@ pub(crate) fn check_pack_with_capture_policy(
     );
     assert_eq!(pack.diagnostic_contract.native, "unsupported");
     assert_eq!(pack.diagnostic_contract.required_tier, "T1");
-    let options_api = OPTIONS_API_PACKS.contains(&name);
-    let jsx_typecheck = name == "jsx-prop-token-ranges-10494";
+    let raw_pack: serde_json::Value =
+        serde_json::from_slice(&fixture_pack).expect("the fixture pack must be JSON");
+    let (checker_options, project_options) = expected_options(&root, name);
     assert_eq!(
-        pack.checker_options
-            .as_ref()
-            .map(|options| (options.options_api, options.jsx_typecheck)),
-        (options_api || jsx_typecheck).then_some((options_api, jsx_typecheck)),
+        raw_pack.get("checkerOptions"),
+        checker_options.as_ref(),
         "the original explicit checker options must be retained"
     );
     assert_eq!(
@@ -139,8 +155,8 @@ pub(crate) fn check_pack_with_capture_policy(
     let vue = std::fs::canonicalize(root.join("tests/node_modules/vue"))
         .expect("the pinned real Vue package must be installed");
     assert_eq!(
-        pack.project_options,
-        (name == "authored-unused-symbols").then(|| serde_json::json!({"vuePackage":"absent"}))
+        pack.project_options, project_options,
+        "the original project options must be retained"
     );
     let mut capture = capture_policy.capture(name, test);
     for case in pack.cases {
@@ -172,6 +188,15 @@ pub(crate) fn check_pack_with_capture_policy(
             }
         }
         for input in &case.inputs {
+            // A Vue stub may only be shipped when the real package is not
+            // linked; writing it through the link would overwrite the
+            // installed package for every later pack.
+            let ships_vue = input.file.split('/').take(2).eq(["node_modules", "vue"]);
+            assert!(
+                pack.project_options.is_some() || !ships_vue,
+                "{}",
+                input.file
+            );
             let file = safe_relative(&input.file);
             let source = safe_relative(&input.source);
             let destination = project_root.join(file);
@@ -181,7 +206,13 @@ pub(crate) fn check_pack_with_capture_policy(
                 .expect("exact fixture bytes must copy");
         }
         if pack.project_options.is_some() {
-            assert!(!project_root.join("node_modules").exists());
+            // Only the pack's own carriers (a historical Vue stub) may exist.
+            let ships_packages = case
+                .inputs
+                .iter()
+                .any(|input| input.file.split('/').next() == Some("node_modules"));
+            assert!(ships_packages || !project_root.join("node_modules").exists());
+            assert!(!project_root.join("node_modules/vue").is_symlink());
         }
         if name == "experimental-router-props-10579" {
             super::fix_history_router_provider::install_source_build(&root, &project_root);
@@ -348,6 +379,20 @@ pub(crate) fn check_pack_with_capture_policy(
             .is_some_and(|options| options.jsx_typecheck)
         {
             checker.enable_jsx_typecheck();
+        }
+        if pack
+            .checker_options
+            .as_ref()
+            .is_some_and(|options| options.legacy_vue2)
+        {
+            checker.enable_legacy_vue2();
+        }
+        if let Some(checks) = pack
+            .checker_options
+            .as_ref()
+            .and_then(|options| options.virtual_ts_checks.as_ref())
+        {
+            checker.set_virtual_ts_checks(checks.props, checks.template_bindings, checks.emits);
         }
         checker.scan_project().expect("the project must scan");
         let result = checker

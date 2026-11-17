@@ -1,0 +1,21 @@
+<script lang="ts">
+import { defineComponent } from 'vue'
+import type { PropType } from 'vue'
+
+type BreadcrumbsItem = { label: string }
+
+export default defineComponent({
+    props: {
+        breadcrumbs: {
+            type: Array as PropType<BreadcrumbsItem[]>,
+            required: true,
+        },
+    },
+})
+</script>
+
+<template>
+  <ol>
+    <li v-for="item in breadcrumbs" :key="item.label">{{ item.label }}</li>
+  </ol>
+</template>

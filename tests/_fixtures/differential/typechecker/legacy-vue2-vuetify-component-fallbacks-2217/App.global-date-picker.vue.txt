@@ -1,0 +1,16 @@
+<script setup lang="ts">
+const width = 320;
+const hideDetails = true;
+function updateDate(newDate: string) {
+  void newDate;
+}
+</script>
+
+<template>
+  <v-date-picker
+    :width="width"
+    :hide-details="hideDetails"
+    chips
+    @input="updateDate"
+  />
+</template>

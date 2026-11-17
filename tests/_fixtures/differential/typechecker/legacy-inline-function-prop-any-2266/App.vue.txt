@@ -1,0 +1,7 @@
+<script setup lang="ts">
+const message = "Required";
+</script>
+
+<template>
+  <v-text-field :rules="[(v) => !!v || message]" />
+</template>

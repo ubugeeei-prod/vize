@@ -1,0 +1,88 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 1923,
+  "regressionCommit": "949fae1251fa05c96f1536e0e70d9a6d6e2f7984",
+  "sourceRevision": "949fae1251fa05c96f1536e0e70d9a6d6e2f7984",
+  "checkerOptions": {
+    "legacyVue2": true
+  },
+  "projectOptions": {
+    "vuePackage": "absent"
+  },
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "setup-and-options-without-vue3-helper-exports",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Setup.vue",
+          "source": "Setup.vue.txt"
+        },
+        {
+          "file": "src/Options.vue",
+          "source": "Options.vue.txt"
+        },
+        {
+          "file": "node_modules/vue/package.json",
+          "source": "vue.package.json.txt"
+        },
+        {
+          "file": "node_modules/vue/types/index.d.ts",
+          "source": "vue.types.index.d.ts.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "setup-ref-unwrap-wrong-member",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Setup.vue",
+          "source": "Setup.ref-wrong-member.vue.txt"
+        },
+        {
+          "file": "src/Options.vue",
+          "source": "Options.vue.txt"
+        },
+        {
+          "file": "node_modules/vue/package.json",
+          "source": "vue.package.json.txt"
+        },
+        {
+          "file": "node_modules/vue/types/index.d.ts",
+          "source": "vue.types.index.d.ts.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Setup.vue",
+          "line": 9,
+          "column": 18,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'toUpperCase' does not exist on type 'number'."
+        }
+      ]
+    }
+  ]
+}

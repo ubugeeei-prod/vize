@@ -1,0 +1,9 @@
+<script setup lang="ts">
+
+type Props = { mini?: boolean } & { dense?: boolean }
+defineProps<Props>()
+</script>
+
+<template>
+  <v-select :width="width" :hide-details="hideDetails" />
+</template>

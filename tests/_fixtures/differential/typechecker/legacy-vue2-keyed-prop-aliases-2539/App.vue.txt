@@ -1,0 +1,8 @@
+<script setup lang="ts">
+type Props = { mini?: boolean } & { dense?: boolean }
+defineProps<Props>()
+</script>
+
+<template>
+  <div>{{ isMini }} {{ hideDetails }} {{ chips }} {{ width }}</div>
+</template>

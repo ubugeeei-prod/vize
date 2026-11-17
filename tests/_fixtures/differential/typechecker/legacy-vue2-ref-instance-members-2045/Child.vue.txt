@@ -1,0 +1,13 @@
+<script setup lang="ts">
+defineProps<{
+  label: string
+}>()
+
+defineEmits<{
+  select: [id: number]
+}>()
+</script>
+
+<template>
+  <button ref="inner">{{ label }}</button>
+</template>

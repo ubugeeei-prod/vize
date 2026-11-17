@@ -1,0 +1,5 @@
+<script lang="ts">
+import untyped from "./untyped";
+export default { mixins: [untyped], methods: { own() {} }, computed: { consumed() { return 1; } } };
+</script>
+<template><span /></template>

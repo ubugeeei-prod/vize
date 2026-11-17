@@ -1,0 +1,18 @@
+<script lang="ts">
+import { defineComponent, type PropType } from 'vue'
+
+const componentProps = {
+  items: {
+    type: Array as PropType<Array<{ id: string }>>,
+  },
+}
+
+export default defineComponent({
+  props: componentProps,
+  setup(props) {
+    props.items.findIndex((item) => item.id)
+    props.items[0]
+    return {}
+  },
+})
+</script>

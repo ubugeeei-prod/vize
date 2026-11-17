@@ -1,0 +1,6 @@
+import Vue from 'vue';
+import GenericComponent from './GenericComponent.vue';
+
+export default Vue.extend({
+  render: (h) => h(GenericComponent),
+});

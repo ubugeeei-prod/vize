@@ -1,0 +1,16 @@
+<script lang="ts">
+import { defineComponent } from "vue"
+
+export default defineComponent({
+  emits: {
+    "range-change": null,
+    submit() {
+      return true
+    },
+  },
+})
+</script>
+
+<template>
+  <button type="button" />
+</template>

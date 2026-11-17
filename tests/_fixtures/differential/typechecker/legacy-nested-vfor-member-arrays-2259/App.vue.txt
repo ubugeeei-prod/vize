@@ -1,0 +1,44 @@
+<script lang="ts">
+import { defineComponent, ref } from 'vue'
+
+type QuestionFieldInputType = 'text' | 'number'
+interface QuestionField {
+  questionFieldInputType: QuestionFieldInputType
+  question: string
+  type: string
+}
+interface QuestionFormat {
+  id: string
+  questionField: QuestionField[]
+}
+
+export default defineComponent({
+  setup() {
+    const questionFormatsRef = ref<QuestionFormat[]>([
+      {
+        id: 'profile',
+        questionField: [
+          { questionFieldInputType: 'text', question: 'Name', type: 'label' },
+        ],
+      },
+    ])
+    const textInput: QuestionFieldInputType = 'text'
+    const wantsQuestion = (value: string) => value
+    const wantsType = (value: string) => value
+    return { questionFormatsRef, textInput, wantsQuestion, wantsType }
+  },
+})
+</script>
+
+<template>
+  <div v-for="questionFormat in questionFormatsRef" :key="questionFormat.id">
+    <span v-for="(answer, i) in questionFormat.questionField" :key="i">
+      <template v-if="answer.questionFieldInputType === textInput">
+        <span :key="`${i}question`">
+          {{ wantsQuestion(answer.question) }}
+          {{ wantsType(answer.type) }}
+        </span>
+      </template>
+    </span>
+  </div>
+</template>

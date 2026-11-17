@@ -1,0 +1,97 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 2217,
+  "regressionCommit": "aa03206ddd5518831c26bbc62c88b516c592d11d",
+  "sourceRevision": "aa03206ddd5518831c26bbc62c88b516c592d11d",
+  "checkerOptions": {
+    "legacyVue2": true
+  },
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "global-date-picker-props-and-input-event",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "App.global-date-picker.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "imported-component-unknown-event-any",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "App.imported-event.vue.txt"
+        },
+        {
+          "file": "src/VDatePicker.vue",
+          "source": "VDatePicker.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "unresolved-component-keyed-props-unchecked",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "App.unresolved-keyed-props.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "imported-component-prop-wrong-type",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "App.imported-prop-wrong-type.vue.txt"
+        },
+        {
+          "file": "src/VDatePicker.vue",
+          "source": "VDatePicker.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 10,
+          "column": 17,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type 'boolean | undefined'."
+        }
+      ]
+    }
+  ]
+}

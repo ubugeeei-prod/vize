@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 2540,
+  "regressionCommit": "1d9cbd29df81c9953c6f28e95eb829b92e834960",
+  "sourceRevision": "1d9cbd29df81c9953c6f28e95eb829b92e834960",
+  "checkerOptions": {
+    "legacyVue2": true
+  },
+  "projectOptions": {
+    "vuePackage": "absent"
+  },
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "unresolved-and-empty-event-listeners-stay-variadic",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "node_modules/vue/package.json",
+          "source": "vue.package.json.txt"
+        },
+        {
+          "file": "node_modules/vue/types/index.d.ts",
+          "source": "vue.index.d.ts.txt"
+        },
+        {
+          "file": "src/components/CalendarRange.vue",
+          "source": "CalendarRange.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+import Vue from 'vue';
+import ReproComponent from './ReproComponent.vue';
+
+export default Vue.extend({
+  render: (h) => h(ReproComponent),
+});
+
+ReproComponent.version.toFixed();

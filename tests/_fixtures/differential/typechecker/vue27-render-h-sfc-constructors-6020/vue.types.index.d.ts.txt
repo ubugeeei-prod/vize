@@ -1,0 +1,64 @@
+export interface VNode {}
+export interface VNodeData {}
+export interface ComponentOptions<V extends Vue = Vue> {
+  render?: (h: CreateElement) => VNode | null | void;
+}
+export interface Vue {
+  readonly $data: Record<string, any>;
+  readonly $props: Record<string, any>;
+  readonly $el: Element;
+  readonly $options: Record<string, any>;
+  readonly $parent: Vue;
+  readonly $root: Vue;
+  readonly $children: Vue[];
+  readonly $refs: Record<string, any>;
+  readonly $slots: Record<string, VNode[] | undefined>;
+  readonly $scopedSlots: Record<string, unknown>;
+  readonly $isServer: boolean;
+  readonly $attrs: Record<string, string>;
+  readonly $listeners: Record<string, Function | Function[]>;
+  readonly $vnode: VNode;
+  readonly $ssrContext: any;
+  $mount(...args: any[]): this;
+  $forceUpdate(): void;
+  $destroy(): void;
+  $set(...args: any[]): any;
+  $delete(...args: any[]): any;
+  $watch(...args: any[]): any;
+  $on(...args: any[]): this;
+  $once(...args: any[]): this;
+  $off(...args: any[]): this;
+  $emit(...args: any[]): this;
+  $nextTick(...args: any[]): Promise<void>;
+  $createElement: CreateElement;
+}
+export interface VueConstructor<V extends Vue = Vue> {
+  new (...args: any[]): V;
+  extend(options?: ComponentOptions<V>): VueConstructor<V>;
+  nextTick(...args: any[]): Promise<void>;
+  set(...args: any[]): any;
+  delete(...args: any[]): any;
+  directive(...args: any[]): any;
+  filter(...args: any[]): any;
+  component(...args: any[]): any;
+  use(...args: any[]): this;
+  mixin(...args: any[]): this;
+  compile(...args: any[]): any;
+  observable<T>(obj: T): T;
+  util: { warn(...args: any[]): void };
+  config: Record<string, any>;
+  version: string;
+}
+declare const Vue: VueConstructor;
+export default Vue;
+export { Vue };
+export type FunctionalComponentOptions<Props = Record<string, any>> = (props: Props) => VNode;
+export type DefineComponent<Props = Record<string, any>> = ComponentOptions<Vue> & {
+  readonly __props?: Props;
+};
+export type Component = typeof Vue | FunctionalComponentOptions<any> | ComponentOptions<any> | DefineComponent<any>;
+export type AsyncComponent = () => Promise<Component>;
+export interface CreateElement {
+  (tag?: string | Component | AsyncComponent | (() => Component), children?: any): VNode;
+  (tag?: string | Component | AsyncComponent | (() => Component), data?: VNodeData, children?: any): VNode;
+}

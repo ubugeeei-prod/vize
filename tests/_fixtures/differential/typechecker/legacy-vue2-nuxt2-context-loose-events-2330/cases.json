@@ -1,0 +1,112 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 2330,
+  "regressionCommit": "246c6c0678c3fddd27b66f3bf1a630d684d8cd03",
+  "sourceRevision": "246c6c0678c3fddd27b66f3bf1a630d684d8cd03",
+  "checkerOptions": {
+    "legacyVue2": true
+  },
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "nuxt2-page-validate-context",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/pages/StudentPage.vue",
+          "source": "StudentPage.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "nuxt2-page-validate-params-wrong-member",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/pages/StudentPage.vue",
+          "source": "StudentPage.params-wrong-member.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/pages/StudentPage.vue",
+          "line": 5,
+          "column": 50,
+          "severity": 1,
+          "code": 2551,
+          "message": "Property 'toFixed' does not exist on type 'string'. Did you mean 'fixed'?"
+        }
+      ]
+    },
+    {
+      "id": "object-event-payload-stays-loose",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "App.object-event-payload.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "matched-object-event-payload-stays-loose",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "App.matched-object-event-payload.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "matched-number-event-payload-still-checked",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "App.matched-number-event-payload.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 10,
+          "column": 15,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '(item: Manager) => void' is not assignable to type '__DataTable_7_click_row_listener'.\nTypes of parameters 'item' and 'item' are incompatible.\nType 'number' is not assignable to type 'Manager'."
+        }
+      ]
+    }
+  ]
+}

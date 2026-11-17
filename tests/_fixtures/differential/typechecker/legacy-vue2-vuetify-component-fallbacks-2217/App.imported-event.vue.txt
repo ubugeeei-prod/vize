@@ -1,0 +1,10 @@
+<script setup lang="ts">
+import VDatePicker from './VDatePicker.vue'
+function updateDate(newDate: string) {
+  void newDate
+}
+</script>
+
+<template>
+  <VDatePicker @input="updateDate" />
+</template>

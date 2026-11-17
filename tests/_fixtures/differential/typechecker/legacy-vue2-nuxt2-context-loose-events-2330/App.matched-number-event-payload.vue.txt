@@ -1,0 +1,11 @@
+<script setup lang="ts">
+type Manager = { id: string }
+declare const DataTable: { new (): { $props: { "onClick:row"?: (item: number) => unknown } } }
+function moveToDetail(item: Manager) {
+  void item
+}
+</script>
+
+<template>
+  <DataTable @click:row="moveToDetail" />
+</template>

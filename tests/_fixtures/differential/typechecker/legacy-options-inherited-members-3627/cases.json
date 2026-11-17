@@ -1,0 +1,89 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 3627,
+  "regressionCommit": "b2f8c3b2a937f743629e16fe40f92bae2730a42c",
+  "sourceRevision": "b2f8c3b2a937f743629e16fe40f92bae2730a42c",
+  "checkerOptions": {
+    "legacyVue2": true
+  },
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "typed-mixins-and-extends-resolve",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/greeter.ts",
+          "source": "greeter.ts.txt"
+        },
+        {
+          "file": "src/base.ts",
+          "source": "base.ts.txt"
+        },
+        {
+          "file": "src/untyped.d.ts",
+          "source": "untyped.d.ts.txt"
+        },
+        {
+          "file": "src/Imported.vue",
+          "source": "Imported.vue.txt"
+        },
+        {
+          "file": "src/Extended.vue",
+          "source": "Extended.vue.txt"
+        },
+        {
+          "file": "src/Inline.vue",
+          "source": "Inline.vue.txt"
+        },
+        {
+          "file": "src/Untyped.vue",
+          "source": "Untyped.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "mixin-missing-member",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/greeter.ts",
+          "source": "greeter.ts.txt"
+        },
+        {
+          "file": "src/Imported.vue",
+          "source": "missing-member.Imported.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Imported.vue",
+          "line": 3,
+          "column": 74,
+          "severity": 1,
+          "code": 2551,
+          "message": "Property 'greeet' does not exist on type '$This'. Did you mean 'greet'?"
+        }
+      ]
+    }
+  ]
+}
