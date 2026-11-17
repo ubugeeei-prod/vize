@@ -58,6 +58,23 @@ impl LinkPathIndex {
     }
 }
 
+/// An owned installation sits at or below a planned package link.
+pub(super) fn installation_overlap(
+    root: &Path,
+    link: &Path,
+    target: Option<&PathBuf>,
+) -> std::io::Error {
+    std::io::Error::new(
+        std::io::ErrorKind::InvalidData,
+        vize_carton::cstr!(
+            "Owned workspace installation overlaps a package link: {}; link: {} -> {:?}",
+            root.display(),
+            link.display(),
+            target,
+        ),
+    )
+}
+
 pub(super) fn retired_link_ancestor(retired: &FxHashSet<PathBuf>, path: &Path) -> bool {
     path.ancestors()
         .skip(1)
