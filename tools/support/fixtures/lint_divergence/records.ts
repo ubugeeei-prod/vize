@@ -203,6 +203,11 @@ export function baselineIntentionalReason(
     const componentRegistration = componentRegistrationBaselineIntentionalReason(finding, source);
     if (componentRegistration !== null) return componentRegistration;
   }
+  if (
+    finding.ruleId === "vue/custom-event-name-casing" &&
+    /^Custom event name 'update:[^']+'/u.test(finding.message)
+  )
+    return "Patina keeps the model prop name after update: unchecked (#9879, restored in #12592 for #12587), the name defineModel() emits and v-model listens for; eslint-plugin-vue checks every :-separated segment.";
   if (finding.ruleId === "vue/no-shared-component-data")
     return "Patina intentionally merges vue/no-shared-component-data and vue/no-deprecated-data-object-declaration into one diagnostic for the same invalid data option.";
   if (
@@ -500,7 +505,9 @@ const patinaIntentionalRuleIds = new Set([
   "vue/no-static-inline-styles",
   "vue/no-unused-components",
   "vue/no-unused-vars",
+  "vue/next-tick-style",
   "vue/require-v-for-key",
+  "script/valid-next-tick",
   "vue/v-slot-style",
 ]);
 export function patinaIntentionalReason(
@@ -556,6 +563,10 @@ export function patinaIntentionalReason(
     typedDefaultComesFromComposedContract(finding, source)
   )
     return "Patina resolves optional props inherited through local interface heritage or intersections; eslint-plugin-vue does not expand that composed prop contract.";
+  if (finding.ruleId === "vue/next-tick-style" && findingInScriptSetup(finding, source))
+    return "Patina also checks <script setup>, as requested in #12450 and kept in #12670; eslint-plugin-vue's defineVueVisitor only visits component option objects.";
+  if (finding.ruleId === "script/valid-next-tick" && findingInScriptSetup(finding, source))
+    return "Patina applies vue/valid-next-tick in <script setup> as well as component options (#12794); eslint-plugin-vue's defineVueVisitor only visits component option objects.";
   if (
     finding.ruleId === "script/no-boolean-default" &&
     findingInsideSameFileDefaultsSpread(finding, source)
@@ -923,6 +934,20 @@ function findingInsideScriptBlock(finding: LintRecord, source: string): boolean 
   const content = source.indexOf(">", open) + 1;
   const close = source.indexOf("</script>", content);
   return content > 0 && content <= offset && (close < 0 || offset < close);
+}
+
+function findingInScriptSetup(finding: LintRecord, source: string): boolean {
+  const offset = findingOffset(finding, source);
+  if (offset === null) return false;
+  const open = source.lastIndexOf("<script", offset);
+  const tagEnd = open < 0 ? -1 : source.indexOf(">", open);
+  const close = source.indexOf("</script>", open);
+  return (
+    tagEnd >= 0 &&
+    tagEnd < offset &&
+    (close < 0 || offset < close) &&
+    /\ssetup(?:[\s=>/]|$)/u.test(source.slice(open, tagEnd))
+  );
 }
 
 function findingOffset(finding: LintRecord, source: string): number | null {
