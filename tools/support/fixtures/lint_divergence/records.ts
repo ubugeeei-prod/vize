@@ -1086,6 +1086,8 @@ function unusedEmitUpstreamMiss(message: string, source: string): string | null 
   const call = new RegExp(`\\b${name}\\s*\\(\\s*(['"\`])${escaped}\\1`, "u").exec(source);
   if (call !== null && call.index < declaration.index)
     return "Patina resolves the defineEmits binding before visiting calls; eslint-plugin-vue misses calls authored before the macro declaration because its visitor records the binding later.";
+  if (new RegExp(`(?<![\\w$.])${name}\\s*\\.\\s*(?:bind|call|apply)\\s*\\(`, "u").test(source))
+    return "Patina counts `emit.bind(null, 'toggleSave')` (or call/apply) as handing the emit function on, so any declared event may be emitted; eslint-plugin-vue sees only direct calls and call arguments.";
   return null;
 }
 
