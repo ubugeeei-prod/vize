@@ -50,6 +50,7 @@
 //!   attribute (so `walk_directives` is meaningful on JSX too).
 //! - [`MarkupBinding`] — the normalized binding view ([`MarkupBindingKind`]).
 //! - [`MarkupConditional`] / [`MarkupList`] — conditional and list scopes.
+//! - [`MarkupBranch`] — the exclusive alternatives an element renders in.
 //! - [`MarkupNode`] — a child node (element, text, interpolation, scope,
 //!   comment).
 //!
@@ -73,6 +74,7 @@ mod attribute;
 mod authored;
 mod batch;
 mod binding;
+mod branches;
 mod context;
 #[cfg(any(test, feature = "legacy-differential"))]
 pub mod differential;
@@ -99,6 +101,7 @@ mod visitor;
 pub use attribute::MarkupAttribute;
 pub use batch::{MarkupRules, RankedMarkupRule};
 pub use binding::{MarkupBinding, MarkupBindingKind};
+pub use branches::MarkupBranch;
 pub use context::MarkupContext;
 pub use directive::MarkupDirective;
 pub use element::MarkupElement;

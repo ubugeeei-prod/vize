@@ -54,4 +54,4 @@ Depois, execute `vp run lint`.
 
 - [Regras de acessibilidade](../accessibility.md)
 - [Todas as regras](../all.md)
-- [Código-fonte](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/role_img_has_name.rs#L14)
+- [Código-fonte](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/a11y/role_img_has_name.rs#L15)
