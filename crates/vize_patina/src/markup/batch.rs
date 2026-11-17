@@ -91,6 +91,10 @@ impl MarkupRule for MarkupRules<'_> {
         ""
     }
 
+    fn shares_element_reads(&self) -> bool {
+        true
+    }
+
     fn enter_document(&self, ctx: &mut MarkupContext<'_, '_>, document: &MarkupDocument) {
         ctx.lint().replay_callback_site(CallbackSite::Template);
         self.each(

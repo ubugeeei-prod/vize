@@ -107,6 +107,14 @@ pub trait MarkupRule {
         MarkupTraversal::Full
     }
 
+    /// Whether many rules read each visited element, so matching an L2
+    /// element's opening tag once (in the template arena) and replaying it
+    /// beats each rule walking it. A single rule keeps the allocation-free
+    /// walk.
+    fn shares_element_reads(&self) -> bool {
+        false
+    }
+
     /// Called once before traversal begins.
     fn enter_document(&self, _ctx: &mut MarkupContext<'_, '_>, _document: &MarkupDocument) {}
 
