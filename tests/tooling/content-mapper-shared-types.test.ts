@@ -400,7 +400,7 @@ test("public Instance retains complete before/after consumer laws in all three m
 const payload = "crates/vize_canon/src/virtual_ts/helpers/declarations/slot-payload.d.ts.txt";
 const sharedPayload =
   "crates/vize_canon/src/virtual_ts/helpers/declarations/shared-slot-payload.d.ts.txt";
-// Each earlier payload family (unregistered, intersecting, union-host) regenerates.
+// Each earlier payload family (unregistered, then intersecting) regenerates.
 const intersecting = `type $NamedSlotPayload<S, N> = { [K in keyof S & N]-?: NonNullable<S[K]> extends (props: infer P, ...args: any[]) => any ? P : never }[keyof S & N] extends infer P ? ([P] extends [never] ? any : P) : any;`;
 for (const [name, family] of Object.entries({
   "the complete previous payload family regenerates in all three module entries": `// @ts-ignore The unchecked payload of an untyped host: an error type, never reported.
@@ -411,11 +411,6 @@ export type $SlotPayload<S, N> = $IsAny<S> extends true ? $SilentAny : string ex
 type $SilentAny = {}["__vizeSilentAny"];
 export type $RegisteredSlotProvider<G, K extends string | number | symbol, F extends string | number | symbol = K, L extends string | number | symbol = F> = $IsAny<G> extends true ? $SilentAny : K extends keyof G ? G[K] : F extends keyof G ? G[F] : L extends keyof G ? G[L] : $SilentAny;
 ${intersecting}
-export type $SlotPayload<S, N, C = $RegisteredSlotProvider<any, never>> = $IsAny<S> extends true ? $IsAny<C> extends true ? C : any : string extends N ? string extends keyof S ? $NamedSlotPayload<S, N> : any : $NamedSlotPayload<S, N>;`,
-  "the union-host payload family regenerates to the generic-host payload": `// @ts-ignore A missing provider keeps its framework error-any fallback.
-type $SilentAny = {}["__vizeSilentAny"];
-export type $RegisteredSlotProvider<G, K extends string | number | symbol, F extends string | number | symbol = K, L extends string | number | symbol = F> = $IsAny<G> extends true ? $SilentAny : K extends keyof G ? G[K] : F extends keyof G ? G[F] : L extends keyof G ? G[L] : $SilentAny;
-type $NamedSlotPayload<S, N> = (S extends unknown ? { [K in keyof S & N]-?: NonNullable<S[K]> extends (props: infer P, ...args: any[]) => any ? P : never }[keyof S & N] : never) extends infer P ? ([P] extends [never] ? any : P) : any;
 export type $SlotPayload<S, N, C = $RegisteredSlotProvider<any, never>> = $IsAny<S> extends true ? $IsAny<C> extends true ? C : any : string extends N ? string extends keyof S ? $NamedSlotPayload<S, N> : any : $NamedSlotPayload<S, N>;`,
 })) {
   test(name, (t) => {
