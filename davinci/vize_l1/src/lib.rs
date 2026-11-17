@@ -69,13 +69,10 @@ pub mod css;
 pub mod dialect;
 pub mod edit;
 pub mod embed;
+pub mod framework;
 pub mod markup;
-pub mod pug;
-pub mod registry;
-
-mod build;
-mod event;
 mod moved;
+pub mod registry;
 mod slice;
 
 // The surface was moved under `markup` (#6835); these paths are deprecated.

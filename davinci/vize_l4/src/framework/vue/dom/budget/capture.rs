@@ -209,7 +209,7 @@ pub(super) fn emit_dom_source_captured<'a, O: PassObserver, C: CaptureSink>(
         }
         capture.page(Level::L1, "parse", || {
             let mut text = String::default();
-            vize_l1::markup::render::render(&tree, &mut |slice| text.push_str(slice));
+            vize_l1::markup::htmlish::render::render(&tree, &mut |slice| text.push_str(slice));
             text
         });
 

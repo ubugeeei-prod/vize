@@ -1,5 +1,5 @@
 use vize_l0::Allocator;
-use vize_l1::pug::{PugError, PugErrorCode, parse_pug};
+use vize_l1::markup::pug::{PugError, PugErrorCode, parse_pug};
 
 use super::{PugRendering, derive_template_with};
 

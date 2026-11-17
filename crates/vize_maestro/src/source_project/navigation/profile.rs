@@ -3,7 +3,7 @@
 use vize_l0::config::{VueDialect, VueVersion};
 use vize_l1::embed::syntax::ProgramOptions;
 #[cfg(feature = "experimental-source-navigation")]
-use vize_l1::{container::vue::DescriptorOptions, markup::parse::SurfaceParseOptions};
+use vize_l1::{container::vue::DescriptorOptions, markup::htmlish::parse::SurfaceParseOptions};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(super) enum Profile {

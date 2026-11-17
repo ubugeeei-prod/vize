@@ -11,7 +11,7 @@ use vize_l0::{Allocator, SourceRoot};
 use vize_l1::dialect::LegacyVueVersion;
 use vize_l1::dialect::vue2::surface::{self, TextChildren, TextRefusal, TextView};
 use vize_l1::markup::SurfaceChild;
-use vize_l1::markup::render::check_fidelity;
+use vize_l1::markup::htmlish::render::check_fidelity;
 
 mod native_vue2_custody_cases;
 

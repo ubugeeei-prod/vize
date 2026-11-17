@@ -2,7 +2,7 @@
 
 use serde_json::{Value, json};
 use vize_l0::{Allocator, SourceRoot, Span, String};
-use vize_l1::markup::document::{
+use vize_l1::markup::htmlish::document::{
     DocumentHtmlNode, DocumentHtmlRefusal as Refusal, DocumentTokenKind, NativeDocument,
 };
 

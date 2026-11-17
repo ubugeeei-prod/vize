@@ -9,7 +9,7 @@
 use alloc::vec::Vec as StdVec;
 
 use vize_l0::{Span, String, cstr};
-use vize_l1::pug::{PugAttrItem, PugTag, PugTagPart};
+use vize_l1::markup::pug::{PugAttrItem, PugTag, PugTagPart};
 
 use super::emit::Emitter;
 use super::eval;

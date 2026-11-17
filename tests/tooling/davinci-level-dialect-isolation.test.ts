@@ -133,7 +133,7 @@ test("one L0 file descriptor owns every input axis and legacy types only re-expo
   assert.match(descriptor, /options\.resolve\(state\.lang\(\)\)/u);
 
   const document = fs.readFileSync(
-    path.join(repoRoot, "davinci/vize_l1/src/markup/document.rs"),
+    path.join(repoRoot, "davinci/vize_l1/src/markup/htmlish/document.rs"),
     "utf8",
   );
   assert.match(document, /FileDialect::document\(configured, root\.source\(\), syntax, lang\)/u);

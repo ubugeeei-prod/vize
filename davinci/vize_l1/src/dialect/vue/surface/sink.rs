@@ -3,10 +3,10 @@
 use vize_l0::{Allocator, Vec, is_void_tag};
 
 use super::{HeaderPolicy, LexicalScope, SurfacePolicy};
-use crate::build::scope::{Frame, Recovery, authored_close, namespace};
-use crate::event::{EventKind, Recorder};
 use crate::markup::entity::DecodedEntity;
-use crate::markup::surface::LintHeaderFact;
+use crate::markup::htmlish::build::scope::{Frame, Recovery, authored_close, namespace};
+use crate::markup::htmlish::event::{EventKind, Recorder};
+use crate::markup::htmlish::surface::LintHeaderFact;
 use crate::markup::token::{LexErrorCode, LexMode, Namespace, QuoteType, Sink};
 use core::marker::PhantomData;
 

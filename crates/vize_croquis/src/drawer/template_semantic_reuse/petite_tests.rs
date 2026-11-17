@@ -1,5 +1,5 @@
 use vize_l0::{Allocator, SourceRoot};
-use vize_l1::markup::document::NativeDocument;
+use vize_l1::markup::htmlish::document::NativeDocument;
 use vize_l2::dialect::petite::PetiteDocument;
 use vize_relief::{ExpressionNode, PropNode, TemplateChildNode};
 

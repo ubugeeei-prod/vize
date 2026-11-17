@@ -9,7 +9,7 @@
     },
     "vue": {
       "files": ".vue <template>",
-      "profile": "VueComponent",
+      "profile": "framework::vue::VueTemplate",
       "oracle": "@vue/compiler-dom 3.5 parse",
       "norm": "@vue/compiler-dom / @vue/compiler-sfc 3.5"
     }

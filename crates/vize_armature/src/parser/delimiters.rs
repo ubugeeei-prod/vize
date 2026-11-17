@@ -2,8 +2,9 @@
 
 use super::{Parser, callbacks::ParserCallbacks};
 use vize_l0::{ErrorCode, Vec};
-use vize_l1::markup::lex::compat::adapter::CompatSink;
-use vize_l1::markup::{Component, Delimiters, Document, LexOptions, Lexer, VueComponent};
+use vize_l1::framework::vue::VueTemplate;
+use vize_l1::markup::htmlish::lex::compat::adapter::CompatSink;
+use vize_l1::markup::{Component, Delimiters, Document, LexOptions, Lexer};
 use vize_relief::{RootNode, errors::CompilerError, options::ParseMode};
 
 impl<'a> Parser<'a> {
@@ -48,7 +49,7 @@ impl<'a> Parser<'a> {
         if document {
             Lexer::<Document, _>::new(source, sink, options).run();
         } else if sfc {
-            Lexer::<VueComponent, _>::new(source, sink, options).run();
+            Lexer::<VueTemplate, _>::new(source, sink, options).run();
         } else {
             Lexer::<Component, _>::new(source, sink, options).run();
         }

@@ -38,7 +38,9 @@ impl Linter {
         let native_document = (use_davinci && dialect.is_petite_vue() && petite_document_demand)
             .then(|| vize_l0::SourceRoot::new(source).ok())
             .flatten()
-            .map(|root| vize_l1::markup::document::NativeDocument::lex_in(&allocator, root));
+            .map(|root| {
+                vize_l1::markup::htmlish::document::NativeDocument::lex_in(&allocator, root)
+            });
         let petite_document = native_document.as_ref().and_then(|owner| {
             vize_l2::dialect::petite::PetiteDocument::lower_in(&allocator, owner).ok()
         });

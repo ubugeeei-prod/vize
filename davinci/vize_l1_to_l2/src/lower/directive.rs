@@ -8,7 +8,7 @@
 //! a directive is a static attribute.
 
 use alloc::vec::Vec;
-use vize_l1::markup::lex::dynamic_argument_boundary;
+use vize_l1::markup::htmlish::lex::dynamic_argument_boundary;
 
 /// Which directive a name spells.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

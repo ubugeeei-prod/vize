@@ -28,7 +28,7 @@ use std::path::PathBuf;
 
 use support::assert_sound;
 use vize_l0::{Allocator, Span};
-use vize_l1::pug::parse_pug;
+use vize_l1::markup::pug::parse_pug;
 use vize_l1_to_l2::lower::pug::{derive_template_source, lower_pug};
 
 fn fixtures(dir: &str) -> Vec<(String, String, PathBuf)> {
