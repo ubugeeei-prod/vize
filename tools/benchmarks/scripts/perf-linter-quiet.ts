@@ -276,6 +276,9 @@ for (const spec of arg("scenarios", "mk,mk-json,mk-all,bench,ta").split(",")) {
   const typeAware = ["--strict-reactivity", "--format", "json"];
   if (spec === "ta-one")
     scenario("misskey type-aware one SFC `MkButton.vue`", mkta, ["lint", "src/components/MkButton.vue", ...typeAware], runs);
+  // `MkAsUi.vue` starts a Corsa session (ambient program files, tsgo spawn) on its own.
+  if (spec === "ta-session")
+    scenario("misskey type-aware one SFC with a session `MkAsUi.vue`", mkta, ["lint", "src/components/MkAsUi.vue", ...typeAware], runs);
   const taNamed = /^ta-files-(\d+)$/.exec(spec);
   if (taNamed) {
     const names = readdirSync(join(mkta, "src/widgets"))
