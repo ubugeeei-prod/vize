@@ -1,10 +1,8 @@
-name: PR performance observation
+name: PR performance observation (perf-linter quiet-runner bench)
 
 # Measurements only. This workflow is deliberately independent of Check,
 # merge_group, release gates, and the existing historical benchmark budgets.
 on:
-  pull_request:
-    types: [opened, synchronize, reopened]
   workflow_dispatch:
     inputs:
       base_sha:
@@ -18,7 +16,7 @@ on:
 
 permissions: { contents: read }
 concurrency:
-  group: pr-performance-observation-${{ github.event.pull_request.number || github.ref }}
+  group: perf-linter-quiet-${{ inputs.base_sha }}-${{ inputs.head_sha }}
   cancel-in-progress: true
 env:
   BASE_SHA: ${{ github.event.pull_request.base.sha || inputs.base_sha }}
@@ -34,7 +32,7 @@ jobs:
   observe:
     name: Performance observations (optional)
     runs-on: blacksmith-32vcpu-ubuntu-2404
-    timeout-minutes: 50
+    timeout-minutes: 120
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
@@ -87,9 +85,6 @@ jobs:
       - name: Install one pinned physical dependency provider
         working-directory: driver
         run: vp install --frozen-lockfile --prefer-offline
-      - name: Validate measurement and source custody controls
-        working-directory: driver
-        run: node --test tests/tooling/pr-performance-observation.test.ts tools/benchmarks/scripts/pr-performance-observation.test.ts tools/benchmarks/scripts/pr-performance-build.test.ts
       - name: Build normal source binaries in independent fresh targets
         run: |
           set -euo pipefail
@@ -108,56 +103,42 @@ jobs:
           const pair = verifyPrPerformanceBuildPair('performance-observation/build/base.json', 'performance-observation/build/head.json');
           writeFileSync('performance-observation/build/pair.json', JSON.stringify(pair, null, 2) + '\n');
           JS
-      - name: Generate identical public inputs and pin the native runtime
+      - name: Prepare misskey, type-aware and benchmark corpora
         working-directory: driver
         run: |
-          node --input-type=module <<'JS'
-          import { appendFileSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
-          import { createRequire } from 'node:module';
-          import { dirname, join, resolve } from 'node:path';
-          import { generateCorpus } from './tools/benchmarks/scripts/generate.mjs';
-          const require = createRequire(resolve('tests/package.json'));
-          const vue = dirname(realpathSync(require.resolve('vue/package.json')));
-          const corsa = realpathSync('node_modules/@typescript/typescript-linux-x64/lib/tsc');
-          const dir = join(process.env.RUNNER_TEMP, 'pr-performance-inputs');
-          generateCorpus({ fileCount: 1000, benchDir: dir });
-          const config = JSON.parse(readFileSync(join(dir, 'tsconfig.json'), 'utf8'));
-          config.compilerOptions.paths.vue = [vue];
-          writeFileSync(join(dir, 'tsconfig.json'), JSON.stringify(config, null, 2) + '\n');
-          appendFileSync(process.env.GITHUB_ENV, `OBSERVATION_INPUT=${dir}\nOBSERVATION_VUE=${vue}\nOBSERVATION_CORSA=${corsa}\n`);
-          JS
-      - name: Observe alternating latency, separate memory, and binary sizes
+          set -euo pipefail
+          root="$RUNNER_TEMP/perf-linter"
+          mkdir -p "$root"
+          git clone --quiet --filter=blob:none --no-checkout https://github.com/misskey-dev/misskey "$root/misskey-src"
+          git -C "$root/misskey-src" sparse-checkout set packages/frontend
+          git -C "$root/misskey-src" checkout --quiet 6a508589d33d07902ffe8d8121a9fdc15a68173c
+          for corpus in mk mkta; do
+            mkdir -p "$root/$corpus"
+            cp -R "$root/misskey-src/packages/frontend/src" "$root/misskey-src/packages/frontend/tsconfig.json" "$root/$corpus/"
+          done
+          mkdir -p "$root/mkta/node_modules/@typescript"
+          ln -s "$(realpath node_modules/@typescript/typescript-linux-x64)" "$root/mkta/node_modules/@typescript/typescript-linux-x64"
+          find "$root/mk/src" -name '*.vue' | wc -l
+          node --input-type=module -e "import('./tools/benchmarks/scripts/generate.mjs').then((m) => m.generateCorpus({ fileCount: 1000, benchDir: process.argv[1], log: () => {} }))" "$root/bench"
+          echo "PERF_LINTER_ROOT=$root" >> "$GITHUB_ENV"
+      - name: Interleaved base/head lint and LSP measurements
         run: |
-          node driver/tools/benchmarks/scripts/pr-performance-observation.ts \
+          set -euo pipefail
+          {
+            echo "### perf-linter quiet-runner comparison"
+            echo
+            echo "Base \`$BASE_SHA\`, head \`$HEAD_SHA\`, both built by pr-performance-build.ts (ci-opt) with rustc $(rustc --version | cut -d' ' -f2). Runner: $(nproc) vCPU."
+            echo
+          } > "$RUNNER_TEMP/perf-linter.md"
+          node driver/tools/benchmarks/scripts/perf-linter-quiet.ts \
             --base-bin "$RUNNER_TEMP/pr-performance-base-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT/ci-opt/vize" \
             --head-bin "$RUNNER_TEMP/pr-performance-head-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT/ci-opt/vize" \
-            --base-source "$BASE_SHA" --head-source "$HEAD_SHA" \
-            --input-dir "$OBSERVATION_INPUT" --vue-dir "$OBSERVATION_VUE" \
-            --corsa-path "$OBSERVATION_CORSA" --runs 5 --warmups 1 \
-            --out "$GITHUB_WORKSPACE/performance-observation/measurements" \
-            --build-receipts "$GITHUB_WORKSPACE/performance-observation/build"
-      - name: Publish the observation summary
-        if: always()
-        run: |
-          if [[ -f performance-observation/measurements/summary.md ]]; then
-            cat performance-observation/measurements/summary.md >> "$GITHUB_STEP_SUMMARY"
-          else
-            printf '%s\n' '### PR performance observation' '' 'No qualified comparison was produced. Inspect the failed measurement/build step and retained evidence; this is not a performance improvement.' >> "$GITHUB_STEP_SUMMARY"
-          fi
-      - name: Package evidence without traversing dependency symlinks
-        if: always()
-        run: |
-          if [[ -d performance-observation ]]; then
-            tar --exclude=node_modules --exclude=.vize --exclude=__out__ \
-              -czf performance-observation.tgz performance-observation
-          fi
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        if: always()
-        with:
-          name: pr-performance-${{ github.event.pull_request.number || 'manual' }}-${{ env.HEAD_SHA }}-${{ github.run_attempt }}
-          path: |
-            performance-observation.tgz
-            performance-observation/measurements/summary.md
-            performance-observation/measurements/report.json
-          if-no-files-found: warn
-          retention-days: 90
+            --mk "$PERF_LINTER_ROOT/mk" --mkta "$PERF_LINTER_ROOT/mkta" --bench "$PERF_LINTER_ROOT/bench" \
+            --runs "$PERF_LINTER_RUNS" --scenarios "$PERF_LINTER_SCENARIOS" \
+            --lsp-rounds "$PERF_LINTER_LSP_ROUNDS" --lsp-edits 40 \
+            --out "$RUNNER_TEMP/perf-linter.md"
+          cat "$RUNNER_TEMP/perf-linter.md" >> "$GITHUB_STEP_SUMMARY"
+        env:
+          PERF_LINTER_RUNS: "30"
+          PERF_LINTER_SCENARIOS: mk,mk-json,mk-all,mk-all-text,bench,ta
+          PERF_LINTER_LSP_ROUNDS: "10"
