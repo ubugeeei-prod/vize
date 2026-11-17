@@ -1825,6 +1825,133 @@
       ]
     },
     {
+      "id": "formatter/sfc/hugged-child-whitespace-width",
+      "state": "active",
+      "targets": [
+        "fmt"
+      ],
+      "inputs": {
+        "root": "sfc-hugged-child-whitespace-width",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "785576bf193e0cf51299549d8c16ff0272a4445f04063e7c31fbcf9f66c01265",
+            "role": "entry",
+            "kind": "vue",
+            "runtimeFileName": "App.vue"
+          }
+        ],
+        "config": []
+      },
+      "provenance": {
+        "issues": [],
+        "commits": [
+          {
+            "sha": "b3858ac9b7d886c07e8c2f1075e13d4fa19bcb57",
+            "role": "pre-fix-base",
+            "paths": [
+              "crates/vize_glyph/src/template/formatter.rs",
+              "crates/vize_glyph/src/template/formatter/child_width.rs"
+            ]
+          }
+        ],
+        "sources": [
+          {
+            "kind": "repository-authored",
+            "revision": "fb43a8ba1883dfd64114b610fe314ed8ce86b777",
+            "path": "crates/vize_glyph/tests/template_hugged_child_whitespace.rs",
+            "symbol": "whitespace_only_child_measures_like_an_empty_child"
+          }
+        ]
+      },
+      "witnesses": [
+        {
+          "path": "crates/vize_glyph/tests/template_hugged_child_whitespace.rs",
+          "symbol": "whitespace_only_child_measures_like_an_empty_child",
+          "executor": "rust-test",
+          "asserts": [
+            "full-output-bytes",
+            "whitespace-only-child-width",
+            "whitespace-tail-interpolation-width",
+            "3-pass-idempotence"
+          ],
+          "limitations": [
+            "The fixture covers whitespace-only children and a whitespace-tailed sole interpolation; whitespace-significant and tab-indented neighbours stay in the Rust witness file."
+          ]
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "component-tags",
+              "interpolations"
+            ],
+            "selector": "same-line whitespace-only children and sole interpolations followed by whitespace before the closing tag"
+          }
+        ]
+      },
+      "adapters": {
+        "legacy": "formatter-cli-v1",
+        "native": null,
+        "reasons": {
+          "legacy": "Source-built formatter CLI compares complete output and a three-pass fixed point.",
+          "native": "No verified native formatter adapter; unsupported is nonpass."
+        }
+      },
+      "expectations": {
+        "legacy": {
+          "state": "captured",
+          "baselineRevision": "f59e69c38ecbead394ba30f0fdacb5f9c1b9fd04",
+          "artifacts": [
+            {
+              "path": "sfc-hugged-child-whitespace-width/reference.expected.txt",
+              "sha256": "cddda51c2a72ff7abde51a283e4e305a6cdcf074b0291d7bc527609eb6b90a71",
+              "role": "repository-authored-regression-reference",
+              "provenance": {
+                "revision": "fb43a8ba1883dfd64114b610fe314ed8ce86b777",
+                "path": "crates/vize_glyph/tests/template_hugged_child_whitespace.rs",
+                "symbol": "whitespace_only_child_measures_like_an_empty_child",
+                "assertion": "Hugged whitespace children print their first-pass layout and stay byte-stable."
+              },
+              "mediaType": "text/x-vue",
+              "runtimeFileName": "App.vue"
+            }
+          ],
+          "contract": "formatter-byte-output-v1",
+          "fields": [
+            "reference-full-output-bytes",
+            "candidate-cli-output-bytes",
+            "3-pass-idempotence"
+          ],
+          "missingFields": [
+            "structured FormatResult.changed is covered by the Rust convergence witness"
+          ],
+          "referenceState": "repository-authored real-project-derived width contract; exact-source Actions required"
+        }
+      },
+      "comparison": {
+        "contract": "formatter-byte-output-v1",
+        "requiredFacets": [
+          "full-output-bytes",
+          "idempotence"
+        ],
+        "transportMappings": []
+      },
+      "scenarios": [
+        {
+          "id": "initial",
+          "inputRef": "App.vue",
+          "operations": []
+        }
+      ]
+    },
+    {
       "id": "formatter/sfc/hugged-child-width-fast-paths",
       "state": "active",
       "targets": [
