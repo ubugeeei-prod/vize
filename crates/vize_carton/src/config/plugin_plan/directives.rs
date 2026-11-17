@@ -1,10 +1,32 @@
 //! Lowers declared `vue.directive` capabilities into the L0 contract table (#13074).
 
 use super::{PluginPlanError, VerifiedPluginPlan};
-use crate::config::{DirectiveContract, DirectiveModifier};
+use crate::config::{DirectiveContract, DirectiveContracts, DirectiveModifier};
 use crate::cstr;
 
 impl VerifiedPluginPlan {
+    /// The shared table compilers read: every declared directive, and the
+    /// outputs each declaring plugin supports, so a template compiled to an
+    /// output its plugin lacks fails closed.
+    pub fn directive_table(&self) -> Result<DirectiveContracts, PluginPlanError> {
+        let contracts = self.directives()?;
+        let outputs = self
+            .plan()
+            .plugins
+            .iter()
+            .filter(|plugin| {
+                contracts
+                    .iter()
+                    .any(|contract| contract.plugin == plugin.name)
+            })
+            .filter_map(|plugin| {
+                let supports = plugin.supports.as_ref()?;
+                Some((plugin.name.clone(), supports.outputs.clone()))
+            })
+            .collect();
+        Ok(DirectiveContracts::with_outputs(contracts, outputs))
+    }
+
     /// Every declared directive, in plan order.
     pub fn directives(&self) -> Result<Vec<DirectiveContract>, PluginPlanError> {
         let mut contracts = Vec::new();

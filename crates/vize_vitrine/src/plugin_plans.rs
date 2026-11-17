@@ -13,9 +13,6 @@ use vize_carton::config::plugin_plan::{PluginPlanError, VerifiedPluginPlan, veri
 use vize_l0::config::DirectiveContracts;
 use vize_l0::{String, cstr};
 
-/// Plans one host process keeps; a config reload registers a new digest.
-const MAX_PLANS: usize = 8;
-
 struct Registered {
     plan: VerifiedPluginPlan,
     directives: DirectiveContracts,
@@ -53,25 +50,22 @@ pub fn register(projected: &str) -> Result<String, PluginPlanError> {
 
 /// Keep a verified plan and lower its directive table once.
 fn keep(plan: VerifiedPluginPlan) -> Result<String, PluginPlanError> {
+    plan.admit("compiler", None)?;
     let digest = String::from(plan.digest());
-    let directives = DirectiveContracts::new(plan.directives()?);
+    let directives = plan.directive_table()?;
+    // Every distinct plan stays for the process: a host keeps naming its
+    // digest, and only a config change registers another plan.
     let mut plans = PLANS.lock().unwrap_or_else(PoisonError::into_inner);
     if !plans.iter().any(|kept| kept.plan.digest() == digest) {
-        if plans.len() == MAX_PLANS {
-            plans.remove(0);
-        }
         plans.push(Registered { plan, directives });
     }
     Ok(digest)
 }
 
-/// The directive table of the plan named `digest`, admitted for the output
-/// one compile produces. No digest means no plan and an empty table.
-pub fn compile_directives(
-    digest: Option<&str>,
-    ssr: bool,
-    vapor: bool,
-) -> Result<DirectiveContracts, PluginPlanError> {
+/// The directive table of the plan named `digest`. The table carries each
+/// declaring plugin's supported outputs, so the SFC compiler refuses a file
+/// whose resolved output a plugin lacks. No digest means an empty table.
+pub fn compile_directives(digest: Option<&str>) -> Result<DirectiveContracts, PluginPlanError> {
     let Some(digest) = digest else {
         return Ok(DirectiveContracts::EMPTY);
     };
@@ -83,14 +77,6 @@ pub fn compile_directives(
             message: cstr!("digest {digest} is not registered; reload vite.config.*"),
         });
     };
-    let output = if ssr {
-        "ssr"
-    } else if vapor {
-        "vapor"
-    } else {
-        "vdom"
-    };
-    kept.plan.admit("compiler", Some(output))?;
     Ok(kept.directives.clone())
 }
 
@@ -119,33 +105,31 @@ mod tests {
 
     #[test]
     fn a_compile_without_a_plan_reads_no_table() {
-        assert!(compile_directives(None, false, false).unwrap().is_empty());
+        assert!(compile_directives(None).unwrap().is_empty());
     }
 
     #[test]
-    fn a_kept_plan_serves_its_table_for_supported_outputs_only() {
+    fn a_kept_plan_serves_its_table_with_the_supported_outputs() {
         let plan = verify_plugin_plan(&tracking(&["ssr", "vdom"]), None).unwrap();
         let digest = keep(plan).unwrap();
-        let table = compile_directives(Some(&digest), false, false).unwrap();
+        let table = compile_directives(Some(&digest)).unwrap();
         assert_eq!(
             table.get("track").map(|contract| contract.plugin.as_str()),
             Some("@acme/tracking")
         );
-        assert!(compile_directives(Some(&digest), true, false).is_ok());
+        assert_eq!(table.unsupported("ssr"), None);
         assert_eq!(
-            compile_directives(Some(&digest), false, true)
-                .unwrap_err()
-                .to_string(),
-            "[plugin/host-unsupported] @acme/tracking: vue.directive `track` does not support the vapor output"
+            table.unsupported("vapor").as_deref(),
+            Some(
+                "[plugin/host-unsupported] @acme/tracking: vue.directive `track` does not support the vapor output"
+            )
         );
     }
 
     #[test]
     fn unknown_digests_and_malformed_projections_fail_closed() {
         assert_eq!(
-            compile_directives(Some("0000"), false, false)
-                .unwrap_err()
-                .code,
+            compile_directives(Some("0000")).unwrap_err().code,
             "plan-stale"
         );
         for projected in ["{}", r#"{"digest":"x"}"#, "not json"] {

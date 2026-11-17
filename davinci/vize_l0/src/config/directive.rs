@@ -14,7 +14,14 @@ use crate::String;
 /// The declared directives one compilation honors, cheap to clone into
 /// every file's options. Empty unless a plugin plan declares a directive.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
-pub struct DirectiveContracts(Option<Arc<[DirectiveContract]>>);
+pub struct DirectiveContracts(Option<Arc<DirectiveTable>>);
+
+#[derive(Debug, PartialEq, Eq)]
+struct DirectiveTable {
+    contracts: Vec<DirectiveContract>,
+    /// `(plugin, outputs)` for each plugin that limits its outputs.
+    outputs: Vec<(String, Vec<String>)>,
+}
 
 /// The empty table, for `const` option defaults.
 pub static NO_DIRECTIVE_CONTRACTS: DirectiveContracts = DirectiveContracts::EMPTY;
@@ -24,10 +31,40 @@ impl DirectiveContracts {
 
     #[must_use]
     pub fn new(contracts: Vec<DirectiveContract>) -> Self {
+        Self::with_outputs(contracts, Vec::new())
+    }
+
+    /// A table whose plugins support only the listed outputs (`vdom`, `ssr`,
+    /// `vapor`); a plugin without an entry supports every output.
+    #[must_use]
+    pub fn with_outputs(
+        contracts: Vec<DirectiveContract>,
+        outputs: Vec<(String, Vec<String>)>,
+    ) -> Self {
         if contracts.is_empty() {
             return Self::EMPTY;
         }
-        Self(Some(contracts.into()))
+        Self(Some(Arc::new(DirectiveTable { contracts, outputs })))
+    }
+
+    /// Why a template compiled to `output` cannot honor this table: the
+    /// first directive whose plugin does not support that output.
+    #[must_use]
+    pub fn unsupported(&self, output: &str) -> Option<String> {
+        let table = self.0.as_deref()?;
+        table.contracts.iter().find_map(|contract| {
+            let (_, outputs) = table
+                .outputs
+                .iter()
+                .find(|(plugin, _)| *plugin == contract.plugin)?;
+            (!outputs.iter().any(|supported| supported == output)).then(|| {
+                crate::cstr!(
+                    "[plugin/host-unsupported] {}: vue.directive `{}` does not support the {output} output",
+                    contract.plugin,
+                    contract.name
+                )
+            })
+        })
     }
 
     #[must_use]
@@ -37,7 +74,9 @@ impl DirectiveContracts {
 
     #[must_use]
     pub fn as_slice(&self) -> &[DirectiveContract] {
-        self.0.as_deref().unwrap_or_default()
+        self.0
+            .as_deref()
+            .map_or(&[], |table| table.contracts.as_slice())
     }
 
     /// The contract of `v-<name>`, when a plugin declares it.

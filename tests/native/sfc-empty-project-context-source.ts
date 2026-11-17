@@ -138,17 +138,14 @@ pub(crate) fn dependencies_to_napi(dependencies: &[impl AsRef<str>]) -> Option<V
 function reviewedSourceSuccessor(file: string, bytes: Uint8Array): Uint8Array {
   if (
     file !== "crates/vize_vitrine/src/napi/sfc/compile.rs" ||
-    blob(bytes) !== "00e9ea4ce7bd66212798ed0318fa1e66e81b3738"
+    blob(bytes) !== "8ec4b58ac5b5fa47c2c1b3859368c08b8481152a"
   )
     return bytes;
   // #13074: a compile applies the directive table of its registered plan.
   let text = Buffer.from(bytes).toString("utf8");
   for (const edit of [
-    "    let directive_contracts = crate::napi::plugin_plan::compile_directives(\n" +
-      "        opts.plugin_plan.as_deref(),\n" +
-      "        opts.ssr.unwrap_or(false),\n" +
-      "        vapor,\n" +
-      "    )?;\n",
+    "    let directive_contracts =\n" +
+      "        crate::napi::plugin_plan::compile_directives(opts.plugin_plan.as_deref())?;\n",
     "        dom_options.directive_contracts = directive_contracts;\n",
   ]) {
     assert.equal(text.split(edit).length, 2, "unique reviewed plugin-plan edit");

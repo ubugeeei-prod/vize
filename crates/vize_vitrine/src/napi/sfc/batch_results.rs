@@ -52,11 +52,8 @@ fn compile_sfc_batch_with_results_inner(
     let success_count = AtomicUsize::new(0);
     let ssr = opts.ssr.unwrap_or(false);
     let vapor = opts.vapor.unwrap_or(false);
-    let directive_contracts = crate::napi::plugin_plan::compile_directives(
-        opts.plugin_plan.as_deref(),
-        opts.ssr.unwrap_or(false),
-        vapor,
-    )?;
+    let directive_contracts =
+        crate::napi::plugin_plan::compile_directives(opts.plugin_plan.as_deref())?;
     let is_ts = opts.is_ts.unwrap_or(false);
     let custom_renderer = opts.custom_renderer.unwrap_or(false);
     let custom_elements = vize_atelier_core::options::CustomElementMatcher::from_patterns(

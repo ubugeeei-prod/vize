@@ -114,13 +114,17 @@ invalidating a plan that is valid today.
   may bind a declared directive takes the compatibility lane, because the
   published `DomEmitOptions` literal cannot carry the table. A binding that breaks
   its contract fails the template with `compiler/directive-contract` on its
-  authored span. `vize build` admits the plan once per output it produces, so
-  a plugin whose `supports.outputs` omits one is refused (`host-unsupported`).
+  authored span. Hosts admit the plan as the compiler once. The
+  table carries each declaring plugin's `supports.outputs`, and the SFC
+  compiler, which resolves each file's output (SSR, a `vapor` script or
+  request, otherwise VDOM), refuses a file compiled to an output its plugin
+  lacks (`host-unsupported`).
   The plan still loads nowhere until the type checker implements the
   capability too. The Vite host registers the resolved plan with the native
   compiler once (`registerPluginPlan`), which re-verifies it and lowers the
-  table; every compile then names the plan by its digest, admits the output
-  it produces, and refuses an unknown digest (`plan-stale`). JSX/TSX
+  table; every compile then names the plan by its digest and refuses an
+  unknown digest (`plan-stale`). Registered plans stay for the process, so
+  a host's digest never expires while its config is unchanged. JSX/TSX
   templates do not read the table yet.
 
 ## Plugin lint rules

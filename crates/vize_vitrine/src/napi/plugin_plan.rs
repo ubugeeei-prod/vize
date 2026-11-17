@@ -21,10 +21,8 @@ pub fn register_plugin_plan(projected: String) -> Result<String> {
 /// The directive table one napi compile applies.
 pub(crate) fn compile_directives(
     digest: Option<&str>,
-    ssr: bool,
-    vapor: bool,
 ) -> Result<vize_l0::config::DirectiveContracts> {
-    crate::plugin_plans::compile_directives(digest, ssr, vapor).map_err(refused)
+    crate::plugin_plans::compile_directives(digest).map_err(refused)
 }
 
 fn refused(error: impl core::fmt::Display) -> Error {
