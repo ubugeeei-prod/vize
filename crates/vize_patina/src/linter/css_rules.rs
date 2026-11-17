@@ -19,7 +19,6 @@ use crate::rules::css::{
 };
 use vize_atelier_sfc::SfcDescriptor;
 use vize_l0::profile;
-use vize_l1::css::lang::StyleLanguage;
 
 pub(crate) const RULE_NO_IMPORTANT: &str = "css/no-important";
 pub(crate) const RULE_NO_ID_SELECTORS: &str = "css/no-id-selectors";
