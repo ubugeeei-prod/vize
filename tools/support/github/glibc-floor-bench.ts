@@ -1,154 +1,195 @@
 /**
- * Compares the Linux GNU release linking recipes on one runner: the same
- * source built against the runner's glibc (`host`, the recipe before the
- * glibc floor) and through `cargo zigbuild` at the documented floor
- * (`floor`). Rounds visit both variants in alternating order so drift on the
- * runner lands on both sides.
+ * Counts the instructions each Linux release linking recipe executes, under
+ * callgrind (deterministic, unlike wall time on a shared runner), and records
+ * binary and gzip sizes.
+ *
+ * For the CLI it also counts the instructions before `main`: the dynamic
+ * loader's (or a static-PIE's own) relocation processing and initializers,
+ * which dominate single-file editor and lint-staged runs. That is the full
+ * run minus a second run collected only inside `main`.
  *
  * Usage:
- *   node tools/support/github/glibc-floor-bench.ts run --rounds <n> --out <json>
- *     --corpus <dir> --cli host=<vize> --cli floor=<vize>
- *     --binding host=<.node> --binding floor=<.node>
+ *   node tools/support/github/glibc-floor-bench.ts measure --out <json> --runs <n>
+ *     --file <one.vue> --corpus <dir> [--corsa <tsgo>]
+ *     --cli <variant>=<vize> ... --binding <variant>=<.node> ...
  *   node tools/support/github/glibc-floor-bench.ts summarize <json>
+ *
+ * The first `--cli` and the first `--binding` variant are the baselines (the
+ * recipe shipping today); every other variant is reported against them.
  */
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import zlib from "node:zlib";
 
 import { isEntrypoint, runEntrypoint } from "../command-runtime.ts";
 
-export interface Sample {
+export interface Measurement {
+  readonly kind: "cli" | "binding";
   readonly scenario: string;
   readonly variant: string;
-  readonly round: number;
-  readonly seconds: number;
+  /** Total instructions (callgrind Ir) per run. */
+  readonly instructions: readonly number[];
+  /** Instructions before `main` per run (CLI only). */
+  readonly beforeMain?: readonly number[];
 }
 
-interface RunOptions {
-  rounds: number;
+export interface Size {
+  readonly kind: "cli" | "binding";
+  readonly variant: string;
+  readonly bytes: number;
+  readonly gzipBytes: number;
+}
+
+interface Options {
   out: string;
+  runs: number;
+  file: string;
   corpus: string;
-  cli: Map<string, string>;
-  binding: Map<string, string>;
+  corsa: string | undefined;
+  cli: [string, string][];
+  binding: [string, string][];
 }
 
-function parseRun(args: readonly string[]): RunOptions {
-  const options: RunOptions = {
-    rounds: 0,
+function parseMeasure(args: readonly string[]): Options {
+  const options: Options = {
     out: "",
+    runs: 0,
+    file: "",
     corpus: "",
-    cli: new Map(),
-    binding: new Map(),
+    corsa: undefined,
+    cli: [],
+    binding: [],
   };
   for (let index = 0; index < args.length; index += 2) {
     const [flag, value] = [args[index], args[index + 1]];
     if (value === undefined) throw new Error(`${flag} needs a value`);
-    if (flag === "--rounds") options.rounds = Number(value);
-    else if (flag === "--out") options.out = value;
-    else if (flag === "--corpus") options.corpus = value;
+    if (flag === "--out") options.out = value;
+    else if (flag === "--runs") options.runs = Number(value);
+    else if (flag === "--file") options.file = path.resolve(value);
+    else if (flag === "--corpus") options.corpus = path.resolve(value);
+    else if (flag === "--corsa") options.corsa = path.resolve(value);
     else if (flag === "--cli" || flag === "--binding") {
       const [variant, file] = value.split("=", 2);
       if (!variant || !file) throw new Error(`${flag} expects <variant>=<path>`);
-      (flag === "--cli" ? options.cli : options.binding).set(variant, path.resolve(file));
+      (flag === "--cli" ? options.cli : options.binding).push([variant, path.resolve(file)]);
     } else throw new Error(`Unknown argument: ${flag}`);
   }
-  if (!Number.isInteger(options.rounds) || options.rounds < 1)
-    throw new Error("--rounds must be >= 1");
-  if (!options.out || !options.corpus) throw new Error("--out and --corpus are required");
+  if (!Number.isInteger(options.runs) || options.runs < 1) throw new Error("--runs must be >= 1");
+  if (!options.out || !options.file || !options.corpus) {
+    throw new Error("--out, --file and --corpus are required");
+  }
   return options;
 }
 
-/** Alternates which variant goes first so neither side always runs warm. */
-export function roundOrder(variants: readonly string[], round: number): string[] {
-  return round % 2 === 0 ? [...variants] : [...variants].reverse();
+/** Total instructions from a callgrind output file's `totals:` or `summary:` line. */
+export function callgrindTotal(text: string): number {
+  const total = /^(?:totals|summary): (\d+)$/mu.exec(text);
+  if (total === null) throw new Error("callgrind output has no totals");
+  return Number(total[1]);
 }
 
-function vueFiles(directory: string): string[] {
-  return fs
-    .readdirSync(directory, { recursive: true, withFileTypes: true })
-    .filter((entry) => entry.isFile() && entry.name.endsWith(".vue"))
-    .map((entry) => path.join(entry.parentPath, entry.name))
-    .sort();
-}
-
-// Loads one binding in a fresh process and compiles every corpus file 5 times.
-const compileScript = `
-const fs = require("node:fs");
-const [binding, list] = process.argv.slice(1);
-const native = require(binding);
-const sources = fs.readFileSync(list, "utf8").split("\\n").filter(Boolean)
-  .map((file) => [file, fs.readFileSync(file, "utf8")]);
-const started = process.hrtime.bigint();
-let bytes = 0;
-for (let pass = 0; pass < 5; pass += 1) {
-  for (const [filename, source] of sources) bytes += native.compileSfc(source, { filename }).code.length;
-}
-process.stdout.write(String(Number(process.hrtime.bigint() - started) / 1e9) + " " + bytes);
-`;
-
-function timed(command: string, args: readonly string[], cwd: string): number {
-  const started = process.hrtime.bigint();
-  const result = spawnSync(command, args, { cwd, encoding: "utf8", maxBuffer: 1 << 30 });
-  const seconds = Number(process.hrtime.bigint() - started) / 1e9;
-  if (result.error) throw result.error;
-  // `vize lint` exits 1 when it reports problems; only a crash invalidates a sample.
-  if (result.status === null || result.status > 1) {
-    throw new Error(`${command} ${args.join(" ")} failed (${result.status})\n${result.stderr}`);
+function callgrind(
+  command: string,
+  args: readonly string[],
+  scratch: string,
+  env: NodeJS.ProcessEnv,
+  extra: readonly string[] = [],
+): number {
+  const out = path.join(scratch, `callgrind.${process.hrtime.bigint()}.out`);
+  const run = spawnSync(
+    "valgrind",
+    ["--tool=callgrind", `--callgrind-out-file=${out}`, ...extra, command, ...args],
+    { cwd: scratch, env, encoding: "utf8", maxBuffer: 1 << 30 },
+  );
+  if (run.error) throw run.error;
+  // `vize lint` and `vize check` exit 1 when they report problems.
+  if (run.status === null || run.status > 1) {
+    throw new Error(
+      `${command} ${args.join(" ")} failed (${run.status})\n${run.stderr.slice(-4000)}`,
+    );
   }
-  return seconds;
+  const total = callgrindTotal(fs.readFileSync(out, "utf8"));
+  fs.rmSync(out, { force: true });
+  return total;
 }
 
-export function runBench(args: readonly string[]): number {
-  const options = parseRun(args);
-  const corpus = path.resolve(options.corpus);
+const bindingScript = (compile: boolean) =>
+  compile
+    ? `const native = require(process.argv[1]);
+const file = process.argv[2];
+const result = native.compileSfc(require("node:fs").readFileSync(file, "utf8"), { filename: file });
+if (!result.code) throw new Error("compileSfc produced no code");`
+    : "require(process.argv[1]);";
+
+function size(kind: Size["kind"], variant: string, file: string): Size {
+  const bytes = fs.readFileSync(file);
+  return { kind, variant, bytes: bytes.length, gzipBytes: zlib.gzipSync(bytes).length };
+}
+
+export function measure(args: readonly string[]): number {
+  const options = parseMeasure(args);
   const scratch = fs.mkdtempSync(path.join(os.tmpdir(), "glibc-floor-bench-"));
-  const list = path.join(scratch, "files.txt");
-  fs.writeFileSync(list, `${vueFiles(corpus).join("\n")}\n`);
-  const scenarios: [string, Map<string, string>, (file: string, round: number) => number][] = [
-    [
-      "cli-lint",
-      options.cli,
-      (cli) => timed(cli, ["lint", corpus, "--no-config", "--format", "json", "--quiet"], scratch),
-    ],
-    [
-      "cli-build",
-      options.cli,
-      (cli, round) =>
-        timed(
-          cli,
-          ["build", corpus, "--output", path.join(scratch, `build-${round}`), "--no-config"],
-          scratch,
-        ),
-    ],
-    [
-      "binding-compile",
-      options.binding,
-      (binding) => {
-        const result = spawnSync(process.execPath, ["-e", compileScript, binding, list], {
-          encoding: "utf8",
-        });
-        if (result.status !== 0) throw new Error(`compile bench failed\n${result.stderr}`);
-        return Number(result.stdout.split(" ")[0]);
-      },
-    ],
-  ];
-  const samples: Sample[] = [];
-  for (const [scenario, variants, measure] of scenarios) {
-    if (variants.size === 0) continue;
-    const names = [...variants.keys()];
-    // One unrecorded warm-up per variant fills the page cache for both.
-    for (const name of names) measure(variants.get(name)!, -1);
-    for (let round = 0; round < options.rounds; round += 1) {
-      for (const variant of roundOrder(names, round)) {
-        const seconds = measure(variants.get(variant)!, round);
-        samples.push({ scenario, variant, round, seconds });
-        console.log(`${scenario} ${variant} round ${round}: ${seconds.toFixed(4)}s`);
+  const env = { ...process.env, ...(options.corsa ? { CORSA_PATH: options.corsa } : {}) };
+  const measurements: Measurement[] = [];
+  const record = (
+    kind: Measurement["kind"],
+    scenario: string,
+    variant: string,
+    command: string,
+    commandArgs: readonly string[],
+    splitMain: boolean,
+  ) => {
+    const instructions: number[] = [];
+    const beforeMain: number[] = [];
+    for (let run = 0; run < options.runs; run += 1) {
+      const total = callgrind(command, commandArgs, scratch, env);
+      instructions.push(total);
+      if (splitMain) {
+        const inMain = callgrind(command, commandArgs, scratch, env, [
+          "--collect-atstart=no",
+          "--toggle-collect=main",
+        ]);
+        beforeMain.push(total - inMain);
       }
     }
+    measurements.push({
+      kind,
+      scenario,
+      variant,
+      instructions,
+      ...(splitMain ? { beforeMain } : {}),
+    });
+    const before = splitMain ? ` (before main ${beforeMain.join(", ")})` : "";
+    console.log(`${scenario} ${variant}: ${instructions.join(", ")}${before}`);
+  };
+  const lintArgs = ["--no-config", "--format", "json", "--quiet"];
+  for (const [variant, cli] of options.cli) {
+    record("cli", "vize --version", variant, cli, ["--version"], true);
+    record("cli", "vize lint <one file>", variant, cli, ["lint", options.file, ...lintArgs], true);
+    if (options.corsa) {
+      const check = ["check", options.file, ...lintArgs];
+      record("cli", "vize check <one file>", variant, cli, check, true);
+    }
+    const corpus = ["lint", options.corpus, ...lintArgs];
+    record("cli", "vize lint <corpus>", variant, cli, corpus, false);
   }
+  if (options.binding.length > 0) {
+    record("binding", "node -e 0 (no binding)", "-", process.execPath, ["-e", "0"], false);
+  }
+  for (const [variant, binding] of options.binding) {
+    const load = ["-e", bindingScript(false), binding];
+    record("binding", "require(binding)", variant, process.execPath, load, false);
+    const compile = ["-e", bindingScript(true), binding, options.file];
+    record("binding", "require + compileSfc <one file>", variant, process.execPath, compile, false);
+  }
+  const sizes = [
+    ...options.cli.map(([variant, file]) => size("cli", variant, file)),
+    ...options.binding.map(([variant, file]) => size("binding", variant, file)),
+  ];
   fs.mkdirSync(path.dirname(path.resolve(options.out)), { recursive: true });
-  fs.writeFileSync(options.out, `${JSON.stringify({ samples }, null, 2)}\n`);
+  fs.writeFileSync(options.out, `${JSON.stringify({ measurements, sizes }, null, 2)}\n`);
   fs.rmSync(scratch, { recursive: true, force: true });
   return 0;
 }
@@ -159,25 +200,37 @@ function median(values: readonly number[]): number {
   return sorted.length % 2 === 1 ? sorted[middle]! : (sorted[middle - 1]! + sorted[middle]!) / 2;
 }
 
-/** Markdown table: per scenario, each variant's median and spread, and floor/host. */
-export function summarize(samples: readonly Sample[]): string {
+const count = (value: number) => Math.round(value).toLocaleString("en-US");
+const delta = (value: number, base: number) =>
+  base > 0 ? `${value >= base ? "+" : ""}${((value / base - 1) * 100).toFixed(2)}%` : "";
+
+/** Markdown: instruction medians per scenario and variant, then sizes, against each baseline. */
+export function summarize(measurements: readonly Measurement[], sizes: readonly Size[]): string {
   const lines = [
-    "| Scenario | Variant | Rounds | Median (s) | Min (s) | Max (s) | vs host |",
-    "| --- | --- | --- | --- | --- | --- | --- |",
+    "| Scenario | Variant | Instructions | vs baseline | Before `main` | vs baseline |",
+    "| --- | --- | --- | --- | --- | --- |",
   ];
-  for (const scenario of new Set(samples.map((sample) => sample.scenario))) {
-    const of = (variant: string) =>
-      samples.filter((sample) => sample.scenario === scenario && sample.variant === variant);
-    const host = median(of("host").map((sample) => sample.seconds));
-    const variants = samples.filter((s) => s.scenario === scenario).map((s) => s.variant);
-    for (const variant of new Set(variants)) {
-      const seconds = of(variant).map((sample) => sample.seconds);
-      const ratio =
-        Number.isFinite(host) && host > 0
-          ? `${((median(seconds) / host - 1) * 100).toFixed(1)}%`
-          : "";
+  for (const scenario of new Set(measurements.map((entry) => entry.scenario))) {
+    const rows = measurements.filter((entry) => entry.scenario === scenario);
+    const base = median(rows[0]!.instructions);
+    const baseBefore = rows[0]!.beforeMain ? median(rows[0]!.beforeMain) : 0;
+    for (const row of rows) {
+      const first = row === rows[0];
+      const value = median(row.instructions);
+      const before = row.beforeMain ? median(row.beforeMain) : undefined;
       lines.push(
-        `| ${scenario} | ${variant} | ${seconds.length} | ${median(seconds).toFixed(4)} | ${Math.min(...seconds).toFixed(4)} | ${Math.max(...seconds).toFixed(4)} | ${variant === "host" ? "" : ratio} |`,
+        `| ${scenario} | ${row.variant} | ${count(value)} | ${first ? "baseline" : delta(value, base)} | ${before === undefined ? "" : count(before)} | ${before === undefined || first ? "" : delta(before, baseBefore)} |`,
+      );
+    }
+  }
+  lines.push("", "| Artifact | Variant | Bytes | vs baseline | gzip bytes | vs baseline |");
+  lines.push("| --- | --- | --- | --- | --- | --- |");
+  for (const kind of ["cli", "binding"] as const) {
+    const rows = sizes.filter((entry) => entry.kind === kind);
+    for (const row of rows) {
+      const first = row === rows[0];
+      lines.push(
+        `| ${kind} | ${row.variant} | ${count(row.bytes)} | ${first ? "baseline" : delta(row.bytes, rows[0]!.bytes)} | ${count(row.gzipBytes)} | ${first ? "baseline" : delta(row.gzipBytes, rows[0]!.gzipBytes)} |`,
       );
     }
   }
@@ -186,14 +239,17 @@ export function summarize(samples: readonly Sample[]): string {
 
 export function main(args: readonly string[]): number {
   const [command, ...rest] = args;
-  if (command === "run") return runBench(rest);
+  if (command === "measure") return measure(rest);
   if (command === "summarize" && rest.length === 1) {
-    const { samples } = JSON.parse(fs.readFileSync(rest[0]!, "utf8")) as { samples: Sample[] };
-    process.stdout.write(summarize(samples));
+    const { measurements, sizes } = JSON.parse(fs.readFileSync(rest[0]!, "utf8")) as {
+      measurements: Measurement[];
+      sizes: Size[];
+    };
+    process.stdout.write(summarize(measurements, sizes));
     return 0;
   }
   throw new Error(
-    "Usage: node tools/support/github/glibc-floor-bench.ts <run ... | summarize <json>>",
+    "Usage: node tools/support/github/glibc-floor-bench.ts <measure ... | summarize <json>>",
   );
 }
 
