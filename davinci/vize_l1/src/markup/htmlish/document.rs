@@ -101,18 +101,18 @@ pub struct DocumentLexicalError {
 /// default delimiters and no dialect-controlled verbatim scopes.
 ///
 /// ```compile_fail
-/// use vize_l1::markup::htmlish::document::NativeDocument;
+/// use vize_l1::markup::htmlish::document::ParsedDocument;
 /// fn requires_clone<T: Clone>() {}
-/// requires_clone::<NativeDocument<'static>>();
+/// requires_clone::<ParsedDocument<'static>>();
 /// ```
 ///
 /// ```compile_fail
-/// use vize_l1::markup::htmlish::document::NativeDocument;
-/// fn forge<'a>(original: NativeDocument<'a>) -> NativeDocument<'a> {
-///     NativeDocument { ..original }
+/// use vize_l1::markup::htmlish::document::ParsedDocument;
+/// fn forge<'a>(original: ParsedDocument<'a>) -> ParsedDocument<'a> {
+///     ParsedDocument { ..original }
 /// }
 /// ```
-pub struct NativeDocument<'a> {
+pub struct ParsedDocument<'a> {
     allocator: &'a Allocator,
     root: SourceRoot<'a>,
     dialect: FileDialect,
@@ -122,9 +122,9 @@ pub struct NativeDocument<'a> {
     declaration_refusal: Option<DocumentLexicalRefusal>,
 }
 
-impl core::fmt::Debug for NativeDocument<'_> {
+impl core::fmt::Debug for ParsedDocument<'_> {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        f.debug_struct("NativeDocument")
+        f.debug_struct("ParsedDocument")
             .field("root", &self.root)
             .field("dialect", &self.dialect)
             .field("events", &self.events)
@@ -135,7 +135,7 @@ impl core::fmt::Debug for NativeDocument<'_> {
     }
 }
 
-impl<'a> NativeDocument<'a> {
+impl<'a> ParsedDocument<'a> {
     /// Run the actual Document lexer once over the complete original source.
     /// The checked root supplies the source limit and base-zero coordinates.
     #[must_use]
@@ -270,12 +270,12 @@ pub enum DocumentLexicalRefusal {
 /// ```
 #[derive(Debug)]
 pub struct DocumentLexicalCompletion<'o, 'a> {
-    owner: &'o NativeDocument<'a>,
+    owner: &'o ParsedDocument<'a>,
 }
 
 impl<'o, 'a> DocumentLexicalCompletion<'o, 'a> {
     #[must_use]
-    pub fn owner(&self) -> &'o NativeDocument<'a> {
+    pub fn owner(&self) -> &'o ParsedDocument<'a> {
         self.owner
     }
 
@@ -288,13 +288,13 @@ impl<'o, 'a> DocumentLexicalCompletion<'o, 'a> {
 /// One immutable callback observation borrowing its genuine original run.
 #[derive(Debug)]
 pub struct DocumentToken<'o, 'a> {
-    owner: &'o NativeDocument<'a>,
+    owner: &'o ParsedDocument<'a>,
     event: &'o Event,
 }
 
 impl<'o, 'a> DocumentToken<'o, 'a> {
     #[must_use]
-    pub fn owner(&self) -> &'o NativeDocument<'a> {
+    pub fn owner(&self) -> &'o ParsedDocument<'a> {
         self.owner
     }
 

@@ -4,7 +4,7 @@ use alloc::vec::Vec;
 use vize_l0::SourceBlock;
 use vize_l1::container::vue::{DescriptorObservation, ScriptRole, ScriptView};
 use vize_l1::css::StyleSyntax;
-use vize_l1::embed::{Lang, syntax::NativeSyntax};
+use vize_l1::embed::{Lang, syntax::EmbedSyntax};
 use vize_l2::file::ScriptUnitId;
 
 /// Original selected role, original syntax and the actually minted unit, if any.
@@ -14,7 +14,7 @@ pub struct NativeScriptObservation<'a> {
     pub(super) block: SourceBlock<'a>,
     pub(super) role: ScriptRole,
     pub(super) lang: Lang,
-    pub(super) syntax: Option<NativeSyntax<'a>>,
+    pub(super) syntax: Option<EmbedSyntax<'a>>,
     pub(super) unit: Option<ScriptUnitId>,
 }
 impl<'a> NativeScriptObservation<'a> {
@@ -35,7 +35,7 @@ impl<'a> NativeScriptObservation<'a> {
         self.lang
     }
     #[must_use]
-    pub fn syntax(&self) -> Option<&NativeSyntax<'a>> {
+    pub fn syntax(&self) -> Option<&EmbedSyntax<'a>> {
         self.syntax.as_ref()
     }
     #[must_use]

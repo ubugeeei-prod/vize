@@ -1,7 +1,7 @@
 use super::support::{block, construct, script};
 use vize_l0::Allocator;
 use vize_l1::embed::Lang;
-use vize_l1_to_l2::native::NativeComponent;
+use vize_l1_to_l2::native::ParsedComponent;
 use vize_l1_to_l2::vue_file::{VueFileIssueKind, VueFileProducer};
 use vize_l2::lang::js::ProgramInput;
 
@@ -95,7 +95,7 @@ fn native_equal_copy_source_refuses_before_mint_and_retains_whole_component() {
     let arena = Allocator::default();
     let source = "<div>kept</div>";
     let copied = vize_l0::String::from(source);
-    let component = NativeComponent::parse_in(&arena, block(source, source).unwrap()).unwrap();
+    let component = ParsedComponent::parse_in(&arena, block(source, source).unwrap()).unwrap();
     let mut producer = VueFileProducer::new(&arena, copied.as_str()).unwrap();
     let rejected = {
         let mut region = producer.template_region().unwrap();

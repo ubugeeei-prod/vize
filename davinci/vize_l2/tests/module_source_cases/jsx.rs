@@ -2,7 +2,7 @@
 
 use oxc_ast::ast::{Expression, Statement};
 use vize_l0::{Allocator, SourceBlock, SourceRoot, Span};
-use vize_l1::embed::syntax::{NativeSyntax, ProgramOptions, parse_program_once};
+use vize_l1::embed::syntax::{EmbedSyntax, ProgramOptions, parse_program_once};
 use vize_l1::embed::{EmbedSource, Lang, SourceError};
 use vize_l2::file::Namespace;
 use vize_l2::lang::js::{FileProducer, ModuleSourceKind, ProgramInput, ProgramScope};
@@ -11,7 +11,7 @@ fn syntax<'a>(
     arena: &'a Allocator,
     block: SourceBlock<'a>,
     lang: Lang,
-) -> Result<NativeSyntax<'a>, SourceError> {
+) -> Result<EmbedSyntax<'a>, SourceError> {
     Ok(parse_program_once(
         arena,
         EmbedSource::authored(block.root_source(), block.span())?,

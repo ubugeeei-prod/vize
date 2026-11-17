@@ -74,10 +74,7 @@ fn assert_component_prop_still_checked(code: &str) {
         code,
         "$PublicComponentAttrs & $ComponentGlobalHtmlAttrs & $AllowedFallthroughAttrs<C>",
     );
-    assert_has(
-        code,
-        r#"$NativeElementProp<$NativeElement<"div">, "style">"#,
-    );
+    assert_has(code, r#"$NativeElementProp<$ElementView<"div">, "style">"#);
 }
 
 #[test]
@@ -87,7 +84,7 @@ fn vue3_check_unknown_props_accepts_intrinsic_attributes() {
     for name in ["x-small", "height", "no-gutters", "cols"] {
         assert_lacks(&output.code, &format!("\"{name}\""));
     }
-    assert_lacks(&output.code, r#"Partial<$NativeElement<"th">> = { "width""#);
+    assert_lacks(&output.code, r#"Partial<$ElementView<"th">> = { "width""#);
     assert_component_prop_still_checked(&output.code);
 }
 
@@ -99,11 +96,11 @@ fn vue3_expectations_strictly_check_only_their_native_owner() {
     let output = generate_template(template, true);
     assert_has(
         &output.code,
-        r#"Partial<$NativeElement<"div">> = { "foo": undefined as never }"#,
+        r#"Partial<$ElementView<"div">> = { "foo": undefined as never }"#,
     );
     assert_has(
         &output.code,
-        r#"Partial<$NativeElement<"div">> = { "class": undefined as never }"#,
+        r#"Partial<$ElementView<"div">> = { "class": undefined as never }"#,
     );
     assert_lacks(&output.code, "\"ordinary\"");
 }
@@ -123,16 +120,16 @@ fn omitted_target_excess_checks_intrinsic_names_without_never_assignment() {
             !assigns_never,
             "omitted target must not assign the name to never: {line}"
         );
-        let typed = has_fragment(line, "Partial<$NativeElement<")
+        let typed = has_fragment(line, "Partial<$ElementView<")
             || has_fragment(line, "void __vize_native_key_");
         assert!(typed, "{line}");
     }
     for fragment in [
-        r#"Partial<$NativeElement<"div">> = { "x-small": undefined as never }"#,
-        r#"Partial<$NativeElement<"tr">> = { "height": undefined as never }"#,
-        r#"Partial<$NativeElement<"th">> = { "width": undefined as never }"#,
-        r#"Partial<$NativeElement<"div">> = { "no-gutters": undefined as never }"#,
-        r#"Partial<$NativeElement<"div">> = { "cols": undefined as never }"#,
+        r#"Partial<$ElementView<"div">> = { "x-small": undefined as never }"#,
+        r#"Partial<$ElementView<"tr">> = { "height": undefined as never }"#,
+        r#"Partial<$ElementView<"th">> = { "width": undefined as never }"#,
+        r#"Partial<$ElementView<"div">> = { "no-gutters": undefined as never }"#,
+        r#"Partial<$ElementView<"div">> = { "cols": undefined as never }"#,
     ] {
         assert_has(&output.code, fragment);
     }

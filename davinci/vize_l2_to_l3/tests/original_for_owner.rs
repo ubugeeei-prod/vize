@@ -18,7 +18,7 @@ use vize_l1::{
         EmbedSource,
         syntax::{ProgramOptions, parse_program_once},
     },
-    markup::{NativeTemplateComponent, SurfaceParseOptions},
+    markup::{SurfaceParseOptions, TemplateComponent},
 };
 use vize_l2::{
     dump::{Op as DumpOp, Page},
@@ -64,7 +64,7 @@ fn original_file(arena: &Allocator) -> Result<NativeTemplateFile<'_>, &'static s
         EmbedSource::authored(SOURCE, setup.block().span()).map_err(|_| "original setup source")?,
         ProgramOptions::module(setup.lang()),
     );
-    let selected = NativeTemplateComponent::parse_in(arena, admitted)
+    let selected = TemplateComponent::parse_in(arena, admitted)
         .map_err(|_| "selected original component")?
         .ok_or("selected template")?;
     let mut owner = NativeTemplateOwner::new(selected).map_err(|_| "normal original owner")?;

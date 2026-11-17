@@ -89,20 +89,20 @@ mod tests {
         assert_eq!(
             generic_check_props_param(
                 "T",
-                Some("Partial<$NativeElement<\"span\">>"),
+                Some("Partial<$ElementView<\"span\">>"),
                 "Props",
                 true,
                 true,
                 false
             ),
             vize_l0::cstr!(
-                "{closed} & {{ [K in keyof (Partial<$NativeElement<\"span\">>) as string extends K ? never : K]?: unknown }}"
+                "{closed} & {{ [K in keyof (Partial<$ElementView<\"span\">>) as string extends K ? never : K]?: unknown }}"
             )
         );
         assert_eq!(
             generic_check_props_param(
                 "T",
-                Some("Partial<$NativeElement<\"span\">>"),
+                Some("Partial<$ElementView<\"span\">>"),
                 "Props",
                 true,
                 false,
@@ -122,7 +122,7 @@ mod tests {
     #[test]
     fn unchecked_unknown_props_keep_the_generic_tail_open_without_a_target() {
         let open = "Props<T> & import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps & $ComponentGlobalHtmlAttrs & Record<string, unknown>";
-        for fallthrough in [None, Some("Partial<$NativeElement<\"span\">>")] {
+        for fallthrough in [None, Some("Partial<$ElementView<\"span\">>")] {
             assert_eq!(
                 generic_check_props_param("T", fallthrough, "Props", false, false, false),
                 open
@@ -139,14 +139,14 @@ mod tests {
         assert_eq!(
             generic_check_props_param(
                 "T",
-                Some("Partial<$NativeElement<\"div\">>"),
+                Some("Partial<$ElementView<\"div\">>"),
                 "Props",
                 true,
                 false,
                 true
             ),
             vize_l0::cstr!(
-                "{declared} & {{ [K in keyof (Partial<$NativeElement<\"div\">>) as string extends K ? never : K]?: unknown }}"
+                "{declared} & {{ [K in keyof (Partial<$ElementView<\"div\">>) as string extends K ? never : K]?: unknown }}"
             )
         );
     }

@@ -11,9 +11,9 @@ use vize_l1::{
     },
     embed::{
         EmbedSource, Lang,
-        syntax::{NativeSyntax, ProgramOptions, parse_program_once},
+        syntax::{EmbedSyntax, ProgramOptions, parse_program_once},
     },
-    markup::{NativeTemplateComponent, SurfaceParseOptions},
+    markup::{SurfaceParseOptions, TemplateComponent},
 };
 use vize_l2::{
     file::FileArtifact,
@@ -43,17 +43,17 @@ use super::{NativeSfcLintRefusal as Refusal, envelope};
 /// }
 /// ```
 /// ```compile_fail
-/// use vize_l1::markup::NativeTemplateComponent;
+/// use vize_l1::markup::TemplateComponent;
 /// use vize_patina::native::sfc::NativeSfcLintOwner;
 /// fn escape_arena<'a>(owner: &NativeSfcLintOwner<'a>)
-///     -> &'static NativeTemplateComponent<'static> {
+///     -> &'static TemplateComponent<'static> {
 ///     owner.template()
 /// }
 /// ```
 pub struct NativeSfcLintOwner<'a> {
     descriptor: DescriptorObservation<'a>,
-    template: NativeTemplateComponent<'a>,
-    syntax: NativeSyntax<'a>,
+    template: TemplateComponent<'a>,
+    syntax: EmbedSyntax<'a>,
     file: FileArtifact<'a>,
 }
 
@@ -102,7 +102,7 @@ impl<'a> NativeSfcLintOwner<'a> {
                 interruptions: file.interrupted_programs().collect(),
             });
         }
-        let template = NativeTemplateComponent::parse_in(allocator, admitted)
+        let template = TemplateComponent::parse_in(allocator, admitted)
             .map_err(Refusal::Parse)?
             .ok_or(Refusal::SourceMismatch)?;
         super::super::admission::selected_component(&template).map_err(Refusal::Template)?;
@@ -128,12 +128,12 @@ impl<'a> NativeSfcLintOwner<'a> {
     }
     /// Returns the original selected template component.
     #[must_use]
-    pub fn template(&self) -> &NativeTemplateComponent<'a> {
+    pub fn template(&self) -> &TemplateComponent<'a> {
         &self.template
     }
     /// Returns the single retained parse of the setup program.
     #[must_use]
-    pub fn syntax(&self) -> &NativeSyntax<'a> {
+    pub fn syntax(&self) -> &EmbedSyntax<'a> {
         &self.syntax
     }
     /// Script-only File; this is never native template/DOM/ref authority.

@@ -1,7 +1,7 @@
 extern crate std;
 
 use super::super::{NativeWalkState, PendingNativeComponent};
-use crate::native::{NativeComponent, NativeVueConstructionError, Point, Probe};
+use crate::native::{NativeVueConstructionError, ParsedComponent, Point, Probe};
 use crate::vue_file::VueFileProducer;
 use std::panic::{AssertUnwindSafe, catch_unwind};
 use vize_l0::{Allocator, SourceRoot, id::NodeId};
@@ -30,7 +30,7 @@ fn real_native_route_retains_original_ast_comments_and_actual_file_tables() {
         EmbedSource::authored(source, script_block.span()).unwrap(),
         ProgramOptions::module(Lang::Js),
     );
-    let component = NativeComponent::parse_in(&a, block).unwrap();
+    let component = ParsedComponent::parse_in(&a, block).unwrap();
     let carrier = component.carrier().tree.children.as_ptr();
     let mut pending = PendingNativeComponent::from_component(component);
     let mut producer = VueFileProducer::new(&a, source).unwrap();
@@ -124,7 +124,7 @@ fn real_guard_keeps_original_owner_before_between_and_after_last_callbacks() {
             EmbedSource::authored(source, script_block.span()).unwrap(),
             ProgramOptions::module(Lang::Js),
         );
-        let component = NativeComponent::parse_in(&a, block).unwrap();
+        let component = ParsedComponent::parse_in(&a, block).unwrap();
         let carrier = component.carrier().tree.children.as_ptr();
         let mut pending = PendingNativeComponent::from_component(component);
         let mut producer = VueFileProducer::new(&a, source).unwrap();
@@ -230,7 +230,7 @@ fn diagnostic_normal_end_cannot_become_native_or_strip_started_observations() {
     let a = Allocator::default();
     let source = "<p>{{value}}</p>";
     let component =
-        NativeComponent::parse_in(&a, SourceRoot::new(source).unwrap().whole_block()).unwrap();
+        ParsedComponent::parse_in(&a, SourceRoot::new(source).unwrap().whole_block()).unwrap();
     let mut pending = PendingNativeComponent::from_component(component);
     let mut builder = Builder::new(&a, source).unwrap();
     pending
@@ -250,7 +250,7 @@ fn foreign_equal_source_keeps_pending_and_rejects_native_before_any_ast_mint() {
     let original = vize_l0::String::from("<p>{{value}}</p>");
     let foreign = original.clone();
     let component =
-        NativeComponent::parse_in(&a, SourceRoot::new(&original).unwrap().whole_block()).unwrap();
+        ParsedComponent::parse_in(&a, SourceRoot::new(&original).unwrap().whole_block()).unwrap();
     let carrier = component.carrier().tree.children.as_ptr();
     let mut pending = PendingNativeComponent::from_component(component);
     let mut producer = VueFileProducer::new(&a, &foreign).unwrap();

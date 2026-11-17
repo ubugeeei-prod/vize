@@ -3,7 +3,7 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_l0::{Allocator, SourceRoot};
 use vize_l1::embed::Lang;
-use vize_l1_to_l2::native::NativeComponent;
+use vize_l1_to_l2::native::ParsedComponent;
 use vize_l1_to_l2::vue_file::{VueFileIssueKind, VueFileProducer};
 use vize_l2::lang::js::ProgramInput;
 
@@ -13,7 +13,7 @@ fn no_script_uses_vue_js_and_retains_the_original_component_and_expression() {
     let source = "<p>{{ 1 }}</p>";
     let mut producer = VueFileProducer::new(&arena, source).unwrap();
     let component =
-        NativeComponent::parse_in(&arena, SourceRoot::new(source).unwrap().whole_block()).unwrap();
+        ParsedComponent::parse_in(&arena, SourceRoot::new(source).unwrap().whole_block()).unwrap();
     let native = component
         .construct_vue_file_in(&mut producer.template_region().unwrap())
         .unwrap();
@@ -52,7 +52,7 @@ fn setup_receipt_selects_actual_js_or_ts_without_a_template_language_argument() 
         let mut producer = VueFileProducer::new(&arena, source).unwrap();
         producer.setup(input).unwrap();
         let component =
-            NativeComponent::parse_in(&arena, block(source, "<p>{{ value }}</p>").unwrap())
+            ParsedComponent::parse_in(&arena, block(source, "<p>{{ value }}</p>").unwrap())
                 .unwrap();
         let native = component
             .construct_vue_file_in(&mut producer.template_region().unwrap())
@@ -99,7 +99,7 @@ fn compatible_combined_profiles_use_real_receipts_despite_reversed_authored_orde
             )
             .unwrap();
         let component =
-            NativeComponent::parse_in(&arena, block(source, "<p>{{local}}</p>").unwrap()).unwrap();
+            ParsedComponent::parse_in(&arena, block(source, "<p>{{local}}</p>").unwrap()).unwrap();
         let native = component
             .construct_vue_file_in(&mut producer.template_region().unwrap())
             .unwrap();
@@ -217,7 +217,7 @@ fn ts_profile_reaches_actual_retained_typed_ast_without_claiming_typed_resolutio
         .setup(ProgramInput::checked(syntax.admitted_program().unwrap(), script_block, 0).unwrap())
         .unwrap();
     let component =
-        NativeComponent::parse_in(&arena, block(source, "<p>{{value as number}}</p>").unwrap())
+        ParsedComponent::parse_in(&arena, block(source, "<p>{{value as number}}</p>").unwrap())
             .unwrap();
     let native = component
         .construct_vue_file_in(&mut producer.template_region().unwrap())
@@ -270,7 +270,7 @@ fn intrinsic_entry_retains_foreign_equal_source_component_before_any_factory_min
     let source = "<p>{{1}}</p>";
     let foreign = source.to_owned();
     let component =
-        NativeComponent::parse_in(&arena, SourceRoot::new(&foreign).unwrap().whole_block())
+        ParsedComponent::parse_in(&arena, SourceRoot::new(&foreign).unwrap().whole_block())
             .unwrap();
     let mut producer = VueFileProducer::new(&arena, source).unwrap();
     let rejected = component

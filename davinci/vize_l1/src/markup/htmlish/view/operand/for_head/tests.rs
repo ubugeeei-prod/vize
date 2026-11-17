@@ -1,9 +1,9 @@
-use super::super::super::{NativeAttribute, NativeTemplateComponent, NativeTemplateGrammar};
-use super::{NativeAttributeForHead, NativeAttributeOperandError};
+use super::super::super::{AttributeView, TemplateComponent, TemplateGrammar};
+use super::{AttributeForHead, AttributeOperandError};
 use crate::container::Vue;
 use crate::container::vue::DescriptorOptions;
 use crate::embed::Lang;
-use crate::embed::syntax::{EmbedHole, ForHeadHole, NativeForInput, NativeForRefusal};
+use crate::embed::syntax::{EmbedHole, ForHeadHole, ForInput, ForRefusal};
 use vize_l0::{
     Allocator,
     config::{VueDialect, VueVersion},
@@ -12,7 +12,7 @@ use vize_l0::{
 fn selected<'a>(
     arena: &'a Allocator,
     source: &'a str,
-) -> Result<NativeTemplateComponent<'a>, &'static str> {
+) -> Result<TemplateComponent<'a>, &'static str> {
     let descriptor = Vue.observe_descriptor(
         arena,
         source,
@@ -25,12 +25,12 @@ fn selected<'a>(
     let admitted = descriptor
         .admitted()
         .map_err(|_| "fixture descriptor refused")?;
-    NativeTemplateComponent::parse_in(arena, admitted)
+    TemplateComponent::parse_in(arena, admitted)
         .map_err(|_| "fixture component parse failed")?
         .ok_or("fixture has no selected template")
 }
 
-fn first_attribute<'s, 'a>(owner: &'s NativeTemplateComponent<'a>) -> NativeAttribute<'s, 'a> {
+fn first_attribute<'s, 'a>(owner: &'s TemplateComponent<'a>) -> AttributeView<'s, 'a> {
     owner
         .children()
         .next()

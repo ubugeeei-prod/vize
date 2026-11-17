@@ -8,9 +8,7 @@ use vize_l0::{
 };
 use vize_l1::{
     container::{Vue, vue::DescriptorOptions},
-    markup::{
-        NativeChildren, NativeTemplateComponent, SurfaceParseOptions, check_fidelity, render,
-    },
+    markup::{ChildrenView, SurfaceParseOptions, TemplateComponent, check_fidelity, render},
 };
 use vize_patina::{
     LintResult, Linter, RuleRegistry,
@@ -21,7 +19,7 @@ use vize_patina::{
 pub const FILENAME: &str = "native-inline-style.vue";
 pub const LOCALES: [Locale; 3] = [Locale::En, Locale::Ja, Locale::Zh];
 
-pub fn selected<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateComponent<'a> {
+pub fn selected<'a>(arena: &'a Allocator, source: &'a str) -> TemplateComponent<'a> {
     let descriptor = Vue.observe_descriptor(
         arena,
         source,
@@ -31,7 +29,7 @@ pub fn selected<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateComp
             template: SurfaceParseOptions::default(),
         },
     );
-    NativeTemplateComponent::parse_in(arena, descriptor.admitted().unwrap())
+    TemplateComponent::parse_in(arena, descriptor.admitted().unwrap())
         .unwrap()
         .unwrap()
 }
@@ -132,7 +130,7 @@ pub fn parser(severity: &str, message: &str, range: Span) -> Value {
 // opt-in product entry inspects just the supplied element and does no walk.
 pub fn collect<'a>(
     lint: &NativeSyntaxLint<'_, 'a>,
-    children: NativeChildren<'_, 'a>,
+    children: ChildrenView<'_, 'a>,
     locale: Locale,
     output: &mut Vec<NativeLintFinding>,
 ) -> Result<(), NativeLintRefusal> {

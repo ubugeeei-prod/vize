@@ -7,9 +7,9 @@ declare const __vize_component__: {
     readonly __vizeComponentMarker: true;
     readonly __vizeRawProps?: Props;
     readonly __vizeNativeFallthroughRoot: true;
-    readonly __vizeFallthroughSource?: Partial<$NativeElement<\"button\">>;
+    readonly __vizeFallthroughSource?: Partial<$ElementView<\"button\">>;
     readonly __vizeHasFallthroughProps: true;
-    readonly __vizeFallthroughProps?: Partial<$NativeElement<\"button\">>;
+    readonly __vizeFallthroughProps?: Partial<$ElementView<\"button\">>;
 } & $ComponentConstructor;
 ";
 
@@ -32,8 +32,8 @@ declare const __vize_component__: {
     readonly __vizeComponentMarker: true;
     readonly __vizeHasFallthroughProps: true;
     readonly __vizeFallthroughProps?:
-        Partial<$NativeElement<\"button\">> &
-        Partial<$NativeElement<\"a\">>;
+        Partial<$ElementView<\"button\">> &
+        Partial<$ElementView<\"a\">>;
     readonly __vizeRawProps?: Props;
 } & $ComponentConstructor;
 ";
@@ -93,7 +93,7 @@ fn removes_only_direct_generated_properties_preserving_inline_neighbors() {
     readonly __vizeComponentMarker: true; readonly __vizeRawProps?: Props;
     readonly __vizeHasFallthroughProps: true;
     readonly __vizeFallthroughProps?: { label: ";" } &
-        Partial<NativeElement>;
+        Partial<ElementView>;
     /** __vizeComponentMarker belongs to this public literal. */
     label: "__vizeComponentMarker";
     nested: { readonly __vizeFallthroughProps?: string };

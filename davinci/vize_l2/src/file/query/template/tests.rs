@@ -14,7 +14,7 @@ use vize_l1::{
         EmbedSource,
         syntax::{ProgramOptions, parse_program_once},
     },
-    markup::{NativeTemplateComponent, SurfaceParseOptions},
+    markup::{SurfaceParseOptions, TemplateComponent},
 };
 
 fn native<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateFile<'a> {
@@ -32,7 +32,7 @@ fn attempt<'a>(arena: &'a Allocator, source: &'a str, complete: bool) -> NativeT
         },
     );
     let admitted = descriptor.admitted().unwrap();
-    let selected = NativeTemplateComponent::parse_in(arena, admitted)
+    let selected = TemplateComponent::parse_in(arena, admitted)
         .unwrap()
         .unwrap();
     let mut original =

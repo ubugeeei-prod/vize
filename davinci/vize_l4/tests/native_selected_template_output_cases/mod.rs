@@ -6,7 +6,7 @@ use vize_l0::{
 };
 use vize_l1::{
     container::{Vue, vue::DescriptorOptions},
-    markup::{NativeTemplateComponent, SurfaceChild, SurfaceParseOptions},
+    markup::{SurfaceChild, SurfaceParseOptions, TemplateComponent},
 };
 use vize_l2::lang::js::{NativeInterpolationInput, NativeTemplateFile, NativeTemplateOwner};
 use vize_l4::targets::dom::NativeTemplateDomOutput;
@@ -40,7 +40,7 @@ pub(super) fn completed<'a>(
             template: SurfaceParseOptions::default(),
         },
     );
-    let selected = NativeTemplateComponent::parse_in(
+    let selected = TemplateComponent::parse_in(
         arena,
         observation.admitted().map_err(|_| "original descriptor")?,
     )

@@ -1,7 +1,7 @@
 use vize_l0::{Allocator, SourceBlock, SourceRoot};
-use vize_l1::embed::syntax::{NativeSyntax, ProgramOptions, parse_program_once};
+use vize_l1::embed::syntax::{EmbedSyntax, ProgramOptions, parse_program_once};
 use vize_l1::embed::{EmbedSource, Lang};
-use vize_l1_to_l2::native::{NativeComponent, NativeProduced};
+use vize_l1_to_l2::native::{NativeProduced, ParsedComponent};
 use vize_l2::file::{Declaration, TemplatePolicy, TemplateScope};
 use vize_l2::lang::js::FileProducer;
 
@@ -27,7 +27,7 @@ pub fn script<'a>(
     arena: &'a Allocator,
     source: &'a str,
     content: &str,
-) -> Option<(NativeSyntax<'a>, SourceBlock<'a>)> {
+) -> Option<(EmbedSyntax<'a>, SourceBlock<'a>)> {
     let block = block(source, content)?;
     let syntax = parse_program_once(
         arena,
@@ -44,7 +44,7 @@ pub fn construct<'a>(
     producer: &mut FileProducer<'a>,
     scope: TemplateScope,
 ) -> Option<NativeProduced<'a>> {
-    let component = NativeComponent::parse_in(arena, block(source, template)?).ok()?;
+    let component = ParsedComponent::parse_in(arena, block(source, template)?).ok()?;
     // Diagnostic construction exercises real File rows without certifying
     // original Vue template custody or runtime access classes.
     let mut region = producer.template_region(scope, LexicalValues).ok()?;

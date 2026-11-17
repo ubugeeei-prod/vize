@@ -9,32 +9,32 @@ use alloc::boxed::Box;
 use oxc_parser::AdmittedHandlerBody;
 use vize_l0::Span;
 
-use super::super::{NativeAttribute, NativeTemplateComponent, NativeTemplateGrammar};
-use super::NativeAttributeOperandError;
+use super::super::{AttributeView, TemplateComponent, TemplateGrammar};
+use super::AttributeOperandError;
 use crate::dialect::vue3::operand::static_event_head;
-use crate::embed::syntax::{NativeSyntax, RetainedHandlerBody, parse_once};
+use crate::embed::syntax::{EmbedSyntax, RetainedHandlerBody, parse_once};
 use crate::embed::{Embed, Grammar, Lang, Shape, SourceError, prepare_attribute_value};
 
 use super::origin::Origin;
 
 /// Any unexpectedly shaped parser artifact remains normally owned and intact.
 #[derive(Debug)]
-pub struct NativeAttributeHandlerFailure<'a> {
-    kind: NativeAttributeOperandError,
-    syntax: Option<Box<NativeSyntax<'a>>>,
+pub struct AttributeHandlerFailure<'a> {
+    kind: AttributeOperandError,
+    syntax: Option<Box<EmbedSyntax<'a>>>,
 }
-impl NativeAttributeHandlerFailure<'_> {
+impl AttributeHandlerFailure<'_> {
     #[must_use]
-    pub const fn kind(&self) -> NativeAttributeOperandError {
+    pub const fn kind(&self) -> AttributeOperandError {
         self.kind
     }
     #[must_use]
-    pub fn syntax(&self) -> Option<&NativeSyntax<'_>> {
+    pub fn syntax(&self) -> Option<&EmbedSyntax<'_>> {
         self.syntax.as_deref()
     }
 }
-impl<'a> From<NativeAttributeOperandError> for NativeAttributeHandlerFailure<'a> {
-    fn from(kind: NativeAttributeOperandError) -> Self {
+impl<'a> From<AttributeOperandError> for AttributeHandlerFailure<'a> {
+    fn from(kind: AttributeOperandError) -> Self {
         Self { kind, syntax: None }
     }
 }
@@ -43,46 +43,49 @@ impl<'a> From<NativeAttributeOperandError> for NativeAttributeHandlerFailure<'a>
 /// No caller AST, language, map, source range or allocator can assemble it.
 ///
 /// ```compile_fail
-/// use vize_l1::markup::NativeAttributeHandler;
+/// use vize_l1::markup::AttributeHandler;
 /// fn requires_clone<T: Clone>() {}
-/// requires_clone::<NativeAttributeHandler<'static>>();
+/// requires_clone::<AttributeHandler<'static>>();
 /// ```
-pub struct NativeAttributeHandler<'a> {
+pub struct AttributeHandler<'a> {
     origin: Origin<'a>,
     argument: Span,
     syntax: RetainedHandlerBody<'a>,
 }
 
-impl<'a> NativeTemplateComponent<'a> {
+impl<'a> TemplateComponent<'a> {
     /// Replace the current header visit's source preparation and handler parse.
     /// This operation calls each once, deriving Module JS/TS from this selection.
     /// Handler syntax holes retain complete source/comments/diagnostics in the result.
     pub fn observe_attribute_handler(
         &self,
-        attribute: NativeAttribute<'_, 'a>,
-    ) -> Result<NativeAttributeHandler<'a>, NativeAttributeHandlerFailure<'a>> {
+        attribute: AttributeView<'_, 'a>,
+    ) -> Result<AttributeHandler<'a>, AttributeHandlerFailure<'a>> {
         Origin::check_original_header(self, &attribute)?;
         let block = self.component().block();
-        let name_offset = block.offset_of(attribute.surface().name.text).ok_or(
-            NativeAttributeOperandError::Source(SourceError::InvalidAuthoredSpan),
-        )?;
+        let name_offset =
+            block
+                .offset_of(attribute.surface().name.text)
+                .ok_or(AttributeOperandError::Source(
+                    SourceError::InvalidAuthoredSpan,
+                ))?;
         let argument = static_event_head(
             attribute.surface().name.text,
             name_offset,
             block.root_source(),
         )
-        .map_err(NativeAttributeOperandError::Directive)?
-        .ok_or(NativeAttributeOperandError::UnsupportedDirective)?;
+        .map_err(AttributeOperandError::Directive)?
+        .ok_or(AttributeOperandError::UnsupportedDirective)?;
         let origin = Origin::from_attribute(self, &attribute)?;
         let source = prepare_attribute_value(
             self.component().allocator(),
             origin.block.root_source(),
             origin.value_span,
         )
-        .map_err(NativeAttributeOperandError::Source)?;
+        .map_err(AttributeOperandError::Source)?;
         let lang = match self.grammar() {
-            NativeTemplateGrammar::JavaScriptModule => Lang::Js,
-            NativeTemplateGrammar::TypeScriptModule => Lang::Ts,
+            TemplateGrammar::JavaScriptModule => Lang::Js,
+            TemplateGrammar::TypeScriptModule => Lang::Ts,
         };
         let syntax = parse_once(
             self.component().allocator(),
@@ -95,11 +98,11 @@ impl<'a> NativeTemplateComponent<'a> {
             },
         )
         .into_handler_body()
-        .map_err(|syntax| NativeAttributeHandlerFailure {
-            kind: NativeAttributeOperandError::UnexpectedShape,
+        .map_err(|syntax| AttributeHandlerFailure {
+            kind: AttributeOperandError::UnexpectedShape,
             syntax: Some(syntax),
         })?;
-        Ok(NativeAttributeHandler {
+        Ok(AttributeHandler {
             origin,
             argument,
             syntax,
@@ -107,7 +110,7 @@ impl<'a> NativeTemplateComponent<'a> {
     }
 }
 
-impl<'a> NativeAttributeHandler<'a> {
+impl<'a> AttributeHandler<'a> {
     #[must_use]
     pub const fn argument_span(&self) -> Span {
         self.argument
@@ -139,14 +142,14 @@ impl<'a> NativeAttributeHandler<'a> {
     /// Foreign/sibling/copied parses cannot confer the original event's origin.
     pub fn admitted_for<'s>(
         &'s self,
-        selected: &'s NativeTemplateComponent<'a>,
-        attribute: NativeAttribute<'s, 'a>,
-    ) -> Option<NativeAttributeHandlerView<'s, 'a>> {
+        selected: &'s TemplateComponent<'a>,
+        attribute: AttributeView<'s, 'a>,
+    ) -> Option<AttributeHandlerView<'s, 'a>> {
         if !self.origin.matches(selected, &attribute) {
             return None;
         }
         self.syntax.admitted_body()?;
-        Some(NativeAttributeHandlerView {
+        Some(AttributeHandlerView {
             owner: self,
             selected,
             attribute,
@@ -160,22 +163,22 @@ impl<'a> NativeAttributeHandler<'a> {
 }
 
 /// A short actual header/operand join, not a native body completion certificate.
-pub struct NativeAttributeHandlerView<'s, 'a> {
-    owner: &'s NativeAttributeHandler<'a>,
-    selected: &'s NativeTemplateComponent<'a>,
-    attribute: NativeAttribute<'s, 'a>,
+pub struct AttributeHandlerView<'s, 'a> {
+    owner: &'s AttributeHandler<'a>,
+    selected: &'s TemplateComponent<'a>,
+    attribute: AttributeView<'s, 'a>,
 }
-impl<'s, 'a> NativeAttributeHandlerView<'s, 'a> {
+impl<'s, 'a> AttributeHandlerView<'s, 'a> {
     #[must_use]
-    pub fn selected(&self) -> &'s NativeTemplateComponent<'a> {
+    pub fn selected(&self) -> &'s TemplateComponent<'a> {
         self.selected
     }
     #[must_use]
-    pub fn attribute(&self) -> &NativeAttribute<'s, 'a> {
+    pub fn attribute(&self) -> &AttributeView<'s, 'a> {
         &self.attribute
     }
     #[must_use]
-    pub fn operand(&self) -> &'s NativeAttributeHandler<'a> {
+    pub fn operand(&self) -> &'s AttributeHandler<'a> {
         self.owner
     }
     /// This proof is always borrowed from the same private original stock owner.

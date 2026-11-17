@@ -99,12 +99,10 @@ fn static_class_never_authorizes_nul_ordinary_cr_style_duplicates_or_dynamic_hea
                 template: vize_l1::markup::SurfaceParseOptions::default(),
             },
         );
-        let selected = vize_l1::markup::NativeTemplateComponent::parse_in(
-            &arena,
-            descriptor.admitted().unwrap(),
-        )
-        .unwrap()
-        .unwrap();
+        let selected =
+            vize_l1::markup::TemplateComponent::parse_in(&arena, descriptor.admitted().unwrap())
+                .unwrap()
+                .unwrap();
         let mut owner = vize_l2::lang::js::NativeTemplateOwner::new(selected)
             .map_err(|_| "owner")
             .unwrap();

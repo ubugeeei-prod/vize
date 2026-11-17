@@ -3,8 +3,7 @@
 use std::vec::Vec as OwnedVec;
 use vize_l0::{Allocator, Vec};
 use vize_l1::markup::{
-    NativeAttributeBindingExpression, NativeAttributeExpression, NativeInterpolationOperand,
-    NativeTemplateComponent,
+    AttributeBindingExpression, AttributeExpression, InterpolationOperand, TemplateComponent,
 };
 
 use super::super::template::Cursor;
@@ -27,17 +26,17 @@ pub use failure::{
 /// ```compile_fail
 /// use vize_glyph::native_doc::{ObservedNativeTemplateDocument, observed_native_template_document};
 /// use vize_l0::Allocator;
-/// use vize_l1::markup::NativeTemplateComponent;
-/// fn outlive_selected<'a>(selected: NativeTemplateComponent<'a>, arena: &'a Allocator)
+/// use vize_l1::markup::TemplateComponent;
+/// fn outlive_selected<'a>(selected: TemplateComponent<'a>, arena: &'a Allocator)
 ///     -> ObservedNativeTemplateDocument<'a, 'a> {
 ///     observed_native_template_document(&selected, arena).unwrap()
 /// }
 /// ```
 pub struct ObservedNativeTemplateDocument<'p, 'a> {
-    original: &'p NativeTemplateComponent<'a>,
-    operands: OwnedVec<NativeInterpolationOperand<'a>>,
-    attributes: OwnedVec<NativeAttributeExpression<'a>>,
-    bindings: OwnedVec<NativeAttributeBindingExpression<'a>>,
+    original: &'p TemplateComponent<'a>,
+    operands: OwnedVec<InterpolationOperand<'a>>,
+    attributes: OwnedVec<AttributeExpression<'a>>,
+    bindings: OwnedVec<AttributeBindingExpression<'a>>,
     document: Doc<'a>,
 }
 
@@ -56,19 +55,19 @@ impl core::fmt::Debug for ObservedNativeTemplateDocument<'_, '_> {
 
 impl<'p, 'a> ObservedNativeTemplateDocument<'p, 'a> {
     /// Borrow the original selected template component.
-    pub fn original(&self) -> &'p NativeTemplateComponent<'a> {
+    pub fn original(&self) -> &'p TemplateComponent<'a> {
         self.original
     }
     /// Borrow interpolation operands in their observed source order.
-    pub fn operands(&self) -> &[NativeInterpolationOperand<'a>] {
+    pub fn operands(&self) -> &[InterpolationOperand<'a>] {
         &self.operands
     }
     /// Borrow conditional directive operands in their observed source order.
-    pub fn attribute_operands(&self) -> &[NativeAttributeExpression<'a>] {
+    pub fn attribute_operands(&self) -> &[AttributeExpression<'a>] {
         &self.attributes
     }
     /// Borrow binding directive operands in their observed source order.
-    pub fn binding_operands(&self) -> &[NativeAttributeBindingExpression<'a>] {
+    pub fn binding_operands(&self) -> &[AttributeBindingExpression<'a>] {
         &self.bindings
     }
     pub(in crate::native_doc) fn into_observations(self) -> (Observed<'a>, Doc<'a>) {
@@ -95,9 +94,9 @@ impl<'p, 'a> ObservedNativeTemplateDocument<'p, 'a> {
     pub fn into_full_parts(
         self,
     ) -> (
-        &'p NativeTemplateComponent<'a>,
-        OwnedVec<NativeInterpolationOperand<'a>>,
-        OwnedVec<NativeAttributeExpression<'a>>,
+        &'p TemplateComponent<'a>,
+        OwnedVec<InterpolationOperand<'a>>,
+        OwnedVec<AttributeExpression<'a>>,
         Doc<'a>,
     ) {
         (self.original, self.operands, self.attributes, self.document)
@@ -120,8 +119,8 @@ impl<'p, 'a> ObservedNativeTemplateDocument<'p, 'a> {
     pub fn into_parts(
         self,
     ) -> (
-        &'p NativeTemplateComponent<'a>,
-        OwnedVec<NativeInterpolationOperand<'a>>,
+        &'p TemplateComponent<'a>,
+        OwnedVec<InterpolationOperand<'a>>,
         Doc<'a>,
     ) {
         (self.original, self.operands, self.document)
@@ -143,7 +142,7 @@ impl<'p, 'a> ObservedNativeTemplateDocument<'p, 'a> {
 /// instead of fabricating an operand. Remaining unvisited bytes stay in the
 /// original component; a failed prefix is never a complete document.
 pub fn observed_native_template_document<'p, 'a>(
-    original: &'p NativeTemplateComponent<'a>,
+    original: &'p TemplateComponent<'a>,
     allocator: &'a Allocator,
 ) -> Result<ObservedNativeTemplateDocument<'p, 'a>, ObservedNativeTemplateFailure<'p, 'a>> {
     observed_native_template_document_with_policy(
@@ -165,7 +164,7 @@ pub fn observed_native_template_document<'p, 'a>(
 /// keeps binding owners distinct and consumes each sealed static selection once.
 /// A first failure keeps all observed prefixes and the actual observer failure.
 pub fn observed_native_template_document_with_policy<'p, 'a>(
-    original: &'p NativeTemplateComponent<'a>,
+    original: &'p TemplateComponent<'a>,
     allocator: &'a Allocator,
     policy: NativeTemplateValuePolicy,
 ) -> Result<ObservedNativeTemplateDocument<'p, 'a>, ObservedNativeTemplateFailure<'p, 'a>> {

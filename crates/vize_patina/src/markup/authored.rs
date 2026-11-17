@@ -4,7 +4,7 @@
 //! nested interactive tags. Content-model consumers instead read the authored
 //! parent/child relation, through the same typed element facade and decoders.
 
-use super::element::queries::is_lint_component;
+use super::element::queries::is_component_tag;
 use super::element::{MarkupElement, MarkupElementInner};
 use super::l2::L2Markup;
 use super::l2::binding::{is_consumed_spelling, is_v_pre};
@@ -100,7 +100,7 @@ pub(super) fn kind(element: &Element<'_>, frozen: bool, opens_v_pre: bool) -> Ma
         })
     {
         MarkupElementKind::Template
-    } else if is_lint_component(tag, !frozen) {
+    } else if is_component_tag(tag, !frozen) {
         MarkupElementKind::Component
     } else {
         MarkupElementKind::Element

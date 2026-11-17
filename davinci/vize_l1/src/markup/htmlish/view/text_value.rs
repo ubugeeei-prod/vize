@@ -1,17 +1,17 @@
 //! Original text source preparation, without whitespace or target admission.
 
-use super::{NativeChild, NativeTemplateComponent};
+use super::{ChildView, TemplateComponent};
 use crate::{embed::EmbedSource, markup::Token};
 use vize_l0::Span;
 
 mod failure;
 mod origin;
-pub use failure::NativeTextValueFailure;
+pub use failure::TextValueFailure;
 use origin::Origin;
 
 /// Original membership or preparation refusal; the original tree stays owned.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum NativeTextValueError {
+pub enum TextValueError {
     ForeignComponent,
     NotText,
     RecoveredComponent,
@@ -26,31 +26,31 @@ pub enum NativeTextValueError {
 /// Vue whitespace semantics nor File completion.
 ///
 /// ```compile_fail
-/// use vize_l1::markup::NativeTextValue;
+/// use vize_l1::markup::TextValue;
 /// fn requires_clone<T: Clone>() {}
-/// requires_clone::<NativeTextValue<'static>>();
+/// requires_clone::<TextValue<'static>>();
 /// ```
 /// ```compile_fail
-/// use vize_l1::{embed::EmbedSource, markup::{Token, NativeTextValue}};
-/// fn forge(source: EmbedSource<'static>) -> NativeTextValue<'static> {
-///     NativeTextValue {
+/// use vize_l1::{embed::EmbedSource, markup::{Token, TextValue}};
+/// fn forge(source: EmbedSource<'static>) -> TextValue<'static> {
+///     TextValue {
 ///         origin: panic!(), original: Token::present("", source.text()), source,
 ///     }
 /// }
 /// ```
 /// ```compile_fail
-/// use vize_l1::markup::{NativeChild, NativeComponent};
-/// fn from_unselected(owner: &NativeComponent<'static>, child: NativeChild<'_, 'static>) {
+/// use vize_l1::markup::{ChildView, ParsedComponent};
+/// fn from_unselected(owner: &ParsedComponent<'static>, child: ChildView<'_, 'static>) {
 ///     owner.observe_text_value(child);
 /// }
 /// ```
-pub struct NativeTextValue<'a> {
+pub struct TextValue<'a> {
     origin: Origin<'a>,
     original: Token<'a>,
     source: EmbedSource<'a>,
 }
 
-impl<'a> NativeTemplateComponent<'a> {
+impl<'a> TemplateComponent<'a> {
     /// Call existing General/Text source preparation once at this original child.
     /// The lexer may already have decoded callbacks when constructing its raw
     /// surface; this is not a claim of one decoder call across the whole parse.
@@ -58,8 +58,8 @@ impl<'a> NativeTemplateComponent<'a> {
     /// Raw-text/RCDATA parents and inherited verbatim mode remain refused.
     pub fn observe_text_value(
         &self,
-        child: NativeChild<'_, 'a>,
-    ) -> Result<NativeTextValue<'a>, NativeTextValueFailure<'a>> {
+        child: ChildView<'_, 'a>,
+    ) -> Result<TextValue<'a>, TextValueFailure<'a>> {
         let prepare = || {
             let (origin, original) = Origin::original(self, &child)?;
             let source = crate::embed::source::prepare_text_value(
@@ -67,18 +67,18 @@ impl<'a> NativeTemplateComponent<'a> {
                 origin.block.root_source(),
                 origin.span,
             )
-            .map_err(NativeTextValueError::Source)?;
-            Ok(NativeTextValue {
+            .map_err(TextValueError::Source)?;
+            Ok(TextValue {
                 origin,
                 original,
                 source,
             })
         };
-        prepare().map_err(|kind| NativeTextValueFailure::original(kind, &child))
+        prepare().map_err(|kind| TextValueFailure::original(kind, &child))
     }
 }
 
-impl<'a> NativeTextValue<'a> {
+impl<'a> TextValue<'a> {
     /// Neutral original token observations, including leading bytes and holes.
     #[must_use]
     pub const fn token(&self) -> &Token<'a> {
@@ -100,12 +100,12 @@ impl<'a> NativeTextValue<'a> {
     /// Short join at the same original root or element child, without reparse.
     pub fn admitted_for<'s>(
         &'s self,
-        selected: &'s NativeTemplateComponent<'a>,
-        child: NativeChild<'s, 'a>,
-    ) -> Option<NativeTextValueView<'s, 'a>> {
+        selected: &'s TemplateComponent<'a>,
+        child: ChildView<'s, 'a>,
+    ) -> Option<TextValueView<'s, 'a>> {
         self.origin
             .matches(selected, &child, &self.original)
-            .then_some(NativeTextValueView {
+            .then_some(TextValueView {
                 owner: self,
                 selected,
                 child,
@@ -119,22 +119,22 @@ impl<'a> NativeTextValue<'a> {
 }
 
 /// Same original child/value join; no whitespace, File or target capability.
-pub struct NativeTextValueView<'s, 'a> {
-    owner: &'s NativeTextValue<'a>,
-    selected: &'s NativeTemplateComponent<'a>,
-    child: NativeChild<'s, 'a>,
+pub struct TextValueView<'s, 'a> {
+    owner: &'s TextValue<'a>,
+    selected: &'s TemplateComponent<'a>,
+    child: ChildView<'s, 'a>,
 }
-impl<'s, 'a> NativeTextValueView<'s, 'a> {
+impl<'s, 'a> TextValueView<'s, 'a> {
     #[must_use]
-    pub fn selected(&self) -> &'s NativeTemplateComponent<'a> {
+    pub fn selected(&self) -> &'s TemplateComponent<'a> {
         self.selected
     }
     #[must_use]
-    pub fn child(&self) -> &NativeChild<'s, 'a> {
+    pub fn child(&self) -> &ChildView<'s, 'a> {
         &self.child
     }
     #[must_use]
-    pub fn observation(&self) -> &'s NativeTextValue<'a> {
+    pub fn observation(&self) -> &'s TextValue<'a> {
         self.owner
     }
 }

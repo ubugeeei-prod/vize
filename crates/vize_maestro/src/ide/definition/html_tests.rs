@@ -112,7 +112,7 @@ fn definition_resolves_native_html_tag_to_mdn_reference() {
 #[test]
 fn definition_resolves_native_html_attribute_to_mdn_reference() {
     let (state, uri, source) = open_source(
-        "NativeAttribute.vue",
+        "AttributeView.vue",
         r#"<template>
   <button disabled>Save</button>
 </template>

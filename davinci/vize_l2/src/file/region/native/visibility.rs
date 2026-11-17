@@ -4,7 +4,7 @@ use crate::file::build::Facts;
 use crate::file::{
     Declaration, DeclarationKind, Namespace, ScopeId, ScriptUnitId, TemplateDeclaration,
 };
-use vize_l1::{embed::Lang, markup::NativeTemplateComponent};
+use vize_l1::{embed::Lang, markup::TemplateComponent};
 
 #[derive(Clone, Copy)]
 pub(crate) struct NativeVisibility {
@@ -13,7 +13,7 @@ pub(crate) struct NativeVisibility {
 
 impl NativeVisibility {
     pub(super) fn checked(
-        selected: &NativeTemplateComponent<'_>,
+        selected: &TemplateComponent<'_>,
         facts: &Facts<'_>,
         setup: Option<ScriptUnitId>,
     ) -> Self {

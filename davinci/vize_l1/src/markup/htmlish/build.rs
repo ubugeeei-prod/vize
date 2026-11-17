@@ -59,14 +59,19 @@ impl<'a> scope::Frame<'a> for Frame<'a> {
     }
 }
 
-pub(crate) fn build<'a, const RAW: bool, const LINT: bool, const STRUCTURAL_DIAGNOSTICS: bool>(
+pub(crate) fn build<
+    'a,
+    const RAW: bool,
+    const TAG_FACTS: bool,
+    const STRUCTURAL_DIAGNOSTICS: bool,
+>(
     allocator: &'a Allocator,
     src: &'a str,
     events: &[Event],
     errors: &mut Vec<'a, crate::markup::SurfaceError>,
     repair_interactive: bool,
 ) -> (SurfaceTree<'a>, bool) {
-    let mut b = Builder::<RAW, LINT, STRUCTURAL_DIAGNOSTICS> {
+    let mut b = Builder::<RAW, TAG_FACTS, STRUCTURAL_DIAGNOSTICS> {
         src,
         allocator,
         events,
@@ -115,7 +120,7 @@ pub(crate) fn build<'a, const RAW: bool, const LINT: bool, const STRUCTURAL_DIAG
     )
 }
 
-struct Builder<'a, 'e, const RAW: bool, const LINT: bool, const STRUCTURAL_DIAGNOSTICS: bool> {
+struct Builder<'a, 'e, const RAW: bool, const TAG_FACTS: bool, const STRUCTURAL_DIAGNOSTICS: bool> {
     src: &'a str,
     allocator: &'a Allocator,
     events: &'e [Event],
@@ -128,8 +133,8 @@ struct Builder<'a, 'e, const RAW: bool, const LINT: bool, const STRUCTURAL_DIAGN
     repaired: bool,
 }
 
-impl<'a, const RAW: bool, const LINT: bool, const STRUCTURAL_DIAGNOSTICS: bool>
-    Builder<'a, '_, RAW, LINT, STRUCTURAL_DIAGNOSTICS>
+impl<'a, const RAW: bool, const TAG_FACTS: bool, const STRUCTURAL_DIAGNOSTICS: bool>
+    Builder<'a, '_, RAW, TAG_FACTS, STRUCTURAL_DIAGNOSTICS>
 {
     fn run(&mut self) {
         while let Some(ev) = self.events.get(self.i).copied() {

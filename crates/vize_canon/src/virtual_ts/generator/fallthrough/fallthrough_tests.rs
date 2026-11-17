@@ -120,7 +120,7 @@ fn strict_component_attrs_resolves_single_root_surfaces_without_fallthrough_opt_
         (
             "defineProps<{ title: string }>()",
             "<button>{{ title }}</button>",
-            "Partial<$NativeElement<\"button\">>",
+            "Partial<$ElementView<\"button\">>",
         ),
         (
             "import Basic from './basic.vue'\ndefineProps<{ title: string }>()",
@@ -207,7 +207,7 @@ fn emits_native_root_fallthrough_props_for_single_root() {
     )
     .expect("single native root should accept fallthrough props");
 
-    assert_eq!(ty, "Partial<$NativeElement<\"button\">>");
+    assert_eq!(ty, "Partial<$ElementView<\"button\">>");
 }
 
 #[test]
@@ -264,7 +264,7 @@ fn check_required_forwards_declared_props_minus_the_roots_own_bindings() {
     let native = fallthrough_type_with("defineProps<{ title: string }>()", "<input />", true)
         .expect("single native root should forward its attributes");
 
-    assert_eq!(native, "$NativeElement<\"input\">");
+    assert_eq!(native, "$ElementView<\"input\">");
 }
 
 // A template-less root has an open fallback in addition to declared props.
@@ -289,7 +289,7 @@ fn strict_required_forwarding_removes_the_index_before_omitting_bound_props() {
     );
     assert_eq!(
         fallthrough_type_with_checks("", "<input />", true, true).as_deref(),
-        Some("$NativeElement<\"input\">")
+        Some("$ElementView<\"input\">")
     );
 }
 
@@ -311,7 +311,7 @@ fn inherit_attrs_false_uses_explicit_attrs_forwarding_target() {
     )
     .expect("explicit native $attrs forwarding should accept fallthrough props");
 
-    assert_eq!(native_ty, "Partial<$NativeElement<\"button\">>");
+    assert_eq!(native_ty, "Partial<$ElementView<\"button\">>");
 
     let component_ty = fallthrough_type(
         "defineOptions({ inheritAttrs: false })\ndefineProps<{ title: string }>()",
@@ -330,7 +330,7 @@ fn explicit_attrs_forwarding_takes_precedence_over_automatic_root_fallthrough() 
     )
     .expect("explicit $attrs forwarding should define the accepted attr surface");
 
-    assert_eq!(ty, "Partial<$NativeElement<\"a\">>");
+    assert_eq!(ty, "Partial<$ElementView<\"a\">>");
 }
 
 #[test]
@@ -359,7 +359,7 @@ fn combines_native_fallthrough_props_when_all_v_if_branches_are_single_roots() {
 
     assert_eq!(
         ty,
-        "Partial<$NativeElement<\"div\">> & Partial<$NativeElement<\"span\">>"
+        "Partial<$ElementView<\"div\">> & Partial<$ElementView<\"span\">>"
     );
 }
 
@@ -373,7 +373,7 @@ fn literal_true_v_else_if_terminates_single_native_root_chain() {
 
     assert_eq!(
         ty,
-        "Partial<$NativeElement<\"div\">> & Partial<$NativeElement<\"span\">>"
+        "Partial<$ElementView<\"div\">> & Partial<$ElementView<\"span\">>"
     );
 }
 

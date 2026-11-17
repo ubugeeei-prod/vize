@@ -37,7 +37,7 @@ fn ready(root: &Path, pattern: &str) -> Command {
 
 const FMT: &str =
     "Found 1 file(s)\nReformatted: App.vue\n\nFormatted 1 file(s)\n  1 file(s) reformatted\n";
-const LINT: &str =
+const TAG_FACTS: &str =
     "[vize] Skipping lint because linter.enabled is false in vite.config.* vue settings.\n";
 const CHECK: &str =
     "[vize] Skipping check because typeChecker.enabled is false in vite.config.* vue settings.\n";
@@ -58,7 +58,7 @@ fn redirected_ready_keeps_stage_logs_and_creates_the_real_build_output() {
     assert_eq!(
         normalize_times(&stderr),
         format!(
-            "vize ready: fmt\n{FMT}vize ready: lint\n{LINT}vize ready: check\n{CHECK}vize ready: build\n{BUILT}{BUILD}"
+            "vize ready: fmt\n{FMT}vize ready: lint\n{TAG_FACTS}vize ready: check\n{CHECK}vize ready: build\n{BUILT}{BUILD}"
         )
     );
     assert!(project.path().join("dist/App.js").is_file());
@@ -91,7 +91,7 @@ fn terminal_ready_numbers_real_stages_and_keeps_stdout_separate() {
     assert_eq!(
         normalize_times(&stderr),
         format!(
-            "\n  vize ready\n\n  [1/4] Format\n{FMT}  ✓ Format  <elapsed>\n\n  [2/4] Lint\n{LINT}  ✓ Lint  <elapsed>\n\n  [3/4] Type check\n{CHECK}  ✓ Type check  <elapsed>\n\n  [4/4] Build\n{BUILT}{BUILD}  ✓ Build  <elapsed>\n\n  ✓ Ready  4 stages completed in <elapsed>\n\n"
+            "\n  vize ready\n\n  [1/4] Format\n{FMT}  ✓ Format  <elapsed>\n\n  [2/4] Lint\n{TAG_FACTS}  ✓ Lint  <elapsed>\n\n  [3/4] Type check\n{CHECK}  ✓ Type check  <elapsed>\n\n  [4/4] Build\n{BUILT}{BUILD}  ✓ Build  <elapsed>\n\n  ✓ Ready  4 stages completed in <elapsed>\n\n"
         )
     );
     assert!(project.path().join("dist/App.js").is_file());

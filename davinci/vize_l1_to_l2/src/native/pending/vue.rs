@@ -3,12 +3,12 @@
 use super::{NativeObservations, NativeWalkGuard, NativeWalkState, PendingNativeComponent};
 use crate::native::block::construct_component;
 use crate::native::{
-    ConstructionFactory, NativeComponent, NativeEmbed, NativeHole, NativeProduced,
+    ConstructionFactory, NativeEmbed, NativeHole, NativeProduced, ParsedComponent,
 };
 use crate::vue_file::{NativeTemplateProfile, VueFileRegion};
 use alloc::boxed::Box;
 use vize_l0::{SourceBlock, diag::Diagnostic};
-use vize_l1::embed::syntax::NativeSyntax;
+use vize_l1::embed::syntax::EmbedSyntax;
 use vize_l2::artifact::ArtifactError;
 use vize_l2::file::TemplateIssue;
 
@@ -76,7 +76,7 @@ impl<'a> RejectedNativeVueComponent<'a> {
         self.error
     }
     #[must_use]
-    pub fn component(&self) -> &NativeComponent<'a> {
+    pub fn component(&self) -> &ParsedComponent<'a> {
         self.pending.component()
     }
     #[must_use]
@@ -92,7 +92,7 @@ impl<'a> RejectedNativeVueComponent<'a> {
         self.pending.observations().embeds()
     }
     #[must_use]
-    pub fn rejected_syntax(&self) -> &[NativeSyntax<'a>] {
+    pub fn rejected_syntax(&self) -> &[EmbedSyntax<'a>] {
         self.pending.observations().rejected_syntax()
     }
 }
@@ -195,7 +195,7 @@ pub(crate) use testing::{Point, Probe};
 #[cfg(test)]
 mod tests;
 
-impl<'a> NativeComponent<'a> {
+impl<'a> ParsedComponent<'a> {
     /// The whole-owner native route has no caller language or generic factory.
     /// Caught inner unwinds require the assembler's parked borrowed-row route.
     pub fn construct_vue_file_in(

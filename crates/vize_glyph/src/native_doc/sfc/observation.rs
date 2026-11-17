@@ -2,8 +2,8 @@
 
 use vize_l1::container::vue::DescriptorObservation;
 use vize_l1::markup::{
-    NativeAttributeBindingExpression, NativeAttributeExpression, NativeAttributeExpressionFailure,
-    NativeInterpolationFailure, NativeInterpolationOperand, NativeTemplateComponent,
+    AttributeBindingExpression, AttributeExpression, AttributeExpressionFailure,
+    InterpolationFailure, InterpolationOperand, TemplateComponent,
 };
 
 use super::super::{Doc, print};
@@ -27,13 +27,13 @@ pub(super) enum Outcome<'a> {
 /// ```
 pub struct NativeSfcObservation<'a> {
     pub(super) descriptor: DescriptorObservation<'a>,
-    pub(super) selected: Option<NativeTemplateComponent<'a>>,
-    pub(super) operands: std::vec::Vec<NativeInterpolationOperand<'a>>,
-    pub(super) interpolation_failure: Option<NativeInterpolationFailure<'a>>,
-    pub(super) attributes: std::vec::Vec<NativeAttributeExpression<'a>>,
-    pub(super) attribute_failure: Option<NativeAttributeExpressionFailure<'a>>,
-    pub(super) bindings: std::vec::Vec<NativeAttributeBindingExpression<'a>>,
-    pub(super) binding_failure: Option<NativeAttributeExpressionFailure<'a>>,
+    pub(super) selected: Option<TemplateComponent<'a>>,
+    pub(super) operands: std::vec::Vec<InterpolationOperand<'a>>,
+    pub(super) interpolation_failure: Option<InterpolationFailure<'a>>,
+    pub(super) attributes: std::vec::Vec<AttributeExpression<'a>>,
+    pub(super) attribute_failure: Option<AttributeExpressionFailure<'a>>,
+    pub(super) bindings: std::vec::Vec<AttributeBindingExpression<'a>>,
+    pub(super) binding_failure: Option<AttributeExpressionFailure<'a>>,
     pub(super) options: NativeSfcOptions,
     pub(super) outcome: Outcome<'a>,
 }
@@ -73,31 +73,31 @@ impl<'a> NativeSfcObservation<'a> {
         &self.descriptor
     }
     /// Borrow the original selected template, if selection succeeded.
-    pub fn selected(&self) -> Option<&NativeTemplateComponent<'a>> {
+    pub fn selected(&self) -> Option<&TemplateComponent<'a>> {
         self.selected.as_ref()
     }
     /// Borrow interpolation operands observed before completion or refusal.
-    pub fn operands(&self) -> &[NativeInterpolationOperand<'a>] {
+    pub fn operands(&self) -> &[InterpolationOperand<'a>] {
         &self.operands
     }
     /// Borrow conditional directive operands observed before completion or refusal.
-    pub fn attribute_operands(&self) -> &[NativeAttributeExpression<'a>] {
+    pub fn attribute_operands(&self) -> &[AttributeExpression<'a>] {
         &self.attributes
     }
     /// Borrow the conditional directive observation failure, if one occurred.
-    pub fn attribute_failure(&self) -> Option<&NativeAttributeExpressionFailure<'a>> {
+    pub fn attribute_failure(&self) -> Option<&AttributeExpressionFailure<'a>> {
         self.attribute_failure.as_ref()
     }
     /// Borrow binding directive operands observed before completion or refusal.
-    pub fn binding_operands(&self) -> &[NativeAttributeBindingExpression<'a>] {
+    pub fn binding_operands(&self) -> &[AttributeBindingExpression<'a>] {
         &self.bindings
     }
     /// Borrow the binding directive observation failure, if one occurred.
-    pub fn binding_failure(&self) -> Option<&NativeAttributeExpressionFailure<'a>> {
+    pub fn binding_failure(&self) -> Option<&AttributeExpressionFailure<'a>> {
         self.binding_failure.as_ref()
     }
     /// Borrow the interpolation observation failure, if one occurred.
-    pub fn interpolation_failure(&self) -> Option<&NativeInterpolationFailure<'a>> {
+    pub fn interpolation_failure(&self) -> Option<&InterpolationFailure<'a>> {
         self.interpolation_failure.as_ref()
     }
     /// Return the typed refusal retained for an incomplete observation.

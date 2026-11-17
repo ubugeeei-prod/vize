@@ -82,13 +82,13 @@ fn borrowed_facts_refuse_an_equal_spelling_sibling_original_attribute() {
     let mut attributes = element.attributes();
     let first = attributes.next().unwrap();
     let second = attributes.next().unwrap();
-    let original = NativeForInput::new(
+    let original = ForInput::new(
         selected
             .observe_attribute_for_head(first.reborrow())
             .unwrap(),
     )
     .unwrap();
-    let sibling = NativeForInput::new(
+    let sibling = ForInput::new(
         selected
             .observe_attribute_for_head(second.reborrow())
             .unwrap(),

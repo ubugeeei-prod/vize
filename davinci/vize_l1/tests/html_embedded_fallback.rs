@@ -3,7 +3,7 @@
 use serde_json::{Value, json};
 use vize_l0::{Allocator, Namespace, SourceRoot, String};
 use vize_l1::markup::htmlish::document::{
-    DocumentHtmlNode, DocumentHtmlRefusal as Refusal, NativeDocument,
+    DocumentHtmlNode, DocumentHtmlRefusal as Refusal, ParsedDocument,
 };
 
 const CORPUS: &str = include_str!("fixtures/document/html-embedded-fallback.json");
@@ -24,7 +24,7 @@ fn embedded_fallback_packets_retain_the_complete_browser_and_legacy_tree() {
         let label = case["name"].as_str().unwrap();
         let source = case["source"].as_str().unwrap();
         let arena = Allocator::default();
-        let owner = NativeDocument::lex_in(&arena, SourceRoot::new(source).unwrap());
+        let owner = ParsedDocument::lex_in(&arena, SourceRoot::new(source).unwrap());
         let tree = owner.html_structure().expect(label);
         let elements: Vec<_> = tree.elements().collect();
         let actual_elements: Vec<_> = elements
@@ -98,7 +98,7 @@ fn iframe_raw_text_disagreements_keep_typed_fallbacks() {
     ] {
         let source = vize_l0::cstr!("<!DOCTYPE html><html><head></head><body>{body}</body></html>");
         let arena = Allocator::default();
-        let owner = NativeDocument::lex_in(&arena, SourceRoot::new(&source).unwrap());
+        let owner = ParsedDocument::lex_in(&arena, SourceRoot::new(&source).unwrap());
         assert!(
             matches!(owner.html_structure(), Err(Refusal::UnsupportedElement(_))),
             "{body}"
@@ -107,6 +107,6 @@ fn iframe_raw_text_disagreements_keep_typed_fallbacks() {
 
     let source = "<!DOCTYPE html><html><head></head><body><iframe>\0</iframe></body></html>";
     let arena = Allocator::default();
-    let owner = NativeDocument::lex_in(&arena, SourceRoot::new(source).unwrap());
+    let owner = ParsedDocument::lex_in(&arena, SourceRoot::new(source).unwrap());
     assert_eq!(owner.html_structure().unwrap_err(), Refusal::NonHtmlToken);
 }

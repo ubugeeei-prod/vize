@@ -7,7 +7,7 @@ use oxc_span::SourceType;
 use vize_l0::{Allocator, Span};
 
 use super::{EmbedSource, Lang, ProgramOptions, parse_program_once};
-use crate::embed::syntax::{EmbedHole, NativeSyntax};
+use crate::embed::syntax::{EmbedHole, EmbedSyntax};
 
 fn source(text: &str) -> EmbedSource<'_> {
     EmbedSource::authored(text, Span::new(0, text.len() as u32)).unwrap()
@@ -40,7 +40,7 @@ fn nonfatal_regex_error_cannot_mint_admission_from_its_recovery_ast() {
             .as_ref(),
     );
     assert!(core::mem::needs_drop::<ProgramObservation<'_>>());
-    assert!(core::mem::needs_drop::<NativeSyntax<'_>>());
+    assert!(core::mem::needs_drop::<EmbedSyntax<'_>>());
     let retained = tree.into_expression().unwrap_err();
     assert_eq!(retained.hole(), Some(EmbedHole::Syntax));
     assert_eq!(retained.comments().count(), 2);

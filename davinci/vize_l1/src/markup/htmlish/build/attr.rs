@@ -6,8 +6,8 @@ use super::Builder;
 use crate::markup::htmlish::event::{Event, EventKind};
 use crate::markup::htmlish::surface::{AttrValue, Attribute, Token};
 
-impl<'a, const RAW: bool, const LINT: bool, const STRUCTURAL_DIAGNOSTICS: bool>
-    Builder<'a, '_, RAW, LINT, STRUCTURAL_DIAGNOSTICS>
+impl<'a, const RAW: bool, const TAG_FACTS: bool, const STRUCTURAL_DIAGNOSTICS: bool>
+    Builder<'a, '_, RAW, TAG_FACTS, STRUCTURAL_DIAGNOSTICS>
 {
     /// `events[i]` is the first `AttrName` piece. Directive pieces all
     /// record as `AttrName`, so the raw name token spans from the first

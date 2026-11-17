@@ -1,6 +1,6 @@
 use super::super::{NativeInterpolationInput, selected};
 use super::{Allocator, Kind, State, Test, check, owner, same};
-use vize_l1::markup::NativeInterpolationError;
+use vize_l1::markup::InterpolationError;
 
 #[test]
 fn the_static_root_child_entry_still_requires_the_separate_whole_interpolation_input() -> Test {
@@ -141,7 +141,7 @@ fn foreign_nested_child_and_foreign_whole_input_never_mint_or_complete_the_actua
             };
             same(
                 record.failure().kind(),
-                NativeInterpolationError::ForeignComponent,
+                InterpolationError::ForeignComponent,
             )?;
         }
     }
@@ -171,7 +171,7 @@ fn actual_recovered_parent_preparation_failure_retains_exact_construct_and_typed
         let Kind::InterpolationPreparation { span, kind: error } = kind else {
             return Err("precise original preparation kind");
         };
-        same(error, NativeInterpolationError::RecoveredComponent)?;
+        same(error, InterpolationError::RecoveredComponent)?;
         same(span.slice(source), "{{ 7 }}")?;
         same(
             walk.reject::<()>(kind)
@@ -191,7 +191,7 @@ fn actual_recovered_parent_preparation_failure_retains_exact_construct_and_typed
     same(failure.span().slice(source), "{{ 7 }}")?;
     same(
         failure.failure().kind(),
-        NativeInterpolationError::RecoveredComponent,
+        InterpolationError::RecoveredComponent,
     )?;
     check(core::ptr::eq(
         output.selected().component().block().root_source(),

@@ -7,7 +7,7 @@ use vize_l1::{
         Vue,
         vue::{DescriptorObservation, DescriptorOptions},
     },
-    markup::{NativeTemplateComponent, SurfaceParseOptions},
+    markup::{SurfaceParseOptions, TemplateComponent},
 };
 use vize_l2::lang::js::{NativeTemplateFile, NativeTemplateOwner};
 mod accepted;
@@ -31,7 +31,7 @@ fn owner<'a>(
 ) -> Result<NativeTemplateOwner<'a>, &'static str> {
     let descriptor = descriptor(arena, source);
     let selected =
-        NativeTemplateComponent::parse_in(arena, descriptor.admitted().map_err(|_| "descriptor")?)
+        TemplateComponent::parse_in(arena, descriptor.admitted().map_err(|_| "descriptor")?)
             .map_err(|_| "selected parse")?
             .ok_or("selected template")?;
     NativeTemplateOwner::new(selected).map_err(|_| "owner")

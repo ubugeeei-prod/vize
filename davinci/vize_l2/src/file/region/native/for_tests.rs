@@ -52,7 +52,7 @@ fn caught_original_for_park_and_scope_unwind_preserve_whole_owner_parent_and_pre
             EmbedSource::authored(source, setup.block().span()).unwrap(),
             ProgramOptions::module(setup.lang()),
         );
-        let selected = NativeTemplateComponent::parse_in(&arena, admitted)
+        let selected = TemplateComponent::parse_in(&arena, admitted)
             .unwrap()
             .unwrap();
         let mut owner =

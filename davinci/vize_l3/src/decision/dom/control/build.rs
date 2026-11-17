@@ -77,7 +77,7 @@ impl<'owner, 'arena> ConditionalFrame<'owner, 'arena> {
                 ),
                 root: id,
                 condition: branch.condition.map(|_| self.first_condition),
-                block: DomBlockEligibility::NativeElement,
+                block: DomBlockEligibility::ElementView,
             });
         }
         Ok(self.admitted)

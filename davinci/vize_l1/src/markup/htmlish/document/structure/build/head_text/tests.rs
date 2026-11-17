@@ -2,7 +2,7 @@ use alloc::vec::Vec;
 use vize_l0::{Allocator, SourceRoot, Span, String};
 
 use super::super::{Refusal, construct_as};
-use crate::markup::htmlish::document::{DocumentTokenKind, NativeDocument};
+use crate::markup::htmlish::document::{DocumentTokenKind, ParsedDocument};
 use crate::markup::{Component, Document};
 
 const ORIGINAL: &str = include_str!(concat!(
@@ -22,7 +22,7 @@ fn envelope(head: &str, body: &str) -> String {
 #[test]
 fn head_text_ancestry_borrows_the_original_single_lexer_owner() {
     let arena = Allocator::default();
-    let owner = NativeDocument::lex_in(&arena, SourceRoot::new(ORIGINAL).expect("small source"));
+    let owner = ParsedDocument::lex_in(&arena, SourceRoot::new(ORIGINAL).expect("small source"));
     let before: Vec<_> = owner
         .tokens()
         .map(|token| (token.kind(), token.span()))
@@ -107,7 +107,7 @@ fn explicit_unslashed_head_text_preserves_both_profiles_name_rules() {
         "<span></span>",
     );
     let arena = Allocator::default();
-    let owner = NativeDocument::lex_in(&arena, SourceRoot::new(&source).expect("small source"));
+    let owner = ParsedDocument::lex_in(&arena, SourceRoot::new(&source).expect("small source"));
     for tree in [
         construct_as::<Document>(&owner),
         construct_as::<Component>(&owner),
@@ -122,7 +122,7 @@ fn explicit_unslashed_head_text_preserves_both_profiles_name_rules() {
     }
     let source = envelope("<TITLE></TITLE>", "");
     let arena = Allocator::default();
-    let owner = NativeDocument::lex_in(&arena, SourceRoot::new(&source).expect("small source"));
+    let owner = ParsedDocument::lex_in(&arena, SourceRoot::new(&source).expect("small source"));
     assert!(construct_as::<Document>(&owner).is_ok());
     assert_eq!(
         construct_as::<Component>(&owner).unwrap_err(),
@@ -143,7 +143,7 @@ fn slashed_special_text_starts_refuse_instead_of_borrowing_html_ownership() {
     ] {
         let source = envelope(head, body);
         let arena = Allocator::default();
-        let owner = NativeDocument::lex_in(&arena, SourceRoot::new(&source).expect("small source"));
+        let owner = ParsedDocument::lex_in(&arena, SourceRoot::new(&source).expect("small source"));
         let raw = ["title", "style", "script", "textarea"]
             .into_iter()
             .find(|name| source.contains(name))
@@ -166,7 +166,7 @@ fn missing_head_text_ends_and_vue_interpolation_cannot_mint_completion() {
     ] {
         let source = envelope(head, "");
         let arena = Allocator::default();
-        let owner = NativeDocument::lex_in(&arena, SourceRoot::new(&source).expect("small source"));
+        let owner = ParsedDocument::lex_in(&arena, SourceRoot::new(&source).expect("small source"));
         assert!(owner.normal_completion().is_ok());
         assert_eq!(
             owner.html_structure().unwrap_err(),
@@ -175,7 +175,7 @@ fn missing_head_text_ends_and_vue_interpolation_cannot_mint_completion() {
     }
     let source = envelope("<title>{{ value }}</title>", "");
     let arena = Allocator::default();
-    let owner = NativeDocument::lex_in(&arena, SourceRoot::new(&source).expect("small source"));
+    let owner = ParsedDocument::lex_in(&arena, SourceRoot::new(&source).expect("small source"));
     assert_eq!(owner.html_structure().unwrap_err(), Refusal::VueSyntax);
 }
 
@@ -188,7 +188,7 @@ fn foreign_head_content_and_other_unsupported_features_keep_typed_refusals() {
     ] {
         let source = envelope(head, "");
         let arena = Allocator::default();
-        let owner = NativeDocument::lex_in(&arena, SourceRoot::new(&source).expect("small source"));
+        let owner = ParsedDocument::lex_in(&arena, SourceRoot::new(&source).expect("small source"));
         let refusal = owner.html_structure().unwrap_err();
         if explicit_envelope {
             assert_eq!(refusal, Refusal::ExplicitEnvelope, "{source}");

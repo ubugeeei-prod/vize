@@ -437,22 +437,19 @@ mod tests {
     #[test]
     fn bound_names_take_fresh_spellings() {
         let parameters =
-            GenericParameters::parse("Props, Props_1, Record, $PublicEmit, $NativeElement");
+            GenericParameters::parse("Props, Props_1, Record, $PublicEmit, $ElementView");
         let _binding = bind_names(Some(&parameters), ["Props_3"]);
         assert_eq!(declared("Props"), "Props_2");
         assert_eq!(cstr!("{}", export_type("Props")), "type Props_2");
         assert_eq!(lib("Record"), "globalThis.Record");
         assert_eq!(helper("$PublicEmit", &[""]), "$PublicEmit_1");
-        assert_eq!(
-            helper("$NativeElement", &["PropertyKey"]),
-            "$NativeElement_1"
-        );
+        assert_eq!(helper("$ElementView", &["PropertyKey"]), "$NativeElement_1");
         let mut ts = crate::virtual_ts::TextBuf::default();
         reexport(&mut ts, "Props");
         emit_forwarded_helpers(&mut ts);
         assert_eq!(
             ts,
-            "export type { Props_2 as Props };\ntype $PublicEmit_1<__A0> = $PublicEmit<__A0>;\ntype $NativeElement_1<__A0 extends PropertyKey> = $NativeElement<__A0>;\n"
+            "export type { Props_2 as Props };\ntype $PublicEmit_1<__A0> = $PublicEmit<__A0>;\ntype $NativeElement_1<__A0 extends PropertyKey> = $ElementView<__A0>;\n"
         );
     }
 

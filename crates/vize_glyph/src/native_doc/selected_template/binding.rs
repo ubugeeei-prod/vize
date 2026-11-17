@@ -1,15 +1,15 @@
 //! Same-event static binding observation, normal custody and original value Doc.
 
 use vize_l0::{Allocator, Span};
-use vize_l1::markup::{NativeStaticBindingHead, NativeTemplateComponent};
+use vize_l1::markup::{StaticBindingHead, TemplateComponent};
 
 use super::input::Input;
 use super::{Doc, NativeTemplateRefusal, expression_document};
 
 pub(super) fn value<'p, 'a, I: Input<'p, 'a>>(
-    selected: &'p NativeTemplateComponent<'a>,
+    selected: &'p TemplateComponent<'a>,
     input: &mut I,
-    binding: NativeStaticBindingHead<'_, '_, 'a>,
+    binding: StaticBindingHead<'_, '_, 'a>,
     span: Span,
     offset: usize,
     allocator: &'a Allocator,

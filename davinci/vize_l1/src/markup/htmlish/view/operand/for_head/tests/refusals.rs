@@ -1,6 +1,6 @@
 use super::{
-    Allocator, EmbedHole, ForHeadHole, Lang, NativeAttributeOperandError, NativeForInput,
-    NativeForRefusal, first_attribute, selected,
+    Allocator, AttributeOperandError, EmbedHole, ForHeadHole, ForInput, ForRefusal, Lang,
+    first_attribute, selected,
 };
 
 #[test]
@@ -23,7 +23,7 @@ fn complete_attribute_extent_cannot_be_replaced_by_a_locally_admitted_prefix() {
     // The public local provider can prepare a valid physical prefix; only this
     // selected producer can attach the complete immutable Attribute event.
     let prefix = operand.raw_value().get(..13).unwrap();
-    let local = NativeForInput::attribute_in(&arena, owner.component().block(), prefix, Lang::Js)
+    let local = ForInput::attribute_in(&arena, owner.component().block(), prefix, Lang::Js)
         .unwrap()
         .observe();
     assert!(local.admitted_dense().is_some());
@@ -39,28 +39,28 @@ fn syntax_and_native_family_refusals_keep_whole_sources_and_original_observation
     for (source, refusal, comments, diagnostics, decoded) in [
         (
             "<template><p v-for='item /*kept*/ in items'/></template>",
-            NativeForRefusal::Comment,
+            ForRefusal::Comment,
             1,
             false,
             false,
         ),
         (
             "<template><p v-for='item in &#105;tems'/></template>",
-            NativeForRefusal::EntityOutput,
+            ForRefusal::EntityOutput,
             0,
             false,
             true,
         ),
         (
             "<template><p v-for='item in values + /*kept*/'/></template>",
-            NativeForRefusal::Head(ForHeadHole::CollectionUnavailable(EmbedHole::Syntax)),
+            ForRefusal::Head(ForHeadHole::CollectionUnavailable(EmbedHole::Syntax)),
             1,
             true,
             false,
         ),
         (
             "<template><p v-for='arguments in items'/></template>",
-            NativeForRefusal::Head(ForHeadHole::AliasesUnavailable(
+            ForRefusal::Head(ForHeadHole::AliasesUnavailable(
                 EmbedHole::InvalidParameterContext,
             )),
             0,
@@ -73,7 +73,7 @@ fn syntax_and_native_family_refusals_keep_whole_sources_and_original_observation
         let operand = owner
             .observe_attribute_for_head(attribute.reborrow())
             .unwrap();
-        assert_eq!(operand.syntax().native_refusal(), Some(refusal));
+        assert_eq!(operand.syntax().for_refusal(), Some(refusal));
         assert_eq!(operand.syntax().comments().count(), comments);
         assert_eq!(operand.syntax().diagnostics().count() > 0, diagnostics);
         assert_eq!(operand.syntax().source().decode_map().is_some(), decoded);
@@ -97,8 +97,8 @@ fn empty_and_sparse_values_retain_the_whole_owner_without_dense_admission() {
             .observe_attribute_for_head(attribute.reborrow())
             .unwrap();
         assert!(matches!(
-            operand.syntax().native_refusal(),
-            Some(NativeForRefusal::Head(_))
+            operand.syntax().for_refusal(),
+            Some(ForRefusal::Head(_))
         ));
         assert_eq!(operand.value_span().slice(source), operand.raw_value());
         assert!(operand.admitted_for(&owner, attribute).is_none());
@@ -112,37 +112,37 @@ fn verbatim_unsupported_heads_and_missing_values_are_preparation_refusals() {
         (
             "<template><p v-pre v-for='item in items'/></template>",
             1,
-            NativeAttributeOperandError::Verbatim,
+            AttributeOperandError::Verbatim,
         ),
         (
             "<template><p v-for.foo='item in items'/></template>",
             0,
-            NativeAttributeOperandError::UnsupportedDirective,
+            AttributeOperandError::UnsupportedDirective,
         ),
         (
             "<template><p v-for:arg='item in items'/></template>",
             0,
-            NativeAttributeOperandError::UnsupportedDirective,
+            AttributeOperandError::UnsupportedDirective,
         ),
         (
             "<template><p v-for:='item in items'/></template>",
             0,
-            NativeAttributeOperandError::UnsupportedDirective,
+            AttributeOperandError::UnsupportedDirective,
         ),
         (
             "<template><p v-if='ready'/></template>",
             0,
-            NativeAttributeOperandError::UnsupportedDirective,
+            AttributeOperandError::UnsupportedDirective,
         ),
         (
             "<template><p class='item in items'/></template>",
             0,
-            NativeAttributeOperandError::UnsupportedDirective,
+            AttributeOperandError::UnsupportedDirective,
         ),
         (
             "<template><p v-for/></template>",
             0,
-            NativeAttributeOperandError::IncompleteValue,
+            AttributeOperandError::IncompleteValue,
         ),
     ] {
         let owner = selected(&arena, source).unwrap();
@@ -175,10 +175,7 @@ fn real_missing_close_and_recovery_precedence_refuse_before_dialect_selection() 
             .observe_attribute_for_head(element.attributes().last().unwrap())
             .err()
             .unwrap();
-        assert_eq!(
-            failure.kind(),
-            NativeAttributeOperandError::RecoveredComponent
-        );
+        assert_eq!(failure.kind(), AttributeOperandError::RecoveredComponent);
         assert!(failure.input().is_none());
     }
 }

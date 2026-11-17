@@ -4,7 +4,7 @@ use super::support::{
 };
 use std::{borrow::Cow, cell::Cell};
 use vize_l0::{Allocator, cstr, diag::MessageLookup};
-use vize_l1::markup::{NativeComponent, NativeTemplateGrammar, check_fidelity};
+use vize_l1::markup::{ParsedComponent, TemplateGrammar, check_fidelity};
 use vize_patina::{
     Linter,
     native::{NativeLintRefusal, NativeSyntaxLint},
@@ -18,7 +18,7 @@ fn equal_foreign_owners_and_raw_parses_refuse_before_lookup_with_source_custody_
     let second = selected(&arena, source);
     let other_arena = Allocator::default();
     let third = selected(&other_arena, source);
-    let raw = NativeComponent::parse_in(&arena, first.component().block()).unwrap();
+    let raw = ParsedComponent::parse_in(&arena, first.component().block()).unwrap();
     let lint = NativeSyntaxLint::new(&first).unwrap();
     for component in [second.component(), third.component(), &raw] {
         let element = component.children().next().unwrap().into_element().unwrap();
@@ -104,7 +104,7 @@ fn original_selected_owner_can_move_after_borrows_end_without_reparse_or_profile
     let arena = Allocator::default();
     let owner = selected(&arena, source);
     let grammar = owner.grammar();
-    assert_eq!(grammar, NativeTemplateGrammar::TypeScriptModule);
+    assert_eq!(grammar, TemplateGrammar::TypeScriptModule);
     let source_ptr = owner.component().carrier().tree.source.as_ptr();
     let before = cstr!("{:?}", owner.component().carrier());
     {

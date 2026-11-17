@@ -1,11 +1,11 @@
-use super::{ForHeadInput, NativeForInput};
+use super::{ForHeadInput, ForInput};
 use oxc_ast::ast::BindingPattern;
 use oxc_span::GetSpan;
 use vize_l0::{Allocator, SourceRoot, Span};
-use vize_l1::embed::syntax::{NativeForHead, NativeForInput as SourceForInput, NativeForRefusal};
+use vize_l1::embed::syntax::{ForHead, ForInput as SourceForInput, ForRefusal};
 use vize_l1::embed::{Embed, EmbedSource, Grammar, Lang, Shape, SourceError};
 
-fn observe<'a>(arena: &'a Allocator, source: &'a str, lang: Lang) -> NativeForHead<'a> {
+fn observe<'a>(arena: &'a Allocator, source: &'a str, lang: Lang) -> ForHead<'a> {
     SourceForInput::attribute_in(
         arena,
         SourceRoot::new(source).unwrap().whole_block(),
@@ -139,7 +139,7 @@ fn neutral_dense_roots_do_not_establish_the_original_source_capability() {
         .unwrap()
         .as_ptr();
     let rejected = ForHeadInput::new(syntax).unwrap_err();
-    assert_eq!(rejected.kind, NativeForRefusal::UnpreparedSource);
+    assert_eq!(rejected.kind, ForRefusal::UnpreparedSource);
     assert_eq!(
         rejected
             .syntax()

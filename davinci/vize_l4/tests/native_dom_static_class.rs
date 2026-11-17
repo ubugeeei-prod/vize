@@ -2,7 +2,7 @@
 
 use vize_l0::{Allocator, SourceRoot};
 use vize_l1::embed::Lang;
-use vize_l1_to_l2::native::NativeComponent;
+use vize_l1_to_l2::native::ParsedComponent;
 use vize_l2::{
     file::{Declaration, TemplatePolicy, TemplateScope},
     lang::js::FileProducer,
@@ -25,7 +25,7 @@ impl TemplatePolicy for DiagnosticValues {
 
 fn file<'a>(arena: &'a Allocator, source: &'a str) -> vize_l2::file::FileArtifact<'a> {
     let block = SourceRoot::new(source).unwrap().block(source, 0).unwrap();
-    let native = NativeComponent::parse_in(arena, block).unwrap();
+    let native = ParsedComponent::parse_in(arena, block).unwrap();
     let mut producer = FileProducer::new(arena, source).unwrap();
     {
         let mut region = producer

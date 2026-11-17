@@ -1,6 +1,6 @@
 use super::selected;
 use crate::embed::{Grammar, Lang, Shape, syntax::EmbedHole};
-use crate::markup::NativeConditionKind;
+use crate::markup::ConditionKind;
 use alloc::vec::Vec;
 use oxc_ast::ast::CommentKind;
 use oxc_diagnostics::{OxcCode, Severity};
@@ -36,14 +36,14 @@ fn empty_and_syntax_holes_keep_complete_original_source_comments_diagnostics_and
             .unwrap();
         assert_eq!(head.name_block().span(), Span::new(16, 20));
         assert_eq!(head.name_block().source(), "v-if");
-        assert_eq!(head.condition_kind(), Some(NativeConditionKind::If));
+        assert_eq!(head.condition_kind(), Some(ConditionKind::If));
         let old = old_owner
             .observe_attribute_expression(old_element.attributes().next().unwrap())
             .unwrap();
         let new = head.observe_expression().unwrap();
         for operand in [&old, &new] {
             let syntax = operand.syntax();
-            assert_eq!(operand.kind(), NativeConditionKind::If);
+            assert_eq!(operand.kind(), ConditionKind::If);
             assert_eq!(operand.name_span(), Span::new(16, 20));
             assert_eq!(operand.value_span(), value_span);
             assert_eq!(operand.raw_value(), raw);
@@ -166,14 +166,14 @@ fn real_over31_parentheses_and_unbalanced_safety_hole_preserve_the_earliest_admi
             .unwrap();
         assert_eq!(head.name_block().span(), Span::new(16, 20));
         assert_eq!(head.name_block().source(), "v-if");
-        assert_eq!(head.condition_kind(), Some(NativeConditionKind::If));
+        assert_eq!(head.condition_kind(), Some(ConditionKind::If));
         let old = old_owner
             .observe_attribute_expression(old_element.attributes().next().unwrap())
             .unwrap();
         let new = head.observe_expression().unwrap();
         for operand in [&old, &new] {
             let syntax = operand.syntax();
-            assert_eq!(operand.kind(), NativeConditionKind::If);
+            assert_eq!(operand.kind(), ConditionKind::If);
             assert_eq!(operand.name_span(), Span::new(16, 20));
             assert_eq!(operand.value_span(), value_span);
             assert_eq!(operand.raw_value(), raw);

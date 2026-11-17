@@ -4,7 +4,7 @@ use vize_l0::{
 };
 use vize_l1::{
     container::{Vue, vue::DescriptorOptions},
-    markup::{NativeTemplateComponent, SurfaceParseOptions},
+    markup::{SurfaceParseOptions, TemplateComponent},
 };
 use vize_l2::lang::js::{NativeTemplateFile, NativeTemplateOwner};
 use vize_l3::decision::ssr::{
@@ -26,7 +26,7 @@ fn completed<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateFile<'a
                 template: SurfaceParseOptions::default(),
             },
         );
-        NativeTemplateComponent::parse_in(arena, descriptor.admitted().unwrap())
+        TemplateComponent::parse_in(arena, descriptor.admitted().unwrap())
             .unwrap()
             .unwrap()
     };

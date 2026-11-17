@@ -3,7 +3,7 @@
 use serde_json::{Value, json};
 use vize_l0::{Allocator, Namespace, SourceRoot, String};
 use vize_l1::markup::htmlish::document::{
-    DocumentHtmlNode, DocumentHtmlRefusal as Refusal, NativeDocument,
+    DocumentHtmlNode, DocumentHtmlRefusal as Refusal, ParsedDocument,
 };
 
 const CORPUS: &str = include_str!("fixtures/document/html-body-elements.json");
@@ -24,7 +24,7 @@ fn body_element_packets_retain_the_complete_browser_and_legacy_tree() {
         let label = case["name"].as_str().unwrap();
         let source = case["source"].as_str().unwrap();
         let arena = Allocator::default();
-        let owner = NativeDocument::lex_in(&arena, SourceRoot::new(source).unwrap());
+        let owner = ParsedDocument::lex_in(&arena, SourceRoot::new(source).unwrap());
         let tree = owner.html_structure().expect(label);
         let elements: Vec<_> = tree.elements().collect();
         let actual_elements: Vec<_> = elements
@@ -100,7 +100,7 @@ fn body_element_recovery_edges_keep_typed_refusals() {
     ] {
         let source = envelope(body);
         let arena = Allocator::default();
-        let owner = NativeDocument::lex_in(&arena, SourceRoot::new(&source).unwrap());
+        let owner = ParsedDocument::lex_in(&arena, SourceRoot::new(&source).unwrap());
         assert!(
             matches!(owner.html_structure(), Err(Refusal::ImpliedEnd(_))),
             "{body}"
@@ -110,7 +110,7 @@ fn body_element_recovery_edges_keep_typed_refusals() {
     for body in ["<param></param>", "<audio>", "<prefixvideo></prefixvideo>"] {
         let source = envelope(body);
         let arena = Allocator::default();
-        let owner = NativeDocument::lex_in(&arena, SourceRoot::new(&source).unwrap());
+        let owner = ParsedDocument::lex_in(&arena, SourceRoot::new(&source).unwrap());
         assert!(owner.html_structure().is_err(), "{body}");
     }
 }

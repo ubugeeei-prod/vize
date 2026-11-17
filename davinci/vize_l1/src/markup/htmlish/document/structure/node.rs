@@ -4,7 +4,7 @@ use vize_l0::Span;
 
 use super::{DocumentHtmlElement, DocumentHtmlRefusal as Refusal, DocumentHtmlStructure, Element};
 use crate::markup::htmlish::document::{
-    DocumentToken, DocumentTokenKind as Kind, Event, NativeDocument,
+    DocumentToken, DocumentTokenKind as Kind, Event, ParsedDocument,
 };
 
 mod scalar;
@@ -178,10 +178,10 @@ impl<'s, 'o, 'a> Iterator for DocumentHtmlChildNodes<'s, 'o, 'a> {
 ///
 /// ```
 /// use vize_l0::{Allocator, SourceRoot};
-/// use vize_l1::markup::htmlish::document::{DocumentHtmlNode, NativeDocument};
+/// use vize_l1::markup::htmlish::document::{DocumentHtmlNode, ParsedDocument};
 /// let arena = Allocator::default();
 /// let source = "<!DOCTYPE html><html><head></head><body>&amp;</body></html>";
-/// let owner = NativeDocument::lex_in(&arena, SourceRoot::new(source).unwrap());
+/// let owner = ParsedDocument::lex_in(&arena, SourceRoot::new(source).unwrap());
 /// let tree = owner.html_structure().unwrap();
 /// let body = tree.elements().nth(2).unwrap();
 /// let DocumentHtmlNode::Text(text) = body.child_nodes().unwrap().next().unwrap().unwrap() else { panic!() };
@@ -207,8 +207,8 @@ impl<'s, 'o, 'a> Iterator for DocumentHtmlChildNodes<'s, 'o, 'a> {
 /// ```
 ///
 /// ```compile_fail
-/// use vize_l1::markup::htmlish::document::{DocumentHtmlNode, NativeDocument};
-/// fn drop_owner(owner: NativeDocument<'_>) {
+/// use vize_l1::markup::htmlish::document::{DocumentHtmlNode, ParsedDocument};
+/// fn drop_owner(owner: ParsedDocument<'_>) {
 ///     let tree = owner.html_structure().unwrap();
 ///     let body = tree.elements().nth(2).unwrap();
 ///     let DocumentHtmlNode::Text(text) = body.child_nodes().unwrap().next().unwrap().unwrap() else { panic!() };
@@ -226,7 +226,7 @@ pub struct DocumentHtmlText<'s, 'o, 'a> {
 
 impl<'s, 'o, 'a> DocumentHtmlText<'s, 'o, 'a> {
     #[must_use]
-    pub fn owner(&self) -> &'o NativeDocument<'a> {
+    pub fn owner(&self) -> &'o ParsedDocument<'a> {
         self.tree.owner
     }
     #[must_use]
@@ -302,7 +302,7 @@ pub struct DocumentHtmlComment<'s, 'o, 'a> {
 
 impl<'s, 'o, 'a> DocumentHtmlComment<'s, 'o, 'a> {
     #[must_use]
-    pub fn owner(&self) -> &'o NativeDocument<'a> {
+    pub fn owner(&self) -> &'o ParsedDocument<'a> {
         self.tree.owner
     }
     #[must_use]

@@ -4,7 +4,7 @@ use oxc_span::GetSpan;
 use vize_l0::{Allocator, SourceBlock, Span, Vec};
 use vize_l1::embed::{
     SourceError,
-    syntax::{EmbedHole, NativeExpressionView, RetainedExpression},
+    syntax::{EmbedHole, ExpressionView, RetainedExpression},
 };
 
 use super::Doc;
@@ -142,7 +142,7 @@ pub fn expression_document<'p, 'a>(
 }
 
 pub(super) fn borrowed_document<'p, 'a>(
-    original: &'p NativeExpressionView<'p, 'a>,
+    original: &'p ExpressionView<'p, 'a>,
     block: SourceBlock<'a>,
     allocator: &'a Allocator,
 ) -> Result<Doc<'a>, ExpressionRefusal> {

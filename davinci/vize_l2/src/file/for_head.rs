@@ -1,13 +1,13 @@
 //! Whole original heads and declarations stay beside their checked File node.
 
 use super::{BindingRef, FileArtifact, ScopeId};
-use crate::lang::js::{NativeForInput, RejectedNativeForInput};
+use crate::lang::js::{ForInput, RejectedForInput};
 use crate::op::{OriginalForId, OriginalForOp};
 use crate::resolution::{
     BindingId, ForAliasDeclaration, ForAliasRole, ForResolution, ForResolutionError,
 };
 use alloc::boxed::Box;
-use vize_l1::markup::NativeAttributeForHeadFailure;
+use vize_l1::markup::AttributeForHeadFailure;
 
 pub(crate) struct ForRecord<'a> {
     pub original: Option<core::ptr::NonNull<OriginalForOp<'a>>>,
@@ -19,7 +19,7 @@ pub(crate) struct ForRecord<'a> {
 }
 
 pub(crate) struct PendingFor<'a> {
-    pub input: Option<NativeForInput<'a>>,
+    pub input: Option<ForInput<'a>>,
     pub resolution: Option<ForResolution<'a>>,
     pub enclosing: ScopeId,
     pub span: vize_l0::Span,
@@ -32,10 +32,10 @@ pub(crate) struct TemplateDeclarationRow {
 
 #[derive(Debug)]
 pub enum RejectedFileFor<'a> {
-    Observation(NativeAttributeForHeadFailure<'a>),
-    Syntax(Box<RejectedNativeForInput<'a>>),
+    Observation(AttributeForHeadFailure<'a>),
+    Syntax(Box<RejectedForInput<'a>>),
     Resolution {
-        input: Box<NativeForInput<'a>>,
+        input: Box<ForInput<'a>>,
         error: ForResolutionError,
     },
 }
@@ -141,7 +141,7 @@ impl<'a> FileArtifact<'a> {
     pub fn rejected_for_heads(&self) -> &[RejectedFileFor<'a>] {
         &self.facts.rejected_for_heads
     }
-    pub fn unattached_for_heads(&self) -> impl Iterator<Item = &NativeForInput<'a>> {
+    pub fn unattached_for_heads(&self) -> impl Iterator<Item = &ForInput<'a>> {
         self.facts
             .pending_for_heads
             .iter()
@@ -220,7 +220,7 @@ impl<'f, 'a> BindingRef<'f, 'a> {
 impl<'a> super::RejectedFile<'a> {
     /// Read original owners from a refused or interrupted factory; no completion
     /// or actual arena allocation association is granted by these observations.
-    pub fn original_for_inputs(&self) -> impl Iterator<Item = &NativeForInput<'a>> {
+    pub fn original_for_inputs(&self) -> impl Iterator<Item = &ForInput<'a>> {
         self.facts
             .pending_for_heads
             .iter()

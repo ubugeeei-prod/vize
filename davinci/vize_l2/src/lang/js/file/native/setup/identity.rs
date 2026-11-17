@@ -3,18 +3,18 @@ use super::{NativeSetupIssue, NativeSetupIssueKind};
 use crate::file::{Scope, ScopeId, ScriptProfile, ScriptUnit};
 use oxc_parser::{AdmittedProgram, ParseOptions};
 use vize_l1::{
-    embed::{Lang, syntax::NativeSyntax},
-    markup::{NativeScriptSelection, NativeTemplateComponent},
+    embed::{Lang, syntax::EmbedSyntax},
+    markup::{ScriptSelection, TemplateComponent},
 };
 
 pub(super) struct Joined<'owner, 'arena> {
-    pub(super) selected: NativeScriptSelection<'owner, 'arena>,
+    pub(super) selected: ScriptSelection<'owner, 'arena>,
     pub(super) program: AdmittedProgram<'owner, 'arena>,
     pub(super) unit: &'owner ScriptUnit,
 }
 pub(super) fn checked<'owner, 'arena>(
-    component: &'owner NativeTemplateComponent<'arena>,
-    syntax: &'owner NativeSyntax<'arena>,
+    component: &'owner TemplateComponent<'arena>,
+    syntax: &'owner EmbedSyntax<'arena>,
     units: &'owner [ScriptUnit],
     scopes: &[Scope],
     source: &str,

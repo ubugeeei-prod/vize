@@ -7,7 +7,7 @@ use vize_l0::{
 };
 use vize_l1::{
     container::{Vue, vue::DescriptorOptions},
-    markup::{NativeChildren, NativeTemplateComponent, SurfaceParseOptions},
+    markup::{ChildrenView, SurfaceParseOptions, TemplateComponent},
 };
 use vize_patina::{
     LintDiagnostic, Linter, RuleRegistry,
@@ -15,7 +15,7 @@ use vize_patina::{
     rules::a11y::{IframeHasTitle, ImgAlt, TabindexNoPositive},
 };
 
-pub fn owner<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateComponent<'a> {
+pub fn owner<'a>(arena: &'a Allocator, source: &'a str) -> TemplateComponent<'a> {
     let descriptor = Vue.observe_descriptor(
         arena,
         source,
@@ -25,7 +25,7 @@ pub fn owner<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateCompone
             template: SurfaceParseOptions::default(),
         },
     );
-    NativeTemplateComponent::parse_in(arena, descriptor.admitted().unwrap())
+    TemplateComponent::parse_in(arena, descriptor.admitted().unwrap())
         .unwrap()
         .unwrap()
 }
@@ -75,7 +75,7 @@ enum SyntaxRule {
 // The test caller drives original children. The product entry never walks them.
 fn collect<'a>(
     lint: &NativeSyntaxLint<'_, 'a>,
-    children: NativeChildren<'_, 'a>,
+    children: ChildrenView<'_, 'a>,
     locale: Locale,
     rule: SyntaxRule,
     output: &mut Vec<Value>,

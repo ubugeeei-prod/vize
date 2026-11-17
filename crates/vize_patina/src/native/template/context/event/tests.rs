@@ -2,11 +2,11 @@ use super::*;
 use crate::native::template::NativeTemplateRule;
 use crate::native::{header, template::NativeTemplateAttributeProfile as Profile};
 use vize_l0::{Allocator, SourceRoot};
-use vize_l1::markup::NativeLintComponent;
+use vize_l1::markup::ComponentTagFacts;
 
 mod native_modifier;
 
-fn attributes<'o, 'a>(root: &'o NativeLintComponent<'a>) -> Vec<NativeTemplateAttribute<'o, 'a>> {
+fn attributes<'o, 'a>(root: &'o ComponentTagFacts<'a>) -> Vec<NativeTemplateAttribute<'o, 'a>> {
     let mut attributes = Vec::new();
     for child in root.children() {
         let Some(element) = child.into_element() else {
@@ -35,9 +35,8 @@ fn existing_callbacks_do_not_gain_event_authority_from_an_exhaustive_match_arm()
     };
     let arena = Allocator::new();
     let source = r#"<input @keyup.13="submit" />"#;
-    let root =
-        NativeLintComponent::parse_in(&arena, SourceRoot::new(source).unwrap().whole_block())
-            .unwrap();
+    let root = ComponentTagFacts::parse_in(&arena, SourceRoot::new(source).unwrap().whole_block())
+        .unwrap();
     let original = root.children().next().unwrap().into_element().unwrap();
     let view = NativeTemplateElement::new(original, attributes(&root).into_iter().collect());
     let callbacks: [&dyn NativeTemplateRule; 4] = [
@@ -86,9 +85,8 @@ fn events_remain_a_separate_closed_profile_and_raw_tokens_are_unconstructible() 
 fn genuine_modifier_tokens_retain_utf8_byte_ranges_order_and_exact_fixes() {
     let arena = Allocator::new();
     let source = "界🌸\r\n<input v-on:keyup.stop.13suffix.27=\"submit\"/>";
-    let root =
-        NativeLintComponent::parse_in(&arena, SourceRoot::new(source).unwrap().whole_block())
-            .unwrap();
+    let root = ComponentTagFacts::parse_in(&arena, SourceRoot::new(source).unwrap().whole_block())
+        .unwrap();
     let attributes = attributes(&root);
     let attribute = attributes.first().unwrap();
     let linter = crate::Linter::new();
@@ -141,8 +139,8 @@ fn foreign_owner_sibling_forgery_and_other_callback_cannot_report_or_edit() {
     let arena = Allocator::new();
     let source = "<input @keyup.13=\"a\"/><input @keyup.27=\"b\"/>";
     let block = SourceRoot::new(source).unwrap().whole_block();
-    let root = NativeLintComponent::parse_in(&arena, block).unwrap();
-    let foreign = NativeLintComponent::parse_in(&arena, block).unwrap();
+    let root = ComponentTagFacts::parse_in(&arena, block).unwrap();
+    let foreign = ComponentTagFacts::parse_in(&arena, block).unwrap();
     let proofs = attributes(&root);
     let foreign_proofs = attributes(&foreign);
     let linter = crate::Linter::new();

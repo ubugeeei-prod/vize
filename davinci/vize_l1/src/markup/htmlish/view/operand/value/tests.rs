@@ -5,7 +5,7 @@ use crate::embed::DecodeSegmentKind;
 use vize_l0::Allocator;
 use vize_l0::config::{VueDialect, VueVersion};
 
-fn selected<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateComponent<'a> {
+fn selected<'a>(arena: &'a Allocator, source: &'a str) -> TemplateComponent<'a> {
     let descriptor = Vue.observe_descriptor(
         arena,
         source,
@@ -15,7 +15,7 @@ fn selected<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateComponen
             template: crate::markup::SurfaceParseOptions::default(),
         },
     );
-    NativeTemplateComponent::parse_in(arena, descriptor.admitted().unwrap())
+    TemplateComponent::parse_in(arena, descriptor.admitted().unwrap())
         .unwrap()
         .unwrap()
 }

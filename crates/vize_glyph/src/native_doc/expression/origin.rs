@@ -4,7 +4,7 @@ use oxc_ast::ast::Expression;
 use vize_l0::Span;
 use vize_l1::embed::{
     EmbedSource, SourceError,
-    syntax::{CommentView, NativeExpressionView, RetainedExpression},
+    syntax::{CommentView, ExpressionView, RetainedExpression},
 };
 
 use super::ExpressionRefusal;
@@ -12,7 +12,7 @@ use super::ExpressionRefusal;
 #[derive(Clone, Copy)]
 pub(super) enum Origin<'p, 'a> {
     Retained(&'p RetainedExpression<'a>),
-    Borrowed(&'p NativeExpressionView<'p, 'a>),
+    Borrowed(&'p ExpressionView<'p, 'a>),
 }
 
 impl<'p, 'a> Origin<'p, 'a> {

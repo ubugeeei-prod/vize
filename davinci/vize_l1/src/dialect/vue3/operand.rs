@@ -11,7 +11,7 @@ pub(crate) use binding::static_binding_parts;
 
 /// The actual complete conditional directive spelling.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum NativeConditionKind {
+pub enum ConditionKind {
     If,
     ElseIf,
 }
@@ -20,7 +20,7 @@ pub(crate) fn conditional_head(
     raw: &str,
     offset: u32,
     source: &str,
-) -> Result<Option<NativeConditionKind>, DirectiveNameError> {
+) -> Result<Option<ConditionKind>, DirectiveNameError> {
     let parts = VueDirectives.decompose(raw, offset)?;
     Ok(conditional_parts(parts, offset + raw.len() as u32, source))
 }
@@ -30,7 +30,7 @@ pub(crate) fn conditional_parts(
     parts: Option<DirectiveName>,
     name_end: u32,
     source: &str,
-) -> Option<NativeConditionKind> {
+) -> Option<ConditionKind> {
     let head = parts?;
     // Only a complete argument/modifier-free conditional head is admitted.
     // The provider retains unsupported variants in their original surface.
@@ -42,8 +42,8 @@ pub(crate) fn conditional_parts(
         return None;
     }
     match DirectiveKind::of(&head, source) {
-        DirectiveKind::If => Some(NativeConditionKind::If),
-        DirectiveKind::ElseIf => Some(NativeConditionKind::ElseIf),
+        DirectiveKind::If => Some(ConditionKind::If),
+        DirectiveKind::ElseIf => Some(ConditionKind::ElseIf),
         _ => None,
     }
 }

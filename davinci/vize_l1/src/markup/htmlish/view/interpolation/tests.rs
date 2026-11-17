@@ -1,6 +1,6 @@
 use crate::container::Vue;
 use crate::container::vue::DescriptorOptions;
-use crate::markup::NativeTemplateComponent;
+use crate::markup::TemplateComponent;
 use vize_l0::{
     Allocator,
     config::{VueDialect, VueVersion},
@@ -13,7 +13,7 @@ mod refusals;
 fn selected<'a>(
     arena: &'a Allocator,
     source: &'a str,
-) -> Result<NativeTemplateComponent<'a>, &'static str> {
+) -> Result<TemplateComponent<'a>, &'static str> {
     let descriptor = Vue.observe_descriptor(
         arena,
         source,
@@ -23,7 +23,7 @@ fn selected<'a>(
             template: crate::markup::SurfaceParseOptions::default(),
         },
     );
-    NativeTemplateComponent::parse_in(
+    TemplateComponent::parse_in(
         arena,
         descriptor
             .admitted()

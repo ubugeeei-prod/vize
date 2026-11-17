@@ -144,7 +144,7 @@ impl<'a> Vue2DescriptorExpressionPool<'a> {
 
 impl<'a> Vue2DescriptorObservation<'a> {
     /// Consume this actual envelope and its complete original Component.
-    /// Only the existing NativeSyntax consuming API relocates expression roots;
+    /// Only the existing EmbedSyntax consuming API relocates expression roots;
     /// nothing is reparsed, decoded again, cloned or silently omitted.
     /// Every refused slot preserves the returned original owner in this pool.
     /// All already retained and subsequent slots remain in original order.

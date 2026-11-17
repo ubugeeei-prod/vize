@@ -218,7 +218,7 @@ fn source_selected_typescript_role_is_retained_without_a_caller_profile() -> Res
         .map_err(|_| "original root text")?;
     assert_eq!(
         receipt.grammar(),
-        crate::markup::NativeTemplateGrammar::TypeScriptModule
+        crate::markup::TemplateGrammar::TypeScriptModule
     );
     assert!(core::ptr::eq(receipt.block().root_source(), source));
     assert_eq!(receipt.span().slice(source), " a\t b ");

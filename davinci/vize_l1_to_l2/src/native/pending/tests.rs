@@ -1,5 +1,5 @@
 use super::{NativeWalkState, PendingConstructionError, PendingNativeComponent};
-use crate::native::{NativeComponent, NativeHoleKind};
+use crate::native::{NativeHoleKind, ParsedComponent};
 use std::panic::{AssertUnwindSafe, catch_unwind};
 use vize_l0::{Allocator, SourceRoot, String, id::NodeId};
 use vize_l1::embed::Lang;
@@ -16,7 +16,7 @@ fn caught_actual_callback_keeps_current_observations_and_partial_owner() {
     let a = Allocator::default();
     let file = "<p @click=\"unused\">{{first /* kept */}}{{second}}</p>";
     let component =
-        NativeComponent::parse_in(&a, SourceRoot::new(file).unwrap().whole_block()).unwrap();
+        ParsedComponent::parse_in(&a, SourceRoot::new(file).unwrap().whole_block()).unwrap();
     let carrier = component.carrier().tree.children.as_ptr();
     let mut pending = PendingNativeComponent::from_component(component);
     let mut builder = Builder::new(&a, file).unwrap();
@@ -149,7 +149,7 @@ fn first_source_callback_unwind_is_interrupted_before_any_mint() {
     let a = Allocator::default();
     let file = "<p>{{value}}</p>";
     let component =
-        NativeComponent::parse_in(&a, SourceRoot::new(file).unwrap().whole_block()).unwrap();
+        ParsedComponent::parse_in(&a, SourceRoot::new(file).unwrap().whole_block()).unwrap();
     let mut pending = PendingNativeComponent::from_component(component);
     let arena_before = a.allocated_bytes();
     let mut builder = Builder::new(&a, file).unwrap();
@@ -194,7 +194,7 @@ fn pre_mint_callback_keeps_current_ast_without_inventing_a_node() {
     let a = Allocator::default();
     let file = "<p>{{value /* kept */}}</p>";
     let component =
-        NativeComponent::parse_in(&a, SourceRoot::new(file).unwrap().whole_block()).unwrap();
+        ParsedComponent::parse_in(&a, SourceRoot::new(file).unwrap().whole_block()).unwrap();
     let mut pending = PendingNativeComponent::from_component(component);
     let mut builder = Builder::new(&a, file).unwrap();
     let mut callbacks = Callbacks {
@@ -251,7 +251,7 @@ fn foreign_equal_source_refuses_without_mint_or_discarding_original_owner() {
     let original = String::from("<p>{{value}}</p>");
     let foreign = original.clone();
     let component =
-        NativeComponent::parse_in(&a, SourceRoot::new(&original).unwrap().whole_block()).unwrap();
+        ParsedComponent::parse_in(&a, SourceRoot::new(&original).unwrap().whole_block()).unwrap();
     let mut pending = PendingNativeComponent::from_component(component);
     let mut builder = Builder::new(&a, &foreign).unwrap();
     assert_eq!(
@@ -274,7 +274,7 @@ fn normal_end_moves_the_same_owner_and_retained_ast_only_once() {
     let a = Allocator::default();
     let file = "<p>{{value /* kept */}}</p>";
     let component =
-        NativeComponent::parse_in(&a, SourceRoot::new(file).unwrap().whole_block()).unwrap();
+        ParsedComponent::parse_in(&a, SourceRoot::new(file).unwrap().whole_block()).unwrap();
     let carrier = component.carrier().tree.children.as_ptr();
     let mut pending = PendingNativeComponent::from_component(component);
     let mut builder = Builder::new(&a, file).unwrap();

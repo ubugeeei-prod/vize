@@ -352,7 +352,7 @@ fn interrupted_model_preparation_failure_keeps_the_original_failure_without_a_mo
         };
         assert_eq!(
             failure.kind(),
-            vize_l1::markup::NativeAttributeOperandError::IncompleteValue
+            vize_l1::markup::AttributeOperandError::IncompleteValue
         );
         assert_eq!(walk.complete().unwrap_err().kind, Kind::Interrupted);
     }
@@ -368,6 +368,6 @@ fn interrupted_model_preparation_failure_keeps_the_original_failure_without_a_mo
     };
     assert_eq!(
         failure.kind(),
-        vize_l1::markup::NativeAttributeOperandError::IncompleteValue
+        vize_l1::markup::AttributeOperandError::IncompleteValue
     );
 }

@@ -11,13 +11,13 @@ mod native_lint_tag {
     use vize_l1::{
         container::{Vue, vue::DescriptorOptions},
         markup::{
-            Element, ElementClose, NativeChildren, NativeComponent, NativeLintTagKind as Kind,
-            NativeLintTagRefusal as Refusal, NativeTemplateComponent, NativeTemplateGrammar,
-            OpenTag, SurfaceParseOptions, SurfaceTree, Token, check_fidelity, render,
+            ChildrenView, Element, ElementClose, OpenTag, ParsedComponent, SurfaceParseOptions,
+            SurfaceTree, TagFactsKind as Kind, TagFactsRefusal as Refusal, TemplateComponent,
+            TemplateGrammar, Token, check_fidelity, render,
         },
     };
 
-    fn selected<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateComponent<'a> {
+    fn selected<'a>(arena: &'a Allocator, source: &'a str) -> TemplateComponent<'a> {
         let descriptor = Vue.observe_descriptor(
             arena,
             source,
@@ -27,7 +27,7 @@ mod native_lint_tag {
                 template: SurfaceParseOptions::default(),
             },
         );
-        NativeTemplateComponent::parse_in(arena, descriptor.admitted().unwrap())
+        TemplateComponent::parse_in(arena, descriptor.admitted().unwrap())
             .unwrap()
             .unwrap()
     }
@@ -39,13 +39,13 @@ mod native_lint_tag {
     }
 
     fn collect<'a>(
-        component: &NativeComponent<'a>,
-        children: NativeChildren<'_, 'a>,
+        component: &ParsedComponent<'a>,
+        children: ChildrenView<'_, 'a>,
         output: &mut Vec<(&'a str, Result<Kind, Refusal>)>,
     ) {
         for child in children {
             if let Some(element) = child.into_element() {
-                let kind = element.lint_tag().map(|receipt| {
+                let kind = element.tag_facts().map(|receipt| {
                     assert!(core::ptr::eq(receipt.component(), component));
                     assert!(core::ptr::eq(receipt.element(), element.surface()));
                     let block = component.block();
@@ -64,7 +64,7 @@ mod native_lint_tag {
         }
     }
 
-    fn tags<'a>(owner: &NativeTemplateComponent<'a>) -> Vec<(&'a str, Result<Kind, Refusal>)> {
+    fn tags<'a>(owner: &TemplateComponent<'a>) -> Vec<(&'a str, Result<Kind, Refusal>)> {
         let component = owner.component();
         let before = rendered(&component.carrier().tree);
         let mut output = Vec::new();

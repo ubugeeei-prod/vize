@@ -7,7 +7,7 @@ use vize_glyph::native_doc::{
     native_template_document, observed_native_template_document, print,
 };
 use vize_l0::{Allocator, Span};
-use vize_l1::markup::NativeInterpolationOperand;
+use vize_l1::markup::InterpolationOperand;
 
 use super::{SCRIPTS, WIDTHS, assert_fixed, newline, options, selected};
 
@@ -127,7 +127,7 @@ fn real_success_and_failure_carrier_unwind_keeps_original_selected_source_maps_a
 #[test]
 fn forgetting_transferred_owned_remainder_preserves_doc_bytes_without_granting_owner_admission() {
     assert!(core::mem::needs_drop::<
-        std::vec::Vec<NativeInterpolationOperand<'_>>,
+        std::vec::Vec<InterpolationOperand<'_>>,
     >());
     let arena = Allocator::default();
     let source = std::string::String::from("<template>{{1n}}{{a&#43;2n}}</template>");

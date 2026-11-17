@@ -5,7 +5,7 @@ use vize_l0::{
 };
 use vize_l1::{
     container::{Vue, vue::DescriptorOptions},
-    markup::{NativeTemplateComponent, SurfaceParseOptions},
+    markup::{SurfaceParseOptions, TemplateComponent},
 };
 use vize_l2::{
     lang::js::NativeTemplateOwner,
@@ -32,7 +32,7 @@ fn original_file_handler_crosses_as_a_typed_id_without_js_source_or_diagnostic_a
             template: SurfaceParseOptions::default(),
         },
     );
-    let selected = NativeTemplateComponent::parse_in(&arena, descriptor.admitted().unwrap())
+    let selected = TemplateComponent::parse_in(&arena, descriptor.admitted().unwrap())
         .unwrap()
         .unwrap();
     let mut original =

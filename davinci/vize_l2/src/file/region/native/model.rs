@@ -12,7 +12,7 @@ use crate::lang::js::{NativeModelInput, NativeTemplateIssueKind as Kind};
 use crate::resolution::{ResolutionErrorKind, Usage, resolve_model_facts};
 use core::ops::DerefMut;
 use vize_l0::id::NodeId;
-use vize_l1::markup::{NativeAttributeHead, NativeTemplateComponent};
+use vize_l1::markup::{AttributeHead, TemplateComponent};
 
 pub(super) struct ObservedModel {
     pub(super) index: usize,
@@ -27,8 +27,8 @@ where
 {
     pub(super) fn observe_model(
         &mut self,
-        selected: &NativeTemplateComponent<'a>,
-        head: &NativeAttributeHead<'_, 'a>,
+        selected: &TemplateComponent<'a>,
+        head: &AttributeHead<'_, 'a>,
     ) -> Result<ObservedModel, Kind> {
         if !core::ptr::eq(selected.component(), head.selected().component())
             || !core::ptr::eq(self.source, selected.component().block().root_source())

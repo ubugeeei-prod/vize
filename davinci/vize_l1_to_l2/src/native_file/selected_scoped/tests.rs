@@ -15,7 +15,7 @@ use vize_l1::{
         vue::{DescriptorObservation, DescriptorOptions},
     },
     css::StyleSyntax,
-    markup::{NativeTemplateComponent, SurfaceParseOptions},
+    markup::{SurfaceParseOptions, TemplateComponent},
 };
 use vize_l2::lang::js::{NativeScopedTemplateIssueKind as Kind, NativeTemplateOwner};
 
@@ -279,7 +279,7 @@ fn nondefault_public_profile_and_uncompleted_file_cannot_grant_scoped_authority(
         assert_eq!(refused.original().descriptor().options(), changed);
     }
     let original = owner.original().descriptor();
-    let selected = NativeTemplateComponent::parse_in(&arena, original.admitted().unwrap())
+    let selected = TemplateComponent::parse_in(&arena, original.admitted().unwrap())
         .unwrap()
         .unwrap();
     let unfinished = NativeTemplateOwner::new(selected).ok().unwrap().finish();

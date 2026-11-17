@@ -10,7 +10,7 @@ mod cases {
             Vue,
             vue::{DescriptorObservation, DescriptorOptions},
         },
-        markup::{NativeTemplateComponent, SurfaceParseOptions},
+        markup::{SurfaceParseOptions, TemplateComponent},
     };
     use vize_l2::file::FileIssueKind;
     use vize_l2::file::NativeFileInterpolationState;
@@ -43,10 +43,9 @@ mod cases {
                 "<template>{{{{ primitive }}}}</template><script setup lang=ts>/* 🌸 */{body}</script>"
             );
             let descriptor = descriptor(&arena, &source);
-            let selected =
-                NativeTemplateComponent::parse_in(&arena, descriptor.admitted().unwrap())
-                    .unwrap()
-                    .unwrap();
+            let selected = TemplateComponent::parse_in(&arena, descriptor.admitted().unwrap())
+                .unwrap()
+                .unwrap();
             let template_span = selected.component().block().span();
             let mut original = NativeTemplateOwner::new(selected)
                 .unwrap_or_else(|_| panic!("the genuine selected owner"));

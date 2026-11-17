@@ -61,7 +61,7 @@ impl LowerPolicy {
         }
     }
 
-    const LINT: Self = Self {
+    const TAG_FACTS: Self = Self {
         preserve_comments: true,
         retain_consumed_expressions: true,
     };
@@ -159,7 +159,7 @@ pub fn lower_preserving_comments<'a>(
         tree,
         errors,
         LegacyCaps::VUE3,
-        LowerPolicy::LINT,
+        LowerPolicy::TAG_FACTS,
         &[],
         None,
     )

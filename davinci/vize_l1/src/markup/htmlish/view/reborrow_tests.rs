@@ -1,4 +1,4 @@
-use super::{NativeComponent, NativeTemplateComponent};
+use super::{ParsedComponent, TemplateComponent};
 use crate::container::Vue;
 use crate::container::vue::DescriptorOptions;
 use vize_l0::{
@@ -9,7 +9,7 @@ use vize_l0::{
 fn selected<'a>(
     arena: &'a Allocator,
     source: &'a str,
-) -> Result<NativeTemplateComponent<'a>, &'static str> {
+) -> Result<TemplateComponent<'a>, &'static str> {
     let descriptor = Vue.observe_descriptor(
         arena,
         source,
@@ -22,7 +22,7 @@ fn selected<'a>(
     let admitted = descriptor
         .admitted()
         .map_err(|_| "fixture descriptor refused")?;
-    NativeTemplateComponent::parse_in(arena, admitted)
+    TemplateComponent::parse_in(arena, admitted)
         .map_err(|_| "fixture component parse failed")?
         .ok_or("fixture has no template")
 }
@@ -72,7 +72,7 @@ fn reborrow_preserves_foreign_component_refusal_and_original_event() {
     };
     assert_eq!(
         failure.kind(),
-        super::NativeAttributeOperandError::ForeignComponent
+        super::AttributeOperandError::ForeignComponent
     );
     assert!(core::ptr::eq(attribute.component(), foreign.component()));
     let operand = foreign
@@ -86,7 +86,7 @@ fn same_child_token_keeps_root_and_nested_parent_before_consumption() {
     let arena = Allocator::default();
     let source = "<p>prefix<span/></p><!--kept-->";
     let component =
-        NativeComponent::parse_in(&arena, SourceRoot::new(source).unwrap().whole_block()).unwrap();
+        ParsedComponent::parse_in(&arena, SourceRoot::new(source).unwrap().whole_block()).unwrap();
     let mut roots = component.children();
     let child = roots.next().unwrap();
     {
@@ -136,7 +136,7 @@ fn reborrow_never_promotes_unquoted_slash_recovery_to_header_admission() {
     };
     assert_eq!(
         failure.kind(),
-        super::NativeAttributeOperandError::RecoveredComponent
+        super::AttributeOperandError::RecoveredComponent
     );
     assert!(failure.syntax().is_none());
     assert!(matches!(

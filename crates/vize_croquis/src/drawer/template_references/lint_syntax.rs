@@ -5,7 +5,7 @@ use crate::drawer::lint_template::CompatibilityRoot;
 use oxc_span::Span as JsSpan;
 use vize_l0::{Allocator, SourceRoot, Span};
 use vize_l1::embed::syntax::{
-    NativeForHead, NativeForInput, RetainedHandlerBody, RetainedSlotParams, parse_once,
+    ForHead, ForInput, RetainedHandlerBody, RetainedSlotParams, parse_once,
 };
 use vize_l1::embed::{
     Embed, EmbedSource, Grammar, Lang, Shape, prepare_attribute_value, prepare_vue_interpolation_in,
@@ -25,7 +25,7 @@ pub(in crate::drawer) struct LintSyntaxFacts<'a> {
 enum LintSyntax<'a> {
     Expression(Option<&'a JsExpr<'a>>),
     Slot(Option<Box<RetainedSlotParams<'a>>>),
-    For(Box<NativeForHead<'a>>),
+    For(Box<ForHead<'a>>),
     HandlerExpression(&'a JsExpr<'a>),
     Handler(Box<RetainedHandlerBody<'a>>),
     LegacySlot(Box<RetainedSlotParams<'a>>),
@@ -250,7 +250,7 @@ impl<'a> LintSyntaxFacts<'a> {
                         let raw = self
                             .source
                             .get(authored.start as usize..authored.end as usize)?;
-                        NativeForInput::attribute_in(
+                        ForInput::attribute_in(
                             projection.allocator(),
                             root.whole_block(),
                             raw,
@@ -258,7 +258,7 @@ impl<'a> LintSyntaxFacts<'a> {
                         )
                         .ok()
                     })
-                    .map(NativeForInput::observe);
+                    .map(ForInput::observe);
                 match owner {
                     Some(owner) if owner.source().text() == node.content => {
                         LintSyntax::For(Box::new(owner))
@@ -279,7 +279,7 @@ impl<'a> LintSyntaxFacts<'a> {
         allocator: &'a Allocator,
         source: EmbedSource<'a>,
         shape: Shape,
-    ) -> vize_l1::embed::syntax::NativeSyntax<'a> {
+    ) -> vize_l1::embed::syntax::EmbedSyntax<'a> {
         parse_once(
             allocator,
             Embed {

@@ -1,7 +1,7 @@
 use super::support::{block, script};
 use vize_l0::{Allocator, Vec};
 use vize_l1::embed::Lang;
-use vize_l1_to_l2::native::NativeComponent;
+use vize_l1_to_l2::native::ParsedComponent;
 use vize_l1_to_l2::vue_file::{VueFileIssueKind, VueFileProducer};
 use vize_l2::artifact::{ComponentBody, ComponentFactory};
 use vize_l2::lang::js::ProgramInput;
@@ -34,7 +34,7 @@ fn original_js_and_ts_empty_default_complete_with_directives_comments_and_zero_b
             )
             .unwrap();
         let component =
-            NativeComponent::parse_in(&arena, block(&source, "<p>kept<!--tail--></p>").unwrap())
+            ParsedComponent::parse_in(&arena, block(&source, "<p>kept<!--tail--></p>").unwrap())
                 .unwrap();
         let native = component
             .construct_vue_file_in(&mut producer.template_region().unwrap())

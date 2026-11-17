@@ -1,7 +1,7 @@
 use vize_armature::{ExpressionNode, PropNode, TemplateChildNode, parse_document};
 use vize_l0::{Allocator, SourceRoot, Span};
 use vize_l1::markup::htmlish::document::{
-    DocumentPetiteDirectiveKind, DocumentPetiteValue, DocumentTokenKind, NativeDocument,
+    DocumentPetiteDirectiveKind, DocumentPetiteValue, DocumentTokenKind, ParsedDocument,
 };
 
 #[derive(Debug, PartialEq, Eq)]
@@ -40,7 +40,7 @@ fn native_value(value: DocumentPetiteValue<'_, '_>) -> String {
 
 fn native(source: &str) -> Vec<Observed> {
     let arena = Allocator::default();
-    let owner = NativeDocument::lex_in(&arena, SourceRoot::new(source).unwrap());
+    let owner = ParsedDocument::lex_in(&arena, SourceRoot::new(source).unwrap());
     owner
         .petite_directives()
         .expect("complete native document")

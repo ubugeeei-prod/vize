@@ -2,9 +2,7 @@
 
 use vize_l0::{Allocator, Vec};
 use vize_l1::markup::SurfaceChild;
-use vize_l1::markup::{
-    NativeChild, NativeChildren, NativeInterpolationOperand, NativeTemplateComponent,
-};
+use vize_l1::markup::{ChildView, ChildrenView, InterpolationOperand, TemplateComponent};
 
 use super::super::template::{Cursor, close_element, open_element, verbatim};
 use super::input::Input;
@@ -14,7 +12,7 @@ use super::{
 };
 
 pub(super) struct Builder<'p, 'a, I> {
-    pub(super) selected: &'p NativeTemplateComponent<'a>,
+    pub(super) selected: &'p TemplateComponent<'a>,
     pub(super) input: I,
     pub(super) next: usize,
     pub(super) cursor: Cursor<'a>,
@@ -25,7 +23,7 @@ pub(super) struct Builder<'p, 'a, I> {
 impl<'p, 'a, I: Input<'p, 'a>> Builder<'p, 'a, I> {
     pub(super) fn children(
         &mut self,
-        children: NativeChildren<'p, 'a>,
+        children: ChildrenView<'p, 'a>,
         parts: &mut Vec<'a, Doc<'a>>,
         depth: usize,
     ) -> Result<(), NativeTemplateRefusal> {
@@ -83,7 +81,7 @@ impl<'p, 'a, I: Input<'p, 'a>> Builder<'p, 'a, I> {
 
     fn interpolation(
         &mut self,
-        child: NativeChild<'p, 'a>,
+        child: ChildView<'p, 'a>,
         parts: &mut Vec<'a, Doc<'a>>,
         depth: usize,
     ) -> Result<(), NativeTemplateRefusal> {
@@ -131,7 +129,7 @@ impl<'p, 'a, I: Input<'p, 'a>> Builder<'p, 'a, I> {
 /// or string kinds cannot classify that framing; preserve any actual trimmed
 /// LF tail without inventing a terminator from an entity or private wrapper.
 fn closing_edge<'a>(
-    operand: &NativeInterpolationOperand<'a>,
+    operand: &InterpolationOperand<'a>,
     offset: usize,
     depth: usize,
     allocator: &'a Allocator,

@@ -1,6 +1,6 @@
 use super::NativeSelectedSfcIssueKind as Kind;
 use vize_l0::Span;
-use vize_l1::markup::{NativeInterpolationFailure, SurfaceChild};
+use vize_l1::markup::{InterpolationFailure, SurfaceChild};
 use vize_l2::lang::js::{
     NativeInterpolationInput, NativeTemplateIssue, NativeTemplateOwner, NativeTemplateWalk,
 };
@@ -8,7 +8,7 @@ use vize_l2::lang::js::{
 pub(super) struct Failure<'a> {
     pub span: Option<Span>,
     pub kind: Kind,
-    pub interpolation: Option<NativeInterpolationFailure<'a>>,
+    pub interpolation: Option<InterpolationFailure<'a>>,
 }
 impl From<NativeTemplateIssue> for Failure<'_> {
     fn from(issue: NativeTemplateIssue) -> Self {

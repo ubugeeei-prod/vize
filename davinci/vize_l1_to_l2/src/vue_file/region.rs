@@ -14,8 +14,8 @@ mod walk;
 ///
 /// ```compile_fail
 /// use vize_l1::embed::Lang;
-/// use vize_l1_to_l2::{native::NativeComponent, vue_file::VueFileRegion};
-/// fn override_lang<'a>(component: NativeComponent<'a>, region: &mut VueFileRegion<'_, 'a>) {
+/// use vize_l1_to_l2::{native::ParsedComponent, vue_file::VueFileRegion};
+/// fn override_lang<'a>(component: ParsedComponent<'a>, region: &mut VueFileRegion<'_, 'a>) {
 ///     let _ = component.construct_vue_file_in(region, Lang::Ts);
 /// }
 /// ```

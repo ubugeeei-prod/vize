@@ -6,41 +6,41 @@ fn original_special_parent_names_and_inherited_verbatim_refuse_before_preparatio
     for (source, expected) in [
         (
             "<template><script>&amp;</script></template>",
-            NativeTextValueError::RawTextParent,
+            TextValueError::RawTextParent,
         ),
         (
             "<template><stYle>&amp;</stYle></template>",
-            NativeTextValueError::RawTextParent,
+            TextValueError::RawTextParent,
         ),
         // Uppercase first/second letters are conservative authored-name
         // exclusions, not a claim of the actual lexer's special-mode entry.
         (
             "<template><sTyLe>&amp;</sTyLe></template>",
-            NativeTextValueError::RawTextParent,
+            TextValueError::RawTextParent,
         ),
         (
             "<template><StYlE>&amp;</StYlE></template>",
-            NativeTextValueError::RawTextParent,
+            TextValueError::RawTextParent,
         ),
         (
             "<template><title>&amp;</title></template>",
-            NativeTextValueError::RcDataParent,
+            TextValueError::RcDataParent,
         ),
         (
             "<template><teXtArEa>&amp;</teXtArEa></template>",
-            NativeTextValueError::RcDataParent,
+            TextValueError::RcDataParent,
         ),
         (
             "<template><tExTaReA>&amp;</tExTaReA></template>",
-            NativeTextValueError::RcDataParent,
+            TextValueError::RcDataParent,
         ),
         (
             "<template><TEXTAREA>&amp;</TEXTAREA></template>",
-            NativeTextValueError::RcDataParent,
+            TextValueError::RcDataParent,
         ),
         (
             "<template><p v-pre>&amp;</p></template>",
-            NativeTextValueError::Verbatim,
+            TextValueError::Verbatim,
         ),
     ] {
         let owner = selected(&arena, source);
@@ -68,7 +68,7 @@ fn original_special_parent_names_and_inherited_verbatim_refuse_before_preparatio
         .observe_text_value(descendant.children().next().unwrap())
         .err()
         .unwrap();
-    assert_eq!(failure.kind(), NativeTextValueError::Verbatim);
+    assert_eq!(failure.kind(), TextValueError::Verbatim);
     assert_eq!(failure.parent_tag(), Some("span"));
     assert_eq!(failure.token().unwrap().text, "&amp;");
 }
@@ -84,7 +84,7 @@ fn actual_nontext_events_keep_original_kind_instead_of_preparing_their_content()
         assert!(!matches!(child.surface(), SurfaceChild::Text(_)));
         let ordinal = child.ordinal();
         let failure = owner.observe_text_value(child).err().unwrap();
-        assert_eq!(failure.kind(), NativeTextValueError::NotText);
+        assert_eq!(failure.kind(), TextValueError::NotText);
         assert_eq!(failure.ordinal(), ordinal);
         assert!(failure.token().is_none());
         assert!(failure.span().is_none());
@@ -113,7 +113,7 @@ fn genuine_missing_parent_close_keeps_full_raw_token_even_without_diagnostic_row
         .observe_text_value(parent.children().next().unwrap())
         .err()
         .unwrap();
-    assert_eq!(failure.kind(), NativeTextValueError::RecoveredComponent);
+    assert_eq!(failure.kind(), TextValueError::RecoveredComponent);
     assert_eq!(arena.allocated_bytes(), before);
     assert_eq!(
         failure.token().unwrap().status,
@@ -157,7 +157,7 @@ fn source_value_never_lifts_existing_root_condense_entity_or_nested_refusals() {
     assert_eq!(value.source().text(), "&lt;");
     assert!(matches!(
         owner.prepare_condensed_root_text(child),
-        Err(NativeRootTextError::Entity)
+        Err(RootTextError::Entity)
     ));
     let owner = selected(&arena, "<template><p>&amp;lt;</p></template>");
     let parent = owner.children().next().unwrap().into_element().unwrap();
@@ -166,7 +166,7 @@ fn source_value_never_lifts_existing_root_condense_entity_or_nested_refusals() {
     assert!(value.admitted_for(&owner, child.reborrow()).is_some());
     assert!(matches!(
         owner.prepare_condensed_root_text(child),
-        Err(NativeRootTextError::NestedChild)
+        Err(RootTextError::NestedChild)
     ));
     crate::markup::check_fidelity(&owner.component().carrier().tree).unwrap();
 }

@@ -1,38 +1,38 @@
 //! Distinct original model operand and same-event short admission.
 
-use super::{NativeAttribute, NativeAttributeHead, NativeTemplateComponent, Origin};
+use super::{AttributeHead, AttributeView, Origin, TemplateComponent};
 use crate::dialect::vue3::operand::ModelModifier;
 use crate::embed::syntax::RetainedExpression;
 use oxc_parser::AdmittedExpression;
 use vize_l0::Span;
 
 mod head;
-pub use head::NativeModelHead;
+pub use head::ModelHead;
 
 /// Normally owned original model value, without conditional relabelling.
 /// Its private Origin is derived only from the same selected original header.
 /// A model operand by itself grants no write, File, body or target authority.
 ///
 /// ```compile_fail
-/// use vize_l1::markup::NativeAttributeModelExpression;
+/// use vize_l1::markup::AttributeModelExpression;
 /// fn requires_clone<T: Clone>() {}
-/// requires_clone::<NativeAttributeModelExpression<'static>>();
+/// requires_clone::<AttributeModelExpression<'static>>();
 /// ```
 ///
 /// ```compile_fail
 /// use vize_l0::Span;
-/// use vize_l1::markup::NativeAttributeModelExpression;
-/// fn replace_value(mut owner: NativeAttributeModelExpression<'_>) {
+/// use vize_l1::markup::AttributeModelExpression;
+/// fn replace_value(mut owner: AttributeModelExpression<'_>) {
 ///     owner.origin.value_span = Span::new(0, 0);
 /// }
 /// ```
-pub struct NativeAttributeModelExpression<'a> {
+pub struct AttributeModelExpression<'a> {
     origin: Origin<'a>,
     syntax: RetainedExpression<'a>,
     modifier: Option<ModelModifier>,
 }
 
-impl<'a> NativeAttributeModelExpression<'a> {
+impl<'a> AttributeModelExpression<'a> {
     /// Complete retained syntax also remains available for local syntax holes.
     #[must_use]
     pub fn syntax(&self) -> &RetainedExpression<'a> {
@@ -78,14 +78,14 @@ impl<'a> NativeAttributeModelExpression<'a> {
     /// Equal-byte copies and independently parsed siblings confer no authority.
     pub fn admitted_for<'s>(
         &'s self,
-        selected: &'s NativeTemplateComponent<'a>,
-        attribute: NativeAttribute<'s, 'a>,
-    ) -> Option<NativeAttributeModelExpressionView<'s, 'a>> {
+        selected: &'s TemplateComponent<'a>,
+        attribute: AttributeView<'s, 'a>,
+    ) -> Option<AttributeModelExpressionView<'s, 'a>> {
         if !self.origin.matches(selected, &attribute) {
             return None;
         }
         self.syntax.admitted_expression()?;
-        Some(NativeAttributeModelExpressionView {
+        Some(AttributeModelExpressionView {
             owner: self,
             selected,
             attribute,
@@ -101,41 +101,41 @@ impl<'a> NativeAttributeModelExpression<'a> {
 /// Short readonly join borrowed from the same private original Model owner.
 ///
 /// ```compile_fail
-/// use vize_l1::markup::{NativeAttribute, NativeAttributeModelExpression,
-///     NativeAttributeModelExpressionView, NativeTemplateComponent};
-/// fn forge<'s, 'a>(owner: &'s NativeAttributeModelExpression<'a>,
-///     selected: &'s NativeTemplateComponent<'a>, attribute: NativeAttribute<'s, 'a>
-/// ) -> NativeAttributeModelExpressionView<'s, 'a> {
-///     NativeAttributeModelExpressionView { owner, selected, attribute }
+/// use vize_l1::markup::{AttributeView, AttributeModelExpression,
+///     AttributeModelExpressionView, TemplateComponent};
+/// fn forge<'s, 'a>(owner: &'s AttributeModelExpression<'a>,
+///     selected: &'s TemplateComponent<'a>, attribute: AttributeView<'s, 'a>
+/// ) -> AttributeModelExpressionView<'s, 'a> {
+///     AttributeModelExpressionView { owner, selected, attribute }
 /// }
 /// ```
 ///
 /// ```compile_fail
-/// use vize_l1::markup::{NativeAttribute, NativeAttributeModelExpression,
-///     NativeAttributeModelExpressionView, NativeTemplateComponent};
-/// fn escape<'s, 'a>(owner: NativeAttributeModelExpression<'a>,
-///     selected: &'s NativeTemplateComponent<'a>, attribute: NativeAttribute<'s, 'a>
-/// ) -> NativeAttributeModelExpressionView<'s, 'a> {
+/// use vize_l1::markup::{AttributeView, AttributeModelExpression,
+///     AttributeModelExpressionView, TemplateComponent};
+/// fn escape<'s, 'a>(owner: AttributeModelExpression<'a>,
+///     selected: &'s TemplateComponent<'a>, attribute: AttributeView<'s, 'a>
+/// ) -> AttributeModelExpressionView<'s, 'a> {
 ///     owner.admitted_for(selected, attribute).unwrap()
 /// }
 /// ```
-pub struct NativeAttributeModelExpressionView<'s, 'a> {
-    owner: &'s NativeAttributeModelExpression<'a>,
-    selected: &'s NativeTemplateComponent<'a>,
-    attribute: NativeAttribute<'s, 'a>,
+pub struct AttributeModelExpressionView<'s, 'a> {
+    owner: &'s AttributeModelExpression<'a>,
+    selected: &'s TemplateComponent<'a>,
+    attribute: AttributeView<'s, 'a>,
 }
 
-impl<'s, 'a> NativeAttributeModelExpressionView<'s, 'a> {
+impl<'s, 'a> AttributeModelExpressionView<'s, 'a> {
     #[must_use]
-    pub fn selected(&self) -> &'s NativeTemplateComponent<'a> {
+    pub fn selected(&self) -> &'s TemplateComponent<'a> {
         self.selected
     }
     #[must_use]
-    pub fn attribute(&self) -> &NativeAttribute<'s, 'a> {
+    pub fn attribute(&self) -> &AttributeView<'s, 'a> {
         &self.attribute
     }
     #[must_use]
-    pub fn operand(&self) -> &'s NativeAttributeModelExpression<'a> {
+    pub fn operand(&self) -> &'s AttributeModelExpression<'a> {
         self.owner
     }
     #[must_use]

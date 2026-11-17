@@ -5,7 +5,7 @@ use vize_l0::config::{VueDialect, VueVersion};
 use vize_l0::{Allocator, String};
 use vize_l1::container::Vue;
 use vize_l1::container::vue::DescriptorOptions;
-use vize_l1::markup::{NativeChildren, NativeInterpolationOperand, NativeTemplateComponent};
+use vize_l1::markup::{ChildrenView, InterpolationOperand, TemplateComponent};
 use vize_l1::markup::{SurfaceChild, SurfaceParseOptions};
 
 mod array;
@@ -21,7 +21,7 @@ mod refusals;
 mod sequence;
 mod unary;
 
-fn selected<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateComponent<'a> {
+fn selected<'a>(arena: &'a Allocator, source: &'a str) -> TemplateComponent<'a> {
     let descriptor = Vue.observe_descriptor(
         arena,
         source,
@@ -31,18 +31,16 @@ fn selected<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateComponen
             template: SurfaceParseOptions::default(),
         },
     );
-    NativeTemplateComponent::parse_in(arena, descriptor.admitted().unwrap())
+    TemplateComponent::parse_in(arena, descriptor.admitted().unwrap())
         .unwrap()
         .unwrap()
 }
 
-fn operands<'a>(
-    selected: &NativeTemplateComponent<'a>,
-) -> std::vec::Vec<NativeInterpolationOperand<'a>> {
+fn operands<'a>(selected: &TemplateComponent<'a>) -> std::vec::Vec<InterpolationOperand<'a>> {
     fn visit<'a>(
-        selected: &NativeTemplateComponent<'a>,
-        children: NativeChildren<'_, 'a>,
-        output: &mut std::vec::Vec<NativeInterpolationOperand<'a>>,
+        selected: &TemplateComponent<'a>,
+        children: ChildrenView<'_, 'a>,
+        output: &mut std::vec::Vec<InterpolationOperand<'a>>,
     ) {
         for child in children {
             match child.surface() {

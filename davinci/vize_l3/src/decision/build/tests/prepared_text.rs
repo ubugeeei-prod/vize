@@ -6,7 +6,7 @@ use vize_l0::{
 };
 use vize_l1::{
     container::{Vue, vue::DescriptorOptions},
-    markup::{NativeTemplateComponent, SurfaceParseOptions},
+    markup::{SurfaceParseOptions, TemplateComponent},
 };
 use vize_l2::lang::js::{NativeTemplateFile, NativeTemplateOwner};
 type Test = Result<(), &'static str>;
@@ -32,7 +32,7 @@ fn completed<'a>(
         },
     );
     let selected =
-        NativeTemplateComponent::parse_in(arena, descriptor.admitted().map_err(|_| "Descriptor")?)
+        TemplateComponent::parse_in(arena, descriptor.admitted().map_err(|_| "Descriptor")?)
             .map_err(|_| "original parse")?
             .ok_or("template")?;
     let mut original = NativeTemplateOwner::new(selected).map_err(|_| "owner")?;

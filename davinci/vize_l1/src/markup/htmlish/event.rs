@@ -16,7 +16,7 @@ use vize_l0::ErrorCode;
 use vize_l0::Vec;
 
 use crate::markup::htmlish::parse::SurfaceError;
-use crate::markup::htmlish::surface::{LintHeaderFact, LintTagFact};
+use crate::markup::htmlish::surface::{HeaderFacts, TagKindFact};
 
 /// What a tokenizer callback reported. Directive name pieces
 /// (`on_dir_name` / `on_dir_arg` / `on_dir_modifier`) all record as
@@ -95,15 +95,15 @@ impl Event {
         self.aux & 1 != 0
     }
 
-    pub(crate) fn lint_tag(&self) -> Option<LintTagFact> {
+    pub(crate) fn tag_facts(&self) -> Option<TagKindFact> {
         debug_assert!(matches!(
             self.kind,
             EventKind::OpenTagEnd | EventKind::SelfClosingTag
         ));
-        LintTagFact::from_aux(self.aux)
+        TagKindFact::from_aux(self.aux)
     }
 
-    pub(crate) fn lint_header_is_literal(&self) -> bool {
+    pub(crate) fn header_is_literal(&self) -> bool {
         debug_assert!(matches!(
             self.kind,
             EventKind::OpenTagEnd | EventKind::SelfClosingTag
@@ -111,7 +111,7 @@ impl Event {
         self.aux & 16 != 0
     }
 
-    pub(crate) fn lint_in_table_context(&self) -> bool {
+    pub(crate) fn in_table_context(&self) -> bool {
         debug_assert!(matches!(
             self.kind,
             EventKind::OpenTagEnd | EventKind::SelfClosingTag
@@ -119,7 +119,7 @@ impl Event {
         self.aux & 32 != 0
     }
 
-    pub(crate) fn lint_in_recovery_context(&self) -> bool {
+    pub(crate) fn in_recovery_context(&self) -> bool {
         debug_assert!(matches!(
             self.kind,
             EventKind::OpenTagEnd | EventKind::SelfClosingTag
@@ -175,12 +175,12 @@ impl Recorder<'_, '_> {
         });
     }
 
-    pub(crate) fn opening_end_with_lint(
+    pub(crate) fn opening_end_with_tag_facts(
         &mut self,
         kind: EventKind,
         end: usize,
         verbatim: bool,
-        facts: LintHeaderFact,
+        facts: HeaderFacts,
     ) {
         debug_assert!(matches!(
             kind,

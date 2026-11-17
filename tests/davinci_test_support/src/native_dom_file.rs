@@ -5,9 +5,9 @@
 )]
 
 use vize_l0::{Allocator, SourceBlock, SourceRoot};
-use vize_l1::embed::syntax::{NativeSyntax, ProgramOptions, parse_program_once};
+use vize_l1::embed::syntax::{EmbedSyntax, ProgramOptions, parse_program_once};
 use vize_l1::embed::{EmbedSource, Lang};
-use vize_l1_to_l2::native::{NativeComponent, NativeProduced};
+use vize_l1_to_l2::native::{NativeProduced, ParsedComponent};
 use vize_l2::file::{Declaration, TemplatePolicy, TemplateScope};
 use vize_l2::lang::js::FileProducer;
 
@@ -38,7 +38,7 @@ pub fn script<'a>(
     arena: &'a Allocator,
     source: &'a str,
     content: &str,
-) -> (NativeSyntax<'a>, SourceBlock<'a>) {
+) -> (EmbedSyntax<'a>, SourceBlock<'a>) {
     let block = block(source, content);
     let syntax = parse_program_once(
         arena,
@@ -56,7 +56,7 @@ pub fn construct<'a>(
     producer: &mut FileProducer<'a>,
     scope: TemplateScope,
 ) -> NativeProduced<'a> {
-    let component = NativeComponent::parse_in(arena, block(source, template)).unwrap();
+    let component = ParsedComponent::parse_in(arena, block(source, template)).unwrap();
     // Real lower factories record lexical rows. This diagnostic policy grants
     // no Vue role, runtime class, or complete original-template custody.
     let mut region = producer.template_region(scope, DiagnosticValues).unwrap();

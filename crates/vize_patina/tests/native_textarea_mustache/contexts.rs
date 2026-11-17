@@ -14,12 +14,12 @@ fn table_refused(source: &str, depth: usize) {
     let mut first_context = None;
     for _ in 1..depth {
         element = element.children().next().unwrap().into_element().unwrap();
-        let original = element.lint_tag().unwrap();
+        let original = element.tag_facts().unwrap();
         if original.in_table_context() {
             first_context.get_or_insert(original.span());
         }
     }
-    let receipt = element.lint_tag().unwrap();
+    let receipt = element.tag_facts().unwrap();
     assert_eq!(receipt.in_table_context(), true);
     let lint = NativeSyntaxLint::new(&owner).unwrap();
     assert_eq!(
@@ -81,7 +81,7 @@ fn genuine_pre_recovery_context_is_refused_without_fabricating_children() {
     let owner = selected(&arena, source);
     let parent = owner.children().next().unwrap().into_element().unwrap();
     let element = parent.children().nth(1).unwrap().into_element().unwrap();
-    let receipt = element.lint_tag().unwrap();
+    let receipt = element.tag_facts().unwrap();
     assert_eq!(receipt.in_recovery_context(), true);
     let lint = NativeSyntaxLint::new(&owner).unwrap();
     assert_eq!(

@@ -5,7 +5,7 @@ use crate::artifact::ArtifactError;
 use crate::file::region::native::NativeTemplateWalk;
 use crate::file::{FileArtifact, FileIssueKind, RejectedFile, ScriptUnitId};
 use vize_l0::Span;
-use vize_l1::{embed::syntax::NativeSyntax, markup::NativeTemplateComponent};
+use vize_l1::{embed::syntax::EmbedSyntax, markup::TemplateComponent};
 
 // The implementation is included from its compatibility module to retain the
 // existing type identity. Keep an ordinary, disabled declaration here so
@@ -25,15 +25,15 @@ pub enum NativeTemplateIssueKind {
     Interpolation(super::super::NativeInterpolationInputError),
     InterpolationPreparation {
         span: Span,
-        kind: vize_l1::markup::NativeInterpolationError,
+        kind: vize_l1::markup::InterpolationError,
     },
     AttributeValue {
         span: Span,
-        kind: vize_l1::markup::NativeAttributeOperandError,
+        kind: vize_l1::markup::AttributeOperandError,
     },
     TextValuePreparation {
         span: Span,
-        kind: vize_l1::markup::NativeTextValueError,
+        kind: vize_l1::markup::TextValueError,
     },
     TextValuePolicy(crate::file::NativeTextValuePolicyError),
     Artifact(ArtifactError),
@@ -85,20 +85,20 @@ pub(crate) enum NativeRouteState {
 /// }
 /// ```
 pub struct NativeTemplateOwner<'a> {
-    selected: NativeTemplateComponent<'a>,
+    selected: TemplateComponent<'a>,
     producer: FileProducer<'a>,
     ordinary: Option<ScriptUnitId>,
     setup: Option<ScriptUnitId>,
-    retained_setup: Option<alloc::boxed::Box<NativeSyntax<'a>>>,
+    retained_setup: Option<alloc::boxed::Box<EmbedSyntax<'a>>>,
     state: NativeRouteState,
 }
 pub struct RejectedNativeTemplateOwner<'a> {
-    selected: NativeTemplateComponent<'a>,
+    selected: TemplateComponent<'a>,
     error: ArtifactError,
 }
 impl<'a> RejectedNativeTemplateOwner<'a> {
     #[must_use]
-    pub fn selected(&self) -> &NativeTemplateComponent<'a> {
+    pub fn selected(&self) -> &TemplateComponent<'a> {
         &self.selected
     }
     #[must_use]
@@ -109,7 +109,7 @@ impl<'a> RejectedNativeTemplateOwner<'a> {
 
 impl<'a> NativeTemplateOwner<'a> {
     pub fn new(
-        selected: NativeTemplateComponent<'a>,
+        selected: TemplateComponent<'a>,
     ) -> Result<Self, alloc::boxed::Box<RejectedNativeTemplateOwner<'a>>> {
         let producer = match FileProducer::new(
             selected.component().allocator(),
@@ -133,7 +133,7 @@ impl<'a> NativeTemplateOwner<'a> {
         })
     }
     #[must_use]
-    pub fn selected(&self) -> &NativeTemplateComponent<'a> {
+    pub fn selected(&self) -> &TemplateComponent<'a> {
         &self.selected
     }
     pub fn begin(&mut self) -> Result<NativeTemplateWalk<'_, 'a>, NativeTemplateIssue> {
@@ -219,14 +219,14 @@ impl<'a> NativeTemplateOwner<'a> {
 /// }
 /// ```
 pub struct NativeTemplateFile<'a> {
-    selected: NativeTemplateComponent<'a>,
+    selected: TemplateComponent<'a>,
     outcome: Result<FileArtifact<'a>, RejectedFile<'a>>,
     state: NativeRouteState,
-    retained_setup: Option<alloc::boxed::Box<NativeSyntax<'a>>>,
+    retained_setup: Option<alloc::boxed::Box<EmbedSyntax<'a>>>,
 }
 impl<'a> NativeTemplateFile<'a> {
     #[must_use]
-    pub fn selected(&self) -> &NativeTemplateComponent<'a> {
+    pub fn selected(&self) -> &TemplateComponent<'a> {
         &self.selected
     }
     #[must_use]

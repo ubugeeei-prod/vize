@@ -2,13 +2,13 @@
 use super::super::super::{NavigationRefusal, SourceSnapshot, coordinates};
 use tower_lsp::lsp_types::{LinkedEditingRanges, Position};
 use vize_l0::Span;
-use vize_l1::container::vue::NativeTemplateFrameNames;
-use vize_l1::markup::{NativeElementClosingName, NativeTemplateComponent};
+use vize_l1::container::vue::TemplateFrameNames;
+use vize_l1::markup::{ElementClosingName, TemplateComponent};
 
 pub(super) struct TemplateNames<'o, 'a> {
     pub(super) snapshot: &'o SourceSnapshot,
-    pub(super) selected: &'o NativeTemplateComponent<'a>,
-    pub(super) frame: NativeTemplateFrameNames<'o, 'a>,
+    pub(super) selected: &'o TemplateComponent<'a>,
+    pub(super) frame: TemplateFrameNames<'o, 'a>,
     pub(super) lines: &'o [usize],
     #[cfg(test)]
     pub(super) original: super::super::super::worker::linked::Inspection,
@@ -50,7 +50,7 @@ impl TemplateNames<'_, '_> {
                 continue;
             };
             let names = element.names().map_err(NavigationRefusal::ElementNames)?;
-            if let NativeElementClosingName::Present(close) = names.closing()
+            if let ElementClosingName::Present(close) = names.closing()
                 && (caret(names.opening(), offset) || caret(close, offset))
             {
                 if result.is_some() {
@@ -134,7 +134,7 @@ mod tests {
             );
             let admitted = descriptor.admitted().unwrap();
             let frame = admitted.template().unwrap().frame_names().unwrap();
-            let selected = NativeTemplateComponent::parse_in(&arena, admitted)
+            let selected = TemplateComponent::parse_in(&arena, admitted)
                 .unwrap()
                 .unwrap();
             let lines = vize_l0::line_index::LineBreaks::Lsp
@@ -191,7 +191,7 @@ mod tests {
         );
         let admitted = descriptor.admitted().unwrap();
         let frame = admitted.template().unwrap().frame_names().unwrap();
-        let selected = NativeTemplateComponent::parse_in(&arena, admitted)
+        let selected = TemplateComponent::parse_in(&arena, admitted)
             .unwrap()
             .unwrap();
         let lines = vize_l0::line_index::LineBreaks::Lsp

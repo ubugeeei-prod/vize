@@ -8,7 +8,7 @@ use vize_atelier_sfc::{
     NativeSsrSfcCompileError, NativeSsrSfcCompileOptions, compile_native_ssr_sfc,
 };
 use vize_l0::{Allocator, config::VueVersion};
-use vize_l1::embed::syntax::{EmbedHole, NativeForRefusal};
+use vize_l1::embed::syntax::{EmbedHole, ForRefusal};
 use vize_l1_to_l2::native_file::NativeSelectedSfcIssueKind;
 use vize_l2::{
     file::{FileIssueKind, RejectedFileFor, RejectedFileHandler},
@@ -267,7 +267,7 @@ fn refusals() -> Vec<serde_json::Value> {
                         original.file().unwrap().rejected_for_heads()
                     );
                 };
-                assert_eq!(input.kind, NativeForRefusal::CollectionShape);
+                assert_eq!(input.kind, ForRefusal::CollectionShape);
                 assert_eq!(input.operand().raw_value(), "value in [1,2]");
                 assert_eq!(input.operand().value_span().slice(source), "value in [1,2]");
                 let collection = input.operand().syntax().collection().unwrap().unwrap();

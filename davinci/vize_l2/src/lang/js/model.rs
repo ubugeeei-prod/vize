@@ -6,7 +6,7 @@ use crate::expr::{
 };
 use vize_l0::Span;
 use vize_l1::embed::syntax::EmbedHole;
-use vize_l1::markup::{NativeAttribute, NativeAttributeModelExpression, NativeTemplateComponent};
+use vize_l1::markup::{AttributeModelExpression, AttributeView, TemplateComponent};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum NativeModelInputError {
@@ -26,14 +26,14 @@ mod tests;
 /// fn duplicate(input: NativeModelInput<'_>) { let _ = input.clone(); }
 /// ```
 pub struct NativeModelInput<'a> {
-    operand: NativeAttributeModelExpression<'a>,
+    operand: AttributeModelExpression<'a>,
     expression: Option<&'a JsExpr<'a>>,
     attribute_span: Option<Span>,
 }
 
 impl<'a> NativeModelInput<'a> {
     #[must_use]
-    pub const fn from_operand(operand: NativeAttributeModelExpression<'a>) -> Self {
+    pub const fn from_operand(operand: AttributeModelExpression<'a>) -> Self {
         Self {
             operand,
             expression: None,
@@ -42,7 +42,7 @@ impl<'a> NativeModelInput<'a> {
     }
 
     #[must_use]
-    pub const fn operand(&self) -> &NativeAttributeModelExpression<'a> {
+    pub const fn operand(&self) -> &AttributeModelExpression<'a> {
         &self.operand
     }
 
@@ -75,8 +75,8 @@ impl<'a> NativeModelInput<'a> {
     /// they are never manufactured by parsing a generated assignment.
     pub fn admitted_for<'s>(
         &'s mut self,
-        selected: &'s NativeTemplateComponent<'a>,
-        attribute: NativeAttribute<'s, 'a>,
+        selected: &'s TemplateComponent<'a>,
+        attribute: AttributeView<'s, 'a>,
     ) -> Result<&'a JsExpr<'a>, NativeModelInputError> {
         let syntax = self.operand.syntax();
         if let Some(hole) = syntax.hole() {

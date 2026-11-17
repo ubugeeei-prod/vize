@@ -106,7 +106,7 @@ fn visit(
             let partial = crate::virtual_ts::generated_names::lib("Partial");
             append!(
                 *ts,
-                "  const __vize_native_key_{}: {partial}<$NativeElement<{tag}>> = {{ ",
+                "  const __vize_native_key_{}: {partial}<$ElementView<{tag}>> = {{ ",
                 location.span.start
             );
             let key_start = ts.len();
@@ -171,7 +171,7 @@ fn emit_fragment_prop_names(
         let partial = crate::virtual_ts::generated_names::lib("Partial");
         append!(
             *ts,
-            "  const __vize_fragment_prop_{}: {partial}<$NativeElement<\"template\">> = {{ ",
+            "  const __vize_fragment_prop_{}: {partial}<$ElementView<\"template\">> = {{ ",
             location.span.start
         );
         let key_start = ts.len();

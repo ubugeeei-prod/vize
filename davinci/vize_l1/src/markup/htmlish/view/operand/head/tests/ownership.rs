@@ -1,5 +1,5 @@
 use super::selected;
-use crate::markup::{NativeAttributeOperandError, NativeConditionKind};
+use crate::markup::{AttributeOperandError, ConditionKind};
 use vize_l0::Allocator;
 
 #[test]
@@ -25,7 +25,7 @@ fn short_head_retains_the_actual_slot_and_can_end_before_owner_move() {
         let current = attributes.next().unwrap();
         let head = selected.observe_attribute_head(current.reborrow()).unwrap();
         assert_eq!(head.attribute().ordinal(), 1);
-        assert_eq!(head.condition_kind(), Some(NativeConditionKind::If));
+        assert_eq!(head.condition_kind(), Some(ConditionKind::If));
         let observed = head.observe_expression().unwrap();
         assert!(observed.admitted_for(&selected, current).is_some());
         assert!(attributes.next().is_none());
@@ -68,7 +68,7 @@ fn independent_same_buffer_and_equal_byte_copy_headers_cannot_select_a_head() {
             .observe_attribute_head(element.attributes().next().unwrap())
             .err()
             .unwrap();
-        assert_eq!(failure, NativeAttributeOperandError::ForeignComponent);
+        assert_eq!(failure, AttributeOperandError::ForeignComponent);
         assert!(
             original
                 .admitted_for(foreign, element.attributes().next().unwrap())
@@ -108,7 +108,7 @@ fn normally_owned_observation_survives_short_head_and_selected_owner_drop() {
         observed
     };
     assert!(core::mem::needs_drop::<
-        crate::markup::NativeAttributeExpression<'static>,
+        crate::markup::AttributeExpression<'static>,
     >());
     let root = observed.syntax().expression().unwrap();
     let syntax = observed.into_syntax();

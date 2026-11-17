@@ -1,7 +1,7 @@
 use vize_l0::{Allocator, SourceBlock, SourceRoot, Span};
-use vize_l1::embed::syntax::{NativeSyntax, ProgramOptions, parse_program_once};
+use vize_l1::embed::syntax::{EmbedSyntax, ProgramOptions, parse_program_once};
 use vize_l1::embed::{EmbedSource, Lang};
-use vize_l1_to_l2::native::{NativeComponent, NativeProduced};
+use vize_l1_to_l2::native::{NativeProduced, ParsedComponent};
 use vize_l1_to_l2::vue_file::VueFileProducer;
 
 pub fn block<'a>(source: &'a str, content: &str) -> Option<SourceBlock<'a>> {
@@ -18,7 +18,7 @@ pub fn script<'a>(
     source: &'a str,
     content: &str,
     lang: Lang,
-) -> Option<(NativeSyntax<'a>, SourceBlock<'a>)> {
+) -> Option<(EmbedSyntax<'a>, SourceBlock<'a>)> {
     let block = block(source, content)?;
     let syntax = parse_program_once(
         arena,
@@ -34,7 +34,7 @@ pub fn construct<'a>(
     template: &str,
     producer: &mut VueFileProducer<'a>,
 ) -> Option<NativeProduced<'a>> {
-    let component = NativeComponent::parse_in(arena, block(source, template)?).ok()?;
+    let component = ParsedComponent::parse_in(arena, block(source, template)?).ok()?;
     let mut region = producer.template_region().ok()?;
     component.construct_in(&mut region, Lang::Js).ok()
 }

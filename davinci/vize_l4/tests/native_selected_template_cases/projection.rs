@@ -1,6 +1,6 @@
 use crate::{check, equal};
 use vize_l0::{Span, id::NodeId};
-use vize_l1::markup::{ElementClose, NativeChild, NativeChildren, SurfaceChild};
+use vize_l1::markup::{ChildView, ChildrenView, ElementClose, SurfaceChild};
 use vize_l2::{
     lang::js::NativeTemplateFile,
     op::{ElementOp, Namespace, Op},
@@ -59,7 +59,7 @@ pub(crate) fn inspect<'owner, 'a>(
 }
 
 fn children<'owner, 'a>(
-    original: NativeChildren<'owner, 'a>,
+    original: ChildrenView<'owner, 'a>,
     canonical: &'owner [Op<'a>],
     analysis: &NativeTemplateDomAnalysis<'owner, 'a>,
     document: &EmitDocument,
@@ -130,7 +130,7 @@ fn children<'owner, 'a>(
 }
 
 fn element_projection<'owner, 'a>(
-    original: NativeChild<'owner, 'a>,
+    original: ChildView<'owner, 'a>,
     element: &'owner ElementOp<'a>,
     analysis: &NativeTemplateDomAnalysis<'owner, 'a>,
     document: &EmitDocument,

@@ -1,13 +1,13 @@
 //! The first native syntax rule, retaining the existing `a11y/img-alt` code.
 
 use vize_l0::diag::MessageLookup;
-use vize_l1::markup::NativeElement;
+use vize_l1::markup::ElementView;
 
 use super::{IMG_ALT_RULE, NativeLintFinding, NativeLintRefusal, header};
 use crate::attribute_policy::{ImageAltMessages, ImageAltPolicy};
 
 pub(super) fn check(
-    element: &NativeElement<'_, '_>,
+    element: &ElementView<'_, '_>,
     messages: &impl MessageLookup,
 ) -> Result<Option<NativeLintFinding>, NativeLintRefusal> {
     let range = header::opening_range(element)?;

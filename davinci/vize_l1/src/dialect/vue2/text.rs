@@ -18,7 +18,7 @@ use alloc::vec::Vec;
 use vize_l0::{Allocator, SourceBlock, Span};
 
 use crate::embed::source::prepare_text_value;
-use crate::embed::syntax::{NativeSyntax, parse_once};
+use crate::embed::syntax::{EmbedSyntax, parse_once};
 use crate::embed::{Embed, EmbedSource, Grammar, Lang, Shape};
 
 /// A retained authored refusal; it does not discard later bindings or diagnostics.
@@ -50,7 +50,7 @@ pub enum TextBoundaryKind {
 pub struct FilterInvocation<'a> {
     span: Span,
     name: EmbedSource<'a>,
-    arguments: Vec<NativeSyntax<'a>>,
+    arguments: Vec<EmbedSyntax<'a>>,
 }
 
 impl<'a> FilterInvocation<'a> {
@@ -60,7 +60,7 @@ impl<'a> FilterInvocation<'a> {
     pub const fn name(&self) -> EmbedSource<'a> {
         self.name
     }
-    pub fn arguments(&self) -> &[NativeSyntax<'a>] {
+    pub fn arguments(&self) -> &[EmbedSyntax<'a>] {
         &self.arguments
     }
 }
@@ -68,12 +68,12 @@ impl<'a> FilterInvocation<'a> {
 /// Ordered filter application syntax. No registry resolution or lowering is implied.
 #[derive(Debug)]
 pub struct FilterChain<'a> {
-    base: NativeSyntax<'a>,
+    base: EmbedSyntax<'a>,
     filters: Vec<FilterInvocation<'a>>,
 }
 
 impl<'a> FilterChain<'a> {
-    pub fn base(&self) -> &NativeSyntax<'a> {
+    pub fn base(&self) -> &EmbedSyntax<'a> {
         &self.base
     }
     pub fn filters(&self) -> &[FilterInvocation<'a>] {
@@ -228,7 +228,7 @@ fn piece<'a>(
     trim(allocator, slice).ok_or(TextBoundaryKind::SourcePreparation)
 }
 
-fn expression<'a>(allocator: &'a Allocator, source: EmbedSource<'a>) -> NativeSyntax<'a> {
+fn expression<'a>(allocator: &'a Allocator, source: EmbedSource<'a>) -> EmbedSyntax<'a> {
     parse_once(
         allocator,
         Embed {

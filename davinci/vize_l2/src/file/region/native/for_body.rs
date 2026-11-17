@@ -9,11 +9,11 @@ use crate::op::OriginalForId;
 use crate::resolution::ForAliasRole;
 use core::{marker::PhantomData, ops::DerefMut};
 use vize_l0::{Span, id::NodeId};
-use vize_l1::markup::{NativeElement, NativeTemplateComponent};
+use vize_l1::markup::{ElementView, TemplateComponent};
 
 pub(super) fn construct<'a: 'b, 'b, R>(
-    original: NativeElement<'_, 'a>,
-    selected: &NativeTemplateComponent<'a>,
+    original: ElementView<'_, 'a>,
+    selected: &TemplateComponent<'a>,
     span: Span,
     header: body::header::Header<'a>,
     observed: ObservedFor,

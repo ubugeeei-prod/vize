@@ -9,11 +9,11 @@ use vize_glyph::native_doc::{
     observed_native_template_document_with_policy, print,
 };
 use vize_l0::{Allocator, Span};
-use vize_l1::markup::{NativeAttributeExpression, NativeTemplateComponent};
+use vize_l1::markup::{AttributeExpression, TemplateComponent};
 
 fn first_attribute<'p, 'a>(
-    selected: &'p NativeTemplateComponent<'a>,
-) -> vize_l1::markup::NativeAttribute<'p, 'a> {
+    selected: &'p TemplateComponent<'a>,
+) -> vize_l1::markup::AttributeView<'p, 'a> {
     selected
         .children()
         .next()
@@ -92,7 +92,7 @@ fn actual_full_owner_moves_keep_both_original_prefix_vectors_and_reject_equal_fo
             .is_none()
     );
     assert!(core::mem::needs_drop::<NativeSfcObservation<'_>>());
-    assert!(core::mem::needs_drop::<NativeAttributeExpression<'_>>());
+    assert!(core::mem::needs_drop::<AttributeExpression<'_>>());
     assert_eq!(identity(&owner), before);
 }
 

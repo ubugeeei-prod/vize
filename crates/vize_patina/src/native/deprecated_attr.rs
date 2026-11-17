@@ -4,14 +4,14 @@ use vize_l0::{
     SmallVec, Span, String,
     diag::{Advisory, Diagnostic, DiagnosticPart, MessageLookup, PartKind, Stage},
 };
-use vize_l1::markup::{NativeElement, NativeLintTagKind};
+use vize_l1::markup::{ElementView, TagFactsKind};
 
 use crate::attribute_policy::deprecated_attr_suggestion;
 
 use super::{DEPRECATED_ATTR_RULE, NativeLintFinding, NativeLintRefusal, header, header_rules};
 
 pub(super) fn check(
-    element: &NativeElement<'_, '_>,
+    element: &ElementView<'_, '_>,
     messages: &impl MessageLookup,
 ) -> Result<Vec<NativeLintFinding>, NativeLintRefusal> {
     let tag = element.surface().tag();
@@ -23,7 +23,7 @@ pub(super) fn check(
             matches.push((name, suggestion, range));
         }
     })?;
-    if receipt.kind() == NativeLintTagKind::Component {
+    if receipt.kind() == TagFactsKind::Component {
         return Ok(Vec::new());
     }
     Ok(matches

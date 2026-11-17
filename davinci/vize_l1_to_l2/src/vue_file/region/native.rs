@@ -69,10 +69,10 @@ impl<'a> ConstructionFactory<'a> for VueNative<'_, '_, '_, 'a> {
     }
 }
 
-struct NativeChild<'c, 'r, 'b, 'a> {
+struct ChildView<'c, 'r, 'b, 'a> {
     region: &'c mut TemplateChildRegion<'r, 'b, 'a, Visibility>,
 }
-impl<'a> ConstructionFactory<'a> for NativeChild<'_, '_, '_, 'a> {
+impl<'a> ConstructionFactory<'a> for ChildView<'_, '_, '_, 'a> {
     fn source(&self) -> &'a str {
         self.region.source()
     }
@@ -131,6 +131,6 @@ impl<'a, B: ConstructionBody<'a>> TemplateBody<'a, Visibility> for NativeBody<B>
         'a: 'b,
         'b: 'r,
     {
-        self.0.run(&mut NativeChild { region }, node);
+        self.0.run(&mut ChildView { region }, node);
     }
 }

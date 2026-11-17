@@ -1,7 +1,7 @@
 use vize_l0::{Allocator, Span};
 use vize_l1::embed::{
     DecodeSegmentKind, Embed, Grammar, Lang, Shape, prepare_attribute_value,
-    syntax::{NativeSyntax, parse_once},
+    syntax::{EmbedSyntax, parse_once},
 };
 use vize_l2::expr::{
     JsExpr,
@@ -30,7 +30,7 @@ const VOCABULARY: Vocabulary = Vocabulary { modules: &[] };
 fn transfer<'a>(
     arena: &'a Allocator,
     file: &'a str,
-    syntax: &'a NativeSyntax<'a>,
+    syntax: &'a EmbedSyntax<'a>,
 ) -> &'a JsExpr<'a> {
     let prepared = syntax.source();
     let mut segments = vize_l0::Vec::new_in(&arena);

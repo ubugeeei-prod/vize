@@ -7,65 +7,58 @@ use vize_l0::{Allocator, SourceBlock};
 mod child;
 mod element;
 mod interpolation;
-mod lint;
-mod lint_tag;
 mod operand;
 mod selected;
 mod text;
 mod text_value;
-pub use child::{NativeChild, NativeChildren};
+pub use child::{ChildView, ChildrenView};
 pub use element::{
-    NativeAttribute, NativeAttributes, NativeElement, NativeElementClosingName,
-    NativeElementNameRefusal, NativeElementNames,
+    AttributeView, AttributesView, ElementClosingName, ElementNameRefusal, ElementNames,
+    ElementView,
 };
 pub use interpolation::{
-    NativeInterpolationError, NativeInterpolationFailure, NativeInterpolationOperand,
-    NativeInterpolationView,
+    InterpolationError, InterpolationFailure, InterpolationOperand, InterpolationView,
 };
-pub use lint::NativeLintComponent;
-pub use lint_tag::{NativeLintTag, NativeLintTagKind, NativeLintTagRefusal};
 pub use operand::{
-    NativeAttributeBindingExpression, NativeAttributeBindingExpressionView, NativeAttributeElse,
-    NativeAttributeElseView, NativeAttributeExpression, NativeAttributeExpressionFailure,
-    NativeAttributeExpressionView, NativeAttributeForHead, NativeAttributeForHeadFailure,
-    NativeAttributeForHeadView, NativeAttributeHandler, NativeAttributeHandlerFailure,
-    NativeAttributeHandlerView, NativeAttributeHead, NativeAttributeModelExpression,
-    NativeAttributeModelExpressionView, NativeAttributeOperandError, NativeAttributeValue,
-    NativeAttributeValueFailure, NativeAttributeValueView, NativeConditionKind, NativeModelHead,
-    NativeStaticBindingHead,
+    AttributeBindingExpression, AttributeBindingExpressionView, AttributeElse, AttributeElseView,
+    AttributeExpression, AttributeExpressionFailure, AttributeExpressionView, AttributeForHead,
+    AttributeForHeadFailure, AttributeForHeadView, AttributeHandler, AttributeHandlerFailure,
+    AttributeHandlerView, AttributeHead, AttributeModelExpression, AttributeModelExpressionView,
+    AttributeOperandError, AttributeValueFailure, AttributeValueOperand, AttributeValueView,
+    ConditionKind, ModelHead, StaticBindingHead,
 };
-pub use selected::{NativeScriptSelection, NativeTemplateComponent, NativeTemplateGrammar};
-pub use text::{NativeRootText, NativeRootTextError, NativeRootTextProfile, NativeRootTextView};
-pub use text_value::{
-    NativeTextValue, NativeTextValueError, NativeTextValueFailure, NativeTextValueView,
-};
+pub use selected::{ScriptSelection, TemplateComponent, TemplateGrammar};
+pub use tag_facts::{TagFacts, TagFactsKind, TagFactsRefusal};
+pub use tag_facts_component::ComponentTagFacts;
+pub use text::{RootText, RootTextError, RootTextProfile, RootTextView};
+pub use text_value::{TextValue, TextValueError, TextValueFailure, TextValueView};
 
 /// Complete once-parsed Component privately paired with its checked source.
 /// Raw mutable carriers cannot be inserted; consuming transfer drops authority.
 /// A genuinely parsed arbitrary block is not proof of SFC template selection.
 ///
 /// ```compile_fail
-/// use vize_l1::markup::NativeComponent;
+/// use vize_l1::markup::ParsedComponent;
 /// fn requires_clone<T: Clone>() {}
-/// requires_clone::<NativeComponent<'static>>();
+/// requires_clone::<ParsedComponent<'static>>();
 /// ```
-pub struct NativeComponent<'a> {
+pub struct ParsedComponent<'a> {
     allocator: &'a Allocator,
     block: SourceBlock<'a>,
     component: ComponentParse<'a>,
 }
 
-impl core::fmt::Debug for NativeComponent<'_> {
+impl core::fmt::Debug for ParsedComponent<'_> {
     fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         formatter
-            .debug_struct("NativeComponent")
+            .debug_struct("ParsedComponent")
             .field("block", &self.block)
             .field("component", &self.component)
             .finish_non_exhaustive()
     }
 }
 
-impl<'a> NativeComponent<'a> {
+impl<'a> ParsedComponent<'a> {
     /// Call the existing native parser once for this exact block.
     pub fn parse_in(
         allocator: &'a Allocator,
@@ -82,18 +75,18 @@ impl<'a> NativeComponent<'a> {
         allocator: &'a Allocator,
         block: SourceBlock<'a>,
     ) -> Result<Self, ComponentSourceError> {
-        Self::parse_lint_in(allocator, block)
+        Self::parse_tag_facts_in(allocator, block)
     }
     // The caller's sealed owner determines bare or Descriptor-selected custody.
     // Both use the same existing default Vue 3 lint event sink exactly once.
-    fn parse_lint_in(
+    fn parse_tag_facts_in(
         allocator: &'a Allocator,
         block: SourceBlock<'a>,
     ) -> Result<Self, ComponentSourceError> {
         Ok(Self {
             allocator,
             block,
-            component: crate::dialect::vue3::surface::parse_component_with_lint(
+            component: crate::dialect::vue3::surface::parse_component_with_tag_facts(
                 allocator,
                 block.source(),
             )?,
@@ -113,8 +106,8 @@ impl<'a> NativeComponent<'a> {
     }
     /// Project actual root children in their original direct order.
     #[must_use]
-    pub fn children(&self) -> NativeChildren<'_, 'a> {
-        NativeChildren::root(self)
+    pub fn children(&self) -> ChildrenView<'_, 'a> {
+        ChildrenView::root(self)
     }
     /// The immutable original root slot; no iteration or membership fabrication.
     fn root_child_at(&self, ordinal: usize) -> Option<&crate::markup::SurfaceChild<'a>> {
@@ -128,5 +121,7 @@ impl<'a> NativeComponent<'a> {
 
 #[cfg(test)]
 mod reborrow_tests;
+mod tag_facts;
+mod tag_facts_component;
 #[cfg(test)]
 mod tests;

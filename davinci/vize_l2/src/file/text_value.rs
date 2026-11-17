@@ -4,7 +4,7 @@ use super::{FileArtifact, RejectedFile};
 use crate::{lang::js::NativeTemplateIssueKind, op::TextOp};
 use core::ptr::NonNull;
 use vize_l0::id::NodeId;
-use vize_l1::markup::{NativeTextValue, NativeTextValueFailure};
+use vize_l1::markup::{TextValue, TextValueFailure};
 
 /// Bounded source policy, independent of target or whitespace condensation.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -39,17 +39,17 @@ pub enum NativeFileTextValueState {
 /// };
 /// ```
 pub struct NativeFileTextValue<'a> {
-    pub(crate) observation: Result<NativeTextValue<'a>, NativeTextValueFailure<'a>>,
+    pub(crate) observation: Result<TextValue<'a>, TextValueFailure<'a>>,
     pub(crate) state: NativeFileTextValueState,
     pub(crate) text: Option<NonNull<TextOp<'a>>>,
 }
 impl<'a> NativeFileTextValue<'a> {
     #[must_use]
-    pub fn observation(&self) -> Option<&NativeTextValue<'a>> {
+    pub fn observation(&self) -> Option<&TextValue<'a>> {
         self.observation.as_ref().ok()
     }
     #[must_use]
-    pub fn failure(&self) -> Option<&NativeTextValueFailure<'a>> {
+    pub fn failure(&self) -> Option<&TextValueFailure<'a>> {
         self.observation.as_ref().err()
     }
     #[must_use]
@@ -127,7 +127,7 @@ impl<'f, 'a> FileTextValue<'f, 'a> {
         self.node
     }
     #[must_use]
-    pub fn observation(self) -> Option<&'f NativeTextValue<'a>> {
+    pub fn observation(self) -> Option<&'f TextValue<'a>> {
         self.file.native_text_values().first()?.observation()
     }
 }

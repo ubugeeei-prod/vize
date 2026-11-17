@@ -14,7 +14,7 @@ use vize_l0::Vec;
 use vize_l1::{
     dialect::vue3::VueDirectives,
     markup::{
-        NativeAttribute, NativeConditionKind, NativeElement, NativeTemplateComponent,
+        AttributeView, ConditionKind, ElementView, TemplateComponent,
         directive::{DirectivePrefix, DirectiveSyntax},
     },
 };
@@ -29,8 +29,8 @@ pub(in crate::file::region::native) struct Header<'a> {
 }
 
 pub(super) fn construct<'a: 'b, 'b, R>(
-    original: &NativeElement<'_, 'a>,
-    selected: &NativeTemplateComponent<'a>,
+    original: &ElementView<'_, 'a>,
+    selected: &TemplateComponent<'a>,
     region: &mut FileRegion<'_, 'b, 'a, R, NativeVisibility>,
 ) -> Result<Header<'a>, Kind>
 where
@@ -40,8 +40,8 @@ where
 }
 
 pub(in crate::file::region::native) fn construct_for_pair<'a: 'b, 'b, R>(
-    original: &NativeElement<'_, 'a>,
-    selected: &NativeTemplateComponent<'a>,
+    original: &ElementView<'_, 'a>,
+    selected: &TemplateComponent<'a>,
     region: &mut FileRegion<'_, 'b, 'a, R, NativeVisibility>,
 ) -> Result<Header<'a>, Kind>
 where
@@ -51,8 +51,8 @@ where
 }
 
 fn construct_with_policy<'a: 'b, 'b, R>(
-    original: &NativeElement<'_, 'a>,
-    selected: &NativeTemplateComponent<'a>,
+    original: &ElementView<'_, 'a>,
+    selected: &TemplateComponent<'a>,
     region: &mut FileRegion<'_, 'b, 'a, R, NativeVisibility>,
     paired: bool,
 ) -> Result<Header<'a>, Kind>
@@ -132,7 +132,7 @@ where
                 let head = selected
                     .observe_attribute_head(attribute.reborrow())
                     .map_err(|_| Kind::UnsupportedChild)?;
-                if head.condition_kind() != Some(NativeConditionKind::If) {
+                if head.condition_kind() != Some(ConditionKind::If) {
                     return Err(Kind::UnsupportedChild);
                 }
                 let observed = region.observe_conditional(selected, &head)?;
@@ -203,7 +203,7 @@ impl<'a> Header<'a> {
     }
 }
 
-fn ordinary<'a>(original: NativeAttribute<'_, 'a>) -> Result<Attribute<'a>, Kind> {
+fn ordinary<'a>(original: AttributeView<'_, 'a>) -> Result<Attribute<'a>, Kind> {
     let surface = original.surface();
     let block = original.component().block();
     let name = surface.name.text;

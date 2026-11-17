@@ -41,7 +41,7 @@ fn refused(source: &str, path: &[usize]) {
             .into_element()
             .unwrap();
     }
-    let receipt = element.lint_tag().unwrap();
+    let receipt = element.tag_facts().unwrap();
     assert!(receipt.header_is_literal());
     assert!(receipt.in_recovery_context());
     assert_eq!(
@@ -142,7 +142,7 @@ fn actual_depth_guard_refusal_preserves_complete_registered_depth_and_aria_error
         original = original.children().next().unwrap().into_element().unwrap();
     }
     let meta = original.children().next().unwrap().into_element().unwrap();
-    let receipt = meta.lint_tag().unwrap();
+    let receipt = meta.tag_facts().unwrap();
     assert!(receipt.header_is_literal());
     assert!(receipt.in_recovery_context());
     let lint = NativeSyntaxLint::new(&owner).unwrap();

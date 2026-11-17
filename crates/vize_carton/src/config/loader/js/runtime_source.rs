@@ -24,12 +24,12 @@ const CAPABILITIES: (&str, &str) = (
 );
 const PLAN: (&str, &str) = ("./plugin-plan.js", include_str!("../plugin-plan.js"));
 const INSPECT: (&str, &str) = ("./plugin-inspect.js", include_str!("../plugin-inspect.js"));
-const LINT: (&str, &str) = ("./plugin-lint.js", include_str!("../plugin-lint.js"));
+const TAG_FACTS: (&str, &str) = ("./plugin-lint.js", include_str!("../plugin-lint.js"));
 
 /// `plugin-host.js`: everything config evaluation needs, in dependency order.
 const PLUGIN_HOST: [(&str, &str); 3] = [CANONICAL, CAPABILITIES, PLAN];
 /// `plugin-tools.js`: the host plus inspection and lint jobs, in dependency order.
-const PLUGIN_TOOLS: [(&str, &str); 5] = [CANONICAL, CAPABILITIES, PLAN, INSPECT, LINT];
+const PLUGIN_TOOLS: [(&str, &str); 5] = [CANONICAL, CAPABILITIES, PLAN, INSPECT, TAG_FACTS];
 
 const PLUGIN_HOST_IMPORT: &str = "import(\"./plugin-host.js\")";
 const PLUGIN_TOOLS_IMPORT: &str = "import(\"./plugin-tools.js\")";

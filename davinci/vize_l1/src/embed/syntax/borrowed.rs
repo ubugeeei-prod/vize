@@ -5,7 +5,7 @@ use oxc_parser::{AdmittedBorrowedExpression, ParseOptions};
 use oxc_span::SourceType;
 use vize_l0::Span;
 
-use super::{CommentView, DiagnosticView, EmbedSource, Grammar, NativeSyntax, Shape, SourceError};
+use super::{CommentView, DiagnosticView, EmbedSource, EmbedSyntax, Grammar, Shape, SourceError};
 
 /// A sealed borrow of the original syntax and its authentic parser admission.
 /// Neither its complete observation nor its expression root is moved or cloned.
@@ -42,10 +42,10 @@ use super::{CommentView, DiagnosticView, EmbedSource, Grammar, NativeSyntax, Sha
 ///
 /// ```compile_fail,E0451
 /// use oxc_parser::AdmittedBorrowedExpression;
-/// use vize_l1::embed::syntax::{NativeExpressionView, NativeSyntax};
-/// fn forge<'o, 'a>(original: &'o NativeSyntax<'a>, admitted: AdmittedBorrowedExpression<'o, 'a>)
-///     -> NativeExpressionView<'o, 'a> {
-///     NativeExpressionView { original, admitted }
+/// use vize_l1::embed::syntax::{ExpressionView, EmbedSyntax};
+/// fn forge<'o, 'a>(original: &'o EmbedSyntax<'a>, admitted: AdmittedBorrowedExpression<'o, 'a>)
+///     -> ExpressionView<'o, 'a> {
+///     ExpressionView { original, admitted }
 /// }
 /// ```
 ///
@@ -53,22 +53,22 @@ use super::{CommentView, DiagnosticView, EmbedSource, Grammar, NativeSyntax, Sha
 ///
 /// ```compile_fail
 /// use oxc_ast::ast::Expression;
-/// use vize_l1::embed::syntax::NativeExpressionView;
-/// fn lengthen<'o, 'a>(view: NativeExpressionView<'o, 'a>) -> &'a Expression<'a> {
+/// use vize_l1::embed::syntax::ExpressionView;
+/// fn lengthen<'o, 'a>(view: ExpressionView<'o, 'a>) -> &'a Expression<'a> {
 ///     view.expression()
 /// }
 /// ```
 ///
 /// ```compile_fail,E0515
-/// use vize_l1::embed::syntax::{NativeExpressionView, NativeSyntax};
-/// fn outlive_owner<'a>(owner: NativeSyntax<'a>) -> NativeExpressionView<'a, 'a> {
+/// use vize_l1::embed::syntax::{ExpressionView, EmbedSyntax};
+/// fn outlive_owner<'a>(owner: EmbedSyntax<'a>) -> ExpressionView<'a, 'a> {
 ///     owner.borrow_expression().unwrap()
 /// }
 /// ```
 ///
 /// ```compile_fail,E0505
-/// use vize_l1::embed::syntax::NativeSyntax;
-/// fn drop_while_borrowed(owner: NativeSyntax<'_>) {
+/// use vize_l1::embed::syntax::EmbedSyntax;
+/// fn drop_while_borrowed(owner: EmbedSyntax<'_>) {
 ///     let view = owner.borrow_expression().unwrap();
 ///     drop(owner);
 ///     println!("{}", view.source().text());
@@ -76,8 +76,8 @@ use super::{CommentView, DiagnosticView, EmbedSource, Grammar, NativeSyntax, Sha
 /// ```
 ///
 /// ```compile_fail,E0505
-/// use vize_l1::embed::syntax::NativeSyntax;
-/// fn move_while_borrowed(owner: NativeSyntax<'_>) {
+/// use vize_l1::embed::syntax::EmbedSyntax;
+/// fn move_while_borrowed(owner: EmbedSyntax<'_>) {
 ///     let view = owner.borrow_expression().unwrap();
 ///     let moved = Box::new(owner);
 ///     println!("{}", view.source().text());
@@ -88,8 +88,8 @@ use super::{CommentView, DiagnosticView, EmbedSource, Grammar, NativeSyntax, Sha
 /// Source lifetime remains independent of a longer owner borrow.
 ///
 /// ```compile_fail
-/// use vize_l1::embed::syntax::{NativeExpressionView, NativeSyntax};
-/// fn replace_source<'o, 'a>(owner: &'o NativeSyntax<'a>) -> NativeExpressionView<'o, 'static> {
+/// use vize_l1::embed::syntax::{ExpressionView, EmbedSyntax};
+/// fn replace_source<'o, 'a>(owner: &'o EmbedSyntax<'a>) -> ExpressionView<'o, 'static> {
 ///     owner.borrow_expression().unwrap()
 /// }
 /// ```
@@ -114,33 +114,33 @@ use super::{CommentView, DiagnosticView, EmbedSource, Grammar, NativeSyntax, Sha
 /// Existing consuming handoffs cannot discard an outstanding original borrow.
 ///
 /// ```compile_fail,E0505
-/// use vize_l1::embed::syntax::NativeSyntax;
-/// fn consume_while_borrowed(owner: NativeSyntax<'_>) {
+/// use vize_l1::embed::syntax::EmbedSyntax;
+/// fn consume_while_borrowed(owner: EmbedSyntax<'_>) {
 ///     let view = owner.borrow_expression().unwrap();
 ///     let retained = owner.into_expression().unwrap();
 ///     println!("{}", view.source().text());
 ///     drop(retained);
 /// }
 /// ```
-pub struct NativeExpressionView<'o, 'a> {
-    original: &'o NativeSyntax<'a>,
+pub struct ExpressionView<'o, 'a> {
+    original: &'o EmbedSyntax<'a>,
     admitted: AdmittedBorrowedExpression<'o, 'a>,
 }
 
-impl core::fmt::Debug for NativeExpressionView<'_, '_> {
+impl core::fmt::Debug for ExpressionView<'_, '_> {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        f.debug_tuple("NativeExpressionView")
+        f.debug_tuple("ExpressionView")
             .field(self.original)
             .finish()
     }
 }
 
-impl<'a> NativeSyntax<'a> {
+impl<'a> EmbedSyntax<'a> {
     /// Borrow the original Expr observation without consuming syntax custody.
     /// The real stock-parser witness and exact original content identity are
     /// mandatory; callers cannot supply an AST, admission status or source map.
     #[must_use]
-    pub fn borrow_expression(&self) -> Option<NativeExpressionView<'_, 'a>> {
+    pub fn borrow_expression(&self) -> Option<ExpressionView<'_, 'a>> {
         if self.hole.is_some() || self.grammar.shape != Shape::Expr {
             return None;
         }
@@ -151,16 +151,16 @@ impl<'a> NativeSyntax<'a> {
         {
             return None;
         }
-        Some(NativeExpressionView {
+        Some(ExpressionView {
             original: self,
             admitted,
         })
     }
 }
 
-impl<'o, 'a> NativeExpressionView<'o, 'a> {
+impl<'o, 'a> ExpressionView<'o, 'a> {
     #[must_use]
-    pub const fn original(&self) -> &'o NativeSyntax<'a> {
+    pub const fn original(&self) -> &'o EmbedSyntax<'a> {
         self.original
     }
     #[must_use]
@@ -196,11 +196,11 @@ impl<'o, 'a> NativeExpressionView<'o, 'a> {
         self.admitted.has_legacy_literals()
     }
     pub fn comments(&self) -> impl Iterator<Item = CommentView<'o, 'a>> {
-        let original: &'o NativeSyntax<'a> = self.original;
+        let original: &'o EmbedSyntax<'a> = self.original;
         original.comments()
     }
     pub fn diagnostics(&self) -> impl Iterator<Item = DiagnosticView<'o, 'a>> {
-        let original: &'o NativeSyntax<'a> = self.original;
+        let original: &'o EmbedSyntax<'a> = self.original;
         original.diagnostics()
     }
     pub fn decoded_span(&self, span: oxc_span::Span) -> Result<Span, SourceError> {

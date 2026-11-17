@@ -8,7 +8,7 @@ fn duplicate_attribute_advisories_remain_in_the_complete_registered_output() {
     assert!(owner.component().carrier().errors.is_empty());
     let div = owner.children().next().unwrap().into_element().unwrap();
     assert_eq!(div.surface().open.attrs.len(), 2);
-    assert_eq!(div.lint_tag().unwrap().kind(), NativeLintTagKind::Element);
+    assert_eq!(div.tag_facts().unwrap().kind(), TagFactsKind::Element);
     for locale in [Locale::En, Locale::Ja, Locale::Zh] {
         let (_, result) = observed(source, locale, &owner);
         assert_eq!(result.error_count, 0);
@@ -70,7 +70,7 @@ fn equal_source_foreign_receipts_cannot_be_used_as_the_selected_lint_owner() {
     let owner = selected(&arena, source);
     let foreign = selected(&arena, source);
     let element = foreign.children().next().unwrap().into_element().unwrap();
-    let receipt = element.lint_tag().unwrap();
+    let receipt = element.tag_facts().unwrap();
     assert!(core::ptr::eq(receipt.component(), foreign.component()));
     assert!(!core::ptr::eq(receipt.component(), owner.component()));
     let lint = NativeSyntaxLint::new(&owner).unwrap();

@@ -1,6 +1,6 @@
 use super::{
-    Allocator, DescriptorOptions, NativeHandlerInput, NativeTemplateComponent, Outer,
-    ResolutionErrorKind, Vue, VueDialect, VueVersion, resolve_handler,
+    Allocator, DescriptorOptions, NativeHandlerInput, Outer, ResolutionErrorKind,
+    TemplateComponent, Vue, VueDialect, VueVersion, resolve_handler,
 };
 use vize_l1::embed::Lang;
 
@@ -26,10 +26,9 @@ fn original_ts_profile_is_intrinsic_and_type_annotations_remain_precise_refusals
                 template: vize_l1::markup::SurfaceParseOptions::default(),
             },
         );
-        let selected =
-            NativeTemplateComponent::parse_in(&allocator, descriptor.admitted().unwrap())
-                .unwrap()
-                .unwrap();
+        let selected = TemplateComponent::parse_in(&allocator, descriptor.admitted().unwrap())
+            .unwrap()
+            .unwrap();
         let element = selected.children().next().unwrap().into_element().unwrap();
         let operand = selected
             .observe_attribute_handler(element.attributes().next().unwrap())

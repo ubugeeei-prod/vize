@@ -6,7 +6,7 @@ use vize_l0::{
 };
 use vize_l1::{
     container::{Vue, vue::DescriptorOptions},
-    markup::{NativeTemplateComponent, SurfaceChild, SurfaceParseOptions},
+    markup::{SurfaceChild, SurfaceParseOptions, TemplateComponent},
 };
 use vize_l2::lang::js::{NativeInterpolationInput, NativeTemplateFile, NativeTemplateOwner};
 use vize_l3::decision::native::build_native_dom_file_decisions;
@@ -52,7 +52,7 @@ fn completed<'a>(
         },
     );
     let selected =
-        NativeTemplateComponent::parse_in(arena, descriptor.admitted().map_err(|_| "descriptor")?)
+        TemplateComponent::parse_in(arena, descriptor.admitted().map_err(|_| "descriptor")?)
             .map_err(|_| "original selected Component")?
             .ok_or("selected template")?;
     let mut owner = NativeTemplateOwner::new(selected).map_err(|_| "original File begin")?;

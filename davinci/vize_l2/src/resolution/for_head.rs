@@ -5,7 +5,7 @@ use vize_l0::Span;
 use vize_l1::embed::syntax::ForHeadPart;
 
 use super::{BindingId, BindingLookup, Occurrence, ResolutionErrorKind, walk};
-use crate::lang::js::NativeForInput;
+use crate::lang::js::ForInput;
 
 mod borrowed;
 pub(crate) use borrowed::resolve_for_facts;
@@ -35,17 +35,17 @@ pub enum ForResolutionErrorKind {
 /// No partial facts escape; the whole original Attribute and syntax stay owned.
 #[derive(Debug)]
 pub struct RejectedForResolution<'a> {
-    input: NativeForInput<'a>,
+    input: ForInput<'a>,
     pub error: ForResolutionError,
 }
 
 impl<'a> RejectedForResolution<'a> {
     #[must_use]
-    pub const fn input(&self) -> &NativeForInput<'a> {
+    pub const fn input(&self) -> &ForInput<'a> {
         &self.input
     }
     #[must_use]
-    pub fn into_input(self) -> NativeForInput<'a> {
+    pub fn into_input(self) -> ForInput<'a> {
         self.input
     }
 }
@@ -58,9 +58,9 @@ impl<'a> RejectedForResolution<'a> {
 /// ```compile_fail
 /// use vize_l0::Span;
 /// use oxc_ast::ast::FormalParameter;
-/// use vize_l2::lang::js::NativeForInput;
+/// use vize_l2::lang::js::ForInput;
 /// use vize_l2::resolution::{ForAlias, ForResolution, Occurrence};
-/// fn substitute<'a>(input: NativeForInput<'a>, collection: Occurrence<'a>,
+/// fn substitute<'a>(input: ForInput<'a>, collection: Occurrence<'a>,
 ///     collection_authored: Span, value: ForAlias<'a>, key: Option<ForAlias<'a>>,
 ///     value_parameter: &'a FormalParameter<'a>, key_parameter: Option<&'a FormalParameter<'a>>) {
 ///     let _ = ForResolution { input, collection, collection_authored, value, key,
@@ -74,7 +74,7 @@ impl<'a> RejectedForResolution<'a> {
 /// ```
 #[derive(Debug)]
 pub struct ForResolution<'a> {
-    input: NativeForInput<'a>,
+    input: ForInput<'a>,
     collection: Occurrence<'a>,
     collection_authored: Span,
     value: ForAlias<'a>,
@@ -85,7 +85,7 @@ pub struct ForResolution<'a> {
 
 impl<'a> ForResolution<'a> {
     #[must_use]
-    pub const fn input(&self) -> &NativeForInput<'a> {
+    pub const fn input(&self) -> &ForInput<'a> {
         &self.input
     }
     #[must_use]
@@ -126,7 +126,7 @@ impl<'a> ForResolution<'a> {
         enclosing.lookup(name).map(ForResolvedBinding::Enclosing)
     }
     #[must_use]
-    pub fn into_input(self) -> NativeForInput<'a> {
+    pub fn into_input(self) -> ForInput<'a> {
         self.input
     }
 }
@@ -136,7 +136,7 @@ impl<'a> ForResolution<'a> {
 /// One retained-tree resolver budget covers this whole bounded head; no source
 /// decode, parse, AST pre-scan or body walk is introduced.
 pub fn resolve_for_head<'a>(
-    input: NativeForInput<'a>,
+    input: ForInput<'a>,
     enclosing: &impl BindingLookup,
 ) -> Result<ForResolution<'a>, Box<RejectedForResolution<'a>>> {
     match borrowed::resolve_for_facts(&input, enclosing) {
@@ -158,7 +158,7 @@ type Facts<'a> = (
 );
 
 fn resolve<'a>(
-    input: &NativeForInput<'a>,
+    input: &ForInput<'a>,
     enclosing: &impl BindingLookup,
 ) -> Result<Facts<'a>, ForResolutionError> {
     let source = input.references().ok_or(ForResolutionError {

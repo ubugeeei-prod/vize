@@ -9,8 +9,7 @@ use vize_l0::{
 use vize_l1::{
     container::{Vue, vue::DescriptorOptions},
     markup::{
-        NativeChildren, NativeElement, NativeTemplateComponent, SurfaceParseOptions,
-        check_fidelity, render,
+        ChildrenView, ElementView, SurfaceParseOptions, TemplateComponent, check_fidelity, render,
     },
 };
 use vize_patina::{
@@ -52,7 +51,7 @@ impl HeaderRule {
     pub fn check<'a>(
         self,
         lint: &NativeSyntaxLint<'_, 'a>,
-        element: &NativeElement<'_, 'a>,
+        element: &ElementView<'_, 'a>,
         messages: &impl MessageLookup,
     ) -> Result<Vec<NativeLintFinding>, NativeLintRefusal> {
         match self {
@@ -66,7 +65,7 @@ impl HeaderRule {
     }
 }
 
-pub fn selected<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateComponent<'a> {
+pub fn selected<'a>(arena: &'a Allocator, source: &'a str) -> TemplateComponent<'a> {
     let descriptor = Vue.observe_descriptor(
         arena,
         source,
@@ -76,7 +75,7 @@ pub fn selected<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateComp
             template: SurfaceParseOptions::default(),
         },
     );
-    NativeTemplateComponent::parse_in(arena, descriptor.admitted().unwrap())
+    TemplateComponent::parse_in(arena, descriptor.admitted().unwrap())
         .unwrap()
         .unwrap()
 }
@@ -187,7 +186,7 @@ pub fn parser(severity: &str, message: &str, range: Span) -> Value {
 // opt-in product entry inspects just the supplied element and does no walk.
 fn collect<'a>(
     lint: &NativeSyntaxLint<'_, 'a>,
-    children: NativeChildren<'_, 'a>,
+    children: ChildrenView<'_, 'a>,
     locale: Locale,
     rule: HeaderRule,
     output: &mut Vec<NativeLintFinding>,

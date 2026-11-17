@@ -3,13 +3,13 @@
 extern crate std;
 
 use crate::artifact::{Artifact, ArtifactError, Builder};
-use crate::lang::js::NativeForInput;
+use crate::lang::js::ForInput;
 use crate::resolution::{BindingId, BindingLookup, ForResolution, resolve_for_head};
 use crate::scope::{ScopeOrigin, ScopeTag};
 use vize_l0::{Allocator, Span, String, id::NodeId};
 use vize_l1::{
     container::{Vue, vue::DescriptorOptions},
-    markup::{NativeTemplateComponent, SurfaceParseOptions},
+    markup::{SurfaceParseOptions, TemplateComponent},
 };
 
 struct Enclosing;
@@ -30,13 +30,12 @@ fn original<'a>(arena: &'a Allocator, source: &'a str) -> (ForResolution<'a>, Sp
             template: SurfaceParseOptions::default(),
         },
     );
-    let selected = NativeTemplateComponent::parse_in(arena, descriptor.admitted().unwrap())
+    let selected = TemplateComponent::parse_in(arena, descriptor.admitted().unwrap())
         .unwrap()
         .unwrap();
     let element = selected.children().next().unwrap().into_element().unwrap();
     let attribute = element.attributes().next().unwrap();
-    let input =
-        NativeForInput::new(selected.observe_attribute_for_head(attribute).unwrap()).unwrap();
+    let input = ForInput::new(selected.observe_attribute_for_head(attribute).unwrap()).unwrap();
     (
         resolve_for_head(input, &Enclosing).unwrap(),
         selected.component().block().span(),

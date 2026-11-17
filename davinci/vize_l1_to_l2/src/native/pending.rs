@@ -2,10 +2,10 @@
 
 use super::block::construct_component;
 use super::construction::Diagnostic as DiagnosticFactory;
-use super::{NativeComponent, NativeEmbed, NativeHole, NativeProduced, RejectedNativeComponent};
+use super::{NativeEmbed, NativeHole, NativeProduced, ParsedComponent, RejectedNativeComponent};
 use alloc::{boxed::Box, vec::Vec};
 use vize_l0::diag::Diagnostic;
-use vize_l1::embed::{Lang, syntax::NativeSyntax};
+use vize_l1::embed::{Lang, syntax::EmbedSyntax};
 use vize_l2::artifact::ComponentFactory;
 
 mod vue;
@@ -18,7 +18,7 @@ pub(crate) struct NativeObservations<'a> {
     pub(super) holes: Vec<NativeHole>,
     pub(super) diagnostics: Vec<Diagnostic>,
     pub(super) embeds: Vec<NativeEmbed<'a>>,
-    pub(super) rejected_syntax: Vec<NativeSyntax<'a>>,
+    pub(super) rejected_syntax: Vec<EmbedSyntax<'a>>,
 }
 
 impl core::fmt::Debug for NativeObservations<'_> {
@@ -54,7 +54,7 @@ impl<'a> NativeObservations<'a> {
         &self.embeds
     }
 
-    pub(crate) fn rejected_syntax(&self) -> &[NativeSyntax<'a>] {
+    pub(crate) fn rejected_syntax(&self) -> &[EmbedSyntax<'a>] {
         &self.rejected_syntax
     }
 }
@@ -77,7 +77,7 @@ pub(crate) enum PendingConstructionError {
 
 /// Park this owner in the assembler's existing template row before construction.
 pub(crate) struct PendingNativeComponent<'a> {
-    component: NativeComponent<'a>,
+    component: ParsedComponent<'a>,
     observations: NativeObservations<'a>,
     state: NativeWalkState,
     native: Option<vue::NativeConstructionReceipt<'a>>,
@@ -94,7 +94,7 @@ impl core::fmt::Debug for PendingNativeComponent<'_> {
 }
 
 impl<'a> PendingNativeComponent<'a> {
-    pub(crate) fn from_component(component: NativeComponent<'a>) -> Self {
+    pub(crate) fn from_component(component: ParsedComponent<'a>) -> Self {
         Self {
             component,
             observations: NativeObservations::new(),
@@ -103,7 +103,7 @@ impl<'a> PendingNativeComponent<'a> {
         }
     }
 
-    pub(crate) fn component(&self) -> &NativeComponent<'a> {
+    pub(crate) fn component(&self) -> &ParsedComponent<'a> {
         &self.component
     }
 
@@ -117,7 +117,7 @@ impl<'a> PendingNativeComponent<'a> {
 
     /// A region refusal before the driver may retain the original raw carrier.
     /// After any driver starts, observations and interruption cannot be stripped.
-    pub(crate) fn into_unconstructed_component(self) -> Result<NativeComponent<'a>, Box<Self>> {
+    pub(crate) fn into_unconstructed_component(self) -> Result<ParsedComponent<'a>, Box<Self>> {
         if self.state != NativeWalkState::Ready
             || self.native.is_some()
             || !self.observations.holes.is_empty()

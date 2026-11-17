@@ -96,7 +96,7 @@ fn equal_sibling_foreign_parent_shared_source_reparse_and_copied_source_never_jo
                 .is_none()
         );
         let failure = owner.observe_text_value(foreign_child).err().unwrap();
-        assert_eq!(failure.kind(), NativeTextValueError::ForeignComponent);
+        assert_eq!(failure.kind(), TextValueError::ForeignComponent);
         assert!(core::ptr::eq(failure.block().root_source(), original));
         assert_eq!(failure.span().unwrap().slice(original), "same");
         assert_eq!(failure.token().unwrap().text, "same");
@@ -116,11 +116,11 @@ fn original_js_ts_selection_and_neutral_source_transfer_do_not_authorize_a_new_o
     for (source, grammar) in [
         (
             "<template>&lt; not { javascript</template>",
-            NativeTemplateGrammar::JavaScriptModule,
+            TemplateGrammar::JavaScriptModule,
         ),
         (
             "<template>&lt; not { javascript</template><script setup lang=ts>const n=1</script>",
-            NativeTemplateGrammar::TypeScriptModule,
+            TemplateGrammar::TypeScriptModule,
         ),
     ] {
         let owner = selected(&arena, source);

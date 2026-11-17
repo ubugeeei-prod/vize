@@ -1,12 +1,12 @@
 use super::selected;
-use crate::markup::{NativeAttributeExpression, NativeTemplateComponent};
+use crate::markup::{AttributeExpression, TemplateComponent};
 
 // Every operand below comes from a Descriptor-selected original Attribute.
 // The two public routes parse independently; neither is an AST oracle for the
 // other. Literal coordinates and complete streams are authored expectations.
 fn assert_own_original_root<'a>(
-    operand: &NativeAttributeExpression<'a>,
-    owner: &NativeTemplateComponent<'a>,
+    operand: &AttributeExpression<'a>,
+    owner: &TemplateComponent<'a>,
     ordinal: usize,
 ) {
     let element = owner.children().next().unwrap().into_element().unwrap();

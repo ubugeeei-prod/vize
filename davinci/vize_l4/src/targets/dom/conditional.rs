@@ -105,7 +105,7 @@ impl<'owner, 'arena, E: ExpressionWriter, L: LinkSink> Emitter<'_, 'owner, 'aren
         let Op::Element(element) = fact.op() else {
             return Err(self.error(root, DomErrorKind::InvalidGrouping));
         };
-        if branch.block() != DomBlockEligibility::NativeElement || !fact.block_eligible {
+        if branch.block() != DomBlockEligibility::ElementView || !fact.block_eligible {
             return Err(self.error(owner, DomErrorKind::InvalidGrouping));
         }
         self.element(root, element, fact, Some(branch.discriminant().index()))

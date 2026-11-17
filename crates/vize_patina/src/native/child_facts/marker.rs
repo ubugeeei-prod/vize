@@ -1,11 +1,11 @@
 use super::super::attribute;
 use super::{NativeChildFactError, NativeHeaderFacts, NativeInterpolationFact, NativeLintRefusal};
 use vize_l0::Span;
-use vize_l1::markup::{ElementClose, NativeChild, SurfaceChild};
+use vize_l1::markup::{ChildView, ElementClose, SurfaceChild};
 
 pub(super) fn observe(
     header: &NativeHeaderFacts<'_, '_>,
-    child: &NativeChild<'_, '_>,
+    child: &ChildView<'_, '_>,
     header_key: u32,
 ) -> Result<Option<(u32, NativeInterpolationFact)>, NativeChildFactError> {
     let interpolation = match child.surface() {

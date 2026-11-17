@@ -1,18 +1,18 @@
 //! Default Vue 3 whitespace at a genuinely selected original root text event.
 
-use super::{NativeChild, NativeTemplateComponent, NativeTemplateGrammar};
+use super::{ChildView, TemplateComponent, TemplateGrammar};
 use crate::markup::SurfaceChild;
 use vize_l0::{SourceBlock, Span, StringBuilder};
 
 /// The sole policy this bounded source provider can establish.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum NativeRootTextProfile {
+pub enum RootTextProfile {
     Vue3Condense,
 }
 
 /// Refusal leaves the original selected parser and every child unchanged.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum NativeRootTextError {
+pub enum RootTextError {
     ForeignComponent,
     NestedChild,
     NotText,
@@ -26,16 +26,16 @@ pub enum NativeRootTextError {
 /// Omitted source events remain present here and in the original tree.
 ///
 /// ```compile_fail
-/// use vize_l1::markup::NativeRootText;
+/// use vize_l1::markup::RootText;
 /// fn requires_clone<T: Clone>() {}
-/// requires_clone::<NativeRootText<'static>>();
+/// requires_clone::<RootText<'static>>();
 /// ```
 /// ```compile_fail
-/// use vize_l1::markup::NativeRootText;
-/// fn forge() { let _ = NativeRootText { content: Some("invented") }; }
+/// use vize_l1::markup::RootText;
+/// fn forge() { let _ = RootText { content: Some("invented") }; }
 /// ```
 #[derive(Debug)]
-pub struct NativeRootText<'a> {
+pub struct RootText<'a> {
     origin: Origin<'a>,
     content: Option<&'a str>,
 }
@@ -44,28 +44,28 @@ pub struct NativeRootText<'a> {
 struct Origin<'a> {
     block: SourceBlock<'a>,
     template_index: usize,
-    grammar: NativeTemplateGrammar,
+    grammar: TemplateGrammar,
     child: *const SurfaceChild<'a>,
     ordinal: usize,
     raw_text: &'a str,
     span: Span,
 }
 
-impl<'a> NativeTemplateComponent<'a> {
+impl<'a> TemplateComponent<'a> {
     /// Derive default Vue 3 condense from this same original root visit.
     /// Nested pre/RCDATA ancestry and text-entity decoding remain unavailable.
     pub fn prepare_condensed_root_text(
         &self,
-        child: NativeChild<'_, 'a>,
-    ) -> Result<NativeRootText<'a>, NativeRootTextError> {
+        child: ChildView<'_, 'a>,
+    ) -> Result<RootText<'a>, RootTextError> {
         if !core::ptr::eq(child.component(), self.component()) {
-            return Err(NativeRootTextError::ForeignComponent);
+            return Err(RootTextError::ForeignComponent);
         }
         if child.parent_element().is_some() {
-            return Err(NativeRootTextError::NestedChild);
+            return Err(RootTextError::NestedChild);
         }
         let SurfaceChild::Text(token) = child.surface() else {
-            return Err(NativeRootTextError::NotText);
+            return Err(RootTextError::NotText);
         };
         let carrier = self.component().carrier();
         if !carrier.errors.is_empty()
@@ -73,15 +73,15 @@ impl<'a> NativeTemplateComponent<'a> {
             || token.is_missing()
             || token.text.is_empty()
         {
-            return Err(NativeRootTextError::RecoveredComponent);
+            return Err(RootTextError::RecoveredComponent);
         }
         if token.text.contains('&') {
-            return Err(NativeRootTextError::Entity);
+            return Err(RootTextError::Entity);
         }
         let block = self.component().block();
         let span = block
             .span_of(token.text)
-            .ok_or(NativeRootTextError::InvalidSourceFrame)?;
+            .ok_or(RootTextError::InvalidSourceFrame)?;
         let ordinal = child.ordinal();
         let previous = ordinal
             .checked_sub(1)
@@ -100,7 +100,7 @@ impl<'a> NativeTemplateComponent<'a> {
         } else {
             Some(condense(self, token.text))
         };
-        Ok(NativeRootText {
+        Ok(RootText {
             origin: Origin {
                 block,
                 template_index: self.template_index(),
@@ -138,7 +138,7 @@ fn omit_blank(
         && raw.bytes().any(|byte| matches!(byte, b'\n' | b'\r')))
 }
 
-fn condense<'a>(selected: &NativeTemplateComponent<'a>, raw: &'a str) -> &'a str {
+fn condense<'a>(selected: &TemplateComponent<'a>, raw: &'a str) -> &'a str {
     let mut previous_whitespace = false;
     let changed = raw.bytes().any(|byte| {
         let current = whitespace(byte);
@@ -165,13 +165,13 @@ fn condense<'a>(selected: &NativeTemplateComponent<'a>, raw: &'a str) -> &'a str
     output.into_str()
 }
 
-impl<'a> NativeRootText<'a> {
+impl<'a> RootText<'a> {
     #[must_use]
-    pub const fn profile(&self) -> NativeRootTextProfile {
-        NativeRootTextProfile::Vue3Condense
+    pub const fn profile(&self) -> RootTextProfile {
+        RootTextProfile::Vue3Condense
     }
     #[must_use]
-    pub const fn grammar(&self) -> NativeTemplateGrammar {
+    pub const fn grammar(&self) -> TemplateGrammar {
         self.origin.grammar
     }
     #[must_use]
@@ -194,9 +194,9 @@ impl<'a> NativeRootText<'a> {
     /// Same-byte reparses and different original slots cannot join.
     pub fn admitted_for_root_at<'s>(
         &'s self,
-        selected: &'s NativeTemplateComponent<'a>,
+        selected: &'s TemplateComponent<'a>,
         ordinal: usize,
-    ) -> Option<NativeRootTextView<'s, 'a>> {
+    ) -> Option<RootTextView<'s, 'a>> {
         let child = selected.component().root_child_at(ordinal)?;
         let block = selected.component().block();
         if ordinal != self.origin.ordinal
@@ -209,7 +209,7 @@ impl<'a> NativeRootText<'a> {
         {
             return None;
         }
-        Some(NativeRootTextView {
+        Some(RootTextView {
             owner: self,
             selected,
         })
@@ -217,17 +217,17 @@ impl<'a> NativeRootText<'a> {
 }
 
 /// Readonly same-original-root join; this is not whole-body/File completion.
-pub struct NativeRootTextView<'s, 'a> {
-    owner: &'s NativeRootText<'a>,
-    selected: &'s NativeTemplateComponent<'a>,
+pub struct RootTextView<'s, 'a> {
+    owner: &'s RootText<'a>,
+    selected: &'s TemplateComponent<'a>,
 }
-impl<'s, 'a> NativeRootTextView<'s, 'a> {
+impl<'s, 'a> RootTextView<'s, 'a> {
     #[must_use]
-    pub fn selected(&self) -> &'s NativeTemplateComponent<'a> {
+    pub fn selected(&self) -> &'s TemplateComponent<'a> {
         self.selected
     }
     #[must_use]
-    pub fn receipt(&self) -> &'s NativeRootText<'a> {
+    pub fn receipt(&self) -> &'s RootText<'a> {
         self.owner
     }
 }

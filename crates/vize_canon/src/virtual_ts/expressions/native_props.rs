@@ -1,7 +1,7 @@
 //! Native Vue prop discovery, type assertions, and authored-range mappings.
 //!
 //! The element table these checks resolve through — `$NativeElements`,
-//! `$NativeElement` and `$NativeElementProp` — is declared once per
+//! `$ElementView` and `$NativeElementProp` — is declared once per
 //! program in `vue_type_helpers_text!` (`virtual_ts/helpers.rs`), not per file,
 //! for two reasons.
 //!
@@ -27,7 +27,7 @@
 //! `declare function __vizeNativeElementProp` exists solely to reference the two
 //! conditional aliases. They are otherwise named only by the checks below, so a
 //! program whose files bind no native prop left them unused and Corsa reported
-//! `TS6196` — `'$NativeElement' is declared but never used.` — which reached
+//! `TS6196` — `'$ElementView' is declared but never used.` — which reached
 //! `check-server` clients as an unmapped hint on a clean SFC. `@ts-ignore` does
 //! not help here: it filters errors, not the suggestion channel these arrive on.
 //! An ambient `declare function` is exempt from unused reporting itself, which is
@@ -240,7 +240,7 @@ pub(super) fn generate_native_prop_statement(
     let check_name_end = ts.len();
     match &native_prop.target {
         NativePropTarget::Property { tag, name } => {
-            ts.push_str(": $NativeElementProp<$NativeElement<");
+            ts.push_str(": $NativeElementProp<$ElementView<");
             push_ts_string_literal(ts, tag.as_str());
             ts.push_str(">, ");
             push_ts_string_literal(ts, name.as_str());

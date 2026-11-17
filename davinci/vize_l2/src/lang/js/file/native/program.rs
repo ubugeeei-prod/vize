@@ -6,7 +6,7 @@ use crate::lang::js::file::{FileProducer, ProgramInput, ProgramScope};
 use oxc_parser::AdmittedProgram;
 use vize_l0::Span;
 use vize_l1::embed::Lang;
-use vize_l1::markup::NativeTemplateComponent;
+use vize_l1::markup::TemplateComponent;
 
 impl<'a> NativeTemplateOwner<'a> {
     pub fn ordinary_program(
@@ -48,7 +48,7 @@ impl<'a> NativeTemplateOwner<'a> {
 
 /// Private field borrows preserve the original owner while its syntax is borrowed.
 pub(super) struct Parts<'owner, 'arena> {
-    pub(super) selected: &'owner NativeTemplateComponent<'arena>,
+    pub(super) selected: &'owner TemplateComponent<'arena>,
     pub(super) producer: &'owner mut FileProducer<'arena>,
     pub(super) state: &'owner mut NativeRouteState,
     pub(super) ordinary: &'owner mut Option<ScriptUnitId>,

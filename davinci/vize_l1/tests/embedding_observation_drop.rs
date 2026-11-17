@@ -159,7 +159,7 @@ fn original_vue2_descriptor_diagnostics_drop_before_arena_and_on_unwind() -> Res
     let with_owner = stats().live_bytes;
     drop(owner);
     if stats().live_bytes >= with_owner {
-        return Err("descriptor must release Component/NativeSyntax heap before arena Drop");
+        return Err("descriptor must release Component/EmbedSyntax heap before arena Drop");
     }
     let mut with_unwind_owner = 0;
     let interrupted = catch_unwind(AssertUnwindSafe(|| {

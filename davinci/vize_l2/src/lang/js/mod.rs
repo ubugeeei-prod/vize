@@ -25,7 +25,7 @@ pub use file::{
     ModuleSourceError, ModuleSourceErrorKind, ModuleSourceKind, OriginalModuleSource,
     OriginalModuleSources,
 };
-pub use for_head::{ForHeadInput, NativeForInput, RejectedForHeadInput, RejectedNativeForInput};
+pub use for_head::{ForHeadInput, ForInput, RejectedForHeadInput, RejectedForInput};
 pub use interpolation::{
     NativeInterpolationInput, NativeInterpolationInputError, NativeInterpolationInputView,
 };

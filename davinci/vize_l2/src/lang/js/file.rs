@@ -41,7 +41,7 @@ pub struct ProgramInputError {
 ///
 /// Admission comes from the original parser-owned no-hole observation, not a
 /// caller's AST or discarded diagnostic list. Native conversion retains its
-/// whole NativeSyntax owner, comments and normally owned diagnostics.
+/// whole EmbedSyntax owner, comments and normally owned diagnostics.
 ///
 /// Raw Programs cannot establish admission:
 /// ```compile_fail

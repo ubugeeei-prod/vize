@@ -9,42 +9,34 @@ use alloc::boxed::Box;
 use oxc_parser::AdmittedExpression;
 use vize_l0::{SourceBlock, Span};
 
-use super::{NativeAttribute, NativeTemplateComponent, NativeTemplateGrammar};
-pub use crate::dialect::vue3::operand::NativeConditionKind;
+use super::{AttributeView, TemplateComponent, TemplateGrammar};
+pub use crate::dialect::vue3::operand::ConditionKind;
 use crate::dialect::vue3::operand::conditional_head;
-use crate::embed::syntax::{NativeSyntax, RetainedExpression, parse_once};
+use crate::embed::syntax::{EmbedSyntax, RetainedExpression, parse_once};
 use crate::embed::{Embed, Grammar, Lang, Shape, SourceError, prepare_attribute_value};
 use crate::markup::DirectiveNameError;
 use crate::markup::{Attribute, Element};
 
 mod event;
-pub use event::{
-    NativeAttributeHandler, NativeAttributeHandlerFailure, NativeAttributeHandlerView,
-};
+pub use event::{AttributeHandler, AttributeHandlerFailure, AttributeHandlerView};
 mod for_head;
-pub use for_head::{
-    NativeAttributeForHead, NativeAttributeForHeadFailure, NativeAttributeForHeadView,
-};
+pub use for_head::{AttributeForHead, AttributeForHeadFailure, AttributeForHeadView};
 mod head;
-pub use head::NativeAttributeHead;
+pub use head::AttributeHead;
 mod else_head;
-pub use else_head::{NativeAttributeElse, NativeAttributeElseView};
+pub use else_head::{AttributeElse, AttributeElseView};
 mod binding;
-pub use binding::{
-    NativeAttributeBindingExpression, NativeAttributeBindingExpressionView, NativeStaticBindingHead,
-};
+pub use binding::{AttributeBindingExpression, AttributeBindingExpressionView, StaticBindingHead};
 mod model;
-pub use model::{
-    NativeAttributeModelExpression, NativeAttributeModelExpressionView, NativeModelHead,
-};
+pub use model::{AttributeModelExpression, AttributeModelExpressionView, ModelHead};
 mod origin;
 use origin::Origin;
 mod value;
-pub use value::{NativeAttributeValue, NativeAttributeValueFailure, NativeAttributeValueView};
+pub use value::{AttributeValueFailure, AttributeValueOperand, AttributeValueView};
 
 /// Preparation refusals leave the original selected surface owner untouched.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum NativeAttributeOperandError {
+pub enum AttributeOperandError {
     ForeignComponent,
     RecoveredComponent,
     Verbatim,
@@ -57,22 +49,22 @@ pub enum NativeAttributeOperandError {
 
 /// Any unexpectedly shaped parser artifact remains normally owned and intact.
 #[derive(Debug)]
-pub struct NativeAttributeExpressionFailure<'a> {
-    kind: NativeAttributeOperandError,
-    syntax: Option<Box<NativeSyntax<'a>>>,
+pub struct AttributeExpressionFailure<'a> {
+    kind: AttributeOperandError,
+    syntax: Option<Box<EmbedSyntax<'a>>>,
 }
-impl NativeAttributeExpressionFailure<'_> {
+impl AttributeExpressionFailure<'_> {
     #[must_use]
-    pub const fn kind(&self) -> NativeAttributeOperandError {
+    pub const fn kind(&self) -> AttributeOperandError {
         self.kind
     }
     #[must_use]
-    pub fn syntax(&self) -> Option<&NativeSyntax<'_>> {
+    pub fn syntax(&self) -> Option<&EmbedSyntax<'_>> {
         self.syntax.as_deref()
     }
 }
-impl<'a> From<NativeAttributeOperandError> for NativeAttributeExpressionFailure<'a> {
-    fn from(kind: NativeAttributeOperandError) -> Self {
+impl<'a> From<AttributeOperandError> for AttributeExpressionFailure<'a> {
+    fn from(kind: AttributeOperandError) -> Self {
         Self { kind, syntax: None }
     }
 }
@@ -81,36 +73,39 @@ impl<'a> From<NativeAttributeOperandError> for NativeAttributeExpressionFailure<
 /// No caller AST, language, map, source range or allocator can assemble it.
 ///
 /// ```compile_fail
-/// use vize_l1::markup::NativeAttributeExpression;
+/// use vize_l1::markup::AttributeExpression;
 /// fn requires_clone<T: Clone>() {}
-/// requires_clone::<NativeAttributeExpression<'static>>();
+/// requires_clone::<AttributeExpression<'static>>();
 /// ```
-pub struct NativeAttributeExpression<'a> {
+pub struct AttributeExpression<'a> {
     origin: Origin<'a>,
-    kind: NativeConditionKind,
+    kind: ConditionKind,
     syntax: RetainedExpression<'a>,
 }
 
-impl<'a> NativeTemplateComponent<'a> {
+impl<'a> TemplateComponent<'a> {
     /// Replace the current header visit's source preparation and expression parse.
     /// This operation calls each once, deriving Module JS/TS from this selection.
     /// Syntax holes retain complete source/comments/diagnostics in the result.
     pub fn observe_attribute_expression(
         &self,
-        attribute: NativeAttribute<'_, 'a>,
-    ) -> Result<NativeAttributeExpression<'a>, NativeAttributeExpressionFailure<'a>> {
+        attribute: AttributeView<'_, 'a>,
+    ) -> Result<AttributeExpression<'a>, AttributeExpressionFailure<'a>> {
         Origin::check_original_header(self, &attribute)?;
         let block = self.component().block();
-        let name_offset = block.offset_of(attribute.surface().name.text).ok_or(
-            NativeAttributeOperandError::Source(SourceError::InvalidAuthoredSpan),
-        )?;
+        let name_offset =
+            block
+                .offset_of(attribute.surface().name.text)
+                .ok_or(AttributeOperandError::Source(
+                    SourceError::InvalidAuthoredSpan,
+                ))?;
         let kind = conditional_head(
             attribute.surface().name.text,
             name_offset,
             block.root_source(),
         )
-        .map_err(NativeAttributeOperandError::Directive)?
-        .ok_or(NativeAttributeOperandError::UnsupportedDirective)?;
+        .map_err(AttributeOperandError::Directive)?
+        .ok_or(AttributeOperandError::UnsupportedDirective)?;
         observe_conditional(self, attribute, kind)
     }
 }
@@ -118,12 +113,12 @@ impl<'a> NativeTemplateComponent<'a> {
 // Both routes have checked the actual original header and dialect selection.
 // Only this shared tail prepares and parses the complete original value.
 fn observe_conditional<'a>(
-    selected: &NativeTemplateComponent<'a>,
-    attribute: NativeAttribute<'_, 'a>,
-    kind: NativeConditionKind,
-) -> Result<NativeAttributeExpression<'a>, NativeAttributeExpressionFailure<'a>> {
+    selected: &TemplateComponent<'a>,
+    attribute: AttributeView<'_, 'a>,
+    kind: ConditionKind,
+) -> Result<AttributeExpression<'a>, AttributeExpressionFailure<'a>> {
     let (origin, syntax) = observe_expression_value(selected, attribute)?;
-    Ok(NativeAttributeExpression {
+    Ok(AttributeExpression {
         origin,
         kind,
         syntax,
@@ -133,19 +128,19 @@ fn observe_conditional<'a>(
 // The genuine head selection has already checked the original event. Both
 // expression families use this complete value preparation and stock parse once.
 fn observe_expression_value<'a>(
-    selected: &NativeTemplateComponent<'a>,
-    attribute: NativeAttribute<'_, 'a>,
-) -> Result<(Origin<'a>, RetainedExpression<'a>), NativeAttributeExpressionFailure<'a>> {
+    selected: &TemplateComponent<'a>,
+    attribute: AttributeView<'_, 'a>,
+) -> Result<(Origin<'a>, RetainedExpression<'a>), AttributeExpressionFailure<'a>> {
     let origin = Origin::from_attribute(selected, &attribute)?;
     let source = prepare_attribute_value(
         selected.component().allocator(),
         origin.block.root_source(),
         origin.value_span,
     )
-    .map_err(NativeAttributeOperandError::Source)?;
+    .map_err(AttributeOperandError::Source)?;
     let lang = match selected.grammar() {
-        NativeTemplateGrammar::JavaScriptModule => Lang::Js,
-        NativeTemplateGrammar::TypeScriptModule => Lang::Ts,
+        TemplateGrammar::JavaScriptModule => Lang::Js,
+        TemplateGrammar::TypeScriptModule => Lang::Ts,
     };
     let syntax = parse_once(
         selected.component().allocator(),
@@ -158,16 +153,16 @@ fn observe_expression_value<'a>(
         },
     )
     .into_expression()
-    .map_err(|syntax| NativeAttributeExpressionFailure {
-        kind: NativeAttributeOperandError::UnexpectedShape,
+    .map_err(|syntax| AttributeExpressionFailure {
+        kind: AttributeOperandError::UnexpectedShape,
         syntax: Some(syntax),
     })?;
     Ok((origin, syntax))
 }
 
-impl<'a> NativeAttributeExpression<'a> {
+impl<'a> AttributeExpression<'a> {
     #[must_use]
-    pub const fn kind(&self) -> NativeConditionKind {
+    pub const fn kind(&self) -> ConditionKind {
         self.kind
     }
     /// Readonly retained observations, also available for local syntax holes.
@@ -192,14 +187,14 @@ impl<'a> NativeAttributeExpression<'a> {
     /// Foreign/sibling/copied parses cannot confer the original event's origin.
     pub fn admitted_for<'s>(
         &'s self,
-        selected: &'s NativeTemplateComponent<'a>,
-        attribute: NativeAttribute<'s, 'a>,
-    ) -> Option<NativeAttributeExpressionView<'s, 'a>> {
+        selected: &'s TemplateComponent<'a>,
+        attribute: AttributeView<'s, 'a>,
+    ) -> Option<AttributeExpressionView<'s, 'a>> {
         if !self.origin.matches(selected, &attribute) {
             return None;
         }
         self.syntax.admitted_expression()?;
-        Some(NativeAttributeExpressionView {
+        Some(AttributeExpressionView {
             owner: self,
             selected,
             attribute,
@@ -213,22 +208,22 @@ impl<'a> NativeAttributeExpression<'a> {
 }
 
 /// A short actual header/operand join, not a native body completion certificate.
-pub struct NativeAttributeExpressionView<'s, 'a> {
-    owner: &'s NativeAttributeExpression<'a>,
-    selected: &'s NativeTemplateComponent<'a>,
-    attribute: NativeAttribute<'s, 'a>,
+pub struct AttributeExpressionView<'s, 'a> {
+    owner: &'s AttributeExpression<'a>,
+    selected: &'s TemplateComponent<'a>,
+    attribute: AttributeView<'s, 'a>,
 }
-impl<'s, 'a> NativeAttributeExpressionView<'s, 'a> {
+impl<'s, 'a> AttributeExpressionView<'s, 'a> {
     #[must_use]
-    pub fn selected(&self) -> &'s NativeTemplateComponent<'a> {
+    pub fn selected(&self) -> &'s TemplateComponent<'a> {
         self.selected
     }
     #[must_use]
-    pub fn attribute(&self) -> &NativeAttribute<'s, 'a> {
+    pub fn attribute(&self) -> &AttributeView<'s, 'a> {
         &self.attribute
     }
     #[must_use]
-    pub fn operand(&self) -> &'s NativeAttributeExpression<'a> {
+    pub fn operand(&self) -> &'s AttributeExpression<'a> {
         self.owner
     }
     /// This proof is always borrowed from the same private original stock owner.

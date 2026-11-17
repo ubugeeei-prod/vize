@@ -1,5 +1,5 @@
 use super::{
-    NativeComponent, NativeVueConstructionError, NativeWalkState, PendingNativeComponent,
+    NativeVueConstructionError, NativeWalkState, ParsedComponent, PendingNativeComponent,
     VueFileProducer,
 };
 use vize_l0::{Allocator, SourceRoot};
@@ -14,7 +14,7 @@ fn ready_only_transfer_keeps_original_carrier_before_any_driver() {
     let a = Allocator::default();
     let source = "<p>{{value}}</p>";
     let original =
-        NativeComponent::parse_in(&a, SourceRoot::new(source).unwrap().whole_block()).unwrap();
+        ParsedComponent::parse_in(&a, SourceRoot::new(source).unwrap().whole_block()).unwrap();
     let carrier = original.carrier().tree.children.as_ptr();
     let pending = PendingNativeComponent::from_component(original);
     let component = pending.into_unconstructed_component().unwrap();
@@ -40,7 +40,7 @@ fn actual_setup_profile_drives_ts_without_a_caller_template_language() {
     producer
         .setup(ProgramInput::checked(syntax.admitted_program().unwrap(), script_block, 0).unwrap())
         .unwrap();
-    let component = NativeComponent::parse_in(&a, block).unwrap();
+    let component = ParsedComponent::parse_in(&a, block).unwrap();
     let native = component
         .construct_vue_file_in(&mut producer.template_region().unwrap())
         .unwrap();
@@ -66,7 +66,7 @@ fn forgotten_real_walk_refuses_second_entry_and_cannot_issue_native_output() {
     let a = Allocator::default();
     let source = "<p>{{value}}</p>";
     let component =
-        NativeComponent::parse_in(&a, SourceRoot::new(source).unwrap().whole_block()).unwrap();
+        ParsedComponent::parse_in(&a, SourceRoot::new(source).unwrap().whole_block()).unwrap();
     let span = component.block().span();
     let mut pending = PendingNativeComponent::from_component(component);
     let mut producer = VueFileProducer::new(&a, source).unwrap();

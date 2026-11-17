@@ -8,7 +8,7 @@ use vize_l1::{
         vue::{DescriptorObservation, DescriptorOptions, ScriptRole},
     },
     css::StyleSyntax,
-    markup::{ComponentSourceError, NativeInterpolationFailure, NativeTemplateComponent},
+    markup::{ComponentSourceError, InterpolationFailure, TemplateComponent},
 };
 use vize_l2::{
     artifact::ArtifactError,
@@ -34,8 +34,8 @@ pub enum NativeSelectedSfcIssueKind {
     Source(ComponentSourceError),
     FileCreation(ArtifactError),
     Template(NativeTemplateIssue),
-    RootText(vize_l1::markup::NativeRootTextError),
-    Interpolation(vize_l1::markup::NativeInterpolationError),
+    RootText(vize_l1::markup::RootTextError),
+    Interpolation(vize_l1::markup::InterpolationError),
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -60,7 +60,7 @@ pub struct NativeSelectedSfcObservation<'a> {
     template: Option<NativeTemplateFile<'a>>,
     style: Option<StyleSyntax<'a>>,
     rejected_creation: Option<Box<RejectedNativeTemplateOwner<'a>>>,
-    interpolation_failure: Option<NativeInterpolationFailure<'a>>,
+    interpolation_failure: Option<InterpolationFailure<'a>>,
     issues: Vec<NativeSelectedSfcIssue>,
 }
 
@@ -93,7 +93,7 @@ impl<'a> NativeSelectedSfcObservation<'a> {
         self.rejected_creation.as_deref()
     }
     #[must_use]
-    pub fn interpolation_failure(&self) -> Option<&NativeInterpolationFailure<'a>> {
+    pub fn interpolation_failure(&self) -> Option<&InterpolationFailure<'a>> {
         self.interpolation_failure.as_ref()
     }
     #[must_use]
@@ -264,7 +264,7 @@ pub(super) fn observe<'a>(
     let span = descriptor
         .template()
         .map_or(whole, |template| template.block().span());
-    let selected = match NativeTemplateComponent::parse_in(allocator, descriptor) {
+    let selected = match TemplateComponent::parse_in(allocator, descriptor) {
         Ok(Some(selected)) => selected,
         Ok(None) => {
             observation.issues.push(NativeSelectedSfcIssue {

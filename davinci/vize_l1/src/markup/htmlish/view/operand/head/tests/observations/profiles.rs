@@ -1,6 +1,6 @@
 use super::{assert_own_original_root, selected};
 use crate::embed::{Grammar, Lang, Shape};
-use crate::markup::{NativeConditionKind, NativeTemplateGrammar};
+use crate::markup::{ConditionKind, TemplateGrammar};
 use oxc_ast::ast::{Expression, TSType};
 use oxc_span::GetSpan;
 use vize_l0::{Allocator, Span};
@@ -13,14 +13,14 @@ fn js_and_setup_ts_profiles_retain_each_routes_own_original_ast_and_spans() {
             "前\n<template><p v-if='(value)'/></template>",
             "(value)",
             Lang::Js,
-            NativeTemplateGrammar::JavaScriptModule,
+            TemplateGrammar::JavaScriptModule,
             Span::new(23, 30),
         ),
         (
             "前\n<template><p v-if='value as boolean'/></template><script setup lang=ts>const value=true</script>",
             "value as boolean",
             Lang::Ts,
-            NativeTemplateGrammar::TypeScriptModule,
+            TemplateGrammar::TypeScriptModule,
             Span::new(23, 39),
         ),
     ] {
@@ -33,7 +33,7 @@ fn js_and_setup_ts_profiles_retain_each_routes_own_original_ast_and_spans() {
             .unwrap();
         assert_eq!(head.name_block().span(), Span::new(17, 21));
         assert_eq!(head.name_block().source(), "v-if");
-        assert_eq!(head.condition_kind(), Some(NativeConditionKind::If));
+        assert_eq!(head.condition_kind(), Some(ConditionKind::If));
         let old = old_owner
             .observe_attribute_expression(old_element.attributes().next().unwrap())
             .unwrap();

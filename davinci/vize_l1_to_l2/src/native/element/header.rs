@@ -202,7 +202,7 @@ impl<'a> Context<'_, 'a> {
 mod tests {
     use super::{Context, HeaderAdmission, NativeHoleKind, StructuralHeadMask};
     use crate::native::construction::Diagnostic;
-    use crate::native::{NativeComponent, NativeObservations};
+    use crate::native::{NativeObservations, ParsedComponent};
     use alloc::vec::Vec;
     use vize_l0::{Allocator, SourceRoot, cstr};
     use vize_l1::embed::Lang;
@@ -212,7 +212,7 @@ mod tests {
 
     fn context<'component, 'a>(
         a: &'a Allocator,
-        component: &'component NativeComponent<'a>,
+        component: &'component ParsedComponent<'a>,
         observations: &'component mut NativeObservations<'a>,
     ) -> Context<'component, 'a> {
         Context {
@@ -231,7 +231,7 @@ mod tests {
         let a = Allocator::default();
         let file = "<div title=\"a&amp;b\" v-if=\"ok\" plain=\"x\" v-for=\"item in items\" :id=\"item.id\">text</div>";
         let component =
-            NativeComponent::parse_in(&a, SourceRoot::new(file).unwrap().whole_block()).unwrap();
+            ParsedComponent::parse_in(&a, SourceRoot::new(file).unwrap().whole_block()).unwrap();
         let [SurfaceChild::Element(carrier)] = component.carrier().tree.children.as_slice() else {
             panic!("actual native carrier");
         };
@@ -286,7 +286,7 @@ mod tests {
         let a = Allocator::default();
         let file = "<p v-if=\"a\">one</p><p v-if=\"b\">two</p>";
         let component =
-            NativeComponent::parse_in(&a, SourceRoot::new(file).unwrap().whole_block()).unwrap();
+            ParsedComponent::parse_in(&a, SourceRoot::new(file).unwrap().whole_block()).unwrap();
         let [SurfaceChild::Element(first), SurfaceChild::Element(second)] =
             component.carrier().tree.children.as_slice()
         else {
@@ -336,7 +336,7 @@ mod tests {
             let a = Allocator::default();
             let file = cstr!("<p {attribute} v-if=\"good\">body</p>");
             let component =
-                NativeComponent::parse_in(&a, SourceRoot::new(&file).unwrap().whole_block())
+                ParsedComponent::parse_in(&a, SourceRoot::new(&file).unwrap().whole_block())
                     .unwrap();
             let [SurfaceChild::Element(carrier)] = component.carrier().tree.children.as_slice()
             else {
@@ -375,7 +375,7 @@ mod tests {
         ] {
             let a = Allocator::default();
             let component =
-                NativeComponent::parse_in(&a, SourceRoot::new(file).unwrap().whole_block())
+                ParsedComponent::parse_in(&a, SourceRoot::new(file).unwrap().whole_block())
                     .unwrap();
             let [SurfaceChild::Element(carrier)] = component.carrier().tree.children.as_slice()
             else {

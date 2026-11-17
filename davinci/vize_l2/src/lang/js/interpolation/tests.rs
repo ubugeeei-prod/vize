@@ -5,7 +5,7 @@ use vize_l0::{
 };
 use vize_l1::{
     container::{Vue, vue::DescriptorOptions},
-    markup::{NativeTemplateComponent, SurfaceParseOptions},
+    markup::{SurfaceParseOptions, TemplateComponent},
 };
 
 mod ownership;
@@ -29,10 +29,7 @@ fn same<T: core::fmt::Debug + PartialEq>(actual: T, expected: T, message: &str) 
     }
 }
 
-fn selected<'a>(
-    arena: &'a Allocator,
-    source: &'a str,
-) -> Result<NativeTemplateComponent<'a>, String> {
+fn selected<'a>(arena: &'a Allocator, source: &'a str) -> Result<TemplateComponent<'a>, String> {
     let descriptor = Vue.observe_descriptor(
         arena,
         source,
@@ -42,7 +39,7 @@ fn selected<'a>(
             template: SurfaceParseOptions::default(),
         },
     );
-    NativeTemplateComponent::parse_in(
+    TemplateComponent::parse_in(
         arena,
         descriptor.admitted().map_err(|_| "descriptor refused")?,
     )

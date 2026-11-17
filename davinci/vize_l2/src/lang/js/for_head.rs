@@ -3,7 +3,7 @@
 use alloc::boxed::Box;
 use oxc_ast::ast::{Expression, FormalParameter};
 use vize_l0::Span;
-use vize_l1::embed::syntax::{NativeForHead, NativeForRefusal};
+use vize_l1::embed::syntax::{ForHead, ForRefusal};
 use vize_l1::embed::{EmbedSource, SourceError};
 
 use crate::resolution::source::ForReferenceSource;
@@ -11,18 +11,18 @@ use crate::resolution::source::ForReferenceSource;
 /// Refusal preserves the entire original head and both available observations.
 #[derive(Debug)]
 pub struct RejectedForHeadInput<'a> {
-    syntax: NativeForHead<'a>,
-    pub kind: NativeForRefusal,
+    syntax: ForHead<'a>,
+    pub kind: ForRefusal,
     pub span: Span,
 }
 
 impl<'a> RejectedForHeadInput<'a> {
     #[must_use]
-    pub const fn syntax(&self) -> &NativeForHead<'a> {
+    pub const fn syntax(&self) -> &ForHead<'a> {
         &self.syntax
     }
     #[must_use]
-    pub fn into_syntax(self) -> NativeForHead<'a> {
+    pub fn into_syntax(self) -> ForHead<'a> {
         self.syntax
     }
 }
@@ -49,20 +49,18 @@ impl<'a> RejectedForHeadInput<'a> {
 /// ```
 #[derive(Debug)]
 pub struct ForHeadInput<'a> {
-    syntax: NativeForHead<'a>,
+    syntax: ForHead<'a>,
     aliases: &'a [FormalParameter<'a>],
     collection: &'a Expression<'a>,
 }
 
 impl<'a> ForHeadInput<'a> {
-    pub fn new(syntax: NativeForHead<'a>) -> Result<Self, Box<RejectedForHeadInput<'a>>> {
+    pub fn new(syntax: ForHead<'a>) -> Result<Self, Box<RejectedForHeadInput<'a>>> {
         let roots = ForReferenceSource::checked(&syntax)
             .map(|source| (source.aliases(), source.collection()));
         let Some((aliases, collection)) = roots else {
             return Err(Box::new(RejectedForHeadInput {
-                kind: syntax
-                    .native_refusal()
-                    .unwrap_or(NativeForRefusal::StockProfile),
+                kind: syntax.for_refusal().unwrap_or(ForRefusal::StockProfile),
                 span: syntax.source().span(),
                 syntax,
             }));
@@ -75,7 +73,7 @@ impl<'a> ForHeadInput<'a> {
     }
 
     #[must_use]
-    pub const fn syntax(&self) -> &NativeForHead<'a> {
+    pub const fn syntax(&self) -> &ForHead<'a> {
         &self.syntax
     }
     #[must_use]
@@ -115,7 +113,7 @@ impl<'a> ForHeadInput<'a> {
             .collection_authored_span(span)
     }
     #[must_use]
-    pub fn into_syntax(self) -> NativeForHead<'a> {
+    pub fn into_syntax(self) -> ForHead<'a> {
         self.syntax
     }
     pub(crate) fn references(&self) -> Option<ForReferenceSource<'_, 'a>> {
@@ -124,7 +122,7 @@ impl<'a> ForHeadInput<'a> {
 }
 
 mod native;
-pub use native::{NativeForInput, RejectedNativeForInput};
+pub use native::{ForInput, RejectedForInput};
 
 #[cfg(test)]
 mod tests;

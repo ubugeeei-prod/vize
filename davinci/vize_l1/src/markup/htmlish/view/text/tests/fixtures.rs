@@ -117,7 +117,7 @@ fn every_pinned_original_root_text_matches_whole_source_qualified_golden_windows
 }
 
 fn original_span(
-    owner: &crate::markup::NativeTemplateComponent<'_>,
+    owner: &crate::markup::TemplateComponent<'_>,
     child: &SurfaceChild<'_>,
 ) -> Result<(&'static str, Span), &'static str> {
     let block = owner.component().block();

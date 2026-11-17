@@ -2,7 +2,7 @@ use super::support::{
     LOCALES, NeverLookup, complete, expected, parity, parser, registered, selected, span,
 };
 use vize_l0::{Allocator, Span, cstr};
-use vize_l1::markup::NativeLintTagRefusal;
+use vize_l1::markup::TagFactsRefusal;
 use vize_patina::native::{NativeLintRefusal, NativeSyntaxLint, NativeVHtmlLintError};
 
 #[test]
@@ -34,7 +34,7 @@ fn modified_argument_and_dynamic_pre_refuse_without_erasing_original_clean_vecto
             assert_eq!(
                 lint.no_v_html(element, &NeverLookup).err(),
                 Some(NativeVHtmlLintError::Header(NativeLintRefusal::LintTag {
-                    reason: NativeLintTagRefusal::AmbiguousVerbatim
+                    reason: TagFactsRefusal::AmbiguousVerbatim
                 }))
             );
         }
@@ -83,7 +83,7 @@ fn inherited_literal_context_refuses_before_clean_credit_and_catalog_lookup() {
         } else {
             "<Foo v-html='x' />"
         };
-        assert!(element.lint_tag().unwrap().header_is_literal());
+        assert!(element.tag_facts().unwrap().header_is_literal());
         assert_eq!(
             lint.no_v_html(&element, &NeverLookup).err(),
             Some(NativeVHtmlLintError::InheritedLiteralContext {
@@ -107,7 +107,7 @@ fn own_exact_pre_authenticates_frozen_sink_headers_inside_inherited_context() {
         let parent = owner.children().next().unwrap().into_element().unwrap();
         let element = parent.children().next().unwrap().into_element().unwrap();
         let lint = NativeSyntaxLint::new(&owner).unwrap();
-        assert!(element.lint_tag().unwrap().header_is_literal());
+        assert!(element.tag_facts().unwrap().header_is_literal());
         assert!(lint.no_v_html(&element, &NeverLookup).unwrap().is_empty());
         for locale in LOCALES {
             assert_eq!(complete(&registered(source, locale)), expected(vec![]));
@@ -164,7 +164,7 @@ fn inherited_template_preserves_original_provider_refusal_and_clean_registered_v
     assert_eq!(
         lint.no_v_html(&element, &NeverLookup).err(),
         Some(NativeVHtmlLintError::Header(NativeLintRefusal::LintTag {
-            reason: NativeLintTagRefusal::InheritedTemplate
+            reason: TagFactsRefusal::InheritedTemplate
         }))
     );
     for locale in LOCALES {

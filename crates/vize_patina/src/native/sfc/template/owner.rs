@@ -10,7 +10,7 @@ use vize_l1::{
         Vue,
         vue::{DescriptorObservation, DescriptorOptions},
     },
-    markup::{NativeTemplateComponent, SurfaceParseOptions},
+    markup::{SurfaceParseOptions, TemplateComponent},
 };
 
 /// A normal original-SFC owner; callers cannot supply raw content spans or
@@ -27,7 +27,7 @@ use vize_l1::{
 /// ```
 pub struct NativeSfcTemplateOwner<'a> {
     descriptor: DescriptorObservation<'a>,
-    template: NativeTemplateComponent<'a>,
+    template: TemplateComponent<'a>,
 }
 
 impl<'a> NativeSfcTemplateOwner<'a> {
@@ -45,7 +45,7 @@ impl<'a> NativeSfcTemplateOwner<'a> {
         envelope::check_template_only(&descriptor)?;
         let admitted = descriptor.admitted().map_err(|_| Refusal::SourceMismatch)?;
         let original = admitted.template().ok_or(Refusal::SourceMismatch)?;
-        let template = NativeTemplateComponent::parse_in(allocator, admitted)
+        let template = TemplateComponent::parse_in(allocator, admitted)
             .map_err(Refusal::Parse)?
             .ok_or(Refusal::SourceMismatch)?;
         if original.container_index() != template.template_index()
@@ -79,7 +79,7 @@ impl<'a> NativeSfcTemplateOwner<'a> {
 
     /// Returns the original selected template component.
     #[must_use]
-    pub fn template(&self) -> &NativeTemplateComponent<'a> {
+    pub fn template(&self) -> &TemplateComponent<'a> {
         &self.template
     }
 }

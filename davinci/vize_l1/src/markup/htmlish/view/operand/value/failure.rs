@@ -1,22 +1,19 @@
-use super::{NativeAttribute, NativeAttributeOperandError};
+use super::{AttributeOperandError, AttributeView};
 use vize_l0::{SourceBlock, Span};
 
 /// Normally owned preparation failure with the actual token's authored input.
 /// The selected Component still owns its complete original surface/diagnostics.
 /// These readonly byte observations confer no original-token admission.
 #[derive(Debug)]
-pub struct NativeAttributeValueFailure<'a> {
-    kind: NativeAttributeOperandError,
+pub struct AttributeValueFailure<'a> {
+    kind: AttributeOperandError,
     block: SourceBlock<'a>,
     ordinal: usize,
     name: &'a str,
     value: Option<&'a str>,
 }
-impl<'a> NativeAttributeValueFailure<'a> {
-    pub(super) fn original(
-        kind: NativeAttributeOperandError,
-        attribute: &NativeAttribute<'_, 'a>,
-    ) -> Self {
+impl<'a> AttributeValueFailure<'a> {
+    pub(super) fn original(kind: AttributeOperandError, attribute: &AttributeView<'_, 'a>) -> Self {
         Self {
             kind,
             block: attribute.component().block(),
@@ -30,7 +27,7 @@ impl<'a> NativeAttributeValueFailure<'a> {
         }
     }
     #[must_use]
-    pub const fn kind(&self) -> NativeAttributeOperandError {
+    pub const fn kind(&self) -> AttributeOperandError {
         self.kind
     }
     /// The actual attribute's full original block, including for foreign input.

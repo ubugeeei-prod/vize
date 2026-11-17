@@ -38,8 +38,8 @@ impl<W: Write> Write for RecordedWriter<W> {
         self.capture.flush()
     }
 }
-struct NativeChild(Child);
-impl Drop for NativeChild {
+struct ChildView(Child);
+impl Drop for ChildView {
     fn drop(&mut self) {
         if self.0.try_wait().ok().flatten().is_none() {
             let _ = self.0.kill();
@@ -49,7 +49,7 @@ impl Drop for NativeChild {
 }
 
 pub(super) struct NativeTap {
-    child: NativeChild,
+    child: ChildView,
     socket: PathBuf,
     stop: Sender<()>,
     control: Receiver<UnixStream>,
@@ -60,7 +60,7 @@ impl NativeTap {
         let socket = output.join("api-relay.sock");
         let listener = UnixListener::bind(&socket).unwrap();
         listener.set_nonblocking(true).unwrap();
-        let mut child = NativeChild(
+        let mut child = ChildView(
             Command::new("setpriv")
                 .args(["--pdeathsig", "KILL", "--"])
                 .arg(launcher)

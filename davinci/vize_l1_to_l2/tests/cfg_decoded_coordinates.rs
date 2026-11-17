@@ -2,7 +2,7 @@
 
 use vize_l0::{Allocator, SourceRoot, Span, id::NodeId};
 use vize_l1::embed::Lang;
-use vize_l1_to_l2::{lower_source_block, native::NativeComponent};
+use vize_l1_to_l2::{lower_source_block, native::ParsedComponent};
 use vize_l2::analysis::template_complexity::{self, ComplexityFacts, Contribution, DecisionKind};
 use vize_l2::artifact::Builder;
 use vize_l2::expr::ExprRef;
@@ -68,7 +68,7 @@ fn actual_native_and_compatibility_producers_agree_on_complete_encoded_expressio
                 assert_eq!(facts, expected);
 
                 let mut builder = Builder::new(&a, &file).unwrap();
-                let owner = NativeComponent::parse_in(&a, block).unwrap();
+                let owner = ParsedComponent::parse_in(&a, block).unwrap();
                 let produced = owner.construct_in(&mut builder.region(), Lang::Ts).unwrap();
                 assert!(produced.is_supported(), "{:?}", produced.holes);
                 let native = builder.finish().unwrap();

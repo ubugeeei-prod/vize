@@ -2,7 +2,7 @@
 
 use serde_json::{Value, json};
 use vize_l0::{Allocator, SourceRoot, String, cstr};
-use vize_l1::markup::htmlish::document::{DocumentHtmlNode, DocumentHtmlRefusal, NativeDocument};
+use vize_l1::markup::htmlish::document::{DocumentHtmlNode, DocumentHtmlRefusal, ParsedDocument};
 
 const CORPUS: &str = include_str!("fixtures/document/html-body-void-elements.json");
 const TAGS: [&str; 5] = ["area", "embed", "source", "track", "wbr"];
@@ -16,7 +16,7 @@ fn original_body_void_elements_match_complete_browser_packets() {
         let label = case["name"].as_str().unwrap();
         let source = case["source"].as_str().unwrap();
         let arena = Allocator::default();
-        let owner = NativeDocument::lex_in(&arena, SourceRoot::new(source).unwrap());
+        let owner = ParsedDocument::lex_in(&arena, SourceRoot::new(source).unwrap());
         let tree = owner.html_structure().expect(label);
         let elements: Vec<_> = tree.elements().collect();
         let actual: Vec<_> = elements
@@ -110,7 +110,7 @@ fn new_void_names_do_not_admit_wrong_modes_prefixes_or_explicit_closes() {
             ),
         ] {
             let arena = Allocator::default();
-            let owner = NativeDocument::lex_in(&arena, SourceRoot::new(&source).unwrap());
+            let owner = ParsedDocument::lex_in(&arena, SourceRoot::new(&source).unwrap());
             let refusal = owner.html_structure().unwrap_err();
             assert!(
                 matches!(
@@ -126,7 +126,7 @@ fn new_void_names_do_not_admit_wrong_modes_prefixes_or_explicit_closes() {
     }
     let source = "<!DOCTYPE html><html><head></head><body><col></body></html>";
     let arena = Allocator::default();
-    let owner = NativeDocument::lex_in(&arena, SourceRoot::new(source).unwrap());
+    let owner = ParsedDocument::lex_in(&arena, SourceRoot::new(source).unwrap());
     assert!(matches!(
         owner.html_structure(),
         Err(DocumentHtmlRefusal::IgnoredTag(_))

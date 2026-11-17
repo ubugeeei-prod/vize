@@ -6,23 +6,23 @@ use super::{
 };
 use alloc::{boxed::Box, vec::Vec};
 use vize_l0::{Allocator, SourceBlock, Span, diag::Diagnostic};
-use vize_l1::embed::{Lang, SourceError, syntax::NativeSyntax};
+use vize_l1::embed::{Lang, SourceError, syntax::EmbedSyntax};
 use vize_l1::markup::{ComponentParse, ComponentSourceError};
 use vize_l2::artifact::ComponentFactory;
 use vize_l2::op::Namespace;
 
 /// A native parser's complete carrier paired with its exact checked source.
 /// Private fields prevent pairing a foreign or modified carrier with a block.
-pub struct NativeComponent<'a> {
+pub struct ParsedComponent<'a> {
     allocator: &'a Allocator,
     block: SourceBlock<'a>,
     component: ComponentParse<'a>,
 }
 
-impl core::fmt::Debug for NativeComponent<'_> {
+impl core::fmt::Debug for ParsedComponent<'_> {
     fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         formatter
-            .debug_struct("NativeComponent")
+            .debug_struct("ParsedComponent")
             .field("block", &self.block)
             .field("component", &self.component)
             .finish_non_exhaustive()
@@ -32,17 +32,17 @@ impl core::fmt::Debug for NativeComponent<'_> {
 /// Source rejection retains the original parser owner before any factory call.
 #[derive(Debug)]
 pub struct RejectedNativeComponent<'a> {
-    pub component: NativeComponent<'a>,
+    pub component: ParsedComponent<'a>,
 }
 
 /// Complete observations from this one construction, beside its factory nodes.
 #[derive(Debug)]
 pub struct NativeProduced<'a> {
-    pub component: NativeComponent<'a>,
+    pub component: ParsedComponent<'a>,
     pub holes: Vec<NativeHole>,
     pub diagnostics: Vec<Diagnostic>,
     pub embeds: Vec<NativeEmbed<'a>>,
-    pub rejected_syntax: Vec<NativeSyntax<'a>>,
+    pub rejected_syntax: Vec<EmbedSyntax<'a>>,
 }
 
 impl NativeProduced<'_> {
@@ -53,7 +53,7 @@ impl NativeProduced<'_> {
     }
 }
 
-impl<'a> NativeComponent<'a> {
+impl<'a> ParsedComponent<'a> {
     /// Parse exactly this checked block once with the genuine native L1 parser.
     pub fn parse_in(
         allocator: &'a Allocator,
@@ -111,7 +111,7 @@ impl<'a> NativeComponent<'a> {
 
 /// Both routes borrow the same original owners into the existing single walk.
 pub(super) fn construct_component<'a, R: ConstructionFactory<'a>>(
-    component: &NativeComponent<'a>,
+    component: &ParsedComponent<'a>,
     observations: &mut NativeObservations<'a>,
     region: &mut R,
     lang: Lang,

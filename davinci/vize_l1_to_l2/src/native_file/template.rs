@@ -1,14 +1,14 @@
 use super::{NativeSfcIssue, NativeSfcIssueKind};
 use crate::native::{
-    NativeComponent, NativeEmbed, NativeHole, NativeProduced, NativeVueConstructionError,
-    NativeVueProduced, PendingNativeComponent, RejectedNativeComponent,
+    NativeEmbed, NativeHole, NativeProduced, NativeVueConstructionError, NativeVueProduced,
+    ParsedComponent, PendingNativeComponent, RejectedNativeComponent,
 };
 use crate::vue_file::{VueFileIssue, VueFileProducer};
 use alloc::{boxed::Box, vec::Vec};
 use vize_l0::{Allocator, SourceBlock, diag::Diagnostic};
 use vize_l1::{
     container::vue::TemplateView,
-    embed::{Lang, syntax::NativeSyntax},
+    embed::{Lang, syntax::EmbedSyntax},
     markup::ComponentSourceError,
 };
 
@@ -19,11 +19,11 @@ pub enum NativeTemplateOutcome<'a> {
     ConstructionRefused(NativeVueConstructionError),
     Produced(NativeVueProduced<'a>),
     FactoryRefused {
-        component: NativeComponent<'a>,
+        component: ParsedComponent<'a>,
         issue: VueFileIssue,
     },
     ComponentRejected(Box<RejectedNativeComponent<'a>>),
-    FileUnavailable(NativeComponent<'a>),
+    FileUnavailable(ParsedComponent<'a>),
     SourceRefused(ComponentSourceError),
 }
 
@@ -83,7 +83,7 @@ impl<'a> NativeTemplateObservation<'a> {
     }
     /// Read the actual original owner even before a genuine native walk can run.
     #[must_use]
-    pub fn component(&self) -> Option<&NativeComponent<'a>> {
+    pub fn component(&self) -> Option<&ParsedComponent<'a>> {
         if let Some(pending) = &self.pending {
             return Some(pending.component());
         }
@@ -128,7 +128,7 @@ impl<'a> NativeTemplateObservation<'a> {
         self.produced().map_or(&[], |produced| &produced.embeds)
     }
     #[must_use]
-    pub fn rejected_syntax(&self) -> &[NativeSyntax<'a>] {
+    pub fn rejected_syntax(&self) -> &[EmbedSyntax<'a>] {
         if let Some(pending) = &self.pending {
             return pending.observations().rejected_syntax();
         }
@@ -157,7 +157,7 @@ impl<'a> NativeTemplateObservation<'a> {
         });
     }
     /// Transfer a pre-driver refusal only; a started owner remains parked intact.
-    fn unconstructed(&mut self) -> Option<NativeComponent<'a>> {
+    fn unconstructed(&mut self) -> Option<ParsedComponent<'a>> {
         let pending = self.pending.take()?;
         match pending.into_unconstructed_component() {
             Ok(component) => Some(component),
@@ -241,7 +241,7 @@ pub(super) fn prepare<'a>(
             kind,
         });
     };
-    let (pending, outcome) = match NativeComponent::parse_in(allocator, block) {
+    let (pending, outcome) = match ParsedComponent::parse_in(allocator, block) {
         Ok(component) => (
             Some(PendingNativeComponent::from_component(component)),
             NativeTemplateOutcome::ConstructionPending,

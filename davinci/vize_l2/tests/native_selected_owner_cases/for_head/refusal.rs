@@ -1,5 +1,5 @@
 use super::*;
-use vize_l1::embed::syntax::{ForHeadPart, NativeForRefusal};
+use vize_l1::embed::syntax::{ForHeadPart, ForRefusal};
 use vize_l2::{
     file::{FileIssueKind, RejectedFileFor, RejectedFileHandler},
     resolution::{ForResolutionErrorKind, ResolutionErrorKind},
@@ -11,12 +11,9 @@ fn syntax_source_and_pattern_refusals_keep_the_complete_original_for_owners()
     let arena = Allocator::default();
     for (value, expected) in [
         ("item in value + /*kept*/", None),
-        (
-            "item /*original*/ in items",
-            Some(NativeForRefusal::Comment),
-        ),
-        ("{item} in items", Some(NativeForRefusal::AliasShape)),
-        ("item in &#105;tems", Some(NativeForRefusal::EntityOutput)),
+        ("item /*original*/ in items", Some(ForRefusal::Comment)),
+        ("{item} in items", Some(ForRefusal::AliasShape)),
+        ("item in &#105;tems", Some(ForRefusal::EntityOutput)),
     ] {
         let source = format!(
             "<script setup lang='ts'>const items=2;</script><template><div v-for='{value}'/></template>",

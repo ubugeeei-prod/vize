@@ -123,7 +123,7 @@ fn interrupted_preparation_failure_stays_owned_without_a_fabricated_input_or_nod
         };
         assert_eq!(
             failure.kind(),
-            vize_l1::markup::NativeAttributeOperandError::IncompleteValue
+            vize_l1::markup::AttributeOperandError::IncompleteValue
         );
         assert_eq!(walk.complete().unwrap_err().kind, Kind::Interrupted);
     }
@@ -140,6 +140,6 @@ fn interrupted_preparation_failure_stays_owned_without_a_fabricated_input_or_nod
     };
     assert_eq!(
         failure.kind(),
-        vize_l1::markup::NativeAttributeOperandError::IncompleteValue
+        vize_l1::markup::AttributeOperandError::IncompleteValue
     );
 }

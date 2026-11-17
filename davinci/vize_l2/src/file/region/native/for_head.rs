@@ -5,11 +5,11 @@ use crate::artifact::RegionBuilder;
 use crate::file::FileIssueKind;
 use crate::file::for_head::{PendingFor, RejectedFileFor};
 use crate::file::region::{FileRegion, Lookup};
-use crate::lang::js::{NativeForInput, file::native::NativeTemplateIssueKind as Kind};
+use crate::lang::js::{ForInput, file::native::NativeTemplateIssueKind as Kind};
 use crate::resolution::{ForResolutionErrorKind, ResolutionErrorKind, resolve_for_facts};
 use core::ops::DerefMut;
 use vize_l0::Span;
-use vize_l1::markup::{NativeAttribute, NativeTemplateComponent};
+use vize_l1::markup::{AttributeView, TemplateComponent};
 
 pub(super) struct ObservedFor {
     pub(super) index: usize,
@@ -21,8 +21,8 @@ where
 {
     pub(super) fn observe_for(
         &mut self,
-        selected: &NativeTemplateComponent<'a>,
-        attribute: NativeAttribute<'_, 'a>,
+        selected: &TemplateComponent<'a>,
+        attribute: AttributeView<'_, 'a>,
     ) -> Result<ObservedFor, Kind> {
         let block = selected.component().block();
         let name_span = block
@@ -43,7 +43,7 @@ where
             }
         };
         let value_span = operand.value_span();
-        let input = match NativeForInput::new(operand) {
+        let input = match ForInput::new(operand) {
             Ok(input) => input,
             Err(error) => {
                 self.facts

@@ -228,7 +228,7 @@ fn native_target_surface(tag: &str, public_types: bool) -> String {
     let mut ty = if public_types {
         String::from("import('vue').NativeElements[")
     } else {
-        cstr!("{}<", names::helper("$NativeElement", &["PropertyKey"]))
+        cstr!("{}<", names::helper("$ElementView", &["PropertyKey"]))
     };
     push_ts_string_literal(&mut ty, tag);
     ty.push_str(if public_types { "]" } else { ">" });

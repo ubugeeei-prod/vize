@@ -1,6 +1,6 @@
 use super::support::*;
 use vize_l0::Span;
-use vize_l1::markup::NativeLintTagRefusal;
+use vize_l1::markup::TagFactsRefusal;
 use vize_patina::{
     HelpLevel, LintPreset, Linter, Severity,
     native::{NativeLintRefusal, template::NativeTemplateLintRefusal as Refusal},
@@ -175,7 +175,7 @@ fn own_exact_and_modified_pre_contexts_cannot_grant_body_or_whole_clean_credit()
         (
             "<div v-pre.camel><textarea>{{ raw }}</textarea></div>",
             Refusal::Header(NativeLintRefusal::LintTag {
-                reason: NativeLintTagRefusal::AmbiguousVerbatim,
+                reason: TagFactsRefusal::AmbiguousVerbatim,
             }),
         ),
     ] {

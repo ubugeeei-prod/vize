@@ -9,7 +9,7 @@ use alloc::boxed::Box;
 use alloc::vec::Vec;
 use vize_l0::diag::{Advisory, Diagnostic, Stage};
 use vize_l0::{Allocator, SourceBlock, SourceRoot, Span, String, id::NodeId};
-use vize_l1::embed::syntax::{EmbedHole, NativeSyntax, RetainedExpression};
+use vize_l1::embed::syntax::{EmbedHole, EmbedSyntax, RetainedExpression};
 use vize_l1::embed::{Lang, SourceError};
 use vize_l1::markup::{ComponentParse, DirectiveNameError};
 use vize_l1::markup::{SurfaceChild, Token};
@@ -25,7 +25,7 @@ pub use pending::{NativeVueConstructionError, NativeVueProduced, RejectedNativeV
 #[cfg(test)]
 pub(crate) use pending::{Point, Probe};
 mod block;
-pub use block::{NativeComponent, NativeProduced, RejectedNativeComponent};
+pub use block::{NativeProduced, ParsedComponent, RejectedNativeComponent};
 mod element;
 mod expression;
 mod pattern;
@@ -75,7 +75,7 @@ pub struct NativeLowered<'a> {
     pub component: ComponentParse<'a>,
     pub embeds: Vec<NativeEmbed<'a>>,
     /// Retain the original owning observations even on an unexpected shape.
-    pub rejected_syntax: Vec<NativeSyntax<'a>>,
+    pub rejected_syntax: Vec<EmbedSyntax<'a>>,
 }
 
 impl NativeLowered<'_> {
@@ -102,7 +102,7 @@ pub fn lower_component_native<'a>(
     let block = SourceRoot::new(source)
         .map_err(|_| empty_rejection(allocator, source, ArtifactError::SourceLimit))?
         .whole_block();
-    let component = NativeComponent::parse_in(allocator, block)
+    let component = ParsedComponent::parse_in(allocator, block)
         .map_err(|_| empty_rejection(allocator, source, ArtifactError::SourceLimit))?;
     let produced = component
         .construct_in(&mut builder.region(), lang)
@@ -135,12 +135,12 @@ fn empty_rejection<'a>(
 
 struct Context<'component, 'a> {
     allocator: &'a Allocator,
-    component: &'component NativeComponent<'a>,
+    component: &'component ParsedComponent<'a>,
     lang: Lang,
     holes: &'component mut Vec<NativeHole>,
     diagnostics: &'component mut Vec<Diagnostic>,
     embeds: &'component mut Vec<NativeEmbed<'a>>,
-    rejected_syntax: &'component mut Vec<NativeSyntax<'a>>,
+    rejected_syntax: &'component mut Vec<EmbedSyntax<'a>>,
 }
 
 impl<'a> Context<'_, 'a> {

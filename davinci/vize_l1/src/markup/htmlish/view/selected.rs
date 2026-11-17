@@ -1,13 +1,13 @@
 //! Descriptor-selected original template ownership, without File completion.
 
-use super::{NativeChildren, NativeComponent};
+use super::{ChildrenView, ParsedComponent};
 use crate::container::vue::{AdmittedDescriptor, ScriptRole, ScriptView};
 use crate::{embed::Lang, markup::ComponentSourceError};
 use vize_l0::{Allocator, SourceBlock};
 
 /// Intrinsic first-family grammar, selected by the authentic Descriptor.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum NativeTemplateGrammar {
+pub enum TemplateGrammar {
     JavaScriptModule,
     TypeScriptModule,
 }
@@ -36,21 +36,21 @@ impl<'a> Selection<'a> {
 /// This owner does not certify clean grammar or a completed native File.
 ///
 /// ```compile_fail
-/// use vize_l1::markup::NativeTemplateComponent;
+/// use vize_l1::markup::TemplateComponent;
 /// fn requires_clone<T: Clone>() {}
-/// requires_clone::<NativeTemplateComponent<'static>>();
+/// requires_clone::<TemplateComponent<'static>>();
 /// ```
 #[derive(Debug)]
-pub struct NativeTemplateComponent<'a> {
-    component: NativeComponent<'a>,
+pub struct TemplateComponent<'a> {
+    component: ParsedComponent<'a>,
     index: usize,
-    grammar: NativeTemplateGrammar,
+    grammar: TemplateGrammar,
     has_styles: bool,
     ordinary: Option<Selection<'a>>,
     setup: Option<Selection<'a>>,
 }
 
-impl<'a> NativeTemplateComponent<'a> {
+impl<'a> TemplateComponent<'a> {
     /// Missing selected template returns `None` without parsing another block.
     pub fn parse_in(
         allocator: &'a Allocator,
@@ -60,11 +60,11 @@ impl<'a> NativeTemplateComponent<'a> {
             return Ok(None);
         };
         let grammar = match descriptor.template_lang() {
-            Lang::Js => NativeTemplateGrammar::JavaScriptModule,
-            Lang::Ts => NativeTemplateGrammar::TypeScriptModule,
+            Lang::Js => TemplateGrammar::JavaScriptModule,
+            Lang::Ts => TemplateGrammar::TypeScriptModule,
         };
         Ok(Some(Self {
-            component: NativeComponent::parse_selected_in(allocator, template.block())?,
+            component: ParsedComponent::parse_selected_in(allocator, template.block())?,
             index: template.container_index(),
             grammar,
             has_styles: descriptor.styles().len() != 0,
@@ -73,7 +73,7 @@ impl<'a> NativeTemplateComponent<'a> {
         }))
     }
     #[must_use]
-    pub fn component(&self) -> &NativeComponent<'a> {
+    pub fn component(&self) -> &ParsedComponent<'a> {
         &self.component
     }
     #[must_use]
@@ -81,7 +81,7 @@ impl<'a> NativeTemplateComponent<'a> {
         self.index
     }
     #[must_use]
-    pub fn grammar(&self) -> NativeTemplateGrammar {
+    pub fn grammar(&self) -> TemplateGrammar {
         self.grammar
     }
     /// Authentic Descriptor style presence, retained without a second parse.
@@ -90,39 +90,39 @@ impl<'a> NativeTemplateComponent<'a> {
         self.has_styles
     }
     #[must_use]
-    pub fn children(&self) -> NativeChildren<'_, 'a> {
+    pub fn children(&self) -> ChildrenView<'_, 'a> {
         self.component.children()
     }
     #[must_use]
-    pub fn ordinary(&self) -> Option<NativeScriptSelection<'_, 'a>> {
-        self.ordinary.map(|selected| NativeScriptSelection {
+    pub fn ordinary(&self) -> Option<ScriptSelection<'_, 'a>> {
+        self.ordinary.map(|selected| ScriptSelection {
             owner: self,
             selected,
         })
     }
     #[must_use]
-    pub fn setup(&self) -> Option<NativeScriptSelection<'_, 'a>> {
-        self.setup.map(|selected| NativeScriptSelection {
+    pub fn setup(&self) -> Option<ScriptSelection<'_, 'a>> {
+        self.setup.map(|selected| ScriptSelection {
             owner: self,
             selected,
         })
     }
     /// Consuming transfer drops Descriptor selection authority.
     #[must_use]
-    pub fn into_component(self) -> NativeComponent<'a> {
+    pub fn into_component(self) -> ParsedComponent<'a> {
         self.component
     }
 }
 
 /// Readonly original script selection borrowing its selected template owner.
 #[derive(Debug)]
-pub struct NativeScriptSelection<'o, 'a> {
-    owner: &'o NativeTemplateComponent<'a>,
+pub struct ScriptSelection<'o, 'a> {
+    owner: &'o TemplateComponent<'a>,
     selected: Selection<'a>,
 }
-impl<'o, 'a> NativeScriptSelection<'o, 'a> {
+impl<'o, 'a> ScriptSelection<'o, 'a> {
     #[must_use]
-    pub fn owner(&self) -> &'o NativeTemplateComponent<'a> {
+    pub fn owner(&self) -> &'o TemplateComponent<'a> {
         self.owner
     }
     #[must_use]
@@ -145,7 +145,7 @@ impl<'o, 'a> NativeScriptSelection<'o, 'a> {
 
 #[cfg(test)]
 mod tests {
-    use super::{NativeTemplateComponent, NativeTemplateGrammar};
+    use super::{TemplateComponent, TemplateGrammar};
     use crate::container::Vue;
     use crate::container::vue::{DescriptorOptions, ScriptRole};
     use crate::{embed::Lang, markup::SurfaceParseOptions};
@@ -170,7 +170,7 @@ mod tests {
         let admitted = descriptor.admitted().unwrap();
         let selected = admitted.template().unwrap();
         let original = selected.block();
-        let owner = NativeTemplateComponent::parse_in(&arena, admitted)
+        let owner = TemplateComponent::parse_in(&arena, admitted)
             .unwrap()
             .unwrap();
         assert_eq!(owner.template_index(), selected.container_index());
@@ -179,7 +179,7 @@ mod tests {
             owner.component().block().root_source(),
             source
         ));
-        assert_eq!(owner.grammar(), NativeTemplateGrammar::TypeScriptModule);
+        assert_eq!(owner.grammar(), TemplateGrammar::TypeScriptModule);
         let p = owner.children().next().unwrap().into_element().unwrap();
         assert_eq!(p.surface().tag(), "p");
         assert_eq!(
@@ -220,12 +220,12 @@ mod tests {
         let source = "<template></template>";
         let owner = {
             let descriptor = Vue.observe_descriptor(&arena, source, options());
-            NativeTemplateComponent::parse_in(&arena, descriptor.admitted().unwrap())
+            TemplateComponent::parse_in(&arena, descriptor.admitted().unwrap())
                 .unwrap()
                 .unwrap()
         };
         let moved = core::hint::black_box(owner);
-        assert_eq!(moved.grammar(), NativeTemplateGrammar::JavaScriptModule);
+        assert_eq!(moved.grammar(), TemplateGrammar::JavaScriptModule);
         assert!(moved.ordinary().is_none());
         assert!(moved.setup().is_none());
         assert_eq!(moved.children().len(), 0);
@@ -245,7 +245,7 @@ mod tests {
         let admitted = descriptor.admitted().unwrap();
         assert!(admitted.template().is_none());
         assert!(
-            NativeTemplateComponent::parse_in(&arena, admitted)
+            TemplateComponent::parse_in(&arena, admitted)
                 .unwrap()
                 .is_none()
         );
@@ -275,7 +275,7 @@ mod tests {
                 let descriptor = Vue.observe_descriptor(&arena, source, options());
                 let admitted = descriptor.admitted().unwrap();
                 assert_eq!(admitted.styles().len() != 0, has_styles);
-                NativeTemplateComponent::parse_in(&arena, admitted)
+                TemplateComponent::parse_in(&arena, admitted)
                     .unwrap()
                     .unwrap()
             };
@@ -294,10 +294,10 @@ mod tests {
         let source =
             "<template><span/></template><script setup lang=ts>const msg: string='x'</script>";
         let descriptor = Vue.observe_descriptor(&arena, source, options());
-        let owner = NativeTemplateComponent::parse_in(&arena, descriptor.admitted().unwrap())
+        let owner = TemplateComponent::parse_in(&arena, descriptor.admitted().unwrap())
             .unwrap()
             .unwrap();
-        assert_eq!(owner.grammar(), NativeTemplateGrammar::TypeScriptModule);
+        assert_eq!(owner.grammar(), TemplateGrammar::TypeScriptModule);
         assert!(owner.ordinary().is_none());
         let setup = owner.setup().unwrap();
         assert_eq!(setup.role(), ScriptRole::Setup);
@@ -309,7 +309,7 @@ mod tests {
     fn selected_owner_retains_original_recovery_without_certifying_clean_grammar() {
         let arena = Allocator::default();
         let descriptor = Vue.observe_descriptor(&arena, "<template><div></template>", options());
-        let owner = NativeTemplateComponent::parse_in(&arena, descriptor.admitted().unwrap())
+        let owner = TemplateComponent::parse_in(&arena, descriptor.admitted().unwrap())
             .unwrap()
             .unwrap();
         let div = owner.children().next().unwrap().into_element().unwrap();

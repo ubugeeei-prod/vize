@@ -3,33 +3,32 @@
 use alloc::boxed::Box;
 use vize_l0::Span;
 
-use super::super::{NativeAttribute, NativeTemplateComponent, NativeTemplateGrammar};
-use super::{NativeAttributeOperandError, origin::Origin};
+use super::super::{AttributeView, TemplateComponent, TemplateGrammar};
+use super::{AttributeOperandError, origin::Origin};
 use crate::dialect::vue3::operand::for_head;
 use crate::embed::syntax::{
-    AdmittedDenseForHead, NativeForHead, NativeForInput, NativeForInputError,
-    RejectedNativeForInput,
+    AdmittedDenseForHead, ForHead, ForInput, ForInputError, RejectedForInput,
 };
 use crate::embed::{Lang, SourceError};
 
 /// Preparation failures keep any original rejected physical input intact.
 #[derive(Debug)]
-pub struct NativeAttributeForHeadFailure<'a> {
-    kind: NativeAttributeOperandError,
-    input: Option<Box<RejectedNativeForInput<'a>>>,
+pub struct AttributeForHeadFailure<'a> {
+    kind: AttributeOperandError,
+    input: Option<Box<RejectedForInput<'a>>>,
 }
-impl NativeAttributeForHeadFailure<'_> {
+impl AttributeForHeadFailure<'_> {
     #[must_use]
-    pub const fn kind(&self) -> NativeAttributeOperandError {
+    pub const fn kind(&self) -> AttributeOperandError {
         self.kind
     }
     #[must_use]
-    pub fn input(&self) -> Option<&RejectedNativeForInput<'_>> {
+    pub fn input(&self) -> Option<&RejectedForInput<'_>> {
         self.input.as_deref()
     }
 }
-impl<'a> From<NativeAttributeOperandError> for NativeAttributeForHeadFailure<'a> {
-    fn from(kind: NativeAttributeOperandError) -> Self {
+impl<'a> From<AttributeOperandError> for AttributeForHeadFailure<'a> {
+    fn from(kind: AttributeOperandError) -> Self {
         Self { kind, input: None }
     }
 }
@@ -38,74 +37,77 @@ impl<'a> From<NativeAttributeOperandError> for NativeAttributeForHeadFailure<'a>
 /// No caller value, source range, language, allocator or raw AST can assemble it.
 ///
 /// ```compile_fail
-/// use vize_l1::markup::NativeAttributeForHead;
+/// use vize_l1::markup::AttributeForHead;
 /// fn requires_clone<T: Clone>() {}
-/// requires_clone::<NativeAttributeForHead<'static>>();
+/// requires_clone::<AttributeForHead<'static>>();
 /// ```
 ///
 /// ```compile_fail,E0616
-/// use vize_l1::embed::syntax::NativeForHead;
-/// use vize_l1::markup::NativeAttributeForHead;
-/// fn substitute<'a>(owner: &mut NativeAttributeForHead<'a>, head: NativeForHead<'a>) {
+/// use vize_l1::embed::syntax::ForHead;
+/// use vize_l1::markup::AttributeForHead;
+/// fn substitute<'a>(owner: &mut AttributeForHead<'a>, head: ForHead<'a>) {
 ///     owner.syntax = head;
 /// }
 /// ```
-pub struct NativeAttributeForHead<'a> {
+pub struct AttributeForHead<'a> {
     origin: Origin<'a>,
-    syntax: NativeForHead<'a>,
+    syntax: ForHead<'a>,
 }
 
-impl<'a> NativeTemplateComponent<'a> {
+impl<'a> TemplateComponent<'a> {
     /// Replace this actual header visit's value preparation and For parses.
     /// Full original value and Module JS/TS come from the same selected owner.
     /// Local refusal keeps the whole head and every available stock observation.
     pub fn observe_attribute_for_head(
         &self,
-        attribute: NativeAttribute<'_, 'a>,
-    ) -> Result<NativeAttributeForHead<'a>, NativeAttributeForHeadFailure<'a>> {
+        attribute: AttributeView<'_, 'a>,
+    ) -> Result<AttributeForHead<'a>, AttributeForHeadFailure<'a>> {
         Origin::check_original_header(self, &attribute)?;
         let block = self.component().block();
-        let name_offset = block.offset_of(attribute.surface().name.text).ok_or(
-            NativeAttributeOperandError::Source(SourceError::InvalidAuthoredSpan),
-        )?;
+        let name_offset =
+            block
+                .offset_of(attribute.surface().name.text)
+                .ok_or(AttributeOperandError::Source(
+                    SourceError::InvalidAuthoredSpan,
+                ))?;
         if !for_head(
             attribute.surface().name.text,
             name_offset,
             block.root_source(),
         )
-        .map_err(NativeAttributeOperandError::Directive)?
+        .map_err(AttributeOperandError::Directive)?
         {
-            return Err(NativeAttributeOperandError::UnsupportedDirective.into());
+            return Err(AttributeOperandError::UnsupportedDirective.into());
         }
         let origin = Origin::from_attribute(self, &attribute)?;
         let lang = match self.grammar() {
-            NativeTemplateGrammar::JavaScriptModule => Lang::Js,
-            NativeTemplateGrammar::TypeScriptModule => Lang::Ts,
+            TemplateGrammar::JavaScriptModule => Lang::Js,
+            TemplateGrammar::TypeScriptModule => Lang::Ts,
         };
-        let input = NativeForInput::attribute_in(
+        let input = ForInput::attribute_in(
             self.component().allocator(),
             origin.block,
             origin.raw_value,
             lang,
         )
-        .map_err(|input| NativeAttributeForHeadFailure {
-            kind: NativeAttributeOperandError::Source(match input.error() {
-                NativeForInputError::ForeignValue => SourceError::InvalidAuthoredSpan,
-                NativeForInputError::Source(error) => error,
+        .map_err(|input| AttributeForHeadFailure {
+            kind: AttributeOperandError::Source(match input.error() {
+                ForInputError::ForeignValue => SourceError::InvalidAuthoredSpan,
+                ForInputError::Source(error) => error,
             }),
             input: Some(input),
         })?;
-        Ok(NativeAttributeForHead {
+        Ok(AttributeForHead {
             origin,
             syntax: input.observe(),
         })
     }
 }
 
-impl<'a> NativeAttributeForHead<'a> {
+impl<'a> AttributeForHead<'a> {
     /// Readonly complete observations, including local typed syntax/family refusals.
     #[must_use]
-    pub fn syntax(&self) -> &NativeForHead<'a> {
+    pub fn syntax(&self) -> &ForHead<'a> {
         &self.syntax
     }
     #[must_use]
@@ -123,14 +125,14 @@ impl<'a> NativeAttributeForHead<'a> {
     /// Rejoin the complete original Attribute after owner movement/storage growth.
     pub fn admitted_for<'s>(
         &'s self,
-        selected: &'s NativeTemplateComponent<'a>,
-        attribute: NativeAttribute<'s, 'a>,
-    ) -> Option<NativeAttributeForHeadView<'s, 'a>> {
+        selected: &'s TemplateComponent<'a>,
+        attribute: AttributeView<'s, 'a>,
+    ) -> Option<AttributeForHeadView<'s, 'a>> {
         if !self.origin.matches(selected, &attribute) {
             return None;
         }
         self.syntax.admitted_dense()?;
-        Some(NativeAttributeForHeadView {
+        Some(AttributeForHeadView {
             owner: self,
             selected,
             attribute,
@@ -138,7 +140,7 @@ impl<'a> NativeAttributeForHead<'a> {
     }
     /// Moving out the original whole head deliberately discards Attribute authority.
     #[must_use]
-    pub fn into_syntax(self) -> NativeForHead<'a> {
+    pub fn into_syntax(self) -> ForHead<'a> {
         self.syntax
     }
 }
@@ -146,40 +148,40 @@ impl<'a> NativeAttributeForHead<'a> {
 /// Short actual header/For join, without File/body, scope or execution completion.
 ///
 /// ```compile_fail,E0515
-/// use vize_l1::markup::{NativeAttribute, NativeAttributeForHead,
-///     NativeAttributeForHeadView, NativeTemplateComponent};
-/// fn escape<'s, 'a>(owner: NativeAttributeForHead<'a>,
-///     selected: &'s NativeTemplateComponent<'a>, attribute: NativeAttribute<'s, 'a>)
-///     -> NativeAttributeForHeadView<'s, 'a> {
+/// use vize_l1::markup::{AttributeView, AttributeForHead,
+///     AttributeForHeadView, TemplateComponent};
+/// fn escape<'s, 'a>(owner: AttributeForHead<'a>,
+///     selected: &'s TemplateComponent<'a>, attribute: AttributeView<'s, 'a>)
+///     -> AttributeForHeadView<'s, 'a> {
 ///     owner.admitted_for(selected, attribute).unwrap()
 /// }
 /// ```
 ///
 /// ```compile_fail,E0515
-/// use vize_l1::markup::{NativeAttribute, NativeAttributeForHead,
-///     NativeAttributeForHeadView, NativeTemplateComponent};
-/// fn escape_selected<'s, 'a>(owner: &'s NativeAttributeForHead<'a>,
-///     selected: NativeTemplateComponent<'a>, attribute: NativeAttribute<'s, 'a>)
-///     -> NativeAttributeForHeadView<'s, 'a> {
+/// use vize_l1::markup::{AttributeView, AttributeForHead,
+///     AttributeForHeadView, TemplateComponent};
+/// fn escape_selected<'s, 'a>(owner: &'s AttributeForHead<'a>,
+///     selected: TemplateComponent<'a>, attribute: AttributeView<'s, 'a>)
+///     -> AttributeForHeadView<'s, 'a> {
 ///     owner.admitted_for(&selected, attribute).unwrap()
 /// }
 /// ```
-pub struct NativeAttributeForHeadView<'s, 'a> {
-    owner: &'s NativeAttributeForHead<'a>,
-    selected: &'s NativeTemplateComponent<'a>,
-    attribute: NativeAttribute<'s, 'a>,
+pub struct AttributeForHeadView<'s, 'a> {
+    owner: &'s AttributeForHead<'a>,
+    selected: &'s TemplateComponent<'a>,
+    attribute: AttributeView<'s, 'a>,
 }
-impl<'s, 'a> NativeAttributeForHeadView<'s, 'a> {
+impl<'s, 'a> AttributeForHeadView<'s, 'a> {
     #[must_use]
-    pub fn selected(&self) -> &'s NativeTemplateComponent<'a> {
+    pub fn selected(&self) -> &'s TemplateComponent<'a> {
         self.selected
     }
     #[must_use]
-    pub fn attribute(&self) -> &NativeAttribute<'s, 'a> {
+    pub fn attribute(&self) -> &AttributeView<'s, 'a> {
         &self.attribute
     }
     #[must_use]
-    pub fn operand(&self) -> &'s NativeAttributeForHead<'a> {
+    pub fn operand(&self) -> &'s AttributeForHead<'a> {
         self.owner
     }
     /// Both capabilities borrow the same original retained whole-head owner.

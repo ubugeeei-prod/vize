@@ -5,9 +5,7 @@ use crate::expr::{
     js::{JsCoordinateError, JsCoordinates},
 };
 use vize_l1::embed::syntax::EmbedHole;
-use vize_l1::markup::{
-    NativeAttribute, NativeAttributeExpression, NativeConditionKind, NativeTemplateComponent,
-};
+use vize_l1::markup::{AttributeExpression, AttributeView, ConditionKind, TemplateComponent};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum NativeConditionalInputError {
@@ -23,20 +21,20 @@ pub enum NativeConditionalInputError {
 /// fn duplicate(input: NativeConditionalInput<'_>) { let _ = input.clone(); }
 /// ```
 pub struct NativeConditionalInput<'a> {
-    operand: NativeAttributeExpression<'a>,
+    operand: AttributeExpression<'a>,
     expression: Option<&'a JsExpr<'a>>,
 }
 
 impl<'a> NativeConditionalInput<'a> {
     #[must_use]
-    pub const fn from_operand(operand: NativeAttributeExpression<'a>) -> Self {
+    pub const fn from_operand(operand: AttributeExpression<'a>) -> Self {
         Self {
             operand,
             expression: None,
         }
     }
     #[must_use]
-    pub const fn operand(&self) -> &NativeAttributeExpression<'a> {
+    pub const fn operand(&self) -> &AttributeExpression<'a> {
         &self.operand
     }
     #[must_use]
@@ -60,10 +58,10 @@ impl<'a> NativeConditionalInput<'a> {
     /// Authenticate the actual header before transferring its existing AST once.
     pub fn admitted_for<'s>(
         &'s mut self,
-        selected: &'s NativeTemplateComponent<'a>,
-        attribute: NativeAttribute<'s, 'a>,
+        selected: &'s TemplateComponent<'a>,
+        attribute: AttributeView<'s, 'a>,
     ) -> Result<&'a JsExpr<'a>, NativeConditionalInputError> {
-        if self.operand.kind() != NativeConditionKind::If {
+        if self.operand.kind() != ConditionKind::If {
             return Err(NativeConditionalInputError::UnsupportedCondition);
         }
         let syntax = self.operand.syntax();

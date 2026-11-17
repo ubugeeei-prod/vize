@@ -5,7 +5,7 @@ use oxc_span::GetSpan;
 use vize_l0::Span;
 use vize_l1::embed::{
     SourceError,
-    syntax::{AdmittedDenseForHead, NativeForHead, RetainedExpression, RetainedSlotParams},
+    syntax::{AdmittedDenseForHead, ForHead, RetainedExpression, RetainedSlotParams},
 };
 
 use super::ReferenceSource;
@@ -19,7 +19,7 @@ pub(crate) struct ForReferenceSource<'h, 'a> {
 }
 
 impl<'h, 'a> ForReferenceSource<'h, 'a> {
-    pub(crate) fn checked(owner: &'h NativeForHead<'a>) -> Option<Self> {
+    pub(crate) fn checked(owner: &'h ForHead<'a>) -> Option<Self> {
         Some(Self {
             head: owner.admitted_dense()?,
             aliases: owner.aliases()?.ok()?,

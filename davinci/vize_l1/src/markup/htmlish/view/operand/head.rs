@@ -1,9 +1,8 @@
 //! A short original header selection reused by layout and conditional syntax.
 
 use super::{
-    NativeAttribute, NativeAttributeExpression, NativeAttributeExpressionFailure,
-    NativeAttributeOperandError, NativeConditionKind, NativeTemplateComponent, Origin,
-    observe_conditional,
+    AttributeExpression, AttributeExpressionFailure, AttributeOperandError, AttributeView,
+    ConditionKind, Origin, TemplateComponent, observe_conditional,
 };
 use crate::dialect::vue3::operand::conditional_parts;
 use crate::embed::SourceError;
@@ -15,63 +14,61 @@ use vize_l0::{SourceBlock, SourceRoot};
 /// This grants no File, body, target or complete formatter authority.
 ///
 /// ```compile_fail
-/// use vize_l1::markup::NativeAttributeHead;
+/// use vize_l1::markup::AttributeHead;
 /// fn requires_clone<T: Clone>() {}
-/// requires_clone::<NativeAttributeHead<'static, 'static>>();
+/// requires_clone::<AttributeHead<'static, 'static>>();
 /// ```
 ///
 /// ```compile_fail
 /// use vize_l0::SourceBlock;
-/// use vize_l1::markup::{NativeAttributeHead, NativeAttribute,
-///     NativeTemplateComponent, DirectiveName, NativeConditionKind};
-/// fn forge<'o, 'a>(selected: &'o NativeTemplateComponent<'a>,
-///     attribute: NativeAttribute<'o, 'a>, name: SourceBlock<'a>,
-///     directive: Option<DirectiveName>, condition: Option<NativeConditionKind>
-/// ) -> NativeAttributeHead<'o, 'a> {
-///     NativeAttributeHead { selected, attribute, name, directive, condition }
+/// use vize_l1::markup::{AttributeHead, AttributeView,
+///     TemplateComponent, DirectiveName, ConditionKind};
+/// fn forge<'o, 'a>(selected: &'o TemplateComponent<'a>,
+///     attribute: AttributeView<'o, 'a>, name: SourceBlock<'a>,
+///     directive: Option<DirectiveName>, condition: Option<ConditionKind>
+/// ) -> AttributeHead<'o, 'a> {
+///     AttributeHead { selected, attribute, name, directive, condition }
 /// }
 /// ```
 ///
 /// ```compile_fail
-/// use vize_l1::markup::{NativeAttributeHead, NativeTemplateComponent};
-/// fn escape<'a>(selected: NativeTemplateComponent<'a>) -> NativeAttributeHead<'a, 'a> {
+/// use vize_l1::markup::{AttributeHead, TemplateComponent};
+/// fn escape<'a>(selected: TemplateComponent<'a>) -> AttributeHead<'a, 'a> {
 ///     let element = selected.children().next().unwrap().into_element().unwrap();
 ///     selected.observe_attribute_head(element.attributes().next().unwrap()).unwrap()
 /// }
 /// ```
-pub struct NativeAttributeHead<'o, 'a> {
-    selected: &'o NativeTemplateComponent<'a>,
-    attribute: NativeAttribute<'o, 'a>,
+pub struct AttributeHead<'o, 'a> {
+    selected: &'o TemplateComponent<'a>,
+    attribute: AttributeView<'o, 'a>,
     name: SourceBlock<'a>,
     directive: Option<DirectiveName>,
-    condition: Option<NativeConditionKind>,
+    condition: Option<ConditionKind>,
 }
 
-impl<'a> NativeTemplateComponent<'a> {
+impl<'a> TemplateComponent<'a> {
     /// Select the actual current attribute once, without preparing its value.
     /// Original membership/recovery/verbatim errors precede dialect selection.
     pub fn observe_attribute_head<'o>(
         &'o self,
-        attribute: NativeAttribute<'o, 'a>,
-    ) -> Result<NativeAttributeHead<'o, 'a>, NativeAttributeOperandError> {
+        attribute: AttributeView<'o, 'a>,
+    ) -> Result<AttributeHead<'o, 'a>, AttributeOperandError> {
         Origin::check_original_header(self, &attribute)?;
         let block = self.component().block();
         let raw = attribute.surface().name.text;
-        let offset = block
-            .offset_of(raw)
-            .ok_or(NativeAttributeOperandError::Source(
-                SourceError::InvalidAuthoredSpan,
-            ))?;
+        let offset = block.offset_of(raw).ok_or(AttributeOperandError::Source(
+            SourceError::InvalidAuthoredSpan,
+        ))?;
         // The selected block already validates its whole root. This smaller
         // frame checks the exact original token slice, without source rematching.
         let name = SourceRoot::new(block.root_source())
             .and_then(|root| root.block(raw, offset))
-            .map_err(|_| NativeAttributeOperandError::Source(SourceError::InvalidAuthoredSpan))?;
+            .map_err(|_| AttributeOperandError::Source(SourceError::InvalidAuthoredSpan))?;
         let directive = VueDirectives
             .decompose(raw, offset)
-            .map_err(NativeAttributeOperandError::Directive)?;
+            .map_err(AttributeOperandError::Directive)?;
         let condition = conditional_parts(directive, name.end(), name.root_source());
-        Ok(NativeAttributeHead {
+        Ok(AttributeHead {
             selected: self,
             attribute,
             name,
@@ -81,13 +78,13 @@ impl<'a> NativeTemplateComponent<'a> {
     }
 }
 
-impl<'o, 'a> NativeAttributeHead<'o, 'a> {
+impl<'o, 'a> AttributeHead<'o, 'a> {
     #[must_use]
-    pub fn selected(&self) -> &'o NativeTemplateComponent<'a> {
+    pub fn selected(&self) -> &'o TemplateComponent<'a> {
         self.selected
     }
     #[must_use]
-    pub fn attribute(&self) -> &NativeAttribute<'o, 'a> {
+    pub fn attribute(&self) -> &AttributeView<'o, 'a> {
         &self.attribute
     }
     /// File-absolute original name window; not a template-local error offset.
@@ -100,7 +97,7 @@ impl<'o, 'a> NativeAttributeHead<'o, 'a> {
         self.directive
     }
     #[must_use]
-    pub const fn condition_kind(&self) -> Option<NativeConditionKind> {
+    pub const fn condition_kind(&self) -> Option<ConditionKind> {
         self.condition
     }
     /// Prepare/parse the original conditional value through the shared tail.
@@ -109,10 +106,10 @@ impl<'o, 'a> NativeAttributeHead<'o, 'a> {
     /// before checking admission. Separate public observations remain possible.
     pub fn observe_expression(
         &self,
-    ) -> Result<NativeAttributeExpression<'a>, NativeAttributeExpressionFailure<'a>> {
+    ) -> Result<AttributeExpression<'a>, AttributeExpressionFailure<'a>> {
         let kind = self
             .condition
-            .ok_or(NativeAttributeOperandError::UnsupportedDirective)?;
+            .ok_or(AttributeOperandError::UnsupportedDirective)?;
         observe_conditional(self.selected, self.attribute.reborrow(), kind)
     }
 }

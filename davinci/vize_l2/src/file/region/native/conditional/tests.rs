@@ -54,7 +54,7 @@ fn owner<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateOwner<'a> {
             template: SurfaceParseOptions::default(),
         },
     );
-    let selected = NativeTemplateComponent::parse_in(arena, descriptor.admitted().unwrap())
+    let selected = TemplateComponent::parse_in(arena, descriptor.admitted().unwrap())
         .unwrap()
         .unwrap();
     let mut owner = NativeTemplateOwner::new(selected).unwrap_or_else(|_| panic!("owner"));

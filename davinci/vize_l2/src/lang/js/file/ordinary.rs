@@ -139,10 +139,10 @@ pub struct OrdinaryIssue {
 /// }
 /// ```
 /// ```compile_fail
-/// use vize_l1::{container::vue::ScriptView, embed::syntax::NativeSyntax};
+/// use vize_l1::{container::vue::ScriptView, embed::syntax::EmbedSyntax};
 /// use vize_l2::{file::FileArtifact, lang::js::VueOrdinaryEmpty};
 /// fn discard<'d, 'a>(file: &FileArtifact<'a>, script: ScriptView<'d, 'a>,
-///     syntax: NativeSyntax<'a>) {
+///     syntax: EmbedSyntax<'a>) {
 ///     let view = VueOrdinaryEmpty::checked(file, script,
 ///         syntax.admitted_program().unwrap()).unwrap();
 ///     drop(syntax);

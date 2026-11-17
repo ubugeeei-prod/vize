@@ -4,26 +4,24 @@ use alloc::boxed::Box;
 use oxc_ast::ast::FunctionBody;
 use vize_l0::Span;
 use vize_l1::embed::SourceError;
-use vize_l1::markup::{
-    NativeAttribute, NativeAttributeHandler, NativeAttributeHandlerView, NativeTemplateComponent,
-};
+use vize_l1::markup::{AttributeHandler, AttributeHandlerView, AttributeView, TemplateComponent};
 
 use super::{HandlerInputErrorKind, HandlerReferenceSource};
 
 pub struct RejectedNativeHandlerInput<'a> {
-    operand: NativeAttributeHandler<'a>,
+    operand: AttributeHandler<'a>,
     pub kind: HandlerInputErrorKind,
     pub span: Span,
 }
 
 impl<'a> RejectedNativeHandlerInput<'a> {
     #[must_use]
-    pub const fn operand(&self) -> &NativeAttributeHandler<'a> {
+    pub const fn operand(&self) -> &AttributeHandler<'a> {
         &self.operand
     }
 
     #[must_use]
-    pub fn into_operand(self) -> NativeAttributeHandler<'a> {
+    pub fn into_operand(self) -> AttributeHandler<'a> {
         self.operand
     }
 }
@@ -48,14 +46,12 @@ impl core::fmt::Debug for RejectedNativeHandlerInput<'_> {
 /// }
 /// ```
 pub struct NativeHandlerInput<'a> {
-    operand: NativeAttributeHandler<'a>,
+    operand: AttributeHandler<'a>,
     body: &'a FunctionBody<'a>,
 }
 
 impl<'a> NativeHandlerInput<'a> {
-    pub fn new(
-        operand: NativeAttributeHandler<'a>,
-    ) -> Result<Self, Box<RejectedNativeHandlerInput<'a>>> {
+    pub fn new(operand: AttributeHandler<'a>) -> Result<Self, Box<RejectedNativeHandlerInput<'a>>> {
         let Some(body) =
             HandlerReferenceSource::checked(operand.syntax()).map(|source| source.body())
         else {
@@ -69,7 +65,7 @@ impl<'a> NativeHandlerInput<'a> {
     }
 
     #[must_use]
-    pub const fn operand(&self) -> &NativeAttributeHandler<'a> {
+    pub const fn operand(&self) -> &AttributeHandler<'a> {
         &self.operand
     }
 
@@ -83,9 +79,9 @@ impl<'a> NativeHandlerInput<'a> {
     #[must_use]
     pub fn admitted_for<'h>(
         &'h self,
-        selected: &'h NativeTemplateComponent<'a>,
-        attribute: NativeAttribute<'h, 'a>,
-    ) -> Option<NativeAttributeHandlerView<'h, 'a>> {
+        selected: &'h TemplateComponent<'a>,
+        attribute: AttributeView<'h, 'a>,
+    ) -> Option<AttributeHandlerView<'h, 'a>> {
         self.operand.admitted_for(selected, attribute)
     }
 
@@ -98,7 +94,7 @@ impl<'a> NativeHandlerInput<'a> {
     }
 
     #[must_use]
-    pub fn into_operand(self) -> NativeAttributeHandler<'a> {
+    pub fn into_operand(self) -> AttributeHandler<'a> {
         self.operand
     }
 
@@ -124,11 +120,11 @@ mod tests {
         config::{VueDialect, VueVersion},
     };
     use vize_l1::container::{Vue, vue::DescriptorOptions};
-    use vize_l1::markup::NativeTemplateComponent;
+    use vize_l1::markup::TemplateComponent;
 
     use super::{HandlerInputErrorKind, NativeHandlerInput};
 
-    fn selected<'a>(allocator: &'a Allocator, source: &'a str) -> NativeTemplateComponent<'a> {
+    fn selected<'a>(allocator: &'a Allocator, source: &'a str) -> TemplateComponent<'a> {
         let descriptor = Vue.observe_descriptor(
             allocator,
             source,
@@ -138,7 +134,7 @@ mod tests {
                 template: vize_l1::markup::SurfaceParseOptions::default(),
             },
         );
-        NativeTemplateComponent::parse_in(allocator, descriptor.admitted().unwrap())
+        TemplateComponent::parse_in(allocator, descriptor.admitted().unwrap())
             .unwrap()
             .unwrap()
     }

@@ -1,29 +1,29 @@
-use super::{Allocator, Lang, NativeForRefusal, observe};
+use super::{Allocator, ForRefusal, Lang, observe};
 use crate::embed::syntax::{EmbedHole, ForHeadHole};
 
 #[test]
 fn bounded_native_family_refuses_source_spelling_without_discarding_roots() {
     let arena = Allocator::default();
     for (text, expected) in [
-        ("(a,b,c) in items", NativeForRefusal::AliasCount(3)),
-        ("{item} in items", NativeForRefusal::AliasShape),
-        ("item=1 in items", NativeForRefusal::AliasShape),
-        ("item:Type in items", NativeForRefusal::AliasShape),
-        ("item in items.list", NativeForRefusal::CollectionShape),
-        ("item in (items)", NativeForRefusal::CollectionShape),
-        ("item /*a*/ in items", NativeForRefusal::Comment),
-        ("item in items /*c*/", NativeForRefusal::Comment),
-        ("\\u0069tem in items", NativeForRefusal::EscapedSpelling),
-        ("item in \\u0069tems", NativeForRefusal::EscapedSpelling),
-        (" item in items", NativeForRefusal::OuterWhitespace),
-        ("item in items\n", NativeForRefusal::OuterWhitespace),
-        ("\u{feff}item in items", NativeForRefusal::OuterWhitespace),
-        ("_ctx in items", NativeForRefusal::RenderContextName),
-        ("item in _ctx", NativeForRefusal::RenderContextName),
-        ("item in &#105;tems", NativeForRefusal::EntityOutput),
+        ("(a,b,c) in items", ForRefusal::AliasCount(3)),
+        ("{item} in items", ForRefusal::AliasShape),
+        ("item=1 in items", ForRefusal::AliasShape),
+        ("item:Type in items", ForRefusal::AliasShape),
+        ("item in items.list", ForRefusal::CollectionShape),
+        ("item in (items)", ForRefusal::CollectionShape),
+        ("item /*a*/ in items", ForRefusal::Comment),
+        ("item in items /*c*/", ForRefusal::Comment),
+        ("\\u0069tem in items", ForRefusal::EscapedSpelling),
+        ("item in \\u0069tems", ForRefusal::EscapedSpelling),
+        (" item in items", ForRefusal::OuterWhitespace),
+        ("item in items\n", ForRefusal::OuterWhitespace),
+        ("\u{feff}item in items", ForRefusal::OuterWhitespace),
+        ("_ctx in items", ForRefusal::RenderContextName),
+        ("item in _ctx", ForRefusal::RenderContextName),
+        ("item in &#105;tems", ForRefusal::EntityOutput),
     ] {
         let head = observe(&arena, text, Lang::Ts);
-        assert_eq!(head.native_refusal(), Some(expected), "{text}");
+        assert_eq!(head.for_refusal(), Some(expected), "{text}");
         assert!(head.admitted_dense().is_none(), "{text}");
         assert_eq!(head.grammar().lang, Lang::Ts);
         assert_eq!(head.source().span().end as usize, text.len());
@@ -56,8 +56,8 @@ fn strict_context_and_real_errors_keep_typed_holes_and_original_observations() {
         ] {
             let head = observe(&arena, text, lang);
             assert_eq!(
-                head.native_refusal(),
-                Some(NativeForRefusal::Head(ForHeadHole::AliasesUnavailable(
+                head.for_refusal(),
+                Some(ForRefusal::Head(ForHeadHole::AliasesUnavailable(
                     EmbedHole::InvalidParameterContext
                 )))
             );
@@ -74,8 +74,8 @@ fn strict_context_and_real_errors_keep_typed_holes_and_original_observations() {
         }
         let malformed = observe(&arena, "item in value + /*kept*/", lang);
         assert_eq!(
-            malformed.native_refusal(),
-            Some(NativeForRefusal::Head(ForHeadHole::CollectionUnavailable(
+            malformed.for_refusal(),
+            Some(ForRefusal::Head(ForHeadHole::CollectionUnavailable(
                 EmbedHole::Syntax
             )))
         );
@@ -94,8 +94,8 @@ fn whole_head_and_sparse_refusals_do_not_manufacture_joint_parts() {
     let long = vize_l0::cstr!("{} in items", ";".repeat(32));
     let head = observe(&arena, &long, Lang::Js);
     assert_eq!(
-        head.native_refusal(),
-        Some(NativeForRefusal::Head(ForHeadHole::WholeHeadAdmission(
+        head.for_refusal(),
+        Some(ForRefusal::Head(ForHeadHole::WholeHeadAdmission(
             EmbedHole::TokenBudget
         )))
     );
@@ -109,10 +109,7 @@ fn whole_head_and_sparse_refusals_do_not_manufacture_joint_parts() {
         "item in",
     ] {
         let head = observe(&arena, text, Lang::Js);
-        assert!(matches!(
-            head.native_refusal(),
-            Some(NativeForRefusal::Head(_))
-        ));
+        assert!(matches!(head.for_refusal(), Some(ForRefusal::Head(_))));
         assert!(head.admitted_dense().is_none());
         assert_eq!(head.source().text(), text);
     }

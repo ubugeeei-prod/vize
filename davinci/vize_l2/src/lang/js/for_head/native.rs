@@ -3,33 +3,31 @@
 use alloc::boxed::Box;
 use oxc_ast::ast::{Expression, FormalParameter};
 use vize_l0::Span;
-use vize_l1::embed::{SourceError, syntax::NativeForRefusal};
-use vize_l1::markup::{
-    NativeAttribute, NativeAttributeForHead, NativeAttributeForHeadView, NativeTemplateComponent,
-};
+use vize_l1::embed::{SourceError, syntax::ForRefusal};
+use vize_l1::markup::{AttributeForHead, AttributeForHeadView, AttributeView, TemplateComponent};
 
 use super::ForReferenceSource;
 
-pub struct RejectedNativeForInput<'a> {
-    operand: NativeAttributeForHead<'a>,
-    pub kind: NativeForRefusal,
+pub struct RejectedForInput<'a> {
+    operand: AttributeForHead<'a>,
+    pub kind: ForRefusal,
     pub span: Span,
 }
 
-impl<'a> RejectedNativeForInput<'a> {
+impl<'a> RejectedForInput<'a> {
     #[must_use]
-    pub const fn operand(&self) -> &NativeAttributeForHead<'a> {
+    pub const fn operand(&self) -> &AttributeForHead<'a> {
         &self.operand
     }
     #[must_use]
-    pub fn into_operand(self) -> NativeAttributeForHead<'a> {
+    pub fn into_operand(self) -> AttributeForHead<'a> {
         self.operand
     }
 }
 
-impl core::fmt::Debug for RejectedNativeForInput<'_> {
+impl core::fmt::Debug for RejectedForInput<'_> {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        f.debug_struct("RejectedNativeForInput")
+        f.debug_struct("RejectedForInput")
             .field("kind", &self.kind)
             .field("span", &self.span)
             .field("syntax", self.operand.syntax())
@@ -42,36 +40,34 @@ impl core::fmt::Debug for RejectedNativeForInput<'_> {
 /// No File, collection resolution, child scope or canonical body is minted here.
 ///
 /// ```compile_fail
-/// use vize_l2::lang::js::NativeForInput;
-/// fn duplicate(input: NativeForInput<'_>) { let _ = input.clone(); }
+/// use vize_l2::lang::js::ForInput;
+/// fn duplicate(input: ForInput<'_>) { let _ = input.clone(); }
 /// ```
 /// ```compile_fail
-/// use vize_l1::markup::{NativeAttribute, NativeAttributeForHeadView, NativeTemplateComponent};
-/// use vize_l2::lang::js::NativeForInput;
-/// fn escape<'h, 'a>(input: NativeForInput<'a>,
-///     selected: &'h NativeTemplateComponent<'a>, attribute: NativeAttribute<'h, 'a>)
-///     -> NativeAttributeForHeadView<'h, 'a> {
+/// use vize_l1::markup::{AttributeView, AttributeForHeadView, TemplateComponent};
+/// use vize_l2::lang::js::ForInput;
+/// fn escape<'h, 'a>(input: ForInput<'a>,
+///     selected: &'h TemplateComponent<'a>, attribute: AttributeView<'h, 'a>)
+///     -> AttributeForHeadView<'h, 'a> {
 ///     input.admitted_for(selected, attribute).unwrap()
 /// }
 /// ```
-pub struct NativeForInput<'a> {
-    operand: NativeAttributeForHead<'a>,
+pub struct ForInput<'a> {
+    operand: AttributeForHead<'a>,
     aliases: &'a [FormalParameter<'a>],
     collection: &'a Expression<'a>,
 }
 
-impl<'a> NativeForInput<'a> {
-    pub fn new(
-        operand: NativeAttributeForHead<'a>,
-    ) -> Result<Self, Box<RejectedNativeForInput<'a>>> {
+impl<'a> ForInput<'a> {
+    pub fn new(operand: AttributeForHead<'a>) -> Result<Self, Box<RejectedForInput<'a>>> {
         let roots = ForReferenceSource::checked(operand.syntax())
             .map(|source| (source.aliases(), source.collection()));
         let Some((aliases, collection)) = roots else {
-            return Err(Box::new(RejectedNativeForInput {
+            return Err(Box::new(RejectedForInput {
                 kind: operand
                     .syntax()
-                    .native_refusal()
-                    .unwrap_or(NativeForRefusal::StockProfile),
+                    .for_refusal()
+                    .unwrap_or(ForRefusal::StockProfile),
                 span: operand.value_span(),
                 operand,
             }));
@@ -83,7 +79,7 @@ impl<'a> NativeForInput<'a> {
         })
     }
     #[must_use]
-    pub const fn operand(&self) -> &NativeAttributeForHead<'a> {
+    pub const fn operand(&self) -> &AttributeForHead<'a> {
         &self.operand
     }
     #[must_use]
@@ -96,9 +92,9 @@ impl<'a> NativeForInput<'a> {
     }
     pub fn admitted_for<'h>(
         &'h self,
-        selected: &'h NativeTemplateComponent<'a>,
-        attribute: NativeAttribute<'h, 'a>,
-    ) -> Option<NativeAttributeForHeadView<'h, 'a>> {
+        selected: &'h TemplateComponent<'a>,
+        attribute: AttributeView<'h, 'a>,
+    ) -> Option<AttributeForHeadView<'h, 'a>> {
         self.operand.admitted_for(selected, attribute)
     }
     pub fn alias_decoded_span(&self, span: oxc_span::Span) -> Result<Span, SourceError> {
@@ -122,7 +118,7 @@ impl<'a> NativeForInput<'a> {
             .collection_authored_span(span)
     }
     #[must_use]
-    pub fn into_operand(self) -> NativeAttributeForHead<'a> {
+    pub fn into_operand(self) -> AttributeForHead<'a> {
         self.operand
     }
     pub(crate) fn references(&self) -> Option<ForReferenceSource<'_, 'a>> {
@@ -130,9 +126,9 @@ impl<'a> NativeForInput<'a> {
     }
 }
 
-impl core::fmt::Debug for NativeForInput<'_> {
+impl core::fmt::Debug for ForInput<'_> {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        f.debug_struct("NativeForInput")
+        f.debug_struct("ForInput")
             .field("syntax", self.operand.syntax())
             .finish_non_exhaustive()
     }

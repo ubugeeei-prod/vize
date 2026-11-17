@@ -4,7 +4,7 @@ use alloc::boxed::Box;
 use oxc_parser::{AdmittedExpression, AdmittedParameters};
 use vize_l0::{Allocator, SourceBlock, Span};
 
-use super::{ForHeadHole, NativeForHead, parse_vue_for_head_once};
+use super::{ForHead, ForHeadHole, parse_vue_for_head_once};
 use crate::embed::{
     Embed, EmbedSource, Grammar, Lang, Shape, SourceError, prepare_attribute_value,
 };
@@ -12,21 +12,21 @@ use crate::embed::{
 mod family;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum NativeForInputError {
+pub enum ForInputError {
     ForeignValue,
     Source(SourceError),
 }
 
 /// An original representable input that could not enter source preparation.
 #[derive(Debug)]
-pub struct RejectedNativeForInput<'a> {
+pub struct RejectedForInput<'a> {
     block: SourceBlock<'a>,
     value: &'a str,
     lang: Lang,
-    error: NativeForInputError,
+    error: ForInputError,
 }
 
-impl<'a> RejectedNativeForInput<'a> {
+impl<'a> RejectedForInput<'a> {
     pub const fn source_block(&self) -> SourceBlock<'a> {
         self.block
     }
@@ -36,7 +36,7 @@ impl<'a> RejectedNativeForInput<'a> {
     pub const fn lang(&self) -> Lang {
         self.lang
     }
-    pub const fn error(&self) -> NativeForInputError {
+    pub const fn error(&self) -> ForInputError {
         self.error
     }
 }
@@ -45,7 +45,7 @@ impl<'a> RejectedNativeForInput<'a> {
 /// Public roots, Lang selectors and byte equality do not establish File identity.
 /// A valid contained subslice can be prepared; a real upper Attribute receiver
 /// must compare its complete original value pointer, length and span.
-pub struct NativeForInput<'a> {
+pub struct ForInput<'a> {
     allocator: &'a Allocator,
     origin: ForOrigin<'a>,
     lang: Lang,
@@ -58,7 +58,7 @@ pub(super) struct ForOrigin<'a> {
     span: Span,
 }
 
-impl<'a> NativeForInput<'a> {
+impl<'a> ForInput<'a> {
     /// Derive coordinates from the original physical slice, then decode once.
     /// This cannot identify the complete extent of an Attribute from a public
     /// SourceBlock alone. It receives no caller span, decoded map or parse status.
@@ -67,9 +67,9 @@ impl<'a> NativeForInput<'a> {
         block: SourceBlock<'a>,
         value: &'a str,
         lang: Lang,
-    ) -> Result<Self, Box<RejectedNativeForInput<'a>>> {
+    ) -> Result<Self, Box<RejectedForInput<'a>>> {
         let rejected = |error| {
-            Box::new(RejectedNativeForInput {
+            Box::new(RejectedForInput {
                 block,
                 value,
                 lang,
@@ -83,9 +83,9 @@ impl<'a> NativeForInput<'a> {
                     .get(span.start as usize..span.end as usize)
                     .is_some_and(|raw| same_text(raw, value))
         });
-        let span = span.ok_or_else(|| rejected(NativeForInputError::ForeignValue))?;
+        let span = span.ok_or_else(|| rejected(ForInputError::ForeignValue))?;
         let source = prepare_attribute_value(allocator, block.root_source(), span)
-            .map_err(|error| rejected(NativeForInputError::Source(error)))?;
+            .map_err(|error| rejected(ForInputError::Source(error)))?;
         Ok(Self {
             allocator,
             origin: ForOrigin { block, value, span },
@@ -96,7 +96,7 @@ impl<'a> NativeForInput<'a> {
 
     /// The existing whole admission/split/two observed parses run exactly once.
     /// Consumption and each projection use only the originally retained arena.
-    pub fn observe(self) -> NativeForHead<'a> {
+    pub fn observe(self) -> ForHead<'a> {
         let mut head = parse_vue_for_head_once(
             self.allocator,
             Embed {
@@ -108,13 +108,13 @@ impl<'a> NativeForInput<'a> {
             },
         );
         head.origin = Some(self.origin);
-        head.native_refusal = family::refused(&head);
+        head.for_refusal = family::refused(&head);
         head
     }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum NativeForRefusal {
+pub enum ForRefusal {
     UnpreparedSource,
     Head(ForHeadHole),
     AliasCount(usize),
@@ -130,7 +130,7 @@ pub enum NativeForRefusal {
 
 /// Neither a public tuple of projections nor raw roots can construct this borrow.
 pub struct AdmittedDenseForHead<'p, 'a> {
-    owner: &'p NativeForHead<'a>,
+    owner: &'p ForHead<'a>,
     origin: &'p ForOrigin<'a>,
     aliases: AdmittedParameters<'p, 'a>,
     collection: AdmittedExpression<'p, 'a>,
@@ -138,19 +138,19 @@ pub struct AdmittedDenseForHead<'p, 'a> {
     collection_source: EmbedSource<'a>,
 }
 
-impl<'a> NativeForHead<'a> {
-    pub fn native_refusal(&self) -> Option<NativeForRefusal> {
+impl<'a> ForHead<'a> {
+    pub fn for_refusal(&self) -> Option<ForRefusal> {
         if self.origin.is_none() {
-            Some(NativeForRefusal::UnpreparedSource)
+            Some(ForRefusal::UnpreparedSource)
         } else if let Some(hole) = self.hole {
-            Some(NativeForRefusal::Head(hole))
+            Some(ForRefusal::Head(hole))
         } else {
-            self.native_refusal
+            self.for_refusal
         }
     }
 
     pub fn admitted_dense(&self) -> Option<AdmittedDenseForHead<'_, 'a>> {
-        if self.native_refusal().is_some() {
+        if self.for_refusal().is_some() {
             return None;
         }
         let origin = self.origin.as_ref()?;

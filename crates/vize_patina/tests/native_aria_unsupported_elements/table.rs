@@ -17,12 +17,12 @@ fn refused(source: &str, depth: usize) {
     let mut first_context = None;
     for _ in 1..depth {
         element = element.children().next().unwrap().into_element().unwrap();
-        let original = element.lint_tag().unwrap();
+        let original = element.tag_facts().unwrap();
         if original.in_table_context() {
             first_context.get_or_insert(original.span());
         }
     }
-    let receipt = element.lint_tag().unwrap();
+    let receipt = element.tag_facts().unwrap();
     assert!(receipt.in_table_context());
     let refusal = NativeHeaderFactError::Header(NativeLintRefusal::TableContext {
         span: receipt.span(),

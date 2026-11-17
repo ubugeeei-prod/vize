@@ -1,7 +1,7 @@
 use super::{assert_own_original_root, selected};
 use crate::embed::{Grammar, Lang, Shape};
 use crate::markup::{
-    ArgSyntax, DirectiveName, DirectivePrefix, NativeAttributeOperandError, NativeConditionKind,
+    ArgSyntax, AttributeOperandError, ConditionKind, DirectiveName, DirectivePrefix,
 };
 use oxc_ast::ast::Expression;
 use vize_l0::{Allocator, Span};
@@ -44,14 +44,14 @@ fn unicode_nonzero_name_block_parts_and_actual_ordinal_preserve_both_original_ro
             modifiers: Span::new(43, 43),
         })
     );
-    assert_eq!(head.condition_kind(), Some(NativeConditionKind::ElseIf));
+    assert_eq!(head.condition_kind(), Some(ConditionKind::ElseIf));
 
     let old = old_owner
         .observe_attribute_expression(old_element.attributes().nth(1).unwrap())
         .unwrap();
     let new = head.observe_expression().unwrap();
     for operand in [&old, &new] {
-        assert_eq!(operand.kind(), NativeConditionKind::ElseIf);
+        assert_eq!(operand.kind(), ConditionKind::ElseIf);
         assert_eq!(operand.name_span(), Span::new(34, 43));
         assert_eq!(operand.value_span(), Span::new(45, 51));
         assert_eq!(operand.raw_value(), "条件");
@@ -199,7 +199,7 @@ fn plain_static_dynamic_and_all_shorthand_headers_keep_complete_typed_parts() {
             old_owner.observe_attribute_expression(old_element.attributes().nth(ordinal).unwrap());
         let new = head.observe_expression();
         if ordinal == 7 {
-            assert_eq!(head.condition_kind(), Some(NativeConditionKind::If));
+            assert_eq!(head.condition_kind(), Some(ConditionKind::If));
             let old = old.unwrap();
             let new = new.unwrap();
             for operand in [&old, &new] {
@@ -231,10 +231,7 @@ fn plain_static_dynamic_and_all_shorthand_headers_keep_complete_typed_parts() {
         } else {
             assert_eq!(head.condition_kind(), None);
             for failure in [old.err().unwrap(), new.err().unwrap()] {
-                assert_eq!(
-                    failure.kind(),
-                    NativeAttributeOperandError::UnsupportedDirective
-                );
+                assert_eq!(failure.kind(), AttributeOperandError::UnsupportedDirective);
                 assert!(failure.syntax().is_none());
             }
         }

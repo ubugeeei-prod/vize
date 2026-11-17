@@ -10,8 +10,8 @@ use vize_l0::{
 use vize_l1::{
     container::{Vue, vue::DescriptorOptions},
     markup::{
-        NativeChildren, NativeLintTagKind, NativeLintTagRefusal, NativeTemplateComponent,
-        SurfaceParseOptions, check_fidelity,
+        ChildrenView, SurfaceParseOptions, TagFactsKind, TagFactsRefusal, TemplateComponent,
+        check_fidelity,
     },
 };
 use vize_patina::{
@@ -80,7 +80,7 @@ impl MarkupRule for ObserveRegisteredRule {
     }
 }
 
-fn selected<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateComponent<'a> {
+fn selected<'a>(arena: &'a Allocator, source: &'a str) -> TemplateComponent<'a> {
     let descriptor = Vue.observe_descriptor(
         arena,
         source,
@@ -90,7 +90,7 @@ fn selected<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateComponen
             template: SurfaceParseOptions::default(),
         },
     );
-    NativeTemplateComponent::parse_in(arena, descriptor.admitted().unwrap())
+    TemplateComponent::parse_in(arena, descriptor.admitted().unwrap())
         .unwrap()
         .unwrap()
 }
@@ -136,7 +136,7 @@ fn registered(source: &str, locale: Locale) -> LintResult {
 fn observed(
     source: &str,
     locale: Locale,
-    owner: &NativeTemplateComponent<'_>,
+    owner: &TemplateComponent<'_>,
 ) -> (Vec<Observation>, LintResult) {
     let observations = Arc::new(Mutex::new(Vec::new()));
     let mut registry = RuleRegistry::new();
@@ -157,23 +157,23 @@ fn observed(
     (captured, actual)
 }
 
-fn native_kind(kind: NativeLintTagKind) -> MarkupElementKind {
+fn native_kind(kind: TagFactsKind) -> MarkupElementKind {
     match kind {
-        NativeLintTagKind::Element => MarkupElementKind::Element,
-        NativeLintTagKind::Component => MarkupElementKind::Component,
-        NativeLintTagKind::Slot => MarkupElementKind::Slot,
-        NativeLintTagKind::Template => MarkupElementKind::Template,
+        TagFactsKind::Element => MarkupElementKind::Element,
+        TagFactsKind::Component => MarkupElementKind::Component,
+        TagFactsKind::Slot => MarkupElementKind::Slot,
+        TagFactsKind::Template => MarkupElementKind::Template,
     }
 }
 
 fn native_observations<'a>(
-    owner: &NativeTemplateComponent<'a>,
-    children: NativeChildren<'_, 'a>,
+    owner: &TemplateComponent<'a>,
+    children: ChildrenView<'_, 'a>,
     output: &mut Vec<Observation>,
 ) {
     for child in children {
         if let Some(element) = child.into_element() {
-            let receipt = element.lint_tag().unwrap();
+            let receipt = element.tag_facts().unwrap();
             assert!(core::ptr::eq(receipt.component(), owner.component()));
             assert!(core::ptr::eq(receipt.element(), element.surface()));
             let block = owner.component().block();

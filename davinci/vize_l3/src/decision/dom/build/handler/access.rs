@@ -97,7 +97,7 @@ mod tests {
     };
     use vize_l1::{
         container::{Vue, vue::DescriptorOptions},
-        markup::{NativeTemplateComponent, SurfaceParseOptions},
+        markup::{SurfaceParseOptions, TemplateComponent},
     };
     use vize_l2::{
         lang::js::{NativeTemplateFile, NativeTemplateOwner},
@@ -114,7 +114,7 @@ mod tests {
                 template: SurfaceParseOptions::default(),
             },
         );
-        let selected = NativeTemplateComponent::parse_in(arena, descriptor.admitted().unwrap())
+        let selected = TemplateComponent::parse_in(arena, descriptor.admitted().unwrap())
             .unwrap()
             .unwrap();
         let mut owner = NativeTemplateOwner::new(selected).unwrap_or_else(|_| panic!("owner"));

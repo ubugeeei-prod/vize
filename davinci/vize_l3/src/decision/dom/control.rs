@@ -28,7 +28,7 @@ impl BranchDiscriminant {
 /// The admitted branch root's semantic block ownership.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum DomBlockEligibility {
-    NativeElement,
+    ElementView,
 }
 
 /// Whether the conditional has an authored final branch.

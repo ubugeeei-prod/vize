@@ -1,4 +1,4 @@
-use super::NativeComponent;
+use super::ParsedComponent;
 use vize_l0::{Allocator, SourceRoot, Span, cstr};
 use vize_l1::embed::Lang;
 use vize_l2::artifact::Builder;
@@ -15,7 +15,7 @@ fn whole_file_template_block_keeps_absolute_entities_and_the_same_once_ast() {
         .unwrap()
         .block(file.get(start..end).unwrap(), start as u32)
         .unwrap();
-    let owner = NativeComponent::parse_in(&a, block).unwrap();
+    let owner = ParsedComponent::parse_in(&a, block).unwrap();
     let mut builder = Builder::new(&a, file).unwrap();
     let produced = owner.construct_in(&mut builder.region(), Lang::Js).unwrap();
     assert!(produced.is_supported());
@@ -72,7 +72,7 @@ fn equal_bytes_in_a_foreign_allocation_reject_before_mint_and_keep_the_owner() {
     let original = vize_l0::String::from("<p>{{ value }}</p>");
     let foreign = original.clone();
     let owner =
-        NativeComponent::parse_in(&a, SourceRoot::new(&original).unwrap().whole_block()).unwrap();
+        ParsedComponent::parse_in(&a, SourceRoot::new(&original).unwrap().whole_block()).unwrap();
     let first = owner.carrier().tree.children.first().unwrap() as *const _;
     let mut builder = Builder::new(&a, &foreign).unwrap();
     let rejected = owner
@@ -105,7 +105,7 @@ fn recursive_short_borrows_record_only_actual_expression_ids_and_keep_raw_output
     );
     let raw = crate::native::lower_component_native(&a, &file, Lang::Js).unwrap();
     let owner =
-        NativeComponent::parse_in(&a, SourceRoot::new(&file).unwrap().whole_block()).unwrap();
+        ParsedComponent::parse_in(&a, SourceRoot::new(&file).unwrap().whole_block()).unwrap();
     let mut builder = Builder::new(&a, &file).unwrap();
     let mut sites = Sites {
         expressions: alloc::vec::Vec::new(),
@@ -179,7 +179,7 @@ fn block_rebases_all_error_and_admission_facts_without_modifying_original_carrie
             prefix.len() as u32,
         )
         .unwrap();
-    let owner = NativeComponent::parse_in(&a, block).unwrap();
+    let owner = ParsedComponent::parse_in(&a, block).unwrap();
     assert!(!owner.carrier().errors.is_empty());
     assert_eq!(owner.carrier().unsupported.len(), 0);
     let mut builder = Builder::new(&a, &file).unwrap();
@@ -222,7 +222,7 @@ fn same_root_pointer_with_a_different_length_cannot_enter_the_factory() {
     let a = Allocator::default();
     let file = "<p>{{value}}</p>tail";
     let owner =
-        NativeComponent::parse_in(&a, SourceRoot::new(file).unwrap().whole_block()).unwrap();
+        ParsedComponent::parse_in(&a, SourceRoot::new(file).unwrap().whole_block()).unwrap();
     let prefix = file.strip_suffix("tail").unwrap();
     assert_eq!(prefix.as_ptr(), file.as_ptr());
     let mut builder = Builder::new(&a, prefix).unwrap();

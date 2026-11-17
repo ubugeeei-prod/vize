@@ -1,7 +1,7 @@
 use alloc::vec::Vec;
 use vize_l0::{Allocator, SourceRoot, String};
 
-use super::{DocumentHtmlNode, NativeDocument, envelope};
+use super::{DocumentHtmlNode, ParsedDocument, envelope};
 use crate::markup::htmlish::document::DocumentTokenKind;
 
 #[test]
@@ -9,7 +9,7 @@ fn text_and_comment_geometry_keeps_actual_original_callback_addresses() {
     let source =
         envelope("前🙂<div data-x='&amp;'>雪&amp;&#x1f642;<!--&amp;-->&NotEqualTilde;</div>終");
     let arena = Allocator::default();
-    let owner = NativeDocument::lex_in(&arena, SourceRoot::new(&source).unwrap());
+    let owner = ParsedDocument::lex_in(&arena, SourceRoot::new(&source).unwrap());
     let tree = owner.html_structure().unwrap();
     let div = tree
         .elements()
@@ -66,7 +66,7 @@ fn text_and_comment_geometry_keeps_actual_original_callback_addresses() {
 fn moved_owners_and_structures_keep_original_parent_and_normal_drop_custody() {
     let source = envelope("<div>雪&amp;<!--keep--><span>x</span>終</div>");
     let arena = Allocator::default();
-    let owner = NativeDocument::lex_in(&arena, SourceRoot::new(&source).unwrap());
+    let owner = ParsedDocument::lex_in(&arena, SourceRoot::new(&source).unwrap());
     let moved = owner;
     let tree = moved.html_structure().unwrap();
     let moved_tree = tree;
@@ -103,9 +103,9 @@ fn same_buffer_and_equal_foreign_buffers_keep_distinct_node_authorities() {
     assert_eq!(source, other_source);
     assert!(!core::ptr::eq(source.as_ptr(), other_source.as_ptr()));
     let arena = Allocator::default();
-    let first = NativeDocument::lex_in(&arena, SourceRoot::new(&source).unwrap());
-    let duplicate = NativeDocument::lex_in(&arena, SourceRoot::new(&source).unwrap());
-    let foreign = NativeDocument::lex_in(&arena, SourceRoot::new(&other_source).unwrap());
+    let first = ParsedDocument::lex_in(&arena, SourceRoot::new(&source).unwrap());
+    let duplicate = ParsedDocument::lex_in(&arena, SourceRoot::new(&source).unwrap());
+    let foreign = ParsedDocument::lex_in(&arena, SourceRoot::new(&other_source).unwrap());
     let first_tree = first.html_structure().unwrap();
     let duplicate_tree = duplicate.html_structure().unwrap();
     let foreign_tree = foreign.html_structure().unwrap();

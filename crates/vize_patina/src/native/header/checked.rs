@@ -4,7 +4,7 @@ use vize_l0::Span;
 use vize_l1::{
     dialect::vue3::VueDirectives,
     markup::{
-        ArgSyntax, DirectiveName, DirectivePrefix, DirectiveSyntax, NativeAttribute, NativeElement,
+        ArgSyntax, AttributeView, DirectiveName, DirectivePrefix, DirectiveSyntax, ElementView,
     },
 };
 
@@ -34,7 +34,7 @@ pub(in crate::native) enum AttributeBinding<'a> {
 /// A checked original projection. Fields and construction remain private.
 /// The wider bare profile still requires its normally owned clean component.
 pub(in crate::native) struct CheckedAttribute<'o, 'a> {
-    original: NativeAttribute<'o, 'a>,
+    original: AttributeView<'o, 'a>,
     head: Option<DirectiveName>,
     head_span: Span,
     range: Span,
@@ -43,8 +43,8 @@ pub(in crate::native) struct CheckedAttribute<'o, 'a> {
 
 impl<'o, 'a> CheckedAttribute<'o, 'a> {
     pub(in crate::native) fn check<const STRICT: bool>(
-        element: &NativeElement<'_, 'a>,
-        original: NativeAttribute<'o, 'a>,
+        element: &ElementView<'_, 'a>,
+        original: AttributeView<'o, 'a>,
     ) -> Result<Self, NativeLintRefusal> {
         if !core::ptr::eq(original.component(), element.component())
             || !core::ptr::eq(original.element(), element.surface())
@@ -59,7 +59,7 @@ impl<'o, 'a> CheckedAttribute<'o, 'a> {
         if verbatim
             && (!STRICT
                 || element
-                    .lint_tag()
+                    .tag_facts()
                     .map_err(|reason| NativeLintRefusal::LintTag { reason })?
                     .header_is_literal())
         {
@@ -95,7 +95,7 @@ impl<'o, 'a> CheckedAttribute<'o, 'a> {
         })
     }
 
-    pub(in crate::native) fn original(&self) -> &NativeAttribute<'o, 'a> {
+    pub(in crate::native) fn original(&self) -> &AttributeView<'o, 'a> {
         &self.original
     }
     pub(in crate::native) fn range(&self) -> Span {
@@ -281,8 +281,8 @@ impl<'o, 'a> CheckedAttribute<'o, 'a> {
 }
 
 pub(super) fn binding_with_modifiers<'a, const STRICT: bool>(
-    element: &NativeElement<'_, 'a>,
-    original: &NativeAttribute<'_, 'a>,
+    element: &ElementView<'_, 'a>,
+    original: &AttributeView<'_, 'a>,
 ) -> Result<Binding<'a>, NativeLintRefusal> {
     let checked = CheckedAttribute::check::<STRICT>(element, original.reborrow())?;
     checked.narrow(checked.binding::<false>()?)

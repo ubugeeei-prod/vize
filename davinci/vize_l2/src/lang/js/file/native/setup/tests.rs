@@ -7,7 +7,7 @@ use vize_l0::{
 };
 use vize_l1::{
     container::{Vue, vue::DescriptorOptions},
-    markup::{NativeTemplateComponent, SurfaceParseOptions},
+    markup::{SurfaceParseOptions, TemplateComponent},
 };
 
 std::thread_local! {
@@ -33,7 +33,7 @@ fn caught_setup_park_unwind_keeps_stock_owner_and_cannot_parse_or_complete_again
             template: SurfaceParseOptions::default(),
         },
     );
-    let selected = NativeTemplateComponent::parse_in(&arena, descriptor.admitted().unwrap())
+    let selected = TemplateComponent::parse_in(&arena, descriptor.admitted().unwrap())
         .unwrap()
         .unwrap();
     let mut owner = NativeTemplateOwner::new(selected).unwrap_or_else(|_| panic!("native owner"));

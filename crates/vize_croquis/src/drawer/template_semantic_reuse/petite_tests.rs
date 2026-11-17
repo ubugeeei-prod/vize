@@ -1,5 +1,5 @@
 use vize_l0::{Allocator, SourceRoot};
-use vize_l1::markup::htmlish::document::NativeDocument;
+use vize_l1::markup::htmlish::document::ParsedDocument;
 use vize_l2::dialect::petite::PetiteDocument;
 use vize_relief::{ExpressionNode, PropNode, TemplateChildNode};
 
@@ -18,7 +18,7 @@ fn petite_hints_are_native_owned_and_preserve_the_complete_croquis() {
         let allocator = Allocator::new();
         let (root, errors) = vize_armature::parse(&allocator, source);
         assert!(errors.is_empty(), "legacy fixture must parse: {errors:?}");
-        let owner = NativeDocument::lex_in(
+        let owner = ParsedDocument::lex_in(
             &allocator,
             SourceRoot::new(source).expect("bounded fixture"),
         );
@@ -104,7 +104,7 @@ fn petite_scope_property_shapes_match_legacy_bindings_and_offsets() {
         let allocator = Allocator::new();
         let (root, errors) = vize_armature::parse(&allocator, &source);
         assert!(errors.is_empty(), "legacy fixture must parse: {errors:?}");
-        let owner = NativeDocument::lex_in(
+        let owner = ParsedDocument::lex_in(
             &allocator,
             SourceRoot::new(&source).expect("bounded fixture"),
         );
@@ -139,7 +139,7 @@ fn petite_hints_honor_disabled_template_expression_collection() {
     let allocator = Allocator::new();
     let (root, errors) = vize_armature::parse(&allocator, source);
     assert!(errors.is_empty(), "legacy fixture must parse: {errors:?}");
-    let owner = NativeDocument::lex_in(
+    let owner = ParsedDocument::lex_in(
         &allocator,
         SourceRoot::new(source).expect("bounded fixture"),
     );

@@ -9,13 +9,13 @@ use vize_l0::{
 };
 use vize_l1::{
     container::{Vue, vue::DescriptorOptions},
-    markup::{NativeChildren, NativeTemplateComponent, SurfaceParseOptions},
+    markup::{ChildrenView, SurfaceParseOptions, TemplateComponent},
 };
 use vize_patina::native::{NativeLintFinding, NativeSyntaxLint};
 
 fn collect<'a>(
     lint: &NativeSyntaxLint<'_, 'a>,
-    children: NativeChildren<'_, 'a>,
+    children: ChildrenView<'_, 'a>,
     messages: &impl MessageLookup,
     output: &mut Vec<NativeLintFinding>,
 ) -> Result<()> {
@@ -47,7 +47,7 @@ fn main() -> Result<()> {
     let admitted = descriptor
         .admitted()
         .map_err(|error| failure(&vize_l0::cstr!("original descriptor refused: {error:?}")))?;
-    let original = NativeTemplateComponent::parse_in(&a, admitted)
+    let original = TemplateComponent::parse_in(&a, admitted)
         .map_err(|error| failure(&vize_l0::cstr!("original template refused: {error:?}")))?
         .ok_or_else(|| failure("missing selected original template"))?;
     let lint = NativeSyntaxLint::new(&original).map_err(|error| {
@@ -62,7 +62,7 @@ fn main() -> Result<()> {
     let messages = image_alt_measurement::messages();
     let observation = image_alt_measurement::measure(
         "patina.native.original.img_alt.observer",
-        "L1 NativeTemplateComponent + NativeSyntaxLint original children",
+        "L1 TemplateComponent + NativeSyntaxLint original children",
         &source,
         || {
             vize_l0::profile!("patina.native.original.img_alt.observer", {

@@ -3,47 +3,45 @@
 use std::vec::Vec;
 use vize_l0::Span;
 use vize_l1::markup::{
-    NativeAttributeBindingExpression, NativeAttributeExpression, NativeAttributeExpressionFailure,
-    NativeAttributeHead, NativeStaticBindingHead,
+    AttributeBindingExpression, AttributeExpression, AttributeExpressionFailure, AttributeHead,
+    StaticBindingHead,
 };
-use vize_l1::markup::{
-    NativeChild, NativeInterpolationFailure, NativeInterpolationOperand, NativeTemplateComponent,
-};
+use vize_l1::markup::{ChildView, InterpolationFailure, InterpolationOperand, TemplateComponent};
 
 use super::NativeTemplateRefusal;
 
 pub(super) trait Input<'p, 'a> {
     fn operand(
         &mut self,
-        selected: &'p NativeTemplateComponent<'a>,
-        child: &NativeChild<'p, 'a>,
+        selected: &'p TemplateComponent<'a>,
+        child: &ChildView<'p, 'a>,
         index: usize,
         offset: usize,
-    ) -> Result<&NativeInterpolationOperand<'a>, NativeTemplateRefusal>;
+    ) -> Result<&InterpolationOperand<'a>, NativeTemplateRefusal>;
 
     fn attribute(
         &mut self,
-        head: &NativeAttributeHead<'_, 'a>,
+        head: &AttributeHead<'_, 'a>,
         offset: usize,
-    ) -> Result<(usize, &NativeAttributeExpression<'a>), NativeTemplateRefusal>;
+    ) -> Result<(usize, &AttributeExpression<'a>), NativeTemplateRefusal>;
 
     fn binding(
         &mut self,
-        head: NativeStaticBindingHead<'_, '_, 'a>,
+        head: StaticBindingHead<'_, '_, 'a>,
         offset: usize,
-    ) -> Result<(usize, &NativeAttributeBindingExpression<'a>), NativeTemplateRefusal>;
+    ) -> Result<(usize, &AttributeBindingExpression<'a>), NativeTemplateRefusal>;
 }
 
-pub(super) struct Borrowed<'p, 'a>(pub(super) &'p [&'p NativeInterpolationOperand<'a>]);
+pub(super) struct Borrowed<'p, 'a>(pub(super) &'p [&'p InterpolationOperand<'a>]);
 
 impl<'p, 'a> Input<'p, 'a> for Borrowed<'p, 'a> {
     fn operand(
         &mut self,
-        _selected: &'p NativeTemplateComponent<'a>,
-        _child: &NativeChild<'p, 'a>,
+        _selected: &'p TemplateComponent<'a>,
+        _child: &ChildView<'p, 'a>,
         index: usize,
         offset: usize,
-    ) -> Result<&NativeInterpolationOperand<'a>, NativeTemplateRefusal> {
+    ) -> Result<&InterpolationOperand<'a>, NativeTemplateRefusal> {
         self.0
             .get(index)
             .copied()
@@ -52,30 +50,30 @@ impl<'p, 'a> Input<'p, 'a> for Borrowed<'p, 'a> {
 
     fn attribute(
         &mut self,
-        _head: &NativeAttributeHead<'_, 'a>,
+        _head: &AttributeHead<'_, 'a>,
         offset: usize,
-    ) -> Result<(usize, &NativeAttributeExpression<'a>), NativeTemplateRefusal> {
+    ) -> Result<(usize, &AttributeExpression<'a>), NativeTemplateRefusal> {
         Err(NativeTemplateRefusal::MissingAttributeOperand { offset, index: 0 })
     }
 
     fn binding(
         &mut self,
-        _head: NativeStaticBindingHead<'_, '_, 'a>,
+        _head: StaticBindingHead<'_, '_, 'a>,
         offset: usize,
-    ) -> Result<(usize, &NativeAttributeBindingExpression<'a>), NativeTemplateRefusal> {
+    ) -> Result<(usize, &AttributeBindingExpression<'a>), NativeTemplateRefusal> {
         Err(NativeTemplateRefusal::MissingBindingOperand { offset, index: 0 })
     }
 }
 
 pub(in crate::native_doc) struct Observed<'a> {
-    pub(in crate::native_doc) operands: Vec<NativeInterpolationOperand<'a>>,
-    pub(in crate::native_doc) failure: Option<NativeInterpolationFailure<'a>>,
-    pub(in crate::native_doc) attributes: Vec<NativeAttributeExpression<'a>>,
+    pub(in crate::native_doc) operands: Vec<InterpolationOperand<'a>>,
+    pub(in crate::native_doc) failure: Option<InterpolationFailure<'a>>,
+    pub(in crate::native_doc) attributes: Vec<AttributeExpression<'a>>,
     pub(in crate::native_doc) attribute_failure:
-        Option<(Span, usize, NativeAttributeExpressionFailure<'a>)>,
-    pub(in crate::native_doc) bindings: Vec<NativeAttributeBindingExpression<'a>>,
+        Option<(Span, usize, AttributeExpressionFailure<'a>)>,
+    pub(in crate::native_doc) bindings: Vec<AttributeBindingExpression<'a>>,
     pub(in crate::native_doc) binding_failure:
-        Option<(Span, usize, NativeAttributeExpressionFailure<'a>)>,
+        Option<(Span, usize, AttributeExpressionFailure<'a>)>,
 }
 
 impl<'a> Observed<'a> {
@@ -94,11 +92,11 @@ impl<'a> Observed<'a> {
 impl<'p, 'a> Input<'p, 'a> for Observed<'a> {
     fn operand(
         &mut self,
-        selected: &'p NativeTemplateComponent<'a>,
-        child: &NativeChild<'p, 'a>,
+        selected: &'p TemplateComponent<'a>,
+        child: &ChildView<'p, 'a>,
         index: usize,
         offset: usize,
-    ) -> Result<&NativeInterpolationOperand<'a>, NativeTemplateRefusal> {
+    ) -> Result<&InterpolationOperand<'a>, NativeTemplateRefusal> {
         match selected.observe_interpolation_expression(child.reborrow()) {
             Ok(operand) => self.operands.push(operand),
             Err(failure) => {
@@ -119,9 +117,9 @@ impl<'p, 'a> Input<'p, 'a> for Observed<'a> {
 
     fn attribute(
         &mut self,
-        head: &NativeAttributeHead<'_, 'a>,
+        head: &AttributeHead<'_, 'a>,
         offset: usize,
-    ) -> Result<(usize, &NativeAttributeExpression<'a>), NativeTemplateRefusal> {
+    ) -> Result<(usize, &AttributeExpression<'a>), NativeTemplateRefusal> {
         let index = self.attributes.len();
         match head.observe_expression() {
             Ok(operand) => self.attributes.push(operand),
@@ -141,9 +139,9 @@ impl<'p, 'a> Input<'p, 'a> for Observed<'a> {
 
     fn binding(
         &mut self,
-        head: NativeStaticBindingHead<'_, '_, 'a>,
+        head: StaticBindingHead<'_, '_, 'a>,
         offset: usize,
-    ) -> Result<(usize, &NativeAttributeBindingExpression<'a>), NativeTemplateRefusal> {
+    ) -> Result<(usize, &AttributeBindingExpression<'a>), NativeTemplateRefusal> {
         let index = self.bindings.len();
         let span = head.head().name_block().span();
         match head.observe_expression() {

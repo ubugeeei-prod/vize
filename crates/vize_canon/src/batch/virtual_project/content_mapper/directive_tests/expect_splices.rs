@@ -31,9 +31,9 @@ fn covered(template: &str, needles: &[&str]) -> Vec<bool> {
 fn native_listener_follows_its_bindings_before_a_bound_sibling() {
     let owner = "<input :value=\"memo\" @change=\"(event) => onUpdate(event?.target?.value)\" />";
     let needles = [
-        "$NativeElement<\"input\">, \"value\"> = (",
+        "$ElementView<\"input\">, \"value\"> = (",
         "(event) => onUpdate(event?.target?.value)",
-        "$NativeElement<\"p\">, \"title\"> = (",
+        "$ElementView<\"p\">, \"title\"> = (",
     ];
     for template in [
         format!(
@@ -60,7 +60,7 @@ fn slot_loop_component_replay_follows_its_bindings() {
         "\"name\": \"a\"",
         "\"name\": memo,",
         "as unknown as __Frame_Check_2)(",
-        "$NativeElement<\"p\">, \"title\"> = (",
+        "$ElementView<\"p\">, \"title\"> = (",
     ];
     assert_eq!(
         covered(template, &needles),
@@ -74,7 +74,7 @@ fn a_render_time_call_keeps_the_listener_after_the_sibling() {
     let template = "  <div>\n    <!-- @vue-expect-error --><input :value=\"memo\" @change=\"(event) => onUpdate(event?.target?.value)\" />\n    <p :title=\"String(memo)\" />\n  </div>";
     let source = format!("{SCRIPT}<template>\n{template}\n</template>\n");
     let text = transform(&source).text;
-    let sibling = text.find("$NativeElement<\"p\">, \"title\">").unwrap();
+    let sibling = text.find("$ElementView<\"p\">, \"title\">").unwrap();
     let listener = text.find("// @change handler").unwrap();
     assert_eq!(sibling < listener, true);
 }

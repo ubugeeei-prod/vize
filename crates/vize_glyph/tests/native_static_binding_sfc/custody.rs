@@ -4,7 +4,7 @@ use std::panic::{AssertUnwindSafe, catch_unwind};
 use vize_glyph::native_doc::{LineEnding, NativeSfcObservation, observe_native_sfc_in};
 use vize_l0::{Allocator, Span};
 use vize_l1::embed::DecodeSegmentKind;
-use vize_l1::markup::NativeAttributeBindingExpression;
+use vize_l1::markup::AttributeBindingExpression;
 
 #[test]
 fn whole_owner_moves_keep_all_three_vectors_actual_ast_roots_and_reject_foreign_equal_source() {
@@ -76,7 +76,7 @@ fn whole_owner_moves_keep_all_three_vectors_actual_ast_roots_and_reject_foreign_
         );
     }
     assert!(core::mem::needs_drop::<NativeSfcObservation<'_>>());
-    assert!(core::mem::needs_drop::<NativeAttributeBindingExpression<'_>>());
+    assert!(core::mem::needs_drop::<AttributeBindingExpression<'_>>());
     assert_eq!(identity(&owner), before);
 }
 

@@ -3,9 +3,7 @@
 use crate::expr::JsExpr;
 use crate::expr::js::JsCoordinateError;
 use vize_l1::embed::syntax::EmbedHole;
-use vize_l1::markup::{
-    NativeChild, NativeInterpolationOperand, NativeInterpolationView, NativeTemplateComponent,
-};
+use vize_l1::markup::{ChildView, InterpolationOperand, InterpolationView, TemplateComponent};
 
 mod transfer;
 
@@ -35,14 +33,14 @@ pub enum NativeInterpolationInputError {
 /// }
 /// ```
 pub struct NativeInterpolationInput<'a> {
-    operand: NativeInterpolationOperand<'a>,
+    operand: InterpolationOperand<'a>,
     expression: Option<&'a JsExpr<'a>>,
 }
 
 impl<'a> NativeInterpolationInput<'a> {
     /// Move the genuine whole L1 operand, including any typed syntax hole.
     #[must_use]
-    pub const fn from_operand(operand: NativeInterpolationOperand<'a>) -> Self {
+    pub const fn from_operand(operand: InterpolationOperand<'a>) -> Self {
         Self {
             operand,
             expression: None,
@@ -50,7 +48,7 @@ impl<'a> NativeInterpolationInput<'a> {
     }
 
     #[must_use]
-    pub const fn operand(&self) -> &NativeInterpolationOperand<'a> {
+    pub const fn operand(&self) -> &InterpolationOperand<'a> {
         &self.operand
     }
 
@@ -63,8 +61,8 @@ impl<'a> NativeInterpolationInput<'a> {
     /// ordered cursor and attached same-File resolution before node admission.
     pub fn admitted_for<'s>(
         &'s mut self,
-        selected: &'s NativeTemplateComponent<'a>,
-        child: NativeChild<'s, 'a>,
+        selected: &'s TemplateComponent<'a>,
+        child: ChildView<'s, 'a>,
     ) -> Result<NativeInterpolationInputView<'s, 'a>, NativeInterpolationInputError> {
         if let Some(hole) = self.operand.syntax().hole() {
             return Err(NativeInterpolationInputError::Hole(hole));
@@ -92,10 +90,10 @@ impl<'a> NativeInterpolationInput<'a> {
 /// A short genuine original join, not a neutral-body or completed File token.
 ///
 /// ```compile_fail
-/// use vize_l1::markup::{NativeChild, NativeTemplateComponent};
+/// use vize_l1::markup::{ChildView, TemplateComponent};
 /// use vize_l2::lang::js::{NativeInterpolationInput, NativeInterpolationInputView};
 /// fn escape<'a>(input: &mut NativeInterpolationInput<'a>,
-///     selected: &NativeTemplateComponent<'a>, child: NativeChild<'_, 'a>)
+///     selected: &TemplateComponent<'a>, child: ChildView<'_, 'a>)
 ///     -> NativeInterpolationInputView<'static, 'a> {
 ///     match input.admitted_for(selected, child) {
 ///         Ok(view) => view,
@@ -104,10 +102,10 @@ impl<'a> NativeInterpolationInput<'a> {
 /// }
 /// ```
 /// ```compile_fail
-/// use vize_l1::markup::{NativeChild, NativeTemplateComponent};
+/// use vize_l1::markup::{ChildView, TemplateComponent};
 /// use vize_l2::lang::js::NativeInterpolationInput;
 /// fn discard<'a>(mut input: NativeInterpolationInput<'a>,
-///     selected: &NativeTemplateComponent<'a>, child: NativeChild<'_, 'a>) {
+///     selected: &TemplateComponent<'a>, child: ChildView<'_, 'a>) {
 ///     let view = match input.admitted_for(selected, child) {
 ///         Ok(view) => view,
 ///         Err(_) => return,
@@ -118,7 +116,7 @@ impl<'a> NativeInterpolationInput<'a> {
 /// ```
 pub struct NativeInterpolationInputView<'s, 'a> {
     input: &'s NativeInterpolationInput<'a>,
-    original: NativeInterpolationView<'s, 'a>,
+    original: InterpolationView<'s, 'a>,
     expression: &'a JsExpr<'a>,
 }
 
@@ -128,7 +126,7 @@ impl<'s, 'a> NativeInterpolationInputView<'s, 'a> {
         self.input
     }
     #[must_use]
-    pub const fn original(&self) -> &NativeInterpolationView<'s, 'a> {
+    pub const fn original(&self) -> &InterpolationView<'s, 'a> {
         &self.original
     }
     #[must_use]

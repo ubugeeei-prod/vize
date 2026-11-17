@@ -13,7 +13,7 @@ mod opening;
 pub(super) mod queries;
 mod rendered;
 
-use queries::{is_lint_component, l2_template_is_special};
+use queries::{is_component_tag, l2_template_is_special};
 
 #[derive(Clone, Copy)]
 pub(super) enum MarkupElementInner<'a> {
@@ -179,7 +179,7 @@ impl<'a> MarkupElement<'a> {
                     // which the lint lane's rules and snapshots are not written
                     // against.
                     _ if surface.is_some() => {
-                        if is_lint_component(tag, !frozen) {
+                        if is_component_tag(tag, !frozen) {
                             MarkupElementKind::Component
                         } else {
                             MarkupElementKind::Element

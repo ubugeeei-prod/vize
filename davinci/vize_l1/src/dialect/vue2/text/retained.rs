@@ -7,7 +7,7 @@ use vize_l0::{SourceBlock, Span};
 
 use super::{FilterChain, FilterInvocation, TextBinding, TextBoundary};
 use crate::embed::syntax::{
-    CommentView, DiagnosticView, EmbedHole, NativeSyntax, RetainedExpression,
+    CommentView, DiagnosticView, EmbedHole, EmbedSyntax, RetainedExpression,
 };
 use crate::embed::{EmbedSource, Grammar, SourceError};
 
@@ -17,8 +17,8 @@ use crate::embed::{EmbedSource, Grammar, SourceError};
 ///
 /// Its refused owner's borrow cannot be widened to the source/arena lifetime:
 /// ```compile_fail
-/// use vize_l1::{dialect::vue2::text::TextExpression, embed::syntax::NativeSyntax};
-/// fn widen<'o, 'a>(slot: &'o TextExpression<'a>) -> &'a NativeSyntax<'a> {
+/// use vize_l1::{dialect::vue2::text::TextExpression, embed::syntax::EmbedSyntax};
+/// fn widen<'o, 'a>(slot: &'o TextExpression<'a>) -> &'a EmbedSyntax<'a> {
 ///     slot.original().unwrap()
 /// }
 /// ```
@@ -34,11 +34,11 @@ pub struct TextExpression<'a> {
 )]
 enum Artifact<'a> {
     Retained(RetainedExpression<'a>),
-    Original(Box<NativeSyntax<'a>>),
+    Original(Box<EmbedSyntax<'a>>),
 }
 
 impl<'a> TextExpression<'a> {
-    fn consume(syntax: NativeSyntax<'a>) -> Self {
+    fn consume(syntax: EmbedSyntax<'a>) -> Self {
         let artifact = match syntax.into_expression() {
             Ok(retained) => Artifact::Retained(retained),
             Err(original) => Artifact::Original(original),
@@ -54,7 +54,7 @@ impl<'a> TextExpression<'a> {
     }
 
     /// A refusal preserves the complete actual owner, never a replacement hole.
-    pub fn original(&self) -> Option<&NativeSyntax<'a>> {
+    pub fn original(&self) -> Option<&EmbedSyntax<'a>> {
         match &self.artifact {
             Artifact::Retained(_) => None,
             Artifact::Original(original) => Some(original),
