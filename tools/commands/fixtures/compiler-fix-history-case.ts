@@ -117,9 +117,10 @@ function register(files: string[], errors: Record<string, number>) {
   write(COHORT, `${JSON.stringify(cohort, null, 2)}\n`);
   write(DISPOSITIONS, `${JSON.stringify(dispositions, null, 2)}\n`);
   const source = read(runner);
-  const pin = /assert_eq!\(cases\.len\(\), \d+,/;
+  // rustfmt may break the pin over several lines; keep its whitespace.
+  const pin = /(assert_eq!\(\s*cases\.len\(\),\s*)\d+,/;
   assert.match(source, pin);
-  write(runner, source.replace(pin, `assert_eq!(cases.len(), ${cohort.length},`));
+  write(runner, source.replace(pin, `$1${cohort.length},`));
   const rendered = renderHistory(collectHistory(root));
   write(INDEX, rendered.index);
   write(RECEIPT, rendered.receipt);

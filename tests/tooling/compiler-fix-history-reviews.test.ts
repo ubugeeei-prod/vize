@@ -98,5 +98,5 @@ void test("current-API compiler oracles and dispositions match the history index
     path.join(root, "crates/vize_atelier_sfc/tests/compile_history.rs"),
     "utf8",
   );
-  assert.equal(Number(/assert_eq!\(cases\.len\(\), (\d+),/.exec(runner)?.[1]), cohort.length);
+  assert.equal(Number(/assert_eq!\(\s*cases\.len\(\),\s*(\d+),/.exec(runner)?.[1]), cohort.length);
 });
