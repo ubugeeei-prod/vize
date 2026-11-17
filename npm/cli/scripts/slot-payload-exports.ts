@@ -5,7 +5,14 @@ import path from "node:path";
 import ts from "typescript";
 import { format } from "oxfmt";
 
-const names = ["$SilentAny", "$RegisteredSlotProvider", "$NamedSlotPayload", "$SlotPayload"];
+const names = [
+  "$SilentAny",
+  "$RegisteredSlotProvider",
+  "$SlotCallbackProps",
+  "$NamedSlotPayload",
+  "$SlotPayload",
+];
+const exportedNames = new Set(["$RegisteredSlotProvider", "$SlotPayload"]);
 const printer = ts.createPrinter({ removeComments: true });
 function aliases(text: string, label: string) {
   const source = ts.createSourceFile(label, text, ts.ScriptTarget.Latest, true);
@@ -68,7 +75,7 @@ export async function slotPayloadExports(root: string): Promise<Map<string, stri
     );
     for (const [family, exported] of [
       [embedded, false],
-      [shared, index === 1 || index === 3],
+      [shared, exportedNames.has(names[index]!)],
     ] as const) {
       assert.equal(
         family.found[index]!.modifiers?.some((node) => node.kind === ts.SyntaxKind.ExportKeyword) ??
@@ -98,6 +105,18 @@ export async function slotPayloadExports(root: string): Promise<Map<string, stri
   `,
     "intersecting public payload",
   );
+  // The union-host payload before generic hosts: the non-distributive
+  // `NonNullable<S[K]> extends ...` and `extends infer P` wrapper deferred to
+  // `unknown` when the slot record's keys depended on a generic parent's type.
+  const unionHost = aliases(
+    `
+    type $SilentAny = {}["__vizeSilentAny"];
+    export type $RegisteredSlotProvider<G, K extends string | number | symbol, F extends string | number | symbol = K, L extends string | number | symbol = F> = $IsAny<G> extends true ? $SilentAny : K extends keyof G ? G[K] : F extends keyof G ? G[F] : L extends keyof G ? G[L] : $SilentAny;
+    type $NamedSlotPayload<S, N> = (S extends unknown ? { [K in keyof S & N]-?: NonNullable<S[K]> extends (props: infer P, ...args: any[]) => any ? P : never }[keyof S & N] : never) extends infer P ? ([P] extends [never] ? any : P) : any;
+    export type $SlotPayload<S, N, C = $RegisteredSlotProvider<any, never>> = $IsAny<S> extends true ? $IsAny<C> extends true ? C : any : string extends N ? string extends keyof S ? $NamedSlotPayload<S, N> : any : $NamedSlotPayload<S, N>;
+  `,
+    "union-host public payload",
+  );
   const sameFamily = (
     current: ReturnType<typeof aliases>,
     family: ReturnType<typeof aliases>,
@@ -118,8 +137,16 @@ export async function slotPayloadExports(root: string): Promise<Map<string, stri
     const current = aliases(text, relative);
     // A known earlier policy is rewritten to the source's; anything else is refused.
     const expected =
-      [legacy, intersecting, shared].find((family) => sameFamily(current, family)) ??
+      [legacy, intersecting, unionHost, shared].find((family) => sameFamily(current, family)) ??
       (current.found.length === legacy.found.length ? legacy : shared);
+    // Layout first: a foreign alias inside the family is refused as such, not
+    // as whichever policy or family it happens to break.
+    for (let index = 1; index < current.found.length; index++)
+      assert.equal(
+        current.source.statements.indexOf(current.found[index]!),
+        current.source.statements.indexOf(current.found[index - 1]!) + 1,
+        `${relative}: payload aliases must remain adjacent`,
+      );
     assert.deepEqual(
       current.found.map((node) => node.name.text),
       expected.found.map((node) => node.name.text),
@@ -127,14 +154,6 @@ export async function slotPayloadExports(root: string): Promise<Map<string, stri
     );
     for (let index = 0; index < current.found.length; index++) {
       const node = current.found[index]!;
-      // Layout first: a foreign alias inside the family is refused as such, not
-      // as whichever policy it happens to break.
-      if (index > 0)
-        assert.equal(
-          current.source.statements.indexOf(node),
-          current.source.statements.indexOf(current.found[index - 1]!) + 1,
-          `${relative}: payload aliases must remain adjacent`,
-        );
       assert.equal(
         identity(node, current.source),
         identity(expected.found[index]!, expected.source),
@@ -142,7 +161,7 @@ export async function slotPayloadExports(root: string): Promise<Map<string, stri
       );
       assert.equal(
         node.modifiers?.some((modifier) => modifier.kind === ts.SyntaxKind.ExportKeyword) ?? false,
-        node.name.text === "$RegisteredSlotProvider" || node.name.text === "$SlotPayload",
+        exportedNames.has(node.name.text),
         `${relative}: payload visibility`,
       );
     }

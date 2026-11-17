@@ -1,0 +1,11 @@
+<script setup lang="ts" generic="T extends Record<string, any>">
+defineProps<{ data: T[] }>()
+
+defineSlots<Record<string, (props: { row: { original: T } }) => unknown>>()
+</script>
+
+<template>
+  <div v-for="(row, index) of data" :key="index">
+    <slot name="name-cell" :row="{ original: row }" />
+  </div>
+</template>

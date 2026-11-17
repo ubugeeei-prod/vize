@@ -1,0 +1,13 @@
+<script setup lang="ts" generic="T extends Record<string, any>">
+type CellSlots<T, K = keyof T> = Record<`${K extends string ? K : never}-cell` | (string & {}), (props: { row: { original: T } }) => unknown>
+
+defineProps<{ data: T[] }>()
+
+defineSlots<CellSlots<T>>()
+</script>
+
+<template>
+  <div v-for="(row, index) of data" :key="index">
+    <slot name="name-cell" :row="{ original: row }" />
+  </div>
+</template>

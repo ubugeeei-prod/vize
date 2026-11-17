@@ -1,0 +1,27 @@
+<script setup lang="ts" generic="TItem extends { id: string }">
+const props = defineProps<{ items: TItem[]; column: `${keyof TItem & string}-cell` }>()
+const dynamicName = "name-cell" as string
+void props
+</script>
+
+<template>
+  <PlainTable :data="items">
+    <template #name-cell="{ row }">{{ row.original.id }}</template>
+  </PlainTable>
+  <ExactTable :data="items">
+    <template #id-cell="{ row }">{{ row.original.id }}</template>
+  </ExactTable>
+  <MyTable :data="items">
+    <template #[column]="{ row }">{{ row.original.id }}</template>
+  </MyTable>
+  <MyTable :data="items">
+    <template #[dynamicName]="{ row }">{{ row.original.id }}</template>
+  </MyTable>
+  <MyTable :data="items">
+    <template #name-cell="{ row }">{{ row.original.missing }}</template>
+  </MyTable>
+  <UiTable :data="items">
+    <template #id-cell="{ row }">{{ row.original.id }}</template>
+    <template #name-cell="{ row }">{{ row.original.id }}</template>
+  </UiTable>
+</template>

@@ -43,6 +43,7 @@ for (const variant of ["embedded", "shared", "published"] as const) {
       const names = new Set([
         "$SilentAny",
         "$RegisteredSlotProvider",
+        "$SlotCallbackProps",
         "$NamedSlotPayload",
         "$SlotPayload",
       ]);

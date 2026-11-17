@@ -44,6 +44,7 @@ fn restore(current: &str, transition: &Value) -> String {
 /// The pre-#13179 bytes of a recorded producer's current image. Older images
 /// pass through; the layers below authenticate them.
 pub(super) fn source_before(path: &str, current: String) -> String {
+    let current = super::generic_slot_payload::source_before(path, current);
     let record = record();
     match record["files"]
         .as_array()
@@ -59,6 +60,7 @@ pub(super) fn source_before(path: &str, current: String) -> String {
 /// A compiled preamble without the #13179 `undefined` default member. A
 /// preamble that does not hold the current declaration exactly once passes.
 pub(super) fn preamble_before(current: &str) -> String {
+    let current = &super::generic_slot_payload::preamble_before(current);
     let hunk = &record()["files"][0]["hunks"][0];
     let after = hunk["after"].as_str().unwrap().trim_end();
     let before = hunk["before"].as_str().unwrap().trim_end();

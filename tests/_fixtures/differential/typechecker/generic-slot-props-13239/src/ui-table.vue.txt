@@ -1,0 +1,20 @@
+<script setup lang="ts" generic="T extends Record<string, any>">
+// The complete shape of Nuxt UI's `TableSlots`: fixed slots intersected with
+// two dynamic records that both admit `(string & {})`.
+type HeaderFooterSlots<T, K = keyof T> = Record<`${K extends string ? K : never}-header` | `${K extends string ? K : never}-footer` | (string & {}), (props: { column: { id: string } }) => unknown>
+type CellSlots<T, K = keyof T> = Record<`${K extends string ? K : never}-cell` | (string & {}), (props: { row: { original: T } }) => unknown>
+type TableSlots<T> = {
+  expanded?: (props: { row: { original: T } }) => unknown
+  empty?: (props?: {}) => unknown
+} & HeaderFooterSlots<T> & CellSlots<T>
+
+defineProps<{ data: T[] }>()
+
+defineSlots<TableSlots<T>>()
+</script>
+
+<template>
+  <div v-for="(row, index) of data" :key="index">
+    <slot name="name-cell" :row="{ original: row }" />
+  </div>
+</template>

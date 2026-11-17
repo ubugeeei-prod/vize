@@ -1,0 +1,13 @@
+<script setup lang="ts" generic="T extends Record<string, any>">
+type ExactCellSlots<T> = Partial<Record<`${keyof T & string}-cell`, (props: { row: { original: T } }) => unknown>>
+
+defineProps<{ data: T[] }>()
+
+defineSlots<ExactCellSlots<T>>()
+</script>
+
+<template>
+  <div v-for="(row, index) of data" :key="index">
+    <slot name="id-cell" :row="{ original: row }" />
+  </div>
+</template>

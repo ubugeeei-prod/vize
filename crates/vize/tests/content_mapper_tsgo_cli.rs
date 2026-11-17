@@ -23,6 +23,7 @@ mod expect_unpacketed_owners_6258;
 mod fallthrough_value_12458;
 mod generic_component_cast_11966;
 mod generic_constructor_slots;
+mod generic_slot_props_13239;
 mod global_component_listener_11373;
 mod global_components;
 mod incomplete_tags;

@@ -20,7 +20,7 @@ fn slot_payload_helper_keeps_authored_signature_fallback() {
     );
     assert_eq!(
         code.matches(
-            "NonNullable<__S[__K]> extends (props: infer __P, ...args: any[]) => any ? __P : never"
+            "type $SlotCallbackProps<__F> = __F extends (props: infer __P, ...args: any[]) => any ? __P : never;"
         )
         .count(),
         1,

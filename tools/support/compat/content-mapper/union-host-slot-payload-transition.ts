@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { beforeGenericHoistedAlias } from "./generic-hoisted-alias-transition.ts";
+import { previousGenericSlotPayload } from "./generic-slot-payload-transition.ts";
 
 type Identity = { bytes: number; sha256: string };
 type Hunk = { before: string; after: string };
@@ -54,17 +55,14 @@ export function beforeUnionHostSlotPayloadSource(file: string, current: string):
 export const intersectingNamedSlotPayload =
   "  type $NamedSlotPayload<S, N> = { [K in keyof S & N]-?: NonNullable<S[K]> extends (props: infer P, ...args: any[]) => any ? P : never }[keyof S & N] extends infer P ? ([P] extends [never] ? any : P) : any;";
 
-const sharedPayloadPath = new URL(
-  "../../../../crates/vize_canon/src/virtual_ts/helpers/declarations/shared-slot-payload.d.ts.txt",
-  import.meta.url,
-);
-
+/**
+ * The union-host payload line. #13239 replaced it in the source-owned asset,
+ * so its recorded predecessor is authoritative here.
+ */
 export function unionHostNamedSlotPayload(): string {
-  const lines = readFileSync(sharedPayloadPath, "utf8")
-    .split("\n")
-    .filter((line) => line.startsWith("  type $NamedSlotPayload<"));
-  assert.equal(lines.length, 1, "one shared $NamedSlotPayload declaration");
-  const line = lines[0]!;
+  const line = previousGenericSlotPayload;
+  assert.equal(line.split("\n").length, 1, "one shared $NamedSlotPayload declaration");
+  assert.ok(line.startsWith("  type $NamedSlotPayload<"), "the union-host payload line");
   assert.ok(line.includes("(S extends unknown ? {"), "the payload distributes over the host");
   return line;
 }

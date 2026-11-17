@@ -30,6 +30,17 @@ const SLOT_RESOLVER_HELPERS: &str =
 /// from the union of both slot functions would intersect them instead, and a
 /// `v-if` on the shape of one member would narrow the other branch to `never`.
 /// A member without the slot contributes nothing, because it never calls it.
+///
+/// Inside a generic parent, a generic child's slot record can still depend on
+/// the parent's type parameter (`Record<`${keyof T}-cell` | (string & {}), F>`),
+/// so the checker defers the payload instead of resolving it. Destructuring a
+/// deferred type reads its constraint, so every step keeps one that resolves:
+/// the slot is read as `S[N]` under `N extends keyof S` (a literal index
+/// simplifies through mapped and intersected records, where `keyof S & N`
+/// stays generic), its first parameter comes from the distributive
+/// `$SlotCallbackProps<F>` (not `NonNullable<S[K]> extends ...`), and the
+/// empty-payload `any` fallback tests `[payload] extends [never]` directly
+/// instead of re-inferring the payload through `extends infer P`.
 const SLOT_PAYLOAD_HELPER: &str = include_str!("../../helpers/declarations/slot-payload.d.ts.txt");
 
 /// Emit helpers only when a component owns an authored slot scope. Keeping

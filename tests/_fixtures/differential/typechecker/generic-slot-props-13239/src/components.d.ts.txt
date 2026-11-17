@@ -1,0 +1,10 @@
+export {}
+
+declare module "vue" {
+  interface GlobalComponents {
+    MyTable: typeof import("./my-table.vue").default
+    PlainTable: typeof import("./plain-table.vue").default
+    ExactTable: typeof import("./exact-table.vue").default
+    UiTable: typeof import("./ui-table.vue").default
+  }
+}

@@ -19,9 +19,7 @@ const items = ['a', 'b']
     let virtual_ts = generate_virtual_ts_from_sfc(source);
 
     assert!(
-        virtual_ts.contains(
-            "[__K in keyof __S & __N]-?: NonNullable<__S[__K]> extends (props: infer __P, ...args: any[]) => any ? __P : never"
-        ),
+        virtual_ts.contains("__N extends keyof __S ? $SlotCallbackProps<__S[__N]> : never"),
         "dynamic slot names should select matching declared slot props:\n{virtual_ts}"
     );
     assert!(

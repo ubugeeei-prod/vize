@@ -87,6 +87,10 @@ import {
   applyWithDefaultsUndefinedIn,
   beforeWithDefaultsUndefinedIn,
 } from "../../tools/support/compat/content-mapper/with-defaults-undefined-transition.ts";
+import {
+  applyGenericSlotPayloadIn,
+  beforeGenericSlotPayloadIn,
+} from "../../tools/support/compat/content-mapper/generic-slot-payload-transition.ts";
 
 test("quiet CLI debug output retains exact helper/file bytes and refuses unrelated stderr", () => {
   const record = JSON.parse(
@@ -232,9 +236,12 @@ test("quiet CLI debug output retains exact helper/file bytes and refuses unrelat
   const fallthroughSourcePreamble = applyLibraryPropsFallthroughIn(unionSourcePreamble);
   assert.equal(beforeLibraryPropsFallthroughIn(fallthroughSourcePreamble), unionSourcePreamble);
   assert.throws(() => applyLibraryPropsFallthroughIn(fallthroughSourcePreamble), /predecessor/u);
-  const currentSourcePreamble = applyWithDefaultsUndefinedIn(fallthroughSourcePreamble);
-  assert.equal(beforeWithDefaultsUndefinedIn(currentSourcePreamble), fallthroughSourcePreamble);
-  assert.throws(() => applyWithDefaultsUndefinedIn(currentSourcePreamble), /predecessor/u);
+  const defaultsSourcePreamble = applyWithDefaultsUndefinedIn(fallthroughSourcePreamble);
+  assert.equal(beforeWithDefaultsUndefinedIn(defaultsSourcePreamble), fallthroughSourcePreamble);
+  assert.throws(() => applyWithDefaultsUndefinedIn(defaultsSourcePreamble), /predecessor/u);
+  const currentSourcePreamble = applyGenericSlotPayloadIn(defaultsSourcePreamble);
+  assert.equal(beforeGenericSlotPayloadIn(currentSourcePreamble), defaultsSourcePreamble);
+  assert.throws(() => applyGenericSlotPayloadIn(currentSourcePreamble), /predecessor/u);
   const canonPredecessor = [...canonLeftoverPreamblePaths]
     .reverse()
     .reduce((current, file) => beforeCanonLeftoversIn(file, current), canonSourcePreamble);
