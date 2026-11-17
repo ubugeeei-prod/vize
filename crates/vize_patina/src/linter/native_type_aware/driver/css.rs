@@ -13,7 +13,8 @@ pub(super) fn finish(
 ) -> LintResult {
     if css_rules::has_active_builtin_css_rules(linter) {
         let owned_template = descriptor.template.as_ref().is_some_and(|template| {
-            template.src.is_none() && template.lang.as_deref().is_none_or(|lang| lang == "html")
+            template.src.is_none()
+                && vize_l1::container::lang::is_html_template(template.lang.as_deref())
         });
         css_rules::append_builtin_css_diagnostics(
             linter,

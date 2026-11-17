@@ -136,12 +136,14 @@ impl<'arena> NativeTemplateFile<'arena> {
             .attrs()
             .iter()
             .any(|attr| attr.name == "scoped" && attr.value.is_none())
-            || style.attrs().iter().any(|attr| {
-                !matches!(
-                    (attr.name, attr.value),
-                    ("scoped", None) | ("lang", Some("css"))
-                )
-            })
+            || style
+                .attrs()
+                .iter()
+                .any(|attr| match (attr.name, attr.value) {
+                    ("scoped", None) => false,
+                    ("lang", Some(lang)) => !vize_l1::container::lang::is_css_style(Some(lang)),
+                    _ => true,
+                })
         {
             return Err(NativeScopedTemplateIssue {
                 span: style.block().span(),

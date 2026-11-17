@@ -128,10 +128,7 @@ impl NoRedundantRoles {
 
         descriptor.styles.iter().any(|style| {
             style.src.is_none()
-                && style
-                    .lang
-                    .as_deref()
-                    .is_none_or(|lang| lang.eq_ignore_ascii_case("css"))
+                && vize_l1::container::lang::is_css_style(style.lang.as_deref())
                 && style_has_markerless_list_class(style.content.as_ref(), &classes)
         })
     }

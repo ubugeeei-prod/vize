@@ -95,7 +95,7 @@ fn file_remarks(path: &str, source: &str, out: &mut Vec<CorpusRemark>) {
     let Some(template) = descriptor.template.as_ref() else {
         return;
     };
-    let html = template.lang.as_deref().is_none_or(|lang| lang == "html");
+    let html = vize_l1::container::lang::is_html_template(template.lang.as_deref());
     if template.src.is_some() || !html {
         return;
     }

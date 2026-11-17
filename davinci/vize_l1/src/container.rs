@@ -13,6 +13,7 @@
 //! Compatibility descriptor consumers build on this layer; descriptor policy
 //! remains outside L1.
 
+pub mod lang;
 pub mod vue;
 
 use vize_l0::{Allocator, Span, Vec};

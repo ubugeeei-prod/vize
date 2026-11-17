@@ -405,7 +405,12 @@ pub(super) fn observe_template_only(source: &str) -> Option<TemplateOnlyDescript
     let mut canonical_attrs = true;
     let opening = super::scan::read_open_boundary(source, start, |attr| {
         attr_count += 1;
-        if attr_count == 1 && attr.name == "lang" && attr.value == Some("html") {
+        if attr_count == 1
+            && attr.name == "lang"
+            && attr
+                .value
+                .is_some_and(|lang| crate::container::lang::is_html_template(Some(lang)))
+        {
             lang = attr.value;
         } else {
             canonical_attrs = false;

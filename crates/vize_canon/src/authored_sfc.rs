@@ -162,55 +162,57 @@ impl<'a> AuthoredSfc<'a> {
 }
 
 /// The derived view of an inline `<template lang="pug">`, if the SFC has one
-/// the lowering accepts.
+/// the lowering accepts; a blank body for a pug template it refuses and for
+/// a template whose lang the block-language registry does not resolve, so
+/// no grammar's absence is analyzed as HTML.
 fn pug_view(source: &str) -> Option<SfcView> {
-    // Cheap gate: only sources that mention pug or jade pay for the SFC parse.
-    if !mentions_pug_language(source) {
+    use vize_l1::container::lang::{TemplateLang, sfc_template_lang, template_lang};
+    // The registry reads the template's `lang` from the L1 container walk
+    // (stopping at the template), so HTML SFCs never pay for the descriptor.
+    if matches!(sfc_template_lang(source), None | Some(Ok(TemplateLang::Html))) {
         return None;
     }
     let descriptor = vize_atelier_sfc::parse_sfc(source, Default::default()).ok()?;
     let template = descriptor.template.as_ref()?;
-    let pug = template
-        .lang
-        .as_deref()
-        .is_some_and(|lang| lang.eq_ignore_ascii_case("pug") || lang.eq_ignore_ascii_case("jade"));
-    if template.src.is_some() || !pug {
+    if template.src.is_some() {
         return None;
     }
-    match vize_l0::profile!(
-        "canon.sfc.pug.lower",
-        PugBlockView::new(source, template.loc.start..template.loc.end)
-    ) {
-        Ok(view) => Some(SfcView::Derived(view)),
-        Err(refused) => {
-            let mut masked = vize_l0::String::with_capacity(source.len());
-            masked.push_str(source.get(..template.loc.start)?);
-            for byte in source.get(template.loc.start..template.loc.end)?.bytes() {
-                masked.push(if matches!(byte, b'\r' | b'\n') {
-                    byte as char
-                } else {
-                    ' '
-                });
-            }
-            masked.push_str(source.get(template.loc.end..)?);
-            Some(SfcView::Refused {
-                source: masked,
-                diagnostics: refused.diagnostics,
-                body_start: template.loc.start as u32,
-            })
-        }
+    let body = template.loc.start..template.loc.end;
+    match template_lang(template.lang.as_deref()) {
+        Ok(TemplateLang::Html) => None,
+        Ok(TemplateLang::Pug(_)) => match vize_l0::profile!(
+            "canon.sfc.pug.lower",
+            PugBlockView::new(source, body.clone())
+        ) {
+            Ok(view) => Some(SfcView::Derived(view)),
+            Err(refused) => blank_template(source, body, refused.diagnostics),
+        },
+        Err(_) => blank_template(source, body, Vec::new()),
     }
 }
 
-fn mentions_pug_language(source: &str) -> bool {
-    source
-        .as_bytes()
-        .windows(3)
-        .any(|window| window.eq_ignore_ascii_case(b"pug"))
-        || source
-            .as_bytes()
-            .windows(4)
-            .any(|window| window.eq_ignore_ascii_case(b"jade"))
+/// `source` with the template body blanked, newlines kept, retaining the
+/// template's own diagnostics.
+fn blank_template(
+    source: &str,
+    body: Range<usize>,
+    diagnostics: Vec<vize_l0::diag::Diagnostic>,
+) -> Option<SfcView> {
+    let mut masked = vize_l0::String::with_capacity(source.len());
+    masked.push_str(source.get(..body.start)?);
+    for byte in source.get(body.clone())?.bytes() {
+        masked.push(if matches!(byte, b'\r' | b'\n') {
+            byte as char
+        } else {
+            ' '
+        });
+    }
+    masked.push_str(source.get(body.end..)?);
+    Some(SfcView::Refused {
+        source: masked,
+        diagnostics,
+        body_start: body.start as u32,
+    })
 }
 
 #[cfg(all(test, feature = "native"))]

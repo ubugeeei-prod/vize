@@ -54,11 +54,9 @@ pub(super) fn compile_sfc_product(
         host_clock_ns,
     )?;
     let template = descriptor.template.as_ref();
-    let authored_syntax = template
-        .and_then(|block| block.lang.as_deref())
-        .map(str::to_ascii_lowercase)
-        .filter(|lang| lang != "html")
-        .unwrap_or_else(|| "vue-template".to_string());
+    let authored_syntax = vize_curator::inspector::sfc_authored_syntax(
+        template.and_then(|block| block.lang.as_deref()),
+    );
     let template_span = template.and_then(|block| {
         let start = u32::try_from(block.loc.start).ok()?;
         let end = u32::try_from(block.loc.end).ok()?;
@@ -69,7 +67,7 @@ pub(super) fn compile_sfc_product(
         ProductCaptureSource {
             path: Some(descriptor.filename.as_ref()),
             container: "vue-sfc",
-            authored_syntax: &authored_syntax,
+            authored_syntax,
             compiled_syntax: "vue-template",
             template_span,
         },

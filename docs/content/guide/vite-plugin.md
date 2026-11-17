@@ -251,6 +251,8 @@ For Nuxt compatibility, the plugin isolates `define` values per Vite environment
 
 `<style lang="scss">`, `sass`, `less` and `stylus` follow Vue's order: the preprocessor runs first, then Vize scopes its output and resolves `v-bind()`. `<style module>` class maps come from your bundler's CSS-module pipeline. Install the preprocessor package (`sass` or `sass-embedded`, `less`, `stylus`) in your project, as you would with `@vitejs/plugin-vue`. `<template lang="pug">` is compiled by Vize itself, so no extra package is needed. The legacy `<template lang="jade">` spelling is accepted as an alias on the same surfaces.
 
+Every Vize tool resolves `lang` through one registry, ASCII case-insensitively: `jade` is `pug`, `styl` is `stylus`, and `postcss`, an empty `lang` or no `lang` is plain CSS. A template `lang` with no Vize grammar (for example `haml`) is never read as HTML: the compiler reports `TEMPLATE_LANG_UNSUPPORTED` at the `lang` value, and the linter and type checker leave the template out.
+
 | Surface                                                 | scss / sass / less / stylus                                                                                                         | pug / jade                          |
 | ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
 | Vite                                                    | Vite preprocesses; Vize scopes the result                                                                                           | Native                              |

@@ -27,7 +27,7 @@ use vize_l0::{
     Allocator,
     dump::capture::{CaptureOutcome, StageCapture},
 };
-use vize_l1::container::{ContainerFormat, Vue};
+use vize_l1::container::{ContainerFormat, Vue, lang::TemplateLang};
 use vize_l1_to_l2::lower::pug::derive_template_source;
 
 use super::{DumpArgs, Pipeline};
@@ -44,9 +44,11 @@ pub(super) fn run(args: &DumpArgs) {
     let path_text = path.to_string_lossy();
     let pipeline = args.pipeline.unwrap_or_default();
     let extension = path.extension().and_then(|extension| extension.to_str());
-    let (capture, source_meta) = match extension {
-        Some("vue") => compile_sfc(path, path_text.as_ref(), &source, pipeline),
-        Some("html" | "htm") => {
+    let sfc = vize_l0::dialect::FileKind::of_path(path) == Some(vize_l0::dialect::FileKind::Sfc);
+    let markup = extension.and_then(vize_l1::container::lang::markup_extension);
+    let (capture, source_meta) = match (sfc, markup) {
+        (true, _) => compile_sfc(path, path_text.as_ref(), &source, pipeline),
+        (_, Some(TemplateLang::Html)) => {
             if pipeline != Pipeline::Dom {
                 fail(
                     path,
@@ -64,7 +66,7 @@ pub(super) fn run(args: &DumpArgs) {
                 },
             )
         }
-        Some("pug" | "jade") => {
+        (_, Some(TemplateLang::Pug(_))) => {
             if pipeline != Pipeline::Dom {
                 fail(
                     path,
@@ -146,7 +148,7 @@ fn compile_raw(source: &str) -> StageCapture {
 fn compile_sfc<'a>(
     path: &Path,
     path_text: &'a str,
-    source: &str,
+    source: &'a str,
     pipeline: Pipeline,
 ) -> (StageCapture, ProductCaptureSource<'a>) {
     let allocator = Allocator::default();
@@ -209,14 +211,11 @@ fn compile_sfc<'a>(
         }
         _ => fail(path, "native and product SFC template boundaries differ"),
     };
-    let authored_language = native_template
-        .and_then(|block| block.attr("lang"))
-        .and_then(|attr| attr.value);
-    let authored_syntax = match authored_language {
-        Some(lang) if lang.eq_ignore_ascii_case("pug") => "pug",
-        Some(lang) if lang.eq_ignore_ascii_case("jade") => "jade",
-        _ => "vue-template",
-    };
+    // Re-read the value from the source the capture borrows, not the arena.
+    let authored_language = native_template.and_then(|block| {
+        vize_l1::container::lang::lang_attr(source, block.open_tag.start as usize)
+    });
+    let authored_syntax = vize_curator::inspector::sfc_authored_syntax(authored_language);
     let mut options = SfcCompileOptions::default();
     options.parse.filename = path_text.into();
     options.template.ssr = pipeline == Pipeline::Ssr;

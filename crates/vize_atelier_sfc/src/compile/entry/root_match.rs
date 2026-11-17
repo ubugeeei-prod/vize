@@ -83,7 +83,9 @@ pub fn prepare_root_patterned_template<'d, 's>(
             .zip(descriptor.source.get(..end))
             .map(|_| location(&descriptor.source, start, end)),
     };
-    if template.src.is_some() || template.lang.as_deref().is_some_and(|lang| lang != "html") {
+    if template.src.is_some()
+        || !vize_l1::container::lang::is_html_template(template.lang.as_deref())
+    {
         return Err(error(
             "Root v-match requires an inline HTML template.",
             template.loc.tag_start,

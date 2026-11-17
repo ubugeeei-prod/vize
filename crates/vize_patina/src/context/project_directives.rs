@@ -54,7 +54,7 @@ impl ProjectLintDirectives {
         let sfc = SfcDirectiveState::scan_if_present(&descriptor);
         let template = descriptor.template.as_ref().and_then(|template| {
             if template.src.is_some()
-                || !template.lang.as_deref().is_none_or(|lang| lang == "html")
+                || !vize_l1::container::lang::is_html_template(template.lang.as_deref())
                 || (!template.content.contains("eslint-")
                     && !template.content.contains("oxlint-")
                     && !template.content.contains("@vize:"))

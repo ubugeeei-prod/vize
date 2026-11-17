@@ -28,7 +28,7 @@ pub(super) fn apply_style_reads(
         })
         || descriptor.template.as_ref().is_some_and(|block| {
             block.src.is_some()
-                || (!derived && block.lang.as_deref().is_some_and(|lang| lang != "html"))
+                || (!derived && !vize_l1::container::lang::is_html_template(block.lang.as_deref()))
         })
         || descriptor.styles.iter().any(|style| style.src.is_some())
     {

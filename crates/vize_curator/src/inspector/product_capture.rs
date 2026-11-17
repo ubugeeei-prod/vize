@@ -24,6 +24,19 @@ pub struct ProductCaptureSource<'a> {
     pub template_span: Option<Span>,
 }
 
+/// The `authored_syntax` of a Vue SFC template with this `lang`, resolved by
+/// the block-language registry: `vue-template` for the HTML grammar, the
+/// registry spelling (`pug`, or `jade` as authored) for the pug grammar, and
+/// the value exactly as authored for a lang no in-tree grammar reads.
+#[must_use]
+pub fn sfc_authored_syntax(lang: Option<&str>) -> &str {
+    use vize_l1::container::lang::{is_html_template, template_spelling};
+    if is_html_template(lang) {
+        return "vue-template";
+    }
+    template_spelling(lang).unwrap_or_else(|unsupported| unsupported.authored())
+}
+
 #[derive(Serialize)]
 struct Outcome<'a> {
     kind: &'static str,

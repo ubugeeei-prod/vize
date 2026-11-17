@@ -242,11 +242,18 @@ fn failed_and_empty_content_keep_the_block_without_inventing_children() {
 }
 
 #[test]
-fn art_markup_uses_original_html_spans_and_pug_remains_explicitly_block_only() {
+fn html_markup_uses_original_html_spans_and_other_langs_remain_explicitly_block_only() {
+    for lang in ["html", "HTML"] {
+        let html = outline(&format!(
+            "<template lang=\"{lang}\"><section><Widget>{{{{value}}}}</Widget></section></template>"
+        ));
+        assert_eq!(html[0].children.as_ref().unwrap()[0].name, "section");
+    }
+    // A lang the block-language registry does not know is not HTML.
     let art =
         outline("<template lang=\"art\"><section><Widget>{{value}}</Widget></section></template>");
-    assert_eq!(art[0].children.as_ref().unwrap()[0].name, "section");
     assert_eq!(art[0].detail.as_deref(), Some("art"));
+    assert!(art[0].children.is_none());
     let pug = outline(
         "<template lang=\"pug\">\nsection\n  Widget(ref='item')\n</template><script setup>const item = 1;</script>",
     );

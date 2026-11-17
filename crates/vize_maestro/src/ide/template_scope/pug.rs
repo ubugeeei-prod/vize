@@ -23,9 +23,7 @@ pub(in crate::ide) fn is_pug(ctx: &IdeContext<'_>) -> bool {
             .and_then(|descriptor| descriptor.template.as_ref())
             .is_some_and(|template| {
                 template.src.is_none()
-                    && template.lang.as_deref().is_some_and(|lang| {
-                        lang.eq_ignore_ascii_case("pug") || lang.eq_ignore_ascii_case("jade")
-                    })
+                    && vize_l1::container::lang::is_pug_template(template.lang.as_deref())
             })
 }
 

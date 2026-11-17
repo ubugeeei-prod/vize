@@ -65,7 +65,7 @@ struct L2Run {
 fn l2_run(source: &str) -> Option<L2Run> {
     let descriptor = parse_sfc(source, SfcParseOptions::default()).ok()?;
     let template = descriptor.template.as_ref()?;
-    let html = template.lang.as_deref().is_none_or(|lang| lang == "html");
+    let html = vize_l1::container::lang::is_html_template(template.lang.as_deref());
     if template.src.is_some() || !html {
         return None;
     }

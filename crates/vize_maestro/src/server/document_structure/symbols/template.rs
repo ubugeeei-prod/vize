@@ -11,11 +11,7 @@ pub(super) fn children(
 ) -> Option<Vec<DocumentSymbol>> {
     // A preprocessor's generated markup positions are not source positions.
     // Keep the existing block until an original-span producer is available.
-    if block
-        .lang
-        .as_deref()
-        .is_some_and(|lang| !matches!(lang, "html" | "art"))
-    {
+    if !vize_l1::container::lang::is_html_template(block.lang.as_deref()) {
         return None;
     }
     let allocator = Allocator::new();

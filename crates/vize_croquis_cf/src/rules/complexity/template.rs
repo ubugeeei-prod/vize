@@ -75,7 +75,9 @@ impl TemplateComplexity {
     pub fn from_sfc(source: &str) -> Option<Self> {
         let descriptor = parse_sfc(source, SfcParseOptions::default()).ok()?;
         let template = descriptor.template.as_ref()?;
-        if template.src.is_some() || template.lang.as_deref().is_some_and(|lang| lang != "html") {
+        if template.src.is_some()
+            || !vize_l1::container::lang::is_html_template(template.lang.as_deref())
+        {
             return None;
         }
         let start = u32::try_from(template.loc.start).ok()?;

@@ -1,5 +1,6 @@
 //! The vize integration tests, linked as one binary instead of one per file.
 
+mod block_language_matrix_cli;
 mod build_cli;
 mod build_custom_elements_cli;
 mod build_declaration_emit_cli;

@@ -47,7 +47,7 @@ impl PhysicalOccurrences {
         match descriptor.template.as_ref() {
             Some(template) => {
                 template.src.is_none()
-                    && template.lang.as_deref().is_none_or(|lang| lang == "html")
+                    && vize_l1::container::lang::is_html_template(template.lang.as_deref())
                     && !template.has_root_match()
             }
             None => {

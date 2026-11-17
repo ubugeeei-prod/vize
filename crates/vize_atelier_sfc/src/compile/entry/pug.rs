@@ -27,15 +27,45 @@ type PreparedPugTemplate<'d, 's> = (
 
 /// A compile view of `descriptor` whose pug template content is its
 /// derived Vue template, and the files it includes; borrowed unchanged
-/// for every other template.
+/// for an HTML template. An inline template in a lang no in-tree grammar
+/// reads fails the compile at its authored `lang` value: its body is never
+/// compiled as HTML.
 pub(super) fn prepare_pug_template<'d, 's>(
     descriptor: &'d SfcDescriptor<'s>,
 ) -> Result<PreparedPugTemplate<'d, 's>, SfcError> {
-    let Some(template) = descriptor.template.as_ref().filter(|template| {
-        template.src.is_none() && template.lang.as_deref().is_some_and(is_pug_language)
-    }) else {
-        return Ok((Cow::Borrowed(descriptor), Vec::new(), None));
+    let borrowed = || Ok((Cow::Borrowed(descriptor), Vec::new(), None));
+    let Some(template) = descriptor
+        .template
+        .as_ref()
+        .filter(|template| template.src.is_none())
+    else {
+        return borrowed();
     };
+    match vize_l1::container::lang::template_lang(template.lang.as_deref()) {
+        Ok(vize_l1::container::lang::TemplateLang::Html) => return borrowed(),
+        Ok(vize_l1::container::lang::TemplateLang::Pug(_)) => {}
+        Err(unsupported) => {
+            let unsupported = unsupported.located(&descriptor.source, template.loc.tag_start);
+            let mut message = vize_l0::String::from("unsupported template lang \"");
+            message.push_str(unsupported.authored());
+            message.push_str("\": Vize reads `html` and `pug` (or `jade`) templates");
+            let loc = unsupported.span().map_or_else(
+                || point(&descriptor.source, template.loc.tag_start),
+                |span| {
+                    let mut loc = point(&descriptor.source, span.start as usize);
+                    loc.end = span.end as usize;
+                    loc.tag_end = span.end as usize;
+                    loc.end_column += (span.end - span.start) as usize;
+                    loc
+                },
+            );
+            return Err(SfcError {
+                message,
+                code: Some("TEMPLATE_LANG_UNSUPPORTED".into()),
+                loc: Some(loc),
+            });
+        }
+    }
     let derived = derive_template_source_including(
         &template.content,
         PugRendering::Pug,
@@ -59,10 +89,6 @@ pub(super) fn prepare_pug_template<'d, 's>(
         template.content = Cow::Owned(derived.html.into());
     }
     Ok((Cow::Owned(view), dependencies, Some(map)))
-}
-
-fn is_pug_language(lang: &str) -> bool {
-    lang.eq_ignore_ascii_case("pug") || lang.eq_ignore_ascii_case("jade")
 }
 
 /// A zero-width block location at `offset` of the SFC source.

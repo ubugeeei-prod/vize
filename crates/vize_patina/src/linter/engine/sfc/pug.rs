@@ -7,7 +7,8 @@
 //! maps back onto the authored pug. Autofixes computed on the derived
 //! template have no pug spelling, so a fix that edits the block is dropped
 //! (its diagnostic stays). Refused templates retain the shared lowering's
-//! authored diagnostics and never enter the HTML template lane.
+//! authored diagnostics and never enter the HTML template lane; neither does
+//! a template whose lang the block-language registry does not resolve.
 
 use vize_atelier_sfc::{SfcParseOptions, parse_sfc};
 use vize_l1_to_l2::lower::pug::PugBlockView;
@@ -21,8 +22,8 @@ pub(in crate::linter::engine) enum PugRoute {
 }
 
 impl Linter {
-    /// Lint `source` through its pug view, or `None` when the SFC has no
-    /// inline pug template.
+    /// Lint `source` through its pug view, without its template when the
+    /// template's lang has no in-tree grammar, or `None` for an HTML template.
     pub(crate) fn lint_pug_sfc(&self, source: &str, filename: &str) -> Option<LintResult> {
         match self.route_pug_sfc(source, filename)? {
             PugRoute::Complete(result) => Some(result),
@@ -38,8 +39,11 @@ impl Linter {
         source: &str,
         filename: &str,
     ) -> Option<PugRoute> {
-        // Cheap gate: only sources that mention either spelling pay for the SFC parse.
-        if !mentions_pug_language(source) {
+        use vize_l1::container::lang::{TemplateLang, sfc_template_lang, template_lang};
+        // The registry reads the template's `lang` from the L1 container walk
+        // (stopping at the template), so only pug SFCs and templates in an
+        // unsupported lang pay for the descriptor here.
+        if matches!(sfc_template_lang(source), None | Some(Ok(TemplateLang::Html))) {
             return None;
         }
         let options = SfcParseOptions {
@@ -48,11 +52,22 @@ impl Linter {
         };
         let descriptor = parse_sfc(source, options).ok()?;
         let template = descriptor.template.as_ref()?;
-        let pug = template.lang.as_deref().is_some_and(|lang| {
-            lang.eq_ignore_ascii_case("pug") || lang.eq_ignore_ascii_case("jade")
-        });
-        if template.src.is_some() || !pug {
+        if template.src.is_some() {
             return None;
+        }
+        match template_lang(template.lang.as_deref()) {
+            Ok(TemplateLang::Html) => return None,
+            Ok(TemplateLang::Pug(_)) => {}
+            // No in-tree grammar reads the body, so no template rule may
+            // read it as HTML; the rest of the SFC still lints.
+            Err(_) => {
+                return Some(PugRoute::Complete(self.lint_sfc_without_template(
+                    source,
+                    filename,
+                    &descriptor,
+                    &[],
+                )));
+            }
         }
         let view = match vize_l0::profile!(
             "patina.sfc.pug.lower",
@@ -63,48 +78,61 @@ impl Linter {
                 // No partial tree is evidence for template-dependent rules.
                 // Script, style and SFC rules still inspect their original bytes,
                 // just as they do after a fatal HTML template parse error.
-                let script_allocator = oxc_allocator::Allocator::default();
-                let parses =
-                    crate::linter::sfc_scripts::lint_scripts(&script_allocator, &descriptor);
-                let scripts = crate::linter::sfc_scripts::ScriptSemantics::new(&parses);
-                let mut result =
-                    self.lint_sfc_level(source, filename, Some((&descriptor, &scripts)));
-                super::super::super::script_rules::append_builtin_script_diagnostics(
-                    self,
+                return Some(PugRoute::Complete(self.lint_sfc_without_template(
+                    source,
+                    filename,
                     &descriptor,
-                    &scripts,
-                    &mut result,
-                    None,
-                );
-                super::super::super::css_rules::append_builtin_css_diagnostics(
-                    self,
-                    &descriptor,
-                    &mut result,
-                    None,
-                );
-                for error in refused.diagnostics {
-                    if error.severity() != vize_l0::diag::Severity::Error {
-                        continue;
-                    }
-                    result.diagnostics.push(LintDiagnostic::error(
-                        "parser/template",
-                        error.message.as_str(),
-                        template.loc.start as u32 + error.span.start,
-                        template.loc.start as u32 + error.span.end,
-                    ));
-                    result.error_count += 1;
-                }
-                return Some(PugRoute::Complete(
-                    self.append_sfc_document_rule_diagnostics(
-                        source,
-                        filename,
-                        result,
-                        Some(&descriptor),
-                    ),
-                ));
+                    &refused.diagnostics,
+                )));
             }
         };
         Some(PugRoute::View(view))
+    }
+
+    /// Lint every block of the SFC except its template, which no grammar
+    /// read: script, style, SFC and document rules on their original bytes,
+    /// plus the template's own error diagnostics (body-relative).
+    fn lint_sfc_without_template(
+        &self,
+        source: &str,
+        filename: &str,
+        descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
+        template_errors: &[vize_l0::diag::Diagnostic],
+    ) -> LintResult {
+        let script_allocator = oxc_allocator::Allocator::default();
+        let parses = crate::linter::sfc_scripts::lint_scripts(&script_allocator, descriptor);
+        let scripts = crate::linter::sfc_scripts::ScriptSemantics::new(&parses);
+        let mut result = self.lint_sfc_level(source, filename, Some((descriptor, &scripts)));
+        super::super::super::script_rules::append_builtin_script_diagnostics(
+            self,
+            descriptor,
+            &scripts,
+            &mut result,
+            None,
+        );
+        super::super::super::css_rules::append_builtin_css_diagnostics(
+            self,
+            descriptor,
+            &mut result,
+            None,
+        );
+        let body_start = descriptor
+            .template
+            .as_ref()
+            .map_or(0, |template| template.loc.start as u32);
+        for error in template_errors {
+            if error.severity() != vize_l0::diag::Severity::Error {
+                continue;
+            }
+            result.diagnostics.push(LintDiagnostic::error(
+                "parser/template",
+                error.message.as_str(),
+                body_start + error.span.start,
+                body_start + error.span.end,
+            ));
+            result.error_count += 1;
+        }
+        self.append_sfc_document_rule_diagnostics(source, filename, result, Some(descriptor))
     }
 }
 
@@ -132,22 +160,3 @@ pub(in crate::linter::engine) fn map_result(
     }
     result
 }
-
-/// Whether `source` contains `pug` or `jade` in any ASCII case.
-///
-/// Every SFC passes this gate. Comparing a window at every byte made it a
-/// percent of a whole lint run, so SIMD `memchr` jumps to each candidate
-/// first letter and only those positions are compared.
-fn mentions_pug_language(source: &str) -> bool {
-    let bytes = source.as_bytes();
-    let spelled_at = |rest: &[u8], index: usize| {
-        bytes
-            .get(index + 1..index + 1 + rest.len())
-            .is_some_and(|tail| tail.eq_ignore_ascii_case(rest))
-    };
-    memchr::memchr2_iter(b'p', b'P', bytes).any(|index| spelled_at(b"ug", index))
-        || memchr::memchr2_iter(b'j', b'J', bytes).any(|index| spelled_at(b"ade", index))
-}
-
-#[cfg(test)]
-mod tests;

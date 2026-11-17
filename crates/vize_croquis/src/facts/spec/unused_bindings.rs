@@ -54,7 +54,8 @@ pub fn evaluate(
                     .is_some_and(|lang| !matches!(lang, "js" | "ts" | "jsx" | "tsx"))
         })
         || descriptor.template.as_ref().is_some_and(|block| {
-            block.src.is_some() || block.lang.as_deref().is_some_and(|lang| lang != "html")
+            block.src.is_some()
+                || !vize_l1::container::lang::is_html_template(block.lang.as_deref())
         })
         || descriptor.styles.iter().any(|block| block.src.is_some())
     {

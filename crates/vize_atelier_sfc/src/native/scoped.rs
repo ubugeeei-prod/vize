@@ -16,11 +16,10 @@ pub(super) fn append(
         container_index: original.container_index(),
         span: original.block().span(),
     };
-    if original
-        .attrs()
-        .iter()
-        .any(|attr| attr.name != "scoped" && (attr.name != "lang" || attr.value != Some("css")))
-    {
+    if original.attrs().iter().any(|attr| {
+        attr.name != "scoped"
+            && (attr.name != "lang" || !super::styles::is_css_lang_value(attr.value))
+    }) {
         return Err(unavailable());
     }
     let observed = syntax
