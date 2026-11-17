@@ -6,7 +6,8 @@
 // A step runs `git mv` for its files and rewrites the paths that name them:
 // the `mod` declarations, `crate::`/`self::`/`super::` paths and `use` groups
 // inside the crate, other crates' `<crate>::` paths, and repository path
-// strings (tooling, docs, fixtures). It makes no other edit. A branch made
+// strings (tooling, docs, fixtures), and renames the crate's identifiers it
+// lists in Rust code and comments, never in literals. It makes no other edit. A branch made
 // before a step lands rebases by re-running the step on its own tree; a step
 // that already ran finds nothing to move.
 import { execFileSync } from "node:child_process";
@@ -33,6 +34,9 @@ export interface Step {
   /** Moved modules whose name the old parent also re-exports as an item: a path
    *  ending in one names the item and stays. */
   readonly items: readonly string[];
+  /** Rust identifiers of the crate renamed word for word, in the crate and in
+   *  the packages that use them (see `identifierRenames`). */
+  readonly identifiers?: Readonly<Record<string, string>>;
 }
 
 const move = (from: string, to: string): ModuleMove => ({
@@ -69,6 +73,105 @@ export const steps: Readonly<Record<string, Step>> = {
         "//! the profile-generic lexer, the lossless surface tree and its builder, the\n" +
         "//! document and component parses, and rendering. Shared markup contracts\n" +
         "//! stay in [`super`].\n",
+    },
+  },
+  // Step 2c: L1 records neutral tag facts (it does not know about lint), and
+  // its types and functions are named by concept, not by migration status.
+  // NativeComponent and NativeTemplateComponent keep their names for now: the
+  // reviewed #7502 attribute-value outputs pin their `Debug` text.
+  "l1-tag-facts": {
+    crate: "davinci/vize_l1",
+    name: "vize_l1",
+    moves: [
+      move("markup::htmlish::view::lint", "markup::htmlish::view::tag_facts_component"),
+      move("markup::htmlish::view::lint_tag", "markup::htmlish::view::tag_facts"),
+      move("markup::htmlish::surface::lint_tag", "markup::htmlish::surface::tag_facts"),
+    ],
+    items: [],
+    parents: {},
+    identifiers: {
+      LINT: "TAG_FACTS",
+      LINT_TAGS: "RECORD_TAG_FACTS",
+      LintHeaderFact: "HeaderFacts",
+      LintTagFact: "TagKindFact",
+      NATIVE_SYNTAX_UNIT_LIMIT: "EMBED_SYNTAX_UNIT_LIMIT",
+      NativeAttribute: "AttributeView",
+      NativeAttributeBindingExpression: "AttributeBindingExpression",
+      NativeAttributeBindingExpressionView: "AttributeBindingExpressionView",
+      NativeAttributeElse: "AttributeElse",
+      NativeAttributeElseView: "AttributeElseView",
+      NativeAttributeExpression: "AttributeExpression",
+      NativeAttributeExpressionFailure: "AttributeExpressionFailure",
+      NativeAttributeExpressionView: "AttributeExpressionView",
+      NativeAttributeForHead: "AttributeForHead",
+      NativeAttributeForHeadFailure: "AttributeForHeadFailure",
+      NativeAttributeForHeadView: "AttributeForHeadView",
+      NativeAttributeHandler: "AttributeHandler",
+      NativeAttributeHandlerFailure: "AttributeHandlerFailure",
+      NativeAttributeHandlerView: "AttributeHandlerView",
+      NativeAttributeHead: "AttributeHead",
+      NativeAttributeModelExpression: "AttributeModelExpression",
+      NativeAttributeModelExpressionView: "AttributeModelExpressionView",
+      NativeAttributeOperandError: "AttributeOperandError",
+      NativeAttributeValue: "AttributeValueOperand",
+      NativeAttributeValueFailure: "AttributeValueFailure",
+      NativeAttributeValueView: "AttributeValueView",
+      NativeAttributes: "AttributesView",
+      NativeChild: "ChildView",
+      NativeChildren: "ChildrenView",
+      NativeConditionKind: "ConditionKind",
+      NativeDocument: "ParsedDocument",
+      NativeElement: "ElementView",
+      NativeElementClosingName: "ElementClosingName",
+      NativeElementNameRefusal: "ElementNameRefusal",
+      NativeElementNames: "ElementNames",
+      NativeExpressionView: "ExpressionView",
+      NativeForHead: "ForHead",
+      NativeForInput: "ForInput",
+      NativeForInputError: "ForInputError",
+      NativeForRefusal: "ForRefusal",
+      NativeInterpolationError: "InterpolationError",
+      NativeInterpolationFailure: "InterpolationFailure",
+      NativeInterpolationOperand: "InterpolationOperand",
+      NativeInterpolationView: "InterpolationView",
+      NativeLintComponent: "ComponentTagFacts",
+      NativeLintTag: "TagFacts",
+      NativeLintTagKind: "TagFactsKind",
+      NativeLintTagRefusal: "TagFactsRefusal",
+      NativeModelHead: "ModelHead",
+      NativeRootText: "RootText",
+      NativeRootTextError: "RootTextError",
+      NativeRootTextProfile: "RootTextProfile",
+      NativeRootTextView: "RootTextView",
+      NativeScriptSelection: "ScriptSelection",
+      NativeStaticBindingHead: "StaticBindingHead",
+      NativeSyntax: "EmbedSyntax",
+      NativeTemplateFrameNameRefusal: "TemplateFrameNameRefusal",
+      NativeTemplateFrameNames: "TemplateFrameNames",
+      NativeTemplateGrammar: "TemplateGrammar",
+      NativeTextValue: "TextValue",
+      NativeTextValueError: "TextValueError",
+      NativeTextValueFailure: "TextValueFailure",
+      NativeTextValueView: "TextValueView",
+      RejectedNativeForInput: "RejectedForInput",
+      construct_with_lint: "construct_with_tag_facts",
+      construct_with_lint_and_diagnostics: "construct_with_tag_facts_and_diagnostics",
+      is_lint_component: "is_component_tag",
+      lint_header: "header_facts",
+      lint_header_is_literal: "header_is_literal",
+      lint_header_literal: "header_facts_literal",
+      lint_in_recovery_context: "in_recovery_context",
+      lint_in_table_context: "in_table_context",
+      lint_recovery_context: "header_recovery_context",
+      lint_table_context: "header_table_context",
+      lint_tag: "tag_facts",
+      mark_lint_tag: "mark_tag_facts",
+      native_refusal: "for_refusal",
+      opening_end_with_lint: "opening_end_with_tag_facts",
+      parse_component_with_lint: "parse_component_with_tag_facts",
+      parse_lint_in: "parse_tag_facts_in",
+      selected_lint_tag_aux_never_changes_mode_quotes_width_or_event_layout:
+        "selected_tag_facts_aux_never_changes_mode_quotes_width_or_event_layout",
     },
   },
   // Step 2b: L1 modules named by concept, not by migration status (`native`).
@@ -310,6 +413,275 @@ function rewriteGroupBody(inner: string, prefix: readonly string[], step: Step):
     .join(",");
 }
 
+/** A run of Rust source: code, a comment, or a string or character literal. */
+export interface RustSegment {
+  readonly kind: "code" | "comment" | "literal";
+  readonly text: string;
+}
+
+/** Split Rust source into code, comments and literals: as much lexing as renames need. */
+export function rustSegments(source: string): RustSegment[] {
+  const segments: RustSegment[] = [];
+  let code = 0;
+  const emit = (kind: "comment" | "literal", start: number, end: number) => {
+    if (code < start) segments.push({ kind: "code", text: source.slice(code, start) });
+    segments.push({ kind, text: source.slice(start, end) });
+    code = end;
+    return end;
+  };
+  const word = /[A-Za-z_][A-Za-z0-9_]*/uy;
+  const rawOpen = /(#*)"/uy;
+  const char = /'(?:\\(?:x[0-9A-Fa-f]{2}|u\{[0-9A-Fa-f_]{1,8}\}|[^\n])|[^\\'\n\r\t])'/uy;
+  const quoted = (open: number) => {
+    let cursor = open + 1;
+    while (cursor < source.length && source[cursor] !== '"')
+      cursor += source[cursor] === "\\" ? 2 : 1;
+    return Math.min(cursor + 1, source.length);
+  };
+  const charEnd = (open: number) => {
+    char.lastIndex = open;
+    const literal = char.exec(source);
+    return literal ? open + literal[0].length : undefined;
+  };
+  let index = 0;
+  while (index < source.length) {
+    const at = source[index];
+    if (source.startsWith("//", index)) {
+      const newline = source.indexOf("\n", index);
+      index = emit("comment", index, newline === -1 ? source.length : newline);
+    } else if (source.startsWith("/*", index)) {
+      let depth = 1;
+      let cursor = index + 2;
+      while (cursor < source.length && depth > 0) {
+        if (source.startsWith("/*", cursor)) depth++;
+        else if (source.startsWith("*/", cursor)) depth--;
+        else {
+          cursor++;
+          continue;
+        }
+        cursor += 2;
+      }
+      index = emit("comment", index, cursor);
+    } else if (at === '"') index = emit("literal", index, quoted(index));
+    else if (at === "'") {
+      // Otherwise a lifetime or a label.
+      const end = charEnd(index);
+      index = end === undefined ? index + 1 : emit("literal", index, end);
+    } else if (/[A-Za-z_]/u.test(at)) {
+      word.lastIndex = index;
+      const name = word.exec(source)![0];
+      const after = index + name.length;
+      rawOpen.lastIndex = after;
+      const raw = ["r", "br", "cr"].includes(name) ? rawOpen.exec(source) : null;
+      const end = raw
+        ? source.indexOf('"' + raw[1], after + raw[0].length)
+        : (name === "b" || name === "c") && source[after] === '"'
+          ? quoted(after)
+          : name === "b" && source[after] === "'"
+            ? charEnd(after)
+            : undefined;
+      if (raw)
+        index = emit("literal", index, end === -1 ? source.length : end! + 1 + raw[1].length);
+      else index = end === undefined ? after : emit("literal", index, end);
+    } else index++;
+  }
+  if (code < source.length) segments.push({ kind: "code", text: source.slice(code) });
+  return segments;
+}
+
+/** Code only: comments become spaces and literals empty `""`, so words stay apart. */
+/** The source with comments and literal contents blanked, offsets unchanged. */
+const codeOf = (source: string) =>
+  rustSegments(source)
+    .map(({ kind, text }) =>
+      kind === "code"
+        ? text
+        : kind === "comment"
+          ? text.replace(/[^\n]/gu, " ")
+          : '"' + text.slice(1, -1).replace(/[^\n]/gu, " ") + '"',
+    )
+    .join("");
+
+/** Offsets of `<crate>::…` paths and `use` trees in code. */
+export function pathRanges(code: string, crateName: string): [number, number][] {
+  const ranges: [number, number][] = [];
+  const start = new RegExp(`(?<![\\w:])(?:::\\s*)?${crateName}\\s*::`, "gu");
+  const segment = new RegExp(`\\s*(${ident})\\s*(::)?|\\s*\\{`, "uy");
+  for (const match of code.matchAll(start)) {
+    let end = match.index + match[0].length;
+    segment.lastIndex = end;
+    for (let next = segment.exec(code); next; next = segment.exec(code)) {
+      end = segment.lastIndex;
+      if (next[1] === undefined) {
+        const close = matchingBrace(code, end - 1);
+        end = close < 0 ? code.length : close + 1;
+        break;
+      }
+      if (!next[2]) break;
+    }
+    ranges.push([match.index, end]);
+  }
+  return ranges;
+}
+
+/** Names a crate's code reaches by path: every word of `<crate>::…` paths and `use` trees. */
+export function namesFrom(code: string, crateName: string): Set<string> {
+  const found = new Set<string>();
+  for (const [start, end] of pathRanges(code, crateName))
+    for (const name of code.slice(start, end).matchAll(new RegExp(ident, "gu"))) found.add(name[0]);
+  return found;
+}
+
+/** How a file renames: `only` these names (all when absent), `paths` only
+ *  inside `<crate>::…` paths, and hand-written `Debug` names with `debugNames`. */
+export interface RenameScope {
+  readonly only?: ReadonlySet<string>;
+  readonly paths?: { readonly crate: string; readonly names: ReadonlySet<string> };
+  readonly debugNames?: boolean;
+}
+
+/**
+ * Word-for-word identifier renames in Rust code and comments. Literals keep
+ * their text, since it reaches output (emitted TypeScript, messages), except,
+ * with `debugNames`, a literal that is exactly a renamed name (a hand-written
+ * `Debug` name). A `$`-prefixed word names an emitted TypeScript helper and stays.
+ */
+export function renameIdentifiers(
+  source: string,
+  renames: Readonly<Record<string, string>>,
+  { only, paths, debugNames = false }: RenameScope = {},
+): string {
+  const words = (names: Iterable<string>) => {
+    const sorted = [...names].sort((a, b) => b.length - a.length);
+    return sorted.length ? new RegExp(`(?<![\\w$])(?:${sorted.join("|")})(?!\\w)`, "gu") : null;
+  };
+  let out = source;
+  const reached = paths && words(paths.names);
+  if (paths && reached) {
+    const code = codeOf(out);
+    let next = "";
+    let last = 0;
+    for (const [start, end] of pathRanges(code, paths.crate)) {
+      next += out.slice(last, start);
+      next += out.slice(start, end).replace(reached, (name) => renames[name] ?? name);
+      last = end;
+    }
+    out = next + out.slice(last);
+  }
+  const names = Object.keys(renames).filter(
+    (name) => (!only || only.has(name)) && !paths?.names.has(name),
+  );
+  const pattern = words(names);
+  if (!pattern) return out;
+  const quoted = new Map(names.map((name) => [`"${name}"`, `"${renames[name]}"`]));
+  return rustSegments(out)
+    .map(({ kind, text }) =>
+      kind !== "literal"
+        ? text.replace(pattern, (name) => renames[name] ?? name)
+        : debugNames
+          ? (quoted.get(text) ?? text)
+          : text,
+    )
+    .join("");
+}
+
+/** Top-level comma-separated entries of a `{…}` body (brackets and generics nest). */
+function bodyEntries(body: string): string[] {
+  const entries: string[] = [];
+  let depth = 0;
+  let last = 0;
+  for (let index = 0; index < body.length; index++) {
+    const at = body[index];
+    if ("([{".includes(at) || (at === "<" && body[index + 1] !== "=")) depth++;
+    else if (")]}".includes(at) || (at === ">" && !"-=".includes(body[index - 1] ?? ""))) depth--;
+    else if (at === "," && depth === 0) {
+      entries.push(body.slice(last, index));
+      last = index + 1;
+    }
+  }
+  entries.push(body.slice(last));
+  return entries;
+}
+
+/** Names code declares: items, enum variants and named struct fields. */
+export function declaredNames(code: string): Set<string> {
+  const found = new Set<string>();
+  const item = new RegExp(
+    `\\b(?:struct|enum|union|trait|type|fn|const|static|mod|macro_rules!)\\s+(${ident})`,
+    "gu",
+  );
+  for (const match of code.matchAll(item)) found.add(match[1]);
+  const entry = new RegExp(
+    `^\\s*(?:#\\s*\\[[^\\]]*\\]\\s*)*(?:pub(?:\\([^)]*\\))?\\s+)?(${ident})`,
+    "u",
+  );
+  for (const match of code.matchAll(
+    new RegExp(`\\b(?:enum|struct|union)\\s+${ident}[^;{]*\\{`, "gu"),
+  )) {
+    const open = match.index + match[0].length - 1;
+    const close = matchingBrace(code, open);
+    if (close < 0) continue;
+    for (const body of bodyEntries(code.slice(open + 1, close))) {
+      const name = entry.exec(body)?.[1];
+      if (name) found.add(name);
+    }
+  }
+  return found;
+}
+
+/**
+ * Which of a step's identifiers each `.rs` file renames. The step crate renames
+ * all of them, hand-written `Debug` names included. Another package renames
+ * only the ones it uses from the crate: names its paths and `use` trees reach
+ * through `<crate>::`, and lowercase names it calls as methods when it reaches
+ * the crate at all. A package that also declares a name of its own (an item, a
+ * variant, a field) keeps it, and renames the crate's only inside `<crate>::`
+ * paths. Vendored upstream sources, fixtures and snapshots are inputs, not
+ * code, and keep their names.
+ */
+export function identifierRenames(
+  step: Step,
+  files: readonly string[],
+  read: (file: string) => string,
+  isPackage: (directory: string) => boolean,
+): Map<string, RenameScope> {
+  const renames = step.identifiers ?? {};
+  const names = Object.keys(renames);
+  const packages = new Map<string, string[]>();
+  for (const file of files) {
+    if (!file.endsWith(".rs") || file.startsWith("upstream/")) continue;
+    if (file.split("/").some((part) => ["_fixtures", "fixtures", "snapshots"].includes(part)))
+      continue;
+    let directory = path.posix.dirname(file);
+    while (directory !== "." && !isPackage(directory)) directory = path.posix.dirname(directory);
+    if (directory === ".") continue;
+    packages.set(directory, [...(packages.get(directory) ?? []), file]);
+  }
+  const clash = names.filter((name) => Object.hasOwn(renames, renames[name]!));
+  if (clash.length) throw new Error(`renamed names are renamed again: ${clash.join(", ")}`);
+  const plan = new Map<string, RenameScope>();
+  for (const [directory, members] of packages) {
+    if (directory === step.crate) {
+      for (const file of members) plan.set(file, { debugNames: true });
+      continue;
+    }
+    const code = members.map((file) => codeOf(read(file))).join("\n");
+    if (!new RegExp(`(?<![\\w:])${step.name}\\s*::`, "u").test(code)) continue;
+    const reached = namesFrom(code, step.name);
+    const declared = declaredNames(code);
+    const used = names.filter(
+      (name) =>
+        reached.has(name) ||
+        (/^[a-z]/u.test(name) && new RegExp(`\\.\\s*${name}\\b`, "u").test(code)),
+    );
+    const only = new Set(used.filter((name) => !declared.has(name)));
+    const own = new Set(used.filter((name) => declared.has(name) && reached.has(name)));
+    const paths = own.size ? { crate: step.name, names: own } : undefined;
+    if (only.size || paths) for (const file of members) plan.set(file, { only, paths });
+  }
+  return plan;
+}
+
 /** Repository path strings: `<crate>/src/<old>` becomes `<crate>/src/<new>`. */
 export function rewritePaths(source: string, step: Step): string {
   let out = source;
@@ -438,7 +810,9 @@ export function run(stepName: string, dryRun: boolean): string[] {
         renames.set(file, next.dir + file.slice(old.dir.length));
     }
   }
-  if (renames.size === 0) return [];
+  // A step that already moved still renames identifiers (a branch made before it).
+  const moving = renames.size > 0;
+  if (!moving && !step.identifiers) return [];
   const collapsed = step.moves.filter(collapses).map(({ from, to }) => ({
     child: moduleFiles(step.crate, from).file,
     parent: moduleFiles(step.crate, to).file,
@@ -448,7 +822,7 @@ export function run(stepName: string, dryRun: boolean): string[] {
   const read = (file: string) =>
     pending.get(file) ?? fs.readFileSync(path.join(repoRoot, file), "utf8");
   const write = (file: string, text: string) => void pending.set(file, text);
-  for (const file of files) {
+  for (const file of moving ? files : []) {
     // This script and its test spell every step's old and new paths on purpose.
     if (selfFiles.has(file)) continue;
     const absolute = path.join(repoRoot, file);
@@ -468,9 +842,29 @@ export function run(stepName: string, dryRun: boolean): string[] {
     if (target && file.endsWith(".rs")) next = rewriteRelativeFiles(next, file, target, renames);
     if (next !== text) write(file, next);
   }
-  moveDeclarations(step, read, write, renames);
+  if (moving) moveDeclarations(step, read, write, renames);
+  // Identifiers last, once module declarations have moved by their old names.
+  if (step.identifiers) {
+    const present = [...new Set([...files, ...pending.keys()])].filter(
+      (file) =>
+        !selfFiles.has(file) && (pending.has(file) || fs.existsSync(path.join(repoRoot, file))),
+    );
+    // Files move inside the step crate, so their old paths name their package.
+    const plan = identifierRenames(step, present, read, (directory) =>
+      fs.existsSync(path.join(repoRoot, directory, "Cargo.toml")),
+    );
+    for (const [file, scope] of plan) {
+      const text = read(file);
+      const next = renameIdentifiers(text, step.identifiers, scope);
+      if (next !== text) write(file, next);
+    }
+  }
   const touched = [...pending.keys()].sort();
   if (dryRun) return [...touched, ...[...renames].map(([from, to]) => `${from} -> ${to}`)];
+  if (!moving) {
+    for (const [file, text] of pending) fs.writeFileSync(path.join(repoRoot, file), text);
+    return touched;
+  }
   // A collapsed child replaces its parent file. The parent may hold only its
   // module docs, other module declarations (kept, with their docs) and
   // re-exports of the child (dropped: the items are now defined in place).
