@@ -299,8 +299,9 @@ impl<'a> Visit<'a> for CoreVisitor<'_, '_> {
             CoreKind::NoConstantCondition if is_constant(&conditional.test, true) => {
                 self.report(conditional.test.without_parentheses().span());
             }
+            // ESLint's core rule reports the whole conditional or `if` node.
             CoreKind::NoNegatedCondition if is_negated(&conditional.test) => {
-                self.report(conditional.test.span());
+                self.report(conditional.span);
             }
             _ => {}
         }
@@ -319,7 +320,7 @@ impl<'a> Visit<'a> for CoreVisitor<'_, '_> {
                     .is_some_and(|alternate| !matches!(alternate, Statement::IfStatement(_)))
                     && is_negated(&statement.test) =>
             {
-                self.report(statement.test.span());
+                self.report(statement.span);
             }
             _ => {}
         }

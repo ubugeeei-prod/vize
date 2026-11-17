@@ -1,0 +1,18 @@
+<script setup lang="ts">
+const a = ref(false)
+const b = ref(1)
+function run(value: unknown) {}
+</script>
+
+<template>
+  <p>{{ a !== b ? a : b }}</p>
+  <p :title="(!a) ? 'x' : 'y'" />
+  <p
+    :title="!a
+      ? 'multi'
+      : 'line'"
+  />
+  <button @click="if (a != b) run(a); else run(b)" />
+  <button @click="if (!a) run(a); else if (b) run(b)" />
+  <p>{{ (!a as boolean) ? b : a }}</p>
+</template>

@@ -4,6 +4,7 @@ use crate::rule::Rule;
 use crate::rule::RuleRegistry;
 
 mod irregular_whitespace;
+mod negated_condition;
 mod template_wrapper_key;
 
 fn lint(rule: Box<dyn Rule>, template: &str) -> LintResult {
