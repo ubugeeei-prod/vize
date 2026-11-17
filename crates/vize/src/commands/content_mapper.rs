@@ -44,7 +44,7 @@ pub struct ContentMapperArgs {
 pub fn run(args: ContentMapperArgs) {
     let stdin = io::stdin();
     let mut reader = BufReader::new(stdin.lock());
-    let mut writer = BufWriter::new(io::stdout());
+    let mut writer = BufWriter::new(ReplyStdout::open());
     let order = if args.reply_when_ready {
         dispatch::ReplyOrder::Ready
     } else {
@@ -64,6 +64,57 @@ pub fn run(args: ContentMapperArgs) {
     if let Err(error) = served {
         eprintln!("vize content-mapper: {error}");
         std::process::exit(1);
+    }
+}
+
+/// Standard output for reply frames, without `io::stdout()`'s line
+/// buffering. A frame's only line breaks end its header (the JSON body
+/// escapes its own), so the `LineWriter` there searched every body backwards
+/// for a line break, found the header's, wrote the header alone and then
+/// searched the body again before writing it: two scans of every reply and
+/// two `write` calls per frame. Each frame now goes out in one `write`.
+enum ReplyStdout {
+    #[cfg(unix)]
+    Raw(std::fs::File),
+    Std(io::Stdout),
+}
+
+impl ReplyStdout {
+    fn open() -> Self {
+        #[cfg(unix)]
+        {
+            use std::os::fd::AsFd;
+            if let Ok(fd) = io::stdout().as_fd().try_clone_to_owned() {
+                return Self::Raw(std::fs::File::from(fd));
+            }
+        }
+        Self::Std(io::stdout())
+    }
+}
+
+impl io::Write for ReplyStdout {
+    fn write(&mut self, bytes: &[u8]) -> io::Result<usize> {
+        match self {
+            #[cfg(unix)]
+            Self::Raw(file) => io::Write::write(file, bytes),
+            Self::Std(stdout) => io::Write::write(stdout, bytes),
+        }
+    }
+
+    fn write_vectored(&mut self, bytes: &[io::IoSlice<'_>]) -> io::Result<usize> {
+        match self {
+            #[cfg(unix)]
+            Self::Raw(file) => io::Write::write_vectored(file, bytes),
+            Self::Std(stdout) => io::Write::write_vectored(stdout, bytes),
+        }
+    }
+
+    fn flush(&mut self) -> io::Result<()> {
+        match self {
+            #[cfg(unix)]
+            Self::Raw(file) => io::Write::flush(file),
+            Self::Std(stdout) => io::Write::flush(stdout),
+        }
     }
 }
 
