@@ -15,6 +15,7 @@ export default defineConfig({
       "src/index.ts",
       "src/loader/index.ts",
       "src/loader/jsx-loader.ts",
+      "src/loader/tsrx-loader.ts",
       "src/loader/style-loader.ts",
       "src/loader/scope-loader.ts",
     ],

@@ -97,5 +97,6 @@ See the package README for the full Rspack configuration surface.
 - Vite is still the recommended integration if you need the most complete and best-tested behavior.
 - CSS Modules and style preprocessors outside Vite depend on the host bundler's CSS pipeline and are more likely to change.
 - Scoped preprocessor styles (`<style scoped lang="scss|sass|less|stylus">`) are compiled before they are scoped, as in Vue. Webpack uses your own `.scss`/`.less`/`.styl` rules (for example `sass-loader` followed by `css-loader`). Rollup, Rolldown and esbuild have no shared preprocessor pipeline, so Vize runs the project's installed `sass` (or `sass-embedded`), `less` or `stylus` itself.
+- `.tsrx` modules are compiled through the same TSRX compiler as `vize build` unless `exclude` matches them, and their TypeScript is stripped as for `.vue` files. A refused module fails the build with every diagnostic; SSR, Vapor and source maps are refused for now. In Rspack, route `.tsrx` files to `@vizejs/rspack-plugin/tsrx-loader` and strip its TypeScript output with a `builtin:swc-loader` rule, as for `.vue` files.
 - If your bundler inlines the Vue runtime instead of externalizing it, make sure the usual Vue compile-time feature flags are configured for that bundler.
 - Treat these integrations as experimental and validate them against your own application before rollout.

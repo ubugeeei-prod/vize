@@ -389,6 +389,11 @@ export declare function compileSfcBatchWithResults(
   options?: BatchCompileOptionsNapi | undefined | null,
 ): BatchCompileResultWithFilesNapi;
 
+export declare function compileTsrx(
+  source: string,
+  options?: TsrxCompileOptionsNapi | undefined | null,
+): TsrxCompileResultNapi;
+
 /** Compile Vue template to Vapor mode */
 export declare function compileVapor(
   template: string,
@@ -1586,6 +1591,50 @@ export declare function transformViteCssVarsForPipeline(
 ): string;
 
 /** Canon's configuration identity and the exact files observed while resolving it. */
+/** Options for [`compile_tsrx`]. */
+export interface TsrxCompileOptionsNapi {
+  /** The module's file name, recorded in its source map. */
+  filename?: string;
+  /** `"dom"` (default), `"ssr"` or `"vapor"`. */
+  target?: string;
+  /** Produce a v3 source map in the result's `map`. */
+  sourceMap?: boolean;
+  /**
+   * Erase TypeScript so `code` is JavaScript, as the `.vue` whole-script
+   * erasure prints it. When `false` (default), host code is copied verbatim
+   * and `code` is TypeScript without JSX.
+   */
+  eraseTypes?: boolean;
+}
+
+/** Result of [`compile_tsrx`]. */
+export interface TsrxCompileResultNapi {
+  /** The compiled module, absent when `errors` is non-empty. */
+  code?: string;
+  /** v3 source map (JSON) for `code`, when requested. */
+  map?: string;
+  /** Every diagnostic of a refused module; empty when it compiled. */
+  errors: Array<TsrxDiagnosticNapi>;
+}
+
+/** One diagnostic of a refused module. */
+export interface TsrxDiagnosticNapi {
+  /**
+   * The reference compiler's code for a syntax or template-rule error
+   * (`TSRX2001`, or a shared `TS1012`); `unsupported` for a construct,
+   * target or option that is not supported yet.
+   */
+  code: string;
+  message: string;
+  /** UTF-8 byte offsets into the source. */
+  start: number;
+  end: number;
+  /** 1-based line of `start`. */
+  line: number;
+  /** 0-based UTF-16 column of `start`, as Rollup and Vite locations count. */
+  column: number;
+}
+
 export interface VueLanguageProjectMetadata {
   configIdentity: string;
   watchedFiles: Array<string>;

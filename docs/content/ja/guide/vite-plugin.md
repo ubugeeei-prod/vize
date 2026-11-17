@@ -326,4 +326,5 @@ export default defineNuxtConfig({
 - Vapor モードのコンパイルに対応しています（Vue 3.6 以降、実験段階）。
 - コンパイルしたすべての CSS をモジュールとして import するために、`virtual:vize-styles` を使えます。
 - `.jsx` / `.tsx` の Vue コンポーネントも同じプラグインで自動でコンパイルします。[JSX と TSX](./jsx.md)を参照してください。
+- `.tsrx` モジュールは、`exclude` に一致しない限り `vize build` と同じ TSRX コンパイラーでコンパイルします（`.tsrx` を読むプラグインはほかにないため、`include` は適用されません）。TypeScript は `.vue` のスクリプトと同じように消去されます。コンパイラーが拒否したモジュールは、すべての診断を行と列とともに報告してビルドを失敗させます。出力できるのは DOM ターゲットで、SSR ビルド、Vapor、ソースマップは現時点では拒否されます
 - rollup / webpack / esbuild / Rspack への実験的な対応は、[実験的なバンドラー統合](./unplugin.md)を参照してください。

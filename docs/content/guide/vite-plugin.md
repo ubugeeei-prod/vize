@@ -319,6 +319,7 @@ See [Nuxt Integration](../integrations/nuxt.md) for more details.
 - Vapor Mode compilation is available for Vue 3.6+ (experimental)
 - The plugin supports `virtual:vize-styles` for importing all compiled CSS as a module
 - `.jsx`/`.tsx` Vue components are compiled automatically through the same plugin — see the [JSX & TSX](./jsx.md) guide
+- `.tsrx` modules are compiled through the same TSRX compiler as `vize build` unless `exclude` matches them (`include` does not apply: no other plugin reads `.tsrx`). Their TypeScript is erased as in `.vue` scripts. A module the compiler refuses fails the build with every diagnostic at its line and column; the DOM target is emitted, while SSR builds, Vapor and source maps are refused for now
 - For experimental rollup / webpack / esbuild / Rspack support, see [Experimental Bundler Integrations](./unplugin.md)
 
 <span id="optional-standalone-shared-config"></span>
