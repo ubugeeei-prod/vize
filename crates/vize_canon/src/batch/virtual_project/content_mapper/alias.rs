@@ -4,6 +4,16 @@ pub(super) fn is_synthetic_content_mapper_identifier(text: &str) -> bool {
     text.starts_with("__vize_prop_check_")
 }
 
+/// Where `original` first occurs in `generated`. Most spans project their
+/// authored text unchanged, at the start of the generated range, so a prefix
+/// compare answers before a substring searcher is built for the needle.
+pub(super) fn verbatim_offset(generated: &str, original: &str) -> Option<usize> {
+    if generated.as_bytes().starts_with(original.as_bytes()) {
+        return Some(0);
+    }
+    memchr::memmem::find(generated.as_bytes(), original.as_bytes())
+}
+
 /// Property navigation (`foo-bar` → `fooBar`) is an alias. A shorthand value
 /// or public-instance read stays an atom so the diagnostic names the binding
 /// (`ariaLabelledby`), not the authored attribute.
