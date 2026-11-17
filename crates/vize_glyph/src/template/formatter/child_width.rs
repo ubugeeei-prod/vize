@@ -47,17 +47,22 @@ impl TemplateFormatter<'_> {
     /// by its matching closing tag. Including this in the opening-tag decision
     /// lets the formatter use whitespace inside the tag as the safe break point
     /// before runtime text would push the completed element past print width.
+    ///
+    /// `blank_child_collapses` says the element prints a whitespace-only child
+    /// as `></tag>`, exactly like an empty one, so that child adds no width.
     #[inline(always)]
     pub(super) fn hugged_inline_suffix_width<const CANONICAL: bool>(
         &self,
         input: &str,
         start: usize,
         tag_name: &str,
+        depth: usize,
+        blank_child_collapses: bool,
     ) -> Option<usize> {
         let source = input.as_bytes();
         let close = start + memchr::memchr(b'<', source.get(start..)?)?;
         let child = input.get(start..close)?;
-        if child.is_empty() {
+        if child.is_empty() || (blank_child_collapses && child.bytes().all(is_whitespace)) {
             return None;
         }
         if source.get(close + 1) != Some(&b'/') {
@@ -99,9 +104,8 @@ impl TemplateFormatter<'_> {
         // Sole interpolations are deliberately excluded below. Detect them
         // before formatting so the opening-tag width probe does not parse and
         // print the same JavaScript expression that the text pass owns.
-        if parse_interpolation_range(child_bytes, 0)
-            .is_some_and(|(_, _, end)| end == child_bytes.len())
-        {
+        let sole_end = parse_interpolation_range(child_bytes, 0).map(|(_, _, end)| end);
+        if sole_end == Some(child_bytes.len()) {
             return None;
         }
         // Interpolation formatting is identity for brace-free text. Measure
@@ -123,6 +127,23 @@ impl TemplateFormatter<'_> {
                 .any(|byte| matches!(byte, b'\r' | b'\n'))
         {
             return None;
+        }
+        // The text pass trims a whitespace tail before `</tag>` and wraps the
+        // remaining interpolation inside `{{ }}` when it overflows. Break the
+        // opening tag only if the hugged child then fits; otherwise both breaks
+        // print and the next pass reads an authored multiline child.
+        if sole_end.is_some_and(|end| {
+            child_bytes
+                .get(end..)
+                .is_some_and(|tail| tail.iter().all(|&byte| is_whitespace(byte)))
+        }) {
+            let hugged = formatted.trim_end_matches([' ', '\t']);
+            let indent = (depth + self.base_depth) * self.options.tab_width as usize;
+            if indent + 1 + hugged.width() + 3 + tag_name.width()
+                > self.options.print_width as usize
+            {
+                return None;
+            }
         }
 
         Some(1 + formatted.width() + 3 + tag_name.width())
