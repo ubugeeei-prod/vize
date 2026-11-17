@@ -182,8 +182,30 @@ pub use ordinary::{
     OrdinaryBinding, OrdinaryCheckpoint, OrdinaryFacts, OrdinaryFactsIncomplete, OrdinaryObserver,
 };
 
+mod options;
+pub use options::{
+    ComponentOptions, ComponentShape, OptionKey, OptionMember, OptionMemberKind, OptionsCheckpoint,
+    OptionsFacts, OptionsFactsIncomplete, OptionsObserver,
+};
+
 mod setup;
 pub use setup::{
     MacroCall, PropsDestructure, PropsField, ReactiveSource, SetupBinding, SetupBindingKind,
     SetupCheckpoint, SetupFacts, SetupFactsIncomplete, SetupObserver,
 };
+
+/// Vue's `unwrapTSNode`, plus the parentheses Babel does not retain.
+fn unwrap_ts<'e, 'a>(
+    expression: &'e oxc_ast::ast::Expression<'a>,
+) -> &'e oxc_ast::ast::Expression<'a> {
+    use oxc_ast::ast::Expression;
+    match expression {
+        Expression::TSAsExpression(inner) => unwrap_ts(&inner.expression),
+        Expression::TSSatisfiesExpression(inner) => unwrap_ts(&inner.expression),
+        Expression::TSTypeAssertion(inner) => unwrap_ts(&inner.expression),
+        Expression::TSNonNullExpression(inner) => unwrap_ts(&inner.expression),
+        Expression::TSInstantiationExpression(inner) => unwrap_ts(&inner.expression),
+        Expression::ParenthesizedExpression(inner) => unwrap_ts(&inner.expression),
+        other => other,
+    }
+}
