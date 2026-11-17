@@ -86,7 +86,7 @@ type __DefineProps<T, __BKeys extends keyof T = $BooleanKey<T>> = Readonly<T> & 
 type $IfAny<T, Y, N> = 0 extends 1 & T ? Y : N;
 type $NotUndefined<T> = T extends undefined ? never : T;
 type $MappedOmit<T, K extends keyof any> = { [P in keyof T as P extends K ? never : P]: T[P] };
-type $DefaultNativeType = null | number | string | boolean | symbol | Function;
+type $DefaultNativeType = null | undefined | number | string | boolean | symbol | Function;
 type $InferDefault<P, T> = ((props: P) => T & {}) | (T extends $DefaultNativeType ? T : never);
 type __WithDefaultsArgs<T> = { [K in keyof T]?: $InferDefault<T, T[K]> };
 type __WithDefaultsResult<T, D, __BKeys extends keyof T = never> = T extends unknown

@@ -238,3 +238,46 @@ import Child from './Child.vue'
     );
     assert_eq!(snapshot[0].1, Some(2322));
 }
+
+/// #13179: `withDefaults` accepts an `undefined` default for a prop whose type
+/// includes `undefined`, as Vue's `InferDefault` does since vuejs/core#13594.
+/// `Control.vue` passes `undefined` for `label?: string`, which the option
+/// still rejects, so exactly that one default is reported. Before the fix
+/// `Repro.vue` was TS2379 as well.
+#[test]
+fn with_defaults_accepts_undefined_where_the_prop_type_includes_it() {
+    if resolve_test_tsgo_binary().is_none() {
+        return;
+    }
+    macro_rules! reported {
+        ($path:literal) => {
+            include_str!(concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/../../tests/_fixtures/differential/typechecker/with-defaults-undefined-13179/",
+                $path
+            ))
+        };
+    }
+    let project_root = create_project_case(
+        "exact-optional-props-with-defaults-undefined",
+        &[
+            ("src/Repro.vue", reported!("src/Repro.vue.txt")),
+            ("src/Control.vue", reported!("src/Control.vue.txt")),
+        ],
+    );
+    write_tsconfig(&project_root, true);
+    let snapshot = snapshot_project_diagnostics(&project_root);
+    let _ = std::fs::remove_dir_all(&project_root);
+    let Some(snapshot) = snapshot else {
+        return;
+    };
+
+    // Vue 3.6's own `withDefaults` reports the same single default. The code
+    // is TS2379 or TS2345 depending on the runtime (see above), so the row is
+    // its file and line.
+    let rows: Vec<_> = snapshot
+        .iter()
+        .map(|(file, _, message)| (file.as_str(), message.split(':').next()))
+        .collect();
+    assert_eq!(rows, vec![("src/Control.vue", Some("3"))], "{snapshot:?}");
+}
