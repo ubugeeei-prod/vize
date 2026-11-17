@@ -11,7 +11,6 @@ static GLOBAL_ALLOCATOR: vize_l0::profiler::ProfilingAllocator<mimalloc::MiMallo
 
 // Linked through `libmimalloc-sys`, whose bindings only declare it behind a
 // feature that would add a dependency.
-#[cfg(target_os = "linux")]
 unsafe extern "C" {
     fn mi_option_set_default(option: std::ffi::c_int, value: std::ffi::c_long);
 }
@@ -34,6 +33,17 @@ static COMMIT_ARENAS_ON_DEMAND: extern "C" fn() = {
     commit_arenas_on_demand
 };
 
+/// `mi_option_destroy_on_exit` in mimalloc v3 (`mimalloc.h`, 0.1.52).
+const DESTROY_ON_EXIT: std::ffi::c_int = 22;
+
 fn main() {
+    // mimalloc's exit hook (`mi_process_done`) collects the main thread's heap
+    // and purges every arena with `madvise` while the process is ending: 1.8 %
+    // of a content-mapper session's CPU samples on macOS and 0.7 % on Linux,
+    // after the last reply, freeing memory the OS reclaims anyway. A value
+    // above 1 makes the hook return at once (`_mi_auto_process_done`).
+    // `MIMALLOC_DESTROY_ON_EXIT` still wins.
+    // SAFETY: an option store before any other thread exists.
+    unsafe { mi_option_set_default(DESTROY_ON_EXIT, 2) };
     vize::cli::run_from_env();
 }

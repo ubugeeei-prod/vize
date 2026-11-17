@@ -4,7 +4,7 @@
 use std::io::{self, BufRead, Write};
 use std::panic::{AssertUnwindSafe, catch_unwind};
 use std::path::{Path, PathBuf};
-use std::sync::mpsc::{self, Receiver, Sender};
+use std::sync::mpsc::{self, Sender};
 use std::sync::{Mutex, PoisonError};
 use std::thread;
 use std::time::{Duration, Instant};
@@ -23,10 +23,12 @@ use super::{Request, TransformParams, read_frame};
 
 mod compact;
 mod initialize;
+mod jobs;
 mod replies;
 mod trivia_scan;
 mod wire;
 use initialize::initialize;
+use jobs::Jobs;
 pub(super) use replies::ReplyOrder;
 use replies::{WriteProgress, write_replies};
 #[cfg(all(test, target_os = "linux", target_pointer_width = "64"))]
@@ -177,8 +179,7 @@ fn serve_with_plan<R: BufRead, W: Write + Send>(
 ) -> io::Result<WorkerPoolReceipt> {
     let write_error = Mutex::new(None::<io::Error>);
     let progress = WriteProgress::new();
-    let (job_tx, job_rx) = mpsc::channel::<TransformJob>();
-    let job_rx = Mutex::new(job_rx);
+    let jobs = Jobs::<TransformJob>::new();
     let (done_tx, done_rx) = mpsc::channel::<(u64, Vec<u8>)>();
     let type_sources = SharedTypeSources::default();
     let mut receipt = WorkerPoolReceipt {
@@ -196,7 +197,7 @@ fn serve_with_plan<R: BufRead, W: Write + Send>(
             }
         })?;
         for stack_bytes in worker_stacks {
-            let jobs = &job_rx;
+            let jobs = &jobs;
             let done = done_tx.clone();
             let type_sources = &type_sources;
             if let Err(error) = thread::Builder::new()
@@ -208,9 +209,9 @@ fn serve_with_plan<R: BufRead, W: Write + Send>(
                     break;
                 }
                 // Scoped threads must see EOF before their automatic join.
-                // Returning early with these senders alive deadlocks both
-                // the writer and any workers that were already started.
-                drop(job_tx);
+                // Returning early with the queue open and this sender alive
+                // deadlocks both the writer and any workers already started.
+                jobs.close();
                 drop(done_tx);
                 return Err(error);
             }
@@ -221,7 +222,7 @@ fn serve_with_plan<R: BufRead, W: Write + Send>(
             Some(inflight_limit) => capture_worker_pool(&receipt).and_then(|()| {
                 read_loop(
                     reader,
-                    &job_tx,
+                    &jobs,
                     &done_tx,
                     &progress,
                     inflight_limit,
@@ -230,7 +231,7 @@ fn serve_with_plan<R: BufRead, W: Write + Send>(
                 )
             }),
         };
-        drop(job_tx);
+        jobs.close();
         drop(done_tx);
         read
     });
@@ -245,16 +246,11 @@ fn serve_with_plan<R: BufRead, W: Write + Send>(
 }
 
 fn worker(
-    jobs: &Mutex<Receiver<TransformJob>>,
+    jobs: &Jobs<TransformJob>,
     done: Sender<(u64, Vec<u8>)>,
     type_sources: &SharedTypeSources,
 ) {
-    loop {
-        let job = {
-            let receiver = jobs.lock().unwrap_or_else(PoisonError::into_inner);
-            receiver.recv()
-        };
-        let Ok(job) = job else { break };
+    while let Some(job) = jobs.pop() {
         let seq = job.seq;
         let sources = type_sources.acquire(job.settings.type_config.as_deref());
         let bytes = match catch_unwind(AssertUnwindSafe(|| transform_frame(&job, &sources))) {
@@ -274,7 +270,7 @@ fn worker(
 
 fn read_loop<R: BufRead>(
     reader: &mut R,
-    jobs: &Sender<TransformJob>,
+    jobs: &Jobs<TransformJob>,
     done: &Sender<(u64, Vec<u8>)>,
     progress: &WriteProgress,
     inflight_limit: std::num::NonZeroUsize,
@@ -387,7 +383,7 @@ fn dispatch_transform(
     id: Value,
     params: Value,
     projects: &ProjectRegistry,
-    jobs: &Sender<TransformJob>,
+    jobs: &Jobs<TransformJob>,
     done: &Sender<(u64, Vec<u8>)>,
     seq: &mut u64,
     diagnostic_code_selectors: bool,
@@ -412,8 +408,8 @@ fn dispatch_transform(
         diagnostic_code_selectors,
     };
     *seq += 1;
-    jobs.send(job)
-        .map_err(|_| io::Error::other("content-mapper workers stopped"))
+    jobs.push(job);
+    Ok(())
 }
 
 fn transform_frame(job: &TransformJob, sources: &ContentMapperTypeSources) -> io::Result<Vec<u8>> {
