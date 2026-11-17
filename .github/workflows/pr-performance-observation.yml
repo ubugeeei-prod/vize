@@ -113,6 +113,17 @@ jobs:
           const pair = verifyPrPerformanceBuildPair('performance-observation/build/base.json', 'performance-observation/build/head.json');
           writeFileSync('performance-observation/build/pair.json', JSON.stringify(pair, null, 2) + '\n');
           JS
+      - name: Symbolized head build for instruction attribution
+        if: contains(inputs.scenarios, 'annotate')
+        working-directory: head
+        run: |
+          set -euo pipefail
+          cargo build --locked -p vize --profile ci-opt \
+            --config 'profile.ci-opt.inherits="release"' --config 'profile.ci-opt.lto="thin"' \
+            --config 'profile.ci-opt.codegen-units=16' --config 'profile.ci-opt.package.vize.strip="none"' \
+            --config 'profile.ci-opt.debug="line-tables-only"' \
+            --target-dir "$RUNNER_TEMP/pr-performance-head-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" --quiet
+          echo "VIZE_SYM_BIN=$RUNNER_TEMP/pr-performance-head-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT/ci-opt/vize" >> "$GITHUB_ENV"
       - name: Install Callgrind for exact instruction counts
         run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends valgrind strace
       - name: Prepare misskey, type-aware and benchmark corpora

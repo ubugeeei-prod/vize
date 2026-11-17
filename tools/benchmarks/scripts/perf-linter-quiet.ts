@@ -291,6 +291,29 @@ for (const spec of arg("scenarios", "mk,mk-json,mk-all,bench,ta").split(",")) {
     const size = run("ls", ["-la", bins.base]);
     write(["", "startup anatomy (base):", "", "```", size, ...header, ...sections, ldStats, ...faults, ...oneFaults, "```", ""].join("\n"));
   }
+  // `annotate-<what>`: Callgrind function attribution (inclusive and self) on the symbolized head build.
+  const annotate = /^annotate-(ver|one|mk-json|mk|bench)$/.exec(spec);
+  if (annotate && process.env.VIZE_SYM_BIN) {
+    const cases: Record<string, [string, string[]]> = {
+      ver: [mk, ["--version"]],
+      one: [mk, ["lint", "src/components/MkButton.vue"]],
+      "mk-json": [mk, ["lint", "src", "--format", "json"]],
+      mk: [mk, ["lint", "src"]],
+      bench: [bench, ["lint", ".", "--format", "json"]],
+    };
+    const [cwd, args] = cases[annotate[1]];
+    const file = `/tmp/callgrind-${annotate[1]}.out`;
+    spawnSync("valgrind", ["--tool=callgrind", `--callgrind-out-file=${file}`, "--cache-sim=no", process.env.VIZE_SYM_BIN, ...args], {
+      cwd,
+      maxBuffer: 1 << 30,
+      env: { ...process.env, RAYON_NUM_THREADS: "1" },
+    });
+    for (const inclusive of ["yes", "no"]) {
+      const result = spawnSync("callgrind_annotate", [`--inclusive=${inclusive}`, "--threshold=99.5", file], { maxBuffer: 1 << 30 });
+      const lines = (result.stdout?.toString() ?? "").split("\n").filter((line) => /^\s*[\d,]+ \(/.test(line)).slice(0, 90).map((line) => line.slice(0, 260));
+      write(["", `callgrind ${annotate[1]} inclusive=${inclusive}:`, "", "```", ...lines, "```", ""].join("\n"));
+    }
+  }
   if (spec === "bench") scenario("1000-SFC benchmark `lint .` (text)", bench, ["lint", "."], runs);
   if (spec === "ta")
     scenario(
