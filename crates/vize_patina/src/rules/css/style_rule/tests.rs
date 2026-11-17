@@ -70,10 +70,6 @@ fn preprocessor_blocks_report_flags_at_authored_bytes() {
     assert_eq!(flags(StyleLanguage::Stylus, stylus), ["!important"]);
     let braced = ".e { margin: 0 !important; }";
     assert_eq!(flags(StyleLanguage::Stylus, braced), ["!important"]);
-    assert_eq!(
-        flags(StyleLanguage::Stylus, ".e {color:red!important}"),
-        ["!important"]
-    );
     // A `//` comment inside a value cannot open a block that hides the flag.
     let commented = ".a { color: red // explanation (\n !important; }";
     assert_eq!(flags(StyleLanguage::Scss, commented), ["!important"]);

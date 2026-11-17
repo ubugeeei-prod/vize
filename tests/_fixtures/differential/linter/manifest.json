@@ -876,6 +876,47 @@
       }
     },
     {
+      "id": "linter/css-style-lane-11550",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "css-style-lane-11550",
+        "files": [
+          {
+            "path": "StyleLanguages.vue.txt",
+            "role": "deliberate-style-language-findings-and-controls",
+            "sha256": "b86cca9e0a319d99aa7de312d8b081805c6b69d6b33e74f96483eff565876d4f"
+          },
+          {
+            "path": "vite.config.mjs",
+            "role": "native-cli-config",
+            "sha256": "42ec022e3c03d2fc1a51023bf85d558575b97609f8e1995861bf605adc165aff"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "scss-style",
+              "sass-style",
+              "less-style",
+              "stylus-style",
+              "js"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/current-api/anchor-bound-image-alt",
       "state": "active",
       "targets": [
