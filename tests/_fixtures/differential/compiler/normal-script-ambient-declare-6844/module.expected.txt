@@ -1,0 +1,22 @@
+import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from "vue"
+
+
+export const limit = 3;
+
+export default {
+  __name: 'Ambient',
+  setup(__props) {
+
+const count = 1;
+
+return (_ctx, _cache) => {
+  const _component_Panel = _resolveComponent("Panel")
+
+  return (_openBlock(), _createBlock(_component_Panel, {
+    title: _ctx.format(count),
+    limit: limit
+  }, null, 8 /* PROPS */, ["title", "limit"]))
+}
+}
+
+}

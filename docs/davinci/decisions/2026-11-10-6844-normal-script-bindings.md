@@ -88,7 +88,17 @@ render context, as in Vue. Across the whole corpus (5,988 compiles), one
 more file changes through the shared classifier: `tsc/#5067` imports
 `{ default as isComp1 }` from a `.vue` file in `<script setup>`, which now
 binds as setup-const, so the template reads the component directly, as in
-Vue.
+Vue. Both changes are pinned as DOM modules
+(`tests/_fixtures/differential/compiler/normal-script-ambient-declare-6844`,
+`named-default-vue-import-6844`). Their bindings match `@vue/compiler-sfc`
+3.6: `_resolveComponent("Panel")`, `_ctx.format(count)` and
+`_createBlock(Card)`.
+
+The compiler runs no File walk over this script. `OrdinaryFacts::of_module`
+reads the top-level statements that the walk would hand `OrdinaryObserver`.
+L2's corpus test proves that both give equal facts on all 101 corpus normal
+scripts. The full walk, with its nested scopes, references and resolution,
+cost about 7.9k instructions per script and nothing in this route used it.
 
 ## Open
 

@@ -1,0 +1,17 @@
+import { openBlock as _openBlock, createBlock as _createBlock } from "vue"
+
+import { default as Card } from './Card.vue'
+
+const __default__ = { inheritAttrs: false };
+
+export default /*@__PURE__*/Object.assign(__default__, {
+  __name: 'Named',
+  setup(__props) {
+
+
+return (_ctx, _cache) => {
+  return (_openBlock(), _createBlock(Card))
+}
+}
+
+})

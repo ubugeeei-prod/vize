@@ -50,3 +50,6 @@ fn observe(content: &str, lang: Option<&str>) -> Option<BindingMetadata> {
     }
     Some(bindings)
 }
+
+#[cfg(test)]
+mod tests;

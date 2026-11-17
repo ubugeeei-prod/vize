@@ -1,0 +1,14 @@
+<script lang="ts">
+import type { Component } from 'vue';
+declare const Panel: Component;
+declare function format(value: number): string;
+export const limit = 3;
+</script>
+
+<script setup lang="ts">
+const count = 1;
+</script>
+
+<template>
+  <Panel :title="format(count)" :limit="limit" />
+</template>

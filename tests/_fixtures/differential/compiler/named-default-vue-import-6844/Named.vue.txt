@@ -1,0 +1,11 @@
+<script lang="ts">
+export default { inheritAttrs: false };
+</script>
+
+<script setup lang="ts">
+import { default as Card } from './Card.vue';
+</script>
+
+<template>
+  <Card />
+</template>
