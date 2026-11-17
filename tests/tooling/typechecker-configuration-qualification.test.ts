@@ -96,6 +96,43 @@ void test("project inputs and generated dependencies block qualification with ex
   }
 });
 
+void test("deprecated and removed compiler options do not block qualification", () => {
+  for (const code of [5101, 5102, 5107, 5108]) {
+    const notice = `error:3:3 [TS${code}] Option 'downlevelIteration' has been removed.`;
+    assert.equal(
+      typecheckerRunStatus(
+        1,
+        parsed([{ file: "packages/lib/tsconfig.json", diagnostics: [notice] }]),
+      ),
+      "findings",
+    );
+  }
+  // Only those notices: every other unavailable-input code still blocks it,
+  // as does any other diagnostic on a config file.
+  for (const code of [2307, 2318, 2688, 2792, 5083, 6053, 6059, 6305, 6307, 18002, 18003]) {
+    const missing = `error:1:1 [TS${code}] Unavailable input.`;
+    assert.equal(
+      typecheckerRunStatus(1, parsed([{ file: "src/App.vue", diagnostics: [missing] }])),
+      "configuration",
+    );
+  }
+  assert.equal(
+    typecheckerRunStatus(
+      1,
+      parsed([
+        {
+          file: "tsconfig.json",
+          diagnostics: [
+            "error:1:1 [TS5102] Option 'baseUrl' has been removed.",
+            "error:2:1 [TS5023] Unknown compiler option 'missing'.",
+          ],
+        },
+      ]),
+    ),
+    "configuration",
+  );
+});
+
 void test("setup failures classify only pinned non-JSON configuration errors", () => {
   const cases = [
     [

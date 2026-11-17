@@ -46,6 +46,11 @@ pub fn typechecker_run_status(exit_code: i64, parsed: &Value) -> &'static str {
             let Ok(code) = code.parse::<u64>() else {
                 continue;
             };
+            // Deprecated and removed compiler options introduce no `any`.
+            // They stay in the compared set; both checkers must agree on them.
+            if matches!(code, 5101 | 5102 | 5107 | 5108) {
+                continue;
+            }
             // Missing modules/generated declarations can introduce `any` into
             // later checks. An authored error elsewhere cannot qualify this run.
             if path.ends_with(".json")
@@ -60,4 +65,51 @@ pub fn typechecker_run_status(exit_code: i64, parsed: &Value) -> &'static str {
         }
     }
     "findings"
+}
+
+#[cfg(test)]
+mod tests {
+    use super::typechecker_run_status;
+    use serde_json::json;
+
+    fn status(file: &str, diagnostic: &str) -> &'static str {
+        typechecker_run_status(
+            1,
+            &json!({"files": [{"file": file, "diagnostics": [diagnostic]}]}),
+        )
+    }
+
+    #[test]
+    fn option_notices_do_not_block_qualification() {
+        for code in [5101, 5102, 5107, 5108] {
+            let diagnostic =
+                format!("error:3:3 [TS{code}] Option 'downlevelIteration' has been removed.");
+            assert_eq!(
+                status("packages/lib/tsconfig.json", &diagnostic),
+                "findings"
+            );
+        }
+    }
+
+    #[test]
+    fn other_configuration_and_unavailable_inputs_still_block_it() {
+        assert_eq!(
+            status(
+                "configs/build.jsonc",
+                "error:1:1 [TS5023] Unknown compiler option 'missing'."
+            ),
+            "configuration"
+        );
+        for code in [
+            2307, 2318, 2688, 2792, 5083, 6053, 6059, 6305, 6307, 18002, 18003,
+        ] {
+            let diagnostic = format!("error:1:1 [TS{code}] Unavailable input.");
+            assert_eq!(status("src/App.vue", &diagnostic), "configuration");
+        }
+        let mixed = json!({"files": [
+            {"file": "tsconfig.json", "diagnostics": ["error:1:1 [TS5102] Option 'baseUrl' has been removed."]},
+            {"file": "src/App.vue", "diagnostics": ["error:1:1 [TS2307] Cannot find module './x'."]}
+        ]});
+        assert_eq!(typechecker_run_status(1, &mixed), "configuration");
+    }
 }

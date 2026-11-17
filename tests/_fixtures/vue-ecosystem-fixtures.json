@@ -1000,18 +1000,14 @@
           {
             "id": "lib",
             "tsconfig": "packages/vuetify/tsconfig.json",
-            "corpusGlobs": ["packages/vuetify/src/**/*.vue", "packages/vuetify/dev/**/*.vue"],
-            "configurationOnly": {
-              "reason": "The root tsconfig sets downlevelIteration, reported as removed by tsgo 7 (TS5102) and deprecated by vue-tsc 6 (TS5101)",
-              "issue": 13300
-            }
+            "corpusGlobs": ["packages/vuetify/src/**/*.vue", "packages/vuetify/dev/**/*.vue"]
           },
           {
             "id": "docs",
             "tsconfig": "packages/docs/tsconfig.json",
             "corpusGlobs": ["packages/docs/src/**/*.vue"],
             "configurationOnly": {
-              "reason": "vue-tsc stops at TS1005 in 4 docs SFCs; projected vuetify sources need their own @/ paths",
+              "reason": "The docs tsconfig has no project reference to the library, so one program checks the library sources with the docs @/ paths; vue-tsc also stops at TS1005 in 4 docs SFCs",
               "issue": 13300
             }
           }
