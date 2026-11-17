@@ -1,0 +1,3 @@
+{
+  "vue/no-restricted-v-bind": "warn"
+}
