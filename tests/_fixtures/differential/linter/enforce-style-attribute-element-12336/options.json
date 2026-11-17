@@ -1,0 +1,5 @@
+{
+  "vue/enforce-style-attribute": {
+    "allow": ["scoped"]
+  }
+}

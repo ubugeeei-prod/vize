@@ -1,0 +1,15 @@
+<template>
+  <div class="card" />
+</template>
+
+<style scoped>
+.card { color: red }
+</style>
+
+<style>
+.card { margin: 0 }
+</style>
+
+<style scoped module>
+.card { padding: 0 }
+</style>
