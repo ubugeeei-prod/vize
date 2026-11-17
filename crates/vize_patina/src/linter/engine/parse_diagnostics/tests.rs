@@ -10,9 +10,24 @@ struct Observed {
     end: u32,
 }
 
+/// The preserved parser with the HTML tree construction a browser applies to
+/// an in-DOM template.
 fn legacy(source: &str) -> Vec<Observed> {
+    preserved(source, true)
+}
+
+/// The preserved parser on a Vue template, which it builds as written.
+fn legacy_component(source: &str) -> Vec<Observed> {
+    preserved(source, false)
+}
+
+fn preserved(source: &str, html_tree_construction: bool) -> Vec<Observed> {
     let allocator = Allocator::new();
-    let (_, errors) = vize_armature::Parser::new(&allocator, source).parse();
+    let options = vize_armature::ParserOptions {
+        html_tree_construction,
+        ..vize_armature::ParserOptions::default()
+    };
+    let (_, errors) = vize_armature::Parser::with_options(&allocator, source, options).parse();
     errors
         .iter()
         .filter(|error| !error.is_compatibility_notice())
@@ -45,8 +60,8 @@ fn legacy(source: &str) -> Vec<Observed> {
         .collect()
 }
 
-/// The preserved parser reads every template as a browser reads HTML; Vue
-/// builds a Vue template as written, so only an in-DOM template is fostered.
+/// Vue builds a Vue template as written, so only an in-DOM template is
+/// fostered.
 const FOSTER: &str = "Foster parenting moved this element before the nearest open table.";
 
 fn vue_error(message: &str, start: u32, end: u32) -> Observed {
@@ -221,6 +236,15 @@ fn a_duplicate_attribute_is_a_warning_only_in_the_vue_2_dialect() {
             .map(|diagnostic| diagnostic.severity)
             .collect();
         assert_eq!(severities, [severity], "{version:?}");
+    }
+}
+
+#[test]
+fn a_vue_template_matches_the_preserved_component_parse() {
+    // The compiler's parser builds a Vue template as written too, so lint and
+    // compile report the same parse diagnostics.
+    for source in CASES {
+        assert_eq!(l1(source), legacy_component(source), "{source:?}");
     }
 }
 

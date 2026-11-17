@@ -18,8 +18,7 @@ fn refused(source: &str, path: &[usize]) {
         .into_element()
         .unwrap();
     // Complete caller traversal reaches an earlier authored sibling before
-    // the path's target: the genuine self-closing nested a, or an element an
-    // implied end tag closed (a hole).
+    // the path's target, such as the genuine self-closing nested a.
     let mut first = None;
     for sibling in owner.children().take(path[0] + 1) {
         let sibling = sibling.into_element().unwrap();
@@ -71,7 +70,7 @@ fn pre_recovery_refusal_keeps_the_authored_v_pre_owner_without_parser_errors() {
         ),
         (
             "<template><p v-pre><div><meta :role='x' /></div></p></template>",
-            &[1][..],
+            &[0, 0][..],
         ),
         (
             "<template><a v-pre><a /><meta :role='x' /></a></template>",
@@ -79,11 +78,11 @@ fn pre_recovery_refusal_keeps_the_authored_v_pre_owner_without_parser_errors() {
         ),
         (
             "<template><select><option v-pre><option><meta :role='x' /></option></option></select></template>",
-            &[0, 1][..],
+            &[0, 0, 0][..],
         ),
         (
             "<template><select><optgroup v-pre><optgroup><meta :role='x' /></optgroup></optgroup></select></template>",
-            &[0, 1][..],
+            &[0, 0, 0][..],
         ),
     ] {
         refused(source, path);

@@ -139,7 +139,7 @@ fn incomplete_headers_refuse_without_erasing_recovery_or_claiming_body_completio
 }
 
 #[test]
-fn tree_recovery_preserves_ambiguous_authored_scope_and_original_observations() {
+fn nested_anchor_keeps_ambiguous_authored_scope_and_original_observations() {
     let source =
         "<template><a v-pre.foo><span><a></a></span></a><input :autofocus='outside' /></template>";
     let arena = Allocator::default();
@@ -162,10 +162,13 @@ fn tree_recovery_preserves_ambiguous_authored_scope_and_original_observations() 
             ("input", Ok(Kind::Element)),
         ]
     );
+    // Built as written: the inner anchor stays in the span.
     let outer = owner.children().next().unwrap().into_element().unwrap();
-    assert!(matches!(outer.surface().close, ElementClose::Implicit));
+    assert!(matches!(outer.surface().close, ElementClose::Present(_)));
     assert!(outer.surface().open.is_verbatim());
-    let inner = owner.children().nth(1).unwrap().into_element().unwrap();
+    let span = outer.children().next().unwrap().into_element().unwrap();
+    let inner = span.children().next().unwrap().into_element().unwrap();
+    assert_eq!(inner.surface().tag(), "a");
     assert!(inner.surface().open.is_verbatim());
     assert_eq!(
         rendered(&owner.component().carrier().tree).as_str(),

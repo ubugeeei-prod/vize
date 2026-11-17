@@ -1,5 +1,6 @@
 //! "In body" start-tag handling: implicit end-tag closing and HTML scopes
-//! (`<a>`/`<button>`/`<li>`/`<dt>`/`<dd>`/`<option>`/`<optgroup>`/`<p>`).
+//! (`<a>`/`<button>`/`<li>`/`<dt>`/`<dd>`/`<option>`/`<optgroup>`/`<p>`), for
+//! documents and callers that ask for HTML tree construction only.
 
 use vize_relief::ElementNode;
 
@@ -8,7 +9,7 @@ use super::is_html_tree_element;
 
 impl<'a> Parser<'a> {
     pub(super) fn handle_in_body_start_tag(&mut self, tag: &str, offset: usize) {
-        if self.template_syntax.is_quirks() {
+        if self.template_syntax.is_quirks() || !self.html_tree_construction() {
             return;
         }
 
@@ -158,9 +159,20 @@ impl<'a> Parser<'a> {
 
     pub(super) fn should_ignore_start_tag(&self, element: &ElementNode<'a>) -> bool {
         !self.template_syntax.is_quirks()
+            && self.html_tree_construction()
             && is_html_tree_element(element)
             && element.tag.eq_ignore_ascii_case("form")
             && self.open_form_count > 0
+    }
+
+    /// Whether the HTML parser's tree-construction fix-ups apply: in document
+    /// mode, when the caller asks for them (Vapor), and for the Vue 1/2
+    /// dialects, whose parsers close optional end tags too. A Vue 3 component
+    /// template is built as written, as Vue's compiler builds it.
+    pub(in crate::parser) fn html_tree_construction(&self) -> bool {
+        self.document
+            || self.options.html_tree_construction
+            || self.options.dialect != vize_l0::config::VueVersion::V3
     }
 
     pub(in crate::parser) fn can_omit_end_tag(tag: &str) -> bool {

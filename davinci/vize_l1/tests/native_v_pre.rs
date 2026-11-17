@@ -127,58 +127,44 @@ fn matching_ancestors_stray_closes_void_and_self_closing_tags_restore_the_owner_
 }
 
 #[test]
-fn lexical_scope_survives_interactive_recovery_and_foreign_namespaces() {
-    for (source, expected, authored) in [
+fn lexical_scope_survives_nested_interactive_tags_and_foreign_namespaces() {
+    for (source, expected) in [
         (
             "<a v-pre><span>{{before}}<a>{{after}}</a>{{tail}}</span></a>{{end}}",
             vec!["end"],
-            true,
         ),
         (
             "<button v-pre><button>{{after}}</button>{{tail}}</button>{{end}}",
             vec!["end"],
-            true,
         ),
         (
             "<a v-pre><a v-pre>{{inner}}</a>{{tail}}</a>{{end}}",
             vec!["end"],
-            true,
         ),
         (
             "<svg><a v-pre><a>{{inner}}</a>{{outer}}</a></svg>{{tail}}",
             vec!["tail"],
-            false,
         ),
         (
             "<math><button v-pre><button>{{inner}}</button></button></math>{{tail}}",
             vec!["tail"],
-            false,
         ),
         (
             "<svg><foreignObject><button v-pre><button>{{after}}</button></button></foreignObject></svg>{{tail}}",
             vec!["tail"],
-            true,
         ),
         (
             "<section><a><span><a></a><span v-pre>{{inside}}</span>{{tail}}</span></a></section>",
             vec!["tail"],
-            true,
         ),
     ] {
         let allocator = Allocator::new();
         let parsed = parse_component_with_authored(&allocator, source).unwrap();
         assert!(parsed.unsupported.is_empty());
         assert_eq!(interpolations(&parsed.tree.children), expected, "{source}");
-        assert_eq!(parsed.authored.is_some(), authored, "{source}");
+        // Built as written: no repaired tree, so no second projection.
+        assert!(parsed.authored.is_none(), "{source}");
         assert_eq!(check_fidelity(&parsed.tree), Ok(()), "{source}");
-        if let Some(tree) = parsed.authored {
-            assert_eq!(
-                interpolations(&tree.children),
-                expected,
-                "shared event stream: {source}"
-            );
-            assert_eq!(check_fidelity(&tree), Ok(()));
-        }
     }
 }
 
@@ -283,15 +269,11 @@ fn same_tag_pre_ignores_unrelated_deep_heads_in_both_orders_and_keeps_prior_fact
         let parsed = parse_component_with_authored(&allocator, &source).unwrap();
         assert!(
             parsed.unsupported.is_empty(),
-            "recovered independent owner: {source}"
+            "nested independent owner: {source}"
         );
         assert_eq!(interpolations(&parsed.tree.children), [" end "], "{source}");
         assert_eq!(check_fidelity(&parsed.tree), Ok(()));
-        let authored = parsed
-            .authored
-            .expect("interactive recovery retains authored projection");
-        assert_eq!(interpolations(&authored.children), [" end "]);
-        assert_eq!(check_fidelity(&authored), Ok(()));
+        assert!(parsed.authored.is_none(), "built as written: {source}");
     }
 }
 

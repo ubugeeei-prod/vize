@@ -91,11 +91,33 @@ For Nuxt, use `vize.compiler.whitespace`; see
 
 `compiler.templateSyntax` defaults to `"standard"`.
 
-- `"standard"` accepts recoverable invalid syntax, emits warnings, and rewrites to valid output.
+- `"standard"` accepts recoverable invalid syntax and emits warnings. The only input it rewrites
+  is a non-void HTML element written self-closing, such as `<div />` (see below).
 - `"strict"` reports invalid syntax as compilation errors.
 - `"quirks"` preserves template syntax compatibility quirks without additional warnings.
 
-The known cases are:
+In every mode, a component template keeps its authored element structure, as Vue's compiler
+builds it. Vize does not apply the browser's HTML tree construction to it: no implied end tags
+(`<p>` before a block or another `<p>`, `<li>`, `<dt>`, `<dd>`, `<option>`, table cells and
+rows), no implied `<tbody>` or `<tr>`, no repair of a nested `<form>`, `<a>` or `<button>`, no
+adoption agency for misnested formatting tags, and no foster parenting out of a `<table>`. So
+`<form><form>`, `<a><a>`, `<p><ul>`, `<p><p>`, `<table><div>` and `<table><tr>` compile as
+written, with every element and its handlers in place.
+
+- Invalid HTML nesting is reported by lint rules such as `vue/permitted-contents`, not by the
+  compiler.
+- A misnested end tag, such as `<b><i></b></i>`, is a compile error, as it is in Vue.
+- An omitted optional end tag, such as `<li>a<li>b`, nests as in Vue. Vue also reports "Element
+  is missing end tag." for it; Vize does not, and `vue/html-end-tags` reports it instead.
+- Standalone HTML documents keep the browser's tree.
+- Vapor (`vapor: true`) still applies the browser's repairs, because the browser parses its
+  template strings again. There, a nested `<form>`, `<p><ul>`, `<p><div>`, `<p><p>` and
+  `<table><div>` fail to compile, a nested `<a>` or `<button>` becomes two siblings, an omitted
+  `<li>` end tag is implied, and a direct `<tr>` gains a `<tbody>`. Vue 3.6 Vapor instead splits
+  each of these into separate templates and keeps the authored tree
+  ([#13310](https://github.com/ubugeeei-prod/vize/issues/13310)).
+
+The known cases where the modes differ are:
 
 - `v-for` aliases with an unmatched edge parenthesis. Vue strips a leading `(` or trailing `)`
   from the alias before it splits `value`, `key`, and `index`; standard and strict modes report

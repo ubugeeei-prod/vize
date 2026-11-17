@@ -28,6 +28,15 @@ fn rendered(tree: &SurfaceTree<'_>) -> String {
     out
 }
 
+/// The tree the HTML parser builds (Vapor); a Vue template keeps the authored one.
+fn parse_html<'a>(allocator: &'a Allocator, source: &'a str) -> SurfaceTree<'a> {
+    let options = SurfaceParseOptions {
+        html_tree_construction: true,
+        ..SurfaceParseOptions::default()
+    };
+    parse_with_options(allocator, source, options).0
+}
+
 fn assert_fidelity(source: &str, context: &str) {
     let allocator = Allocator::new();
     let (tree, _errors) = parse(&allocator, source);
@@ -287,7 +296,9 @@ fn nested_interactive_content_keeps_fidelity_without_missing_close_holes() {
         "<div><button><div><button>bbb</button></div></button></div>",
     ] {
         let allocator = Allocator::new();
-        let (tree, _errors) = parse(&allocator, source);
+        let (authored, _errors) = parse(&allocator, source);
+        assert_eq!(hole_counts(&authored), HoleCounts::default(), "{source}");
+        let tree = parse_html(&allocator, source);
         assert_eq!(rendered(&tree), source);
         assert_eq!(check_fidelity(&tree), Ok(()));
         assert_eq!(
@@ -320,7 +331,10 @@ fn assert_direct_nested_interactive_close_order(
     redundant_close: &str,
 ) {
     let allocator = Allocator::new();
-    let (tree, _errors) = parse(&allocator, source);
+    let (authored, _errors) = parse(&allocator, source);
+    assert_eq!(hole_counts(&authored), HoleCounts::default(), "{source}");
+    assert_eq!(authored.children.len(), 1, "{source}: nested");
+    let tree = parse_html(&allocator, source);
     assert_eq!(rendered(&tree), source);
     assert_eq!(check_fidelity(&tree), Ok(()));
     assert_eq!(

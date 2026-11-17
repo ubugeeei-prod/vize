@@ -128,8 +128,14 @@ mod tests {
     fn opening_ownership_survives_html_scope_recovery_without_changing_recovery() {
         let source = "<p v-pre><div><Child></Child></div><p></p>";
         let arena = Allocator::new();
-        let (root, errors, frozen) = Parser::new(&arena, source).parse_with_frozen_elements();
-        let (control, control_errors) = Parser::new(&arena, source).parse();
+        // HTML scope recovery runs only under HTML tree construction.
+        let options = || vize_relief::options::ParserOptions {
+            html_tree_construction: true,
+            ..vize_relief::options::ParserOptions::default()
+        };
+        let (root, errors, frozen) =
+            Parser::with_options(&arena, source, options()).parse_with_frozen_elements();
+        let (control, control_errors) = Parser::with_options(&arena, source, options()).parse();
         assert_eq!(vize_l0::cstr!("{root:?}"), vize_l0::cstr!("{control:?}"));
         assert_eq!(
             vize_l0::cstr!("{errors:?}"),

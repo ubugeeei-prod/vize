@@ -1,15 +1,19 @@
 //! Implied end tags: L1 element nesting against the shipped parser.
 //!
-//! The standard lane follows HTML "in body" and "in table" start-tag closes;
-//! the quirks lane keeps Vue compiler-core's authored nesting, which L1's
-//! authored projection reproduces. Legacy `tbody`/`tr` owners with no source
-//! bytes are inserted by L1->L2 lowering, so the comparison skips them.
+//! A Vue component template keeps Vue compiler-core's authored nesting in
+//! both the standard and the quirks lane. The HTML tree construction lane
+//! (Vapor) follows HTML "in body" and "in table" start-tag closes. Legacy
+//! `tbody`/`tr` owners with no source bytes are inserted by L1->L2 lowering,
+//! so the comparison skips them.
 
 use vize_armature::{
     ParserOptions, TemplateChildNode, TemplateSyntaxMode, parse_with_options_and_template_syntax,
 };
 use vize_l0::{Allocator, is_native_tag};
-use vize_l1::markup::{SurfaceChild, SurfaceTree, check_fidelity, parse_with_authored};
+use vize_l1::markup::{
+    SurfaceChild, SurfaceParseOptions, SurfaceTree, check_fidelity, parse_with_authored,
+    parse_with_options,
+};
 
 type Rows<'a> = Vec<(&'a str, usize)>;
 
@@ -27,7 +31,12 @@ fn surface<'a>(tree: &SurfaceTree<'a>) -> Rows<'a> {
     rows
 }
 
-fn legacy<'a>(source: &'a str, allocator: &'a Allocator, syntax: TemplateSyntaxMode) -> Rows<'a> {
+fn legacy<'a>(
+    source: &'a str,
+    allocator: &'a Allocator,
+    syntax: TemplateSyntaxMode,
+    html_tree_construction: bool,
+) -> Rows<'a> {
     fn walk<'a>(children: &[TemplateChildNode<'a>], depth: usize, rows: &mut Rows<'a>) {
         for child in children {
             if let TemplateChildNode::Element(element) = child {
@@ -42,6 +51,7 @@ fn legacy<'a>(source: &'a str, allocator: &'a Allocator, syntax: TemplateSyntaxM
     }
     let options = ParserOptions {
         is_native_tag: Some(is_native_tag),
+        html_tree_construction,
         ..ParserOptions::default()
     };
     let (root, _) = parse_with_options_and_template_syntax(allocator, source, options, syntax);
@@ -50,17 +60,31 @@ fn legacy<'a>(source: &'a str, allocator: &'a Allocator, syntax: TemplateSyntaxM
     rows
 }
 
-/// Both lanes agree on every source, normal and authored projections alike.
+/// L1's HTML tree construction lane (Vapor's L3 bridge).
+fn html<'a>(allocator: &'a Allocator, source: &'a str) -> SurfaceTree<'a> {
+    let options = SurfaceParseOptions {
+        html_tree_construction: true,
+        ..SurfaceParseOptions::default()
+    };
+    parse_with_options(allocator, source, options).0
+}
+
+/// Both parsers agree on every source in every lane: the authored tree for a
+/// component template (standard and quirks), the repaired one under HTML tree
+/// construction.
 fn agrees(source: &str) {
     let allocator = Allocator::new();
     let (normal, authored, _) = parse_with_authored(&allocator, source);
+    assert!(authored.is_none(), "{source}");
     assert_eq!(check_fidelity(&normal), Ok(()), "{source}");
-    let standard = legacy(source, &allocator, TemplateSyntaxMode::Standard);
+    let standard = legacy(source, &allocator, TemplateSyntaxMode::Standard, false);
     assert_eq!(surface(&normal), standard, "standard: {source}");
-    let quirks = legacy(source, &allocator, TemplateSyntaxMode::Quirks);
-    let authored = authored.as_ref().unwrap_or(&normal);
-    assert_eq!(check_fidelity(authored), Ok(()), "{source}");
-    assert_eq!(surface(authored), quirks, "quirks: {source}");
+    let quirks = legacy(source, &allocator, TemplateSyntaxMode::Quirks, false);
+    assert_eq!(surface(&normal), quirks, "quirks: {source}");
+    let repaired = html(&allocator, source);
+    assert_eq!(check_fidelity(&repaired), Ok(()), "{source}");
+    let expected = legacy(source, &allocator, TemplateSyntaxMode::Standard, true);
+    assert_eq!(surface(&repaired), expected, "html: {source}");
 }
 
 #[test]
@@ -161,17 +185,18 @@ fn table_rows_and_row_groups_close_their_open_sibling() {
     }
 }
 
-/// Shapes L1 cannot or does not yet take from the standard lane. Each row is
-/// the L1 surface; the quirks lane still matches the authored projection.
+/// Shapes L1's HTML lane cannot or does not yet take from the shipped parser's.
+/// Each row is the L1 HTML-lane surface. A component template builds them as
+/// written in both parsers.
 #[test]
-fn standard_lane_divergences_stay_explicit() {
+fn html_lane_divergences_stay_explicit() {
     for (source, expected) in [
         // Foster parenting moves nodes before the table; L1 keeps source order.
         (
             "<table><div>x</div><tr><td>a</td></tr></table>",
             &[("table", 0), ("div", 1), ("tr", 1), ("td", 2)][..],
         ),
-        // A nested `form` start tag is ignored by the standard lane.
+        // A nested `form` start tag is ignored by the HTML lane.
         ("<form><form>x</form></form>", &[("form", 0), ("form", 1)]),
         // A self-closing nested interactive element keeps its scope.
         ("<a>x<a/>y</a>", &[("a", 0), ("a", 1)]),
@@ -182,19 +207,18 @@ fn standard_lane_divergences_stay_explicit() {
         ),
     ] {
         let allocator = Allocator::new();
-        let (normal, authored, _) = parse_with_authored(&allocator, source);
-        assert_eq!(check_fidelity(&normal), Ok(()), "{source}");
-        assert_eq!(surface(&normal), expected, "{source}");
+        let repaired = html(&allocator, source);
+        assert_eq!(check_fidelity(&repaired), Ok(()), "{source}");
+        assert_eq!(surface(&repaired), expected, "{source}");
         assert_ne!(
-            legacy(source, &allocator, TemplateSyntaxMode::Standard),
+            legacy(source, &allocator, TemplateSyntaxMode::Standard, true),
             expected,
             "now agrees, move to the agreeing corpus: {source}"
         );
-        let authored = authored.as_ref().unwrap_or(&normal);
-        assert_eq!(
-            surface(authored),
-            legacy(source, &allocator, TemplateSyntaxMode::Quirks),
-            "{source}"
-        );
+        let (normal, _, _) = parse_with_authored(&allocator, source);
+        let standard = legacy(source, &allocator, TemplateSyntaxMode::Standard, false);
+        assert_eq!(surface(&normal), standard, "standard: {source}");
+        let quirks = legacy(source, &allocator, TemplateSyntaxMode::Quirks, false);
+        assert_eq!(surface(&normal), quirks, "quirks: {source}");
     }
 }
