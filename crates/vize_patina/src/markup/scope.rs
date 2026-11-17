@@ -166,6 +166,20 @@ impl<'a> MarkupList<'a> {
         }
     }
 
+    /// Whether the list's own head keys its items: a host-syntax loop with a
+    /// `key` clause (`@for (const item of items; key item.id)`), so no
+    /// repeated element needs a key of its own.
+    pub fn has_head_key(&self) -> bool {
+        match self.inner {
+            MarkupListInner::L2 { op, .. } => {
+                op.host.as_ref().is_some_and(|host| host.key.is_some())
+            }
+            MarkupListInner::Relief(_)
+            | MarkupListInner::ReliefDirective { .. }
+            | MarkupListInner::OriginalL2 { .. } => false,
+        }
+    }
+
     /// Visit the elements this list repeats — the elements a `:key`
     /// requirement applies to.
     pub fn walk_elements(&self, visitor: &mut impl FnMut(MarkupElement<'a>)) {
