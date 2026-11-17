@@ -249,3 +249,40 @@ emit('change')
 </script>`;
   assert.equal(unused(plain, "apply"), null);
 });
+
+test("an inline intersection prop beside a defaults spread stays Patina's check", () => {
+  const sfc = `<script setup lang="ts" generic="T">
+import { StatefulProps, statefulPropsDefaults } from './stateful'
+type Props = StatefulProps<T> & {
+  clearValue?: T
+}
+const props = withDefaults(defineProps<Props>(), {
+  ...statefulPropsDefaults,
+})
+</script>`;
+  const requireDefault = (source: string) => {
+    const start = source.indexOf("clearValue?: T");
+    const before = source.slice(0, start).split("\n");
+    const line = before.length,
+      column = (before.at(-1)?.length ?? 0) + 1;
+    return patinaIntentionalReason(
+      {
+        file: "src/VaFormField.vue",
+        ruleId: "script/require-default-prop",
+        severity: "warning",
+        line,
+        column,
+        endLine: line,
+        endColumn: column + 14,
+        message: "[vize:script/require-default-prop] Prop 'clearValue' requires a default value.",
+      },
+      source,
+    );
+  };
+  assert.match(requireDefault(sfc) ?? "", /inline intersection member/u);
+  assert.equal(requireDefault(sfc.replace("  ...statefulPropsDefaults,\n", "")), null);
+  const inline = sfc
+    .replace("type Props = StatefulProps<T> & {\n  clearValue?: T\n}\n", "")
+    .replace("defineProps<Props>()", "defineProps<StatefulProps<T> & {\n  clearValue?: T\n}>()");
+  assert.equal(requireDefault(inline), null);
+});
