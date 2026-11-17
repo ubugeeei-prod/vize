@@ -1,0 +1,21 @@
+import type { DefineComponent, PropType } from "vue";
+
+export type ValidationRule<V = any> = ((v: V) => any | string) | Promise<(v: V) => any | string>;
+
+export declare const LibInput: DefineComponent<
+  {
+    modelValue: { type: StringConstructor; default: string };
+    rules: { type: PropType<ValidationRule<string>[]>; default: () => any; required: false };
+    format: { type: PropType<{ display: (v: string) => string }>; required: false };
+  },
+  {},
+  {},
+  {},
+  {},
+  {},
+  {},
+  {
+    "update:modelValue": (value: string) => true;
+    clickAppendInner: (event: MouseEvent) => true;
+  }
+>;

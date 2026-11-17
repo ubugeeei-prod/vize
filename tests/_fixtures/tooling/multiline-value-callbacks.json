@@ -1,0 +1,31 @@
+{
+  "schema": "vize.multilineValueCallbacksSource.v1",
+  "credit": {
+    "compiled": false,
+    "native": false,
+    "performance": false
+  },
+  "files": [
+    {
+      "path": "crates/vize_canon/src/virtual_ts/scope/component_events/generic_inference.rs",
+      "before": {
+        "bytes": 20155,
+        "sha256": "9423a52f0760614d8f9d0af1c41af8d6f9a76feedbceaf839dcd2a389461567f"
+      },
+      "after": {
+        "bytes": 20533,
+        "sha256": "b30cda9d601d63d19e5417f3a54f9c44be86337c052ba2a8099186e50555e04e"
+      },
+      "hunks": [
+        {
+          "before": "    append_spread_value, callback_parameters_on_ignored_line_with_ranges, generated_prop_span,\n    map_rewritten_template_binding, prop_entry_sub_spans_with_synthetic_value_gaps,\n    prop_value_source_range,\n};\n",
+          "after": "    append_spread_value, callback_parameters_on_ignored_line_with_ranges, generated_prop_span,\n    inference_value_callback_parameters_with_ranges, map_rewritten_template_binding,\n    prop_entry_sub_spans_with_synthetic_value_gaps, prop_value_source_range,\n};\n"
+        },
+        {
+          "before": "        let owned = (inline_callback && !generated.omits_tail())\n            .then(|| callback_parameters_on_ignored_line_with_ranges(generated.text.trim_start()))\n            .flatten();\n",
+          "after": "        let owned = if generated.omits_tail() {\n            None\n        } else if inline_callback {\n            callback_parameters_on_ignored_line_with_ranges(generated.text.trim_start())\n        } else if template_binding_access.is_empty() {\n            // Callbacks inside a multi-line value start below the entry's\n            // ignored line; their parameters move onto ignored lines too.\n            inference_value_callback_parameters_with_ranges(&generated.text)\n        } else {\n            None\n        };\n"
+        }
+      ]
+    }
+  ]
+}

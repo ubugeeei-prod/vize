@@ -78,5 +78,6 @@ pub(crate) use statements::{
 pub(crate) use ts_suppression_comments::{
     CallbackParameterRewrite, callback_parameters_on_ignored_line,
     callback_parameters_on_ignored_line_with_ranges,
+    inference_value_callback_parameters_with_ranges,
 };
 pub(crate) use value_checks::{TemplateValueCheckTables, TemplateValueChecks};

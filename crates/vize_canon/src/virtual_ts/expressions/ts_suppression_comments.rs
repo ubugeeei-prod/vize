@@ -24,6 +24,16 @@ pub(super) fn inference_callback_parameters_on_ignored_lines(value: &str) -> Opt
     nested_callbacks::rewrite(input).or(outer)
 }
 
+/// Callback parameters that start after the first line of a multi-line
+/// non-callback value (an array of rules, an options object), moved onto
+/// generated `@ts-ignore` lines. A mapped inference-only entry ignores only
+/// its first line, and its copy gives those parameters no contextual type.
+pub(crate) fn inference_value_callback_parameters_with_ranges(
+    value: &str,
+) -> Option<CallbackParameterRewrite> {
+    nested_callbacks::rewrite_with_ranges(value, false)
+}
+
 /// Ordinary arrows use the allocation-free lexical path. Rare generic,
 /// sequence, conditional and function shapes delegate to parser-derived
 /// branch-local suppression ranges. `None` leaves borrowed input unchanged.

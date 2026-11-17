@@ -14,6 +14,17 @@ use vize_carton::String;
 const IGNORE: &str = "\n// @ts-ignore Inference-only nested callback parameter.\n";
 
 pub(super) fn rewrite(value: &str) -> Option<String> {
+    rewrite_with_ranges(value, true).map(|rewrite| rewrite.text)
+}
+
+/// [`rewrite`] with the generated-only ranges it inserts. A `root_callback`
+/// value is itself a callback whose parameters its caller places; any other
+/// value (an array of rules, an options object) has none, so its top-level
+/// callbacks are nested ones too.
+pub(super) fn rewrite_with_ranges(
+    value: &str,
+    root_callback: bool,
+) -> Option<super::CallbackParameterRewrite> {
     // A new directive must not consume an authored expect-error or turn it
     // into an unused directive. This unsupported copy retains the old bytes.
     if value.contains("@ts-expect-error") || !value.contains(['\n', '\r', '\u{2028}', '\u{2029}']) {
@@ -26,7 +37,7 @@ pub(super) fn rewrite(value: &str) -> Option<String> {
         .ok()?;
     let mut visitor = Parameters {
         value,
-        depth: 0,
+        depth: usize::from(!root_callback),
         edits: Vec::new(),
     };
     visitor.visit_expression(&expression);
@@ -35,14 +46,19 @@ pub(super) fn rewrite(value: &str) -> Option<String> {
     }
     visitor.edits.sort_unstable_by_key(|edit| edit.0);
     let mut text = String::with_capacity(value.len());
+    let mut synthetic_ranges = Vec::with_capacity(visitor.edits.len());
     let mut copied = 0;
     for (offset, insertion) in visitor.edits {
         text.push_str(value.get(copied..offset)?);
+        synthetic_ranges.push(text.len()..text.len() + insertion.len());
         text.push_str(insertion);
         copied = offset;
     }
     text.push_str(value.get(copied..)?);
-    Some(text)
+    Some(super::CallbackParameterRewrite {
+        text,
+        synthetic_ranges,
+    })
 }
 
 struct Parameters<'s> {

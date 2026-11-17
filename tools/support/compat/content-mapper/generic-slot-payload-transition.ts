@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
+import { beforeMultilineValueCallbacks } from "./multiline-value-callbacks-transition.ts";
 
 type Identity = { bytes: number; sha256: string };
 type Hunk = { before: string; after: string };
@@ -32,6 +33,7 @@ const identity = (text: string): Identity => ({
 
 /** The pre-#13239 bytes of a recorded helper; other images pass through. */
 export function beforeGenericSlotPayload(file: string, current: string): string {
+  current = beforeMultilineValueCallbacks(file, current);
   const transition = record.files.find((candidate) => candidate.path === file);
   if (!transition) return current;
   const now = identity(current);

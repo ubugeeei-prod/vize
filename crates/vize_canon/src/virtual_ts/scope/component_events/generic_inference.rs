@@ -13,8 +13,8 @@ use crate::virtual_ts::{
 use crate::virtual_ts::expressions::{
     CallbackParameterRewrite, ComponentPropSource, PropSpan, append_props_literal,
     append_spread_value, callback_parameters_on_ignored_line_with_ranges, generated_prop_span,
-    map_rewritten_template_binding, prop_entry_sub_spans_with_synthetic_value_gaps,
-    prop_value_source_range,
+    inference_value_callback_parameters_with_ranges, map_rewritten_template_binding,
+    prop_entry_sub_spans_with_synthetic_value_gaps, prop_value_source_range,
 };
 use crate::virtual_ts::types::VizeMapping;
 
@@ -434,9 +434,17 @@ fn inference_entries<'u>(
             continue;
         }
         let inline_callback = is_inline_callback_prop(prop);
-        let owned = (inline_callback && !generated.omits_tail())
-            .then(|| callback_parameters_on_ignored_line_with_ranges(generated.text.trim_start()))
-            .flatten();
+        let owned = if generated.omits_tail() {
+            None
+        } else if inline_callback {
+            callback_parameters_on_ignored_line_with_ranges(generated.text.trim_start())
+        } else if template_binding_access.is_empty() {
+            // Callbacks inside a multi-line value start below the entry's
+            // ignored line; their parameters move onto ignored lines too.
+            inference_value_callback_parameters_with_ranges(&generated.text)
+        } else {
+            None
+        };
         entries.push(InferenceEntry {
             prop,
             generated,

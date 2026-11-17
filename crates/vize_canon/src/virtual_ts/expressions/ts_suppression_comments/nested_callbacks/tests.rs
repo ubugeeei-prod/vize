@@ -1,4 +1,4 @@
-use super::{IGNORE, rewrite};
+use super::{IGNORE, rewrite, rewrite_with_ranges};
 
 #[test]
 fn original_nested_parameter_gets_its_own_inference_directive() {
@@ -111,4 +111,35 @@ fn declarations_and_methods_do_not_gain_callback_suppression() {
     ] {
         assert_eq!(rewrite(source), None);
     }
+}
+
+/// A non-callback value has no root parameters for its caller to place:
+/// callbacks of an array or object starting below its first line are
+/// nested ones, and only the inserted directives are generated-only.
+#[test]
+fn value_callbacks_below_the_first_line_get_directives_with_ranges() {
+    let source = "[(a) => a,\n  (v) => !!v || 'x',\n  { display: w =>\n w.trim() },\n]";
+    let rewrite = rewrite_with_ranges(source, false).expect("rewritten");
+    let lone = "(\n// @ts-ignore Inference-only nested callback parameter.\n";
+    assert_eq!(
+        rewrite.text,
+        format!(
+            "[(a) => a,\n  ({IGNORE}v) => !!v || 'x',\n  {{ display: {lone}w) =>\n w.trim() }},\n]"
+        )
+    );
+    let synthetic = rewrite
+        .synthetic_ranges
+        .iter()
+        .map(|range| rewrite.text.get(range.clone()).unwrap())
+        .collect::<Vec<_>>();
+    assert_eq!(synthetic, [IGNORE, lone, ")"]);
+    // A callback root keeps its depth-zero parameters for the caller.
+    assert_eq!(
+        rewrite_with_ranges("(v) =>\n v", true).map(|r| r.text),
+        None
+    );
+    assert_eq!(
+        rewrite_with_ranges("[(v) => v]", false).map(|r| r.text),
+        None
+    );
 }

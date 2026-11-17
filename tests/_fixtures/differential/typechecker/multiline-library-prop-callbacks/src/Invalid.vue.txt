@@ -1,0 +1,17 @@
+<script setup lang="ts">
+import { reactive } from "vue";
+import { LibInput } from "rules-lib";
+
+const formData = reactive({ password: "" });
+</script>
+
+<template>
+  <LibInput
+    v-model="formData.password"
+    :rules="[
+      (v) => v.missingMethod() || 'x',
+      (v: number) => v > 1 || 'y',
+    ]"
+    @click-append-inner="formData.password = ''"
+  />
+</template>

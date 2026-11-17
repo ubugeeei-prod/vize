@@ -1,0 +1,37 @@
+<script setup lang="ts">
+import { reactive } from "vue";
+import { LibInput } from "rules-lib";
+
+const formData = reactive({ password: "", repeatPassword: "" });
+</script>
+
+<template>
+  <LibInput
+    v-model="formData.repeatPassword"
+    :rules="[
+      (v) => !!v || 'Repeat Password field is required',
+      (v) => v === formData.password || 'Passwords don\'t match',
+    ]"
+    @click-append-inner="formData.password = ''"
+  />
+  <LibInput
+    v-model="formData.password"
+    :rules="[(v) => !!v || 'required', (v) => v.length > 7 || 'short']"
+    @click-append-inner="formData.password = ''"
+  />
+  <LibInput
+    v-model="formData.password"
+    :rules="[
+      // required
+      (v) => !!v || 'required', /* trailing */
+      (v) =>
+        v.length > 7 || 'short',
+      (v) => [v].map((x) =>
+        x.length > 0).every(Boolean) || 'nested',
+    ]"
+    :format="{
+      display: (v) => v.trim(),
+    }"
+    @click-append-inner="formData.password = ''"
+  />
+</template>
