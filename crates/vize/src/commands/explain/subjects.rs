@@ -11,9 +11,9 @@ use vize_l0::diag::Severity as Claim;
 use vize_l3::verify::ViolationCode;
 use vize_patina::rule_contracts::contract_for;
 use vize_patina::rules::css::{
-    CssRule, NoDisplayNone, NoHardcodedValues, NoIdSelectors, NoImportant, NoUtilityClasses,
-    NoVBindPerformance, PreferLogicalProperties, PreferNestedSelectors, PreferSlotted,
-    RequireFontDisplay,
+    CssRule, CssRuleMeta, NoDisplayNone, NoHardcodedValues, NoIdSelectors, NoImportant,
+    NoUtilityClasses, NoVBindPerformance, PreferLogicalProperties, PreferNestedSelectors,
+    PreferSlotted, RequireFontDisplay, StyleRule,
 };
 use vize_patina::{
     RuleCategory, RuleRegistry, Severity, builtin_musea_rules, builtin_script_rules,
@@ -125,20 +125,19 @@ pub(crate) fn rules() -> Vec<Rule> {
         );
     }
     let hardcoded = NoHardcodedValues::default();
-    let css: [&dyn CssRule; 10] = [
-        &NoDisplayNone,
-        &hardcoded,
-        &NoIdSelectors,
-        &NoImportant,
-        &NoUtilityClasses,
-        &NoVBindPerformance,
-        &PreferLogicalProperties,
-        &PreferNestedSelectors,
-        &PreferSlotted,
-        &RequireFontDisplay,
+    let css: [&CssRuleMeta; 10] = [
+        CssRule::meta(&NoDisplayNone),
+        CssRule::meta(&hardcoded),
+        CssRule::meta(&NoIdSelectors),
+        StyleRule::meta(&NoImportant),
+        CssRule::meta(&NoUtilityClasses),
+        CssRule::meta(&NoVBindPerformance),
+        CssRule::meta(&PreferLogicalProperties),
+        CssRule::meta(&PreferNestedSelectors),
+        CssRule::meta(&PreferSlotted),
+        CssRule::meta(&RequireFontDisplay),
     ];
-    for rule in css {
-        let meta = rule.meta();
+    for meta in css {
         push(
             &mut rules,
             meta.name,

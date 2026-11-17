@@ -81,6 +81,7 @@ function readPatinaSourceRules() {
         implementationLine: line,
         implementationPath: relativePath,
         metaType,
+        everyStyleLanguage: /\bimpl\s+StyleRule\s+for\b/.test(source),
       });
     }
 

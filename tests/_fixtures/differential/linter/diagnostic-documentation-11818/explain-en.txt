@@ -1291,7 +1291,7 @@ css/no-important · lint rule
 Discourage use of !important in CSS
 
 tier: exact
-domain: declarations and selectors of <style> blocks as parsed by lightningcss
+domain: the authored structure of <style> blocks in every style language, as the L1 style reader reads it
 severity: warning
 category: css
 autofix: no

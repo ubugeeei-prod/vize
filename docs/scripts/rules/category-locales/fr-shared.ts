@@ -32,6 +32,8 @@ export const frenchShared = {
     "Aucune ; examinez les fichiers concernés et appliquez la correction",
   "Analyzed component graph and the supported facts described below":
     "Graphe de composants analysé et faits pris en charge décrits ci-dessous",
+  "CSS, SCSS, Sass, Less and Stylus style blocks, as written (not preprocessed)":
+    "Blocs style CSS, SCSS, Sass, Less et Stylus, tels qu’écrits (sans préprocesseur)",
   "Plain CSS style blocks (scss, sass, less and stylus blocks are skipped)":
     "Blocs style en CSS standard (les blocs scss, sass, less et stylus sont ignorés)",
   "HTML documents detected as petite-vue; ordinary Vue SFCs are outside this rule's scope.":

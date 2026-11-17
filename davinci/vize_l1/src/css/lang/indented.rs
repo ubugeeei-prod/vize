@@ -37,8 +37,25 @@ pub(super) fn stylus(source: &str) -> Lexis {
     }
 }
 
+/// Stylus accepts CSS braces. A block brace ends a line (`.a {`) or, in a
+/// one-line rule (`.a { color: red; }`), follows whitespace and encloses a
+/// `;` or a `: `; an interpolation (`.item-{i}`, `{prop}: 1`) does neither.
 fn is_braced_stylus(source: &str) -> bool {
-    source.lines().any(|line| line.trim_end().ends_with('{'))
+    source.lines().any(|line| {
+        if line.trim_end().ends_with('{') {
+            return true;
+        }
+        let bytes = line.as_bytes();
+        bytes.iter().enumerate().any(|(at, &byte)| {
+            byte == b'{'
+                && at > 0
+                && bytes.get(at - 1).is_some_and(u8::is_ascii_whitespace)
+                && line.get(at + 1..).is_some_and(|rest| {
+                    let inner = rest.split('}').next().unwrap_or_default();
+                    rest.contains('}') && (inner.contains(';') || inner.contains(": "))
+                })
+        })
+    })
 }
 
 /// `=name` and `+name` spell `@mixin` and `@include`.

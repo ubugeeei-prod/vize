@@ -4,9 +4,9 @@ use vize_l0::diag::{Severity, Tier};
 
 use super::{DEMOTED, RULE_CONTRACTS, contract_for};
 use crate::rules::css::{
-    CssRule, NoDisplayNone, NoHardcodedValues, NoIdSelectors, NoImportant, NoUtilityClasses,
-    NoVBindPerformance, PreferLogicalProperties, PreferNestedSelectors, PreferSlotted,
-    RequireFontDisplay,
+    CssRule, CssRuleMeta, NoDisplayNone, NoHardcodedValues, NoIdSelectors, NoImportant,
+    NoUtilityClasses, NoVBindPerformance, PreferLogicalProperties, PreferNestedSelectors,
+    PreferSlotted, RequireFontDisplay, StyleRule,
 };
 use crate::{RuleRegistry, builtin_musea_rules, builtin_script_rules};
 
@@ -30,19 +30,19 @@ fn registered() -> BTreeMap<&'static str, Severity> {
     for meta in builtin_script_rules() {
         rules.insert(meta.name, unified(meta.default_severity));
     }
-    let css: [&dyn CssRule; 10] = [
-        &NoDisplayNone,
-        &NoHardcodedValues::default(),
-        &NoIdSelectors,
-        &NoImportant,
-        &NoUtilityClasses,
-        &NoVBindPerformance,
-        &PreferLogicalProperties,
-        &PreferNestedSelectors,
-        &PreferSlotted,
-        &RequireFontDisplay,
+    let css: [&CssRuleMeta; 10] = [
+        CssRule::meta(&NoDisplayNone),
+        CssRule::meta(&NoHardcodedValues::default()),
+        CssRule::meta(&NoIdSelectors),
+        StyleRule::meta(&NoImportant),
+        CssRule::meta(&NoUtilityClasses),
+        CssRule::meta(&NoVBindPerformance),
+        CssRule::meta(&PreferLogicalProperties),
+        CssRule::meta(&PreferNestedSelectors),
+        CssRule::meta(&PreferSlotted),
+        CssRule::meta(&RequireFontDisplay),
     ];
-    let css_names: Vec<&str> = css.iter().map(|rule| rule.meta().name).collect();
+    let css_names: Vec<&str> = css.iter().map(|meta| meta.name).collect();
     let mut expected_css = crate::linter::css_rules::all_builtin_css_rule_names().to_vec();
     let mut sorted_css = css_names.clone();
     expected_css.sort_unstable();
@@ -51,8 +51,8 @@ fn registered() -> BTreeMap<&'static str, Severity> {
         sorted_css, expected_css,
         "the CSS list tracks the CSS registry"
     );
-    for rule in css {
-        rules.insert(rule.meta().name, unified(rule.meta().default_severity));
+    for meta in css {
+        rules.insert(meta.name, unified(meta.default_severity));
     }
     for meta in builtin_musea_rules() {
         rules.insert(meta.name, unified(meta.default_severity));

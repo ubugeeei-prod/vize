@@ -11,7 +11,7 @@ description: "通常のカスケードを上書きする !important を検出し
 | --- | --- | --- | --- |
 | `warning` | `opinionated`, `nuxt` | なし | なし |
 
-適用範囲：プレーン CSS の style ブロック（scss・sass・less・stylus のブロックは対象外）。
+適用範囲：CSS・SCSS・Sass・Less・Stylus の style ブロック（書かれたまま。プリプロセッサは実行しません）。
 
 ## 悪い例
 
@@ -58,4 +58,4 @@ export default defineConfig({}).withVue({
 
 - [CSS ルール](../css.md)
 - [全ルール](../all.md)
-- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_important.rs#L14)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_important.rs#L15)

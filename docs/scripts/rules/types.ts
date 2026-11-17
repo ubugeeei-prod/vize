@@ -8,6 +8,8 @@ export interface RuleMetadata {
   implementationLine: number;
   implementationPath: string;
   metaType: string;
+  /** A `css/*` rule that reads the L1 structure of every style language. */
+  everyStyleLanguage?: boolean;
   presets: readonly string[];
 }
 

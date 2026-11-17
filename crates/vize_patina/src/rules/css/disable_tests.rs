@@ -35,7 +35,7 @@ fn test_parse_next_line_comments() {
 #[test]
 fn test_disable_line_uses_the_style_block_offset() {
     let mut linter = CssLinter::new();
-    linter.add_rule(Box::new(super::NoImportant));
+    linter.add_style_rule(Box::new(super::NoImportant));
     let source = "\
 .a { color: red !important; }
 .b { color: red !important; } /* vize-disable-line css/no-important */

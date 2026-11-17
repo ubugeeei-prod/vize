@@ -1,11 +1,11 @@
 //! Engine wiring for the built-in `css/*` lint rules.
 //!
-//! The `css/*` rules implement the [`CssRule`](crate::rules::css::CssRule)
-//! trait and are assembled by [`CssLinter`](crate::rules::css::CssLinter).
-//! This module drives that linter from the SFC `<style>` pipeline: for every
-//! enabled `css/*` rule it parses each `<style>` block once (via lightning-css,
-//! inside [`CssLinter::lint`]) and merges the reported diagnostics into the
-//! file-level [`LintResult`].
+//! The `css/*` rules implement [`StyleRule`](crate::rules::css::StyleRule),
+//! over the L1 structure of every style language, or
+//! [`CssRule`](crate::rules::css::CssRule), over a lightningcss parse of
+//! plain CSS, and are assembled by [`CssLinter`](crate::rules::css::CssLinter).
+//! This module drives that linter from the SFC `<style>` pipeline and merges
+//! the reported diagnostics into the file-level [`LintResult`].
 //!
 //! Like the built-in script rules, `css/*` rules are **opt-in**: they only run
 //! when the active preset or the host configuration enables them by name.
@@ -13,12 +13,13 @@
 use super::{LintResult, Linter};
 use crate::rules::css::no_display_none::NoDisplayNoneForTemplate;
 use crate::rules::css::{
-    CssLinter, CssRule, NoDisplayNone, NoHardcodedValues, NoIdSelectors, NoImportant,
+    CssLinter, CssRule, CssRuleMeta, NoDisplayNone, NoHardcodedValues, NoIdSelectors, NoImportant,
     NoUtilityClasses, NoVBindPerformance, PreferLogicalProperties, PreferNestedSelectors,
-    PreferSlotted, RequireFontDisplay,
+    PreferSlotted, RequireFontDisplay, StyleRule,
 };
 use vize_atelier_sfc::SfcDescriptor;
 use vize_l0::profile;
+use vize_l1::css::lang::StyleLanguage;
 
 pub(crate) const RULE_NO_IMPORTANT: &str = "css/no-important";
 pub(crate) const RULE_NO_ID_SELECTORS: &str = "css/no-id-selectors";
@@ -76,8 +77,7 @@ pub fn builtin_css_rules() -> Vec<BuiltinCssRuleMeta> {
     ALL_BUILTIN_CSS_RULE_NAMES
         .iter()
         .filter_map(|rule_name| {
-            let rule = css_rule_for_name(rule_name)?;
-            let meta = rule.meta();
+            let meta = css_rule_for_name(rule_name)?.meta();
             Some(BuiltinCssRuleMeta {
                 name: meta.name,
                 description: meta.description,
@@ -94,7 +94,7 @@ mod tests {
     use crate::Linter;
 
     #[test]
-    fn css_rules_read_plain_css_blocks_only() {
+    fn structure_rules_read_every_style_language() {
         let linter = Linter::new().with_enabled_rules(Some(vec!["css/no-important".into()]));
         let source = "<template><div class=\"a\" /></template>\n<style>.a { margin: 0 !important; }</style>\n<style lang=\"postcss\">.b { margin: 0 !important; }</style>\n<style lang=\"scss\">.c { margin: 0 !important; }</style>\n<style lang=\"less\">.d { margin: 0 !important; }</style>\n<style lang=\"stylus\">.e { margin: 0 !important; }</style>\n<style lang=\"sass\">.f\n  margin: 0 !important</style>\n";
         let lines: Vec<usize> = linter
@@ -111,7 +111,8 @@ mod tests {
                     + 1
             })
             .collect();
-        assert_eq!(lines, [2, 3]);
+        // css, postcss, scss, less, stylus, then the sass declaration line.
+        assert_eq!(lines, [2, 3, 4, 5, 6, 8]);
     }
 
     #[test]
@@ -139,9 +140,28 @@ pub(crate) fn has_active_builtin_css_rules(linter: &Linter) -> bool {
 }
 
 /// Construct the boxed [`CssRule`] for a built-in `css/*` rule name.
-fn css_rule_for_name(rule_name: &str) -> Option<Box<dyn CssRule>> {
+/// A built-in rule and the lane that reads it.
+enum BuiltinCssRule {
+    /// Reads plain CSS through lightningcss.
+    Css(Box<dyn CssRule>),
+    /// Reads the L1 structure of every style language.
+    Style(Box<dyn StyleRule>),
+}
+
+impl BuiltinCssRule {
+    fn meta(&self) -> &'static CssRuleMeta {
+        match self {
+            Self::Css(rule) => rule.meta(),
+            Self::Style(rule) => rule.meta(),
+        }
+    }
+}
+
+fn css_rule_for_name(rule_name: &str) -> Option<BuiltinCssRule> {
+    if rule_name == RULE_NO_IMPORTANT {
+        return Some(BuiltinCssRule::Style(Box::new(NoImportant)));
+    }
     let rule: Box<dyn CssRule> = match rule_name {
-        RULE_NO_IMPORTANT => Box::new(NoImportant),
         RULE_NO_ID_SELECTORS => Box::new(NoIdSelectors),
         RULE_PREFER_LOGICAL_PROPERTIES => Box::new(PreferLogicalProperties),
         RULE_REQUIRE_FONT_DISPLAY => Box::new(RequireFontDisplay),
@@ -153,11 +173,7 @@ fn css_rule_for_name(rule_name: &str) -> Option<Box<dyn CssRule>> {
         RULE_PREFER_SLOTTED => Box::new(PreferSlotted),
         _ => return None,
     };
-    Some(rule)
-}
-
-fn is_plain_css(lang: Option<&str>) -> bool {
-    lang.is_none_or(|lang| lang.eq_ignore_ascii_case("css") || lang.eq_ignore_ascii_case("postcss"))
+    Some(BuiltinCssRule::Css(rule))
 }
 
 /// Run every active built-in `css/*` rule against each plain-CSS `<style>`
@@ -180,6 +196,13 @@ pub(crate) fn append_builtin_css_diagnostics(
             && linter.is_rule_enabled(rule_name)
             && let Some(rule) = css_rule_for_name(rule_name)
         {
+            let rule = match rule {
+                BuiltinCssRule::Style(rule) => {
+                    css_linter.add_style_rule(rule);
+                    continue;
+                }
+                BuiltinCssRule::Css(rule) => rule,
+            };
             let rule = if *rule_name == RULE_NO_DISPLAY_NONE
                 && descriptor
                     .styles
@@ -197,9 +220,11 @@ pub(crate) fn append_builtin_css_diagnostics(
 
     for style in &descriptor.styles {
         // External styles (`<style src="...">`) have no inline content to lint.
-        // The rules read plain CSS; preprocessor syntax (scss, sass, less,
-        // stylus) is skipped rather than half-parsed as CSS.
-        if style.src.is_some() || !is_plain_css(style.lang.as_deref()) {
+        // A `lang` with no style dialect stays opaque.
+        let Some(language) = StyleLanguage::from_lang(style.lang.as_deref()) else {
+            continue;
+        };
+        if style.src.is_some() || !css_linter.reads(language) {
             continue;
         }
         let source = style.content.as_ref();
@@ -208,7 +233,7 @@ pub(crate) fn append_builtin_css_diagnostics(
         }
         let css_result = profile!(
             "patina.css_rule.lint_style_block",
-            css_linter.lint(source, style.loc.start)
+            css_linter.lint_block(source, style.loc.start, language, true)
         );
         super::severity::append_with_rule_overrides(
             result,

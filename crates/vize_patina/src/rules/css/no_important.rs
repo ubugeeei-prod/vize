@@ -5,11 +5,12 @@
 //! Using !important makes styles harder to override and maintain.
 //! It's often a sign of specificity wars and can lead to CSS bloat.
 
-use lightningcss::stylesheet::StyleSheet;
+use vize_l1::css::StyleSheet;
 
 use crate::diagnostic::{LintDiagnostic, Severity};
 
-use super::{CssLintResult, CssRule, CssRuleMeta, value_tokens::ValueTokens};
+use super::style_rule::{declaration_values, important_flags};
+use super::{CssLintResult, CssRuleMeta, StyleRule};
 
 static META: CssRuleMeta = CssRuleMeta {
     name: "css/no-important",
@@ -17,34 +18,31 @@ static META: CssRuleMeta = CssRuleMeta {
     default_severity: Severity::Warning,
 };
 
-/// No !important rule
+/// No !important rule. It reads every declaration's value in the L1
+/// structure, so it checks SCSS, Sass, Less and Stylus blocks as written.
 pub struct NoImportant;
 
-impl CssRule for NoImportant {
+impl StyleRule for NoImportant {
     fn meta(&self) -> &'static CssRuleMeta {
         &META
     }
 
-    fn check<'i>(
-        &self,
-        source: &'i str,
-        _stylesheet: &StyleSheet<'i>,
-        offset: usize,
-        result: &mut CssLintResult,
-    ) {
-        if !source.as_bytes().contains(&b'!') {
+    fn check(&self, sheet: &StyleSheet<'_>, result: &mut CssLintResult) {
+        if !sheet.source().as_bytes().contains(&b'!') {
             return;
         }
-        for (start, end) in ValueTokens::new(source).important {
-            result.add_diagnostic(
-                LintDiagnostic::warn(
-                    META.name,
-                    "Avoid using !important as it makes styles harder to override",
-                    (offset + start) as u32,
-                    (offset + end) as u32,
-                )
-                .with_help("Use more specific selectors or reorganize CSS specificity instead"),
-            );
+        for value in declaration_values(sheet) {
+            for flag in important_flags(sheet, value) {
+                result.add_diagnostic(
+                    LintDiagnostic::warn(
+                        META.name,
+                        "Avoid using !important as it makes styles harder to override",
+                        flag.start,
+                        flag.end,
+                    )
+                    .with_help("Use more specific selectors or reorganize CSS specificity instead"),
+                );
+            }
         }
     }
 }
@@ -56,7 +54,7 @@ mod tests {
 
     fn create_linter() -> CssLinter {
         let mut linter = CssLinter::new();
-        linter.add_rule(Box::new(NoImportant));
+        linter.add_style_rule(Box::new(NoImportant));
         linter
     }
 
