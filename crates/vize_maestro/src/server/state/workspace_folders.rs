@@ -31,6 +31,12 @@ pub(super) struct WorkspaceFolderConfig {
     global_ignores: Vec<LintPlanScope>,
     project_ignores: Option<ProjectIgnoreSet>,
     features: LinterFeatureFlags,
+    /// Plugin lint rules of this config generation; dropping it stops their sidecar.
+    #[expect(
+        clippy::disallowed_types,
+        reason = "requests share the host without holding the context lock"
+    )]
+    plugin_lint: Option<std::sync::Arc<super::plugin_lint::PluginLintHost>>,
 }
 
 impl WorkspaceFolderConfig {
@@ -256,6 +262,22 @@ impl ServerState {
         }
         let (config, features) = self.get_linter_config_and_features();
         Some((config, self.get_linter_rule_options(), features))
+    }
+
+    /// The plugin lint host that owns `uri`, unless its linter context ignores it.
+    #[expect(
+        clippy::disallowed_types,
+        reason = "requests share the host without holding the context lock"
+    )]
+    pub(super) fn plugin_lint_for_uri(
+        &self,
+        uri: &Url,
+    ) -> Option<std::sync::Arc<super::plugin_lint::PluginLintHost>> {
+        let path = uri.to_file_path().ok()?;
+        let contexts = self.workspace_folder_configs.read();
+        let context = deepest_enclosing_folder(&contexts, &path)?;
+        let host = context.plugin_lint.clone()?;
+        context.linter_for_path(&path).map(|_| host)
     }
 }
 

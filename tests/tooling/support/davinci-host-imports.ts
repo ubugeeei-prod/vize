@@ -50,6 +50,27 @@ export function withoutHostRuntimeReferences(source: string, relativePath: strin
       "host_config_matcher",
     );
   }
+  if (
+    file === "crates/vize_patina/src/plugin_batch/lint.rs" ||
+    file === "crates/vize_patina/src/plugin_batch/lint/rules.rs"
+  ) {
+    // Plugin lint jobs read the plan Carton verified; they own no config storage.
+    storage = storage.replace(
+      /^use vize_carton::config::plugin_plan::\{(?:PlannedCapability, PlannedPlugin(?:, VerifiedPluginPlan)?)\};$/gmu,
+      "host_plugin_plan",
+    );
+  }
+  if (file === "crates/vize_maestro/src/server/state/plugin_lint.rs") {
+    // The editor drives Carton's plugin sidecar for the plan Carton verified.
+    storage = storage.replace(
+      /^use vize_carton::config::plugin_plan::document_plugin_plan;$/gmu,
+      "host_plugin_plan",
+    );
+    storage = storage.replace(
+      /^use vize_carton::config::\{PluginLintSidecar, SidecarBudget, SidecarReply\};$/gmu,
+      "host_plugin_sidecar",
+    );
+  }
   if (file === "crates/vize/src/lint_plan/matcher.rs") {
     storage = storage.replace(
       /^pub\(crate\) use vize_carton::config::matcher::(?:GlobSequence|\{LintPlanScope, absolute_path, normalize_path\});$/gmu,

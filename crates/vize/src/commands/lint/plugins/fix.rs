@@ -25,11 +25,7 @@ impl PluginLint {
         receipt: &mut PluginLintReceipt,
         relint: impl Fn(&Path, String, &str) -> Option<(String, LintResult)> + Sync,
     ) -> Result<(), String> {
-        let safe: FxHashSet<&str> = self
-            .jobs
-            .iter()
-            .filter_map(|job| job.rules.safe_fix_id())
-            .collect();
+        let safe: FxHashSet<&str> = self.jobs.safe_fix_ids();
         if safe.is_empty() {
             return Ok(());
         }

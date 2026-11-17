@@ -88,7 +88,7 @@ fn stale_malformed_and_unprojected_plans_fail_closed() {
 }
 
 #[test]
-fn the_editor_refuses_plugin_lint_rules_it_cannot_run_yet() {
+fn the_editor_admits_plugin_lint_rules() {
     let dir = tempfile::tempdir().unwrap();
     let sdk = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../../npm/plugin-sdk/v2.js")
@@ -103,11 +103,6 @@ fn the_editor_refuses_plugin_lint_rules_it_cannot_run_yet() {
     );
     std::fs::write(dir.path().join("vite.config.mjs"), config.as_str()).unwrap();
     let snapshot = super::load_lsp_config_snapshot(Some(dir.path()));
-    assert!(!snapshot.valid);
-    assert_eq!(
-        snapshot.error.as_deref(),
-        Some(
-            "[plugin/capability-unadmitted] @acme/r: lsp does not implement lint.rule `@acme/r/x` yet"
-        )
-    );
+    assert!(snapshot.valid, "{:?}", snapshot.error);
+    assert!(snapshot.project.document.plugin_plan().is_some());
 }
