@@ -1,0 +1,52 @@
+<script lang="ts">
+export type CodeInputModelValue =
+  | Record<string, unknown>
+/**
+ */
+export default {
+}
+</script>
+
+<script setup lang="ts">
+import { isDefined } from '@scalar/helpers/array/is-defined'
+import {
+} from '@scalar/use-codemirror'
+import {
+} from '@scalar/workspace-store/request-example'
+import type { XScalarEnvironment } from '@scalar/workspace-store/schemas/extensions/document/x-scalar-environments'
+import { nanoid } from 'nanoid'
+import { computed, ref, toRef, useAttrs, watch, type Ref } from 'vue'
+
+import DataTableInputSelect from '@/v2/components/data-table/DataTableInputSelect.vue'
+import EnvironmentVariableDropdown from '@/v2/features/environments/components/EnvironmentVariablesDropdown.vue'
+import type { ClientLayout } from '@/v2/types/layout'
+
+import { backspaceCommand, pillPlugin } from './code-variable-widget'
+type Props = {
+}
+const {
+} = defineProps<Props>()
+const emit = defineEmits<{
+}>()
+/**
+ */
+const handleKeyDown = (key: string, event: KeyboardEvent): void => {
+  if (showDropdown.value) {
+    if (key === 'down' || key === 'up') {
+    }
+  }
+  if (key === 'escape' && !disableTabIndent) {
+  }
+  if (key === 'enter' && event.target instanceof HTMLDivElement) {
+  }
+}
+defineExpose({
+  /**
+   */
+  focus: (position?: 'start' | 'end' | number) => {
+    if (!codeMirror.value) {
+    }
+    codeMirror.value.dispatch({
+    })
+  },
+})
