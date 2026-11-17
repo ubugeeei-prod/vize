@@ -1,0 +1,34 @@
+{
+  "row": "plaintext",
+  "dialect": "vue",
+  "source": "<div><plaintext><b>a</b></plaintext></div>",
+  "oracle": {
+    "name": "@vue/compiler-dom",
+    "version": "3.5.35"
+  },
+  "elements": [
+    [
+      "div",
+      null,
+      []
+    ],
+    [
+      "plaintext",
+      0,
+      []
+    ],
+    [
+      "b",
+      1,
+      []
+    ]
+  ],
+  "texts": [
+    [
+      2,
+      "a"
+    ]
+  ],
+  "comments": [],
+  "errors": []
+}

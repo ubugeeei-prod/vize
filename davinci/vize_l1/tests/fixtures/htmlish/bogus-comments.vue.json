@@ -1,0 +1,27 @@
+{
+  "row": "bogus-comments",
+  "dialect": "vue",
+  "source": "<div><?x y?><span></ span><!x></span></div>",
+  "oracle": {
+    "name": "@vue/compiler-dom",
+    "version": "3.5.35"
+  },
+  "elements": [
+    [
+      "div",
+      null,
+      []
+    ],
+    [
+      "span",
+      0,
+      []
+    ]
+  ],
+  "texts": [],
+  "comments": [],
+  "errors": [
+    "21",
+    "23"
+  ]
+}

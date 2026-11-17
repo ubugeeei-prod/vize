@@ -310,10 +310,15 @@ impl<'a, const RAW: bool, const TAG_FACTS: bool, const STRUCTURAL_DIAGNOSTICS: b
         let tail = crate::slice::from(self.src, e.min(self.src.len()));
         let closer = match kind {
             RawKind::Comment => {
+                // `-->`; `--!>` (WHATWG closes there with an error; the lexer's
+                // content already holds its first `-`, leaving `-!>`); the
+                // abrupt empty forms `<!--->` (`->`) and `<!-->` (`>`).
                 if tail.starts_with("-->") {
                     3
                 } else if tail.starts_with("--!>") {
                     4
+                } else if tail.starts_with("-!>") || tail.starts_with("->") {
+                    tail.find('>').map_or(0, |at| at + 1)
                 } else if tail.starts_with('>') {
                     1
                 } else {

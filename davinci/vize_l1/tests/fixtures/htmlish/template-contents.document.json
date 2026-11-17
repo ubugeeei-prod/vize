@@ -1,0 +1,44 @@
+{
+  "row": "template-contents",
+  "dialect": "document",
+  "source": "<!DOCTYPE html><html><head></head><body><template><td>a</td></template></body></html>",
+  "oracle": {
+    "name": "parse5",
+    "version": "7.3.0"
+  },
+  "elements": [
+    [
+      "html",
+      null,
+      []
+    ],
+    [
+      "head",
+      0,
+      []
+    ],
+    [
+      "body",
+      0,
+      []
+    ],
+    [
+      "template",
+      2,
+      []
+    ],
+    [
+      "td",
+      3,
+      []
+    ]
+  ],
+  "texts": [
+    [
+      4,
+      "a"
+    ]
+  ],
+  "comments": [],
+  "errors": []
+}

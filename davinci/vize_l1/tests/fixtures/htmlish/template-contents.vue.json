@@ -1,0 +1,39 @@
+{
+  "row": "template-contents",
+  "dialect": "vue",
+  "source": "<div><template v-if=\"ok\"><span>a</span></template></div>",
+  "oracle": {
+    "name": "@vue/compiler-dom",
+    "version": "3.5.35"
+  },
+  "elements": [
+    [
+      "div",
+      null,
+      []
+    ],
+    [
+      "template",
+      0,
+      [
+        [
+          "v-if",
+          "ok"
+        ]
+      ]
+    ],
+    [
+      "span",
+      1,
+      []
+    ]
+  ],
+  "texts": [
+    [
+      2,
+      "a"
+    ]
+  ],
+  "comments": [],
+  "errors": []
+}

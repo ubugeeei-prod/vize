@@ -1,0 +1,24 @@
+{
+  "row": "declarations",
+  "dialect": "vue",
+  "source": "<!DOCTYPE html><div>a</div>",
+  "oracle": {
+    "name": "@vue/compiler-dom",
+    "version": "3.5.35"
+  },
+  "elements": [
+    [
+      "div",
+      null,
+      []
+    ]
+  ],
+  "texts": [
+    [
+      0,
+      "a"
+    ]
+  ],
+  "comments": [],
+  "errors": []
+}

@@ -1,0 +1,29 @@
+{
+  "row": "element-name-case",
+  "dialect": "vue",
+  "source": "<MyComp><DIV>a</DIV></MyComp>",
+  "oracle": {
+    "name": "@vue/compiler-dom",
+    "version": "3.5.35"
+  },
+  "elements": [
+    [
+      "MyComp",
+      null,
+      []
+    ],
+    [
+      "DIV",
+      0,
+      []
+    ]
+  ],
+  "texts": [
+    [
+      1,
+      "a"
+    ]
+  ],
+  "comments": [],
+  "errors": []
+}
