@@ -1347,7 +1347,7 @@ css/prefer-logical-properties · lint rule
 Recommend CSS logical properties for better i18n support
 
 tier: exact
-domain: declarations and selectors of <style> blocks as parsed by lightningcss
+domain: the authored structure of CSS, SCSS, Sass, Less and Stylus <style> blocks, as the L1 style reader reads it
 severity: warning
 category: css
 autofix: no
@@ -1377,7 +1377,7 @@ css/require-font-display · lint rule
 Require font-display in @font-face rules
 
 tier: exact
-domain: declarations and selectors of <style> blocks as parsed by lightningcss
+domain: the authored structure of CSS, SCSS, Sass, Less and Stylus <style> blocks, as the L1 style reader reads it
 severity: warning
 category: css
 autofix: no

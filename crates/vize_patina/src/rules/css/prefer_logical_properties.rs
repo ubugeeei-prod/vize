@@ -2,15 +2,11 @@
 //!
 //! Recommend using CSS logical properties for better internationalization.
 
-use lightningcss::declaration::DeclarationBlock;
-use lightningcss::properties::PropertyId;
-use lightningcss::rules::CssRule as LCssRule;
-use lightningcss::stylesheet::StyleSheet;
+use vize_l1::css::{StyleNodeKind, StyleSheet};
 
 use crate::diagnostic::{LintDiagnostic, Severity};
 
-use super::declaration_positions::DeclarationPositions;
-use super::{CssLintResult, CssRule, CssRuleMeta};
+use super::{CssLintResult, CssRuleMeta, StyleRule};
 
 static META: CssRuleMeta = CssRuleMeta {
     name: "css/prefer-logical-properties",
@@ -18,105 +14,51 @@ static META: CssRuleMeta = CssRuleMeta {
     default_severity: Severity::Warning,
 };
 
-/// Prefer logical properties rule
+/// Physical properties and the logical property each one maps to.
+const PHYSICAL: [(&str, &str); 8] = [
+    ("margin-left", "margin-inline-start"),
+    ("margin-right", "margin-inline-end"),
+    ("padding-left", "padding-inline-start"),
+    ("padding-right", "padding-inline-end"),
+    ("border-left-width", "border-inline-start-width"),
+    ("border-right-width", "border-inline-end-width"),
+    ("left", "inset-inline-start"),
+    ("right", "inset-inline-end"),
+];
+
+/// It reads every declaration's name in the L1 structure, in every style
+/// language, and reports a physical property at its name.
 pub struct PreferLogicalProperties;
 
-impl CssRule for PreferLogicalProperties {
+impl StyleRule for PreferLogicalProperties {
     fn meta(&self) -> &'static CssRuleMeta {
         &META
     }
 
-    fn check<'i>(
-        &self,
-        source: &'i str,
-        stylesheet: &StyleSheet<'i>,
-        offset: usize,
-        result: &mut CssLintResult,
-    ) {
-        for rule in &stylesheet.rules.0 {
-            self.check_rule(rule, source, offset, result);
-        }
-    }
-}
-
-impl PreferLogicalProperties {
-    fn check_rule(&self, rule: &LCssRule, source: &str, offset: usize, result: &mut CssLintResult) {
-        match rule {
-            LCssRule::Style(style_rule) => {
-                let mut positions = DeclarationPositions::new(source, style_rule);
-                self.check_declarations(&style_rule.declarations, &mut positions, offset, result);
-                for rule in &style_rule.rules.0 {
-                    self.check_rule(rule, source, offset, result);
-                }
+    fn check(&self, sheet: &StyleSheet<'_>, result: &mut CssLintResult) {
+        for node in sheet.nodes() {
+            let StyleNodeKind::Declaration { name, .. } = sheet.kind(node) else {
+                continue;
+            };
+            let text = sheet.text(name);
+            if !PHYSICAL
+                .iter()
+                .any(|(physical, _)| text.eq_ignore_ascii_case(physical))
+            {
+                continue;
             }
-            LCssRule::Media(media) => {
-                for rule in &media.rules.0 {
-                    self.check_rule(rule, source, offset, result);
-                }
-            }
-            LCssRule::Supports(supports) => {
-                for rule in &supports.rules.0 {
-                    self.check_rule(rule, source, offset, result);
-                }
-            }
-            LCssRule::LayerBlock(layer) => {
-                for rule in &layer.rules.0 {
-                    self.check_rule(rule, source, offset, result);
-                }
-            }
-            _ => {}
+            result.add_diagnostic(
+                LintDiagnostic::warn(
+                    META.name,
+                    "Consider using logical properties for better RTL support",
+                    name.start,
+                    name.end,
+                )
+                .with_help(
+                    "Use logical properties like margin-inline-start instead of margin-left",
+                ),
+            );
         }
-    }
-
-    fn check_declarations(
-        &self,
-        declarations: &DeclarationBlock,
-        positions: &mut DeclarationPositions,
-        offset: usize,
-        result: &mut CssLintResult,
-    ) {
-        // Check all declarations (both regular and important)
-        for decl in declarations.declarations.iter() {
-            self.check_property(decl.property_id(), positions, offset, result);
-        }
-        for decl in declarations.important_declarations.iter() {
-            self.check_property(decl.property_id(), positions, offset, result);
-        }
-    }
-
-    #[inline]
-    fn check_property(
-        &self,
-        prop_id: PropertyId,
-        positions: &mut DeclarationPositions,
-        offset: usize,
-        result: &mut CssLintResult,
-    ) {
-        let (physical, logical) = match prop_id {
-            PropertyId::MarginLeft => ("margin-left", "margin-inline-start"),
-            PropertyId::MarginRight => ("margin-right", "margin-inline-end"),
-            PropertyId::PaddingLeft => ("padding-left", "padding-inline-start"),
-            PropertyId::PaddingRight => ("padding-right", "padding-inline-end"),
-            PropertyId::BorderLeftWidth => ("border-left-width", "border-inline-start-width"),
-            PropertyId::BorderRightWidth => ("border-right-width", "border-inline-end-width"),
-            PropertyId::Left => ("left", "inset-inline-start"),
-            PropertyId::Right => ("right", "inset-inline-end"),
-            _ => return,
-        };
-
-        let Some((start, end)) = positions.take(physical, offset) else {
-            return;
-        };
-        let _ = logical; // suppress unused warnings
-        result.add_diagnostic(
-            LintDiagnostic::warn(
-                META.name,
-                "Consider using logical properties for better RTL support",
-                start,
-                end,
-            )
-            .with_help("Use logical properties like margin-inline-start instead of margin-left"),
-        );
     }
 }
 
@@ -127,7 +69,7 @@ mod tests {
 
     fn create_linter() -> CssLinter {
         let mut linter = CssLinter::new();
-        linter.add_rule(Box::new(PreferLogicalProperties));
+        linter.add_style_rule(Box::new(PreferLogicalProperties));
         linter
     }
 

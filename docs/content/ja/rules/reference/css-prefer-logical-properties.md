@@ -11,7 +11,7 @@ description: "書字方向に対応する CSS の論理プロパティを使い�
 | --- | --- | --- | --- |
 | `warning` | `opinionated`, `nuxt` | なし | なし |
 
-適用範囲：プレーン CSS の style ブロック（scss・sass・less・stylus のブロックは対象外）。
+適用範囲：CSS・SCSS・Sass・Less・Stylus の style ブロック（書かれたまま。プリプロセッサは実行しません）。
 
 ## 悪い例
 
@@ -58,4 +58,4 @@ export default defineConfig({}).withVue({
 
 - [CSS ルール](../css.md)
 - [全ルール](../all.md)
-- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/prefer_logical_properties.rs#L15)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/prefer_logical_properties.rs#L11)
