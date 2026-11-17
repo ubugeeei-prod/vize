@@ -20,7 +20,6 @@ pub(super) fn slots(predecessor: &'static str) -> &'static str {
     successor
 }
 
-#[allow(dead_code)]
 pub(super) fn mixed_vue2(predecessor: &'static str) -> &'static str {
     let predecessor = super::authored_component_infer::mixed_vue2(predecessor);
     let successor = include_str!(
@@ -30,7 +29,7 @@ pub(super) fn mixed_vue2(predecessor: &'static str) -> &'static str {
         include_str!(
             "../fixtures/public-instance-mixed-vue2/successor-with-defaults-undefined-13179/receipt.json"
         ),
-        "MIXED_PENDING",
+        "7aca83c77736a63e32029ef8cda0d43bd88697906919c0cfd272d33995f02d92",
         13179,
         predecessor,
         successor,
