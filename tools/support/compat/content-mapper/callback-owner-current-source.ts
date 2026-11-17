@@ -18,6 +18,10 @@ import {
   currentLibraryPropChecker,
   previousLibraryPropChecker,
 } from "./library-props-fallthrough-transition.ts";
+import {
+  currentDefaultNativeType,
+  previousDefaultNativeType,
+} from "./with-defaults-undefined-transition.ts";
 
 export type CallbackSourceReader = (path: string) => string;
 type Edit = { start: number; end: number; replacement: Buffer };
@@ -418,6 +422,27 @@ export function currentCallbackSourceEdits(
       before.indexOf(previousLibraryPropChecker),
       previousLibraryPropChecker.length,
       currentLibraryPropChecker,
+    );
+  }
+  // #13179: `$DefaultNativeType` gains `undefined`.
+  const defaultCounts = [before, after].map((text) =>
+    [previousDefaultNativeType, currentDefaultNativeType].map(
+      (line) => text.split(line).length - 1,
+    ),
+  );
+  if (defaultCounts[0]![0] !== defaultCounts[1]![0]) {
+    assert.deepEqual(
+      defaultCounts,
+      [
+        [1, 0],
+        [0, 1],
+      ],
+      "only the certified default native type may migrate",
+    );
+    add(
+      before.indexOf(previousDefaultNativeType),
+      previousDefaultNativeType.length,
+      currentDefaultNativeType,
     );
   }
   const certifyCanonLeftoversSource = (path: string): string => {

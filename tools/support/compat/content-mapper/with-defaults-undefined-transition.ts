@@ -48,3 +48,39 @@ export function beforeWithDefaultsUndefined(file: string, current: string): stri
   assert.deepEqual(identity(previous), transition.before);
   return previous;
 }
+
+/** The one edited declaration, as packet relocation certifies it. */
+export const previousDefaultNativeType = record.files[0]!.hunks[0]!.before.trimEnd();
+export const currentDefaultNativeType = record.files[0]!.hunks[0]!.after.trimEnd();
+
+/** Whether a canonical helper asset changed by exactly the recorded #13179 edit. */
+export function certifyWithDefaultsUndefinedAsset(
+  file: string,
+  before: Buffer,
+  after: Buffer,
+): boolean {
+  const transition = record.files.find((candidate) => candidate.path === file);
+  if (!transition) return false;
+  const previous = before.toString("utf8"),
+    current = after.toString("utf8");
+  if (
+    identity(previous).sha256 !== transition.before.sha256 ||
+    identity(current).sha256 !== transition.after.sha256
+  )
+    return false;
+  assert.equal(beforeWithDefaultsUndefined(file, current), previous, `#13179 asset: ${file}`);
+  return true;
+}
+
+/** Advance a preamble image across #13179; it must hold the predecessor line once. */
+export function applyWithDefaultsUndefinedIn(previous: string): string {
+  assert.equal(previous.split(previousDefaultNativeType).length, 2, "default native predecessor");
+  assert.equal(previous.includes(currentDefaultNativeType), false);
+  return previous.replace(previousDefaultNativeType, () => currentDefaultNativeType);
+}
+
+/** Inverse of {@link applyWithDefaultsUndefinedIn}. */
+export function beforeWithDefaultsUndefinedIn(current: string): string {
+  assert.equal(current.split(currentDefaultNativeType).length, 2, "default native current line");
+  return current.replace(currentDefaultNativeType, () => previousDefaultNativeType);
+}

@@ -2,6 +2,11 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { certifyJsxWitnessChange } from "./constructor-jsx-witness-transition.ts";
+import {
+  certifyWithDefaultsUndefinedAsset,
+  currentDefaultNativeType,
+  previousDefaultNativeType,
+} from "./with-defaults-undefined-transition.ts";
 
 const runtimePropPath = "crates/vize_canon/src/virtual_ts/helpers/declarations/core-types.d.ts.txt";
 export const previousRuntimeProp =
@@ -24,6 +29,46 @@ export const currentSharedWithDefaults = previousSharedWithDefaults.replace(
   " & { readonly [K in keyof _T]: unknown };",
 );
 
+/** The certified `withDefaults` declaration edits a packet may cross. */
+export function certifyWithDefaultsEdits(before: Buffer, after: Buffer) {
+  return [
+    certifiedTransition(
+      before,
+      after,
+      previousEmbeddedWithDefaults,
+      currentEmbeddedWithDefaults,
+      "embedded withDefaults docs return",
+    ),
+    certifiedTransition(
+      before,
+      after,
+      previousSharedWithDefaults,
+      currentSharedWithDefaults,
+      "shared withDefaults authored return",
+    ),
+  ];
+}
+
+/** Declaration edits inside the embedded helper; a whole helper replacement owns them. */
+export function certifyHelperDeclarationEdits(before: Buffer, after: Buffer) {
+  return [
+    certifiedTransition(
+      before,
+      after,
+      previousRuntimeProp,
+      currentRuntimeProp,
+      "runtime prop value alias",
+    ),
+    certifiedTransition(
+      before,
+      after,
+      previousDefaultNativeType,
+      currentDefaultNativeType,
+      "withDefaults undefined default",
+    ),
+  ];
+}
+
 export function certifyCanonicalAssets(
   paths: readonly string[],
   base: readonly Buffer[],
@@ -36,6 +81,7 @@ export function certifyCanonicalAssets(
       after = head[index];
     assert.ok(before && after);
     if (before.equals(after)) continue;
+    if (certifyWithDefaultsUndefinedAsset(file, before, after)) continue;
     const label = `canonical helper body changed: ${file}`;
     if (file !== runtimePropPath) {
       const proof = certifyJsxWitnessChange(file, before, after);

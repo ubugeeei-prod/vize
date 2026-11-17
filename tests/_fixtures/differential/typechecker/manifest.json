@@ -24852,6 +24852,45 @@
       }
     },
     {
+      "id": "typechecker/with-defaults-undefined-13179/exact-optional-undefined-default",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "with-defaults-undefined-13179/tsconfig.json.txt",
+          "role": "issue-authored-exact-optional-config",
+          "sha256": "0ef1de5027856b752769dad771d96007ba77215fefaa963caafae8ebb962f446"
+        },
+        {
+          "path": "with-defaults-undefined-13179/src/Repro.vue.txt",
+          "role": "issue-authored-undefined-default-regression",
+          "sha256": "a7621e8dd98ed751e4d9a563b879eeab203bc3e73b662b2db5c936b84122342e"
+        },
+        {
+          "path": "with-defaults-undefined-13179/src/Control.vue.txt",
+          "role": "undefined-default-without-undefined-prop-control",
+          "sha256": "2b09c16b543fe4938014ec673485bb327c21957dd52c983d46e0dfaed4ed4663"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::with_defaults_undefined_13179::standard_tsgo_accepts_undefined_with_defaults_under_exact_optional_property_types and batch::type_checker::tests::recent_issues::exact_optional_props::with_defaults_accepts_undefined_where_the_prop_type_includes_it; #13179 `withDefaults` `undefined` default for `boolean | undefined` under exactOptionalPropertyTypes, with a `string`-only control that stays rejected. Input-only registration; no native parity claim."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/workspace-runtime-props-13110/reported-project",
       "state": "active",
       "targets": [
@@ -26540,45 +26579,6 @@
               "ts"
             ],
             "selector": "batch-typechecker-fixture-v1 pinned authored sources"
-          }
-        ]
-      }
-    },
-    {
-      "id": "typechecker/with-defaults-undefined-13179/exact-optional-undefined-default",
-      "state": "active",
-      "targets": [
-        "batch"
-      ],
-      "inputs": [
-        {
-          "path": "with-defaults-undefined-13179/tsconfig.json.txt",
-          "role": "issue-authored-exact-optional-config",
-          "sha256": "0ef1de5027856b752769dad771d96007ba77215fefaa963caafae8ebb962f446"
-        },
-        {
-          "path": "with-defaults-undefined-13179/src/Repro.vue.txt",
-          "role": "issue-authored-undefined-default-regression",
-          "sha256": "a7621e8dd98ed751e4d9a563b879eeab203bc3e73b662b2db5c936b84122342e"
-        },
-        {
-          "path": "with-defaults-undefined-13179/src/Control.vue.txt",
-          "role": "undefined-default-without-undefined-prop-control",
-          "sha256": "2b09c16b543fe4938014ec673485bb327c21957dd52c983d46e0dfaed4ed4663"
-        }
-      ],
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template",
-              "ts"
-            ],
-            "selector": "content_mapper_tsgo_cli::with_defaults_undefined_13179::standard_tsgo_accepts_undefined_with_defaults_under_exact_optional_property_types and batch::type_checker::tests::recent_issues::exact_optional_props::with_defaults_accepts_undefined_where_the_prop_type_includes_it; #13179 `withDefaults` `undefined` default for `boolean | undefined` under exactOptionalPropertyTypes, with a `string`-only control that stays rejected. Input-only registration; no native parity claim."
           }
         ]
       }

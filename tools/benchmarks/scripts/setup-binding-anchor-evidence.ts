@@ -5,6 +5,7 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { isAbsolute, join } from "node:path";
 import {
   certifiedTransition,
+  certifyHelperDeclarationEdits,
   currentEmbeddedWithDefaults,
   previousEmbeddedWithDefaults,
 } from "../../support/compat/content-mapper/canonical-helper-transition.ts";
@@ -29,7 +30,8 @@ const binaries = read("binaries.json");
 assert.notEqual(binaries.base.sha256, binaries.head.sha256, "role-isolated binaries must differ");
 const pinnedSha256 = "73d98e1625eac89e544e822565ea41e066bec3b3f38f747ed3263dda9b02358a";
 let pinnedInput: unknown;
-const projectionAssets = readAssets(process.cwd(), process.cwd());
+// Base packets carry the base helper image; an optional base checkout supplies it.
+const projectionAssets = readAssets(process.argv[3] ?? process.cwd(), process.cwd());
 
 type CompleteDocument = Record<string, unknown> & {
   code: string;
@@ -65,6 +67,9 @@ function certifyDocument(before: CompleteDocument, after: CompleteDocument) {
   const edits: Edit[] = [
     ...(withDefaults ? [withDefaults] : []),
     ...(libraryChecker ? [libraryChecker] : []),
+    ...certifyHelperDeclarationEdits(Buffer.from(before.code), Buffer.from(after.code)).filter(
+      (edit) => edit !== undefined,
+    ),
     ...certifyFallthroughSourceFields(Buffer.from(before.code), Buffer.from(after.code)),
   ].sort((left, right) => left.start - right.start);
   if (edits.length === 0) {
