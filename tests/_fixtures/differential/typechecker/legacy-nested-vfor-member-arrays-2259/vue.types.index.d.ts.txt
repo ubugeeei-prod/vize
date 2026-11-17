@@ -1,0 +1,10 @@
+export interface Vue {
+  $attrs: Record<string, unknown>;
+  $refs: Record<string, any>;
+  $slots: Record<string, unknown>;
+  $emit: (...args: any[]) => void;
+}
+export type Ref<T> = { value: T };
+export declare function ref<T>(value: T): Ref<T>;
+export declare function defineComponent<T>(options: T): T;
+export default { version: '2.7.16' };

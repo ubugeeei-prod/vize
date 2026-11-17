@@ -1,0 +1,73 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 569,
+  "regressionCommit": "67ec25621c3d4ccbcd36215a7f701bc3e3fb247e",
+  "sourceRevision": "67ec25621c3d4ccbcd36215a7f701bc3e3fb247e",
+  "checkerOptions": {
+    "virtualTsChecks": {
+      "props": false,
+      "templateBindings": true,
+      "emits": true
+    }
+  },
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "mismatched-component-prop-unchecked",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "App.vue.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "template-expression-still-checked",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "wrong-member.App.vue.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 8,
+          "column": 10,
+          "severity": 1,
+          "code": 2551,
+          "message": "Property 'toFixed' does not exist on type '\"not a number\"'. Did you mean 'fixed'?"
+        }
+      ]
+    }
+  ]
+}

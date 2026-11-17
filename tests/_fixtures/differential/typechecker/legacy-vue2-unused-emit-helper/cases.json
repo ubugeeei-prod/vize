@@ -1,0 +1,80 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": null,
+  "regressionCommit": "6fd843fb57857e6f1886ace03c0732cd76f18c98",
+  "sourceRevision": "6fd843fb57857e6f1886ace03c0732cd76f18c98",
+  "checkerOptions": {
+    "legacyVue2": true
+  },
+  "projectOptions": {
+    "vuePackage": "absent"
+  },
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "typed-emits-without-unused-helper",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "node_modules/vue/package.json",
+          "source": "vue.package.json.txt"
+        },
+        {
+          "file": "node_modules/vue/types/index.d.ts",
+          "source": "vue.index.d.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "typed-emits.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "user-unused-local-still-reported",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "node_modules/vue/package.json",
+          "source": "vue.package.json.txt"
+        },
+        {
+          "file": "node_modules/vue/types/index.d.ts",
+          "source": "vue.index.d.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "user-unused.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 3,
+          "column": 7,
+          "severity": 1,
+          "code": 6133,
+          "message": "'unusedLocal' is declared but its value is never read."
+        }
+      ]
+    }
+  ]
+}

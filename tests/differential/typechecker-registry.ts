@@ -282,25 +282,24 @@ export const sourceRevisions: Record<string, string> = byPack([
   ...fixHistory.map(([pack, entry]): [string, string] => [pack, entry.sourceRevision]),
 ]);
 
-// Packs whose original tests enabled the Options API checker.
-export const OPTIONS_API_PACKS = new Set([
-  "class-component-decorators-1434",
-  "no-space-default-export-3087",
-  "options-api-any-instance",
-  "options-api-data-assignment-5644",
-  "options-api-method-body-anchors-3596",
-  "options-api-public-instance-members-4251",
-  "options-api-reserved-component-reference",
-  "options-props-spread-setup-scope",
-  "options-runtime-props-value-scope-3089",
-  "options-setup-return-template-1897",
-  "options-setup-spread-bindings-2005",
-  "options-spread-only-computed-unused",
-  "options-template-dollar-props-4242",
-  "options-template-instance-bindings-1433",
-  "options-template-literal-bindings-3086",
-  "options-unknown-template-instance-3903",
-  "required-default-props",
-  "runtime-mixin-required-props-3582",
-  "setup-custom-properties",
-]);
+// The checker and project options each pack's original test used: a
+// tool-written pack declares them in its registry entry; these hand-written
+// packs keep theirs here.
+const authoredOptions: Record<string, { checkerOptions?: object; projectOptions?: object }> = {
+  "authored-unused-symbols": { projectOptions: { vuePackage: "absent" } },
+  "jsx-prop-token-ranges-10494": { checkerOptions: { jsxTypecheck: true } },
+  "options-api-any-instance": { checkerOptions: { optionsApi: true } },
+  "options-api-reserved-component-reference": { checkerOptions: { optionsApi: true } },
+  "required-default-props": { checkerOptions: { optionsApi: true } },
+  "setup-custom-properties": { checkerOptions: { optionsApi: true } },
+};
+
+export function packOptions(pack: string): {
+  checkerOptions?: object;
+  projectOptions?: object;
+} {
+  const registered = (fixHistoryPacks as Record<string, any>)[pack];
+  if (registered)
+    return { checkerOptions: registered.checkerOptions, projectOptions: registered.projectOptions };
+  return authoredOptions[pack] ?? {};
+}

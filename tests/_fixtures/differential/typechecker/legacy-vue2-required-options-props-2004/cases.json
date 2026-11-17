@@ -1,0 +1,69 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 2004,
+  "regressionCommit": "7070fe414bbf008b6d72761ccfcba6a977bc1096",
+  "sourceRevision": "7070fe414bbf008b6d72761ccfcba6a977bc1096",
+  "checkerOptions": {
+    "legacyVue2": true
+  },
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "required-identifier-props-defined-in-setup",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "optional-identifier-props-possibly-undefined",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "optional.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 13,
+          "column": 5,
+          "severity": 1,
+          "code": 18048,
+          "message": "'props.items' is possibly 'undefined'."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 14,
+          "column": 5,
+          "severity": 1,
+          "code": 18048,
+          "message": "'props.items' is possibly 'undefined'."
+        }
+      ]
+    }
+  ]
+}

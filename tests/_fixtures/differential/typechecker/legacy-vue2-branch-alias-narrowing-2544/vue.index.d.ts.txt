@@ -1,0 +1,7 @@
+export interface Vue {
+  $attrs: Record<string, unknown>;
+  $refs: Record<string, any>;
+  $slots: Record<string, unknown>;
+  $emit: (...args: any[]) => void;
+}
+export default { version: '2.7.16' };

@@ -1,0 +1,5 @@
+<script lang="ts">
+import greeter from "./greeter";
+export default { mixins: [greeter], computed: { consumed() { return this.greeet(); } } };
+</script>
+<template><span /></template>

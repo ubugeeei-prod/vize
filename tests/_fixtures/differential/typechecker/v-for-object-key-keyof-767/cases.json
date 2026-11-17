@@ -1,0 +1,81 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 767,
+  "regressionCommit": "b06aeecfb8c215de44dcfbce1978c5ede4f8ac41",
+  "sourceRevision": "b06aeecfb8c215de44dcfbce1978c5ede4f8ac41",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "object-source-key-and-value",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/VForObject.vue",
+          "source": "VForObject.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "object-source-key-not-number",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/VForObject.vue",
+          "source": "VForObject.key-number.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/VForObject.vue",
+          "line": 8,
+          "column": 70,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type 'string' is not assignable to parameter of type 'number'.\nType 'string' is not assignable to type 'number'."
+        }
+      ]
+    },
+    {
+      "id": "object-source-value-not-string",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/VForObject.vue",
+          "source": "VForObject.value-string.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/VForObject.vue",
+          "line": 8,
+          "column": 49,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type 'number' is not assignable to parameter of type 'string'."
+        }
+      ]
+    }
+  ]
+}

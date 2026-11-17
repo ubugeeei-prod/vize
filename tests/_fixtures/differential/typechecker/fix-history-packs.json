@@ -33,7 +33,10 @@
   },
   "class-component-decorators-1434": {
     "test": "fix_history_cases::class_component_decorators_1434::class_component_default_export_keeps_its_decorators",
-    "sourceRevision": "37b62dd501f041f8ea49684c412ac8912fa81b21"
+    "sourceRevision": "37b62dd501f041f8ea49684c412ac8912fa81b21",
+    "checkerOptions": {
+      "optionsApi": true
+    }
   },
   "component-derived-reserved-props": {
     "test": "fix_history_cases::component_derived_reserved_props::component_derived_reserved_prop_shorthand",
@@ -94,6 +97,17 @@
   "direct-callback-props-3546": {
     "test": "fix_history_cases::direct_callback_props_3546::direct_inline_callback_props_are_distinguished_from_nested_callbacks",
     "sourceRevision": "2b82fe00f6a94728c71abe394ab87b00d1704df0"
+  },
+  "disabled-template-scope-script-checks-1903": {
+    "test": "fix_history_cases::disabled_template_scope_script_checks_1903::disabled_template_bindings_skip_template_but_check_script",
+    "sourceRevision": "dfdce7dd95f906520de680087343f04872f4945c",
+    "checkerOptions": {
+      "virtualTsChecks": {
+        "props": true,
+        "templateBindings": false,
+        "emits": true
+      }
+    }
   },
   "dynamic-component-setup-props-4494": {
     "test": "fix_history_cases::dynamic_component_setup_props_4494::dynamic_component_props_use_resolved_setup_binding_type",
@@ -219,6 +233,128 @@
     "test": "fix_history_cases::leading_semicolon_handler_3091::asi_prefixed_handlers_preserve_batch_diagnostics",
     "sourceRevision": "f6ffab4e808a96f2d0dac8827d4e00c7d7df260a"
   },
+  "legacy-inline-function-prop-any-2266": {
+    "test": "fix_history_cases::legacy_inline_function_prop_any_2266::legacy_library_inline_function_props_skip_implicit_any",
+    "sourceRevision": "f4d945bb5263b198749bc6cfbe3f24272dc57c60",
+    "checkerOptions": {
+      "legacyVue2": true
+    }
+  },
+  "legacy-nested-vfor-member-arrays-2259": {
+    "test": "fix_history_cases::legacy_nested_vfor_member_arrays_2259::legacy_nested_v_for_member_array_aliases_keep_element_types",
+    "sourceRevision": "dfc0f23a768488cd504346a2b07d0ccef3a85ee5",
+    "checkerOptions": {
+      "legacyVue2": true
+    },
+    "projectOptions": {
+      "vuePackage": "absent"
+    }
+  },
+  "legacy-options-inherited-members-3627": {
+    "test": "fix_history_cases::legacy_options_inherited_members_3627::legacy_this_includes_typed_mixin_and_extends_members",
+    "sourceRevision": "b2f8c3b2a937f743629e16fe40f92bae2730a42c",
+    "checkerOptions": {
+      "legacyVue2": true
+    }
+  },
+  "legacy-vue2-branch-alias-narrowing-2544": {
+    "test": "fix_history_cases::legacy_vue2_branch_alias_narrowing_2544::legacy_vue2_v_for_branch_guards_keep_alias_narrowing",
+    "sourceRevision": "845356cb92313956ebb5f134f0e3f628a9d20b66",
+    "checkerOptions": {
+      "legacyVue2": true
+    },
+    "projectOptions": {
+      "vuePackage": "absent"
+    }
+  },
+  "legacy-vue2-event-arity-2540": {
+    "test": "fix_history_cases::legacy_vue2_event_arity_2540::legacy_vue2_unresolved_component_event_payloads_stay_variadic",
+    "sourceRevision": "1d9cbd29df81c9953c6f28e95eb829b92e834960",
+    "checkerOptions": {
+      "legacyVue2": true
+    },
+    "projectOptions": {
+      "vuePackage": "absent"
+    }
+  },
+  "legacy-vue2-keyed-prop-aliases-2539": {
+    "test": "fix_history_cases::legacy_vue2_keyed_prop_aliases_2539::legacy_vue2_unresolved_keyed_props_use_loose_record_fallback",
+    "sourceRevision": "3d2e641317a3476472dcbe72c0dce8283ebe1d97",
+    "checkerOptions": {
+      "legacyVue2": true
+    },
+    "projectOptions": {
+      "vuePackage": "absent"
+    }
+  },
+  "legacy-vue2-nuxt2-context-loose-events-2330": {
+    "test": "fix_history_cases::legacy_vue2_nuxt2_context_loose_events_2330::legacy_vue2_keeps_nuxt2_page_context_and_loose_object_event_payloads",
+    "sourceRevision": "246c6c0678c3fddd27b66f3bf1a630d684d8cd03",
+    "checkerOptions": {
+      "legacyVue2": true
+    }
+  },
+  "legacy-vue2-nuxt2-page-options-2682": {
+    "test": "fix_history_cases::legacy_vue2_nuxt2_page_options_2682::legacy_vue2_accepts_nuxt2_layout_and_head_this_bindings",
+    "sourceRevision": "da7b5364bbe88ae02412e5dea627f9ca69804a4e",
+    "checkerOptions": {
+      "legacyVue2": true
+    },
+    "projectOptions": {
+      "vuePackage": "absent"
+    }
+  },
+  "legacy-vue2-ref-arity-1808": {
+    "test": "fix_history_cases::legacy_vue2_ref_arity_1808::legacy_vue2_template_ref_unwrap_accepts_single_parameter_ref",
+    "sourceRevision": "724abf846703cc4461bb10c957ee5b5eefdf58ca",
+    "checkerOptions": {
+      "legacyVue2": true
+    },
+    "projectOptions": {
+      "vuePackage": "absent"
+    }
+  },
+  "legacy-vue2-ref-instance-members-2045": {
+    "test": "fix_history_cases::legacy_vue2_ref_instance_members_2045::legacy_vue2_component_refs_include_instance_surface",
+    "sourceRevision": "71f9a8115e9c3cc70cafe600ed82063509353327",
+    "checkerOptions": {
+      "legacyVue2": true
+    }
+  },
+  "legacy-vue2-required-options-props-2004": {
+    "test": "fix_history_cases::legacy_vue2_required_options_props_2004::legacy_vue2_identifier_options_props_keep_required_literals",
+    "sourceRevision": "7070fe414bbf008b6d72761ccfcba6a977bc1096",
+    "checkerOptions": {
+      "legacyVue2": true
+    }
+  },
+  "legacy-vue2-structural-helpers-1923": {
+    "test": "fix_history_cases::legacy_vue2_structural_helpers_1923::legacy_vue2_virtual_ts_uses_structural_helpers_without_vue3_exports",
+    "sourceRevision": "949fae1251fa05c96f1536e0e70d9a6d6e2f7984",
+    "checkerOptions": {
+      "legacyVue2": true
+    },
+    "projectOptions": {
+      "vuePackage": "absent"
+    }
+  },
+  "legacy-vue2-unused-emit-helper": {
+    "test": "fix_history_cases::legacy_vue2_unused_emit_helper::legacy_vue2_no_unused_locals_skips_loose_emit_helper",
+    "sourceRevision": "6fd843fb57857e6f1886ace03c0732cd76f18c98",
+    "checkerOptions": {
+      "legacyVue2": true
+    },
+    "projectOptions": {
+      "vuePackage": "absent"
+    }
+  },
+  "legacy-vue2-vuetify-component-fallbacks-2217": {
+    "test": "fix_history_cases::legacy_vue2_vuetify_component_fallbacks_2217::legacy_vue2_keeps_global_component_props_and_events_permissive",
+    "sourceRevision": "aa03206ddd5518831c26bbc62c88b516c592d11d",
+    "checkerOptions": {
+      "legacyVue2": true
+    }
+  },
   "listener-key-vue-tsc-parity-5960": {
     "test": "fix_history_cases::listener_key_vue_tsc_parity_5960::fragment_keys_and_external_member_listeners_match_vue_tsc",
     "sourceRevision": "e30b36c8f3302aa9fc364bc288f44ac9e732ff65"
@@ -243,9 +379,34 @@
     "test": "fix_history_cases::nested_v_if_narrowing_2959::nested_else_v_for_preserves_batch_diagnostics",
     "sourceRevision": "ac02c114ce529b6ef42e7ca7757279e1068548a6"
   },
+  "no-check-props-component-props-569": {
+    "test": "fix_history_cases::no_check_props_component_props_569::disabled_prop_checks_skip_component_prop_assignability",
+    "sourceRevision": "67ec25621c3d4ccbcd36215a7f701bc3e3fb247e",
+    "checkerOptions": {
+      "virtualTsChecks": {
+        "props": false,
+        "templateBindings": true,
+        "emits": true
+      }
+    }
+  },
+  "no-check-props-keyed-template-props": {
+    "test": "fix_history_cases::no_check_props_keyed_template_props::disabled_prop_checks_skip_keyed_template_prop_constraints",
+    "sourceRevision": "3e7efb82ad29fb18eee89e31bcc5bf0053f2b409",
+    "checkerOptions": {
+      "virtualTsChecks": {
+        "props": false,
+        "templateBindings": true,
+        "emits": true
+      }
+    }
+  },
   "no-space-default-export-3087": {
     "test": "fix_history_cases::no_space_default_export_3087::no_space_default_export_is_wrapped_as_options_api",
-    "sourceRevision": "894b6f62b772b0a0e4e389bcc38cd9b8469d7557"
+    "sourceRevision": "894b6f62b772b0a0e4e389bcc38cd9b8469d7557",
+    "checkerOptions": {
+      "optionsApi": true
+    }
   },
   "normal-script-enum-exports-2331": {
     "test": "fix_history_cases::normal_script_enum_exports_2331::normal_script_ts_enum_is_a_named_value_export",
@@ -275,53 +436,96 @@
     "test": "fix_history_cases::optional_model_update_payload_3908::optional_define_model_update_payload_carries_undefined",
     "sourceRevision": "9074dbf00c23d7679ba4ffc16c2ef9f641ac6d42"
   },
+  "options-api-cast-props-value-scope": {
+    "test": "fix_history_cases::options_api_cast_props_value_scope::options_api_type_cast_props_defer_to_setup_value_scope",
+    "sourceRevision": "921ee580f2548f4e97d3d208b2c1a457a28da306",
+    "checkerOptions": {
+      "optionsApi": true
+    }
+  },
   "options-api-data-assignment-5644": {
     "test": "fix_history_cases::options_api_data_assignment_5644::options_api_data_assignments_are_mutable_from_template_expressions",
-    "sourceRevision": "024b4b712cb03528547b03cbb01cf459ca36fa08"
+    "sourceRevision": "024b4b712cb03528547b03cbb01cf459ca36fa08",
+    "checkerOptions": {
+      "optionsApi": true
+    }
   },
   "options-api-method-body-anchors-3596": {
     "test": "fix_history_cases::options_api_method_body_anchors_3596::options_api_method_diagnostics_anchor_on_authored_script_bytes",
-    "sourceRevision": "026f4b54f3fbc567af3a2351656f951681ff3149"
+    "sourceRevision": "026f4b54f3fbc567af3a2351656f951681ff3149",
+    "checkerOptions": {
+      "optionsApi": true
+    }
   },
   "options-api-public-instance-members-4251": {
     "test": "fix_history_cases::options_api_public_instance_members_4251::options_api_public_instance_members_reach_script_and_ref_consumers",
-    "sourceRevision": "97898a1a07aa4fd4d3f3ab413e8852ef1b541ec8"
+    "sourceRevision": "97898a1a07aa4fd4d3f3ab413e8852ef1b541ec8",
+    "checkerOptions": {
+      "optionsApi": true
+    }
   },
   "options-props-spread-setup-scope": {
     "test": "fix_history_cases::options_props_spread_setup_scope::options_api_spread_runtime_props_stay_in_setup_scope",
-    "sourceRevision": "13ae68d9a09d91ca85353c9b769d4c78e6ed6f18"
+    "sourceRevision": "13ae68d9a09d91ca85353c9b769d4c78e6ed6f18",
+    "checkerOptions": {
+      "optionsApi": true
+    }
   },
   "options-runtime-props-value-scope-3089": {
     "test": "fix_history_cases::options_runtime_props_value_scope_3089::options_runtime_props_check_from_value_scope",
-    "sourceRevision": "3ed9fbc889078cbbc9b1a86fa3b5f8dfd8612dd6"
+    "sourceRevision": "3ed9fbc889078cbbc9b1a86fa3b5f8dfd8612dd6",
+    "checkerOptions": {
+      "optionsApi": true
+    }
   },
   "options-setup-return-template-1897": {
     "test": "fix_history_cases::options_setup_return_template_1897::options_api_setup_returns_reach_the_template_unwrapped",
-    "sourceRevision": "b46bd454b06c70329032e98bee050d80f877c2d5"
+    "sourceRevision": "b46bd454b06c70329032e98bee050d80f877c2d5",
+    "checkerOptions": {
+      "optionsApi": true
+    }
   },
   "options-setup-spread-bindings-2005": {
     "test": "fix_history_cases::options_setup_spread_bindings_2005::options_setup_return_spread_bindings_reach_the_template",
-    "sourceRevision": "cd1fc1447ab6b7d4e0a5afb589b0bafdbc1714a9"
+    "sourceRevision": "cd1fc1447ab6b7d4e0a5afb589b0bafdbc1714a9",
+    "checkerOptions": {
+      "optionsApi": true
+    }
   },
   "options-spread-only-computed-unused": {
     "test": "fix_history_cases::options_spread_only_computed_unused::options_spread_only_computed_reports_no_synthetic_unused_alias",
-    "sourceRevision": "be564bc1b423bcc304e9d11a868467c82f0a526d"
+    "sourceRevision": "be564bc1b423bcc304e9d11a868467c82f0a526d",
+    "checkerOptions": {
+      "optionsApi": true
+    }
   },
   "options-template-dollar-props-4242": {
     "test": "fix_history_cases::options_template_dollar_props_4242::options_api_props_reach_template_dollar_props",
-    "sourceRevision": "155555e58136758d84700e70a417a58588c0008d"
+    "sourceRevision": "155555e58136758d84700e70a417a58588c0008d",
+    "checkerOptions": {
+      "optionsApi": true
+    }
   },
   "options-template-instance-bindings-1433": {
     "test": "fix_history_cases::options_template_instance_bindings_1433::options_api_template_bindings_keep_instance_types",
-    "sourceRevision": "87701cf384daf9ccb001e3ab5ea19f74e7938397"
+    "sourceRevision": "87701cf384daf9ccb001e3ab5ea19f74e7938397",
+    "checkerOptions": {
+      "optionsApi": true
+    }
   },
   "options-template-literal-bindings-3086": {
     "test": "fix_history_cases::options_template_literal_bindings_3086::options_api_template_literals_are_not_bindings",
-    "sourceRevision": "c40cb562b37a1cde3080bb560df6fbb23a574212"
+    "sourceRevision": "c40cb562b37a1cde3080bb560df6fbb23a574212",
+    "checkerOptions": {
+      "optionsApi": true
+    }
   },
   "options-unknown-template-instance-3903": {
     "test": "fix_history_cases::options_unknown_template_instance_3903::options_api_unknown_template_names_resolve_on_the_public_instance",
-    "sourceRevision": "263094d86067ac5149b40d537585b16e6aa24865"
+    "sourceRevision": "263094d86067ac5149b40d537585b16e6aa24865",
+    "checkerOptions": {
+      "optionsApi": true
+    }
   },
   "plain-options-define-component-1407": {
     "test": "fix_history_cases::plain_options_define_component_1407::plain_options_object_default_export_gets_instance_this",
@@ -361,7 +565,10 @@
   },
   "runtime-mixin-required-props-3582": {
     "test": "fix_history_cases::runtime_mixin_required_props_3582::imported_runtime_and_mixin_props_preserve_requiredness",
-    "sourceRevision": "b15fb9ebb37a173b1b50d91eef42d3625dd6b014"
+    "sourceRevision": "b15fb9ebb37a173b1b50d91eef42d3625dd6b014",
+    "checkerOptions": {
+      "optionsApi": true
+    }
   },
   "runtime-prop-helper-syntax": {
     "test": "fix_history_cases::runtime_prop_helper_syntax::runtime_prop_helper_emits_valid_typescript",
@@ -471,6 +678,17 @@
     "test": "fix_history_cases::template_loop_narrowing_3149::v_for_callbacks_preserve_batch_diagnostics",
     "sourceRevision": "2ecf10de92663303cecb76470bfa5ea42e992764"
   },
+  "template-usage-disabled-template-checks-1968": {
+    "test": "fix_history_cases::template_usage_disabled_template_checks_1968::disabled_template_checks_still_mark_template_bindings_used",
+    "sourceRevision": "99bc5034f1671bef7de6c83047cd9c264d05562f",
+    "checkerOptions": {
+      "virtualTsChecks": {
+        "props": true,
+        "templateBindings": false,
+        "emits": true
+      }
+    }
+  },
   "tsx-sfc-named-exports-2303": {
     "test": "fix_history_cases::tsx_sfc_named_exports_2303::tsx_sfc_named_exports_keep_downstream_contextual_typing",
     "sourceRevision": "27260d211025441b6303090d4fd7acaa65528f15"
@@ -499,6 +717,10 @@
     "test": "fix_history_cases::v_for_item_readable_props::v_for_item_props_stay_readable_through_kebab_aliases",
     "sourceRevision": "be40baf2077e555a3e1041b47af369ba6f2e06d4"
   },
+  "v-for-object-key-keyof-767": {
+    "test": "fix_history_cases::v_for_object_key_keyof_767::v_for_over_object_types_key_as_keyof_and_value_as_member",
+    "sourceRevision": "b06aeecfb8c215de44dcfbce1978c5ede4f8ac41"
+  },
   "value-binding-over-type-only-pascal-4915": {
     "test": "fix_history_cases::value_binding_over_type_only_pascal_4915::value_bindings_win_over_type_only_pascal_component_aliases",
     "sourceRevision": "ad99a95135db04ceff3a0d882fefbe5162fddb05"
@@ -506,6 +728,16 @@
   "vue-alias-public-instance-guard-5672": {
     "test": "fix_history_cases::vue_alias_public_instance_guard_5672::vue_alias_without_public_instance_degrades_template_context",
     "sourceRevision": "c220f47b65134eee36851c7841b1e8d5567eafe4"
+  },
+  "vue27-render-h-sfc-constructors-6020": {
+    "test": "fix_history_cases::vue27_render_h_sfc_constructors_6020::vue27_render_h_accepts_generated_sfc_constructors",
+    "sourceRevision": "9193b13ca62af15076609a3a8d7e2405b5df98d1",
+    "checkerOptions": {
+      "legacyVue2": true
+    },
+    "projectOptions": {
+      "vuePackage": "absent"
+    }
   },
   "whole-props-check-display-3906": {
     "test": "fix_history_cases::whole_props_check_display_3906::whole_props_check_target_displays_the_public_props_shape",

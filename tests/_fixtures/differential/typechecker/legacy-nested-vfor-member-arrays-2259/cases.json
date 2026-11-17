@@ -1,0 +1,57 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 2259,
+  "regressionCommit": "dfc0f23a768488cd504346a2b07d0ccef3a85ee5",
+  "sourceRevision": "dfc0f23a768488cd504346a2b07d0ccef3a85ee5",
+  "checkerOptions": {
+    "legacyVue2": true
+  },
+  "projectOptions": {
+    "vuePackage": "absent"
+  },
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "nested-member-array-aliases-typed",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "node_modules/vue/package.json",
+          "source": "vue.package.json.txt"
+        },
+        {
+          "file": "node_modules/vue/types/index.d.ts",
+          "source": "vue.types.index.d.ts.txt"
+        },
+        {
+          "file": "node_modules/vite/package.json",
+          "source": "vite.package.json.txt"
+        },
+        {
+          "file": "node_modules/vite/client.d.ts",
+          "source": "vite.client.d.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

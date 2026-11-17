@@ -1,0 +1,11 @@
+<script setup lang="ts">
+import Child from './Child.vue'
+
+const isLoading = false
+function confirmDialog() {}
+</script>
+
+<template>
+  <Child @save="confirmDialog" />
+  {{ missingItems }}
+</template>

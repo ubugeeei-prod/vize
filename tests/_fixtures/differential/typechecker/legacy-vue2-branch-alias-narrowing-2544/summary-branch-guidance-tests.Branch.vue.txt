@@ -1,0 +1,25 @@
+<script setup lang="ts">
+type GuidanceTest =
+  | { testResult: 'Pass'; retestFlag: boolean; passOnly: string }
+  | { testResult: 'Fail'; retestFlag?: false; reason: string }
+
+type AimAtReport =
+  | { kind: 'summary'; title: string }
+  | { kind: 'history'; title: string; guidanceTests: GuidanceTest[] }
+
+const aimAtReports: AimAtReport[] = []
+</script>
+
+<template>
+  <template v-for="aimAtReport in aimAtReports">
+    <template v-if="aimAtReport.kind === 'summary'">
+      <span>{{ aimAtReport.guidanceTests }}</span>
+    </template>
+    <template v-else>
+      <template v-for="guidanceTest in aimAtReport.guidanceTests">
+        <span v-if="guidanceTest.retestFlag" class="retest-label mr-2">再 {{ aimAtReport.title }}</span>
+        <span v-if="guidanceTest.testResult === 'Pass'" class="test-result-label__pass">{{ guidanceTest.passOnly }}</span>
+      </template>
+    </template>
+  </template>
+</template>

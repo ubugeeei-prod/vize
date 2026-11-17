@@ -1,0 +1,111 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 2544,
+  "regressionCommit": "845356cb92313956ebb5f134f0e3f628a9d20b66",
+  "sourceRevision": "845356cb92313956ebb5f134f0e3f628a9d20b66",
+  "checkerOptions": {
+    "legacyVue2": true
+  },
+  "projectOptions": {
+    "vuePackage": "absent"
+  },
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "nested-v-for-else-branch-alias-narrowing",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "node_modules/vue/package.json",
+          "source": "vue.package.json.txt"
+        },
+        {
+          "file": "node_modules/vue/types/index.d.ts",
+          "source": "vue.index.d.ts.txt"
+        },
+        {
+          "file": "src/Branch.vue",
+          "source": "Branch.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "summary-branch-rejects-history-member",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "node_modules/vue/package.json",
+          "source": "vue.package.json.txt"
+        },
+        {
+          "file": "node_modules/vue/types/index.d.ts",
+          "source": "vue.index.d.ts.txt"
+        },
+        {
+          "file": "src/Branch.vue",
+          "source": "summary-branch-guidance-tests.Branch.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Branch.vue",
+          "line": 16,
+          "column": 28,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'guidanceTests' does not exist on type '{ kind: \"summary\"; title: string; }'."
+        }
+      ]
+    },
+    {
+      "id": "pass-branch-rejects-fail-member",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "node_modules/vue/package.json",
+          "source": "vue.package.json.txt"
+        },
+        {
+          "file": "node_modules/vue/types/index.d.ts",
+          "source": "vue.index.d.ts.txt"
+        },
+        {
+          "file": "src/Branch.vue",
+          "source": "pass-branch-reason.Branch.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Branch.vue",
+          "line": 21,
+          "column": 105,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'reason' does not exist on type '{ testResult: \"Pass\"; retestFlag: boolean; passOnly: string; }'."
+        }
+      ]
+    }
+  ]
+}

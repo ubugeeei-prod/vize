@@ -4,7 +4,8 @@
 //   node tools/commands/fixtures/typechecker-fix-history-pack.ts [--capture DIR] SPEC.json|PACK...
 //
 // A SPEC.json names a new or changed pack:
-//   { pack, module, test, regressionCommit, historicalIssue, checkerOptions?, sources?, cases? }
+//   { pack, module, test, regressionCommit, historicalIssue, checkerOptions?,
+//     projectOptions?, sources?, cases? }
 // `sources` maps fixture file names to their bytes; `cases` lists
 // `{ id, inputs: [{ file, source }] }`. Without `cases` the pack's
 // cases.json supplies them. A bare PACK re-registers an existing pack from
@@ -46,13 +47,20 @@ type Diagnostic = {
   message: string;
 };
 type Case = { id: string; inputs: Input[]; diagnostics?: Diagnostic[] };
+type CheckerOptions = {
+  optionsApi?: boolean;
+  jsxTypecheck?: boolean;
+  legacyVue2?: boolean;
+  virtualTsChecks?: { props: boolean; templateBindings: boolean; emits: boolean };
+};
 type Spec = {
   pack: string;
   module: string;
   test: string;
   regressionCommit: string;
   historicalIssue: number | null;
-  checkerOptions?: { optionsApi?: boolean; jsxTypecheck?: boolean };
+  checkerOptions?: CheckerOptions;
+  projectOptions?: { vuePackage: "absent" };
   sources?: Record<string, string>;
   cases?: Case[];
 };
@@ -69,7 +77,12 @@ function safeName(name: string) {
   return name;
 }
 
-type Registered = { test: string; sourceRevision: string };
+type Registered = {
+  test: string;
+  sourceRevision: string;
+  checkerOptions?: CheckerOptions;
+  projectOptions?: { vuePackage: "absent" };
+};
 const readRegistry = (): Record<string, Registered> => JSON.parse(read(registryPath));
 
 function register(pack: string, entry: Registered) {
@@ -95,6 +108,7 @@ function loadSpec(argument: string): Spec {
     regressionCommit: pack.regressionCommit,
     historicalIssue: pack.historicalIssue,
     checkerOptions: pack.checkerOptions,
+    projectOptions: pack.projectOptions,
   };
 }
 
@@ -139,6 +153,7 @@ function writePack(spec: Spec, capture?: string) {
     regressionCommit: spec.regressionCommit,
     sourceRevision: spec.regressionCommit,
     checkerOptions: spec.checkerOptions,
+    projectOptions: spec.projectOptions,
     diagnosticContract: contract,
     cases,
   };
@@ -168,6 +183,7 @@ function manifestEntries(spec: Spec, cases: Case[], packSha256: string, old: Ent
       regressionCommit: spec.regressionCommit,
       sourceRevision: spec.regressionCommit,
       checkerOptions: spec.checkerOptions,
+      projectOptions: spec.projectOptions,
       packReference: { path: `${spec.pack}/cases.json`, sha256: packSha256 },
       inputs,
       dialectCoverage: typecheckerDialectCoverage(fixtures, inputs),
@@ -227,6 +243,8 @@ for (const argument of args) {
   register(spec.pack, {
     test: `fix_history_cases::${spec.module}::${spec.test}`,
     sourceRevision: spec.regressionCommit,
+    checkerOptions: spec.checkerOptions,
+    projectOptions: spec.projectOptions,
   });
   updateRust(spec, cases);
   updateLedger(spec);

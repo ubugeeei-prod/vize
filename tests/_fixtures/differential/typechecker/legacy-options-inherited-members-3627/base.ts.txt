@@ -1,0 +1,1 @@
+const base = undefined as unknown as new () => { describe(): string }; export default base;

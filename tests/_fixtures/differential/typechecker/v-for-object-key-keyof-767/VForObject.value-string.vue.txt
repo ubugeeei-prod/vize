@@ -1,0 +1,9 @@
+<script setup lang="ts">
+const obj: { foo: number; bar: number } = { foo: 1, bar: 2 }
+function wantValue(n: string) { return n }
+function wantKey(k: 'foo' | 'bar') { return k }
+</script>
+
+<template>
+  <div v-for="(value, key) in obj">{{ wantValue(value) }} {{ wantKey(key) }}</div>
+</template>

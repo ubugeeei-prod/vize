@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 2266,
+  "regressionCommit": "f4d945bb5263b198749bc6cfbe3f24272dc57c60",
+  "sourceRevision": "f4d945bb5263b198749bc6cfbe3f24272dc57c60",
+  "checkerOptions": {
+    "legacyVue2": true
+  },
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "inline-rule-callback-no-implicit-any",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "sibling-prop-expression-still-checked",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "wrong-sibling-prop.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 6,
+          "column": 66,
+          "severity": 1,
+          "code": 2551,
+          "message": "Property 'toFixed' does not exist on type '\"Required\"'. Did you mean 'fixed'?"
+        }
+      ]
+    }
+  ]
+}

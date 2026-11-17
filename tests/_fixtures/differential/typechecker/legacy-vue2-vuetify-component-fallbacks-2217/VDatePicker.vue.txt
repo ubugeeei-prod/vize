@@ -1,0 +1,7 @@
+<script setup lang="ts">
+defineProps<{ mini?: boolean }>()
+</script>
+
+<template>
+  <div />
+</template>

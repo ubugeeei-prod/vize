@@ -1,0 +1,5 @@
+<script lang="ts">
+import base from "./base";
+export default { extends: base, computed: { consumed() { return this.describe(); } } };
+</script>
+<template><span /></template>

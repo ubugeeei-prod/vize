@@ -1,0 +1,26 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+import Child from './Child.vue'
+
+const childRef = ref<InstanceType<typeof Child> | null>(null)
+const selected = ref(0)
+
+async function focusChild() {
+  if (childRef.value) {
+    const label: number = childRef.value.$props.label
+    childRef.value.$emit('select', 1)
+    ;(childRef.value.$el as HTMLButtonElement).focus()
+    childRef.value.$refs.inner
+    void label
+  }
+}
+
+function onSelect(id: number) {
+  selected.value = id
+}
+</script>
+
+<template>
+  <Child ref="childRef" label="Save" @select="onSelect" />
+  <button @click="focusChild">{{ selected }}</button>
+</template>

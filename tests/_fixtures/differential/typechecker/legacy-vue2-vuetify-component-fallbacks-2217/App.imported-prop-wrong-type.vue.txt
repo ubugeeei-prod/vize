@@ -1,0 +1,11 @@
+<script setup lang="ts">
+import VDatePicker from './VDatePicker.vue'
+function updateDate(newDate: string) {
+  void newDate
+}
+const width = 320
+</script>
+
+<template>
+  <VDatePicker :mini="width" @input="updateDate" />
+</template>

@@ -1,0 +1,138 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 2682,
+  "regressionCommit": "da7b5364bbe88ae02412e5dea627f9ca69804a4e",
+  "sourceRevision": "da7b5364bbe88ae02412e5dea627f9ca69804a4e",
+  "checkerOptions": {
+    "legacyVue2": true
+  },
+  "projectOptions": {
+    "vuePackage": "absent"
+  },
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "error-layout-head-this-js",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/layouts/error.vue",
+          "source": "error.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "App.vue.txt"
+        },
+        {
+          "file": "node_modules/vue/package.json",
+          "source": "vue.package.json.txt"
+        },
+        {
+          "file": "node_modules/vue/types/index.d.ts",
+          "source": "vue.types.index.d.ts.txt"
+        },
+        {
+          "file": "node_modules/vite/package.json",
+          "source": "vite.package.json.txt"
+        },
+        {
+          "file": "node_modules/vite/client.d.ts",
+          "source": "vite.client.d.ts.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "error-layout-head-this-ts",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/layouts/error.vue",
+          "source": "error.ts.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "App.vue.txt"
+        },
+        {
+          "file": "node_modules/vue/package.json",
+          "source": "vue.package.json.txt"
+        },
+        {
+          "file": "node_modules/vue/types/index.d.ts",
+          "source": "vue.types.index.d.ts.txt"
+        },
+        {
+          "file": "node_modules/vite/package.json",
+          "source": "vite.package.json.txt"
+        },
+        {
+          "file": "node_modules/vite/client.d.ts",
+          "source": "vite.client.d.ts.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "error-layout-async-data-context-wrong-type",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/layouts/error.vue",
+          "source": "error.ts.async-data-wrong-type.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "App.vue.txt"
+        },
+        {
+          "file": "node_modules/vue/package.json",
+          "source": "vue.package.json.txt"
+        },
+        {
+          "file": "node_modules/vue/types/index.d.ts",
+          "source": "vue.types.index.d.ts.txt"
+        },
+        {
+          "file": "node_modules/vite/package.json",
+          "source": "vite.package.json.txt"
+        },
+        {
+          "file": "node_modules/vite/client.d.ts",
+          "source": "vite.client.d.ts.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/layouts/error.vue",
+          "line": 17,
+          "column": 11,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'string' is not assignable to type 'number'."
+        }
+      ]
+    }
+  ]
+}

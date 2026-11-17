@@ -1,0 +1,13 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+
+defineProps<{
+  test: string
+}>()
+
+const count = ref(0)
+</script>
+
+<template>
+  <div>{{ test.toFixed() }} {{ count }}</div>
+</template>

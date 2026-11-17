@@ -1,0 +1,14 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+import Child from './Child.vue'
+
+const scriptOnly: string = 1
+const isLoading = ref(false)
+</script>
+
+<template>
+<div>
+  <Child v-for="item in missingItems" :key="item.id" :busy="isLoading" @save="confirmDialog" />
+  {{ confirmDialog }}
+</div>
+</template>

@@ -1,0 +1,164 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 1808,
+  "regressionCommit": "724abf846703cc4461bb10c957ee5b5eefdf58ca",
+  "sourceRevision": "724abf846703cc4461bb10c957ee5b5eefdf58ca",
+  "checkerOptions": {
+    "legacyVue2": true
+  },
+  "projectOptions": {
+    "vuePackage": "absent"
+  },
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "legacy-ref-unwrap",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "App.ref.vue.txt"
+        },
+        {
+          "file": "node_modules/vue/package.json",
+          "source": "vue.package.json.txt"
+        },
+        {
+          "file": "node_modules/vue/types/index.d.ts",
+          "source": "vue.types.index.d.ts.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "legacy-props-and-ref-unwrap",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "App.props-ref.vue.txt"
+        },
+        {
+          "file": "node_modules/vue/package.json",
+          "source": "vue.package.json.txt"
+        },
+        {
+          "file": "node_modules/vue/types/index.d.ts",
+          "source": "vue.types.index.d.ts.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "legacy-ref-unwrap-wrong-member",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "App.ref-wrong-member.vue.txt"
+        },
+        {
+          "file": "node_modules/vue/package.json",
+          "source": "vue.package.json.txt"
+        },
+        {
+          "file": "node_modules/vue/types/index.d.ts",
+          "source": "vue.types.index.d.ts.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 8,
+          "column": 18,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'toUpperCase' does not exist on type 'number'."
+        }
+      ]
+    },
+    {
+      "id": "legacy-prop-wrong-member",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "App.props-wrong-member.vue.txt"
+        },
+        {
+          "file": "node_modules/vue/package.json",
+          "source": "vue.package.json.txt"
+        },
+        {
+          "file": "node_modules/vue/types/index.d.ts",
+          "source": "vue.types.index.d.ts.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 12,
+          "column": 16,
+          "severity": 1,
+          "code": 2551,
+          "message": "Property 'toFixed' does not exist on type 'string'. Did you mean 'fixed'?"
+        }
+      ]
+    },
+    {
+      "id": "authored-two-argument-ref-rejected",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "App.two-arg-ref.vue.txt"
+        },
+        {
+          "file": "node_modules/vue/package.json",
+          "source": "vue.package.json.txt"
+        },
+        {
+          "file": "node_modules/vue/types/index.d.ts",
+          "source": "vue.types.index.d.ts.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 4,
+          "column": 14,
+          "severity": 1,
+          "code": 2707,
+          "message": "Generic type 'Ref<T>' requires between 0 and 1 type arguments."
+        }
+      ]
+    }
+  ]
+}

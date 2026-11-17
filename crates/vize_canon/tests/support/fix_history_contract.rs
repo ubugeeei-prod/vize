@@ -49,6 +49,18 @@ pub(crate) struct CheckerOptions {
     pub(crate) options_api: bool,
     #[serde(default)]
     pub(crate) jsx_typecheck: bool,
+    #[serde(default)]
+    pub(crate) legacy_vue2: bool,
+    pub(crate) virtual_ts_checks: Option<VirtualTsChecks>,
+}
+
+/// `BatchTypeChecker::set_virtual_ts_checks` as the original test called it.
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub(crate) struct VirtualTsChecks {
+    pub(crate) props: bool,
+    pub(crate) template_bindings: bool,
+    pub(crate) emits: bool,
 }
 
 #[derive(Deserialize)]

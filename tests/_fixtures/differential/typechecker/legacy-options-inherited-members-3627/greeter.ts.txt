@@ -1,0 +1,1 @@
+const greeter = undefined as unknown as new () => { greet(): string }; export default greeter;

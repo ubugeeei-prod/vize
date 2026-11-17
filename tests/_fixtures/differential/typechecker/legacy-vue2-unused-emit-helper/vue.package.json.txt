@@ -1,0 +1,4 @@
+{
+  "name": "vue",
+  "types": "types/index.d.ts"
+}

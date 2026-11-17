@@ -19,7 +19,7 @@ import {
   type ListenerDiagnosticAuthority,
 } from "./typechecker-listener-events.ts";
 import {
-  OPTIONS_API_PACKS,
+  packOptions,
   packCases,
   TYPECHECKER_TESTS,
   sourceRevisions,
@@ -50,7 +50,7 @@ export type TypecheckerCase = {
   test: string;
   regressionCommit: string;
   sourceRevision?: string;
-  checkerOptions?: { optionsApi?: boolean; jsxTypecheck?: boolean };
+  checkerOptions?: Record<string, unknown>;
   projectOptions?: { vuePackage: "absent" };
   packReference: Artifact;
   inputs: Array<Artifact & { file: string }>;
@@ -64,7 +64,7 @@ type Pack = {
   sourceRevision: string;
   diagnosticContract: typeof contract;
   regressionCommit: string;
-  checkerOptions?: { optionsApi?: boolean; jsxTypecheck?: boolean };
+  checkerOptions?: Record<string, unknown>;
   projectOptions?: { vuePackage: "absent" };
   cases: Array<{
     id: string;
@@ -193,20 +193,17 @@ export function loadTypecheckerManifest(manifestPath: string) {
     assert.equal(pack.sourceRevision, sourceRevisions[fixture.pack]);
     assert.equal(pack.sourceRevision, fixture.sourceRevision ?? loaded.manifest.baseRevision);
     assert.deepEqual(pack.diagnosticContract, contract);
+    const options = packOptions(fixture.pack);
     assert.deepEqual(
       pack.checkerOptions,
-      OPTIONS_API_PACKS.has(fixture.pack)
-        ? { optionsApi: true }
-        : fixture.pack === "jsx-prop-token-ranges-10494"
-          ? { jsxTypecheck: true }
-          : undefined,
+      options.checkerOptions,
       "the original explicit checker options must be retained",
     );
     assert.deepEqual(fixture.checkerOptions, pack.checkerOptions);
     assert.deepEqual(
       pack.projectOptions,
-      fixture.pack === "authored-unused-symbols" ? { vuePackage: "absent" } : undefined,
-      "the original absent Vue package must be retained",
+      options.projectOptions,
+      "the original absent Vue package and other project options must be retained",
     );
     assert.deepEqual(fixture.projectOptions, pack.projectOptions);
     const original = pack.cases.find((item) => item.id === fixture.case);

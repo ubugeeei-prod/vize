@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": null,
+  "regressionCommit": "3e7efb82ad29fb18eee89e31bcc5bf0053f2b409",
+  "sourceRevision": "3e7efb82ad29fb18eee89e31bcc5bf0053f2b409",
+  "checkerOptions": {
+    "virtualTsChecks": {
+      "props": false,
+      "templateBindings": true,
+      "emits": true
+    }
+  },
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "undeclared-keyed-prop-unchecked",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "keyed.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "declared-prop-wrong-member",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "keyed-wrong-member.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 7,
+          "column": 17,
+          "severity": 1,
+          "code": 2551,
+          "message": "Property 'toFixed' does not exist on type 'string'. Did you mean 'fixed'?"
+        }
+      ]
+    }
+  ]
+}

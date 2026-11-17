@@ -1,0 +1,12 @@
+<script setup lang="ts">
+import Child from './Child.vue'
+
+const isLoading = false
+function confirmDialog() {}
+const unusedLocal = 1
+</script>
+
+<template>
+  <Child :busy="isLoading" @save="confirmDialog" />
+  {{ missingItems }}
+</template>

@@ -1,0 +1,28 @@
+<script lang="ts">
+import { defineComponent } from "vue"
+import CalendarRange from "./components/CalendarRange.vue"
+
+export default defineComponent({
+  components: { CalendarRange },
+  setup() {
+    function updateRange(
+      calendarDate: { start: string; end: string },
+      highlightSelectedDate: () => void,
+    ) {
+      void calendarDate
+      highlightSelectedDate()
+    }
+    function submitHooks(hooks: { before?: () => void; after?: () => void }) {
+      hooks.before?.()
+    }
+    return { updateRange, submitHooks }
+  },
+})
+</script>
+
+<template>
+  <CalendarRange
+    @range-change="updateRange"
+    @submit="submitHooks"
+  />
+</template>

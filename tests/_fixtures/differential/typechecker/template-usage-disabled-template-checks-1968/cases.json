@@ -1,0 +1,100 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 1968,
+  "regressionCommit": "99bc5034f1671bef7de6c83047cd9c264d05562f",
+  "sourceRevision": "99bc5034f1671bef7de6c83047cd9c264d05562f",
+  "checkerOptions": {
+    "virtualTsChecks": {
+      "props": true,
+      "templateBindings": false,
+      "emits": true
+    }
+  },
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "template-bindings-used-script-local-unused",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.no-unused-locals.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "historical.App.vue.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 6,
+          "column": 7,
+          "severity": 1,
+          "code": 6133,
+          "message": "'unusedLocal' is declared but its value is never read."
+        }
+      ]
+    },
+    {
+      "id": "template-bindings-used-no-unused-locals",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.no-unused-locals.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "used.App.vue.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "binding-dropped-from-template-is-unused",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.no-unused-locals.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "unused-binding.App.vue.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 4,
+          "column": 7,
+          "severity": 1,
+          "code": 6133,
+          "message": "'isLoading' is declared but its value is never read."
+        }
+      ]
+    }
+  ]
+}
