@@ -80,6 +80,8 @@ pub struct PugTree<'a> {
     pub source: &'a str,
     pub nodes: Vec<'a, PugNode<'a>>,
     pub eof: Token<'a>,
+    /// The pug-family language the template was parsed as.
+    pub profile: super::PugProfile,
 }
 
 #[derive(Debug)]

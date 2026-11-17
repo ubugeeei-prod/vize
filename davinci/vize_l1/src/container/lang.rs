@@ -49,6 +49,7 @@ use alloc::borrow::Cow;
 use vize_l0::Span;
 
 pub use crate::css::lang::StyleLanguage;
+pub use crate::markup::pug::PugProfile;
 
 /// The grammar that reads a template's content.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -59,20 +60,6 @@ pub enum TemplateLang {
     /// The pug surface (`vize_l1::markup::pug`), lowered to a derived Vue template,
     /// with the language version the author named.
     Pug(PugProfile),
-}
-
-/// Which language of the pug family a template names. Both are read by the
-/// in-tree pug grammar, which follows pug@3.0.4.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum PugProfile {
-    /// `pug`: pug 3, the language Vue's toolchain renders `lang="pug"` with.
-    Pug3,
-    /// `jade`: the legacy jade 1.x language Vue's toolchain renders
-    /// `lang="jade"` with (`@vue/consolidate` loads the `jade` package).
-    /// Where jade 1.x and pug 3 differ (attribute `#{}` interpolation,
-    /// `- each`, the `mixin name()` call, `each ... of`), the grammar
-    /// currently reads pug 3.
-    Jade1,
 }
 
 impl TemplateLang {

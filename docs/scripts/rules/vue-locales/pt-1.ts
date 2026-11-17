@@ -55,6 +55,11 @@ export const portugueseVue1: Record<string, readonly [purpose: string, bad: stri
       "O template seleciona Pug por meio de lang. Essa é uma convenção pretendida de usar apenas HTML; o processamento atual de SFCs não gera diagnósticos para este ID do catálogo.",
       "Um template HTML comum omite lang e usa o parágrafo diretamente. Isso ilustra a convenção sem afirmar que há uma ocorrência diagnosticada atualmente em SFCs.",
     ],
+    "vue/prefer-pug-lang": [
+      'Preferir lang="pug" à linguagem de template legada jade 1.x',
+      "O template nomeia jade, que o Vue renderiza com o pacote legado jade 1.x, e usa o each com hífen exclusivo do jade.",
+      "O template nomeia pug e escreve o laço com a palavra-chave each do pug 3.",
+    ],
     "vue/no-template-shadow": [
       "Proibir nomes de variáveis que ocultam variáveis de um escopo externo",
       "O v-for interno declara item novamente e oculta a variável item externa dentro do laço aninhado.",

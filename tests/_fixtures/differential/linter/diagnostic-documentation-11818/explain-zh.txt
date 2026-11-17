@@ -6573,6 +6573,30 @@ vue/prefer-props-shorthand · lint 规则
 
 帮助:
   使用prop简写语法
+=== vue/prefer-pug-lang
+vue/prefer-pug-lang · lint 规则
+优先使用 lang="pug"，而不是旧版 jade 1.x 模板语言
+
+精度层级: exact
+适用范围: a lang="jade" template's lang value and the jade 1.x constructs the pug lowering reads under the jade profile
+严重级别: 警告
+类别: recommended
+自动修复: 支持
+文档: docs/content/rules/reference/vue-prefer-pug-lang.md
+
+错误示例:
+  <template lang="jade">
+  ul
+    - each item in items
+      li= item
+  </template>
+
+正确示例:
+  <template lang="pug">
+  ul
+    each item in items
+      li= item
+  </template>
 === vue/prefer-single-event-payload
 vue/prefer-single-event-payload · lint 规则
 强制自定义事件只传递单个负载参数
