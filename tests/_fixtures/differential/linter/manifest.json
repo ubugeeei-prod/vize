@@ -16570,6 +16570,37 @@
       }
     },
     {
+      "id": "linter/eslint-disable-mapped-aliases-12336",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "eslint-disable-mapped-aliases-12336",
+        "files": [
+          {
+            "path": "Case.vue.txt",
+            "role": "real-project-matrix-reduction",
+            "sha256": "efbc5c714aabe14491547a27c1dbbd6ee7fc3a2cea2e428dc54c8b5e067a5eb3"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/eslint-vue-report-nodes-12336",
       "state": "active",
       "targets": [
