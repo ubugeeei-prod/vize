@@ -154,7 +154,7 @@ fn every_corpus_setup_binding_matches_croquis() {
         intentional,
         BTreeMap::from([
             (cstr!("LiteralConst <- Some(SetupConst)"), 4),
-            (cstr!("SetupConst <- Some(SetupMaybeRef)"), 1_949),
+            (cstr!("SetupConst <- Some(SetupMaybeRef)"), 1_951),
             (cstr!("SetupConst <- Some(SetupReactiveConst)"), 5),
             (cstr!("SetupMaybeRef <- Some(SetupConst)"), 19),
             (cstr!("SetupMaybeRef <- Some(SetupReactiveConst)"), 4),

@@ -6,7 +6,7 @@
     {
       "path": "crates/vize_atelier_sfc/src/compile.rs",
       "referenceBlob": "6856ecc04ae177fe53724a09fbf2c0f5654a1fb7",
-      "currentBlob": "e6d42464540501a21795166d6637ecfe155b476e",
+      "currentBlob": "54bc6c6b5137fe0df403883db93901970d8bc40a",
       "replacements": [
         {
           "reference": "mod normal_script;\npub(crate) mod output_module;\nmod props_rest;\nmod setup_exports;\nmod stage_capture;\n#[cfg(test)]\n",
@@ -139,6 +139,14 @@
         {
           "reference": "            .then(|| {\n                bindings::collect_options_api_bindings(&script_content, script.lang.as_deref())\n            })\n",
           "current": "            .then(|| bindings::options_api(&script_content, script.lang.as_deref()))\n"
+        },
+        {
+          "reference": "use self::bindings::{\n    collect_normal_script_bindings, merge_normal_script_bindings, register_setup_enum_bindings,\n};\n",
+          "current": "use self::bindings::{merge_normal_script_bindings, register_setup_enum_bindings};\n"
+        },
+        {
+          "reference": "        let normal_script_bindings = profile!(\n            \"atelier.sfc.normal_script.register_bindings\",\n            collect_normal_script_bindings(&script.content)\n        );\n",
+          "current": "        let normal_script_bindings = bindings::ordinary(&script.content, script.lang.as_deref());\n"
         }
       ]
     },

@@ -64,9 +64,32 @@ whose props `foo-bar` and `plain` are also computed names: they now read
 `$props.fooBar`/`$props.plain` (props win over computed in the instance
 proxy, and Vue does not define a computed that shadows a prop).
 
+## Compiler switch: a paired normal script
+
+Beside `<script setup>`, the template also sees the normal `<script>`'s
+runtime bindings. The compiler now reads them from `OrdinaryFacts`
+(`compile/bindings/ordinary.rs`), parsed once by L1 with the block's `lang`,
+and `collect_normal_script_bindings`, the compiler's own second OXC walk, is
+gone. The facts classify these bindings as Vue's `compileScript` does:
+`ref`/`reactive` and their siblings count only when imported from `vue`, a
+`let` is never a ref, and an ambient `declare` has no runtime binding. A
+named `default` import from a `.vue` file is the component itself, as a
+default import is. This rule was added to the shared L2 classifier, so
+`<script setup>` follows it too. The first declaration of a name wins, and a
+script the levels refuse exposes nothing.
+
+On the corpus (32 SFCs with both blocks, DOM, SSR and Vapor) the output is
+byte-identical except three `vue-language-tools` fixtures (`#2206`, `#4820`,
+`events`). Their normal scripts only `declare` the components and functions
+the template uses. The old walk bound those names, so the module returned
+identifiers that do not exist at runtime (`const __returned__ = { D, A, … }`).
+They now resolve as components (`_resolveComponent("A")`) or through the
+render context, as in Vue.
+
 ## Open
 
-This is not S7 completion. The compiler route that replaces
-`collect_normal_script_bindings` (a paired `<script setup>`'s view of the
-normal script) with `OrdinaryFacts` remains open, and so do the Patina,
-Maestro and Canon readers of Croquis' Options API descriptor.
+This is not S7 completion. The Patina, Maestro and Canon readers of Croquis'
+Options API descriptor remain, and so do two `OptionsObserver` gaps inherited
+from Croquis: a returned name is resolved against module objects rather than
+its lexical scope, and spread members are dropped rather than marking the
+group incomplete.

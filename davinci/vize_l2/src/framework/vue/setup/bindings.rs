@@ -277,7 +277,11 @@ impl<'a> Bindings<'a> {
                     if from_vue && let Some((api, _, _)) = vue_setup_call(imported.as_str()) {
                         self.aliases.push((local, api));
                     }
-                    let kind = if from_vue {
+                    // `import { default as C } from './C.vue'` is the component
+                    // itself, as a default import is (Vue's `compileScript`).
+                    let kind = if from_vue
+                        || (imported.as_str() == "default" && import.source.value.ends_with(".vue"))
+                    {
                         SetupBindingKind::SetupConst
                     } else {
                         SetupBindingKind::SetupMaybeRef

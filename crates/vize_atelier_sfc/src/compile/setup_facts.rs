@@ -139,7 +139,7 @@ pub(super) fn program_options(lang: Option<&str>) -> ProgramOptions {
     options
 }
 
-const fn binding_type(kind: SetupBindingKind) -> BindingType {
+pub(super) const fn binding_type(kind: SetupBindingKind) -> BindingType {
     match kind {
         SetupBindingKind::SetupConst => BindingType::SetupConst,
         SetupBindingKind::SetupLet => BindingType::SetupLet,
