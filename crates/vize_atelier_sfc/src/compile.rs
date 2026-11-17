@@ -217,9 +217,7 @@ fn compile_sfc_inner(
         }
 
         let options_api_bindings = has_template
-            .then(|| {
-                bindings::collect_options_api_bindings(&script_content, script.lang.as_deref())
-            })
+            .then(|| bindings::options_api(&script_content, script.lang.as_deref()))
             .flatten();
 
         // Compile template if present
