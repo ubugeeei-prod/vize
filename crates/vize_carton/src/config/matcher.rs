@@ -289,17 +289,17 @@ fn resolve_base_dir(base_path: Option<&str>, config_dir: &Path) -> PathBuf {
 }
 
 pub fn absolute_path(path: &Path, cwd: &Path) -> PathBuf {
-    let normalized = PathBuf::from(path.to_string_lossy().replace('\\', "/"));
-    let absolute = if normalized.is_absolute() {
-        normalized
-    } else {
-        cwd.join(normalized)
-    };
-    normalize_lexically(&absolute)
+    // Only a spelled backslash needs a rewritten copy; joining onto `cwd` keeps
+    // an absolute path as it is.
+    let mut text = path.to_string_lossy();
+    if text.contains('\\') {
+        text = text.replace('\\', "/").into();
+    }
+    normalize_lexically(&cwd.join(Path::new(text.as_ref())))
 }
 
 fn normalize_lexically(path: &Path) -> PathBuf {
-    let mut normalized = PathBuf::new();
+    let mut normalized = PathBuf::with_capacity(path.as_os_str().len());
     for component in path.components() {
         match component {
             Component::CurDir => {}

@@ -172,12 +172,16 @@ pub(super) fn source_path(path: &Path) -> PathBuf {
 
 /// The absolute path with `.` and `..` applied lexically.
 pub(super) fn lexical_path(path: &Path) -> PathBuf {
+    let joined;
     let absolute = if path.is_absolute() {
-        path.to_path_buf()
+        path
     } else {
-        std::env::current_dir().unwrap_or_default().join(path)
+        joined = std::env::current_dir().unwrap_or_default().join(path);
+        joined.as_path()
     };
-    let mut normalized = PathBuf::new();
+    // Dropping `.`, `..` and repeated separators never lengthens a path, so
+    // one buffer of the input's length holds every pushed component.
+    let mut normalized = PathBuf::with_capacity(absolute.as_os_str().len());
     for component in absolute.components() {
         match component {
             Component::CurDir => {}
