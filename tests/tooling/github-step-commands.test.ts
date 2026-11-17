@@ -219,6 +219,33 @@ void test("github/vp-install appends caller filters to the frozen offline instal
   );
 });
 
+void test("github/install-cross-compile-tools stops after a failed apt update", (t) => {
+  for (const [exitCodes, status, calls] of [
+    [[0], 0, 2],
+    [[100], 100, 1],
+    [[0, 4], 4, 2],
+  ] as const) {
+    const tempDir = mkdtempSync(path.join(tmpdir(), "github-cross-tools-"));
+    t.after(() => rmSync(tempDir, { recursive: true, force: true }));
+    const log = path.join(tempDir, "calls.log");
+    writeRecordingCommand(path.join(tempDir, "bin"), "sudo", log, { exitCodes });
+
+    const result = runToolCommand("tools/support/github/install-cross-compile-tools.ts", [], {
+      cwd: tempDir,
+      env: { PATH: pathWith(path.join(tempDir, "bin")) },
+    });
+
+    assert.equal(result.status, status);
+    assert.deepEqual(
+      readRecordedCalls(log).map(({ argv }) => argv),
+      [
+        ["apt-get", "update"],
+        ["apt-get", "install", "-y", "gcc-aarch64-linux-gnu"],
+      ].slice(0, calls),
+    );
+  }
+});
+
 void test("github/create-cli-archive archives from the target release directory", (t) => {
   const tempDir = fs.realpathSync(mkdtempSync(path.join(tmpdir(), "github-cli-archive-")));
   t.after(() => rmSync(tempDir, { recursive: true, force: true }));

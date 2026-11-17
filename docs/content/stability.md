@@ -53,18 +53,18 @@ Before any npm release, the packed tarballs are installed and must pass `vize --
 
 ### Linux glibc floor
 
-Every Linux GNU artifact (the `@vizejs/native-linux-{x64,arm64}-gnu` bindings and the
-`vize-{x86_64,aarch64}-unknown-linux-gnu` CLI archives the editor extensions download) needs
-**glibc 2.17 or newer**. Release builds link against that floor with `cargo zigbuild`, and the
-release fails if any built ELF file needs a newer glibc symbol version
+The Linux GNU native bindings (`@vizejs/native-linux-{x64,arm64}-gnu`) need **glibc 2.17 or
+newer**. They are what the npm `vize` command, `@vizejs/vite-plugin`, and every other Node.js
+integration load. Release builds link them against that floor with `cargo zigbuild`, and the release
+fails if any built binding needs a newer glibc symbol version
 (`tools/commands/ci/github/verify-glibc-symbols.ts`). Before tagging, the release candidate runs in
 containers:
 
-| Container         | glibc | What runs                                                                        |
-| ----------------- | ----- | -------------------------------------------------------------------------------- |
-| Amazon Linux 2023 | 2.34  | Packed install, `vize --version`, `check`, `lint`, `init`, `vite build`; the CLI |
-| AlmaLinux 8       | 2.28  | Packed install, `vize --version`, `check`, `lint`, `init`, `vite build`; the CLI |
-| CentOS 7          | 2.17  | The x64 binding loads and compiles an SFC; the CLI                               |
+| Container         | glibc | What runs                                                               |
+| ----------------- | ----- | ----------------------------------------------------------------------- |
+| Amazon Linux 2023 | 2.34  | Packed install, `vize --version`, `check`, `lint`, `init`, `vite build` |
+| AlmaLinux 8       | 2.28  | Packed install, `vize --version`, `check`, `lint`, `init`, `vite build` |
+| CentOS 7          | 2.17  | The x64 binding loads and compiles an SFC                               |
 
 Official Node.js 22+ builds already require glibc 2.28, so wherever Node.js runs, the binding
 loads: Debian 10+, Ubuntu 20.04+, RHEL/AlmaLinux/Rocky 8+, and Amazon Linux 2023.
@@ -80,6 +80,11 @@ binding cannot load in a glibc process, so it is not a fallback on glibc systems
 
 If the binding still fails to load, the error names the library and symbol version the binding
 asked for, the glibc version the system has, and the floor above.
+
+The standalone `vize-{x86_64,aarch64}-unknown-linux-gnu` CLI archives on GitHub releases (which the
+editor extensions download) are not covered by this floor yet and need the glibc of the release
+runner. On older systems use the fully static `vize-*-unknown-linux-musl` archive, which runs on any
+Linux.
 
 The minimum supported Rust version (MSRV) for the workspace is declared in `Cargo.toml` under
 `[workspace.package].rust-version`. The development toolchain pinned by `rust-toolchain.toml`

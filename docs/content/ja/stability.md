@@ -47,13 +47,13 @@ npm に公開する前に、リリース用 tarball をインストールし、`
 
 ### Linux の glibc 要件 {#linux-glibc-floor}
 
-Linux GNU 向けの成果物（`@vizejs/native-linux-{x64,arm64}-gnu` のバインディングと、エディタ拡張がダウンロードする `vize-{x86_64,aarch64}-unknown-linux-gnu` の CLI アーカイブ）は、**glibc 2.17 以降**で動作します。リリースビルドは `cargo zigbuild` でこの下限に合わせてリンクし、ビルドした ELF ファイルがより新しい glibc のシンボルバージョンを要求するとリリースが失敗します（`tools/commands/ci/github/verify-glibc-symbols.ts`）。タグを打つ前に、リリース候補を次のコンテナで実行します。
+Linux GNU 向けのネイティブバインディング（`@vizejs/native-linux-{x64,arm64}-gnu`）は、**glibc 2.17 以降**で動作します。npm の `vize` コマンド、`@vizejs/vite-plugin`、その他すべての Node.js 連携はこのバインディングを読み込みます。リリースビルドは `cargo zigbuild` でこの下限に合わせてリンクし、ビルドしたバインディングがより新しい glibc のシンボルバージョンを要求するとリリースが失敗します（`tools/commands/ci/github/verify-glibc-symbols.ts`）。タグを打つ前に、リリース候補を次のコンテナで実行します。
 
 | コンテナ          | glibc | 実行内容                                                                             |
 | ----------------- | ----- | ------------------------------------------------------------------------------------ |
-| Amazon Linux 2023 | 2.34  | tarball のインストール、`vize --version`・`check`・`lint`・`init`・`vite build`、CLI |
-| AlmaLinux 8       | 2.28  | tarball のインストール、`vize --version`・`check`・`lint`・`init`・`vite build`、CLI |
-| CentOS 7          | 2.17  | x64 バインディングの読み込みと SFC のコンパイル、CLI                                 |
+| Amazon Linux 2023 | 2.34  | tarball のインストール、`vize --version`・`check`・`lint`・`init`・`vite build` |
+| AlmaLinux 8       | 2.28  | tarball のインストール、`vize --version`・`check`・`lint`・`init`・`vite build` |
+| CentOS 7          | 2.17  | x64 バインディングの読み込みと SFC のコンパイル                                 |
 
 公式の Node.js 22 以降のビルドは glibc 2.28 を必要とするため、Node.js が動く環境ではバインディングも読み込めます（Debian 10 以降、Ubuntu 20.04 以降、RHEL / AlmaLinux / Rocky 8 以降、Amazon Linux 2023）。
 
@@ -62,6 +62,8 @@ Linux GNU 向けの成果物（`@vizejs/native-linux-{x64,arm64}-gnu` のバイ�
 **musl.** Alpine などの musl 環境では `@vizejs/native-linux-{x64,arm64}-musl` を使います。musl 版のバインディングは glibc のプロセスでは読み込めないため、glibc 環境の代替にはなりません。
 
 それでもバインディングを読み込めない場合、エラーには、バインディングが要求したライブラリとシンボルバージョン、システムの glibc バージョン、上記の下限が表示されます。
+
+GitHub リリースの単体 CLI アーカイブ `vize-{x86_64,aarch64}-unknown-linux-gnu`（エディタ拡張がダウンロードするもの）は、まだこの下限の対象外で、リリース用ランナーの glibc を必要とします。古い環境では、どの Linux でも動く完全静的リンクの `vize-*-unknown-linux-musl` アーカイブを使ってください。
 
 Rust の最低対応バージョン（MSRV）は、`Cargo.toml` の `[workspace.package].rust-version` に記載しています。
 開発用の `rust-toolchain.toml` は、同じバージョンか、それより新しいバージョンを指定します。

@@ -171,11 +171,6 @@ test("release builds link every GNU artifact against the documented floor", () =
   assert.doesNotMatch(native, /verify-glibc-symbols\.ts --max/);
   assert.match(native, /uses: \.\/\.github\/actions\/setup-cargo-zigbuild/);
 
-  const cli = readRepoFile(".github", "actions", "build-release-cli", "action.yml");
-  assert.match(cli, /glibc-floor\.ts target "\$RELEASE_TARGET"/);
-  assert.match(cli, /cargo zigbuild --locked --release -p vize --target "\$floor_target"/);
-  assert.match(cli, /verify-glibc-symbols\.ts "target\/\$RELEASE_TARGET\/release\/vize"/);
-
   const job = workflowJobBody(readRepoFile(".github", "workflows", "release.yml"), "build-native");
   assert.match(job, /cross-compile: \$\{\{ matrix\.settings\.cross_compile \}\}/);
 });
@@ -183,9 +178,8 @@ test("release builds link every GNU artifact against the documented floor", () =
 test("the release cannot tag before the GNU artifacts ran on old glibc", () => {
   const release = readRepoFile(".github", "workflows", "release.yml");
   const smoke = workflowJobBody(release, "smoke-glibc-floor");
-  assert.match(smoke, /needs: \[version, build-packages, build-native, build-cli\]/);
+  assert.match(smoke, /needs: \[version, build-packages, build-native\]/);
   assert.match(smoke, /uses: \.\/\.github\/actions\/smoke-glibc-floor-containers/);
-  assert.match(smoke, /cli: \.artifacts\/cli\/vize/);
   assert.match(workflowJobBody(release, "tag"), /smoke-glibc-floor/);
 
   const containers = readRepoFile(

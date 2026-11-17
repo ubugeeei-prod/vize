@@ -570,12 +570,12 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
-  # The Linux GNU bindings and CLIs must run on the documented glibc floor
+  # The Linux GNU bindings must run on the documented glibc floor
   # (tools/support/github/glibc-floor.ts): Amazon Linux 2023 is the Vercel
   # build image and the Vercel Functions / AWS Lambda runtime.
   smoke-glibc-floor:
     name: Smoke Linux GNU on old glibc - ${{ matrix.platform }}
-    needs: [version, build-packages, build-native, build-cli]
+    needs: [version, build-packages, build-native]
     if: needs.version.outputs.ref != ''
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 30
@@ -595,19 +595,11 @@ jobs:
       - uses: ./.github/actions/setup-runtime-package-managers
         with: { node-version-file: "package.json" }
       - uses: ./.github/actions/release-npm-artifacts
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with: { name: "cli-${{ matrix.target }}", path: .artifacts/cli-archive }
-      - name: Unpack the release CLI
-        env: { TARGET: "${{ matrix.target }}", PLATFORM: "${{ matrix.platform }}" }
-        run: |
-          mkdir -p .artifacts/cli
-          tar -xzf ".artifacts/cli-archive/vize-$TARGET.tar.gz" -C .artifacts/cli
-          node tools/commands/ci/github/verify-glibc-symbols.ts .artifacts/cli/vize \
-            "npm/native/npm/$PLATFORM/vize-vitrine.$PLATFORM.node"
+      - name: Gate the bindings on the glibc floor
+        env: { PLATFORM: "${{ matrix.platform }}" }
+        run: node tools/commands/ci/github/verify-glibc-symbols.ts "npm/native/npm/$PLATFORM/vize-vitrine.$PLATFORM.node"
       - uses: ./.github/actions/smoke-glibc-floor-containers
         with: { platform: "${{ matrix.platform }}" }
-      - uses: ./.github/actions/smoke-glibc-floor-containers
-        with: { platform: "${{ matrix.platform }}", cli: .artifacts/cli/vize }
 
   # Every artifact exists: only now does the version become real.
   tag:

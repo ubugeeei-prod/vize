@@ -1,5 +1,5 @@
 name: Release glibc floor
-# Builds the Linux GNU release artifacts with the exact release recipes, fails
+# Builds the Linux GNU native bindings with the exact release recipe, fails
 # when any ELF image needs more than the documented glibc floor
 # (tools/support/github/glibc-floor.ts), and runs them on Amazon Linux 2023
 # (Vercel builds and functions), AlmaLinux 8 and CentOS 7. release.yml runs the
@@ -15,7 +15,6 @@ on:
       - "crates/vize_vitrine/build.rs"
       - "npm/native/native-binding.js"
       - "npm/native/native-targets.js"
-      - ".github/actions/build-release-cli/**"
       - ".github/actions/build-release-native/**"
       - ".github/actions/setup-cargo-zigbuild/**"
       - ".github/actions/smoke-glibc-floor-containers/**"
@@ -84,61 +83,3 @@ jobs:
           vp run --filter './npm/builder/vite' build
       - uses: ./.github/actions/smoke-glibc-floor-containers
         with: { platform: "${{ matrix.platform }}" }
-
-  cli:
-    name: CLI glibc floor - ${{ matrix.platform }}
-    runs-on: ${{ matrix.runner }}
-    timeout-minutes: 75
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - runner: blacksmith-32vcpu-ubuntu-2404
-            target: x86_64-unknown-linux-gnu
-            platform: linux-x64-gnu
-          # The arm64 CLI is cross-linked on x64 like the release; it runs on arm64.
-          - runner: blacksmith-32vcpu-ubuntu-2404
-            target: aarch64-unknown-linux-gnu
-            platform: linux-arm64-gnu
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { persist-credentials: false }
-      - name: Read the package version
-        id: version
-        run: node -e 'console.log(`version=${require("./npm/native/package.json").version}`)' >> "$GITHUB_OUTPUT"
-      - name: Build the release CLI (gates the glibc floor)
-        uses: ./.github/actions/build-release-cli
-        with:
-          target: ${{ matrix.target }}
-          archive: vize-${{ matrix.target }}.tar.gz
-          release-version: ${{ steps.version.outputs.version }}
-          upload-artifacts: "true"
-
-  cli-smoke:
-    name: CLI on old glibc - ${{ matrix.platform }}
-    needs: cli
-    runs-on: ${{ matrix.runner }}
-    timeout-minutes: 15
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - runner: blacksmith-32vcpu-ubuntu-2404
-            target: x86_64-unknown-linux-gnu
-            platform: linux-x64-gnu
-          - runner: ubuntu-22.04-arm
-            target: aarch64-unknown-linux-gnu
-            platform: linux-arm64-gnu
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-        with: { persist-credentials: false }
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with: { name: "cli-${{ matrix.target }}", path: .artifacts/cli-archive }
-      - name: Unpack the release CLI
-        env: { TARGET: "${{ matrix.target }}" }
-        run: |
-          mkdir -p .artifacts/cli
-          tar -xzf ".artifacts/cli-archive/vize-$TARGET.tar.gz" -C .artifacts/cli
-          node tools/commands/ci/github/verify-glibc-symbols.ts .artifacts/cli/vize
-      - uses: ./.github/actions/smoke-glibc-floor-containers
-        with: { platform: "${{ matrix.platform }}", cli: .artifacts/cli/vize }

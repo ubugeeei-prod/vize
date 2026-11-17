@@ -145,7 +145,6 @@ test("all shipping platforms retain target and ABI guards on accelerated runners
   assert.equal((native.match(/verify-glibc-symbols\.ts npm\//g) ?? []).length, 2);
   assert.doesNotMatch(native, /verify-glibc-symbols\.ts --max/);
   const cli = readRepoFile(".github", "actions", "build-release-cli", "action.yml");
-  assert.match(cli, /verify-glibc-symbols\.ts "target\/\$RELEASE_TARGET\/release\/vize"/);
   assert.match(cli, /verify-musl-cli-binary\.ts/);
   assert.match(cli, /configure-zig-musl-linkers\.ts/);
 });

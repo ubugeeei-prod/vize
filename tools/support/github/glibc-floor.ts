@@ -1,7 +1,8 @@
 /**
- * The one glibc floor every shipped Linux GNU artifact (the `@vizejs/native`
- * and `@vizejs/fresco-native` bindings and the `vize` CLI archives, x64 and
- * arm64) is linked against and gated on.
+ * The one glibc floor the shipped Linux GNU native bindings
+ * (`@vizejs/native` and `@vizejs/fresco-native`, x64 and arm64) are linked
+ * against and gated on. The npm `vize` command loads these bindings, as do
+ * `@vizejs/vite-plugin` and every other Node.js integration.
  *
  * glibc 2.17 is the manylinux2014 baseline and the floor of Rust's own
  * `*-unknown-linux-gnu` standard library, so no supported dependency needs
