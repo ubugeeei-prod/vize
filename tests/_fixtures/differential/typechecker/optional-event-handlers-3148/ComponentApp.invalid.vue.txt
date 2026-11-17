@@ -1,0 +1,8 @@
+<script setup lang="ts">
+import Child from './Child.vue'
+
+const item = {} as {
+  onClick?: (payload: KeyboardEvent) => Promise<void>
+}
+</script>
+<template><Child @click="item.onClick" /></template>

@@ -7,6 +7,8 @@ export function packCases<T extends { pack?: unknown }>(cases: readonly T[]): T[
 // Exact production fixture-body and original-source registrations, sorted by pack.
 export const TYPECHECKER_TESTS = {
   "allow-importing-ts-extensions-9890": "authored_ts_extensions_report_ts5097_by_default",
+  "ambient-declarations-3095":
+    "fix_history_cases::ambient_declarations_3095::ambient_augmentations_preserve_batch_diagnostics",
   "aria-kebab-prop-11048":
     "aria_kebab_prop_11048::declared_kebab_aria_props_preserve_batch_diagnostics",
   "aria-propertykey-capture-11153":
@@ -70,12 +72,16 @@ export const TYPECHECKER_TESTS = {
   "dependency-probe-history-10936": "dependency_probe_histories_preserve_complete_diagnostics",
   "dynamic-component-union-listener-10026":
     "dynamic_component_union_listener_preserves_clean_diagnostics",
+  "dynamic-component-v-for-scope":
+    "fix_history_cases::dynamic_component_v_for_scope::dynamic_is_on_v_for_elements_preserves_batch_diagnostics",
   "dynamic-directive-expression-mapping-10182":
     "dynamic_directive_expressions_preserve_typed_slot_payloads",
   "editor-alias-import-extension-10753":
     "editor_alias_import_extension_styles_keep_native_diagnostics",
   "empty-generic-public-contract-10540":
     "empty_generic_markers_preserve_functional_public_contracts",
+  "empty-template-interpolation-3090":
+    "fix_history_cases::empty_template_interpolation_3090::empty_interpolations_preserve_batch_diagnostics",
   "empty-v-slot-expression": "empty_v_slot_expressions_keep_slot_scopes_checked",
   "escaped-import-literals-10763": "escaped_module_paths_preserve_complete_authored_diagnostics",
   "event-handler-narrowing": "inline_event_assignments_preserve_exact_diagnostics",
@@ -87,10 +93,16 @@ export const TYPECHECKER_TESTS = {
   "generic-fallthrough-spread-9956": "generic_fallthrough_spread_preserves_valid_values",
   "generic-slot-outlet-10883": "generic_slot_outlets_check_against_the_setup_parameters",
   "global-scope-build-info-10819": "global_scope_build_info_keeps_complete_diagnostics",
+  "guard-diagnostic-position-2960":
+    "fix_history_cases::guard_diagnostic_position_2960::authored_guards_own_batch_diagnostics",
   "import-literal-geometry-10762": "rewritten_import_literals_preserve_complete_batch_diagnostics",
+  "imported-ref-unwrap-2958":
+    "fix_history_cases::imported_ref_unwrap_2958::imported_refs_preserve_batch_diagnostics",
   "incomplete-script-setup-recovery-10200": "pins_incomplete_setup_import_corpus",
   "inferred-project-tsconfig-9718": "inferred_project_tsconfig_preserves_owned_batch_inputs",
   "jsx-prop-token-ranges-10494": "jsx_prop_tokens_preserve_complete_batch_diagnostics",
+  "leading-semicolon-handler-3091":
+    "fix_history_cases::leading_semicolon_handler_3091::asi_prefixed_handlers_preserve_batch_diagnostics",
   "library-generic-props-fallback-13021":
     "library_generic_props_fallback::old_library_generic_props_follow_the_unknown_props_policy",
   "listener-attribute-parity-9852": "listener_keeps_class_style_and_spread_attribute_parity",
@@ -103,14 +115,24 @@ export const TYPECHECKER_TESTS = {
   "native-expect-error-10413": "vue3_native_expectations_preserve_strict_ownership",
   "native-inline-event-handler-9835": "native_inline_event_handler_is_contextually_typed",
   "native-pointer-events-original": "native_click_events_preserve_pointer_event_diagnostics",
+  "nested-v-if-narrowing-2959":
+    "fix_history_cases::nested_v_if_narrowing_2959::nested_else_v_for_preserves_batch_diagnostics",
   "nuxt-plugin-injection-types": "nuxt_reference_graph_preserves_plugin_injection_import_types",
   "nuxt-unknown-template-options-10013": "nuxt_unknown_template_options_preserve_explicit_checks",
+  "optional-event-handlers-3148":
+    "fix_history_cases::optional_event_handlers_3148::optional_handlers_preserve_batch_diagnostics",
   "optional-fallthrough-spread-10170":
     "optional_fallthrough_spread_preserves_valid_values_and_rejects_invalid_values",
   "options-api-any-instance": "options_api_any_instance_preserves_complete_original_diagnostics",
   "options-api-reserved-component-reference":
     "options_api_reserved_props_resolve_dynamic_component_references",
   "package-target-deletion-refresh": "missing_exported_package_target_preserves_ts2307",
+  "plain-script-enum-class-exports-3382":
+    "fix_history_cases::plain_script_enum_class_exports_3382::plain_script_value_and_type_exports_preserve_batch_diagnostics",
+  "plain-script-named-exports-1966":
+    "fix_history_cases::plain_script_named_exports_1966::plain_script_value_exports_preserve_batch_diagnostics",
+  "plain-script-type-body-2038":
+    "fix_history_cases::plain_script_type_body_2038::plain_script_type_bodies_preserve_batch_diagnostics",
   "planned-generic-syntax-route-10598":
     "planned_generic_syntax_keeps_independent_body_errors_through_repairs",
   "portable-pug-10434": "portable_pug_refusals_preserve_native_batch_diagnostics",
@@ -125,6 +147,8 @@ export const TYPECHECKER_TESTS = {
   "reopen-repaired-diagnostics-10730": "repaired_dependency_buffer_keeps_its_own_diagnostics",
   "required-default-props": "defaulted_required_props_stay_optional_for_the_parent",
   "required-props-edges": "required_props_keep_exact_unicode_diagnostics",
+  "reserved-enum-member-3092":
+    "fix_history_cases::reserved_enum_member_3092::reserved_enum_members_preserve_batch_diagnostics",
   "reserved-expression-shapes": "reserved_prop_shapes_preserve_literal_and_member_diagnostics",
   "runtime-props-report-10100-10101": "runtime_props_reports_10100_10101_retain_expected_types",
   "setup-custom-properties": "custom_properties_resolve_on_the_template_instance",
@@ -133,6 +157,8 @@ export const TYPECHECKER_TESTS = {
   "strict-fallthrough-default-7856": "strict_component_attrs_infer_default_fallthrough_surfaces",
   "template-context-undefined-10667": "undefined_context_keeps_complete_authored_diagnostics",
   "template-definite-assignment": "deferred_template_reads_preserve_script_diagnostics",
+  "template-loop-narrowing-3149":
+    "fix_history_cases::template_loop_narrowing_3149::v_for_callbacks_preserve_batch_diagnostics",
   "template-ref-signatures-10948": "template_ref_signatures_preserve_readonly_unknown_and_repairs",
   "template-suppression-original": "template_suppression_preserves_complete_original_diagnostics",
   "tsconfig-literal-brackets-10819": "literal_bracket_pages_keep_their_project_options",
@@ -158,6 +184,7 @@ export const TYPECHECKER_TESTS = {
 const originalFixtureRevision = "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943";
 export const sourceRevisions = {
   "allow-importing-ts-extensions-9890": "f1b07174a4a86ffc3433f31b8c78406d5bf5b760",
+  "ambient-declarations-3095": "9129f14b5fa108e71cb5deed590f68f39054c1c2",
   "aria-kebab-prop-11048": "65b38273c8713a724f42f0bb63a2aef7cc6daae4",
   "aria-propertykey-capture-11153": "aed91c7626f9daf11a07b9eb32a0b7ff27ec9038",
   "art-variant-implicit-component-9854": "f07065df35d25bc76f355e5f106c80dbefa922b5",
@@ -199,9 +226,11 @@ export const sourceRevisions = {
   "declared-prop-names-original": "0f15c8b49d0630c1f2492c7ad8447ef4c9711534",
   "dependency-probe-history-10936": "1266cd3a014654bbdcf3378500b93447411b26d9",
   "dynamic-component-union-listener-10026": "0aafae7e41f1ac381d07fa9f0154084cc1e6f211",
+  "dynamic-component-v-for-scope": "7f802b69bf57fc555e65174d33d8319fc4753aa4",
   "dynamic-directive-expression-mapping-10182": "f305bcc8c81b8f6009dabb5a3a61bb838c755701",
   "editor-alias-import-extension-10753": "377e5df97c4effa786a6426a62f61296ce16c750",
   "empty-generic-public-contract-10540": "4fdc457df6498c4636efb35dd76af61394ad7006",
+  "empty-template-interpolation-3090": "7c18c96fe98af6b74f57753b7801e647f751d50d",
   "empty-v-slot-expression": "482dd05d23ac9d1bec4065608dd8fe562a11b3b0",
   "escaped-import-literals-10763": "62652a4d4029fa11016dfa1ac8c24669b42c8d7a",
   "event-handler-narrowing": originalFixtureRevision,
@@ -212,10 +241,13 @@ export const sourceRevisions = {
   "generic-fallthrough-spread-9956": "2b1e41a5b09005a97d24d1ff34f34c7507bbfb67",
   "generic-slot-outlet-10883": "42ca747027a86da7f94b473cff737cb330134d8c",
   "global-scope-build-info-10819": "61d756842bb44a72c84982f01dc40d3423c96503",
+  "guard-diagnostic-position-2960": "7f01c58cdd13bda478e7b1b70fe5575a173bd063",
   "import-literal-geometry-10762": "62652a4d4029fa11016dfa1ac8c24669b42c8d7a",
+  "imported-ref-unwrap-2958": "57dd8e862ab9963567d6762629170bab3b464c05",
   "incomplete-script-setup-recovery-10200": "4a555b0aae0a394fbe4cedc08092638975f06a2a",
   "inferred-project-tsconfig-9718": "f95557dadaab83dc0f7d4a7613bdb7ed4e59d323",
   "jsx-prop-token-ranges-10494": "aaeeb1c1264a319737fa11e56971c9d73064d6a3",
+  "leading-semicolon-handler-3091": "f6ffab4e808a96f2d0dac8827d4e00c7d7df260a",
   "library-generic-props-fallback-13021": "f06d427619f943bf1192cfafbae65de537e464d0",
   "listener-attribute-parity-9852": "11cb03950bc8d2a4e9cb8d164b0aaca79e302291",
   "literal-reference-paths-10551": "0a7f029e3be412a89232bd82127d3ac9bb058514",
@@ -226,12 +258,17 @@ export const sourceRevisions = {
   "native-expect-error-10413": "b005ad1279cc17a2da628e4d7459a0cb9f65dbe7",
   "native-inline-event-handler-9835": "8ac6ce1668e9bede8d73411e63a247dbd6f8eb56",
   "native-pointer-events-original": "e7d8b1c82a8badec89ec9779838dfa50c1b9b790",
+  "nested-v-if-narrowing-2959": "ac02c114ce529b6ef42e7ca7757279e1068548a6",
   "nuxt-plugin-injection-types": "2c22691f0f8303a28c425213c423e299f9ad5420",
   "nuxt-unknown-template-options-10013": "fb700551a3a3a69f8976efa6fe31bca43ebc19b4",
+  "optional-event-handlers-3148": "805d32a5277a025d062edc47e20cc22ce170f5e7",
   "optional-fallthrough-spread-10170": "8300867552287abb14f4fbb7471c705aea72bbdf",
   "options-api-any-instance": "35bdad84760e6251edd52bb2e3e52701974a9d63",
   "options-api-reserved-component-reference": "482dd05d23ac9d1bec4065608dd8fe562a11b3b0",
   "package-target-deletion-refresh": "13fa41356d075047a229f580014b637d3bbeb57f",
+  "plain-script-enum-class-exports-3382": "813a7ba187995f46cd4c3c0b8ec03104bcd9d9e3",
+  "plain-script-named-exports-1966": "a4da0228d54f89923e2982044eeab2c4809529be",
+  "plain-script-type-body-2038": "fd87bb1274a781dad70c3599df9fd3365a1eb870",
   "planned-generic-syntax-route-10598": "957827706dd439d9810a24f65b4a16c45f266b5e",
   "portable-pug-10434": "c2132e45d47aad595aac7e07f5e71a78b8ffd1c8",
   "public-instance-ts-directives-10984": "c001dc27973a316351d1d45739ad84a7db544f11",
@@ -242,6 +279,7 @@ export const sourceRevisions = {
   "reopen-repaired-diagnostics-10730": "9403195279c75693aea30f097bf996cb83dd9729",
   "required-default-props": "34b2a8f60f2a73df5736422761c6f5f08cd21fe4",
   "required-props-edges": originalFixtureRevision,
+  "reserved-enum-member-3092": "347d653aba6f5bc24592275a772e0877f367ce05",
   "reserved-expression-shapes": originalFixtureRevision,
   "runtime-props-report-10100-10101": "5dfe002a9467d152c8545693df33def3aa5f3bf7",
   "setup-custom-properties": "482dd05d23ac9d1bec4065608dd8fe562a11b3b0",
@@ -250,6 +288,7 @@ export const sourceRevisions = {
   "strict-fallthrough-default-7856": "d32790c869ac18c1e0e24e82a8876d796190133a",
   "template-context-undefined-10667": "2806a05b4b9dac514afd0fb5c0cd3fb9925d9c54",
   "template-definite-assignment": originalFixtureRevision,
+  "template-loop-narrowing-3149": "2ecf10de92663303cecb76470bfa5ea42e992764",
   "template-ref-signatures-10948": "9157b9fa83dbdc98100be084be288f21d0d1bc18",
   "template-suppression-original": "e199979dfb32dfd8eb9ad32a2928fb010768f239",
   "tsconfig-literal-brackets-10819": "26b8fa31c7933d800c8bf4c2f37057864caaae9d",

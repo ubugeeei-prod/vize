@@ -1,0 +1,10 @@
+<script setup lang="ts">
+const value = 'visible'
+</script>
+
+<template>
+  <SfCollectedProduct>
+    <template #more-actions>{{  }}</template>
+  </SfCollectedProduct>
+  <p>{{ value }}</p>
+</template>

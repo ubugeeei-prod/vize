@@ -1,0 +1,13 @@
+import {
+  DiffCursor,
+  DiffDisplayMode,
+  DiffMarker,
+  pageSize,
+  toPageCount,
+} from "./DiffViewer.vue";
+
+const mode: DiffDisplayMode = "split";
+const marker: DiffMarker = DiffMarker.Added;
+const cursor: DiffCursor = new DiffCursor();
+const pages: number = toPageCount(pageSize) + cursor.line;
+void [mode, marker, pages];

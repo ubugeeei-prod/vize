@@ -1,0 +1,4 @@
+<script setup lang="ts">
+const parts = [{ type: 'text', key: '0', value: 'a' }];
+</script>
+<template><article><p><component v-for="part in parts" :is="part.type === 'text' ? 'span' : 'a'" :key="part.key">{{ part.value }}</component></p></article></template>
