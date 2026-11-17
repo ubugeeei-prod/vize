@@ -1,0 +1,10 @@
+<script setup lang="ts">
+defineSlots<{
+  default: (props: { foo: string }) => any;
+}>();
+</script>
+
+<template>
+  <slot bar="..."></slot>
+  <slot foo="ok"></slot>
+</template>
