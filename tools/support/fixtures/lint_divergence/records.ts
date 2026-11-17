@@ -16,6 +16,20 @@ import {
   inheritedPropMemberReason,
 } from "./inherited_prop_members.ts";
 import {
+  booleanDefaultFromImportedContract,
+  duplicateKeyFromImportedContract,
+  importedPropCollisionReason,
+  importedPropContractReason,
+  propFindingFromImportedContract,
+  templateShadowFromImportedContract,
+} from "./imported_prop_contract.ts";
+import {
+  importedEmitContractReason,
+  importedSlotContractReason,
+  emitFindingFromImportedContract,
+  undeclaredSlotFromImportedContract,
+} from "./imported_macro_contract.ts";
+import {
   indexRealProjectLocationSource,
   realProjectLocationDivergence,
   type RealProjectLocationSource,
@@ -256,6 +270,16 @@ export function baselineIntentionalReason(
     assertedMethodHandler(finding, source)
   )
     return "Vue's compiler unwraps parentheses and TypeScript `as`/`satisfies`/`!` when it decides a v-on value is a method handler, so `(handleKeyDown as any)` is passed as the method itself; eslint-plugin-vue reads the wrapped expression as an inline handler.";
+  if (
+    finding.ruleId === "vue/require-explicit-slots" &&
+    finding.message === "Slots must be explicitly defined." &&
+    source !== undefined &&
+    source !== null
+  ) {
+    const offset = findingOffset(finding, source);
+    if (offset !== null && undeclaredSlotFromImportedContract(offset, source))
+      return importedSlotContractReason;
+  }
   if (finding.ruleId === "vue/no-shared-component-data")
     return "Patina intentionally merges vue/no-shared-component-data and vue/no-deprecated-data-object-declaration into one diagnostic for the same invalid data option.";
   if (
@@ -537,6 +561,7 @@ const patinaIntentionalRuleIds = new Set([
   "script/no-deprecated-dollar-listeners-api",
   "script/no-deprecated-dollar-scopedslots-api",
   "script/no-deprecated-events-api",
+  "script/no-dupe-keys",
   "script/no-ref-as-operand",
   "script/no-side-effects-in-computed-properties",
   "script/one-component-per-file",
@@ -551,6 +576,11 @@ const patinaIntentionalRuleIds = new Set([
   "vue/no-reserved-component-names",
   "vue/no-setup-props-reactivity-loss",
   "vue/no-static-inline-styles",
+  "vue/no-template-shadow",
+  "vue/no-shadow-native-events",
+  "script/no-required-prop-with-default",
+  "vue/prop-name-casing",
+  "script/no-unused-emit-declarations",
   "vue/no-unused-components",
   "vue/no-unused-vars",
   "vue/next-tick-style",
@@ -617,6 +647,8 @@ export function patinaIntentionalReason(
     typedDefaultComesFromComposedContract(finding, source)
   )
     return "Patina resolves optional props inherited through local interface heritage or intersections; eslint-plugin-vue does not expand that composed prop contract.";
+  const importedContract = importedPropContractFinding(finding, source);
+  if (importedContract !== null) return importedContract;
   if (
     finding.ruleId === "script/require-default-prop" &&
     inlineExtensionBesideDefaultsSpread(finding, source)
@@ -1148,6 +1180,35 @@ function findingInScriptSetup(finding: LintRecord, source: string): boolean {
     (close < 0 || offset < close) &&
     /\ssetup(?:[\s=>/]|$)/u.test(source.slice(open, tagEnd))
   );
+}
+
+function importedPropContractFinding(finding: LintRecord, source: string): string | null {
+  const start = findingOffset(finding, source),
+    end = findingEndOffset(finding, source);
+  if (start === null || end === null || end < start) return null;
+  const accepted = [
+    "script/require-default-prop",
+    "script/no-required-prop-with-default",
+    "vue/prop-name-casing",
+  ].includes(finding.ruleId)
+    ? propFindingFromImportedContract(finding.message, start, end, source)
+    : finding.ruleId === "script/no-boolean-default"
+      ? booleanDefaultFromImportedContract(start, end, source)
+      : null;
+  if (accepted !== null) return accepted ? importedPropContractReason : null;
+  if (
+    ["vue/no-shadow-native-events", "script/no-unused-emit-declarations"].includes(
+      finding.ruleId,
+    ) &&
+    emitFindingFromImportedContract(finding.message, start, end, source)
+  )
+    return importedEmitContractReason;
+  const collides =
+    finding.ruleId === "script/no-dupe-keys"
+      ? duplicateKeyFromImportedContract(finding.message, start, end, source)
+      : finding.ruleId === "vue/no-template-shadow" &&
+        templateShadowFromImportedContract(finding.message, start, source);
+  return collides ? importedPropCollisionReason : null;
 }
 
 function findingOffset(finding: LintRecord, source: string): number | null {
