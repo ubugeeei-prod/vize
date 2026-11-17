@@ -12,7 +12,7 @@
 use alloc::vec::Vec as StdVec;
 
 use vize_l0::{Allocator, Span, String, cstr};
-use vize_l1::pug::{
+use vize_l1::markup::pug::{
     PugBlock, PugHtmlItem, PugInline, PugNode, PugRefusal, PugRefused, PugTag, PugTextPiece,
     PugTree, parse_pug,
 };

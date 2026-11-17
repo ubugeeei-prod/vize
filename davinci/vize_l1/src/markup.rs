@@ -24,15 +24,11 @@
 //! Design: <https://github.com/ubugeeei-prod/vize/issues/6836#issuecomment-5847794929>.
 
 pub mod directive;
-pub mod document;
 pub mod entity;
 pub mod grammar;
-pub mod lex;
-mod native;
-pub mod parse;
+pub mod htmlish;
 pub mod profile;
-pub mod render;
-pub mod surface;
+pub mod pug;
 pub mod token;
 pub mod tsrx;
 
@@ -40,8 +36,8 @@ pub use directive::{
     ArgSyntax, DirectiveName, DirectiveNameError, DirectivePrefix, DirectiveSyntax, VueDirectives,
 };
 pub use grammar::{MarkupGrammar, Vue};
-pub use lex::{Delimiters, LexOptions, Lexer};
-pub use native::{
+pub use htmlish::lex::{Delimiters, LexOptions, Lexer};
+pub use htmlish::native::{
     NativeAttribute, NativeAttributeBindingExpression, NativeAttributeBindingExpressionView,
     NativeAttributeElse, NativeAttributeElseView, NativeAttributeExpression,
     NativeAttributeExpressionFailure, NativeAttributeExpressionView, NativeAttributeForHead,
@@ -57,18 +53,20 @@ pub use native::{
     NativeStaticBindingHead, NativeTemplateComponent, NativeTemplateGrammar, NativeTextValue,
     NativeTextValueError, NativeTextValueFailure, NativeTextValueView,
 };
-pub use parse::{
+pub use htmlish::parse::{
     ComponentParse, ComponentSourceError, DirectiveAdmission, SurfaceError, SurfaceParseOptions,
     parse, parse_component, parse_component_with_authored, parse_component_with_options,
     parse_with_authored, parse_with_authored_diagnostics, parse_with_options,
     parse_with_options_and_caps,
 };
-pub use profile::{Component, Document, Profile, ProfileKind, VueComponent};
-pub use render::{HoleCounts, check_fidelity, hole_counts, render};
-pub use surface::{
+pub use htmlish::render::{HoleCounts, check_fidelity, hole_counts, render};
+pub use htmlish::surface::{
     AttrValue, Attribute, CloseTag, Element, ElementClose, Interpolation, OpenTag, SurfaceChild,
     SurfaceTree, Token, TokenStatus,
 };
+pub use profile::{Component, Document, Profile, ProfileKind, VueComponent};
 pub use token::{LexErrorCode, LexMode, Namespace, QuoteType, Sink};
 
-pub use native::{NativeLintComponent, NativeLintTag, NativeLintTagKind, NativeLintTagRefusal};
+pub use htmlish::native::{
+    NativeLintComponent, NativeLintTag, NativeLintTagKind, NativeLintTagRefusal,
+};

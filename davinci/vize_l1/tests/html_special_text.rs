@@ -2,7 +2,9 @@
 
 use serde_json::{Value, json};
 use vize_l0::{Allocator, SourceRoot, Span, String};
-use vize_l1::markup::document::{DocumentHtmlNode, DocumentHtmlRefusal as Refusal, NativeDocument};
+use vize_l1::markup::htmlish::document::{
+    DocumentHtmlNode, DocumentHtmlRefusal as Refusal, NativeDocument,
+};
 
 const CORPUS: &str = include_str!("fixtures/document/html-special-text.json");
 

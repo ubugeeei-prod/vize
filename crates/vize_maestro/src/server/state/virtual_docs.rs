@@ -24,7 +24,7 @@ fn petite_semantic_reuse(
     root: &vize_relief::RootNode<'_>,
     content: &str,
 ) -> Option<vize_croquis::drawer::TemplateSemanticReuse> {
-    let owner = vize_l1::markup::document::NativeDocument::lex_in(
+    let owner = vize_l1::markup::htmlish::document::NativeDocument::lex_in(
         allocator,
         vize_l0::SourceRoot::new(content).ok()?,
     );

@@ -7,7 +7,8 @@
 
 use crate::tokenizer::Callbacks;
 use vize_l1::markup::{
-    LexErrorCode, LexMode, QuoteType, Sink, entity::DecodedEntity, lex::compat::adapter::CompatSink,
+    LexErrorCode, LexMode, QuoteType, Sink, entity::DecodedEntity,
+    htmlish::lex::compat::adapter::CompatSink,
 };
 
 pub(super) struct OriginalFirstScalarSink<C> {

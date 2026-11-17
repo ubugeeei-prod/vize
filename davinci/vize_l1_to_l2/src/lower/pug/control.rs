@@ -6,7 +6,7 @@
 use alloc::vec::Vec as StdVec;
 
 use vize_l0::{Span, String, cstr};
-use vize_l1::pug::{PugNode, PugRefusal, PugRefused};
+use vize_l1::markup::pug::{PugNode, PugRefusal, PugRefused};
 
 use super::emit::Emitter;
 use super::eval;

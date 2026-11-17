@@ -40,7 +40,7 @@ fn l1_page(path: &str, template: &str) -> StagePage {
     let allocator = Allocator::default();
     let (tree, _errors) = vize_l1::markup::parse(&allocator, template);
     let mut text = String::default();
-    vize_l1::markup::render::render(&tree, &mut |slice| text.push_str(slice));
+    vize_l1::markup::htmlish::render::render(&tree, &mut |slice| text.push_str(slice));
     StagePage {
         path: Some(String::from(path)),
         stage: cstr!("s1"),

@@ -1,6 +1,6 @@
 use vize_armature::{ExpressionNode, PropNode, TemplateChildNode, parse_document};
 use vize_l0::{Allocator, SourceRoot, Span};
-use vize_l1::markup::document::{
+use vize_l1::markup::htmlish::document::{
     DocumentPetiteDirectiveKind, DocumentPetiteValue, DocumentTokenKind, NativeDocument,
 };
 

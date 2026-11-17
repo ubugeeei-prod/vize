@@ -187,7 +187,7 @@ pub(crate) fn lower_source_for_vapor_captured<'a, C: CaptureSink>(
         );
         capture.page(Level::L1, "parse", || {
             let mut text = String::default();
-            vize_l1::markup::render::render(&tree, &mut |part| text.push_str(part));
+            vize_l1::markup::htmlish::render::render(&tree, &mut |part| text.push_str(part));
             text
         });
         let s2 = bridge_profile!(

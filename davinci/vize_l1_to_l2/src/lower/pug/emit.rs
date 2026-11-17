@@ -9,7 +9,7 @@ use alloc::vec::Vec as StdVec;
 use vize_l0::diag::Diagnostic;
 use vize_l0::{Span, String, cstr};
 use vize_l1::markup::Token;
-use vize_l1::pug::{
+use vize_l1::markup::pug::{
     PugBlock, PugCode, PugComment, PugHtmlItem, PugInline, PugNode, PugRefusal, PugTag, PugText,
     PugTextPiece, PugTree,
 };
@@ -227,10 +227,10 @@ impl<'t> Emitter<'t> {
 
     fn head_offset(&self, tag: &PugTag<'_>) -> u32 {
         tag.parts.first().map_or(0, |part| match part {
-            vize_l1::pug::PugTagPart::Class(token)
-            | vize_l1::pug::PugTagPart::Id(token)
-            | vize_l1::pug::PugTagPart::AndAttributes(token) => self.offset(token),
-            vize_l1::pug::PugTagPart::Attrs(group) => self.offset(&group.open),
+            vize_l1::markup::pug::PugTagPart::Class(token)
+            | vize_l1::markup::pug::PugTagPart::Id(token)
+            | vize_l1::markup::pug::PugTagPart::AndAttributes(token) => self.offset(token),
+            vize_l1::markup::pug::PugTagPart::Attrs(group) => self.offset(&group.open),
         })
     }
 

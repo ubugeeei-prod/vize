@@ -25,7 +25,7 @@ fn assembled(source: &str) -> String {
 
 fn assembled_pug(source: &str) -> (String, String) {
     let allocator = Allocator::new();
-    let (tree, errors) = vize_l1::pug::parse_pug(&allocator, source);
+    let (tree, errors) = vize_l1::markup::pug::parse_pug(&allocator, source);
     let mut pug = vize_l1_to_l2::lower::pug::lower_pug(&allocator, &tree, &errors);
     assert!(!pug.template.has_errors(), "{source:?}: pug surface errors");
     assert!(pug.lowered.diagnostics.is_empty(), "{source:?}: L2 errors");

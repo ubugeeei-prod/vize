@@ -10,7 +10,7 @@
 use vize_l0::{Allocator, ErrorCode, SourceRoot, Span, cstr};
 use vize_l1::dialect::vue2::text::TextBoundaryKind;
 use vize_l1::dialect::{LegacyVueVersion, vue2::surface};
-use vize_l1::markup::render::check_fidelity;
+use vize_l1::markup::htmlish::render::check_fidelity;
 
 type Facts<'a> = (&'a str, Vec<(&'a str, Vec<&'a str>)>);
 

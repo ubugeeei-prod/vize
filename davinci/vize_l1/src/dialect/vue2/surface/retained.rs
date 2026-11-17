@@ -6,8 +6,8 @@ use vize_l0::{SourceBlock, Vec};
 use super::super::text::{RetainedTextBinding, TextBoundary};
 use super::ComponentParse;
 use crate::dialect::LegacyVueVersion;
-use crate::markup::parse::SurfaceError;
-use crate::markup::surface::SurfaceTree;
+use crate::markup::htmlish::parse::SurfaceError;
+use crate::markup::htmlish::surface::SurfaceTree;
 
 mod body;
 pub use body::{RetainedTextChild, RetainedTextChildren, RetainedTextRefusal, RetainedTextView};

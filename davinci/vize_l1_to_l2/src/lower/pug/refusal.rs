@@ -2,7 +2,7 @@
 //! template, and what to write instead.
 
 use vize_l0::{String, cstr};
-use vize_l1::pug::PugRefusal;
+use vize_l1::markup::pug::PugRefusal;
 
 /// The error message for a refused keyword construct.
 pub(super) fn message(refusal: PugRefusal) -> String {

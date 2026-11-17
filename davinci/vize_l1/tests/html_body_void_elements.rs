@@ -2,7 +2,7 @@
 
 use serde_json::{Value, json};
 use vize_l0::{Allocator, SourceRoot, String, cstr};
-use vize_l1::markup::document::{DocumentHtmlNode, DocumentHtmlRefusal, NativeDocument};
+use vize_l1::markup::htmlish::document::{DocumentHtmlNode, DocumentHtmlRefusal, NativeDocument};
 
 const CORPUS: &str = include_str!("fixtures/document/html-body-void-elements.json");
 const TAGS: [&str; 5] = ["area", "embed", "source", "track", "wbr"];

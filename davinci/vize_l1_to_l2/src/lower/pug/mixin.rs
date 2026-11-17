@@ -11,7 +11,7 @@
 use alloc::vec::Vec as StdVec;
 
 use vize_l0::{String, cstr};
-use vize_l1::pug::{PugBlock, PugCall, PugInline, PugRefused, PugTag, PugTextPiece};
+use vize_l1::markup::pug::{PugBlock, PugCall, PugInline, PugRefused, PugTag, PugTextPiece};
 
 use super::emit::Emitter;
 use super::eval;

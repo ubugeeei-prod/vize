@@ -8,7 +8,7 @@ import { fileURLToPath } from "node:url";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const script = path.join(repoRoot, "tools/support/levels/move-vue-surface-provider.ts");
-const old = "davinci/vize_l1/src/markup/parse.rs";
+const old = "davinci/vize_l1/src/markup/htmlish/parse.rs";
 const current = "davinci/vize_l1/src/dialect/vue3/surface.rs";
 
 function write(root: string, file: string, content: string): void {

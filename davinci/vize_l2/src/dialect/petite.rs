@@ -6,7 +6,7 @@ use vize_l1::{
     embed::{DecodeSegmentKind, EmbedSource, SourceError, prepare_attribute_value},
     markup::{
         QuoteType,
-        document::{DocumentPetiteDirectiveKind, DocumentPetiteRefusal, NativeDocument},
+        htmlish::document::{DocumentPetiteDirectiveKind, DocumentPetiteRefusal, NativeDocument},
     },
 };
 
@@ -32,7 +32,7 @@ pub enum PetiteDocumentRefusal {
 ///
 /// ```
 /// use vize_l0::{Allocator, SourceRoot};
-/// use vize_l1::markup::document::NativeDocument;
+/// use vize_l1::markup::htmlish::document::NativeDocument;
 /// use vize_l2::dialect::petite::{PetiteDocument, PetiteScopeShape};
 /// let arena = Allocator::default();
 /// let owner = NativeDocument::lex_in(

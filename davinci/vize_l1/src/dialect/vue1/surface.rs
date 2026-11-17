@@ -16,9 +16,9 @@ pub use vize_l0::SourceFrameError as SourceError;
 
 use crate::dialect::LegacyVueVersion;
 use crate::dialect::vue::surface::{SurfacePolicy, sink::VueSink};
-use crate::event::Recorder;
-use crate::markup::parse::{SurfaceError, construct};
-use crate::markup::surface::SurfaceTree;
+use crate::markup::htmlish::event::Recorder;
+use crate::markup::htmlish::parse::{SurfaceError, construct};
+use crate::markup::htmlish::surface::SurfaceTree;
 use crate::markup::{Component, LexOptions, Lexer, Sink};
 
 /// A retained interpolation that this bounded provider does not admit.

@@ -8,7 +8,7 @@ use crate::template::{
 };
 use vize_l0::{String, ToCompactString};
 use vize_l1::markup::{
-    DirectivePrefix, DirectiveSyntax, VueDirectives, lex::dynamic_argument_boundary,
+    DirectivePrefix, DirectiveSyntax, VueDirectives, htmlish::lex::dynamic_argument_boundary,
 };
 
 impl TemplateFormatter<'_> {
