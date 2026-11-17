@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import type { ErrorDialogData } from '#shared/types'
+
+defineProps<ErrorDialogData>()
+</script>
+
+<template>
+  <button>{{ close }}</button>
+</template>
