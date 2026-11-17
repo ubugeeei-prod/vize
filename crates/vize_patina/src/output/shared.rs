@@ -275,7 +275,13 @@ impl SourceLineIndex {
     fn new(source: &str) -> Self {
         let bytes = source.as_bytes();
         let mut line_starts = SmallVec::new();
-        line_starts.push(0);
+        // Columns follow ESLint, which drops a leading byte order mark from
+        // the text it reports positions in.
+        line_starts.push(if source.starts_with('\u{feff}') {
+            '\u{feff}'.len_utf8()
+        } else {
+            0
+        });
 
         line_starts.extend(memchr::memchr_iter(b'\n', bytes).map(|index| index + 1));
 
