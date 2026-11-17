@@ -26,6 +26,44 @@ const write = (line = "") => {
   console.log(line);
 };
 
+// Findings of one JSON report, as `file:line:column rule` keys.
+function findings(stdout: string): string[] {
+  try {
+    const report = JSON.parse(stdout) as { file: string; messages: { ruleId: string; line: number; column: number }[] }[];
+    return report.flatMap((file) => file.messages.map((m) => `${file.file}:${m.line}:${m.column} ${m.ruleId}`));
+  } catch {
+    return [];
+  }
+}
+
+function diffFindings(cwd: string, args: string[]): string {
+  const output = (binary: string) =>
+    spawnSync(binary, args, { cwd, maxBuffer: 1 << 30 }).stdout?.toString() ?? "";
+  const base = findings(output(bins.base));
+  const head = findings(output(bins.head));
+  const count = (xs: string[]) => {
+    const map = new Map<string, number>();
+    for (const x of xs) map.set(x, (map.get(x) ?? 0) + 1);
+    return map;
+  };
+  const b = count(base);
+  const h = count(head);
+  const byRule = new Map<string, { added: number; removed: number }>();
+  const examples: string[] = [];
+  for (const key of new Set([...b.keys(), ...h.keys()])) {
+    const delta = (h.get(key) ?? 0) - (b.get(key) ?? 0);
+    if (delta === 0) continue;
+    const rule = key.split(" ").at(-1) ?? "";
+    const entry = byRule.get(rule) ?? { added: 0, removed: 0 };
+    if (delta > 0) entry.added += delta;
+    else entry.removed -= delta;
+    byRule.set(rule, entry);
+    if (examples.length < 6) examples.push(`${delta > 0 ? "+" : "-"}${key}`);
+  }
+  const rules = [...byRule].map(([rule, { added, removed }]) => `${rule} +${added}/-${removed}`).join(", ");
+  return `${rules || "none"}${examples.length ? ` (e.g. ${examples.join("; ")})` : ""}`;
+}
+
 type Sample = { wall: number; cpu: number; rss: number; code: number | null; sha: string; timedOut: boolean };
 
 function once(binary: string, cwd: string, args: string[]): Sample {
@@ -104,5 +142,8 @@ for (const [name, dir] of corpora) {
     const cpuRatio = pct(samples.head.map((x) => x.cpu), 0.5) / pct(samples.base.map((x) => x.cpu), 0.5);
     const irRatio = ir ? (ir.head / ir.base).toFixed(4) : "";
     write(`| | | head/base | wall ${ratio.toFixed(3)} | CPU ${cpuRatio.toFixed(3)} | | | | ${irRatio} |`);
+    if (samples.base[0]?.sha !== samples.head[0]?.sha) {
+      write(`| | | finding diff | ${diffFindings(dir, args)} | | | | | |`);
+    }
   }
 }
