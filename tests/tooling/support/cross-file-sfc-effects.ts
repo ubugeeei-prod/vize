@@ -186,6 +186,14 @@ const project = path.join(consumer, 'project-"日本語🙂');
 fs.mkdirSync(project);
 const observations: unknown[] = [];
 
+/** Splits a plain report into its lint section and its cross-file complexity section. */
+function reportSections(text: string): [string, string] {
+  const marker = "## Cross-file Complexity";
+  assert.equal(text.split(marker).length, 2, "one cross-file complexity section");
+  const index = text.indexOf(marker);
+  return [text.slice(0, index), text.slice(index)];
+}
+
 function profileCheck(label: string, fileCount: number, blocks: number, off = false): unknown {
   const profile: unknown = JSON.parse(
     fs.readFileSync(path.join(output, label + ".profile.json"), "utf8"),
@@ -268,7 +276,17 @@ for (const test of cases) {
     ],
     project,
   );
-  const expectedPlain = expectedReport(test, beforePlain.toString("utf8"));
+  // The lint section must match the newest release; only the complexity
+  // section is the reviewed successor of the pre-fix release's report.
+  const currentPlain = run(
+    `${test.id}.current-plain`,
+    currentBinary,
+    [...flags, "--format", "plain", "*.vue"],
+    project,
+  );
+  const [, legacyComplexity] = reportSections(beforePlain.toString("utf8"));
+  const [currentLint] = reportSections(currentPlain.toString("utf8"));
+  const expectedPlain = currentLint + expectedReport(test, legacyComplexity);
   fs.writeFileSync(path.join(output, `${test.id}.expected-plain`), expectedPlain);
   assert.equal(afterPlain.toString("utf8"), expectedPlain, `${test.id}: complete report packet`);
   assert.equal(statuses.get(profileName), statuses.get(`${test.id}.public-plain`));
