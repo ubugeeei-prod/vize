@@ -81,28 +81,43 @@ fn unicode_attribute_value_overflows(name: &str, trimmed: &str, available_width:
     name.width() + trimmed.width() > available_width
 }
 
+/// Where an attribute value's expression is laid out.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum ValueLayout {
+    Inline,
+    Standalone,
+    /// Authored line breaks overstate the joined width; the printed value
+    /// decides, as it does for the next pass.
+    Printed,
+}
+
 #[inline]
-fn value_uses_standalone_layout(
+fn value_layout(
     name: &str,
     value: &str,
     trimmed: &str,
     options: &FormatOptions,
     attribute_depth: usize,
-) -> bool {
+) -> ValueLayout {
     if value_starts_on_next_line(value) {
-        return true;
+        return ValueLayout::Standalone;
     }
 
     let fixed_width = (attribute_depth + 1) * options.tab_width as usize + 3;
     let available_width = (options.print_width as usize).saturating_sub(fixed_width);
     let byte_width = name.len() + trimmed.len();
-    if byte_width <= available_width || value.contains(['\r', '\n']) {
-        return false;
+    if byte_width <= available_width {
+        return ValueLayout::Inline;
     }
-    if fixed_width >= options.print_width as usize {
-        return true;
+    if value.contains(['\r', '\n']) {
+        return ValueLayout::Printed;
     }
-    unicode_attribute_value_overflows(name, trimmed, available_width)
+    if fixed_width >= options.print_width as usize
+        || unicode_attribute_value_overflows(name, trimmed, available_width)
+    {
+        return ValueLayout::Standalone;
+    }
+    ValueLayout::Inline
 }
 
 thread_local! {
@@ -212,78 +227,98 @@ fn format_expression_with_layout(
         if !parsed.diagnostics.is_empty() {
             return None;
         }
-        let budgeted = |argument: &Expression<'_>, depth| {
-            format_with_value_budget(
-                oxc_allocator,
-                &parsed.program,
-                argument,
-                (trimmed, depth),
-                options,
-                quote_style,
-            )
-        };
 
+        let mut printed_depth = None;
         if let Some(depth) = attribute_depth
             && let [Statement::ExpressionStatement(statement)] = parsed.program.body.as_slice()
             && let Expression::UnaryExpression(unary) = &statement.expression
-        {
-            let budget_shape = matches!(
-                &unary.argument,
-                Expression::BinaryExpression(_)
-                    | Expression::LogicalExpression(_)
-                    | Expression::StaticMemberExpression(_)
-                    | Expression::ComputedMemberExpression(_)
-                    | Expression::PrivateFieldExpression(_)
-                    | Expression::ChainExpression(_)
-            );
-            if matches!(&unary.argument, Expression::CallExpression(_))
+            && (matches!(&unary.argument, Expression::CallExpression(_))
                 || (options.canonical_directive_layout
                     && matches!(
                         &unary.argument,
                         Expression::ConditionalExpression(_) | Expression::ObjectExpression(_)
                     ))
-                || (budget_shape
-                    && (options.canonical_directive_layout
-                        || attribute_layout.is_some_and(|(name, value, trimmed)| {
-                            value_uses_standalone_layout(name, value, trimmed, options, depth)
-                        })))
-            {
-                return budgeted(&unary.argument, depth);
-            }
-            if budget_shape && let Some((name, ..)) = attribute_layout {
-                // The authored bytes fit or span lines, but the printed value may
-                // still overflow its attribute line. The template printer then
-                // moves it onto its own line, where the next pass applies the
-                // budget; apply it now so both passes print the same value.
-                let formatted = format_unbudgeted(
-                    oxc_allocator,
-                    &parsed.program,
-                    trimmed,
-                    options,
-                    quote_style,
-                )?;
-                let code = formatted.code.as_str();
-                if !code.contains(['\r', '\n'])
-                    && value_uses_standalone_layout(name, code, code, options, depth)
-                {
-                    return budgeted(&unary.argument, depth);
-                }
-                return Some(formatted);
-            }
+                || (matches!(
+                    &unary.argument,
+                    Expression::BinaryExpression(_)
+                        | Expression::LogicalExpression(_)
+                        | Expression::StaticMemberExpression(_)
+                        | Expression::ComputedMemberExpression(_)
+                        | Expression::PrivateFieldExpression(_)
+                        | Expression::ChainExpression(_)
+                ) && (options.canonical_directive_layout
+                    || attribute_layout.is_some_and(|(name, value, trimmed)| match value_layout(
+                        name, value, trimmed, options, depth,
+                    ) {
+                        ValueLayout::Standalone => true,
+                        ValueLayout::Printed => {
+                            printed_depth = Some(depth);
+                            false
+                        }
+                        ValueLayout::Inline => false,
+                    }))))
+        {
+            return format_within_value_budget(
+                oxc_allocator,
+                &parsed.program,
+                &unary.argument,
+                (trimmed, depth),
+                options,
+                quote_style,
+            );
         }
-        format_unbudgeted(
-            oxc_allocator,
-            &parsed.program,
-            trimmed,
-            options,
-            quote_style,
-        )
+        let mut oxc_options = options.to_oxc_format_options();
+        if let Some(quote_style) = quote_style {
+            oxc_options.quote_style = quote_style;
+        }
+        let formatted = format_program(oxc_allocator, &parsed.program, oxc_options, None)
+            .print()
+            .ok()?
+            .into_code();
+
+        // Extract the expression back from the formatted output.
+        // preserve_parens is false, so the formatter may remove the wrapping parens.
+        // Expected forms:  "void expression;\n"  or  "void (expression);\n"
+        let formatted = formatted.trim();
+        let formatted = formatted.strip_suffix(';').unwrap_or(formatted);
+        let inner = formatted.strip_prefix("void ").unwrap_or(formatted);
+
+        // The retained AST distinguishes the wrapper from authored call/member
+        // parentheses and sequences whose grouping Vue consumers require.
+        let inner = expression_wrapper::unwrap_argument(inner, &parsed.program, trimmed)?;
+        let code = trim_expression(inner.text);
+
+        // A value authored across lines printed on one line. The template
+        // printer moves an overflowing line under the attribute, where the
+        // next pass applies the budget; apply it now so both passes agree.
+        if let Some(depth) = printed_depth
+            && let Some((name, ..)) = attribute_layout
+            && memchr::memchr2(b'\r', b'\n', code.as_bytes()).is_none()
+            && value_layout(name, code, code, options, depth) == ValueLayout::Standalone
+            && let [Statement::ExpressionStatement(statement)] = parsed.program.body.as_slice()
+            && let Expression::UnaryExpression(unary) = &statement.expression
+        {
+            return format_within_value_budget(
+                oxc_allocator,
+                &parsed.program,
+                &unary.argument,
+                (trimmed, depth),
+                options,
+                quote_style,
+            );
+        }
+
+        Some(FormattedExpression {
+            code: code.to_compact_string(),
+            retained_bare_sequence: inner.retained_bare_sequence,
+            owns_attribute_lines: false,
+        })
     })
 }
 
 /// Format the wrapper's argument within the line left after the attribute's
 /// standalone value indentation.
-fn format_with_value_budget(
+fn format_within_value_budget(
     oxc_allocator: &OxcAllocator,
     program: &Program<'_>,
     argument: &Expression<'_>,
@@ -329,40 +364,5 @@ fn format_with_value_budget(
         code,
         retained_bare_sequence: inner.retained_bare_sequence,
         owns_attribute_lines,
-    })
-}
-
-/// Format the wrapper program at the configured print width.
-fn format_unbudgeted(
-    oxc_allocator: &OxcAllocator,
-    program: &Program<'_>,
-    trimmed: &str,
-    options: &FormatOptions,
-    quote_style: Option<QuoteStyle>,
-) -> Option<FormattedExpression> {
-    let mut oxc_options = options.to_oxc_format_options();
-    if let Some(quote_style) = quote_style {
-        oxc_options.quote_style = quote_style;
-    }
-    let formatted = format_program(oxc_allocator, program, oxc_options, None)
-        .print()
-        .ok()?
-        .into_code();
-
-    // Extract the expression back from the formatted output.
-    // preserve_parens is false, so the formatter may remove the wrapping parens.
-    // Expected forms:  "void expression;\n"  or  "void (expression);\n"
-    let formatted = formatted.trim();
-    let formatted = formatted.strip_suffix(';').unwrap_or(formatted);
-    let inner = formatted.strip_prefix("void ").unwrap_or(formatted);
-
-    // The retained AST distinguishes the wrapper from authored call/member
-    // parentheses and sequences whose grouping Vue consumers require.
-    let inner = expression_wrapper::unwrap_argument(inner, program, trimmed)?;
-
-    Some(FormattedExpression {
-        code: trim_expression(inner.text).to_compact_string(),
-        retained_bare_sequence: inner.retained_bare_sequence,
-        owns_attribute_lines: false,
     })
 }

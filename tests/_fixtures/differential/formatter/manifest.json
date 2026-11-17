@@ -2807,7 +2807,7 @@
         "sources": [
           {
             "kind": "repository-authored",
-            "revision": "c3a1ddd0f649b35db24abcc5b894786864945466",
+            "revision": "79a1cec84a8c4d9bfc894b837ff0ef00073e94fa",
             "path": "crates/vize_glyph/tests/template_attribute_value_budget.rs",
             "symbol": "multiline_logical_value_breaks_on_its_own_line"
           }
@@ -2861,7 +2861,7 @@
               "sha256": "604dd41ad59608a6306529c84471c0b916479d618f97286acad19091f7d5cea4",
               "role": "repository-authored-regression-reference",
               "provenance": {
-                "revision": "c3a1ddd0f649b35db24abcc5b894786864945466",
+                "revision": "79a1cec84a8c4d9bfc894b837ff0ef00073e94fa",
                 "path": "crates/vize_glyph/tests/template_attribute_value_budget.rs",
                 "symbol": "multiline_logical_value_breaks_on_its_own_line",
                 "assertion": "A multiline logical directive value prints its standalone layout on the first pass and stays byte-stable."
