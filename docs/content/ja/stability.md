@@ -45,6 +45,24 @@ Vize は v1 アルファ版を目指して開発中です。早期に導入で�
 
 npm に公開する前に、リリース用 tarball をインストールし、`vize --version`、`vize check`、`@vizejs/native` の `require` / `import`、`@vizejs/vite-plugin` による `vite build` がすべて通ることを確認します。新規インストールの全体検証は毎週も実行します。
 
+### Linux の glibc 要件 {#linux-glibc-floor}
+
+Linux GNU 向けの成果物（`@vizejs/native-linux-{x64,arm64}-gnu` のバインディングと、エディタ拡張がダウンロードする `vize-{x86_64,aarch64}-unknown-linux-gnu` の CLI アーカイブ）は、**glibc 2.17 以降**で動作します。リリースビルドは `cargo zigbuild` でこの下限に合わせてリンクし、ビルドした ELF ファイルがより新しい glibc のシンボルバージョンを要求するとリリースが失敗します（`tools/commands/ci/github/verify-glibc-symbols.ts`）。タグを打つ前に、リリース候補を次のコンテナで実行します。
+
+| コンテナ          | glibc | 実行内容                                                                             |
+| ----------------- | ----- | ------------------------------------------------------------------------------------ |
+| Amazon Linux 2023 | 2.34  | tarball のインストール、`vize --version`・`check`・`lint`・`init`・`vite build`、CLI |
+| AlmaLinux 8       | 2.28  | tarball のインストール、`vize --version`・`check`・`lint`・`init`・`vite build`、CLI |
+| CentOS 7          | 2.17  | x64 バインディングの読み込みと SFC のコンパイル、CLI                                 |
+
+公式の Node.js 22 以降のビルドは glibc 2.28 を必要とするため、Node.js が動く環境ではバインディングも読み込めます（Debian 10 以降、Ubuntu 20.04 以降、RHEL / AlmaLinux / Rocky 8 以降、Amazon Linux 2023）。
+
+**Vercel.** ビルドイメージと Node.js の Functions ランタイムは Amazon Linux 2023（glibc 2.34）で動作し、対応しています。0.777.0 までのリリースは glibc 2.35 を必要としていたため、``version `GLIBC_2.35' not found`` で失敗していました。`vize` と `@vizejs/*` をそろえて更新してください。Node.js は 22 以降を使ってください（Project Settings → Node.js Version）。古い Node.js では、パッケージマネージャーがネイティブのプラットフォームパッケージをインストールしません。
+
+**musl.** Alpine などの musl 環境では `@vizejs/native-linux-{x64,arm64}-musl` を使います。musl 版のバインディングは glibc のプロセスでは読み込めないため、glibc 環境の代替にはなりません。
+
+それでもバインディングを読み込めない場合、エラーには、バインディングが要求したライブラリとシンボルバージョン、システムの glibc バージョン、上記の下限が表示されます。
+
 Rust の最低対応バージョン（MSRV）は、`Cargo.toml` の `[workspace.package].rust-version` に記載しています。
 開発用の `rust-toolchain.toml` は、同じバージョンか、それより新しいバージョンを指定します。
 安定版 v1 より前は MSRV を引き上げる場合があり、その際はリリースノートで案内します。

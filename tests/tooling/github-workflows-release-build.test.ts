@@ -141,8 +141,11 @@ test("all shipping platforms retain target and ABI guards on accelerated runners
     );
   }
   const native = readRepoFile(".github", "actions", "build-release-native", "action.yml");
-  assert.equal((native.match(/verify-glibc-symbols\.ts --max 2\.36/g) ?? []).length, 2);
+  // GNU artifacts are gated on the documented floor, never a looser ad hoc ceiling.
+  assert.equal((native.match(/verify-glibc-symbols\.ts npm\//g) ?? []).length, 2);
+  assert.doesNotMatch(native, /verify-glibc-symbols\.ts --max/);
   const cli = readRepoFile(".github", "actions", "build-release-cli", "action.yml");
+  assert.match(cli, /verify-glibc-symbols\.ts "target\/\$RELEASE_TARGET\/release\/vize"/);
   assert.match(cli, /verify-musl-cli-binary\.ts/);
   assert.match(cli, /configure-zig-musl-linkers\.ts/);
 });

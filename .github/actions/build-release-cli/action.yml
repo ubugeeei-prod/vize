@@ -41,24 +41,16 @@ runs:
       with:
         toolchain: ${{ steps.rust-toolchain.outputs.channel }}
         targets: ${{ inputs.target }}
-    # x86_64 gnu links with rust-lld so crates/vize/build.rs can fold identical code.
-    - name: Setup Wild linker (Linux)
-      if: runner.os == 'Linux' && !endsWith(inputs.target, '-musl') && inputs.target != 'x86_64-unknown-linux-gnu'
-      uses: ./.github/actions/setup-wild-http-recovery
-      with:
-        wild-version: "0.9.0"
-    - name: Stabilize Ubuntu package archive (Linux ARM64)
-      if: inputs.target == 'aarch64-unknown-linux-gnu'
-      uses: ./.github/actions/setup-ubuntu-archive
-    - name: Install cross-compilation tools (Linux ARM64)
-      if: inputs.target == 'aarch64-unknown-linux-gnu'
-      shell: bash
-      run: vize-ci-apt-retry node tools/support/github/install-cross-compile-tools.ts
-    - name: Setup Zig (Linux musl CLI)
-      if: endsWith(inputs.target, '-musl')
+    - name: Setup Zig (Linux CLI)
+      if: runner.os == 'Linux'
       uses: goto-bus-stop/setup-zig@abea47f85e598557f500fa1fd2ab7464fcb39406 # v2
       # A pinned release: the default nightly master re-downloads (and can time out) every run.
       with: { version: 0.15.1 }
+    # GNU CLIs link through cargo-zigbuild against the documented glibc floor
+    # (tools/support/github/glibc-floor.ts), x64 and the arm64 cross build alike.
+    - name: Setup cargo-zigbuild (Linux GNU CLI)
+      if: endsWith(inputs.target, '-unknown-linux-gnu')
+      uses: ./.github/actions/setup-cargo-zigbuild
     - name: Configure Zig linker (Linux musl CLI)
       if: endsWith(inputs.target, '-musl')
       shell: bash
@@ -88,10 +80,16 @@ runs:
     - name: Build CLI
       shell: bash
       env:
-        CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: aarch64-linux-gnu-gcc
         RELEASE_TARGET: ${{ inputs.target }}
         VIZE_RELEASE_VERSION: ${{ inputs.release-version }}
-      run: cargo build --locked --release -p vize --target "$RELEASE_TARGET"
+      run: |
+        if [[ "$RELEASE_TARGET" == *-unknown-linux-gnu ]]; then
+          floor_target="$(node tools/support/github/glibc-floor.ts target "$RELEASE_TARGET")"
+          cargo zigbuild --locked --release -p vize --target "$floor_target"
+          node tools/commands/ci/github/verify-glibc-symbols.ts "target/$RELEASE_TARGET/release/vize"
+        else
+          cargo build --locked --release -p vize --target "$RELEASE_TARGET"
+        fi
     - name: Create archive (Unix)
       if: runner.os != 'Windows'
       shell: bash

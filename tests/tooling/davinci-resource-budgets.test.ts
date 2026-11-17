@@ -146,14 +146,11 @@ test("the measured server and the x86_64 gnu release CLI link without Wild", () 
   for (const job of ["resource", "production-lsp-resource"]) {
     assert.deepEqual(wildSetup(workflow.jobs[job].steps), [], job);
   }
+  // Release CLIs never use Wild: GNU targets link through cargo-zigbuild at the
+  // glibc floor (zig's driver has no `--icf`), musl targets through rust-lld.
   const cli = parse(readRepoFile(".github", "actions", "build-release-cli", "action.yml")) as any;
-  assert.deepEqual(
-    wildSetup(cli.runs.steps).map((step) => step.if),
-    [
-      "runner.os == 'Linux' && !endsWith(inputs.target, '-musl') && inputs.target != 'x86_64-unknown-linux-gnu'",
-    ],
-  );
-  assert.equal(restorePinnedWildAction(cli.runs.steps), 1);
+  assert.deepEqual(wildSetup(cli.runs.steps), []);
+  assert.equal(restorePinnedWildAction(cli.runs.steps), 0);
 });
 
 test("the CLI build script asks only rust-lld release links to fold and pack", () => {

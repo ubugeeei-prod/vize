@@ -570,10 +570,57 @@ jobs:
           if-no-files-found: warn
           retention-days: 14
 
+  # The Linux GNU bindings and CLIs must run on the documented glibc floor
+  # (tools/support/github/glibc-floor.ts): Amazon Linux 2023 is the Vercel
+  # build image and the Vercel Functions / AWS Lambda runtime.
+  smoke-glibc-floor:
+    name: Smoke Linux GNU on old glibc - ${{ matrix.platform }}
+    needs: [version, build-packages, build-native, build-cli]
+    if: needs.version.outputs.ref != ''
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: blacksmith-32vcpu-ubuntu-2404
+            target: x86_64-unknown-linux-gnu
+            platform: linux-x64-gnu
+          - runner: blacksmith-32vcpu-ubuntu-2404-arm
+            target: aarch64-unknown-linux-gnu
+            platform: linux-arm64-gnu
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { ref: "${{ needs.version.outputs.ref }}", persist-credentials: false }
+      - uses: ./.github/actions/setup-runtime-package-managers
+        with: { node-version-file: "package.json" }
+      - uses: ./.github/actions/release-npm-artifacts
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with: { name: "cli-${{ matrix.target }}", path: .artifacts/cli-archive }
+      - name: Unpack the release CLI
+        env: { TARGET: "${{ matrix.target }}", PLATFORM: "${{ matrix.platform }}" }
+        run: |
+          mkdir -p .artifacts/cli
+          tar -xzf ".artifacts/cli-archive/vize-$TARGET.tar.gz" -C .artifacts/cli
+          node tools/commands/ci/github/verify-glibc-symbols.ts .artifacts/cli/vize \
+            "npm/native/npm/$PLATFORM/vize-vitrine.$PLATFORM.node"
+      - uses: ./.github/actions/smoke-glibc-floor-containers
+        with: { platform: "${{ matrix.platform }}" }
+      - uses: ./.github/actions/smoke-glibc-floor-containers
+        with: { platform: "${{ matrix.platform }}", cli: .artifacts/cli/vize }
+
   # Every artifact exists: only now does the version become real.
   tag:
     name: Tag the release
-    needs: [version, smoke, smoke-editor-artifacts, build-cli, build-editor-extensions]
+    needs:
+      [
+        version,
+        smoke,
+        smoke-glibc-floor,
+        smoke-editor-artifacts,
+        build-cli,
+        build-editor-extensions,
+      ]
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions: { actions: write, contents: write }

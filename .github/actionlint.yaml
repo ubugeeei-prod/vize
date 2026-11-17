@@ -3,5 +3,8 @@ self-hosted-runner:
     - blacksmith-8vcpu-ubuntu-2404
     - blacksmith-12vcpu-macos-15
     - blacksmith-32vcpu-ubuntu-2204
+    # The arm64 release rows (tools/support/github/release-platforms.ts).
+    - blacksmith-32vcpu-ubuntu-2204-arm
     - blacksmith-32vcpu-ubuntu-2404
+    - blacksmith-32vcpu-ubuntu-2404-arm
     - blacksmith-32vcpu-windows-2025

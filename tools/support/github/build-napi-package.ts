@@ -5,13 +5,16 @@
  *   <package-dir> <manifest-path> <package-name> <target> [--cross-compile]
  *
  * Apple targets build the dynamic library with Cargo and copy it to the
- * package's platform `.node` file. Other targets run `vp exec napi build`.
+ * package's platform `.node` file. Other targets run `vp exec napi build`;
+ * with `--cross-compile` (cargo-zigbuild) a Linux GNU target is linked against
+ * the documented glibc floor (`x86_64-unknown-linux-gnu.2.17`).
  * Every native build receives a fresh 128-bit `VIZE_NATIVE_BUILD_TOKEN` that
  * overrides any inherited token while the rest of the environment is kept.
  */
 import { randomBytes } from "node:crypto";
 import fs from "node:fs";
 
+import { glibcFloorTarget } from "./glibc-floor.ts";
 import { beginNativeBuildReceipt, finishNativeBuildReceipt } from "./native-build-receipt.ts";
 
 import {
@@ -175,7 +178,7 @@ export function main(args: readonly string[]): number {
     "--output-dir",
     ".",
     "--target",
-    target,
+    crossCompile ? glibcFloorTarget(target) : target,
   ];
   if (crossCompile) commandArgs.push("--cross-compile");
   commandArgs.push("--", "--locked");

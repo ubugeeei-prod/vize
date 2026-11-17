@@ -321,7 +321,7 @@ test("Linux Rust CI installs Wild linker before cargo builds", () => {
     ".github/actions/app-e2e-row/action.yml",
     ".github/workflows/native-smoke.yml",
     ".github/workflows/tool-benchmark.yml",
-    ".github/actions/build-release-cli/action.yml",
+    // Release CLIs link with zig (GNU, at the glibc floor) or rust-lld (musl), never Wild.
     ".github/actions/build-release-native/action.yml",
     ".github/workflows/full-source-cli.yml",
   ]) {

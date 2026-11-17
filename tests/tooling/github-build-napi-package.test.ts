@@ -137,7 +137,8 @@ void test("non-Apple targets run napi through vp with a fresh build token", (t) 
             "../../crates/vize_fresco/Cargo.toml",
             "vize_fresco",
             "napi",
-            "aarch64-unknown-linux-gnu",
+            // cargo-zigbuild links GNU targets against the documented glibc floor.
+            "aarch64-unknown-linux-gnu.2.17",
           ),
           "--cross-compile",
           "--",

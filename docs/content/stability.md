@@ -51,6 +51,36 @@ Before any npm release, the packed tarballs are installed and must pass `vize --
 `vize check`, loading `@vizejs/native` through both `require` and `import`, and a `vite build` with
 `@vizejs/vite-plugin`. The full fresh-install matrix also runs weekly.
 
+### Linux glibc floor
+
+Every Linux GNU artifact (the `@vizejs/native-linux-{x64,arm64}-gnu` bindings and the
+`vize-{x86_64,aarch64}-unknown-linux-gnu` CLI archives the editor extensions download) needs
+**glibc 2.17 or newer**. Release builds link against that floor with `cargo zigbuild`, and the
+release fails if any built ELF file needs a newer glibc symbol version
+(`tools/commands/ci/github/verify-glibc-symbols.ts`). Before tagging, the release candidate runs in
+containers:
+
+| Container         | glibc | What runs                                                                        |
+| ----------------- | ----- | -------------------------------------------------------------------------------- |
+| Amazon Linux 2023 | 2.34  | Packed install, `vize --version`, `check`, `lint`, `init`, `vite build`; the CLI |
+| AlmaLinux 8       | 2.28  | Packed install, `vize --version`, `check`, `lint`, `init`, `vite build`; the CLI |
+| CentOS 7          | 2.17  | The x64 binding loads and compiles an SFC; the CLI                               |
+
+Official Node.js 22+ builds already require glibc 2.28, so wherever Node.js runs, the binding
+loads: Debian 10+, Ubuntu 20.04+, RHEL/AlmaLinux/Rocky 8+, and Amazon Linux 2023.
+
+**Vercel.** The build image and the Node.js function runtimes run on Amazon Linux 2023
+(glibc 2.34), which is supported. Releases up to 0.777.0 needed glibc 2.35 and failed there with
+``version `GLIBC_2.35' not found``; upgrade `vize` and `@vizejs/*` together. Use Node.js 22 or
+newer (Project Settings → Node.js Version): package managers skip the native platform package on
+older Node.js versions.
+
+**musl.** Alpine and other musl systems use `@vizejs/native-linux-{x64,arm64}-musl`. A musl
+binding cannot load in a glibc process, so it is not a fallback on glibc systems.
+
+If the binding still fails to load, the error names the library and symbol version the binding
+asked for, the glibc version the system has, and the floor above.
+
 The minimum supported Rust version (MSRV) for the workspace is declared in `Cargo.toml` under
 `[workspace.package].rust-version`. The development toolchain pinned by `rust-toolchain.toml`
 may be the same version or newer. Before v1 stable the MSRV may move forward in any prerelease;

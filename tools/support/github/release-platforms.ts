@@ -21,8 +21,10 @@ export interface NativePlatform {
 const macosReleaseHost =
   process.env.VIZE_RELEASE_MACOS_RUNNER?.trim() || "blacksmith-12vcpu-macos-15";
 
-// The GNU builds retain Ubuntu 22.04's glibc floor. Windows ARM64 is built
-// with an explicit amd64_arm64 MSVC environment on the faster x64 runner.
+// Linux GNU builds link through cargo-zigbuild against the documented glibc
+// floor (tools/support/github/glibc-floor.ts), so the runner's own glibc never
+// leaks into an artifact. Windows ARM64 is built with an explicit amd64_arm64
+// MSVC environment on the faster x64 runner.
 export const cliReleasePlatforms: CliPlatform[] = [
   {
     host: macosReleaseHost,
@@ -82,7 +84,7 @@ export const nativeReleasePlatforms: NativePlatform[] = [
   {
     host: "blacksmith-32vcpu-ubuntu-2204",
     target: "x86_64-unknown-linux-gnu",
-    cross_compile: false,
+    cross_compile: true,
   },
   {
     host: "blacksmith-32vcpu-ubuntu-2404",
@@ -92,7 +94,7 @@ export const nativeReleasePlatforms: NativePlatform[] = [
   {
     host: "blacksmith-32vcpu-ubuntu-2204-arm",
     target: "aarch64-unknown-linux-gnu",
-    cross_compile: false,
+    cross_compile: true,
   },
   {
     host: "blacksmith-32vcpu-ubuntu-2404-arm",

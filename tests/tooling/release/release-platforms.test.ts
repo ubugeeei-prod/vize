@@ -70,12 +70,20 @@ test("release platform plan includes slow targets outside fifth minors", () => {
   assert.ok(plan.nativeMatrix.some((platform) => platform.target === "aarch64-pc-windows-msvc"));
 });
 
-test("release platform plan builds GNU native packages on the Debian bookworm floor", () => {
+test("release platform plan links GNU native packages through zigbuild on native hosts", () => {
   const plan = releasePlatformPlan("v1.201.0");
-  const hosts = new Map(plan.nativeMatrix.map(({ host, target }) => [target, host]));
+  const rows = new Map(plan.nativeMatrix.map((row) => [row.target, row]));
 
-  assert.equal(hosts.get("x86_64-unknown-linux-gnu"), "blacksmith-32vcpu-ubuntu-2204");
-  assert.equal(hosts.get("aarch64-unknown-linux-gnu"), "blacksmith-32vcpu-ubuntu-2204-arm");
+  assert.deepEqual(rows.get("x86_64-unknown-linux-gnu"), {
+    host: "blacksmith-32vcpu-ubuntu-2204",
+    target: "x86_64-unknown-linux-gnu",
+    cross_compile: true,
+  });
+  assert.deepEqual(rows.get("aarch64-unknown-linux-gnu"), {
+    host: "blacksmith-32vcpu-ubuntu-2204-arm",
+    target: "aarch64-unknown-linux-gnu",
+    cross_compile: true,
+  });
 });
 
 test("release platform cadence preserves native manifest entries when all platforms are included", () => {
