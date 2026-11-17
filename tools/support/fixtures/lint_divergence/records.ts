@@ -4,6 +4,12 @@ import {
   componentRegistrationPatinaIntentionalReason,
 } from "./component_registration_intentional.ts";
 import {
+  classFragmentReason,
+  gluedFragmentDuplicate,
+  identifierKeyClassReason,
+  identifierKeyDuplicate,
+} from "./duplicate_class_intentional.ts";
+import {
   indexRealProjectLocationSource,
   realProjectLocationDivergence,
   type RealProjectLocationSource,
@@ -208,6 +214,15 @@ export function baselineIntentionalReason(
     /^Custom event name 'update:[^']+'/u.test(finding.message)
   )
     return "Patina keeps the model prop name after update: unchecked (#9879, restored in #12592 for #12587), the name defineModel() emits and v-model listens for; eslint-plugin-vue checks every :-separated segment.";
+  if (
+    finding.ruleId === "vue/no-duplicate-class-names" &&
+    source !== undefined &&
+    source !== null
+  ) {
+    const offset = findingOffset(finding, source);
+    if (offset !== null && gluedFragmentDuplicate(finding.message, offset, source))
+      return classFragmentReason;
+  }
   if (finding.ruleId === "vue/no-shared-component-data")
     return "Patina intentionally merges vue/no-shared-component-data and vue/no-deprecated-data-object-declaration into one diagnostic for the same invalid data option.";
   if (
@@ -506,6 +521,7 @@ const patinaIntentionalRuleIds = new Set([
   "vue/no-unused-components",
   "vue/no-unused-vars",
   "vue/next-tick-style",
+  "html/no-duplicate-class",
   "vue/require-v-for-key",
   "script/valid-next-tick",
   "vue/v-slot-style",
@@ -565,6 +581,11 @@ export function patinaIntentionalReason(
     return "Patina resolves optional props inherited through local interface heritage or intersections; eslint-plugin-vue does not expand that composed prop contract.";
   if (finding.ruleId === "vue/next-tick-style" && findingInScriptSetup(finding, source))
     return "Patina also checks <script setup>, as requested in #12450 and kept in #12670; eslint-plugin-vue's defineVueVisitor only visits component option objects.";
+  if (finding.ruleId === "html/no-duplicate-class") {
+    const offset = findingOffset(finding, source);
+    if (offset !== null && identifierKeyDuplicate(finding.message, offset, source))
+      return identifierKeyClassReason;
+  }
   if (finding.ruleId === "script/valid-next-tick" && findingInScriptSetup(finding, source))
     return "Patina applies vue/valid-next-tick in <script setup> as well as component options (#12794); eslint-plugin-vue's defineVueVisitor only visits component option objects.";
   if (
