@@ -91,13 +91,14 @@ impl<'a> MarkupElement<'a> {
     }
 
     /// [`from_l2`](Self::from_l2) for the element the document visitor hands
-    /// to every rule: each rule that reads its opening tag replays one match.
-    /// Elements wrapped elsewhere (children, scopes, walks) match on demand.
-    pub(super) fn from_l2_visited(op: L2ElementOp<'a>, doc: &'a L2Markup<'a>) -> Self {
-        Self::from_l2_matching(op, doc, true)
-    }
-
-    fn from_l2_matching(op: L2ElementOp<'a>, doc: &'a L2Markup<'a>, match_items: bool) -> Self {
+    /// to its rules. With `match_items` (a batch of rules) every rule that
+    /// reads the opening tag replays one match kept in the template arena;
+    /// elements wrapped elsewhere (children, scopes, walks) match on demand.
+    pub(super) fn from_l2_matching(
+        op: L2ElementOp<'a>,
+        doc: &'a L2Markup<'a>,
+        match_items: bool,
+    ) -> Self {
         let surface = if doc.surface.is_none() || op.is_synthesized(doc) {
             None
         } else {

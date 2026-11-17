@@ -28,6 +28,8 @@ pub struct MarkupDocumentVisitor<'rule, 'ctx, 'mc, 'a, R: ?Sized> {
     /// The rule's name, read once: every hook re-stamps it on the context.
     name: &'static str,
     traversal: MarkupTraversal,
+    /// Match each visited L2 element's opening tag once for every rule.
+    shares_element_reads: bool,
     ctx: &'ctx mut MarkupContext<'mc, 'a>,
 }
 
@@ -37,6 +39,7 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
             rule,
             name: rule.name(),
             traversal: rule.traversal(),
+            shares_element_reads: rule.shares_element_reads(),
             ctx,
         }
     }
@@ -141,17 +144,21 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
     fn visit_l2_region(&mut self, doc: &'a L2Markup<'a>, ops: &'a [Op<'a>]) {
         for op in ops {
             match op {
-                Op::Element(element) => self.visit_element(MarkupElement::from_l2_visited(
+                Op::Element(element) => self.visit_element(MarkupElement::from_l2_matching(
                     L2ElementOp::Element(element),
                     doc,
+                    self.shares_element_reads,
                 )),
-                Op::Component(component) => self.visit_element(MarkupElement::from_l2_visited(
+                Op::Component(component) => self.visit_element(MarkupElement::from_l2_matching(
                     L2ElementOp::Component(component),
                     doc,
+                    self.shares_element_reads,
                 )),
-                Op::Slot(slot) => {
-                    self.visit_element(MarkupElement::from_l2_visited(L2ElementOp::Slot(slot), doc))
-                }
+                Op::Slot(slot) => self.visit_element(MarkupElement::from_l2_matching(
+                    L2ElementOp::Slot(slot),
+                    doc,
+                    self.shares_element_reads,
+                )),
                 Op::Text(text) => {
                     if self.traversal.keeps_text_and_exits() {
                         self.text(children::text_node(doc, text));
