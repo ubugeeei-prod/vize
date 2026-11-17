@@ -9,6 +9,7 @@ import {
   identifierKeyClassReason,
   identifierKeyDuplicate,
 } from "./duplicate_class_intentional.ts";
+import { inheritedPropMember, inheritedPropMemberReason } from "./inherited_prop_members.ts";
 import {
   indexRealProjectLocationSource,
   realProjectLocationDivergence,
@@ -543,6 +544,7 @@ const patinaIntentionalRuleIds = new Set([
   "html/no-duplicate-class",
   "vue/prefer-single-event-payload",
   "script/require-typed-ref",
+  "vue/require-prop-comment",
   "vue/require-v-for-key",
   "script/valid-next-tick",
   "vue/v-slot-style",
@@ -600,6 +602,10 @@ export function patinaIntentionalReason(
     typedDefaultComesFromComposedContract(finding, source)
   )
     return "Patina resolves optional props inherited through local interface heritage or intersections; eslint-plugin-vue does not expand that composed prop contract.";
+  if (finding.ruleId === "vue/require-prop-comment") {
+    const offset = findingOffset(finding, source);
+    if (offset !== null && inheritedPropMember(offset, source)) return inheritedPropMemberReason;
+  }
   if (finding.ruleId === "vue/next-tick-style" && findingInScriptSetup(finding, source))
     return "Patina also checks <script setup>, as requested in #12450 and kept in #12670; eslint-plugin-vue's defineVueVisitor only visits component option objects.";
   if (finding.ruleId === "script/require-typed-ref" && refCallUnderTypeAssertion(finding, source))
