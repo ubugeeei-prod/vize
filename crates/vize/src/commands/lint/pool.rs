@@ -1,11 +1,12 @@
-//! The lint worker pool, sized to the inputs a run found.
+//! The lint worker pool, sized to explicitly named inputs.
 //!
 //! Rayon's global pool starts one worker per CPU the first time anything asks
-//! for it, and starting them is serial work on the main thread. A run over a
-//! few files then waits for every worker to start, and the idle ones still
-//! spin before they sleep. Discovery therefore reads the worker budget without
-//! starting the pool, and the pool starts once the inputs are known, with no
-//! more workers than they can keep busy.
+//! for it. Directory discovery asks while it walks, so a directory or glob run
+//! starts every worker early, while the walk still has work for the main
+//! thread. A run over named files (an editor, `lint-staged`) skips discovery
+//! and would otherwise wait for every worker to start and then spin them idle
+//! around one or two files; it starts the pool here with no more workers than
+//! its files can keep busy.
 
 use std::path::PathBuf;
 
@@ -15,7 +16,7 @@ const BYTES_PER_WORKER: u64 = 32 * 1024;
 
 /// Workers the run may use: `RAYON_NUM_THREADS` when set, else one per CPU,
 /// exactly as Rayon would choose without starting the pool to ask it.
-pub(super) fn budget() -> usize {
+fn budget() -> usize {
     std::env::var("RAYON_NUM_THREADS")
         .ok()
         .and_then(|threads| threads.parse::<usize>().ok())
@@ -25,8 +26,8 @@ pub(super) fn budget() -> usize {
 }
 
 /// Start the global pool with as many workers as `files` can occupy: never
-/// more than one per file, and below the budget only when the files are small
-/// enough to be counted (a `stat` each). A pool something already started
+/// more than one per file, and below the budget only when the files are few
+/// enough to be measured (a `stat` each). A pool discovery already started
 /// keeps its size.
 pub(super) fn start_for(files: &[PathBuf]) {
     let budget = budget();
