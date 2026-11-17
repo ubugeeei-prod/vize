@@ -141,8 +141,9 @@ names the fix. Each case compiles one authored input through a public entry:
 `compile_sfc` for a whole SFC (DOM, SSR or Vapor target), or
 `compile_template_with_options` for bare DOM markup. A small option set covers
 production output, preserved TypeScript, standalone module output, codegen mode,
-identifier prefixing, static hoisting, handler caching, comments and source
-maps. `crates/vize_atelier_sfc/tests/compile_history.rs` snapshots every public
+identifier prefixing, static hoisting, handler caching, comments, source maps,
+template syntax mode (standard, strict or quirks), custom renderers and the
+Vue dialect (3, 2.7 or 2). `crates/vize_atelier_sfc/tests/compile_history.rs` snapshots every public
 result field: code, CSS, map, errors, warnings, bindings, macro artifacts and
 dependencies for an SFC, or errors, preamble, code and map for a template. It
 also pins each case's error count.

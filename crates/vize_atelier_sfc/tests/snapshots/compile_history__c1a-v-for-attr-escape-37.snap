@@ -1,0 +1,35 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c1a-v-for-attr-escape-37",
+    history: "39a98b823cb6b38f6209bde45bf651e4ca230ad5",
+    source: "<li v-for=\"item in items\" :key=\"item\" title=\"first\nsecond\" data-quote='say \"hi\"' data-path=\"a\\b\">{{ item }}</li>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: Some(
+            true,
+        ),
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, renderList as _renderList } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(_ctx.items, (item) => {\n    return (_openBlock(), _createElementBlock(\"li\", {\n      key: item,\n      title: \"first\\nsecond\",\n      \"data-quote\": \"say \\\"hi\\\"\",\n      \"data-path\": \"a\\\\b\"\n    }, _toDisplayString(item), 1 /* TEXT */))\n  }), 128 /* KEYED_FRAGMENT */))\n}",
+    map: None,
+}

@@ -1,0 +1,82 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c1a-open-tag-at-eof-no-panic-137",
+    history: "f6c31580ae9f6aab796f1b053e651ed6e012dbf2",
+    source: "<template>\n  <div>\n  <div\n",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 4,
+}
+Template {
+    errors: [
+        CompilerError {
+            code: EofInTag,
+            message: "Unexpected end of input inside a tag; inferred the missing tag close so parsing can continue.",
+            loc: Some(
+                SourceLocation {
+                    span: Span {
+                        start: 26,
+                        end: 26,
+                    },
+                },
+            ),
+        },
+        CompilerError {
+            code: MissingEndTag,
+            message: "Element is missing end tag.",
+            loc: Some(
+                SourceLocation {
+                    span: Span {
+                        start: 21,
+                        end: 26,
+                    },
+                },
+            ),
+        },
+        CompilerError {
+            code: MissingEndTag,
+            message: "Element is missing end tag.",
+            loc: Some(
+                SourceLocation {
+                    span: Span {
+                        start: 13,
+                        end: 18,
+                    },
+                },
+            ),
+        },
+        CompilerError {
+            code: MissingEndTag,
+            message: "Element is missing end tag.",
+            loc: Some(
+                SourceLocation {
+                    span: Span {
+                        start: 0,
+                        end: 10,
+                    },
+                },
+            ),
+        },
+    ],
+    preamble: "",
+    code: "",
+    map: None,
+}

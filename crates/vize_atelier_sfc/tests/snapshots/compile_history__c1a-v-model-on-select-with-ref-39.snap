@@ -1,0 +1,50 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c1a-v-model-on-select-with-ref-39",
+    history: "a303a49c86ef410093ac0b69231e463c7fd9d325",
+    source: "<script setup>\nimport { ref } from 'vue'\nconst selected = ref('option1')\n</script>\n\n<template>\n  <select v-model=\"selected\">\n    <option value=\"option1\">Option 1</option>\n    <option value=\"option2\">Option 2</option>\n  </select>\n</template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { vModelSelect as _vModelSelect, withDirectives as _withDirectives, createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nconst _hoisted_1 = /*#__PURE__*/ _createElementVNode(\"option\", { value: \"option1\" }, \"Option 1\")\nconst _hoisted_2 = /*#__PURE__*/ _createElementVNode(\"option\", { value: \"option2\" }, \"Option 2\")\n\nimport { ref } from 'vue'\n\n\nexport default {\n  __name: 'History',\n  setup(__props) {\n\nconst selected = ref('option1')\n\nreturn (_ctx, _cache) => {\n  return _withDirectives((_openBlock(), _createElementBlock(\"select\", {\n    \"onUpdate:modelValue\": _cache[0] || (_cache[0] = $event => ((selected).value = $event))\n  }, [\n    _hoisted_1,\n    _hoisted_2\n  ], 512 /* NEED_PATCH */)), [\n    [_vModelSelect, selected.value]\n  ])\n}\n}\n\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "ref": SetupConst,
+                        "selected": SetupRef,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

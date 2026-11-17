@@ -1,0 +1,50 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c1a-props-destructure-with-type-based-defineprops-and-defaults-39",
+    history: "a303a49c86ef410093ac0b69231e463c7fd9d325",
+    source: "<script setup lang=\"ts\">\nconst { color = \"primary\", size = \"medium\" } = defineProps<{\n  color?: \"primary\" | \"secondary\";\n  size?: \"small\" | \"medium\" | \"large\";\n}>();\n</script>\n\n<template>\n  <div :class=\"[color, size]\">Styled</div>\n</template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { normalizeClass as _normalizeClass, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\n\nexport default {\n  __name: 'History',\n  props: {\n    color: { type: String, required: false, default: \"primary\" },\n    size: { type: String, required: false, default: \"medium\" }\n  },\n  setup(__props) {\n\n\nreturn (_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"div\", {\n    class: _normalizeClass([__props.color, __props.size])\n  }, \"Styled\", 2 /* CLASS */))\n}\n}\n\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "color": Props,
+                        "size": Props,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

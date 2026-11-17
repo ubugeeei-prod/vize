@@ -1,0 +1,35 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c1c-default-slot-v-if-stable-432",
+    history: "7a57bab23e05429dc879cabe918ee34929332299",
+    source: "<PageWithHeader>\n  <div v-if=\"tab === 'overview'\">Overview</div>\n  <div v-else-if=\"tab === 'emojis'\">Emojis</div>\n  <div v-else>Charts</div>\n</PageWithHeader>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: Some(
+            "function",
+        ),
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "const { resolveComponent: _resolveComponent, openBlock: _openBlock, createBlock: _createBlock, createElementBlock: _createElementBlock, createCommentVNode: _createCommentVNode, withCtx: _withCtx } = Vue\n",
+    code: "function render(_ctx, _cache, $props, $setup, $data, $options) {\n  const _component_PageWithHeader = _resolveComponent(\"PageWithHeader\")\n  \n  return (_openBlock(), _createBlock(_component_PageWithHeader, null, {\n    default: _withCtx(() => [\n      (tab === 'overview')\n        ? (_openBlock(), _createElementBlock(\"div\", { key: 0 }, \"Overview\"))\n        : (tab === 'emojis')\n          ? (_openBlock(), _createElementBlock(\"div\", { key: 1 }, \"Emojis\"))\n        : (_openBlock(), _createElementBlock(\"div\", { key: 2 }, \"Charts\"))\n    ]),\n    _: 1 /* STABLE */\n  }))\n}",
+    map: None,
+}

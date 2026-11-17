@@ -1,0 +1,41 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c1a-options-script-ts-stripped-37",
+    history: "39a98b823cb6b38f6209bde45bf651e4ca230ad5",
+    source: "<script lang=\"ts\">\ninterface Props {\n    name: string;\n    count?: number;\n}\n\nexport default {\n    name: 'MyComponent',\n    props: {\n        name: String,\n        count: Number\n    } as Props,\n    setup(props: Props) {\n        const message: string = `Hello, ${props.name}!`;\n        return { message };\n    }\n}\n</script>\n\n<template>\n    <div>{{ message }}</div>\n</template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "const _sfc_main = {\n  name: \"MyComponent\",\n  props: {\n    name: String,\n    count: Number\n  },\n  setup(props) {\n    const message = `Hello, ${props.name}!`;\n    return { message };\n  }\n};\n\nimport { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nfunction _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", null, _toDisplayString(_ctx.message), 1 /* TEXT */))\n}\n_sfc_main.render = _sfc_render\nexport default _sfc_main",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

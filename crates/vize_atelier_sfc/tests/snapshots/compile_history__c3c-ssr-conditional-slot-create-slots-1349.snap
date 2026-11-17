@@ -1,0 +1,41 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c3c-ssr-conditional-slot-create-slots-1349",
+    history: "b62246f640d6457fee61a836823cf817e9b8f8cc",
+    source: "<template>\n  <Child>\n    <template v-if=\"ok\" #header>\n      <span>head</span>\n    </template>\n  </Child>\n</template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "ssr",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { ssrRenderComponent as _ssrRenderComponent } from \"@vue/server-renderer\"\nimport { createElementVNode as _createElementVNode, resolveComponent as _resolveComponent, createSlots as _createSlots, withCtx as _withCtx } from \"vue\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(_ssrRenderComponent(_resolveComponent(\"Child\"), _attrs, _createSlots({\n    _: 2 /* DYNAMIC */\n  }, [\n    (_ctx.ok) ? {\n      name: \"header\",\n      fn: _withCtx((_, _push, _parent, _scopeId) => {\n        if (_push) {\n          _push(`<span>head</span>`)\n        } else {\n          return [_createElementVNode(\"span\", null, \"head\")]\n        }\n      }),\n      key: \"0\"\n    } : undefined\n  ]), _parent))\n}\n\nconst _sfc_main = {}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

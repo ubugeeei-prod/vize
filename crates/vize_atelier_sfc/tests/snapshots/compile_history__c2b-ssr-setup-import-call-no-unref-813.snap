@@ -1,0 +1,52 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c2b-ssr-setup-import-call-no-unref-813",
+    history: "3cdafe9a541f81dca0ff59b8820941ef293678a7",
+    source: "<script setup lang=\"ts\">\nimport { valibotResolver } from '@primevue/forms/resolvers/valibot'\nconst schema = {}\n</script>\n\n<template>\n  <Form :resolver=\"schema ? valibotResolver(schema) : undefined\" />\n</template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "ssr",
+    options: Options {
+        prod: None,
+        preserve_ts: Some(
+            true,
+        ),
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { defineComponent as _defineComponent } from 'vue'\nimport { ssrRenderComponent as _ssrRenderComponent } from \"@vue/server-renderer\"\nimport { resolveComponent as _resolveComponent, mergeProps as _mergeProps } from \"vue\"\n\n\nfunction ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(_ssrRenderComponent(_resolveComponent(\"Form\"), _mergeProps({ resolver: $setup.schema ? $setup.valibotResolver($setup.schema) : undefined }, _attrs), null, _parent))\n}\nimport { valibotResolver } from '@primevue/forms/resolvers/valibot'\n\n\nexport default /*@__PURE__*/_defineComponent({\n  __name: 'History',\n  ssrRender: ssrRender,\n  setup(__props, { expose: __expose }) {\n  __expose();\n\nconst schema = {}\n\nconst __returned__ = { valibotResolver, schema }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n})",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "valibotResolver": SetupMaybeRef,
+                        "schema": SetupConst,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

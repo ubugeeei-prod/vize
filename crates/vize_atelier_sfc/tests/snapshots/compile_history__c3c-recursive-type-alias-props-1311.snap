@@ -1,0 +1,50 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c3c-recursive-type-alias-props-1311",
+    history: "80d507efb5253248587dd0bfd3c49ea1507fbe14",
+    source: "<script setup lang=\"ts\">\ntype NestedItem<T> = T extends Array<infer I> ? NestedItem<I> : T\ntype DotPathKeys<T> = { [K in keyof T & string]: K | `${K}.${DotPathKeys<T[K]>}` }[keyof T & string]\n\ndefineProps<{ items?: NestedItem<string>; keys?: DotPathKeys<Record<string, any>> }>()\n</script>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "\nexport default {\n  __name: 'History',\n  props: {\n    items: { type: null, required: false },\n    keys: { type: Object, required: false }\n  },\n  setup(__props, { expose: __expose }) {\n  __expose();\n\n\n}\n\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "items": Props,
+                        "keys": Props,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

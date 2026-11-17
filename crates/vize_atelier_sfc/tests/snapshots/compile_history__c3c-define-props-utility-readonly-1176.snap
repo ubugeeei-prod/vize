@@ -1,0 +1,50 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c3c-define-props-utility-readonly-1176",
+    history: "22e4ff4e48d6136d43a5073ab5edf7079fe4748b",
+    source: "<script setup lang=\"ts\">\ninterface Props { a: string; b: number }\ndefineProps<Readonly<Props>>()\n</script>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "\nexport default {\n  __name: 'History',\n  props: {\n    a: { type: String, required: true },\n    b: { type: Number, required: true }\n  },\n  setup(__props, { expose: __expose }) {\n  __expose();\n\n\n}\n\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "a": Props,
+                        "b": Props,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

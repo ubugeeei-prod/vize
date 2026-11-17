@@ -1,0 +1,54 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c2b-inline-render-computed-resolve-component-813",
+    history: "3cdafe9a541f81dca0ff59b8820941ef293678a7",
+    source: "<script setup lang=\"ts\">\nimport Child from './Child.vue'\nimport { computed, resolveComponent } from 'vue'\n\nconst componentsMap = computed(() => ({\n  h1: resolveComponent('prose-h1', false),\n}))\n</script>\n\n<template>\n  <Child :components=\"componentsMap\" />\n</template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: Some(
+            true,
+        ),
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { defineComponent as _defineComponent } from 'vue'\nimport { openBlock as _openBlock, createBlock as _createBlock } from \"vue\"\n\nimport Child from './Child.vue'\nimport { computed, resolveComponent } from 'vue'\n\n\nexport default /*@__PURE__*/_defineComponent({\n  __name: 'History',\n  setup(__props) {\n\nconst componentsMap = computed(() => ({\n  h1: resolveComponent('prose-h1', false),\n}))\n\nreturn (_ctx: any,_cache: any) => {\n  return (_openBlock(), _createBlock(Child, { components: componentsMap.value }, null, 8 /* PROPS */, [\"components\"]))\n}\n}\n\n})",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "Child": SetupConst,
+                        "computed": SetupConst,
+                        "componentsMap": SetupRef,
+                        "resolveComponent": SetupConst,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

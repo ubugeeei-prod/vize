@@ -1,0 +1,51 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c2c-dual-script-shared-import-once-js-993",
+    history: "f875c88ffa41f70c42b69f211e0ebe51d2b11532",
+    source: "<script lang=\"ts\">\nimport { registerHotkey } from './hotkey-plugin'\nregisterHotkey()\n</script>\n\n<script setup lang=\"ts\">\nimport { registerHotkey } from './hotkey-plugin'\nimport { ref } from 'vue'\nconst count = ref(0)\nregisterHotkey()\n</script>\n\n<template>{{ count }}</template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { toDisplayString as _toDisplayString } from \"vue\"\n\nimport { registerHotkey } from './hotkey-plugin'\nimport { ref } from 'vue'\n\nregisterHotkey();\n\nexport default {\n  __name: 'History',\n  setup(__props) {\n\nconst count = ref(0);\nregisterHotkey();\n\nreturn (_ctx, _cache) => {\n  return _toDisplayString(count.value)\n}\n}\n\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "registerHotkey": SetupMaybeRef,
+                        "ref": SetupConst,
+                        "count": SetupRef,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

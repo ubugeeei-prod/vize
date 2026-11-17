@@ -1,0 +1,41 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c1c-vapor-coalesce-effects-class-and-text",
+    history: "3d33d9d1b24e0a064d25d76e586233b1de1d8106",
+    source: "<template><div><span>label <span :class=\"cls\">{{ msg }}</span></span></div></template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "vapor",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { child as _child, next as _next, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, setClass as _setClass, renderEffect as _renderEffect, template as _template } from 'vue';\nconst t0 = _template(\"<div><span>label <span> </span></span></div>\", true)\n\nfunction render(_ctx, $props, $emit, $attrs, $slots) {\n  const n0 = t0()\n  const n1 = _child(n0)\n  const n2 = _next(_child(n1))\n  const x2 = _txt(n2)\n  _renderEffect(() => {\n    _setClass(n2, _ctx.cls)\n    _setText(x2, _toDisplayString(_ctx.msg))\n  })\n  return n0\n}\nconst _sfc_main = { __vapor: true }\n_sfc_main.render = render\nexport default _sfc_main",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

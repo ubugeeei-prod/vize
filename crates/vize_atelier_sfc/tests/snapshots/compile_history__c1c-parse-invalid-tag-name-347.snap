@@ -1,0 +1,60 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c1c-parse-invalid-tag-name-347",
+    history: "731cce813a41207950923d89099ac2c87047c0b6",
+    source: "<1div></1div><span></span>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: Some(
+            true,
+        ),
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 2,
+}
+Template {
+    errors: [
+        CompilerError {
+            code: InvalidFirstCharacterOfTagName,
+            message: "Tag name starts with an invalid character; treating the malformed tag as text.",
+            loc: Some(
+                SourceLocation {
+                    span: Span {
+                        start: 8,
+                        end: 9,
+                    },
+                },
+            ),
+        },
+        CompilerError {
+            code: InvalidEndTag,
+            message: "Invalid end tag.",
+            loc: Some(
+                SourceLocation {
+                    span: Span {
+                        start: 6,
+                        end: 13,
+                    },
+                },
+            ),
+        },
+    ],
+    preamble: "",
+    code: "",
+    map: None,
+}

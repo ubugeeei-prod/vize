@@ -1,0 +1,48 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c3a-v-else-if-without-expression-1255",
+    history: "80b48da33433b29b1129ec2e5424b0b829401f6a",
+    source: "<div v-if=\"ok\">yes</div><div v-else-if>maybe</div>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: Some(
+            true,
+        ),
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 1,
+}
+Template {
+    errors: [
+        CompilerError {
+            code: VIfNoExpression,
+            message: "v-if/v-else-if is missing expression.",
+            loc: Some(
+                SourceLocation {
+                    span: Span {
+                        start: 29,
+                        end: 38,
+                    },
+                },
+            ),
+        },
+    ],
+    preamble: "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createCommentVNode as _createCommentVNode } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    (_ctx.ok)\n      ? (_openBlock(), _createElementBlock(\"div\", { key: 0 }, \"yes\"))\n      : _createCommentVNode(\"v-if\", true),\n    _createElementVNode(\"div\", null, \"maybe\")\n  ], 64 /* STABLE_FRAGMENT */))\n}",
+    map: None,
+}

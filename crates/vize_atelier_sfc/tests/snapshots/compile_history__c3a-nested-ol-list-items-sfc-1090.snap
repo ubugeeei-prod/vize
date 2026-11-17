@@ -1,0 +1,49 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c3a-nested-ol-list-items-sfc-1090",
+    history: "e7e414107dd80fb74527656b070dc0504ab0ca03",
+    source: "<script setup lang=\"ts\">\nconst groups = [{ year: \"2024\", items: [\"a\", \"b\"] }];\n</script>\n\n<template>\n  <ol>\n    <li v-for=\"g in groups\" :key=\"g.year\">\n      <span>{{ g.year }}</span>\n      <ol>\n        <li v-for=\"item in g.items\" :key=\"item\">{{ item }}</li>\n      </ol>\n    </li>\n  </ol>\n</template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, renderList as _renderList } from \"vue\"\n\n\nexport default {\n  __name: 'History',\n  setup(__props) {\n\nconst groups = [{\n  year: \"2024\",\n  items: [\"a\", \"b\"]\n}];\n\nreturn (_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"ol\", null, [\n    (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(groups, (g) => {\n      return (_openBlock(), _createElementBlock(\"li\", { key: g.year }, [\n        _createElementVNode(\"span\", null, _toDisplayString(g.year), 1 /* TEXT */),\n        _createElementVNode(\"ol\", null, [\n          (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(g.items, (item) => {\n            return (_openBlock(), _createElementBlock(\"li\", { key: item }, _toDisplayString(item), 1 /* TEXT */))\n          }), 128 /* KEYED_FRAGMENT */))\n        ])\n      ]))\n    }), 128 /* KEYED_FRAGMENT */))\n  ]))\n}\n}\n\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "groups": SetupConst,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

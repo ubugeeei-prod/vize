@@ -1,0 +1,43 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c2c-scoped-css-not-is-pseudo-971",
+    history: "e8cbb1f3b15525a3790b836cb6f02e8769083757",
+    source: "<template>\n  <div class=\"x btn\">x</div>\n</template>\n\n<style scoped>\n.x:not(:checked) { color: red; }\n.btn:is(:hover, :focus) { color: blue; }\n</style>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nconst _hoisted_1 = { class: \"x btn\" }\n\nexport function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"div\", _hoisted_1, \"x\"))\n}",
+            css: Some(
+                ".x[data-v-4045eae1]:not(:checked){ color: red; }.btn[data-v-4045eae1]:is(:hover, :focus){ color: blue; }\n",
+            ),
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

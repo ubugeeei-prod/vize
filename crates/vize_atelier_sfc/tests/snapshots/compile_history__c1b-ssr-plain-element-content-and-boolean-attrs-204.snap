@@ -1,0 +1,41 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c1b-ssr-plain-element-content-and-boolean-attrs-204",
+    history: "3a87d25f029f731be72705a19787743a996640eb",
+    source: "<template>\n  <div>\n    <input type=\"checkbox\" :checked=\"checked\">\n    <input type=\"radio\" v-model=\"picked\" value=\"a\">\n    <div v-html=\"content\"></div>\n    <div v-text=\"msg\"></div>\n  </div>\n</template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "ssr",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs, ssrIncludeBooleanAttr as _ssrIncludeBooleanAttr, ssrLooseEqual as _ssrLooseEqual } from \"@vue/server-renderer\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(`<div${_ssrRenderAttrs(_attrs)}><input type=\"checkbox\"${(_ssrIncludeBooleanAttr(_ctx.checked)) ? \" checked\" : \"\"}><input type=\"radio\"${(_ssrIncludeBooleanAttr(_ssrLooseEqual(_ctx.picked, \"a\"))) ? \" checked\" : \"\"} value=\"a\"><div>${(_ctx.content) ?? ''}</div><div>${_ssrInterpolate(_ctx.msg)}</div></div>`)\n}\n\nconst _sfc_main = {}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

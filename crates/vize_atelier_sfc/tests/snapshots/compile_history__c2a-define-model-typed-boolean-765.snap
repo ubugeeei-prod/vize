@@ -1,0 +1,51 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c2a-define-model-typed-boolean-765",
+    history: "f110960b5311c150831079eeddccc6cbb548606b",
+    source: "<script setup lang=\"ts\">\nconst checked = defineModel<boolean>()\n</script>\n\n<template>\n  <input v-model=\"checked\" />\n</template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: Some(
+            true,
+        ),
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { useModel as _useModel } from 'vue'\nimport { defineComponent as _defineComponent } from 'vue'\nimport { vModelText as _vModelText, withDirectives as _withDirectives, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\n\nexport default /*@__PURE__*/_defineComponent({\n  __name: 'History',\n  props: {\n    \"modelValue\": { type: Boolean },\n    \"modelModifiers\": {},\n  },\n  emits: [\"update:modelValue\"],\n  setup(__props) {\n\nconst checked = _useModel<boolean>(__props, \"modelValue\")\n\nreturn (_ctx: any,_cache: any) => {\n  return _withDirectives((_openBlock(), _createElementBlock(\"input\", {\n    \"onUpdate:modelValue\": _cache[0] || (_cache[0] = ($event: any) => ((checked).value = $event))\n  }, null, 512 /* NEED_PATCH */)), [\n    [_vModelText, checked.value]\n  ])\n}\n}\n\n})",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "checked": SetupRef,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

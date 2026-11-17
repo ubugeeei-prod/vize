@@ -1,0 +1,52 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c1a-complex-type-based-props-destructure-with-defaults-39",
+    history: "a303a49c86ef410093ac0b69231e463c7fd9d325",
+    source: "<script setup lang=\"ts\">\nconst {\n  title,\n  count = 0,\n  disabled = false,\n  items = () => []\n} = defineProps<{\n  title: string;\n  count?: number;\n  disabled?: boolean;\n  items?: string[];\n}>();\n</script>\n\n<template>\n  <div :class=\"{ disabled }\">\n    <h1>{{ title }}</h1>\n    <span>{{ count }}</span>\n    <ul>\n      <li v-for=\"item in items\" :key=\"item\">{{ item }}</li>\n    </ul>\n  </div>\n</template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, normalizeClass as _normalizeClass, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, renderList as _renderList } from \"vue\"\n\n\nexport default {\n  __name: 'History',\n  props: {\n    title: { type: String, required: true },\n    count: { type: Number, required: false, default: 0 },\n    disabled: { type: Boolean, required: false, default: false },\n    items: { type: Array, required: false, default: () => [] }\n  },\n  setup(__props) {\n\n\nreturn (_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"div\", {\n    class: _normalizeClass({ disabled: __props.disabled })\n  }, [\n    _createElementVNode(\"h1\", null, _toDisplayString(__props.title), 1 /* TEXT */),\n    _createElementVNode(\"span\", null, _toDisplayString(__props.count), 1 /* TEXT */),\n    _createElementVNode(\"ul\", null, [\n      (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(__props.items, (item) => {\n        return (_openBlock(), _createElementBlock(\"li\", { key: item }, _toDisplayString(item), 1 /* TEXT */))\n      }), 128 /* KEYED_FRAGMENT */))\n    ])\n  ], 2 /* CLASS */))\n}\n}\n\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "disabled": Props,
+                        "title": Props,
+                        "count": Props,
+                        "items": Props,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

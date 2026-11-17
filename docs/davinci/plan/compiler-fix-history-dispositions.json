@@ -1,5 +1,417 @@
 {
   "schema": "vize.compiler.fix-history-dispositions",
   "version": 1,
-  "rows": []
+  "rows": [
+    {
+      "fixCommit": "07574f1faea7dec3be8f3177851a1a45c6c0c937",
+      "state": "no-compile-behavior",
+      "reason": "Croquis marks type/interface exports that use `typeof <setup value>` as not hoisted, and Canon's virtual TS keeps them inside `__setup`. TypeExport.hoisted is read only by Canon's virtual TS generator; atelier_sfc does not consume type_exports.",
+      "coveredBy": [
+        "crates/vize_canon/src/sfc_typecheck/tests.rs::test_type_check_typeof_setup_const_stays_in_setup_scope"
+      ]
+    },
+    {
+      "fixCommit": "11f3a6563c48d38997b2e603d282bbaaa9b53d2c",
+      "state": "no-compile-behavior",
+      "reason": "Canon's batch virtual project now re-exports named exports from split-script .vue modules, and Croquis::merge_plain_script keeps the regular <script>'s NonScriptSetup scope for virtual TS. compile_sfc reads bindings, not the merged scope chain, so compiled output cannot differ; the change only feeds `vize check`.",
+      "coveredBy": [
+        "crates/vize/tests/check_cli.rs::check_preserves_named_exports_from_split_script_vue",
+        "crates/vize_atelier_sfc/src/croquis/tests.rs::split_scripts_share_one_synthetic_script_offset_space"
+      ]
+    },
+    {
+      "fixCommit": "1c7163dbaf4f2962b0fc16208066ac75a4ca45a4",
+      "state": "no-compile-behavior",
+      "reason": "Croquis now records the declaration offset of each v-for alias (and stops re-adding duplicate SetupConst bindings at offset 0) so Patina reports unused v-for aliases at the alias span. Declaration offsets feed only lint diagnostics; the template compiler does not read Croquis v-for scope offsets.",
+      "coveredBy": [
+        "crates/vize_patina/src/linter/tests/basic.rs::test_lint_template_reports_unused_v_for_alias_at_alias_span"
+      ]
+    },
+    {
+      "fixCommit": "1fdbb7ad0c88d27a55d4fa9056b2140916d2ac17",
+      "state": "no-compile-behavior",
+      "reason": "vize check CLI plumbing: sharded corsa CLI execution, tsconfig extends inlining, slot-prop annotations and const-generic stripping in canon virtual TS, and const-modifier stripping in croquis declaration (.d.ts) emit. None of these feed compile_sfc or the template compilers.",
+      "coveredBy": [
+        "crates/vize/src/commands/check/runner/tests.rs::validates_corsa_server_counts",
+        "crates/vize_canon/src/batch/executor/tests.rs::cli_global_diagnostics_do_not_trigger_session_fallback",
+        "crates/vize_canon/src/batch/executor/cli/tests.rs::partitions_vue_files_and_shares_program_wide_sources",
+        "crates/vize_canon/src/batch/executor/cli/tests.rs::shards_along_import_graph_components",
+        "crates/vize_canon/src/batch/virtual_project/tests/tsconfig_extends.rs::materialized_tsconfig_inlines_extends_chain_without_extending_original",
+        "crates/vize_canon/src/tests.rs::virtual_ts_annotated_slot_props_keep_user_annotation_and_check_it",
+        "crates/vize_canon/src/tests.rs::virtual_ts_const_generic_component_strips_const_from_type_positions",
+        "crates/vize_canon/src/virtual_ts/props.rs::strips_const_modifiers_for_type_declarations"
+      ]
+    },
+    {
+      "fixCommit": "2ac861d0d2247fc4e715117468e4cf874b9ebd04",
+      "state": "no-compile-behavior",
+      "reason": "The fix replaces a byte-slice in vize_canon's virtual TS generator (is_use_template_ref_binding) with a checked `get`, so type-checker virtual TS generation no longer panics on multibyte script comments. The croquis change is a test only; no compiler (atelier) code changed, so compiled output cannot differ.",
+      "coveredBy": [
+        "crates/vize_canon/src/virtual_ts/tests.rs::test_virtual_ts_generation_survives_unicode_script_comments",
+        "crates/vize_croquis/src/script_parser/tests.rs::test_binding_spans_stay_byte_aligned_with_unicode_comments"
+      ]
+    },
+    {
+      "fixCommit": "2f759fcfe3f08c747096d82077b4b294a1ccbd72",
+      "state": "no-compile-behavior",
+      "reason": "Only the Croquis virtual-TS preamble type `__WithDefaultsResult` changed (Omit & mapped -? type -> Omit & Required<Pick<...>>) plus type-checker snapshots. That text is emitted only into Canon's virtual TypeScript for type checking; compile_sfc/compile_template never emit it.",
+      "coveredBy": [
+        "crates/vize_canon/src/sfc_typecheck/tests/with_defaults.rs::test_type_check_with_defaults_template_props_are_default_resolved",
+        "crates/vize_canon/src/sfc_typecheck/tests/with_defaults.rs::test_type_check_with_defaults_narrows_direct_template_prop_identifiers"
+      ]
+    },
+    {
+      "fixCommit": "36748f96dfd364a20f6c47993904fd33032a33eb",
+      "state": "no-compile-behavior",
+      "reason": "clone_expression now flattens a Compound expression to a Simple one carrying its source. Compound expression nodes are only built in unit tests; the parser and transforms hand process_inline_handler Simple nodes, so no public input reaches the changed arm and output cannot differ.",
+      "coveredBy": [
+        "crates/vize_atelier_core/src/steps/expression/tests.rs::test_clone_expression_preserves_compound_source"
+      ]
+    },
+    {
+      "fixCommit": "4185649de7c5a859eedde74984d7eb253deae618",
+      "state": "no-compile-behavior",
+      "reason": "The change fills defineModel type/required/default metadata in vize_croquis::script_parser and feeds it into Canon's virtual TypeScript props/emits. compile_sfc builds its own defineModel props/emits (vize_atelier_sfc script/define_model_metadata.rs) and never reads these Croquis fields, so compiled output cannot differ; this is type-checker-only analysis.",
+      "coveredBy": [
+        "crates/vize_canon/src/tests.rs::snapshot_virtual_ts_with_define_model",
+        "crates/vize_canon/src/snapshots/vize_canon__tests__virtual_ts_tests__virtual_ts_with_define_model.snap",
+        "tests/snapshots/check/__snapshots__/compiler-macros-check.snap"
+      ]
+    },
+    {
+      "fixCommit": "48255cc2d80c424508fa9ee2ca6146ad3e117f97",
+      "state": "no-compile-behavior",
+      "reason": "Changes only the Croquis virtual-TS template generator (typed v-for alias emission) and a Patina type-aware test. Virtual TS feeds the type checker/linter only; compiled render output is untouched.",
+      "coveredBy": [
+        "crates/vize_patina/src/linter/native_type_aware/tests.rs::typed_v_for_alias_template_bindings_are_ignored"
+      ]
+    },
+    {
+      "fixCommit": "49e5531b2c7e9e77647d35c87e795134e5205477",
+      "state": "no-compile-behavior",
+      "reason": "Reduces reactivity-loss false positives: croquis plain-value/destructure origin tracking, croquis_cf reactivity and lifecycle-cleanup diagnostics, Patina no-reactivity-loss rule and canon checks. This is linter/type-checker analysis only; no binding types or compiler inputs change.",
+      "coveredBy": [
+        "crates/vize_croquis/src/script_parser/tests.rs::test_props_snapshot_composable_call_and_getter_extraction_are_losses",
+        "crates/vize_croquis/src/script_parser/tests.rs::test_plain_reactive_values_are_reported_at_composable_boundaries",
+        "crates/vize_croquis/src/script_parser/tests.rs::test_plain_reactive_values_ignore_call_boundaries",
+        "crates/vize_croquis_cf/src/analyzer/tests_reactivity_props/direct.rs::test_reactive_prop_direct_define_props_destructure_preserves_cross_file_flow",
+        "crates/vize_croquis_cf/src/analyzer/tests_reactivity_props/direct.rs::test_reactive_prop_plain_alias_mutation_is_cross_file_loss",
+        "crates/vize_croquis_cf/src/analyzer/tests_single_file.rs::test_lifecycle_hook_without_cleanup_is_reported",
+        "crates/vize_croquis_cf/src/analyzer/tests_single_file.rs::test_lifecycle_hook_with_cleanup_is_allowed",
+        "crates/vize_patina/src/linter/native_type_aware/tests.rs::no_reactivity_loss_tracks_props_composable_calls_and_getter_returns"
+      ]
+    },
+    {
+      "fixCommit": "5b4a87439bb60e5b5b557464671bf0905ec9ecb8",
+      "state": "no-compile-behavior",
+      "reason": "Croquis's script parser now records top-level static object literals and expands `...spread` entries inside runtime defineProps/defineEmits objects into prop/emit definitions and bindings. Croquis ScriptParseResult macros feed Canon virtual TS and Patina; the SFC compiler builds props/emits/bindings from its own ScriptCompileContext and runtime_object_literals is read nowhere else.",
+      "coveredBy": [
+        "crates/vize_croquis/src/script_parser/tests.rs::test_parse_define_props_runtime_object_spread_local_literal",
+        "crates/vize_croquis/src/script_parser/tests.rs::test_parse_define_emits_runtime_object_spread_local_literal",
+        "crates/vize_canon/src/sfc_typecheck/tests.rs::test_type_check_runtime_props_object_spread_template_binding"
+      ]
+    },
+    {
+      "fixCommit": "613dda604578acdcc52a04d66a659fbee2f3644f",
+      "state": "no-compile-behavior",
+      "reason": "Cross-file provide/inject analysis (vize_croquis_cf) now resolves slot-projected children against the component that writes them, used by `vize lint --cross-file`. The vize_croquis visit_element change only memoizes element_subtree_end; scope bounds are identical, so no compiled output changes.",
+      "coveredBy": [
+        "crates/vize/src/commands/lint/tests.rs::cross_file_opt_in_resolves_provide_inject_through_default_slot",
+        "crates/vize_croquis_cf/src/analyzer/tests_provide_inject/tree.rs::test_slot_content_keeps_the_writing_component_as_its_parent"
+      ]
+    },
+    {
+      "fixCommit": "61a4dd074b1c336023a4c23c8d2362a73298610f",
+      "state": "no-compile-behavior",
+      "reason": "Croquis plain-script parsing registers exported value declarations as bindings, and the undefined-binding analysis reports the expression offset. Both feed only the Canon type checker and the linter; compile_sfc collects normal-script bindings with its own collector and parses only script setup through Croquis, whose path is unchanged.",
+      "coveredBy": [
+        "crates/vize_croquis/src/script_parser/tests/reactivity_offsets.rs::plain_script_exported_bindings_are_collected",
+        "crates/vize_canon/src/sfc_typecheck/tests.rs::test_type_check_plain_script_exported_binding_in_template",
+        "crates/vize_canon/src/sfc_typecheck/tests.rs::test_type_check_template_undefined_binding_uses_expression_offset"
+      ]
+    },
+    {
+      "fixCommit": "69a8f2839a5729bec3a25cbd8af126cdb91619a4",
+      "state": "no-compile-behavior",
+      "reason": "Marks LegacyDialectCapabilities #[non_exhaustive] and bumps workspace/npm versions to 0.205.0. An API-compatibility attribute and version strings cannot change compiled output.",
+      "coveredBy": [
+        "davinci/vize_l1/src/dialect/vue/tests.rs::composed_tables_match_the_pre_registry_capability_matrix"
+      ]
+    },
+    {
+      "fixCommit": "711cb80543ac12f7ef3c0f54cccdca52f7ef4afe",
+      "state": "no-compile-behavior",
+      "reason": "Croquis reactivity-loss detection ignores value-sink calls (emit, Number, console.*, JSON.stringify, Math.*). Reactivity losses feed only Patina/Canon diagnostics; the compiler does not read them.",
+      "coveredBy": [
+        "crates/vize_croquis/src/script_parser/tests.rs::test_plain_reactive_values_ignore_call_boundaries"
+      ]
+    },
+    {
+      "fixCommit": "76132582fd93607bb43429918bdd1dcff68b1fa9",
+      "state": "no-compile-behavior",
+      "reason": "Adds an owning-component field to Croquis `VSlotScopeData` so Canon can type scoped-slot props from the child component's defineSlots. The atelier transform sets the field to `None` and never reads it; codegen is unchanged.",
+      "coveredBy": [
+        "crates/vize/tests/check_cli.rs::check_scoped_slot_props_typed_from_child_define_slots"
+      ]
+    },
+    {
+      "fixCommit": "79e9e110ba725255624cea545bcd6dd657e78348",
+      "state": "no-compile-behavior",
+      "reason": "Changes vize_canon virtual TS generation, the `vize check` Nuxt command and croquis runtime-prop type extraction (extract_props_from_runtime), which at this commit fed only the type checker/linter (compile_sfc used its own ScriptCompileContext for props codegen). Compiled output cannot differ; the added .vue files are type-check project fixtures.",
+      "coveredBy": [
+        "crates/vize_canon/src/batch/type_checker/tests.rs::batch_type_checker_accepts_nested_ref_value_component_props",
+        "tests/_fixtures/differential/typechecker/compiler-macro-runtime-props-regressions/cases.json",
+        "crates/vize_croquis/src/script_parser/tests.rs::test_parse_define_props_runtime_object_spread_local_literal"
+      ]
+    },
+    {
+      "fixCommit": "8252898b62bff2877e7e09dcfb2d98b223c19f9d",
+      "state": "no-compile-behavior",
+      "reason": "Adds analyze_sfc_descriptor_resolved / merge_resolved_props_into_croquis in vize_atelier_sfc::croquis and switches the canon SFC type checker, typecheck service and maestro virtual TS to it, so props inherited through imported/heritage types are not flagged as undefined template references. compile_sfc never calls the new entry, so compiled output cannot differ; only type-check diagnostics and virtual TS change.",
+      "coveredBy": [
+        "crates/vize_canon/src/sfc_typecheck/tests/heritage_props.rs::imported_heritage_props_are_not_undefined_bindings"
+      ]
+    },
+    {
+      "fixCommit": "84ad16ca4d099ecd589934d7bd7916d5d9ffad53",
+      "state": "no-compile-behavior",
+      "reason": "Corsa/LSP session overlays, `vize check`/`vize fmt` CLI plumbing, Maestro virtual-code and completion work, and test scratch paths. The only atelier_sfc edits move test scratch directories; no compiler source changed.",
+      "coveredBy": []
+    },
+    {
+      "fixCommit": "8ee35b9dc26cf0fa45dab063be2021fddc35eb2c",
+      "state": "no-compile-behavior",
+      "reason": "Teaches croquis script parsing to extract runtime `defineEmits({...})` / array emits with payload types for vize_canon's untyped-emit diagnostics. The compiler's runtime `emits` codegen comes from its own ScriptCompileContext and did not read croquis emit definitions, so compiled output cannot differ.",
+      "coveredBy": [
+        "crates/vize_canon/src/sfc_typecheck/tests.rs::test_type_check_with_runtime_emits_object_validators",
+        "crates/vize_canon/src/sfc_typecheck/tests.rs::test_type_check_with_untyped_runtime_emits_object_value",
+        "crates/vize_croquis/src/script_parser/tests.rs::test_parse_define_emits_runtime_object"
+      ]
+    },
+    {
+      "fixCommit": "9319a0769df570cf0fd03c5982d153d6a39f29e7",
+      "state": "no-compile-behavior",
+      "reason": "Croquis's drawer keeps a parent-component stack so a `<template #name>` slot host records its owning component in VSlotScopeData, letting Canon type the slot props from that component's $slots instead of `any`. Only the Croquis scope data read by Canon virtual TS changes; compiled output cannot differ.",
+      "coveredBy": ["crates/vize_canon/src/tests.rs::snapshot_virtual_ts_scoped_slots"]
+    },
+    {
+      "fixCommit": "938a1b11ad3cab1e103544e7c0ef1e56abd7a3c6",
+      "state": "no-compile-behavior",
+      "reason": "Croquis now keeps each template identifier's root offset (extract_identifier_refs_oxc) so undefined-reference diagnostics point at the real occurrence (`name` in `user.name + name`) instead of the first substring match. UndefinedRef offsets feed only Canon/Patina diagnostics; the template and SFC compilers never read them.",
+      "coveredBy": [
+        "crates/vize_canon/src/sfc_typecheck/tests.rs::test_type_check_template_undefined_binding_skips_member_property_offsets",
+        "crates/vize_croquis/src/drawer/helpers/identifiers/tests.rs::test_extract_identifier_refs_preserve_root_offsets"
+      ]
+    },
+    {
+      "fixCommit": "967b9da3bb785a35e54bb01054a6b55850b257ff",
+      "state": "no-compile-behavior",
+      "reason": "Changes only croquis cross-file component resolution (is_builtin_component now normalizes kebab-case names), which feeds cross-file lint diagnostics (UnregisteredComponent). The compiler does not use the cross-file analyzer, so compiled output cannot differ.",
+      "coveredBy": [
+        "crates/vize_croquis_cf/src/rules/component_resolution/tests.rs::test_is_builtin_component"
+      ]
+    },
+    {
+      "fixCommit": "9876ed9088ac14c2ec3deb9e46c02365a3cf21cf",
+      "state": "no-compile-behavior",
+      "reason": "Croquis records argument-less object-form v-on (`v-on=\"{ ... }\"`) as a VOn template expression instead of synthesizing an event handler, so Canon's virtual TS emits `void ({ ... }); // VOn`. Template expressions feed only the type checker and linter; DOM/SSR/Vapor codegen does not consume them.",
+      "coveredBy": [
+        "crates/vize_canon/src/virtual_ts/tests.rs::test_object_form_v_on_is_preserved_as_expression"
+      ]
+    },
+    {
+      "fixCommit": "9f8a92fe20897915dfc2e1f134b7a66cb09d26c4",
+      "state": "no-compile-behavior",
+      "reason": "Croquis now records whether a v-slot argument is dynamic (ScopeChain::dynamic_v_slot_scopes) so Canon's virtual TS types `v-slot:[name]` props from the union of all declared slots instead of a static slot key. The scope-chain flag is read only by vize_canon virtual TS generation; the SFC/template compilers do not consume Croquis v-slot scope data.",
+      "coveredBy": [
+        "crates/vize_canon/src/tests/slot_scope.rs::virtual_ts_dynamic_component_v_slot_uses_slot_prop_union",
+        "crates/vize/tests/check_cli.rs::check_dynamic_scoped_slot_props_typed_from_child_define_slots"
+      ]
+    },
+    {
+      "fixCommit": "a1fee61d1433ad5d0883df597c95751135aabefd",
+      "state": "no-compile-behavior",
+      "reason": "Changes only the Croquis virtual-TS generator for template event handlers and the Patina native type-aware no-floating-promises query. Both feed the linter/type checker; no atelier compiler crate changed, so compiled output cannot differ. (Later work reversed the lint verdict to ignore member handlers; still lint-only.)",
+      "coveredBy": [
+        "crates/vize_patina/src/linter/native_type_aware/tests/template_event_handlers.rs::no_floating_promises_ignores_member_template_event_handlers",
+        "crates/vize_patina/src/linter/native_type_aware/tests/template_event_handlers.rs::no_floating_promises_ignores_sync_member_template_event_handlers"
+      ]
+    },
+    {
+      "fixCommit": "ad4a92c47eff01f5abe67554d7ab8422b209676d",
+      "state": "no-compile-behavior",
+      "reason": "Rewrites vize_croquis ImportResolver::extract_type_definitions from regex scanning to an OXC AST walk. At the commit its only callers were croquis virtual_ts (type checking); at HEAD nothing outside import_resolver.rs uses it. The SFC compiler resolves imported types through its own script context, so compiled output cannot differ.",
+      "coveredBy": [
+        "crates/vize_croquis/src/import_resolver.rs::test_extract_type_definitions",
+        "crates/vize_croquis/src/import_resolver.rs::test_extract_ignores_strings_and_comments",
+        "crates/vize_croquis/src/import_resolver.rs::test_extract_generic_interface",
+        "crates/vize_croquis/src/import_resolver.rs::test_extract_multi_line_nested_interface",
+        "crates/vize_croquis/src/import_resolver.rs::test_extract_union_and_intersection_aliases",
+        "crates/vize_croquis/src/import_resolver.rs::test_extract_reexported_local_types",
+        "crates/vize_croquis/src/import_resolver.rs::test_extract_skips_non_exported_types"
+      ]
+    },
+    {
+      "fixCommit": "b10876e9137243be48f9405e44b88003c1906f49",
+      "state": "no-compile-behavior",
+      "reason": "Adds value_bindings to the Croquis v-for scope so destructured aliases bind every name for virtual TS, unused-var analysis and type-aware lint. The only atelier_core edit populates the new field with the single existing value alias, so the compiler scope chain and compiled output are unchanged.",
+      "coveredBy": [
+        "crates/vize_croquis/src/drawer/helpers/v_for/tests.rs::parse_scope_expression_keeps_destructured_value_pattern",
+        "crates/vize_croquis/src/drawer/helpers/v_for/tests.rs::parse_scope_expression_splits_tuple_around_destructured_value",
+        "crates/vize_patina/src/linter/native_type_aware/tests.rs::typed_destructured_v_for_template_bindings_are_ignored",
+        "crates/vize_canon/src/tests.rs::snapshot_virtual_ts_v_for_destructuring",
+        "crates/vize_canon/src/sfc_typecheck/tests.rs::test_type_check_v_for_destructuring"
+      ]
+    },
+    {
+      "fixCommit": "b76d2f7b3d23c49f55a12f2a7ba41e553304da1f",
+      "state": "no-compile-behavior",
+      "reason": "Canon virtual TS now reads local interface/type-alias prop fields from a croquis TypeResolver populated by an AST walk instead of a text scanner; croquis gains Croquis.types and register_local_type. Only canon virtual TS / vue_codegen consume these, so compiled output cannot differ.",
+      "coveredBy": [
+        "crates/vize_canon/src/virtual_ts/tests.rs::test_define_props_local_interface_fields_resolved_via_ast",
+        "crates/vize_canon/src/virtual_ts/tests.rs::test_define_props_local_intersection_alias_emits_keyed_bindings",
+        "crates/vize_canon/src/virtual_ts/props.rs::type_reference_lookup_key_strips_generics_but_preserves_inline_literals"
+      ]
+    },
+    {
+      "fixCommit": "b8f878388af850587f4471c56c60b9af21f5e9f1",
+      "state": "no-compile-behavior",
+      "reason": "Croquis now records v-on TemplateExpression start/end from the expression span instead of the whole directive span, which only shifts Canon's virtual-TS source-map ranges for type-check diagnostics. atelier_sfc's Croquis analysis runs with `collect_template_expressions: false` (crates/vize_atelier_sfc/src/croquis.rs), so compiled output cannot change.",
+      "coveredBy": [
+        "crates/vize_canon/src/batch/type_checker/tests.rs::batch_type_checker_multiline_inline_handler_points_into_offending_line"
+      ]
+    },
+    {
+      "fixCommit": "bea7cd0664ef06b9779ac00708501230ca2897d9",
+      "state": "no-compile-behavior",
+      "reason": "Canon's virtual TS now types template props declared through withDefaults as default-resolved (Required<Pick<...>>), changing only the generated virtual TypeScript and its snapshots. No vize_atelier_* code changed, so compiled output cannot differ.",
+      "coveredBy": [
+        "crates/vize_canon/src/sfc_typecheck/tests/with_defaults.rs::test_type_check_with_defaults_template_props_are_default_resolved",
+        "crates/vize_canon/src/virtual_ts/props/with_defaults.rs::collects_with_defaults_object_keys",
+        "crates/vize_canon/src/virtual_ts/props.rs::builds_deterministic_with_defaults_props_type"
+      ]
+    },
+    {
+      "fixCommit": "c7378647b4d523ffdaae11bedb7d46f25763c1fe",
+      "state": "no-compile-behavior",
+      "reason": "Croquis now records specifier-only `export { X }` / `export type { X }` statements in script setup as `re_exports`, and Canon lifts them out of the synthetic `__setup()` in the virtual TS. No vize_atelier_* crate reads `re_exports`, so compiled output cannot differ.",
+      "coveredBy": [
+        "crates/vize_canon/src/virtual_ts/tests.rs::test_script_setup_type_reexport_lifted_to_module_scope",
+        "crates/vize/tests/check_cli.rs::check_lifts_script_setup_type_reexports"
+      ]
+    },
+    {
+      "fixCommit": "c982636085b3be4d768a1ea72a09e6f6222365c1",
+      "state": "no-compile-behavior",
+      "reason": "CI repair: renames VueDialect to VueVersion in vize_armature legacy.rs (type rename only, identical capability tables) and updates vize check declaration-emit test expectations for the shared __vize_helpers.d.ts. No compiler code path changes.",
+      "coveredBy": [
+        "crates/vize/tests/check_cli.rs::check_can_emit_declarations",
+        "crates/vize/tests/check_cli.rs::check_declaration_emit_uses_tsconfig_options",
+        "davinci/vize_l1/src/dialect/vue/tests.rs::as_str_round_trips_all_variants_through_config_parsing",
+        "davinci/vize_l1/src/dialect/vue/tests.rs::v2_and_v2_7_share_the_template_dialect",
+        "davinci/vize_l1/src/dialect/vue/tests.rs::default_dialect_resolves_to_the_all_off_vue3_set"
+      ]
+    },
+    {
+      "fixCommit": "ca50559473f17c7eb7f68b7b3c9b6c400c807136",
+      "state": "no-compile-behavior",
+      "reason": "Restores the public transform_v_if(ctx, exp, is_root) signature as a wrapper over the new transform_v_if_with_directive, which traverse now calls with identical arguments. The compiler pipeline runs the same code as after #1255, so compiled output is byte-identical.",
+      "coveredBy": [
+        "crates/vize_atelier_core/src/lane/structural/tests.rs::test_v_if_without_expression_reports_error",
+        "crates/vize_atelier_core/src/lane/structural/tests.rs::test_v_else_if_without_expression_reports_error",
+        "crates/vize_atelier_core/src/lane/structural/tests.rs::test_v_else_without_expression_stays_valid"
+      ]
+    },
+    {
+      "fixCommit": "cd25c7802352d6600b86200bc084473a8391b7ae",
+      "state": "no-compile-behavior",
+      "reason": "Changes only the Croquis virtual-TS template generator (v-if narrowing) and the Patina template query collector. Both feed type checking/linting; no compiler crate output changes.",
+      "coveredBy": [
+        "crates/vize_patina/src/linter/native_type_aware/tests.rs::narrowed_template_bindings_inside_v_if_are_ignored"
+      ]
+    },
+    {
+      "fixCommit": "d175e964b691cad7ac542d08734cac5051a48e96",
+      "state": "no-compile-behavior",
+      "reason": "Croquis builds sibling-aware v-if/v-else-if/v-else narrowing guards (negated preceding conditions) and Canon emits them in the virtual TS. The guards only feed type checking; no compile_sfc/compile_template output reads them.",
+      "coveredBy": [
+        "crates/vize_croquis/src/drawer/template/tests.rs::flat_v_else_branch_gets_negated_guard",
+        "crates/vize_croquis/src/drawer/template/tests.rs::flat_v_else_if_chain_accumulates_negated_guards",
+        "crates/vize_croquis/src/drawer/template/tests.rs::non_conditional_sibling_breaks_v_if_chain",
+        "crates/vize/tests/check_cli.rs::check_v_else_branch_narrows_discriminated_union"
+      ]
+    },
+    {
+      "fixCommit": "d4237c13e1674d45d50772b0ad9c5707cfbbc4ec",
+      "state": "no-compile-behavior",
+      "reason": "Routes template expressions containing `/` through croquis' OXC slow path so regex literals are not reported as identifiers; this feeds Maestro's undefined-binding diagnostics. extract_identifiers_oxc is not used by any atelier compiler crate, so compiled output cannot differ.",
+      "coveredBy": [
+        "crates/vize_croquis/src/drawer/helpers/identifiers/tests.rs::test_extract_identifiers_ignores_regex_literals",
+        "crates/vize_maestro/src/ide/type_service/diagnostics/diagnostics_tests.rs::collect_diagnostics_does_not_report_regex_literals_as_undefined_bindings"
+      ]
+    },
+    {
+      "fixCommit": "d5c76b0521bec4afd51d64b80abaaa8db8ef8136",
+      "state": "no-compile-behavior",
+      "reason": "Changes `vite_plugin::scope_css_for_pipeline` (the Vite/Nuxt CSS extraction helper exposed through vize_vitrine) to keep leading `/* ... */` comments before a scoped rule or @media block, plus vite-plugin-vize JS changes. compile_sfc and compile_template do not call this pipeline helper.",
+      "coveredBy": [
+        "crates/vize_atelier_sfc/src/vite_plugin/css_scope/tests.rs::preserves_comments_before_media_rules",
+        "crates/vize_atelier_sfc/src/vite_plugin/css_scope/tests.rs::preserves_comments_before_selectors"
+      ]
+    },
+    {
+      "fixCommit": "dab7edca29ef07b68ef81e11b19e3bf9ad8bc900",
+      "state": "no-compile-behavior",
+      "reason": "Croquis plain-script parsing now resolves Options API `components` registrations through const bindings, spreads and `export default <identifier>`, and stops reporting value exports in plain scripts as invalid. `component_registrations` and plain-script `invalid_exports` feed only Maestro, Patina and Canon; compile_sfc never reads them (it parses script setup only via parse_script_setup).",
+      "coveredBy": [
+        "crates/vize_croquis/src/script_parser/tests.rs::test_parse_options_api_component_registrations",
+        "crates/vize_croquis/src/script_parser/tests.rs::test_parse_options_api_component_registrations_through_bindings",
+        "crates/vize_patina/src/rules/script/no_options_api/tests.rs::test_invalid_cdn_create_app_options",
+        "crates/vize_patina/src/rules/script/no_options_api/tests.rs::test_invalid_destructured_create_app_options"
+      ]
+    },
+    {
+      "fixCommit": "e8ad806442134436b0a2750d6a93b63b627dceb1",
+      "state": "no-compile-behavior",
+      "reason": "Derives croquis script-setup is_async from a top-level-await AST walk and drops the canon text scan for \"await \", so canon virtual TS emits async __setup only for real top-level await. No compiler crate reads the croquis is_async flag (checked at the commit), so compiled output cannot differ.",
+      "coveredBy": [
+        "crates/vize_canon/src/virtual_ts/tests.rs::test_script_setup_top_level_await_emits_async_setup",
+        "crates/vize_canon/src/virtual_ts/tests.rs::test_script_setup_top_level_for_await_emits_async_setup",
+        "crates/vize_canon/src/virtual_ts/tests.rs::test_script_setup_nested_await_and_text_do_not_emit_async_setup",
+        "crates/vize_croquis/src/script_parser/tests/async_setup.rs::test_parse_script_setup_marks_top_level_await_async",
+        "crates/vize_croquis/src/script_parser/tests/async_setup.rs::test_parse_script_setup_ignores_non_top_level_awaits"
+      ]
+    },
+    {
+      "fixCommit": "e957538964a4b570e2cdef3a2370c75e41bd28e5",
+      "state": "no-compile-behavior",
+      "reason": "Adds a new public `validate_script_setup_semantics` entry point (props-destructure default type validation) and calls it from Canon batch registration and Maestro LSP diagnostics. compile_sfc already ran the same validator; its code, errors and every other result field are unchanged.",
+      "coveredBy": [
+        "crates/vize_canon/src/batch/virtual_project/tests.rs::test_register_vue_file_reports_props_destructure_default_type_mismatch",
+        "crates/vize_canon/src/batch/virtual_project/tests.rs::test_register_vue_file_allows_matching_props_destructure_default",
+        "crates/vize_maestro/src/ide/diagnostics/tests.rs::collect_reports_props_destructure_default_type_mismatch_for_lsp",
+        "crates/vize_maestro/src/ide/diagnostics/tests.rs::collect_does_not_report_sfc_compile_diagnostic_for_valid_default",
+        "crates/vize_atelier_sfc/tests/fixtures/fix-history/props-default-type-diagnostic.expected.json"
+      ]
+    },
+    {
+      "fixCommit": "eb62d44acada562ca55ed5da9d26b10c348e90c0",
+      "state": "no-compile-behavior",
+      "reason": "Performance follow-up to #1283: the Croquis identifier cache goes back to plain names and the undefined-ref offset is recomputed only for undefined identifiers with a word-boundary search; Canon's instance-global refs use the same name lookup. Only diagnostic offsets in Croquis/Canon are touched; compiled output cannot differ.",
+      "coveredBy": [
+        "crates/vize_canon/src/sfc_typecheck/tests.rs::test_type_check_template_undefined_binding_skips_member_property_offsets"
+      ]
+    },
+    {
+      "fixCommit": "f6f692cad55299e155289c85964a17028c49c3f4",
+      "state": "no-compile-behavior",
+      "reason": "Adds Options API `components` registration collection to croquis script parsing and widens the croquis analyzer's is_component_tag; both feed patina's vue/no-unused-components only. compile_sfc neither reads component_registrations nor calls is_component_tag, so compiled output cannot differ.",
+      "coveredBy": [
+        "crates/vize_patina/src/linter/tests/no_unused_components.rs::test_lint_sfc_no_unused_components_matches_options_api_component_alias",
+        "crates/vize_patina/src/linter/tests/no_unused_components.rs::test_lint_sfc_no_unused_components_reports_unused_options_api_component_alias",
+        "crates/vize_croquis/src/script_parser/tests.rs::test_parse_options_api_component_registrations",
+        "crates/vize_croquis/src/drawer/helpers/keywords.rs::tests::test_is_component_tag"
+      ]
+    }
+  ]
 }
