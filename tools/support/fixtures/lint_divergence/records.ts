@@ -533,6 +533,7 @@ const patinaIntentionalRuleIds = new Set([
   "vue/no-unused-vars",
   "vue/next-tick-style",
   "html/no-duplicate-class",
+  "vue/prefer-single-event-payload",
   "script/require-typed-ref",
   "vue/require-v-for-key",
   "script/valid-next-tick",
@@ -639,7 +640,9 @@ export function patinaIntentionalReason(
   )
     return "Patina resolves a local runtime props object referenced by the component's props option; eslint-plugin-vue does not follow that identifier, so this is additional sound prop-contract coverage.";
   if (
-    finding.ruleId === "script/custom-event-name-casing" &&
+    (finding.ruleId === "script/custom-event-name-casing" ||
+      (finding.ruleId === "vue/prefer-single-event-payload" &&
+        findingInsideScriptBlock(finding, source))) &&
     findingPrecedesDefineEmits(finding, source)
   )
     return "Patina resolves the defineEmits binding before visiting calls; eslint-plugin-vue misses calls authored before the macro declaration because its visitor records the binding later.";
