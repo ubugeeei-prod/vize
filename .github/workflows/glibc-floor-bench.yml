@@ -1,0 +1,93 @@
+name: glibc floor benchmark
+run-name: glibc floor benchmark @ ${{ github.sha }}
+# Evidence for the Linux GNU release recipe: builds the same source twice on
+# one runner, against the runner's glibc (`host`, the recipe before the
+# glibc 2.17 floor: rust-lld with ICF and packed relocations for the CLI,
+# Wild for the binding) and through cargo-zigbuild at the floor (`floor`),
+# then times the CLI and the binding in alternating rounds.
+# Driver: tools/support/github/glibc-floor-bench.ts
+on:
+  # Only a change to the benchmark itself measures on a pull request.
+  pull_request:
+    paths:
+      - ".github/workflows/glibc-floor-bench.yml"
+      - "tools/support/github/glibc-floor-bench.ts"
+  workflow_dispatch:
+    inputs:
+      rounds:
+        description: Rounds per variant (each round visits both variants in alternating order)
+        type: string
+        default: "15"
+permissions: { contents: read }
+concurrency:
+  group: glibc-floor-bench-${{ github.sha }}
+  cancel-in-progress: false
+env:
+  CARGO_INCREMENTAL: 0
+  CARGO_TERM_COLOR: never
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  BENCH_ROUNDS: ${{ inputs.rounds || '15' }}
+jobs:
+  measure:
+    name: Measure (linux-x64-gnu)
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        with: { persist-credentials: false }
+      - uses: voidzero-dev/setup-vp@ca1c46663915d6c1042ae23bd39ab85718bfb0fa # v1
+        with: { node-version-file: "package.json", cache: true, run-install: false }
+      - name: Install native package tooling
+        run: vp install --frozen-lockfile --prefer-offline --filter './npm/native...'
+      - name: Read the repository Rust toolchain
+        id: rust-toolchain
+        run: sed -n 's/^channel = "\(.*\)"$/channel=\1/p' rust-toolchain.toml >> "$GITHUB_OUTPUT"
+      - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
+        with:
+          toolchain: ${{ steps.rust-toolchain.outputs.channel }}
+          targets: x86_64-unknown-linux-gnu
+      - uses: goto-bus-stop/setup-zig@abea47f85e598557f500fa1fd2ab7464fcb39406 # v2
+        with: { version: 0.15.1 }
+      - uses: ./.github/actions/setup-cargo-zigbuild
+      # Before Wild exists: the host CLI links with rust-lld, as the release did.
+      - name: Build the CLI against the runner glibc
+        run: |
+          cargo build --locked --release -p vize --target x86_64-unknown-linux-gnu
+          mkdir -p "$RUNNER_TEMP/host" && cp target/x86_64-unknown-linux-gnu/release/vize "$RUNNER_TEMP/host/vize"
+      - name: Build the CLI at the glibc floor
+        run: |
+          cargo zigbuild --locked --release -p vize --target "$(node tools/support/github/glibc-floor.ts target x86_64-unknown-linux-gnu)"
+          mkdir -p "$RUNNER_TEMP/floor" && cp target/x86_64-unknown-linux-gnu/release/vize "$RUNNER_TEMP/floor/vize"
+      - uses: ./.github/actions/setup-wild-http-recovery
+        with: { wild-version: "0.9.0" }
+      - name: Build the binding against the runner glibc
+        run: |
+          node tools/support/github/build-napi-package.ts npm/native ../../crates/vize_vitrine/Cargo.toml vize_vitrine x86_64-unknown-linux-gnu
+          cp npm/native/vize-vitrine.linux-x64-gnu.node "$RUNNER_TEMP/host/vize-vitrine.node"
+      - name: Build the binding at the glibc floor
+        run: |
+          node tools/support/github/build-napi-package.ts npm/native ../../crates/vize_vitrine/Cargo.toml vize_vitrine x86_64-unknown-linux-gnu --cross-compile
+          cp npm/native/vize-vitrine.linux-x64-gnu.node "$RUNNER_TEMP/floor/vize-vitrine.node"
+      - name: Record what each variant links
+        run: |
+          node tools/commands/ci/github/verify-glibc-symbols.ts "$RUNNER_TEMP/floor/vize" "$RUNNER_TEMP/floor/vize-vitrine.node"
+          node tools/commands/ci/github/verify-glibc-symbols.ts --max 2.39 "$RUNNER_TEMP/host/vize" "$RUNNER_TEMP/host/vize-vitrine.node"
+          ls -l "$RUNNER_TEMP/host" "$RUNNER_TEMP/floor"
+      - name: Measure
+        run: >-
+          node tools/support/github/glibc-floor-bench.ts run --rounds "$BENCH_ROUNDS"
+          --out "$RUNNER_TEMP/glibc-floor-bench.json" --corpus npm/ui/src
+          --cli "host=$RUNNER_TEMP/host/vize" --cli "floor=$RUNNER_TEMP/floor/vize"
+          --binding "host=$RUNNER_TEMP/host/vize-vitrine.node" --binding "floor=$RUNNER_TEMP/floor/vize-vitrine.node"
+      - name: Summarize
+        if: ${{ always() }}
+        run: >-
+          test ! -s "$RUNNER_TEMP/glibc-floor-bench.json" ||
+          node tools/support/github/glibc-floor-bench.ts summarize "$RUNNER_TEMP/glibc-floor-bench.json"
+          >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: ${{ always() }}
+        with:
+          name: glibc-floor-bench
+          path: ${{ runner.temp }}/glibc-floor-bench.json
+          if-no-files-found: warn
