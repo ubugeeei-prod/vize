@@ -1,0 +1,13 @@
+<script setup  lang="ts" generic="T">
+defineProps<{ item: T }>()
+</script>
+
+<template>
+  <div />
+</template>
+
+<style  scoped>
+.a {
+  color: red;
+}
+</style  >

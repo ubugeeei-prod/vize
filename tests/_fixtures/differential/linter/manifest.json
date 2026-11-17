@@ -17560,6 +17560,43 @@
       }
     },
     {
+      "id": "linter/no-multi-spaces-block-tags-12336",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "no-multi-spaces-block-tags-12336",
+        "files": [
+          {
+            "path": "ListboxItem.vue.txt",
+            "role": "real-project-matrix-reduction",
+            "sha256": "16da27ba6c0a2b4ac807ebbd9e615d6e57e435fdcc60ecef6a1aa79522db72b6"
+          },
+          {
+            "path": "rules.json",
+            "role": "rule-options",
+            "sha256": "0858f62fd5ba8341f2d07bd42ffd14eab205236d1d80ddcf67cf7d15520ebf63"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/no-unnecessary-type-assertion-12992",
       "state": "active",
       "targets": [
