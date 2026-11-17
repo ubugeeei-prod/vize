@@ -2,7 +2,10 @@
 // input-specific code ends at L2. L2→L3, L3 and L4 name no input format
 // (JSX, TSX, TSRX, SFC, Pug) in a module path, a file name or a Rust identifier,
 // and they have no `lang/` module. L1 follows the target layout: one sibling per
-// markup grammar and per style language, and one Vue owner.
+// markup grammar and per style language, and one Vue owner. No level module is
+// named by migration status (`native`, `compat`: `status:` entries), L1 code
+// names no product (`lint:` entries), and every htmlish ledger row has its
+// fixtures (`fixture:` entries).
 // Present differences are listed in docs/davinci/plan/input-placement-owed.json,
 // which can only shrink; the gate passes when the list is empty. Test code is exempt.
 import assert from "node:assert/strict";
@@ -121,9 +124,71 @@ function l1Offenders(root: string): string[] {
   return found;
 }
 
+// Migration status is not a concept: no level module is named `native` or `compat`.
+const levelCrates = [
+  "vize_l0",
+  "vize_l1",
+  "vize_l1_to_l2",
+  "vize_l2",
+  "vize_l2_to_l3",
+  "vize_l3",
+  "vize_l4",
+];
+const statusSegment = /^(?:native|compat)(?:_|$)|_(?:native|compat)$/u;
+
+/** `status:<module>` for the outermost module whose name is a migration status. */
+function statusOffenders(root: string): string[] {
+  const found = new Set<string>();
+  for (const crate of levelCrates)
+    for (const file of rustFiles(path.join(root, crate, "src"))) {
+      const relative = path.relative(repoRoot, file).split(path.sep).join("/");
+      if (isTestFile(relative)) continue;
+      const segments = relative.replace(/\.rs$/u, "").split("/");
+      const at = segments.findIndex((segment, index) => index > 2 && statusSegment.test(segment));
+      if (at >= 0) found.add("status:" + segments.slice(0, at + 1).join("/"));
+    }
+  return [...found];
+}
+
+/** `lint:<file>` for L1 code that names a product (lint). */
+function productOffenders(root: string): string[] {
+  return rustFiles(path.join(root, "vize_l1", "src"))
+    .map((file) => path.relative(repoRoot, file).split(path.sep).join("/"))
+    .filter((relative) => !isTestFile(relative))
+    .filter((relative) => {
+      const words = (text: string) =>
+        (text.match(/[A-Za-z_][A-Za-z0-9_]*/gu) ?? []).some((identifier) =>
+          identifierWords(identifier).includes("lint"),
+        );
+      return (
+        words(relative.replace(/\.rs$/u, "").replaceAll("/", " ")) ||
+        words(maskRustSource(fs.readFileSync(path.join(repoRoot, relative), "utf8")))
+      );
+    })
+    .map((relative) => "lint:" + relative);
+}
+
+/** `fixture:<row>:<dialect>` for each htmlish ledger row without a fixture. */
+function fixtureOffenders(): string[] {
+  const ledger = JSON.parse(
+    fs.readFileSync(path.join(repoRoot, "docs/davinci/plan/htmlish-divergences.json"), "utf8"),
+  ) as { rows: { id: string; fixtures: Record<string, string | null> }[] };
+  return ledger.rows.flatMap((row) =>
+    Object.entries(row.fixtures)
+      .filter(([, fixture]) => fixture === null)
+      .map(([dialect]) => `fixture:${row.id}:${dialect}`),
+  );
+}
+
 export function offenders(): string[] {
   const root = path.join(repoRoot, "davinci");
-  return [...neutralOffenders(root), ...l1Offenders(root)].sort();
+  return [
+    ...neutralOffenders(root),
+    ...l1Offenders(root),
+    ...statusOffenders(root),
+    ...productOffenders(root),
+    ...fixtureOffenders(),
+  ].sort();
 }
 
 function owed(): string[] {

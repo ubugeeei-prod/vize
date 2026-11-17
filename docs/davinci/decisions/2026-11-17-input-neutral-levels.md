@@ -67,7 +67,9 @@ have produced the same kind of drift that MLIR dialect sprawl does.
    driver crate that replaces the `vize_atelier_*` shells under #6828. Levels
    never depend upward.
 5. **L1 directories follow the #6855 axes exactly**, with one sibling per
-   grammar or language and one Vue owner. The target trees are below. This
+   grammar or language and one Vue owner. Modules are named by concept, never
+   by migration status (`native`, `compat`). L1 does not know about products
+   such as lint. The target trees are below. This
    supersedes #6855's top-level `profile/`: a host-document profile only means
    something to a markup grammar, so it stays a shared contract at the
    `markup/` root.
@@ -169,10 +171,10 @@ pub struct ComponentDef<'a> {   // extends today's vize_l2::component::Component
 
 | Today                                                                                       | Destination                                                                                                                                                                                                                                                                             |
 | ------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `markup/{lex,parse,document,native,surface,render}`, root `build.rs` + `build/`, `event.rs` | `markup/html/` (the HTML-family template grammar, document and component profiles)                                                                                                                                                                                                      |
-| `markup/{token,profile,grammar}.rs`, `markup/entity`                                        | stay at the `markup/` root: contracts and decoding shared by every grammar                                                                                                                                                                                                              |
+| `markup/{lex,parse,document,native,surface,render}`, root `build.rs` + `build/`, `event.rs` | `markup/htmlish/` (the HTML-tokenizer family: document and component profiles, below)                                                                                                                                                                                                   |
+| `markup/{token,profile,grammar}.rs`, `markup/entity`                                        | stay at the `markup/` root: contracts and decoding shared by every grammar. `markup/profile.rs` keeps the neutral `Document` and `Component` profiles; `VueComponent` moves to `framework/vue/profile.rs`                                                                               |
 | `pug.rs`, `pug/`                                                                            | `markup/pug/`                                                                                                                                                                                                                                                                           |
-| `markup/tsrx/`                                                                              | stays (`markup/tsrx/`), now a sibling of `html` and `pug`                                                                                                                                                                                                                               |
+| `markup/tsrx/`                                                                              | stays (`markup/tsrx/`), now a sibling of `htmlish` and `pug`                                                                                                                                                                                                                            |
 | `markup/directive.rs` (Vue directive decomposition)                                         | `framework/vue/directive.rs`; the neutral `DirectiveSyntax` hook trait stays in `markup/grammar.rs`                                                                                                                                                                                     |
 | `dialect/{mod,vue,vue0,vue1,vue2,vue3}`                                                     | `framework/vue/{feature, version/{v0,v1,v2,v3}, quirks}` (the #6841 composition), one Vue owner                                                                                                                                                                                         |
 | `registry.rs`                                                                               | stays: the only file that names concrete variants                                                                                                                                                                                                                                       |
@@ -186,21 +188,129 @@ pub struct ComponentDef<'a> {   // extends today's vize_l2::component::Component
 | `embed/`, `edit.rs`, `slice.rs`                                                             | stay                                                                                                                                                                                                                                                                                    |
 | `moved.rs`                                                                                  | deleted. The only in-repo user is `crates/vize_atelier_sfc/examples/n8n_compiler_custody/native.rs` (`vize_l1::parse`), which moves to `vize_l1::markup::parse` in the same commit. The breaking change is recorded in the release notes, as `vize_l1`'s experimental contract requires |
 
+### `markup/htmlish`: one grammar, two profiles
+
+`markup/htmlish` is the HTML-tokenizer family. It is not ".html only": the
+same lexer and tree builder read an `.html` document (also in-DOM templates
+and petite-vue) under the **Document** profile, and an SFC `<template>` under
+the **Component** profile with Vue's attribute rule on top. The name says
+"HTML-ish" on purpose. Other names were rejected: `html` (reads as `.html`
+files), `template` (Pug and TSRX are template grammars too) and `vue` (an
+`.html` document is not a Vue SFC).
+
+The profiles are zero-sized markers whose associated constants are the only
+place the two hosts differ (`markup/profile.rs`):
+
+- `Document`: WHATWG HTML parsing as a browser builds the DOM.
+- `Component`: the neutral component-template profile. It is HTML syntax
+  without document tree construction: names keep their case, any element may
+  self-close, there are no implied end tags or content models, and attribute
+  whitespace is required as in HTML. Its consumers today are the published
+  tokenizer facade (Armature's callback compatibility, legacy under #6828) and
+  any future non-Vue component grammar (the #6829 proofs of concept).
+- `VueComponent`: `Component` plus Vue's SFC attribute boundary (a closing
+  quote ends an attribute, `REQUIRE_ATTRIBUTE_WHITESPACE = false`). That is a
+  Vue rule, so it moves to `framework/vue/profile.rs` as `VueTemplate`. The
+  neutral `markup/profile.rs` keeps `Document` and `Component`.
+
+#### htmlish oracles and divergences
+
+Each reading of `markup/htmlish` is a **dialect** with two references. Its
+**oracle** is the reference parser whose tree we compare against. Its **norm**
+is the specification that decides what counts as an error.
+
+| Dialect    | Files                                 | Profile                        | Oracle                                                                                                | Norm                                          |
+| ---------- | ------------------------------------- | ------------------------------ | ----------------------------------------------------------------------------------------------------- | --------------------------------------------- |
+| `document` | `.html`, in-DOM templates, petite-vue | `Document`                     | WHATWG parsing as Chromium `DOMParser` runs it; parse5 over html5lib-tests as the browser-free engine | WHATWG HTML                                   |
+| `vue`      | `.vue` `<template>`                   | `VueComponent` (`VueTemplate`) | `@vue/compiler-dom` 3.5 `parse`                                                                       | `@vue/compiler-dom` / `@vue/compiler-sfc` 3.5 |
+
+The ledger `docs/davinci/plan/htmlish-divergences.json` is the machine-checked
+record of how the dialects differ, row by row. Each row gives the behavior of
+both dialects, the profile constant that switches it (if any), and one
+differential fixture per dialect. A fixture that does not exist yet is `null`
+and appears in the owed list as `fixture:<row>:<dialect>`.
+
+The ledger covers the profile switches: declarations; element-name,
+attribute-name, end-tag and foreign-element case; self-closing; attribute
+whitespace; implied end tags including `</br>`; the `select` and table content
+models. It also covers the token rules both dialects must state: raw text for
+`script`/`style` and for `xmp`/`iframe`/`noembed`/`noframes`, script-data
+escapes, RCDATA (`textarea`, `title`), SVG `title`, `foreignObject`,
+`plaintext`, `noscript`, `template` contents, bogus comments (`<?x>`,
+`</ div>`, `<!x>`), comment edges (`<!-->`, `<!--->`, `--!>`), CRLF, NULL and
+character references.
+
+A difference between the two dialects is not a vize decision: each follows its
+oracle. Where **vize** departs from an oracle, the ledger lists it under
+`divergences`, with a `decidedBy` link to the record that decided it, a
+fixture, and a `fuzzExempt` rule that tells the oracle fuzzer which inputs not
+to compare. `tests/tooling/davinci-htmlish-divergences.test.ts` checks the
+ledger:
+
+- fixture paths exist;
+- every `null` fixture is in the owed list, and every `fixture:` owed entry is
+  a `null` in the ledger;
+- every named switch is a constant of `Profile`;
+- every divergence names its decision, fixture and exemption.
+
+One divergence is deliberate and is in the ledger, and one design commitment
+holds alongside it:
+
+- **Error recovery** (divergence `error-recovery`). Parsing never stops at a
+  structural error. Malformed input becomes typed holes (the L1 hole policy),
+  so the editor, the linter and the formatter keep working on code being
+  typed. An oracle that rejects an input is compared only on inputs it
+  accepts.
+- **Document is the browser tree** (commitment). The Document profile models real WHATWG
+  tree construction: implied end tags, foster parenting, the `select` rules
+  and the adoption agency where the structure builder admits them. A Document
+  tree is what the browser hydrates, not a token-level approximation.
+
+Owed: an oracle differential fuzzer (generated htmlish inputs run through vize
+and both oracles, honoring each divergence's `fuzzExempt`), and real-file
+comparisons over the hydrated project corpus. Both are part of step 2d.
+
+### Migration-status names are not concepts
+
+`native` (built natively, not legacy-backed) and `compat` (byte-compatible with
+a legacy implementation) describe how far a migration has gone, not what a
+module is. Under the charter and the #13020 acceptance, they do not belong in
+the stable layout. Modules are named by concept, and a module kept only for
+the legacy route is named `legacy` and deleted behind its zero-fallback gate
+(#6854).
+
+| Today (`vize_l1`)                                                                        | Destination                                                                                                                                                                                                    |
+| ---------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `markup/htmlish/lex/native.rs`                                                           | the lexer itself: `markup/htmlish/lex.rs`                                                                                                                                                                      |
+| `markup/htmlish/lex/compat.rs` (byte-identical Armature tokenizer)                       | `markup/htmlish/lex/legacy.rs`, deleted with Armature (#6828)                                                                                                                                                  |
+| `markup/htmlish/native/` (typed views over a parsed component template; `Native*` types) | `markup/htmlish/view/`; types renamed by concept (`NativeElement` becomes `ElementView`, …)                                                                                                                    |
+| `markup/htmlish/native/{lint,lint_tag}.rs`, `markup/htmlish/surface/lint_tag.rs`         | out of L1. L1 does not know about lint. A view a product needs becomes a neutral read in the L2 query API (#6871); a lint-shaped projection moves to its consumer, `vize_patina` (110 files use `NativeLint*`) |
+| `markup/htmlish/event/native.rs`                                                         | `markup/htmlish/event/record.rs` (the event recorder)                                                                                                                                                          |
+| `markup/entity/native.rs`                                                                | `markup/entity/decode.rs` (the decoding hook)                                                                                                                                                                  |
+| `embed/syntax/for_head/native.rs`                                                        | `embed/syntax/for_head/parse.rs`                                                                                                                                                                               |
+| `container/vue/compat/`                                                                  | `container/vue/legacy/` (the legacy descriptor contract), deleted under #6828                                                                                                                                  |
+
+The same rule applies in `vize_l1_to_l2` (`native`, `native_file`,
+`native_vue2`, `dialect/vue{2,3}/native`, `vue_file/region/native`), `vize_l2`
+(`artifact/builder/native`, `file/region/native`, `lang/js/*/native`) and
+`vize_l3` (`decision/native`, `decision/{dom,ssr}/…/native`). Those are
+renamed by concept in their own steps.
+
 ## Target layout
 
 ```text
 vize_l1/src/
-  container/{vue, plain?}
+  container/{vue, lang.rs, plain?}                                   lang.rs: block-language registry
   markup.rs  markup/{token.rs, profile.rs, grammar.rs, entity/}   shared contracts
-             markup/{html/, pug/, tsrx/}                          one sibling per grammar
+             markup/{htmlish/, pug/, tsrx/}                       one sibling per grammar
   style.rs   style/{structure.rs, structure/, classes.rs, nesting.rs}  shared
              style/{css/, scss.rs, sass.rs, less.rs, stylus.rs}   one sibling per language
   embed/     (JS/TS programs and embeds, parsed once)
-  framework/vue/{directive.rs, style_bind.rs, feature/, version/, quirks.rs}
+  framework/vue/{profile.rs, directive.rs, style_bind.rs, feature/, version/, quirks.rs}
   registry.rs  edit.rs  slice.rs
 
 vize_l1_to_l2/src/
-  markup/{html, pug}            grammar → neutral ops
+  markup/{htmlish, pug}         grammar → neutral ops
   framework/vue/{sfc, jsx, tsrx, setup?, …}  Vue compositions that need framework meaning
   lang/  pass/  registry.rs     (unchanged roles)
 
@@ -230,10 +340,16 @@ vize_l4/src/
   `style/` children are the shared readers plus one module per language.
   The existing `davinci-l1-dialect-isolation` test keeps checking that core
   modules do not reference dialect policy, now against `framework/vue`.
+- **Every level crate:** no module path segment named by migration status
+  (`native`, `compat`). In L1, no non-test code names a product (`lint` as an
+  identifier word).
+- **Fixtures:** every owed row of the Document/SFC difference table is listed
+  as a `fixture:` entry until its fixture lands.
 - **Ratchet.** Every present difference is listed, one path per entry, in
-  `docs/davinci/plan/input-placement-owed.json`: 72 at this record (13 L1
-  layout entries, 59 L2→L3/L3/L4 files). A new difference fails the test. A
-  fixed one must leave the list, so the list can only shrink.
+  `docs/davinci/plan/input-placement-owed.json`. A new difference fails the
+  test. A fixed one must leave the list, so the list can only shrink. The
+  `fixture:` entries are checked the same way: a row may leave only when its
+  fixture exists.
 - `levels.inputs` is added to the T3 table of the completion gates as a
   measured gate, by maintainer request (2026-11-17). It passes when the owed
   list is empty.
@@ -250,18 +366,22 @@ parity with the existing corpora (compiler differential, mounted parity, the
 JSX oracles, the TSRX reference corpus, L1 fidelity), and its PR body carries
 `--profile ci-opt` instruction, wall-time and RSS numbers.
 
-| Step | Slice                                                                                                                                       | Kind                        |
-| ---: | ------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------- |
-|    1 | This record, the `levels.inputs` gate with its `owed` list, the completion-gates row                                                        | docs + ratchet              |
-|    2 | L1: `pug/` → `markup/pug/`; HTML-family files + `build/` + `event.rs` → `markup/html/`                                                      | move-only                   |
-|    3 | L1: `css/` → `style/` with per-language siblings; `bind.rs` → `framework/vue/style_bind.rs`                                                 | move-only, then split edits |
-|    4 | L1: `dialect/vue*` + `markup/directive.rs` → `framework/vue/`; delete `moved.rs`                                                            | move-only, then removal     |
-|    5 | L2: `lang/tsrx` lowering → `vize_l1_to_l2::framework::vue::tsrx`; `component.rs` → `module.rs`                                              | move-only                   |
-|    6 | L2: `ModuleDef`, `Edit`, extended `ComponentDef`; the TSRX lowering fills component facts (port of L4 `component`/`props`/`scopes`/`names`) | behavior-preserving         |
-|    7 | L4: `module/` emits `ModuleDef` on DOM; TSRX switches to it; `lang/tsrx` keeps only the entry, which moves to its product                   | behavior-preserving         |
-|    8 | L4/L3: JSX switches to `ModuleDef` (`vize_l4::jsx`, `vize_l3::jsx`, `targets/ts/module.rs` dissolve)                                        | behavior-preserving         |
-|    9 | SFC lowering produces `ModuleDef`; `module/{setup,ordinary}` become edits                                                                   | behavior-preserving         |
-|   10 | `ui.jsx-child` → `ui.child-value` rename; `owed` reaches zero                                                                               | rename-only                 |
+| Step | Slice                                                                                                                                                                               | Kind                        |
+| ---: | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------- |
+|    1 | This record, the `levels.inputs` gate with its `owed` list, the completion-gates row                                                                                                | docs + ratchet              |
+|    2 | L1: `pug/` → `markup/pug/`; HTML-family files + `build/` + `event.rs` → `markup/htmlish/`                                                                                           | move-only                   |
+|   2a | L1: `VueComponent` → `framework/vue/profile.rs` (`VueTemplate`)                                                                                                                     | move + rename               |
+|   2b | L1: migration-status names → concept names (`lex/native`, `lex/compat` → `legacy`, `native/` → `view/`, `event/native`, `entity/native`, `for_head/native`, `container/vue/compat`) | scripted move + type rename |
+|   2c | L1: lint views (`NativeLint*`, `lint_tag`) out of L1, into `vize_patina` or the L2 query API (#6871)                                                                                | behavior-preserving         |
+|   2d | Owed Document/SFC fixtures; a divergence a new fixture finds is fixed in the same PR                                                                                                | fixtures + fixes            |
+|    3 | L1: `css/` → `style/` with per-language siblings; `bind.rs` → `framework/vue/style_bind.rs`                                                                                         | move-only, then split edits |
+|    4 | L1: `dialect/vue*` + `markup/directive.rs` → `framework/vue/`; delete `moved.rs`                                                                                                    | move-only, then removal     |
+|    5 | L2: `lang/tsrx` lowering → `vize_l1_to_l2::framework::vue::tsrx`; `component.rs` → `module.rs`                                                                                      | move-only                   |
+|    6 | L2: `ModuleDef`, `Edit`, extended `ComponentDef`; the TSRX lowering fills component facts (port of L4 `component`/`props`/`scopes`/`names`)                                         | behavior-preserving         |
+|    7 | L4: `module/` emits `ModuleDef` on DOM; TSRX switches to it; `lang/tsrx` keeps only the entry, which moves to its product                                                           | behavior-preserving         |
+|    8 | L4/L3: JSX switches to `ModuleDef` (`vize_l4::jsx`, `vize_l3::jsx`, `targets/ts/module.rs` dissolve)                                                                                | behavior-preserving         |
+|    9 | SFC lowering produces `ModuleDef`; `module/{setup,ordinary}` become edits                                                                                                           | behavior-preserving         |
+|   10 | `ui.jsx-child` → `ui.child-value` rename; `owed` reaches zero                                                                                                                       | rename-only                 |
 
 Steps 2–4 do not depend on 5–10, and each step is one reviewable PR. Steps 6
 and 7 are the ones that stop TSRX code accumulating in L4.
