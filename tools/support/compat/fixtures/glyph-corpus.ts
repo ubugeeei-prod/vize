@@ -249,9 +249,10 @@ export function withFormattedWorkspace<Result>(
   files: readonly string[],
   launch: Pick<GlyphLaunch, "command" | "prefix">,
   run: (workspace: FormattedWorkspace) => Result,
+  root = workspaceRoot,
 ): Result {
-  mkdirSync(workspaceRoot, { recursive: true });
-  const workspaceDir = mkdtempSync(join(workspaceRoot, `${project.id}-`));
+  mkdirSync(root, { recursive: true });
+  const workspaceDir = mkdtempSync(join(root, `${project.id}-`));
   try {
     for (const file of files) {
       const target = join(workspaceDir, file);

@@ -24,6 +24,8 @@ import {
   writeGlyphCorpusPropertyEvidence,
 } from "../../tools/support/compat/fixtures/glyph-corpus.ts";
 import {
+  assertNoEnclosingContext,
+  createIsolatedWorkspaceRoot,
   mirrorProjectContext,
   withPristineWorkspace,
 } from "../../tools/support/compat/fixtures/glyph-corpus-context.ts";
@@ -111,9 +113,10 @@ function sweepProject(
 ): void {
   const files = collectProjectVueFiles(project) as string[];
   if (files.length === 0) return;
-  withFormattedWorkspace(project, files, launch, (workspace: { workspaceDir: string }) => {
-    // Both sides lint the same mirrored project at sibling paths, so only the
-    // Vue bytes differ.
+  // Both sides lint the same mirrored project at sibling paths outside the
+  // checkout, so only the Vue bytes differ and nothing above them resolves.
+  const root = createIsolatedWorkspaceRoot();
+  const compare = (workspace: { workspaceDir: string }): void => {
     const baseline = withPristineWorkspace(
       project.fixtureDir,
       files,
@@ -152,7 +155,12 @@ function sweepProject(
         detail: real.map((entry) => entry.detail).join("\n"),
       });
     }
-  });
+  };
+  try {
+    withFormattedWorkspace(project, files, launch, compare, root);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
 }
 
 test("glyph corpus lint-agreement holds for every hydrated fixture", () => {
@@ -298,6 +306,23 @@ test("glyph corpus lint-agreement ignores packages the fixture's checkout enclos
     assert.deepEqual(violations, []);
     assert.equal(counters.files, 1);
   } finally {
+    fs.rmSync(outerDir, { recursive: true, force: true });
+  }
+});
+
+test("glyph corpus lint-agreement workspaces sit under no enclosing package", () => {
+  const root = createIsolatedWorkspaceRoot();
+  const outerDir = fs.mkdtempSync(path.join(os.tmpdir(), "vize-glyph-enclosing-"));
+  try {
+    assert.doesNotThrow(() => assertNoEnclosingContext(path.join(root, "workspace")));
+    fs.mkdirSync(path.join(outerDir, "node_modules"));
+    fs.mkdirSync(path.join(outerDir, "inner"));
+    assert.throws(
+      () => assertNoEnclosingContext(path.join(outerDir, "inner")),
+      /is enclosed by .*node_modules/,
+    );
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
     fs.rmSync(outerDir, { recursive: true, force: true });
   }
 });
