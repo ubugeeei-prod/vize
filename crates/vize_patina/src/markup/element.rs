@@ -87,6 +87,17 @@ impl<'a> MarkupElement<'a> {
     /// Wrap an L2 element-shaped op, locating its authored L1 element when the
     /// artifact carries a surface tree.
     pub(super) fn from_l2(op: L2ElementOp<'a>, doc: &'a L2Markup<'a>) -> Self {
+        Self::from_l2_matching(op, doc, false)
+    }
+
+    /// [`from_l2`](Self::from_l2) for the element the document visitor hands
+    /// to every rule: each rule that reads its opening tag replays one match.
+    /// Elements wrapped elsewhere (children, scopes, walks) match on demand.
+    pub(super) fn from_l2_visited(op: L2ElementOp<'a>, doc: &'a L2Markup<'a>) -> Self {
+        Self::from_l2_matching(op, doc, true)
+    }
+
+    fn from_l2_matching(op: L2ElementOp<'a>, doc: &'a L2Markup<'a>, match_items: bool) -> Self {
         let surface = if doc.surface.is_none() || op.is_synthesized(doc) {
             None
         } else {
@@ -97,10 +108,10 @@ impl<'a> MarkupElement<'a> {
         // frozen. Read the literal scope from L1's retained Vue-shaped tree;
         // keep the ordinary surface element because it is the tree L2 lowered.
         let frozen = doc.frozen_at(op.span().start);
-        let items = if frozen {
-            None
-        } else {
+        let items = if match_items && !frozen {
             arena_items(doc, op.attributes(), op.bindings(), surface)
+        } else {
+            None
         };
         Self::from_inner(MarkupElementInner::L2 {
             op,

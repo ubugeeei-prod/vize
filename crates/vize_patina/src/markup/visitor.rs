@@ -141,15 +141,16 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
     fn visit_l2_region(&mut self, doc: &'a L2Markup<'a>, ops: &'a [Op<'a>]) {
         for op in ops {
             match op {
-                Op::Element(element) => {
-                    self.visit_element(MarkupElement::from_l2(L2ElementOp::Element(element), doc))
-                }
-                Op::Component(component) => self.visit_element(MarkupElement::from_l2(
+                Op::Element(element) => self.visit_element(MarkupElement::from_l2_visited(
+                    L2ElementOp::Element(element),
+                    doc,
+                )),
+                Op::Component(component) => self.visit_element(MarkupElement::from_l2_visited(
                     L2ElementOp::Component(component),
                     doc,
                 )),
                 Op::Slot(slot) => {
-                    self.visit_element(MarkupElement::from_l2(L2ElementOp::Slot(slot), doc))
+                    self.visit_element(MarkupElement::from_l2_visited(L2ElementOp::Slot(slot), doc))
                 }
                 Op::Text(text) => {
                     if self.traversal.keeps_text_and_exits() {
