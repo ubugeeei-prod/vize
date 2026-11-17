@@ -109,6 +109,18 @@ impl<'p, 'a> ProgramInput<'p, 'a> {
             },
         })
     }
+
+    /// The top-level statements a File walk would visit, or `None` when the
+    /// walk refuses the profile (a script or a declaration file).
+    pub(crate) fn walked_statements(&self) -> Option<&'p [oxc_ast::ast::Statement<'a>]> {
+        let program = self.references.program();
+        (self.profile.module && !program.source_type.is_typescript_definition())
+            .then_some(program.body.as_slice())
+    }
+
+    pub(crate) fn statement_count(&self) -> usize {
+        self.references.program().body.len()
+    }
 }
 
 /// Sole source of file-local declarations from original admitted observations.

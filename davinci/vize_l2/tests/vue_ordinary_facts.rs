@@ -1,10 +1,19 @@
 //! Native facts for the normal `<script>` half of #6844.
 
+#[expect(dead_code, reason = "this test reads the corpus, not setup facts")]
+mod support {
+    pub mod vue_setup;
+}
+
+use support::vue_setup::corpus;
+use vize_l0::config::{VueDialect, VueVersion};
 use vize_l0::{Allocator, SourceRoot, Span};
+use vize_l1::container::{Vue, vue::DescriptorOptions};
 use vize_l1::embed::{
     EmbedSource, Lang,
     syntax::{ProgramOptions, parse_program_once},
 };
+use vize_l1::markup::SurfaceParseOptions;
 use vize_l2::framework::vue::{
     OrdinaryFacts, OrdinaryFactsIncomplete, OrdinaryObserver, ReactiveSource, SetupBindingKind,
 };
@@ -114,4 +123,76 @@ fn unfinished_observer_claims_no_program() {
         OrdinaryObserver::new().finish(),
         Err(OrdinaryFactsIncomplete::NoProgram)
     );
+}
+
+/// The facts of a corpus file's normal `<script>` as the walk observer and the
+/// statement-only read produce them, or `None` when the levels refuse it first.
+fn both_routes(
+    source: &str,
+) -> Option<(
+    Result<OrdinaryFacts, OrdinaryFactsIncomplete>,
+    Result<OrdinaryFacts, OrdinaryFactsIncomplete>,
+)> {
+    let arena = Allocator::default();
+    let descriptor = Vue.observe_descriptor(
+        &arena,
+        source,
+        DescriptorOptions {
+            version: VueVersion::V3,
+            dialect: VueDialect::Vue,
+            template: SurfaceParseOptions::default(),
+        },
+    );
+    let view = descriptor.admitted().ok()?;
+    let script = view.ordinary()?;
+    let block = script.block();
+    let parse = || {
+        Some(parse_program_once(
+            &arena,
+            EmbedSource::authored(source, block.span()).ok()?,
+            ProgramOptions::module(script.lang()),
+        ))
+    };
+    let (first, second) = (parse()?, parse()?);
+    let input = |syntax| ProgramInput::checked(syntax, block, script.container_index()).ok();
+    let direct = OrdinaryFacts::of_module(&input(first.admitted_program()?)?);
+    let mut producer = FileProducer::new(&arena, descriptor.source()).ok()?;
+    let mut observer = OrdinaryObserver::new();
+    producer
+        .program_observed(
+            input(second.admitted_program()?)?,
+            ProgramScope::Module,
+            &mut observer,
+        )
+        .ok()?;
+    Some((observer.finish(), direct))
+}
+
+#[test]
+fn statement_only_read_equals_the_walk_on_every_corpus_normal_script() {
+    let (root, files) = corpus();
+    let (mut compared, mut bindings) = (0usize, 0usize);
+    let mut mismatches = Vec::new();
+    for file in &files {
+        let Ok(source) = std::fs::read_to_string(file) else {
+            continue;
+        };
+        let Some((walked, direct)) = both_routes(&source) else {
+            continue;
+        };
+        compared += 1;
+        bindings += walked.as_ref().map_or(0, |facts| facts.bindings().len());
+        if walked != direct {
+            let relative = file.strip_prefix(&root).unwrap_or(file).display();
+            mismatches.push(format!(
+                "{relative}\n  walk:   {walked:?}\n  direct: {direct:?}"
+            ));
+        }
+    }
+    eprintln!("compared {compared} normal scripts ({bindings} bindings)");
+    assert!(
+        compared >= 100,
+        "corpus shrank to {compared} normal scripts"
+    );
+    assert!(mismatches.is_empty(), "{}", mismatches.join("\n"));
 }

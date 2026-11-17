@@ -7,7 +7,7 @@
 
 use super::setup::{Bindings, SetupBinding};
 use crate::file::{ScopeId, ScriptUnit};
-use crate::lang::js::{CallEvent, DeclaredEvent, FileObserver, StatementEvent};
+use crate::lang::js::{CallEvent, DeclaredEvent, FileObserver, ProgramInput, StatementEvent};
 use crate::resolution::ResolutionErrorKind;
 
 /// A normal-script binding uses the same template access classification as a
@@ -21,6 +21,38 @@ pub struct OrdinaryFacts {
 }
 
 impl OrdinaryFacts {
+    /// The facts of one module Program, read from its top-level statements
+    /// alone, for a caller that runs no File walk (the SFC compiler's view of
+    /// a normal script beside `<script setup>`). They equal what
+    /// [`OrdinaryObserver`] collects from a complete walk of the same input,
+    /// because the observer reads only the root-scope statement events, which
+    /// the walk emits once per top-level statement, in order. The walk's
+    /// nested scopes, references and resolution are not built.
+    pub fn of_module(input: &ProgramInput<'_, '_>) -> Result<Self, OrdinaryFactsIncomplete> {
+        // A refused profile emits no statement event, as in the walk.
+        let statements = match (input.walked_statements(), input.statement_count()) {
+            (Some(statements), _) => statements,
+            (None, 0) => &[],
+            (None, expected) => {
+                return Err(OrdinaryFactsIncomplete::MissingStatements {
+                    observed: 0,
+                    expected,
+                });
+            }
+        };
+        let base = input.span().start;
+        let mut bindings = Bindings::ordinary();
+        for statement in statements {
+            bindings.statement(base, statement);
+        }
+        if bindings.overflow {
+            return Err(OrdinaryFactsIncomplete::SpanOverflow);
+        }
+        Ok(Self {
+            bindings: bindings.rows,
+        })
+    }
+
     /// Runtime imports and direct top-level declarations, in source order.
     #[must_use]
     pub fn bindings(&self) -> &[OrdinaryBinding] {
