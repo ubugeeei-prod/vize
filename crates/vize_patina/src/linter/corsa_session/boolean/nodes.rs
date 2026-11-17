@@ -4,6 +4,10 @@
 use corsa::api::NodeHandle;
 use vize_l0::cstr;
 
+mod properties;
+
+pub(in crate::linter) use properties::{Syntax, kind as syntax_kind};
+
 const NODE: usize = 28;
 
 fn invalid(reason: &str) -> corsa::CorsaError {

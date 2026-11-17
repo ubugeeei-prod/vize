@@ -12,7 +12,7 @@
     "commit": "12e452f0292212bf9bf443b3988ec230f4ae7097",
     "testPath": "packages/eslint-plugin/tests/rules/no-unsafe-enum-assignment.test.ts"
   },
-  "note": "Every valid and invalid case of the upstream test file except the JSX ones, with the packets typescript-eslint 8.72.2 reports (1-based line and column of `code`, end exclusive as ESLint reports it). Each case is linted alone as `<script lang=\"ts\">`, the code, `export {};`. A `vizeGap` case is pinned silent until it is fixed.",
+  "note": "Every valid and invalid case of the upstream test file except the JSX ones, with the packets typescript-eslint 8.72.2 reports (1-based line and column of `code`, end exclusive as ESLint reports it). Each case is linted alone as `<script lang=\"ts\">`, the code, `export {};`.",
   "caseCount": 247,
   "cases": [
     {
@@ -961,8 +961,7 @@
           "endColumn": 6,
           "message": "The computed key used here does not have a shared enum type with the expected enum 'Fruit'."
         }
-      ],
-      "vizeGap": "#13070: mapped enum keys"
+      ]
     },
     {
       "id": "invalid[28]",
@@ -975,8 +974,7 @@
           "endColumn": 18,
           "message": "The computed key used here does not have a shared enum type with the expected enum 'Vegetable'."
         }
-      ],
-      "vizeGap": "#13070: mapped enum keys"
+      ]
     },
     {
       "id": "invalid[29]",
@@ -1626,8 +1624,7 @@
           "endColumn": 17,
           "message": "The computed key used here does not have a shared enum type with the expected enum 'Fruit'."
         }
-      ],
-      "vizeGap": "#13070: mapped enum keys"
+      ]
     },
     {
       "id": "invalid[81]",
@@ -1640,8 +1637,7 @@
           "endColumn": 17,
           "message": "The computed key used here does not have a shared enum type with the expected enum 'Fruit'."
         }
-      ],
-      "vizeGap": "#13070: mapped enum keys"
+      ]
     },
     {
       "id": "invalid[82]",
@@ -1967,8 +1963,7 @@
           "endColumn": 25,
           "message": "The computed key used here does not have a shared enum type with the expected enum 'Fruit'."
         }
-      ],
-      "vizeGap": "#13070: mapped enum keys"
+      ]
     },
     {
       "id": "invalid[106]",
@@ -1981,8 +1976,7 @@
           "endColumn": 16,
           "message": "The computed key used here does not have a shared enum type with the expected enum 'Fruit'."
         }
-      ],
-      "vizeGap": "#13070: mapped enum keys"
+      ]
     },
     {
       "id": "invalid[107]",
@@ -2203,8 +2197,7 @@
           "endColumn": 25,
           "message": "The computed key used here does not have a shared enum type with the expected enum 'Fruit'."
         }
-      ],
-      "vizeGap": "#13070: mapped enum keys"
+      ]
     },
     {
       "id": "invalid[124]",

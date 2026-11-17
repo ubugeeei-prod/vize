@@ -1,5 +1,4 @@
-//! #12994: qualified enum flows match typescript-eslint without changing safe flows.
-//! Remaining checker-surface-dependent flows are tracked in #13070.
+//! #12994, #13070: enum flows match typescript-eslint without changing safe flows.
 use super::{corsa_available, lint_sfc_with_corsa};
 use crate::diagnostic::Severity;
 use crate::{LintPreset, Linter};
@@ -16,6 +15,8 @@ const ARGUMENT: &str =
     "The argument passed here does not have a shared enum type with the expected enum 'Fruit'.";
 const RETURN: &str =
     "The value returned here does not have a shared enum type with the expected enum 'Fruit'.";
+const ACCESS: &str =
+    "The computed key used here does not have a shared enum type with the expected enum 'Fruit'.";
 const ACCESS_BOTH: &str = "The computed key used here does not have a shared enum type with the expected enum 'Fruit', 'Vegetable'.";
 
 /// `(start line, start column, end line, end column, severity, message)`.
@@ -64,6 +65,8 @@ fn qualified_enum_flows_have_exact_packets_and_safe_controls() {
     let expected = vec![
         packet((14, 3), (14, 13), ASSIGNMENT),
         packet((20, 3), (20, 13), ASSIGNMENT),
+        // A mapped enum key, read from the object's declaration.
+        packet((24, 7), (24, 8), ACCESS),
         packet((29, 10), (29, 21), ACCESS_BOTH),
         packet((32, 7), (32, 38), ASSIGNMENT),
         packet((34, 7), (34, 43), ASSIGNMENT),
@@ -147,11 +150,7 @@ void [combined, arrow, described, plain, Holder, Derived];
         vec![
             packet((35, 3), (35, 12), &flags(RETURN)),
             packet((37, 9), (37, 10), &flags(ARGUMENT)),
-            packet(
-                (40, 11),
-                (40, 12),
-                "The computed key used here does not have a shared enum type with the expected enum 'Fruit'.",
-            ),
+            packet((40, 11), (40, 12), ACCESS,),
         ]
     );
 }
@@ -298,6 +297,85 @@ void [Plain, Aliased, Fallback, Safe];
             (14, 3, RULE.to_string()),
             (20, 3, RULE.to_string()),
             (22, 23, "type/no-deprecated".to_string()),
+        ]
+    );
+}
+
+/// typescript-eslint reads mapped enum keys from the declaration of the
+/// accessed symbol: its own annotation, in this file or another one. An alias
+/// (`type Keyed`, `Record`) or an import binding is not a mapped type node.
+#[test]
+fn mapped_keys_come_from_the_accessed_declaration() {
+    if !corsa_available() {
+        return;
+    }
+    let keys = r#"export enum Fruit {
+  Apple,
+}
+export declare const keyed: { [key in Fruit]: string };
+export declare const holder: { keyed: { [key in Fruit]: string } };
+"#;
+    let component = r#"<script setup lang="ts">
+import { Fruit, holder, keyed } from "./keys";
+
+type Keyed = { [key in Fruit]: string };
+declare const aliased: Keyed;
+declare const record: Record<Fruit, string>;
+declare const optional: { keyed?: { [key in Fruit]: string } };
+function generic<K extends Fruit>(map: { [P in K]: string }, key: number) {
+  return map[key];
+}
+keyed[0];
+holder.keyed[0];
+aliased[0];
+record[0];
+optional.keyed?.[0];
+holder.keyed[Fruit.Apple];
+void generic;
+</script>
+"#;
+    let workspace = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../target/vize-tests");
+    std::fs::create_dir_all(&workspace).expect("test workspace");
+    let project = tempfile::Builder::new()
+        .prefix("enum-mapped-keys-13070-")
+        .tempdir_in(workspace)
+        .expect("temporary project");
+    let source_dir = project.path().join("src");
+    std::fs::create_dir(&source_dir).expect("source directory");
+    std::fs::write(
+        project.path().join("tsconfig.json"),
+        r#"{"compilerOptions":{"module":"ESNext","moduleResolution":"Bundler","strict":true,"target":"ES2022","noEmit":true},"include":["src/**/*.ts","src/**/*.vue"]}"#,
+    )
+    .expect("tsconfig");
+    std::fs::write(source_dir.join("keys.ts"), keys).expect("keys module");
+    let path = source_dir.join("Keys.vue");
+    std::fs::write(&path, component).expect("component");
+    let linter =
+        Linter::with_preset(LintPreset::Opinionated).with_enabled_rules(Some(vec![RULE.into()]));
+    let result = lint_sfc_with_corsa(&linter, component, path.to_str().expect("UTF-8 path"));
+    let mut actual = result
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.rule_name == RULE)
+        .map(|diagnostic| {
+            let (line, column) = line_column(component, diagnostic.start);
+            let (end_line, end_column) = line_column(component, diagnostic.end);
+            (
+                line,
+                column,
+                end_line,
+                end_column,
+                diagnostic.message.to_string(),
+            )
+        })
+        .collect::<Vec<_>>();
+    actual.sort();
+    assert_eq!(
+        actual,
+        vec![
+            (9, 14, 9, 17, ACCESS.to_string()),
+            (12, 14, 12, 15, ACCESS.to_string()),
+            (15, 18, 15, 19, ACCESS.to_string()),
         ]
     );
 }
