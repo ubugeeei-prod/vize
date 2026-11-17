@@ -82,6 +82,13 @@ fn code_lines(source: &str) -> String {
     let mut index = 0;
     while let Some(&byte) = bytes.get(index) {
         index = match byte {
+            // An escaped character is opaque, as the structure lexer reads
+            // it: `.quoted\"name` opens no string.
+            b'\\' => {
+                let end = char_end(bytes, index + 1);
+                blank(index + 1, end);
+                end
+            }
             b'"' | b'\'' => {
                 let close = string_close(bytes, index);
                 blank(index + 1, close);
@@ -119,7 +126,7 @@ fn string_close(bytes: &[u8], open: usize) -> usize {
     let mut cursor = open + 1;
     while let Some(&byte) = bytes.get(cursor) {
         if byte == b'\\' {
-            cursor += 2;
+            cursor = char_end(bytes, cursor + 1);
             continue;
         }
         if Some(byte) == quote {
@@ -158,11 +165,23 @@ fn url_payload(bytes: &[u8], index: usize) -> Option<(usize, usize)> {
     while let Some(&byte) = bytes.get(cursor) {
         match byte {
             b')' => return Some((from, cursor)),
-            b'\\' => cursor += 2,
+            b'\\' => cursor = char_end(bytes, cursor + 1),
             _ => cursor += 1,
         }
     }
     Some((from, bytes.len()))
+}
+
+/// The end of the character starting at `index` (the end of `bytes` past it).
+fn char_end(bytes: &[u8], index: usize) -> usize {
+    if index >= bytes.len() {
+        return bytes.len();
+    }
+    let mut end = index + 1;
+    while bytes.get(end).is_some_and(|&byte| byte & 0xC0 == 0x80) {
+        end += 1;
+    }
+    end
 }
 
 fn find(bytes: &[u8], from: usize, needle: &[u8]) -> Option<usize> {

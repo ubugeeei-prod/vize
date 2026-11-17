@@ -152,6 +152,10 @@ fn preprocessor_selectors_report_ids_as_written() {
     ] {
         assert_eq!(ids(StyleLanguage::Stylus, stylus), ["#main"], "{stylus}");
     }
+    // An escaped quote in a selector opens no string that hides later braces.
+    let escaped = ".quoted\\\"name { color: red; }\n#main { color: red !important; }\n";
+    assert_eq!(ids(StyleLanguage::Stylus, escaped), ["#main"]);
+    assert_eq!(flags(StyleLanguage::Stylus, escaped), ["!important"]);
     // A line comment in an SCSS selector is masked, so it ends the compound.
     let scss = "#a // note\n.b { color: red; }";
     assert_eq!(ids(StyleLanguage::Scss, scss), Vec::<String>::new());

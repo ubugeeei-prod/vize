@@ -149,14 +149,19 @@ pub(super) fn key_compound_ids(sheet: &StyleSheet<'_>, prelude: Span) -> Vec<Spa
 /// indented Sass `/*` without `*/`) replaced by spaces of the same byte
 /// length, so token offsets stay authored offsets. A terminated `/* … */`
 /// stays a comment token, which separates nothing: `#a/**/.b` is one
-/// compound.
+/// compound. Comments are in document order, so only those overlapping
+/// `span` are visited.
 fn masked(sheet: &StyleSheet<'_>, span: Span) -> String {
     let mut text = String::from(sheet.text(span));
-    for comment in sheet.comments() {
-        let comment = comment.span();
-        if comment.end <= span.start || span.end <= comment.start {
-            continue;
-        }
+    let comments = sheet.comments();
+    let first = comments.partition_point(|comment| comment.span().end <= span.start);
+    let inside = comments
+        .get(first..)
+        .unwrap_or_default()
+        .iter()
+        .map(|comment| comment.span())
+        .take_while(|comment| comment.start < span.end);
+    for comment in inside {
         let body = sheet.text(comment);
         if body.starts_with("/*") && body.len() >= 4 && body.ends_with("*/") {
             continue;
