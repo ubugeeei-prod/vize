@@ -52,8 +52,9 @@ pub struct JsonMessage {
 /// Format results as JSON
 ///
 /// Files are independent: each one is located, rendered and serialized on the
-/// worker pool, and the report is the files' pretty JSON joined in input
-/// order, byte for byte what `serde_json::to_string_pretty` writes for the
+/// worker pool as a one-element pretty array. `serde_json` writes an array
+/// element the same way at every position, so splicing those elements in input
+/// order is byte for byte what `serde_json::to_string_pretty` writes for the
 /// whole array. Only files with a diagnostic get a line index.
 pub(super) fn format_json(results: &[LintResult], sources: &[(String, String)]) -> String {
     if results.is_empty() {
@@ -63,34 +64,31 @@ pub(super) fn format_json(results: &[LintResult], sources: &[(String, String)]) 
         .iter()
         .map(|(filename, source)| (filename.as_str(), source.as_str()))
         .collect();
-    let render = |result: &LintResult| file_json(result, &source_map);
+    // `[\n  {..}\n]`: the element keeps its `\n  ` lead-in and drops the brackets.
+    let render = |result: &LintResult| {
+        serde_json::to_string_pretty(std::slice::from_ref(&file_result(result, &source_map)))
+            .unwrap_or_else(|_| "[\n  {}\n]".to_owned())
+    };
 
     #[cfg(not(target_arch = "wasm32"))]
-    let files: Vec<String> = {
+    let files: Vec<_> = {
         use rayon::prelude::*;
         results.par_iter().map(render).collect()
     };
     #[cfg(target_arch = "wasm32")]
-    let files: Vec<String> = results.iter().map(render).collect();
+    let files: Vec<_> = results.iter().map(render).collect();
 
-    let mut output =
-        String::with_capacity(4 + files.iter().map(|file| file.len() + 2).sum::<usize>());
-    output.push_str("[\n");
+    let mut output = String::with_capacity(files.iter().map(|file| file.len()).sum::<usize>());
+    output.push('[');
     for (index, file) in files.iter().enumerate() {
         if index > 0 {
-            output.push_str(",\n");
+            output.push(',');
         }
-        output.push_str(file);
+        let element = file.get(1..file.len().saturating_sub(2));
+        output.push_str(element.unwrap_or_default());
     }
     output.push_str("\n]");
     output
-}
-
-/// One file's element of the report array, pretty-printed one level deep.
-fn file_json(result: &LintResult, source_map: &FxHashMap<&str, &str>) -> String {
-    let element = serde_json::to_string_pretty(&file_result(result, source_map))
-        .unwrap_or_else(|_| "{}".to_owned());
-    nest(&element)
 }
 
 fn file_result(result: &LintResult, source_map: &FxHashMap<&str, &str>) -> JsonFileResult {
@@ -129,20 +127,6 @@ fn file_result(result: &LintResult, source_map: &FxHashMap<&str, &str>) -> JsonF
         error_count: result.error_count,
         warning_count: result.warning_count,
     }
-}
-
-/// Pretty JSON escapes every newline inside a string, so each line break is
-/// structure and indenting every line nests the element inside the array.
-fn nest(element: &str) -> String {
-    let mut nested = String::with_capacity(element.len() + element.len() / 8 + 2);
-    for (index, line) in element.split('\n').enumerate() {
-        if index > 0 {
-            nested.push('\n');
-        }
-        nested.push_str("  ");
-        nested.push_str(line);
-    }
-    nested
 }
 
 #[cfg(test)]
