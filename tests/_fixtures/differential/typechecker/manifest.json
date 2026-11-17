@@ -43962,6 +43962,35 @@
       }
     },
     {
+      "id": "typechecker/regression/self-package-link-13044",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "self-package-link-13044/input.json",
+          "sha256": "cc58802cefbbdc5cc70cde60cef9616ec251e61996bd03287692859edd840eb6",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "vize_canon batch::virtual_project::workspace_aliases::plan_tests::an_alias_rebased_onto_its_own_target_plans_no_link; controlled owned parent alias whose nested alias, rebased through the parent, is already its own target (pnpm injected layout): no link onto the owned installation's own path, while the raw coordinate still rebases its descendants; no private project source"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/semantic-compile-errors-12522",
       "state": "active",
       "targets": [
@@ -44874,35 +44903,6 @@
               "ts"
             ],
             "selector": "workspace_aliases::rebase::tests::nested_owned_aliases_move_below_the_parent_target and workspace_aliases::rebase::tests::alias_cycles_and_owned_alias_links_stay_fail_closed; controlled owned parent alias and strict descendant dependency link plus cycle rejection, without private project source or a native diagnostic oracle"
-          }
-        ]
-      }
-    },
-    {
-      "id": "typechecker/regression/self-package-link-13044",
-      "state": "active",
-      "targets": [
-        "batch"
-      ],
-      "inputs": [
-        {
-          "path": "self-package-link-13044/input.json",
-          "sha256": "cc58802cefbbdc5cc70cde60cef9616ec251e61996bd03287692859edd840eb6",
-          "role": "regression-reproduction"
-        }
-      ],
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template",
-              "ts"
-            ],
-            "selector": "vize_canon batch::virtual_project::workspace_aliases::plan_tests::an_alias_rebased_onto_its_own_target_plans_no_link; controlled owned parent alias whose nested alias, rebased through the parent, is already its own target (pnpm injected layout): no link onto the owned installation's own path, while the raw coordinate still rebases its descendants; no private project source"
           }
         ]
       }
