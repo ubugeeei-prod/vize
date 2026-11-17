@@ -291,13 +291,15 @@ fn split_pattern(pattern: &str) -> (String, String, bool) {
     }
 }
 
-/// Selected override bases using the existing tsconfig origin and alias policy.
-/// An effective configuration that cannot be reconciled is deliberately unknown.
+/// Selected override bases of each specifier, using the existing tsconfig
+/// origin and alias policy. An effective configuration that cannot be
+/// reconciled is deliberately unknown. The configuration is loaded and
+/// reconciled once for all specifiers: none of that depends on the specifier.
 pub(in crate::commands) fn mapper_override_candidates(
     config_file_name: &Path,
     effective_options: &Value,
-    specifier: &str,
-) -> Option<Vec<PathBuf>> {
+    specifiers: &[&str],
+) -> Option<Vec<Vec<PathBuf>>> {
     let resolver = PathAliasResolver::from_tsconfig(Some(config_file_name));
     let options = effective_options.as_object()?;
     let directory = config_file_name.parent()?;
@@ -349,13 +351,19 @@ pub(in crate::commands) fn mapper_override_candidates(
             return None;
         }
     }
-    let (_, candidates) = resolver.resolve_with_inputs(
-        specifier,
-        &mut CanonicalPathCache::default(),
-        false,
-        |base, _, _| (None, vec![base.to_path_buf()]),
-    );
-    Some(candidates)
+    let mut paths = CanonicalPathCache::default();
+    Some(
+        specifiers
+            .iter()
+            .map(|specifier| {
+                resolver
+                    .resolve_with_inputs(specifier, &mut paths, false, |base, _, _| {
+                        (None, vec![base.to_path_buf()])
+                    })
+                    .1
+            })
+            .collect(),
+    )
 }
 
 #[cfg(test)]

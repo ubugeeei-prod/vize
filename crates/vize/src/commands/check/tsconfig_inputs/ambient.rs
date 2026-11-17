@@ -19,11 +19,13 @@ use super::type_references::{
 };
 
 mod content_mapper;
+mod realpaths;
 mod top_level;
 
 pub(crate) use content_mapper::{
     collect_content_mapper_ambient_declarations, collect_selected_nuxt_import_manifests,
 };
+use realpaths::ReferenceRealpaths;
 use top_level::has_top_level_import_or_export;
 
 /// Collect ambient declaration files that belong to the tsconfig
@@ -106,6 +108,7 @@ fn collect_ambient_declaration_files_from(
         .into_iter()
         .collect::<FxHashSet<_>>();
     let mut seen = files.iter().cloned().collect::<FxHashSet<_>>();
+    let mut realpaths = ReferenceRealpaths::default();
     for path in &explicit_type_declarations {
         if seen.insert(path.clone()) {
             files.push(path.clone());
@@ -146,7 +149,9 @@ fn collect_ambient_declaration_files_from(
             hidden_reference_roots.push(path.clone());
         }
 
-        for referenced in reference_path_declaration_files(&path, &content, Some(&project_root)) {
+        for referenced in
+            reference_path_declaration_files(&path, &content, Some(&project_root), &mut realpaths)
+        {
             if seen.insert(referenced.clone()) {
                 files.push(referenced);
             }
@@ -214,6 +219,7 @@ fn follow_declaration_references(
     read: &mut dyn FnMut(&Path, &str),
 ) {
     let mut seen = files.iter().cloned().collect::<FxHashSet<_>>();
+    let mut realpaths = ReferenceRealpaths::default();
     let mut index = 0;
     while let Some(path) = files.get(index).cloned() {
         index += 1;
@@ -227,7 +233,9 @@ fn follow_declaration_references(
             continue;
         };
         read(&path, &content);
-        for referenced in reference_path_declaration_files(&path, &content, project_root) {
+        for referenced in
+            reference_path_declaration_files(&path, &content, project_root, &mut realpaths)
+        {
             if seen.insert(referenced.clone()) {
                 files.push(referenced);
             }
@@ -370,6 +378,7 @@ fn reference_path_declaration_files(
     path: &Path,
     content: &str,
     project_root: Option<&Path>,
+    realpaths: &mut ReferenceRealpaths,
 ) -> Vec<PathBuf> {
     let Some(base_dir) = path.parent() else {
         return Vec::new();
@@ -377,7 +386,7 @@ fn reference_path_declaration_files(
     reference_directive_lines(content)
         .filter_map(reference_path_attribute)
         .filter_map(|reference| {
-            let resolved = normalize_input_path(&base_dir.join(reference));
+            let resolved = realpaths.resolve(&base_dir.join(reference));
             (project_root.is_none_or(|root| resolved.starts_with(root))
                 && !path_has_component(&resolved, NODE_MODULES_DIR)
                 && is_declaration_file(&resolved)
