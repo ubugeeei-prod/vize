@@ -244,6 +244,21 @@ impl<'a> L2Template<'a> {
         )
     }
 
+    /// A standalone HTML document is parsed by the browser before Vue reads it,
+    /// so its tables foster misplaced content; a Vue template is not.
+    pub(crate) fn lower_for(
+        allocator: &'a Allocator,
+        source: &'a str,
+        kind: crate::context::TemplateDocumentKind,
+    ) -> Self {
+        match kind {
+            crate::context::TemplateDocumentKind::StandaloneHtml => {
+                Self::lower_in_dom(allocator, source)
+            }
+            crate::context::TemplateDocumentKind::VueTemplate => Self::lower(allocator, source),
+        }
+    }
+
     fn from_parse(
         allocator: &'a Allocator,
         (tree, authored, errors): (
