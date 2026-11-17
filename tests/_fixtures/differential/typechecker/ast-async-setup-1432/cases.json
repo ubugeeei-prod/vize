@@ -1,0 +1,156 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 1432,
+  "regressionCommit": "e8ad806442134436b0a2750d6a93b63b627dceb1",
+  "sourceRevision": "e8ad806442134436b0a2750d6a93b63b627dceb1",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "top-level-await",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "top-level.App.vue.txt"
+        },
+        {
+          "file": "src/api.ts",
+          "source": "api.ts.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "top-level-await-wrong-member",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "top-level-invalid.App.vue.txt"
+        },
+        {
+          "file": "src/api.ts",
+          "source": "api.ts.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 5,
+          "column": 24,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'toUpperCase' does not exist on type 'number'."
+        }
+      ]
+    },
+    {
+      "id": "top-level-for-await",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "for-await.App.vue.txt"
+        },
+        {
+          "file": "src/api.ts",
+          "source": "api.ts.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "top-level-for-await-wrong-member",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "for-await-invalid.App.vue.txt"
+        },
+        {
+          "file": "src/api.ts",
+          "source": "api.ts.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 5,
+          "column": 22,
+          "severity": 1,
+          "code": 2551,
+          "message": "Property 'toFixed' does not exist on type 'string'. Did you mean 'fixed'?"
+        }
+      ]
+    },
+    {
+      "id": "nested-and-text-await",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "nested.App.vue.txt"
+        },
+        {
+          "file": "src/api.ts",
+          "source": "api.ts.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "nested-await-wrong-annotation",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "nested-invalid.App.vue.txt"
+        },
+        {
+          "file": "src/api.ts",
+          "source": "api.ts.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 7,
+          "column": 11,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type 'string'."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+<script setup lang="ts">
+defineOptions({ inheritAttrs: false });
+defineProps<{ title: string; on: boolean }>();
+</script>
+<template>
+  <div v-if="on" class="on">{{ title }}</div>
+  <span v-else class="off">{{ title }}</span>
+</template>

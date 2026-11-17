@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import { Bare } from "../components/Local.vue";
+
+const label: string = Bare.label;
+</script>
+
+<template>
+  <div>{{ label }}</div>
+</template>

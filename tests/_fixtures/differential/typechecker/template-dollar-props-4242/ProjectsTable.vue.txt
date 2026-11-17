@@ -1,0 +1,17 @@
+<script setup lang="ts">
+import type { PropType } from 'vue'
+import type { Pagination } from './types'
+
+const props = defineProps({
+  pagination: { type: Object as PropType<Pagination>, required: true },
+  loading: { type: Boolean, default: false },
+})
+</script>
+
+<template>
+  <div v-if="$props.loading">loading</div>
+  <div>{{ $props.pagination.page }}/{{ $props.pagination.perPage }} of {{ $props.pagination.total }}</div>
+  <button @click="$props.pagination.page = $props.pagination.page + 1">next</button>
+  <span>{{ props.pagination.page }}</span>
+  <span>{{ loading }}</span>
+</template>

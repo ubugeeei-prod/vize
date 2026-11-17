@@ -1,0 +1,14 @@
+<script setup lang="ts">
+import { useTemplateRef } from "vue";
+
+const canvas = useTemplateRef("canvas");
+const img = useTemplateRef("img");
+
+canvas.value?.getContext("2d");
+img.value?.decode();
+</script>
+
+<template>
+  <canvas ref="canvas" />
+  <img ref="img" alt="" />
+</template>

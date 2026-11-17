@@ -1,0 +1,7 @@
+export declare function Component<T extends abstract new (...args: any[]) => unknown>(
+  target: T,
+  context?: ClassDecoratorContext<T>,
+): T
+export declare function Prop(
+  options?: unknown,
+): (target: undefined, context: ClassFieldDecoratorContext) => void

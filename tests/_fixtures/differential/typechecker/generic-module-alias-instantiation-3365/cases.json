@@ -1,0 +1,105 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 3365,
+  "regressionCommit": "a40aefa70fc004f00c230efa9e9303b52f0c10a2",
+  "sourceRevision": "a40aefa70fc004f00c230efa9e9303b52f0c10a2",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "generic-aliases-instantiated",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/GenericAliases.vue",
+          "source": "GenericAliases.vue.txt"
+        },
+        {
+          "file": "src/PlainAliases.vue",
+          "source": "PlainAliases.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "Parent.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "generic-emit-payload-mismatch",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/GenericAliases.vue",
+          "source": "GenericAliases.vue.txt"
+        },
+        {
+          "file": "src/PlainAliases.vue",
+          "source": "PlainAliases.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "Parent.wrong-payload.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Parent.vue",
+          "line": 9,
+          "column": 29,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '(value: 'y') => \"y\"' is not assignable to type '(value: \"x\") => any'.\nTypes of parameters 'value' and 'value' are incompatible.\nType '\"x\"' is not assignable to type '\"y\"'."
+        }
+      ]
+    },
+    {
+      "id": "generic-slot-prop-missing-member",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/GenericAliases.vue",
+          "source": "GenericAliases.vue.txt"
+        },
+        {
+          "file": "src/PlainAliases.vue",
+          "source": "PlainAliases.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "Parent.wrong-slot.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Parent.vue",
+          "line": 10,
+          "column": 43,
+          "severity": 1,
+          "code": 2551,
+          "message": "Property 'toFixed' does not exist on type '\"x\"'. Did you mean 'fixed'?"
+        }
+      ]
+    }
+  ]
+}

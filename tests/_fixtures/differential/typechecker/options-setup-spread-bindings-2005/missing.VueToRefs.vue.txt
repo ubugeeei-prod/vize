@@ -1,0 +1,26 @@
+<script lang="ts">
+import { defineComponent, toRefs } from 'vue'
+
+function useAiSupportForm() {
+    return {
+        formInput: {
+            aiSupportTitle: '',
+            aiSupportType: '',
+            aiSupportTagName: '',
+        },
+    }
+}
+
+export default defineComponent({
+    setup() {
+        const { formInput } = useAiSupportForm()
+        return {
+            ...toRefs(formInput),
+        }
+    },
+})
+</script>
+
+<template>
+  <div>{{ aiSupportTitle }} {{ aiSupportType }} {{ aiSupportTagNames }}</div>
+</template>

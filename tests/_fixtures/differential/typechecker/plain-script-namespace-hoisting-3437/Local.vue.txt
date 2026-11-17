@@ -1,0 +1,7 @@
+<script lang="ts">
+namespace Bare {
+  export const label = "bare";
+}
+
+export default { name: "Local", data: () => ({ label: Bare.label }) };
+</script>

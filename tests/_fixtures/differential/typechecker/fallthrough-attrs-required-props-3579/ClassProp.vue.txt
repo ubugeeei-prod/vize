@@ -1,0 +1,4 @@
+<script setup lang="ts">
+defineProps<{ class: number }>()
+</script>
+<template><span /></template>

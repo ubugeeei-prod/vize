@@ -1,0 +1,12 @@
+import ProjectsTable from './ProjectsTable.vue'
+import TimelineItem from './TimelineItem.vue'
+import type { Pagination } from './types'
+
+type TableProps = InstanceType<typeof ProjectsTable>['$props']
+type TimelineProps = InstanceType<typeof TimelineItem>['$props']
+
+const pagination: Pagination = { page: 1, perPage: 10, total: 20 }
+
+export const table: TableProps = { pagination, loading: true }
+export const timeline: TimelineProps = { date: 'today', active: true }
+export const page: number = table.pagination.page

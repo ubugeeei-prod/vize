@@ -1,0 +1,14 @@
+import type { DefineComponent } from "vue"
+export {}
+
+declare module "vue" {
+  interface GlobalComponents {
+    VaInput: DefineComponent<{
+      rules?: Array<(value: string) => string | boolean>
+    }>
+    MkSuspense: DefineComponent<{
+      onResolved?: (result: { file: string }) => void
+    }>
+    UnresolvedSuspense: DefineComponent
+  }
+}

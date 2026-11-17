@@ -1,0 +1,80 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": null,
+  "regressionCommit": "d9535048975662e1fd68bf05db50b3ffd64a19f4",
+  "sourceRevision": "d9535048975662e1fd68bf05db50b3ffd64a19f4",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "emit-only-child",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/EmitProps.vue",
+          "source": "EmitProps.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "emit-listener-matching-payload",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/EmitProps.vue",
+          "source": "EmitProps.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "valid.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "emit-listener-wrong-payload",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/EmitProps.vue",
+          "source": "EmitProps.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "invalid.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Parent.vue",
+          "line": 10,
+          "column": 15,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '(value: string) => void' is not assignable to type '(value: MouseEvent) => any'.\nTypes of parameters 'value' and 'value' are incompatible.\nType 'MouseEvent' is not assignable to type 'string'."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+<script setup lang="ts">
+import Form, { type FormSubmitEvent } from './Form.vue'
+
+function login(payload: FormSubmitEvent<{ username: string; password: string }>) {
+  payload.data.username.toUpperCase()
+  payload.data.password.toUpperCase()
+}
+
+function wrong(payload: FormSubmitEvent<{ username: number; password: string }>) {
+  payload.data.username.toFixed()
+}
+</script>
+
+<template>
+  <Form
+    :initial-state="{ username: '', password: '' }"
+    @submit="login"
+    @reset="() => undefined"
+  />
+</template>

@@ -1,0 +1,3 @@
+<template>
+  <UnknownInput :rules="[(value) => value]" />
+</template>

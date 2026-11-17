@@ -1,0 +1,8 @@
+<script setup lang="ts">
+import { fetchData, items } from './api'
+
+for await (const item of items) {
+    console.log(item.toFixed(0))
+}
+</script>
+<template><div /></template>

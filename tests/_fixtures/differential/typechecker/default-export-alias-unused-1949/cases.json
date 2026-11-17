@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 1949,
+  "regressionCommit": "958a2ac4c623225bd031a132de8540be8fd78f82",
+  "sourceRevision": "958a2ac4c623225bd031a132de8540be8fd78f82",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "options-default-export-no-unused-locals",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Page.vue",
+          "source": "Page.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "authored-unused-local-still-reported",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Page.vue",
+          "source": "invalid.Page.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Page.vue",
+          "line": 2,
+          "column": 7,
+          "severity": 1,
+          "code": 6133,
+          "message": "'unusedLocal' is declared but its value is never read."
+        }
+      ]
+    }
+  ]
+}

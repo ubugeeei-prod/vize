@@ -1,0 +1,73 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 4242,
+  "regressionCommit": "155555e58136758d84700e70a417a58588c0008d",
+  "sourceRevision": "155555e58136758d84700e70a417a58588c0008d",
+  "checkerOptions": {
+    "optionsApi": true
+  },
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "options-api-dollar-props",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/OptionsValid.vue",
+          "source": "OptionsValid.vue.txt"
+        },
+        {
+          "file": "src/OptionsInvalid.vue",
+          "source": "OptionsInvalid.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/OptionsInvalid.vue",
+          "line": 13,
+          "column": 18,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'nope' does not exist on type 'Partial<{ label: string; }> & Omit<{ readonly label: string; readonly size: number; } & VNodeProps & AllowedComponentProps & ComponentCustomProps, \"label\">'."
+        },
+        {
+          "file": "src/OptionsInvalid.vue",
+          "line": 14,
+          "column": 23,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'toUpperCase' does not exist on type 'number'."
+        }
+      ]
+    },
+    {
+      "id": "options-api-dollar-props-valid",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/OptionsValid.vue",
+          "source": "OptionsValid.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

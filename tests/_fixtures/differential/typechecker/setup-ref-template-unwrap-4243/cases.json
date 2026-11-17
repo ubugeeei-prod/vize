@@ -1,0 +1,167 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 4243,
+  "regressionCommit": "59d893a34c9def4ad6a4cdc46d148f97f3422e9f",
+  "sourceRevision": "59d893a34c9def4ad6a4cdc46d148f97f3422e9f",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "imported-refs-clean-template",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/composables.ts",
+          "source": "composables.ts.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "clean.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "imported-ref-misspelled-member",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/composables.ts",
+          "source": "composables.ts.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "misspelled-member.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 8,
+          "column": 21,
+          "severity": 1,
+          "code": 2551,
+          "message": "Property 'lenght' does not exist on type 'Media[]'. Did you mean 'length'?"
+        }
+      ]
+    },
+    {
+      "id": "imported-ref-template-value-access",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/composables.ts",
+          "source": "composables.ts.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "template-value-access.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 8,
+          "column": 21,
+          "severity": 1,
+          "code": 2551,
+          "message": "Property 'value' does not exist on type 'Media[]'. Did you mean 'values'?"
+        }
+      ]
+    },
+    {
+      "id": "plain-value-object-not-unwrapped",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/composables.ts",
+          "source": "composables.ts.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "plain-object-member.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 8,
+          "column": 18,
+          "severity": 1,
+          "code": 2551,
+          "message": "Property 'valeu' does not exist on type '{ readonly text: \"Login info\"; readonly value: \"LOGIN_INFO\"; }'. Did you mean 'value'?"
+        }
+      ]
+    },
+    {
+      "id": "script-scope-ref-not-unwrapped",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/composables.ts",
+          "source": "composables.ts.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "script-scope-no-unwrap.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 4,
+          "column": 35,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'length' does not exist on type 'Ref<Media[], Media[]>'."
+        }
+      ]
+    }
+  ]
+}

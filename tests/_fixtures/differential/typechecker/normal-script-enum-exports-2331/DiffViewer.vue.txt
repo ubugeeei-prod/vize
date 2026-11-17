@@ -1,0 +1,6 @@
+<script lang="ts">
+export enum DiffDisplayMode { Hidden = 'hidden' }
+export type Props = {}
+</script>
+
+<template><div /></template>

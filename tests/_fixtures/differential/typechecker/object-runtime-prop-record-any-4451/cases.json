@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 4451,
+  "regressionCommit": "9a6dbdcfcfb33681ef5a310e841d73d6dd3e9875",
+  "sourceRevision": "9a6dbdcfcfb33681ef5a310e841d73d6dd3e9875",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "object-prop-untyped-member-access",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "valid.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "object-prop-assigned-to-string",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "invalid.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 7,
+          "column": 7,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'Record<string, any>' is not assignable to type 'string'."
+        }
+      ]
+    }
+  ]
+}

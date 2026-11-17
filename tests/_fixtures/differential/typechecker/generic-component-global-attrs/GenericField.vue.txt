@@ -1,0 +1,8 @@
+<script setup lang="ts" generic="T">
+defineProps<{ value: T; label: string }>()
+</script>
+
+<template>
+  <label>{{ label }}</label>
+  <input :value="String(value)" />
+</template>

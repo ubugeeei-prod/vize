@@ -1,0 +1,17 @@
+<script setup lang="ts">
+import Child from './Child.vue'
+const form: any = []
+const model = 1
+function onSave(_changed: boolean, _invalid: boolean) {}
+</script>
+
+<template>
+  <Child
+    v-if="form.filter(item => item).length"
+    :value="model"
+    @save="(changed, invalid) => onSave(changed, invalid)"
+  >
+    <template #default="{ label }">{{ label.toUpperCase() }}</template>
+    <template #caption="{ text }">{{ text.toUpperCase() }}</template>
+  </Child>
+</template>

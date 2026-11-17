@@ -1,0 +1,127 @@
+<script setup lang="ts">
+defineProps<{
+  title: string
+  variant0?: 'solid' | 'outline' | 'ghost' | 'link'
+  onSelect0?: (value: string, index: number) => void
+  itemList0?: readonly { id: string; label: string }[]
+  variant1?: 'solid' | 'outline' | 'ghost' | 'link'
+  onSelect1?: (value: string, index: number) => void
+  itemList1?: readonly { id: string; label: string }[]
+  variant2?: 'solid' | 'outline' | 'ghost' | 'link'
+  onSelect2?: (value: string, index: number) => void
+  itemList2?: readonly { id: string; label: string }[]
+  variant3?: 'solid' | 'outline' | 'ghost' | 'link'
+  onSelect3?: (value: string, index: number) => void
+  itemList3?: readonly { id: string; label: string }[]
+  variant4?: 'solid' | 'outline' | 'ghost' | 'link'
+  onSelect4?: (value: string, index: number) => void
+  itemList4?: readonly { id: string; label: string }[]
+  variant5?: 'solid' | 'outline' | 'ghost' | 'link'
+  onSelect5?: (value: string, index: number) => void
+  itemList5?: readonly { id: string; label: string }[]
+  variant6?: 'solid' | 'outline' | 'ghost' | 'link'
+  onSelect6?: (value: string, index: number) => void
+  itemList6?: readonly { id: string; label: string }[]
+  variant7?: 'solid' | 'outline' | 'ghost' | 'link'
+  onSelect7?: (value: string, index: number) => void
+  itemList7?: readonly { id: string; label: string }[]
+  variant8?: 'solid' | 'outline' | 'ghost' | 'link'
+  onSelect8?: (value: string, index: number) => void
+  itemList8?: readonly { id: string; label: string }[]
+  variant9?: 'solid' | 'outline' | 'ghost' | 'link'
+  onSelect9?: (value: string, index: number) => void
+  itemList9?: readonly { id: string; label: string }[]
+  variant10?: 'solid' | 'outline' | 'ghost' | 'link'
+  onSelect10?: (value: string, index: number) => void
+  itemList10?: readonly { id: string; label: string }[]
+  variant11?: 'solid' | 'outline' | 'ghost' | 'link'
+  onSelect11?: (value: string, index: number) => void
+  itemList11?: readonly { id: string; label: string }[]
+  variant12?: 'solid' | 'outline' | 'ghost' | 'link'
+  onSelect12?: (value: string, index: number) => void
+  itemList12?: readonly { id: string; label: string }[]
+  variant13?: 'solid' | 'outline' | 'ghost' | 'link'
+  onSelect13?: (value: string, index: number) => void
+  itemList13?: readonly { id: string; label: string }[]
+  variant14?: 'solid' | 'outline' | 'ghost' | 'link'
+  onSelect14?: (value: string, index: number) => void
+  itemList14?: readonly { id: string; label: string }[]
+  variant15?: 'solid' | 'outline' | 'ghost' | 'link'
+  onSelect15?: (value: string, index: number) => void
+  itemList15?: readonly { id: string; label: string }[]
+  variant16?: 'solid' | 'outline' | 'ghost' | 'link'
+  onSelect16?: (value: string, index: number) => void
+  itemList16?: readonly { id: string; label: string }[]
+  variant17?: 'solid' | 'outline' | 'ghost' | 'link'
+  onSelect17?: (value: string, index: number) => void
+  itemList17?: readonly { id: string; label: string }[]
+  variant18?: 'solid' | 'outline' | 'ghost' | 'link'
+  onSelect18?: (value: string, index: number) => void
+  itemList18?: readonly { id: string; label: string }[]
+  variant19?: 'solid' | 'outline' | 'ghost' | 'link'
+  onSelect19?: (value: string, index: number) => void
+  itemList19?: readonly { id: string; label: string }[]
+  variant20?: 'solid' | 'outline' | 'ghost' | 'link'
+  onSelect20?: (value: string, index: number) => void
+  itemList20?: readonly { id: string; label: string }[]
+  variant21?: 'solid' | 'outline' | 'ghost' | 'link'
+  onSelect21?: (value: string, index: number) => void
+  itemList21?: readonly { id: string; label: string }[]
+  variant22?: 'solid' | 'outline' | 'ghost' | 'link'
+  onSelect22?: (value: string, index: number) => void
+  itemList22?: readonly { id: string; label: string }[]
+  variant23?: 'solid' | 'outline' | 'ghost' | 'link'
+  onSelect23?: (value: string, index: number) => void
+  itemList23?: readonly { id: string; label: string }[]
+  variant24?: 'solid' | 'outline' | 'ghost' | 'link'
+  onSelect24?: (value: string, index: number) => void
+  itemList24?: readonly { id: string; label: string }[]
+  variant25?: 'solid' | 'outline' | 'ghost' | 'link'
+  onSelect25?: (value: string, index: number) => void
+  itemList25?: readonly { id: string; label: string }[]
+  variant26?: 'solid' | 'outline' | 'ghost' | 'link'
+  onSelect26?: (value: string, index: number) => void
+  itemList26?: readonly { id: string; label: string }[]
+  variant27?: 'solid' | 'outline' | 'ghost' | 'link'
+  onSelect27?: (value: string, index: number) => void
+  itemList27?: readonly { id: string; label: string }[]
+  variant28?: 'solid' | 'outline' | 'ghost' | 'link'
+  onSelect28?: (value: string, index: number) => void
+  itemList28?: readonly { id: string; label: string }[]
+  variant29?: 'solid' | 'outline' | 'ghost' | 'link'
+  onSelect29?: (value: string, index: number) => void
+  itemList29?: readonly { id: string; label: string }[]
+  variant30?: 'solid' | 'outline' | 'ghost' | 'link'
+  onSelect30?: (value: string, index: number) => void
+  itemList30?: readonly { id: string; label: string }[]
+  variant31?: 'solid' | 'outline' | 'ghost' | 'link'
+  onSelect31?: (value: string, index: number) => void
+  itemList31?: readonly { id: string; label: string }[]
+  variant32?: 'solid' | 'outline' | 'ghost' | 'link'
+  onSelect32?: (value: string, index: number) => void
+  itemList32?: readonly { id: string; label: string }[]
+  variant33?: 'solid' | 'outline' | 'ghost' | 'link'
+  onSelect33?: (value: string, index: number) => void
+  itemList33?: readonly { id: string; label: string }[]
+  variant34?: 'solid' | 'outline' | 'ghost' | 'link'
+  onSelect34?: (value: string, index: number) => void
+  itemList34?: readonly { id: string; label: string }[]
+  variant35?: 'solid' | 'outline' | 'ghost' | 'link'
+  onSelect35?: (value: string, index: number) => void
+  itemList35?: readonly { id: string; label: string }[]
+  variant36?: 'solid' | 'outline' | 'ghost' | 'link'
+  onSelect36?: (value: string, index: number) => void
+  itemList36?: readonly { id: string; label: string }[]
+  variant37?: 'solid' | 'outline' | 'ghost' | 'link'
+  onSelect37?: (value: string, index: number) => void
+  itemList37?: readonly { id: string; label: string }[]
+  variant38?: 'solid' | 'outline' | 'ghost' | 'link'
+  onSelect38?: (value: string, index: number) => void
+  itemList38?: readonly { id: string; label: string }[]
+  variant39?: 'solid' | 'outline' | 'ghost' | 'link'
+  onSelect39?: (value: string, index: number) => void
+  itemList39?: readonly { id: string; label: string }[]
+}>()
+defineEmits<{ change: [value: string]; close: [] }>()
+</script>
+<template><span /></template>

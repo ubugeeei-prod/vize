@@ -1,0 +1,4 @@
+import Test from "./Test.vue";
+
+type TestProps = InstanceType<typeof Test>["$props"];
+void (null as unknown as TestProps);

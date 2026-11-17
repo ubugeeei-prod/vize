@@ -1,0 +1,146 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 3708,
+  "regressionCommit": "34463efe9ac81e18619ebcdc3e3326b94bd85932",
+  "sourceRevision": "34463efe9ac81e18619ebcdc3e3326b94bd85932",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "dollar-emit-with-unused-local",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/DollarEmit.vue",
+          "source": "DollarEmit.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/DollarEmit.vue",
+          "line": 3,
+          "column": 7,
+          "severity": 1,
+          "code": 6133,
+          "message": "'unusedLocal' is declared but its value is never read."
+        }
+      ]
+    },
+    {
+      "id": "renamed-binding-dollar-emit",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/RenamedEmit.vue",
+          "source": "RenamedEmit.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "renamed-binding-dollar-emit-wrong-event",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/RenamedEmit.vue",
+          "source": "RenamedEmit-wrong-event.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/RenamedEmit.vue",
+          "line": 5,
+          "column": 33,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '\"saved\"' is not assignable to parameter of type '\"save\"'."
+        }
+      ]
+    },
+    {
+      "id": "direct-template-emit",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/DirectTemplateEmit.vue",
+          "source": "DirectTemplateEmit.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "direct-script-emit",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/DirectScriptEmit.vue",
+          "source": "DirectScriptEmit.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "unused-define-emits-result",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/UnusedEmit.vue",
+          "source": "UnusedEmit.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "options-api-unrelated-local",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/OptionsApi.vue",
+          "source": "OptionsApi.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/OptionsApi.vue",
+          "line": 2,
+          "column": 7,
+          "severity": 1,
+          "code": 6133,
+          "message": "'emit' is declared but its value is never read."
+        }
+      ]
+    }
+  ]
+}

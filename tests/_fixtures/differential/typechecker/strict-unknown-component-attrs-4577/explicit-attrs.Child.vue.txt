@@ -1,0 +1,4 @@
+<script setup lang="ts">
+defineProps<{ title: string }>();
+</script>
+<template><li><a v-bind="$attrs">{{ title }}</a></li></template>

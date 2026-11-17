@@ -18,7 +18,12 @@ import {
   selectListenerEventAuthority,
   type ListenerDiagnosticAuthority,
 } from "./typechecker-listener-events.ts";
-import { packCases, TYPECHECKER_TESTS, sourceRevisions } from "./typechecker-registry.ts";
+import {
+  OPTIONS_API_PACKS,
+  packCases,
+  TYPECHECKER_TESTS,
+  sourceRevisions,
+} from "./typechecker-registry.ts";
 import {
   typecheckerDialectCoverage,
   verifiedTypecheckerDialectCoverage,
@@ -190,13 +195,7 @@ export function loadTypecheckerManifest(manifestPath: string) {
     assert.deepEqual(pack.diagnosticContract, contract);
     assert.deepEqual(
       pack.checkerOptions,
-      fixture.pack === "options-api-any-instance" ||
-        fixture.pack === "options-api-reserved-component-reference" ||
-        fixture.pack === "setup-custom-properties" ||
-        fixture.pack === "required-default-props" ||
-        fixture.pack === "no-space-default-export-3087" ||
-        fixture.pack === "options-runtime-props-value-scope-3089" ||
-        fixture.pack === "options-template-literal-bindings-3086"
+      OPTIONS_API_PACKS.has(fixture.pack)
         ? { optionsApi: true }
         : fixture.pack === "jsx-prop-token-ranges-10494"
           ? { jsxTypecheck: true }

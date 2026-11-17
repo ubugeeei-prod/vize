@@ -1,0 +1,17 @@
+<script setup lang="ts">
+type TargetStudent = { id: number; username: string; name: string };
+
+const props = withDefaults(defineProps<{
+  targetStudent?: TargetStudent | null
+}>(), {
+  targetStudent: null,
+})
+
+void props
+</script>
+
+<template>
+  <PlainDialog :is-opened="targetStudent !== null">
+    {{ targetStudent?.username.toFixed() ?? '--' }}
+  </PlainDialog>
+</template>

@@ -1,0 +1,25 @@
+import {
+  computed,
+  readonly,
+  ref,
+  shallowRef,
+  type ComputedRef,
+  type Ref,
+  type ShallowRef,
+  type WritableComputedRef,
+} from 'vue'
+
+export interface Media { id: string; url: string }
+export interface UserLogin { account: { id: string }; server: string; token?: string }
+
+export const mediaList: Ref<Media[]> = ref([])
+export const currentUser: ComputedRef<UserLogin | undefined> = computed(() => undefined)
+export const draftName: WritableComputedRef<string> = computed({ get: () => 'draft', set: () => {} })
+export const shallowList: ShallowRef<Media[]> = shallowRef([])
+export const readonlyCount = readonly(ref(0))
+export const nullableUser: Ref<UserLogin | null> = ref(null)
+export const unionValue: Ref<string | number> = ref('a')
+export const flag = ref(false)
+
+// Not a ref: a plain constant that merely has a `value` property (#3767).
+export const OPTION = { text: 'Login info', value: 'LOGIN_INFO' } as const

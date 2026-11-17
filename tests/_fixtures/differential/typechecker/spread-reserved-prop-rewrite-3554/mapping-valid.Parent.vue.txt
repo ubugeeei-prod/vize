@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import Child from './Child.vue'
+defineProps<{ as?: string }>()
+const bag = { count: 1 }
+</script>
+
+<template>
+  <Child v-bind="{ as, count: bag.count }" />
+</template>

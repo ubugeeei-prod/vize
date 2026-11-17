@@ -1,0 +1,11 @@
+<script lang="ts">
+export default {
+    inheritAttrs: false,
+}
+</script>
+
+<script setup lang="ts">
+const props = defineProps<{ toaster: boolean }>()
+</script>
+
+<template><div>{{ toaster }}</div></template>

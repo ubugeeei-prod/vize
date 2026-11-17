@@ -1,0 +1,15 @@
+<script setup lang="ts">
+const emit = defineEmits<{
+  create: []
+  close: []
+}>()
+</script>
+
+<template>
+  <Child
+    @create="
+      emit('create')
+      emit('closed')
+    "
+  />
+</template>

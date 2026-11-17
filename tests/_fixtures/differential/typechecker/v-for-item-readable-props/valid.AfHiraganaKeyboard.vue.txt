@@ -1,0 +1,32 @@
+<script setup lang="ts">
+import AfKeyboardButton from "./AfKeyboardButton.vue";
+
+type KeyboardKey = InstanceType<typeof AfKeyboardButton>["$props"] & {
+  onClick?: () => void;
+};
+type KeyboardLayout = KeyboardKey[][];
+
+const keyboardLayout: KeyboardLayout = [
+  [
+    {
+      keyType: "input",
+      innerHtml: "あ",
+      width: "1fr",
+      longPress: true,
+    },
+  ],
+];
+</script>
+
+<template>
+  <div v-for="(row, rowIndex) in keyboardLayout" :key="rowIndex">
+    <AfKeyboardButton
+      v-for="(key, i) in row"
+      :key="`hiragana-key-${i}`"
+      :key-type="key.keyType"
+      :inner-html="key.innerHtml"
+      :width="key.width"
+      :long-press="key.longPress"
+    />
+  </div>
+</template>

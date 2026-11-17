@@ -1,0 +1,104 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 4915,
+  "regressionCommit": "ad99a95135db04ceff3a0d882fefbe5162fddb05",
+  "sourceRevision": "ad99a95135db04ceff3a0d882fefbe5162fddb05",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "camel-value-binding-beside-type-only-pascal-import",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "historical.App.vue.txt"
+        },
+        {
+          "file": "node_modules/chart.js/package.json",
+          "source": "chart.package.json.txt"
+        },
+        {
+          "file": "node_modules/chart.js/index.d.ts",
+          "source": "chart.index.d.ts.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "camel-value-binding-component-props",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "typed.App.vue.txt"
+        },
+        {
+          "file": "src/ChartPanel.vue",
+          "source": "ChartPanel.vue.txt"
+        },
+        {
+          "file": "node_modules/chart.js/package.json",
+          "source": "chart.package.json.txt"
+        },
+        {
+          "file": "node_modules/chart.js/index.d.ts",
+          "source": "chart.index.d.ts.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "camel-value-binding-component-wrong-prop",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "typed-wrong.App.vue.txt"
+        },
+        {
+          "file": "src/ChartPanel.vue",
+          "source": "ChartPanel.vue.txt"
+        },
+        {
+          "file": "node_modules/chart.js/package.json",
+          "source": "chart.package.json.txt"
+        },
+        {
+          "file": "node_modules/chart.js/index.d.ts",
+          "source": "chart.index.d.ts.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 8,
+          "column": 28,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type 'string'."
+        }
+      ]
+    }
+  ]
+}

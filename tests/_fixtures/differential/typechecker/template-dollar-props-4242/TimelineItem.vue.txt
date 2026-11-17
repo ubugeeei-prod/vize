@@ -1,0 +1,10 @@
+<script setup lang="ts">
+defineProps({
+  date: { type: String, default: '' },
+  active: { type: Boolean, default: false },
+})
+</script>
+
+<template>
+  <div :class="{ active: $props.active }">{{ $props.date.toUpperCase() }}</div>
+</template>

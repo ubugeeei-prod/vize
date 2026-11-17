@@ -1,0 +1,74 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 2303,
+  "regressionCommit": "27260d211025441b6303090d4fd7acaa65528f15",
+  "sourceRevision": "27260d211025441b6303090d4fd7acaa65528f15",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "tsx-sfc-named-export-contextual-typing",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Widget.vue",
+          "source": "Widget.vue.txt"
+        },
+        {
+          "file": "src/register-widget.ts",
+          "source": "register-widget.ts.txt"
+        },
+        {
+          "file": "src/theme.ts",
+          "source": "theme.ts.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "tsx-sfc-named-export-wrong-slot-return",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Widget.vue",
+          "source": "Widget.vue.txt"
+        },
+        {
+          "file": "src/register-widget.ts",
+          "source": "register-widget.ts.txt"
+        },
+        {
+          "file": "src/theme.ts",
+          "source": "theme-wrong.ts.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/theme.ts",
+          "line": 5,
+          "column": 5,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '({ size }: { size: \"large\" | \"small\"; }) => \"text-lg\" | 1' is not assignable to type '(context: { size: \"large\" | \"small\"; }) => string'.\nType 'string | number' is not assignable to type 'string'.\nType 'number' is not assignable to type 'string'."
+        }
+      ]
+    }
+  ]
+}

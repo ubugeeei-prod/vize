@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import Child from './Child.vue'
+import { OPTION, currentUser, draftName, flag, mediaList, nullableUser, readonlyCount, shallowList, unionValue } from './composables'
+const scriptOnlyCount = mediaList.value.length
+</script>
+
+<template>
+  <div>{{ mediaList.lenght }}</div>
+</template>

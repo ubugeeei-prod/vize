@@ -1,0 +1,12 @@
+<script setup lang="ts">
+const identity = (value: HTMLElement) => value
+</script>
+
+<template>
+  <span
+    :ref="(el: HTMLElement) => {
+      identity(el)
+      return undefined
+    }"
+  />
+</template>

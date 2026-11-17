@@ -1,0 +1,20 @@
+<script setup lang="ts">
+import { Transition } from 'vue'
+import Required from './Required.vue'
+import Optional from './Optional.vue'
+import RuntimeOptional from './RuntimeOptional.vue'
+import Mixin from './Mixin.vue'
+import { External } from './components'
+const propName = 'count' as string
+</script>
+
+<template>
+  <Required />
+  <Required :[propName]="1" />
+  <Optional />
+  <RuntimeOptional />
+  <Mixin />
+  <External />
+  <Transition />
+  <UnknownWidget />
+</template>

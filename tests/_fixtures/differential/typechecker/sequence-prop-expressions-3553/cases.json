@@ -1,0 +1,111 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 3553,
+  "regressionCommit": "ec3ef8ce3ddf5853d3659a83d9b8f151fdbe3f1f",
+  "sourceRevision": "ec3ef8ce3ddf5853d3659a83d9b8f151fdbe3f1f",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "non-generic-sequence-callback",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "Parent.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "non-generic-sequence-callback-wrong-member",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "Parent.wrong-member.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Parent.vue",
+          "line": 6,
+          "column": 47,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'toUpperCase' does not exist on type 'number'."
+        }
+      ]
+    },
+    {
+      "id": "generic-sequence-callback",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "generic.Child.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "generic.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "generic-sequence-callback-wrong-member",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "generic.Child.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "generic.Parent.wrong-member.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Parent.vue",
+          "line": 6,
+          "column": 52,
+          "severity": 1,
+          "code": 18046,
+          "message": "'value' is of type 'unknown'."
+        }
+      ]
+    }
+  ]
+}

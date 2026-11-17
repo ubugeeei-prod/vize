@@ -1,0 +1,12 @@
+<script setup lang="ts">
+const identity = (value: HTMLElement | null) => value
+</script>
+
+<template>
+  <button
+    :disabled="(() => {
+      identity(null)
+      return true
+    })()"
+  />
+</template>

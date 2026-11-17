@@ -1,0 +1,6 @@
+<script setup lang="ts">
+defineModel<number>()
+defineModel<string>('title')
+</script>
+
+<template><span /></template>

@@ -1,0 +1,10 @@
+<script setup lang="ts">
+defineProps<{ value: number }>()
+defineEmits<{ save: [changed: boolean, invalid: boolean] }>()
+defineSlots<{
+  default(props: { label: string }): unknown
+  caption(props: { text: string }): unknown
+}>()
+</script>
+
+<template><slot label="ready" /><slot name="caption" text="done" /></template>

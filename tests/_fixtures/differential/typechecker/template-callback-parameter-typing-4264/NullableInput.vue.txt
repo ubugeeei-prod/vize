@@ -1,0 +1,5 @@
+<script setup lang="ts">
+defineProps<{ modelValue: number | null }>()
+defineEmits<{ "update:modelValue": [value: number | null] }>()
+</script>
+<template><input /></template>

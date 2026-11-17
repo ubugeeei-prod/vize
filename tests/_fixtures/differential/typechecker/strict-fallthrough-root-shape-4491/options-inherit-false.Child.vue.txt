@@ -1,0 +1,11 @@
+<script lang="ts">
+import { defineComponent } from "vue";
+
+export default defineComponent({
+  inheritAttrs: false,
+  props: {
+    title: { type: String, required: true },
+  },
+});
+</script>
+<template><div class="root">{{ title }}</div></template>

@@ -1,0 +1,169 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 6245,
+  "regressionCommit": "95401a66090e358f72063d7c4bd73c2b70b593b7",
+  "sourceRevision": "95401a66090e358f72063d7c4bd73c2b70b593b7",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "enum-class-exports-keep-identity",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "library.App.vue.txt"
+        },
+        {
+          "file": "src/index.ts",
+          "source": "consumer.index.ts.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "enum-class-exports-reject-structural-values",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "library.App.vue.txt"
+        },
+        {
+          "file": "src/index.ts",
+          "source": "consumer-nominal.index.ts.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/index.ts",
+          "line": 13,
+          "column": 7,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '\"red\"' is not assignable to type 'Color'."
+        },
+        {
+          "file": "src/index.ts",
+          "line": 14,
+          "column": 7,
+          "severity": 1,
+          "code": 2741,
+          "message": "Property 'brand' is missing in type '{ value: number; }' but required in type 'Box<number>'."
+        }
+      ]
+    },
+    {
+      "id": "inline-export-wrong-value-type",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "library.App.vue.txt"
+        },
+        {
+          "file": "src/index.ts",
+          "source": "consumer-wrong-value.index.ts.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/index.ts",
+          "line": 9,
+          "column": 7,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type 'string'."
+        }
+      ]
+    },
+    {
+      "id": "vue-declaration-without-source-sfc",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Library.vue.d.ts",
+          "source": "Library.vue.d.ts.txt"
+        },
+        {
+          "file": "src/index.ts",
+          "source": "declaration-import.index.ts.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "vue-declaration-without-source-sfc-wrong-type",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Library.vue.d.ts",
+          "source": "Library.vue.d.ts.txt"
+        },
+        {
+          "file": "src/index.ts",
+          "source": "declaration-import-wrong.index.ts.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/index.ts",
+          "line": 2,
+          "column": 7,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type 'string'."
+        }
+      ]
+    },
+    {
+      "id": "missing-sfc-and-declaration",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/index.ts",
+          "source": "declaration-import.index.ts.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/index.ts",
+          "line": 1,
+          "column": 23,
+          "severity": 1,
+          "code": 2307,
+          "message": "Cannot find module './Library.vue' or its corresponding type declarations."
+        }
+      ]
+    }
+  ]
+}

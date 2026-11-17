@@ -1,0 +1,13 @@
+import { ref } from "vue";
+import MkModalWindow from "./MkModalWindow.vue";
+import TypedExpose from "./TypedExpose.vue";
+
+// Repaired: every member below is on the declared expose surface.
+declare const instance: InstanceType<typeof MkModalWindow>;
+export const p1 = instance.close;
+
+export const p2 = instance.close();
+declare const typedInstance: InstanceType<typeof TypedExpose>;
+export const p3 = typedInstance.close;
+const instanceRef = ref<InstanceType<typeof MkModalWindow> | null>(null);
+export const p4 = instanceRef.value?.close();

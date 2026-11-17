@@ -1,0 +1,11 @@
+<script setup lang="ts">
+import Generic from './Generic.vue'
+import Multi from './Multi.vue'
+import Plain from './Plain.vue'
+</script>
+
+<template>
+  <Generic value="b" v-slot="{ value }">{{ value }}</Generic>
+  <Multi mode="row" event="cell" v-slot="{ mode }">{{ mode }}</Multi>
+  <Plain label="plain" v-slot="{ label }">{{ label }}</Plain>
+</template>

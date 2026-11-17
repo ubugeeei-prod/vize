@@ -1,0 +1,103 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 4489,
+  "regressionCommit": "16f992cb64e502db4066cda3003ec5bad0a0b04d",
+  "sourceRevision": "16f992cb64e502db4066cda3003ec5bad0a0b04d",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "exposed-member-through-use-template-ref",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Clean.vue",
+          "source": "Clean.vue.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "unexposed-member-through-use-template-ref",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Broken.vue",
+          "source": "Broken.vue.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Broken.vue",
+          "line": 7,
+          "column": 14,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'hide' does not exist on type '$ComponentInstance'."
+        }
+      ]
+    },
+    {
+      "id": "native-refs-named-like-setup-bindings",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/NativeRefs.vue",
+          "source": "NativeRefs.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "native-canvas-ref-wrong-member",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/NativeRefs.vue",
+          "source": "NativeRefsWrong.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/NativeRefs.vue",
+          "line": 7,
+          "column": 15,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'decode' does not exist on type 'HTMLCanvasElement'."
+        }
+      ]
+    }
+  ]
+}

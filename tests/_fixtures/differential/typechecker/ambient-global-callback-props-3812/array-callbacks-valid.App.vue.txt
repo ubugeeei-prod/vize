@@ -1,0 +1,3 @@
+<template>
+  <VaInput :rules="[(value) => value.length > 0 || 'required']" />
+</template>

@@ -1,0 +1,4 @@
+<script setup lang="ts">
+defineProps<{ align: 'start' | 'end' }>()
+</script>
+<template><span /></template>

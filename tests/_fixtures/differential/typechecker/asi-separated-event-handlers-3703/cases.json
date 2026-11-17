@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 3703,
+  "regressionCommit": "4039c4c9a5217b81591d67c8123981eba1126f33",
+  "sourceRevision": "4039c4c9a5217b81591d67c8123981eba1126f33",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "asi-separated-emit-statements",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "asi.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "asi-separated-second-statement-unknown-event",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "asi-wrong-event.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 12,
+          "column": 12,
+          "severity": 1,
+          "code": 2769,
+          "message": "No overload matches this call.\nThe last overload gave the following error.\nArgument of type '\"closed\"' is not assignable to parameter of type '\"create\"'."
+        }
+      ]
+    },
+    {
+      "id": "expression-shaped-handlers",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "expression-handlers.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

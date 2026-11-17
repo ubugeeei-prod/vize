@@ -1,0 +1,8 @@
+<script setup lang="ts">
+interface CallableEmits {
+  (event: 'commit', value: string): void
+  (event: 'cancel'): void
+}
+
+defineEmits<CallableEmits>()
+</script>

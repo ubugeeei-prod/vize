@@ -1,0 +1,11 @@
+<script setup lang="ts">
+import { defaultStudyHistory } from './defaults'
+
+type StudyHistory = typeof defaultStudyHistory
+
+defineProps<{ studyHistory: StudyHistory }>()
+</script>
+
+<template>
+  <article>{{ studyHistory.minutes.toFixed(0) }}</article>
+</template>

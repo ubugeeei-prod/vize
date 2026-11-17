@@ -1,0 +1,6 @@
+<script setup lang="ts">
+defineEmits({
+  save: (value: string) => value.length > 0,
+  reset: () => true,
+})
+</script>

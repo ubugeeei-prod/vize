@@ -1,0 +1,8 @@
+<script setup lang="ts">
+import Child from './Child.vue'
+const maybe: string | undefined = undefined
+</script>
+
+<template>
+  <Child :label="maybe" />
+</template>

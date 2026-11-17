@@ -1,0 +1,24 @@
+<script setup lang="ts">
+import Child from './Child.vue'
+import { OPTION, currentUser, draftName, flag, mediaList, nullableUser, readonlyCount, shallowList, unionValue } from './composables'
+const scriptOnlyCount = mediaList.value.length
+</script>
+
+<template>
+  <div>{{ mediaList.length }}</div>
+  <div>{{ mediaList[0]?.url }}</div>
+  <div>{{ currentUser?.account.id }}</div>
+  <div>{{ currentUser?.token }}</div>
+  <div v-if="draftName === 'draft'">named</div>
+  <div>{{ shallowList.length }}</div>
+  <div>{{ readonlyCount + 1 }}</div>
+  <div>{{ nullableUser?.server }}</div>
+  <div>{{ unionValue }}</div>
+  <div>{{ OPTION.value }}</div>
+  <div>{{ scriptOnlyCount }}</div>
+  <div v-if="flag">on</div>
+  <div v-for="item in mediaList" :key="item.id">{{ item.url }}</div>
+  <input v-model="draftName">
+  <button @click="flag = !flag">toggle</button>
+  <Child :items="mediaList" :label="draftName" :count="readonlyCount" />
+</template>

@@ -1,0 +1,6 @@
+<script setup lang="ts">
+import type { ChartComponent } from 'chart.js'
+const chartComponent = { template: '<div />' }
+</script>
+
+<template><chartComponent /></template>

@@ -1,0 +1,11 @@
+<script setup lang="ts">
+import type { Directive } from 'vue'
+const vUntyped: Directive = () => {}
+const vNotADirective = 42
+</script>
+
+<template>
+  <div v-global="'anything'" />
+  <div v-untyped="'anything'" />
+  <div v-not-a-directive="'anything'" />
+</template>

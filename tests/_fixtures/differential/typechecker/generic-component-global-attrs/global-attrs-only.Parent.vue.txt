@@ -1,0 +1,13 @@
+<script setup lang="ts">
+import GenericField from './GenericField.vue'
+
+const value = { id: 1 }
+</script>
+
+<template>
+  <GenericField :value="value" label="Search" id="search" />
+  <GenericField :value="value" label="Search" aria-label="Search" />
+  <GenericField :value="value" label="Search" aria-activedescendant="row-1" />
+  <GenericField :value="value" label="Search" data-test-id="search" />
+  <GenericField :value="value" label="Search" dataTestId="search" />
+</template>

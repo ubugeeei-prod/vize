@@ -1,0 +1,11 @@
+<script setup lang="ts">
+const [title, titleModifiers] = defineModel<string, "lazy">("title", { required: true });
+
+if (titleModifiers.lazy) {
+  title.value = title.value.trim();
+}
+</script>
+
+<template>
+  <span>{{ title }}</span>
+</template>

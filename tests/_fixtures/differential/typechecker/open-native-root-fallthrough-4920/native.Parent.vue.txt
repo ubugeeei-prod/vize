@@ -1,0 +1,13 @@
+<script setup lang="ts">
+import NativeButton from './NativeButton.vue'
+import MultiRootButton from './MultiRootButton.vue'
+
+const uiLocked = true
+</script>
+
+<template>
+  <NativeButton label="Run" :disable="uiLocked" :disabled="true" />
+  <NativeButton label="Run" :disabled="'bad'" />
+  <NativeButton :disable="uiLocked" />
+  <MultiRootButton label="Run" :disable="uiLocked" />
+</template>

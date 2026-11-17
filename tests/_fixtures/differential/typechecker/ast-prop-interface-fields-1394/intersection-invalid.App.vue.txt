@@ -1,0 +1,8 @@
+<script setup lang="ts">
+interface Base { id: string }
+interface Extra { label: string }
+type Props = Base & Extra;
+
+defineProps<Props>();
+</script>
+<template><div>{{ id.toFixed(0) }}{{ label }}</div></template>

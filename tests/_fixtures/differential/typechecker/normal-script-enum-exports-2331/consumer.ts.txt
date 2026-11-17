@@ -1,0 +1,6 @@
+import { DiffDisplayMode } from './DiffViewer.vue'
+import type { Props } from './DiffViewer.vue'
+
+const mode: DiffDisplayMode = DiffDisplayMode.Hidden
+const props: Props = {}
+export { mode, props }

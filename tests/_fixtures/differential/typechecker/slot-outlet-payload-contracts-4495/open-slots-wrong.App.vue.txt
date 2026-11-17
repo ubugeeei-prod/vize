@@ -1,0 +1,13 @@
+<script setup lang="ts">
+import OpenSlots from './OpenSlots.vue';
+
+function takesString(value: number) {
+  return value;
+}
+</script>
+
+<template>
+  <OpenSlots>
+    <template #header="{ title }">{{ takesString(title) }}</template>
+  </OpenSlots>
+</template>

@@ -1,0 +1,22 @@
+<script lang="ts">
+export default {
+    props: {
+        initial: Number,
+    },
+    data() {
+        return { count: 0 }
+    },
+    computed: {
+        doubled() {
+            return this.count * 2
+        },
+    },
+    methods: {
+        bump() {
+            return this.count + 1
+        },
+    },
+}
+</script>
+
+<template><div>{{ count }}</div></template>

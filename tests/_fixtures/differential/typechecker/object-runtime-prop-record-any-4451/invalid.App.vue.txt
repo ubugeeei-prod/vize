@@ -1,0 +1,15 @@
+<script setup lang="ts">
+const props = defineProps({
+  config: { type: Object, required: true },
+  items: Object,
+});
+
+const title: string = props.config;
+</script>
+
+<template>
+  <h1>{{ title }} {{ config.heading.text }}</h1>
+  <ul v-if="items">
+    <li v-for="(item, key) in items" :key="key">{{ item.label.toUpperCase() }}</li>
+  </ul>
+</template>

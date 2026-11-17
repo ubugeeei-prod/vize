@@ -1,0 +1,17 @@
+<script setup lang="ts">
+import type { PropType } from 'vue'
+import type { Pagination } from './types'
+
+defineProps({
+  isActive: { type: Boolean, default: false },
+  pagination: { type: Object as PropType<Pagination>, required: true },
+})
+</script>
+
+<template>
+  <div>{{ $props.pagination.total }}</div>
+  <div>{{ $props.isActive }}</div>
+  <div>{{ $props.pagination.perPage }}</div>
+  <button @click="$props.pagination.page = 2">a</button>
+  <button @click="$props.pagination.page = $props.pagination.page + 1">b</button>
+</template>

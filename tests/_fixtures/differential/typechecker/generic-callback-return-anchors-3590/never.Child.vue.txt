@@ -1,0 +1,5 @@
+<script setup lang="ts" generic="T">
+defineProps<{ value: T; pick: never }>()
+</script>
+
+<template><span /></template>

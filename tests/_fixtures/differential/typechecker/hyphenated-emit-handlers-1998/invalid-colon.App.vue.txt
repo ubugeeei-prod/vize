@@ -1,0 +1,23 @@
+<script setup lang="ts">
+import OverlayDialog, { type FolderPayload } from './OverlayDialog.vue'
+
+function handleFolder(payload: FolderPayload) {
+  payload.id.toUpperCase()
+}
+
+function handleOverlay(open: string) {
+  open.valueOf()
+}
+
+function handleMathKey(key: string) {
+  key.toUpperCase()
+}
+</script>
+
+<template>
+  <OverlayDialog
+    @click-folder="handleFolder"
+    @update:is-opened-overlay-loading="handleOverlay"
+    @input:math-key="handleMathKey"
+  />
+</template>

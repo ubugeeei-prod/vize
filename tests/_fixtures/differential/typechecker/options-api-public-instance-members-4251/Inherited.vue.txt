@@ -1,0 +1,15 @@
+<script lang="ts">
+import { defineComponent } from 'vue';
+import base from './base';
+import greeter from './greeter';
+
+export default defineComponent({
+  extends: base,
+  mixins: [greeter],
+  data() {
+    return { own: 1 };
+  },
+});
+</script>
+
+<template>{{ own }}</template>

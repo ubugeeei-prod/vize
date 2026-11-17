@@ -1,0 +1,135 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 3903,
+  "regressionCommit": "263094d86067ac5149b40d537585b16e6aa24865",
+  "sourceRevision": "263094d86067ac5149b40d537585b16e6aa24865",
+  "checkerOptions": {
+    "optionsApi": true
+  },
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "options-data-binding",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "data.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "options-unknown-name-on-instance",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "data-missing.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 22,
+          "column": 31,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'missingThing' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<ExtractPropTypes<{ initial: NumberConstructor; }>, {}>, {}, { count: number; }, { doubled(): number; }, ... 21 more ..., {}>'."
+        }
+      ]
+    },
+    {
+      "id": "script-declared-namespace",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "namespace.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "script-declared-namespace-unknown-name",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "namespace-missing.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 11,
+          "column": 36,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'missingThing' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, {}, PublicProps, ... 16 more ..., {}>'."
+        }
+      ]
+    },
+    {
+      "id": "setup-next-to-plain-script",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "split.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "setup-next-to-plain-script-unknown-name",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "split-missing.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 11,
+          "column": 33,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'missingThing' does not exist on the component instance."
+        }
+      ]
+    }
+  ]
+}

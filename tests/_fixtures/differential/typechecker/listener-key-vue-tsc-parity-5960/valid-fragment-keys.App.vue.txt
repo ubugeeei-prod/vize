@@ -1,0 +1,29 @@
+<script setup lang="ts">
+import { computed, ref } from 'vue'
+const buttons: { text: string | null }[] = []
+const tabs: { id: number }[] = []
+const strings: string[] = []
+const numbers: number[] = []
+const symbols: symbol[] = []
+const holder = ref<{ id: number } | null>(null)
+const derived = computed(() => holder.value)
+const flag = true
+</script>
+
+<template>
+  <template v-for="button in buttons" :key="button.text ?? ''">
+    <span>{{ button.text }}</span>
+  </template>
+  <template v-for="option in tabs" :key="option.id">
+    <span>{{ option.id }}</span>
+  </template>
+  <template v-for="s in strings" :key="s"><span>{{ s }}</span></template>
+  <template v-for="n in numbers" :key="n"><span>{{ n }}</span></template>
+  <template v-for="sy in symbols" :key="sy"><span>x</span></template>
+  <template v-for="item in tabs" :key="holder?.id"><span>{{ item.id }}</span></template>
+  <template v-for="item in tabs" :key="derived?.id"><span>{{ item.id }}</span></template>
+  <template v-for="item in tabs" :key="item.id" :id="item.id">
+    <span>{{ item.id }}</span>
+  </template>
+  <template v-if="flag" :key="tabs.length"><span>a</span></template>
+</template>

@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import type { Directive } from 'vue'
+const vTooltip: Directive<HTMLElement, string> = () => {}
+const user = { name: 'a' }
+</script>
+
+<template>
+  <div v-tooltip="user.title" />
+</template>

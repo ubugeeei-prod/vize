@@ -1,0 +1,15 @@
+<script setup lang="ts">
+import GenericAliases from './GenericAliases.vue'
+import PlainAliases from './PlainAliases.vue'
+
+const onPick = (value: 'x') => value
+</script>
+
+<template>
+  <GenericAliases name="x" @pick="onPick">
+    <template #default="{ item }">{{ item.toFixed() }}</template>
+  </GenericAliases>
+  <PlainAliases name="y">
+    <template #default="{ label }">{{ label.length }}</template>
+  </PlainAliases>
+</template>

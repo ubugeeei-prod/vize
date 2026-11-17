@@ -1,0 +1,16 @@
+<script setup lang="ts">
+import DefaultSlotChild from "./DefaultSlotChild.vue";
+import HeaderSlotChild from "./HeaderSlotChild.vue";
+import LibraryButton from "./LibraryButton";
+</script>
+
+<template>
+  <DefaultSlotChild>
+    <template #default="{ msg }">{{ msg }}</template>
+  </DefaultSlotChild>
+  <HeaderSlotChild>
+    <template #header="{ title }">{{ title }}</template>
+  </HeaderSlotChild>
+  <HeaderSlotChild />
+  <LibraryButton />
+</template>

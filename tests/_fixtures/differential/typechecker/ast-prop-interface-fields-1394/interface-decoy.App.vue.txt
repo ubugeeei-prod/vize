@@ -1,0 +1,15 @@
+<script setup lang="ts">
+// A real interface Props { decoy: never } lives further down.
+interface Props {
+  title: string;
+  meta: {
+    createdAt: number;
+    tags: string[];
+  };
+  lookup: Map<string, number>;
+  count?: number; // counts things } and quotes "}"
+}
+
+defineProps<Props>();
+</script>
+<template><div>{{ title }}{{ meta }}{{ lookup }}{{ count }}{{ decoy }}</div></template>

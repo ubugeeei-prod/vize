@@ -1,0 +1,6 @@
+<script lang="ts">
+import { defineComponent } from 'vue'
+const base = defineComponent({ props: { label: String } })
+export default defineComponent({ mixins: [base] })
+</script>
+<template><span /></template>

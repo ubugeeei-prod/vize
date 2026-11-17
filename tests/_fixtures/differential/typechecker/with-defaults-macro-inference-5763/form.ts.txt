@@ -1,0 +1,4 @@
+export interface FormFieldProps {
+  name?: string;
+  required?: boolean;
+}

@@ -1,0 +1,2 @@
+export type Pagination = { page: number; perPage: number; total: number }
+export type Project = { name: string; status: 'important' | 'archived' }

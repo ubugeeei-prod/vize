@@ -1,0 +1,7 @@
+<script setup lang="ts">
+import Child from './Child.vue'
+</script>
+
+<template>
+  <Child :transform="void 0, (value) => value.toUpperCase()" />
+</template>

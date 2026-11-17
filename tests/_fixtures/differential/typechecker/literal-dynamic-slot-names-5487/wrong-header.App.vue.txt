@@ -1,0 +1,21 @@
+<script setup lang="ts">
+import CmsListTable from './CmsListTable.vue';
+
+type User = { name: string; email: string };
+const users: User[] = [];
+
+function takesUser(value: User) {
+  return value.email;
+}
+function takesHeader(value: { key: number }) {
+  return value.key;
+}
+</script>
+
+<template>
+  <CmsListTable :items="users">
+    <template #[`item.name`]="{ item, header }">
+      {{ takesUser(item) }}{{ takesHeader(header) }}{{ item.name }}
+    </template>
+  </CmsListTable>
+</template>

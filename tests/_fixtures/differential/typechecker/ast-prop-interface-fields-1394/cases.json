@@ -1,0 +1,140 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 1394,
+  "regressionCommit": "b76d2f7b3d23c49f55a12f2a7ba41e553304da1f",
+  "sourceRevision": "b76d2f7b3d23c49f55a12f2a7ba41e553304da1f",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "local-interface-props-in-template",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "interface.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "comment-decoy-field-is-not-a-prop",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "interface-decoy.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 15,
+          "column": 63,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'decoy' does not exist on type 'Readonly<Props> & {} & { $: ComponentInternalInstance; $data: {}; $props: {}; $attrs: Attrs; $refs: Data; $slots: Readonly<InternalSlots>; ... 8 more ...; $watch: <T extends string | ((...args: any) => any)>(source: T, cb: ..., options?: WatchOptions<...> | undefined) => WatchStopHandle; }'."
+        }
+      ]
+    },
+    {
+      "id": "local-interface-props-from-parent",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "interface.App.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "Parent.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "local-interface-generic-field-mismatch",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "interface.App.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "Parent.invalid.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Parent.vue",
+          "line": 4,
+          "column": 64,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'Map<string, string>' is not assignable to type 'Map<string, number>'.\nType 'string' is not assignable to type 'number'."
+        }
+      ]
+    },
+    {
+      "id": "local-intersection-alias-props",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "intersection.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "local-intersection-alias-wrong-member",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "intersection-invalid.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 8,
+          "column": 22,
+          "severity": 1,
+          "code": 2551,
+          "message": "Property 'toFixed' does not exist on type 'string'. Did you mean 'fixed'?"
+        }
+      ]
+    }
+  ]
+}

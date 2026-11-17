@@ -1,0 +1,11 @@
+<script lang="ts">
+namespace Bare {
+  export const label = 'bare'
+}
+
+export default {
+    name: 'Namespaces',
+}
+</script>
+
+<template><div>{{ Bare.label }}</div></template>

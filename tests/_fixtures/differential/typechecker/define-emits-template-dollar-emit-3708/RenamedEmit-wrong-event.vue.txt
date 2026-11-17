@@ -1,0 +1,5 @@
+<script setup lang="ts">
+const dispatch = defineEmits<{ save: [] }>()
+</script>
+
+<template><button @click="$emit('saved')" /></template>

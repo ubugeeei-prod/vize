@@ -1,0 +1,10 @@
+<script lang="ts">
+export default {
+  name: "PagesChangePassword",
+  layout: "no-header",
+};
+</script>
+
+<template>
+  <main />
+</template>

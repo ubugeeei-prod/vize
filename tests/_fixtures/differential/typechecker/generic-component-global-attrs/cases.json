@@ -1,0 +1,74 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": null,
+  "regressionCommit": "d7796777839f961aa97d1a55397ad4e2d0372a31",
+  "sourceRevision": "d7796777839f961aa97d1a55397ad4e2d0372a31",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "closed-generic-global-html-attrs",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/GenericField.vue",
+          "source": "GenericField.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "global-attrs-only.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "closed-generic-unknown-attrs-rejected",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/GenericField.vue",
+          "source": "GenericField.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "Parent.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Parent.vue",
+          "line": 13,
+          "column": 47,
+          "severity": 1,
+          "code": 2353,
+          "message": "Object literal may only specify known properties, and '\"database\"' does not exist in type '$SetupProps & VNodeProps & AllowedComponentProps & ComponentCustomProps & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; ... 679 more ...; zoomAndPan?: unknown; } & { ...; }'."
+        },
+        {
+          "file": "src/Parent.vue",
+          "line": 14,
+          "column": 47,
+          "severity": 1,
+          "code": 2353,
+          "message": "Object literal may only specify known properties, and '\"depressed\"' does not exist in type '$SetupProps & VNodeProps & AllowedComponentProps & ComponentCustomProps & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; ... 679 more ...; zoomAndPan?: unknown; } & { ...; }'."
+        }
+      ]
+    }
+  ]
+}

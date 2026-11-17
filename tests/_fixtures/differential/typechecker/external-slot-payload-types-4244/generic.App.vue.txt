@@ -1,0 +1,45 @@
+<script setup lang="ts">
+import GenericList from './GenericList.vue';
+import UnconstrainedList from './UnconstrainedList.vue';
+
+type Block = { id: string; kind: 'text'; text: string } | { id: string; kind: 'image'; url: string };
+
+const blocks: Block[] = [];
+const untyped: any = null;
+
+function takesNumber(value: number) {
+  return value;
+}
+</script>
+
+<template>
+  <GenericList :items="blocks" label="ok">
+    <template #default="{ item, index }">
+      <span v-if="item.kind === 'text'">{{ item.text }}</span>
+      <span v-else>{{ item.url }}</span>
+      <span>{{ takesNumber(index) }}</span>
+    </template>
+    <template #header="{ total }">{{ takesNumber(total) }}</template>
+    <template #footer>done</template>
+  </GenericList>
+
+  <GenericList :items="blocks" label="alias">
+    <template #default="{ item: row }">{{ row.kind }}</template>
+  </GenericList>
+
+  <GenericList :items="blocks" label="outer">
+    <template #default="{ item: outer }">
+      <GenericList :items="blocks" label="inner">
+        <template #default="{ item: inner }">{{ outer.kind }}{{ inner.kind }}</template>
+      </GenericList>
+    </template>
+  </GenericList>
+
+  <GenericList :items="untyped" label="degraded">
+    <template #default="{ item }">{{ item.kind }}</template>
+  </GenericList>
+
+  <UnconstrainedList :events="untyped">
+    <template #row="{ event }">{{ event.id }}</template>
+  </UnconstrainedList>
+</template>

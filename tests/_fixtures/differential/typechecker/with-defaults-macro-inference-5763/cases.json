@@ -1,0 +1,162 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 5763,
+  "regressionCommit": "91754f691b70884a7b1723fb723388485b2ed54b",
+  "sourceRevision": "91754f691b70884a7b1723fb723388485b2ed54b",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "reka-generic-vmodel-expect-error-consumed",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/form.ts",
+          "source": "form.ts.txt"
+        },
+        {
+          "file": "src/Foo.vue",
+          "source": "reka.Foo.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "reka-generic-vmodel-unsuppressed",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/form.ts",
+          "source": "form.ts.txt"
+        },
+        {
+          "file": "src/Foo.vue",
+          "source": "reka-unsuppressed.Foo.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Foo.vue",
+          "line": 49,
+          "column": 3,
+          "severity": 1,
+          "code": 2769,
+          "message": "No overload matches this call.\nThe last overload gave the following error.\nType 'T[] | NonNullable<T> | undefined' is not assignable to type '(Readonly<$MappedOmit<LooseRequired<Props<T>>, \"modelValue\" | \"open\">> & { readonly modelValue: T | T[] | undefined; readonly open: boolean | undefined; } & { readonly [K in \"defaultOpen\" | ... 4 more ... | Extract<...>]-?: ...; })[\"modelValue\"] | undefined'.\nType 'T[]' is not assignable to type '((T | T[]) & boolean) | undefined'.\nType 'T[]' is not assignable to type 'T[] & true'.\nType 'T[]' is not assignable to type 'true'."
+        },
+        {
+          "file": "src/Foo.vue",
+          "line": 50,
+          "column": 3,
+          "severity": 1,
+          "code": 2769,
+          "message": "No overload matches this call.\nThe last overload gave the following error.\nType 'false' is not assignable to type 'true'."
+        }
+      ]
+    },
+    {
+      "id": "template-props-default-resolved",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "standard.tsconfig.json.txt"
+        },
+        {
+          "file": "src/test.vue",
+          "source": "default-resolved.test.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "template-undefaulted-prop-read",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "standard.tsconfig.json.txt"
+        },
+        {
+          "file": "src/test.vue",
+          "source": "undefaulted-read.test.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/test.vue",
+          "line": 4,
+          "column": 40,
+          "severity": 1,
+          "code": 18048,
+          "message": "'props.raw' is possibly 'undefined'."
+        }
+      ]
+    },
+    {
+      "id": "direct-template-prop-narrowed",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "standard.tsconfig.json.txt"
+        },
+        {
+          "file": "src/test.vue",
+          "source": "narrowed.test.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "never-prop-not-boolean",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "standard.tsconfig.json.txt"
+        },
+        {
+          "file": "src/LinkBase.vue",
+          "source": "LinkBase.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "with-defaults-props-readonly",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "standard.tsconfig.json.txt"
+        },
+        {
+          "file": "src/LinkBase.vue",
+          "source": "readonly-write.LinkBase.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/LinkBase.vue",
+          "line": 13,
+          "column": 7,
+          "severity": 1,
+          "code": 2540,
+          "message": "Cannot assign to 'to' because it is a read-only property."
+        }
+      ]
+    }
+  ]
+}

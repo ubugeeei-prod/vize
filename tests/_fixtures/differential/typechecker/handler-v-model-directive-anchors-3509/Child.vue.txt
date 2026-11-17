@@ -1,0 +1,5 @@
+<script setup lang="ts">
+defineEmits<{ pick: [value: number]; done: [] }>()
+</script>
+
+<template><span /></template>

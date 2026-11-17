@@ -1,0 +1,19 @@
+<script setup lang="ts">
+import Field from './Field.vue'
+
+type FormEntry = {
+  hidden?: (values: Record<string, any>) => boolean
+  type: 'text' | 'file'
+}
+
+defineProps<{ form: Record<string, FormEntry> }>()
+
+const values = defineModel<Record<string, number>>({ required: true })
+</script>
+
+<template>
+  <template v-for="v, k in form" :key="k">
+    <Field v-if="!v.hidden?.(values) && v.type === 'text'" v-model="values[k]" />
+    <button v-else @click="values[k] = 'file'">set</button>
+  </template>
+</template>

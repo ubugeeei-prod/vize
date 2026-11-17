@@ -1,0 +1,5 @@
+<script setup lang="ts">
+defineProps<{ modelValue: unknown }>()
+defineEmits<{ "update:modelValue": [value: unknown] }>()
+</script>
+<template><input /></template>

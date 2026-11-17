@@ -1,0 +1,1 @@
+export type UnwrapArray<T> = T extends ReadonlyArray<infer U> ? U : T

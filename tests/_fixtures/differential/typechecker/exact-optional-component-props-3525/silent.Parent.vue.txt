@@ -1,0 +1,12 @@
+<script setup lang="ts">
+import Child from './Child.vue'
+const maybe: string | undefined = undefined
+const orNull: string | null = null
+</script>
+
+<template>
+  <Child />
+  <Child :label="'ok'" class="a" style="color: red" data-id="1" />
+  <Child :nullish="orNull" />
+  <Child :explicit="maybe" />
+</template>

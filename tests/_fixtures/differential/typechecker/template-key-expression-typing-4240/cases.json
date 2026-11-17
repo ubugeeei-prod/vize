@@ -1,0 +1,194 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 4240,
+  "regressionCommit": "22c638a00bf228aeea0e1b0fe2b9fa70b876a261",
+  "sourceRevision": "22c638a00bf228aeea0e1b0fe2b9fa70b876a261",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "key-expression-members-valid",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Members.vue",
+          "source": "valid.Members.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "key-expression-members-checked-inside-fragment",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Members.vue",
+          "source": "Members.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Members.vue",
+          "line": 6,
+          "column": 41,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'missing' does not exist on type '{ id: number; }'."
+        },
+        {
+          "file": "src/Members.vue",
+          "line": 7,
+          "column": 46,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'missing' does not exist on type '{ id: number; }'."
+        }
+      ]
+    },
+    {
+      "id": "template-fragment-keys",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "fragment.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 28,
+          "column": 26,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '{ id: number; }[]' is not assignable to type 'PropertyKey | undefined'."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 14,
+          "column": 40,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'string | null' is not assignable to type 'PropertyKey | undefined'.\nType 'null' is not assignable to type 'PropertyKey | undefined'."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 17,
+          "column": 37,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '{ id: number; }' is not assignable to type 'PropertyKey | undefined'."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 23,
+          "column": 35,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '{ id: number; } | null' is not assignable to type 'PropertyKey | undefined'.\nType 'null' is not assignable to type 'PropertyKey | undefined'."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 24,
+          "column": 35,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '{ id: number; } | null' is not assignable to type 'PropertyKey | undefined'.\nType 'null' is not assignable to type 'PropertyKey | undefined'."
+        }
+      ]
+    },
+    {
+      "id": "element-keys-reserved-prop-contract",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Elements.vue",
+          "source": "Elements.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Elements.vue",
+          "line": 19,
+          "column": 14,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type 'string'."
+        },
+        {
+          "file": "src/Elements.vue",
+          "line": 12,
+          "column": 35,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'string | null' is not assignable to type 'PropertyKey | undefined'.\nType 'null' is not assignable to type 'PropertyKey | undefined'."
+        },
+        {
+          "file": "src/Elements.vue",
+          "line": 13,
+          "column": 32,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '{ id: number; }' is not assignable to type 'PropertyKey | undefined'."
+        },
+        {
+          "file": "src/Elements.vue",
+          "line": 14,
+          "column": 30,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '{ id: number; } | null' is not assignable to type 'PropertyKey | undefined'.\nType 'null' is not assignable to type 'PropertyKey | undefined'."
+        },
+        {
+          "file": "src/Elements.vue",
+          "line": 15,
+          "column": 30,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '{ id: number; } | null' is not assignable to type 'PropertyKey | undefined'.\nType 'null' is not assignable to type 'PropertyKey | undefined'."
+        }
+      ]
+    },
+    {
+      "id": "component-keys-outside-props-and-events",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        },
+        {
+          "file": "src/Component.vue",
+          "source": "Component.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

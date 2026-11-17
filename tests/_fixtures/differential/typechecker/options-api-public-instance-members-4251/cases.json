@@ -1,0 +1,228 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 4251,
+  "regressionCommit": "97898a1a07aa4fd4d3f3ab413e8852ef1b541ec8",
+  "sourceRevision": "97898a1a07aa4fd4d3f3ab413e8852ef1b541ec8",
+  "checkerOptions": {
+    "optionsApi": true
+  },
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "source-lane-project",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Options.vue",
+          "source": "Options.vue.txt"
+        },
+        {
+          "file": "src/Data.vue",
+          "source": "Data.vue.txt"
+        },
+        {
+          "file": "src/Computed.vue",
+          "source": "Computed.vue.txt"
+        },
+        {
+          "file": "src/Methods.vue",
+          "source": "Methods.vue.txt"
+        },
+        {
+          "file": "src/PropsEmits.vue",
+          "source": "PropsEmits.vue.txt"
+        },
+        {
+          "file": "src/SetupReturn.vue",
+          "source": "SetupReturn.vue.txt"
+        },
+        {
+          "file": "src/Inherited.vue",
+          "source": "Inherited.vue.txt"
+        },
+        {
+          "file": "src/base.ts",
+          "source": "base.ts.txt"
+        },
+        {
+          "file": "src/greeter.ts",
+          "source": "greeter.ts.txt"
+        },
+        {
+          "file": "src/Consumer.ts",
+          "source": "Consumer.ts.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "Parent.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "source-lane-member-matrix",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Options.vue",
+          "source": "Options.vue.txt"
+        },
+        {
+          "file": "src/Data.vue",
+          "source": "Data.vue.txt"
+        },
+        {
+          "file": "src/Computed.vue",
+          "source": "Computed.vue.txt"
+        },
+        {
+          "file": "src/Methods.vue",
+          "source": "Methods.vue.txt"
+        },
+        {
+          "file": "src/PropsEmits.vue",
+          "source": "PropsEmits.vue.txt"
+        },
+        {
+          "file": "src/SetupReturn.vue",
+          "source": "SetupReturn.vue.txt"
+        },
+        {
+          "file": "src/Inherited.vue",
+          "source": "Inherited.vue.txt"
+        },
+        {
+          "file": "src/base.ts",
+          "source": "base.ts.txt"
+        },
+        {
+          "file": "src/greeter.ts",
+          "source": "greeter.ts.txt"
+        },
+        {
+          "file": "src/Verify.tsx",
+          "source": "Verify.tsx.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "source-lane-script-consumer-wrong-member-type",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Options.vue",
+          "source": "Options.vue.txt"
+        },
+        {
+          "file": "src/Data.vue",
+          "source": "Data.vue.txt"
+        },
+        {
+          "file": "src/Computed.vue",
+          "source": "Computed.vue.txt"
+        },
+        {
+          "file": "src/Methods.vue",
+          "source": "Methods.vue.txt"
+        },
+        {
+          "file": "src/PropsEmits.vue",
+          "source": "PropsEmits.vue.txt"
+        },
+        {
+          "file": "src/SetupReturn.vue",
+          "source": "SetupReturn.vue.txt"
+        },
+        {
+          "file": "src/Inherited.vue",
+          "source": "Inherited.vue.txt"
+        },
+        {
+          "file": "src/base.ts",
+          "source": "base.ts.txt"
+        },
+        {
+          "file": "src/greeter.ts",
+          "source": "greeter.ts.txt"
+        },
+        {
+          "file": "src/Consumer.ts",
+          "source": "wrong.Consumer.ts.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "Parent.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Consumer.ts",
+          "line": 18,
+          "column": 14,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type 'string'."
+        }
+      ]
+    },
+    {
+      "id": "options-template-data-binding",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Options.vue",
+          "source": "Options.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "options-template-data-binding-wrong-member",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Options.vue",
+          "source": "wrong.Options.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Options.vue",
+          "line": 9,
+          "column": 20,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'toUpperCase' does not exist on type 'number'."
+        }
+      ]
+    }
+  ]
+}

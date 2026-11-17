@@ -1,0 +1,36 @@
+<script setup lang="ts">
+import { useTemplateRef } from 'vue'
+import Public from './Public.vue'
+import Callable from './Callable.vue'
+import RuntimeObject from './RuntimeObject.vue'
+import Generic from './Generic.vue'
+
+const publicRef = useTemplateRef<InstanceType<typeof Public>>('public')
+const callableRef = useTemplateRef<InstanceType<typeof Callable>>('callable')
+const runtimeObjectRef = useTemplateRef<InstanceType<typeof RuntimeObject>>('runtime-object')
+const genericRef = useTemplateRef<InstanceType<typeof Generic>>('generic')
+
+publicRef.value?.$emit('select', 'ok')
+callableRef.value?.$emit('commit', 'ok')
+runtimeObjectRef.value?.$emit('save', 'ok')
+genericRef.value?.$emit('pick', 'ok')
+publicRef.value?.close(true)
+
+// @ts-expect-error template-ref record emit payload stays exact
+publicRef.value?.$emit('select', 1)
+// @ts-expect-error template-ref callable payload stays exact
+callableRef.value?.$emit('commit', 1)
+// @ts-expect-error template-ref runtime payload stays exact
+runtimeObjectRef.value?.$emit('save', 1)
+// @ts-expect-error template-ref generic payload stays exact
+genericRef.value?.$emit('pick', 1)
+// @ts-expect-error template-ref exposed member stays exact
+publicRef.value?.close('yes')
+</script>
+
+<template>
+  <Public ref="public" :model-value="1" some-value="ok" />
+  <Callable ref="callable" />
+  <RuntimeObject ref="runtime-object" />
+  <Generic ref="generic" item="ok" />
+</template>

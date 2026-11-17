@@ -1,0 +1,14 @@
+<script setup lang="ts">
+import { fetchData, items } from './api'
+
+const message = "await should not force async setup"
+// await should not force async setup
+async function load() {
+    const loaded: string = await fetchData()
+    void loaded
+}
+const run = async () => {
+    await fetchData()
+}
+</script>
+<template><div>{{ message }}{{ load }}{{ run }}</div></template>

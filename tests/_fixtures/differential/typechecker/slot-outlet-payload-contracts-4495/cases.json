@@ -1,0 +1,149 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 4495,
+  "regressionCommit": "8ab7fd93f0072880f46ea7fce8ac9f998922feed",
+  "sourceRevision": "8ab7fd93f0072880f46ea7fce8ac9f998922feed",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "declared-slot-payloads-clean",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/env.d.ts",
+          "source": "env.d.ts.txt"
+        },
+        {
+          "file": "src/DefaultSlotChild.vue",
+          "source": "DefaultSlotChild.vue.txt"
+        },
+        {
+          "file": "src/HeaderSlotChild.vue",
+          "source": "HeaderSlotChild.vue.txt"
+        },
+        {
+          "file": "src/LibraryButton.ts",
+          "source": "LibraryButton.ts.txt"
+        },
+        {
+          "file": "src/Clean.vue",
+          "source": "Clean.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "unknown-slot-payload-member",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/env.d.ts",
+          "source": "env.d.ts.txt"
+        },
+        {
+          "file": "src/DefaultSlotChild.vue",
+          "source": "DefaultSlotChild.vue.txt"
+        },
+        {
+          "file": "src/UnknownSlotProp.vue",
+          "source": "UnknownSlotProp.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/UnknownSlotProp.vue",
+          "line": 7,
+          "column": 27,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'missing' does not exist on type '{ msg: string; }'."
+        }
+      ]
+    },
+    {
+      "id": "omitted-declared-slot",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/env.d.ts",
+          "source": "env.d.ts.txt"
+        },
+        {
+          "file": "src/HeaderSlotChild.vue",
+          "source": "HeaderSlotChild.vue.txt"
+        },
+        {
+          "file": "src/MissingRequiredSlot.vue",
+          "source": "MissingRequiredSlot.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "open-slot-index-signature",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "std.tsconfig.json.txt"
+        },
+        {
+          "file": "src/OpenSlots.vue",
+          "source": "OpenSlots.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "open-slots.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "open-slot-index-signature-wrong-payload-use",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "std.tsconfig.json.txt"
+        },
+        {
+          "file": "src/OpenSlots.vue",
+          "source": "OpenSlots.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "open-slots-wrong.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 11,
+          "column": 50,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type 'string' is not assignable to parameter of type 'number'."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+declare module "pkg-widget" {
+  const PkgWidget: new () => { dismiss(): void };
+  export default PkgWidget;
+}

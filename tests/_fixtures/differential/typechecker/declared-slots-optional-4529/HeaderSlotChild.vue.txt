@@ -1,0 +1,9 @@
+<script setup lang="ts">
+defineSlots<{
+  header(props: { title: string }): unknown;
+}>();
+</script>
+
+<template>
+  <slot name="header" :title="'Hi'" />
+</template>

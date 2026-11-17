@@ -1,0 +1,7 @@
+<script lang="ts">
+export module Legacy {
+  export const a = 1;
+}
+
+export default { name: "Legacy" };
+</script>

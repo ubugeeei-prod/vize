@@ -1,0 +1,14 @@
+<script setup lang="ts">
+function afterEnter(el: Element) { el.getBoundingClientRect() }
+function afterLeave(el: Element) { el.getBoundingClientRect() }
+function wrongTransition(el: string) { el.toUpperCase() }
+</script>
+
+<template>
+  <Transition
+    @afterEnter="afterEnter"
+    @afterLeave="afterLeave"
+    @beforeEnter="(el) => el.missing"
+    @beforeLeave="wrongTransition"
+  />
+</template>

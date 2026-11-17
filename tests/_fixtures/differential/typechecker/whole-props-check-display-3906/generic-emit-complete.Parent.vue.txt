@@ -1,0 +1,11 @@
+<script setup lang="ts">
+import { AnyEmitChild, GenericFirstCallbackChild, GenericLastCallbackChild, TypedOnlyChild } from './components'
+const stringHandler = (_value: string) => {}
+</script>
+
+<template>
+  <GenericFirstCallbackChild :count="1" :on-save="stringHandler" />
+  <GenericLastCallbackChild :count="1" :on-save="stringHandler" />
+  <AnyEmitChild :count="1" :on-save="stringHandler" />
+  <TypedOnlyChild :count="1" :on-save="stringHandler" />
+</template>

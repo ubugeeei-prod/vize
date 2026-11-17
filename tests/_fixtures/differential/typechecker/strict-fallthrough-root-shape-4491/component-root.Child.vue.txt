@@ -1,0 +1,6 @@
+<script setup lang="ts">
+import BaseInput from "./BaseInput.vue";
+
+defineProps<{ title: string }>();
+</script>
+<template><BaseInput /></template>

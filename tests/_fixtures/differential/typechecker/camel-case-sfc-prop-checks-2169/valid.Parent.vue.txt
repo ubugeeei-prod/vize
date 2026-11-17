@@ -1,0 +1,10 @@
+<script setup lang="ts">
+import Child from "./Child.vue";
+
+const right: number = 42;
+</script>
+
+<template>
+  <Child :countTotal="right" />
+  <Child :count-total="right" />
+</template>

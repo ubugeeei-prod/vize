@@ -1,0 +1,23 @@
+<script setup lang="ts" generic="T extends string = 'a'">
+const { value = undefined } = defineProps<{
+  value?: T;
+}>();
+
+const emit = defineEmits<{
+  "update:value": [value: T];
+}>();
+
+defineSlots<{
+  default: (props: { value: T | undefined }) => unknown;
+}>();
+
+function onClick(): void {
+  if (value !== undefined) emit("update:value", value);
+}
+</script>
+
+<template>
+  <button type="button" @click="onClick">
+    <slot :value="value" />
+  </button>
+</template>

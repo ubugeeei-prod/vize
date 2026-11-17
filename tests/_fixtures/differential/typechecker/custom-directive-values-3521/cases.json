@@ -1,0 +1,109 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 3521,
+  "regressionCommit": "375b0fb5b0d04af9014d81ef865d17dba02f3b0a",
+  "sourceRevision": "375b0fb5b0d04af9014d81ef865d17dba02f3b0a",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "typed-directive-value-matches",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "value-match.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "typed-directive-value-mismatch",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "value-mismatch.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 7,
+          "column": 17,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'string' is not assignable to type 'number'."
+        }
+      ]
+    },
+    {
+      "id": "unresolvable-and-untyped-directives",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "unresolvable-untyped.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "directive-value-member-valid",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "member-valid.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "directive-value-missing-member",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "member-error.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 8,
+          "column": 24,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'title' does not exist on type '{ name: string; }'."
+        }
+      ]
+    }
+  ]
+}

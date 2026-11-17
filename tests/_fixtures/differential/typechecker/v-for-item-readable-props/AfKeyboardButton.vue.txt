@@ -1,0 +1,14 @@
+<script setup lang="ts">
+export type KeyboardButtonType = "function" | "input" | "submit" | "system";
+
+defineProps<{
+  keyType?: KeyboardButtonType;
+  innerHtml?: string;
+  width?: string;
+  longPress?: boolean;
+}>();
+</script>
+
+<template>
+  <button><slot /></button>
+</template>

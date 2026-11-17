@@ -1,0 +1,92 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": null,
+  "regressionCommit": "f37a2d6764892f711d77f3cdf1c57d75a067e735",
+  "sourceRevision": "f37a2d6764892f711d77f3cdf1c57d75a067e735",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "type-only-imports-in-indexed-alias",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "valid.App.vue.txt"
+        },
+        {
+          "file": "src/schema.ts",
+          "source": "schema.ts.txt"
+        },
+        {
+          "file": "src/types.ts",
+          "source": "types.ts.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "type-only-import-missing-indexed-key",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "invalid.App.vue.txt"
+        },
+        {
+          "file": "src/schema.ts",
+          "source": "schema.ts.txt"
+        },
+        {
+          "file": "src/types.ts",
+          "source": "types.ts.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 6,
+          "column": 37,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'missingHistories' does not exist on type '{ studyHistories: { id: string; minutes: number; }[]; }'."
+        }
+      ]
+    },
+    {
+      "id": "typeof-root-value-import",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "typeof-root.App.vue.txt"
+        },
+        {
+          "file": "src/defaults.ts",
+          "source": "defaults.ts.txt"
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

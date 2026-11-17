@@ -1,0 +1,19 @@
+<script lang="ts">
+export default {
+  data() {
+    return {
+      count: 1,
+      label: 'ready',
+      flag: true,
+      nested: { inner: { depth: 2 } },
+      list: [1, 2, 3],
+      pair: ['a', 1] as [string, number],
+      widened: 'text' as string,
+      literal: 'exact' as const,
+      maybe: null as string | null,
+    };
+  },
+};
+</script>
+
+<template>{{ count.toFixed(0) }}{{ label }}{{ nested.inner.depth }}{{ list.length }}</template>

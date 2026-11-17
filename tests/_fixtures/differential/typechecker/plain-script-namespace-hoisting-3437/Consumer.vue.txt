@@ -1,0 +1,39 @@
+<script setup lang="ts">
+import {
+  build,
+  captured,
+  Config,
+  Cursor,
+  Derived,
+  Nest,
+  Twice,
+} from "../components/Namespaces.vue";
+
+// Namespace as a value and as a type container.
+const spacing: number = Config.spacing;
+const kind: Config.Kind = "wide";
+const depth: number = Nest.Inner.depth;
+
+// Both blocks of a merged namespace have to survive the relocation.
+const one: number = Twice.one;
+const two: Twice.Two = "s";
+
+// A namespace merged with a class keeps the class's own meanings.
+const cursor: Cursor = new Cursor();
+const anchor: Cursor.Anchor = cursor.line;
+
+// A namespace merged with a function keeps the call signature.
+const built: number = build();
+const version: number = build.version;
+
+// A namespace body reading a plain-script binding still type-checks.
+const total: number = Derived.total;
+const capturedValue: number = captured;
+</script>
+
+<template>
+  <div>
+    {{ spacing }} {{ kind }} {{ depth }} {{ one }} {{ two }} {{ cursor }}
+    {{ anchor }} {{ built }} {{ version }} {{ total }} {{ capturedValue }}
+  </div>
+</template>

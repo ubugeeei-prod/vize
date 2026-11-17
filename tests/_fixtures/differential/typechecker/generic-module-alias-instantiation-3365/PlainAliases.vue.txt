@@ -1,0 +1,9 @@
+<script setup lang="ts" generic="T extends string = 'fallback'">
+defineProps<{ name: T }>();
+defineSlots<{ default(props: { label: string }): unknown }>();
+defineExpose<{ ready: boolean }>();
+</script>
+
+<template>
+  <div><slot label="x" /></div>
+</template>

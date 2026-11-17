@@ -1,0 +1,6 @@
+<script setup lang="ts">
+const emit = defineEmits<{ ready: [] }>()
+emit('ready')
+</script>
+
+<template><main /></template>

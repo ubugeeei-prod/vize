@@ -1,0 +1,15 @@
+<script setup lang="ts">
+import type { Pagination } from './types'
+
+defineProps<{
+  modelValue?: string
+  isActive?: boolean
+  pagination: Pagination
+}>()
+</script>
+
+<template>
+  <div>{{ $props.isActive }}</div>
+  <div>{{ $props.pagination.page }}</div>
+  <div>{{ $props.modelValue }}</div>
+</template>

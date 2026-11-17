@@ -1,0 +1,4 @@
+<script setup lang="ts">
+import Child from "./Child.vue";
+</script>
+<template><Child title="ok" :items="[1, 2]" id="outer" /></template>

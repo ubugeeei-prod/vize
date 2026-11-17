@@ -1,0 +1,21 @@
+<script lang="ts">
+import { computed, defineComponent, ref } from 'vue';
+
+export default defineComponent({
+  setup() {
+    const total = ref(0);
+    const doubledTotal = computed(() => total.value * 2);
+    return { total, doubledTotal };
+  },
+  data() {
+    return { seed: 'setup' };
+  },
+  methods: {
+    bump(step: number): void {
+      this.total += step;
+    },
+  },
+});
+</script>
+
+<template>{{ total }}{{ doubledTotal }}{{ seed }}</template>

@@ -1,0 +1,25 @@
+<script lang="ts">
+export default {
+  data() {
+    return { count: 2 };
+  },
+  computed: {
+    doubled(): number {
+      return this.count * 2;
+    },
+    quadrupled(): number {
+      return this.doubled * 2;
+    },
+    label: {
+      get(): string {
+        return String(this.count);
+      },
+      set(next: string) {
+        this.count = Number(next);
+      },
+    },
+  },
+};
+</script>
+
+<template>{{ doubled }}{{ quadrupled }}{{ label }}</template>

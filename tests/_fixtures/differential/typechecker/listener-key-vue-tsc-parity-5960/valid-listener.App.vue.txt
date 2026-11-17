@@ -1,0 +1,12 @@
+<script setup lang="ts">
+const props = {
+  qSliderProps: {
+    modelValue: 1 as number | null,
+    "onUpdate:modelValue": (value: number | null) => { value?.toFixed() },
+    stringOnly: (value: string) => value.toUpperCase(),
+  }
+}
+</script>
+<template>
+  <QSlider :modelValue="props.qSliderProps.modelValue" @update:modelValue="props.qSliderProps['onUpdate:modelValue']" />
+</template>

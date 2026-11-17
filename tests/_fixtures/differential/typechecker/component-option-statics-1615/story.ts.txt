@@ -1,0 +1,11 @@
+import App from './App.vue'
+
+type StorybookLikeMeta<C extends import('vue').ConcreteComponent> = {
+  component: C
+}
+
+const meta = {
+  component: App,
+} satisfies StorybookLikeMeta<typeof App>
+
+void meta

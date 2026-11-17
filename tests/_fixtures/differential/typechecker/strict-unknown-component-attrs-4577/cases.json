@@ -1,0 +1,412 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 4577,
+  "regressionCommit": "4b5cbe23cf33aca6b7f8aad1c3a17b365077cd75",
+  "sourceRevision": "4b5cbe23cf33aca6b7f8aad1c3a17b365077cd75",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "fallthrough-mono-ok",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "fallthrough-mono-ok.App.vue.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "fallthrough-mono-ok.Child.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "fallthrough-data-aria-camel-ok",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "fallthrough-data-aria-camel-ok.App.vue.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "fallthrough-data-aria-camel-ok.Child.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "fallthrough-mono-false-bad",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "fallthrough-mono-false-bad.App.vue.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "fallthrough-mono-false-bad.Child.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "fallthrough-mono-false-native-binding-bad",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "fallthrough-mono-false-native-binding-bad.App.vue.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "fallthrough-mono-false-native-binding-bad.Child.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "fallthrough-options-api-inherit-attrs-false-bad",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "fallthrough-options-api-inherit-attrs-false-bad.App.vue.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "fallthrough-options-api-inherit-attrs-false-bad.Child.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Child.vue",
+          "line": 11,
+          "column": 32,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'title' does not exist on the component instance."
+        }
+      ]
+    },
+    {
+      "id": "fallthrough-multi-bad",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "fallthrough-options-api-inherit-attrs-false-bad.App.vue.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "fallthrough-multi-bad.Child.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "fallthrough-multi-false-bad",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "fallthrough-options-api-inherit-attrs-false-bad.App.vue.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "fallthrough-multi-false-bad.Child.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "fallthrough-native-type-bad",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "fallthrough-mono-false-native-binding-bad.App.vue.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "fallthrough-data-aria-camel-ok.Child.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 4,
+          "column": 30,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '\"nope\"' is not assignable to type 'Booleanish | undefined'."
+        }
+      ]
+    },
+    {
+      "id": "fallthrough-vif-both-mono-ok",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "fallthrough-vif-both-mono-ok.App.vue.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "fallthrough-vif-both-mono-ok.Child.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "fallthrough-vif-both-mono-false-bad",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "fallthrough-vif-both-mono-ok.App.vue.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "fallthrough-vif-both-mono-false-bad.Child.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "fallthrough-vif-mono-multi-bad",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "fallthrough-vif-both-mono-ok.App.vue.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "fallthrough-vif-mono-multi-bad.Child.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "fallthrough-root-vfor-bad",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "fallthrough-root-vfor-bad.App.vue.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "fallthrough-root-vfor-bad.Child.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "fallthrough-template-root-vfor-bad",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "fallthrough-root-vfor-bad.App.vue.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "fallthrough-template-root-vfor-bad.Child.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "fallthrough-vif-static-ok",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "fallthrough-options-api-inherit-attrs-false-bad.App.vue.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "fallthrough-vif-static-ok.Child.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "fallthrough-vif-elseif-static-ok",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "fallthrough-vif-elseif-static-ok.App.vue.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "fallthrough-vif-elseif-static-ok.Child.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "fallthrough-vif-static-multi-bad",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "fallthrough-options-api-inherit-attrs-false-bad.App.vue.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "fallthrough-vif-static-multi-bad.Child.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "fallthrough-vif-static-prop-ok",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "fallthrough-vif-static-prop-ok.App.vue.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "fallthrough-vif-static-prop-ok.Child.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "fallthrough-component-root-open",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "component-root-open.App.vue.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "component-root-open.Child.vue.txt"
+        },
+        {
+          "file": "src/BaseInput.vue",
+          "source": "component-root-open.BaseInput.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "explicit-nested-attrs-forwarding-ok",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "explicit-attrs.App.vue.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "explicit-attrs.Child.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "explicit-nested-attrs-forwarding-value-bad",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "explicit-attrs-bad.App.vue.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "explicit-attrs.Child.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 4,
+          "column": 30,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type 'string'."
+        }
+      ]
+    }
+  ]
+}

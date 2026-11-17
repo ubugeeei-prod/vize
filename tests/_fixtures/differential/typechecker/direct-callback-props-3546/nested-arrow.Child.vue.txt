@@ -1,0 +1,5 @@
+<script setup lang="ts" generic="T">
+defineProps<{ value: T; apply: (fn: (value: T) => T, value: T) => T }>()
+</script>
+
+<template><span /></template>

@@ -1,0 +1,10 @@
+<script setup lang="ts">
+import Child from './Child.vue'
+const buttons: { text: string | null }[] = []
+const tabs: { id: number }[] = []
+</script>
+
+<template>
+  <Child v-for="button in buttons" :key="button.text" label="a" />
+  <Child v-for="option in tabs" :key="option" label="b" />
+</template>

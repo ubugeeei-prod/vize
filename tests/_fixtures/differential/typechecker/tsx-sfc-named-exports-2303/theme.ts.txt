@@ -1,0 +1,9 @@
+import type { RegisteredWidgetConfig } from "./register-widget";
+
+export const widgetTheme: RegisteredWidgetConfig = {
+  slots: {
+    root: ({ size }) => {
+      return size === "small" ? "text-sm" : "text-lg";
+    },
+  },
+};

@@ -1,0 +1,108 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": null,
+  "regressionCommit": "be564bc1b423bcc304e9d11a868467c82f0a526d",
+  "sourceRevision": "be564bc1b423bcc304e9d11a868467c82f0a526d",
+  "checkerOptions": {
+    "optionsApi": true
+  },
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "spread-only-computed-no-unused-alias",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "node_modules/pinia/package.json",
+          "source": "pinia.package.json.txt"
+        },
+        {
+          "file": "node_modules/pinia/index.d.ts",
+          "source": "pinia.index.d.ts.txt"
+        },
+        {
+          "file": "src/SpreadOnly.vue",
+          "source": "SpreadOnly.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "spread-only-computed-authored-unused-local",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "node_modules/pinia/package.json",
+          "source": "pinia.package.json.txt"
+        },
+        {
+          "file": "node_modules/pinia/index.d.ts",
+          "source": "pinia.index.d.ts.txt"
+        },
+        {
+          "file": "src/SpreadOnly.vue",
+          "source": "invalid.SpreadOnly.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/SpreadOnly.vue",
+          "line": 12,
+          "column": 7,
+          "severity": 1,
+          "code": 6133,
+          "message": "'unusedLocal' is declared but its value is never read."
+        }
+      ]
+    },
+    {
+      "id": "spread-only-computed-wrong-member-use",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "node_modules/pinia/package.json",
+          "source": "pinia.package.json.txt"
+        },
+        {
+          "file": "node_modules/pinia/index.d.ts",
+          "source": "pinia.index.d.ts.txt"
+        },
+        {
+          "file": "src/SpreadOnly.vue",
+          "source": "invalid-template.SpreadOnly.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/SpreadOnly.vue",
+          "line": 20,
+          "column": 17,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'toFixed' does not exist on type 'boolean'."
+        }
+      ]
+    }
+  ]
+}

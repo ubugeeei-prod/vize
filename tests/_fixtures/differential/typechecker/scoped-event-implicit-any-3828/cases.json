@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 3828,
+  "regressionCommit": "7b0b4adb66ff112a03ecf4da57641214c01f04d7",
+  "sourceRevision": "7b0b4adb66ff112a03ecf4da57641214c01f04d7",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "unresolved-ambient-event-slot-name-collision-implicit-any",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/global-components.d.ts",
+          "source": "global-components.d.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "implicit-any.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 2,
+          "column": 55,
+          "severity": 1,
+          "code": 7006,
+          "message": "Parameter 'result' implicitly has an 'any' type."
+        }
+      ]
+    },
+    {
+      "id": "unresolved-ambient-event-annotated-parameter",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/global-components.d.ts",
+          "source": "global-components.d.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "annotated.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

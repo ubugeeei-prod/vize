@@ -1,0 +1,14 @@
+<script setup lang="ts">
+import { ref } from "vue";
+import MkModalWindow from "./MkModalWindow.vue";
+
+const modal = ref<typeof MkModalWindow | null>(null);
+
+function onClose(): void {
+  modal.value?.close();
+}
+</script>
+
+<template>
+  <MkModalWindow ref="modal" @click="onClose" />
+</template>

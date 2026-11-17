@@ -1,0 +1,7 @@
+<script setup lang="ts">
+const disabledFlag: boolean = true;
+</script>
+
+<template>
+  <button type="button" :disabled="disabledFlag">go</button>
+</template>

@@ -1,0 +1,80 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 5672,
+  "regressionCommit": "c220f47b65134eee36851c7841b1e8d5567eafe4",
+  "sourceRevision": "c220f47b65134eee36851c7841b1e8d5567eafe4",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "standard-vue-template-context",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "standard.tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "alias-without-public-instance",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "types/vue-alias.d.ts",
+          "source": "vue-alias.d.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "alias-without-public-instance-wrong-assignment",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "types/vue-alias.d.ts",
+          "source": "vue-alias.d.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "wrong-assignment.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 7,
+          "column": 41,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'string' is not assignable to type 'number'."
+        }
+      ]
+    }
+  ]
+}

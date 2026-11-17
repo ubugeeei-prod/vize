@@ -1,0 +1,7 @@
+<script setup lang="ts" generic="T">
+defineProps<{ value: T; label: string }>()
+</script>
+
+<template>
+  <button>{{ label }} {{ value }}</button>
+</template>

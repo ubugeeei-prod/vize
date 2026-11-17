@@ -1,0 +1,13 @@
+<script setup lang="ts">
+import OneProp from './OneProp.vue'
+import TwoProps from './TwoProps.vue'
+import OptionalProp from './OptionalProp.vue'
+</script>
+<template>
+  <OneProp :some-value="1" />
+  <OneProp :someValue="1" />
+  <OptionalProp />
+  <OptionalProp :some-value="1" />
+  <OptionalProp :someValue="1" />
+  <TwoProps :some-value="1" other="ok" />
+</template>

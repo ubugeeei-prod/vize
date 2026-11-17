@@ -1,0 +1,147 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 4734,
+  "regressionCommit": "8298520356b8ee9d0d3b7ab96e10791f0150652c",
+  "sourceRevision": "8298520356b8ee9d0d3b7ab96e10791f0150652c",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "mono-root-known-aria-and-data-attrs",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "mono-ok.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "mono-root-aria-label",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "aria-camel-ok.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "mono-root-unknown-aria-prefix-rejected",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "aria-prefix-bad.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "mono-root-aria-label-wrong-title",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "aria-camel-wrong-title.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 4,
+          "column": 19,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type 'string'."
+        }
+      ]
+    },
+    {
+      "id": "generic-root-custom-data-attrs",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "generic.Child.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "generic-data-custom-ok.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "generic-root-custom-data-attrs-wrong-title",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "generic.Child.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "generic-data-custom-wrong-title.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 4,
+          "column": 19,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type 'string'."
+        }
+      ]
+    }
+  ]
+}

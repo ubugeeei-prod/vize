@@ -1,0 +1,11 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+import Child from './ModelChild.vue'
+
+const text = ref('hello')
+const num = ref(1)
+</script>
+
+<template>
+  <Child v-model="num" v-model:title="text" />
+</template>

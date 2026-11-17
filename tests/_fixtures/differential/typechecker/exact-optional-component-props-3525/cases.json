@@ -1,0 +1,111 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 3525,
+  "regressionCommit": "14a39c33651fa00aceeb62924b519319bc9492d7",
+  "sourceRevision": "14a39c33651fa00aceeb62924b519319bc9492d7",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "explicit-undefined-optional-prop-exact",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.exact.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "undefined.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Parent.vue",
+          "line": 7,
+          "column": 4,
+          "severity": 1,
+          "code": 2379,
+          "message": "Argument of type '{ label: undefined; }' is not assignable to parameter of type '$ComponentCheckProps<Props, $PublicComponentAttrs & Record<string, unknown>>' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.\nType '{ label: undefined; }' is not assignable to type '{ readonly label?: string; }' with 'exactOptionalPropertyTypes: true'. Consider adding 'undefined' to the types of the target's properties.\nTypes of property 'label' are incompatible.\nType 'undefined' is not assignable to type 'string'."
+        }
+      ]
+    },
+    {
+      "id": "explicit-undefined-optional-prop-loose",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.loose.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "undefined.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "correct-usages-exact",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.exact.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "silent.Child.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "silent.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "wrongly-typed-prop-reported-once-exact",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.exact.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "wrong-type.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Parent.vue",
+          "line": 6,
+          "column": 11,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type 'string'."
+        }
+      ]
+    }
+  ]
+}

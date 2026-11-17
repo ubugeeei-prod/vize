@@ -1,0 +1,33 @@
+<script lang="ts">
+import type { PropType } from 'vue';
+
+export default {
+  props: {
+    title: { type: String, required: true },
+    size: { type: Number, default: 1 },
+    items: { type: Array as PropType<string[]>, required: true },
+  },
+  emits: {
+    pick: (value: string) => value.length > 0,
+    clear: () => true,
+  },
+  inject: {
+    theme: { from: 'theme', default: 'light' },
+  },
+  provide() {
+    return { scope: 'props-emits' };
+  },
+  computed: {
+    heading(): string {
+      return `${this.title}:${this.size}`;
+    },
+  },
+  methods: {
+    emitPick(): void {
+      this.$emit('pick', this.title);
+    },
+  },
+};
+</script>
+
+<template>{{ heading }}{{ items.length }}</template>

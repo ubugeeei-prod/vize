@@ -1,0 +1,6 @@
+<script setup lang="ts">
+const model = defineModel<string>({ required: true })
+void model;
+</script>
+
+<template><div>{{ model }}</div></template>

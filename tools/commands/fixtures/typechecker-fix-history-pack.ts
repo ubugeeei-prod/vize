@@ -11,7 +11,7 @@
 // its cases.json (for example after taking main's manifest in a conflict).
 // Diagnostics come from DIR/<pack>/<case>.json when present (arrays of
 // runner diagnostics), else from the existing cases.json, else stay empty.
-// Run `cargo fmt -p vize_canon` and `vp fmt` on the registry afterwards.
+// Run `cargo fmt -p vize_canon` afterwards.
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
@@ -23,7 +23,7 @@ import { typecheckerDialectCoverage } from "../../../tests/differential/typechec
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 const fixtures = path.join(root, "tests/_fixtures/differential/typechecker");
 const manifestPath = path.join(fixtures, "manifest.json");
-const registryPath = path.join(root, "tests/differential/typechecker-registry.ts");
+const registryPath = path.join(fixtures, "fix-history-packs.json");
 const casesDir = path.join(root, "crates/vize_canon/tests/fix_history_cases");
 const ledgerPath = path.join(root, "docs/davinci/plan/typechecker-fix-history.tsv");
 const admitted = "batch-start-actions-verified";
@@ -69,46 +69,23 @@ function safeName(name: string) {
   return name;
 }
 
-function registryMap(source: string, name: string) {
-  const start = source.indexOf(`export const ${name} = {\n`);
-  assert(start >= 0, `${name} is missing from the registry`);
-  const bodyStart = source.indexOf("\n", start) + 1;
-  const bodyEnd = source.indexOf("\n}", bodyStart) + 1;
-  const entries = new Map<string, string>();
-  for (const [, key, value] of source
-    .slice(bodyStart, bodyEnd)
-    .matchAll(/^ {2}"([^"]+)":\s*("[^"]+"|[A-Za-z_]\w*),$/gm)) {
-    entries.set(key, value);
-  }
-  return { bodyStart, bodyEnd, entries };
-}
+type Registered = { test: string; sourceRevision: string };
+const readRegistry = (): Record<string, Registered> => JSON.parse(read(registryPath));
 
-function renderRegistryMap(entries: Map<string, string>) {
-  return [...entries]
-    .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
-    .map(([key, value]) => {
-      const line = `  "${key}": ${value},`;
-      return line.length <= 100 ? `${line}\n` : `  "${key}":\n    ${value},\n`;
-    })
-    .join("");
-}
-
-function setRegistry(source: string, name: string, key: string, value: string) {
-  const map = registryMap(source, name);
-  const original = source.slice(map.bodyStart, map.bodyEnd);
-  assert.equal(renderRegistryMap(map.entries), original, `${name} must already be canonical`);
-  map.entries.set(key, JSON.stringify(value));
-  return (
-    source.slice(0, map.bodyStart) + renderRegistryMap(map.entries) + source.slice(map.bodyEnd)
+function register(pack: string, entry: Registered) {
+  const registry = readRegistry();
+  registry[pack] = entry;
+  const sorted = Object.fromEntries(
+    Object.entries(registry).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)),
   );
+  fs.writeFileSync(registryPath, json(sorted));
 }
 
 function loadSpec(argument: string): Spec {
   if (argument.endsWith(".json")) return JSON.parse(read(argument)) as Spec;
   const pack = JSON.parse(read(path.join(fixtures, argument, "cases.json")));
-  const raw = registryMap(read(registryPath), "TYPECHECKER_TESTS").entries.get(argument);
-  assert(raw, `${argument} has no registered test body`);
-  const test = JSON.parse(raw) as string;
+  const test = readRegistry()[argument]?.test;
+  assert(test, `${argument} has no registered test body`);
   const [, module, body] = /^fix_history_cases::([a-z0-9_]+)::([a-z0-9_]+)$/.exec(test) ?? [];
   assert(module && body, `${argument} is not a fix_history_cases pack`);
   return {
@@ -206,9 +183,10 @@ function updateManifest(spec: Spec, cases: Case[], packSha256: string) {
   const manifest = JSON.parse(read(manifestPath)) as { cases: Entry[] };
   const old = manifest.cases.filter((entry) => entry.pack === spec.pack);
   const rest = manifest.cases.filter((entry) => entry.pack !== spec.pack);
-  // Pack projects stay sorted by pack; corpus inputs without a pack keep their place.
-  let at = rest.findIndex((entry) => entry.pack !== undefined && entry.pack > spec.pack);
-  if (at < 0) at = rest.findLastIndex((entry) => entry.pack !== undefined) + 1;
+  // The manifest sorts by pack, or by id for corpus inputs without a pack
+  // (assertSortedCases); insert at the same key.
+  let at = rest.findIndex((entry) => (entry.pack ?? entry.id) > spec.pack);
+  if (at < 0) at = rest.length;
   rest.splice(at, 0, ...manifestEntries(spec, cases, packSha256, old));
   manifest.cases = rest;
   fs.writeFileSync(manifestPath, json(manifest));
@@ -246,15 +224,10 @@ for (const argument of args) {
   const spec = loadSpec(argument);
   const { cases, packSha256 } = writePack(spec, capture);
   updateManifest(spec, cases, packSha256);
-  let registry = read(registryPath);
-  registry = setRegistry(
-    registry,
-    "TYPECHECKER_TESTS",
-    spec.pack,
-    `fix_history_cases::${spec.module}::${spec.test}`,
-  );
-  registry = setRegistry(registry, "sourceRevisions", spec.pack, spec.regressionCommit);
-  fs.writeFileSync(registryPath, registry);
+  register(spec.pack, {
+    test: `fix_history_cases::${spec.module}::${spec.test}`,
+    sourceRevision: spec.regressionCommit,
+  });
   updateRust(spec, cases);
   updateLedger(spec);
   console.log(`${spec.pack}: ${cases.length} cases`);
