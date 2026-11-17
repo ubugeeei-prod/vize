@@ -1,0 +1,10 @@
+<template>
+  <div
+    relative
+    :class="[
+      ...themeClasses.container,
+      // eslint-disable-next-line vue/prefer-separate-static-class
+      'before-position-absolute before:left-2',
+    ]"
+  />
+</template>
