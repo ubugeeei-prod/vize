@@ -130,7 +130,9 @@ fn original_foster_and_valid_table_contexts_refuse_before_lookup() {
 }
 
 #[test]
-fn ignored_form_refuses_and_keeps_the_complete_nonempty_registered_control() {
+fn nested_form_refuses_natively_and_lints_the_inner_form_completely() {
+    // Vue keeps the nested form, so its attributes are linted and no parser
+    // error is reported.
     let source = "<template><form><form style='x' /></form></template>";
     let arena = Allocator::default();
     let owner = selected(&arena, source);
@@ -148,50 +150,35 @@ fn ignored_form_refuses_and_keeps_the_complete_nonempty_registered_control() {
     for locale in LOCALES {
         assert_eq!(
             complete(&registered(source, locale)),
-            expected(vec![
-                parser(
-                    "error",
-                    "HTML tree construction ignored this start tag because an equivalent element is already open.",
-                    span(source, "<form style='x' />")
-                ),
-                warning(locale, span(source, "style='x'"))
-            ])
+            expected(vec![warning(locale, span(source, "style='x'"))])
         );
     }
 }
 
 #[test]
-fn five_original_pre_recovery_sources_keep_every_registered_parser_diagnostic() {
-    for (source, path, ignored, invalid_end) in [
+fn five_pre_recovery_sources_keep_the_authored_v_pre_owner_without_parser_errors() {
+    // Vue builds each template as written, so none has a parser error. Only
+    // the native tag facts still treat the shape as a recovery context.
+    for (source, path) in [
         (
             "<template><form><form v-pre><meta :role='x' /></form></form></template>",
             &[0, 0, 0][..],
-            Some("<form v-pre>"),
-            Some("</form></template>"),
         ),
         (
             "<template><p v-pre><div><meta :role='x' /></div></p></template>",
             &[1][..],
-            None,
-            Some("</p>"),
         ),
         (
             "<template><a v-pre><a /><meta :role='x' /></a></template>",
             &[0, 1][..],
-            None,
-            None,
         ),
         (
             "<template><select><option v-pre><option><meta :role='x' /></option></option></select></template>",
             &[0, 1][..],
-            None,
-            Some("</option></select>"),
         ),
         (
             "<template><select><optgroup v-pre><optgroup><meta :role='x' /></optgroup></optgroup></select></template>",
             &[0, 1][..],
-            None,
-            Some("</optgroup></select>"),
         ),
     ] {
         let arena = Allocator::default();
@@ -221,16 +208,7 @@ fn five_original_pre_recovery_sources_keep_every_registered_parser_diagnostic() 
             })
         );
         for locale in LOCALES {
-            let mut diagnostics = Vec::new();
-            if let Some(opening) = ignored {
-                diagnostics.push(parser("error", "HTML tree construction ignored this start tag because an equivalent element is already open.", span(source, opening)));
-            }
-            if let Some(closing) = invalid_end {
-                let mut range = span(source, closing);
-                range.end = range.start + u32::try_from(closing.find('>').unwrap() + 1).unwrap();
-                diagnostics.push(parser("error", "Invalid end tag.", range));
-            }
-            assert_eq!(complete(&registered(source, locale)), expected(diagnostics));
+            assert_eq!(complete(&registered(source, locale)), expected(Vec::new()));
         }
     }
 }

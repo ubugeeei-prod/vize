@@ -185,7 +185,8 @@ fn fostered_and_valid_table_descendants_refuse_without_dropping_registered_findi
 }
 
 #[test]
-fn ignored_nested_form_keeps_parser_first_and_complete_nonempty_product_control() {
+fn nested_form_refuses_natively_and_keeps_the_complete_product_warning() {
+    // Vue keeps the nested form, so the complete result has no parser error.
     let source = "<template><form><form align='yes' /></form></template>";
     let arena = Allocator::default();
     let owner = selected(&arena, source);
@@ -203,14 +204,13 @@ fn ignored_nested_form_keeps_parser_first_and_complete_nonempty_product_control(
     for locale in LOCALES {
         assert_eq!(
             complete(&registered(source, locale)),
-            expected(vec![
-                parser(
-                    "error",
-                    "HTML tree construction ignored this start tag because an equivalent element is already open.",
-                    span(source, "<form align='yes' />")
-                ),
-                warning(locale, span(source, "align='yes'"), "form", "align", ALIGN)
-            ])
+            expected(vec![warning(
+                locale,
+                span(source, "align='yes'"),
+                "form",
+                "align",
+                ALIGN
+            )])
         );
     }
 }

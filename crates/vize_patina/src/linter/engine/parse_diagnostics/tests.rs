@@ -51,6 +51,15 @@ fn legacy(source: &str) -> Vec<Observed> {
 /// builds a Vue template as written, so only an in-DOM template is fostered.
 const FOSTER: &str = "Foster parenting moved this element before the nearest open table.";
 
+fn vue_error(message: &str, start: u32, end: u32) -> Observed {
+    Observed {
+        message: message.into(),
+        severity: Severity::Error,
+        start,
+        end,
+    }
+}
+
 fn l1(source: &str) -> Vec<Observed> {
     observe(source, false)
 }
@@ -81,83 +90,82 @@ fn observe(source: &str, in_dom: bool) -> Vec<Observed> {
         .collect()
 }
 
-#[test]
-fn l1_parser_template_diagnostics_match_the_preserved_parser() {
-    let cases = [
-        "",
-        "<",
-        "<div",
-        "<!-- unfinished",
-        "<div answer=>",
-        "<div :[answer>",
-        "{{ answer",
-        "<div first\"second>",
-        "<div answer=one\"two>",
-        "<div =answer>",
-        "<div first=one second=two>",
-        "<div first=one SECOND=two first=three>",
-        "<!-- --!>",
-        "<!wat>",
-        "</div>",
-        "<div>",
-        "<div><span></div>",
-        "<div v-on.></div>",
-        "<div v-></div>",
-        "<div />",
-        "<div first= second=>",
-        "<div><span answer=></div>",
-        "<div><span></div></span>",
-        "<p><div></div></p>",
-        "<ul><li>one<li>two</ul>",
-        "<dl><dt>term<dd>value</dl>",
-        "<select><option>one<option>two</select>",
-        "<table><tbody><tr><td>cell</table>",
-        "<b><i>text</b></i>",
-        "<a><a>nested</a></a>",
-        "<button><button>nested</button></button>",
-        "<form><form>nested</form></form>",
-        "<svg><g></svg>",
-        "<div v-on. v-></div>",
-        "<div :answer=one :answer=two></div>",
-        "<div v->{{ answer",
-        "<div first=one first=two>{{ answer",
-        "<form><form><",
-        "<div : @ # .></div>",
-        "<div v-.foo></div>",
-        "<div v-:arg></div>",
-        "<div v-on..stop></div>",
-        "<div v-on...></div>",
-        "<div first=one FIRST=two></div>",
-        "<div v-pre><span v->{{ raw }}</span></div>",
-        "<div v-pre><span v-on.></span></div>",
-        "<div v-pre v-if.></div>",
-        "<div v-pre><span :TITLE=a :TITLE=b></span></div>",
-        "</div",
-        "<div></span",
-        "<div></div",
-        "<div></div answer>",
-        "<div></div/>",
-        "</>",
-        "<?wat>",
-        "<![CDATA[value]]>",
-        "<!-->",
-        "<!-- <!-- nested -->",
-        "<div\0answer></div>",
-        "<table><div>fostered</div></table>",
-        "<table><center>fostered</center></table>",
-        "<table>fostered<tr><td>cell</td></tr></table>",
-        "<table><thead><th>Name</th><th>Grade</th></thead></table>",
-        "<math><annotation-xml><table><html></html></table></annotation-xml></math>",
-        "<table><tbody><template v-for=x><div></div></template></tbody></table>",
-        "<table><tbody><template><div></div></template></tbody></table>",
-    ];
+const CASES: [&str; 66] = [
+    "",
+    "<",
+    "<div",
+    "<!-- unfinished",
+    "<div answer=>",
+    "<div :[answer>",
+    "{{ answer",
+    "<div first\"second>",
+    "<div answer=one\"two>",
+    "<div =answer>",
+    "<div first=one second=two>",
+    "<div first=one SECOND=two first=three>",
+    "<!-- --!>",
+    "<!wat>",
+    "</div>",
+    "<div>",
+    "<div><span></div>",
+    "<div v-on.></div>",
+    "<div v-></div>",
+    "<div />",
+    "<div first= second=>",
+    "<div><span answer=></div>",
+    "<div><span></div></span>",
+    "<p><div></div></p>",
+    "<ul><li>one<li>two</ul>",
+    "<dl><dt>term<dd>value</dl>",
+    "<select><option>one<option>two</select>",
+    "<table><tbody><tr><td>cell</table>",
+    "<b><i>text</b></i>",
+    "<a><a>nested</a></a>",
+    "<button><button>nested</button></button>",
+    "<form><form>nested</form></form>",
+    "<svg><g></svg>",
+    "<div v-on. v-></div>",
+    "<div :answer=one :answer=two></div>",
+    "<div v->{{ answer",
+    "<div first=one first=two>{{ answer",
+    "<form><form><",
+    "<div : @ # .></div>",
+    "<div v-.foo></div>",
+    "<div v-:arg></div>",
+    "<div v-on..stop></div>",
+    "<div v-on...></div>",
+    "<div first=one FIRST=two></div>",
+    "<div v-pre><span v->{{ raw }}</span></div>",
+    "<div v-pre><span v-on.></span></div>",
+    "<div v-pre v-if.></div>",
+    "<div v-pre><span :TITLE=a :TITLE=b></span></div>",
+    "</div",
+    "<div></span",
+    "<div></div",
+    "<div></div answer>",
+    "<div></div/>",
+    "</>",
+    "<?wat>",
+    "<![CDATA[value]]>",
+    "<!-->",
+    "<!-- <!-- nested -->",
+    "<div\0answer></div>",
+    "<table><div>fostered</div></table>",
+    "<table><center>fostered</center></table>",
+    "<table>fostered<tr><td>cell</td></tr></table>",
+    "<table><thead><th>Name</th><th>Grade</th></thead></table>",
+    "<math><annotation-xml><table><html></html></table></annotation-xml></math>",
+    "<table><tbody><template v-for=x><div></div></template></tbody></table>",
+    "<table><tbody><template><div></div></template></tbody></table>",
+];
 
-    let mismatches = cases
+#[test]
+fn l1_in_dom_diagnostics_match_the_preserved_parser() {
+    let mismatches = CASES
         .into_iter()
         .filter_map(|source| {
-            let actual = l1(source);
-            let mut expected = legacy(source);
-            expected.retain(|observed| observed.message != FOSTER);
+            let actual = l1_in_dom(source);
+            let expected = legacy(source);
             (actual != expected)
                 .then(|| format!("{source:?}\n  L1: {actual:?}\n  preserved: {expected:?}"))
         })
@@ -166,14 +174,35 @@ fn l1_parser_template_diagnostics_match_the_preserved_parser() {
 }
 
 #[test]
-fn an_in_dom_template_keeps_the_preserved_foster_notices() {
-    for source in [
-        "<table><div>fostered</div></table>",
-        "<table><center>fostered</center></table>",
-        "<table>fostered<tr><td>cell</td></tr></table>",
-        "<math><annotation-xml><table><html></html></table></annotation-xml></math>",
-    ] {
-        assert_eq!(l1_in_dom(source), legacy(source), "{source}");
+fn a_vue_template_reports_what_vue_reports() {
+    // Vue builds a template as written: no implied end tag, ignored nested
+    // form, adoption agency or foster parenting. These are Vue 3.5's
+    // `baseParse` errors, except that a `<p>`, `<li>` or other optional end
+    // tag left open stays with `vue/html-end-tags`, as Vue 2 and in-DOM do.
+    // Every other case reports what the in-DOM parse reports.
+    let missing = "Element is missing end tag.";
+    let as_written = |source: &str| match source {
+        "<p><div></div></p>" | "<form><form>nested</form></form>" => Some(Vec::new()),
+        "<b><i>text</b></i>" => Some(vec![
+            vue_error(missing, 3, 6),
+            vue_error("Invalid end tag.", 14, 18),
+        ]),
+        "<form><form><" => Some(vec![
+            vue_error(
+                "Unexpected end of input after `<`; treating it as text so parsing can continue.",
+                12,
+                13,
+            ),
+            vue_error(missing, 6, 12),
+            vue_error(missing, 0, 6),
+        ]),
+        _ => None,
+    };
+    for source in CASES {
+        let mut in_dom = l1_in_dom(source);
+        in_dom.retain(|observed| observed.message != FOSTER);
+        let expected = as_written(source).unwrap_or(in_dom);
+        assert_eq!(l1(source), expected, "{source:?}");
     }
 }
 

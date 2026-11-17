@@ -1,0 +1,8 @@
+<template>
+  <p>
+    Rewards:
+    <ul>
+      <li>Gold</li>
+    </ul>
+  </p>
+</template>
