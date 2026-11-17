@@ -36,8 +36,8 @@ use vize_l0::id::NodeId;
 use vize_l0::side_table::SideTable;
 use vize_l0::{Allocator, Span};
 use vize_l2::artifact::{ArtifactParts, LoweringFeatures, OpFamily};
-use vize_l2::component::{ComponentDef, Exec, RenderScope};
 use vize_l2::expr::ExprRef;
+use vize_l2::module::{ComponentDef, Exec, RenderScope};
 use vize_l2::op::Region;
 use vize_l2::scope::{ScopeFacts, ScopeTag};
 

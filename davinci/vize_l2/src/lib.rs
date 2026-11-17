@@ -49,13 +49,13 @@ extern crate alloc;
 
 pub mod analysis;
 pub mod artifact;
-pub mod component;
 pub mod dialect;
 pub mod dump;
 pub mod expr;
 pub mod file;
 pub mod framework;
 pub mod lang;
+pub mod module;
 pub mod op;
 pub mod provenance;
 pub mod registry;

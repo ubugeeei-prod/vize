@@ -1,4 +1,4 @@
-use vize_l2::component::Exec;
+use vize_l2::module::Exec;
 
 use super::JsxRefusal;
 use super::tests::lower;

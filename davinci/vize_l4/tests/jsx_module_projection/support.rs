@@ -4,7 +4,7 @@ use oxc_semantic::SemanticBuilder;
 use oxc_span::SourceType;
 use vize_l0::Allocator;
 use vize_l1_to_l2::framework::vue::jsx::{JsxRefusal, ModuleOptions, VIZE, lower_module};
-use vize_l2::component::{ComponentDef, Exec};
+use vize_l2::module::{ComponentDef, Exec};
 
 /// One parsed module and the L2 definitions of its outermost roots.
 pub struct Module<'a> {

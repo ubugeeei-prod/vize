@@ -6,7 +6,7 @@ use oxc_semantic::SemanticBuilder;
 use oxc_span::SourceType;
 use vize_l0::Allocator;
 use vize_l0::dialect::JsxSemantics;
-use vize_l2::component::{Exec, RenderScope};
+use vize_l2::module::{Exec, RenderScope};
 use vize_l2::op::{BindingOp, DynamicName, Op};
 
 use super::{

@@ -5,8 +5,8 @@ mod control_flow;
 mod support;
 
 use vize_l0::{Allocator, Span};
-use vize_l2::component::{Exec, RenderScope};
 use vize_l2::expr::ExprRef;
+use vize_l2::module::{Exec, RenderScope};
 use vize_l2::op::Op;
 use vize_l4::targets::ts::{
     JsxModuleRefusal, LinkMapping, LinkRole, MappingError, TsDocument, project_jsx_module,

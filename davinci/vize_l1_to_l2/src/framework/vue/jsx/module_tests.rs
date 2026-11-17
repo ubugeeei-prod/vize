@@ -5,7 +5,7 @@ use oxc_parser::Parser;
 use oxc_semantic::SemanticBuilder;
 use oxc_span::SourceType;
 use vize_l0::{Allocator, Span};
-use vize_l2::component::Exec;
+use vize_l2::module::Exec;
 
 use super::{
     EnteredFunction, FunctionNode, JsxRefusal, JsxRoot, ModuleOptions, ModuleVisitor,
