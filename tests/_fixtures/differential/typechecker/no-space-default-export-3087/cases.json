@@ -1,0 +1,75 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 3087,
+  "regressionCommit": "894b6f62b772b0a0e4e389bcc38cd9b8469d7557",
+  "sourceRevision": "894b6f62b772b0a0e4e389bcc38cd9b8469d7557",
+  "checkerOptions": {
+    "optionsApi": true
+  },
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "indented-no-space-default-export",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/LegacyComponent.vue",
+          "source": "LegacyComponent.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "indented-no-space-default-export-template-error",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/LegacyComponent.vue",
+          "source": "LegacyComponent.invalid.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/LegacyComponent.vue",
+          "line": 15,
+          "column": 39,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'toUpperCase' does not exist on type 'number'."
+        }
+      ]
+    },
+    {
+      "id": "comment-boundary-default-export",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/CommentBoundary.vue",
+          "source": "CommentBoundary.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 2731,
+  "regressionCommit": "a76940eb95b9fdbba90331b5b3b1bab2331ec902",
+  "sourceRevision": "a76940eb95b9fdbba90331b5b3b1bab2331ec902",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "optional-boolean-to-required-boolean",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        },
+        {
+          "file": "src/Foo.vue",
+          "source": "Foo.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "normalized-boolean-to-string-error",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "invalid.Child.vue.txt"
+        },
+        {
+          "file": "src/Foo.vue",
+          "source": "Foo.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Foo.vue",
+          "line": 8,
+          "column": 11,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'boolean' is not assignable to type 'string'."
+        }
+      ]
+    }
+  ]
+}

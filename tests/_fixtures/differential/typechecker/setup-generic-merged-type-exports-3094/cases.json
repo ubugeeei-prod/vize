@@ -1,0 +1,148 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 3094,
+  "regressionCommit": "5067f25786f316af91c33beb7ef08d6f4419378e",
+  "sourceRevision": "5067f25786f316af91c33beb7ef08d6f4419378e",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "private-setup-props-public-export",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/PrivateSetupButton.vue",
+          "source": "PrivateSetupButton.vue.txt"
+        },
+        {
+          "file": "src/consumer.ts",
+          "source": "private-props-consumer.ts.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "private-setup-props-invalid-literal",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/PrivateSetupButton.vue",
+          "source": "PrivateSetupButton.vue.txt"
+        },
+        {
+          "file": "src/consumer.ts",
+          "source": "private-props-consumer.invalid.ts.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/consumer.ts",
+          "line": 3,
+          "column": 32,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '\"reset\"' is not assignable to type '\"button\" | \"submit\"'."
+        }
+      ]
+    },
+    {
+      "id": "generic-setup-type-export",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/GenericBox.vue",
+          "source": "GenericBox.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "generic-setup-type-export-invalid-value",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/GenericBox.vue",
+          "source": "GenericBox.invalid.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/GenericBox.vue",
+          "line": 4,
+          "column": 23,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '2' is not assignable to type '1'."
+        }
+      ]
+    },
+    {
+      "id": "merged-interface-exports",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/MergedOptions.vue",
+          "source": "MergedOptions.vue.txt"
+        },
+        {
+          "file": "src/consumer.ts",
+          "source": "merged-consumer.ts.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "merged-interface-exports-missing-member",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/MergedOptions.vue",
+          "source": "MergedOptions.vue.txt"
+        },
+        {
+          "file": "src/consumer.ts",
+          "source": "merged-consumer.invalid.ts.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/consumer.ts",
+          "line": 3,
+          "column": 7,
+          "severity": 1,
+          "code": 2741,
+          "message": "Property 'b' is missing in type '{ a: 1; }' but required in type 'Options'."
+        }
+      ]
+    }
+  ]
+}

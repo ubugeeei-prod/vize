@@ -1,0 +1,18 @@
+export interface ExampleValue {
+  value: number;
+}
+
+export interface ExampleProps {
+  firstValue?: ExampleValue | ExampleValue[];
+  secondValue?: ExampleValue | ExampleValue[];
+  additionalNumberValue?: number;
+  disabled?: boolean;
+  reversed?: boolean;
+  mode?: "a" | "b" | "c";
+}
+
+export type ExampleEmits<
+  T extends ExampleValue | ExampleValue[] = ExampleValue | ExampleValue[]
+> = {
+  change: [value: T];
+};

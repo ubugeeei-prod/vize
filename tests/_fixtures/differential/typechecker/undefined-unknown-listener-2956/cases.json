@@ -1,0 +1,81 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 2956,
+  "regressionCommit": "872d43f244876bf2b3241026abe3f1e2a552d58a",
+  "sourceRevision": "872d43f244876bf2b3241026abe3f1e2a552d58a",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "undefined-unknown-listener",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/UndefinedEvent.vue",
+          "source": "UndefinedEvent.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "non-callable-unknown-listener",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/UndefinedEvent.vue",
+          "source": "non-callable.UndefinedEvent.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/UndefinedEvent.vue",
+          "line": 2,
+          "column": 30,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type '(...args: any[]) => any'."
+        }
+      ]
+    },
+    {
+      "id": "unresolved-unknown-listener",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/UndefinedEvent.vue",
+          "source": "unresolved.UndefinedEvent.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/UndefinedEvent.vue",
+          "line": 2,
+          "column": 44,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'missingHandler' does not exist on the component instance."
+        }
+      ]
+    }
+  ]
+}

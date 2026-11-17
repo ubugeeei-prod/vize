@@ -1,0 +1,5 @@
+import type { Props } from "./PrivateSetupButton.vue";
+
+const acceptedProps: Props = { nativeType: "submit" };
+
+void acceptedProps;

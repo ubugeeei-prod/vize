@@ -1,0 +1,7 @@
+<script setup lang="ts">
+defineProps<{ present: string }>();
+</script>
+
+<template>
+  <span />
+</template>

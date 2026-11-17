@@ -1,0 +1,102 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 2476,
+  "regressionCommit": "f4dbdb44c080b869630d8ad83d46a95fa356e124",
+  "sourceRevision": "f4dbdb44c080b869630d8ad83d46a95fa356e124",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "generic-type-from-template-prop",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "template-props.Child.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "template-props.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "generic-model-type-from-v-model",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "v-model.Child.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "v-model.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "generic-model-type-from-static-value-key",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "value-key.Child.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "value-key.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "generic-model-type-from-static-value-key-mismatch",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "value-key.Child.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "value-key.invalid.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Parent.vue",
+          "line": 10,
+          "column": 10,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'number | null' is not assignable to type 'string | null | undefined'.\nType 'number' is not assignable to type 'string'."
+        }
+      ]
+    }
+  ]
+}

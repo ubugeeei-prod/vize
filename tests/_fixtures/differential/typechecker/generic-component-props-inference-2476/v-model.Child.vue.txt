@@ -1,0 +1,6 @@
+<script setup lang="ts" generic="T = boolean">
+defineProps<{ modelValue?: T | null }>()
+defineEmits<{ "update:modelValue": [value: T | null] }>()
+</script>
+
+<template><button /></template>

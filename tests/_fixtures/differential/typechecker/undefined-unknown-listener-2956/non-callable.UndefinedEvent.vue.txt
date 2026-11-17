@@ -1,0 +1,2 @@
+<script setup lang="ts">const handler = 1</script>
+<template><UnknownComponent @unknownEvent="handler" /></template>

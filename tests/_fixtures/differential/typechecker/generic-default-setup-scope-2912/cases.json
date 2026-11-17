@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 2912,
+  "regressionCommit": "5afffd0b3cb0dd06d9eb347b57f40dba3d9c8e4e",
+  "sourceRevision": "5afffd0b3cb0dd06d9eb347b57f40dba3d9c8e4e",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "generic-default-wider-constraint",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Foo.vue",
+          "source": "Foo.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "generic-setup-assignment-error",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Foo.vue",
+          "source": "invalid.Foo.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Foo.vue",
+          "line": 12,
+          "column": 9,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'string | number' is not assignable to type 'string'.\nType 'number' is not assignable to type 'string'."
+        }
+      ]
+    }
+  ]
+}

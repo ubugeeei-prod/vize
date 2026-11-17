@@ -1,0 +1,92 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 2920,
+  "regressionCommit": "37cb5631062a8926497835844f8d41db680128eb",
+  "sourceRevision": "37cb5631062a8926497835844f8d41db680128eb",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "imported-heritage-boolean-key",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/types.ts",
+          "source": "types.ts.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "imported-and-local-boolean-keys",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/types.ts",
+          "source": "types.ts.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "mixed.Child.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "imported-boolean-key-type-error",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/types.ts",
+          "source": "types.ts.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "invalid.Child.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Child.vue",
+          "line": 8,
+          "column": 7,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'boolean' is not assignable to type 'string'."
+        },
+        {
+          "file": "src/Child.vue",
+          "line": 12,
+          "column": 12,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'string' is not assignable to type 'Booleanish | undefined'."
+        }
+      ]
+    }
+  ]
+}

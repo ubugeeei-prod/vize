@@ -1,0 +1,21 @@
+<script lang="ts">
+import type BaseComponent from "./Base.vue"
+
+type ComponentProps<T> = T extends new (...args: never[]) => {
+  $props: infer Props
+}
+  ? Props
+  : never
+
+export interface FooProps extends ComponentProps<typeof BaseComponent> {}
+</script>
+
+<script setup lang="ts">
+import Base from "./Base.vue"
+
+defineProps<FooProps>()
+</script>
+
+<template>
+  <Base :as="1" />
+</template>
