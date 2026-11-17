@@ -24,7 +24,8 @@ export function applyWithDefaultsUndefined(previous: Buffer): Buffer {
   assert.equal(text.split(previousDefaultNativeType).length, 2, "one #13179 predecessor line");
   assert.equal(text.includes(currentDefaultNativeType), false);
   const at = Buffer.byteLength(text.slice(0, text.indexOf(previousDefaultNativeType)));
-  const delta = Buffer.byteLength(currentDefaultNativeType) - Buffer.byteLength(previousDefaultNativeType);
+  const delta =
+    Buffer.byteLength(currentDefaultNativeType) - Buffer.byteLength(previousDefaultNativeType);
   const shift = (offset: string) => String(Number(offset) >= at ? Number(offset) + delta : offset);
   const current = text
     .replace(previousDefaultNativeType, () => currentDefaultNativeType)

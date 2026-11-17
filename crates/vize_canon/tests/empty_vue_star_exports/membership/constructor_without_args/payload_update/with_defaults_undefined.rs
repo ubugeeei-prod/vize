@@ -56,6 +56,19 @@ pub(super) fn source_before(path: &str, current: String) -> String {
     }
 }
 
+/// A compiled preamble without the #13179 `undefined` default member. A
+/// preamble that does not hold the current declaration exactly once passes.
+pub(super) fn preamble_before(current: &str) -> String {
+    let hunk = &record()["files"][0]["hunks"][0];
+    let after = hunk["after"].as_str().unwrap().trim_end();
+    let before = hunk["before"].as_str().unwrap().trim_end();
+    if current.matches(after).count() != 1 {
+        return current.to_owned();
+    }
+    assert_eq!(current.matches(before).count(), 0);
+    current.replacen(after, before, 1)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -59,6 +59,7 @@ pub(super) fn source_before(path: &str, current: String) -> String {
 
 /// A compiled preamble without the #13021 library fallthrough tail.
 pub(super) fn preamble_before(current: &str) -> String {
+    let current = &super::with_defaults_undefined::preamble_before(current);
     let record = record();
     match ["compiledPreamble", "compiledStrictPreamble"]
         .into_iter()
