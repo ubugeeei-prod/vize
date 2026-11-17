@@ -1,0 +1,9 @@
+<script setup lang="ts">
+interface Payload {
+  value: string;
+}
+
+defineEmits<{
+  change: [payload: Payload];
+}>();
+</script>

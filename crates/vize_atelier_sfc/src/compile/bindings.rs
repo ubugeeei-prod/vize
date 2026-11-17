@@ -3,14 +3,16 @@
 //! Registers compiler-specific setup bindings and the bindings of normal
 //! `<script>` blocks.
 
+mod options;
 mod vapor;
+pub(super) use options::options_api;
 pub(super) use vapor::for_vapor;
 
 use oxc_ast::ast::{
     BindingPattern, Declaration, Expression, ImportDeclarationSpecifier, Program, Statement,
     VariableDeclaration, VariableDeclarationKind,
 };
-use vize_l0::{ToCompactString, profile};
+use vize_l0::ToCompactString;
 
 use crate::types::{BindingMetadata, BindingType};
 
@@ -322,53 +324,6 @@ fn unwrap_type_only_wrappers<'e, 'a>(mut expr: &'e Expression<'a>) -> &'e Expres
             _ => return expr,
         };
     }
-}
-
-/// Extract the Options API members exposed through render-function arguments.
-/// Imports and module constants stay local to a normal script.
-pub(super) fn collect_options_api_bindings(
-    content: &str,
-    lang: Option<&str>,
-) -> Option<BindingMetadata> {
-    // Parse the `<script>` once for Options API binding extraction only —
-    // this lighter `parse_script_with_options` path skips the full
-    // template/reactivity Croquis analysis the `<script setup>` path runs.
-    let parsed = profile!(
-        "atelier.sfc.normal_script.options_api_bindings",
-        vize_croquis::script_parser::parse_script_with_options_and_jsx(
-            content,
-            vize_croquis::script_parser::ScriptParserOptions {
-                options_api: true,
-                legacy_vue2: false,
-            },
-            lang.is_some_and(|lang| matches!(lang.trim(), "tsx" | "jsx")),
-        )
-    );
-    let mut bindings = BindingMetadata::default();
-    for (name, bt) in parsed.bindings.iter() {
-        // Forward only the unambiguous Options API member kinds. Croquis
-        // assigns `SetupConst`/`LiteralConst` to top-level imports and
-        // module-local consts and `SetupMaybeRef` to `setup()` returns —
-        // none of which `@vue/compiler-sfc` registers as template
-        // bindings for a non-`<script setup>` block (forwarding them would
-        // rewrite locally-registered components to `$setup.Foo` instead of
-        // leaving them for `_resolveComponent("Foo")`).
-        if matches!(
-            bt,
-            BindingType::Data
-                | BindingType::Options
-                | BindingType::Props
-                | BindingType::PropsAliased
-        ) {
-            bindings.bindings.insert(name.to_compact_string(), bt);
-        }
-    }
-    for (local, key) in &parsed.bindings.props_aliases {
-        bindings
-            .props_aliases
-            .insert(local.to_compact_string(), key.to_compact_string());
-    }
-    (!bindings.bindings.is_empty()).then_some(bindings)
 }
 
 #[cfg(test)]

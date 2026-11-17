@@ -1,0 +1,17 @@
+<script setup lang="ts">
+import Child from "./Child.vue";
+
+const Components = { Child };
+
+interface Payload {
+  value: string;
+}
+
+function handleChange(payload: Payload) {
+  payload.value.toUpperCase();
+}
+</script>
+
+<template>
+  <component :is="Components.Child" @change="handleChange($event)" />
+</template>

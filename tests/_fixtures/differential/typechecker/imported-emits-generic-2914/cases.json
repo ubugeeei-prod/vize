@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 2914,
+  "regressionCommit": "db8f7e52c7f337fdacb8f18be99aaf8d53f2cc2f",
+  "sourceRevision": "db8f7e52c7f337fdacb8f18be99aaf8d53f2cc2f",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "imported-emits-generic",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/types.ts",
+          "source": "types.ts.txt"
+        },
+        {
+          "file": "src/Example.vue",
+          "source": "Example.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "imported-emits-payload-error",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/types.ts",
+          "source": "types.ts.txt"
+        },
+        {
+          "file": "src/Example.vue",
+          "source": "invalid.Example.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Example.vue",
+          "line": 25,
+          "column": 18,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type 'number' is not assignable to parameter of type 'T'.\n'T' could be instantiated with an arbitrary type which could be unrelated to 'number'."
+        }
+      ]
+    }
+  ]
+}

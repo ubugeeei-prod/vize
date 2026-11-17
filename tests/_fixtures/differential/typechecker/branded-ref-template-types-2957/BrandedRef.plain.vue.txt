@@ -1,0 +1,7 @@
+<script setup lang="ts">
+import { ref } from "vue";
+type BrandedString = string & { __brand: "BrandedString" };
+function acceptBranded(value: BrandedString): string { return value; }
+const plainRef = ref<string>("");
+</script>
+<template>{{ acceptBranded(plainRef) }}</template>

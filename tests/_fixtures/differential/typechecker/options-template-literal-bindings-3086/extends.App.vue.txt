@@ -1,0 +1,17 @@
+<script lang="ts">
+import Base from './Base'
+
+export default {
+  extends: Base,
+}
+</script>
+
+<template>
+  <button
+    :disabled="false"
+    :aria-hidden="true"
+    :data-empty="null"
+    :data-state="falsey ? trueValue : nullish"
+    @click="inheritedHandler(false)"
+  />
+</template>

@@ -1,0 +1,27 @@
+<script setup lang="ts">
+interface FooProps {
+  modelValue?: string
+}
+
+type UseModelOptions<P, K extends keyof P> = {
+  props: P
+  key: K
+  clone?: boolean | ((value: P[K]) => P[K])
+}
+
+function useModel<P, K extends keyof P>(options: UseModelOptions<P, K>) {
+  void options
+}
+
+const props = withDefaults(defineProps<FooProps>(), {
+  modelValue: undefined,
+})
+
+useModel({
+  props,
+  key: 'modelValue',
+  clone: value => value === undefined ? undefined : value.trim(),
+})
+</script>
+
+<template>{{ modelValue.trim() }}</template>

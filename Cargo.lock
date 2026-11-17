@@ -5402,6 +5402,7 @@ dependencies = [
  "insta",
  "libc",
  "memchr",
+ "oxc-miette 3.0.1",
  "oxc_allocator",
  "oxc_ast",
  "oxc_ast_visit",

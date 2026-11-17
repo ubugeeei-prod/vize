@@ -44,6 +44,7 @@ fn restore(current: &str, transition: &Value) -> String {
 /// The pre-#13113 bytes of a recorded producer's current image. Older images
 /// pass through; the layers below authenticate them.
 pub(super) fn source_before(path: &str, current: String) -> String {
+    let current = super::with_defaults_undefined::source_before(path, current);
     let record = record();
     match record["files"]
         .as_array()

@@ -52,6 +52,7 @@ mod template_ref_unwrap;
 mod union_host_slot_payload;
 mod unowned_owned_keys;
 mod usage_helpers;
+mod with_defaults_undefined;
 
 const RECORD: &str = "malformed-membership/slot-provider-payload-update-11027.json";
 const PATHS: [&str; 11] = [

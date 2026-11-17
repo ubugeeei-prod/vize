@@ -1,0 +1,11 @@
+<script setup lang="ts">
+const props = defineProps({
+  title: String,
+  visible: Boolean,
+});
+const count: number = props.title;
+</script>
+
+<template>
+  <dialog v-if="visible">{{ title }}</dialog>
+</template>

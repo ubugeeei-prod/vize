@@ -15,8 +15,9 @@ pub(in crate::linter) use expression_facts::{
     ComputedMemberQuery, ExpressionFact, ExpressionQuery, Facets, HeritageQuery, PathStep, detail,
 };
 pub(in crate::linter) use relations::{
-    AssertionAsk, AssertionContext, ContextSource, DeprecationAsk, DeprecationKind, Literal,
-    NonNullAsk, PropertyContext, RelationReply, RelationRequest, ReturnAsk, Shape, Span,
+    AssertionAsk, AssertionContext, ContextSource, DeprecationAsk, DeprecationKind,
+    EnumCallArgument, EnumCallAsk, EnumCheckAsk, EnumMismatch, EnumReceiver, HeritageSource,
+    Literal, NonNullAsk, PropertyContext, RelationReply, RelationRequest, ReturnAsk, Shape, Span,
     flags as type_flags,
 };
 pub(in crate::linter) use type_shape::{PredicateRequest, ShapeRequest};
@@ -99,11 +100,26 @@ impl Drop for CorsaTypeAwareSession {
     }
 }
 
+/// Remove this process's session directories under the project roots of
+/// `files`.
+///
+/// Only [`paths::allocate_session_root`] names such a directory, so a process
+/// that never allocated one has nothing to remove and skips the walk. Without
+/// type-aware rules that walk cost one `getcwd` and about two `stat`s per
+/// ancestor directory for every linted file. Files in one directory share a
+/// project root, so each directory resolves once.
 pub(super) fn remove_finished_process_sessions(files: &[std::path::PathBuf]) {
-    let mut seen = vize_l0::FxHashSet::default();
+    if !paths::allocated_any_session_root() {
+        return;
+    }
+    let mut directories = vize_l0::FxHashSet::default();
+    let mut roots = vize_l0::FxHashSet::default();
     for file in files {
+        if !directories.insert(file.parent().unwrap_or(file)) {
+            continue;
+        }
         let root = paths::resolve_project_root(file.to_string_lossy().as_ref());
-        if seen.insert(root.clone()) {
+        if roots.insert(root.clone()) {
             paths::remove_finished_process_sessions(&root);
         }
     }

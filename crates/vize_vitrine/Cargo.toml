@@ -56,7 +56,8 @@ vize_l3 = { workspace = true }
 vize_l1 = { workspace = true }
 vize_l1_to_l2 = { workspace = true }
 vize_l2 = { workspace = true }
-vize_l4 = { workspace = true }
+# `compileTsrx` erases TypeScript through the TSRX compile entry.
+vize_l4 = { workspace = true, features = ["typescript"] }
 vize = { path = "../vize", default-features = false, features = [
   "glyph",
   "maestro",

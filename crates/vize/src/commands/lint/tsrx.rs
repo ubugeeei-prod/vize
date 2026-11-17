@@ -6,19 +6,16 @@
 //! one diagnostic per rule and range.
 //! Syntax errors and constructs the lowering refuses are `parser/tsrx`
 //! diagnostics at their authored spans, so no region is skipped silently.
-//! Host loops (`@for`) are refused the same way until the markup rules read
-//! a loop's head key and its `@empty` region.
+//! Host loops (`@for`) are list scopes: a `key` clause keys their items, and
+//! their `@empty` region is linted as content outside the list.
 
 use std::path::Path;
 
 use oxc_diagnostics::{OxcDiagnostic, Severity as OxcSeverity};
 use vize_l0::dialect::FileKind;
-use vize_l0::{Allocator, Span, ToCompactString, cstr};
+use vize_l0::{Allocator, ToCompactString, cstr};
 use vize_l1::markup::tsrx;
-use vize_l2::artifact::Artifact;
 use vize_l2::lang::tsrx::{TsrxIssue, lower};
-use vize_l2::op::Op;
-use vize_l2::walk::{NodeRef, PageWalk, visit_nodes};
 use vize_patina::markup::L2Markup;
 use vize_patina::{LintDiagnostic, LintResult, Linter, Severity};
 
@@ -37,25 +34,7 @@ pub(super) fn lint_tsrx(linter: &Linter, source: &str, filename: &str) -> LintRe
         match lower(&allocator, &module) {
             Err(issues) => diagnostics.extend(issues.iter().map(unsupported)),
             Ok(artifacts) => {
-                let loops: Vec<Span> = artifacts
-                    .regions()
-                    .iter()
-                    .flat_map(|region| host_loops(region.artifact()))
-                    .collect();
-                diagnostics.extend(loops.iter().map(|span| {
-                    LintDiagnostic::error(
-                        TSRX_PARSE_RULE,
-                        "@for is not linted in TSRX modules yet, so this module's markup is not linted",
-                        span.start,
-                        span.end,
-                    )
-                }));
-                let regions = if loops.is_empty() {
-                    artifacts.regions()
-                } else {
-                    &[]
-                };
-                for region in regions {
+                for region in artifacts.regions() {
                     let markup = L2Markup::from_artifact(region.artifact());
                     let result = linter.lint_markup(source, filename, &markup);
                     diagnostics.extend(result.diagnostics);
@@ -96,24 +75,6 @@ fn syntax(diagnostic: &OxcDiagnostic) -> LintDiagnostic {
             LintDiagnostic::warn(TSRX_PARSE_RULE, message, start, end)
         }
     }
-}
-
-/// Every host loop (`ForOp::host`) of one region, outermost first.
-fn host_loops(artifact: &Artifact<'_>) -> Vec<Span> {
-    let mut loops = Vec::new();
-    // A sealed artifact's ids fit the id space, so the walk visits every node.
-    let _ = visit_nodes(
-        &mut PageWalk::new(),
-        &artifact.root().ops,
-        &mut |_, node| {
-            if let NodeRef::Op(Op::For(each)) = node
-                && each.host.is_some()
-            {
-                loops.push(each.span);
-            }
-        },
-    );
-    loops
 }
 
 /// A construct the L2 lowering does not support yet: the module's markup is

@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 2957,
+  "regressionCommit": "145baca6ae3b4a45b847b7dcbf2cbcc39cd1e72d",
+  "sourceRevision": "145baca6ae3b4a45b847b7dcbf2cbcc39cd1e72d",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "branded-string-ref-argument",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/BrandedRef.vue",
+          "source": "BrandedRef.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "branded-number-ref-argument",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/BrandedRef.vue",
+          "source": "BrandedNumberRef.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "plain-string-ref-rejected-by-brand",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/BrandedRef.vue",
+          "source": "BrandedRef.plain.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/BrandedRef.vue",
+          "line": 7,
+          "column": 28,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type 'string' is not assignable to parameter of type 'BrandedString'.\nType 'string' is not assignable to type '{ __brand: \"BrandedString\"; }'."
+        }
+      ]
+    }
+  ]
+}

@@ -8,7 +8,7 @@ use crate::linter::corsa_session::{RelationReply, RelationRequest, Shape, Span, 
 use corsa::lint::LintNode;
 use oxc_ast::ast::Program;
 use serde_json::{Value, json};
-use vize_l0::FxHashMap;
+use vize_l0::{FxHashMap, String as CompactString, append, cstr};
 
 /// A host node a reply is written back to: `(kind, start, end)` in script
 /// coordinates.
@@ -26,6 +26,8 @@ pub(super) struct Pending {
     returns: Vec<Key>,
     /// Assignability replies and the field each is written to.
     assignable: Vec<(Key, &'static str)>,
+    enum_checks: Vec<EnumTarget>,
+    enum_calls: Vec<Vec<EnumTarget>>,
     /// Nodes whose facts are known without asking the checker.
     fixed: Vec<(Key, &'static str, Value)>,
 }
@@ -38,6 +40,25 @@ struct AssertionTarget {
 struct NonNullTarget {
     key: Key,
     used_before_assigned: bool,
+}
+
+#[derive(Clone, Copy)]
+pub(super) struct EnumTarget {
+    key: Key,
+    start: u32,
+    end: u32,
+    message: &'static str,
+}
+
+impl EnumTarget {
+    pub(super) fn new(key: Key, span: Span, message: &'static str) -> Self {
+        Self {
+            key,
+            start: span.0,
+            end: span.1,
+            message,
+        }
+    }
 }
 
 impl Pending {
@@ -54,6 +75,8 @@ impl Pending {
             && self.request.defaults.is_empty()
             && self.request.returns.is_empty()
             && self.request.assignable.is_empty()
+            && self.request.enum_checks.is_empty()
+            && self.request.enum_calls.is_empty()
     }
 }
 
@@ -201,6 +224,51 @@ pub(super) fn apply(nodes: &mut [LintNode], pending: &Pending, reply: Option<&Re
             None if *field == "__getterTypeAssignableToSetter" => push(*key, field, json!(true)),
             None => push(*key, "__typeFactsMissing", json!(true)),
         }
+    }
+    let mut enum_reports: FxHashMap<Key, Vec<Value>> = FxHashMap::default();
+    let mut record =
+        |target: &EnumTarget, answer: Option<&crate::linter::corsa_session::EnumMismatch>| {
+            let Some(answer) = answer else {
+                return;
+            };
+            let mut names = CompactString::default();
+            for (index, name) in answer.names.iter().enumerate() {
+                if index > 0 {
+                    names.push_str(", ");
+                }
+                append!(names, "'{}'", name.as_str());
+            }
+            let message = match target.message.split_once("{{enumNames}}") {
+                Some((before, after)) => cstr!("{before}{names}{after}"),
+                None => CompactString::from(target.message),
+            };
+            enum_reports.entry(target.key).or_default().push(json!({
+                "start": target.start,
+                "end": target.end,
+                "message": message,
+            }));
+        };
+    for (index, target) in pending.enum_checks.iter().enumerate() {
+        record(
+            target,
+            reply
+                .and_then(|reply| reply.enum_checks.get(index))
+                .and_then(Option::as_ref),
+        );
+    }
+    for (index, targets) in pending.enum_calls.iter().enumerate() {
+        let answers = reply.and_then(|reply| reply.enum_calls.get(index));
+        for (argument, target) in targets.iter().enumerate() {
+            record(
+                target,
+                answers
+                    .and_then(|answers| answers.get(argument))
+                    .and_then(Option::as_ref),
+            );
+        }
+    }
+    for (key, reports) in enum_reports {
+        push(key, "__unsafeEnumReports", Value::Array(reports));
     }
     for node in nodes {
         stamp(node, &facts);

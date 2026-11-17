@@ -1,0 +1,5 @@
+<script lang="ts">
+const value = 1; export type Public = typeof value; export interface Shape { value: typeof value }
+</script>
+
+<template><div /></template>

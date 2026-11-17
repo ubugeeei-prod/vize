@@ -97,7 +97,7 @@ jobs:
               done
             done
           done
-          node tools/benchmarks/scripts/setup-binding-anchor-evidence.ts "$RUNNER_TEMP/binding-evidence"
+          node tools/benchmarks/scripts/setup-binding-anchor-evidence.ts "$RUNNER_TEMP/binding-evidence" "$RUNNER_TEMP/binding-base"
       - name: Require complete constructor projection byte parity
         run: |
           set -euo pipefail

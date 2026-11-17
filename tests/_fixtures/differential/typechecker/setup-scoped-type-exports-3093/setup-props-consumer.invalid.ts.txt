@@ -1,0 +1,5 @@
+import type { Props } from "./SetupButton.vue";
+
+const rejectedProps: Props = { nativeType: "reset" };
+
+void rejectedProps;

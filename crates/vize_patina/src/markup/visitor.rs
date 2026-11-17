@@ -178,6 +178,10 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
                 Op::For(for_op) => {
                     self.list(MarkupList::from_l2(for_op, doc));
                     self.visit_l2_step(doc, scope_region(doc, for_op.span, &for_op.region.ops));
+                    // A host loop's `@empty` content renders once, outside the list.
+                    if let Some(empty) = for_op.empty_region() {
+                        self.visit_l2_region(doc, &empty.ops);
+                    }
                 }
                 Op::OriginalFor(for_op) => {
                     self.list(MarkupList::from_original_l2(for_op, doc));

@@ -1,0 +1,10 @@
+<script setup lang="ts">
+const NATIVE_TYPES = ["button", "submit"] as const;
+type Props = {
+  nativeType: typeof NATIVE_TYPES[number];
+};
+const props = defineProps<Props>();
+void props;
+</script>
+
+<template><button /></template>

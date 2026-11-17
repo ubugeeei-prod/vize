@@ -1,0 +1,29 @@
+<script setup lang="ts">
+import { ref } from "vue";
+
+interface FooProps {
+  kind?: "one";
+  value?: string;
+}
+
+interface BarProps {
+  kind?: "many";
+  value?: string[];
+}
+
+type ExampleProps = FooProps | BarProps;
+
+const props = withDefaults(defineProps<ExampleProps>(), {
+  kind: "one",
+});
+
+const value = ref(props.value);
+
+function clear() {
+  value.value = 1;
+}
+</script>
+
+<template>
+  <button type="button" @click="clear">Clear</button>
+</template>

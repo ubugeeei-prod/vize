@@ -160,4 +160,16 @@ mod tests {
             end,
         ));
     }
+
+    #[test]
+    fn rejects_a_slot_outlet_payload_key() {
+        // A `<slot>` payload literal has the props-literal shape, but its
+        // excess key is a real slot contract error (upstream #4979).
+        let (generated, mapping, start, end) = projection(ProjectionFeatures::ALL);
+        let source = "<template><slot  :buffer=\"200\" /></template>";
+        assert_eq!(source.get(18..24), Some("buffer"));
+        assert!(!authenticated_component_key(
+            &generated, source, &mapping, start, end,
+        ));
+    }
 }

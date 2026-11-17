@@ -1,0 +1,10 @@
+<script setup lang="ts" generic="T = string">
+import { shallowRef } from "vue"
+import Child from "./Child.vue"
+
+const modelValue = shallowRef<T | null>(null)
+</script>
+
+<template>
+  <Child v-model="modelValue" />
+</template>

@@ -1,0 +1,4 @@
+<script setup lang="ts">
+defineProps<{ label: 'say "bye" \\ done' }>()
+</script>
+<template><span>{{ label }}</span></template>

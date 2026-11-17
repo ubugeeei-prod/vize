@@ -1,0 +1,16 @@
+<script lang="ts">
+const NATIVE_TYPES = ["button", "submit", "reset"] as const;
+export type ButtonNativeType = typeof NATIVE_TYPES[number];
+
+const COLORS = ["red", "blue"] as const;
+export interface BadgeOptions {
+  color: typeof COLORS[number];
+}
+
+const selected: ButtonNativeType = "button";
+const options: BadgeOptions = { color: "red" };
+void selected;
+void options;
+</script>
+
+<template><button /></template>

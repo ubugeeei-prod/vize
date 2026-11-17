@@ -33,6 +33,7 @@ const pluginLintSessionExport =
   "module.exports.PluginLintSession = nativeBinding.PluginLintSession;\n";
 const configStdinCapabilityExport =
   "module.exports.supportsCliConfigStdin = nativeBinding.supportsCliConfigStdin;\n";
+const compileTsrxExport = "module.exports.compileTsrx = nativeBinding.compileTsrx;\n";
 const sha256 = (body: Buffer) => createHash("sha256").update(body).digest("hex");
 
 /** Keep the original authenticated loader law through the exact public additions. */
@@ -81,6 +82,15 @@ export function originalNativeLoaderModule(name: string, body: Buffer): Buffer {
     2,
     "config stdin capability retains its canonical initialization position",
   );
+  assert.equal(
+    text.split(
+      "module.exports.compileSfcBatchWithResults = nativeBinding.compileSfcBatchWithResults;\n" +
+        compileTsrxExport +
+        "module.exports.compileVapor = nativeBinding.compileVapor;\n",
+    ).length,
+    2,
+    "TSRX compile export retains its canonical initialization position",
+  );
   const before =
     "module.exports.typeCheckWithVirtualTsVisitors = nativeBinding.typeCheckWithVirtualTsVisitors;\n";
   const after =
@@ -97,6 +107,7 @@ export function originalNativeLoaderModule(name: string, body: Buffer): Buffer {
       .replace(typeResolutionBatchClassExport, "")
       .replace(typeResolutionBatchFunctionExport, "")
       .replace(configStdinCapabilityExport, "")
+      .replace(compileTsrxExport, "")
       .replace(addedExports, ""),
   );
   assert.equal(original.length, reference.bytes, "complete original native loader length");

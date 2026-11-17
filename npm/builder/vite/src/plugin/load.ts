@@ -18,6 +18,7 @@ import { resolveCssImports } from "../utils/css.ts";
 import type { SourceMapV3 } from "../utils/source-map.ts";
 import { fromPluginVisibleVirtualId, LEGACY_VIZE_PREFIX, RESOLVED_CSS_MODULE } from "../virtual.ts";
 import { transformVizeVirtualModule } from "./vite-transform.ts";
+import { transformTsrxRequest } from "./tsrx.ts";
 import {
   getCompiledStyleSource,
   getVirtualStyleContent,
@@ -313,7 +314,20 @@ export async function transformHook(
   id: string,
   options?: { ssr?: boolean },
 ): Promise<TransformResult | null> {
-  if (!id.startsWith("\0") && !id.includes(".vue") && !isJsxComponentPath(id)) return null;
+  if (
+    !id.startsWith("\0") &&
+    !id.includes(".vue") &&
+    !id.includes(".tsrx") &&
+    !isJsxComponentPath(id)
+  ) {
+    return null;
+  }
+
+  // `.tsrx` modules are real files too; no other plugin reads them.
+  const tsrxResult = transformTsrxRequest(state, code, id, { ssr: options?.ssr });
+  if (tsrxResult !== undefined) {
+    return tsrxResult;
+  }
 
   const pluginVisibleVirtualPath = fromPluginVisibleVirtualId(id);
 

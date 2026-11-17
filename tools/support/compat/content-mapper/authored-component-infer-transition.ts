@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
+import { beforeWithDefaultsUndefined } from "./with-defaults-undefined-transition.ts";
 
 type Identity = { bytes: number; sha256: string };
 type Hunk = { before: string; after: string };
@@ -35,6 +36,7 @@ const identity = (text: string): Identity => ({
 
 /** The pre-#13113 bytes of a recorded producer; other images pass through. */
 export function beforeAuthoredComponentInfer(file: string, current: string): string {
+  current = beforeWithDefaultsUndefined(file, current);
   const transition = record.files.find((candidate) => candidate.path === file);
   if (!transition) return current;
   const now = identity(current);

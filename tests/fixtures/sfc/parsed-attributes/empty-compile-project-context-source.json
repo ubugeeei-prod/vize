@@ -6,7 +6,7 @@
     {
       "path": "crates/vize_atelier_sfc/src/compile.rs",
       "referenceBlob": "6856ecc04ae177fe53724a09fbf2c0f5654a1fb7",
-      "currentBlob": "5433fd87bd11b144b41a9b7de417ba1faadf366a",
+      "currentBlob": "e6d42464540501a21795166d6637ecfe155b476e",
       "replacements": [
         {
           "reference": "mod normal_script;\npub(crate) mod output_module;\nmod props_rest;\nmod setup_exports;\nmod stage_capture;\n#[cfg(test)]\n",
@@ -135,6 +135,10 @@
         {
           "reference": "    ctx.bindings = script_bindings.clone();\n    if synthetic_inline_dollar_emit {\n        // `$emit` is a setup-context alias for inline render only. Returning it\n        // as authored setup state would reference an undeclared identifier.\n        ctx.bindings.bindings.remove(\"$emit\");\n    }\n",
           "current": "    bindings::copy_setup_state_bindings(\n        &mut ctx.bindings,\n        &script_bindings,\n        synthetic_inline_dollar_emit,\n    );\n"
+        },
+        {
+          "reference": "            .then(|| {\n                bindings::collect_options_api_bindings(&script_content, script.lang.as_deref())\n            })\n",
+          "current": "            .then(|| bindings::options_api(&script_content, script.lang.as_deref()))\n"
         }
       ]
     },

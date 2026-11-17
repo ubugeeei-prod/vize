@@ -1,0 +1,109 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 3202,
+  "regressionCommit": "378683f0c1feee643cd1e01347ff8cc6d31141db",
+  "sourceRevision": "378683f0c1feee643cd1e01347ff8cc6d31141db",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "static-and-bound-class",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "class.App.vue.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "static-and-bound-declared-prop",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "title.App.vue.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 5,
+          "column": 40,
+          "severity": 1,
+          "code": 1117,
+          "message": "An object literal cannot have multiple properties with the same name."
+        }
+      ]
+    },
+    {
+      "id": "repeated-declared-prop-wrong-bound-value",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "title-wrong.App.vue.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 5,
+          "column": 40,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type 'string'."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 5,
+          "column": 18,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type 'string'."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 5,
+          "column": 40,
+          "severity": 1,
+          "code": 1117,
+          "message": "An object literal cannot have multiple properties with the same name."
+        }
+      ]
+    }
+  ]
+}

@@ -108,6 +108,7 @@ const packages = [
       new URL("builder/rspack/src/index.ts", npmRoot),
       new URL("builder/rspack/src/loader/index.ts", npmRoot),
       new URL("builder/rspack/src/loader/jsx-loader.ts", npmRoot),
+      new URL("builder/rspack/src/loader/tsrx-loader.ts", npmRoot),
       new URL("builder/rspack/src/loader/style-loader.ts", npmRoot),
       new URL("builder/rspack/src/loader/scope-loader.ts", npmRoot),
     ],

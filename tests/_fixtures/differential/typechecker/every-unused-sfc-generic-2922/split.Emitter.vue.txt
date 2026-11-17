@@ -1,0 +1,10 @@
+<script setup lang="ts" generic="T extends string, U extends number">
+import type { LocalProps } from "./types";
+
+defineProps<LocalProps<T>>();
+const emit = defineEmits<{ change: [value: U] }>();
+
+emit("change", 1 as U);
+// @ts-expect-error strings are outside the generic payload constraint
+emit("change", "invalid");
+</script>

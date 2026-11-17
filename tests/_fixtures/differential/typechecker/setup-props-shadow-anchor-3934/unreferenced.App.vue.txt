@@ -1,0 +1,8 @@
+<script setup lang="ts">
+const props = defineProps<{ label: string }>()
+const other = 1
+</script>
+
+<template>
+  <span>{{ other }}</span>
+</template>

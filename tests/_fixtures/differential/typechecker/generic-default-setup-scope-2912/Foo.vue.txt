@@ -1,0 +1,18 @@
+<script setup lang="ts" generic="T extends string | number = string">
+import { ref } from "vue";
+
+interface Props {
+  value?: T;
+}
+
+const props = defineProps<Props>();
+const state = ref(props.value);
+
+function setValue(value: T) {
+  state.value = value;
+}
+</script>
+
+<template>
+  <slot :set-value :state />
+</template>

@@ -35,7 +35,7 @@ void test("member-inferred emit factories restore every exact previous source an
       }
     }
   }
-  const other = "crates/vize_canon/src/virtual_ts/helpers/declarations/vue3-types.d.ts.txt";
+  const other = "crates/vize_canon/src/virtual_ts/helpers/declarations/vue2-types.d.ts.txt";
   assert.equal(emitMemberInferEditsBefore(read, other, read(other)), read(other));
   assert.throws(() =>
     beforeEmitMemberInfer(

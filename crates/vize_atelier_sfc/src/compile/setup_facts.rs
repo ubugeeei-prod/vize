@@ -132,7 +132,7 @@ impl<'a> SetupAnalysis<'a> {
 /// `js` and `jsx`, as in Vue; TypeScript for every other `lang`, which is
 /// also how the compiler reads a language Vue leaves uncompiled (`uts`).
 /// `jsx` and `tsx` enable JSX.
-fn program_options(lang: Option<&str>) -> ProgramOptions {
+pub(super) fn program_options(lang: Option<&str>) -> ProgramOptions {
     let javascript = matches!(lang, None | Some("js" | "jsx"));
     let mut options = ProgramOptions::module(if javascript { Lang::Js } else { Lang::Ts });
     options.jsx = matches!(lang, Some("jsx" | "tsx"));

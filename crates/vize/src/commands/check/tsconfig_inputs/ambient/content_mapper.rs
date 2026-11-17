@@ -9,8 +9,11 @@ use super::super::glob::normalize_input_path;
 use super::super::loader::TsconfigInputCache;
 use super::super::matching::{is_nuxt_import_manifest_path, matches_tsconfig_patterns};
 use super::super::spec::{InputSelection, ProgramInputOptions};
+use super::super::type_references::DeclarationContents;
 use super::super::{collect_default_check_files_for_tsconfig, tsconfig_selects_any_input};
-use super::{collect_declaration_reference_graph_reading, collect_tsconfig_type_declaration_files};
+use super::{
+    collect_declaration_reference_graph_reading, collect_tsconfig_type_declaration_files_reading,
+};
 
 /// The declaration graph a content-mapper project owns.
 pub(crate) struct ContentMapperAmbientDeclarations {
@@ -77,21 +80,27 @@ pub(crate) fn collect_content_mapper_ambient_declarations(
             cache,
         ));
     }
-    roots.extend(collect_tsconfig_type_declaration_files(
+    // Each declaration is read once: the type packages' graph walks keep what
+    // they read for the walk that follows references, and that walk also
+    // decides the template-ref ownership. A declaration it read is a file.
+    let mut contents = DeclarationContents::default();
+    roots.extend(collect_tsconfig_type_declaration_files_reading(
         &project_root,
         Some(tsconfig_path),
+        &mut contents,
     ));
     roots.extend(manifests);
-    // Each declaration is read once: the walk that follows its references
-    // also decides the template-ref ownership.
     let mut declares_vue_template_ref = false;
-    let mut files = collect_declaration_reference_graph_reading(&roots, |content| {
-        declares_vue_template_ref = declares_vue_template_ref
-            || vize_canon::batch::declares_vue_template_ref_global(content);
-    })
-    .into_iter()
-    .filter(|path| path.is_file())
-    .collect::<Vec<_>>();
+    let mut read = FxHashSet::default();
+    let mut files =
+        collect_declaration_reference_graph_reading(&roots, contents, |path, content| {
+            read.insert(path.to_path_buf());
+            declares_vue_template_ref = declares_vue_template_ref
+                || vize_canon::batch::declares_vue_template_ref_global(content);
+        })
+        .into_iter()
+        .filter(|path| read.contains(path) || path.is_file())
+        .collect::<Vec<_>>();
     files.sort();
     ContentMapperAmbientDeclarations {
         files,

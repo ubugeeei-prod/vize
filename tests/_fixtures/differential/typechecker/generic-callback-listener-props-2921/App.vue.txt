@@ -1,0 +1,12 @@
+<script setup lang="ts">
+import Child from "./Child.vue";
+
+function selectNumber(item: number) {
+  console.log(item.toFixed(2));
+}
+</script>
+
+<template>
+  <Child :items="[1, 2, 3]" @select="(item) => item.toFixed(2)" />
+  <Child :items="[1, 2, 3]" @select="selectNumber" />
+</template>

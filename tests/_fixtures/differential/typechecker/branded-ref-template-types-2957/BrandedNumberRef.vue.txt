@@ -1,0 +1,7 @@
+<script setup lang="ts">
+import { ref } from "vue";
+type BrandedNumber = number & { __brand: "BrandedNumber" };
+function acceptBranded(value: BrandedNumber): number { return value; }
+const brandedRef = ref<BrandedNumber>(0 as BrandedNumber);
+</script>
+<template>{{ acceptBranded(brandedRef) }}</template>

@@ -1,0 +1,8 @@
+<script lang="ts">
+const value = 1;
+export /* public */ type Box<T extends typeof value> = { value: T }
+const box: Box<1> = { value: 2 };
+void box;
+</script>
+
+<template><div /></template>

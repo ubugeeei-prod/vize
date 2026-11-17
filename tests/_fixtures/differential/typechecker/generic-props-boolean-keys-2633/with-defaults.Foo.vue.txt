@@ -1,0 +1,18 @@
+<script lang="ts">
+interface Props<T> {
+  as?: string;
+  value: T;
+}
+</script>
+
+<script setup lang="ts" generic="T extends Record<string, unknown>">
+const props = withDefaults(defineProps<Props<T>>(), {
+  as: "div"
+});
+
+function getKey(value: Record<PropertyKey, unknown>) {
+  return String(value.id);
+}
+
+getKey(props.value);
+</script>

@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 2732,
+  "regressionCommit": "b41d999468128f920fcbbda1cc5c019e90dc75ee",
+  "sourceRevision": "b41d999468128f920fcbbda1cc5c019e90dc75ee",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "component-fallthrough-touch-listener",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Foo.vue",
+          "source": "Foo.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "native-element-touch-listener-type-error",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Foo.vue",
+          "source": "native.Foo.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Foo.vue",
+          "line": 12,
+          "column": 24,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '(event: MouseEvent) => void' is not assignable to parameter of type '(_e: TouchEvent) => unknown'.\nTypes of parameters 'event' and '_e' are incompatible.\nType 'TouchEvent' is missing the following properties from type 'MouseEvent': button, buttons, clientX, clientY, and 15 more."
+        }
+      ]
+    }
+  ]
+}
