@@ -1,0 +1,13 @@
+<script setup lang="ts">
+import TeacherCard from "./TeacherCard.vue"
+const teacher = { name: "Ada" }
+const isLoading = false
+</script>
+
+<template>
+<TeacherCard
+  class="ma-1"
+  :teacher="teacher"
+  :class="{ 'loading-place-holder': isLoading }"
+/>
+</template>

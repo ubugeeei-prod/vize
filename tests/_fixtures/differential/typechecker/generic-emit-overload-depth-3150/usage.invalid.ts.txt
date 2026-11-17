@@ -1,0 +1,11 @@
+import Child from "./Child.vue";
+
+type StaticEventProps<C> = C extends { __vizeEmitProps?: infer P }
+  ? NonNullable<P>
+  : never;
+type ExpandedEventProps = {
+  [K in keyof StaticEventProps<typeof Child>]: StaticEventProps<typeof Child>[K]
+};
+
+declare const handlers: ExpandedEventProps;
+handlers.onClosed?.("unexpected");

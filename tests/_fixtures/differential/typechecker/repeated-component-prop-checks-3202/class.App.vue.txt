@@ -1,0 +1,5 @@
+<script setup lang="ts">
+import Child from "./Child.vue"
+const isLoading = false
+</script>
+<template><Child class="static-card" :class="{ loading: isLoading }" /></template>

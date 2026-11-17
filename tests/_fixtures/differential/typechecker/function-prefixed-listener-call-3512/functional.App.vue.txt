@@ -1,0 +1,7 @@
+<script setup lang="ts">
+import KnownChild from './KnownChild.vue'
+function functionalHandler(key: string) {
+  void key
+}
+</script>
+<template><KnownChild @select="functionalHandler($event)" /></template>

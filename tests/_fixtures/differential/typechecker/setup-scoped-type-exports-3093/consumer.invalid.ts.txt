@@ -1,0 +1,11 @@
+import type { BadgeOptions, ButtonNativeType } from "./Button.vue";
+
+const acceptedButton: ButtonNativeType = "submit";
+const rejectedButton: ButtonNativeType = "anchor";
+const acceptedBadge: BadgeOptions = { color: "blue" };
+const rejectedBadge: BadgeOptions = { color: "green" };
+
+void acceptedButton;
+void rejectedButton;
+void acceptedBadge;
+void rejectedBadge;

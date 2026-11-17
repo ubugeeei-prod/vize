@@ -1,0 +1,7 @@
+import type { Public, Shape } from "./SharedLine.vue";
+
+const publicValue: Public = 2;
+const shape: Shape = { value: 1 };
+
+void publicValue;
+void shape;

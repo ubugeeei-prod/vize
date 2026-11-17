@@ -1,0 +1,14 @@
+<script setup lang="ts" generic="T extends keyof Payloads = any">
+export interface Payloads {
+  text: string
+  count: number
+}
+
+defineProps<{ type: T }>()
+defineEmits<{
+  <K extends keyof Payloads>(event: "done", value: Payloads[K]): void
+  (event: "closed"): void
+}>()
+</script>
+
+<template><div /></template>

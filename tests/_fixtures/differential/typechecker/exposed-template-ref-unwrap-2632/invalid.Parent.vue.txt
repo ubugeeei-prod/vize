@@ -1,0 +1,12 @@
+<script setup lang="ts">
+import { useTemplateRef } from "vue";
+
+import Child from "./Child.vue";
+
+const child = useTemplateRef<InstanceType<typeof Child>>("child");
+</script>
+
+<template>
+  <Child ref="child" />
+  {{ child?.element?.foo }}
+</template>

@@ -1,0 +1,3 @@
+<script setup lang="ts" generic="TValue = undefined">
+defineProps<{ value?: TValue }>();
+</script>

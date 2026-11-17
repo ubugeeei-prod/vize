@@ -1,0 +1,5 @@
+import type { Options } from "./MergedOptions.vue";
+
+const options: Options = { a: 1 };
+
+void options;

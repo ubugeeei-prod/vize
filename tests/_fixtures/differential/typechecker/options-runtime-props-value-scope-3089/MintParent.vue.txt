@@ -1,0 +1,4 @@
+<script setup lang="ts">
+import MintPaletteButton from './MintPaletteButton.vue'
+</script>
+<template><MintPaletteButton content="mint" :offset="0.5" direction="rt" /></template>

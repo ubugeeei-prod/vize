@@ -1,0 +1,7 @@
+<script setup lang="ts">
+defineProps<{ teacher: { name: string } }>()
+</script>
+
+<template>
+  <article />
+</template>
