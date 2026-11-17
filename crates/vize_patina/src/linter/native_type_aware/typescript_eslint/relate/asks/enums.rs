@@ -20,6 +20,17 @@ impl<'v> Walk<'_, '_, 'v> {
                 let id = value.get("id");
                 let pattern =
                     id.is_some_and(|id| matches!(kind(id), "ArrayPattern" | "ObjectPattern"));
+                // typescript-eslint compares the initializer with the type of
+                // `node.id`. An unannotated pattern takes its initializer's
+                // own type, so no enum can be lost; its contextual type is
+                // only the pattern's implied shape, not a receiver.
+                if pattern
+                    && id
+                        .and_then(|id| id.get("typeAnnotation"))
+                        .is_none_or(Value::is_null)
+                {
+                    return;
+                }
                 self.enum_pair(
                     value,
                     value.get("init"),
