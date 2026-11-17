@@ -154,6 +154,55 @@ fn definition_session_detects_a_same_mtime_package_manifest_retarget() {
     assert_eq!(second.uri, file_url(&bravo.canonicalize().unwrap()));
 }
 
+/// Component imports share the server's route cache: a package installed after
+/// a miss, a same-mtime manifest retarget, and a change made during a
+/// diagnostics pass's validation scope are all observed on the next lookup.
+#[test]
+fn shared_component_routes_observe_installs_and_retargets() {
+    let workspace = tempdir().unwrap();
+    let source = workspace.path().join("src/App.vue");
+    let content = "<script setup lang=\"ts\">\nimport Widget from '@scope/ui/widget'\n</script>\n";
+    write(&source, content);
+    let uri = file_url(&source);
+    let state = ServerState::new();
+    state
+        .documents
+        .open(uri.clone(), content.to_string(), 1, "vue".to_string());
+    let context = IdeContext::new(&state, &uri, 0).unwrap();
+    let resolve =
+        || crate::ide::definition::helpers::resolve_import_path_in(&context, "@scope/ui/widget");
+    assert_eq!(resolve(), None);
+
+    let package = workspace.path().join("node_modules/@scope/ui");
+    let manifest = package.join("package.json");
+    let alpha_manifest = r#"{"exports":{"./widget":"./src/Alpha.vue"}}"#;
+    let bravo_manifest = r#"{"exports":{"./widget":"./src/Bravo.vue"}}"#;
+    let (alpha, bravo) = (package.join("src/Alpha.vue"), package.join("src/Bravo.vue"));
+    write(&alpha, "<template />\n");
+    write(&bravo, "<template />\n");
+    write(&manifest, alpha_manifest);
+    assert_eq!(resolve(), Some(alpha.canonicalize().unwrap()));
+
+    let retarget = |manifest_text: &str| {
+        let modified = fs::metadata(&manifest).unwrap().modified().unwrap();
+        fs::write(&manifest, manifest_text).unwrap();
+        fs::File::options()
+            .write(true)
+            .open(&manifest)
+            .unwrap()
+            .set_modified(modified)
+            .unwrap();
+    };
+    retarget(bravo_manifest);
+    assert_eq!(resolve(), Some(bravo.canonicalize().unwrap()));
+
+    let scope = state.package_route_resolver.lock().validation_scope();
+    assert_eq!(resolve(), Some(bravo.canonicalize().unwrap()));
+    retarget(alpha_manifest);
+    drop(scope);
+    assert_eq!(resolve(), Some(alpha.canonicalize().unwrap()));
+}
+
 #[test]
 fn resolves_scoped_wildcard_declaration_subpath() {
     let workspace = tempdir().unwrap();
