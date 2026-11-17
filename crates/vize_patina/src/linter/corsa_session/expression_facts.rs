@@ -7,11 +7,14 @@
 //! constraint or contextual type are fetched once whichever family asks.
 mod details;
 mod paths;
+mod requests;
 mod shape;
 mod signatures;
+mod widening;
 
 pub(in crate::linter) use super::promise_facts::Facets;
 pub(in crate::linter) use paths::PathStep;
+pub(in crate::linter) use requests::{ComputedMemberQuery, HeritageQuery};
 pub(in crate::linter) use shape::detail;
 
 mod batch;
@@ -63,9 +66,14 @@ pub(in crate::linter) struct ExpressionQuery {
     /// For a call-like node: argument positions whose resolved parameter types
     /// to load (0 loads none).
     pub call_positions: u32,
+    /// With `call_positions`: also load the type an argument after a variadic
+    /// tuple spread meets (`FunctionSignature.consumeRemainingArguments`).
+    pub call_rest: bool,
     /// For a function-like node: load its call signatures' return types.
     /// `Some(true)` reads them off the contextual type when there is one.
     pub function_returns: Option<bool>,
+    /// With `function_returns`: also load each signature's type predicate.
+    pub predicates: bool,
     /// Load the checker's contextual type at this node, with its detail.
     pub contextual: bool,
     /// Load checker details (flags, constituents, constraint, references).
@@ -117,10 +125,12 @@ impl ExpressionQuery {
             self.heritage = other.heritage;
         }
         self.call_positions = self.call_positions.max(other.call_positions);
+        self.call_rest |= other.call_rest;
         self.function_returns = match (self.function_returns, other.function_returns) {
             (Some(left), Some(right)) => Some(left || right),
             (left, right) => left.or(right),
         };
+        self.predicates |= other.predicates;
         self.contextual |= other.contextual;
         self.detail |= other.detail;
         self.promise_any |= other.promise_any;
@@ -146,29 +156,6 @@ impl ExpressionQuery {
         self.parts |= other.parts;
         self.empty_object |= other.empty_object;
     }
-
-    /// Resolve this range to the outermost node with the same span: a type
-    /// reference and its name share one, and only the reference is typed.
-    fn widens(&self) -> bool {
-        self.parts || self.empty_object
-    }
-}
-
-/// Heritage lookups for no-misused-promises' `checksVoidReturn.inheritedMethods`.
-#[derive(Clone, Debug)]
-pub(in crate::linter) struct HeritageQuery {
-    /// Read the heritage types as the base types of the declared type
-    /// (`extends`); otherwise the expression type is the heritage type.
-    pub base_types: bool,
-    /// Non-static member names of the class or interface.
-    pub members: Vec<CompactString>,
-}
-
-/// Operand ranges for a computed member access.
-#[derive(Clone, Copy, Debug)]
-pub(in crate::linter) struct ComputedMemberQuery {
-    pub object: (u32, u32),
-    pub property: (u32, u32),
 }
 
 /// Facts a typescript-eslint rule reads off one expression.
@@ -256,12 +243,10 @@ impl CorsaTypeAwareSession {
             ),
             None => (start, end),
         };
+        let utf16 = super::utf16::Utf16Offsets::new(source);
         let translate = |span: (u32, u32)| {
             let (start, end) = to_virtual(span);
-            (
-                byte_offset_to_utf16_offset(source, start),
-                byte_offset_to_utf16_offset(source, end),
-            )
+            (utf16.get(start), utf16.get(end))
         };
         let extra = request.map_or_else(Vec::new, |request| relations::spans(request, &translate));
         if queries.is_empty() && extra.is_empty() {
@@ -301,23 +286,23 @@ type Located = (
 );
 
 /// Query ranges are UTF-16 offsets into `source`; `extra` are more UTF-16
-/// spans (relation operands) typed in the same batch.
+/// spans (relation operands) typed in the same batch, each with its widening.
 async fn load(
     memo: &CheckerMemo<'_>,
     file: &str,
     source: &str,
     ranges: &[(u32, u32)],
     queries: &[ExpressionQuery],
-    extra: &[(u32, u32)],
+    extra: &[((u32, u32), bool)],
 ) -> corsa::Result<(Vec<ExpressionFact>, Option<Located>)> {
     let session = memo.session();
     let mut spans = ranges.to_vec();
-    spans.extend_from_slice(extra);
+    spans.extend(extra.iter().map(|(span, _)| *span));
     let mut widen = queries
         .iter()
         .map(ExpressionQuery::widens)
         .collect::<Vec<_>>();
-    widen.resize(spans.len(), false);
+    widen.extend(extra.iter().map(|(_, widen)| *widen));
     let (responses, handles) = type_responses(session, file, source, &spans, &widen).await?;
     if responses.len() != spans.len() {
         return Err(corsa::CorsaError::Protocol(
@@ -395,7 +380,7 @@ async fn load(
                 fact.call = signatures::resolved_parameters(
                     memo,
                     location.clone(),
-                    query.call_positions,
+                    (query.call_positions, query.call_rest),
                     &mut details,
                 )
                 .await?;
@@ -411,6 +396,7 @@ async fn load(
                     memo,
                     response,
                     location.filter(|_| contextual).cloned(),
+                    query.predicates,
                     &mut details,
                 )
                 .await?,
@@ -485,13 +471,4 @@ fn detail_exposes_promise(detail: Option<&Value>) -> bool {
                     text.starts_with("Promise<") || text.starts_with("PromiseLike<")
                 })
     })
-}
-
-fn byte_offset_to_utf16_offset(source: &str, byte_offset: u32) -> u32 {
-    let mut clamped = usize::min(byte_offset as usize, source.len());
-    while clamped > 0 && !source.is_char_boundary(clamped) {
-        clamped -= 1;
-    }
-    let prefix = source.get(..clamped).unwrap_or_default();
-    prefix.encode_utf16().count() as u32
 }

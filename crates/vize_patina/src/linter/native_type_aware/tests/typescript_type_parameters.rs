@@ -130,6 +130,8 @@ class Container<T> {
     assert_eq!(actual, vec![2, 5], "{:#?}", result.diagnostics);
 }
 
+mod inferred;
+
 mod corpus {
     include!("typescript_no_unnecessary_type_parameters_corpus.rs");
 }

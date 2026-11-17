@@ -64,7 +64,7 @@ export interface EvidenceFile<T> {
 
 const matrixTools = ["compiler", "typechecker", "linter", "formatter"];
 const matrixStatuses = ["planned", "ok", "findings", "configuration", "failed", "missing-fixture"];
-const lintExtensions = ".vue, .html, .htm, .js, .mjs, .cjs, .ts, .mts, .cts, .jsx, or .tsx",
+const lintExtensions = ".vue, .html, .htm, .js, .mjs, .cjs, .ts, .mts, .cts, .jsx, .tsx, or .tsrx",
   noFilesPrefix = `No ${lintExtensions} files found matching patterns: `,
   unmatchedPatternsPrefix = `Warning: no ${lintExtensions} files found matching patterns: `,
   recursiveVueGlob = /^(?:\*\*|[A-Za-z0-9_.@+-]+(?:\/[A-Za-z0-9_.@+-]+)*\/\*\*)\/\*\.vue$/;

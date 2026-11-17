@@ -12,6 +12,7 @@ use crate::template_diagnostic_directives::{DirectivePolicy, TemplateDiagnosticD
 use crate::virtual_ts::{VizeSemanticLink, types::VizeMapping};
 
 mod safety;
+pub(super) use safety::{RelocationSafety, stable_render_flow_with_loops};
 
 pub(super) fn callback_input_facts(element: &vize_relief::ElementNode<'_>) -> Option<bool> {
     safety::callback_input_facts(element)

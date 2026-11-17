@@ -287,7 +287,16 @@ pub(super) fn generate_v_slot_scope(
             }
             super::node::emit_scope_usage_bindings(ts, mappings, ctx, scope_id, inner_indent);
 
-            if let Some(exprs) = ctx.expressions_by_scope.get(&scope_id)
+            if ctx.expect_splices.has_scope(scope_id) {
+                ctx.expect_splices.generate_expressions(
+                    ts,
+                    mappings,
+                    ctx,
+                    scope_id,
+                    inner_indent,
+                    None,
+                );
+            } else if let Some(exprs) = ctx.expressions_by_scope.get(&scope_id)
                 && ctx.check_options.check_template_bindings
             {
                 generate_expressions(

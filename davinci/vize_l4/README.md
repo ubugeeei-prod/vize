@@ -51,6 +51,14 @@ exposes checked authored diagnostic ranges. Generated module punctuation is
 unlinked. This additive input does not select Canon's default route or admit
 Vue templates, JSX, incomplete File syntax or the full type-check target.
 
+`targets::ts::project_jsx_module` projects a JSX/TSX module from the L2
+definitions of its outermost roots (#6849). Script stays verbatim; each root
+becomes one expression whose native element bindings, listeners, spreads and
+child values are checked through the published ambient helpers. `&&`, `?:`
+and `.map()` keep their authored script around the projected regions. The
+result is a `TsDocument`: text, one role per link and check-comment ranges.
+Components are typed refusals for now, and no product route calls it.
+
 Whole-component completeness, file If/For, broader DOM semantics and the SSR,
 Vapor and type-check targets remain unfinished in
 [#6840](https://github.com/ubugeeei-prod/vize/issues/6840).

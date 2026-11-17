@@ -371,6 +371,8 @@ pub struct MacroTracker {
     art: Option<ArtDefinition>,
     define_options_name: Option<CompactString>,
     props_destructure: Option<PropsDestructuredBindings>,
+    /// The identifier a `defineProps`/`withDefaults` call initializes.
+    props_object_local: Option<CompactString>,
     top_level_awaits: Vec<TopLevelAwait>,
     next_id: u32,
     define_props_idx: Option<usize>,
@@ -480,18 +482,6 @@ impl MacroTracker {
     #[inline]
     pub fn slots(&self) -> &[SlotsDefinition] {
         &self.slots
-    }
-
-    /// Set props destructure
-    #[inline]
-    pub fn set_props_destructure(&mut self, destructure: PropsDestructuredBindings) {
-        self.props_destructure = Some(destructure);
-    }
-
-    /// Get props destructure
-    #[inline]
-    pub fn props_destructure(&self) -> Option<&PropsDestructuredBindings> {
-        self.props_destructure.as_ref()
     }
 
     /// Add top-level await

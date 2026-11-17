@@ -2,7 +2,10 @@
 #![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 use std::path::{Path, PathBuf};
 
-use super::{collect_ambient_declaration_files, collect_hidden_ambient_declaration_files};
+use super::{
+    collect_ambient_declaration_files, collect_content_mapper_ambient_declarations,
+    collect_hidden_ambient_declaration_files,
+};
 use crate::commands::check::tsconfig_inputs::TsconfigInputCache;
 
 fn write(root: &Path, rel: &str, content: &str) {
@@ -30,6 +33,45 @@ fn relative_paths(root: &Path, files: &[PathBuf]) -> Vec<String> {
                 .replace('\\', "/")
         })
         .collect()
+}
+
+#[test]
+fn content_mapper_ambient_collection_opens_only_declaration_inputs() {
+    let root = unique_case_dir("content-mapper-declarations-only");
+    let _ = std::fs::remove_dir_all(&root);
+    for index in 0..256 {
+        write(
+            &root,
+            &format!("src/generated/module-{index}.ts"),
+            "export {}; declare global { interface Unrelated {} }\n",
+        );
+    }
+    write(
+        &root,
+        "src/auto-imports.d.ts",
+        "/// <reference path=\"./template-ref.d.ts\" />\nexport {};\n",
+    );
+    write(
+        &root,
+        "src/template-ref.d.ts",
+        "export {}; declare global { const useTemplateRef: typeof import('vue')['useTemplateRef']; }\n",
+    );
+    write(&root, "tsconfig.json", r#"{ "include": ["src"] }"#);
+
+    let project_root = root.canonicalize().unwrap();
+    let files = collect_content_mapper_ambient_declarations(
+        &project_root,
+        &project_root.join("tsconfig.json"),
+        &mut TsconfigInputCache::default(),
+    );
+
+    // The reference-only manifest is part of the program graph too: editing
+    // its references changes ownership, so it is watched (#13093).
+    assert_eq!(
+        relative_paths(&project_root, &files),
+        vec!["src/auto-imports.d.ts", "src/template-ref.d.ts"]
+    );
+    let _ = std::fs::remove_dir_all(&root);
 }
 
 #[test]

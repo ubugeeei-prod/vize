@@ -21,8 +21,10 @@ use super::project::{
 };
 use super::{Request, TransformParams, read_frame};
 
+mod compact;
 mod initialize;
 mod replies;
+mod trivia_scan;
 mod wire;
 use initialize::initialize;
 pub(super) use replies::ReplyOrder;
@@ -31,7 +33,7 @@ use replies::{WriteProgress, write_replies};
 use wire::encode_frame;
 #[cfg(test)]
 pub(super) use wire::wire_value;
-use wire::{encode_error, encode_result, encode_transform};
+use wire::{HostReads, encode_error, encode_result, encode_transform};
 
 // Actions measured both closure shapes at 4,094 levels in the optimized
 // ci-opt profile with 32 MiB and an independent 64 MiB output control.
@@ -415,12 +417,16 @@ fn dispatch_transform(
 }
 
 fn transform_frame(job: &TransformJob, sources: &ContentMapperTypeSources) -> io::Result<Vec<u8>> {
+    let reads = HostReads {
+        code_selectors: job.diagnostic_code_selectors,
+        geometry_only: job.settings.transform_options.diagnostics_only(),
+    };
     match super::shipped_declaration::read_shipped_declaration(
         Path::new(job.file_name.as_str()),
         job.settings.skip_lib_check,
     ) {
         Ok(Some(result)) => {
-            return encode_transform(&job.id, &result, job.diagnostic_code_selectors);
+            return encode_transform(&job.id, &result, reads);
         }
         Ok(None) => {}
         Err(error) => {
@@ -436,11 +442,10 @@ fn transform_frame(job: &TransformJob, sources: &ContentMapperTypeSources) -> io
         &job.settings.project_context,
         sources,
     ) {
-        Ok(result) => encode_transform(
-            &job.id,
-            &result.with_semantic_diagnostics(),
-            job.diagnostic_code_selectors,
-        ),
+        Ok(result) => {
+            let result = compact::for_host(result.with_semantic_diagnostics(), &job.settings);
+            encode_transform(&job.id, &result, reads)
+        }
         Err(error) => {
             let message = cstr!("Transform failed: {error}");
             encode_error(&job.id, -32603, &message)
@@ -450,6 +455,9 @@ fn transform_frame(job: &TransformJob, sources: &ContentMapperTypeSources) -> io
 
 #[cfg(all(test, target_os = "linux", target_pointer_width = "64"))]
 mod tests;
+
+#[cfg(test)]
+mod compact_tests;
 
 #[cfg(test)]
 mod type_source_tests {

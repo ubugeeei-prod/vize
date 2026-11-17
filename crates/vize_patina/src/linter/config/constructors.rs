@@ -53,6 +53,7 @@ impl Linter {
             corsa_path: None,
             #[cfg(not(target_arch = "wasm32"))]
             type_aware_tsconfig: None,
+            type_sources: None,
         }
     }
 
@@ -95,6 +96,7 @@ impl Linter {
             corsa_path: None,
             #[cfg(not(target_arch = "wasm32"))]
             type_aware_tsconfig: None,
+            type_sources: None,
         };
         if matches!(preset, LintPreset::Opinionated) {
             linter.script_rule_overrides.insert(
@@ -144,6 +146,7 @@ impl Linter {
             corsa_path: None,
             #[cfg(not(target_arch = "wasm32"))]
             type_aware_tsconfig: None,
+            type_sources: None,
         }
     }
 
@@ -202,6 +205,7 @@ impl Linter {
             corsa_path: None,
             #[cfg(not(target_arch = "wasm32"))]
             type_aware_tsconfig: None,
+            type_sources: None,
         }
     }
 }

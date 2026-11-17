@@ -114,7 +114,7 @@ pub(super) fn apply(declaration: &mut LintNode, facts: &FxHashMap<(u32, u32), &E
                 return_usage(returns, &name, from_class)
             } else {
                 answered = true;
-                rendered_usage(&fact.type_texts, &name, true, false)
+                rendered_usage(&fact.type_texts, &name, from_class, false)
             };
             inferred = (inferred + usage).min(2);
             if inferred >= 2 {
@@ -134,12 +134,9 @@ fn usage_queries(owner: &Value, owner_kind: &str) -> Vec<Value> {
     if matches!(owner_kind, "ClassDeclaration" | "ClassExpression") {
         return class_usage_queries(owner);
     }
-    if needs_semantic_return(owner) {
-        return node_range(owner)
-            .map(|(start, end)| vec![json!({ "start": start, "end": end, "kind": "return" })])
-            .unwrap_or_default();
-    }
-    Vec::new()
+    let mut queries = Vec::new();
+    signature_queries(owner, &[], &mut queries);
+    queries
 }
 
 fn class_usage_queries(owner: &Value) -> Vec<Value> {
@@ -158,16 +155,8 @@ fn class_usage_queries(owner: &Value) -> Vec<Value> {
             member.get("value").filter(|value| is_function_like(value))
         };
         if let Some(function) = function {
-            if needs_semantic_return(function)
-                && let Some((start, end)) = node_range(function)
-            {
-                queries.push(json!({
-                    "start": start,
-                    "end": end,
-                    "kind": "return",
-                    "shadows": declared_type_parameters(function),
-                }));
-            }
+            let shadows = declared_type_parameters(function);
+            signature_queries(function, &shadows, &mut queries);
             continue;
         }
         let kind = member.get("type").and_then(Value::as_str);
@@ -315,7 +304,8 @@ fn reference_implies_multiple(
                     .and_then(Value::as_bool)
                     .unwrap_or(false),
                 key,
-            ) {
+            ) || is_property_initializer(kind, key, child)
+            {
                 return false;
             }
             let child_in_return = in_return || (is_function_like(value) && key == "returnType");
@@ -347,7 +337,10 @@ fn return_usage(returns: &Value, name: &str, from_class: bool) -> u64 {
     signatures
         .iter()
         .map(|signature| {
+            // `getTypePredicateOfSignature(signature)?.type ?? getReturnType()`.
             let texts = signature
+                .get("predicate")
+                .unwrap_or(signature)
                 .get("texts")
                 .and_then(Value::as_array)
                 .into_iter()

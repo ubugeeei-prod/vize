@@ -28,7 +28,7 @@ pub(super) fn script_summary(
     let mut summary = super::super::super::analyze_descriptor_for_lint(
         scripts,
         admitted,
-        linter.has_resolved_macro_type_demand().then_some(filename),
+        linter.macro_type_resolution(filename),
         unused,
         false,
     );
@@ -90,6 +90,7 @@ pub(super) fn report_unused(
     ctx.set_config_rule_severities(linter.severity_overrides.clone());
     ctx.set_help_level(linter.help_level);
     ctx.set_no_inline_config(linter.no_inline_config);
+    ctx.set_type_sources(linter.type_sources.as_ref());
     ctx.set_sfc_descriptor(descriptor);
     ctx.set_analysis(summary);
     NoUnusedSetupBindings::report(&mut ctx, None);

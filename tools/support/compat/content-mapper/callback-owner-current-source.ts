@@ -14,6 +14,10 @@ import { beforeListenerLibTypeQualification } from "./lib-type-qualification-lis
 import { beforeDiscriminatedJsxUnion } from "./discriminated-jsx-union-transition.ts";
 import { beforeCanonLeftovers, beforeStrictExtraKeys } from "./strict-extra-keys-transition.ts";
 import { certifiedHelperImages, withLandedEdits } from "./callback-owner-landed-contracts.ts";
+import {
+  currentLibraryPropChecker,
+  previousLibraryPropChecker,
+} from "./library-props-fallthrough-transition.ts";
 
 export type CallbackSourceReader = (path: string) => string;
 type Edit = { start: number; end: number; replacement: Buffer };
@@ -395,6 +399,27 @@ export function currentCallbackSourceEdits(
       replacement: Buffer.from(replacement),
     });
   };
+  // #13021: the embedded `$PropChecker` library branch gains the loose tail.
+  const libraryCounts = [before, after].map((text) =>
+    [previousLibraryPropChecker, currentLibraryPropChecker].map(
+      (line) => text.split(line).length - 1,
+    ),
+  );
+  if (libraryCounts[0]![0] !== libraryCounts[1]![0]) {
+    assert.deepEqual(
+      libraryCounts,
+      [
+        [1, 0],
+        [0, 1],
+      ],
+      "only the certified library checker branch may migrate",
+    );
+    add(
+      before.indexOf(previousLibraryPropChecker),
+      previousLibraryPropChecker.length,
+      currentLibraryPropChecker,
+    );
+  }
   const certifyCanonLeftoversSource = (path: string): string => {
     const current = readSource(path);
     const predecessor = beforeCanonLeftovers(path, current);

@@ -253,8 +253,20 @@ impl RelationReply {
 }
 
 /// Every node span `request` needs typed, translated and deduplicated, so the
-/// expression batch resolves each handle and type once.
-pub(super) fn spans(request: &RelationRequest, translate: &dyn Fn(Span) -> Span) -> Vec<Span> {
+/// expression batch resolves each handle and type once. A span is paired with
+/// whether it names a type node (a type argument and the default it is
+/// compared with): those are typed as their outermost node with the same span,
+/// the type reference, as `getTypeAtLocation` types a type node. A bare name's
+/// own identifier types as the error type.
+pub(super) fn spans(
+    request: &RelationRequest,
+    translate: &dyn Fn(Span) -> Span,
+) -> Vec<(Span, bool)> {
+    let type_nodes = request
+        .defaults
+        .iter()
+        .flat_map(|(argument, default)| [translate(*argument), translate(*default)])
+        .collect::<FxHashSet<_>>();
     let mut seen = FxHashSet::default();
     let mut order = Vec::new();
     let mut add = |span: Span| {
@@ -375,6 +387,9 @@ pub(super) fn spans(request: &RelationRequest, translate: &dyn Fn(Span) -> Span)
         }
     }
     order
+        .into_iter()
+        .map(|span| (span, type_nodes.contains(&span)))
+        .collect()
 }
 
 pub(super) struct Located {

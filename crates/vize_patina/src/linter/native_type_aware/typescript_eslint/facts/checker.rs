@@ -210,12 +210,14 @@ pub(super) fn listener_queries(node: &LintNode, queries: &mut Planner, needs: Ne
         "CallExpression" | "NewExpression" | "TaggedTemplateExpression" => {
             if needs.calls {
                 let arguments = call_arguments(node);
-                queries.push(query(
+                let mut call = query(
                     node.range.start,
                     node.range.end,
                     arguments + SPREAD_SLACK,
                     None,
-                ));
+                );
+                call.call_rest = argument_follows_spread(node);
+                queries.push(call);
             }
             if needs.super_calls
                 && let Some((start, end)) = super_call_base(node)
@@ -360,6 +362,15 @@ fn insert_returns(node: &mut LintNode, facts: Value, has_return_type: bool, is_a
         .insert("__functionHasReturnType".into(), json!(has_return_type));
     node.fields
         .insert("__functionIsAsync".into(), json!(is_async));
+}
+
+/// An argument follows a spread, so it may meet the rest type.
+fn argument_follows_spread(node: &LintNode) -> bool {
+    let arguments = node.child_list("arguments").unwrap_or_default();
+    arguments
+        .iter()
+        .position(|argument| argument.kind == "SpreadElement")
+        .is_some_and(|spread| spread + 1 < arguments.len())
 }
 
 fn query(

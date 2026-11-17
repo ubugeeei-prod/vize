@@ -87,3 +87,9 @@ mapping, diagnostic and authored-hit counts are unchanged.
 block's verbatim lines across their shared line breaks. Generated text is
 unchanged; only the content-mapper mapping count and coordinate hash move from
 12 rows to 11.
+
+`successor-authored-component-infer-13113` records #13113 on top of
+`successor-shared-listener-args-12793`: the content mapper binds the authored default
+export by inference (`$AuthoredComponent extends infer A extends object ? … &
+A & …`). Its text shrinks by 1 byte and later mapping coordinates move by it;
+Canon, Maestro and every count are unchanged.

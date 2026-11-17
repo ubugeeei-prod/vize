@@ -325,6 +325,7 @@ fn analyze_script_setup_program_demand_capture<const BUILTIN_TYPES: bool>(
         "croquis.script_setup.resolve_type_hoisting",
         result.resolve_type_export_hoisting()
     );
+    result.forget_setup_value_prop_types();
 
     super::expose::extract_exposes(&mut result, program, source);
     result.macros.invalidate_default_objects();

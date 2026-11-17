@@ -246,13 +246,16 @@ pub(super) fn evaluate(
                     continue;
                 };
                 let configured = options::for_rule(options, rule);
-                let mut prepared = present::prepare(rule, node, configured.as_ref());
-                if let Some(configured) = configured {
-                    prepared.fields.insert("__ruleOptions".into(), configured);
-                }
-                for diagnostic in
-                    run_default_type_aware_rule_owned(rule, prepared).unwrap_or_default()
-                {
+                let prepared = present::prepare(rule, node, configured.as_ref());
+                let inputs = std::iter::once(prepared).chain(present::follow_up(rule, node));
+                for diagnostic in inputs.flat_map(|mut input| {
+                    if let Some(configured) = &configured {
+                        input
+                            .fields
+                            .insert("__ruleOptions".into(), configured.clone());
+                    }
+                    run_default_type_aware_rule_owned(rule, input).unwrap_or_default()
+                }) {
                     let (raw_start, raw_end) =
                         present::range(rule, node, diagnostic.range.start, diagnostic.range.end);
                     let message = present::message(
@@ -269,7 +272,10 @@ pub(super) fn evaluate(
                 }
             }
         }
-        for gap in gaps::reports(&collected) {
+        let misused = corsa_rules
+            .contains(&"no-misused-promises")
+            .then(|| options::for_rule(options, "no-misused-promises"));
+        for gap in gaps::reports(&collected, misused.as_ref().map(Option::as_ref)) {
             let start = script.offset.saturating_add(gap.start);
             let end = script.offset.saturating_add(gap.end);
             if seen.insert((gap.rule, start, end, gap.message.clone())) {

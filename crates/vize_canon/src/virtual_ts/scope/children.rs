@@ -17,6 +17,7 @@ pub(super) fn generate_child_scopes(
     if let Some(child_ids) = ctx.children_map.get(&parent_scope_id) {
         for &child_id in child_ids {
             if let Some(child_scope) = ctx.summary.scopes.get_scope(child_id)
+                && !ctx.expect_splices.moves_handler(child_id.as_u32())
                 && matches!(
                     child_scope.kind,
                     ScopeKind::VFor

@@ -37,13 +37,20 @@ use vize_carton::{String, append};
 ///
 /// `refs_type` is the type of the component's own `$refs`, when the template's
 /// ref registry types it (`inferTemplateDollarRefs`).
+///
+/// `authored`, when given, names the `<script setup>` bindings. Vue's
+/// `compileScript` binding metadata resolves a template name to such a binding
+/// before the instance (`$setup.$attrs`, never `_ctx.$attrs`), so a context
+/// member the script binds itself is not redeclared over it (#13087).
 pub(crate) fn generate_template_context(
     options: &VirtualTsOptions,
     dialect: VueVersion,
     legacy_vue2: bool,
     has_own_slots: bool,
     (attrs_type, refs_type, emit_initializer): (Option<&str>, Option<&str>, Option<&str>),
+    authored: Option<&dyn Fn(&str) -> bool>,
 ) -> String {
+    let authored = |name: &str| authored.is_some_and(|authored| authored(name));
     let mut ctx = String::default();
     let record = crate::virtual_ts::generated_names::lib("Record");
 
@@ -78,29 +85,32 @@ pub(crate) fn generate_template_context(
     }
 
     // Core Vue globals (always present on ComponentPublicInstance)
-    if let Some(attrs_type) = attrs_type {
-        append!(
-            ctx,
-            "    const $attrs = (void 0) as unknown as {attrs_type};\n"
-        );
-    } else {
-        ctx.push_str("    const $attrs = __ctx.$attrs;\n");
+    if !authored("$attrs") {
+        match attrs_type {
+            Some(attrs_type) => append!(
+                ctx,
+                "    const $attrs = (void 0) as unknown as {attrs_type};\n"
+            ),
+            None => ctx.push_str("    const $attrs = __ctx.$attrs;\n"),
+        }
     }
-    if !has_own_slots {
+    if !has_own_slots && !authored("$slots") {
         ctx.push_str("    const $slots = __ctx.$slots;\n");
     }
-    if let Some(refs_type) = refs_type {
-        append!(
-            ctx,
-            "    const $refs = (void 0) as unknown as {refs_type};\n"
-        );
-    } else {
-        ctx.push_str("    const $refs = __ctx.$refs;\n");
+    if !authored("$refs") {
+        match refs_type {
+            Some(refs_type) => append!(
+                ctx,
+                "    const $refs = (void 0) as unknown as {refs_type};\n"
+            ),
+            None => ctx.push_str("    const $refs = __ctx.$refs;\n"),
+        }
     }
-    if let Some(initializer) = emit_initializer {
-        append!(ctx, "    const $emit = {initializer};\n");
-    } else {
-        ctx.push_str("    const $emit = __ctx.$emit;\n");
+    if !authored("$emit") {
+        match emit_initializer {
+            Some(initializer) => append!(ctx, "    const $emit = {initializer};\n"),
+            None => ctx.push_str("    const $emit = __ctx.$emit;\n"),
+        }
     }
 
     // Vue 2-only instance members (absent from Vue 3's ComponentPublicInstance).

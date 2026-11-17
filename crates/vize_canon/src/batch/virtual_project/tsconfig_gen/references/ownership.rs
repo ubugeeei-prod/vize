@@ -2,6 +2,10 @@ use std::path::{Path, PathBuf};
 
 use vize_carton::FxHashMap;
 
+pub use vize_l0::typescript_ownership::TsconfigSourceKind;
+use vize_l0::typescript_ownership::source_spellings;
+pub(super) use vize_l0::typescript_ownership::unique_owner;
+
 use super::{graph, spec::SpecCache};
 
 /// Host path semantics used while matching tsconfig ownership.
@@ -26,43 +30,9 @@ impl TsconfigOwnershipOptions {
 impl Default for TsconfigOwnershipOptions {
     fn default() -> Self {
         Self {
-            case_sensitive: host_uses_case_sensitive_file_names(),
+            case_sensitive: vize_l0::typescript_ownership::host_uses_case_sensitive_file_names(),
         }
     }
-}
-
-/// Match TypeScript's host policy: Windows is insensitive; other hosts probe
-/// the filesystem containing the running checker by swapping the executable
-/// path's ASCII case. This preserves case-sensitive macOS volumes instead of
-/// hard-coding an operating-system guess.
-fn host_uses_case_sensitive_file_names() -> bool {
-    if cfg!(windows) {
-        return false;
-    }
-    let Ok(executable) = std::env::current_exe() else {
-        return !cfg!(target_os = "macos");
-    };
-    let spelled = executable.to_string_lossy();
-    let swapped = spelled
-        .chars()
-        .map(|character| {
-            if character.is_ascii_lowercase() {
-                character.to_ascii_uppercase()
-            } else {
-                character.to_ascii_lowercase()
-            }
-        })
-        .collect::<vize_carton::String>();
-    swapped == spelled || !Path::new(&swapped).exists()
-}
-
-/// Whether membership also requires the owning project to enable `allowJs`.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum TsconfigSourceKind {
-    /// Vue files and the TypeScript family.
-    Typed,
-    /// `.js`, `.jsx`, `.mjs`, and `.cjs` inputs.
-    JavaScript,
 }
 
 /// Run-scoped parsed ownership graph. There is no process-global state: HMR
@@ -99,31 +69,27 @@ impl TsconfigOwnershipCache {
         source_path: &Path,
         source_kind: TsconfigSourceKind,
     ) -> bool {
-        self.project_owns_normalized_source(
-            tsconfig_path,
-            &graph::normalize_path(source_path),
-            source_kind,
-        )
+        self.project_owns_spellings(tsconfig_path, &source_spellings(source_path), source_kind)
     }
 
-    fn project_owns_normalized_source(
+    fn project_owns_spellings(
         &mut self,
         tsconfig_path: &Path,
-        source_path: &Path,
+        spellings: &[PathBuf],
         source_kind: TsconfigSourceKind,
     ) -> bool {
         let case_sensitive = self.options.case_sensitive;
         let Some(spec) = self.specs.load(tsconfig_path) else {
             return false;
         };
-        spec.includes_normalized(source_path, case_sensitive, source_kind)
+        spec.includes_any(spellings, case_sensitive, source_kind)
     }
 
     /// The inherited `compilerOptions.allowJs` for one effective project.
     pub fn project_allows_js(&mut self, tsconfig_path: &Path) -> bool {
         self.specs
             .load(tsconfig_path)
-            .and_then(|spec| spec.allow_js)
+            .and_then(|spec| spec.allow_js())
             .unwrap_or(false)
     }
 
@@ -135,16 +101,34 @@ impl TsconfigOwnershipCache {
         source_path: &Path,
         source_kind: TsconfigSourceKind,
     ) -> PathBuf {
-        let source_path = graph::normalize_path(source_path);
-        self.effective_config_for_normalized_source(tsconfig_path, &source_path, source_kind)
+        self.effective_config_for_spellings(
+            tsconfig_path,
+            &source_spellings(source_path),
+            source_kind,
+        )
     }
 
     /// [`Self::effective_config_for_source`] for a source the caller has
-    /// already canonicalized, as `canonicalize` would spell it.
+    /// already canonicalized, as `canonicalize` would spell it. A source the
+    /// caller reached through a symlinked directory below its config should
+    /// use [`Self::effective_config_for_source`] instead.
     pub fn effective_config_for_normalized_source(
         &mut self,
         tsconfig_path: &Path,
         source_path: &Path,
+        source_kind: TsconfigSourceKind,
+    ) -> PathBuf {
+        self.effective_config_for_spellings(
+            tsconfig_path,
+            std::slice::from_ref(&source_path.to_path_buf()),
+            source_kind,
+        )
+    }
+
+    fn effective_config_for_spellings(
+        &mut self,
+        tsconfig_path: &Path,
+        spellings: &[PathBuf],
         source_kind: TsconfigSourceKind,
     ) -> PathBuf {
         let projects = self.project_paths(tsconfig_path);
@@ -153,25 +137,7 @@ impl TsconfigOwnershipCache {
             .cloned()
             .unwrap_or_else(|| self.specs.normalize(tsconfig_path));
         unique_owner(&root, &projects, |project| {
-            self.project_owns_normalized_source(project, source_path, source_kind)
+            self.project_owns_spellings(project, spellings, source_kind)
         })
     }
-}
-
-pub(super) fn unique_owner<'a>(
-    root: &Path,
-    projects: impl IntoIterator<Item = &'a PathBuf>,
-    mut owns: impl FnMut(&Path) -> bool,
-) -> PathBuf {
-    let mut owner = None;
-    for project in projects {
-        if !owns(project) {
-            continue;
-        }
-        if owner.is_some() {
-            return root.to_path_buf();
-        }
-        owner = Some(project);
-    }
-    owner.cloned().unwrap_or_else(|| root.to_path_buf())
 }

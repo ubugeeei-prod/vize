@@ -29,6 +29,8 @@ const typeResolutionBatchClassExport =
   "module.exports.TypeResolutionBatch = nativeBinding.TypeResolutionBatch;\n";
 const typeResolutionBatchFunctionExport =
   "module.exports.beginTypeResolutionBatch = nativeBinding.beginTypeResolutionBatch;\n";
+const pluginLintSessionExport =
+  "module.exports.PluginLintSession = nativeBinding.PluginLintSession;\n";
 const configStdinCapabilityExport =
   "module.exports.supportsCliConfigStdin = nativeBinding.supportsCliConfigStdin;\n";
 const sha256 = (body: Buffer) => createHash("sha256").update(body).digest("hex");
@@ -53,6 +55,7 @@ export function originalNativeLoaderModule(name: string, body: Buffer): Buffer {
   assert.equal(
     text.split(
       "module.exports.PluginDocumentHandle = nativeBinding.PluginDocumentHandle;\n" +
+        pluginLintSessionExport +
         typeResolutionBatchClassExport +
         "module.exports.applyOutputPlugins = nativeBinding.applyOutputPlugins;\n",
     ).length,
@@ -90,6 +93,7 @@ export function originalNativeLoaderModule(name: string, body: Buffer): Buffer {
   const original = Buffer.from(
     text
       .replace(typeResolutionBatchWrapper, "")
+      .replace(pluginLintSessionExport, "")
       .replace(typeResolutionBatchClassExport, "")
       .replace(typeResolutionBatchFunctionExport, "")
       .replace(configStdinCapabilityExport, "")

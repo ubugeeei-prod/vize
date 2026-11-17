@@ -1,4 +1,5 @@
 //! Memoized property, signature, index and shape lookups of the relation checker.
+use super::super::super::probe::signature_parameters;
 use super::super::Shape;
 use super::{CALL, Checker, flags};
 use corsa::api::{SignatureResponse, SymbolResponse, TypeResponse};
@@ -81,18 +82,19 @@ impl Checker<'_> {
             .flatten()
     }
 
-    /// Types of a signature's parameters, in order.
+    /// Types of a signature's parameters (`getTypeOfSymbol`), in order; shorter
+    /// than the parameter list when one cannot be typed. A signature only
+    /// mentions its parameter handles, so the full symbols are loaded first.
     pub(in super::super) async fn parameter_types(
         &mut self,
         signature: &SignatureResponse,
     ) -> Vec<TypeResponse> {
-        let mut types = Vec::new();
-        for parameter in &signature.parameters {
-            if let Ok(Some(ty)) = self.session.get_type_of_symbol(parameter.clone()).await {
-                types.push(ty);
-            }
-        }
-        types
+        signature_parameters::load(self.session, signature)
+            .await
+            .unwrap_or_default()
+            .into_iter()
+            .flatten()
+            .collect()
     }
 
     pub(in super::super) async fn index_info_count(&mut self, ty: &TypeResponse) -> usize {

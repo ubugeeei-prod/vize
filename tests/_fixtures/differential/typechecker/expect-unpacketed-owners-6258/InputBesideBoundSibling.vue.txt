@@ -1,0 +1,15 @@
+<script setup lang="ts">
+const memo = "x";
+const title = "y";
+const onUpdate = (value: string) => console.log(value);
+</script>
+
+<template>
+  <div>
+    <!-- @vue-expect-error TS2339 --><input
+      :value="memo"
+      @change="(event) => onUpdate(event?.target?.value)"
+    />
+    <p :title="title" />
+  </div>
+</template>

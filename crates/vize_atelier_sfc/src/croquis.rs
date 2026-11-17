@@ -30,7 +30,7 @@ pub use occurrences::{
 };
 pub use resolved::{
     merge_resolved_props_into_croquis, merge_resolved_props_into_croquis_with_sources,
-    resolve_descriptor_type_world,
+    resolve_descriptor_type_world, resolve_descriptor_type_world_with_sources,
 };
 pub use script_parses::SfcScriptParses;
 use vize_atelier_core::RootNode;
@@ -215,13 +215,15 @@ pub fn analyze_sfc_descriptor_with_lint_template(
 }
 
 /// Analyze a lint descriptor from its completed Davinci template artifact,
-/// resolving imported macro types before the template is drawn.
+/// resolving imported macro types before the template is drawn. `sources`
+/// shares one disk view across calls; `None` reads a fresh one.
 #[doc(hidden)]
 pub fn analyze_sfc_descriptor_with_lint_template_resolved(
     scripts: &SfcScriptParses<'_>,
     template: Option<LintTemplate<'_, '_>>,
     options: SfcCroquisOptions,
     filename: &str,
+    sources: Option<&crate::script::TypeSourceSnapshot>,
 ) -> Croquis {
     analyze_sfc_descriptor_resolved_impl::<false>(
         scripts,
@@ -233,7 +235,7 @@ pub fn analyze_sfc_descriptor_with_lint_template_resolved(
             include_script_content: false,
         },
         Some(filename),
-        None,
+        sources,
         DescriptorObservation::default(),
     )
     .croquis

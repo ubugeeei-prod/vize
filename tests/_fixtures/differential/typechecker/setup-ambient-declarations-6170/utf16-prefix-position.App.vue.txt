@@ -1,0 +1,6 @@
+<script setup lang="ts">
+const prefix = '日本語';
+declare const label: string;
+label.toFixed();
+</script>
+<template><div /></template>

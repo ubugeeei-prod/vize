@@ -1,0 +1,11 @@
+<script setup lang="ts">
+import Child from './ClassicValueAndSetupType.vue';
+
+function wrong(item: string) {
+  void item;
+}
+</script>
+
+<template>
+  <Child @pick="wrong" />
+</template>

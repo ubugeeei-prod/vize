@@ -1,0 +1,7 @@
+<script setup lang="ts">
+const props = withDefaults(defineProps<{ seed?: number }>(), { seed: 1 });
+</script>
+
+<template>
+  <p>{{ props.seed.toFixed() }} {{ props.missing }}</p>
+</template>

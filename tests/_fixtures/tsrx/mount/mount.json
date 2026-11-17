@@ -1,0 +1,343 @@
+{
+  "rows": [
+    {
+      "id": "counter/clicks",
+      "file": "tests/_fixtures/tsrx/mount/counter.tsrx",
+      "component": "Counter",
+      "props": { "title": "Tally", "step": 1 },
+      "steps": [{ "click": "button" }, { "click": "button" }, { "click": "button" }]
+    },
+    {
+      "id": "counter/props",
+      "file": "tests/_fixtures/tsrx/mount/counter.tsrx",
+      "component": "Counter",
+      "props": { "title": "Tally", "step": 2 },
+      "steps": [{ "click": "button" }, { "props": { "title": "Renamed" } }, { "props": { "step": 1 } }, { "click": "button" }]
+    },
+    {
+      "id": "attributes/updates",
+      "file": "tests/_fixtures/tsrx/mount/attributes.tsrx",
+      "component": "Field",
+      "props": { "name": "email", "value": "a", "disabled": false, "tone": "plain" },
+      "steps": [{ "props": { "value": "abcd" } }, { "props": { "disabled": true, "tone": "warn" } }, { "props": { "name": "user" } }]
+    },
+    {
+      "id": "loops/rows",
+      "file": "tests/_fixtures/tsrx/mount/loops.tsrx",
+      "component": "Rows",
+      "props": { "rows": [{ "id": 1, "text": "a" }, { "id": 2, "text": "b" }, { "id": 3, "text": "c" }] },
+      "steps": [
+        { "props": { "rows": [{ "id": 3, "text": "c" }, { "id": 1, "text": "a" }, { "id": 2, "text": "b" }] } },
+        { "props": { "rows": [{ "id": 3, "text": "c" }, { "id": 4, "text": "d" }, { "id": 2, "text": "B" }] } },
+        { "props": { "rows": [{ "id": 2, "text": "B" }] } },
+        { "props": { "rows": [] } },
+        { "props": { "rows": [{ "id": 5, "text": "e" }, { "id": 2, "text": "b" }] } }
+      ]
+    },
+    {
+      "id": "loops/pairs",
+      "file": "tests/_fixtures/tsrx/mount/loops.tsrx",
+      "component": "Pairs",
+      "props": { "rows": [{ "id": 1, "text": "a" }, { "id": 2, "text": "b" }, { "id": 3, "text": "c" }] },
+      "steps": [
+        { "props": { "rows": [{ "id": 3, "text": "c" }, { "id": 1, "text": "a" }, { "id": 2, "text": "b" }] } },
+        { "props": { "rows": [{ "id": 3, "text": "c" }, { "id": 4, "text": "d" }, { "id": 2, "text": "B" }] } },
+        { "props": { "rows": [{ "id": 2, "text": "B" }] } },
+        { "props": { "rows": [] } },
+        { "props": { "rows": [{ "id": 5, "text": "e" }, { "id": 2, "text": "b" }] } }
+      ]
+    },
+    {
+      "id": "loops/nested",
+      "file": "tests/_fixtures/tsrx/mount/loops.tsrx",
+      "component": "Nested",
+      "expected": "#13142",
+      "props": { "rows": [{ "id": 1, "text": "a" }, { "id": 2, "text": "b" }, { "id": 3, "text": "c" }] },
+      "steps": [
+        { "props": { "rows": [{ "id": 3, "text": "c" }, { "id": 1, "text": "a" }, { "id": 2, "text": "b" }] } },
+        { "props": { "rows": [{ "id": 3, "text": "c" }, { "id": 4, "text": "d" }, { "id": 2, "text": "B" }] } },
+        { "props": { "rows": [{ "id": 2, "text": "B" }] } },
+        { "props": { "rows": [] } },
+        { "props": { "rows": [{ "id": 5, "text": "e" }, { "id": 2, "text": "b" }] } }
+      ]
+    },
+    {
+      "id": "loops/values",
+      "file": "tests/_fixtures/tsrx/mount/loops.tsrx",
+      "component": "Values",
+      "props": { "items": ["a", "b", "c"] },
+      "steps": [
+        { "props": { "items": ["c", "a", "b"] } },
+        { "props": { "items": ["c", "d", "b"] } },
+        { "props": { "items": ["b"] } },
+        { "props": { "items": [] } },
+        { "props": { "items": ["e", "b"] } }
+      ]
+    },
+    {
+      "id": "loops/indexed",
+      "file": "tests/_fixtures/tsrx/mount/loops.tsrx",
+      "component": "Indexed",
+      "props": { "items": ["a", "b", "c"] },
+      "steps": [
+        { "props": { "items": ["c", "a", "b"] } },
+        { "props": { "items": ["c", "d", "b"] } },
+        { "props": { "items": ["b"] } },
+        { "props": { "items": [] } },
+        { "props": { "items": ["e", "b"] } }
+      ]
+    },
+    {
+      "id": "loops/owned",
+      "file": "tests/_fixtures/tsrx/mount/loops.tsrx",
+      "component": "Owned",
+      "props": { "rows": [{ "id": 1, "text": "a" }, { "id": 2, "text": "b" }, { "id": 3, "text": "c" }] },
+      "steps": [
+        { "props": { "rows": [{ "id": 3, "text": "c" }, { "id": 1, "text": "a" }, { "id": 2, "text": "b" }] } },
+        { "props": { "rows": [{ "id": 3, "text": "c" }, { "id": 4, "text": "d" }, { "id": 2, "text": "B" }] } },
+        { "props": { "rows": [{ "id": 2, "text": "B" }] } },
+        { "props": { "rows": [] } },
+        { "props": { "rows": [{ "id": 5, "text": "e" }, { "id": 2, "text": "b" }] } }
+      ]
+    },
+    {
+      "id": "loops/terms",
+      "file": "tests/_fixtures/tsrx/mount/loops.tsrx",
+      "component": "Terms",
+      "props": { "rows": [{ "id": 1, "text": "a" }, { "id": 2, "text": "b" }, { "id": 3, "text": "c" }] },
+      "steps": [
+        { "props": { "rows": [{ "id": 3, "text": "c" }, { "id": 1, "text": "a" }, { "id": 2, "text": "b" }] } },
+        { "props": { "rows": [{ "id": 3, "text": "c" }, { "id": 4, "text": "d" }, { "id": 2, "text": "B" }] } },
+        { "props": { "rows": [{ "id": 2, "text": "B" }] } },
+        { "props": { "rows": [] } },
+        { "props": { "rows": [{ "id": 5, "text": "e" }, { "id": 2, "text": "b" }] } }
+      ]
+    },
+    {
+      "id": "loops/labels",
+      "file": "tests/_fixtures/tsrx/mount/loops.tsrx",
+      "component": "Labels",
+      "props": { "items": ["a", "b", "c"] },
+      "steps": [
+        { "props": { "items": ["c", "a", "b"] } },
+        { "props": { "items": ["c", "d", "b"] } },
+        { "props": { "items": ["b"] } },
+        { "props": { "items": [] } },
+        { "props": { "items": ["e", "b"] } }
+      ]
+    },
+    {
+      "id": "values/updates",
+      "file": "tests/_fixtures/tsrx/mount/values.tsrx",
+      "component": "Values",
+      "props": { "text": "x", "count": 1, "flag": false, "items": ["a", "b"] },
+      "steps": [{ "props": { "flag": true } }, { "props": { "count": 5, "text": "" } }, { "props": { "items": [] } }]
+    },
+    {
+      "id": "returns/plain",
+      "file": "tests/_fixtures/tsrx/mount/returns.tsrx",
+      "component": "Plain",
+      "props": { "label": "ab", "count": 1 },
+      "steps": [{ "props": { "count": 2 } }, { "props": { "label": "cd" } }]
+    },
+    {
+      "id": "returns/arrow",
+      "file": "tests/_fixtures/tsrx/mount/returns.tsrx",
+      "component": "Arrow",
+      "props": { "count": 1 },
+      "steps": [{ "props": { "count": 2 } }, { "props": { "count": 0 } }]
+    },
+    {
+      "id": "returns/grow",
+      "file": "tests/_fixtures/tsrx/mount/returns.tsrx",
+      "component": "Grow",
+      "props": { "items": ["a", "b", "c"] },
+      "steps": [{ "click": "button" }, { "props": { "items": ["x", "y", "z"] } }, { "click": "button" }]
+    },
+    {
+      "id": "slots/default",
+      "file": "tests/_fixtures/tsrx/mount/slots.tsrx",
+      "component": "Panel",
+      "props": { "title": "a", "count": 1 },
+      "steps": [{ "props": { "count": 2 } }, { "props": { "title": "b" } }]
+    },
+    {
+      "id": "typed/updates",
+      "file": "tests/_fixtures/tsrx/mount/typed.tsrx",
+      "component": "Typed",
+      "props": { "size": 1, "label": "go" },
+      "steps": [{ "click": "button" }, { "props": { "size": 2 } }, { "click": "button" }, { "props": { "label": "stop" } }]
+    },
+    {
+      "id": "dynamic/host",
+      "file": "tests/_fixtures/tsrx/mount/dynamic.tsrx",
+      "component": "Host",
+      "props": { "tag": "section" },
+      "steps": [{ "props": { "tag": "article" } }, { "props": { "tag": "section" } }]
+    },
+    {
+      "id": "dynamic/toggle",
+      "file": "tests/_fixtures/tsrx/mount/dynamic.tsrx",
+      "component": "Toggle",
+      "props": {},
+      "steps": [{ "click": "button" }, { "click": "button" }]
+    },
+    {
+      "id": "dynamic/pick",
+      "file": "tests/_fixtures/tsrx/mount/dynamic.tsrx",
+      "component": "Pick",
+      "props": { "label": "a" },
+      "steps": [{ "props": { "label": "b" } }]
+    },
+    {
+      "id": "default/app",
+      "file": "tests/_fixtures/tsrx/mount/default.tsrx",
+      "component": "default",
+      "props": { "title": "a", "count": 1 },
+      "steps": [{ "props": { "count": 2 } }, { "props": { "title": "b" } }]
+    },
+    {
+      "id": "nested/toggle",
+      "file": "tests/_fixtures/tsrx/mount/nested.tsrx",
+      "component": "Toggle",
+      "props": { "on": true, "n": 1 },
+      "steps": [{ "props": { "n": 2 } }, { "props": { "on": false } }, { "props": { "n": 3 } }, { "props": { "on": true } }]
+    },
+    {
+      "id": "nested/chain",
+      "file": "tests/_fixtures/tsrx/mount/nested.tsrx",
+      "component": "Modes",
+      "props": { "mode": "a", "label": "x" },
+      "steps": [
+        { "props": { "label": "y" } },
+        { "props": { "mode": "b" } },
+        { "props": { "label": "z" } },
+        { "props": { "mode": "c" } },
+        { "props": { "mode": "a" } }
+      ]
+    },
+    {
+      "id": "nested/guard",
+      "file": "tests/_fixtures/tsrx/mount/nested.tsrx",
+      "component": "Guard",
+      "props": { "count": 0, "label": "x" },
+      "steps": [{ "props": { "count": 1 } }, { "props": { "label": "y" } }, { "props": { "count": 0 } }, { "props": { "count": 2 } }]
+    },
+    {
+      "id": "nested/recount",
+      "file": "tests/_fixtures/tsrx/mount/nested.tsrx",
+      "component": "Guard",
+      "expected": "#13176",
+      "props": { "count": 1, "label": "x" },
+      "steps": [{ "props": { "count": 2 } }]
+    },
+    {
+      "id": "nested/click",
+      "file": "tests/_fixtures/tsrx/mount/nested.tsrx",
+      "component": "Disclosure",
+      "props": { "title": "menu" },
+      "steps": [{ "click": "button" }, { "props": { "title": "abc" } }, { "props": { "title": "abcd" } }, { "click": "button" }]
+    },
+    {
+      "id": "props/defaults",
+      "file": "tests/_fixtures/tsrx/mount/props.tsrx",
+      "component": "Defaults",
+      "props": { "label": "a" },
+      "steps": [{ "props": { "label": "b" } }]
+    },
+    {
+      "id": "props/cast",
+      "file": "tests/_fixtures/tsrx/mount/props.tsrx",
+      "component": "Defaults",
+      "props": { "flag": "", "count": 3, "tags": ["x", "y"] },
+      "steps": [{ "props": { "count": 4 } }, { "props": { "flag": false } }]
+    },
+    {
+      "id": "props/renamed",
+      "file": "tests/_fixtures/tsrx/mount/props.tsrx",
+      "component": "Renamed",
+      "props": { "label": "a", "count": 3 },
+      "steps": [{ "props": { "label": "b" } }, { "props": { "count": 5 } }]
+    },
+    {
+      "id": "props/renamed-default",
+      "file": "tests/_fixtures/tsrx/mount/props.tsrx",
+      "component": "Renamed",
+      "props": { "label": "a" },
+      "steps": [{ "props": { "label": "b" } }]
+    },
+    {
+      "id": "props/rest",
+      "file": "tests/_fixtures/tsrx/mount/props.tsrx",
+      "component": "Rest",
+      "props": { "label": "a", "title": "t", "data-x": "1" },
+      "steps": [{ "props": { "title": "u" } }, { "props": { "label": "b" } }]
+    },
+    {
+      "id": "empty/fill",
+      "file": "tests/_fixtures/tsrx/mount/empty.tsrx",
+      "component": "List",
+      "props": { "items": ["a"] },
+      "steps": [{ "props": { "items": [] } }, { "props": { "items": ["b", "c"] } }]
+    },
+    {
+      "id": "empty/toggle",
+      "file": "tests/_fixtures/tsrx/mount/empty.tsrx",
+      "component": "List",
+      "expected": "#13180",
+      "props": { "items": [] },
+      "steps": [{ "props": { "items": ["a", "b"] } }, { "props": { "items": [] } }]
+    },
+    {
+      "id": "empty/update",
+      "file": "tests/_fixtures/tsrx/mount/empty.tsrx",
+      "component": "List",
+      "expected": "#13180",
+      "props": { "items": ["a", "b"] },
+      "steps": [{ "props": { "items": ["b", "a", "c"] } }]
+    },
+    {
+      "id": "empty/components",
+      "file": "tests/_fixtures/tsrx/mount/empty.tsrx",
+      "component": "Cards",
+      "props": { "rows": [{ "id": 1, "text": "a" }] },
+      "steps": [{ "props": { "rows": [] } }, { "props": { "rows": [{ "id": 2, "text": "b" }] } }]
+    },
+    {
+      "id": "directive/client",
+      "file": "tests/_fixtures/tsrx/mount/directive.tsrx",
+      "component": "Client",
+      "props": { "label": "n" },
+      "steps": [{ "click": "button" }, { "props": { "label": "m" } }, { "click": "button" }]
+    },
+    {
+      "id": "shadow/scopes",
+      "file": "tests/_fixtures/tsrx/mount/shadow.tsrx",
+      "component": "Shadow",
+      "props": { "label": "p", "items": ["a", "bb"] },
+      "steps": [{ "props": { "label": "q" } }, { "props": { "items": ["ccc"] } }]
+    },
+    {
+      "id": "map/items",
+      "file": "tests/_fixtures/tsrx/mount/map.tsrx",
+      "component": "Items",
+      "props": { "items": ["a", "b"] },
+      "steps": []
+    },
+    {
+      "id": "map/update",
+      "file": "tests/_fixtures/tsrx/mount/map.tsrx",
+      "component": "Items",
+      "expected": "#13176",
+      "props": { "items": ["a", "b"] },
+      "steps": [{ "props": { "items": ["a", "b", "c"] } }]
+    },
+    {
+      "id": "map/click",
+      "file": "tests/_fixtures/tsrx/mount/map.tsrx",
+      "component": "Rows",
+      "props": { "rows": [{ "id": 0, "text": "a" }, { "id": 1, "text": "b" }] },
+      "steps": [{ "click": "button" }, { "click": "button" }]
+    }
+  ]
+}

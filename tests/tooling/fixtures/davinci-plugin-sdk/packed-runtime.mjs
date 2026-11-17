@@ -11,6 +11,7 @@ import {
   negotiateVisitorPlugin,
   runVisitorFixture,
 } from "@vizejs/plugin-sdk/visitor";
+import { PLUGIN_API_VERSION, PLUGIN_ENTRY, defineVizePlugin } from "@vizejs/plugin-sdk/v2";
 
 const expected = [
   "BATCH_SCHEMA",
@@ -197,4 +198,27 @@ assert.equal(
 );
 assert.deepEqual(traceEvents, ["render:start"]);
 assert.ok(import.meta.resolve("@vizejs/plugin-sdk").includes("/node_modules/@vizejs/plugin-sdk/"));
-console.log("packed SDK runtime exports: 8 root, fixes, sandbox and visitor verified");
+const v2 = defineVizePlugin({
+  apiVersion: PLUGIN_API_VERSION,
+  stability: "experimental",
+  name: "packed-v2",
+  version: "1",
+  setup(api, options) {
+    api.lint.rule({
+      id: "packed-rule",
+      meta: { messages: { found: "found" } },
+      visit: ["ui.element"],
+      run() {},
+    });
+    assert.deepEqual(options, { level: 1 });
+  },
+});
+const entry = v2({ level: 1 });
+assert.equal(PLUGIN_ENTRY, Symbol.for("vize.plugin.entry"));
+assert.equal(entry[PLUGIN_ENTRY].apiVersion, 2);
+assert.deepEqual(
+  entry[PLUGIN_ENTRY].manifest.capabilities.map(({ id }) => id),
+  ["lint.rule"],
+);
+assert.match(entry[PLUGIN_ENTRY].manifest.fingerprint, /^[0-9a-f]{64}$/);
+console.log("packed SDK runtime exports: 8 root, fixes, sandbox, visitor and v2 verified");

@@ -181,6 +181,8 @@ pub(crate) struct ScopeGenContext<'a, 'template> {
     /// Guarded handlers also key by their generated lexical block, because an
     /// alias declared in one sibling `if` is not visible from the next one.
     pub(crate) event_contracts: &'a RefCell<FxHashMap<EventContractKey, u32>>,
+    /// `@vue-expect-error` owners whose later checks follow their bindings.
+    pub(super) expect_splices: &'a super::expect_owner_splices::ExpectOwnerSplices<'a, 'template>,
 }
 
 pub(crate) struct ScopeGenerationOptions<'a, 'template> {
@@ -316,6 +318,11 @@ pub(super) struct ComponentPropsContext<'a, 'template> {
     pub(super) hoist_shared_preamble: bool,
     pub(super) preserve_event_navigation: bool,
     pub(super) omit_navigation_references: bool,
+    /// Slot-name checks without navigation are type-only statements: no
+    /// declaration enters the template control flow every later reference
+    /// walks. Only without type parameters in scope, where indexing and
+    /// destructuring report the same diagnostic.
+    pub(super) type_only_slot_references: bool,
     pub(super) check_unknown_events: bool,
     pub(super) strict_v_model: bool,
     pub(super) component_binding_check: ComponentBindingCheck<'a>,

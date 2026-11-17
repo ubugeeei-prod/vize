@@ -1,0 +1,16 @@
+<script lang="ts">
+const COLORS = ['blue', 'red'] as const;
+
+export interface BadgeOptions {
+  color: typeof COLORS[number];
+}
+</script>
+
+<script lang="ts" setup>
+const props = defineProps<{ options: BadgeOptions }>();
+const fallback: BadgeOptions = { color: COLORS[0] };
+</script>
+
+<template>
+  <div>{{ props.options.color }}{{ fallback.color }}</div>
+</template>

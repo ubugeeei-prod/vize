@@ -61,7 +61,7 @@ export const sdk4CleanupPackages = [
       "base64",
       "compact_str",
       "memchr",
-      "rustc-hash",
+      "rustc-hash 2.1.3",
       "serde",
       "serde_json",
       "smallvec",

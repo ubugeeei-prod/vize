@@ -1,0 +1,6 @@
+export interface CardProps {
+  count?: number;
+  featured?: boolean;
+  label: string;
+  unused?: string;
+}

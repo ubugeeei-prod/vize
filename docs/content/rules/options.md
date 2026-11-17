@@ -118,7 +118,7 @@ export default defineConfig({}).withVue({
 | `type/no-unsafe-member-access` | `{ allowOptionalChaining?: boolean }` | Defaults to `false`, as in typescript-eslint. |
 | `type/only-throw-error` | `{ allow?: TypeSpecifier[]; allowRethrowing?: boolean; allowThrowingAny?: boolean; allowThrowingUnknown?: boolean }` | Defaults to `[]` and `true` for the three switches, as in typescript-eslint. |
 | `type/prefer-promise-reject-errors` | `{ allow?: TypeSpecifier[]; allowEmptyReject?: boolean; allowThrowingAny?: boolean; allowThrowingUnknown?: boolean }` | Defaults to `[]` and `false` for the three switches, as in typescript-eslint. |
-| `type/unbound-method` | `{ ignoreStatic?: boolean }` | Defaults to `false`, as in typescript-eslint. |
+| `type/unbound-method` | `{ ignoreStatic?: boolean; checkGlobalObjectMethods?: boolean }` | Both default to `false`. `ignoreStatic` is as in typescript-eslint. Library methods read from the global object (`window.setTimeout`, `self.requestAnimationFrame`) are not reported, because platform operations use the global object when called without a receiver; `checkGlobalObjectMethods: true` reports them as typescript-eslint does. |
 
 ## Detailed Examples
 

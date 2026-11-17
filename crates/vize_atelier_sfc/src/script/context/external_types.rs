@@ -375,6 +375,13 @@ impl ScriptCompileContext {
                 .iter()
                 .map(|path| path_key(path)),
         );
+        if discovered.is_some() {
+            dependencies.extend(
+                Project::reference_inputs(base_file)?
+                    .iter()
+                    .map(|path| path_key(path)),
+            );
+        }
         if let Some(project) = project {
             dependencies.extend(project.inputs().iter().map(|path| path_key(path)));
         }

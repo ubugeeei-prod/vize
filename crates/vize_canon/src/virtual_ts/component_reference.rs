@@ -157,18 +157,28 @@ fn resolved_component_binding_reference_with_bindings(
             ));
         }
     }
-    if let Some(root) = dotted_component_root(template_name)
-        && !contains_compact_name(syntactic_type_only_imported_names, root)
-        && let Some(binding_type) = bindings.binding_type(root)
-    {
-        let mut reference = component_binding_reference_for_summary_binding(
+    if dotted_component_root(template_name).is_some()
+        && let Some(reference) = value_path_reference(
             summary,
             bindings,
-            root,
-            binding_type,
             options,
-        );
-        reference.push_str(template_name.strip_prefix(root)?);
+            syntactic_type_only_imported_names,
+            template_name,
+        )
+    {
+        return Some((reference, true));
+    }
+    // The SFC's own `components` option outranks global and ambient names.
+    if let Some(local) = registrations::registered_local(
+        summary,
+        [template_name, camel_name.as_str(), pascal_name.as_str()],
+    ) && let Some(reference) = value_path_reference(
+        summary,
+        bindings,
+        options,
+        syntactic_type_only_imported_names,
+        local,
+    ) {
         return Some((reference, true));
     }
     if let Some(reference) = super::component_aliases::inline_value(
@@ -200,6 +210,49 @@ fn resolved_component_binding_reference_with_bindings(
         }
     }
     None
+}
+
+/// `path` (`Child`, `ui.Menu`) when its root is a value binding.
+fn value_path_reference(
+    summary: &Croquis,
+    bindings: ScriptBindings<'_>,
+    options: &VirtualTsOptions,
+    syntactic_type_only_imported_names: &FxHashSet<CompactString>,
+    path: &str,
+) -> Option<String> {
+    let root = path.split('.').next()?;
+    if contains_compact_name(syntactic_type_only_imported_names, root) {
+        return None;
+    }
+    let binding_type = bindings.binding_type(root)?;
+    let mut reference = component_binding_reference_for_summary_binding(
+        summary,
+        bindings,
+        root,
+        binding_type,
+        options,
+    );
+    reference.push_str(path.get(root.len()..)?);
+    Some(reference)
+}
+
+/// The value a `components` option key gives the tag (`[tag, camel, pascal]`).
+pub(crate) fn registered_component_reference(
+    summary: &Croquis,
+    options: &VirtualTsOptions,
+    syntactic_type_only_imported_names: &FxHashSet<CompactString>,
+    candidates: [&str; 3],
+) -> Option<String> {
+    let local = registrations::registered_local(summary, candidates)?;
+    super::script_facts::with_bindings(summary, |bindings| {
+        value_path_reference(
+            summary,
+            bindings,
+            options,
+            syntactic_type_only_imported_names,
+            local,
+        )
+    })
 }
 
 /// A dotted tag is a member path only after all parts are valid identifiers;
@@ -333,6 +386,9 @@ fn options_api_reserved_binding_local_with_bindings(
     }
     local
 }
+
+mod registrations;
+pub(crate) use registrations::is_registered_component;
 
 #[cfg(test)]
 mod dotted_tests;

@@ -54,6 +54,13 @@ tsc --runExternalCode --noEmit -p tsconfig.json
 テンプレートのディレクティブ、エディターの設定は
 [Content Mapper のガイド](./content-mapper.md)を参照してください。
 
+`create-vue` のプロジェクトのように、`tsconfig.json` が `"files": []` と `references` だけを持つ
+ソリューション形式のルートの場合、上のコマンドは何も検査せずに正常終了します。`.vue` ファイルを
+含む参照先のプロジェクト（`tsconfig.app.json` など）ごとに `contentMappers` を指定し、
+`tsc -b --runExternalCode` または `tsc --runExternalCode --noEmit -p tsconfig.app.json` を
+実行してください。詳しくは
+[プロジェクト参照](./content-mapper.md#プロジェクト参照-ソリューション形式の-tsconfig)を参照してください。
+
 ## tsrs
 
 tsrs を入れ、同じフラグを渡します。`contentMappers` の指定は変えません。
@@ -74,6 +81,7 @@ tsrs --runExternalCode --noEmit -p tsconfig.json
 | --------------------------------------- | ----------------------------------------------------------------------------------------------------- |
 | `vue-tsc --noEmit`                      | 上のマッパーを入れて `tsc --runExternalCode --noEmit`                                                 |
 | `vue-tsc -p tsconfig.app.json --noEmit` | `tsc --runExternalCode --noEmit -p tsconfig.app.json`                                                 |
+| `vue-tsc --build`                       | 参照先の各プロジェクトにマッパーを入れて `tsc -b --runExternalCode`                                   |
 | 同じプロジェクトを tsrs で              | `tsrs --runExternalCode --noEmit -p tsconfig.app.json`                                                |
 | Vue - Official 拡張機能の診断           | content mapper を有効にした TypeScript 7.1 ホスト、または [Vize の言語サーバー](./language-server.md) |
 

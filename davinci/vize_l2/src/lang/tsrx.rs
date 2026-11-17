@@ -10,7 +10,10 @@
 //!
 //! - Elements and components: a member tag or a name that does not start
 //!   with a lowercase ASCII letter is a component. The namespace follows
-//!   `svg`, `math` and `foreignObject`.
+//!   `svg`, `math` and `foreignObject`. A component's children are its
+//!   default slot. A dynamic tag `<{expr}>` is the dynamic `component` whose
+//!   `is` binding is `expr` at `{expr}`, the shape JSX value tags lower to:
+//!   an element for a string, else a component.
 //! - Fragments are flattened into the enclosing region.
 //! - Text follows the JSX whitespace rules. Normalized-empty text produces no op.
 //! - A `{expr}` child becomes `ui.jsx-child`: it renders text, a node or a list,
@@ -20,6 +23,13 @@
 //!   the neutral bare attribute. `{expr}` and `{name}` become `ui.bind`, and
 //!   `{...expr}` becomes an object-spread `ui.bind`. Spans keep authored order.
 //! - `@if`/`@else` becomes `ui.if`.
+//! - A `{expr}` child that is a conditional over nested regions
+//!   (`{a ? <A /> : <B />}`, `{a && <A />}` with a provably boolean `a`)
+//!   becomes `ui.if` over their markup, and `{xs.map((x, i) => <A />)}` a
+//!   `ui.for` with the callback's parameters as aliases ([`nested`]); those
+//!   regions are part of the enclosing artifact.
+//! - `@for` becomes `ui.for` with the retained host head (`HostFor`): the
+//!   authored left side, `index`, `key`, `await`, and the `@empty` region.
 //! - A function-body region (`@{ … }`) lowers only its render node. Its setup
 //!   statements stay host code.
 //!
@@ -38,6 +48,7 @@ use crate::expr::js::{JsCoordinateError, JsCoordinates};
 
 mod check;
 mod emit;
+mod nested;
 mod text;
 
 /// Why a module, or one construct in it, is refused.
@@ -47,14 +58,10 @@ pub enum TsrxIssueKind {
     Syntax,
     /// Setup statements inside markup, which need the statement-container slice.
     StatementContainer,
-    /// `@for`, which needs an iteration op with a host head and an empty branch.
-    For,
     /// `@switch`, which needs a single-evaluation switch op.
     Switch,
     /// `@try`/`@pending`/`@catch`, which needs a boundary op.
     Try,
-    /// `<{expr}>`, which needs a dynamic tag op.
-    DynamicTag,
     /// `<style>`/`<script>` bodies, which need TSRX style scoping.
     RawText,
     /// A character reference in text or in a quoted attribute value.
@@ -98,9 +105,15 @@ impl<'a> TsrxRegion<'a> {
     pub fn artifact(&self) -> &Artifact<'a> {
         &self.artifact
     }
+
+    #[must_use]
+    pub fn into_artifact(self) -> Artifact<'a> {
+        self.artifact
+    }
 }
 
-/// Every region of one module, lowered, in source order.
+/// Every region of one module, lowered, in source order, except the nested
+/// regions lowered into an enclosing region's artifact.
 pub struct TsrxArtifacts<'a> {
     module: &'a TsrxModule<'a>,
     regions: Vec<TsrxRegion<'a>>,
@@ -116,6 +129,11 @@ impl<'a> TsrxArtifacts<'a> {
     #[must_use]
     pub fn regions(&self) -> &[TsrxRegion<'a>] {
         &self.regions
+    }
+
+    #[must_use]
+    pub fn into_regions(self) -> Vec<TsrxRegion<'a>> {
+        self.regions
     }
 }
 
@@ -139,7 +157,17 @@ pub fn lower<'a>(
         return Err(issues);
     }
     let mut regions = Vec::with_capacity(module.regions().len());
+    let cx = emit::Context {
+        allocator,
+        source,
+        module,
+        folded: nested::Folded::default(),
+    };
     for region in module.regions() {
+        // An enclosing region starts first, so its folded regions are known.
+        if cx.folded.borrow().contains(&region.span) {
+            continue;
+        }
         let fail = |kind| {
             alloc::vec![TsrxIssue {
                 kind,
@@ -148,12 +176,7 @@ pub fn lower<'a>(
         };
         let mut builder = Builder::new(allocator, source)
             .map_err(|error| fail(TsrxIssueKind::Artifact(error)))?;
-        emit::region(
-            &emit::Context { allocator, source },
-            region,
-            &mut builder.region(),
-        )
-        .map_err(|issue| alloc::vec![issue])?;
+        emit::region(&cx, region, &mut builder.region()).map_err(|issue| alloc::vec![issue])?;
         let artifact = builder
             .finish()
             .map_err(|rejected| fail(TsrxIssueKind::Artifact(rejected.error)))?;
@@ -164,6 +187,13 @@ pub fn lower<'a>(
         });
     }
     Ok(TsrxArtifacts { module, regions })
+}
+
+/// Whether a static tag names a component: a member tag, or a name that does
+/// not start with a lowercase ASCII letter.
+#[must_use]
+pub fn is_component(name: &str) -> bool {
+    name.contains('.') || !name.starts_with(|first: char| first.is_ascii_lowercase())
 }
 
 /// A retained host expression, without a parse or a copy.

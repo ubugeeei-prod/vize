@@ -168,6 +168,7 @@ const packages = [
       new URL("../../npm/plugin-sdk/fixes.d.ts", import.meta.url),
       new URL("../../npm/plugin-sdk/sandbox.d.ts", import.meta.url),
       new URL("../../npm/plugin-sdk/visitor.d.ts", import.meta.url),
+      new URL("../../npm/plugin-sdk/v2.d.ts", import.meta.url),
     ],
   },
 ] as const;

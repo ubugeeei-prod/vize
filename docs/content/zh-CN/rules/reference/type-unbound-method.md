@@ -67,6 +67,12 @@ export default defineConfig({}).withVue({
 
 然后运行 `vp run lint`。
 
+## 与 typescript-eslint 的差异
+
+不报告从全局对象读取的库方法。这适用于类型为 `Window & typeof globalThis` 或 `typeof globalThis` 的接收者，包括 `window.setTimeout`、`const { matchMedia } = window`、`self.requestAnimationFrame` 和 `document.defaultView?.setTimeout`。平台操作在没有接收者时会使用全局对象，因此这些引用可以照常运行。你自己的代码添加到 `Window` 上的方法仍会被报告。另一个框架的 `Window`（`parent.setTimeout`）以及通过全局对象取得的对象的方法（`window.localStorage.getItem`）同样会被报告。设置 `checkGlobalObjectMethods: true` 后，这些引用会像在 typescript-eslint 中一样被报告。
+
+被合并了声明的内置对象（`declare global { interface Math {} }`）仍然享有豁免；通过任何指向 `RegExp` 构造函数的路径访问 `RegExp.escape` 都会被豁免。豁免依据的是 TypeScript 库的声明，而不是运行 linter 的 Node.js 版本。
+
 ## 相关页面
 
 - [类型与脚本规则](../type-and-script.md)

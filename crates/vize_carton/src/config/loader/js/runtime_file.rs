@@ -51,14 +51,14 @@ struct ProcessRuntime {
     runtime: SharedRuntime,
 }
 
-pub(super) struct NodeRuntimeFile {
+pub(in crate::config::loader) struct NodeRuntimeFile {
     path: PathBuf,
     _lease: Option<SharedRuntime>,
     _temporary: Option<tempfile::TempPath>,
 }
 
 impl NodeRuntimeFile {
-    pub(super) fn new(script: &str) -> io::Result<Self> {
+    pub(in crate::config::loader) fn new(script: &str) -> io::Result<Self> {
         let source = runtime_source(script);
         if let Ok(home) = cache_home()
             && let Ok(cached) = process_runtime(&home, &source)
@@ -78,7 +78,7 @@ impl NodeRuntimeFile {
         &self.path
     }
 
-    pub(super) fn command(&self, config_path: &Path) -> Command {
+    pub(in crate::config::loader) fn command(&self, config_path: &Path) -> Command {
         let mut command = Command::new("node");
         command
             .arg(self.path())

@@ -40,6 +40,6 @@ mod tests {
         let source =
             "<script setup lang=\"python\">\nwhile x:\n</script>\n<template><p /></template>\n";
         let refused = compile(source);
-        assert_eq!(refused.map_err(|error| error.span.start), Err(29));
+        assert_eq!(refused.map_err(|error| error.span.start), Err(38));
     }
 }

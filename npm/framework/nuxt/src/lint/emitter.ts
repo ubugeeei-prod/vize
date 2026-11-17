@@ -19,7 +19,9 @@ interface OxlintOverride {
 interface NuxtOxlintConfig {
   plugins: ["vue"];
   jsPlugins: Array<string | { name: "vize"; specifier: string }>;
-  settings: { vize: { preset: "incremental"; generatedBy?: "@vizejs/nuxt" } };
+  settings: {
+    vize: { preset: "incremental"; generatedBy?: "@vizejs/nuxt"; pluginRules?: true };
+  };
   ignorePatterns?: string[];
   globals?: Record<string, "readonly" | "writable">;
   rules?: Record<string, NuxtLintRuleConfig>;
@@ -101,6 +103,8 @@ export function renderNuxtOxlintConfig(
   pluginSpecifier: string,
   globBase?: NuxtOxlintGlobBase,
   projectJsPlugins: readonly string[] = [],
+  /** Run the `vue.plugins` lint rules of the nearest `vite.config.*` in oxlint-plugin-vize. */
+  pluginRules = false,
 ): string {
   if (globBase) {
     const root = path.relative(globBase.configDir, globBase.rootDir);
@@ -140,7 +144,11 @@ export function renderNuxtOxlintConfig(
       ...projectJsPlugins.map((specifier) => rebaseJsPlugin(specifier, globBase?.configDir)),
     ],
     settings: {
-      vize: { preset: "incremental", ...(globBase?.owner ? { generatedBy: globBase.owner } : {}) },
+      vize: {
+        preset: "incremental",
+        ...(globBase?.owner ? { generatedBy: globBase.owner } : {}),
+        ...(pluginRules ? { pluginRules: true as const } : {}),
+      },
     },
   };
   if (ignorePatterns.length > 0) config.ignorePatterns = ignorePatterns;

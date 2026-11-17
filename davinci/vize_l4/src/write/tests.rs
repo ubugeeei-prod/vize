@@ -103,3 +103,35 @@ fn unrecorded_writer_finishes_without_links() {
     assert!(document.links().is_empty());
     assert_eq!(document.as_str(), "x");
 }
+
+#[test]
+fn linked_fragments_open_with_their_enclosing_unit() {
+    let mut inner = Writer::<Recorded>::default();
+    inner.push("f(");
+    inner.push_linked("a", Span::new(9, 10));
+    inner.push(")");
+    let mut writer = Writer::<Recorded>::default();
+    writer.push_linked("x = ", Span::new(0, 4));
+    writer.append_linked(inner, Span::new(4, 12));
+    let document = writer.finish().into_document();
+    assert_eq!(document.as_str(), "x = f(a)");
+    let units: Vec<_> = document
+        .links()
+        .iter()
+        .map(|link| (link.generated, link.authored))
+        .collect();
+    assert_eq!(
+        units,
+        [
+            (Span::new(0, 4), Span::new(0, 4)),
+            (Span::new(4, 8), Span::new(4, 12)),
+            (Span::new(6, 7), Span::new(9, 10)),
+        ]
+    );
+    let mut plain = Writer::<NoLinks>::default();
+    plain.push("x = ");
+    let mut fragment = Writer::<NoLinks>::default();
+    fragment.push("f(a)");
+    plain.append_linked(fragment, Span::new(4, 12));
+    assert_eq!(plain.as_str(), document.as_str());
+}

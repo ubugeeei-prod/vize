@@ -59,6 +59,7 @@ fn component_public_base_degrades_when_vue_alias_omits_public_instance() {
         false,
         false,
         (None, None, None),
+        None,
     );
     let lines = context.lines().collect::<Vec<_>>();
     let alias_line = lines

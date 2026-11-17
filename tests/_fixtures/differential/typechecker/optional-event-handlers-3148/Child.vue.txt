@@ -1,0 +1,4 @@
+<script setup lang="ts">
+defineEmits<{ click: [payload: PointerEvent] }>()
+</script>
+<template><button /></template>

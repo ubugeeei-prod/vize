@@ -1,0 +1,6 @@
+<script setup lang="ts">
+const local = await Promise.resolve('fixed' as const);
+declare const label: typeof local;
+const exact: 'fixed' = label;
+</script>
+<template>{{ label }}</template>

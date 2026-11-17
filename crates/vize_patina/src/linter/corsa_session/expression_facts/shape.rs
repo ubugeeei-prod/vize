@@ -4,10 +4,11 @@
 //! constituents, type-parameter constraints, array elements, base types and
 //! where `toString` comes from. Rendered type text cannot answer those
 //! questions, so the host sends them as a small JSON tree (`__typeShape`).
+mod global_object;
 mod members;
 use super::super::checker_memo::CheckerMemo;
 use corsa::api::{DocumentIdentifier, NodeHandle, TypeHandle, TypeResponse};
-use members::{declaration_kind, is_default_library};
+use members::{declaration_kind, declared_in_default_library};
 use serde_json::{Map, Value, json};
 use std::{future::Future, pin::Pin};
 use vize_l0::FxHashMap;
@@ -38,7 +39,6 @@ const PROPERTY_DECLARATION: u16 = 173;
 const METHOD_SIGNATURE: u16 = 174;
 const METHOD_DECLARATION: u16 = 175;
 const FUNCTION_EXPRESSION: u16 = 219;
-const FUNCTION_DECLARATION: u16 = 263;
 const PROPERTY_ASSIGNMENT: u16 = 303;
 
 /// Nesting depth of the shape tree. Deep enough for `T[]` inside a union
@@ -137,15 +137,21 @@ impl<'a> Shapes<'a> {
         if depth >= MAX_DEPTH {
             return Value::Object(out);
         }
+        let mut generic = flags & GENERIC != 0;
         if flags & (UNION | INTERSECTION) != 0 {
             let parts = self.session.constituents(ty).await;
             let mut shapes = Vec::with_capacity(parts.len());
             for part in parts {
                 shapes.push(self.build(part, depth + 1, details).await);
             }
+            // `T & {}` (`NonNullable<T>`), `U & Date` or `"none" | (U & {})`:
+            // `getConstrainedTypeAtLocation` resolves the whole type, so an
+            // intersection with a type parameter becomes `boolean`, `Date` or
+            // `{}` instead of keeping the parameter's own constraint.
+            generic |= shapes.iter().any(contains_generic);
             out.insert("types".into(), Value::Array(shapes));
         }
-        if flags & GENERIC != 0 {
+        if generic {
             let constraint = self
                 .session
                 .base_constraint(ty)
@@ -227,10 +233,7 @@ impl<'a> Shapes<'a> {
             }
             out.insert(
                 "lib".into(),
-                json!(
-                    !symbol.declarations.is_empty()
-                        && symbol.declarations.iter().all(is_default_library)
-                ),
+                json!(declared_in_default_library(&symbol.declarations)),
             );
         }
         if details & detail::CALLABLE != 0 && (depth != 0 || details & detail::ROOT_CALLABLE == 0) {
@@ -446,4 +449,14 @@ impl<'a> Shapes<'a> {
         self.object_members = Some(members.clone());
         Some(members)
     }
+}
+
+/// A built shape is, or holds as a union/intersection part, a generic type.
+fn contains_generic(shape: &Value) -> bool {
+    let flags = shape.get("flags").and_then(Value::as_u64).unwrap_or(0);
+    flags & u64::from(GENERIC) != 0
+        || shape
+            .get("types")
+            .and_then(Value::as_array)
+            .is_some_and(|parts| parts.iter().any(contains_generic))
 }

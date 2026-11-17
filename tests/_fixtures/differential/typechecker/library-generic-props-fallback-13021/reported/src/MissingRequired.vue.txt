@@ -1,0 +1,8 @@
+<script setup lang="ts">
+import { NoFallback, WithFallback } from "./libs";
+</script>
+
+<template>
+  <NoFallback :buffer="200" />
+  <WithFallback :buffer="200" />
+</template>

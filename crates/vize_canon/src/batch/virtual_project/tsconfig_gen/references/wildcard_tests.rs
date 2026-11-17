@@ -4,7 +4,7 @@
 
 use std::path::{Path, PathBuf};
 
-use super::wildcard::{TsconfigWildcard, TsconfigWildcardUsage};
+use vize_l0::typescript_ownership::{TsconfigWildcard, TsconfigWildcardUsage};
 
 const ROOT: &str = "/vize-wildcard-fixture/p";
 

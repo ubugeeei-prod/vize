@@ -27,6 +27,7 @@ module.exports = nativeBinding;
 module.exports.getVueLanguageProjectMetadata = nativeBinding.getVueLanguageProjectMetadata;
 module.exports.generateVueLanguageCode = nativeBinding.generateVueLanguageCode;
 module.exports.PluginDocumentHandle = nativeBinding.PluginDocumentHandle;
+module.exports.PluginLintSession = nativeBinding.PluginLintSession;
 module.exports.TypeResolutionBatch = nativeBinding.TypeResolutionBatch;
 module.exports.applyOutputPlugins = nativeBinding.applyOutputPlugins;
 module.exports.applyViteDefineReplacements = nativeBinding.applyViteDefineReplacements;

@@ -1,0 +1,4 @@
+<script setup lang="ts">
+declare function label(value: string): string; declare function label(value: number): number; const a: string = label('ok'); const b: number = label(1);
+</script>
+<template><div /></template>

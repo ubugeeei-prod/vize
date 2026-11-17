@@ -1,0 +1,12 @@
+export default {
+  vue: {
+    linter: {
+      preset: "incremental",
+      rules: { "type/unbound-method": "error" },
+      ruleOptions: {
+        "type/unbound-method": { checkGlobalObjectMethods: true },
+      },
+      typeAware: true,
+    },
+  },
+};

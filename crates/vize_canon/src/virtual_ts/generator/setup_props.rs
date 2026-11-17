@@ -24,48 +24,43 @@ pub(super) fn emit_template_context(
     record: &super::template_record::TemplateRecord,
     emit_initializer: Option<&str>,
 ) {
-    // Authored setup bindings take precedence over implicit CSS modules. Keep
-    // the original options for useCssModule() typing; filter only declarations
+    // Authored setup bindings take precedence over every implicit template
+    // context member (CSS modules, plugin globals, `$attrs`, `$emit`, ...),
+    // as Vue's binding metadata resolves them first (#13087). Keep the
+    // original options for useCssModule() typing; filter only declarations
     // emitted into the template's lexical scope, where ref shadows may exist.
-    let has_css_modules = !options.css_modules.is_empty()
-        || options.template_globals.iter().any(|global| {
-            global.default_value == crate::virtual_ts::types::CSS_MODULE_GLOBAL_MARKER
-        });
-    let context_options = if !has_css_modules {
-        std::borrow::Cow::Borrowed(options)
-    } else {
+    let context = profile!(
+        "canon.virtual_ts.generate_template_context",
         crate::virtual_ts::script_facts::with_bindings(summary, |bindings| {
             let owns = |name: &str| bindings.is_script_setup() && bindings.contains_binding(name);
             let collides = options.css_modules.iter().any(|name| owns(name))
-                || options.template_globals.iter().any(|global| {
-                    global.default_value == crate::virtual_ts::types::CSS_MODULE_GLOBAL_MARKER
-                        && owns(&global.name)
-                });
-            if !collides {
-                return std::borrow::Cow::Borrowed(options);
-            }
-            let mut options = options.clone();
-            options.css_modules.retain(|name| !owns(name));
-            options.template_globals.retain(|global| {
-                global.default_value != crate::virtual_ts::types::CSS_MODULE_GLOBAL_MARKER
-                    || !owns(&global.name)
-            });
-            std::borrow::Cow::Owned(options)
+                || options
+                    .template_globals
+                    .iter()
+                    .any(|global| owns(&global.name));
+            let context_options = if collides {
+                let mut options = options.clone();
+                options.css_modules.retain(|name| !owns(name));
+                options
+                    .template_globals
+                    .retain(|global| !owns(&global.name));
+                std::borrow::Cow::Owned(options)
+            } else {
+                std::borrow::Cow::Borrowed(options)
+            };
+            crate::virtual_ts::helpers::generate_template_context(
+                &context_options,
+                dialect,
+                legacy_vue2,
+                imports.has_own_slots(),
+                (
+                    imports.attrs_type(),
+                    record.template_refs_type(),
+                    emit_initializer,
+                ),
+                Some(&owns),
+            )
         })
-    };
-    let context = profile!(
-        "canon.virtual_ts.generate_template_context",
-        crate::virtual_ts::helpers::generate_template_context(
-            &context_options,
-            dialect,
-            legacy_vue2,
-            imports.has_own_slots(),
-            (
-                imports.attrs_type(),
-                record.template_refs_type(),
-                emit_initializer
-            ),
-        )
     );
     ts.push_str(&context);
     ts.push('\n');

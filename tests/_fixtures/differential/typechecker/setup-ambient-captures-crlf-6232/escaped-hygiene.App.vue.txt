@@ -1,0 +1,7 @@
+<script setup lang="ts">
+const \u005f_vize_ambient_0_type_0 = 1;
+const local = 'fixed';
+declare const label: typeof local;
+const exact: 'fixed' = label;
+</script>
+<template>{{ label }}</template>

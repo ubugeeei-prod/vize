@@ -1,0 +1,383 @@
+{
+  "entries": [
+    {
+      "manifest": {
+        "after": [
+          "gamma"
+        ],
+        "apiVersion": 2,
+        "backend": "js",
+        "before": [],
+        "cacheInputs": [],
+        "capabilities": [
+          {
+            "id": "lint.rule",
+            "required": true,
+            "schemaVersion": 1,
+            "data": {
+              "id": "a",
+              "messages": {
+                "found": "Found {name}."
+              },
+              "visit": [
+                "ui.element"
+              ]
+            }
+          }
+        ],
+        "fingerprint": "5555555555555555555555555555555555555555555555555555555555555555",
+        "name": "alpha",
+        "options": {},
+        "permissions": [],
+        "stability": "experimental",
+        "supports": {},
+        "version": "1.0.0"
+      }
+    },
+    {
+      "manifest": {
+        "after": [],
+        "apiVersion": 2,
+        "backend": "js",
+        "before": [
+          "alpha"
+        ],
+        "cacheInputs": [],
+        "capabilities": [
+          {
+            "id": "lint.rule",
+            "required": true,
+            "schemaVersion": 1,
+            "data": {
+              "id": "b",
+              "messages": {
+                "found": "Found {name}."
+              },
+              "visit": [
+                "ui.element"
+              ]
+            }
+          }
+        ],
+        "fingerprint": "4444444444444444444444444444444444444444444444444444444444444444",
+        "name": "beta",
+        "options": {},
+        "permissions": [],
+        "stability": "experimental",
+        "supports": {},
+        "version": "1.0.0"
+      }
+    },
+    {
+      "manifest": {
+        "after": [],
+        "apiVersion": 2,
+        "backend": "js",
+        "before": [],
+        "cacheInputs": [],
+        "capabilities": [
+          {
+            "id": "lint.rule",
+            "required": true,
+            "schemaVersion": 1,
+            "data": {
+              "id": "c",
+              "messages": {
+                "found": "Found {name}."
+              },
+              "visit": [
+                "ui.element"
+              ]
+            }
+          }
+        ],
+        "fingerprint": "5555555555555555555555555555555555555555555555555555555555555555",
+        "name": "gamma",
+        "options": {},
+        "permissions": [],
+        "stability": "experimental",
+        "supports": {},
+        "version": "1.0.0"
+      }
+    },
+    {
+      "manifest": {
+        "after": [],
+        "apiVersion": 2,
+        "backend": "js",
+        "before": [],
+        "cacheInputs": [],
+        "capabilities": [
+          {
+            "id": "lint.rule",
+            "required": true,
+            "schemaVersion": 1,
+            "data": {
+              "id": "d",
+              "messages": {
+                "found": "Found {name}."
+              },
+              "visit": [
+                "ui.element"
+              ]
+            }
+          }
+        ],
+        "fingerprint": "5555555555555555555555555555555555555555555555555555555555555555",
+        "name": "delta",
+        "options": {},
+        "permissions": [],
+        "stability": "experimental",
+        "supports": {},
+        "version": "1.0.0"
+      }
+    }
+  ],
+  "runtime": "node",
+  "expect": {
+    "digest": "bde96b89461a0cb2c05bd76db7c164b84d1a64ef9944fbb63b150a6ef0cc516a",
+    "plan": {
+      "claims": [
+        {
+          "key": "lint.rule:alpha/a",
+          "owner": "alpha"
+        },
+        {
+          "key": "lint.rule:beta/b",
+          "owner": "beta"
+        },
+        {
+          "key": "lint.rule:delta/d",
+          "owner": "delta"
+        },
+        {
+          "key": "lint.rule:gamma/c",
+          "owner": "gamma"
+        }
+      ],
+      "planSchema": 1,
+      "plugins": [
+        {
+          "after": [],
+          "apiVersion": 2,
+          "backend": "js",
+          "before": [
+            "alpha"
+          ],
+          "cacheInputs": [],
+          "capabilities": [
+            {
+              "data": {
+                "defaultLevel": "off",
+                "demands": [],
+                "docs": "",
+                "documents": [
+                  "template"
+                ],
+                "fixable": "none",
+                "id": "b",
+                "messages": {
+                  "found": "Found {name}."
+                },
+                "visit": [
+                  "ui.element"
+                ]
+              },
+              "id": "lint.rule",
+              "key": "beta/b",
+              "required": true,
+              "schemaVersion": 1
+            }
+          ],
+          "fingerprint": "4444444444444444444444444444444444444444444444444444444444444444",
+          "index": 1,
+          "name": "beta",
+          "options": {},
+          "permissions": [],
+          "skipped": [],
+          "stability": "experimental",
+          "supports": {
+            "outputs": [
+              "ssr",
+              "vapor",
+              "vdom"
+            ],
+            "runtimes": [
+              "bun",
+              "node"
+            ],
+            "vue": [
+              "2",
+              "3"
+            ]
+          },
+          "version": "1.0.0"
+        },
+        {
+          "after": [],
+          "apiVersion": 2,
+          "backend": "js",
+          "before": [],
+          "cacheInputs": [],
+          "capabilities": [
+            {
+              "data": {
+                "defaultLevel": "off",
+                "demands": [],
+                "docs": "",
+                "documents": [
+                  "template"
+                ],
+                "fixable": "none",
+                "id": "c",
+                "messages": {
+                  "found": "Found {name}."
+                },
+                "visit": [
+                  "ui.element"
+                ]
+              },
+              "id": "lint.rule",
+              "key": "gamma/c",
+              "required": true,
+              "schemaVersion": 1
+            }
+          ],
+          "fingerprint": "5555555555555555555555555555555555555555555555555555555555555555",
+          "index": 2,
+          "name": "gamma",
+          "options": {},
+          "permissions": [],
+          "skipped": [],
+          "stability": "experimental",
+          "supports": {
+            "outputs": [
+              "ssr",
+              "vapor",
+              "vdom"
+            ],
+            "runtimes": [
+              "bun",
+              "node"
+            ],
+            "vue": [
+              "2",
+              "3"
+            ]
+          },
+          "version": "1.0.0"
+        },
+        {
+          "after": [
+            "gamma"
+          ],
+          "apiVersion": 2,
+          "backend": "js",
+          "before": [],
+          "cacheInputs": [],
+          "capabilities": [
+            {
+              "data": {
+                "defaultLevel": "off",
+                "demands": [],
+                "docs": "",
+                "documents": [
+                  "template"
+                ],
+                "fixable": "none",
+                "id": "a",
+                "messages": {
+                  "found": "Found {name}."
+                },
+                "visit": [
+                  "ui.element"
+                ]
+              },
+              "id": "lint.rule",
+              "key": "alpha/a",
+              "required": true,
+              "schemaVersion": 1
+            }
+          ],
+          "fingerprint": "5555555555555555555555555555555555555555555555555555555555555555",
+          "index": 0,
+          "name": "alpha",
+          "options": {},
+          "permissions": [],
+          "skipped": [],
+          "stability": "experimental",
+          "supports": {
+            "outputs": [
+              "ssr",
+              "vapor",
+              "vdom"
+            ],
+            "runtimes": [
+              "bun",
+              "node"
+            ],
+            "vue": [
+              "2",
+              "3"
+            ]
+          },
+          "version": "1.0.0"
+        },
+        {
+          "after": [],
+          "apiVersion": 2,
+          "backend": "js",
+          "before": [],
+          "cacheInputs": [],
+          "capabilities": [
+            {
+              "data": {
+                "defaultLevel": "off",
+                "demands": [],
+                "docs": "",
+                "documents": [
+                  "template"
+                ],
+                "fixable": "none",
+                "id": "d",
+                "messages": {
+                  "found": "Found {name}."
+                },
+                "visit": [
+                  "ui.element"
+                ]
+              },
+              "id": "lint.rule",
+              "key": "delta/d",
+              "required": true,
+              "schemaVersion": 1
+            }
+          ],
+          "fingerprint": "5555555555555555555555555555555555555555555555555555555555555555",
+          "index": 3,
+          "name": "delta",
+          "options": {},
+          "permissions": [],
+          "skipped": [],
+          "stability": "experimental",
+          "supports": {
+            "outputs": [
+              "ssr",
+              "vapor",
+              "vdom"
+            ],
+            "runtimes": [
+              "bun",
+              "node"
+            ],
+            "vue": [
+              "2",
+              "3"
+            ]
+          },
+          "version": "1.0.0"
+        }
+      ]
+    }
+  }
+}

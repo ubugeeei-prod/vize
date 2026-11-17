@@ -119,7 +119,16 @@ pub(super) fn generate_scope_node(
                     }
                     emit_scope_usage_bindings(ts, mappings, ctx, scope_id, &callback_indent);
 
-                    if let Some(exprs) = ctx.expressions_by_scope.get(&scope_id)
+                    if ctx.expect_splices.has_scope(scope_id) {
+                        ctx.expect_splices.generate_expressions(
+                            ts,
+                            mappings,
+                            ctx,
+                            scope_id,
+                            &callback_indent,
+                            enclosing_guard,
+                        );
+                    } else if let Some(exprs) = ctx.expressions_by_scope.get(&scope_id)
                         && ctx.check_options.check_template_bindings
                     {
                         generate_expressions_in_enclosing_guard(
@@ -260,6 +269,12 @@ pub(super) fn generate_scope_node(
             if outer_guard.is_some() {
                 super::append_chained_vif_guard_close(ts, indent);
             }
+        }
+        _ if ctx.expect_splices.has_scope(scope_id) => {
+            emit_scope_usage_bindings(ts, mappings, ctx, scope_id, indent);
+            ctx.expect_splices
+                .generate_expressions(ts, mappings, ctx, scope_id, indent, None);
+            generate_scope_slot_outlet_checks(ts, mappings, scope_id, ctx, indent);
         }
         _ => {
             generate_scope_contents(ts, mappings, ctx, scope, indent);

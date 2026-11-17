@@ -20,6 +20,7 @@ pub(in crate::linter) mod flags {
     pub const NUMBER_LITERAL: u32 = 1 << 11;
     pub const BIGINT_LITERAL: u32 = 1 << 12;
     pub const BOOLEAN_LITERAL: u32 = 1 << 13;
+    pub const ENUM_LITERAL: u32 = 1 << 15;
     pub const ENUM: u32 = 1 << 16;
     pub const NON_PRIMITIVE: u32 = 1 << 17;
     pub const TYPE_PARAMETER: u32 = 1 << 19;
@@ -32,6 +33,8 @@ pub(in crate::linter) mod flags {
     pub const LITERAL: u32 = STRING_LITERAL | NUMBER_LITERAL | BIGINT_LITERAL | BOOLEAN_LITERAL;
     /// `TypeFlags.NumberLike`.
     pub const NUMBER_LIKE: u32 = NUMBER | NUMBER_LITERAL | ENUM;
+    /// `TypeFlags.EnumLike`.
+    pub const ENUM_LIKE: u32 = ENUM | ENUM_LITERAL;
     /// `TypeFlags.TypeVariable | TypeFlags.Index`.
     pub const TYPE_VARIABLE: u32 = TYPE_PARAMETER | INDEXED_ACCESS | INDEX;
     /// Types `getBaseConstraintOfType` can resolve to something other than

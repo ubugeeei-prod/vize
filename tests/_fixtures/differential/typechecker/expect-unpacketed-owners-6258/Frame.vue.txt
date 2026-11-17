@@ -1,0 +1,3 @@
+<template>
+  <div><slot name="menu" /></div>
+</template>

@@ -770,6 +770,10 @@ export interface LintRuleOptions {
      * Whether to skip checking whether `static` methods are correctly bound.
      */
     ignoreStatic?: boolean;
+    /**
+     * Whether to also report library methods read from the global object (`window.setTimeout`, `self.requestAnimationFrame`), as typescript-eslint does. They run unbound because platform operations fall back to the global object.
+     */
+    checkGlobalObjectMethods?: boolean;
   };
   "vue/no-unused-script-vars"?: {
     vars?: "all" | "local";

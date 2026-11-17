@@ -1,0 +1,12 @@
+<script lang="ts">
+/** @deprecated */
+type A = string[];
+/** @deprecated */
+declare const a: A;
+/** @deprecated */
+interface Foo {}
+
+class Bar implements Foo {}
+const [b] = a;
+export {};
+</script>

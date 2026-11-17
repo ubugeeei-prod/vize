@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "id": "lsp/regression/owning-project-paths-13090",
+  "provenance": {
+    "fixCommit": "05925b0ed382b9dc3fc4bb2ce05ad669a4aea7ae",
+    "issue": 13090,
+    "witnessPath": "crates/vize_maestro/src/ide/tsconfig_paths.rs",
+    "inputOrigin": "#13090 create-vue solution layout: a node project listed first declares a conflicting @/* alias, the app project owns src/App.vue",
+    "contractOrigin": "Complete document links for two aliased imports and one relative control, resolved through the referenced project that owns the importer"
+  },
+  "files": [
+    {
+      "source": "App.vue.txt",
+      "runtimePath": "src/App.vue",
+      "sha256": "4a5315deed8fd2b1f8ca6b7139faa65abe4269a44ce6fe56d585b72bec519f3f"
+    },
+    {
+      "source": "Child.vue.txt",
+      "runtimePath": "src/Child.vue",
+      "sha256": "9dd8733e272ce6dc306e9ed65adcfcf56eb195e69d47dc315160ad73beae52e8"
+    },
+    {
+      "source": "app-format.ts.txt",
+      "runtimePath": "src/format.ts",
+      "sha256": "f8b21a2510089f6c8d7cae1d0fa2faee7792390bd95e6df1da6cd653bd28c263"
+    },
+    {
+      "source": "app-props.ts.txt",
+      "runtimePath": "src/props.ts",
+      "sha256": "1ee7918ffbdacf5b78073302e128591440a340e28e45117062e9d7d9216222a2"
+    },
+    {
+      "source": "node-props.ts.txt",
+      "runtimePath": "node/props.ts",
+      "sha256": "877e5785d7dd3e35bd87d71d6fadc368e6834365a42ff21913ad19fe3ce6cc89"
+    },
+    {
+      "source": "tsconfig.json.txt",
+      "runtimePath": "tsconfig.json",
+      "sha256": "ffb0dc1a99504f4d50c09d8699f2848abc5222d1a089570ebb3acaa358583846"
+    },
+    {
+      "source": "tsconfig.node.json.txt",
+      "runtimePath": "tsconfig.node.json",
+      "sha256": "de9f28471abc936fec2a131523b0817a93f7eed8aa475978c6c7584a29b5c435"
+    },
+    {
+      "source": "tsconfig.app.json.txt",
+      "runtimePath": "tsconfig.app.json",
+      "sha256": "5873ede22f2aec7e03c664f55f1090f61fc6565400384c8babe8150d22f4e7db"
+    }
+  ],
+  "entry": "src/App.vue",
+  "expected": {
+    "source": "response.expected.json",
+    "sha256": "45936141a47b44025b92ccabb8d64bbbdd6491dc5d031adf343530031846b526"
+  },
+  "method": "textDocument/documentLink",
+  "documentVersion": 1,
+  "initializationOptions": {
+    "editor": true,
+    "lint": false,
+    "typecheck": false
+  },
+  "scope": "Editor alias resolution selects the owning referenced project instead of the first project that declares paths; source-inspected input custody does not establish native whole-product parity"
+}

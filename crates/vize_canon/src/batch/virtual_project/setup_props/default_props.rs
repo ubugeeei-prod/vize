@@ -136,7 +136,7 @@ pub(super) fn resolve_imported_default_names(
     visited: &mut RuntimePropVisitSet,
     cache: &RuntimePropResolveCache,
 ) -> FxHashSet<CompactString> {
-    let Some(path) = resolve_runtime_import_path(importer, specifier) else {
+    let Some(path) = resolve_runtime_import_path(importer, specifier, cache) else {
         return FxHashSet::default();
     };
     let key_path = path.canonicalize().unwrap_or_else(|_| path.clone());

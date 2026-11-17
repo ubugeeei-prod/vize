@@ -1,0 +1,14 @@
+<script lang="ts">
+const kinds = ['a', 'b'] as const;
+</script>
+
+<script lang="ts" setup>
+type Local = typeof kinds[number];
+type Local = string;
+
+const value: Local = 'a';
+</script>
+
+<template>
+  <div>{{ value }}</div>
+</template>

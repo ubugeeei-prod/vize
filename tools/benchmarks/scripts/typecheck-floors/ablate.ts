@@ -8,11 +8,11 @@
  */
 
 const TYPE_DECL =
-  /^\s*type (__\w+_\d+__(listener_args|library|props|emit_props|fallthrough|props_members)\b|__\w+_\d+_[\w$]+_(prop_args|fallthrough_args|inferred_emit_args|static_emit_args|emit_args|args|event|return_native_fallthrough|return|prop_arrays|listener|handler)\b|__\w+_\d+_emit_resolver\b|__\w+_(Props|Component|CheckProps|CheckTail|ValueProps|FallthroughValue|Check)_\d+\b|__\w+_\d+_prop_\w+\b|__\w+_\d+_model_\w+\b|__vize_events_resolver_\d+\b|\$SlotContract_\d+\b)/u;
+  /^\s*type (__\w+_\d+__(listener_args|library|props|emit_props|fallthrough|props_members)\b|__\w+_\d+_[\w$]+_(prop_args|fallthrough_args|inferred_emit_args|static_emit_args|emit_args|args|event|return_native_fallthrough|return|prop_arrays|listener|handler)\b|__\w+_\d+_emit_resolver\b|__\w+_(Props|Component|CheckProps|CheckTail|ValueProps|FallthroughValue|Check)_\d+\b|__\w+_\d+_prop_\w+\b|__\w+_\d+_model_\w+\b|__vize_events_resolver_\d+\b|__vize_slots_nav_\d+\b|\$SlotContract_\d+\b)/u;
 const CONST_DECL =
   /^\s*const (__vize_emit_props_\d+|__vize_event_keys_\d+|__vize_events_resolved_\d+|__vize_kebab_events_nav_\d+|__vize_props_nav_\d+|__vize_slots_nav_\d+|__vize_slot_host_\d+(?:_instances)?|__vize_required_slots_\d+|__vize_prop_check_\w+)\b/u;
 const BLANK =
-  /^\s*const \{ \} = undefined as unknown as \$ComponentNavigationProps|^\s*const \{ \w+: __vize_slot_nav_|^\s*void __vize_slot_nav_|^\s*\/\* __vize_template_hover \*\/|^\s*\/\/(?! @ts-| <reference| @vize-map)/u;
+  /^\s*const \{ \} = undefined as unknown as \$ComponentNavigationProps|^\s*const \{ \w+: __vize_slot_nav_|^\s*void __vize_slot_nav_|^\s*void \(undefined as unknown as __vize_slots_nav_|^\s*\/\* __vize_template_hover \*\/|^\s*\/\/(?! @ts-| <reference| @vize-map)/u;
 
 /** Bracket depth change of one line, quoted text skipped (linear, unlike a backtracking regex). */
 function depthChange(line: string): number {

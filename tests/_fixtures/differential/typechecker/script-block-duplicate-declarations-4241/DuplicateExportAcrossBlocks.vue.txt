@@ -1,0 +1,15 @@
+<script lang="ts">
+const kinds = ['a', 'b'] as const;
+
+export type Kind = typeof kinds[number];
+</script>
+
+<script lang="ts" setup>
+export type Kind = string;
+
+const value: Kind = 'a';
+</script>
+
+<template>
+  <div>{{ value }}</div>
+</template>

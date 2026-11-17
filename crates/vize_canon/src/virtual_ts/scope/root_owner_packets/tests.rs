@@ -4,7 +4,8 @@ use super::super::{
 };
 use crate::virtual_ts::{
     VirtualTsCheckOptions, VirtualTsOptions, VizeSemanticLink,
-    template_binding_access::TemplateBindingAccess, types::VizeMapping,
+    generic_parameters::GenericParameters, template_binding_access::TemplateBindingAccess,
+    types::VizeMapping,
 };
 use vize_carton::{FxHashSet, String, cstr};
 use vize_croquis::{Analyzer, AnalyzerOptions};
@@ -22,6 +23,20 @@ fn render_projection(
     packets: bool,
     navigation: bool,
     omit_navigation_references: bool,
+) -> Output {
+    render_generic_projection(
+        script,
+        template,
+        (packets, navigation, omit_navigation_references),
+        None,
+    )
+}
+
+fn render_generic_projection(
+    script: &str,
+    template: &str,
+    (packets, navigation, omit_navigation_references): (bool, bool, bool),
+    generic_parameters: Option<&GenericParameters>,
 ) -> Output {
     let allocator = vize_carton::Allocator::new();
     let (root, errors) = vize_armature::parse(&allocator, template);
@@ -50,7 +65,7 @@ fn render_projection(
             ScopeGenerationOptions {
                 component_props_contract: "Props",
                 diagnostic_ownership: None,
-                generic_parameters: None,
+                generic_parameters,
                 check_options: VirtualTsCheckOptions {
                     check_unknown_events: true,
                     ..Default::default()
@@ -103,18 +118,60 @@ fn diagnostics_only_navigation_keeps_slot_and_event_name_checks() {
                 "check omits every {navigation} packet"
             );
         }
-        for diagnostic in [
-            "__vize_event_keys_0",
-            "__vize_slots_nav_0",
-            "__vize_slot_nav_0_0",
-        ] {
+        for diagnostic in ["__vize_event_keys_0", "__vize_slots_nav_0"] {
             assert_eq!(
                 check.0.matches(diagnostic).count(),
                 2,
                 "check retains one declaration and one use of {diagnostic}"
             );
         }
+        assert_eq!(editor.0.matches("__vize_slot_nav_0_0").count(), 2);
+        // The check names the slot through a type-only indexed access, so no
+        // declaration joins the render control flow.
+        assert_eq!(check.0.matches("__vize_slot_nav_0_0").count(), 0);
+        assert_eq!(
+            check
+                .0
+                .matches("  type __vize_slots_nav_0 = $NavigationSlots<typeof Comp>;\n")
+                .count(),
+            1
+        );
+        let access = "  void (undefined as unknown as __vize_slots_nav_0['missing']);\n";
+        assert_eq!(check.0.matches(access).count(), 1, "{}", check.0);
+        let name = template.find("#missing").unwrap() + 1;
+        let quoted = check.0.find(access).unwrap() + access.find('\'').unwrap();
+        let mapping = check
+            .1
+            .iter()
+            .find(|mapping| mapping.gen_range.start == quoted)
+            .expect("the quoted slot key maps to the authored slot name");
+        assert_eq!(mapping.gen_range.end, quoted + "'missing'".len());
+        assert_eq!(mapping.src_range, name..name + "missing".len());
+        assert_eq!(
+            mapping.sub_spans[0].gen_range,
+            quoted + 1..quoted + 1 + "missing".len()
+        );
     }
+}
+
+/// With type parameters in scope an indexed access defers where destructuring
+/// reads the constraint (TS2536 instead of TS2339), so a generic component
+/// keeps the destructured slot name.
+#[test]
+fn generic_components_keep_destructured_slot_names_in_the_check() {
+    let template = "<Comp><template #missing>{{ value }}</template></Comp>";
+    let generics = GenericParameters::parse("T");
+    let check = render_generic_projection(SCRIPT, template, (false, true, true), Some(&generics));
+    assert_eq!(
+        check
+            .0
+            .matches("  const { missing: __vize_slot_nav_0_0 } = __vize_slots_nav_0;\n")
+            .count(),
+        1,
+        "{}",
+        check.0
+    );
+    assert_eq!(check.0.matches("type __vize_slots_nav_0").count(), 0);
 }
 
 // Preserve every full mapped payload and semantic edge under the relocation;

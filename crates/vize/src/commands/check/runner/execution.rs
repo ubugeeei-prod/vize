@@ -124,10 +124,55 @@ fn resolve_program_dialect(
     Ok(super::dialect_from_features(target))
 }
 
+/// Nuxt import manifests the program's tsconfig selects through `files` or
+/// `include`, and the program roots extended by those Nuxt detection does not
+/// supply itself.
+///
+/// Input collection keeps generated manifests out of the roots because a
+/// detected Nuxt project turns them into its own auto-import stubs. Outside
+/// a detected project nothing replaces them, so dropping a selected one hid
+/// the globals it declares and reported TS2304 where `tsc` accepts (#13093).
+/// Every selected manifest, loaded or supplied as stubs, still declares the
+/// program's globals, so all of them decide `useTemplateRef` ownership.
+fn with_selected_import_manifests<'a>(
+    files: &'a [PathBuf],
+    project_root: &std::path::Path,
+    tsconfig_path: Option<&std::path::Path>,
+    nuxt_project_root: &std::path::Path,
+) -> (std::borrow::Cow<'a, [PathBuf]>, Vec<PathBuf>) {
+    let Some(tsconfig_path) = tsconfig_path else {
+        return (std::borrow::Cow::Borrowed(files), Vec::new());
+    };
+    let selected = crate::commands::check::tsconfig_inputs::collect_selected_nuxt_import_manifests(
+        project_root,
+        tsconfig_path,
+        &mut crate::commands::check::tsconfig_inputs::TsconfigInputCache::default(),
+    );
+    let unsupplied = selected
+        .iter()
+        .filter(|manifest| {
+            !files.contains(manifest)
+                && !nuxt::supplies_generated_declaration(nuxt_project_root, manifest)
+        })
+        .cloned()
+        .collect::<Vec<_>>();
+    if unsupplied.is_empty() {
+        return (std::borrow::Cow::Borrowed(files), selected);
+    }
+    let files = files.iter().cloned().chain(unsupplied).collect();
+    (std::borrow::Cow::Owned(files), selected)
+}
+
 pub(super) fn prepare_program(
     input: ProgramExecutionInput<'_>,
     settings: &CheckerSettings,
 ) -> Result<PendingProgram, String> {
+    let (program_files, selected_manifests) = with_selected_import_manifests(
+        input.files,
+        input.project_root,
+        input.tsconfig_path.as_deref(),
+        input.nuxt_project_root,
+    );
     let dialect = resolve_program_dialect(
         settings.dialect,
         input.project_root,
@@ -216,10 +261,16 @@ pub(super) fn prepare_program(
     checker.set_package_routes(input.package_routes);
     checker.set_foreign_declarations(input.foreign_declarations);
     checker.set_ambient_vue_template_ref(
-        crate::commands::check::tsconfig_inputs::declares_vue_template_ref_global(input.files),
+        crate::commands::check::tsconfig_inputs::declares_vue_template_ref_global(
+            &program_files
+                .iter()
+                .chain(&selected_manifests)
+                .cloned()
+                .collect::<Vec<_>>(),
+        ),
     );
     checker
-        .scan_paths(input.files)
+        .scan_paths(&program_files)
         .map_err(|error| cstr!("{}", error))?;
     if input.ensure_included_sources {
         checker
@@ -240,7 +291,7 @@ pub(super) fn prepare_program(
     }
     Ok(PendingProgram {
         checker,
-        input_files: input.files.to_vec(),
+        input_files: program_files.into_owned(),
         reported_files: input.reported_files,
         tsconfig_path: input.tsconfig_path,
         program_root: input.program_root,

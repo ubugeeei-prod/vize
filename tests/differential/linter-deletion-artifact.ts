@@ -107,7 +107,13 @@ export function expectedLinterBlockers(projects: LinterProjectEvidence[]): Block
         code: "linter-baseline-config",
         detail: `${project.id}: baseline discarded ${project.droppedConfigMessageCount} config message(s)`,
       });
-    if (project.unmatchedPatterns.length > 0)
+    // A declared zero-Vue corpus is expected to match none of its globs; the scope
+    // check above and the pinned no-files linter diagnostic already bind that state.
+    const declaredZeroCorpus =
+      project.expectedFileCount === 0 &&
+      project.reportedExpectedFileCount === 0 &&
+      project.comparedFileCount === 0;
+    if (project.unmatchedPatterns.length > 0 && !declaredZeroCorpus)
       blockers.push({
         code: "linter-unmatched-patterns",
         detail: `${project.id}: unmatched explicit lint patterns ${JSON.stringify(project.unmatchedPatterns)}`,

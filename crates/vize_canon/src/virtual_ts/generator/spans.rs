@@ -1,6 +1,8 @@
 //! Span collection/merging, template-referenced-name discovery, and
 //! `export default` rewriting used while assembling the virtual TypeScript.
 
+#[cfg(test)]
+mod hoisted_jsdoc_tests;
 mod template_usage;
 
 pub(super) use template_usage::template_usage;
@@ -21,6 +23,56 @@ pub(super) fn merge_overlapping_spans(mut spans: Vec<(u32, u32)>) -> Vec<(u32, u
         merged.push((start, end));
     }
     merged
+}
+
+/// Widen a hoisted declaration's span over the JSDoc blocks that lead it.
+///
+/// TypeScript attaches a `/** … */` comment to the declaration that follows
+/// it. A declaration moved to module scope without its JSDoc loses its
+/// `@deprecated`, `@see` and documentation, and the comment left behind in
+/// `__setup()` documents whichever statement comes next instead (#12985).
+/// Only whole-line blocks separated from the span by whitespace move.
+pub(super) fn with_leading_jsdoc(script: &str, (start, end): (u32, u32)) -> (u32, u32) {
+    let mut cursor = start as usize;
+    while let Some(open) = script.get(..cursor).and_then(leading_jsdoc_start) {
+        cursor = open;
+    }
+    (u32::try_from(cursor).unwrap_or(start), end)
+}
+
+/// Where the JSDoc block that ends `before` (up to trailing whitespace) opens,
+/// when that block opens its own line.
+fn leading_jsdoc_start(before: &str) -> Option<usize> {
+    let head = before.trim_end().strip_suffix("*/")?;
+    let open = head.rfind("/**")?;
+    let body = head.get(open + 3..)?;
+    if body.contains("*/") {
+        return None;
+    }
+    let line_start = head.get(..open)?.rfind('\n').map_or(0, |index| index + 1);
+    head.get(line_start..open)?
+        .trim()
+        .is_empty()
+        .then_some(open)
+}
+
+/// Byte length of the JSDoc blocks (and the whitespace after them) that lead
+/// a hoisted declaration's text.
+pub(super) fn leading_jsdoc_len(text: &str) -> usize {
+    let mut offset = 0;
+    loop {
+        let Some(rest) = text.get(offset..) else {
+            return offset;
+        };
+        let trimmed = rest.trim_start();
+        let Some(close) = trimmed.strip_prefix("/**").and_then(|body| body.find("*/")) else {
+            return offset;
+        };
+        // `/**`, the body, `*/`, then the whitespace before the declaration.
+        let comment_end = rest.len() - trimmed.len() + 3 + close + 2;
+        let after = rest.get(comment_end..).unwrap_or_default();
+        offset += comment_end + (after.len() - after.trim_start().len());
+    }
 }
 
 /// Generated identifier resolving Vue's `defineComponent` (see

@@ -37,6 +37,15 @@ pub fn resolve_descriptor_type_world(
     descriptor_world(descriptor, filename, &TypeSourceSnapshot::default())
 }
 
+/// [`resolve_descriptor_type_world`] against a disk view shared across calls.
+pub fn resolve_descriptor_type_world_with_sources(
+    descriptor: &SfcDescriptor<'_>,
+    filename: &str,
+    sources: &TypeSourceSnapshot,
+) -> Option<vize_croquis::types::ResolvedTypeWorld> {
+    descriptor_world(descriptor, filename, sources)
+}
+
 // The scoped world reads the current setup/normal text directly. The
 // compatibility collector and context analysis do not contribute to it.
 fn descriptor_world(

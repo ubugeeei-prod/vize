@@ -170,12 +170,16 @@ process.stdin.destroy();
     let runtime = runtime(cache.path(), &script);
     let mut command = runtime.command(&config);
     let mut phases = 0;
-    let output =
-        crate::config::loader::js_observation::evaluate_observed(&mut command, &mut |paths| {
+    let output = crate::config::loader::js_observation::evaluate(
+        &mut command,
+        Some(&mut |paths| {
             assert!(paths.is_empty());
             phases += 1;
-        })
-        .unwrap();
+        }),
+    )
+    .unwrap()
+    .into_output()
+    .unwrap();
     assert!(
         output.status.success(),
         "{}",

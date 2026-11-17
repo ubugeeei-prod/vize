@@ -25,7 +25,7 @@ const messageKeysWithHelp = [
 
 type Rec = Readonly<Record<string, unknown>>;
 
-const lintExtensions = ".vue, .html, .htm, .js, .mjs, .cjs, .ts, .mts, .cts, .jsx, or .tsx";
+const lintExtensions = ".vue, .html, .htm, .js, .mjs, .cjs, .ts, .mts, .cts, .jsx, .tsx, or .tsrx";
 
 export function zeroFileLinterStderr(patterns: readonly string[]): string {
   return `No ${lintExtensions} files found matching patterns: [${patterns

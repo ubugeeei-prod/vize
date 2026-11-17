@@ -1,11 +1,23 @@
 //! Report ranges aligned with typescript-eslint.
+mod misused_spread;
 mod require_await;
+mod unbound_method;
+mod unsafe_argument;
+mod void_operator;
 
 use std::collections::BTreeMap;
 
 use corsa::lint::{LintNode, TextRange};
 use serde_json::Value;
 use vize_l0::{String, cstr};
+
+/// A further input a rule runs on, for a check its dependency stops short of.
+pub(super) fn follow_up(rule: &str, node: &LintNode) -> Option<LintNode> {
+    match rule {
+        "no-unsafe-argument" => unsafe_argument::after_variadic_spread(node),
+        _ => None,
+    }
+}
 
 pub(super) fn prepare(rule: &str, node: &LintNode, configured: Option<&Value>) -> LintNode {
     let mut owned = node.clone();
@@ -16,6 +28,9 @@ pub(super) fn prepare(rule: &str, node: &LintNode, configured: Option<&Value>) -
             supply_tostring_argument(&mut owned);
         }
         "require-await" => require_await::expose_non_thenable_any_returns(&mut owned),
+        "no-meaningless-void-operator" => void_operator::expose_thenable_operand(&mut owned),
+        "unbound-method" => unbound_method::trust_global_object(&mut owned, configured),
+        "no-misused-spread" => misused_spread::expose_class_declarations(&mut owned),
         "restrict-plus-operands" if disallows_nullish(configured) => {
             expose_nullish_union_flags(&mut owned);
         }

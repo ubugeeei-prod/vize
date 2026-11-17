@@ -1,0 +1,4 @@
+<script setup lang="ts">
+let local: string | number = 1; declare const first: typeof local; local = 'fixed'; declare const label: typeof local; const a: number = first; const b: string = label;
+</script>
+<template>{{ label }}</template>

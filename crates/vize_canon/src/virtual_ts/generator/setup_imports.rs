@@ -22,6 +22,8 @@ pub(super) struct SetupImportPlan {
     imports: Vec<ImportSpec>,
     slots_type: Option<TemplateSlotsType>,
     attrs_type: Option<String>,
+    /// `<script setup>` binds `$slots` itself, which the template then reads.
+    authored_dollar_slots: bool,
 }
 
 struct ImportSpec {
@@ -54,9 +56,14 @@ impl SetupImportPlan {
             }
             ty
         });
+        let authored_dollar_slots =
+            crate::virtual_ts::script_facts::with_bindings(summary, |bindings| {
+                bindings.is_script_setup() && bindings.contains_binding("$slots")
+            });
         let mut plan = Self {
             slots_type,
             attrs_type,
+            authored_dollar_slots,
             ..Self::default()
         };
         let Some(script) = script else {
@@ -159,7 +166,11 @@ impl SetupImportPlan {
         mappings: &mut Vec<VizeMapping>,
         source_offset: &dyn Fn(usize) -> usize,
     ) {
-        if let Some(slots) = &self.slots_type {
+        if let Some(slots) = self
+            .slots_type
+            .as_ref()
+            .filter(|_| !self.authored_dollar_slots)
+        {
             ts.push_str("    const $slots: ");
             slots.emit(ts, mappings, source_offset);
             ts.push_str(" = undefined as any;\n");

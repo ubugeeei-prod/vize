@@ -282,6 +282,18 @@ impl<L: LinkSink> Writer<L> {
         self.helpers.extend(&fragment.helpers);
     }
 
+    /// Append a finished fragment as one unit generated from `authored`. The
+    /// unit's link precedes the fragment's own links, so links stay in
+    /// generated order with each enclosing unit before what it encloses.
+    pub fn append_linked(&mut self, fragment: Self, authored: Span) {
+        if L::RECORDING {
+            let start = self.cursor();
+            let end = start.saturating_add(fragment.cursor());
+            self.links.record(Span::new(start, end), authored, None);
+        }
+        self.append(fragment);
+    }
+
     /// Finish the body without a preamble.
     #[must_use]
     pub fn finish(self) -> Emitted<L> {

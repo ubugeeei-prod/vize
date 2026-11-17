@@ -1,0 +1,10 @@
+<script setup lang="ts">
+defineProps<{ seed: number }>();
+
+const $attrs = { title: 1 };
+const $emit = (value: number) => value.toFixed();
+</script>
+
+<template>
+  <p>{{ $attrs.title.toFixed() }} {{ $emit(1).padStart(2) }} {{ seed }}</p>
+</template>

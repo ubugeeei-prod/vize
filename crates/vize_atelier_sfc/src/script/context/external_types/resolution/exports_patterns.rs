@@ -21,17 +21,45 @@ pub(super) fn exports_types_entry(manifest: &serde_json::Value, key: &str) -> Op
         }
         // An exact key ends resolution the way Node does, so an entry without a
         // `types` condition must not borrow declarations from a wildcard key.
-        return super::find_types_condition(entry).map(ExportsTypes::Types);
+        return find_types_condition(entry).map(ExportsTypes::Types);
     }
     let (captured, target) = best_pattern_match(exports, key)?;
     if target.is_null() {
         return Some(ExportsTypes::Excluded);
     }
     Some(ExportsTypes::Types(
-        super::find_types_condition(target)?
+        find_types_condition(target)?
             .replace('*', captured)
             .to_compact_string(),
     ))
+}
+
+/// Find the `types` condition for the package root. The root entry is either
+/// the explicit `"."` subpath or, when no subpath keys are present, a condition
+/// map placed directly under `exports`.
+pub(super) fn exports_root_types_entry(manifest: &serde_json::Value) -> Option<String> {
+    let exports = manifest.get("exports")?;
+    if let Some(root) = exports.get(".") {
+        return find_types_condition(root);
+    }
+    let conditions = exports.as_object()?;
+    if conditions.keys().any(|key| key.starts_with('.')) {
+        return None;
+    }
+    find_types_condition(exports)
+}
+
+/// Read a `types` condition out of an `exports` value; conditions may nest.
+fn find_types_condition(value: &serde_json::Value) -> Option<String> {
+    match value {
+        serde_json::Value::Object(map) => {
+            if let Some(types) = map.get("types").and_then(|value| value.as_str()) {
+                return Some(types.to_compact_string());
+            }
+            map.values().find_map(find_types_condition)
+        }
+        _ => None,
+    }
 }
 
 /// Match `key` against Node-style `exports` pattern keys such as `"./dist/*"`,

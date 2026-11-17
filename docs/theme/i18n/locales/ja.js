@@ -55,6 +55,7 @@
       "/rules/reference/parser-template": "テンプレートの構文エラー",
       "/rules/reference/parser-sfc": "SFC の構文エラー",
       "/rules/reference/parser-jsx": "JSX の構文エラー",
+      "/rules/reference/parser-tsrx": "TSRX の構文エラー",
       "/rules/reference/type-project-configuration": "プロジェクト設定のエラー",
       "/guide/check-performance": "型チェックのパフォーマンス",
       "/guide/oxlint": "Oxlint プラグイン",

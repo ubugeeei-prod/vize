@@ -121,7 +121,7 @@ export default defineConfig({}).withVue({
 | `type/no-unsafe-member-access` | `{ allowOptionalChaining?: boolean }` | typescript-eslint と同じく、既定は `false` です。 |
 | `type/only-throw-error` | `{ allow?: TypeSpecifier[]; allowRethrowing?: boolean; allowThrowingAny?: boolean; allowThrowingUnknown?: boolean }` | typescript-eslint と同じく、既定は `[]`、3 つのスイッチは `true` です。 |
 | `type/prefer-promise-reject-errors` | `{ allow?: TypeSpecifier[]; allowEmptyReject?: boolean; allowThrowingAny?: boolean; allowThrowingUnknown?: boolean }` | typescript-eslint と同じく、既定は `[]`、3 つのスイッチは `false` です。 |
-| `type/unbound-method` | `{ ignoreStatic?: boolean }` | typescript-eslint と同じく、既定は `false` です。 |
+| `type/unbound-method` | `{ ignoreStatic?: boolean; checkGlobalObjectMethods?: boolean }` | どちらも既定は `false` です。`ignoreStatic` は typescript-eslint と同じです。グローバルオブジェクトから読み出したライブラリのメソッド (`window.setTimeout`、`self.requestAnimationFrame`) は、レシーバーなしで呼ばれてもプラットフォームの操作がグローバルオブジェクトを使うため報告しません。`checkGlobalObjectMethods: true` で typescript-eslint と同じく報告します。 |
 
 ## 詳しい例
 

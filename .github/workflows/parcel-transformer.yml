@@ -14,6 +14,11 @@ on:
       - Cargo.lock
       - tools/support/compat/parcel/**
       - .github/workflows/parcel-transformer.yml
+  # Hosted macOS arm64 capacity is scarce, so pull requests build the per-platform
+  # packages only when the native plugin itself changes; main still builds every
+  # target nightly, and tags and dispatches always do.
+  schedule:
+    - cron: "37 2 * * *"
   workflow_dispatch:
     inputs:
       publish:
@@ -45,7 +50,30 @@ env:
   TRIGGER_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
 
 jobs:
+  packaging-changes:
+    name: Plan native packaging
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: blacksmith-32vcpu-ubuntu-2404
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      packages: ${{ steps.changes.outputs.packages }}
+    steps:
+      - name: Detect native plugin package changes
+        id: changes
+        uses: dorny/paths-filter@7b450fff21473bca461d4b92ce414b9d0420d706 # v4.0.2
+        with:
+          filters: |
+            packages:
+              - 'npm/builder/parcel-native/**'
+              - 'crates/vize_parcel_transformer/**'
+              - '.github/workflows/parcel-transformer.yml'
+
   native-plugin-packages:
+    needs: packaging-changes
+    if: ${{ !cancelled() && (github.event_name != 'pull_request' || needs.packaging-changes.outputs.packages == 'true') }}
     permissions:
       contents: read
       id-token: write

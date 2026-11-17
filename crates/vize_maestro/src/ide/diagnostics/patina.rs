@@ -68,11 +68,14 @@ impl DiagnosticService {
         let Some(linter) = linter_for_uri(state, uri, ecosystem_enabled) else {
             return vec![];
         };
-        let result = if is_standalone_html {
+        let mut result = if is_standalone_html {
             linter.lint_standalone_html(content, uri.path())
         } else {
             linter.lint_sfc(content, uri.path())
         };
+        if !is_standalone_html && uri.path().ends_with(".vue") {
+            state.extend_plugin_lint_diagnostics(uri, content, &mut result.diagnostics);
+        }
         result
             .diagnostics
             .into_iter()

@@ -1,4 +1,4 @@
-use super::{paths::next_session_directory_name, probe::byte_offset_to_utf16_offset};
+use super::{paths::next_session_directory_name, utf16::byte_offset_to_utf16_offset};
 
 #[test]
 fn utf16_offsets_follow_typescript_rules() {
