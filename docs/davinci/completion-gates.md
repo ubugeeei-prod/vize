@@ -61,10 +61,11 @@ are not committed here; the tool prints them.
 
 ## T3: backends
 
-| Gate        | Passes when                                                | Kind  | Issues |
-| ----------- | ---------------------------------------------------------- | ----- | ------ |
-| `levels.l3` | L3 makes the shared decisions for every backend.           | issue | #6839  |
-| `levels.l4` | DOM, SSR, Vapor and virtual-TS emission live in `vize_l4`. | issue | #6840  |
+| Gate            | Passes when                                                                                                                                                     | Kind     | Issues       |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------- | ------------ |
+| `levels.l3`     | L3 makes the shared decisions for every backend.                                                                                                                | issue    | #6839        |
+| `levels.l4`     | DOM, SSR, Vapor and virtual-TS emission live in `vize_l4`.                                                                                                      | issue    | #6840        |
+| `levels.inputs` | Input-specific code ends at L2: L2→L3, L3 and L4 name no input format and L1 follows the target layout. `docs/davinci/plan/input-placement-owed.json` is empty. | measured | #6839, #6840 |
 
 ## T4: products
 
