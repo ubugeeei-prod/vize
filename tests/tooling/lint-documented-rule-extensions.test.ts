@@ -212,3 +212,40 @@ emit('toggled', 1, 2)
   assert.equal(payload("2)"), null);
   assert.equal(payload("b)"), null);
 });
+
+test("emits eslint-plugin-vue cannot see stay Patina's reading", () => {
+  const unused = (sfc: string, event: string) =>
+    baselineIntentionalReason(
+      {
+        file: "src/Picker.vue",
+        ruleId: "vue/no-unused-emit-declarations",
+        severity: "warning",
+        line: 1,
+        column: 1,
+        endLine: 1,
+        endColumn: 2,
+        message: `\`${event}\` is defined as emit but never used.`,
+      },
+      sfc,
+    );
+  const asserted = `<script setup lang="ts">
+const emit = defineEmits<{ apply: [unknown]; change: [] }>()
+function pick(payload: unknown) {
+  (emit as any)('apply', payload)
+}
+</script>`;
+  assert.match(unused(asserted, "apply") ?? "", /type assertion/u);
+  const early = `<script setup lang="ts">
+function edit() {
+  emit("edit-environment")
+}
+const emit = defineEmits<{ (e: "edit-environment"): void; (e: "select"): void }>()
+</script>`;
+  assert.match(unused(early, "edit-environment") ?? "", /before the macro declaration/u);
+  assert.equal(unused(early, "select"), null);
+  const plain = `<script setup lang="ts">
+const emit = defineEmits<{ apply: []; change: [] }>()
+emit('change')
+</script>`;
+  assert.equal(unused(plain, "apply"), null);
+});
