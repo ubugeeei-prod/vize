@@ -54,6 +54,20 @@ fn conditional_arms_are_linted_as_branches_of_the_enclosing_region() {
 }
 
 #[test]
+fn value_and_regions_are_linted_inside_the_enclosing_region() {
+    // `{n && …}` with a non-boolean `n` is a `ui.and` in the `<ul>` region.
+    let source = "export function Avatar({ n, src }: { n: number; src: string }) @{
+  <ul>{n && <li><img  src={src} /></li>}{n && <li>{n}</li>}</ul>
+}
+";
+    let result = lint_tsrx(&Linter::new(), source, "Avatar.tsrx");
+    assert_eq!(
+        rows(&result),
+        [("a11y/alt-text", 82, 100), ("vue/no-multi-spaces", 86, 88)]
+    );
+}
+
+#[test]
 fn a_module_with_an_unsupported_construct_reports_every_one_and_lints_no_region() {
     let source = "export function A() @{
   <div  class=\"a\">

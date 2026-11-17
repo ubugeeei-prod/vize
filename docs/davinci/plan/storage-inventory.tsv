@@ -141,13 +141,13 @@ l2	-	davinci/vize_l2/src/artifact/builder/conditional.rs	0	0	0	0	5	0	0	0
 l2	analysis	davinci/vize_l2/src/artifact/builder/tests.rs	2	0	1	6	1	8	0	0
 l2	analysis	davinci/vize_l2/src/artifact/tests.rs	1	8	1	6	1	9	0	0
 l2	contract	davinci/vize_l2/src/dump.rs	1	1	1	0	0	0	0	0
-l2	contract	davinci/vize_l2/src/dump/owned.rs	1	16	1	18	0	0	0	0
+l2	contract	davinci/vize_l2/src/dump/owned.rs	1	17	1	18	0	0	0	0
 l2	contract	davinci/vize_l2/src/dump/owned/binding.rs	1	7	1	13	0	0	0	0
 l2	-	davinci/vize_l2/src/lang/dump/owned.rs	0	0	1	10	0	0	0	0
 l2	contract	davinci/vize_l2/src/dump/parse.rs	2	4	1	0	0	0	0	0
 l2	contract	davinci/vize_l2/src/dump/parse/binding_line.rs	1	8	1	3	0	0	0	0
 l2	-	davinci/vize_l2/src/lang/dump/parse.rs	0	0	1	1	0	0	0	0
-l2	contract	davinci/vize_l2/src/dump/parse/line.rs	13	0	1	6	0	0	0	0
+l2	contract	davinci/vize_l2/src/dump/parse/line.rs	14	0	1	6	0	0	0	0
 l2	-	davinci/vize_l2/src/dump/print/binding.rs	0	0	1	1	0	0	0	0
 l2	contract	davinci/vize_l2/src/dump/provenance.rs	1	1	1	4	0	0	0	0
 l2	-	davinci/vize_l2/src/op.rs	0	0	0	0	1	1	0	0

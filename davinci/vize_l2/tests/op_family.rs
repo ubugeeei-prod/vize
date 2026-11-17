@@ -10,9 +10,9 @@
 use vize_l0::{Allocator, Box, Span, Vec};
 use vize_l2::expr::{ExprRef, OpaqueExpr, OpaqueReason};
 use vize_l2::op::{
-    Attribute, BindOp, BindingContract, BindingOp, CommentOp, ComponentOp, DynamicName, ElementOp,
-    ForBinding, ForOp, IfBranch, IfOp, InterpolationOp, ModelOp, Namespace, OnOp, Op, Region,
-    SlotContentOp, SlotOp, SlotsObjectOp, TextOp, VueCloakOp, VueCssBindOp, VueDirectiveOp,
+    AndOp, Attribute, BindOp, BindingContract, BindingOp, CommentOp, ComponentOp, DynamicName,
+    ElementOp, ForBinding, ForOp, IfBranch, IfOp, InterpolationOp, ModelOp, Namespace, OnOp, Op,
+    Region, SlotContentOp, SlotOp, SlotsObjectOp, TextOp, VueCloakOp, VueCssBindOp, VueDirectiveOp,
     VueHtmlOp, VueMemoOp, VueOnceOp, VueShowOp, VueSlotScopeOp, VueSyncOp, VueTextOp,
 };
 
@@ -37,6 +37,7 @@ fn op_keyword(op: &Op<'_>) -> &'static str {
         Op::JsxChildValue(_) => "ui.jsx-child",
         Op::Comment(_) => "ui.comment",
         Op::If(_) => "ui.if",
+        Op::And(_) => "ui.and",
         Op::For(_) | Op::OriginalFor(_) => "ui.for",
         Op::Slot(_) => "ui.slot",
     }
@@ -153,6 +154,14 @@ fn every_op<'a>(allocator: &'a Allocator) -> Vec<'a, Op<'a>> {
                         }],
                         &allocator,
                     ),
+                    span,
+                },
+                &allocator,
+            )),
+            Op::And(Box::new_in(
+                AndOp {
+                    left: expr,
+                    region: region(allocator),
                     span,
                 },
                 &allocator,
@@ -304,6 +313,7 @@ fn every_region_op_variant_is_matched_without_a_wildcard() {
             "ui.jsx-child",
             "ui.comment",
             "ui.if",
+            "ui.and",
             "ui.for",
             "ui.slot",
         ]

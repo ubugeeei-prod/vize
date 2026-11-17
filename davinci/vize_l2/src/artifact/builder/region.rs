@@ -156,6 +156,16 @@ impl<'a> RegionBuilder<'_, 'a> {
     ) -> Result<NodeId, ArtifactError> {
         self.builder.callback_for(head, span, children)
     }
+    /// Create one `ui.and`; the callback builds the region a truthy `left`
+    /// renders.
+    pub fn and(
+        &mut self,
+        left: ExprRef<'a>,
+        span: Span,
+        children: impl FnOnce(&mut RegionBuilder<'_, 'a>, NodeId),
+    ) -> Result<NodeId, ArtifactError> {
+        self.builder.and(left, span, children)
+    }
     /// Create one `ui.if`; the callback adds its branches in authored order.
     pub fn conditional(
         &mut self,

@@ -107,6 +107,7 @@ fn census(ops: &[DumpOp], out: &mut Vec<Owner>) {
                     census(&branch.ops, out);
                 }
             }
+            DumpOp::And(and) => census(&and.ops, out),
             DumpOp::For(for_op) => census(&for_op.ops, out),
             DumpOp::OriginalFor(for_op) => census(&for_op.ops, out),
             DumpOp::Slot(slot) => census(&slot.fallback, out),

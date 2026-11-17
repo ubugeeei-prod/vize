@@ -104,6 +104,10 @@ fn rewrite_ops<'a>(
                     );
                 }
             }
+            Op::And(and) => {
+                rewrite_expr(allocator, &mut and.left, &mut facts.names);
+                rewrite_ops(allocator, source, walk, &mut and.region.ops, texts, facts);
+            }
             Op::For(for_op) => {
                 rewrite_expr(allocator, &mut for_op.binding.source, &mut facts.names);
                 rewrite_expr(allocator, &mut for_op.binding.value, &mut facts.names);

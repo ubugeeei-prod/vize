@@ -181,6 +181,7 @@ mod tests {
             emitted,
             [
                 "components.tsrx",
+                "mount/and.tsrx",
                 "mount/attributes.tsrx",
                 "mount/counter.tsrx",
                 "mount/default.tsrx",

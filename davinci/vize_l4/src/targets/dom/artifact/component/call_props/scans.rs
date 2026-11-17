@@ -26,6 +26,7 @@ pub(super) fn has_nested_for_component_static_bind_props(
                 }
                 found
             }
+            Op::And(and) => has_nested_for_component_static_bind_props(&and.region, is_ts)?,
             Op::For(for_op) => region_has_component_static_bind_props(&for_op.region, is_ts)?,
             Op::OriginalFor(for_op) => {
                 region_has_component_static_bind_props(&for_op.region, is_ts)?
@@ -60,6 +61,7 @@ fn region_has_component_static_bind_props(
                 }
                 found
             }
+            Op::And(and) => region_has_component_static_bind_props(&and.region, is_ts)?,
             Op::For(for_op) => region_has_component_static_bind_props(&for_op.region, is_ts)?,
             Op::OriginalFor(for_op) => {
                 region_has_component_static_bind_props(&for_op.region, is_ts)?

@@ -7,7 +7,8 @@
 //! kept whitespace the lowering consumed between them, and a `ui.for` as its
 //! carrier. A JSX conditional or list is an expression, so a JSX projection's
 //! `ui.if` / `ui.for` stays one [`MarkupNode::If`] / [`MarkupNode::For`]. A
-//! merged text/interpolation run is split back into its recorded parts.
+//! merged text/interpolation run is split back into its recorded parts. A
+//! `ui.and` is a conditional expression too.
 
 use super::surface::{child_start, token_range};
 use super::walk::{L2Step, scope_region};
@@ -58,6 +59,7 @@ pub(in crate::markup) fn walk_nodes<'a>(
                 }
             }
             Op::If(if_op) => visitor(MarkupNode::If(if_range(doc, if_op))),
+            Op::And(and) => visitor(MarkupNode::If(doc.scope_range(and.span, and.span))),
             Op::For(for_op) => visitor(MarkupNode::For(doc.open_tag_range(for_op.span))),
             Op::OriginalFor(for_op) => visitor(MarkupNode::For(doc.open_tag_range(for_op.span))),
         }

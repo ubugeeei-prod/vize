@@ -42,6 +42,7 @@ fn keyword(op: &DumpOp) -> &'static str {
         DumpOp::JsxChildValue(_) => "ui.jsx-child",
         DumpOp::Comment(_) => "ui.comment",
         DumpOp::If(_) => "ui.if",
+        DumpOp::And(_) => "ui.and",
         DumpOp::For(_) | DumpOp::OriginalFor(_) => "ui.for",
         DumpOp::Slot(_) => "ui.slot",
     }
@@ -58,6 +59,7 @@ fn op_span(op: &DumpOp) -> Span {
         }
         DumpOp::Comment(comment) => comment.span,
         DumpOp::If(if_op) => if_op.span,
+        DumpOp::And(and) => and.span,
         DumpOp::For(for_op) => for_op.span,
         DumpOp::OriginalFor(for_op) => for_op.span,
         DumpOp::Slot(slot) => slot.span,
@@ -129,6 +131,11 @@ fn visit_op(op: &DumpOp, owner: Owner, rigor: Rigor, out: &mut Vec<Violation>) {
         }
         DumpOp::OriginalFor(for_op) => {
             for child in &for_op.ops {
+                visit_op(child, Some((kw, span)), rigor, out);
+            }
+        }
+        DumpOp::And(and) => {
+            for child in &and.ops {
                 visit_op(child, Some((kw, span)), rigor, out);
             }
         }

@@ -230,6 +230,12 @@ impl Walk {
                     self.region(&branch.region, Some(at));
                 }
             }
+            Op::And(and) => {
+                let at = self.push(parent, op.mnemonic(), and.span, |node| {
+                    node.value = Some(and.left.source().to_owned());
+                }) as u32;
+                self.region(&and.region, Some(at));
+            }
             Op::For(for_op) => {
                 let binding = &for_op.binding;
                 let at = self.push(parent, op.mnemonic(), for_op.span, |node| {

@@ -295,6 +295,10 @@ fn walk(
                     walk(&branch.ops, tables, branch_state, next, out);
                 }
             }
+            DumpOp::And(and) => {
+                *next += 1;
+                walk(&and.ops, tables, state, next, out);
+            }
             DumpOp::For(for_op) => {
                 *next += 1;
                 out.fors.push(L2For {

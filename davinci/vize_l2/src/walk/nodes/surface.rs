@@ -27,6 +27,7 @@ impl<'s, 'a> NodeRef<'s, 'a> {
                 Op::Interpolation(it) | Op::JsxChildValue(it) => it.span,
                 Op::Comment(it) => it.span,
                 Op::If(it) => it.span,
+                Op::And(it) => it.span,
                 Op::For(it) => it.span,
                 Op::OriginalFor(it) => it.span,
                 Op::Slot(it) => it.span,
@@ -65,6 +66,7 @@ impl<'s, 'a> NodeRef<'s, 'a> {
                 | Op::JsxChildValue(_)
                 | Op::Comment(_)
                 | Op::If(_)
+                | Op::And(_)
                 | Op::For(_)
                 | Op::OriginalFor(_),
             )
@@ -103,6 +105,7 @@ impl<'s, 'a> NodeRef<'s, 'a> {
                         optional(branch.condition, visit);
                     }
                 }
+                Op::And(it) => visit(it.left),
                 Op::For(it) => {
                     visit(it.binding.source);
                     visit(it.binding.value);

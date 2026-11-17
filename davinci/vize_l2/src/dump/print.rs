@@ -223,6 +223,16 @@ fn print_op_guarded<W: Write>(w: &mut W, op: &Op, depth: usize, mode: Style) -> 
             }
             Ok(())
         }
+        Op::And(and) => {
+            indent(w, depth)?;
+            w.write_str("ui.and ")?;
+            print_expr(w, &and.left, mode)?;
+            end_line(w, and.span, mode)?;
+            for child in &and.ops {
+                print_op(w, child, depth + 1, mode)?;
+            }
+            Ok(())
+        }
         Op::For(for_op) => {
             indent(w, depth)?;
             w.write_str("ui.for source=")?;

@@ -12,7 +12,7 @@ use super::loc_to_range;
 use super::relief_scopes::ReliefChain;
 use crate::ir::ByteRange;
 use vize_l2::expr::{ExprRef, OpaqueReason};
-use vize_l2::op::{ForOp, IfOp, OriginalForOp};
+use vize_l2::op::{AndOp, ForOp, IfOp, OriginalForOp};
 use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, ForNode, IfNode, TemplateChildNode};
 
 #[derive(Clone, Copy)]
@@ -23,10 +23,14 @@ enum MarkupConditionalInner<'a> {
         op: &'a IfOp<'a>,
         doc: &'a L2Markup<'a>,
     },
+    L2And {
+        op: &'a AndOp<'a>,
+        doc: &'a L2Markup<'a>,
+    },
 }
 
 /// A conditional scope: a Vue `v-if` / `v-else-if` / `v-else` chain, a
-/// lowered JSX `cond && <x/>` / ternary, or an L2 `ui.if`.
+/// lowered JSX `cond && <x/>` / ternary, or an L2 `ui.if` / `ui.and`.
 #[derive(Clone, Copy)]
 pub struct MarkupConditional<'a> {
     inner: MarkupConditionalInner<'a>,
@@ -51,6 +55,12 @@ impl<'a> MarkupConditional<'a> {
         }
     }
 
+    pub(super) const fn from_l2_and(op: &'a AndOp<'a>, doc: &'a L2Markup<'a>) -> Self {
+        Self {
+            inner: MarkupConditionalInner::L2And { op, doc },
+        }
+    }
+
     /// Number of branches in the chain (`v-if` + each `v-else-if` + optional
     /// `v-else`).
     pub fn branch_count(&self) -> usize {
@@ -58,6 +68,7 @@ impl<'a> MarkupConditional<'a> {
             MarkupConditionalInner::Relief(node) => node.branches.len(),
             MarkupConditionalInner::ReliefChain(chain) => chain.branch_count(),
             MarkupConditionalInner::L2 { op, .. } => op.branches.len(),
+            MarkupConditionalInner::L2And { .. } => 1,
         }
     }
 
@@ -72,6 +83,7 @@ impl<'a> MarkupConditional<'a> {
             MarkupConditionalInner::L2 { op, .. } => {
                 op.branches.iter().any(|branch| branch.condition.is_none())
             }
+            MarkupConditionalInner::L2And { .. } => false,
         }
     }
 
@@ -81,6 +93,7 @@ impl<'a> MarkupConditional<'a> {
             MarkupConditionalInner::Relief(node) => loc_to_range(&node.loc),
             MarkupConditionalInner::ReliefChain(chain) => chain.range(),
             MarkupConditionalInner::L2 { op, doc } => if_range(doc, op),
+            MarkupConditionalInner::L2And { op, doc } => doc.scope_range(op.span, op.span),
         }
     }
 }

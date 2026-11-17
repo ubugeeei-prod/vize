@@ -48,7 +48,7 @@ pub mod text;
 pub mod vue;
 
 pub use bind::{BindOp, OnOp};
-pub use control::{ForBinding, ForOp, HostFor, IfBranch, IfOp};
+pub use control::{AndOp, ForBinding, ForOp, HostFor, IfBranch, IfOp};
 mod original_for;
 pub use element::{Attribute, ComponentOp, ElementOp, Namespace};
 pub use handler::{HandlerId, OnHandlerRef};
@@ -94,6 +94,10 @@ pub enum Op<'a> {
     OriginalFor(Box<'a, OriginalForOp<'a>>),
     /// `ui.slot` - a slot outlet owning its fallback region.
     Slot(Box<'a, SlotOp<'a>>),
+    /// `ui.and` - `left && <region>` as a child: `left` is evaluated once and
+    /// renders as a child value when falsy. Last, so the other variants keep
+    /// their discriminants.
+    And(Box<'a, AndOp<'a>>),
 }
 
 impl Op<'_> {
@@ -109,6 +113,7 @@ impl Op<'_> {
             Self::JsxChildValue(_) => "ui.jsx-child",
             Self::Comment(_) => "ui.comment",
             Self::If(_) => "ui.if",
+            Self::And(_) => "ui.and",
             Self::For(_) => "ui.for",
             Self::OriginalFor(_) => "ui.for",
             Self::Slot(_) => "ui.slot",

@@ -68,6 +68,10 @@ fn project_op<D: ExprDialect>(document: &mut EmitDocument, dialect: &D, op: &Op<
                 project_region(document, dialect, &branch.region);
             }
         }
+        Op::And(and) => {
+            project_expr(document, dialect, and.left);
+            project_region(document, dialect, &and.region);
+        }
         Op::For(for_op) => {
             project_expr(document, dialect, for_op.binding.source);
             project_region(document, dialect, &for_op.region);

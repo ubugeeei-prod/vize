@@ -188,6 +188,14 @@ fn visit_region_guarded<P: ProvenanceSink, R: RemarkSink>(
                     native: false,
                 }
             }
+            Op::And(and) => {
+                visit_region(walk, &and.region.ops, ns, provenance, facts, remarks);
+                Contribution {
+                    level: ChildLevel::Dynamic,
+                    nested: false,
+                    native: false,
+                }
+            }
             Op::For(for_op) => {
                 visit_region(walk, &for_op.region.ops, ns, provenance, facts, remarks);
                 Contribution {

@@ -202,6 +202,19 @@ impl<'a> Cx<'a> {
                 }
                 id
             }
+            l2::Op::And(and) => {
+                // Structural transport only: no operand renders a falsy
+                // `left`, so every native target refuses `ui.and` before L3.
+                let id = self.push_op(OpKind::If, target_region, and.span, PartitionKind::Dynamic);
+                self.lower_region(
+                    &and.region,
+                    target_region,
+                    id,
+                    and.span,
+                    PartitionKind::Dynamic,
+                );
+                id
+            }
             l2::Op::OriginalFor(for_op) => {
                 // Structural transport only. The File-qualified original header has
                 // no neutral operands; native admission requires collection/alias

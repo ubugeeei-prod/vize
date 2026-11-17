@@ -213,6 +213,17 @@ impl<'facts, 'r, 'a> Cx<'facts, 'r, 'a> {
                     source,
                 );
             }
+            // A falsy `left` is a client child value.
+            l2::Op::And(and) => {
+                let (_, fact) = self.consume_fact(and.span);
+                self.errors.push(SsrStringPlanError {
+                    kind: SsrStringPlanErrorKind::UnsupportedClientChildValue,
+                    fact_index: fact,
+                    expected_span: and.span,
+                    actual_span: Some(and.span),
+                });
+                self.lower_region(&and.region);
+            }
             l2::Op::OriginalFor(for_op) => {
                 let (_, fact) = self.consume_fact(for_op.span);
                 self.errors.push(SsrStringPlanError {

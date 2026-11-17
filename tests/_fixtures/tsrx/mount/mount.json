@@ -338,6 +338,63 @@
       "component": "Rows",
       "props": { "rows": [{ "id": 0, "text": "a" }, { "id": 1, "text": "b" }] },
       "steps": [{ "click": "button" }, { "click": "button" }]
+    },
+    {
+      "id": "and/count",
+      "file": "tests/_fixtures/tsrx/mount/and.tsrx",
+      "component": "Count",
+      "props": { "n": 0, "label": "x" },
+      "steps": [{ "props": { "n": 1 } }, { "props": { "label": "y" } }, { "props": { "n": 0 } }, { "props": { "n": 3 } }, { "props": { "label": "z" } }, { "props": { "n": 0 } }]
+    },
+    {
+      "id": "and/recount",
+      "file": "tests/_fixtures/tsrx/mount/and.tsrx",
+      "component": "Count",
+      "expected": "#13176",
+      "props": { "n": 0, "label": "x" },
+      "steps": [{ "props": { "n": 1 } }, { "props": { "n": 2 } }]
+    },
+    {
+      "id": "and/values",
+      "file": "tests/_fixtures/tsrx/mount/and.tsrx",
+      "component": "Values",
+      "props": { "kind": "zero" },
+      "steps": [{ "props": { "kind": "empty" } }, { "props": { "kind": "text" } }, { "props": { "kind": "nan" } }, { "props": { "kind": "yes" } }, { "props": { "kind": "none" } }, { "props": { "kind": "missing" } }, { "props": { "kind": "no" } }, { "props": { "kind": "big" } }, { "props": { "kind": "zero" } }]
+    },
+    {
+      "id": "and/root",
+      "file": "tests/_fixtures/tsrx/mount/and.tsrx",
+      "component": "Root",
+      "props": { "n": 0 },
+      "steps": [{ "props": { "n": 5 } }, { "props": { "n": 0 } }]
+    },
+    {
+      "id": "and/pair",
+      "file": "tests/_fixtures/tsrx/mount/and.tsrx",
+      "component": "Pair",
+      "props": { "a": 0, "b": "" },
+      "steps": [{ "props": { "a": 1 } }, { "props": { "b": "x" } }, { "props": { "a": 0 } }, { "props": { "b": "" } }]
+    },
+    {
+      "id": "and/component",
+      "file": "tests/_fixtures/tsrx/mount/and.tsrx",
+      "component": "Tagged",
+      "props": { "count": 0, "title": "t" },
+      "steps": [{ "props": { "count": 1 } }, { "props": { "title": "u" } }, { "props": { "count": 0 } }]
+    },
+    {
+      "id": "and/chained",
+      "file": "tests/_fixtures/tsrx/mount/and.tsrx",
+      "component": "Chained",
+      "props": { "n": 0, "m": "x" },
+      "steps": [{ "props": { "n": 1 } }, { "props": { "m": "" } }, { "props": { "m": "y" } }, { "props": { "n": 0 } }]
+    },
+    {
+      "id": "and/svg",
+      "file": "tests/_fixtures/tsrx/mount/and.tsrx",
+      "component": "Drawn",
+      "props": { "n": 0 },
+      "steps": [{ "props": { "n": 2 } }, { "props": { "n": 0 } }]
     }
   ]
 }

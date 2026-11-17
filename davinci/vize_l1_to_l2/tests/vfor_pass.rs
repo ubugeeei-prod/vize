@@ -30,6 +30,7 @@ fn count_fors(ops: &[DumpOp]) -> usize {
                 .iter()
                 .map(|branch| count_fors(&branch.ops))
                 .sum(),
+            DumpOp::And(and) => count_fors(&and.ops),
             DumpOp::For(for_op) => 1 + count_fors(&for_op.ops),
             DumpOp::OriginalFor(for_op) => 1 + count_fors(&for_op.ops),
             DumpOp::Slot(slot) => count_fors(&slot.fallback),

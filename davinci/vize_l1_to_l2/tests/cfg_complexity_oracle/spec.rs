@@ -142,6 +142,18 @@ impl Eval {
             DumpOp::Interpolation(interpolation) => self.expr(&interpolation.expression, id, line),
             DumpOp::JsxChildValue(child) => self.expr(&child.expression, id, line),
             DumpOp::If(if_op) => self.if_chain(if_op, id, line),
+            // `left && <region>` decides like a one-branch `v-if`.
+            DumpOp::And(and) => {
+                let chain = DumpIf {
+                    branches: vec![vize_l2::dump::Branch {
+                        condition: Some(and.left.clone()),
+                        ops: and.ops.clone(),
+                        span: and.span,
+                    }],
+                    span: and.span,
+                };
+                self.if_chain(&chain, id, line)
+            }
             DumpOp::For(for_op) => {
                 let source = &for_op.binding.source;
                 let n = self.nesting();

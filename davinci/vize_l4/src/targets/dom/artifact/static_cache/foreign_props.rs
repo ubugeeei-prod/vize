@@ -66,6 +66,13 @@ pub(super) fn region_has_non_branch_foreign_props_hoist(
                     }
                 }
             }
+            Op::And(and) => {
+                if ensure_sufficient_stack(|| {
+                    region_has_non_branch_foreign_props_hoist(walk, &and.region.ops, facts, true)
+                }) {
+                    return true;
+                }
+            }
             Op::For(for_op) => {
                 if ensure_sufficient_stack(|| {
                     region_has_non_branch_foreign_props_hoist(

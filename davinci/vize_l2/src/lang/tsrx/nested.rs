@@ -4,13 +4,14 @@
 //! `null`, and `{a && <A />}` with a provably boolean `a` lower to one `ui.if`
 //! whose branches are the nested regions' markup, and `{xs.map((x, i) => <A />)}`
 //! lowers to a `ui.for` over `xs` with the callback's parameters as aliases:
-//! the shapes JSX control flow lowers (`framework/vue/jsx/control_flow.rs`). An
-//! arm or a callback may itself return such a shape. The nested regions become
-//! part of the enclosing artifact.
+//! the shapes JSX control flow lowers (`framework/vue/jsx/control_flow.rs`).
+//! `{n && <A />}` with any other `n` lowers to a `ui.and`, which renders a
+//! falsy `n` (`0`) as the reference does. An arm or a callback may itself
+//! return such a shape. The nested regions become part of the enclosing
+//! artifact.
 //!
 //! Any other expression that holds markup stays a value child, and its regions
-//! stay standalone: `{n && <A />}` renders `0` for a zero `n`, which a `ui.if`
-//! cannot.
+//! stay standalone.
 
 use core::cell::RefCell;
 
@@ -51,9 +52,7 @@ fn structural<'a>(module: &TsrxModule<'a>, value: &Expression<'a>) -> bool {
     match unwrap(value) {
         Expression::ConditionalExpression(chain) => chain_renders(module, chain),
         Expression::LogicalExpression(logical) => {
-            logical.operator == LogicalOperator::And
-                && is_boolean(&logical.left)
-                && renders(module, &logical.right)
+            logical.operator == LogicalOperator::And && renders(module, &logical.right)
         }
         Expression::CallExpression(call) => {
             map_parts(call).is_some_and(|(_, _, returned)| renders(module, returned))
@@ -127,8 +126,12 @@ fn lower<'a>(
     namespace: Namespace,
     builder: &mut RegionBuilder<'_, 'a>,
 ) -> Result<(), TsrxIssue> {
-    if let Expression::CallExpression(call) = unwrap(value) {
-        return map(cx, call, at, namespace, builder);
+    match unwrap(value) {
+        Expression::CallExpression(call) => return map(cx, call, at, namespace, builder),
+        Expression::LogicalExpression(logical) if !is_boolean(&logical.left) => {
+            return value_and(cx, logical, at, namespace, builder);
+        }
+        _ => {}
     }
     let mut failure = None;
     let built = builder.conditional(at, |branches, _| {
@@ -139,6 +142,22 @@ fn lower<'a>(
             Expression::LogicalExpression(logical) => and(cx, logical, namespace, branches).err(),
             _ => Some(unstructured(at)),
         };
+    });
+    failure.or(artifact(built.err(), at)).map_or(Ok(()), Err)
+}
+
+/// `{n && <A />}` with an `n` not known to be a boolean: a `ui.and`.
+fn value_and<'a>(
+    cx: &Context<'a>,
+    logical: &'a LogicalExpression<'a>,
+    at: Span,
+    namespace: Namespace,
+    builder: &mut RegionBuilder<'_, 'a>,
+) -> Result<(), TsrxIssue> {
+    let left = ExprRef::Js(expression(cx.allocator, cx.source, &logical.left)?);
+    let mut failure = None;
+    let built = builder.and(left, at, |region, _| {
+        failure = arm(cx, &logical.right, namespace, region).err();
     });
     failure.or(artifact(built.err(), at)).map_or(Ok(()), Err)
 }
