@@ -10,6 +10,7 @@ mod entry_rules;
 mod fix;
 mod patterns;
 mod plugins;
+mod pool;
 mod profile;
 mod read_source;
 mod rich;
@@ -121,6 +122,7 @@ pub fn run(mut args: LintArgs) {
         let _ = std::io::stdout().flush();
         std::process::exit(2);
     }
+    pool::start_for(&files);
     let help_level = match args.help_level.as_str() {
         "none" => HelpLevel::None,
         "short" => HelpLevel::Short,

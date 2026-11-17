@@ -16,7 +16,9 @@ pub(super) fn candidates(
     walker: &mut WalkBuilder,
     selected: impl Fn(&DirEntry) -> bool + Sync,
 ) -> Vec<PathBuf> {
-    let threads = rayon::current_num_threads().min(MAX_WALK_THREADS);
+    // The budget, not the pool: starting the pool here would size it before
+    // the run knows how many files it has.
+    let threads = super::super::pool::budget().min(MAX_WALK_THREADS);
     if threads <= 1 {
         return walker
             .build()
