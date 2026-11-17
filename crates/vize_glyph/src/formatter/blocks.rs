@@ -10,7 +10,7 @@ use std::borrow::Cow;
 use vize_l0::{FxHashMap, String, is_void_tag};
 use vize_l1::container::Vue;
 use vize_l1::container::vue::TemplateOnlyDescriptor;
-use vize_l1::container::vue::compat::{CompatBlock, split_blocks, tag_name_eq};
+use vize_l1::container::vue::boundary::{CompatBlock, split_blocks, tag_name_eq};
 
 use crate::error::FormatError;
 

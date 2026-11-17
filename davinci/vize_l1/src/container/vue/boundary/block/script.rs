@@ -6,12 +6,12 @@ use alloc::borrow::Cow;
 use memchr::{memchr2, memchr3, memmem};
 use vize_l0::expression_guard::scan::line_comment_terminator;
 
-use super::compat::can_start_string_literal;
 use super::literals::{can_start_regex_literal, script_regex_end, skip_script_string_literal};
 use super::{
     BlockEndSearch, BlockParseResult, advance_line, build_malformed_error, content_end_column,
     find_closing_tag_end,
 };
+use crate::container::vue::boundary::block::lexical::can_start_string_literal;
 
 /// Find the end of a `<script>` block.
 pub(super) fn find_script_block_end<'a>(search: BlockEndSearch<'a>) -> BlockParseResult<'a> {

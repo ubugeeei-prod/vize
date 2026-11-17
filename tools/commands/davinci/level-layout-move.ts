@@ -71,6 +71,25 @@ export const steps: Readonly<Record<string, Step>> = {
         "//! stay in [`super`].\n",
     },
   },
+  // Step 2b: L1 modules named by concept, not by migration status (`native`).
+  "l1-concepts": {
+    crate: "davinci/vize_l1",
+    name: "vize_l1",
+    moves: [
+      // The lexer is the module itself: lex/native.rs becomes lex.rs, beside
+      // lex/compat (the byte-identical Armature tokenizer).
+      move("markup::htmlish::lex::native", "markup::htmlish::lex"),
+      move("markup::htmlish::event::native", "markup::htmlish::event::record"),
+      move("markup::htmlish::native", "markup::htmlish::view"),
+      move("markup::entity::native", "markup::entity::decoder"),
+      move("embed::syntax::for_head::native", "embed::syntax::for_head::parse"),
+      // The shared SFC block-boundary scanner; its lexical helpers by concept.
+      move("container::vue::compat::block::compat", "container::vue::boundary::block::lexical"),
+      move("container::vue::compat", "container::vue::boundary"),
+    ],
+    items: [],
+    parents: {},
+  },
 };
 
 const ident = "[A-Za-z_][A-Za-z0-9_]*";
@@ -197,11 +216,13 @@ export function rewriteRust(
         return "self::" + target.slice(newHere.length).join("::");
       return ["crate", ...target].join("::");
     });
-    const bare = new RegExp(`(\\buse\\s+)(${ident})::`, "gu");
-    out = out.replace(bare, (whole, lead: string, first: string, offset: number) => {
-      if (!children.has(first)) return whole;
+    // A bare child path, in a `use` or anywhere else (`native::ForOrigin<'a>`).
+    const bare = new RegExp(`((?<![\\w:])|\\buse\\s+)((?:${ident}::)+)`, "gu");
+    out = out.replace(bare, (whole, lead: string, path: string, offset: number) => {
+      const segments = path.slice(0, -2).split("::");
+      if (!children.has(segments[0])) return whole;
       const here = moduleAt(fileModule, inline, offset);
-      const target = relocate(step.moves, [...here, first]);
+      const target = relocate(step.moves, [...here, ...segments]);
       const newHere = relocate(step.moves, here);
       if (startsWith(target, newHere)) return lead + target.slice(newHere.length).join("::") + "::";
       return lead + ["crate", ...target].join("::") + "::";
@@ -335,12 +356,19 @@ export function rewriteRelativeFiles(
   });
 }
 
+/** A move into its own parent (`a::b::c` to `a::b`): the child replaces the parent. */
+const collapses = ({ from, to }: ModuleMove) =>
+  to.length + 1 === from.length && startsWith(from, to);
+
 /** Move `mod name;` declarations from each old parent to its new parent. */
 function moveDeclarations(
   step: Step,
   read: (file: string) => string,
   write: (file: string, text: string) => void,
+  renames: ReadonlyMap<string, string>,
 ) {
+  // A parent that moves in the same step is edited where it is now.
+  const current = (file: string) => [...renames].find(([, moved]) => moved === file)?.[0] ?? file;
   const parentFile = (module: readonly string[]) =>
     module.length === 1
       ? path.posix.join(step.crate, "src/lib.rs")
@@ -354,10 +382,15 @@ function moveDeclarations(
     const found = declaration.exec(text);
     if (!found) throw new Error(`no \`mod ${name};\` in ${oldParent}`);
     write(oldParent, text.replace(declaration, ""));
-    const visibility = found[2]?.trim() === "pub" ? "pub" : "pub(crate)";
-    const newParent = parentFile(to);
+    if (collapses({ from, to })) continue;
+    const newParent = current(parentFile(to));
+    // A rename in place keeps its visibility; a module that moves to another
+    // parent stays reachable from where it was used.
+    const kept = found[2]?.trim();
+    const visibility =
+      newParent === oldParent ? (kept ? kept + " " : "") : kept === "pub" ? "pub " : "pub(crate) ";
     const lines = added.get(newParent) ?? [];
-    lines.push(`${visibility} mod ${to.at(-1)};`);
+    lines.push(`${visibility}mod ${to.at(-1)};`);
     added.set(newParent, lines);
   }
   for (const [module, doc] of Object.entries(step.parents)) {
@@ -398,12 +431,19 @@ export function run(stepName: string, dryRun: boolean): string[] {
     const old = moduleFiles(step.crate, from);
     const next = moduleFiles(step.crate, to);
     for (const file of files) {
+      // The first, most specific move of a file wins, as in `relocate`.
+      if (renames.has(file)) continue;
       if (file === old.file) renames.set(file, next.file);
       else if (file.startsWith(old.dir + "/"))
         renames.set(file, next.dir + file.slice(old.dir.length));
     }
   }
   if (renames.size === 0) return [];
+  const collapsed = step.moves.filter(collapses).map(({ from, to }) => ({
+    child: moduleFiles(step.crate, from).file,
+    parent: moduleFiles(step.crate, to).file,
+    name: from.at(-1)!,
+  }));
   const pending = new Map<string, string>();
   const read = (file: string) =>
     pending.get(file) ?? fs.readFileSync(path.join(repoRoot, file), "utf8");
@@ -428,9 +468,44 @@ export function run(stepName: string, dryRun: boolean): string[] {
     if (target && file.endsWith(".rs")) next = rewriteRelativeFiles(next, file, target, renames);
     if (next !== text) write(file, next);
   }
-  moveDeclarations(step, read, write);
+  moveDeclarations(step, read, write, renames);
   const touched = [...pending.keys()].sort();
   if (dryRun) return [...touched, ...[...renames].map(([from, to]) => `${from} -> ${to}`)];
+  // A collapsed child replaces its parent file. The parent may hold only its
+  // module docs, other module declarations (kept, with their docs) and
+  // re-exports of the child (dropped: the items are now defined in place).
+  for (const { child, parent, name } of collapsed) {
+    const kept: string[] = [];
+    let docs: string[] = [];
+    const reexport = new RegExp(
+      `^\\s*(?:pub(?:\\([^)]*\\))?\\s+)?use\\s+(?:self::)?(?:${name})?::`,
+      "u",
+    );
+    const lines = read(parent).split("\n");
+    for (let index = 0; index < lines.length; index++) {
+      const line = lines[index];
+      if (/^\s*\/\/!/u.test(line) || line.trim() === "") continue;
+      if (/^\s*\/\/\//u.test(line)) {
+        docs.push(line);
+        continue;
+      }
+      if (/^\s*(?:pub(?:\([^)]*\))?\s+)?mod\s+\w+\s*;/u.test(line)) {
+        kept.push(...docs, line);
+        docs = [];
+        continue;
+      }
+      if (reexport.test(line)) {
+        while (!lines[index].includes(";")) index++;
+        docs = [];
+        continue;
+      }
+      throw new Error(`${parent} holds more than declarations and re-exports: ${line}`);
+    }
+    const body = read(child).replace(/\n*$/u, "\n");
+    write(child, kept.length ? body + "\n" + kept.join("\n") + "\n" : body);
+    pending.delete(parent);
+    git("rm", "-q", parent);
+  }
   for (const [file, text] of pending) fs.writeFileSync(path.join(repoRoot, file), text);
   for (const [from, to] of renames) {
     fs.mkdirSync(path.dirname(path.join(repoRoot, to)), { recursive: true });

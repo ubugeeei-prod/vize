@@ -3,7 +3,7 @@ use crate::sfc::types::{
     SfcStyleBlock, SfcTemplateBlock,
 };
 use std::borrow::Cow;
-use vize_l1::container::vue::compat::{
+use vize_l1::container::vue::boundary::{
     CompatBlock, CompatBlockLocation, CompatSplitError, split_blocks, tag_name_eq,
 };
 

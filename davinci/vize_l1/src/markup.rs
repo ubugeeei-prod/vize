@@ -38,7 +38,18 @@ pub use directive::{
 };
 pub use grammar::{MarkupGrammar, Vue};
 pub use htmlish::lex::{Delimiters, LexOptions, Lexer};
-pub use htmlish::native::{
+pub use htmlish::parse::{
+    ComponentParse, ComponentSourceError, DirectiveAdmission, SurfaceError, SurfaceParseOptions,
+    parse, parse_component, parse_component_with_authored, parse_component_with_options,
+    parse_with_authored, parse_with_authored_diagnostics, parse_with_options,
+    parse_with_options_and_caps,
+};
+pub use htmlish::render::{HoleCounts, check_fidelity, hole_counts, render};
+pub use htmlish::surface::{
+    AttrValue, Attribute, CloseTag, Element, ElementClose, Interpolation, OpenTag, SurfaceChild,
+    SurfaceTree, Token, TokenStatus,
+};
+pub use htmlish::view::{
     NativeAttribute, NativeAttributeBindingExpression, NativeAttributeBindingExpressionView,
     NativeAttributeElse, NativeAttributeElseView, NativeAttributeExpression,
     NativeAttributeExpressionFailure, NativeAttributeExpressionView, NativeAttributeForHead,
@@ -54,20 +65,9 @@ pub use htmlish::native::{
     NativeStaticBindingHead, NativeTemplateComponent, NativeTemplateGrammar, NativeTextValue,
     NativeTextValueError, NativeTextValueFailure, NativeTextValueView,
 };
-pub use htmlish::parse::{
-    ComponentParse, ComponentSourceError, DirectiveAdmission, SurfaceError, SurfaceParseOptions,
-    parse, parse_component, parse_component_with_authored, parse_component_with_options,
-    parse_with_authored, parse_with_authored_diagnostics, parse_with_options,
-    parse_with_options_and_caps,
-};
-pub use htmlish::render::{HoleCounts, check_fidelity, hole_counts, render};
-pub use htmlish::surface::{
-    AttrValue, Attribute, CloseTag, Element, ElementClose, Interpolation, OpenTag, SurfaceChild,
-    SurfaceTree, Token, TokenStatus,
-};
 pub use profile::{Component, Document, Profile, ProfileKind};
 pub use token::{LexErrorCode, LexMode, Namespace, QuoteType, Sink};
 
-pub use htmlish::native::{
+pub use htmlish::view::{
     NativeLintComponent, NativeLintTag, NativeLintTagKind, NativeLintTagRefusal,
 };
