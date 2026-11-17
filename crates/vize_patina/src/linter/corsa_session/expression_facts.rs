@@ -278,9 +278,10 @@ impl CorsaTypeAwareSession {
     }
 }
 
-/// Node-located spans with their handles and types, in batch order.
+/// Node-located spans (with whether each was widened to its outermost
+/// same-span node) and their handles and types, in batch order.
 type Located = (
-    Vec<(u32, u32)>,
+    Vec<((u32, u32), bool)>,
     Vec<Option<NodeHandle>>,
     Vec<Option<TypeResponse>>,
 );
@@ -309,7 +310,10 @@ async fn load(
             "Incomplete expression type batch".into(),
         ));
     }
-    let located = handles.map(|handles| (spans.clone(), handles, responses.clone()));
+    let located = handles.map(|handles| {
+        let keys = spans.iter().copied().zip(widen.iter().copied()).collect();
+        (keys, handles, responses.clone())
+    });
     let mut responses = responses;
     responses.truncate(queries.len());
     let handles = located

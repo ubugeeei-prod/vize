@@ -1,4 +1,5 @@
 //! typescript-eslint type-aware checks on SFC script blocks.
+mod checked_enums;
 mod facts;
 mod gaps;
 #[cfg(test)]
@@ -201,6 +202,7 @@ pub(super) fn evaluate(
             relate::apply(&mut collected.nodes, &pending, relations.as_ref());
         }
         let mut seen = FxHashSet::default();
+        let mut enum_reports = Vec::new();
         if floating {
             let configured = options::for_rule(options, "no-floating-promises");
             for node in collected
@@ -267,7 +269,16 @@ pub(super) fn evaluate(
                     );
                     let start = script.offset.saturating_add(raw_start);
                     let end = script.offset.saturating_add(raw_end);
-                    if seen.insert((vize_name, start, end, message.clone())) {
+                    if !seen.insert((vize_name, start, end, message.clone())) {
+                        continue;
+                    }
+                    if vize_name == UNSAFE_ENUM_RULE {
+                        enum_reports.push(checked_enums::Report {
+                            start: raw_start,
+                            end: raw_end,
+                            message,
+                        });
+                    } else {
                         push_warning(result, LintDiagnostic::warn(vize_name, message, start, end));
                     }
                 }
@@ -279,16 +290,40 @@ pub(super) fn evaluate(
         for gap in gaps::reports(&collected, misused.as_ref().map(Option::as_ref)) {
             let start = script.offset.saturating_add(gap.start);
             let end = script.offset.saturating_add(gap.end);
-            if seen.insert((gap.rule, start, end, gap.message.clone())) {
+            if !seen.insert((gap.rule, start, end, gap.message.clone())) {
+                continue;
+            }
+            if gap.rule == UNSAFE_ENUM_RULE {
+                enum_reports.push(checked_enums::Report {
+                    start: gap.start,
+                    end: gap.end,
+                    message: gap.message,
+                });
+            } else {
                 push_warning(
                     result,
                     LintDiagnostic::warn(gap.rule, gap.message.as_str(), start, end),
                 );
             }
         }
+        checked_enums::retain_unchecked(&collected.program, &mut enum_reports);
+        for report in enum_reports {
+            push_warning(
+                result,
+                LintDiagnostic::warn(
+                    UNSAFE_ENUM_RULE,
+                    report.message.as_str(),
+                    script.offset.saturating_add(report.start),
+                    script.offset.saturating_add(report.end),
+                ),
+            );
+        }
     }
     Ok(())
 }
+
+/// Reported after `checked_enums` replays upstream's `markChecked`.
+const UNSAFE_ENUM_RULE: &str = "type/no-unsafe-enum-assignment";
 
 /// vize's `type/no-floating-promises` message.
 const FLOATING_MESSAGE: &str =
