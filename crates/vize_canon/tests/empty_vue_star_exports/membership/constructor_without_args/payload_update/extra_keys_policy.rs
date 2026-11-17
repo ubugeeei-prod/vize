@@ -195,7 +195,7 @@ mod tests {
             redo(preamble_before(preamble), PREAMBLE_EDITS),
             super::super::runtime_prop_call::preamble_before(&integrated)
         );
-        let other = "crates/vize_canon/src/virtual_ts/helpers/declarations/vue3-types.d.ts.txt";
+        let other = "crates/vize_canon/src/virtual_ts/helpers/declarations/vue2-types.d.ts.txt";
         assert_eq!(source_before(other, current(other)), current(other));
         let mut manifest = json!({ "provenance": { "existing": "unchanged" } });
         retain_provenance(&mut manifest);

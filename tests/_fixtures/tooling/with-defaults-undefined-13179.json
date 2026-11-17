@@ -1,0 +1,62 @@
+{
+  "schema": "vize.withDefaultsUndefinedSource.v1",
+  "issue": 13179,
+  "credit": {
+    "compiled": false,
+    "native": false,
+    "performance": false
+  },
+  "files": [
+    {
+      "path": "crates/vize_canon/src/virtual_ts/helpers/declarations/vue3-types.d.ts.txt",
+      "before": {
+        "bytes": 1346,
+        "sha256": "7ac2e099a2726b5c2b2c1ceddc98addd8e98a441508869346c5f075c7308ed6e"
+      },
+      "after": {
+        "bytes": 1358,
+        "sha256": "431557bf79c0234f72decc6c284ff98ee15592547bc37a50da13ca7745b4c149"
+      },
+      "hunks": [
+        {
+          "before": "type $DefaultNativeType = null | number | string | boolean | symbol | Function;\n",
+          "after": "type $DefaultNativeType = null | undefined | number | string | boolean | symbol | Function;\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/generated/content-mapper-types.d.ts",
+      "before": {
+        "bytes": 12930,
+        "sha256": "cd112792a23ef7ec9f586927c0b5e723d8c5bb2d1bdd52cc65b6838d5f93a7e5"
+      },
+      "after": {
+        "bytes": 12942,
+        "sha256": "e20333cdd467f335b327b588904fe9749d3cc9949bfcf3e4bc31b25d54b30575"
+      },
+      "hunks": [
+        {
+          "before": "type $DefaultNativeType = null | number | string | boolean | symbol | Function;\n",
+          "after": "type $DefaultNativeType = null | undefined | number | string | boolean | symbol | Function;\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/virtual-ts-globals.d.ts",
+      "before": {
+        "bytes": 18011,
+        "sha256": "00dc77f586c4ea5d1692bf3715fde7407ed46abcc2b1bcf748fb0b50d3921177"
+      },
+      "after": {
+        "bytes": 18023,
+        "sha256": "3603093403379904949ed9c7c7ffd221595b2e1d8b3f7f10820ca748d7ed533d"
+      },
+      "hunks": [
+        {
+          "before": "type $DefaultNativeType = null | number | string | boolean | symbol | Function;\n",
+          "after": "type $DefaultNativeType = null | undefined | number | string | boolean | symbol | Function;\n"
+        }
+      ]
+    }
+  ]
+}

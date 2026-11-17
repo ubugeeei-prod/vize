@@ -1,0 +1,5 @@
+<script setup lang="ts">
+interface Props { label?: string }
+const props = withDefaults(defineProps<Props>(), { label: undefined });
+</script>
+<template><div>{{ props.label }}</div></template>

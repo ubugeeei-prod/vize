@@ -40,7 +40,7 @@ type $BooleanKey<T, K extends keyof T = keyof T> = K extends any ? [Exclude<T[K]
 type $IfAny<T, Y, N> = 0 extends (1 & T) ? Y : N;
 type $NotUndefined<T> = T extends undefined ? never : T;
 type $MappedOmit<T, K extends keyof any> = { [P in keyof T as P extends K ? never : P]: T[P] };
-type $DefaultNativeType = null | number | string | boolean | symbol | Function;
+type $DefaultNativeType = null | undefined | number | string | boolean | symbol | Function;
 type $InferDefault<P, T> = ((props: P) => T & {}) | (T extends $DefaultNativeType ? T : never);
 type __WithDefaultsArgs<T> = { [K in keyof T]?: $InferDefault<T, T[K]> };
 type __WithDefaultsResult<T, D, __BKeys extends keyof T = never> = T extends unknown ? Readonly<$MappedOmit<T, keyof D>> & { readonly [K in keyof D as K extends keyof T ? K : never]-?: K extends keyof T ? D[K] extends undefined ? $IfAny<D[K], $NotUndefined<T[K]>, T[K]> : $NotUndefined<T[K]> : never } & { readonly [K in __BKeys]-?: K extends keyof D ? D[K] extends undefined ? boolean | undefined : boolean : boolean } : never;
@@ -132,7 +132,7 @@ function __setup() {
 
 defineProps<Props>()
 
-  // @vize-map: 16021:16044 -> 0:76
+  // @vize-map: 16033:16056 -> 0:76
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
@@ -174,13 +174,13 @@ defineProps<Props>()
 
   // Undefined references from template:
   void (__vize_keyed_template_context.isMini);
-  // @vize-map: 18012:18018 -> 8:14
+  // @vize-map: 18024:18030 -> 8:14
   void (__vize_keyed_template_context.hideDetails);
-  // @vize-map: 18095:18106 -> 21:32
+  // @vize-map: 18107:18118 -> 21:32
   void (__vize_keyed_template_context.chips);
-  // @vize-map: 18184:18189 -> 39:44
+  // @vize-map: 18196:18201 -> 39:44
   void (__vize_keyed_template_context.width);
-  // @vize-map: 18267:18272 -> 51:56
+  // @vize-map: 18279:18284 -> 51:56
 
   // Reference setup bindings (used in template/CSS v-bind)
   void mini;
