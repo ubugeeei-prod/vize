@@ -363,8 +363,12 @@ where
                     &mut work,
                     budget,
                 ) {
-                    None => return finish(ReachabilityOutcome::BudgetExceeded, inputs, work, budget),
-                    Some(true) => return finish(ReachabilityOutcome::ReachesVue, inputs, work, budget),
+                    None => {
+                        return finish(ReachabilityOutcome::BudgetExceeded, inputs, work, budget);
+                    }
+                    Some(true) => {
+                        return finish(ReachabilityOutcome::ReachesVue, inputs, work, budget);
+                    }
                     Some(false) => {}
                 }
             }

@@ -355,7 +355,7 @@ impl VirtualProject {
             if links.get(&alias.virtual_dir) != Some(&alias.real_dir) {
                 return Err(std::io::Error::new(
                     std::io::ErrorKind::InvalidData,
-                    format!(
+                    vize_carton::cstr!(
                         "Workspace package link plan omits an owned alias: {} -> {}; planned target: {:?}",
                         alias.virtual_dir.display(),
                         alias.real_dir.display(),
@@ -391,7 +391,7 @@ impl VirtualProject {
             if !alias.starts_with(&self.virtual_root) || overlap.is_some() {
                 return Err(std::io::Error::new(
                     std::io::ErrorKind::InvalidData,
-                    format!(
+                    vize_carton::cstr!(
                         "Workspace package alias overlaps another package link: {} -> {}; conflicting link: {:?} -> {:?}",
                         alias.display(),
                         target.display(),

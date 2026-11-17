@@ -130,7 +130,10 @@ mod tests {
             "p0/src/index.ts",
             "export * from './components';\nimport { x } from 'dep';\n",
         );
-        let barrel = write("p0/src/components/index.ts", "export { default } from './a.vue';\n");
+        let barrel = write(
+            "p0/src/components/index.ts",
+            "export { default } from './a.vue';\n",
+        );
         let vue = write("p0/src/components/a.vue", "<template />\n");
         let chunk = "export declare const value: number;\n".repeat(4);
         let chunks = ["a-dep/c1.d.ts", "a-dep/c2.d.ts", "a-dep/c3.d.ts"]

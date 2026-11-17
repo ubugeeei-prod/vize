@@ -251,7 +251,7 @@ pub(super) fn claims_with_source_coordinates(
         }
         claims.insert(claim.clone());
         for (index, (alias, target)) in aliases.iter().enumerate() {
-            if visited[index] {
+            if visited.get(index).copied().unwrap_or(true) {
                 continue;
             }
             let Ok(suffix) = claim.strip_prefix(target) else {
@@ -262,7 +262,9 @@ pub(super) fn claims_with_source_coordinates(
                 continue;
             }
             let mut next_visited = visited.clone();
-            next_visited[index] = true;
+            if let Some(seen) = next_visited.get_mut(index) {
+                *seen = true;
+            }
             pending.push((source, next_visited));
         }
     }
