@@ -5,8 +5,18 @@
 //! often enough imports it once with `import type * as __vizeSdk` instead, and
 //! each reference becomes `__vizeSdk.X`: a qualified name of the same
 //! declaration, so the same types and diagnostics, for one module resolution
-//! per file and fewer bytes to scan. Generated `__vize*` names are reserved,
-//! so authored code cannot capture the namespace.
+//! per file. Generated `__vize*` names are reserved, so authored code cannot
+//! capture the namespace.
+//!
+//! The file keeps one module reference per rewritten type reference, as
+//! empty type-only imports after the namespace import. tsgo assigns files to
+//! checkers by a weight that counts a file's module references
+//! (`file.Imports()`, `compiler/checkerpool.go`) and links files by them; the
+//! SDK references track a file's template contract work, its expensive part.
+//! Collapsing them to one import made template-heavy files look cheap and
+//! cluster on one checker (#13135: misskey +11.9 % at the default checker
+//! count). An empty import is checked once, without resolving a qualifier or
+//! instantiating anything, and leaves the partition where it was (#13225).
 
 use std::ops::Range;
 
@@ -20,7 +30,12 @@ use super::GenericCopies;
 const PRIVATE_REFERENCE: &str = "import(\"vize:virtual-ts\").";
 const NAMESPACE_REFERENCE: &str = "__vizeSdk.";
 const NAMESPACE_IMPORT: &str = "import type * as __vizeSdk from \"vize/virtual-ts\";\n";
+/// One per rewritten reference beyond the namespace import's own.
+const WEIGHT_IMPORT: &str = "import type {} from \"vize/virtual-ts\";\n";
 const SAVED: usize = PRIVATE_REFERENCE.len() - NAMESPACE_REFERENCE.len();
+/// Fewer references than this keep their import types: the namespace import
+/// itself is a statement to check.
+const MIN_REFERENCES: usize = 4;
 
 /// Rewrite the SDK references through one namespace import when that shrinks
 /// the file. References inside verbatim rows, sub-spans or `/// <reference>`
@@ -36,7 +51,7 @@ pub(super) fn name_sdk_through_namespace(
     authored_lines: &[Range<usize>],
 ) {
     let found = memchr::memmem::find_iter(code.as_bytes(), PRIVATE_REFERENCE).collect::<Vec<_>>();
-    if found.len() * SAVED <= NAMESPACE_IMPORT.len() {
+    if found.len() < MIN_REFERENCES {
         return;
     }
     let mut kept = authored_lines.to_vec();
@@ -80,8 +95,7 @@ pub(super) fn name_sdk_through_namespace(
         })
         .collect::<Vec<_>>();
     let separator = !code.is_empty() && !code.ends_with('\n');
-    let import_len = NAMESPACE_IMPORT.len() + usize::from(separator);
-    if starts.len() * SAVED <= import_len {
+    if starts.len() < MIN_REFERENCES {
         return;
     }
     let Some(rewritten) = rewrite(code, &starts, separator) else {
@@ -121,8 +135,12 @@ pub(super) fn name_sdk_through_namespace(
 }
 
 fn rewrite(code: &str, starts: &[usize], separator: bool) -> Option<CompactString> {
+    let weights = starts.len().saturating_sub(1);
     let mut out = CompactString::with_capacity(
-        code.len() - starts.len() * SAVED + NAMESPACE_IMPORT.len() + usize::from(separator),
+        code.len() - starts.len() * SAVED
+            + NAMESPACE_IMPORT.len()
+            + weights * WEIGHT_IMPORT.len()
+            + usize::from(separator),
     );
     let mut last = 0;
     for &start in starts {
@@ -135,12 +153,15 @@ fn rewrite(code: &str, starts: &[usize], separator: bool) -> Option<CompactStrin
         out.push('\n');
     }
     out.push_str(NAMESPACE_IMPORT);
+    for _ in 0..weights {
+        out.push_str(WEIGHT_IMPORT);
+    }
     Some(out)
 }
 
 #[cfg(test)]
 mod tests {
-    use super::{CompactString, NAMESPACE_IMPORT, name_sdk_through_namespace};
+    use super::{CompactString, NAMESPACE_IMPORT, WEIGHT_IMPORT, name_sdk_through_namespace};
     use crate::virtual_ts::diagnostic_ownership::{
         DiagnosticOwnership, DiagnosticOwnershipCollector,
     };
@@ -206,8 +227,9 @@ mod tests {
             &[],
         );
         let expected = format!(
-            "const x = 1;\n{}const y = x;\n{NAMESPACE_IMPORT}",
-            aliases(5).replace(REF, "__vizeSdk.")
+            "const x = 1;\n{}const y = x;\n{NAMESPACE_IMPORT}{}",
+            aliases(5).replace(REF, "__vizeSdk."),
+            WEIGHT_IMPORT.repeat(4)
         );
         assert_eq!(code.as_str(), expected.as_str());
         let new_y = expected.rfind("y =").unwrap();
