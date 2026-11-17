@@ -207,6 +207,7 @@ fn process_source(
     kind: ImporterKind,
     rename_targets: &[RenameTarget],
 ) -> Option<(Url, Vec<TextEdit>)> {
+    let importer = super::alias::Importer::new(path);
     let moved = apply_all_path_renames(path, rename_targets);
     let stays = moved.is_none();
     let future_path = moved.unwrap_or_else(|| normalize_path_buf(path));
@@ -217,7 +218,7 @@ fn process_source(
         && collect_edits(
             state,
             ScanFiles::RenamedOnly,
-            path,
+            &importer,
             &future_path,
             source,
             kind,
@@ -244,7 +245,7 @@ fn process_source(
     let mut edits = collect_edits(
         state,
         ScanFiles::Live(state),
-        path,
+        &importer,
         &future_path,
         source,
         kind,
@@ -269,7 +270,7 @@ fn process_source(
 fn collect_edits(
     state: &ServerState,
     files: ScanFiles<'_>,
-    path: &Path,
+    importer: &super::alias::Importer<'_>,
     future_path: &Path,
     source: &str,
     kind: ImporterKind,
@@ -277,10 +278,10 @@ fn collect_edits(
 ) -> Vec<TextEdit> {
     match kind {
         ImporterKind::Vue => {
-            collect_vue_edits(state, files, path, future_path, source, rename_targets)
+            collect_vue_edits(state, files, importer, future_path, source, rename_targets)
         }
         ImporterKind::Script => {
-            collect_script_file_edits(files, path, future_path, source, rename_targets)
+            collect_script_file_edits(files, importer, future_path, source, rename_targets)
         }
     }
 }

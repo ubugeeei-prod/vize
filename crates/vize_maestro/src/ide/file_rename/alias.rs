@@ -29,19 +29,51 @@ struct AliasEntry {
     target_base: PathBuf,
 }
 
+/// One scanned importer. Its alias table is read once, however many
+/// specifiers and scans ask for it: discovering it probes every ancestor
+/// directory and parses the governing tsconfig.
+pub(super) struct Importer<'a> {
+    path: &'a Path,
+    aliases: std::cell::OnceCell<Option<Vec<AliasEntry>>>,
+}
+
+impl<'a> Importer<'a> {
+    pub(super) fn new(path: &'a Path) -> Self {
+        Self {
+            path,
+            aliases: std::cell::OnceCell::new(),
+        }
+    }
+
+    pub(super) fn path(&self) -> &'a Path {
+        self.path
+    }
+
+    /// Longest pattern first, mirroring TypeScript's `paths` selection.
+    fn aliases(&self) -> Option<&[AliasEntry]> {
+        self.aliases
+            .get_or_init(|| {
+                let mut aliases = project_aliases(self.path)?;
+                aliases.sort_by_key(|alias| std::cmp::Reverse(alias.pattern_prefix.len()));
+                Some(aliases)
+            })
+            .as_deref()
+    }
+}
+
 /// Rewrite one specifier for the pending renames: relative specifiers via the
 /// manual scanner's rules, aliased ones via the `paths` map. `None` leaves the
 /// specifier untouched.
 pub(super) fn rewrite_specifier(
     files: ScanFiles<'_>,
-    importer_path: &Path,
+    importer: &Importer<'_>,
     future_importer_dir: &Path,
     specifier: &str,
     rename_targets: &[RenameTarget],
 ) -> Option<std::string::String> {
     super::manual::rewrite_relative_specifier(
         files,
-        importer_path.parent()?,
+        importer.path().parent()?,
         future_importer_dir,
         specifier,
         rename_targets,
@@ -49,7 +81,7 @@ pub(super) fn rewrite_specifier(
     .or_else(|| {
         rewrite_alias_specifier(
             files,
-            importer_path,
+            importer,
             future_importer_dir,
             specifier,
             rename_targets,
@@ -61,7 +93,7 @@ pub(super) fn rewrite_specifier(
 /// renamed. `None` leaves the specifier untouched.
 fn rewrite_alias_specifier(
     files: ScanFiles<'_>,
-    importer_path: &Path,
+    importer: &Importer<'_>,
     future_importer_dir: &Path,
     specifier: &str,
     rename_targets: &[RenameTarget],
@@ -71,11 +103,7 @@ fn rewrite_alias_specifier(
         return None;
     }
 
-    let mut aliases = project_aliases(importer_path)?;
-    // Longest pattern wins, mirroring TypeScript's `paths` selection.
-    aliases.sort_by_key(|alias| std::cmp::Reverse(alias.pattern_prefix.len()));
-
-    for alias in &aliases {
+    for alias in importer.aliases()? {
         let Some(rest) = specifier_path.strip_prefix(alias.pattern_prefix.as_str()) else {
             continue;
         };
