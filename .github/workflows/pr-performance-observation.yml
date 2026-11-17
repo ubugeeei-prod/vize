@@ -114,7 +114,7 @@ jobs:
           writeFileSync('performance-observation/build/pair.json', JSON.stringify(pair, null, 2) + '\n');
           JS
       - name: Install Callgrind for exact instruction counts
-        run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends valgrind
+        run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends valgrind strace
       - name: Prepare misskey, type-aware and benchmark corpora
         working-directory: driver
         run: |

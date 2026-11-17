@@ -263,6 +263,17 @@ for (const spec of arg("scenarios", "mk,mk-json,mk-all,bench,ta").split(",")) {
       write(["", `phases ${spec} round ${round}:`, "", "```", ...lines, "```", ""].join("\n"));
     }
   }
+  // `strace-tN`: syscall counts of one JSON lint with N workers (scheduler yields and futex waits).
+  const straceThreads = /^strace-t(\d+)$/.exec(spec);
+  if (straceThreads) {
+    const result = spawnSync("strace", ["-f", "-c", "-o", "/dev/stderr", bins.base, "lint", "src", "--format", "json"], {
+      cwd: mk,
+      maxBuffer: 1 << 30,
+      env: { ...process.env, RAYON_NUM_THREADS: straceThreads[1] },
+    });
+    const lines = (result.stderr?.toString() ?? "").split("\n").filter((line) => /calls|-----|total|sched_yield|futex|read|openat|mmap|munmap|madvise|statx|newfstatat|getdents|clone|mprotect/.test(line));
+    write(["", `syscalls with RAYON_NUM_THREADS=${straceThreads[1]}:`, "", "```", ...lines, "```", ""].join("\n"));
+  }
   if (spec === "bench") scenario("1000-SFC benchmark `lint .` (text)", bench, ["lint", "."], runs);
   if (spec === "ta")
     scenario(
