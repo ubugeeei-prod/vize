@@ -33,6 +33,8 @@ export interface Step {
   /** Moved modules whose name the old parent also re-exports as an item: a path
    *  ending in one names the item and stays. */
   readonly items: readonly string[];
+  /** Rust identifiers renamed in every tracked `.rs` file, word for word. */
+  readonly identifiers?: Readonly<Record<string, string>>;
 }
 
 const move = (from: string, to: string): ModuleMove => ({
@@ -69,6 +71,105 @@ export const steps: Readonly<Record<string, Step>> = {
         "//! the profile-generic lexer, the lossless surface tree and its builder, the\n" +
         "//! document and component parses, and rendering. Shared markup contracts\n" +
         "//! stay in [`super`].\n",
+    },
+  },
+  // Step 2c: L1 records neutral tag facts (it does not know about lint), and
+  // its types and functions are named by concept, not by migration status.
+  "l1-tag-facts": {
+    crate: "davinci/vize_l1",
+    name: "vize_l1",
+    moves: [
+      move("markup::htmlish::view::lint", "markup::htmlish::view::tag_facts_component"),
+      move("markup::htmlish::view::lint_tag", "markup::htmlish::view::tag_facts"),
+      move("markup::htmlish::surface::lint_tag", "markup::htmlish::surface::tag_facts"),
+    ],
+    items: [],
+    parents: {},
+    identifiers: {
+      LINT: "TAG_FACTS",
+      LINT_TAGS: "RECORD_TAG_FACTS",
+      LintHeaderFact: "HeaderFacts",
+      LintTagFact: "TagKindFact",
+      NATIVE_SYNTAX_UNIT_LIMIT: "EMBED_SYNTAX_UNIT_LIMIT",
+      NativeAttribute: "AttributeView",
+      NativeAttributeBindingExpression: "AttributeBindingExpression",
+      NativeAttributeBindingExpressionView: "AttributeBindingExpressionView",
+      NativeAttributeElse: "AttributeElse",
+      NativeAttributeElseView: "AttributeElseView",
+      NativeAttributeExpression: "AttributeExpression",
+      NativeAttributeExpressionFailure: "AttributeExpressionFailure",
+      NativeAttributeExpressionView: "AttributeExpressionView",
+      NativeAttributeForHead: "AttributeForHead",
+      NativeAttributeForHeadFailure: "AttributeForHeadFailure",
+      NativeAttributeForHeadView: "AttributeForHeadView",
+      NativeAttributeHandler: "AttributeHandler",
+      NativeAttributeHandlerFailure: "AttributeHandlerFailure",
+      NativeAttributeHandlerView: "AttributeHandlerView",
+      NativeAttributeHead: "AttributeHead",
+      NativeAttributeModelExpression: "AttributeModelExpression",
+      NativeAttributeModelExpressionView: "AttributeModelExpressionView",
+      NativeAttributeOperandError: "AttributeOperandError",
+      NativeAttributeValue: "AttributeValueOperand",
+      NativeAttributeValueFailure: "AttributeValueFailure",
+      NativeAttributeValueView: "AttributeValueView",
+      NativeAttributes: "AttributesView",
+      NativeChild: "ChildView",
+      NativeChildren: "ChildrenView",
+      NativeComponent: "ParsedComponent",
+      NativeConditionKind: "ConditionKind",
+      NativeDocument: "ParsedDocument",
+      NativeElement: "ElementView",
+      NativeElementClosingName: "ElementClosingName",
+      NativeElementNameRefusal: "ElementNameRefusal",
+      NativeElementNames: "ElementNames",
+      NativeExpressionView: "ExpressionView",
+      NativeForHead: "ForHead",
+      NativeForInput: "ForInput",
+      NativeForInputError: "ForInputError",
+      NativeForRefusal: "ForRefusal",
+      NativeInterpolationError: "InterpolationError",
+      NativeInterpolationFailure: "InterpolationFailure",
+      NativeInterpolationOperand: "InterpolationOperand",
+      NativeInterpolationView: "InterpolationView",
+      NativeLintComponent: "ComponentTagFacts",
+      NativeLintTag: "TagFacts",
+      NativeLintTagKind: "TagFactsKind",
+      NativeLintTagRefusal: "TagFactsRefusal",
+      NativeModelHead: "ModelHead",
+      NativeRootText: "RootText",
+      NativeRootTextError: "RootTextError",
+      NativeRootTextProfile: "RootTextProfile",
+      NativeRootTextView: "RootTextView",
+      NativeScriptSelection: "ScriptSelection",
+      NativeStaticBindingHead: "StaticBindingHead",
+      NativeSyntax: "EmbedSyntax",
+      NativeTemplateComponent: "TemplateComponent",
+      NativeTemplateFrameNameRefusal: "TemplateFrameNameRefusal",
+      NativeTemplateFrameNames: "TemplateFrameNames",
+      NativeTemplateGrammar: "TemplateGrammar",
+      NativeTextValue: "TextValue",
+      NativeTextValueError: "TextValueError",
+      NativeTextValueFailure: "TextValueFailure",
+      NativeTextValueView: "TextValueView",
+      RejectedNativeForInput: "RejectedForInput",
+      construct_with_lint: "construct_with_tag_facts",
+      construct_with_lint_and_diagnostics: "construct_with_tag_facts_and_diagnostics",
+      is_lint_component: "is_component_tag",
+      lint_header: "header_facts",
+      lint_header_is_literal: "header_is_literal",
+      lint_header_literal: "header_facts_literal",
+      lint_in_recovery_context: "in_recovery_context",
+      lint_in_table_context: "in_table_context",
+      lint_recovery_context: "header_recovery_context",
+      lint_table_context: "header_table_context",
+      lint_tag: "tag_facts",
+      mark_lint_tag: "mark_tag_facts",
+      native_refusal: "for_refusal",
+      opening_end_with_lint: "opening_end_with_tag_facts",
+      parse_component_with_lint: "parse_component_with_tag_facts",
+      parse_lint_in: "parse_tag_facts_in",
+      selected_lint_tag_aux_never_changes_mode_quotes_width_or_event_layout:
+        "selected_tag_facts_aux_never_changes_mode_quotes_width_or_event_layout",
     },
   },
   // Step 2b: L1 modules named by concept, not by migration status (`native`).
@@ -310,6 +411,17 @@ function rewriteGroupBody(inner: string, prefix: readonly string[], step: Step):
     .join(",");
 }
 
+/** Word-for-word identifier renames (`\bold\b` becomes `new`). */
+export function renameIdentifiers(
+  source: string,
+  renames: Readonly<Record<string, string>>,
+): string {
+  const names = Object.keys(renames).sort((a, b) => b.length - a.length);
+  if (names.length === 0) return source;
+  const pattern = new RegExp(`\\b(?:${names.join("|")})\\b`, "gu");
+  return source.replace(pattern, (name) => renames[name] ?? name);
+}
+
 /** Repository path strings: `<crate>/src/<old>` becomes `<crate>/src/<new>`. */
 export function rewritePaths(source: string, step: Step): string {
   let out = source;
@@ -469,6 +581,19 @@ export function run(stepName: string, dryRun: boolean): string[] {
     if (next !== text) write(file, next);
   }
   moveDeclarations(step, read, write, renames);
+  // Identifiers last, once module declarations have moved by their old names.
+  if (step.identifiers)
+    for (const file of new Set([
+      ...files.filter((file) => file.endsWith(".rs")),
+      ...pending.keys(),
+    ])) {
+      // Vendored upstream sources keep their own names.
+      if (selfFiles.has(file) || !file.endsWith(".rs") || file.startsWith("upstream/")) continue;
+      if (!pending.has(file) && !fs.existsSync(path.join(repoRoot, file))) continue;
+      const text = read(file);
+      const next = renameIdentifiers(text, step.identifiers);
+      if (next !== text) write(file, next);
+    }
   const touched = [...pending.keys()].sort();
   if (dryRun) return [...touched, ...[...renames].map(([from, to]) => `${from} -> ${to}`)];
   // A collapsed child replaces its parent file. The parent may hold only its

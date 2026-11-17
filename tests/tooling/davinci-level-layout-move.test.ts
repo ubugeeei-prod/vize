@@ -5,6 +5,7 @@ import { test } from "node:test";
 import {
   modulePathOf,
   relocate,
+  renameIdentifiers,
   rewritePaths,
   rewriteRelativeFiles,
   rewriteRust,
@@ -109,5 +110,15 @@ test("repository paths, regex literals, test filters and relative includes", () 
       new Map(),
     ),
     'include_str!("../../../../tests/fixtures/a.json")',
+  );
+});
+
+test("identifier renames are whole words", () => {
+  assert.equal(
+    renameIdentifiers("x.lint_tag(); mod native_lint_tag; NativeLintTagKind::Element", {
+      lint_tag: "tag_facts",
+      NativeLintTagKind: "NativeTagFactsKind",
+    }),
+    "x.tag_facts(); mod native_lint_tag; NativeTagFactsKind::Element",
   );
 });
