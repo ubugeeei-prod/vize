@@ -53,5 +53,5 @@ Changing a lint preset does not change either result.
 
 - [Linting with the CLI](../../guide/cli.md#lint)
 - [Native lint execution settings](../../guide/lint-execution.md)
-- [Diagnostic conversion source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/lint/tsrx.rs)
+- [Diagnostic conversion source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/linter/engine/tsrx.rs)
 - [TSRX lowering source](https://github.com/ubugeeei-prod/vize/blob/main/davinci/vize_l2/src/lang/tsrx.rs)

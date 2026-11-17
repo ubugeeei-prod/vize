@@ -27,6 +27,7 @@ mod template;
 mod template_extract;
 #[cfg(test)]
 mod test_lanes;
+mod tsrx;
 mod unused_directives;
 
 pub(crate) use template_extract::extract_template_fast;

@@ -70,6 +70,8 @@ impl DiagnosticService {
         };
         let mut result = if is_standalone_html {
             linter.lint_standalone_html(content, uri.path())
+        } else if crate::utils::is_tsrx_path(uri.path()) {
+            linter.lint_tsrx(content, uri.path())
         } else {
             linter.lint_sfc(content, uri.path())
         };

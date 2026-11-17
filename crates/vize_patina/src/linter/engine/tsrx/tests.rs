@@ -1,5 +1,8 @@
-use super::super::tsrx::lint_tsrx;
-use vize_patina::{LintResult, Linter};
+use crate::linter::{LintResult, Linter};
+
+fn lint_tsrx(linter: &Linter, source: &str, filename: &str) -> LintResult {
+    linter.lint_tsrx(source, filename)
+}
 
 fn rows(result: &LintResult) -> Vec<(&str, u32, u32)> {
     result
