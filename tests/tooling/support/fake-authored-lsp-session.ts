@@ -24,6 +24,12 @@ const DEFAULT_LIFECYCLE: FakeAuthoredLspLifecycle = {
 export class FakeAuthoredLspSession {
   readonly events: string[] = [];
   readonly openFiles: string[] = [];
+  /**
+   * A repaired probe dependency first publishes the probe-era type answer at
+   * the repaired version: `partial` once, `terminal` in every publication.
+   */
+  staleDependencyRepair: "none" | "partial" | "terminal" = "none";
+  private staleDependencyRepairUri: string | null = null;
   private readonly documents = new Map<string, { text: string; version: number }>();
   private readonly lifecycle: FakeAuthoredLspLifecycle;
   private readonly nullMethod: string | null;
@@ -94,10 +100,12 @@ export class FakeAuthoredLspSession {
       this.openFiles.push(file);
       this.events.push(`${method}:${document.version}:${file}`);
     } else if (method === "textDocument/didChange") {
-      this.documents.set(document.uri, {
-        text: payload.contentChanges?.[0]?.text ?? "",
-        version: document.version ?? 0,
-      });
+      const previous = this.documents.get(document.uri)?.text ?? "";
+      const text = payload.contentChanges?.[0]?.text ?? "";
+      if (previous.includes("vizeOracleProbe") && !text.includes("vizeOracleProbe")) {
+        this.staleDependencyRepairUri = this.staleDependencyRepair === "none" ? null : document.uri;
+      }
+      this.documents.set(document.uri, { text, version: document.version ?? 0 });
       if (
         this.fileDeleted &&
         this.emitStaleRepairDiagnostics &&
@@ -216,6 +224,31 @@ export class FakeAuthoredLspSession {
           `${method}:${repaired.document.version}:${fileName(repaired.uri)}:stale-repair-skipped`,
         );
       }
+    }
+    const staleUri = this.staleDependencyRepairUri;
+    const staleDependency = notifications.find(({ uri }) => uri === staleUri);
+    if (staleDependency != null) {
+      const stalePayload = {
+        ...staleDependency.payload,
+        diagnostics: [
+          {
+            code: 2339,
+            message:
+              "Property 'highlighter' does not exist on type '{ vizeOracleProbe?: boolean }'.",
+            range: range(1, 0, 1),
+            severity: 1,
+            source: "vize/types",
+          },
+        ],
+      };
+      const event = `${method}:${staleDependency.document.version}:${fileName(staleDependency.uri)}`;
+      if (this.staleDependencyRepair === "terminal") staleDependency.payload = stalePayload;
+      else this.staleDependencyRepairUri = null;
+      if (predicate(stalePayload)) {
+        this.events.push(`${event}:stale-dependency-repair`);
+        return stalePayload;
+      }
+      this.events.push(`${event}:stale-dependency-repair-skipped`);
     }
     const notification = notifications.find(({ payload }) => predicate(payload));
     assert.ok(notification, "fake session must have a matching diagnostic notification");
