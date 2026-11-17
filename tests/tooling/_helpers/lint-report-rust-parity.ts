@@ -228,6 +228,20 @@ export function runReporter(
   for (const [name, text] of Object.entries(rawFiles))
     files[name] = name.endsWith(".json") ? parseReport(text, sourceVersion) : text;
   for (const process of processes) {
+    // The successor passes the rule map's matrix-only rule options (#12336)
+    // through a removed generated config where the frozen reporters pass
+    // `--no-config`.
+    if (!rust) {
+      const at = process.argv.indexOf("--config");
+      const config = at < 0 ? undefined : process.argv[at + 1];
+      if (
+        config !== undefined &&
+        path.basename(config) === "vize.lint-matrix.config.mjs" &&
+        path.basename(path.dirname(config)).startsWith("vize-lint-matrix-options-") &&
+        !fs.existsSync(config)
+      )
+        process.argv.splice(at, 2, "--no-config");
+    }
     assert.equal(process.stdin, "");
     assert.equal(process.lang, "C");
     assert.equal(process.lcAll, "C");
