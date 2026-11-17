@@ -2,6 +2,7 @@
 #![expect(clippy::disallowed_macros, reason = "fixtures are built with format!")]
 
 mod document_tail;
+mod table_rows;
 mod table_section_cells;
 use super::{
     parse, parse_document, parse_document_with_options, parse_with_options,
@@ -1406,29 +1407,6 @@ fn test_parse_custom_renderer_non_html_element_keeps_self_closing_flag() {
 }
 
 #[test]
-fn test_parse_table_inserts_implicit_tbody() {
-    let allocator = Allocator::new();
-    let (root, errors) = parse(&allocator, "<table><tr><td>x</td></tr></table>");
-
-    assert!(errors.is_empty(), "unexpected errors: {errors:?}");
-    let TemplateChildNode::Element(table) = &root.children[0] else {
-        panic!("Expected table");
-    };
-    assert_eq!(table.children.len(), 1);
-    let TemplateChildNode::Element(tbody) = &table.children[0] else {
-        panic!("Expected implicit tbody");
-    };
-    assert_eq!(tbody.tag, "tbody");
-    let TemplateChildNode::Element(tr) = &tbody.children[0] else {
-        panic!("Expected tr");
-    };
-    let TemplateChildNode::Element(td) = &tr.children[0] else {
-        panic!("Expected td");
-    };
-    assert!(matches!(&td.children[0], TemplateChildNode::Text(text) if text.content == "x"));
-}
-
-#[test]
 fn test_parse_table_foster_parents_unexpected_element() {
     let allocator = Allocator::new();
     let (root, errors) = parse(&allocator, "<table><div>hello</div></table>");
@@ -1452,10 +1430,7 @@ fn test_parse_table_cell_keeps_normal_body_content() {
     let TemplateChildNode::Element(table) = &root.children[0] else {
         panic!("Expected table");
     };
-    let TemplateChildNode::Element(tbody) = &table.children[0] else {
-        panic!("Expected tbody");
-    };
-    let TemplateChildNode::Element(tr) = &tbody.children[0] else {
+    let TemplateChildNode::Element(tr) = &table.children[0] else {
         panic!("Expected tr");
     };
     let TemplateChildNode::Element(td) = &tr.children[0] else {

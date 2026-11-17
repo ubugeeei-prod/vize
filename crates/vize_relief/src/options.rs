@@ -67,6 +67,11 @@ pub struct ParserOptions {
     pub on_warn: Option<fn(crate::CompilerError)>,
     pub comments: bool,
     pub experimental_in_tag_comments: bool,
+    /// Give rows and cells written directly in a `<table>` the `tbody` (and,
+    /// inside it, `tr`) owners the HTML parser inserts. Off by default:
+    /// Vue's compiler keeps authored rows. Vapor turns it on because its
+    /// template strings are parsed again by `innerHTML`.
+    pub implied_table_sections: bool,
     /// Vue dialect the source is written in, resolved once per file from
     /// `vue.version`. Defaults to [`VueVersion::V3`]; any legacy line is opt-in
     /// behind the `legacy` cargo feature. Parsing/tokenizing only consults this
@@ -92,6 +97,7 @@ impl Default for ParserOptions {
             on_warn: None,
             comments: true,
             experimental_in_tag_comments: false,
+            implied_table_sections: false,
             dialect: VueVersion::V3,
         }
     }

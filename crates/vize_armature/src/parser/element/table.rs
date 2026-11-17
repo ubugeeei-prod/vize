@@ -1,4 +1,6 @@
-//! Table foster parenting and implicit table section/row insertion.
+//! Table foster parenting and implicit table section/row insertion. Sections
+//! and rows are implied only in document mode or when the caller asks for them
+//! (`ParserOptions::implied_table_sections`).
 
 use vize_l0::Vec;
 use vize_relief::ElementNode;
@@ -101,7 +103,9 @@ impl<'a> Parser<'a> {
                 let last = self.stack.len() - 1;
                 self.close_stack_element_at(last, false);
             }
-            self.ensure_table_section(offset);
+            if self.implies_table_sections() {
+                self.ensure_table_section(offset);
+            }
         } else if Self::tag_in(tag, &["td", "th"]) {
             if self
                 .stack
@@ -110,6 +114,9 @@ impl<'a> Parser<'a> {
             {
                 let last = self.stack.len() - 1;
                 self.close_stack_element_at(last, false);
+            }
+            if !self.implies_table_sections() {
+                return;
             }
             self.ensure_table_section(offset);
             let authored_section_parent = !self.document
@@ -120,6 +127,12 @@ impl<'a> Parser<'a> {
                 self.ensure_table_row(offset);
             }
         }
+    }
+
+    /// Whether direct rows and cells gain the owners the HTML parser inserts.
+    /// A Vue component template keeps authored rows, as Vue's compiler does.
+    fn implies_table_sections(&self) -> bool {
+        self.document || self.options.implied_table_sections
     }
 
     fn ensure_table_section(&mut self, offset: usize) {

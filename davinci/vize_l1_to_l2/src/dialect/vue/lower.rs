@@ -49,6 +49,7 @@ pub use text::{
 pub struct LowerPolicy {
     preserve_comments: bool,
     retain_consumed_expressions: bool,
+    implied_table_sections: bool,
 }
 
 impl LowerPolicy {
@@ -58,12 +59,32 @@ impl LowerPolicy {
         Self {
             preserve_comments,
             retain_consumed_expressions: false,
+            implied_table_sections: false,
+        }
+    }
+
+    /// The lint policy: comments kept, consumed expressions retained.
+    #[must_use]
+    pub const fn lint() -> Self {
+        Self::LINT
+    }
+
+    /// Give rows and cells written directly in a `<table>` the `tbody` (and,
+    /// inside it, `tr`) owners the HTML parser inserts. Component templates
+    /// keep authored rows, as Vue's compiler does; HTML documents and
+    /// markup parsed again by `innerHTML` (Vapor templates) need the owners.
+    #[must_use]
+    pub const fn with_implied_table_sections(self) -> Self {
+        Self {
+            implied_table_sections: true,
+            ..self
         }
     }
 
     const LINT: Self = Self {
         preserve_comments: true,
         retain_consumed_expressions: true,
+        implied_table_sections: false,
     };
 }
 

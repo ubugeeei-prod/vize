@@ -24,10 +24,8 @@ fn dynamic_component_stays_inside_its_authored_table_loop() {
         panic!("authored table");
     };
     assert_eq!(table.tag, "table");
-    let TemplateChildNode::Element(section) = &table.children[0] else {
-        panic!("implicit table section");
-    };
-    let TemplateChildNode::Element(row) = &section.children[0] else {
+    // Vue keeps the authored row directly under the table.
+    let TemplateChildNode::Element(row) = &table.children[0] else {
         panic!("authored row");
     };
     assert_eq!(row.tag, "tr");
