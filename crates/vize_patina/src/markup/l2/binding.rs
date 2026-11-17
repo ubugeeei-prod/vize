@@ -73,17 +73,7 @@ impl<'a> L2Item<'a> {
     }
 }
 
-/// Visit the authored items of an L2 element in authored order.
-///
-/// With an L1 surface the authored attribute list drives the order and every
-/// L1 attribute resolves to the L2 attribute or binding carrying its exact
-/// span, or — when L2 consumed or dropped it — to a [`L2Item::Surface`]. A
-/// JSX projection has no surface tree and drops nothing (it refuses instead),
-/// so its attributes and bindings are merged by span.
-///
-/// Share the authored-order reconstruction across rules; only the final
-/// callback differs. Borrowing the callback does not allocate.
-/// [`walk_items`] once per element, kept in the compile arena.
+/// Run [`walk_items`] once per element and keep its items in the compile arena.
 ///
 /// Every rule that reads an element's opening tag walks the same items, and
 /// matching each authored attribute back to the op L2 kept for it is the walk's
@@ -103,6 +93,16 @@ pub(in crate::markup) fn arena_items<'a>(
     Some(allocator.as_oxc().alloc_slice_copy(&items))
 }
 
+/// Visit the authored items of an L2 element in authored order.
+///
+/// With an L1 surface the authored attribute list drives the order and every
+/// L1 attribute resolves to the L2 attribute or binding carrying its exact
+/// span, or — when L2 consumed or dropped it — to a [`L2Item::Surface`]. A
+/// JSX projection has no surface tree and drops nothing (it refuses instead),
+/// so its attributes and bindings are merged by span.
+///
+/// Share the authored-order reconstruction across rules; only the final
+/// callback differs. Borrowing the callback does not allocate.
 pub(in crate::markup) fn walk_items<'a>(
     doc: &'a L2Markup<'a>,
     attributes: &'a [Attribute<'a>],
