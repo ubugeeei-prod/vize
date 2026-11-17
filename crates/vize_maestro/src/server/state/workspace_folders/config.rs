@@ -77,6 +77,7 @@ impl WorkspaceFolderConfig {
             document,
             source_path,
             &plan.plan.base.rules,
+            "lsp",
         )
         .map(std::sync::Arc::new);
         Self {

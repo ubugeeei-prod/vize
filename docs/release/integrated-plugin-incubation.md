@@ -8,14 +8,14 @@
 
 ## Status
 
-| Slice                                                    | State                                    |
-| -------------------------------------------------------- | ---------------------------------------- |
-| API v1 packet freeze                                     | done (#13122)                            |
-| v2 manifest, canonical plan, validation, inspector views | done (#13124)                            |
-| `vue.plugins` resolved from `vite.config.*`              | done                                     |
-| custom lint (`lint.rule`, adapted v1 rules)              | done: `vize lint` incl. `--fix`, the LSP |
-| custom directive (`vue.directive`)                       | declared only; every consumer refuses it |
-| custom block (`sfc.custom-block`)                        | declared only; every consumer refuses it |
+| Slice                                                    | State                                                 |
+| -------------------------------------------------------- | ----------------------------------------------------- |
+| API v1 packet freeze                                     | done (#13122)                                         |
+| v2 manifest, canonical plan, validation, inspector views | done (#13124)                                         |
+| `vue.plugins` resolved from `vite.config.*`              | done                                                  |
+| custom lint (`lint.rule`, adapted v1 rules)              | done: `vize lint` incl. `--fix`, LSP, Oxlint and Nuxt |
+| custom directive (`vue.directive`)                       | declared only; every consumer refuses it              |
+| custom block (`sfc.custom-block`)                        | declared only; every consumer refuses it              |
 
 ## Where the contract lives
 
@@ -147,5 +147,17 @@ invalidating a plan that is valid today.
   preferred only when its rule is `fixable: "safe"`. The editor keeps the last
   answer per document text, so diagnostics, hover and code actions of one text
   cross into JS once.
+- **Oxlint and Nuxt.** oxlint-plugin-vize hosts the rules with
+  `settings.vize.pluginRules: true`. It runs the plugins of the nearest
+  `vite.config.*` above each Vue file. One native `PluginLintSession` per config
+  owns one sidecar for the whole Oxlint process, and each Vue file crosses into
+  it once. `vize/plugin-errors` reports the plugin diagnostics Vize resolved as
+  errors and `vize/plugin-warnings` the rest, so severity stays the one set in
+  `vue.linter.rules`. A session or rule failure is one error on the file. The
+  Nuxt lint config enables both rules and the setting when `vue.plugins` lists
+  entries. It keeps plugin rule IDs out of the Oxlint rule map, refuses them in
+  `entries[]`, and refuses capabilities lint does not implement. Like every
+  Oxlint rule on a `.vue` file, they run only for files with a `<script>`
+  block.
 - **Not yet.** Templates that the plugin records cannot represent are skipped
   (and listed in the CLI receipt).

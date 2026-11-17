@@ -12,6 +12,7 @@ import * as path from "node:path";
 import { importConfigModule } from "../../../../cli/src/config/module-runtime.mjs";
 import {
   VITE_CONFIG_FILE_NAMES,
+  inspectViteConfigPlugins,
   resolveViteConfigSource,
 } from "../../../../cli/src/config/vite-runtime.mjs";
 
@@ -32,6 +33,8 @@ export interface ProjectOxlintOverride {
 
 export interface ProjectLintRuleSets {
   entries?: ProjectLintRuleEntry[];
+  /** `vue.plugins` lint rules, run by oxlint-plugin-vize's `plugin-errors`/`plugin-warnings`. */
+  pluginRules?: true;
   jsPlugins?: string[];
   vize?: ProjectLintRules;
   oxlint?: ProjectLintRules;
@@ -96,8 +99,12 @@ export async function readProjectLintRuleSets(
       linter.preset && linter.preset !== "incremental"
         ? await loadPreset(linter.preset, linter.typeAware)
         : {};
+    // Plugin rules take their root severity inside the plugin host, not as Oxlint rules.
+    const authored = Object.fromEntries(
+      Object.entries(linter.rules).filter(([id]) => !project.pluginRuleIds.has(id)),
+    );
     const rules = applyRuleOptions(
-      { ...presetRules, ...linter.rules },
+      { ...presetRules, ...authored },
       linter.ruleOptions,
       warnings,
       "vue.linter",
@@ -106,6 +113,12 @@ export async function readProjectLintRuleSets(
   }
   const entries = project.entries
     .map((entry, index): ProjectLintRuleEntry | undefined => {
+      const scoped = Object.keys(entry.rules).find((id) => project.pluginRuleIds.has(id));
+      if (scoped !== undefined) {
+        throw new Error(
+          `[plugin/plan-invalid] vue.entries[${String(index)}].linter: plugin rule \`${scoped}\` is configured in vue.linter.rules only`,
+        );
+      }
       const rules = applyRuleOptions(
         { ...entry.rules },
         entry.ruleOptions,
@@ -125,6 +138,7 @@ export async function readProjectLintRuleSets(
   return {
     ...(entries.length > 0 ? { entries } : {}),
     ...(jsPlugins.length > 0 ? { jsPlugins } : {}),
+    ...(project.pluginRuleIds.size > 0 ? { pluginRules: true as const } : {}),
     ...(vize ? { vize } : {}),
     ...(Object.keys(oxlint).length > 0 ? { oxlint } : {}),
     ...(oxlintOverrides.length > 0 ? { oxlintOverrides } : {}),
@@ -134,6 +148,8 @@ export async function readProjectLintRuleSets(
 
 interface ProjectConfig {
   entries: ProjectLinterEntry[];
+  /** Public IDs of every `vue.plugins` lint rule. */
+  pluginRuleIds: ReadonlySet<string>;
   linter?: ProjectLinterConfig;
   oxlint?: unknown;
   oxlintConfigDir?: string;
@@ -141,29 +157,55 @@ interface ProjectConfig {
 
 async function readProjectConfig(rootDir: string): Promise<ProjectConfig> {
   const loaded = await loadProjectViteConfigSource(rootDir);
-  if (!loaded) return { entries: [] };
+  if (!loaded) return { entries: [], pluginRuleIds: new Set() };
   const parsed = loaded.source;
   const rawVue = parsed.vue && typeof parsed.vue === "object" ? parsed.vue : undefined;
-  refusePluginEntries(rawVue);
+  const pluginRuleIds = hasPluginEntries(rawVue)
+    ? await lintPluginRuleIds(loaded.exported)
+    : new Set<string>();
   const rawLinter = rawVue && "linter" in rawVue ? projectLinter(rawVue.linter) : undefined;
   const entries = rawVue && "entries" in rawVue ? projectEntries(rawVue.entries) : [];
   return {
     entries,
+    pluginRuleIds,
     linter: rawLinter,
     oxlint: parsed.lint,
     oxlintConfigDir: loaded.configDir,
   };
 }
 
-// The generated Oxlint config cannot host plugin API v2 rules; ignoring them
-// would silently drop configured lint, so a plugin list fails closed here.
-function refusePluginEntries(vue: object | undefined): void {
+function hasPluginEntries(vue: object | undefined): boolean {
   const plugins = vue && "plugins" in vue ? vue.plugins : undefined;
-  if (Array.isArray(plugins) && plugins.every((entry) => entry === false || entry == null)) return;
-  if (plugins === undefined) return;
-  throw new Error(
-    "[plugin/capability-unadmitted] vue.plugins: the Nuxt Oxlint integration does not run plugin lint rules yet; run `vize lint` for them",
-  );
+  if (plugins === undefined) return false;
+  return !(Array.isArray(plugins) && plugins.every((entry) => entry === false || entry == null));
+}
+
+// oxlint-plugin-vize hosts the lint capabilities. Any other capability that lint
+// consumes but does not implement fails closed, as it does in `vize lint`.
+async function lintPluginRuleIds(exported: unknown): Promise<ReadonlySet<string>> {
+  const inspection = await inspectViteConfigPlugins(exported, {
+    command: "lint",
+    mode: "development",
+  });
+  const refused = inspection.admission.lint?.refused[0];
+  if (refused) {
+    throw new Error(
+      `[plugin/capability-unadmitted] ${refused.plugin}: lint does not implement ${refused.capability} \`${refused.key}\` yet`,
+    );
+  }
+  const ids = new Set<string>();
+  for (const plugin of inspection.plugins) {
+    for (const capability of plugin.capabilities) {
+      if (capability.id === "lint.rule") ids.add(capability.key);
+      if (capability.id === "lint.plugin-v1") {
+        const listed = (capability.data as { rules?: unknown }).rules;
+        for (const rule of Array.isArray(listed) ? listed : []) {
+          if (typeof rule === "string") ids.add(`${plugin.name}/${rule}`);
+        }
+      }
+    }
+  }
+  return ids;
 }
 
 function projectLinter(value: unknown): ProjectLinterConfig | undefined {
@@ -219,7 +261,7 @@ function scopedGlobs(value: unknown, basePath: unknown): string[] {
 
 async function loadProjectViteConfigSource(
   rootDir: string,
-): Promise<{ configDir: string; source: Record<string, unknown> } | null> {
+): Promise<{ configDir: string; exported: unknown; source: Record<string, unknown> } | null> {
   let directory = path.resolve(rootDir);
   while (true) {
     for (const name of VITE_CONFIG_FILE_NAMES) {
@@ -229,6 +271,7 @@ async function loadProjectViteConfigSource(
       if (module === null) throw new Error("Unable to load Vite configuration at " + filePath);
       return {
         configDir: directory,
+        exported: module.default ?? module,
         source: await resolveViteConfigSource(module.default ?? module, {
           command: "lint",
           mode: "development",

@@ -453,23 +453,3 @@ await test("Nuxt's public config consumer reads canonical helpers and rejects un
     assert.equal(await readFile(path.join(historical, name), "utf8"), source);
   }
 });
-
-void test("plugin lists fail closed instead of dropping plugin lint rules", async (t) => {
-  const root = await temporaryRoot(t, "vize-nuxt-project-plugin-rules-");
-  await writeFile(
-    path.join(root, "vite.config.mjs"),
-    `export default { vue: { plugins: [{ name: "x", version: "1" }], linter: { preset: "essential" } } };`,
-  );
-  await assert.rejects(readProjectLintRuleSets(root, unexpectedPreset), {
-    message:
-      "[plugin/capability-unadmitted] vue.plugins: the Nuxt Oxlint integration does not run plugin lint rules yet; run `vize lint` for them",
-  });
-  const skipped = await temporaryRoot(t, "vize-nuxt-project-plugin-skipped-");
-  await writeFile(
-    path.join(skipped, "vite.config.mjs"),
-    `export default { vue: { plugins: [false, null], linter: { rules: { "vue/no-v-html": "error" } } } };`,
-  );
-  assert.deepEqual(await readProjectLintRules(skipped, unexpectedPreset), {
-    "vue/no-v-html": "error",
-  });
-});

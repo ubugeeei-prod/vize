@@ -303,6 +303,13 @@ export async function setupNuxtLintConfigGeneration(
     if (projectRules.oxlint) {
       projectItems.push({ name: "project/oxlint", nativeRules: projectRules.oxlint });
     }
+    if (projectRules.pluginRules) {
+      // Each plugin rule keeps its `vue.linter.rules` severity inside the host.
+      projectItems.push({
+        name: "project/plugins",
+        nativeRules: { "vize/plugin-errors": "error", "vize/plugin-warnings": "warn" },
+      });
+    }
     for (const [index, entry] of (projectRules.entries ?? []).entries()) {
       projectItems.push({
         name: entry.name ? `project/${entry.name}` : `project/entry-${String(index + 1)}`,
@@ -333,6 +340,7 @@ export async function setupNuxtLintConfigGeneration(
         owner: ownsReservedConfig ? "@vizejs/nuxt" : undefined,
       },
       projectRules.jsPlugins,
+      projectRules.pluginRules === true,
     );
     const changed = ownsReservedConfig
       ? await writeOwnedNuxtConfig(configFile, artifact, writeFileIfChanged)
