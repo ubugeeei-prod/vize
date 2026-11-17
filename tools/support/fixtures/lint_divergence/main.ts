@@ -12,6 +12,7 @@ import {
 } from "./runtime.ts";
 import { collectVueInputPaths, parseArgs, selectedProjects, type Args } from "./selection.ts";
 import { BaselineArtifactStage, removeStagedBaselineArtifacts } from "./baseline_stage.ts";
+import { isolationRoot, relocatePaths, withIsolatedFixture } from "./isolation.ts";
 import {
   errorMessage,
   get,
@@ -72,23 +73,53 @@ function measureProject(
   project: Json,
 ): JsonObject | null {
   const id = projectString(project, "id"),
-    cwd = path.resolve(root, projectString(project, "fixturePath"));
-  if (!hydrated(cwd)) {
+    fixtureDir = path.resolve(root, projectString(project, "fixturePath"));
+  if (!hydrated(fixtureDir)) {
     console.log(`Skipped ${id}: fixture is not hydrated`);
     return null;
   }
-  const files = collectVueInputPaths(cwd, project),
+  const files = collectVueInputPaths(fixtureDir, project),
     expectedCount = unsigned(get(project, "expectedVueFileCount")) ?? null;
   if (expectedCount === 0 && files.length)
     throw new Error(`${id} matched ${files.length} Vue files, expected 0`);
   if (!files.length && expectedCount !== 0) throw new Error(`${id} matched no Vue files`);
+  // Both providers lint a mirror that resolves packages only from the
+  // fixture's own install, never from the repository's `node_modules`.
+  return withIsolatedFixture(fixtureDir, isolationRoot(), id, (cwd) =>
+    measureMirror(
+      { cwd, fixtureDir },
+      root,
+      args,
+      launch,
+      evidence,
+      ruleMap,
+      comparable,
+      project,
+      files,
+    ),
+  );
+}
+
+function measureMirror(
+  { cwd, fixtureDir }: { cwd: string; fixtureDir: string },
+  root: string,
+  args: Args,
+  launch: Launch,
+  evidence: Json,
+  ruleMap: Json,
+  comparable: ReturnType<typeof selectComparableRules>,
+  project: Json,
+  files: string[],
+): JsonObject {
+  const id = projectString(project, "id"),
+    expectedCount = unsigned(get(project, "expectedVueFileCount")) ?? null;
   const patina =
     files.length === 0
       ? { results: [], findings: [] }
       : runPatina(cwd, project, args, launch, files);
   const json = path.join(args.outputDir, `${id}-lint-divergence.json`),
     markdown = path.join(args.outputDir, `${id}-lint-divergence.md`),
-    stage = new BaselineArtifactStage(args.outputDir);
+    stage = new BaselineArtifactStage(args.outputDir, { from: cwd, to: fixtureDir });
   try {
     const started = performance.now(),
       baseline = runEslintBaseline(
@@ -125,6 +156,7 @@ function measureProject(
       revision: get(project, "revision"),
       preset: selectedPreset,
       evidence,
+      fixtureIsolation: "mirror-without-ancestor-packages",
       files: { comparedCount: files.length, expectedCount },
       baseline: {
         package: get(ruleMap, "upstream", "package"),
@@ -145,6 +177,8 @@ function measureProject(
       divergence,
     };
     artifact.budget = evaluateBudget(artifact);
+    // Reports name the fixture, not the temporary mirror.
+    artifact.baseline = relocatePaths(artifact.baseline, cwd, fixtureDir);
     stage.writeArtifact(json, artifact);
     writeText(markdown, renderMarkdown(artifact));
     console.log(`Wrote ${relativePath(root, json)}`);
