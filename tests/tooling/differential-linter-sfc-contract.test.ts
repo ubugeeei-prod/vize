@@ -19,6 +19,12 @@ import { sha256 } from "../differential/harness.mjs";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const manifest = path.join(root, "tests/_fixtures/differential/linter/manifest.json");
 const loaded = loadLinterManifest(manifest, root);
+const historyNativeReasons: Record<string, unknown> = JSON.parse(
+  fs.readFileSync(
+    path.join(root, "tests/_fixtures/differential/linter/history-native-reasons.json"),
+    "utf8",
+  ),
+);
 // Independent authored whole vector; never derive its geometry from a native
 // parser or expectedNativeReason and never grant execution credit here.
 const positive =
@@ -50,7 +56,7 @@ void test("all current SFC wires have the complete bounded transition and old pa
   assert.deepEqual(
     loaded.manifest.cohorts.map((cohort: any) => [cohort.id, cohort.cases.sha256]),
     [
-      ["current-api", "a26abe911e088ed1cc8fa5d2503349cdafc328bca984ab77927c085364f3424d"],
+      ["current-api", "f061cf28e8071ddfe1fc98b72c8181224ee815d610c859a9b54fadd5ff0004fb"],
       ["next-tick", "96b1745c527e4a65fc0347566d015d5063271e90d7fdc8d21fe160c54856c5c2"],
       ["report", "c10833e985b26e524cc9a0d0e469c3e651850fbe9dd6293d8f2854e692ef5622"],
       ["static-class", "b409b01c2e7177419cafbdbbdb6257b11fe32e37e9a46acd9595d09d1f817116"],
@@ -61,7 +67,7 @@ void test("all current SFC wires have the complete bounded transition and old pa
     sha256(
       fs.readFileSync(path.join(root, "tests/_fixtures/differential/linter/oracle-index.json")),
     ),
-    "30b412c524d9ce9bd775aec7cb9a74375c2d6c78773fafab7070177f508a5c64",
+    "937959e719140ee0fa62f39ce9819197a5dce6642b879c7ef6f2cec52a125e9a",
   );
   const expected: [string, ReturnType<typeof missing> | null][] = [
     ["current-api/ref-string-untyped", null],
@@ -130,6 +136,10 @@ void test("all current SFC wires have the complete bounded transition and old pa
     ["next-tick/invalid-arrow-expression-void-call-sfc", missing("script/valid-next-tick")],
     ["next-tick/nested-arrow-restores-statement-context-sfc", missing("script/valid-next-tick")],
   ];
+  // Fix-history cases (#6881) record their native outcome beside their wires.
+  expected.push(
+    ...(Object.entries(historyNativeReasons) as [string, ReturnType<typeof missing> | null][]),
+  );
   expected.sort((a, b) => a[0].localeCompare(b[0]));
   const actual = loaded.cases
     .filter(

@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h2-no-options-api-generated-color-tokens-6117",
+    history: "79b1cde7b13b20be4c3c861492fd861563324135",
+    source: "\n/**\n * Do not edit directly, this file was auto-generated.\n */\nexport default {\n  color: {\n    white: { value: \"#ffffff\" },\n    primary: { value: \"#4bc4cc\" },\n  },\n};\n",
+    filename: "tokens.js",
+    entry: "script",
+    rule: "script/no-options-api",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "tokens.js",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "tokens.js",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

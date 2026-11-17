@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h2-typed-props-template-first-frame-6327",
+    history: "78ca5df73fd6bb8a24bc06a921c03cdb667f49ab",
+    source: "<template>\n  <button @click=\"emit('edit')\">{{ props.label }}</button>\n</template>\n\n<script setup>\nconst props = defineProps(['label'])\nconst emit = defineEmits(['edit'])\n</script>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "type/require-typed-props",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "type/require-typed-props",
+                severity: Warning,
+                message: "Prop should have a type definition",
+                start: 112,
+                end: 134,
+                help: Some(
+                    "Use `defineProps<Props>()` or a runtime prop object with concrete constructor types.",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "type/require-typed-props",
+                    severity: Warning,
+                    message: "Prop should have a type definition",
+                    start: 112,
+                    end: 134,
+                    help: Some(
+                        "Use `defineProps<Props>()` or a runtime prop object with concrete constructor types.",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

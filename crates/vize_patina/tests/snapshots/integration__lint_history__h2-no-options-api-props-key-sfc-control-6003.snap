@@ -1,0 +1,71 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h2-no-options-api-props-key-sfc-control-6003",
+    history: "c46595eee7e99858cfc8f6bb19e87d2b98cb0ea1",
+    source: "<script>\nexport default {\n  props: {\n    value: String\n  }\n}\n</script>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "script/no-options-api",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "script/no-options-api",
+                severity: Error,
+                message: "Options API component declarations are not supported",
+                start: 24,
+                end: 60,
+                help: Some(
+                    "Use <script setup> with Composition API. Move props/emits to defineProps()/defineEmits(), lifecycle options to onMounted()/onUnmounted(), and component metadata to defineOptions() when needed.",
+                ),
+                labels: [
+                    Label {
+                        message: "props option (use defineProps())",
+                        start: 28,
+                        end: 33,
+                    },
+                ],
+                fix: None,
+            },
+        ],
+        error_count: 1,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "script/no-options-api",
+                    severity: Error,
+                    message: "Options API component declarations are not supported",
+                    start: 24,
+                    end: 60,
+                    help: Some(
+                        "Use <script setup> with Composition API. Move props/emits to defineProps()/defineEmits(), lifecycle options to onMounted()/onUnmounted(), and component metadata to defineOptions() when needed.",
+                    ),
+                    labels: [
+                        Label {
+                            message: "props option (use defineProps())",
+                            start: 28,
+                            end: 33,
+                        },
+                    ],
+                    fix: None,
+                },
+            ],
+            error_count: 1,
+            warning_count: 0,
+        },
+    ),
+}

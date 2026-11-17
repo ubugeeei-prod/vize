@@ -1,0 +1,107 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h1-no-src-attribute-top-level-blocks-6588",
+    history: "f787eff0d7965fe4a4552c52d6675d1877e8f59b",
+    source: "<template src=\"./view.html\"></template>\n<script src=\"./logic.ts\"></script>\n<style src=\"./theme.css\"></style>",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "vue/no-src-attribute",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 3,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/no-src-attribute",
+                severity: Warning,
+                message: "Avoid using src attribute on SFC blocks",
+                start: 0,
+                end: 28,
+                help: Some(
+                    "Keep all component code in the same .vue file for better maintainability",
+                ),
+                labels: [],
+                fix: None,
+            },
+            LintDiagnostic {
+                rule_name: "vue/no-src-attribute",
+                severity: Warning,
+                message: "Avoid using src attribute on SFC blocks",
+                start: 40,
+                end: 65,
+                help: Some(
+                    "Keep all component code in the same .vue file for better maintainability",
+                ),
+                labels: [],
+                fix: None,
+            },
+            LintDiagnostic {
+                rule_name: "vue/no-src-attribute",
+                severity: Warning,
+                message: "Avoid using src attribute on SFC blocks",
+                start: 75,
+                end: 100,
+                help: Some(
+                    "Keep all component code in the same .vue file for better maintainability",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 3,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/no-src-attribute",
+                    severity: Warning,
+                    message: "Avoid using src attribute on SFC blocks",
+                    start: 0,
+                    end: 28,
+                    help: Some(
+                        "Keep all component code in the same .vue file for better maintainability",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+                LintDiagnostic {
+                    rule_name: "vue/no-src-attribute",
+                    severity: Warning,
+                    message: "Avoid using src attribute on SFC blocks",
+                    start: 40,
+                    end: 65,
+                    help: Some(
+                        "Keep all component code in the same .vue file for better maintainability",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+                LintDiagnostic {
+                    rule_name: "vue/no-src-attribute",
+                    severity: Warning,
+                    message: "Avoid using src attribute on SFC blocks",
+                    start: 75,
+                    end: 100,
+                    help: Some(
+                        "Keep all component code in the same .vue file for better maintainability",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 3,
+        },
+    ),
+}

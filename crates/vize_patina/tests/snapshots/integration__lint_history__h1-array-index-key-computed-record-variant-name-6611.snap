@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h1-array-index-key-computed-record-variant-name-6611",
+    history: "d38c6f1c6964f5b268901320690bf0fcae509e5e",
+    source: "<script setup lang=\"ts\">\nimport { computed } from \"vue\";\nconst groupedResults = computed(() => {\n  const groups: Record<string, string[]> = {};\n  groups.variant = [\"result\"];\n  return groups;\n});\n</script>\n<template>\n  <div v-for=\"(variantResults, variantName) in groupedResults\" :key=\"variantName\">\n    {{ variantResults.length }}\n  </div>\n</template>",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "vue/no-array-index-key",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

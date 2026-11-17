@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h4-require-v-for-key-slot-outlet-5486",
+    history: "c7fed06c1db3bc7576ee61a185f50e33c9f3611f",
+    source: "<div><slot v-for=\"(item, index) in items\" name=\"item\" :item=\"item\" :index=\"index\" /></div>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/require-v-for-key",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

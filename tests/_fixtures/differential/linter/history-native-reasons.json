@@ -1,0 +1,524 @@
+{
+  "current-api/h1-array-index-key-computed-record-variant-name-6611": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-array-index-key\" }"
+  },
+  "current-api/h1-component-registration-async-alias-namespace-6598": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/require-component-registration\" }"
+  },
+  "current-api/h1-component-registration-async-missing-widget-6598": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/require-component-registration\" }"
+  },
+  "current-api/h1-component-registration-async-setup-6598": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/require-component-registration\" }"
+  },
+  "current-api/h1-named-enable-after-disable-all-script": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-mutating-props\" }"
+  },
+  "current-api/h1-nested-selectors-comment-between-compound-6522": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"css/prefer-nested-selectors\" }"
+  },
+  "current-api/h1-nested-selectors-comment-between-rules-6522": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"css/prefer-nested-selectors\" }"
+  },
+  "current-api/h1-nested-selectors-comment-in-media-6522": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"css/prefer-nested-selectors\" }"
+  },
+  "current-api/h1-nested-selectors-comment-inside-descendant-6522": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"css/prefer-nested-selectors\" }"
+  },
+  "current-api/h1-nested-selectors-comment-text-in-attribute-6522": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"css/prefer-nested-selectors\" }"
+  },
+  "current-api/h1-nested-selectors-commented-selector-list-6522": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"css/prefer-nested-selectors\" }"
+  },
+  "current-api/h1-nested-selectors-leading-comment-6522": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"css/prefer-nested-selectors\" }"
+  },
+  "current-api/h1-nested-selectors-list-with-descendant-6522": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"css/prefer-nested-selectors\" }"
+  },
+  "current-api/h1-nested-selectors-spaced-selector-list-6522": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"css/prefer-nested-selectors\" }"
+  },
+  "current-api/h1-no-src-attribute-script-inside-template-6588": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-src-attribute\" }"
+  },
+  "current-api/h1-no-src-attribute-top-level-blocks-6588": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-src-attribute\" }"
+  },
+  "current-api/h1-prefixed-eslint-disable-next-line-script-6527": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-mutating-props\" }"
+  },
+  "current-api/h1-prefixed-other-rule-does-not-suppress-6527": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-mutating-props\" }"
+  },
+  "current-api/h1-prefixed-oxlint-disable-next-line-script-6527": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-mutating-props\" }"
+  },
+  "current-api/h1-prefixed-region-enable-restores-script-rule-6527": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-mutating-props\" }"
+  },
+  "current-api/h1-prefixed-suppression-unrelated-comment-control-6527": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-mutating-props\" }"
+  },
+  "current-api/h1-setup-binding-bound-string-template-ref": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-unused-setup-bindings\" }"
+  },
+  "current-api/h1-setup-binding-custom-directive-read": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-unused-setup-bindings\" }"
+  },
+  "current-api/h1-setup-binding-static-template-ref": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-unused-setup-bindings\" }"
+  },
+  "current-api/h1-setup-binding-ts-lang-control": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-unused-setup-bindings\" }"
+  },
+  "current-api/h1-setup-binding-unknown-script-lang": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-unused-setup-bindings\" }"
+  },
+  "current-api/h1-setup-binding-unmatched-template-ref-control": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-unused-setup-bindings\" }"
+  },
+  "current-api/h1-unprefixed-oxlint-disable-next-line-script-6527": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-mutating-props\" }"
+  },
+  "current-api/h1-unused-components-type-string-name-6700": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-unused-components\" }"
+  },
+  "current-api/h1-unused-components-typeof-import-6690": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-unused-components\" }"
+  },
+  "current-api/h1-unused-properties-comments-strings-imports-6689": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-unused-properties\" }"
+  },
+  "current-api/h1-unused-properties-script-reference-6700": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-unused-properties\" }"
+  },
+  "current-api/h2-no-inline-style-prop-driven-binding-6018": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-inline-style\" }"
+  },
+  "current-api/h2-no-inline-style-static-style-control-6018": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-inline-style\" }"
+  },
+  "current-api/h2-no-options-api-color-tokens-in-sfc-control-6117": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"script/no-options-api\" }"
+  },
+  "current-api/h2-no-options-api-props-key-sfc-control-6003": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"script/no-options-api\" }"
+  },
+  "current-api/h2-no-v-bind-performance-message-6018": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"css/no-v-bind-performance\" }"
+  },
+  "current-api/h2-redundant-roles-disc-list-control-6006": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"a11y/no-redundant-roles\" }"
+  },
+  "current-api/h2-redundant-roles-markerless-list-6006": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"a11y/no-redundant-roles\" }"
+  },
+  "current-api/h2-typed-emits-crlf-multibyte-frame-6327": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
+  "current-api/h2-typed-emits-script-first-frame-6327": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
+  "current-api/h2-typed-emits-template-first-frame-6327": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
+  "current-api/h2-typed-props-classic-script-first-frame-6327": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
+  "current-api/h2-typed-props-crlf-multibyte-frame-6327": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
+  "current-api/h2-typed-props-template-first-frame-6327": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnsupportedTypeAwareMode",
+    "detail": "UnsupportedTypeAwareMode"
+  },
+  "current-api/h2-v-html-dynamic-tag-name-prop-sfc-6116": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-v-text-v-html-on-component\" }"
+  },
+  "current-api/h3-art-block-regular-sfc-5936": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/warn-custom-block\" }"
+  },
+  "current-api/h3-docs-block-control-5936": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/warn-custom-block\" }"
+  },
+  "current-api/h3-hardcoded-absolute-font-size-5989": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"css/no-hardcoded-values\" }"
+  },
+  "current-api/h3-hardcoded-relative-font-size-5989": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"css/no-hardcoded-values\" }"
+  },
+  "current-api/h3-hardcoded-transparent-color-5989": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"css/no-hardcoded-values\" }"
+  },
+  "current-api/h3-mutating-props-destructured-sort-5810": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-mutating-props\" }"
+  },
+  "current-api/h3-mutating-props-handler-calls-5810": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-mutating-props\" }"
+  },
+  "current-api/h3-mutating-props-handler-nonliteral-5810": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-mutating-props\" }"
+  },
+  "current-api/h3-mutating-props-multi-statement-5810": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-mutating-props\" }"
+  },
+  "current-api/h3-mutating-props-script-calls-5810": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-mutating-props\" }"
+  },
+  "current-api/h3-mutating-props-script-nonliteral-5810": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-mutating-props\" }"
+  },
+  "current-api/h3-mutating-props-v-model-span-5810": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-mutating-props\" }"
+  },
+  "current-api/h3-nested-selectors-already-nested-5888": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"css/prefer-nested-selectors\" }"
+  },
+  "current-api/h3-nested-selectors-declaration-boundary-5891": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"css/prefer-nested-selectors\" }"
+  },
+  "current-api/h3-nested-selectors-flat-reports-5888": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"css/prefer-nested-selectors\" }"
+  },
+  "current-api/h3-nested-selectors-nested-at-rule-5888": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"css/prefer-nested-selectors\" }"
+  },
+  "current-api/h3-nested-selectors-style-around-media-5891": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"css/prefer-nested-selectors\" }"
+  },
+  "current-api/h3-nested-selectors-supports-group-5891": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"css/prefer-nested-selectors\" }"
+  },
+  "current-api/h3-normal-script-import-unregistered-5837": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/require-component-registration\" }"
+  },
+  "current-api/h3-options-components-registration-5837": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/require-component-registration\" }"
+  },
+  "current-api/h3-split-script-plain-import-5995": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/require-component-registration\" }"
+  },
+  "current-api/h3-split-script-unimported-control-5995": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/require-component-registration\" }"
+  },
+  "current-api/h3-template-v-for-child-key-5782": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/require-v-for-key\" }"
+  },
+  "current-api/h3-template-v-for-without-key-5782": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/require-v-for-key\" }"
+  },
+  "current-api/h3-unused-components-alias-used-5809": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-unused-components\" }"
+  },
+  "current-api/h3-unused-components-library-registration-5809": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-unused-components\" }"
+  },
+  "current-api/h3-unused-components-plain-value-5809": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-unused-components\" }"
+  },
+  "current-api/h3-unused-components-public-alias-5809": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-unused-components\" }"
+  },
+  "current-api/h4-component-registration-other-widget-4953": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/require-component-registration\" }"
+  },
+  "current-api/h4-component-registration-self-define-options-4953": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/require-component-registration\" }"
+  },
+  "current-api/h4-component-registration-self-filename-4953": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/require-component-registration\" }"
+  },
+  "current-api/h4-musea-no-empty-variant-art-file-5599": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"musea/no-empty-variant\" }"
+  },
+  "current-api/h4-musea-require-title-art-file-5599": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"musea/require-title\" }"
+  },
+  "current-api/h4-musea-require-title-plain-vue-scoped-5599": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"musea/require-title\" }"
+  },
+  "current-api/h4-no-options-api-sfc-props-control-5638": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"script/no-options-api\" }"
+  },
+  "current-api/h4-v-for-destructured-value-before-used-index": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-unused-vars\" }"
+  },
+  "current-api/h4-v-for-leading-value-alias-index-used": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-unused-vars\" }"
+  },
+  "current-api/h4-v-for-trailing-index-unused-control": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-unused-vars\" }"
+  },
+  "current-api/h4-v-for-value-and-key-aliases-index-used": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-unused-vars\" }"
+  },
+  "current-api/h4-warn-custom-block-docs-control-5637": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/warn-custom-block\" }"
+  },
+  "current-api/h4-warn-custom-block-musea-art-file-5637": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/warn-custom-block\" }"
+  }
+}

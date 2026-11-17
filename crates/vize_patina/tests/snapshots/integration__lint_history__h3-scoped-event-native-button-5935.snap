@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h3-scoped-event-native-button-5935",
+    history: "ff0068d7bd38c348e656de517bc47e91e1d733c4",
+    source: "<button @playAudio=\"handlePlay\"></button>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/scoped-event-names",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

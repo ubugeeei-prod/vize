@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h3-normal-script-import-unregistered-5837",
+    history: "32d6e73ea4b9d78221e32d9b4d29789b716850a1",
+    source: "<script lang=\"ts\">\nimport Child from './Child.vue'\n\nexport default {}\n</script>\n\n<template>\n  <Child />\n</template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "vue/require-component-registration",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/require-component-registration",
+                severity: Warning,
+                message: "Component is used but not explicitly imported",
+                start: 95,
+                end: 100,
+                help: Some(
+                    "Import the component in <script setup> or register it in components option",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/require-component-registration",
+                    severity: Warning,
+                    message: "Component is used but not explicitly imported",
+                    start: 95,
+                    end: 100,
+                    help: Some(
+                        "Import the component in <script setup> or register it in components option",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

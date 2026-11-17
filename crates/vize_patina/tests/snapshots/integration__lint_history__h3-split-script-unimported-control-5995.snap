@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h3-split-script-unimported-control-5995",
+    history: "a865d26c4d60b8f4c3e6389e8e8775939273e991",
+    source: "<script setup lang=\"ts\">\nimport Child from './Child.vue'\n</script>\n\n<template>\n  <Child />\n  <MissingWidget />\n</template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "vue/require-component-registration",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/require-component-registration",
+                severity: Warning,
+                message: "Component is used but not explicitly imported",
+                start: 94,
+                end: 107,
+                help: Some(
+                    "Import the component in <script setup> or register it in components option",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/require-component-registration",
+                    severity: Warning,
+                    message: "Component is used but not explicitly imported",
+                    start: 94,
+                    end: 107,
+                    help: Some(
+                        "Import the component in <script setup> or register it in components option",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

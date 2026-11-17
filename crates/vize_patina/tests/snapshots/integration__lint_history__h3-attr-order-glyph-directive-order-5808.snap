@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h3-attr-order-glyph-directive-order-5808",
+    history: "aff98628b1dd52ee777bd75bda45c02e77334dc4",
+    source: "<div v-show=\"open\" v-once id=\"help\" v-tooltip:dialog=\"tip\" class=\"_button\"></div>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/attribute-order",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

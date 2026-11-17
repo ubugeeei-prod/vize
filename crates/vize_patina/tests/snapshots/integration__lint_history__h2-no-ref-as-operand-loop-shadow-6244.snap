@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h2-no-ref-as-operand-loop-shadow-6244",
+    history: "763a364ff54f7a3e4c636dd7471f59798471dac3",
+    source: "const options = ref([]);\nfor (let i = 10; i < 36; i++) { const value = i.toString(36) + i; options.value.push({ label: `Long Label: ${value}`, value }); }\nconst value = ref(['a']);\nconst broken = `value: ${value}`;",
+    filename: "History.ts",
+    entry: "script",
+    rule: "script/no-ref-as-operand",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.ts",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.ts",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

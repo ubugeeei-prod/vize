@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h1-definition-name-initialism-filename-6698",
+    history: "341fd1ba1d28391ed9973f2675727e27c3d3c731",
+    source: "<div>Content</div>",
+    filename: "UI.vue",
+    entry: "template",
+    rule: "vue/component-definition-name-casing",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "UI.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "UI.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

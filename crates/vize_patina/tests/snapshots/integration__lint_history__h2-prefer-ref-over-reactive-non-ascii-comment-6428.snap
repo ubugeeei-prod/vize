@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h2-prefer-ref-over-reactive-non-ascii-comment-6428",
+    history: "da9b2f5cf30e3bb6370ef03c2c2d6d145c56d289",
+    source: "const state = /*éé日*/reactive({ count: 0 })",
+    filename: "History.ts",
+    entry: "script",
+    rule: "script/prefer-ref-over-reactive",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.ts",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "script/prefer-ref-over-reactive",
+                severity: Warning,
+                message: "Consider using ref() instead of reactive() for simpler state management",
+                start: 25,
+                end: 33,
+                help: Some(
+                    "ref() is more explicit with `.value` access, easier to pass around, and avoids reactivity loss from destructuring. Use `const count = ref(0)` instead of `const state = reactive({ count: 0 })`",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.ts",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "script/prefer-ref-over-reactive",
+                    severity: Warning,
+                    message: "Consider using ref() instead of reactive() for simpler state management",
+                    start: 25,
+                    end: 33,
+                    help: Some(
+                        "ref() is more explicit with `.value` access, easier to pass around, and avoids reactivity loss from destructuring. Use `const count = ref(0)` instead of `const state = reactive({ count: 0 })`",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

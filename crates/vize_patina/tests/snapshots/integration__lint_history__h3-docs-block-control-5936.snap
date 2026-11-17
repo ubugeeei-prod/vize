@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h3-docs-block-control-5936",
+    history: "9e875327aac6330db8d0cd60f3f87671ceabe6b1",
+    source: "<template>\n  <div />\n</template>\n\n<docs>\n# MyComponent\n</docs>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "vue/warn-custom-block",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/warn-custom-block",
+                severity: Warning,
+                message: "Custom block detected. Ensure proper plugin configuration.",
+                start: 34,
+                end: 40,
+                help: Some(
+                    "Custom blocks require corresponding Vite/Webpack plugins to be processed",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/warn-custom-block",
+                    severity: Warning,
+                    message: "Custom block detected. Ensure proper plugin configuration.",
+                    start: 34,
+                    end: 40,
+                    help: Some(
+                        "Custom blocks require corresponding Vite/Webpack plugins to be processed",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

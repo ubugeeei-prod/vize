@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h1-no-src-attribute-html-document-markup-6588",
+    history: "f787eff0d7965fe4a4552c52d6675d1877e8f59b",
+    source: "<html><head>\n<script type=\"module\" src=\"/src/main.ts\"></script>\n<style src=\"/src/site.css\"></style>\n</head><body></body></html>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/no-src-attribute",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

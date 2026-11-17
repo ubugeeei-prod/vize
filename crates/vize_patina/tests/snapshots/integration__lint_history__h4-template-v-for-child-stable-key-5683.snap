@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h4-template-v-for-child-stable-key-5683",
+    history: "50709e6388be4f1a7e10b0f99be081f2e7971fdd",
+    source: "<template v-for=\"(item, index) in list\"><li :key=\"item.id\">{{ item }}</li></template>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/no-array-index-key",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

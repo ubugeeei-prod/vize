@@ -1,0 +1,71 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h4-no-ref-as-operand-template-literal-5618",
+    history: "79c638925d332e74637743766e00b40b82b8e768",
+    source: "import { ref, computed, shallowRef, toRef, customRef } from \"vue\";\nconst count = ref(0)\nconst text = `${count}`",
+    filename: "History.ts",
+    entry: "script",
+    rule: "script/no-ref-as-operand",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.ts",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "script/no-ref-as-operand",
+                severity: Error,
+                message: "'count' is a ref and must be unwrapped with `.value` here.",
+                start: 104,
+                end: 109,
+                help: Some(
+                    "A ref holds its value behind `.value`. Read it as `<name>.value` in this position; passing the ref itself (e.g. to `watch`) does not need `.value`.",
+                ),
+                labels: [
+                    Label {
+                        message: "ref used directly as an operand",
+                        start: 104,
+                        end: 109,
+                    },
+                ],
+                fix: None,
+            },
+        ],
+        error_count: 1,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.ts",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "script/no-ref-as-operand",
+                    severity: Error,
+                    message: "'count' is a ref and must be unwrapped with `.value` here.",
+                    start: 104,
+                    end: 109,
+                    help: Some(
+                        "A ref holds its value behind `.value`. Read it as `<name>.value` in this position; passing the ref itself (e.g. to `watch`) does not need `.value`.",
+                    ),
+                    labels: [
+                        Label {
+                            message: "ref used directly as an operand",
+                            start: 104,
+                            end: 109,
+                        },
+                    ],
+                    fix: None,
+                },
+            ],
+            error_count: 1,
+            warning_count: 0,
+        },
+    ),
+}

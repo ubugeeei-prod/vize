@@ -1,0 +1,259 @@
+commit	subject	state	cases	note
+eb8eb6b7fd5f9968081bba00bc9f56f23cfd2677	fix(patina): count static template refs as setup uses	oracle-pinned	current-api/h1-setup-binding-static-template-ref,current-api/h1-setup-binding-bound-string-template-ref,current-api/h1-setup-binding-unmatched-template-ref-control	-
+b06bdb398789d21f639c8f008666a97ea707cc12	fix(patina): guard unknown binding inputs and satisfy source checks	oracle-pinned	current-api/h1-setup-binding-unknown-script-lang,current-api/h1-setup-binding-custom-directive-read,current-api/h1-setup-binding-ts-lang-control	-
+303521fc781c39ccb22faf4bea2e1599a5c867d4	fix(patina): retain content-model diagnostic registry order	not-admitted	-	not expressible in the current-API cohort: `vue/permitted-contents` was migrated to a whole-document S2 (`MarkupRule::enter_document`) hook. After the migration it emitted its diagnostics after every legacy template rule, regardless of where it sits in the registry. This commit rest
+85cc05b89b5b16b8d302cd44ca124bab2d17c9ea	fix(patina): limit unsafe URL reports to active sinks (#6699)	oracle-pinned	current-api/h1-unsafe-url-dynamic-active-sinks-6699,current-api/h1-unsafe-url-static-image-component-6699,current-api/h1-unsafe-url-static-active-sinks-6699,current-api/h1-unsafe-url-image-srcset-6699	-
+094739fbcda25f3b4c41d03c72f04a6a1242aa2d	fix(patina): recognize script references in unused Vue rules (#6700)	oracle-pinned	current-api/h1-unused-components-typeof-import-6690,current-api/h1-unused-components-type-string-name-6700,current-api/h1-unused-properties-comments-strings-imports-6689,current-api/h1-unused-properties-script-reference-6700	-
+341fd1ba1d28391ed9973f2675727e27c3d3c731	fix(patina): accept uppercase PascalCase filenames (#6698)	oracle-pinned	current-api/h1-definition-name-initialism-filename-6698,current-api/h1-definition-name-single-letter-filename-6698,current-api/h1-definition-name-underscored-uppercase-filename-6698	-
+b731cd547528cdde8cbb1b8fb68d0470afa16ac7	fix(patina): let attribute-hyphenation accept camelCase aria/data props (#6662)	oracle-pinned	current-api/attribute-hyphenation-aria-data-camel-props,current-api/attribute-hyphenation-aria-data-native-attributes	-
+d38c6f1c6964f5b268901320690bf0fcae509e5e	fix(patina): allow named object keys in v-for lint (#6611)	oracle-pinned	current-api/h1-array-index-key-variant-name-6611,current-api/h1-array-index-key-computed-record-variant-name-6611,current-api/h1-array-index-key-array-literal-variant-name-6611,current-api/h1-array-index-key-item-name-alias-6611	-
+e354089098c1e364f4fadba4b621b9e8cebba6ea	fix(patina): recognize async setup components (#6598)	oracle-pinned	current-api/h1-component-registration-async-setup-6598,current-api/h1-component-registration-async-alias-namespace-6598,current-api/h1-component-registration-async-missing-widget-6598	-
+f787eff0d7965fe4a4552c52d6675d1877e8f59b	fix(patina): limit no-src-attribute to SFC blocks (#6588)	oracle-pinned	current-api/h1-no-src-attribute-top-level-blocks-6588,current-api/h1-no-src-attribute-script-inside-template-6588,current-api/h1-no-src-attribute-html-document-markup-6588	-
+17d7774f414d8a2139c67857ba2e19228e2790a1	fix(patina): preserve object keys in v-for index lint (#6589)	oracle-pinned	current-api/h1-array-index-key-object-key-alias-6589,current-api/h1-array-index-key-template-object-key-alias-6589,current-api/h1-array-index-key-object-literal-index-alias-6589,current-api/h1-array-index-key-array-literal-key-alias-6589,current-api/h1-array-index-key-unconventional-row-alias-6589	-
+c277331472c65dc895a73d04e82684e5591b7934	fix(patina): gate instance rule on Vapor context (#6547)	oracle-pinned	current-api/h1-get-current-instance-explicit-plain-script-6547	-
+e25a5db95c7a9dd5bb2c2fbde69a55e34405c9bb	fix(patina): scope lint comments and restore named rules	oracle-pinned	current-api/h1-eslint-marker-in-markup-not-comment,current-api/h1-oxlint-marker-in-markup-not-comment,current-api/h1-named-enable-after-disable-all-template,current-api/h1-named-enable-keeps-other-template-rules-disabled,current-api/h1-named-enable-after-disable-all-script	-
+025f3b777a04d24b0698a79a368bc44d19d84478	fix(ci): restore full workspace Clippy on main (#6534)	no-lint-behavior	-	The commit fixes Clippy lints only:
+c7c1d7c968a8528a945a57693ce092fd3872fd4d	fix(patina): treat expression arrow nextTick as returned (#6530)	oracle-pinned	next-tick/valid-arrow-expression-return-script,next-tick/valid-arrow-expression-return-sfc,next-tick/valid-parenthesized-arrow-expression-return-script,next-tick/valid-parenthesized-arrow-expression-return-sfc,next-tick/invalid-arrow-block-bare-call-script,next-tick/invalid-arrow-block-bare-call-sfc,next-tick/invalid-arrow-expression-void-call-script,next-tick/invalid-arrow-expression-void-call-sfc,next-tick/nested-arrow-restores-statement-context-script,next-tick/nested-arrow-restores-statement-context-sfc	-
+1d7ff3b2b05e1e93a68d37c291d1683e653df5ba	fix(patina): avoid duplicate image alt diagnostics	oracle-pinned	current-api/anchor-bound-image-alt,current-api/anchor-empty-image-alt	-
+6fa9d6b6bdadf302554e560acfcccf14d0ba0d9d	fix(patina): honor plugin-prefixed lint suppressions (#6527)	oracle-pinned	current-api/h1-prefixed-suppression-unrelated-comment-control-6527,current-api/h1-prefixed-eslint-disable-next-line-script-6527,current-api/h1-prefixed-oxlint-disable-next-line-script-6527,current-api/h1-unprefixed-oxlint-disable-next-line-script-6527,current-api/h1-prefixed-other-rule-does-not-suppress-6527,current-api/h1-prefixed-region-enable-restores-script-rule-6527,current-api/h1-prefixed-eslint-disable-next-line-template-6527,current-api/h1-prefixed-oxlint-disable-next-line-template-6527,current-api/h1-prefixed-suppression-template-control-6527	-
+efed4ad359ab6b704061890a3734b0bf1ba7f247	fix(patina): ignore comments in nested selector check (#6522)	oracle-pinned	current-api/h1-nested-selectors-leading-comment-6522,current-api/h1-nested-selectors-comment-between-rules-6522,current-api/h1-nested-selectors-commented-selector-list-6522,current-api/h1-nested-selectors-spaced-selector-list-6522,current-api/h1-nested-selectors-comment-in-media-6522,current-api/h1-nested-selectors-comment-between-compound-6522,current-api/h1-nested-selectors-comment-text-in-attribute-6522,current-api/h1-nested-selectors-comment-inside-descendant-6522,current-api/h1-nested-selectors-list-with-descendant-6522	-
+680a10f9538d7e293f29b4927b763bce002c09d1	fix(ci): use exact oracle for Patina Unicode diagnostic (#6466)	no-lint-behavior	-	The commit only changes a unit test. In `crates/vize_patina/src/diagnostic.rs` it replaces two loose `starts_with`/`ends_with` assertions with an exact `assert_eq!` on `formatting::render_markdown_to_ansi("理由: `v-model` を使う * é")` == `"理由: 
+e3d249a0aae5b4119289e31374394dbb0c61e00a	fix(patina): join the panic-free workspace lints (#6450)	no-lint-behavior	-	Workspace-lint hygiene across 122 files with no lint-observable behavior change:
+634f636969b451c805ad4874c0567d64c8e8f850	fix(patina): eliminate panic paths in css, musea, and opinionated rules (#6433)	oracle-pinned	current-api/static-class-empty-expression,current-api/static-class-utf8-fix-corrected	-
+da9b2f5cf30e3bb6370ef03c2c2d6d145c56d289	fix(patina): eliminate panic paths in script, vue, and ssr rules (#6428)	oracle-pinned	current-api/h2-prefer-ref-over-reactive-non-ascii-comment-6428,current-api/h2-require-function-return-type-non-ascii-arrow-6428	-
+816db89fa9a95d479894d690c7faa63f9276c962	fix(patina): resolve typed UI template bindings (#6411)	not-admitted	-	not expressible in the current-API cohort: Behavior: `type/no-unsafe-template-binding` (native type-aware lint):
+169210cd797d002e0459228e6bdf55fbc0d9b6b8	fix(davinci): clear remaining main validation failures (#6409)	not-admitted	-	not expressible in the current-API cohort: Patina behavior: in `type/no-unsafe-template-binding`, a shorthand binding (`:name`) and a bare event handler (`@click="onClick"`) map the same authored text to both a synthetic check identifier and the real expression. `generated_offset_fo
+3a2fd80a314ae1c644af30bed1419855b2133c1e	fix(davinci): restore post-integration type and contract checks (#6406)	not-admitted	-	not expressible in the current-API cohort: Patina behavior: the Corsa type-aware session places each virtual file at a path that matches its source directory (`corsa_session/paths.rs::virtual_file_path`, `open_virtual_project(content, filename)`). Relative imports (`./model.ts`) the
+beb84df46db611f6bf017fa6803af8cf84e6d59e	fix(davinci): clear the required checks from the integration squash (#6403)	not-admitted	-	not expressible in the current-API cohort: Patina behavior: this restores the native type-aware pipeline pieces lost in the integration squash:
+a75c629c5c948885f7ffe2216f044a1a6c5e2851	fix(davinci): validate slot spreads and reduce compiler overhead (#6398)	no-lint-behavior	-	Patina change: performance only. `markup/s2/binding.rs::walk_items` and `markup/s2/children.rs::walk_nodes` / `walk_chain` take `&mut dyn FnMut` instead of `impl FnMut`, and `walk_interpolation` gains `?Sized`. This cuts monomorphization; t
+78ca5df73fd6bb8a24bc06a921c03cdb667f49ab	fix(patina): report script-analysis ranges through the S0 script frame (FP-1) (#6327)	oracle-pinned	current-api/h2-typed-props-template-first-frame-6327,current-api/h2-typed-emits-template-first-frame-6327,current-api/h2-typed-emits-script-first-frame-6327,current-api/h2-typed-props-classic-script-first-frame-6327,current-api/h2-typed-props-crlf-multibyte-frame-6327,current-api/h2-typed-emits-crlf-multibyte-frame-6327	-
+763a364ff54f7a3e4c636dd7471f59798471dac3	fix(tooling): stabilize alpha app and editor validation (#6244)	oracle-pinned	current-api/h2-no-import-compiler-macros-line-comment-6244,current-api/h2-no-import-compiler-macros-string-literal-6244,current-api/h2-no-import-compiler-macros-alias-local-name-6244,current-api/h2-no-import-compiler-macros-prefix-name-6244,current-api/h2-no-import-compiler-macros-inline-comment-6244,current-api/h2-no-import-compiler-macros-other-module-6244,current-api/h2-no-import-compiler-macros-crlf-utf8-specifiers-6244,current-api/h2-no-ref-as-operand-loop-shadow-6244,current-api/h2-required-prop-default-destructure-default-6244,current-api/h2-required-prop-default-destructure-alias-6244,current-api/h2-required-prop-default-with-defaults-local-type-6244,current-api/h2-required-prop-default-exported-type-alias-6244,current-api/h2-required-prop-default-exported-interface-6244,current-api/h2-required-prop-default-local-interface-6244,current-api/h2-required-prop-default-intersection-alias-6244,current-api/h2-required-prop-default-optional-field-6244,current-api/h2-required-prop-default-no-default-6244,current-api/h2-required-prop-default-with-defaults-optional-6244,current-api/h2-required-prop-default-imported-type-6244,current-api/h2-required-prop-default-circular-alias-6244,current-api/h2-required-prop-default-local-function-shadow-6244,current-api/h2-required-prop-default-import-shadow-6244,current-api/h2-required-prop-default-destructured-shadow-6244,current-api/h2-required-prop-default-exported-function-shadow-6244,current-api/h2-required-prop-default-parameter-shadow-6244,current-api/h2-required-prop-default-crlf-utf8-6244	-
+79b1cde7b13b20be4c3c861492fd861563324135	fix(patina): allow generated token data objects (#6117)	oracle-pinned	current-api/h2-no-options-api-generated-color-tokens-6117,current-api/h2-no-options-api-color-tokens-in-sfc-control-6117	-
+312485ac2375f4e7cb99ecd4e085b28a35413add	fix(patina): allow tag-name dynamic component v-html (#6116)	oracle-pinned	current-api/h2-v-html-dynamic-tag-name-prop-sfc-6116,current-api/h2-v-html-dynamic-tag-name-identifier-6116,current-api/h2-v-html-dynamic-native-string-literal-6116,current-api/h2-v-html-dynamic-component-reference-6116,current-api/h2-v-html-dynamic-component-carrier-6116,current-api/h2-v-html-dynamic-component-string-literal-6116	-
+6e76dbcffcd8a1d70a9b8ab719924393c6299ee0	fix(patina): avoid component id-reference false positives	oracle-pinned	current-api/id-reference-component-anchor	-
+ac76ab3c0413db3d1b17a7f5c869420ca63e6d04	fix(patina): clarify prop-driven style policy (#6018)	oracle-pinned	current-api/h2-no-inline-style-prop-driven-binding-6018,current-api/h2-no-inline-style-static-style-control-6018,current-api/h2-no-v-bind-performance-message-6018	-
+bac60e33aa622b42b4adcf44103e4f11e5808d47	fix(a11y): allow accessible aria patterns (#6006)	oracle-pinned	current-api/h2-click-key-events-aria-hidden-backdrop-6006,current-api/h2-click-key-events-visible-backdrop-control-6006,current-api/h2-static-interactions-aria-hidden-backdrop-6006,current-api/h2-static-interactions-visible-backdrop-control-6006,current-api/h2-supports-focus-activedescendant-listbox-6006,current-api/h2-redundant-roles-markerless-list-6006,current-api/h2-redundant-roles-disc-list-control-6006	-
+c46595eee7e99858cfc8f6bb19e87d2b98cb0ea1	fix(patina): ignore plain module option-shaped objects (#6003)	oracle-pinned	current-api/h2-no-options-api-generated-breakpoint-tokens-6003,current-api/h2-no-options-api-plain-config-object-6003,current-api/h2-no-options-api-vue-import-plain-export-6003,current-api/h2-no-options-api-props-key-plain-module-6003,current-api/h2-no-options-api-props-key-sfc-control-6003,current-api/h2-no-options-api-define-component-control-6003	-
+a865d26c4d60b8f4c3e6389e8e8775939273e991	fix(patina): recognize split-script component imports (#5995)	oracle-pinned	current-api/h3-split-script-plain-import-5995,current-api/h3-split-script-unimported-control-5995	-
+3932cf3e2451adb066b600c51a63c1164228fe0b	fix(patina): keep opinionated rules satisfiable (#5989)	oracle-pinned	current-api/h3-inline-style-dynamic-binding-5989,current-api/h3-inline-style-component-static-only-5989,current-api/h3-unsafe-url-safe-call-5989,current-api/h3-unsafe-url-member-sanitizer-5989,current-api/h3-unsafe-url-factory-call-5989,current-api/h3-hardcoded-transparent-color-5989,current-api/h3-hardcoded-relative-font-size-5989,current-api/h3-hardcoded-absolute-font-size-5989	-
+309d1c239cc1608a77916cb5a78e961df08a9451	fix(a11y): honor negative tabindex for hidden focusables	oracle-pinned	current-api/h3-aria-hidden-input-tabindex-below-minus-one-5943,current-api/h3-aria-hidden-input-tabindex-minus-one-5943,current-api/h3-aria-hidden-nonnumeric-tabindex-5943,current-api/h3-aria-hidden-button-control-5943	-
+ff0068d7bd38c348e656de517bc47e91e1d733c4	fix(patina): ignore native scoped-event listeners	oracle-pinned	current-api/h3-scoped-event-native-li-5935,current-api/h3-scoped-event-native-button-5935,current-api/h3-scoped-event-dynamic-arg-5935,current-api/h3-scoped-event-component-5935	-
+9e875327aac6330db8d0cd60f3f87671ceabe6b1	fix(patina): allow musea art custom blocks	oracle-pinned	current-api/h3-art-block-regular-sfc-5936,current-api/h3-docs-block-control-5936	-
+244c8127bfa34850db8d18a067589b6bc0d1f7aa	fix(patina): respect scoped no-ref operands	oracle-pinned	current-api/h3-ref-operand-block-local-shadow-5981,current-api/h3-ref-operand-block-shadow-no-leak-5981,current-api/h3-ref-operand-catch-param-shadow-5981,current-api/h3-ref-operand-for-of-shadow-5981	-
+133506ede19070a057ecc59ab6feda8a94ecd40d	fix(patina): report the flat selectors prefer-nested-selectors is for (#5891)	oracle-pinned	current-api/h3-nested-selectors-nested-at-rule-5888,current-api/h3-nested-selectors-already-nested-5888,current-api/h3-nested-selectors-flat-reports-5888,current-api/h3-nested-selectors-declaration-boundary-5891,current-api/h3-nested-selectors-style-around-media-5891,current-api/h3-nested-selectors-supports-group-5891	-
+32d6e73ea4b9d78221e32d9b4d29789b716850a1	fix(patina): honor options components registration (#5837)	oracle-pinned	current-api/h3-options-components-registration-5837,current-api/h3-normal-script-import-unregistered-5837	-
+808ec8e08de8133fdf1b3f8ecf3156e2ec562aef	fix(patina): allow v-for slot templates without keys (#5822)	oracle-pinned	current-api/h3-v-for-dynamic-slot-forwarder-5822,current-api/h3-v-for-keyless-li-control-5822	-
+aff98628b1dd52ee777bd75bda45c02e77334dc4	fix(patina): align attribute order directives (#5808)	oracle-pinned	current-api/h3-attr-order-event-before-v-if-5808,current-api/h3-attr-order-class-before-v-if-5808,current-api/h3-attr-order-late-v-model-5808,current-api/h3-attr-order-late-custom-directive-5808,current-api/h3-attr-order-highest-category-5808,current-api/h3-attr-order-object-bind-reset-5808,current-api/h3-attr-order-glyph-directive-order-5808,current-api/h3-attr-order-glyph-slot-first-5808	-
+d6da3cd952e889f898e725a24b74cd88e7011a85	fix(patina): align no-mutating-props mutation parity (#5810)	oracle-pinned	current-api/h3-mutating-props-handler-calls-5810,current-api/h3-mutating-props-multi-statement-5810,current-api/h3-mutating-props-handler-nonliteral-5810,current-api/h3-mutating-props-script-calls-5810,current-api/h3-mutating-props-script-nonliteral-5810,current-api/h3-mutating-props-destructured-sort-5810,current-api/h3-mutating-props-v-model-span-5810	-
+a99e96bf140fb2b502d87c9bce8eab8d020e035f	fix(patina): align valid-v-model expression parity (#5811)	oracle-pinned	current-api/h3-v-model-conditional-range-5811,current-api/h3-v-model-argument-binary-range-5811,current-api/h3-v-model-cast-optional-object-5811,current-api/h3-v-model-optional-chain-control-5811	-
+feb2cc85a3f4c7bf34b110113e7d901ce11aab0d	fix(patina): align no-unused-components registration parity (#5809)	oracle-pinned	current-api/h3-unused-components-plain-value-5809,current-api/h3-unused-components-public-alias-5809,current-api/h3-unused-components-library-registration-5809,current-api/h3-unused-components-alias-used-5809	-
+2089ab120aa8e582b2297d96a59fccb3e6edff6b	fix(patina): allow target blank on relative links (#5789)	oracle-pinned	current-api/target-blank-relative-control,current-api/target-blank-external-control,current-api/target-blank-bound-href-control	-
+81562bb9954c906f6310cf4ce7297d83a1ed0183	fix(patina): report keyless template v-for (#5782)	oracle-pinned	current-api/h3-template-v-for-without-key-5782,current-api/h3-template-v-for-child-key-5782	-
+124ce6a49c6b0ea7b28297ab36686a9c998ec564	fix(patina): allow v-model on lowercase custom components	oracle-pinned	current-api/h3-v-model-lowercase-custom-component,current-api/h3-v-model-native-div-control	-
+f5da870f54760b9a96561c15ce9bbd18b9498d4a	fix(patina): avoid leading v-for alias false positives	oracle-pinned	current-api/h4-v-for-leading-value-alias-index-used,current-api/h4-v-for-value-and-key-aliases-index-used,current-api/h4-v-for-destructured-value-before-used-index,current-api/h4-v-for-trailing-index-unused-control	-
+5e8fab0bb41bd2cce48a7ef66a432418408f52cf	fix(patina): require noreferrer for target blank (#5705)	oracle-pinned	current-api/target-blank-noopener-only,current-api/target-blank-noreferrer-only,current-api/target-blank-complete-rel-control	-
+50709e6388be4f1a7e10b0f99be081f2e7971fdd	fix(patina): report template child index keys (#5683)	oracle-pinned	current-api/h4-template-v-for-child-index-key-5683,current-api/h4-template-v-for-child-stable-key-5683,current-api/h4-element-v-for-index-key-control-5683	-
+bea75982f417ea35b656fbe404f640653f462ee4	fix(patina): run configured musea design token lint (#5612)	not-admitted	-	not expressible in the current-API cohort: What changed: `linter.ruleOptions["musea/prefer-design-tokens"].tokens` is now parsed in the vize_carton config. The CLI auto-enables `musea/prefer-design-tokens` when tokens are configured, and both the CLI and LSP diagnostics thread the t
+a5ad19252514a317562827b26734eeb894cc78d5	fix(patina): allow musea art custom blocks (#5637)	oracle-pinned	current-api/h4-warn-custom-block-musea-art-file-5637,current-api/h4-warn-custom-block-docs-control-5637	-
+5b82f9f6edd3cdbeb88d28f4a1b797cb4f36b540	fix(patina): support casing rule options (#5642)	not-admitted	-	not expressible in the current-API cohort: What changed: `ruleOptions` for `vue/component-name-in-template-casing` (`casing`) and `script/custom-event-name-casing` (`casing: camelCase | kebab-case`) are now parsed in config and threaded through the CLI, LSP, NAPI, WASM and oxlint pl
+1994074b69425c277623f72f2945480f4522b43e	fix(patina): ignore plain default data objects (#5638)	oracle-pinned	current-api/h4-no-options-api-plain-i18n-catalog-5638,current-api/h4-no-options-api-plain-design-tokens-5638,current-api/h4-no-options-api-define-component-control-5638,current-api/h4-no-options-api-sfc-props-control-5638	-
+79c638925d332e74637743766e00b40b82b8e768	fix(patina): expand happy path lint preset (#5618)	oracle-pinned	current-api/h4-no-internal-imports-relative-vue-sfc-5618,current-api/h4-no-internal-imports-dist-control-5618,current-api/h4-no-ref-as-operand-template-literal-5618,current-api/h4-no-reserved-identifiers-private-instance-5618,current-api/h4-no-reserved-identifiers-props-control-5618	-
+18163b49c841d0d803bac07f6e5882f0b74fefb5	fix(patina): apply categories to css rules (#5604)	not-admitted	-	not expressible in the current-API cohort: What changed: `Linter::with_disabled_categories` and `with_category_severity_overrides` now also cover built-in `css/*` rules. `css/no-hardcoded-values` was added to the `style` category, and `css/no-display-none` and `css/require-font-disp
+8e773066b5b9f68358bc0055f0d657a6b5502a2a	fix(patina): route musea lint rules (#5599)	oracle-pinned	current-api/h4-musea-require-title-art-file-5599,current-api/h4-musea-no-empty-variant-art-file-5599,current-api/h4-musea-require-title-plain-vue-scoped-5599	-
+0f144725a32d58c65105704aa2f268409ff537a9	fix(patina): register legacy img alt rule opt-in (#5598)	oracle-pinned	current-api/h4-a11y-img-alt-explicit-opt-in-5598,current-api/h4-a11y-img-alt-with-alt-control-5598	-
+b07e35f2bcf51ff0eb44833263f2c4e0319f3e7a	fix(patina): align script preset metadata (#5597)	no-lint-behavior	-	What changed: preset metadata only. Script-rule preset membership is now derived from `BUILTIN_SCRIPT_RULES[].presets` instead of hand-kept name lists. `OPINIONATED_SCRIPT_PRESETS` no longer includes `nuxt`, and about 40 script rules moved 
+c7fed06c1db3bc7576ee61a185f50e33c9f3611f	fix(patina): ignore slot outlets for v-for key (#5486)	oracle-pinned	current-api/h4-require-v-for-key-slot-outlet-5486,current-api/h4-require-v-for-key-element-control-5486	-
+2d217a78a3d3d211bef547be230641a0c8857de4	fix(patina): avoid drop_non_drop in Davinci markup bench (#5247)	no-lint-behavior	-	What changed: only `crates/vize_patina/benches/davinci_markup.rs`, a benchmark restructured to satisfy clippy `drop_non_drop`. No linter source or rule changed.
+a5078784822d2a70087be20093b7d469fb63662c	fix(corsa): use JSON-RPC for TypeScript 7 runtimes	no-lint-behavior	-	What changed: the choice of protocol (async JSON-RPC vs msgpack) for the corsa/tsgo runtime moved into a shared `vize_carton::corsa_api_mode::uses_async_json_rpc_api`. TypeScript 7 native binaries and TypeScript package runtimes now use JSO
+b8df7bfef348537d51ee1cdbe4740ee6d77ec3d2	fix(patina): quiet four opinionated vue rule false positives (#4982)	oracle-pinned	current-api/h4-no-useless-mustaches-whitespace-literal-4954,current-api/h4-no-useless-mustaches-whitespace-escape-4954,current-api/h4-no-useless-mustaches-visible-content-4954,current-api/h4-component-registration-self-filename-4953,current-api/h4-component-registration-self-define-options-4953,current-api/h4-component-registration-other-widget-4953,current-api/h4-multiple-objects-class-template-literal-4982,current-api/h4-multiple-objects-class-string-brace-4982,current-api/h4-multiple-objects-class-call-argument-4982	-
+86d379248ef409b7a6b5c66ee12ec086c7013e0b	fix(patina): allow whitespace-only mustaches (#4991)	not-admitted	-	-
+b37d53cc62e902e089c176f23e9b5dce971003ce	fix(patina): count class array objects via parser (#4984)	not-admitted	-	-
+f5db9b1277106e7f6d4f2de68f314dc2c567bddb	fix(patina): match reserved component parity (#4979)	not-admitted	-	-
+1ab272292ebee370d20e0fc81dacc32aad7f4f95	fix(patina): align attribute order with formatter slots (#4978)	not-admitted	-	-
+e2673d1fe9de71850007f0857569ac1991599e68	fix(patina): match no-lone-template slot boundaries (#4977)	not-admitted	-	-
+80c4bfd6260bb2d891460a19a273ab5c28e5e8d4	fix(patina): align attribute hyphenation arguments (#4967)	not-admitted	-	-
+5481407dd2b2b643afa6ff0966133eeb31f7ec88	fix(patina): align deprecated slot attribute span (#4951)	not-admitted	-	-
+aa3c42f0b3830550d0c45f11a6b5875199a60b56	fix(patina): make vue/no-undefined-refs reachable from config (#4639)	not-admitted	-	-
+e31d2f597e213e3973b382447e042ee986e385eb	fix(patina): report setup prop mutations (#4518)	not-admitted	-	-
+e088c94a0b0ee197c2fa7b3963b0ab7383fd6f0b	fix(patina): report deprecated Vue 2 slot attributes (#4519)	not-admitted	-	-
+42423d527c4ca32f346e228cc4cd6ad4b925ab62	fix(patina): exempt model modifier props (#4515)	not-admitted	-	-
+80bbc1007488009374a829428df4c10064a5f56e	fix(patina): align four rules with eslint-plugin-vue (#4429)	not-admitted	-	-
+33e2b3b328a9d762c4853324f129579bccbb905a	fix(real-project): make element-plus lint evidence comparable (#4373)	not-admitted	-	-
+863a2d71b3d7b9cde17f87ac445cc7f3288e81c8	fix(patina): ignore unused components when a dynamic `is` binding is present (#4233)	not-admitted	-	-
+4a6d20cd9f5b59f80b3c9c1d3bafc97fbac72a09	fix(patina): match eslint-plugin-vue block order in vue/sfc-element-order (#4229)	not-admitted	-	-
+fb462face5f1d1827b70cd0a0167ce25f661e50a	fix(glyph): preserve template runtime semantics (#4123)	not-admitted	-	-
+9a40950d0c83f9de8a4a6603009683b1bd0187c8	fix(patina): respect Nuxt 2 config order (#3794)	not-admitted	-	-
+486322ff3d90fa7d484cd663a31795fe8c2fcd14	fix(patina): disable props shorthand for Vue 2 (#3792)	not-admitted	-	-
+01958d4bbb5c557439f6875c4680e475a133557c	fix(patina): ignore local non-Pinia store composables (#3789)	not-admitted	-	-
+7910a3c4b072b4f2652e4f4055fdc53a38119479	fix(patina): report actual Nuxt config inversions (#3790)	not-admitted	-	-
+8f1953c0637060efe9d1103f9426000a39238054	fix(patina): condense short help output (#3785)	not-admitted	-	-
+ca4fc84f2f6c75538e85a7c9d451984981035ae8	fix(patina): accept object-bound v-for keys (#3704)	not-admitted	-	-
+eb47ce97d6186183c36bec79eb65698e74bc17a4	fix(patina): classify built-in script rules for category severities (#3696)	not-admitted	-	-
+75c858f4b1b59bcf826279a9a44c3e62cbea3e78	fix(patina): scope NuxtLink guidance to Nuxt preset (#3692)	not-admitted	-	-
+8cfb25e08e87cb39861a20d87476a438f8b9791c	fix(patina): scope Nuxt config ordering by filename (#3695)	not-admitted	-	-
+44dc70401c994f42167ee4f250d49e63fe2ff3e2	fix(vitrine): write Nuxt lint fixes atomically (#3655)	not-admitted	-	-
+6707962c0d57b37109814d206c374c843ac3f389	fix(patina): anchor unused props at declarations (#3562)	not-admitted	-	-
+598cc56b57718b31f1d0783657ac0655fdb6b83a	fix(patina): give no-unused-properties a real template-usage signal (#3508)	not-admitted	-	-
+28d6ecece001dfd932f3ae6b6b430372dfd6da70	fix(patina): report prop mutation from a v-on inline handler (#3451)	not-admitted	-	-
+cdafbf8fab16d97a789506b0a7c42bcafd319392	fix(patina): pair prefer-use-template-ref with template ref attributes (#3406)	not-admitted	-	-
+3c6e6362133dbd59843f5b4e2630812a1ab23909	fix(patina): run analysis-dependent rules on recovered template parses (#3294) (#3310)	not-admitted	-	-
+882c9867aec8b9fff8ed24d46491c4d27eb8e81b	fix(patina): anchor no-v-html suppression to the element opening tag (#3270)	not-admitted	-	-
+a9077bff41f7a03cfeb0b90a0c32459fe047fe82	fix(patina): count template emit calls as used declarations (#3225)	not-admitted	-	-
+f4d79ab11a9c549b03db0a3500b2465fd3fd5c2e	fix(patina): avoid treating template root fragments as custom blocks (#3220)	not-admitted	-	-
+f310d1cfdcc86110c868c55265489e77f45f187d	fix(patina): allow v-html on dynamic native elements (#3221)	not-admitted	-	-
+e8b173840bda57cafb27efc5fe56f17893c29bce	fix(patina): allow type-only exports in script setup (#3215)	not-admitted	-	-
+e3bff76b535ff870a6adcbe9d545d7c29704e61d	fix(patina): preserve analyzed source file paths (#3159)	not-admitted	-	-
+43bb1309b29d42e5f9eef7707536581addd82bba	fix(patina): accept bound media accessible names (#3151)	not-admitted	-	-
+6f6e87780f37a3540f3391afd945b480f7ba9098	fix(patina): repair HTML quote diagnostics (#3027)	not-admitted	-	-
+0a47371487f584b71c27eb5d43250367c388ea2a	fix(lsp): refresh VitePress declaration diagnostics (#3017)	not-admitted	-	-
+d7e802f112ed90158582cee14d00d8b140607586	fix(docs): repair filter rule description (#2948)	not-admitted	-	-
+000f75dd9a574e58686c8010d17d9589ded64873	fix(patina): allow inherited router targets (#2929)	not-admitted	-	-
+7b11533440c8e2578aed1b4827852aa072d5655f	fix(patina): respect shadowed prop bindings (#2927)	not-admitted	-	-
+42d94169acaf32fb3f8d0ace0737245fa7d87cac	fix(patina): emit lsp diagnostics as one json array (#2700)	not-admitted	-	-
+91c890b28da5e98c7118b61dd5d47864fadc7c2e	fix(patina): honor builtin rule severity overrides (#2676)	not-admitted	-	-
+a30ae13559eebbd68275e21310f8f6bf0a577936	fix(patina): recognize template scope bindings	not-admitted	-	-
+193f4dfa825786bb989d276dc9c9b3736e565d64	fix(patina): allow dotted data table slots (#2541)	not-admitted	-	-
+6131d0c8fd1ec53b1c6b870ea039dd953e3d6f30	fix(patina): dedupe logical property diagnostics (#2534)	not-admitted	-	-
+a37bf2c5117909847c2ab6aaa99ccf098a274aac	fix(patina): type Vue 2 options props in templates (#2529)	not-admitted	-	-
+87ed46d9a282a5f3da07900c6c67e5a7b652a316	fix(canon): normalize boolean props and TSX setup refs (#2475)	not-admitted	-	-
+c2c1f09e4eb6309df91d920472be0b8068815be8	fix(patina): allow appear transition children (#2445)	not-admitted	-	-
+708d256022864e1295b7f543cb230fdfc82740cc	fix(patina): ignore keyed control-flow v-for children (#2444)	not-admitted	-	-
+989e1fb5452c0d6d750e4675e9ca9c12aa8027f7	fix(patina): require static router link to args (#2433)	not-admitted	-	-
+25de9546c221a885dc347ca8409ba420220db16e	fix(patina): require static Void Link href args (#2435)	not-admitted	-	-
+97b6305a45ded9478c75a2a11c73f7c87c17d339	fix(patina): ignore dynamic ARIA role args (#2429)	not-admitted	-	-
+87e2118d1d57174084ed6ad33d83e55d3e23133b	fix(patina): require static anchor href args (#2431)	not-admitted	-	-
+5ef7bab20f1f51840130d5c4a76f58a8cf9af798	fix(patina): ignore dynamic ARIA prop args (#2427)	not-admitted	-	-
+606cb3d4e6a83e552394d50b79ea6f7ea0f02141	fix(patina): ignore dynamic unsupported ARIA args (#2425)	not-admitted	-	-
+4bc6cc8edec50c20233bcb462a750758ffd6839b	fix(patina): ignore dynamic URL attr args (#2423)	not-admitted	-	-
+12ae02196ee5f667c994e6c8d5ca9a8ae7e9e74e	fix(patina): ignore dynamic href args for focusable checks (#2421)	not-admitted	-	-
+2a3b4771b244e6bf51fdf4012b2faa9588594cdf	fix(patina): ignore dynamic autofocus args (#2419)	not-admitted	-	-
+af1c53419871cfbba89a2e7a8b979dabf0994aa1	fix(patina): ignore dynamic accesskey args (#2415)	not-admitted	-	-
+a12211715ea770ecaa14322844608186a2deca36	fix(patina): ignore dynamic mouse event args (#2418)	not-admitted	-	-
+55e691572a159fd167bc40b672ad3692915ddc85	fix(patina): ignore dynamic events for static interactions (#2413)	not-admitted	-	-
+1f787dd7784b6aa6ba2eeae95fb82ea8643f0c1c	fix(patina): ignore dynamic click event args (#2411)	not-admitted	-	-
+c8ddb770705feb13ff294cdfb261b58afc559aa9	fix(patina): reject dynamic component is args (#2409)	not-admitted	-	-
+8ac20de86378ce9436ce4c076f4c6f205ff989cf	fix(patina): ignore dynamic args for v-on exact (#2407)	not-admitted	-	-
+33bb6ac018283643a4f7db036771078b160965ad	fix(patina): ignore dynamic args for class object arrays (#2405)	not-admitted	-	-
+3047068fcbdeca56987f813d5d28d0bf3d71cf08	fix(patina): ignore dynamic args for array index keys (#2402)	not-admitted	-	-
+86de1fae13b1d08d05f6fe8b1121b638c3dc70aa	fix(patina): ignore dynamic args for duplicate attrs (#2400)	not-admitted	-	-
+b1c80b1016d114eafdbbc4871d675bccd1575e30	fix(patina): ignore dynamic args for attribute hyphenation (#2398)	not-admitted	-	-
+5763bec28c6fc5af664b66fd4a56ad58c31b5249	fix(patina): ignore dynamic args for prop casing (#2396)	not-admitted	-	-
+f631674a16d5a2221b9950a1f07e7000a4fe658e	fix(patina): ignore dynamic args for true shorthand (#2394)	not-admitted	-	-
+ec1618d06acb9b4cec5112a988a79c2d0f025461	fix(patina): ignore dynamic v-bind names for static attrs (#2393)	not-admitted	-	-
+bc0c34d9ddec008b9b6e315b69dd6e9d0b87cd39	fix(patina): limit true shorthand on native attrs (#2390)	not-admitted	-	-
+3a5402af3e958ee5ac65391806d3ef68e575f6a5	fix(patina): ignore boolean attrs on custom components (#2388)	not-admitted	-	-
+09ea69f6aac94cd15307eff77bb1f3769f067422	fix(patina): canon dynamic component prop casing (#2386)	not-admitted	-	-
+70dc7a4b944e3b61dd48b32b2906660c169f464e	fix(patina): reject misplaced slot templates (#2382)	not-admitted	-	-
+80535d5d35cde88757fe4d2dc9c995842e625598	fix(patina): detect component-like v-html targets (#2384)	not-admitted	-	-
+0cfe613fec9ce07c967f5dfb8194e32d3efa3b1f	fix(patina): reject dynamic v-bind shorthand (#2380)	not-admitted	-	-
+f80646b62c35f77ab09309eb353d8091c733129d	fix(patina): reject malformed v-model expressions (#2378)	not-admitted	-	-
+e3f4ffc87c09d7c3f09fba98ec1bdc849c19bbd3	fix(patina): report static bound duplicates (#2377)	not-admitted	-	-
+80392e1e9d308778886e41577ecb87c421219f92	fix(patina): reject trailing v-model tokens (#2374)	not-admitted	-	-
+730b25076c78a48cb961e98339e6fb5c7f3fa0f9	fix(patina): validate v-for key variables (#2372)	not-admitted	-	-
+c896e5d5926653cf5d35f82b51f8765db6e03acd	fix(patina): validate v-model assignment targets (#2370)	not-admitted	-	-
+94433e1c8b9a1a4439dae086b67fb5976ff351fe	fix(patina): reject mixed owner default slots (#2368)	not-admitted	-	-
+09588226e0a8d674c58e337aa6e6df245fc8be00	fix(patina): reject nested v-memo in v-for (#2366)	not-admitted	-	-
+60410f2071e97fb3c6be9167f93dac9b3a8b6aa4	fix(patina): reject invalid v-memo expressions (#2364)	not-admitted	-	-
+5fd7dd6c4c591823793b6a4f3ac252add6a6dae9	fix(patina): reject v-if arguments (#2362)	not-admitted	-	-
+94f3c8740f1760247d3375319676862f8201585b	fix(patina): reject v-show arguments (#2360)	not-admitted	-	-
+75d90bff8c6ae9b0b7101c47e047eb483d0a5970	fix(patina): reject file input v-model (#2358)	not-admitted	-	-
+c5c4cff29e18cf0090a59d0280981dc1418a644c	fix(patina): reject native v-model arguments (#2356)	not-admitted	-	-
+72c604cf72607947743d4826d586907618d44c72	fix(patina): reject unsupported v-bind modifiers (#2354)	not-admitted	-	-
+4e85e71d12cacef33938d44ad16eacc1b83a429a	fix(patina): report duplicate child v-slot templates (#2352)	not-admitted	-	-
+3d7dad4e1bc71f1b5d361604067c8681c07a542e	fix(patina): reject keyword v-on handlers (#2350)	not-admitted	-	-
+932ffa43042aa1b113d0a1abb6906cb57ce946e0	fix(patina): report named component v-slot (#2348)	not-admitted	-	-
+c04e878b4c87422584774ad9e5eb94c4c7e39482	fix(patina): report invalid standalone v-else chains (#2326)	not-admitted	-	-
+db2702cc53c2309099d9823e7a5a325b6ab85ecc	fix(patina): deduplicate logical property diagnostics (#2325)	not-admitted	-	-
+07f3dc732a0fef5d0ff55cc3d0f9466ddbf36ad3	fix(patina)!: use crate-private Nuxt types to revert accidental semver-breaking changes from #2279 (#2280)	not-admitted	-	-
+4e87438f8607e3c57fe971fea95f3c5f34351529	fix(patina): gate script/no-next-tick off opinionated preset for non-Vapor projects (#2278)	not-admitted	-	-
+c3aaf4cf821adbf6b6ec1199dd2d7ac63b6bc3a3	fix(patina): skip prefer-nested-selectors on already-nested rules and top-level at-rules (#2274)	not-admitted	-	-
+1b95785805fcd21cd310211b4349c03d80526554	fix(patina): skip vue/warn-custom-block on standalone HTML files (#2275)	not-admitted	-	-
+6ef405f3e5f37930b67be2bdc1060355a5a8b1fc	fix(patina): allow v-* Vuetify tags in Nuxt preset casing/self-closing rules (#2279)	not-admitted	-	-
+c638c6d53bdcb1884ae22615dce0c1f9efe59c44	fix(patina): ignore duplicate ids across v-if branches (#2206)	not-admitted	-	-
+3ae2400342b54eedb50d6fcf41d4b8503eb3e788	fix(patina): keep vapor script rules out of nuxt preset (#2161)	not-admitted	-	-
+bed9279f902e1d118b9061a6e0ddad5c08989f14	fix: align lint and formatter behavior (#2135)	not-admitted	-	-
+f9fa82f7867e3a9373a8d0ee30162c6947c7c113	fix(patina): gate compat preset rules (#2079)	oracle-pinned	current-api/slot-compat-vue2,current-api/shorthand-compat-vue2,current-api/slot-compat-vue3,current-api/shorthand-compat-vue3,current-api/next-tick-unspecified,current-api/next-tick-disabled	-
+54ba6d4e2b5b8330f31cde3da403df6645972a8f	fix: address lint migration and scoped CSS regressions (#2057)	not-admitted	-	-
+9de757df210718288199bc67857a51ba48535622	fix(lint): respect Vue 2 v-for template keys (#2007)	not-admitted	-	-
+038809588c2395c9c612d2d1feb684fbabde8d3b	fix(cli): support plain script lint and fmt inputs (#1963)	not-admitted	-	-
+13c37f96aac8b8482febbfc9c1673f9b75762e69	fix(lint): allow options api in nuxt preset (#1922)	not-admitted	-	-
+708f157d7897b4d6b682a33d3365fe3045315b55	fix(patina): avoid reserved filename component false positives (#1781)	not-admitted	-	-
+a2e2c83261035e346dce270d442b54bf171cb3a3	fix(patina): mark v-for aliases used from template refs (#1782)	not-admitted	-	-
+026b42b911d407bc279df127f0d4fae792134732	fix(patina): exempt components from vue/permitted-contents required-children check (#1749)	not-admitted	-	-
+97e9daf20570b2e4c8b1bb19233b8f62094c6220	fix(patina): accept <slot> and directive-bearing <template> roots in vue/valid-template-root (#1753)	not-admitted	-	-
+9f05a990e9ce8e69a22f675ffade7e0b111baa31	fix(patina): scope vue/no-unsafe-url data/action/formaction to their HTML elements (#1744)	not-admitted	-	-
+498c5f93e058cfa0050f5e308fda5373b682fbbe	fix: address minor release blockers	not-admitted	-	-
+82871f814f0f541b2de8dd5feaaa86ea80bd38e3	fix(patina): don't run no-top-level-ref-in-script on <script setup> (#1682)	not-admitted	-	-
+49e5531b2c7e9e77647d35c87e795134e5205477	fix(croquis): reduce reactivity loss false positives (#1515)	not-admitted	-	-
+482fcc3e2b2bb121f299d630b721cf6f79e09d82	fix(patina): ignore </template> inside quoted attribute values during fast scan (#1477)	not-admitted	-	-
+d25a08e75574647c281a589dace0285502217519	fix(patina): skip HTML comments when scanning for </template> (#1435)	not-admitted	-	-
+2c9665f76d5c4b568552addc0e6c174a2a14f164	fix(patina): replace prefer-computed watch text scanning with AST checks (#1406)	not-admitted	-	-
+51d09e41414254b548603dbfcdc9330c17d82a58	fix(patina): avoid mid-character slice panic in no_hydration_mismatch (#1353)	not-admitted	-	-
+9ea1ce34e85021bba45a4cc2d0a42f6b35dd085b	fix(vize_patina): suppress template diagnostics with directives (#1281)	not-admitted	-	-
+09b8fdc398da2633551c3286282ad75b0bd805f4	fix(vize_patina): report lint columns as characters (#1273)	not-admitted	-	-
+141f0c2cb96d21650981784621809350838dde6e	fix(vize_patina): avoid hydration mismatch substring false positives (#1268)	not-admitted	-	-
+aba8bbc807ba6d51e00fa864f60efbd7848e19b4	fix(vize_patina): report malformed sfc blocks (#1258)	not-admitted	-	-
+cf2fe2e5408c530a0e673e872203b4b132d27b3c	fix(linter): surface template parser errors (#1250)	not-admitted	-	-
+ee4d5841cea2c1299f2e03f8eb0cf6f739d2feef	fix(vize_patina): detect bound aria on unsupported elements (#1251)	not-admitted	-	-
+6cde87fcedbaecccb2ec56515fc14a3356abaef7	fix(vize_patina): accept bound aria labels on headings (#1249)	not-admitted	-	-
+c3f6780cb9f7642503137ccf78797b3faf215725	fix(vize_patina): detect bound autofocus and accesskey (#1247)	not-admitted	-	-
+84c7f8636c5c8b8c925649adfb27d0f520cd028e	fix(vize_patina): require href for anchor focusability (#1242)	not-admitted	-	-
+dc52682b235458680031a94b38c3b8887660db69	fix(vize_patina): avoid hydration mismatch literal false positives (#1234)	not-admitted	-	-
+0833b4aebd5b9301e09eb8eba17c2755e706db4a	fix(vize_patina): validate literal bound aria roles (#1233)	not-admitted	-	-
+0e5ba5d3d68ca5837d2e3d362c98e569d33f77ff	fix(vize_patina): allow universal SSR globals (#1232)	not-admitted	-	-
+de4c8f62d16e7bd403b946de03569b0ebbd35003	fix(vize_patina): check bound literal roles for required aria props (#1231)	not-admitted	-	-
+dcd2e2404bfeedc00311819f54d910bd789a6e0a	fix(vize_patina): count LSP columns as UTF-16 (#1228)	not-admitted	-	-
+ede02546da36ed08f1f4dc23bfc168e3e5923581	fix(parser): report stricter HTML parse errors (#1065)	not-admitted	-	-
+6ff5652a8a49c3d74b2212131b73166fbc8ec7a4	fix: align Vue codegen for VOICEVOX (#1014)	not-admitted	-	-
+b67e1cfb4ab8ece295482e19a8c6d20a539e6900	fix(patina): suppression applies to whole line; identifier-aware v-if-with-v-for (#982)	not-admitted	-	-
+99b523f535135d1a39039ee1462fdc524131a63b	fix(linter): avoid dynamic component import false positives (#940)	not-admitted	-	-
+695e0c4777a0a3dcbbde8a2b48f6b81cc942cb6e	fix(lint): skip Nuxt route filename casing (#939)	not-admitted	-	-
+04cebe5bcb34c1b1fac1501b42137dafaf9b4a5d	fix(lint): recognize script setup component imports (#938)	not-admitted	-	-
+3b0703d70f2ab448176c05138930e4498a0030d1	fix(a11y): handle bound landmark labels (#933)	not-admitted	-	-
+6db3e13ad90095cc455a8ab688911439bcc633c9	fix(linter): respect anchor transparent content (#900)	not-admitted	-	-
+1c7163dbaf4f2962b0fc16208066ac75a4ca45a4	fix(linter): report v-for unused aliases at source span (#895)	not-admitted	-	-
+079cf826dd496921ca96f5758c73eff7236719b8	fix(linter): map intrinsic member components (#892)	not-admitted	-	-
+58607afb8b9ec32db1f3a62f67745a142f660951	fix(patina): interpolate lint message placeholders (#864)	not-admitted	-	-
+012025bef45ee97abf3b49566456fdde3e84bc1f	fix: allow hash-only href bindings (#843)	not-admitted	-	-
+b3d39da0ab4e8ec21050bde9d57fece3cb968e34	fix: treat slots as a11y content (#842)	not-admitted	-	-
+4beda71d71dedfc15d0ea8eacb4a587f43ecd606	fix: inspect sfc style blocks for scoped style (#838)	not-admitted	-	-
+b8e40e4539afeaa71cea7ccec2a3e4c89aab1ed4	fix: ignore slot props in unsafe url rule (#837)	not-admitted	-	-
+09dcb8ef5e86811e56f4446cf52d046ff1fdcf49	fix: clean up stale patina sessions (#660)	not-admitted	-	-
+5d607f8a4e63993a2bb0f4533498c4410b85148b	fix(patina): use source-aware LSP diagnostics in emit() (#619)	not-admitted	-	-
+84ad16ca4d099ecd589934d7bd7916d5d9ffad53	fix: stabilize Vue virtual typing and Corsa workspaces (#618)	not-admitted	-	-
+2e884f7b2df816c675f1473bba681b4429a4f458	fix: improve Vue virtual typing defaults (#617)	not-admitted	-	-
+dab7edca29ef07b68ef81e11b19e3bf9ad8bc900	fix: resolve options api component bindings	not-admitted	-	-
+fd5589b8889df8277e3c18ba187b77af2674879f	fix: honor linter rules from shared config (#568)	not-admitted	-	-
+da92410ed425fa7c0bcd156a3fdd2d984086650e	fix: resolve non-experimental issue backlog (#554)	not-admitted	-	-
+1c06f394e375fba398a19140529372b817ffe689	fix(tsgo): honor configured Corsa runtime paths	not-admitted	-	-
+4a4b66ef95fd9bfa149c356a44761493c0148b68	fix: stabilize ci after main merges	not-admitted	-	-
+731cce813a41207950923d89099ac2c87047c0b6	fix: reduce unsafe and panic paths (#347)	oracle-pinned	current-api/v-for-no-separator,current-api/v-for-separator-control	-
+b10876e9137243be48f9405e44b88003c1906f49	fix(type-aware): preserve destructured v-for bindings	not-admitted	-	-
+2afeaa4e063e10e6067d2b880b24f5e1143af415	fix(patina): ignore incomplete template type probes	not-admitted	-	-
+cd25c7802352d6600b86200bc084473a8391b7ae	fix(type-aware): preserve v-if template narrowing (#333)	not-admitted	-	-
+48255cc2d80c424508fa9ee2ca6146ad3e117f97	fix(type-aware): preserve typed v-for aliases (#332)	not-admitted	-	-
+f957ca660096160dd02f2287cb30d7dcc2ad66d9	fix(type-aware): collect event statement callees (#329)	not-admitted	-	-
+24ebf1eb748c5a12fc9c195f1b9ae6614d27ae59	fix(lint): catch dynamic props v-model mutations (#327)	not-admitted	-	-
+4c1c93ee7525b48ed843fefd51d26fd1a129cb24	fix(lint): avoid local props v-model false positives (#326)	not-admitted	-	-
+994ae6314c7e3f2e3804b45fb956b1fff1e42cec	fix(type-aware): probe computed template bindings (#325)	not-admitted	-	-
+c8a041c44c2414d0f61caba529e40c2142081710	fix(lint): catch nested prop v-model mutations (#323)	not-admitted	-	-
+c2cac772c40ca0afde5feccf95316df3ec59c963	fix(type-aware): catch computed event promise handlers (#322)	not-admitted	-	-
+23f89a90b37d842ada3beda89a18e2123c3843ff	fix(type-aware): catch optional event promise handlers	not-admitted	-	-
+a1fee61d1433ad5d0883df597c95751135aabefd	fix(type-aware): catch member event promise handlers	not-admitted	-	-
+af80c0587d81378a1bee60641f4d9eaf9fe9940e	fix(patina): tighten floating promise handlers	not-admitted	-	-
+f6f692cad55299e155289c85964a17028c49c3f4	fix(lint): match options api component aliases (#303)	not-admitted	-	-
+f623a794514477804c2865aeccd7133cafd7cd26	fix(lint): allow v-model on dynamic component (#304)	not-admitted	-	-
+43524c6d1546ed6b0936b5592ae58bf1c7c82ace	fix(a11y): skip custom component interactions (#300)	not-admitted	-	-
+ad7960fa26c4b623efc4549f0e26b6712f0e598e	fix(lint): harden fast template extraction (#292)	not-admitted	-	-
+066d77fce0c90be9cad9eb65c19224f353f9ce3d	fix(type-aware): catch event block floating promises (#278)	not-admitted	-	-
+895d6df1661c9c2abdbbd5d97fe18579de0f184a	fix(a11y): normalize javascript anchor hrefs (#275)	not-admitted	-	-
+b91e4496aed6014da9c382cbc49f09e7c2e18827	fix(ssr): skip regex literal browser names (#273)	not-admitted	-	-
+448dd6f24cba2118bd65f434373d3f544f58f6e2	fix(ssr): allow direct typeof browser guards (#272)	not-admitted	-	-
+f6ccb0e08a9d5a1024b7c07c2ad13f0989098cee	fix(security): flag static unsafe urls (#268)	not-admitted	-	-
+63740292834a0123c5652de933b74780a581586e	fix(type): detect nested template promises (#259)	not-admitted	-	-
+f2c345a5e7039f055235ae2786bd1b63020aea73	fix(type): flag promises handled only by finally (#257)	not-admitted	-	-
+fe73fb98ef484335cb1e2292eabad1827c1d23e6	fix(type): detect floating promises in control flow (#256)	not-admitted	-	-
+bd6f865e267fd4a637a9f486740538cec9aebdfe	fix(a11y): honor bound literal input types (#255)	not-admitted	-	-
+f5d043a84ccefe91a0aaf1b9c292437c73cf38b4	fix: correct Vue prop source spans (#208)	not-admitted	-	-
+3a87d25f029f731be72705a19787743a996640eb	fix: improve e2e and tooling readiness (#204)	oracle-pinned	report/original-line-columns,report/unicode-crlf-columns,report/source-map-order-and-missing,report/no-findings-output-control	-
+7496807db91087009eafff88432ff3f0ed3717cd	fix: misskey parse error (#85)	not-admitted	-	-

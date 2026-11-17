@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h4-a11y-img-alt-with-alt-control-5598",
+    history: "0f144725a32d58c65105704aa2f268409ff537a9",
+    source: "<img src=\"/photo.jpg\" alt=\"Photo\" />",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/a11y-img-alt",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

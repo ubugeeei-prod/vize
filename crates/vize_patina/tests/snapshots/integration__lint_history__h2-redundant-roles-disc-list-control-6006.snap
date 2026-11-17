@@ -1,0 +1,61 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h2-redundant-roles-disc-list-control-6006",
+    history: "bac60e33aa622b42b4adcf44103e4f11e5808d47",
+    source: "<template>\n  <ul class=\"plain\" role=\"list\"><li>a</li></ul>\n</template>\n<style scoped>\n.plain { list-style: disc; }\n</style>",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "a11y/no-redundant-roles",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 1,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "a11y/no-redundant-roles",
+                severity: Warning,
+                message: "<ul> has an implicit role of 'list'. The role attribute is redundant",
+                start: 13,
+                end: 43,
+                help: Some(
+                    "Remove the redundant role attribute. The element already has this role implicitly through its HTML semantics",
+                ),
+                labels: [],
+                fix: Some(
+                    Fix {
+                        message: "Remove the redundant role attribute. The element already has this role implicitly through its HTML semantics",
+                        edits: [
+                            TextEdit {
+                                start: 30,
+                                end: 42,
+                                new_text: "",
+                            },
+                        ],
+                    },
+                ),
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [
+        Application {
+            diagnostic_index: 0,
+            source: "<template>\n  <ul class=\"plain\"><li>a</li></ul>\n</template>\n<style scoped>\n.plain { list-style: disc; }\n</style>",
+            result: LintResult {
+                filename: "History.vue",
+                diagnostics: [],
+                error_count: 0,
+                warning_count: 0,
+            },
+        },
+    ],
+    unchanged_requery: None,
+}

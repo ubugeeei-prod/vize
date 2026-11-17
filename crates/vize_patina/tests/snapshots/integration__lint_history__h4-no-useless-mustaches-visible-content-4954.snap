@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h4-no-useless-mustaches-visible-content-4954",
+    history: "b8df7bfef348537d51ee1cdbe4740ee6d77ec3d2",
+    source: "<div>{{ ' x ' }}</div>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/no-useless-mustaches",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/no-useless-mustaches",
+                severity: Warning,
+                message: "Interpolating a constant string is unnecessary; write it as static text",
+                start: 5,
+                end: 16,
+                help: Some(
+                    "Replace the mustache with the plain text ({{ 'x' }} becomes x).",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/no-useless-mustaches",
+                    severity: Warning,
+                    message: "Interpolating a constant string is unnecessary; write it as static text",
+                    start: 5,
+                    end: 16,
+                    help: Some(
+                        "Replace the mustache with the plain text ({{ 'x' }} becomes x).",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

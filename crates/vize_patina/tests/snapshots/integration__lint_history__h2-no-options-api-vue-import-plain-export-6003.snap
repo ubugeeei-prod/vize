@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h2-no-options-api-vue-import-plain-export-6003",
+    history: "c46595eee7e99858cfc8f6bb19e87d2b98cb0ea1",
+    source: "\nimport { h } from 'vue'\n\nexport default {\n  customOption: true\n}\n",
+    filename: "History.ts",
+    entry: "script",
+    rule: "script/no-options-api",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.ts",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.ts",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

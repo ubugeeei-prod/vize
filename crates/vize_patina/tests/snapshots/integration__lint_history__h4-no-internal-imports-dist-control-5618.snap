@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h4-no-internal-imports-dist-control-5618",
+    history: "79c638925d332e74637743766e00b40b82b8e768",
+    source: "import { ref } from 'vue/dist/vue.esm-bundler.js'",
+    filename: "History.ts",
+    entry: "script",
+    rule: "script/no-internal-imports",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.ts",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "script/no-internal-imports",
+                severity: Error,
+                message: "Importing from internal Vue module is forbidden",
+                start: 21,
+                end: 48,
+                help: Some(
+                    "Import from 'vue' directly instead of internal modules",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 1,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.ts",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "script/no-internal-imports",
+                    severity: Error,
+                    message: "Importing from internal Vue module is forbidden",
+                    start: 21,
+                    end: 48,
+                    help: Some(
+                        "Import from 'vue' directly instead of internal modules",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 1,
+            warning_count: 0,
+        },
+    ),
+}

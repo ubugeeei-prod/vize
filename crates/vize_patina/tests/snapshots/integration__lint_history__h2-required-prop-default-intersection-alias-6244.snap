@@ -1,0 +1,81 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h2-required-prop-default-intersection-alias-6244",
+    history: "763a364ff54f7a3e4c636dd7471f59798471dac3",
+    source: "type Base = { value: number }; type Props = Base & { extra?: string }; const { value = 1 } = defineProps<Props>();",
+    filename: "History.ts",
+    entry: "script",
+    rule: "script/no-required-prop-with-default",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.ts",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "script/no-required-prop-with-default",
+                severity: Error,
+                message: "Prop 'value' is required but also declares a default",
+                start: 14,
+                end: 27,
+                help: Some(
+                    "Make the typed prop optional with `?` or remove the default.",
+                ),
+                labels: [
+                    Label {
+                        message: "marked required here",
+                        start: 14,
+                        end: 19,
+                    },
+                    Label {
+                        message: "default declared here",
+                        start: 87,
+                        end: 88,
+                    },
+                ],
+                fix: None,
+            },
+        ],
+        error_count: 1,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.ts",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "script/no-required-prop-with-default",
+                    severity: Error,
+                    message: "Prop 'value' is required but also declares a default",
+                    start: 14,
+                    end: 27,
+                    help: Some(
+                        "Make the typed prop optional with `?` or remove the default.",
+                    ),
+                    labels: [
+                        Label {
+                            message: "marked required here",
+                            start: 14,
+                            end: 19,
+                        },
+                        Label {
+                            message: "default declared here",
+                            start: 87,
+                            end: 88,
+                        },
+                    ],
+                    fix: None,
+                },
+            ],
+            error_count: 1,
+            warning_count: 0,
+        },
+    ),
+}

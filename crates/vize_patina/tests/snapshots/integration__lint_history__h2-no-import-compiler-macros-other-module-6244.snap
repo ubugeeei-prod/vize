@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h2-no-import-compiler-macros-other-module-6244",
+    history: "763a364ff54f7a3e4c636dd7471f59798471dac3",
+    source: "import { defineProps } from 'elsewhere'; import { computed } from 'vue';",
+    filename: "History.ts",
+    entry: "script",
+    rule: "script/no-import-compiler-macros",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.ts",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.ts",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

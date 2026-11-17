@@ -1,0 +1,83 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h2-no-import-compiler-macros-crlf-utf8-specifiers-6244",
+    history: "763a364ff54f7a3e4c636dd7471f59798471dac3",
+    source: "const emoji = '😀';\r\nimport {\r\n  computed,\r\n  defineProps as props,\r\n  defineEmits\r\n} from 'vue';",
+    filename: "History.ts",
+    entry: "script",
+    rule: "script/no-import-compiler-macros",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 2,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.ts",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "script/no-import-compiler-macros",
+                severity: Error,
+                message: "Do not import 'defineProps' - compiler macros are automatically available in <script setup>",
+                start: 48,
+                end: 59,
+                help: Some(
+                    "Remove the macro from the import statement. Compiler macros are auto-imported.",
+                ),
+                labels: [],
+                fix: None,
+            },
+            LintDiagnostic {
+                rule_name: "script/no-import-compiler-macros",
+                severity: Error,
+                message: "Do not import 'defineEmits' - compiler macros are automatically available in <script setup>",
+                start: 73,
+                end: 84,
+                help: Some(
+                    "Remove the macro from the import statement. Compiler macros are auto-imported.",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 2,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.ts",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "script/no-import-compiler-macros",
+                    severity: Error,
+                    message: "Do not import 'defineProps' - compiler macros are automatically available in <script setup>",
+                    start: 48,
+                    end: 59,
+                    help: Some(
+                        "Remove the macro from the import statement. Compiler macros are auto-imported.",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+                LintDiagnostic {
+                    rule_name: "script/no-import-compiler-macros",
+                    severity: Error,
+                    message: "Do not import 'defineEmits' - compiler macros are automatically available in <script setup>",
+                    start: 73,
+                    end: 84,
+                    help: Some(
+                        "Remove the macro from the import statement. Compiler macros are auto-imported.",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 2,
+            warning_count: 0,
+        },
+    ),
+}

@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h2-no-inline-style-prop-driven-binding-6018",
+    history: "ac76ab3c0413db3d1b17a7f5c869420ca63e6d04",
+    source: "<template>\n  <span :class=\"['icon', `icon-${size}`]\" :style=\"color ? { color } : undefined\" />\n</template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "vue/no-inline-style",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h3-split-script-plain-import-5995",
+    history: "a865d26c4d60b8f4c3e6389e8e8775939273e991",
+    source: "<script lang=\"ts\">\nimport LoadingBar from './LoadingBar.vue'\n\nexport const helper = () => 1\n</script>\n\n<script setup lang=\"ts\">\nconst shown = true\n</script>\n\n<template>\n  <div v-if=\"shown\">\n    <LoadingBar />\n  </div>\n</template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "vue/require-component-registration",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

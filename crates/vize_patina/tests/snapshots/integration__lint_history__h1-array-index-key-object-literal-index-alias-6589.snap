@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h1-array-index-key-object-literal-index-alias-6589",
+    history: "17d7774f414d8a2139c67857ba2e19228e2790a1",
+    source: "<li v-for=\"(value, index) in { a: 1 }\" :key=\"index\">{{ value }}</li>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/no-array-index-key",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

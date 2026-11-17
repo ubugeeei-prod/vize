@@ -45,11 +45,11 @@ void test("shared linter corpus retains every complete actual public observation
       legacyMatches: plannedCases,
       legacyFailures: 0,
       baselineDrift: 0,
-      nativeUnsupported: plannedCases - 20,
+      nativeUnsupported: plannedCases - 23,
       nativeFailures: 0,
-      nativeHandled: 20,
-      nativeEquivalent: 20,
-      pairedComparisons: 20,
+      nativeHandled: 23,
+      nativeEquivalent: 23,
+      pairedComparisons: 23,
     },
     JSON.stringify(report.rows, null, 2),
   );
@@ -67,9 +67,9 @@ void test("shared linter corpus retains every complete actual public observation
     fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, `${markdown}\n`);
   assert.deepEqual(acceptance.total, {
     planned: plannedCases,
-    nativeHandled: 20,
-    nativeEquivalent: 20,
-    unsupported: plannedCases - 20,
+    nativeHandled: 23,
+    nativeEquivalent: 23,
+    unsupported: plannedCases - 23,
     legacyBacked: 0,
     unverified: 0,
   });
@@ -93,6 +93,10 @@ void test("shared linter corpus retains every complete actual public observation
             "linter/current-api/placeholder-label-unrequired-empty-control",
             "linter/current-api/placeholder-label-required-empty-control",
             "linter/current-api/placeholder-label-required-nonempty-report",
+            // Fix-history cases the native component-name rule handles (#6881).
+            "linter/current-api/h1-definition-name-initialism-filename-6698",
+            "linter/current-api/h1-definition-name-single-letter-filename-6698",
+            "linter/current-api/h1-definition-name-underscored-uppercase-filename-6698",
           ].includes(fixture.id),
       )
       .map((fixture: any) => fixture.id)

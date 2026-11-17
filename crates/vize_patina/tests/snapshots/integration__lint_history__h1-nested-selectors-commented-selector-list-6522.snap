@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h1-nested-selectors-commented-selector-list-6522",
+    history: "efed4ad359ab6b704061890a3734b0bf1ba7f247",
+    source: "<style>/* x */ .a, .b { color: red; }</style>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "css/prefer-nested-selectors",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

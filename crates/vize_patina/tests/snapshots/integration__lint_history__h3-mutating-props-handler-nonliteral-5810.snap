@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h3-mutating-props-handler-nonliteral-5810",
+    history: "d6da3cd952e889f898e725a24b74cd88e7011a85",
+    source: "<script setup lang=\"ts\">\nconst props = defineProps<{ items: string[]; options: Record<string, boolean> }>();\nconst method = 'push';\nconst assign = 'assign';\n</script>\n\n<template>\n  <button @click=\"props.items[method]('x'); Object[assign](props.options, { enabled: true })\">go</button>\n</template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "vue/no-mutating-props",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

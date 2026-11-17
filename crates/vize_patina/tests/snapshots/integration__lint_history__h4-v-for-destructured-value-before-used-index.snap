@@ -1,0 +1,83 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h4-v-for-destructured-value-before-used-index",
+    history: "f5da870f54760b9a96561c15ce9bbd18b9498d4a",
+    source: "<template>\n  <div v-for=\"({ id, label }, index) in items\" :key=\"index\">{{ index }}</div>\n</template>",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "vue/no-unused-vars",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 2,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/no-unused-vars",
+                severity: Warning,
+                message: "Variable 'label' is defined by v-for but never used",
+                start: 32,
+                end: 37,
+                help: Some(
+                    "If the variable is intentionally unused, prefix it with underscore: _item",
+                ),
+                labels: [],
+                fix: None,
+            },
+            LintDiagnostic {
+                rule_name: "vue/no-unused-vars",
+                severity: Warning,
+                message: "Variable 'id' is defined by v-for but never used",
+                start: 28,
+                end: 30,
+                help: Some(
+                    "If the variable is intentionally unused, prefix it with underscore: _item",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 2,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/no-unused-vars",
+                    severity: Warning,
+                    message: "Variable 'label' is defined by v-for but never used",
+                    start: 32,
+                    end: 37,
+                    help: Some(
+                        "If the variable is intentionally unused, prefix it with underscore: _item",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+                LintDiagnostic {
+                    rule_name: "vue/no-unused-vars",
+                    severity: Warning,
+                    message: "Variable 'id' is defined by v-for but never used",
+                    start: 28,
+                    end: 30,
+                    help: Some(
+                        "If the variable is intentionally unused, prefix it with underscore: _item",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 2,
+        },
+    ),
+}

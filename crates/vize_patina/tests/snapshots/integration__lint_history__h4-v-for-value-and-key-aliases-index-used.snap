@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h4-v-for-value-and-key-aliases-index-used",
+    history: "f5da870f54760b9a96561c15ce9bbd18b9498d4a",
+    source: "<template>\n  <div v-for=\"(entry, key, index) in items\" :key=\"index\">{{ index }}</div>\n</template>",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "vue/no-unused-vars",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

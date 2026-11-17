@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h4-no-reserved-identifiers-props-control-5618",
+    history: "79c638925d332e74637743766e00b40b82b8e768",
+    source: "const __props = {}",
+    filename: "History.ts",
+    entry: "script",
+    rule: "script/no-reserved-identifiers",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.ts",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "script/no-reserved-identifiers",
+                severity: Error,
+                message: "Vue compiler reserved identifier should not be used",
+                start: 6,
+                end: 13,
+                help: Some(
+                    "Choose a different variable name to avoid conflicts with Vue internals",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 1,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.ts",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "script/no-reserved-identifiers",
+                    severity: Error,
+                    message: "Vue compiler reserved identifier should not be used",
+                    start: 6,
+                    end: 13,
+                    help: Some(
+                        "Choose a different variable name to avoid conflicts with Vue internals",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 1,
+            warning_count: 0,
+        },
+    ),
+}

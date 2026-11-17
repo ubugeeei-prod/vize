@@ -1,0 +1,131 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h1-unsafe-url-static-active-sinks-6699",
+    history: "85cc05b89b5b16b8d302cd44ca124bab2d17c9ea",
+    source: "<div><a href=\"javascript:alert(1)\">link</a><iframe src=\"javascript:alert(1)\" /><form action=\"javascript:alert(1)\" /><object data=\"data:text/html,<script>alert(1)</script>\" /></div>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/no-unsafe-url",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 4,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/no-unsafe-url",
+                severity: Warning,
+                message: "Static URL attribute uses a potentially unsafe protocol or active data URL",
+                start: 8,
+                end: 34,
+                help: Some(
+                    "Use http(s), relative URLs, or a non-executable data URL. Avoid javascript:, vbscript:, text/html data URLs, and SVG data URLs",
+                ),
+                labels: [],
+                fix: None,
+            },
+            LintDiagnostic {
+                rule_name: "vue/no-unsafe-url",
+                severity: Warning,
+                message: "Static URL attribute uses a potentially unsafe protocol or active data URL",
+                start: 51,
+                end: 76,
+                help: Some(
+                    "Use http(s), relative URLs, or a non-executable data URL. Avoid javascript:, vbscript:, text/html data URLs, and SVG data URLs",
+                ),
+                labels: [],
+                fix: None,
+            },
+            LintDiagnostic {
+                rule_name: "vue/no-unsafe-url",
+                severity: Warning,
+                message: "Static URL attribute uses a potentially unsafe protocol or active data URL",
+                start: 85,
+                end: 113,
+                help: Some(
+                    "Use http(s), relative URLs, or a non-executable data URL. Avoid javascript:, vbscript:, text/html data URLs, and SVG data URLs",
+                ),
+                labels: [],
+                fix: None,
+            },
+            LintDiagnostic {
+                rule_name: "vue/no-unsafe-url",
+                severity: Warning,
+                message: "Static URL attribute uses a potentially unsafe protocol or active data URL",
+                start: 124,
+                end: 171,
+                help: Some(
+                    "Use http(s), relative URLs, or a non-executable data URL. Avoid javascript:, vbscript:, text/html data URLs, and SVG data URLs",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 4,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/no-unsafe-url",
+                    severity: Warning,
+                    message: "Static URL attribute uses a potentially unsafe protocol or active data URL",
+                    start: 8,
+                    end: 34,
+                    help: Some(
+                        "Use http(s), relative URLs, or a non-executable data URL. Avoid javascript:, vbscript:, text/html data URLs, and SVG data URLs",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+                LintDiagnostic {
+                    rule_name: "vue/no-unsafe-url",
+                    severity: Warning,
+                    message: "Static URL attribute uses a potentially unsafe protocol or active data URL",
+                    start: 51,
+                    end: 76,
+                    help: Some(
+                        "Use http(s), relative URLs, or a non-executable data URL. Avoid javascript:, vbscript:, text/html data URLs, and SVG data URLs",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+                LintDiagnostic {
+                    rule_name: "vue/no-unsafe-url",
+                    severity: Warning,
+                    message: "Static URL attribute uses a potentially unsafe protocol or active data URL",
+                    start: 85,
+                    end: 113,
+                    help: Some(
+                        "Use http(s), relative URLs, or a non-executable data URL. Avoid javascript:, vbscript:, text/html data URLs, and SVG data URLs",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+                LintDiagnostic {
+                    rule_name: "vue/no-unsafe-url",
+                    severity: Warning,
+                    message: "Static URL attribute uses a potentially unsafe protocol or active data URL",
+                    start: 124,
+                    end: 171,
+                    help: Some(
+                        "Use http(s), relative URLs, or a non-executable data URL. Avoid javascript:, vbscript:, text/html data URLs, and SVG data URLs",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 4,
+        },
+    ),
+}

@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h2-no-options-api-plain-config-object-6003",
+    history: "c46595eee7e99858cfc8f6bb19e87d2b98cb0ea1",
+    source: "\nconst config = {\n  ssg: { siteName: \"docs\" },\n  data: { items: [] }\n};\n\nexport default config;\n",
+    filename: "site.config.ts",
+    entry: "script",
+    rule: "script/no-options-api",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "site.config.ts",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "site.config.ts",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

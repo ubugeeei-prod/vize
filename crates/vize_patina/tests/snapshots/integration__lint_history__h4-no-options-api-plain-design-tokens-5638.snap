@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h4-no-options-api-plain-design-tokens-5638",
+    history: "1994074b69425c277623f72f2945480f4522b43e",
+    source: "\nexport default {\n  breakpoint: {\n    s: { value: 600 },\n    m: { value: 1200 }\n  }\n}\n",
+    filename: "History.ts",
+    entry: "script",
+    rule: "script/no-options-api",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.ts",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.ts",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}
