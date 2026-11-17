@@ -910,7 +910,7 @@
         "files": ["LICENSE.md"]
       },
       "vueGlobs": ["packages/vuetify/**/*.vue", "packages/docs/src/**/*.vue"],
-      "tsconfig": "tsconfig.json",
+      "tsconfig": "packages/vuetify/tsconfig.json",
       "coverage": [
         "compiler",
         "linter",
@@ -996,6 +996,26 @@
         "packageManager": "pnpm",
         "packageManagerVersion": "10.26.1",
         "lockfile": "pnpm-lock.yaml",
+        "targets": [
+          {
+            "id": "lib",
+            "tsconfig": "packages/vuetify/tsconfig.json",
+            "corpusGlobs": ["packages/vuetify/src/**/*.vue", "packages/vuetify/dev/**/*.vue"],
+            "configurationOnly": {
+              "reason": "The root tsconfig sets downlevelIteration, reported as removed by tsgo 7 (TS5102) and deprecated by vue-tsc 6 (TS5101)",
+              "issue": 13300
+            }
+          },
+          {
+            "id": "docs",
+            "tsconfig": "packages/docs/tsconfig.json",
+            "corpusGlobs": ["packages/docs/src/**/*.vue"],
+            "configurationOnly": {
+              "reason": "vue-tsc stops at TS1005 in 4 docs SFCs; projected vuetify sources need their own @/ paths",
+              "issue": 13300
+            }
+          }
+        ],
         "hangTimeoutMs": 2400000,
         "maxFalsePositiveRatio": 0.05,
         "maxFalseNegativeRatio": 0.05
@@ -2728,7 +2748,7 @@
       "revision": "9c364b482e5621a1d38b50e8610d2fb974457e6e",
       "license": { "spdx": "Apache-2.0", "files": ["LICENSE"] },
       "vueGlobs": ["**/*.vue"],
-      "tsconfig": "jsconfig.json",
+      "tsconfig": "src/renderer/tsconfig.json",
       "coverage": ["compiler","linter","typechecker","formatter","syntax-highlighter","lsp"],
       "diff": "e2e-vrt",
       "typecheckPerformance": {
@@ -2737,6 +2757,18 @@
         "packageManager": "npm",
         "packageManagerVersion": "11.9.0",
         "lockfile": "package-lock.json",
+        "targets": [
+          {
+            "id": "renderer",
+            "tsconfig": "src/renderer/tsconfig.json",
+            "corpusGlobs": ["src/renderer/**/*.vue"]
+          },
+          {
+            "id": "lyric",
+            "tsconfig": "src/renderer-lyric/tsconfig.json",
+            "corpusGlobs": ["src/renderer-lyric/**/*.vue"]
+          }
+        ],
         "hangTimeoutMs": 2400000,
         "maxFalsePositiveRatio": 0.05,
         "maxFalseNegativeRatio": 0.05
