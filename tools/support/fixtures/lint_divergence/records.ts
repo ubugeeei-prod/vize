@@ -257,6 +257,13 @@ export function baselineIntentionalReason(
     const reason = unusedEmitUpstreamMiss(finding.message, source);
     if (reason !== null) return reason;
   }
+  if (
+    finding.ruleId === "vue/no-unused-emit-declarations" &&
+    source !== undefined &&
+    source !== null &&
+    setupCallsGetCurrentInstance(source)
+  )
+    return "Patina treats every declared event as possibly emitted once <script setup> calls getCurrentInstance(): the instance's emit can be called from code the rule cannot inspect. eslint-plugin-vue still reports the events it does not see emitted.";
   if (finding.ruleId === "vue/v-if-else-key") {
     const tag = /repeated component '([^']+)'/u.exec(finding.message)?.[1];
     if (tag !== undefined && vueSvgTags.has(tag))
@@ -841,6 +848,20 @@ function registeredComponentIsProvablyAbsent(finding: LintRecord, source: string
   const executable = template.replace(/<!--[\s\S]*?-->/gu, "");
   if (/<component\b/iu.test(executable)) return false;
   return !new RegExp(`<\\s*(?:${escaped}|${escapedKebab})(?=[\\s/>])`, "iu").test(executable);
+}
+
+/** A `getCurrentInstance()` call in the `<script setup>` block, outside comments. */
+function setupCallsGetCurrentInstance(source: string): boolean {
+  for (const open of source.matchAll(/<script\b([^>]*)>/gu)) {
+    if (!/\ssetup(?:[\s=/]|$)/u.test(open[1] ?? "")) continue;
+    const start = (open.index ?? 0) + open[0].length;
+    const end = source.indexOf("</script>", start);
+    const body = source
+      .slice(start, end < 0 ? source.length : end)
+      .replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*/gu, " ");
+    if (/(?<![\w$.])getCurrentInstance\s*\(/u.test(body)) return true;
+  }
+  return false;
 }
 
 function hasModuleAndSetupScripts(source: string): boolean {
