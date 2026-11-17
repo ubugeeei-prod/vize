@@ -3,6 +3,7 @@
 mod checks;
 mod context;
 mod deprecated;
+mod enums;
 use super::binding::{self, Binding, Instantiated};
 use super::{Key, Pending};
 use crate::linter::corsa_session::{Literal, Span};
@@ -17,6 +18,7 @@ const RETURN_THIS: &str = "prefer-return-this-type";
 const DEPRECATED: &str = "no-deprecated";
 const ACCESSOR_PAIRS: &str = "related-getter-setter-pairs";
 const TYPE_ARGUMENTS: &str = "no-unnecessary-type-arguments";
+const ENUM_ASSIGNMENT: &str = "no-unsafe-enum-assignment";
 
 /// A node and the key it sits under in its parent.
 type Ancestor<'a> = (&'a Value, &'a str);
@@ -119,6 +121,13 @@ fn static_kind(kind: &str) -> Option<&'static str> {
         "TSTypeParameterInstantiation" => "TSTypeParameterInstantiation",
         "MethodDefinition" => "MethodDefinition",
         "TSMethodSignature" => "TSMethodSignature",
+        "VariableDeclarator" => "VariableDeclarator",
+        "AssignmentExpression" => "AssignmentExpression",
+        "AssignmentPattern" => "AssignmentPattern",
+        "PropertyDefinition" => "PropertyDefinition",
+        "AccessorProperty" => "AccessorProperty",
+        "ReturnStatement" => "ReturnStatement",
+        "TaggedTemplateExpression" => "TaggedTemplateExpression",
         _ => return None,
     })
 }
@@ -209,6 +218,9 @@ impl<'v> Walk<'_, '_, 'v> {
                 "Property" => self.deprecated_key(value, ancestors),
                 _ => {}
             }
+        }
+        if self.enabled(ENUM_ASSIGNMENT) {
+            self.enum_assignment(value, ancestors);
         }
         match kind(value) {
             "TSAsExpression" | "TSTypeAssertion" if self.enabled(ASSERTION) => {
