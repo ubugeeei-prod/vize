@@ -300,16 +300,14 @@ pub fn run(mut args: LintArgs) {
 
     let output_start = Instant::now();
     if render_details {
-        let lint_results: Vec<_> = profile!(
-            "cli.lint.output.clone_results",
-            results.iter().map(|(_, _, _, r)| r).cloned().collect()
-        );
-        let sources: Vec<_> = profile!(
-            "cli.lint.output.clone_sources",
+        // Rendering is the last reader of the retained results, so they move
+        // into the formatter's shape instead of being copied.
+        let (lint_results, sources): (Vec<_>, Vec<_>) = profile!(
+            "cli.lint.output.split_results",
             results
-                .iter()
-                .map(|(_, f, s, _)| (f.clone(), vize_l0::String::from(s.as_str())))
-                .collect()
+                .into_iter()
+                .map(|(_, filename, source, result)| (result, (filename, source)))
+                .unzip()
         );
 
         let output = profile!(
