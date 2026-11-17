@@ -90,13 +90,11 @@ fn element_slot_child_type<'a, 'template>(
         ElementType::Component => None,
         // A non-native tag no binding owns is the global component Vue
         // resolves for it under any spelling, or else a custom element.
-        ElementType::Element if element.ns == Namespace::Html && !is_native_tag(element.tag) => {
-            Some(global_component_type(
-                element.tag,
-                |component: &str| String::from(component),
-                native_element_type(element.tag, element.ns),
-            ))
-        }
+        ElementType::Element if !is_native_tag(element.tag) => Some(global_component_type(
+            element.tag,
+            |component: &str| String::from(component),
+            native_element_type(element.tag, element.ns),
+        )),
         ElementType::Element => Some(String::from(native_element_type(element.tag, element.ns))),
         ElementType::Slot | ElementType::Template => None,
     }

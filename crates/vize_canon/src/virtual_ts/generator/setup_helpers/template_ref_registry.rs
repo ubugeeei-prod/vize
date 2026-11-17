@@ -71,7 +71,7 @@ enum RegisteredRefKind {
     /// A non-native tag no binding owns (`<my-child>`): the global component
     /// Vue resolves it to, or the custom element it renders when
     /// `GlobalComponents` registers none of its spellings.
-    GlobalOrElement { tag: String },
+    GlobalOrElement { tag: String, is_svg: bool },
 }
 
 /// The rendered `$TemplateRefs` object-type body, or `None` when no
@@ -136,12 +136,13 @@ pub(super) fn template_ref_registry(
                 body.push_str(" | ");
                 dollar_body.push_str(" | ");
             }
-            if let RegisteredRefKind::GlobalOrElement { tag } = &entry.kind {
+            if let RegisteredRefKind::GlobalOrElement { tag, is_svg } = &entry.kind {
                 includes_dom_element = true;
                 includes_component = true;
                 let shared = record.shares_refs();
                 // Only the component branch is `null` until mounted.
-                let target = |nullable: bool| global_ref_target(tag.as_str(), shared, nullable);
+                let target =
+                    |nullable: bool| global_ref_target(tag.as_str(), *is_svg, shared, nullable);
                 if entry.in_v_for {
                     append!(body, "{}[]", target(true));
                     append!(dollar_body, "{}[]", target(true));
@@ -306,9 +307,10 @@ fn collect_element(
                             start: element.loc.span.start,
                         })
                         .unwrap_or_else(|| {
-                            if element.ns == Namespace::Html && !is_native_tag(element.tag) {
+                            if !is_native_tag(element.tag) {
                                 RegisteredRefKind::GlobalOrElement {
                                     tag: String::from(element.tag),
+                                    is_svg: matches!(element.ns, Namespace::Svg),
                                 }
                             } else {
                                 RegisteredRefKind::Element {
@@ -450,12 +452,17 @@ fn is_ascii_identifier(segment: &str) -> bool {
 
 /// The ref of a tag no binding owns, resolved through `GlobalComponents`
 /// exactly as its props are: `<my-child>` and `<MyChild>` hold the same
-/// instance, and an unregistered tag holds its custom element.
-fn global_ref_target(tag: &str, shared: bool, nullable: bool) -> String {
+/// instance, and an unregistered tag holds its custom element. Vue resolves
+/// a non-native tag as a component inside `<svg>` and `<math>` too.
+fn global_ref_target(tag: &str, is_svg: bool, shared: bool, nullable: bool) -> String {
     let component_helper = TEMPLATE_COMPONENT_REF.select(shared);
     let mut tag_literal = crate::virtual_ts::TextBuf::default();
     push_ts_string_literal(&mut tag_literal, tag);
-    let element = vize_carton::cstr!("{}<{tag_literal}>", DOM_ELEMENT.select(shared));
+    let svg_argument = if is_svg { ", true" } else { "" };
+    let element = vize_carton::cstr!(
+        "{}<{tag_literal}{svg_argument}>",
+        DOM_ELEMENT.select(shared)
+    );
     global_component_type(
         tag,
         |component| {

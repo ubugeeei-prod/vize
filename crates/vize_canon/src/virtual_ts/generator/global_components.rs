@@ -153,11 +153,12 @@ impl<'a> GlobalComponentPlan<'a> {
             {
                 continue;
             }
-            let camel_name = camelize(name);
-            let pascal_name = capitalize(camel_name.as_str());
+            let [pascal_name, camel_name, _] =
+                crate::virtual_ts::component_reference::registry_keys(name);
             let candidates = [name, camel_name.as_str(), pascal_name.as_str()];
-            // Vue resolves registry components in this exact order. Use the
-            // same selected provider for props and slot payload ownership.
+            // The one registry key order: props and slot payloads select the
+            // provider here, and template refs and strict slot children
+            // (`global_component_type`) read the same keys.
             let registry_keys = [pascal_name.as_str(), camel_name.as_str(), name];
             // A key of the SFC's own `components` option is never unknown; a
             // value it names owns the tag like any other binding.

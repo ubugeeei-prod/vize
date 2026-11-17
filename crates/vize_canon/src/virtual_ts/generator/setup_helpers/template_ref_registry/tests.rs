@@ -246,9 +246,14 @@ fn unknown_foreign_namespace_elements_do_not_become_component_refs_from_setup_bi
             r#"<svg><shape ref="shape" /></svg><math><glyph ref="glyph" /></math>"#,
             &summary,
         )
-        .map(|registry| registry.body)
-        .as_deref(),
-        Some(r#" "shape": $DomElement<"shape", true>; "glyph": $DomElement<"glyph">; "#)
+        .map(|registry| registry.body),
+        // Vue still resolves both tags as components, so only a registered
+        // global component can own them.
+        Some(vize_l0::cstr!(
+            " \"shape\": {}; \"glyph\": {}; ",
+            global_lookup(&["Shape", "shape"], "", r#""shape", true"#),
+            global_lookup(&["Glyph", "glyph"], "", r#""glyph""#),
+        ))
     );
 }
 
@@ -454,31 +459,42 @@ fn unbound_kebab_tags_resolve_global_components_before_custom_elements() {
         ),
     )
     .unwrap();
-    let lookup = |null: &str| {
-        let branch = |key: &str| {
-            vize_l0::cstr!(
-                "(import('vue').GlobalComponents extends {{ \"{key}\": infer __C }} ? $TemplateComponentRef<__C>{null} : "
-            )
-        };
-        vize_l0::cstr!(
-            "{}{}{}$DomElement<\"my-child\">)))",
-            branch("MyChild"),
-            branch("myChild"),
-            branch("my-child")
+    let kebab =
+        |null: &str| global_lookup(&["MyChild", "myChild", "my-child"], null, r#""my-child""#);
+    let shape = |null: &str| {
+        global_lookup(
+            &["MyShape", "myShape", "my-shape"],
+            null,
+            r#""my-shape", true"#,
         )
     };
-    let (plain, nullable) = (lookup(""), lookup(" | null"));
+    let (plain, nullable) = (kebab(""), kebab(" | null"));
+    let (shape, nullable_shape) = (shape(""), shape(" | null"));
     assert_eq!(
         registry.body.as_str(),
-        vize_l0::cstr!(
-            " \"kebab\": {plain}; \"many\": {nullable}[]; \"shape\": $DomElement<\"my-shape\", true>; "
-        )
+        vize_l0::cstr!(" \"kebab\": {plain}; \"many\": {nullable}[]; \"shape\": {shape}; ")
     );
     assert_eq!(
         registry.dollar_body.as_str(),
         vize_l0::cstr!(
-            " \"kebab\": {nullable}; \"many\": {nullable}[]; \"shape\": $DomElement<\"my-shape\", true>; "
+            " \"kebab\": {nullable}; \"many\": {nullable}[]; \"shape\": {nullable_shape}; "
         )
     );
     assert!(registry.includes_component && registry.includes_dom_element);
+}
+
+/// The `GlobalComponents` lookup of a tag no binding owns, falling back to
+/// `$DomElement<fallback>`.
+fn global_lookup(keys: &[&str], null: &str, fallback: &str) -> vize_l0::String {
+    let mut lookup = vize_l0::String::default();
+    for key in keys {
+        lookup.push_str(&vize_l0::cstr!(
+            "(import('vue').GlobalComponents extends {{ \"{key}\": infer __C }} ? $TemplateComponentRef<__C>{null} : "
+        ));
+    }
+    lookup.push_str(&vize_l0::cstr!("$DomElement<{fallback}>"));
+    for _ in keys {
+        lookup.push(')');
+    }
+    lookup
 }
