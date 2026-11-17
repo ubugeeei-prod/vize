@@ -17,11 +17,19 @@ fn write(root: &Path, relative: &str, content: &str) {
 
 fn collect(root: &Path, tsconfig: &str) -> Vec<std::path::PathBuf> {
     write(root, "tsconfig.json", tsconfig);
-    collect_content_mapper_ambient_declarations(
+    let declarations = collect_content_mapper_ambient_declarations(
         root,
         &root.join("tsconfig.json"),
         &mut TsconfigInputCache::default(),
-    )
+    );
+    // The single read pass decides what re-reading the returned graph does.
+    assert_eq!(
+        declarations.declares_vue_template_ref,
+        declares_vue_template_ref_global(&declarations.files),
+        "{tsconfig}: {:?}",
+        declarations.files
+    );
+    declarations.files
 }
 
 #[test]

@@ -228,3 +228,28 @@ fn tsconfig_type_packages_follow_extends_and_local_overrides() {
 
     let _ = std::fs::remove_dir_all(&root);
 }
+
+#[test]
+fn reference_directive_lines_are_the_split_lines_that_name_a_reference() {
+    for content in [
+        "",
+        "<reference",
+        "/// <reference types=\"node\" />",
+        "/// <reference path=\"a.d.ts\" />\r\n/// <reference types=\"vite/client\" />\r\n",
+        "export {};\n// a <reference and another <reference on one line\n/// <reference path=\"b.d.ts\" />",
+        "/// <reference path=\"c.d.ts\" />\r",
+        "const a = 1;\r/// <reference path=\"lone-cr.d.ts\" />\nconst b = 2;\n",
+        "// élan\n\t /// <reference types=\"ünicode\" />\n\n<reference\n",
+        "\n\n\n/// <reference path=\"last.d.ts\" />\n",
+    ] {
+        let expected = content
+            .lines()
+            .filter(|line| line.contains("<reference"))
+            .collect::<Vec<_>>();
+        assert_eq!(
+            super::reference_directive_lines(content).collect::<Vec<_>>(),
+            expected,
+            "{content:?}"
+        );
+    }
+}
