@@ -96,6 +96,7 @@ mod tests {
     #[test]
     fn structure_rules_read_every_style_language() {
         let linter = Linter::new().with_enabled_rules(Some(vec!["css/no-important".into()]));
+        // css/no-id-selectors reads the same structure.
         let source = "<template><div class=\"a\" /></template>\n<style>.a { margin: 0 !important; }</style>\n<style lang=\"postcss\">.b { margin: 0 !important; }</style>\n<style lang=\"scss\">.c { margin: 0 !important; }</style>\n<style lang=\"less\">.d { margin: 0 !important; }</style>\n<style lang=\"stylus\">.e { margin: 0 !important; }</style>\n<style lang=\"sass\">.f\n  margin: 0 !important</style>\n";
         let lines: Vec<usize> = linter
             .lint_sfc(source, "Card.vue")
@@ -158,11 +159,15 @@ impl BuiltinCssRule {
 }
 
 fn css_rule_for_name(rule_name: &str) -> Option<BuiltinCssRule> {
-    if rule_name == RULE_NO_IMPORTANT {
-        return Some(BuiltinCssRule::Style(Box::new(NoImportant)));
+    let style: Option<Box<dyn StyleRule>> = match rule_name {
+        RULE_NO_IMPORTANT => Some(Box::new(NoImportant)),
+        RULE_NO_ID_SELECTORS => Some(Box::new(NoIdSelectors)),
+        _ => None,
+    };
+    if let Some(rule) = style {
+        return Some(BuiltinCssRule::Style(rule));
     }
     let rule: Box<dyn CssRule> = match rule_name {
-        RULE_NO_ID_SELECTORS => Box::new(NoIdSelectors),
         RULE_PREFER_LOGICAL_PROPERTIES => Box::new(PreferLogicalProperties),
         RULE_REQUIRE_FONT_DISPLAY => Box::new(RequireFontDisplay),
         RULE_PREFER_NESTED_SELECTORS => Box::new(PreferNestedSelectors),

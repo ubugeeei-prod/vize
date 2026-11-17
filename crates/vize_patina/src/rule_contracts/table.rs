@@ -19,7 +19,7 @@ const FILE_TEXT: Domain =
 const CSS_TEXT: Domain =
     Domain::new("declarations and selectors of <style> blocks as parsed by lightningcss");
 const STYLE_STRUCTURE: Domain = Domain::new(
-    "the authored structure of <style> blocks in every style language, as the L1 style reader reads it",
+    "the authored structure of CSS, SCSS, Sass, Less and Stylus <style> blocks, as the L1 style reader reads it",
 );
 const DIRECTIVES: Domain = Domain::new(
     "elements and Vue directive syntax of SFC templates as parsed: names, arguments, modifiers, expressions and placement",
@@ -101,7 +101,7 @@ pub static RULE_CONTRACTS: &[RuleEntry] = &[
     row!("a11y/use-list", Heuristic, A11Y, Warning),
     row!("css/no-display-none", Heuristic, CSS_TEXT, Warning),
     row!("css/no-hardcoded-values", Heuristic, CSS_TEXT, Warning),
-    row!("css/no-id-selectors", Exact, CSS_TEXT, Warning),
+    row!("css/no-id-selectors", Exact, STYLE_STRUCTURE, Warning),
     row!("css/no-important", Exact, STYLE_STRUCTURE, Warning),
     row!("css/no-utility-classes", Heuristic, CSS_TEXT, Warning),
     row!("css/no-v-bind-performance", Exact, CSS_TEXT, Warning),

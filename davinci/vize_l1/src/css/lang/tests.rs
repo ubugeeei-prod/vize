@@ -191,6 +191,15 @@ fn stylus_resolves_indented_parents_and_skips_functions_and_loops() {
         names(Stylus, ".a\n  width {n}px\n.b\n  color red\n"),
         ["a", "b"]
     );
+    // Braces in comments and strings do not make a block; compact rules do.
+    assert_eq!(
+        names(
+            Stylus,
+            "// e.g. .x { color: red; }\n.a\n  content '{ a: b; }'\n"
+        ),
+        ["a"]
+    );
+    assert_eq!(names(Stylus, ".c {color:red}\n"), ["c"]);
 }
 
 #[test]

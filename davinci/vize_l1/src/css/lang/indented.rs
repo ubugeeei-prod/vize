@@ -37,11 +37,13 @@ pub(super) fn stylus(source: &str) -> Lexis {
     }
 }
 
-/// Stylus accepts CSS braces. A block brace ends a line (`.a {`) or, in a
-/// one-line rule (`.a { color: red; }`), follows whitespace and encloses a
-/// `;` or a `: `; an interpolation (`.item-{i}`, `{prop}: 1`) does neither.
+/// Stylus accepts CSS braces. Outside comments and strings, a block brace
+/// ends a line (`.a {`) or, in a one-line rule (`.a { color: red; }`,
+/// `.a {color:red}`), follows whitespace and encloses a `;` or a `:`; an
+/// interpolation (`.item-{i}`, `{prop}: 1`) does neither.
 fn is_braced_stylus(source: &str) -> bool {
-    source.lines().any(|line| {
+    let code = code_lines(source);
+    code.lines().any(|line| {
         if line.trim_end().ends_with('{') {
             return true;
         }
@@ -52,10 +54,57 @@ fn is_braced_stylus(source: &str) -> bool {
                 && bytes.get(at - 1).is_some_and(u8::is_ascii_whitespace)
                 && line.get(at + 1..).is_some_and(|rest| {
                     let inner = rest.split('}').next().unwrap_or_default();
-                    rest.contains('}') && (inner.contains(';') || inner.contains(": "))
+                    rest.contains('}') && (inner.contains(';') || inner.contains(':'))
                 })
         })
     })
+}
+
+/// `source` with comments and string contents blanked, line breaks kept.
+fn code_lines(source: &str) -> String {
+    let mut code = String::default();
+    let mut chars = source.chars().peekable();
+    let mut quote = None;
+    while let Some(ch) = chars.next() {
+        match (quote, ch) {
+            (Some(open), _) if ch == open => {
+                quote = None;
+                code.push(ch);
+            }
+            (Some(_), '\\') => {
+                code.push(' ');
+                if chars.next().is_some() {
+                    code.push(' ');
+                }
+            }
+            (Some(_), '\n') => code.push('\n'),
+            (Some(_), _) => code.push(' '),
+            (None, '"' | '\'') => {
+                quote = Some(ch);
+                code.push(ch);
+            }
+            (None, '/') if chars.peek() == Some(&'/') => {
+                while chars.peek().is_some_and(|next| *next != '\n') {
+                    chars.next();
+                }
+            }
+            (None, '/') if chars.peek() == Some(&'*') => {
+                chars.next();
+                let mut last = ' ';
+                for next in chars.by_ref() {
+                    if next == '\n' {
+                        code.push('\n');
+                    }
+                    if last == '*' && next == '/' {
+                        break;
+                    }
+                    last = next;
+                }
+            }
+            (None, _) => code.push(ch),
+        }
+    }
+    code
 }
 
 /// `=name` and `+name` spell `@mixin` and `@include`.
