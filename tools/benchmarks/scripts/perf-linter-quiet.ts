@@ -274,6 +274,23 @@ for (const spec of arg("scenarios", "mk,mk-json,mk-all,bench,ta").split(",")) {
     const lines = (result.stderr?.toString() ?? "").split("\n").filter((line) => /calls|-----|total|sched_yield|futex|read|openat|mmap|munmap|madvise|statx|newfstatat|getdents|clone|mprotect/.test(line));
     write(["", `syscalls with RAYON_NUM_THREADS=${straceThreads[1]}:`, "", "```", ...lines, "```", ""].join("\n"));
   }
+  if (spec === "startup") {
+    const run = (command: string, args: string[], env: Record<string, string> = {}) => {
+      const result = spawnSync(command, args, { cwd: mk, maxBuffer: 1 << 30, env: { ...process.env, ...env } });
+      return `${result.stdout?.toString() ?? ""}${result.stderr?.toString() ?? ""}`;
+    };
+    const sections = run("readelf", ["-S", "-W", bins.base])
+      .split("\n")
+      .filter((line) => /\.(text|rodata|data\.rel\.ro|data|bss|rela\.dyn|relr\.dyn|init_array|eh_frame|gcc_except_table|got)\b/.test(line));
+    const header = run("readelf", ["-h", "-l", "-d", "-W", bins.base])
+      .split("\n")
+      .filter((line) => /Type:|LOAD|GNU_RELRO|FLAGS|RELACOUNT|RELRSZ|RELASZ|NEEDED|BIND_NOW/.test(line));
+    const ldStats = run(bins.base, ["--version"], { LD_DEBUG: "statistics" });
+    const faults = [0, 1, 2].map(() => run("/usr/bin/time", ["-f", "%e s %R minor %F major %M KiB", bins.base, "--version"]).split("\n").filter((line) => /minor/.test(line)).join(""));
+    const oneFaults = run("/usr/bin/time", ["-f", "%e s %R minor %F major %M KiB", bins.base, "lint", "src/components/MkButton.vue"]).split("\n").filter((line) => /minor/.test(line));
+    const size = run("ls", ["-la", bins.base]);
+    write(["", "startup anatomy (base):", "", "```", size, ...header, ...sections, ldStats, ...faults, ...oneFaults, "```", ""].join("\n"));
+  }
   if (spec === "bench") scenario("1000-SFC benchmark `lint .` (text)", bench, ["lint", "."], runs);
   if (spec === "ta")
     scenario(
