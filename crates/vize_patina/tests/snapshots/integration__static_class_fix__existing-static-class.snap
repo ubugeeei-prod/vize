@@ -21,8 +21,8 @@ expression: "(&case, &initial, &result)"
                 rule_name: "vapor/prefer-static-class",
                 severity: Warning,
                 message: "Prefer static class attribute over dynamic :class binding for constant values",
-                start: 17,
-                end: 34,
+                start: 25,
+                end: 33,
                 help: Some(
                     "Move static classes to the class attribute",
                 ),
@@ -40,8 +40,8 @@ expression: "(&case, &initial, &result)"
                 rule_name: "vapor/prefer-static-class",
                 severity: Warning,
                 message: "Prefer static class attribute over dynamic :class binding for constant values",
-                start: 17,
-                end: 34,
+                start: 25,
+                end: 33,
                 help: Some(
                     "Move static classes to the class attribute",
                 ),
