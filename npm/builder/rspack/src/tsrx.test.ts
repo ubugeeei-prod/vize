@@ -21,7 +21,8 @@ const counter = fs.readFileSync(
 );
 
 function project(files: Record<string, string>): string {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "vize-rspack-tsrx-"));
+  // Rspack reports resources by their real path (macOS links the tmpdir).
+  const root = fs.realpathSync(fs.mkdtempSync(path.join(os.tmpdir(), "vize-rspack-tsrx-")));
   for (const [name, source] of Object.entries(files)) {
     fs.writeFileSync(path.join(root, name), source);
   }
@@ -76,7 +77,7 @@ function compile(root: string) {
   );
 }
 
-void test("rspack: a .tsrx module loads as the native entry's output and renders", async (t) => {
+void test("rspack: a .tsrx module loads through the native entry and renders", async (t) => {
   const root = project({
     "Counter.tsrx": counter,
     "entry.js": 'export { Counter } from "./Counter.tsrx";\n',
@@ -116,9 +117,12 @@ void test("rspack: a refused .tsrx module fails the build with every diagnostic"
     const stats = await compile(root);
     const errors = stats.toJson({ all: false, errors: true }).errors ?? [];
     t.assert.equal(errors.length, 1);
+    // Rspack indents the loader error's lines under its own frame.
+    const message = errors[0]?.message ?? "";
+    t.assert.match(message, /\[vize\] TSRX compilation failed in .*App\.tsrx:\n/);
     t.assert.match(
-      errors[0]?.message ?? "",
-      /\[vize\] TSRX compilation failed in .*App\.tsrx:\n {2}- .*App\.tsrx:1:26 \[unsupported\] OutsideComponent is not emitted for the DOM target yet/,
+      message,
+      /- .*App\.tsrx:1:26 \[unsupported\] OutsideComponent is not emitted for the DOM target yet\n/,
     );
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
