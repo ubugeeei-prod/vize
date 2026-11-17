@@ -91,19 +91,79 @@ function isTestPath(relative: string): boolean {
   );
 }
 
-/** Brace depth change of one Rust line, outside strings, chars and comments. */
-function braceDelta(raw: string): number {
-  const code = raw
-    .replace(/r(#*)"[\s\S]*?"\1/g, '""')
-    .replace(/"(?:\\.|[^"\\])*"/g, '""')
-    .replace(/'(?:\\.|[^'\\])'/g, "' '")
-    .replace(/\/\/.*$/, "");
+/**
+ * Per line of a Rust source: the brace depth change outside strings, raw
+ * strings, chars and comments, with the lexical state carried across lines
+ * (a block comment or string may span several), and whether the line opens
+ * inside a comment or string.
+ */
+export function lexicalLines(source: string): Array<{ delta: number; inside: boolean }> {
+  const lines: Array<{ delta: number; inside: boolean }> = [];
   let delta = 0;
-  for (const char of code) {
-    if (char === "{") delta += 1;
-    if (char === "}") delta -= 1;
+  let inside = false;
+  // normal | line comment | block comment (depth) | string | raw string (hashes)
+  let state: "code" | "line" | "block" | "string" | "raw" = "code";
+  let blockDepth = 0;
+  let rawHashes = 0;
+  for (let i = 0; i < source.length; i += 1) {
+    const char = source[i]!;
+    const next = source[i + 1];
+    if (char === "\n") {
+      lines.push({ delta, inside });
+      delta = 0;
+      if (state === "line") state = "code";
+      inside = state !== "code";
+      continue;
+    }
+    if (state === "line") continue;
+    if (state === "block") {
+      if (char === "/" && next === "*") {
+        blockDepth += 1;
+        i += 1;
+      } else if (char === "*" && next === "/") {
+        blockDepth -= 1;
+        i += 1;
+        if (blockDepth === 0) state = "code";
+      }
+      continue;
+    }
+    if (state === "string") {
+      if (char === "\\") i += 1;
+      else if (char === '"') state = "code";
+      continue;
+    }
+    if (state === "raw") {
+      if (char === '"' && source.slice(i + 1, i + 1 + rawHashes) === "#".repeat(rawHashes)) {
+        i += rawHashes;
+        state = "code";
+      }
+      continue;
+    }
+    if (char === "/" && next === "/") {
+      state = "line";
+      i += 1;
+    } else if (char === "/" && next === "*") {
+      state = "block";
+      blockDepth = 1;
+      i += 1;
+    } else if (char === '"') {
+      state = "string";
+    } else if (char === "r" && /^r#*"/.test(source.slice(i, i + 64)) && !/\w/.test(source[i - 1] ?? "")) {
+      rawHashes = /^r(#*)"/.exec(source.slice(i, i + 64))![1]!.length;
+      i += rawHashes + 1;
+      state = "raw";
+    } else if (char === "'") {
+      // A char literal (`'{'`, `'\''`, `'\u{7b}'`); a lifetime has no close.
+      const literal = /^'(?:\\(?:u\{[0-9a-fA-F]+\}|.)|[^\\'])'/.exec(source.slice(i, i + 16));
+      if (literal) i += literal[0].length - 1;
+    } else if (char === "{") {
+      delta += 1;
+    } else if (char === "}") {
+      delta -= 1;
+    }
   }
-  return delta;
+  lines.push({ delta, inside });
+  return lines;
 }
 
 /**
@@ -112,15 +172,18 @@ function braceDelta(raw: string): number {
  */
 export function shippedLines(source: string): Array<[number, string]> {
   const lines = source.split("\n");
+  const lexical = lexicalLines(source);
   const kept: Array<[number, string]> = [];
   let testDepth = 0;
   let pendingTest = false;
   for (const [index, raw] of lines.entries()) {
     const line = raw.trim();
+    const { delta, inside } = lexical[index] ?? { delta: 0, inside: false };
     if (testDepth > 0) {
-      testDepth += braceDelta(raw);
+      testDepth += delta;
       continue;
     }
+    if (inside) continue;
     if (/^#\[cfg\((?:all\()?test\b/.test(line)) {
       pendingTest = true;
       continue;
@@ -129,11 +192,11 @@ export function shippedLines(source: string): Array<[number, string]> {
       if (line.startsWith("#[")) continue;
       pendingTest = false;
       if (/^(?:pub(?:\([^)]*\))?\s+)?mod\s+\w+\s*\{/.test(line)) {
-        testDepth = braceDelta(raw);
+        testDepth = delta;
         continue;
       }
     }
-    if (line.startsWith("//")) continue;
+    if (line.startsWith("//") || line.startsWith("/*")) continue;
     kept.push([index + 1, raw]);
   }
   return kept;
@@ -210,12 +273,16 @@ void test("a brace in a test module's string does not hide the shipped code afte
     "mod tests {",
     '    const OPEN: &str = "{";',
     "    const BRACE: char = '{';",
+    "    /* { */",
+    '    const MULTI: &str = "{',
+    '    }{";',
+    '    const RAW: &str = r#"{"#;',
     "}",
     "fn shipped(lang: &str) -> bool {",
     '    lang == "pug"',
     "}",
   ].join("\n");
-  assert.deepEqual(violations(source), ['7: equality with a language name: lang == "pug"']);
+  assert.deepEqual(violations(source), ['11: equality with a language name: lang == "pug"']);
 });
 
 void test("the gate leaves tag names, test modules and comments alone", () => {

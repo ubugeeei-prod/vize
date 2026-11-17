@@ -215,3 +215,30 @@ export {};
             .all(|diagnostic| diagnostic.rule_name != "type/require-await")
     );
 }
+
+/// An unsupported template lang leaves the template out, never the native
+/// type-aware script checks: the same SFC with an HTML and a `haml`
+/// template reports the same floating promise through `Linter::lint_sfc`.
+#[test]
+fn an_unsupported_template_lang_keeps_native_script_checks() {
+    if !corsa_available() {
+        return;
+    }
+    let linter = Linter::with_preset(LintPreset::Opinionated).with_type_aware_lint(true);
+    let script = "<script setup lang=\"ts\">\nasync function f() {}\nf();\n</script>\n";
+    let floating = |template: &str| -> Vec<(u32, u32)> {
+        let source = format!("{script}{template}");
+        let mut found: Vec<_> = linter
+            .lint_sfc(&source, "Unsupported.vue")
+            .diagnostics
+            .iter()
+            .filter(|diagnostic| diagnostic.rule_name == "type/no-floating-promises")
+            .map(|diagnostic| (diagnostic.start, diagnostic.end))
+            .collect();
+        found.sort_unstable();
+        found
+    };
+    let html = floating("<template lang=\"html\"><p/></template>\n");
+    assert_eq!(html.len(), 1, "{html:?}");
+    assert_eq!(floating("<template lang=\"haml\">%p  </template>\n"), html);
+}
