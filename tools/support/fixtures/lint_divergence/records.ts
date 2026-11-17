@@ -8,6 +8,7 @@ import {
   realProjectLocationDivergence,
   type RealProjectLocationSource,
 } from "./real_project_locations.ts";
+import { unusedEmitPatinaReading } from "./unused_emit_names.ts";
 import {
   byteOrder,
   get,
@@ -202,6 +203,22 @@ export function baselineIntentionalReason(
   if (source !== undefined && source !== null) {
     const componentRegistration = componentRegistrationBaselineIntentionalReason(finding, source);
     if (componentRegistration !== null) return componentRegistration;
+  }
+  if (
+    finding.ruleId === "vue/no-unused-emit-declarations" &&
+    source !== undefined &&
+    source !== null &&
+    setupCallsGetCurrentInstance(source)
+  )
+    return "Patina treats every declared event as possibly emitted once <script setup> calls getCurrentInstance(): the instance's emit can be called from code the rule cannot inspect. eslint-plugin-vue still reports the events it does not see emitted.";
+  if (
+    finding.ruleId === "vue/no-unused-emit-declarations" &&
+    source !== undefined &&
+    source !== null
+  ) {
+    const event = /^`([^`]+)` is defined as emit but never used\.$/u.exec(finding.message)?.[1];
+    const reading = event === undefined ? null : unusedEmitPatinaReading(event, source);
+    if (reading !== null) return reading;
   }
   if (finding.ruleId === "vue/no-shared-component-data")
     return "Patina intentionally merges vue/no-shared-component-data and vue/no-deprecated-data-object-declaration into one diagnostic for the same invalid data option.";
@@ -714,6 +731,20 @@ function registeredComponentIsProvablyAbsent(finding: LintRecord, source: string
   const executable = template.replace(/<!--[\s\S]*?-->/gu, "");
   if (/<component\b/iu.test(executable)) return false;
   return !new RegExp(`<\\s*(?:${escaped}|${escapedKebab})(?=[\\s/>])`, "iu").test(executable);
+}
+
+/** A `getCurrentInstance()` call in the `<script setup>` block, outside comments. */
+function setupCallsGetCurrentInstance(source: string): boolean {
+  for (const open of source.matchAll(/<script\b([^>]*)>/gu)) {
+    if (!/\ssetup(?:[\s=/]|$)/u.test(open[1] ?? "")) continue;
+    const start = (open.index ?? 0) + open[0].length;
+    const end = source.indexOf("</script>", start);
+    const body = source
+      .slice(start, end < 0 ? source.length : end)
+      .replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*/gu, " ");
+    if (/(?<![\w$.])getCurrentInstance\s*\(/u.test(body)) return true;
+  }
+  return false;
 }
 
 function hasModuleAndSetupScripts(source: string): boolean {
