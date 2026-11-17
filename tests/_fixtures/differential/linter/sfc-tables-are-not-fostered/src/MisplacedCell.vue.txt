@@ -1,0 +1,8 @@
+<template>
+  <table>
+    <div class="caption">Rows</div>
+    <tbody>
+      <tr><td>1</td></tr>
+    </tbody>
+  </table>
+</template>

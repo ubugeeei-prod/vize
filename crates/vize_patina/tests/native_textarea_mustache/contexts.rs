@@ -1,5 +1,5 @@
 use super::support::{
-    LOCALES, NeverLookup, collect, complete, error, expected, parser, registered, selected, span,
+    LOCALES, NeverLookup, collect, complete, error, expected, registered, selected, span,
 };
 use vize_l0::{Allocator, cstr};
 use vize_patina::native::{
@@ -44,20 +44,13 @@ fn table_refused(source: &str, depth: usize) {
 }
 
 #[test]
-fn original_foster_parenting_control_keeps_both_complete_errors() {
+fn original_table_context_control_keeps_the_complete_error() {
     let source = "<template><table><textarea>{{x}}</textarea></table></template>";
     table_refused(source, 2);
     for locale in LOCALES {
         assert_eq!(
             complete(&registered(source, locale)),
-            expected(vec![
-                parser(
-                    "error",
-                    "Foster parenting moved this element before the nearest open table.",
-                    span(source, "<textarea>")
-                ),
-                error(locale, span(source, "{{x}}")),
-            ])
+            expected(vec![error(locale, span(source, "{{x}}"))])
         );
     }
 }

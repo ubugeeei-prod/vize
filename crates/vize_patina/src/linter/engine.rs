@@ -438,9 +438,18 @@ impl Linter {
         gate_semantic_on_fatal_parse: bool,
         env: TemplateRuleEnv<'_>,
     ) -> LintResult {
+        // A standalone HTML document is parsed by the browser before Vue reads
+        // it, so its tables foster misplaced content; a Vue template is not.
         let l2 = profile!(
             "patina.template.l1_parse_lower",
-            crate::markup::L2Template::lower(allocator, source)
+            match env.document_kind {
+                TemplateDocumentKind::StandaloneHtml => {
+                    crate::markup::L2Template::lower_in_dom(allocator, source)
+                }
+                TemplateDocumentKind::VueTemplate => {
+                    crate::markup::L2Template::lower(allocator, source)
+                }
+            }
         );
         let has_fatal_parse_errors = self.has_fatal_template_parse_errors(&l2);
 

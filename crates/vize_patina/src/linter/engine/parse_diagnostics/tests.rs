@@ -47,9 +47,25 @@ fn legacy(source: &str) -> Vec<Observed> {
         .collect()
 }
 
+/// The preserved parser reads every template as a browser reads HTML; Vue
+/// builds a Vue template as written, so only an in-DOM template is fostered.
+const FOSTER: &str = "Foster parenting moved this element before the nearest open table.";
+
 fn l1(source: &str) -> Vec<Observed> {
+    observe(source, false)
+}
+
+fn l1_in_dom(source: &str) -> Vec<Observed> {
+    observe(source, true)
+}
+
+fn observe(source: &str, in_dom: bool) -> Vec<Observed> {
     let allocator = Allocator::new();
-    let parsed = crate::markup::L2Template::lower(&allocator, source);
+    let parsed = if in_dom {
+        crate::markup::L2Template::lower_in_dom(&allocator, source)
+    } else {
+        crate::markup::L2Template::lower(&allocator, source)
+    };
     let linter = Linter::new().with_enabled_rules(Some(vec![TEMPLATE_PARSE_RULE.into()]));
     let mut result = Linter::l1_template_parse_lint_result("diagnostics.vue", source, &parsed);
     linter.append_compatibility_template_parse_diagnostics(&mut result, source, &parsed);
@@ -140,12 +156,46 @@ fn l1_parser_template_diagnostics_match_the_preserved_parser() {
         .into_iter()
         .filter_map(|source| {
             let actual = l1(source);
-            let expected = legacy(source);
+            let mut expected = legacy(source);
+            expected.retain(|observed| observed.message != FOSTER);
             (actual != expected)
                 .then(|| format!("{source:?}\n  L1: {actual:?}\n  preserved: {expected:?}"))
         })
         .collect::<std::vec::Vec<_>>();
     assert!(mismatches.is_empty(), "{}", mismatches.join("\n"));
+}
+
+#[test]
+fn an_in_dom_template_keeps_the_preserved_foster_notices() {
+    for source in [
+        "<table><div>fostered</div></table>",
+        "<table><center>fostered</center></table>",
+        "<table>fostered<tr><td>cell</td></tr></table>",
+        "<math><annotation-xml><table><html></html></table></annotation-xml></math>",
+    ] {
+        assert_eq!(l1_in_dom(source), legacy(source), "{source}");
+    }
+}
+
+#[test]
+fn a_vue_template_is_never_fostered() {
+    // Vue compiles `<draggable tag="tbody">` as a component inside the table
+    // (vue-draggable-next, vuestic-ui). A browser parsing it as HTML would
+    // move the custom element before the table, so an in-DOM template keeps
+    // the notice.
+    let source =
+        "<table class=\"table\"><draggable tag=\"tbody\"><tr><td>1</td></tr></draggable></table>";
+    assert_eq!(l1(source), Vec::<Observed>::new());
+    let start = source.find("<draggable").unwrap() as u32;
+    assert_eq!(
+        l1_in_dom(source),
+        vec![Observed {
+            message: FOSTER.into(),
+            severity: Severity::Error,
+            start,
+            end: start + "<draggable tag=\"tbody\">".len() as u32,
+        }]
+    );
 }
 
 #[test]

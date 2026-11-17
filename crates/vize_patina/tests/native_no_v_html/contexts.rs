@@ -34,15 +34,7 @@ fn original_foster_and_valid_table_contexts_refuse_before_lookup() {
             ))
         );
         for locale in LOCALES {
-            let mut diagnostics = Vec::new();
-            if foster {
-                diagnostics.push(parser(
-                    "error",
-                    "Foster parenting moved this element before the nearest open table.",
-                    span(source, "<html v-html>"),
-                ));
-            }
-            diagnostics.push(warning(locale, span(source, "v-html")));
+            let diagnostics = vec![warning(locale, span(source, "v-html"))];
             assert_eq!(complete(&registered(source, locale)), expected(diagnostics));
         }
     }
