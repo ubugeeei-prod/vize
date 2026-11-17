@@ -122,12 +122,12 @@ pub(crate) fn component_metadata(
         let Some(import_path) = definition_helpers::find_import_path(ctx, &name) else {
             continue;
         };
-        let resolved = definition_helpers::resolve_import_path(ctx.uri, &import_path)?;
+        let resolved = definition_helpers::resolve_import_path_in(ctx, &import_path)?;
         return cached_component_metadata(ctx, &resolved);
     }
 
     if let Some(import_path) = art_component_path(ctx, component_name) {
-        let resolved = definition_helpers::resolve_import_path(ctx.uri, &import_path)?;
+        let resolved = definition_helpers::resolve_import_path_in(ctx, &import_path)?;
         return cached_component_metadata(ctx, &resolved);
     }
 

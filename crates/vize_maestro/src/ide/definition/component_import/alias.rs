@@ -39,7 +39,7 @@ pub(super) fn resolve(ctx: &IdeContext<'_>, name: &str, depth: usize) -> Option<
         }
         Expression::CallExpression(call) if async_component_call(&parsed.program, &call.callee) => {
             let specifier = loader_specifier(call.arguments.first()?)?;
-            let resolved = helpers::resolve_import_path(ctx.uri, specifier)?;
+            let resolved = helpers::resolve_import_path_in(ctx, specifier)?;
             if is_vue_path(&resolved) {
                 return Some(resolved);
             }
