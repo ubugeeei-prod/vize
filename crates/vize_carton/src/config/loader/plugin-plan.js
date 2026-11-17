@@ -103,15 +103,25 @@ export function callbackKey(plugin, capability, key, name) {
   return `${plugin}\u0000${capability}\u0000${key}\u0000${name}`;
 }
 
-/** Refuse a capability that no Vize product implements yet, whichever product loads it. */
+/**
+ * Refuse a capability until every product that consumes it implements it,
+ * whichever product loads it, so no product silently ignores it.
+ */
 export function refuseUnimplementedCapabilities(plan) {
   for (const plugin of plan.plugins) {
     for (const capability of plugin.capabilities) {
-      if (PLUGIN_REGISTRY.capabilities[capability.id].admittedBy.length !== 0) continue;
+      const { consumers, admittedBy } = PLUGIN_REGISTRY.capabilities[capability.id];
+      const missing = consumers.filter((consumer) => !admittedBy.includes(consumer));
+      if (missing.length === 0) continue;
+      const subject = `${capability.id} \`${capability.key}\``;
+      const refusal =
+        admittedBy.length === 0
+          ? `no Vize product implements ${subject} yet`
+          : `${subject} is not implemented by ${missing.join(", ")} yet`;
       throw new VizePluginPlanError(
         "capability-unadmitted",
         plugin.name,
-        `no Vize product implements ${capability.id} \`${capability.key}\` yet; run \`vize plugin inspect\` for the plan`,
+        `${refusal}; run \`vize plugin inspect\` for the plan`,
       );
     }
   }

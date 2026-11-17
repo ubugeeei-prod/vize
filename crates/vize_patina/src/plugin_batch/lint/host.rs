@@ -9,7 +9,8 @@
 //! cancels the wait and the late answer is skipped. After repeated failures
 //! the host reports the last one instead of restarting until the config
 //! changes. The last answer for each document text is kept, so its
-//! diagnostics, hover and code actions cross into JS once.
+//! diagnostics, hover and code actions cross into JS once. A plan whose only
+//! lint work is native (declared directive contracts) never starts a sidecar.
 
 #![expect(
     clippy::disallowed_types,
@@ -21,7 +22,7 @@ use std::time::Duration;
 
 use std::sync::{Mutex, MutexGuard, PoisonError};
 
-use vize_carton::config::plugin_plan::document_plugin_plan;
+use vize_carton::config::plugin_plan::{VerifiedPluginPlan, document_plugin_plan};
 use vize_carton::config::{PluginLintSidecar, SidecarBudget, SidecarReply};
 use vize_l0::config::{ConfigDocument, LintRuleSeverity};
 use vize_l0::{FxHashMap, FxHashSet, cstr};
@@ -68,31 +69,46 @@ struct Slot {
 }
 
 impl PluginLintHost {
-    /// `None` when the config enables no plugin rule. Planning failures stay
-    /// visible on every linted document.
+    /// `None` when the config adds no plugin lint work. Planning failures
+    /// stay visible on every linted document.
     pub fn plan(
         document: &ConfigDocument,
         source_path: Option<&Path>,
         severities: &FxHashMap<vize_l0::String, LintRuleSeverity>,
         product: &str,
     ) -> Option<Self> {
-        let jobs = match document_plugin_plan(document) {
+        match document_plugin_plan(document) {
+            Ok(None) => None,
+            Ok(Some(plan)) => Self::for_plan(&plan, source_path, severities, product),
+            Err(error) => Some(Self::new(Err(cstr!("{error}").into_string()), source_path)),
+        }
+    }
+
+    /// The host of one verified plan; `None` when it adds no lint work.
+    pub fn for_plan(
+        plan: &VerifiedPluginPlan,
+        source_path: Option<&Path>,
+        severities: &FxHashMap<vize_l0::String, LintRuleSeverity>,
+        product: &str,
+    ) -> Option<Self> {
+        let jobs = match PluginLintJobs::plan(plan, severities, product) {
             Ok(None) => return None,
-            Ok(Some(plan)) => match PluginLintJobs::plan(&plan, severities, product) {
-                Ok(None) => return None,
-                Ok(Some(jobs)) => Ok(jobs),
-                Err(error) => Err(error.into_string()),
-            },
-            Err(error) => Err(cstr!("{error}").into_string()),
+            Ok(Some(jobs)) => Ok(jobs),
+            Err(error) => Err(error.into_string()),
         };
-        let config = source_path.map(Path::to_path_buf);
+        // Only JS jobs need the authored config to start a sidecar.
         let jobs = jobs.and_then(|jobs| {
-            config.as_ref().map(|_| jobs).ok_or_else(|| {
-                "[plugin/plan-invalid] plan: plugin lint rules run from vite.config.*, which was not found".to_owned()
-            })
+            if source_path.is_none() && jobs.crosses() {
+                return Err("[plugin/plan-invalid] plan: plugin lint rules run from vite.config.*, which was not found".to_owned());
+            }
+            Ok(jobs)
         });
-        Some(Self {
-            config: config.unwrap_or_default(),
+        Some(Self::new(jobs, source_path))
+    }
+
+    fn new(jobs: Result<PluginLintJobs, String>, source_path: Option<&Path>) -> Self {
+        Self {
+            config: source_path.map(Path::to_path_buf).unwrap_or_default(),
             safe_fixes: jobs
                 .as_ref()
                 .map(PluginLintJobs::safe_fix_ids)
@@ -100,7 +116,7 @@ impl PluginLintHost {
             jobs,
             slot: Mutex::default(),
             answered: Mutex::default(),
-        })
+        }
     }
 
     /// Lint one SFC with every job in one bounded request.
@@ -119,12 +135,16 @@ impl PluginLintHost {
         {
             return PluginLintOutcome::Diagnostics(diagnostics.clone());
         }
-        let lowered = match jobs.lower(source, filename) {
+        let mut lowered = match jobs.lower(source, filename) {
             Ok(Some(lowered)) => lowered,
             // The plugin records cannot represent this template; `vize lint` skips it too.
             Ok(None) => return PluginLintOutcome::Diagnostics(Vec::new()),
             Err(error) => return PluginLintOutcome::Failed(error.into_string()),
         };
+        let native = std::mem::take(&mut lowered.native);
+        if !jobs.crosses() {
+            return PluginLintOutcome::Diagnostics(native);
+        }
         let request = match jobs.request(&[&lowered]) {
             Ok(request) => request,
             Err(error) => return PluginLintOutcome::Failed(error.into_string()),
@@ -170,9 +190,13 @@ impl PluginLintHost {
                 slot.failures = 0;
                 match jobs.answers(&answer, &[&lowered]) {
                     Ok(answers) => {
-                        let diagnostics: Vec<_> = answers
+                        let diagnostics: Vec<_> = native
                             .into_iter()
-                            .flat_map(|answer| answer.documents.into_iter().flatten())
+                            .chain(
+                                answers
+                                    .into_iter()
+                                    .flat_map(|answer| answer.documents.into_iter().flatten()),
+                            )
                             .collect();
                         drop(slot);
                         let mut answered = locked(&self.answered);

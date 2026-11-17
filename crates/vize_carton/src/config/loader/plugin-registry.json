@@ -31,7 +31,7 @@
       "apiVersions": [2],
       "consumers": ["compiler", "typecheck", "lint", "lsp"],
       "callbacks": [],
-      "admittedBy": []
+      "admittedBy": ["lint", "lsp"]
     }
   },
   "lintDocuments": ["template"],

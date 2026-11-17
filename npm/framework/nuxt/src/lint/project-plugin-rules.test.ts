@@ -1,6 +1,6 @@
 // `vue.plugins` lint rules in the Nuxt Oxlint integration (#13074): hosted by
 // oxlint-plugin-vize, never projected as Oxlint rules, and fail closed for
-// capabilities lint does not implement.
+// capabilities lint, or another product consuming them, does not implement.
 import assert from "node:assert/strict";
 import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
@@ -53,6 +53,22 @@ export default { vue: { plugins: [design()], entries: [{ files: ["src/**"], lint
       "[plugin/plan-invalid] vue.entries[0].linter: plugin rule `@acme/design/no-raw-color` is configured in vue.linter.rules only",
   });
 
+  const block = await temporaryRoot(t, "vize-nuxt-project-plugin-block-");
+  await writeFile(
+    path.join(block, "vite.config.mjs"),
+    `import { defineVizePlugin } from ${PLUGIN_SDK};
+const routes = defineVizePlugin({
+  apiVersion: 2, stability: "experimental", name: "@acme/routes", version: "1.0.0",
+  setup(api) { api.sfc.block("route", { lang: "json" }); },
+});
+export default { vue: { plugins: [routes()] } };`,
+  );
+  await assert.rejects(readProjectLintRuleSets(block, unexpectedPreset), {
+    message:
+      "[plugin/capability-unadmitted] @acme/routes: lint does not implement sfc.custom-block `route:json` yet",
+  });
+
+  // Lint checks directive contracts, but the compiler and type checker do not yet.
   const directive = await temporaryRoot(t, "vize-nuxt-project-plugin-directive-");
   await writeFile(
     path.join(directive, "vite.config.mjs"),
@@ -65,7 +81,7 @@ export default { vue: { plugins: [track()] } };`,
   );
   await assert.rejects(readProjectLintRuleSets(directive, unexpectedPreset), {
     message:
-      "[plugin/capability-unadmitted] @acme/track: lint does not implement vue.directive `track` yet",
+      "[plugin/capability-unadmitted] @acme/track: vue.directive `track` is not implemented by compiler, typecheck yet; run `vize plugin inspect` for the plan",
   });
 
   const skipped = await temporaryRoot(t, "vize-nuxt-project-plugin-skipped-");

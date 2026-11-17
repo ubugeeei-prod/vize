@@ -14,7 +14,7 @@
 | v2 manifest, canonical plan, validation, inspector views | done (#13124)                                         |
 | `vue.plugins` resolved from `vite.config.*`              | done                                                  |
 | custom lint (`lint.rule`, adapted v1 rules)              | done: `vize lint` incl. `--fix`, LSP, Oxlint and Nuxt |
-| custom directive (`vue.directive`)                       | declared only; every consumer refuses it              |
+| custom directive (`vue.directive`)                       | lint and LSP check modifiers; compiler, types pending |
 | custom block (`sfc.custom-block`)                        | declared only; every consumer refuses it              |
 
 ## Where the contract lives
@@ -74,7 +74,7 @@ invalidating a plan that is valid today.
 - **Capabilities.** An unknown or unsupported capability marked
   `required: false` is skipped and listed under `skipped`. A required one fails.
   A product refuses a plan containing a capability addressed to it that it does
-  not admit. No product admits a v2 capability until its slice lands.
+  not admit. A product admits a capability once it implements its part.
 - **Backends.** Only `js` is admitted. `native` and `wasm` fail with
   `backend-unavailable`, and there is no `auto`. Nothing falls back silently.
 - **Runtimes.** The resolving runtime (`node` or `bun`) must appear in
@@ -88,8 +88,9 @@ invalidating a plan that is valid today.
   `data:` module, so configs without plugins never parse or evaluate it.
   Inspection and other plugin tools (`loader/plugin-tools.js`) are only in the
   separate tooling runtime.
-- **Global refusal.** Until a capability is implemented by some product, every
-  product refuses a plan that contains it at config load. `vize plugin inspect`
+- **Global refusal.** Until every product that consumes a capability
+  implements it, every product refuses a plan that contains it at config load,
+  so no product silently ignores what another one honors. `vize plugin inspect`
   still reports the plan with its refused capabilities.
 - **Composition.** A later `withVue({ plugins })` replaces the list, like other
   Vue option arrays.
@@ -98,7 +99,16 @@ invalidating a plan that is valid today.
   are refused.
 - **Directives.** Names are kebab-case and cannot shadow a built-in directive.
   Modifiers normalize to `{ optional: true, default: false }`. A required
-  modifier with a default is refused.
+  modifier with a default is refused. `VerifiedPluginPlan::directives` lowers
+  every contract once into the native table that each consumer will read.
+  `normalized_modifiers` keeps a binding's authored modifiers in order and
+  appends every absent modifier that defaults to `true`, in canonical order. It
+  refuses unknown modifiers and missing required ones.
+  `vize lint`, the language server and the Oxlint integration check every
+  binding against its contract natively, without a sidecar, and report a
+  violation on the binding's authored span as `plugin/directive-contract`.
+  Lint and the LSP admit the capability; the plan still loads nowhere until the
+  compiler and the type checker implement it too.
 
 ## Plugin lint rules
 

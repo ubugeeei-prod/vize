@@ -6,6 +6,7 @@
 //! refuse any capability addressed to them that they do not implement.
 
 mod canonical;
+mod directives;
 mod invariants;
 mod registry;
 #[cfg(test)]
@@ -190,26 +191,34 @@ impl VerifiedPluginPlan {
         refused
     }
 
-    /// Refuse a capability that no Vize product implements yet.
+    /// Refuse a capability until every product that consumes it implements
+    /// it, so no product can silently ignore one another product honors.
     pub fn refuse_unimplemented(&self) -> Result<(), PluginPlanError> {
         let registry = plugin_registry();
         for plugin in &self.plan.plugins {
             for capability in &plugin.capabilities {
-                if registry
-                    .capabilities
-                    .get(capability.id.as_str())
-                    .is_some_and(|known| !known.admitted_by.is_empty())
-                {
+                let Some(known) = registry.capabilities.get(capability.id.as_str()) else {
+                    continue;
+                };
+                let missing: Vec<&str> = known
+                    .consumers
+                    .iter()
+                    .filter(|consumer| !known.admitted_by.contains(consumer))
+                    .map(String::as_str)
+                    .collect();
+                if missing.is_empty() {
                     continue;
                 }
+                let subject = cstr!("{} `{}`", capability.id, capability.key);
+                let refusal = if known.admitted_by.is_empty() {
+                    cstr!("no Vize product implements {subject} yet")
+                } else {
+                    cstr!("{subject} is not implemented by {} yet", missing.join(", "))
+                };
                 return Err(PluginPlanError::new(
                     "capability-unadmitted",
                     &plugin.name,
-                    cstr!(
-                        "no Vize product implements {} `{}` yet; run `vize plugin inspect` for the plan",
-                        capability.id,
-                        capability.key
-                    ),
+                    cstr!("{refusal}; run `vize plugin inspect` for the plan"),
                 ));
             }
         }
