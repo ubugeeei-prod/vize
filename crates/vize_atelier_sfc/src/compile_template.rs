@@ -6,6 +6,7 @@
 use vize_l0::dump::capture::StageCapture;
 use vize_l0::{String, ToCompactString, profile};
 mod duplicates;
+mod error_list;
 mod extraction;
 mod string_tracking;
 mod vapor;
@@ -15,6 +16,7 @@ mod section_offsets_tests;
 #[cfg(test)]
 mod tests;
 
+pub use error_list::{TEMPLATE_ERRORS_PREFIX, template_error_details};
 pub(crate) use extraction::{extract_template_parts, slice_template_parts, template_parts_full};
 pub(crate) use vapor::compile_template_block_vapor;
 
@@ -223,7 +225,7 @@ pub(crate) fn compile_template_block_with_capture(
             .map(|e| CompilerErrorWithSource::new(e, &template.content))
             .collect();
         if !fatal.is_empty() {
-            let mut message = String::from("Template compilation errors: ");
+            let mut message = String::from(TEMPLATE_ERRORS_PREFIX);
             use std::fmt::Write as _;
             let _ = write!(&mut message, "{:?}", fatal);
             return Err(SfcError {
@@ -349,7 +351,7 @@ pub(crate) fn compile_template_block_with_capture(
         .map(|e| CompilerErrorWithSource::new(e, &template.content))
         .collect();
     if !fatal.is_empty() {
-        let mut message = String::from("Template compilation errors: ");
+        let mut message = String::from(TEMPLATE_ERRORS_PREFIX);
         use std::fmt::Write as _;
         let _ = write!(&mut message, "{:?}", fatal);
         return Err(SfcError {

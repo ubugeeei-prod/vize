@@ -61,7 +61,7 @@ fn reject_spans(template: &SfcTemplateBlock, spans: Vec<SourceLocation>) -> Resu
         .iter()
         .map(|error| CompilerErrorWithSource::new(error, &template.content))
         .collect();
-    let mut message = String::from("Template compilation errors: ");
+    let mut message = String::from(super::TEMPLATE_ERRORS_PREFIX);
     use std::fmt::Write as _;
     let _ = write!(&mut message, "{:?}", with_source);
     Err(SfcError {
