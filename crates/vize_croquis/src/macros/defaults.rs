@@ -81,6 +81,13 @@ impl MacroTracker {
         }
     }
 
+    /// Whether the authored `withDefaults` object names `name`, even when the
+    /// prop's declaration is out of reach.
+    pub fn with_defaults_declares(&self, name: &str) -> bool {
+        self.with_defaults.values.contains_key(name)
+            || self.with_defaults.key_ranges.contains_key(name)
+    }
+
     /// Inline, non-shorthand default keys owned by the recognized defineProps
     /// invocation. Imported and ambiguous property declarations grant no edge.
     pub fn with_defaults_key_ranges(&self, name: &str) -> &[(u32, u32)] {

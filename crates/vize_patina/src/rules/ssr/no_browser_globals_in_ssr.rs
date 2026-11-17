@@ -264,6 +264,18 @@ impl NoBrowserGlobalsInSsr {
     }
 }
 
+impl NoBrowserGlobalsInSsr {
+    /// A browser-global name read in the template, unless the component may
+    /// declare it as a prop: template names resolve on the component
+    /// instance, and props declared through an unresolved type count too.
+    fn is_template_browser_global(ctx: &LintContext<'_>, name: &str) -> bool {
+        Self::is_browser_global_binding(ctx, name)
+            && !ctx
+                .analysis()
+                .is_some_and(|analysis| crate::rules::props_shape::may_declare_prop(analysis, name))
+    }
+}
+
 impl Rule for NoBrowserGlobalsInSsr {
     fn meta(&self) -> &'static RuleMeta {
         &META
@@ -301,7 +313,7 @@ impl Rule for NoBrowserGlobalsInSsr {
                 continue;
             }
 
-            if Self::is_browser_global_binding(ctx, ident) {
+            if Self::is_template_browser_global(ctx, ident) {
                 ctx.warn_with_help(
                     ctx.t_fmt("ssr/no-browser-globals-in-ssr.message", &[("name", ident)]),
                     &interpolation.loc,
@@ -338,7 +350,7 @@ impl Rule for NoBrowserGlobalsInSsr {
                     continue;
                 }
 
-                if Self::is_browser_global_binding(ctx, ident) {
+                if Self::is_template_browser_global(ctx, ident) {
                     ctx.warn_with_help(
                         ctx.t_fmt("ssr/no-browser-globals-in-ssr.message", &[("name", ident)]),
                         &directive.loc,
@@ -350,6 +362,8 @@ impl Rule for NoBrowserGlobalsInSsr {
     }
 }
 
+#[cfg(test)]
+mod prop_evidence_tests;
 #[cfg(test)]
 mod script_scope_tests;
 #[cfg(test)]
