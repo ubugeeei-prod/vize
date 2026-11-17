@@ -2,14 +2,18 @@
 
 #[cfg(feature = "native")]
 mod canonical;
+mod comparable;
 mod dependents;
 mod resolution;
 mod specifiers;
+use comparable::{ComparablePaths, comparable_path};
+#[cfg(test)]
 use resolution::resolve_import;
+use resolution::resolve_import_with;
 
 use std::{
     collections::BTreeMap,
-    path::{Component, Path, PathBuf},
+    path::{Path, PathBuf},
 };
 
 use oxc_span::SourceType;
@@ -48,7 +52,11 @@ impl OpenImportIndex {
             .to_file_path()
             .ok()
             .map(|path| {
-                collect_dependencies(&path, importer, source, &mut self.package_routes.lock())
+                let mut package_routes = self.package_routes.lock();
+                // One edit is one view of the filesystem: each route input is
+                // validated once for the whole update, not once per lookup.
+                let _validation = package_routes.validation_scope();
+                collect_dependencies(&path, importer, source, &mut package_routes)
             })
             .unwrap_or_default();
         remove_importer(&mut self.canonical.write(), importer);
@@ -164,6 +172,7 @@ fn collect_dependencies(
     let Some(importer_dir) = importer.parent() else {
         return Vec::new();
     };
+    let mut comparable = ComparablePaths::default();
     if importer
         .extension()
         .is_none_or(|extension| extension != "vue")
@@ -178,6 +187,7 @@ fn collect_dependencies(
             importer_dir,
             Some(importer_uri),
             package_routes,
+            &mut comparable,
             &mut dependencies,
         );
         return dependencies.into_iter().collect();
@@ -198,6 +208,7 @@ fn collect_dependencies(
             importer_dir,
             Some(importer_uri),
             package_routes,
+            &mut comparable,
             &mut dependencies,
         );
     }
@@ -210,14 +221,22 @@ fn collect_script_dependencies(
     importer_dir: &Path,
     importer_uri: Option<&Url>,
     package_routes: &mut PackageRouteResolver,
+    comparable: &mut ComparablePaths,
     dependencies: &mut FxHashSet<PathBuf>,
 ) {
     for specifier in specifiers::collect(source, source_type) {
         let specifier = specifier.as_str();
-        let mut resolved = resolve_import(importer_dir, specifier, package_routes);
+        let mut resolved = resolve_import_with(importer_dir, specifier, package_routes, comparable);
+        // A bare specifier's package route was just looked up from this
+        // directory with the same options, so the fallback only adds relative
+        // and project-alias targets. Asking `resolve_import_specifier` would
+        // repeat that failed lookup through a fresh, uncached resolver that
+        // re-`lstat`s every route input on every edit.
         if !resolved.target_found
             && let Some(dependency) = importer_uri.and_then(|uri| {
-                crate::ide::definition::import_resolver::resolve_import_specifier(uri, specifier)
+                crate::ide::definition::import_resolver::resolve_authored_import_specifier(
+                    uri, specifier,
+                )
             })
         {
             resolved.dependencies.push(dependency);
@@ -228,37 +247,9 @@ fn collect_script_dependencies(
             // where lookups use the same comparable spelling; this also
             // collapses platform aliases such as macOS `/var` -> `/private/var`
             // without erasing the resolver's logical package identity.
-            dependencies.insert(comparable_path(&dependency));
+            dependencies.insert(comparable.get(&dependency));
         }
     }
-}
-
-fn comparable_path(path: &Path) -> PathBuf {
-    let mut ancestor = path;
-    let mut unresolved = Vec::new();
-    while let Some(parent) = ancestor.parent() {
-        if let Some(name) = ancestor.file_name() {
-            unresolved.push(name.to_os_string());
-        }
-        if let Ok(mut canonical) = std::fs::canonicalize(parent) {
-            for component in unresolved.into_iter().rev() {
-                canonical.push(component);
-            }
-            return canonical;
-        }
-        ancestor = parent;
-    }
-    let mut normalized = PathBuf::new();
-    for component in path.components() {
-        match component {
-            Component::CurDir => {}
-            Component::ParentDir => {
-                normalized.pop();
-            }
-            _ => normalized.push(component.as_os_str()),
-        }
-    }
-    normalized
 }
 
 fn source_type(lang: Option<&str>) -> SourceType {
