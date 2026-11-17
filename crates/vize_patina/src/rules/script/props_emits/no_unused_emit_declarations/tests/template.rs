@@ -286,3 +286,27 @@ function onSave() {
 "#;
     assert_eq!(lint_sfc(sfc).warning_count, 0);
 }
+
+#[test]
+fn an_emit_function_passed_on_from_the_template_may_emit_every_event() {
+    for template in [
+        r#"<Root v-bind="{ ...props, ...useEmitAsProps(emits) }" />"#,
+        r#"<Child :emit="emits" />"#,
+        r#"<Child :forward="$emit" />"#,
+    ] {
+        let sfc = format!(
+            "<script setup lang=\"ts\">\nconst props = defineProps<{{ a?: string }}>()\nconst emits = defineEmits<{{ complete: []; change: [] }}>()\n</script>\n<template>\n  {template}\n</template>\n"
+        );
+        assert_eq!(lint_sfc(&sfc).warning_count, 0, "{template}");
+    }
+    // Prose naming the binding and a direct call keep the check.
+    let sfc = "<script setup lang=\"ts\">\nconst emits = defineEmits<{ complete: []; change: [] }>()\n</script>\n<template>\n  <p>This component emits events.</p>\n  <button @click=\"emits('complete')\" />\n</template>\n";
+    let result = lint_sfc(sfc);
+    assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
+}
+
+#[test]
+fn get_current_instance_may_emit_every_event() {
+    let sfc = "<script setup lang=\"ts\">\nimport { getCurrentInstance } from 'vue'\ndefineEmits<{ select: []; expand: [] }>()\nconst table = getCurrentInstance()\n</script>\n<template><div /></template>\n";
+    assert_eq!(lint_sfc(sfc).warning_count, 0);
+}

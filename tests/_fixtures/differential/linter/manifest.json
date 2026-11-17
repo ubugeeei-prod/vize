@@ -22440,6 +22440,43 @@
       }
     },
     {
+      "id": "linter/unused-emits-escapes-12336",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "unused-emits-escapes-12336",
+        "files": [
+          {
+            "path": "PinInput.vue.txt",
+            "role": "real-project-matrix-reduction",
+            "sha256": "e7edc41898b241cb8c73ddd15f87dde105b2ba5a7fd3c52ae2690328e86512fb"
+          },
+          {
+            "path": "rules.json",
+            "role": "rule-options",
+            "sha256": "9676c78434b9ba2cab945a6f2620da4b1ed25dfed5845eccc08476ebe7f08fe2"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/v-bind-prop-longform-6097",
       "state": "active",
       "targets": [
