@@ -314,6 +314,132 @@
       "reason": "Spreading this reactive() object (v-bind=\"props\") exceeds TypeScript instantiation depth; the same spread in a plain .ts file reports TS2589 under both TypeScript 6 and 7. vue-tsc emits the props call too, but the checker anchors the error on the unmapped call start, so vue-tsc drops it. Vize reports it on the component tag the props literal maps to, because dropping a give-up hides why the props and listeners of this usage are degraded."
     },
     {
+      "project": "vue-vben-admin",
+      "file": "packages/@core/ui-kit/form-ui/src/form-render/form.vue",
+      "severity": "error",
+      "line": 56,
+      "column": 1,
+      "vize": {
+        "code": 2578,
+        "message": "Unused '@ts-expect-error' directive."
+      },
+      "baseline": null,
+      "issue": 13044,
+      "reason": "The directive silences vue-tsc's TS6133 on a setup binding that the template names only as a static `ref=\"...\"`. Vue's inline renderer reads that binding (`ref_key: \"name\", ref: name`), so it is used: removing it changes which element the template ref receives. Vize counts that read (#11386), so the TS6133 the directive expects does not occur and TypeScript reports the directive itself. vue-tsc writes template refs only as a JSDoc navigation comment, so the binding looks unread there."
+    },
+    {
+      "project": "vue-vben-admin",
+      "file": "packages/@core/ui-kit/layout-ui/src/components/layout-content.vue",
+      "severity": "error",
+      "line": 29,
+      "column": 1,
+      "vize": {
+        "code": 2578,
+        "message": "Unused '@ts-expect-error' directive."
+      },
+      "baseline": null,
+      "issue": 13044,
+      "reason": "The directive silences vue-tsc's TS6133 on a setup binding that the template names only as a static `ref=\"...\"`. Vue's inline renderer reads that binding (`ref_key: \"name\", ref: name`), so it is used: removing it changes which element the template ref receives. Vize counts that read (#11386), so the TS6133 the directive expects does not occur and TypeScript reports the directive itself. vue-tsc writes template refs only as a JSDoc navigation comment, so the binding looks unread there."
+    },
+    {
+      "project": "vue-vben-admin",
+      "file": "packages/@core/ui-kit/popup-ui/src/drawer/drawer.vue",
+      "severity": "error",
+      "line": 57,
+      "column": 1,
+      "vize": {
+        "code": 2578,
+        "message": "Unused '@ts-expect-error' directive."
+      },
+      "baseline": null,
+      "issue": 13044,
+      "reason": "The directive silences vue-tsc's TS6133 on a setup binding that the template names only as a static `ref=\"...\"`. Vue's inline renderer reads that binding (`ref_key: \"name\", ref: name`), so it is used: removing it changes which element the template ref receives. Vize counts that read (#11386), so the TS6133 the directive expects does not occur and TypeScript reports the directive itself. vue-tsc writes template refs only as a JSDoc navigation comment, so the binding looks unread there."
+    },
+    {
+      "project": "vue-vben-admin",
+      "file": "packages/@core/ui-kit/popup-ui/src/modal/modal.vue",
+      "severity": "error",
+      "line": 40,
+      "column": 1,
+      "vize": {
+        "code": 2578,
+        "message": "Unused '@ts-expect-error' directive."
+      },
+      "baseline": null,
+      "issue": 13044,
+      "reason": "The directive silences vue-tsc's TS6133 on a setup binding that the template names only as a static `ref=\"...\"`. Vue's inline renderer reads that binding (`ref_key: \"name\", ref: name`), so it is used: removing it changes which element the template ref receives. Vize counts that read (#11386), so the TS6133 the directive expects does not occur and TypeScript reports the directive itself. vue-tsc writes template refs only as a JSDoc navigation comment, so the binding looks unread there."
+    },
+    {
+      "project": "vue-vben-admin",
+      "file": "packages/@core/ui-kit/popup-ui/src/modal/modal.vue",
+      "severity": "error",
+      "line": 44,
+      "column": 1,
+      "vize": {
+        "code": 2578,
+        "message": "Unused '@ts-expect-error' directive."
+      },
+      "baseline": null,
+      "issue": 13044,
+      "reason": "The directive silences vue-tsc's TS6133 on a setup binding that the template names only as a static `ref=\"...\"`. Vue's inline renderer reads that binding (`ref_key: \"name\", ref: name`), so it is used: removing it changes which element the template ref receives. Vize counts that read (#11386), so the TS6133 the directive expects does not occur and TypeScript reports the directive itself. vue-tsc writes template refs only as a JSDoc navigation comment, so the binding looks unread there."
+    },
+    {
+      "project": "vue-vben-admin",
+      "file": "packages/@core/ui-kit/tabs-ui/src/components/tabs-chrome/tabs.vue",
+      "severity": "error",
+      "line": 31,
+      "column": 1,
+      "vize": {
+        "code": 2578,
+        "message": "Unused '@ts-expect-error' directive."
+      },
+      "baseline": null,
+      "issue": 13044,
+      "reason": "The directive silences vue-tsc's TS6133 on a setup binding that the template names only as a static `ref=\"...\"`. Vue's inline renderer reads that binding (`ref_key: \"name\", ref: name`), so it is used: removing it changes which element the template ref receives. Vize counts that read (#11386), so the TS6133 the directive expects does not occur and TypeScript reports the directive itself. vue-tsc writes template refs only as a JSDoc navigation comment, so the binding looks unread there."
+    },
+    {
+      "project": "vue-vben-admin",
+      "file": "packages/@core/ui-kit/tabs-ui/src/components/tabs-chrome/tabs.vue",
+      "severity": "error",
+      "line": 33,
+      "column": 1,
+      "vize": {
+        "code": 2578,
+        "message": "Unused '@ts-expect-error' directive."
+      },
+      "baseline": null,
+      "issue": 13044,
+      "reason": "The directive silences vue-tsc's TS6133 on a setup binding that the template names only as a static `ref=\"...\"`. Vue's inline renderer reads that binding (`ref_key: \"name\", ref: name`), so it is used: removing it changes which element the template ref receives. Vize counts that read (#11386), so the TS6133 the directive expects does not occur and TypeScript reports the directive itself. vue-tsc writes template refs only as a JSDoc navigation comment, so the binding looks unread there."
+    },
+    {
+      "project": "vue-vben-admin",
+      "file": "packages/@core/ui-kit/tabs-ui/src/tabs-view.vue",
+      "severity": "error",
+      "line": 32,
+      "column": 3,
+      "vize": {
+        "code": 2578,
+        "message": "Unused '@ts-expect-error' directive."
+      },
+      "baseline": null,
+      "issue": 13044,
+      "reason": "The directive silences vue-tsc's TS6133 on a setup binding that the template names only as a static `ref=\"...\"`. Vue's inline renderer reads that binding (`ref_key: \"name\", ref: name`), so it is used: removing it changes which element the template ref receives. Vize counts that read (#11386), so the TS6133 the directive expects does not occur and TypeScript reports the directive itself. vue-tsc writes template refs only as a JSDoc navigation comment, so the binding looks unread there."
+    },
+    {
+      "project": "vue-vben-admin",
+      "file": "packages/effects/common-ui/src/components/icon-picker/icon-picker.vue",
+      "severity": "error",
+      "line": 200,
+      "column": 13,
+      "vize": {
+        "code": 2322,
+        "message": "Type '\"visible\"' is not assignable to type 'Booleanish | undefined'. (source: aria-expanded=\"visible\")"
+      },
+      "baseline": null,
+      "issue": 13044,
+      "reason": "`Input` declares no `aria-expanded` prop and renders a root `<input>`, so the attribute falls through to that element, where Vue types `aria-expanded` as `Booleanish`. `\"visible\"` is not a valid ARIA state value (only true or false). Vize checks fallthrough attributes against the root element, and vue-tsc reports the same TS2322 here with `vueCompilerOptions.fallthroughAttributes` enabled. By default vue-tsc accepts any undeclared component attribute through `Record<string, unknown>`."
+    },
+    {
       "project": "nuxt-ui",
       "file": "docs/app/components/content/examples/navigation-menu/NavigationMenuModelValueExample.vue",
       "severity": "error",

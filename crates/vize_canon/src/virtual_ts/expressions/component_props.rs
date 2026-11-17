@@ -315,10 +315,15 @@ fn generate_component_prop_checks_inner<const LEGACY_SCALARS: bool>(
             let check_name_end = ts.len();
             let inline_callback =
                 !LEGACY_SCALARS && crate::virtual_ts::scope::is_inline_callback_prop(prop);
+            let replaced = super::component_prop_bindings::overridden_by_later_static(usage, prop);
             let owned = owned_values
                 .as_ref()
-                .filter(|values| values.owns(prop_index));
-            if LEGACY_SCALARS {
+                .filter(|values| !replaced && values.owns(prop_index));
+            if replaced {
+                // A later static attribute is the value the child is checked
+                // with; this expression keeps only its own diagnostics.
+                ts.push_str(": unknown = ");
+            } else if LEGACY_SCALARS {
                 append!(*ts, ": __vize_legacy_prop_{idx}_{prop_index} = ");
             } else if let Some(values) = owned {
                 values.append_type(ts, prop, generated_value.text.as_str());
