@@ -174,6 +174,14 @@ export const steps: Readonly<Record<string, Step>> = {
         "selected_tag_facts_aux_never_changes_mode_quotes_width_or_event_layout",
     },
   },
+  // Step 5: the neutral component definition becomes the module description's home.
+  "l2-module": {
+    crate: "davinci/vize_l2",
+    name: "vize_l2",
+    moves: [move("component", "module")],
+    items: [],
+    parents: {},
+  },
   // Step 2b: L1 modules named by concept, not by migration status (`native`).
   "l1-concepts": {
     crate: "davinci/vize_l1",
