@@ -40,7 +40,7 @@
       "api": "--static-class",
       "cases": {
         "path": "tests/_fixtures/differential/lint-static-class/cases.json",
-        "sha256": "b409b01c2e7177419cafbdbbdb6257b11fe32e37e9a46acd9595d09d1f817116"
+        "sha256": "a8e75c02b01aed33a505886090952ac63f7e7b78a9fa96cc31be591852e207af"
       }
     },
     {
@@ -54,7 +54,7 @@
   ],
   "oracles": {
     "path": "tests/_fixtures/differential/linter/oracle-index.json",
-    "sha256": "362d9be19793e2c164af9b964b4f9b6bd9f4af781b8f2b44d3004887ab9f0448"
+    "sha256": "b9f91809b14d7986f345fc4c562261417854a4f5d9e1005396fc60af7e6b3cb8"
   },
   "cases": [
     {
@@ -19889,6 +19889,38 @@
               "vue3-sfc",
               "html-template",
               "js",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/prefer-static-class-nodes-12336",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "prefer-static-class-nodes-12336",
+        "files": [
+          {
+            "path": "Case.vue.txt",
+            "role": "real-project-matrix-reduction",
+            "sha256": "b550e80ff76bb8df8d7b0837cea9ad21fae78ee3cc03d2c06205ca5cb5adc971"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
               "ts"
             ],
             "selector": "linter manifest pinned authored sources"

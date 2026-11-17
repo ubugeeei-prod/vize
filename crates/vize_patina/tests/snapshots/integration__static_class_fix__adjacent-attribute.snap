@@ -16,10 +16,10 @@ expression: "(&case, &initial, &result)"
             22,
         ),
         diagnostic_start: Some(
-            6,
+            13,
         ),
         diagnostic_end: Some(
-            22,
+            21,
         ),
     },
     LintResult {
@@ -29,8 +29,8 @@ expression: "(&case, &initial, &result)"
                 rule_name: "vapor/prefer-static-class",
                 severity: Warning,
                 message: "Prefer static class attribute over dynamic :class binding for constant values",
-                start: 6,
-                end: 22,
+                start: 13,
+                end: 21,
                 help: None,
                 labels: [],
                 fix: Some(
