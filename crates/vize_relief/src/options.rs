@@ -142,6 +142,10 @@ pub struct TransformOptions {
     /// (see `vize_armature::legacy`). This PR threads the signal; it does not
     /// yet branch any behavior on it.
     pub dialect: VueVersion,
+    /// Directive contracts declared by `vue.plugins` (#13074). A binding of a
+    /// declared directive gains its default modifiers, and one that breaks the
+    /// contract is a compile error. Empty without a plugin plan.
+    pub directive_contracts: vize_l0::config::DirectiveContracts,
 }
 
 impl Default for TransformOptions {
@@ -161,6 +165,7 @@ impl Default for TransformOptions {
             custom_renderer: false,
             experimental_patterned_template: false,
             dialect: VueVersion::V3,
+            directive_contracts: vize_l0::config::DirectiveContracts::EMPTY,
         }
     }
 }

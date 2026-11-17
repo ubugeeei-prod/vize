@@ -110,6 +110,26 @@ pub fn lower_with_frozen_element_spans<'a>(
     block: SourceBlock<'a>,
     spans: &'a [Span],
 ) -> Result<Lowered<'a>, &'static str> {
+    lower_with_frozen_element_spans_and_directives(
+        allocator,
+        tree,
+        errors,
+        block,
+        spans,
+        &vize_l0::config::NO_DIRECTIVE_CONTRACTS,
+    )
+}
+
+/// [`lower_with_frozen_element_spans`] honoring declared directive contracts.
+#[doc(hidden)]
+pub fn lower_with_frozen_element_spans_and_directives<'a>(
+    allocator: &'a Allocator,
+    tree: &SurfaceTree<'a>,
+    errors: &[SurfaceError],
+    block: SourceBlock<'a>,
+    spans: &'a [Span],
+    directive_contracts: &vize_l0::config::DirectiveContracts,
+) -> Result<Lowered<'a>, &'static str> {
     let openings = FrozenOpenings::new(tree, block, spans)?;
     let mut cx = Cx::with_source_block_and_comment_policy(
         allocator,
@@ -120,6 +140,7 @@ pub fn lower_with_frozen_element_spans<'a>(
         None,
     );
     cx.frozen_openings = openings;
+    cx.directive_contracts = directive_contracts.clone();
     finish::lower_in_frozen_context(cx, tree, errors, block)
 }
 

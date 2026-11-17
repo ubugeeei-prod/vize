@@ -79,5 +79,6 @@ pub mod vue_file;
 pub use lower::{
     ForeignDialect, Lowered, lower, lower_preserving_comments, lower_source_block,
     lower_source_block_with_caps, lower_source_block_with_foreign_expressions, lower_style_block,
-    lower_style_block_in, lower_with_caps, lower_with_frozen_element_spans,
+    lower_style_block_in, lower_with_caps, lower_with_directives, lower_with_frozen_element_spans,
+    lower_with_frozen_element_spans_and_directives,
 };

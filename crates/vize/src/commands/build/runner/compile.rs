@@ -260,6 +260,7 @@ fn compile_file_inner(
             compiler_options: Some(vize_atelier_dom::DomCompilerOptions {
                 experimental_in_tag_comments: settings.experimental_in_tag_comments,
                 experimental_patterned_template: settings.experimental_patterned_template,
+                directive_contracts: settings.directive_contracts.clone(),
                 ..Default::default()
             }),
             dialect: settings.dialect,

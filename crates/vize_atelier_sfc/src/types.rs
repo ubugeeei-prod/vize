@@ -167,7 +167,8 @@ pub struct TemplateCompileOptions {
     /// the `legacy` cargo feature; this PR only plumbs the signal.
     pub dialect: vize_carton::config::VueVersion,
 
-    /// Compiler options
+    /// Compiler options. Their `directive_contracts` (#13074) reach the
+    /// VDOM, SSR and Vapor template compilers alike.
     pub compiler_options: Option<vize_atelier_dom::DomCompilerOptions>,
 }
 

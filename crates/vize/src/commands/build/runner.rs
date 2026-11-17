@@ -11,6 +11,7 @@ mod compile_stats;
 mod declarations;
 mod fallback;
 mod output;
+mod plugins;
 mod preprocess;
 mod profile_facts;
 mod settings;

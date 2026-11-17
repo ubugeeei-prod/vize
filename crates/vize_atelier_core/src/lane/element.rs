@@ -16,6 +16,7 @@ use crate::{
 
 use super::{ExitFns, TransformContext};
 
+mod custom_directive;
 mod directive_expressions;
 mod frozen;
 mod vapor_runtime_props;
@@ -213,11 +214,7 @@ fn process_element_props<'a>(ctx: &mut TransformContext<'a>, el: &mut Box<'a, El
                 // No need to add to ctx.directives (which would use resolveDirective)
                 "show" => {}
                 // Handle custom directives - register them for resolveDirective
-                _ if !is_builtin_directive(dir.name) => {
-                    ctx.helper(RuntimeHelper::WithDirectives);
-                    ctx.helper(RuntimeHelper::ResolveDirective);
-                    ctx.add_directive(dir.name);
-                }
+                _ if !is_builtin_directive(dir.name) => custom_directive::register(ctx, dir),
                 _ => {}
             }
         }

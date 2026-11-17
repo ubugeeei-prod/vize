@@ -1,0 +1,6 @@
+---
+source: crates/vize_atelier_sfc/tests/plugin_directive_contracts.rs
+expression: "format!(\"{:?}\\n{}\", error.code, error.message)"
+---
+Some("TEMPLATE_ERROR")
+Template compilation errors: [CompilerError { code: DirectiveContract, message: "v-track does not declare the modifier `bogus` (declared by @acme/tracking)", loc: Some(SourceLocation { start: Position { offset: 6, line: 2, column: 6 }, end: Position { offset: 30, line: 2, column: 30 }, source: "v-track.bogus.strict=\"e\"" }) }, CompilerError { code: DirectiveContract, message: "v-track requires the modifier `strict` (declared by @acme/tracking)", loc: Some(SourceLocation { start: Position { offset: 43, line: 3, column: 6 }, end: Position { offset: 50, line: 3, column: 13 }, source: "v-track" }) }]

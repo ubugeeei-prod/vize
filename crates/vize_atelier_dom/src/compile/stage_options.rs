@@ -51,6 +51,7 @@ pub(super) fn transform_options(options: &DomCompilerOptions) -> TransformOption
         experimental_patterned_template: options.experimental_patterned_template,
         binding_metadata: options.binding_metadata.clone(),
         dialect: options.dialect,
+        directive_contracts: options.directive_contracts.clone(),
         ..Default::default()
     }
 }
@@ -138,6 +139,21 @@ pub(super) fn l2_emit_refusal(
 
 pub(super) fn source_may_contain_patterned_template_syntax(source: &str) -> bool {
     source.contains("v-match") || source.contains("v-when") || source.contains("v-case")
+}
+
+/// A template that may bind a directive declared by `vue.plugins` (#13074)
+/// stays on the compatibility lane, which applies the contract: the
+/// published `DomEmitOptions` literal is frozen, so it cannot carry the
+/// table. This superset scan never runs without a plugin plan.
+pub(super) fn source_may_bind_declared_directive(
+    source: &str,
+    contracts: &vize_l0::config::DirectiveContracts,
+) -> bool {
+    contracts.as_slice().iter().any(|contract| {
+        source
+            .match_indices(contract.name.as_str())
+            .any(|(at, _)| source.as_bytes().get(at.saturating_sub(2)..at) == Some(b"v-"))
+    })
 }
 
 /// `@vize:` comments stay on the legacy lane: its parser retains them as

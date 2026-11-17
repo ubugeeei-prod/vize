@@ -51,7 +51,8 @@ incubation; `native` and `wasm` refuse instead of falling back.
 
 `api.sfc.block` and `api.vue.directive` are declared, not yet usable: every
 product refuses a plan that contains one until every product consuming it
-implements it. Lint and the language server already check directive modifiers. v1
+implements it. Lint and the language server already check directive modifiers,
+and `vize build` compiles their defaults into VDOM, SSR and Vapor output. v1
 `definePlugin` rule plugins may also appear in `vue.plugins`; the host records
 them through an adapter and executes the original plugin unchanged.
 

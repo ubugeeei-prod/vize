@@ -80,7 +80,10 @@ pub fn option_payload(prefix: bool) -> Value {
         self_component,
         source_map,
         source_map_filename,
+        directive_contracts,
     } = VaporCompilerExperimentalOptions::default();
+    // Added after these captures; its empty default is how they compiled.
+    assert!(directive_contracts.is_empty());
     json!({
         "entrypoint": "compile_vapor", "templateSyntax": "Standard",
         "customElements": "default", "sfcScope": null,

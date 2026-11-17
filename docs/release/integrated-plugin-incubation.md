@@ -14,7 +14,7 @@
 | v2 manifest, canonical plan, validation, inspector views | done (#13124)                                         |
 | `vue.plugins` resolved from `vite.config.*`              | done                                                  |
 | custom lint (`lint.rule`, adapted v1 rules)              | done: `vize lint` incl. `--fix`, LSP, Oxlint and Nuxt |
-| custom directive (`vue.directive`)                       | lint and LSP check modifiers; compiler, types pending |
+| custom directive (`vue.directive`)                       | lint, LSP and compiler; types pending                 |
 | custom block (`sfc.custom-block`)                        | declared only; every consumer refuses it              |
 
 ## Where the contract lives
@@ -107,8 +107,18 @@ invalidating a plan that is valid today.
   `vize lint`, the language server and the Oxlint integration check every
   binding against its contract natively, without a sidecar, and report a
   violation on the binding's authored span as `plugin/directive-contract`.
-  Lint and the LSP admit the capability; the plan still loads nowhere until the
-  compiler and the type checker implement it too.
+  The compiler admits the capability too. A declared directive's absent
+  modifiers that default to `true` are appended after the authored ones in
+  VDOM, SSR and Vapor output, by the L2 lowering and by the legacy transform
+  alike, so every lane emits the same modifiers object. A VDOM template that
+  may bind a declared directive takes the compatibility lane, because the
+  published `DomEmitOptions` literal cannot carry the table. A binding that breaks
+  its contract fails the template with `compiler/directive-contract` on its
+  authored span. `vize build` admits the plan once per output it produces, so
+  a plugin whose `supports.outputs` omits one is refused (`host-unsupported`).
+  The plan still loads nowhere until the type checker implements the
+  capability too. The Vite host and JSX/TSX templates do not read the table
+  yet.
 
 ## Plugin lint rules
 

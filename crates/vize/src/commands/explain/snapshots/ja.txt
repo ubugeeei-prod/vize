@@ -52,6 +52,15 @@ compiler/control-character-reference · コンパイラーエラー
 
 ヒント:
   参照を削除するか、意図した表示文字を書いてください
+=== compiler/directive-contract
+compiler/directive-contract · コンパイラーエラー
+ディレクティブのバインディングが宣言された契約に違反しています。
+
+ステージ: lowered
+重大度: エラー
+
+ヒント:
+  vue.plugins のプラグインがこのディレクティブに宣言した修飾子だけを使い、必須の修飾子をすべて付けてください。vize plugin inspect で一覧できます
 === compiler/duplicate-attribute
 compiler/duplicate-attribute · コンパイラーエラー
 属性が重複しています。

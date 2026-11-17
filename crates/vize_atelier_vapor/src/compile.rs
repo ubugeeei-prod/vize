@@ -83,6 +83,8 @@ pub struct VaporCompilerExperimentalOptions {
     pub source_map: bool,
     /// Filename recorded in the Source Map v3 `file` and `sources` fields.
     pub source_map_filename: Option<String>,
+    /// Directive contracts from the experimental `vue.plugins` API (#13074).
+    pub directive_contracts: vize_l0::config::DirectiveContracts,
 }
 
 mod inner;

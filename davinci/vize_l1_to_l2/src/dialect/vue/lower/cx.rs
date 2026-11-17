@@ -56,6 +56,8 @@ pub(crate) struct Cx<'a, P> {
     pub features: vize_l2::artifact::LoweringFeatures,
     custom_element_patterns: Vec<String>,
     custom_element_predicate: Option<fn(&str) -> bool>,
+    /// Directive contracts from `vue.plugins` (#13074); empty without a plan.
+    pub(crate) directive_contracts: vize_l0::config::DirectiveContracts,
 }
 
 impl<'a, P: ProvenanceSink> Cx<'a, P> {
@@ -98,6 +100,7 @@ impl<'a, P: ProvenanceSink> Cx<'a, P> {
             features: vize_l2::artifact::LoweringFeatures::EMPTY,
             custom_element_patterns: custom_element_patterns.to_vec(),
             custom_element_predicate,
+            directive_contracts: vize_l0::config::DirectiveContracts::EMPTY,
         }
     }
 

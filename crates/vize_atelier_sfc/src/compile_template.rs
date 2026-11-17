@@ -170,6 +170,9 @@ pub(crate) fn compile_template_block_with_capture(
             dialect: options.dialect,
             binding_metadata: bindings.cloned(),
             script_tables,
+            directive_contracts: compiler_options
+                .map(|opts| opts.directive_contracts.clone())
+                .unwrap_or_default(),
         };
         let ssr_experimental_options = vize_atelier_ssr::SsrCompilerExperimentalOptions {
             component_name: component_name.map(|name| name.to_compact_string()),

@@ -58,6 +58,9 @@ pub(crate) fn compile_template_block_vapor(
     let experimental_options = VaporCompilerExperimentalOptions {
         component_name: component_name.map(|name| name.to_compact_string()),
         self_component: experimental_self_component,
+        directive_contracts: compiler_options
+            .map(|opts| opts.directive_contracts.clone())
+            .unwrap_or_default(),
         ..VaporCompilerExperimentalOptions::default()
     };
 

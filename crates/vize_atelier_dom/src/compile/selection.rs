@@ -46,6 +46,8 @@ pub(super) enum DomLegacyReason {
     PatternedSource,
     /// The source text may carry an `@vize:` directive comment.
     DirectiveComment,
+    /// The source text may bind a directive a `vue.plugins` entry declares.
+    DeclaredDirective,
     /// The `legacy-differential` legacy lane was forced for this thread.
     #[cfg(feature = "legacy-differential")]
     Forced,
@@ -67,6 +69,7 @@ impl DomLegacyReason {
             Self::Croquis => "analysis-context",
             Self::PatternedSource => "patterned-source",
             Self::DirectiveComment => "directive-comment",
+            Self::DeclaredDirective => "declared-directive",
             #[cfg(feature = "legacy-differential")]
             Self::Forced => "forced",
         }
@@ -87,6 +90,7 @@ impl DomLegacyReason {
             Self::Croquis => "l2.dom.legacy.croquis",
             Self::PatternedSource => "l2.dom.legacy.patterned_source",
             Self::DirectiveComment => "l2.dom.legacy.directive_comment",
+            Self::DeclaredDirective => "l2.dom.legacy.declared_directive",
             #[cfg(feature = "legacy-differential")]
             Self::Forced => "l2.dom.legacy.forced",
         }

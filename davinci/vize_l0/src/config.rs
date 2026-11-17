@@ -5,7 +5,10 @@ mod document;
 mod model;
 mod normalize;
 pub use crate::dialect::VueDialect;
-pub use directive::{DirectiveContract, DirectiveContractError, DirectiveModifier};
+pub use directive::{
+    DirectiveContract, DirectiveContractError, DirectiveContracts, DirectiveModifier,
+    NO_DIRECTIVE_CONTRACTS,
+};
 pub use document::ConfigDocument;
 pub use model::{
     AllowListOptions, AnchorHasContentOptions, ArrowParens, AttributeHyphenationConfig,

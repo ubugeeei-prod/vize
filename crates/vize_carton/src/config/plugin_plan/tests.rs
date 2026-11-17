@@ -134,13 +134,12 @@ fn admission_refuses_unimplemented_capabilities_per_product() {
         [
             ("sfc.custom-block", "route:json"),
             ("sfc.custom-block", "i18n"),
-            ("vue.directive", "track")
         ]
     );
     let error = plan.admit("compiler", None).unwrap_err();
     assert_eq!(
         crate::cstr!("{error}"),
-        "[plugin/capability-unadmitted] @acme/routes: compiler does not implement sfc.custom-block `route:json` yet (and 2 more)"
+        "[plugin/capability-unadmitted] @acme/routes: compiler does not implement sfc.custom-block `route:json` yet (and 1 more)"
     );
     assert_eq!(
         plan.admit("bundler", None).unwrap_err().code,
@@ -211,6 +210,20 @@ fn declared_directives_lower_to_one_normalization_table() {
         crate::cstr!("{unknown}"),
         "v-track does not declare the modifier `bogus`"
     );
+
+    // The compiler appends only the absent defaults, after the authored ones.
+    assert_eq!(track.default_modifiers(&["strict"]), Ok(vec!["passive"]));
+    assert_eq!(
+        track.default_modifiers(&["passive", "strict"]),
+        Ok(Vec::<&str>::new())
+    );
+    assert_eq!(track.default_modifiers(&["once"]).unwrap_err(), missing);
+
+    // One shared table: lookup by name, and an empty table for no plan.
+    let table = crate::config::DirectiveContracts::new(vec![track.clone()]);
+    assert_eq!(table.get("track"), Some(&track));
+    assert_eq!(table.get("focus"), None);
+    assert!(crate::config::DirectiveContracts::new(Vec::new()).is_empty());
 }
 
 /// The declared-capabilities fixture reduced to its one directive plugin.
@@ -232,19 +245,17 @@ fn directive_only_plan() -> super::VerifiedPluginPlan {
 #[test]
 fn a_capability_is_refused_until_every_consumer_implements_it() {
     let plan = directive_only_plan();
-    // Lint and the editor implement directive contracts; the compiler and the
-    // type checker do not, so no product may load the plan yet.
-    for product in ["lint", "lsp", "format"] {
+    // Lint, the editor and the compiler implement directive contracts; the
+    // type checker does not, so no product may load the plan yet.
+    for product in ["compiler", "lint", "lsp", "format"] {
         plan.admit(product, None).unwrap();
     }
-    for product in ["compiler", "typecheck"] {
-        assert_eq!(
-            plan.admit(product, None).unwrap_err().code,
-            "capability-unadmitted"
-        );
-    }
+    assert_eq!(
+        plan.admit("typecheck", None).unwrap_err().code,
+        "capability-unadmitted"
+    );
     assert_eq!(
         crate::cstr!("{}", plan.refuse_unimplemented().unwrap_err()),
-        "[plugin/capability-unadmitted] @acme/tracking: vue.directive `track` is not implemented by compiler, typecheck yet; run `vize plugin inspect` for the plan"
+        "[plugin/capability-unadmitted] @acme/tracking: vue.directive `track` is not implemented by typecheck yet; run `vize plugin inspect` for the plan"
     );
 }
