@@ -9,7 +9,12 @@ import {
   identifierKeyClassReason,
   identifierKeyDuplicate,
 } from "./duplicate_class_intentional.ts";
-import { inheritedPropMember, inheritedPropMemberReason } from "./inherited_prop_members.ts";
+import {
+  heritageOnlyProp,
+  heritageOnlyPropReason,
+  inheritedPropMember,
+  inheritedPropMemberReason,
+} from "./inherited_prop_members.ts";
 import {
   indexRealProjectLocationSource,
   realProjectLocationDivergence,
@@ -545,6 +550,8 @@ const patinaIntentionalRuleIds = new Set([
   "vue/prefer-single-event-payload",
   "script/require-typed-ref",
   "vue/require-prop-comment",
+  "vue/no-props-shadow",
+  "vue/no-template-shadow",
   "vue/require-v-for-key",
   "script/valid-next-tick",
   "vue/v-slot-style",
@@ -602,6 +609,18 @@ export function patinaIntentionalReason(
     typedDefaultComesFromComposedContract(finding, source)
   )
     return "Patina resolves optional props inherited through local interface heritage or intersections; eslint-plugin-vue does not expand that composed prop contract.";
+  const shadowed =
+    finding.ruleId === "vue/no-props-shadow"
+      ? /Declaration of `([^`]+)` shadows the prop/u.exec(finding.message)?.[1]
+      : finding.ruleId === "vue/no-template-shadow"
+        ? /Variable '([^']+)' shadows/u.exec(finding.message)?.[1]
+        : undefined;
+  if (
+    shadowed !== undefined &&
+    heritageOnlyProp(shadowed, source) &&
+    (finding.ruleId === "vue/no-props-shadow" || !scriptDeclares(shadowed, source))
+  )
+    return heritageOnlyPropReason;
   if (finding.ruleId === "vue/require-prop-comment") {
     const offset = findingOffset(finding, source);
     if (offset !== null && inheritedPropMember(offset, source)) return inheritedPropMemberReason;
@@ -1056,6 +1075,15 @@ function parseErrorPointInRange(positive: LintRecord, negative: LintRecord): boo
     ? negative.message.startsWith("Parsing error: ") &&
         patina.startsWith("error parsing javascript expression")
     : patina.startsWith(code.replaceAll("-", " "));
+}
+
+/** A script declares `name` as a binding, which no-template-shadow would also see. */
+function scriptDeclares(name: string, source: string): boolean {
+  const escaped = name.replace(/\$/gu, "\\$");
+  return new RegExp(
+    `\\b(?:(?:const|let|var|function|class)\\s+${escaped}(?![\\w$])|import\\s+(?:type\\s+)?(?:${escaped}\\s*[,\\s]|[^;{}]*\\{[^{}]*(?<![\\w$.])${escaped}(?![\\w$]|\\s+as\\b)[^{}]*\\})[^;{}]*?\\bfrom\\b)|\\b(?:const|let|var)\\s*\\{[^}]*(?<![\\w$.])${escaped}(?![\\w$]|\\s*:)[^}]*\\}`,
+    "u",
+  ).test(source);
 }
 
 function findingInScriptSetup(finding: LintRecord, source: string): boolean {

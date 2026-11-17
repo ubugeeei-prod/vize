@@ -63,3 +63,68 @@ test("members eslint-plugin-vue reads itself stay counted", () => {
     .replace("</script>", "interface Other extends BaseProps {}\n</script>");
   assert.equal(reason(unrelated, "disabled"), null);
 });
+
+/** A shadow finding naming `name`, over the first `text`. */
+function shadow(
+  source: string,
+  ruleId: "vue/no-props-shadow" | "vue/no-template-shadow",
+  name: string,
+  text = name,
+): string | null {
+  const start = source.indexOf(text);
+  assert.ok(start >= 0, text);
+  const before = source.slice(0, start).split("\n");
+  const line = before.length,
+    column = (before.at(-1)?.length ?? 0) + 1;
+  return patinaIntentionalReason(
+    {
+      file: "src/Link.vue",
+      ruleId,
+      severity: "warning",
+      line,
+      column,
+      endLine: line,
+      endColumn: column + name.length,
+      message:
+        ruleId === "vue/no-props-shadow"
+          ? `[vize:vue/no-props-shadow] Declaration of \`${name}\` shadows the prop with the same name`
+          : `[vize:vue/no-template-shadow] Variable '${name}' shadows a variable in an outer scope`,
+    },
+    source,
+  );
+}
+
+const link = `<script lang="ts">
+import type { AnchorHTMLAttributes } from './html'
+interface NuxtLinkProps {
+  to?: string
+  href?: string
+}
+export interface LinkProps extends NuxtLinkProps, /** @vue-ignore */ Omit<AnchorHTMLAttributes, 'href' | 'rel'> {
+  as?: string
+}
+</script>
+<script setup lang="ts">
+const props = defineProps<LinkProps>()
+const to = computed(() => props.to ?? props.href)
+</script>
+<template><NuxtLink v-slot="{ href }" custom><a :href="href" /></NuxtLink></template>
+`;
+const heritage = /declared only in a same-file interface the defineProps type extends/u;
+
+test("a shadowed prop the props inherit through extends is classified", () => {
+  assert.match(shadow(link, "vue/no-props-shadow", "to", "to = computed") ?? "", heritage);
+  assert.match(shadow(link, "vue/no-template-shadow", "href", "href }") ?? "", heritage);
+});
+
+test("shadowed props eslint-plugin-vue can read stay counted", () => {
+  const own = link.replace("as?: string", "as?: string\n  to?: string");
+  assert.equal(shadow(own, "vue/no-props-shadow", "to", "to = computed"), null);
+  const omitted = link.replace("extends NuxtLinkProps, ", "extends Omit<NuxtLinkProps, 'to'>, ");
+  assert.equal(shadow(omitted, "vue/no-props-shadow", "to", "to = computed"), null);
+  assert.match(shadow(omitted, "vue/no-template-shadow", "href", "href }") ?? "", heritage);
+  const bound = link.replace("const to =", "const href = props.href\nconst to =");
+  assert.equal(shadow(bound, "vue/no-template-shadow", "href", "href }"), null);
+  const imported = link.replace("import type {", "import { href, type");
+  assert.equal(shadow(imported, "vue/no-template-shadow", "href", "href }"), null);
+});
