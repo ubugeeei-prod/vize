@@ -2,7 +2,7 @@
 // node perf-linter-quiet.ts --base-bin B --head-bin H --mk DIR --mkta DIR --bench DIR --runs N --lsp-rounds R --lsp-edits E --out FILE
 import { spawn, spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { appendFileSync, readFileSync } from "node:fs";
+import { appendFileSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 
 const argv = process.argv.slice(2);
@@ -257,6 +257,16 @@ for (const spec of arg("scenarios", "mk,mk-json,mk-all,bench,ta").split(",")) {
   const dirThreads = /^dir-t(\d+)$/.exec(spec);
   if (dirThreads)
     scenario(`one directory (src/widgets), RAYON_NUM_THREADS=${dirThreads[1]}`, mk, ["lint", "src/widgets"], runs, { RAYON_NUM_THREADS: dirThreads[1] });
+  // `files-N`: the first N widget SFCs named on the command line (an editor or lint-staged run).
+  const namedFiles = /^files-(\d+)$/.exec(spec);
+  if (namedFiles) {
+    const names = readdirSync(join(mk, "src/widgets"))
+      .filter((name) => name.endsWith(".vue"))
+      .sort()
+      .slice(0, Number(namedFiles[1]))
+      .map((name) => `src/widgets/${name}`);
+    scenario(`${names.length} named widget SFCs`, mk, ["lint", ...names], runs);
+  }
   if (spec === "ver") scenario("`vize --version` (process start)", mk, ["--version"], runs);
   if (spec === "one") scenario("misskey one SFC `lint src/components/MkButton.vue`", mk, ["lint", "src/components/MkButton.vue"], runs);
   if (spec === "ir-ver") irScenario("`vize --version` instructions", mk, ["--version"]);
