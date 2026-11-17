@@ -1,0 +1,17 @@
+<script setup lang="ts">
+import type { FloatingOptions } from "./types"
+
+type Single = { multiple?: false }
+type Multi = { multiple: true }
+
+defineProps<
+  {
+    label?: string
+  } & (Single | Multi) &
+    FloatingOptions
+>()
+</script>
+
+<template>
+  <p>{{ label }}</p>
+</template>
