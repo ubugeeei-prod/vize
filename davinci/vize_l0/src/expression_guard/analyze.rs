@@ -6,6 +6,7 @@ use super::{
     speculative_arrow_default_paren, speculative_type_angle_open_kind,
     starts_valid_identifier_escape,
 };
+use crate::SmallVec;
 
 /// `<(ident =` only follows `<`, trivia, or a comment. Other next bytes skip the lookahead.
 fn arrow_default_paren_possible(bytes: &[u8], open: usize) -> bool {
@@ -49,10 +50,11 @@ pub(super) fn analyze_expression_nesting(content: &str) -> ExpressionNestingAnal
     let bytes = content.as_bytes();
     let (mut angle_depth, mut decorator_depth) = (0usize, 0usize);
     let mut max_depth = 0usize;
-    let mut delimiters = Vec::new();
+    // Template expressions nest a few levels; these stacks stay inline.
+    let mut delimiters: SmallVec<[u8; 32]> = SmallVec::new();
     let mut delimiters_balanced = true;
     let mut can_start_regex = true;
-    let mut template_interpolation_depths = Vec::new();
+    let mut template_interpolation_depths: SmallVec<[usize; 8]> = SmallVec::new();
     // Plain `foo < bar` is indistinguishable from a type argument to a byte
     // scanner. Enter angle-tracking mode only for repeated speculative type
     // prefixes: the structural shapes (`<{`, `<[`, #2944), JSDoc non-nullable
@@ -88,7 +90,7 @@ pub(super) fn analyze_expression_nesting(content: &str) -> ExpressionNestingAnal
     let mut track_type_angles = false;
     // `(delimiter depth at the opener, `<` count)` for each `<(ident =` frame.
     // Ordinary parentheses do not push: the depth tells which `)` closes the frame.
-    let mut arrow_frames: Vec<(usize, usize)> = Vec::new();
+    let mut arrow_frames: SmallVec<[(usize, usize); 4]> = SmallVec::new();
     let mut pending_arrow_default_paren: Option<usize> = None;
     let mut excessive_arrow_default_speculation = false;
     let mut unterminated_template = false;

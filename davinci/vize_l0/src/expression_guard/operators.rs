@@ -6,14 +6,16 @@
 //! budget for the same safety boundary.
 
 use super::{MAX_EXPRESSION_NESTING_DEPTH, scan};
+use crate::SmallVec;
 
 #[inline(always)]
 pub(super) fn has_excessive_prefix_operator_run(content: &str) -> bool {
     let bytes = content.as_bytes();
     let mut can_start_operand = true;
-    let mut delimiters = Vec::new();
+    // Template expressions nest a few levels; these stacks stay inline.
+    let mut delimiters: SmallVec<[u8; 32]> = SmallVec::new();
     let mut prefix_operator_run = 0usize;
-    let mut template_interpolation_depths = Vec::new();
+    let mut template_interpolation_depths: SmallVec<[usize; 8]> = SmallVec::new();
     let mut i = 0usize;
 
     while let Some(&byte) = bytes.get(i) {
