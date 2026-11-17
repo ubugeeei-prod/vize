@@ -12,7 +12,7 @@ use oxc_ast::ast::{
 use oxc_ast_visit::{Visit, walk};
 use vize_l0::{FxHashSet, String, cstr};
 
-use crate::rules::script::props_emits::type_prop_names::same_file_type_prop_names;
+use crate::rules::script::props_emits::type_prop_names::same_sfc_type_prop_names;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-props-shadow",
@@ -41,10 +41,15 @@ impl Rule for NoPropsShadow {
                     .map(|prop| String::from(prop.name.as_str())),
             );
         }
+        let sibling = ctx
+            .sfc_scripts()
+            .and_then(|scripts| scripts.script())
+            .filter(|parsed| !parsed.panicked && parsed.diagnostics.is_empty())
+            .map(|parsed| &parsed.program);
         let findings = setup_program(ctx, |program, offset, _source| {
             let mut props = semantic_props;
             collect_runtime_props(program, &mut props);
-            for (name, _) in same_file_type_prop_names(program) {
+            for (name, _) in same_sfc_type_prop_names(program, sibling) {
                 props.insert(String::from(name.as_str()));
             }
             collect_prop_shadows(program, offset, &props)
@@ -283,9 +288,18 @@ fn collect_variable_shadow(
             .init
             .as_ref()
             .is_some_and(initializer_is_props_macro);
-        if !holds_props_macro {
-            collect_shadowed_pattern(&declarator.id, props, offset, findings);
+        if holds_props_macro {
+            continue;
         }
+        // An ESTree identifier spans its type annotation: `items: Item[]`.
+        if let (BindingPattern::BindingIdentifier(identifier), Some(annotation)) =
+            (&declarator.id, &declarator.type_annotation)
+        {
+            let span = oxc_span::Span::new(identifier.span.start, annotation.span.end);
+            push_shadow(identifier.name.as_str(), span, offset, props, findings);
+            continue;
+        }
+        collect_shadowed_pattern(&declarator.id, props, offset, findings);
     }
 }
 
@@ -362,3 +376,6 @@ fn collect_shadowed_pattern(
         }
     }
 }
+
+#[cfg(test)]
+mod tests;
