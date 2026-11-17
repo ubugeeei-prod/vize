@@ -1590,7 +1590,6 @@ export declare function transformViteCssVarsForPipeline(
   productionFilename?: string | undefined | null,
 ): string;
 
-/** Canon's configuration identity and the exact files observed while resolving it. */
 /** Options for [`compile_tsrx`]. */
 export interface TsrxCompileOptionsNapi {
   /** The module's file name, recorded in its source map. */
@@ -1635,6 +1634,7 @@ export interface TsrxDiagnosticNapi {
   column: number;
 }
 
+/** Canon's configuration identity and the exact files observed while resolving it. */
 export interface VueLanguageProjectMetadata {
   configIdentity: string;
   watchedFiles: Array<string>;
