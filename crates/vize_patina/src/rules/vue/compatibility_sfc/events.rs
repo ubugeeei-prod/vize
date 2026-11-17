@@ -198,7 +198,16 @@ pub(super) fn for_block_emits<'a>(
             };
             let (mut entries_found, unresolved) = entries(None);
             if unresolved && let world @ Some(_) = ctx.macro_type_world() {
-                entries_found = entries(world).0;
+                let own = std::mem::replace(&mut entries_found, entries(world).0);
+                // eslint-plugin-vue reports an event this file declares on its
+                // own member, not on the type argument.
+                for entry in &mut entries_found {
+                    if let Some(own) = own.iter().find(|own| own.name == entry.name) {
+                        entry.span = own.span;
+                        entry.sibling = own.sibling;
+                        entry.extra_payload = own.extra_payload;
+                    }
+                }
             }
             declared.extend(entries_found);
         }

@@ -245,3 +245,12 @@ fn sort_keys_checks_script_objects_outside_component_option_shapes() {
         ]
     );
 }
+
+#[test]
+fn native_events_declared_on_a_local_member_report_that_member() {
+    let source = "<script setup lang=\"ts\">\nimport type { RootEmits } from 'reka-ui'\ntype GroupEmits = Omit<RootEmits, 'update:modelValue'> & { change: [event: Event] }\nconst emits = defineEmits<GroupEmits>()\n</script>";
+    assert_eq!(
+        reported(Box::new(NoShadowNativeEvents), source),
+        ["change: [event: Event]"]
+    );
+}
