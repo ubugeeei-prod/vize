@@ -1,0 +1,8 @@
+<template>
+  <RecipeCard
+    v-for="recipe in recipes"
+    :key="recipe.id"
+    :v-bind="{ item: recipe }"
+  />
+  <Checkbox key="key" :v-model="0" start-open />
+</template>
