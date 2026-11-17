@@ -1,0 +1,6 @@
+import type { PropType } from "vue"
+
+export declare const sharedProps: {
+  label: { type: StringConstructor; required: true }
+  onRemove: { type: PropType<() => void>; required: true }
+}

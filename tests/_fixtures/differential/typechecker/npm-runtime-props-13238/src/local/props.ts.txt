@@ -1,0 +1,6 @@
+import type { PropType } from "vue"
+
+export const localProps = {
+  label: { type: String, required: true as const },
+  onRemove: { type: Function as PropType<() => void>, required: true as const },
+}

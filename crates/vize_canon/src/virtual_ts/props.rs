@@ -1,6 +1,7 @@
 mod keyed_template_names;
 mod mappings;
 mod model_props;
+mod opaque_runtime;
 mod options_api;
 mod runtime_docs;
 mod setup_scoped;
@@ -14,6 +15,7 @@ use super::generic_parameters::GenericParameters;
 pub(crate) use mappings::{PropBindingMappings, PropsSource, prop_source};
 pub(crate) use model_props::emitted_model_prop_names;
 use model_props::{append_macro_props_type_literal, append_model_props_type_literal};
+use opaque_runtime::{opaque_runtime_props_binding, opaque_runtime_public_props_type};
 pub(crate) use options_api::OptionsApiPropsSource;
 pub(crate) use options_api::append_default_props;
 use options_api::emit_options_api_props_type;
@@ -152,6 +154,16 @@ pub(crate) fn generate_props_type(
         } else {
             append!(*ts, "{props_head}{generic_decl} = {inner_type};\n");
         }
+    } else if let Some(binding) = opaque_runtime_props_binding(summary) {
+        exports_props = true;
+        let props_type = opaque_runtime_public_props_type(binding);
+        ts.push_str(unused_generic_comment(generic_param, props_type.as_str()));
+        append!(*ts, "{props_head}{generic_decl} = {props_type}");
+        if has_models {
+            ts.push_str(" & ");
+            append_model_props_type_literal(ts, summary, script, models, generic_param);
+        }
+        ts.push_str(";\n");
     } else if has_props || has_models {
         exports_props = true;
         append!(*ts, "{props_head}{generic_decl} = ");

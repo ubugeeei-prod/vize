@@ -1,0 +1,10 @@
+<script setup lang="ts">
+import { sharedProps } from "props-pkg"
+
+const props = defineProps(sharedProps)
+console.log(props.label)
+</script>
+
+<template>
+  <button @click="onRemove">{{ label }}</button>
+</template>
