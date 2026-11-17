@@ -34,8 +34,10 @@ const SLOT_RESOLVER_HELPERS: &str =
 /// Inside a generic parent, a generic child's slot record can still depend on
 /// the parent's type parameter (`Record<`${keyof T}-cell` | (string & {}), F>`),
 /// so the checker defers the payload instead of resolving it. Destructuring a
-/// deferred type reads its constraint, which only survives when each step
-/// distributes over a naked type parameter: the slot function goes through
+/// deferred type reads its constraint, so every step keeps one that resolves:
+/// the slot is read as `S[N]` under `N extends keyof S` (a literal index
+/// simplifies through mapped and intersected records, where `keyof S & N`
+/// stays generic), its first parameter comes from the distributive
 /// `$SlotCallbackProps<F>` (not `NonNullable<S[K]> extends ...`), and the
 /// empty-payload `any` fallback tests `[payload] extends [never]` directly
 /// instead of re-inferring the payload through `extends infer P`.

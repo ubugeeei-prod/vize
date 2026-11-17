@@ -39,6 +39,7 @@ mod generic_component_parity;
 mod generic_constructor_slots;
 mod generic_inherit_attrs_open_tail;
 mod generic_local_indexing;
+mod generic_slot_props;
 mod global_component_callbacks;
 mod guarded_arrow_listener;
 mod guarded_listener_nested_callback;

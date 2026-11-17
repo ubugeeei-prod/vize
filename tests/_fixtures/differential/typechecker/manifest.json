@@ -14864,6 +14864,75 @@
       ]
     },
     {
+      "id": "typechecker/generic-slot-props-13239/generic-parent-cell-slot-payload",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "generic-slot-props-13239/tsconfig.json.txt",
+          "role": "issue-authored-content-mapper-config",
+          "sha256": "8280441d912b4f9ebdaa3b500f4493f81faa044ee712c9b996a23e1fe4bae2af"
+        },
+        {
+          "path": "generic-slot-props-13239/src/components.d.ts.txt",
+          "role": "issue-authored-global-component-registry",
+          "sha256": "83ba029c48f096723a2c0ad878df47deb857439b02a8ea04e20400aa1b351765"
+        },
+        {
+          "path": "generic-slot-props-13239/src/my-table.vue.txt",
+          "role": "issue-authored-generic-cell-slot-record-child",
+          "sha256": "74122cd7eb6e59c9ff5402fee18e317722885e0fd0e3364e879c13439892f514"
+        },
+        {
+          "path": "generic-slot-props-13239/src/generic-outer.vue.txt",
+          "role": "issue-authored-generic-parent-regression",
+          "sha256": "288dd6220d837266daad9c3b5bcd659f89ecd5267171c7c5b2c8f9a58804ce91"
+        },
+        {
+          "path": "generic-slot-props-13239/src/plain-outer.vue.txt",
+          "role": "issue-authored-non-generic-parent-control",
+          "sha256": "4f3ec2007dd651263a4476ef45f642f28c2cd7235faacdf0f346c21d39fd8430"
+        },
+        {
+          "path": "generic-slot-props-13239/src/plain-table.vue.txt",
+          "role": "plain-string-record-slot-child",
+          "sha256": "1565f8780e2b63f7e97a30cc5c3c37982a4d79366689c9782c2b5ea99e2d8bc2"
+        },
+        {
+          "path": "generic-slot-props-13239/src/exact-table.vue.txt",
+          "role": "exact-key-union-slot-child",
+          "sha256": "e6868205cd0b660a72a06da991f723f7c5e4d6fcd7d59878fef2a943aa3f9cad"
+        },
+        {
+          "path": "generic-slot-props-13239/src/ui-table.vue.txt",
+          "role": "nuxt-ui-table-slots-intersection-child",
+          "sha256": "335dcf84b7f3658ff8b4031c1695f63fefda4d0ef1a05a65f886b2907ad9711d"
+        },
+        {
+          "path": "generic-slot-props-13239/src/generic-variants.vue.txt",
+          "role": "record-union-and-dynamic-slot-name-variants-with-typed-control",
+          "sha256": "6064ecc05d8e35bd2904598e66c04cae01c095ad5aed753525e59b769bb1d4ff"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::generic_slot_props_13239::standard_tsgo_types_generic_child_slot_props_inside_a_generic_parent and batch::type_checker::tests::recent_issues::generic_slot_props::generic_child_slot_props_are_inferred_inside_a_generic_parent; #13239 generic parent filling `#name-cell` of a generic child whose slot record keys depend on the parent's type parameter (Nuxt UI `UTable` `DynamicCellSlots`), with plain-record, exact-key-union, Nuxt UI `TableSlots`-shaped intersection and dynamic-name variants and a typed control. Input-only registration; no native parity claim."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/generic-slots-exposed-exports-3101/generic-slot-and-exposed-components",
       "state": "active",
       "targets": [

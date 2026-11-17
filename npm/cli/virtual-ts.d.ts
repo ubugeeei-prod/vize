@@ -83,11 +83,13 @@ export type $RegisteredSlotProvider<
           : $SilentAny;
 type $SlotCallbackProps<F> = F extends (props: infer P, ...args: any[]) => any ? P : never;
 type $NamedSlotPayload<S, N> = [
-  S extends unknown ? { [K in keyof S & N]-?: $SlotCallbackProps<S[K]> }[keyof S & N] : never,
+  S extends unknown ? (N extends keyof S ? $SlotCallbackProps<S[N]> : never) : never,
 ] extends [never]
   ? any
   : S extends unknown
-    ? { [K in keyof S & N]-?: $SlotCallbackProps<S[K]> }[keyof S & N]
+    ? N extends keyof S
+      ? $SlotCallbackProps<S[N]>
+      : never
     : never;
 export type $SlotPayload<S, N, C = $RegisteredSlotProvider<any, never>> =
   $IsAny<S> extends true

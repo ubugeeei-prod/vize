@@ -23,6 +23,7 @@ mod emit_props_twins;
 mod extra_keys_policy;
 mod generic_event_specialization;
 mod generic_hoisted_alias;
+mod generic_slot_payload;
 mod guarded_inference_arrow;
 mod input_channels;
 mod instance_input_keys;

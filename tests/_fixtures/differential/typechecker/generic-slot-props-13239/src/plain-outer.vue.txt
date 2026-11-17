@@ -1,0 +1,9 @@
+<script setup lang="ts">
+defineProps<{ items: { id: string }[] }>()
+</script>
+
+<template>
+  <MyTable :data="items">
+    <template #name-cell="{ row }">{{ row.original.id }}</template>
+  </MyTable>
+</template>

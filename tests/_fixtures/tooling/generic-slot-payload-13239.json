@@ -1,0 +1,96 @@
+{
+  "schema": "vize.genericSlotPayloadSource.v1",
+  "issue": 13239,
+  "credit": {
+    "compiled": false,
+    "native": false,
+    "performance": false
+  },
+  "files": [
+    {
+      "path": "crates/vize_canon/src/virtual_ts/helpers/declarations/shared-slot-payload.d.ts.txt",
+      "before": {
+        "bytes": 919,
+        "sha256": "c803a5161de53b16e48506347c6afe47210f6906e54a0f5aaff8059b98f09afc"
+      },
+      "after": {
+        "bytes": 998,
+        "sha256": "fbe47e35690fe4091301543ffe046f7ce70acc43ea90291e207f43ca8da5aaa0"
+      },
+      "hunks": [
+        {
+          "before": "  type $NamedSlotPayload<S, N> = (S extends unknown ? { [K in keyof S & N]-?: NonNullable<S[K]> extends (props: infer P, ...args: any[]) => any ? P : never }[keyof S & N] : never) extends infer P ? ([P] extends [never] ? any : P) : any;\n",
+          "after": "  type $SlotCallbackProps<F> = F extends (props: infer P, ...args: any[]) => any ? P : never;\n  type $NamedSlotPayload<S, N> = [S extends unknown ? N extends keyof S ? $SlotCallbackProps<S[N]> : never : never] extends [never] ? any : S extends unknown ? N extends keyof S ? $SlotCallbackProps<S[N]> : never : never;\n"
+        }
+      ]
+    },
+    {
+      "path": "crates/vize_canon/src/virtual_ts/helpers/declarations/slot-payload.d.ts.txt",
+      "before": {
+        "bytes": 950,
+        "sha256": "898c1bef7beabb09ac2abbd70cb2e50adbacfd7b098f1acdee6cc14691b9954d"
+      },
+      "after": {
+        "bytes": 1029,
+        "sha256": "a18c9330f1c92d3048010f3e26315c2d63ce37c4459e6db36a497fc88c92e7b0"
+      },
+      "hunks": [
+        {
+          "before": "type $NamedSlotPayload<__S, __N> = (__S extends unknown ? { [__K in keyof __S & __N]-?: NonNullable<__S[__K]> extends (props: infer __P, ...args: any[]) => any ? __P : never }[keyof __S & __N] : never) extends infer __P ? ([__P] extends [never] ? any : __P) : any;\n",
+          "after": "type $SlotCallbackProps<__F> = __F extends (props: infer __P, ...args: any[]) => any ? __P : never;\ntype $NamedSlotPayload<__S, __N> = [__S extends unknown ? __N extends keyof __S ? $SlotCallbackProps<__S[__N]> : never : never] extends [never] ? any : __S extends unknown ? __N extends keyof __S ? $SlotCallbackProps<__S[__N]> : never : never;\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/virtual-ts.d.ts",
+      "before": {
+        "bytes": 18180,
+        "sha256": "0b2bfe84712043e0a9d1085c7da46c2d81986904b18e961460d2ba545df0c4ac"
+      },
+      "after": {
+        "bytes": 18231,
+        "sha256": "e9d74e7eccd5201a4662b072fb2cd8317a204858ad8874ed8a31f569874485cc"
+      },
+      "hunks": [
+        {
+          "before": "type $NamedSlotPayload<S, N> = (\n  S extends unknown\n    ? {\n        [K in keyof S & N]-?: NonNullable<S[K]> extends (props: infer P, ...args: any[]) => any\n          ? P\n          : never;\n      }[keyof S & N]\n    : never\n) extends infer P\n  ? [P] extends [never]\n    ? any\n    : P\n  : any;\n",
+          "after": "type $SlotCallbackProps<F> = F extends (props: infer P, ...args: any[]) => any ? P : never;\ntype $NamedSlotPayload<S, N> = [\n  S extends unknown ? (N extends keyof S ? $SlotCallbackProps<S[N]> : never) : never,\n] extends [never]\n  ? any\n  : S extends unknown\n    ? N extends keyof S\n      ? $SlotCallbackProps<S[N]>\n      : never\n    : never;\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/virtual-ts.d.mts",
+      "before": {
+        "bytes": 18180,
+        "sha256": "0b2bfe84712043e0a9d1085c7da46c2d81986904b18e961460d2ba545df0c4ac"
+      },
+      "after": {
+        "bytes": 18231,
+        "sha256": "e9d74e7eccd5201a4662b072fb2cd8317a204858ad8874ed8a31f569874485cc"
+      },
+      "hunks": [
+        {
+          "before": "type $NamedSlotPayload<S, N> = (\n  S extends unknown\n    ? {\n        [K in keyof S & N]-?: NonNullable<S[K]> extends (props: infer P, ...args: any[]) => any\n          ? P\n          : never;\n      }[keyof S & N]\n    : never\n) extends infer P\n  ? [P] extends [never]\n    ? any\n    : P\n  : any;\n",
+          "after": "type $SlotCallbackProps<F> = F extends (props: infer P, ...args: any[]) => any ? P : never;\ntype $NamedSlotPayload<S, N> = [\n  S extends unknown ? (N extends keyof S ? $SlotCallbackProps<S[N]> : never) : never,\n] extends [never]\n  ? any\n  : S extends unknown\n    ? N extends keyof S\n      ? $SlotCallbackProps<S[N]>\n      : never\n    : never;\n"
+        }
+      ]
+    },
+    {
+      "path": "npm/cli/virtual-ts.d.cts",
+      "before": {
+        "bytes": 18180,
+        "sha256": "0b2bfe84712043e0a9d1085c7da46c2d81986904b18e961460d2ba545df0c4ac"
+      },
+      "after": {
+        "bytes": 18231,
+        "sha256": "e9d74e7eccd5201a4662b072fb2cd8317a204858ad8874ed8a31f569874485cc"
+      },
+      "hunks": [
+        {
+          "before": "type $NamedSlotPayload<S, N> = (\n  S extends unknown\n    ? {\n        [K in keyof S & N]-?: NonNullable<S[K]> extends (props: infer P, ...args: any[]) => any\n          ? P\n          : never;\n      }[keyof S & N]\n    : never\n) extends infer P\n  ? [P] extends [never]\n    ? any\n    : P\n  : any;\n",
+          "after": "type $SlotCallbackProps<F> = F extends (props: infer P, ...args: any[]) => any ? P : never;\ntype $NamedSlotPayload<S, N> = [\n  S extends unknown ? (N extends keyof S ? $SlotCallbackProps<S[N]> : never) : never,\n] extends [never]\n  ? any\n  : S extends unknown\n    ? N extends keyof S\n      ? $SlotCallbackProps<S[N]>\n      : never\n    : never;\n"
+        }
+      ]
+    }
+  ]
+}
