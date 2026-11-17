@@ -1,7 +1,7 @@
 import { ssrRenderVNode as _ssrRenderVNode, ssrRenderAttrs as _ssrRenderAttrs, ssrRenderList as _ssrRenderList } from "@vue/server-renderer";
 import { createVNode as _createVNode, createTextVNode as _createTextVNode, resolveDynamicComponent as _resolveDynamicComponent, toDisplayString as _toDisplayString, withCtx as _withCtx } from "vue";
 function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
-  _push(`<table${_ssrRenderAttrs(_attrs)}><tbody>`);
+  _push(`<table${_ssrRenderAttrs(_attrs)}>`);
   _push(`<!--[-->`);
   _ssrRenderList($props.rows, (line, r) => {
     _push(`<tr>`);
@@ -16,7 +16,7 @@ function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options
     _push(`</tr>`);
   });
   _push(`<!--]-->`);
-  _push(`</tbody></table>`);
+  _push(`</table>`);
 }
 export default {
   __name: "Layout",

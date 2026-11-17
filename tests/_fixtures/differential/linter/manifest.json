@@ -21473,6 +21473,37 @@
       }
     },
     {
+      "id": "linter/table-authored-rows",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "table-authored-rows",
+        "files": [
+          {
+            "path": "TableAuthoredRows.vue.txt",
+            "role": "regression-reproduction",
+            "sha256": "c236101abebe58467f9369cdfc84402a52e73784ca416814a1b5181b32cc5737"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/table-section-cells-12307",
       "state": "active",
       "targets": [
