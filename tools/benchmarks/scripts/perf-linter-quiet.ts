@@ -246,6 +246,7 @@ for (const spec of arg("scenarios", "mk,mk-json,mk-all,bench,ta").split(",")) {
       RAYON_NUM_THREADS: benchThreads[1],
     });
   if (spec === "ir-mk") irScenario("misskey `--format json` instructions", mk, ["lint", "src", "--format", "json"]);
+  if (spec === "ir-mk-all") irScenario("misskey `--preset all --format json` instructions", mk, ["lint", "src", "--preset", "all", "--format", "json"]);
   if (spec === "ir-mk-text") irScenario("misskey text instructions", mk, ["lint", "src"]);
   if (spec === "ir-bench") irScenario("1000-SFC `--format json` instructions", bench, ["lint", ".", "--format", "json"]);
   if (spec === "ir-ta")
