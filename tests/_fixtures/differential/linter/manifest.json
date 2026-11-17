@@ -17883,6 +17883,42 @@
       }
     },
     {
+      "id": "linter/no-duplicate-class-nodes-12336",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "no-duplicate-class-nodes-12336",
+        "files": [
+          {
+            "path": "Classes.vue.txt",
+            "role": "real-project-matrix-reduction",
+            "sha256": "3fc9f896c230bd8f9e1a4e46394373d2a909223cb72825f29384cd05f1bd1352"
+          },
+          {
+            "path": "rules.json",
+            "role": "rule-options",
+            "sha256": "d641d8a2aac5144d2de00b004e37e63d5cff1b716d5457740a59c165035c9ee6"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/no-implied-eval-callable-13000",
       "state": "active",
       "targets": [
