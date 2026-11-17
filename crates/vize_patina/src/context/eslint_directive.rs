@@ -378,35 +378,8 @@ fn parse_eslint_rule_list(raw: &str) -> Vec<String> {
                 .filter(|name| name.contains('/'))
                 .unwrap_or(rule)
         })
-        // These registered script rules share ESLint's identity. Keep the
-        // compatibility mapping narrow; unrelated Vue IDs still match exactly.
-        .map(|rule| match rule {
-            "vue/no-reserved-keys" => "script/no-reserved-keys",
-            "vue/no-dupe-keys" => "script/no-dupe-keys",
-            "vue/no-side-effects-in-computed-properties" => {
-                "script/no-side-effects-in-computed-properties"
-            }
-            "vue/no-deprecated-dollar-listeners-api" => "script/no-deprecated-dollar-listeners-api",
-            "vue/no-deprecated-dollar-scopedslots-api" => {
-                "script/no-deprecated-dollar-scopedslots-api"
-            }
-            "vue/no-use-computed-property-like-method" => {
-                "script/no-use-computed-property-like-method"
-            }
-            "vue/require-valid-default-prop" => "script/require-valid-default-prop",
-            "vue/require-default-prop" => "script/require-default-prop",
-            "vue/require-prop-types" => "script/require-prop-types",
-            "vue/no-computed-properties-in-data" => "script/no-computed-properties-in-data",
-            "vue/no-deprecated-delete-set" => "script/no-deprecated-delete-set",
-            "vue/no-deprecated-model-definition" => "script/no-deprecated-model-definition",
-            "vue/no-deprecated-vue-config-keycodes" => "script/no-deprecated-vue-config-keycodes",
-            "vue/no-shared-component-data" => "script/no-deprecated-data-object-declaration",
-            "vue/one-component-per-file" => "script/one-component-per-file",
-            "vue/order-in-components" => "script/order-in-components",
-            "vue/require-render-return" => "script/require-render-return",
-            "vue/require-slots-as-functions" => "script/require-slots-as-functions",
-            rule => rule,
-        })
+        // An eslint-plugin-vue rule ID suppresses the Patina rule it maps to.
+        .map(super::eslint_vue_aliases::patina_rule)
         .map(String::from)
         .collect()
 }

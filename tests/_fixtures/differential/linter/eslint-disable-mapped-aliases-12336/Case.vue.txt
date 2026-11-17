@@ -1,0 +1,7 @@
+<template>
+  <!-- eslint-disable vue/prefer-separate-static-class, vue/no-duplicate-class-names -->
+  <div :class="['a a', 'b']" />
+  <!-- eslint-enable -->
+  <!-- eslint-disable-next-line vue/attributes-order -->
+  <input :value="v" v-model="v" />
+</template>
