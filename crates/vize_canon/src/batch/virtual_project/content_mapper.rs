@@ -463,8 +463,7 @@ fn candidate(
     let generated_text = generated.get(generated_range.clone())?;
     let original_text = source.get(original_range.clone())?;
     if !is_synthetic_content_mapper_identifier(generated_text)
-        && let Some(relative_start) =
-            memchr::memmem::find(generated_text.as_bytes(), original_text.as_bytes())
+        && let Some(relative_start) = alias::verbatim_offset(generated_text, original_text)
     {
         let start = generated_range.start + relative_start;
         return Some(SpanCandidate {
