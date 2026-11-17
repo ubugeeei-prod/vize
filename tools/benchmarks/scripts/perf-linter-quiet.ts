@@ -320,6 +320,20 @@ for (const spec of arg("scenarios", "mk,mk-json,mk-all,bench,ta").split(",")) {
       const lines = (result.stdout?.toString() ?? "").split("\n").filter((line) => /^\s*[\d,]+ \(/.test(line)).slice(0, 90).map((line) => line.slice(0, 260));
       write(["", `callgrind ${annotate[1]} inclusive=${inclusive}:`, "", "```", ...lines, "```", ""].join("\n"));
     }
+    // Callers of the hottest self-cost leaves (memcmp, memcpy, substring search, hashing, growth).
+    const focus = /memcmp|memcpy|memmove|is_contained_in|StrSearcher|phf::map|get_entry|Components|finish_grow|wrap_optimal_fit|smawk|read_span|push_str|write_str|statx|__GI___stat|realpath|canonicalize|getenv|to_lowercase|to_ascii_lowercase|hash_one|BuildHasher/;
+    const tree = spawnSync("callgrind_annotate", ["--tree=caller", "--inclusive=no", "--threshold=99", file], { maxBuffer: 1 << 30 });
+    const blocks = (tree.stdout?.toString() ?? "").split(/\n\s*\n/);
+    const shown: string[] = [];
+    for (const block of blocks) {
+      const lines = block.split("\n");
+      const head = lines.find((line) => / \*  /.test(line));
+      if (!head || !focus.test(head)) continue;
+      const total = Number(/^\s*([\d,]+)/.exec(head)?.[1]?.replace(/,/g, "") ?? 0);
+      if (total < 3_000_000) continue;
+      shown.push(...lines.filter((line) => line.trim()).slice(0, 16).map((line) => line.replace(/\[\/[^\]]*\]/g, "").replace(/\/home\/runner\/[^ ]*?\/(src|crates)\//g, "$1/").slice(0, 230)), "");
+    }
+    write(["", `callgrind ${annotate[1]} callers of hot leaves:`, "", "```", ...shown.slice(0, 400), "```", ""].join("\n"));
   }
   // `paths-<mk|mk-json|one>`: which paths one run stats or opens, grouped by the final component.
   const pathsSpec = /^paths-(mk|mk-json|one)$/.exec(spec);
