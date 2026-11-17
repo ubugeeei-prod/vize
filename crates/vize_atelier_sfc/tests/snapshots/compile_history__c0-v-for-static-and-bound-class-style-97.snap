@@ -12,7 +12,7 @@ Case {
     options: Options {
         prod: None,
         preserve_ts: None,
-        inline_template: None,
+        standalone: None,
         mode: None,
         prefix_identifiers: Some(
             true,

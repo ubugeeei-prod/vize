@@ -26,7 +26,7 @@ const RECEIPT = "docs/davinci/plan/compiler-fix-history-index.json";
 const OPTIONS = new Set([
   "prod",
   "preserveTs",
-  "inlineTemplate",
+  "standalone",
   "mode",
   "prefixIdentifiers",
   "hoistStatic",

@@ -140,7 +140,7 @@ Index rows become `current-api-pinned` when a case in
 names the fix. Each case compiles one authored input through a public entry:
 `compile_sfc` for a whole SFC (DOM, SSR or Vapor target), or
 `compile_template_with_options` for bare DOM markup. A small option set covers
-production output, preserved TypeScript, inline templates, codegen mode,
+production output, preserved TypeScript, standalone module output, codegen mode,
 identifier prefixing, static hoisting, handler caching, comments and source
 maps. `crates/vize_atelier_sfc/tests/compile_history.rs` snapshots every public
 result field: code, CSS, map, errors, warnings, bindings, macro artifacts and

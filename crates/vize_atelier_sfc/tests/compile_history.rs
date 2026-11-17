@@ -41,8 +41,10 @@ struct Options {
     prod: Option<bool>,
     /// SFC: keep TypeScript in the emitted script.
     preserve_ts: Option<bool>,
-    /// SFC: inline the template render function into setup.
-    inline_template: Option<bool>,
+    /// SFC: rewrite the module to the standalone global-runtime output
+    /// (`ScriptCompileOptions::inline_template`). The render function is
+    /// inlined into setup either way.
+    standalone: Option<bool>,
     /// Template: `module` (default) or `function`.
     mode: Option<String>,
     /// Template: prefix identifiers with `_ctx.`.
@@ -107,7 +109,7 @@ fn compile_whole_sfc(case: &Case) -> Observation {
         parse,
         script: ScriptCompileOptions {
             id: Some(case.filename.as_str().into()),
-            inline_template: case.options.inline_template.unwrap_or(false),
+            inline_template: case.options.standalone.unwrap_or(false),
             is_ts,
             ..ScriptCompileOptions::default()
         },
