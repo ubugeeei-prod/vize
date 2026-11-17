@@ -6,9 +6,9 @@ use vize_l0::{Allocator, String};
 use vize_l1::markup::tsrx::{RegionSite, parse};
 
 use super::{TsrxIssue, TsrxIssueKind, lower};
-use crate::dump::Page;
-use crate::expr::ExprRef;
-use crate::op::Op;
+use vize_l2::dump::Page;
+use vize_l2::expr::ExprRef;
+use vize_l2::op::Op;
 
 fn dumps(source: &str) -> Vec<(RegionSite, String)> {
     let allocator = Allocator::default();
@@ -195,7 +195,7 @@ fn retained_expressions_project_absolute_host_spans() {
     let [Op::Element(element)] = region.artifact().root().ops.as_slice() else {
         panic!("one element");
     };
-    let [crate::op::BindingOp::Bind(bind)] = element.bindings.as_slice() else {
+    let [vize_l2::op::BindingOp::Bind(bind)] = element.bindings.as_slice() else {
         panic!("one bind");
     };
     let Some(ExprRef::Js(value)) = bind.value else {

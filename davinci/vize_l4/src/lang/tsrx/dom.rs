@@ -13,9 +13,9 @@ use alloc::vec::Vec;
 use vize_l0::pass::NoObserver;
 use vize_l0::{Allocator, Span, String};
 use vize_l1::markup::tsrx::TsrxModule;
+use vize_l1_to_l2::framework::vue::tsrx::TsrxArtifacts;
 use vize_l1_to_l2::pass::{TransformProfile, run_transform_with_profile};
 use vize_l1_to_l2::{LegacyCaps, Lowered};
-use vize_l2::lang::tsrx::TsrxArtifacts;
 
 use super::component::{self, Component, Form};
 use super::names::{Names, Use};

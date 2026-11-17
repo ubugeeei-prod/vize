@@ -18,7 +18,7 @@ use crate::markup::{L2Markup, MarkupRules};
 use oxc_diagnostics::{OxcDiagnostic, Severity as OxcSeverity};
 use vize_l0::{Allocator, ToCompactString, cstr, profile};
 use vize_l1::markup::tsrx;
-use vize_l2::lang::tsrx::{TsrxIssue, lower};
+use vize_l1_to_l2::framework::vue::tsrx::{TsrxIssue, lower};
 
 /// The operational rule of TSRX parse and lowering diagnostics.
 pub const TSRX_PARSE_RULE: &str = "parser/tsrx";

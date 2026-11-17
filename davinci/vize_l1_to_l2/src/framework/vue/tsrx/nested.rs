@@ -24,9 +24,9 @@ use vize_l1::markup::tsrx::{Region, TsrxModule};
 
 use super::emit::{self, Context};
 use super::{TsrxIssue, TsrxIssueKind, expression};
-use crate::artifact::{BranchBuilder, CallbackForHead, RegionBuilder};
-use crate::expr::ExprRef;
-use crate::op::Namespace;
+use vize_l2::artifact::{BranchBuilder, CallbackForHead, RegionBuilder};
+use vize_l2::expr::ExprRef;
+use vize_l2::op::Namespace;
 
 /// The regions folded into an enclosing artifact, in the order they were met.
 pub(super) type Folded = RefCell<alloc::vec::Vec<Span>>;
@@ -276,7 +276,7 @@ fn span(span: oxc_span::Span) -> Span {
     Span::new(span.start, span.end)
 }
 
-fn artifact(error: Option<crate::artifact::ArtifactError>, span: Span) -> Option<TsrxIssue> {
+fn artifact(error: Option<vize_l2::artifact::ArtifactError>, span: Span) -> Option<TsrxIssue> {
     error.map(|error| TsrxIssue {
         kind: TsrxIssueKind::Artifact(error),
         span,
@@ -286,7 +286,7 @@ fn artifact(error: Option<crate::artifact::ArtifactError>, span: Span) -> Option
 /// [`structural`] accepted a shape [`lower`] does not build: a compiler bug.
 fn unstructured(span: Span) -> TsrxIssue {
     TsrxIssue {
-        kind: TsrxIssueKind::Artifact(crate::artifact::ArtifactError::InvalidSpan {
+        kind: TsrxIssueKind::Artifact(vize_l2::artifact::ArtifactError::InvalidSpan {
             node: None,
             span,
         }),
