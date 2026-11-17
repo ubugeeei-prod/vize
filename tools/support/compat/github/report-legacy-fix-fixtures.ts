@@ -440,7 +440,12 @@ export function analyzeLegacyFix({
 }
 
 export function gitFixtureFile(revision: string, path: string, cwd = process.cwd()): Buffer | null {
-  const result = spawnSync("git", ["show", `${revision}:${path}`], { cwd, encoding: "buffer" });
+  // Product manifests outgrow spawnSync's 1 MiB default buffer.
+  const result = spawnSync("git", ["show", `${revision}:${path}`], {
+    cwd,
+    encoding: "buffer",
+    maxBuffer: 256 * 1024 * 1024,
+  });
   if (result.status === 0) return result.stdout;
   // New files can exist in the checkout while being absent from the baseline.
   // Inspect the actual tree, rather than matching localized Git stderr. An

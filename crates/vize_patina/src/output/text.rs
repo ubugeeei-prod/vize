@@ -33,13 +33,17 @@ pub fn format_ansi(results: &[LintResult], sources: &[(String, String)]) -> Stri
     output
 }
 
-#[expect(clippy::disallowed_types, reason = "oxc_diagnostics requires Arc")]
+/// Render every file's reports, in result order.
+///
+/// Files render independently: each report reads only its own source, and the
+/// graphical handler keeps no state between reports. Rendering — snippet
+/// layout and help wrapping — dominated a large report on one thread, so files
+/// render in parallel and join in their original order, byte for byte.
 fn format_graphical(
     results: &[LintResult],
     sources: &[(String, String)],
     help_target: HelpRenderTarget,
 ) -> String {
-    let mut output = String::default();
     let handler = GraphicalReportHandler::new_themed(GraphicalTheme::unicode());
 
     // Create a map of filename to source
@@ -47,33 +51,54 @@ fn format_graphical(
         .iter()
         .map(|(f, s)| (f.as_str(), s.as_str()))
         .collect();
+    let render = |result: &LintResult| render_file(&handler, &source_map, result, help_target);
 
-    for result in results {
-        if result.diagnostics.is_empty() {
-            continue;
-        }
+    #[cfg(not(target_arch = "wasm32"))]
+    let files: Vec<String> = {
+        use rayon::prelude::*;
+        results.par_iter().map(render).collect()
+    };
+    #[cfg(target_arch = "wasm32")]
+    let files: Vec<String> = results.iter().map(render).collect();
 
-        // Get source for this file
-        let source = source_map
-            .get(result.filename.as_str())
-            .copied()
-            .unwrap_or("");
+    let mut output = String::with_capacity(files.iter().map(String::len).sum());
+    for file in &files {
+        output.push_str(file);
+    }
+    output
+}
 
-        let named_source = Arc::new(NamedSource::new(&result.filename, source.to_owned()));
-
-        for diagnostic in &result.diagnostics {
-            let oxc_diag = to_oxc_diagnostic(diagnostic, help_target);
-            let report = oxc_diag.with_source_code(Arc::clone(&named_source));
-
-            // Render using oxc_diagnostics
-            let mut buf = String::default();
-            if handler.render_report(&mut buf, report.as_ref()).is_ok() {
-                output.push_str(&buf);
-                output.push('\n');
-            }
-        }
+#[expect(clippy::disallowed_types, reason = "oxc_diagnostics requires Arc")]
+fn render_file(
+    handler: &GraphicalReportHandler,
+    source_map: &FxHashMap<&str, &str>,
+    result: &LintResult,
+    help_target: HelpRenderTarget,
+) -> String {
+    let mut output = String::default();
+    if result.diagnostics.is_empty() {
+        return output;
     }
 
+    // Get source for this file
+    let source = source_map
+        .get(result.filename.as_str())
+        .copied()
+        .unwrap_or("");
+
+    let named_source = Arc::new(NamedSource::new(&result.filename, source.to_owned()));
+    let mut buf = String::default();
+    for diagnostic in &result.diagnostics {
+        let oxc_diag = to_oxc_diagnostic(diagnostic, help_target);
+        let report = oxc_diag.with_source_code(Arc::clone(&named_source));
+
+        // Render using oxc_diagnostics
+        buf.clear();
+        if handler.render_report(&mut buf, report.as_ref()).is_ok() {
+            output.push_str(&buf);
+            output.push('\n');
+        }
+    }
     output
 }
 

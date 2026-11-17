@@ -6,6 +6,7 @@ mod receipt;
 mod shared_listener_args;
 mod unowned_owned_keys;
 mod verbatim_runs;
+mod with_defaults_undefined;
 
 use super::{capture_fixture, load_matrix};
 use receipt::{authenticate_join_receipt, authenticate_packets, authenticate_successor_receipt};
@@ -274,6 +275,6 @@ fn public_instance_slot_packets_remain_authenticated() {
         .expect("reviewed Options API slot fixture");
     assert_eq!(
         capture_fixture(fixture).render().as_str(),
-        authored_component_infer::slots(unowned_successor)
+        with_defaults_undefined::slots(unowned_successor)
     );
 }

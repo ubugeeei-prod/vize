@@ -59,10 +59,18 @@ pub(super) struct Checker<'a> {
     session: &'a CheckerMemo<'a>,
     parts: FxHashMap<TypeHandle, Vec<TypeResponse>>,
     properties: FxHashMap<TypeHandle, Vec<SymbolResponse>>,
+    symbol_types: FxHashMap<SymbolHandle, Option<TypeResponse>>,
     signatures: FxHashMap<(TypeHandle, i32), Vec<SignatureResponse>>,
     assignable: FxHashMap<(TypeHandle, TypeHandle), bool>,
+    apparent: FxHashMap<TypeHandle, TypeResponse>,
     files: FxHashMap<CompactString, Option<EncodedPayload>>,
     deprecations: FxHashMap<SymbolHandle, Option<CompactString>>,
+    pub(super) enum_mismatches: FxHashMap<(TypeHandle, TypeHandle), bool>,
+    pub(super) enum_names: FxHashMap<TypeHandle, Vec<CompactString>>,
+    pub(super) enum_constituents: FxHashMap<TypeHandle, Vec<TypeResponse>>,
+    pub(super) generic_types: FxHashMap<TypeHandle, bool>,
+    /// Enum key types an object's computed member access is checked against.
+    pub(super) computed_keys: FxHashMap<TypeHandle, Vec<TypeResponse>>,
 }
 
 impl<'a> Checker<'a> {
@@ -71,15 +79,58 @@ impl<'a> Checker<'a> {
             session,
             parts: FxHashMap::default(),
             properties: FxHashMap::default(),
+            symbol_types: FxHashMap::default(),
             signatures: FxHashMap::default(),
             assignable: FxHashMap::default(),
+            apparent: FxHashMap::default(),
             files: FxHashMap::default(),
             deprecations: FxHashMap::default(),
+            enum_mismatches: FxHashMap::default(),
+            enum_names: FxHashMap::default(),
+            enum_constituents: FxHashMap::default(),
+            generic_types: FxHashMap::default(),
+            computed_keys: FxHashMap::default(),
         }
     }
 
     pub(super) fn session(&self) -> &'a ProjectSession {
         self.session
+    }
+
+    pub(super) async fn type_texts(&self, ty: &TypeResponse) -> Vec<CompactString> {
+        self.session.type_texts(ty).await
+    }
+
+    pub(super) async fn resolved_signature(&self, node: &NodeHandle) -> Option<SignatureResponse> {
+        self.session.resolved_signature(node).await
+    }
+
+    pub(super) async fn parameter_type(
+        &self,
+        signature: &corsa::api::SignatureHandle,
+        index: i32,
+    ) -> Option<TypeResponse> {
+        self.session.parameter_type(signature, index).await
+    }
+
+    pub(super) async fn apparent(&mut self, ty: &TypeResponse) -> TypeResponse {
+        if let Some(apparent) = self.apparent.get(&ty.id) {
+            return apparent.clone();
+        }
+        let apparent = self
+            .session
+            .client()
+            .get_apparent_type(
+                self.session.snapshot().handle.clone(),
+                self.session.project_handle(),
+                ty.id.clone(),
+            )
+            .await
+            .ok()
+            .flatten()
+            .unwrap_or_else(|| ty.clone());
+        self.apparent.insert(ty.id.clone(), apparent.clone());
+        apparent
     }
 
     /// Encoded syntax of a declaring file, fetched once per batch.

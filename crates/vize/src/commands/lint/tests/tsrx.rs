@@ -72,22 +72,50 @@ fn a_module_with_an_unsupported_construct_reports_every_one_and_lints_no_region(
 }
 
 #[test]
-fn a_module_with_host_loops_reports_each_and_lints_no_region() {
+fn a_keyed_host_loop_lints_its_items_and_its_empty_region() {
+    // The head's `key` keys every item; `@empty` renders outside the list.
     let source = "export function List({ items }: { items: string[] }) @{
   <ul  class=\"list\">
     @for (const item of items; key item) {
       <li  title={item}><img src={item} /></li>
     } @empty {
-      <li>none</li>
+      <li  class=\"none\"><img src=\"none.png\" /></li>
     }
   </ul>
 }
 ";
     let result = lint_tsrx(&Linter::new(), source, "List.tsrx");
-    assert_eq!(rows(&result), [("parser/tsrx", 81, 208)]);
+    let at = |text: &str| u32::try_from(source.find(text).unwrap()).unwrap();
     assert_eq!(
-        result.diagnostics[0].message,
-        "@for is not linted in TSRX modules yet, so this module's markup is not linted"
+        rows(&result),
+        [
+            ("vue/no-multi-spaces", 61, 63),
+            ("vue/no-multi-spaces", 129, 131),
+            ("a11y/alt-text", 144, 162),
+            ("vue/no-multi-spaces", 192, 194),
+            ("a11y/alt-text", 207, 229),
+        ]
     );
-    assert_eq!((result.error_count, result.warning_count), (1, 0));
+    assert_eq!(at("<ul  ") + 3, 61);
+    assert_eq!(at("<li  title") + 3, 129);
+    assert_eq!(at("<li  class") + 3, 192);
+    assert_eq!(at("<img src=\"none.png\""), 207);
+}
+
+#[test]
+fn an_unkeyed_host_loop_needs_a_key_on_its_items() {
+    let source = "export function List({ items }: { items: string[] }) @{
+  <ul>
+    @for (const item of items) {
+      <li>{item}</li>
+    }
+  </ul>
+}
+";
+    let result = lint_tsrx(&Linter::new(), source, "List.tsrx");
+    // Reported at the loop, as for a JSX `.map()` list.
+    let start = u32::try_from(source.find("@for").unwrap()).unwrap();
+    let end = u32::try_from(source.find("\n  </ul>").unwrap()).unwrap();
+    assert_eq!(rows(&result), [("vue/require-v-for-key", start, end)]);
+    assert_eq!((start, end), (67, 123));
 }

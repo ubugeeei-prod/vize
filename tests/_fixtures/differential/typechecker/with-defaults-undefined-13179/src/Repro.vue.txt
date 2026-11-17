@@ -1,0 +1,5 @@
+<script setup lang="ts">
+interface Props { enabled?: boolean | undefined }
+const props = withDefaults(defineProps<Props>(), { enabled: undefined });
+</script>
+<template><div>{{ props.enabled }}</div></template>

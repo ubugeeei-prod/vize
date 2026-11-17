@@ -46,7 +46,7 @@ src/Controls.vue(13,23): error TS2322: Type '(event: string) => void' is not ass
 ";
 
 /// The published SDK as installed from npm, answered by the built mapper.
-fn install_published_sdk(project: &Path) {
+pub(super) fn install_published_sdk(project: &Path) {
     let package = project.join("node_modules/vize");
     let manifest_path = package.join("package.json");
     let mut manifest: serde_json::Value =

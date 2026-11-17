@@ -4,7 +4,9 @@
 //! same questions about the same types (union constituents, base constraints,
 //! contextual types). One memo per batch answers each question once per type
 //! or node, whichever family asks first.
-use corsa::api::{NodeHandle, ProjectSession, TypeHandle, TypeResponse};
+use corsa::api::{
+    NodeHandle, ProjectSession, SignatureHandle, SignatureResponse, TypeHandle, TypeResponse,
+};
 use std::cell::RefCell;
 use std::ops::Deref;
 use vize_l0::FxHashMap;
@@ -19,6 +21,8 @@ pub(in crate::linter) struct CheckerMemo<'a> {
     contextual: RefCell<FxHashMap<NodeHandle, Option<TypeResponse>>>,
     texts: RefCell<FxHashMap<TypeHandle, Vec<vize_l0::String>>>,
     property_names: RefCell<FxHashMap<TypeHandle, Vec<vize_l0::String>>>,
+    resolved_signatures: RefCell<FxHashMap<NodeHandle, Option<SignatureResponse>>>,
+    parameter_types: RefCell<FxHashMap<(SignatureHandle, i32), Option<TypeResponse>>>,
 }
 
 impl Deref for CheckerMemo<'_> {
@@ -38,6 +42,8 @@ impl<'a> CheckerMemo<'a> {
             contextual: RefCell::default(),
             texts: RefCell::default(),
             property_names: RefCell::default(),
+            resolved_signatures: RefCell::default(),
+            parameter_types: RefCell::default(),
         }
     }
 
@@ -154,6 +160,57 @@ impl<'a> CheckerMemo<'a> {
         self.property_names
             .borrow_mut()
             .insert(ty.id.clone(), found.clone());
+        found
+    }
+
+    /// The signature selected for a call-like node.
+    pub(in crate::linter) async fn resolved_signature(
+        &self,
+        node: &NodeHandle,
+    ) -> Option<SignatureResponse> {
+        if let Some(found) = self.resolved_signatures.borrow().get(node) {
+            return found.clone();
+        }
+        let found = self
+            .session
+            .client()
+            .get_resolved_signature(
+                self.session.snapshot().handle.clone(),
+                self.session.project_handle(),
+                node.clone(),
+            )
+            .await
+            .ok()
+            .flatten();
+        self.resolved_signatures
+            .borrow_mut()
+            .insert(node.clone(), found.clone());
+        found
+    }
+
+    /// The resolved parameter type at one argument position.
+    pub(in crate::linter) async fn parameter_type(
+        &self,
+        signature: &SignatureHandle,
+        index: i32,
+    ) -> Option<TypeResponse> {
+        let key = (signature.clone(), index);
+        if let Some(found) = self.parameter_types.borrow().get(&key) {
+            return found.clone();
+        }
+        let found = self
+            .session
+            .client()
+            .get_parameter_type(
+                self.session.snapshot().handle.clone(),
+                self.session.project_handle(),
+                signature.clone(),
+                index,
+            )
+            .await
+            .ok()
+            .flatten();
+        self.parameter_types.borrow_mut().insert(key, found.clone());
         found
     }
 }

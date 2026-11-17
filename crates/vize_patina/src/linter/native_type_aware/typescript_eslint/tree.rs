@@ -12,6 +12,11 @@ use std::collections::BTreeMap;
 
 const DEPTH: u32 = 24;
 
+/// Listens to computed member accesses only (`MemberExpression[computed=true]`),
+/// so a rule that reads `obj[key]` does not collect, and ask facts of, every
+/// `obj.name` access as well.
+pub(super) const COMPUTED_MEMBER_LISTENER: &str = "MemberExpression[computed=true]";
+
 const DECLARATIONS: &[&str] = &[
     "VariableDeclarator",
     "FunctionDeclaration",
@@ -117,9 +122,11 @@ fn walk(
         return;
     };
     let key = slot.key;
-    if listeners.contains(&kind)
-        && let Some(mut node) = convert(value, source, DEPTH, parent_kind, key)
-    {
+    let listened = listeners.contains(&kind)
+        || (kind == "MemberExpression"
+            && listeners.contains(&COMPUTED_MEMBER_LISTENER)
+            && value.get("computed").and_then(Value::as_bool) == Some(true));
+    if listened && let Some(mut node) = convert(value, source, DEPTH, parent_kind, key) {
         if let Some(parent) = parent {
             function_naming(&mut node, parent);
         }

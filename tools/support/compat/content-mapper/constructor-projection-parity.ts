@@ -8,12 +8,8 @@ import { withoutProducerUnmappedIgnores } from "./producer-unmapped-ignores.ts";
 import {
   certifiedTransition,
   uniqueOffset,
-  previousRuntimeProp,
-  currentRuntimeProp,
-  previousEmbeddedWithDefaults,
-  currentEmbeddedWithDefaults,
-  previousSharedWithDefaults,
-  currentSharedWithDefaults,
+  certifyHelperDeclarationEdits,
+  certifyWithDefaultsEdits,
 } from "./canonical-helper-transition.ts";
 export {
   previousEmbeddedWithDefaults,
@@ -166,33 +162,13 @@ function relocationEdits(
     if (transition) certifiedEdits.push(transition);
   }
   // Whole helper replacement owns its alias; pruned helpers retain only the declaration.
-  if (!helperTransition) {
-    const runtimeProp = certifiedTransition(
-      before,
-      after,
-      previousRuntimeProp,
-      currentRuntimeProp,
-      "runtime prop value alias",
-    );
-    if (runtimeProp) certifiedEdits.push(runtimeProp);
-  }
+  if (!helperTransition)
+    for (const edit of certifyHelperDeclarationEdits(before, after))
+      if (edit) certifiedEdits.push(edit);
   for (const transition of [
     certifiedTransition(before, after, previousSlotsExport, currentSlotsExport, "Slots export"),
     certifiedTransition(before, after, previousSlotsMarker, currentSlotsMarker, "Slots marker"),
-    certifiedTransition(
-      before,
-      after,
-      previousEmbeddedWithDefaults,
-      currentEmbeddedWithDefaults,
-      "embedded withDefaults docs return",
-    ),
-    certifiedTransition(
-      before,
-      after,
-      previousSharedWithDefaults,
-      currentSharedWithDefaults,
-      "shared withDefaults authored return",
-    ),
+    ...certifyWithDefaultsEdits(before, after),
     certifyAttrValueKeySet(before, after),
     certifyLibraryPropChecker(before, after),
   ])

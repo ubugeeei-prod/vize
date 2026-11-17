@@ -84,6 +84,9 @@ fn walk_region<'a>(
             Op::For(for_op) => {
                 let step = scope_region(doc, for_op.span, &for_op.region.ops);
                 walk_step(doc, step, enter, exit);
+                if let Some(empty) = for_op.empty_region() {
+                    walk_region(doc, &empty.ops, enter, exit);
+                }
             }
             Op::OriginalFor(for_op) => {
                 let step = scope_region(doc, for_op.span, &for_op.region.ops);

@@ -1,0 +1,98 @@
+<script setup lang="ts">
+enum Fruit {
+  Apple,
+  Banana,
+}
+enum Vegetable {
+  Asparagus = "asparagus",
+}
+
+interface Basket<T> {
+  fruit: T;
+}
+class Implemented implements Basket<Fruit> {
+  fruit = 1;
+}
+class Base<T> {
+  fruit!: T;
+}
+class Extended extends Base<Fruit> {
+  fruit = 1;
+}
+
+declare const keyed: { [key in Fruit]: string };
+keyed[0];
+declare const explicit: {
+  [Vegetable.Asparagus]: string;
+  [Fruit.Apple]: string;
+};
+explicit["asparagus"];
+
+declare const tuple: [number];
+const [destructured]: [Fruit] = tuple;
+declare const source: { fruit: number };
+const { fruit }: { fruit: Fruit } = source;
+const spread: { fruit: Fruit } = { ...source };
+
+declare const numbers: number[];
+declare const pair: [number];
+const readonlyFruit: readonly Fruit[] = numbers;
+const indexedFruit: { [index: number]: Fruit } = pair;
+
+function takesFruits(...fruits: Fruit[]): void {}
+takesFruits(...numbers);
+takesFruits(Fruit.Apple, ...numbers, 1);
+
+interface FruitNode {
+  fruit: Fruit;
+  next: FruitNode;
+}
+interface NumberNode {
+  fruit: number;
+  next: NumberNode;
+}
+declare const numberNode: NumberNode;
+const fruitNode: FruitNode = numberNode;
+
+interface FruitBox<T> {
+  fruit: Fruit;
+  value: T;
+}
+interface NumberBox<T> {
+  fruit: number;
+  value: T;
+}
+function getFruitBox<T>(box: NumberBox<T>): FruitBox<T> {
+  return box;
+}
+
+declare const deep: { a: { b: { c: { d: { fruit: number } } } } };
+const deepFruit: { a: { b: { c: { d: { fruit: Fruit } } } } } = deep;
+
+class AccessorBasket implements Basket<Fruit> {
+  accessor fruit = 1;
+}
+declare function takesPair(...args: [Fruit, Fruit]): void;
+declare const variableTuple: [Fruit, ...Fruit[]];
+takesPair(...variableTuple, 1);
+declare function takesMixed(first: Fruit, second: number, third: number, ...rest: Fruit[]): void;
+takesMixed(...variableTuple, 1);
+declare const numberSet: Set<number>;
+takesFruits(...numberSet);
+
+declare function useFruit(source: (() => Fruit) | Fruit): void;
+declare function pickFruit(source: Fruit | Fruit[]): void;
+useFruit(2);
+pickFruit(2);
+useFruit(Fruit.Apple);
+pickFruit([Fruit.Banana]);
+
+const safeBasket: Basket<Fruit> = { fruit: Fruit.Apple };
+const safeFlags: Fruit = Fruit.Apple | Fruit.Banana;
+declare function acceptsPrimitive(value: Fruit | number): void;
+acceptsPrimitive(2);
+keyed[Fruit.Apple];
+void [safeBasket, safeFlags, fruitNode, readonlyFruit, indexedFruit, spread, destructured, fruit];
+</script>
+
+<template><p>matrix</p></template>
