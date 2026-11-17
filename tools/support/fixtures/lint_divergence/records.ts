@@ -229,6 +229,14 @@ export function baselineIntentionalReason(
     if (offset !== null && gluedFragmentDuplicate(finding.message, offset, source))
       return classFragmentReason;
   }
+  if (
+    finding.ruleId === "vue/no-unused-emit-declarations" &&
+    source !== undefined &&
+    source !== null
+  ) {
+    const reason = unusedEmitUpstreamMiss(finding.message, source);
+    if (reason !== null) return reason;
+  }
   if (finding.ruleId === "vue/v-if-else-key") {
     const tag = /repeated component '([^']+)'/u.exec(finding.message)?.[1];
     if (tag !== undefined && vueSvgTags.has(tag))
@@ -994,6 +1002,29 @@ function refCallUnderTypeAssertion(finding: LintRecord, source: string): boolean
     start = before.length - 1;
     end = end + after + 1;
   }
+}
+
+/**
+ * Two eslint-plugin-vue blind spots in vue/no-unused-emit-declarations, for
+ * the `const <binding> = defineEmits(...)` of the file:
+ * - it sees the binding only as a bare identifier, not through a type
+ *   assertion (`(emit as any)('apply')`, `useVModel(props, 'modelValue', emits as any)`);
+ * - it learns the binding at the macro, so a call written above it
+ *   (`emit("edit-environment")` in an earlier function) does not count.
+ */
+function unusedEmitUpstreamMiss(message: string, source: string): string | null {
+  const event = /^`([^`]+)` is defined as emit but never used\.$/u.exec(message)?.[1];
+  const declaration = /\b(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*defineEmits\b/u.exec(source);
+  const binding = declaration?.[1];
+  if (event === undefined || declaration === null || binding === undefined) return null;
+  const name = binding.replace(/\$/gu, "\\$");
+  if (new RegExp(`[(,]\\s*${name}\\s*(?:as\\s|satisfies\\s|!)`, "u").test(source))
+    return "Patina follows the emit function through a type assertion, as in `(emit as any)('apply')` or `useVModel(props, 'modelValue', emits as any)`; eslint-plugin-vue recognizes only a bare identifier, so it misses those emits.";
+  const escaped = event.replace(/[.*+?^${}()|[\]\\]/gu, (character) => `\\${character}`);
+  const call = new RegExp(`\\b${name}\\s*\\(\\s*(['"\`])${escaped}\\1`, "u").exec(source);
+  if (call !== null && call.index < declaration.index)
+    return "Patina resolves the defineEmits binding before visiting calls; eslint-plugin-vue misses calls authored before the macro declaration because its visitor records the binding later.";
+  return null;
 }
 
 /**
