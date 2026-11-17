@@ -185,3 +185,30 @@ test("SVG elements outside an <svg> ancestor are native to Vue", () => {
     assert.match(keyed(tag) ?? "", /native/u);
   for (const tag of ["MyIcon", "my-path", "Path"]) assert.equal(keyed(tag), null);
 });
+
+test("a payload call authored before defineEmits is Patina's finding", () => {
+  const sfc = `<template>
+  <button @click="emit('toggled', a, b)" />
+</template>
+<script setup lang="ts">
+function insert(text: string) {
+  emit('execute-action', 'insertText', text)
+}
+const emit = defineEmits<{ 'execute-action': [string, string]; toggled: [number, number] }>()
+emit('toggled', 1, 2)
+</script>
+`;
+  const payload = (text: string) =>
+    patinaIntentionalReason(
+      classFinding(
+        sfc,
+        "vue/prefer-single-event-payload",
+        text,
+        "[vize:vue/prefer-single-event-payload] Pass a single payload object instead of multiple arguments.",
+      ),
+      sfc,
+    );
+  assert.match(payload("text)") ?? "", /before the macro declaration/u);
+  assert.equal(payload("2)"), null);
+  assert.equal(payload("b)"), null);
+});
