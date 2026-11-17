@@ -19,7 +19,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import type { BigIntStats, Dirent } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { basename, dirname, join, resolve } from "node:path";
 
 export const manifestName = ".vize-source-mtimes.json";
 const schema = "vize.rust-source-mtimes";
@@ -179,6 +179,17 @@ function invalidateUnownedWorkspaceArtifacts(
   let removed = 0;
   const seen: string[] = [];
   visitFingerprintDirectories(target, (path) => {
+    if (basename(path) === "fingerprint") {
+      // Cargo 1.100 layout: `build/<package>/<hash>/fingerprint` holds one
+      // unit, and its package directory names the owner.
+      const owner = basename(dirname(dirname(path)));
+      if (seen.length < 5) seen.push(owner);
+      if (owners.has(owner)) {
+        rmSync(path, { recursive: true });
+        removed++;
+      }
+      return;
+    }
     for (const unit of readdirSync(path)) {
       if (seen.length < 5) seen.push(unit);
       const match = /^(.*)-[0-9a-f]{16}$/u.exec(unit);
