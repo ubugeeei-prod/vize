@@ -486,3 +486,14 @@ fn prefer_v_model_pairs_camelized_names_and_mirror_handlers() {
         );
     }
 }
+
+#[test]
+fn restricted_v_bind_reports_the_directive_key() {
+    assert_eq!(
+        reported(
+            Box::new(NoRestrictedVBind),
+            r#"<Card :v-bind="{ item }" /><Input key="k" :v-model="0" start-open /><i :v-show.camel />"#,
+        ),
+        [":v-bind", ":v-model", ":v-show.camel"]
+    );
+}
