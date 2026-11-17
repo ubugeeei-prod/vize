@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h2-no-options-api-generated-breakpoint-tokens-6003",
+    history: "c46595eee7e99858cfc8f6bb19e87d2b98cb0ea1",
+    source: "\n/**\n * Do not edit directly, this file was auto-generated.\n */\nexport default {\n  breakpoint: {\n    m: {\n      key: '{breakpoint.m}',\n      value: 960,\n      type: 'dimension'\n    }\n  }\n}\n",
+    filename: "tokens.js",
+    entry: "script",
+    rule: "script/no-options-api",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "tokens.js",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "tokens.js",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

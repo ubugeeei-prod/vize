@@ -100,3 +100,20 @@ remain distinct from the original count-only test helper. Final-head and queue
 comparison are still required; enumeration counters stay unchanged. All-locale
 coverage, snapshot deltas, whole-commit/history closure and native proof remain
 open. Native handled/equivalent/paired comparisons remain zero.
+
+## Requirement ledger and scripted registration (2026-11-17)
+
+[`linter-fix-history.tsv`](../plan/linter-fix-history.tsv) lists exactly the 258
+title-fix candidates of the inventory above (pin `b4f25fb6`), one row each, with
+the cohort cases that pin it. It is the reviewed-requirement record this
+decision asked for, not a whole-repository inventory: the 245 other titles and
+the merge supplements stay in the regenerated artifact.
+
+`tools/commands/fixtures/linter-fix-history-case.ts` registers a fix's cases in
+the current-API cohort. Each case is one authored or original input linted with
+one named rule; the complete Debug observation (diagnostics, help, every
+independently applied fix and its re-lint) is the insta snapshot oracle, pinned
+in `oracle-index.json` and the shared manifest. SFC cases record their native
+outcome in `history-native-reasons.json`, which the SFC contract test merges.
+Rows whose behavior the cohort cannot express (type-aware rules, config,
+cross-file) stay `not-admitted` until a cohort can carry them.

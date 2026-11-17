@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h4-musea-no-empty-variant-art-file-5599",
+    history: "8e773066b5b9f68358bc0055f0d657a6b5502a2a",
+    source: "<art component=\"./Button.vue\">\n  <variant name=\"empty\"></variant>\n</art>\n",
+    filename: "Button.art.vue",
+    entry: "sfc",
+    rule: "musea/no-empty-variant",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "Button.art.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "musea/no-empty-variant",
+                severity: Warning,
+                message: "Empty <variant> block with no content",
+                start: 33,
+                end: 65,
+                help: Some(
+                    "Add template content inside the variant",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "Button.art.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "musea/no-empty-variant",
+                    severity: Warning,
+                    message: "Empty <variant> block with no content",
+                    start: 33,
+                    end: 65,
+                    help: Some(
+                        "Add template content inside the variant",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h2-click-key-events-aria-hidden-backdrop-6006",
+    history: "bac60e33aa622b42b4adcf44103e4f11e5808d47",
+    source: "<div aria-hidden=\"true\" class=\"backdrop\" @click=\"close\" />",
+    filename: "History.vue",
+    entry: "template",
+    rule: "a11y/click-events-have-key-events",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

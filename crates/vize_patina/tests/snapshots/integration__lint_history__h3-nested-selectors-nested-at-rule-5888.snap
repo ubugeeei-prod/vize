@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h3-nested-selectors-nested-at-rule-5888",
+    history: "133506ede19070a057ecc59ab6feda8a94ecd40d",
+    source: "<template><div class=\"a\" /></template>\n<style>\n.a {\n  color: red;\n\n  @media (hover: hover) {\n    &:hover {\n      color: blue;\n    }\n  }\n}\n</style>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "css/prefer-nested-selectors",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h2-v-html-dynamic-tag-name-prop-sfc-6116",
+    history: "312485ac2375f4e7cb99ecd4e085b28a35413add",
+    source: "<script setup lang=\"ts\">\nconst { tagName = \"div\", html = \"\" } = defineProps<{\n  tagName?: string\n  html?: string\n}>()\n</script>\n\n<template>\n  <component :is=\"tagName\" v-html=\"html\" />\n</template>",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "vue/no-v-text-v-html-on-component",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

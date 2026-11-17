@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h2-supports-focus-activedescendant-listbox-6006",
+    history: "bac60e33aa622b42b4adcf44103e4f11e5808d47",
+    source: "<div>\n  <button\n    type=\"button\"\n    role=\"combobox\"\n    aria-controls=\"lb\"\n    :aria-activedescendant=\"`lb-option-${focused}`\"\n  >Select</button>\n  <div id=\"lb\" role=\"listbox\">\n    <button role=\"option\" tabindex=\"-1\">A</button>\n  </div>\n</div>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "a11y/interactive-supports-focus",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

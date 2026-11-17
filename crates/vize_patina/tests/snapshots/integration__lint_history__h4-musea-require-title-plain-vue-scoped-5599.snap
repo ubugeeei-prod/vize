@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h4-musea-require-title-plain-vue-scoped-5599",
+    history: "8e773066b5b9f68358bc0055f0d657a6b5502a2a",
+    source: "<art component=\"./Button.vue\">\n  <variant name=\"empty\"></variant>\n</art>\n",
+    filename: "Button.vue",
+    entry: "sfc",
+    rule: "musea/require-title",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "Button.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "Button.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

@@ -1,0 +1,131 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h1-unused-properties-comments-strings-imports-6689",
+    history: "094739fbcda25f3b4c41d03c72f04a6a1242aa2d",
+    source: "<script setup lang=\"ts\">\n// the title is shown elsewhere\nconst label = \"subtitle\";\nimport type { Phase } from \"./phase\";\n\ndefineProps<{\n  title: string;\n  subtitle: string;\n  phase: Phase;\n  count: number;\n}>();\n</script>\n\n<template><h1>{{ label }}</h1></template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "vue/no-unused-properties",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 4,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/no-unused-properties",
+                severity: Warning,
+                message: "Prop 'title' is defined but never used",
+                start: 138,
+                end: 152,
+                help: Some(
+                    "Remove unused prop or use it in your template/script",
+                ),
+                labels: [],
+                fix: None,
+            },
+            LintDiagnostic {
+                rule_name: "vue/no-unused-properties",
+                severity: Warning,
+                message: "Prop 'subtitle' is defined but never used",
+                start: 155,
+                end: 172,
+                help: Some(
+                    "Remove unused prop or use it in your template/script",
+                ),
+                labels: [],
+                fix: None,
+            },
+            LintDiagnostic {
+                rule_name: "vue/no-unused-properties",
+                severity: Warning,
+                message: "Prop 'phase' is defined but never used",
+                start: 175,
+                end: 188,
+                help: Some(
+                    "Remove unused prop or use it in your template/script",
+                ),
+                labels: [],
+                fix: None,
+            },
+            LintDiagnostic {
+                rule_name: "vue/no-unused-properties",
+                severity: Warning,
+                message: "Prop 'count' is defined but never used",
+                start: 191,
+                end: 205,
+                help: Some(
+                    "Remove unused prop or use it in your template/script",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 4,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/no-unused-properties",
+                    severity: Warning,
+                    message: "Prop 'title' is defined but never used",
+                    start: 138,
+                    end: 152,
+                    help: Some(
+                        "Remove unused prop or use it in your template/script",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+                LintDiagnostic {
+                    rule_name: "vue/no-unused-properties",
+                    severity: Warning,
+                    message: "Prop 'subtitle' is defined but never used",
+                    start: 155,
+                    end: 172,
+                    help: Some(
+                        "Remove unused prop or use it in your template/script",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+                LintDiagnostic {
+                    rule_name: "vue/no-unused-properties",
+                    severity: Warning,
+                    message: "Prop 'phase' is defined but never used",
+                    start: 175,
+                    end: 188,
+                    help: Some(
+                        "Remove unused prop or use it in your template/script",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+                LintDiagnostic {
+                    rule_name: "vue/no-unused-properties",
+                    severity: Warning,
+                    message: "Prop 'count' is defined but never used",
+                    start: 191,
+                    end: 205,
+                    help: Some(
+                        "Remove unused prop or use it in your template/script",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 4,
+        },
+    ),
+}

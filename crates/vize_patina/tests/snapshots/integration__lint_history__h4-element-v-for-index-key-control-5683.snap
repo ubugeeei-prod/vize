@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h4-element-v-for-index-key-control-5683",
+    history: "50709e6388be4f1a7e10b0f99be081f2e7971fdd",
+    source: "<li v-for=\"(item, index) in list\" :key=\"index\">{{ item }}</li>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/no-array-index-key",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/no-array-index-key",
+                severity: Warning,
+                message: "Do not use the v-for index as :key; use a stable, unique identifier instead",
+                start: 34,
+                end: 46,
+                help: Some(
+                    "Bind :key to a stable id from the item (e.g. :key=\"item.id\"). The index changes when the list is reordered or filtered, so Vue reuses the wrong element state.",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/no-array-index-key",
+                    severity: Warning,
+                    message: "Do not use the v-for index as :key; use a stable, unique identifier instead",
+                    start: 34,
+                    end: 46,
+                    help: Some(
+                        "Bind :key to a stable id from the item (e.g. :key=\"item.id\"). The index changes when the list is reordered or filtered, so Vue reuses the wrong element state.",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

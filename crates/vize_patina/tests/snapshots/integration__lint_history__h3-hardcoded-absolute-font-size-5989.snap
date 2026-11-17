@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h3-hardcoded-absolute-font-size-5989",
+    history: "3932cf3e2451adb066b600c51a63c1164228fe0b",
+    source: "<template><div class=\"button\" /></template>\n<style>\n.button { font-size: 16px; }\n</style>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "css/no-hardcoded-values",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "css/no-hardcoded-values",
+                severity: Warning,
+                message: "Consider using a CSS variable for font-size",
+                start: 62,
+                end: 71,
+                help: Some(
+                    "Use var(--font-size-name) or relative units (rem, em)",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "css/no-hardcoded-values",
+                    severity: Warning,
+                    message: "Consider using a CSS variable for font-size",
+                    start: 62,
+                    end: 71,
+                    help: Some(
+                        "Use var(--font-size-name) or relative units (rem, em)",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

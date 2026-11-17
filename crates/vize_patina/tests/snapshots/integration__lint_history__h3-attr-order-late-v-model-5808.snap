@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h3-attr-order-late-v-model-5808",
+    history: "aff98628b1dd52ee777bd75bda45c02e77334dc4",
+    source: "<CopyButton showLabel v-model:copied=\"copied\" />",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/attribute-order",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/attribute-order",
+                severity: Warning,
+                message: "Attribute should be placed in correct order",
+                start: 22,
+                end: 45,
+                help: Some(
+                    "Reorder attributes to follow the recommended order",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/attribute-order",
+                    severity: Warning,
+                    message: "Attribute should be placed in correct order",
+                    start: 22,
+                    end: 45,
+                    help: Some(
+                        "Reorder attributes to follow the recommended order",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

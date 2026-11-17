@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h1-setup-binding-unmatched-template-ref-control",
+    history: "eb8eb6b7fd5f9968081bba00bc9f56f23cfd2677",
+    source: "<script setup>import { ref } from 'vue'; const el = ref(null);</script><template><div ref=\"other\" /></template>",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "vue/no-unused-setup-bindings",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/no-unused-setup-bindings",
+                severity: Warning,
+                message: "Setup binding 'el' is never read",
+                start: 47,
+                end: 49,
+                help: Some(
+                    "Remove the binding or prefix its name with underscore if intentionally unused",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/no-unused-setup-bindings",
+                    severity: Warning,
+                    message: "Setup binding 'el' is never read",
+                    start: 47,
+                    end: 49,
+                    help: Some(
+                        "Remove the binding or prefix its name with underscore if intentionally unused",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

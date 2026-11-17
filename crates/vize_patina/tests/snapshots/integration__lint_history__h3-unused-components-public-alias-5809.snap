@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h3-unused-components-public-alias-5809",
+    history: "feb2cc85a3f4c7bf34b110113e7d901ce11aab0d",
+    source: "<script>\nimport Style from './style.vue'\n\nexport default {\n  components: {\n    FourStyle: Style,\n  },\n}\n</script>\n\n<template>\n  <div />\n</template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "vue/no-unused-components",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/no-unused-components",
+                severity: Warning,
+                message: "Component 'FourStyle' is registered but never used in template",
+                start: 79,
+                end: 88,
+                help: Some(
+                    "Remove the unused import or use the component in your template",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/no-unused-components",
+                    severity: Warning,
+                    message: "Component 'FourStyle' is registered but never used in template",
+                    start: 79,
+                    end: 88,
+                    help: Some(
+                        "Remove the unused import or use the component in your template",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

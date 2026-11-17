@@ -1,0 +1,203 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h1-unsafe-url-dynamic-active-sinks-6699",
+    history: "85cc05b89b5b16b8d302cd44ca124bab2d17c9ea",
+    source: "<div><MediaPlayer :src=\"url\" /><media-player :src=\"url\" /><img :src=\"url\" /><video :src=\"url\" /><audio :src=\"url\" /><source :src=\"url\" /><a :href=\"url\">link</a><iframe :src=\"url\" /><form :action=\"url\"><button :formaction=\"url\">go</button></form><object :data=\"url\" /><embed :src=\"url\" /><script :src=\"url\" /></div>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/no-unsafe-url",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 7,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/no-unsafe-url",
+                severity: Warning,
+                message: "Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
+                start: 140,
+                end: 151,
+                help: Some(
+                    "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url",
+                ),
+                labels: [],
+                fix: None,
+            },
+            LintDiagnostic {
+                rule_name: "vue/no-unsafe-url",
+                severity: Warning,
+                message: "Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
+                start: 168,
+                end: 178,
+                help: Some(
+                    "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol",
+                ),
+                labels: [],
+                fix: None,
+            },
+            LintDiagnostic {
+                rule_name: "vue/no-unsafe-url",
+                severity: Warning,
+                message: "Dynamic :action binding may be vulnerable to XSS via javascript: protocol",
+                start: 187,
+                end: 200,
+                help: Some(
+                    "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol",
+                ),
+                labels: [],
+                fix: None,
+            },
+            LintDiagnostic {
+                rule_name: "vue/no-unsafe-url",
+                severity: Warning,
+                message: "Dynamic :formaction binding may be vulnerable to XSS via javascript: protocol",
+                start: 209,
+                end: 226,
+                help: Some(
+                    "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol",
+                ),
+                labels: [],
+                fix: None,
+            },
+            LintDiagnostic {
+                rule_name: "vue/no-unsafe-url",
+                severity: Warning,
+                message: "Dynamic :data binding may be vulnerable to XSS via javascript: protocol",
+                start: 253,
+                end: 264,
+                help: Some(
+                    "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol",
+                ),
+                labels: [],
+                fix: None,
+            },
+            LintDiagnostic {
+                rule_name: "vue/no-unsafe-url",
+                severity: Warning,
+                message: "Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
+                start: 274,
+                end: 284,
+                help: Some(
+                    "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol",
+                ),
+                labels: [],
+                fix: None,
+            },
+            LintDiagnostic {
+                rule_name: "vue/no-unsafe-url",
+                severity: Warning,
+                message: "Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
+                start: 295,
+                end: 305,
+                help: Some(
+                    "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 7,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/no-unsafe-url",
+                    severity: Warning,
+                    message: "Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
+                    start: 140,
+                    end: 151,
+                    help: Some(
+                        "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+                LintDiagnostic {
+                    rule_name: "vue/no-unsafe-url",
+                    severity: Warning,
+                    message: "Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
+                    start: 168,
+                    end: 178,
+                    help: Some(
+                        "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+                LintDiagnostic {
+                    rule_name: "vue/no-unsafe-url",
+                    severity: Warning,
+                    message: "Dynamic :action binding may be vulnerable to XSS via javascript: protocol",
+                    start: 187,
+                    end: 200,
+                    help: Some(
+                        "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+                LintDiagnostic {
+                    rule_name: "vue/no-unsafe-url",
+                    severity: Warning,
+                    message: "Dynamic :formaction binding may be vulnerable to XSS via javascript: protocol",
+                    start: 209,
+                    end: 226,
+                    help: Some(
+                        "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+                LintDiagnostic {
+                    rule_name: "vue/no-unsafe-url",
+                    severity: Warning,
+                    message: "Dynamic :data binding may be vulnerable to XSS via javascript: protocol",
+                    start: 253,
+                    end: 264,
+                    help: Some(
+                        "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+                LintDiagnostic {
+                    rule_name: "vue/no-unsafe-url",
+                    severity: Warning,
+                    message: "Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
+                    start: 274,
+                    end: 284,
+                    help: Some(
+                        "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+                LintDiagnostic {
+                    rule_name: "vue/no-unsafe-url",
+                    severity: Warning,
+                    message: "Dynamic :src binding may be vulnerable to XSS via javascript: protocol",
+                    start: 295,
+                    end: 305,
+                    help: Some(
+                        "Ensure URLs are sanitized before binding to prevent XSS via javascript: protocol",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 7,
+        },
+    ),
+}

@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h3-nested-selectors-flat-reports-5888",
+    history: "133506ede19070a057ecc59ab6feda8a94ecd40d",
+    source: "<template><div class=\"a\" /></template>\n<style>\n.a {\n  color: red;\n}\n\n.a .b {\n  color: blue;\n}\n</style>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "css/prefer-nested-selectors",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "css/prefer-nested-selectors",
+                severity: Warning,
+                message: "Consider using CSS nesting for descendant selectors",
+                start: 69,
+                end: 74,
+                help: Some(
+                    "Use CSS nesting syntax to nest child selectors inside parent selectors",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "css/prefer-nested-selectors",
+                    severity: Warning,
+                    message: "Consider using CSS nesting for descendant selectors",
+                    start: 69,
+                    end: 74,
+                    help: Some(
+                        "Use CSS nesting syntax to nest child selectors inside parent selectors",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

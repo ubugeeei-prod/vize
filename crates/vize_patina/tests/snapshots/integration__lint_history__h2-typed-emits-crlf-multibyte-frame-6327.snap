@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h2-typed-emits-crlf-multibyte-frame-6327",
+    history: "78ca5df73fd6bb8a24bc06a921c03cdb667f49ab",
+    source: "<template>\r\n  <p>ラベル：{{ props.label }}</p>\r\n</template>\r\n\r\n<script setup>\r\nconst props = defineProps(['label'])\r\nconst emit = defineEmits(['edit'])\r\n</script>\r\n",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "type/require-typed-emits",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "type/require-typed-emits",
+                severity: Warning,
+                message: "Emit should have a type definition",
+                start: 134,
+                end: 155,
+                help: Some(
+                    "Use `defineEmits<...>()` or a validator object with typed payload parameters.",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "type/require-typed-emits",
+                    severity: Warning,
+                    message: "Emit should have a type definition",
+                    start: 134,
+                    end: 155,
+                    help: Some(
+                        "Use `defineEmits<...>()` or a validator object with typed payload parameters.",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

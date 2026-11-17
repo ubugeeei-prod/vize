@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h4-multiple-objects-class-string-brace-4982",
+    history: "b8df7bfef348537d51ee1cdbe4740ee6d77ec3d2",
+    source: "<div :class=\"['{', { a: b }]\" />",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/no-multiple-objects-in-class",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h3-v-for-dynamic-slot-forwarder-5822",
+    history: "808ec8e08de8133fdf1b3f8ecf3156e2ec562aef",
+    source: "<Component>\n  <template v-for=\"header in headers\" #[`header.${header.value}`]>\n    <slot :name=\"`header.${header.value}`\" :header=\"header\" />\n  </template>\n</Component>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/require-v-for-key",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

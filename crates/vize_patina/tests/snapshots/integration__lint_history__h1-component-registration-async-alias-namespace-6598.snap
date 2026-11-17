@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h1-component-registration-async-alias-namespace-6598",
+    history: "e354089098c1e364f4fadba4b621b9e8cebba6ea",
+    source: "<script setup lang=\"ts\">\nimport { defineAsyncComponent as asyncComponent } from 'vue'\nimport * as Vue from 'vue'\n\nconst LoadingPanel = asyncComponent(() => import('./LoadingPanel.vue'))\nconst StatusBadge = Vue.defineAsyncComponent(() => import('./StatusBadge.vue'))\n</script>\n\n<template>\n  <loading-panel />\n  <StatusBadge />\n</template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "vue/require-component-registration",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

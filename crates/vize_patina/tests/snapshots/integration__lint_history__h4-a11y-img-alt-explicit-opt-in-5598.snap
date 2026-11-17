@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h4-a11y-img-alt-explicit-opt-in-5598",
+    history: "0f144725a32d58c65105704aa2f268409ff537a9",
+    source: "<img src=\"/photo.jpg\" />",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/a11y-img-alt",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/a11y-img-alt",
+                severity: Warning,
+                message: "<img> elements must have an alt attribute for accessibility",
+                start: 0,
+                end: 24,
+                help: Some(
+                    "Add alt=\"description\" for informative images or alt=\"\" for decorative images",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/a11y-img-alt",
+                    severity: Warning,
+                    message: "<img> elements must have an alt attribute for accessibility",
+                    start: 0,
+                    end: 24,
+                    help: Some(
+                        "Add alt=\"description\" for informative images or alt=\"\" for decorative images",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

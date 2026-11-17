@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h3-scoped-event-component-5935",
+    history: "ff0068d7bd38c348e656de517bc47e91e1d733c4",
+    source: "<AudioPlayer @playAudio=\"handlePlay\" />",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/scoped-event-names",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/scoped-event-names",
+                severity: Warning,
+                message: "Consider using scoped event name for better organization",
+                start: 13,
+                end: 36,
+                help: Some(
+                    "Use scoped event names like 'update:modelValue' instead of generic names",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/scoped-event-names",
+                    severity: Warning,
+                    message: "Consider using scoped event name for better organization",
+                    start: 13,
+                    end: 36,
+                    help: Some(
+                        "Use scoped event names like 'update:modelValue' instead of generic names",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

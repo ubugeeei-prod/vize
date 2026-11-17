@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h2-redundant-roles-markerless-list-6006",
+    history: "bac60e33aa622b42b4adcf44103e4f11e5808d47",
+    source: "<template>\n  <ul class=\"plain\" role=\"list\"><li>a</li></ul>\n</template>\n<style scoped>\n.plain { list-style: none; }\n</style>",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "a11y/no-redundant-roles",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h4-component-registration-self-define-options-4953",
+    history: "b8df7bfef348537d51ee1cdbe4740ee6d77ec3d2",
+    source: "<script setup lang=\"ts\">\ndefineOptions({ name: \"TreeItem\" });\ndefineProps<{ node: { children: unknown[] } }>();\n</script>\n\n<template>\n  <ul>\n    <li v-for=\"(child, i) in node.children\" :key=\"i\">\n      <TreeItem :node=\"child\" />\n    </li>\n  </ul>\n</template>\n",
+    filename: "item.vue",
+    entry: "sfc",
+    rule: "vue/require-component-registration",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "item.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "item.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

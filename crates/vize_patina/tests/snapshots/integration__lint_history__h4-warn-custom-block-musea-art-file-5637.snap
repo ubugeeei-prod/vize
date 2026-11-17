@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h4-warn-custom-block-musea-art-file-5637",
+    history: "a5ad19252514a317562827b26734eeb894cc78d5",
+    source: "<script setup lang=\"ts\">\ndefineArt(\"./Button.vue\", { title: \"Button\" })\n</script>\n<art>\n  <variant name=\"Default\" default>\n    <Button>OK</Button>\n  </variant>\n</art>\n",
+    filename: "Button.art.vue",
+    entry: "sfc",
+    rule: "vue/warn-custom-block",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "Button.art.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "Button.art.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

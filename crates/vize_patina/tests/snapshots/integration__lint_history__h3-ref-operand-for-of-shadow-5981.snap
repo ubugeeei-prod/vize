@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h3-ref-operand-for-of-shadow-5981",
+    history: "244c8127bfa34850db8d18a067589b6bc0d1f7aa",
+    source: "import { ref, computed, shallowRef, toRef, customRef } from \"vue\";\nconst item = ref(0)\nfor (const item of items) { item + 1 }",
+    filename: "History.ts",
+    entry: "script",
+    rule: "script/no-ref-as-operand",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.ts",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.ts",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

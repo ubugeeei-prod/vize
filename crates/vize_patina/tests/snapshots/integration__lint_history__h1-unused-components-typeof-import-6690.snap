@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h1-unused-components-typeof-import-6690",
+    history: "094739fbcda25f3b4c41d03c72f04a6a1242aa2d",
+    source: "<script setup lang=\"ts\">\nimport { ref } from 'vue';\nimport Child from './Child.vue';\n\nconst childRef = ref<InstanceType<typeof Child>>();\ndefineExpose({ childRef });\n</script>\n\n<template><div>hello</div></template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "vue/no-unused-components",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

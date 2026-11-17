@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h3-art-block-regular-sfc-5936",
+    history: "9e875327aac6330db8d0cd60f3f87671ceabe6b1",
+    source: "<template>\n  <div />\n</template>\n<art>\n  <variant name=\"Default\" />\n</art>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "vue/warn-custom-block",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

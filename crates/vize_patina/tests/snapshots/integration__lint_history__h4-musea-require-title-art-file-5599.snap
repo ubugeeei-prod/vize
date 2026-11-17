@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h4-musea-require-title-art-file-5599",
+    history: "8e773066b5b9f68358bc0055f0d657a6b5502a2a",
+    source: "<art component=\"./Button.vue\">\n  <variant name=\"empty\"></variant>\n</art>\n",
+    filename: "Button.art.vue",
+    entry: "sfc",
+    rule: "musea/require-title",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "Button.art.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "musea/require-title",
+                severity: Error,
+                message: "Missing required 'title' attribute in <art> block",
+                start: 0,
+                end: 29,
+                help: Some(
+                    "Add a title attribute: <art title=\"Component Name\">",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 1,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "Button.art.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "musea/require-title",
+                    severity: Error,
+                    message: "Missing required 'title' attribute in <art> block",
+                    start: 0,
+                    end: 29,
+                    help: Some(
+                        "Add a title attribute: <art title=\"Component Name\">",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 1,
+            warning_count: 0,
+        },
+    ),
+}

@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h1-prefixed-eslint-disable-next-line-script-6527",
+    history: "6fa9d6b6bdadf302554e560acfcccf14d0ba0d9d",
+    source: "<script setup lang=\"ts\">\nconst props = defineProps<{ items: string[] }>()\n// eslint-disable-next-line vize/vue/no-mutating-props\nObject.assign(props.items, [])\n</script>",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "vue/no-mutating-props",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}
