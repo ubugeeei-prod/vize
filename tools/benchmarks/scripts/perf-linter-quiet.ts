@@ -250,6 +250,10 @@ for (const spec of arg("scenarios", "mk,mk-json,mk-all,bench,ta").split(",")) {
   if (spec === "ir-bench") irScenario("1000-SFC `--format json` instructions", bench, ["lint", ".", "--format", "json"]);
   if (spec === "ir-ta")
     irScenario("misskey type-aware instructions", mkta, ["lint", "src", "--strict-reactivity", "--format", "json"]);
+  if (spec === "ver") scenario("`vize --version` (process start)", mk, ["--version"], runs);
+  if (spec === "one") scenario("misskey one SFC `lint src/components/MkButton.vue`", mk, ["lint", "src/components/MkButton.vue"], runs);
+  if (spec === "ir-ver") irScenario("`vize --version` instructions", mk, ["--version"]);
+  if (spec === "ir-one") irScenario("one SFC instructions", mk, ["lint", "src/components/MkButton.vue"]);
   if (spec === "bench") scenario("1000-SFC benchmark `lint .` (text)", bench, ["lint", "."], runs);
   if (spec === "ta")
     scenario(
