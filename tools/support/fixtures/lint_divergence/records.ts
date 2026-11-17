@@ -13,8 +13,10 @@ import {
 } from "./imported_prop_contract.ts";
 import {
   importedEmitContractReason,
+  importedSlotContractReason,
   nativeEventFromImportedContract,
-} from "./imported_emit_contract.ts";
+  undeclaredSlotFromImportedContract,
+} from "./imported_macro_contract.ts";
 import {
   indexRealProjectLocationSource,
   realProjectLocationDivergence,
@@ -214,6 +216,16 @@ export function baselineIntentionalReason(
   if (source !== undefined && source !== null) {
     const componentRegistration = componentRegistrationBaselineIntentionalReason(finding, source);
     if (componentRegistration !== null) return componentRegistration;
+  }
+  if (
+    finding.ruleId === "vue/require-explicit-slots" &&
+    finding.message === "Slots must be explicitly defined." &&
+    source !== undefined &&
+    source !== null
+  ) {
+    const offset = findingOffset(finding, source);
+    if (offset !== null && undeclaredSlotFromImportedContract(offset, source))
+      return importedSlotContractReason;
   }
   if (finding.ruleId === "vue/no-shared-component-data")
     return "Patina intentionally merges vue/no-shared-component-data and vue/no-deprecated-data-object-declaration into one diagnostic for the same invalid data option.";

@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { patinaIntentionalReason } from "../../tools/support/fixtures/lint_divergence/records.ts";
+import {
+  baselineIntentionalReason,
+  patinaIntentionalReason,
+} from "../../tools/support/fixtures/lint_divergence/records.ts";
 
 const imported = /emits type imported from another module/u;
 
@@ -60,4 +63,57 @@ interface Emits { click: [] }
 defineEmits<Emits>()
 </script>`;
   assert.equal(reason(local, "Emits", "click", 2), null);
+});
+
+/** The upstream finding on the `occurrence`-th `<slot`. */
+function slotReason(source: string, occurrence = 0): string | null {
+  let start = -1;
+  for (let seen = 0; seen <= occurrence; seen++) start = source.indexOf("<slot", start + 1);
+  assert.ok(start >= 0);
+  const before = source.slice(0, start).split("\n");
+  return baselineIntentionalReason(
+    {
+      file: "src/Item.vue",
+      ruleId: "vue/require-explicit-slots",
+      severity: "error",
+      line: before.length,
+      column: (before.at(-1)?.length ?? 0) + 1,
+      endLine: before.length,
+      endColumn: (before.at(-1)?.length ?? 0) + 6,
+      message: "Slots must be explicitly defined.",
+    },
+    source,
+  );
+}
+
+const importedSlots = /slots type imported from another module/u;
+
+test("a slot only an imported slots type declares is classified", () => {
+  const source = `<script setup lang="ts">
+import type { ComboboxSlots } from './types'
+defineSlots<ComboboxSlots<O, G>>()
+</script>
+<template>
+  <slot :open />
+  <slot name="before" />
+</template>`;
+  assert.match(slotReason(source) ?? "", importedSlots);
+  assert.match(slotReason(source, 1) ?? "", importedSlots);
+});
+
+test("a slot the file spells, binds or cannot see stays counted", () => {
+  const spelled = `<script setup lang="ts">
+import type { Base } from './types'
+type Slots = Base & { header?(props: {}): any }
+defineSlots<Slots>()
+</script>
+<template><slot name="header" /><slot :name="dynamic" /></template>`;
+  assert.equal(slotReason(spelled), null);
+  assert.equal(slotReason(spelled, 1), null);
+  const local = `<script setup lang="ts">
+interface Slots { title(): any }
+defineSlots<Slots>()
+</script>
+<template><slot name="footer" /></template>`;
+  assert.equal(slotReason(local), null);
 });
