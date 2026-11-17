@@ -7,7 +7,10 @@ use crate::ir::ByteRange;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use oxc_ast::ast::{CallExpression, Expression, ImportDeclarationSpecifier, Program, Statement};
 use oxc_ast_visit::{Visit, walk};
-use oxc_span::{GetSpan, Span};
+use oxc_span::Span;
+use oxc_syntax::scope::{ScopeFlags, ScopeId};
+use std::cell::Cell;
+use this_alias::{ScopeTrail, ThisAliases};
 use vize_l0::{CompactString, FxHashSet};
 
 static META: RuleMeta = RuleMeta {
@@ -36,6 +39,8 @@ impl Rule for NextTickStyle {
                 source,
                 findings: Vec::new(),
                 bindings: &bindings,
+                aliases: ThisAliases::collect(program),
+                trail: ScopeTrail::default(),
             };
             visitor.visit_program(program);
             findings.extend(visitor.findings);
@@ -90,33 +95,64 @@ struct NextTickCalls<'bindings, 's> {
     source: &'s str,
     findings: Vec<ByteRange>,
     bindings: &'bindings NextTickBindings,
+    aliases: ThisAliases,
+    trail: ScopeTrail,
 }
 
 impl<'a> Visit<'a> for NextTickCalls<'_, '_> {
+    fn enter_scope(&mut self, flags: ScopeFlags, _: &Cell<Option<ScopeId>>) {
+        self.trail.enter(flags);
+    }
+
+    fn leave_scope(&mut self) {
+        self.trail.leave();
+    }
+
     fn visit_call_expression(&mut self, call: &CallExpression<'a>) {
-        if is_next_tick_call(call, self.bindings)
+        if let Some(name) = next_tick_name(call, self.bindings, &self.aliases, &self.trail)
             && (!call.arguments.is_empty() || !promise_is_consumed(self.source, call.span))
         {
-            self.findings
-                .push(absolute_range(self.offset, call.callee.span()));
+            self.findings.push(absolute_range(self.offset, name));
         }
         walk::walk_call_expression(self, call);
     }
 }
 
-fn is_next_tick_call(call: &CallExpression<'_>, bindings: &NextTickBindings) -> bool {
+/// The `nextTick` or `$nextTick` identifier of a Vue `nextTick` call, which
+/// eslint-plugin-vue reports: an import from `vue`, `Vue.nextTick` or a
+/// namespace import's member, and `$nextTick` on `this` or a `this` alias.
+fn next_tick_name(
+    call: &CallExpression<'_>,
+    bindings: &NextTickBindings,
+    aliases: &ThisAliases,
+    trail: &ScopeTrail,
+) -> Option<Span> {
     match call.callee.get_inner_expression() {
-        Expression::Identifier(identifier) => bindings.named.contains(identifier.name.as_str()),
+        Expression::Identifier(identifier) => bindings
+            .named
+            .contains(identifier.name.as_str())
+            .then_some(identifier.span),
         Expression::StaticMemberExpression(member) => {
-            member.property.name == "$nextTick"
-                || (member.property.name == "nextTick"
-                    && matches!(
-                        member.object.get_inner_expression(),
-                        Expression::Identifier(identifier)
-                            if bindings.namespaces.contains(identifier.name.as_str())
-                    ))
+            let receiver = member.object.get_inner_expression();
+            let matched = match member.property.name.as_str() {
+                "$nextTick" => match receiver {
+                    Expression::ThisExpression(_) => true,
+                    Expression::Identifier(identifier) => {
+                        aliases.is_alias(trail, identifier.name.as_str())
+                    }
+                    _ => false,
+                },
+                "nextTick" => matches!(
+                    receiver,
+                    Expression::Identifier(identifier)
+                        if identifier.name == "Vue"
+                            || bindings.namespaces.contains(identifier.name.as_str())
+                ),
+                _ => false,
+            };
+            matched.then_some(member.property.span)
         }
-        _ => false,
+        _ => None,
     }
 }
 
@@ -124,9 +160,10 @@ fn promise_is_consumed(source: &str, span: Span) -> bool {
     source
         .get(..span.start as usize)
         .is_some_and(prefix_ends_with_await)
-        || source
-            .get(span.end as usize..)
-            .is_some_and(|suffix| suffix.trim_start().starts_with(".then"))
+        || source.get(span.end as usize..).is_some_and(|suffix| {
+            let suffix = suffix.trim_start();
+            suffix.starts_with(".then") || suffix.starts_with("?.then")
+        })
 }
 
 fn prefix_ends_with_await(prefix: &str) -> bool {
@@ -142,3 +179,7 @@ fn prefix_ends_with_await(prefix: &str) -> bool {
         .next_back()
         .is_none_or(|character| !character.is_alphanumeric() && !matches!(character, '_' | '$'))
 }
+
+#[cfg(test)]
+mod tests;
+mod this_alias;
