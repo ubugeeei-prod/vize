@@ -7,8 +7,8 @@
     "diagnostics": 1,
     "edit_start": 5,
     "edit_end": 28,
-    "diagnostic_start": 6,
-    "diagnostic_end": 28
+    "diagnostic_start": 13,
+    "diagnostic_end": 27
   },
   {
     "id": "long-binding",
@@ -18,8 +18,8 @@
     "diagnostics": 1,
     "edit_start": 5,
     "edit_end": 34,
-    "diagnostic_start": 12,
-    "diagnostic_end": 34
+    "diagnostic_start": 19,
+    "diagnostic_end": 33
   },
   {
     "id": "self-closing",
@@ -29,8 +29,8 @@
     "diagnostics": 1,
     "edit_start": 5,
     "edit_end": 22,
-    "diagnostic_start": 6,
-    "diagnostic_end": 22
+    "diagnostic_start": 13,
+    "diagnostic_end": 21
   },
   {
     "id": "adjacent-attribute",
@@ -40,8 +40,8 @@
     "diagnostics": 1,
     "edit_start": 5,
     "edit_end": 22,
-    "diagnostic_start": 6,
-    "diagnostic_end": 22
+    "diagnostic_start": 13,
+    "diagnostic_end": 21
   },
   {
     "id": "outer-single-quote",
@@ -51,8 +51,8 @@
     "diagnostics": 1,
     "edit_start": 5,
     "edit_end": 22,
-    "diagnostic_start": 6,
-    "diagnostic_end": 22
+    "diagnostic_start": 13,
+    "diagnostic_end": 21
   },
   {
     "id": "utf8-crlf-sfc",
@@ -62,8 +62,8 @@
     "diagnostics": 1,
     "edit_start": 31,
     "edit_end": 54,
-    "diagnostic_start": 32,
-    "diagnostic_end": 54
+    "diagnostic_start": 39,
+    "diagnostic_end": 53
   },
   {
     "id": "existing-static-class",

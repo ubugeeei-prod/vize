@@ -49,7 +49,7 @@
   },
   "linter/current-api/static-class-utf8-fix-corrected": {
     "path": "crates/vize_patina/tests/snapshots/integration__lint_history__static-class-utf8-fix-corrected.snap",
-    "sha256": "387ae510993056ce19f1aca3c285f6d88a93cfc2a5854e07decbba9344c09b32"
+    "sha256": "20345a92fa2dbf2bc0439982600426317f528fee97b926b9aeae3f6769577c95"
   },
   "linter/next-tick/valid-arrow-expression-return-script": {
     "path": "crates/vize_patina/tests/snapshots/integration__next_tick_history__valid-arrow-expression-return-script.snap",
@@ -109,31 +109,31 @@
   },
   "linter/static-class/short-binding": {
     "path": "crates/vize_patina/tests/snapshots/integration__static_class_fix__short-binding.snap",
-    "sha256": "02dd85e947c77659e7b9395a9418e6cd11aef03f28546f53e432404415862b17"
+    "sha256": "0dc341eda30f828fd677f65112e04aa74e4dcd8063973d3bcf3c8ae7cb16873c"
   },
   "linter/static-class/long-binding": {
     "path": "crates/vize_patina/tests/snapshots/integration__static_class_fix__long-binding.snap",
-    "sha256": "a40bfd007c150e75c396bb730c65c32b8330ddd2f2bdd3f0c8c056515fbe9e34"
+    "sha256": "69c4d5b00c62b9c5a22c79f960f53c08fe286f915e0248456e877c843045cd16"
   },
   "linter/static-class/self-closing": {
     "path": "crates/vize_patina/tests/snapshots/integration__static_class_fix__self-closing.snap",
-    "sha256": "e821bd35794920fd6fa4eb8ef8a6e2c93b565a1df29d6faa8e6e258e92945f45"
+    "sha256": "7f84f80d8f1b3f7052f2403ac92e83a4e42b035ececefc3adaabfcc4a225aced"
   },
   "linter/static-class/adjacent-attribute": {
     "path": "crates/vize_patina/tests/snapshots/integration__static_class_fix__adjacent-attribute.snap",
-    "sha256": "fd9c46539d09e393bd4913015ea905e7ec67da3d9648764acd026d6f1f26b0a4"
+    "sha256": "929d0934cbf66024efc5f511f6b3ac9bdad28fb5a4997e1aa76e7ffd23325576"
   },
   "linter/static-class/outer-single-quote": {
     "path": "crates/vize_patina/tests/snapshots/integration__static_class_fix__outer-single-quote.snap",
-    "sha256": "ee24d4b451deded85240b571ba4d6a1ff4269490bdff4f6c4d632ef6aab533c4"
+    "sha256": "65cac6de646a3a2042a3e49fb537d7d83198afc7b72282948981ffd84631b67f"
   },
   "linter/static-class/utf8-crlf-sfc": {
     "path": "crates/vize_patina/tests/snapshots/integration__static_class_fix__utf8-crlf-sfc.snap",
-    "sha256": "b6a74437fe49bedc1ffa1260136c54fb73862644668bd8c1809cfed71a672467"
+    "sha256": "c03e2cf9c2e5e56aa98552805454fc504abd326687b9ef35abb1431541f191df"
   },
   "linter/static-class/existing-static-class": {
     "path": "crates/vize_patina/tests/snapshots/integration__static_class_fix__existing-static-class.snap",
-    "sha256": "4304344eae456c09e1404f8334691ab65136c9fa8614f81b1dddbd5040e15b91"
+    "sha256": "2439559fee37d034bce4c285209efa3524a7c8fe0191aa1ddb73d37670f10c2a"
   },
   "linter/static-class/dynamic-expression": {
     "path": "crates/vize_patina/tests/snapshots/integration__static_class_fix__dynamic-expression.snap",

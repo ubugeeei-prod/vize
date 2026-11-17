@@ -105,7 +105,12 @@ fn collect_possible_static_parts<'a>(
 }
 
 /// Collect class fragments that are present regardless of runtime state and
-/// can therefore move to a static `class` attribute.
+/// can therefore move to a static `class` attribute, as
+/// `vue/prefer-separate-static-class` finds them: a string literal, a whole
+/// template quasi bounded by whitespace or the literal's ends (spanning its
+/// `` ` ``, `${` and `}` delimiters, as ESTree does), array items, and object
+/// keys set to `true`. A quasi such as `badge--` in `` `badge--${variant}` ``
+/// is part of a dynamic class and is skipped whole.
 pub(crate) fn unconditional_static_parts<'a>(
     expression: &'a Expression<'a>,
     parts: &mut Vec<StaticClassPart<'a>>,
@@ -117,21 +122,33 @@ pub(crate) fn unconditional_static_parts<'a>(
             unconditional: true,
             shared_group: None,
         }),
+        Expression::TemplateLiteral(template) if template.expressions.is_empty() => {
+            if let Some(text) = template.single_quasi() {
+                parts.push(StaticClassPart {
+                    text: text.as_str(),
+                    span: template.span,
+                    unconditional: true,
+                    shared_group: None,
+                });
+            }
+        }
         Expression::TemplateLiteral(template) => {
+            let last = template.quasis.len().saturating_sub(1);
             for (index, quasi) in template.quasis.iter().enumerate() {
                 let text = template_element_text(quasi);
-                if let Some(text) = complete_template_segment(
-                    text,
-                    index == 0 || starts_with_ascii_whitespace(text),
-                    index == template.expressions.len() || ends_with_ascii_whitespace(text),
-                ) {
-                    parts.push(StaticClassPart {
-                        text,
-                        span: quasi.span,
-                        unconditional: true,
-                        shared_group: None,
-                    });
+                if text.trim().is_empty()
+                    || (index != 0 && !starts_with_ascii_whitespace(text))
+                    || (index != last && !ends_with_ascii_whitespace(text))
+                {
+                    continue;
                 }
+                let close = if index == last { 1 } else { 2 };
+                parts.push(StaticClassPart {
+                    text: text.trim(),
+                    span: Span::new(quasi.span.start.saturating_sub(1), quasi.span.end + close),
+                    unconditional: true,
+                    shared_group: None,
+                });
             }
         }
         Expression::ArrayExpression(array) => {
