@@ -3,6 +3,7 @@ use crate::linter::{LintResult, Linter};
 use crate::rule::Rule;
 use crate::rule::RuleRegistry;
 
+mod empty_pattern;
 mod irregular_whitespace;
 mod negated_condition;
 mod template_wrapper_key;

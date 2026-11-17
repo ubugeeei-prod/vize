@@ -17594,6 +17594,42 @@
       }
     },
     {
+      "id": "linter/no-empty-pattern-slot-scope-12336",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "no-empty-pattern-slot-scope-12336",
+        "files": [
+          {
+            "path": "DragTable.vue.txt",
+            "role": "real-project-matrix-reduction",
+            "sha256": "5f2a670cb7ecc5b8e832d7da60adebfd420f845a312c0738ac49b347d7f5c041"
+          },
+          {
+            "path": "rules.json",
+            "role": "rule-options",
+            "sha256": "be4a5c4a6a661ee62eb4a7bc1748bd1a3a72341a768739d2c8aabad34a08f38c"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/no-implied-eval-callable-13000",
       "state": "active",
       "targets": [
