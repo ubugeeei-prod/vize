@@ -234,6 +234,12 @@ for (const spec of arg("scenarios", "mk,mk-json,mk-all,bench,ta").split(",")) {
     scenario(`misskey \`--format json\`, RAYON_NUM_THREADS=${threads[1]}`, mk, ["lint", "src", "--format", "json"], runs, {
       RAYON_NUM_THREADS: threads[1],
     });
+  // `mk-json-e<NAME>=<VALUE>+<NAME>=<VALUE>`: the same JSON lint with extra environment.
+  const envSpec = /^mk-json-e(.+)$/.exec(spec);
+  if (envSpec) {
+    const env = Object.fromEntries(envSpec[1].split("+").map((pair) => pair.split("=") as [string, string]));
+    scenario(`misskey \`--format json\`, ${envSpec[1]}`, mk, ["lint", "src", "--format", "json"], runs, env);
+  }
   const benchThreads = /^bench-t(\d+)$/.exec(spec);
   if (benchThreads)
     scenario(`1000-SFC \`--format json\`, RAYON_NUM_THREADS=${benchThreads[1]}`, bench, ["lint", ".", "--format", "json"], runs, {
