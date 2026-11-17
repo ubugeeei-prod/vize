@@ -6,6 +6,7 @@ use vize_l1::css::{StyleNodeKind, StyleSheet};
 
 use crate::diagnostic::{LintDiagnostic, Severity};
 
+use super::style_rule::in_style_scope;
 use super::{CssLintResult, CssRuleMeta, StyleRule};
 
 static META: CssRuleMeta = CssRuleMeta {
@@ -29,7 +30,10 @@ impl StyleRule for RequireFontDisplay {
             let StyleNodeKind::AtRule { name } = sheet.kind(node) else {
                 continue;
             };
-            if node.block().is_none() || !sheet.text(name).eq_ignore_ascii_case("font-face") {
+            if node.block().is_none()
+                || !sheet.text(name).eq_ignore_ascii_case("font-face")
+                || !in_style_scope(sheet, node)
+            {
                 continue;
             }
             let has_font_display = nodes.iter().any(|child| {

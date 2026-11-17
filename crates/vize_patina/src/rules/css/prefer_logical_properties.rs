@@ -6,6 +6,7 @@ use vize_l1::css::{StyleNodeKind, StyleSheet};
 
 use crate::diagnostic::{LintDiagnostic, Severity};
 
+use super::style_rule::in_style_scope;
 use super::{CssLintResult, CssRuleMeta, StyleRule};
 
 static META: CssRuleMeta = CssRuleMeta {
@@ -40,6 +41,9 @@ impl StyleRule for PreferLogicalProperties {
             let StyleNodeKind::Declaration { name, .. } = sheet.kind(node) else {
                 continue;
             };
+            if !in_style_scope(sheet, node) {
+                continue;
+            }
             let text = sheet.text(name);
             if !PHYSICAL
                 .iter()

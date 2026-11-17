@@ -28,7 +28,7 @@ use vize_l1::css::StyleSheet;
 
 use crate::diagnostic::{LintDiagnostic, Severity};
 
-use super::style_rule::{rule_preludes, without_comments};
+use super::style_rule::{all_rule_preludes, without_comments};
 use super::{CssLintResult, CssRuleMeta, StyleRule};
 
 static META: CssRuleMeta = CssRuleMeta {
@@ -58,7 +58,7 @@ impl StyleRule for PreferSlotted {
         );
         let code = without_comments(sheet, whole);
         let slotted = code.contains("::v-slotted") || code.contains(":slotted");
-        for prelude in rule_preludes(sheet) {
+        for prelude in all_rule_preludes(sheet) {
             let text = without_comments(sheet, prelude);
             let bytes = text.as_bytes();
             let at = |offset: usize, len: usize| {
