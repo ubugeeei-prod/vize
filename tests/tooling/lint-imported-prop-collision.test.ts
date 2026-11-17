@@ -92,6 +92,28 @@ const target = ref<HTMLElement>()
   );
 });
 
+test("a props destructure that reads the prop back does not declare it again", () => {
+  const source = `<script setup lang="ts">
+import type { PageHeaderProps } from './MkPageHeader.vue'
+const props = withDefaults(defineProps<PageHeaderProps & { reversed?: boolean }>(), {
+  reversed: false,
+})
+const headerProps = computed(() => {
+  const { reversed, tab, ...rest } = props
+  return rest
+})
+const tab = defineModel<string>('tab')
+</script>
+`;
+  const declarator = "tab = defineModel<string>('tab')";
+  assert.match(reason(source, "script/no-dupe-keys", declarator, "tab") ?? "", collision);
+  assert.match(reason(source, "script/no-dupe-keys", "'tab'", "tab") ?? "", collision);
+  for (const other of ["= other", "= props.nested", "= props?.nested", "= props[key]"]) {
+    const nested = source.replace("} = props\n", `} ${other}\n`);
+    assert.equal(reason(nested, "script/no-dupe-keys", declarator, "tab"), null, other);
+  }
+});
+
 test("duplicate keys the SFC can declare itself stay counted", () => {
   const sameFileMember = `<script setup lang="ts">
 import type { Base } from './base'

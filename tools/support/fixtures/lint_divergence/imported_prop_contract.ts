@@ -163,11 +163,19 @@ function mentions(source: string, name: string): (region: Range) => boolean {
  * Every script offset that can declare `name`: `const`/`let`/`var`,
  * `function` and `class` names, destructure patterns, import clauses and
  * `defineModel` names (`modelValue` for an unnamed model). Nested scopes
- * count too, so a doubtful name is never accepted.
+ * count too, so a doubtful name is never accepted. Only an object pattern
+ * that reads the props object back (`const { tab, ...rest } = props`) is
+ * skipped: its names are the props themselves.
  */
 function declarationSites(source: string, scripts: Range[], name: string): number[] {
   const escaped = escapeName(name);
   const sites: number[] = [];
+  const props =
+    /\b(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*(?:withDefaults\s*\(\s*)?defineProps\b/u.exec(
+      source,
+    )?.[1];
+  const readsProps =
+    props === undefined ? null : new RegExp(`^\\}\\s*=\\s*${escapeName(props)}(?![\\w$.?[])`, "u");
   const direct = new RegExp(
     `\\b(?:const|let|var|function\\s*\\*?|class)\\s+(${escaped})(?![\\w$])`,
     "gu",
@@ -195,6 +203,8 @@ function declarationSites(source: string, scripts: Range[], name: string): numbe
         pattern[0].endsWith("[") || pattern[0].endsWith("{")
           ? (matchingBracket(source, open) ?? script.end)
           : open;
+      if (pattern[0].endsWith("{") && readsProps?.test(source.slice(close, close + 80)) === true)
+        continue;
       for (const match of source.slice(begin, close).matchAll(word))
         sites.push(begin + (match.index ?? 0) + match[0].length - name.length);
     }
