@@ -148,7 +148,11 @@ export function lexicalLines(source: string): Array<{ delta: number; inside: boo
       i += 1;
     } else if (char === '"') {
       state = "string";
-    } else if (char === "r" && /^r#*"/.test(source.slice(i, i + 64)) && !/\w/.test(source[i - 1] ?? "")) {
+    } else if (
+      char === "r" &&
+      /^r#*"/.test(source.slice(i, i + 64)) &&
+      !/\w/.test(source[i - 1] ?? "")
+    ) {
       rawHashes = /^r(#*)"/.exec(source.slice(i, i + 64))![1]!.length;
       i += rawHashes + 1;
       state = "raw";
