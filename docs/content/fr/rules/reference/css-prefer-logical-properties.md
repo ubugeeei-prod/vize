@@ -11,7 +11,7 @@ Recommander les propriétés logiques CSS pour mieux prendre en charge l’inter
 | --- | --- | --- | --- |
 | `warning` | `opinionated`, `nuxt` | Non | Aucune |
 
-Champ d’application : Blocs style en CSS standard (les blocs scss, sass, less et stylus sont ignorés).
+Champ d’application : Blocs style CSS, SCSS, Sass, Less et Stylus, tels qu’écrits (sans préprocesseur).
 
 ## Mauvais
 
@@ -58,4 +58,4 @@ Lancez ensuite `vp run lint`.
 
 - [Règles CSS](../css.md)
 - [Toutes les règles](../all.md)
-- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/prefer_logical_properties.rs#L15)
+- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/prefer_logical_properties.rs#L11)

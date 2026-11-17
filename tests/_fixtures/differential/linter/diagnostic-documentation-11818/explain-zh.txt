@@ -1360,7 +1360,7 @@ css/prefer-logical-properties · lint 规则
 推荐使用 CSS 逻辑属性，以更好地支持国际化
 
 精度层级: exact
-适用范围: declarations and selectors of <style> blocks as parsed by lightningcss
+适用范围: the authored structure of CSS, SCSS, Sass, Less and Stylus <style> blocks, as the L1 style reader reads it
 严重级别: 警告
 类别: css
 自动修复: 不支持
@@ -1390,7 +1390,7 @@ css/require-font-display · lint 规则
 要求在 @font-face 规则中指定 font-display
 
 精度层级: exact
-适用范围: declarations and selectors of <style> blocks as parsed by lightningcss
+适用范围: the authored structure of CSS, SCSS, Sass, Less and Stylus <style> blocks, as the L1 style reader reads it
 严重级别: 警告
 类别: css
 自动修复: 不支持

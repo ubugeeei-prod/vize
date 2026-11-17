@@ -2,13 +2,11 @@
 //!
 //! Require font-display property in @font-face rules.
 
-use lightningcss::rules::CssRule as LCssRule;
-use lightningcss::rules::font_face::FontFaceProperty;
-use lightningcss::stylesheet::StyleSheet;
+use vize_l1::css::{StyleNodeKind, StyleSheet};
 
 use crate::diagnostic::{LintDiagnostic, Severity};
 
-use super::{CssLintResult, CssRule, CssRuleMeta};
+use super::{CssLintResult, CssRuleMeta, StyleRule};
 
 static META: CssRuleMeta = CssRuleMeta {
     name: "css/require-font-display",
@@ -16,70 +14,42 @@ static META: CssRuleMeta = CssRuleMeta {
     default_severity: Severity::Warning,
 };
 
-/// Require font-display rule
+/// It reads every `@font-face` in the L1 structure, in every style language,
+/// and reports it at its `@font-face` keyword.
 pub struct RequireFontDisplay;
 
-impl CssRule for RequireFontDisplay {
+impl StyleRule for RequireFontDisplay {
     fn meta(&self) -> &'static CssRuleMeta {
         &META
     }
 
-    fn check<'i>(
-        &self,
-        _source: &'i str,
-        stylesheet: &StyleSheet<'i>,
-        offset: usize,
-        result: &mut CssLintResult,
-    ) {
-        for rule in &stylesheet.rules.0 {
-            self.check_rule(rule, offset, result);
-        }
-    }
-}
-
-impl RequireFontDisplay {
-    fn check_rule(&self, rule: &LCssRule, offset: usize, result: &mut CssLintResult) {
-        match rule {
-            LCssRule::FontFace(font_face) => {
-                // font-display is stored as Custom property in lightningcss
-                let has_font_display = font_face.properties.iter().any(|prop| {
-                    if let FontFaceProperty::Custom(custom) = prop {
-                        custom.name.as_ref() == "font-display"
-                    } else {
-                        false
-                    }
-                });
-
-                if !has_font_display {
-                    result.add_diagnostic(
-                        LintDiagnostic::warn(
-                            META.name,
-                            "@font-face rule is missing font-display property",
-                            offset as u32,
-                            (offset + 10) as u32,
-                        )
-                        .with_help(
-                            "Add `font-display: swap;` to prevent FOIT (Flash of Invisible Text)",
-                        ),
-                    );
-                }
+    fn check(&self, sheet: &StyleSheet<'_>, result: &mut CssLintResult) {
+        let nodes = sheet.nodes();
+        for (index, node) in nodes.iter().enumerate() {
+            let StyleNodeKind::AtRule { name } = sheet.kind(node) else {
+                continue;
+            };
+            if node.block().is_none() || !sheet.text(name).eq_ignore_ascii_case("font-face") {
+                continue;
             }
-            LCssRule::Media(media) => {
-                for rule in &media.rules.0 {
-                    self.check_rule(rule, offset, result);
-                }
+            let has_font_display = nodes.iter().any(|child| {
+                child.parent() == Some(index)
+                    && matches!(sheet.kind(child), StyleNodeKind::Declaration { name, .. }
+                        if sheet.text(name).eq_ignore_ascii_case("font-display"))
+            });
+            if !has_font_display {
+                result.add_diagnostic(
+                    LintDiagnostic::warn(
+                        META.name,
+                        "@font-face rule is missing font-display property",
+                        node.prelude().start,
+                        name.end,
+                    )
+                    .with_help(
+                        "Add `font-display: swap;` to prevent FOIT (Flash of Invisible Text)",
+                    ),
+                );
             }
-            LCssRule::Supports(supports) => {
-                for rule in &supports.rules.0 {
-                    self.check_rule(rule, offset, result);
-                }
-            }
-            LCssRule::LayerBlock(layer) => {
-                for rule in &layer.rules.0 {
-                    self.check_rule(rule, offset, result);
-                }
-            }
-            _ => {}
         }
     }
 }
@@ -91,7 +61,7 @@ mod tests {
 
     fn create_linter() -> CssLinter {
         let mut linter = CssLinter::new();
-        linter.add_rule(Box::new(RequireFontDisplay));
+        linter.add_style_rule(Box::new(RequireFontDisplay));
         linter
     }
 

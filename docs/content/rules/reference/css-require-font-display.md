@@ -11,7 +11,7 @@ Require font-display in @font-face rules.
 | --- | --- | --- | --- |
 | `warning` | `opinionated`, `nuxt` | No | None |
 
-Applies to: Plain CSS style blocks (scss, sass, less and stylus blocks are skipped).
+Applies to: CSS, SCSS, Sass, Less and Stylus style blocks, as written (not preprocessed).
 
 ## Bad
 
@@ -61,4 +61,4 @@ Then run `vp run lint`.
 
 - [CSS rules](../css.md)
 - [All rules](../all.md)
-- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/require_font_display.rs#L13)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/require_font_display.rs#L11)

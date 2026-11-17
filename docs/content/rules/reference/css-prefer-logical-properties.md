@@ -11,7 +11,7 @@ Recommend CSS logical properties for better i18n support.
 | --- | --- | --- | --- |
 | `warning` | `opinionated`, `nuxt` | No | None |
 
-Applies to: Plain CSS style blocks (scss, sass, less and stylus blocks are skipped).
+Applies to: CSS, SCSS, Sass, Less and Stylus style blocks, as written (not preprocessed).
 
 ## Bad
 
@@ -58,4 +58,4 @@ Then run `vp run lint`.
 
 - [CSS rules](../css.md)
 - [All rules](../all.md)
-- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/prefer_logical_properties.rs#L15)
+- [Source code](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/prefer_logical_properties.rs#L11)

@@ -161,14 +161,14 @@ fn css_rule_for_name(rule_name: &str) -> Option<BuiltinCssRule> {
     let style: Option<Box<dyn StyleRule>> = match rule_name {
         RULE_NO_IMPORTANT => Some(Box::new(NoImportant)),
         RULE_NO_ID_SELECTORS => Some(Box::new(NoIdSelectors)),
+        RULE_PREFER_LOGICAL_PROPERTIES => Some(Box::new(PreferLogicalProperties)),
+        RULE_REQUIRE_FONT_DISPLAY => Some(Box::new(RequireFontDisplay)),
         _ => None,
     };
     if let Some(rule) = style {
         return Some(BuiltinCssRule::Style(rule));
     }
     let rule: Box<dyn CssRule> = match rule_name {
-        RULE_PREFER_LOGICAL_PROPERTIES => Box::new(PreferLogicalProperties),
-        RULE_REQUIRE_FONT_DISPLAY => Box::new(RequireFontDisplay),
         RULE_PREFER_NESTED_SELECTORS => Box::new(PreferNestedSelectors),
         RULE_NO_DISPLAY_NONE => Box::new(NoDisplayNone),
         RULE_NO_V_BIND_PERFORMANCE => Box::new(NoVBindPerformance),
