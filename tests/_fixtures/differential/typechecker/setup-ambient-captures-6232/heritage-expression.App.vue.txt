@@ -1,0 +1,6 @@
+<script setup lang="ts">
+function createBase() { return class { value = 'fixed'; }; }
+declare class Derived extends createBase() { extra: number; }
+const label: string = new Derived().value;
+</script>
+<template>{{ label }}</template>

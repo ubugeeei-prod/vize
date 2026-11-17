@@ -1,0 +1,20 @@
+<script lang="ts">
+export const Item = 1;
+</script>
+
+<script lang="ts" setup>
+type Item = { id: number };
+
+defineSlots<{ default(props: { item: Item }): unknown }>();
+const emit = defineEmits<{ (ev: 'pick', item: Item): void }>();
+
+const current: Item = { id: Item };
+
+function pick() {
+  emit('pick', current);
+}
+</script>
+
+<template>
+  <div @click="pick">{{ current.id }}</div>
+</template>

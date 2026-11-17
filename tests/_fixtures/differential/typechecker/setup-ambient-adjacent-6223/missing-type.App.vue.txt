@@ -1,0 +1,4 @@
+<script setup lang="ts">
+const before = 1; declare const label: Missing; const after = 2;
+</script>
+<template><div /></template>

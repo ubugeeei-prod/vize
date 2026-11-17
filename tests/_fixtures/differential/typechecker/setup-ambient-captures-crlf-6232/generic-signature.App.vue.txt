@@ -1,0 +1,6 @@
+<script setup lang="ts">
+const local = 'fixed';
+declare function label<T extends typeof local>(value: T): T;
+const exact: 'fixed' = label(local);
+</script>
+<template>{{ label }}</template>

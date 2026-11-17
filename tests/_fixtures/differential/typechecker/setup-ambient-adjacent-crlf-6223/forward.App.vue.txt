@@ -1,0 +1,4 @@
+<script setup lang="ts">
+label.toUpperCase(); declare const label: string; const after: string = label;
+</script>
+<template><div /></template>

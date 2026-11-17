@@ -1,0 +1,15 @@
+<script lang="ts">
+export class Shape {
+  size = 1;
+}
+</script>
+
+<script lang="ts" setup>
+type Shape = { size: number };
+
+const value: Shape = { size: 2 };
+</script>
+
+<template>
+  <div>{{ value.size }}</div>
+</template>

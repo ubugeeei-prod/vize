@@ -1,0 +1,22 @@
+<script lang="ts">
+export const PAGE_SIZE = 20;
+
+export enum DiffMode {
+  Unified = 'unified',
+  Split = 'split',
+}
+
+export class Cursor {
+  line = 0;
+}
+</script>
+
+<script lang="ts" setup>
+const mode: DiffMode = DiffMode.Unified;
+const cursor: Cursor = new Cursor();
+const size = PAGE_SIZE;
+</script>
+
+<template>
+  <div>{{ mode }}{{ cursor.line }}{{ size }}</div>
+</template>
