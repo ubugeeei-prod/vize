@@ -1,0 +1,7 @@
+<script setup lang="ts">
+import Toggle from './Toggle.vue'
+</script>
+
+<template>
+  <Toggle :model-value="123" />
+</template>

@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import PointView from './PointView.vue'
+import Labeled from './Labeled.vue'
+</script>
+
+<template>
+  <PointView :point="{ x: 'one' }" :status="0" />
+  <Labeled label="other" :value="'1'" />
+</template>

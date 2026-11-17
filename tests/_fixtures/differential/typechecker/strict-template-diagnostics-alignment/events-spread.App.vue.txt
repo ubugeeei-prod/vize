@@ -1,0 +1,16 @@
+<script setup lang="ts">
+import Child from './Child.vue'
+
+const bag = { onClick: 'not a listener' }
+
+function first(event: KeyboardEvent) {
+  return event.key
+}
+function second() {
+  return 'clicked'
+}
+</script>
+
+<template>
+  <Child @keydown="first" v-bind="bag" @click="second" />
+</template>

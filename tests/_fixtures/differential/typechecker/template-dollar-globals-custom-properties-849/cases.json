@@ -1,0 +1,93 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 849,
+  "regressionCommit": "822768792a095efe41e240a4a86669ac73b1b8c5",
+  "sourceRevision": "822768792a095efe41e240a4a86669ac73b1b8c5",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "dollar-global-from-custom-properties",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/@types/vue-globals.d.ts",
+          "source": "vue-globals.d.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "valid.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "dollar-global-argument-type-checked",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/@types/vue-globals.d.ts",
+          "source": "vue-globals.d.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "invalid.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 2,
+          "column": 12,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type 'number' is not assignable to parameter of type 'string'."
+        }
+      ]
+    },
+    {
+      "id": "dollar-global-beside-missing-identifier",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/@types/vue-globals.d.ts",
+          "source": "vue-globals.d.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "missing.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 2,
+          "column": 35,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'missing' does not exist on the component instance."
+        }
+      ]
+    }
+  ]
+}

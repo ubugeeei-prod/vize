@@ -1,0 +1,4 @@
+export type Differences = {
+  added: string[]
+  removed: string[]
+}

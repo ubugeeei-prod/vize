@@ -1,0 +1,273 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 6398,
+  "regressionCommit": "a75c629c5c948885f7ffe2216f044a1a6c5e2851",
+  "sourceRevision": "a75c629c5c948885f7ffe2216f044a1a6c5e2851",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "spread-nested-clean",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "spread-nested.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "spread-nested-incompatible-payload",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "spread-nested-broken.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 6,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{ item: { id: string; label: string; }; }' is not assignable to parameter of type '{ item: { id: number; label: string; }; }'.\nThe types of 'item.id' are incompatible between these types.\nType 'string' is not assignable to type 'number'."
+        }
+      ]
+    },
+    {
+      "id": "spread-shadowed-generic-extract-clean",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "spread-shadowed-generic-extract.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "spread-shadowed-generic-extract-incompatible-payload",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "spread-shadowed-generic-extract-broken.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 7,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{ item: { id: string; label: string; }; }' is not assignable to parameter of type '{ item: { id: number; label: string; }; }'.\nThe types of 'item.id' are incompatible between these types.\nType 'string' is not assignable to type 'number'."
+        }
+      ]
+    },
+    {
+      "id": "spread-shadowed-extract-clean",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "spread-shadowed-extract.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "spread-shadowed-extract-incompatible-payload",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "spread-shadowed-extract-broken.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 7,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{ item: { id: string; label: string; }; }' is not assignable to parameter of type '{ item: { id: number; label: string; }; }'.\nThe types of 'item.id' are incompatible between these types.\nType 'string' is not assignable to type 'number'."
+        }
+      ]
+    },
+    {
+      "id": "spread-partial-ordered-optional-generic-payloads",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "spread-valid.App.vue.txt"
+        },
+        {
+          "file": "src/Generic.vue",
+          "source": "spread-valid.Generic.vue.txt"
+        },
+        {
+          "file": "src/Unknown.vue",
+          "source": "spread-valid.Unknown.vue.txt"
+        },
+        {
+          "file": "src/Empty.vue",
+          "source": "spread-valid.Empty.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "spread-missing-reports-exact-error",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "spread-missing.error.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 6,
+          "column": 4,
+          "severity": 1,
+          "code": 2741,
+          "message": "Property 'item' is missing in type '{ label: string; }' but required in type '{ item: number; label: string; }'."
+        }
+      ]
+    },
+    {
+      "id": "spread-optional-reports-exact-error",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "spread-optional.error.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 6,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{ item?: number; label: string; }' is not assignable to parameter of type '{ item: number; label: string; }'.\nTypes of property 'item' are incompatible.\nType 'number | undefined' is not assignable to type 'number'.\nType 'undefined' is not assignable to type 'number'."
+        }
+      ]
+    },
+    {
+      "id": "spread-order-reports-exact-error",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "spread-order.error.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 7,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{ label: string; item: string; }' is not assignable to parameter of type '{ item: number; label: string; }'.\nTypes of property 'item' are incompatible.\nType 'string' is not assignable to type 'number'."
+        }
+      ]
+    },
+    {
+      "id": "spread-callback-reports-exact-error",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "spread-callback.error.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 6,
+          "column": 57,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'toUpperCase' does not exist on type 'number'."
+        }
+      ]
+    },
+    {
+      "id": "spread-inline-callback-reports-exact-error",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "spread-inline-callback.error.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 6,
+          "column": 69,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'toUpperCase' does not exist on type 'number'."
+        }
+      ]
+    }
+  ]
+}

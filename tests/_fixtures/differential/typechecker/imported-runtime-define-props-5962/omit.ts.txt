@@ -1,0 +1,3 @@
+export function omit<T extends object, K extends keyof T>(value: T, ..._keys: K[]): Omit<T, K> {
+  return value as Omit<T, K>
+}

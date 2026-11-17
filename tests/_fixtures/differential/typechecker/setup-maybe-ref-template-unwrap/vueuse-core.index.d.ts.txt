@@ -1,0 +1,6 @@
+import type { Ref } from 'vue'
+
+export declare function useMouse(): {
+  x: Ref<number>
+  y: Ref<number>
+}

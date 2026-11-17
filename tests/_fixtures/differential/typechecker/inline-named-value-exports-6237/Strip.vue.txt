@@ -1,0 +1,6 @@
+<script lang="ts">
+const text = 'export const x'; /* export */ export/*keep*/const café = 1; export const next = café;
+export
+const last = next;
+</script>
+<template><div /></template>

@@ -1,0 +1,12 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+import Child from './Child.vue'
+
+const state = ref({
+  nested: ref(1),
+})
+</script>
+
+<template>
+  <Child :count="String(state.nested.value)" />
+</template>

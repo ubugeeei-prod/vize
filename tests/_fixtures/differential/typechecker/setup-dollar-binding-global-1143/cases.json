@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 1143,
+  "regressionCommit": "f30af4cfaf242e826d7520726019467959c31ff0",
+  "sourceRevision": "f30af4cfaf242e826d7520726019467959c31ff0",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "historical-any-dollar-binding-guard",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "historical.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "typed-dollar-binding-member",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "typed.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "typed-dollar-binding-missing-member",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "typed-missing.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 3,
+          "column": 11,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'missing' does not exist on type '{ dark: boolean; }'."
+        }
+      ]
+    }
+  ]
+}

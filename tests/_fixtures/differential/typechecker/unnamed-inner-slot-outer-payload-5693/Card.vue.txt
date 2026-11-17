@@ -1,0 +1,11 @@
+<script setup lang="ts">
+defineSlots<{
+  title(): any;
+}>();
+</script>
+
+<template>
+  <section>
+    <slot name="title" />
+  </section>
+</template>

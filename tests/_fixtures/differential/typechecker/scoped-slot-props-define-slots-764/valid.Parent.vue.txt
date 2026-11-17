@@ -1,0 +1,7 @@
+<script setup lang="ts">
+import Child from './Child.vue'
+</script>
+
+<template>
+  <Child v-slot="{ item }">{{ item.toFixed() }}</Child>
+</template>

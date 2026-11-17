@@ -1,0 +1,119 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 1275,
+  "regressionCommit": "b28c78952a0022c512c77ba3ce09273b4db7bd95",
+  "sourceRevision": "b28c78952a0022c512c77ba3ce09273b4db7bd95",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "computed-member-non-callable-handler",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/ComputedMemberHandler.vue",
+          "source": "ComputedMemberHandler.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/ComputedMemberHandler.vue",
+          "line": 6,
+          "column": 19,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type 'number' is not assignable to parameter of type '(_e: PointerEvent) => unknown'."
+        }
+      ]
+    },
+    {
+      "id": "index-member-callable-handler",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/IndexHandler.vue",
+          "source": "IndexHandler.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "lexical-member-forms-callable",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/LexicalForms.vue",
+          "source": "LexicalForms.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "lexical-member-forms-wrong-payload",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/LexicalFormsWrong.vue",
+          "source": "LexicalFormsWrong.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/LexicalFormsWrong.vue",
+          "line": 12,
+          "column": 19,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '(name: string) => string' is not assignable to parameter of type '(_e: PointerEvent) => unknown'.\nTypes of parameters 'name' and '_e' are incompatible.\nType 'PointerEvent' is not assignable to type 'string'."
+        },
+        {
+          "file": "src/LexicalFormsWrong.vue",
+          "line": 13,
+          "column": 19,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '(name: string) => string' is not assignable to parameter of type '(_e: PointerEvent) => unknown'.\nTypes of parameters 'name' and '_e' are incompatible.\nType 'PointerEvent' is not assignable to type 'string'."
+        },
+        {
+          "file": "src/LexicalFormsWrong.vue",
+          "line": 14,
+          "column": 19,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '((name: string) => string) | undefined' is not assignable to parameter of type '((_e: PointerEvent) => unknown) | null | undefined'.\nType '(name: string) => string' is not assignable to type '(_e: PointerEvent) => unknown'.\nTypes of parameters 'name' and '_e' are incompatible.\nType 'PointerEvent' is not assignable to type 'string'."
+        },
+        {
+          "file": "src/LexicalFormsWrong.vue",
+          "line": 15,
+          "column": 19,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '(name: string) => string' is not assignable to parameter of type '(_e: PointerEvent) => unknown'.\nTypes of parameters 'name' and '_e' are incompatible.\nType 'PointerEvent' is not assignable to type 'string'."
+        }
+      ]
+    }
+  ]
+}

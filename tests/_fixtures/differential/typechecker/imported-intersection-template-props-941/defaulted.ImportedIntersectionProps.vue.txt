@@ -1,0 +1,16 @@
+<template>
+  <div>{{ item.id }} {{ direction.toUpperCase() }} {{ autoLoad }}</div>
+</template>
+
+<script setup lang="ts" generic="T extends { id: string }">
+import type { PaginationOptions } from './imported-options'
+
+const props = withDefaults(defineProps<PaginationOptions & {
+  item: T
+}>(), {
+  autoLoad: true,
+  direction: 'down',
+})
+
+void props
+</script>

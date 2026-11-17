@@ -1,0 +1,18 @@
+<script lang="ts">
+import type { BaseProps } from './index'
+
+export interface ParentWidgetProps extends BaseProps {}
+</script>
+
+<script setup lang="ts">
+import Child from './Child.vue'
+
+const props = defineProps<ParentWidgetProps>()
+</script>
+
+<template>
+  <Child
+    :as="as"
+    :as-child="props.as"
+  />
+</template>

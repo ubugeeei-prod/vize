@@ -1,0 +1,231 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 3318,
+  "regressionCommit": "519cec5990d37434620c3ac38e3750a0eefa195b",
+  "sourceRevision": "519cec5990d37434620c3ac38e3750a0eefa195b",
+  "checkerOptions": {
+    "optionsApi": true
+  },
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "hello-decorator-required-prop-passed",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "node_modules/vue-property-decorator/package.json",
+          "source": "vue-property-decorator.package.json.txt"
+        },
+        {
+          "file": "node_modules/vue-property-decorator/index.d.ts",
+          "source": "vue-property-decorator.index.d.ts.txt"
+        },
+        {
+          "file": "src/HelloDecorator.vue",
+          "source": "HelloDecorator.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "valid.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "hello-decorator-missing-and-mismatched-prop",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "node_modules/vue-property-decorator/package.json",
+          "source": "vue-property-decorator.package.json.txt"
+        },
+        {
+          "file": "node_modules/vue-property-decorator/index.d.ts",
+          "source": "vue-property-decorator.index.d.ts.txt"
+        },
+        {
+          "file": "src/HelloDecorator.vue",
+          "source": "HelloDecorator.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "invalid.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 20,
+          "column": 6,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{ nme: string; }' is not assignable to parameter of type '$ComponentCheckProps<Props, $PublicComponentAttrs & Record<string, unknown>>'.\nProperty '\"name\"' is missing in type '{ nme: string; }' but required in type '{ readonly name: string; }'."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 21,
+          "column": 22,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type 'string'."
+        }
+      ]
+    },
+    {
+      "id": "optional-default-and-annotated-props-accepted",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "node_modules/vue-property-decorator/package.json",
+          "source": "vue-property-decorator.package.json.txt"
+        },
+        {
+          "file": "node_modules/vue-property-decorator/index.d.ts",
+          "source": "vue-property-decorator.index.d.ts.txt"
+        },
+        {
+          "file": "src/Widget.vue",
+          "source": "Widget.vue.txt"
+        },
+        {
+          "file": "src/List.vue",
+          "source": "List.vue.txt"
+        },
+        {
+          "file": "src/Usage.vue",
+          "source": "valid.Usage.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "optional-default-and-annotated-props-mismatched",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "node_modules/vue-property-decorator/package.json",
+          "source": "vue-property-decorator.package.json.txt"
+        },
+        {
+          "file": "node_modules/vue-property-decorator/index.d.ts",
+          "source": "vue-property-decorator.index.d.ts.txt"
+        },
+        {
+          "file": "src/Widget.vue",
+          "source": "Widget.vue.txt"
+        },
+        {
+          "file": "src/List.vue",
+          "source": "List.vue.txt"
+        },
+        {
+          "file": "src/Usage.vue",
+          "source": "invalid.Usage.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Usage.vue",
+          "line": 7,
+          "column": 12,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type 'string'."
+        },
+        {
+          "file": "src/Usage.vue",
+          "line": 8,
+          "column": 20,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'string' is not assignable to type 'number'."
+        },
+        {
+          "file": "src/Usage.vue",
+          "line": 9,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{}' is not assignable to parameter of type '$ComponentCheckProps<Props, $PublicComponentAttrs & Record<string, unknown>>'.\nProperty '\"items\"' is missing in type '{}' but required in type '{ readonly items: { id: number; }[]; readonly offset?: number | undefined; }'."
+        }
+      ]
+    },
+    {
+      "id": "renaming-decorators-resolve-through-instance",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "node_modules/vue-property-decorator/package.json",
+          "source": "vue-property-decorator.package.json.txt"
+        },
+        {
+          "file": "node_modules/vue-property-decorator/index.d.ts",
+          "source": "vue-property-decorator.index.d.ts.txt"
+        },
+        {
+          "file": "src/Renaming.vue",
+          "source": "valid.Renaming.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "renaming-decorator-member-wrong-use",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "node_modules/vue-property-decorator/package.json",
+          "source": "vue-property-decorator.package.json.txt"
+        },
+        {
+          "file": "node_modules/vue-property-decorator/index.d.ts",
+          "source": "vue-property-decorator.index.d.ts.txt"
+        },
+        {
+          "file": "src/Renaming.vue",
+          "source": "invalid.Renaming.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Renaming.vue",
+          "line": 11,
+          "column": 31,
+          "severity": 1,
+          "code": 2551,
+          "message": "Property 'toFixed' does not exist on type 'string'. Did you mean 'fixed'?"
+        }
+      ]
+    }
+  ]
+}

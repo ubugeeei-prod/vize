@@ -1,0 +1,8 @@
+<script setup lang="ts">
+const emit = defineEmits<{ save: [id: number] }>()
+const title = defineModel<string>('title')
+</script>
+
+<template>
+  <button @click="emit('save', 1)">{{ title }}</button>
+</template>

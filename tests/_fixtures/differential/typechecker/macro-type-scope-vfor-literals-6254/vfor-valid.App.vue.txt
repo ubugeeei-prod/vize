@@ -1,0 +1,7 @@
+<script setup lang="ts">
+const accept = (_: 'a' | 'b') => {}
+</script>
+
+<template>
+  <div v-for="item in ['a', 'b']" :key="item">{{ accept(item) }}</div>
+</template>

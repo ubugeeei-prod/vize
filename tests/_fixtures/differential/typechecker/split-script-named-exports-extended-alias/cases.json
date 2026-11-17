@@ -1,0 +1,137 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": null,
+  "regressionCommit": "11f3a6563c48d38997b2e603d282bbaaa9b53d2c",
+  "sourceRevision": "11f3a6563c48d38997b2e603d282bbaaa9b53d2c",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "split-script-named-exports-imported",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Helper.vue",
+          "source": "Helper.vue.txt"
+        },
+        {
+          "file": "src/Consumer.vue",
+          "source": "Consumer.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "split-script-named-export-type-checked",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Helper.vue",
+          "source": "Helper.vue.txt"
+        },
+        {
+          "file": "src/Consumer.vue",
+          "source": "invalid.Consumer.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Consumer.vue",
+          "line": 4,
+          "column": 32,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'string' is not assignable to type 'number'."
+        }
+      ]
+    },
+    {
+      "id": "split-script-export-default-with-named-exports",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Helper.vue",
+          "source": "HelperWithDefault.vue.txt"
+        },
+        {
+          "file": "src/Consumer.vue",
+          "source": "Consumer.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "named-exports-through-extended-paths-alias",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "extends.tsconfig.json.txt"
+        },
+        {
+          "file": "config/tsconfig.base.json",
+          "source": "config.tsconfig.base.json.txt"
+        },
+        {
+          "file": "src/Helper.vue",
+          "source": "Helper.vue.txt"
+        },
+        {
+          "file": "src/Consumer.vue",
+          "source": "alias.Consumer.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "named-export-through-extended-alias-type-checked",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "extends.tsconfig.json.txt"
+        },
+        {
+          "file": "config/tsconfig.base.json",
+          "source": "config.tsconfig.base.json.txt"
+        },
+        {
+          "file": "src/Helper.vue",
+          "source": "Helper.vue.txt"
+        },
+        {
+          "file": "src/Consumer.vue",
+          "source": "alias.invalid.Consumer.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Consumer.vue",
+          "line": 4,
+          "column": 32,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'string' is not assignable to type 'number'."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+<script setup lang="ts">
+defineProps<{
+  public: { type: "a" } | { type: "b", bSpecific: () => void }
+}>()
+</script>
+
+<template>
+  <div v-if="public.type === 'a'" @click="public.bSpecific"></div>
+</template>

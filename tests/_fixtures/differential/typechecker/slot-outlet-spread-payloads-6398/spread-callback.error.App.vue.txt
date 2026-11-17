@@ -1,0 +1,7 @@
+<script setup lang="ts">
+const row = { item: 1 };
+defineSlots<{ row(props: { item: number; format: (value: number) => string }): unknown }>();
+</script>
+<template>
+  <slot name="row" v-bind="row" :format="value => value.toUpperCase()" />
+</template>

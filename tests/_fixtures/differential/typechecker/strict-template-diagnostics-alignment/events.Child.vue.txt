@@ -1,0 +1,10 @@
+<script setup lang="ts">
+defineEmits<{
+  keydown: [event: KeyboardEvent];
+  click: [];
+}>();
+</script>
+
+<template>
+  <button type="button" @keydown="$emit('keydown', $event)" @click="$emit('click')">Child</button>
+</template>

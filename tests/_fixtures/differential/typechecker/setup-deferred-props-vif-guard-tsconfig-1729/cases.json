@@ -1,0 +1,206 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 1729,
+  "regressionCommit": "fe056f2572172c469f06181bfe694878217ffc4a",
+  "sourceRevision": "fe056f2572172c469f06181bfe694878217ffc4a",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "define-props-typeof-setup-binding",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "typeof-setup-binding.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "define-props-typeof-setup-binding-wrong-literal",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "typeof-setup-binding.wrong-literal.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 14,
+          "column": 7,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'string' is not assignable to type 'number'."
+        }
+      ]
+    },
+    {
+      "id": "deferred-props-with-hoisted-props-interface",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "hoisted-props.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "deferred-props-with-hoisted-props-wrong-literal",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "hoisted-props.wrong-literal.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 11,
+          "column": 7,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'string' is not assignable to type 'number'."
+        }
+      ]
+    },
+    {
+      "id": "define-props-non-hoisted-type-ref",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "non-hoisted-type-ref.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "define-props-non-hoisted-type-ref-wrong-member",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "non-hoisted-type-ref.wrong-member.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 11,
+          "column": 7,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '{}' is not assignable to type 'string'."
+        }
+      ]
+    },
+    {
+      "id": "prefixed-v-else-keeps-negated-guard",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "prefixed-v-else.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "prefixed-v-else-reads-other-variant-member",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "prefixed-v-else.wrong-member.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 13,
+          "column": 26,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'to' does not exist on type '{ kind: \"anchor\"; hash: string; key: string; }'."
+        }
+      ]
+    },
+    {
+      "id": "native-removed-tsconfig-options-normalized",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.native-removed.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "native-removed.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "native-removed-tsconfig-options-still-checks",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.native-removed.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "native-removed.wrong-type.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 2,
+          "column": 7,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type 'string'."
+        }
+      ]
+    }
+  ]
+}

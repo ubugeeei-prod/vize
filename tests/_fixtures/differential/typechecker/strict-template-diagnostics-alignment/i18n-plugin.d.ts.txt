@@ -1,0 +1,7 @@
+import type { ComposerCustomProperties } from '../node_modules/i18n-lite/dist/runtime/types.ts'
+
+declare module 'vue' {
+  interface ComponentCustomProperties extends ComposerCustomProperties {}
+}
+
+export {}

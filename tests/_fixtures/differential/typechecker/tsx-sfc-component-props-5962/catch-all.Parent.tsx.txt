@@ -1,0 +1,10 @@
+import Child from './Child.vue'
+
+export default () => (
+  <Child
+    label="Save"
+    onClear={() => {}}
+    onUpdate:modelValue={(value: unknown) => value}
+    onVisible-change={() => {}}
+  />
+)

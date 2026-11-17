@@ -1,0 +1,111 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 4992,
+  "regressionCommit": "13bcf1ba4ddb588b79296623f259c310a1bab2b5",
+  "sourceRevision": "13bcf1ba4ddb588b79296623f259c310a1bab2b5",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "real-html-attrs-on-closed-component",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Wrapper.vue",
+          "source": "Wrapper.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "html-attrs.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "unknown-attr-stays-strict-invalid",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Wrapper.vue",
+          "source": "Wrapper.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "unknown-attr.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 9,
+          "column": 12,
+          "severity": 1,
+          "code": 2353,
+          "message": "Object literal may only specify known properties, and '\"depressed\"' does not exist in type '$ComponentCheckProps<Props, $PublicComponentAttrs & { abbr?: unknown; about?: unknown; \"accent-height\"?: unknown; accentHeight?: unknown; accept?: unknown; acceptcharset?: unknown; accesskey?: unknown; accumulate?: unknown; action?: unknown; additive?: unknown; align?: unknown; ... 671 more ...; zoomAndPan?: unknown...'."
+        }
+      ]
+    },
+    {
+      "id": "boolean-literal-binding-valid",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Toggle.vue",
+          "source": "Toggle.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "literal-boolean.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "number-literal-binding-reports-once-invalid",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Toggle.vue",
+          "source": "Toggle.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "literal-number.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 6,
+          "column": 12,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type 'boolean | undefined'."
+        }
+      ]
+    }
+  ]
+}

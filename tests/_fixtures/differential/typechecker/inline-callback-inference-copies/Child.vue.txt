@@ -1,0 +1,11 @@
+<script setup lang="ts">
+defineProps<{
+  fileId: string
+  validate?: (file: { id: string }) => boolean | Promise<boolean>
+}>()
+defineEmits<{
+  update: [file: { id: string }]
+}>()
+</script>
+
+<template><span /></template>

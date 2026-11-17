@@ -1,0 +1,18 @@
+<script setup lang="ts">
+import { computed, ref } from 'vue'
+import Child from './Child.vue'
+
+const count = ref(1)
+const doubled = computed(() => count.value * 2)
+const label: string = 'hello'
+function save(value: string) {
+  return value
+}
+</script>
+
+<template>
+  <button :title="label">{{ count }} {{ doubled }}</button>
+  <Child :label="label" @save="save">
+    <template #default="{ value }">{{ value }}</template>
+  </Child>
+</template>

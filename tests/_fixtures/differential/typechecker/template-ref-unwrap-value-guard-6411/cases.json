@@ -1,0 +1,119 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 6411,
+  "regressionCommit": "816db89fa9a95d479894d690c7faa63f9276c962",
+  "sourceRevision": "816db89fa9a95d479894d690c7faa63f9276c962",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "vue-types-unavailable-imported-call",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/format.ts",
+          "source": "format.ts.txt"
+        },
+        {
+          "file": "src/vue-unavailable.d.ts",
+          "source": "vue-unavailable.d.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "imported-call.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "vue-types-unavailable-imported-call-wrong-arg",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/format.ts",
+          "source": "format.ts.txt"
+        },
+        {
+          "file": "src/vue-unavailable.d.ts",
+          "source": "vue-unavailable.d.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "imported-call-wrong-arg.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 6,
+          "column": 21,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type 'string' is not assignable to parameter of type 'number'."
+        }
+      ]
+    },
+    {
+      "id": "real-vue-ref-unwraps-into-call",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/format.ts",
+          "source": "format.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "ref-call.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "real-vue-ref-unwraps-wrong-value",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/format.ts",
+          "source": "format.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "ref-call-wrong-value.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 9,
+          "column": 21,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type 'string' is not assignable to parameter of type 'number'."
+        }
+      ]
+    }
+  ]
+}

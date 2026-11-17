@@ -1,0 +1,7 @@
+<script setup lang="ts">
+const count = 'unknown'
+</script>
+
+<template>
+  <AutoCard :count="count" />
+</template>
