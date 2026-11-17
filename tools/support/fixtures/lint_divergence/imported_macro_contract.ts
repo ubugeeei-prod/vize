@@ -26,14 +26,20 @@ interface TypeArgument {
   readonly end: number;
 }
 
-/** A native event Patina reports on a `defineEmits<T>()` type argument. */
-export function nativeEventFromImportedContract(
+/**
+ * An event Patina reports on a `defineEmits<T>()` type argument: a native
+ * event it shadows, or one it declares but never emits.
+ */
+export function emitFindingFromImportedContract(
   message: string,
   start: number,
   end: number,
   source: string,
 ): boolean {
-  const name = /`([^`]+)`/u.exec(message)?.[1];
+  const name = (/^\[vize:vue\/no-shadow-native-events\] .*`([^`]+)`$/u.exec(message) ??
+    /^\[vize:script\/no-unused-emit-declarations\] The '([^']+)' event is declared but never emitted\.$/u.exec(
+      message,
+    ))?.[1];
   if (name === undefined) return false;
   const argument = typeArguments(source, "defineEmits").find(
     (candidate) => candidate.start <= start && end <= candidate.end,

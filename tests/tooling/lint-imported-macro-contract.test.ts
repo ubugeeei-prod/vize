@@ -117,3 +117,29 @@ defineSlots<Slots>()
 <template><slot name="footer" /></template>`;
   assert.equal(slotReason(local), null);
 });
+
+test("an unemitted event only an imported emits type declares is classified", () => {
+  const source = `<script setup lang="ts">
+import type { DismissableLayerEmits } from '@/DismissableLayer'
+export type HoverCardContentImplEmits = DismissableLayerEmits & { opened: [] }
+const emits = defineEmits<HoverCardContentImplEmits>()
+</script>`;
+  const unused = (event: string) => {
+    const start = source.indexOf("HoverCardContentImplEmits>");
+    return patinaIntentionalReason(
+      {
+        file: "src/HoverCardContentImpl.vue",
+        ruleId: "script/no-unused-emit-declarations",
+        severity: "warning",
+        line: 4,
+        column: start - source.lastIndexOf("\n", start),
+        endLine: 4,
+        endColumn: start - source.lastIndexOf("\n", start) + "HoverCardContentImplEmits".length,
+        message: `[vize:script/no-unused-emit-declarations] The '${event}' event is declared but never emitted.`,
+      },
+      source,
+    );
+  };
+  assert.match(unused("interactOutside") ?? "", imported);
+  assert.equal(unused("opened"), null);
+});

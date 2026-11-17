@@ -14,7 +14,7 @@ import {
 import {
   importedEmitContractReason,
   importedSlotContractReason,
-  nativeEventFromImportedContract,
+  emitFindingFromImportedContract,
   undeclaredSlotFromImportedContract,
 } from "./imported_macro_contract.ts";
 import {
@@ -525,6 +525,7 @@ const patinaIntentionalRuleIds = new Set([
   "vue/no-static-inline-styles",
   "vue/no-template-shadow",
   "vue/no-shadow-native-events",
+  "script/no-unused-emit-declarations",
   "vue/no-unused-components",
   "vue/no-unused-vars",
   "vue/require-v-for-key",
@@ -966,8 +967,10 @@ function importedPropContractFinding(finding: LintRecord, source: string): strin
         : null;
   if (accepted !== null) return accepted ? importedPropContractReason : null;
   if (
-    finding.ruleId === "vue/no-shadow-native-events" &&
-    nativeEventFromImportedContract(finding.message, start, end, source)
+    ["vue/no-shadow-native-events", "script/no-unused-emit-declarations"].includes(
+      finding.ruleId,
+    ) &&
+    emitFindingFromImportedContract(finding.message, start, end, source)
   )
     return importedEmitContractReason;
   const collides =
