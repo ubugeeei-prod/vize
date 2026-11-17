@@ -16,7 +16,7 @@ use vize_atelier_sfc::{
     ScriptCompileOptions, SfcCompileOptions, SfcCompileResult, SfcError, SfcParseOptions,
     StyleCompileOptions, TemplateCompileOptions, compile_sfc, parse_sfc,
 };
-use vize_l0::Allocator;
+use vize_l0::{Allocator, String};
 
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -162,9 +162,9 @@ fn compile_bare_template(case: &Case) -> Observation {
     );
     Observation::Template {
         errors,
-        preamble: codegen.preamble.to_string(),
-        code: codegen.code.to_string(),
-        map: codegen.map.map(|map| map.to_string()),
+        preamble: codegen.preamble,
+        code: codegen.code,
+        map: codegen.map,
     }
 }
 
@@ -198,7 +198,7 @@ fn full_current_compile_results() {
             case.id
         );
         if first.errors() != case.errors {
-            mismatched.insert(case.id.clone(), first.errors().into());
+            mismatched.insert(case.id.as_str().into(), first.errors().into());
         }
         insta::assert_snapshot!(case.id.as_str(), first_bytes);
     }
