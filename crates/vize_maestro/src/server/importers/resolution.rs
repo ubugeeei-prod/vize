@@ -1,4 +1,4 @@
-use super::comparable_path;
+use super::ComparablePaths;
 use std::path::{Path, PathBuf};
 use vize_canon::{PackageRouteResolver, PackageSourceOptions};
 use vize_l0::cstr;
@@ -10,10 +10,26 @@ pub(super) struct ImportResolution {
     pub(super) target_found: bool,
 }
 
+#[cfg(test)]
 pub(super) fn resolve_import(
     importer_dir: &Path,
     specifier: &str,
     package_routes: &mut PackageRouteResolver,
+) -> ImportResolution {
+    resolve_import_with(
+        importer_dir,
+        specifier,
+        package_routes,
+        &mut ComparablePaths::default(),
+    )
+}
+
+/// Resolve one specifier, canonicalizing through the update's shared memo.
+pub(super) fn resolve_import_with(
+    importer_dir: &Path,
+    specifier: &str,
+    package_routes: &mut PackageRouteResolver,
+    comparable: &mut ComparablePaths,
 ) -> ImportResolution {
     let specifier = if specifier.starts_with('#') {
         specifier
@@ -27,7 +43,7 @@ pub(super) fn resolve_import(
         || specifier.starts_with("./")
         || specifier.starts_with("../")
     {
-        let dependencies: Vec<_> = resolve_relative_import(importer_dir, specifier)
+        let dependencies: Vec<_> = resolve_relative_import(importer_dir, specifier, comparable)
             .into_iter()
             .collect();
         return ImportResolution {
@@ -48,17 +64,21 @@ pub(super) fn resolve_import(
     }
 }
 
-fn resolve_relative_import(importer_dir: &Path, specifier: &str) -> Option<PathBuf> {
+fn resolve_relative_import(
+    importer_dir: &Path,
+    specifier: &str,
+    comparable: &mut ComparablePaths,
+) -> Option<PathBuf> {
     let joined = importer_dir.join(specifier);
     if matches!(specifier, "." | "..") {
         return SCRIPT_EXTENSIONS
             .iter()
             .map(|extension| joined.join("index").with_extension(extension))
             .find(|candidate| candidate.exists())
-            .map(|candidate| comparable_path(&candidate));
+            .map(|candidate| comparable.get(&candidate));
     }
     if has_script_extension(Path::new(specifier)) {
-        return Some(comparable_path(&joined));
+        return Some(comparable.get(&joined));
     }
     SCRIPT_EXTENSIONS
         .iter()
@@ -69,7 +89,7 @@ fn resolve_relative_import(importer_dir: &Path, specifier: &str) -> Option<PathB
                 .map(|extension| joined.join("index").with_extension(extension)),
         )
         .find(|candidate| candidate.exists())
-        .map(|candidate| comparable_path(&candidate))
+        .map(|candidate| comparable.get(&candidate))
 }
 
 fn has_script_extension(path: &Path) -> bool {
