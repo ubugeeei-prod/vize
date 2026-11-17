@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import type { HTMLAttributes } from "vue";
+
+defineProps<{ class?: HTMLAttributes["class"]; style?: HTMLAttributes["style"] }>();
+</script>
+
+<template>
+  <div />
+</template>

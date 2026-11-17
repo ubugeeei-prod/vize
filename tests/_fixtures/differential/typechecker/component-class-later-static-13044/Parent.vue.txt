@@ -1,0 +1,18 @@
+<script setup lang="ts">
+import Child from "./Child.vue";
+
+type ClassType = Array<ClassType> | boolean | null | object | string | undefined;
+const props = defineProps<{ class?: ClassType; tone: boolean }>();
+</script>
+
+<template>
+  <!-- A later static class is the value the child is checked with: clean. -->
+  <Child :class="props.class" class="size-full" />
+  <Child :class="props.class" v-bind="{}" class="side-content" />
+  <Child :style="tone" style="color: red" />
+  <!-- The bound value reaches the child's check: TS2322 (vue-tsc TS2345). -->
+  <Child :class="props.class" />
+  <Child class="first" :class="props.class" />
+  <!-- The bound expression keeps its own diagnostics: TS2339. -->
+  <Child :class="missingClass" class="row" />
+</template>

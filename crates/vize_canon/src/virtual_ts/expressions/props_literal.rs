@@ -8,7 +8,7 @@
 
 use super::super::types::{VizeMapping, VizeSubSpan};
 use super::component_prop_bindings::{
-    collect_generated_class_bindings, collect_generated_named_bindings,
+    collect_generated_class_bindings, collect_generated_named_bindings, overridden_by_later_static,
 };
 use super::component_props::{ComponentPropSource, is_checkable_prop};
 use super::prop_sources::append_prop_value;
@@ -98,7 +98,7 @@ pub(crate) fn append_props_literal(
     let mut spreads = usage.spread_props.iter().peekable();
     let marks = named_entry_marks(usage, (merge_class_bindings, merge_style_bindings));
     for (prop, marked) in usage.props.iter().zip(marks) {
-        if !is_checkable_prop(prop) {
+        if !is_checkable_prop(prop) || overridden_by_later_static(usage, prop) {
             continue;
         }
         while let Some(spread) = spreads.next_if(|pending| pending.start < prop.start) {

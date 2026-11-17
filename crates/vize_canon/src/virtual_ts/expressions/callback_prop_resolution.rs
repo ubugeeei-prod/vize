@@ -1,7 +1,7 @@
 //! Resolve a generic child's instantiated props before checking inline callbacks.
 
 use super::component_prop_bindings::{
-    collect_generated_class_bindings, merged_class_binding_value,
+    collect_generated_class_bindings, merged_class_binding_value, overridden_by_later_static,
 };
 use super::component_props::{ComponentPropSource, is_checkable_prop};
 use super::prop_sources::{append_prop_value, generated_prop_value};
@@ -139,7 +139,7 @@ fn append_props_object(
     let mut emitted_merged_class = false;
     let mut spreads = usage.spread_props.iter().peekable();
     for prop in &usage.props {
-        if !is_checkable_prop(prop) {
+        if !is_checkable_prop(prop) || overridden_by_later_static(usage, prop) {
             continue;
         }
         while let Some(spread) = spreads.next_if(|spread| spread.start < prop.start) {
