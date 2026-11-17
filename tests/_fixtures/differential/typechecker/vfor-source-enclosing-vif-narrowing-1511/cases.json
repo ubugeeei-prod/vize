@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 1511,
+  "regressionCommit": "edd9fbe7bf4a08d82f1a9229dd0fc6a6780f0c56",
+  "sourceRevision": "edd9fbe7bf4a08d82f1a9229dd0fc6a6780f0c56",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "vfor-source-narrowed-by-enclosing-vif",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/VForNarrowedByVif.vue",
+          "source": "VForNarrowedByVif.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "vfor-source-not-narrowed-without-vif",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/VForNotNarrowed.vue",
+          "source": "VForNotNarrowed.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/VForNotNarrowed.vue",
+          "line": 9,
+          "column": 20,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type 'string | number' is not assignable to parameter of type 'string'.\nType 'number' is not assignable to type 'string'."
+        }
+      ]
+    },
+    {
+      "id": "vif-inside-vfor-body-does-not-wrap-loop",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/NestedVifInBody.vue",
+          "source": "NestedVifInBody.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

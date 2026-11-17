@@ -1,0 +1,95 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 2475,
+  "regressionCommit": "87ed46d9a282a5f3da07900c6c67e5a7b652a316",
+  "sourceRevision": "87ed46d9a282a5f3da07900c6c67e5a7b652a316",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "optional-boolean-prop-normalized-in-setup",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.es2023.json.txt"
+        },
+        {
+          "file": "src/Foo.vue",
+          "source": "boolean.Foo.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "optional-string-prop-not-normalized",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.es2023.json.txt"
+        },
+        {
+          "file": "src/Foo.vue",
+          "source": "string.Foo.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Foo.vue",
+          "line": 7,
+          "column": 9,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '() => string | undefined' is not assignable to parameter of type 'boolean | (() => boolean)'.\nType '() => string | undefined' is not assignable to type '() => boolean'.\nType 'string | undefined' is not assignable to type 'boolean'.\nType 'undefined' is not assignable to type 'boolean'."
+        }
+      ]
+    },
+    {
+      "id": "with-defaults-boolean-prop-normalized",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.es2023.json.txt"
+        },
+        {
+          "file": "src/Foo.vue",
+          "source": "with-defaults.Foo.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "with-defaults-string-prop-not-boolean",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.es2023.json.txt"
+        },
+        {
+          "file": "src/Foo.vue",
+          "source": "with-defaults-string.Foo.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Foo.vue",
+          "line": 10,
+          "column": 9,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '() => string' is not assignable to parameter of type 'boolean | (() => boolean)'.\nType '() => string' is not assignable to type '() => boolean'.\nType 'string' is not assignable to type 'boolean'."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+<script setup lang="ts">
+type FormViewState = 'input' | 'confirm' | 'complete';
+
+interface Props {
+  formViewState: FormViewState;
+}
+
+const props = defineProps<Props>();
+</script>
+
+<template>
+  <p>{{ props.formViewState }} {{ formViewState }}</p>
+</template>

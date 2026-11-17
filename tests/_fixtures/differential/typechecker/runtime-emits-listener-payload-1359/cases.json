@@ -1,0 +1,92 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 1359,
+  "regressionCommit": "19b878c60242fff5328202728c92fbd23ef76d7d",
+  "sourceRevision": "19b878c60242fff5328202728c92fbd23ef76d7d",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "spread-runtime-emits-compatible-listener",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "runtime-ok.App.vue.txt"
+        },
+        {
+          "file": "src/RuntimeEmits.vue",
+          "source": "RuntimeEmits.vue.txt"
+        },
+        {
+          "file": "src/emits.ts",
+          "source": "emits.ts.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "spread-runtime-emits-wrong-listener-payload",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "runtime-wrong.App.vue.txt"
+        },
+        {
+          "file": "src/RuntimeEmits.vue",
+          "source": "RuntimeEmits.vue.txt"
+        },
+        {
+          "file": "src/emits.ts",
+          "source": "emits.ts.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 10,
+          "column": 18,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '(value: string) => void' is not assignable to type '(value?: number | undefined) => any'.\nTypes of parameters 'value' and 'value' are incompatible.\nType 'number | undefined' is not assignable to type 'string'.\nType 'undefined' is not assignable to type 'string'."
+        }
+      ]
+    },
+    {
+      "id": "undeclared-component-dom-listener-standard-mode",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "fallthrough.App.vue.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "fallthrough.Child.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

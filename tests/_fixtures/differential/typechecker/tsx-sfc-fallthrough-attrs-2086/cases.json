@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 2086,
+  "regressionCommit": "0027caad7a79b0d1a6f00b1ba68198b740f875c6",
+  "sourceRevision": "0027caad7a79b0d1a6f00b1ba68198b740f875c6",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "fallthrough-class-and-style",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.jsx.json.txt"
+        },
+        {
+          "file": "src/AfButton.vue",
+          "source": "AfButton.vue.txt"
+        },
+        {
+          "file": "src/AfButton.stories.tsx",
+          "source": "AfButton.stories.tsx.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "declared-prop-wrong-literal",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.jsx.json.txt"
+        },
+        {
+          "file": "src/AfButton.vue",
+          "source": "AfButton.vue.txt"
+        },
+        {
+          "file": "src/AfButton.stories.tsx",
+          "source": "wrong-color.AfButton.stories.tsx.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/AfButton.stories.tsx",
+          "line": 7,
+          "column": 5,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '\"tertiary\"' is not assignable to type '\"primary\" | \"secondary\" | undefined'."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 1905,
+  "regressionCommit": "21d5dd73da450a3b3fb0638ef8544798ccc11e25",
+  "sourceRevision": "21d5dd73da450a3b3fb0638ef8544798ccc11e25",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "art-variant-uses-schema-and-handler",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.no-unused-locals.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "valid.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "art-variant-leaves-handler-unused",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.no-unused-locals.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "invalid.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 3,
+          "column": 10,
+          "severity": 1,
+          "code": 6133,
+          "message": "'handleSubmit' is declared but its value is never read."
+        }
+      ]
+    }
+  ]
+}

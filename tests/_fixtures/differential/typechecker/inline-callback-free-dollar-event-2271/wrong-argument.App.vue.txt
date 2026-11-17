@@ -1,0 +1,7 @@
+<script setup lang="ts">
+function handleInput(_a: Event, _b: Event) { void _a; void _b; }
+</script>
+
+<template>
+  <input @input="(e) => handleInput(e, 1)" />
+</template>

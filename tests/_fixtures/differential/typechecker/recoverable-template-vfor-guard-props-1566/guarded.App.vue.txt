@@ -1,0 +1,13 @@
+<script setup lang="ts">
+import Test from "./test.vue";
+const elems = { a: [1], b: ["a"] } as const;
+const key = "a" as "a" | "b";
+</script>
+
+<template>
+<div v-if="key === 'b'">
+  <button v-for="value in elems[key]" :key="value">
+    <Test :value1="value" />
+  </button>
+</div>
+</template>

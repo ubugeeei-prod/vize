@@ -1,0 +1,129 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 2134,
+  "regressionCommit": "bd113bbccb2be992217f99d60b620f3715e4f1b5",
+  "sourceRevision": "bd113bbccb2be992217f99d60b620f3715e4f1b5",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "repeated-default-slots",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "SlotChild.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "slots.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "repeated-default-slot-wrong-member",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "SlotChild.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "slots-wrong-member.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 14,
+          "column": 16,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'toUpperCase' does not exist on type 'number'."
+        }
+      ]
+    },
+    {
+      "id": "undeclared-component-event-listener",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "PlainChild.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "event.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "tsx-kebab-prop-alias",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.jsx.json.txt"
+        },
+        {
+          "file": "src/AfButton.vue",
+          "source": "AfButton.vue.txt"
+        },
+        {
+          "file": "src/AfButton.stories.tsx",
+          "source": "AfButton.stories.tsx.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "tsx-kebab-prop-wrong-type",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.jsx.json.txt"
+        },
+        {
+          "file": "src/AfButton.vue",
+          "source": "AfButton.vue.txt"
+        },
+        {
+          "file": "src/AfButton.stories.tsx",
+          "source": "wrong-kebab.AfButton.stories.tsx.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/AfButton.stories.tsx",
+          "line": 4,
+          "column": 4,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '{ class: string; style: string; color: \"primary\"; \"is-opened\": string; onClick: (event: MouseEvent) => void; }' is not assignable to type 'IntrinsicAttributes & Pick<$AuthoredKeyWitness<{ class: unknown; style: unknown; color: unknown; \"is-opened\": unknown; onClick: unknown; }>, \"class\" | \"color\" | \"is-opened\" | \"onClick\" | \"style\"> & ... 9 more ... & ComponentCustomProps'.\nType '{ class: string; style: string; color: \"primary\"; \"is-opened\": string; onClick: (event: MouseEvent) => void; }' is not assignable to type 'Partial<$KebabProps<Props>>'.\nTypes of property '\"is-opened\"' are incompatible.\nType 'string' is not assignable to type 'boolean | undefined'."
+        }
+      ]
+    }
+  ]
+}

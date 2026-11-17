@@ -1,0 +1,18 @@
+<script setup lang="ts">
+import { pickProperties } from '~/src/shared/objectOperationUtil';
+import { FormViewStateEnum as _FormViewStateEnum } from '~/src/domain/models/form';
+
+const FormViewStateEnum = pickProperties(_FormViewStateEnum, [
+  _FormViewStateEnum.TextbookSelection_OtherStudentTextbook,
+  _FormViewStateEnum.DetailForm_OtherStudentTextbook,
+]);
+
+type FormViewState = (typeof FormViewStateEnum)[keyof typeof FormViewStateEnum];
+
+interface Props {
+  formViewState: FormViewState;
+  updateStepperStateToTextbookInput: (s: FormViewState) => void;
+}
+
+const props = defineProps<Props>();
+</script>

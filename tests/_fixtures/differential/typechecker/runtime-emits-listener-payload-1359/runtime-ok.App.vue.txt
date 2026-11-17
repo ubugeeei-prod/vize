@@ -1,0 +1,11 @@
+<script setup lang="ts">
+import RuntimeEmits from './RuntimeEmits.vue'
+
+function onOk(value?: number) {
+  void value
+}
+</script>
+
+<template>
+  <RuntimeEmits @ok="onOk" />
+</template>

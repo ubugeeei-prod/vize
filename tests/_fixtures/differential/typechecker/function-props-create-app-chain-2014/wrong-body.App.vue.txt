@@ -1,0 +1,7 @@
+<script setup lang="ts">
+import Comp1 from './components/Comp1.vue';
+</script>
+
+<template>
+  <Comp1 :textConverter="(value) => value.toUpperCase()" />
+</template>

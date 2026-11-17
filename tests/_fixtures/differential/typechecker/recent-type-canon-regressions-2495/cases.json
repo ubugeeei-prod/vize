@@ -1,0 +1,185 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 2495,
+  "regressionCommit": "25ca8a2b12bccf4dd321f0e152275233501b3883",
+  "sourceRevision": "25ca8a2b12bccf4dd321f0e152275233501b3883",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "imported-base-interface-template-props",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.jsx.json.txt"
+        },
+        {
+          "file": "src/base.ts",
+          "source": "base.ts.txt"
+        },
+        {
+          "file": "src/Foo.vue",
+          "source": "interface.Foo.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "imported-base-interface-prop-wrong-member",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.jsx.json.txt"
+        },
+        {
+          "file": "src/base.ts",
+          "source": "base.ts.txt"
+        },
+        {
+          "file": "src/Foo.vue",
+          "source": "interface-wrong-member.Foo.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Foo.vue",
+          "line": 6,
+          "column": 49,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'length' does not exist on type 'boolean'."
+        }
+      ]
+    },
+    {
+      "id": "contextmenu-accepts-pointer-event-handler",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.jsx.json.txt"
+        },
+        {
+          "file": "src/Foo.vue",
+          "source": "contextmenu.Foo.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "contextmenu-rejects-keyboard-event-handler",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.jsx.json.txt"
+        },
+        {
+          "file": "src/Foo.vue",
+          "source": "contextmenu-keyboard.Foo.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Foo.vue",
+          "line": 4,
+          "column": 33,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '(event: KeyboardEvent) => Promise<void>' is not assignable to parameter of type '(_e: PointerEvent) => unknown'.\nTypes of parameters 'event' and '_e' are incompatible.\nType 'PointerEvent' is missing the following properties from type 'KeyboardEvent': charCode, code, isComposing, key, and 8 more."
+        }
+      ]
+    },
+    {
+      "id": "generic-sfc-value-specialized-from-typescript",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.jsx.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "generic.Child.vue.txt"
+        },
+        {
+          "file": "src/main.ts",
+          "source": "main.ts.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "generic-sfc-value-rejects-extra-type-argument",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.jsx.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "generic.Child.vue.txt"
+        },
+        {
+          "file": "src/main.ts",
+          "source": "too-many-type-args.main.ts.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/main.ts",
+          "line": 2,
+          "column": 34,
+          "severity": 1,
+          "code": 2635,
+          "message": "Type '{ __vizeCheck: <T = string>(props: $SetupProps & VNodeProps & AllowedComponentProps & ComponentCustomProps & { ...; } & { ...; } & Record<...>) => void; ... 7 more ...; readonly __vizeFallthroughProps?: Partial<...> | undefined; } & $GenericComponent' has no signatures for which the type argument list is applicable."
+        }
+      ]
+    },
+    {
+      "id": "nested-union-prop-members-stay-nested",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.jsx.json.txt"
+        },
+        {
+          "file": "src/Foo.vue",
+          "source": "nested-union.Foo.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "nested-union-member-is-not-a-template-binding",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.jsx.json.txt"
+        },
+        {
+          "file": "src/Foo.vue",
+          "source": "nested-union-member-name.Foo.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Foo.vue",
+          "line": 13,
+          "column": 68,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'text' does not exist on the component instance."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+export const FormViewStateEnum = {
+  TextbookSelection_OtherStudentTextbook: 'TextbookSelection_OtherStudentTextbook',
+  DetailForm_OtherStudentTextbook: 'DetailForm_OtherStudentTextbook',
+  TextbookInput: 'TextbookInput',
+} as const;

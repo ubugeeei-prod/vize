@@ -1,0 +1,14 @@
+<script setup lang="ts">
+import Thing, { helper as describe, type Extra } from './thing'
+import Badge, * as badgeNs from './badge'
+
+const thing: Thing = { label: 1 }
+const extra: Extra = { id: 1 }
+const badge: Badge = { tone: 'info' }
+const size: badgeNs.BadgeSize = 'sm'
+const text = describe(thing)
+</script>
+
+<template>
+  <p :data-id="extra.id" :data-tone="badge.tone" :data-size="size">{{ text }}</p>
+</template>

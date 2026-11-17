@@ -1,0 +1,5 @@
+<script setup lang="ts">
+defineProps<{ color: 'primary' | 'secondary' }>()
+defineEmits<{ click: [event: MouseEvent] }>()
+</script>
+<template><button /></template>

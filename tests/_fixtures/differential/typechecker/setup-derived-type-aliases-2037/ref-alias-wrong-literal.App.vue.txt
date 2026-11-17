@@ -1,0 +1,12 @@
+<script setup lang="ts">
+import { ref } from 'vue';
+
+const DialogOpenStatusEnum = {
+  None: 'None',
+  Confirm: 'Confirm',
+} as const;
+
+type DialogOpenStatus = (typeof DialogOpenStatusEnum)[keyof typeof DialogOpenStatusEnum];
+
+const dialogOpenStatus = ref<DialogOpenStatus>('Other');
+</script>

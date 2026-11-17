@@ -1,0 +1,105 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 3009,
+  "regressionCommit": "46a2340e53595c53829320bdcf6a62c8ebdad65f",
+  "sourceRevision": "46a2340e53595c53829320bdcf6a62c8ebdad65f",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "kebab-slot-host-typed-slot-props",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/ElBadge.vue",
+          "source": "ElBadge.vue.txt"
+        },
+        {
+          "file": "src/element-plus.ts",
+          "source": "element-plus.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "kebab-slot-host-missing-member",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/ElBadge.vue",
+          "source": "ElBadge.vue.txt"
+        },
+        {
+          "file": "src/element-plus.ts",
+          "source": "element-plus.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "historical-missing.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 6,
+          "column": 53,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'missing' does not exist on type 'number'."
+        }
+      ]
+    },
+    {
+      "id": "nested-kebab-slot-host-missing-member",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/ElBadge.vue",
+          "source": "ElBadge.vue.txt"
+        },
+        {
+          "file": "src/element-plus.ts",
+          "source": "element-plus.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "nested-missing.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 9,
+          "column": 55,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'missing' does not exist on type 'number'."
+        }
+      ]
+    }
+  ]
+}

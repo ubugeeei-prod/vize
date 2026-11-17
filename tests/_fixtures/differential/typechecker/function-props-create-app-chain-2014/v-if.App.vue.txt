@@ -1,0 +1,10 @@
+<script setup lang="ts">
+import Comp1 from './components/Comp1.vue';
+
+const show = Math.random() > 0.5;
+</script>
+
+<template>
+  <Comp1 v-if="show" :textConverter="(value) => `${value * 100}%`" />
+  <p v-else>hidden</p>
+</template>

@@ -1,0 +1,95 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 2271,
+  "regressionCommit": "3b23363761388106de0f79a7526bc389de92214c",
+  "sourceRevision": "3b23363761388106de0f79a7526bc389de92214c",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "arrow-callback-declared-parameter",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "declared-parameter.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "inline-statement-implicit-event",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "inline-statement.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "arrow-callback-free-dollar-event",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "free-event.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 6,
+          "column": 37,
+          "severity": 1,
+          "code": 2551,
+          "message": "Property '$event' does not exist on the component instance. Did you mean 'event'?"
+        }
+      ]
+    },
+    {
+      "id": "arrow-callback-wrong-argument",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "wrong-argument.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 6,
+          "column": 40,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type 'number' is not assignable to parameter of type 'Event'."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+<script setup lang="ts">
+import Emoji from "emoji-mart-vue-fast/src/components/Emoji.vue";
+
+const emojiName: string = Emoji;
+void emojiName;
+</script>
+
+<template><Emoji /></template>

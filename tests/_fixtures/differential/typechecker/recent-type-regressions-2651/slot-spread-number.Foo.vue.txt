@@ -1,0 +1,11 @@
+<script setup lang="ts">
+import Base from "./Base.vue";
+
+const count = 1;
+</script>
+
+<template>
+  <Base v-slot="slotData">
+    <slot v-bind="{ ...count }" />
+  </Base>
+</template>

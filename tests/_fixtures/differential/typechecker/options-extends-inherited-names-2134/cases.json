@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 2134,
+  "regressionCommit": "bd113bbccb2be992217f99d60b620f3715e4f1b5",
+  "sourceRevision": "bd113bbccb2be992217f99d60b620f3715e4f1b5",
+  "checkerOptions": {
+    "optionsApi": true
+  },
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "extends-base-template-names",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/BaseButton.vue",
+          "source": "BaseButton.vue.txt"
+        },
+        {
+          "file": "src/Button.vue",
+          "source": "Button.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+<script setup lang="ts">
+import type { BaseProps } from "./base";
+interface FooProps extends BaseProps { orientation?: "horizontal" | "vertical"; }
+const props = withDefaults(defineProps<FooProps>(), { orientation: "horizontal" });
+</script>
+<template><div :as :data-decorative="decorative" :data-orientation="props.orientation" /></template>

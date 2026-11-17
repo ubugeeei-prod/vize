@@ -1,0 +1,3 @@
+<script setup lang="ts">
+defineProps<{ bind: string; sync: string; fooBar: string }>()
+</script>

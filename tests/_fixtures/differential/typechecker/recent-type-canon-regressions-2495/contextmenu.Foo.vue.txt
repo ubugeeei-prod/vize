@@ -1,0 +1,4 @@
+<script setup lang="ts">
+async function onPointer(event: PointerEvent) { event.preventDefault(); }
+</script>
+<template><button @contextmenu="onPointer" /></template>

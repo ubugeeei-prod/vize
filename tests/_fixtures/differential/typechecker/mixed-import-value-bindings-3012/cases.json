@@ -1,0 +1,74 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 3012,
+  "regressionCommit": "8bf88a7a1bf5aca18cde096ea847d186370905df",
+  "sourceRevision": "8bf88a7a1bf5aca18cde096ea847d186370905df",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "mixed-default-named-namespace-imports",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/thing.ts",
+          "source": "thing.ts.txt"
+        },
+        {
+          "file": "src/badge.ts",
+          "source": "badge.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "mixed-default-import-type-still-checked",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/thing.ts",
+          "source": "thing.ts.txt"
+        },
+        {
+          "file": "src/badge.ts",
+          "source": "badge.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "wrong-default-type.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 5,
+          "column": 24,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type 'string'."
+        }
+      ]
+    }
+  ]
+}

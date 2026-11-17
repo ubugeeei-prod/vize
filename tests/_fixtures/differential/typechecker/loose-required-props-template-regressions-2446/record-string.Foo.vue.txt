@@ -1,0 +1,16 @@
+<script setup lang="ts">
+type MaybeRefOrGetter<T> = T | (() => T)
+
+interface FooProps {
+  forceMount?: boolean
+}
+
+function forwardProps<T extends Record<string, string>>(value: MaybeRefOrGetter<T>) {
+  return value
+}
+
+const props = defineProps<FooProps>()
+forwardProps(props)
+</script>
+
+<template><div /></template>

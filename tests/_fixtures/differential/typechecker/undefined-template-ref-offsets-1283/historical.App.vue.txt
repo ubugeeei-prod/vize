@@ -1,0 +1,4 @@
+<script setup>
+const user = {}
+</script>
+<template>{{ user.name + name }}</template>

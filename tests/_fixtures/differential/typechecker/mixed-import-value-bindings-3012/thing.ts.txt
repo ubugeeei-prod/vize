@@ -1,0 +1,11 @@
+export default interface Thing {
+  label: string
+}
+
+export interface Extra {
+  id: number
+}
+
+export function helper(thing: Thing): string {
+  return thing.label
+}

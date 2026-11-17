@@ -1,0 +1,12 @@
+<script setup lang="ts">
+function useFlag(flag: boolean | (() => boolean)) {
+  return flag
+}
+
+const props = defineProps<{ modal?: boolean }>()
+useFlag(() => props.modal)
+</script>
+
+<template>
+  <div />
+</template>

@@ -1,0 +1,4 @@
+{
+  "name": "vite",
+  "types": "client.d.ts"
+}

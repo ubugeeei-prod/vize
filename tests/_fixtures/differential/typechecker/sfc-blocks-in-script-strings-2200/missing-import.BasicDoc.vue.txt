@@ -1,0 +1,29 @@
+<script setup lang="ts">
+import { ref } from 'vue';
+import Accordion from './Accordion.vue';
+import AccordionContent from './AccordionContent.vue';
+import AccordionHeader from './AccordionHeader.vue';
+import AccordionPanel from './AccordionPannel.vue';
+
+const code = ref(`
+<template>
+  <Accordion value="0" />
+</template>
+
+<script setup lang="ts">
+import Accordion from './Accordion.vue';
+import AccordionPanel from './AccordionPanel.vue';
+import AccordionHeader from './AccordionHeader.vue';
+import AccordionContent from './AccordionContent.vue';
+<\/script>
+`);
+</script>
+
+<template>
+  <Accordion>
+    <AccordionPanel>
+      <AccordionHeader />
+      <AccordionContent />
+    </AccordionPanel>
+  </Accordion>
+</template>

@@ -1,0 +1,12 @@
+type PickedProperties<T, V> = { [K in keyof T as T[K] extends V ? K : never]: T[K] };
+
+export function pickProperties<T extends Record<string, string>, V extends T[keyof T]>(
+  source: T,
+  values: readonly V[],
+): PickedProperties<T, V> {
+  const picked: Record<string, string> = {};
+  for (const [key, value] of Object.entries(source)) {
+    if ((values as readonly string[]).includes(value)) picked[key] = value;
+  }
+  return picked as unknown as PickedProperties<T, V>;
+}

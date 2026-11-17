@@ -1,0 +1,14 @@
+export interface Vue {
+  $attrs: Record<string, unknown>;
+  $refs: Record<string, any>;
+  $slots: Record<string, unknown>;
+  $emit: (...args: any[]) => void;
+}
+
+export type PropType<T> = { new (...args: any[]): T & {} } | { (): T } | null;
+
+declare const VueConstructor: {
+  version: string;
+};
+
+export default VueConstructor;

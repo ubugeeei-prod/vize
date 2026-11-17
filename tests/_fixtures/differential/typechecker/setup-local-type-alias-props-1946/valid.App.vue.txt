@@ -1,0 +1,7 @@
+<script setup lang="ts">
+import FormView from './FormView.vue'
+</script>
+
+<template>
+  <FormView form-view-state="confirm" />
+</template>

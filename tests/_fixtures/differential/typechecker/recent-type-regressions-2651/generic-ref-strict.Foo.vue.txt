@@ -1,0 +1,11 @@
+<script setup lang="ts" generic="T">
+import { ref } from "vue";
+
+const value = ref<T>();
+
+function update(value: T) {}
+</script>
+
+<template>
+  <button @click="update(value)" />
+</template>

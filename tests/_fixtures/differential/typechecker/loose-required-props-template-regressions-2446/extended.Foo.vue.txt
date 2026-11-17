@@ -1,0 +1,18 @@
+<script setup lang="ts">
+interface BaseProps {
+  required?: boolean
+}
+
+interface FooProps extends BaseProps {
+  label: string
+}
+
+defineProps<FooProps>()
+</script>
+
+<template>
+  <label>
+    <input :required="required" />
+    {{ label }} {{ required }}
+  </label>
+</template>

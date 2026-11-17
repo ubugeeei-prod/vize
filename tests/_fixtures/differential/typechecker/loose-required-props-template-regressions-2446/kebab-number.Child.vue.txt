@@ -1,0 +1,7 @@
+<script setup lang="ts">
+defineProps<{ itemLabel: number }>()
+</script>
+
+<template>
+  <span />
+</template>

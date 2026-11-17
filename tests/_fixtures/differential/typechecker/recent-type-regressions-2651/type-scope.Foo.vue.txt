@@ -1,0 +1,9 @@
+<script lang="ts">
+export type FooContext = MaybeElement;
+</script>
+
+<script setup lang="ts">
+import type { MaybeElement } from "./types";
+
+type MaybeElement = HTMLElement | null;
+</script>

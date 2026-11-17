@@ -1,0 +1,7 @@
+declare module "*.vue" {
+  const component: unknown;
+  export default component;
+}
+
+declare module "emoji-mart-vue-fast/src/components";
+declare module "emoji-mart-vue-fast/data/all.json";

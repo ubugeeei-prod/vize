@@ -1,0 +1,5 @@
+<script lang="ts">
+export interface BaseProps {
+  decorative?: boolean;
+}
+</script>

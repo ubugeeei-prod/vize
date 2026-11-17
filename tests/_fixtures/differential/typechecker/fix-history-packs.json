@@ -11,6 +11,10 @@
     "test": "fix_history_cases::aria_data_fallthrough_attrs_4734::known_aria_and_custom_data_attrs_fall_through_but_unknown_aria_is_rejected",
     "sourceRevision": "8298520356b8ee9d0d3b7ab96e10791f0150652c"
   },
+  "art-variant-bindings-no-unused-1905": {
+    "test": "fix_history_cases::art_variant_bindings_no_unused_1905::art_variant_template_reads_count_as_setup_binding_usage",
+    "sourceRevision": "21d5dd73da450a3b3fb0638ef8544798ccc11e25"
+  },
   "asi-separated-event-handlers-3703": {
     "test": "fix_history_cases::asi_separated_event_handlers_3703::asi_separated_event_handler_statements_stay_authored",
     "sourceRevision": "4039c4c9a5217b81591d67c8123981eba1126f33"
@@ -22,6 +26,14 @@
   "ast-prop-interface-fields-1394": {
     "test": "fix_history_cases::ast_prop_interface_fields_1394::local_prop_interface_fields_resolve_through_the_ast",
     "sourceRevision": "b76d2f7b3d23c49f55a12f2a7ba41e553304da1f"
+  },
+  "batch-diagnostic-subspan-mapping-3201": {
+    "test": "fix_history_cases::batch_diagnostic_subspan_mapping_3201::batch_diagnostics_map_through_exact_expression_sub_spans",
+    "sourceRevision": "1acad3cafdff185d4a4f3fa5f23166ef3c4840b1"
+  },
+  "boolean-prop-normalization-2475": {
+    "test": "fix_history_cases::boolean_prop_normalization_2475::optional_boolean_props_normalize_to_boolean",
+    "sourceRevision": "87ed46d9a282a5f3da07900c6c67e5a7b652a316"
   },
   "branded-ref-template-types-2957": {
     "test": "fix_history_cases::branded_ref_template_types_2957::branded_ref_template_unwrap_preserves_brand",
@@ -57,6 +69,10 @@
   "component-option-statics-1615": {
     "test": "fix_history_cases::component_option_statics_1615::virtual_component_satisfies_concrete_component_constraint",
     "sourceRevision": "01ae57c12f09b1bbe0be77097d5cd3788f3e65ad"
+  },
+  "component-slot-event-kebab-false-positives-2134": {
+    "test": "fix_history_cases::component_slot_event_kebab_false_positives_2134::repeated_slots_unknown_events_and_kebab_props_check_cleanly",
+    "sourceRevision": "bd113bbccb2be992217f99d60b620f3715e4f1b5"
   },
   "component-template-ref-expose-4489": {
     "test": "fix_history_cases::component_template_ref_expose_4489::component_use_template_ref_uses_define_expose_surface",
@@ -94,6 +110,10 @@
     "test": "fix_history_cases::define_model_template_unwrap_5847::define_model_record_indexes_with_template_v_for_keys",
     "sourceRevision": "00b6fd3939ed3f1c77e1a342215849644f64aded"
   },
+  "define-props-direct-template-reads-2262": {
+    "test": "fix_history_cases::define_props_direct_template_reads_2262::direct_template_prop_reads_keep_define_props_result_used",
+    "sourceRevision": "a85f3da23989f8208edb7a01407aebfe19e8264a"
+  },
   "direct-callback-props-3546": {
     "test": "fix_history_cases::direct_callback_props_3546::direct_inline_callback_props_are_distinguished_from_nested_callbacks",
     "sourceRevision": "2b82fe00f6a94728c71abe394ab87b00d1704df0"
@@ -116,6 +136,10 @@
   "dynamic-component-v-for-scope": {
     "test": "fix_history_cases::dynamic_component_v_for_scope::dynamic_is_on_v_for_elements_preserves_batch_diagnostics",
     "sourceRevision": "7f802b69bf57fc555e65174d33d8319fc4753aa4"
+  },
+  "dynamic-directive-names-2797": {
+    "test": "fix_history_cases::dynamic_directive_names_2797::dynamic_directive_names_stay_expressions_not_contract_keys",
+    "sourceRevision": "ce3a4f7a9d4718fc8ebbbfbfee00a3cf0e4ff1da"
   },
   "dynamic-member-component-emits-2915": {
     "test": "fix_history_cases::dynamic_member_component_emits_2915::dynamic_member_component_listener_infers_emit_payload",
@@ -157,6 +181,10 @@
     "test": "fix_history_cases::function_prefixed_listener_call_3512::function_prefixed_listener_call_is_not_an_inline_function",
     "sourceRevision": "7676592d51c264565259de273ccea511601d25b9"
   },
+  "function-props-create-app-chain-2014": {
+    "test": "fix_history_cases::function_props_create_app_chain_2014::inline_function_props_are_contextually_typed",
+    "sourceRevision": "cec7d50748ea10603b2dbf3242d832d01b7cfe5e"
+  },
   "generic-callback-listener-props-2921": {
     "test": "fix_history_cases::generic_callback_listener_props_2921::generic_callback_prop_listener_infers_payload",
     "sourceRevision": "e3a12cf323cb3f7213034e5137564ca4daf794b1"
@@ -168,6 +196,10 @@
   "generic-component-global-attrs": {
     "test": "fix_history_cases::generic_component_global_attrs::generic_closed_component_accepts_global_html_attrs",
     "sourceRevision": "d7796777839f961aa97d1a55397ad4e2d0372a31"
+  },
+  "generic-component-listener-payload-1908": {
+    "test": "fix_history_cases::generic_component_listener_payload_1908::generic_component_listener_payload_follows_inferred_props",
+    "sourceRevision": "2105341f2a79f0801a383a49740566ba03fcbeee"
   },
   "generic-component-props-inference-2476": {
     "test": "fix_history_cases::generic_component_props_inference_2476::generic_component_props_infer_from_template",
@@ -229,6 +261,18 @@
     "test": "fix_history_cases::imported_ref_unwrap_2958::imported_refs_preserve_batch_diagnostics",
     "sourceRevision": "57dd8e862ab9963567d6762629170bab3b464c05"
   },
+  "inherited-interface-template-props-2453": {
+    "test": "fix_history_cases::inherited_interface_template_props_2453::local_interface_extends_binds_inherited_template_props",
+    "sourceRevision": "261e88513e2f5411167f7a401a69fcb35b241088"
+  },
+  "inline-callback-free-dollar-event-2271": {
+    "test": "fix_history_cases::inline_callback_free_dollar_event_2271::inline_arrow_listener_keeps_authored_free_dollar_event_free",
+    "sourceRevision": "3b23363761388106de0f79a7526bc389de92214c"
+  },
+  "kebab-slot-host-binding-3009": {
+    "test": "fix_history_cases::kebab_slot_host_binding_3009::kebab_slot_hosts_resolve_pascal_setup_bindings",
+    "sourceRevision": "46a2340e53595c53829320bdcf6a62c8ebdad65f"
+  },
   "leading-semicolon-handler-3091": {
     "test": "fix_history_cases::leading_semicolon_handler_3091::asi_prefixed_handlers_preserve_batch_diagnostics",
     "sourceRevision": "f6ffab4e808a96f2d0dac8827d4e00c7d7df260a"
@@ -270,6 +314,16 @@
   "legacy-vue2-event-arity-2540": {
     "test": "fix_history_cases::legacy_vue2_event_arity_2540::legacy_vue2_unresolved_component_event_payloads_stay_variadic",
     "sourceRevision": "1d9cbd29df81c9953c6f28e95eb829b92e834960",
+    "checkerOptions": {
+      "legacyVue2": true
+    },
+    "projectOptions": {
+      "vuePackage": "absent"
+    }
+  },
+  "legacy-vue2-inline-component-props-helper-2256": {
+    "test": "fix_history_cases::legacy_vue2_inline_component_props_helper_2256::legacy_vue2_preamble_defines_component_props_helpers",
+    "sourceRevision": "8fe0c8dc8e1abd3df101d026f0b6efb876ef59d4",
     "checkerOptions": {
       "legacyVue2": true
     },
@@ -363,6 +417,14 @@
     "test": "fix_history_cases::literal_dynamic_slot_names_5487::literal_template_slot_name_uses_index_signature_payload",
     "sourceRevision": "cd93f9fba56a8c067691a96f06f15eff2285bd10"
   },
+  "loose-required-props-template-regressions-2446": {
+    "test": "fix_history_cases::loose_required_props_template_regressions_2446::loose_required_props_vfor_unions_and_kebab_attrs",
+    "sourceRevision": "a6c98e7d24eb7323d7f3b9d2543e3e9f2f7def5b"
+  },
+  "mixed-import-value-bindings-3012": {
+    "test": "fix_history_cases::mixed_import_value_bindings_3012::mixed_default_named_and_namespace_imports_keep_value_bindings",
+    "sourceRevision": "8bf88a7a1bf5aca18cde096ea847d186370905df"
+  },
   "multiline-native-binding-anchor-3563": {
     "test": "fix_history_cases::multiline_native_binding_anchor_3563::multiline_native_v_bind_anchors_at_the_attribute_name",
     "sourceRevision": "7424ea068468a631bfdca4ba1f408310d7231ca2"
@@ -374,6 +436,10 @@
   "native-element-v-bind-checks-3443": {
     "test": "fix_history_cases::native_element_v_bind_checks_3443::every_static_native_v_bind_is_checked_against_element_props",
     "sourceRevision": "51a13ef48cf2e509b39592c08017561fb5dd10ee"
+  },
+  "nested-interface-fields-not-props-1279": {
+    "test": "fix_history_cases::nested_interface_fields_not_props_1279::nested_interface_fields_are_not_template_props",
+    "sourceRevision": "8de44530eef34bd2658c52c5f53a2963e0980b1d"
   },
   "nested-v-if-narrowing-2959": {
     "test": "fix_history_cases::nested_v_if_narrowing_2959::nested_else_v_for_preserves_batch_diagnostics",
@@ -460,6 +526,20 @@
   "options-api-public-instance-members-4251": {
     "test": "fix_history_cases::options_api_public_instance_members_4251::options_api_public_instance_members_reach_script_and_ref_consumers",
     "sourceRevision": "97898a1a07aa4fd4d3f3ab413e8852ef1b541ec8",
+    "checkerOptions": {
+      "optionsApi": true
+    }
+  },
+  "options-api-this-bridge-1366": {
+    "test": "fix_history_cases::options_api_this_bridge_1366::options_api_this_resolves_across_setup_data_computed_methods",
+    "sourceRevision": "b01ecf39085b5d14a01335749ddc7178d3b894d7",
+    "checkerOptions": {
+      "optionsApi": true
+    }
+  },
+  "options-extends-inherited-names-2134": {
+    "test": "fix_history_cases::options_extends_inherited_names_2134::options_api_extends_base_exposes_inherited_template_names",
+    "sourceRevision": "bd113bbccb2be992217f99d60b620f3715e4f1b5",
     "checkerOptions": {
       "optionsApi": true
     }
@@ -551,6 +631,22 @@
     "test": "fix_history_cases::plain_script_type_body_2038::plain_script_type_bodies_preserve_batch_diagnostics",
     "sourceRevision": "fd87bb1274a781dad70c3599df9fd3365a1eb870"
   },
+  "prop-type-error-attribute-name-anchor-3205": {
+    "test": "fix_history_cases::prop_type_error_attribute_name_anchor_3205::component_prop_type_errors_anchor_at_attribute_name",
+    "sourceRevision": "55227fa84922109af547beb1f6dc7a00d7c2dbba"
+  },
+  "recent-type-canon-regressions-2495": {
+    "test": "fix_history_cases::recent_type_canon_regressions_2495::interface_props_contextmenu_and_generic_specialization",
+    "sourceRevision": "25ca8a2b12bccf4dd321f0e152275233501b3883"
+  },
+  "recent-type-regressions-2651": {
+    "test": "fix_history_cases::recent_type_regressions_2651::recent_generic_ref_interface_slot_and_expose_regressions",
+    "sourceRevision": "984cc2c1c1d0f4e120fc2a968aef04e3c0ee58f0"
+  },
+  "recoverable-template-vfor-guard-props-1566": {
+    "test": "fix_history_cases::recoverable_template_vfor_guard_props_1566::recoverable_template_repair_and_vfor_guarded_component_props",
+    "sourceRevision": "beeb9d20faa6f952a8137b60f531cc37088deccd"
+  },
   "repeated-component-prop-checks-3202": {
     "test": "fix_history_cases::repeated_component_prop_checks_3202::repeated_component_prop_names_keep_unique_checks",
     "sourceRevision": "378683f0c1feee643cd1e01347ff8cc6d31141db"
@@ -562,6 +658,10 @@
   "reserved-enum-member-3092": {
     "test": "fix_history_cases::reserved_enum_member_3092::reserved_enum_members_preserve_batch_diagnostics",
     "sourceRevision": "347d653aba6f5bc24592275a772e0877f367ce05"
+  },
+  "runtime-emits-listener-payload-1359": {
+    "test": "fix_history_cases::runtime_emits_listener_payload_1359::runtime_emits_listener_payload_and_fallthrough_dom_listener",
+    "sourceRevision": "19b878c60242fff5328202728c92fbd23ef76d7d"
   },
   "runtime-mixin-required-props-3582": {
     "test": "fix_history_cases::runtime_mixin_required_props_3582::imported_runtime_and_mixin_props_preserve_requiredness",
@@ -614,9 +714,17 @@
     "test": "fix_history_cases::setup_ambient_global_types_6211::ambient_setup_global_types_preserve_batch_diagnostics",
     "sourceRevision": "a7fcfb4a5a17a4db0cd5fc21326205da7d020e1f"
   },
+  "setup-derived-type-aliases-2037": {
+    "test": "fix_history_cases::setup_derived_type_aliases_2037::setup_local_type_aliases_stay_with_their_consts",
+    "sourceRevision": "e9bfbcc91101021a20a5496ebdcf1740c99e7539"
+  },
   "setup-generic-merged-type-exports-3094": {
     "test": "fix_history_cases::setup_generic_merged_type_exports_3094::setup_generic_and_merged_type_exports_stay_legal",
     "sourceRevision": "5067f25786f316af91c33beb7ef08d6f4419378e"
+  },
+  "setup-local-type-alias-props-1946": {
+    "test": "fix_history_cases::setup_local_type_alias_props_1946::setup_local_type_alias_stays_visible_to_hoisted_props",
+    "sourceRevision": "ce15831f96c2963db2f56740f3edf45bf18665dd"
   },
   "setup-props-shadow-anchor-3934": {
     "test": "fix_history_cases::setup_props_shadow_anchor_3934::setup_props_read_by_template_is_not_unused",
@@ -633,6 +741,14 @@
   "setup-scoped-type-exports-3093": {
     "test": "fix_history_cases::setup_scoped_type_exports_3093::setup_scoped_value_dependent_type_exports_are_public",
     "sourceRevision": "71e38ec49f6931f5341d433bea8709d767daba87"
+  },
+  "sfc-blocks-in-script-strings-2200": {
+    "test": "fix_history_cases::sfc_blocks_in_script_strings_2200::sfc_block_text_inside_script_strings_is_not_hoisted",
+    "sourceRevision": "53c5d6e507b52decb903214322ab56e0312dbec0"
+  },
+  "sfc-import-suppressions-vue-shims-2258": {
+    "test": "fix_history_cases::sfc_import_suppressions_vue_shims_2258::hoisted_imports_keep_suppressions_and_bare_vue_imports_use_shims",
+    "sourceRevision": "da3b5e70aeb728b4f5a063354c6284c7e9970eb7"
   },
   "slot-outlet-payload-contracts-4495": {
     "test": "fix_history_cases::slot_outlet_payload_contracts_4495::slot_outlet_payloads_type_destructured_slot_bindings",
@@ -678,6 +794,10 @@
     "test": "fix_history_cases::template_loop_narrowing_3149::v_for_callbacks_preserve_batch_diagnostics",
     "sourceRevision": "2ecf10de92663303cecb76470bfa5ea42e992764"
   },
+  "template-ref-unwrap-installed-vue-1814": {
+    "test": "fix_history_cases::template_ref_unwrap_installed_vue_1814::template_ref_unwrap_follows_installed_vue_ref_value",
+    "sourceRevision": "5bcfe78a5be8845d60d43a3b63eb0aa5111b3d7f"
+  },
   "template-usage-disabled-template-checks-1968": {
     "test": "fix_history_cases::template_usage_disabled_template_checks_1968::disabled_template_checks_still_mark_template_bindings_used",
     "sourceRevision": "99bc5034f1671bef7de6c83047cd9c264d05562f",
@@ -689,6 +809,10 @@
       }
     }
   },
+  "tsx-sfc-fallthrough-attrs-2086": {
+    "test": "fix_history_cases::tsx_sfc_fallthrough_attrs_2086::tsx_story_accepts_sfc_class_and_style_attrs",
+    "sourceRevision": "0027caad7a79b0d1a6f00b1ba68198b740f875c6"
+  },
   "tsx-sfc-named-exports-2303": {
     "test": "fix_history_cases::tsx_sfc_named_exports_2303::tsx_sfc_named_exports_keep_downstream_contextual_typing",
     "sourceRevision": "27260d211025441b6303090d4fd7acaa65528f15"
@@ -696,6 +820,10 @@
   "type-only-import-value-anchors": {
     "test": "fix_history_cases::type_only_import_value_anchors::type_position_imports_are_not_value_anchored",
     "sourceRevision": "f37a2d6764892f711d77f3cdf1c57d75a067e735"
+  },
+  "undefined-template-ref-offsets-1283": {
+    "test": "fix_history_cases::undefined_template_ref_offsets_1283::undefined_template_reference_anchors_at_its_own_occurrence",
+    "sourceRevision": "938a1b11ad3cab1e103544e7c0ef1e56abd7a3c6"
   },
   "undefined-unknown-listener-2956": {
     "test": "fix_history_cases::undefined_unknown_listener_2956::undefined_unknown_component_listener_is_optional",
@@ -724,6 +852,10 @@
   "value-binding-over-type-only-pascal-4915": {
     "test": "fix_history_cases::value_binding_over_type_only_pascal_4915::value_bindings_win_over_type_only_pascal_component_aliases",
     "sourceRevision": "ad99a95135db04ceff3a0d882fefbe5162fddb05"
+  },
+  "vfor-source-enclosing-vif-narrowing-1511": {
+    "test": "fix_history_cases::vfor_source_enclosing_vif_narrowing_1511::vfor_source_is_narrowed_by_enclosing_vif",
+    "sourceRevision": "edd9fbe7bf4a08d82f1a9229dd0fc6a6780f0c56"
   },
   "vue-alias-public-instance-guard-5672": {
     "test": "fix_history_cases::vue_alias_public_instance_guard_5672::vue_alias_without_public_instance_degrades_template_context",
