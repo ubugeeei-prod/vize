@@ -193,3 +193,12 @@ fn never_fixes_authored_attribute_names_to_camel_case() {
     assert_eq!(fixed, r#"<UserBadge displayName="a" :activeKey="key" />"#);
     assert_eq!(linter.lint_template(&fixed, "test.vue").warning_count, 0);
 }
+
+/// `should_ignore` skips the SVG list for names without an uppercase letter.
+#[test]
+fn every_weird_case_svg_attribute_has_an_uppercase_letter() {
+    for name in super::SVG_ATTRIBUTES_WEIRD_CASE {
+        assert!(name.bytes().any(|byte| byte.is_ascii_uppercase()), "{name}");
+    }
+    assert_eq!(warning_count(r#"<svg><path viewBox="0 0 1 1" /></svg>"#), 0);
+}

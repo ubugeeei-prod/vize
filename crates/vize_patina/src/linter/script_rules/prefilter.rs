@@ -5,10 +5,10 @@
 //! per-rule substring gate ([`script_rule_may_match`]) and the ecosystem-rule
 //! fast path both live here.
 
-use memchr::memmem;
 use vize_atelier_sfc::SfcDescriptor;
 
 mod js_source;
+mod markers;
 mod ref_operand;
 
 use super::registry::{
@@ -37,16 +37,21 @@ use super::registry::{
     RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT,
 };
 use super::{Linter, active_builtin_script_rule_entries};
-use js_source::{imports_from_vue, source_may_define_component_options};
+pub(super) use markers::BlockMarkers;
 use ref_operand::source_may_contain_ref_operand;
 
+#[cfg(test)]
 pub(super) fn script_rule_may_match(rule_name: &str, source: &str) -> bool {
-    let bytes = source.as_bytes();
+    script_rule_may_match_in(rule_name, &BlockMarkers::new(source))
+}
+
+/// Whether `rule_name` can match the block `markers` searches.
+pub(super) fn script_rule_may_match_in(rule_name: &str, markers: &BlockMarkers<'_>) -> bool {
     match rule_name {
         RULE_NO_ASYNC_IN_COMPUTED => {
-            contains(bytes, b"computed")
+            contains(markers, b"computed")
                 && contains_any(
-                    bytes,
+                    markers,
                     &[
                         b"async",
                         b"await",
@@ -65,33 +70,33 @@ pub(super) fn script_rule_may_match(rule_name: &str, source: &str) -> bool {
                 )
         }
         RULE_NO_IMPORT_COMPILER_MACROS => {
-            imports_from_vue(bytes) && contains_any(bytes, COMPILER_MACRO_NEEDLES)
+            markers.imports_from_vue() && contains_any(markers, COMPILER_MACRO_NEEDLES)
         }
         RULE_NO_INTERNAL_IMPORTS => {
-            contains(bytes, b"vue") && contains_any(bytes, INTERNAL_IMPORT_NEEDLES)
+            contains(markers, b"vue") && contains_any(markers, INTERNAL_IMPORT_NEEDLES)
         }
-        RULE_NO_RESERVED_IDENTIFIERS => contains_any(bytes, RESERVED_IDENTIFIER_NEEDLES),
+        RULE_NO_RESERVED_IDENTIFIERS => contains_any(markers, RESERVED_IDENTIFIER_NEEDLES),
         RULE_NO_DUPE_KEYS => {
-            source_may_define_component_options(bytes)
-                || contains_any(bytes, &[b"defineProps", b"defineModel"])
+            markers.may_define_component_options()
+                || contains_any(markers, &[b"defineProps", b"defineModel"])
         }
         RULE_NO_RESERVED_KEYS => {
-            source_may_define_component_options(bytes) || contains(bytes, b"defineProps")
+            markers.may_define_component_options() || contains(markers, b"defineProps")
         }
-        RULE_NO_POTENTIAL_COMPONENT_OPTION_TYPO => source_may_define_component_options(bytes),
+        RULE_NO_POTENTIAL_COMPONENT_OPTION_TYPO => markers.may_define_component_options(),
         RULE_NO_SIDE_EFFECTS_IN_COMPUTED => {
-            (source_may_define_component_options(bytes)
-                && contains(bytes, b"computed")
-                && contains(bytes, b"this"))
-                || ((imports_from_vue(bytes)
-                    || contains(bytes, b"@vue/composition-api")
-                    || (contains(bytes, b"import") && contains(bytes, b"\\")))
-                    && (contains(bytes, b"computed") || contains(bytes, b"\\")))
+            (markers.may_define_component_options()
+                && contains(markers, b"computed")
+                && contains(markers, b"this"))
+                || ((markers.imports_from_vue()
+                    || contains(markers, b"@vue/composition-api")
+                    || (contains(markers, b"import") && contains(markers, b"\\")))
+                    && (contains(markers, b"computed") || contains(markers, b"\\")))
         }
         RULE_NO_ARROW_FUNCTIONS_IN_WATCH => {
-            source_may_define_component_options(bytes)
-                && contains(bytes, b"watch")
-                && contains(bytes, b"=>")
+            markers.may_define_component_options()
+                && contains(markers, b"watch")
+                && contains(markers, b"=>")
         }
         RULE_NO_REQUIRED_PROP_WITH_DEFAULT => {
             // Typed defaults express requiredness in the type and may use an
@@ -99,16 +104,16 @@ pub(super) fn script_rule_may_match(rule_name: &str, source: &str) -> bool {
             // normal sibling script can own that local type while the setup
             // block owns the default, so retain type-declaration blocks for
             // cross-block resolution too.
-            contains(bytes, b"defineProps")
-                || contains(bytes, b"interface")
-                || contains(bytes, b"type ")
-                || (source_may_declare_props(bytes)
-                    && contains(bytes, b"required")
-                    && contains(bytes, b"default"))
+            contains(markers, b"defineProps")
+                || contains(markers, b"interface")
+                || contains(markers, b"type ")
+                || (source_may_declare_props(markers)
+                    && contains(markers, b"required")
+                    && contains(markers, b"default"))
         }
-        RULE_REQUIRE_PROP_TYPE_CONSTRUCTOR => source_may_declare_props(bytes),
+        RULE_REQUIRE_PROP_TYPE_CONSTRUCTOR => source_may_declare_props(markers),
         RULE_NO_RESERVED_PROPS => {
-            source_may_declare_props(bytes) && contains_any(bytes, RESERVED_PROP_NEEDLES)
+            source_may_declare_props(markers) && contains_any(markers, RESERVED_PROP_NEEDLES)
         }
         RULE_RETURN_IN_EMITS_VALIDATOR => {
             // Method shorthand and trivia before an arrow body have no fixed
@@ -116,66 +121,66 @@ pub(super) fn script_rule_may_match(rule_name: &str, source: &str) -> bool {
             // Setup calls can refer to a normal-script const without a brace
             // in this block. Escaped identifiers are decoded by the AST; the
             // conservative escape candidate never proves macro ownership.
-            contains(bytes, b"defineEmits")
-                || contains(bytes, b"\\u")
-                || (source_may_declare_emits(bytes) && contains(bytes, b"{"))
+            contains(markers, b"defineEmits")
+                || contains(markers, b"\\u")
+                || (source_may_declare_emits(markers) && contains(markers, b"{"))
         }
         RULE_REQUIRE_VALID_DEFAULT_PROP => {
             // `withDefaults` and `defineModel<T>` carry a default without the
             // words `type` and `default` both appearing in the script.
-            contains(bytes, b"defineModel")
-                || contains(bytes, b"withDefaults")
-                || contains(bytes, b"defineProps")
-                || (source_may_declare_props(bytes) && contains(bytes, b"default"))
+            contains(markers, b"defineModel")
+                || contains(markers, b"withDefaults")
+                || contains(markers, b"defineProps")
+                || (source_may_declare_props(markers) && contains(markers, b"default"))
         }
         // A sibling `export default { props }` decides whether an empty macro
         // declares nothing, so that block is parsed too.
-        RULE_VALID_DEFINE_PROPS => contains(bytes, b"defineProps") || contains(bytes, b"props"),
-        RULE_VALID_DEFINE_EMITS => contains(bytes, b"defineEmits") || contains(bytes, b"emits"),
+        RULE_VALID_DEFINE_PROPS => contains(markers, b"defineProps") || contains(markers, b"props"),
+        RULE_VALID_DEFINE_EMITS => contains(markers, b"defineEmits") || contains(markers, b"emits"),
         RULE_PREFER_DEFINE_EMITS_BINDING => {
-            contains(bytes, b"defineEmits") || contains(bytes, b"\\u")
+            contains(markers, b"defineEmits") || contains(markers, b"\\u")
         }
-        RULE_VALID_DEFINE_OPTIONS => contains(bytes, b"defineOptions"),
-        RULE_VALID_NEXT_TICK => contains(bytes, b"nextTick") || contains(bytes, b"$nextTick"),
+        RULE_VALID_DEFINE_OPTIONS => contains(markers, b"defineOptions"),
+        RULE_VALID_NEXT_TICK => contains(markers, b"nextTick") || contains(markers, b"$nextTick"),
         RULE_NO_LIFECYCLE_AFTER_AWAIT | RULE_NO_WATCH_AFTER_AWAIT => {
-            contains(bytes, b"await") && contains(bytes, b"setup")
+            contains(markers, b"await") && contains(markers, b"setup")
         }
-        RULE_NO_EXPOSE_AFTER_AWAIT => contains(bytes, b"await") && contains(bytes, b"xpose"),
-        RULE_NO_REF_AS_OPERAND => source_may_contain_ref_operand(source),
-        RULE_RETURN_IN_COMPUTED_PROPERTY => contains(bytes, b"computed") && contains(bytes, b"{"),
+        RULE_NO_EXPOSE_AFTER_AWAIT => contains(markers, b"await") && contains(markers, b"xpose"),
+        RULE_NO_REF_AS_OPERAND => source_may_contain_ref_operand(markers.source()),
+        RULE_RETURN_IN_COMPUTED_PROPERTY => {
+            contains(markers, b"computed") && contains(markers, b"{")
+        }
         RULE_NO_USE_COMPUTED_PROPERTY_LIKE_METHOD => {
-            source_may_define_component_options(bytes) && contains(bytes, b"computed")
+            markers.may_define_component_options() && contains(markers, b"computed")
         }
         RULE_NO_DUPLICATE_ATTR_INHERITANCE => true,
         RULE_NO_MULTIPLE_SLOT_ARGS => {
-            contains(bytes, b"slots") || contains(bytes, b"$slots") || contains(bytes, b"useSlots")
+            contains(markers, b"slots")
+                || contains(markers, b"$slots")
+                || contains(markers, b"useSlots")
         }
         RULE_NO_UNSTABLE_NESTED_COMPONENTS => {
-            source_may_define_component_options(bytes)
-                && (contains(bytes, b"components") || contains(bytes, b"defineComponent"))
+            markers.may_define_component_options()
+                && (contains(markers, b"components") || contains(markers, b"defineComponent"))
         }
-        RULE_PINIA_PREFER_STORE_TO_REFS => memmem::find(bytes, b"Store").is_some(),
+        RULE_PINIA_PREFER_STORE_TO_REFS => contains(markers, b"Store"),
         RULE_VUE_ROUTER_PREFER_NAMED_PUSH => {
-            (memmem::find(bytes, b".push").is_some() || memmem::find(bytes, b".replace").is_some())
-                && (memmem::find(bytes, b"'/").is_some() || memmem::find(bytes, b"\"/").is_some())
-                && (memmem::find(bytes, b"router").is_some()
-                    || memmem::find(bytes, b"Router").is_some())
+            (contains(markers, b".push") || contains(markers, b".replace"))
+                && (contains(markers, b"'/") || contains(markers, b"\"/"))
+                && (contains(markers, b"router") || contains(markers, b"Router"))
         }
         RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT => {
-            memmem::find(bytes, b"toMatchSnapshot").is_some()
-                && memmem::find(bytes, b".html").is_some()
+            contains(markers, b"toMatchSnapshot") && contains(markers, b".html")
         }
-        RULE_NUXT_NO_PAGE_META_RUNTIME_VALUES => memmem::find(bytes, b"definePageMeta").is_some(),
-        RULE_NUXT_NO_CONFIG_TEST_KEY | RULE_NUXT_CONFIG_KEYS_ORDER => {
-            memmem::find(bytes, b"export").is_some()
-        }
-        RULE_PREFER_COMPUTED => memmem::find(bytes, b"watch").is_some(),
-        RULE_PREFER_IMPORT_FROM_VUE => memmem::find(bytes, b"@vue/").is_some(),
-        RULE_NUXT_PREFER_IMPORT_META => memmem::find(bytes, b"process").is_some(),
+        RULE_NUXT_NO_PAGE_META_RUNTIME_VALUES => contains(markers, b"definePageMeta"),
+        RULE_NUXT_NO_CONFIG_TEST_KEY | RULE_NUXT_CONFIG_KEYS_ORDER => contains(markers, b"export"),
+        RULE_PREFER_COMPUTED => contains(markers, b"watch"),
+        RULE_PREFER_IMPORT_FROM_VUE => contains(markers, b"@vue/"),
+        RULE_NUXT_PREFER_IMPORT_META => contains(markers, b"process"),
         RULE_NO_RESTRICTED_GLOBALS => {
-            memmem::find(bytes, b"process").is_some()
-                || memmem::find(bytes, b"localStorage").is_some()
-                || memmem::find(bytes, b"sessionStorage").is_some()
+            contains(markers, b"process")
+                || contains(markers, b"localStorage")
+                || contains(markers, b"sessionStorage")
         }
         RULE_NO_RESTRICTED_MEMBERS => false,
         _ => true,
@@ -220,22 +225,22 @@ const RESERVED_IDENTIFIER_NEEDLES: &[&[u8]] = &[
     b"_openBlock",
 ];
 const RESERVED_PROP_NEEDLES: &[&[u8]] = &[b"key", b"ref", b"ref_for", b"ref_key", b"is", b"$"];
-fn contains(haystack: &[u8], needle: &[u8]) -> bool {
-    memmem::find(haystack, needle).is_some()
+fn contains(markers: &BlockMarkers<'_>, needle: &'static [u8]) -> bool {
+    markers.contains(needle)
 }
 
-fn contains_any(haystack: &[u8], needles: &[&[u8]]) -> bool {
-    needles.iter().any(|needle| contains(haystack, needle))
+fn contains_any(markers: &BlockMarkers<'_>, needles: &[&'static [u8]]) -> bool {
+    needles.iter().any(|needle| markers.contains(needle))
 }
 
-fn source_may_declare_props(bytes: &[u8]) -> bool {
-    contains(bytes, b"defineProps")
-        || (source_may_define_component_options(bytes) && contains(bytes, b"props"))
+fn source_may_declare_props(markers: &BlockMarkers<'_>) -> bool {
+    contains(markers, b"defineProps")
+        || (markers.may_define_component_options() && contains(markers, b"props"))
 }
 
-fn source_may_declare_emits(bytes: &[u8]) -> bool {
-    contains(bytes, b"defineEmits")
-        || (source_may_define_component_options(bytes) && contains(bytes, b"emits"))
+fn source_may_declare_emits(markers: &BlockMarkers<'_>) -> bool {
+    contains(markers, b"defineEmits")
+        || (markers.may_define_component_options() && contains(markers, b"emits"))
 }
 
 /// Whether a built-in script rule applies to the current file.
@@ -279,7 +284,11 @@ pub(super) fn is_jsx_filename(filename: &str) -> bool {
 /// an SFC or JSX module (as in eslint-plugin-vue) or one that calls
 /// `defineComponent`. A `$on`, `data: {}` or `props` object in any other module
 /// is not a Vue component.
-pub(super) fn script_rule_applies_to_module(rule_name: &str, source: &str, filename: &str) -> bool {
+pub(super) fn script_rule_applies_to_module(
+    rule_name: &str,
+    markers: &BlockMarkers<'_>,
+    filename: &str,
+) -> bool {
     !matches!(
         rule_name,
         RULE_NO_COMPUTED_PROPERTIES_IN_DATA
@@ -298,7 +307,7 @@ pub(super) fn script_rule_applies_to_module(rule_name: &str, source: &str, filen
     ) || [".vue", ".jsx", ".tsx"]
         .iter()
         .any(|extension| filename.ends_with(extension))
-        || contains(source.as_bytes(), b"defineComponent")
+        || markers.contains(b"defineComponent")
 }
 
 fn is_nuxt_config_filename(filename: &str) -> bool {
@@ -359,13 +368,14 @@ pub(super) fn has_only_active_ecosystem_script_rules(linter: &Linter) -> bool {
 }
 
 fn source_may_match_ecosystem_rule(source: &str) -> bool {
+    let markers = BlockMarkers::new(source);
     [
         RULE_PINIA_PREFER_STORE_TO_REFS,
         RULE_VUE_ROUTER_PREFER_NAMED_PUSH,
         RULE_VUE_TEST_UTILS_NO_HTML_SNAPSHOT,
     ]
     .into_iter()
-    .any(|rule_name| script_rule_may_match(rule_name, source))
+    .any(|rule_name| script_rule_may_match_in(rule_name, &markers))
 }
 
 #[cfg(test)]

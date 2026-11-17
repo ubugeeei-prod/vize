@@ -153,9 +153,13 @@ impl AttributeHyphenation {
     }
 
     fn should_ignore(&self, name: &str) -> bool {
-        if SVG_ATTRIBUTES_WEIRD_CASE
-            .iter()
-            .any(|attr| name.contains(attr))
+        // Every listed SVG attribute has an uppercase ASCII letter, so a name
+        // without one contains none of them. Most authored names are
+        // lowercase, and this skips one substring search per listed name.
+        if name.bytes().any(|byte| byte.is_ascii_uppercase())
+            && SVG_ATTRIBUTES_WEIRD_CASE
+                .iter()
+                .any(|attr| name.contains(attr))
         {
             return true;
         }

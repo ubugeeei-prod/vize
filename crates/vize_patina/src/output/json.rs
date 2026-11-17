@@ -51,7 +51,7 @@ pub struct JsonMessage {
 
 /// Format results as JSON
 pub(super) fn format_json(results: &[LintResult], sources: &[(String, String)]) -> String {
-    let source_indices = source_indices(sources);
+    let source_indices = source_indices(results, sources);
     let json_results: Vec<JsonFileResult> = results
         .iter()
         .map(|r| JsonFileResult {
