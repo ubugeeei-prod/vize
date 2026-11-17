@@ -372,13 +372,19 @@ mod tests {
                 PathBuf::from("owned/preferences"),
             ),
         ]);
-        let claims = claims_with_source_coordinates(&aliases);
-        assert!(claims.contains(Path::new(
-            "consumer/popup/node_modules/preferences/package.json"
-        )));
-        assert!(claims.contains(Path::new(
-            "owned/popup/node_modules/preferences/package.json"
-        )));
+        let mut claims = claims_with_source_coordinates(&aliases)
+            .into_iter()
+            .collect::<Vec<_>>();
+        claims.sort();
+        assert_eq!(
+            claims,
+            [
+                "consumer/popup/node_modules/preferences/package.json",
+                "consumer/popup/package.json",
+                "owned/popup/node_modules/preferences/package.json",
+            ]
+            .map(PathBuf::from)
+        );
     }
 
     #[test]

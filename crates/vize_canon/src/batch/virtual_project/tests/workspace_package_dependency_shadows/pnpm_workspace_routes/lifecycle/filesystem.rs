@@ -79,10 +79,11 @@ fn editor_union_rejects_raw_parent_link_before_rewriting_real_pnpm_install() {
             false,
         )
         .unwrap_err();
-    assert!(
-        error
-            .to_string()
-            .starts_with("IO error: Workspace package alias overlaps another package link:")
+    let message = error.to_string();
+    // The detail after the head names the platform-specific link paths.
+    assert_eq!(
+        message.split_once(" link: ").map(|(head, _)| head),
+        Some("IO error: Workspace package alias overlaps another package")
     );
     assert_eq!(
         (
