@@ -41,13 +41,14 @@
 //! this.$nextTick(() => focusInput())
 //! ```
 
-use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta};
+use super::{ScriptLintResult, ScriptRule, ScriptRuleMeta, SfcScriptContext};
 use crate::diagnostic::{LintDiagnostic, Severity};
+use crate::linter::sfc_scripts::BlockSemantic;
 use oxc_ast::{
     AstKind,
     ast::{Expression, ImportDeclarationSpecifier, Program, Statement},
 };
-use oxc_semantic::{AstNodes, Semantic, SemanticBuilder};
+use oxc_semantic::{AstNodes, Semantic, SemanticBuilderReturn};
 use oxc_span::{GetSpan, Span};
 use oxc_syntax::{node::NodeId, symbol::SymbolId};
 
@@ -86,66 +87,85 @@ impl ScriptRule for ValidNextTick {
         offset: usize,
         result: &mut ScriptLintResult,
     ) {
-        if !source.contains("nextTick") {
-            return;
+        check(program, None, source, offset, result);
+    }
+
+    fn check_program_with_sfc<'a>(
+        &self,
+        program: &'a Program<'a>,
+        source: &str,
+        offset: usize,
+        sfc: SfcScriptContext<'_>,
+        result: &mut ScriptLintResult,
+    ) {
+        check(program, sfc.semantic_of(program), source, offset, result);
+    }
+}
+
+fn check<'a>(
+    program: &'a Program<'a>,
+    shared: Option<&'a SemanticBuilderReturn<'a>>,
+    source: &str,
+    offset: usize,
+    result: &mut ScriptLintResult,
+) {
+    if !source.contains("nextTick") {
+        return;
+    }
+    let built = BlockSemantic::of(shared, program, true);
+    let semantic = &built.semantic;
+    let (named, namespaces) = vue_imports(program);
+    let mut reports = Vec::new();
+    for &symbol in &named {
+        for reference in semantic.symbol_references(symbol) {
+            let node = reference.node_id();
+            if reference.is_read()
+                && !matches!(
+                    semantic.nodes().parent_kind(node),
+                    AstKind::ExportSpecifier(_) | AstKind::TSTypeQuery(_)
+                )
+            {
+                let span = semantic.nodes().kind(node).span();
+                check_use(semantic.nodes(), node, span, &mut reports);
+            }
         }
-        let semantic = SemanticBuilder::new()
-            .with_build_nodes(true)
-            .build(program)
-            .semantic;
-        let (named, namespaces) = vue_imports(program);
-        let mut reports = Vec::new();
-        for &symbol in &named {
-            for reference in semantic.symbol_references(symbol) {
-                let node = reference.node_id();
-                if reference.is_read()
-                    && !matches!(
-                        semantic.nodes().parent_kind(node),
-                        AstKind::ExportSpecifier(_) | AstKind::TSTypeQuery(_)
-                    )
-                {
-                    let span = semantic.nodes().kind(node).span();
-                    check_use(semantic.nodes(), node, span, &mut reports);
+    }
+    for node in semantic.nodes().iter() {
+        let AstKind::StaticMemberExpression(member) = node.kind() else {
+            continue;
+        };
+        let next_tick = match member.property.name.as_str() {
+            "$nextTick" => matches!(
+                member.object.without_parentheses(),
+                Expression::ThisExpression(_)
+            ),
+            "nextTick" => match member.object.without_parentheses() {
+                Expression::Identifier(object) => {
+                    object.name == "Vue"
+                        || resolves_to(semantic, object.reference_id.get(), &namespaces)
                 }
-            }
-        }
-        for node in semantic.nodes().iter() {
-            let AstKind::StaticMemberExpression(member) = node.kind() else {
-                continue;
-            };
-            let next_tick = match member.property.name.as_str() {
-                "$nextTick" => matches!(
-                    member.object.without_parentheses(),
-                    Expression::ThisExpression(_)
-                ),
-                "nextTick" => match member.object.without_parentheses() {
-                    Expression::Identifier(object) => {
-                        object.name == "Vue"
-                            || resolves_to(&semantic, object.reference_id.get(), &namespaces)
-                    }
-                    _ => false,
-                },
                 _ => false,
-            };
-            if next_tick {
-                check_use(
-                    semantic.nodes(),
-                    node.id(),
-                    member.property.span,
-                    &mut reports,
-                );
-            }
-        }
-        reports.sort_by_key(|(span, _)| span.start);
-        for (span, message) in reports {
-            let start = offset as u32 + span.start;
-            let end = offset as u32 + span.end;
-            result.add_diagnostic(
-                LintDiagnostic::warn(META.name, message, start, end)
-                    .with_label("invalid nextTick usage", start, end)
-                    .with_help(HELP),
+            },
+            _ => false,
+        };
+        if next_tick {
+            check_use(
+                semantic.nodes(),
+                node.id(),
+                member.property.span,
+                &mut reports,
             );
         }
+    }
+    reports.sort_by_key(|(span, _)| span.start);
+    for (span, message) in reports {
+        let start = offset as u32 + span.start;
+        let end = offset as u32 + span.end;
+        result.add_diagnostic(
+            LintDiagnostic::warn(META.name, message, start, end)
+                .with_label("invalid nextTick usage", start, end)
+                .with_help(HELP),
+        );
     }
 }
 

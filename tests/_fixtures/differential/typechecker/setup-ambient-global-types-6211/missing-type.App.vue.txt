@@ -1,0 +1,4 @@
+<script setup lang="ts">
+declare const value: Missing;
+</script>
+<template><div /></template>

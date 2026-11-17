@@ -24,6 +24,7 @@ mod errors;
 mod paths;
 mod probe;
 mod session;
+mod utf16;
 mod virtual_documents;
 mod vue_dependencies;
 

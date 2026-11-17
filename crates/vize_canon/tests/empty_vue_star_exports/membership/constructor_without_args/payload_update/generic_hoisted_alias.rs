@@ -39,6 +39,7 @@ fn restore(current: &str, file: &Value) -> String {
 /// The exact pre-forwarding bytes of a recorded producer. Older images pass
 /// through; the layers below authenticate them.
 pub(super) fn source_before(path: &str, current: String) -> String {
+    let current = super::library_props_fallthrough::source_before(path, current);
     let record = record();
     match record["files"]
         .as_array()

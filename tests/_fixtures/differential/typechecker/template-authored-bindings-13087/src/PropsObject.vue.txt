@@ -1,0 +1,9 @@
+<script setup lang="ts">
+defineProps<{ seed: number }>();
+
+const props = { title: "Name" };
+</script>
+
+<template>
+  <p>{{ props.title }} {{ seed }}</p>
+</template>

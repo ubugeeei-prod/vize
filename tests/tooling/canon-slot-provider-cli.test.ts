@@ -79,6 +79,10 @@ import {
   applyUnionHostSlotPayloadIn,
   beforeUnionHostSlotPayloadIn,
 } from "../../tools/support/compat/content-mapper/union-host-slot-payload-transition.ts";
+import {
+  applyLibraryPropsFallthroughIn,
+  beforeLibraryPropsFallthroughIn,
+} from "../../tools/support/compat/content-mapper/library-props-fallthrough-transition.ts";
 
 test("quiet CLI debug output retains exact helper/file bytes and refuses unrelated stderr", () => {
   const record = JSON.parse(
@@ -218,9 +222,12 @@ test("quiet CLI debug output retains exact helper/file bytes and refuses unrelat
   assert.equal(beforeSharedKebabCaseIn(kebabSourcePreamble), usageGatesSourcePreamble);
   const targetsSourcePreamble = applySharedTemplateRefTargetsIn(kebabSourcePreamble);
   assert.equal(beforeSharedTemplateRefTargetsIn(targetsSourcePreamble), kebabSourcePreamble);
-  const currentSourcePreamble = applyUnionHostSlotPayloadIn(targetsSourcePreamble);
-  assert.equal(beforeUnionHostSlotPayloadIn(currentSourcePreamble), targetsSourcePreamble);
-  assert.throws(() => applyUnionHostSlotPayloadIn(currentSourcePreamble), /predecessor/u);
+  const unionSourcePreamble = applyUnionHostSlotPayloadIn(targetsSourcePreamble);
+  assert.equal(beforeUnionHostSlotPayloadIn(unionSourcePreamble), targetsSourcePreamble);
+  assert.throws(() => applyUnionHostSlotPayloadIn(unionSourcePreamble), /predecessor/u);
+  const currentSourcePreamble = applyLibraryPropsFallthroughIn(unionSourcePreamble);
+  assert.equal(beforeLibraryPropsFallthroughIn(currentSourcePreamble), unionSourcePreamble);
+  assert.throws(() => applyLibraryPropsFallthroughIn(currentSourcePreamble), /predecessor/u);
   const canonPredecessor = [...canonLeftoverPreamblePaths]
     .reverse()
     .reduce((current, file) => beforeCanonLeftoversIn(file, current), canonSourcePreamble);

@@ -66,6 +66,8 @@ pub(super) struct TemplateRefUnwraps {
     /// reusing their instantiations across files.
     shared_unwrap: bool,
     props_shadow_anchor: Option<Range<usize>>,
+    /// The script binds `props` to something other than the props object.
+    authored_props_binding: bool,
 }
 
 #[expect(clippy::too_many_arguments, reason = "independent emitter inputs")]
@@ -297,6 +299,9 @@ impl TemplateRefUnwraps {
             hoist_shared_preamble: generation_options.hoist_shared_preamble,
             shared_unwrap: false,
             props_shadow_anchor: None,
+            authored_props_binding: crate::virtual_ts::script_facts::binding_type(summary, "props")
+                .is_some()
+                && summary.macros.props_object_local() != Some("props"),
         }
     }
 
@@ -304,18 +309,22 @@ impl TemplateRefUnwraps {
         self.props_shadow_anchor.as_ref()
     }
 
-    /// The mapper's resolved props object normally owns `props` in the
-    /// template closure. An authored maybe-ref with that name already emits a
-    /// template-local shadow, so the generated object must move aside while
-    /// template expressions keep resolving to the authored binding.
+    /// The resolved props object owns `props` in the template closure only
+    /// when no other binding claims the name: it then re-types the authored
+    /// `const props = defineProps()` itself. Any other script binding named
+    /// `props` (a `setup-const` helper, a destructured prop or rest object, a
+    /// maybe-ref, an import) is what Vue's `compileScript` binding metadata
+    /// resolves the template name to (#10196, #13087), so the generated object
+    /// moves aside and template expressions keep the authored binding.
     pub(super) fn props_object_binding(&self) -> &'static str {
-        let shadows_props = self
-            .setup_bindings
-            .iter()
-            .chain(&self.options_api_setup_bindings)
-            .chain(&self.auto_import_bindings)
-            .chain(&self.deferred_bindings)
-            .any(|name| name.as_str() == "props");
+        let shadows_props = self.authored_props_binding
+            || self
+                .setup_bindings
+                .iter()
+                .chain(&self.options_api_setup_bindings)
+                .chain(&self.auto_import_bindings)
+                .chain(&self.deferred_bindings)
+                .any(|name| name.as_str() == "props");
         if shadows_props {
             "__vize_props"
         } else {

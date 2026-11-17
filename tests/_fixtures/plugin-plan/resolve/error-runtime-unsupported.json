@@ -1,0 +1,47 @@
+{
+  "entries": [
+    {
+      "manifest": {
+        "after": [],
+        "apiVersion": 2,
+        "backend": "js",
+        "before": [],
+        "cacheInputs": [],
+        "capabilities": [
+          {
+            "id": "lint.rule",
+            "required": true,
+            "schemaVersion": 1,
+            "data": {
+              "id": "a",
+              "messages": {
+                "found": "Found {name}."
+              },
+              "visit": [
+                "ui.element"
+              ]
+            }
+          }
+        ],
+        "fingerprint": "5555555555555555555555555555555555555555555555555555555555555555",
+        "name": "alpha",
+        "options": {},
+        "permissions": [],
+        "stability": "experimental",
+        "supports": {
+          "runtimes": [
+            "bun"
+          ]
+        },
+        "version": "1.0.0"
+      }
+    }
+  ],
+  "runtime": "node",
+  "expect": {
+    "error": {
+      "code": "host-unsupported",
+      "message": "[plugin/host-unsupported] alpha: does not support the node runtime"
+    }
+  }
+}

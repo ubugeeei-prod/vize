@@ -98,6 +98,8 @@ export function verifyStandalonePluginSdk(
       "stages.d.ts",
       "visitor.js",
       "visitor.d.ts",
+      "v2.js",
+      "v2.d.ts",
       "identity.js",
     ]) {
       assert.ok(fs.existsSync(path.join(installed, entry)), `tarball lacks ${entry}`);

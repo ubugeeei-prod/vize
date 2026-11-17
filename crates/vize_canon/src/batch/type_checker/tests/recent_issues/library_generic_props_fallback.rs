@@ -1,6 +1,8 @@
 //! #13021: old vue-tsc library declarations lack `__VLS_PROPS_FALLBACK`.
 
 use super::super::{create_project_case, resolve_test_tsgo_binary, snapshot_project_diagnostics};
+
+mod reported;
 use std::path::Path;
 use vize_carton::String;
 
@@ -63,11 +65,12 @@ const items = [{ id: "one", name: "Alpha", downloads: 1 }];
 "#;
 
 const MISSING_REQUIRED: &str = r#"<script setup lang="ts">
-import { NoFallback } from "./libs";
+import { NoFallback, WithFallback } from "./libs";
 </script>
 
 <template>
   <NoFallback :buffer="200" />
+  <WithFallback :buffer="200" />
 </template>
 "#;
 
@@ -122,8 +125,23 @@ fn check(name: &str, vue_options: &str) -> Option<Diagnostics> {
     diagnostics
 }
 
+/// The missing required `items`, once the undeclared `buffer` no longer hides
+/// it. Both declaration shapes report the same row: the old one now receives
+/// the fallthrough tail the newer emitter writes into the declaration itself.
+fn expected_missing_required(line: u32) -> (String, Option<u32>, String) {
+    (
+        "src/MissingRequired.vue".into(),
+        Some(2345),
+        vize_carton::cstr!(
+            "{line}:4:error Argument of type '{{ buffer: number; }}' is not assignable to parameter of type '{{ items: unknown[]; itemSize?: ItemSizeValue<unknown> | undefined; }} & VNodeProps & AllowedComponentProps & ComponentCustomProps & Record<...>'.\nProperty 'items' is missing in type '{{ buffer: number; }}' but required in type '{{ items: unknown[]; itemSize?: ItemSizeValue<unknown> | undefined; }}'."
+        ),
+    )
+}
+
 fn expected_wrong_value() -> Diagnostics {
     vec![
+        expected_missing_required(6),
+        expected_missing_required(7),
         (
             "src/Wrong.vue".into(),
             Some(2322),
@@ -139,9 +157,9 @@ fn expected_wrong_value() -> Diagnostics {
 
 fn assert_loose_packet(actual: Option<Diagnostics>) {
     let actual = actual.expect("the native checker should be available");
-    // Keep the whole packet exact. In particular, the old generic declaration
-    // shape does not report its missing `items` prop; changing that unrelated
-    // behavior is outside this compatibility fix.
+    // Keep the whole packet exact: no TS2353 for an undeclared attribute on
+    // either declaration shape, while declared values, inferred generic props
+    // and missing required props are still reported.
     assert_eq!(
         actual,
         expected_wrong_value(),

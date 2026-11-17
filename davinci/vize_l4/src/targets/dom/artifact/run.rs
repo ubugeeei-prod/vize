@@ -250,11 +250,13 @@ pub(super) fn emit_dom_observed<'f, P>(
     #[cfg(any(test, feature = "legacy-differential"))]
     let patch_fact_entries = cx.patch_facts.materialized_len();
     let (preamble, imports_len) = cx.buf.preamble_with_imports_len(options);
+    let helpers = cx.buf.helpers();
     let code = cx.buf.code;
     Ok(DomEmitObservation {
         emit: DomEmit {
             preamble,
             code,
+            helpers,
             sections: DomEmitSections {
                 imports_len,
                 assets_start,

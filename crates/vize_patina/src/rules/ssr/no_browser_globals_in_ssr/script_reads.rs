@@ -61,7 +61,9 @@ fn analyze(
     source_type: SourceType,
     layout: Option<&script_layout::Source>,
 ) -> Vec<(String, Span)> {
-    if !script_layout::candidate(source) {
+    // A layout holds its blocks verbatim between blank padding, and it exists
+    // only when one of them is a candidate, so only bare sources are scanned.
+    if layout.is_none() && !script_layout::candidate(source) {
         return Vec::new();
     }
     let allocator = Allocator::default();

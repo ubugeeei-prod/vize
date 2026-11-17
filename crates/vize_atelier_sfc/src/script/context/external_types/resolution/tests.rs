@@ -231,3 +231,64 @@ fn subpath_excluded_by_a_null_export_is_not_resolved() {
 
     let _ = std::fs::remove_dir_all(package);
 }
+
+/// Writes `files` into a fresh package directory and resolves `subpath`.
+fn resolve_in_package(files: &[(&str, &str)], subpath: &str) -> Option<std::path::PathBuf> {
+    let package = tempfile::tempdir().unwrap();
+    for (path, contents) in files {
+        let path = package.path().join(path);
+        std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+        std::fs::write(path, contents).unwrap();
+    }
+    let root = package.path().canonicalize().unwrap();
+    resolve_package_types(package.path(), subpath)
+        .map(|path| path.strip_prefix(&root).unwrap().to_path_buf())
+}
+
+#[test]
+fn source_first_exports_resolve_without_declarations() {
+    const SOURCE: &str = "export const props = {}";
+    // A root `index.ts` beside the export does not answer for the package.
+    for manifest in [
+        r#"{"exports":"./src/entry.ts"}"#,
+        r#"{"exports":{".":"./src/entry.ts"}}"#,
+        r#"{"exports":{".":{"import":"./src/entry.ts","require":"./cjs/entry.cjs"}}}"#,
+        r#"{"exports":{"require":"./cjs/entry.cjs","default":"./src/entry.ts"}}"#,
+        r#"{"exports":{".":[{"import":"./missing.ts"},"./src/entry.ts"]}}"#,
+    ] {
+        let resolved = resolve_in_package(
+            &[
+                ("package.json", manifest),
+                ("src/entry.ts", SOURCE),
+                ("index.ts", SOURCE),
+            ],
+            "",
+        );
+        assert_eq!(
+            resolved.as_deref(),
+            Some(std::path::Path::new("src/entry.ts")),
+            "{manifest}"
+        );
+    }
+
+    let manifest =
+        r#"{"exports":{"./props":"./src/props.ts","./parts/*":{"import":"./src/parts/*.ts"}}}"#;
+    for (subpath, expected) in [
+        ("props", "src/props.ts"),
+        ("parts/button", "src/parts/button.ts"),
+    ] {
+        let resolved = resolve_in_package(
+            &[
+                ("package.json", manifest),
+                ("src/props.ts", SOURCE),
+                ("src/parts/button.ts", SOURCE),
+            ],
+            subpath,
+        );
+        assert_eq!(
+            resolved.as_deref(),
+            Some(std::path::Path::new(expected)),
+            "{subpath}"
+        );
+    }
+}

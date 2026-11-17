@@ -1,0 +1,13 @@
+<script setup lang="ts">
+const truthy = <T extends boolean | undefined>(flag: T) => (flag ? "flag: " + flag : "");
+const nullish = <U,>(value: U) => (value ?? "none") + "!";
+const byTypeof = <U,>(value: U) => (typeof value === "boolean" ? "b: " + value : "");
+const byInstance = <U,>(value: U) => (value instanceof Date ? "d: " + value : "");
+const spelled = <T extends boolean | undefined>(flag: NonNullable<T>) => "flag: " + flag;
+const bare = <T extends boolean | undefined>(flag: T) => "flag: " + flag;
+const text = <U,>(value: U) => (typeof value === "string" ? value + "!" : "");
+</script>
+
+<template>
+  <p>{{ [truthy, nullish, byTypeof, byInstance, spelled, bare, text].length }}</p>
+</template>

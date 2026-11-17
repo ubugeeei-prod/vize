@@ -21,11 +21,11 @@ fn complete_product_sources_and_native_assembly_keep_their_exact_postimages() {
     );
     assert_eq!(
         digest(super::super::VITE_RUNTIME.as_bytes()),
-        "c86162de68ef38023850119348cdc7e6c4f68fa4eb1ea9594a2b69277c296cfb"
+        "0bb73d5f28813a5045f23cf739256ea408093218202596220b7f43639d9d7b0b"
     );
     assert_eq!(
         digest(vite_runtime().unwrap().as_bytes()),
-        "74062f0f915e15bb903f1e2792f7141eb09c269b98c060268ed1dc665887a4c6"
+        "908f23af458e06abb00d47565f294770fd8fa40d433c8bd44c5514ed0ee946a7"
     );
 }
 
@@ -67,16 +67,81 @@ process.stdout.write(JSON.stringify(rows));
 }
 
 #[test]
-fn missing_or_duplicate_owned_imports_are_refused_before_node_execution() {
-    let source = super::super::VITE_RUNTIME;
-    let missing = source.replacen(super::VALIDATION_IMPORT, "", 1);
+fn owned_modules_share_one_scope_and_plugin_modules_load_lazily() {
+    let config = vite_runtime().unwrap();
+    let tools = super::vite_tools_runtime().unwrap();
+    let lazy = "import(\"data:text/javascript;charset=utf-8,\" + encodeURIComponent(";
+    for runtime in [&config, &tools] {
+        assert_eq!(runtime.matches(" from \"./").count(), 0);
+        assert_eq!(runtime.matches("import(\"./").count(), 0);
+    }
+    assert_eq!(config.matches(lazy).count(), 1);
+    assert_eq!(config.matches(super::TOOLS_UNAVAILABLE).count(), 1);
+    assert_eq!(tools.matches(lazy).count(), 2);
     assert_eq!(
-        super::assemble(&missing),
-        Err("missing owned validator import in the product runtime")
+        super::assemble(
+            "import { x } from \"./unowned.js\";\nexport const y = x;\n",
+            false
+        ),
+        Err("unowned relative import in the product runtime")
     );
-    let duplicate = [source, super::VALIDATION_IMPORT].concat();
     assert_eq!(
-        super::assemble(&duplicate),
-        Err("duplicate owned validator import in the product runtime")
+        super::assemble(
+            "import { x } from \"./vite-runtime-validation.js\"\n",
+            false
+        ),
+        Err("unterminated import in the product runtime")
     );
+    let builtin = "import { resolve } from \"node:path\";\nexport { resolve };\n";
+    assert_eq!(
+        super::assemble(builtin, false).unwrap(),
+        crate::cstr!("{}{builtin}", super::assemble("", false).unwrap())
+    );
+}
+
+fn run(script: &str) -> serde_json::Value {
+    let project = tempfile::tempdir().unwrap();
+    let runtime = super::super::runtime_file::NodeRuntimeFile::new(script).unwrap();
+    let output = runtime
+        .command(&project.path().join("vite.config.mjs"))
+        .output()
+        .unwrap();
+    assert_eq!(
+        output.status.code(),
+        Some(0),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    serde_json::from_slice(&output.stdout).unwrap()
+}
+
+#[test]
+fn lazy_plugin_modules_resolve_and_inspect_inside_the_private_modules() {
+    let mut config = vite_runtime().unwrap();
+    config.push_str(
+        r#"
+const rows = [];
+try { await projectViteConfigSource({ vue: { plugins: [{ name: "x", version: "1" }] } }); }
+catch (error) { rows.push(error.message); }
+rows.push(JSON.stringify(await projectViteConfigSource({ vue: { plugins: [false, null] } })));
+try { await inspectViteConfigPlugins({ vue: {} }); } catch (error) { rows.push(error.message); }
+process.stdout.write(JSON.stringify(rows));
+"#,
+    );
+    assert_eq!(
+        run(&config),
+        serde_json::json!([
+            "[plugin/entry-invalid] vue.plugins[0]: expected a defineVizePlugin entry or a v1 definePlugin rule plugin; other v1 hooks keep their native APIs",
+            "{\"typeChecker\":{\"jsxTypecheck\":true}}",
+            "plugin tools are not part of the config runtime"
+        ])
+    );
+    let mut tools = super::vite_tools_runtime().unwrap();
+    tools.push_str(
+        r#"
+const inspection = await inspectViteConfigPlugins({ vue: {} });
+process.stdout.write(JSON.stringify([inspection.order.length, inspection.digest.length, inspection.admission.lint.status]));
+"#,
+    );
+    assert_eq!(run(&tools), serde_json::json!([0, 64, "unused"]));
 }

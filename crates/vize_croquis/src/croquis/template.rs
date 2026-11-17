@@ -71,7 +71,8 @@ impl TemplateInfo {
 pub struct ComponentRegistration {
     /// Public component name registered for template usage.
     pub name: CompactString,
-    /// Local script binding referenced by the registration.
+    /// Local script binding referenced by the registration, or a static
+    /// member path rooted at one (`ui.Menu`).
     pub local_name: CompactString,
 }
 

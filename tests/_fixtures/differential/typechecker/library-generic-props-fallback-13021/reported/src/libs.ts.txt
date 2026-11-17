@@ -1,0 +1,23 @@
+import type { PublicProps, VNode } from "vue";
+
+type Props<T> = { items: T[] } & PublicProps;
+type Fallback = typeof globalThis extends { __VLS_PROPS_FALLBACK: infer P } ? P : {};
+
+// The shape of vue-virtual-scroller 3.0.5's DynamicScroller.vue.d.ts: no fallback term
+export declare const NoFallback: <T>(
+  props: Props<T>,
+  ctx?: { attrs: any; slots: {}; emit: () => void },
+  expose?: unknown,
+  setup?: Promise<{ props: Props<T> }>,
+) => VNode & { __ctx?: { props: Props<T>; attrs: any } };
+
+// The shape vue-tsc writes today: the props end with the fallback term
+export declare const WithFallback: <T>(
+  props: Props<T> & Fallback,
+  ctx?: { attrs: any; slots: {}; emit: () => void },
+  expose?: unknown,
+  setup?: Promise<{ props: Props<T> & Fallback }>,
+) => VNode & { __ctx?: { props: Props<T> & Fallback; attrs: any } };
+
+// A function component without __ctx
+export declare const NoCtx: <T>(props: Props<T>) => VNode;

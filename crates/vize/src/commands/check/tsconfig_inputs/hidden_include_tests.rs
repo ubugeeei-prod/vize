@@ -229,3 +229,32 @@ fn hidden_include_roots_stop_at_the_literal_directory_prefix() {
         vec![runtime.join("api.ts")]
     );
 }
+
+/// `tsc` expands a wildcard before a literal dot-directory segment and then
+/// matches that segment literally, so `packages/*/.vitepress` is selected
+/// while package folders, other dot-directories and deeper matches are not.
+#[test]
+fn wildcard_before_a_literal_hidden_segment_selects_matching_dot_directories() {
+    let dir = tempfile::tempdir().unwrap();
+    let root = dir.path().canonicalize().unwrap();
+    for path in [
+        "packages/docs/.vitepress/theme/Layout.vue",
+        "packages/site/.vitepress/App.vue",
+        "packages/site/.other/App.vue",
+        "packages/node_modules/.vitepress/App.vue",
+        "packages/site/deep/.vitepress/App.vue",
+    ] {
+        fs::create_dir_all(root.join(path).parent().unwrap()).unwrap();
+        fs::write(root.join(path), "<template><div/></template>").unwrap();
+    }
+    let config = root.join("tsconfig.json");
+    fs::write(&config, r#"{"include":["packages/*/.vitepress/**/*.vue"]}"#).unwrap();
+
+    assert_eq!(
+        relative_paths(&root, &collect_default_check_files(&root, &config)),
+        vec![
+            "packages/docs/.vitepress/theme/Layout.vue",
+            "packages/site/.vitepress/App.vue",
+        ]
+    );
+}

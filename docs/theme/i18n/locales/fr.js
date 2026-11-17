@@ -55,6 +55,7 @@
       "/rules/reference/parser-template": "Erreurs de syntaxe des templates",
       "/rules/reference/parser-sfc": "Erreurs de syntaxe SFC",
       "/rules/reference/parser-jsx": "Erreurs de syntaxe JSX",
+      "/rules/reference/parser-tsrx": "Erreurs de syntaxe TSRX",
       "/rules/reference/type-project-configuration": "Erreurs de configuration du projet",
       "/guide/check-performance": "Performances de la vérification de types",
       "/guide/oxlint": "Plugin Oxlint",

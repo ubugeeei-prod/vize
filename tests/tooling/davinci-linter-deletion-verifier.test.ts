@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import type { LintSummary } from "../differential/linter-deletion-schema.ts";
+import { canonicalSha256, type LintSummary } from "../differential/linter-deletion-schema.ts";
 import {
   assessLinterDeletionShard,
   validateLinterDeletionArtifact,
@@ -14,7 +14,7 @@ void test("linter preflight binds Matrix diagnostics but remains deletion-blocke
     artifact = assessLinterDeletionShard(input);
   assert.equal(
     zeroInputStderr,
-    'No .vue, .html, .htm, .js, .mjs, .cjs, .ts, .mts, .cts, .jsx, or .tsx files found matching patterns: ["**/*.vue"]\n',
+    'No .vue, .html, .htm, .js, .mjs, .cjs, .ts, .mts, .cts, .jsx, .tsx, or .tsrx files found matching patterns: ["**/*.vue"]\n',
   );
   assert.equal(artifact.status, "blocked");
   for (const code of [
@@ -109,6 +109,45 @@ void test("linter preflight records every diagnostic and corpus gap", () => {
         blocker.code === "linter-unmatched-patterns" &&
         blocker.detail ===
           'with-vue: unmatched explicit lint patterns ["missing-a/**/*.vue","missing-b/**/*.vue"]',
+    ),
+  );
+});
+
+void test("a declared zero-Vue project records a zero-count artifact without project blockers", () => {
+  const artifact = assessLinterDeletionShard(control()),
+    zero = artifact.projects.find((project) => project.id === "without-vue")!;
+  assert.equal(zero.expectedFileCount, 0);
+  assert.equal(zero.reportedExpectedFileCount, 0);
+  assert.equal(zero.comparedFileCount, 0);
+  assert.deepEqual(zero.unmatchedPatterns, ["**/*.vue"]);
+  assert.deepEqual(zero.budget, { verdict: "passed", passed: true, unusableReason: null });
+  assert.deepEqual(
+    artifact.blockers.filter((blocker) => blocker.detail.startsWith("without-vue: ")),
+    [],
+  );
+  assert.doesNotThrow(() => validateLinterDeletionArtifact(artifact));
+
+  const forged = structuredClone(artifact);
+  forged.blockers.push({
+    code: "linter-unmatched-patterns",
+    detail: 'without-vue: unmatched explicit lint patterns ["**/*.vue"]',
+  });
+  forged.sha256 = canonicalSha256(
+    Object.fromEntries(Object.entries(forged).filter(([key]) => key !== "sha256")),
+  );
+  assert.throws(
+    () => validateLinterDeletionArtifact(forged),
+    /linter deletion blocker projection drifted/u,
+  );
+
+  const scopeDrift = assessLinterDeletionShard(
+    control({ projects: { "without-vue": { comparedFileCount: 1 } } }),
+  );
+  assert(
+    scopeDrift.blockers.some(
+      (blocker) =>
+        blocker.code === "linter-project-scope" &&
+        blocker.detail === "without-vue: compared 1 file(s), expected 0",
     ),
   );
 });

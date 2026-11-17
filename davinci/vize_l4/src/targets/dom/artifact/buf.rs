@@ -4,7 +4,7 @@ use alloc::vec::Vec as StdVec;
 
 use vize_l0::{String, ToCompactString};
 
-use super::helper::Helper;
+use super::helper::{Helper, RuntimeHelpers};
 
 mod alias;
 mod call_position;
@@ -97,6 +97,11 @@ impl Buf {
 
     pub(super) fn use_helper(&mut self, helper: Helper) {
         self.mark(helper);
+    }
+
+    /// Every helper the preamble imports.
+    pub(super) fn helpers(&self) -> RuntimeHelpers {
+        RuntimeHelpers::from_bits(self.used)
     }
 
     pub(super) fn prefer(&mut self, helper: Helper) {

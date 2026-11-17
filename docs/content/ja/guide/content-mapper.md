@@ -77,6 +77,45 @@ VS Code では、信頼されたワークスペースで Content Mapper 対応�
 Vize 拡張機能が `.vue` の対応を自動登録します。同じマッパーがエディターでも動作します。
 エディターが求めるときは `js/ts.contentMappers.enabled` を有効にしてください。
 
+### プロジェクト参照（ソリューション形式の tsconfig）
+
+`create-vue` などのテンプレートは、ソリューション形式のルートを使います。ルートの
+`tsconfig.json` 自体はファイルを持たず、`tsconfig.app.json` と `tsconfig.node.json` を参照する
+だけです。`.vue` ファイルは `tsconfig.app.json` に属します。この構成では次の 2 点に注意してください。
+
+- `contentMappers` は、`.vue` ファイルを含む参照先のプロジェクトごとに指定します。この設定は
+  プロジェクト単位で、参照先のプロジェクトはルートの設定を引き継ぎません。ルートだけに書いた
+  マッパーは、どの `.vue` ファイルにも適用されません。一方、`extends` による継承は効くので、
+  それらのプロジェクトが継承する共通の設定ファイルに一度だけ書くこともできます。
+- 型チェックはルートではなく参照先のプロジェクトに対して実行します。`"files": []` のルートは
+  ファイルを 1 つも含まないため、`tsc --runExternalCode --noEmit -p tsconfig.json` は何も検査せずに
+  正常終了します。
+
+`tsconfig.app.json` の例です。
+
+```json
+{
+  "extends": "@vue/tsconfig/tsconfig.dom.json",
+  "include": ["env.d.ts", "src/**/*", "src/**/*.vue"],
+  "contentMappers": [
+    {
+      "package": "vize",
+      "extensions": [".vue"]
+    }
+  ]
+}
+```
+
+そのうえで、参照先のプロジェクトをまとめてビルドするか、アプリのプロジェクトを直接検査します。
+
+```bash
+tsc -b --runExternalCode
+tsc --runExternalCode --noEmit -p tsconfig.app.json
+```
+
+[`vize check`](./cli.md#check) はこの構成でも追加の設定は不要です。各 `.vue` ファイルが
+属する参照先のプロジェクトを自動で選びます。
+
 ## オプション
 
 マッパーの設定には `options` オブジェクトを指定できます。

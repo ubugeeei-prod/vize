@@ -1,0 +1,19 @@
+<script setup lang="ts">
+import { ref } from "vue";
+import Frame from "./Frame.vue";
+import Item from "./Item.vue";
+
+const items = ref([]);
+</script>
+
+<template>
+  <Frame>
+    <template #menu>
+      <!-- @vue-expect-error TS2339 --><Item
+        v-for="item in items"
+        :key="item.key"
+        name="a"
+      />
+    </template>
+  </Frame>
+</template>

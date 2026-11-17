@@ -1,0 +1,208 @@
+{
+  "entries": [
+    {
+      "v1": {
+        "name": "team-conventions",
+        "version": "1.0.0",
+        "fingerprint": "team-code",
+        "visit": [
+          "ui.for",
+          "ui.bind"
+        ],
+        "demands": [
+          "templateScopes"
+        ],
+        "cacheInputs": [],
+        "rules": [
+          "no-index-key"
+        ]
+      }
+    },
+    {
+      "v1": {
+        "name": "legacy-uncached",
+        "version": "1",
+        "fingerprint": "legacy-code",
+        "rules": [
+          "check",
+          "other"
+        ]
+      }
+    },
+    {
+      "manifest": {
+        "after": [],
+        "apiVersion": 2,
+        "backend": "js",
+        "before": [],
+        "cacheInputs": [],
+        "capabilities": [
+          {
+            "id": "lint.rule",
+            "required": true,
+            "schemaVersion": 1,
+            "data": {
+              "id": "modern",
+              "messages": {
+                "found": "Found {name}."
+              },
+              "visit": [
+                "ui.element"
+              ]
+            }
+          }
+        ],
+        "fingerprint": "1111111111111111111111111111111111111111111111111111111111111111",
+        "name": "@acme/rules",
+        "options": {},
+        "permissions": [],
+        "stability": "experimental",
+        "supports": {},
+        "version": "1.0.0"
+      }
+    }
+  ],
+  "runtime": "node",
+  "expect": {
+    "digest": "9ba28d67f2f04e819a09e8a3d8aa5538e5833a24d12087d8a509250c4fbe5411",
+    "plan": {
+      "claims": [
+        {
+          "key": "lint.plugin-v1:legacy-uncached",
+          "owner": "legacy-uncached"
+        },
+        {
+          "key": "lint.plugin-v1:team-conventions",
+          "owner": "team-conventions"
+        },
+        {
+          "key": "lint.rule:@acme/rules/modern",
+          "owner": "@acme/rules"
+        }
+      ],
+      "planSchema": 1,
+      "plugins": [
+        {
+          "after": [],
+          "apiVersion": 1,
+          "backend": "js",
+          "before": [],
+          "cacheInputs": [],
+          "capabilities": [
+            {
+              "data": {
+                "demands": [
+                  "templateScopes"
+                ],
+                "rules": [
+                  "no-index-key"
+                ],
+                "visit": [
+                  "ui.bind",
+                  "ui.for"
+                ]
+              },
+              "id": "lint.plugin-v1",
+              "key": "team-conventions",
+              "required": true,
+              "schemaVersion": 1
+            }
+          ],
+          "fingerprint": "team-code",
+          "index": 0,
+          "name": "team-conventions",
+          "options": {},
+          "permissions": [],
+          "skipped": [],
+          "stability": "v1",
+          "version": "1.0.0"
+        },
+        {
+          "after": [],
+          "apiVersion": 1,
+          "backend": "js",
+          "before": [],
+          "cacheInputs": null,
+          "capabilities": [
+            {
+              "data": {
+                "demands": [],
+                "rules": [
+                  "check",
+                  "other"
+                ],
+                "visit": null
+              },
+              "id": "lint.plugin-v1",
+              "key": "legacy-uncached",
+              "required": true,
+              "schemaVersion": 1
+            }
+          ],
+          "fingerprint": "legacy-code",
+          "index": 1,
+          "name": "legacy-uncached",
+          "options": {},
+          "permissions": [],
+          "skipped": [],
+          "stability": "v1",
+          "version": "1"
+        },
+        {
+          "after": [],
+          "apiVersion": 2,
+          "backend": "js",
+          "before": [],
+          "cacheInputs": [],
+          "capabilities": [
+            {
+              "data": {
+                "defaultLevel": "off",
+                "demands": [],
+                "docs": "",
+                "documents": [
+                  "template"
+                ],
+                "fixable": "none",
+                "id": "modern",
+                "messages": {
+                  "found": "Found {name}."
+                },
+                "visit": [
+                  "ui.element"
+                ]
+              },
+              "id": "lint.rule",
+              "key": "@acme/rules/modern",
+              "required": true,
+              "schemaVersion": 1
+            }
+          ],
+          "fingerprint": "1111111111111111111111111111111111111111111111111111111111111111",
+          "index": 2,
+          "name": "@acme/rules",
+          "options": {},
+          "permissions": [],
+          "skipped": [],
+          "stability": "experimental",
+          "supports": {
+            "outputs": [
+              "ssr",
+              "vapor",
+              "vdom"
+            ],
+            "runtimes": [
+              "bun",
+              "node"
+            ],
+            "vue": [
+              "2",
+              "3"
+            ]
+          },
+          "version": "1.0.0"
+        }
+      ]
+    }
+  }
+}

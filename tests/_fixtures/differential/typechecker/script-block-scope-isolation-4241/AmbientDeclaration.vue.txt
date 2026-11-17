@@ -1,0 +1,16 @@
+<script lang="ts">
+declare const __BUILD_ID__: string;
+
+const stages = ['alpha', 'beta'] as const;
+
+export declare type Stage = typeof stages[number];
+</script>
+
+<script lang="ts" setup>
+const props = defineProps<{ stage: Stage }>();
+const build = __BUILD_ID__;
+</script>
+
+<template>
+  <div>{{ props.stage }}{{ build }}</div>
+</template>

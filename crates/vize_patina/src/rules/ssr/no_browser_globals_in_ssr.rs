@@ -151,6 +151,33 @@ const BROWSER_GLOBALS: &[&str] = &[
     "matchMedia",
 ];
 
+/// For each ASCII first byte, the lengths of the browser globals starting
+/// with it ([`length_bit`]). A token whose first byte and length match no
+/// name skips the list scan; names are all ASCII.
+const BROWSER_GLOBAL_SHAPES: [u32; 128] = browser_global_shapes();
+
+/// One bit per length, the last shared by every length from 31 up.
+const fn length_bit(length: usize) -> u32 {
+    1 << if length < 31 { length } else { 31 }
+}
+
+#[expect(
+    clippy::indexing_slicing,
+    reason = "const evaluation over the list; the table index is masked to 0..128"
+)]
+const fn browser_global_shapes() -> [u32; 128] {
+    let mut table = [0; 128];
+    let mut index = 0;
+    while index < BROWSER_GLOBALS.len() {
+        let name = BROWSER_GLOBALS[index].as_bytes();
+        if let Some(&first) = name.first() {
+            table[(first & 0x7f) as usize] |= length_bit(name.len());
+        }
+        index += 1;
+    }
+    table
+}
+
 /// Globals that are available in both browser and SSR runtimes.
 const UNIVERSAL_GLOBALS: &[&str] = &["globalThis", "self"];
 
@@ -169,7 +196,12 @@ impl NoBrowserGlobalsInSsr {
     /// Check if a name is a browser-only global (using static list)
     #[inline]
     fn is_browser_global_static(name: &str) -> bool {
-        !UNIVERSAL_GLOBALS.contains(&name) && BROWSER_GLOBALS.contains(&name)
+        let shaped = name.as_bytes().first().is_some_and(|&first| {
+            BROWSER_GLOBAL_SHAPES
+                .get(usize::from(first))
+                .is_some_and(|lengths| lengths & length_bit(name.len()) != 0)
+        });
+        shaped && !UNIVERSAL_GLOBALS.contains(&name) && BROWSER_GLOBALS.contains(&name)
     }
 
     /// Check if a name is a browser-only global using croquis analysis
@@ -189,11 +221,31 @@ impl NoBrowserGlobalsInSsr {
 
     /// Whether `text` can read a global `is_global` accepts. A read is an
     /// identifier token or an escaped one; text with neither reads none.
+    ///
+    /// A token is a maximal run of ASCII alphanumerics, `_` and `$`. Every
+    /// byte of a non-ASCII character is outside that set, so scanning bytes
+    /// splits exactly where scanning characters does.
     fn may_read(text: &str, mut is_global: impl FnMut(&str) -> bool) -> bool {
-        text.contains('\\')
-            || text
-                .split(|c: char| !(c.is_ascii_alphanumeric() || c == '_' || c == '$'))
-                .any(|token| !token.is_empty() && is_global(token))
+        if text.contains('\\') {
+            return true;
+        }
+        let mut start = None;
+        for (index, &byte) in text.as_bytes().iter().enumerate() {
+            let word = byte.is_ascii_alphanumeric() || byte == b'_' || byte == b'$';
+            match (word, start) {
+                (true, None) => start = Some(index),
+                (false, Some(from)) => {
+                    if text.get(from..index).is_some_and(&mut is_global) {
+                        return true;
+                    }
+                    start = None;
+                }
+                _ => {}
+            }
+        }
+        start
+            .and_then(|from| text.get(from..))
+            .is_some_and(is_global)
     }
 
     /// A script or template binding shadows a browser global of the same name.

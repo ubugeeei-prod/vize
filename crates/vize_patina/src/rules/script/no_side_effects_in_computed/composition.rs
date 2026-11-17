@@ -1,6 +1,7 @@
 //! Vue computed identity and getter-local versus external binding ownership.
 
 use super::{GetterBody, ScriptLintResult, SideEffectVisitor, accessor_object_getter};
+use crate::linter::sfc_scripts::BlockSemantic;
 use oxc_ast::ast::{
     AssignmentTarget, BindingPattern, CallExpression, Expression, IdentifierReference,
     ImportDeclaration, ImportDeclarationSpecifier, Program, SimpleAssignmentTarget, Statement,
@@ -10,7 +11,7 @@ use oxc_ast_visit::{
     Visit,
     walk::{walk_call_expression, walk_variable_declaration},
 };
-use oxc_semantic::{Scoping, SemanticBuilder};
+use oxc_semantic::{Scoping, SemanticBuilderReturn};
 use oxc_span::Span;
 use oxc_syntax::symbol::SymbolId;
 use vize_l0::FxHashMap;
@@ -28,6 +29,7 @@ struct Bindings<'semantic> {
 
 pub(super) fn check_program<'a>(
     program: &'a Program<'a>,
+    shared: Option<&'a SemanticBuilderReturn<'a>>,
     offset: usize,
     result: &mut ScriptLintResult,
 ) {
@@ -39,7 +41,8 @@ pub(super) fn check_program<'a>(
     }) {
         return;
     }
-    let semantic = SemanticBuilder::new().build(program).semantic;
+    let built = BlockSemantic::of(shared, program, false);
+    let semantic = &built.semantic;
     let mut bindings = Bindings {
         identities: FxHashMap::default(),
         scoping: semantic.scoping(),

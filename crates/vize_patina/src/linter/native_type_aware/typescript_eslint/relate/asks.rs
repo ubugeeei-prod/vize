@@ -3,7 +3,7 @@
 mod checks;
 mod context;
 mod deprecated;
-use super::binding::{self, Binding};
+use super::binding::{self, Binding, Instantiated};
 use super::{Key, Pending};
 use crate::linter::corsa_session::{Literal, Span};
 use oxc_ast::ast::Program;
@@ -27,9 +27,8 @@ struct Walk<'a, 'm, 'v> {
     pending: &'a mut Pending,
     /// Non-null operands whose binding still needs scope analysis.
     identifiers: Vec<(usize, Span)>,
-    /// Type argument lists, the name they instantiate, and whether that name
-    /// is constructed with `new`.
-    instantiations: Vec<(&'v Value, Span, bool)>,
+    /// Type argument lists, the name they instantiate, and where.
+    instantiations: Vec<(&'v Value, Span, Instantiated)>,
 }
 
 pub(super) fn collect(
@@ -51,7 +50,7 @@ pub(super) fn collect(
     let instantiations = std::mem::take(&mut walk.instantiations);
     let names = instantiations
         .iter()
-        .map(|(_, name, constructed)| (*name, *constructed))
+        .map(|(_, name, context)| (*name, *context))
         .collect::<Vec<_>>();
     let defaults = binding::type_parameter_defaults(ast, &names);
     for ((list, _, _), defaults) in instantiations.into_iter().zip(defaults) {
@@ -124,11 +123,16 @@ fn static_kind(kind: &str) -> Option<&'static str> {
     })
 }
 
-/// The annotated type node of `TSTypeAnnotation` wrappers.
+/// The annotated type node of `TSTypeAnnotation` wrappers. ESTree spells a
+/// missing annotation as `null`, which is no annotation.
 fn annotation_type(value: &Value) -> Option<&Value> {
-    let annotation = value.get("typeAnnotation")?;
+    let annotation = value
+        .get("typeAnnotation")
+        .filter(|annotation| !annotation.is_null())?;
     if kind(annotation) == "TSTypeAnnotation" {
-        annotation.get("typeAnnotation")
+        annotation
+            .get("typeAnnotation")
+            .filter(|annotation| !annotation.is_null())
     } else {
         Some(annotation)
     }
@@ -282,17 +286,20 @@ impl<'v> Walk<'_, '_, 'v> {
         let Some(&(parent, field)) = ancestors.last() else {
             return;
         };
-        let name = match (kind(parent), field) {
-            ("TSTypeReference", "typeArguments") => parent.get("typeName"),
+        let (name, context) = match (kind(parent), field) {
+            ("TSTypeReference", "typeArguments") => (parent.get("typeName"), Instantiated::Type),
             ("TSClassImplements" | "TSInterfaceHeritage", "typeArguments") => {
-                parent.get("expression")
+                (parent.get("expression"), Instantiated::Type)
             }
             ("ClassDeclaration" | "ClassExpression", "superTypeArguments") => {
-                parent.get("superClass")
+                (parent.get("superClass"), Instantiated::Value)
             }
-            ("CallExpression" | "NewExpression", "typeArguments") => parent.get("callee"),
-            ("TaggedTemplateExpression", "typeArguments") => parent.get("tag"),
-            _ => None,
+            ("CallExpression", "typeArguments") => (parent.get("callee"), Instantiated::Call),
+            ("NewExpression", "typeArguments") => (parent.get("callee"), Instantiated::New),
+            ("TaggedTemplateExpression", "typeArguments") => {
+                (parent.get("tag"), Instantiated::Call)
+            }
+            _ => return,
         };
         let Some(name) = name
             .filter(|name| kind(name) == "Identifier")
@@ -300,8 +307,7 @@ impl<'v> Walk<'_, '_, 'v> {
         else {
             return;
         };
-        self.instantiations
-            .push((value, name, kind(parent) == "NewExpression"));
+        self.instantiations.push((value, name, context));
     }
 }
 

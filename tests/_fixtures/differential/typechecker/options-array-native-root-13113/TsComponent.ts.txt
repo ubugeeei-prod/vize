@@ -1,0 +1,8 @@
+import { defineComponent, h } from "vue";
+
+export const TsComponent = defineComponent({
+  emits: ["change"],
+  setup(_props, { emit }) {
+    return () => h("button", { type: "button", onClick: () => emit("change", 1) });
+  },
+});

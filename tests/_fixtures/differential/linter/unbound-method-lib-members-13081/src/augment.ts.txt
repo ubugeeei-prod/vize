@@ -1,0 +1,13 @@
+declare global {
+  interface Math {}
+
+  interface ObjectConstructor {
+    readonly marker: string;
+  }
+
+  interface Array<T> {
+    last(): T | undefined;
+  }
+}
+
+export const augmented = true;

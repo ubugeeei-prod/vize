@@ -6,6 +6,7 @@ use vize_carton::{FxHashMap, String, append};
 
 use super::generics::{generic_injection_point, references_any_identifier};
 use super::glued_import::GluedImportSection;
+use super::spans::leading_jsdoc_len;
 use crate::virtual_ts::VizeMapping;
 
 fn push_mapped(
@@ -21,6 +22,10 @@ fn push_mapped(
         src_range: source..source + text.len(),
         sub_spans: Vec::new(),
     });
+}
+
+fn without_leading_jsdoc(text: &str) -> &str {
+    text.get(leading_jsdoc_len(text)..).unwrap_or(text)
 }
 
 /// A hoisted type declaration about to be emitted at module scope, beside
@@ -55,6 +60,7 @@ impl Hoisted<'_> {
             .filter(|&(&(start, end), &name)| {
                 self.script
                     .get(start as usize..end as usize)
+                    .map(without_leading_jsdoc)
                     .is_some_and(|text| {
                         references_any_identifier(text, names)
                             && generic_injection_point(text, name).is_some()
@@ -82,6 +88,10 @@ pub(super) fn emit_generic_injected(
     let Some((defaults, names)) = injection else {
         return false;
     };
+    // The declaration's leading JSDoc is copied ahead of it, never parsed.
+    let doc = leading_jsdoc_len(text);
+    let (comment, text) = text.split_at_checked(doc).unwrap_or(("", text));
+    let source = source + comment.len();
     let Some((hoisted, inject_at)) = hoisted
         .filter(|_| references_any_identifier(text, names))
         .and_then(|hoisted| {
@@ -91,6 +101,9 @@ pub(super) fn emit_generic_injected(
     else {
         return false;
     };
+    if !comment.is_empty() {
+        push_mapped(ts, mappings, comment, source - comment.len());
+    }
     let (prefix, suffix) = text.split_at(inject_at);
     push_mapped(ts, mappings, prefix, source);
     // Synthetic parameter list; no corresponding source span.

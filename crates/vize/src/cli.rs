@@ -63,6 +63,9 @@ enum Commands {
     /// Pull versioned @vizejs/ui and @vizejs/composable sources into the project
     Lib(crate::commands::library::LibArgs),
 
+    /// Inspect experimental plugin API v2 plans (vue.plugins)
+    Plugin(crate::commands::plugin::PluginArgs),
+
     /// Start type check JSON-RPC server (Unix only)
     #[cfg(unix)]
     CheckServer(crate::commands::check_server::CheckServerArgs),
@@ -136,6 +139,7 @@ fn run(cli: Cli) {
         Some(Commands::Doctor(args)) => crate::commands::doctor::run(args),
         Some(Commands::Clean(args)) => crate::commands::clean::run(args),
         Some(Commands::Lib(args)) => crate::commands::library::run(args),
+        Some(Commands::Plugin(args)) => crate::commands::plugin::run(args),
         #[cfg(unix)]
         Some(Commands::CheckServer(args)) => crate::commands::check_server::run(args),
         Some(Commands::ContentMapper(args)) => crate::commands::content_mapper::run(args),

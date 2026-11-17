@@ -234,3 +234,18 @@ fn a_capture_already_at_module_scope_gets_no_alias() {
     plan.push_captured_return_fields(&[], &mut fields);
     assert!(fields.is_empty());
 }
+
+#[test]
+fn expando_functions_stay_beside_their_property_assignments() {
+    // typescript-eslint v8.72.2 no-misused-spread valid[22] / valid[24]: the
+    // checker reads `f.prop = 1` as a property of `f` only in `f`'s container.
+    let script = "function f() {}\nf.prop = 1;\nfunction* generator() {}\ngenerator[\"prop\"] = 1;\nfunction plain() {}\nexport {};\n";
+    assert_eq!(hoisted_text(script), vec!["function plain() {}"]);
+
+    // A namespace partner still moves the merged function to module scope.
+    let merged = "function g() {}\ng.prop = 1;\nnamespace g {\n  export const x = 1;\n}\n";
+    assert_eq!(
+        hoisted_text(merged),
+        vec!["namespace g {\n  export const x = 1;\n}", "function g() {}"]
+    );
+}

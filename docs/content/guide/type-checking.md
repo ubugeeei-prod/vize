@@ -52,6 +52,13 @@ That replaces `vue-tsc --noEmit`. After TypeScript 7.1 is stable, install
 `typescript` at 7.1 or newer and keep the same command. Mapper options, template
 directives, and editor setup are in the [Content Mapper guide](./content-mapper.md).
 
+If `tsconfig.json` is a solution-style root with `"files": []` and `references`, as in
+`create-vue` projects, the command above checks nothing and still exits successfully. Declare
+`contentMappers` in each referenced project that includes `.vue` files, such as
+`tsconfig.app.json`, and run `tsc -b --runExternalCode` or
+`tsc --runExternalCode --noEmit -p tsconfig.app.json`. See
+[Project references](./content-mapper.md#project-references-solution-style-tsconfig).
+
 ## tsrs
 
 Install tsrs and pass the same flag. The `contentMappers` entry does not change:
@@ -72,6 +79,7 @@ Windows or Intel macOS packages. For the editor, start `tsrs --lsp`.
 | --------------------------------------- | ----------------------------------------------------------------------------------------------- |
 | `vue-tsc --noEmit`                      | `tsc --runExternalCode --noEmit` with the mapper above                                          |
 | `vue-tsc -p tsconfig.app.json --noEmit` | `tsc --runExternalCode --noEmit -p tsconfig.app.json`                                           |
+| `vue-tsc --build`                       | `tsc -b --runExternalCode` with the mapper in each referenced project                           |
 | the same project on tsrs                | `tsrs --runExternalCode --noEmit -p tsconfig.app.json`                                          |
 | Vue - Official extension diagnostics    | a TypeScript 7.1 host with content mappers, or the [Vize language server](./language-server.md) |
 

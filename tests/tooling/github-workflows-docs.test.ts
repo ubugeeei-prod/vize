@@ -200,6 +200,7 @@ test("full Docs checks real preview resources before building and retains the ra
       "/ja/rules/reference/parser-template",
       "/ja/rules/reference/parser-sfc",
       "/ja/rules/reference/parser-jsx",
+      "/ja/rules/reference/parser-tsrx",
       "/ja/rules/reference/type-project-configuration",
     ].sort(),
   );

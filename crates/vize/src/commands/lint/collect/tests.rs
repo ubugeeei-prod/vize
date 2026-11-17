@@ -145,6 +145,37 @@ fn default_collection_matches_the_extension_glob_union_in_one_walk() {
     assert_eq!(glob_union, included);
 }
 
+#[cfg(unix)]
+#[test]
+fn walks_select_links_to_files_but_not_lintable_named_directories() {
+    let dir = tempfile::tempdir().unwrap();
+    let root = dir.path();
+    let src = root.join("src");
+    fs::create_dir_all(src.join("Folder.vue")).unwrap();
+    fs::create_dir_all(root.join("shared/Target.vue")).unwrap();
+    fs::write(src.join("App.vue"), "").unwrap();
+    fs::write(src.join("Folder.vue/inner.ts"), "").unwrap();
+    fs::write(root.join("shared/Real.vue"), "").unwrap();
+    std::os::unix::fs::symlink(root.join("shared/Real.vue"), src.join("Linked.vue")).unwrap();
+    std::os::unix::fs::symlink(root.join("shared/Target.vue"), src.join("LinkedDir.vue")).unwrap();
+    std::os::unix::fs::symlink(root.join("shared/Missing.vue"), src.join("Dangling.vue")).unwrap();
+
+    let walked = collect_lint_file_collection(&[src.display().to_string().into()], None).files;
+    let globbed =
+        collect_lint_file_collection(&[src.join("**/*.vue").display().to_string().into()], None)
+            .files;
+
+    assert_eq!(
+        walked,
+        vec![
+            src.join("App.vue"),
+            src.join("Folder.vue/inner.ts"),
+            src.join("Linked.vue")
+        ]
+    );
+    assert_eq!(globbed, vec![src.join("App.vue"), src.join("Linked.vue")]);
+}
+
 #[test]
 fn broad_discovery_skips_git_dependency_and_generated_trees_without_gitignore() {
     let dir = tempfile::tempdir().unwrap();

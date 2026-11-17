@@ -113,6 +113,9 @@ pub struct SfcScriptContext<'a> {
     /// retain their conservative single-file behavior when resolution is
     /// unavailable or incomplete.
     pub resolved_type_world: Option<&'a ResolvedTypeWorld>,
+    /// The SFC's script parses, sharing one semantic pass per block when the
+    /// engine holds one (see [`Self::semantic_of`]).
+    pub(crate) scripts: Option<&'a dyn crate::linter::sfc_scripts::ScriptParses>,
 }
 
 impl<'a> SfcScriptContext<'a> {
@@ -123,5 +126,15 @@ impl<'a> SfcScriptContext<'a> {
     #[inline]
     pub fn template_ast(&self) -> Option<(&'a SurfaceTree<'a>, u32)> {
         Some((self.template_surface?, self.template_offset?))
+    }
+
+    /// The semantic pass the engine shares for `program`, when `program` is
+    /// one of this SFC's block parses. `None` means the rule runs its own.
+    #[inline]
+    pub(crate) fn semantic_of(
+        &self,
+        program: &oxc_ast::ast::Program<'_>,
+    ) -> Option<&'a oxc_semantic::SemanticBuilderReturn<'a>> {
+        self.scripts?.semantic_of(program)
     }
 }

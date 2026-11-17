@@ -1,0 +1,23 @@
+import type { NotificationConfig } from './ExportedType.vue';
+import type { BadgeOptions } from './ExportedInterface.vue';
+import { PAGE_SIZE, DiffMode, Cursor } from './ExportedValue.vue';
+import type { Stage } from './AmbientDeclaration.vue';
+import type { Level } from './DefaultExport.vue';
+import type { Size } from './SetupMacros.vue';
+import type { Theme } from './OptionsApi.vue';
+import type { Boxed } from './GenericExportedType.vue';
+
+const okConfig: NotificationConfig = { type: 'all' };
+const badConfig: NotificationConfig = { type: 'list', userListId: 'x' };
+const okBadge: BadgeOptions = { color: 'red' };
+const badBadge: BadgeOptions = { color: 'blue' };
+const okStage: Stage = 'alpha';
+const badStage: Stage = 'beta';
+const okLevel: Level = 'info';
+const okSize: Size = 'sm';
+const okTheme: Theme = 'dark';
+const okBoxed: Boxed<number> = { key: 'a', value: 1 };
+const okCursor = new Cursor();
+void okConfig; void badConfig; void okBadge; void badBadge; void okStage;
+void badStage; void okLevel; void okSize; void okTheme; void okBoxed;
+void okCursor; void PAGE_SIZE; void DiffMode;

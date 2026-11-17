@@ -92,6 +92,7 @@ void test("operational failures are filed with lint execution in their authored 
     "/rules/reference/parser-template",
     "/rules/reference/parser-sfc",
     "/rules/reference/parser-jsx",
+    "/rules/reference/parser-tsrx",
     "/rules/reference/type-project-configuration",
   ];
   const linter = sitemap.navGroups.find((group) => group.key === "linter")!;

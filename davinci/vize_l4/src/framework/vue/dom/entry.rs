@@ -7,6 +7,7 @@ use vize_l0::{Allocator, String, TemplateSyntaxMode};
 use vize_l1_to_l2::lower::LegacyCaps;
 
 use super::budget::emit_dom_source_with_options_and_observer;
+use super::helper::RuntimeHelpers;
 use super::options::DomEmitOptions;
 use super::{EmitError, emit_dom_source_with_caps_observed};
 
@@ -21,6 +22,8 @@ pub struct DomEmit {
     pub code: String,
     /// Emission-recorded section boundaries in the same buffers.
     pub sections: DomEmitSections,
+    /// The runtime helpers [`DomEmit::preamble`] imports.
+    pub helpers: RuntimeHelpers,
 }
 
 /// Byte offsets of the structural sections of one L2 DOM render module.

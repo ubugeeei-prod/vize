@@ -1,7 +1,6 @@
 //! [`MarkupElement`]: one element / component / fragment / template / slot.
 
 use super::jsx_names::{jsx_element_kind, jsx_element_name, jsx_element_ref, jsx_fragment_ref};
-use super::l2::surface::{element_at, element_with_v_pre_at};
 use super::l2::{L2ElementOp, L2Markup};
 use super::node::MarkupNode;
 use super::{MarkupElementKind, relief_scopes, span_to_range};
@@ -84,19 +83,16 @@ impl<'a> MarkupElement<'a> {
     /// Wrap an L2 element-shaped op, locating its authored L1 element when the
     /// artifact carries a surface tree.
     pub(super) fn from_l2(op: L2ElementOp<'a>, doc: &'a L2Markup<'a>) -> Self {
-        let surface = doc
-            .surface
-            .filter(|_| !op.is_synthesized(doc))
-            .and_then(|tree| element_at(tree, op.span().start));
+        let surface = if doc.surface.is_none() || op.is_synthesized(doc) {
+            None
+        } else {
+            doc.surface_element_at(op.span().start)
+        };
         // HTML tree construction may close a `v-pre` owner before the L2 op
         // that follows it, while Vue's compiler keeps that authored subtree
         // frozen. Read the literal scope from L1's retained Vue-shaped tree;
         // keep the ordinary surface element because it is the tree L2 lowered.
-        let frozen = doc
-            .authored
-            .or(doc.surface)
-            .and_then(|tree| element_with_v_pre_at(tree, op.span().start))
-            .is_some_and(|(_, frozen)| frozen);
+        let frozen = doc.frozen_at(op.span().start);
         Self::from_inner(MarkupElementInner::L2 {
             op,
             doc,

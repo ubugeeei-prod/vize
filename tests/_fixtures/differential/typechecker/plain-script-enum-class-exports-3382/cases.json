@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 3382,
+  "regressionCommit": "813a7ba187995f46cd4c3c0b8ec03104bcd9d9e3",
+  "sourceRevision": "813a7ba187995f46cd4c3c0b8ec03104bcd9d9e3",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "value-and-type-exports",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/DiffViewer.vue",
+          "source": "DiffViewer.vue.txt"
+        },
+        {
+          "file": "src/consumer.ts",
+          "source": "consumer.ts.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "enum-type-side-error",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/DiffViewer.vue",
+          "source": "DiffViewer.vue.txt"
+        },
+        {
+          "file": "src/consumer.ts",
+          "source": "consumer.invalid.ts.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/consumer.ts",
+          "line": 9,
+          "column": 7,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '\"split\"' is not assignable to type 'DiffDisplayMode'."
+        }
+      ]
+    }
+  ]
+}

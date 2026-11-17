@@ -1,0 +1,19 @@
+<script setup lang="ts">
+import Child from "./Child.vue";
+
+type Item =
+  | { type: "text"; text: string }
+  | { type: "container"; children: string[]; align: "left" | "right" };
+
+const item = {} as Item;
+</script>
+
+<template>
+  <div v-if="item.type === 'container'">
+    <Child
+      v-for="child in item.children"
+      :key="child"
+      :align="item.type"
+    />
+  </div>
+</template>

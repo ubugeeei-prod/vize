@@ -7,6 +7,7 @@ use vize_carton::{String, ToCompactString, cstr};
 
 mod checked_imports;
 mod conditions;
+mod references;
 
 #[derive(Debug, PartialEq, Eq)]
 struct RuntimeProp {

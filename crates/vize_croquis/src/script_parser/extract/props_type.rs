@@ -1,6 +1,6 @@
-use oxc_ast::ast::{TSType, TSTypeName};
+use oxc_ast::ast::{Expression, TSType, TSTypeName};
 use oxc_span::GetSpan;
-use vize_carton::CompactString;
+use vize_carton::{CompactString, cstr};
 
 pub(super) fn runtime_prop_type_from_ts_type(
     ts_type: &TSType<'_>,
@@ -60,4 +60,44 @@ pub(super) fn runtime_ctor_type(name: &str) -> Option<&'static str> {
         "Function" => Some("(...args: any[]) => any"),
         _ => None,
     }
+}
+
+/// The checker helper that types a runtime prop from its constructor value.
+const VALUE_PROP_TYPE_HEAD: &str = "__RuntimePropCtor<typeof ";
+
+/// Vue infers any other constructor (`Counter`, `ns.Counter`, a `PropType`
+/// constant) from the value itself: an instance for `new`, a return value for
+/// a call. Name the value and let the checker infer it, as the setup-side
+/// `defineProps(...)` result does.
+pub(super) fn runtime_value_prop_type(
+    value: &Expression<'_>,
+    reads_value: &mut bool,
+) -> Option<CompactString> {
+    let mut path = CompactString::default();
+    push_value_path(value, &mut path)?;
+    *reads_value = true;
+    Some(cstr!("{VALUE_PROP_TYPE_HEAD}{path}>"))
+}
+
+fn push_value_path(value: &Expression<'_>, path: &mut CompactString) -> Option<()> {
+    match value {
+        Expression::Identifier(id) => path.push_str(id.name.as_str()),
+        Expression::StaticMemberExpression(member) if !member.optional => {
+            push_value_path(&member.object, path)?;
+            path.push('.');
+            path.push_str(member.property.name.as_str());
+        }
+        _ => return None,
+    }
+    Some(())
+}
+
+/// Root bindings named by [`runtime_value_prop_type`], e.g. `ns` in `ns.Counter`.
+pub(in crate::script_parser) fn value_prop_type_roots(
+    prop_type: &str,
+) -> impl Iterator<Item = &str> {
+    prop_type
+        .split(VALUE_PROP_TYPE_HEAD)
+        .skip(1)
+        .filter_map(|rest| rest.split(['.', '>']).next())
 }

@@ -303,7 +303,8 @@ fn collect_references(
                         .and_then(Value::as_bool)
                         .unwrap_or(false),
                     key,
-                ) {
+                ) || is_property_initializer(kind, key, child)
+                {
                     continue;
                 }
                 if kind == Some("TSConditionalType")
@@ -483,3 +484,4 @@ fn collect_binding_names(value: &Value, out: &mut Vec<String>) {
 }
 
 include!("type_parameters/semantic.rs");
+include!("type_parameters/signature.rs");

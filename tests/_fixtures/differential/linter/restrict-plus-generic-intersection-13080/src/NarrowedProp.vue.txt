@@ -1,0 +1,15 @@
+<script setup lang="ts" generic="T extends boolean | undefined, U">
+import { computed } from "vue";
+
+const { flag, value } = defineProps<{ flag: T; value: U }>();
+
+const truthy = computed(() => (flag ? "flag: " + flag : ""));
+const nullish = computed(() => (value ?? "none") + "!");
+const byTypeof = computed(() => (typeof value === "boolean" ? "b: " + value : ""));
+const byInstance = computed(() => (value instanceof Date ? "d: " + value : ""));
+const bare = computed(() => "flag: " + flag);
+</script>
+
+<template>
+  <p>{{ truthy }} {{ nullish }} {{ byTypeof }} {{ byInstance }} {{ bare }}</p>
+</template>

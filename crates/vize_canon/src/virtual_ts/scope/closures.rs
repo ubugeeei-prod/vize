@@ -11,6 +11,7 @@ use super::component_event_navigation::emit_event_references;
 use super::component_prop_expressions::collect_component_prop_expression_ranges;
 use super::component_props::{collect_checkable_usages, generate_component_props};
 use super::context::{ComponentPropsContext, ScopeGenContext, ScopeGenerationOptions};
+use super::expect_owner_splices::ExpectOwnerSplices;
 use super::explicit_generics::ExplicitGenerics;
 use super::globals::{generate_instance_global_refs, generate_undefined_refs};
 pub(super) use super::node::generate_scope_node;
@@ -216,6 +217,10 @@ pub(super) fn emit_scope_closures(
         hoist_shared_preamble: options.hoist_shared_preamble,
         preserve_event_navigation: options.preserve_event_navigation,
         omit_navigation_references: options.omit_navigation_references,
+        type_only_slot_references: options.omit_navigation_references
+            && options
+                .generic_parameters
+                .is_none_or(|generic| generic.parameters.is_empty()),
         check_unknown_events: check_options.check_unknown_events && check_options.check_emits,
         strict_v_model: check_options.strict_v_model && check_options.check_emits,
         component_binding_check: options.component_binding_check,
@@ -263,6 +268,18 @@ pub(super) fn emit_scope_closures(
             })
     } else {
         RootCallbackOwners::default()
+    };
+    let expect_splices = if pack_root_owners {
+        ExpectOwnerSplices::collect(
+            &props_ctx,
+            usages.as_deref(),
+            &expressions_by_scope,
+            &callback_owners,
+            check_options,
+            options.script_content,
+        )
+    } else {
+        ExpectOwnerSplices::default()
     };
     if let Some(usages) = &usages {
         if root_packets.is_empty() {
@@ -317,9 +334,10 @@ pub(super) fn emit_scope_closures(
             dynamic_aliases: &dynamic_aliases,
             event_inference_usages: &event_inference_usages,
             event_contracts: &event_contracts,
+            expect_splices: &expect_splices,
         };
 
-        if nested_scope_ids.contains(&scope.id) {
+        if nested_scope_ids.contains(&scope.id) || expect_splices.moves_handler(scope_id) {
             continue;
         }
 
@@ -331,7 +349,9 @@ pub(super) fn emit_scope_closures(
                 | ScopeKind::VueGlobal
         ) || callback_owners.has_scope(scope_id)
         {
-            if let Some(exprs) = expressions_by_scope.get(&scope_id)
+            if expect_splices.has_scope(scope_id) {
+                expect_splices.generate_expressions(ts, mappings, &ctx, scope_id, "  ", None);
+            } else if let Some(exprs) = expressions_by_scope.get(&scope_id)
                 && check_options.check_template_bindings
             {
                 callback_owners.generate_expressions(
@@ -403,7 +423,11 @@ pub(super) fn emit_scope_closures(
                 semantic_links,
                 &props_ctx,
                 usages,
-                (&mut root_packets, &callback_owners)
+                (
+                    &mut root_packets,
+                    &callback_owners,
+                    expect_splices.moved_usages()
+                )
             )
         );
     }

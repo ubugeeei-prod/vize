@@ -5,6 +5,7 @@ use vize_l0::id::NodeId;
 use vize_l2::expr::ExprRef;
 use vize_l2::op::{ForOp, Op, VueMemoOp};
 
+mod host;
 mod keys;
 
 use super::EmitCx;
@@ -23,8 +24,8 @@ pub(super) fn emit_for(
     id: Option<NodeId>,
     fragment_key: Option<&str>,
 ) -> Result<(), EmitError> {
-    if for_op.host.is_some() {
-        return Err(EmitError::unsupported_at(Reason::HostForLoop, for_op.span));
+    if let Some(host) = &for_op.host {
+        return host::emit_for(cx, for_op, host, id, fragment_key);
     }
     let source_raw = js_source(&for_op.binding.source)?;
     let source_prefixed;
@@ -81,31 +82,40 @@ fn emit_for_scoped(
     if let Some(span) = wrapper.and_then(|wrapper| wrapper.runtime_directive) {
         return Err(EmitError::unsupported_at(Reason::TemplateUnwrapShape, span));
     }
-    let wrapper_key = match wrapper.and_then(|wrapper| wrapper.key.as_ref()) {
-        Some(key) => Some(super::tpl::wrapper_key_js(cx, key)?),
-        None => None,
+    // A host loop body of several nodes renders a keyed fragment per item, as
+    // a `<template v-for>` does.
+    let host_fragment = for_op.host.as_ref().filter(|_| for_op.region.ops.len() > 1);
+    let wrapper_key = match (
+        wrapper.and_then(|wrapper| wrapper.key.as_ref()),
+        host_fragment,
+    ) {
+        (Some(key), _) => Some(super::tpl::wrapper_key_js(cx, key)?),
+        (None, Some(host)) => host::item_key(cx, host, None, for_op.span)?,
+        (None, None) => None,
     };
     let wrapper_attrs = wrapper
         .map(|wrapper| wrapper.attributes.as_slice())
         .unwrap_or(&[]);
     let wrapper_class = wrapper.and_then(|wrapper| wrapper.class.as_ref());
-    let from_template = wrapper.is_some();
+    let from_template = wrapper.is_some() || host_fragment.is_some();
     let item_memo = if from_template {
         None
     } else {
         plain_item_memo(&for_op.region.ops)
     };
+    // Host loops key every item (`host::item_key`).
+    let host_keyed = for_op.host.is_some();
     let (bind_len, keyed) = if from_template {
         (0, wrapper_key.is_some())
     } else {
         match for_op.region.ops.as_slice() {
             [Op::Element(element)] => (
                 element.bindings.len(),
-                has_dynamic_item_key(&element.bindings),
+                host_keyed || has_dynamic_item_key(&element.bindings),
             ),
             [Op::Component(component)] => (
                 component.bindings.len(),
-                has_dynamic_item_key(&component.bindings),
+                host_keyed || has_dynamic_item_key(&component.bindings),
             ),
             [Op::Slot(slot)] => (slot.bindings.len(), has_dynamic_item_key(&slot.bindings)),
             [Op::OriginalFor(original)] => {
@@ -282,10 +292,18 @@ fn emit_plain_item(
     match for_op.region.ops.as_slice() {
         [Op::Element(element)] => {
             let key = item_key_js(cx, &element.attributes, &element.bindings)?;
+            let key = match &for_op.host {
+                Some(host) => host::item_key(cx, host, key, for_op.span)?,
+                None => key,
+            };
             super::emit_for_item_call(cx, element, id, stable, key.as_deref())
         }
         [Op::Component(component)] => {
             let key = item_key_js(cx, &component.attributes, &component.bindings)?;
+            let key = match &for_op.host {
+                Some(host) => host::item_key(cx, host, key, for_op.span)?,
+                None => key,
+            };
             super::component::emit_for_item(cx, component, id, key.as_deref())
         }
         [Op::Slot(slot)] => super::outlet::emit_outlet(cx, slot, None, false),

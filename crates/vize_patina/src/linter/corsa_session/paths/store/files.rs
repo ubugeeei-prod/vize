@@ -10,7 +10,12 @@ use augmentation::is_module_augmentation;
 
 pub(super) fn ambient_program_files(project_root: &Path, tsconfig: &Path) -> Vec<String> {
     let selection = configured_program_files(tsconfig);
-    let mut files = selection.declarations;
+    let spelling = ProgramRootSpelling::new(project_root);
+    let mut files = selection
+        .declarations
+        .iter()
+        .map(|path| spelling.file_name(path))
+        .collect::<Vec<_>>();
     let mut sources = selection.source_candidates;
     if selection.needs_authoritative_source_scan {
         sources.extend(owned_typescript_sources(project_root, tsconfig));
@@ -24,16 +29,48 @@ pub(super) fn ambient_program_files(project_root: &Path, tsconfig: &Path) -> Vec
                 return None;
             }
             let content = std::fs::read_to_string(&path).ok()?;
-            is_module_augmentation(&content).then(|| {
-                let canonical = std::fs::canonicalize(&path).unwrap_or(path);
-                slash_path(&canonical)
-            })
+            is_module_augmentation(&content).then(|| spelling.file_name(&path))
         })
         .collect::<Vec<_>>();
     files.extend(augmentations);
     files.sort();
     files.dedup();
     files
+}
+
+/// The root-file spelling the session program must share with the module
+/// graph that the linted SFC reaches (#13077).
+///
+/// That graph is spelled from the session's project root, which comes from
+/// the current directory as the OS reports it, and TypeScript resolves an
+/// SFC's `./registry` under that spelling. A root file spelled differently is
+/// a different file to Corsa, so its `declare module "./registry"` augments
+/// another module identity. On Windows `std::fs::canonicalize` differs from
+/// the working-directory spelling twice over: it answers with a `\\?\`
+/// verbatim path (read by Corsa as the UNC root `//?/C:/`), and it expands
+/// 8.3 short names and junctions that the current directory keeps. Files
+/// inside the project are therefore spelled from the session root; only files
+/// outside it keep their non-verbatim canonical spelling.
+struct ProgramRootSpelling<'a> {
+    project_root: &'a Path,
+    canonical_root: PathBuf,
+}
+
+impl<'a> ProgramRootSpelling<'a> {
+    fn new(project_root: &'a Path) -> Self {
+        Self {
+            project_root,
+            canonical_root: vize_l0::path::canonicalize_non_verbatim(project_root),
+        }
+    }
+
+    fn file_name(&self, path: &Path) -> String {
+        let canonical = vize_l0::path::canonicalize_non_verbatim(path);
+        match canonical.strip_prefix(&self.canonical_root) {
+            Ok(relative) => slash_path(&self.project_root.join(relative)),
+            Err(_) => slash_path(&canonical),
+        }
+    }
 }
 
 fn owned_typescript_sources(project_root: &Path, tsconfig: &Path) -> Vec<PathBuf> {
@@ -57,7 +94,7 @@ fn is_typescript_source(path: &Path) -> bool {
 }
 
 struct ProgramFileSelection {
-    declarations: Vec<String>,
+    declarations: Vec<PathBuf>,
     source_candidates: Vec<PathBuf>,
     needs_authoritative_source_scan: bool,
 }
@@ -109,8 +146,7 @@ fn configured_program_files(tsconfig: &Path) -> ProgramFileSelection {
             continue;
         }
         if is_declaration_file(&path) {
-            let absolute = std::fs::canonicalize(&path).unwrap_or(path);
-            declarations.push(slash_path(&absolute));
+            declarations.push(path);
         } else if is_typescript_source(&path) {
             source_candidates.push(path);
         }
@@ -130,8 +166,26 @@ fn configured_program_files(tsconfig: &Path) -> ProgramFileSelection {
 
 #[cfg(test)]
 mod tests {
-    use super::ambient_program_files;
+    use super::{String, ambient_program_files};
     use std::{fs, path::Path};
+
+    /// Program files are absolute and spelled from the session project root
+    /// exactly as given, never canonicalized away from it (a macOS temp dir
+    /// sits behind the `/var` symlink, a Windows one behind an 8.3 name) and
+    /// never from a Windows `\\?\` verbatim root (#13077).
+    fn relative_to(root: &Path, files: &[String]) -> Vec<String> {
+        let prefix = root.to_string_lossy().replace('\\', "/");
+        files
+            .iter()
+            .map(|path| {
+                path.as_str()
+                    .strip_prefix(prefix.as_str())
+                    .and_then(|relative| relative.strip_prefix('/'))
+                    .unwrap_or_else(|| panic!("{path} is not under {prefix}"))
+                    .into()
+            })
+            .collect()
+    }
 
     fn write(root: &Path, path: &str, content: &str) {
         let path = root.join(path);
@@ -179,16 +233,7 @@ mod tests {
         );
 
         let files = ambient_program_files(root.path(), &root.path().join("tsconfig.json"));
-        let relative: Vec<_> = files
-            .iter()
-            .map(|path| {
-                Path::new(path)
-                    .strip_prefix(root.path())
-                    .unwrap()
-                    .to_string_lossy()
-                    .replace('\\', "/")
-            })
-            .collect();
+        let relative = relative_to(root.path(), &files);
         assert_eq!(
             relative,
             vec!["src/augment.ts", "src/env.d.ts", "src/global.ts"]
@@ -216,17 +261,35 @@ mod tests {
         );
 
         let files = ambient_program_files(root.path(), &root.path().join("tsconfig.json"));
-        let relative: Vec<_> = files
-            .iter()
-            .map(|path| {
-                Path::new(path)
-                    .strip_prefix(root.path())
-                    .unwrap()
-                    .to_string_lossy()
-                    .replace('\\', "/")
-            })
-            .collect();
+        let relative = relative_to(root.path(), &files);
         assert_eq!(relative, vec!["src/augment.ts"]);
+    }
+
+    /// The Windows split of #13077, modelled with a symlinked project root:
+    /// the session reaches the project through the link, so the included
+    /// augmentation must be spelled through the link too, not through the
+    /// canonical target (where Corsa would see a second `registry.ts`).
+    #[cfg(unix)]
+    #[test]
+    fn program_roots_keep_the_session_project_root_spelling() {
+        let temp = tempfile::tempdir().unwrap();
+        let real = temp.path().join("real");
+        write(&real, "tsconfig.json", r#"{"include":["src/**/*.ts"]}"#);
+        write(&real, "src/env.d.ts", "declare const build: string;\n");
+        write(
+            &real,
+            "src/augment.ts",
+            "import './registry';\ndeclare module './registry' { interface Registry { extra: true } }\n",
+        );
+        let linked = temp.path().join("linked");
+        std::os::unix::fs::symlink(&real, &linked).unwrap();
+
+        let files = ambient_program_files(&linked, &linked.join("tsconfig.json"));
+
+        assert_eq!(
+            relative_to(&linked, &files),
+            vec!["src/augment.ts", "src/env.d.ts"]
+        );
     }
 }
 

@@ -88,6 +88,7 @@ vize [COMMAND]
 | `inspector`      | プレイグラウンドのコンパイラーインスペクター用データを作成する                             |
 | `clean`          | Vize が生成したキャッシュを削除する                                                        |
 | `lib`            | バージョンを指定して UI・composable のソースを取り込む（[Lib Pull ガイド](./lib-pull.md)） |
+| `plugin`         | 実験的な Plugin API v2 のプランを確認する                                                  |
 | `ready`          | `fmt`、`lint`、`check`、`build` を実行する                                                 |
 | `upgrade`        | インストール済み CLI を更新する                                                            |
 | `check-server`   | Unix JSON-RPC の型チェックサーバーを起動する                                               |
@@ -105,6 +106,8 @@ vize build src/**/*.vue
 vize build --ssr
 vize build --profile src
 ```
+
+`vize build` は `.vue` と `.tsrx` のファイルをコンパイルします。TSRX モジュールは TSRX のコンパイラーを通り、すべての構文エラーと、まだ対応していない構文やターゲットを行と列とともに報告します。拒否されたモジュールにコンパイル結果は出力されません（`--continue-on-error` では、失敗した他のファイルと同じ空のフォールバックモジュールになります）。TypeScript は `.vue` のスクリプトと同じように消去され（`.js` を出力）、`--script-ext preserve` では保持されます（`.ts` を出力）。既定のパターン（`./**/*.vue`）は `.vue` だけを選びます。
 
 | オプション                    | 説明                                                                   |
 | ----------------------------- | ---------------------------------------------------------------------- |
@@ -174,6 +177,8 @@ vize lint src
 vize lint --preset opinionated src
 vize lint --help-level short src
 ```
+
+デフォルトのファイル探索では Vue、HTML、JavaScript/TypeScript、JSX/TSX、TSRX を lint します。`.tsrx` モジュールの各マークアップ領域には、JSX/TSX の描画ルートと同じマークアップのルールが適用されます。`.tsrx` モジュールのホストの TypeScript は、まだスクリプトのルールで検査されません。構文エラーと、変換処理がまだ対応していない構文は [`parser/tsrx`](../rules/reference/parser-tsrx.md) のエラーになります。
 
 | オプション                           | 説明                                                                                                                                |
 | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
@@ -365,6 +370,20 @@ vize clean path/to/project
 | `-q, --quiet`                       | 状態の出力を抑える                                     |
 
 <a id="準備ができて"></a>
+
+## プラグイン
+
+```bash
+vize plugin inspect
+vize plugin inspect --config path/to/vite.config.ts
+```
+
+`vize plugin inspect` は `vite.config.*` を評価し、`vue.plugins` から解決された正規のプラグインプランを
+JSON で出力します。プラグインの順序、所有権の宣言、ケーパビリティ、オプション、パーミッション、
+キャッシュ入力、プロダクトごとの受け入れ状況を含みます。Plugin API v2 は実験的な API です
+([状況](https://github.com/ubugeeei-prod/vize/blob/main/docs/release/integrated-plugin-incubation.md))。
+ほかのコマンドは、まだどの Vize プロダクトも実装していないケーパビリティを含むプランを拒否します。
+`inspect` は理由を確認できるよう、そのようなプランも表示します。
 
 ## 準備状況の確認
 

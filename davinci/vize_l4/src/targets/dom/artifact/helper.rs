@@ -338,3 +338,28 @@ impl Helper {
         })
     }
 }
+
+/// The Vue runtime helpers one DOM emission imports, as a set, so a module
+/// that merges several render functions imports each helper once.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct RuntimeHelpers(u64);
+
+impl RuntimeHelpers {
+    pub(super) const fn from_bits(bits: u64) -> Self {
+        Self(bits)
+    }
+
+    /// Every helper of either set.
+    #[must_use]
+    pub const fn union(self, other: Self) -> Self {
+        Self(self.0 | other.0)
+    }
+
+    /// `(export, alias)` of every helper in the set, in a fixed order.
+    pub fn imports(self) -> impl Iterator<Item = (&'static str, &'static str)> {
+        Helper::ALL
+            .into_iter()
+            .filter(move |helper| self.0 & helper.bit() != 0)
+            .map(|helper| (helper.name(), helper.alias()))
+    }
+}

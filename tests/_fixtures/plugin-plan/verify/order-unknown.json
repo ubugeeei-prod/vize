@@ -1,0 +1,93 @@
+{
+  "plan": {
+    "claims": [
+      {
+        "key": "lint.rule:@acme/design-system/prefer-token",
+        "owner": "@acme/design-system"
+      }
+    ],
+    "planSchema": 1,
+    "plugins": [
+      {
+        "after": [
+          "@missing/plugin"
+        ],
+        "apiVersion": 2,
+        "backend": "js",
+        "before": [],
+        "cacheInputs": [
+          {
+            "name": "tokens",
+            "value": "v3"
+          }
+        ],
+        "capabilities": [
+          {
+            "data": {
+              "defaultLevel": "warn",
+              "demands": [
+                "bindings",
+                "templateScopes"
+              ],
+              "docs": "Prefer tokens.",
+              "documents": [
+                "template"
+              ],
+              "fixable": "safe",
+              "id": "prefer-token",
+              "messages": {
+                "found": "Found {name}."
+              },
+              "visit": [
+                "ui.bind",
+                "ui.element"
+              ]
+            },
+            "id": "lint.rule",
+            "key": "@acme/design-system/prefer-token",
+            "required": true,
+            "schemaVersion": 1
+          }
+        ],
+        "fingerprint": "9999999999999999999999999999999999999999999999999999999999999999",
+        "index": 0,
+        "name": "@acme/design-system",
+        "options": {},
+        "permissions": [
+          {
+            "kind": "env",
+            "keys": [
+              "DESIGN_MODE"
+            ]
+          },
+          {
+            "kind": "fs.read",
+            "paths": [
+              "design.json",
+              "src/tokens/**"
+            ]
+          }
+        ],
+        "skipped": [],
+        "stability": "experimental",
+        "supports": {
+          "outputs": [
+            "ssr",
+            "vdom"
+          ],
+          "runtimes": [
+            "bun",
+            "node"
+          ],
+          "vue": [
+            "3"
+          ]
+        },
+        "version": "1.0.0"
+      }
+    ]
+  },
+  "expect": {
+    "code": "order-unknown"
+  }
+}

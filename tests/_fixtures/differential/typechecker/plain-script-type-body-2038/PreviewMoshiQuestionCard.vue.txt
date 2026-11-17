@@ -1,0 +1,22 @@
+<script lang="ts">
+import { defineComponent, PropType } from "@nuxtjs/composition-api";
+
+export const DATA_TYPE = {
+  QUESTION: "question",
+  ANSWER: "answer",
+} as const;
+
+export type RenderedBody = {
+  dataType: (typeof DATA_TYPE)[keyof typeof DATA_TYPE];
+  data: string;
+};
+
+export default defineComponent({
+  props: {
+    renderedBodies: {
+      type: Array as PropType<RenderedBody[]>,
+      default: "",
+    },
+  },
+});
+</script>

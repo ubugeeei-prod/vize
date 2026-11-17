@@ -88,6 +88,16 @@ impl<'a> SfcScriptParses<'a> {
         self.script_setup.as_ref().map(|block| self.parse(block))
     }
 
+    /// The `<script>` block's parse if a reader already forced it.
+    pub fn parsed_script(&self) -> Option<&ParserReturn<'_>> {
+        Some(self.script.as_ref()?.parsed.get()?.get())
+    }
+
+    /// The `<script setup>` block's parse if a reader already forced it.
+    pub fn parsed_script_setup(&self) -> Option<&ParserReturn<'_>> {
+        Some(self.script_setup.as_ref()?.parsed.get()?.get())
+    }
+
     fn parse<'s>(&'s self, block: &'s Block<'a>) -> &'s ParserReturn<'s> {
         block
             .parsed

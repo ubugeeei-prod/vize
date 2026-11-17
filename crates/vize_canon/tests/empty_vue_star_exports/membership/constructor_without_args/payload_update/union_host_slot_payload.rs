@@ -58,6 +58,7 @@ pub(super) fn source_before(path: &str, current: String) -> String {
 
 /// A compiled preamble with the intersecting slot payload.
 pub(super) fn preamble_before(current: &str) -> String {
+    let current = &super::library_props_fallthrough::preamble_before(current);
     let record = record();
     match ["compiledPreamble", "compiledStrictPreamble"]
         .into_iter()
@@ -102,6 +103,7 @@ mod tests {
                 "compiledStrictPreamble",
             ),
         ] {
+            let physical = &super::super::library_props_fallthrough::preamble_before(physical);
             let preamble = &record[key];
             assert!(is_after(physical, preamble));
             let previous = preamble_before(physical);

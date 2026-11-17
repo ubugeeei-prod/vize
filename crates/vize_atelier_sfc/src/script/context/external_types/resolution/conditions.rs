@@ -63,6 +63,22 @@ pub(super) enum Selection {
     Excluded,
 }
 
+/// The existing file `bundler` resolution selects with its default conditions
+/// (`types`, `import`, `default`), without the exclusion a custom condition
+/// list enforces: the legacy resolver keeps its own fallbacks after a miss.
+pub(super) fn bundler_entry(
+    package: &Path,
+    manifest: &str,
+    subpath: &str,
+    probe: impl Fn(PathBuf) -> Option<PathBuf>,
+) -> Option<PathBuf> {
+    let conditions = [String::from("types"), String::from("import")];
+    match resolve(package, manifest, subpath, &conditions, probe)? {
+        Selection::Path(path) => Some(path),
+        Selection::Excluded => None,
+    }
+}
+
 pub(super) fn resolve(
     package: &Path,
     manifest: &str,

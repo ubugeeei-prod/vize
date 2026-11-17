@@ -111,6 +111,11 @@ tsc --runExternalCode --noEmit -p tsconfig.json
 tsrs --runExternalCode --noEmit -p tsconfig.json
 ```
 
+`"files": []` と `references` だけを持つソリューション形式の `tsconfig.json` はファイルを含まないため、
+`-p tsconfig.json` では何も検査されません。`.vue` ファイルを含む参照先のプロジェクトにマッパーを書き、
+`tsc -b --runExternalCode` を実行するか、`-p tsconfig.app.json` のようにそのプロジェクトを指定してください。
+詳しくは[プロジェクト参照](./content-mapper.md#プロジェクト参照-ソリューション形式の-tsconfig)を参照してください。
+
 `vize check` は同梱チェッカーです。そのコマンドを使うときはプロジェクトのルートから実行します。
 モノリポジトリ内の特定のパッケージを検査する場合は、そのディレクトリから実行します。
 

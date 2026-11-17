@@ -37,6 +37,7 @@ export type {
   VueConfig,
   VueOptions,
   VueOptionsEntry,
+  VuePluginEntry,
   UserConfig,
   UserConfigEntry,
   UserConfigInput,

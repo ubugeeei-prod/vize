@@ -131,4 +131,5 @@ pub mod side_table;
 pub mod path;
 
 /// Shared selected-project TypeScript compiler-option loading.
+pub mod typescript_ownership;
 pub mod typescript_project;

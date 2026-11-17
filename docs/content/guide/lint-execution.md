@@ -96,6 +96,7 @@ message and reference page to repair the input, then run lint again.
 | `parser/template`            | [Template syntax and parser recovery](../rules/reference/parser-template.md)         |
 | `parser/sfc`                 | [Single-file component structure](../rules/reference/parser-sfc.md)                  |
 | `parser/jsx`                 | [JSX/TSX parsing and lowering](../rules/reference/parser-jsx.md)                     |
+| `parser/tsrx`                | [TSRX parsing and lowering](../rules/reference/parser-tsrx.md)                       |
 | `type/project-configuration` | [TypeScript project configuration](../rules/reference/type-project-configuration.md) |
 
 ## Static class defaults

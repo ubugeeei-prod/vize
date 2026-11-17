@@ -27,6 +27,7 @@ mod occurrences;
 mod parse;
 mod parse_plain;
 mod process;
+mod prop_options;
 mod recovery;
 mod reexecution;
 mod result;
@@ -65,6 +66,8 @@ pub use parse_plain::{
     parse_script_with_options_and_jsx,
 };
 pub use process::{collect_options_descriptor, collect_options_object, process_statement};
+pub(crate) use prop_options::is_const_type_assertion;
+pub use prop_options::literal_boolean_type;
 pub use recovery::{
     parse_original_for_analysis, parse_program_for_analysis, recover_program_for_analysis,
     with_shared_program_for_analysis,

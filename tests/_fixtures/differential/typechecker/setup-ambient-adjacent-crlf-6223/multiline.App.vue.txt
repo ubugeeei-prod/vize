@@ -1,0 +1,6 @@
+<script setup lang="ts">
+const before = 1; declare const label: {
+text: string;
+}; const after: string = label.text;
+</script>
+<template><div /></template>

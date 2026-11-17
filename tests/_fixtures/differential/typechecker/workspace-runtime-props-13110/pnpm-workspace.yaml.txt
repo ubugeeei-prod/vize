@@ -1,0 +1,3 @@
+packages:
+  - fake-props
+  - packages/*

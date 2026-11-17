@@ -1,0 +1,9 @@
+<script setup lang="ts">
+let local: string | number = 1;
+declare const first: typeof local;
+local = 'fixed';
+declare const label: typeof local;
+const wrongNumber: string = first;
+const wrongString: number = label;
+</script>
+<template>{{ label }}</template>

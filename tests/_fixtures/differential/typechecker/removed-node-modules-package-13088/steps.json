@@ -1,0 +1,31 @@
+{
+  "issue": 13088,
+  "command": "vize check",
+  "steps": [
+    {
+      "step": 1,
+      "nodeModulesExtra": "never existed",
+      "expected": "passes"
+    },
+    {
+      "step": 2,
+      "nodeModulesExtra": "created",
+      "expected": "passes"
+    },
+    {
+      "step": 3,
+      "nodeModulesExtra": "removed",
+      "expected": "passes"
+    },
+    {
+      "step": 4,
+      "nodeModulesExtra": "still removed",
+      "expected": "passes"
+    },
+    {
+      "step": 5,
+      "nodeModulesExtra": "created again",
+      "expected": "passes"
+    }
+  ]
+}

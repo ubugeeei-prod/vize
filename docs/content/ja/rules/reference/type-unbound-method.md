@@ -67,6 +67,12 @@ export default defineConfig({}).withVue({
 
 設定したら `vp run lint` を実行します。
 
+## typescript-eslint との違い
+
+グローバルオブジェクトから読み出したライブラリのメソッドは報告しません。レシーバーの型が `Window & typeof globalThis` または `typeof globalThis` の場合が対象です。`window.setTimeout`、`const { matchMedia } = window`、`self.requestAnimationFrame`、`document.defaultView?.setTimeout` もこれに含まれます。プラットフォームの操作はレシーバーなしで呼ばれるとグローバルオブジェクトを使うため、書いたとおりに動きます。自分のコードで `Window` に追加したメソッドは引き続き報告します。別のフレームの `Window` (`parent.setTimeout`) や、グローバルからたどったオブジェクトのメソッド (`window.localStorage.getItem`) も同様です。`checkGlobalObjectMethods: true` を指定すると、typescript-eslint と同じくこれらも報告します。
+
+宣言をマージした組み込み (`declare global { interface Math {} }`) も除外の対象のままです。`RegExp.escape` は `RegExp` コンストラクターへのどの経路でも除外されます。除外は linter を動かす Node.js のバージョンではなく、TypeScript のライブラリ宣言に従います。
+
 ## 関連ページ
 
 - [型と script のルール](../type-and-script.md)
