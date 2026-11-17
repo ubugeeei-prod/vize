@@ -84,7 +84,11 @@ byte-identical except three `vue-language-tools` fixtures (`#2206`, `#4820`,
 the template uses. The old walk bound those names, so the module returned
 identifiers that do not exist at runtime (`const __returned__ = { D, A, … }`).
 They now resolve as components (`_resolveComponent("A")`) or through the
-render context, as in Vue.
+render context, as in Vue. Across the whole corpus (5,988 compiles), one
+more file changes through the shared classifier: `tsc/#5067` imports
+`{ default as isComp1 }` from a `.vue` file in `<script setup>`, which now
+binds as setup-const, so the template reads the component directly, as in
+Vue.
 
 ## Open
 
