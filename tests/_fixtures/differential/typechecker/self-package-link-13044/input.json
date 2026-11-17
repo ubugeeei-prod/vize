@@ -1,0 +1,30 @@
+{
+  "schema": "vize.controlled-workspace-alias-descendant",
+  "id": "typechecker/regression/self-package-link-13044",
+  "scope": "Controlled owned parent workspace alias whose nested alias, rebased through the parent, is already its own target (pnpm injected workspace layout); no private project source.",
+  "links": [
+    {
+      "virtualDir": "consumer/node_modules/form",
+      "realDir": "owned/form"
+    },
+    {
+      "virtualDir": "consumer/node_modules/form/node_modules/ui",
+      "realDir": "owned/form/node_modules/ui"
+    },
+    {
+      "virtualDir": "consumer/node_modules/form/node_modules/ui/node_modules/types",
+      "realDir": "owned/types"
+    }
+  ],
+  "expected": [
+    {
+      "virtualDir": "consumer/node_modules/form",
+      "realDir": "owned/form"
+    },
+    {
+      "virtualDir": "owned/form/node_modules/ui/node_modules/types",
+      "realDir": "owned/types"
+    }
+  ],
+  "rejectedBefore": "The nested alias planned owned/form/node_modules/ui -> owned/form/node_modules/ui, a link onto the owned installation's own path, and materialization failed closed with 'Owned workspace installation overlaps a package link'."
+}

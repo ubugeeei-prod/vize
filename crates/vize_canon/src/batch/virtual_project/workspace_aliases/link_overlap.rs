@@ -18,9 +18,11 @@ impl LinkPathIndex {
         Self { set, sorted }
     }
 
-    /// `path` is this link or sits under one. Ancestor walk, not a link scan.
-    pub(super) fn covers(&self, path: &Path) -> bool {
-        path.ancestors().any(|ancestor| self.set.contains(ancestor))
+    /// The link at `path` or the nearest one above it. Ancestor walk, not a
+    /// link scan.
+    pub(super) fn covering<'p>(&self, path: &'p Path) -> Option<&'p Path> {
+        path.ancestors()
+            .find(|ancestor| self.set.contains(*ancestor))
     }
 
     pub(super) fn alias_overlap_path(&self, alias: &Path, target: &Path) -> Option<PathBuf> {
@@ -54,6 +56,23 @@ impl LinkPathIndex {
             .get(start)
             .filter(|path| path.starts_with(prefix))
     }
+}
+
+/// An owned installation sits at or below a planned package link.
+pub(super) fn installation_overlap(
+    root: &Path,
+    link: &Path,
+    target: Option<&PathBuf>,
+) -> std::io::Error {
+    std::io::Error::new(
+        std::io::ErrorKind::InvalidData,
+        vize_carton::cstr!(
+            "Owned workspace installation overlaps a package link: {}; link: {} -> {:?}",
+            root.display(),
+            link.display(),
+            target,
+        ),
+    )
 }
 
 pub(super) fn retired_link_ancestor(retired: &FxHashSet<PathBuf>, path: &Path) -> bool {

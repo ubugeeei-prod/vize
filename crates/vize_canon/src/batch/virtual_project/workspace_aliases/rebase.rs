@@ -213,6 +213,10 @@ pub(super) fn plan_aliases(mut raw: Vec<WorkspaceAliasCandidate>) -> Vec<Package
             link.real_dir = target;
         }
     }
+    // A coordinate that rebasing already placed at its target is that
+    // target, not an alias of it. Its raw path still rebased its descendants
+    // above; a link onto its own path would only bury the owned directory.
+    links.retain(|link| link.virtual_dir != link.real_dir);
     links
 }
 
@@ -271,6 +275,16 @@ pub(super) fn claims_with_source_coordinates(
     claims
 }
 
+/// `target` itself for an exact match. `Path::join("")` appends a separator,
+/// which compares equal yet spells a different path.
+fn join_suffix(target: &Path, suffix: &Path) -> PathBuf {
+    if suffix.as_os_str().is_empty() {
+        target.to_path_buf()
+    } else {
+        target.join(suffix)
+    }
+}
+
 fn descendant_path(original: &Path, aliases: &FxHashMap<PathBuf, PathBuf>) -> Option<PathBuf> {
     descendant_path_with_depth(original, aliases).map(|(path, _)| path)
 }
@@ -294,7 +308,7 @@ fn descendant_path_with_depth(
             return None;
         }
         let suffix = current.strip_prefix(alias).ok()?;
-        let next = target.join(suffix);
+        let next = join_suffix(target, suffix);
         if next == current {
             return None;
         }
@@ -317,7 +331,7 @@ fn target_path(original: &Path, aliases: &FxHashMap<PathBuf, PathBuf>) -> Option
             return None;
         }
         let suffix = current.strip_prefix(alias).ok()?;
-        let next = target.join(suffix);
+        let next = join_suffix(target, suffix);
         if next == current {
             return None;
         }

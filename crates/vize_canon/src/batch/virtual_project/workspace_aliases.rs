@@ -370,12 +370,8 @@ impl VirtualProject {
         let install_roots = self.workspace_install_roots()?;
         let link_paths = link_overlap::LinkPathIndex::from_links(links);
         for root in &install_roots {
-            if link_paths.covers(root) {
-                return Err(std::io::Error::new(
-                    std::io::ErrorKind::InvalidData,
-                    "Owned workspace installation overlaps a package link",
-                )
-                .into());
+            if let Some(link) = link_paths.covering(root) {
+                return Err(link_overlap::installation_overlap(root, link, links.get(link)).into());
             }
             checked.extend(
                 root.ancestors()
