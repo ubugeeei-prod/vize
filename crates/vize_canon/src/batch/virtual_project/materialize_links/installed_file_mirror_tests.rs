@@ -1,21 +1,8 @@
 //! A program file that is itself an installed dependency file (#13044).
 
 use std::fs;
-use std::path::{Path, PathBuf};
-
-use vize_carton::cstr;
 
 use super::super::VirtualProject;
-
-fn case_dir(name: &str) -> PathBuf {
-    let dir = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join("target")
-        .join("vize-tests")
-        .join("installed-file-mirror")
-        .join(cstr!("{name}-{}", std::process::id()).as_str());
-    let _ = fs::remove_dir_all(&dir);
-    dir
-}
 
 /// Nuxt's generated declarations name `../node_modules/<pkg>/…` by path, so
 /// the mirror rewrites that one file of the package. Its `package.json` and
@@ -23,7 +10,8 @@ fn case_dir(name: &str) -> PathBuf {
 /// source reports `TS2307` (Mealie's `vuetify` and `@nuxtjs/i18n`).
 #[test]
 fn a_mirrored_installed_file_keeps_its_package_siblings_linked() {
-    let root = case_dir("siblings");
+    let workspace = tempfile::tempdir().unwrap();
+    let root = workspace.path().to_path_buf();
     let package = root.join("node_modules").join("pkg");
     fs::create_dir_all(package.join("lib")).unwrap();
     fs::write(root.join("package.json"), r#"{ "name": "app" }"#).unwrap();
@@ -87,5 +75,4 @@ fn a_mirrored_installed_file_keeps_its_package_siblings_linked() {
         ],
         "only the mirrored file is owned; its manifest and siblings stay linked",
     );
-    let _ = fs::remove_dir_all(&root);
 }
