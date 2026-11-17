@@ -97,13 +97,13 @@ impl<'a> RegionBuilder<'_, 'a> {
 
     /// Record that the lowering built an op of `family`, which selects the
     /// passes that publish its facts (a component's slot grouping).
-    pub(crate) fn observe(&mut self, family: crate::artifact::OpFamily) {
+    pub fn observe(&mut self, family: crate::artifact::OpFamily) {
         self.builder.parts.features = self.builder.parts.features.observing(family);
     }
 
     /// Attach a binding whose name the lowering supplies, at the authored
     /// value's `span`.
-    pub(crate) fn synthesized_bind(
+    pub fn synthesized_bind(
         &mut self,
         name: &'a str,
         value: ExprRef<'a>,
