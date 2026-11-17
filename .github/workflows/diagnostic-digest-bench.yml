@@ -108,7 +108,11 @@ jobs:
           cd "$corpora/misskey-$MISSKEY_SHA"
           pnpm_spec=$(jq -r .packageManager package.json)
           [[ "$pnpm_spec" =~ ^pnpm@[0-9]+\.[0-9]+\.[0-9]+$ ]]
-          npx --yes "$pnpm_spec" install --filter "./packages/frontend..." --ignore-scripts
+          # misskey pins a newer Node than this repository; its packages
+          # are only read here, so a dependency's engines range must not stop
+          # the install.
+          npx --yes "$pnpm_spec" install --filter "./packages/frontend..." --ignore-scripts \
+            --config.engine-strict=false
       - name: Measure
         shell: bash
         run: |
