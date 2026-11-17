@@ -455,8 +455,16 @@ fn unbound_kebab_tags_resolve_global_components_before_custom_elements() {
     )
     .unwrap();
     let lookup = |null: &str| {
+        let branch = |key: &str| {
+            vize_l0::cstr!(
+                "(import('vue').GlobalComponents extends {{ \"{key}\": infer __C }} ? $TemplateComponentRef<__C>{null} : "
+            )
+        };
         vize_l0::cstr!(
-            "(\"MyChild\" extends keyof import('vue').GlobalComponents ? $TemplateComponentRef<import('vue').GlobalComponents[\"MyChild\"]>{null} : (\"myChild\" extends keyof import('vue').GlobalComponents ? $TemplateComponentRef<import('vue').GlobalComponents[\"myChild\"]>{null} : (\"my-child\" extends keyof import('vue').GlobalComponents ? $TemplateComponentRef<import('vue').GlobalComponents[\"my-child\"]>{null} : $DomElement<\"my-child\">)))"
+            "{}{}{}$DomElement<\"my-child\">)))",
+            branch("MyChild"),
+            branch("myChild"),
+            branch("my-child")
         )
     };
     let (plain, nullable) = (lookup(""), lookup(" | null"));
