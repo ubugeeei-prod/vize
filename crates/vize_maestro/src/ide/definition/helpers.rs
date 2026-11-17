@@ -259,3 +259,9 @@ pub(crate) fn extract_import_path_from_pos(content: &str, pos: usize) -> Option<
 pub(crate) fn resolve_import_path(current_uri: &Url, import_path: &str) -> Option<PathBuf> {
     super::import_resolver::resolve_import_specifier(current_uri, import_path)
 }
+
+/// [`resolve_import_path`] for the context's document, through the server's
+/// shared package-route cache.
+pub(crate) fn resolve_import_path_in(ctx: &IdeContext<'_>, import_path: &str) -> Option<PathBuf> {
+    super::import_resolver::resolve_import_specifier_in(ctx.state, ctx.uri, import_path)
+}

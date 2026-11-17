@@ -21,7 +21,7 @@ pub(crate) fn contract(ctx: &IdeContext<'_>) -> Option<ComponentEventContract> {
     let resolved_path = component_import::resolve_component_file(ctx, &event.component_name)
         .or_else(|| {
             let import_path = super::art::component_path(ctx, &event.component_name)?;
-            helpers::resolve_import_path(ctx.uri, &import_path)
+            helpers::resolve_import_path_in(ctx, &import_path)
         })?;
     let component_content = std::fs::read_to_string(&resolved_path).ok()?;
     let descriptor = ctx

@@ -134,6 +134,11 @@ pub struct ServerState {
     /// The resolver validates manifest, link, and source inputs before each
     /// cache hit, so session reuse cannot return a stale export target.
     pub(crate) package_route_resolver: Mutex<vize_canon::PackageRouteResolver>,
+    /// Package routes of imported components (diagnostics, hover, completion,
+    /// slot and event definition). Apart from the resolver the import index
+    /// and Corsa share, so a diagnostics pass neither waits on their lookups
+    /// nor moves their validation epoch.
+    pub(crate) component_route_resolver: Mutex<vize_canon::PackageRouteResolver>,
     /// Physical path identities used by canonical editor mapping. File events
     /// invalidate the table before the next request.
     #[cfg(feature = "native")]

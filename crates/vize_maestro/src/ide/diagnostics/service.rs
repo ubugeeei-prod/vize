@@ -45,6 +45,9 @@ impl DiagnosticService {
         }
 
         let line_index = LineIndex::new(&content);
+        // One diagnostics pass is one view of the filesystem: package-route
+        // inputs are validated once for every component it resolves.
+        let _route_validation = state.component_route_resolver.lock().validation_scope();
 
         let path = uri.path();
         if path.ends_with(".art.vue") {
