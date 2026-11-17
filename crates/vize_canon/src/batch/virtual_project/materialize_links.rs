@@ -58,13 +58,36 @@ impl VirtualProject {
         &self,
         expected_files: &FxHashSet<PathBuf>,
     ) -> Vec<PackageNodeModulesLink> {
-        let passthrough = self.passthrough_files.keys().cloned().collect();
+        let mut passthrough: FxHashSet<PathBuf> = self.passthrough_files.keys().cloned().collect();
+        passthrough.extend(self.installed_file_mirrors());
         package_node_modules_links_with_passthrough(
             &self.project_root,
             &self.virtual_root,
             expected_files.iter().map(PathBuf::as_path),
             &passthrough,
         )
+    }
+
+    /// Mirrored sources that are installed files at their own coordinates.
+    ///
+    /// A program can contain a dependency's file directly: Nuxt's generated
+    /// declarations reference `../node_modules/<pkg>/…` by path, and a
+    /// `paths` target can name one. The mirror rewrites that one file, but the
+    /// package around it is still the installed one: its `package.json`, the
+    /// `exports` targets and every sibling declaration must keep resolving
+    /// through the real install, or a bare `import "<pkg>"` reports `TS2307`
+    /// beside a file of that very package. Such a file therefore owns only
+    /// itself, exactly like a passthrough copy (#9690). Package shadows, which
+    /// do own their package directory, are separate maps.
+    fn installed_file_mirrors(&self) -> impl Iterator<Item = PathBuf> + '_ {
+        self.virtual_files.values().filter_map(|file| {
+            let relative = file.virtual_path.strip_prefix(&self.virtual_root).ok()?;
+            let installed = relative
+                .components()
+                .any(|component| component.as_os_str() == "node_modules");
+            (installed && file.original_path.strip_prefix(&self.project_root).ok()? == relative)
+                .then(|| file.virtual_path.clone())
+        })
     }
 
     pub(crate) fn desired_package_links(
@@ -127,3 +150,6 @@ impl VirtualProject {
         roots
     }
 }
+
+#[cfg(test)]
+mod installed_file_mirror_tests;

@@ -1,0 +1,24 @@
+{
+  "schema": "vize.controlled-installed-file-mirror",
+  "id": "typechecker/regression/installed-file-mirror-13044",
+  "scope": "Controlled install whose one declaration a program names by path (as Nuxt's generated declarations name ../node_modules/<pkg>/...), next to a bare import of the same package; no private project source.",
+  "installed": {
+    "node_modules/pkg/package.json": "{ \"name\": \"pkg\", \"types\": \"./lib/index.d.ts\" }",
+    "node_modules/pkg/lib/index.d.ts": "export declare const a: 1;\n",
+    "node_modules/pkg/lib/extra.d.ts": "export declare const b: 2;\n"
+  },
+  "programFiles": ["node_modules/pkg/lib/extra.d.ts"],
+  "bareImport": "import { a } from \"pkg\";",
+  "expectedMirrorFiles": ["node_modules/pkg/lib/extra.d.ts"],
+  "expectedLinks": [
+    {
+      "virtualDir": "node_modules/pkg/lib/index.d.ts",
+      "realDir": "node_modules/pkg/lib/index.d.ts"
+    },
+    {
+      "virtualDir": "node_modules/pkg/package.json",
+      "realDir": "node_modules/pkg/package.json"
+    }
+  ],
+  "rejectedBefore": "The mirrored file claimed node_modules/pkg whole, so its package.json and lib/index.d.ts were never linked and the bare import reported TS2307."
+}
