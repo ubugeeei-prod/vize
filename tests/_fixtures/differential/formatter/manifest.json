@@ -2775,6 +2775,130 @@
       ]
     },
     {
+      "id": "formatter/sfc/multiline-directive-value-budget",
+      "state": "active",
+      "targets": [
+        "fmt"
+      ],
+      "inputs": {
+        "root": "sfc-multiline-directive-value-budget",
+        "files": [
+          {
+            "path": "App.vue.txt",
+            "sha256": "58ce3c0377d2aab0df43edb2428a15912144547c01d2aa0f977f906c3122e0cc",
+            "role": "entry",
+            "kind": "vue",
+            "runtimeFileName": "App.vue"
+          }
+        ],
+        "config": []
+      },
+      "provenance": {
+        "issues": [],
+        "commits": [
+          {
+            "sha": "b3858ac9b7d886c07e8c2f1075e13d4fa19bcb57",
+            "role": "pre-fix-base",
+            "paths": [
+              "crates/vize_glyph/src/script/expression.rs"
+            ]
+          }
+        ],
+        "sources": [
+          {
+            "kind": "repository-authored",
+            "revision": "c3a1ddd0f649b35db24abcc5b894786864945466",
+            "path": "crates/vize_glyph/tests/template_attribute_value_budget.rs",
+            "symbol": "multiline_logical_value_breaks_on_its_own_line"
+          }
+        ]
+      },
+      "witnesses": [
+        {
+          "path": "crates/vize_glyph/tests/template_attribute_value_budget.rs",
+          "symbol": "multiline_logical_value_breaks_on_its_own_line",
+          "executor": "rust-test",
+          "asserts": [
+            "full-output-bytes",
+            "standalone-value-budget",
+            "3-pass-idempotence"
+          ],
+          "limitations": [
+            "The fixture covers logical values authored across lines without a leading break; member chains and tab indentation stay in the Rust witness file."
+          ]
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "directive-values"
+            ],
+            "selector": "v-if and bound logical values authored across lines that overflow once joined"
+          }
+        ]
+      },
+      "adapters": {
+        "legacy": "formatter-cli-v1",
+        "native": null,
+        "reasons": {
+          "legacy": "Source-built formatter CLI compares complete output and a three-pass fixed point.",
+          "native": "No verified native formatter adapter; unsupported is nonpass."
+        }
+      },
+      "expectations": {
+        "legacy": {
+          "state": "captured",
+          "baselineRevision": "f59e69c38ecbead394ba30f0fdacb5f9c1b9fd04",
+          "artifacts": [
+            {
+              "path": "sfc-multiline-directive-value-budget/reference.expected.txt",
+              "sha256": "604dd41ad59608a6306529c84471c0b916479d618f97286acad19091f7d5cea4",
+              "role": "repository-authored-regression-reference",
+              "provenance": {
+                "revision": "c3a1ddd0f649b35db24abcc5b894786864945466",
+                "path": "crates/vize_glyph/tests/template_attribute_value_budget.rs",
+                "symbol": "multiline_logical_value_breaks_on_its_own_line",
+                "assertion": "A multiline logical directive value prints its standalone layout on the first pass and stays byte-stable."
+              },
+              "mediaType": "text/x-vue",
+              "runtimeFileName": "App.vue"
+            }
+          ],
+          "contract": "formatter-byte-output-v1",
+          "fields": [
+            "reference-full-output-bytes",
+            "candidate-cli-output-bytes",
+            "3-pass-idempotence"
+          ],
+          "missingFields": [
+            "structured FormatResult.changed is covered by the Rust convergence witness"
+          ],
+          "referenceState": "repository-authored habitica-derived budget contract; exact-source Actions required"
+        }
+      },
+      "comparison": {
+        "contract": "formatter-byte-output-v1",
+        "requiredFacets": [
+          "full-output-bytes",
+          "idempotence"
+        ],
+        "transportMappings": []
+      },
+      "scenarios": [
+        {
+          "id": "initial",
+          "inputRef": "App.vue",
+          "operations": []
+        }
+      ]
+    },
+    {
       "id": "formatter/sfc/plain-style-nested-comments",
       "state": "active",
       "targets": [

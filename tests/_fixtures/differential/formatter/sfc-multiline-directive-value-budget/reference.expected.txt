@@ -1,0 +1,22 @@
+<template>
+  <div>
+    <div>
+      <div
+        v-if="
+          user.purchased.background.birthday_bash ||
+          user.purchased.background.on_a_strange_planet_x
+        "
+      >
+        x
+      </div>
+      <Item
+        :empty-item="
+          !flatGear[activeItems[group]] ||
+          flatGear[activeItems[group]].key.indexOf('_base_0') !== -1
+        "
+        :item="flatGear[activeItems[group]]"
+      />
+      <div v-if="a || b">x</div>
+    </div>
+  </div>
+</template>
