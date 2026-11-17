@@ -504,7 +504,7 @@ export function run(stepName: string, dryRun: boolean): string[] {
     const body = read(child).replace(/\n*$/u, "\n");
     write(child, kept.length ? body + "\n" + kept.join("\n") + "\n" : body);
     pending.delete(parent);
-    if (!dryRun) git("rm", "-q", parent);
+    git("rm", "-q", parent);
   }
   for (const [file, text] of pending) fs.writeFileSync(path.join(repoRoot, file), text);
   for (const [from, to] of renames) {
