@@ -54,7 +54,7 @@ test("generic lexer and profile policy mutations fail without rejecting dialect 
   const genericMarkupFiles = [
     "markup/profile.rs",
     "markup/htmlish/lex.rs",
-    "markup/htmlish/lex/native.rs",
+    "markup/htmlish/lex/states_tag.rs",
     "markup/htmlish/lex/compat.rs",
     "markup/htmlish/lex/nested/token.rs",
   ];
