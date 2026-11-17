@@ -38,6 +38,10 @@ mod plugin_lint;
 #[cfg(feature = "napi")]
 mod plugin_output;
 #[cfg(feature = "napi")]
+pub(crate) mod plugin_plan;
+#[cfg(feature = "napi")]
+pub use plugin_plan::register_plugin_plan;
+#[cfg(feature = "napi")]
 mod plugin_sdk;
 #[cfg(feature = "napi")]
 mod sfc;

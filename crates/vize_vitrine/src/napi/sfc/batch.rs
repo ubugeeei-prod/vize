@@ -74,6 +74,11 @@ fn compile_sfc_batch_inner(
 
     let ssr = opts.ssr.unwrap_or(false);
     let vapor = opts.vapor.unwrap_or(false);
+    let directive_contracts = crate::napi::plugin_plan::compile_directives(
+        opts.plugin_plan.as_deref(),
+        opts.ssr.unwrap_or(false),
+        vapor,
+    )?;
     let is_ts = opts.is_ts.unwrap_or(false);
     let custom_renderer = opts.custom_renderer.unwrap_or(false);
     let custom_elements = vize_atelier_core::options::CustomElementMatcher::from_patterns(
@@ -191,6 +196,7 @@ fn compile_sfc_batch_inner(
                 dialect: vue_version,
                 compiler_options: {
                     let mut dom_options = experimentals.dom_options();
+                    dom_options.directive_contracts = directive_contracts.clone();
                     if let Some(value) = opts.template_cache_handlers {
                         dom_options.cache_handlers = value;
                     }

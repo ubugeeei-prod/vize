@@ -55,6 +55,8 @@ export interface BatchCompileOptionsNapi extends ExperimentalCompileFlags {
   typeResolutionFallbackTsconfig?: string;
   customRenderer?: boolean;
   customElements?: string[];
+  /** Digest of the registered `vue.plugins` plan whose directive contracts apply. */
+  pluginPlan?: string;
   templateSyntax?: "standard" | "strict" | "quirks";
   runtimeModuleName?: string;
   runtimeGlobalName?: string;

@@ -117,8 +117,11 @@ invalidating a plan that is valid today.
   authored span. `vize build` admits the plan once per output it produces, so
   a plugin whose `supports.outputs` omits one is refused (`host-unsupported`).
   The plan still loads nowhere until the type checker implements the
-  capability too. The Vite host and JSX/TSX templates do not read the table
-  yet.
+  capability too. The Vite host registers the resolved plan with the native
+  compiler once (`registerPluginPlan`), which re-verifies it and lowers the
+  table; every compile then names the plan by its digest, admits the output
+  it produces, and refuses an unknown digest (`plan-stale`). JSX/TSX
+  templates do not read the table yet.
 
 ## Plugin lint rules
 

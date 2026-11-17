@@ -67,6 +67,9 @@ pub struct SfcParseOptionsNapi {
 #[derive(Default)]
 pub struct SfcCompileOptionsNapi {
     pub whitespace: Option<String>,
+    /// Digest of a `vue.plugins` plan registered with `registerPluginPlan`;
+    /// its directive contracts apply to this compile (#13074).
+    pub plugin_plan: Option<String>,
     pub filename: Option<String>,
     pub mode: Option<String>,
     pub source_map: Option<bool>,
@@ -200,6 +203,9 @@ pub struct SfcCompileResultNapi {
 #[derive(Default)]
 pub struct BatchCompileOptionsNapi {
     pub whitespace: Option<String>,
+    /// Digest of a `vue.plugins` plan registered with `registerPluginPlan`;
+    /// its directive contracts apply to this compile (#13074).
+    pub plugin_plan: Option<String>,
     pub mode: Option<String>,
     pub ssr: Option<bool>,
     pub vapor: Option<bool>,
