@@ -101,6 +101,21 @@ defineSlots<ComboboxSlots<O, G>>()
   assert.match(slotReason(source, 1) ?? "", importedSlots);
 });
 
+test("a slot named by a bound literal is static", () => {
+  const source = `<script setup lang="ts">
+import { type ComponentSlots, SlotUse } from '@/constants/slots'
+defineSlots<ComponentSlots<SlotUse.MonthPicker>>()
+</script>
+<template>
+  <slot :name="\`month-overlay-value\`" :value="value" />
+  <slot :name="'top-extra'" />
+  <slot :name="\`item-\${name}\`" />
+</template>`;
+  assert.match(slotReason(source) ?? "", importedSlots);
+  assert.match(slotReason(source, 1) ?? "", importedSlots);
+  assert.equal(slotReason(source, 2), null);
+});
+
 test("a slot the file spells, binds or cannot see stays counted", () => {
   const spelled = `<script setup lang="ts">
 import type { Base } from './types'

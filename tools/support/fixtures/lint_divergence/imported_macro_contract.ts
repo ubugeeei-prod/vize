@@ -52,9 +52,11 @@ export function undeclaredSlotFromImportedContract(offset: number, source: strin
   if (!source.startsWith("<slot", offset) || !/[\s/>]/u.test(source[offset + 5] ?? ""))
     return false;
   const tag = source.slice(offset, source.indexOf(">", offset) + 1);
-  // A bound name could be anything; only a static or absent name is checked.
-  if (/\s(?::|v-bind:)name\b/u.test(tag)) return false;
-  const name = /\sname\s*=\s*(?:"([^"]*)"|'([^']*)')/u.exec(tag);
+  // A bound name could be anything; only a static or absent name is checked,
+  // and a bound literal (`:name="\`month-overlay-value\`"`) is static.
+  const literal = /\s(?::|v-bind:)name\s*=\s*"\s*(?:`([^`$]*)`|'([^']*)')\s*"/u.exec(tag);
+  if (literal === null && /\s(?::|v-bind:)name\b/u.test(tag)) return false;
+  const name = literal ?? /\sname\s*=\s*(?:"([^"]*)"|'([^']*)')/u.exec(tag);
   const slot = name === null ? "default" : (name[1] ?? name[2] ?? "");
   const [argument, ...others] = typeArguments(source, "defineSlots");
   return (
