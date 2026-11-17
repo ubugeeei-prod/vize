@@ -85,7 +85,12 @@ mod tests {
                         walk_interpolations(&branch.region.ops, visit);
                     }
                 }
-                Op::For(for_op) => walk_interpolations(&for_op.region.ops, visit),
+                Op::For(for_op) => {
+                    walk_interpolations(&for_op.region.ops, visit);
+                    if let Some(empty) = for_op.empty_region() {
+                        walk_interpolations(&empty.ops, visit);
+                    }
+                }
                 Op::OriginalFor(for_op) => walk_interpolations(&for_op.region.ops, visit),
                 Op::Text(_) | Op::Comment(_) => {}
             }

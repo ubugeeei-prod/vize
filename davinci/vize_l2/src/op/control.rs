@@ -51,6 +51,15 @@ pub struct ForOp<'a> {
     pub span: Span,
 }
 
+impl<'a> ForOp<'a> {
+    /// A host loop's `@empty` region: content rendered once, outside the
+    /// loop, when the collection yields no item.
+    #[must_use]
+    pub fn empty_region(&self) -> Option<&Region<'a>> {
+        self.host.as_ref().and_then(|host| host.empty.as_ref())
+    }
+}
+
 /// The host-language head of a [`ForOp`] and its `@empty` region.
 ///
 /// The head is retained host AST with authored spans, never re-synthesized.
