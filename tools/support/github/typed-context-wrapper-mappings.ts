@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { CHECK_MODE_PRODUCER_SUCCESSORS } from "../compat/content-mapper/check-mode-successor.ts";
+import { beforePugEchoTable } from "../compat/content-mapper/pug-echo-table-successor.ts";
 import { beforeVerbatimOffset } from "../compat/content-mapper/verbatim-offset-successor.ts";
 
 export type MapperPacket = {
@@ -18,15 +19,17 @@ export function assertTypedContextWrapperMappings(
 ): void {
   const digest = (bytes: string | Uint8Array) => createHash("sha256").update(bytes).digest("hex");
   const verbatimRunSuccessor = "    span_normalize::join_verbatim_runs(source, generated, spans)\n";
-  const currentProducer = beforeVerbatimOffset(Buffer.from(producer).toString("utf8"));
   const componentExportAdditions = [
     "mod component_export;\n",
     "    component_export::insert_spans(&mut spans, mappings, metadata);\n",
   ];
   assert.equal(
     digest(producer),
-    "965d4f517cc073bc176ffed0653c3ed439854351bf6083794e35dadefb2436ed",
+    "7ca582212b81c8a77956aef8b5213ef4be86d189f83e42297d156e34e7366e05",
     "unqualified content-mapper producer",
+  );
+  const currentProducer = beforeVerbatimOffset(
+    beforePugEchoTable(Buffer.from(producer).toString("utf8")),
   );
   const qualificationRefactorSuccessors = [
     [

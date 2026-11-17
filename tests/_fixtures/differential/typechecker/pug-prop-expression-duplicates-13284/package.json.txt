@@ -1,0 +1,12 @@
+{
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "tsc -p tsconfig.json --noEmit --runExternalCode"
+  },
+  "devDependencies": {
+    "typescript": "7.1.0-beta",
+    "vize": "0.778.0",
+    "vue": "3.5.45"
+  }
+}
