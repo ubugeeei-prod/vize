@@ -70,13 +70,27 @@ await test("a source-only API reaches ESM through the paired entrypoint and rest
   }
 });
 
-await test("an unrelated loader difference refuses pairing before the entrypoint changes", () => {
+await test("a loader the source changed is paired from source and restored", () => {
   const f = fixture();
   try {
-    fs.writeFileSync(path.join(f.installed, "native-targets.js"), "module.exports = [1];\n");
-    assert.throws(() => stageSourceNativeEntrypoint(f.root, f.app, f.artifacts));
+    const targets = path.join(f.installed, "native-targets.js");
+    fs.writeFileSync(targets, "module.exports = [1];\n");
+    const staged = stageSourceNativeEntrypoint(f.root, f.app, f.artifacts);
+    assert.equal(fs.readFileSync(targets, "utf8"), "module.exports = [];\n");
+    assert.equal(
+      fs.readFileSync(path.join(f.artifacts, "published-native-targets.js"), "utf8"),
+      "module.exports = [1];\n",
+    );
+    assert.deepEqual(
+      JSON.parse(fs.readFileSync(path.join(f.artifacts, "source-native-entry.json"), "utf8"))
+        .pairedLoaders,
+      ["native-targets.js"],
+    );
+    fs.writeFileSync(targets, "module.exports = [2];\n");
+    assert.throws(() => staged.verify());
+    assert.throws(() => staged.restore());
+    assert.equal(fs.readFileSync(targets, "utf8"), "module.exports = [1];\n");
     assert.equal(fs.readFileSync(path.join(f.installed, "index.js"), "utf8"), published);
-    assert.deepEqual(fs.readdirSync(f.artifacts), []);
   } finally {
     fs.rmSync(f.root, { recursive: true, force: true });
   }

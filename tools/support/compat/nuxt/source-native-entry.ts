@@ -22,21 +22,30 @@ export function stageSourceNativeEntrypoint(root: string, fixture: string, artif
   assert.notEqual(installedEntry, sourceEntry, "the fixture must own its published entrypoint");
   const installed = path.dirname(installedEntry);
   const loaders = ["native-binding.js", "native-binding-identity.js", "native-targets.js"];
+  // A loader the source changed since the fixture's pinned release is paired
+  // from source as well, so the source binary never runs behind a mix of
+  // published and source loaders. Unchanged loaders keep their published bytes.
+  const pairedLoaders = loaders.flatMap((name) => {
+    const published = fs.readFileSync(path.join(installed, name));
+    const sourceLoader = fs.readFileSync(path.join(source, name));
+    return published.equals(sourceLoader) ? [] : [{ name, published, source: sourceLoader }];
+  });
   const loaderHashes = Object.fromEntries(
-    loaders.map((name) => {
-      const original = fs.readFileSync(path.join(installed, name));
-      assert.deepEqual(
-        original,
-        fs.readFileSync(path.join(source, name)),
-        `source and fixture loader must match before pairing: ${name}`,
-      );
-      return [name, hash(original)];
-    }),
+    loaders.map((name) => [name, hash(fs.readFileSync(path.join(source, name)))]),
   );
   const original = fs.readFileSync(installedEntry);
   const current = fs.readFileSync(sourceEntry);
   fs.writeFileSync(path.join(artifacts, "published-native-index.js"), original, { flag: "wx" });
   fs.writeFileSync(path.join(artifacts, "source-native-index.js"), current, { flag: "wx" });
+  for (const loader of pairedLoaders) {
+    const published = path.join(artifacts, `published-${loader.name}`);
+    fs.writeFileSync(published, loader.published, { flag: "wx" });
+    fs.writeFileSync(path.join(artifacts, `source-${loader.name}`), loader.source, { flag: "wx" });
+  }
+  const restoreLoaders = () => {
+    for (const loader of pairedLoaders)
+      fs.writeFileSync(path.join(installed, loader.name), loader.published);
+  };
   const verify = () => {
     assert.deepEqual(fs.readFileSync(installedEntry), current, "source entrypoint changed");
     assert.deepEqual(fs.readFileSync(sourceEntry), current, "source entrypoint snapshot changed");
@@ -52,6 +61,7 @@ export function stageSourceNativeEntrypoint(root: string, fixture: string, artif
         sourceSha256: hash(current),
         publishedSha256: hash(original),
         loaderHashes,
+        pairedLoaders: pairedLoaders.map((loader) => loader.name),
       },
       null,
       2,
@@ -60,9 +70,12 @@ export function stageSourceNativeEntrypoint(root: string, fixture: string, artif
   );
   try {
     fs.writeFileSync(installedEntry, current);
+    for (const loader of pairedLoaders)
+      fs.writeFileSync(path.join(installed, loader.name), loader.source);
     verify();
   } catch (error) {
     fs.writeFileSync(installedEntry, original);
+    restoreLoaders();
     throw error;
   }
   let restored = false;
@@ -79,6 +92,7 @@ export function stageSourceNativeEntrypoint(root: string, fixture: string, artif
         verify();
       } finally {
         fs.writeFileSync(installedEntry, original);
+        restoreLoaders();
         assert.deepEqual(fs.readFileSync(installedEntry), original);
         restored = true;
       }

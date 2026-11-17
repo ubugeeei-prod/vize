@@ -52,3 +52,19 @@ test("relocated project API exports cannot inherit the original initialization l
     assert.throws(() => originalNativeLoaderModule("index.js", Buffer.from(relocated)));
   }
 });
+
+test("native-binding.js keeps its original loading law under the load diagnostics", () => {
+  const current = fs.readFileSync(
+    new URL("../../npm/native/native-binding.js", import.meta.url),
+    "utf8",
+  );
+  for (const [from, to] of [
+    ['const linuxGnuGlibcFloor = "2.17";', 'const linuxGnuGlibcFloor = "2.28";'],
+    ["  attemptedTargets = nativeTargets(loadErrors);\n", "  attemptedTargets = [];\n"],
+    ["let attemptedTargets = [];\n", ""],
+  ]) {
+    const changed = current.replace(from, to);
+    assert.notEqual(changed, current);
+    assert.throws(() => originalNativeLoaderModule("native-binding.js", Buffer.from(changed)));
+  }
+});

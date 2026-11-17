@@ -34,13 +34,76 @@ const pluginLintSessionExport =
 const configStdinCapabilityExport =
   "module.exports.supportsCliConfigStdin = nativeBinding.supportsCliConfigStdin;\n";
 const compileTsrxExport = "module.exports.compileTsrx = nativeBinding.compileTsrx;\n";
-const sha256 = (body: Buffer) => createHash("sha256").update(body).digest("hex");
+const sha256 = (body: Buffer | string) => createHash("sha256").update(body).digest("hex");
+
+// native-binding.js gained load-failure diagnostics (the glibc floor, dlopen
+// hints, absent platform packages). They replace only `buildLoadError`, and
+// the loader records the targets it tried; loading itself is unchanged.
+const attemptedTargetsDeclaration = "const loadErrors = [];\nlet attemptedTargets = [];\n";
+const attemptedTargetsLoop =
+  "  attemptedTargets = nativeTargets(loadErrors);\n  for (const target of attemptedTargets) {\n";
+const loadDiagnosticsStart = "// Every Linux GNU binding is linked against this glibc";
+const loadDiagnosticsEnd = "let nativeBinding = loadNativeBinding();\n";
+const loadDiagnosticsSha256 = "339ebee50256785fa10b1ee1e06639f7ced67a98aa443ae1ccf2d69005b8fd39";
+const originalBuildLoadError = `function buildLoadError() {
+  if (loadErrors.length === 0) {
+    return new Error("Failed to load native binding");
+  }
+
+  const loadFailure = loadErrors.find((error) => !error?.vizeMissingNativeSpecifier);
+  if (loadFailure) {
+    return new Error(\`Failed to load native binding: \${loadFailure.message}\`, {
+      cause: loadErrors.reduce((error, current) => {
+        current.cause = error;
+        return current;
+      }),
+    });
+  }
+
+  return new Error(
+    \`Cannot find native binding. \` +
+      \`npm has a bug related to optional dependencies (https://github.com/npm/cli/issues/4828). \` +
+      "Please try \`npm i\` again after removing both package-lock.json and node_modules directory.",
+    {
+      cause: loadErrors.reduce((error, current) => {
+        current.cause = error;
+        return current;
+      }),
+    },
+  );
+}
+
+`;
+
+function originalNativeBinding(text: string): string {
+  for (const [piece, label] of [
+    [attemptedTargetsDeclaration, "attempted target declaration"],
+    [attemptedTargetsLoop, "attempted target loop"],
+    [loadDiagnosticsStart, "load diagnostics"],
+    [loadDiagnosticsEnd, "native binding initialization"],
+  ] as const) {
+    assert.equal(text.split(piece).length, 2, `exactly one ${label}`);
+  }
+  const start = text.indexOf(loadDiagnosticsStart);
+  const end = text.indexOf(loadDiagnosticsEnd);
+  assert.ok(start < end, "load diagnostics precede initialization");
+  assert.equal(sha256(text.slice(start, end)), loadDiagnosticsSha256, "exact load diagnostics");
+  return (text.slice(0, start) + originalBuildLoadError + text.slice(end))
+    .replace(attemptedTargetsDeclaration, "const loadErrors = [];\n")
+    .replace(attemptedTargetsLoop, "  for (const target of nativeTargets(loadErrors)) {\n");
+}
 
 /** Keep the original authenticated loader law through the exact public additions. */
 export function originalNativeLoaderModule(name: string, body: Buffer): Buffer {
   const reference = nativeLoaderProgram.modules.find((module) => module.name === name);
   assert.ok(reference, "unknown native loader module");
   if (body.length === reference.bytes && sha256(body) === reference.sha256) return body;
+  if (name === "native-binding.js") {
+    const original = Buffer.from(originalNativeBinding(body.toString("utf8")));
+    assert.equal(original.length, reference.bytes, "complete original native binding length");
+    assert.equal(sha256(original), reference.sha256, "complete original native binding program");
+    return original;
+  }
   assert.equal(name, "index.js", "only the public project API facade changed");
   const text = body.toString("utf8");
   assert.deepEqual(Buffer.from(text), body);
