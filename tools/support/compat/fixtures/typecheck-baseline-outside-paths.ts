@@ -72,6 +72,28 @@ export function rewriteOutsidePackagePaths(
   sourceConfigPath: string,
   configDir: string,
 ): RewrittenPaths | null {
+  const result = overlayPackagePaths(fixtureRoot, sourceConfigPath, configDir);
+  return result?.changed ? result.paths : null;
+}
+
+/**
+ * The source chain's winning `paths`, spelled from the overlay's directory.
+ * TypeScript replaces `paths` wholesale, so an overlay that adds any mapping
+ * must carry these too or it drops the project's own aliases (Vben's `#/*`).
+ */
+export function declaredOverlayPaths(
+  fixtureRoot: string,
+  sourceConfigPath: string,
+  configDir: string,
+): RewrittenPaths | null {
+  return overlayPackagePaths(fixtureRoot, sourceConfigPath, configDir)?.paths ?? null;
+}
+
+function overlayPackagePaths(
+  fixtureRoot: string,
+  sourceConfigPath: string,
+  configDir: string,
+): { paths: RewrittenPaths; changed: boolean } | null {
   const root = resolve(fixtureRoot);
   const declared = winningPaths(sourceConfigPath, root);
   if (declared == null) return null;
@@ -94,7 +116,7 @@ export function rewriteOutsidePackagePaths(
     rewritten[name] = remapped;
     if (!sameStringArray(targets, remapped)) changed = true;
   }
-  return changed ? rewritten : null;
+  return { paths: rewritten, changed };
 }
 
 export function pathMappingRoot(
