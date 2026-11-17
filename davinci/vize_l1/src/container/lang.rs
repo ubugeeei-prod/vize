@@ -254,7 +254,7 @@ pub fn sfc_template_lang(source: &str) -> Option<Result<TemplateLang, Unsupporte
         TemplateTags::Attributed => {}
     }
     let mut found = None;
-    let _ = crate::container::vue::compat::split_blocks(source, |mut block| {
+    let _ = crate::container::vue::boundary::split_blocks(source, |mut block| {
         if !block.tag_name.eq_ignore_ascii_case(b"template") {
             return true;
         }
