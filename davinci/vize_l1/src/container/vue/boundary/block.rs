@@ -1,4 +1,4 @@
-mod compat;
+mod lexical;
 mod literals;
 mod regex;
 mod script;
@@ -11,7 +11,7 @@ pub(super) use super::{
     BlockAttrs, BlockEndSearch, BlockParseResult, advance_line, build_malformed_error,
     content_end_column, find_block_end, find_closing_tag_end, newlines,
 };
-use compat::is_void_block;
+use lexical::is_void_block;
 pub(super) use literals::{can_start_regex_literal, skip_script_string_literal};
 pub(super) use regex::skip_regex_literal;
 use script::find_script_block_end;

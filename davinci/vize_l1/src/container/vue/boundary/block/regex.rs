@@ -1,6 +1,6 @@
 //! Transactional lookahead for JavaScript regex literals in SFC block scans.
 
-pub(in crate::container::vue::compat) fn skip_regex_literal(
+pub(in crate::container::vue::boundary) fn skip_regex_literal(
     bytes: &[u8],
     mut pos: usize,
     len: usize,

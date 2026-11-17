@@ -298,7 +298,7 @@
             "sha": "ddfd83fcea818a8bdfb95d13d2ab2efc44eebd3c",
             "role": "pre-fix-base",
             "paths": [
-              "davinci/vize_l1/src/container/vue/compat/block.rs",
+              "davinci/vize_l1/src/container/vue/boundary/block.rs",
               "crates/vize_glyph/src/formatter/opening_tag.rs"
             ]
           }

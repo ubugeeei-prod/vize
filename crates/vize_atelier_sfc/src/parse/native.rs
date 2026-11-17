@@ -3,7 +3,7 @@
 use std::borrow::Cow;
 use vize_carton::FxHashMap;
 use vize_l1::container::Vue;
-use vize_l1::container::vue::compat::{
+use vize_l1::container::vue::boundary::{
     CompatBlock, CompatBlockLocation, CompatSplitError, split_blocks, tag_name_eq,
 };
 

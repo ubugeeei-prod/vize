@@ -16,7 +16,7 @@ use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use serde::{Deserialize, Serialize};
 use vize_atelier_sfc::SfcDescriptor;
 use vize_l0::{FxHashMap, String, cstr};
-use vize_l1::container::vue::compat::{CompatBlock, split_blocks, tag_name_eq};
+use vize_l1::container::vue::boundary::{CompatBlock, split_blocks, tag_name_eq};
 
 const PREPROCESSOR_LANGS: [&str; 5] = ["scss", "sass", "less", "stylus", "styl"];
 

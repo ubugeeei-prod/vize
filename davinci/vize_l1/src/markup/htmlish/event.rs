@@ -6,8 +6,7 @@
 //! plain [`Event`]s (12 bytes, `Copy`), then `build` walks that slice
 //! with lookahead. The split keeps the tree builder a straight-line
 //! function over data instead of a callback state machine.
-
-mod native;
+mod record;
 #[cfg(test)]
 mod tests;
 
