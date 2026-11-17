@@ -5,6 +5,7 @@ mod callback_order;
 mod compatibility_parses;
 mod directives;
 mod eslint_directive;
+mod eslint_vue_aliases;
 mod facts;
 mod helpers;
 mod macro_facts;
