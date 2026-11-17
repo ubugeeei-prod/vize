@@ -224,7 +224,7 @@
           "column": 4,
           "severity": 1,
           "code": 2345,
-          "message": "Argument of type '{}' is not assignable to parameter of type '$ComponentCheckProps<Props, $PublicComponentAttrs & Record<string, unknown>>'.\nType '{}' is missing the following properties from type '{ readonly count: number; readonly label: string; readonly tone?: \"danger\" | \"info\" | undefined; }': count, label"
+          "message": "Argument of type '{ \"data-id\": number; }' is not assignable to parameter of type '$ComponentCheckProps<Props, $PublicComponentAttrs & Record<string, unknown>>'.\nType '{ \"data-id\": number; }' is missing the following properties from type '{ readonly count: number; readonly label: string; readonly tone?: \"danger\" | \"info\" | undefined; }': count, label"
         },
         {
           "file": "src/Parent.vue",

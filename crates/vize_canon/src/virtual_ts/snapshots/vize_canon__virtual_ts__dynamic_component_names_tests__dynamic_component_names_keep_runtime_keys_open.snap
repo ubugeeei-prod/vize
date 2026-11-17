@@ -258,6 +258,8 @@ const handler = () => {}
   void __vize_prop_check_0_static_prop;
   (undefined as unknown as __Child_Check_0)({
     ...{} as { "onSave": never },
+    // @ts-ignore Dynamic prop names and values own their diagnostics as expressions.
+    ...{ [(propName)]: (dynamicValue) },
     "staticProp": staticValue,
   });
   type $SlotContract_0 = $StructuralSlots<typeof Child>;

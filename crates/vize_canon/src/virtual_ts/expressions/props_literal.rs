@@ -22,6 +22,7 @@ use vize_croquis::{
 };
 use vize_l0::ts;
 
+mod dynamic_names;
 mod entry_marks;
 mod prop_entry;
 pub(crate) use entry_marks::{literal_carries_value, named_entry_marks};
@@ -87,6 +88,12 @@ pub(crate) fn append_props_literal(
             super::super::helpers::push_ts_string_literal(ts, &vize_carton::cstr!("on{handler}"));
             ts.push_str(": never },\n");
         }
+    }
+
+    // Runtime-named props reach only the checked literal: inference copies
+    // keep their static-key contract (#2797).
+    if !source_context.is_inference_only() {
+        dynamic_names::append_dynamic_name_entries(ts, usage, template_binding_access, expr_indent);
     }
 
     let class_bindings = collect_generated_class_bindings(usage, template_binding_access);
