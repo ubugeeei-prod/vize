@@ -248,6 +248,12 @@ const emit = defineEmits<{ apply: []; change: [] }>()
 emit('change')
 </script>`;
   assert.equal(unused(plain, "apply"), null);
+  const bound = plain.replace(
+    "emit('change')",
+    "const handlers = { toggleSave: emit.bind(null, 'apply') }",
+  );
+  assert.match(unused(bound, "apply") ?? "", /emit\.bind/u);
+  assert.equal(unused(plain.replace("emit('change')", "emitter.bind(null)"), "apply"), null);
 });
 
 test("an inline intersection prop beside a defaults spread stays Patina's check", () => {
