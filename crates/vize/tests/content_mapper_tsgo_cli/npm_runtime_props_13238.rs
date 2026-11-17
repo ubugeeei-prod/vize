@@ -158,15 +158,23 @@ fn write(root: &Path, path: &str, contents: &str) {
     fs::write(path, contents).unwrap();
 }
 
-fn mapper_lines(tsgo: &Path, root: &Path) -> (Option<i32>, CompactString) {
+/// `file(line,col) TScode` for every diagnostic tsgo reports with the mapper.
+fn mapper_lines(tsgo: &Path, root: &Path) -> (Option<i32>, Vec<CompactString>) {
     let output = check_project(tsgo, root, "tsconfig.json");
     assert_eq!(output.stderr, b"", "{}", output_text(&output));
-    (
-        output.status.code(),
-        std::str::from_utf8(&output.stdout).unwrap().into(),
-    )
+    let observed = std::str::from_utf8(&output.stdout)
+        .unwrap()
+        .lines()
+        .filter_map(|line| {
+            let (position, rest) = line.split_once(": error ")?;
+            let (code, _) = rest.split_once(':')?;
+            Some(cstr!("{position} {code}"))
+        })
+        .collect::<Vec<_>>();
+    (output.status.code(), observed)
 }
 
+/// The same `file(line,col) TScode` rows from `vize check`.
 fn cli_lines(tsgo: &Path, root: &Path) -> (Option<i32>, Vec<CompactString>) {
     let cli = Command::new(env!("CARGO_BIN_EXE_vize"))
         .current_dir(root)
@@ -194,15 +202,12 @@ fn cli_lines(tsgo: &Path, root: &Path) -> (Option<i32>, Vec<CompactString>) {
                 .as_array()
                 .unwrap()
                 .iter()
-                .map(move |diagnostic| {
-                    let text = diagnostic.as_str().unwrap();
-                    let head = text.split(" (source:").next().unwrap_or(text);
-                    let head = head.split(" [").next().unwrap_or(head);
-                    let code = text
-                        .split_once(" [")
-                        .and_then(|(_, rest)| rest.split_once(']'))
-                        .map_or("", |(code, _)| code);
-                    cstr!("{name} {head} {code}")
+                .filter_map(move |diagnostic| {
+                    let text = diagnostic.as_str()?.strip_prefix("error:")?;
+                    let (position, rest) = text.split_once(" [")?;
+                    let (code, _) = rest.split_once(']')?;
+                    let (line, column) = position.split_once(':')?;
+                    Some(cstr!("{name}({line},{column}) {code}"))
                 })
         })
         .collect::<Vec<_>>();
@@ -231,10 +236,7 @@ fn standard_tsgo_types_template_props_from_declared_runtime_props() {
     }
 
     // The reported project: both rows are clean.
-    assert_eq!(
-        mapper_lines(&tsgo, root),
-        (Some(0), CompactString::default())
-    );
+    assert_eq!(mapper_lines(&tsgo, root), (Some(0), Vec::new()));
     assert_eq!(cli_lines(&tsgo, root), (Some(0), Vec::new()));
 
     // `export *` barrels and default exports from declarations-only packages,
@@ -242,23 +244,27 @@ fn standard_tsgo_types_template_props_from_declared_runtime_props() {
     for (path, contents) in PACKAGES.into_iter().chain([DEFAULT_COMPONENT]) {
         write(root, path, contents);
     }
-    assert_eq!(
-        mapper_lines(&tsgo, root),
-        (Some(0), CompactString::default())
-    );
+    assert_eq!(mapper_lines(&tsgo, root), (Some(0), Vec::new()));
     assert_eq!(cli_lines(&tsgo, root), (Some(0), Vec::new()));
 
     for (path, contents) in NEGATIVE {
         write(root, path, contents);
     }
-    let (mapper_status, mapper) = mapper_lines(&tsgo, root);
-    assert_eq!(mapper_status, Some(2), "{mapper}");
-    assert_eq!(mapper, MAPPER_NEGATIVE);
-    let (cli_status, cli) = cli_lines(&tsgo, root);
-    assert_eq!(cli_status, Some(1), "{cli:?}");
-    assert_eq!(cli, CLI_NEGATIVE);
+    assert_eq!(
+        mapper_lines(&tsgo, root),
+        (Some(2), NEGATIVE_REPORTS.map(CompactString::from).to_vec())
+    );
+    assert_eq!(
+        cli_lines(&tsgo, root),
+        (Some(1), NEGATIVE_REPORTS.map(CompactString::from).to_vec())
+    );
 }
 
-const MAPPER_NEGATIVE: &str = "";
-
-const CLI_NEGATIVE: [&str; 0] = [];
+/// A wrong member, an optional prop's `undefined`, an undeclared name (with
+/// the declared one suggested), and the parent omitting required props.
+const NEGATIVE_REPORTS: [&str; 4] = [
+    "src/negative.vue(8,15) TS2339",
+    "src/negative.vue(9,9) TS18048",
+    "src/negative.vue(10,9) TS2551",
+    "src/parent.vue(9,4) TS2345",
+];

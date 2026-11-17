@@ -117,7 +117,9 @@ mod tests {
         );
         assert_eq!(
             lines_with(&code, "const props:"),
-            ["  const props: __RuntimePropShape<typeof sharedProps> & Props = {} as __RuntimePropShape<typeof sharedProps> & Props;"],
+            [
+                "  const props: __RuntimePropShape<typeof sharedProps> & Props = {} as __RuntimePropShape<typeof sharedProps> & Props;"
+            ],
             "{code}"
         );
         assert_eq!(
