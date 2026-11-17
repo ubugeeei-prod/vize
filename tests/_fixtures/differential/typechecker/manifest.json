@@ -44943,6 +44943,66 @@
       }
     },
     {
+      "id": "typechecker/regression/kebab-global-component-ref-13237",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "kebab-global-component-ref-13237/src/child.vue.txt",
+          "sha256": "89729280c470f0599beb1d6bd8c97ca696a43412f42e8a53d0e694253f3a7c11",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "kebab-global-component-ref-13237/src/components.d.ts.txt",
+          "sha256": "0a0f17fbcfaf3b80ad096bee472b094e2c44c7036abca00b2402d1563e8ee693",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "kebab-global-component-ref-13237/src/forms.vue.txt",
+          "sha256": "4ef1b06f285512b95723c4765792497533f1f7ef756fb940cebb36f1c577fbdb",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "kebab-global-component-ref-13237/src/options.vue.txt",
+          "sha256": "2a8fdb6d4722dae9e18312756e45e05d18ed12ae8948897adf1086ba4a8396ae",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "kebab-global-component-ref-13237/src/parent.vue.txt",
+          "sha256": "40a710737560c7f078e21051c33ed9ab519dd21031f7a8e2240e63dc992248ae",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "kebab-global-component-ref-13237/src/pug.vue.txt",
+          "sha256": "aa5d8e8c3c5939a8148126d012512cf36a265629f4dd959eff898ba235401e2a",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "kebab-global-component-ref-13237/tsconfig.json.txt",
+          "sha256": "febc49ad2a866cd3a4e5e7ab497abfa2a23b98a2f6757152f4becf836f4606c3",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "pug-template",
+              "ts"
+            ],
+            "selector": "content_mapper_tsgo_cli::kebab_global_component_ref_13237 and check_kebab_global_component_ref_cli::check_types_kebab_global_component_refs_as_the_component; exact #13237 project: a ref on a kebab-case `GlobalComponents` tag (`<my-child ref>`) holds the component instance like `<MyChild ref>` through `useTemplateRef`, `v-for`, Pug and template `$refs`, while an unregistered kebab tag stays its custom `Element`. Input-only registration; no native parity credit."
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/legacy-external-component-props",
       "state": "active",
       "targets": [

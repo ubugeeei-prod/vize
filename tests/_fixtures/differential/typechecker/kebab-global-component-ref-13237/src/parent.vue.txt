@@ -1,0 +1,14 @@
+<script setup lang="ts">
+import { useTemplateRef } from "vue"
+
+const pascal = useTemplateRef("pascal")
+const kebab = useTemplateRef("kebab")
+
+pascal.value?.focus()
+kebab.value?.focus()
+</script>
+
+<template>
+  <MyChild ref="pascal" />
+  <my-child ref="kebab" />
+</template>

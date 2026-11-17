@@ -1,0 +1,11 @@
+<script lang="ts">
+import { defineComponent } from "vue"
+
+export default defineComponent({})
+</script>
+
+<template>
+  <MyChild ref="pascal" />
+  <my-child ref="kebab" />
+  <button @click="$refs.pascal?.focus(); $refs.kebab?.focus()" />
+</template>

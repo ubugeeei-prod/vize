@@ -1,5 +1,5 @@
 use vize_croquis::{Analyzer, AnalyzerOptions, Croquis};
-use vize_l0::{Allocator, CompactString, FxHashSet};
+use vize_l0::{Allocator, CompactString, FxHashSet, String, cstr};
 use vize_relief::BindingType;
 
 use super::super::super::template_record::TemplateRecord;
@@ -246,9 +246,14 @@ fn unknown_foreign_namespace_elements_do_not_become_component_refs_from_setup_bi
             r#"<svg><shape ref="shape" /></svg><math><glyph ref="glyph" /></math>"#,
             &summary,
         )
-        .map(|registry| registry.body)
-        .as_deref(),
-        Some(r#" "shape": $DomElement<"shape", true>; "glyph": $DomElement<"glyph">; "#)
+        .map(|registry| registry.body),
+        // Vue still resolves both tags as components, so only a registered
+        // global component can own them.
+        Some(cstr!(
+            " \"shape\": {}; \"glyph\": {}; ",
+            global_lookup(&["Shape", "shape"], "", r#""shape", true"#),
+            global_lookup(&["Glyph", "glyph"], "", r#""glyph""#),
+        ))
     );
 }
 
@@ -433,4 +438,61 @@ const root = useTemplateRef("root");
         vec![registry_line, alias_line],
         "the setup-scope registry must not reference the template-local alias:\n{code}",
     );
+}
+
+// #13237: a kebab tag no binding owns is resolved through `GlobalComponents`
+// under the keys Vue tries (PascalCase, camelCase, authored), like its props;
+// an unregistered tag stays its custom element. Only the component branch is
+// `null` before mount, in a `v-for` and in `$refs`.
+#[test]
+fn unbound_kebab_tags_resolve_global_components_before_custom_elements() {
+    let registry = registry_checked(
+        "import { useTemplateRef } from 'vue';\nconst kebab = useTemplateRef('kebab')",
+        r#"<my-child ref="kebab" /><my-child v-for="i in 2" ref="many" /><svg><my-shape ref="shape" /></svg>"#,
+        (&Croquis::default(), &VirtualTsOptions::default()),
+        (
+            VirtualTsCheckOptions {
+                infer_template_dollar_refs: true,
+                ..Default::default()
+            },
+            &TemplateRecord::default(),
+        ),
+    )
+    .unwrap();
+    let kebab =
+        |null: &str| global_lookup(&["MyChild", "myChild", "my-child"], null, r#""my-child""#);
+    let shape = |null: &str| {
+        global_lookup(
+            &["MyShape", "myShape", "my-shape"],
+            null,
+            r#""my-shape", true"#,
+        )
+    };
+    let (plain, nullable) = (kebab(""), kebab(" | null"));
+    let (shape, nullable_shape) = (shape(""), shape(" | null"));
+    assert_eq!(
+        registry.body.as_str(),
+        cstr!(" \"kebab\": {plain}; \"many\": {nullable}[]; \"shape\": {shape}; ")
+    );
+    assert_eq!(
+        registry.dollar_body.as_str(),
+        cstr!(" \"kebab\": {nullable}; \"many\": {nullable}[]; \"shape\": {nullable_shape}; ")
+    );
+    assert!(registry.includes_component && registry.includes_dom_element);
+}
+
+/// The `GlobalComponents` lookup of a tag no binding owns, falling back to
+/// `$DomElement<fallback>`.
+fn global_lookup(keys: &[&str], null: &str, fallback: &str) -> String {
+    let mut lookup = String::default();
+    for key in keys {
+        lookup.push_str(&cstr!(
+            "(import('vue').GlobalComponents extends {{ \"{key}\": infer __C }} ? $TemplateComponentRef<__C>{null} : "
+        ));
+    }
+    lookup.push_str(&cstr!("$DomElement<{fallback}>"));
+    for _ in keys {
+        lookup.push(')');
+    }
+    lookup
 }

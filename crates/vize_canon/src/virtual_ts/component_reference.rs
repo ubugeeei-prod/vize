@@ -339,6 +339,53 @@ fn is_props_destructure_local(summary: &Croquis, candidate: &str) -> bool {
         })
 }
 
+/// The registry keys Vue's `resolveAsset` tries for a markup tag, in order:
+/// PascalCase, camelCase, then the authored spelling.
+pub(crate) fn registry_keys(tag: &str) -> [String; 3] {
+    let camel = camelize(tag);
+    [capitalize(camel.as_str()), camel, String::from(tag)]
+}
+
+/// The global component a tag no binding owns, as Vue resolves it from
+/// `GlobalComponents`: `component` wraps the first registered key's type
+/// (named `__C`), and `fallback` is what the tag is when none is registered
+/// (a custom element).
+///
+/// `<my-child>` and `<MyChild>` name the same `GlobalComponents` entry, so
+/// whatever reads the component of a tag (props, events, slots, refs) sees
+/// it under either spelling. Each key is matched structurally: indexing
+/// `GlobalComponents["myChild"]` behind a `"myChild" extends keyof` test is
+/// still an error (TS2538) for an absent key, which the checker turns into
+/// `any` for the whole lookup.
+pub(crate) fn global_component_type(
+    tag: &str,
+    component: impl Fn(&str) -> String,
+    fallback: &str,
+) -> String {
+    let registered = component("__C");
+    let mut output = String::default();
+    let mut previous: Option<String> = None;
+    let mut branches = 0_usize;
+    for key in registry_keys(tag) {
+        if previous.as_ref() == Some(&key) {
+            continue;
+        }
+        let mut key_literal = super::TextBuf::default();
+        super::helpers::push_ts_string_literal(&mut key_literal, key.as_str());
+        vize_carton::append!(
+            output,
+            "(import('vue').GlobalComponents extends {{ {key_literal}: infer __C }} ? {registered} : "
+        );
+        branches += 1;
+        previous = Some(key);
+    }
+    output.push_str(fallback);
+    for _ in 0..branches {
+        output.push(')');
+    }
+    output
+}
+
 pub(crate) fn has_type_only_component_candidate(
     syntactic_type_only_imported_names: &FxHashSet<CompactString>,
     template_name: &str,

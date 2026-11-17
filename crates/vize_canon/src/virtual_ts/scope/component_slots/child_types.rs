@@ -1,7 +1,9 @@
-use vize_carton::{String, cstr};
+use vize_carton::{String, cstr, is_native_tag};
 use vize_relief::{ElementNode, ElementType, Namespace, TemplateChildNode};
 
-use crate::virtual_ts::component_reference::resolved_component_binding_reference;
+use crate::virtual_ts::component_reference::{
+    global_component_type, resolved_component_binding_reference,
+};
 
 use super::ComponentSlotCheckMeta;
 use super::slot_syntax::is_slot_directive;
@@ -86,6 +88,13 @@ fn element_slot_child_type<'a, 'template>(
 
     match element.tag_type {
         ElementType::Component => None,
+        // A non-native tag no binding owns is the global component Vue
+        // resolves for it under any spelling, or else a custom element.
+        ElementType::Element if !is_native_tag(element.tag) => Some(global_component_type(
+            element.tag,
+            |component: &str| String::from(component),
+            native_element_type(element.tag, element.ns),
+        )),
         ElementType::Element => Some(String::from(native_element_type(element.tag, element.ns))),
         ElementType::Slot | ElementType::Template => None,
     }

@@ -1,0 +1,11 @@
+<script setup lang="ts">
+import { useTemplateRef } from "vue"
+
+const kebab = useTemplateRef("kebab")
+
+kebab.value?.focus()
+</script>
+
+<template lang="pug">
+my-child(ref="kebab")
+</template>

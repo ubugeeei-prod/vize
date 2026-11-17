@@ -1,0 +1,7 @@
+export {}
+
+declare module "vue" {
+  interface GlobalComponents {
+    MyChild: typeof import("./child.vue").default
+  }
+}
