@@ -427,6 +427,43 @@
       }
     },
     {
+      "id": "linter/bom-columns-12336",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "bom-columns-12336",
+        "files": [
+          {
+            "path": "AiAssistant.vue.txt",
+            "role": "real-project-matrix-reduction",
+            "sha256": "bce87cfc8fab0bc6e45cf794565c7b68ea0d78ddbc48a3eadfdcea4688d1c675"
+          },
+          {
+            "path": "rules.json",
+            "role": "rule-options",
+            "sha256": "43753a485247566dd653298b52fb7a198bd6e6aeed01b2e7ce93035c902b0aef"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/complexity-coordinates-10465",
       "state": "active",
       "targets": [
