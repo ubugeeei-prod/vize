@@ -8708,6 +8708,38 @@
       }
     },
     {
+      "id": "linter/no-negated-condition-node-12336",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "no-negated-condition-node-12336",
+        "files": [
+          {
+            "path": "Case.vue.txt",
+            "role": "real-project-matrix-reduction",
+            "sha256": "38a6a6aff8245a49254a6ff725e3469d8c9dae3287faaf674dae73a7d8fbaac9"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/no-unnecessary-type-assertion-12992",
       "state": "active",
       "targets": [
