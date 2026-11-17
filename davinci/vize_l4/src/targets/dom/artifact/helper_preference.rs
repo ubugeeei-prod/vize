@@ -230,6 +230,8 @@ fn prefer_op_helpers(
     }
 }
 
+// Inlined into both arms, so `ui.if` keeps the codegen it had as the only caller.
+#[inline(always)]
 fn prefer_if_branch_helpers(
     buf: &mut Buf,
     cx: &PreferCx<'_>,

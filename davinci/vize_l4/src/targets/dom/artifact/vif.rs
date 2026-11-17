@@ -270,6 +270,8 @@ fn authored_condition_quote_padding<'a>(
     .then_some((leading, trailing))
 }
 
+// Inlined into both callers, so `ui.if` keeps the codegen it had as the only one.
+#[inline(always)]
 fn emit_branch(
     cx: &mut EmitCx<'_>,
     region: &Region<'_>,

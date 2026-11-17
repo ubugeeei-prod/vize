@@ -222,6 +222,8 @@ fn component_has_legacy_hoist(
     })
 }
 
+// Inlined into both arms, so `ui.if` keeps the codegen it had as the only caller.
+#[inline(always)]
 fn branch_roots_have_legacy_hoist(
     walk: &mut PageWalk,
     ops: &[Op<'_>],
