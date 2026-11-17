@@ -156,7 +156,6 @@ function measureMirror(
       revision: get(project, "revision"),
       preset: selectedPreset,
       evidence,
-      fixtureIsolation: "mirror-without-ancestor-packages",
       files: { comparedCount: files.length, expectedCount },
       baseline: {
         package: get(ruleMap, "upstream", "package"),
