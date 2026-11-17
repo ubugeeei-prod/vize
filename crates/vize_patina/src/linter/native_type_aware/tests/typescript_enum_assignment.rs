@@ -87,7 +87,7 @@ fn qualified_enum_flows_have_exact_packets_and_safe_controls() {
 
 /// typescript-eslint exempts an enum's own bit flags wherever it checks a
 /// flow, compares a private `#name` with no inherited member, and reads a
-/// computed key only from a member's name.
+/// computed key only from a member's name, wherever its comments are.
 #[test]
 fn bit_flags_private_names_and_member_bodies_stay_safe() {
     if !corsa_available() {
@@ -131,6 +131,8 @@ function plain(): Flags {
 }
 consume(4);
 described["describe"];
+declare const commented: { [Fruit.Apple /* key: fruit */]: string };
+commented[1];
 void [combined, arrow, described, plain, Holder, Derived];
 </script>
 "#;
@@ -140,6 +142,11 @@ void [combined, arrow, described, plain, Holder, Derived];
         vec![
             packet((35, 3), (35, 12), &flags(RETURN)),
             packet((37, 9), (37, 10), &flags(ARGUMENT)),
+            packet(
+                (40, 11),
+                (40, 12),
+                "The computed key used here does not have a shared enum type with the expected enum 'Fruit'.",
+            ),
         ]
     );
 }

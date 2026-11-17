@@ -151,11 +151,12 @@ fn computed_key_position(data: &[u8], declaration: &NodeHandle) -> Option<u32> {
         return None;
     }
     let close = text.get(open + 1..)?.find(']')?.saturating_add(open + 1);
-    let colon = text.find(':').unwrap_or(text.len());
-    if close > colon {
+    let inside = text.get(open + 1..close)?;
+    // `[index: number]` is an index signature, not a computed name; a colon
+    // inside a comment (`[Fruit.Apple /* key: x */]`) does not make one.
+    if without_comments(inside).contains(':') {
         return None;
     }
-    let inside = text.get(open + 1..close)?;
     let leading = inside.len().saturating_sub(inside.trim_start().len());
     let mapped = inside.find(" in ").map(|offset| offset + 4);
     // `getTypeAtLocation(name.expression)`: the type at a property access's
@@ -171,6 +172,28 @@ fn computed_key_position(data: &[u8], declaration: &NodeHandle) -> Option<u32> {
     let relative = open + 1 + key;
     let prefix = text.get(..relative)?;
     Some(pos.saturating_add(prefix.encode_utf16().count() as u32))
+}
+
+/// `text` with its `//` and `/* */` comments removed.
+fn without_comments(text: &str) -> vize_l0::String {
+    let mut out = vize_l0::String::default();
+    let mut rest = text;
+    while let Some(index) = rest.find('/') {
+        let (Some(code), Some(from)) = (rest.get(..index), rest.get(index..)) else {
+            break;
+        };
+        out.push_str(code);
+        if let Some(block) = from.strip_prefix("/*") {
+            rest = block.split_once("*/").map_or("", |(_, after)| after);
+        } else if let Some(line) = from.strip_prefix("//") {
+            rest = line.split_once('\n').map_or("", |(_, after)| after);
+        } else {
+            out.push('/');
+            rest = from.get(1..).unwrap_or_default();
+        }
+    }
+    out.push_str(rest);
+    out
 }
 
 fn utf16_to_byte(text: &str, offset: u32) -> Option<usize> {
