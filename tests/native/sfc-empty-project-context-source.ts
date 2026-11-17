@@ -76,6 +76,21 @@ pub(crate) fn dependencies_to_napi(dependencies: &[impl AsRef<str>]) -> Option<V
     return restored;
   }
   if (
+    file === "crates/vize_vitrine/src/napi/sfc/types.rs" &&
+    blob(bytes) === "0399155317ff085588b2cfc8e52fc261dac0efae"
+  ) {
+    // #13074: compile options name a registered `vue.plugins` plan by digest.
+    const field =
+      "    /// Digest of a `vue.plugins` plan registered with `registerPluginPlan`;\n" +
+      "    /// its directive contracts apply to this compile (#13074).\n" +
+      "    pub plugin_plan: Option<String>,\n";
+    const text = Buffer.from(bytes).toString("utf8");
+    assert.equal(text.split(field).length, 3, "reviewed plugin-plan option in both structs");
+    const reference = Buffer.from(text.split(field).join(""));
+    assert.equal(blob(reference), "9f76121fb52ce2eae282a3768a0f125b56a3d853");
+    return reference;
+  }
+  if (
     file === "crates/vize/src/type_projects.rs" &&
     blob(bytes) === "4d567c1bf5eff482c9ce78d02d30761514973cc1"
   ) {
@@ -119,6 +134,28 @@ pub(crate) fn dependencies_to_napi(dependencies: &[impl AsRef<str>]) -> Option<V
   return reference;
 }
 
+/** Later reviewed edits to an integrated source, removed before its law is checked. */
+function reviewedSourceSuccessor(file: string, bytes: Uint8Array): Uint8Array {
+  if (
+    file !== "crates/vize_vitrine/src/napi/sfc/compile.rs" ||
+    blob(bytes) !== "8ec4b58ac5b5fa47c2c1b3859368c08b8481152a"
+  )
+    return bytes;
+  // #13074: a compile applies the directive table of its registered plan.
+  let text = Buffer.from(bytes).toString("utf8");
+  for (const edit of [
+    "    let directive_contracts =\n" +
+      "        crate::napi::plugin_plan::compile_directives(opts.plugin_plan.as_deref())?;\n",
+    "        dom_options.directive_contracts = directive_contracts;\n",
+  ]) {
+    assert.equal(text.split(edit).length, 2, "unique reviewed plugin-plan edit");
+    text = text.replace(edit, "");
+  }
+  const reference = Buffer.from(text);
+  assert.equal(blob(reference), "074a7a36ebf219dbfc48f2abed51fc3a1a3a4fcd");
+  return reference;
+}
+
 /** Authenticate only this reviewed integration, then retain the original law. */
 export function emptyCompileSourcesForReference(
   sources: Record<string, Uint8Array>,
@@ -154,7 +191,7 @@ export function emptyCompileSourcesForReference(
   const restored: Record<string, Uint8Array> = {};
   for (const source of plan.sources) {
     assert.equal(source.referenceBlob, referenceBlobs[source.path]);
-    const current = sources[source.path];
+    const current = reviewedSourceSuccessor(source.path, sources[source.path]!);
     assert.equal(blob(current), source.currentBlob, `reviewed integration: ${source.path}`);
     let text = Buffer.from(current).toString("utf8");
     for (const replacement of [...source.replacements].reverse()) {

@@ -70,6 +70,8 @@ export interface VizePluginState {
   precompileBatchSize: number;
   ignorePatterns: string[];
   mergedOptions: VizeOptions;
+  /** Digest of the registered `vue.plugins` plan, when the config declares one. */
+  pluginPlan?: string;
   fileCompilerOptions?: (file: string) => VizeOptions;
   compilerScopeIdentity?: unknown;
   initialized: boolean;
@@ -102,6 +104,7 @@ export type CompileOptionsForRequest = {
   mode?: "module" | "function";
   customRenderer: boolean;
   customElements?: string[];
+  pluginPlan?: string;
   templateSyntax: "standard" | "strict" | "quirks";
   runtimeModuleName?: string;
   runtimeGlobalName?: string;
@@ -126,7 +129,7 @@ export function getCompileOptionsForRequest(
     VizePluginState,
     "isProduction" | "mergedOptions" | "viteBuildSourcemap" | "fileCompilerOptions"
   > &
-    Partial<Pick<VizePluginState, "root" | "srcResolutions">>,
+    Partial<Pick<VizePluginState, "root" | "srcResolutions" | "pluginPlan">>,
   ssr: boolean,
   file?: string,
 ): CompileOptionsForRequest {
@@ -157,6 +160,9 @@ export function getCompileOptionsForRequest(
   }
   if (mergedOptions?.customElements !== undefined) {
     options.customElements = mergedOptions.customElements;
+  }
+  if (state.pluginPlan !== undefined) {
+    options.pluginPlan = state.pluginPlan;
   }
   if (mergedOptions?.mode !== undefined) {
     options.mode = mergedOptions.mode;

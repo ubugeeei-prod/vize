@@ -37,6 +37,7 @@ import { patchCssModuleGenerateScopedName } from "./css-modules.ts";
 import { installDevMiddleware } from "./dev-middleware.ts";
 import { mergeCompilerOptions, type VizeCompilerDefaults } from "./compiler-config.ts";
 import { createFileCompilerOptions } from "./compiler-scopes.ts";
+import { registerPluginPlan } from "../compiler.ts";
 import {
   createLegacyVueCompatibilityPlugin,
   isLegacyVueCompatibilityMode,
@@ -205,6 +206,7 @@ export function vize(
       );
 
       state.mergedOptions = mergeCompilerOptions(options, sharedConfig, compilerDefaults);
+      state.pluginPlan = registerPluginPlan(sharedConfig);
       const replaced = removeHostVueSfcCompilers(
         resolvedConfig.plugins as Plugin[],
         state.mergedOptions,

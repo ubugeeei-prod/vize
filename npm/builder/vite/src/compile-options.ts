@@ -15,6 +15,8 @@ export interface CompileFileOptions extends PluginVueCompileOptions {
   mode?: "module" | "function";
   customRenderer?: boolean;
   customElements?: string[];
+  /** Digest of the registered `vue.plugins` plan whose directive contracts apply. */
+  pluginPlan?: string;
   templateSyntax?: "standard" | "strict" | "quirks";
   experimentalInTagComments?: boolean;
   experimentalPatternedTemplate?: boolean;
@@ -42,6 +44,8 @@ export interface CompileBatchOptions extends PluginVueCompileOptions {
   mode?: "module" | "function";
   customRenderer?: boolean;
   customElements?: string[];
+  /** Digest of the registered `vue.plugins` plan whose directive contracts apply. */
+  pluginPlan?: string;
   templateSyntax?: "standard" | "strict" | "quirks";
   experimentalInTagComments?: boolean;
   experimentalPatternedTemplate?: boolean;
@@ -74,6 +78,7 @@ export function buildCompileFileOptions(
     ...(options.whitespace === undefined ? {} : { whitespace: options.whitespace }),
     customRenderer: options.customRenderer ?? false,
     ...(options.customElements === undefined ? {} : { customElements: options.customElements }),
+    ...(options.pluginPlan === undefined ? {} : { pluginPlan: options.pluginPlan }),
     experimentalInTagComments: options.experimentalInTagComments ?? false,
     experimentalPatternedTemplate: options.experimentalPatternedTemplate ?? false,
     experimentalSelfComponent: options.experimentalSelfComponent ?? false,
@@ -118,6 +123,7 @@ export function buildCompileBatchOptions(options: CompileBatchOptions): BatchCom
     ...(options.whitespace === undefined ? {} : { whitespace: options.whitespace }),
     customRenderer: options.customRenderer ?? false,
     ...(options.customElements === undefined ? {} : { customElements: options.customElements }),
+    ...(options.pluginPlan === undefined ? {} : { pluginPlan: options.pluginPlan }),
     experimentalInTagComments: options.experimentalInTagComments ?? false,
     experimentalPatternedTemplate: options.experimentalPatternedTemplate ?? false,
     experimentalSelfComponent: options.experimentalSelfComponent ?? false,

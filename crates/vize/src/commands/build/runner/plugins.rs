@@ -1,74 +1,38 @@
 //! `vue.plugins` contributions `vize build` honors (#13074).
 //!
 //! The config parse already verified the plan and refused any capability
-//! that a consuming product does not implement. Once the inputs are known,
-//! the build admits the plan as the compiler for exactly the outputs those
-//! inputs produce, and lowers the declared directive contracts into the
-//! table each file's compile reads.
-
-use std::path::Path;
+//! that a consuming product does not implement. The build admits the plan as
+//! the compiler and lowers the declared directive table once. The table
+//! carries each declaring plugin's supported outputs, so the SFC compiler
+//! refuses a file whose resolved output (SSR, Vapor or VDOM) a plugin lacks.
 
 use vize_l0::config::{ConfigDocument, DirectiveContracts};
 
-use super::settings::CompileFileSettings;
 use crate::config::plugin_plan::{PluginPlanError, VerifiedPluginPlan, document_plugin_plan};
 
-/// The verified plan of `document`; a refused plan ends the build.
-pub(super) fn verified_plan(document: &ConfigDocument) -> Option<VerifiedPluginPlan> {
-    document_plugin_plan(document).unwrap_or_else(|error| fail(&error))
+/// The directive table of `document`; a refused plan ends the build.
+pub(super) fn directive_contracts(document: &ConfigDocument) -> DirectiveContracts {
+    document_plugin_plan(document)
+        .and_then(|plan| {
+            plan.as_ref()
+                .map_or(Ok(DirectiveContracts::EMPTY), admitted)
+        })
+        .unwrap_or_else(|error| {
+            eprintln!("\x1b[31mError:\x1b[0m {error}");
+            std::process::exit(1);
+        })
 }
 
-impl CompileFileSettings {
-    /// Admit the plan for the outputs `inputs` compile to and lower its
-    /// directive table; a refusal ends the build. Without a plan this does
-    /// nothing.
-    pub(super) fn admit_plugin_plan<'p>(&mut self, inputs: impl Iterator<Item = &'p Path>) {
-        let Some(plan) = self.plugin_plan.as_ref() else {
-            return;
-        };
-        let (mut vapor, mut other) = (false, false);
-        for input in inputs {
-            if self.compiler_for_path(input).vapor {
-                vapor = true;
-            } else {
-                other = true;
-            }
-        }
-        let base = if self.ssr { "ssr" } else { "vdom" };
-        // An SSR render of a Vapor component is still SSR output.
-        let outputs: Vec<&str> = [
-            (other || (self.ssr && vapor)).then_some(base),
-            vapor.then_some("vapor"),
-        ]
-        .into_iter()
-        .flatten()
-        .collect();
-        self.directive_contracts =
-            admitted_directives(plan, &outputs).unwrap_or_else(|error| fail(&error));
-    }
-}
-
-/// Fail closed when a plugin does not support an output the build produces.
-fn admitted_directives(
-    plan: &VerifiedPluginPlan,
-    outputs: &[&str],
-) -> Result<DirectiveContracts, PluginPlanError> {
-    for output in outputs {
-        plan.admit("compiler", Some(output))?;
-    }
-    Ok(DirectiveContracts::new(plan.directives()?))
-}
-
-fn fail(error: &dyn core::fmt::Display) -> ! {
-    eprintln!("\x1b[31mError:\x1b[0m {error}");
-    std::process::exit(1);
+fn admitted(plan: &VerifiedPluginPlan) -> Result<DirectiveContracts, PluginPlanError> {
+    plan.admit("compiler", None)?;
+    plan.directive_table()
 }
 
 #[cfg(test)]
 mod tests {
     use serde_json::json;
 
-    use super::admitted_directives;
+    use super::admitted;
     use crate::config::plugin_plan::{VerifiedPluginPlan, verify_plugin_plan};
 
     /// The declared-capabilities fixture reduced to its directive plugin.
@@ -92,7 +56,7 @@ mod tests {
 
     #[test]
     fn the_build_lowers_the_declared_directives_once() {
-        let contracts = admitted_directives(&tracking(None), &["vdom", "vapor"]).unwrap();
+        let contracts = admitted(&tracking(None)).unwrap();
         let names: Vec<_> = contracts
             .as_slice()
             .iter()
@@ -102,24 +66,14 @@ mod tests {
     }
 
     #[test]
-    fn only_outputs_the_build_produces_are_admitted() {
-        let vdom_only = tracking(Some(&["vdom"]));
-        assert!(admitted_directives(&vdom_only, &["vdom"]).is_ok());
-        // A Vapor-only build never asks a Vapor plugin for VDOM support.
-        assert!(admitted_directives(&tracking(Some(&["vapor"])), &["vapor"]).is_ok());
-        let refusals: Vec<_> = ["ssr", "vapor"]
-            .into_iter()
-            .map(|output| {
-                admitted_directives(&vdom_only, &[output])
-                    .unwrap_err()
-                    .to_string()
-            })
-            .collect();
+    fn the_table_refuses_exactly_the_outputs_a_plugin_lacks() {
+        let table = admitted(&tracking(Some(&["vdom"]))).unwrap();
+        assert_eq!(table.unsupported("vdom"), None);
         assert_eq!(
-            refusals,
+            [table.unsupported("ssr"), table.unsupported("vapor")],
             [
-                "[plugin/host-unsupported] @acme/tracking: vue.directive `track` does not support the ssr output",
-                "[plugin/host-unsupported] @acme/tracking: vue.directive `track` does not support the vapor output",
+                Some("[plugin/host-unsupported] @acme/tracking: vue.directive `track` does not support the ssr output".into()),
+                Some("[plugin/host-unsupported] @acme/tracking: vue.directive `track` does not support the vapor output".into()),
             ]
         );
     }
