@@ -50,7 +50,7 @@ impl Drawer {
         let normalized = normalize(root);
         self.croquis
             .unused_bindings
-            .retain(|name| normalize(name) != normalized);
+            .retain(|name| !normalizes_to(name, &normalized));
     }
 
     pub(super) fn read_setup_directive(&mut self, directive: &str) {
@@ -67,4 +67,65 @@ pub(crate) fn normalize(name: &str) -> CompactString {
         .filter(|ch| *ch != '-')
         .flat_map(char::to_lowercase)
         .collect()
+}
+
+/// `normalize(name) == normalized`, compared as it is produced.
+///
+/// Every element tag is checked against every unused setup binding, so
+/// building each binding's normalized spelling again per tag was the cost.
+fn normalizes_to(name: &str, normalized: &str) -> bool {
+    if name.is_ascii() {
+        return name
+            .bytes()
+            .filter(|byte| *byte != b'-')
+            .map(|byte| byte.to_ascii_lowercase())
+            .eq(normalized.bytes());
+    }
+    name.chars()
+        .filter(|ch| *ch != '-')
+        .flat_map(char::to_lowercase)
+        .eq(normalized.chars())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{normalize, normalizes_to};
+
+    #[test]
+    fn normalizes_to_agrees_with_normalize() {
+        let names = [
+            "",
+            "-",
+            "Foo",
+            "foo",
+            "FooBar",
+            "foo-bar",
+            "foo--bar-",
+            "-foo",
+            "fooBar2",
+            "v-focus",
+            "vFocus",
+            "Äpfel",
+            "äpfel",
+            "ÄPFEL-x",
+            "İstanbul",
+            "i̇stanbul",
+            "Σίσυφος",
+            "ΣΊΣΥΦΟΣ",
+            "ß",
+            "SS",
+            "ǅungla",
+            "ǆungla",
+            "Ǆ-ungla",
+        ];
+        for name in names {
+            for other in names {
+                assert_eq!(
+                    normalizes_to(name, &normalize(other)),
+                    normalize(name) == normalize(other),
+                    "{name:?} vs {other:?}"
+                );
+            }
+        }
+    }
 }
