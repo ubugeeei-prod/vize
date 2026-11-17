@@ -41,6 +41,7 @@ impl<'a> MarkupElement<'a> {
                 doc,
                 surface: Some(element),
                 frozen: true,
+                ..
             } => {
                 let opens_v_pre =
                     super::super::l2::binding::opens_v_pre(doc, element, op.attributes());
@@ -169,6 +170,7 @@ impl<'a> MarkupElement<'a> {
                 doc,
                 surface: Some(element),
                 frozen: true,
+                ..
             } => {
                 let opens_v_pre =
                     super::super::l2::binding::opens_v_pre(doc, element, op.attributes());
@@ -182,6 +184,13 @@ impl<'a> MarkupElement<'a> {
 
     pub(in crate::markup) fn walk_l2_items(&self, visitor: &mut impl FnMut(L2Item<'a>)) {
         match self.inner {
+            MarkupElementInner::L2 {
+                items: Some(items), ..
+            } => {
+                for &item in items {
+                    visitor(item);
+                }
+            }
             MarkupElementInner::L2 {
                 op, doc, surface, ..
             } => {

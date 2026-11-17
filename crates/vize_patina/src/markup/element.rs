@@ -1,6 +1,7 @@
 //! [`MarkupElement`]: one element / component / fragment / template / slot.
 
 use super::jsx_names::{jsx_element_kind, jsx_element_name, jsx_element_ref, jsx_fragment_ref};
+use super::l2::binding::{L2Item, arena_items};
 use super::l2::{L2ElementOp, L2Markup};
 use super::node::MarkupNode;
 use super::{MarkupElementKind, relief_scopes, span_to_range};
@@ -40,6 +41,9 @@ pub(super) enum MarkupElementInner<'a> {
         doc: &'a L2Markup<'a>,
         surface: Option<&'a vize_l1::markup::Element<'a>>,
         frozen: bool,
+        /// The opening tag's items, matched once for every rule (`None` for a
+        /// frozen element or a document without an arena).
+        items: Option<&'a [L2Item<'a>]>,
     },
     /// An authored `<template>` carrier L2 unwrapped into a `ui.if` branch or
     /// `ui.for` region: its surface comes from L1, its children from the
@@ -93,11 +97,17 @@ impl<'a> MarkupElement<'a> {
         // frozen. Read the literal scope from L1's retained Vue-shaped tree;
         // keep the ordinary surface element because it is the tree L2 lowered.
         let frozen = doc.frozen_at(op.span().start);
+        let items = if frozen {
+            None
+        } else {
+            arena_items(doc, op.attributes(), op.bindings(), surface)
+        };
         Self::from_inner(MarkupElementInner::L2 {
             op,
             doc,
             surface,
             frozen,
+            items,
         })
     }
 
@@ -163,6 +173,7 @@ impl<'a> MarkupElement<'a> {
                 surface,
                 doc,
                 frozen,
+                ..
             } => {
                 let tag = match surface {
                     Some(element) => element.tag(),
