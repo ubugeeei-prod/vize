@@ -244,7 +244,11 @@ fn props_shadow_reads_type_props_and_value_bindings() {
     );
 
     let declare = "<script setup lang=\"ts\">\ndefineProps({ label: String })\ndeclare const label: string\n</script>\n<template />";
-    assert_eq!(reported(Box::new(NoPropsShadow), declare), ["label"]);
+    // ESTree identifiers span their type annotation.
+    assert_eq!(
+        reported(Box::new(NoPropsShadow), declare),
+        ["label: string"]
+    );
 
     let type_only = "<script setup lang=\"ts\">\nimport type { label } from './label'\ntype tone = string\ninterface mode { Dark: string }\ndefineProps({ label: String, tone: String, mode: String })\n</script>\n<template />";
     assert!(

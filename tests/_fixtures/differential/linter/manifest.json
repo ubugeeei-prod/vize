@@ -17884,23 +17884,18 @@
       }
     },
     {
-      "id": "linter/no-restricted-v-bind-key-12336",
+      "id": "linter/no-props-shadow-sibling-script-12336",
       "state": "active",
       "targets": [
         "lint"
       ],
       "inputs": {
-        "root": "no-restricted-v-bind-key-12336",
+        "root": "no-props-shadow-sibling-script-12336",
         "files": [
           {
-            "path": "RecipeList.vue.txt",
+            "path": "AccordionItem.vue.txt",
             "role": "real-project-matrix-reduction",
-            "sha256": "ce7b455a92c14f42493c8e650a6244eed87ba2db06411ee0956e076a4b861608"
-          },
-          {
-            "path": "rules.json",
-            "role": "rule-options",
-            "sha256": "45a4c39ce4d1928e4174576d5e669d17f1484cd23d62f92f237e143b955f955b"
+            "sha256": "693f50545db0d35e410419685abcd317b97a574ad119285704a3c5e24dca8ddd"
           }
         ]
       },
@@ -17912,7 +17907,8 @@
             "kind": "source-inspection",
             "dialects": [
               "vue3-sfc",
-              "html-template"
+              "html-template",
+              "ts"
             ],
             "selector": "linter manifest pinned authored sources"
           }
