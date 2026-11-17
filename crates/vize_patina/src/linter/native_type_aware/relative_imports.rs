@@ -55,8 +55,12 @@ fn source_directory(filename: &str) -> Option<std::path::PathBuf> {
 /// Specifier byte range inside `from "./mod"` or `from './mod'`.
 fn next_relative_specifier(content: &str, from: usize) -> Option<(usize, usize)> {
     let bytes = content.as_bytes();
-    let mut index = from;
-    while index + 6 < bytes.len() {
+    // `memmem` jumps between `from` occurrences instead of testing every byte
+    // of the generated document.
+    let candidates = memchr::memmem::find_iter(bytes.get(from..).unwrap_or_default(), b"from")
+        .map(|offset| from + offset)
+        .take_while(|index| index + 6 < bytes.len());
+    for index in candidates {
         if is_from_keyword(bytes, index) {
             let mut cursor = index + 4;
             while bytes.get(cursor) == Some(&b' ') {
@@ -77,7 +81,6 @@ fn next_relative_specifier(content: &str, from: usize) -> Option<(usize, usize)>
                 }
             }
         }
-        index += 1;
     }
     None
 }
@@ -161,6 +164,20 @@ mod tests {
         assert_eq!(
             &document.content[generated..generated + "const y".len()],
             "const y"
+        );
+    }
+
+    #[test]
+    fn only_a_from_keyword_before_a_relative_specifier_is_rewritten() {
+        let source = "const fromage = 'from ./x'; import a from 'vue';\nimport b from './b';\nexport{c}from'./c'";
+        let mut document = TypeAwareDocument {
+            content: VizeString::from(source),
+            mapping: ProjectionMapping::from_spans(vec![]),
+        };
+        absolutize_relative_imports(&mut document, "/pkg/src/Widget.vue");
+        assert_eq!(
+            document.content.as_str(),
+            "const fromage = 'from ./x'; import a from 'vue';\nimport b from '/pkg/src/b';\nexport{c}from'/pkg/src/c'"
         );
     }
 
