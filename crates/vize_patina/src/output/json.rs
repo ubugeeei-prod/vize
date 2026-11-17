@@ -66,12 +66,12 @@ pub(super) fn format_json(results: &[LintResult], sources: &[(String, String)]) 
     let render = |result: &LintResult| file_json(result, &source_map);
 
     #[cfg(not(target_arch = "wasm32"))]
-    let files: Vec<std::string::String> = {
+    let files: Vec<String> = {
         use rayon::prelude::*;
         results.par_iter().map(render).collect()
     };
     #[cfg(target_arch = "wasm32")]
-    let files: Vec<std::string::String> = results.iter().map(render).collect();
+    let files: Vec<String> = results.iter().map(render).collect();
 
     let mut output =
         String::with_capacity(4 + files.iter().map(|file| file.len() + 2).sum::<usize>());
@@ -87,7 +87,7 @@ pub(super) fn format_json(results: &[LintResult], sources: &[(String, String)]) 
 }
 
 /// One file's element of the report array, pretty-printed one level deep.
-fn file_json(result: &LintResult, source_map: &FxHashMap<&str, &str>) -> std::string::String {
+fn file_json(result: &LintResult, source_map: &FxHashMap<&str, &str>) -> String {
     let element = serde_json::to_string_pretty(&file_result(result, source_map))
         .unwrap_or_else(|_| "{}".to_owned());
     nest(&element)
@@ -133,8 +133,8 @@ fn file_result(result: &LintResult, source_map: &FxHashMap<&str, &str>) -> JsonF
 
 /// Pretty JSON escapes every newline inside a string, so each line break is
 /// structure and indenting every line nests the element inside the array.
-fn nest(element: &str) -> std::string::String {
-    let mut nested = std::string::String::with_capacity(element.len() + element.len() / 8 + 2);
+fn nest(element: &str) -> String {
+    let mut nested = String::with_capacity(element.len() + element.len() / 8 + 2);
     for (index, line) in element.split('\n').enumerate() {
         if index > 0 {
             nested.push('\n');
