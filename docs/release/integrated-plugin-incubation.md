@@ -143,6 +143,9 @@ invalidating a plan that is valid today.
   the start of the document (code `plugin`). After three consecutive sidecar
   failures the server reports the last one until the config changes. A rule
   failure is answered, so the sidecar keeps running.
+- **Editor fixes.** A plugin diagnostic with a fix offers it as a quick fix,
+  preferred only when its rule is `fixable: "safe"`. The editor keeps the last
+  answer per document text, so diagnostics, hover and code actions of one text
+  cross into JS once.
 - **Not yet.** Templates that the plugin records cannot represent are skipped
-  (and listed in the CLI receipt). The editor offers no plugin fixes as code
-  actions yet.
+  (and listed in the CLI receipt).
