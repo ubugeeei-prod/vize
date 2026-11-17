@@ -59,7 +59,9 @@ export function restoreConformanceWorkflow(workflow: string): string {
   return restoreConformanceNativeStaging(
     restoreFallthroughValueSuite(
       restoreExactTsgoTimeout(
-        restoreLibraryFallthroughSuite(restorePackagedDataAttrSuite(restoreRustToolchainPin(workflow))),
+        restoreLibraryFallthroughSuite(
+          restorePackagedDataAttrSuite(restoreRustToolchainPin(workflow)),
+        ),
       ),
     ),
   );
