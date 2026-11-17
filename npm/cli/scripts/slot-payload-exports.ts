@@ -139,6 +139,14 @@ export async function slotPayloadExports(root: string): Promise<Map<string, stri
     const expected =
       [legacy, intersecting, unionHost, shared].find((family) => sameFamily(current, family)) ??
       (current.found.length === legacy.found.length ? legacy : shared);
+    // Layout first: a foreign alias inside the family is refused as such, not
+    // as whichever policy or family it happens to break.
+    for (let index = 1; index < current.found.length; index++)
+      assert.equal(
+        current.source.statements.indexOf(current.found[index]!),
+        current.source.statements.indexOf(current.found[index - 1]!) + 1,
+        `${relative}: payload aliases must remain adjacent`,
+      );
     assert.deepEqual(
       current.found.map((node) => node.name.text),
       expected.found.map((node) => node.name.text),
@@ -146,14 +154,6 @@ export async function slotPayloadExports(root: string): Promise<Map<string, stri
     );
     for (let index = 0; index < current.found.length; index++) {
       const node = current.found[index]!;
-      // Layout first: a foreign alias inside the family is refused as such, not
-      // as whichever policy it happens to break.
-      if (index > 0)
-        assert.equal(
-          current.source.statements.indexOf(node),
-          current.source.statements.indexOf(current.found[index - 1]!) + 1,
-          `${relative}: payload aliases must remain adjacent`,
-        );
       assert.equal(
         identity(node, current.source),
         identity(expected.found[index]!, expected.source),

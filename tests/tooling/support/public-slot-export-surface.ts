@@ -394,6 +394,35 @@ function withProvenTemplateRefTargetAdditionsRemoved(
   return { ...actual, exports };
 }
 
+/** #13239's distributive slot callback reader is an addition; the registered-provider oracle reads it in every entry. */
+function withProvenSlotCallbackAdditionRemoved(
+  actual: ExportSurface,
+  expected: ExportSurface,
+): ExportSurface {
+  const exports = structuredClone(actual.exports);
+  const name = "$SlotCallbackProps";
+  const index = exports.findIndex((entry) => entry.name === name);
+  if (expected.exports.some((entry) => entry.name === name) || index < 0)
+    return { ...actual, exports };
+  const oracle = new URL("tests/tooling/canon-registered-slot-provider.test.ts", repositoryRoot);
+  assert.ok(fs.existsSync(oracle) && fs.readFileSync(oracle, "utf8").includes(name));
+  assert.deepEqual(exports[index], {
+    name,
+    type: true,
+    value: false,
+    namespace: false,
+    declarations: [
+      {
+        kind: "TypeAliasDeclaration",
+        parameters: [{ name: "F", constraint: null, default: null }],
+        signatures: [],
+      },
+    ],
+  });
+  exports.splice(index, 1);
+  return { ...actual, exports };
+}
+
 export function assertPublicSlotExportSurface(
   actual: ExportSurface,
   expected: ExportSurface,
@@ -412,7 +441,10 @@ export function assertPublicSlotExportSurface(
                 withProvenTemplateRefUnwrapAdditionsRemoved(
                   withProvenPropValueOrAdditionRemoved(
                     withProvenListenerAdditionRemoved(
-                      withProvenListenerContractRemoved(actual, expected),
+                      withProvenListenerContractRemoved(
+                        withProvenSlotCallbackAdditionRemoved(actual, expected),
+                        expected,
+                      ),
                       expected,
                     ),
                     expected,
