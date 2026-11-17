@@ -1,0 +1,193 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 4241,
+  "regressionCommit": "da1de3654e840605f65b18e6da536340cc6a28b4",
+  "sourceRevision": "da1de3654e840605f65b18e6da536340cc6a28b4",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "collisions-and-shadowing",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/DuplicateInClassic.vue",
+          "source": "collisions-and-shadowing.DuplicateInClassic.vue.txt"
+        },
+        {
+          "file": "src/DuplicateInSetup.vue",
+          "source": "DuplicateInSetup.vue.txt"
+        },
+        {
+          "file": "src/DuplicateExportAcrossBlocks.vue",
+          "source": "DuplicateExportAcrossBlocks.vue.txt"
+        },
+        {
+          "file": "src/InvalidCrossBlockRef.vue",
+          "source": "InvalidCrossBlockRef.vue.txt"
+        },
+        {
+          "file": "src/ShadowingTypeAlias.vue",
+          "source": "ShadowingTypeAlias.vue.txt"
+        },
+        {
+          "file": "src/ShadowingInterface.vue",
+          "source": "ShadowingInterface.vue.txt"
+        },
+        {
+          "file": "src/ShadowingClass.vue",
+          "source": "ShadowingClass.vue.txt"
+        },
+        {
+          "file": "src/ClassicValueAndSetupType.vue",
+          "source": "ClassicValueAndSetupType.vue.txt"
+        },
+        {
+          "file": "src/SharedImportName.vue",
+          "source": "SharedImportName.vue.txt"
+        },
+        {
+          "file": "src/BadAssignment.vue",
+          "source": "BadAssignment.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/BadAssignment.vue",
+          "line": 8,
+          "column": 7,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '\"c\"' is not assignable to type '\"a\" | \"b\"'."
+        },
+        {
+          "file": "src/DuplicateExportAcrossBlocks.vue",
+          "line": 4,
+          "column": 13,
+          "severity": 1,
+          "code": 2300,
+          "message": "Duplicate identifier 'Kind'."
+        },
+        {
+          "file": "src/DuplicateExportAcrossBlocks.vue",
+          "line": 8,
+          "column": 13,
+          "severity": 1,
+          "code": 2300,
+          "message": "Duplicate identifier 'Kind'."
+        },
+        {
+          "file": "src/DuplicateInClassic.vue",
+          "line": 4,
+          "column": 13,
+          "severity": 1,
+          "code": 2300,
+          "message": "Duplicate identifier 'Kind'."
+        },
+        {
+          "file": "src/DuplicateInClassic.vue",
+          "line": 5,
+          "column": 13,
+          "severity": 1,
+          "code": 2300,
+          "message": "Duplicate identifier 'Kind'."
+        },
+        {
+          "file": "src/DuplicateInSetup.vue",
+          "line": 6,
+          "column": 6,
+          "severity": 1,
+          "code": 2300,
+          "message": "Duplicate identifier 'Local'."
+        },
+        {
+          "file": "src/DuplicateInSetup.vue",
+          "line": 7,
+          "column": 6,
+          "severity": 1,
+          "code": 2300,
+          "message": "Duplicate identifier 'Local'."
+        },
+        {
+          "file": "src/InvalidCrossBlockRef.vue",
+          "line": 2,
+          "column": 32,
+          "severity": 1,
+          "code": 2304,
+          "message": "Cannot find name 'setupOnlyValue'."
+        },
+        {
+          "file": "src/SharedImportName.vue",
+          "line": 2,
+          "column": 10,
+          "severity": 1,
+          "code": 2300,
+          "message": "Duplicate identifier 'ref'."
+        },
+        {
+          "file": "src/SharedImportName.vue",
+          "line": 8,
+          "column": 10,
+          "severity": 1,
+          "code": 2300,
+          "message": "Duplicate identifier 'ref'."
+        }
+      ]
+    },
+    {
+      "id": "setup-type-over-classic-value",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/ClassicValueAndSetupType.vue",
+          "source": "ClassicValueAndSetupType.vue.txt"
+        },
+        {
+          "file": "src/ClassicValueConsumer.vue",
+          "source": "ClassicValueConsumer.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/ClassicValueConsumer.vue",
+          "line": 10,
+          "column": 11,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '(item: string) => void' is not assignable to type '(item: Item) => any'.\nTypes of parameters 'item' and 'item' are incompatible.\nType 'Item' is not assignable to type 'string'."
+        }
+      ]
+    },
+    {
+      "id": "repaired-classic-duplicate",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/DuplicateInClassic.vue",
+          "source": "repaired-classic-duplicate.DuplicateInClassic.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

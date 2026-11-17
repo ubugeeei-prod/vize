@@ -1,0 +1,4 @@
+<script setup lang="ts">
+const before = 1; declare class Label { value: string; } const label = null! as Label; const after: string = label.value;
+</script>
+<template><div /></template>

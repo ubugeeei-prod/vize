@@ -1,0 +1,402 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 6232,
+  "regressionCommit": "0c94290f5f02b35a76f8ebc86128bcd1e1193e4a",
+  "sourceRevision": "0c94290f5f02b35a76f8ebc86128bcd1e1193e4a",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "literal",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "literal.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "transitive",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "transitive.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "overloads",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "overloads.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "heritage",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "heritage.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "expose",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "expose.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "export",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "export.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "async",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "async.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "adjacent",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "adjacent.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "adjacent-flow",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "adjacent-flow.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "flow",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "flow.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "class-type",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "class-type.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "local-type",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "local-type.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "generic-signature",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "generic-signature.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "hygiene",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "hygiene.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "escaped-hygiene",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "escaped-hygiene.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "invalid-heritage",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "invalid-heritage.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 3,
+          "column": 29,
+          "severity": 1,
+          "code": 2507,
+          "message": "Type '1' is not a constructor function type."
+        }
+      ]
+    },
+    {
+      "id": "invalid-type-property",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "invalid-type-property.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 3,
+          "column": 35,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'missing' does not exist on type '{ text: string; }'."
+        }
+      ]
+    },
+    {
+      "id": "invalid-literal-and-template",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "invalid-literal-and-template.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 4,
+          "column": 7,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '\"fixed\"' is not assignable to type '\"other\"'."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 5,
+          "column": 7,
+          "severity": 1,
+          "code": 2551,
+          "message": "Property 'toFixed' does not exist on type '\"fixed\"'. Did you mean 'fixed'?"
+        },
+        {
+          "file": "src/App.vue",
+          "line": 7,
+          "column": 20,
+          "severity": 1,
+          "code": 2551,
+          "message": "Property 'toFixed' does not exist on type '\"fixed\"'. Did you mean 'fixed'?"
+        }
+      ]
+    },
+    {
+      "id": "flow-errors",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "flow-errors.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 6,
+          "column": 7,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type 'string'."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 7,
+          "column": 7,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'string' is not assignable to type 'number'."
+        }
+      ]
+    },
+    {
+      "id": "forward-type-query",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "forward-type-query.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "heritage-expression",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "heritage-expression.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "export-consumer",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "export-consumer.App.vue.txt"
+        },
+        {
+          "file": "src/consumer.ts",
+          "source": "consumer.ts.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/consumer.ts",
+          "line": 2,
+          "column": 7,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '\"other\"' is not assignable to type '\"fixed\"'."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+<script setup lang="ts">
+// @ts-expect-error unused
+declare const value: HTMLElement;
+</script>
+<template><div /></template>

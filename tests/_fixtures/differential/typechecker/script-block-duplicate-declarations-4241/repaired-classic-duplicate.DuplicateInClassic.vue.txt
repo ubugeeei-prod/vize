@@ -1,0 +1,14 @@
+<script lang="ts">
+const kinds = ['a', 'b'] as const;
+
+export type Kind = typeof kinds[number];
+export type KindName = string;
+</script>
+
+<script lang="ts" setup>
+const props = defineProps<{ kind: Kind; name: KindName }>();
+</script>
+
+<template>
+  <div>{{ props.kind }}{{ props.name }}</div>
+</template>

@@ -151,6 +151,22 @@ export const TYPECHECKER_TESTS = {
     "fix_history_cases::reserved_enum_member_3092::reserved_enum_members_preserve_batch_diagnostics",
   "reserved-expression-shapes": "reserved_prop_shapes_preserve_literal_and_member_diagnostics",
   "runtime-props-report-10100-10101": "runtime_props_reports_10100_10101_retain_expected_types",
+  "script-block-duplicate-declarations-4241":
+    "fix_history_cases::script_block_duplicate_declarations_4241::script_block_collisions_preserve_batch_diagnostics",
+  "script-block-scope-isolation-4241":
+    "fix_history_cases::script_block_scope_isolation_4241::cross_block_type_sharing_preserves_batch_diagnostics",
+  "setup-ambient-adjacent-6223":
+    "fix_history_cases::setup_ambient_adjacent_6223::adjacent_ambient_declarations_preserve_lf_batch_diagnostics",
+  "setup-ambient-adjacent-crlf-6223":
+    "fix_history_cases::setup_ambient_adjacent_crlf_6223::adjacent_ambient_declarations_preserve_crlf_batch_diagnostics",
+  "setup-ambient-captures-6232":
+    "fix_history_cases::setup_ambient_captures_6232::setup_dependent_ambient_captures_preserve_lf_batch_diagnostics",
+  "setup-ambient-captures-crlf-6232":
+    "fix_history_cases::setup_ambient_captures_crlf_6232::setup_dependent_ambient_captures_preserve_crlf_batch_diagnostics",
+  "setup-ambient-declarations-6170":
+    "fix_history_cases::setup_ambient_declarations_6170::independent_ambient_setup_declarations_preserve_batch_diagnostics",
+  "setup-ambient-global-types-6211":
+    "fix_history_cases::setup_ambient_global_types_6211::ambient_setup_global_types_preserve_batch_diagnostics",
   "setup-custom-properties": "custom_properties_resolve_on_the_template_instance",
   "slot-outlet-key": "slot_outlet_keys_preserve_complete_project_diagnostics",
   "split-script-original": "split_script_setup_preserves_complete_original_diagnostics",
@@ -282,6 +298,14 @@ export const sourceRevisions = {
   "reserved-enum-member-3092": "347d653aba6f5bc24592275a772e0877f367ce05",
   "reserved-expression-shapes": originalFixtureRevision,
   "runtime-props-report-10100-10101": "5dfe002a9467d152c8545693df33def3aa5f3bf7",
+  "script-block-duplicate-declarations-4241": "da1de3654e840605f65b18e6da536340cc6a28b4",
+  "script-block-scope-isolation-4241": "da1de3654e840605f65b18e6da536340cc6a28b4",
+  "setup-ambient-adjacent-6223": "be16d7c61b992af1e9af7e49a6975ce7a16e2512",
+  "setup-ambient-adjacent-crlf-6223": "be16d7c61b992af1e9af7e49a6975ce7a16e2512",
+  "setup-ambient-captures-6232": "0c94290f5f02b35a76f8ebc86128bcd1e1193e4a",
+  "setup-ambient-captures-crlf-6232": "0c94290f5f02b35a76f8ebc86128bcd1e1193e4a",
+  "setup-ambient-declarations-6170": "71451516ec37ed6ae600ba09f57f5d452961645a",
+  "setup-ambient-global-types-6211": "a7fcfb4a5a17a4db0cd5fc21326205da7d020e1f",
   "setup-custom-properties": "482dd05d23ac9d1bec4065608dd8fe562a11b3b0",
   "slot-outlet-key": "c6e43ca98cbffe099a6ef323006139d796d62208",
   "split-script-original": "b3c2933be5afbdb5f2df07da093f40bc7ce72187",

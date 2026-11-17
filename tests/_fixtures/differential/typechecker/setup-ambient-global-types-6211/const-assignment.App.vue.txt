@@ -1,0 +1,5 @@
+<script setup lang="ts">
+declare const value: HTMLElement;
+value = document.body;
+</script>
+<template><div /></template>
