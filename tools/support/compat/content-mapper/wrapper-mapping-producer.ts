@@ -2,15 +2,16 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { CHECK_MODE_PRODUCER_SUCCESSORS } from "./check-mode-successor.ts";
+import { beforeVerbatimOffset } from "./verbatim-offset-successor.ts";
 
 export function assertWrapperMappingProducer(producer: Uint8Array): void {
   const digest = (bytes: string | Uint8Array) => createHash("sha256").update(bytes).digest("hex");
   assert.equal(
     digest(producer),
-    "e05df54b6db5727e5eb15d52d57b2b799a7852ef8e22e1ff4dc9f87f1a1a44d5",
+    "965d4f517cc073bc176ffed0653c3ed439854351bf6083794e35dadefb2436ed",
     "unqualified #11675 wrapper mapping producer",
   );
-  let historical = Buffer.from(producer).toString("utf8");
+  let historical = beforeVerbatimOffset(Buffer.from(producer).toString("utf8"));
   for (const [successor, predecessor] of [
     [
       `mod directive_table;
