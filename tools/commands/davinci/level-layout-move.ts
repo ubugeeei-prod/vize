@@ -652,13 +652,155 @@ export function run(stepName: string, dryRun: boolean): string[] {
   return [...touched, ...[...renames].map(([from, to]) => `${from} -> ${to}`)];
 }
 
+/** A module moved to another crate: `from` and `to` are `{ crate dir, crate name, module path }`. */
+export interface CrateModule {
+  readonly crate: string;
+  readonly name: string;
+  readonly module: readonly string[];
+}
+
+export interface CrossCrateStep {
+  readonly from: CrateModule;
+  readonly to: CrateModule;
+}
+
+export const crossCrateSteps: Readonly<Record<string, CrossCrateStep>> = {
+  // Step 5: TSRX lowering is L1→L2's job, beside the JSX lowering.
+  "l2-tsrx-lowering": {
+    from: { crate: "davinci/vize_l2", name: "vize_l2", module: ["lang", "tsrx"] },
+    to: {
+      crate: "davinci/vize_l1_to_l2",
+      name: "vize_l1_to_l2",
+      module: ["framework", "vue", "tsrx"],
+    },
+  },
+};
+
+/**
+ * Rewrite one file for a cross-crate move. Inside the moved module, `crate::`
+ * paths into the module follow it and every other `crate::` path names the
+ * old crate; `super::` chains that leave the module become absolute paths in
+ * the old crate. Everywhere else, the old crate's path to the module becomes
+ * the new crate's (`crate::` inside the new crate).
+ */
+export function rewriteCrossCrate(
+  source: string,
+  step: CrossCrateStep,
+  file: string,
+  moved: boolean,
+): string {
+  const { from, to } = step;
+  const fromPath = from.module.join("::");
+  const toPath = to.module.join("::");
+  let out = source;
+  if (moved) {
+    const fileModule = modulePathOf(from.crate, file);
+    const inline = inlineModules(out);
+    out = out.replace(
+      new RegExp(`\\b((?:super::)+)((?:${ident}::)*${ident})`, "gu"),
+      (whole, supers: string, tail: string, offset: number) => {
+        const depth = (supers.match(/super::/gu) ?? []).length;
+        const here = moduleAt(fileModule, inline, offset);
+        const base = here.slice(0, here.length - depth);
+        if (startsWith(base, from.module)) return whole;
+        return [from.name, ...base, ...tail.split("::")].join("::");
+      },
+    );
+    out = out.replace(new RegExp(`\\bcrate::`, "gu"), (whole, offset: number) =>
+      out.startsWith(fromPath + "::", offset + whole.length) ||
+      out.startsWith(fromPath, offset + whole.length)
+        ? whole
+        : `${from.name}::`,
+    );
+    out = out.replaceAll(`crate::${fromPath}`, `crate::${toPath}`);
+    return out;
+  }
+  const inTarget = file.startsWith(to.crate + "/src/") || file.startsWith(to.crate + "/tests/");
+  const replacement = inTarget && file.startsWith(to.crate + "/src/") ? "crate" : to.name;
+  out = out.replace(
+    new RegExp(`\\b${from.name}::${fromPath.replaceAll("::", "::")}\\b`, "gu"),
+    `${replacement}::${toPath}`,
+  );
+  return out;
+}
+
+export function runCrossCrate(stepName: string, dryRun: boolean): string[] {
+  const step = crossCrateSteps[stepName];
+  if (!step) throw new Error(`unknown step ${stepName}`);
+  const files = git("ls-files", "-z").split("\0").filter(Boolean);
+  const old = moduleFiles(step.from.crate, step.from.module);
+  const next = moduleFiles(step.to.crate, step.to.module);
+  const renames = new Map<string, string>();
+  for (const file of files) {
+    if (file === old.file) renames.set(file, next.file);
+    else if (file.startsWith(old.dir + "/"))
+      renames.set(file, next.dir + file.slice(old.dir.length));
+  }
+  if (renames.size === 0) return [];
+  const pending = new Map<string, string>();
+  const read = (file: string) =>
+    pending.get(file) ?? fs.readFileSync(path.join(repoRoot, file), "utf8");
+  for (const file of files) {
+    if (selfFiles.has(file)) continue;
+    const absolute = path.join(repoRoot, file);
+    if (!fs.existsSync(absolute) || !fs.statSync(absolute).isFile()) continue;
+    const text = fs.readFileSync(absolute, "utf8");
+    if (text.includes("\0")) continue;
+    let out = text;
+    if (file.endsWith(".rs")) out = rewriteCrossCrate(out, step, file, renames.has(file));
+    out = out.replaceAll(old.dir + "/", next.dir + "/").replaceAll(old.file, next.file);
+    const target = renames.get(file);
+    if (target && file.endsWith(".rs")) out = rewriteRelativeFiles(out, file, target, renames);
+    if (out !== text) pending.set(file, out);
+  }
+  // Declarations: out of the old parent, into the new one.
+  const parentOf = (crate: string, module: readonly string[]) =>
+    module.length === 1
+      ? path.posix.join(crate, "src/lib.rs")
+      : (() => {
+          const parent = moduleFiles(crate, module.slice(0, -1));
+          return fs.existsSync(path.join(repoRoot, parent.file))
+            ? parent.file
+            : path.posix.join(parent.dir, "mod.rs");
+        })();
+  const name = step.from.module.at(-1)!;
+  const oldParent = parentOf(step.from.crate, step.from.module);
+  const declaration = new RegExp(`^(\\s*)(pub(?:\\([^)]*\\))?\\s+)?mod\\s+${name}\\s*;\\n`, "mu");
+  const found = declaration.exec(read(oldParent));
+  if (!found) throw new Error(`no \`mod ${name};\` in ${oldParent}`);
+  pending.set(oldParent, read(oldParent).replace(declaration, ""));
+  const newParent = parentOf(step.to.crate, step.to.module);
+  const parentText = read(newParent);
+  const declarations = [...parentText.matchAll(/^(?:pub(?:\([^)]*\))?\s+)?mod\s+\w+\s*;\n/gmu)];
+  const at = declarations.length
+    ? declarations.at(-1)!.index! + declarations.at(-1)![0].length
+    : parentText.length;
+  pending.set(
+    newParent,
+    parentText.slice(0, at) + `pub mod ${step.to.module.at(-1)};\n` + parentText.slice(at),
+  );
+  const touched = [...pending.keys()].sort();
+  const moves = [...renames].map(([from, to]) => `${from} -> ${to}`);
+  if (dryRun) return [...touched, ...moves];
+  for (const [file, text] of pending) fs.writeFileSync(path.join(repoRoot, file), text);
+  for (const [from, to] of renames) {
+    fs.mkdirSync(path.dirname(path.join(repoRoot, to)), { recursive: true });
+    git("mv", from, to);
+  }
+  return [...touched, ...moves];
+}
+
 if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
   const [stepName, ...flags] = process.argv.slice(2);
   if (!stepName) {
-    console.error(`usage: level-layout-move.ts <${Object.keys(steps).join("|")}> [--dry-run]`);
+    console.error(
+      `usage: level-layout-move.ts <${[...Object.keys(steps), ...Object.keys(crossCrateSteps)].join("|")}> [--dry-run]`,
+    );
     process.exit(2);
   }
-  const touched = run(stepName, flags.includes("--dry-run"));
+  const dryRun = flags.includes("--dry-run");
+  const touched =
+    stepName in crossCrateSteps ? runCrossCrate(stepName, dryRun) : run(stepName, dryRun);
   console.log(touched.join("\n"));
   console.log(`${touched.length} changes`);
 }
