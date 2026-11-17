@@ -228,6 +228,9 @@ for (const spec of arg("scenarios", "mk,mk-json,mk-all,bench,ta").split(",")) {
   if (spec === "mk-json") scenario("misskey `lint src --format json`", mk, ["lint", "src", "--format", "json"], runs);
   if (spec === "mk-all")
     scenario("misskey `--preset all --format json`", mk, ["lint", "src", "--preset", "all", "--format", "json"], runs);
+  const allThreads = /^mk-all-t(\d+)$/.exec(spec);
+  if (allThreads)
+    scenario(`misskey \`--preset all --format json\`, RAYON_NUM_THREADS=${allThreads[1]}`, mk, ["lint", "src", "--preset", "all", "--format", "json"], runs, { RAYON_NUM_THREADS: allThreads[1] });
   if (spec === "mk-all-text") scenario("misskey `--preset all` (text)", mk, ["lint", "src", "--preset", "all"], runs);
   const threads = /^mk-json-t(\d+)$/.exec(spec);
   if (threads)
