@@ -13,7 +13,7 @@ use super::ErrorCode;
 
 impl ErrorCode {
     /// Every code, in declaration order.
-    pub const ALL: [Self; 65] = [
+    pub const ALL: [Self; 66] = [
         Self::AbruptClosingOfEmptyComment,
         Self::CdataInHtmlContent,
         Self::DuplicateAttribute,
@@ -79,6 +79,7 @@ impl ErrorCode {
         Self::SurrogateCharacterReference,
         Self::NoncharacterCharacterReference,
         Self::DirectiveContract,
+        Self::ControlCharacterInInputStream,
     ];
 
     /// The code a diagnostic shows and `vize explain` accepts.
@@ -172,6 +173,7 @@ impl ErrorCode {
             Self::SurrogateCharacterReference => "compiler/surrogate-character-reference",
             Self::NoncharacterCharacterReference => "compiler/noncharacter-character-reference",
             Self::DirectiveContract => "compiler/directive-contract",
+            Self::ControlCharacterInInputStream => "compiler/control-character-in-input-stream",
         }
     }
 

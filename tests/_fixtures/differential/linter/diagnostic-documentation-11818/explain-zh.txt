@@ -43,6 +43,15 @@ compiler/character-reference-outside-unicode-range · 编译器错误
 
 帮助:
   请使用不大于 &#x10FFFF; 的码点
+=== compiler/control-character-in-input-stream
+compiler/control-character-in-input-stream · 编译器错误
+输入中包含控制字符。
+
+阶段: surface
+严重级别: 错误
+
+帮助:
+  请删除不可见的控制字符；HTML 模板中不允许使用它
 === compiler/control-character-reference
 compiler/control-character-reference · 编译器错误
 控制字符引用。

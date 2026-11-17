@@ -403,4 +403,16 @@ static ENTRIES: &[(&str, &str, &str, &str)] = &[
         "参照を削除してください。非文字は交換用ではありません",
         "请删除该引用；非字符不用于交换",
     ),
+    (
+        "compiler/control-character-in-input-stream.message",
+        "Control character in input stream.",
+        "入力に制御文字があります。",
+        "输入中包含控制字符。",
+    ),
+    (
+        "compiler/control-character-in-input-stream.help",
+        "remove the invisible control character; HTML does not allow it in a template",
+        "見えない制御文字を削除してください。HTML のテンプレートでは使用できません",
+        "请删除不可见的控制字符；HTML 模板中不允许使用它",
+    ),
 ];
