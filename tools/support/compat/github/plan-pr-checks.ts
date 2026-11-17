@@ -71,12 +71,26 @@ export function planPrChecks({ paths, eventName, labels, workspace, cargoMetadat
   return { source, rust, js, native, tier, sourceContracts };
 }
 
+// Reasons explain a plan; they select nothing. Every needs output travels in
+// one environment string to the source report, and Linux caps one string at
+// 128 KiB, so a PR touching hundreds of fixtures must not list every path.
+export const MAX_OUTPUT_REASONS = 40;
+
+function boundReasons<T extends { reasons: string[] }>(plan: T): T {
+  if (plan.reasons.length <= MAX_OUTPUT_REASONS) return plan;
+  const omitted = plan.reasons.length - MAX_OUTPUT_REASONS;
+  return {
+    ...plan,
+    reasons: [...plan.reasons.slice(0, MAX_OUTPUT_REASONS), `... and ${omitted} more`],
+  };
+}
+
 export function prCheckOutputs(plan: ReturnType<typeof planPrChecks>): Record<string, string> {
   return {
     rust: "true",
-    "rust-plan": JSON.stringify(plan.rust),
+    "rust-plan": JSON.stringify(boundReasons(plan.rust)),
     js: String(plan.js.groups.length > 0 || plan.js.conformance.fresco || plan.js.conformance.ui),
-    "js-plan": JSON.stringify(plan.js),
+    "js-plan": JSON.stringify(boundReasons(plan.js)),
     tooling: String(plan.source.tooling),
     "source-contracts": String(plan.sourceContracts),
     heavy: String(plan.tier === "heavy"),
