@@ -101,6 +101,28 @@ defineSlots<ComboboxSlots<O, G>>()
   assert.match(slotReason(source, 1) ?? "", importedSlots);
 });
 
+test("picked keys and prop members do not declare an imported slot", () => {
+  const source = `<script setup lang="ts">
+import type { MenuSlots } from './Menu.types'
+defineProps<{ icon?: string }>()
+defineSlots<Pick<MenuSlots<T, D>, 'item-leading' | 'icon'>>()
+</script>
+<template>
+  <slot name="item-leading" />
+  <slot name="icon" />
+  <slot name="footer" />
+</template>`;
+  assert.match(slotReason(source) ?? "", importedSlots);
+  assert.match(slotReason(source, 1) ?? "", importedSlots);
+  assert.equal(slotReason(source, 2), null);
+  const omitted = source.replace(
+    "Pick<MenuSlots<T, D>, 'item-leading' | 'icon'>",
+    "Omit<MenuSlots<T, D>, 'icon'>",
+  );
+  assert.match(slotReason(omitted) ?? "", importedSlots);
+  assert.equal(slotReason(omitted, 1), null);
+});
+
 test("a slot named by a bound literal is static", () => {
   const source = `<script setup lang="ts">
 import { type ComponentSlots, SlotUse } from '@/constants/slots'

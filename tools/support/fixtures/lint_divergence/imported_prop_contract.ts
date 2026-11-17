@@ -336,8 +336,11 @@ export function typeRegions(
   source: string,
   scripts: Range[],
   includes: (typeName: string) => boolean = () => true,
+  propsArguments = true,
 ): Range[] {
-  const regions: Range[] = propsCalls(source).map((call) => call.typeArgument);
+  const regions: Range[] = propsArguments
+    ? propsCalls(source).map((call) => call.typeArgument)
+    : [];
   for (const match of source.matchAll(/<script\b[^>]*\bgeneric\s*=\s*("[^"]*"|'[^']*')/giu))
     regions.push({ start: match.index ?? 0, end: (match.index ?? 0) + match[0].length });
   for (const script of scripts) {

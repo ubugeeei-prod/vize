@@ -83,12 +83,53 @@ function onlyImportedDeclares(source: string, argument: TypeArgument, name: stri
   const text = source.slice(argument.start, argument.end);
   if (!reachesImport(source, scripts, text)) return false;
   const reached = typeClosure(source, text);
-  const regions = [argument, ...typeRegions(source, scripts, (typeName) => reached.has(typeName))];
+  // A prop such as `icon?: IconName` names no slot or event, so the props
+  // argument is not a declaring region here.
+  const regions = [
+    argument,
+    ...typeRegions(source, scripts, (typeName) => reached.has(typeName), false),
+  ];
   const escaped = escapeName(name);
   // A member key (`click: []`, `default?(props)`) or any string spelling.
   const spelled = new RegExp(
     `(?:^|[^\\w$.'"])${escaped}\\s*\\??\\s*[:(]|['"\`]${escaped}['"\`]`,
     "u",
   );
-  return !regions.some((region) => spelled.test(source.slice(region.start, region.end)));
+  // A lone `Pick<Slots, ...>` declares only its keys.
+  const lonePick =
+    /^\s*Pick\s*<[\s\S]*>\s*$/u.test(text) && !/[&|]/u.test(withoutUtilityKeys(text));
+  if (lonePick && !new RegExp(`['"\`]${escaped}['"\`]`, "u").test(text)) return false;
+  return !regions.some((region) =>
+    spelled.test(withoutUtilityKeys(source.slice(region.start, region.end))),
+  );
+}
+
+/**
+ * `Pick<Slots, 'item'>` quotes member names without declaring them: the
+ * keys select from the imported type. Pick keys are blanked so only a
+ * declaring spelling counts. `Omit` keys stay, so an omitted name is never
+ * classified.
+ */
+function withoutUtilityKeys(text: string): string {
+  let result = text;
+  for (const match of text.matchAll(/\bPick\s*</gu)) {
+    const open = (match.index ?? 0) + match[0].length;
+    let depth = 0,
+      comma = -1;
+    for (let index = open; index < text.length; index++) {
+      const character = text[index];
+      if (character === "<" || character === "(" || character === "{" || character === "[") depth++;
+      else if (character === ")" || character === "}" || character === "]") depth--;
+      else if (character === ">") {
+        if (depth === 0) {
+          if (comma >= 0)
+            result =
+              result.slice(0, comma + 1) + " ".repeat(index - comma - 1) + result.slice(index);
+          break;
+        }
+        depth--;
+      } else if (character === "," && depth === 0) comma = index;
+    }
+  }
+  return result;
 }
