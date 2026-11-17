@@ -5,7 +5,11 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
-import { planPrChecks, prCheckOutputs } from "../../tools/support/compat/github/plan-pr-checks.ts";
+import {
+  MAX_OUTPUT_REASONS,
+  planPrChecks,
+  prCheckOutputs,
+} from "../../tools/support/compat/github/plan-pr-checks.ts";
 import {
   planAffectedJs,
   readJsWorkspace,
@@ -237,6 +241,37 @@ test("normal PRs defer duplicate heavy qualification and preserve an explicit fu
   assert.equal(selectPrTier({ eventName: "pull_request", paths, labels: [] }), "fast");
   assert.equal(selectPrTier({ eventName: "pull_request", paths, labels: ["full-ci"] }), "heavy");
   assert.equal(selectPrTier({ eventName: "merge_group", paths, labels: [] }), "heavy");
+});
+
+test("plan outputs bound their reasons so every needs output fits one environment string", () => {
+  // A fixture-only PR with hundreds of unknown inputs once overflowed the
+  // source report's NEEDS_JSON (Linux caps one string at 128 KiB).
+  const paths = Array.from(
+    { length: 900 },
+    (_, index) => `tests/_fixtures/unknown/case-${index}.txt`,
+  );
+  const plan = planPrChecks({
+    paths,
+    eventName: "pull_request",
+    labels: [],
+    workspace,
+    cargoMetadata: metadata,
+  });
+  assert(plan.rust.reasons.length > MAX_OUTPUT_REASONS);
+  const outputs = prCheckOutputs(plan);
+  for (const name of ["rust-plan", "js-plan"]) {
+    const output = JSON.parse(outputs[name]);
+    const full = name === "rust-plan" ? plan.rust : plan.js;
+    assert.deepEqual(
+      output.reasons.slice(0, MAX_OUTPUT_REASONS),
+      full.reasons.slice(0, MAX_OUTPUT_REASONS),
+    );
+    assert.deepEqual(output.reasons.slice(MAX_OUTPUT_REASONS), [
+      `... and ${full.reasons.length - MAX_OUTPUT_REASONS} more`,
+    ]);
+    assert.deepEqual({ ...output, reasons: [] }, { ...full, reasons: [] });
+  }
+  assert(Object.values(outputs).join("").length < 64 * 1024);
 });
 
 test("one source plan joins actual Rust and JS closures without temporary JSON files", () => {
