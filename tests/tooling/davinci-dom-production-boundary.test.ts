@@ -25,7 +25,8 @@ const compilerOptionsProjectedToS2 = [
   "binding_metadata",
   "is_ts",
 ];
-const compilerOptionsHandledAroundS2 = ["source_map"];
+// A template that may bind a declared directive takes the compatibility lane.
+const compilerOptionsHandledAroundS2 = ["source_map", "directive_contracts"];
 const compilerOptionsHeldAtDefault = [
   "ssr",
   "experimental_patterned_template",
@@ -136,6 +137,7 @@ test("DOM L2 production switch classifies every compiler option", () => {
       "is_ts",
       "dialect",
       "script_tables",
+      "directive_contracts",
     ].sort(),
   );
 
