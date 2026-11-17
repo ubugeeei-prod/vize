@@ -80,7 +80,8 @@ test("every plugin's time is attributed in the lint output", () => {
     out.plugins.map(({ name, nodes, reports, cached }) => ({ name, nodes, reports, cached })),
     [
       { name: "team-conventions", nodes: 10, reports: 2, cached: false },
-      { name: "slow-plugin", nodes: 8, reports: 0, cached: false },
+      // TODO_LIST's table keeps its authored rows: no implied `tbody` element.
+      { name: "slow-plugin", nodes: 7, reports: 0, cached: false },
     ],
   );
   const [fast, spin] = out.plugins;
@@ -263,7 +264,7 @@ test("the measured proxy arm reads the same document to the same reports", () =>
   assert.deepEqual(runProxy(team, handle), batch);
   assert.deepEqual(
     batch.map((report: { node: number }) => report.node),
-    [7, 12],
+    [6, 11],
   );
 });
 
