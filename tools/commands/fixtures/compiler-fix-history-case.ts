@@ -14,6 +14,7 @@
 // takes the `id -> observed` object the runner prints for mismatched counts.
 // Snapshots come from `INSTA_UPDATE=always cargo test -p vize_atelier_sfc --test compile_history`.
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -121,9 +122,12 @@ function register(files: string[], errors: Record<string, number>) {
   const pin = /(assert_eq!\(\s*cases\.len\(\),\s*)\d+,/;
   assert.match(source, pin);
   write(runner, source.replace(pin, `$1${cohort.length},`));
+  // The receipt pins the formatted bytes, so format before regenerating it.
+  execFileSync("vp", ["fmt", COHORT, DISPOSITIONS], { cwd: root, stdio: "ignore" });
   const rendered = renderHistory(collectHistory(root));
   write(INDEX, rendered.index);
   write(RECEIPT, rendered.receipt);
+  execFileSync("vp", ["fmt", RECEIPT], { cwd: root, stdio: "ignore" });
   const receipt = JSON.parse(rendered.receipt);
   console.log(
     `${cohort.length} cases; ${receipt.currentApiPinnedFixSubjects} pinned and ` +
