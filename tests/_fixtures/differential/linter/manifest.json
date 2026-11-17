@@ -1027,6 +1027,47 @@
       }
     },
     {
+      "id": "linter/css-style-lane-declarations-11550",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "css-style-lane-declarations-11550",
+        "files": [
+          {
+            "path": "Declarations.vue.txt",
+            "role": "deliberate-style-language-findings-and-controls",
+            "sha256": "4c9afde9bec28af6c4778c7c902abaf9bd87745eaef39dbb7fd16920cac8043c"
+          },
+          {
+            "path": "vite.config.mjs",
+            "role": "native-cli-config",
+            "sha256": "0f7b6fac64ad61dae26fc7d8100bd05a2e4f6600caf93c2d969a2dbe53e8d9ce"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "scss-style",
+              "sass-style",
+              "less-style",
+              "stylus-style",
+              "js"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/current-api/anchor-bound-image-alt",
       "state": "active",
       "targets": [
