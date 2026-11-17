@@ -318,8 +318,12 @@ function defineOptionsNamesSelf(source: string, tag: string): boolean {
   return false;
 }
 
-function decoratorRegisters(source: string, tag: string): boolean {
-  for (const [open, close] of objectArguments(source, /@Component\b/gu)) {
+function decoratorRegisters(
+  source: string,
+  tag: string,
+  decorator: RegExp = /@Component\b/gu,
+): boolean {
+  for (const [open, close] of objectArguments(source, decorator)) {
     const components = propertyValue(source, open, close, "components");
     if (components === null || source[components] !== "{") continue;
     const componentsClose = matchingBrace(source, components, close);
@@ -327,6 +331,24 @@ function decoratorRegisters(source: string, tag: string): boolean {
     if (componentMapRegisters(source, components, componentsClose, tag)) return true;
   }
   return false;
+}
+
+/**
+ * vue/component-name-in-template-casing checks registered components only.
+ * Patina reads `@Component({ components })` and `@Options({ components })`
+ * class decorators as registrations; eslint-plugin-vue reads option objects.
+ */
+export function decoratorRegisteredCasingReason(
+  ruleId: string,
+  tagAt: string,
+  source: string,
+): string | null {
+  const tag = /^<([A-Za-z][\w.-]*)/u.exec(tagAt)?.[1];
+  return ruleId === "vue/component-name-in-template-casing" &&
+    tag !== undefined &&
+    decoratorRegisters(source, tag, /@(?:Component|Options)\b/gu)
+    ? "Patina reads the components a class decorator registers (`@Component({ components })`, `@Options({ components })`), so the registered-components casing check covers them; eslint-plugin-vue reads registrations only from component option objects."
+    : null;
 }
 
 function optionsApiRegistersNumericKebab(source: string, tag: string): boolean {

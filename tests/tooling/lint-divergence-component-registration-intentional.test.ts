@@ -11,6 +11,7 @@ import {
   componentRegistrationPatinaIntentionalReason,
 } from "../../tools/support/fixtures/lint_divergence/component_registration_intentional.ts";
 import { compareLintFindings as compareSuccessor } from "../../tools/support/fixtures/lint_divergence/compare.ts";
+import { patinaIntentionalReason } from "../../tools/support/fixtures/lint_divergence/records.ts";
 import { get, list, type Json } from "../../tools/support/fixtures/lint_divergence/value.ts";
 import { currentContext, span } from "./_helpers/lint-divergence-fixture.ts";
 
@@ -37,6 +38,47 @@ export default class Home extends Vue {}
       componentRegistrationBaselineIntentionalReason(finding(tag), source) ?? "",
       /decorator/u,
     );
+});
+
+test("casing findings on decorator-registered components are Patina's reading", () => {
+  const source = `<template>
+  <div><language-setting /><version /><other-part /></div>
+</template>
+<script lang="ts">
+import { Vue, Component } from 'vue-property-decorator'
+import LanguageSetting from './includes/LanguageSetting.vue'
+import Version from './includes/Version.vue'
+@Component({ components: { LanguageSetting, Version } })
+export default class AppSystem extends Vue {}
+</script>`;
+  const casing = (tag: string, text = source) => {
+    const offset = text.indexOf(`<${tag}`);
+    const before = text.slice(0, offset).split("\n");
+    const line = before.length,
+      column = (before.at(-1)?.length ?? 0) + 1;
+    return patinaIntentionalReason(
+      {
+        file: "src/AppSystem.vue",
+        ruleId: "vue/component-name-in-template-casing",
+        severity: "warning",
+        line,
+        column,
+        endLine: line,
+        endColumn: column + tag.length + 1,
+        message: "[vize:vue/component-name-in-template-casing] Component should use PascalCase",
+      },
+      text,
+    );
+  };
+  assert.match(casing("language-setting") ?? "", /class decorator registers/u);
+  assert.match(casing("version") ?? "", /class decorator registers/u);
+  assert.match(casing("version", source.replace("@Component(", "@Options(")) ?? "", /decorator/u);
+  assert.equal(casing("other-part"), null);
+  const optionObject = source.replace(
+    "@Component({ components: { LanguageSetting, Version } })\nexport default class AppSystem extends Vue {}",
+    "export default { components: { LanguageSetting, Version } }",
+  );
+  assert.equal(casing("version", optionObject), null);
 });
 
 test("component map scanning skips nested values", () => {
