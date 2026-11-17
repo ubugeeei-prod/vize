@@ -69,6 +69,7 @@ pub mod css;
 pub mod dialect;
 pub mod edit;
 pub mod embed;
+pub mod framework;
 pub mod markup;
 mod moved;
 pub mod registry;

@@ -38,7 +38,12 @@ pub trait Profile: Copy + Default + 'static {
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct Document;
 
-/// Standard component-template grammar used by the published tokenizer facade.
+/// The neutral component-template profile: HTML syntax without document tree
+/// construction. Names keep their case, any element may self-close, and there
+/// are no implied end tags or content models; attribute whitespace is required
+/// as in HTML. A framework adds its own rules on top (Vue's is
+/// `framework::vue::VueTemplate`). Today it is read by the published tokenizer
+/// facade and by component grammars without framework rules.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub struct Component;
 
@@ -60,21 +65,6 @@ impl Profile for Component {
     const IMPLIED_END_TAGS: bool = false;
     const SELECT_CONTENT_MODEL: bool = false;
     const TABLE_CONTENT_MODEL: bool = false;
-}
-
-/// Vue's SFC attribute grammar, selected explicitly by the source format.
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
-pub struct VueComponent;
-
-impl Profile for VueComponent {
-    const KIND: ProfileKind = Component::KIND;
-    const TOLERATE_DECLARATIONS: bool = Component::TOLERATE_DECLARATIONS;
-    const FOLD_NAME_CASE: bool = Component::FOLD_NAME_CASE;
-    const SELF_CLOSING_ANY_ELEMENT: bool = Component::SELF_CLOSING_ANY_ELEMENT;
-    const REQUIRE_ATTRIBUTE_WHITESPACE: bool = false;
-    const IMPLIED_END_TAGS: bool = Component::IMPLIED_END_TAGS;
-    const SELECT_CONTENT_MODEL: bool = Component::SELECT_CONTENT_MODEL;
-    const TABLE_CONTENT_MODEL: bool = Component::TABLE_CONTENT_MODEL;
 }
 
 #[cfg(test)]

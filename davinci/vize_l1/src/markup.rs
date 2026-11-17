@@ -3,8 +3,9 @@
 //! Markup is a grammar × profile matrix. The grammar is the markup language
 //! family (Vue now; Svelte, Angular and others later). The profile selects
 //! the host rules: [`profile::Document`] for HTML and in-DOM templates
-//! (petite-vue), [`profile::Component`] for the standard tokenizer contract,
-//! and [`profile::VueComponent`] for explicit Vue SFC source grammar.
+//! (petite-vue) and [`profile::Component`] for component templates. A
+//! framework's own template profile lives with the framework
+//! (`framework::vue::VueTemplate`).
 //!
 //! One shared state machine, [`lex::Lexer`], is generic over the profile
 //! and its event [`token::Sink`], so every per-profile branch is resolved at
@@ -64,7 +65,7 @@ pub use htmlish::surface::{
     AttrValue, Attribute, CloseTag, Element, ElementClose, Interpolation, OpenTag, SurfaceChild,
     SurfaceTree, Token, TokenStatus,
 };
-pub use profile::{Component, Document, Profile, ProfileKind, VueComponent};
+pub use profile::{Component, Document, Profile, ProfileKind};
 pub use token::{LexErrorCode, LexMode, Namespace, QuoteType, Sink};
 
 pub use htmlish::native::{
