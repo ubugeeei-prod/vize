@@ -24,7 +24,7 @@ pub(super) use documents::rename_open_documents;
 pub(super) use documents::rename_project_open_documents;
 
 pub(super) use self::path::{
-    RESOLVABLE_SCRIPT_EXTENSIONS, RenderStyle, apply_all_path_renames, candidate_exists,
+    RESOLVABLE_SCRIPT_EXTENSIONS, RenderStyle, ScanFiles, apply_all_path_renames, candidate_exists,
     is_index_file, normalize_path_buf, render_module_specifier, rewrite_relative_specifier,
     split_specifier_suffix, strip_extension,
 };
@@ -207,6 +207,26 @@ fn process_source(
     kind: ImporterKind,
     rename_targets: &[RenameTarget],
 ) -> Option<(Url, Vec<TextEdit>)> {
+    let moved = apply_all_path_renames(path, rename_targets);
+    let stays = moved.is_none();
+    let future_path = moved.unwrap_or_else(|| normalize_path_buf(path));
+    // Routing a file to its project dominates a workspace scan, and most files
+    // name no renamed path. An importer that stays put is routed only if a
+    // scan where nothing but renamed paths exists still finds an edit.
+    if stays
+        && collect_edits(
+            state,
+            ScanFiles::RenamedOnly,
+            path,
+            &future_path,
+            source,
+            kind,
+            rename_targets,
+        )
+        .is_empty()
+    {
+        return None;
+    }
     #[cfg(feature = "native")]
     let routed = owner.map(|owner| {
         owner
@@ -221,15 +241,15 @@ fn process_source(
     }
     #[cfg(not(feature = "native"))]
     let _ = owner;
-    let future_path =
-        apply_all_path_renames(path, rename_targets).unwrap_or_else(|| normalize_path_buf(path));
-
-    let mut edits = match kind {
-        ImporterKind::Vue => collect_vue_edits(state, path, &future_path, source, rename_targets),
-        ImporterKind::Script => {
-            collect_script_file_edits(state, path, &future_path, source, rename_targets)
-        }
-    };
+    let mut edits = collect_edits(
+        state,
+        ScanFiles::Live(state),
+        path,
+        &future_path,
+        source,
+        kind,
+        rename_targets,
+    );
 
     if edits.is_empty() {
         return None;
@@ -244,6 +264,25 @@ fn process_source(
     });
 
     Some((uri, edits))
+}
+
+fn collect_edits(
+    state: &ServerState,
+    files: ScanFiles<'_>,
+    path: &Path,
+    future_path: &Path,
+    source: &str,
+    kind: ImporterKind,
+    rename_targets: &[RenameTarget],
+) -> Vec<TextEdit> {
+    match kind {
+        ImporterKind::Vue => {
+            collect_vue_edits(state, files, path, future_path, source, rename_targets)
+        }
+        ImporterKind::Script => {
+            collect_script_file_edits(files, path, future_path, source, rename_targets)
+        }
+    }
 }
 
 fn rename_targets(renames: &[FileRename]) -> Vec<RenameTarget> {

@@ -4,11 +4,12 @@ use std::path::Path;
 
 use tower_lsp::lsp_types::TextEdit;
 
-use super::manual::{RenameTarget, offset_range, rewrite_relative_specifier};
+use super::manual::{RenameTarget, ScanFiles, offset_range, rewrite_relative_specifier};
 use crate::server::ServerState;
 
 pub(super) fn collect_vue_resource_edits(
     state: &ServerState,
+    files: ScanFiles<'_>,
     path: &Path,
     future_path: &Path,
     source: &str,
@@ -27,7 +28,7 @@ pub(super) fn collect_vue_resource_edits(
     let mut edits = Vec::new();
     let mut push_edit = |specifier: &str, start: usize, end: usize| {
         let Some(new_text) =
-            rewrite_relative_specifier(state, current_dir, future_dir, specifier, rename_targets)
+            rewrite_relative_specifier(files, current_dir, future_dir, specifier, rename_targets)
         else {
             return;
         };

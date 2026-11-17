@@ -11,7 +11,7 @@ use tower_lsp::lsp_types::TextEdit;
 
 use crate::server::ServerState;
 
-use super::{RenameTarget, offset_range};
+use super::{RenameTarget, ScanFiles, offset_range};
 
 struct SpecifierOccurrence {
     start: usize,
@@ -20,7 +20,7 @@ struct SpecifierOccurrence {
 }
 
 struct ScriptEditContext<'a> {
-    state: &'a ServerState,
+    files: ScanFiles<'a>,
     current_path: &'a Path,
     future_path: &'a Path,
     full_source: &'a str,
@@ -117,6 +117,7 @@ impl<'a> Visit<'a> for ModuleSpecifierCollector {
 
 pub(super) fn collect_vue_edits(
     state: &ServerState,
+    files: ScanFiles<'_>,
     path: &Path,
     future_path: &Path,
     source: &str,
@@ -128,7 +129,7 @@ pub(super) fn collect_vue_edits(
 
     let mut edits = Vec::new();
     let edit_context = ScriptEditContext {
-        state,
+        files,
         current_path: path,
         future_path,
         full_source: source,
@@ -154,6 +155,7 @@ pub(super) fn collect_vue_edits(
     }
     edits.extend(super::super::resources::collect_vue_resource_edits(
         state,
+        files,
         path,
         future_path,
         source,
@@ -164,7 +166,7 @@ pub(super) fn collect_vue_edits(
 }
 
 pub(super) fn collect_script_file_edits(
-    state: &ServerState,
+    files: ScanFiles<'_>,
     path: &Path,
     future_path: &Path,
     source: &str,
@@ -175,7 +177,7 @@ pub(super) fn collect_script_file_edits(
     };
 
     let edit_context = ScriptEditContext {
-        state,
+        files,
         current_path: path,
         future_path,
         full_source: source,
@@ -206,7 +208,7 @@ fn collect_script_content_edits(
         .into_iter()
         .filter_map(|specifier| {
             let new_text = super::super::alias::rewrite_specifier(
-                context.state,
+                context.files,
                 context.current_path,
                 future_dir,
                 &specifier.specifier,

@@ -17,11 +17,10 @@
 use std::path::{Path, PathBuf};
 
 use super::manual::{
-    RESOLVABLE_SCRIPT_EXTENSIONS, RenameTarget, RenderStyle, apply_all_path_renames,
+    RESOLVABLE_SCRIPT_EXTENSIONS, RenameTarget, RenderStyle, ScanFiles, apply_all_path_renames,
     candidate_exists, is_index_file, normalize_path_buf, render_module_specifier,
     split_specifier_suffix, strip_extension,
 };
-use crate::server::ServerState;
 
 /// One effective alias: the pattern (`@/*`), and the target's base directory
 /// resolved against its declaring config (`<anchor>/src`).
@@ -34,14 +33,14 @@ struct AliasEntry {
 /// manual scanner's rules, aliased ones via the `paths` map. `None` leaves the
 /// specifier untouched.
 pub(super) fn rewrite_specifier(
-    state: &ServerState,
+    files: ScanFiles<'_>,
     importer_path: &Path,
     future_importer_dir: &Path,
     specifier: &str,
     rename_targets: &[RenameTarget],
 ) -> Option<std::string::String> {
     super::manual::rewrite_relative_specifier(
-        state,
+        files,
         importer_path.parent()?,
         future_importer_dir,
         specifier,
@@ -49,7 +48,7 @@ pub(super) fn rewrite_specifier(
     )
     .or_else(|| {
         rewrite_alias_specifier(
-            state,
+            files,
             importer_path,
             future_importer_dir,
             specifier,
@@ -61,7 +60,7 @@ pub(super) fn rewrite_specifier(
 /// Rewrite one non-relative specifier whose alias-resolved target is being
 /// renamed. `None` leaves the specifier untouched.
 fn rewrite_alias_specifier(
-    state: &ServerState,
+    files: ScanFiles<'_>,
     importer_path: &Path,
     future_importer_dir: &Path,
     specifier: &str,
@@ -81,7 +80,7 @@ fn rewrite_alias_specifier(
             continue;
         };
         let base = normalize_path_buf(&alias.target_base.join(rest));
-        let Some((resolved, style)) = probe_alias_target(state, &base, rename_targets) else {
+        let Some((resolved, style)) = probe_alias_target(files, &base, rename_targets) else {
             continue;
         };
         let future = apply_all_path_renames(&resolved, rename_targets)?;
@@ -123,12 +122,12 @@ fn render_alias_remainder(remainder: &Path, style: RenderStyle) -> std::string::
 /// then directory-index probing, mirroring the relative scanner's candidate
 /// order. The style decides how the rename is re-spelled.
 fn probe_alias_target(
-    state: &ServerState,
+    files: ScanFiles<'_>,
     base: &Path,
     rename_targets: &[RenameTarget],
 ) -> Option<(PathBuf, RenderStyle)> {
     let resolvable = |path: &Path| {
-        candidate_exists(state, path) || apply_all_path_renames(path, rename_targets).is_some()
+        candidate_exists(files, path) || apply_all_path_renames(path, rename_targets).is_some()
     };
     if base.extension().is_some() {
         return resolvable(base).then(|| (base.to_path_buf(), RenderStyle::Explicit));

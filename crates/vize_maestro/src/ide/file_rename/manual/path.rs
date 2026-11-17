@@ -18,6 +18,17 @@ pub(in crate::ide::file_rename) enum RenderStyle {
     DirectoryIndex,
 }
 
+/// Which files a rename scan treats as present while resolving a specifier.
+#[derive(Clone, Copy)]
+pub(in crate::ide::file_rename) enum ScanFiles<'a> {
+    /// The disk and this state's open buffers.
+    Live(&'a ServerState),
+    /// No file at all: only renamed paths resolve. The first candidate the
+    /// live scan rewrites is renamed, so it is also the first one here; an
+    /// importer that stays put has a live edit only if it has one here.
+    RenamedOnly,
+}
+
 #[derive(Clone)]
 struct SpecifierCandidate {
     resolved: PathBuf,
@@ -25,7 +36,7 @@ struct SpecifierCandidate {
 }
 
 pub(in crate::ide::file_rename) fn rewrite_relative_specifier(
-    state: &ServerState,
+    files: ScanFiles<'_>,
     current_importer_dir: &Path,
     future_importer_dir: &Path,
     specifier: &str,
@@ -38,7 +49,7 @@ pub(in crate::ide::file_rename) fn rewrite_relative_specifier(
 
     let mut selected = None;
     for candidate in specifier_candidates(current_importer_dir, specifier_path) {
-        if candidate_exists(state, &candidate.resolved)
+        if candidate_exists(files, &candidate.resolved)
             || apply_all_path_renames(&candidate.resolved, rename_targets).is_some()
         {
             selected = Some(candidate);
@@ -204,7 +215,10 @@ fn apply_path_rename(path: &Path, rename: &RenameTarget) -> Option<PathBuf> {
     }
 }
 
-pub(in crate::ide::file_rename) fn candidate_exists(state: &ServerState, path: &Path) -> bool {
+pub(in crate::ide::file_rename) fn candidate_exists(files: ScanFiles<'_>, path: &Path) -> bool {
+    let ScanFiles::Live(state) = files else {
+        return false;
+    };
     if path.exists() {
         return true;
     }
