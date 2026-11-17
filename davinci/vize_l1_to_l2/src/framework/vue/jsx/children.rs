@@ -14,7 +14,7 @@ use vize_l2::op::{
 
 use super::attributes::{Owner, Props, props};
 use super::control_flow::control_flow;
-use super::slots::slot_children;
+use super::slots::{slot_children, v_slots_templates};
 use super::{Cx, JsxRefusal, span};
 
 /// The tag a dynamic component is rendered through.
@@ -66,6 +66,9 @@ pub(super) fn element<'a>(
         Tag::Named(_) | Tag::Value(_) => {
             if !slot_children(cx, &element.children, &mut ops)? {
                 push_children(cx, &element.children, &mut ops)?;
+            }
+            if lowered.has_slot_templates() {
+                v_slots_templates(cx, &opening.attributes, &mut ops)?;
             }
         }
     }

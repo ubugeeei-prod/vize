@@ -8,13 +8,14 @@
 //! value waits for its JSX child rendering (#12322); spreads, computed or
 //! non-name keys and non-function entries wait for their slice.
 //!
-//! `v-slots={slots}` on a component forwards a runtime slots object as
-//! `ui.slots-object`, bound after the other props. An object literal there
-//! waits with the slot objects above.
+//! `v-slots` on a component takes the same object of render functions,
+//! appended to the children as templates, or forwards a runtime slots object
+//! (`v-slots={slots}`) as `ui.slots-object`, bound after the other props.
 
 use oxc_ast::ast::{
-    Expression, FormalParameters, FunctionBody, JSXAttribute, JSXAttributeName, JSXAttributeValue,
-    JSXChild, JSXExpression, ObjectExpression, ObjectPropertyKind, PropertyKey, Statement,
+    Expression, FormalParameters, FunctionBody, JSXAttribute, JSXAttributeItem, JSXAttributeName,
+    JSXAttributeValue, JSXChild, JSXExpression, ObjectExpression, ObjectPropertyKind, PropertyKey,
+    Statement,
 };
 use oxc_span::GetSpan;
 use vize_l0::{Box, Span, String, Vec};
@@ -178,12 +179,25 @@ fn returned<'e, 'x>(
     }
 }
 
-/// The value `v-slots` forwards: any expression but an object, a function,
-/// a sequence or a literal, which are not a runtime slots object.
-pub(super) fn forwarded_slots(
+/// `v-slots` and the camelCase spelling the JSX dialects accept too.
+pub(super) const V_SLOTS: [&str; 2] = ["v-slots", "vSlots"];
+
+/// What a component's `v-slots` lowers to.
+#[derive(Clone, Copy)]
+pub(super) enum SlotsAttribute {
+    /// A runtime slots object at this span, bound after the other props.
+    Forwarded(oxc_span::Span),
+    /// An object of render functions, appended to the children as templates.
+    Templates,
+}
+
+/// Classify a `v-slots` value. A forwarded value is any expression but an
+/// object, a function, a sequence or a literal; an object must hold only
+/// render functions.
+pub(super) fn slots_attribute(
     attribute: &JSXAttribute<'_>,
     owner: Owner<'_, '_, '_>,
-) -> Result<oxc_span::Span, JsxRefusal> {
+) -> Result<SlotsAttribute, JsxRefusal> {
     let (
         Owner::Component,
         JSXAttributeName::Identifier(_),
@@ -192,13 +206,27 @@ pub(super) fn forwarded_slots(
     else {
         return Err(JsxRefusal::Attribute);
     };
-    let expression = match &container.expression {
-        JSXExpression::ObjectExpression(_) | JSXExpression::EmptyExpression(_) => None,
+    let inner = match &container.expression {
+        JSXExpression::EmptyExpression(_) => None,
         expression => expression.as_expression(),
-    };
-    let inner = expression
-        .map(Expression::get_inner_expression)
-        .ok_or(JsxRefusal::Attribute)?;
+    }
+    .map(Expression::get_inner_expression)
+    .ok_or(JsxRefusal::Attribute)?;
+    if let Expression::ObjectExpression(object) = inner {
+        let renders = object.properties.iter().all(|property| {
+            matches!(property, ObjectPropertyKind::ObjectProperty(property)
+            if matches!(
+                property.value.get_inner_expression(),
+                Expression::ArrowFunctionExpression(_) | Expression::FunctionExpression(_)
+            ))
+        });
+        // Any other object is forwarded verbatim or partly dropped: not yet.
+        return if renders {
+            Ok(SlotsAttribute::Templates)
+        } else {
+            Err(JsxRefusal::Attribute)
+        };
+    }
     let forwarded = !matches!(
         inner,
         Expression::ObjectExpression(_)
@@ -219,7 +247,29 @@ pub(super) fn forwarded_slots(
     if !forwarded || contains_jsx(inner) {
         return Err(JsxRefusal::Attribute);
     }
-    Ok(inner.span())
+    Ok(SlotsAttribute::Forwarded(inner.span()))
+}
+
+/// The templates of the `v-slots` object among `items`, after the children.
+pub(super) fn v_slots_templates<'a>(
+    cx: &mut Cx<'a, '_>,
+    items: &[JSXAttributeItem<'_>],
+    ops: &mut Vec<'a, Op<'a>>,
+) -> Result<(), JsxRefusal> {
+    for item in items {
+        if let JSXAttributeItem::Attribute(attribute) = item
+            && let JSXAttributeName::Identifier(name) = &attribute.name
+            && V_SLOTS.contains(&cx.slice(name.span)?)
+            && let Some(JSXAttributeValue::ExpressionContainer(container)) = &attribute.value
+            && let Some(Expression::ObjectExpression(object)) = container
+                .expression
+                .as_expression()
+                .map(Expression::get_inner_expression)
+        {
+            return object_slots(cx, object, ops);
+        }
+    }
+    Err(JsxRefusal::Attribute)
 }
 
 /// `ui.slots-object` for the forwarded value at `at`.

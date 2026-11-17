@@ -18,6 +18,8 @@ mod module;
 mod module_tests;
 mod slots;
 #[cfg(test)]
+mod slots_tests;
+#[cfg(test)]
 mod tests;
 
 pub use boolean::BooleanBindings;
