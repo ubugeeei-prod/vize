@@ -244,6 +244,55 @@ const isLoading = false
     );
 }
 
+/// `:class` before a static `class` is not the value the child's props are
+/// checked with (vue-tsc's object literal keeps the later static string, as
+/// for native elements). Its expression keeps its own diagnostics only.
+#[test]
+fn later_static_class_replaces_the_bound_class_contract() {
+    let script = r#"import Child from "./Child.vue"
+const isLoading = false
+const tone = "dark"
+"#;
+    let template = r#"<Child :class="{ loading: isLoading }" class="static-card" />
+<Child :style="tone" v-bind="{}" style="color: red" />"#;
+
+    let allocator = vize_carton::Allocator::new();
+    let (root, _) = vize_armature::parse(&allocator, template);
+    let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+    analyzer.analyze_script_setup(script);
+    analyzer.analyze_template(&root);
+    let summary = analyzer.finish();
+
+    let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
+    let count = |needle: &str| output.code.matches(needle).count();
+
+    assert_eq!(
+        (
+            count("const __vize_prop_check_0_class: unknown = { loading: isLoading };"),
+            count("const __vize_prop_check_0_class_2: __Child_0_prop_class = \"static-card\";"),
+            count("const __vize_prop_check_1_style: unknown = tone;"),
+            count(
+                "const __vize_prop_check_1_style_2: __Child_1_prop_style = {\"color\":\"red\",};"
+            ),
+        ),
+        (1, 1, 1, 1),
+        "{}",
+        output.code
+    );
+    let class_entries = count("\"class\":");
+    let style_entries = count("\"style\":");
+    assert_eq!(
+        (
+            class_entries > 0 && style_entries > 0,
+            count("\"class\": \"static-card\""),
+            count("\"style\": {\"color\":\"red\",}"),
+        ),
+        (true, class_entries, style_entries),
+        "the props literals carry only the later static values:\n{}",
+        output.code
+    );
+}
+
 #[test]
 fn attribute_name_anchor_survives_prefixes_and_modifiers() {
     let script = r#"import Child from "./Child.vue"

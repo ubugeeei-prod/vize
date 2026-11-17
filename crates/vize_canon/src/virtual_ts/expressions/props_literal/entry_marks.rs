@@ -2,6 +2,7 @@
 //! assignment. The literal and the content-mapper per-prop emitter read the
 //! same rows, so a value is owned by exactly one of them.
 
+use super::super::component_prop_bindings::overridden_by_later_static;
 use super::super::component_props::is_checkable_prop;
 use crate::virtual_ts::helpers::{component_aria_prop_keys, component_prop_key};
 use vize_carton::FxHashSet;
@@ -22,7 +23,7 @@ pub(crate) fn named_entry_marks(
         .props
         .iter()
         .map(|prop| {
-            if !is_checkable_prop(prop) {
+            if !is_checkable_prop(prop) || overridden_by_later_static(usage, prop) {
                 return None;
             }
             let merged = match prop.name.as_str() {
