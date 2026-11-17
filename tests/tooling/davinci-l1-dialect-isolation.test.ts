@@ -9,7 +9,14 @@ import { maskRustNonCode } from "./davinci-storage-rust-syntax.ts";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
 const sourceRoot = path.join(repoRoot, "davinci/vize_l1/src");
-const coreModules = new Set(["build", "event", "parse", "render", "slice", "surface"]);
+// Generic modules: a `.rs` file at one of these paths and every file under it.
+const genericModules = [
+  "slice",
+  "markup/profile",
+  "markup/htmlish/build",
+  "markup/htmlish/event",
+  "markup/htmlish/lex",
+];
 const policy =
   /\b(?:dialect|vue[0-3]|petite|quirks|LegacyCaps|LegacyDialectCapabilities|LegacyVueVersion|VueVersion)\b/u;
 
@@ -24,12 +31,8 @@ function rustFiles(root: string): string[] {
 function genericFiles(root: string): string[] {
   return rustFiles(root).filter((file) => {
     const relative = path.relative(root, file).split(path.sep).join("/");
-    const top = relative.split("/")[0].replace(/\.rs$/u, "");
-    return (
-      coreModules.has(top) ||
-      relative === "markup/profile.rs" ||
-      relative === "markup/lex.rs" ||
-      relative.startsWith("markup/lex/")
+    return genericModules.some(
+      (module) => relative === module + ".rs" || relative.startsWith(module + "/"),
     );
   });
 }
@@ -41,7 +44,7 @@ function assertGenericIsolation(root: string): void {
 }
 
 test("generic L1 construction, rendering and lexer never depend on dialect policy", () => {
-  assert.ok(genericFiles(sourceRoot).length > coreModules.size);
+  assert.ok(genericFiles(sourceRoot).length > genericModules.length);
   assertGenericIsolation(sourceRoot);
 });
 
@@ -50,10 +53,10 @@ test("generic lexer and profile policy mutations fail without rejecting dialect 
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   const genericMarkupFiles = [
     "markup/profile.rs",
-    "markup/lex.rs",
-    "markup/lex/native.rs",
-    "markup/lex/compat.rs",
-    "markup/lex/nested/token.rs",
+    "markup/htmlish/lex.rs",
+    "markup/htmlish/lex/native.rs",
+    "markup/htmlish/lex/compat.rs",
+    "markup/htmlish/lex/nested/token.rs",
   ];
   for (const relative of ["markup.rs", "markup/directive.rs", ...genericMarkupFiles]) {
     const file = path.join(root, relative);
