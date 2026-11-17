@@ -279,6 +279,11 @@ for (const spec of arg("scenarios", "mk,mk-json,mk-all,bench,ta").split(",")) {
   // `MkAsUi.vue` starts a Corsa session (ambient program files, tsgo spawn) on its own.
   if (spec === "ta-session")
     scenario("misskey type-aware one SFC with a session `MkAsUi.vue`", mkta, ["lint", "src/components/MkAsUi.vue", ...typeAware], runs);
+  // The same run with an explicit native runtime, so the session spawns tsgo and lists ambient program files.
+  if (spec === "ta-tsgo")
+    scenario("misskey type-aware `MkAsUi.vue`, explicit TSGO_PATH", mkta, ["lint", "src/components/MkAsUi.vue", ...typeAware], runs, {
+      TSGO_PATH: join(mkta, "node_modules/@typescript/typescript-linux-x64/lib/tsc"),
+    });
   const taNamed = /^ta-files-(\d+)$/.exec(spec);
   if (taNamed) {
     const names = readdirSync(join(mkta, "src/widgets"))
