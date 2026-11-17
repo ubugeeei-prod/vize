@@ -1,9 +1,8 @@
 //! Single-file props shapes, and the names a component may declare as props.
 
-use oxc_allocator::Allocator;
-use oxc_ast::ast::{Expression, ObjectPropertyKind};
-use oxc_parser::Parser;
-use oxc_span::SourceType;
+use oxc_ast::ast::{
+    Argument, Expression, ObjectExpression, ObjectPropertyKind, Program, Statement,
+};
 use vize_croquis::{Croquis, types::TypeDefinitions};
 use vize_l0::{CompactString, FxHashSet};
 
@@ -13,38 +12,60 @@ use vize_l0::{CompactString, FxHashSet};
 /// `withDefaults` keys and `Pick<_, 'name'>` keys declare the name even when
 /// the picked type is out of reach, and a props type the file cannot resolve
 /// may declare any name.
-pub(crate) fn may_declare_prop(analysis: &Croquis, name: &str) -> bool {
+pub(crate) fn may_declare_prop(
+    analysis: &Croquis,
+    script_setup: Option<&Program<'_>>,
+    name: &str,
+) -> bool {
     let macros = &analysis.macros;
     macros.props().iter().any(|prop| prop.name.as_str() == name)
         || macros
             .props_destructure()
             .is_some_and(|destructure| destructure.get(name).is_some())
-        || with_defaults_declares(macros.with_defaults_expression(), name)
+        || script_setup.is_some_and(|program| with_defaults_declares(program, name))
         || picks_key(analysis, name)
         || has_unresolved_props(analysis)
 }
 
 /// Whether the authored `withDefaults` object names `name`, or spreads or
-/// computes a key that may. Croquis keeps these keys only for resolved props.
-fn with_defaults_declares(expression: Option<&str>, name: &str) -> bool {
-    let Some(expression) = expression else {
-        return false;
+/// computes a key that may. Croquis keeps these keys only for resolved props,
+/// so they are read from the script setup AST the lint pass already holds.
+fn with_defaults_declares(program: &Program<'_>, name: &str) -> bool {
+    program
+        .body
+        .iter()
+        .find_map(with_defaults_object)
+        .is_some_and(|object| {
+            object.properties.iter().any(|property| match property {
+                ObjectPropertyKind::SpreadProperty(_) => true,
+                ObjectPropertyKind::ObjectProperty(property) => property
+                    .key
+                    .static_name()
+                    .is_none_or(|key| key.as_ref() == name),
+            })
+        })
+}
+
+/// The object argument of a top-level `withDefaults(defineProps(...), { ... })`.
+fn with_defaults_object<'a>(statement: &'a Statement<'a>) -> Option<&'a ObjectExpression<'a>> {
+    let expression = match statement {
+        Statement::ExpressionStatement(statement) => &statement.expression,
+        Statement::VariableDeclaration(declaration) => declaration
+            .declarations
+            .iter()
+            .find_map(|declarator| declarator.init.as_ref())?,
+        _ => return None,
     };
-    let allocator = Allocator::default();
-    let Ok(expression) = Parser::new(&allocator, expression, SourceType::ts()).parse_expression()
-    else {
-        return false;
+    let Expression::CallExpression(call) = expression.get_inner_expression() else {
+        return None;
     };
-    let Expression::ObjectExpression(object) = expression.without_parentheses() else {
-        return false;
-    };
-    object.properties.iter().any(|property| match property {
-        ObjectPropertyKind::SpreadProperty(_) => true,
-        ObjectPropertyKind::ObjectProperty(property) => property
-            .key
-            .static_name()
-            .is_none_or(|key| key.as_ref() == name),
-    })
+    if !matches!(&call.callee, Expression::Identifier(callee) if callee.name == "withDefaults") {
+        return None;
+    }
+    match call.arguments.get(1)? {
+        Argument::ObjectExpression(object) => Some(object),
+        _ => None,
+    }
 }
 
 /// Whether the props type, its local aliases or its interface heritage pick

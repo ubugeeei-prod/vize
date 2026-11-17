@@ -270,9 +270,13 @@ impl NoBrowserGlobalsInSsr {
     /// instance, and props declared through an unresolved type count too.
     fn is_template_browser_global(ctx: &LintContext<'_>, name: &str) -> bool {
         Self::is_browser_global_binding(ctx, name)
-            && !ctx
-                .analysis()
-                .is_some_and(|analysis| crate::rules::props_shape::may_declare_prop(analysis, name))
+            && !ctx.analysis().is_some_and(|analysis| {
+                let script_setup = ctx
+                    .sfc_scripts()
+                    .and_then(|scripts| scripts.script_setup())
+                    .map(|parsed| &parsed.program);
+                crate::rules::props_shape::may_declare_prop(analysis, script_setup, name)
+            })
     }
 }
 
