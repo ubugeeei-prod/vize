@@ -12,6 +12,10 @@ import {
   templateShadowFromImportedContract,
 } from "./imported_prop_contract.ts";
 import {
+  importedEmitContractReason,
+  nativeEventFromImportedContract,
+} from "./imported_emit_contract.ts";
+import {
   indexRealProjectLocationSource,
   realProjectLocationDivergence,
   type RealProjectLocationSource,
@@ -508,6 +512,7 @@ const patinaIntentionalRuleIds = new Set([
   "vue/no-setup-props-reactivity-loss",
   "vue/no-static-inline-styles",
   "vue/no-template-shadow",
+  "vue/no-shadow-native-events",
   "vue/no-unused-components",
   "vue/no-unused-vars",
   "vue/require-v-for-key",
@@ -948,6 +953,11 @@ function importedPropContractFinding(finding: LintRecord, source: string): strin
         ? booleanDefaultFromImportedContract(start, end, source)
         : null;
   if (accepted !== null) return accepted ? importedPropContractReason : null;
+  if (
+    finding.ruleId === "vue/no-shadow-native-events" &&
+    nativeEventFromImportedContract(finding.message, start, end, source)
+  )
+    return importedEmitContractReason;
   const collides =
     finding.ruleId === "script/no-dupe-keys"
       ? duplicateKeyFromImportedContract(finding.message, start, end, source)

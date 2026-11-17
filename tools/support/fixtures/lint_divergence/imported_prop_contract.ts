@@ -211,7 +211,7 @@ function statementAt(source: string, scripts: Range[], offset: number): Range | 
   return end < offset ? null : { start, end };
 }
 
-function escapeName(name: string): string {
+export function escapeName(name: string): string {
   return name.replace(/[.*+?^${}()|[\]\\]/gu, (character) => `\\${character}`);
 }
 
@@ -222,7 +222,7 @@ function importedOnly(source: string, scripts: Range[], call: PropsCall, name: s
   );
 }
 
-function scriptBlocks(source: string): Range[] {
+export function scriptBlocks(source: string): Range[] {
   const blocks: Range[] = [];
   for (const match of source.matchAll(/<script\b[^>]*>/giu)) {
     const start = (match.index ?? 0) + match[0].length;
@@ -305,7 +305,7 @@ function declaresPropName(source: string, regions: Range[], name: string): boole
   return regions.some((region) => declaration.test(source.slice(region.start, region.end)));
 }
 
-function typeRegions(
+export function typeRegions(
   source: string,
   scripts: Range[],
   includes: (typeName: string) => boolean = () => true,
@@ -381,13 +381,13 @@ function importBindings(source: string, scripts: Range[]): Set<string> {
 }
 
 /** Follow local aliases and interface heritage from the type argument to an import. */
-function reachesImport(source: string, scripts: Range[], typeArgument: string): boolean {
+export function reachesImport(source: string, scripts: Range[], typeArgument: string): boolean {
   const imports = importBindings(source, scripts);
   return [...typeClosure(source, typeArgument)].some((name) => imports.has(name));
 }
 
 /** Every name the type argument reaches through local aliases and interface heritage. */
-function typeClosure(source: string, typeArgument: string): Set<string> {
+export function typeClosure(source: string, typeArgument: string): Set<string> {
   const pending = [...typeArgument.matchAll(identifier)].map((match) => match[0]);
   const seen = new Set<string>();
   while (pending.length > 0 && seen.size < maximumVisitedTypes) {
@@ -415,7 +415,7 @@ function skipSpace(source: string, index: number): number {
 }
 
 /** The `>` closing a type argument list; `=>` arrows do not close it. */
-function matchingAngle(source: string, open: number): number | null {
+export function matchingAngle(source: string, open: number): number | null {
   let depth = 1;
   for (let index = open; index < source.length; index++) {
     const character = source[index];
