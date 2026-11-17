@@ -55,7 +55,11 @@ impl Bits {
 }
 
 fn mask(bit: usize, span: usize) -> u64 {
-    let ones = if span >= 64 { u64::MAX } else { (1 << span) - 1 };
+    let ones = if span >= 64 {
+        u64::MAX
+    } else {
+        (1 << span) - 1
+    };
     ones << bit
 }
 
@@ -77,7 +81,10 @@ fn any(words: &[u64], start: usize, end: usize) -> bool {
     while at < end {
         let (word, bit) = (at / 64, at % 64);
         let span = (end - at).min(64 - bit);
-        if words.get(word).is_some_and(|value| value & mask(bit, span) != 0) {
+        if words
+            .get(word)
+            .is_some_and(|value| value & mask(bit, span) != 0)
+        {
             return true;
         }
         at += span;
