@@ -1,10 +1,16 @@
 //! HTML table tree-construction normalizations needed before L2 ids are minted.
 //!
-//! Direct rows under a table gain an implicit `tbody`, and direct cells under
-//! that synthesized section gain an implicit `tr`. Cells under an authored row
-//! group remain direct children, matching Vue's component compiler rather than
-//! the browser's document parser. L2 inserts only the required owners during
-//! lowering so synthesized op ids stay in folio page order.
+//! A Vue component template keeps authored table structure, as Vue's compiler
+//! does: a row or cell written directly in a `<table>` stays its child. Only a
+//! lowering that asks for the HTML parser's owners
+//! ([`LowerPolicy::with_implied_table_sections`]: HTML documents, and Vapor
+//! templates that `innerHTML` parses again) gets them. Then direct rows under
+//! a table gain an implicit `tbody`, and direct cells under that synthesized
+//! section gain an implicit `tr`; cells under an authored row group remain
+//! direct children. L2 inserts those owners during lowering so synthesized op
+//! ids stay in folio page order.
+//!
+//! [`LowerPolicy::with_implied_table_sections`]: super::LowerPolicy::with_implied_table_sections
 
 use vize_l0::{Box, Span, Vec, cstr};
 use vize_l1::markup::{Interpolation, SurfaceChild};
@@ -21,8 +27,7 @@ pub(crate) fn lower_element_children<'a>(
     ns: Namespace,
 ) -> Vec<'a, Op<'a>> {
     match tag {
-        "table" => lower_table_children(cx, children, ns),
-        "thead" | "tbody" | "tfoot" => lower_row_group_children(cx, children, ns),
+        "table" if cx.implied_table_sections() => lower_table_children(cx, children, ns),
         _ => lower_children(cx, children, ns),
     }
 }
@@ -37,14 +42,6 @@ fn lower_table_children<'a>(
             lower_implicit_section_children(cx, segment, ns)
         })
     })
-}
-
-fn lower_row_group_children<'a>(
-    cx: &mut Cx<'a, impl ProvenanceSink>,
-    children: &[SurfaceChild<'a>],
-    ns: Namespace,
-) -> Vec<'a, Op<'a>> {
-    lower_children(cx, children, ns)
 }
 
 fn lower_implicit_section_children<'a>(

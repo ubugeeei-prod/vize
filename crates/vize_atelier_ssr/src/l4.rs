@@ -155,10 +155,6 @@ const ADMITTED_RULES: &[&str] = &[
     // `v-pre` freezes its subtree as text and drops the directive itself.
     "drop.v-pre",
     "lower.v-pre-text",
-    // HTML table construction: a direct row under `<table>` gains a `tbody`,
-    // and a direct cell under a row group gains a `tr`.
-    "lower.table.implicit-tbody",
-    "lower.table.implicit-tr",
 ];
 
 mod source;

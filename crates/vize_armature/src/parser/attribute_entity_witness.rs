@@ -199,6 +199,7 @@ fn assert_original_options(options: &ParserOptions, expected_in_tag_comments: bo
         on_warn,
         comments,
         experimental_in_tag_comments,
+        implied_table_sections,
         dialect,
     } = options;
     let defaults = ParserOptions::default();
@@ -217,6 +218,7 @@ fn assert_original_options(options: &ParserOptions, expected_in_tag_comments: bo
     assert!(on_error.is_none() && on_warn.is_none());
     assert!(*comments);
     assert_eq!(*experimental_in_tag_comments, expected_in_tag_comments);
+    assert!(!*implied_table_sections);
     assert_eq!(*dialect, defaults.dialect);
 }
 
