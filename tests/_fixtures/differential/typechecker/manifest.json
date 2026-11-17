@@ -40450,6 +40450,45 @@
       }
     },
     {
+      "id": "typechecker/regression/component-class-later-static-13044",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "component-class-later-static-13044/Child.vue.txt",
+          "sha256": "754f210210d84386efdd0a086233c8bdf12346d921a45a609ef0d882600c70e4",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-class-later-static-13044/Parent.vue.txt",
+          "sha256": "58c22a6b4a4694188b6e73057cf17cafa341745ab3f3d0dca9b0f24001e7a4c0",
+          "role": "regression-reproduction"
+        },
+        {
+          "path": "component-class-later-static-13044/tsconfig.json.txt",
+          "sha256": "8617e41a46ceaecf45f4041f3147f809739a32624d8a4a96839fa2f62990a170",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "vize_canon virtual_ts::expressions::component_props_tests::later_static_class_replaces_the_bound_class_contract; a component's bound :class/:style followed by a static class/style of the same name is not the value the child's props are checked with (vue-tsc's authored-order object literal keeps the static string, as vize already does for native elements), while the bound expression keeps its own diagnostics and a static-first or lone bound class stays checked"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/component-export-navigation-features",
       "state": "active",
       "targets": [
@@ -44219,45 +44258,6 @@
               "ts"
             ],
             "selector": "check_canon_nuxt_parity_cli::check_slot_outlet_props_follow_the_vue_compiler_option and vue_options_projection_tests; a slot outlet passing boolean | undefined to a declared boolean slot prop is TS2322 by default, as vue-tsc 3.3.14 reports, and vueCompilerOptions.checkSlotOutletProps: false turns the check off in vize check and the content mapper."
-          }
-        ]
-      }
-    },
-    {
-      "id": "typechecker/regression/component-class-later-static-13044",
-      "state": "active",
-      "targets": [
-        "batch"
-      ],
-      "inputs": [
-        {
-          "path": "component-class-later-static-13044/Child.vue.txt",
-          "sha256": "754f210210d84386efdd0a086233c8bdf12346d921a45a609ef0d882600c70e4",
-          "role": "regression-reproduction"
-        },
-        {
-          "path": "component-class-later-static-13044/Parent.vue.txt",
-          "sha256": "58c22a6b4a4694188b6e73057cf17cafa341745ab3f3d0dca9b0f24001e7a4c0",
-          "role": "regression-reproduction"
-        },
-        {
-          "path": "component-class-later-static-13044/tsconfig.json.txt",
-          "sha256": "8617e41a46ceaecf45f4041f3147f809739a32624d8a4a96839fa2f62990a170",
-          "role": "regression-reproduction"
-        }
-      ],
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template",
-              "ts"
-            ],
-            "selector": "vize_canon virtual_ts::expressions::component_props_tests::later_static_class_replaces_the_bound_class_contract; a component's bound :class/:style followed by a static class/style of the same name is not the value the child's props are checked with (vue-tsc's authored-order object literal keeps the static string, as vize already does for native elements), while the bound expression keeps its own diagnostics and a static-first or lone bound class stays checked"
           }
         ]
       }
