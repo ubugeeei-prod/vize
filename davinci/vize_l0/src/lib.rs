@@ -46,6 +46,7 @@ mod clone_in;
 mod vec;
 
 // Shared modules
+pub mod code_run;
 pub mod compiler_error;
 pub mod stage;
 pub use compiler_error::ErrorCode;

@@ -140,59 +140,9 @@ pub(super) fn trivia(
             },
             // A closing JSX tag: its text is not code.
             b'<' if bytes.get(at + 1) == Some(&b'/') => return None,
-            _ => at = skip_code(bytes, at + 1),
-        }
-    }
-}
-
-/// What a byte is to [`skip_code`].
-const PLAIN: u8 = 0;
-const SPACE: u8 = 1;
-const STOP: u8 = 2;
-
-/// Each byte's class: trivia whitespace, a byte the scan stops at (slashes,
-/// quotes, template ticks, braces), or plain code. `<` is code: a closing
-/// JSX tag is found at its slash. A table, as a `match` per byte costs the
-/// run scan about 40% more instructions.
-const CLASSES: [u8; 256] = {
-    let mut classes = [PLAIN; 256];
-    let mut byte = 0;
-    while byte < classes.len() {
-        if let Some((_, rest)) = classes.split_at_mut_checked(byte)
-            && let Some(slot) = rest.first_mut()
-        {
-            *slot = match byte as u8 {
-                b' ' | b'\t' | b'\n' | b'\r' => SPACE,
-                b'/' | b'"' | b'\'' | b'`' | b'{' | b'}' => STOP,
-                _ => PLAIN,
-            };
-        }
-        byte += 1;
-    }
-    classes
-};
-
-fn class(byte: u8) -> u8 {
-    CLASSES.get(usize::from(byte)).copied().unwrap_or(PLAIN)
-}
-
-/// The end of the code run from `at`: the next byte the scan must look at,
-/// or the end. A lone whitespace byte between two code bytes is crossed, as
-/// the caller would hand it out as one-byte trivia with no comment, which a
-/// rewrite leaves as it is; one before `/` (a comment, a regular expression
-/// or a division) or before more whitespace ends the run.
-fn skip_code(bytes: &[u8], mut at: usize) -> usize {
-    loop {
-        while bytes.get(at).is_some_and(|byte| class(*byte) == PLAIN) {
-            at += 1;
-        }
-        match (bytes.get(at), bytes.get(at + 1)) {
-            (Some(byte), Some(next))
-                if class(*byte) == SPACE && class(*next) != SPACE && *next != b'/' =>
-            {
-                at += 1;
-            }
-            _ => return at,
+            // A run of code; `vize_l0::code_run` steps over it sixteen
+            // bytes at a time and crosses a lone whitespace byte.
+            _ => at = vize_l0::code_run::skip_code(bytes, at + 1),
         }
     }
 }
