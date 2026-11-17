@@ -1,5 +1,5 @@
 use vize_croquis::{Analyzer, AnalyzerOptions, Croquis};
-use vize_l0::{Allocator, CompactString, FxHashSet};
+use vize_l0::{Allocator, CompactString, FxHashSet, String, cstr};
 use vize_relief::BindingType;
 
 use super::super::super::template_record::TemplateRecord;
@@ -249,7 +249,7 @@ fn unknown_foreign_namespace_elements_do_not_become_component_refs_from_setup_bi
         .map(|registry| registry.body),
         // Vue still resolves both tags as components, so only a registered
         // global component can own them.
-        Some(vize_l0::cstr!(
+        Some(cstr!(
             " \"shape\": {}; \"glyph\": {}; ",
             global_lookup(&["Shape", "shape"], "", r#""shape", true"#),
             global_lookup(&["Glyph", "glyph"], "", r#""glyph""#),
@@ -472,27 +472,25 @@ fn unbound_kebab_tags_resolve_global_components_before_custom_elements() {
     let (shape, nullable_shape) = (shape(""), shape(" | null"));
     assert_eq!(
         registry.body.as_str(),
-        vize_l0::cstr!(" \"kebab\": {plain}; \"many\": {nullable}[]; \"shape\": {shape}; ")
+        cstr!(" \"kebab\": {plain}; \"many\": {nullable}[]; \"shape\": {shape}; ")
     );
     assert_eq!(
         registry.dollar_body.as_str(),
-        vize_l0::cstr!(
-            " \"kebab\": {nullable}; \"many\": {nullable}[]; \"shape\": {nullable_shape}; "
-        )
+        cstr!(" \"kebab\": {nullable}; \"many\": {nullable}[]; \"shape\": {nullable_shape}; ")
     );
     assert!(registry.includes_component && registry.includes_dom_element);
 }
 
 /// The `GlobalComponents` lookup of a tag no binding owns, falling back to
 /// `$DomElement<fallback>`.
-fn global_lookup(keys: &[&str], null: &str, fallback: &str) -> vize_l0::String {
-    let mut lookup = vize_l0::String::default();
+fn global_lookup(keys: &[&str], null: &str, fallback: &str) -> String {
+    let mut lookup = String::default();
     for key in keys {
-        lookup.push_str(&vize_l0::cstr!(
+        lookup.push_str(&cstr!(
             "(import('vue').GlobalComponents extends {{ \"{key}\": infer __C }} ? $TemplateComponentRef<__C>{null} : "
         ));
     }
-    lookup.push_str(&vize_l0::cstr!("$DomElement<{fallback}>"));
+    lookup.push_str(&cstr!("$DomElement<{fallback}>"));
     for _ in keys {
         lookup.push(')');
     }
