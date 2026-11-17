@@ -1,0 +1,3 @@
+{
+  "vue/no-ref-object-reactivity-loss": "warn"
+}

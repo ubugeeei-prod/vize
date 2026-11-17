@@ -248,3 +248,24 @@ const width = panel.value?.clientWidth
         3,
     );
 }
+
+#[test]
+fn reads_every_composition_api_module_eslint_plugin_vue_traces() {
+    for module in [
+        "vue",
+        "@vue/composition-api",
+        "@nuxtjs/composition-api",
+        "#imports",
+    ] {
+        assert_copies(
+            &format!(
+                "import {{ computed }} from '{module}'\nconst remove = (item) => {{\n  const items = computed(() => list.value)\n  const found = items.value.find((entry) => entry === item)\n}}\n"
+            ),
+            1,
+        );
+    }
+    assert_copies(
+        "import { computed } from 'vue-demi-like'\nconst items = computed(() => list.value)\nconst found = items.value\n",
+        0,
+    );
+}
