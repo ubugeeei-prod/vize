@@ -1,0 +1,151 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 3791,
+  "regressionCommit": "121da88bf450158bd7bccf8f12da8db9c97b77af",
+  "sourceRevision": "121da88bf450158bd7bccf8f12da8db9c97b77af",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "omitted-required-camel-props",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/OneProp.vue",
+          "source": "OneProp.vue.txt"
+        },
+        {
+          "file": "src/TwoProps.vue",
+          "source": "TwoProps.vue.txt"
+        },
+        {
+          "file": "src/OptionalProp.vue",
+          "source": "OptionalProp.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "camel.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Parent.vue",
+          "line": 9,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{ someValue: number; }' is not assignable to parameter of type '$ComponentCheckProps<Props, $PublicComponentAttrs & Record<string, unknown>>'.\nProperty 'other' is missing in type '{ someValue: number; }' but required in type '{ readonly someValue: number; readonly other: string; }'."
+        },
+        {
+          "file": "src/Parent.vue",
+          "line": 10,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{ other: string; }' is not assignable to parameter of type '$ComponentCheckProps<Props, $PublicComponentAttrs & Record<string, unknown>>'.\nProperty 'someValue' is missing in type '{ other: string; }' but required in type '{ readonly someValue: number; readonly other: string; }'."
+        },
+        {
+          "file": "src/Parent.vue",
+          "line": 7,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{}' is not assignable to parameter of type '$ComponentCheckProps<Props, $PublicComponentAttrs & Record<string, unknown>>'.\nProperty 'someValue' is missing in type '{}' but required in type '{ readonly someValue: number; }'."
+        },
+        {
+          "file": "src/Parent.vue",
+          "line": 8,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{}' is not assignable to parameter of type '$ComponentCheckProps<Props, $PublicComponentAttrs & Record<string, unknown>>'.\nType '{}' is missing the following properties from type '{ readonly someValue: number; readonly other: string; }': someValue, other"
+        }
+      ]
+    },
+    {
+      "id": "complete-camel-and-kebab-props",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/OneProp.vue",
+          "source": "OneProp.vue.txt"
+        },
+        {
+          "file": "src/TwoProps.vue",
+          "source": "TwoProps.vue.txt"
+        },
+        {
+          "file": "src/OptionalProp.vue",
+          "source": "OptionalProp.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "camel-complete.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "wide-props-missing-required-title",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Wide.vue",
+          "source": "Wide.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "wide.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Parent.vue",
+          "line": 7,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{ variant0: \"solid\"; onSelect3: (_value: string, _index: number) => void; class: string; }' is not assignable to parameter of type '$ComponentCheckProps<__Wide_CheckProps_0, $PublicComponentAttrs & Record<string, unknown>>'.\nProperty 'title' is missing in type '{ variant0: \"solid\"; onSelect3: (_value: string, _index: number) => void; class: string; }' but required in type '{ readonly title: string; readonly variant0?: \"ghost\" | \"link\" | \"outline\" | \"solid\" | undefined; readonly onSelect0?: ((value: string, index: number) => void) | undefined; readonly itemList0?: readonly { ...; }[] | undefined; ... 118 more ...; readonly onClose?: (() => any) | undefined; }'."
+        }
+      ]
+    },
+    {
+      "id": "wide-props-complete",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Wide.vue",
+          "source": "Wide.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "wide-complete.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

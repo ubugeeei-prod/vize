@@ -1,0 +1,11 @@
+import { café, Counter, Mode, Color, Flag, Merged, Box } from './App.vue';
+const mode: Mode = Mode.One;
+const color: Color = Color.Red;
+const flag: Flag = Flag.Enabled;
+const merged: Merged = Merged.Second;
+const label: string = Merged.label;
+const box: Box<number> = new Box(1);
+const boxed: number = box.value;
+const value: number = café;
+const counter: Counter = new Counter();
+const precise: number = counter.value;

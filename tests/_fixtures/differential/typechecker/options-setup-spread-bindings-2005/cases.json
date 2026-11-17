@@ -1,0 +1,98 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 2005,
+  "regressionCommit": "cd1fc1447ab6b7d4e0a5afb589b0bafdbc1714a9",
+  "sourceRevision": "cd1fc1447ab6b7d4e0a5afb589b0bafdbc1714a9",
+  "checkerOptions": {
+    "optionsApi": true
+  },
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "setup-spread-local-stub-helpers",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/OptionsSetupSpread.vue",
+          "source": "LocalStubs.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "setup-spread-vue-to-refs",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/OptionsSetupSpread.vue",
+          "source": "VueToRefs.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "setup-spread-binding-wrong-type",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/OptionsSetupSpread.vue",
+          "source": "invalid.VueToRefs.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/OptionsSetupSpread.vue",
+          "line": 25,
+          "column": 26,
+          "severity": 1,
+          "code": 2551,
+          "message": "Property 'toFixed' does not exist on type 'string'. Did you mean 'fixed'?"
+        }
+      ]
+    },
+    {
+      "id": "setup-spread-binding-misspelled",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/OptionsSetupSpread.vue",
+          "source": "missing.VueToRefs.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/OptionsSetupSpread.vue",
+          "line": 25,
+          "column": 52,
+          "severity": 1,
+          "code": 2551,
+          "message": "Property 'aiSupportTagNames' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, { aiSupportTitle: Ref<string, string>; aiSupportType: Ref<string, string>; aiSupportTagName: Ref<string, string>; }, ... 23 more ..., {}>'. Did you mean 'aiSupportTagName'?"
+        }
+      ]
+    }
+  ]
+}

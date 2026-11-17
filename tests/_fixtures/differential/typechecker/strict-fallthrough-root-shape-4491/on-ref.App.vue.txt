@@ -1,0 +1,6 @@
+<script setup lang="ts">
+import { ref } from "vue";
+import Child from "./Child.vue";
+const on = ref(true);
+</script>
+<template><Child title="ok" :on="on" id="outer" /></template>

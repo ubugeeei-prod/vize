@@ -1,0 +1,9 @@
+<script lang="ts">
+const emit = 1
+
+export default {
+  emits: ['click'],
+}
+</script>
+
+<template><button @click="$emit('click')" /></template>

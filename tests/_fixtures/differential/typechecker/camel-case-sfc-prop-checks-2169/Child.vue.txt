@@ -1,0 +1,9 @@
+<script setup lang="ts">
+defineProps<{
+  countTotal: number
+}>()
+</script>
+
+<template>
+  <span>{{ countTotal }}</span>
+</template>

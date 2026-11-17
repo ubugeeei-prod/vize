@@ -1,0 +1,3 @@
+<script setup lang="ts">
+defineProps<{ onClick: (value: string) => void }>()
+</script>

@@ -1,0 +1,48 @@
+<script setup lang="ts" generic="T">
+interface Props<T> {
+  modelValue?: T | T[];
+  defaultValue?: T | T[];
+  open?: boolean;
+  defaultOpen?: boolean;
+  multiple?: boolean;
+}
+
+type Ref<T> = { value: T };
+type UseVModelOptions<T, Passive extends boolean = false> = {
+  passive?: Passive;
+  defaultValue?: T;
+  deep?: boolean;
+};
+
+declare function useVModel<P extends object, K extends keyof P, Name extends string>(
+  props: P,
+  key?: K,
+  emit?: (name: Name, ...args: any[]) => void,
+  options?: UseVModelOptions<P[K], false>,
+): Ref<P[K]>;
+declare function useVModel<P extends object, K extends keyof P, Name extends string>(
+  props: P,
+  key?: K,
+  emit?: (name: Name, ...args: any[]) => void,
+  options?: UseVModelOptions<P[K], true>,
+): Ref<P[K]>;
+
+const props = withDefaults(defineProps<Props<T>>(), {
+  modelValue: undefined,
+  open: undefined,
+});
+const emit = defineEmits<{
+  "update:modelValue": [value: T];
+  "update:open": [value: boolean];
+}>();
+
+useVModel(props, "modelValue", emit, {
+  defaultValue: props.defaultValue ?? (props.multiple ? [] : undefined),
+  passive: (props.modelValue === undefined) as false,
+  deep: true,
+});
+useVModel(props, "open", emit, {
+  defaultValue: "open",
+  passive: (props.open === undefined) as false,
+});
+</script>

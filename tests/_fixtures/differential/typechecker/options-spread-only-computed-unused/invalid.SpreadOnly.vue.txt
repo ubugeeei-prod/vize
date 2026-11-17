@@ -1,0 +1,23 @@
+<script lang="ts">
+import { defineComponent } from 'vue'
+import { mapState } from 'pinia'
+
+function useFakeStore() {
+    return {
+        items: [] as string[],
+        ready: true,
+    }
+}
+
+const unusedLocal = 1
+
+export default defineComponent({
+    computed: {
+        ...mapState(useFakeStore, ['items', 'ready']),
+    },
+})
+</script>
+
+<template>
+  <div>{{ ready }}</div>
+</template>

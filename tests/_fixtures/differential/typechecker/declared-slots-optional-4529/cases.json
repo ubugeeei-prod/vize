@@ -1,0 +1,104 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 4529,
+  "regressionCommit": "4335e65ed7e650102f6cfcb0483eb20ba7773b09",
+  "sourceRevision": "4335e65ed7e650102f6cfcb0483eb20ba7773b09",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "provided-and-omitted-declared-slots",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/env.d.ts",
+          "source": "env.d.ts.txt"
+        },
+        {
+          "file": "src/Clean.vue",
+          "source": "Clean.vue.txt"
+        },
+        {
+          "file": "src/DefaultSlotChild.vue",
+          "source": "DefaultSlotChild.vue.txt"
+        },
+        {
+          "file": "src/HeaderSlotChild.vue",
+          "source": "HeaderSlotChild.vue.txt"
+        },
+        {
+          "file": "src/LibraryButton.ts",
+          "source": "LibraryButton.ts.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "omitted-only-declared-slot",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/env.d.ts",
+          "source": "env.d.ts.txt"
+        },
+        {
+          "file": "src/MissingRequiredSlot.vue",
+          "source": "MissingRequiredSlot.vue.txt"
+        },
+        {
+          "file": "src/HeaderSlotChild.vue",
+          "source": "HeaderSlotChild.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "unknown-declared-slot-payload-member",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/env.d.ts",
+          "source": "env.d.ts.txt"
+        },
+        {
+          "file": "src/UnknownSlotProp.vue",
+          "source": "UnknownSlotProp.vue.txt"
+        },
+        {
+          "file": "src/DefaultSlotChild.vue",
+          "source": "DefaultSlotChild.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/UnknownSlotProp.vue",
+          "line": 7,
+          "column": 27,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'missing' does not exist on type '{ msg: string; }'."
+        }
+      ]
+    }
+  ]
+}

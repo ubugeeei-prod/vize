@@ -1,0 +1,7 @@
+<script setup lang="ts">
+import Test from "./Test.vue";
+</script>
+
+<template>
+  <Test @test="(value1: number) => value1" />
+</template>

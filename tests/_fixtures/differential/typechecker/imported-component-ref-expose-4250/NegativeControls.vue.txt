@@ -1,0 +1,10 @@
+<script setup lang="ts">
+import PropsChild from "./PropsChild.vue";
+</script>
+
+<template>
+  <PropsChild :label="1" />
+  <PropsChild />
+  <PropsChild label="ok" :count="'no'" />
+  <PropsChild label="ok" :count="2" />
+</template>

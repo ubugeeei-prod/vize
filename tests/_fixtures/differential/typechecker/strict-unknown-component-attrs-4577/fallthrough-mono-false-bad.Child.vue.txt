@@ -1,0 +1,5 @@
+<script setup lang="ts">
+defineOptions({ inheritAttrs: false });
+defineProps<{ title: string }>();
+</script>
+<template><div class="root">{{ title }}</div></template>

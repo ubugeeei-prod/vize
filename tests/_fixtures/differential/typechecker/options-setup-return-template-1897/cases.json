@@ -1,0 +1,98 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 1897,
+  "regressionCommit": "b46bd454b06c70329032e98bee050d80f877c2d5",
+  "sourceRevision": "b46bd454b06c70329032e98bee050d80f877c2d5",
+  "checkerOptions": {
+    "optionsApi": true
+  },
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "setup-ref-return-unwrapped",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "ref.valid.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "setup-ref-return-wrong-argument",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "ref.invalid.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 13,
+          "column": 25,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type 'boolean' is not assignable to parameter of type 'number'."
+        }
+      ]
+    },
+    {
+      "id": "setup-ref-and-object-returns",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "store.valid.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "setup-object-return-wrong-member",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "store.invalid.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 14,
+          "column": 46,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'toFixed' does not exist on type 'boolean'."
+        }
+      ]
+    }
+  ]
+}

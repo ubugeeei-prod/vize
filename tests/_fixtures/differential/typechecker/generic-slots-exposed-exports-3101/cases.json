@@ -1,0 +1,165 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 3101,
+  "regressionCommit": "30db60efb71eed8dd060b373d50a29e137f43c46",
+  "sourceRevision": "30db60efb71eed8dd060b373d50a29e137f43c46",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "generic-slot-and-exposed-components",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Generic.vue",
+          "source": "Generic.vue.txt"
+        },
+        {
+          "file": "src/Multi.vue",
+          "source": "Multi.vue.txt"
+        },
+        {
+          "file": "src/Plain.vue",
+          "source": "Plain.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "generic-type-exports-consumer",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Generic.vue",
+          "source": "Generic.vue.txt"
+        },
+        {
+          "file": "src/Multi.vue",
+          "source": "Multi.vue.txt"
+        },
+        {
+          "file": "src/Plain.vue",
+          "source": "Plain.vue.txt"
+        },
+        {
+          "file": "src/consumer.ts",
+          "source": "consumer.ts.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "generic-type-exports-consumer-wrong-slot-value",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Generic.vue",
+          "source": "Generic.vue.txt"
+        },
+        {
+          "file": "src/Multi.vue",
+          "source": "Multi.vue.txt"
+        },
+        {
+          "file": "src/Plain.vue",
+          "source": "Plain.vue.txt"
+        },
+        {
+          "file": "src/consumer.ts",
+          "source": "consumer-wrong.ts.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/consumer.ts",
+          "line": 4,
+          "column": 68,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '\"c\"' is not assignable to type '\"b\"'."
+        }
+      ]
+    },
+    {
+      "id": "generic-components-template-consumer",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Generic.vue",
+          "source": "Generic.vue.txt"
+        },
+        {
+          "file": "src/Multi.vue",
+          "source": "Multi.vue.txt"
+        },
+        {
+          "file": "src/Plain.vue",
+          "source": "Plain.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "Parent.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "generic-components-template-constraint-violation",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Generic.vue",
+          "source": "Generic.vue.txt"
+        },
+        {
+          "file": "src/Multi.vue",
+          "source": "Multi.vue.txt"
+        },
+        {
+          "file": "src/Plain.vue",
+          "source": "Plain.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "Parent-wrong.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Parent.vue",
+          "line": 9,
+          "column": 21,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '\"cell\"' is not assignable to type '\"row\"'."
+        }
+      ]
+    }
+  ]
+}

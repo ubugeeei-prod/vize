@@ -1,0 +1,28 @@
+<script lang="ts">
+function defineComponent(options: any): any { return options }
+function toRefs<T extends Record<string, any>>(value: T): { [K in keyof T]: { value: T[K] } } {
+  return value as any
+}
+
+function useAiSupportForm() {
+  return {
+    formInput: {
+      aiSupportTitle: '',
+      aiSupportType: '',
+      aiSupportTagName: '',
+    },
+  }
+}
+
+export default defineComponent({
+  setup() {
+    const { formInput } = useAiSupportForm()
+    return {
+      ...toRefs(formInput),
+    }
+  },
+})
+</script>
+<template>
+  <div>{{ aiSupportTitle }} {{ aiSupportType }} {{ aiSupportTagName }}</div>
+</template>

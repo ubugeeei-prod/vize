@@ -1,0 +1,16 @@
+<script setup lang="ts">
+import RuntimeRequired from './RuntimeRequired.vue'
+import RuntimeOptional from './RuntimeOptional.vue'
+import MixinRequired from './MixinRequired.vue'
+import MixinOptional from './MixinOptional.vue'
+import DirectDefault from './DirectDefault.vue'
+import DirectAndMixin from './DirectAndMixin.vue'
+</script>
+<template>
+  <RuntimeRequired :count="1" />
+  <RuntimeOptional />
+  <MixinRequired :count="1" />
+  <MixinOptional />
+  <DirectDefault />
+  <DirectAndMixin :inherited="1" />
+</template>

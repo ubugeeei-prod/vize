@@ -1,0 +1,17 @@
+<script setup lang="ts">
+import type { Pagination } from './types'
+
+const { label = 'ready' } = defineProps<{
+  label?: string
+  isActive?: boolean
+  pagination: Pagination
+}>()
+void label
+</script>
+
+<template>
+  <div>{{ $props.isActive }}</div>
+  <div>{{ $props.pagination.page }}</div>
+  <div>{{ $props.label?.toUpperCase() }}</div>
+  <div>{{ label.toUpperCase() }}</div>
+</template>

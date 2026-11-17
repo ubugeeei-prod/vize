@@ -1,0 +1,5 @@
+<script setup lang="ts" generic="T extends { id: number }">
+defineProps<{ items: T[]; pick: (item: T) => string }>()
+</script>
+
+<template><span /></template>

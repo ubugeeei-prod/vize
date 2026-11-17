@@ -1,0 +1,37 @@
+<template>
+  <ul class="list">
+    <li class="row">item 1</li>
+    <li class="row">item 2</li>
+    <li class="row">item 3</li>
+    <li class="row">item 4</li>
+    <li class="row">item 5</li>
+    <li class="row">item 6</li>
+    <li class="row">item 7</li>
+    <li class="row">item 8</li>
+    <li class="row">item 9</li>
+    <li class="row">item 10</li>
+    <li class="row">item 11</li>
+    <li class="row">item 12</li>
+    <li class="row">item 13</li>
+    <li class="row">item 14</li>
+    <li class="row">item 15</li>
+    <li class="row">item 16</li>
+    <li class="row">item 17</li>
+    <li class="row">item 18</li>
+    <li class="row">item 19</li>
+    <li class="row">item 20</li>
+  </ul>
+</template>
+
+<script lang="ts">
+export default {
+  data() {
+    return { count: 0 };
+  },
+  methods: {
+    bump() {
+      this.count = this.missingHelper;
+    },
+  },
+};
+</script>

@@ -1,0 +1,95 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 2081,
+  "regressionCommit": "1604bd9c3a17f78bdec64433d9aebde4ca4641f8",
+  "sourceRevision": "1604bd9c3a17f78bdec64433d9aebde4ca4641f8",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "with-defaults-interface-props-in-template",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/AfsSnackbar.vue",
+          "source": "AfsSnackbar.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "union-member-is-not-a-template-binding",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/AfsSnackbar.vue",
+          "source": "invalid.AfsSnackbar.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/AfsSnackbar.vue",
+          "line": 22,
+          "column": 40,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'text' does not exist on the component instance."
+        }
+      ]
+    },
+    {
+      "id": "with-defaults-inline-props-in-template",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/DialogHost.vue",
+          "source": "DialogHost.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "inline-prop-member-wrong-type",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/DialogHost.vue",
+          "source": "invalid.DialogHost.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/DialogHost.vue",
+          "line": 15,
+          "column": 32,
+          "severity": 1,
+          "code": 2551,
+          "message": "Property 'toFixed' does not exist on type 'string'. Did you mean 'fixed'?"
+        }
+      ]
+    }
+  ]
+}

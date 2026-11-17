@@ -1,0 +1,82 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 3908,
+  "regressionCommit": "9074dbf00c23d7679ba4ffc16c2ef9f641ac6d42",
+  "sourceRevision": "9074dbf00c23d7679ba4ffc16c2ef9f641ac6d42",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "model-update-handlers-match-payloads",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/OptionalModel.vue",
+          "source": "OptionalModel.vue.txt"
+        },
+        {
+          "file": "src/RequiredModel.vue",
+          "source": "RequiredModel.vue.txt"
+        },
+        {
+          "file": "src/DefaultedModel.vue",
+          "source": "DefaultedModel.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "valid.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "optional-model-rejects-bare-string-handler",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/OptionalModel.vue",
+          "source": "OptionalModel.vue.txt"
+        },
+        {
+          "file": "src/RequiredModel.vue",
+          "source": "RequiredModel.vue.txt"
+        },
+        {
+          "file": "src/DefaultedModel.vue",
+          "source": "DefaultedModel.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "optional-bare-handler.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Parent.vue",
+          "line": 16,
+          "column": 39,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '(value: string) => void' is not assignable to type '(value: string | undefined) => any'.\nTypes of parameters 'value' and 'value' are incompatible.\nType 'string | undefined' is not assignable to type 'string'.\nType 'undefined' is not assignable to type 'string'."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+<script lang="ts">
+const unusedLocal = 1;
+
+export default {
+  name: "PagesChangePassword",
+  layout: "no-header",
+};
+</script>
+
+<template>
+  <main />
+</template>

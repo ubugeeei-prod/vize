@@ -1,0 +1,7 @@
+<script setup lang="ts">
+defineExpose<{ close(): void }>();
+</script>
+
+<template>
+  <div />
+</template>

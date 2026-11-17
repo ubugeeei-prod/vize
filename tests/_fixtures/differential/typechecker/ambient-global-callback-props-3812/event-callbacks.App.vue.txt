@@ -1,0 +1,4 @@
+<template>
+  <MkSuspense @resolved="(result) => result.file.length" />
+  <MkSuspense @resolved="(result) => result.missing" />
+</template>

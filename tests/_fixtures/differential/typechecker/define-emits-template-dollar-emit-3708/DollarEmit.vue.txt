@@ -1,0 +1,6 @@
+<script setup lang="ts">
+const emit = defineEmits<{ click: [] }>()
+const unusedLocal = 1
+</script>
+
+<template><button @click="$emit('click')" /></template>

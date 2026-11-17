@@ -1,0 +1,30 @@
+<script lang="ts">
+import { defineComponent } from 'vue'
+
+const sharedProps = {
+  meta: { type: Object, required: true as const },
+}
+function useFakeStore() {
+  return { cached: (s: string, _b: boolean) => s }
+}
+export default defineComponent({
+  props: { ...sharedProps },
+  setup() {
+    const store = useFakeStore()
+    return { store }
+  },
+  data() {
+    return { missing: false }
+  },
+  computed: {
+    url() {
+      return this.store.cached('x', 'no')
+    },
+  },
+  methods: {
+    onError(_a: unknown) {
+      this.missing = true
+    },
+  },
+})
+</script>

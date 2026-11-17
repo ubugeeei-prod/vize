@@ -1,0 +1,7 @@
+<script setup lang="ts">
+const value = 'yes'
+</script>
+
+<template>
+  <a :href="value" :tabindex="value" />
+</template>

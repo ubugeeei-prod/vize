@@ -1,0 +1,16 @@
+<script setup lang="ts">
+import { Transition } from 'vue'
+import Required from './Required.vue'
+import Optional from './Optional.vue'
+import { External } from './components'
+</script>
+
+<template>
+  <Required class="static" :count="1" />
+  <Required :class="'bound'" :count="1" />
+  <Required data-id="1" :count="1" />
+  <Optional class="clean" />
+  <External style="display: block" :count="1" />
+  <Transition class="clean" />
+  <UnknownWidget aria-label="clean" />
+</template>

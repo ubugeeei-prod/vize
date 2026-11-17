@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import Child from './Child.vue'
+defineProps<{ as: number }>()
+const items = [1]
+</script>
+
+<template>
+  <Child v-for="as in items" v-bind="{ as }" />
+</template>

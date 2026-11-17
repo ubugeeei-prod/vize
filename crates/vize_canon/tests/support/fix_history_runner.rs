@@ -21,6 +21,29 @@ mod capture;
 mod required_listener_events;
 pub(crate) use capture::WorkspaceCapturePolicy;
 
+/// Packs whose original tests enabled the Options API checker.
+const OPTIONS_API_PACKS: &[&str] = &[
+    "class-component-decorators-1434",
+    "no-space-default-export-3087",
+    "options-api-any-instance",
+    "options-api-data-assignment-5644",
+    "options-api-method-body-anchors-3596",
+    "options-api-public-instance-members-4251",
+    "options-api-reserved-component-reference",
+    "options-props-spread-setup-scope",
+    "options-runtime-props-value-scope-3089",
+    "options-setup-return-template-1897",
+    "options-setup-spread-bindings-2005",
+    "options-spread-only-computed-unused",
+    "options-template-dollar-props-4242",
+    "options-template-instance-bindings-1433",
+    "options-template-literal-bindings-3086",
+    "options-unknown-template-instance-3903",
+    "required-default-props",
+    "runtime-mixin-required-props-3582",
+    "setup-custom-properties",
+];
+
 pub(crate) fn check_pack(
     name: &str,
     test: &str,
@@ -96,41 +119,14 @@ pub(crate) fn check_pack_with_capture_policy(
     );
     assert_eq!(pack.diagnostic_contract.native, "unsupported");
     assert_eq!(pack.diagnostic_contract.required_tier, "T1");
+    let options_api = OPTIONS_API_PACKS.contains(&name);
+    let jsx_typecheck = name == "jsx-prop-token-ranges-10494";
     assert_eq!(
         pack.checker_options
             .as_ref()
-            .map(|options| options.options_api),
-        matches!(
-            name,
-            "options-api-any-instance"
-                | "options-api-reserved-component-reference"
-                | "setup-custom-properties"
-                | "required-default-props"
-                | "no-space-default-export-3087"
-                | "options-runtime-props-value-scope-3089"
-                | "options-template-literal-bindings-3086"
-                | "jsx-prop-token-ranges-10494"
-        )
-        .then_some(name != "jsx-prop-token-ranges-10494"),
+            .map(|options| (options.options_api, options.jsx_typecheck)),
+        (options_api || jsx_typecheck).then_some((options_api, jsx_typecheck)),
         "the original explicit checker options must be retained"
-    );
-    assert_eq!(
-        pack.checker_options
-            .as_ref()
-            .map(|options| options.jsx_typecheck),
-        matches!(
-            name,
-            "options-api-any-instance"
-                | "options-api-reserved-component-reference"
-                | "setup-custom-properties"
-                | "required-default-props"
-                | "no-space-default-export-3087"
-                | "options-runtime-props-value-scope-3089"
-                | "options-template-literal-bindings-3086"
-                | "jsx-prop-token-ranges-10494"
-        )
-        .then_some(name == "jsx-prop-token-ranges-10494"),
-        "the authored JSX lowering option must be retained"
     );
     assert_eq!(
         pack.cases

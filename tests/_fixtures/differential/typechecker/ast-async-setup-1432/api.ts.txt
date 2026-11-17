@@ -1,0 +1,8 @@
+export async function fetchData(): Promise<number> {
+  return 1
+}
+export const items: AsyncIterable<string> = {
+  async *[Symbol.asyncIterator]() {
+    yield 'a'
+  },
+}

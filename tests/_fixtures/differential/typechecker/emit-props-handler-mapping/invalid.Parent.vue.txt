@@ -1,0 +1,11 @@
+<script setup lang="ts">
+import EmitProps from './EmitProps.vue'
+
+function onClick(value: string) {
+  void value
+}
+</script>
+
+<template>
+  <EmitProps @click="onClick" />
+</template>

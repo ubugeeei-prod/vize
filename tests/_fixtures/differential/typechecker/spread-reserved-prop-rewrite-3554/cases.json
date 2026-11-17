@@ -1,0 +1,129 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 3554,
+  "regressionCommit": "2342d1fc46ca3a9a927228d8686ce25153332aea",
+  "sourceRevision": "2342d1fc46ca3a9a927228d8686ce25153332aea",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "spread-object-reserved-template-props",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "reserved.Child.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "reserved.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "spread-reserved-rewrite-valid-member",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "count.Child.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "mapping-valid.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "spread-reserved-rewrite-following-missing-member",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "count.Child.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "mapping.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Parent.vue",
+          "line": 8,
+          "column": 35,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'missing' does not exist on type '{ count: number; }'."
+        }
+      ]
+    },
+    {
+      "id": "v-for-reserved-local-spread-number",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "as-number.Child.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "v-for-valid.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "v-for-reserved-local-spread-string",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "as-number.Child.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "v-for.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Parent.vue",
+          "line": 8,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{ as: string; }' is not assignable to parameter of type '$ComponentCheckProps<Props, $PublicComponentAttrs & Record<string, unknown>>'.\nType '{ as: string; }' is not assignable to type '{ readonly as: number; }'.\nTypes of property 'as' are incompatible.\nType 'string' is not assignable to type 'number'."
+        }
+      ]
+    }
+  ]
+}

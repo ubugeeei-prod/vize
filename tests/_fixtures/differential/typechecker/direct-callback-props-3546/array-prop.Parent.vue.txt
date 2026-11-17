@@ -1,0 +1,8 @@
+<script setup lang="ts">
+import Child from './Child.vue'
+const jobs = [{ id: 1, timestamp: 2 }]
+</script>
+
+<template>
+  <Child :events="jobs.map((job) => ({ id: job.id }))" />
+</template>

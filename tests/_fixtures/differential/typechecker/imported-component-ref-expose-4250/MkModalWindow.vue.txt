@@ -1,0 +1,16 @@
+<script setup lang="ts">
+import { ref } from "vue";
+
+const showing = ref(true);
+const secret = ref("private");
+
+function close(): void {
+  showing.value = false;
+}
+
+defineExpose({ close });
+</script>
+
+<template>
+  <div v-if="showing">{{ secret }}</div>
+</template>

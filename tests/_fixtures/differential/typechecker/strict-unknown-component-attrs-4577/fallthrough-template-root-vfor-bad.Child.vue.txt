@@ -1,0 +1,8 @@
+<script setup lang="ts">
+defineProps<{ title: string; items: number[] }>();
+</script>
+<template>
+  <template v-for="item in items" :key="item">
+    <div>{{ title }}</div>
+  </template>
+</template>

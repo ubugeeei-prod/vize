@@ -1,0 +1,151 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 3579,
+  "regressionCommit": "1dba759d5b48406481494db09fa152cfcce4a68a",
+  "sourceRevision": "1dba759d5b48406481494db09fa152cfcce4a68a",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "fallthrough-attrs-with-required-props-bound",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Required.vue",
+          "source": "Required.vue.txt"
+        },
+        {
+          "file": "src/Optional.vue",
+          "source": "Optional.vue.txt"
+        },
+        {
+          "file": "src/components.ts",
+          "source": "components.ts.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "fallthrough-bound.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "fallthrough-only-usages-missing-required-props",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Required.vue",
+          "source": "Required.vue.txt"
+        },
+        {
+          "file": "src/Optional.vue",
+          "source": "Optional.vue.txt"
+        },
+        {
+          "file": "src/components.ts",
+          "source": "components.ts.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "fallthrough.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Parent.vue",
+          "line": 9,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{ class: string; }' is not assignable to parameter of type '$ComponentCheckProps<Props, $PublicComponentAttrs & Record<string, unknown>>'.\nProperty 'count' is missing in type '{ class: string; }' but required in type '{ readonly count: number; }'."
+        },
+        {
+          "file": "src/Parent.vue",
+          "line": 10,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{ class: string; }' is not assignable to parameter of type '$ComponentCheckProps<Props, $PublicComponentAttrs & Record<string, unknown>>'.\nProperty 'count' is missing in type '{ class: string; }' but required in type '{ readonly count: number; }'."
+        },
+        {
+          "file": "src/Parent.vue",
+          "line": 11,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{ dataId: string; }' is not assignable to parameter of type '$ComponentCheckProps<Props, $PublicComponentAttrs & Record<string, unknown>>'.\nProperty 'count' is missing in type '{ dataId: string; }' but required in type '{ readonly count: number; }'."
+        },
+        {
+          "file": "src/Parent.vue",
+          "line": 13,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{ style: { display: string; }; }' is not assignable to parameter of type '$ComponentCheckProps<__External_CheckProps_4, Record<string, unknown>>'.\nProperty 'count' is missing in type '{ style: { display: string; }; }' but required in type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 8 more ...; readonly count: number; }'."
+        }
+      ]
+    },
+    {
+      "id": "explicit-class-prop-number",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/ClassProp.vue",
+          "source": "ClassProp.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "class-prop-valid.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "explicit-class-prop-mismatch-once",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/ClassProp.vue",
+          "source": "ClassProp.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "class-prop.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Parent.vue",
+          "line": 6,
+          "column": 14,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'string' is not assignable to type 'number'."
+        }
+      ]
+    }
+  ]
+}

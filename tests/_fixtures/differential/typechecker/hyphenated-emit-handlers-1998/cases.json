@@ -1,0 +1,93 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 1998,
+  "regressionCommit": "f47f024b760f7692352612dc8a0cf850c18ae373",
+  "sourceRevision": "f47f024b760f7692352612dc8a0cf850c18ae373",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "hyphenated-emit-listeners",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/OverlayDialog.vue",
+          "source": "OverlayDialog.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "colon-hyphen-listener-wrong-payload",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/OverlayDialog.vue",
+          "source": "OverlayDialog.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "invalid-colon.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 20,
+          "column": 6,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '(open: string) => void' is not assignable to type '(value: boolean) => any'.\nTypes of parameters 'open' and 'value' are incompatible.\nType 'boolean' is not assignable to type 'string'."
+        }
+      ]
+    },
+    {
+      "id": "hyphen-listener-wrong-payload",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/OverlayDialog.vue",
+          "source": "OverlayDialog.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "invalid-hyphen.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 19,
+          "column": 6,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '(payload: FolderPayload & { name: string; }) => void' is not assignable to type '(payload: FolderPayload) => any'.\nTypes of parameters 'payload' and 'payload' are incompatible.\nType 'FolderPayload' is not assignable to type 'FolderPayload & { name: string; }'.\nProperty 'name' is missing in type 'FolderPayload' but required in type '{ name: string; }'."
+        }
+      ]
+    }
+  ]
+}

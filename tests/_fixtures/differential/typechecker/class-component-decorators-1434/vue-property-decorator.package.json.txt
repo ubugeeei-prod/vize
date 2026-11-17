@@ -1,0 +1,5 @@
+{
+  "name": "vue-property-decorator",
+  "version": "10.0.0-rc.3",
+  "types": "index.d.ts"
+}

@@ -1,0 +1,6 @@
+import type { Slots as GenericSlots } from './Generic.vue'
+import type { Slots as MultiSlots, Exposed as MultiExposed } from './Multi.vue'
+
+const genericSlot: Parameters<GenericSlots<'b'>['default']>[0] = { value: 'c' }
+const multiSlot: Parameters<MultiSlots<'row', 'row'>['default']>[0] = { mode: 'row', event: undefined }
+const exposed: MultiExposed<'cell'> = { current: () => 'cell' }

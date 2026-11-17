@@ -1,0 +1,48 @@
+<script lang="ts">
+const localBase = 10;
+
+namespace Bare {
+  export const label = "bare";
+}
+
+export namespace Config {
+  export type Kind = "wide" | "tall";
+  export const spacing = 4;
+}
+
+export namespace Nest.Inner {
+  export const depth = 2;
+}
+
+export namespace Twice {
+  export const one = 1;
+}
+export namespace Twice {
+  export type Two = string;
+}
+
+export class Cursor {
+  line = 0;
+}
+export namespace Cursor {
+  export type Anchor = number;
+}
+
+export function build() {
+  return localBase;
+}
+export namespace build {
+  export const version = 1;
+}
+
+export const captured = 7;
+export namespace Derived {
+  export const total = captured + localBase;
+}
+
+export default { name: "Namespaces" };
+</script>
+
+<template>
+  <div>{{ Bare.label }} {{ Config.spacing }}</div>
+</template>

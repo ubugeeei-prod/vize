@@ -1,0 +1,93 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 4994,
+  "regressionCommit": "dfe3b6befc643c46031356e3b357e73cb1afe1ee",
+  "sourceRevision": "dfe3b6befc643c46031356e3b357e73cb1afe1ee",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "listener-assignment-keeps-sibling-binding-wide",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "Parent.vue.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "listener-assignment-wrong-value",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "wrong-assignment.Parent.vue.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Parent.vue",
+          "line": 14,
+          "column": 27,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '\"opened\"' is not assignable to type 'DialogState'."
+        }
+      ]
+    },
+    {
+      "id": "sibling-comparison-without-overlap",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "no-overlap.Parent.vue.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Parent.vue",
+          "line": 17,
+          "column": 26,
+          "severity": 1,
+          "code": 2367,
+          "message": "This comparison appears to be unintentional because the types 'DialogState' and '\"opened\"' have no overlap."
+        }
+      ]
+    }
+  ]
+}

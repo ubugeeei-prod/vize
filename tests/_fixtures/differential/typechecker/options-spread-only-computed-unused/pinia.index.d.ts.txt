@@ -1,0 +1,4 @@
+export declare function mapState<S extends object, K extends keyof S & string>(
+  useStore: () => S,
+  keys: readonly K[],
+): { [P in K]: () => S[P] };

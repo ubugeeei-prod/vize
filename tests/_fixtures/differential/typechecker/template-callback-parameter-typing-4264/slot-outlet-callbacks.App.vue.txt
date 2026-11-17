@@ -1,0 +1,12 @@
+<script setup lang="ts" generic="T extends { id: string }">
+const slots = defineSlots<{
+  default(props: { item: T; index: number; dragStart: (ev: DragEvent) => void }): unknown
+}>()
+const items = [{ id: "one" } as T]
+function onDragstart(ev: DragEvent, item: T) {}
+</script>
+
+<template>
+  <slot v-for="(item, i) in items" :item="item" :index="i" :dragStart="(ev) => onDragstart(ev, item)" />
+  <slot :item="items[0]" :index="0" :dragStart="(ev) => ev.missing" />
+</template>

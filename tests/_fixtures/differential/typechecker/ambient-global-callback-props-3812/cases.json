@@ -1,0 +1,134 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 3812,
+  "regressionCommit": "c6f498cff95dd574e2d9741989fec1c9fcdaed4b",
+  "sourceRevision": "c6f498cff95dd574e2d9741989fec1c9fcdaed4b",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "ambient-array-callbacks-contextually-typed",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/global-components.d.ts",
+          "source": "global-components.d.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "array-callbacks.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 3,
+          "column": 38,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'missing' does not exist on type 'string'."
+        }
+      ]
+    },
+    {
+      "id": "ambient-array-callbacks-valid",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/global-components.d.ts",
+          "source": "global-components.d.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "array-callbacks-valid.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "ambient-event-callbacks-contextually-typed",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/global-components.d.ts",
+          "source": "global-components.d.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "event-callbacks.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 3,
+          "column": 45,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'missing' does not exist on type '{ file: string; }'."
+        }
+      ]
+    },
+    {
+      "id": "ambient-event-callbacks-valid",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/global-components.d.ts",
+          "source": "global-components.d.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "event-callbacks-valid.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "unknown-component-array-callback-implicit-any",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "unknown-array-callback.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 2,
+          "column": 27,
+          "severity": 1,
+          "code": 7006,
+          "message": "Parameter 'value' implicitly has an 'any' type."
+        }
+      ]
+    }
+  ]
+}

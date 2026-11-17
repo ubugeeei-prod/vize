@@ -1,0 +1,20 @@
+<script setup lang="ts">
+import Child from './Child.vue'
+defineProps<{ as?: string; typeof?: string; count: number }>()
+</script>
+
+<template>
+  <Child v-bind="{
+    /* as before */ as /* as after */,
+    value: count as /* as assertion */ number,
+    label: `${as}`,
+    kind: typeof count,
+    options: {
+      method: { as<T>(value: T) { return `${as}:${value}` } },
+      accessor: { get as() { return 'div' }, set as(value) {} },
+      generator: { *as<T>() { yield 'div' as T } },
+      asyncMethod: { async as<T>() { return 'div' as T } },
+      asyncGenerator: { async *as<T>() { yield 'div' as T } }
+    }
+  }" />
+</template>

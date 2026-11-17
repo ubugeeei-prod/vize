@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import Wide from './Wide.vue'
+const pick = (_value: string, _index: number) => {}
+</script>
+
+<template>
+  <Wide variant0="solid" :on-select3="pick" class="wide" />
+  <Wide title="ok" variant0="solid" :on-select3="pick" class="wide" />
+</template>

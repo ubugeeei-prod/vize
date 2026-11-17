@@ -1,0 +1,8 @@
+<script setup lang="ts">
+import NullableInput from "./NullableInput.vue"
+const selected = 1 as number | null
+function numberOnly(value: number) { value.toFixed() }
+</script>
+<template>
+  <NullableInput :modelValue="selected" @update:modelValue="numberOnly" />
+</template>

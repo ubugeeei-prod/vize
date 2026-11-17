@@ -1,0 +1,3 @@
+<template>
+  <UnresolvedSuspense v-slot="{ result }" @resolved="(result) => result.file" />
+</template>

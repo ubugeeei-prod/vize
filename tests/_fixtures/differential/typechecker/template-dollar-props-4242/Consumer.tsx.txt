@@ -1,0 +1,12 @@
+import ProjectsTable from './ProjectsTable.vue'
+import TimelineItem from './TimelineItem.vue'
+import type { Pagination } from './types'
+
+const pagination: Pagination = { page: 1, perPage: 10, total: 20 }
+
+export const rendered = (
+  <>
+    <ProjectsTable pagination={pagination} loading />
+    <TimelineItem date="today" active />
+  </>
+)

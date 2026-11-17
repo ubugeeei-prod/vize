@@ -1,0 +1,9 @@
+<script setup lang="ts">
+defineEmits<{
+  (event: "click", value: MouseEvent): void
+}>()
+</script>
+
+<template>
+  <button>Click</button>
+</template>

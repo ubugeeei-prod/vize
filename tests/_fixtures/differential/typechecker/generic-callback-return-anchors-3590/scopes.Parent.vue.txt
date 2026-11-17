@@ -1,0 +1,12 @@
+<script setup lang="ts">
+import Child from './Child.vue'
+import CallbackOnly from './CallbackOnly.vue'
+const visible = true
+const groups = [[{ id: 1 }]]
+</script>
+
+<template>
+  <Child v-if="visible" :items="[{ id: 1 }]" :pick="(item) => item.id" />
+  <Child v-for="group in groups" :key="group[0].id" :items="group" :pick="(item) => item.id" />
+  <CallbackOnly :transform="(item) => item.toUpperCase()" />
+</template>

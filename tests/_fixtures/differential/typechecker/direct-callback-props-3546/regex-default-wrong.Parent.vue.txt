@@ -1,0 +1,18 @@
+<script setup lang="ts">
+import Child from './Child.vue'
+let foo = 1
+const bar = 2
+const ok = true
+const target = ')'
+</script>
+
+<template>
+  <Child
+    :value="1"
+    :apply="(pattern = /* default */ /\)/, value) /* callback */ => value"
+    :calculate="(pattern = foo++ / bar, value) => value"
+    :inspect="(fn = () => { if (ok) /\)/.test(target) }, value) => value"
+    :choose="ok ? (value) => value : (value) => value"
+    :sequence="(void 0, (value) => value.toUpperCase())"
+  />
+</template>

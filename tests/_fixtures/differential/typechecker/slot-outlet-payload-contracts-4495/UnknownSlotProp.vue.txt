@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import DefaultSlotChild from "./DefaultSlotChild.vue";
+</script>
+
+<template>
+  <DefaultSlotChild>
+    <template #default="{ missing }">{{ missing }}</template>
+  </DefaultSlotChild>
+</template>

@@ -1,0 +1,9 @@
+<script setup lang="ts">
+defineProps<{
+  label?: string
+  nullish?: string | null
+  explicit?: string | undefined
+}>()
+</script>
+
+<template><span /></template>

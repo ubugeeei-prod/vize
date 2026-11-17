@@ -1,0 +1,7 @@
+import type { DefineComponent } from "vue"
+export {}
+declare module "vue" {
+  interface GlobalComponents {
+    QSlider: DefineComponent<{ modelValue?: number | null; "onUpdate:modelValue"?: (value: number | null) => any }>
+  }
+}

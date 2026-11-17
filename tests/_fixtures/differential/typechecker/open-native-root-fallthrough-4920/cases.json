@@ -1,0 +1,145 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 4920,
+  "regressionCommit": "09b4ddde76ed21942c0e302e7b2d4d8da289eaf1",
+  "sourceRevision": "09b4ddde76ed21942c0e302e7b2d4d8da289eaf1",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "native-root-unknown-attr-ok",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "native-valid.Parent.vue.txt"
+        },
+        {
+          "file": "src/NativeButton.vue",
+          "source": "NativeButton.vue.txt"
+        },
+        {
+          "file": "src/MultiRootButton.vue",
+          "source": "MultiRootButton.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "native-root-unknown-attr-obligations",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "native.Parent.vue.txt"
+        },
+        {
+          "file": "src/NativeButton.vue",
+          "source": "NativeButton.vue.txt"
+        },
+        {
+          "file": "src/MultiRootButton.vue",
+          "source": "MultiRootButton.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Parent.vue",
+          "line": 10,
+          "column": 30,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'string' is not assignable to type 'boolean | undefined'."
+        },
+        {
+          "file": "src/Parent.vue",
+          "line": 11,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{ disable: boolean; }' is not assignable to parameter of type '$ComponentCheckProps<Props, $PublicComponentAttrs & Record<string, unknown>>'.\nProperty 'label' is missing in type '{ disable: boolean; }' but required in type '{ readonly label: string; readonly disabled?: boolean | undefined; }'."
+        }
+      ]
+    },
+    {
+      "id": "generic-native-root-unknown-attr-ok",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "generic-valid.Parent.vue.txt"
+        },
+        {
+          "file": "src/GenericButton.vue",
+          "source": "GenericButton.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "generic-native-root-declared-prop-checks",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "generic.Parent.vue.txt"
+        },
+        {
+          "file": "src/GenericButton.vue",
+          "source": "GenericButton.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Parent.vue",
+          "line": 11,
+          "column": 34,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type 'string'."
+        }
+      ]
+    },
+    {
+      "id": "fallthrough-unknown-attrs-ok",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.jsx.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "unknown-attrs.App.vue.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "mono-div.Child.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

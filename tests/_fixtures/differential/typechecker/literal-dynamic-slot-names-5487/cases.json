@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 5487,
+  "regressionCommit": "cd93f9fba56a8c067691a96f06f15eff2285bd10",
+  "sourceRevision": "cd93f9fba56a8c067691a96f06f15eff2285bd10",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "literal-template-slot-name-payload",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/CmsListTable.vue",
+          "source": "CmsListTable.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "literal-template-slot-name-wrong-header",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/CmsListTable.vue",
+          "source": "CmsListTable.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "wrong-header.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 18,
+          "column": 43,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type 'Header' is not assignable to parameter of type '{ key: number; }'.\nTypes of property 'key' are incompatible.\nType 'string' is not assignable to type 'number'."
+        }
+      ]
+    }
+  ]
+}

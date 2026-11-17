@@ -1,0 +1,13 @@
+<script setup lang="ts">
+import { useTemplateRef } from 'vue'
+
+const html = useTemplateRef('html')
+const vector = useTemplateRef('vector')
+const htmlHref: string | undefined = html.value?.href
+const vectorHref: string | undefined = vector.value?.href
+</script>
+
+<template>
+  <a ref="html" />
+  <svg><a ref="vector" /></svg>
+</template>

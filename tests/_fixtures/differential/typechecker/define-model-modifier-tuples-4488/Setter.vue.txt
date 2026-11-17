@@ -1,0 +1,6 @@
+<script setup lang="ts">
+const [model] = defineModel<number, "trim", string, boolean>();
+
+const read: string | undefined = model.value;
+model.value = true;
+</script>

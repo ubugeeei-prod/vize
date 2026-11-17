@@ -1,0 +1,7 @@
+<script setup lang="ts">
+defineProps<{ title: string; on: boolean }>();
+</script>
+<template>
+  <div v-if="on" class="on">{{ title }}</div>
+  <span v-else-if="true" class="off">{{ title }}</span>
+</template>

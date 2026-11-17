@@ -1,0 +1,146 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 3526,
+  "regressionCommit": "21e5bd408bfdf22f0c043f1e0c50d92f4055479a",
+  "sourceRevision": "21e5bd408bfdf22f0c043f1e0c50d92f4055479a",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "correct-spread",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "good-spread.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "wrong-and-missing-spreads",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "spreads.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Parent.vue",
+          "line": 8,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{ count: string; }' is not assignable to parameter of type '$ComponentCheckProps<Props, $PublicComponentAttrs & Record<string, unknown>>'.\nType '{ count: string; }' is not assignable to type '{ readonly count: number; }'.\nTypes of property 'count' are incompatible.\nType 'string' is not assignable to type 'number'."
+        },
+        {
+          "file": "src/Parent.vue",
+          "line": 10,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{ [x: string]: unknown; class?: ClassValue; style?: StyleValue; }' is not assignable to parameter of type '$ComponentCheckProps<Props, $PublicComponentAttrs & Record<string, unknown>>'.\nProperty 'count' is missing in type '{ [x: string]: unknown; class?: ClassValue; style?: StyleValue; }' but required in type '{ readonly count: number; }'."
+        }
+      ]
+    },
+    {
+      "id": "spread-beside-correct-named-prop",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "mixed-valid.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "spread-beside-wrong-named-prop",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "mixed.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Parent.vue",
+          "line": 7,
+          "column": 25,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'string' is not assignable to type 'number'."
+        }
+      ]
+    },
+    {
+      "id": "error-inside-spread-expression",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "inner-error.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Parent.vue",
+          "line": 7,
+          "column": 22,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'missing' does not exist on type '{ count: number; }'."
+        }
+      ]
+    }
+  ]
+}

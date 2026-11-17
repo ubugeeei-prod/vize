@@ -1,0 +1,3 @@
+import { WidgetConfig } from "./Widget.vue";
+
+export type RegisteredWidgetConfig = typeof WidgetConfig;

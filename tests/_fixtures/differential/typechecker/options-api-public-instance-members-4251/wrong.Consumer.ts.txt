@@ -1,0 +1,20 @@
+import Computed from './Computed.vue';
+import Data from './Data.vue';
+import Methods from './Methods.vue';
+import Options from './Options.vue';
+
+type IsAny<T> = 0 extends 1 & T ? true : false;
+
+declare const options: InstanceType<typeof Options>;
+declare const data: InstanceType<typeof Data>;
+declare const computed: InstanceType<typeof Computed>;
+declare const methods: InstanceType<typeof Methods>;
+
+export const sourceCount: number = options.count;
+export const sourceNested: number = data.nested.inner.depth;
+export const sourceDoubled: number = computed.doubled;
+export const sourceAdd: number = methods.add(1);
+export const sourceCountIsAny: false = null as unknown as IsAny<typeof options.count>;
+export const sourceCountAsString: string = options.count;
+// @ts-expect-error a script consumer keeps the method parameter's exact type
+export const sourceAddWrong: number = methods.add('1');

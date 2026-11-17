@@ -1,0 +1,9 @@
+<script setup lang="ts" generic="T extends { id: string }">
+defineProps<{ items: T[]; label?: string }>()
+</script>
+
+<template>
+  <div>{{ $props.items.length }}</div>
+  <div v-for="item in $props.items" :key="item.id">{{ item.id }}</div>
+  <div>{{ $props.label }}</div>
+</template>

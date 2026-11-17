@@ -1,0 +1,61 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 3596,
+  "regressionCommit": "026f4b54f3fbc567af3a2351656f951681ff3149",
+  "sourceRevision": "026f4b54f3fbc567af3a2351656f951681ff3149",
+  "checkerOptions": {
+    "optionsApi": true
+  },
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "options-method-known-member",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "known-member.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "options-method-missing-member-below-long-template",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "missing-helper.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 33,
+          "column": 25,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'missingHelper' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, { count: number; }, {}, { bump(): void; }, ComponentOptionsMixin, ComponentOptionsMixin, ... 18 more ..., {}>'."
+        }
+      ]
+    }
+  ]
+}

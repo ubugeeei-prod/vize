@@ -1,0 +1,27 @@
+<script setup lang="ts">
+import { useTemplateRef } from 'vue'
+import Computed from './Computed.vue'
+import Methods from './Methods.vue'
+import Options from './Options.vue'
+
+const optionsRef = useTemplateRef<InstanceType<typeof Options>>('options')
+const computedRef = useTemplateRef<InstanceType<typeof Computed>>('computed')
+const methodsRef = useTemplateRef<InstanceType<typeof Methods>>('methods')
+
+const parentCount: number | undefined = optionsRef.value?.count
+const parentDoubled: number | undefined = computedRef.value?.doubled
+const parentAdd: number | undefined = methodsRef.value?.add(1)
+
+// @ts-expect-error a template ref keeps the data member's exact type
+const parentCountAsString: string | undefined = optionsRef.value?.count
+// @ts-expect-error a template ref keeps the method parameter's exact type
+const parentAddWrong: number | undefined = methodsRef.value?.add('1')
+
+defineExpose({ parentCount, parentDoubled, parentAdd, parentCountAsString, parentAddWrong })
+</script>
+
+<template>
+  <Options ref="options" />
+  <Computed ref="computed" />
+  <Methods ref="methods" />
+</template>

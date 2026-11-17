@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import type { Media } from './composables'
+
+defineProps<{ items: Media[]; label: string; count: number }>()
+</script>
+
+<template>
+  <div />
+</template>

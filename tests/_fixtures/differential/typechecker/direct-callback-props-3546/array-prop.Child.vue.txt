@@ -1,0 +1,5 @@
+<script setup lang="ts" generic="T extends { id: number }">
+defineProps<{ events: T[] }>()
+</script>
+
+<template><span /></template>

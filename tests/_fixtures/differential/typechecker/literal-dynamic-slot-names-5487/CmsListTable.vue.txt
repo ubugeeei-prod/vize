@@ -1,0 +1,18 @@
+<script setup lang="ts" generic="T extends { name: string }">
+type Header = { key: string };
+defineProps<{ items: T[] }>();
+defineSlots<{
+  actions?(): unknown;
+  [key: `item.${string}`]: ((props: { item: T; header: Header }) => unknown) | undefined;
+}>();
+</script>
+
+<template>
+  <slot
+    v-for="item in items"
+    :key="item.name"
+    :name="`item.${item.name}`"
+    :item="item"
+    :header="{ key: item.name }"
+  />
+</template>

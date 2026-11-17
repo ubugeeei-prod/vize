@@ -1,0 +1,53 @@
+<script lang="ts">
+import type { FormFieldProps } from "./form";
+
+type Ref<T> = { value: T };
+type AcceptableValue = string | number | bigint | Record<string, any> | null;
+
+export interface Props<T = AcceptableValue> extends FormFieldProps {
+  open?: boolean;
+  defaultOpen?: boolean;
+  defaultValue?: T | Array<T>;
+  modelValue?: T | Array<T>;
+  multiple?: boolean;
+}
+
+export type Emits<T = AcceptableValue> = {
+  "update:modelValue": [value: T];
+  "update:open": [value: boolean];
+};
+
+type UseVModelOptions<T, Passive extends boolean = false> = {
+  passive?: Passive;
+  defaultValue?: T;
+  deep?: boolean;
+};
+
+declare function useVModel<P extends object, K extends keyof P, Name extends string>(
+  props: P,
+  key?: K,
+  emit?: (name: Name, ...args: any[]) => void,
+  options?: UseVModelOptions<P[K], false>,
+): Ref<P[K]>;
+declare function useVModel<P extends object, K extends keyof P, Name extends string>(
+  props: P,
+  key?: K,
+  emit?: (name: Name, ...args: any[]) => void,
+  options?: UseVModelOptions<P[K], true>,
+): Ref<P[K]>;
+</script>
+
+<script setup lang="ts" generic="T extends AcceptableValue = AcceptableValue">
+const props = withDefaults(defineProps<Props<T>>(), {
+  modelValue: undefined,
+  open: undefined,
+});
+const emit = defineEmits<Emits<T>>();
+const multiple = { value: props.multiple };
+
+useVModel(props, "modelValue", emit, {
+  defaultValue: props.defaultValue ?? (multiple.value ? [] : undefined),
+  passive: (props.modelValue === undefined) as false,
+  deep: true,
+});
+</script>

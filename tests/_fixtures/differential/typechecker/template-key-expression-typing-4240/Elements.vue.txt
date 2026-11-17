@@ -1,0 +1,22 @@
+<script setup lang="ts">
+import { computed, ref } from 'vue'
+const buttons: { text: string | null }[] = []
+const tabs: { id: number }[] = []
+const strings: string[] = []
+const holder = ref<{ id: number } | null>(null)
+const derived = computed(() => holder.value)
+</script>
+
+<template>
+  <div v-for="s in strings" :key="s">{{ s }}</div>
+  <div v-for="button in buttons" :key="button.text">{{ button.text }}</div>
+  <div v-for="option in tabs" :key="option">{{ option.id }}</div>
+  <div v-for="item in tabs" :key="holder">{{ item.id }}</div>
+  <div v-for="item in tabs" :key="derived">{{ item.id }}</div>
+  <template :id="'ok'">
+    <span>a</span>
+  </template>
+  <template :id="1">
+    <span>b</span>
+  </template>
+</template>

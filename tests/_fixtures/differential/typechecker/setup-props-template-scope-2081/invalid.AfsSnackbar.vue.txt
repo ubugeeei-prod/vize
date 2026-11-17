@@ -1,0 +1,23 @@
+<script setup lang="ts">
+interface Props {
+  isOpened: boolean
+  title: string
+  timeout?: number
+  interaction?:
+    | { text: string; to: string; event?: never }
+    | { text: string; event: () => void; to?: never }
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  timeout: 4000
+})
+
+void props
+</script>
+
+<template>
+  <AfsButton v-if="interaction?.to" :to="interaction.to">
+    {{ title }} {{ interaction.text }}
+  </AfsButton>
+  <span v-if="isOpened">{{ title }} {{ text }}</span>
+</template>

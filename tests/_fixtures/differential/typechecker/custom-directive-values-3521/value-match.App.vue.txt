@@ -1,0 +1,8 @@
+<script setup lang="ts">
+import type { Directive } from 'vue'
+const vFocus: Directive<HTMLElement, number> = () => {}
+</script>
+
+<template>
+  <div v-focus="1" />
+</template>

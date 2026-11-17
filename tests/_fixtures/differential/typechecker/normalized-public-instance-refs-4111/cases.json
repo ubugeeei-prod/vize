@@ -1,0 +1,197 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 4111,
+  "regressionCommit": "e96023e4393b0301a2e6a76621053202676ff2d5",
+  "sourceRevision": "e96023e4393b0301a2e6a76621053202676ff2d5",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "template-ref-public-instance-strict-emits",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Public.vue",
+          "source": "Public.vue.txt"
+        },
+        {
+          "file": "src/Callable.vue",
+          "source": "Callable.vue.txt"
+        },
+        {
+          "file": "src/RuntimeObject.vue",
+          "source": "RuntimeObject.vue.txt"
+        },
+        {
+          "file": "src/RuntimeArray.vue",
+          "source": "RuntimeArray.vue.txt"
+        },
+        {
+          "file": "src/Generic.vue",
+          "source": "Generic.vue.txt"
+        },
+        {
+          "file": "src/Union.vue",
+          "source": "Union.vue.txt"
+        },
+        {
+          "file": "src/NativeListenerProp.vue",
+          "source": "NativeListenerProp.vue.txt"
+        },
+        {
+          "file": "src/NoEmits.vue",
+          "source": "NoEmits.vue.txt"
+        },
+        {
+          "file": "src/vue.d.ts",
+          "source": "vue.d.ts.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "nongeneric.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "template-ref-public-instance-wrong-emit-payload",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Public.vue",
+          "source": "Public.vue.txt"
+        },
+        {
+          "file": "src/Callable.vue",
+          "source": "Callable.vue.txt"
+        },
+        {
+          "file": "src/RuntimeObject.vue",
+          "source": "RuntimeObject.vue.txt"
+        },
+        {
+          "file": "src/RuntimeArray.vue",
+          "source": "RuntimeArray.vue.txt"
+        },
+        {
+          "file": "src/Generic.vue",
+          "source": "Generic.vue.txt"
+        },
+        {
+          "file": "src/Union.vue",
+          "source": "Union.vue.txt"
+        },
+        {
+          "file": "src/NativeListenerProp.vue",
+          "source": "NativeListenerProp.vue.txt"
+        },
+        {
+          "file": "src/NoEmits.vue",
+          "source": "NoEmits.vue.txt"
+        },
+        {
+          "file": "src/vue.d.ts",
+          "source": "vue.d.ts.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "wrong-payload.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Parent.vue",
+          "line": 16,
+          "column": 24,
+          "severity": 1,
+          "code": 2769,
+          "message": "No overload matches this call.\nThe last overload gave the following error.\nArgument of type '\"select\"' is not assignable to parameter of type '\"update:title\"'."
+        }
+      ]
+    },
+    {
+      "id": "template-ref-historical-generic-instance-consumer",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Public.vue",
+          "source": "Public.vue.txt"
+        },
+        {
+          "file": "src/Callable.vue",
+          "source": "Callable.vue.txt"
+        },
+        {
+          "file": "src/RuntimeObject.vue",
+          "source": "RuntimeObject.vue.txt"
+        },
+        {
+          "file": "src/RuntimeArray.vue",
+          "source": "RuntimeArray.vue.txt"
+        },
+        {
+          "file": "src/Generic.vue",
+          "source": "Generic.vue.txt"
+        },
+        {
+          "file": "src/Union.vue",
+          "source": "Union.vue.txt"
+        },
+        {
+          "file": "src/NativeListenerProp.vue",
+          "source": "NativeListenerProp.vue.txt"
+        },
+        {
+          "file": "src/NoEmits.vue",
+          "source": "NoEmits.vue.txt"
+        },
+        {
+          "file": "src/vue.d.ts",
+          "source": "vue.d.ts.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "Parent.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Parent.vue",
+          "line": 11,
+          "column": 48,
+          "severity": 1,
+          "code": 2344,
+          "message": "Type '{ __vizeCheck: <T extends string = string>(props: $SetupProps & VNodeProps & AllowedComponentProps & ComponentCustomProps & { ...; } & { ...; } & Record<...>) => void; ... 9 more ...; readonly __vizeFallthroughProps?: Record<...> | undefined; } & $GenericComponent' does not satisfy the constraint 'abstract new (...args: any) => any'.\nType '{ __vizeCheck: <T extends string = string>(props: $SetupProps & VNodeProps & AllowedComponentProps & ComponentCustomProps & { ...; } & { ...; } & Record<...>) => void; ... 9 more ...; readonly __vizeFallthroughProps?: Record<...> | undefined; } & $GenericComponent' provides no match for the signature 'new (...args: any): any'."
+        },
+        {
+          "file": "src/Parent.vue",
+          "line": 25,
+          "column": 1,
+          "severity": 1,
+          "code": 2578,
+          "message": "Unused '@ts-expect-error' directive."
+        }
+      ]
+    }
+  ]
+}

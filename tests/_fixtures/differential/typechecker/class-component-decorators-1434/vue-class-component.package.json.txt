@@ -1,0 +1,5 @@
+{
+  "name": "vue-class-component",
+  "version": "8.0.0-rc.1",
+  "types": "index.d.ts"
+}

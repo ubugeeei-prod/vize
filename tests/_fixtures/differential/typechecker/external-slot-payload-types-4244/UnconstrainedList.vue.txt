@@ -1,0 +1,15 @@
+<script setup lang="ts" generic="T">
+defineSlots<{
+  row(props: { event: T }): any;
+}>();
+
+defineProps<{ events: T[] }>();
+</script>
+
+<template>
+  <div>
+    <div v-for="(event, i) in events" :key="i">
+      <slot name="row" :event="event" />
+    </div>
+  </div>
+</template>

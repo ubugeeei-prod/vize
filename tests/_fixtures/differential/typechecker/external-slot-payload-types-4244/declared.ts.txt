@@ -1,0 +1,10 @@
+import type { DefineComponent } from 'vue';
+
+export declare const DeclaredList: DefineComponent<{ rows: string[] }> & {
+  new (): {
+    $slots: {
+      default(props: { row: string; index: number }): any;
+      empty(props: { reason: string }): any;
+    };
+  };
+};

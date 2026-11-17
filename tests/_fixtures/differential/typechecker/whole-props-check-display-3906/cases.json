@@ -1,0 +1,170 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 3906,
+  "regressionCommit": "1234f20675cbb1c13a2815afa8ac3a957defb244",
+  "sourceRevision": "1234f20675cbb1c13a2815afa8ac3a957defb244",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "generic-emit-overloads-missing-required-count",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/components.ts",
+          "source": "components.ts.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "generic-emit.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Parent.vue",
+          "line": 7,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{ onSave: (_value: string) => void; }' is not assignable to parameter of type '$ComponentCheckProps<Props, Record<string, unknown>>'.\nProperty 'count' is missing in type '{ onSave: (_value: string) => void; }' but required in type '{ readonly count: number; readonly onSave?: ((value: string) => void) | undefined; }'."
+        },
+        {
+          "file": "src/Parent.vue",
+          "line": 8,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{ onSave: (_value: string) => void; }' is not assignable to parameter of type '$ComponentCheckProps<Props, Record<string, unknown>>'.\nProperty 'count' is missing in type '{ onSave: (_value: string) => void; }' but required in type '{ readonly count: number; readonly onSave?: ((value: string) => void) | undefined; }'."
+        },
+        {
+          "file": "src/Parent.vue",
+          "line": 9,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{ onSave: (_value: string) => void; }' is not assignable to parameter of type '$ComponentCheckProps<Props, Record<string, unknown>>'.\nProperty 'count' is missing in type '{ onSave: (_value: string) => void; }' but required in type '{ readonly count: number; readonly onSave?: ((value: string) => void) | undefined; }'."
+        },
+        {
+          "file": "src/Parent.vue",
+          "line": 10,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{ onSave: (_value: string) => void; }' is not assignable to parameter of type '$ComponentCheckProps<{ count: number; onSave?: ((value: string) => void) | undefined; }, Record<string, unknown>>'.\nProperty 'count' is missing in type '{ onSave: (_value: string) => void; }' but required in type '{ readonly count: number; readonly onSave?: ((value: string) => void) | undefined; }'."
+        }
+      ]
+    },
+    {
+      "id": "generic-emit-overloads-complete-props",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/components.ts",
+          "source": "components.ts.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "generic-emit-complete.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "sfc-emit-listener-missing-required-count",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "emits-missing.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Parent.vue",
+          "line": 8,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{ onSave: (_value: string) => void; }' is not assignable to parameter of type '$ComponentCheckProps<__Child_CheckProps_0, $PublicComponentAttrs & Record<string, unknown>>'.\nProperty 'count' is missing in type '{ onSave: (_value: string) => void; }' but required in type '{ readonly count: number; readonly onSave?: ((value: string) => any) | undefined; }'."
+        },
+        {
+          "file": "src/Parent.vue",
+          "line": 7,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{ onSave: never; }' is not assignable to parameter of type '$ComponentCheckProps<__Child_CheckProps_0, $PublicComponentAttrs & Record<string, unknown>>'.\nProperty 'count' is missing in type '{ onSave: never; }' but required in type '{ readonly count: number; readonly onSave?: ((value: string) => any) | undefined; }'."
+        }
+      ]
+    },
+    {
+      "id": "sfc-emit-listener-complete-props",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "emits-complete.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "sfc-emit-listener-prop-wrong-callback",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "emits-wrong-listener.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Parent.vue",
+          "line": 7,
+          "column": 22,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '(_value: number) => void' is not assignable to type '(value: string) => any'.\nTypes of parameters '_value' and 'value' are incompatible.\nType 'string' is not assignable to type 'number'."
+        }
+      ]
+    }
+  ]
+}

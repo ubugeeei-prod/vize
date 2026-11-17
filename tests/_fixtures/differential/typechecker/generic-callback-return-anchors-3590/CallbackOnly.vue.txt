@@ -1,0 +1,5 @@
+<script setup lang="ts" generic="T extends string = string">
+defineProps<{ transform: (item: T) => number }>()
+</script>
+
+<template><span /></template>

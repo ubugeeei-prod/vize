@@ -1,0 +1,6 @@
+<script setup lang="ts">
+defineProps<
+  | { kind: 'text'; textValue: string }
+  | { kind: 'count'; countValue: number }
+>()
+</script>

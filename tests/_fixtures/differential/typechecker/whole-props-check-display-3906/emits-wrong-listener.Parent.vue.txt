@@ -1,0 +1,8 @@
+<script setup lang="ts">
+import Child from './Child.vue'
+const onCount = (_value: number) => {}
+</script>
+
+<template>
+  <Child :count="1" :on-save="onCount" />
+</template>

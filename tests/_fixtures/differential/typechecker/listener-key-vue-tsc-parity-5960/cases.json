@@ -1,0 +1,143 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 5960,
+  "regressionCommit": "e30b36c8f3302aa9fc364bc288f44ac9e732ff65",
+  "sourceRevision": "e30b36c8f3302aa9fc364bc288f44ac9e732ff65",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "fragment-property-keys-and-unchecked-id",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "valid-fragment-keys.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "fragment-keys-checked-against-property-key",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "fragment-keys.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 28,
+          "column": 26,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '{ id: number; }[]' is not assignable to type 'PropertyKey | undefined'."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 14,
+          "column": 40,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'string | null' is not assignable to type 'PropertyKey | undefined'.\nType 'null' is not assignable to type 'PropertyKey | undefined'."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 17,
+          "column": 37,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '{ id: number; }' is not assignable to type 'PropertyKey | undefined'."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 23,
+          "column": 35,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '{ id: number; } | null' is not assignable to type 'PropertyKey | undefined'.\nType 'null' is not assignable to type 'PropertyKey | undefined'."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 24,
+          "column": 35,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '{ id: number; } | null' is not assignable to type 'PropertyKey | undefined'.\nType 'null' is not assignable to type 'PropertyKey | undefined'."
+        }
+      ]
+    },
+    {
+      "id": "external-member-listener-exact-payload",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/global-components.d.ts",
+          "source": "global-components.d.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "valid-listener.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "external-member-listener-strict-contract",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/global-components.d.ts",
+          "source": "global-components.d.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "listener.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 11,
+          "column": 57,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '(value: number) => void' is not assignable to type '(value: number | null) => any'.\nTypes of parameters 'value' and 'value' are incompatible.\nType 'number | null' is not assignable to type 'number'.\nType 'null' is not assignable to type 'number'."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 12,
+          "column": 57,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '(value: string) => string' is not assignable to type '(value: number | null) => any'.\nTypes of parameters 'value' and 'value' are incompatible.\nType 'number | null' is not assignable to type 'string'.\nType 'null' is not assignable to type 'string'."
+        }
+      ]
+    }
+  ]
+}

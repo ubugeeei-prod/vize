@@ -1,0 +1,11 @@
+<script setup lang="ts" generic="T extends string = 'fallback'">
+defineProps<{ name: T }>();
+defineSlots<{ default(props: { item: T }): unknown }>();
+const emit = defineEmits<{ pick: [value: T] }>();
+defineExpose<{ current: T }>();
+void emit;
+</script>
+
+<template>
+  <div><slot :item="name" /></div>
+</template>

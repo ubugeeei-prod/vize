@@ -1,0 +1,2 @@
+import type { DefineComponent } from 'vue'
+export const External = {} as DefineComponent<{ count: number }>

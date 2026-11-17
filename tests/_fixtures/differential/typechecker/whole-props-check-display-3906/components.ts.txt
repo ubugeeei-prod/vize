@@ -1,0 +1,38 @@
+type Props = {
+  count: number
+  onSave?: (value: string) => void
+}
+
+export const GenericFirstCallbackChild = null as unknown as {
+  new(): {
+    $props: Props
+    $emit: {
+      (event: string, ...args: any[]): void
+      (event: 'save', value: string): void
+    }
+  }
+}
+
+export const GenericLastCallbackChild = null as unknown as {
+  new(): {
+    $props: Props
+    $emit: {
+      (event: 'save', value: string): void
+      (event: string, ...args: any[]): void
+    }
+  }
+}
+
+export const AnyEmitChild = null as unknown as {
+  new(): {
+    $props: Props
+    $emit: any
+  }
+}
+
+export const TypedOnlyChild = null as unknown as {
+  new(): {
+    $props: { count: number; onSave?: (value: string) => void }
+    $emit: (event: 'save', value: string) => void
+  }
+}

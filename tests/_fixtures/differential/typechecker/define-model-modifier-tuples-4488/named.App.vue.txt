@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import NamedChild from "./NamedChild.vue";
+
+let text = " hello ";
+</script>
+
+<template>
+  <NamedChild v-model:title.lazy="text" />
+</template>

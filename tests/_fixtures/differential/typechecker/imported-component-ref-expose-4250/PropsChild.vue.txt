@@ -1,0 +1,11 @@
+<script setup lang="ts">
+defineProps<{ label: string; count?: number }>();
+
+function reset(): void {}
+
+defineExpose({ reset });
+</script>
+
+<template>
+  <div>{{ label }}</div>
+</template>

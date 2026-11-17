@@ -1,0 +1,9 @@
+<script setup lang="ts">
+defineProps<{ title: string }>();
+</script>
+<template>
+  <template v-if="true">
+    <div class="a">{{ title }}</div>
+    <span class="b">x</span>
+  </template>
+</template>

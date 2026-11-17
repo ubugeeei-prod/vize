@@ -1,0 +1,19 @@
+<script lang="tsx">
+type WidgetOptions = {
+  render?: () => unknown;
+  slots: {
+    root: (context: { size: "small" | "large" }) => string;
+  };
+};
+
+export const WidgetConfig: WidgetOptions = {
+  render: () => <span />,
+  slots: {
+    root: ({ size }) => size,
+  },
+};
+</script>
+
+<template>
+  <div />
+</template>

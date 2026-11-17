@@ -1,0 +1,15 @@
+<script setup lang="ts">
+export interface FolderPayload {
+  id: string
+}
+
+defineEmits<{
+  (e: "click-folder", payload: FolderPayload): void
+  (e: "update:is-opened-overlay-loading", value: boolean): void
+  (e: "input:math-key", key: string): void
+}>()
+</script>
+
+<template>
+  <button type="button">Open</button>
+</template>

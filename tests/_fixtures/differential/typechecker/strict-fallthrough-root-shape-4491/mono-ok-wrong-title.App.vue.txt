@@ -1,0 +1,4 @@
+<script setup lang="ts">
+import Child from "./Child.vue";
+</script>
+<template><Child :title="1" id="outer" aria-haspopup="menu" /></template>

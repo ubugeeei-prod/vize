@@ -1,0 +1,156 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 3546,
+  "regressionCommit": "2b82fe00f6a94728c71abe394ab87b00d1704df0",
+  "sourceRevision": "2b82fe00f6a94728c71abe394ab87b00d1704df0",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "nested-type-arrow-callback",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "nested-arrow.Child.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "nested-arrow.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "nested-type-arrow-callback-wrong-member",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "nested-arrow.Child.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "nested-arrow-wrong.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Parent.vue",
+          "line": 6,
+          "column": 73,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'toUpperCase' does not exist on type 'number'."
+        }
+      ]
+    },
+    {
+      "id": "regex-default-callbacks",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "regex-default.Child.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "regex-default.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "regex-default-callbacks-wrong-member",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "regex-default.Child.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "regex-default-wrong.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Parent.vue",
+          "line": 16,
+          "column": 42,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'toUpperCase' does not exist on type 'number'."
+        }
+      ]
+    },
+    {
+      "id": "array-prop-nested-map-callback",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "array-prop.Child.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "array-prop.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "array-prop-nested-map-callback-wrong-element",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "array-prop.Child.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "array-prop-wrong.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Parent.vue",
+          "line": 7,
+          "column": 11,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '{ id: string; }[]' is not assignable to type '{ id: number; }[]'.\nType '{ id: string; }' is not assignable to type '{ id: number; }'.\nTypes of property 'id' are incompatible.\nType 'string' is not assignable to type 'number'."
+        }
+      ]
+    }
+  ]
+}

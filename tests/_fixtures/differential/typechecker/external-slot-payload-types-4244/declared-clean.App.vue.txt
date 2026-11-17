@@ -1,0 +1,24 @@
+<script setup lang="ts">
+import { DeclaredList } from './declared';
+import { FancyList } from 'fancy-ui';
+
+function takesNumber(value: number) {
+  return value;
+}
+function takesString(value: string) {
+  return value;
+}
+</script>
+
+<template>
+  <DeclaredList :rows="['a']">
+    <template #default="{ row, index }">
+      <span v-if="index > 0">{{ takesString(row) }}{{ takesNumber(index) }}</span>
+    </template>
+    <template #empty="{ reason }">{{ takesString(reason) }}</template>
+  </DeclaredList>
+
+  <FancyList :entries="[1]">
+    <template #default="{ entry, position }">{{ takesNumber(entry) }}{{ takesNumber(position) }}</template>
+  </FancyList>
+</template>

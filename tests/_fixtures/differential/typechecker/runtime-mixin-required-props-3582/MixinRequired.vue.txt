@@ -1,0 +1,7 @@
+<script lang="ts">
+import { defineComponent } from 'vue'
+const base = defineComponent({
+  props: { count: { type: Number, required: true } },
+})
+export default defineComponent({ mixins: [base] })
+</script>

@@ -1,0 +1,11 @@
+<script setup lang="ts">
+import Child from './Child.vue'
+const bag = { count: 'oops' }
+const good = { count: 1 }
+</script>
+
+<template>
+  <Child v-bind="bag" />
+  <Child v-bind="good" />
+  <Child v-bind="$attrs" />
+</template>

@@ -1,0 +1,17 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+import OptionalModel from './OptionalModel.vue'
+import RequiredModel from './RequiredModel.vue'
+import DefaultedModel from './DefaultedModel.vue'
+const text = ref('')
+function onMaybe(value: string | undefined) {
+  text.value = value ?? ''
+}
+function onString(value: string) {
+  text.value = value
+}
+</script>
+
+<template>
+  <OptionalModel :model-value="text" @update:modelValue="onString" />
+</template>

@@ -1,0 +1,22 @@
+<script setup lang="ts">
+import type { MaybeRefOrGetter } from "vue";
+
+const props = defineProps<{ open?: boolean }>();
+const emit = defineEmits<{ "update:open": [value: boolean] }>();
+
+function createEventBridge<
+  State extends Record<string, unknown>,
+  EventName extends string
+>(
+  state: MaybeRefOrGetter<State>,
+  dispatch: (event: EventName, ...args: any[]) => void
+) {
+  return { state, dispatch };
+}
+
+createEventBridge(props, emit);
+</script>
+
+<template>
+  <button @click="emit('update:open', 'open')" />
+</template>

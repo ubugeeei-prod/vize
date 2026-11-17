@@ -1,0 +1,5 @@
+export type GetStudyHistoriesQuery = {
+  student: {
+    studyHistories: Array<{ id: string; minutes: number }>
+  }
+}

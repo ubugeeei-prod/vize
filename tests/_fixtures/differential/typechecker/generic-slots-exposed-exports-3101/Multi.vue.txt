@@ -1,0 +1,18 @@
+<script setup lang="ts" generic="Mode extends 'row' | 'cell', TEvent extends Mode">
+const props = defineProps<{
+  mode: Mode;
+  event?: TEvent;
+}>();
+
+defineSlots<{
+  default: (props: { mode: Mode; event: TEvent | undefined }) => unknown;
+}>();
+
+defineExpose<{
+  current: () => Mode;
+}>();
+</script>
+
+<template>
+  <slot :mode="props.mode" :event="props.event" />
+</template>

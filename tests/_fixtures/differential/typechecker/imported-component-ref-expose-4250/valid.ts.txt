@@ -1,0 +1,32 @@
+import { ref, shallowRef, useTemplateRef } from "vue";
+import MkModalWindow from "./MkModalWindow.vue";
+import TypedExpose from "./TypedExpose.vue";
+import PkgWidget from "pkg-widget";
+
+// Component value type: Vue's own `LegacyOptions` index signature makes every
+// member access resolve, so none of these may report.
+declare const value: typeof MkModalWindow;
+export const v1 = value.close;
+export const v2 = value.secret;
+export const v3 = value.name;
+
+// Nullable template refs written against the component value type (Misskey).
+const nullableRef = ref<typeof MkModalWindow | null>(null);
+export const r1 = nullableRef.value?.close();
+const typedNullableRef = ref<typeof TypedExpose | null>(null);
+export const r2 = typedNullableRef.value?.close();
+
+// Public instance surfaces resolve the declared expose members.
+declare const instance: InstanceType<typeof MkModalWindow>;
+export const i1 = instance.close();
+declare const typedInstance: InstanceType<typeof TypedExpose>;
+export const i2 = typedInstance.close();
+declare const pkgInstance: InstanceType<typeof PkgWidget>;
+export const i3 = pkgInstance.dismiss();
+
+const instanceRef = ref<InstanceType<typeof MkModalWindow> | null>(null);
+export const i4 = instanceRef.value?.close();
+const shallow = shallowRef<InstanceType<typeof MkModalWindow> | null>(null);
+export const i5 = shallow.value?.close();
+const templateRef = useTemplateRef<InstanceType<typeof MkModalWindow>>("modal");
+export const i6 = templateRef.value?.close();

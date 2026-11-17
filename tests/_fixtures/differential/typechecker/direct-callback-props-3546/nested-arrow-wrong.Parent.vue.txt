@@ -1,0 +1,7 @@
+<script setup lang="ts">
+import Child from './Child.vue'
+</script>
+
+<template>
+  <Child :value="1" :apply="(fn: (x: number) => number, value) => value.toUpperCase()" />
+</template>

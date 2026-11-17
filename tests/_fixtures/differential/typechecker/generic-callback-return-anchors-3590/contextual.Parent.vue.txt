@@ -1,0 +1,8 @@
+<script setup lang="ts">
+import Child from './Child.vue'
+</script>
+
+<template>
+  <Child :items="[{ id: 1 }]" :pick="(item) => item.id" />
+  <Child :items="[{ id: 'x' }]" :pick="() => 'y'" />
+</template>

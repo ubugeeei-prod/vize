@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import Child from "./Child.vue";
+
+let text = " hello ";
+</script>
+
+<template>
+  <Child v-model.nope="text" />
+</template>

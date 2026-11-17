@@ -1,0 +1,17 @@
+<script lang="ts">
+import { Vue } from 'vue-class-component'
+import { Component, Prop } from 'vue-property-decorator'
+
+@Component
+export default class Counter extends Vue {
+  @Prop() readonly initial!: number
+  count = 0
+  get doubled() {
+    return this.count * 2
+  }
+  bump() {
+    this.count += 1
+  }
+}
+</script>
+<template><div>{{ count }}{{ doubled }}</div></template>

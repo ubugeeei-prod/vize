@@ -1,0 +1,28 @@
+<script setup lang="ts">
+const anyList: any = null;
+const arrList: string[] = [];
+const objList: Record<string, number> = {};
+const unknownList: unknown = null;
+
+function takesNumber(value: number) {
+  return value;
+}
+</script>
+
+<template>
+  <div v-for="(item, index) in anyList" :key="index">
+    {{ item }}{{ index < arrList.length - 1 ? ',' : '' }}
+  </div>
+  <div v-for="(item2, index2) in arrList" :key="index2">
+    {{ item2 }}{{ index2 < arrList.length - 1 ? ',' : '' }}
+  </div>
+  <div v-for="(value3, key3, index3) in objList" :key="key3">
+    {{ value3 }}{{ takesNumber(index3) }}
+  </div>
+  <div v-for="(item4, key4, index4) in anyList" :key="key4">
+    {{ item4 }}{{ takesNumber(index4) }}
+  </div>
+  <div v-for="(item5, index5) in unknownList" :key="index5">
+    {{ item5 }}{{ takesNumber(index5) }}
+  </div>
+</template>

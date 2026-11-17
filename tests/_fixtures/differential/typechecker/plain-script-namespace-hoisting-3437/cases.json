@@ -1,0 +1,116 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 3437,
+  "regressionCommit": "5435790bbb1f11b9d2c97e8e186000bcd67c58ea",
+  "sourceRevision": "5435790bbb1f11b9d2c97e8e186000bcd67c58ea",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "namespaces-used-as-values-and-types",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/components/Namespaces.vue",
+          "source": "Namespaces.vue.txt"
+        },
+        {
+          "file": "src/pages/Consumer.vue",
+          "source": "Consumer.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "namespace-type-member-mismatch",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/components/Namespaces.vue",
+          "source": "Namespaces.vue.txt"
+        },
+        {
+          "file": "src/pages/Consumer.vue",
+          "source": "Consumer.wrong-kind.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/pages/Consumer.vue",
+          "line": 14,
+          "column": 7,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '\"deep\"' is not assignable to type 'Kind'."
+        }
+      ]
+    },
+    {
+      "id": "unexported-namespace-import",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/components/Local.vue",
+          "source": "Local.vue.txt"
+        },
+        {
+          "file": "src/pages/LocalConsumer.vue",
+          "source": "LocalConsumer.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/pages/LocalConsumer.vue",
+          "line": 2,
+          "column": 10,
+          "severity": 1,
+          "code": 2614,
+          "message": "Module '\"../components/Local.vue\"' has no exported member 'Bare'. Did you mean to use 'import Bare from \"../components/Local.vue\"' instead?"
+        }
+      ]
+    },
+    {
+      "id": "legacy-module-keyword",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/components/Legacy.vue",
+          "source": "Legacy.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/components/Legacy.vue",
+          "line": 2,
+          "column": 15,
+          "severity": 1,
+          "code": 1540,
+          "message": "A 'namespace' declaration should not be declared using the 'module' keyword. Please use the 'namespace' keyword instead."
+        }
+      ]
+    }
+  ]
+}

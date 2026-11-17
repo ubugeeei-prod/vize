@@ -1,0 +1,10 @@
+<script setup lang="ts">
+import Child from './Child.vue'
+const take = (value: number) => value
+const finish = () => {}
+</script>
+
+<template>
+  <Child @pick="take" @done="finish" />
+  <Child @pick="(v) => take(v)" />
+</template>

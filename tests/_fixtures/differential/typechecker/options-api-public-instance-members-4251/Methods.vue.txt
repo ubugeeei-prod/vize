@@ -1,0 +1,23 @@
+<script lang="ts">
+export default {
+  data() {
+    return { count: 3 };
+  },
+  methods: {
+    add(step: number): number {
+      return this.count + step;
+    },
+    describe(value: string | number): string {
+      return typeof value === 'string' ? value : value.toFixed(1);
+    },
+    async load(id: string): Promise<{ id: string }> {
+      return { id };
+    },
+    *walk(): Generator<number, void, unknown> {
+      yield this.count;
+    },
+  },
+};
+</script>
+
+<template>{{ add(1) }}{{ describe('x') }}</template>

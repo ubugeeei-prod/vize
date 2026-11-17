@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import Child from './Child.vue'
+const onSave = (_value: string) => {}
+</script>
+
+<template>
+  <Child :count="1" @save="onSave" />
+  <Child :count="1" :on-save="onSave" />
+</template>

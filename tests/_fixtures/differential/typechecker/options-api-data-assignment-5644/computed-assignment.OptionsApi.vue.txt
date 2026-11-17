@@ -1,0 +1,21 @@
+<template>
+    <button @click="open = true">open</button>
+    <button @click="label = 'closed'">close</button>
+    <span>{{ open }} {{ label }}</span>
+</template>
+<script lang="ts">
+import { defineComponent } from 'vue'
+
+export default defineComponent({
+    data() {
+        return {
+            open: false,
+        }
+    },
+    computed: {
+        label(): string {
+            return String(this.open)
+        },
+    },
+})
+</script>

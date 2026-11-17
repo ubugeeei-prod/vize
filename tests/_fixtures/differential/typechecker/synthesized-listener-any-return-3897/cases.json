@@ -1,0 +1,127 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 3897,
+  "regressionCommit": "29aeaa770fb27dc98e5a39e830aa977c91064c85",
+  "sourceRevision": "29aeaa770fb27dc98e5a39e830aa977c91064c85",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "event-handler-wrong-payload-and-arity",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "wrong-handlers.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Parent.vue",
+          "line": 7,
+          "column": 11,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '(value: string) => string' is not assignable to type '(value: number) => any'.\nTypes of parameters 'value' and 'value' are incompatible.\nType 'number' is not assignable to type 'string'."
+        },
+        {
+          "file": "src/Parent.vue",
+          "line": 7,
+          "column": 24,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '(value: string) => string' is not assignable to type '() => any'.\nTarget signature provides too few arguments. Expected 1 or more, but got 0."
+        },
+        {
+          "file": "src/Parent.vue",
+          "line": 8,
+          "column": 29,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type 'number' is not assignable to parameter of type 'string'."
+        }
+      ]
+    },
+    {
+      "id": "event-handler-matching-payload",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "matching-handlers.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "generic-form-submit-listener-payload",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Form.vue",
+          "source": "Form.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "generic-form.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 22,
+          "column": 6,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '(payload: FormSubmitEvent<{ username: number; password: string; }>) => void' is not assignable to type '(payload: FormSubmitEvent<{ username: string; password: string; }>) => any'.\nTypes of parameters 'payload' and 'payload' are incompatible.\nType 'FormSubmitEvent<{ username: string; password: string; }>' is not assignable to type 'FormSubmitEvent<{ username: number; password: string; }>'.\nType '{ username: string; password: string; }' is not assignable to type '{ username: number; password: string; }'.\nTypes of property 'username' are incompatible.\nType 'string' is not assignable to type 'number'."
+        }
+      ]
+    },
+    {
+      "id": "generic-form-submit-listener-valid",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Form.vue",
+          "source": "Form.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "generic-form-valid.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

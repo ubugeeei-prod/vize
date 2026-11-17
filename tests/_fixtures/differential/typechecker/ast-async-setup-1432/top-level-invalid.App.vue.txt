@@ -1,0 +1,5 @@
+<script setup lang="ts">
+import { fetchData, items } from './api'
+const data = await fetchData()
+</script>
+<template><div>{{ data.toUpperCase() }}</div></template>

@@ -1,0 +1,9 @@
+declare module 'fancy-ui' {
+  export const FancyList: import('vue').DefineComponent<{ entries: number[] }> & {
+    new (): {
+      $slots: {
+        default(props: { entry: number; position: number }): any;
+      };
+    };
+  };
+}

@@ -1,0 +1,1 @@
+declare const button: { new (): { $props: {}; $slots: { default(props: { label: string }): unknown; icon(): unknown; }; }; }; export default button;

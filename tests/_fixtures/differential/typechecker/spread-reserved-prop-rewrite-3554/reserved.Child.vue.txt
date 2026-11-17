@@ -1,0 +1,5 @@
+<script setup lang="ts">
+defineProps<{ as?: string; value: number; label: string; kind: string; options: object }>()
+</script>
+
+<template><span /></template>

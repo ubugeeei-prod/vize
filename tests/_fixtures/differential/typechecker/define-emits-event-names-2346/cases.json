@@ -1,0 +1,121 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 2346,
+  "regressionCommit": "6096c8bca193e3a73fb28918ca78613516ec0a02",
+  "sourceRevision": "6096c8bca193e3a73fb28918ca78613516ec0a02",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "emit-passed-to-event-name-helper",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Foo.vue",
+          "source": "Foo.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "emit-wrong-payload",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Foo.vue",
+          "source": "Foo-wrong-payload.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Foo.vue",
+          "line": 21,
+          "column": 39,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type 'string' is not assignable to parameter of type 'boolean'."
+        }
+      ]
+    },
+    {
+      "id": "runtime-emit-object-instance-props",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Test.vue",
+          "source": "Test.vue.txt"
+        },
+        {
+          "file": "src/test.ts",
+          "source": "test.ts.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "runtime-emit-object-template-listener",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Test.vue",
+          "source": "Test.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "Parent.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "runtime-emit-object-wrong-listener",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Test.vue",
+          "source": "Test.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "Parent-wrong-listener.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Parent.vue",
+          "line": 6,
+          "column": 10,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '(value1: number) => number' is not assignable to type '(value1: string, value2: number) => any'.\nTypes of parameters 'value1' and 'value1' are incompatible.\nType 'string' is not assignable to type 'number'."
+        }
+      ]
+    }
+  ]
+}

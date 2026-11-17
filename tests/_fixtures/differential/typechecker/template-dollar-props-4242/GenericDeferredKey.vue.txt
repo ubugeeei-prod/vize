@@ -1,0 +1,32 @@
+<script lang="ts">
+type IsPlainObject<T> = T extends object ? (T extends Function ? false : true) : false
+type DotPathKeys<T> = IsPlainObject<T> extends true
+  ? {
+      [K in keyof T & string]: IsPlainObject<NonNullable<T[K]>> extends true
+        ? K | `${K}.${DotPathKeys<NonNullable<T[K]>>}`
+        : K
+    }[keyof T & string]
+  : never
+export type ItemKeys<T> = (keyof Extract<T, object> & string) | DotPathKeys<Extract<T, object>>
+
+export function get(object: Record<string, any>, path: string): string {
+  return String(object[path])
+}
+</script>
+
+<script setup lang="ts" generic="T extends Record<string, any>">
+const props = withDefaults(
+  defineProps<{
+    items?: T[]
+    labelKey?: ItemKeys<T>
+  }>(),
+  { labelKey: 'label' as never },
+)
+</script>
+
+<template>
+  <div v-for="(item, i) in props.items" :key="i">
+    {{ get(item, props.labelKey as string) }}
+    {{ get(item, $props.labelKey as string) }}
+  </div>
+</template>

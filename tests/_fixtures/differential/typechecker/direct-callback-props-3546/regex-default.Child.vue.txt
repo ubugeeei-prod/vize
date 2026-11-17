@@ -1,0 +1,12 @@
+<script setup lang="ts" generic="T">
+defineProps<{
+  value: T
+  apply: (pattern: RegExp, value: T) => T
+  calculate: (pattern: number, value: T) => T
+  inspect: (fn: () => void, value: T) => T
+  choose: (value: T) => T
+  sequence: (value: T) => T
+}>()
+</script>
+
+<template><span /></template>

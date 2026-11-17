@@ -1,0 +1,3 @@
+export * from "vue/dist/vue.js";
+// This alias omits Vue's public instance type: the shadowing name is a value only.
+export declare const ComponentPublicInstance: unique symbol;

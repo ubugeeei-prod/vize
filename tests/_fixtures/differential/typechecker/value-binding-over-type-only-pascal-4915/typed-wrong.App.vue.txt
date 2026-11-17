@@ -1,0 +1,8 @@
+<script setup lang="ts">
+import type { ChartComponent } from 'chart.js'
+import ChartPanel from './ChartPanel.vue'
+const chartComponent = ChartPanel
+const kind: ChartComponent['kind'] = 'bar'
+</script>
+
+<template><chartComponent :label="1" /></template>

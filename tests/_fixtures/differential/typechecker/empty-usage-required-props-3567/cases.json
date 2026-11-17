@@ -1,0 +1,114 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 3567,
+  "regressionCommit": "9a2ff60327e092636a4a13443694c032266622d5",
+  "sourceRevision": "9a2ff60327e092636a4a13443694c032266622d5",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "required-props-bound",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Required.vue",
+          "source": "Required.vue.txt"
+        },
+        {
+          "file": "src/Optional.vue",
+          "source": "Optional.vue.txt"
+        },
+        {
+          "file": "src/RuntimeOptional.vue",
+          "source": "RuntimeOptional.vue.txt"
+        },
+        {
+          "file": "src/Mixin.vue",
+          "source": "Mixin.vue.txt"
+        },
+        {
+          "file": "src/components.ts",
+          "source": "components.ts.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "bound.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "empty-usages-missing-required-props",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Required.vue",
+          "source": "Required.vue.txt"
+        },
+        {
+          "file": "src/Optional.vue",
+          "source": "Optional.vue.txt"
+        },
+        {
+          "file": "src/RuntimeOptional.vue",
+          "source": "RuntimeOptional.vue.txt"
+        },
+        {
+          "file": "src/Mixin.vue",
+          "source": "Mixin.vue.txt"
+        },
+        {
+          "file": "src/components.ts",
+          "source": "components.ts.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "empty.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Parent.vue",
+          "line": 12,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{}' is not assignable to parameter of type '$ComponentCheckProps<Props, $PublicComponentAttrs & Record<string, unknown>>'.\nProperty 'count' is missing in type '{}' but required in type '{ readonly count: number; }'."
+        },
+        {
+          "file": "src/Parent.vue",
+          "line": 13,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{}' is not assignable to parameter of type '$ComponentCheckProps<Props, $PublicComponentAttrs & Record<string, unknown>>'.\nProperty 'count' is missing in type '{}' but required in type '{ readonly count: number; }'."
+        },
+        {
+          "file": "src/Parent.vue",
+          "line": 17,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{}' is not assignable to parameter of type '$ComponentCheckProps<__External_CheckProps_5, Record<string, unknown>>'.\nProperty 'count' is missing in type '{}' but required in type '{ readonly key?: PropertyKey | undefined; readonly ref?: VNodeRef | undefined; readonly ref_for?: boolean | undefined; readonly ref_key?: string | undefined; ... 8 more ...; readonly count: number; }'."
+        }
+      ]
+    }
+  ]
+}

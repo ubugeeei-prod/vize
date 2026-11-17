@@ -1,0 +1,12 @@
+<script lang="ts">
+const emoji = '😀'; export /* kept */ const café = 1; export class Counter { value = café; }
+export enum Mode { One, Two }
+export enum Color { Red = 'red', Blue = 'blue' }
+export const enum Flag { Enabled = 1 }
+export enum Merged { First = 1 }
+export enum Merged { Second = 2 }
+export namespace Merged { export const label = 'merged'; }
+export class Box<T> { private brand = 0; constructor(public value: T) {} }
+const counter: Counter = new Counter();
+</script>
+<template><div /></template>

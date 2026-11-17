@@ -1,0 +1,14 @@
+import { ref } from "vue";
+import MkModalWindow from "./MkModalWindow.vue";
+import TypedExpose from "./TypedExpose.vue";
+
+// A private setup binding is not part of the expose surface.
+declare const instance: InstanceType<typeof MkModalWindow>;
+export const p1 = instance.secret;
+
+// A genuinely absent member still reports; it is never widened to `any`.
+export const p2 = instance.absentMember;
+declare const typedInstance: InstanceType<typeof TypedExpose>;
+export const p3 = typedInstance.absentMember;
+const instanceRef = ref<InstanceType<typeof MkModalWindow> | null>(null);
+export const p4 = instanceRef.value?.absentMember();

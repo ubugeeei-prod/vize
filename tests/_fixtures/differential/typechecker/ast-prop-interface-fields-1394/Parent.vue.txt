@@ -1,0 +1,4 @@
+<script setup lang="ts">
+import Child from './Child.vue'
+</script>
+<template><Child title="t" :meta="{ createdAt: 1, tags: [] }" :lookup="new Map([['a', 1]])" /></template>

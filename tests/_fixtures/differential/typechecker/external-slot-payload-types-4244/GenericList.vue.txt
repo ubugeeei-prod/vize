@@ -1,0 +1,19 @@
+<script setup lang="ts" generic="T extends { id: string }">
+defineSlots<{
+  default(props: { item: T; index: number }): any;
+  header(props: { total: number }): any;
+  footer(): any;
+}>();
+
+defineProps<{ items: T[]; label: string }>();
+</script>
+
+<template>
+  <div>
+    <slot name="header" :total="1" />
+    <div v-for="(item, i) in items" :key="item.id">
+      <slot :item="item" :index="i" />
+    </div>
+    <slot name="footer" />
+  </div>
+</template>

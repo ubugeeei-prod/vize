@@ -1,0 +1,7 @@
+<script setup lang="ts">
+const [model, modifiers] = defineModel<string, "trim" | "capitalize">({ required: true });
+
+if (modifiers.nope) {
+  model.value = model.value.trim();
+}
+</script>

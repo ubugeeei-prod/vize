@@ -1,0 +1,10 @@
+<script setup lang="ts">
+import GenericButton from './GenericButton.vue'
+
+const value = { id: 1 }
+const uiLocked = true
+</script>
+
+<template>
+  <GenericButton :value="value" label="Run" :disable="uiLocked" />
+</template>

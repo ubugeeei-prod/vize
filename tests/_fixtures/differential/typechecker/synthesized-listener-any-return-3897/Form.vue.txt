@@ -1,0 +1,20 @@
+<script setup lang="ts" generic="FormShape extends object">
+export interface FormSubmitEvent<FormShape extends object> {
+  data: FormShape
+}
+
+export interface FormEmits<FormShape extends object> {
+  (e: "submit", payload: FormSubmitEvent<FormShape>): void
+  (e: "reset"): void
+}
+
+defineProps<{
+  initialState: FormShape
+}>()
+
+defineEmits<FormEmits<FormShape>>()
+</script>
+
+<template>
+  <form />
+</template>

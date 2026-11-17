@@ -1,0 +1,8 @@
+<script setup lang="ts" generic="T extends { id: number }">
+type Props<T> =
+  | { kind: 'pick'; items: T[]; pick: (item: T) => string }
+  | { kind: 'plain'; items: T[] }
+defineProps<Props<T>>()
+</script>
+
+<template><span /></template>

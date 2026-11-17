@@ -1,0 +1,8 @@
+<script setup lang="ts">
+import ClassProp from './ClassProp.vue'
+</script>
+
+<template>
+  <ClassProp class="bad" />
+  <ClassProp :class="1" />
+</template>

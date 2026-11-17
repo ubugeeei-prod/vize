@@ -1,0 +1,219 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 4264,
+  "regressionCommit": "7e1f9b31b014d60ef91021d26a83fcda6fa661a1",
+  "sourceRevision": "7e1f9b31b014d60ef91021d26a83fcda6fa661a1",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "slot-outlet-callbacks-declared-props-clean",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "slot-outlet-callbacks-clean.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "slot-outlet-callbacks-declared-props",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "slot-outlet-callbacks.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 11,
+          "column": 60,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'missing' does not exist on type 'DragEvent'."
+        }
+      ]
+    },
+    {
+      "id": "untyped-slot-outlet-callback-implicit-any",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "untyped-slot-outlet.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 2,
+          "column": 22,
+          "severity": 1,
+          "code": 7006,
+          "message": "Parameter 'ev' implicitly has an 'any' type."
+        }
+      ]
+    },
+    {
+      "id": "external-member-update-model-handlers",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/global-components.d.ts",
+          "source": "global-components.d.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "external-member-model.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 11,
+          "column": 57,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '(value: number) => string' is not assignable to type '(value: number | null) => any'.\nTypes of parameters 'value' and 'value' are incompatible.\nType 'number | null' is not assignable to type 'number'.\nType 'null' is not assignable to type 'number'."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 12,
+          "column": 57,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '(value: string) => string' is not assignable to type '(value: number | null) => any'.\nTypes of parameters 'value' and 'value' are incompatible.\nType 'number | null' is not assignable to type 'string'.\nType 'null' is not assignable to type 'string'."
+        }
+      ]
+    },
+    {
+      "id": "local-sfc-update-model-identifier-handler-strict",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/NullableInput.vue",
+          "source": "NullableInput.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "local-sfc-model.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 7,
+          "column": 42,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '(value: number) => void' is not assignable to type '(value: number | null) => any'.\nTypes of parameters 'value' and 'value' are incompatible.\nType 'number | null' is not assignable to type 'number'.\nType 'null' is not assignable to type 'number'."
+        }
+      ]
+    },
+    {
+      "id": "transition-group-hook-handlers-elements",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "transition-group.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 11,
+          "column": 30,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'missing' does not exist on type 'Element'."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 12,
+          "column": 6,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '(el: string) => void' is not assignable to type '(el: Element) => any'.\nTypes of parameters 'el' and 'el' are incompatible.\nType 'Element' is not assignable to type 'string'."
+        }
+      ]
+    },
+    {
+      "id": "transition-camel-case-hook-handlers-elements",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "transition-camel.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 11,
+          "column": 30,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'missing' does not exist on type 'Element'."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 12,
+          "column": 6,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '(el: string) => void' is not assignable to type '(el: Element) => any'.\nTypes of parameters 'el' and 'el' are incompatible.\nType 'Element' is not assignable to type 'string'."
+        }
+      ]
+    },
+    {
+      "id": "dynamic-component-custom-member-handler",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "dynamic-custom-member.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

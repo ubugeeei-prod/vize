@@ -1,0 +1,4 @@
+<script setup lang="ts">
+defineProps<{ count: number; label: string; tone?: 'info' | 'danger' }>()
+</script>
+<template><span /></template>

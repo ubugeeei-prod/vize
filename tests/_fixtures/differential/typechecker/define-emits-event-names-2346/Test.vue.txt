@@ -1,0 +1,8 @@
+<template></template>
+<script setup lang="ts">
+const emit = defineEmits({
+  test: (value1: string, value2: number) => {
+    console.log(value1, value2);
+  },
+});
+</script>

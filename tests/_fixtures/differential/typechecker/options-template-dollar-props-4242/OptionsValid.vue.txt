@@ -1,0 +1,15 @@
+<script lang="ts">
+import { defineComponent } from 'vue'
+
+export default defineComponent({
+  props: {
+    label: { type: String, default: '' },
+    size: { type: Number, required: true },
+  },
+})
+</script>
+
+<template>
+  <div>{{ $props.label }}</div>
+  <div>{{ $props.size.toFixed(1) }}</div>
+</template>

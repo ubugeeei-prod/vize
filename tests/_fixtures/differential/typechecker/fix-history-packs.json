@@ -1,0 +1,538 @@
+{
+  "ambient-declarations-3095": {
+    "test": "fix_history_cases::ambient_declarations_3095::ambient_augmentations_preserve_batch_diagnostics",
+    "sourceRevision": "9129f14b5fa108e71cb5deed590f68f39054c1c2"
+  },
+  "ambient-global-callback-props-3812": {
+    "test": "fix_history_cases::ambient_global_callback_props_3812::ambient_global_components_type_authored_callbacks",
+    "sourceRevision": "c6f498cff95dd574e2d9741989fec1c9fcdaed4b"
+  },
+  "aria-data-fallthrough-attrs-4734": {
+    "test": "fix_history_cases::aria_data_fallthrough_attrs_4734::known_aria_and_custom_data_attrs_fall_through_but_unknown_aria_is_rejected",
+    "sourceRevision": "8298520356b8ee9d0d3b7ab96e10791f0150652c"
+  },
+  "asi-separated-event-handlers-3703": {
+    "test": "fix_history_cases::asi_separated_event_handlers_3703::asi_separated_event_handler_statements_stay_authored",
+    "sourceRevision": "4039c4c9a5217b81591d67c8123981eba1126f33"
+  },
+  "ast-async-setup-1432": {
+    "test": "fix_history_cases::ast_async_setup_1432::async_setup_follows_top_level_await_in_the_script_ast",
+    "sourceRevision": "e8ad806442134436b0a2750d6a93b63b627dceb1"
+  },
+  "ast-prop-interface-fields-1394": {
+    "test": "fix_history_cases::ast_prop_interface_fields_1394::local_prop_interface_fields_resolve_through_the_ast",
+    "sourceRevision": "b76d2f7b3d23c49f55a12f2a7ba41e553304da1f"
+  },
+  "branded-ref-template-types-2957": {
+    "test": "fix_history_cases::branded_ref_template_types_2957::branded_ref_template_unwrap_preserves_brand",
+    "sourceRevision": "145baca6ae3b4a45b847b7dcbf2cbcc39cd1e72d"
+  },
+  "camel-case-sfc-prop-checks-2169": {
+    "test": "fix_history_cases::camel_case_sfc_prop_checks_2169::camel_case_sfc_child_props_are_still_checked",
+    "sourceRevision": "fffcb76482df4002955407669003ec45dd0615ba"
+  },
+  "class-component-decorators-1434": {
+    "test": "fix_history_cases::class_component_decorators_1434::class_component_default_export_keeps_its_decorators",
+    "sourceRevision": "37b62dd501f041f8ea49684c412ac8912fa81b21"
+  },
+  "component-derived-reserved-props": {
+    "test": "fix_history_cases::component_derived_reserved_props::component_derived_reserved_prop_shorthand",
+    "sourceRevision": "8fe6bd909063488f53b8c46e0a8301e57d1cd104"
+  },
+  "component-event-assignment-scope-4994": {
+    "test": "fix_history_cases::component_event_assignment_scope_4994::component_event_assignment_does_not_narrow_render_scope",
+    "sourceRevision": "dfe3b6befc643c46031356e3b357e73cb1afe1ee"
+  },
+  "component-fallthrough-touch-listener-2732": {
+    "test": "fix_history_cases::component_fallthrough_touch_listener_2732::component_fallthrough_touch_listener_stays_loose",
+    "sourceRevision": "b41d999468128f920fcbbda1cc5c019e90dc75ee"
+  },
+  "component-merged-class-bindings-2538": {
+    "test": "fix_history_cases::component_merged_class_bindings_2538::component_static_and_dynamic_class_bindings_merge",
+    "sourceRevision": "ed38d543eeed916cf98a6be84d58e3b4b84015ce"
+  },
+  "component-option-statics-1615": {
+    "test": "fix_history_cases::component_option_statics_1615::virtual_component_satisfies_concrete_component_constraint",
+    "sourceRevision": "01ae57c12f09b1bbe0be77097d5cd3788f3e65ad"
+  },
+  "component-template-ref-expose-4489": {
+    "test": "fix_history_cases::component_template_ref_expose_4489::component_use_template_ref_uses_define_expose_surface",
+    "sourceRevision": "16f992cb64e502db4066cda3003ec5bad0a0b04d"
+  },
+  "custom-directive-values-3521": {
+    "test": "fix_history_cases::custom_directive_values_3521::custom_directive_values_are_checked_against_directive_value_type",
+    "sourceRevision": "375b0fb5b0d04af9014d81ef865d17dba02f3b0a"
+  },
+  "declared-any-slot-provider-11027": {
+    "test": "fix_history_cases::declared_any_slot_provider_11027::declared_any_slot_providers_preserve_authored_errors_and_intrinsic_controls",
+    "sourceRevision": "be8aa8108652c10b7eb02d963e8862fcae6b542c"
+  },
+  "declared-slots-optional-4529": {
+    "test": "fix_history_cases::declared_slots_optional_4529::declared_slots_stay_optional_for_parents",
+    "sourceRevision": "4335e65ed7e650102f6cfcb0483eb20ba7773b09"
+  },
+  "default-export-alias-unused-1949": {
+    "test": "fix_history_cases::default_export_alias_unused_1949::generated_default_export_alias_is_not_reported_unused",
+    "sourceRevision": "958a2ac4c623225bd031a132de8540be8fd78f82"
+  },
+  "define-emits-event-names-2346": {
+    "test": "fix_history_cases::define_emits_event_names_2346::define_emits_callable_infers_event_names",
+    "sourceRevision": "6096c8bca193e3a73fb28918ca78613516ec0a02"
+  },
+  "define-emits-template-dollar-emit-3708": {
+    "test": "fix_history_cases::define_emits_template_dollar_emit_3708::template_dollar_emit_consumes_the_define_emits_binding",
+    "sourceRevision": "34463efe9ac81e18619ebcdc3e3326b94bd85932"
+  },
+  "define-model-modifier-tuples-4488": {
+    "test": "fix_history_cases::define_model_modifier_tuples_4488::define_model_modifier_tuple_types_are_preserved",
+    "sourceRevision": "08db7132a3fb81a618e2111c055fbc285bd4b86c"
+  },
+  "define-model-template-unwrap-5847": {
+    "test": "fix_history_cases::define_model_template_unwrap_5847::define_model_record_indexes_with_template_v_for_keys",
+    "sourceRevision": "00b6fd3939ed3f1c77e1a342215849644f64aded"
+  },
+  "direct-callback-props-3546": {
+    "test": "fix_history_cases::direct_callback_props_3546::direct_inline_callback_props_are_distinguished_from_nested_callbacks",
+    "sourceRevision": "2b82fe00f6a94728c71abe394ab87b00d1704df0"
+  },
+  "dynamic-component-setup-props-4494": {
+    "test": "fix_history_cases::dynamic_component_setup_props_4494::dynamic_component_props_use_resolved_setup_binding_type",
+    "sourceRevision": "67dc97e8ab5c0d96697e3b8e0f04aa1678ccc14f"
+  },
+  "dynamic-component-v-for-scope": {
+    "test": "fix_history_cases::dynamic_component_v_for_scope::dynamic_is_on_v_for_elements_preserves_batch_diagnostics",
+    "sourceRevision": "7f802b69bf57fc555e65174d33d8319fc4753aa4"
+  },
+  "dynamic-member-component-emits-2915": {
+    "test": "fix_history_cases::dynamic_member_component_emits_2915::dynamic_member_component_listener_infers_emit_payload",
+    "sourceRevision": "9c8861cfcbca6ba118dfff9b14250bb30e6aee39"
+  },
+  "emit-props-handler-mapping": {
+    "test": "fix_history_cases::emit_props_handler_mapping::declared_emits_map_to_checked_handler_props",
+    "sourceRevision": "d9535048975662e1fd68bf05db50b3ffd64a19f4"
+  },
+  "empty-template-interpolation-3090": {
+    "test": "fix_history_cases::empty_template_interpolation_3090::empty_interpolations_preserve_batch_diagnostics",
+    "sourceRevision": "7c18c96fe98af6b74f57753b7801e647f751d50d"
+  },
+  "empty-usage-required-props-3567": {
+    "test": "fix_history_cases::empty_usage_required_props_3567::empty_component_usages_check_required_props",
+    "sourceRevision": "9a2ff60327e092636a4a13443694c032266622d5"
+  },
+  "every-unused-sfc-generic-2922": {
+    "test": "fix_history_cases::every_unused_sfc_generic_2922::every_sfc_generic_used_by_props_or_emits_is_retained",
+    "sourceRevision": "9aad33772161de7133ef2ebd628e5d21f60b43ac"
+  },
+  "exact-optional-component-props-3525": {
+    "test": "fix_history_cases::exact_optional_component_props_3525::exact_optional_property_types_apply_to_component_props",
+    "sourceRevision": "14a39c33651fa00aceeb62924b519319bc9492d7"
+  },
+  "exposed-template-ref-unwrap-2632": {
+    "test": "fix_history_cases::exposed_template_ref_unwrap_2632::exposed_template_ref_unwraps_on_component_instance",
+    "sourceRevision": "745bc7c6301766b462bc8f5a9ba3104656c5c2a6"
+  },
+  "external-slot-payload-types-4244": {
+    "test": "fix_history_cases::external_slot_payload_types_4244::external_component_slot_payloads_keep_their_types",
+    "sourceRevision": "4edbc20c6e588e5ebb64bd80e4ba9ec51af56e08"
+  },
+  "fallthrough-attrs-required-props-3579": {
+    "test": "fix_history_cases::fallthrough_attrs_required_props_3579::fallthrough_only_usages_keep_required_props",
+    "sourceRevision": "1dba759d5b48406481494db09fa152cfcce4a68a"
+  },
+  "function-prefixed-listener-call-3512": {
+    "test": "fix_history_cases::function_prefixed_listener_call_3512::function_prefixed_listener_call_is_not_an_inline_function",
+    "sourceRevision": "7676592d51c264565259de273ccea511601d25b9"
+  },
+  "generic-callback-listener-props-2921": {
+    "test": "fix_history_cases::generic_callback_listener_props_2921::generic_callback_prop_listener_infers_payload",
+    "sourceRevision": "e3a12cf323cb3f7213034e5137564ca4daf794b1"
+  },
+  "generic-callback-return-anchors-3590": {
+    "test": "fix_history_cases::generic_callback_return_anchors_3590::generic_callback_prop_errors_anchor_at_the_callback_leaf",
+    "sourceRevision": "583cd63246042a43bd4879e9b374ce07c19c09a5"
+  },
+  "generic-component-global-attrs": {
+    "test": "fix_history_cases::generic_component_global_attrs::generic_closed_component_accepts_global_html_attrs",
+    "sourceRevision": "d7796777839f961aa97d1a55397ad4e2d0372a31"
+  },
+  "generic-component-props-inference-2476": {
+    "test": "fix_history_cases::generic_component_props_inference_2476::generic_component_props_infer_from_template",
+    "sourceRevision": "f4dbdb44c080b869630d8ad83d46a95fa356e124"
+  },
+  "generic-default-setup-scope-2912": {
+    "test": "fix_history_cases::generic_default_setup_scope_2912::generic_default_does_not_replace_setup_parameter",
+    "sourceRevision": "5afffd0b3cb0dd06d9eb347b57f40dba3d9c8e4e"
+  },
+  "generic-emit-overload-depth-3150": {
+    "test": "fix_history_cases::generic_emit_overload_depth_3150::generic_emit_overload_listener_props_stay_within_depth",
+    "sourceRevision": "5257a671727fc55e94bb227247269d23a8eda13e"
+  },
+  "generic-imported-boolean-keys-2920": {
+    "test": "fix_history_cases::generic_imported_boolean_keys_2920::generic_props_resolve_imported_boolean_keys",
+    "sourceRevision": "37cb5631062a8926497835844f8d41db680128eb"
+  },
+  "generic-inline-callback-prop-3511": {
+    "test": "fix_history_cases::generic_inline_callback_prop_3511::generic_child_inline_callback_prop_is_contextually_typed",
+    "sourceRevision": "51253bbae73236b3710765f11651f9c32e72ffcb"
+  },
+  "generic-module-alias-instantiation-3365": {
+    "test": "fix_history_cases::generic_module_alias_instantiation_3365::generic_component_aliases_are_instantiated_for_consumers",
+    "sourceRevision": "a40aefa70fc004f00c230efa9e9303b52f0c10a2"
+  },
+  "generic-props-boolean-keys-2633": {
+    "test": "fix_history_cases::generic_props_boolean_keys_2633::generic_props_do_not_gain_boolean_intersections",
+    "sourceRevision": "3c2edcdebd2f836c3e96a8447f57e000de453315"
+  },
+  "generic-sfc-extracted-props-2701": {
+    "test": "fix_history_cases::generic_sfc_extracted_props_2701::generic_sfc_props_infer_through_extracted_component_props",
+    "sourceRevision": "89131c4b4b3a605f5c12c771dccb54fe91d38482"
+  },
+  "generic-slots-exposed-exports-3101": {
+    "test": "fix_history_cases::generic_slots_exposed_exports_3101::generic_sfc_type_exports_keep_their_type_parameters",
+    "sourceRevision": "30db60efb71eed8dd060b373d50a29e137f43c46"
+  },
+  "guard-diagnostic-position-2960": {
+    "test": "fix_history_cases::guard_diagnostic_position_2960::authored_guards_own_batch_diagnostics",
+    "sourceRevision": "7f01c58cdd13bda478e7b1b70fe5575a173bd063"
+  },
+  "handler-v-model-directive-anchors-3509": {
+    "test": "fix_history_cases::handler_v_model_directive_anchors_3509::handler_and_v_model_errors_anchor_at_directive_names",
+    "sourceRevision": "4a18d23aebbcd4f6b6ccd332b23adee066b71fac"
+  },
+  "hyphenated-emit-handlers-1998": {
+    "test": "fix_history_cases::hyphenated_emit_handlers_1998::hyphenated_and_colon_emit_listeners_resolve_camelized_handlers",
+    "sourceRevision": "f47f024b760f7692352612dc8a0cf850c18ae373"
+  },
+  "imported-component-ref-expose-4250": {
+    "test": "fix_history_cases::imported_component_ref_expose_4250::imported_component_refs_resolve_exposed_members",
+    "sourceRevision": "6aef3e8822e398c25fc3409b2c6192a77fe2c51c"
+  },
+  "imported-emits-generic-2914": {
+    "test": "fix_history_cases::imported_emits_generic_2914::imported_define_emits_type_retains_sfc_generic",
+    "sourceRevision": "db8f7e52c7f337fdacb8f18be99aaf8d53f2cc2f"
+  },
+  "imported-ref-unwrap-2958": {
+    "test": "fix_history_cases::imported_ref_unwrap_2958::imported_refs_preserve_batch_diagnostics",
+    "sourceRevision": "57dd8e862ab9963567d6762629170bab3b464c05"
+  },
+  "leading-semicolon-handler-3091": {
+    "test": "fix_history_cases::leading_semicolon_handler_3091::asi_prefixed_handlers_preserve_batch_diagnostics",
+    "sourceRevision": "f6ffab4e808a96f2d0dac8827d4e00c7d7df260a"
+  },
+  "listener-key-vue-tsc-parity-5960": {
+    "test": "fix_history_cases::listener_key_vue_tsc_parity_5960::fragment_keys_and_external_member_listeners_match_vue_tsc",
+    "sourceRevision": "e30b36c8f3302aa9fc364bc288f44ac9e732ff65"
+  },
+  "literal-dynamic-slot-names-5487": {
+    "test": "fix_history_cases::literal_dynamic_slot_names_5487::literal_template_slot_name_uses_index_signature_payload",
+    "sourceRevision": "cd93f9fba56a8c067691a96f06f15eff2285bd10"
+  },
+  "multiline-native-binding-anchor-3563": {
+    "test": "fix_history_cases::multiline_native_binding_anchor_3563::multiline_native_v_bind_anchors_at_the_attribute_name",
+    "sourceRevision": "7424ea068468a631bfdca4ba1f408310d7231ca2"
+  },
+  "native-boolean-bindings-3289": {
+    "test": "fix_history_cases::native_boolean_bindings_3289::native_boolean_bindings_are_checked_against_native_elements",
+    "sourceRevision": "3bd325f3b5a311eb37242b403a94876e4727fb01"
+  },
+  "native-element-v-bind-checks-3443": {
+    "test": "fix_history_cases::native_element_v_bind_checks_3443::every_static_native_v_bind_is_checked_against_element_props",
+    "sourceRevision": "51a13ef48cf2e509b39592c08017561fb5dd10ee"
+  },
+  "nested-v-if-narrowing-2959": {
+    "test": "fix_history_cases::nested_v_if_narrowing_2959::nested_else_v_for_preserves_batch_diagnostics",
+    "sourceRevision": "ac02c114ce529b6ef42e7ca7757279e1068548a6"
+  },
+  "no-space-default-export-3087": {
+    "test": "fix_history_cases::no_space_default_export_3087::no_space_default_export_is_wrapped_as_options_api",
+    "sourceRevision": "894b6f62b772b0a0e4e389bcc38cd9b8469d7557"
+  },
+  "normal-script-enum-exports-2331": {
+    "test": "fix_history_cases::normal_script_enum_exports_2331::normal_script_ts_enum_is_a_named_value_export",
+    "sourceRevision": "5eb53f331a55a9fdb02bb9e8ab83c141b0918146"
+  },
+  "normalized-public-instance-refs-4111": {
+    "test": "fix_history_cases::normalized_public_instance_refs_4111::template_refs_see_the_normalized_public_instance",
+    "sourceRevision": "e96023e4393b0301a2e6a76621053202676ff2d5"
+  },
+  "object-runtime-prop-record-any-4451": {
+    "test": "fix_history_cases::object_runtime_prop_record_any_4451::object_runtime_props_infer_record_string_any",
+    "sourceRevision": "9a6dbdcfcfb33681ef5a310e841d73d6dd3e9875"
+  },
+  "open-native-root-fallthrough-4920": {
+    "test": "fix_history_cases::open_native_root_fallthrough_4920::native_root_fallthrough_accepts_unknown_attrs",
+    "sourceRevision": "09b4ddde76ed21942c0e302e7b2d4d8da289eaf1"
+  },
+  "optional-boolean-template-props-2731": {
+    "test": "fix_history_cases::optional_boolean_template_props_2731::optional_boolean_template_prop_is_normalized",
+    "sourceRevision": "a76940eb95b9fdbba90331b5b3b1bab2331ec902"
+  },
+  "optional-event-handlers-3148": {
+    "test": "fix_history_cases::optional_event_handlers_3148::optional_handlers_preserve_batch_diagnostics",
+    "sourceRevision": "805d32a5277a025d062edc47e20cc22ce170f5e7"
+  },
+  "optional-model-update-payload-3908": {
+    "test": "fix_history_cases::optional_model_update_payload_3908::optional_define_model_update_payload_carries_undefined",
+    "sourceRevision": "9074dbf00c23d7679ba4ffc16c2ef9f641ac6d42"
+  },
+  "options-api-data-assignment-5644": {
+    "test": "fix_history_cases::options_api_data_assignment_5644::options_api_data_assignments_are_mutable_from_template_expressions",
+    "sourceRevision": "024b4b712cb03528547b03cbb01cf459ca36fa08"
+  },
+  "options-api-method-body-anchors-3596": {
+    "test": "fix_history_cases::options_api_method_body_anchors_3596::options_api_method_diagnostics_anchor_on_authored_script_bytes",
+    "sourceRevision": "026f4b54f3fbc567af3a2351656f951681ff3149"
+  },
+  "options-api-public-instance-members-4251": {
+    "test": "fix_history_cases::options_api_public_instance_members_4251::options_api_public_instance_members_reach_script_and_ref_consumers",
+    "sourceRevision": "97898a1a07aa4fd4d3f3ab413e8852ef1b541ec8"
+  },
+  "options-props-spread-setup-scope": {
+    "test": "fix_history_cases::options_props_spread_setup_scope::options_api_spread_runtime_props_stay_in_setup_scope",
+    "sourceRevision": "13ae68d9a09d91ca85353c9b769d4c78e6ed6f18"
+  },
+  "options-runtime-props-value-scope-3089": {
+    "test": "fix_history_cases::options_runtime_props_value_scope_3089::options_runtime_props_check_from_value_scope",
+    "sourceRevision": "3ed9fbc889078cbbc9b1a86fa3b5f8dfd8612dd6"
+  },
+  "options-setup-return-template-1897": {
+    "test": "fix_history_cases::options_setup_return_template_1897::options_api_setup_returns_reach_the_template_unwrapped",
+    "sourceRevision": "b46bd454b06c70329032e98bee050d80f877c2d5"
+  },
+  "options-setup-spread-bindings-2005": {
+    "test": "fix_history_cases::options_setup_spread_bindings_2005::options_setup_return_spread_bindings_reach_the_template",
+    "sourceRevision": "cd1fc1447ab6b7d4e0a5afb589b0bafdbc1714a9"
+  },
+  "options-spread-only-computed-unused": {
+    "test": "fix_history_cases::options_spread_only_computed_unused::options_spread_only_computed_reports_no_synthetic_unused_alias",
+    "sourceRevision": "be564bc1b423bcc304e9d11a868467c82f0a526d"
+  },
+  "options-template-dollar-props-4242": {
+    "test": "fix_history_cases::options_template_dollar_props_4242::options_api_props_reach_template_dollar_props",
+    "sourceRevision": "155555e58136758d84700e70a417a58588c0008d"
+  },
+  "options-template-instance-bindings-1433": {
+    "test": "fix_history_cases::options_template_instance_bindings_1433::options_api_template_bindings_keep_instance_types",
+    "sourceRevision": "87701cf384daf9ccb001e3ab5ea19f74e7938397"
+  },
+  "options-template-literal-bindings-3086": {
+    "test": "fix_history_cases::options_template_literal_bindings_3086::options_api_template_literals_are_not_bindings",
+    "sourceRevision": "c40cb562b37a1cde3080bb560df6fbb23a574212"
+  },
+  "options-unknown-template-instance-3903": {
+    "test": "fix_history_cases::options_unknown_template_instance_3903::options_api_unknown_template_names_resolve_on_the_public_instance",
+    "sourceRevision": "263094d86067ac5149b40d537585b16e6aa24865"
+  },
+  "plain-options-define-component-1407": {
+    "test": "fix_history_cases::plain_options_define_component_1407::plain_options_object_default_export_gets_instance_this",
+    "sourceRevision": "df454d1dad18d3534176b6c9e8544fab636a2e88"
+  },
+  "plain-script-enum-class-exports-3382": {
+    "test": "fix_history_cases::plain_script_enum_class_exports_3382::plain_script_value_and_type_exports_preserve_batch_diagnostics",
+    "sourceRevision": "813a7ba187995f46cd4c3c0b8ec03104bcd9d9e3"
+  },
+  "plain-script-named-exports-1966": {
+    "test": "fix_history_cases::plain_script_named_exports_1966::plain_script_value_exports_preserve_batch_diagnostics",
+    "sourceRevision": "a4da0228d54f89923e2982044eeab2c4809529be"
+  },
+  "plain-script-namespace-hoisting-3437": {
+    "test": "fix_history_cases::plain_script_namespace_hoisting_3437::plain_script_namespaces_are_module_scope_declarations",
+    "sourceRevision": "5435790bbb1f11b9d2c97e8e186000bcd67c58ea"
+  },
+  "plain-script-public-declarations-6245": {
+    "test": "fix_history_cases::plain_script_public_declarations_6245::plain_script_enum_class_identity_and_vue_declaration_imports",
+    "sourceRevision": "95401a66090e358f72063d7c4bd73c2b70b593b7"
+  },
+  "plain-script-type-body-2038": {
+    "test": "fix_history_cases::plain_script_type_body_2038::plain_script_type_bodies_preserve_batch_diagnostics",
+    "sourceRevision": "fd87bb1274a781dad70c3599df9fd3365a1eb870"
+  },
+  "repeated-component-prop-checks-3202": {
+    "test": "fix_history_cases::repeated_component_prop_checks_3202::repeated_component_prop_names_keep_unique_checks",
+    "sourceRevision": "378683f0c1feee643cd1e01347ff8cc6d31141db"
+  },
+  "required-camel-case-props-3791": {
+    "test": "fix_history_cases::required_camel_case_props_3791::required_camel_case_props_stay_required",
+    "sourceRevision": "121da88bf450158bd7bccf8f12da8db9c97b77af"
+  },
+  "reserved-enum-member-3092": {
+    "test": "fix_history_cases::reserved_enum_member_3092::reserved_enum_members_preserve_batch_diagnostics",
+    "sourceRevision": "347d653aba6f5bc24592275a772e0877f367ce05"
+  },
+  "runtime-mixin-required-props-3582": {
+    "test": "fix_history_cases::runtime_mixin_required_props_3582::imported_runtime_and_mixin_props_preserve_requiredness",
+    "sourceRevision": "b15fb9ebb37a173b1b50d91eef42d3625dd6b014"
+  },
+  "runtime-prop-helper-syntax": {
+    "test": "fix_history_cases::runtime_prop_helper_syntax::runtime_prop_helper_emits_valid_typescript",
+    "sourceRevision": "e49925f0fbde257854af2aa73e34b45be7f14b3d"
+  },
+  "scoped-event-implicit-any-3828": {
+    "test": "fix_history_cases::scoped_event_implicit_any_3828::unresolved_ambient_event_callback_keeps_implicit_any_beside_slot_binding",
+    "sourceRevision": "7b0b4adb66ff112a03ecf4da57641214c01f04d7"
+  },
+  "script-block-duplicate-declarations-4241": {
+    "test": "fix_history_cases::script_block_duplicate_declarations_4241::script_block_collisions_preserve_batch_diagnostics",
+    "sourceRevision": "da1de3654e840605f65b18e6da536340cc6a28b4"
+  },
+  "script-block-scope-isolation-4241": {
+    "test": "fix_history_cases::script_block_scope_isolation_4241::cross_block_type_sharing_preserves_batch_diagnostics",
+    "sourceRevision": "da1de3654e840605f65b18e6da536340cc6a28b4"
+  },
+  "sequence-prop-expressions-3553": {
+    "test": "fix_history_cases::sequence_prop_expressions_3553::sequence_callback_props_keep_contextual_parameter_types",
+    "sourceRevision": "ec3ef8ce3ddf5853d3659a83d9b8f151fdbe3f1f"
+  },
+  "setup-ambient-adjacent-6223": {
+    "test": "fix_history_cases::setup_ambient_adjacent_6223::adjacent_ambient_declarations_preserve_lf_batch_diagnostics",
+    "sourceRevision": "be16d7c61b992af1e9af7e49a6975ce7a16e2512"
+  },
+  "setup-ambient-adjacent-crlf-6223": {
+    "test": "fix_history_cases::setup_ambient_adjacent_crlf_6223::adjacent_ambient_declarations_preserve_crlf_batch_diagnostics",
+    "sourceRevision": "be16d7c61b992af1e9af7e49a6975ce7a16e2512"
+  },
+  "setup-ambient-captures-6232": {
+    "test": "fix_history_cases::setup_ambient_captures_6232::setup_dependent_ambient_captures_preserve_lf_batch_diagnostics",
+    "sourceRevision": "0c94290f5f02b35a76f8ebc86128bcd1e1193e4a"
+  },
+  "setup-ambient-captures-crlf-6232": {
+    "test": "fix_history_cases::setup_ambient_captures_crlf_6232::setup_dependent_ambient_captures_preserve_crlf_batch_diagnostics",
+    "sourceRevision": "0c94290f5f02b35a76f8ebc86128bcd1e1193e4a"
+  },
+  "setup-ambient-declarations-6170": {
+    "test": "fix_history_cases::setup_ambient_declarations_6170::independent_ambient_setup_declarations_preserve_batch_diagnostics",
+    "sourceRevision": "71451516ec37ed6ae600ba09f57f5d452961645a"
+  },
+  "setup-ambient-global-types-6211": {
+    "test": "fix_history_cases::setup_ambient_global_types_6211::ambient_setup_global_types_preserve_batch_diagnostics",
+    "sourceRevision": "a7fcfb4a5a17a4db0cd5fc21326205da7d020e1f"
+  },
+  "setup-generic-merged-type-exports-3094": {
+    "test": "fix_history_cases::setup_generic_merged_type_exports_3094::setup_generic_and_merged_type_exports_stay_legal",
+    "sourceRevision": "5067f25786f316af91c33beb7ef08d6f4419378e"
+  },
+  "setup-props-shadow-anchor-3934": {
+    "test": "fix_history_cases::setup_props_shadow_anchor_3934::setup_props_read_by_template_is_not_unused",
+    "sourceRevision": "7c83dd0193b06a4cee3a1825a374ca0cd11fbd85"
+  },
+  "setup-props-template-scope-2081": {
+    "test": "fix_history_cases::setup_props_template_scope_2081::with_defaults_setup_props_are_template_bindings",
+    "sourceRevision": "1604bd9c3a17f78bdec64433d9aebde4ca4641f8"
+  },
+  "setup-ref-template-unwrap-4243": {
+    "test": "fix_history_cases::setup_ref_template_unwrap_4243::imported_setup_refs_unwrap_in_template_expressions",
+    "sourceRevision": "59d893a34c9def4ad6a4cdc46d148f97f3422e9f"
+  },
+  "setup-scoped-type-exports-3093": {
+    "test": "fix_history_cases::setup_scoped_type_exports_3093::setup_scoped_value_dependent_type_exports_are_public",
+    "sourceRevision": "71e38ec49f6931f5341d433bea8709d767daba87"
+  },
+  "slot-outlet-payload-contracts-4495": {
+    "test": "fix_history_cases::slot_outlet_payload_contracts_4495::slot_outlet_payloads_type_destructured_slot_bindings",
+    "sourceRevision": "8ab7fd93f0072880f46ea7fce8ac9f998922feed"
+  },
+  "spread-reserved-prop-rewrite-3554": {
+    "test": "fix_history_cases::spread_reserved_prop_rewrite_3554::v_bind_spreads_rewrite_reserved_prop_references",
+    "sourceRevision": "2342d1fc46ca3a9a927228d8686ce25153332aea"
+  },
+  "static-component-prop-values-3197": {
+    "test": "fix_history_cases::static_component_prop_values_3197::static_component_attribute_values_are_type_checked",
+    "sourceRevision": "c5af134e4924e31f31c8aba74f9984e356e1f6c2"
+  },
+  "strict-fallthrough-root-shape-4491": {
+    "test": "fix_history_cases::strict_fallthrough_root_shape_4491::fallthrough_attrs_follow_inherit_attrs_and_root_shape",
+    "sourceRevision": "cf759a1ee4e6f2c557f87a892a85112960ca65d9"
+  },
+  "strict-unknown-component-attrs-4577": {
+    "test": "fix_history_cases::strict_unknown_component_attrs_4577::closed_components_reject_unknown_fallthrough_attrs",
+    "sourceRevision": "4b5cbe23cf33aca6b7f8aad1c3a17b365077cd75"
+  },
+  "synthesized-listener-any-return-3897": {
+    "test": "fix_history_cases::synthesized_listener_any_return_3897::synthesized_emit_listeners_return_any",
+    "sourceRevision": "29aeaa770fb27dc98e5a39e830aa977c91064c85"
+  },
+  "synthetic-vif-guard-diagnostics-5852": {
+    "test": "fix_history_cases::synthetic_vif_guard_diagnostics_5852::component_vif_guard_callback_reports_only_from_authored_guard",
+    "sourceRevision": "0726ec9cee5660f87b79748be715bf970c3190e8"
+  },
+  "template-callback-parameter-typing-4264": {
+    "test": "fix_history_cases::template_callback_parameter_typing_4264::template_callback_parameters_use_declared_slot_transition_and_model_types",
+    "sourceRevision": "7e1f9b31b014d60ef91021d26a83fcda6fa661a1"
+  },
+  "template-dollar-props-4242": {
+    "test": "fix_history_cases::template_dollar_props_4242::define_props_reach_template_dollar_props",
+    "sourceRevision": "155555e58136758d84700e70a417a58588c0008d"
+  },
+  "template-key-expression-typing-4240": {
+    "test": "fix_history_cases::template_key_expression_typing_4240::template_key_expressions_follow_the_vue_key_contract",
+    "sourceRevision": "22c638a00bf228aeea0e1b0fe2b9fa70b876a261"
+  },
+  "template-loop-narrowing-3149": {
+    "test": "fix_history_cases::template_loop_narrowing_3149::v_for_callbacks_preserve_batch_diagnostics",
+    "sourceRevision": "2ecf10de92663303cecb76470bfa5ea42e992764"
+  },
+  "tsx-sfc-named-exports-2303": {
+    "test": "fix_history_cases::tsx_sfc_named_exports_2303::tsx_sfc_named_exports_keep_downstream_contextual_typing",
+    "sourceRevision": "27260d211025441b6303090d4fd7acaa65528f15"
+  },
+  "type-only-import-value-anchors": {
+    "test": "fix_history_cases::type_only_import_value_anchors::type_position_imports_are_not_value_anchored",
+    "sourceRevision": "f37a2d6764892f711d77f3cdf1c57d75a067e735"
+  },
+  "undefined-unknown-listener-2956": {
+    "test": "fix_history_cases::undefined_unknown_listener_2956::undefined_unknown_component_listener_is_optional",
+    "sourceRevision": "872d43f244876bf2b3241026abe3f1e2a552d58a"
+  },
+  "use-template-ref-registry-3910": {
+    "test": "fix_history_cases::use_template_ref_registry_3910::use_template_ref_resolves_static_template_refs",
+    "sourceRevision": "a0c4bee37d78398ea20d244945a2a912cddfb505"
+  },
+  "v-bind-object-prop-spread-3526": {
+    "test": "fix_history_cases::v_bind_object_prop_spread_3526::v_bind_object_spread_is_checked_against_child_props",
+    "sourceRevision": "21e5bd408bfdf22f0c043f1e0c50d92f4055479a"
+  },
+  "v-for-any-source-keys-4392": {
+    "test": "fix_history_cases::v_for_any_source_keys_4392::any_v_for_key_matches_vue_tsc_object_fallback",
+    "sourceRevision": "8ede47a7ddf0eb07a9a19b60522156bd378a03ff"
+  },
+  "v-for-item-readable-props": {
+    "test": "fix_history_cases::v_for_item_readable_props::v_for_item_props_stay_readable_through_kebab_aliases",
+    "sourceRevision": "be40baf2077e555a3e1041b47af369ba6f2e06d4"
+  },
+  "value-binding-over-type-only-pascal-4915": {
+    "test": "fix_history_cases::value_binding_over_type_only_pascal_4915::value_bindings_win_over_type_only_pascal_component_aliases",
+    "sourceRevision": "ad99a95135db04ceff3a0d882fefbe5162fddb05"
+  },
+  "vue-alias-public-instance-guard-5672": {
+    "test": "fix_history_cases::vue_alias_public_instance_guard_5672::vue_alias_without_public_instance_degrades_template_context",
+    "sourceRevision": "c220f47b65134eee36851c7841b1e8d5567eafe4"
+  },
+  "whole-props-check-display-3906": {
+    "test": "fix_history_cases::whole_props_check_display_3906::whole_props_check_target_displays_the_public_props_shape",
+    "sourceRevision": "1234f20675cbb1c13a2815afa8ac3a957defb244"
+  },
+  "whole-props-checker-bounds-3634": {
+    "test": "fix_history_cases::whole_props_checker_bounds_3634::whole_props_checks_target_the_unmodified_child_props",
+    "sourceRevision": "08297d4ffd2d00cf0dc8e729665dfc430e8cdf01"
+  },
+  "with-defaults-loose-required-2924": {
+    "test": "fix_history_cases::with_defaults_loose_required_2924::with_defaults_retains_loose_required_props",
+    "sourceRevision": "a619bad6a42dc8c6e3cbd4f830a2e691a64c5cef"
+  },
+  "with-defaults-macro-inference-5763": {
+    "test": "fix_history_cases::with_defaults_macro_inference_5763::with_defaults_macro_inference_matches_vue_readonly_semantics",
+    "sourceRevision": "91754f691b70884a7b1723fb723388485b2ed54b"
+  },
+  "with-defaults-optional-union-2913": {
+    "test": "fix_history_cases::with_defaults_optional_union_2913::with_defaults_preserves_optional_union_props",
+    "sourceRevision": "fc0e623bb9d2e9d50f496d98ca5f78bf1a607218"
+  },
+  "with-defaults-undefined-boolean-vmodel": {
+    "test": "fix_history_cases::with_defaults_undefined_boolean_vmodel::with_defaults_undefined_boolean_keeps_controlled_vmodel_overloads",
+    "sourceRevision": "f647dbb6698c3125e95c12ed1c5d947d08f600b0"
+  },
+  "with-defaults-undefined-default": {
+    "test": "fix_history_cases::with_defaults_undefined_default::with_defaults_undefined_default_stays_optional",
+    "sourceRevision": "38b5adbedf092bca14579a827e1af4f4b28ad03c"
+  }
+}

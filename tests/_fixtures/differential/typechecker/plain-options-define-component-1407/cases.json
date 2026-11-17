@@ -1,0 +1,132 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 1407,
+  "regressionCommit": "df454d1dad18d3534176b6c9e8544fab636a2e88",
+  "sourceRevision": "df454d1dad18d3534176b6c9e8544fab636a2e88",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "this-data-access-in-computed",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "computed.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "this-data-access-wrong-return-type",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "computed-invalid.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 8,
+          "column": 7,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type 'string'."
+        }
+      ]
+    },
+    {
+      "id": "dual-block-options-object",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "dual-block.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "dual-block-options-wrong-type",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "dual-block-invalid.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 3,
+          "column": 3,
+          "severity": 1,
+          "code": 2769,
+          "message": "No overload matches this call.\nThe last overload gave the following error.\nType 'string' is not assignable to type 'boolean | undefined'."
+        }
+      ]
+    },
+    {
+      "id": "single-line-options-object",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "single-line.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "single-line-options-wrong-name",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "single-line-invalid.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 2,
+          "column": 28,
+          "severity": 1,
+          "code": 2769,
+          "message": "No overload matches this call.\nThe last overload gave the following error.\nType 'number' is not assignable to type 'string'."
+        }
+      ]
+    }
+  ]
+}

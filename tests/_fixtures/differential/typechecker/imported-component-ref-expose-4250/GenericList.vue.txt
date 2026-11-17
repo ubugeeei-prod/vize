@@ -1,0 +1,13 @@
+<script setup lang="ts" generic="T extends { id: string }">
+const props = defineProps<{ items: T[] }>();
+
+function pick(index: number): T {
+  return props.items[index];
+}
+
+defineExpose({ pick });
+</script>
+
+<template>
+  <div>{{ items.length }}</div>
+</template>

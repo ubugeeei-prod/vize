@@ -1,0 +1,98 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 1433,
+  "regressionCommit": "87701cf384daf9ccb001e3ab5ea19f74e7938397",
+  "sourceRevision": "87701cf384daf9ccb001e3ab5ea19f74e7938397",
+  "checkerOptions": {
+    "optionsApi": true
+  },
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "data-binding-number-method",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "data.valid.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "data-binding-wrong-argument",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "data.invalid.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 10,
+          "column": 25,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type 'boolean' is not assignable to parameter of type 'number'."
+        }
+      ]
+    },
+    {
+      "id": "props-data-computed-methods-instance",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "members.valid.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "method-return-wrong-member",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "members.invalid.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 21,
+          "column": 37,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'toUpperCase' does not exist on type 'number'."
+        }
+      ]
+    }
+  ]
+}

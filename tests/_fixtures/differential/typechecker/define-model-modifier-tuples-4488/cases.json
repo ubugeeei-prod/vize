@@ -1,0 +1,148 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 4488,
+  "regressionCommit": "08db7132a3fb81a618e2111c055fbc285bd4b86c",
+  "sourceRevision": "08db7132a3fb81a618e2111c055fbc285bd4b86c",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "default-model-modifier-tuple-parent",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "App.vue.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "model-getter-setter-generics",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Setter.vue",
+          "source": "Setter.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "unknown-modifier-tuple-member",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Broken.vue",
+          "source": "Broken.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Broken.vue",
+          "line": 4,
+          "column": 15,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'nope' does not exist on type 'Record<\"capitalize\" | \"trim\", true | undefined>'."
+        }
+      ]
+    },
+    {
+      "id": "unknown-default-model-modifier-in-parent",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/BrokenParent.vue",
+          "source": "BrokenParent.vue.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/BrokenParent.vue",
+          "line": 8,
+          "column": 18,
+          "severity": 1,
+          "code": 2353,
+          "message": "Object literal may only specify known properties, and '\"nope\"' does not exist in type 'Partial<Record<\"capitalize\" | \"trim\", true>>'."
+        }
+      ]
+    },
+    {
+      "id": "named-model-modifier-parent",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "named.App.vue.txt"
+        },
+        {
+          "file": "src/NamedChild.vue",
+          "source": "NamedChild.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "unknown-named-model-modifier-in-parent",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "named-wrong.App.vue.txt"
+        },
+        {
+          "file": "src/NamedChild.vue",
+          "source": "NamedChild.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 8,
+          "column": 29,
+          "severity": 1,
+          "code": 2353,
+          "message": "Object literal may only specify known properties, and '\"nope\"' does not exist in type 'Partial<Record<\"lazy\", true>>'."
+        }
+      ]
+    }
+  ]
+}

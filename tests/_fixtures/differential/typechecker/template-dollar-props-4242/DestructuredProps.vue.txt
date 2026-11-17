@@ -1,0 +1,15 @@
+<script setup lang="ts">
+import type { Pagination } from './types'
+
+const { label = 'ready', pagination } = defineProps<{
+  label?: string
+  pagination: Pagination
+}>()
+</script>
+
+<template>
+  <div>{{ label.toUpperCase() }}</div>
+  <div>{{ pagination.page }}</div>
+  <div>{{ $props.pagination.page }}</div>
+  <div>{{ $props.label }}</div>
+</template>

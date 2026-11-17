@@ -1,0 +1,17 @@
+<script setup lang="ts">
+import type { PropType } from 'vue'
+import type { Project } from './types'
+
+defineProps({
+  status: { type: String as PropType<Project['status']>, required: true },
+})
+
+const colors: Record<Project['status'], string> = {
+  important: 'danger',
+  archived: 'gray',
+}
+</script>
+
+<template>
+  <span :class="colors[$props.status]">{{ $props.status }}</span>
+</template>

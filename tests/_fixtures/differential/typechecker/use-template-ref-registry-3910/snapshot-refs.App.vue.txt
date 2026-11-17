@@ -1,0 +1,13 @@
+<script setup lang="ts">
+import { ref, useTemplateRef } from 'vue'
+
+const inputRef = ref<HTMLInputElement | null>(null)
+const buttonEl = useTemplateRef('btn')
+</script>
+
+<template>
+  <div>
+    <input ref="inputRef" />
+    <button ref="btn">Click</button>
+  </div>
+</template>
