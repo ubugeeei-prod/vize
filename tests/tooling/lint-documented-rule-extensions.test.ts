@@ -139,3 +139,29 @@ test("a fragment glued to an interpolation is not a whole class", () => {
   // A whole token bounded by whitespace is a class Patina also compares.
   assert.equal(upstream("['px-2 '", "px-2"), null);
 });
+
+test("a ref call directly under a type assertion is Patina's stricter stance", () => {
+  const script = `<script setup lang="ts">
+import { ref, type Ref } from 'vue'
+const editor = ref(null) as unknown as Ref<HTMLElement>
+const focused = (ref()) satisfies Ref<Date | undefined>
+const plain = ref(null)
+const wrapped = cast(ref(null)) as Ref<HTMLElement>
+</script>
+`;
+  const typedRef = (text: string, occurrence = 0) =>
+    patinaIntentionalReason(
+      classFinding(
+        script,
+        "script/require-typed-ref",
+        text,
+        "[vize:script/require-typed-ref] This ref() should have an explicit type argument.",
+        occurrence,
+      ),
+      script,
+    );
+  assert.match(typedRef("ref(null)") ?? "", /#12069/u);
+  assert.match(typedRef("ref()") ?? "", /#12069/u);
+  assert.equal(typedRef("ref(null)", 1), null);
+  assert.equal(typedRef("ref(null)", 2), null);
+});

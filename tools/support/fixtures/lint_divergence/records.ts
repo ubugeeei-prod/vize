@@ -522,6 +522,7 @@ const patinaIntentionalRuleIds = new Set([
   "vue/no-unused-vars",
   "vue/next-tick-style",
   "html/no-duplicate-class",
+  "script/require-typed-ref",
   "vue/require-v-for-key",
   "script/valid-next-tick",
   "vue/v-slot-style",
@@ -581,6 +582,8 @@ export function patinaIntentionalReason(
     return "Patina resolves optional props inherited through local interface heritage or intersections; eslint-plugin-vue does not expand that composed prop contract.";
   if (finding.ruleId === "vue/next-tick-style" && findingInScriptSetup(finding, source))
     return "Patina also checks <script setup>, as requested in #12450 and kept in #12670; eslint-plugin-vue's defineVueVisitor only visits component option objects.";
+  if (finding.ruleId === "script/require-typed-ref" && refCallUnderTypeAssertion(finding, source))
+    return "Patina requires a type argument even when a type assertion follows the ref call (#12069): `ref(null) as unknown as Ref<T>` is an unchecked cast, while eslint-plugin-vue counts any as/satisfies assertion as typed.";
   if (finding.ruleId === "html/no-duplicate-class") {
     const offset = findingOffset(finding, source);
     if (offset !== null && identifierKeyDuplicate(finding.message, offset, source))
@@ -955,6 +958,28 @@ function findingInsideScriptBlock(finding: LintRecord, source: string): boolean 
   const content = source.indexOf(">", open) + 1;
   const close = source.indexOf("</script>", content);
   return content > 0 && content <= offset && (close < 0 || offset < close);
+}
+
+/** The reported `ref(...)` call, through wrapping parentheses, is the operand of `as` or `satisfies`. */
+function refCallUnderTypeAssertion(finding: LintRecord, source: string): boolean {
+  let start = findingOffset(finding, source),
+    end = findingEndOffset(finding, source);
+  if (start === null || end === null || !/^(?:ref|shallowRef)\b/u.test(source.slice(start, end)))
+    return false;
+  for (;;) {
+    const after = /^\s*/u.exec(source.slice(end))?.[0].length ?? 0;
+    if (/^(?:as|satisfies)\s/u.test(source.slice(end + after))) return true;
+    const before = source.slice(0, start).trimEnd();
+    // Grouping parentheses only: `cast(ref())` is a call argument.
+    if (
+      !before.endsWith("(") ||
+      /[\w$)\]>]$/u.test(before.slice(0, -1).trimEnd()) ||
+      source[end + after] !== ")"
+    )
+      return false;
+    start = before.length - 1;
+    end = end + after + 1;
+  }
 }
 
 function findingInScriptSetup(finding: LintRecord, source: string): boolean {
