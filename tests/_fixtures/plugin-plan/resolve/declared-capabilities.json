@@ -1,0 +1,256 @@
+{
+  "entries": [
+    {
+      "manifest": {
+        "after": [],
+        "apiVersion": 2,
+        "backend": "js",
+        "before": [],
+        "cacheInputs": [],
+        "capabilities": [
+          {
+            "id": "sfc.custom-block",
+            "required": true,
+            "schemaVersion": 1,
+            "data": {
+              "type": "route",
+              "lang": "json"
+            }
+          }
+        ],
+        "fingerprint": "2222222222222222222222222222222222222222222222222222222222222222",
+        "name": "@acme/routes",
+        "options": {},
+        "permissions": [],
+        "stability": "experimental",
+        "supports": {},
+        "version": "1.0.0"
+      }
+    },
+    {
+      "manifest": {
+        "after": [],
+        "apiVersion": 2,
+        "backend": "js",
+        "before": [],
+        "cacheInputs": [],
+        "capabilities": [
+          {
+            "id": "sfc.custom-block",
+            "required": true,
+            "schemaVersion": 1,
+            "data": {
+              "type": "i18n"
+            }
+          }
+        ],
+        "fingerprint": "0000000000000000000000000000000000000000000000000000000000000000",
+        "name": "@acme/i18n",
+        "options": {},
+        "permissions": [],
+        "stability": "experimental",
+        "supports": {},
+        "version": "1.0.0"
+      }
+    },
+    {
+      "manifest": {
+        "after": [],
+        "apiVersion": 2,
+        "backend": "js",
+        "before": [],
+        "cacheInputs": [],
+        "capabilities": [
+          {
+            "id": "vue.directive",
+            "required": true,
+            "schemaVersion": 1,
+            "data": {
+              "name": "track",
+              "modifiers": {
+                "once": {
+                  "optional": true,
+                  "default": false
+                },
+                "passive": {
+                  "default": true
+                },
+                "strict": {
+                  "optional": false
+                }
+              }
+            }
+          }
+        ],
+        "fingerprint": "4444444444444444444444444444444444444444444444444444444444444444",
+        "name": "@acme/tracking",
+        "options": {},
+        "permissions": [],
+        "stability": "experimental",
+        "supports": {},
+        "version": "1.0.0"
+      }
+    }
+  ],
+  "runtime": "node",
+  "expect": {
+    "digest": "b3220f6ee691c3724c2194c8e2bae51aeeb8701f3f7ef101958729c4ab40516c",
+    "plan": {
+      "claims": [
+        {
+          "key": "sfc.custom-block:i18n",
+          "owner": "@acme/i18n"
+        },
+        {
+          "key": "sfc.custom-block:route:json",
+          "owner": "@acme/routes"
+        },
+        {
+          "key": "vue.directive:track",
+          "owner": "@acme/tracking"
+        }
+      ],
+      "planSchema": 1,
+      "plugins": [
+        {
+          "after": [],
+          "apiVersion": 2,
+          "backend": "js",
+          "before": [],
+          "cacheInputs": [],
+          "capabilities": [
+            {
+              "data": {
+                "lang": "json",
+                "type": "route"
+              },
+              "id": "sfc.custom-block",
+              "key": "route:json",
+              "required": true,
+              "schemaVersion": 1
+            }
+          ],
+          "fingerprint": "2222222222222222222222222222222222222222222222222222222222222222",
+          "index": 0,
+          "name": "@acme/routes",
+          "options": {},
+          "permissions": [],
+          "skipped": [],
+          "stability": "experimental",
+          "supports": {
+            "outputs": [
+              "ssr",
+              "vapor",
+              "vdom"
+            ],
+            "runtimes": [
+              "bun",
+              "node"
+            ],
+            "vue": [
+              "2",
+              "3"
+            ]
+          },
+          "version": "1.0.0"
+        },
+        {
+          "after": [],
+          "apiVersion": 2,
+          "backend": "js",
+          "before": [],
+          "cacheInputs": [],
+          "capabilities": [
+            {
+              "data": {
+                "type": "i18n"
+              },
+              "id": "sfc.custom-block",
+              "key": "i18n",
+              "required": true,
+              "schemaVersion": 1
+            }
+          ],
+          "fingerprint": "0000000000000000000000000000000000000000000000000000000000000000",
+          "index": 1,
+          "name": "@acme/i18n",
+          "options": {},
+          "permissions": [],
+          "skipped": [],
+          "stability": "experimental",
+          "supports": {
+            "outputs": [
+              "ssr",
+              "vapor",
+              "vdom"
+            ],
+            "runtimes": [
+              "bun",
+              "node"
+            ],
+            "vue": [
+              "2",
+              "3"
+            ]
+          },
+          "version": "1.0.0"
+        },
+        {
+          "after": [],
+          "apiVersion": 2,
+          "backend": "js",
+          "before": [],
+          "cacheInputs": [],
+          "capabilities": [
+            {
+              "data": {
+                "modifiers": {
+                  "once": {
+                    "default": false,
+                    "optional": true
+                  },
+                  "passive": {
+                    "default": true,
+                    "optional": true
+                  },
+                  "strict": {
+                    "default": false,
+                    "optional": false
+                  }
+                },
+                "name": "track"
+              },
+              "id": "vue.directive",
+              "key": "track",
+              "required": true,
+              "schemaVersion": 1
+            }
+          ],
+          "fingerprint": "4444444444444444444444444444444444444444444444444444444444444444",
+          "index": 2,
+          "name": "@acme/tracking",
+          "options": {},
+          "permissions": [],
+          "skipped": [],
+          "stability": "experimental",
+          "supports": {
+            "outputs": [
+              "ssr",
+              "vapor",
+              "vdom"
+            ],
+            "runtimes": [
+              "bun",
+              "node"
+            ],
+            "vue": [
+              "2",
+              "3"
+            ]
+          },
+          "version": "1.0.0"
+        }
+      ]
+    }
+  }
+}

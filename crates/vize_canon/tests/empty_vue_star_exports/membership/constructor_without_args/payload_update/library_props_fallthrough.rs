@@ -44,6 +44,7 @@ fn restore(current: &str, transition: &Value) -> String {
 /// The pre-#13021 bytes of a recorded asset's current image. Older images pass
 /// through; the layers below authenticate them.
 pub(super) fn source_before(path: &str, current: String) -> String {
+    let current = super::authored_component_infer::source_before(path, current);
     let record = record();
     match record["files"]
         .as_array()

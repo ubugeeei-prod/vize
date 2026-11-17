@@ -90,7 +90,8 @@ impl<'a> TemplateRuleEnv<'a> {
 }
 
 pub(crate) use rule_sets::{
-    TemplateRuleEnv, analyze_descriptor_for_lint, analyze_descriptor_for_lint_with_template,
+    MacroTypeResolution, TemplateRuleEnv, analyze_descriptor_for_lint,
+    analyze_descriptor_for_lint_with_template,
 };
 
 impl Linter {
@@ -158,6 +159,7 @@ impl Linter {
         ctx.set_config_rule_severities(self.severity_overrides.clone());
         ctx.set_help_level(self.help_level);
         ctx.set_no_inline_config(self.no_inline_config);
+        ctx.set_type_sources(self.type_sources.as_ref());
 
         // SFC-level rules reuse the pipeline's descriptor and script parses; a
         // caller without them gets one parse here.

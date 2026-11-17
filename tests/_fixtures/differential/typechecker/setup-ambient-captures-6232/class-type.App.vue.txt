@@ -1,0 +1,6 @@
+<script setup lang="ts">
+class Local<T> { constructor(public value: T) {} }
+declare const label: Local<string>;
+const exact: string = label.value;
+</script>
+<template>{{ label }}</template>

@@ -175,6 +175,15 @@ impl EmitCx<'_> {
         mark
     }
 
+    /// [`Self::enter_for_scope`] for a host loop, whose callback params are
+    /// the authored head's pattern and index names.
+    pub(super) fn enter_host_for_scope(&mut self, aliases: [Option<&str>; 3]) -> ScopeMark {
+        let mark = self.scope.mark();
+        self.scope
+            .push_for_bindings(aliases, [None; 3], None, !self.prefix_identifiers);
+        mark
+    }
+
     /// `enter_v_slot_scope` + `add_slot_params` for a scoped slot.
     pub(super) fn enter_slot_scope(&mut self, params: Option<&str>) -> ScopeMark {
         let mark = self.scope.mark();

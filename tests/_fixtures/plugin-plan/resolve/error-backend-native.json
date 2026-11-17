@@ -1,0 +1,43 @@
+{
+  "entries": [
+    {
+      "manifest": {
+        "after": [],
+        "apiVersion": 2,
+        "backend": "native",
+        "before": [],
+        "cacheInputs": [],
+        "capabilities": [
+          {
+            "id": "lint.rule",
+            "required": true,
+            "schemaVersion": 1,
+            "data": {
+              "id": "a",
+              "messages": {
+                "found": "Found {name}."
+              },
+              "visit": [
+                "ui.element"
+              ]
+            }
+          }
+        ],
+        "fingerprint": "2222222222222222222222222222222222222222222222222222222222222222",
+        "name": "@acme/native",
+        "options": {},
+        "permissions": [],
+        "stability": "experimental",
+        "supports": {},
+        "version": "1.0.0"
+      }
+    }
+  ],
+  "runtime": "node",
+  "expect": {
+    "error": {
+      "code": "backend-unavailable",
+      "message": "[plugin/backend-unavailable] @acme/native: the native backend is not available in plugin API v2 incubation; select an implemented backend explicitly (no fallback is attempted)"
+    }
+  }
+}

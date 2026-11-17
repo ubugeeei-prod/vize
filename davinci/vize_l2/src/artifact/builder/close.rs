@@ -63,6 +63,15 @@ impl<'a> Builder<'a> {
                     element: None,
                 };
             }
+            Owner::CallbackFor { binding } => Op::For(Box::new_in(
+                crate::op::ForOp {
+                    binding,
+                    region: children,
+                    host: None,
+                    span,
+                },
+                &self.allocator,
+            )),
             // Host loops close in `host_for`, which owns both of their regions.
             Owner::HostFor { .. } | Owner::HostRegion => {
                 return ClosedFrame {

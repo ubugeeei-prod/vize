@@ -3,6 +3,7 @@
 use std::path::Path;
 
 use super::collect::{is_plain_script_path, is_standalone_html_path};
+use super::tsrx::{is_tsrx_path, lint_tsrx};
 use crate::commands::atomic_write::atomic_write;
 use vize_l0::{String, ToCompactString, profiler::global_profiler};
 use vize_patina::{JsxLang, LintResult, Linter, TextEdit};
@@ -33,6 +34,19 @@ pub(super) fn lint_source_with_optional_fix(
         global_profiler().record_fs_write(source.len());
     }
     Ok((source, result, fixed))
+}
+
+/// Lint `source` and apply the built-in fixes until stable, without writing.
+pub(super) fn relint_with_fixes(
+    linter: &Linter,
+    path: &Path,
+    source: String,
+    filename: &str,
+) -> (String, LintResult) {
+    let result = lint_source(linter, path, &source, filename);
+    fix_until_stable(source, result, |source| {
+        lint_source(linter, path, source, filename)
+    })
 }
 
 pub(super) fn fix_until_stable(
@@ -69,6 +83,8 @@ fn lint_source(linter: &Linter, path: &Path, source: &str, filename: &str) -> Li
         empty_lint_result(filename)
     } else if let Some(lang) = jsx_lang_for_path(path) {
         linter.lint_jsx(source, filename, lang)
+    } else if is_tsrx_path(path) {
+        lint_tsrx(linter, source, filename)
     } else {
         linter.lint_sfc(source, filename)
     }

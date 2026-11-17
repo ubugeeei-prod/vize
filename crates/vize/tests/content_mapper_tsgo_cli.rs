@@ -40,6 +40,7 @@ mod nested_function_guard_11853;
 mod nuxt_manifest_template_ref_13093;
 mod optional_prop_spacing;
 mod options_api_diagnostics;
+mod options_array_native_root_13113;
 mod packaged_generic_data_attrs;
 mod project_declarations;
 mod projection_modes;

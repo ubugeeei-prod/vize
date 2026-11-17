@@ -109,6 +109,7 @@ mod linter;
 pub mod markup;
 pub mod native;
 pub mod output;
+pub mod plugin_batch;
 mod preset;
 mod rule;
 pub mod rule_contracts;
@@ -138,7 +139,9 @@ pub use markup::{
     MarkupContext, MarkupDirective, MarkupDocument, MarkupDocumentVisitor, MarkupElement,
     MarkupElementKind, MarkupList, MarkupNode, MarkupRule, MarkupText,
 };
-pub use output::{OutputFormat, format_results, format_summary, rule_docs_path};
+pub use output::{
+    OutputFormat, format_results, format_summary, register_plugin_rule_docs, rule_docs_path,
+};
 pub use preset::LintPreset;
 pub use rule::{Rule, RuleCategory, RuleMeta, RuleRegistry};
 pub use rules::musea::builtin_musea_rules;

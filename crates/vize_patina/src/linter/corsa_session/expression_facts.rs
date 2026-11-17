@@ -243,12 +243,10 @@ impl CorsaTypeAwareSession {
             ),
             None => (start, end),
         };
+        let utf16 = super::utf16::Utf16Offsets::new(source);
         let translate = |span: (u32, u32)| {
             let (start, end) = to_virtual(span);
-            (
-                byte_offset_to_utf16_offset(source, start),
-                byte_offset_to_utf16_offset(source, end),
-            )
+            (utf16.get(start), utf16.get(end))
         };
         let extra = request.map_or_else(Vec::new, |request| relations::spans(request, &translate));
         if queries.is_empty() && extra.is_empty() {
@@ -473,13 +471,4 @@ fn detail_exposes_promise(detail: Option<&Value>) -> bool {
                     text.starts_with("Promise<") || text.starts_with("PromiseLike<")
                 })
     })
-}
-
-fn byte_offset_to_utf16_offset(source: &str, byte_offset: u32) -> u32 {
-    let mut clamped = usize::min(byte_offset as usize, source.len());
-    while clamped > 0 && !source.is_char_boundary(clamped) {
-        clamped -= 1;
-    }
-    let prefix = source.get(..clamped).unwrap_or_default();
-    prefix.encode_utf16().count() as u32
 }

@@ -33,9 +33,9 @@ mod calls;
 mod declared;
 mod types;
 
+use crate::linter::sfc_scripts::BlockSemantic;
 use oxc_ast::ast::Program;
 use oxc_ast_visit::Visit;
-use oxc_semantic::SemanticBuilder;
 
 use vize_l0::{CompactString, FxHashSet};
 
@@ -101,7 +101,7 @@ impl ScriptRule for RequireExplicitEmits {
         {
             return;
         }
-        let built = SemanticBuilder::new().with_build_nodes(true).build(program);
+        let built = BlockSemantic::of(sfc.semantic_of(program), program, true);
         let semantic = &built.semantic;
         let resolver = Resolver {
             semantic,

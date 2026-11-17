@@ -1,0 +1,64 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 3095,
+  "regressionCommit": "9129f14b5fa108e71cb5deed590f68f39054c1c2",
+  "sourceRevision": "9129f14b5fa108e71cb5deed590f68f39054c1c2",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "global-and-module-augmentations",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "node_modules/virtual-service/package.json",
+          "source": "virtual-service.package.json.txt"
+        },
+        {
+          "file": "node_modules/virtual-service/index.d.ts",
+          "source": "virtual-service.index.d.ts.txt"
+        },
+        {
+          "file": "src/LivePreview.vue",
+          "source": "LivePreview.vue.txt"
+        },
+        {
+          "file": "src/consumer.ts",
+          "source": "consumer.ts.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/consumer.ts",
+          "line": 4,
+          "column": 7,
+          "severity": 1,
+          "code": 2741,
+          "message": "Property 'label' is missing in type '{ id: string; }' but required in type 'Payload'."
+        },
+        {
+          "file": "src/consumer.ts",
+          "line": 6,
+          "column": 27,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type 'number' is not assignable to parameter of type 'string'."
+        }
+      ]
+    }
+  ]
+}

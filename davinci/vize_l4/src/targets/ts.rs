@@ -2,14 +2,25 @@
 //!
 //! Vue template projection and the Canon default route remain unfinished
 //! (#6849, #6879). This bounded entry never rewrites or reparses a Program.
+//!
+//! [`project_jsx_module`] projects a JSX/TSX module from the L2 definitions
+//! of its markup roots into a [`TsDocument`]. No product route calls it yet.
 
 use crate::write::{EmitDocument, LinkSink, NoLinks, Recorded, Writer};
 use vize_l0::Span;
 use vize_l2::file::{FileArtifact, ScriptUnit};
 use vize_l2::lang::js::JsxFile;
 
+mod control;
+mod helpers;
 mod mapping;
+mod module;
+mod ops;
+mod output;
+pub use helpers::HELPERS;
 pub use mapping::MappingError;
+pub use module::{JsxModuleRefusal, project_jsx_module};
+pub use output::{DirectiveKind, DirectiveRange, LinkFact, LinkMapping, LinkRole, TsDocument};
 pub mod vue;
 
 const MODULE_SUFFIX: &str = "\n;\nexport {};\n";

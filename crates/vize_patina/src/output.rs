@@ -15,7 +15,7 @@ pub mod unified;
 mod tests;
 
 pub use json::{JsonFileResult, JsonMessage};
-pub use shared::rule_docs_path;
+pub use shared::{register_plugin_rule_docs, rule_docs_path};
 pub use text::*;
 
 use crate::linter::LintResult;

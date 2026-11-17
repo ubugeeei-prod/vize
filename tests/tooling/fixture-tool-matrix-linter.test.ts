@@ -281,7 +281,7 @@ test("fixture tool matrix preserves the zero-file linter contract", () => {
     executable,
     `#!/usr/bin/env node
 process.stdout.write("[]");
-process.stderr.write('No .vue, .html, .htm, .js, .mjs, .cjs, .ts, .mts, .cts, .jsx, or .tsx files found matching patterns: ["**/*.vue"]\\n');
+process.stderr.write('No .vue, .html, .htm, .js, .mjs, .cjs, .ts, .mts, .cts, .jsx, .tsx, or .tsrx files found matching patterns: ["**/*.vue"]\\n');
 process.exit(2);\n`,
   );
   fs.chmodSync(executable, 0o755);

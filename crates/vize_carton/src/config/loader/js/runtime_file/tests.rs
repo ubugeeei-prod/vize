@@ -353,7 +353,16 @@ fn damaged_owned_runtime_is_repaired_in_place() {
     drop(cached);
     fs::write(&path, "partial").unwrap();
 
-    let repaired = runtime(cache.path(), script);
+    // A child spawned by a parallel test can hold the dropped lease until its
+    // exec closes it. The repair then falls back to a private file, so retry.
+    let mut repaired = runtime(cache.path(), script);
+    for _ in 0..100 {
+        if repaired.is_cached() {
+            break;
+        }
+        thread::sleep(Duration::from_millis(10));
+        repaired = runtime(cache.path(), script);
+    }
     assert!(repaired.is_cached());
     assert_eq!(repaired.path(), path);
     assert_eq!(fs::read(path).unwrap(), super::runtime_source(script));

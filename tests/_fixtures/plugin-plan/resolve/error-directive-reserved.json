@@ -1,0 +1,37 @@
+{
+  "entries": [
+    {
+      "manifest": {
+        "after": [],
+        "apiVersion": 2,
+        "backend": "js",
+        "before": [],
+        "cacheInputs": [],
+        "capabilities": [
+          {
+            "id": "vue.directive",
+            "required": true,
+            "schemaVersion": 1,
+            "data": {
+              "name": "model"
+            }
+          }
+        ],
+        "fingerprint": "9999999999999999999999999999999999999999999999999999999999999999",
+        "name": "@acme/bad",
+        "options": {},
+        "permissions": [],
+        "stability": "experimental",
+        "supports": {},
+        "version": "1.0.0"
+      }
+    }
+  ],
+  "runtime": "node",
+  "expect": {
+    "error": {
+      "code": "capability-invalid",
+      "message": "[plugin/capability-invalid] @acme/bad vue.directive: v-model is a built-in Vue directive"
+    }
+  }
+}

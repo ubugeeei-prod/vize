@@ -1,0 +1,12 @@
+{
+  "entries": [],
+  "runtime": "node",
+  "expect": {
+    "digest": "a6c8a8daa3b59a4a6156f299b7c78e000d7d5920b674a1b6282128b9aa3758d0",
+    "plan": {
+      "claims": [],
+      "planSchema": 1,
+      "plugins": []
+    }
+  }
+}

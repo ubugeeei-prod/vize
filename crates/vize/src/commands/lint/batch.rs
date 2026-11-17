@@ -5,6 +5,7 @@ use super::{
     collect::{is_plain_script_path, is_standalone_html_path},
     fix::{is_storybook_csf_path, jsx_lang_for_path},
     read_source::read_lint_source,
+    tsrx::{is_tsrx_path, lint_tsrx},
 };
 use rayon::prelude::*;
 use std::{
@@ -68,6 +69,8 @@ pub(super) fn run(
                     })
                 } else if let Some(lang) = jsx_lang_for_path(path) {
                     linter.prepare_jsx(&source, &filename, lang)
+                } else if is_tsrx_path(path) {
+                    PreparedLint::complete(lint_tsrx(linter, &source, &filename))
                 } else {
                     linter.prepare_sfc(&source, &filename)
                 }

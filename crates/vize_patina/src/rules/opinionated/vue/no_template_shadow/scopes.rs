@@ -11,15 +11,15 @@ use vize_relief::{ElementNode, PropNode, TemplateChildNode};
 
 #[derive(Default)]
 struct Scope {
-    visible: FxHashSet<CompactString>,
+    /// Script bindings plus the template names in scope, collected when the
+    /// first template name is declared: a template that declares none can
+    /// shadow nothing, so it never pays for the script analysis.
+    visible: Option<FxHashSet<CompactString>>,
     introduced: Vec<CompactString>,
 }
 
 pub(super) fn check<'a>(ctx: &mut LintContext<'a>, children: &[TemplateChildNode<'a>]) {
-    let mut scope = Scope {
-        visible: super::script_bindings::collect(ctx),
-        introduced: Vec::new(),
-    };
+    let mut scope = Scope::default();
     walk(ctx, children, &mut scope);
 }
 
@@ -99,7 +99,10 @@ fn element_bindings<'a>(ctx: &mut LintContext<'a>, element: &ElementNode<'a>, sc
 
 impl Scope {
     fn declare(&mut self, ctx: &mut LintContext<'_>, binding: Binding) {
-        if self.visible.insert(binding.name.clone()) {
+        let visible = self
+            .visible
+            .get_or_insert_with(|| super::script_bindings::collect(ctx));
+        if visible.insert(binding.name.clone()) {
             self.introduced.push(binding.name);
         } else {
             ctx.warn_with_help(
@@ -114,8 +117,11 @@ impl Scope {
     }
 
     fn leave(&mut self, start: usize) {
+        let Some(visible) = self.visible.as_mut() else {
+            return;
+        };
         for name in self.introduced.drain(start..) {
-            self.visible.remove(&name);
+            visible.remove(&name);
         }
     }
 }

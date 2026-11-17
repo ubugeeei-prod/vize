@@ -1,0 +1,5 @@
+<script setup lang="ts">
+declare const settings: Application.Settings;
+const title: string = settings.title;
+</script>
+<template><div>{{ settings.title }}{{ title }}</div></template>

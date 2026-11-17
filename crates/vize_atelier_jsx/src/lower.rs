@@ -8,7 +8,6 @@
 
 mod attr;
 mod babel_slot;
-mod boolean;
 mod child;
 mod control_flow;
 mod element;
@@ -34,6 +33,7 @@ use oxc_ast::ast::{JSXElement, JSXElementName, JSXFragment};
 use oxc_semantic::Scoping;
 use oxc_span::Span;
 use vize_l0::{Allocator, Box, String, ToCompactString, Vec};
+use vize_l1_to_l2::framework::vue::jsx::BooleanBindings;
 use vize_relief::{RootNode, TemplateChildNode};
 
 use crate::BabelIsCustomElement;
@@ -92,7 +92,7 @@ pub struct Lowerer<'a, 'm, 's: 'a> {
     scoping: Option<Scoping>,
     stable_component_bindings: Option<vize_l0::FxHashSet<oxc_syntax::symbol::SymbolId>>,
     current_output_mode: crate::JsxOutputMode,
-    boolean_bindings: boolean::BooleanBindings,
+    boolean_bindings: BooleanBindings,
     custom_element_spans: std::vec::Vec<(u32, u32)>,
     babel_vdom_lane: bool,
     transform_on_helper: Option<String>,
@@ -140,7 +140,7 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
             scoping,
             stable_component_bindings: None,
             current_output_mode: crate::JsxOutputMode::Vdom,
-            boolean_bindings: boolean::BooleanBindings::default(),
+            boolean_bindings: BooleanBindings::default(),
             custom_element_spans: std::vec::Vec::new(),
             babel_vdom_lane: babel.vdom_lane,
             transform_on_helper: babel.transform_on_helper.map(String::from),
@@ -303,6 +303,19 @@ impl<'a, 'm, 's: 'a> Lowerer<'a, 'm, 's> {
 
     pub(crate) fn scoping(&self) -> Option<&Scoping> {
         self.scoping.as_ref()
+    }
+
+    pub(crate) fn collect_boolean_bindings(&mut self, program: &oxc_ast::ast::Program<'_>) {
+        self.boolean_bindings = BooleanBindings::collect(program, self.scoping.as_ref());
+    }
+
+    pub(crate) const fn boolean_bindings(&self) -> &BooleanBindings {
+        &self.boolean_bindings
+    }
+
+    fn is_provably_boolean(&self, expression: &oxc_ast::ast::Expression<'_>) -> bool {
+        self.boolean_bindings
+            .proves(expression, self.scoping.as_ref())
     }
 
     pub(crate) const fn semantics(&self) -> vize_l0::dialect::JsxSemantics {

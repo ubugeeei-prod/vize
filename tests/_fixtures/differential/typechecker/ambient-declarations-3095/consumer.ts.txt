@@ -1,0 +1,8 @@
+import type { Payload } from "virtual-service";
+
+const accepted: Payload = { id: "one", label: "ready" };
+const rejected: Payload = { id: "two" };
+window.refreshLivePreview("/ready");
+window.refreshLivePreview(42);
+void accepted;
+void rejected;

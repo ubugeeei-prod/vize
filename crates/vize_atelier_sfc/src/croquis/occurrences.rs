@@ -6,6 +6,7 @@ use super::analysis::{
 };
 use super::{SfcCroquisAnalysis, SfcCroquisOptions, SfcScriptParses};
 use crate::SfcDescriptor;
+use crate::script::TypeSourceSnapshot;
 use vize_atelier_core::RootNode;
 use vize_croquis::binding_occurrences::BindingOccurrences;
 use vize_croquis::drawer::LintTemplate;
@@ -32,7 +33,7 @@ pub fn analyze_sfc_descriptor_with_occurrences_and_template_reuse(
     options: SfcCroquisOptions,
     reuse: Option<vize_croquis::drawer::TemplateSemanticReuse>,
 ) -> (SfcCroquisAnalysis, Option<BindingOccurrences>) {
-    analyze_sfc_descriptor_with_occurrences_impl(scripts, root, options, reuse, None)
+    analyze_sfc_descriptor_with_occurrences_impl(scripts, root, options, reuse, None, None)
 }
 
 /// Capture authored reads while drawing the completed Davinci artifact.
@@ -42,18 +43,27 @@ pub fn analyze_sfc_descriptor_with_lint_template_and_occurrences(
     template: Option<LintTemplate<'_, '_>>,
     options: SfcCroquisOptions,
 ) -> (SfcCroquisAnalysis, Option<BindingOccurrences>) {
-    analyze_sfc_descriptor_with_occurrences_impl(scripts, template, options, None, None)
+    analyze_sfc_descriptor_with_occurrences_impl(scripts, template, options, None, None, None)
 }
 
 /// Capture authored reads after imported macro types have been resolved.
+/// `sources` shares one disk view across calls; `None` reads a fresh one.
 #[doc(hidden)]
 pub fn analyze_sfc_descriptor_with_lint_template_and_occurrences_resolved(
     scripts: &SfcScriptParses<'_>,
     template: Option<LintTemplate<'_, '_>>,
     options: SfcCroquisOptions,
     filename: &str,
+    sources: Option<&TypeSourceSnapshot>,
 ) -> (SfcCroquisAnalysis, Option<BindingOccurrences>) {
-    analyze_sfc_descriptor_with_occurrences_impl(scripts, template, options, None, Some(filename))
+    analyze_sfc_descriptor_with_occurrences_impl(
+        scripts,
+        template,
+        options,
+        None,
+        Some(filename),
+        sources,
+    )
 }
 
 fn analyze_sfc_descriptor_with_occurrences_impl(
@@ -62,6 +72,7 @@ fn analyze_sfc_descriptor_with_occurrences_impl(
     options: SfcCroquisOptions,
     reuse: Option<vize_croquis::drawer::TemplateSemanticReuse>,
     resolve_filename: Option<&str>,
+    sources: Option<&TypeSourceSnapshot>,
 ) -> (SfcCroquisAnalysis, Option<BindingOccurrences>) {
     let descriptor = scripts.descriptor();
     let mut packet = None;
@@ -75,7 +86,7 @@ fn analyze_sfc_descriptor_with_occurrences_impl(
             include_script_content: true,
         },
         resolve_filename,
-        None,
+        sources,
         DescriptorObservation {
             occurrences: Some(&mut packet),
             template_semantic_reuse: reuse,

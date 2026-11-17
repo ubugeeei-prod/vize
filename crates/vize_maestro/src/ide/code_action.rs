@@ -1,7 +1,7 @@
 //! Code action provider for Vue SFC files.
 //!
 //! Provides code actions for:
-//! - Lint fixes from vize_patina
+//! - Lint fixes from vize_patina and plugin lint rules
 //! - Quick fixes for common issues
 //! - Refactoring actions
 #![expect(
@@ -24,6 +24,7 @@ use vize_l0::line_index::offset_to_line_col;
 mod auto_import_literal_tests;
 #[cfg(test)]
 mod diagnostic_selection_tests;
+mod plugin_lint;
 mod ref_value;
 #[cfg(test)]
 mod ref_value_tests;
@@ -94,6 +95,14 @@ impl CodeActionService {
                 stamp,
             ));
         }
+
+        actions.extend(Self::collect_plugin_lint_fixes(
+            ctx,
+            range,
+            diagnostics,
+            #[cfg(feature = "native")]
+            stamp,
+        ));
 
         if let Some(lint) = Self::lint_script_once(ctx, diagnostics) {
             actions.extend(Self::collect_script_suppress(

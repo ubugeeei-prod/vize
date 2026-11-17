@@ -14,7 +14,7 @@ void test("linter preflight binds Matrix diagnostics but remains deletion-blocke
     artifact = assessLinterDeletionShard(input);
   assert.equal(
     zeroInputStderr,
-    'No .vue, .html, .htm, .js, .mjs, .cjs, .ts, .mts, .cts, .jsx, or .tsx files found matching patterns: ["**/*.vue"]\n',
+    'No .vue, .html, .htm, .js, .mjs, .cjs, .ts, .mts, .cts, .jsx, .tsx, or .tsrx files found matching patterns: ["**/*.vue"]\n',
   );
   assert.equal(artifact.status, "blocked");
   for (const code of [

@@ -1,0 +1,44 @@
+{
+  "entries": [
+    {
+      "manifest": {
+        "after": [],
+        "apiVersion": 2,
+        "backend": "js",
+        "before": [],
+        "cacheInputs": [],
+        "capabilities": [
+          {
+            "id": "lint.rule",
+            "required": true,
+            "schemaVersion": 1,
+            "data": {
+              "id": "a",
+              "messages": {
+                "found": "Found {name}."
+              },
+              "visit": [
+                "ui.element"
+              ]
+            }
+          }
+        ],
+        "fingerprint": "5555555555555555555555555555555555555555555555555555555555555555",
+        "name": "alpha",
+        "options": {},
+        "permissions": [],
+        "stability": "experimental",
+        "supports": {},
+        "version": "1.0.0"
+      },
+      "descriptorApiVersion": 3
+    }
+  ],
+  "runtime": "node",
+  "expect": {
+    "error": {
+      "code": "api-unsupported",
+      "message": "[plugin/api-unsupported] vue.plugins[0]: plugin API 3 is not supported (supported: 1, 2)"
+    }
+  }
+}

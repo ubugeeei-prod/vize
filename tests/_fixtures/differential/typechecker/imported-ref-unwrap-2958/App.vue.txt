@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import { format, sharedRef } from "./other.ts";
+import BooleanProp from "./BooleanProp.vue";
+</script>
+
+<template>
+  <BooleanProp :boolProp="sharedRef" />
+  <div>{{ format(sharedRef) }}</div>
+</template>

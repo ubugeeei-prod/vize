@@ -1,0 +1,111 @@
+{
+  "entries": [
+    {
+      "skip": false
+    },
+    {
+      "manifest": {
+        "after": [],
+        "apiVersion": 2,
+        "backend": "js",
+        "before": [],
+        "cacheInputs": [],
+        "capabilities": [
+          {
+            "id": "lint.rule",
+            "required": true,
+            "schemaVersion": 1,
+            "data": {
+              "id": "x",
+              "messages": {
+                "found": "Found {name}."
+              },
+              "visit": [
+                "ui.element"
+              ]
+            }
+          }
+        ],
+        "fingerprint": "4444444444444444444444444444444444444444444444444444444444444444",
+        "name": "only",
+        "options": {},
+        "permissions": [],
+        "stability": "experimental",
+        "supports": {},
+        "version": "1.0.0"
+      }
+    },
+    {
+      "skip": null
+    }
+  ],
+  "runtime": "node",
+  "expect": {
+    "digest": "c39bcfdbfb0a3fa832d100176b0e7b0a7e0407dc84763860e99866131c1641e9",
+    "plan": {
+      "claims": [
+        {
+          "key": "lint.rule:only/x",
+          "owner": "only"
+        }
+      ],
+      "planSchema": 1,
+      "plugins": [
+        {
+          "after": [],
+          "apiVersion": 2,
+          "backend": "js",
+          "before": [],
+          "cacheInputs": [],
+          "capabilities": [
+            {
+              "data": {
+                "defaultLevel": "off",
+                "demands": [],
+                "docs": "",
+                "documents": [
+                  "template"
+                ],
+                "fixable": "none",
+                "id": "x",
+                "messages": {
+                  "found": "Found {name}."
+                },
+                "visit": [
+                  "ui.element"
+                ]
+              },
+              "id": "lint.rule",
+              "key": "only/x",
+              "required": true,
+              "schemaVersion": 1
+            }
+          ],
+          "fingerprint": "4444444444444444444444444444444444444444444444444444444444444444",
+          "index": 1,
+          "name": "only",
+          "options": {},
+          "permissions": [],
+          "skipped": [],
+          "stability": "experimental",
+          "supports": {
+            "outputs": [
+              "ssr",
+              "vapor",
+              "vdom"
+            ],
+            "runtimes": [
+              "bun",
+              "node"
+            ],
+            "vue": [
+              "2",
+              "3"
+            ]
+          },
+          "version": "1.0.0"
+        }
+      ]
+    }
+  }
+}

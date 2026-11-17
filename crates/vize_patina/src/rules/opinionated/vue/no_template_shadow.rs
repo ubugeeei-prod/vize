@@ -107,6 +107,34 @@ mod tests {
     }
 
     #[test]
+    fn script_bindings_are_read_when_a_nested_scope_first_declares_a_name() {
+        // The first template declaration sits below plain elements and a
+        // sibling scope that leaves; the script binding it shadows must still
+        // be in view, and a sibling that declares a fresh name stays silent.
+        let result = create_linter().lint_sfc(
+            r#"<template><main><p>{{ total }}</p><section><ul><li v-for="row in rows" :key="row">{{ row }}</li></ul><ol><li v-for="total in rows" :key="total">{{ total }}</li></ol></section></main></template>
+<script setup lang="ts">
+const rows = [1]
+const total = 2
+</script>"#,
+            "test.vue",
+        );
+        assert_eq!(result.warning_count, 1, "{:?}", result.diagnostics);
+        assert_eq!(
+            result.diagnostics[0].message,
+            "Variable 'total' shadows a variable in an outer scope"
+        );
+        let silent = create_linter().lint_sfc(
+            r#"<template><main><p>{{ total }}</p></main></template>
+<script setup lang="ts">
+const total = 2
+</script>"#,
+            "test.vue",
+        );
+        assert_eq!(silent.warning_count, 0, "{:?}", silent.diagnostics);
+    }
+
+    #[test]
     fn test_invalid_slot_binding_shadows_template_scope() {
         let result = create_linter().lint_template(
             r#"<div v-for="files in groups"><Widget #default="{ files }">{{ files }}</Widget></div>"#,

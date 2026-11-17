@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
+import { beforeAuthoredComponentInfer } from "./authored-component-infer-transition.ts";
 import { certifiedTransition } from "./canonical-helper-transition.ts";
 
 type Identity = { bytes: number; sha256: string };
@@ -37,6 +38,7 @@ const identity = (text: string): Identity => ({
 
 /** The pre-#13021 bytes of a recorded asset; other images pass through. */
 export function beforeLibraryPropsFallthrough(file: string, current: string): string {
+  current = beforeAuthoredComponentInfer(file, current);
   const transition = record.files.find((candidate) => candidate.path === file);
   if (!transition) return current;
   const now = identity(current);

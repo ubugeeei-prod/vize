@@ -39,6 +39,7 @@ fn operational_diagnostic_paths_resolve_to_their_own_bilingual_authority() {
         ("parser/template", "parser-template"),
         ("parser/sfc", "parser-sfc"),
         ("parser/jsx", "parser-jsx"),
+        ("parser/tsrx", "parser-tsrx"),
         ("type/project-configuration", "type-project-configuration"),
     ] {
         assert!(!registry.has_rule(id), "operational diagnostic: {id}");

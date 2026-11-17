@@ -1,0 +1,3 @@
+import type { Label } from './App.vue';
+const wrong: Label = 'other';
+const exact: Label = 'fixed';

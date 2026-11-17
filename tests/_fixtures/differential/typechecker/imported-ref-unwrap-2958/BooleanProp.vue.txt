@@ -1,0 +1,4 @@
+<script setup lang="ts">
+defineProps<{ boolProp?: boolean }>()
+</script>
+<template><div /></template>

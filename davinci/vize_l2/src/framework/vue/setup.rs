@@ -16,7 +16,7 @@ pub use props::{PropsDestructure, PropsField};
 use super::contract::{
     self, ComponentContract, ContractCheckpoint, ContractDraft, LocalTypes, PropsDraft,
 };
-use super::{MacroKind, lookup};
+use super::{MacroKind, lookup, unwrap_ts};
 use crate::file::{ScopeId, ScriptUnit};
 use crate::lang::js::{CallEvent, DeclaredEvent, FileObserver, StatementEvent};
 use crate::resolution::ResolutionErrorKind;
@@ -182,7 +182,7 @@ impl<'a> SetupObserver<'a> {
     }
 
     fn expression(&mut self, base: u32, expression: &Expression<'a>, declarator: Option<Span>) {
-        if let Expression::CallExpression(call) = unwrap(expression) {
+        if let Expression::CallExpression(call) = unwrap_ts(expression) {
             self.call(base, call, declarator);
         }
     }
@@ -274,19 +274,6 @@ fn authored(base: u32, span: oxc_span::Span, overflow: &mut bool) -> Span {
             *overflow = true;
             Span::new(0, 0)
         }
-    }
-}
-
-/// Vue's `unwrapTSNode`, plus the parentheses Babel does not retain.
-fn unwrap<'e, 'a>(expression: &'e Expression<'a>) -> &'e Expression<'a> {
-    match expression {
-        Expression::TSAsExpression(inner) => unwrap(&inner.expression),
-        Expression::TSSatisfiesExpression(inner) => unwrap(&inner.expression),
-        Expression::TSTypeAssertion(inner) => unwrap(&inner.expression),
-        Expression::TSNonNullExpression(inner) => unwrap(&inner.expression),
-        Expression::TSInstantiationExpression(inner) => unwrap(&inner.expression),
-        Expression::ParenthesizedExpression(inner) => unwrap(&inner.expression),
-        other => other,
     }
 }
 

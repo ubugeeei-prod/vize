@@ -459,7 +459,7 @@ never overrides config and stale locks fail closed.
 ### Phase 0 — contract and no-op host
 
 - Add the manifest, canonical serializer, plan builder, inspector, and config
-  projection from `vite.config.*`.
+  projection from `vite.config.*` ([status](./integrated-plugin-incubation.md)).
 - Prove byte-identical behavior and measured no-plugin overhead across every v1
   product before enabling a contribution.
 

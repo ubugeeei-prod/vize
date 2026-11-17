@@ -17,12 +17,25 @@ const PROJECT_RULES: &[&str] = &[
     "vue/cross-file-attrs-fallthrough",
 ];
 
+/// Documentation pages of rules contributed by plugins, set once per process.
+static PLUGIN_RULE_DOCS: std::sync::OnceLock<FxHashMap<&'static str, String>> =
+    std::sync::OnceLock::new();
+
+/// Register the documentation page of every plugin rule in this process.
+/// Built-in rules keep their generated pages; only the first registration wins.
+pub fn register_plugin_rule_docs(docs: FxHashMap<&'static str, String>) {
+    let _ = PLUGIN_RULE_DOCS.set(docs);
+}
+
 /// Return the rule's own documentation page.
 ///
 /// The slug matches `ruleSlug`: non-alphanumeric runs become a single `-`,
 /// ASCII letters are lowercased, and leading or trailing hyphens are dropped.
 /// `vue/require-v-for-key` is `docs/content/rules/reference/vue-require-v-for-key.md`.
 pub fn rule_docs_path(rule_name: &str) -> String {
+    if let Some(page) = PLUGIN_RULE_DOCS.get().and_then(|docs| docs.get(rule_name)) {
+        return page.clone();
+    }
     // Operational diagnostics are outside the generated rule catalogue.
     match rule_name {
         "cross-file" => return String::from("docs/content/rules/cross-file.md"),

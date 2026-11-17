@@ -4,7 +4,7 @@ use crate::config::{LinterConfig, LinterConfigPlan};
 use vize_l0::{FxHashSet, String, cstr};
 use vize_patina::{RuleRegistry, builtin_css_rules, builtin_musea_rules, builtin_script_rules};
 
-pub(super) fn validate(plan: &LinterConfigPlan) -> Result<(), String> {
+pub(super) fn validate(plan: &LinterConfigPlan, plugin_rules: &[String]) -> Result<(), String> {
     let root = configured_names(&plan.base);
     let entries = plan
         .entries
@@ -18,6 +18,20 @@ pub(super) fn validate(plan: &LinterConfigPlan) -> Result<(), String> {
         .collect::<Vec<_>>();
     if root.is_empty() && entries.is_empty() {
         return Ok(());
+    }
+    // Plugin rule severities are planned once, from the root rules only.
+    let mut scoped = entries
+        .iter()
+        .filter(|name| plugin_rules.contains(name))
+        .map(String::as_str)
+        .collect::<Vec<_>>();
+    if !scoped.is_empty() {
+        scoped.sort_unstable();
+        scoped.dedup();
+        return Err(cstr!(
+            "Plugin lint rules are configured in the root vue.linter.rules, not in entries[]: {}",
+            scoped.join(", ")
+        ));
     }
 
     let mut registry = RuleRegistry::with_all();
@@ -43,6 +57,7 @@ pub(super) fn validate(plan: &LinterConfigPlan) -> Result<(), String> {
         typing::PARAM_TYPE,
         typing::MISSING_PARAM,
     ]);
+    known.extend(plugin_rules.iter().map(String::as_str));
     known.extend(
         CrossFileDiagnostic::CODES
             .into_iter()

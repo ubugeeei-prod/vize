@@ -25,6 +25,7 @@ pub(crate) mod musea_rules;
 mod native_type_aware;
 mod restricted_rules;
 mod rule_selection;
+pub(crate) mod run_type_sources;
 pub(crate) mod script_rules;
 mod severity;
 pub(crate) mod sfc_scripts;
@@ -32,7 +33,7 @@ pub(crate) mod sfc_scripts;
 pub use config::{LintResult, Linter};
 #[cfg(not(target_arch = "wasm32"))]
 pub use engine::PreparedLint;
-pub(crate) use engine::analyze_descriptor_for_lint;
+pub(crate) use engine::{MacroTypeResolution, analyze_descriptor_for_lint};
 
 #[cfg(test)]
 #[expect(clippy::string_slice, reason = "tests assert by panicking")]

@@ -1,0 +1,25 @@
+<script lang="ts">
+const sizes = ['sm', 'lg'] as const;
+
+export type Size = typeof sizes[number];
+export interface HostSlots {
+  default(props: { size: Size }): unknown;
+}
+</script>
+
+<script lang="ts" setup>
+const props = withDefaults(defineProps<{ size?: Size }>(), { size: 'sm' });
+const emit = defineEmits<{ (ev: 'resize', size: Size): void }>();
+const model = defineModel<Size>({ default: 'sm' });
+defineSlots<HostSlots>();
+defineExpose({ size: props.size });
+
+function bump() {
+  emit('resize', props.size);
+  model.value = props.size;
+}
+</script>
+
+<template>
+  <div @click="bump">{{ props.size }}{{ model }}</div>
+</template>

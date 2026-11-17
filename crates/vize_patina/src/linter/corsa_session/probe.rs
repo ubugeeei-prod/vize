@@ -27,6 +27,7 @@ impl CorsaTypeAwareSession {
             .and_then(|document| document.rewritten_source.as_deref())
             .unwrap_or(generated_source);
         let positions = profile!("patina.corsa_session.byte_to_utf16_batch", {
+            let utf16 = super::utf16::Utf16Offsets::new(generated_source);
             requests
                 .iter()
                 .map(|(generated_offset, _, _)| {
@@ -35,7 +36,7 @@ impl CorsaTypeAwareSession {
                             .import_source_map
                             .get_virtual_offset(*generated_offset)
                     });
-                    byte_offset_to_utf16_offset(generated_source, generated_offset)
+                    utf16.get(generated_offset)
                 })
                 .collect::<Vec<_>>()
         });
@@ -362,15 +363,6 @@ fn is_missing_snapshot_handle(message: &str, prefix: &str) -> bool {
         return false;
     };
     !handle.trim().is_empty()
-}
-
-pub(super) fn byte_offset_to_utf16_offset(source: &str, byte_offset: u32) -> u32 {
-    let mut clamped = usize::min(byte_offset as usize, source.len());
-    while clamped > 0 && !source.is_char_boundary(clamped) {
-        clamped -= 1;
-    }
-    let prefix = source.get(..clamped).unwrap_or_default();
-    prefix.encode_utf16().count() as u32
 }
 
 #[cfg(test)]

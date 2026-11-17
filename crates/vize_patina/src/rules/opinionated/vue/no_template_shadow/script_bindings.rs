@@ -1,13 +1,14 @@
 //! Component bindings visible above every template-local scope.
 
 use crate::context::LintContext;
+use crate::linter::sfc_scripts::BlockSemantic;
 use crate::rules::script::vue_object::VueObjects;
 use oxc_ast::ast::{
     ArrayExpressionElement, BindingPattern, Expression, ImportDeclarationSpecifier,
     ObjectExpression, ObjectPropertyKind, Program, PropertyKey, Statement,
 };
 use oxc_ast_visit::{Visit, walk::walk_object_expression};
-use oxc_semantic::SemanticBuilder;
+use oxc_semantic::SemanticBuilderReturn;
 use vize_l0::{CompactString, FxHashSet};
 
 pub(super) fn collect(ctx: &LintContext<'_>) -> FxHashSet<CompactString> {
@@ -25,7 +26,12 @@ pub(super) fn collect(ctx: &LintContext<'_>) -> FxHashSet<CompactString> {
             .and_then(|descriptor| descriptor.script_setup.as_ref())
             .map(|block| block.content.as_ref())
         {
-            collect_vue_objects(&parsed.program, source, &mut names);
+            collect_vue_objects(
+                &parsed.program,
+                source,
+                ctx.script_semantic_of(&parsed.program),
+                &mut names,
+            );
         }
     }
     if let Some(parsed) = scripts.script()
@@ -33,7 +39,12 @@ pub(super) fn collect(ctx: &LintContext<'_>) -> FxHashSet<CompactString> {
             .and_then(|descriptor| descriptor.script.as_ref())
             .map(|block| block.content.as_ref())
     {
-        collect_vue_objects(&parsed.program, source, &mut names);
+        collect_vue_objects(
+            &parsed.program,
+            source,
+            ctx.script_semantic_of(&parsed.program),
+            &mut names,
+        );
     }
     names
 }
@@ -105,8 +116,13 @@ fn collect_pattern(pattern: &BindingPattern<'_>, names: &mut FxHashSet<CompactSt
     }
 }
 
-fn collect_vue_objects(program: &Program<'_>, source: &str, names: &mut FxHashSet<CompactString>) {
-    let built = SemanticBuilder::new().with_build_nodes(true).build(program);
+fn collect_vue_objects<'a>(
+    program: &'a Program<'a>,
+    source: &str,
+    shared: Option<&'a SemanticBuilderReturn<'a>>,
+    names: &mut FxHashSet<CompactString>,
+) {
+    let built = BlockSemantic::of(shared, program, true);
     let objects = VueObjects::collect(program, source, &built.semantic, true);
     let mut collector = VueObjectBindingCollector {
         objects: &objects,

@@ -200,6 +200,7 @@
     "tooling/support/lsp/responsive-lint-published.ts",
     "tooling/support/mounted-runtime-source.ts",
     "tooling/support/native-array-typescript.ts",
+    "tooling/support/native-jsx-module-typescript.ts",
     "tooling/support/native-program-typescript.ts",
     "tooling/support/oxlint-installed-html-acceptance.ts",
     "tooling/support/oxlint-installed-html-runtime.ts",

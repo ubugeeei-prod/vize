@@ -1,0 +1,12 @@
+<script lang="ts">
+export type FromSetup = typeof setupOnlyValue;
+</script>
+
+<script lang="ts" setup>
+const setupOnlyValue = 1;
+const used = setupOnlyValue;
+</script>
+
+<template>
+  <div>{{ used }}</div>
+</template>

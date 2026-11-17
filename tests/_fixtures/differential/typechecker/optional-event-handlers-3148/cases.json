@@ -1,0 +1,80 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 3148,
+  "regressionCommit": "805d32a5277a025d062edc47e20cc22ce170f5e7",
+  "sourceRevision": "805d32a5277a025d062edc47e20cc22ce170f5e7",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "optional-component-handler",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "ComponentApp.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "optional-native-handler",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "NativeApp.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "optional-component-handler-payload-error",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "ComponentApp.invalid.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 8,
+          "column": 19,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '((payload: KeyboardEvent) => Promise<void>) | undefined' is not assignable to type '((payload: PointerEvent) => any) | null | undefined'.\nType '(payload: KeyboardEvent) => Promise<void>' is not assignable to type '(payload: PointerEvent) => any'.\nTypes of parameters 'payload' and 'payload' are incompatible.\nType 'PointerEvent' is missing the following properties from type 'KeyboardEvent': charCode, code, isComposing, key, and 8 more."
+        }
+      ]
+    }
+  ]
+}

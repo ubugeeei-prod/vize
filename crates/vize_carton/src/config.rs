@@ -9,12 +9,14 @@ pub mod formatter_lint_plan;
 mod loader;
 #[cfg(feature = "lint-glob")]
 pub mod matcher;
+pub mod plugin_plan;
 mod project;
 pub use loader::{
     ConfigEvaluationSession, ConfigLoadFailureIdentity, LoadedConfig, LoadedConfigEntryFiles,
     LoadedConfigEntryIgnores, LoadedConfigExperimentalVueFlags, LoadedConfigWithFeatures,
     LoadedFormatterSnapshot, LoadedLibConfig, LoadedLintExecutionConfig, LoadedLspConfig,
-    LoadedProjectConfig, enable_config_evaluation_cache, load_compiler_custom_elements,
+    LoadedProjectConfig, PluginLintSidecar, SidecarBudget, SidecarReply,
+    enable_config_evaluation_cache, inspect_config_plugins, load_compiler_custom_elements,
     load_compiler_host_compiler, load_compiler_jsx_compat, load_compiler_jsx_mode,
     load_compiler_template_settings, load_compiler_template_syntax, load_compiler_vapor,
     load_compiler_vue_version, load_config,

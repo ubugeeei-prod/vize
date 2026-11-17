@@ -36,14 +36,14 @@ fn output_details(output: &Output) -> String {
 
 fn warning_message(patterns: &[&str]) -> String {
     format!(
-        "Warning: no .vue, .html, .htm, .js, .mjs, .cjs, .ts, .mts, .cts, .jsx, or .tsx files found matching patterns: {:?}",
+        "Warning: no .vue, .html, .htm, .js, .mjs, .cjs, .ts, .mts, .cts, .jsx, .tsx, or .tsrx files found matching patterns: {:?}",
         patterns
     )
 }
 
 fn no_files_message(patterns: &[&str]) -> String {
     format!(
-        "No .vue, .html, .htm, .js, .mjs, .cjs, .ts, .mts, .cts, .jsx, or .tsx files found matching patterns: {:?}",
+        "No .vue, .html, .htm, .js, .mjs, .cjs, .ts, .mts, .cts, .jsx, .tsx, or .tsrx files found matching patterns: {:?}",
         patterns
     )
 }

@@ -1,4 +1,5 @@
 //! Authenticate the complete packets behind the reviewed #10933 transition.
+mod authored_component_infer;
 mod constructor_noinfer_return;
 mod mixed_vue2;
 mod receipt;
@@ -273,6 +274,6 @@ fn public_instance_slot_packets_remain_authenticated() {
         .expect("reviewed Options API slot fixture");
     assert_eq!(
         capture_fixture(fixture).render().as_str(),
-        verbatim_runs::slots(unowned_successor)
+        authored_component_infer::slots(unowned_successor)
     );
 }
