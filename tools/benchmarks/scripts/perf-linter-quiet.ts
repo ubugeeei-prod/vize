@@ -250,6 +250,12 @@ for (const spec of arg("scenarios", "mk,mk-json,mk-all,bench,ta").split(",")) {
   if (spec === "ir-bench") irScenario("1000-SFC `--format json` instructions", bench, ["lint", ".", "--format", "json"]);
   if (spec === "ir-ta")
     irScenario("misskey type-aware instructions", mkta, ["lint", "src", "--strict-reactivity", "--format", "json"]);
+  const oneThreads = /^one-t(\d+)$/.exec(spec);
+  if (oneThreads)
+    scenario(`one SFC, RAYON_NUM_THREADS=${oneThreads[1]}`, mk, ["lint", "src/components/MkButton.vue"], runs, { RAYON_NUM_THREADS: oneThreads[1] });
+  const dirThreads = /^dir-t(\d+)$/.exec(spec);
+  if (dirThreads)
+    scenario(`one directory (src/widgets), RAYON_NUM_THREADS=${dirThreads[1]}`, mk, ["lint", "src/widgets"], runs, { RAYON_NUM_THREADS: dirThreads[1] });
   if (spec === "ver") scenario("`vize --version` (process start)", mk, ["--version"], runs);
   if (spec === "one") scenario("misskey one SFC `lint src/components/MkButton.vue`", mk, ["lint", "src/components/MkButton.vue"], runs);
   if (spec === "ir-ver") irScenario("`vize --version` instructions", mk, ["--version"]);
