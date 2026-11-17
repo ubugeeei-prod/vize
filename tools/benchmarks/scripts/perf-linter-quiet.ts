@@ -22,7 +22,7 @@ const write = (line = "") => {
   console.log(line);
 };
 
-type Sample = { wall: number; cpu: number; rss: number; code: number | null; sha: string; timedOut: boolean };
+type Sample = { wall: number; cpu: number; user: number; sys: number; rss: number; code: number | null; sha: string; timedOut: boolean };
 
 function once(binary: string, cwd: string, args: string[], env: Record<string, string> = {}): Sample {
   const start = performance.now();
@@ -43,6 +43,8 @@ function once(binary: string, cwd: string, args: string[], env: Record<string, s
   return {
     wall,
     cpu: ((user || 0) + (sys || 0)) * 1000,
+    user: (user || 0) * 1000,
+    sys: (sys || 0) * 1000,
     rss: (rss || 0) / 1024,
     code: result.status,
     sha: createHash("sha256").update(stdout).digest("hex").slice(0, 16),
@@ -91,7 +93,13 @@ function scenario(name: string, cwd: string, args: string[], count: number, env:
     return `${pct(walls, 0.5).toFixed(1)} / ${pct(walls, 0.95).toFixed(1)} / ${Math.max(...walls).toFixed(1)} ms | ${pct(
       xs.map((x) => x.cpu),
       0.5,
-    ).toFixed(0)} ms | ${pct(
+    ).toFixed(0)} ms (user ${pct(
+      xs.map((x) => x.user),
+      0.5,
+    ).toFixed(0)} / sys ${pct(
+      xs.map((x) => x.sys),
+      0.5,
+    ).toFixed(0)}) | ${pct(
       xs.map((x) => x.rss),
       0.5,
     ).toFixed(1)} MiB | ${[...new Set(xs.map((x) => x.code))].join(",")} | ${xs.filter((x) => x.timedOut).length} | ${shas.join(",")}`;
