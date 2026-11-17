@@ -1,0 +1,81 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": null,
+  "regressionCommit": "38b5adbedf092bca14579a827e1af4f4b28ad03c",
+  "sourceRevision": "38b5adbedf092bca14579a827e1af4f4b28ad03c",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "undefined-default-keeps-optional-value",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Foo.vue",
+          "source": "Foo.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "undefined-default-unguarded-clone-error",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Foo.vue",
+          "source": "clone-unguarded.Foo.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Foo.vue",
+          "line": 23,
+          "column": 19,
+          "severity": 1,
+          "code": 18048,
+          "message": "'value' is possibly 'undefined'."
+        }
+      ]
+    },
+    {
+      "id": "undefined-default-template-binding-not-narrowed",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Foo.vue",
+          "source": "template-direct.Foo.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Foo.vue",
+          "line": 27,
+          "column": 14,
+          "severity": 1,
+          "code": 18048,
+          "message": "'modelValue' is possibly 'undefined'."
+        }
+      ]
+    }
+  ]
+}

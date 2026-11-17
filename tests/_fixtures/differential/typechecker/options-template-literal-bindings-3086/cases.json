@@ -1,0 +1,172 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 3086,
+  "regressionCommit": "c40cb562b37a1cde3080bb560df6fbb23a574212",
+  "sourceRevision": "c40cb562b37a1cde3080bb560df6fbb23a574212",
+  "checkerOptions": {
+    "optionsApi": true
+  },
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "unresolved-extends-template-literals",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "extends.App.vue.txt"
+        },
+        {
+          "file": "src/Base.ts",
+          "source": "Base.ts.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 15,
+          "column": 13,
+          "severity": 1,
+          "code": 2349,
+          "message": "This expression is not callable.\nType 'never' has no call signatures."
+        }
+      ]
+    },
+    {
+      "id": "unresolved-extends-literal-member-error",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "extends.invalid.App.vue.txt"
+        },
+        {
+          "file": "src/Base.ts",
+          "source": "Base.ts.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 12,
+          "column": 24,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'length' does not exist on type 'true'."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 15,
+          "column": 13,
+          "severity": 1,
+          "code": 2349,
+          "message": "This expression is not callable.\nType 'never' has no call signatures."
+        }
+      ]
+    },
+    {
+      "id": "setup-spread-template-literals",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "spread.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 15,
+          "column": 18,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'falsey' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, {}, PublicProps, ... 16 more ..., {}>'."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 15,
+          "column": 27,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'trueValue' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, {}, PublicProps, ... 16 more ..., {}>'."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 15,
+          "column": 39,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'nullish' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, {}, PublicProps, ... 16 more ..., {}>'."
+        }
+      ]
+    },
+    {
+      "id": "setup-spread-literal-member-error",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "spread.invalid.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 13,
+          "column": 24,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'length' does not exist on type 'true'."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 15,
+          "column": 18,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'falsey' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, {}, PublicProps, ... 16 more ..., {}>'."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 15,
+          "column": 27,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'trueValue' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, {}, PublicProps, ... 16 more ..., {}>'."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 15,
+          "column": 39,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'nullish' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, {}, PublicProps, ... 16 more ..., {}>'."
+        }
+      ]
+    }
+  ]
+}

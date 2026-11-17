@@ -251,6 +251,10 @@ impl MarkupRule for RequireVForKey {
     }
 
     fn enter_list<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, list: &MarkupList<'a>) {
+        // A host loop's `key` clause keys every item (TSRX `@for`).
+        if list.has_head_key() {
+            return;
+        }
         // Raw Relief retains the authored directive on the element and the
         // attribute hook owns it. Lowered L2 consumes a valid v-for into the
         // list op, while malformed directives remain attributes. Choose the

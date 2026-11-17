@@ -1,0 +1,15 @@
+<script setup lang="ts" generic="T, K extends keyof T | undefined = undefined">
+type ModelValue<T, K> = K extends keyof T ? T[K] : T
+
+defineProps<{
+  items: T[]
+  valueKey?: K
+  modelValue?: ModelValue<T, K> | null
+}>()
+
+defineEmits<{
+  "update:modelValue": [value: ModelValue<T, K> | null]
+}>()
+</script>
+
+<template><button /></template>

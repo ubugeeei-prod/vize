@@ -1,0 +1,103 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 2922,
+  "regressionCommit": "9aad33772161de7133ef2ebd628e5d21f60b43ac",
+  "sourceRevision": "9aad33772161de7133ef2ebd628e5d21f60b43ac",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "emit-only-generic",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Emitter.vue",
+          "source": "emit-only.Emitter.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "emit-only-generic-payload-error",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Emitter.vue",
+          "source": "emit-only.invalid.Emitter.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Emitter.vue",
+          "line": 5,
+          "column": 16,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type 'number' is not assignable to parameter of type 'T'.\n'T' could be instantiated with an arbitrary type which could be unrelated to 'number'."
+        }
+      ]
+    },
+    {
+      "id": "split-props-and-emits-generics",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/types.ts",
+          "source": "types.ts.txt"
+        },
+        {
+          "file": "src/Emitter.vue",
+          "source": "split.Emitter.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "split-emits-generic-payload-error",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/types.ts",
+          "source": "types.ts.txt"
+        },
+        {
+          "file": "src/Emitter.vue",
+          "source": "split.invalid.Emitter.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Emitter.vue",
+          "line": 8,
+          "column": 16,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type 'string' is not assignable to parameter of type 'U'.\n'U' could be instantiated with an arbitrary type which could be unrelated to 'string'."
+        }
+      ]
+    }
+  ]
+}

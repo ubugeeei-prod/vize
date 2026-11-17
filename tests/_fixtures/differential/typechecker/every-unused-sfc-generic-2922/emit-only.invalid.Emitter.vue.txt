@@ -1,0 +1,6 @@
+<script setup lang="ts" generic="T extends string">
+const emit = defineEmits<{ change: [value: T] }>();
+
+emit("change", "valid" as T);
+emit("change", 1);
+</script>

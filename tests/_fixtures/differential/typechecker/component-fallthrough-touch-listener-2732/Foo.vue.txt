@@ -1,0 +1,13 @@
+<script setup lang="ts">
+import { defineComponent, h } from "vue";
+
+const Child = defineComponent(() => () => h("button"));
+
+function onPress(event: MouseEvent) {
+  event.preventDefault();
+}
+</script>
+
+<template>
+  <Child @touchstart="onPress" />
+</template>

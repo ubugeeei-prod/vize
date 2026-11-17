@@ -37,3 +37,34 @@ fn initialization_errors_keep_the_entire_original_cause_and_resolved_path() {
         "Failed to start corsa type-aware session [resolved executable: /controlled/runtime/tsc]"
     );
 }
+
+#[test]
+fn finished_sessions_are_removed_once_per_linted_directory() {
+    let root = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .join("target")
+        .join("vize-tests")
+        .join(&*vize_l0::cstr!(
+            "patina-corsa-finished-directories-{}",
+            std::process::id()
+        ));
+    let _ = std::fs::remove_dir_all(&root);
+    std::fs::create_dir_all(root.join("src/components")).unwrap();
+    std::fs::write(root.join("package.json"), "{}").unwrap();
+    // Naming the session is what marks this process as owning session roots.
+    let session = root
+        .join(".vize")
+        .join("patina")
+        .join(next_session_directory_name().as_str());
+    std::fs::create_dir_all(&session).unwrap();
+    let files = [
+        root.join("src/components/A.vue"),
+        root.join("src/components/B.vue"),
+        root.join("src/App.vue"),
+    ];
+
+    super::remove_finished_process_sessions(&files);
+
+    assert!(!session.exists());
+    assert!(root.join("package.json").is_file());
+    let _ = std::fs::remove_dir_all(&root);
+}

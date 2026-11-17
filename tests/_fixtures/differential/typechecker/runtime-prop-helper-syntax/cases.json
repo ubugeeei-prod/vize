@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": null,
+  "regressionCommit": "e49925f0fbde257854af2aa73e34b45be7f14b3d",
+  "sourceRevision": "e49925f0fbde257854af2aa73e34b45be7f14b3d",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "runtime-props-parse-and-check",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/ConfirmDialog.vue",
+          "source": "ConfirmDialog.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "runtime-string-prop-type-error",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/ConfirmDialog.vue",
+          "source": "invalid.ConfirmDialog.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/ConfirmDialog.vue",
+          "line": 6,
+          "column": 7,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'string | undefined' is not assignable to type 'number'.\nType 'undefined' is not assignable to type 'number'."
+        }
+      ]
+    }
+  ]
+}

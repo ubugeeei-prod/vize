@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": null,
+  "regressionCommit": "8fe6bd909063488f53b8c46e0a8301e57d1cd104",
+  "sourceRevision": "8fe6bd909063488f53b8c46e0a8301e57d1cd104",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "reserved-prop-shorthand-from-component-props",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Base.vue",
+          "source": "Base.vue.txt"
+        },
+        {
+          "file": "src/Foo.vue",
+          "source": "Foo.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "reserved-prop-number-value-type-error",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Base.vue",
+          "source": "Base.vue.txt"
+        },
+        {
+          "file": "src/Foo.vue",
+          "source": "invalid.Foo.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Foo.vue",
+          "line": 20,
+          "column": 10,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type 'string'."
+        }
+      ]
+    }
+  ]
+}

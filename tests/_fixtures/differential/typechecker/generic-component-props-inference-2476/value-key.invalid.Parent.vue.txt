@@ -1,0 +1,11 @@
+<script setup lang="ts">
+import { ref } from "vue"
+import Child from "./Child.vue"
+
+const items = [{ id: "a", label: "A" }]
+const value = ref<number | null>(null)
+</script>
+
+<template>
+  <Child v-model="value" :items value-key="id" />
+</template>
