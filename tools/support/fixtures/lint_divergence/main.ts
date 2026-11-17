@@ -15,9 +15,11 @@ import { BaselineArtifactStage, removeStagedBaselineArtifacts } from "./baseline
 import { isolationRoot, relocatePaths, withIsolatedFixture } from "./isolation.ts";
 import {
   matrixRuleOptions,
-  writeMatrixRuleOptionsConfig,
+  matrixVueVersion,
+  writeMatrixConfig,
   type MatrixRuleOption,
 } from "./matrix_rule_options.ts";
+import { vue2DialectDisabledRules } from "./vue2_dialect.ts";
 import {
   errorMessage,
   get,
@@ -76,9 +78,9 @@ function measureProject(
   ruleMap: Json,
   comparable: ReturnType<typeof selectComparableRules>,
   project: Json,
-  ruleOptions: { overrides: readonly MatrixRuleOption[]; config: string | null } = {
+  matrix: { overrides: readonly MatrixRuleOption[]; ledger: Json } = {
     overrides: [],
-    config: null,
+    ledger: null,
   },
 ): JsonObject | null {
   const id = projectString(project, "id"),
@@ -105,6 +107,7 @@ function measureProject(
       comparable,
       project,
       files,
+      matrix,
     ),
   );
 }
@@ -119,13 +122,21 @@ function measureMirror(
   comparable: ReturnType<typeof selectComparableRules>,
   project: Json,
   files: string[],
+  matrix: { overrides: readonly MatrixRuleOption[]; ledger: Json },
 ): JsonObject {
   const id = projectString(project, "id"),
     expectedCount = unsigned(get(project, "expectedVueFileCount")) ?? null;
-  const patina =
-    files.length === 0
-      ? { results: [], findings: [] }
-      : runPatina(cwd, project, args, launch, files, ruleOptions.config);
+  const vueVersion = matrixVueVersion(matrix.ledger, projectString(project, "fixturePath"));
+  const config = writeMatrixConfig(matrix.overrides, vueVersion);
+  const patina = (() => {
+    try {
+      return files.length === 0
+        ? { results: [], findings: [] }
+        : runPatina(cwd, project, args, launch, files, config);
+    } finally {
+      if (config !== null) fs.rmSync(path.dirname(config), { recursive: true, force: true });
+    }
+  })();
   const json = path.join(args.outputDir, `${id}-lint-divergence.json`),
     markdown = path.join(args.outputDir, `${id}-lint-divergence.md`),
     stage = new BaselineArtifactStage(args.outputDir, { from: cwd, to: fixtureDir });
@@ -157,6 +168,7 @@ function measureMirror(
         rules: baselineRules,
         files,
       },
+      vueVersion === null ? new Set() : vue2DialectDisabledRules(root),
     );
     const artifact: JsonObject = {
       schema: "vize.fixtureLintDivergenceRun",
@@ -216,11 +228,13 @@ export function runLintDivergenceReport(argv: string[] = process.argv.slice(2)):
   if (!Array.isArray(ledger)) throw new Error("The lint divergence ledger must be an array");
   const projects = selectedProjects(registry, args);
   if (!projects.length) throw new Error("No linter-covered project matched the selection");
+  const matrix = {
+    overrides: matrixRuleOptions(root, ruleMap),
+    ledger: readJson(path.join(root, "tests/_fixtures/fixture-compatibility-ledger.json")),
+  };
   const launch = resolveVizeLaunch(root, args.vizeBin),
     evidence = collectRunEvidence(root),
-    comparable = selectComparableRules(ruleMap, args.preset, args.measureCoverageGap),
-    overrides = matrixRuleOptions(root, ruleMap),
-    ruleOptions = { overrides, config: writeMatrixRuleOptionsConfig(overrides) };
+    comparable = selectComparableRules(ruleMap, args.preset, args.measureCoverageGap);
   try {
     fs.mkdirSync(args.outputDir, { recursive: true });
   } catch (error) {
@@ -228,23 +242,18 @@ export function runLintDivergenceReport(argv: string[] = process.argv.slice(2)):
   }
   removePriorArtifacts(args.outputDir, projects);
   const artifacts: Json[] = [];
-  try {
-    for (const project of projects) {
-      const artifact = measureProject(
-        root,
-        args,
-        launch,
-        evidence,
-        ruleMap,
-        comparable,
-        project,
-        ruleOptions,
-      );
-      if (artifact !== null) artifacts.push(artifact);
-    }
-  } finally {
-    if (ruleOptions.config !== null)
-      fs.rmSync(path.dirname(ruleOptions.config), { recursive: true, force: true });
+  for (const project of projects) {
+    const artifact = measureProject(
+      root,
+      args,
+      launch,
+      evidence,
+      ruleMap,
+      comparable,
+      project,
+      matrix,
+    );
+    if (artifact !== null) artifacts.push(artifact);
   }
   writeIndex(root, args.outputDir, args.preset, evidence, artifacts);
   assertBudgetsPassed(artifacts, args.budgetMode);

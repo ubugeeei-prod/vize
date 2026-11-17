@@ -7,7 +7,8 @@ import { fileURLToPath } from "node:url";
 
 import {
   matrixRuleOptions,
-  writeMatrixRuleOptionsConfig,
+  matrixVueVersion,
+  writeMatrixConfig,
 } from "../../tools/support/fixtures/lint_divergence/matrix_rule_options.ts";
 
 const root = fileURLToPath(new URL("../../", import.meta.url));
@@ -21,14 +22,30 @@ test("every matrix override is documented and keeps Patina's default tested", ()
     overrides.map(({ upstreamRule }) => upstreamRule),
     ["vue/v-on-handler-style"],
   );
-  const config = writeMatrixRuleOptionsConfig(overrides);
+  const config = writeMatrixConfig(overrides, null);
   assert.ok(config);
-  assert.match(
+  assert.equal(
     fs.readFileSync(config, "utf8"),
-    /"vue\/v-on-handler-style":\["method","inline-function"\]/u,
+    `export default {"vue":{"linter":{"ruleOptions":{"vue/v-on-handler-style":["method","inline-function"]}}}};\n`,
   );
   fs.rmSync(path.dirname(config), { recursive: true, force: true });
-  assert.equal(writeMatrixRuleOptionsConfig([]), null);
+  assert.equal(writeMatrixConfig([], null), null);
+});
+
+test("a Vue 2 or 2.7 project is linted with the dialect its packages pin", () => {
+  const ledger = JSON.parse(
+    fs.readFileSync(path.join(root, "tests/_fixtures/fixture-compatibility-ledger.json"), "utf8"),
+  );
+  assert.equal(matrixVueVersion(ledger, "tests/_fixtures/_git/vue2-elm"), "2");
+  assert.equal(matrixVueVersion(ledger, "tests/_fixtures/_git/habitica"), "2.7");
+  assert.equal(matrixVueVersion(ledger, "tests/_fixtures/_git/airi"), null);
+  // Mixed majors keep Patina's default.
+  assert.equal(matrixVueVersion(ledger, "tests/_fixtures/_git/gogocode"), null);
+  assert.equal(matrixVueVersion(ledger, "tests/_fixtures/_git/missing"), null);
+  const config = writeMatrixConfig([], "2.7");
+  assert.ok(config);
+  assert.equal(fs.readFileSync(config, "utf8"), `export default {"vue":{"version":"2.7"}};\n`);
+  fs.rmSync(path.dirname(config), { recursive: true, force: true });
 });
 
 function project(header: string, guard = "fn keeps_default() {}") {

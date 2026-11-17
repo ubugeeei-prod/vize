@@ -4,6 +4,7 @@ import {
   eligibleReferenceCoverage,
   referenceCoverageCases,
 } from "../lint_reference_coverage.ts";
+import { vue2DialectReason } from "./vue2_dialect.ts";
 import {
   baselineIntentionalReason,
   collectBaselineFindings,
@@ -103,6 +104,8 @@ export function compareLintFindings(
   patinaFindings: Json[],
   eslintResults: Json[] | ReturnType<typeof collectBaselineFindings>,
   context: JsonObject,
+  /** Patina rules the project's Vue 2 dialect turns off (vue2_dialect.ts). */
+  dialectDisabledRules: ReadonlySet<string> = new Set(),
 ): JsonObject {
   const index = indexRuleMap(ruleMap),
     patina = collectPatinaFindings(patinaFindings, cwd),
@@ -170,10 +173,12 @@ export function compareLintFindings(
     else if (status === "intentional-divergence")
       intentionalDivergences.push({ ...finding, reason: get(entry, "reason") });
     else if (status === "mapped") {
-      const reason = baselineIntentionalReason(finding, sourceFor(finding.file));
+      const target = get(entry, "patinaRule");
+      const reason =
+        baselineIntentionalReason(finding, sourceFor(finding.file)) ??
+        (typeof target === "string" && dialectDisabledRules.has(target) ? vue2DialectReason : null);
       if (reason !== null) intentionalDivergences.push({ ...finding, reason });
       else {
-        const target = get(entry, "patinaRule");
         if (typeof target !== "string")
           throw new Error(`${finding.ruleId} must name the patina rule it maps to`);
         comparableBaseline.push({ ...finding, ruleId: target, upstreamRuleId: finding.ruleId });
