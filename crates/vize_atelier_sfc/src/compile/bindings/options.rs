@@ -7,7 +7,7 @@
 //! its template reads them through the render context, as it does for a
 //! component that declares none.
 
-use vize_l0::{Allocator, SourceRoot, Span, String, ToCompactString, camelize, profile};
+use vize_l0::{Allocator, FxHashMap, SourceRoot, Span, String, ToCompactString, camelize, profile};
 use vize_l1::embed::{EmbedSource, syntax::parse_program_once};
 use vize_l2::framework::vue::{OptionMemberKind, OptionsObserver};
 use vize_l2::lang::js::{FileProducer, ProgramInput, ProgramScope};
@@ -17,10 +17,10 @@ use crate::types::{BindingMetadata, BindingType};
 
 /// The binding of each member the template reads through the instance:
 /// `props` as props, `data` and Nuxt `asyncData` as data, `computed`,
-/// `methods` and `inject` as options. A later member of the same name
-/// replaces an earlier one; `setup()` returns stay setup state, so a
-/// returned name drops the option binding it replaces, and Vue 3 has no
-/// `filters`.
+/// `methods` and `inject` as options. A name declared by several groups,
+/// in the component or its mixins, binds as the instance proxy resolves it:
+/// a `setup()` return (setup state, so no option binding) before `data`,
+/// before `props`, before the other options. Vue 3 has no `filters`.
 pub(in crate::compile) fn options_api(
     content: &str,
     lang: Option<&str>,
@@ -47,32 +47,41 @@ fn observe(content: &str, lang: Option<&str>) -> Option<BindingMetadata> {
         .program_observed(input, ProgramScope::Nested, &mut observer)
         .ok()?;
     let facts = observer.finish().ok()?;
-    let mut bindings = BindingMetadata::default();
+    // Each name keeps the binding of its highest-ranked group.
+    let mut ranked: FxHashMap<String, (u8, Option<BindingType>)> = FxHashMap::default();
     for member in &facts.component()?.members {
-        let binding = match member.kind {
-            OptionMemberKind::Prop => Some(BindingType::Props),
-            OptionMemberKind::Data | OptionMemberKind::AsyncData => Some(BindingType::Data),
+        let (rank, binding) = match member.kind {
+            OptionMemberKind::Setup => (3, None),
+            OptionMemberKind::Data | OptionMemberKind::AsyncData => (2, Some(BindingType::Data)),
+            OptionMemberKind::Prop => (1, Some(BindingType::Props)),
             OptionMemberKind::Computed | OptionMemberKind::Method | OptionMemberKind::Inject => {
-                Some(BindingType::Options)
+                (0, Some(BindingType::Options))
             }
-            OptionMemberKind::Setup => None,
             OptionMemberKind::Filter => continue,
         };
         let name = content.get(member.name.start as usize..member.name.end as usize)?;
-        let Some(name) = template_name(name) else {
+        let Some(name) = template_name(name, member.kind) else {
             continue;
         };
-        match binding {
-            Some(binding) => bindings.bindings.insert(name, binding),
-            None => bindings.bindings.remove(&name),
-        };
+        let entry = ranked.entry(name).or_insert((rank, binding));
+        if rank > entry.0 {
+            *entry = (rank, binding);
+        }
+    }
+    let mut bindings = BindingMetadata::default();
+    for (name, (_, binding)) in ranked {
+        if let Some(binding) = binding {
+            bindings.bindings.insert(name, binding);
+        }
     }
     (!bindings.bindings.is_empty()).then_some(bindings)
 }
 
-/// The template name of a member: an ASCII identifier as written, or the
-/// camel case of a kebab-case name when that is one.
-fn template_name(name: &str) -> Option<String> {
+/// The template name of a member: an ASCII identifier as written, or, for
+/// a prop only, the camel case of a kebab-case name when that is one. A
+/// hyphenated key of any other group is reachable only by its own spelling,
+/// which no template identifier is.
+fn template_name(name: &str, kind: OptionMemberKind) -> Option<String> {
     let identifier = |name: &str| {
         let mut chars = name.chars();
         chars
@@ -84,7 +93,7 @@ fn template_name(name: &str) -> Option<String> {
         return Some(name.to_compact_string());
     }
     let camel = camelize(name);
-    (name.contains('-') && identifier(&camel)).then_some(camel)
+    (kind == OptionMemberKind::Prop && name.contains('-') && identifier(&camel)).then_some(camel)
 }
 
 #[cfg(test)]
@@ -116,6 +125,28 @@ mod tests {
         assert_eq!(read("shadow"), None);
         assert_eq!(read("f"), None);
         assert_eq!(bindings.bindings.len(), 7);
+    }
+
+    #[test]
+    fn a_name_binds_as_the_instance_proxy_resolves_it() {
+        // Setup state, then data, then props, then the other options, whatever
+        // the reading order; mixin members are read after the component's own.
+        let script =
+            "const Base = { data() { return { s: 1, d: 1, p: 1 } }, computed: { c() {} } };
+export default {
+  mixins: [Base],
+  props: ['p', 'c'],
+  setup() { return { s: 2 } },
+  data() { return { 'kebab-data': 1 } },
+}";
+        let bindings = options_api(script, None).expect("bindings");
+        let read = |name: &str| bindings.bindings.get(name).copied();
+        assert_eq!(read("s"), None);
+        assert_eq!(read("d"), Some(BindingType::Data));
+        assert_eq!(read("p"), Some(BindingType::Data));
+        assert_eq!(read("c"), Some(BindingType::Props));
+        assert_eq!(read("kebabData"), None);
+        assert_eq!(bindings.bindings.len(), 3);
     }
 
     #[test]

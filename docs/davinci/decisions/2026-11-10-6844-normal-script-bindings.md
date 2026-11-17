@@ -44,16 +44,25 @@ The SFC compiler reads the template bindings of a normal `<script>` without
 script content is parsed once by L1 with the block's `lang`, as the setup
 route does. Members bind as Vue's `compileScript` does: `props` as `props`,
 `data` (and Nuxt 2 `asyncData`) as `data`, `computed`, `methods` and
-`inject` as `options`; a later member of the same name replaces an earlier
-one, a `setup()` return drops the option binding it replaces, and Vue 3
-`filters` bind nothing. A script the levels refuse forwards no bindings,
+`inject` as `options`, and Vue 3 `filters` bind nothing. A name declared
+by several groups, in the component or a mixin, binds as Vue's instance
+proxy resolves it: a `setup()` return (setup state, so no option binding)
+before `data`, before `props`, before the other options. Croquis let the
+last member read win, so a mixin's `data` member could hide a `setup()`
+return. Only a prop's kebab-case key also binds its camel case; Croquis
+camelized every group, so `'kebab-key'` in `data` bound a `kebabKey` that
+the instance does not have. A script the levels refuse forwards no bindings,
 so its template reads members through `_ctx`, which resolves the same
 members at runtime; nothing falls back to Croquis.
 
 On the repository corpus (83 normal-script SFCs in the DOM, SSR and Vapor
 shapes) the output is byte-identical except the four Croquis-defect files
 above, where a module constant spelled like a `data` member now leaves the
-member bound (`$data.filters` instead of `_ctx.filters`), as in Vue.
+member bound (`$data.filters` instead of `_ctx.filters`), as in Vue, and
+`tests/fixtures/typechecker/options-api-computed-setters/WrappedOptions.vue`,
+whose props `foo-bar` and `plain` are also computed names: they now read
+`$props.fooBar`/`$props.plain` (props win over computed in the instance
+proxy, and Vue does not define a computed that shadows a prop).
 
 ## Open
 
