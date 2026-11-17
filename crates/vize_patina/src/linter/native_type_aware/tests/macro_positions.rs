@@ -150,7 +150,7 @@ fn vue_project() -> Option<tempfile::TempDir> {
 }
 
 /// The newest Vue 3.5+ in the workspace's pnpm store, if installed.
-fn workspace_vue() -> Option<PathBuf> {
+pub(super) fn workspace_vue() -> Option<PathBuf> {
     let store = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../node_modules/.pnpm");
     let mut found = std::fs::read_dir(store)
         .ok()?

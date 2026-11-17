@@ -12677,7 +12677,7 @@
           {
             "path": "cases.json",
             "role": "upstream-immutable-oracle",
-            "sha256": "29005a4d37b70a7708b02959fd41916946108ec6dd99e6c8a7e251de6e7fb608"
+            "sha256": "e51d2fe5155f64b2518c0cb41cb8cfdad99f77f3439fc823670717b170b281e1"
           }
         ]
       },

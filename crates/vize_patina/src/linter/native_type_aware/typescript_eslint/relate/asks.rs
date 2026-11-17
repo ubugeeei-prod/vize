@@ -6,7 +6,7 @@ mod deprecated;
 mod enums;
 use super::binding::{self, Binding, Instantiated};
 use super::{Key, Pending};
-use crate::linter::corsa_session::{Literal, Span};
+use crate::linter::corsa_session::{DeclaredDefaultAsk, DefaultSite, Literal, Span};
 use oxc_ast::ast::Program;
 use serde_json::{Value, json};
 
@@ -29,8 +29,9 @@ struct Walk<'a, 'm, 'v> {
     pending: &'a mut Pending,
     /// Non-null operands whose binding still needs scope analysis.
     identifiers: Vec<(usize, Span)>,
-    /// Type argument lists, the name they instantiate, and where.
-    instantiations: Vec<(&'v Value, Span, Instantiated)>,
+    /// Type argument lists, the local name they may instantiate, where, and
+    /// where the checker finds their type parameters otherwise.
+    instantiations: Vec<(&'v Value, Option<Span>, Instantiated, Option<DefaultSite>)>,
 }
 
 pub(super) fn collect(
@@ -52,12 +53,19 @@ pub(super) fn collect(
     let instantiations = std::mem::take(&mut walk.instantiations);
     let names = instantiations
         .iter()
-        .map(|(_, name, context)| (*name, *context))
+        .filter_map(|(_, name, context, _)| Some(((*name)?, *context)))
         .collect::<Vec<_>>();
-    let defaults = binding::type_parameter_defaults(ast, &names);
-    for ((list, _, _), defaults) in instantiations.into_iter().zip(defaults) {
-        if let Some(defaults) = defaults {
-            walk.type_arguments(list, &defaults);
+    let mut local = binding::type_parameter_defaults(ast, &names).into_iter();
+    for (list, name, _, site) in instantiations {
+        // A name the script declares answers from its own syntax; any other
+        // generic is read from the checker's declaration.
+        match name.and_then(|_| local.next().flatten()) {
+            Some(defaults) => walk.type_arguments(list, &defaults),
+            None => {
+                if let Some(site) = site {
+                    walk.declared_type_arguments(list, site);
+                }
+            }
         }
     }
     let identifiers = std::mem::take(&mut walk.identifiers);
@@ -292,8 +300,9 @@ impl<'v> Walk<'_, '_, 'v> {
         self.pending.request.defaults.push(pair);
     }
 
-    /// A type argument list whose instantiated name may resolve to a local
-    /// declaration with defaults (`TSTypeParameterInstantiation`).
+    /// A type argument list (`TSTypeParameterInstantiation`): its name may
+    /// resolve to a local declaration with defaults, and the checker resolves
+    /// any other one.
     fn instantiation(&mut self, value: &'v Value, ancestors: &[Ancestor<'v>]) {
         let Some(&(parent, field)) = ancestors.last() else {
             return;
@@ -313,13 +322,67 @@ impl<'v> Walk<'_, '_, 'v> {
             }
             _ => return,
         };
-        let Some(name) = name
+        let name_span = name.and_then(|name| self.map_span(name));
+        let site = match context {
+            Instantiated::Type => name_span.map(|name| DefaultSite::Type {
+                name,
+                type_context: true,
+            }),
+            Instantiated::Value => name_span.map(|name| DefaultSite::Type {
+                name,
+                type_context: false,
+            }),
+            Instantiated::Call => self.map_span(parent).map(|call| DefaultSite::Call { call }),
+            Instantiated::New => self
+                .map_span(parent)
+                .zip(name_span)
+                .map(|(call, callee)| DefaultSite::New { call, callee }),
+        };
+        let local = name
             .filter(|name| kind(name) == "Identifier")
-            .and_then(span)
+            .and_then(span);
+        self.instantiations.push((value, local, context, site));
+    }
+
+    fn map_span(&self, value: &Value) -> Option<Span> {
+        (self.map)(span(value)?)
+    }
+
+    /// `checkTSArgsAndParameters` for a generic the script does not declare:
+    /// the checker decides whether the last argument is its default.
+    fn declared_type_arguments(&mut self, list: &Value, site: DefaultSite) {
+        let Some(arguments) = list.get("params").and_then(Value::as_array) else {
+            return;
+        };
+        let (Some(key), Some(last), Some(list_span)) = (key(list), arguments.last(), span(list))
         else {
             return;
         };
-        self.instantiations.push((value, name, context));
+        let Some(argument) = self.map_span(last) else {
+            return;
+        };
+        let ranges = arguments
+            .iter()
+            .filter_map(span)
+            .map(|(start, end)| json!({ "start": start, "end": end }))
+            .collect::<Vec<_>>();
+        self.pending
+            .fixed
+            .push((key, "__typeArgumentRanges", Value::Array(ranges)));
+        self.pending.fixed.push((
+            key,
+            "__typeArgumentListRange",
+            json!({ "start": list_span.0, "end": list_span.1 }),
+        ));
+        self.pending.declared_defaults.push((key, arguments.len()));
+        self.pending
+            .request
+            .declared_defaults
+            .push(DeclaredDefaultAsk {
+                argument,
+                index: arguments.len() - 1,
+                site,
+            });
     }
 }
 

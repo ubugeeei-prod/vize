@@ -10,12 +10,14 @@ use vize_l0::{FxHashMap, FxHashSet, String as CompactString};
 
 mod checker;
 mod contextual;
+mod declared_defaults;
 mod deprecation;
 mod enums;
 mod unchanged;
 
 use checker::Checker;
 pub(in crate::linter) use checker::flags;
+pub(in crate::linter) use declared_defaults::{DeclaredDefaultAsk, DefaultSite};
 pub(in crate::linter) use enums::{
     EnumCallArgument, EnumCallAsk, EnumCheckAsk, EnumMismatch, EnumReceiver, HeritageSource,
 };
@@ -36,6 +38,9 @@ pub(in crate::linter) struct RelationRequest {
     /// `no-unnecessary-type-arguments`: whether a type argument is its type
     /// parameter's default (`(argument, default)`).
     pub defaults: Vec<(Span, Span)>,
+    /// `no-unnecessary-type-arguments` for generics declared outside the
+    /// script, whose defaults only the checker's declarations hold.
+    pub declared_defaults: Vec<DeclaredDefaultAsk>,
     /// Deep enum-flow checks that need paired checker types.
     pub enum_checks: Vec<EnumCheckAsk>,
     /// Calls are checked as a unit so tuple and variadic spreads advance the
@@ -53,6 +58,7 @@ pub(in crate::linter) struct RelationReply {
     pub assignable: Vec<Option<bool>>,
     pub deprecations: Vec<Option<Deprecation>>,
     pub defaults: Vec<Option<bool>>,
+    pub declared_defaults: Vec<Option<bool>>,
     pub enum_checks: Vec<Option<EnumMismatch>>,
     pub enum_calls: Vec<Vec<Option<EnumMismatch>>>,
 }
@@ -242,6 +248,7 @@ impl RelationReply {
             assignable: vec![None; request.assignable.len()],
             deprecations: vec![None; request.deprecations.len()],
             defaults: vec![None; request.defaults.len()],
+            declared_defaults: vec![None; request.declared_defaults.len()],
             enum_checks: vec![None; request.enum_checks.len()],
             enum_calls: request
                 .enum_calls
@@ -316,6 +323,9 @@ pub(super) fn spans(
     for (argument, default) in &request.defaults {
         add_node(*argument, true);
         add_node(*default, true);
+    }
+    for ask in &request.declared_defaults {
+        ask.each_span(&mut add_node);
     }
     for ask in &request.deprecations {
         add_node(ask.node, false);
@@ -426,16 +436,17 @@ pub(super) async fn answer(
             located.type_node(translate(*argument)),
             located.type_node(translate(*default)),
         ) {
-            // A bare name in type position can type as the error type; two
-            // of those are not proof the argument is the default.
-            (Some(argument), Some(default))
-                if (argument.flags | default.flags) & flags::ANY == 0 =>
-            {
-                Some(checker.same_type(argument, default).await)
+            (Some(argument), Some(default)) => {
+                Some(checker.equals_default(argument, default).await)
             }
             _ => None,
         };
         reply.defaults.push(value);
+    }
+    for ask in &request.declared_defaults {
+        reply
+            .declared_defaults
+            .push(declared_defaults::check(&mut checker, &located, ask, translate).await);
     }
     if !request.deprecations.is_empty() {
         let nodes = request

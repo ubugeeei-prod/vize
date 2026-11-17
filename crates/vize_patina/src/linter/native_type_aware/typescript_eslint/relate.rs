@@ -23,6 +23,8 @@ pub(super) struct Pending {
     shapes: Vec<Key>,
     deprecations: Vec<Key>,
     defaults: Vec<Key>,
+    /// Checker-resolved defaults and the type argument count of each list.
+    declared_defaults: Vec<(Key, usize)>,
     returns: Vec<Key>,
     /// Assignability replies and the field each is written to.
     assignable: Vec<(Key, &'static str)>,
@@ -73,6 +75,7 @@ impl Pending {
             && self.request.shapes.is_empty()
             && self.request.deprecations.is_empty()
             && self.request.defaults.is_empty()
+            && self.request.declared_defaults.is_empty()
             && self.request.returns.is_empty()
             && self.request.assignable.is_empty()
             && self.request.enum_checks.is_empty()
@@ -190,6 +193,20 @@ pub(super) fn apply(nodes: &mut [LintNode], pending: &Pending, reply: Option<&Re
             "__lastTypeArgumentEqualsDefault",
             json!(same == Some(true)),
         );
+    }
+    for (index, (key, count)) in pending.declared_defaults.iter().enumerate() {
+        // Only a default the last argument equals is a fact; any other list
+        // stays without a type parameter count, which keeps the rule silent.
+        if reply
+            .and_then(|reply| reply.declared_defaults.get(index))
+            .copied()
+            .flatten()
+            == Some(true)
+        {
+            push(*key, "__typeParameterCount", json!(count));
+            push(*key, "__lastTypeParameterHasDefault", json!(true));
+            push(*key, "__lastTypeArgumentEqualsDefault", json!(true));
+        }
     }
     for (index, key) in pending.deprecations.iter().enumerate() {
         let found = reply

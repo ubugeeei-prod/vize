@@ -71,6 +71,8 @@ pub(super) struct Checker<'a> {
     pub(super) generic_types: FxHashMap<TypeHandle, bool>,
     /// Enum key types an object's computed member access is checked against.
     pub(super) computed_keys: FxHashMap<TypeHandle, Vec<TypeResponse>>,
+    /// The intrinsic `any`, asked for once.
+    any: Option<Option<TypeHandle>>,
 }
 
 impl<'a> Checker<'a> {
@@ -90,6 +92,7 @@ impl<'a> Checker<'a> {
             enum_constituents: FxHashMap::default(),
             generic_types: FxHashMap::default(),
             computed_keys: FxHashMap::default(),
+            any: None,
         }
     }
 
@@ -243,6 +246,37 @@ impl<'a> Checker<'a> {
             .unwrap_or_default();
         symbols.resize(count, None);
         symbols
+    }
+
+    /// `no-unnecessary-type-arguments`: whether a type argument is its type
+    /// parameter's default. A name the checker cannot resolve types as the
+    /// error type, and two of those are no proof; `any` written out on both
+    /// sides is the same type, as upstream compares it.
+    pub(super) async fn equals_default(
+        &mut self,
+        argument: &TypeResponse,
+        default: &TypeResponse,
+    ) -> bool {
+        if (argument.flags | default.flags) & flags::ANY == 0 {
+            return self.same_type(argument, default).await;
+        }
+        if self.any.is_none() {
+            let any = self
+                .session
+                .client()
+                .get_any_type(
+                    self.session.snapshot().handle.clone(),
+                    self.session.project_handle(),
+                )
+                .await
+                .ok()
+                .map(|any| any.id);
+            self.any = Some(any);
+        }
+        self.any
+            .as_ref()
+            .and_then(Option::as_ref)
+            .is_some_and(|any| argument.id == *any && default.id == *any)
     }
 
     /// typescript-eslint `no-unnecessary-type-arguments`' comparison: the same
