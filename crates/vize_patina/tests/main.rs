@@ -33,6 +33,7 @@ mod css_global_compound_ownership;
 mod css_global_ownership;
 mod css_global_universal_ownership;
 mod css_id_selector_ranges;
+mod css_style_lane;
 mod css_type_aware_ownership;
 mod css_utility_literal_tokens;
 mod css_value_tokens_7989;

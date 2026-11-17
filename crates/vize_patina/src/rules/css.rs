@@ -332,7 +332,6 @@ impl CssLinter {
     pub fn with_all_rules() -> Self {
         Self {
             rules: vec![
-                Box::new(NoIdSelectors),
                 Box::new(PreferLogicalProperties),
                 Box::new(RequireFontDisplay),
                 Box::new(PreferNestedSelectors),
@@ -342,7 +341,7 @@ impl CssLinter {
                 Box::new(NoUtilityClasses),
                 Box::new(PreferSlotted),
             ],
-            style_rules: vec![Box::new(NoImportant)],
+            style_rules: vec![Box::new(NoImportant), Box::new(NoIdSelectors)],
         }
     }
 

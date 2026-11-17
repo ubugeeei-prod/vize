@@ -1,11 +1,16 @@
 use vize_l1::css::lang::StyleLanguage;
 
-use super::super::{CssLinter, NoImportant};
+use super::super::{CssLinter, NoIdSelectors, NoImportant, StyleRule};
 
 /// The `!important` flags `css/no-important` reports in a block at offset 10.
 fn flags(language: StyleLanguage, source: &str) -> Vec<String> {
+    findings(Box::new(NoImportant), language, source)
+}
+
+/// The text of each finding of `rule` in a block at offset 10.
+fn findings(rule: Box<dyn StyleRule>, language: StyleLanguage, source: &str) -> Vec<String> {
     let mut linter = CssLinter::new();
-    linter.add_style_rule(Box::new(NoImportant));
+    linter.add_style_rule(rule);
     linter
         .lint_block(source, 10, language, true)
         .diagnostics
@@ -65,6 +70,9 @@ fn preprocessor_blocks_report_flags_at_authored_bytes() {
     assert_eq!(flags(StyleLanguage::Stylus, stylus), ["!important"]);
     let braced = ".e { margin: 0 !important; }";
     assert_eq!(flags(StyleLanguage::Stylus, braced), ["!important"]);
+    // A `//` comment inside a value cannot open a block that hides the flag.
+    let commented = ".a { color: red // explanation (\n !important; }";
+    assert_eq!(flags(StyleLanguage::Scss, commented), ["!important"]);
 }
 
 #[test]
@@ -73,4 +81,82 @@ fn an_unbalanced_block_has_no_structure_findings() {
         flags(StyleLanguage::Scss, ".a { color: red !important;"),
         Vec::<String>::new()
     );
+}
+
+fn ids(language: StyleLanguage, source: &str) -> Vec<String> {
+    findings(Box::new(NoIdSelectors), language, source)
+}
+
+#[test]
+fn id_selectors_are_top_level_selector_tokens() {
+    let css = StyleLanguage::Css;
+    // The key compound of each selector, right to left, as before.
+    assert_eq!(
+        ids(css, "#a, #b .c, .d > #e#f { color: #fff; }"),
+        ["#a", "#f", "#e"]
+    );
+    // A functional pseudo-class is consumed whole; the ID after it is the rule's.
+    assert_eq!(
+        ids(css, ".a:not(#b) #c, [x] #d { color: red; }"),
+        ["#c", "#d"]
+    );
+    // Pseudo-class arguments, attribute values, comments and colors are not.
+    assert_eq!(
+        ids(
+            css,
+            ".a:not(#b)[href=\"#c\"] /* #d */ { background: #eee; }"
+        ),
+        Vec::<String>::new()
+    );
+    assert_eq!(
+        ids(css, "@media (width > 1px) { #m { color: red; } }"),
+        ["#m"]
+    );
+    assert_eq!(
+        ids(css, "@keyframes k { from { opacity: 0; } }"),
+        Vec::<String>::new()
+    );
+    // As before: rules under at-rules the lightningcss lane skipped are not checked.
+    assert_eq!(
+        ids(css, "@container (width > 1px) { #c { color: red; } }"),
+        Vec::<String>::new()
+    );
+    assert_eq!(
+        ids(
+            css,
+            "@supports (display: grid) { @layer a { #s { color: red; } } }"
+        ),
+        ["#s"]
+    );
+    // A block comment separates no compounds; whitespace beside it does.
+    assert_eq!(ids(css, "#a/**/.b { color: red; }"), ["#a"]);
+    assert_eq!(ids(css, "#a/**/#b { color: red; }"), ["#b", "#a"]);
+    assert_eq!(ids(css, "#a /**/ .b { color: red; }"), Vec::<String>::new());
+}
+
+#[test]
+fn preprocessor_selectors_report_ids_as_written() {
+    let scss = ".card {\n  #title { color: red; }\n  &#{$x} { color: blue; }\n  // #note\n}";
+    assert_eq!(ids(StyleLanguage::Scss, scss), ["#title"]);
+    let less = "#ns { .mixin() { color: red; } }\n.a { #ns.mixin(); }";
+    assert_eq!(ids(StyleLanguage::Less, less), ["#ns"]);
+    let sass = "#main\n  color: #fff\n  .x\n    width: 1px\n";
+    assert_eq!(ids(StyleLanguage::Sass, sass), ["#main"]);
+    let stylus = "#main\n  color #fff\n";
+    assert_eq!(ids(StyleLanguage::Stylus, stylus), ["#main"]);
+    // One-line braced Stylus rules whose markers sit in a string or after an
+    // unquoted `url(//…)` are still rules.
+    for stylus in [
+        "#main {content:\"a;b\"}\n",
+        "#main { background: url(http://example.com/a.png) !important }\n",
+    ] {
+        assert_eq!(ids(StyleLanguage::Stylus, stylus), ["#main"], "{stylus}");
+    }
+    // An escaped quote in a selector opens no string that hides later braces.
+    let escaped = ".quoted\\\"name { color: red; }\n#main { color: red !important; }\n";
+    assert_eq!(ids(StyleLanguage::Stylus, escaped), ["#main"]);
+    assert_eq!(flags(StyleLanguage::Stylus, escaped), ["!important"]);
+    // A line comment in an SCSS selector is masked, so it ends the compound.
+    let scss = "#a // note\n.b { color: red; }";
+    assert_eq!(ids(StyleLanguage::Scss, scss), Vec::<String>::new());
 }

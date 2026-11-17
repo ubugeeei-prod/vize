@@ -11,7 +11,7 @@ description: "不建议在 CSS 中使用 ID 选择器。"
 | --- | --- | --- | --- |
 | `warning` | `opinionated`, `nuxt` | 不支持 | 无 |
 
-适用范围：纯 CSS 的 style 块（scss、sass、less 和 stylus 块会被跳过）。
+适用范围：CSS、SCSS、Sass、Less 和 Stylus 的 style 块，按原样读取（不运行预处理器）。
 
 ## 错误示例
 
@@ -58,4 +58,4 @@ export default defineConfig({}).withVue({
 
 - [CSS 规则](../css.md)
 - [全部规则](../all.md)
-- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_id_selectors.rs#L19)
+- [源代码](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/no_id_selectors.rs#L15)

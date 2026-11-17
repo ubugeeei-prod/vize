@@ -128,7 +128,7 @@ pub(crate) fn rules() -> Vec<Rule> {
     let css: [&CssRuleMeta; 10] = [
         CssRule::meta(&NoDisplayNone),
         CssRule::meta(&hardcoded),
-        CssRule::meta(&NoIdSelectors),
+        StyleRule::meta(&NoIdSelectors),
         StyleRule::meta(&NoImportant),
         CssRule::meta(&NoUtilityClasses),
         CssRule::meta(&NoVBindPerformance),

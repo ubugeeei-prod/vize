@@ -33,7 +33,7 @@ fn registered() -> BTreeMap<&'static str, Severity> {
     let css: [&CssRuleMeta; 10] = [
         CssRule::meta(&NoDisplayNone),
         CssRule::meta(&NoHardcodedValues::default()),
-        CssRule::meta(&NoIdSelectors),
+        StyleRule::meta(&NoIdSelectors),
         StyleRule::meta(&NoImportant),
         CssRule::meta(&NoUtilityClasses),
         CssRule::meta(&NoVBindPerformance),
