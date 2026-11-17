@@ -1,0 +1,46 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c0-v-for-static-and-bound-class-style-ssr-97",
+    history: "572e9bcae38e5a4f3b4375b78ae3c00a89112cdd",
+    source: "<script setup lang=\"ts\">\nconst items = [{ id: 1, active: true, width: \"10px\", label: \"a\" }];\n</script>\n\n<template>\n  <ul>\n    <li v-for=\"item in items\" :key=\"item.id\" class=\"row\" :class=\"{ active: item.active }\" style=\"color: red\" :style=\"{ width: item.width }\">{{ item.label }}</li>\n  </ul>\n</template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "ssr",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { ssrInterpolate as _ssrInterpolate, ssrRenderAttrs as _ssrRenderAttrs, ssrRenderClass as _ssrRenderClass, ssrRenderStyle as _ssrRenderStyle, ssrRenderList as _ssrRenderList } from \"@vue/server-renderer\"\n\n\nfunction ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(`<ul${_ssrRenderAttrs(_attrs)}>`)\n  _push(`<!--[-->`)\n  _ssrRenderList($setup.items, (item) => {\n    _push(`<li class=\"${_ssrRenderClass([\"row\", { active: item.active }])}\" style=\"${_ssrRenderStyle([\"color: red\", { width: item.width }])}\">${_ssrInterpolate(item.label)}</li>`)\n  })\n  _push(`<!--]-->`)\n  _push(`</ul>`)\n}\n\nexport default {\n  __name: 'History',\n  ssrRender: ssrRender,\n  setup(__props, { expose: __expose }) {\n  __expose();\n\nconst items = [{\n  id: 1,\n  active: true,\n  width: \"10px\",\n  label: \"a\"\n}];\n\nconst __returned__ = { items }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "items": SetupConst,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

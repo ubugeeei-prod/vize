@@ -1,6 +1,6 @@
 {
   "schema": "vize.compiler.fix-history-index",
-  "version": 3,
+  "version": 4,
   "sourceRevision": "9aaa1fe458a09e0d0c6604dc8835ccf7c737d943",
   "paths": [
     "crates/vize_atelier_core",
@@ -32,8 +32,18 @@
   "touchingCommits": 1321,
   "conventionalFixSubjects": 661,
   "nonMergeFixSubjects": 626,
-  "fixtureLinkedFixSubjects": 30,
+  "fixtureLinkedFixSubjects": 31,
   "boundedReviewedFixtureScopes": 16,
+  "currentApiPinnedFixSubjects": 1,
+  "noCompileBehaviorFixSubjects": 0,
+  "currentApiCohort": {
+    "path": "crates/vize_atelier_sfc/tests/fixtures/compile-history/cases.json",
+    "sha256": "bc7c9ccc302669cc5355e6ed6063c57261126f979b60f0b77e63999930a1645a"
+  },
+  "dispositions": {
+    "path": "docs/davinci/plan/compiler-fix-history-dispositions.json",
+    "sha256": "c7cf90b64bac248ca5b094d17243f9e6ed0efe6e9ab467341be85283c2507da6"
+  },
   "wholeFixReviewedSubjects": 0,
   "wholeFixReviewPendingSubjects": 626,
   "reviewLedger": {
@@ -74,7 +84,7 @@
   ],
   "index": {
     "path": "docs/davinci/plan/compiler-fix-history.tsv",
-    "sha256": "d8d5bc9063c79e8677629faaaa1067833f16dea88948fbd0770e1a26d8b4186c"
+    "sha256": "a49568e738926f3d41d7f3728a48f4ccdffda1f6ec5f5c58ae4a2b97b6f91f0e"
   },
   "semanticDenominator": null,
   "nativeAcceptance": 0,
@@ -83,6 +93,7 @@
     "Changed witness paths and stable patch equivalence are candidates, not coverage or automatic duplicate exclusions.",
     "Fixture references cover only their recorded entrypoint, target, options and public output facets.",
     "Sixteen fixture scopes (ten SFC, five SSR and one Vapor) have bounded semantic review; every fix subject retains whole-fix target and dialect review pending.",
-    "Historical or local execution does not certify current Actions or a native route."
+    "Historical or local execution does not certify current Actions or a native route.",
+    "current-api-pinned rows pin today's complete public result for authored inputs of the fix; they are legacy regression evidence, not native acceptance."
   ]
 }

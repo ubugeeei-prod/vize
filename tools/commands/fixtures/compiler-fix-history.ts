@@ -24,6 +24,10 @@ export const HISTORY_CRATES = [
 const INDEX = "docs/davinci/plan/compiler-fix-history.tsv";
 const RECEIPT = "docs/davinci/plan/compiler-fix-history-index.json";
 const REVIEWS = "docs/davinci/plan/compiler-fix-history-reviews.json";
+export const COHORT = "crates/vize_atelier_sfc/tests/fixtures/compile-history/cases.json";
+export const DISPOSITIONS = "docs/davinci/plan/compiler-fix-history-dispositions.json";
+const PINNED = "current-api-pinned";
+const NO_BEHAVIOR = "no-compile-behavior";
 const FIX = /^fix(?:\([^)]*\))?!?:/;
 const digest = (bytes: string | Uint8Array) => createHash("sha256").update(bytes).digest("hex");
 
@@ -240,7 +244,45 @@ function fixtureReferences(root: string): Map<string, CaseReference[]> {
       }
     }
   }
+  for (const fixture of readCohort(root)) {
+    const cases = links.get(fixture.history) ?? [];
+    cases.push({ id: `compiler/current-api/${fixture.id}`, evidence: COHORT });
+    links.set(fixture.history, cases);
+  }
   return links;
+}
+
+// Current public API oracles: one authored input per case, every result field
+// snapshotted by crates/vize_atelier_sfc/tests/compile_history.rs.
+export function readCohort(root: string): { id: string; history: string }[] {
+  const cases = JSON.parse(fs.readFileSync(path.join(root, COHORT), "utf8"));
+  assert(Array.isArray(cases), `${COHORT} must be an array`);
+  const ids = new Set<string>();
+  for (const fixture of cases) {
+    assert.match(fixture.id, /^[a-z0-9]+(?:-[a-z0-9]+)*$/);
+    assert(!ids.has(fixture.id), `duplicate compile-history case: ${fixture.id}`);
+    ids.add(fixture.id);
+    assert.match(fixture.history, /^[a-f0-9]{40}$/);
+  }
+  return cases;
+}
+
+// Fix subjects whose behavior has no compiled-output effect, each with the
+// reason and the current tests that cover what the commit changed.
+export function readDispositions(root: string): Map<string, string> {
+  const document = JSON.parse(fs.readFileSync(path.join(root, DISPOSITIONS), "utf8"));
+  assert.equal(document.schema, "vize.compiler.fix-history-dispositions");
+  assert.equal(document.version, 1);
+  const states = new Map<string, string>();
+  for (const row of document.rows) {
+    assert.match(row.fixCommit, /^[a-f0-9]{40}$/);
+    assert.equal(row.state, NO_BEHAVIOR);
+    assert(typeof row.reason === "string" && row.reason.length > 0, row.fixCommit);
+    assert(Array.isArray(row.coveredBy), row.fixCommit);
+    assert(!states.has(row.fixCommit), `duplicate disposition: ${row.fixCommit}`);
+    states.set(row.fixCommit, row.state);
+  }
+  return states;
 }
 
 export function collectHistory(root: string) {
@@ -270,6 +312,7 @@ export function collectHistory(root: string) {
   const nonMergeFixes = fixes.filter((commit) => commit.parents.length < 2);
   const links = fixtureReferences(root);
   const reviewed = reviewedScopes(root, links);
+  const dispositions = readDispositions(root);
   const rows = nonMergeFixes.map((commit) => {
     const paths = git(root, ["show", "--format=", "--name-only", commit.sha, "--", ...scopes])
       .trimEnd()
@@ -289,11 +332,20 @@ export function collectHistory(root: string) {
       scopeReview: reviewed.reviews.get(commit.sha) ?? null,
       review: reviewed.reviews.has(commit.sha)
         ? "fixture-linked;bounded-semantic-scope-reviewed;whole-fix-review-pending"
-        : references.length
-          ? "fixture-linked;target-and-semantic-review-pending"
-          : "semantic-review-pending",
+        : references.some((reference) => reference.evidence === COHORT)
+          ? PINNED
+          : references.length
+            ? "fixture-linked;target-and-semantic-review-pending"
+            : (dispositions.get(commit.sha) ?? "semantic-review-pending"),
     };
   });
+  const indexedFixes = new Set(rows.map((row) => row.sha));
+  for (const fixture of readCohort(root))
+    assert(indexedFixes.has(fixture.history), `${fixture.id} names a non-indexed fix`);
+  for (const sha of dispositions.keys()) {
+    assert(indexedFixes.has(sha), `disposition names a non-indexed fix: ${sha}`);
+    assert(!links.has(sha), `a fixture-linked fix cannot also be dispositioned: ${sha}`);
+  }
   const indexed = new Set(rows.map((row) => row.sha));
   const nonIndexedFixtureReferences = [...links]
     .filter(([sha]) => !indexed.has(sha))
@@ -322,7 +374,7 @@ export function collectHistory(root: string) {
           : "semantic-scope-review-pending",
       };
     });
-  return { raw, commits, fixes, rows, nonIndexedFixtureReferences, reviewed };
+  return { root, raw, commits, fixes, rows, nonIndexedFixtureReferences, reviewed };
 }
 
 export function renderHistory(history: ReturnType<typeof collectHistory>) {
@@ -357,7 +409,7 @@ export function renderHistory(history: ReturnType<typeof collectHistory>) {
   const index = `${columns.join("\t")}\n${body.join("\n")}\n`;
   const receipt = {
     schema: "vize.compiler.fix-history-index",
-    version: 3,
+    version: 4,
     sourceRevision: HISTORY_REVISION,
     paths: HISTORY_CRATES.map((name) => `crates/${name}`),
     command: [
@@ -375,6 +427,16 @@ export function renderHistory(history: ReturnType<typeof collectHistory>) {
     nonMergeFixSubjects: history.rows.length,
     fixtureLinkedFixSubjects: history.rows.filter((row) => row.references.length).length,
     boundedReviewedFixtureScopes: history.rows.filter((row) => row.scopeReview).length,
+    currentApiPinnedFixSubjects: history.rows.filter((row) => row.review === PINNED).length,
+    noCompileBehaviorFixSubjects: history.rows.filter((row) => row.review === NO_BEHAVIOR).length,
+    currentApiCohort: {
+      path: COHORT,
+      sha256: digest(fs.readFileSync(path.join(history.root, COHORT))),
+    },
+    dispositions: {
+      path: DISPOSITIONS,
+      sha256: digest(fs.readFileSync(path.join(history.root, DISPOSITIONS))),
+    },
     wholeFixReviewedSubjects: 0,
     wholeFixReviewPendingSubjects: history.rows.length,
     reviewLedger: {
@@ -393,6 +455,7 @@ export function renderHistory(history: ReturnType<typeof collectHistory>) {
       "Fixture references cover only their recorded entrypoint, target, options and public output facets.",
       "Sixteen fixture scopes (ten SFC, five SSR and one Vapor) have bounded semantic review; every fix subject retains whole-fix target and dialect review pending.",
       "Historical or local execution does not certify current Actions or a native route.",
+      "current-api-pinned rows pin today's complete public result for authored inputs of the fix; they are legacy regression evidence, not native acceptance.",
     ],
   };
   return { index, receipt: `${JSON.stringify(receipt, null, 2)}\n` };

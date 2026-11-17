@@ -1,0 +1,41 @@
+[
+  {
+    "id": "c0-v-for-static-and-bound-class-style-97",
+    "history": "572e9bcae38e5a4f3b4375b78ae3c00a89112cdd",
+    "source": "<li v-for=\"item in items\" :key=\"item.id\" class=\"row\" :class=\"{ active: item.active }\" style=\"color: red\" :style=\"{ width: item.width }\">{{ item.label }}</li>",
+    "filename": "History.vue",
+    "entry": "template",
+    "target": "dom",
+    "options": {
+      "prefixIdentifiers": true
+    },
+    "errors": 0
+  },
+  {
+    "id": "c0-v-for-static-and-bound-class-style-sfc-97",
+    "history": "572e9bcae38e5a4f3b4375b78ae3c00a89112cdd",
+    "source": "<script setup lang=\"ts\">\nconst items = [{ id: 1, active: true, width: \"10px\", label: \"a\" }];\n</script>\n\n<template>\n  <ul>\n    <li v-for=\"item in items\" :key=\"item.id\" class=\"row\" :class=\"{ active: item.active }\" style=\"color: red\" :style=\"{ width: item.width }\">{{ item.label }}</li>\n  </ul>\n</template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c0-v-for-static-and-bound-class-style-ssr-97",
+    "history": "572e9bcae38e5a4f3b4375b78ae3c00a89112cdd",
+    "source": "<script setup lang=\"ts\">\nconst items = [{ id: 1, active: true, width: \"10px\", label: \"a\" }];\n</script>\n\n<template>\n  <ul>\n    <li v-for=\"item in items\" :key=\"item.id\" class=\"row\" :class=\"{ active: item.active }\" style=\"color: red\" :style=\"{ width: item.width }\">{{ item.label }}</li>\n  </ul>\n</template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "ssr",
+    "errors": 0
+  },
+  {
+    "id": "c0-v-for-static-and-bound-class-style-vapor-97",
+    "history": "572e9bcae38e5a4f3b4375b78ae3c00a89112cdd",
+    "source": "<script setup lang=\"ts\">\nconst items = [{ id: 1, active: true, width: \"10px\", label: \"a\" }];\n</script>\n\n<template>\n  <ul>\n    <li v-for=\"item in items\" :key=\"item.id\" class=\"row\" :class=\"{ active: item.active }\" style=\"color: red\" :style=\"{ width: item.width }\">{{ item.label }}</li>\n  </ul>\n</template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "vapor",
+    "errors": 0
+  }
+]
