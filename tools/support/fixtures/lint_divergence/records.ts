@@ -609,6 +609,11 @@ export function patinaIntentionalReason(
     typedDefaultComesFromComposedContract(finding, source)
   )
     return "Patina resolves optional props inherited through local interface heritage or intersections; eslint-plugin-vue does not expand that composed prop contract.";
+  if (
+    finding.ruleId === "script/require-default-prop" &&
+    inlineExtensionBesideDefaultsSpread(finding, source)
+  )
+    return "Patina keeps checking a prop the file appends in an inline intersection member (`type Props = Imported & { local?: T }`) when withDefaults spreads imported defaults (#12069): the spread covers the imported contract. eslint-plugin-vue skips every prop once the defaults object holds a spread.";
   const shadowed =
     finding.ruleId === "vue/no-props-shadow"
       ? /Declaration of `([^`]+)` shadows the prop/u.exec(finding.message)?.[1]
@@ -960,6 +965,30 @@ function localTypeDependsOn(source: string, root: string, target: string): boole
     }
   }
   return false;
+}
+
+/**
+ * The finding is a member of an inline `{ ... }` operand of a
+ * `type X = A & { ... }` alias, and the file's withDefaults object
+ * spreads another value: Patina's `prop_is_inline_intersection_extension`.
+ */
+function inlineExtensionBesideDefaultsSpread(finding: LintRecord, source: string): boolean {
+  const offset = findingOffset(finding, source);
+  if (offset === null) return false;
+  const prefix = source.slice(0, offset);
+  const open = prefix.lastIndexOf("{");
+  const typeStart = prefix.lastIndexOf("type ", open);
+  if (open < 0 || typeStart < 0) return false;
+  const header = source.slice(typeStart, open);
+  const close = source.indexOf("}", offset);
+  return (
+    /^type\s+[A-Za-z_$][\w$]*(?:\s*<[^=]*>)?\s*=[^{};]*&\s*$/u.test(header) &&
+    close > offset &&
+    !source.slice(open + 1, offset).includes("{") &&
+    /\bwithDefaults\s*\(\s*defineProps\s*<[^]*?>\s*\(\s*\)\s*,\s*\{[^}]*?\.\.\.[A-Za-z_$]/u.test(
+      source,
+    )
+  );
 }
 
 function findingInsideSameFileDefaultsSpread(finding: LintRecord, source: string): boolean {
