@@ -93,6 +93,7 @@ mod sfc_syntax_error_module;
 mod shared_helper_shadowing;
 mod single_required_camel_prop;
 mod slot_key;
+mod slot_outlet_loose_payload;
 mod split_script_diagnostic_anchors;
 mod spread_props;
 mod spread_scope_bindings;

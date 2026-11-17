@@ -6,7 +6,7 @@ use std::{
 };
 
 use serde_json::Value;
-use vize_l0::FxHashSet;
+use vize_l0::{FxHashMap, FxHashSet};
 
 use super::jsonc::parse_jsonc_value;
 
@@ -39,6 +39,10 @@ pub(crate) fn reference_directive_lines(content: &str) -> impl Iterator<Item = &
     })
 }
 
+/// The text of each declaration a package graph walk read, by the path it
+/// returned, so a caller that reads the returned files reads each once.
+pub(crate) type DeclarationContents = FxHashMap<PathBuf, String>;
+
 pub(crate) fn resolve_type_package_declaration_files(
     project_root: &Path,
     reference: &str,
@@ -50,12 +54,26 @@ pub(crate) fn resolve_type_reference_declaration_files(
     search_start: &Path,
     reference: &str,
 ) -> Vec<PathBuf> {
+    resolve_type_reference_declaration_files_reading(
+        search_start,
+        reference,
+        &mut DeclarationContents::default(),
+    )
+}
+
+/// [`resolve_type_reference_declaration_files`], keeping in `contents` the
+/// text of every declaration the package graph walk read.
+pub(crate) fn resolve_type_reference_declaration_files_reading(
+    search_start: &Path,
+    reference: &str,
+    contents: &mut DeclarationContents,
+) -> Vec<PathBuf> {
     let Some(reference) = TypeReference::parse(reference) else {
         return Vec::new();
     };
 
     for package_root in type_package_roots(search_start, reference.package.as_str()) {
-        if let Some(files) = package_declaration_files(&package_root, reference.subpath) {
+        if let Some(files) = package_declaration_files(&package_root, reference.subpath, contents) {
             return files;
         }
     }
@@ -167,10 +185,18 @@ fn fallback_types_package_name(package: &str) -> Option<std::string::String> {
     Some(vize_l0::cstr!("@types/{package}").into())
 }
 
-fn package_declaration_files(package_root: &Path, subpath: Option<&str>) -> Option<Vec<PathBuf>> {
+fn package_declaration_files(
+    package_root: &Path,
+    subpath: Option<&str>,
+    contents: &mut DeclarationContents,
+) -> Option<Vec<PathBuf>> {
     for entry in package_declaration_entry_candidates(package_root, subpath) {
         if is_declaration_path(&entry) && entry.is_file() {
-            return Some(collect_package_declaration_graph(&entry, package_root));
+            return Some(collect_package_declaration_graph(
+                &entry,
+                package_root,
+                contents,
+            ));
         }
     }
 
@@ -279,7 +305,11 @@ fn push_unique_candidate(candidates: &mut Vec<PathBuf>, path: PathBuf) {
     }
 }
 
-fn collect_package_declaration_graph(entry: &Path, package_root: &Path) -> Vec<PathBuf> {
+fn collect_package_declaration_graph(
+    entry: &Path,
+    package_root: &Path,
+    contents: &mut DeclarationContents,
+) -> Vec<PathBuf> {
     let package_root = normalize_path_lexically(package_root);
     let mut files = Vec::new();
     let mut seen = FxHashSet::default();
@@ -307,6 +337,7 @@ fn collect_package_declaration_graph(entry: &Path, package_root: &Path) -> Vec<P
                 queue.push(referenced);
             }
         }
+        contents.insert(path, content);
     }
 
     files

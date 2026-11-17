@@ -1,8 +1,8 @@
 #![expect(clippy::disallowed_methods, reason = "fixtures use std strings")]
 #![expect(clippy::disallowed_macros, reason = "fixtures use std strings")]
 use super::{
-    collect_tsconfig_type_packages, reference_type_packages,
-    resolve_type_reference_declaration_files,
+    DeclarationContents, collect_tsconfig_type_packages, reference_type_packages,
+    resolve_type_reference_declaration_files, resolve_type_reference_declaration_files_reading,
 };
 use std::path::{Path, PathBuf};
 
@@ -252,4 +252,47 @@ fn reference_directive_lines_are_the_split_lines_that_name_a_reference() {
             "{content:?}"
         );
     }
+}
+
+/// The package graph walk keeps the text of every declaration it returns, so
+/// the walk that follows the returned files reads none of them again.
+#[test]
+fn package_graph_walk_keeps_the_text_of_every_declaration_it_returns() {
+    let root = unique_case_dir("graph-contents");
+    let package = "node_modules/@types/graph";
+    write(
+        &root,
+        &format!("{package}/package.json"),
+        r#"{"types":"index.d.ts"}"#,
+    );
+    let index = "/// <reference path=\"globals.d.ts\" />\n/// <reference path=\"../../outside.d.ts\" />\nexport {}\n";
+    write(&root, &format!("{package}/index.d.ts"), index);
+    write(
+        &root,
+        &format!("{package}/globals.d.ts"),
+        "declare const g: 1;\n",
+    );
+    write(&root, "node_modules/outside.d.ts", "declare const o: 1;\n");
+
+    let mut contents = DeclarationContents::default();
+    let files = resolve_type_reference_declaration_files_reading(&root, "graph", &mut contents);
+    assert_eq!(
+        files,
+        resolve_type_reference_declaration_files(&root, "graph"),
+        "keeping the text changes no result"
+    );
+    let mut kept = contents.keys().cloned().collect::<Vec<_>>();
+    kept.sort();
+    let mut returned = files.clone();
+    returned.sort();
+    assert_eq!(kept, returned);
+    for file in &files {
+        assert_eq!(
+            contents.get(file).map(std::string::String::as_str),
+            Some(std::fs::read_to_string(file).unwrap().as_str()),
+            "{}",
+            file.display()
+        );
+    }
+    std::fs::remove_dir_all(root).unwrap();
 }

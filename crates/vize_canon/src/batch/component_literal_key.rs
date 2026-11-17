@@ -14,7 +14,8 @@ pub(super) struct AuthenticatedComponentLiteralKey {
 ///
 /// Inference-only copies fail the `ALL` feature gate. The generated row must
 /// start with a quoted property key and carry an exact sub-span from that key
-/// to an authored attribute name inside a component start tag.
+/// to an authored attribute name inside a component start tag (never a
+/// `<slot>` outlet or a `<template>`).
 pub(super) fn authenticate_component_literal_key(
     source: &str,
     generated: &str,
@@ -93,6 +94,16 @@ fn is_authored_attribute_key(source: &str, key: Range<usize>) -> bool {
         return false;
     };
     if tag_head.starts_with(['/', '!', '?']) || !ends_outside_quotes(tag_head) {
+        return false;
+    }
+    // Vue's compiler decides these by tag name: `<slot>` is a slot outlet
+    // whose payload literal has the same shape as a props literal (#4979),
+    // and `<template>` is a fragment. Neither passes component props.
+    let tag_name = tag_head
+        .split(|byte: char| byte.is_ascii_whitespace() || byte == '/')
+        .next()
+        .unwrap_or_default();
+    if matches!(tag_name, "slot" | "template") {
         return false;
     }
     source.get(key.end..).is_some_and(|after| {

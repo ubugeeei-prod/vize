@@ -46,6 +46,9 @@ oxc_ast = { workspace = true, features = ["serialize"] }
 oxc_estree.workspace = true
 oxc_ast_visit.workspace = true
 oxc_diagnostics.workspace = true
+# The miette that `oxc_diagnostics` renders with; its `Diagnostic` trait lets
+# the text report render a sourced diagnostic without building a `Report`.
+miette = { package = "oxc-miette", version = "=3.0.1" }
 oxc_ecmascript.workspace = true
 oxc_span.workspace = true
 oxc_syntax.workspace = true

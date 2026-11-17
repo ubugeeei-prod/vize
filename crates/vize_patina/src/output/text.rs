@@ -3,13 +3,10 @@
 use crate::diagnostic::{HelpRenderTarget, LintDiagnostic, Severity, render_help};
 use crate::linter::LintResult;
 use crate::output::rule_docs_path;
+use miette::{Diagnostic, SourceCode};
 use oxc_diagnostics::{GraphicalReportHandler, GraphicalTheme, NamedSource, OxcDiagnostic};
 use oxc_span::Span;
-#[expect(
-    clippy::disallowed_types,
-    reason = "required by the oxc_diagnostics API"
-)]
-use std::sync::Arc;
+use std::borrow::Cow;
 use vize_l0::FxHashMap;
 use vize_l0::String;
 use vize_l0::ToCompactString;
@@ -68,7 +65,6 @@ fn format_graphical(
     output
 }
 
-#[expect(clippy::disallowed_types, reason = "oxc_diagnostics requires Arc")]
 fn render_file(
     handler: &GraphicalReportHandler,
     source_map: &FxHashMap<&str, &str>,
@@ -86,20 +82,91 @@ fn render_file(
         .copied()
         .unwrap_or("");
 
-    let named_source = Arc::new(NamedSource::new(&result.filename, source.to_owned()));
+    let named_source = NamedSource::new(&result.filename, source.to_owned());
     let mut buf = String::default();
     for diagnostic in &result.diagnostics {
-        let oxc_diag = to_oxc_diagnostic(diagnostic, help_target);
-        let report = oxc_diag.with_source_code(Arc::clone(&named_source));
+        let report = SourcedDiagnostic {
+            diagnostic: to_oxc_diagnostic(diagnostic, help_target),
+            source: &named_source,
+        };
 
         // Render using oxc_diagnostics
         buf.clear();
-        if handler.render_report(&mut buf, report.as_ref()).is_ok() {
+        if handler.render_report(&mut buf, &report).is_ok() {
             output.push_str(&buf);
             output.push('\n');
         }
     }
     output
+}
+
+/// A diagnostic and its file's source, rendered without a `miette::Report`.
+///
+/// `OxcDiagnostic::with_source_code` wraps the diagnostic in two `Report`s,
+/// and creating each one runs miette's handler hook, which reads half a dozen
+/// environment variables under std's process-wide environment lock. The
+/// renderer only reads the diagnostic and its source, so this wrapper gives it
+/// exactly what miette's own `WithSourceCode` would: every method delegates,
+/// and `source_code` falls back to the file's source.
+struct SourcedDiagnostic<'a> {
+    diagnostic: OxcDiagnostic,
+    source: &'a dyn SourceCode,
+}
+
+impl std::fmt::Debug for SourcedDiagnostic<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Debug::fmt(&self.diagnostic, f)
+    }
+}
+
+impl std::fmt::Display for SourcedDiagnostic<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Display::fmt(&self.diagnostic, f)
+    }
+}
+
+impl std::error::Error for SourcedDiagnostic<'_> {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        self.diagnostic.source()
+    }
+}
+
+impl Diagnostic for SourcedDiagnostic<'_> {
+    fn code(&self) -> Option<Cow<'_, str>> {
+        self.diagnostic.code()
+    }
+
+    fn severity(&self) -> Option<miette::Severity> {
+        self.diagnostic.severity()
+    }
+
+    fn help(&self) -> Option<Cow<'_, str>> {
+        self.diagnostic.help()
+    }
+
+    fn note(&self) -> Option<Cow<'_, str>> {
+        self.diagnostic.note()
+    }
+
+    fn url(&self) -> Option<Cow<'_, str>> {
+        self.diagnostic.url()
+    }
+
+    fn labels(&self) -> miette::Labels {
+        self.diagnostic.labels()
+    }
+
+    fn source_code(&self) -> Option<&dyn SourceCode> {
+        self.diagnostic.source_code().or(Some(self.source))
+    }
+
+    fn related(&self) -> miette::Related<'_> {
+        self.diagnostic.related()
+    }
+
+    fn diagnostic_source(&self) -> Option<&dyn Diagnostic> {
+        self.diagnostic.diagnostic_source()
+    }
 }
 
 fn to_oxc_diagnostic(diagnostic: &LintDiagnostic, help_target: HelpRenderTarget) -> OxcDiagnostic {

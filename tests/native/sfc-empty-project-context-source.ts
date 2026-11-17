@@ -17,7 +17,7 @@ const bytes = readFileSync(
 );
 assert.equal(
   createHash("sha256").update(bytes).digest("hex"),
-  "d70132445182787424fddc589f261207817bd74b86a3e3ec091b0c38cfb5e8d2",
+  "62bfb4314586869bd5d4212860b02e3d95f1f4c25f1878b19dd4dbf609dd14d6",
   "the reviewed project-context transformation must remain complete",
 );
 const plan = JSON.parse(bytes.toString("utf8")) as {
