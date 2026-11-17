@@ -1,0 +1,10 @@
+<script setup lang="ts">
+import { localProps } from "./local/props"
+
+const props = defineProps(localProps)
+console.log(props.label)
+</script>
+
+<template>
+  <button @click="onRemove">{{ label }}</button>
+</template>

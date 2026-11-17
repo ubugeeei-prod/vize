@@ -37,6 +37,7 @@ mod module_default_export;
 mod nav_index_signature_access_12531;
 mod nested_callback_11361;
 mod nested_function_guard_11853;
+mod npm_runtime_props_13238;
 mod nuxt_manifest_template_ref_13093;
 mod optional_prop_spacing;
 mod options_api_diagnostics;

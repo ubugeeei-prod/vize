@@ -1,0 +1,1 @@
+export const sharedProps = { label: { type: String, required: true }, onRemove: { type: Function, required: true } }

@@ -19,6 +19,7 @@ use vize_croquis::macros::MacroKind;
 use super::keyed_template_names::collect_keyed_template_prop_names;
 use super::mappings::PropBindingMappings;
 use super::mappings::prop_binding_identifier;
+use super::opaque_runtime::{opaque_runtime_props_binding, opaque_runtime_resolved_props_type};
 use super::setup_scoped::props_type_ref;
 use super::template_bindings::{
     emit_macro_template_prop_bindings, should_skip_template_prop_binding,
@@ -68,8 +69,11 @@ impl TemplatePropsModel {
             .macros
             .define_props()
             .and_then(|m| m.type_args.as_ref());
-        let declares_props =
-            !props.is_empty() || !models.is_empty() || define_props_type_args.is_some();
+        let opaque_runtime_props = opaque_runtime_props_binding(summary);
+        let declares_props = !props.is_empty()
+            || !models.is_empty()
+            || define_props_type_args.is_some()
+            || opaque_runtime_props.is_some();
 
         let setup_scoped = define_props_type_requires_setup_scope(summary);
         let authored_type_ref = if !setup_scoped && let Some(contract) = component_contract {
@@ -127,13 +131,21 @@ impl TemplatePropsModel {
         // relies on above.
         let boolean_casting = (define_props_type_args.is_some() && generic_param.is_none())
             .then_some(&undefined_default_names);
-        let resolved_type_ref = opaque_defaults_props_type_ref(summary).unwrap_or_else(|| {
+        let mut resolved_type_ref = opaque_defaults_props_type_ref(summary).unwrap_or_else(|| {
             template_props_type_ref(
                 base_type_ref.as_str(),
                 &defaulted_prop_names,
                 boolean_casting,
             )
         });
+        // The object's own type resolves what the authored contract only marks
+        // optional: a defaulted or Boolean prop is never `undefined` here.
+        if let Some(binding) = opaque_runtime_props {
+            resolved_type_ref = cstr!(
+                "{} & {resolved_type_ref}",
+                opaque_runtime_resolved_props_type(binding)
+            );
+        }
 
         Self {
             authored_type_ref,
@@ -310,30 +322,33 @@ pub(crate) fn generate_props_variables(
         }
 
         if should_emit_keyed_template_prop_bindings(summary, type_name, &emitted_names) {
-            let names = collect_keyed_template_prop_names(summary, &emitted_names);
-            if check_props && !names.is_empty() {
-                // Keep literal public-instance members (including user plugin
-                // augmentations), but never let an index signature hide typos.
-                append!(
-                    *ts,
-                    "  const __vize_keyed_template_context = {props_object_binding} as typeof {props_object_binding} & {{ [K in keyof __Ctx as string extends K ? never : number extends K ? never : symbol extends K ? never : K]: __Ctx[K] }};\n  void __vize_keyed_template_context;\n"
-                );
-            }
-            for name in names {
-                if check_props {
-                    emit_keyed_template_prop_binding(
-                        ts,
-                        binding_mappings,
-                        template_props_type_ref,
-                        name.as_str(),
-                        defaulted_prop_names.contains(&name),
-                    );
-                } else {
-                    emit_unchecked_template_prop_binding(ts, props_object_binding, name.as_str());
-                }
-                keyed_names.insert(name);
-            }
+            emit_keyed_template_prop_bindings(
+                ts,
+                binding_mappings,
+                summary,
+                (props_object_binding, template_props_type_ref),
+                check_props,
+                defaulted_prop_names,
+                (&emitted_names, &mut keyed_names),
+            );
         }
+    } else if opaque_runtime_props_binding(summary).is_some() {
+        // No prop name is listed, so each name the template reads is declared
+        // from the object's type, the way an opaque `defineProps<T>()` is.
+        // `defineModel()` names keep the bindings emitted for them below.
+        let listed = models
+            .iter()
+            .map(|model| String::from(model.name.as_str()))
+            .collect();
+        emit_keyed_template_prop_bindings(
+            ts,
+            binding_mappings,
+            summary,
+            (props_object_binding, template_props_type_ref),
+            check_props,
+            defaulted_prop_names,
+            (&listed, &mut keyed_names),
+        );
     } else if has_props {
         // Runtime-declared props: generate individual variables
         emit_macro_template_prop_bindings(
@@ -363,6 +378,40 @@ pub(crate) fn generate_props_variables(
     }
     ts.push('\n');
     keyed_names
+}
+
+fn emit_keyed_template_prop_bindings(
+    ts: &mut crate::virtual_ts::TextBuf,
+    binding_mappings: &mut PropBindingMappings<'_>,
+    summary: &Croquis,
+    (props_object_binding, props_type_ref): (&str, &str),
+    check_props: bool,
+    defaulted_prop_names: &FxHashSet<String>,
+    (emitted_names, keyed_names): (&FxHashSet<String>, &mut FxHashSet<String>),
+) {
+    let names = collect_keyed_template_prop_names(summary, emitted_names);
+    if check_props && !names.is_empty() {
+        // Keep literal public-instance members (including user plugin
+        // augmentations), but never let an index signature hide typos.
+        append!(
+            *ts,
+            "  const __vize_keyed_template_context = {props_object_binding} as typeof {props_object_binding} & {{ [K in keyof __Ctx as string extends K ? never : number extends K ? never : symbol extends K ? never : K]: __Ctx[K] }};\n  void __vize_keyed_template_context;\n"
+        );
+    }
+    for name in names {
+        if check_props {
+            emit_keyed_template_prop_binding(
+                ts,
+                binding_mappings,
+                props_type_ref,
+                name.as_str(),
+                defaulted_prop_names.contains(&name),
+            );
+        } else {
+            emit_unchecked_template_prop_binding(ts, props_object_binding, name.as_str());
+        }
+        keyed_names.insert(name);
+    }
 }
 
 fn emit_keyed_template_prop_binding(

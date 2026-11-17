@@ -1,0 +1,1 @@
+{ "name": "props-pkg", "type": "module", "types": "./index.d.ts", "main": "./index.js" }
