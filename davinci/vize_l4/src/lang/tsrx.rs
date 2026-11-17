@@ -100,8 +100,8 @@ pub enum EmitIssue {
     TypeErasure,
     /// DOM: markup outside the body or the returned value of a top-level
     /// component, a function whose name starts with an uppercase letter, or
-    /// held by a value other than a conditional's arm (`{n && <b />}`,
-    /// `.map()` callbacks).
+    /// held by a value other than a conditional's arm or a `.map()` callback's
+    /// result (`{n && <b />}`, `{render(<b />)}`).
     OutsideComponent,
     /// DOM: parameters other than none, one identifier, or one object pattern
     /// of static keys, each bound to a name with an optional default the

@@ -118,14 +118,14 @@ fn dom_markup_outside_a_component_body_is_refused_at_its_region() {
             "export function App() @{\n\tconst x = <i />;\n\t<p />\n}\n",
             "<i />",
         ),
-        // A value that holds markup: `n` may render `0`, and `.map()` waits
-        // for its loop lowering.
+        // A value that holds markup: `n` may render `0`, and `.map()` passes
+        // only an item and an index.
         (
             "export function App({ n }: { n: number }) @{\n\t<p>{n && <i />}</p>\n}\n",
             "<i />",
         ),
         (
-            "export function App({ xs }: { xs: string[] }) @{\n\t<p>{xs.map((x) => <i>{x}</i>)}</p>\n}\n",
+            "export function App({ xs }: { xs: string[] }) @{\n\t<p>{xs.map((x, i, all) => <i>{x}</i>)}</p>\n}\n",
             "<i>{x}</i>",
         ),
     ] {

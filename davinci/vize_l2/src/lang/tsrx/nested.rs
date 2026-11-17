@@ -1,19 +1,22 @@
-//! Markup regions nested in a conditional expression child.
+//! Markup regions nested in a conditional or loop expression child.
 //!
 //! `{a ? <A /> : <B />}`, its `a ? … : b ? … : …` chains, a last alternate
 //! `null`, and `{a && <A />}` with a provably boolean `a` lower to one `ui.if`
-//! whose branches are the nested regions' markup, the shapes JSX control flow
-//! lowers (`framework/vue/jsx/control_flow.rs`). An arm may itself be such a
-//! conditional. The nested regions become part of the enclosing artifact.
+//! whose branches are the nested regions' markup, and `{xs.map((x, i) => <A />)}`
+//! lowers to a `ui.for` over `xs` with the callback's parameters as aliases:
+//! the shapes JSX control flow lowers (`framework/vue/jsx/control_flow.rs`). An
+//! arm or a callback may itself return such a shape. The nested regions become
+//! part of the enclosing artifact.
 //!
 //! Any other expression that holds markup stays a value child, and its regions
 //! stay standalone: `{n && <A />}` renders `0` for a zero `n`, which a `ui.if`
-//! cannot, and `.map()` callbacks wait for their loop lowering.
+//! cannot.
 
 use core::cell::RefCell;
 
 use oxc_ast::ast::{
-    ConditionalExpression, Expression, LogicalExpression, LogicalOperator, UnaryOperator,
+    CallExpression, ConditionalExpression, Expression, FormalParameters, LogicalExpression,
+    LogicalOperator, Statement, UnaryOperator,
 };
 use oxc_span::GetSpan;
 use vize_l0::Span;
@@ -21,7 +24,7 @@ use vize_l1::markup::tsrx::{Region, TsrxModule};
 
 use super::emit::{self, Context};
 use super::{TsrxIssue, TsrxIssueKind, expression};
-use crate::artifact::{BranchBuilder, RegionBuilder};
+use crate::artifact::{BranchBuilder, CallbackForHead, RegionBuilder};
 use crate::expr::ExprRef;
 use crate::op::Namespace;
 
@@ -52,8 +55,56 @@ fn structural<'a>(module: &TsrxModule<'a>, value: &Expression<'a>) -> bool {
                 && is_boolean(&logical.left)
                 && renders(module, &logical.right)
         }
+        Expression::CallExpression(call) => {
+            map_parts(call).is_some_and(|(_, _, returned)| renders(module, returned))
+        }
         _ => false,
     }
+}
+
+/// The array, the callback's parameters and its returned value of
+/// `xs.map(cb)`: an arrow or function expression of at most two plain
+/// parameters whose body is its value or one `return`. `renderList` passes
+/// `(item, index)` for an array, as `map` does.
+fn map_parts<'e, 'a>(
+    call: &'e CallExpression<'a>,
+) -> Option<(
+    &'e Expression<'a>,
+    &'e FormalParameters<'a>,
+    &'e Expression<'a>,
+)> {
+    let Expression::StaticMemberExpression(member) = unwrap(&call.callee) else {
+        return None;
+    };
+    if member.property.name != "map" || member.optional || call.optional {
+        return None;
+    }
+    let [argument] = call.arguments.as_slice() else {
+        return None;
+    };
+    let (params, statements, expression) = match unwrap(argument.as_expression()?) {
+        Expression::ArrowFunctionExpression(arrow) if !arrow.r#async => {
+            (&*arrow.params, &arrow.body.statements, arrow.expression)
+        }
+        Expression::FunctionExpression(function) if !function.r#async && !function.generator => (
+            &*function.params,
+            &function.body.as_ref()?.statements,
+            false,
+        ),
+        _ => return None,
+    };
+    if params.rest.is_some()
+        || params.items.len() > 2
+        || params.items.iter().any(|param| param.initializer.is_some())
+    {
+        return None;
+    }
+    let returned = match statements.as_slice() {
+        [Statement::ExpressionStatement(statement)] if expression => &statement.expression,
+        [Statement::ReturnStatement(statement)] if !expression => statement.argument.as_ref()?,
+        _ => return None,
+    };
+    Some((&member.object, params, returned))
 }
 
 /// Every consequent renders, and so does the last alternate unless it is `null`.
@@ -76,6 +127,9 @@ fn lower<'a>(
     namespace: Namespace,
     builder: &mut RegionBuilder<'_, 'a>,
 ) -> Result<(), TsrxIssue> {
+    if let Expression::CallExpression(call) = unwrap(value) {
+        return map(cx, call, at, namespace, builder);
+    }
     let mut failure = None;
     let built = builder.conditional(at, |branches, _| {
         failure = match unwrap(value) {
@@ -87,6 +141,41 @@ fn lower<'a>(
         };
     });
     failure.or(artifact(built.err(), at)).map_or(Ok(()), Err)
+}
+
+fn map<'a>(
+    cx: &Context<'a>,
+    call: &'a CallExpression<'a>,
+    at: Span,
+    namespace: Namespace,
+    builder: &mut RegionBuilder<'_, 'a>,
+) -> Result<(), TsrxIssue> {
+    let Some((list, params, returned)) = map_parts(call) else {
+        return Err(unstructured(at));
+    };
+    let head = CallbackForHead {
+        collection: expression(cx.allocator, cx.source, list)?,
+        params,
+    };
+    let mut failure = None;
+    let built = builder.callback_for(head, at, |region, _| {
+        failure = arm(cx, returned, namespace, region).err();
+    });
+    failure.or(artifact(built.err(), at)).map_or(Ok(()), Err)
+}
+
+/// What an arm or a callback renders: a nested region's markup, or a
+/// conditional or loop.
+fn arm<'a>(
+    cx: &Context<'a>,
+    value: &'a Expression<'a>,
+    namespace: Namespace,
+    region: &mut RegionBuilder<'_, 'a>,
+) -> Result<(), TsrxIssue> {
+    match cx.module.expression_region(unwrap(value)) {
+        Some(nested) => fold(cx, nested, namespace, region),
+        None => lower(cx, value, span(value.span()), namespace, region),
+    }
 }
 
 fn chain<'a>(
@@ -139,10 +228,7 @@ fn branch<'a>(
     };
     let mut failure = None;
     let built = branches.branch(condition, span, |region, _| {
-        failure = match cx.module.expression_region(unwrap(arm)) {
-            Some(nested) => fold(cx, nested, namespace, region).err(),
-            None => lower(cx, arm, self::span(arm.span()), namespace, region).err(),
-        };
+        failure = self::arm(cx, arm, namespace, region).err();
     });
     failure.or(artifact(built.err(), span)).map_or(Ok(()), Err)
 }

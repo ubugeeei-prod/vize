@@ -25,8 +25,9 @@
 //! - `@if`/`@else` becomes `ui.if`.
 //! - A `{expr}` child that is a conditional over nested regions
 //!   (`{a ? <A /> : <B />}`, `{a && <A />}` with a provably boolean `a`)
-//!   becomes `ui.if` over their markup ([`nested`]); those regions are part
-//!   of the enclosing artifact.
+//!   becomes `ui.if` over their markup, and `{xs.map((x, i) => <A />)}` a
+//!   `ui.for` with the callback's parameters as aliases ([`nested`]); those
+//!   regions are part of the enclosing artifact.
 //! - `@for` becomes `ui.for` with the retained host head (`HostFor`): the
 //!   authored left side, `index`, `key`, `await`, and the `@empty` region.
 //! - A function-body region (`@{ … }`) lowers only its render node. Its setup

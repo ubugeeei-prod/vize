@@ -11,7 +11,8 @@ fn rows(result: &LintResult) -> Vec<(&str, u32, u32)> {
 
 #[test]
 fn regions_merge_in_source_order_with_one_report_per_rule_and_range() {
-    // The `<li>` region is nested in the `<ul>` region's expression child.
+    // The `<li>` region is the `.map()` loop's region in the `<ul>` region,
+    // so the loop rules see it.
     let source = "export function List({ items }: { items: string[] }) @{
   <ul  class=\"list\">
     {items.map((item) => <li  title={item}><img src={item} /></li>)}
@@ -27,12 +28,13 @@ export function Footer() @{
         rows(&result),
         [
             ("vue/no-multi-spaces", 61, 63),
+            ("vue/require-v-for-key", 81, 145),
             ("vue/no-multi-spaces", 105, 107),
             ("a11y/alt-text", 120, 138),
             ("vue/no-multi-spaces", 194, 196),
         ]
     );
-    assert_eq!((result.error_count, result.warning_count), (0, 4));
+    assert_eq!((result.error_count, result.warning_count), (1, 4));
 }
 
 #[test]

@@ -147,6 +147,15 @@ impl<'a> RegionBuilder<'_, 'a> {
     ) -> Result<NodeId, ArtifactError> {
         self.builder.host_for(head, span, regions)
     }
+    /// Create one array callback `ui.for`; the callback builds its region.
+    pub fn callback_for(
+        &mut self,
+        head: super::CallbackForHead<'a>,
+        span: Span,
+        children: impl FnOnce(&mut RegionBuilder<'_, 'a>, NodeId),
+    ) -> Result<NodeId, ArtifactError> {
+        self.builder.callback_for(head, span, children)
+    }
     /// Create one `ui.if`; the callback adds its branches in authored order.
     pub fn conditional(
         &mut self,

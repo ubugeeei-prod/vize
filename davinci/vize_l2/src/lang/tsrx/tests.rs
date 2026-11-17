@@ -93,7 +93,7 @@ ui.element article @106:384
 }
 
 #[test]
-fn nested_regions_lower_separately_and_conditionals_keep_branch_order() {
+fn map_callbacks_fold_their_region_and_conditionals_keep_branch_order() {
     let source = "const view = (items: string[], ok: boolean) =>
 \t<ul>
 \t\t{items.map((item) => <li>{item}</li>)}
@@ -101,23 +101,20 @@ fn nested_regions_lower_separately_and_conditionals_keep_branch_order() {
 \t</ul>;
 ";
     let regions = dumps(source);
-    // The outer child keeps the nested region's placeholder in its retained
-    // expression; the nested region is its own artifact.
-    let [
-        (RegionSite::Expression, outer),
-        (RegionSite::Expression, inner),
-    ] = regions.as_slice()
-    else {
+    // The callback's region is the loop's region, in the enclosing artifact.
+    let [(RegionSite::Expression, page)] = regions.as_slice() else {
         panic!("{regions:?}");
     };
     assert_eq!(
-        outer,
+        page,
         r#"[l2-dump-v2]
-ops=9
+ops=11
 
 [l2-dump-v2.ops]
 ui.element ul @48:188
-  ui.jsx-child js("items.map((item) => <li>{item}</li>)" @56:92) @55:93
+  ui.for source=js("items" @56:61) value=opaque(for-value "item" @67:71) @55:93
+    ui.element li @76:91
+      ui.jsx-child js("item" @81:85) @80:86
   ui.if @96:181
     branch js("ok" @101:103) @96:119
       ui.element b @107:117
@@ -128,17 +125,6 @@ ui.element ul @48:188
     branch @160:181
       ui.element s @168:179
         ui.text "none" @171:175
-
-"#
-    );
-    assert_eq!(
-        inner,
-        r#"[l2-dump-v2]
-ops=2
-
-[l2-dump-v2.ops]
-ui.element li @76:91
-  ui.jsx-child js("item" @81:85) @80:86
 
 "#
     );
