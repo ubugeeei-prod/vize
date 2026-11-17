@@ -36,7 +36,7 @@ pub(crate) fn reset(uses: usize) {
 /// The listeners of this template function whose emit arguments are
 /// inferred: component handlers the event scope types (emit checks on, a
 /// static event name, not a vnode hook, not a slot outlet's), on a usage
-/// that infers them.
+/// that infers them, counted up to the sharing threshold of two.
 pub(crate) fn uses(
     summary: &Croquis,
     template_ast: Option<&vize_relief::RootNode<'_>>,
@@ -72,6 +72,8 @@ pub(crate) fn uses(
                     super::generic_inference::infers_emit_args(template_ast, &usage)
                 })
         })
+        // `reset` only asks for two; stop scanning once they are found.
+        .take(2)
         .count()
 }
 
