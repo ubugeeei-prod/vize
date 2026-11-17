@@ -1,0 +1,4 @@
+{
+  "vue/no-shadow-native-events": "warn",
+  "vue/prefer-single-event-payload": "warn"
+}

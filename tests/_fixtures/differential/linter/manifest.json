@@ -16403,6 +16403,42 @@
       }
     },
     {
+      "id": "linter/emit-report-nodes-12336",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "emit-report-nodes-12336",
+        "files": [
+          {
+            "path": "Group.vue.txt",
+            "role": "real-project-matrix-reduction",
+            "sha256": "4c9c0505b9e52fa2dce68efb94d32919b43acdab11e7bf95ac190c1c137c8629"
+          },
+          {
+            "path": "rules.json",
+            "role": "rule-options",
+            "sha256": "c1540f1bf76daaea5c8500b50f81796cad48dad3dfbf6d4467595c63fa84b59d"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/empty-tuple-runtime-12949",
       "state": "active",
       "targets": [
