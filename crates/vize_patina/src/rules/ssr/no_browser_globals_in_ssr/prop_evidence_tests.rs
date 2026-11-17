@@ -64,3 +64,19 @@ fn complete_local_props_still_leave_free_globals_reported() {
     );
     assert_eq!(names("defineProps<{ open?: boolean }>()"), ["close"]);
 }
+
+#[test]
+fn a_spread_withdefaults_object_may_name_any_prop_but_spelled_keys_are_exact() {
+    assert_eq!(
+        names(
+            "import { shared } from './defaults'\ninterface Props { label?: string }\nwithDefaults(defineProps<Props>(), { ...shared })"
+        ),
+        Vec::<&str>::new()
+    );
+    assert_eq!(
+        names(
+            "interface Props { label?: string }\nwithDefaults(defineProps<Props>(), { open: false })"
+        ),
+        ["close"]
+    );
+}

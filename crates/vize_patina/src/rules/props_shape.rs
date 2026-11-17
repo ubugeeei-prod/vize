@@ -1,5 +1,9 @@
 //! Single-file props shapes, and the names a component may declare as props.
 
+use oxc_allocator::Allocator;
+use oxc_ast::ast::{Expression, ObjectPropertyKind};
+use oxc_parser::Parser;
+use oxc_span::SourceType;
 use vize_croquis::{Croquis, types::TypeDefinitions};
 use vize_l0::{CompactString, FxHashSet};
 
@@ -15,9 +19,32 @@ pub(crate) fn may_declare_prop(analysis: &Croquis, name: &str) -> bool {
         || macros
             .props_destructure()
             .is_some_and(|destructure| destructure.get(name).is_some())
-        || macros.with_defaults_declares(name)
+        || with_defaults_declares(macros.with_defaults_expression(), name)
         || picks_key(analysis, name)
         || has_unresolved_props(analysis)
+}
+
+/// Whether the authored `withDefaults` object names `name`, or spreads or
+/// computes a key that may. Croquis keeps these keys only for resolved props.
+fn with_defaults_declares(expression: Option<&str>, name: &str) -> bool {
+    let Some(expression) = expression else {
+        return false;
+    };
+    let allocator = Allocator::default();
+    let Ok(expression) = Parser::new(&allocator, expression, SourceType::ts()).parse_expression()
+    else {
+        return false;
+    };
+    let Expression::ObjectExpression(object) = expression.without_parentheses() else {
+        return false;
+    };
+    object.properties.iter().any(|property| match property {
+        ObjectPropertyKind::SpreadProperty(_) => true,
+        ObjectPropertyKind::ObjectProperty(property) => property
+            .key
+            .static_name()
+            .is_none_or(|key| key.as_ref() == name),
+    })
 }
 
 /// Whether the props type, its local aliases or its interface heritage pick
