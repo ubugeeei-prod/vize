@@ -1,0 +1,15 @@
+<script setup lang="ts" generic="T extends Record<string, unknown>">
+interface Props<T> {
+  enabled?: boolean;
+  value: T;
+}
+
+const props = defineProps<Props<T>>();
+const enabled: boolean = props.enabled;
+
+function getKey(value: Record<PropertyKey, unknown>) {
+  return String(value.id);
+}
+
+getKey(props.value);
+</script>

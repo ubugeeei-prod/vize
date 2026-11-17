@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 2538,
+  "regressionCommit": "ed38d543eeed916cf98a6be84d58e3b4b84015ce",
+  "sourceRevision": "ed38d543eeed916cf98a6be84d58e3b4b84015ce",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "static-and-dynamic-class-merged",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/TeacherCard.vue",
+          "source": "TeacherCard.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "merged-class-sibling-prop-type-error",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/TeacherCard.vue",
+          "source": "TeacherCard.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "invalid.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 10,
+          "column": 4,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '{ name: number; }' is not assignable to type '{ name: string; }'.\nTypes of property 'name' are incompatible.\nType 'number' is not assignable to type 'string'."
+        }
+      ]
+    }
+  ]
+}

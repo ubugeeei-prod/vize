@@ -1,0 +1,11 @@
+<script setup lang="ts">
+import { useTemplateRef } from "vue";
+
+const element = useTemplateRef<HTMLElement>("element");
+
+defineExpose({ element });
+</script>
+
+<template>
+  <div ref="element" />
+</template>

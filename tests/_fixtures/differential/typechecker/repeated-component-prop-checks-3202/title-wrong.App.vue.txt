@@ -1,0 +1,5 @@
+<script setup lang="ts">
+import Child from "./Child.vue"
+const count = 1
+</script>
+<template><Child title="static title" :title="count" /></template>

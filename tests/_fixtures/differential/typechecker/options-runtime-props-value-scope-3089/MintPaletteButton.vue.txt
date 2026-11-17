@@ -1,0 +1,20 @@
+<script>
+export default {
+  props: {
+    content: {
+      type: String,
+      default: ''
+    },
+    offset: {
+      type: Number,
+      default: Math.PI / 4
+    },
+    direction: {
+      type: String,
+      default: 'lt' // preserve this runtime comment in value scope
+    }
+  }
+}
+</script>
+
+<template><span>{{ direction }}</span></template>

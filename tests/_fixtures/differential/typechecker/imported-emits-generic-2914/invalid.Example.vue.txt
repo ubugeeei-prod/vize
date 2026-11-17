@@ -1,0 +1,30 @@
+<script
+  setup
+  lang="ts"
+  generic="
+    T extends ExampleValue | ExampleValue[] = ExampleValue | ExampleValue[]
+  "
+>
+  import {
+    type ExampleEmits,
+    type ExampleProps,
+    type ExampleValue
+  } from "./types";
+
+  const props = withDefaults(defineProps<ExampleProps>(), {
+    firstValue: undefined,
+    secondValue: undefined,
+    additionalNumberValue: 0,
+    disabled: false,
+    reversed: false,
+    mode: "b"
+  });
+
+  const emit = defineEmits<ExampleEmits<T>>();
+  emit("change", props.firstValue as T);
+  emit("change", 1);
+</script>
+
+<template>
+  <slot :emit :props />
+</template>

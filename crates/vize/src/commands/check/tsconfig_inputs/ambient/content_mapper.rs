@@ -10,7 +10,16 @@ use super::super::loader::TsconfigInputCache;
 use super::super::matching::{is_nuxt_import_manifest_path, matches_tsconfig_patterns};
 use super::super::spec::{InputSelection, ProgramInputOptions};
 use super::super::{collect_default_check_files_for_tsconfig, tsconfig_selects_any_input};
-use super::{collect_declaration_reference_graph, collect_tsconfig_type_declaration_files};
+use super::{collect_declaration_reference_graph_reading, collect_tsconfig_type_declaration_files};
+
+/// The declaration graph a content-mapper project owns.
+pub(crate) struct ContentMapperAmbientDeclarations {
+    /// Every declaration of the graph, sorted.
+    pub files: Vec<PathBuf>,
+    /// Whether one of them declares Vue's global `useTemplateRef`, decided
+    /// while the graph walk reads it.
+    pub declares_vue_template_ref: bool,
+}
 
 /// Collect the declaration graph that decides content-mapper ownership.
 ///
@@ -30,7 +39,7 @@ pub(crate) fn collect_content_mapper_ambient_declarations(
     project_root: &Path,
     tsconfig_path: &Path,
     cache: &mut TsconfigInputCache,
-) -> Vec<PathBuf> {
+) -> ContentMapperAmbientDeclarations {
     let project_root = normalize_input_path(project_root);
     let mut roots = Vec::new();
     let mut seen = FxHashSet::default();
@@ -73,12 +82,21 @@ pub(crate) fn collect_content_mapper_ambient_declarations(
         Some(tsconfig_path),
     ));
     roots.extend(manifests);
-    let mut graph = collect_declaration_reference_graph(&roots)
-        .into_iter()
-        .filter(|path| path.is_file())
-        .collect::<Vec<_>>();
-    graph.sort();
-    graph
+    // Each declaration is read once: the walk that follows its references
+    // also decides the template-ref ownership.
+    let mut declares_vue_template_ref = false;
+    let mut files = collect_declaration_reference_graph_reading(&roots, |content| {
+        declares_vue_template_ref = declares_vue_template_ref
+            || vize_canon::batch::declares_vue_template_ref_global(content);
+    })
+    .into_iter()
+    .filter(|path| path.is_file())
+    .collect::<Vec<_>>();
+    files.sort();
+    ContentMapperAmbientDeclarations {
+        files,
+        declares_vue_template_ref,
+    }
 }
 
 /// Nuxt import manifests the tsconfig itself selects through `files` or

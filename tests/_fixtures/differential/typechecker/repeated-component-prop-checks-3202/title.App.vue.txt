@@ -1,0 +1,5 @@
+<script setup lang="ts">
+import Child from "./Child.vue"
+const label = "bound title"
+</script>
+<template><Child title="static title" :title="label" /></template>

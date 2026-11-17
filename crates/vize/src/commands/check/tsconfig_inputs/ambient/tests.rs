@@ -63,7 +63,8 @@ fn content_mapper_ambient_collection_opens_only_declaration_inputs() {
         &project_root,
         &project_root.join("tsconfig.json"),
         &mut TsconfigInputCache::default(),
-    );
+    )
+    .files;
 
     // The reference-only manifest is part of the program graph too: editing
     // its references changes ownership, so it is watched (#13093).

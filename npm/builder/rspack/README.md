@@ -179,8 +179,11 @@ export default {
 
 ## Configuration responsibilities
 
-Rspack rules select files through `test`, `include`, and `exclude`. SFC and JSX
-loader options configure compilation. `VizePlugin` configures CSS integration,
+Rspack rules select files through `test`, `include`, and `exclude`. SFC, JSX and
+TSRX loader options configure compilation. `@vizejs/rspack-plugin/tsrx-loader`
+compiles `.tsrx` modules through the same TSRX compiler as `vize build`; like the
+SFC loader it returns TypeScript, so put a `builtin:swc-loader` TypeScript rule
+before it in `use`. A refused module fails the build with every diagnostic. `VizePlugin` configures CSS integration,
 automatic rules, TypeScript post-processing, and diagnostic logging.
 
 Compilation options on `VizePlugin` are deprecated and are not forwarded to loaders.

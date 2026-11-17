@@ -4,7 +4,7 @@
 //   node tools/commands/fixtures/typechecker-fix-history-pack.ts [--capture DIR] SPEC.json|PACK...
 //
 // A SPEC.json names a new or changed pack:
-//   { pack, module, test, regressionCommit, historicalIssue, sources?, cases? }
+//   { pack, module, test, regressionCommit, historicalIssue, checkerOptions?, sources?, cases? }
 // `sources` maps fixture file names to their bytes; `cases` lists
 // `{ id, inputs: [{ file, source }] }`. Without `cases` the pack's
 // cases.json supplies them. A bare PACK re-registers an existing pack from
@@ -52,6 +52,7 @@ type Spec = {
   test: string;
   regressionCommit: string;
   historicalIssue: number | null;
+  checkerOptions?: { optionsApi?: boolean; jsxTypecheck?: boolean };
   sources?: Record<string, string>;
   cases?: Case[];
 };
@@ -116,6 +117,7 @@ function loadSpec(argument: string): Spec {
     test: body,
     regressionCommit: pack.regressionCommit,
     historicalIssue: pack.historicalIssue,
+    checkerOptions: pack.checkerOptions,
   };
 }
 
@@ -159,6 +161,7 @@ function writePack(spec: Spec, capture?: string) {
     historicalIssue: spec.historicalIssue,
     regressionCommit: spec.regressionCommit,
     sourceRevision: spec.regressionCommit,
+    checkerOptions: spec.checkerOptions,
     diagnosticContract: contract,
     cases,
   };
@@ -187,6 +190,7 @@ function manifestEntries(spec: Spec, cases: Case[], packSha256: string, old: Ent
       test,
       regressionCommit: spec.regressionCommit,
       sourceRevision: spec.regressionCommit,
+      checkerOptions: spec.checkerOptions,
       packReference: { path: `${spec.pack}/cases.json`, sha256: packSha256 },
       inputs,
       dialectCoverage: typecheckerDialectCoverage(fixtures, inputs),

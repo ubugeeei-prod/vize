@@ -1,0 +1,6 @@
+<script lang="ts">
+const value = 1;
+export interface Options { a: typeof value } export interface Options { b: typeof value }
+</script>
+
+<template><div /></template>

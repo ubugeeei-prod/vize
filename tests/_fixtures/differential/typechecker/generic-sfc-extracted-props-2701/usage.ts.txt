@@ -1,0 +1,16 @@
+import Child from "./Child.vue";
+
+type ComponentProps<T> = T extends new (...args: any) => { $props: infer P }
+  ? NonNullable<P>
+  : {};
+
+declare function mount<T>(
+  component: T,
+  options?: { props?: ComponentProps<T> }
+): void;
+
+mount(Child, {
+  props: {
+    value: "one"
+  }
+});

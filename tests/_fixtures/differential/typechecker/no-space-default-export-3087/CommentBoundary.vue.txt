@@ -1,0 +1,5 @@
+<script>
+export default/* keep this comment */{
+  name: 'CommentBoundary'
+}
+</script>

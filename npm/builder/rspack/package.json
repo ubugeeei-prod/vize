@@ -44,6 +44,11 @@
       "import": "./dist/loader/jsx-loader.mjs",
       "default": "./dist/loader/jsx-loader.mjs"
     },
+    "./tsrx-loader": {
+      "types": "./dist/loader/tsrx-loader.d.mts",
+      "import": "./dist/loader/tsrx-loader.mjs",
+      "default": "./dist/loader/tsrx-loader.mjs"
+    },
     "./style-loader": {
       "types": "./dist/loader/style-loader.d.mts",
       "import": "./dist/loader/style-loader.mjs",

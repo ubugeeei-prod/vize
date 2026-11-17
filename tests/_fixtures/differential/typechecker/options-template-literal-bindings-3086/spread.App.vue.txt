@@ -1,0 +1,17 @@
+<script lang="ts">
+export default {
+  setup() {
+    const known = {}
+    return { ...known }
+  },
+}
+</script>
+
+<template>
+  <button
+    :disabled="false"
+    :aria-hidden="true"
+    :data-empty="null"
+    :data-state="falsey ? trueValue : nullish"
+  />
+</template>

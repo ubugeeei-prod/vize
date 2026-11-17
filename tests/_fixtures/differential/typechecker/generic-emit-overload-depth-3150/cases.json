@@ -1,0 +1,66 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 3150,
+  "regressionCommit": "5257a671727fc55e94bb227247269d23a8eda13e",
+  "sourceRevision": "5257a671727fc55e94bb227247269d23a8eda13e",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "generic-emit-overload-expansion",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        },
+        {
+          "file": "src/usage.ts",
+          "source": "usage.ts.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "generic-emit-overload-extra-argument",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        },
+        {
+          "file": "src/usage.ts",
+          "source": "usage.invalid.ts.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/usage.ts",
+          "line": 11,
+          "column": 21,
+          "severity": 1,
+          "code": 2554,
+          "message": "Expected 0 arguments, but got 1."
+        }
+      ]
+    }
+  ]
+}

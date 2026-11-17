@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 3934,
+  "regressionCommit": "7c83dd0193b06a4cee3a1825a374ca0cd11fbd85",
+  "sourceRevision": "7c83dd0193b06a4cee3a1825a374ca0cd11fbd85",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "template-v-bind-props-read",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 9,
+          "column": 7,
+          "severity": 1,
+          "code": 6133,
+          "message": "'orphan' is declared but its value is never read."
+        }
+      ]
+    },
+    {
+      "id": "template-without-props-reference-unused",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "unreferenced.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+<script setup lang="ts" generic="T">
+import type { ImportedBase } from "./types";
+
+interface Props<T> extends ImportedBase {
+  value: T;
+  active?: boolean;
+}
+const props = defineProps<Props<T>>();
+const disabled: boolean = props.disabled;
+const active: boolean = props.active;
+</script>
+
+<template>
+  <button :disabled="disabled" :aria-pressed="active">{{ props.value }}</button>
+</template>

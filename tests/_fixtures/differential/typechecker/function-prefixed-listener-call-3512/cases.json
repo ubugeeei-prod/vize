@@ -1,0 +1,129 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 3512,
+  "regressionCommit": "7676592d51c264565259de273ccea511601d25b9",
+  "sourceRevision": "7676592d51c264565259de273ccea511601d25b9",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "unresolved-component-multi-argument-handler",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "unresolved.App.vue.txt"
+        },
+        {
+          "file": "src/UnknownChild.vue",
+          "source": "UnknownChild.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "resolved-component-exact-handler-tuple",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "resolved.App.vue.txt"
+        },
+        {
+          "file": "src/KnownChild.vue",
+          "source": "KnownChild.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "resolved-component-wrong-first-argument",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "resolved-wrong.App.vue.txt"
+        },
+        {
+          "file": "src/KnownChild.vue",
+          "source": "KnownChild.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 8,
+          "column": 24,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '(key: number, path: string[]) => void' is not assignable to type '(key: string, path: string[]) => any'.\nTypes of parameters 'key' and 'key' are incompatible.\nType 'string' is not assignable to type 'number'."
+        }
+      ]
+    },
+    {
+      "id": "function-prefixed-call-handler",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "functional.App.vue.txt"
+        },
+        {
+          "file": "src/KnownChild.vue",
+          "source": "KnownChild.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "function-prefixed-call-wrong-argument",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "functional-wrong.App.vue.txt"
+        },
+        {
+          "file": "src/KnownChild.vue",
+          "source": "KnownChild.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 7,
+          "column": 50,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type 'string' is not assignable to parameter of type 'number'."
+        }
+      ]
+    }
+  ]
+}

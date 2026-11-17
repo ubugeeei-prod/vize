@@ -1,0 +1,14 @@
+<script setup lang="ts">
+interface Props {
+  label: string
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  label: 'fallback',
+})
+const orphan = 1
+</script>
+
+<template>
+  <button v-bind="props"></button>
+</template>

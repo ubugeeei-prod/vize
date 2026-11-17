@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 2924,
+  "regressionCommit": "a619bad6a42dc8c6e3cbd4f830a2e691a64c5cef",
+  "sourceRevision": "a619bad6a42dc8c6e3cbd4f830a2e691a64c5cef",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "defaulted-template-props",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/test.vue",
+          "source": "test.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "loose-required-undefaulted-key",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/test.vue",
+          "source": "shape.test.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "undefaulted-prop-possibly-undefined",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/test.vue",
+          "source": "raw-access.test.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/test.vue",
+          "line": 4,
+          "column": 40,
+          "severity": 1,
+          "code": 18048,
+          "message": "'props.raw' is possibly 'undefined'."
+        }
+      ]
+    }
+  ]
+}

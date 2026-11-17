@@ -106,15 +106,12 @@ pub(crate) fn check_pack_with_capture_policy(
                 | "options-api-reserved-component-reference"
                 | "setup-custom-properties"
                 | "required-default-props"
+                | "no-space-default-export-3087"
+                | "options-runtime-props-value-scope-3089"
+                | "options-template-literal-bindings-3086"
                 | "jsx-prop-token-ranges-10494"
         )
-        .then_some(matches!(
-            name,
-            "options-api-any-instance"
-                | "options-api-reserved-component-reference"
-                | "setup-custom-properties"
-                | "required-default-props"
-        )),
+        .then_some(name != "jsx-prop-token-ranges-10494"),
         "the original explicit checker options must be retained"
     );
     assert_eq!(
@@ -127,6 +124,9 @@ pub(crate) fn check_pack_with_capture_policy(
                 | "options-api-reserved-component-reference"
                 | "setup-custom-properties"
                 | "required-default-props"
+                | "no-space-default-export-3087"
+                | "options-runtime-props-value-scope-3089"
+                | "options-template-literal-bindings-3086"
                 | "jsx-prop-token-ranges-10494"
         )
         .then_some(name == "jsx-prop-token-ranges-10494"),

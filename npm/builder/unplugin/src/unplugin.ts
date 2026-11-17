@@ -22,6 +22,7 @@ import {
   webpackStyleRequest,
 } from "./webpack-styles.ts";
 import { stripTypeScript } from "./strip-types.ts";
+import { compileTsrxRequest, createTsrxFilter, isTsrxFile } from "./tsrx.ts";
 import type {
   CachedCompiledModule,
   NormalizedVizeUnpluginOptions,
@@ -173,6 +174,7 @@ type VizeUnpluginInput = VizeUnpluginOptions | undefined;
 export const vizeUnplugin = createUnplugin<VizeUnpluginInput>((rawOptions = {}, meta) => {
   const options = normalizeOptions(rawOptions);
   const filter = createFilter(options.include, options.exclude);
+  const tsrxFilter = createTsrxFilter(options.exclude);
   const cache = new Map<string, CachedCompiledModule>();
   const jsxStyles = new Map<string, StyleBlockInfo[]>();
   const webpackStyleFiles = meta.framework === "webpack";
@@ -229,7 +231,7 @@ export const vizeUnplugin = createUnplugin<VizeUnpluginInput>((rawOptions = {}, 
       // onLoad hook runs. Returning the authored SFC here lets unplugin retain
       // this plugin as the loader owner and apply the JavaScript loader after
       // the ordinary transform hook compiles the file.
-      if (meta.framework === "bun" && isVueFile(id)) {
+      if (meta.framework === "bun" && (isVueFile(id) || isTsrxFile(id))) {
         return { code: await readFile(id, "utf8"), map: null };
       }
       if (!isVueStyleRequest(id)) {
@@ -252,6 +254,9 @@ export const vizeUnplugin = createUnplugin<VizeUnpluginInput>((rawOptions = {}, 
       if (isJsxFile(id)) {
         return filter(id);
       }
+      if (isTsrxFile(id)) {
+        return tsrxFilter(id);
+      }
       // A `.vue` filename (from the path or a `vize-file` query) is required for a
       // match, so ids without a `.vue` substring can never be transformed. Skip
       // URLSearchParams parsing for the common plain-JS imports.
@@ -265,6 +270,10 @@ export const vizeUnplugin = createUnplugin<VizeUnpluginInput>((rawOptions = {}, 
     async transform(code, id) {
       if (options.hostCompiler) {
         return null;
+      }
+
+      if (isTsrxFile(id)) {
+        return tsrxFilter(id) ? compileTsrxRequest(id, code, options) : null;
       }
 
       if (isJsxFile(id)) {
@@ -366,8 +375,8 @@ export const vizeUnplugin = createUnplugin<VizeUnpluginInput>((rawOptions = {}, 
 
     esbuild: {
       // A `<style src>` module's path sits beside its src file (styleRequestId).
-      onResolveFilter: /\.(?:vue|[jt]sx)(?:$|\?)|\.__vize_style_\d+\?/,
-      onLoadFilter: /\.(?:vue|[jt]sx)(?:$|\?)|\.__vize_style_\d+\?/,
+      onResolveFilter: /\.(?:vue|[jt]sx|tsrx)(?:$|\?)|\.__vize_style_\d+\?/,
+      onLoadFilter: /\.(?:vue|[jt]sx|tsrx)(?:$|\?)|\.__vize_style_\d+\?/,
       loader(_code, id) {
         const request = parseVueRequest(id);
         if (request.query.type === "style") {

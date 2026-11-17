@@ -1,0 +1,10 @@
+<script setup lang="ts">
+const props = defineProps({
+  title: String,
+  visible: Boolean,
+});
+</script>
+
+<template>
+  <dialog v-if="visible">{{ title }}</dialog>
+</template>
