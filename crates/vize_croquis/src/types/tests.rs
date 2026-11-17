@@ -235,6 +235,44 @@ fn extract_properties_keeps_a_leading_pipe_union_on_the_property() {
 }
 
 #[test]
+fn extract_properties_keeps_a_trailing_operator_operand_off_the_props() {
+    let mut resolver = TypeResolver::new();
+    resolver.add_interface(
+        "Props",
+        "{\n  size?: Small &\n    Large\n  open?: boolean\n}",
+    );
+    let props = resolver.extract_properties("Props");
+    let operand =
+        resolver.extract_properties("{\n  id?: string\n} & (Single | Multi) &\n  Options");
+
+    // The joined type keeps the authored indentation; only its tokens matter.
+    assert_eq!(
+        props
+            .iter()
+            .map(|prop| {
+                let tokens = prop
+                    .prop_type
+                    .as_deref()
+                    .unwrap_or_default()
+                    .split_whitespace();
+                (prop.name.as_str(), tokens.collect::<Vec<_>>())
+            })
+            .collect::<Vec<_>>(),
+        [
+            ("size", vec!["Small", "&", "Large"]),
+            ("open", vec!["boolean"])
+        ]
+    );
+    assert_eq!(
+        operand
+            .iter()
+            .map(|prop| prop.name.as_str())
+            .collect::<Vec<_>>(),
+        Vec::<&str>::new()
+    );
+}
+
+#[test]
 fn test_extract_emits_call_signature() {
     let resolver = TypeResolver::new();
     let emits =
