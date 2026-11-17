@@ -64,9 +64,39 @@ whose props `foo-bar` and `plain` are also computed names: they now read
 `$props.fooBar`/`$props.plain` (props win over computed in the instance
 proxy, and Vue does not define a computed that shadows a prop).
 
+## Compiler switch: a paired setup's normal script
+
+With a `<script setup>`, the template also reads the normal `<script>`'s
+top-level runtime bindings. The compiler reads them from `OrdinaryFacts`
+(`compile/bindings/ordinary.rs`): the script is parsed once by L1 with its
+`lang`, kinds map as the setup route maps them, the first declaration of a
+name keeps it, and a runtime `enum` takes the compiler's literal
+classification. `collect_normal_script_bindings`, which parsed every
+script as plain TypeScript, is gone. A script the levels refuse forwards no bindings, as one that did not
+parse did before.
+
+Measured against Vue 3.5 `compileScript`, this changes four shapes, each to
+Vue's output:
+
+- An ambient `declare const` / `declare function` / `declare enum` binds
+  nothing: `<C3 />` resolves through `resolveComponent("C3")` and
+  `func(x)` reads `_ctx.func`.
+- A `const` initialized by an array or object literal (`as const` included)
+  is a setup constant, so inline templates read `levels`, not
+  `_unref(levels)`.
+- `{ default as Child }` (or `{ "default" as Child }`) from a `.vue` file
+  is a setup constant, as a default import is, in both scripts; this fixes
+  the shared L2 classifier, so the setup route renders `_createBlock(Child)`
+  too.
+- A `tsx`/`jsx` normal script is read with JSX. It was read as plain
+  TypeScript, refused, and forwarded nothing.
+
+On the repository corpus, 456 of 489 normal scripts bind identically; the 33
+others differ only in the first two shapes. The Croquis setup oracle
+(`tests/vue_setup_bindings.rs`) records the two `{ default as X }` imports
+in its corpus as reviewed Vue differences.
+
 ## Open
 
-This is not S7 completion. The compiler route that replaces
-`collect_normal_script_bindings` (a paired `<script setup>`'s view of the
-normal script) with `OrdinaryFacts` remains open, and so do the Patina,
-Maestro and Canon readers of Croquis' Options API descriptor.
+The Patina, Maestro and Canon readers of Croquis' Options API descriptor
+remain open.
