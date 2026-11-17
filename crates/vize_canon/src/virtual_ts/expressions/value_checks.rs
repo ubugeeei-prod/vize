@@ -93,6 +93,7 @@ impl TemplateValueCheckTables {
                         options.check_options.check_template_bindings && !legacy_vue2,
                         options.check_options.check_unknown_directives,
                     ),
+                    &options.virtual_ts_options.directive_contracts,
                 )
             }),
             component_ref_callbacks: collect_component_ref_callback_bindings(

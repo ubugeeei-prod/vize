@@ -112,9 +112,9 @@ export interface PluginSetupApi {
   };
   readonly vue: {
     /**
-     * Lint and the language server check modifier contracts and `vize build`
-     * compiles their defaults; the plan loads once the type checker implements
-     * directives too. Modifiers default to none.
+     * Lint, the language server and `vize check` check modifier contracts, and
+     * the compiler emits their defaults in VDOM, SSR and Vapor output.
+     * Modifiers default to none.
      */
     directive(
       name: string,

@@ -25,7 +25,7 @@ fn complete_product_sources_and_native_assembly_keep_their_exact_postimages() {
     );
     assert_eq!(
         digest(vite_runtime().unwrap().as_bytes()),
-        "576e85b34362116ee8ab701ba4b8af7f475ce4067985e0c3194e1a3c761b465b"
+        "ca66b887bb3e3a8c090b451ddd5ca74f345c4bddfba2b32794d0e7abebae10b8"
     );
 }
 

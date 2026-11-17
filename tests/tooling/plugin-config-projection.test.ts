@@ -84,14 +84,17 @@ test("capabilities no product implements fail closed in every projection", async
     message:
       "[plugin/capability-unadmitted] @acme/routes: no Vize product implements sfc.custom-block `route:json` yet; run `vize plugin inspect` for the plan",
   });
-  // A capability loads only once every product that consumes it implements it.
-  await assert.rejects(
-    projectViteConfigSource({ vue: { plugins: [tracking()] } }, undefined, "/p"),
-    {
-      code: "capability-unadmitted",
-      message:
-        "[plugin/capability-unadmitted] @acme/tracking: vue.directive `track` is not implemented by typecheck yet; run `vize plugin inspect` for the plan",
-    },
+  // A capability loads once every product that consumes it implements it.
+  const directives = await projectViteConfigSource(
+    { vue: { plugins: [tracking()] } },
+    undefined,
+    "/p",
+  );
+  assert.deepEqual(
+    directives.__vizePluginPlan.plan.plugins.map((plugin) =>
+      plugin.capabilities.map((capability) => `${capability.id}:${capability.key}`),
+    ),
+    [["vue.directive:track"]],
   );
   await assert.rejects(projectViteConfigSource({ vue: { plugins: {} } }), {
     message: "[plugin/entry-invalid] vue.plugins: must be an array",

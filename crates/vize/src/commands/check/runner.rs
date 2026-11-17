@@ -29,6 +29,7 @@ mod invocation;
 mod nuxt_tsconfig;
 mod output;
 mod overlap;
+mod plugins;
 mod program_inputs;
 mod programs;
 mod resolve;

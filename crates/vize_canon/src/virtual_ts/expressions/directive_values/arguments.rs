@@ -9,6 +9,8 @@ pub(crate) struct DirectiveValueBindings {
     pub(crate) values: FxHashMap<(u32, u32), DirectiveValueBinding>,
     pub(crate) dynamic_arguments: FxHashSet<(u32, u32)>,
     pub(super) enabled: bool,
+    /// Declared contracts whose default modifiers each hook call receives.
+    pub(super) contracts: vize_l0::config::DirectiveContracts,
 }
 
 pub(super) fn collect(directive: &DirectiveNode<'_>, bindings: &mut DirectiveValueBindings) {

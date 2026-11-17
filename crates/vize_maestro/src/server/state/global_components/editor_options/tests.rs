@@ -41,6 +41,7 @@ fn expected(paths: &[&Path]) -> VirtualTsOptions {
             })
             .collect(),
         strict_instance_globals: false,
+        directive_contracts: vize_l0::config::DirectiveContracts::EMPTY,
     }
 }
 

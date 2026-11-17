@@ -97,6 +97,10 @@ pub struct VirtualTsOptions {
     /// Vue 3 dollar references already read the typed public instance when this
     /// is false; legacy Vue 2 keeps its structural compatibility fallback.
     pub strict_instance_globals: bool,
+    /// Directive contracts declared by `vue.plugins` (#13074). A declared
+    /// directive's hook receives the same default modifiers the compiler
+    /// emits, and a binding that breaks its contract is a diagnostic.
+    pub directive_contracts: vize_l0::config::DirectiveContracts,
 }
 
 impl Default for VirtualTsOptions {
@@ -109,6 +113,7 @@ impl Default for VirtualTsOptions {
             external_template_bindings: Vec::new(),
             reference_paths: Vec::new(),
             strict_instance_globals: false,
+            directive_contracts: vize_l0::config::DirectiveContracts::EMPTY,
         }
     }
 }

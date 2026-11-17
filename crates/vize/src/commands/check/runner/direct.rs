@@ -34,6 +34,7 @@ pub(crate) fn run_direct(args: &CheckArgs) {
             std::process::exit(2);
         })
     };
+    let directive_contracts = super::plugins::directive_contracts(&project_config.document);
     let experimental_vue = project_config.document.experimental_vue_flags();
     let compiler_template_syntax = project_config.document.compiler_template_syntax();
     let ignores = project_config.document.entry_ignores();
@@ -132,8 +133,10 @@ pub(crate) fn run_direct(args: &CheckArgs) {
         &mut tsconfig_input_cache,
         &mut canonical_paths,
     );
+    let mut virtual_ts_options = build_virtual_ts_options(&config, config_dir);
+    virtual_ts_options.directive_contracts = directive_contracts;
     let settings = CheckerSettings {
-        virtual_ts_options: build_virtual_ts_options(&config, config_dir),
+        virtual_ts_options,
         corsa_path: effective_corsa_path,
         servers: corsa_servers,
         checkers: args.checkers.map(std::num::NonZero::get),

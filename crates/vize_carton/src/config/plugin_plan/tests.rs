@@ -243,19 +243,12 @@ fn directive_only_plan() -> super::VerifiedPluginPlan {
 }
 
 #[test]
-fn a_capability_is_refused_until_every_consumer_implements_it() {
+fn a_capability_loads_once_every_consumer_implements_it() {
     let plan = directive_only_plan();
-    // Lint, the editor and the compiler implement directive contracts; the
-    // type checker does not, so no product may load the plan yet.
-    for product in ["compiler", "lint", "lsp", "format"] {
+    // The compiler, the type checker, lint and the editor all implement
+    // directive contracts, so every product loads the plan.
+    for product in ["compiler", "typecheck", "lint", "lsp", "format"] {
         plan.admit(product, None).unwrap();
     }
-    assert_eq!(
-        plan.admit("typecheck", None).unwrap_err().code,
-        "capability-unadmitted"
-    );
-    assert_eq!(
-        crate::cstr!("{}", plan.refuse_unimplemented().unwrap_err()),
-        "[plugin/capability-unadmitted] @acme/tracking: vue.directive `track` is not implemented by typecheck yet; run `vize plugin inspect` for the plan"
-    );
+    plan.refuse_unimplemented().unwrap();
 }

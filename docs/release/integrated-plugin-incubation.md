@@ -14,7 +14,7 @@
 | v2 manifest, canonical plan, validation, inspector views | done (#13124)                                         |
 | `vue.plugins` resolved from `vite.config.*`              | done                                                  |
 | custom lint (`lint.rule`, adapted v1 rules)              | done: `vize lint` incl. `--fix`, LSP, Oxlint and Nuxt |
-| custom directive (`vue.directive`)                       | lint, LSP and compiler; types pending                 |
+| custom directive (`vue.directive`)                       | modifier contracts load: lint, LSP, compiler, types   |
 | custom block (`sfc.custom-block`)                        | declared only; every consumer refuses it              |
 
 ## Where the contract lives
@@ -119,13 +119,20 @@ invalidating a plan that is valid today.
   compiler, which resolves each file's output (SSR, a `vapor` script or
   request, otherwise VDOM), refuses a file compiled to an output its plugin
   lacks (`host-unsupported`).
-  The plan still loads nowhere until the type checker implements the
-  capability too. The Vite host registers the resolved plan with the native
+  The Vite host registers the resolved plan with the native
   compiler once (`registerPluginPlan`), which re-verifies it and lowers the
   table; every compile then names the plan by its digest and refuses an
   unknown digest (`plan-stale`). Registered plans stay for the process, so
-  a host's digest never expires while its config is unchanged. JSX/TSX
-  templates do not read the table yet.
+  a host's digest never expires while its config is unchanged.
+  `vize check` admits the capability as the type checker. A declared
+  directive's hook receives the same default modifiers in its binding
+  (unmapped, since nothing authored them), and a binding that breaks its
+  contract is a check diagnostic with the compiler's message on its authored
+  span. With every consumer implementing it, directive plans now load.
+  Not yet covered: runtime registration and value/argument types (the
+  contract carries only modifiers), JSX/TSX directives, the editor's virtual
+  TypeScript defaults (the editor reports violations through lint), and the
+  TypeScript/Volar plugins, which read no `vue.plugins` plan.
 
 ## Plugin lint rules
 

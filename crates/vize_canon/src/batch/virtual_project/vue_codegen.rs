@@ -229,6 +229,12 @@ pub(super) fn generate_vue_virtual_ts(
                 template_ast.as_ref(),
             ));
     }
+    croquis
+        .pattern_diagnostics
+        .extend(crate::sfc_typecheck::directive_contracts::diagnostics(
+            template_ast.as_ref(),
+            &options.directive_contracts,
+        ));
     for pattern in &croquis.pattern_diagnostics {
         let mut diagnostic = diagnostic_for_offset(
             path,

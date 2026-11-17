@@ -68,7 +68,8 @@ export default { vue: { plugins: [routes()] } };`,
       "[plugin/capability-unadmitted] @acme/routes: lint does not implement sfc.custom-block `route:json` yet",
   });
 
-  // Lint checks directive contracts, but the compiler and type checker do not yet.
+  // Every product implements directive contracts, so the plan loads; lint
+  // checks them natively in oxlint-plugin-vize.
   const directive = await temporaryRoot(t, "vize-nuxt-project-plugin-directive-");
   await writeFile(
     path.join(directive, "vite.config.mjs"),
@@ -79,9 +80,8 @@ const track = defineVizePlugin({
 });
 export default { vue: { plugins: [track()] } };`,
   );
-  await assert.rejects(readProjectLintRuleSets(directive, unexpectedPreset), {
-    message:
-      "[plugin/capability-unadmitted] @acme/track: vue.directive `track` is not implemented by typecheck yet; run `vize plugin inspect` for the plan",
+  assert.deepEqual(await readProjectLintRuleSets(directive, unexpectedPreset), {
+    pluginRules: true,
   });
 
   const skipped = await temporaryRoot(t, "vize-nuxt-project-plugin-skipped-");

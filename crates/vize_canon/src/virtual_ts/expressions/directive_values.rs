@@ -29,6 +29,10 @@ pub(crate) struct DirectiveValueBinding {
     pub(super) arg: Option<(CompactString, (u32, u32))>,
     /// Each modifier and its template range: `v-dir.a.b`.
     pub(super) modifiers: Vec<(CompactString, (u32, u32))>,
+    /// Absent modifiers a `vue.plugins` contract defaults to `true`
+    /// (#13074). The runtime binding carries them, but nothing authored
+    /// them, so they stay unmapped.
+    pub(super) default_modifiers: Vec<CompactString>,
     /// Whether the classic `<script>` default export is in scope as
     /// `__default__`, the home of a component's own `directives` option.
     pub(super) has_default_alias: bool,
@@ -45,9 +49,11 @@ pub(crate) fn collect_directive_value_bindings(
     bindings: ScriptBindings<'_>,
     (has_default_alias, vapor): (bool, bool),
     (enabled, include_valueless): (bool, bool),
+    contracts: &vize_l0::config::DirectiveContracts,
 ) -> DirectiveValueBindings {
     let mut collected = DirectiveValueBindings {
         enabled,
+        contracts: contracts.clone(),
         ..DirectiveValueBindings::default()
     };
     let Some(root) = root else {
@@ -106,9 +112,10 @@ fn collect_element_bindings(
         };
         arguments::collect(directive, collected);
         if collected.enabled
-            && let Some((range, binding)) =
+            && let Some((range, mut binding)) =
                 directive_value_binding(directive, bindings, include_valueless)
         {
+            binding.default_modifiers = contract_defaults(directive, &collected.contracts);
             collected.values.insert(range, binding);
         }
     }
@@ -172,12 +179,33 @@ fn directive_value_binding(
             in_setup,
             arg,
             modifiers,
+            default_modifiers: Vec::new(),
             has_default_alias: false,
             vapor: false,
             name_range: (name_start, name_end),
             has_value: expression.is_some(),
         },
     ))
+}
+
+/// The modifiers a valid binding of a declared directive gains; a binding
+/// that breaks its contract gains none (its diagnostic is reported apart).
+fn contract_defaults(
+    directive: &DirectiveNode<'_>,
+    contracts: &vize_l0::config::DirectiveContracts,
+) -> Vec<CompactString> {
+    let Some(contract) = contracts.get(directive.name) else {
+        return Vec::new();
+    };
+    let authored: Vec<&str> = directive
+        .modifiers
+        .iter()
+        .map(|modifier| modifier.content)
+        .collect();
+    contract
+        .default_modifiers(&authored)
+        .map(|defaults| defaults.into_iter().map(CompactString::new).collect())
+        .unwrap_or_default()
 }
 
 /// Vue's own directive resolution convention: `v-focus` -> `vFocus`,
@@ -258,8 +286,12 @@ pub(super) fn generate_directive_value_statement(
         crate::virtual_ts::helpers::push_ts_string_literal(ts, arg.as_str());
         ts.push_str(", ");
     }
-    if let (Some(first), Some(last)) = (binding.modifiers.first(), binding.modifiers.last()) {
-        push_mapped(ts, "modifiers", (first.1.0, last.1.1));
+    let authored = binding.modifiers.first().zip(binding.modifiers.last());
+    if authored.is_some() || !binding.default_modifiers.is_empty() {
+        match authored {
+            Some((first, last)) => push_mapped(ts, "modifiers", (first.1.0, last.1.1)),
+            None => ts.push_str("modifiers"),
+        }
         ts! { &mut *ts =>
             #(": ")
             {
@@ -269,6 +301,10 @@ pub(super) fn generate_directive_value_statement(
                         let mut key = crate::virtual_ts::TextBuf::default();
                         crate::virtual_ts::helpers::push_ts_string_literal(&mut key, modifier.as_str());
                         push_mapped(__ts, key.as_str(), *range);
+                        __ts.push_str(": true, ");
+                    }
+                    for modifier in &binding.default_modifiers {
+                        crate::virtual_ts::helpers::push_ts_string_literal(__ts, modifier.as_str());
                         __ts.push_str(": true, ");
                     }
                 }

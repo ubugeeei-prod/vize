@@ -70,7 +70,7 @@ pub(super) fn generate(
         None => ts.push_str("undefined"),
     }
     ts.push_str(", ");
-    if binding.modifiers.is_empty() {
+    if binding.modifiers.is_empty() && binding.default_modifiers.is_empty() {
         ts.push_str("undefined");
     } else {
         ts! { &mut *ts =>
@@ -81,6 +81,11 @@ pub(super) fn generate(
                         let mut key = crate::virtual_ts::TextBuf::default();
                         push_ts_string_literal(&mut key, modifier.as_str());
                         push_mapped(__ts, key.as_str(), in_template(*range));
+                        __ts.push_str(": true, ");
+                    }
+                    // Contract defaults (#13074): carried, never authored.
+                    for modifier in &binding.default_modifiers {
+                        push_ts_string_literal(__ts, modifier.as_str());
                         __ts.push_str(": true, ");
                     }
                 }

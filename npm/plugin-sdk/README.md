@@ -49,10 +49,11 @@ options (only JSON with safe integers), unavailable backends and stale plans all
 fail closed with a `[plugin/<code>]` error. Only the `js` backend exists during
 incubation; `native` and `wasm` refuse instead of falling back.
 
-`api.sfc.block` and `api.vue.directive` are declared, not yet usable: every
-product refuses a plan that contains one until every product consuming it
-implements it. Lint and the language server already check directive modifiers,
-and `vize build` compiles their defaults into VDOM, SSR and Vapor output. v1
+`api.vue.directive` modifier contracts load everywhere: lint, the language
+server and `vize check` report bindings that break them, and `vize build` and
+the Vite plugin compile their defaults into VDOM, SSR and Vapor output.
+`api.sfc.block` is declared, not yet usable: every product refuses a plan that
+contains one until every product consuming it implements it. v1
 `definePlugin` rule plugins may also appear in `vue.plugins`; the host records
 them through an adapter and executes the original plugin unchanged.
 

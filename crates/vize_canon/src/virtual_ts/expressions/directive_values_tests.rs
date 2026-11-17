@@ -178,6 +178,76 @@ fn directive_helpers_preserve_hooks_without_a_vue_type_dependency() {
     }
 }
 
+/// A `vue.plugins` contract (#13074) gives the hook the same default
+/// modifiers the compiler emits; nothing authored them, so they stay unmapped.
+#[test]
+fn declared_directive_hooks_receive_contract_default_modifiers() {
+    use vize_l0::config::{DirectiveContract, DirectiveContracts, DirectiveModifier};
+    let script = r#"import type { Directive } from 'vue'
+const vTrack: Directive<HTMLElement, number> = () => {}"#;
+    let template = r#"<a v-track.once="1" /><b v-track="2" />"#;
+    let allocator = vize_carton::Allocator::new();
+    let (root, summary) = analyze(&allocator, script, template);
+    let options = crate::virtual_ts::VirtualTsOptions {
+        directive_contracts: DirectiveContracts::new(vec![DirectiveContract {
+            plugin: "@acme/tracking".into(),
+            name: "track".into(),
+            modifiers: vec![
+                DirectiveModifier {
+                    name: "once".into(),
+                    optional: true,
+                    default: false,
+                },
+                DirectiveModifier {
+                    name: "passive".into(),
+                    optional: true,
+                    default: true,
+                },
+            ],
+        }]),
+        ..Default::default()
+    };
+    let output = crate::virtual_ts::generate_virtual_ts_with_offsets(
+        &summary,
+        Some(script),
+        Some(&root),
+        0,
+        0,
+        &options,
+    );
+    let calls: Vec<&str> = output
+        .code
+        .lines()
+        .map(str::trim)
+        .filter(|line| line.ends_with("// CustomDirective"))
+        .map(|line| {
+            let start = line.find("modifiers").unwrap_or(line.len());
+            let end = line.find(" value:").unwrap_or(line.len());
+            line.get(start..end).unwrap_or_default()
+        })
+        .collect();
+    assert_eq!(
+        calls,
+        [
+            r#"modifiers: { "once": true, "passive": true, },"#,
+            r#"modifiers: { "passive": true, },"#,
+        ],
+        "{}",
+        output.code
+    );
+    let passive = output.code.find(r#""passive""#).expect("default modifier");
+    assert_eq!(
+        output
+            .mapping
+            .spans()
+            .iter()
+            .filter(|span| span.gen_range.start == passive)
+            .count(),
+        0,
+        "a default modifier has no authored range"
+    );
+}
+
 fn analyze<'a>(
     allocator: &'a vize_carton::Allocator,
     script: &str,
