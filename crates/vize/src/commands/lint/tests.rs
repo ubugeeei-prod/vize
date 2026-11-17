@@ -4,7 +4,6 @@
 mod fix_regressions;
 mod format_output;
 mod nuxt_layout;
-mod tsrx;
 
 use super::cross_file::build_cross_file_lint_output;
 use std::{fs, path::Path};

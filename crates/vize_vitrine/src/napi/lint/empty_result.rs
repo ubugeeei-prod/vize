@@ -31,7 +31,7 @@ mod tests {
         let output = format_empty_lint_output(&["missing".to_owned()], OutputFormat::Text);
 
         assert!(output.contains(
-            "No .vue, .html, .htm, .js, .mjs, .cjs, .ts, .mts, .cts, .jsx, or .tsx files found"
+            "No .vue, .html, .htm, .js, .mjs, .cjs, .ts, .mts, .cts, .jsx, .tsx, or .tsrx files found"
         ));
         assert!(output.contains("missing"));
     }

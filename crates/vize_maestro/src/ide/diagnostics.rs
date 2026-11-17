@@ -69,6 +69,8 @@ mod severity;
 )]
 #[cfg(test)]
 mod tests;
+#[cfg(test)]
+mod tsrx_lint_tests;
 #[cfg(all(test, feature = "native"))]
 mod typecheck_unavailable_tests;
 mod vize_sfc_type;
