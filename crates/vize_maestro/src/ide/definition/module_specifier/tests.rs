@@ -154,11 +154,12 @@ fn definition_session_detects_a_same_mtime_package_manifest_retarget() {
     assert_eq!(second.uri, file_url(&bravo.canonicalize().unwrap()));
 }
 
-/// Component imports share the server's route cache: a package installed after
-/// a miss, a same-mtime manifest retarget, and a change made during a
-/// diagnostics pass's validation scope are all observed on the next lookup.
+/// Component imports reuse the server's component route cache: a package
+/// installed after a miss, a same-mtime manifest retarget, and a change made
+/// during a diagnostics pass's validation scope are all observed on the next
+/// lookup.
 #[test]
-fn shared_component_routes_observe_installs_and_retargets() {
+fn cached_component_routes_observe_installs_and_retargets() {
     let workspace = tempdir().unwrap();
     let source = workspace.path().join("src/App.vue");
     let content = "<script setup lang=\"ts\">\nimport Widget from '@scope/ui/widget'\n</script>\n";
@@ -196,7 +197,7 @@ fn shared_component_routes_observe_installs_and_retargets() {
     retarget(bravo_manifest);
     assert_eq!(resolve(), Some(bravo.canonicalize().unwrap()));
 
-    let scope = state.package_route_resolver.lock().validation_scope();
+    let scope = state.component_route_resolver.lock().validation_scope();
     assert_eq!(resolve(), Some(bravo.canonicalize().unwrap()));
     retarget(alpha_manifest);
     drop(scope);

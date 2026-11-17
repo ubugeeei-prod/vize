@@ -37,6 +37,7 @@ impl ServerState {
                 package_route_resolver.clone(),
             ),
             package_route_resolver: Mutex::new(package_route_resolver),
+            component_route_resolver: Mutex::default(),
             #[cfg(feature = "native")]
             canonical_paths: DashMap::new(),
             component_metadata_cache: DashMap::new(),

@@ -13,10 +13,10 @@ pub(crate) fn resolve_import_specifier(uri: &Url, specifier: &str) -> Option<Pat
         .or_else(|| module_specifier::resolve_specifier(uri, specifier))
 }
 
-/// [`resolve_import_specifier`] with package routes from the server's shared,
-/// stamp-validated route cache instead of a fresh resolver per call. A fresh
-/// resolver re-captured every route input (`lstat`s up the `node_modules`
-/// chain) for each component an edit's diagnostics looked up.
+/// [`resolve_import_specifier`] with package routes from the server's
+/// stamp-validated component route cache instead of a fresh resolver per call.
+/// A fresh resolver re-captured every route input (`lstat`s up the
+/// `node_modules` chain) for each component an edit's diagnostics looked up.
 pub(crate) fn resolve_import_specifier_in(
     state: &crate::server::ServerState,
     uri: &Url,
@@ -26,7 +26,7 @@ pub(crate) fn resolve_import_specifier_in(
         module_specifier::resolve_specifier_with(
             uri,
             specifier,
-            &mut state.package_route_resolver.lock(),
+            &mut state.component_route_resolver.lock(),
         )
     })
 }
