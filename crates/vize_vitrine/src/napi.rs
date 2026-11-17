@@ -47,6 +47,8 @@ mod template;
 mod tokens;
 #[cfg(feature = "napi")]
 mod transform_plugins;
+#[cfg(any(test, feature = "napi"))]
+mod tsrx;
 
 #[cfg(feature = "napi")]
 mod napi_typecheck;
@@ -123,3 +125,5 @@ pub use template::*;
 pub use tokens::*;
 #[cfg(feature = "napi")]
 pub use transform_plugins::*;
+#[cfg(feature = "napi")]
+pub use tsrx::*;

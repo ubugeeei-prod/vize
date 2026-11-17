@@ -9,6 +9,7 @@ export type { VizeRspackPluginOptions } from "./types/index.ts";
 // Loaders (for direct import)
 export { default as vizeLoader } from "./loader/index.ts";
 export { default as vizeJsxLoader } from "./loader/jsx-loader.ts";
+export { default as vizeTsrxLoader } from "./loader/tsrx-loader.ts";
 export { default as vizeStyleLoader } from "./loader/style-loader.ts";
 export { default as vizeScopeLoader } from "./loader/scope-loader.ts";
 export type {
@@ -16,6 +17,7 @@ export type {
   VizeSfcLoaderOptions,
   VizeSfcCompilerOptions,
   VizeJsxLoaderOptions,
+  VizeTsrxLoaderOptions,
   VizeStyleLoaderOptions,
 } from "./types/index.ts";
 

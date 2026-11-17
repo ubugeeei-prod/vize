@@ -164,6 +164,12 @@ export type VizeJsxLoaderOptions = Pick<
   "sourceMap" | "vapor" | "jsxMode" | "jsxCompat" | "include" | "exclude"
 >;
 
+/** Options accepted by the TSRX loader. */
+export type VizeTsrxLoaderOptions = Pick<
+  VizeLoaderOptions,
+  "ssr" | "vapor" | "include" | "exclude"
+>;
+
 /** Options accepted by the style-block extraction loader. */
 export interface VizeStyleLoaderOptions {
   /** Rspack native CSS mode @default false */

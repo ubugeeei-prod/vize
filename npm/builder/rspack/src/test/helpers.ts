@@ -20,12 +20,14 @@ const snapshotRoots = Array.from(new Set([workspaceRoot, fs.realpathSync(workspa
 type PackageLoaderAlias =
   | "@vizejs/rspack-plugin/loader"
   | "@vizejs/rspack-plugin/jsx-loader"
+  | "@vizejs/rspack-plugin/tsrx-loader"
   | "@vizejs/rspack-plugin/scope-loader"
   | "@vizejs/rspack-plugin/style-loader";
 
 export const packageLoaderAliases = {
   "@vizejs/rspack-plugin/loader": path.join(packageRoot, "dist", "loader", "index.mjs"),
   "@vizejs/rspack-plugin/jsx-loader": path.join(packageRoot, "dist", "loader", "jsx-loader.mjs"),
+  "@vizejs/rspack-plugin/tsrx-loader": path.join(packageRoot, "dist", "loader", "tsrx-loader.mjs"),
   "@vizejs/rspack-plugin/scope-loader": path.join(
     packageRoot,
     "dist",
