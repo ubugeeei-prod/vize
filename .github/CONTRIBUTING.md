@@ -8,6 +8,16 @@ Use the Node.js development runtime from `package.json#devEngines.runtime` and t
 
 Instruction-count and paired-memory measurements use the same `rust-toolchain.toml` compiler. A toolchain bump re-baselines their recorded compiler identity in the same PR, without loosening ceilings the compiler change does not explain (see [one Rust toolchain](../docs/davinci/decisions/2026-10-20-single-rust-toolchain.md)).
 
+Rust's nightly parallel frontend is an optional local accelerator, not a second pinned toolchain: CI, release builds, published artifacts and measurements stay on `rust-toolchain.toml`. For local `check`, `clippy` and `test` loops, a rustup-managed nightly with eight frontend threads cuts `cargo check -p vize` after an edit to `vize_canon` from 17.0 s to 6.5 s on a 32-vCPU runner ([measurements](../docs/davinci/decisions/2026-11-17-rust-parallel-frontend.md)):
+
+```sh
+rustup toolchain install nightly-2026-11-16 --profile minimal -c clippy
+RUSTFLAGS="${RUSTFLAGS:-} -Zunstable-options --jobs-frontend=8" \
+  CARGO_TARGET_DIR=target/nightly-frontend ~/.cargo/bin/cargo +nightly-2026-11-16 check -p vize_canon
+```
+
+Keep the separate target directory, use 8 threads (16 and 32 are slower), and append to `RUSTFLAGS` so the Nix shell's Darwin link flags survive; call rustup's `cargo` because the Nix shell's has no toolchain selector. Nightly Clippy lints differ from the pinned gate, so run the final `clippy` and tests with the pinned toolchain before pushing.
+
 Install dependencies from the workspace root:
 
 ```sh
