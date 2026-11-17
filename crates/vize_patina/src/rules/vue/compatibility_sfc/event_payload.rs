@@ -175,10 +175,14 @@ impl<'a> Visit<'a> for PayloadCalls<'_, 'a> {
         if let Some(third) = it.arguments.get(2)
             && self.dispatches(&it.callee)
         {
-            let last = it.arguments.last().map_or(third.span(), GetSpan::span);
+            // ESTree has no parenthesized node, so `(count - 1)` is ranged inside.
+            let last = it
+                .arguments
+                .last()
+                .map_or(argument_span(third), argument_span);
             self.found.push((
                 event_name(it.arguments.first()),
-                Span::new(third.span().start, last.end),
+                Span::new(argument_span(third).start, last.end),
             ));
         }
         walk::walk_call_expression(self, it);
@@ -235,6 +239,13 @@ impl<'a> PayloadCalls<'_, 'a> {
 
 /// Upstream's `isStringLiteral`: a string, or a template without
 /// substitutions.
+fn argument_span(argument: &Argument<'_>) -> Span {
+    argument.as_expression().map_or_else(
+        || argument.span(),
+        |expression| expression.without_parentheses().span(),
+    )
+}
+
 fn event_name(argument: Option<&Argument<'_>>) -> Option<String> {
     match argument?.as_expression()?.without_parentheses() {
         Expression::StringLiteral(literal) => Some(String::from(literal.value.as_str())),
