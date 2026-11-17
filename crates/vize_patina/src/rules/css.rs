@@ -337,13 +337,13 @@ impl CssLinter {
                 Box::new(NoVBindPerformance),
                 Box::new(NoHardcodedValues::default()),
                 Box::new(NoUtilityClasses),
-                Box::new(PreferSlotted),
             ],
             style_rules: vec![
                 Box::new(NoImportant),
                 Box::new(NoIdSelectors),
                 Box::new(PreferLogicalProperties),
                 Box::new(RequireFontDisplay),
+                Box::new(PreferSlotted),
             ],
         }
     }

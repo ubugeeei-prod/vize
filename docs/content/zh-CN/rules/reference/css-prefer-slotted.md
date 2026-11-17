@@ -11,7 +11,7 @@ description: "建议使用 ::v-slotted() 为插槽内容设置样式。"
 | --- | --- | --- | --- |
 | `warning` | `opinionated`, `nuxt` | 不支持 | 无 |
 
-适用范围：纯 CSS 的 style 块（scss、sass、less 和 stylus 块会被跳过）。
+适用范围：CSS、SCSS、Sass、Less 和 Stylus 的 style 块，按原样读取（不运行预处理器）。
 
 ## 错误示例
 

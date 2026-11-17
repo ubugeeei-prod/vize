@@ -1380,7 +1380,7 @@ css/prefer-slotted · lint 规则
 推荐使用 ::v-slotted() 为插槽内容设置样式
 
 精度层级: heuristic
-适用范围: declarations and selectors of <style> blocks as parsed by lightningcss
+适用范围: the authored structure of CSS, SCSS, Sass, Less and Stylus <style> blocks, as the L1 style reader reads it
 严重级别: 警告
 类别: css
 自动修复: 不支持

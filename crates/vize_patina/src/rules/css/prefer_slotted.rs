@@ -23,13 +23,13 @@
 //! </style>
 //! ```
 
-use memchr::memmem;
-
-use lightningcss::stylesheet::StyleSheet;
+use vize_l0::Span;
+use vize_l1::css::StyleSheet;
 
 use crate::diagnostic::{LintDiagnostic, Severity};
 
-use super::{CssLintResult, CssRule, CssRuleMeta};
+use super::style_rule::{rule_preludes, without_comments};
+use super::{CssLintResult, CssRuleMeta, StyleRule};
 
 static META: CssRuleMeta = CssRuleMeta {
     name: "css/prefer-slotted",
@@ -37,146 +37,83 @@ static META: CssRuleMeta = CssRuleMeta {
     default_severity: Severity::Warning,
 };
 
-/// Prefer slotted rule
+/// Deprecated deep-selector spellings, each followed by whitespace or the
+/// end of the selector.
+const DEPRECATED_DEEP: [&str; 3] = [">>>", "/deep/", "::v-deep"];
+
+/// It reads every rule's selector in the L1 structure, in every style
+/// language, with comments masked. The deprecated deep combinators are not
+/// CSS, so the lightningcss version never saw a block that held one.
 pub struct PreferSlotted;
 
-impl CssRule for PreferSlotted {
+impl StyleRule for PreferSlotted {
     fn meta(&self) -> &'static CssRuleMeta {
         &META
     }
 
-    fn check<'i>(
-        &self,
-        source: &'i str,
-        _stylesheet: &StyleSheet<'i>,
-        offset: usize,
-        result: &mut CssLintResult,
-    ) {
-        let bytes = source.as_bytes();
-        let comments = comment_ranges(bytes);
-
-        // Check for deprecated ::v-deep without parentheses (Vue 2 style)
-        // In Vue 3, should use :deep() or ::v-deep()
-        let deprecated_patterns = [
-            (">>> ", "deep selector"),
-            ("/deep/ ", "deep selector"),
-            ("::v-deep ", "::v-deep without parentheses"),
-        ];
-
-        for (pattern, _desc) in deprecated_patterns {
-            let finder = memmem::Finder::new(pattern.as_bytes());
-
-            let mut search_start = 0;
-            while let Some(pos) = bytes.get(search_start..).and_then(|rest| finder.find(rest)) {
-                let absolute_pos = search_start + pos;
-                if in_comment(&comments, absolute_pos) {
-                    search_start = absolute_pos + 1;
-                    continue;
+    fn check(&self, sheet: &StyleSheet<'_>, result: &mut CssLintResult) {
+        let whole = Span::new(
+            sheet.nodes().first().map_or(0, |node| node.span().start),
+            sheet.nodes().last().map_or(0, |node| node.span().end),
+        );
+        let code = without_comments(sheet, whole);
+        let slotted = code.contains("::v-slotted") || code.contains(":slotted");
+        for prelude in rule_preludes(sheet) {
+            let text = without_comments(sheet, prelude);
+            let bytes = text.as_bytes();
+            let at = |offset: usize, len: usize| {
+                Span::new(
+                    prelude.start + offset as u32,
+                    prelude.start + (offset + len) as u32,
+                )
+            };
+            for pattern in DEPRECATED_DEEP {
+                for (offset, _) in text.match_indices(pattern) {
+                    let next = bytes.get(offset + pattern.len());
+                    if next.is_none_or(u8::is_ascii_whitespace) {
+                        let span = at(offset, pattern.len());
+                        result.add_diagnostic(
+                            LintDiagnostic::warn(
+                                META.name,
+                                "Deprecated deep selector syntax",
+                                span.start,
+                                span.end,
+                            )
+                            .with_help(
+                                "Use :deep(.class) or ::v-deep(.class) with parentheses in Vue 3",
+                            ),
+                        );
+                    }
                 }
-
-                result.add_diagnostic(
-                    LintDiagnostic::warn(
-                        META.name,
-                        "Deprecated deep selector syntax",
-                        (offset + absolute_pos) as u32,
-                        (offset + absolute_pos + pattern.len()) as u32,
-                    )
-                    .with_help("Use :deep(.class) or ::v-deep(.class) with parentheses in Vue 3"),
-                );
-
-                search_start = absolute_pos + 1;
             }
-        }
-
-        // Check for slot element selector that might need ::v-slotted
-        // Pattern: direct styling of slot element without ::v-slotted
-        if contains_outside(bytes, b"slot", &comments)
-            && !contains_outside(bytes, b"::v-slotted", &comments)
-            && !contains_outside(bytes, b":slotted", &comments)
-        {
-            // Only warn if there's actual styling around "slot"
-            let finder = memmem::Finder::new(b"slot");
-            let mut search_start = 0;
-
-            while let Some(pos) = bytes.get(search_start..).and_then(|rest| finder.find(rest)) {
-                let absolute_pos = search_start + pos;
-
-                // Check if "slot" is part of a selector (not inside a value or comment)
-                // Look for preceding characters that indicate selector context
-                let is_selector = absolute_pos
+            if slotted {
+                continue;
+            }
+            for (offset, _) in text.match_indices("slot") {
+                let before = offset
                     .checked_sub(1)
-                    .and_then(|prev| bytes.get(prev))
-                    .is_none_or(|prev| matches!(prev, b' ' | b'\n' | b'{' | b',' | b'>'));
-
-                // Check if followed by selector-like characters
-                let after_pos = absolute_pos + 4;
-                let is_followed_by_selector = bytes
-                    .get(after_pos)
-                    .is_some_and(|next| matches!(next, b' ' | b'{' | b'.' | b'[' | b'>'));
-
-                if is_selector && is_followed_by_selector && !in_comment(&comments, absolute_pos) {
+                    .and_then(|previous| bytes.get(previous));
+                let after = bytes.get(offset + 4);
+                let starts =
+                    before.is_none_or(|byte| matches!(byte, b' ' | b'\n' | b'\t' | b',' | b'>'));
+                let ends = after.is_none_or(|byte| {
+                    matches!(byte, b' ' | b'\n' | b'\t' | b'.' | b'[' | b'>' | b',')
+                });
+                if starts && ends {
+                    let span = at(offset, 4);
                     result.add_diagnostic(
                         LintDiagnostic::warn(
                             META.name,
                             "Consider using ::v-slotted() to style slot content in scoped styles",
-                            (offset + absolute_pos) as u32,
-                            (offset + absolute_pos + 4) as u32,
+                            span.start,
+                            span.end,
                         )
-                        .with_help(
-                            "Use `::v-slotted(selector)` to explicitly target content passed to slots",
-                        ),
+                        .with_help("Use `::v-slotted(selector)` to explicitly target content passed to slots"),
                     );
                 }
-
-                search_start = absolute_pos + 1;
             }
         }
     }
-}
-
-fn comment_ranges(bytes: &[u8]) -> Vec<(usize, usize)> {
-    let mut ranges = Vec::new();
-    let mut index = 0;
-    while index + 1 < bytes.len() {
-        if bytes.get(index) == Some(&b'/') && bytes.get(index + 1) == Some(&b'*') {
-            let start = index;
-            index += 2;
-            while index + 1 < bytes.len()
-                && !(bytes.get(index) == Some(&b'*') && bytes.get(index + 1) == Some(&b'/'))
-            {
-                index += 1;
-            }
-            let end = if index + 1 < bytes.len() {
-                index + 2
-            } else {
-                bytes.len()
-            };
-            ranges.push((start, end));
-            index = end;
-        } else {
-            index += 1;
-        }
-    }
-    ranges
-}
-
-fn in_comment(ranges: &[(usize, usize)], pos: usize) -> bool {
-    ranges
-        .iter()
-        .any(|(start, end)| pos >= *start && pos < *end)
-}
-
-fn contains_outside(bytes: &[u8], needle: &[u8], comments: &[(usize, usize)]) -> bool {
-    let finder = memmem::Finder::new(needle);
-    let mut search_start = 0;
-    while let Some(pos) = bytes.get(search_start..).and_then(|rest| finder.find(rest)) {
-        let absolute = search_start + pos;
-        if !in_comment(comments, absolute) {
-            return true;
-        }
-        search_start = absolute + 1;
-    }
-    false
 }
 
 #[cfg(test)]
@@ -186,7 +123,7 @@ mod tests {
 
     fn create_linter() -> CssLinter {
         let mut linter = CssLinter::new();
-        linter.add_rule(Box::new(PreferSlotted));
+        linter.add_style_rule(Box::new(PreferSlotted));
         linter
     }
 
@@ -204,10 +141,39 @@ mod tests {
         assert_eq!(result.warning_count, 0);
     }
 
-    // Note: Tests for deprecated >>> and /deep/ patterns are not included here
-    // because they are invalid CSS syntax and fail to parse.
-    // These patterns should be detected at the SFC level before CSS parsing,
-    // or by a raw text scanner that runs before the CSS linter.
+    #[test]
+    fn test_warns_deprecated_deep_combinators() {
+        let linter = create_linter();
+        let source = ".a >>> .b { color: red; }\n.c /deep/ .d { color: red; }\n.e ::v-deep .f { color: red; }\n.g ::v-deep(.h) { color: red; }";
+        let reported: Vec<_> = linter
+            .lint(source, 0)
+            .diagnostics
+            .iter()
+            .map(|diagnostic| &source[diagnostic.start as usize..diagnostic.end as usize])
+            .collect();
+        assert_eq!(reported, [">>>", "/deep/", "::v-deep"]);
+    }
+
+    #[test]
+    fn test_reads_preprocessor_selectors() {
+        use vize_l1::css::lang::StyleLanguage;
+        let linter = create_linter();
+        let scss = ".a {\n  // slot is fine in a comment\n  slot > .b { color: red; }\n  .c >>> .d { color: red; }\n}";
+        let result = linter.lint_block(scss, 0, StyleLanguage::Scss, true);
+        let reported: Vec<_> = result
+            .diagnostics
+            .iter()
+            .map(|diagnostic| &scss[diagnostic.start as usize..diagnostic.end as usize])
+            .collect();
+        assert_eq!(reported, ["slot", ">>>"]);
+        let stylus = "slot\n  color red\n";
+        assert_eq!(
+            linter
+                .lint_block(stylus, 0, StyleLanguage::Stylus, true)
+                .warning_count,
+            1
+        );
+    }
 
     #[test]
     fn test_ignores_slot_and_deep_selectors_inside_comments() {

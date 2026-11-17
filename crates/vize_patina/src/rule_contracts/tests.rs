@@ -39,7 +39,7 @@ fn registered() -> BTreeMap<&'static str, Severity> {
         CssRule::meta(&NoVBindPerformance),
         StyleRule::meta(&PreferLogicalProperties),
         CssRule::meta(&PreferNestedSelectors),
-        CssRule::meta(&PreferSlotted),
+        StyleRule::meta(&PreferSlotted),
         StyleRule::meta(&RequireFontDisplay),
     ];
     let css_names: Vec<&str> = css.iter().map(|meta| meta.name).collect();

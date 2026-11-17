@@ -151,7 +151,17 @@ pub(super) fn key_compound_ids(sheet: &StyleSheet<'_>, prelude: Span) -> Vec<Spa
 /// stays a comment token, which separates nothing: `#a/**/.b` is one
 /// compound. Comments are in document order, so only those overlapping
 /// `span` are visited.
-fn masked(sheet: &StyleSheet<'_>, span: Span) -> String {
+pub(super) fn masked(sheet: &StyleSheet<'_>, span: Span) -> String {
+    mask_comments(sheet, span, false)
+}
+
+/// The text of `span` with every comment of the block, a terminated
+/// `/* … */` included, replaced by spaces of the same byte length.
+pub(super) fn without_comments(sheet: &StyleSheet<'_>, span: Span) -> String {
+    mask_comments(sheet, span, true)
+}
+
+fn mask_comments(sheet: &StyleSheet<'_>, span: Span, terminated: bool) -> String {
     let mut text = String::from(sheet.text(span));
     let comments = sheet.comments();
     let first = comments.partition_point(|comment| comment.span().end <= span.start);
@@ -163,7 +173,7 @@ fn masked(sheet: &StyleSheet<'_>, span: Span) -> String {
         .take_while(|comment| comment.start < span.end);
     for comment in inside {
         let body = sheet.text(comment);
-        if body.starts_with("/*") && body.len() >= 4 && body.ends_with("*/") {
+        if !terminated && body.starts_with("/*") && body.len() >= 4 && body.ends_with("*/") {
             continue;
         }
         let from = comment.start.max(span.start) - span.start;

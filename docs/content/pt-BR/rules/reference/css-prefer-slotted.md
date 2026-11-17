@@ -11,7 +11,7 @@ Recomendar ::v-slotted() para estilizar o conteúdo de slots.
 | --- | --- | --- | --- |
 | `warning` | `opinionated`, `nuxt` | Não | Nenhuma |
 
-Aplicável a: Blocos style em CSS puro (blocos scss, sass, less e stylus são ignorados).
+Aplicável a: Blocos style em CSS, SCSS, Sass, Less e Stylus, como escritos (sem pré-processador).
 
 ## Incorreto
 
