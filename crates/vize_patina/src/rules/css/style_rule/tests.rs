@@ -116,6 +116,18 @@ fn id_selectors_are_top_level_selector_tokens() {
         ids(css, "@keyframes k { from { opacity: 0; } }"),
         Vec::<String>::new()
     );
+    // As before: rules under at-rules the lightningcss lane skipped are not checked.
+    assert_eq!(
+        ids(css, "@container (width > 1px) { #c { color: red; } }"),
+        Vec::<String>::new()
+    );
+    assert_eq!(
+        ids(
+            css,
+            "@supports (display: grid) { @layer a { #s { color: red; } } }"
+        ),
+        ["#s"]
+    );
 }
 
 #[test]

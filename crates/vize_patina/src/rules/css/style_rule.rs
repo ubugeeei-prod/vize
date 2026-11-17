@@ -9,7 +9,7 @@
 
 use cssparser::{Parser, ParserInput, Token};
 use vize_l0::{Span, String};
-use vize_l1::css::{StyleNodeKind, StyleSheet};
+use vize_l1::css::{StyleNode, StyleNodeKind, StyleSheet};
 
 use super::{CssLintResult, CssRuleMeta};
 
@@ -47,12 +47,45 @@ pub(super) fn declaration_values<'s>(sheet: &'s StyleSheet<'_>) -> impl Iterator
     })
 }
 
-/// Every rule's selector span, in document order.
+/// At-rules whose blocks hold style rules the rules check, as the lightningcss
+/// lane descended (`@media`, `@supports`, `@layer`), plus the preprocessor
+/// blocks that emit style rules where they are used (Sass spells `@mixin` and
+/// `@include` as `=` and `+`).
+const STYLE_SCOPES: [&str; 13] = [
+    "media", "supports", "layer", "mixin", "include", "if", "else", "each", "for", "while",
+    "at-root", "=", "+",
+];
+
+/// Whether `node` is in the scope the rule lane checks: under style rules and
+/// the [`STYLE_SCOPES`] at-rules only, not in `@keyframes`, `@font-face`,
+/// `@page`, `@container` or another at-rule the lightningcss lane skipped.
+pub(super) fn in_style_scope(sheet: &StyleSheet<'_>, node: &StyleNode) -> bool {
+    let nodes = sheet.nodes();
+    let mut parent = node.parent();
+    while let Some(index) = parent {
+        let Some(ancestor) = nodes.get(index) else {
+            return false;
+        };
+        if let StyleNodeKind::AtRule { name } = sheet.kind(ancestor) {
+            let name = sheet.text(name);
+            if !STYLE_SCOPES
+                .iter()
+                .any(|scope| name.eq_ignore_ascii_case(scope))
+            {
+                return false;
+            }
+        }
+        parent = ancestor.parent();
+    }
+    true
+}
+
+/// Every rule's selector span in the checked scope, in document order.
 pub(super) fn rule_preludes<'s>(sheet: &'s StyleSheet<'_>) -> impl Iterator<Item = Span> + 's {
     sheet
         .nodes()
         .iter()
-        .filter(|node| sheet.kind(node) == StyleNodeKind::Rule)
+        .filter(|node| sheet.kind(node) == StyleNodeKind::Rule && in_style_scope(sheet, node))
         .map(|node| node.prelude())
 }
 
