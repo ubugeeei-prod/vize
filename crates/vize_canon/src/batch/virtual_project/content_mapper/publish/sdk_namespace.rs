@@ -289,7 +289,7 @@ mod tests {
                 let reference = if index < 3 { REF } else { "__vizeSdk." };
                 format!("type A{index} = {reference}$UsageProps<typeof C>;\n")
             })
-            .chain([NAMESPACE_IMPORT.to_owned()])
+            .chain([NAMESPACE_IMPORT.to_owned(), WEIGHT_IMPORT.repeat(4)])
             .collect::<String>();
         assert_eq!(code.as_str(), expected.as_str());
         // Coordinates before the first rewrite do not move.
