@@ -62,11 +62,17 @@ fn the_alias_table_is_sorted_and_never_hides_a_registered_rule() {
             .iter()
             .copied(),
     );
+    let hidden: Vec<&str> = ESLINT_VUE_ALIASES
+        .iter()
+        .map(|(upstream, _)| *upstream)
+        .filter(|upstream| registered.contains(upstream))
+        .collect();
+    assert_eq!(
+        hidden,
+        Vec::<&str>::new(),
+        "upstream IDs that are Patina rules"
+    );
     for (upstream, patina) in ESLINT_VUE_ALIASES {
-        assert!(
-            !registered.contains(upstream),
-            "{upstream} is itself a Patina rule"
-        );
         assert_eq!(patina_rule(upstream), *patina);
     }
     assert_eq!(patina_rule("vue/no-v-html"), "vue/no-v-html");
