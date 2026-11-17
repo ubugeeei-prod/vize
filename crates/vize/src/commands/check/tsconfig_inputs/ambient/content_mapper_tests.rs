@@ -3,6 +3,7 @@
 use std::path::Path;
 
 use super::collect_content_mapper_ambient_declarations;
+use crate::commands::check::tsconfig_inputs::type_references::DeclarationContents;
 use crate::commands::check::tsconfig_inputs::{
     TsconfigInputCache, declares_vue_template_ref_global,
 };
@@ -174,4 +175,25 @@ fn wildcard_prefixed_nuxt_includes_select_each_app_manifest() {
         "{files:?}"
     );
     assert!(declares_vue_template_ref_global(&files), "{files:?}");
+}
+
+/// A declaration a package graph walk already read is taken from the kept
+/// text, not read again: the visitor sees that text even though the file on
+/// disk now says something else.
+#[test]
+fn the_reference_walk_takes_kept_declaration_text_instead_of_reading_again() {
+    let directory = tempfile::tempdir().unwrap();
+    let root = directory.path().canonicalize().unwrap();
+    write(&root, "types/kept.d.ts", "declare const onDisk: 1;\n");
+    let kept = root.join("types/kept.d.ts");
+    let mut contents = DeclarationContents::default();
+    contents.insert(kept.clone(), VUE_TEMPLATE_REF.into());
+    let mut visited = Vec::new();
+    let files = super::collect_declaration_reference_graph_reading(
+        std::slice::from_ref(&kept),
+        contents,
+        |path, content| visited.push((path.to_path_buf(), content.to_owned())),
+    );
+    assert_eq!(files.into_iter().collect::<Vec<_>>(), vec![kept.clone()]);
+    assert_eq!(visited, vec![(kept, VUE_TEMPLATE_REF.to_owned())]);
 }
