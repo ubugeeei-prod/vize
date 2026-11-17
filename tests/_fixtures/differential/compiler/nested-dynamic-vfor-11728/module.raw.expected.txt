@@ -3,7 +3,7 @@ import { createVNode as _createVNode, createTextVNode as _createTextVNode, resol
 
 
 function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {
-  _push(`<table${_ssrRenderAttrs(_attrs)}><tbody>`)
+  _push(`<table${_ssrRenderAttrs(_attrs)}>`)
   _push(`<!--[-->`)
   _ssrRenderList($props.rows, (line, r) => {
     _push(`<tr>`)
@@ -15,7 +15,7 @@ function ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options
     _push(`</tr>`)
   })
   _push(`<!--]-->`)
-  _push(`</tbody></table>`)
+  _push(`</table>`)
 }
 
 export default {

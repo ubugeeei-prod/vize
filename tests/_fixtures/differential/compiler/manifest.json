@@ -2321,8 +2321,8 @@
       },
       "reference": {
         "path": "nested-dynamic-vfor-11728/module.expected.txt",
-        "sha256": "ba96f9acc62d4201bb1079d6216e6330446ebc7ce345fb236487151e61d81378",
-        "source": "Exact source CLI a3169b6e4fd2e15e7dd12e083b54ee3b30da8508 build --ssr --no-config full-module observation; parser::table_component_tests::dynamic_component_stays_inside_its_authored_table_loop consumes this pinned authored input."
+        "sha256": "9ec912628628de1f8c53c3f3744bacefc18d00d42f611a06e5c27eb10ef7862f",
+        "source": "Exact source CLI a3169b6e4fd2e15e7dd12e083b54ee3b30da8508 build --ssr --no-config full-module observation, less the implied tbody that Vue 3.5 does not emit (docs/davinci/decisions/2026-11-18-sfc-table-authored-rows.md); parser::table_component_tests::dynamic_component_stays_inside_its_authored_table_loop consumes this pinned authored input."
       },
       "adapters": {
         "legacy": "compiler-cli-ssr-v1",
@@ -4439,6 +4439,59 @@
           "macro_artifacts"
         ],
         "scriptLang": "js"
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "compiler-cli-ssr-v1 default Vue 3 dialect"
+          }
+        ]
+      }
+    },
+    {
+      "id": "compiler/sfc/table-authored-rows",
+      "state": "active",
+      "targets": [
+        "ssr"
+      ],
+      "inputs": {
+        "root": "table-authored-rows",
+        "files": [
+          {
+            "path": "Layout.vue.txt",
+            "sha256": "c236101abebe58467f9369cdfc84402a52e73784ca416814a1b5181b32cc5737",
+            "role": "entry"
+          }
+        ]
+      },
+      "reference": {
+        "path": "table-authored-rows/module.expected.txt",
+        "sha256": "342116415fcff30a0d6124debc6480b2cf96d1cf99e467b2f76d5c5a028d55cb",
+        "source": "crates/vize_atelier_sfc/tests/table_authored_rows.rs:direct_table_rows_and_cells_stay_authored_like_vue"
+      },
+      "adapters": {
+        "legacy": "compiler-cli-ssr-v1",
+        "native": null,
+        "reasons": {
+          "native": "Whole-product native compiler remains unavailable; this source-built SSR observation pins authored table rows and cells (Vue 3.5 emits table > tr) without native parity credit."
+        }
+      },
+      "comparison": {
+        "contract": "compiler-ssr-module-bytes-v1",
+        "requiredFacets": [
+          "code",
+          "css",
+          "errors",
+          "warnings",
+          "macro_artifacts"
+        ]
       },
       "dialectCoverage": {
         "state": "source-inspected",
