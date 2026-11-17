@@ -1,5 +1,6 @@
 use vize_carton::{String, append, cstr};
 use vize_croquis::Croquis;
+use vize_l0::ts_emit::generated_name::SETUP_PROPS;
 
 use super::append_model_props_type_literal;
 use crate::virtual_ts::generic_parameters::GenericParameters;
@@ -64,7 +65,10 @@ pub(crate) fn generate_setup_scoped_props_artifact(
         append_model_props_type_literal(ts, summary, script, models, generic_parameters);
         ts.push_str(";\n");
     }
-    ts.push_str("  const __vize_setup_props = undefined as unknown as $SetupProps;\n");
+    vize_l0::append!(
+        *ts,
+        "  const {SETUP_PROPS} = undefined as unknown as $SetupProps;\n"
+    );
 }
 
 pub(super) fn props_type_ref(

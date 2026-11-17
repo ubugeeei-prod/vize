@@ -145,23 +145,23 @@ export declare namespace colors { const current: string; }
         );
         assert_eq!(
             project_declaration_as_typescript("export default class { value: string; }\n"),
-            "declare class __vize_shipped_default_0 { value: string; }\nexport default __vize_shipped_default_0;\n"
+            "declare class $shippedDefault0 { value: string; }\nexport default $shippedDefault0;\n"
         );
         assert_eq!(
             project_declaration_as_typescript(
                 "export default abstract /* class in a comment */ class {}\n"
             ),
-            "declare abstract /* class in a comment */ class __vize_shipped_default_0 {}\nexport default __vize_shipped_default_0;\n"
+            "declare abstract /* class in a comment */ class $shippedDefault0 {}\nexport default $shippedDefault0;\n"
         );
         assert_eq!(
             project_declaration_as_typescript(
                 "export default abstract /* class 名前 in a comment */ class {}\n"
             ),
-            "declare abstract /* class 名前 in a comment */ class __vize_shipped_default_0 {}\nexport default __vize_shipped_default_0;\n"
+            "declare abstract /* class 名前 in a comment */ class $shippedDefault0 {}\nexport default $shippedDefault0;\n"
         );
         assert_eq!(
             project_declaration_as_typescript("export default function<T>(): T;\n"),
-            "declare function __vize_shipped_default_0<T>(): T;\nexport default __vize_shipped_default_0;\n"
+            "declare function $shippedDefault0<T>(): T;\nexport default $shippedDefault0;\n"
         );
         assert_eq!(
             project_declaration_as_typescript(

@@ -1,6 +1,7 @@
 //! Scope-aware component props type checks, including recursion into nested
 //! v-for/v-slot closure scopes.
 
+use vize_l0::ts_emit::generated_name::SLOT_HOST;
 mod bindings;
 mod closure_scopes;
 mod duplicate_listeners;
@@ -387,7 +388,7 @@ fn generate_usage_declarations(
         )
         .map(|scope| {
             constructor_instance::instance_pair_name(
-                vize_carton::cstr!("__vize_slot_host_{}", scope.id.as_u32()).as_str(),
+                vize_carton::cstr!("{SLOT_HOST}{}", scope.id.as_u32()).as_str(),
                 &summary.scopes,
             )
         });

@@ -453,19 +453,19 @@ const result = {} as Result<number>;
     void __ctx; void $attrs; void $slots; void $refs; void $emit;
 
   {
-    const __vize_match_8_0 = (result);
-    type __vize_match_8_1 = typeof __vize_match_8_0;
-    type __vize_match_8_2 = ['object', [["kind", ['literal', 'ok']],["rows", ['any']],]];
-    type __vize_match_8_3 = $Patterns.Match<__vize_match_8_1, __vize_match_8_2>;
-    const __vize_match_8_4unreachable: $Patterns.Reachable<__vize_match_8_3> = true;
-    void __vize_match_8_4unreachable;
-    if (((value: __vize_match_8_1): value is __vize_match_8_1 & __vize_match_8_3 => (void value, true))(__vize_match_8_0) && ((value: __vize_match_8_1): value is __vize_match_8_1 & __vize_match_8_3 => (void value, true))((result))) {
-      const __vize_match_8_5 = __vize_match_8_0 as __vize_match_8_3;
-      const rows = __vize_match_8_5["rows"];
+    const $match8_0 = (result);
+    type $match8_1 = typeof $match8_0;
+    type $match8_2 = ['object', [["kind", ['literal', 'ok']],["rows", ['any']],]];
+    type $match8_3 = $Patterns.Match<$match8_1, $match8_2>;
+    const $match8_4unreachable: $Patterns.Reachable<$match8_3> = true;
+    void $match8_4unreachable;
+    if (((value: $match8_1): value is $match8_1 & $match8_3 => (void value, true))($match8_0) && ((value: $match8_1): value is $match8_1 & $match8_3 => (void value, true))((result))) {
+      const $match8_5 = $match8_0 as $match8_3;
+      const rows = $match8_5["rows"];
       void rows;
-      const rest = __vize_match_8_5 as Omit<typeof __vize_match_8_5, "kind" | "rows">;
+      const rest = $match8_5 as Omit<typeof $match8_5, "kind" | "rows">;
       void rest;
-      const whole = __vize_match_8_5;
+      const whole = $match8_5;
       void whole;
       if (rows.length > 0) {
         void (whole.rows.length); // Interpolation
@@ -477,8 +477,8 @@ const result = {} as Result<number>;
 
         // v-for scope: rows in rows
         {
-        const __vize_v_for_source_10 = __vForList(rows);
-        for (const [rows] of __vize_v_for_source_10) {
+        const $forSource10 = __vForList(rows);
+        for (const [rows] of $forSource10) {
           void rows;
           void (rows); // VBind
           // @vize-map: expr -> 373:377
@@ -486,16 +486,16 @@ const result = {} as Result<number>;
         }
       }
     }
-    type __vize_match_8_6 = ['any'];
-    type __vize_match_8_7 = $Patterns.Match<__vize_match_8_1, __vize_match_8_6>;
-    const __vize_match_8_8unreachable: $Patterns.Reachable<__vize_match_8_7> = true;
-    void __vize_match_8_8unreachable;
-    if (((value: __vize_match_8_1): value is __vize_match_8_1 & __vize_match_8_7 => (void value, true))(__vize_match_8_0) && ((value: __vize_match_8_1): value is __vize_match_8_1 & __vize_match_8_7 => (void value, true))((result))) {
-      const __vize_match_8_9 = __vize_match_8_0 as __vize_match_8_7;
+    type $match8_6 = ['any'];
+    type $match8_7 = $Patterns.Match<$match8_1, $match8_6>;
+    const $match8_8unreachable: $Patterns.Reachable<$match8_7> = true;
+    void $match8_8unreachable;
+    if (((value: $match8_1): value is $match8_1 & $match8_7 => (void value, true))($match8_0) && ((value: $match8_1): value is $match8_1 & $match8_7 => (void value, true))((result))) {
+      const $match8_9 = $match8_0 as $match8_7;
     }
-    type __vize_match_8_10 = $Patterns.Subtract<__vize_match_8_1, __vize_match_8_6>;
-    const __vize_match_8_11: $Patterns.Exhaustiveness<__vize_match_8_10> = true;
-    void __vize_match_8_11;
+    type $match8_10 = $Patterns.Subtract<$match8_1, $match8_6>;
+    const $match8_11: $Patterns.Exhaustiveness<$match8_10> = true;
+    void $match8_11;
   }
 
   // Component props type declarations
@@ -544,50 +544,50 @@ const result = {} as Result<number>;
   // Component template navigation references
   void Child;
   const { } = undefined as unknown as $ComponentNavigationProps<__Child_Props_0>;
-  const __vize_props_nav_0 = undefined as unknown as __Child_Props_0 & globalThis.Record<string, unknown>;
+  const $propsNav0 = undefined as unknown as __Child_Props_0 & globalThis.Record<string, unknown>;
   // @ts-ignore Navigation-only references; no diagnostic owner.
-  void __vize_props_nav_0.count;
+  void $propsNav0.count;
 
   // Component props value checks (template scope)
   {
-    const __vize_match_8__0 = (result);
-    type __vize_match_8__1 = typeof __vize_match_8__0;
-    type __vize_match_8__2 = ['object', [["kind", ['literal', 'ok']],["rows", ['any']],]];
-    type __vize_match_8__3 = $Patterns.Match<__vize_match_8__1, __vize_match_8__2>;
-    if (((value: __vize_match_8__1): value is __vize_match_8__1 & __vize_match_8__3 => (void value, true))(__vize_match_8__0) && ((value: __vize_match_8__1): value is __vize_match_8__1 & __vize_match_8__3 => (void value, true))((result))) {
-      const __vize_match_8__4 = __vize_match_8__0 as __vize_match_8__3;
-      const rows = __vize_match_8__4["rows"];
+    const $match8__0 = (result);
+    type $match8__1 = typeof $match8__0;
+    type $match8__2 = ['object', [["kind", ['literal', 'ok']],["rows", ['any']],]];
+    type $match8__3 = $Patterns.Match<$match8__1, $match8__2>;
+    if (((value: $match8__1): value is $match8__1 & $match8__3 => (void value, true))($match8__0) && ((value: $match8__1): value is $match8__1 & $match8__3 => (void value, true))((result))) {
+      const $match8__4 = $match8__0 as $match8__3;
+      const rows = $match8__4["rows"];
       void rows;
-      const rest = __vize_match_8__4 as Omit<typeof __vize_match_8__4, "kind" | "rows">;
+      const rest = $match8__4 as Omit<typeof $match8__4, "kind" | "rows">;
       void rest;
-      const whole = __vize_match_8__4;
+      const whole = $match8__4;
       void whole;
       if (rows.length > 0) {
 
         // Component props in v-for scope: rows in rows
         {
-        const __vize_v_for_source_10 = __vForList(rows);
-        for (const [rows] of __vize_v_for_source_10) {
+        const $forSource10 = __vForList(rows);
+        for (const [rows] of $forSource10) {
           void rows;
           // @vize-map: prop -> 365:378
-          const __vize_prop_check_0_count: __Child_0_prop_count = rows;
-          void __vize_prop_check_0_count;
+          const $prop0_count: __Child_0_prop_count = rows;
+          void $prop0_count;
           (undefined as unknown as __Child_Check_0)({
             "count": rows,
           });
           type $SlotContract_0 = $StructuralSlots<typeof Child>;
-          const __vize_required_slots_0: $RequiredSlots<$SlotContract_0, {}> = {};
-          void __vize_required_slots_0;
+          const $requiredSlots0: $RequiredSlots<$SlotContract_0, {}> = {};
+          void $requiredSlots0;
         }
         }
       }
     }
-    type __vize_match_8__5 = ['any'];
-    type __vize_match_8__6 = $Patterns.Match<__vize_match_8__1, __vize_match_8__5>;
-    if (((value: __vize_match_8__1): value is __vize_match_8__1 & __vize_match_8__6 => (void value, true))(__vize_match_8__0) && ((value: __vize_match_8__1): value is __vize_match_8__1 & __vize_match_8__6 => (void value, true))((result))) {
-      const __vize_match_8__7 = __vize_match_8__0 as __vize_match_8__6;
+    type $match8__5 = ['any'];
+    type $match8__6 = $Patterns.Match<$match8__1, $match8__5>;
+    if (((value: $match8__1): value is $match8__1 & $match8__6 => (void value, true))($match8__0) && ((value: $match8__1): value is $match8__1 & $match8__6 => (void value, true))((result))) {
+      const $match8__7 = $match8__0 as $match8__6;
     }
-    type __vize_match_8__8 = $Patterns.Subtract<__vize_match_8__1, __vize_match_8__5>;
+    type $match8__8 = $Patterns.Subtract<$match8__1, $match8__5>;
   }
 
   // Mark used components as referenced

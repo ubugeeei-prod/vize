@@ -44,6 +44,7 @@
 use super::super::types::{VizeMapping, VizeSubSpan};
 use vize_carton::{CompactString, FxHashMap, append, is_native_tag};
 use vize_croquis::TemplateExpression;
+use vize_l0::ts_emit::generated_name::NATIVE_PROP_CHECK;
 use vize_relief::{
     DirectiveNode, ElementNode, ExpressionNode, PropNode, RootNode, TemplateChildNode,
 };
@@ -236,7 +237,7 @@ pub(super) fn generate_native_prop_statement(
 
     append!(*ts, "{indent}const ");
     let check_name_start = ts.len();
-    append!(*ts, "__vize_native_prop_check_{}", expr.start);
+    append!(*ts, "{NATIVE_PROP_CHECK}{}", expr.start);
     let check_name_end = ts.len();
     match &native_prop.target {
         NativePropTarget::Property { tag, name } => {
@@ -265,7 +266,7 @@ pub(super) fn generate_native_prop_statement(
     };
     append!(
         *ts,
-        "{indent}void __vize_native_prop_check_{}; // VBind\n",
+        "{indent}void {NATIVE_PROP_CHECK}{}; // VBind\n",
         expr.start
     );
 

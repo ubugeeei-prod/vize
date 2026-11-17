@@ -38,11 +38,7 @@ fn dynamic_namespace_props_resolve_the_exact_value_in_both_registry_modes() {
         for checked in [true, false] {
             let output = generate(&script, &template, checked);
             let captured = matches!(expression, "registry.Choice" | "registry.nested.Choice");
-            let constructor = if captured {
-                "__vize_dynamic_is_0"
-            } else {
-                reference
-            };
+            let constructor = if captured { "$is0" } else { reference };
             assert!(
                 output
                     .code
@@ -54,7 +50,7 @@ fn dynamic_namespace_props_resolve_the_exact_value_in_both_registry_modes() {
                 let initializers = output
                     .code
                     .lines()
-                    .filter_map(|line| line.strip_prefix("  const __vize_dynamic_is_0 = "))
+                    .filter_map(|line| line.strip_prefix("  const $is0 = "))
                     .collect::<Vec<_>>();
                 let expected_initializer = vize_carton::cstr!("({expression});");
                 assert_eq!(initializers, vec![expected_initializer.as_str()]);
@@ -85,9 +81,9 @@ fn dynamic_namespace_props_resolve_the_exact_value_in_both_registry_modes() {
                 output
                     .code
                     .get(name_span.gen_range.clone())
-                    .is_some_and(|text| text.starts_with("__vize_prop_check_"))
+                    .is_some_and(|text| text.starts_with("$prop"))
             );
-            assert!(!output.code.contains("__vize_global_component_"));
+            assert!(!output.code.contains("$globalComponent"));
         }
     }
 }
@@ -102,7 +98,7 @@ fn ordinary_namespaced_tags_keep_their_markup_reference() {
             .code
             .contains("type __Registry_Choice_Props_0 = typeof Registry.Choice extends ")
     );
-    assert!(!output.code.contains("__vize_global_component_"));
+    assert!(!output.code.contains("$globalComponent"));
     assert!(!output.code.contains("typeof Registry_Choice"));
 }
 

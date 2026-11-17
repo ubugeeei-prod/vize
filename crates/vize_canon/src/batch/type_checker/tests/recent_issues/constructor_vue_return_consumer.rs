@@ -160,7 +160,7 @@ fn request(input: &Input<'_>) -> Result<UsageRequest, Failure> {
         input.component_text,
     )?;
     let file = name(input.generated_file)?;
-    let host = "__vize_slot_host_9_instances";
+    let host = "$slotHost9_instances";
     Ok(UsageRequest {
         usage_id: "original27:constructor-public-props-discrepancy:WitnessChild".into(),
         authored_file: name(&input.root.join("src/Tiny.vue"))?,

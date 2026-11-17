@@ -42,10 +42,10 @@ fn same_name_shorthand_maps_the_binding_onto_the_attribute() {
     ] {
         let shorthand = source.find(&format!(":{attribute} />")).unwrap() + 1;
         let explicit = source.find(&format!("\"{binding}\"")).unwrap() + 1;
-        let marker = format!("__vize_public_instance.{binding}");
+        let marker = format!("$public.{binding}");
         let reads = text
             .match_indices(&marker)
-            .map(|(at, _)| at + "__vize_public_instance.".len())
+            .map(|(at, _)| at + "$public.".len())
             .collect::<Vec<_>>();
         assert_eq!(reads.len(), 2, "{text}");
         assert!(
@@ -70,8 +70,8 @@ fn same_name_shorthand_maps_the_binding_onto_the_attribute() {
 
 #[test]
 fn keeps_diagnostic_handler_anchors_out_of_editor_features() {
-    let generated = "  const __vize_handler_1_2: unknown = handler;";
-    let start = generated.find("__vize_handler_").unwrap();
+    let generated = "  const $handler1_2: unknown = handler;";
+    let start = generated.find("$handler").unwrap();
 
     assert_eq!(
         content_mapper_span_features(generated, start, ContentMapperSpanKind::Atom),
@@ -346,22 +346,22 @@ const value = "example";
 
     assert_alias_mapping(
         &result,
-        "__vize_props_nav_0.fooBar",
-        "__vize_props_nav_0.".len(),
+        "$propsNav0.fooBar",
+        "$propsNav0.".len(),
         source.find(":foo-bar").unwrap() + 1,
         "foo-bar".len(),
     );
     assert_alias_mapping(
         &result,
-        "__vize_props_nav_0.modelValue",
-        "__vize_props_nav_0.".len(),
+        "$propsNav0.modelValue",
+        "$propsNav0.".len(),
         source.find("v-model").unwrap(),
         "v-model".len(),
     );
     assert_alias_mapping(
         &result,
-        "__vize_kebab_events_nav_0.saveItem",
-        "__vize_kebab_events_nav_0.".len(),
+        "$kebabNav0.saveItem",
+        "$kebabNav0.".len(),
         source.find("@save-item").unwrap() + 1,
         "save-item".len(),
     );
@@ -370,7 +370,7 @@ const value = "example";
 #[test]
 fn keeps_arbitrary_synthetic_spans_as_atoms() {
     assert!(!super::super::alias::is_alias_projection(
-        "__vize_handler_1_2",
+        "$handler1_2",
         "handler"
     ));
     assert!(!super::super::alias::is_alias_projection(
@@ -395,7 +395,7 @@ const value = 1;
         generate_vue_content_mapper_transform(Path::new("App.vue"), source).expect("transform");
     let original_start = source.find(":foo-bar").unwrap() + 1;
 
-    let check_marker = "const __vize_prop_check_0_foo_bar";
+    let check_marker = "const $prop0_foo_bar";
     let check_generated_start = result
         .text
         .find(check_marker)
@@ -404,7 +404,7 @@ const value = 1;
     assert!(
         result.mappings.iter().any(|mapping| {
             mapping.0[0] == check_generated_start
-                && mapping.0[1] == "__vize_prop_check_0_foo_bar".len()
+                && mapping.0[1] == "$prop0_foo_bar".len()
                 && mapping.0[2] == original_start
                 && mapping.0[3] == "foo-bar".len()
                 && mapping.0[4] == ContentMapperSpanKind::Atom as usize

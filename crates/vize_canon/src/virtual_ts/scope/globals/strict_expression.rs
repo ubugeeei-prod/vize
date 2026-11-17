@@ -4,6 +4,7 @@ use crate::virtual_ts::diagnostic_ownership::DiagnosticOwnershipCollector;
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use vize_carton::{FxHashSet, String};
 use vize_croquis::{Croquis, analyzer::extract_identifier_refs_oxc};
+use vize_l0::ts_emit::generated_name::KEYED_TEMPLATE_CONTEXT;
 
 use crate::virtual_ts::types::{VirtualTsOptions, VizeMapping};
 
@@ -73,7 +74,7 @@ pub(super) fn generate_strict_expression_refs(
                 mappings,
                 (
                     if check_keyed && keyed {
-                        "__vize_keyed_template_context"
+                        KEYED_TEMPLATE_CONTEXT.spelled()
                     } else {
                         strict_receiver(keyed)
                     },

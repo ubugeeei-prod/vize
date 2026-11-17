@@ -315,8 +315,8 @@ fn replay_prior_runtime_tuple_read(
 ) {
     // Exact runtime expression inverse from 9435's first parent. Only this
     // site changes; the other historical type-alias site stays repaired.
-    let current = "(__vize_args as unknown[])[0]";
-    let prior = "__vize_args[0]";
+    let current = "($args as unknown[])[0]";
+    let prior = "$args[0]";
     assert_eq!(file.content.matches(current).count(), 1);
     assert!(
         file.source_map
@@ -380,7 +380,7 @@ fn replay_prior_runtime_tuple_read(
         diagnostic.message.as_str(),
         "Tuple type '[]' of length '0' has no element at index '0'."
     );
-    let index = replay.find(prior).unwrap() + "__vize_args[".len();
+    let index = replay.find(prior).unwrap() + "$args[".len();
     let start = LineBreaks::Lsp.offset_to_position(&replay, index);
     let end = LineBreaks::Lsp.offset_to_position(&replay, index + 1);
     assert_eq!(

@@ -150,7 +150,7 @@ defineExpose<{
   mode: Mode;
   event?: TEvent;
 };
-  const __vize_setup_props = undefined as unknown as $SetupProps;
+  const $setupProps = undefined as unknown as $SetupProps;
   // ========== Template Scope (inherits from setup) ==========
   // Anchor before the template scope shadows `props`
   void props;
@@ -187,13 +187,13 @@ defineExpose<{
   // Compiler-macro results contribute to the component signature
   void props;
 
-  return { __vize_setup_props };
+  return { $setupProps };
 }
 
 // Invoke setup to verify types
 __setup();
 
-export type Props<Mode extends 'row' | 'cell' = any, TEvent extends Mode = any> = Awaited<ReturnType<typeof __setup<Mode, TEvent>>>["__vize_setup_props"];
+export type Props<Mode extends 'row' | 'cell' = any, TEvent extends Mode = any> = Awaited<ReturnType<typeof __setup<Mode, TEvent>>>["$setupProps"];
 
 export type Emits = {};
 type $Slots<Mode extends 'row' | 'cell' = any, TEvent extends Mode = any> = {

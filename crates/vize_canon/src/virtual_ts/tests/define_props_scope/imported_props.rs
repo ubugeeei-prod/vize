@@ -185,12 +185,12 @@ export default {
     let code = options_api_code_with_component_usage(script);
 
     assert!(
-        code.contains("const __vize_options_props = ({ ...sharedProps } as const);"),
+        code.contains("const $optionsProps = ({ ...sharedProps } as const);"),
         "deferred Options API props should still be captured in setup scope:\n{code}"
     );
     assert!(
         code.contains(
-            "type $ResolvedProps = $OptionsPropShape<Awaited<ReturnType<typeof __setup>>[\"__vize_options_props\"]>;"
+            "type $ResolvedProps = $OptionsPropShape<Awaited<ReturnType<typeof __setup>>[\"$optionsProps\"]>;"
         ),
         "deferred Options API props should resolve through a private alias:\n{code}"
     );

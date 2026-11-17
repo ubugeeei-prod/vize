@@ -52,7 +52,7 @@ fn component_tag_anchors_preserve_their_complete_authored_ranges_and_native_valu
             .collect::<Vec<_>>();
         if case.opaque {
             assert!(tag_rows.is_empty(), "{} is authored opaque text", case.name);
-            assert!(!result.code.contains("__vize_dynamic_is_0"));
+            assert!(!result.code.contains("$is0"));
             continue;
         }
         assert!(

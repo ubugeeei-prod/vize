@@ -1,4 +1,5 @@
 use std::ops::Range;
+use vize_l0::ts_emit::generated_name::SLOT_CHILDREN;
 
 use vize_carton::{String, append, cstr};
 use vize_croquis::analysis::ComponentUsage;
@@ -40,7 +41,7 @@ pub(super) fn generate_strict_slot_child_checks(
     };
     for check in checks {
         let safe_slot_name = to_safe_identifier_fragment(check.name.as_str());
-        let check_name = cstr!("__vize_slot_children_{idx}_{safe_slot_name}");
+        let check_name = cstr!("{SLOT_CHILDREN}{idx}_{safe_slot_name}");
         let gen_start = ts.len();
         if ctx.hoist_shared_preamble {
             let slot_children =

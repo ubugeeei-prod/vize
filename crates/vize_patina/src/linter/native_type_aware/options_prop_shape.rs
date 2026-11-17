@@ -1,10 +1,11 @@
 //! Type a template expression as a runtime Options API prop when Canon left
 //! the free name as `any` so the instance check can still report `TS2339`.
 
+use vize_l0::ts_emit::generated_name::OPTIONS_PROPS;
 use vize_l0::{String, cstr};
 
 pub(super) fn options_props_object(text: &str) -> Option<&str> {
-    let marker = "const __vize_options_props = (";
+    let marker = concat!("const ", vize_l0::generated_name!(OPTIONS_PROPS), " = (");
     let at = text.find(marker)?;
     let rest = text.get(at + marker.len()..)?.trim_start();
     if !rest.starts_with('{') {
@@ -20,7 +21,7 @@ pub(super) fn options_prop_annotation(object: Option<&str>, expr: &str) -> Optio
         return None;
     }
     Some(cstr!(
-        "$OptionsPropShape<typeof __vize_options_props>[\"{name}\"]"
+        "$OptionsPropShape<typeof {OPTIONS_PROPS}>[\"{name}\"]"
     ))
 }
 

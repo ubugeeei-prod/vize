@@ -35,8 +35,8 @@ fn duplicated_template_diagnostic_is_reported_once() {
     // deduplicate it.
     let message = "Property 'missingThing' does not exist on type '$TemplateInstance'.";
     let mut diagnostics: Vec<_> = virtual_source
-        .match_indices("void (__vize_public_instance.missingThing)")
-        .map(|(at, _)| at + "void (__vize_public_instance.".len())
+        .match_indices("void ($public.missingThing)")
+        .map(|(at, _)| at + "void ($public.".len())
         .map(|offset| {
             let (line, character) = LineIndex::new(virtual_source)
                 .offset_to_line_col(virtual_source, offset as u32)

@@ -42,6 +42,7 @@ use oxc_ast::ast::{Expression, Statement};
 use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_l0::cstr;
+use vize_l0::ts_emit::generated_name::V_SCOPE_PROBE;
 use vize_l2::dialect::petite::{PetiteDirectiveKind, PetiteScopeShape};
 use vize_relief::{DirectiveNode, ElementNode, ExpressionNode};
 
@@ -125,7 +126,7 @@ impl Rule for ValidVScope {
 fn is_object_literal(expr: &str) -> bool {
     // Wrap as the initializer of a declaration so the object literal parses as
     // an expression (a bare leading `{` would otherwise be a block statement).
-    let wrapped = cstr!("const __vize_scope = {expr}");
+    let wrapped = cstr!("const {V_SCOPE_PROBE} = {expr}");
 
     let allocator = Allocator::default();
     let source_type = SourceType::default().with_typescript(true);

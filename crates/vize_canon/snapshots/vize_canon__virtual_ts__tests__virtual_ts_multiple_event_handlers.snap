@@ -158,16 +158,16 @@ function handleHover() {}
   // @vize-map: expr -> 66:71
 
   // @click handler
-  void ((__vize_event: PointerEvent) => {
-    const __vize_handler_9_24 = ((__vize_cb: ((_e: PointerEvent) => unknown) | null | undefined) => __vize_cb)((handleClick));
-    if (__vize_handler_9_24) __vize_handler_9_24(__vize_event);  // handler expression
+  void (($evt: PointerEvent) => {
+    const $handler9_24 = (($cb: ((_e: PointerEvent) => unknown) | null | undefined) => $cb)((handleClick));
+    if ($handler9_24) $handler9_24($evt);  // handler expression
     // @vize-map: handler -> 24:35
   });
 
   // @mouseenter handler
-  void ((__vize_event: MouseEvent) => {
-    const __vize_handler_10_50 = ((__vize_cb: ((_e: MouseEvent) => unknown) | null | undefined) => __vize_cb)((handleHover));
-    if (__vize_handler_10_50) __vize_handler_10_50(__vize_event);  // handler expression
+  void (($evt: MouseEvent) => {
+    const $handler10_50 = (($cb: ((_e: MouseEvent) => unknown) | null | undefined) => $cb)((handleHover));
+    if ($handler10_50) $handler10_50($evt);  // handler expression
     // @vize-map: handler -> 50:61
   });
 

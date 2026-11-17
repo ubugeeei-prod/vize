@@ -189,14 +189,14 @@ fn custom_property_member_types_and_native_type_queries_remain_exact() {
             ("dynamic", "any"),
         ] {
             let declaration_marker = cstr!("var {name}!:");
-            let instance_marker = cstr!("__vize_public_instance.{name}");
+            let instance_marker = cstr!("$public.{name}");
             let declaration = generated
                 .find(declaration_marker.as_str())
                 .map(|start| start + "var ".len())
                 .expect("actual typed lexical declaration");
             let instance_read = generated
                 .find(instance_marker.as_str())
-                .map(|start| start + "__vize_public_instance.".len())
+                .map(|start| start + "$public.".len())
                 .expect("actual instance member read");
             for (kind, offset) in [("lexical", declaration), ("instance", instance_read)] {
                 let position = u32::try_from(offset).expect("native query position");

@@ -13,6 +13,7 @@ use super::dynamic_component::DynamicComponentAliases;
 use crate::virtual_ts::types::VizeMapping;
 use vize_carton::{FxHashMap, String, append, cstr};
 use vize_croquis::Croquis;
+use vize_l0::ts_emit::generated_name::GENERIC;
 
 const DIRECTIVE: &str = "@vue-generic";
 
@@ -39,7 +40,7 @@ impl ExplicitGenerics {
                 Some((
                     usage.start,
                     ExplicitGeneric {
-                        alias: cstr!("__vize_generic_{}", usage.start),
+                        alias: cstr!("{GENERIC}{}", usage.start),
                         arguments,
                     },
                 ))

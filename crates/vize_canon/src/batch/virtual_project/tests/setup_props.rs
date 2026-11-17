@@ -183,9 +183,11 @@ import Child from "./Child.vue";
     .unwrap()
     .pre_rewrite_code;
 
-    assert!(virtual_ts.contains("type __vize_events_resolver_0 = typeof Child"));
-    assert!(virtual_ts.contains("const __vize_kebab_events_nav_0: typeof __vize_events_resolved_0 & Record<string, unknown> = __vize_events_resolved_0;"));
-    assert!(virtual_ts.contains("void __vize_kebab_events_nav_0.saveItem;"));
+    assert!(virtual_ts.contains("type $EventsResolver0 = typeof Child"));
+    assert!(virtual_ts.contains(
+        "const $kebabNav0: typeof $resolvedEvents0 & Record<string, unknown> = $resolvedEvents0;"
+    ));
+    assert!(virtual_ts.contains("void $kebabNav0.saveItem;"));
 
     let _ = fs::remove_dir_all(&case_dir);
 }

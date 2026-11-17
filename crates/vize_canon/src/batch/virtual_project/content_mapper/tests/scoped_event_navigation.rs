@@ -30,7 +30,7 @@ const handleConfirm = (value: "conditional") => value;
             .expect("navigation guard");
     let resolver = result
         .text
-        .find("const __vize_events_resolved_")
+        .find("const $resolvedEvents")
         .expect("event resolver");
 
     assert!(guard < resolver, "{}", result.text);
@@ -38,16 +38,13 @@ const handleConfirm = (value: "conditional") => value;
         .find("\"value\": conditionalValue")
         .expect("resolved value");
     assert!(resolver + resolved_value > guard, "{}", result.text);
-    assert_eq!(
-        result.text.matches("const __vize_events_resolved_").count(),
-        1
-    );
+    assert_eq!(result.text.matches("const $resolvedEvents").count(), 1);
     let handler_inference = result
         .text
-        .find("const __vize_emit_props_")
+        .find("const $emitProps")
         .expect("handler inference");
     let guarded_inference = result.text[handler_inference..]
-        .find("if ((conditionalValue)) return (undefined as unknown as __vize_emit_input<__ConditionalGenericChild_")
+        .find("if ((conditionalValue)) return (undefined as unknown as $EmitGate<__ConditionalGenericChild_")
         .expect("guarded handler inference");
     let inferred_value = result.text[handler_inference..]
         .find("\"value\": conditionalValue")

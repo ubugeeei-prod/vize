@@ -100,7 +100,7 @@ pub struct GeneratedJsxFile {
 /// Name of the synthesized helper that swallows every re-emitted JSX
 /// expression. Declaring it ambient and `any`-returning lets each argument be
 /// type-checked independently while the whole call stays a valid render return.
-const JSX_EXPR_SINK: &str = "__vize_jsx_expr__";
+const JSX_EXPR_SINK: &str = vize_l0::generated_name!(JSX_EXPR);
 
 /// Ambient `Ctx<Emits, Slots>` type injected at module scope so the typed
 /// second parameter of a Vize JSX/TSX component (`{ emit, slots }: Ctx<…>`)
@@ -135,7 +135,7 @@ struct JsxExpr {
 
 /// One re-emitted unit recovered from a lowered JSX root, in source order.
 ///
-/// The render pass turns these into the arguments of a `__vize_jsx_expr__(…)`
+/// The render pass turns these into the arguments of a `$jsx(…)`
 /// call. Most are plain [`Expr`](JsxEmit::Expr) reads, but two directive forms
 /// need structured re-emission so their checks match Vue semantics:
 ///
@@ -259,7 +259,7 @@ mod nested_tests {
                 walk::walk_jsx_element(self, element);
             }
             fn visit_call_expression(&mut self, call: &CallExpression<'a>) {
-                if matches!(&call.callee, Expression::Identifier(identifier) if identifier.name == "__vize_jsx_component__")
+                if matches!(&call.callee, Expression::Identifier(identifier) if identifier.name == vize_l0::ts_emit::generated_name::JSX_COMPONENT.spelled())
                     && matches!(call.arguments.first(), Some(Argument::Identifier(identifier)) if identifier.name == "TabBar")
                 {
                     self.tab_bar += 1;

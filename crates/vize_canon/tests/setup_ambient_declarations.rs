@@ -96,7 +96,7 @@ fn setup_local_dependencies_are_not_lifted_or_widened() {
     let output = virtual_source(&source);
     assert_eq!(
         authored_setup_body(&output),
-        "const local = 'fixed';\n  type __vize_ambient_0_type_0 = typeof local;"
+        "const local = 'fixed';\n  type $ambient0_type_0 = typeof local;"
     );
     assert_eq!(output.matches("const local = 'fixed';").count(), 1);
 }
@@ -106,7 +106,7 @@ fn global_type_wrappers_do_not_hide_setup_local_dependencies() {
     let script = "class Local {}\ndeclare const first: Local;\ndeclare const second: ReadonlyArray<typeof first>;";
     assert_eq!(
         authored_setup_body(&virtual_source(&setup(script))),
-        "class Local {}\n  type __vize_ambient_0_type_0 = Local;"
+        "class Local {}\n  type $ambient0_type_0 = Local;"
     );
     assert_module_declaration(&setup(script), "declare const first:", true);
     assert_module_declaration(
@@ -236,7 +236,7 @@ fn long_dependency_chains_capture_the_local_type_once() {
     let output = virtual_source(&setup(&script));
     assert_eq!(
         authored_setup_body(&output),
-        "const local = 'fixed';\n  type __vize_ambient_0_type_0 = typeof local;"
+        "const local = 'fixed';\n  type $ambient0_type_0 = typeof local;"
     );
     assert_eq!(output.matches("declare const value_").count(), 256);
     let setup = output.find("// ========== Setup Scope ==========").unwrap();
@@ -263,7 +263,7 @@ fn overloads_capture_local_types_but_keep_runtime_merge_partners_in_setup() {
     let output = virtual_source(&setup(script));
     assert_eq!(
         authored_setup_body(&output),
-        "const local = 1;\n  type __vize_ambient_0_type_0 = typeof local;"
+        "const local = 1;\n  type $ambient0_type_0 = typeof local;"
     );
     insta::assert_snapshot!("overload_capture", output);
 

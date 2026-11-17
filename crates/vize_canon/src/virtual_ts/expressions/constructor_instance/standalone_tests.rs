@@ -24,7 +24,7 @@ impl<'a> Visit<'a> for Declarations {
     fn visit_variable_declaration(&mut self, declaration: &VariableDeclaration<'a>) {
         if declaration.declarations.iter().any(|declarator| {
             matches!(&declarator.id, BindingPattern::BindingIdentifier(name)
-                if name.name == "__vize_slot_host_1_instances")
+                if name.name == "$slotHost1_instances")
         }) {
             self.pairs.push(declaration.span);
         }
@@ -71,7 +71,7 @@ fn standalone_and_shared_props_use_the_actual_constructor_pair() {
             ""
         };
         let pair = cstr!(
-            "const __vize_slot_host_1_instances = (undefined as unknown as <__Z, __P>(withoutArguments: __Z, withArguments: __P) => {{ readonly withoutArguments: __Z; readonly withArguments: __P }})(new (undefined as unknown as {prefix}$SlotConstructorWithoutArguments<{prefix}$SlotConstructor<typeof ElBadge>>)(), new (undefined as unknown as {prefix}$SlotConstructorWithArguments<{prefix}$SlotConstructor<typeof ElBadge>>)({{\n    \"value\": 1,\n  }}, ...([] as unknown as {prefix}$SlotConstructorArgs<{prefix}$SlotConstructor<typeof ElBadge>>)));"
+            "const $slotHost1_instances = (undefined as unknown as <__Z, __P>(withoutArguments: __Z, withArguments: __P) => {{ readonly withoutArguments: __Z; readonly withArguments: __P }})(new (undefined as unknown as {prefix}$SlotConstructorWithoutArguments<{prefix}$SlotConstructor<typeof ElBadge>>)(), new (undefined as unknown as {prefix}$SlotConstructorWithArguments<{prefix}$SlotConstructor<typeof ElBadge>>)({{\n    \"value\": 1,\n  }}, ...([] as unknown as {prefix}$SlotConstructorArgs<{prefix}$SlotConstructor<typeof ElBadge>>)));"
         );
         assert_eq!(
             declarations
@@ -82,7 +82,7 @@ fn standalone_and_shared_props_use_the_actual_constructor_pair() {
             vec![pair.as_str()],
             "the emitted pair must retain both original constructor calls and the authored argument",
         );
-        let selected = "(typeof __vize_slot_host_1_instances.withArguments extends { $props: unknown } ? typeof __vize_slot_host_1_instances.withArguments : typeof __vize_slot_host_1_instances.withoutArguments)";
+        let selected = "(typeof $slotHost1_instances.withArguments extends { $props: unknown } ? typeof $slotHost1_instances.withArguments : typeof $slotHost1_instances.withoutArguments)";
         let raw = cstr!(
             "typeof ElBadge extends {{ readonly __vizeComponentMarker: true }} ? {prefix}$ComponentRawProps<typeof ElBadge> : 0 extends (1 & {selected}) ? {prefix}$ComponentRawProps<typeof ElBadge> : {selected} extends {{ $props: infer __P }} ? unknown extends __P ? Record<string, unknown> : __P : {prefix}$ComponentRawProps<typeof ElBadge>"
         );

@@ -20,7 +20,11 @@ export function contentMapperHelperAbi(root: string, pending: ReadonlyMap<string
   const packageRoot = path.join(root, "npm/cli");
   const manifest = JSON.parse(read(path.join(packageRoot, "package.json")));
   const references = read(path.join(root, nativeReferences));
-  const consumers = [...references.matchAll(/=>\s*\("[^"\n]+",\s*"([^"\n]+)"\)/gu)]
+  const consumers = [
+    ...references.matchAll(
+      /=>\s*\((?:"[^"\n]+"|vize_l0::generated_name!\(\w+\)),\s*"([^"\n]+)"\)/gu,
+    ),
+  ]
     .map((match) => match[1]!)
     .sort();
   assert.ok(consumers.length > 0, "native shared_type_refs! consumer list is empty");

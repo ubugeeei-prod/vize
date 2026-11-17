@@ -1,6 +1,7 @@
 //! Specialize authored Vue context imports once in their setup scope.
 
 use std::ops::Range;
+use vize_l0::ts_emit::generated_name::SETUP_IMPORT;
 
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{ImportDeclarationSpecifier, ImportOrExportKind, Statement};
@@ -138,11 +139,7 @@ impl SetupImportPlan {
 
     pub(super) fn emit_import_anchors(&self, ts: &mut crate::virtual_ts::TextBuf) {
         for (index, import) in self.imports.iter().enumerate() {
-            append!(
-                *ts,
-                "const __vize_setup_import_{index} = {};\n",
-                import.name
-            );
+            append!(*ts, "const {SETUP_IMPORT}{index} = {};\n", import.name);
         }
     }
 
@@ -230,7 +227,7 @@ impl SetupImportPlan {
                 src_range: original,
                 sub_spans: Vec::new(),
             });
-            append!(*ts, " = __vize_setup_import_{index} as unknown as ");
+            append!(*ts, " = {SETUP_IMPORT}{index} as unknown as ");
             if *namespace {
                 let mut fields = Vec::new();
                 let mut keys = Vec::new();
@@ -248,7 +245,7 @@ impl SetupImportPlan {
                 }
                 append!(
                     *ts,
-                    "{}<typeof __vize_setup_import_{index}, {}> & {{ {} }};\n",
+                    "{}<typeof {SETUP_IMPORT}{index}, {}> & {{ {} }};\n",
                     crate::virtual_ts::generated_names::lib("Omit"),
                     keys.join(" | "),
                     fields.join("; ")

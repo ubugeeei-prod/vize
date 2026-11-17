@@ -3,6 +3,7 @@
 use vize_carton::{String, append, cstr};
 use vize_croquis::{Croquis, ScopeId, ScopeKind};
 use vize_l0::ts;
+use vize_l0::ts_emit::generated_name::{SLOT_NAME, SLOT_PAYLOAD, SLOT_SCOPE};
 use vize_relief::{RootNode, TemplateChildNode};
 
 use super::SlotOutletChecks;
@@ -152,7 +153,7 @@ impl SlotOutletChecks {
             if outlet.name_is_dynamic {
                 append!(
                     slot,
-                    "{{ [K in {}<typeof __vize_slot_name_{}>]?: (props: typeof __vize_slot_payload_{}) => any }}",
+                    "{{ [K in {}<typeof {SLOT_NAME}{}>]?: (props: typeof {SLOT_PAYLOAD}{}) => any }}",
                     crate::virtual_ts::generated_names::lib("NonNullable"),
                     outlet.start,
                     outlet.start
@@ -165,7 +166,7 @@ impl SlotOutletChecks {
                             push_ts_string_literal(__ts, outlet.name.as_str());
                             append!(
                                 *__ts,
-                                "?: (props: typeof __vize_slot_payload_{}) => any",
+                                "?: (props: typeof {SLOT_PAYLOAD}{}) => any",
                                 outlet.start
                             );
                         }
@@ -184,12 +185,12 @@ impl SlotOutletChecks {
             let id = scope.id.as_u32();
             types.push(if matches!(scope.kind, ScopeKind::VFor) {
                 cstr!(
-                    "{}<typeof __vize_slot_scope_{id}[number]>",
+                    "{}<typeof {SLOT_SCOPE}{id}[number]>",
                     crate::virtual_ts::generated_names::lib("NonNullable")
                 )
             } else {
                 cstr!(
-                    "{}<typeof __vize_slot_scope_{id}>",
+                    "{}<typeof {SLOT_SCOPE}{id}>",
                     crate::virtual_ts::generated_names::lib("ReturnType")
                 )
             });

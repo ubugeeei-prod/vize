@@ -1,4 +1,5 @@
 use std::path::Path;
+use vize_l0::ts_emit::generated_name::SHIPPED_DEFAULT;
 
 use oxc_allocator::Allocator;
 use oxc_ast::ast::{Declaration, ExportDefaultDeclarationKind, Statement};
@@ -56,7 +57,7 @@ fn ambient_insertion(declaration: &Declaration<'_>) -> Option<u32> {
 
 fn default_export_name(text: &str, sequence: &mut usize) -> String {
     loop {
-        let name = cstr!("__vize_shipped_default_{}", *sequence);
+        let name = cstr!("{SHIPPED_DEFAULT}{}", *sequence);
         *sequence += 1;
         if !text.contains(name.as_str()) {
             return name;

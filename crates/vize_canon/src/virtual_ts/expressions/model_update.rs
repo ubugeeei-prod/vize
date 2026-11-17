@@ -6,6 +6,7 @@
 //! `undefined` is the `TS2322` the Vue toolchain reports for it.
 
 use std::ops::Range;
+use vize_l0::ts_emit::generated_name::MODEL_VALUE;
 
 use vize_carton::{append, camelize};
 use vize_croquis::croquis::{ComponentUsage, PassedProp};
@@ -64,11 +65,11 @@ pub(super) fn append_model_update_check(
     );
 
     let statement_start = ts.len();
-    append!(*ts, "{indent}void ((__vize_model_value: {payload}) => {{ ");
+    append!(*ts, "{indent}void (({MODEL_VALUE}: {payload}) => {{ ");
     let target_start = ts.len();
     ts.push_str(target);
     let target_end = ts.len();
-    ts.push_str(" = __vize_model_value; });\n");
+    vize_l0::append!(*ts, " = {MODEL_VALUE}; }});\n");
     source_context.record_model_write_back(usage, prop, target_start..target_end);
     mappings.push(VizeMapping {
         gen_range: statement_start..ts.len(),

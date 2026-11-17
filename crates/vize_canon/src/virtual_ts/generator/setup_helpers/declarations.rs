@@ -11,6 +11,7 @@ use oxc_span::SourceType;
 use vize_carton::{CompactString, FxHashSet, String, append};
 use vize_croquis::Croquis;
 use vize_croquis::script_parser::with_shared_parse;
+use vize_l0::ts_emit::generated_name::TEMPLATE_EMIT;
 
 pub(crate) struct SetupHelperPlan {
     shadowed: FxHashSet<CompactString>,
@@ -88,11 +89,8 @@ impl SetupHelperPlan {
                 let inner = super::super::emits::inner_type_of(type_args);
                 Some(vize_carton::cstr!("__EmitFn<{inner}>"))
             } else if let Some(args) = emits.runtime_args.as_ref() {
-                append!(
-                    *ts,
-                    "    const __vize_template_emit = defineEmits({args});\n"
-                );
-                Some(String::from("typeof __vize_template_emit"))
+                append!(*ts, "    const {TEMPLATE_EMIT} = defineEmits({args});\n");
+                Some(vize_carton::cstr!("typeof {TEMPLATE_EMIT}"))
             } else {
                 None
             }

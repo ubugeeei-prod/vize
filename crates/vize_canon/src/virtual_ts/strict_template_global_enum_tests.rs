@@ -28,9 +28,7 @@ fn strict_template_context_does_not_recheck_script_setup_enum() {
 
     assert!(output.code.contains("Status.Ready"), "{}", output.code);
     assert!(
-        !output
-            .code
-            .contains("__vize_strict_template_context.Status"),
+        !output.code.contains("$strictCtx.Status"),
         "{}",
         output.code
     );

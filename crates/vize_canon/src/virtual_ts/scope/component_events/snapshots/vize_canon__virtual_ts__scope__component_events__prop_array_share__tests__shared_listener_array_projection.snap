@@ -149,15 +149,15 @@ const onOpen = () => undefined
     const $emit = __ctx.$emit;
     void __ctx; void $attrs; void $slots; void $refs; void $emit;
 
-  const __vize_events_nav_0 = undefined as unknown as $ComponentEvents<typeof Child> & Record<string, unknown>;
-  void __vize_events_nav_0.select;
-  void __vize_events_nav_0.close;
-  const __vize_events_nav_1 = undefined as unknown as $ComponentEvents<typeof Child> & Record<string, unknown>;
-  void __vize_events_nav_1.select;
-  void __vize_events_nav_1.close;
-  const __vize_events_nav_2 = undefined as unknown as $ComponentEvents<typeof Other> & Record<string, unknown>;
-  void __vize_events_nav_2.save;
-  void __vize_events_nav_2.open;
+  const $eventsNav0 = undefined as unknown as $ComponentEvents<typeof Child> & Record<string, unknown>;
+  void $eventsNav0.select;
+  void $eventsNav0.close;
+  const $eventsNav1 = undefined as unknown as $ComponentEvents<typeof Child> & Record<string, unknown>;
+  void $eventsNav1.select;
+  void $eventsNav1.close;
+  const $eventsNav2 = undefined as unknown as $ComponentEvents<typeof Other> & Record<string, unknown>;
+  void $eventsNav2.save;
+  void $eventsNav2.open;
 
   // @select handler
   type __Child_12__listener_missing<__P, __Raw extends string | number | symbol> = [__Raw] extends [never] ? unknown[] : __P extends { [__K in __Raw]?: (...args: infer __A) => any } ? __A : unknown[];
@@ -178,10 +178,10 @@ const onOpen = () => undefined
   type __Child_12_select_prop_arrays = __Child_12__props_members extends infer __B ? __B extends [infer __P] ? $IsAny<__P> extends true ? never : __P extends { onSelect?: infer __H } ? Extract<NonNullable<__H>, readonly unknown[]> : never : never : never;
   type __Child_12_select_listener = unknown[] extends __Child_12_select_args ? ((...args: any[]) => any) : ((...args: __Child_12_select_args) => __Child_12_select_return);
   type __Child_12_select_handler = unknown[] extends __Child_12_select_args ? ((...args: any[]) => any) : __Child_12_select_listener;
-  void ((...__vize_args: Parameters<__Child_12_select_listener>) => {
-    const __vize_event = (__vize_args as unknown[])[0] as __Child_12_select_event; void __vize_event;
-    const __vize_handler_12_24: __Child_12_select_handler | __Child_12_select_prop_arrays | null | undefined = (onSelect);
-    if (typeof __vize_handler_12_24 === "function") (__vize_handler_12_24 as __Child_12_select_listener)(...__vize_args);  // handler expression
+  void ((...$args: Parameters<__Child_12_select_listener>) => {
+    const $evt = ($args as unknown[])[0] as __Child_12_select_event; void $evt;
+    const $handler12_24: __Child_12_select_handler | __Child_12_select_prop_arrays | null | undefined = (onSelect);
+    if (typeof $handler12_24 === "function") ($handler12_24 as __Child_12_select_listener)(...$args);  // handler expression
     // @vize-map: handler -> 24:32
   });
 
@@ -197,10 +197,10 @@ const onOpen = () => undefined
   type __Child_13_close_prop_arrays = __Child_12__props_members extends infer __B ? __B extends [infer __P] ? $IsAny<__P> extends true ? never : __P extends { onClose?: infer __H } ? Extract<NonNullable<__H>, readonly unknown[]> : never : never : never;
   type __Child_13_close_listener = unknown[] extends __Child_13_close_args ? ((...args: any[]) => any) : ((...args: __Child_13_close_args) => __Child_13_close_return);
   type __Child_13_close_handler = unknown[] extends __Child_13_close_args ? ((...args: any[]) => any) : __Child_13_close_listener;
-  void ((...__vize_args: Parameters<__Child_13_close_listener>) => {
-    const __vize_event = (__vize_args as unknown[])[0] as __Child_13_close_event; void __vize_event;
-    const __vize_handler_13_42: __Child_13_close_handler | __Child_13_close_prop_arrays | null | undefined = (onClose);
-    if (typeof __vize_handler_13_42 === "function") (__vize_handler_13_42 as __Child_13_close_listener)(...__vize_args);  // handler expression
+  void ((...$args: Parameters<__Child_13_close_listener>) => {
+    const $evt = ($args as unknown[])[0] as __Child_13_close_event; void $evt;
+    const $handler13_42: __Child_13_close_handler | __Child_13_close_prop_arrays | null | undefined = (onClose);
+    if (typeof $handler13_42 === "function") ($handler13_42 as __Child_13_close_listener)(...$args);  // handler expression
     // @vize-map: handler -> 42:49
   });
 
@@ -210,10 +210,10 @@ const onOpen = () => undefined
   type __Child_14_select_event = __Child_14_select_args extends infer __A extends unknown[] ? [__A] extends [[]] ? any : unknown[] extends __A ? any : __A[0] : never;
   type __Child_14_select_listener = unknown[] extends __Child_14_select_args ? ((...args: any[]) => any) : ((...args: __Child_14_select_args) => __Child_12_select_return);
   type __Child_14_select_handler = unknown[] extends __Child_14_select_args ? ((...args: any[]) => any) : __Child_14_select_listener;
-  void ((...__vize_args: Parameters<__Child_14_select_listener>) => {
-    const __vize_event = (__vize_args as unknown[])[0] as __Child_14_select_event; void __vize_event;
-    const __vize_handler_14_72: __Child_14_select_handler | __Child_12_select_prop_arrays | null | undefined = (onSelect);
-    if (typeof __vize_handler_14_72 === "function") (__vize_handler_14_72 as __Child_14_select_listener)(...__vize_args);  // handler expression
+  void ((...$args: Parameters<__Child_14_select_listener>) => {
+    const $evt = ($args as unknown[])[0] as __Child_14_select_event; void $evt;
+    const $handler14_72: __Child_14_select_handler | __Child_12_select_prop_arrays | null | undefined = (onSelect);
+    if (typeof $handler14_72 === "function") ($handler14_72 as __Child_14_select_listener)(...$args);  // handler expression
     // @vize-map: handler -> 72:80
   });
 
@@ -223,10 +223,10 @@ const onOpen = () => undefined
   type __Child_15_close_event = __Child_15_close_args extends infer __A extends unknown[] ? [__A] extends [[]] ? any : unknown[] extends __A ? any : __A[0] : never;
   type __Child_15_close_listener = unknown[] extends __Child_15_close_args ? ((...args: any[]) => any) : ((...args: __Child_15_close_args) => __Child_13_close_return);
   type __Child_15_close_handler = unknown[] extends __Child_15_close_args ? ((...args: any[]) => any) : __Child_15_close_listener;
-  void ((...__vize_args: Parameters<__Child_15_close_listener>) => {
-    const __vize_event = (__vize_args as unknown[])[0] as __Child_15_close_event; void __vize_event;
-    const __vize_handler_15_90: __Child_15_close_handler | __Child_13_close_prop_arrays | null | undefined = (onClose);
-    if (typeof __vize_handler_15_90 === "function") (__vize_handler_15_90 as __Child_15_close_listener)(...__vize_args);  // handler expression
+  void ((...$args: Parameters<__Child_15_close_listener>) => {
+    const $evt = ($args as unknown[])[0] as __Child_15_close_event; void $evt;
+    const $handler15_90: __Child_15_close_handler | __Child_13_close_prop_arrays | null | undefined = (onClose);
+    if (typeof $handler15_90 === "function") ($handler15_90 as __Child_15_close_listener)(...$args);  // handler expression
     // @vize-map: handler -> 90:97
   });
 
@@ -249,10 +249,10 @@ const onOpen = () => undefined
   type __Other_16_save_prop_arrays = __Other_16__props_members extends infer __B ? __B extends [infer __P] ? $IsAny<__P> extends true ? never : __P extends { onSave?: infer __H } ? Extract<NonNullable<__H>, readonly unknown[]> : never : never : never;
   type __Other_16_save_listener = unknown[] extends __Other_16_save_args ? ((...args: any[]) => any) : ((...args: __Other_16_save_args) => __Other_16_save_return);
   type __Other_16_save_handler = unknown[] extends __Other_16_save_args ? ((...args: any[]) => any) : __Other_16_save_listener;
-  void ((...__vize_args: Parameters<__Other_16_save_listener>) => {
-    const __vize_event = (__vize_args as unknown[])[0] as __Other_16_save_event; void __vize_event;
-    const __vize_handler_16_118: __Other_16_save_handler | __Other_16_save_prop_arrays | null | undefined = (onSave);
-    if (typeof __vize_handler_16_118 === "function") (__vize_handler_16_118 as __Other_16_save_listener)(...__vize_args);  // handler expression
+  void ((...$args: Parameters<__Other_16_save_listener>) => {
+    const $evt = ($args as unknown[])[0] as __Other_16_save_event; void $evt;
+    const $handler16_118: __Other_16_save_handler | __Other_16_save_prop_arrays | null | undefined = (onSave);
+    if (typeof $handler16_118 === "function") ($handler16_118 as __Other_16_save_listener)(...$args);  // handler expression
     // @vize-map: handler -> 118:124
   });
 
@@ -268,10 +268,10 @@ const onOpen = () => undefined
   type __Other_17_open_prop_arrays = __Other_16__props_members extends infer __B ? __B extends [infer __P] ? $IsAny<__P> extends true ? never : __P extends { onOpen?: infer __H } ? Extract<NonNullable<__H>, readonly unknown[]> : never : never : never;
   type __Other_17_open_listener = unknown[] extends __Other_17_open_args ? ((...args: any[]) => any) : ((...args: __Other_17_open_args) => __Other_17_open_return);
   type __Other_17_open_handler = unknown[] extends __Other_17_open_args ? ((...args: any[]) => any) : __Other_17_open_listener;
-  void ((...__vize_args: Parameters<__Other_17_open_listener>) => {
-    const __vize_event = (__vize_args as unknown[])[0] as __Other_17_open_event; void __vize_event;
-    const __vize_handler_17_133: __Other_17_open_handler | __Other_17_open_prop_arrays | null | undefined = (onOpen);
-    if (typeof __vize_handler_17_133 === "function") (__vize_handler_17_133 as __Other_17_open_listener)(...__vize_args);  // handler expression
+  void ((...$args: Parameters<__Other_17_open_listener>) => {
+    const $evt = ($args as unknown[])[0] as __Other_17_open_event; void $evt;
+    const $handler17_133: __Other_17_open_handler | __Other_17_open_prop_arrays | null | undefined = (onOpen);
+    if (typeof $handler17_133 === "function") ($handler17_133 as __Other_17_open_listener)(...$args);  // handler expression
     // @vize-map: handler -> 133:139
   });
 
@@ -344,8 +344,8 @@ const onOpen = () => undefined
         ...{} as { "onClose": never },
       });
       type $SlotContract_0 = $StructuralSlots<typeof Child>;
-      const __vize_required_slots_0: $RequiredSlots<$SlotContract_0, {}> = {};
-      void __vize_required_slots_0;
+      const $requiredSlots0: $RequiredSlots<$SlotContract_0, {}> = {};
+      void $requiredSlots0;
     },
     () => {
       (undefined as unknown as __Child_Check_1)({
@@ -353,8 +353,8 @@ const onOpen = () => undefined
         ...{} as { "onClose": never },
       });
       type $SlotContract_1 = $StructuralSlots<typeof Child>;
-      const __vize_required_slots_1: $RequiredSlots<$SlotContract_1, {}> = {};
-      void __vize_required_slots_1;
+      const $requiredSlots1: $RequiredSlots<$SlotContract_1, {}> = {};
+      void $requiredSlots1;
     },
     () => {
       (undefined as unknown as __Other_Check_2)({
@@ -362,8 +362,8 @@ const onOpen = () => undefined
         ...{} as { "onOpen": never },
       });
       type $SlotContract_2 = $StructuralSlots<typeof Other>;
-      const __vize_required_slots_2: $RequiredSlots<$SlotContract_2, {}> = {};
-      void __vize_required_slots_2;
+      const $requiredSlots2: $RequiredSlots<$SlotContract_2, {}> = {};
+      void $requiredSlots2;
     },
   ];
 

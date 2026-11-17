@@ -2,6 +2,7 @@
 
 use oxc_ast::ast::Expression;
 use oxc_span::{GetSpan, SourceType, Span as OxcSpan};
+use vize_l0::ts_emit::generated_name::VALUE_PROBE;
 use vize_l0::{Span, String, ToCompactString};
 use vize_l1::markup::tsrx::{Block, Catch, For, If, Node, Switch, TagName, Try};
 
@@ -187,7 +188,7 @@ impl MarkupFormatter<'_, '_> {
 
     fn for_left(&self, span: OxcSpan) -> Result<String, FormatError> {
         let source = self.slice(Span::new(span.start, span.end))?.trim();
-        let wrapped = vize_l0::cstr!("for ({source} of __vize_value) {{}}");
+        let wrapped = vize_l0::cstr!("for ({source} of {VALUE_PROBE}) {{}}");
         let formatted = format_script_with_source_type(
             wrapped.as_str(),
             self.options,
@@ -197,7 +198,9 @@ impl MarkupFormatter<'_, '_> {
         formatted
             .trim()
             .strip_prefix("for (")
-            .and_then(|body| body.split_once(" of __vize_value)"))
+            .and_then(|body| {
+                body.split_once(concat!(" of ", vize_l0::generated_name!(VALUE_PROBE), ")"))
+            })
             .filter(|(_, tail)| tail.trim() == "{\n}")
             .map(|(binding, _)| binding)
             .map(ToCompactString::to_compact_string)

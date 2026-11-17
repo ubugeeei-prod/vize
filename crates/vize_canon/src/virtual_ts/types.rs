@@ -33,14 +33,15 @@ pub struct TemplateGlobal {
 /// block. The marker stays in the otherwise-unused fallback-value field so
 /// per-SFC CSS-module metadata does not expand the public `VirtualTsOptions`
 /// struct (which downstream users construct directly).
-pub(crate) const CSS_MODULE_GLOBAL_MARKER: &str = "__vize_css_module_global";
-pub(crate) const TYPED_ROUTE_GLOBAL_MARKER: &str = "__vize_typed_route_global";
+pub(crate) const CSS_MODULE_GLOBAL_MARKER: &str = vize_l0::generated_name!(CSS_MODULE_GLOBAL);
+pub(crate) const TYPED_ROUTE_GLOBAL_MARKER: &str = vize_l0::generated_name!(TYPED_ROUTE_GLOBAL);
 
 /// Placeholder `default_value` of a runtime prop the batch resolver collected
 /// from a spread or an imported object: it records that the setup-side value
 /// is never `undefined` (a `default`, a `Boolean` declaration or a
 /// `*WithDefault` helper), not an authored default expression.
-pub(crate) const RESOLVED_RUNTIME_DEFAULT: &str = "__vize_resolved_runtime_default";
+pub(crate) const RESOLVED_RUNTIME_DEFAULT: &str =
+    vize_l0::generated_name!(RESOLVED_RUNTIME_DEFAULT);
 
 impl TemplateGlobal {
     /// Whether the template context types this global through `__Global`;

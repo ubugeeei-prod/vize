@@ -55,7 +55,11 @@ pub(super) fn transform_await_expressions(
     (output, output_runs, uses_async_context)
 }
 
-const AWAIT_WRAP_PREFIX: &str = "async function __vize_async_setup__() {\n";
+const AWAIT_WRAP_PREFIX: &str = concat!(
+    "async function ",
+    vize_l0::generated_name!(ASYNC_SETUP_PROBE),
+    "() {\n"
+);
 const AWAIT_WRAP_SUFFIX: &str = "\n}";
 
 /// Rewrite the top-level awaits of `source`, recording the result's

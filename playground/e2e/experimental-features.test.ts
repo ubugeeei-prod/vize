@@ -131,8 +131,8 @@ const status = 'ready'
       includeVirtualTs: true,
       experimentalStrictSlotChildren: true,
     });
-    expect(off.virtualTs).not.toContain("const __vize_slot_children_");
-    expect(on.virtualTs).toContain("const __vize_slot_children_");
+    expect(off.virtualTs).not.toContain("const $slotChildren");
+    expect(on.virtualTs).toContain("const $slotChildren");
     expect(on.virtualTs).toContain("$ProvidedSlotChildren<[HTMLInputElement]>");
     expect(
       wasm.typeCheck(source, { includeVirtualTs: true, experimentalStrictSlotChildren: false })
@@ -149,10 +149,10 @@ const status = 'ready'
       includeVirtualTs: true,
       experimentalStrictSlotChildren: true,
     });
-    const start = result.virtualTs!.indexOf("const __vize_slot_children_") + "const ".length;
+    const start = result.virtualTs!.indexOf("const $slotChildren") + "const ".length;
     const range = mapGeneratedRange(
       start,
-      start + "__vize_slot_children_0_default".length,
+      start + "$slotChildren0_default".length,
       result.sourceMappings!,
     );
     expect(range).not.toBeNull();

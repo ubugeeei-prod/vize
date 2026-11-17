@@ -62,9 +62,7 @@ fn slot_payload_preserves_the_actual_value_provider_and_missing_registry_fallbac
                 payloads,
                 // The props pass annotates from the template pass's host.
                 vec![
-                    vize_carton::cstr!(
-                        "typeof __vize_slot_host_{scope}, \"default\"{provider}>) {{"
-                    );
+                    vize_carton::cstr!("typeof $slotHost{scope}, \"default\"{provider}>) {{");
                     passes
                 ],
                 "complete payload annotations for {script} in {template}"

@@ -10,6 +10,7 @@ import { beforeListenerContract } from "../../../tools/support/compat/content-ma
 import { repoRoot } from "../_helpers/tool-commands.ts";
 import { beforeSharedTemplateRefUnwrapSource } from "../../../tools/support/compat/content-mapper/shared-template-ref-unwrap-transition.ts";
 import { beforeSharedUsageHelpersSource } from "../../../tools/support/compat/content-mapper/shared-usage-helpers-transition.ts";
+import { beforeGeneratedNames } from "../../../tools/support/compat/content-mapper/generated-names-transition.ts";
 
 type CanonLeftoversReceipt = {
   compiledPreamble: { edits: Array<{ before: string; after: string }> };
@@ -42,6 +43,7 @@ const identity = (text: string): Identity => ({
 });
 
 export function beforeCanonLeftoversSource(file: string, current: string): string {
+  current = beforeGeneratedNames(file, current);
   current = beforePropValueOr(
     file,
     beforeListenerContract(

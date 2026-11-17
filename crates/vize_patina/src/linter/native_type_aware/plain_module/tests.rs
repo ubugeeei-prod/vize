@@ -33,7 +33,7 @@ fn plain_plan_outlives_source_and_preserves_existing_findings_on_failure() {
     assert_eq!(
         prepared.virtual_content(),
         Some(
-            "export async function save() {}\nexport function submit() { save();\nfunction __vize_patina_promise_0() { return (save()); }\n }\n"
+            "export async function save() {}\nexport function submit() { save();\nfunction $promise0() { return (save()); }\n }\n"
         ),
     );
     let result = prepared.finish(

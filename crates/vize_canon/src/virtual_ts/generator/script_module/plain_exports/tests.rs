@@ -68,9 +68,9 @@ fn value_and_type_declarations_are_bridged_in_both_declaration_spaces() {
         ],
     );
 
-    assert!(ts.contains("export const Mode = __vize_plain_script_exports.Mode;\n"));
+    assert!(ts.contains("export const Mode = $scriptExports.Mode;\n"));
     assert!(ts.contains("export type Mode = (typeof Mode)[keyof typeof Mode];\n"));
-    assert!(ts.contains("export const Widget = __vize_plain_script_exports.Widget;\n"));
+    assert!(ts.contains("export const Widget = $scriptExports.Widget;\n"));
     assert!(ts.contains("export type Widget = InstanceType<typeof Widget>;\n"));
 }
 
@@ -85,8 +85,8 @@ fn value_only_declarations_never_gain_a_type_export() {
         ],
     );
 
-    assert!(ts.contains("export const plain = __vize_plain_script_exports.plain;\n"));
-    assert!(ts.contains("export const helper = __vize_plain_script_exports.helper;\n"));
+    assert!(ts.contains("export const plain = $scriptExports.plain;\n"));
+    assert!(ts.contains("export const helper = $scriptExports.helper;\n"));
     assert!(
         !ts.contains("export type "),
         "value-only exports must not invent a type meaning:\n{ts}"

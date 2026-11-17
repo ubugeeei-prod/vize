@@ -9,6 +9,7 @@ use crate::virtual_ts::script_facts::ScriptBindings;
 use vize_carton::{CompactString, String, append, camelize, capitalize};
 use vize_croquis::TemplateExpression;
 use vize_l0::ts;
+use vize_l0::ts_emit::generated_name::{DIRECTIVE_CHECK, UNKNOWN_DIRECTIVE};
 use vize_relief::{
     DirectiveNode, ElementNode, ExpressionNode, PropNode, RootNode, TemplateChildNode,
 };
@@ -207,7 +208,7 @@ pub(super) fn generate_directive_value_statement(
         check_unknown_directives,
     );
     let source = (template_offset + expr.start) as usize..(template_offset + expr.end) as usize;
-    let name = vize_carton::cstr!("__vize_directive_check_{}", expr.start);
+    let name = vize_carton::cstr!("{DIRECTIVE_CHECK}{}", expr.start);
     let variable = binding.variable.as_str();
     if binding.vapor {
         super::vapor_directive::generate(
@@ -322,7 +323,7 @@ fn emit_unknown_directive_presence(
     } else {
         "unknown"
     };
-    let local = vize_carton::cstr!("__vize_unknown_directive_{start}");
+    let local = vize_carton::cstr!("{UNKNOWN_DIRECTIVE}{start}");
     append!(*ts, "{indent}const {{ ");
     let gen_start = ts.len();
     crate::virtual_ts::helpers::push_ts_string_literal(ts, variable);

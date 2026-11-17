@@ -15,8 +15,8 @@ defineModel<string>("title", { required: true });
 "#;
     let result =
         generate_vue_content_mapper_transform(Path::new("ModelChild.vue"), source).expect("model");
-    let marker = "/* __vize_model_event */ \"update:title\"";
-    let generated = result.text.find(marker).unwrap() + "/* __vize_model_event */ ".len();
+    let marker = "/* $modelEvent */ \"update:title\"";
+    let generated = result.text.find(marker).unwrap() + "/* $modelEvent */ ".len();
     let original = source.find("\"title\"").unwrap();
     let prop_marker = "export type Props = {\n  \"title\"";
     let prop_generated = result.text.find(prop_marker).unwrap() + "export type Props = {\n  ".len();
@@ -45,14 +45,14 @@ import ModelChild from "./ModelChild.vue";
         generate_vue_content_mapper_transform(Path::new("App.vue"), parent_source).expect("parent");
     let completion = parent
         .text
-        .find("__vize_model_events_completion_0['update:title']")
+        .find("$modelCompletion0['update:title']")
         .expect("completion projection")
-        + "__vize_model_events_completion_0['".len();
+        + "$modelCompletion0['".len();
     let navigation = parent
         .text
-        .find("__vize_model_events_nav_0['update:title']")
+        .find("$modelNav0['update:title']")
         .expect("navigation projection")
-        + "__vize_model_events_nav_0['".len();
+        + "$modelNav0['".len();
     let original = parent_source.find("@update:title").unwrap() + 1;
     assert!(
         has_model_event_mapping(

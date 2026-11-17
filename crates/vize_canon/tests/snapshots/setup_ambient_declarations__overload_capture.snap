@@ -13,7 +13,7 @@ expression: output
 // Shared preamble hoisted to the program-wide __vize_helpers.d.ts
 // ========== Module Scope (imports) ==========
 declare function label(value: string): string;
-declare function label(value: Awaited<ReturnType<typeof __setup>>["__vize_ambient_0_capture_0"]): number;
+declare function label(value: Awaited<ReturnType<typeof __setup>>["$ambient0_capture_0"]): number;
 declare const alias: typeof label;
 
 // ========== Exported Types ==========
@@ -35,9 +35,9 @@ function __setup() {
   // User setup code
 
 const local = 1;
-  type __vize_ambient_0_type_0 = typeof local;
+  type $ambient0_type_0 = typeof local;
 
-  // @vize-map: 1269:1335 -> 0:153
+  // @vize-map: 1262:1321 -> 0:153
 
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
@@ -57,7 +57,7 @@ const local = 1;
   })();
 
   return {
-    get __vize_ambient_0_capture_0(): __vize_ambient_0_type_0 { return null!; },
+    get $ambient0_capture_0(): $ambient0_type_0 { return null!; },
   };
 }
 

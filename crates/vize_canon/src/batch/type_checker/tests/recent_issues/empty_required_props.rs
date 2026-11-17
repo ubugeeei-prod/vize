@@ -221,7 +221,7 @@ defineProps<{ count: number }>()
         .split_once("// Component props in v-for scope:")
         .expect("component props v-for section")
         .1
-        .split_once("for (const [item] of __vize_v_for_source_")
+        .split_once("for (const [item] of $forSource")
         .expect("v-for loop")
         .1;
 

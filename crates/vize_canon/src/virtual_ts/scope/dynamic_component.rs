@@ -10,6 +10,7 @@
 
 use vize_carton::{FxHashMap, FxHashSet, String, append};
 use vize_croquis::{Croquis, ScopeId, ScopeKind, drawer::is_dynamic_component_alias};
+use vize_l0::ts_emit::generated_name::{DYNAMIC_GUARD, DYNAMIC_GUARD_NOT};
 use vize_relief::{ElementNode, ExpressionNode, PropNode, RootNode, TemplateChildNode};
 
 mod generic_index;
@@ -208,9 +209,9 @@ impl DynamicComponentAliases {
             if guard::term_needs_capture(summary, &origin, usage.scope_id) {
                 captured = true;
                 let name = if origin.negated {
-                    vize_carton::cstr!("__vize_dynamic_guard_{}_not", origin.start)
+                    vize_carton::cstr!("{}{}", DYNAMIC_GUARD_NOT, origin.start)
                 } else {
-                    vize_carton::cstr!("__vize_dynamic_guard_{}", origin.start)
+                    vize_carton::cstr!("{}{}", DYNAMIC_GUARD, origin.start)
                 };
                 self.collect_guard(
                     summary,

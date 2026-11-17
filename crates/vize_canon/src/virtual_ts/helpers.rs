@@ -3,6 +3,7 @@
 //! Contains utility functions for type declarations, event type mapping,
 //! identifier conversion, and template context generation.
 
+use vize_l0::ts_emit::generated_name::STRICT_TEMPLATE_CONTEXT;
 #[cfg(feature = "native")]
 pub(crate) const ERROR_COMPONENT_STUB: &str =
     "declare const __vize_component: any;\nexport default __vize_component;\n";
@@ -79,8 +80,9 @@ pub(crate) fn generate_template_context(
     // Operator literals never read that lexical binding when creating placeholders.
     ctx.push_str("    const __ctx = (void 0) as unknown as __Ctx;\n");
     if options.strict_instance_globals {
-        ctx.push_str(
-            "    type $StrictContextIsAny<T> = 0 extends (1 & T) ? true : false;\n    type $StrictContextLiteralKey<T> = T extends string ? string extends T ? never : T extends `$${infer __Rest}` ? string extends __Rest ? never : T : T : number extends T ? never : symbol extends T ? never : T;\n    type $StrictContextProperty<T> = [T] extends [never] ? never : $StrictContextIsAny<T> extends true ? T : unknown extends T ? any : T;\n    type $StrictPublicInstanceGlobals = {\n      [__K in keyof __Ctx as $StrictContextLiteralKey<__K> extends infer __L ? __L extends `$${string}` ? __L : never : never]: $StrictContextProperty<__Ctx[__K]>;\n    };\n    type $StrictTemplateContext = {\n      $attrs: __Ctx[\"$attrs\"];\n      $slots: __Ctx[\"$slots\"];\n      $refs: __Ctx[\"$refs\"];\n      $emit: __Ctx[\"$emit\"];\n    } & $StrictPublicInstanceGlobals;\n    const __vize_strict_template_context = (void 0) as unknown as $StrictTemplateContext;\n",
+        vize_l0::append!(
+            ctx,
+            "    type $StrictContextIsAny<T> = 0 extends (1 & T) ? true : false;\n    type $StrictContextLiteralKey<T> = T extends string ? string extends T ? never : T extends `$${{infer __Rest}}` ? string extends __Rest ? never : T : T : number extends T ? never : symbol extends T ? never : T;\n    type $StrictContextProperty<T> = [T] extends [never] ? never : $StrictContextIsAny<T> extends true ? T : unknown extends T ? any : T;\n    type $StrictPublicInstanceGlobals = {{\n      [__K in keyof __Ctx as $StrictContextLiteralKey<__K> extends infer __L ? __L extends `$${{string}}` ? __L : never : never]: $StrictContextProperty<__Ctx[__K]>;\n    }};\n    type $StrictTemplateContext = {{\n      $attrs: __Ctx[\"$attrs\"];\n      $slots: __Ctx[\"$slots\"];\n      $refs: __Ctx[\"$refs\"];\n      $emit: __Ctx[\"$emit\"];\n    }} & $StrictPublicInstanceGlobals;\n    const {STRICT_TEMPLATE_CONTEXT} = (void 0) as unknown as $StrictTemplateContext;\n"
         );
     }
 
@@ -155,7 +157,7 @@ pub(crate) fn generate_template_context(
     // Mark all as used
     ctx.push_str("    void __ctx; void $attrs; void $slots; void $refs; void $emit;");
     if options.strict_instance_globals {
-        ctx.push_str(" void __vize_strict_template_context;");
+        vize_l0::append!(ctx, " void {STRICT_TEMPLATE_CONTEXT};");
     }
     ctx.push('\n');
     if vue2_dialect {

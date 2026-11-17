@@ -152,7 +152,7 @@ function onClick(): void {
   type $SetupProps = {
   value?: T;
 };
-  const __vize_setup_props = undefined as unknown as $SetupProps;
+  const $setupProps = undefined as unknown as $SetupProps;
   // ========== Template Scope (inherits from setup) ==========
   ;(function __template() {
     // Vue template context (delegates to ComponentPublicInstance)
@@ -172,17 +172,17 @@ function onClick(): void {
   const props: __DefineProps<$SetupProps> = {} as __DefineProps<$SetupProps>;
   void props; // Mark as used to avoid TS6133
 
-  const __vize_native_key_11: Partial<$NativeElement<"button">> = { "type": undefined as never };
-  void __vize_native_key_11;
+  const $nativeKey11: Partial<$NativeElement<"button">> = { "type": undefined as never };
+  void $nativeKey11;
   function __vizeSlotOutlet<S>(slot: S): S extends () => infer R ? (props: {}) => R : NonNullable<S> { return slot as any; }
   __vizeSlotOutlet((undefined as unknown as $Slots<T>)["default"])({
     "value": value,
   });
 
   // @click handler
-  void ((__vize_event: PointerEvent) => {
-    const __vize_handler_8_33 = ((__vize_cb: ((_e: PointerEvent) => unknown) | null | undefined) => __vize_cb)((onClick));
-    if (__vize_handler_8_33) __vize_handler_8_33(__vize_event);  // handler expression
+  void (($evt: PointerEvent) => {
+    const $handler8_33 = (($cb: ((_e: PointerEvent) => unknown) | null | undefined) => $cb)((onClick));
+    if ($handler8_33) $handler8_33($evt);  // handler expression
     // @vize-map: handler -> 403:410
   });
 
@@ -193,13 +193,13 @@ function onClick(): void {
   // Compiler-macro results contribute to the component signature
   void emit;
 
-  return { __vize_setup_props };
+  return { $setupProps };
 }
 
 // Invoke setup to verify types
 __setup();
 
-export type Props<T extends string = 'a'> = Awaited<ReturnType<typeof __setup<T>>>["__vize_setup_props"];
+export type Props<T extends string = 'a'> = Awaited<ReturnType<typeof __setup<T>>>["$setupProps"];
 
 export type Emits<T extends string = 'a'> = {
   "update:value": [value: T];

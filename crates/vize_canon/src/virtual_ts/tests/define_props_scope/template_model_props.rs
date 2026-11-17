@@ -24,7 +24,7 @@ fn model_value_lines(code: &str) -> Vec<&str> {
         .filter(|line| {
             line.starts_with("const modelValue")
                 || line.starts_with("var modelValue")
-                || line.starts_with("void (__vize_public_instance.modelValue")
+                || line.starts_with("void ($public.modelValue")
         })
         .collect()
 }
@@ -59,7 +59,7 @@ void count;
         model_value_lines(&code),
         [
             "var modelValue!: $TemplateInstanceMember<\"modelValue\">; void (modelValue);",
-            "void (__vize_public_instance.modelValue);",
+            "void ($public.modelValue);",
         ],
         "{code}"
     );

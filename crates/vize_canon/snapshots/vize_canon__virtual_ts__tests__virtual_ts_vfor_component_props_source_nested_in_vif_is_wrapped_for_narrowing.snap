@@ -145,18 +145,18 @@ const key = "a" as "a" | "b";
     const $emit = __ctx.$emit;
     void __ctx; void $attrs; void $slots; void $refs; void $emit;
 
-  const __vize_native_key_64: Partial<$NativeElement<"button">> = { "key": undefined as never };
-  void __vize_native_key_64;
+  const $nativeKey64: Partial<$NativeElement<"button">> = { "key": undefined as never };
+  void $nativeKey64;
   if ((key === 'b')) {
     // @vize-map: expr -> 11:22
 
     // v-for scope: value in elems[key]
     {
-    const __vize_v_for_source_7 = __vForList(elems[key]);
-    for (const [value] of __vize_v_for_source_7) {
+    const $forSource7 = __vForList(elems[key]);
+    for (const [value] of $forSource7) {
       void value;
-      const __vize_native_prop_check_69: $NativeElementProp<$NativeElement<"button">, "key"> = (value);
-      void __vize_native_prop_check_69; // VBind
+      const $nativeProp69: $NativeElementProp<$NativeElement<"button">, "key"> = (value);
+      void $nativeProp69; // VBind
       void (value); // VBind
       // @vize-map: expr -> 96:101
     }
@@ -209,27 +209,27 @@ const key = "a" as "a" | "b";
   // Component template navigation references
   void Test;
   const { } = undefined as unknown as $ComponentNavigationProps<__Test_Props_0>;
-  const __vize_props_nav_0 = undefined as unknown as __Test_Props_0 & globalThis.Record<string, unknown>;
+  const $propsNav0 = undefined as unknown as __Test_Props_0 & globalThis.Record<string, unknown>;
   // @ts-ignore Navigation-only references; no diagnostic owner.
-  void __vize_props_nav_0.value1;
+  void $propsNav0.value1;
 
   // Component props value checks (template scope)
   if ((key === 'b')) {
 
     // Component props in v-for scope: value in elems[key]
     {
-    const __vize_v_for_source_7 = __vForList(elems[key]);
-    for (const [value] of __vize_v_for_source_7) {
+    const $forSource7 = __vForList(elems[key]);
+    for (const [value] of $forSource7) {
       void value;
       // @vize-map: prop -> 87:102
-        const __vize_prop_check_0_value1: __Test_0_prop_value1 = value;
-        void __vize_prop_check_0_value1;
+        const $prop0_value1: __Test_0_prop_value1 = value;
+        void $prop0_value1;
         (undefined as unknown as __Test_Check_0)({
           "value1": value,
         });
         type $SlotContract_0 = $StructuralSlots<typeof Test>;
-        const __vize_required_slots_0: $RequiredSlots<$SlotContract_0, {}> = {};
-        void __vize_required_slots_0;
+        const $requiredSlots0: $RequiredSlots<$SlotContract_0, {}> = {};
+        void $requiredSlots0;
     }
     }
   }

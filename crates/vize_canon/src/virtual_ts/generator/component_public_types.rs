@@ -7,6 +7,9 @@ use crate::virtual_ts::macro_type_mappings::MacroTypeMappings;
 use vize_carton::{String, append, cstr};
 use vize_croquis::Croquis;
 use vize_l0::ts;
+use vize_l0::ts_emit::generated_name::{
+    EXPOSED, TEMPLATE, TEMPLATE_SLOTS, TYPED_EXPOSED, TYPED_SLOTS,
+};
 
 pub(super) struct SlotsTypeOptions<'a> {
     pub generic_injection: Option<&'a (String, Vec<String>)>,
@@ -57,7 +60,7 @@ pub(super) fn emit_slots_type(
             // source coordinates are shared with independent native observers.
             let setup = names::setup_return(&arguments);
             ts! { &mut *ts =>
-                #("type ") #slots #declaration = #setup #("['__vize_typed_slots']")
+                #("type ") #slots #declaration = #setup #("['") #TYPED_SLOTS #("']")
             }
             mappings.emit_slot_key_witnesses(ts, &summary.macros);
             ts! { &mut *ts => ; }
@@ -89,7 +92,7 @@ pub(super) fn emit_slots_type(
             .unwrap_or_default();
         let setup = names::setup_return(&arguments);
         ts! { &mut *ts =>
-            #("type ") #slots #declaration = #setup #("['__vize_template_slots']");
+            #("type ") #slots #declaration = #setup #("['") #TEMPLATE_SLOTS #("']");
         }
         generic_injection.is_some()
     } else {
@@ -164,13 +167,13 @@ fn emit_exposed_alias(
             let arguments = cstr!("<{}>", arguments.join(", "));
             let setup = names::setup_return(&arguments);
             ts! { &mut *ts =>
-                #head<#declaration> = #setup["__vize_typed_exposed"];
+                #head<#declaration> = #setup #("[\"") #TYPED_EXPOSED #("\"]");
             }
             return (true, true);
         }
         let setup = names::setup_return("");
         ts! { &mut *ts =>
-            #head = #setup["__vize_typed_exposed"];
+            #head = #setup #("[\"") #TYPED_EXPOSED #("\"]");
         }
         (true, false)
     } else if let Some(ref type_args) = expose.type_args {
@@ -185,13 +188,13 @@ fn emit_exposed_alias(
             let arguments = cstr!("<{}>", arguments.join(", "));
             let setup = names::setup_return(&arguments);
             ts! { &mut *ts =>
-                #head<#declaration> = #setup["__vize_exposed"];
+                #head<#declaration> = #setup #("[\"") #EXPOSED #("\"]");
             }
             return (true, true);
         }
         let setup = names::setup_return("");
         ts! { &mut *ts =>
-            #head = #setup["__vize_exposed"];
+            #head = #setup #("[\"") #EXPOSED #("\"]");
         }
         (true, false)
     } else {
@@ -262,7 +265,7 @@ pub(super) fn template_slots_type(
         }
     } else if inferred_slots {
         TemplateSlotsType {
-            expression: "typeof __vize_template".into(),
+            expression: cstr!("typeof {TEMPLATE}"),
             authored_range: None,
         }
     } else {
@@ -276,7 +279,12 @@ pub(super) fn template_slots_type(
 impl TemplateSlotsType {
     /// Read the inferred slots from `value` instead of the whole template value.
     pub(super) fn read_template_value(&mut self, value: &str) {
-        if self.authored_range.is_none() && self.expression == "typeof __vize_template" {
+        if self.authored_range.is_none()
+            && self
+                .expression
+                .strip_prefix("typeof ")
+                .is_some_and(|value| TEMPLATE.is(value))
+        {
             self.expression = cstr!("typeof {value}");
         }
     }

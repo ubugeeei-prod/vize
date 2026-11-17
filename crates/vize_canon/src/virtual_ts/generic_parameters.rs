@@ -30,7 +30,7 @@ fn preparation_count(increment: bool) -> usize {
     })
 }
 
-const PREFIX: &str = "function __vize_generic<";
+const PREFIX: &str = concat!("function ", vize_l0::generated_name!(GENERIC_PROBE), "<");
 
 #[derive(Debug)]
 pub(crate) struct GenericParameter {

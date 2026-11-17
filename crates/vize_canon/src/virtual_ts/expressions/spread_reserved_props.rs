@@ -19,7 +19,7 @@ use references::ReferenceCollector;
 use vize_carton::{FxHashSet, String, append};
 use vize_croquis::{ScopeChain, ScopeId};
 
-const PARSE_PREFIX: &str = "const __vize_spread = (";
+const PARSE_PREFIX: &str = concat!("const ", vize_l0::generated_name!(SPREAD_PROBE), " = (");
 const PARSE_SUFFIX: &str = ");";
 
 #[derive(Debug, PartialEq, Eq)]
@@ -185,7 +185,14 @@ fn collect_replacements(
             template_scopes,
             usage_scope_id,
             true,
-            ("function __vize_handler() {\n", "\n}"),
+            (
+                concat!(
+                    "function ",
+                    vize_l0::generated_name!(HANDLER_PROBE),
+                    "() {\n"
+                ),
+                "\n}",
+            ),
         )
         .unwrap_or_default();
     }

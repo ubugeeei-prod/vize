@@ -167,9 +167,9 @@ function increment() {
   // @vize-map: expr -> 216:221
 
   // @click handler
-  void ((__vize_event: PointerEvent) => {
-    const __vize_handler_8_84 = ((__vize_cb: ((_e: PointerEvent) => unknown) | null | undefined) => __vize_cb)((increment));
-    if (__vize_handler_8_84) __vize_handler_8_84(__vize_event);  // handler expression
+  void (($evt: PointerEvent) => {
+    const $handler8_84 = (($cb: ((_e: PointerEvent) => unknown) | null | undefined) => $cb)((increment));
+    if ($handler8_84) $handler8_84($evt);  // handler expression
     // @vize-map: handler -> 249:258
   });
 

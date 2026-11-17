@@ -46,7 +46,7 @@ fn alias_for(template: &str, nth: usize) -> String {
         .nth(nth)
         .map(|(start, _)| start)
         .expect("authored component");
-    cstr!("__vize_dynamic_is_{start}")
+    cstr!("$is{start}")
 }
 
 fn alias(nth: usize) -> String {
@@ -115,10 +115,10 @@ fn outer_guard_keeps_its_binding_identity_across_a_shadowing_slot() {
         .find(";(function __template()")
         .expect("template scope")..];
     let guard_start = TEMPLATE.find("v-if=\"visible\"").expect("outer guard") + "v-if=\"".len();
-    let guard = cstr!("__vize_dynamic_guard_{guard_start}");
+    let guard = cstr!("$isGuard{guard_start}");
     let outer_alias = alias_for(TEMPLATE, 0);
     let inner_alias = alias_for(TEMPLATE, 1);
-    let else_guard = cstr!("{guard}_not");
+    let else_guard = cstr!("$isNotGuard{guard_start}");
     let else_outer_alias = alias_for(TEMPLATE, 2);
     let else_inner_alias = alias_for(TEMPLATE, 3);
     let capture = cstr!("const {guard} = ((visible));");
@@ -173,5 +173,5 @@ fn guard_without_an_intervening_rebinding_stays_inline() {
         2,
         "{template}"
     );
-    assert_eq!(template.matches("const __vize_dynamic_guard_").count(), 0);
+    assert_eq!(template.matches("const $isGuard").count(), 0);
 }

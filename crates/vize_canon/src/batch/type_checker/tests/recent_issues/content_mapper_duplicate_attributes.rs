@@ -13,11 +13,7 @@ fn content_mapper_isolates_duplicate_class_and_style_attribute_probes() {
     let result =
         generate_vue_content_mapper_transform(Path::new("src/App.vue"), source).expect("transform");
 
-    for marker in [
-        "const __vize_emit_props_",
-        "const __vize_events_resolved_",
-        "var __vize_ref_",
-    ] {
+    for marker in ["const $emitProps", "const $resolvedEvents", "var $ref"] {
         let mut count = 0;
         for (start, _) in result.text.as_str().match_indices(marker) {
             let tail = &result.text.as_str()[start + marker.len()..];

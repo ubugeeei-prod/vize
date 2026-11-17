@@ -79,7 +79,7 @@ const REAL_INSTANCE_READS: [(&str, std::ops::Range<usize>); 6] = [
 fn lexical_dollar_scopes_keep_only_real_instance_reads_and_exact_authored_ranges() {
     let strict = output(true);
     assert_eq!(
-        instance_reads(&strict, "__vize_strict_template_context."),
+        instance_reads(&strict, "$strictCtx."),
         REAL_INSTANCE_READS,
         "{}",
         strict.code
@@ -128,7 +128,14 @@ fn public_instance_dollar_scopes_do_not_hoist_lexical_slot_loop_or_handler_names
     let declarations: Vec<_> = output
         .code
         .lines()
-        .filter(|line| line.trim_start().starts_with("const $") && line.contains(" = __ctx.$"))
+        .filter(|line| {
+            line.trim_start()
+                .strip_prefix("const ")
+                .and_then(|rest| rest.split_once(" = __ctx.$"))
+                .is_some_and(|(name, _)| {
+                    name.starts_with('$') && !vize_l0::ts_emit::generated_name::is_generated(name)
+                })
+        })
         .collect();
     assert_eq!(
         declarations,

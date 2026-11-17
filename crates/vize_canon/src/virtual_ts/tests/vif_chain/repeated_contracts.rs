@@ -52,7 +52,7 @@ const onClose = () => undefined
         .find("type __MyChild_Check_1 = __MyChild_Check_0;")
         .expect("later whole-props check reuses the first resolved checker");
     assert_eq!(
-        output.code.matches("const __vize_emit_props_").count(),
+        output.code.matches("const $emitProps").count(),
         2,
         "each usage should resolve its props once for all of its listeners: {}",
         output.code
@@ -290,7 +290,7 @@ fn repeated_prop_value_type_is_emitted_once() {
                 .expect("prop diagnostic anchors at the attribute name");
             assert_eq!(
                 &output.code[name_span.gen_range.clone()],
-                cstr!("__vize_prop_check_{idx}_label").as_str(),
+                cstr!("$prop{idx}_label").as_str(),
                 "TS2322 stays on the per-usage check; hoist={hoist}"
             );
             assert!(
@@ -360,7 +360,7 @@ fn repeated_emit_resolver_is_emitted_once() {
         // Gated uses share the module's one resolver alias and declare none;
         // a hoisted module names the shared SDK resolver instead.
         assert_eq!(
-            output.code.matches("type __vize_emit_resolver<").count(),
+            output.code.matches("type $EmitResolver<").count(),
             usize::from(!hoist),
             "one module resolver; hoist={hoist}: {}",
             output.code
@@ -381,13 +381,13 @@ fn repeated_emit_resolver_is_emitted_once() {
             output.code
         );
         assert_eq!(
-            output.code.matches("const __vize_emit_factory_").count(),
+            output.code.matches("const $emitFactory").count(),
             4,
             "each use calls the module resolver; hoist={hoist}: {}",
             output.code
         );
         assert_eq!(
-            output.code.matches("const __vize_emit_props_").count(),
+            output.code.matches("const $emitProps").count(),
             4,
             "each use still resolves its own emit props; hoist={hoist}: {}",
             output.code
@@ -403,7 +403,7 @@ fn repeated_emit_resolver_is_emitted_once() {
                 .expect("prop diagnostic anchors at the attribute name");
             assert_eq!(
                 &output.code[name_span.gen_range.clone()],
-                cstr!("__vize_prop_check_{idx}_label").as_str(),
+                cstr!("$prop{idx}_label").as_str(),
                 "TS2322 stays on the per-usage check; hoist={hoist}"
             );
             assert!(

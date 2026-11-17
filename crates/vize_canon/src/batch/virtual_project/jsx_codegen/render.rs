@@ -4,11 +4,12 @@ use super::nested::RenderContext;
 use super::{CTX_HELPER, JSX_EXPR_SINK, JsxEmit, JsxExpr, component, slot};
 use crate::virtual_ts::VizeMapping;
 use vize_carton::String as CompactString;
+use vize_l0::ts_emit::generated_name::FOR_VALUE;
 
 /// Build the plain-`.ts` text and its source mappings.
 ///
 /// Every byte outside a JSX render root is copied verbatim; each render root is
-/// replaced by `__vize_jsx_expr__(<unit>, <unit>, …)`, with each re-emitted
+/// replaced by `$jsx(<unit>, <unit>, …)`, with each re-emitted
 /// expression mapped back to its original byte range.
 pub(super) fn render_plain_ts(
     source: &str,
@@ -56,7 +57,7 @@ pub(super) fn render_plain_ts(
     (out, mappings)
 }
 
-/// Emit `__vize_jsx_expr__(<unit>, <unit>, …)` for one render scope, recursing
+/// Emit `$jsx(<unit>, <unit>, …)` for one render scope, recursing
 /// into `v-for` bodies so their loop aliases stay in scope.
 pub(super) fn render_sink_call(
     out: &mut CompactString,
@@ -75,7 +76,7 @@ pub(super) fn render_sink_call(
     out.push(')');
 }
 
-/// Re-emit one [`JsxEmit`] unit as a `__vize_jsx_expr__` argument, recording the
+/// Re-emit one [`JsxEmit`] unit as a `$jsx` argument, recording the
 /// source mappings that point its diagnostics back at the original JSX.
 fn render_emit(
     out: &mut CompactString,
@@ -99,8 +100,8 @@ fn render_emit(
         }
         JsxEmit::Component(component) => component::render(out, mappings, component, context),
         JsxEmit::SlotScope(scope) => {
-            // `__vize_jsx_component_slot__(<Host>, "<name>", (<pattern>) =>
-            //  __vize_jsx_expr__(<body…>))`: the body is re-emitted inside the
+            // `$jsxSlot(<Host>, "<name>", (<pattern>) =>
+            //  $jsx(<body…>))`: the body is re-emitted inside the
             // callback so the slot pattern binds with the payload type declared
             // by the host component's `$slots`. `render_open` leaves the helper
             // call open; the trailing `)` below closes it.
@@ -114,7 +115,7 @@ fn render_emit(
             key_alias,
             body,
         } => {
-            // `(<source>).map((<value>, <key>) => __vize_jsx_expr__(<body…>))`:
+            // `(<source>).map((<value>, <key>) => $jsx(<body…>))`:
             // the body is re-emitted inside the callback so the loop aliases bind
             // with their inferred element types. The `.map` scaffolding is left
             // unmapped (its diagnostics, if any, point at the mapped `source`).
@@ -124,7 +125,7 @@ fn render_emit(
             if let Some(value) = value_alias {
                 push_mapped_expr(out, mappings, value, context);
             } else {
-                out.push_str("__vize_v");
+                vize_l0::append!(*out, "{FOR_VALUE}");
             }
             if let Some(key) = key_alias {
                 out.push_str(", ");

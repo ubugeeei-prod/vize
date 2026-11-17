@@ -16,9 +16,9 @@ const attrs = { value: 'text' }
 const onSave = (value: number) => value
 "#;
 
-const GATED: &str = "const __vize_emit_factory_0 = (undefined as unknown as __vize_emit_resolver<";
+const GATED: &str = "const $emitFactory0 = (undefined as unknown as $EmitResolver<";
 const DIRECT: &str = "_0_emit_resolver)(";
-const ALIASES: &str = "type __vize_emit_input<";
+const ALIASES: &str = "type $EmitGate<";
 const COMPUTED: &str =
     r#"<component :is="pick ? Child : Other" :value="value" @save="onSave"></component>"#;
 
@@ -53,22 +53,20 @@ fn a_computed_is_listener_takes_the_gated_call_in_both_modes() {
     assert_eq!(
         standalone
             .matches(
-                "(component: C) => C : __vize_emit_closed<C> extends [infer E] ? __vize_emit_closed_factory<E> : $EmitPropsFactory<C>;"
+                "(component: C) => C : $EmitClosed<C> extends [infer E] ? $EmitClosedFactory<E> : $EmitPropsFactory<C>;"
             )
             .count(),
         1,
         "{standalone}"
     );
     assert_eq!(
-        standalone
-            .matches("type __vize_emit_closed<C, A = C> = ")
-            .count(),
+        standalone.matches("type $EmitClosed<C, A = C> = ").count(),
         1,
         "{standalone}"
     );
     assert_eq!(
         standalone
-            .matches("const __vize_emit_props_0 = (undefined as unknown as __vize_emit_input<")
+            .matches("const $emitProps0 = (undefined as unknown as $EmitGate<")
             .count(),
         1,
         "{standalone}"
@@ -81,23 +79,19 @@ fn a_computed_is_listener_takes_the_gated_call_in_both_modes() {
         },
     );
     assert_eq!(hoisted.matches(DIRECT).count(), 0, "{hoisted}");
-    for alias in [
-        ALIASES,
-        "type __vize_emit_resolver<",
-        "type __vize_emit_native_input<",
-    ] {
+    for alias in [ALIASES, "type $EmitResolver<", "type $EmitNativeGate<"] {
         assert_eq!(hoisted.matches(alias).count(), 0, "{hoisted}");
     }
     assert_eq!(
         hoisted
-            .matches("const __vize_emit_factory_0 = (undefined as unknown as import(\"vize:virtual-ts\").$EmitGateResolver<")
+            .matches("const $emitFactory0 = (undefined as unknown as import(\"vize:virtual-ts\").$EmitGateResolver<")
             .count(),
         1,
         "{hoisted}"
     );
     assert_eq!(
         hoisted
-            .matches("const __vize_emit_props_0 = (undefined as unknown as import(\"vize:virtual-ts\").$EmitGateInput<")
+            .matches("const $emitProps0 = (undefined as unknown as import(\"vize:virtual-ts\").$EmitGateInput<")
             .count(),
         1,
         "{hoisted}"
@@ -123,16 +117,13 @@ fn a_guarded_use_calls_the_factory_before_its_guard() {
         r#"<Child v-if="pick" :value="value" @save="onSave" />"#,
         VirtualTsGenerationOptions::default(),
     );
-    let factory =
-        "const __vize_emit_factory_0 = (undefined as unknown as __vize_emit_resolver<__Child_";
-    let call = "if ((pick)) return (undefined as unknown as __vize_emit_input<__Child_";
+    let factory = "const $emitFactory0 = (undefined as unknown as $EmitResolver<__Child_";
+    let call = "if ((pick)) return (undefined as unknown as $EmitGate<__Child_";
     assert_eq!(code.matches(factory).count(), 1, "{code}");
     assert_eq!(code.matches(call).count(), 1, "{code}");
     assert_eq!(code.matches(DIRECT).count(), 0, "{code}");
     let factory_at = code.find(factory).unwrap();
-    let iife_at = code
-        .find("const __vize_emit_props_0 = (void 0, () => {")
-        .unwrap();
+    let iife_at = code.find("const $emitProps0 = (void 0, () => {").unwrap();
     assert!(factory_at < iife_at, "{code}");
 }
 
@@ -142,11 +133,7 @@ fn a_guard_that_names_the_component_keeps_the_direct_call() {
         r#"<Child v-if="Child && pick" :value="value" @save="onSave" />"#,
         VirtualTsGenerationOptions::default(),
     );
-    assert_eq!(
-        code.matches("const __vize_emit_factory_").count(),
-        0,
-        "{code}"
-    );
+    assert_eq!(code.matches("const $emitFactory").count(), 0, "{code}");
     assert_eq!(
         code.matches("_0_emit_resolver)(Child)(").count(),
         1,

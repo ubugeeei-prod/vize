@@ -47,10 +47,10 @@ const count = 1
     const $emit = __ctx.$emit;
     void __ctx; void $attrs; void $slots; void $refs; void $emit;
 
-  const __vize_native_key_18: Partial<$NativeElement<"svg">> = { "viewBox": undefined as never };
-  void __vize_native_key_18;
-  const __vize_native_key_44: Partial<$NativeElement<"path">> = { "d": undefined as never };
-  void __vize_native_key_44;
+  const $nativeKey18: Partial<$NativeElement<"svg">> = { "viewBox": undefined as never };
+  void $nativeKey18;
+  const $nativeKey44: Partial<$NativeElement<"path">> = { "d": undefined as never };
+  void $nativeKey44;
   void (count); // Interpolation
   // @vize-map: expr -> 144:149
 

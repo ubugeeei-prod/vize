@@ -450,7 +450,7 @@ function onChange(): void {
     let result =
         generate_vue_content_mapper_transform(Path::new("App.vue"), source).expect("transform");
 
-    for marker in ["const __vize_emit_props_", "var __vize_ref_"] {
+    for marker in ["const $emitProps", "var $ref"] {
         let probe = result
             .text
             .split_once(marker)

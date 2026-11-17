@@ -1,6 +1,6 @@
 //! Type probes read `const __expr_N`, the binding the croquis generator used
 //! to name one template expression. Canon emits `void (expr); // kind` and
-//! event handlers as `__vize_cb)((expr))`. This pass adds the binding and
+//! event handlers as `$cb)((expr))`. This pass adds the binding and
 //! keeps each expression's mapping on its text.
 
 use vize_l0::{String as VizeString, cstr};
@@ -19,7 +19,7 @@ pub(super) fn inferred_binding_offset(
 }
 
 const VOID_OPEN: &str = "void (";
-const HANDLER_MARK: &str = "__vize_cb)((";
+const HANDLER_MARK: &str = concat!(vize_l0::generated_name!(CALLBACK), ")((");
 
 pub(super) fn binding_offset(generated: &str, expression_offset: u32) -> Option<u32> {
     let offset = usize::min(expression_offset as usize, generated.len());
@@ -294,8 +294,7 @@ mod tests {
 
     #[test]
     fn a_handler_argument_gets_a_binding_on_the_previous_line() {
-        let source =
-            "  const __vize_handler_1 = ((__vize_cb: unknown) => __vize_cb)((actions[method]));\n";
+        let source = "  const $handler1 = (($cb: unknown) => $cb)((actions[method]));\n";
         let expr_at = source.find("actions[method]").expect("expr");
         let mut document = TypeAwareDocument {
             content: VizeString::from(source),
@@ -307,7 +306,7 @@ mod tests {
         bind_template_expressions(&mut document);
         assert_eq!(
             document.content.as_str(),
-            "  const __expr_0 = (actions[method]);\n  const __vize_handler_1 = ((__vize_cb: unknown) => __vize_cb)((actions[method]));\n"
+            "  const __expr_0 = (actions[method]);\n  const $handler1 = (($cb: unknown) => $cb)((actions[method]));\n"
         );
         let generated = document.mapping.to_generated(3).expect("row");
         assert_eq!(
@@ -355,7 +354,7 @@ mod tests {
 
     #[test]
     fn an_options_prop_binding_uses_the_runtime_shape() {
-        let source = "  void (isOpened); // VBind\n  void (type); // VBind\n  const __vize_options_props = ({\n    isOpened: { type: Boolean, required: true },\n  } as const);\n";
+        let source = "  void (isOpened); // VBind\n  void (type); // VBind\n  const $optionsProps = ({\n    isOpened: { type: Boolean, required: true },\n  } as const);\n";
         let expr_at = source.find("isOpened").expect("expr");
         let type_at = source.find("void (type)").expect("second wrapper") + VOID_OPEN.len();
         let mut document = TypeAwareDocument {
@@ -368,7 +367,7 @@ mod tests {
         bind_template_expressions(&mut document);
         assert_eq!(
             document.content.as_str(),
-            "  const __expr_0: $OptionsPropShape<typeof __vize_options_props>[\"isOpened\"] = (isOpened); // VBind\n  const __expr_1 = (type); // VBind\n  const __vize_options_props = ({\n    isOpened: { type: Boolean, required: true },\n  } as const);\n"
+            "  const __expr_0: $OptionsPropShape<typeof $optionsProps>[\"isOpened\"] = (isOpened); // VBind\n  const __expr_1 = (type); // VBind\n  const $optionsProps = ({\n    isOpened: { type: Boolean, required: true },\n  } as const);\n"
         );
         let generated = document.mapping.to_generated(4).expect("row");
         assert_eq!(

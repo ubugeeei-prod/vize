@@ -136,7 +136,7 @@ fn test_options_api_emits_real_props_type_from_object_option() {
 
     assert!(
         output.code.contains(
-            "const __vize_options_props = ({\n        initial: Number,\n        label: { type: String, required: true },\n    } as const);"
+            "const $optionsProps = ({\n        initial: Number,\n        label: { type: String, required: true },\n    } as const);"
         ),
         "expected the runtime props object to remain in value scope:\n{}",
         output.code
@@ -289,7 +289,7 @@ const count = ref(0)
         output.code
     );
     assert!(
-        !output.code.contains("__vize_method_") && !output.code.contains("__vize_computed_"),
+        !output.code.contains("$method_") && !output.code.contains("$computed_"),
         "`<script setup>` output must not contain Options API wrappers:\n{}",
         output.code
     );
@@ -452,7 +452,7 @@ defineProps<Props>();
 fn test_define_props_local_intersection_alias_emits_keyed_bindings() {
     // A local `type Props = A & B` resolves through the now-populated
     // TypeResolver: its body carries a top-level `&`, so the generator falls
-    // back to keyed `satisfies keyof typeof __vize_keyed_template_context` bindings rather than field-by-field
+    // back to keyed `satisfies keyof typeof $keyedCtx` bindings rather than field-by-field
     // extraction. This path previously relied on the definitions map being
     // empty; registering local types from the AST drives it correctly.
     use vize_croquis::{Analyzer, AnalyzerOptions};
@@ -477,9 +477,7 @@ defineProps<Props>();
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
     assert!(
-        output
-            .code
-            .contains("satisfies keyof typeof __vize_keyed_template_context"),
+        output.code.contains("satisfies keyof typeof $keyedCtx"),
         "an intersection prop alias should emit keyed template bindings:\n{}",
         output.code
     );
@@ -750,9 +748,9 @@ fn test_define_expose_is_part_of_component_instance() {
     let output = generate_virtual_ts(&summary, Some(script), None, 0);
 
     assert!(
-        output.code.contains(
-            "export type Exposed = Awaited<ReturnType<typeof __setup>>[\"__vize_exposed\"];"
-        ),
+        output
+            .code
+            .contains("export type Exposed = Awaited<ReturnType<typeof __setup>>[\"$exposed\"];"),
         "runtime defineExpose should emit an Exposed type:\n{}",
         output.code
     );
@@ -829,7 +827,7 @@ const wrong = 'not a number'
         },
     );
 
-    assert!(!output.code.contains("__vize_prop_check"));
+    assert!(!vize_l0::ts_emit::generated_name::PROP_CHECK.occurs_in(&output.code));
     assert!(!output.code.contains("type __Child_Props_0"));
 }
 
@@ -1261,7 +1259,7 @@ const val = 0 as unknown as UnionType;
     assert!(
         output
             .code
-            .contains("if ((val.type === 'b')) {\n      const __vize_handler"),
+            .contains("if ((val.type === 'b')) {\n      const $handler"),
         "same-element event handler should preserve the v-if guard while type-checking the handler:\n{}",
         output.code
     );
@@ -1283,9 +1281,7 @@ fn test_inline_arrow_event_handler_is_called_with_event() {
     let output = generate_virtual_ts(&summary, None, Some(&root), 0);
 
     assert!(
-        output
-            .code
-            .contains("(__vize_event);  // handler expression"),
+        output.code.contains("($evt);  // handler expression"),
         "inline arrow handler should be invoked with the event:\n{}",
         output.code
     );
@@ -1321,7 +1317,7 @@ fn test_inline_arrow_event_handler_preserves_a_free_dollar_event_reference() {
 
     assert!(
         output.code.contains(
-            "((__vize_cb: ((_e: InputEvent) => unknown) | null | undefined) => __vize_cb)(((e) => handleInput($event, e)));"
+            "(($cb: ((_e: InputEvent) => unknown) | null | undefined) => $cb)(((e) => handleInput($event, e)));"
         ),
         "the native callback parameter must be typed without shadowing the authored free `$event`:\n{}",
         output.code
@@ -1349,7 +1345,7 @@ fn test_native_inline_arrow_parameter_is_contextually_typed() {
     let handler_initializers = output
         .code
         .lines()
-        .filter_map(|line| line.trim().strip_prefix("const __vize_handler_"))
+        .filter_map(|line| line.trim().strip_prefix("const $handler"))
         .map(|line| {
             line.split_once(" = ")
                 .expect("generated handler assignment")
@@ -1359,7 +1355,7 @@ fn test_native_inline_arrow_parameter_is_contextually_typed() {
     assert_eq!(
         handler_initializers,
         [
-            "((__vize_cb: ((_e: MouseEvent) => unknown) | null | undefined) => __vize_cb)(((e) => readonly && e.preventDefault()));"
+            "(($cb: ((_e: MouseEvent) => unknown) | null | undefined) => $cb)(((e) => readonly && e.preventDefault()));"
         ]
     );
 }
@@ -1386,15 +1382,15 @@ const arr = [(event: PointerEvent) => event.preventDefault()]
 
     assert!(
         output.code.contains(
-            "((__vize_cb: ((_e: PointerEvent) => unknown) | null | undefined) => __vize_cb)((handlers['x']));"
+            "(($cb: ((_e: PointerEvent) => unknown) | null | undefined) => $cb)((handlers['x']));"
         ),
         "computed-member handler references should be checked as callable:\n{}",
         output.code
     );
     assert!(
-        output
-            .code
-            .contains("((__vize_cb: ((_e: PointerEvent) => unknown) | null | undefined) => __vize_cb)((arr[0]));"),
+        output.code.contains(
+            "(($cb: ((_e: PointerEvent) => unknown) | null | undefined) => $cb)((arr[0]));"
+        ),
         "index handler references should be checked as callable:\n{}",
         output.code
     );
@@ -1952,7 +1948,7 @@ function handleTest(value1: string, value2: number) {
     assert!(
         output
             .code
-            .contains("((...__vize_args: Parameters<__Test_8_test_listener>) => {"),
+            .contains("((...$args: Parameters<__Test_8_test_listener>) => {"),
         "component event closure must receive the full listener parameter tuple:\n{}",
         output.code
     );
@@ -1967,7 +1963,7 @@ function handleTest(value1: string, value2: number) {
         output.code.contains(
             "type __Test_8_test_handler = unknown[] extends __Test_8_test_args ? ((...args: any[]) => any) : __Test_8_test_listener;"
         ) && output.code.contains(
-            "const __vize_handler_8_13: __Test_8_test_handler | __Test_8_test_prop_arrays | null | undefined = (handleTest);"
+            "const $handler8_13: __Test_8_test_handler | __Test_8_test_prop_arrays | null | undefined = (handleTest);"
         ),
         "bare handler reference must be typed through the emit handler alias:\n{}",
         output.code
@@ -1975,13 +1971,13 @@ function handleTest(value1: string, value2: number) {
     assert!(
         output
             .code
-            .contains("(__vize_handler_8_13 as __Test_8_test_listener)(...__vize_args);"),
+            .contains("($handler8_13 as __Test_8_test_listener)(...$args);"),
         "bare handler reference must be invoked with the full argument spread:\n{}",
         output.code
     );
     assert!(
         output.code.contains(
-            "const __vize_handler_9_40: __Test_9_test_handler | __Test_8_test_prop_arrays | null | undefined = ((value1, value2) => handleTest(value1, value2));"
+            "const $handler9_40: __Test_9_test_handler | __Test_8_test_prop_arrays | null | undefined = ((value1, value2) => handleTest(value1, value2));"
         ),
         "inline multi-arg arrow must be typed through the emit handler alias:\n{}",
         output.code
@@ -1989,7 +1985,7 @@ function handleTest(value1: string, value2: number) {
     assert!(
         output
             .code
-            .contains("(__vize_handler_9_40 as __Test_9_test_listener)(...__vize_args);"),
+            .contains("($handler9_40 as __Test_9_test_listener)(...$args);"),
         "inline multi-arg arrow must be invoked with the full argument spread:\n{}",
         output.code
     );
@@ -2027,19 +2023,19 @@ fn test_native_event_handler_keeps_single_event_parameter() {
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
     assert!(
-        output.code.contains("((__vize_event: PointerEvent) => {"),
+        output.code.contains("(($evt: PointerEvent) => {"),
         "native method reference must receive one privately named event parameter:\n{}",
         output.code
     );
     assert!(
-        output
-            .code
-            .contains("((__vize_cb: ((_e: PointerEvent) => unknown) | null | undefined) => __vize_cb)((handleClick));"),
+        output.code.contains(
+            "(($cb: ((_e: PointerEvent) => unknown) | null | undefined) => $cb)((handleClick));"
+        ),
         "native event handler reference must be typed by the DOM event:\n{}",
         output.code
     );
     assert!(
-        !output.code.contains("...__vize_args"),
+        !output.code.contains("...$args"),
         "native event handler must not use the emit argument tuple spread:\n{}",
         output.code
     );

@@ -10,6 +10,7 @@ use oxc_ast_visit::{
 use oxc_parser::Parser as OxcParser;
 use oxc_span::{GetSpan, SourceType};
 use oxc_syntax::operator::UnaryOperator;
+use vize_l0::ts_emit::generated_name::RUNTIME_PROBE;
 use vize_l0::{String, ToCompactString, profile};
 
 pub(super) fn is_runtime_array_macro(runtime_args: Option<&str>) -> bool {
@@ -28,7 +29,7 @@ pub(super) fn is_runtime_array_macro(runtime_args: Option<&str>) -> bool {
 
 pub(super) fn extract_runtime_object_property_values(source: &str) -> Vec<String> {
     let mut wrapped = String::with_capacity(source.len() + 32);
-    wrapped.push_str("const __vize_runtime = (");
+    vize_l0::append!(wrapped, "const {RUNTIME_PROBE} = (");
     let expression_offset = wrapped.len();
     wrapped.push_str(source);
     wrapped.push_str(");");

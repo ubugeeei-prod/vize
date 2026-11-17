@@ -90,7 +90,7 @@ function onChange(_value: boolean) {}
         .expect("transform");
     let inference = result
         .text
-        .find("const __vize_emit_props_")
+        .find("const $emitProps")
         .expect("listener inference");
     let probe = result.text[inference..]
         .split_once("});")

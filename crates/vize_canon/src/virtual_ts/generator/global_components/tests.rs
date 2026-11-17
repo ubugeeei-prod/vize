@@ -48,7 +48,7 @@ fn define_art_string_source_types_its_implicit_variant_component() {
         code.lines()
             .filter_map(|line| {
                 line.strip_prefix("const { \"")?
-                    .split_once("\": __vize_global_component_")
+                    .split_once("\": $globalComponent")
                     .map(|(name, _)| name)
             })
             .collect::<Vec<_>>()
@@ -105,8 +105,8 @@ fn unknown_component_flag_preserves_complete_dynamic_code_and_projection() {
     ] {
         let checked = generate(script, template, true);
         let default = generate(script, template, false);
-        assert!(checked.code.contains("const __vize_dynamic_is_"));
-        assert!(!checked.code.contains("__vize_global_component_"));
+        assert!(checked.code.contains("const $is"));
+        assert!(!checked.code.contains("$globalComponent"));
         assert_eq!(checked.code, default.code, "{template}");
         assert_eq!(checked.mapping, default.mapping, "{template}");
     }
@@ -116,7 +116,7 @@ fn unknown_component_flag_preserves_complete_dynamic_code_and_projection() {
 fn static_unknown_components_keep_their_authored_registry_mappings() {
     let template = "😀\r\n<component :is=\"'button'\" />\r\n<MissingWidget /><missing-widget />";
     let output = generate("", template, true);
-    assert!(output.code.contains("const __vize_dynamic_is_"));
+    assert!(output.code.contains("const $is"));
     for name in ["MissingWidget", "missing-widget"] {
         let literal = vize_carton::cstr!("\"{name}\"");
         let start = output
@@ -132,7 +132,7 @@ fn static_unknown_components_keep_their_authored_registry_mappings() {
         let authored = 100 + template.find(name).expect("authored tag");
         assert_eq!(row.src_range, authored..authored + name.len());
     }
-    assert!(!output.code.contains("\"__vize_dynamic_is_"));
+    assert!(!output.code.contains("\"$is"));
 }
 
 #[test]
@@ -155,7 +155,7 @@ fn dynamic_component_constructor_union_keeps_props_checks() {
     let default = generate(script, template, false);
     assert_eq!(checked.code, default.code);
     assert_eq!(checked.mapping, default.mapping);
-    assert!(checked.code.contains("typeof __vize_dynamic_is_"));
+    assert!(checked.code.contains("typeof $is"));
     assert!(checked.code.contains("'wrong'"));
 }
 
@@ -185,11 +185,7 @@ fn authored_alias_spelling_never_proves_dynamic_component_ownership() {
 
     // The tokenizer does not accept underscore as a tag-start character.
     // Retain these original bytes as opaque text, not a positive unknown tag.
-    for template in [
-        "<__vize_dynamic_is_0 />",
-        "<__vize_dynamic_is_0 :is=\"'button'\" />",
-        "<__vize_dynamic_is_777 />",
-    ] {
+    for template in ["<$is0 />", "<$is0 :is=\"'button'\" />", "<$is777 />"] {
         let allocator = vize_carton::Allocator::new();
         let (root, errors) = vize_armature::parse(&allocator, template);
         assert!(errors.is_empty(), "{errors:?}");
@@ -284,7 +280,7 @@ fn named_dynamic_values_require_their_fresh_ast_and_matching_usage() {
         "<Unknown :is=\"registry.button\" />",
         true,
     );
-    assert!(ordinary.code.contains("__vize_global_component_"));
+    assert!(ordinary.code.contains("$globalComponent"));
 }
 
 #[test]
@@ -327,14 +323,14 @@ fn named_member_exclusion_removes_only_the_exact_registry_check_and_mapping() {
     // The script-owned member now resolves through a local alias. The actual
     // template proves that owner; missing AST retains the registry refusal.
     const UNOWNED: &str = concat!(
-        "const { \"__vize_dynamic_is_0\": __vize_global_component_0 } = {} as (",
-        "\"__vize_dynamic_is_0\" extends keyof import('vue').GlobalComponents ? { \"__vize_dynamic_is_0\": unknown } : ",
-        "\"__vize_dynamic_is_0\" extends keyof import('vue').GlobalComponents ? { \"__vize_dynamic_is_0\": unknown } : ",
-        "\"__vize_dynamic_is_0\" extends keyof import('vue').GlobalComponents ? { \"__vize_dynamic_is_0\": unknown } : {});\n",
-        "void __vize_global_component_0;\n",
+        "const { \"$is0\": $globalComponent0 } = {} as (",
+        "\"$is0\" extends keyof import('vue').GlobalComponents ? { \"$is0\": unknown } : ",
+        "\"$is0\" extends keyof import('vue').GlobalComponents ? { \"$is0\": unknown } : ",
+        "\"$is0\" extends keyof import('vue').GlobalComponents ? { \"$is0\": unknown } : {});\n",
+        "void $globalComponent0;\n",
         "\n// Global component stubs (vue module augmentations)\n",
         "type $GlobalComponent<__K extends string | number | symbol, __F extends string | number | symbol = __K, __L extends string | number | symbol = __F, __G = import(\"vue\").GlobalComponents, __C = __K extends keyof __G ? __G[__K] : __F extends keyof __G ? __G[__F] : __L extends keyof __G ? __G[__L] : any> = unknown extends __C ? any : __C;\n",
-        "declare const __vize_dynamic_is_0: $GlobalComponent<\"__vize_dynamic_is_0\">;\n",
+        "declare const $is0: $GlobalComponent<\"$is0\">;\n",
     );
     assert_eq!(owned, "");
     assert_eq!(unowned, UNOWNED);
@@ -342,8 +338,8 @@ fn named_member_exclusion_removes_only_the_exact_registry_check_and_mapping() {
     assert_eq!(
         unowned_maps,
         vec![crate::virtual_ts::VizeMapping {
-            gen_range: 8..29,
-            src_range: 101..120,
+            gen_range: 8..14,
+            src_range: 101..105,
             sub_spans: Vec::new(),
         }]
     );

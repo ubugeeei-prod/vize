@@ -4,6 +4,7 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { beforeEmitPropsBlockScope } from "./emit-props-block-scope-transition.ts";
 import { beforeSharedUsageGates } from "./shared-usage-gates-transition.ts";
+import { beforeGeneratedNames } from "./generated-names-transition.ts";
 
 export const guardedInferenceArrowRecord = "tests/_fixtures/tooling/guarded-inference-arrow.json";
 const recordSha256 = "8d296ee5db5d0d4ad0afda82f788593343e19bb663ab0a90af40dc4169425463";
@@ -42,6 +43,7 @@ function load(): Transition {
 
 /** The exact pre-arrow bytes of a recorded producer's current image; older images pass through. */
 export function beforeGuardedInferenceArrow(path: string, current: string): string {
+  current = beforeGeneratedNames(path, current);
   current = beforeSharedUsageGates(path, current);
   current = beforeEmitPropsBlockScope(path, current);
   const file = load().files.find((entry) => entry.path === path);

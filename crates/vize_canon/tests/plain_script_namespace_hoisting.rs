@@ -219,7 +219,7 @@ export default { name: "Namespaces" };
     assert_eq!(
         bridge,
         format!(
-            "const __vize_plain_script_exports = __setup();\nexport const untouched = __vize_plain_script_exports.untouched;\n\n{AUTHORED_COMPONENT_ALIASES}"
+            "const $scriptExports = __setup();\nexport const untouched = $scriptExports.untouched;\n\n{AUTHORED_COMPONENT_ALIASES}"
         )
     );
 }

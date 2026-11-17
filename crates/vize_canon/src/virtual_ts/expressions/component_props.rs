@@ -24,6 +24,7 @@ use vize_croquis::{
     ScopeChain,
     croquis::{ComponentUsage, PassedProp},
 };
+use vize_l0::ts_emit::generated_name::{LEGACY_PROP_TYPE, PROP_CHECK};
 
 mod context;
 pub(crate) use context::ComponentPropCheckContext;
@@ -302,9 +303,9 @@ fn generate_component_prop_checks_inner<const LEGACY_SCALARS: bool>(
                 .and_modify(|count| *count += 1)
                 .or_insert(1);
             let check_name = if *occurrence == 1 {
-                cstr!("__vize_prop_check_{idx}_{safe_prop_name}")
+                cstr!("{PROP_CHECK}{idx}_{safe_prop_name}")
             } else {
-                cstr!("__vize_prop_check_{idx}_{safe_prop_name}_{occurrence}")
+                cstr!("{PROP_CHECK}{idx}_{safe_prop_name}_{occurrence}")
             };
             let gen_stmt_start = ts.len();
             append!(*ts, "{expr_indent}const ");
@@ -324,7 +325,7 @@ fn generate_component_prop_checks_inner<const LEGACY_SCALARS: bool>(
                 // with; this expression keeps only its own diagnostics.
                 ts.push_str(": unknown = ");
             } else if LEGACY_SCALARS {
-                append!(*ts, ": __vize_legacy_prop_{idx}_{prop_index} = ");
+                append!(*ts, ": {LEGACY_PROP_TYPE}{idx}_{prop_index} = ");
             } else if let Some(values) = owned {
                 values.append_type(ts, prop, generated_value.text.as_str());
             } else {

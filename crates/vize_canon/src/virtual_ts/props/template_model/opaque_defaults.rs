@@ -17,7 +17,8 @@ use vize_carton::{String, append, cstr};
 use vize_croquis::Croquis;
 
 /// Setup-scope binding typed by the macro call over the authored argument.
-const CAPTURE: &str = "__vize_with_defaults_props";
+const CAPTURE: vize_l0::ts_emit::generated_name::GeneratedName =
+    vize_l0::ts_emit::generated_name::WITH_DEFAULTS_PROPS;
 
 /// The authored defaults argument when its keys are opaque to static analysis.
 fn opaque_defaults_expression(summary: &Croquis) -> Option<&str> {

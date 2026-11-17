@@ -134,7 +134,11 @@ fn parses_as_handler_body(cx: &Cx<'_, impl ProvenanceSink>, source: &str) -> boo
         return false;
     }
     let mut wrapped = String::with_capacity(source.len() + 39);
-    wrapped.push_str("const __vize_handler__ = $event => {\n");
+    wrapped.push_str(concat!(
+        "const ",
+        vize_l0::generated_name!(HANDLER_PROBE),
+        " = $event => {\n"
+    ));
     wrapped.push_str(source);
     wrapped.push_str("\n};");
     let parsed = Parser::new(

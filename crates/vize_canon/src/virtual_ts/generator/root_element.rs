@@ -2,6 +2,7 @@
 
 use vize_carton::{CompactString, FxHashSet, append, cstr, is_native_tag};
 use vize_croquis::Croquis;
+use vize_l0::ts_emit::generated_name::ROOT_EL;
 use vize_relief::{ElementNode, Namespace, PropNode, RootNode, TemplateChildNode};
 
 use crate::virtual_ts::{
@@ -61,7 +62,7 @@ pub(super) fn emit_setup_type(
         ts.push_str("  type $RootEl = any;\n");
     }
     if checks.infer_component_dollar_el && inferred {
-        ts.push_str("  const __vize_root_el = {} as $RootEl;\n");
+        vize_l0::append!(*ts, "  const {ROOT_EL} = {{}} as $RootEl;\n");
         return true;
     }
     false

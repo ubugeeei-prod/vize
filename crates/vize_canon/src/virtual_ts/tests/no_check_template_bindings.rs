@@ -54,7 +54,7 @@ const isLoading = ref(false)
     assert!(!output.code.contains("void isLoading;"));
     assert!(!output.code.contains("missingItems"));
     assert!(!output.code.contains("confirmDialog"));
-    assert!(!output.code.contains("__vize_prop_check"));
+    assert!(!vize_l0::ts_emit::generated_name::PROP_CHECK.occurs_in(&output.code));
     assert!(!output.code.contains("@save handler"));
 }
 
@@ -106,7 +106,7 @@ function confirmDialog() {}
     );
     assert!(!output.code.contains("type __R_isLoading"));
     assert!(!output.code.contains("var isLoading:"));
-    assert!(!output.code.contains("__vize_prop_check"));
+    assert!(!vize_l0::ts_emit::generated_name::PROP_CHECK.occurs_in(&output.code));
     assert!(!output.code.contains("@save handler"));
     assert!(!output.code.contains("void missingItems;"));
     assert!(

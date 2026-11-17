@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { beforeSharedKebabCaseSource } from "../../../tools/support/compat/content-mapper/shared-kebab-case-transition.ts";
 import { beforeSharedTemplateRefTargetsSource } from "../../../tools/support/compat/content-mapper/shared-template-ref-targets-transition.ts";
 import { emitMemberInferEditsBefore, readRepository } from "./emit-member-infer-source.ts";
+import { beforeGeneratedNames } from "../../../tools/support/compat/content-mapper/generated-names-transition.ts";
 
 type Identity = { bytes: number; sha256: string };
 type Edit = { before: string; after: string };
@@ -369,6 +370,7 @@ function inverse(current: string, transition: Transition, context: string): stri
 
 /** Restore only the authenticated pre-listener-relation source image. */
 export function beforeSharedListenerRelationSource(path: string, current: string): string {
+  current = beforeGeneratedNames(path, current);
   if (
     path === "npm/cli/package.json" &&
     identity(current).sha256 === shippedDeclarationSkipLibCheckTransition.after.sha256

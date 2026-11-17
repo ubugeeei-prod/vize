@@ -65,7 +65,10 @@ mod tests {
         let record = record();
         for file in record["files"].as_array().unwrap() {
             let path = file["path"].as_str().unwrap();
-            let current = fs::read_to_string(support::repository().join(path)).unwrap();
+            let current = super::super::generated_names::source_before(
+                path,
+                fs::read_to_string(support::repository().join(path)).unwrap(),
+            );
             let current = super::super::emit_props_block_scope::source_before(path, current);
             assert!(is_after(&current, file), "{path}");
             let previous = source_before(path, current.clone());

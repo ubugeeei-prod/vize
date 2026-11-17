@@ -61,12 +61,12 @@ export default defineComponent({
         output.code
     );
     assert!(
-        output.code.contains("__vize_method_bump"),
+        output.code.contains("$method_bump"),
         "expected method body to be checked through a typed wrapper:\n{}",
         output.code
     );
     assert!(
-        output.code.contains("__vize_computed_status"),
+        output.code.contains("$computed_status"),
         "expected computed body to be checked through a typed wrapper:\n{}",
         output.code
     );
@@ -122,12 +122,12 @@ export default defineComponent({
     );
 
     assert!(
-        output.code.contains("async function __vize_method_load("),
+        output.code.contains("async function $method_load("),
         "expected the authored `async` modifier to survive the copy:\n{}",
         output.code
     );
     assert!(
-        output.code.contains("function* __vize_method_walk("),
+        output.code.contains("function* $method_walk("),
         "expected the authored generator star to survive the copy:\n{}",
         output.code
     );
@@ -165,8 +165,8 @@ export default defineComponent({
     );
 
     assert!(
-        output.code.contains("function __vize_method_a_b(")
-            && output.code.contains("function __vize_method_a_b_2("),
+        output.code.contains("function $method_a_b(")
+            && output.code.contains("function $method_a_b_2("),
         "colliding sanitized keys must produce distinct bridge functions:\n{}",
         output.code
     );

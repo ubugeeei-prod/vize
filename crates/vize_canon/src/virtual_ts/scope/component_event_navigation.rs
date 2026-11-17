@@ -1,5 +1,9 @@
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use std::ops::Range;
+use vize_l0::ts_emit::generated_name::{
+    EVENT_KEYS, EVENTS_NAV, EVENTS_RESOLVED, EVENTS_RESOLVER_TYPE, KEBAB_EVENTS_NAV,
+    MODEL_EVENTS_COMPLETION, MODEL_EVENTS_NAV,
+};
 
 use vize_carton::{FxHashSet, cstr};
 use vize_croquis::croquis::{ComponentUsage, EventListener};
@@ -134,11 +138,11 @@ fn emit_usage_event_references(
     if ctx.omit_navigation_references {
         return;
     }
-    let resolved_events = cstr!("__vize_events_resolved_{idx}");
-    let direct_events_ref = cstr!("__vize_events_nav_{idx}");
-    let kebab_events_ref = cstr!("__vize_kebab_events_nav_{idx}");
-    let model_events_ref = cstr!("__vize_model_events_nav_{idx}");
-    let model_completion_ref = cstr!("__vize_model_events_completion_{idx}");
+    let resolved_events = cstr!("{EVENTS_RESOLVED}{idx}");
+    let direct_events_ref = cstr!("{EVENTS_NAV}{idx}");
+    let kebab_events_ref = cstr!("{KEBAB_EVENTS_NAV}{idx}");
+    let model_events_ref = cstr!("{MODEL_EVENTS_NAV}{idx}");
+    let model_completion_ref = cstr!("{MODEL_EVENTS_COMPLETION}{idx}");
     let mut emitted_direct_ref = false;
     let mut emitted_kebab_ref = false;
     let mut emitted_model_ref = false;
@@ -292,7 +296,7 @@ fn emit_event_name_checks(
     // raw emits, listener props and kebab aliases all share the same names.
     vize_l0::emit_ts!(
         ts,
-        "{indent}const __vize_event_keys_{idx}: {{ [K in keyof {component_events}<typeof {component_ref}> & string as `on${{{capitalize}<$ComponentAttrCamel<K>>}}`]?: unknown }} = {{\n"
+        "{indent}const {EVENT_KEYS}{idx}: {{ [K in keyof {component_events}<typeof {component_ref}> & string as `on${{{capitalize}<$ComponentAttrCamel<K>>}}`]?: unknown }} = {{\n"
     );
     let mut emitted_names = FxHashSet::default();
     for event in &usage.events {
@@ -317,7 +321,7 @@ fn emit_event_name_checks(
             sub_spans: Vec::new(),
         });
     }
-    vize_l0::emit_ts!(ts, "{indent}}};\n{indent}void __vize_event_keys_{idx};\n");
+    vize_l0::emit_ts!(ts, "{indent}}};\n{indent}void {EVENT_KEYS}{idx};\n");
 }
 
 fn emit_resolved_events(
@@ -333,7 +337,7 @@ fn emit_resolved_events(
         .select(ctx.hoist_shared_preamble);
     vize_l0::emit_ts!(
         ts,
-        "{indent}type __vize_events_resolver_{idx} = typeof {component_ref} extends {{ __vizeResolveEvents?: infer __F }} ? (__F extends (...args: any[]) => any ? __F : (props: any) => {component_events}<typeof {component_ref}>) : (props: any) => {component_events}<typeof {component_ref}>;\n{indent}// @ts-ignore Inference-only call; the authored prop checker owns diagnostics.\n{indent}const {resolved_events} = (undefined as unknown as __vize_events_resolver_{idx})("
+        "{indent}type {EVENTS_RESOLVER_TYPE}{idx} = typeof {component_ref} extends {{ __vizeResolveEvents?: infer __F }} ? (__F extends (...args: any[]) => any ? __F : (props: any) => {component_events}<typeof {component_ref}>) : (props: any) => {component_events}<typeof {component_ref}>;\n{indent}// @ts-ignore Inference-only call; the authored prop checker owns diagnostics.\n{indent}const {resolved_events} = (undefined as unknown as {EVENTS_RESOLVER_TYPE}{idx})("
     );
     if !usage.spread_props.is_empty() {
         crate::virtual_ts::expressions::append_inference_props_literal(

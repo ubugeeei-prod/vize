@@ -335,7 +335,7 @@ fn vue3_target_drops_intrinsic_attribute_excess_checks() {
         configured.transform_options,
     )
     .unwrap();
-    let excess = has_fragment(&generated.text, "__vize_native_key_");
+    let excess = has_fragment(&generated.text, "$nativeKey");
     assert!(!excess, "{}", generated.text);
 
     std::fs::write(
@@ -351,7 +351,7 @@ fn vue3_target_drops_intrinsic_attribute_excess_checks() {
         omitted.transform_options,
     )
     .unwrap();
-    let still_checked = has_fragment(&checked.text, "__vize_native_key_");
+    let still_checked = has_fragment(&checked.text, "$nativeKey");
     assert!(still_checked, "{}", checked.text);
 }
 

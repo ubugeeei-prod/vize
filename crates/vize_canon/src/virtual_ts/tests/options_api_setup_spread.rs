@@ -149,7 +149,7 @@ export default defineComponent({
     assert_eq!(
         output
             .code
-            .matches("const $fetch = __vize_instance_globals.$fetch;")
+            .matches("const $fetch = $globals.$fetch;")
             .count(),
         1,
         "instance globals should read the authored instance without a spread setup return:\n{}",

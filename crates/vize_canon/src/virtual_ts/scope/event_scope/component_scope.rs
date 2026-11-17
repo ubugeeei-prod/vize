@@ -5,6 +5,7 @@
 use crate::virtual_ts::scope::ScopeMappings;
 use vize_carton::profile;
 use vize_croquis::{EventHandlerScopeData, Scope};
+use vize_l0::ts_emit::generated_name::{EVENT_ARG, INLINE_HANDLER, LISTENER_ARGS};
 
 use crate::virtual_ts::expressions::ComponentPropSource;
 use crate::virtual_ts::types::{VirtualTsCheckOptions, VizeMapping};
@@ -37,7 +38,7 @@ pub(super) fn generate_component_handler_scope(
     let event_value = if data.has_implicit_event {
         "$event"
     } else {
-        "__vize_event"
+        EVENT_ARG.spelled()
     };
     let needs_typed_handler_assignment = needs_typed_handler_assignment(data);
     // Only reached for handlers with a target component; without one there is
@@ -158,24 +159,24 @@ pub(super) fn generate_component_handler_scope(
     let mut inline_name_range = None;
     let parameters = crate::virtual_ts::generated_names::lib("Parameters");
     if inline_statement_handler {
-        let handler_name = vize_carton::cstr!("__vize_inline_handler_{}", scope_id);
+        let handler_name = vize_carton::cstr!("{INLINE_HANDLER}{}", scope_id);
         vize_l0::emit_ts!(ts, "{indent}const ");
         let name_start = ts.len();
         ts.push_str(handler_name.as_str());
         inline_name_range = Some(name_start..ts.len());
         vize_l0::emit_ts!(
             ts,
-            ": {listener_type} = (...__vize_args: {parameters}<{listener_type}>) => {{\n",
+            ": {listener_type} = (...{LISTENER_ARGS}: {parameters}<{listener_type}>) => {{\n",
         );
     } else {
         vize_l0::emit_ts!(
             ts,
-            "{indent}void ((...__vize_args: {parameters}<{listener_type}>) => {{\n",
+            "{indent}void ((...{LISTENER_ARGS}: {parameters}<{listener_type}>) => {{\n",
         );
     }
     vize_l0::emit_ts!(
         ts,
-        "{inner_indent}const {event_value} = (__vize_args as unknown[])[0] as {event_type}; void {event_value};\n",
+        "{inner_indent}const {event_value} = ({LISTENER_ARGS} as unknown[])[0] as {event_type}; void {event_value};\n",
     );
 
     profile!(
@@ -206,7 +207,7 @@ pub(super) fn generate_component_handler_scope(
     if let Some(name_range) = inline_name_range {
         vize_l0::emit_ts!(
             ts,
-            "{indent}}};\n{indent}void __vize_inline_handler_{scope_id};\n"
+            "{indent}}};\n{indent}void {INLINE_HANDLER}{scope_id};\n"
         );
         let src_range = event_name_src_range.unwrap_or(
             (ctx.template_offset + scope.span.start) as usize

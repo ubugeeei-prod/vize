@@ -8,6 +8,9 @@
 
 use vize_carton::{String, append};
 use vize_croquis::Croquis;
+use vize_l0::ts_emit::generated_name::{
+    DEFINED_EMITS, EMIT_OPTIONS, EXPOSED, TEMPLATE_REFS, TYPED_EMITS, TYPED_EXPOSED, TYPED_SLOTS,
+};
 use vize_relief::RootNode;
 
 mod boolean_keys;
@@ -56,16 +59,16 @@ pub(super) fn emit_return_artifacts(
         let inner = super::emits::inner_type_of(type_args);
         append!(
             *ts,
-            "\n  const __vize_typed_slots = undefined as unknown as {inner};\n"
+            "\n  const {TYPED_SLOTS} = undefined as unknown as {inner};\n"
         );
-        fields.push("__vize_typed_slots".into());
+        fields.push(TYPED_SLOTS.spelled().into());
     }
     if let Some(expose) = summary.macros.define_expose()
         && expose.type_args.is_none()
         && let Some(runtime_args) = expose.runtime_args.as_ref()
     {
-        append!(*ts, "\n  const __vize_exposed = ({runtime_args});\n");
-        fields.push("__vize_exposed".into());
+        append!(*ts, "\n  const {EXPOSED} = ({runtime_args});\n");
+        fields.push(EXPOSED.spelled().into());
     } else if super::setup_scope::define_expose_type_requires_setup_scope(summary)
         && let Some(type_args) = summary
             .macros
@@ -75,17 +78,17 @@ pub(super) fn emit_return_artifacts(
         let inner = super::emits::inner_type_of(type_args);
         append!(
             *ts,
-            "\n  const __vize_typed_exposed = undefined as unknown as {inner};\n"
+            "\n  const {TYPED_EXPOSED} = undefined as unknown as {inner};\n"
         );
-        fields.push("__vize_typed_exposed".into());
+        fields.push(TYPED_EXPOSED.spelled().into());
     }
     if let Some(runtime_args) = define_emits_runtime_args(summary) {
         append!(
             *ts,
-            "\n  const __vize_emit_options = ({runtime_args});\n  const __vize_emits = defineEmits({runtime_args});\n"
+            "\n  const {EMIT_OPTIONS} = ({runtime_args});\n  const {DEFINED_EMITS} = defineEmits({runtime_args});\n"
         );
-        fields.push("__vize_emit_options".into());
-        fields.push("__vize_emits".into());
+        fields.push(EMIT_OPTIONS.spelled().into());
+        fields.push(DEFINED_EMITS.spelled().into());
     } else if super::setup_scope::define_emits_type_requires_setup_scope(summary)
         && let Some(type_args) = summary
             .macros
@@ -97,9 +100,9 @@ pub(super) fn emit_return_artifacts(
         let inner = super::emits::inner_type_of(type_args);
         append!(
             *ts,
-            "\n  const __vize_typed_emits = undefined as unknown as {inner};\n"
+            "\n  const {TYPED_EMITS} = undefined as unknown as {inner};\n"
         );
-        fields.push("__vize_typed_emits".into());
+        fields.push(TYPED_EMITS.spelled().into());
     }
 }
 
@@ -175,7 +178,10 @@ pub(super) fn emit_setup_helpers(
             .map_or("", |registry| registry.dollar_body.as_str());
         append!(*ts, "  type $DollarRefs = {{{dollar_body}}};\n");
         if record.has_instance_refs() {
-            ts.push_str("  const __vize_refs = undefined as unknown as $DollarRefs;\n");
+            vize_l0::append!(
+                *ts,
+                "  const {TEMPLATE_REFS} = undefined as unknown as $DollarRefs;\n"
+            );
         }
     }
     let boolean_keys =

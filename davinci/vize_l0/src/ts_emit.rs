@@ -16,6 +16,8 @@
 //! ```
 
 use crate::CompactString;
+
+pub mod generated_name;
 use core::fmt;
 
 /// Buffer that can accept reserved TypeScript bytes.
@@ -341,15 +343,16 @@ mod tests {
         let declaration = "<T>";
         let arguments = "<T>";
         ts! { &mut ts =>
-            type $Slots #declaration = Awaited<ReturnType<typeof __setup #arguments>>["__vize_typed_slots"];
+            type $Slots #declaration = Awaited<ReturnType<typeof __setup #arguments>>["$typedSlots"];
         }
         assert_eq!(
             ts,
-            "type $Slots<T> = Awaited<ReturnType<typeof __setup<T>>>[\"__vize_typed_slots\"];\n"
+            "type $Slots<T> = Awaited<ReturnType<typeof __setup<T>>>[\"$typedSlots\"];\n"
         );
         ts! { &mut ts => export type { $Slots as Slots }; }
         assert_eq!(
-            &ts["type $Slots<T> = Awaited<ReturnType<typeof __setup<T>>>[\"__vize_typed_slots\"];\n".len()..],
+            &ts["type $Slots<T> = Awaited<ReturnType<typeof __setup<T>>>[\"$typedSlots\"];\n"
+                .len()..],
             "export type { $Slots as Slots };\n"
         );
         let mut empty = String::default();
@@ -364,11 +367,11 @@ mod tests {
         assert_eq!(block, "export type Emits = {\n  \"click\": any[];\n};\n");
         let mut indexed = String::default();
         ts! { &mut indexed =>
-            type $Slots = Awaited<ReturnType<typeof __setup>> #("['__vize_typed_slots']");
+            type $Slots = Awaited<ReturnType<typeof __setup>> #("['$typedSlots']");
         }
         assert_eq!(
             indexed,
-            "type $Slots = Awaited<ReturnType<typeof __setup>>['__vize_typed_slots'];\n"
+            "type $Slots = Awaited<ReturnType<typeof __setup>>['$typedSlots'];\n"
         );
     }
 

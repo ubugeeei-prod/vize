@@ -41,9 +41,9 @@ const props = defineProps<SomeGenericType<typeof someDefinition>>();
         output.code
     );
     assert!(
-        output.code.contains(
-            "export type Props = Awaited<ReturnType<typeof __setup>>[\"__vize_setup_props\"];"
-        ),
+        output
+            .code
+            .contains("export type Props = Awaited<ReturnType<typeof __setup>>[\"$setupProps\"];"),
         "module Props should be exported through __setup return type:\n{}",
         output.code
     );
@@ -83,7 +83,7 @@ defineProps<Props & { items: typeof someDefinition }>();
     );
     assert!(
         output.code.contains(
-            "type $ResolvedProps = Awaited<ReturnType<typeof __setup>>[\"__vize_setup_props\"];"
+            "type $ResolvedProps = Awaited<ReturnType<typeof __setup>>[\"$setupProps\"];"
         ),
         "default export should use a private resolved props alias:\n{}",
         output.code

@@ -63,7 +63,7 @@ fn options_api_prop_shape_relaxes_defaulted_required_props() {
     assert!(
         has_line(
             code,
-            "export type Props = $OptionsPropShape<Awaited<ReturnType<typeof __setup>>[\"__vize_options_props\"]>;"
+            "export type Props = $OptionsPropShape<Awaited<ReturnType<typeof __setup>>[\"$optionsProps\"]>;"
         ),
         "the published Props must still come from the deferred runtime object:\n{code}"
     );

@@ -7,6 +7,7 @@ use crate::{
     virtual_ts::VizeMapping,
 };
 use vize_carton::{FxHashSet, append, is_native_tag};
+use vize_l0::ts_emit::generated_name::{FRAGMENT_PROP, NATIVE_KEY};
 use vize_relief::{ExpressionNode, PropNode, RootNode, TemplateChildNode};
 
 pub(super) fn emit(
@@ -106,7 +107,7 @@ fn visit(
             let partial = crate::virtual_ts::generated_names::lib("Partial");
             append!(
                 *ts,
-                "  const __vize_native_key_{}: {partial}<$NativeElement<{tag}>> = {{ ",
+                "  const {NATIVE_KEY}{}: {partial}<$NativeElement<{tag}>> = {{ ",
                 location.span.start
             );
             let key_start = ts.len();
@@ -114,7 +115,7 @@ fn visit(
             let key_end = ts.len();
             append!(
                 *ts,
-                ": undefined as never }};\n  void __vize_native_key_{};\n",
+                ": undefined as never }};\n  void {NATIVE_KEY}{};\n",
                 location.span.start
             );
             mappings.push(VizeMapping {
@@ -171,7 +172,7 @@ fn emit_fragment_prop_names(
         let partial = crate::virtual_ts::generated_names::lib("Partial");
         append!(
             *ts,
-            "  const __vize_fragment_prop_{}: {partial}<$NativeElement<\"template\">> = {{ ",
+            "  const {FRAGMENT_PROP}{}: {partial}<$NativeElement<\"template\">> = {{ ",
             location.span.start
         );
         let key_start = ts.len();
@@ -179,7 +180,7 @@ fn emit_fragment_prop_names(
         let key_end = ts.len();
         append!(
             *ts,
-            ": undefined as never }};\n  void __vize_fragment_prop_{};\n",
+            ": undefined as never }};\n  void {FRAGMENT_PROP}{};\n",
             location.span.start
         );
         mappings.push(VizeMapping {

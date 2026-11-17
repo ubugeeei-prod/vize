@@ -155,8 +155,8 @@ const handler = ref(named)
     const $emit = __ctx.$emit;
     void __ctx; void $attrs; void $slots; void $refs; void $emit;
 
-  const __vize_events_nav_0 = undefined as unknown as $ComponentEvents<typeof loose> & Record<string, unknown>;
-  void __vize_events_nav_0.pick;
+  const $eventsNav0 = undefined as unknown as $ComponentEvents<typeof loose> & Record<string, unknown>;
+  void $eventsNav0.pick;
   void (loose); // VBind
   // @vize-map: expr -> 179:184
 
@@ -171,10 +171,10 @@ const handler = ref(named)
   type __loose_8_pick_fallthrough_args = __loose_8__fallthrough extends infer __B ? __B extends [infer __F] ? NonNullable<__F> extends infer __P ? (__loose_8__listener_args<__P, "onPick", never>) extends infer __A extends unknown[] ? (__A extends [] ? unknown[] : __A) : unknown[] : unknown[] : unknown[] : never;
   type __loose_0_emit_resolver = __loose_8__library extends true ? (component: typeof loose) => typeof loose : $EmitPropsFactory<typeof loose>;
   // @ts-ignore Inference-only dynamic target/props; the canonical component-props call owns diagnostics.
-  const __vize_emit_props_0 = (undefined as unknown as __loose_0_emit_resolver)(loose)({
+  const $emitProps0 = (undefined as unknown as __loose_0_emit_resolver)(loose)({
   });
-  type __loose_8_pick_inferred_emit_args = __loose_8__library extends true ? (typeof __vize_emit_props_0 extends { __ctx?: infer __X } ? NonNullable<__X> extends { props: infer __P } ? __P : {} : {}) extends { onPick?: (...args: infer __A) => any } ? __A : unknown[] : typeof __vize_emit_props_0 extends { readonly __vizeLooseListener: infer __L extends unknown[] } ? __L : typeof __vize_emit_props_0 extends { onPick?: (...args: infer __A) => any } ? __A : unknown[];
-  type __loose_8_pick_contextless_listener = __loose_8__library extends true ? false : typeof __vize_emit_props_0 extends { readonly __vizeLooseListener: unknown[] } ? true : false;
+  type __loose_8_pick_inferred_emit_args = __loose_8__library extends true ? (typeof $emitProps0 extends { __ctx?: infer __X } ? NonNullable<__X> extends { props: infer __P } ? __P : {} : {}) extends { onPick?: (...args: infer __A) => any } ? __A : unknown[] : typeof $emitProps0 extends { readonly __vizeLooseListener: infer __L extends unknown[] } ? __L : typeof $emitProps0 extends { onPick?: (...args: infer __A) => any } ? __A : unknown[];
+  type __loose_8_pick_contextless_listener = __loose_8__library extends true ? false : typeof $emitProps0 extends { readonly __vizeLooseListener: unknown[] } ? true : false;
   type __loose_8_pick_static_emit_args = __loose_8__emit_props extends infer __B ? __B extends [infer __EP] ? __EP extends { onPick?: (...args: infer __A) => any } ? __A : unknown[] : unknown[] : never;
   type __loose_8_pick_emit_args = unknown[] extends __loose_8_pick_inferred_emit_args ? __loose_8_pick_static_emit_args : __loose_8_pick_inferred_emit_args;
   type __loose_8_pick_args = __loose_8_pick_contextless_listener extends true ? unknown[] : unknown[] extends __loose_8_pick_inferred_emit_args ? (unknown[] extends __loose_8_pick_prop_args ? (unknown[] extends __loose_8_pick_emit_args ? __loose_8_pick_fallthrough_args : __loose_8_pick_emit_args) : __loose_8_pick_prop_args) : __loose_8_pick_inferred_emit_args;
@@ -185,10 +185,10 @@ const handler = ref(named)
   type __loose_8_pick_prop_arrays = __loose_8__props_members extends infer __B ? __B extends [infer __P] ? $IsAny<__P> extends true ? never : __P extends { onPick?: infer __H } ? Extract<NonNullable<__H>, readonly unknown[]> : never : never : never;
   type __loose_8_pick_listener = unknown[] extends __loose_8_pick_args ? ((...args: any[]) => any) : ((...args: __loose_8_pick_args) => __loose_8_pick_return);
   type __loose_8_pick_handler = unknown[] extends __loose_8_pick_args ? ((...args: any[]) => any) : __loose_8_pick_listener;
-  void ((...__vize_args: Parameters<__loose_8_pick_listener>) => {
-    const __vize_event = (__vize_args as unknown[])[0] as __loose_8_pick_event; void __vize_event;
-    const __vize_handler_8_31 = ({ __vize_listener: (handler) } satisfies { __vize_listener: __loose_8_pick_contextless_listener extends true ? unknown : (__loose_8_pick_handler | __loose_8_pick_prop_arrays | null | undefined) }).__vize_listener;
-    const __vize_handler_8_31_callable: __loose_8_pick_contextless_listener extends true ? (((...args: never[]) => unknown) | readonly ((...args: never[]) => unknown)[] | null | undefined) : unknown = __vize_handler_8_31; void __vize_handler_8_31_callable;
+  void ((...$args: Parameters<__loose_8_pick_listener>) => {
+    const $evt = ($args as unknown[])[0] as __loose_8_pick_event; void $evt;
+    const $handler8_31 = ({ $listener: (handler) } satisfies { $listener: __loose_8_pick_contextless_listener extends true ? unknown : (__loose_8_pick_handler | __loose_8_pick_prop_arrays | null | undefined) }).$listener;
+    const $handler8_31_callable: __loose_8_pick_contextless_listener extends true ? (((...args: never[]) => unknown) | readonly ((...args: never[]) => unknown)[] | null | undefined) : unknown = $handler8_31; void $handler8_31_callable;
     // @vize-map: handler -> 193:200
   });
 
@@ -247,8 +247,8 @@ const handler = ref(named)
         ...{} as { "onPick": never },
       });
       type $SlotContract_0 = $StructuralSlots<typeof loose>;
-      const __vize_required_slots_0: $RequiredSlots<$SlotContract_0, {}> = {};
-      void __vize_required_slots_0;
+      const $requiredSlots0: $RequiredSlots<$SlotContract_0, {}> = {};
+      void $requiredSlots0;
     },
   ];
 

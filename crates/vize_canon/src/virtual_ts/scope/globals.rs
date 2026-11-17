@@ -6,6 +6,9 @@ use oxc_span::SourceType;
 use std::borrow::Cow;
 use vize_carton::{FxHashSet, String, append, cstr};
 use vize_croquis::script_parser::with_shared_parse;
+use vize_l0::ts_emit::generated_name::{
+    KEYED_TEMPLATE_CONTEXT, STRICT_TEMPLATE_CONTEXT, TEMPLATE_INSTANCE,
+};
 
 use vize_croquis::{Croquis, ScopeKind};
 
@@ -199,7 +202,7 @@ pub(super) fn generate_undefined_refs(
                 mappings,
                 (
                     if check_keyed && keyed {
-                        "__vize_keyed_template_context"
+                        KEYED_TEMPLATE_CONTEXT.spelled()
                     } else {
                         strict_receiver(keyed)
                     },
@@ -223,7 +226,9 @@ pub(super) fn generate_undefined_refs(
             }
             emit_header(ts, &mut emitted_header);
             if !emitted_public_instance {
-                ts.push_str(PUBLIC_INSTANCE_PRELUDE);
+                ts.push_str(&vize_l0::ts_emit::generated_name::hygiene::text(
+                    PUBLIC_INSTANCE_PRELUDE,
+                ));
                 emitted_public_instance = true;
             }
             if seen_names.insert(String::from(name)) {
@@ -235,7 +240,7 @@ pub(super) fn generate_undefined_refs(
             emit_strict_template_context_ref(
                 ts,
                 mappings,
-                (PUBLIC_INSTANCE_RECEIVER, name),
+                (PUBLIC_INSTANCE_RECEIVER.spelled(), name),
                 src_start,
                 src_end,
                 true,
@@ -259,14 +264,16 @@ pub(super) fn generate_undefined_refs(
             // the authored expression is checked against it the way `vue-tsc`
             // checks `__VLS_ctx.<name>`; only a name the instance lacks stays
             // `any`, and that name reports exactly once, from the read below.
-            ts.push_str(AUTHORED_INSTANCE_PRELUDE);
+            ts.push_str(&vize_l0::ts_emit::generated_name::hygiene::text(
+                AUTHORED_INSTANCE_PRELUDE,
+            ));
             emitted_instance = true;
         }
 
         // Use void expression to reference the name without creating an unused variable
         let expr_code = if on_instance {
             cstr!(
-                "  var {}!: $AuthoredInstanceMember<\"{}\">; void ({});\n  void (__vize_template_instance.{});\n",
+                "  var {}!: $AuthoredInstanceMember<\"{}\">; void ({});\n  void ({TEMPLATE_INSTANCE}.{});\n",
                 undef.name,
                 undef.name,
                 undef.name,
@@ -331,15 +338,32 @@ pub(super) fn generate_undefined_refs(
 /// instance wording the lexical form reports. `__Ctx` is the template context
 /// type, so a `vue` without `ComponentPublicInstance` degrades to an index
 /// signature and reports nothing, as the context itself does.
-const PUBLIC_INSTANCE_PRELUDE: &str = "  type $TemplateInstance = { [__K in keyof __Ctx]: __Ctx[__K] };\n  type $TemplateInstanceMember<__K extends string> = __K extends keyof $TemplateInstance ? $TemplateInstance[__K] : any;\n  const __vize_public_instance = undefined as unknown as $TemplateInstance;\n  void __vize_public_instance;\n";
+const PUBLIC_INSTANCE_PRELUDE: &str = concat!(
+    "  type $TemplateInstance = { [__K in keyof __Ctx]: __Ctx[__K] };\n  type $TemplateInstanceMember<__K extends string> = __K extends keyof $TemplateInstance ? $TemplateInstance[__K] : any;\n  const ",
+    vize_l0::generated_name!(PUBLIC_INSTANCE),
+    " = undefined as unknown as $TemplateInstance;\n  void ",
+    vize_l0::generated_name!(PUBLIC_INSTANCE),
+    ";\n"
+);
 
-const PUBLIC_INSTANCE_RECEIVER: &str = "__vize_public_instance";
+const PUBLIC_INSTANCE_RECEIVER: vize_l0::ts_emit::generated_name::GeneratedName =
+    vize_l0::ts_emit::generated_name::PUBLIC_INSTANCE;
 
 /// These generated declarations need a generic key constraint for Vue's
 /// intersection instance types. A generated-only block keeps the helper type
 /// and receiver out of authored template type expressions. The `var` bindings
 /// remain function-scoped, with their annotations resolved inside this block.
-const AUTHORED_INSTANCE_PRELUDE: &str = "  { // Generated inherited-member declarations only.\n  const __vize_template_instance = undefined as unknown as (typeof __default__ extends abstract new (...args: any) => infer __I ? __I : {});\n  void __vize_template_instance;\n  type $AuthoredInstanceMember<__K extends string> = __K extends keyof typeof __vize_template_instance ? (typeof __vize_template_instance)[__K] : any;\n";
+const AUTHORED_INSTANCE_PRELUDE: &str = concat!(
+    "  { // Generated inherited-member declarations only.\n  const ",
+    vize_l0::generated_name!(TEMPLATE_INSTANCE),
+    " = undefined as unknown as (typeof __default__ extends abstract new (...args: any) => infer __I ? __I : {});\n  void ",
+    vize_l0::generated_name!(TEMPLATE_INSTANCE),
+    ";\n  type $AuthoredInstanceMember<__K extends string> = __K extends keyof typeof ",
+    vize_l0::generated_name!(TEMPLATE_INSTANCE),
+    " ? (typeof ",
+    vize_l0::generated_name!(TEMPLATE_INSTANCE),
+    ")[__K] : any;\n"
+);
 
 /// Same-name shorthand (`:aria-labelledby`) stores the camelized binding while
 /// the authored token is longer. A prefix range overlaps the attribute and is
@@ -376,7 +400,7 @@ pub(super) fn strict_receiver(keyed_prop: bool) -> &'static str {
     if keyed_prop {
         "props"
     } else {
-        "__vize_strict_template_context"
+        STRICT_TEMPLATE_CONTEXT.spelled()
     }
 }
 

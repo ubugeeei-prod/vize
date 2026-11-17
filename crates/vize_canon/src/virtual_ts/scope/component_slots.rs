@@ -1,5 +1,6 @@
 //! Required-slot checks for component usages.
 
+use vize_l0::ts_emit::generated_name::REQUIRED_SLOTS;
 mod child_types;
 mod contract_share;
 mod slot_syntax;
@@ -114,7 +115,7 @@ pub(super) fn generate_component_slot_checks(
         vize_l0::emit_ts!(ts, "{expr_indent}type {contract_name} = {rhs};\n");
 
         let provided_slots = provided_slots_type(usage);
-        let check_name = vize_carton::cstr!("__vize_required_slots_{idx}");
+        let check_name = vize_carton::cstr!("{REQUIRED_SLOTS}{idx}");
         let gen_start = ts.len();
         if ctx.hoist_shared_preamble {
             let required_slots =

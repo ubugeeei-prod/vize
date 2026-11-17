@@ -156,11 +156,11 @@ defineProps<Props>()
   void props; // Mark as used to avoid TS6133
   const mini = props["mini"];
   void mini;
-  const __vize_keyed_template_context = props as typeof props & { [K in keyof __Ctx as string extends K ? never : number extends K ? never : symbol extends K ? never : K]: __Ctx[K] };
-  void __vize_keyed_template_context;
-  const hideDetails = __vize_keyed_template_context[("hideDetails" satisfies keyof typeof __vize_keyed_template_context)];
+  const $keyedCtx = props as typeof props & { [K in keyof __Ctx as string extends K ? never : number extends K ? never : symbol extends K ? never : K]: __Ctx[K] };
+  void $keyedCtx;
+  const hideDetails = $keyedCtx[("hideDetails" satisfies keyof typeof $keyedCtx)];
   void hideDetails;
-  const width = __vize_keyed_template_context[("width" satisfies keyof typeof __vize_keyed_template_context)];
+  const width = $keyedCtx[("width" satisfies keyof typeof $keyedCtx)];
   void width;
 
   void (width); // VBind
@@ -169,10 +169,10 @@ defineProps<Props>()
   // @vize-map: expr -> 40:51
 
   // Undefined references from template:
-  void (__vize_keyed_template_context.width);
-  // @vize-map: 18096:18101 -> 18:23
-  void (__vize_keyed_template_context.hideDetails);
-  // @vize-map: 18179:18190 -> 40:51
+  void ($keyedCtx.width);
+  // @vize-map: 17956:17961 -> 18:23
+  void ($keyedCtx.hideDetails);
+  // @vize-map: 18019:18030 -> 40:51
 
   // Component props type declarations
   type $IsAny<T> = 0 extends (1 & T) ? true : false;
@@ -221,24 +221,24 @@ defineProps<Props>()
   // Component template navigation references
   void v_select;
   const { } = undefined as unknown as $ComponentNavigationProps<__v_select_Props_0>;
-  const __vize_props_nav_0 = undefined as unknown as __v_select_Props_0 & globalThis.Record<string, unknown>;
+  const $propsNav0 = undefined as unknown as __v_select_Props_0 & globalThis.Record<string, unknown>;
   // @ts-ignore Navigation-only references; no diagnostic owner.
-  void __vize_props_nav_0.width; void __vize_props_nav_0.hideDetails;
+  void $propsNav0.width; void $propsNav0.hideDetails;
 
   // Component props value checks (template scope)
   // @vize-map: prop -> 10:24
-  const __vize_prop_check_0_width: __v_select_0_prop_width = width;
-  void __vize_prop_check_0_width;
+  const $prop0_width: __v_select_0_prop_width = width;
+  void $prop0_width;
   // @vize-map: prop -> 25:52
-  const __vize_prop_check_0_hide_details: __v_select_0_prop_hide_details = hideDetails;
-  void __vize_prop_check_0_hide_details;
+  const $prop0_hide_details: __v_select_0_prop_hide_details = hideDetails;
+  void $prop0_hide_details;
   (undefined as unknown as __v_select_Check_0)({
     "width": width,
     "hideDetails": hideDetails,
   });
   type $SlotContract_0 = $StructuralSlots<typeof v_select>;
-  const __vize_required_slots_0: $RequiredSlots<$SlotContract_0, {}> = {};
-  void __vize_required_slots_0;
+  const $requiredSlots0: $RequiredSlots<$SlotContract_0, {}> = {};
+  void $requiredSlots0;
 
   // Mark used components as referenced
   void v_select;

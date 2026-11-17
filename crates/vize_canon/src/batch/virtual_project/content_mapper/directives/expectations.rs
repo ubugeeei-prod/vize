@@ -2,6 +2,10 @@
 
 use super::ContentMapperSpan;
 use std::ops::Range;
+use vize_l0::ts_emit::generated_name::{
+    EMIT_CALLS_NAV, EVENT_KEYS, EVENTS_NAV, KEBAB_EVENTS_NAV, MODEL_EVENTS_NAV, PROP_CHECK,
+    PROPS_NAV, REQUIRED_SLOTS, SLOT_NAV, SLOTS_NAV,
+};
 
 pub(super) fn expect_interval(
     generated: &str,
@@ -36,10 +40,9 @@ pub(super) fn expect_interval(
         .into_iter()
         .max_by_key(|cluster| {
             let text = generated.get(cluster.start..cluster.end).unwrap_or("");
-            let rank = if text.contains("__vize_prop_check_") {
+            let rank = if PROP_CHECK.occurs_in(text) {
                 3_u8
-            } else if text.contains("__vize_event_keys_") || text.contains("__vize_required_slots_")
-            {
+            } else if EVENT_KEYS.occurs_in(text) || REQUIRED_SLOTS.occurs_in(text) {
                 2
             } else {
                 1
@@ -109,7 +112,7 @@ fn foreign_diagnostic_cuts(
 }
 
 /// Navigation reads resolve a tag (`void Tag;`) or a key on an open
-/// `__vize_*nav*` record and report nothing.
+/// `$*Nav*` record and report nothing.
 fn navigation_read(generated: &str, start: usize) -> bool {
     let line_start = generated
         .get(..start)
@@ -125,7 +128,17 @@ fn navigation_read(generated: &str, start: usize) -> bool {
                 .bytes()
                 .all(|byte| matches!(byte, b'_' | b'$' | b'.') || byte.is_ascii_alphanumeric())
     };
-    line.contains("_nav")
+    [
+        PROPS_NAV,
+        SLOTS_NAV,
+        SLOT_NAV,
+        EVENTS_NAV,
+        KEBAB_EVENTS_NAV,
+        MODEL_EVENTS_NAV,
+        EMIT_CALLS_NAV,
+    ]
+    .iter()
+    .any(|name| name.occurs_in(line))
         || line
             .strip_prefix("void ")
             .and_then(|rest| rest.strip_suffix(';'))

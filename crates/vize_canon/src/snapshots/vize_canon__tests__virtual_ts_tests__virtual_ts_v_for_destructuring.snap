@@ -159,17 +159,17 @@ const items = ref<Item[]>([])
     const $emit = __ctx.$emit;
     void __ctx; void $attrs; void $slots; void $refs; void $emit;
 
-  const __vize_native_key_47: Partial<$NativeElement<"li">> = { "key": undefined as never };
-  void __vize_native_key_47;
+  const $nativeKey47: Partial<$NativeElement<"li">> = { "key": undefined as never };
+  void $nativeKey47;
 
   // v-for scope: { id, name } in items
   {
-  const __vize_v_for_source_7 = __vForList(items);
-  for (const [{ id, name }] of __vize_v_for_source_7) {
+  const $forSource7 = __vForList(items);
+  for (const [{ id, name }] of $forSource7) {
     void id;
     void name;
-    const __vize_native_prop_check_52: $NativeElementProp<$NativeElement<"li">, "key"> = (id);
-    void __vize_native_prop_check_52; // VBind
+    const $nativeProp52: $NativeElementProp<$NativeElement<"li">, "key"> = (id);
+    void $nativeProp52; // VBind
     void (id); // Interpolation
     // @vize-map: expr -> 217:219
     void (name); // Interpolation

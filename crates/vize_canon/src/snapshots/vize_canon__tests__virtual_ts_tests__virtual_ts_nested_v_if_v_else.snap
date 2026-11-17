@@ -160,8 +160,8 @@ const data = ref<string[]>([])
     const $emit = __ctx.$emit;
     void __ctx; void $attrs; void $slots; void $refs; void $emit;
 
-  const __vize_native_key_190: Partial<$NativeElement<"p">> = { "key": undefined as never };
-  void __vize_native_key_190;
+  const $nativeKey190: Partial<$NativeElement<"p">> = { "key": undefined as never };
+  void $nativeKey190;
   if (status === 'loading') {
     // @vize-map: expr -> 215:235
   } else if (status === 'error') {
@@ -174,11 +174,11 @@ const data = ref<string[]>([])
 
     // v-for scope: item in data
     {
-    const __vize_v_for_source_7 = __vForList(data);
-    for (const [item] of __vize_v_for_source_7) {
+    const $forSource7 = __vForList(data);
+    for (const [item] of $forSource7) {
       void item;
-      const __vize_native_prop_check_195: $NativeElementProp<$NativeElement<"p">, "key"> = (item);
-      void __vize_native_prop_check_195; // VBind
+      const $nativeProp195: $NativeElementProp<$NativeElement<"p">, "key"> = (item);
+      void $nativeProp195; // VBind
       void (item); // Interpolation
       // @vize-map: expr -> 395:399
     }

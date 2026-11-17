@@ -5,6 +5,7 @@
 //! reserved names through the same typed object.
 
 use super::{helpers::is_reserved_identifier, props::collect_template_prop_names};
+use vize_l0::ts_emit::generated_name::{OPTIONS_INSTANCE, TEMPLATE_INSTANCE};
 
 mod authored_calls;
 mod contextual;
@@ -236,7 +237,7 @@ impl<'a> TemplateBindingAccess<'a> {
             );
             names.extend(instance.options.css_modules.iter().cloned());
             names.extend(instance.options.external_template_bindings.iter().cloned());
-            let mut candidate = String::from("__vize_template_instance");
+            let mut candidate = String::from(TEMPLATE_INSTANCE.spelled());
             while names.contains(candidate.as_str())
                 || instance
                     .options
@@ -477,7 +478,7 @@ impl<'a> TemplateBindingAccess<'a> {
         }
         self.names.get(name).map(|receiver| match receiver {
             Receiver::Props => "props",
-            Receiver::OptionsInstance => "__vize_options_instance",
+            Receiver::OptionsInstance => OPTIONS_INSTANCE.spelled(),
         })
     }
 }

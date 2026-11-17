@@ -19,8 +19,8 @@ use std::{collections::BTreeMap, fs, path::Path, process::Command};
 use vize_carton::{String, cstr, line_index::LineBreaks};
 
 const MISSKEY_REVISION: &str = "810faa8e5db4bbf9d6d408a61df148559340ee99";
-const CURRENT_TUPLE_READ: &str = "(__vize_args as unknown[])[0]";
-const PRIOR_TUPLE_READ: &str = "__vize_args[0]";
+const CURRENT_TUPLE_READ: &str = "($args as unknown[])[0]";
+const PRIOR_TUPLE_READ: &str = "$args[0]";
 
 #[test]
 fn pinned_misskey_preserves_current_and_tuple_diagnostic_boundaries() {
@@ -299,9 +299,9 @@ fn tuple_current_offset(
         })
         .collect::<Vec<_>>();
     for (replay_start, current_start) in &replacements {
-        let replay_index = replay_start + "__vize_args[".len();
+        let replay_index = replay_start + "$args[".len();
         if offset >= *replay_start && offset < replay_start + PRIOR_TUPLE_READ.len() {
-            let current_index = current_start + "(__vize_args as unknown[])[".len();
+            let current_index = current_start + "($args as unknown[])[".len();
             let translated = if offset >= replay_index {
                 current_index + (offset - replay_index)
             } else {
@@ -325,9 +325,9 @@ fn tuple_replay_mapping_ignores_preexisting_native_event_reads() {
     let current = cstr!("native {PRIOR_TUPLE_READ}; component {CURRENT_TUPLE_READ}; after");
     let replay = current.replace(CURRENT_TUPLE_READ, PRIOR_TUPLE_READ);
     let replay_component = replay.rfind(PRIOR_TUPLE_READ).unwrap();
-    let replay_index = replay_component + "__vize_args[".len();
+    let replay_index = replay_component + "$args[".len();
     let current_component = current.find(CURRENT_TUPLE_READ).unwrap();
-    let current_index = current_component + "(__vize_args as unknown[])[".len();
+    let current_index = current_component + "($args as unknown[])[".len();
     assert_eq!(
         tuple_current_offset(&current, &replay, replay_index),
         (current_index, Some("generated"))

@@ -50,13 +50,7 @@ fn assert_owned_read(output: &VirtualTsOutput, template: &str, receiver: &str) {
 fn ordinary_source_retains_the_existing_receiver_and_code_shape() {
     let template = "<div>{{ $ghost.value }}</div>";
     let result = output(template, Some("const rows = [1];"), &Default::default());
-    assert_eq!(
-        result
-            .code
-            .matches("const __vize_template_instance")
-            .count(),
-        0
-    );
+    assert_eq!(result.code.matches("const $inst").count(), 0);
     assert_owned_read(&result, template, "__ctx");
 }
 
@@ -69,63 +63,42 @@ fn loop_and_plain_or_escaped_callback_binders_cannot_capture_the_receiver() {
     ] {
         let result = output(template, Some("const rows = [1];"), &Default::default());
         assert_eq!(
-            result
-                .code
-                .matches("const __vize_template_instance = __ctx;")
-                .count(),
+            result.code.matches("const $inst = __ctx;").count(),
             1,
             "{}",
             result.code
         );
-        assert_owned_read(&result, template, "__vize_template_instance");
+        assert_owned_read(&result, template, "$inst");
     }
 }
 
 #[test]
-fn a_non_dollar_unresolved_read_is_reserved_even_without_script_undefined_facts() {
-    let template =
-        "<div v-for=\"__ctx in [1]\">{{ $ghost.value }}{{ __vize_template_instance }}</div>";
+fn an_authored_receiver_spelling_is_an_instance_read_and_moves_the_receiver() {
+    let template = "<div v-for=\"__ctx in [1]\">{{ $ghost.value }}{{ $inst }}</div>";
     let result = output(template, None, &Default::default());
     assert_eq!(
-        result
-            .code
-            .matches("const __vize_template_instance_ = __ctx;")
-            .count(),
+        result.code.matches("const $inst$ = __ctx;").count(),
         1,
         "{}",
         result.code
     );
-    assert_eq!(
-        result
-            .code
-            .matches("void (__vize_template_instance);")
-            .count(),
-        1
-    );
-    assert_owned_read(&result, template, "__vize_template_instance_");
+    assert_eq!(result.code.matches("void ($inst$.$inst);").count(), 1);
+    assert_owned_read(&result, template, "$inst$");
 }
 
 #[test]
 fn unresolved_type_queries_are_not_bound_by_the_new_alias() {
-    let template = "<div>{{ ((__ctx: any) => { type T = typeof __vize_template_instance; return $ghost.value; })(0) }}</div>";
+    let template =
+        "<div>{{ ((__ctx: any) => { type T = typeof $inst; return $ghost.value; })(0) }}</div>";
     let result = output(template, Some("const n = 1;"), &Default::default());
     assert_eq!(
-        result
-            .code
-            .matches("const __vize_template_instance_ = __ctx;")
-            .count(),
+        result.code.matches("const $inst$ = __ctx;").count(),
         1,
         "{}",
         result.code
     );
-    assert_eq!(
-        result
-            .code
-            .matches("typeof __vize_template_instance;")
-            .count(),
-        1
-    );
-    assert_owned_read(&result, template, "__vize_template_instance_");
+    assert_eq!(result.code.matches("typeof $inst$.$inst;").count(), 1);
+    assert_owned_read(&result, template, "$inst$");
 }
 
 #[test]
@@ -141,13 +114,7 @@ fn an_unrelated_function_name_or_outer_script_binding_is_not_a_capture() {
         ),
     ] {
         let result = output(template, Some(script), &Default::default());
-        assert_eq!(
-            result
-                .code
-                .matches("const __vize_template_instance")
-                .count(),
-            0
-        );
+        assert_eq!(result.code.matches("const $inst").count(), 0);
         assert_owned_read(&result, template, "__ctx");
     }
 }

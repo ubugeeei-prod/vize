@@ -130,14 +130,12 @@ export default {
     );
 
     assert!(
-        !output.code.contains("__vize_template_instance.Bare"),
+        !output.code.contains("$inst.Bare"),
         "a script-declared namespace must not be checked against the public instance:\n{}",
         output.code
     );
     assert!(
-        output
-            .code
-            .contains("__vize_template_instance.missingThing"),
+        output.code.contains("$inst.missingThing"),
         "a name the script never declares still resolves on the public instance:\n{}",
         output.code
     );
@@ -171,14 +169,12 @@ export default {
     );
 
     assert!(
-        !output.code.contains("__vize_template_instance.icon"),
+        !output.code.contains("$inst.icon"),
         "a name a TSX script declares must not be checked against the public instance:\n{}",
         output.code
     );
     assert!(
-        output
-            .code
-            .contains("__vize_template_instance.missingThing"),
+        output.code.contains("$inst.missingThing"),
         "a name the script never declares still resolves on the public instance:\n{}",
         output.code
     );
@@ -212,7 +208,7 @@ export default {
     );
 
     assert!(
-        !output.code.contains("__vize_template_instance"),
+        !output.code.contains("$inst"),
         "an unparseable script must keep the public-instance form off:\n{}",
         output.code
     );
@@ -256,7 +252,7 @@ fn test_options_api_script_setup_next_to_plain_script_disables_the_instance_form
     );
 
     assert!(
-        !output.code.contains("__vize_template_instance"),
+        !output.code.contains("$inst"),
         "a `<script setup>` block must keep the public-instance form off:\n{}",
         output.code
     );
@@ -344,9 +340,7 @@ fn test_options_api_configured_globals_are_not_redeclared_by_the_instance_form()
     );
 
     assert!(
-        !output
-            .code
-            .contains("__vize_template_instance.toThousandFilter"),
+        !output.code.contains("$inst.toThousandFilter"),
         "a configured template global must not be checked against the public instance:\n{}",
         output.code
     );
@@ -357,7 +351,7 @@ fn test_options_api_configured_globals_are_not_redeclared_by_the_instance_form()
     );
 }
 
-/// A reserved prop name (`as`) is read through `__vize_options_instance` in
+/// A reserved prop name (`as`) is read through `$this` in
 /// template expressions, but a `<component :is="as">` references the binding
 /// as a component: `typeof _as`, the safe spelling the `<script setup>`
 /// projection declares for the same prop. The Options API projection declares
@@ -395,7 +389,7 @@ export default defineComponent({
         // the safe local a component reference reads
         "  const _as: $OptionsBinding<typeof __default__, \"as\"> = (void 0) as any; void _as;",
         // template expressions keep reading the reserved prop through the instance
-        "  void __vize_options_instance[\"as\"];",
+        "  void $this[\"as\"];",
         // the dynamic component resolves the local
         "  type __as_Component_0 = typeof _as;",
     ] {

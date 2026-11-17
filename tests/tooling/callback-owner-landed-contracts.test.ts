@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
+import { beforeGeneratedNames } from "../../tools/support/compat/content-mapper/generated-names-transition.ts";
 import {
   certifiedHelperImages,
   navigationBlock,
@@ -179,7 +180,10 @@ test("verbatim setup lines (#12481) land as two-byte deletions inside the setup 
 });
 
 test("#12622: a gate block gaining the closed-SFC route is one certified edit", () => {
-  const current = readFileSync(new URL(`../../${closedEmitGatePath}`, import.meta.url), "utf8");
+  const current = beforeGeneratedNames(
+    closedEmitGatePath,
+    readFileSync(new URL(`../../${closedEmitGatePath}`, import.meta.url), "utf8"),
+  );
   const previous = beforeClosedEmitFactory(closedEmitGatePath, current);
   for (const hoisted of [false, true]) {
     const old = renderedGateBlock(previous, hoisted);

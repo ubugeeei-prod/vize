@@ -39,7 +39,7 @@ fn opaque_props_have_mapped_checks_for_every_bare_template_occurrence() {
                     let rest = output.code.get(mapping.gen_range.end..)?;
                     let line_end = mapping.gen_range.end + rest.find('\n').unwrap_or(rest.len());
                     let statement = output.code.get(line_start..line_end)?;
-                    if statement != "  void (__vize_keyed_template_context.titel);" {
+                    if statement != "  void ($keyedCtx.titel);" {
                         return None;
                     }
                     Some((

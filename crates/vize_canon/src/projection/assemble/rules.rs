@@ -1,6 +1,7 @@
 //! Reportability and placement rules of the assembly pass.
 
 use std::ops::Range;
+use vize_l0::ts_emit::generated_name::SRC_DEFAULT;
 
 use vize_atelier_sfc::{SfcDescriptor, SfcParseOptions, parse_sfc};
 use vize_carton::{String, cstr};
@@ -48,7 +49,7 @@ fn is_unused_declaration(message: &str) -> bool {
         && (message.contains("never read") || message.contains("never used"))
 }
 
-/// Generated helper bindings (`__vize_*`) and the template's implicit
+/// Generated helper bindings (`$name`) and the template's implicit
 /// instance members are never authored declarations.
 fn names_generated_binding(message: &str) -> bool {
     [
@@ -61,7 +62,7 @@ fn names_generated_binding(message: &str) -> bool {
 /// `TS5097` about an import specifier owned by Canon's generated project.
 ///
 /// This covers both rewritten `.vue.ts`/`.vue.tsx` routes and the synthesized
-/// `__vize_src` import used to load an external SFC script block. Authored
+/// `$src` import used to load an external SFC script block. Authored
 /// `.ts` imports must continue to report the diagnostic.
 pub(super) fn is_generated_project_import_extension<P>(
     generated: &str,
@@ -91,8 +92,12 @@ pub fn is_generated_project_import_extension_at(
     };
     has_extension(specifier, &[".vue.ts", ".vue.tsx"])
         || (has_extension(specifier, &[".ts", ".tsx", ".mts", ".cts"])
-            && import_statement_at(generated, start, end)
-                .is_some_and(|statement| statement.contains("import __vize_src from")))
+            && import_statement_at(generated, start, end).is_some_and(|statement| {
+                statement
+                    .strip_prefix("import ")
+                    .and_then(|rest| rest.split_once(" from"))
+                    .is_some_and(|(name, _)| SRC_DEFAULT.is(name))
+            }))
 }
 
 fn import_statement_at(source: &str, start: usize, end: usize) -> Option<&str> {
@@ -235,7 +240,7 @@ mod import_extension_tests {
 
     #[test]
     fn generated_external_script_route_is_found_from_its_internal_binding() {
-        let source = "import __vize_src from './component.jsx.ts';\nexport default __vize_src;\n";
+        let source = "import $src from './component.jsx.ts';\nexport default $src;\n";
         assert!(is_generated_project_import_extension(
             source,
             &diagnostic(source, "'./component.jsx.ts'")

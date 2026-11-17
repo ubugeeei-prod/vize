@@ -200,10 +200,7 @@ fn editor_documents_retain_diagnostic_only_inference_owners_through_jsx_prefixes
         )
         .unwrap();
         assert_eq!(document.source_type.is_jsx(), language == "tsx");
-        let inference = document
-            .pre_rewrite_code
-            .find("const __vize_emit_props_")
-            .unwrap();
+        let inference = document.pre_rewrite_code.find("const $emitProps").unwrap();
         let suffix = document.pre_rewrite_code.get(inference..).unwrap();
         let key = inference + suffix.find("\"hidden\"").unwrap();
         let value = inference + suffix.find("'wrong'").unwrap();
@@ -235,7 +232,7 @@ fn editor_documents_retain_diagnostic_only_inference_owners_through_jsx_prefixes
         let mapper =
             crate::batch::generate_vue_content_mapper_transform(Path::new("App.vue"), &source)
                 .unwrap();
-        let inference = mapper.text.find("const __vize_emit_props_").unwrap();
+        let inference = mapper.text.find("const $emitProps").unwrap();
         let suffix = mapper.text.get(inference..).unwrap();
         for offset in [
             inference + suffix.find("\"hidden\"").unwrap() + 1,

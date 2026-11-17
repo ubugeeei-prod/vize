@@ -21,7 +21,21 @@ pub(super) fn source_offset_to_virtual_generated_offset(
     virtual_result: &VirtualTsResult,
     source_offset: usize,
 ) -> Option<usize> {
-    let mapping = mapping_for_source_offset(&virtual_result.source_mappings, source_offset)?;
+    // A generated identifier (a handler or prop-check anchor) carries
+    // diagnostics for the authored span; any other row owns its navigation.
+    let anchor = |range: &std::ops::Range<usize>| {
+        let generated = |offset: usize| {
+            virtual_result
+                .import_source_map
+                .get_virtual_offset(offset as u32) as usize
+        };
+        virtual_result
+            .code
+            .get(generated(range.start)..generated(range.end))
+            .is_some_and(vize_l0::ts_emit::generated_name::is_generated)
+    };
+    let mapping =
+        ranked_mapping_for_source_offset(&virtual_result.source_mappings, source_offset, anchor)?;
     let generated_pre_rewrite = map_source_offset_to_generated(mapping, source_offset);
     Some(
         virtual_result
@@ -105,9 +119,18 @@ pub(super) fn materialized_source_offset_to_generated_offset(
 #[cfg(test)]
 mod component_tag_tests;
 
+#[cfg(test)]
 fn mapping_for_source_offset(
     mappings: &[vize_canon::virtual_ts::VizeMapping],
     offset: usize,
+) -> Option<&vize_canon::virtual_ts::VizeMapping> {
+    ranked_mapping_for_source_offset(mappings, offset, |_| false)
+}
+
+fn ranked_mapping_for_source_offset(
+    mappings: &[vize_canon::virtual_ts::VizeMapping],
+    offset: usize,
+    anchor: impl Fn(&std::ops::Range<usize>) -> bool,
 ) -> Option<&vize_canon::virtual_ts::VizeMapping> {
     mappings
         .iter()
@@ -119,13 +142,18 @@ fn mapping_for_source_offset(
                     .any(|span| offset >= span.src_range.start && offset <= span.src_range.end)
         })
         .min_by_key(|mapping| {
-            mapping
+            let (source, generated, range) = mapping
                 .sub_spans
                 .iter()
                 .filter(|span| offset >= span.src_range.start && offset <= span.src_range.end)
-                .map(|span| (span.src_range.len(), span.gen_range.len()))
-                .min()
-                .unwrap_or_else(|| (mapping.src_range.len(), mapping.gen_range.len()))
+                .map(|span| (span.src_range.len(), span.gen_range.len(), &span.gen_range))
+                .min_by_key(|&(source, generated, _)| (source, generated))
+                .unwrap_or((
+                    mapping.src_range.len(),
+                    mapping.gen_range.len(),
+                    &mapping.gen_range,
+                ));
+            (source, anchor(range), generated)
         })
 }
 
@@ -291,6 +319,42 @@ mod tests {
             assert_eq!(map_source_offset_to_generated(mapping, 32), 151);
         }
     }
+
+    #[test]
+    fn a_short_generated_anchor_never_outranks_the_navigation_row() {
+        // `@update:saveItem` maps to its navigation key and to the handler
+        // anchor; the anchor is shorter, but it only carries diagnostics.
+        let code = "void $modelNav2['update:saveItem'];\nconst $handler9_115 = h;\n";
+        let navigation = code.find("update:").unwrap();
+        let handler = code.find("$handler").unwrap();
+        let mappings = [
+            VizeMapping {
+                gen_range: navigation..navigation + 15,
+                src_range: 30..45,
+                sub_spans: vec![],
+            },
+            // The handler statement row names the event through its anchor.
+            VizeMapping {
+                gen_range: handler - 6..code.len(),
+                src_range: 0..60,
+                sub_spans: vec![VizeSubSpan {
+                    gen_range: handler..handler + 13,
+                    src_range: 30..45,
+                }],
+            },
+        ];
+        let anchor = |range: &std::ops::Range<usize>| {
+            code.get(range.clone())
+                .is_some_and(vize_l0::ts_emit::generated_name::is_generated)
+        };
+        for order in [[0, 1], [1, 0]] {
+            let ordered = order.map(|index| mappings[index].clone());
+            let mapping = super::ranked_mapping_for_source_offset(&ordered, 32, anchor)
+                .expect("navigation row");
+            assert_eq!(map_source_offset_to_generated(mapping, 32), navigation + 2);
+        }
+    }
+
     #[test]
     fn public_declaration_keeps_exported_and_setup_native_identities() {
         use crate::ide::DiagnosticService;

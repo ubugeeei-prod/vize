@@ -164,12 +164,12 @@ const emit = defineEmits<Emits>()
   const disabled = props["disabled"];
   void disabled;
 
-  const __vize_native_key_53: Partial<$NativeElement<"button">> = { "disabled": undefined as never };
-  void __vize_native_key_53;
+  const $nativeKey53: Partial<$NativeElement<"button">> = { "disabled": undefined as never };
+  void $nativeKey53;
   void (props.title); // Interpolation
   // @vize-map: expr -> 276:287
-  const __vize_native_prop_check_63: $NativeElementProp<$NativeElement<"button">, "disabled"> = (props.disabled);
-  void __vize_native_prop_check_63; // VBind
+  const $nativeProp63: $NativeElementProp<$NativeElement<"button">, "disabled"> = (props.disabled);
+  void $nativeProp63; // VBind
 
   // @click handler
   void (() => {

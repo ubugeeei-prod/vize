@@ -1,5 +1,6 @@
 use vize_carton::{CompactString, FxHashMap, FxHashSet, String, append, camelize, capitalize};
 use vize_croquis::{Croquis, ScopeData};
+use vize_l0::ts_emit::generated_name::GLOBAL_COMPONENT;
 
 use crate::virtual_ts::component_reference::{
     component_reference_alias, contains_compact_name, is_registered_component,
@@ -206,14 +207,14 @@ impl<'a> GlobalComponentPlan<'a> {
                 let start = ts.len();
                 crate::virtual_ts::helpers::push_ts_string_literal(ts, name);
                 let end = ts.len();
-                append!(*ts, ": __vize_global_component_{index} }} = {{}} as (");
+                append!(*ts, ": {GLOBAL_COMPONENT}{index} }} = {{}} as (");
                 for candidate in registry_keys {
                     crate::virtual_ts::helpers::push_ts_string_literal(ts, candidate);
                     ts.push_str(" extends keyof import('vue').GlobalComponents ? { ");
                     crate::virtual_ts::helpers::push_ts_string_literal(ts, name);
                     ts.push_str(": unknown } : ");
                 }
-                append!(*ts, "{{}});\nvoid __vize_global_component_{index};\n");
+                append!(*ts, "{{}});\nvoid {GLOBAL_COMPONENT}{index};\n");
                 let source_start = (diagnostics.template_offset + usage.start + 1) as usize;
                 diagnostics.mappings.push(VizeMapping {
                     gen_range: start..end,

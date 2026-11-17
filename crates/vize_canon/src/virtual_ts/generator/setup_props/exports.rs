@@ -1,6 +1,7 @@
 use super::{OptionsApiPropsSource, SetupPropsPlan, append_default_props};
 use crate::virtual_ts::generated_names as names;
 use vize_carton::{append, cstr};
+use vize_l0::ts_emit::generated_name::{OPTIONS_PROPS, SETUP_PROPS};
 
 impl SetupPropsPlan {
     pub(in crate::virtual_ts::generator) fn emit_module_export(
@@ -25,7 +26,7 @@ impl SetupPropsPlan {
                 names::export_type("Props")
             };
             let setup = names::setup_return(&arguments);
-            append!(*ts, "{head}{declaration} = {setup}[\"__vize_setup_props\"]");
+            append!(*ts, "{head}{declaration} = {setup}[\"{SETUP_PROPS}\"]");
             forwarded_roots.push_props_tail(ts, &setup);
             ts.push_str(";\n");
             if !self.module_scope_declares_props {
@@ -46,7 +47,7 @@ impl SetupPropsPlan {
             let setup = names::setup_return("");
             append!(
                 *ts,
-                "{head} = $OptionsPropShape<{setup}[\"__vize_options_props\"]>"
+                "{head} = $OptionsPropShape<{setup}[\"{OPTIONS_PROPS}\"]>"
             );
             append_default_props(ts, source);
             ts.push_str(";\n");

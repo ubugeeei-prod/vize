@@ -1,7 +1,8 @@
 use vize_l0::String as CompactString;
+use vize_l0::ts_emit::generated_name::{PROP_CHECK, PUBLIC_INSTANCE};
 
 pub(super) fn is_synthetic_content_mapper_identifier(text: &str) -> bool {
-    text.starts_with("__vize_prop_check_")
+    PROP_CHECK.is_member(text)
 }
 
 /// Property navigation (`foo-bar` → `fooBar`) is an alias. A shorthand value
@@ -16,7 +17,9 @@ pub(super) fn span_kind(
     let binding = generated_file
         .get(..generated_range.start)
         .is_some_and(|prefix| {
-            prefix.ends_with("__vize_public_instance.")
+            prefix
+                .strip_suffix('.')
+                .is_some_and(|head| PUBLIC_INSTANCE.ends(head))
                 || prefix.ends_with("void (")
                 || prefix.ends_with("= (")
         });

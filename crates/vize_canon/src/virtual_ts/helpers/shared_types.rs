@@ -20,7 +20,7 @@ impl SharedTypeRef {
 }
 
 macro_rules! shared_type_refs {
-    ($($name:ident => ($embedded:literal, $exported:literal)),+ $(,)?) => {
+    ($($name:ident => ($embedded:expr, $exported:literal)),+ $(,)?) => {
         /// Public SDK exports consumed by native shared virtual modules.
         pub const SHARED_VIRTUAL_TYPE_EXPORTS: &[&str] = &[$($exported),+];
         $(
@@ -78,10 +78,10 @@ shared_type_refs! {
     LISTENER_ARGS => ("$ListenerArgs", "$ListenerArgs"),
     LISTENER_CONTRACT => ("$ListenerContract", "$ListenerContract"),
     EMIT_PROPS_FACTORY => ("$EmitPropsFactory", "$EmitPropsFactory"),
-    CLOSED_EMIT => ("__vize_emit_closed", "$ClosedEmit"),
-    CLOSED_EMIT_FACTORY => ("__vize_emit_closed_factory", "$ClosedEmitFactory"),
-    EMIT_GATE_RESOLVER => ("__vize_emit_resolver", "$EmitGateResolver"),
-    EMIT_GATE_INPUT => ("__vize_emit_input", "$EmitGateInput"),
+    CLOSED_EMIT => (vize_l0::generated_name!(EMIT_CLOSED_TYPE), "$ClosedEmit"),
+    CLOSED_EMIT_FACTORY => (vize_l0::generated_name!(EMIT_CLOSED_FACTORY_TYPE), "$ClosedEmitFactory"),
+    EMIT_GATE_RESOLVER => (vize_l0::generated_name!(EMIT_RESOLVER_TYPE), "$EmitGateResolver"),
+    EMIT_GATE_INPUT => (vize_l0::generated_name!(EMIT_INPUT_TYPE), "$EmitGateInput"),
     EMIT_PROPS => ("__EmitProps", "__EmitProps"),
     TEMPLATE_REF_UNWRAP => ("__U", "$TemplateRefUnwrap"),
     TEMPLATE_REF_UNWRAP_NARROWED => ("__UN", "$TemplateRefUnwrapNarrowed"),

@@ -23,12 +23,9 @@ fn actual_root_checks_keep_creation_between_earlier_and_later_render_mutations()
                     );
                     let generated = result.virtual_ts.as_deref().expect("a complete projection");
                     let owner = generated
-                        .find("const __vize_prop_check_0_pick:")
+                        .find("const $prop0_pick:")
                         .expect("one canonical callback owner");
-                    assert_eq!(
-                        generated.matches("const __vize_prop_check_0_pick:").count(),
-                        1
-                    );
+                    assert_eq!(generated.matches("const $prop0_pick:").count(), 1);
                     assert!(
                         generated
                             .find("void (state.value = 2)")
@@ -48,8 +45,7 @@ fn actual_root_checks_keep_creation_between_earlier_and_later_render_mutations()
                             generated
                                 .get(mapping.gen_range.clone())
                                 .is_some_and(|text| {
-                                    text.trim_start()
-                                        .starts_with("const __vize_prop_check_0_pick:")
+                                    text.trim_start().starts_with("const $prop0_pick:")
                                 })
                         })
                         .expect("the moved owner retains its complete authored mapping");
@@ -83,9 +79,7 @@ fn earlier_vif_chains_keep_their_scope_and_unsupported_owners_keep_the_old_phase
             &SfcTypeCheckOptions::new("src/Min.vue").with_virtual_ts(),
         );
         let generated = result.virtual_ts.as_deref().expect("complete projection");
-        let owner = generated
-            .find("const __vize_prop_check_0_pick:")
-            .expect("root owner");
+        let owner = generated.find("const $prop0_pick:").expect("root owner");
         assert!(generated.find("state.value = 3").expect("else branch") < owner);
         assert!(
             owner
@@ -111,7 +105,7 @@ fn earlier_vif_chains_keep_their_scope_and_unsupported_owners_keep_the_old_phase
                 .as_deref()
                 .expect("complete recovery projection");
             let owner = generated
-                .find("const __vize_prop_check_0_pick:")
+                .find("const $prop0_pick:")
                 .expect("unsupported checks remain visible");
             assert!(
                 owner
@@ -138,14 +132,14 @@ fn effectful_opening_tags_and_prior_deferred_scopes_keep_their_complete_old_phas
             "({ [state.value]: true })",
         ] {
             let source = cstr!("<!-- 日本 🧭 -->{SCRIPT}<template><Comp :other=\"{value}\" :pick=\"{callback}\" @save=\"noop\" /><div>{{{{ delete state.value }}}}</div></template>").replace('\n', newline);
-            assert_late_owner(&source, "const __vize_prop_check_0_pick:");
+            assert_late_owner(&source, "const $prop0_pick:");
         }
         for opening in [
             "@[delete(state.value)]=\"noop\"",
             "v-on=\"(delete state.value, {})\"",
         ] {
             let source = cstr!("<!-- 日本 🧭 -->{SCRIPT}<template><Comp {opening} :pick=\"{callback}\" /><div>{{{{ delete state.value }}}}</div></template>").replace('\n', newline);
-            assert_late_owner(&source, "const __vize_prop_check_0_pick:");
+            assert_late_owner(&source, "const $prop0_pick:");
         }
         for prefix in [
             "<div v-for=\"entry in [state]\">{{ delete entry.value }}</div>",
@@ -154,9 +148,9 @@ fn effectful_opening_tags_and_prior_deferred_scopes_keep_their_complete_old_phas
         ] {
             let source = cstr!("<!-- 日本 🧭 -->{SCRIPT}<template>{prefix}<Comp :pick=\"{callback}\" @save=\"noop\" /><div>{{{{ delete state.value }}}}</div></template>").replace('\n', newline);
             let owner = if prefix.starts_with("<section>") {
-                "const __vize_prop_check_1_pick:"
+                "const $prop1_pick:"
             } else {
-                "const __vize_prop_check_0_pick:"
+                "const $prop0_pick:"
             };
             assert_late_owner(&source, owner);
         }

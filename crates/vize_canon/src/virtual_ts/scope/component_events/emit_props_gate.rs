@@ -7,7 +7,7 @@
 //! argument, or `{}`. Generic resolvers and unmarked constructors can retain
 //! type parameters until the props call. Those routes keep the original factory.
 //! For the remaining components the second call's result is the factory's return type, so
-//! `__vize_emit_input` checks the literal against `any`. The authored literal is
+//! `$EmitGate` checks the literal against `any`. The authored literal is
 //! still emitted because the type level, not the generator, picks the route.
 //!
 //! The result is equal only where the component type is closed: a deferred
@@ -22,9 +22,10 @@
 
 use vize_carton::append;
 use vize_croquis::{Croquis, ScopeData};
+use vize_l0::ts_emit::generated_name::EMIT_FACTORY;
 
 /// `{emit_props_factory}` is the shared `$EmitPropsFactory` reference.
-/// `__vize_emit_input` mirrors that factory's branches: `true` marks a route
+/// `$EmitGate` mirrors that factory's branches: `true` marks a route
 /// that reads the props, `false` one that does not. A union call combines its
 /// members' returns with subtype reduction, which no type alias can spell, so
 /// the cheap call also requires every member to return the identical type.
@@ -36,18 +37,38 @@ use vize_croquis::{Croquis, ScopeData};
 /// and its return never reads `A`. For one member (identical to the whole
 /// type, so no union), `$UnionEmit<C>` is that `E`, and `{closed_factory}<E>`,
 /// `(component: unknown) => (props: any) => __EmitProps<E>`, is the same
-/// factory minus its props input. `__vize_emit_input` then returns that call
+/// factory minus its props input. `$EmitGate` then returns that call
 /// unchanged: its own branches would make the same `(props: any) => R` of it,
 /// and the full factory's single signature returns the same `R` where they
 /// would not. Unions, `any`, `never`, generic resolvers, unmarked
 /// constructors and an `$emit` of `never` keep the full factory and the full
 /// gate.
-const GATE_ALIASES: &str = "type __vize_emit_native_input<C> = C extends new (...args: any[]) => any ? C extends { readonly __vizeComponentMarker: true } ? false : true : false;\n{closed_aliases}type __vize_emit_resolver<L, C> = [L] extends [true] ? (component: C) => C : {closed}<C> extends [infer E] ? {closed_factory}<E> : {emit_props_factory}<C>;\ntype __vize_emit_input<L, C, F, R = F extends (...args: any) => infer T ? T : any, U = R> = [L] extends [true] ? F : {closed}<C> extends [unknown] ? F : true extends (0 extends (1 & C) ? false : C extends { __vizeResolveEmitProps?: infer X } ? X extends (...args: any[]) => any ? true : __vize_emit_native_input<C> : C extends { __vizeResolveProps?: infer X } ? X extends (...args: any[]) => any ? true : __vize_emit_native_input<C> : __vize_emit_native_input<C>) ? F : [R] extends [never] ? F : [R extends unknown ? (<G>() => G extends R ? 1 : 2) extends <G>() => G extends U ? 1 : 2 ? true : false : false] extends [true] ? (props: any) => R : F;\n";
+const GATE_ALIASES: &str = concat!(
+    "type ",
+    vize_l0::generated_name!(EMIT_NATIVE_INPUT_TYPE),
+    "<C> = C extends new (...args: any[]) => any ? C extends { readonly __vizeComponentMarker: true } ? false : true : false;\n{closed_aliases}type ",
+    vize_l0::generated_name!(EMIT_RESOLVER_TYPE),
+    "<L, C> = [L] extends [true] ? (component: C) => C : {closed}<C> extends [infer E] ? {closed_factory}<E> : {emit_props_factory}<C>;\ntype ",
+    vize_l0::generated_name!(EMIT_INPUT_TYPE),
+    "<L, C, F, R = F extends (...args: any) => infer T ? T : any, U = R> = [L] extends [true] ? F : {closed}<C> extends [unknown] ? F : true extends (0 extends (1 & C) ? false : C extends { __vizeResolveEmitProps?: infer X } ? X extends (...args: any[]) => any ? true : ",
+    vize_l0::generated_name!(EMIT_NATIVE_INPUT_TYPE),
+    "<C> : C extends { __vizeResolveProps?: infer X } ? X extends (...args: any[]) => any ? true : ",
+    vize_l0::generated_name!(EMIT_NATIVE_INPUT_TYPE),
+    "<C> : ",
+    vize_l0::generated_name!(EMIT_NATIVE_INPUT_TYPE),
+    "<C>) ? F : [R] extends [never] ? F : [R extends unknown ? (<G>() => G extends R ? 1 : 2) extends <G>() => G extends U ? 1 : 2 ? true : false : false] extends [true] ? (props: any) => R : F;\n"
+);
 
 /// A hoisted module names the shared `$ClosedEmit`/`$ClosedEmitFactory`,
 /// instantiated once per component (and per `$emit`) for the whole program. A
 /// standalone module declares the same two aliases itself.
-const CLOSED_EMIT_ALIASES: &str = "type __vize_emit_closed<C, A = C> = [C] extends [never] ? false : 0 extends (1 & C) ? false : [C extends { readonly __vizeComponentMarker: true } ? (<G>() => G extends C ? 1 : 2) extends <G>() => G extends A ? 1 : 2 ? C extends { __vizeResolveEmitProps?: infer X } ? X extends (...args: any[]) => any ? false : true : C extends { __vizeResolveProps?: infer X } ? X extends (...args: any[]) => any ? false : true : true : false : false] extends [true] ? [C extends new (...args: any[]) => { $emit: infer E } ? E : never] extends [infer E] ? [E] extends [never] ? false : [E] : false : false;\ntype __vize_emit_closed_factory<E> = (component: unknown) => (props: any) => __EmitProps<E>;\n";
+const CLOSED_EMIT_ALIASES: &str = concat!(
+    "type ",
+    vize_l0::generated_name!(EMIT_CLOSED_TYPE),
+    "<C, A = C> = [C] extends [never] ? false : 0 extends (1 & C) ? false : [C extends { readonly __vizeComponentMarker: true } ? (<G>() => G extends C ? 1 : 2) extends <G>() => G extends A ? 1 : 2 ? C extends { __vizeResolveEmitProps?: infer X } ? X extends (...args: any[]) => any ? false : true : C extends { __vizeResolveProps?: infer X } ? X extends (...args: any[]) => any ? false : true : true : false : false] extends [true] ? [C extends new (...args: any[]) => { $emit: infer E } ? E : never] extends [infer E] ? [E] extends [never] ? false : [E] : false : false;\ntype ",
+    vize_l0::generated_name!(EMIT_CLOSED_FACTORY_TYPE),
+    "<E> = (component: unknown) => (props: any) => __EmitProps<E>;\n"
+);
 
 /// Declares the gate aliases once per module that can reach a gated call. A
 /// hoisted module names the shared `$EmitGateResolver`/`$EmitGateInput`
@@ -144,7 +165,7 @@ pub(super) fn append_gated_call(
     let (resolver, input) = gate_names(hoisted);
     append!(
         *ts,
-        "{indent}const __vize_emit_factory_{usage_idx} = (undefined as unknown as {resolver}<{library}, typeof {component_ref}>)({component_ref}); const {emit_props} = (undefined as unknown as {input}<{library}, typeof {component_ref}, typeof __vize_emit_factory_{usage_idx}>)(",
+        "{indent}const {EMIT_FACTORY}{usage_idx} = (undefined as unknown as {resolver}<{library}, typeof {component_ref}>)({component_ref}); const {emit_props} = (undefined as unknown as {input}<{library}, typeof {component_ref}, typeof {EMIT_FACTORY}{usage_idx}>)(",
     );
 }
 
@@ -160,7 +181,7 @@ pub(super) fn append_guarded_factory(
     let (resolver, _) = gate_names(hoisted);
     append!(
         *ts,
-        "{indent}// @ts-ignore Inference-only factory; called before the guard below.\n{indent}const __vize_emit_factory_{usage_idx} = (undefined as unknown as {resolver}<{library}, typeof {component_ref}>)({component_ref});\n",
+        "{indent}// @ts-ignore Inference-only factory; called before the guard below.\n{indent}const {EMIT_FACTORY}{usage_idx} = (undefined as unknown as {resolver}<{library}, typeof {component_ref}>)({component_ref});\n",
     );
 }
 
@@ -176,7 +197,7 @@ pub(super) fn append_guarded_input(
     let (_, input) = gate_names(hoisted);
     append!(
         *ts,
-        "{indent}if ({guard}) return (undefined as unknown as {input}<{library}, typeof {component_ref}, typeof __vize_emit_factory_{usage_idx}>)(",
+        "{indent}if ({guard}) return (undefined as unknown as {input}<{library}, typeof {component_ref}, typeof {EMIT_FACTORY}{usage_idx}>)(",
     );
 }
 

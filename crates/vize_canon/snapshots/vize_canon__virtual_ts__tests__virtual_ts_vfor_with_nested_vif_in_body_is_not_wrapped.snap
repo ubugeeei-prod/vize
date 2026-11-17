@@ -144,16 +144,16 @@ const show = true;
     const $emit = __ctx.$emit;
     void __ctx; void $attrs; void $slots; void $refs; void $emit;
 
-  const __vize_native_key_34: Partial<$NativeElement<"li">> = { "key": undefined as never };
-  void __vize_native_key_34;
+  const $nativeKey34: Partial<$NativeElement<"li">> = { "key": undefined as never };
+  void $nativeKey34;
 
   // v-for scope: item in items
   {
-  const __vize_v_for_source_6 = __vForList(items);
-  for (const [item] of __vize_v_for_source_6) {
+  const $forSource6 = __vForList(items);
+  for (const [item] of $forSource6) {
     void item;
-    const __vize_native_prop_check_39: $NativeElementProp<$NativeElement<"li">, "key"> = (item);
-    void __vize_native_prop_check_39; // VBind
+    const $nativeProp39: $NativeElementProp<$NativeElement<"li">, "key"> = (item);
+    void $nativeProp39; // VBind
     if ((show)) {
       // @vize-map: expr -> 62:66
       void (item); // Interpolation

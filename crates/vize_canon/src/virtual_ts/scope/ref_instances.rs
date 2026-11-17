@@ -14,6 +14,7 @@
 use vize_carton::{CompactString, FxHashMap, FxHashSet, String, append, cstr};
 use vize_croquis::{Croquis, Scope, ScopeKind, analysis::ComponentUsage};
 use vize_l0::ts;
+use vize_l0::ts_emit::generated_name::TEMPLATE_REF;
 
 use crate::virtual_ts::{
     component_reference::resolved_component_binding_reference,
@@ -138,7 +139,7 @@ fn emit_probe(
     component: &str,
     loops: &[&Scope],
 ) -> String {
-    let name = cstr!("__vize_ref_{}", usage.start);
+    let name = cstr!("{TEMPLATE_REF}{}", usage.start);
     append!(*ts, "\n  // Ref instance of <{}>\n", usage.name);
     let mut indent = String::from("  ");
     emit_ref_loops(

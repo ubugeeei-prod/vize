@@ -219,18 +219,15 @@ mod tests {
     #[test]
     fn constructor_pair_names_skip_all_authored_binding_collisions() {
         let mut scopes = ScopeChain::new();
-        for name in [
-            "__vize_slot_host_9_instances",
-            "__vize_slot_host_9_instances_1",
-        ] {
+        for name in ["$slotHost9_instances", "$slotHost9_instances_1"] {
             scopes.add_binding(
                 CompactString::new(name),
                 ScopeBinding::new(BindingType::SetupConst, 0),
             );
         }
         assert_eq!(
-            instance_pair_name("__vize_slot_host_9", &scopes),
-            "__vize_slot_host_9_instances_2",
+            instance_pair_name("$slotHost9", &scopes),
+            "$slotHost9_instances_2",
         );
     }
 }

@@ -317,7 +317,7 @@ fn comment_stripped_probe(
 /// assertion has no useful symbol type even when the iterable is fully typed.
 pub(super) fn v_for_source_binding_offset(generated: &str, expression_offset: u32) -> Option<u32> {
     let offset = usize::min(expression_offset as usize, generated.len().checked_sub(1)?);
-    let marker = "const __vize_v_for_source_";
+    let marker = concat!("const ", vize_l0::generated_name!(V_FOR_SOURCE));
     let before_expression = generated.get(..=offset)?;
     for (marker_start, _) in before_expression.rmatch_indices(marker) {
         let line_start = generated

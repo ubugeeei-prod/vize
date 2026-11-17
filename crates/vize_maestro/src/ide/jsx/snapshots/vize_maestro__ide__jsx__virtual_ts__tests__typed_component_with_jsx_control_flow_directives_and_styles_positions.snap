@@ -9,7 +9,7 @@ expression: "virtual_positions_for_markers(source, &generated,\n&[\"items.map\",
         source: "items.map",
         position: (
             14,
-            33,
+            20,
         ),
     },
     VirtualPosition {
@@ -18,7 +18,7 @@ expression: "virtual_positions_for_markers(source, &generated,\n&[\"items.map\",
         source: "tone} v-show",
         position: (
             14,
-            22,
+            9,
         ),
     },
     VirtualPosition {
@@ -27,7 +27,7 @@ expression: "virtual_positions_for_markers(source, &generated,\n&[\"items.map\",
         source: "ok}>",
         position: (
             14,
-            28,
+            15,
         ),
     },
     VirtualPosition {
@@ -45,7 +45,7 @@ expression: "virtual_positions_for_markers(source, &generated,\n&[\"items.map\",
         source: "emit('select', item.id)",
         position: (
             14,
-            94,
+            68,
         ),
     },
     VirtualPosition {
@@ -54,7 +54,7 @@ expression: "virtual_positions_for_markers(source, &generated,\n&[\"items.map\",
         source: "item.label",
         position: (
             14,
-            126,
+            100,
         ),
     },
     VirtualPosition {
@@ -63,7 +63,7 @@ expression: "virtual_positions_for_markers(source, &generated,\n&[\"items.map\",
         source: "selected.value === item.id",
         position: (
             14,
-            138,
+            112,
         ),
     },
     VirtualPosition {
@@ -72,7 +72,7 @@ expression: "virtual_positions_for_markers(source, &generated,\n&[\"items.map\",
         source: "index",
         position: (
             14,
-            51,
+            38,
         ),
     },
     VirtualPosition {
@@ -81,7 +81,7 @@ expression: "virtual_positions_for_markers(source, &generated,\n&[\"items.map\",
         source: "selected.value} v-focus",
         position: (
             14,
-            176,
+            150,
         ),
     },
     VirtualPosition {
@@ -90,7 +90,7 @@ expression: "virtual_positions_for_markers(source, &generated,\n&[\"items.map\",
         source: "activeItem.value?.label",
         position: (
             14,
-            216,
+            190,
         ),
     },
     VirtualPosition {
@@ -99,7 +99,7 @@ expression: "virtual_positions_for_markers(source, &generated,\n&[\"items.map\",
         source: "slots.footer()",
         position: (
             14,
-            241,
+            215,
         ),
     },
     VirtualPosition {
@@ -108,7 +108,7 @@ expression: "virtual_positions_for_markers(source, &generated,\n&[\"items.map\",
         source: "gap}px",
         position: (
             14,
-            257,
+            231,
         ),
     },
 ]

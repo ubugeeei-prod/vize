@@ -155,10 +155,10 @@ void (null! as $TemplateRefs["btn"]); const buttonEl = __vizeInferRef('btn')
     const $emit = __ctx.$emit;
     void __ctx; void $attrs; void $slots; void $refs; void $emit;
 
-  const __vize_native_key_20: Partial<$NativeElement<"input">> = { "ref": undefined as never };
-  void __vize_native_key_20;
-  const __vize_native_key_50: Partial<$NativeElement<"button">> = { "ref": undefined as never };
-  void __vize_native_key_50;
+  const $nativeKey20: Partial<$NativeElement<"input">> = { "ref": undefined as never };
+  void $nativeKey20;
+  const $nativeKey50: Partial<$NativeElement<"button">> = { "ref": undefined as never };
+  void $nativeKey50;
 
   // Reference setup bindings (used in template/CSS v-bind)
   void buttonEl; void inputRef; void (null as unknown as keyof typeof ref); void (null as unknown as keyof typeof useTemplateRef);

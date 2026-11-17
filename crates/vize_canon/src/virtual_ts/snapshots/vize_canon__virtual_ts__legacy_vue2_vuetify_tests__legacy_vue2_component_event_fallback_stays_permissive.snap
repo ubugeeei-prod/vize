@@ -148,8 +148,8 @@ function updateDate(newDate: string) {
     const $emit = __ctx.$emit;
     void __ctx; void $attrs; void $slots; void $refs; void $emit;
 
-  const __vize_events_nav_0 = undefined as unknown as $ComponentEvents<typeof VDatePicker> & Record<string, unknown>;
-  void __vize_events_nav_0.input;
+  const $eventsNav0 = undefined as unknown as $ComponentEvents<typeof VDatePicker> & Record<string, unknown>;
+  void $eventsNav0.input;
 
   // @input handler
   type __VDatePicker_8__listener_missing<__P, __Raw extends string | number | symbol> = [__Raw] extends [never] ? unknown[] : __P extends { [__K in __Raw]?: (...args: infer __A) => any } ? __A : unknown[];
@@ -170,10 +170,10 @@ function updateDate(newDate: string) {
   type __VDatePicker_8_input_prop_arrays = __VDatePicker_8__props_members extends infer __B ? __B extends [infer __P] ? $IsAny<__P> extends true ? never : __P extends { onInput?: infer __H } ? Extract<NonNullable<__H>, readonly unknown[]> : never : never : never;
   type __VDatePicker_8_input_listener = unknown[] extends __VDatePicker_8_input_args ? ((...args: any[]) => any) : ((...args: __VDatePicker_8_input_args) => __VDatePicker_8_input_return);
   type __VDatePicker_8_input_handler = unknown[] extends __VDatePicker_8_input_args ? ((...args: any[]) => any) : __VDatePicker_8_input_listener;
-  void ((...__vize_args: Parameters<__VDatePicker_8_input_listener>) => {
-    const __vize_event = (__vize_args as unknown[])[0] as __VDatePicker_8_input_event; void __vize_event;
-    const __vize_handler_8_21: __VDatePicker_8_input_handler | __VDatePicker_8_input_prop_arrays | null | undefined = (updateDate);
-    if (typeof __vize_handler_8_21 === "function") (__vize_handler_8_21 as __VDatePicker_8_input_listener)(...__vize_args);  // handler expression
+  void ((...$args: Parameters<__VDatePicker_8_input_listener>) => {
+    const $evt = ($args as unknown[])[0] as __VDatePicker_8_input_event; void $evt;
+    const $handler8_21: __VDatePicker_8_input_handler | __VDatePicker_8_input_prop_arrays | null | undefined = (updateDate);
+    if (typeof $handler8_21 === "function") ($handler8_21 as __VDatePicker_8_input_listener)(...$args);  // handler expression
     // @vize-map: handler -> 21:31
   });
 
@@ -232,8 +232,8 @@ function updateDate(newDate: string) {
         ...{} as { "onInput": never },
       });
       type $SlotContract_0 = $StructuralSlots<typeof VDatePicker>;
-      const __vize_required_slots_0: $RequiredSlots<$SlotContract_0, {}> = {};
-      void __vize_required_slots_0;
+      const $requiredSlots0: $RequiredSlots<$SlotContract_0, {}> = {};
+      void $requiredSlots0;
     },
   ];
 
@@ -429,8 +429,8 @@ function updateDate(newDate: string) {
     void __ctx; void $attrs; void $slots; void $refs; void $emit;
     void $listeners;void $children;void $scopedSlots;void $on;void $off;void $once;void $set;void $delete;void $createElement;void _c;
 
-  const __vize_events_nav_0 = undefined as unknown as $ComponentEvents<typeof VDatePicker> & Record<string, unknown>;
-  void __vize_events_nav_0.input;
+  const $eventsNav0 = undefined as unknown as $ComponentEvents<typeof VDatePicker> & Record<string, unknown>;
+  void $eventsNav0.input;
 
   // @input handler
   type __VDatePicker_8__listener_missing<__P, __Raw extends string | number | symbol> = [__Raw] extends [never] ? unknown[] : __P extends { [__K in __Raw]?: (...args: infer __A) => any } ? __A : unknown[];
@@ -445,10 +445,10 @@ function updateDate(newDate: string) {
   type __VDatePicker_8_input_event = __VDatePicker_8_input_args extends infer __A extends unknown[] ? [__A] extends [[]] ? any : unknown[] extends __A ? any : $Vue2LooseEventArg<__A[0]> : never;
   type __VDatePicker_8_input_legacy_args = __VDatePicker_8_input_args extends [] ? any[] : unknown[] extends __VDatePicker_8_input_args ? any[] : $Vue2LooseEmitArgs<__VDatePicker_8_input_args>;
   type __VDatePicker_8_input_listener = (...args: __VDatePicker_8_input_legacy_args) => unknown;
-  void ((...__vize_args: Parameters<__VDatePicker_8_input_listener>) => {
-    const __vize_event = (__vize_args as unknown[])[0] as __VDatePicker_8_input_event; void __vize_event;
-    const __vize_handler_8_21: __VDatePicker_8_input_listener | null | undefined = (updateDate);
-    if (__vize_handler_8_21) __vize_handler_8_21(...__vize_args);  // handler expression
+  void ((...$args: Parameters<__VDatePicker_8_input_listener>) => {
+    const $evt = ($args as unknown[])[0] as __VDatePicker_8_input_event; void $evt;
+    const $handler8_21: __VDatePicker_8_input_listener | null | undefined = (updateDate);
+    if ($handler8_21) $handler8_21(...$args);  // handler expression
     // @vize-map: handler -> 21:31
   });
 
@@ -507,8 +507,8 @@ function updateDate(newDate: string) {
         ...{} as { "onInput": never },
       });
       type $SlotContract_0 = $StructuralSlots<typeof VDatePicker>;
-      const __vize_required_slots_0: $RequiredSlots<$SlotContract_0, {}> = {};
-      void __vize_required_slots_0;
+      const $requiredSlots0: $RequiredSlots<$SlotContract_0, {}> = {};
+      void $requiredSlots0;
     },
   ];
 

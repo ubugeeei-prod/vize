@@ -232,7 +232,7 @@ fn infer_default_value_runtime_type(
     default_value: &str,
     expected_runtime_type: &str,
 ) -> Option<&'static str> {
-    const WRAP_PREFIX: &str = "const __vize_default__ = ";
+    const WRAP_PREFIX: &str = concat!("const ", vize_l0::generated_name!(DEFAULT_PROBE), " = ");
     let mut wrapped = String::with_capacity(WRAP_PREFIX.len() + default_value.len() + 1);
     wrapped.push_str(WRAP_PREFIX);
     wrapped.push_str(default_value);

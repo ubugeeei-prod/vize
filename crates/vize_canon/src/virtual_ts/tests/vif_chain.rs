@@ -165,7 +165,7 @@ const aimAtReports: AimAtReport[] = []
     assert!(
         output
             .code
-            .contains("for (const [aimAtReport] of __vize_v_for_source_"),
+            .contains("for (const [aimAtReport] of $forSource"),
         "expected parent v-for to declare aimAtReport before branch guards:\n{}",
         output.code
     );
@@ -207,7 +207,7 @@ fn same_element_v_if_does_not_see_v_for_alias() {
     assert!(
         output
             .code
-            .contains("for (const [attribute, index] of __vize_v_for_source_"),
+            .contains("for (const [attribute, index] of $forSource"),
         "the v-for body should still bind aliases for descendants:\n{}",
         output.code
     );

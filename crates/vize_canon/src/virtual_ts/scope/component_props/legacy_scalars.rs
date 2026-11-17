@@ -2,6 +2,7 @@
 //! Ordinary eligibility, callback emission, and callback owners stay intact.
 use vize_carton::{FxHashMap, FxHashSet, append, camelize, capitalize, cstr};
 use vize_croquis::{ScopeKind, analysis::ComponentUsage};
+use vize_l0::ts_emit::generated_name::{LEGACY_PROP_TYPE, LEGACY_PROPS_TYPE};
 
 use super::super::context::ComponentPropsContext;
 use super::super::inline_callback_classifier::LegacyInlineCallbacks;
@@ -143,7 +144,7 @@ pub(super) fn append_aliases(
     // unknown. No callback/body type or public component declaration changes.
     append!(
         *ts,
-        "  type __vize_legacy_props_{idx}<__C = typeof {reference}> = __C extends abstract new (...__args: infer _Args) => infer __I ? __I extends {{ $props: infer __P }} ? __P : unknown : __C extends (props: infer __P, ...__args: infer _Rest) => unknown ? __P : unknown;\n"
+        "  type {LEGACY_PROPS_TYPE}{idx}<__C = typeof {reference}> = __C extends abstract new (...__args: infer _Args) => infer __I ? __I extends {{ $props: infer __P }} ? __P : unknown : __C extends (props: infer __P, ...__args: infer _Rest) => unknown ? __P : unknown;\n"
     );
     for (index, prop) in usage.props.iter().enumerate() {
         if prop.name_is_dynamic
@@ -164,7 +165,7 @@ pub(super) fn append_aliases(
         // fallback without widening the component's actual public props.
         append!(
             *ts,
-            "  type __vize_legacy_prop_{idx}_{index}<__P = __vize_legacy_props_{idx}, __R = __P extends unknown ? {raw} extends keyof __P ? __P[{raw}] : never : never, __C = __P extends unknown ? {camel} extends keyof __P ? __P[{camel}] : never : never> = [__R] extends [never] ? [__C] extends [never] ? unknown : __C : __R;\n"
+            "  type {LEGACY_PROP_TYPE}{idx}_{index}<__P = {LEGACY_PROPS_TYPE}{idx}, __R = __P extends unknown ? {raw} extends keyof __P ? __P[{raw}] : never : never, __C = __P extends unknown ? {camel} extends keyof __P ? __P[{camel}] : never : never> = [__R] extends [never] ? [__C] extends [never] ? unknown : __C : __R;\n"
         );
     }
 }

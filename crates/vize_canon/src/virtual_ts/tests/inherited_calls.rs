@@ -28,10 +28,10 @@ fn callee(receiver: &str, name: &str) -> vize_carton::String {
 fn direct_optional_generic_and_grouped_calls_retain_affine_property_tokens() {
     let template = "<p :title=\"greet('x')\">{{ greet?.('x') }} {{ identity<number>(1) }} {{ (greet)('x') }} {{ ({ greet, member: holder.greet, text: 'greet' }) }}</p><Child :title=\"/* comment */greet(/* inner */'x')\"/>";
     let output = generate(template, SCRIPT);
-    let receiver = "__vize_template_instance";
+    let receiver = "$inst";
     let early = output
         .code
-        .find("const __vize_template_instance = undefined as unknown as")
+        .find("const $inst = undefined as unknown as")
         .unwrap();
     let first_call = output
         .code
@@ -145,13 +145,12 @@ fn lexical_loop_and_slot_callees_keep_their_own_receiver() {
 }
 #[test]
 fn receiver_hygiene_and_missing_member_guard_keep_distinct_owners() {
-    let template =
-        "<p>{{ (__vize_template_instance => greet('x'))(0) }} {{ missingInherited() }}</p>";
+    let template = "<p>{{ ($inst => greet('x'))(0) }} {{ missingInherited() }}</p>";
     let output = generate(template, SCRIPT);
     assert_eq!(
         output
             .code
-            .matches(callee("__vize_template_instance_", "greet").as_str())
+            .matches(callee("$inst$", "greet").as_str())
             .count(),
         1,
         "{}",
@@ -160,7 +159,7 @@ fn receiver_hygiene_and_missing_member_guard_keep_distinct_owners() {
     assert_eq!(
         output
             .code
-            .matches(callee("__vize_template_instance_", "missingInherited").as_str())
+            .matches(callee("$inst$", "missingInherited").as_str())
             .count(),
         1,
         "{}",
@@ -169,7 +168,7 @@ fn receiver_hygiene_and_missing_member_guard_keep_distinct_owners() {
     assert_eq!(
         output
             .code
-            .matches("void (__vize_template_instance.missingInherited);")
+            .matches("void ($inst$.missingInherited);")
             .count(),
         1,
         "{}",

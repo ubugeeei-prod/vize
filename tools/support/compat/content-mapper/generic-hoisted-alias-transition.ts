@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { beforeLibraryPropsFallthrough } from "./library-props-fallthrough-transition.ts";
+import { beforeGeneratedNames } from "./generated-names-transition.ts";
 
 type Identity = { bytes: number; sha256: string };
 type Hunk = { before: string; after: string };
@@ -34,6 +35,7 @@ const identity = (text: string): Identity => ({
 
 /** The pre-forwarding bytes of a recorded producer; other images pass through. */
 export function beforeGenericHoistedAlias(file: string, current: string): string {
+  current = beforeGeneratedNames(file, current);
   current = beforeLibraryPropsFallthrough(file, current);
   const transition = record.files.find((candidate) => candidate.path === file);
   if (!transition) return current;

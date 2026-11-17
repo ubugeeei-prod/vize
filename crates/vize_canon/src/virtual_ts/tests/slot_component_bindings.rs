@@ -371,9 +371,9 @@ fn empty_v_slot_expression_keeps_the_slot_function_parseable() {
         );
         // An empty expression binds nothing, so nothing reads the payload.
         let function = vize_carton::cstr!(
-            "  void function _slot_content_{scope}(__vize_slot_props_{scope}: unknown) {{"
+            "  void function _slot_content_{scope}($slotProps{scope}: unknown) {{"
         );
-        let parameter = vize_carton::cstr!("    void __vize_slot_props_{scope};");
+        let parameter = vize_carton::cstr!("    void $slotProps{scope};");
         for expected in [function, parameter] {
             assert!(
                 code.lines().any(|line| line == expected.as_str()),

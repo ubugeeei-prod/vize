@@ -134,10 +134,7 @@ export default {
         output.code
     );
     assert_eq!(
-        output
-            .code
-            .matches("extends keyof typeof __vize_template_instance")
-            .count(),
+        output.code.matches("extends keyof typeof $inst").count(),
         0,
         "the instance pass does not declare names for a script with parse diagnostics:\n{}",
         output.code

@@ -50,19 +50,13 @@ export default {
         disabled.text
     );
     assert_eq!(
-        disabled
-            .text
-            .matches("void (__vize_public_instance.count);")
-            .count(),
+        disabled.text.matches("void ($public.count);").count(),
         0,
         "disabled Options API members must not become TS2339 reads:\n{}",
         disabled.text
     );
     assert_eq!(
-        disabled
-            .text
-            .matches("void (__vize_public_instance.missing);")
-            .count(),
+        disabled.text.matches("void ($public.missing);").count(),
         1,
         "unknown names must retain public-instance resolution:\n{}",
         disabled.text

@@ -7,7 +7,8 @@ use crate::template_diagnostic_directives::UNUSED_EXPECT_ERROR_MESSAGE;
 use crate::virtual_ts::{ProjectionMapping, VizeMapping};
 
 const SFC: &str = "<script setup lang=\"ts\">\nconst count = 1\n</script>\n<template><p>{{ missing }}</p></template>\n";
-const GENERATED: &str = "const count = 1\nvoid (missing);\nconst __vize_match_0_unreachable: $Patterns.Reachable<T> = true;\n";
+const GENERATED: &str =
+    "const count = 1\nvoid (missing);\nconst $match0_unreachable: $Patterns.Reachable<T> = true;\n";
 const REPORT_UNUSED: AssemblyPolicy = AssemblyPolicy {
     report_unused: true,
 };
@@ -15,11 +16,11 @@ const REPORT_UNUSED: AssemblyPolicy = AssemblyPolicy {
 fn mapping(source: &str) -> ProjectionMapping {
     let script = source.find("const count").unwrap_or(0);
     let missing = source.find("missing").unwrap_or(0);
-    let assertion = GENERATED.find("__vize_match").unwrap();
+    let assertion = GENERATED.find("$match").unwrap();
     ProjectionMapping::from_spans(vec![
         VizeMapping::new(0..15, script..script + 15),
         VizeMapping::new(22..29, missing..missing + 7),
-        VizeMapping::new(assertion..assertion + 32, missing..missing + 7),
+        VizeMapping::new(assertion..assertion + 25, missing..missing + 7),
     ])
 }
 
@@ -208,8 +209,8 @@ fn reachability_assertions_are_warnings_unless_elaborated_otherwise() {
     let assembled = assemble(
         SFC,
         vec![
-            finished("__vize_match", 2322, exhaustive),
-            finished("__vize_match", 2322, other),
+            finished("$match", 2322, exhaustive),
+            finished("$match", 2322, other),
         ],
         REPORT_UNUSED,
     );

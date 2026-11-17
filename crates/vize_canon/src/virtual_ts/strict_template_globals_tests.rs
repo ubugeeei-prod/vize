@@ -54,9 +54,7 @@ fn test_strict_template_context_does_not_inherit_public_instance_unknowns() {
     );
 
     assert!(
-        output
-            .code
-            .contains("const $t = __vize_strict_template_context.$t;"),
+        output.code.contains("const $t = $strictCtx.$t;"),
         "{}",
         output.code
     );
@@ -92,16 +90,8 @@ fn test_strict_template_context_does_not_recheck_v_for_scope_bindings() {
         },
     );
 
-    assert!(
-        !output.code.contains("__vize_strict_template_context.item"),
-        "{}",
-        output.code
-    );
-    assert!(
-        !output.code.contains("__vize_strict_template_context.index"),
-        "{}",
-        output.code
-    );
+    assert!(!output.code.contains("$strictCtx.item"), "{}", output.code);
+    assert!(!output.code.contains("$strictCtx.index"), "{}", output.code);
 }
 
 #[test]
@@ -129,15 +119,9 @@ fn test_strict_template_context_does_not_recheck_template_props() {
         },
     );
 
+    assert!(!output.code.contains("$strictCtx.title"), "{}", output.code);
     assert!(
-        !output.code.contains("__vize_strict_template_context.title"),
-        "{}",
-        output.code
-    );
-    assert!(
-        !output
-            .code
-            .contains("__vize_strict_template_context.confirm"),
+        !output.code.contains("$strictCtx.confirm"),
         "{}",
         output.code
     );
@@ -180,10 +164,7 @@ fn test_strict_template_unknown_refs_read_context_without_shadowing_auto_imports
         output.code
     );
     assert_eq!(
-        output
-            .code
-            .matches("__vize_strict_template_context.getPreferences")
-            .count(),
+        output.code.matches("$strictCtx.getPreferences").count(),
         2,
         "{}",
         output.code
@@ -196,16 +177,12 @@ fn test_strict_template_unknown_refs_read_context_without_shadowing_auto_imports
         output.code
     );
     assert!(
-        !output
-            .code
-            .contains("__vize_strict_template_context.currentUser"),
+        !output.code.contains("$strictCtx.currentUser"),
         "{}",
         output.code
     );
     assert!(
-        !output
-            .code
-            .contains("__vize_strict_template_context.$shout"),
+        !output.code.contains("$strictCtx.$shout"),
         "{}",
         output.code
     );
@@ -271,18 +248,9 @@ fn test_strict_template_expression_reports_unknown_member_root() {
         },
     );
 
-    assert!(
-        output
-            .code
-            .contains("__vize_strict_template_context.plugin"),
-        "{}",
-        output.code
-    );
+    assert!(output.code.contains("$strictCtx.plugin"), "{}", output.code);
     assert_eq!(
-        output
-            .code
-            .matches("__vize_strict_template_context.plugin")
-            .count(),
+        output.code.matches("$strictCtx.plugin").count(),
         5,
         "{}",
         output.code
@@ -292,11 +260,7 @@ fn test_strict_template_expression_reports_unknown_member_root() {
         "{}",
         output.code
     );
-    assert!(
-        !output.code.contains("__vize_strict_template_context.key"),
-        "{}",
-        output.code
-    );
+    assert!(!output.code.contains("$strictCtx.key"), "{}", output.code);
 }
 
 #[test]
@@ -341,9 +305,7 @@ fn test_strict_template_expression_ignores_literals_and_builtins() {
             output.code
         );
         assert!(
-            !output
-                .code
-                .contains(&format!("__vize_strict_template_context.{name}")),
+            !output.code.contains(&format!("$strictCtx.{name}")),
             "{}",
             output.code
         );

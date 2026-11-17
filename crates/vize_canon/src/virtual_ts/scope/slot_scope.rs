@@ -18,6 +18,7 @@ use vize_carton::append;
 use vize_carton::cstr;
 use vize_carton::profile;
 use vize_croquis::{Croquis, Scope, ScopeKind, VSlotScopeData};
+use vize_l0::ts_emit::generated_name::{SLOT_PROPS, SLOT_SCOPE};
 
 use crate::virtual_ts::expressions::{
     ComponentPropSource, ExpressionListEmitContext, generate_expressions,
@@ -228,7 +229,7 @@ pub(super) fn generate_v_slot_scope(
             )
             .with_model_modifiers(ctx.checks.model_modifiers)
             .with_diagnostic_ownership(ctx.checks.diagnostic_ownership),
-            binding_prefix: TEMPLATE_HOST_PREFIX,
+            binding_prefix: TEMPLATE_HOST_PREFIX.spelled(),
             reuse_host: false,
             indent,
             hoist_shared_preamble: ctx.hoist_shared_preamble,
@@ -240,7 +241,7 @@ pub(super) fn generate_v_slot_scope(
     let function_gen_start = ts.len();
     let capture_slots = ctx.slot_outlets.captures_scope(ctx.summary, scope.id);
     let function_name = if capture_slots {
-        cstr!("__vize_slot_scope_{scope_id}")
+        cstr!("{SLOT_SCOPE}{scope_id}")
     } else {
         cstr!("_slot_{safe_slot_name}_{scope_id}")
     };
@@ -365,9 +366,9 @@ pub(super) fn generate_v_slot_props_scope(
                 template_binding_access: ctx.template_binding_access,
                 source_context: ctx.source_context,
                 binding_prefix: if reuse_host {
-                    TEMPLATE_HOST_PREFIX
+                    TEMPLATE_HOST_PREFIX.spelled()
                 } else {
-                    "__vize_slot_props_host_"
+                    vize_l0::ts_emit::generated_name::SLOT_PROPS_HOST.spelled()
                 },
                 reuse_host,
                 indent,
@@ -415,8 +416,9 @@ pub(super) fn generate_v_slot_props_scope(
     );
 }
 
-/// Host binding prefix of the template pass, `__vize_slot_host_<scope>`.
-const TEMPLATE_HOST_PREFIX: &str = "__vize_slot_host_";
+/// Host binding prefix of the template pass, `$slotHost_<scope>`.
+const TEMPLATE_HOST_PREFIX: vize_l0::ts_emit::generated_name::GeneratedName =
+    vize_l0::ts_emit::generated_name::SLOT_HOST;
 
 /// Whether the template pass declared this slot's host in the block the props
 /// pass also writes to. Each pass replays a `v-for`, `v-slot`, `v-match` or
@@ -444,7 +446,7 @@ fn slot_props_pattern(data: &VSlotScopeData, scope_id: u32) -> String {
     data.props_pattern
         .as_ref()
         .map(|pattern| pattern.as_str().into())
-        .unwrap_or_else(|| cstr!("__vize_slot_props_{scope_id}"))
+        .unwrap_or_else(|| cstr!("{SLOT_PROPS}{scope_id}"))
 }
 
 #[cfg(test)]

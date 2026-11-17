@@ -110,10 +110,10 @@ function submitHooks(hooks: { before?: () => void; after?: () => void }) {
     void __ctx; void $attrs; void $slots; void $refs; void $emit;
     void $listeners;void $children;void $scopedSlots;void $on;void $off;void $once;void $set;void $delete;void $createElement;void _c;
 
-  const __vize_kebab_events_nav_0 = undefined as unknown as $ComponentEvents<typeof CalendarRange> & Record<string, unknown>;
-  void __vize_kebab_events_nav_0.rangeChange;
-  const __vize_events_nav_0 = undefined as unknown as $ComponentEvents<typeof CalendarRange> & Record<string, unknown>;
-  void __vize_events_nav_0.submit;
+  const $kebabNav0 = undefined as unknown as $ComponentEvents<typeof CalendarRange> & Record<string, unknown>;
+  void $kebabNav0.rangeChange;
+  const $eventsNav0 = undefined as unknown as $ComponentEvents<typeof CalendarRange> & Record<string, unknown>;
+  void $eventsNav0.submit;
 
   // @range-change handler
   type __CalendarRange_9__listener_missing<__P, __Raw extends string | number | symbol> = [__Raw] extends [never] ? unknown[] : __P extends { [__K in __Raw]?: (...args: infer __A) => any } ? __A : unknown[];
@@ -128,10 +128,10 @@ function submitHooks(hooks: { before?: () => void; after?: () => void }) {
   type __CalendarRange_9_range_change_event = __CalendarRange_9_range_change_args extends infer __A extends unknown[] ? [__A] extends [[]] ? any : unknown[] extends __A ? any : $Vue2LooseEventArg<__A[0]> : never;
   type __CalendarRange_9_range_change_legacy_args = __CalendarRange_9_range_change_args extends [] ? any[] : unknown[] extends __CalendarRange_9_range_change_args ? any[] : $Vue2LooseEmitArgs<__CalendarRange_9_range_change_args>;
   type __CalendarRange_9_range_change_listener = (...args: __CalendarRange_9_range_change_legacy_args) => unknown;
-  void ((...__vize_args: Parameters<__CalendarRange_9_range_change_listener>) => {
-    const __vize_event = (__vize_args as unknown[])[0] as __CalendarRange_9_range_change_event; void __vize_event;
-    const __vize_handler_9_30: __CalendarRange_9_range_change_listener | null | undefined = (updateRange);
-    if (__vize_handler_9_30) __vize_handler_9_30(...__vize_args);  // handler expression
+  void ((...$args: Parameters<__CalendarRange_9_range_change_listener>) => {
+    const $evt = ($args as unknown[])[0] as __CalendarRange_9_range_change_event; void $evt;
+    const $handler9_30: __CalendarRange_9_range_change_listener | null | undefined = (updateRange);
+    if ($handler9_30) $handler9_30(...$args);  // handler expression
     // @vize-map: handler -> 30:41
   });
 
@@ -143,10 +143,10 @@ function submitHooks(hooks: { before?: () => void; after?: () => void }) {
   type __CalendarRange_10_submit_event = __CalendarRange_10_submit_args extends infer __A extends unknown[] ? [__A] extends [[]] ? any : unknown[] extends __A ? any : $Vue2LooseEventArg<__A[0]> : never;
   type __CalendarRange_10_submit_legacy_args = __CalendarRange_10_submit_args extends [] ? any[] : unknown[] extends __CalendarRange_10_submit_args ? any[] : $Vue2LooseEmitArgs<__CalendarRange_10_submit_args>;
   type __CalendarRange_10_submit_listener = (...args: __CalendarRange_10_submit_legacy_args) => unknown;
-  void ((...__vize_args: Parameters<__CalendarRange_10_submit_listener>) => {
-    const __vize_event = (__vize_args as unknown[])[0] as __CalendarRange_10_submit_event; void __vize_event;
-    const __vize_handler_10_52: __CalendarRange_10_submit_listener | null | undefined = (submitHooks);
-    if (__vize_handler_10_52) __vize_handler_10_52(...__vize_args);  // handler expression
+  void ((...$args: Parameters<__CalendarRange_10_submit_listener>) => {
+    const $evt = ($args as unknown[])[0] as __CalendarRange_10_submit_event; void $evt;
+    const $handler10_52: __CalendarRange_10_submit_listener | null | undefined = (submitHooks);
+    if ($handler10_52) $handler10_52(...$args);  // handler expression
     // @vize-map: handler -> 52:63
   });
 
@@ -206,8 +206,8 @@ function submitHooks(hooks: { before?: () => void; after?: () => void }) {
         ...{} as { "onSubmit": never },
       });
       type $SlotContract_0 = $StructuralSlots<typeof CalendarRange>;
-      const __vize_required_slots_0: $RequiredSlots<$SlotContract_0, {}> = {};
-      void __vize_required_slots_0;
+      const $requiredSlots0: $RequiredSlots<$SlotContract_0, {}> = {};
+      void $requiredSlots0;
     },
   ];
 

@@ -9,8 +9,7 @@ use vize_croquis::{Analyzer, AnalyzerOptions};
 
 const PRELUDE: &str = "  type $TemplateInstance = { [__K in keyof __Ctx]: __Ctx[__K] };";
 const MEMBER_ALIAS: &str = "  type $TemplateInstanceMember<__K extends string> = __K extends keyof $TemplateInstance ? $TemplateInstance[__K] : any;";
-const INSTANCE: &str =
-    "  const __vize_public_instance = undefined as unknown as $TemplateInstance;";
+const INSTANCE: &str = "  const $public = undefined as unknown as $TemplateInstance;";
 
 fn setup_output(
     script: &str,
@@ -64,11 +63,7 @@ fn script_setup_reads_an_unknown_name_off_the_public_instance_once_per_use() {
         "{code}"
     );
     // one instance read per authored occurrence, each mapped to its own use
-    assert_eq!(
-        count_lines(&code, "  void (__vize_public_instance.isSP);"),
-        2,
-        "{code}"
-    );
+    assert_eq!(count_lines(&code, "  void ($public.isSP);"), 2, "{code}");
     let first = template.find("isSP").expect("the first use");
     let second = template.rfind("isSP").expect("the second use");
     for use_start in [first, second] {
@@ -78,7 +73,7 @@ fn script_setup_reads_an_unknown_name_off_the_public_instance_once_per_use() {
                 mapping.src_range == (use_start..use_start + "isSP".len())
                     && code
                         .get(..mapping.gen_range.start)
-                        .is_some_and(|head| head.ends_with("__vize_public_instance."))
+                        .is_some_and(|head| head.ends_with("$public."))
             })
             .count();
         assert_eq!(
@@ -87,11 +82,7 @@ fn script_setup_reads_an_unknown_name_off_the_public_instance_once_per_use() {
         );
     }
     // a bound name is never read off the instance
-    assert_eq!(
-        count_lines(&code, "  void (__vize_public_instance.label);"),
-        0,
-        "{code}"
-    );
+    assert_eq!(count_lines(&code, "  void ($public.label);"), 0, "{code}");
     assert_eq!(count_lines(&code, "  void (isSP);"), 0, "{code}");
 }
 
@@ -108,11 +99,7 @@ fn a_declared_template_global_keeps_its_context_binding() {
     let (code, _) = setup_output("", "<p>{{ appName }} {{ other }}</p>", &options);
     parses(&code);
     // the context declares `appName`; only `other` reads the instance
-    assert_eq!(
-        count_lines(&code, "  void (__vize_public_instance.appName);"),
-        0,
-        "{code}"
-    );
+    assert_eq!(count_lines(&code, "  void ($public.appName);"), 0, "{code}");
     assert_eq!(
         count_lines(
             &code,
@@ -121,11 +108,7 @@ fn a_declared_template_global_keeps_its_context_binding() {
         0,
         "{code}"
     );
-    assert_eq!(
-        count_lines(&code, "  void (__vize_public_instance.other);"),
-        1,
-        "{code}"
-    );
+    assert_eq!(count_lines(&code, "  void ($public.other);"), 1, "{code}");
 }
 
 /// A TypeScript-only declaration the script holds (a `namespace`) is no
@@ -140,11 +123,7 @@ fn a_script_declared_type_only_name_is_not_read_off_the_instance() {
         &VirtualTsOptions::default(),
     );
     parses(&code);
-    assert_eq!(
-        count_lines(&code, "  void (__vize_public_instance.Bare);"),
-        0,
-        "{code}"
-    );
+    assert_eq!(count_lines(&code, "  void ($public.Bare);"), 0, "{code}");
     assert_eq!(
         count_lines(
             &code,
@@ -177,11 +156,7 @@ fn an_options_api_default_export_keeps_its_own_instance_form() {
     .code;
     parses(&code);
     assert_eq!(count_lines(&code, PRELUDE), 0, "{code}");
-    assert_eq!(
-        count_lines(&code, "  void (__vize_template_instance.missing);"),
-        1,
-        "{code}"
-    );
+    assert_eq!(count_lines(&code, "  void ($inst.missing);"), 1, "{code}");
     assert_eq!(
         count_lines(
             &code,
@@ -214,11 +189,7 @@ fn loop_sources_keep_each_read_and_exclude_the_current_alias() {
     ] {
         let (code, spans) = setup_output("", template, &VirtualTsOptions::default());
         parses(&code);
-        assert_eq!(
-            count_lines(&code, "  void (__vize_public_instance.missing);"),
-            2,
-            "{code}"
-        );
+        assert_eq!(count_lines(&code, "  void ($public.missing);"), 2, "{code}");
         let iterable_start = template.find(" in ").expect("loop source") + " in ".len();
         let iterable_end =
             template[iterable_start..].find('"').expect("source end") + iterable_start;
@@ -234,7 +205,7 @@ fn loop_sources_keep_each_read_and_exclude_the_current_alias() {
             .iter()
             .filter(|mapping| {
                 code.get(..mapping.gen_range.start)
-                    .is_some_and(|head| head.ends_with("__vize_public_instance."))
+                    .is_some_and(|head| head.ends_with("$public."))
             })
             .map(|mapping| mapping.src_range.start)
             .collect();
@@ -247,14 +218,6 @@ fn nested_loop_sources_keep_the_outer_alias_visible() {
     let template = r#"<section v-for="item in rows"><i v-for="item in item" :key="item">{{ item }}</i></section>"#;
     let (code, _) = setup_output("", template, &VirtualTsOptions::default());
     parses(&code);
-    assert_eq!(
-        count_lines(&code, "  void (__vize_public_instance.rows);"),
-        1,
-        "{code}"
-    );
-    assert_eq!(
-        count_lines(&code, "  void (__vize_public_instance.item);"),
-        0,
-        "{code}"
-    );
+    assert_eq!(count_lines(&code, "  void ($public.rows);"), 1, "{code}");
+    assert_eq!(count_lines(&code, "  void ($public.item);"), 0, "{code}");
 }

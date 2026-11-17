@@ -3,6 +3,7 @@
 use vize_carton::{String, append, cstr};
 use vize_croquis::{Croquis, macros::ModelDefinition};
 use vize_l0::ts;
+use vize_l0::ts_emit::generated_name::MODEL_DEFAULTS;
 
 use super::{generic_parameters::GenericParameters, helpers::push_ts_string_literal};
 
@@ -45,7 +46,7 @@ pub(crate) fn emit_defaults_artifact(
         return;
     }
     ts! { &mut *ts =>
-        #("\n  const __vize_model_defaults = ")
+        #("\n  const ") #MODEL_DEFAULTS #(" = ")
         {
             #("\n")
             #{
@@ -65,7 +66,7 @@ pub(crate) fn emit_defaults_artifact(
         }
         ;
     }
-    fields.push("__vize_model_defaults".into());
+    fields.push(MODEL_DEFAULTS.spelled().into());
 }
 
 pub(crate) fn emit_defaults_type(
@@ -77,7 +78,7 @@ pub(crate) fn emit_defaults_type(
         .unwrap_or_default();
     append!(
         *ts,
-        "type {}{declaration} = {}[\"__vize_model_defaults\"];\n",
+        "type {}{declaration} = {}[\"{MODEL_DEFAULTS}\"];\n",
         super::generated_names::declared("$ModelDefaults"),
         super::generated_names::setup_return(&arguments)
     );

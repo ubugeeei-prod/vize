@@ -123,11 +123,11 @@ function needsString(value: string) {}
             "concrete zero-argument tuples must not be indexed in an unselected type branch:\n{virtual_ts}"
         );
         assert!(
-            virtual_ts.contains("(__vize_args as unknown[])[0]"),
+            virtual_ts.contains("($args as unknown[])[0]"),
             "reading a possibly absent runtime argument must not index a concrete empty tuple:\n{virtual_ts}"
         );
         assert!(
-            virtual_ts.contains("...__vize_args: Parameters<"),
+            virtual_ts.contains("...$args: Parameters<"),
             "the listener must retain the complete original argument tuple:\n{virtual_ts}"
         );
     }
@@ -145,11 +145,13 @@ defineEmits(['click'])
     .virtual_ts
     .expect("virtual TypeScript should be generated");
     assert!(
-        virtual_ts.contains("const __vize_emits = defineEmits(['click']);"),
+        virtual_ts.contains("const $emits = defineEmits(['click']);"),
         "const-generic inference must see the original runtime array:\n{virtual_ts}"
     );
     assert!(
-        virtual_ts.contains("type $StaticEmitProps = __EmitProps<Awaited<ReturnType<typeof __setup>>[\"__vize_emits\"]>"),
+        virtual_ts.contains(
+            "type $StaticEmitProps = __EmitProps<Awaited<ReturnType<typeof __setup>>[\"$emits\"]>"
+        ),
         "array methods must not become event names:\n{virtual_ts}"
     );
 }
@@ -211,7 +213,7 @@ const item = {} as {
     );
     assert!(
         app.content
-            .contains("if (typeof __vize_handler_7_15 === \"function\")"),
+            .contains("if (typeof $handler7_15 === \"function\")"),
         "optional event references should be guarded before invocation:\n{}",
         app.content
     );
@@ -246,12 +248,12 @@ const item = {} as {
         .find(|file| file.original_path.ends_with("App.vue"))
         .expect("App.vue should be registered");
     assert!(
-        app.content.contains("| null | undefined) => __vize_cb"),
+        app.content.contains("| null | undefined) => $cb"),
         "optional native event references should remain optional:\n{}",
         app.content
     );
     assert!(
-        app.content.contains("if (__vize_handler_"),
+        app.content.contains("if ($handler"),
         "optional native event references should be guarded before invocation:\n{}",
         app.content
     );
@@ -272,11 +274,11 @@ const item = {} as {
 fn event_handler_mapping_targets_the_user_operand() {
     use vize_croquis::{Analyzer, AnalyzerOptions};
 
-    let script = r#"const __vize_cb = undefined as
+    let script = r#"const $cb = undefined as
   | ((event: PointerEvent) => void)
   | undefined
 "#;
-    let template = r#"<button @click="__vize_cb">Click</button>"#;
+    let template = r#"<button @click="$cb">Click</button>"#;
 
     let allocator = vize_l0::Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
@@ -288,7 +290,7 @@ fn event_handler_mapping_targets_the_user_operand() {
     let output =
         vize_canon::virtual_ts::generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
-    let expression = "__vize_cb";
+    let expression = "$cb";
     let source_start = template.find(expression).unwrap();
     let source_end = source_start + expression.len();
     let mapping = output
@@ -299,7 +301,7 @@ fn event_handler_mapping_targets_the_user_operand() {
         .expect("should map the event handler expression");
     let operand_start = output
         .code
-        .find("((__vize_cb));")
+        .find("(($cb));")
         .expect("the user handler should be emitted as the wrapper operand")
         + 2;
 

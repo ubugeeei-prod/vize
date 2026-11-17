@@ -59,9 +59,9 @@ fn project_source(name: &str, vue_compiler_options: &str) -> vize_carton::String
 }
 
 fn assert_unknown_checks(content: &str, enabled: bool) {
-    let component = content.contains("__vize_global_component_");
+    let component = content.contains("$globalComponent");
     let props = content.contains("import(\"vize:virtual-ts\").ComponentGlobalHtmlAttrs");
-    let directive = content.contains("__vize_unknown_directive_");
+    let directive = content.contains("$unknownDirective");
     let open_tail = content.contains(
         "type $ComponentCheckTail<C> = import(\"vize:virtual-ts\").$IsGeneratedComponent<C> extends true ? $PublicComponentAttrs & Record<string, unknown> : Record<string, unknown>;",
     );
@@ -261,7 +261,7 @@ mod originals {
         let mut off: Value = serde_json::from_str(CONFIG).unwrap();
         off["vueCompilerOptions"] = json!({"checkUnknownComponents":false,"checkUnknownProps":false,"checkUnknownDirectives":false});
         let disabled = source(Some(off), PARENT);
-        assert!(!disabled.contains("__vize_unknown_directive_"));
+        assert!(!disabled.contains("$unknownDirective"));
         assert_eq!(
             disabled
                 .lines()
@@ -271,7 +271,7 @@ mod originals {
             )
         );
         let absent = source(None, PARENT);
-        assert!(!absent.contains("__vize_unknown_directive_"));
+        assert!(!absent.contains("$unknownDirective"));
         assert_eq!(
             absent
                 .lines()

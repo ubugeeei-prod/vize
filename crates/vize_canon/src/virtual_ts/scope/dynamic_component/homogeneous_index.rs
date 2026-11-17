@@ -45,10 +45,7 @@ mod tests {
     #[test]
     fn exact_import_annotation_refuses_self_capture() {
         let allocator = Allocator::new();
-        for (object, expected) in [
-            ("map", Some(Some("(typeof map)[\"a\"]"))),
-            ("__vize_dynamic_is_0", None),
-        ] {
+        for (object, expected) in [("map", Some(Some("(typeof map)[\"a\"]"))), ("$is0", None)] {
             let template = cstr!("<component :is=\"{object}[foo]\"></component>");
             let (root, errors) = parse(&allocator, template.as_str());
             assert!(errors.is_empty());

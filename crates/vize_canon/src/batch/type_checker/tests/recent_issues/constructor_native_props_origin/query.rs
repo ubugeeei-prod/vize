@@ -108,7 +108,7 @@ pub(super) fn observe(
     // The template pass declares the one constructor instance pair; the props
     // pass annotates from it instead of declaring a second.
     let mut hosts = Vec::new();
-    for name in ["__vize_slot_host_9_instances"] {
+    for name in ["$slotHost9_instances"] {
         let offset = position(generated, &format!("const {name} ="))? + 6;
         let pair = required(
             record(

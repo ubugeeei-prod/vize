@@ -2,6 +2,7 @@ use vize_carton::{String, cstr};
 use vize_croquis::Croquis;
 use vize_l0::ts;
 use vize_l0::ts_emit::TsString;
+use vize_l0::ts_emit::generated_name::{DEFINED_EMITS, TYPED_EMITS};
 
 use super::setup_scope::{define_emits_type_requires_setup_scope, macro_type_requires_setup_scope};
 use crate::virtual_ts::{
@@ -208,10 +209,7 @@ pub(super) fn emit_emits_type(
                 let arguments = generic_param
                     .map(|generic| cstr!("<{}>", generic.names))
                     .unwrap_or_default();
-                cstr!(
-                    "{}[\"__vize_typed_emits\"]",
-                    names::setup_return(&arguments)
-                )
+                cstr!("{}[\"{TYPED_EMITS}\"]", names::setup_return(&arguments))
             } else {
                 String::from(inner_type_of(type_args))
             };
@@ -231,7 +229,7 @@ pub(super) fn emit_emits_type(
         } else if has_runtime_emits {
             let setup = names::setup_return("");
             ts! { &mut *ts =>
-                #head #emits_generic_suffix = #setup["__vize_emits"]
+                #head #emits_generic_suffix = #setup #("[\"") #DEFINED_EMITS #("\"]")
                 #(model in models =>
                     & ((event: #TsString(cstr!("update:{}", model.name).as_str()), value: #(model_update_payload(generic_param, model))) => void)
                 )*
@@ -332,11 +330,11 @@ fn emit_emit_props_helper(
         let setup = names::setup_return("");
         if info.preserve_event_navigation {
             ts! { &mut *ts =>
-                #("type ") #static_event_map = __EmitOptions<#setup["__vize_emits"]>;
+                #("type ") #static_event_map = __EmitOptions<#setup #("[\"") #DEFINED_EMITS #("\"]")>;
             }
         }
         ts! { &mut *ts =>
-            type $StaticEmitProps = #emit_props<#setup["__vize_emits"]>;
+            type $StaticEmitProps = #emit_props<#setup #("[\"") #DEFINED_EMITS #("\"]")>;
             #("\n")
         }
     } else {

@@ -68,7 +68,10 @@ fn authored_setup_type_parameter(value: &str) -> Option<String> {
     let authored = code.get(..owner)?;
     let generated = code.get(owner + " in __setup<".len()..)?;
     if !authored.starts_with("(type parameter) ")
-        || !generated.contains("__vize_setup_props: $SetupProps;")
+        || !generated.contains(concat!(
+            vize_l0::generated_name!(SETUP_PROPS),
+            ": $SetupProps;"
+        ))
     {
         return None;
     }
@@ -164,7 +167,7 @@ mod tests {
 
     #[test]
     fn setup_type_parameter_hides_generated_owner_and_return_type() {
-        let native = "```typescript\n(type parameter) T extends Item in __setup<T extends Item, K extends keyof T>(): {\n    __vize_setup_props: $SetupProps;\n}\n```\n\nThe item type.";
+        let native = "```typescript\n(type parameter) T extends Item in __setup<T extends Item, K extends keyof T>(): {\n    $setupProps: $SetupProps;\n}\n```\n\nThe item type.";
         assert_eq!(
             HoverService::decorate_corsa_hover_markdown(native),
             "```typescript\n(type parameter) T extends Item\n```\n\nThe item type."
@@ -173,7 +176,7 @@ mod tests {
 
     #[test]
     fn setup_owner_text_inside_a_constraint_remains_authored() {
-        let native = "```typescript\n(type parameter) T extends \"before in __setup<after\" in __setup<T extends \"before in __setup<after\">(): {\n    __vize_setup_props: $SetupProps;\n}\n```";
+        let native = "```typescript\n(type parameter) T extends \"before in __setup<after\" in __setup<T extends \"before in __setup<after\">(): {\n    $setupProps: $SetupProps;\n}\n```";
         assert_eq!(
             HoverService::decorate_corsa_hover_markdown(native),
             "```typescript\n(type parameter) T extends \"before in __setup<after\"\n```"
@@ -182,7 +185,7 @@ mod tests {
 
     #[test]
     fn nested_setup_owner_text_inside_a_constraint_remains_authored() {
-        let native = "```typescript\n(type parameter) T extends { [K in __setup<string>]: K } in __setup<T extends { [K in __setup<string>]: K }>(): {\n    __vize_setup_props: $SetupProps;\n}\n```";
+        let native = "```typescript\n(type parameter) T extends { [K in __setup<string>]: K } in __setup<T extends { [K in __setup<string>]: K }>(): {\n    $setupProps: $SetupProps;\n}\n```";
         assert_eq!(
             HoverService::decorate_corsa_hover_markdown(native),
             "```typescript\n(type parameter) T extends { [K in __setup<string>]: K }\n```"

@@ -104,9 +104,9 @@ pub(super) fn bind_checked_expressions(
                             .is_some_and(|tail| tail.starts_with(" {\n"))
                 });
             let checked = [
-                "const __vize_prop_check_",
-                "const __vize_native_prop_check_",
-                "const __vize_handler_",
+                concat!("const ", vize_l0::generated_name!(PROP_CHECK)),
+                concat!("const ", vize_l0::generated_name!(NATIVE_PROP_CHECK)),
+                concat!("const ", vize_l0::generated_name!(HANDLER)),
             ]
             .iter()
             .any(|prefix| trimmed.starts_with(prefix));
@@ -284,7 +284,7 @@ struct ExpressionOwnerStatement<'a> {
 /// enclosing check instead.
 fn expression_owner_statements(text: &str) -> Vec<ExpressionOwnerStatement<'_>> {
     const CHECKED_OPEN: &str = "__vizeSlotOutlet((undefined as unknown as ";
-    const INFERRED_OPEN: &str = "var __vize_slot_payload_";
+    const INFERRED_OPEN: &str = concat!("var ", vize_l0::generated_name!(SLOT_PAYLOAD));
     const COMPONENT_PROPS_OPEN: &str = "(undefined as unknown as __";
     let mut statements = Vec::new();
     for (marker, terminator) in [(CHECKED_OPEN, ");\n"), (INFERRED_OPEN, ";\n")] {

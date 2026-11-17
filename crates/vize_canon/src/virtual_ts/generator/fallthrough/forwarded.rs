@@ -15,10 +15,12 @@ use crate::virtual_ts::{
     scope::{FORWARDED_RETURN_KEY, FORWARDED_ROOT_HELPERS},
 };
 use vize_carton::{String, append};
+use vize_l0::ts_emit::generated_name::TEMPLATE;
 use vize_relief::RootNode;
 
 /// The setup return field the forwarded props leave the setup scope through.
-const SETUP_FIELD: &str = "__vize_forwarded";
+const SETUP_FIELD: vize_l0::ts_emit::generated_name::GeneratedName =
+    vize_l0::ts_emit::generated_name::FORWARDED;
 
 #[derive(Default)]
 pub(in crate::virtual_ts::generator) struct ForwardedRoots {
@@ -78,10 +80,7 @@ impl ForwardedRoots {
     pub(in crate::virtual_ts::generator) fn push_return_field(&self, fields: &mut Vec<String>) {
         if self.any() {
             let mut field = String::default();
-            append!(
-                field,
-                "{SETUP_FIELD}: __vize_template.{FORWARDED_RETURN_KEY}"
-            );
+            append!(field, "{SETUP_FIELD}: {TEMPLATE}.{FORWARDED_RETURN_KEY}");
             fields.push(field);
         }
     }
@@ -169,8 +168,8 @@ mod tests {
             plan("<Basic :foo=\"bar\" @close=\"bar\" />", true, false),
             (
                 vec![0],
-                vec!["__vize_forwarded: __vize_template.__vizeForwarded".into()],
-                " & Partial<Setup<T>[\"__vize_forwarded\"]>".into(),
+                vec!["$forwarded: $template.__vizeForwarded".into()],
+                " & Partial<Setup<T>[\"$forwarded\"]>".into(),
             )
         );
     }
@@ -179,11 +178,11 @@ mod tests {
     fn required_forwarded_props_exclude_what_the_root_binds_itself() {
         assert_eq!(
             plan("<Basic :foo=\"bar\" @close=\"bar\" />", true, true).2,
-            " & Omit<Setup<T>[\"__vize_forwarded\"], \"foo\" | \"onClose\">"
+            " & Omit<Setup<T>[\"$forwarded\"], \"foo\" | \"onClose\">"
         );
         assert_eq!(
             plan("<Basic />", true, true).2,
-            " & Setup<T>[\"__vize_forwarded\"]"
+            " & Setup<T>[\"$forwarded\"]"
         );
     }
 

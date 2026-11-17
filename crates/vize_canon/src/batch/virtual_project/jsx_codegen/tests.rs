@@ -147,7 +147,7 @@ fn scoped_slot_object_binds_its_pattern_over_the_slot_body() {
 
     assert_eq!(
         rendered_statement(source),
-        "export const view = __vize_jsx_expr__(__vize_jsx_component__(Widget)({\"fooBar\": \"ok\"}), __vize_jsx_component_slot__(Widget, \"default\", (props: { item: string }) => __vize_jsx_expr__(props.item)));"
+        "export const view = $jsx($jsxComponent(Widget)({\"fooBar\": \"ok\"}), $jsxSlot(Widget, \"default\", (props: { item: string }) => $jsx(props.item)));"
     );
 }
 
@@ -157,7 +157,7 @@ fn scoped_slot_render_prop_child_binds_its_pattern_over_the_slot_body() {
 
     assert_eq!(
         rendered_statement(source),
-        "export const view = __vize_jsx_expr__(__vize_jsx_component__(Widget)({\"fooBar\": \"ok\"}), __vize_jsx_component_slot__(Widget, \"default\", (props: { item: string }) => __vize_jsx_expr__(props.item)));"
+        "export const view = $jsx($jsxComponent(Widget)({\"fooBar\": \"ok\"}), $jsxSlot(Widget, \"default\", (props: { item: string }) => $jsx(props.item)));"
     );
 }
 
@@ -167,7 +167,7 @@ fn scoped_slot_destructured_pattern_and_named_slots_each_get_their_own_scope() {
 
     assert_eq!(
         rendered_statement(source),
-        "export const view = __vize_jsx_expr__(__vize_jsx_component__(Widget)({\"fooBar\": \"ok\"}), __vize_jsx_component_slot__(Widget, \"default\", ({ item }: { item: string }) => __vize_jsx_expr__(item)), __vize_jsx_component_slot__(Widget, \"footer\", (b: { n: number }) => __vize_jsx_expr__(b.n)));"
+        "export const view = $jsx($jsxComponent(Widget)({\"fooBar\": \"ok\"}), $jsxSlot(Widget, \"default\", ({ item }: { item: string }) => $jsx(item)), $jsxSlot(Widget, \"footer\", (b: { n: number }) => $jsx(b.n)));"
     );
 }
 
@@ -180,7 +180,7 @@ fn component_inside_a_scoped_slot_body_keeps_its_props_call() {
 
     assert_eq!(
         rendered_statement(source),
-        "export const view = __vize_jsx_expr__(__vize_jsx_component__(Widget)({\"fooBar\": \"ok\"}), __vize_jsx_component_slot__(Widget, \"default\", (props: { item: string }) => __vize_jsx_expr__(__vize_jsx_component__(Counter)({\"count\": props.item}))));"
+        "export const view = $jsx($jsxComponent(Widget)({\"fooBar\": \"ok\"}), $jsxSlot(Widget, \"default\", (props: { item: string }) => $jsx($jsxComponent(Counter)({\"count\": props.item}))));"
     );
 }
 
@@ -193,7 +193,7 @@ fn scoped_slot_inside_a_v_for_body_binds_both_scopes() {
 
     assert_eq!(
         rendered_statement(source),
-        "export const view = __vize_jsx_expr__((items).map((item) => __vize_jsx_expr__(__vize_jsx_component__(Widget)({\"fooBar\": item}), __vize_jsx_component_slot__(Widget, \"default\", (props: { item: string }) => __vize_jsx_expr__(props.item)))));"
+        "export const view = $jsx((items).map((item) => $jsx($jsxComponent(Widget)({\"fooBar\": item}), $jsxSlot(Widget, \"default\", (props: { item: string }) => $jsx(props.item)))));"
     );
 }
 
@@ -205,7 +205,7 @@ fn nested_scoped_slots_each_resolve_their_own_host() {
 
     assert_eq!(
         rendered_statement(source),
-        "export const view = __vize_jsx_expr__(__vize_jsx_component__(Widget)({\"fooBar\": \"ok\"}), __vize_jsx_component_slot__(Widget, \"default\", (outer: { item: string }) => __vize_jsx_expr__(__vize_jsx_component__(Panel)({\"title\": outer.item}), __vize_jsx_component_slot__(Panel, \"default\", (inner: { row: number }) => __vize_jsx_expr__(inner.row)))));"
+        "export const view = $jsx($jsxComponent(Widget)({\"fooBar\": \"ok\"}), $jsxSlot(Widget, \"default\", (outer: { item: string }) => $jsx($jsxComponent(Panel)({\"title\": outer.item}), $jsxSlot(Panel, \"default\", (inner: { row: number }) => $jsx(inner.row)))));"
     );
 }
 
@@ -217,7 +217,7 @@ fn non_scoped_slot_body_stays_in_the_enclosing_scope() {
 
     assert_eq!(
         rendered_statement(source),
-        "export const view = __vize_jsx_expr__(__vize_jsx_component__(Widget)({\"fooBar\": \"ok\"}), label);"
+        "export const view = $jsx($jsxComponent(Widget)({\"fooBar\": \"ok\"}), label);"
     );
 }
 
@@ -266,9 +266,9 @@ fn component_helper_declares_the_slot_payload_contract() {
     assert_eq!(
         declarations,
         vec![
-            "declare function __vize_jsx_component_spread__<O>(value: O): $JsxCanonicalRawProps<Omit<O, 'key' | 'ref'>>;",
-            "declare function __vize_jsx_component__<C>(component: C): $JsxComponentCall<C>;",
-            "declare function __vize_jsx_component_slot__<C, N extends string>(component: C, name: N, render: (payload: $JsxSlotPayload<C, N>) => unknown): any;",
+            "declare function $jsxSpread<O>(value: O): $JsxCanonicalRawProps<Omit<O, 'key' | 'ref'>>;",
+            "declare function $jsxComponent<C>(component: C): $JsxComponentCall<C>;",
+            "declare function $jsxSlot<C, N extends string>(component: C, name: N, render: (payload: $JsxSlotPayload<C, N>) => unknown): any;",
         ]
     );
 }
@@ -282,12 +282,12 @@ fn semantic_component_tags_props_and_spreads_survive_plain_ts_lowering() {
     assert!(
         generated
             .code
-            .contains("__vize_jsx_component__(Counter)({\"count\": count, \"isOpened\": true})")
+            .contains("$jsxComponent(Counter)({\"count\": count, \"isOpened\": true})")
     );
     assert!(
-        generated.code.contains(
-            "__vize_jsx_component__(Library.Counter)({...__vize_jsx_component_spread__(bag), \"label\": \"hello\"})"
-        )
+        generated
+            .code
+            .contains("$jsxComponent(Library.Counter)({...$jsxSpread(bag), \"label\": \"hello\"})")
     );
 
     for authored in [

@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "kind": "exact-generated-name-spelling-successor",
+  "nativeAcceptanceCredit": false,
+  "entries": [
+    {
+      "entry": 74,
+      "before": [
+        "project/A.vue.ts",
+        4212,
+        "f15bc1dec67e2e279facff35e3285129f8028a9ec05e63021e6cfbe5e2c6050d"
+      ],
+      "after": [
+        "project/A.vue.ts",
+        4170,
+        "09b866142f4297dd4d01bc50a1ea0b569d73e66e5fd4af2b922471907a6030e0"
+      ],
+      "deltaBytes": -42
+    }
+  ]
+}

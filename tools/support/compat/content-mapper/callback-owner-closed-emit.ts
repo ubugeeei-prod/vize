@@ -7,6 +7,7 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { beforeClosedEmitFactory } from "./closed-emit-factory-transition.ts";
+import { beforeGeneratedNames } from "./generated-names-transition.ts";
 
 type Edit = { start: number; end: number; replacement: Buffer };
 export const closedEmitGatePath =
@@ -36,9 +37,10 @@ export function renderedGateBlock(source: string, hoisted: boolean): string {
 let blocks: Array<{ before: string; after: string }> | undefined;
 function gateBlocks(): Array<{ before: string; after: string }> {
   if (blocks) return blocks;
-  const current = readFileSync(
-    new URL(`../../../../${closedEmitGatePath}`, import.meta.url),
-    "utf8",
+  // The gate blocks of the recorded outputs predate the generated-name spelling.
+  const current = beforeGeneratedNames(
+    closedEmitGatePath,
+    readFileSync(new URL(`../../../../${closedEmitGatePath}`, import.meta.url), "utf8"),
   );
   const previous = beforeClosedEmitFactory(closedEmitGatePath, current);
   assert.notEqual(previous, current, "the closed emit factory record owns the gate source");

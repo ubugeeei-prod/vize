@@ -181,7 +181,7 @@ fn vue_options_follow_the_selected_reference_without_leaking_from_siblings() {
             .find_by_original(&app)
             .unwrap()
             .content
-            .contains("__vize_global_component_")
+            .contains("$globalComponent")
     );
     assert_eq!(
         super::snapshot_tsconfig_vue_target(

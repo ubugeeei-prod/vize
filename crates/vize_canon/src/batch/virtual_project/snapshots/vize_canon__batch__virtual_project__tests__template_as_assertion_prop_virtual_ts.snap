@@ -63,14 +63,14 @@ const onFocus = (target: HTMLElement) => {
   const _as = props["as"];
   void _as;
 
-  const __vize_native_key_46: Partial<$NativeElement<"div">> = { "style": undefined as never };
-  void __vize_native_key_46;
-  const __vize_native_prop_check_25: $NativeElementProp<$NativeElement<"div">, "data-value"> = ((value as any));
-  void __vize_native_prop_check_25; // VBind
-  const __vize_native_prop_check_53: $NativeElementProp<$NativeElement<"div">, "style"> = ({
+  const $nativeKey46: Partial<$NativeElement<"div">> = { "style": undefined as never };
+  void $nativeKey46;
+  const $nativeProp25: $NativeElementProp<$NativeElement<"div">, "data-value"> = ((value as any));
+  void $nativeProp25; // VBind
+  const $nativeProp53: $NativeElementProp<$NativeElement<"div">, "style"> = ({
       ['--demo-value' as any]: value,
     });
-  void __vize_native_prop_check_53; // VBind
+  void $nativeProp53; // VBind
   void ({
       focusin: (event: FocusEvent) => {
         onFocus(event.target as HTMLElement)

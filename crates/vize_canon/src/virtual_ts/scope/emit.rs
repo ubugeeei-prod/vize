@@ -7,6 +7,7 @@ use vize_carton::append;
 use vize_carton::cstr;
 use vize_croquis::{Scope, ScopeData};
 use vize_l0::ts;
+use vize_l0::ts_emit::generated_name::{SLOT_SCOPE, V_FOR_SOURCE};
 
 use crate::virtual_ts::expressions::{
     map_rewritten_template_binding, rewrite_reserved_template_binding,
@@ -205,10 +206,10 @@ pub(super) fn emit_v_for_loop_open<M>(
             #("\n")
             #{
                 if capture {
-                    append!(*__ts, "{indent}var __vize_slot_scope_{scope_id} = (() => {{\n");
+                    append!(*__ts, "{indent}var {SLOT_SCOPE}{scope_id} = (() => {{\n");
                 }
                 (move |ts: &mut crate::virtual_ts::TextBuf| {
-                    let source_name = cstr!("__vize_v_for_source_{scope_id}");
+                    let source_name = cstr!("{V_FOR_SOURCE}{scope_id}");
                     append!(*ts, "{indent}const {source_name} = __vForList(");
                     let source_gen_start = ts.len();
                     // A loop source runs before that loop's own aliases are introduced.

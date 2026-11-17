@@ -5,8 +5,8 @@
 //! consumers. A bridge at module scope hands the bindings back:
 //!
 //! ```ignore
-//! const __vize_plain_script_exports = __setup();
-//! export const Mode = __vize_plain_script_exports.Mode;
+//! const $scriptExports = __setup();
+//! export const Mode = $scriptExports.Mode;
 //! ```
 //!
 //! That bridge carries only the *value* meaning. `enum` and `class` declare a
@@ -20,6 +20,7 @@ use oxc_ast::ast::{BindingPattern, Declaration, Statement};
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType};
 use vize_carton::{CompactString, FxHashSet, String as VizeString, append};
+use vize_l0::ts_emit::generated_name::PLAIN_SCRIPT_EXPORTS;
 
 use crate::virtual_ts::{VizeMapping, VizeSemanticLink, VizeSemanticLinkKind};
 
@@ -90,7 +91,7 @@ pub(crate) fn emit_setup_invocation_and_exports(
     exports: &[PlainScriptExport],
 ) {
     if exports.iter().any(|export| export.bridged_value) {
-        ts.push_str("const __vize_plain_script_exports = __setup();\n");
+        vize_l0::append!(*ts, "const {PLAIN_SCRIPT_EXPORTS} = __setup();\n");
     } else {
         // Nothing left to read off the return object; binding it would only add
         // an unused module-scope const.
@@ -101,7 +102,7 @@ pub(crate) fn emit_setup_invocation_and_exports(
         if export.bridged_value {
             append!(
                 *ts,
-                "export const {name} = __vize_plain_script_exports.{name};\n"
+                "export const {name} = {PLAIN_SCRIPT_EXPORTS}.{name};\n"
             );
         }
         // A value+type declaration loses its type meaning when the bridge only
@@ -122,7 +123,7 @@ pub(crate) fn emit_setup_invocation_and_exports_with_mappings(
 ) -> Vec<VizeSemanticLink> {
     let mut links = Vec::new();
     if exports.iter().any(|export| export.bridged_value) {
-        ts.push_str("const __vize_plain_script_exports = __setup();\n");
+        vize_l0::append!(*ts, "const {PLAIN_SCRIPT_EXPORTS} = __setup();\n");
     } else {
         ts.push_str("__setup();\n");
     }
@@ -137,7 +138,7 @@ pub(crate) fn emit_setup_invocation_and_exports_with_mappings(
             let generated_start = ts.len();
             ts.push_str(name);
             let generated_end = ts.len();
-            append!(*ts, " = __vize_plain_script_exports.{name};\n");
+            append!(*ts, " = {PLAIN_SCRIPT_EXPORTS}.{name};\n");
             if let Some(source_range) = binding {
                 links.push(VizeSemanticLink {
                     source_range,

@@ -157,8 +157,8 @@ const todos = ref([{ id: 1, text: 'Hello' }])
 
   // v-for scope: todo in todos
   {
-  const __vize_v_for_source_8 = __vForList(todos);
-  for (const [todo] of __vize_v_for_source_8) {
+  const $forSource8 = __vForList(todos);
+  for (const [todo] of $forSource8) {
     void todo;
     void (todo.id); // VBind
     // @vize-map: expr -> 46:53
@@ -213,26 +213,26 @@ const todos = ref([{ id: 1, text: 'Hello' }])
   // Component template navigation references
   void TodoItem;
   const { } = undefined as unknown as $ComponentNavigationProps<__TodoItem_Props_0>;
-  const __vize_props_nav_0 = undefined as unknown as __TodoItem_Props_0 & globalThis.Record<string, unknown>;
+  const $propsNav0 = undefined as unknown as __TodoItem_Props_0 & globalThis.Record<string, unknown>;
   // @ts-ignore Navigation-only references; no diagnostic owner.
-  void __vize_props_nav_0.item;
+  void $propsNav0.item;
 
   // Component props value checks (template scope)
 
   // Component props in v-for scope: todo in todos
   {
-  const __vize_v_for_source_8 = __vForList(todos);
-  for (const [todo] of __vize_v_for_source_8) {
+  const $forSource8 = __vForList(todos);
+  for (const [todo] of $forSource8) {
     void todo;
     // @vize-map: prop -> 55:67
-    const __vize_prop_check_0_item: __TodoItem_0_prop_item = todo;
-    void __vize_prop_check_0_item;
+    const $prop0_item: __TodoItem_0_prop_item = todo;
+    void $prop0_item;
     (undefined as unknown as __TodoItem_Check_0)({
       "item": todo,
     });
     type $SlotContract_0 = $StructuralSlots<typeof TodoItem>;
-    const __vize_required_slots_0: $RequiredSlots<$SlotContract_0, {}> = {};
-    void __vize_required_slots_0;
+    const $requiredSlots0: $RequiredSlots<$SlotContract_0, {}> = {};
+    void $requiredSlots0;
   }
   }
 

@@ -136,7 +136,7 @@ const slots = useSlots()
   // @vize-map: 16034:16062 -> 0:58
 
   // ========== Template Scope (inherits from setup) ==========
-  const __vize_template = (function __template() {
+  const $template = (function __template() {
     // Vue template context (delegates to ComponentPublicInstance)
     // @ts-ignore TS2694/TS2307: a `vue` without `ComponentPublicInstance` must degrade template context extras to unchecked, never error.
     type __Ctx = import('vue').ComponentPublicInstance;
@@ -148,27 +148,27 @@ const slots = useSlots()
     void __ctx; void $attrs; void $slots; void $refs; void $emit;
 
   function __vizeSlotOutlet<S>(slot: S): S extends () => infer R ? (props: {}) => R : NonNullable<S> { return slot as any; }
-  var __vize_slot_payload_63 = {
+  var $slotPayload63 = {
   };
-  var __vize_slot_payload_81 = {
+  var $slotPayload81 = {
   };
-  var __vize_slot_payload_13 = {
+  var $slotPayload13 = {
     "title": 'Header',
   };
-  return {} as { "header"?: (props: typeof __vize_slot_payload_13) => any} & { "default"?: (props: typeof __vize_slot_payload_63) => any} & { "footer"?: (props: typeof __vize_slot_payload_81) => any};
+  return {} as { "header"?: (props: typeof $slotPayload13) => any} & { "default"?: (props: typeof $slotPayload63) => any} & { "footer"?: (props: typeof $slotPayload81) => any};
 
   // Reference setup bindings (used in template/CSS v-bind)
   void slots; void (null as unknown as keyof typeof useSlots);
   })();
 
-  return { __vize_template_slots: __vize_template };
+  return { $templateSlots: $template };
 }
 
 // Invoke setup to verify types
 __setup();
 
 export type Emits = {};
-type $Slots = Awaited<ReturnType<typeof __setup>>['__vize_template_slots'];
+type $Slots = Awaited<ReturnType<typeof __setup>>['$templateSlots'];
 export type { $Slots as Slots };
 
 // ========== Default Export ==========

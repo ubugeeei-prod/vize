@@ -21,6 +21,7 @@ mod emit_overloads;
 mod emit_props_block_scope;
 mod emit_props_twins;
 mod extra_keys_policy;
+mod generated_names;
 mod generic_event_specialization;
 mod generic_hoisted_alias;
 mod guarded_inference_arrow;
@@ -154,6 +155,7 @@ fn previous(current: &str, record: &Value) -> String {
 /// member is read unchanged and remains subject to its existing frozen hash.
 pub(super) fn source_before(path: &str) -> String {
     let actual = fs::read_to_string(support::repository().join(path)).unwrap();
+    let actual = generated_names::source_before(path, actual);
     let Some(index) = PATHS.iter().position(|candidate| *candidate == path) else {
         return emit_overloads::source_before(path, actual);
     };

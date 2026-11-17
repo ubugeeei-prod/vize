@@ -28,6 +28,7 @@ use vize_croquis::drawer::{
     EventHandlerExpression, classify_event_handler, extract_identifier_refs_checked,
     strip_js_comments_with_offsets,
 };
+use vize_l0::ts_emit::generated_name::LISTENER_ARGS;
 
 mod giant_interpolations;
 use giant_interpolations::{generate_isolated_interpolations, should_isolate_interpolations};
@@ -428,7 +429,7 @@ fn emit_expression_statement(
         ts.push_str(inference_expression);
         append!(
             *ts,
-            ") as ((...__vize_args: any[]) => unknown)); // {}\n",
+            ") as ((...{LISTENER_ARGS}: any[]) => unknown)); // {}\n",
             expr.kind.as_str()
         );
         // An arrow value itself does not read its captures. End the render

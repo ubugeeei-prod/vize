@@ -8,7 +8,10 @@ use std::ops::Range;
 
 use vize_croquis::{BindingType, Croquis};
 use vize_l0::config::VueVersion;
-use vize_l0::{FxHashMap, FxHashSet, String, append};
+use vize_l0::{
+    FxHashMap, FxHashSet, String, append,
+    ts_emit::generated_name::{PROPS_OBJECT, TEMPLATE},
+};
 
 use super::super::types::{VirtualTsGenerationOptions, VirtualTsOptions};
 use super::anchors::emit_props_shadow_anchor;
@@ -137,11 +140,11 @@ pub(super) fn collect_and_emit_scope_preamble(
     }
     // Semicolon prevents ASI issues when user script doesn't end with `;`
     // (e.g., `console.log(x)\n(function...)` would be parsed as a call)
-    ts.push_str(if capture_template {
-        "  const __vize_template = (function __template() {\n"
+    if capture_template {
+        append!(*ts, "  const {TEMPLATE} = (function __template() {{\n");
     } else {
-        "  ;(function __template() {\n"
-    });
+        ts.push_str("  ;(function __template() {\n");
+    }
     unwraps.emit_template_variables(ts, has_generic_param, &captures, semantic_links);
     if generation_options.template_use_navigation {
         let shadowed = unwraps.template_shadowed_bindings();
@@ -326,7 +329,7 @@ impl TemplateRefUnwraps {
                 .chain(&self.deferred_bindings)
                 .any(|name| name.as_str() == "props");
         if shadows_props {
-            "__vize_props"
+            PROPS_OBJECT.spelled()
         } else {
             "props"
         }

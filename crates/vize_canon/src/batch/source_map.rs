@@ -139,7 +139,7 @@ mod tests {
         use crate::virtual_ts::VizeSubSpan;
         let map = SfcSourceMap::new(
             vec![VizeMapping {
-                // const __vize_prop_check_0_msg: __T = 42;
+                // const $prop0_msg: __T = 42;
                 gen_range: Range {
                     start: 100,
                     end: 145,

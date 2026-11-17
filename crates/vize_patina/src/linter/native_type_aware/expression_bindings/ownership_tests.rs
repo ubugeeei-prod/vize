@@ -38,7 +38,7 @@ fn assert_owner(document: &TypeAwareDocument, authored: Range<usize>, identifier
 }
 
 fn checked_document(expression: &str, authored: Range<usize>) -> TypeAwareDocument {
-    let text = format!("const __vize_prop_check_0: unknown = ({expression});\n");
+    let text = format!("const $prop0: unknown = ({expression});\n");
     let generated = text.find(expression).expect("checked expression");
     TypeAwareDocument {
         content: String::from(text.as_str()),
@@ -116,7 +116,7 @@ fn full_multiline_wrappers_preserve_commas_and_mapping_after_later_edits() {
 #[test]
 fn checked_multiline_initializer_owns_only_the_complete_value() {
     let expression = "\n  `safe ${name}`\n";
-    let original = format!("const __vize_prop_check_0: unknown = ({expression});\n");
+    let original = format!("const $prop0: unknown = ({expression});\n");
     let mut document = mapped_document(&original, &[(expression, 40), ("name", 50)]);
     bind_template_expressions(&mut document);
     assert_eq!(
@@ -126,7 +126,7 @@ fn checked_multiline_initializer_owns_only_the_complete_value() {
     assert_owner(&document, 40..40 + expression.len(), "__expr_0");
     assert_eq!(inferred_binding_offset(&document, &(50..54)), None);
     // A synthetic annotated name cannot become the expression's inferred owner.
-    let mut anchor = mapped_document(&original, &[("__vize_prop_check_0", 40)]);
+    let mut anchor = mapped_document(&original, &[("$prop0", 40)]);
     bind_template_expressions(&mut anchor);
     assert_eq!(anchor.content.as_str(), original);
     assert_eq!(inferred_binding_offset(&anchor, &(40..59)), None);
@@ -175,17 +175,15 @@ fn condition_alias_stays_in_the_same_scope_and_keeps_the_original_guard() {
 
 #[test]
 fn handler_uses_the_complete_owned_span_and_preserves_inert_markers() {
-    let inert = "const marker = 'void (foreign); // VBind __vize_cb)((foreign))';\n";
+    let inert = "const marker = 'void (foreign); // VBind $cb)((foreign))';\n";
     let expression = "handle(\n  nested(() => ({ value: item.value }))\n)";
-    let original = format!(
-        "{inert}  const __vize_handler_0 = ((__vize_cb: unknown) => __vize_cb)(({expression}));\n"
-    );
+    let original = format!("{inert}  const $handler0 = (($cb: unknown) => $cb)(({expression}));\n");
     let mut document = mapped_document(&original, &[(expression, 8)]);
     bind_template_expressions(&mut document);
     assert_eq!(
         document.content.as_str(),
         format!(
-            "{inert}  const __expr_0 = ({expression});\n  const __vize_handler_0 = ((__vize_cb: unknown) => __vize_cb)(({expression}));\n"
+            "{inert}  const __expr_0 = ({expression});\n  const $handler0 = (($cb: unknown) => $cb)(({expression}));\n"
         )
     );
     assert_owner(&document, 8..8 + expression.len(), "__expr_0");
@@ -198,11 +196,9 @@ fn handler_uses_the_complete_owned_span_and_preserves_inert_markers() {
 #[test]
 fn synthetic_callback_subspan_retains_its_own_inferred_type() {
     let expression = "unsafeHandler";
-    let original = "  const __vize_handler_0 = ((__vize_cb: (() => unknown) | null | undefined) => __vize_cb)((unsafeHandler));\n";
+    let original = "  const $handler0 = (($cb: (() => unknown) | null | undefined) => $cb)((unsafeHandler));\n";
     let expr_at = original.find(expression).expect("owned value");
-    let name_at = original
-        .find("__vize_handler_0")
-        .expect("synthetic receiver");
+    let name_at = original.find("$handler0").expect("synthetic receiver");
     let mut document = TypeAwareDocument {
         content: String::from(original),
         mapping: ProjectionMapping::from_spans(vec![VizeMapping {
@@ -210,7 +206,7 @@ fn synthetic_callback_subspan_retains_its_own_inferred_type() {
             src_range: 50..63,
             sub_spans: vec![
                 VizeSubSpan {
-                    gen_range: name_at..name_at + "__vize_handler_0".len(),
+                    gen_range: name_at..name_at + "$handler0".len(),
                     src_range: 40..45,
                 },
                 VizeSubSpan {
@@ -246,11 +242,9 @@ fn actual_annotated_listener_initializer_owns_its_type_and_name_range() {
     // Canon scope/event_handler.rs113–145 uses this direct annotated const;
     // its final row216–243 carries separate receiver-name and value sub-spans.
     let expression = "unsafeHandler";
-    let original = "  const __vize_handler_1: Listener | null | undefined = (unsafeHandler);\n";
+    let original = "  const $handler1: Listener | null | undefined = (unsafeHandler);\n";
     let expr_at = original.find(expression).expect("owned value");
-    let name_at = original
-        .find("__vize_handler_1")
-        .expect("synthetic receiver");
+    let name_at = original.find("$handler1").expect("synthetic receiver");
     let mut document = TypeAwareDocument {
         content: String::from(original),
         mapping: ProjectionMapping::from_spans(vec![VizeMapping {
@@ -258,7 +252,7 @@ fn actual_annotated_listener_initializer_owns_its_type_and_name_range() {
             src_range: 50..63,
             sub_spans: vec![
                 VizeSubSpan {
-                    gen_range: name_at..name_at + "__vize_handler_1".len(),
+                    gen_range: name_at..name_at + "$handler1".len(),
                     src_range: 40..45,
                 },
                 VizeSubSpan {
@@ -285,7 +279,7 @@ fn actual_annotated_listener_initializer_owns_its_type_and_name_range() {
         document
             .content
             .get(receiver.span.sub_spans[0].gen_range.clone()),
-        Some("__vize_handler_1")
+        Some("$handler1")
     );
     assert_eq!(receiver.span.sub_spans[1].src_range, 50..63);
     assert_eq!(

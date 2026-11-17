@@ -97,7 +97,7 @@ const count = ref('wrong')
     // Both generated owners report on the directive. The upstream mapper host
     // does not deduplicate diagnostics, so the transform suppresses the
     // per-prop echo and keeps this whole-props position as the canonical one.
-    let check = "__vize_prop_check_0_modelValue";
+    let check = "$prop0_modelValue";
     assert_eq!(
         generated_origin(model, check, check.len(), 0),
         authored(model, "<template>", "v-model", 0)

@@ -82,7 +82,10 @@ mod tests {
             let path = file["path"].as_str().unwrap();
             let current = super::super::shared_usage_gates::source_before(
                 path,
-                fs::read_to_string(support::repository().join(path)).unwrap(),
+                super::super::generated_names::source_before(
+                    path,
+                    fs::read_to_string(support::repository().join(path)).unwrap(),
+                ),
             );
             assert!(is_after(&current, file), "{path}");
             let previous = source_before(path, current.clone());

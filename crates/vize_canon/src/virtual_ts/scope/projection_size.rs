@@ -71,7 +71,9 @@ const rows: Row[] = []
         "prop replay must still enter every inner loop"
     );
     assert!(
-        code.matches("__vize_prop_check_").count() >= BRANCHES,
+        code.matches(vize_l0::ts_emit::generated_name::PROP_CHECK.as_str())
+            .count()
+            >= BRANCHES,
         "component prop checks must stay inside each branch"
     );
     let alias_tested_early = code.split("if ((cell").nth(1).is_some();

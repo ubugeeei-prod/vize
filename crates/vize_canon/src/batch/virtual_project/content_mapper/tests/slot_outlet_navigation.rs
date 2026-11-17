@@ -142,7 +142,7 @@ const slotName = "header";
 "#;
     let result = generate_vue_content_mapper_transform(Path::new("SlotProvider.vue"), source)
         .expect("transform");
-    let generated = generated_text_range(&result.text, "NonNullable<typeof __vize_slot_name_");
+    let generated = generated_text_range(&result.text, "NonNullable<typeof $slotName");
 
     assert!(
         !result
@@ -183,7 +183,7 @@ const slotName = "header";
 "#;
     let result = generate_vue_content_mapper_transform(Path::new("SlotProvider.vue"), source)
         .expect("transform");
-    let generated = generated_text_range(&result.text, "NonNullable<typeof __vize_slot_name_");
+    let generated = generated_text_range(&result.text, "NonNullable<typeof $slotName");
 
     assert!(
         !result
@@ -202,7 +202,7 @@ const name = "header";
 "#;
     let result = generate_vue_content_mapper_transform(Path::new("SlotProvider.vue"), source)
         .expect("transform");
-    let generated = generated_text_range(&result.text, "NonNullable<typeof __vize_slot_name_");
+    let generated = generated_text_range(&result.text, "NonNullable<typeof $slotName");
 
     assert!(
         !result

@@ -12,8 +12,7 @@ use crate::batch::ContentMapperSpan;
 
 #[test]
 fn component_prop_navigation_is_the_only_hover_owner() {
-    let generated =
-        "  void __vize_props_nav_0.title;\n  (undefined as Check)({ \"title\": value });";
+    let generated = "  void $propsNav0.title;\n  (undefined as Check)({ \"title\": value });";
     let navigation = generated.find("title").unwrap();
     let check = generated.rfind("title").unwrap();
     let authored = 40;

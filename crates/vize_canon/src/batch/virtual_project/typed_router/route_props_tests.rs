@@ -138,7 +138,7 @@ fn admitted_pages_project_the_public_template_and_setup_contracts() {
     // A route param used bare in the template resolves through the projected contract.
     assert_eq!(
         line(preview, "const id ="),
-        "const id = __vize_keyed_template_context[(\"id\" satisfies keyof typeof __vize_keyed_template_context)];"
+        "const id = $keyedCtx[(\"id\" satisfies keyof typeof $keyedCtx)];"
     );
 }
 

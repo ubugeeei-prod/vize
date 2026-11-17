@@ -42,9 +42,7 @@ fn native_prop_check_uses_vue_jsx_type_and_authored_subspans() {
         .mapping
         .spans()
         .iter()
-        .find(|mapping| {
-            output.code[mapping.gen_range.clone()].contains("__vize_native_prop_check_")
-        })
+        .find(|mapping| output.code[mapping.gen_range.clone()].contains("$nativeProp"))
         .expect("native prop check mapping");
     assert_eq!(
         check_mapping.src_range, name_range,
@@ -58,7 +56,7 @@ fn native_prop_check_uses_vue_jsx_type_and_authored_subspans() {
         .find(|span| span.src_range == name_range)
         .expect("native prop check should anchor at the authored prop name");
     assert!(
-        output.code[name_span.gen_range.clone()].starts_with("__vize_native_prop_check_"),
+        output.code[name_span.gen_range.clone()].starts_with("$nativeProp"),
         "synthetic check identifier should carry the prop-type diagnostic"
     );
     let wrapper_span = check_mapping
@@ -103,9 +101,7 @@ fn invalid_native_prop_maps_the_recovery_terminator_to_the_closing_quote() {
         .mapping
         .spans()
         .iter()
-        .find(|mapping| {
-            output.code[mapping.gen_range.clone()].contains("__vize_native_prop_check_")
-        })
+        .find(|mapping| output.code[mapping.gen_range.clone()].contains("$nativeProp"))
         .expect("native prop check mapping");
     let terminator_span = check_mapping
         .sub_spans
@@ -151,12 +147,12 @@ fn native_prop_check_ignores_dynamic_names_and_components() {
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
     assert!(
-        !output.code.contains("__vize_native_prop_check_"),
+        !output.code.contains("$nativeProp"),
         "dynamic native attrs plus child props must keep their existing paths:\n{}",
         output.code
     );
     assert!(
-        output.code.contains("__vize_prop_check_"),
+        output.code.contains("$prop"),
         "the child component should still use component prop checking:\n{}",
         output.code
     );
@@ -372,13 +368,13 @@ fn later_static_class_or_style_replaces_the_bound_value() {
         .code
         .lines()
         .map(str::trim)
-        .filter(|line| line.starts_with("const __vize_native_prop_check_"))
+        .filter(|line| line.starts_with("const $nativeProp"))
         .collect();
     assert_eq!(
         checks,
         [
-            r#"const __vize_native_prop_check_56: $NativeElementProp<$NativeElement<"p">, "class"> = (flag);"#,
-            r#"const __vize_native_prop_check_113: $NativeElementProp<$NativeElement<"b">, "title"> = (flag);"#,
+            r#"const $nativeProp56: $NativeElementProp<$NativeElement<"p">, "class"> = (flag);"#,
+            r#"const $nativeProp113: $NativeElementProp<$NativeElement<"b">, "title"> = (flag);"#,
         ],
         "{}",
         output.code

@@ -1,5 +1,6 @@
 use super::document::TypeAwareDocument;
 use super::parsing::extract_runtime_object_property_values;
+use vize_l0::ts_emit::generated_name::{PATINA_EMIT, PATINA_PROMISE, PATINA_PROP};
 use vize_l0::{String, ToCompactString};
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -32,7 +33,7 @@ pub(super) fn push_promise_marker(
     };
 
     let mut marker_name = String::with_capacity(28);
-    marker_name.push_str("__vize_patina_promise_");
+    vize_l0::append!(marker_name, "{PATINA_PROMISE}");
     let query_index = queries.len().to_compact_string();
     marker_name.push_str(query_index.as_str());
 
@@ -75,7 +76,7 @@ pub(super) fn push_prop_type_markers(
     let mut block = String::with_capacity(runtime_args.len() + 128);
     for (index, prop_source) in prop_sources.iter().enumerate() {
         let mut prop_name = String::with_capacity(24);
-        prop_name.push_str("__vize_patina_prop_");
+        vize_l0::append!(prop_name, "{PATINA_PROP}");
         prop_name.push_str(queries.len().to_compact_string().as_str());
         prop_name.push('_');
         prop_name.push_str(index.to_compact_string().as_str());
@@ -120,7 +121,7 @@ pub(super) fn push_emit_validator_markers(
     let mut block = String::with_capacity(runtime_args.len() + 128);
     for (index, validator_source) in validator_sources.iter().enumerate() {
         let mut validator_name = String::with_capacity(24);
-        validator_name.push_str("__vize_patina_emit_");
+        vize_l0::append!(validator_name, "{PATINA_EMIT}");
         validator_name.push_str(queries.len().to_compact_string().as_str());
         validator_name.push('_');
         validator_name.push_str(index.to_compact_string().as_str());

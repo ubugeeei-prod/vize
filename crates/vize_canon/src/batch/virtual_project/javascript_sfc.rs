@@ -19,6 +19,7 @@
 use crate::script_parse::is_typescript_lang;
 use vize_atelier_sfc::SfcDescriptor;
 use vize_carton::{String, cstr};
+use vize_l0::ts_emit::generated_name::SRC_DEFAULT;
 
 fn is_jsx_like_lang(lang: &str) -> bool {
     matches!(lang, "jsx" | "tsx")
@@ -74,7 +75,7 @@ fn with_external_script_source(mut descriptor: SfcDescriptor<'_>) -> SfcDescript
     let Ok(specifier) = serde_json::to_string(specifier.as_str()) else {
         return descriptor;
     };
-    let content = cstr!("import __vize_src from {specifier};\nexport default __vize_src;\n");
+    let content = cstr!("import {SRC_DEFAULT} from {specifier};\nexport default {SRC_DEFAULT};\n");
     script.content = std::borrow::Cow::Owned(content.as_str().into());
     descriptor
 }
@@ -244,7 +245,7 @@ mod foreign_script_tests {
                 .script
                 .as_ref()
                 .map(|block| block.content.as_ref()),
-            Some("import __vize_src from \"./typescript.js\";\nexport default __vize_src;\n")
+            Some("import $src from \"./typescript.js\";\nexport default $src;\n")
         );
 
         for (source, specifier) in [
@@ -257,8 +258,7 @@ mod foreign_script_tests {
             let descriptor =
                 parse_sfc(sfc.as_str(), SfcParseOptions::default()).expect("SFC must parse");
             let descriptor = prepare_script_blocks(descriptor);
-            let expected =
-                cstr!("import __vize_src from {specifier};\nexport default __vize_src;\n");
+            let expected = cstr!("import $src from {specifier};\nexport default $src;\n");
             assert_eq!(
                 descriptor
                     .script

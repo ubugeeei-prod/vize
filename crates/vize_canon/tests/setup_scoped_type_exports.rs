@@ -94,13 +94,13 @@ fn classic_value_dependent_exports_are_captured_and_reexported() {
     );
     assert!(
         virtual_ts.contains(
-            "export type ButtonNativeType = Awaited<ReturnType<typeof __setup>>[\"__vize_exported_type_ButtonNativeType\"]"
+            "export type ButtonNativeType = Awaited<ReturnType<typeof __setup>>[\"$exportedType_ButtonNativeType\"]"
         ),
         "the public alias must be restored at module scope:\n{virtual_ts}"
     );
     assert!(
         virtual_ts.contains(
-            "export type BadgeOptions = Awaited<ReturnType<typeof __setup>>[\"__vize_exported_type_BadgeOptions\"]"
+            "export type BadgeOptions = Awaited<ReturnType<typeof __setup>>[\"$exportedType_BadgeOptions\"]"
         ),
         "the public interface shape must be restored at module scope:\n{virtual_ts}"
     );
@@ -211,9 +211,8 @@ fn private_setup_scoped_props_still_export_a_public_declaration() {
         "a private value-dependent Props must still yield one public export:\n{virtual_ts}"
     );
     assert!(
-        virtual_ts.contains(
-            "export type Props = Awaited<ReturnType<typeof __setup>>[\"__vize_setup_props\"]"
-        ),
+        virtual_ts
+            .contains("export type Props = Awaited<ReturnType<typeof __setup>>[\"$setupProps\"]"),
         "the public Props alias must resolve from the setup return:\n{virtual_ts}"
     );
     assert!(
@@ -252,7 +251,7 @@ fn a_classic_block_export_keeps_one_authoritative_declaration() {
         "a classic-block export must not be re-declared through __setup:\n{virtual_ts}"
     );
     assert!(
-        !virtual_ts.contains("__vize_exported_type_NotificationConfig"),
+        !virtual_ts.contains("$exportedType_NotificationConfig"),
         "a classic-block export must not be captured as a setup artifact:\n{virtual_ts}"
     );
     // Verbatim emission is what keeps the authored diagnostic range intact.

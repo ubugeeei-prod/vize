@@ -17,7 +17,7 @@
 //! [`JsxEmit::ForScope`](super::JsxEmit::ForScope) handles `v-for` aliases:
 //!
 //! ```text
-//! __vize_jsx_component_slot__(<Host>, "<name>", (<pattern>) => __vize_jsx_expr__(<body…>))
+//! $jsxSlot(<Host>, "<name>", (<pattern>) => $jsx(<body…>))
 //! ```
 //!
 //! The parameter's type comes from the host component's declared `$slots` via
@@ -26,6 +26,7 @@
 //! untyped so untyped slot hosts never produce a false positive.
 
 use vize_carton::{String as CompactString, ToCompactString};
+use vize_l0::ts_emit::generated_name::JSX_COMPONENT_SLOT;
 use vize_relief::{ElementNode, ElementType, PropNode};
 
 use crate::virtual_ts::VizeMapping;
@@ -94,7 +95,7 @@ pub(super) fn render_open(
     scope: &JsxSlotScope,
     context: &RenderContext<'_>,
 ) {
-    out.push_str("__vize_jsx_component_slot__(");
+    vize_l0::append!(*out, "{JSX_COMPONENT_SLOT}(");
     out.push_str(&scope.host);
     out.push_str(", ");
     out.push_str(&json_string(&scope.name));

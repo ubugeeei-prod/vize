@@ -29,6 +29,7 @@ use vize_carton::FxHashSet;
 use vize_carton::String;
 use vize_carton::append;
 use vize_carton::cstr;
+use vize_l0::ts_emit::generated_name::STRICT_TEMPLATE_CONTEXT;
 
 use vize_croquis::{Croquis, ScopeData, analyzer::extract_identifier_refs_oxc};
 
@@ -208,7 +209,8 @@ fn instance_props_type(
 
 /// The authored Options API instance, with the public instance as the fallback
 /// for a default export that is not a component constructor.
-const AUTHORED_INSTANCE_RECEIVER: &str = "__vize_instance_globals";
+const AUTHORED_INSTANCE_RECEIVER: vize_l0::ts_emit::generated_name::GeneratedName =
+    vize_l0::ts_emit::generated_name::INSTANCE_GLOBALS;
 
 struct InstanceGlobalRefsEmitter<'a> {
     ts: &'a mut crate::virtual_ts::TextBuf,
@@ -280,11 +282,11 @@ impl<'a> InstanceGlobalRefsEmitter<'a> {
     /// `any` fallback.
     fn instance_receiver(&self) -> Option<&'static str> {
         if self.options.strict_instance_globals {
-            Some("__vize_strict_template_context")
+            Some(STRICT_TEMPLATE_CONTEXT.spelled())
         } else if self.scope_options.legacy_vue2 {
             None
         } else if resolves_on_authored_instance(self.summary, self.scope_options) {
-            Some(AUTHORED_INSTANCE_RECEIVER)
+            Some(AUTHORED_INSTANCE_RECEIVER.spelled())
         } else {
             Some("__ctx")
         }
@@ -357,7 +359,8 @@ impl<'a> InstanceGlobalRefsEmitter<'a> {
             );
             self.emitted_instance_global_alias = true;
         }
-        if receiver == Some(AUTHORED_INSTANCE_RECEIVER) && !self.emitted_authored_instance {
+        if receiver == Some(AUTHORED_INSTANCE_RECEIVER.spelled()) && !self.emitted_authored_instance
+        {
             append!(
                 *self.ts,
                 "  const {AUTHORED_INSTANCE_RECEIVER} = undefined as unknown as (typeof __default__ extends abstract new (...args: any) => infer __I ? __I : __Ctx);\n",

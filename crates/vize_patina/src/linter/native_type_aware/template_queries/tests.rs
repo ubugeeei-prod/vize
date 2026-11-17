@@ -9,8 +9,8 @@ use vize_l0::String;
 #[test]
 fn camelized_shorthand_probes_the_value_instead_of_the_native_check() {
     for value in ["ariaLabel", "__props.ariaLabel", "__vizeUnref(ariaLabel"] {
-        let generated = format!("const __vize_native_prop_check_10 = ({value});");
-        let check_start = generated.find("__vize_native_prop_check_10").unwrap();
+        let generated = format!("const $nativeProp10 = ({value});");
+        let check_start = generated.find("$nativeProp10").unwrap();
         let value_start = generated.find(" = (").unwrap() + " = (".len();
         let value_end = value_start + value.len();
         let document = TypeAwareDocument {
@@ -20,7 +20,7 @@ fn camelized_shorthand_probes_the_value_instead_of_the_native_check() {
                 src_range: 10..20,
                 sub_spans: vec![
                     VizeSubSpan {
-                        gen_range: check_start..check_start + "__vize_native_prop_check_10".len(),
+                        gen_range: check_start..check_start + "$nativeProp10".len(),
                         src_range: 10..20,
                     },
                     VizeSubSpan {
@@ -127,7 +127,7 @@ function pick(index: number): string[] { return pages[index] ?? [] }
 
 #[test]
 fn multiline_v_for_capture_lookup_uses_the_nearest_declaration() {
-    let generated = "  const __vize_v_for_source_1 = __vForList(items);\n  for (const [item] of __vize_v_for_source_1) {\n    const __vize_v_for_source_not_a_capture = 'ignore';\n    const __vize_v_for_source_2 = __vForList(pages[\n      current\n    ]);\n";
+    let generated = "  const $forSource1 = __vForList(items);\n  for (const [item] of $forSource1) {\n    const $forSource_not_a_capture = 'ignore';\n    const $forSource2 = __vForList(pages[\n      current\n    ]);\n";
     let expression_offset = generated.rfind(']').unwrap() as u32;
     let binding_offset =
         v_for_source_binding_offset(generated, expression_offset).expect("capture binding");
@@ -140,10 +140,10 @@ fn multiline_v_for_capture_lookup_uses_the_nearest_declaration() {
 
 #[test]
 fn a_nested_callee_uses_the_authored_initializer_and_the_full_expression_is_inferred() {
-    let text = "  const __vize_handler_0: unknown = (() => emit('retry'));\n";
+    let text = "  const $handler0: unknown = (() => emit('retry'));\n";
     let expression = "() => emit('retry')";
     let start = text.find(expression).unwrap();
-    let name = text.find("__vize_handler_0").unwrap();
+    let name = text.find("$handler0").unwrap();
     let mut document = TypeAwareDocument {
         content: String::from(text),
         mapping: ProjectionMapping::from_spans(vec![VizeMapping {
@@ -151,7 +151,7 @@ fn a_nested_callee_uses_the_authored_initializer_and_the_full_expression_is_infe
             src_range: 100..100 + expression.len(),
             sub_spans: vec![
                 VizeSubSpan {
-                    gen_range: name..name + "__vize_handler_0".len(),
+                    gen_range: name..name + "$handler0".len(),
                     src_range: 95..99,
                 },
                 VizeSubSpan {

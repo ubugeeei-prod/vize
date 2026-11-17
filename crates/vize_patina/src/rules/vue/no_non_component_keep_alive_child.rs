@@ -21,6 +21,7 @@ use oxc_ecmascript::{
     side_effects::{MayHaveSideEffects, MayHaveSideEffectsContext, PropertyReadSideEffects},
 };
 use vize_l0::is_native_tag;
+use vize_l0::ts_emit::generated_name::UNKNOWN_REFERENCE;
 use vize_relief::{ElementNode, ElementType, ExpressionNode, PropNode, TemplateChildNode};
 
 static META: RuleMeta = RuleMeta {
@@ -325,7 +326,7 @@ struct OpaqueReferences;
 
 impl<'a> VisitMut<'a> for OpaqueReferences {
     fn visit_identifier_reference(&mut self, reference: &mut IdentifierReference<'a>) {
-        reference.name = "__vize_unknown_reference".into();
+        reference.name = UNKNOWN_REFERENCE.spelled().into();
     }
 }
 

@@ -89,7 +89,10 @@ pub(super) fn semantic_position(
                     head.rsplit_once('\n')
                         .map_or(head, |(_, line)| line)
                         .trim_start()
-                        .starts_with("void __vize_kebab_events_nav_")
+                        .strip_prefix("void ")
+                        .is_some_and(|name| {
+                            vize_l0::ts_emit::generated_name::KEBAB_EVENTS_NAV.is_member(name)
+                        })
                 });
             (is_navigation
                 && document.virtual_result.code.get(start..end) == Some(semantic.as_str()))

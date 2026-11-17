@@ -75,14 +75,21 @@ pub(super) fn rewrite_tsx_vue_shim_specifiers(
     })
 }
 
-const SETUP_SCOPED_PROPS_INPUT: &str =
-    "  const __vize_setup_props = undefined as unknown as $SetupProps;";
+const SETUP_SCOPED_PROPS_INPUT: &str = concat!(
+    "  const ",
+    vize_l0::generated_name!(SETUP_PROPS),
+    " = undefined as unknown as $SetupProps;"
+);
 
 // A setup-local interface cannot be named from __setup's declaration return
 // type (TS4060). Declaration input alone uses this distributive homomorphic
 // projection so TypeScript serializes each branch without changing the normal
 // checking surface, diagnostics, or editor projections.
-const SETUP_SCOPED_PROPS_DECLARATION: &str = "  const __vize_setup_props = undefined as unknown as $IsAny<$SetupProps> extends true ? $SetupProps : unknown extends $SetupProps ? $SetupProps : $SetupProps extends infer $PropBranch ? $PropBranch extends (...args: any[]) => any ? $PropBranch : { [K in keyof $PropBranch]: $PropBranch[K] } : never;";
+const SETUP_SCOPED_PROPS_DECLARATION: &str = concat!(
+    "  const ",
+    vize_l0::generated_name!(SETUP_PROPS),
+    " = undefined as unknown as $IsAny<$SetupProps> extends true ? $SetupProps : unknown extends $SetupProps ? $SetupProps : $SetupProps extends infer $PropBranch ? $PropBranch extends (...args: any[]) => any ? $PropBranch : { [K in keyof $PropBranch]: $PropBranch[K] } : never;"
+);
 
 fn rewrite_tsx_vue_shim_specifier(path: &str, source_dir: &Path) -> Option<String> {
     if !(path.starts_with("./") || path.starts_with("../")) {

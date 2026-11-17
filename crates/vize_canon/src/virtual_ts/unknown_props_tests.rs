@@ -120,7 +120,7 @@ fn listener_inference_maps_its_own_prop_keys_values_and_spreads() {
         );
         let inference = output
             .code
-            .find("const __vize_emit_props_")
+            .find("const $emitProps")
             .expect("the listener must instantiate the child's public input contract");
         let generated_key = inference
             + output

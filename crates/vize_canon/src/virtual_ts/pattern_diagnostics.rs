@@ -12,11 +12,11 @@ pub fn is_unreachable_pattern_diagnostic(source: &str, offset: usize, code: Opti
     let Some((name, suffix)) = rest.split_once(':') else {
         return false;
     };
-    name.starts_with("__vize_match_")
+    vize_l0::ts_emit::generated_name::MATCH.is_member(name)
         && name.ends_with("unreachable")
         && name
             .bytes()
-            .all(|byte| byte.is_ascii_alphanumeric() || byte == b'_')
+            .all(|byte| byte.is_ascii_alphanumeric() || byte == b'_' || byte == b'$')
         && suffix.starts_with(" $Patterns.Reachable<")
 }
 
@@ -26,13 +26,13 @@ mod tests {
 
     #[test]
     fn only_generated_reachability_assignments_are_warnings() {
-        let source = "const __vize_match_2_unreachable: $Patterns.Reachable<T> = true;";
+        let source = "const $match2_unreachable: $Patterns.Reachable<T> = true;";
         assert!(classify(source, 6, Some(2322)));
         assert!(!classify(source, 6, Some(2304)));
         assert!(!classify(source, 0, Some(2322)));
         assert!(!classify("value: number = 'bad'", 0, Some(2322)));
         assert!(!classify(
-            "__vize_match_0_\nunreachable: $Patterns.Reachable<T>",
+            "$match0_\nunreachable: $Patterns.Reachable<T>",
             0,
             Some(2322)
         ));

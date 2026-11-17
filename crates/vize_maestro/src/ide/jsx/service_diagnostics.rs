@@ -37,7 +37,7 @@ impl JsxService {
                     return None;
                 }
                 // Skip "declared but never used" noise on the synthesized sink
-                // helper and any other internal `__vize_` symbol.
+                // helper and any other generated `$` symbol.
                 let is_unused = diag.message.contains("is declared but")
                     && (diag.message.contains("never read") || diag.message.contains("never used"));
                 if is_unused && diag.message.contains("'__vize") {

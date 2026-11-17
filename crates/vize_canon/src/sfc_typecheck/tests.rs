@@ -313,17 +313,16 @@ const emit = defineEmits({
 
     let virtual_ts = result.virtual_ts.expect("virtual ts should be generated");
     assert!(
-        virtual_ts.contains("const __vize_emit_options = ({"),
+        virtual_ts.contains("const $emitOptions = ({"),
         "{virtual_ts}"
     );
     assert!(virtual_ts.contains("...emitObject"), "{virtual_ts}");
     assert!(
-        virtual_ts.contains("const __vize_emits = defineEmits({\n    ...emitObject,\n});"),
+        virtual_ts.contains("const $emits = defineEmits({\n    ...emitObject,\n});"),
         "{virtual_ts}"
     );
     assert!(
-        virtual_ts
-            .contains("export type Emits = Awaited<ReturnType<typeof __setup>>[\"__vize_emits\"];"),
+        virtual_ts.contains("export type Emits = Awaited<ReturnType<typeof __setup>>[\"$emits\"];"),
         "{virtual_ts}"
     );
     assert!(
@@ -355,17 +354,15 @@ const emit = defineEmits([...useDialogPluginComponent.emits]);
 
     let virtual_ts = result.virtual_ts.expect("virtual ts should be generated");
     assert!(
-        virtual_ts.contains("const __vize_emit_options = ([...useDialogPluginComponent.emits]);"),
+        virtual_ts.contains("const $emitOptions = ([...useDialogPluginComponent.emits]);"),
         "{virtual_ts}"
     );
     assert!(
-        virtual_ts
-            .contains("const __vize_emits = defineEmits([...useDialogPluginComponent.emits]);"),
+        virtual_ts.contains("const $emits = defineEmits([...useDialogPluginComponent.emits]);"),
         "{virtual_ts}"
     );
     assert!(
-        virtual_ts
-            .contains("export type Emits = Awaited<ReturnType<typeof __setup>>[\"__vize_emits\"];"),
+        virtual_ts.contains("export type Emits = Awaited<ReturnType<typeof __setup>>[\"$emits\"];"),
         "{virtual_ts}"
     );
 }

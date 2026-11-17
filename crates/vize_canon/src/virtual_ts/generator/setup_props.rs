@@ -1,3 +1,4 @@
+use vize_l0::ts_emit::generated_name::{OPTIONS_PROPS, SETUP_PROPS};
 mod exports;
 
 use vize_carton::{CompactString, FxHashSet, String, append, cstr, profile};
@@ -348,10 +349,10 @@ impl SetupPropsPlan {
             fields.push("__default__");
         }
         if self.defer {
-            fields.push("__vize_setup_props");
+            fields.push(SETUP_PROPS.spelled());
         }
         if self.defer_options_api_props {
-            fields.push("__vize_options_props");
+            fields.push(OPTIONS_PROPS.spelled());
         }
     }
 
@@ -375,7 +376,7 @@ impl SetupPropsPlan {
         };
         append!(
             ts,
-            "\n  const __vize_options_props = ({source}{const_assertion});\n"
+            "\n  const {OPTIONS_PROPS} = ({source}{const_assertion});\n"
         );
     }
 

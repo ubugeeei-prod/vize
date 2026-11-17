@@ -46,7 +46,7 @@ fn repeated_direct_emit_resolver_is_emitted_once() {
             );
         }
         assert_eq!(
-            output.code.matches("const __vize_emit_factory_").count(),
+            output.code.matches("const $emitFactory").count(),
             0,
             "multi-line uses keep the direct call; hoist={hoist}: {}",
             output.code

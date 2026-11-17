@@ -47,7 +47,7 @@ pub fn lower_source_for_typecheck<'a>(
     };
     let prepared = parse::prepare_source_for_parse(source, lang);
     let mut recovered = prepared.into_owned();
-    const MEMBER: &str = "__vize_incomplete_member";
+    const MEMBER: &str = vize_l0::generated_name!(INCOMPLETE_MEMBER);
     recovered.insert_str(offset, MEMBER);
     let mut parsed = parse::parse_module(allocator, &recovered, lang);
     if parsed.has_errors() {

@@ -206,22 +206,22 @@ const item = ref<{ name: string } | undefined>()
   // Component template navigation references
   void LinkComp;
   const { } = undefined as unknown as $ComponentNavigationProps<__LinkComp_Props_0>;
-  const __vize_props_nav_0 = undefined as unknown as __LinkComp_Props_0 & globalThis.Record<string, unknown>;
+  const $propsNav0 = undefined as unknown as __LinkComp_Props_0 & globalThis.Record<string, unknown>;
   // @ts-ignore Navigation-only references; no diagnostic owner.
-  void __vize_props_nav_0.to;
+  void $propsNav0.to;
 
   // Component props value checks (template scope)
   // @vize-map: prop -> 22:37
   // @ts-ignore Inference-only guard; authored v-if checks own diagnostics.
   if ((item)) {
-    const __vize_prop_check_0_to: __LinkComp_0_prop_to = item.name;
-    void __vize_prop_check_0_to;
+    const $prop0_to: __LinkComp_0_prop_to = item.name;
+    void $prop0_to;
     (undefined as unknown as __LinkComp_Check_0)({
       "to": item.name,
     });
     type $SlotContract_0 = __LinkComp_slot_contract;
-    const __vize_required_slots_0: $RequiredSlots<$SlotContract_0, {}> = {};
-    void __vize_required_slots_0;
+    const $requiredSlots0: $RequiredSlots<$SlotContract_0, {}> = {};
+    void $requiredSlots0;
   }
   type __LinkComp_slot_contract = $StructuralSlots<typeof LinkComp>;
 

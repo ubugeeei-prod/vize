@@ -69,7 +69,7 @@ fn assert_lacks(code: &str, needle: &str) {
 }
 
 fn assert_component_prop_still_checked(code: &str) {
-    assert_has(code, "const __vize_prop_check_0_not_a_real_prop:");
+    assert_has(code, "const $prop0_not_a_real_prop:");
     assert_has(
         code,
         "$PublicComponentAttrs & $ComponentGlobalHtmlAttrs & $AllowedFallthroughAttrs<C>",
@@ -83,7 +83,7 @@ fn assert_component_prop_still_checked(code: &str) {
 #[test]
 fn vue3_check_unknown_props_accepts_intrinsic_attributes() {
     let output = generate(true);
-    assert_lacks(&output.code, "__vize_native_key_");
+    assert_lacks(&output.code, "$nativeKey");
     for name in ["x-small", "height", "no-gutters", "cols"] {
         assert_lacks(&output.code, &format!("\"{name}\""));
     }
@@ -114,7 +114,7 @@ fn omitted_target_excess_checks_intrinsic_names_without_never_assignment() {
     let native_keys: Vec<_> = output
         .code
         .lines()
-        .filter(|line| has_fragment(line, "__vize_native_key_"))
+        .filter(|line| has_fragment(line, "$nativeKey"))
         .collect();
     assert!(!native_keys.is_empty(), "{}", output.code);
     for line in native_keys {
@@ -123,8 +123,8 @@ fn omitted_target_excess_checks_intrinsic_names_without_never_assignment() {
             !assigns_never,
             "omitted target must not assign the name to never: {line}"
         );
-        let typed = has_fragment(line, "Partial<$NativeElement<")
-            || has_fragment(line, "void __vize_native_key_");
+        let typed =
+            has_fragment(line, "Partial<$NativeElement<") || has_fragment(line, "void $nativeKey");
         assert!(typed, "{line}");
     }
     for fragment in [

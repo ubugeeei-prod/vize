@@ -2,6 +2,7 @@
 
 use crate::virtual_ts::scope::ScopeMappings;
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
+use vize_l0::ts_emit::generated_name::MATCH;
 mod descriptor;
 mod source;
 
@@ -114,7 +115,7 @@ pub(super) fn emit_match(
     let ScopeData::VMatch(subject) = scope.data() else {
         return;
     };
-    let mut prefix = cstr!("__vize_match_{}_", scope.id.as_u32());
+    let mut prefix = cstr!("{MATCH}{}_", scope.id.as_u32());
     // Include script and template spellings, not only known bindings: unresolved
     // references must not accidentally start resolving to a generated local.
     while ts.contains(prefix.as_str())

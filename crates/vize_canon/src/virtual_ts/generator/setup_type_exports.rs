@@ -1,4 +1,5 @@
 use std::borrow::Cow;
+use vize_l0::ts_emit::generated_name::EXPORTED_TYPE;
 
 use vize_carton::{FxHashSet, String, append, cstr};
 use vize_croquis::Croquis;
@@ -118,7 +119,7 @@ impl SetupTypeExportsPlan {
                     continue;
                 }
                 exports.push(SetupTypeExport {
-                    artifact: cstr!("__vize_exported_type_{name}"),
+                    artifact: cstr!("{EXPORTED_TYPE}_{name}"),
                     name,
                 });
             }
@@ -236,7 +237,7 @@ mod tests {
         let mut setup = crate::virtual_ts::TextBuf::default();
         plan.emit_setup_artifacts(&mut setup, &mut fields);
         assert!(setup.contains("unknown as Public"));
-        assert_eq!(fields, ["__vize_exported_type_Public"]);
+        assert_eq!(fields, ["$exportedType_Public"]);
     }
 
     #[test]
@@ -289,7 +290,7 @@ mod tests {
         let mut fields = Vec::new();
         let mut setup = crate::virtual_ts::TextBuf::default();
         plan.emit_setup_artifacts(&mut setup, &mut fields);
-        assert_eq!(fields, ["__vize_exported_type_Public"]);
+        assert_eq!(fields, ["$exportedType_Public"]);
         assert!(setup.contains("unknown as Public"));
 
         let mut module = crate::virtual_ts::TextBuf::default();
@@ -323,7 +324,7 @@ mod tests {
         let mut fields = Vec::new();
         let mut setup = crate::virtual_ts::TextBuf::default();
         plan.emit_setup_artifacts(&mut setup, &mut fields);
-        assert_eq!(fields, ["__vize_exported_type_Options"]);
+        assert_eq!(fields, ["$exportedType_Options"]);
         assert_eq!(setup.matches("unknown as Options").count(), 1);
 
         let mut module = crate::virtual_ts::TextBuf::default();

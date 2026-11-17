@@ -30,7 +30,7 @@ pub fn extract_v_scope_bindings(expr: &str) -> SmallVec<[VScopeBinding; 4]> {
     // Wrap as the initializer of a declaration so the object literal parses as
     // an expression (a bare leading `{` would be a block statement). The prefix
     // length is fixed, so subtracting it recovers offsets within `trimmed`.
-    const PREFIX: &str = "const __vize_scope = ";
+    const PREFIX: &str = concat!("const ", vize_l0::generated_name!(V_SCOPE_PROBE), " = ");
     let wrapped = vize_carton::cstr!("{PREFIX}{trimmed}");
     // Offset of `trimmed` within `wrapped`, plus the original expression's own
     // leading whitespace that `trim` removed (callers pass absolute offsets

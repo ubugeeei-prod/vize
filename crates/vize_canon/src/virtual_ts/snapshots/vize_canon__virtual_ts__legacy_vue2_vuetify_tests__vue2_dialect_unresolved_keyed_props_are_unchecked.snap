@@ -152,15 +152,15 @@ defineProps<Props>()
   void props; // Mark as used to avoid TS6133
   const mini = props["mini"];
   void mini;
-  const __vize_keyed_template_context = props as typeof props & { [K in keyof __Ctx as string extends K ? never : number extends K ? never : symbol extends K ? never : K]: __Ctx[K] };
-  void __vize_keyed_template_context;
-  const chips = __vize_keyed_template_context[("chips" satisfies keyof typeof __vize_keyed_template_context)];
+  const $keyedCtx = props as typeof props & { [K in keyof __Ctx as string extends K ? never : number extends K ? never : symbol extends K ? never : K]: __Ctx[K] };
+  void $keyedCtx;
+  const chips = $keyedCtx[("chips" satisfies keyof typeof $keyedCtx)];
   void chips;
-  const hideDetails = __vize_keyed_template_context[("hideDetails" satisfies keyof typeof __vize_keyed_template_context)];
+  const hideDetails = $keyedCtx[("hideDetails" satisfies keyof typeof $keyedCtx)];
   void hideDetails;
-  const isMini = __vize_keyed_template_context[("isMini" satisfies keyof typeof __vize_keyed_template_context)];
+  const isMini = $keyedCtx[("isMini" satisfies keyof typeof $keyedCtx)];
   void isMini;
-  const width = __vize_keyed_template_context[("width" satisfies keyof typeof __vize_keyed_template_context)];
+  const width = $keyedCtx[("width" satisfies keyof typeof $keyedCtx)];
   void width;
 
   void (isMini); // Interpolation
@@ -173,14 +173,14 @@ defineProps<Props>()
   // @vize-map: expr -> 51:56
 
   // Undefined references from template:
-  void (__vize_keyed_template_context.isMini);
-  // @vize-map: 18024:18030 -> 8:14
-  void (__vize_keyed_template_context.hideDetails);
-  // @vize-map: 18107:18118 -> 21:32
-  void (__vize_keyed_template_context.chips);
-  // @vize-map: 18196:18201 -> 39:44
-  void (__vize_keyed_template_context.width);
-  // @vize-map: 18279:18284 -> 51:56
+  void ($keyedCtx.isMini);
+  // @vize-map: 17804:17810 -> 8:14
+  void ($keyedCtx.hideDetails);
+  // @vize-map: 17867:17878 -> 21:32
+  void ($keyedCtx.chips);
+  // @vize-map: 17936:17941 -> 39:44
+  void ($keyedCtx.width);
+  // @vize-map: 17999:18004 -> 51:56
 
   // Reference setup bindings (used in template/CSS v-bind)
   void mini;

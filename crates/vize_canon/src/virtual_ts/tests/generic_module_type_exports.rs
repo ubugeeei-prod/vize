@@ -175,8 +175,8 @@ defineEmits<{ 'change': [value: Value] }>()
     let virtual_ts = generate_virtual_ts_from_sfc(source);
     for expected in [
         "type Value = $HoistedGeneric0<T>;",
-        "const __vize_typed_emits = undefined as unknown as { 'change': [value: Value] };",
-        "export type Emits<T extends 'number' | 'text' = any> = Awaited<ReturnType<typeof __setup<T>>>[\"__vize_typed_emits\"];",
+        "const $typedEmits = undefined as unknown as { 'change': [value: Value] };",
+        "export type Emits<T extends 'number' | 'text' = any> = Awaited<ReturnType<typeof __setup<T>>>[\"$typedEmits\"];",
         "__EmitProps<Emits<T>>",
     ] {
         assert!(
@@ -203,7 +203,7 @@ function itemScope(index: number) {
     assert_eq!(
         virtual_ts
             .matches(
-                "const __vize_typed_slots = undefined as unknown as { item?(scope: ReturnType<typeof itemScope>): unknown };"
+                "const $typedSlots = undefined as unknown as { item?(scope: ReturnType<typeof itemScope>): unknown };"
             )
             .count(),
         1,
@@ -212,7 +212,7 @@ function itemScope(index: number) {
     assert_eq!(
         virtual_ts
             .matches(
-                "type $Slots = Awaited<ReturnType<typeof __setup>>['__vize_typed_slots'] & { item?: unknown; };"
+                "type $Slots = Awaited<ReturnType<typeof __setup>>['$typedSlots'] & { item?: unknown; };"
             )
             .count(),
         1,
@@ -237,8 +237,8 @@ function itemScope(value: T) { return { value }; }
     let virtual_ts = generate_virtual_ts_from_sfc(source);
 
     for expected in [
-        "const __vize_typed_slots = undefined as unknown as { item?(scope: ReturnType<typeof itemScope>): unknown };",
-        "type $Slots<T extends string = any> = Awaited<ReturnType<typeof __setup<T>>>['__vize_typed_slots'] & { item?: unknown; };",
+        "const $typedSlots = undefined as unknown as { item?(scope: ReturnType<typeof itemScope>): unknown };",
+        "type $Slots<T extends string = any> = Awaited<ReturnType<typeof __setup<T>>>['$typedSlots'] & { item?: unknown; };",
         "slots: $Slots<T>",
     ] {
         assert_eq!(
@@ -283,12 +283,12 @@ fn generic_event_alias_keeps_indirect_callable_and_model_contracts() {
         (
             "(event: 'change', value: Value) => void",
             "",
-            "[\"__vize_typed_emits\"];",
+            "[\"$typedEmits\"];",
         ),
         (
             "{ change: [value: Value] }",
             "defineModel<number>()",
-            "__EmitFn<Awaited<ReturnType<typeof __setup<T>>>[\"__vize_typed_emits\"]> & __EmitFn<{",
+            "__EmitFn<Awaited<ReturnType<typeof __setup<T>>>[\"$typedEmits\"]> & __EmitFn<{",
         ),
     ] {
         let source = format!(
@@ -301,7 +301,7 @@ fn generic_event_alias_keeps_indirect_callable_and_model_contracts() {
         );
         assert!(
             virtual_ts.contains(&format!(
-                "const __vize_typed_emits = undefined as unknown as {emits};"
+                "const $typedEmits = undefined as unknown as {emits};"
             )),
             "{virtual_ts}"
         );

@@ -14,9 +14,9 @@ use super::DIRECTIVE_POLICY_EXPECT;
 use crate::virtual_ts::attr_value_declaration;
 
 const APP: &str = "<script setup lang=\"ts\">\nimport Field from './Field.vue'\n</script>\n<template>\n  <Field label=\"x\" :maxlength=\"{}\" />\n</template>\n";
-const OWNED: &str = "  const __vize_prop_check_0_maxlength: $AttrValue<__Field_Props_0, \"maxlength\", typeof Field, __Field_0_prop_maxlength> = {} satisfies __Field_0_prop_maxlength;\n";
-const PLAIN: &str = "  const __vize_prop_check_0_maxlength: __Field_0_prop_maxlength = {};\n";
-const NAME: &str = "__vize_prop_check_0_maxlength";
+const OWNED: &str = "  const $prop0_maxlength: $AttrValue<__Field_Props_0, \"maxlength\", typeof Field, __Field_0_prop_maxlength> = {} satisfies __Field_0_prop_maxlength;\n";
+const PLAIN: &str = "  const $prop0_maxlength: __Field_0_prop_maxlength = {};\n";
+const NAME: &str = "$prop0_maxlength";
 
 fn policies(directives: &[ContentMapperDiagnosticDirective], at: usize) -> Vec<usize> {
     directives
@@ -127,7 +127,7 @@ fn literal_owners_alone_take_the_owned_form() {
         };
         assert_eq!(policies(&directives, value), echoed, "{source}");
         assert_eq!(
-            text.matches("  const __vize_prop_check_0_aria_busy: __Field_0_prop_aria_busy = 1;\n")
+            text.matches("  const $prop0_aria_busy: __Field_0_prop_aria_busy = 1;\n")
                 .count(),
             aria_plain,
             "ARIA keeps the plain owner"
@@ -150,7 +150,7 @@ fn split_values_stay_one_owned_expression() {
         let result = generate_vue_content_mapper_transform(Path::new("/project/App.vue"), &source)
             .expect("transform");
         let text = result.text.as_str();
-        let opening = "  const __vize_prop_check_0_maxlength: $AttrValue<__Field_Props_0, \"maxlength\", typeof Field, __Field_0_prop_maxlength> = (";
+        let opening = "  const $prop0_maxlength: $AttrValue<__Field_Props_0, \"maxlength\", typeof Field, __Field_0_prop_maxlength> = (";
         let start = text.find(opening).expect("owned per-prop check");
         let statement = text
             .get(start..)
@@ -203,7 +203,7 @@ fn relaxed_fallthrough_root_keeps_declared_props_with_the_literal() {
         "the root usage is relaxed"
     );
     assert_eq!(
-        text.matches("  const __vize_prop_check_0_label: $AttrValue<__Inner_Props_0, \"label\", typeof Inner, __Inner_0_prop_label> = 1 satisfies __Inner_0_prop_label;\n")
+        text.matches("  const $prop0_label: $AttrValue<__Inner_Props_0, \"label\", typeof Inner, __Inner_0_prop_label> = 1 satisfies __Inner_0_prop_label;\n")
             .count(),
         1,
         "the declared key, not its `Partial`, decides the owner"
@@ -218,7 +218,7 @@ fn relaxed_fallthrough_root_keeps_declared_props_with_the_literal() {
     assert_eq!(
         undefined
             .text
-            .matches("  const __vize_prop_check_0_label: $AttrValue<__Inner_Props_0, \"label\", unknown, __Inner_0_prop_label, {}> = undefined satisfies __Inner_0_prop_label;\n")
+            .matches("  const $prop0_label: $AttrValue<__Inner_Props_0, \"label\", unknown, __Inner_0_prop_label, {}> = undefined satisfies __Inner_0_prop_label;\n")
             .count(),
         1,
         "the per-prop contract owns explicit undefined at the relaxed root"
@@ -234,7 +234,7 @@ fn component_prop_assignments_are_ignored_only_when_the_literal_owns_them() {
         .expect("component prop echo directive");
     let check = result
         .text
-        .find("const __vize_prop_check_0_count")
+        .find("const $prop0_count")
         .expect("per-prop check")
         + "const ".len();
     let tail = result

@@ -11,6 +11,7 @@ use super::super::types::{VizeMapping, VizeSubSpan};
 use crate::virtual_ts::scope::is_direct_inline_function_prop_value;
 use vize_carton::{FxHashMap, append, is_native_tag};
 use vize_croquis::TemplateExpression;
+use vize_l0::ts_emit::generated_name::COMPONENT_REF_CHECK;
 use vize_relief::{
     DirectiveNode, ElementNode, ExpressionNode, PropNode, RootNode, TemplateChildNode,
 };
@@ -116,7 +117,7 @@ pub(super) fn generate_component_ref_callback_statement(
 
     append!(*ts, "{indent}const ");
     let check_name_start = ts.len();
-    append!(*ts, "__vize_component_ref_check_{}", expr.start);
+    append!(*ts, "{COMPONENT_REF_CHECK}{}", expr.start);
     let check_name_end = ts.len();
     append!(
         *ts,
@@ -135,7 +136,7 @@ pub(super) fn generate_component_ref_callback_statement(
     };
     append!(
         *ts,
-        "{indent}void __vize_component_ref_check_{}; // VBind\n",
+        "{indent}void {COMPONENT_REF_CHECK}{}; // VBind\n",
         expr.start
     );
 

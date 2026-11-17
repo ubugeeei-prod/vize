@@ -68,11 +68,17 @@ pub(super) fn emit_forwarded_root_probes(
         }
         let emit_props_factory = crate::virtual_ts::helpers::shared_types::EMIT_PROPS_FACTORY
             .select(ctx.hoist_shared_preamble);
-        for (kind, factory) in [
-            ("props", "$ForwardedPropsFactory"),
-            ("emits", emit_props_factory),
+        for (stem, factory) in [
+            (
+                vize_l0::ts_emit::generated_name::FORWARDED_PROPS,
+                "$ForwardedPropsFactory",
+            ),
+            (
+                vize_l0::ts_emit::generated_name::FORWARDED_EMITS,
+                emit_props_factory,
+            ),
         ] {
-            let name = cstr!("__vize_forwarded_{kind}_{index}");
+            let name = cstr!("{stem}{index}");
             emit_probe(ts, ctx, usage, component.as_str(), factory, name.as_str());
             if !forwarded.is_empty() {
                 forwarded.push_str(" & ");

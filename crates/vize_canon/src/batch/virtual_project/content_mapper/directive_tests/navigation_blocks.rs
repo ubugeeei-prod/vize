@@ -7,7 +7,7 @@ use super::super::protocol::{
 use super::super::unmapped_ignores::unmapped_ignores;
 use super::published;
 
-const TEXT: &str = "void Child;\n  const __vize_props_nav_0 = undefined as unknown as P & globalThis.Record<string, unknown>;\n  // @ts-ignore Navigation-only references; no diagnostic owner.\n  void __vize_props_nav_0.title; void __vize_props_nav_0.count; void __vize_props_nav_0['data-x'];\nconst after = 1;\n";
+const TEXT: &str = "void Child;\n  const $propsNav0 = undefined as unknown as P & globalThis.Record<string, unknown>;\n  // @ts-ignore Navigation-only references; no diagnostic owner.\n  void $propsNav0.title; void $propsNav0.count; void $propsNav0['data-x'];\nconst after = 1;\n";
 const KEYS: [&str; 5] = ["Child", "title", "count", "data-x", "after"];
 
 fn spans(text: &str) -> Vec<Span> {
@@ -47,7 +47,7 @@ fn one_ignore_covers_the_navigation_block_and_its_gaps() {
 fn an_explicit_tuple_touching_the_block_keeps_every_gap() {
     let title = TEXT.find("title").unwrap();
     let expect = Row([1, 2, title, title + 5, DIRECTIVE_POLICY_EXPECT, 0]);
-    let plain = TEXT.replace("__vize_props_nav_", "__vize_propz_nav_");
+    let plain = TEXT.replace("$propsNav", "$propzNav");
     let plain_title = plain.find("title").unwrap();
     let touched = rows(TEXT, vec![expect]);
     // Five spans leave six gaps; the expect keeps its own interval.
@@ -74,17 +74,11 @@ fn an_explicit_tuple_touching_the_block_keeps_every_gap() {
 #[test]
 fn only_a_numbered_const_whose_ignored_line_holds_only_its_references_opens_a_block() {
     for text in [
-        TEXT.replace("__vize_props_nav_0 =", "__vize_props_nav_x ="),
-        TEXT.replace(
-            "void __vize_props_nav_0.count",
-            "void __vize_props_nav_1.count",
-        ),
-        TEXT.replace("; void __vize_props_nav_0.count", "; void other.count"),
+        TEXT.replace("$propsNav0 =", "$propsNav_x ="),
+        TEXT.replace("void $propsNav0.count", "void $propsNav1.count"),
+        TEXT.replace("; void $propsNav0.count", "; void other.count"),
         TEXT.replace("// @ts-ignore Navigation-only", "// Navigation-only"),
-        TEXT.replace(
-            "  const __vize_props_nav_0",
-            "  x; const __vize_props_nav_0",
-        ),
+        TEXT.replace("  const $propsNav0", "  x; const $propsNav0"),
     ] {
         assert_eq!(rows(&text, Vec::new()).len(), 6, "{text}");
     }
@@ -92,10 +86,7 @@ fn only_a_numbered_const_whose_ignored_line_holds_only_its_references_opens_a_bl
 
 #[test]
 fn a_reference_line_the_comment_does_not_cover_keeps_its_gaps() {
-    let text = TEXT.replace(
-        "; void __vize_props_nav_0.count",
-        ";\n  void __vize_props_nav_0.count",
-    );
+    let text = TEXT.replace("; void $propsNav0.count", ";\n  void $propsNav0.count");
     let rows = rows(&text, Vec::new());
     let covered = |key: &str| {
         let at = text.find(key).unwrap();
@@ -111,13 +102,11 @@ fn published_parent_ignores_each_navigation_block_once() {
     let source = "<script setup lang=\"ts\">\nimport Child from './Child.vue'\nconst n = 1\n</script>\n<template>\n  <Child :a=\"n\" :b=\"n\" data-x=\"y\" />\n</template>\n";
     let result = published(source);
     let text = result.text.as_str();
-    let start = text
-        .find("const __vize_props_nav_0 = ")
-        .expect("navigation block");
+    let start = text.find("const $propsNav0 = ").expect("navigation block");
     let references = text[start..].split_inclusive('\n').nth(2).unwrap();
     assert_eq!(
         references.trim_start(),
-        "void __vize_props_nav_0.a; void __vize_props_nav_0.b; void __vize_props_nav_0.dataX;\n",
+        "void $propsNav0.a; void $propsNav0.b; void $propsNav0.dataX;\n",
         "{text}"
     );
     let end = start

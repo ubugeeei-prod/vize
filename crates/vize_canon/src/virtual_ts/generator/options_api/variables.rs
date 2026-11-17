@@ -9,6 +9,7 @@ use crate::virtual_ts::scope::{
 use crate::virtual_ts::{VirtualTsOptions, VizeMapping, VizeSemanticLink, VizeSemanticLinkKind};
 use vize_carton::{FxHashSet, String, append};
 use vize_croquis::{BindingType, Croquis};
+use vize_l0::ts_emit::generated_name::OPTIONS_INSTANCE;
 
 /// Emit the profiled Options API variables without growing the root generator.
 pub(in crate::virtual_ts::generator) fn emit_options_api_variables(
@@ -145,15 +146,16 @@ fn generate_options_api_variables(
         "  type $OptionsBinding<T, K extends string> = K extends keyof $OptionsInstance<T> ? $OptionsInstance<T>[K] : any;\n",
     );
     if names.iter().any(|(name, _)| is_reserved_identifier(name)) {
-        ts.push_str(
-            "  const __vize_options_instance = {} as $OptionsInstance<typeof __default__>;\n",
+        vize_l0::append!(
+            ts,
+            "  const {OPTIONS_INSTANCE} = {{}} as $OptionsInstance<typeof __default__>;\n"
         );
     }
     for (name, mutable) in &names {
         let generated_start = if is_reserved_identifier(name) {
             // A reserved name cannot be a local, so template expressions
             // read it through the instance. A component reference cannot
-            // (`typeof __vize_options_instance["as"]` is no component
+            // (`typeof $this["as"]` is no component
             // binding), so the name also gets the safe local the
             // `<script setup>` projection declares for it: `<component
             // :is="as">` resolves `typeof _as` exactly as it does there.
@@ -162,7 +164,7 @@ fn generate_options_api_variables(
                 ts,
                 "  const {local}: $OptionsBinding<typeof __default__, \"{name}\"> = (void 0) as any; void {local};\n"
             );
-            ts.push_str("  void __vize_options_instance[\"");
+            vize_l0::append!(ts, "  void {OPTIONS_INSTANCE}[\"");
             let start = ts.len();
             append!(ts, "{name}\"];\n");
             start

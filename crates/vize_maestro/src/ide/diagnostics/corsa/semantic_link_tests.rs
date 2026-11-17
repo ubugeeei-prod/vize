@@ -83,10 +83,7 @@ fn original_bare_prop_links_keep_emitted_binding_and_native_property_endpoints_a
         "/../../tests/_fixtures/differential/lsp/bare-prop-definition/StatusBoxLocal.vue.txt"
     ));
     for newline in ["\n", "\r\n"] {
-        for (source, property_receiver) in [
-            (imported, "__vize_keyed_template_context[(\""),
-            (local, "props[\""),
-        ] {
+        for (source, property_receiver) in [(imported, "$keyedCtx[(\""), (local, "props[\"")] {
             let source = ["<!-- 😀 -->\n", source].concat().replace('\n', newline);
             let result =
                 DiagnosticService::generate_virtual_ts(&uri, &source, false, false).unwrap();

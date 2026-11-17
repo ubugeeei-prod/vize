@@ -94,24 +94,24 @@ const props = defineProps<ParentWidgetProps>();
   // Component template navigation references
   void Child;
   const { } = undefined as unknown as $ComponentNavigationProps<__Child_Props_0>;
-  const __vize_props_nav_0 = undefined as unknown as __Child_Props_0 & globalThis.Record<string, unknown>;
+  const $propsNav0 = undefined as unknown as __Child_Props_0 & globalThis.Record<string, unknown>;
   // @ts-ignore Navigation-only references; no diagnostic owner.
-  void __vize_props_nav_0.as; void __vize_props_nav_0.asChild;
+  void $propsNav0.as; void $propsNav0.asChild;
 
   // Component props value checks (template scope)
   // @vize-map: prop -> 265:273
-  const __vize_prop_check_0_as: __Child_0_prop_as = props["as"];
-  void __vize_prop_check_0_as;
+  const $prop0_as: __Child_0_prop_as = props["as"];
+  void $prop0_as;
   // @vize-map: prop -> 274:299
-  const __vize_prop_check_0_as_child: __Child_0_prop_as_child = props.asChild;
-  void __vize_prop_check_0_as_child;
+  const $prop0_as_child: __Child_0_prop_as_child = props.asChild;
+  void $prop0_as_child;
   (undefined as unknown as __Child_Check_0)({
     "as": props["as"],
     "asChild": props.asChild,
   });
   type $SlotContract_0 = import("vize:virtual-ts").$StructuralSlots<typeof Child>;
-  const __vize_required_slots_0: import("vize:virtual-ts").$RequiredSlots<$SlotContract_0, {}> = {};
-  void __vize_required_slots_0;
+  const $requiredSlots0: import("vize:virtual-ts").$RequiredSlots<$SlotContract_0, {}> = {};
+  void $requiredSlots0;
 
   // Mark used components as referenced
   void Child;

@@ -14,6 +14,7 @@ mod controls;
 mod current_generated_constructor;
 mod current_updates;
 mod fallthrough_source_generated;
+mod generated_names_generated;
 mod integrated_generated_constructor;
 mod provider_roster;
 mod setup_verbatim_generated;
@@ -253,6 +254,7 @@ fn expected(current_providers: bool) -> (Value, Value) {
     constructor_noinfer_generated::apply(&mut manifest, &mut members);
     setup_verbatim_generated::apply(&mut manifest, &mut members);
     fallthrough_source_generated::apply(&mut manifest, &mut members);
+    generated_names_generated::apply(&mut manifest, &mut members);
     (manifest, json!(members))
 }
 

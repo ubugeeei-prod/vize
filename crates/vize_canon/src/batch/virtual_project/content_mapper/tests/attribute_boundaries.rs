@@ -37,8 +37,8 @@ fn adjacent_quoted_attributes_keep_the_complete_spaced_projection() {
         .into();
     let template_start = source.find("<template>").expect("authored template") + "<template>".len();
     let attribute = boundary - template_start;
-    let original_name = cstr!("__vize_native_key_{attribute}");
-    let spaced_name = cstr!("__vize_native_key_{}", attribute + 1);
+    let original_name = cstr!("$nativeKey{attribute}");
+    let spaced_name = cstr!("$nativeKey{}", attribute + 1);
     assert_eq!(expected.text.matches(spaced_name.as_str()).count(), 2);
     expected.text = expected
         .text

@@ -4,6 +4,7 @@
 //! not own intermediate TypeScript or interpret authored type expressions.
 
 use core::fmt;
+use vize_l0::ts_emit::generated_name::{ROOT_EL, TEMPLATE_REFS};
 
 use crate::virtual_ts::generated_names as names;
 use vize_carton::{String, cstr};
@@ -118,14 +119,14 @@ impl fmt::Display for GenericContext<'_> {
         if self.root_element {
             write!(
                 formatter,
-                " & {{ $el: {}['__vize_root_el'] }}",
+                " & {{ $el: {}['{ROOT_EL}'] }}",
                 names::setup_return(arguments)
             )?;
         }
         if self.template_refs {
             write!(
                 formatter,
-                " & {{ $refs: {}['__vize_refs'] }}",
+                " & {{ $refs: {}['{TEMPLATE_REFS}'] }}",
                 names::setup_return(arguments)
             )?;
         }

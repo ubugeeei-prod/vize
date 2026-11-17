@@ -16,7 +16,7 @@ const PAGE: &str = include_str!(concat!(
 ));
 
 /// The write-back statement `model_update` emits for the bound target.
-const WRITE_BACK: &str = "climate = __vize_model_value;";
+const WRITE_BACK: &str = "climate = $value;";
 
 fn projection(vue_compiler_options: &str) -> vize_l0::String {
     let directory = tempfile::tempdir().unwrap();
@@ -92,9 +92,7 @@ fn write_back_owns_the_bound_target_diagnostics() {
     )
     .unwrap();
     let text = transform.text.as_str();
-    let write_back = text
-        .find("state.missing = __vize_model_value")
-        .expect("write-back");
+    let write_back = text.find("state.missing = $value").expect("write-back");
     let literal = text
         .find("\"modelValue\": state.missing")
         .expect("props literal")

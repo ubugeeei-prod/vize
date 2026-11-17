@@ -41,8 +41,8 @@ fn volar_expect_directive_owns_the_instance_primary_not_a_navigation_copy() {
             .unwrap();
     let text = result.text.as_str();
     let primary_at = |name: &str| {
-        let needle = format!("__vize_public_instance.{name}");
-        text.find(&needle).expect("instance primary") + "__vize_public_instance.".len()
+        let needle = format!("$public.{name}");
+        text.find(&needle).expect("instance primary") + "$public.".len()
     };
     let expected = primary_at("expectedMissing");
     let navigation = text

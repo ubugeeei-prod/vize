@@ -99,3 +99,10 @@ mapping fewer, so only its mapping count and coordinate hashes move.
 export by inference (`$AuthoredComponent extends infer A extends object ? … &
 A & …`). Its text shrinks by 1 byte and later mapping coordinates move by it;
 Canon, Maestro and every count are unchanged.
+
+`successor-generated-names` records #13230 on top of
+`successor-with-defaults-undefined-13179`: generated values, keys and markers
+are spelled `$name` from `vize_l0::generated_name` instead of `__vize_*`.
+Canon and the content mapper shrink by 63 bytes and Maestro by 42. Mapping,
+diagnostic and authored-hit counts are unchanged, so the changed coordinate
+hashes come only from the relocation.

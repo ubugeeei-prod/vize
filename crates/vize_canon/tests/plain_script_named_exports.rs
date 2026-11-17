@@ -53,7 +53,7 @@ export const setupParseMdFileDialogCtx = () => ({ ready: true });
 
     assert!(
         content.contains(
-            "export const setupParseMdFileDialogCtx = __vize_plain_script_exports.setupParseMdFileDialogCtx;"
+            "export const setupParseMdFileDialogCtx = $scriptExports.setupParseMdFileDialogCtx;"
         ),
         "normal <script> named exports must stay available from the virtual module:\n{content}"
     );
@@ -121,14 +121,12 @@ export function toPageCount(total: number) {
         );
     }
     for name in ["DiffDisplayMode", "DiffMarker", "DiffCursor", "toPageCount"] {
-        assert!(!content.contains(&format!(
-            "export const {name} = __vize_plain_script_exports."
-        )));
+        assert!(!content.contains(&format!("export const {name} = $scriptExports.")));
         assert!(!content.contains(&format!("export type {name} =")));
     }
 
     // A value-only declaration must not be handed a type meaning it never had.
-    let value = "export const pageSize = __vize_plain_script_exports.pageSize;";
+    let value = "export const pageSize = $scriptExports.pageSize;";
     let absent_type_side = "export type pageSize ";
     assert!(
         content.contains(value),
@@ -191,7 +189,7 @@ export default defineComponent({
         "normal <script> exported type body must remain syntactically intact:\n{content}"
     );
     assert!(
-        content.contains("export const DATA_TYPE = __vize_plain_script_exports.DATA_TYPE;"),
+        content.contains("export const DATA_TYPE = $scriptExports.DATA_TYPE;"),
         "normal <script> exported const must remain visible to module exports:\n{content}"
     );
     assert_ts_parses(content);

@@ -739,7 +739,7 @@
     {
       "name": "replacement feature metadata differs",
       "source": "\"submit\"",
-      "generated": "void __vize_model_events_completion_                                 \"submit\"",
+      "generated": "void $modelCompletion0                                               \"submit\"",
       "mappings": [
         {
           "generated": [

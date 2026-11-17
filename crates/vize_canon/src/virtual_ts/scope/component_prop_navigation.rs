@@ -1,4 +1,5 @@
 use std::ops::Range;
+use vize_l0::ts_emit::generated_name::{PROPS_NAV, SLOT_NAV, SLOTS_NAV};
 
 use vize_carton::cstr;
 use vize_croquis::croquis::{ComponentUsage, PassedProp, SlotUsage};
@@ -108,7 +109,7 @@ fn emit_prop_references(
         target_range: completion_offset..completion_offset,
         kind: VizeSemanticLinkKind::VueComponentPropCompletion,
     });
-    let props_ref = cstr!("__vize_props_nav_{idx}");
+    let props_ref = cstr!("{PROPS_NAV}{idx}");
     let mut emitted_props_ref = false;
     for prop in &usage.props {
         if prop.name_is_dynamic || prop.name.as_str() == "key" || prop.name.as_str() == "ref" {
@@ -200,7 +201,7 @@ fn emit_slot_references(
     idx: usize,
     usage: &ComponentUsage,
 ) {
-    let slots_ref = cstr!("__vize_slots_nav_{idx}");
+    let slots_ref = cstr!("{SLOTS_NAV}{idx}");
     let mut emitted_slots_ref = false;
     for (slot_index, slot) in usage.slots.iter().enumerate() {
         if slot.name_is_dynamic {
@@ -245,7 +246,7 @@ fn emit_slot_references(
             // the owner's property identity. Indexed typeof also rejects missing keys.
             vize_l0::emit_ts!(
                 ts,
-                "  const __vize_slot_nav_{idx}_{slot_index} = undefined as unknown as typeof {slots_ref}["
+                "  const {SLOT_NAV}{idx}_{slot_index} = undefined as unknown as typeof {slots_ref}["
             );
         }
         let access_start = ts.len();
@@ -262,10 +263,10 @@ fn emit_slot_references(
         } else if identifier {
             vize_l0::emit_ts!(
                 ts,
-                ": __vize_slot_nav_{idx}_{slot_index} }} = {slots_ref};\n  void __vize_slot_nav_{idx}_{slot_index};\n"
+                ": {SLOT_NAV}{idx}_{slot_index} }} = {slots_ref};\n  void {SLOT_NAV}{idx}_{slot_index};\n"
             );
         } else {
-            vize_l0::emit_ts!(ts, "];\n  void __vize_slot_nav_{idx}_{slot_index};\n");
+            vize_l0::emit_ts!(ts, "];\n  void {SLOT_NAV}{idx}_{slot_index};\n");
         }
         let src_range = (ctx.template_offset as usize + source_range.start)
             ..(ctx.template_offset as usize + source_range.end);

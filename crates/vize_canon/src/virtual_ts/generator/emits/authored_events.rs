@@ -1,6 +1,7 @@
 use vize_carton::{FxHashSet, String, append, cstr};
 use vize_croquis::Croquis;
 use vize_l0::ts;
+use vize_l0::ts_emit::generated_name::MODEL_EVENT_MARKER;
 
 use crate::virtual_ts::macro_type_mappings::MacroTypeMappings;
 
@@ -88,7 +89,7 @@ pub(super) fn emit_authored_event_map(
         let Some(authored_range) = summary.macros.model_declaration(model.name.as_str()) else {
             continue;
         };
-        ts.push_str("  /* __vize_model_event */ ");
+        vize_l0::append!(*ts, "  /* {MODEL_EVENT_MARKER} */ ");
         let generated_start = ts.len();
         ts.push_str(
             serde_json::to_string(event_name.as_str())

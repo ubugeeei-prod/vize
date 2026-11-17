@@ -33,7 +33,7 @@ fn strict_slot_contracts_are_opt_in_in_modern_and_legacy_entrypoints() {
         let contracts = |code: &str| -> Vec<std::string::String> {
             code.lines()
                 .map(str::trim)
-                .filter(|line| line.starts_with("const __vize_slot_children_"))
+                .filter(|line| line.starts_with("const $slotChildren"))
                 .map(str::to_owned)
                 .collect()
         };
@@ -41,7 +41,7 @@ fn strict_slot_contracts_are_opt_in_in_modern_and_legacy_entrypoints() {
         assert_eq!(
             contracts(&on),
             [
-                "const __vize_slot_children_0_default: $SlotChildren<$SlotContract_0, \"default\"> = null as unknown as $ProvidedSlotChildren<[HTMLInputElement]>;",
+                "const $slotChildren0_default: $SlotChildren<$SlotContract_0, \"default\"> = null as unknown as $ProvidedSlotChildren<[HTMLInputElement]>;",
             ]
         );
         options.experimental_strict_slot_children = false;

@@ -1,6 +1,7 @@
 use crate::virtual_ts::generated_names::push_lib_text;
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use vize_carton::{FxHashMap, String, append};
+use vize_l0::ts_emit::generated_name::{SLOT_NAME, SLOT_PAYLOAD};
 
 use crate::virtual_ts::{
     expressions::ComponentPropSource, helpers::to_camel_case, types::VizeMapping,
@@ -186,11 +187,7 @@ fn generate_slot_outlet_checks(
             String::from(indent)
         };
         if infer {
-            append!(
-                *ts,
-                "{expr_indent}var __vize_slot_payload_{} = ",
-                outlet.start
-            );
+            append!(*ts, "{expr_indent}var {SLOT_PAYLOAD}{} = ", outlet.start);
             append_slot_outlet_literal(
                 ts,
                 mappings,
@@ -204,7 +201,7 @@ fn generate_slot_outlet_checks(
             if outlet.name_is_dynamic {
                 append!(
                     *ts,
-                    "{expr_indent}var __vize_slot_name_{} = __vizeSlotName({});\n",
+                    "{expr_indent}var {SLOT_NAME}{} = __vizeSlotName({});\n",
                     outlet.start,
                     outlet.name
                 );

@@ -4,6 +4,7 @@ use super::span_features::content_mapper_span_features;
 use super::{ContentMapperSpanKind, SpanCandidate, VizeMapping, candidate};
 use std::ops::Range;
 use vize_l0::SmallVec;
+use vize_l0::ts_emit::generated_name::MODEL_EVENT_MARKER;
 
 pub(super) fn candidates(
     source: &str,
@@ -116,7 +117,9 @@ fn model_triplet(
         || interior.gen_range.end != name.gen_range.end
         || !generated
             .get(..whole.gen_range.start)?
-            .ends_with("  /* __vize_model_event */ ")
+            .strip_suffix(" */ ")
+            .and_then(|head| head.rsplit_once("  /* "))
+            .is_some_and(|(_, marker)| MODEL_EVENT_MARKER.is(marker))
     {
         return None;
     }
@@ -345,7 +348,7 @@ mod model_tests {
     fn rows(name: &str, literal: &str) -> (vize_l0::String, vize_l0::String, Vec<VizeMapping>) {
         let source = vize_l0::cstr!("defineModel<string>({literal})");
         let generated = vize_l0::cstr!(
-            "  \"{name}\": string;\n  /* __vize_model_event */ \"update:{name}\": [value: string];\n"
+            "  \"{name}\": string;\n  /* $modelEvent */ \"update:{name}\": [value: string];\n"
         );
         let authored = source.find(literal).unwrap() + 1;
         let event = generated.find("\"update:").unwrap();
@@ -448,7 +451,7 @@ mod model_tests {
             assert!(model_triplet(&source, &generated, &rows[0], &rows[1], &rows[2]).is_none());
         }
         for generated in [
-            generated.replace("__vize_model_event", "__vize_other_event"),
+            generated.replace("$modelEvent", "$otherEvent"),
             generated.replace("update:", "delete:"),
             generated.replace("update:saveItem", "update:otherOne"),
         ] {

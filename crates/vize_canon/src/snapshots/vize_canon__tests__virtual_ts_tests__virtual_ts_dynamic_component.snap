@@ -164,9 +164,9 @@ function switchComponent() {
   // @vize-map: expr -> 346:362
 
   // @click handler
-  void ((__vize_event: PointerEvent) => {
-    const __vize_handler_10_80 = ((__vize_cb: ((_e: PointerEvent) => unknown) | null | undefined) => __vize_cb)((switchComponent));
-    if (__vize_handler_10_80) __vize_handler_10_80(__vize_event);  // handler expression
+  void (($evt: PointerEvent) => {
+    const $handler10_80 = (($cb: ((_e: PointerEvent) => unknown) | null | undefined) => $cb)((switchComponent));
+    if ($handler10_80) $handler10_80($evt);  // handler expression
     // @vize-map: handler -> 397:412
   });
 
@@ -221,8 +221,8 @@ function switchComponent() {
       (undefined as unknown as __currentComponent_Check_0)({
       });
       type $SlotContract_0 = $StructuralSlots<typeof currentComponent>;
-      const __vize_required_slots_0: $RequiredSlots<$SlotContract_0, {}> = {};
-      void __vize_required_slots_0;
+      const $requiredSlots0: $RequiredSlots<$SlotContract_0, {}> = {};
+      void $requiredSlots0;
     },
   ];
 

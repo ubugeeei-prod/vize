@@ -15,6 +15,7 @@
 use vize_carton::{FxHashSet, String, append, cstr};
 use vize_croquis::Croquis;
 use vize_croquis::macros::MacroKind;
+use vize_l0::ts_emit::generated_name::KEYED_TEMPLATE_CONTEXT;
 
 use super::keyed_template_names::collect_keyed_template_prop_names;
 use super::mappings::PropBindingMappings;
@@ -316,7 +317,7 @@ pub(crate) fn generate_props_variables(
                 // augmentations), but never let an index signature hide typos.
                 append!(
                     *ts,
-                    "  const __vize_keyed_template_context = {props_object_binding} as typeof {props_object_binding} & {{ [K in keyof __Ctx as string extends K ? never : number extends K ? never : symbol extends K ? never : K]: __Ctx[K] }};\n  void __vize_keyed_template_context;\n"
+                    "  const {KEYED_TEMPLATE_CONTEXT} = {props_object_binding} as typeof {props_object_binding} & {{ [K in keyof __Ctx as string extends K ? never : number extends K ? never : symbol extends K ? never : K]: __Ctx[K] }};\n  void {KEYED_TEMPLATE_CONTEXT};\n"
                 );
             }
             for name in names {
@@ -378,16 +379,20 @@ fn emit_keyed_template_prop_binding(
         let exclude = crate::virtual_ts::generated_names::lib("Exclude");
         append!(
             *ts,
-            "  const {binding_name} = __vize_keyed_template_context[(\"{prop_name}\" satisfies keyof typeof __vize_keyed_template_context)] as {exclude}<{props_type_ref}[\"{prop_name}\"], undefined>;\n"
+            "  const {binding_name} = {KEYED_TEMPLATE_CONTEXT}[(\"{prop_name}\" satisfies keyof typeof {KEYED_TEMPLATE_CONTEXT})] as {exclude}<{props_type_ref}[\"{prop_name}\"], undefined>;\n"
         );
     } else {
         append!(
             *ts,
-            "  const {binding_name} = __vize_keyed_template_context[(\"{prop_name}\" satisfies keyof typeof __vize_keyed_template_context)];\n"
+            "  const {binding_name} = {KEYED_TEMPLATE_CONTEXT}[(\"{prop_name}\" satisfies keyof typeof {KEYED_TEMPLATE_CONTEXT})];\n"
         );
     }
     append!(*ts, "  void {binding_name};\n");
-    let property_start = start + binding_name.len() + " = __vize_keyed_template_context[(\"".len();
+    let property_start = start
+        + binding_name.len()
+        + " = ".len()
+        + KEYED_TEMPLATE_CONTEXT.spelled().len()
+        + "[(\"".len();
     binding_mappings.link(
         start..start + binding_name.len(),
         property_start..property_start + prop_name.len(),

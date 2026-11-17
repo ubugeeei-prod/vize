@@ -138,7 +138,8 @@ pub use types::{TemplateGlobal, VirtualTsOptions, VirtualTsOutput};
 /// are intentionally left `any` here: that fallback is the conservative side of
 /// the trade (it can miss an error, never fabricate one), and typing them is
 /// tracked separately from this fix.
-pub const JSX_COMPONENT_HELPER: &str = "type $JsxKebabCase<S extends string> = S extends `${infer H}${infer T}` ? H extends Lowercase<H> ? `${H}${$JsxKebabCase<T>}` : `-${Lowercase<H>}${$JsxKebabCase<T>}` : S;\n\
+pub const JSX_COMPONENT_HELPER: &str = concat!(
+    "type $JsxKebabCase<S extends string> = S extends `${infer H}${infer T}` ? H extends Lowercase<H> ? `${H}${$JsxKebabCase<T>}` : `-${Lowercase<H>}${$JsxKebabCase<T>}` : S;\n\
 type $JsxCamelCase<S extends string> = S extends `data-${string}` | `aria-${string}` ? S : S extends `${infer H}-${infer T}` ? `${H}${Capitalize<$JsxCamelCase<T>>}` : S;\n\
 type $JsxRawPropKeys<R> = R extends unknown ? { [K in keyof R]-?: K extends string ? K | $JsxKebabCase<K> : K }[keyof R] : never;\n\
 type $JsxCanonicalRawProps<R> = R extends unknown ? { [K in keyof R as K extends string ? $JsxCamelCase<K> : K]: R[K] } : never;\n\
@@ -152,10 +153,17 @@ type $JsxFallthroughAttrs<Owned = {}> = { class?: unknown; style?: unknown } & {
 type $JsxSfcComponentProps<I> = I extends { $props: infer P } ? I extends { readonly __vizeRawProps?: infer R } ? Omit<P, $JsxRawPropKeys<R>> & $JsxCanonicalRawProps<R> & $JsxFallthroughAttrs<P> : $JsxCanonicalRawProps<P> & $JsxFallthroughAttrs<P> : any;\n\
 type $JsxComponentProps<C> = C extends abstract new (...args: any[]) => infer I ? $JsxNormalizeProps<$JsxSfcComponentProps<I>> : C extends (props: infer P, ...args: any[]) => any ? $JsxNormalizeProps<$JsxCanonicalRawProps<P> & $JsxFallthroughAttrs<P>> : any;\n\
 type $JsxSlotPayload<C, N extends string> = C extends abstract new (...args: any[]) => infer I ? I extends { $slots: infer S } ? N extends keyof S ? NonNullable<S[N]> extends (props: infer P, ...args: any[]) => any ? P : any : any : any : any;\n\
-declare function __vize_jsx_component_spread__<O>(value: O): $JsxCanonicalRawProps<Omit<O, 'key' | 'ref'>>;\n\
+declare function ",
+    vize_l0::generated_name!(JSX_COMPONENT_SPREAD),
+    "<O>(value: O): $JsxCanonicalRawProps<Omit<O, 'key' | 'ref'>>;\n\
 type $JsxComponentCall<C> = C extends abstract new (...args: any[]) => any ? (props: $JsxComponentProps<C>) => any : C extends (...args: any[]) => any ? C : (props: $JsxComponentProps<C>) => any;\n\
-declare function __vize_jsx_component__<C>(component: C): $JsxComponentCall<C>;\n\
-declare function __vize_jsx_component_slot__<C, N extends string>(component: C, name: N, render: (payload: $JsxSlotPayload<C, N>) => unknown): any;\n";
+declare function ",
+    vize_l0::generated_name!(JSX_COMPONENT),
+    "<C>(component: C): $JsxComponentCall<C>;\n\
+declare function ",
+    vize_l0::generated_name!(JSX_COMPONENT_SLOT),
+    "<C, N extends string>(component: C, name: N, render: (payload: $JsxSlotPayload<C, N>) => unknown): any;\n"
+);
 #[cfg(feature = "native")]
 pub(crate) use types::AuthoredScriptMetadata;
 #[cfg(feature = "native")]

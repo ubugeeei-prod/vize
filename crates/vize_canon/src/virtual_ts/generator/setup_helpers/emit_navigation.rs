@@ -1,6 +1,7 @@
 //! Native property identity for statically named calls to the actual macro result.
 
 use std::ops::Range;
+use vize_l0::ts_emit::generated_name::EMIT_CALLS_NAV;
 
 use oxc_ast::ast::{
     Argument, BindingPattern, CallExpression, Expression, Program, Statement,
@@ -180,10 +181,10 @@ impl SetupHelperPlan {
         let authored = crate::virtual_ts::generated_names::declared("$AuthoredEventMap");
         append!(
             *ts,
-            "  const __vize_emit_calls_nav = undefined as unknown as {authored}{generic_suffix};\n"
+            "  const {EMIT_CALLS_NAV} = undefined as unknown as {authored}{generic_suffix};\n"
         );
         for call in &self.emit_calls {
-            ts.push_str("  void __vize_emit_calls_nav[");
+            vize_l0::append!(*ts, "  void {EMIT_CALLS_NAV}[");
             let start = ts.len() + 1;
             ts.push_str(&call.literal);
             mappings.push(VizeMapping::new(
@@ -231,7 +232,7 @@ fire(key, true);
         });
         assert_eq!(
             generated.as_str(),
-            "  const __vize_emit_calls_nav = undefined as unknown as $AuthoredEventMap;\n  void __vize_emit_calls_nav[\"change\"];\n  void __vize_emit_calls_nav['change'];\n"
+            "  const $emitCalls = undefined as unknown as $AuthoredEventMap;\n  void $emitCalls[\"change\"];\n  void $emitCalls['change'];\n"
         );
         let first_source = source.find("fire(\"change\"").unwrap() + 6;
         let second_source = source.find("fire('change'").unwrap() + 6;
@@ -300,7 +301,7 @@ fire(key, true);
         assert_eq!(
             (generated.as_str(), mappings),
             (
-                "  const __vize_emit_calls_nav = undefined as unknown as $AuthoredEventMap<T>;\n  void __vize_emit_calls_nav['change'];\n",
+                "  const $emitCalls = undefined as unknown as $AuthoredEventMap<T>;\n  void $emitCalls['change'];\n",
                 vec![crate::virtual_ts::VizeMapping::new(
                     generated_start..generated_start + 6,
                     source_start..source_start + 6,

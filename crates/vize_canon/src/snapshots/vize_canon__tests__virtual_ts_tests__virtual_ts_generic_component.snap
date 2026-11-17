@@ -150,7 +150,7 @@ const activeItem = ref<T | null>(null)
   items: T[]
   selected?: T
 };
-  const __vize_setup_props = undefined as unknown as $SetupProps;
+  const $setupProps = undefined as unknown as $SetupProps;
   // ========== Template Scope (inherits from setup) ==========
   // Anchor before the template scope shadows `props`
   void props;
@@ -176,16 +176,16 @@ const activeItem = ref<T | null>(null)
   const selected = props["selected"];
   void selected;
 
-  const __vize_native_key_47: Partial<$NativeElement<"div">> = { "key": undefined as never };
-  void __vize_native_key_47;
+  const $nativeKey47: Partial<$NativeElement<"div">> = { "key": undefined as never };
+  void $nativeKey47;
 
   // v-for scope: item in props.items
   {
-  const __vize_v_for_source_7 = __vForList(props.items);
-  for (const [item] of __vize_v_for_source_7) {
+  const $forSource7 = __vForList(props.items);
+  for (const [item] of $forSource7) {
     void item;
-    const __vize_native_prop_check_52: $NativeElementProp<$NativeElement<"div">, "key"> = (String(item));
-    void __vize_native_prop_check_52; // VBind
+    const $nativeProp52: $NativeElementProp<$NativeElement<"div">, "key"> = (String(item));
+    void $nativeProp52; // VBind
     void (item); // Interpolation
     // @vize-map: expr -> 350:354
   }
@@ -198,13 +198,13 @@ const activeItem = ref<T | null>(null)
   // Compiler-macro results contribute to the component signature
   void props; void emit;
 
-  return { __vize_setup_props };
+  return { $setupProps };
 }
 
 // Invoke setup to verify types
 __setup();
 
-export type Props<T extends string | number = any> = Awaited<ReturnType<typeof __setup<T>>>["__vize_setup_props"];
+export type Props<T extends string | number = any> = Awaited<ReturnType<typeof __setup<T>>>["$setupProps"];
 
 export type Emits<T extends string | number = any> = {
   (e: 'select', item: T): void

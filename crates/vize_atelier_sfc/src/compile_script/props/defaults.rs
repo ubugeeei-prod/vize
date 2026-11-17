@@ -34,7 +34,7 @@ pub(crate) fn extract_with_defaults_values(with_defaults_args: &str) -> WithDefa
         return values;
     }
 
-    const WRAP_PREFIX: &str = "const __vize_defaults__ = ";
+    const WRAP_PREFIX: &str = concat!("const ", vize_l0::generated_name!(DEFAULTS_PROBE), " = ");
     let mut wrapped = String::with_capacity(WRAP_PREFIX.len() + trimmed.len() + 1);
     wrapped.push_str(WRAP_PREFIX);
     wrapped.push_str(trimmed);
@@ -109,7 +109,7 @@ fn runtime_defaults(trimmed: &str, argument: &Argument<'_>) -> WithDefaultsValue
 }
 
 fn source_for_span(trimmed: &str, span: oxc_span::Span) -> Option<String> {
-    const WRAP_PREFIX: &str = "const __vize_defaults__ = ";
+    const WRAP_PREFIX: &str = concat!("const ", vize_l0::generated_name!(DEFAULTS_PROBE), " = ");
     let start = (span.start as usize).checked_sub(WRAP_PREFIX.len())?;
     let end = (span.end as usize).checked_sub(WRAP_PREFIX.len())?;
     trimmed

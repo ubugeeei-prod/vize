@@ -49,8 +49,8 @@ fn a_literal_ts_string_is_folded_into_the_static_reserve() {
 #[test]
 fn a_raw_hole_keeps_single_quoted_indexes() {
     assert_static(
-        "type $Slots = Awaited<ReturnType<typeof __setup>> #(\"['__vize_typed_slots']\");",
-        "type $Slots = Awaited<ReturnType<typeof __setup>>['__vize_typed_slots'];\n",
+        "type $Slots = Awaited<ReturnType<typeof __setup>> #(\"['$typedSlots']\");",
+        "type $Slots = Awaited<ReturnType<typeof __setup>>['$typedSlots'];\n",
     );
 }
 

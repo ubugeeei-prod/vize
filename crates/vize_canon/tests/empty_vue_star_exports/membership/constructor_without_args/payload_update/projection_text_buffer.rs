@@ -55,7 +55,10 @@ pub(super) fn source_before(path: &str, current: String) -> String {
 pub(super) fn read_current(path: &str) -> String {
     source_before(
         path,
-        fs::read_to_string(support::repository().join(path)).unwrap(),
+        super::generated_names::source_before(
+            path,
+            fs::read_to_string(support::repository().join(path)).unwrap(),
+        ),
     )
 }
 
@@ -70,7 +73,13 @@ mod tests {
             let path = file["path"].as_str().unwrap();
             let current = super::super::static_emit_gate::source_before(
                 path,
-                super::super::listener_contract::read_current(path),
+                super::super::listener_contract::source_before(
+                    path,
+                    super::super::generated_names::source_before(
+                        path,
+                        fs::read_to_string(support::repository().join(path)).unwrap(),
+                    ),
+                ),
             );
             assert_eq!(support::hash(current.as_bytes()), file["after"]["sha256"]);
             let previous = source_before(path, current.clone());

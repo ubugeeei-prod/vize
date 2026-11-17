@@ -46,7 +46,7 @@ fn is_ident(byte: u8) -> bool {
 }
 
 fn is_generated_name(name: &str) -> bool {
-    name.starts_with("__vize_")
+    vize_l0::ts_emit::generated_name::is_generated(name)
         || (name.starts_with("__") && name.bytes().any(|byte| byte.is_ascii_digit()))
 }
 

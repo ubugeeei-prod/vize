@@ -33,7 +33,7 @@ fn options_api_runtime_props_stay_in_value_scope() {
         "a runtime object must never be copied into TypeScript type position:\n{virtual_ts}"
     );
     assert!(
-        virtual_ts.contains("const __vize_options_props = ({"),
+        virtual_ts.contains("const $optionsProps = ({"),
         "the runtime props object must be captured as a setup-scoped value:\n{virtual_ts}"
     );
     assert!(
@@ -42,7 +42,7 @@ fn options_api_runtime_props_stay_in_value_scope() {
     );
     assert!(
         virtual_ts.contains(
-            "export type Props = $OptionsPropShape<Awaited<ReturnType<typeof __setup>>[\"__vize_options_props\"]>;"
+            "export type Props = $OptionsPropShape<Awaited<ReturnType<typeof __setup>>[\"$optionsProps\"]>;"
         ),
         "Props must be derived from the captured runtime value:\n{virtual_ts}"
     );

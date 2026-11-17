@@ -4,6 +4,7 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { beforeLibTypeQualification } from "./lib-type-qualification-transition.ts";
 import { beforeSharedUsageGates } from "./shared-usage-gates-transition.ts";
+import { beforeGeneratedNames } from "./generated-names-transition.ts";
 
 export const staticEmitGateRecord = "tests/_fixtures/tooling/static-emit-gate-source.json";
 const recordSha256 = "3dcff6d84c6ce53b58c546e6df6db87f7b282963f0097d2d0dc0af79b01257b0";
@@ -39,6 +40,7 @@ function load(): Transition {
 
 /** The exact pre-gate bytes of a recorded producer's current image; older images pass through. */
 export function beforeStaticEmitGate(path: string, current: string): string {
+  current = beforeGeneratedNames(path, current);
   current = beforeSharedUsageGates(path, current);
   current = beforeLibTypeQualification(path, current);
   const file = load().files.find((entry) => entry.path === path);

@@ -191,7 +191,11 @@ pub(super) fn resolve_vnode_factory<'a>(
 }
 
 fn valid_pragma_expression(pragma: &str) -> bool {
-    let mut probe = String::from("const __vize_pragma = (");
+    let mut probe = String::from(concat!(
+        "const ",
+        vize_l0::generated_name!(PRAGMA_PROBE),
+        " = ("
+    ));
     probe.push_str(pragma);
     probe.push_str("\n);");
     let allocator = oxc_allocator::Allocator::default();

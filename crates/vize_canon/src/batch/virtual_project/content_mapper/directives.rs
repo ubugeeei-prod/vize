@@ -6,6 +6,7 @@
 //! usage across intervals of the same authored expectation.
 
 use std::ops::Range;
+use vize_l0::ts_emit::generated_name::PROP_CHECK;
 
 mod expectations;
 use expectations::expect_interval;
@@ -206,7 +207,11 @@ pub(super) fn with_component_prop_echoes(
         let Some(text) = generated.get(mapping.gen_range.clone()) else {
             continue;
         };
-        if !text.trim_start().starts_with("const __vize_prop_check_") {
+        if !text
+            .trim_start()
+            .strip_prefix("const ")
+            .is_some_and(|name| PROP_CHECK.is_member(name))
+        {
             continue;
         }
         // The emitter wrote this owned form only where the literal carries

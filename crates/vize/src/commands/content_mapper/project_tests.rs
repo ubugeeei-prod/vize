@@ -339,11 +339,11 @@ function onChange() {}
 /// Editor and check counts of each navigation marker. A slot reference also
 /// rejects a missing slot name, so the check projection keeps it.
 const NAVIGATION_MARKERS: [(&str, usize, usize); 5] = [
-    ("__vize_template_use", 2, 0),
+    ("$use", 2, 0),
     ("Component template navigation references", 1, 0),
-    ("__vize_props_nav_", 2, 0),
-    ("__vize_events_nav_", 2, 0),
-    ("__vize_slots_nav_", 2, 2),
+    ("$propsNav", 2, 0),
+    ("$eventsNav", 2, 0),
+    ("$slotsNav", 2, 2),
 ];
 
 /// The open reply's identity, the transform's text and its span tuple widths

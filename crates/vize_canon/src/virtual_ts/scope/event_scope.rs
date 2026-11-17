@@ -17,6 +17,10 @@
 use crate::virtual_ts::scope::ScopeMappings;
 use vize_carton::{append, profile};
 use vize_croquis::{EventHandlerScopeData, Scope};
+use vize_l0::ts_emit::generated_name::{
+    DYNAMIC_COMPONENT_LISTENER_TYPE, EVENT_ARG, LISTENER_ARGS, TRANSITION_HANDLER_TYPE,
+    TRANSITION_LISTENER_TYPE, VNODE_HOOK_HANDLER_TYPE, VNODE_HOOK_LISTENER_TYPE,
+};
 
 use crate::virtual_ts::helpers::get_dom_event_type;
 
@@ -50,7 +54,7 @@ pub(super) fn generate_event_handler_scope(
     let event_value = if data.has_implicit_event {
         "$event"
     } else {
-        "__vize_event"
+        EVENT_ARG.spelled()
     };
     append!(*ts, "\n{indent}// @{} handler\n", data.event_name);
 
@@ -104,8 +108,8 @@ pub(super) fn generate_event_handler_scope(
         .then(|| vnode_hook_signature(data.event_name.as_str()))
         .flatten()
     {
-        let listener_type = vize_carton::cstr!("__vize_vnode_hook_{}_listener", scope_id);
-        let handler_type = vize_carton::cstr!("__vize_vnode_hook_{}_handler", scope_id);
+        let listener_type = vize_carton::cstr!("{VNODE_HOOK_LISTENER_TYPE}{scope_id}");
+        let handler_type = vize_carton::cstr!("{VNODE_HOOK_HANDLER_TYPE}{scope_id}");
         let needs_typed_handler_assignment = needs_typed_handler_assignment(data);
         vize_l0::emit_ts!(
             ts,
@@ -120,11 +124,11 @@ pub(super) fn generate_event_handler_scope(
         let parameters = crate::virtual_ts::generated_names::lib("Parameters");
         vize_l0::emit_ts!(
             ts,
-            "{indent}void ((...__vize_args: {parameters}<{listener_type}>) => {{\n"
+            "{indent}void ((...{LISTENER_ARGS}: {parameters}<{listener_type}>) => {{\n"
         );
         vize_l0::emit_ts!(
             ts,
-            "{inner_indent}const {event_value} = __vize_args[0] as {event_type}; void {event_value};\n"
+            "{inner_indent}const {event_value} = {LISTENER_ARGS}[0] as {event_type}; void {event_value};\n"
         );
 
         profile!(
@@ -184,8 +188,8 @@ pub(super) fn generate_event_handler_scope(
         let listener_args = listener_args.replace("Element", event_type.as_str());
         let event_type = event_type.as_str();
         let listener_args = listener_args.as_str();
-        let listener_type = vize_carton::cstr!("__vize_transition_{}_listener", scope_id);
-        let handler_type = vize_carton::cstr!("__vize_transition_{}_handler", scope_id);
+        let listener_type = vize_carton::cstr!("{TRANSITION_LISTENER_TYPE}{scope_id}");
+        let handler_type = vize_carton::cstr!("{TRANSITION_HANDLER_TYPE}{scope_id}");
         let needs_typed_handler_assignment = needs_typed_handler_assignment(data);
         vize_l0::emit_ts!(
             ts,
@@ -200,11 +204,11 @@ pub(super) fn generate_event_handler_scope(
         let parameters = crate::virtual_ts::generated_names::lib("Parameters");
         vize_l0::emit_ts!(
             ts,
-            "{indent}void ((...__vize_args: {parameters}<{listener_type}>) => {{\n"
+            "{indent}void ((...{LISTENER_ARGS}: {parameters}<{listener_type}>) => {{\n"
         );
         vize_l0::emit_ts!(
             ts,
-            "{inner_indent}const {event_value} = __vize_args[0] as {event_type}; void {event_value};\n"
+            "{inner_indent}const {event_value} = {LISTENER_ARGS}[0] as {event_type}; void {event_value};\n"
         );
 
         profile!(
@@ -247,7 +251,7 @@ pub(super) fn generate_event_handler_scope(
             data.event_name.as_str(),
         )
     {
-        let listener_type = vize_carton::cstr!("__vize_dynamic_component_{}_listener", scope_id);
+        let listener_type = vize_carton::cstr!("{DYNAMIC_COMPONENT_LISTENER_TYPE}{scope_id}");
         vize_l0::emit_ts!(
             ts,
             "{indent}type {listener_type} = (...args: any[]) => any;\n"
@@ -255,11 +259,11 @@ pub(super) fn generate_event_handler_scope(
         let parameters = crate::virtual_ts::generated_names::lib("Parameters");
         vize_l0::emit_ts!(
             ts,
-            "{indent}void ((...__vize_args: {parameters}<{listener_type}>) => {{\n"
+            "{indent}void ((...{LISTENER_ARGS}: {parameters}<{listener_type}>) => {{\n"
         );
         vize_l0::emit_ts!(
             ts,
-            "{inner_indent}const {event_value} = __vize_args[0] as any; void {event_value};\n"
+            "{inner_indent}const {event_value} = {LISTENER_ARGS}[0] as any; void {event_value};\n"
         );
 
         profile!(

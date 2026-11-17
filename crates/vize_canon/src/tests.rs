@@ -264,8 +264,7 @@ const items = ref(['a', 'b', 'c'])
         // Payload instantiated from the authored props (#4147).
         assert!(
             virtual_ts.contains(r#"void function _slot_default_"#)
-                && virtual_ts
-                    .contains(r#"({ item, index }: $SlotPayload<typeof __vize_slot_host_"#),
+                && virtual_ts.contains(r#"({ item, index }: $SlotPayload<typeof $slotHost"#),
             "<template #default> slot props should be typed from the owning component:\n{virtual_ts}"
         );
         assert!(

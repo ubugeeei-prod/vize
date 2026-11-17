@@ -19,9 +19,13 @@ use core::fmt;
 use std::cell::RefCell;
 
 use vize_carton::{String, append, cstr};
+use vize_l0::ts_emit::generated_name::hygiene::Scope as HygieneScope;
 use vize_l0::ts_emit::{EmitHole, EmitLen, TsBuf};
 
 use super::generic_parameters::GenericParameters;
+
+mod authored;
+mod markers;
 use vize_croquis::Croquis;
 
 #[derive(Default)]
@@ -40,7 +44,7 @@ thread_local! {
 }
 
 /// Restores an outer projection's names on return and unwinding.
-pub(crate) struct Binding(Option<Projection>);
+pub(crate) struct Binding(Option<Projection>, Option<HygieneScope>);
 
 impl Drop for Binding {
     fn drop(&mut self) {
@@ -54,9 +58,10 @@ impl Drop for Binding {
 /// module types the SFC declares itself.
 pub(crate) fn bind(parameters: Option<&GenericParameters>, summary: &Croquis) -> Binding {
     let authored = summary.type_exports.iter();
-    let binding = bind_names(parameters, authored.map(|export| export.name.as_str()));
+    let mut binding = bind_names(parameters, authored.map(|export| export.name.as_str()));
     // One bindings table for the scan; a batch projection binds uncached.
     let _bindings = crate::virtual_ts::script_facts::ensure_bindings(summary);
+    binding.1 = Some(authored::bind_values(summary));
     let shadowed = LIB_TYPES
         .iter()
         .copied()
@@ -86,9 +91,8 @@ fn bind_names<'a>(
         shadowed: Vec::new(),
         forwarded: Vec::new(),
     };
-    Binding(Some(CURRENT.with_borrow_mut(|current| {
-        std::mem::replace(current, projection)
-    })))
+    let outer = CURRENT.with_borrow_mut(|current| std::mem::replace(current, projection));
+    Binding(Some(outer), None)
 }
 
 fn fresh(projection: &Projection, base: &str) -> Option<String> {
@@ -384,11 +388,7 @@ pub(crate) fn helper(name: &'static str, constraints: &'static [&'static str]) -
     })
 }
 
-/// The line prefix of a template use projected onto its setup binding.
-pub(crate) const TEMPLATE_USE_PREFIX: &str = "/* __vize_template_use */ typeof ";
-
-/// The line prefix of a template use's unwrapped, const-preserving hover proxy.
-pub(crate) const TEMPLATE_HOVER_PREFIX: &str = "/* __vize_template_hover */ const ";
+pub(crate) use markers::{TEMPLATE_HOVER_PREFIX, TEMPLATE_USE_PREFIX};
 
 /// Declare the helper aliases requested so far, outside every generic scope.
 pub(crate) fn emit_forwarded_helpers(ts: &mut crate::virtual_ts::TextBuf) {

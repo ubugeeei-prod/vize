@@ -270,9 +270,9 @@ fn static_component_expect_owns_one_packet_without_its_child() {
                 let directives = result.diagnostic_directives.unwrap();
                 let mut expected = static_id_echoes(source.as_str(), result.text.as_str(), id);
                 let mut authored = baseline.directives;
-                let event_read = format!("void __vize_events_nav_0.{event};");
-                let event_name_start = result.text.as_str().find(&event_read).unwrap()
-                    + "void __vize_events_nav_0.".len();
+                let event_read = format!("void $eventsNav0.{event};");
+                let event_name_start =
+                    result.text.as_str().find(&event_read).unwrap() + "void $eventsNav0.".len();
                 // The mapped name read is the first real diagnostic owner.
                 // The two emitter-proven literals precede this packet and
                 // cannot stretch its EXPECT across their IGNORE intervals.
@@ -451,7 +451,7 @@ fn expect_interval_leaves_a_later_sibling_interpolation_visible() {
         .find(|row| row.0[4] == DIRECTIVE_POLICY_EXPECT)
         .expect("expect")
         .0;
-    let owner = text.find("__vize_prop_check_0_pick:").expect("owner");
+    let owner = text.find("$prop0_pick:").expect("owner");
     let copies = text.match_indices("state.missing").collect::<Vec<_>>();
     assert_eq!(directives.unused_expect_directive_diagnostics.len(), 1);
     assert!(

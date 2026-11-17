@@ -20,8 +20,8 @@ const handler = (value: number) => value;
     let result =
         generate_vue_content_mapper_transform(Path::new("App.vue"), source).expect("transform");
     let original = source.find("@sa").unwrap() + 1;
-    let navigation = result.text.find("__vize_events_nav_0.sa").unwrap();
-    let generated = navigation + "__vize_events_nav_0.".len();
+    let navigation = result.text.find("$eventsNav0.sa").unwrap();
+    let generated = navigation + "$eventsNav0.".len();
     let handler = result.text.find("// @sa handler").unwrap();
 
     assert!(
@@ -53,8 +53,8 @@ import Child from "./Child.vue";
 "#;
     let result =
         generate_vue_content_mapper_transform(Path::new("App.vue"), source).expect("transform");
-    let projection = "__vize_kebab_events_nav_0.saveItem";
-    let generated = result.text.find(projection).unwrap() + "__vize_kebab_events_nav_0.".len();
+    let projection = "$kebabNav0.saveItem";
+    let generated = result.text.find(projection).unwrap() + "$kebabNav0.".len();
     let original = source.find("@save-item").unwrap() + 1;
 
     assert!(
@@ -187,7 +187,7 @@ const handlePick = (value: string) => value;
     for expected in [
         "__vizeResolveEvents?: infer __F",
         "\"value\": \"chosen\"",
-        "void __vize_events_nav_0.pick",
+        "void $eventsNav0.pick",
     ] {
         assert!(parent.text.contains(expected), "{}", parent.text);
     }
@@ -213,7 +213,7 @@ const handleSelect = (value: "nested") => value;
         generate_vue_content_mapper_transform(Path::new("App.vue"), source).expect("transform");
     let resolver = result
         .text
-        .find("const __vize_events_resolved_0")
+        .find("const $resolvedEvents0")
         .expect("event resolver");
     let closure = result.text[..resolver]
         .rfind("// Component props in v-for scope")
@@ -225,13 +225,7 @@ const handleSelect = (value: "nested") => value;
         "{}",
         result.text
     );
-    assert_eq!(
-        result
-            .text
-            .matches("const __vize_events_resolved_0")
-            .count(),
-        1
-    );
+    assert_eq!(result.text.matches("const $resolvedEvents0").count(), 1);
 
     let original = source.find("@select").unwrap() + 1;
     assert!(result.mappings.iter().any(|mapping| {
@@ -258,7 +252,7 @@ const handleActivate = (value: "slot") => value;
         generate_vue_content_mapper_transform(Path::new("App.vue"), source).expect("transform");
     let resolver = result
         .text
-        .find("const __vize_events_resolved_")
+        .find("const $resolvedEvents")
         .expect("event resolver");
     let closure = result.text[..resolver]
         .rfind("// Component props in v-slot scope")
@@ -270,10 +264,7 @@ const handleActivate = (value: "slot") => value;
         "{}",
         result.text
     );
-    assert_eq!(
-        result.text.matches("const __vize_events_resolved_").count(),
-        1
-    );
+    assert_eq!(result.text.matches("const $resolvedEvents").count(), 1);
 }
 
 /// A template use of a shadowed setup binding names the authored binding for

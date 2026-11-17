@@ -4,6 +4,7 @@
 
 use vize_carton::{String, append, cstr};
 use vize_croquis::drawer::{EventHandlerExpression, classify_event_handler_with_identifier};
+use vize_l0::ts_emit::generated_name::{CALLBACK, EVENT_ARG, HANDLER, LISTENER_ARGS};
 
 use crate::virtual_ts::expressions::{
     guarded_callback_reads, map_rewritten_template_binding, rewrite_reserved_template_binding,
@@ -50,7 +51,7 @@ pub(super) fn generate_event_handler_expressions(
             let event_value = if ctx.data.has_implicit_event {
                 "$event"
             } else {
-                "__vize_event"
+                EVENT_ARG.spelled()
             };
             let src_start = (ctx.template_offset + expr.start) as usize;
             let src_end = (ctx.template_offset + expr.end) as usize;
@@ -97,7 +98,7 @@ pub(super) fn generate_event_handler_expressions(
             // multi-arg emits keep every parameter (#1512). Both a bare callable
             // reference and an inline arrow/function are checked against the
             // listener type and invoked through the typed const with the full
-            // argument spread. `__vize_args` is `Parameters<listener>` (a tuple),
+            // argument spread. `$args` is `Parameters<listener>` (a tuple),
             // so the spread always targets the listener's own parameter list,
             // verifying each parameter while avoiding TS2556.
             //
@@ -133,7 +134,7 @@ pub(super) fn generate_event_handler_expressions(
                     ts,
                     mappings.diagnostics,
                     contextual_listener::Listener {
-                        name: cstr!("__vize_handler_{scope_id}_{}", expr.start).as_str(),
+                        name: cstr!("{HANDLER}{scope_id}_{}", expr.start).as_str(),
                         content,
                         annotation: ctx.event_handler_type.unwrap_or(listener_type),
                         contextless,
@@ -146,7 +147,7 @@ pub(super) fn generate_event_handler_expressions(
                 (ctx.event_handler_type, ctx.event_listener_type)
                 && (is_reference || inline_callback_arg.is_some())
             {
-                let handler_name = cstr!("__vize_handler_{scope_id}_{}", expr.start);
+                let handler_name = cstr!("{HANDLER}{scope_id}_{}", expr.start);
                 let stmt_start = ts.len();
                 append!(*ts, "{indent}const ", indent = handler_indent);
                 let name_start = ts.len();
@@ -160,14 +161,14 @@ pub(super) fn generate_event_handler_expressions(
                 listener_spans = Some((stmt_start..ts.len(), name_start..name_end));
                 append!(
                     *ts,
-                    "{indent}if (typeof {handler_name} === \"function\") ({handler_name} as {listener_type})(...__vize_args);  // handler expression\n",
+                    "{indent}if (typeof {handler_name} === \"function\") ({handler_name} as {listener_type})(...{LISTENER_ARGS});  // handler expression\n",
                     indent = handler_indent,
                 );
                 mapped_start..mapped_end
             } else if let Some(listener_type) = ctx.event_listener_type
                 && (is_reference || inline_callback_arg.is_some())
             {
-                let handler_name = cstr!("__vize_handler_{scope_id}_{}", expr.start);
+                let handler_name = cstr!("{HANDLER}{scope_id}_{}", expr.start);
                 let stmt_start = ts.len();
                 append!(*ts, "{indent}const ", indent = handler_indent);
                 let name_start = ts.len();
@@ -181,15 +182,15 @@ pub(super) fn generate_event_handler_expressions(
                 listener_spans = Some((stmt_start..ts.len(), name_start..name_end));
                 append!(
                     *ts,
-                    "{indent}if ({handler_name}) {handler_name}(...__vize_args);  // handler expression\n",
+                    "{indent}if ({handler_name}) {handler_name}(...{LISTENER_ARGS});  // handler expression\n",
                     indent = handler_indent,
                 );
                 mapped_start..mapped_end
             } else if is_reference || inline_callback_arg.is_some() {
-                let handler_name = cstr!("__vize_handler_{scope_id}_{}", expr.start);
+                let handler_name = cstr!("{HANDLER}{scope_id}_{}", expr.start);
                 append!(
                     *ts,
-                    "{indent}const {handler_name} = ((__vize_cb: ((_e: {event_type}) => unknown) | null | undefined) => __vize_cb)((",
+                    "{indent}const {handler_name} = (({CALLBACK}: ((_e: {event_type}) => unknown) | null | undefined) => {CALLBACK})((",
                     indent = handler_indent,
                     event_type = ctx.event_type,
                 );

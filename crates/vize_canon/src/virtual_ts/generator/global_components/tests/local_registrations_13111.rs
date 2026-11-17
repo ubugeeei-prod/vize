@@ -78,11 +78,11 @@ fn registered_keys_resolve_to_their_values_and_skip_the_unknown_probe() {
         "\n// Global component stubs (vue module augmentations)\n",
         "type $GlobalComponent<__K extends string | number | symbol, __F extends string | number | symbol = __K, __L extends string | number | symbol = __F, __G = import(\"vue\").GlobalComponents, __C = __K extends keyof __G ? __G[__K] : __F extends keyof __G ? __G[__F] : __L extends keyof __G ? __G[__L] : any> = unknown extends __C ? any : __C;\n",
         "declare const Lazy: $GlobalComponent<\"Lazy\">;\n",
-        "const { \"NotRegistered\": __vize_global_component_5 } = {} as (",
+        "const { \"NotRegistered\": $globalComponent5 } = {} as (",
         "\"NotRegistered\" extends keyof import('vue').GlobalComponents ? { \"NotRegistered\": unknown } : ",
         "\"NotRegistered\" extends keyof import('vue').GlobalComponents ? { \"NotRegistered\": unknown } : ",
         "\"NotRegistered\" extends keyof import('vue').GlobalComponents ? { \"NotRegistered\": unknown } : {});\n",
-        "void __vize_global_component_5;\n",
+        "void $globalComponent5;\n",
         "declare const NotRegistered: $GlobalComponent<\"NotRegistered\">;\n",
     );
     assert_eq!(code.into_compact(), EXPECTED);

@@ -113,7 +113,7 @@ fn an_instantiated_component_ref_reads_the_template_record() {
     .unwrap();
     assert_eq!(
         registry.body.as_str(),
-        r#" "declared": $TemplateComponentRef<typeof Child>; "child": $TemplateRefInstance<typeof __vize_template.__vizeRefs, "24", typeof Child>; "#
+        r#" "declared": $TemplateComponentRef<typeof Child>; "child": $TemplateRefInstance<typeof $template.__vizeRefs, "24", typeof Child>; "#
     );
     assert!(registry.includes_instantiated);
 }
@@ -425,7 +425,7 @@ const root = useTemplateRef("root");
     .code;
     let registry_line =
         r#"  type $TemplateRefs = { "root": $TemplateComponentRef<typeof Child | "div">; };"#;
-    let alias_line = "  const __vize_dynamic_is_0 = (condition ? Child : 'div');";
+    let alias_line = "  const $is0 = (condition ? Child : 'div');";
     assert_eq!(
         code.lines()
             .filter(|line| *line == registry_line || *line == alias_line)

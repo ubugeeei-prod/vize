@@ -74,14 +74,14 @@ fn a_directive_without_a_setup_binding_resolves_through_the_registries() {
     let check: Vec<&str> = output
         .code
         .lines()
-        .filter(|line| line.contains("__vize_directive_check_"))
+        .filter(|line| line.contains("$directive"))
         .map(str::trim)
         .collect();
     assert_eq!(
         check,
         [
-            r#"const __vize_directive_check_26 = __vizeDirective(__vizeRegisteredDirective<unknown, "vFocus">());"#,
-            r#"__vize_directive_check_26(null!, { ...__vizeDirectiveBindingRest, arg: "target", modifiers: { "once": true, }, value: ('nope') }, ...__vizeDirectiveTail(__vize_directive_check_26)); // CustomDirective"#,
+            r#"const $directive26 = __vizeDirective(__vizeRegisteredDirective<unknown, "vFocus">());"#,
+            r#"$directive26(null!, { ...__vizeDirectiveBindingRest, arg: "target", modifiers: { "once": true, }, value: ('nope') }, ...__vizeDirectiveTail($directive26)); // CustomDirective"#,
         ],
         "{}",
         output.code
@@ -119,7 +119,7 @@ fn builtin_directives_are_not_treated_as_custom() {
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
     assert!(
-        !output.code.contains("__vize_directive_check_"),
+        !output.code.contains("$directive"),
         "builtin directives must keep their existing emission:\n{}",
         output.code
     );
@@ -156,7 +156,7 @@ const vFocus: Directive<HTMLElement, number> = () => {}"#;
     let output = generate_virtual_ts(&summary, Some(script), Some(&root), 0);
 
     assert!(
-        !output.code.contains("__vize_directive_check_"),
+        !output.code.contains("$directive"),
         "a valueless directive has no expression to check:\n{}",
         output.code
     );

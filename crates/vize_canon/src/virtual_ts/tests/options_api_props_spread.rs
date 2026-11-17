@@ -113,13 +113,13 @@ export default defineComponent({
     assert!(
         output
             .code
-            .contains("const __vize_options_props = ({ ...sharedProps } as const);"),
+            .contains("const $optionsProps = ({ ...sharedProps } as const);"),
         "spread props must be kept in setup scope where sharedProps resolves:\n{}",
         output.code
     );
     assert!(
         output.code.contains(
-            "export type Props = $OptionsPropShape<Awaited<ReturnType<typeof __setup>>[\"__vize_options_props\"]>;"
+            "export type Props = $OptionsPropShape<Awaited<ReturnType<typeof __setup>>[\"$optionsProps\"]>;"
         ),
         "Props should be derived from the setup-scoped runtime props artifact:\n{}",
         output.code
@@ -182,13 +182,13 @@ export default defineComponent({
     assert!(
         output
             .code
-            .contains("const __vize_options_props = (componentProps);"),
+            .contains("const $optionsProps = (componentProps);"),
         "identifier props should be captured as a setup-scoped runtime value:\n{}",
         output.code
     );
     assert!(
         output.code.contains(
-            "export type Props = $OptionsPropShape<Awaited<ReturnType<typeof __setup>>[\"__vize_options_props\"]>;"
+            "export type Props = $OptionsPropShape<Awaited<ReturnType<typeof __setup>>[\"$optionsProps\"]>;"
         ),
         "Props should be derived from the setup-scoped identifier props artifact:\n{}",
         output.code
@@ -236,13 +236,13 @@ export default defineComponent({
     assert!(
         output
             .code
-            .contains("const __vize_options_props = ({\n        breadcrumbs:"),
+            .contains("const $optionsProps = ({\n        breadcrumbs:"),
         "type-cast props should stay in setup scope as a value:\n{}",
         output.code
     );
     assert!(
         output.code.contains(
-            "export type Props = $OptionsPropShape<Awaited<ReturnType<typeof __setup>>[\"__vize_options_props\"]>;"
+            "export type Props = $OptionsPropShape<Awaited<ReturnType<typeof __setup>>[\"$optionsProps\"]>;"
         ),
         "Props should be derived from the setup-scoped runtime props artifact:\n{}",
         output.code

@@ -6,6 +6,7 @@
 //! SFC constructor or local function component contract.
 
 use std::vec::Vec;
+use vize_l0::ts_emit::generated_name::{JSX_COMPONENT, JSX_COMPONENT_SPREAD};
 
 use vize_carton::{String as CompactString, ToCompactString};
 use vize_relief::{ElementNode, ElementType, ExpressionNode, PropNode};
@@ -106,7 +107,7 @@ pub(super) fn render(
     component: &JsxComponent,
     context: &RenderContext<'_>,
 ) {
-    out.push_str("__vize_jsx_component__(");
+    vize_l0::append!(*out, "{JSX_COMPONENT}(");
     push_mapped_expr(out, mappings, &component.tag, context);
     // Preserve the function itself so generic props infer from this literal.
     out.push_str(")(");
@@ -167,7 +168,7 @@ fn render_prop(
             source_end,
         } => {
             let entry_start = out.len();
-            out.push_str("...__vize_jsx_component_spread__(");
+            vize_l0::append!(*out, "...{JSX_COMPONENT_SPREAD}(");
             push_mapped_expr(out, mappings, value, context);
             out.push(')');
             let entry_end = out.len();

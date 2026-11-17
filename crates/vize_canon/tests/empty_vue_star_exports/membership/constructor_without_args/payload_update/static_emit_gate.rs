@@ -56,7 +56,10 @@ pub(super) fn read_current(path: &str) -> String {
         path,
         super::constructor_noinfer_return::source_before(
             path,
-            fs::read_to_string(support::repository().join(path)).unwrap(),
+            super::generated_names::source_before(
+                path,
+                fs::read_to_string(support::repository().join(path)).unwrap(),
+            ),
         ),
     )
 }

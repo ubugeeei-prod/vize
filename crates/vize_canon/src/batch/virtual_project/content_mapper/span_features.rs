@@ -2,6 +2,10 @@
 
 use super::{ContentMapperSpan, ContentMapperSpanKind};
 use vize_l0::FxHashMap;
+use vize_l0::ts_emit::generated_name::{
+    HANDLER, KEBAB_EVENTS_NAV, MODEL_EVENT_MARKER, MODEL_EVENTS_COMPLETION, MODEL_EVENTS_NAV,
+    PROP_CHECK, PROPS_NAV,
+};
 
 /// TypeScript Content Mapper protocol-v1 feature bits.
 ///
@@ -180,7 +184,8 @@ pub(super) fn content_mapper_span_features(
         (_, Some(prefix))
             if prefix
                 .trim_start()
-                .starts_with("void __vize_model_events_completion_") =>
+                .strip_prefix("void ")
+                .is_some_and(|name| MODEL_EVENTS_COMPLETION.is_member(name)) =>
         {
             CONTENT_MAPPER_SPAN_FEATURES_COMPLETION
         }
@@ -249,8 +254,12 @@ pub(super) fn retain_component_prop_hover_owner(generated: &str, spans: &mut [Co
 }
 
 fn is_component_prop_navigation_projection(generated: &str, start: usize) -> bool {
-    line_prefix(generated, start)
-        .is_some_and(|prefix| prefix.trim_start().starts_with("void __vize_props_nav_"))
+    line_prefix(generated, start).is_some_and(|prefix| {
+        prefix
+            .trim_start()
+            .strip_prefix("void ")
+            .is_some_and(|name| PROPS_NAV.is_member(name))
+    })
 }
 
 fn is_template_hover_projection(generated: &str, start: usize) -> bool {
@@ -267,7 +276,7 @@ fn is_diagnostic_handler_anchor(
     if kind != ContentMapperSpanKind::Atom
         || !generated
             .get(start..)
-            .is_some_and(|suffix| suffix.starts_with("__vize_handler_"))
+            .is_some_and(|suffix| HANDLER.is_member(suffix))
     {
         return false;
     }
@@ -295,17 +304,19 @@ fn is_component_prop_check_anchor(
     kind == ContentMapperSpanKind::Atom
         && generated
             .get(start..)
-            .is_some_and(|suffix| suffix.starts_with("__vize_prop_check_"))
+            .is_some_and(|suffix| PROP_CHECK.is_member(suffix))
 }
 
 fn projection_prefix(generated: &str, start: usize) -> Option<&str> {
-    const MARKER: &[u8] = b"__vize_";
-    let probe_start = start.saturating_sub(64);
-    let has_marker = generated
-        .as_bytes()
-        .get(probe_start..start)?
-        .windows(MARKER.len())
-        .any(|window| window == MARKER);
+    let before = generated.get(..start)?;
+    let mut probe_start = start.saturating_sub(64);
+    while !before.is_char_boundary(probe_start) {
+        probe_start += 1;
+    }
+    let has_marker = before.get(probe_start..).is_some_and(|window| {
+        vize_l0::ts_emit::generated_name::hygiene::dollar_identifiers(window)
+            .any(vize_l0::ts_emit::generated_name::is_generated)
+    });
     if has_marker {
         line_prefix(generated, start)
     } else {
@@ -315,7 +326,11 @@ fn projection_prefix(generated: &str, start: usize) -> Option<&str> {
 
 fn is_whole_symbol_projection(prefix: &str) -> bool {
     let prefix = prefix.trim_start();
-    prefix.starts_with("void __vize_kebab_events_nav_")
-        || prefix.starts_with("void __vize_model_events_nav_")
-        || prefix.starts_with("/* __vize_model_event */ ")
+    prefix
+        .strip_prefix("void ")
+        .is_some_and(|name| KEBAB_EVENTS_NAV.is_member(name) || MODEL_EVENTS_NAV.is_member(name))
+        || prefix
+            .strip_prefix("/* ")
+            .and_then(|rest| rest.split_once(" */ "))
+            .is_some_and(|(marker, _)| MODEL_EVENT_MARKER.is(marker))
 }

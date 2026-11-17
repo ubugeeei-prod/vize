@@ -114,7 +114,7 @@ pub(super) fn inline_callback_copies_stay_ignored_and_never_hide_the_canonical_c
                     [
                         "ignored",
                         "ignored",
-                        "const __vize_prop_check_0_pick: $ResolvedProp<typeof __vize_resolved_Comp_props_0, typeof __vize_selected_Comp_props_0, 'pick', __Comp_0_prop_pick> = ",
+                        "const $prop0_pick: $ResolvedProp<typeof $resolvedProps_Comp_0, typeof $selectedProps_Comp_0, 'pick', __Comp_0_prop_pick> = ",
                         "ignored",
                     ],
                     "{text}"
@@ -189,7 +189,7 @@ fn assert_callback_navigation_echoes(
 ) {
     let text = packet["text"].as_str().expect("complete virtual text");
     let navigation = text
-        .find("const __vize_events_resolved_0 =")
+        .find("const $resolvedEvents0 =")
         .expect("event navigation phase");
     let key = navigation
         + text[navigation..]

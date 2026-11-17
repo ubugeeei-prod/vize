@@ -1,6 +1,7 @@
 /** Producer lines introduced by the diagnostics-only projection, beside their predecessors. */
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import { beforeGeneratedNames } from "./generated-names-transition.ts";
 
 export const CHECK_MODE_PRODUCER_SUCCESSORS = [
   [
@@ -53,6 +54,7 @@ const identity = (text: string) => ({
 
 /** The exact generator bytes before check-mode threading; other images pass through. */
 export function beforeCheckModeGenerator(path: string, current: string): string {
+  current = beforeGeneratedNames(path, current);
   if (path !== generatorPath || identity(current).sha256 !== generatorIdentity.after.sha256)
     return current;
   assert.deepEqual(identity(current), generatorIdentity.after, "check-mode generator successor");

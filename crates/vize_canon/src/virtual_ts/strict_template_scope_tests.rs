@@ -50,8 +50,8 @@ fn strict_virtual_ts(template: &str, script: Option<&str>) -> String {
 fn strict_context_reads(template: &str, script: Option<&str>) -> Vec<String> {
     let code = strict_virtual_ts(template, script);
     let mut reads = Vec::new();
-    for (index, _) in code.match_indices("__vize_strict_template_context.") {
-        let rest = &code[index + "__vize_strict_template_context.".len()..];
+    for (index, _) in code.match_indices("$strictCtx.") {
+        let rest = &code[index + "$strictCtx.".len()..];
         let end = rest
             .find(|c: char| !(c.is_ascii_alphanumeric() || c == '_' || c == '$'))
             .unwrap_or(rest.len());
@@ -119,7 +119,7 @@ fn dynamic_is_before_or_after_same_element_v_for_sees_its_alias() {
         );
         let code = strict_virtual_ts(template, Some(script));
         let loop_start = code.find("for (const [part]").expect("v-for scope");
-        let mut declarations = code.match_indices("const __vize_dynamic_is_").peekable();
+        let mut declarations = code.match_indices("const $is").peekable();
         assert!(declarations.peek().is_some(), "{code}");
         assert!(
             declarations.all(|(at, _)| at > loop_start),
@@ -145,7 +145,7 @@ fn dynamic_is_independent_of_same_element_v_for_keeps_component_inference() {
         "<component :is=\"flag ? 'span' : 'a'\" v-for=\"part in parts\">{{ part }}</component>";
     let code = strict_virtual_ts(template, Some(script));
     assert!(
-        code.contains("const __vize_dynamic_is_"),
+        code.contains("const $is"),
         "an independent :is expression should keep its inferred component target:\n{code}"
     );
 }
@@ -172,9 +172,7 @@ fn keyed_imported_props_are_read_through_the_props_object() {
     let template = "<section>\n  <template v-for=\"group in groups\" :key=\"group.id\">\n    <Card :selectable=\"selectable\" :picked=\"picked.size\" :missing=\"missingKey\" />\n  </template>\n</section>";
     let code = strict_virtual_ts(template, Some(script));
     assert!(
-        code.contains(
-            "const selectable = __vize_keyed_template_context[(\"selectable\" satisfies keyof"
-        ),
+        code.contains("const selectable = $keyedCtx[(\"selectable\" satisfies keyof"),
         "the case needs the keyed props projection:\n{code}"
     );
     assert_eq!(
@@ -183,7 +181,7 @@ fn keyed_imported_props_are_read_through_the_props_object() {
     );
     for name in ["selectable", "picked", "missingKey"] {
         assert!(
-            code.contains(&format!("  void (__vize_keyed_template_context.{name});\n")),
+            code.contains(&format!("  void ($keyedCtx.{name});\n")),
             "{name} must be read through the props object:\n{code}"
         );
     }

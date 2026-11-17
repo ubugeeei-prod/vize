@@ -281,7 +281,7 @@ mod tests {
             .expect("the render root must be rewritten");
         assert_eq!(
             rendered,
-            "export const view = __vize_jsx_expr__(__vize_jsx_component__(Widget)({\"fooBar\": \"ok\"}), __vize_jsx_component_slot__(Widget, \"default\", (props: { item: string }) => __vize_jsx_expr__(props.item)));"
+            "export const view = $jsx($jsxComponent(Widget)({\"fooBar\": \"ok\"}), $jsxSlot(Widget, \"default\", (props: { item: string }) => $jsx(props.item)));"
         );
 
         let mapped: Vec<&str> = generated

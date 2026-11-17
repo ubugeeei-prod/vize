@@ -124,12 +124,12 @@ pub(super) fn unmapped_ignores(
 /// The `@ts-ignore` line `component_prop_navigation.rs` emits before its references.
 const NAVIGATION_IGNORE: &str = "// @ts-ignore Navigation-only references; no diagnostic owner.";
 
-/// `const __vize_props_nav_N = …;`, its `@ts-ignore` line and the one line of
-/// `void __vize_props_nav_N…;` references that comment covers. No span maps
+/// `const $propsNavN = …;`, its `@ts-ignore` line and the one line of
+/// `void $propsNavN…;` references that comment covers. No span maps
 /// the const, and TypeScript reports nothing on the ignored line, so no owner
 /// reads a diagnostic anywhere in the block.
 fn navigation_blocks(generated: &str) -> Vec<std::ops::Range<usize>> {
-    const DECLARATION: &str = "const __vize_props_nav_";
+    const DECLARATION: &str = concat!("const ", vize_l0::generated_name!(PROPS_NAV));
     let mut blocks = Vec::new();
     for start in memchr::memmem::find_iter(generated.as_bytes(), DECLARATION.as_bytes()) {
         let (Some(before), Some(rest)) = (generated.get(..start), generated.get(start..)) else {
@@ -147,6 +147,7 @@ fn navigation_blocks(generated: &str) -> Vec<std::ops::Range<usize>> {
         };
         let Some((index, _)) = declaration
             .strip_prefix(DECLARATION)
+            .map(|tail| tail.trim_start_matches('$'))
             .and_then(|tail| tail.split_once(" = "))
         else {
             continue;
@@ -154,7 +155,14 @@ fn navigation_blocks(generated: &str) -> Vec<std::ops::Range<usize>> {
         if index.is_empty() || !index.bytes().all(|byte| byte.is_ascii_digit()) {
             continue;
         }
-        let owner = ["void __vize_props_nav_", index].concat();
+        let Some(name) = declaration
+            .strip_prefix("const ")
+            .and_then(|tail| tail.split_once(" = "))
+            .map(|(name, _)| name)
+        else {
+            continue;
+        };
+        let owner = ["void ", name].concat();
         let statements = references.trim();
         let owned = statements.ends_with(';')
             && statements.split_inclusive(';').all(|statement| {

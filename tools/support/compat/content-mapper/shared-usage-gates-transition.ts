@@ -8,6 +8,7 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { beforeAuthoredComponentInfer } from "./authored-component-infer-transition.ts";
 import { certifiedTransition } from "./canonical-helper-transition.ts";
+import { beforeGeneratedNames } from "./generated-names-transition.ts";
 
 export const sharedUsageGatesRecord = "tests/_fixtures/tooling/shared-usage-gates.json";
 const recordSha256 = "a3f2d9708e62ef286879cc7c6f7160176c555c24cebe84223234abb5a01482d7";
@@ -63,6 +64,7 @@ function load(): Transition {
 
 /** The pre-gate bytes of a recorded producer's current image; older images pass through. */
 export function beforeSharedUsageGates(path: string, current: string): string {
+  current = beforeGeneratedNames(path, current);
   current = beforeAuthoredComponentInfer(path, current);
   const file = load().files.find((entry) => entry.path === path);
   if (!file) return current;

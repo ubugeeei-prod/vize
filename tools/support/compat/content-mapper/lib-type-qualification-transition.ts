@@ -4,6 +4,7 @@ import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { beforeListenerLibTypeQualification } from "./lib-type-qualification-listeners-transition.ts";
 import { beforeSharedUsageGates } from "./shared-usage-gates-transition.ts";
+import { beforeGeneratedNames } from "./generated-names-transition.ts";
 
 export const libTypeQualificationRecord =
   "tests/_fixtures/tooling/lib-type-qualification-12536.json";
@@ -43,6 +44,7 @@ function load(): Transition {
 
 /** The exact pre-qualification bytes of a recorded producer's current image; older images pass through. */
 export function beforeLibTypeQualification(path: string, current: string): string {
+  current = beforeGeneratedNames(path, current);
   current = beforeSharedUsageGates(path, current);
   current = beforeListenerLibTypeQualification(path, current);
   const file = load().files.find((entry) => entry.path === path);

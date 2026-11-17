@@ -100,7 +100,7 @@ fn context_views_emit_complete_plain_and_refined_public_surfaces() {
         ),
         (
             true,
-            "type $GenericContext<T = any> = {\n  props: Props<T> & __EmitProps<Emits<T>> & $JsxSlotProps<$Slots<T>> & import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps;\n  attrs: any;\n  emit: $PublicEmit<Emits<T>>;\n  slots: $Slots<T>;\n  expose: (exposed: import('vue').ShallowUnwrapRef<Exposed<T>> & { $el: Awaited<ReturnType<typeof __setup<T>>>['__vize_root_el'] } & { $refs: Awaited<ReturnType<typeof __setup<T>>>['__vize_refs'] }) => void;\n};\n",
+            "type $GenericContext<T = any> = {\n  props: Props<T> & __EmitProps<Emits<T>> & $JsxSlotProps<$Slots<T>> & import('vue').VNodeProps & import('vue').AllowedComponentProps & import('vue').ComponentCustomProps;\n  attrs: any;\n  emit: $PublicEmit<Emits<T>>;\n  slots: $Slots<T>;\n  expose: (exposed: import('vue').ShallowUnwrapRef<Exposed<T>> & { $el: Awaited<ReturnType<typeof __setup<T>>>['$rootEl'] } & { $refs: Awaited<ReturnType<typeof __setup<T>>>['$refMap'] }) => void;\n};\n",
         ),
     ] {
         let context = GenericContext {

@@ -11,6 +11,7 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 use serde_json::json;
 use vize_atelier_sfc::SfcDescriptor;
+use vize_l0::ts_emit::generated_name::BOOLEAN_TARGET;
 use vize_l0::{String, config::StrictBooleanExpressionsOptions};
 use vize_l1::markup::SurfaceTree;
 
@@ -103,7 +104,7 @@ pub(super) fn plan(
         .iter()
         .enumerate()
         {
-            let name = vize_l0::cstr!("__vize_boolean_target_{suffix}_{index}");
+            let name = vize_l0::cstr!("{BOOLEAN_TARGET}_{suffix}_{index}");
             document.content.push_str("declare const ");
             targets.push(document.content.len() as u32);
             document.content.push_str(&name);

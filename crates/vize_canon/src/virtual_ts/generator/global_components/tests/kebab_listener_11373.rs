@@ -78,7 +78,7 @@ fn original_mapper_outputs_keep_typed_global_declarations_before_values() {
             "{id}: {}",
             transform.text
         );
-        let call = format!(", typeof {reference}>)({reference}); const __vize_emit_props_");
+        let call = format!(", typeof {reference}>)({reference}); const $emitProps");
         if id == "src/GlobalComponentListener.vue" {
             let call_start = transform
                 .text
@@ -120,7 +120,7 @@ fn default_unknown_and_local_component_policies_remain_separate() {
         code.lines()
             .filter(|line| {
                 line.starts_with("const { \"unregistered-link\":")
-                    || line.starts_with("void __vize_global_component_")
+                    || line.starts_with("void $globalComponent")
             })
             .map(str::to_owned)
             .collect::<Vec<_>>()
@@ -132,8 +132,8 @@ fn default_unknown_and_local_component_policies_remain_separate() {
         default.code
     );
     assert_eq!(probes(&checked.code), vec![
-        "const { \"unregistered-link\": __vize_global_component_0 } = {} as (\"UnregisteredLink\" extends keyof import('vue').GlobalComponents ? { \"unregistered-link\": unknown } : \"unregisteredLink\" extends keyof import('vue').GlobalComponents ? { \"unregistered-link\": unknown } : \"unregistered-link\" extends keyof import('vue').GlobalComponents ? { \"unregistered-link\": unknown } : {});".to_owned(),
-        "void __vize_global_component_0;".to_owned(),
+        "const { \"unregistered-link\": $globalComponent0 } = {} as (\"UnregisteredLink\" extends keyof import('vue').GlobalComponents ? { \"unregistered-link\": unknown } : \"unregisteredLink\" extends keyof import('vue').GlobalComponents ? { \"unregistered-link\": unknown } : \"unregistered-link\" extends keyof import('vue').GlobalComponents ? { \"unregistered-link\": unknown } : {});".to_owned(),
+        "void $globalComponent0;".to_owned(),
     ], "{}", checked.code);
     let local_registry = local
         .code

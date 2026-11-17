@@ -4,6 +4,7 @@ use vize_croquis::{
     Croquis, EventHandlerScopeData, Scope,
     analysis::{ComponentUsage, PassedProp},
 };
+use vize_l0::ts_emit::generated_name::EMIT_PROPS;
 
 use crate::virtual_ts::{
     expressions::rewrite_reserved_template_binding, helpers::to_camel_case,
@@ -76,7 +77,7 @@ pub(super) fn generate_inferred_emit_args(
 
     let scope_id = ctx.scope.id.as_u32();
     let resolver_type = cstr!("__{}_{}_emit_resolver", ctx.component_type_name, usage_idx);
-    let emit_props = cstr!("__vize_emit_props_{usage_idx}");
+    let emit_props = cstr!("{EMIT_PROPS}{usage_idx}");
     let inferred_args = cstr!(
         "__{}_{}_{}_inferred_emit_args",
         ctx.component_type_name,

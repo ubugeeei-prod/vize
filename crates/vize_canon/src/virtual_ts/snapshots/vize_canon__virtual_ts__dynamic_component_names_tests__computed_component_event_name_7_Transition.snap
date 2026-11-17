@@ -158,9 +158,9 @@ let pressed = false
   // @vize-map: expr -> 14:19
 
   // @enter handler
-  type __vize_dynamic_component_8_listener = (...args: any[]) => any;
-  void ((...__vize_args: Parameters<__vize_dynamic_component_8_listener>) => {
-    const $event = __vize_args[0] as any; void $event;
+  type $DynamicListener8 = (...args: any[]) => any;
+  void ((...$args: Parameters<$DynamicListener8>) => {
+    const $event = $args[0] as any; void $event;
     pressed = true;  // handler expression
     // @vize-map: handler -> 22:36
   });
@@ -216,8 +216,8 @@ let pressed = false
       (undefined as unknown as __Transition_Check_0)({
       });
       type $SlotContract_0 = $StructuralSlots<typeof Transition>;
-      const __vize_required_slots_0: $RequiredSlots<$SlotContract_0, {}> = {};
-      void __vize_required_slots_0;
+      const $requiredSlots0: $RequiredSlots<$SlotContract_0, {}> = {};
+      void $requiredSlots0;
     },
   ];
 

@@ -4,6 +4,7 @@ use oxc_span::Span;
 use vize_carton::{FxHashSet, String, append, cstr};
 use vize_croquis::Croquis;
 use vize_l0::ts;
+use vize_l0::ts_emit::generated_name::AMBIENT;
 
 use crate::virtual_ts::VizeMapping;
 
@@ -66,19 +67,13 @@ impl AmbientProjection {
             return;
         }
         let used: FxHashSet<usize> = names
-            .filter_map(|name| {
-                name.strip_prefix("__vize_ambient_")?
-                    .split_once('_')?
-                    .0
-                    .parse()
-                    .ok()
-            })
+            .filter_map(|name| AMBIENT.strip(name)?.split_once('_')?.0.parse().ok())
             .collect();
         let mut id = 0;
         while used.contains(&id) {
             id += 1;
         }
-        self.prefix = cstr!("__vize_ambient_{id}_");
+        self.prefix = cstr!("{AMBIENT}{id}_");
     }
 
     pub(in crate::virtual_ts::generator) fn script_lines<'a>(

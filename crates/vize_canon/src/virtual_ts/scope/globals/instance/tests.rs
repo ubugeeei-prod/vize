@@ -90,7 +90,7 @@ fn the_default_vue3_form_checks_every_occurrence_on_the_public_instance() {
         .filter(|line| {
             line.contains("__VizeInstanceGlobal")
                 || line.contains("$InstanceGlobal")
-                || line.contains("__vize_strict_template_context")
+                || line.contains("$strictCtx")
         })
         .collect::<Vec<_>>();
     assert_eq!(context_helpers, Vec::<&str>::new());
@@ -146,17 +146,14 @@ fn the_strict_form_reads_every_occurrence_off_the_template_context() {
     assert_eq!(
         output
             .code
-            .matches("const $missing = __vize_strict_template_context.$missing;")
+            .matches("const $missing = $strictCtx.$missing;")
             .count(),
         1,
         "{}",
         output.code
     );
     assert_eq!(
-        output
-            .code
-            .matches("void (__vize_strict_template_context.$missing);")
-            .count(),
+        output.code.matches("void ($strictCtx.$missing);").count(),
         2,
         "{}",
         output.code
@@ -165,7 +162,7 @@ fn the_strict_form_reads_every_occurrence_off_the_template_context() {
 
 #[test]
 fn typed_receivers_map_each_access_back_to_its_authored_occurrence() {
-    for (strict, receiver) in [(true, "__vize_strict_template_context."), (false, "__ctx.")] {
+    for (strict, receiver) in [(true, "$strictCtx."), (false, "__ctx.")] {
         let output = generate(strict);
 
         let mut mapped = output
@@ -230,7 +227,7 @@ fn options_api_reads_the_authored_instance() {
     assert_eq!(
         output
             .code
-            .matches("  const __vize_instance_globals = undefined as unknown as (typeof __default__ extends abstract new (...args: any) => infer __I ? __I : __Ctx);\n")
+            .matches("  const $globals = undefined as unknown as (typeof __default__ extends abstract new (...args: any) => infer __I ? __I : __Ctx);\n")
             .count(),
         1,
         "{}",
@@ -239,17 +236,14 @@ fn options_api_reads_the_authored_instance() {
     assert_eq!(
         output
             .code
-            .matches("const $missing = __vize_instance_globals.$missing;")
+            .matches("const $missing = $globals.$missing;")
             .count(),
         1,
         "{}",
         output.code
     );
     assert_eq!(
-        output
-            .code
-            .matches("void (__vize_instance_globals.$missing);")
-            .count(),
+        output.code.matches("void ($globals.$missing);").count(),
         2,
         "{}",
         output.code
@@ -294,10 +288,7 @@ fn options_api_lexical_members_do_not_gain_public_instance_reads() {
             output.code
         );
         assert_eq!(
-            output
-                .code
-                .matches(&format!("__vize_public_instance.{name}"))
-                .count(),
+            output.code.matches(&format!("$public.{name}")).count(),
             0,
             "Options API member {name} gained a public-instance read:\n{}",
             output.code
@@ -313,10 +304,7 @@ fn options_api_lexical_members_do_not_gain_public_instance_reads() {
         );
     }
     assert_eq!(
-        output
-            .code
-            .matches("void (__vize_template_instance.missing);")
-            .count(),
+        output.code.matches("void ($inst.missing);").count(),
         1,
         "the undeclared negative control must retain its instance diagnostic:\n{}",
         output.code
@@ -357,7 +345,7 @@ export default defineComponent({
     assert_eq!(
         output
             .code
-            .matches("  { // Generated inherited-member declarations only.\n  const __vize_template_instance = undefined as unknown as (typeof __default__ extends abstract new (...args: any) => infer __I ? __I : {});\n")
+            .matches("  { // Generated inherited-member declarations only.\n  const $inst = undefined as unknown as (typeof __default__ extends abstract new (...args: any) => infer __I ? __I : {});\n")
             .count(),
         1,
         "the authored instance receiver is declared once:\n{}",
@@ -394,7 +382,7 @@ export default defineComponent({
         assert_eq!(
             output
                 .code
-                .matches(&format!("void (__vize_template_instance.{name});"))
+                .matches(&format!("void ($inst.{name});"))
                 .count(),
             1,
             "inherited or unknown member {name} keeps one mapped instance read:\n{}",
@@ -454,10 +442,7 @@ export default {
     assert_eq!(output.code.matches("$OptionsBinding").count(), 0);
     for name in ["label", "count", "doubled", "increment"] {
         assert_eq!(
-            output
-                .code
-                .matches(&format!("__vize_public_instance.{name}"))
-                .count(),
+            output.code.matches(&format!("$public.{name}")).count(),
             0,
             "disabled Options API member {name} gained a public-instance read:\n{}",
             output.code
@@ -485,7 +470,7 @@ export default {
         assert_eq!(
             output
                 .code
-                .matches(&format!("void (__vize_public_instance.{name});"))
+                .matches(&format!("void ($public.{name});"))
                 .count(),
             1,
             "dynamic and unknown controls need one mapped public-instance read:\n{}",

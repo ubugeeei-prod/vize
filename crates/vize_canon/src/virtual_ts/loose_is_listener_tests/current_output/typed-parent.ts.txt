@@ -141,8 +141,8 @@ const take = (value: string) => value
     const $emit = __ctx.$emit;
     void __ctx; void $attrs; void $slots; void $refs; void $emit;
 
-  const __vize_events_nav_0 = undefined as unknown as $ComponentEvents<typeof Child> & Record<string, unknown>;
-  void __vize_events_nav_0.pick;
+  const $eventsNav0 = undefined as unknown as $ComponentEvents<typeof Child> & Record<string, unknown>;
+  void $eventsNav0.pick;
 
   // @pick handler
   type __Child_8__listener_missing<__P, __Raw extends string | number | symbol> = [__Raw] extends [never] ? unknown[] : __P extends { [__K in __Raw]?: (...args: infer __A) => any } ? __A : unknown[];
@@ -163,10 +163,10 @@ const take = (value: string) => value
   type __Child_8_pick_prop_arrays = __Child_8__props_members extends infer __B ? __B extends [infer __P] ? $IsAny<__P> extends true ? never : __P extends { onPick?: infer __H } ? Extract<NonNullable<__H>, readonly unknown[]> : never : never : never;
   type __Child_8_pick_listener = unknown[] extends __Child_8_pick_args ? ((...args: any[]) => any) : ((...args: __Child_8_pick_args) => __Child_8_pick_return);
   type __Child_8_pick_handler = unknown[] extends __Child_8_pick_args ? ((...args: any[]) => any) : __Child_8_pick_listener;
-  void ((...__vize_args: Parameters<__Child_8_pick_listener>) => {
-    const __vize_event = (__vize_args as unknown[])[0] as __Child_8_pick_event; void __vize_event;
-    const __vize_handler_8_14: __Child_8_pick_handler | __Child_8_pick_prop_arrays | null | undefined = ((v) => take(v));
-    if (typeof __vize_handler_8_14 === "function") (__vize_handler_8_14 as __Child_8_pick_listener)(...__vize_args);  // handler expression
+  void ((...$args: Parameters<__Child_8_pick_listener>) => {
+    const $evt = ($args as unknown[])[0] as __Child_8_pick_event; void $evt;
+    const $handler8_14: __Child_8_pick_handler | __Child_8_pick_prop_arrays | null | undefined = ((v) => take(v));
+    if (typeof $handler8_14 === "function") ($handler8_14 as __Child_8_pick_listener)(...$args);  // handler expression
     // @vize-map: handler -> 14:28
   });
 
@@ -225,8 +225,8 @@ const take = (value: string) => value
         ...{} as { "onPick": never },
       });
       type $SlotContract_0 = $StructuralSlots<typeof Child>;
-      const __vize_required_slots_0: $RequiredSlots<$SlotContract_0, {}> = {};
-      void __vize_required_slots_0;
+      const $requiredSlots0: $RequiredSlots<$SlotContract_0, {}> = {};
+      void $requiredSlots0;
     },
   ];
 

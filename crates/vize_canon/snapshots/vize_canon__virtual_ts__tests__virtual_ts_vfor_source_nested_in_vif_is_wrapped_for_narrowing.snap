@@ -144,18 +144,18 @@ const key = "a" as "a" | "b";
     const $emit = __ctx.$emit;
     void __ctx; void $attrs; void $slots; void $refs; void $emit;
 
-  const __vize_native_key_64: Partial<$NativeElement<"button">> = { "key": undefined as never };
-  void __vize_native_key_64;
+  const $nativeKey64: Partial<$NativeElement<"button">> = { "key": undefined as never };
+  void $nativeKey64;
   if ((key === 'b')) {
     // @vize-map: expr -> 11:22
 
     // v-for scope: value in elems[key]
     {
-    const __vize_v_for_source_6 = __vForList(elems[key]);
-    for (const [value] of __vize_v_for_source_6) {
+    const $forSource6 = __vForList(elems[key]);
+    for (const [value] of $forSource6) {
       void value;
-      const __vize_native_prop_check_69: $NativeElementProp<$NativeElement<"button">, "key"> = (value);
-      void __vize_native_prop_check_69; // VBind
+      const $nativeProp69: $NativeElementProp<$NativeElement<"button">, "key"> = (value);
+      void $nativeProp69; // VBind
       void (value); // Interpolation
       // @vize-map: expr -> 79:84
     }

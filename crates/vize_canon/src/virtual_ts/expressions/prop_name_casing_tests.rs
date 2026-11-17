@@ -93,7 +93,7 @@ fn a_prop_named_template_keeps_its_case_everywhere_it_is_emitted() {
         "prop alias type lost the declared casing:\n{code}"
     );
     assert!(
-        code.contains("void __vize_props_nav_0.Template; void __vize_props_nav_0.other;"),
+        code.contains("void $propsNav0.Template; void $propsNav0.other;"),
         "navigation reference lost the declared casing:\n{code}"
     );
     assert!(

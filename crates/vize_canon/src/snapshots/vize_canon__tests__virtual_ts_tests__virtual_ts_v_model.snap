@@ -160,12 +160,12 @@ const selected = ref('option1')
     const $emit = __ctx.$emit;
     void __ctx; void $attrs; void $slots; void $refs; void $emit;
 
-  const __vize_native_key_49: Partial<$NativeElement<"input">> = { "type": undefined as never };
-  void __vize_native_key_49;
-  const __vize_native_key_132: Partial<$NativeElement<"option">> = { "value": undefined as never };
-  void __vize_native_key_132;
-  const __vize_native_key_180: Partial<$NativeElement<"option">> = { "value": undefined as never };
-  void __vize_native_key_180;
+  const $nativeKey49: Partial<$NativeElement<"input">> = { "type": undefined as never };
+  void $nativeKey49;
+  const $nativeKey132: Partial<$NativeElement<"option">> = { "value": undefined as never };
+  void $nativeKey132;
+  const $nativeKey180: Partial<$NativeElement<"option">> = { "value": undefined as never };
+  void $nativeKey180;
   void (text); // VModel
   // @vize-map: expr -> 182:186
   void (checked); // VModel

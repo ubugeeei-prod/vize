@@ -31,7 +31,11 @@ pub(super) struct TemplateCallRanges {
     pub expression_consumes_source: bool,
 }
 
-const TEMPLATE_HANDLER_PREFIX: &str = "function __vize_template_handler(){\n";
+const TEMPLATE_HANDLER_PREFIX: &str = concat!(
+    "function ",
+    vize_l0::generated_name!(TEMPLATE_HANDLER),
+    "(){\n"
+);
 
 pub(super) fn collect_template_call_ranges(
     allocator: &OxcAllocator,

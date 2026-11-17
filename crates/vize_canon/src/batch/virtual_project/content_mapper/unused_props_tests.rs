@@ -74,7 +74,7 @@ const { foo, fooKey, ...props } = defineProps<{
         result.text
     );
     assert_eq!(
-        result.text.matches("  const __vize_props: ").count(),
+        result.text.matches("  const $propsObj: ").count(),
         1,
         "{}",
         result.text

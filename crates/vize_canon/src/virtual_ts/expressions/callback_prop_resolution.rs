@@ -12,6 +12,7 @@ use crate::virtual_ts::scope::is_inline_callback_prop;
 use crate::virtual_ts::template_binding_access::TemplateBindingAccess;
 use vize_carton::{String, cstr};
 use vize_croquis::croquis::ComponentUsage;
+use vize_l0::ts_emit::generated_name::{RESOLVED_PROPS, SELECTED_PROPS};
 
 pub(super) struct CallbackPropsResolution {
     pub(super) resolved_props: String,
@@ -72,8 +73,8 @@ pub(super) fn generate_callback_props_resolution(
     }
 
     let component_type_name = to_safe_identifier_fragment(usage.name.as_str());
-    let resolved_props = cstr!("__vize_resolved_{component_type_name}_props_{idx}");
-    let selected_props = cstr!("__vize_selected_{component_type_name}_props_{idx}");
+    let resolved_props = cstr!("{RESOLVED_PROPS}_{component_type_name}_{idx}");
+    let selected_props = cstr!("{SELECTED_PROPS}_{component_type_name}_{idx}");
     let expr_indent = String::from(indent);
     if hoist_shared_preamble {
         let resolved_context_props =

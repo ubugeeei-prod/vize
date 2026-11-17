@@ -3,10 +3,13 @@ import fs from "node:fs";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import ts from "typescript";
+import { beforeGeneratedNames } from "../../tools/support/compat/content-mapper/generated-names-transition.ts";
 import { beforeGenericEventSpecialization } from "./support/generic-event-specialization-source.ts";
 
 const repo = new URL("../../", import.meta.url);
-const read = (path: string) => fs.readFileSync(new URL(path, repo), "utf8");
+// The equivalence oracles bind the gate text by its pre-`$name` spelling.
+const read = (path: string) =>
+  beforeGeneratedNames(path, fs.readFileSync(new URL(path, repo), "utf8"));
 const declarations = "crates/vize_canon/src/virtual_ts/helpers/declarations/";
 const ownership = ["$ComponentMetadataKeys", "$ComponentOwnKeys", "$UnownedComponentAttrs"]
   .map((name) => {

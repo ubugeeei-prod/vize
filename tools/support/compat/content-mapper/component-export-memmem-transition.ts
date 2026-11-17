@@ -2,6 +2,7 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
+import { beforeGeneratedNames } from "./generated-names-transition.ts";
 
 export const componentExportMemmemRecord =
   "tests/_fixtures/tooling/component-export-memmem-12835.json";
@@ -41,6 +42,7 @@ function load(): Transition {
 
 /** The exact pre-memmem bytes of a recorded producer; older images pass through. */
 export function beforeComponentExportMemmem(path: string, current: string): string {
+  current = beforeGeneratedNames(path, current);
   const file = load().files.find((entry) => entry.path === path);
   if (!file || identity(current).sha256 !== file.after.sha256) return current;
   assert.equal(Buffer.byteLength(current), file.after.bytes, `component export memmem: ${path}`);

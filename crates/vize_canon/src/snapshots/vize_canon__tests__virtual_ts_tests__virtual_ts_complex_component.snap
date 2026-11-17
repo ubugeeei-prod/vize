@@ -191,8 +191,8 @@ watch(count, (newVal) => {
   const title = props["title"];
   void title;
 
-  const __vize_native_key_8: Partial<$NativeElement<"div">> = { "class": undefined as never };
-  void __vize_native_key_8;
+  const $nativeKey8: Partial<$NativeElement<"div">> = { "class": undefined as never };
+  void $nativeKey8;
   void (props.title); // Interpolation
   // @vize-map: expr -> 582:593
   void (count); // Interpolation
@@ -201,9 +201,9 @@ watch(count, (newVal) => {
   // @vize-map: expr -> 651:658
 
   // @click handler
-  void ((__vize_event: PointerEvent) => {
-    const __vize_handler_10_140 = ((__vize_cb: ((_e: PointerEvent) => unknown) | null | undefined) => __vize_cb)((increment));
-    if (__vize_handler_10_140) __vize_handler_10_140(__vize_event);  // handler expression
+  void (($evt: PointerEvent) => {
+    const $handler10_140 = (($cb: ((_e: PointerEvent) => unknown) | null | undefined) => $cb)((increment));
+    if ($handler10_140) $handler10_140($evt);  // handler expression
     // @vize-map: handler -> 686:695
   });
 

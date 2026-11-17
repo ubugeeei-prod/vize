@@ -90,15 +90,15 @@ const emit = defineEmits<{
         generated_copies,
         vec![
             (
-                "const __vize_emit_factory_0 = (undefined as unknown as __vize_emit_resolver<__Foo_8__library, typeof Foo>)(Foo); const __vize_emit_props_0 = (undefined as unknown as __vize_emit_input<__Foo_8__library, typeof Foo, typeof __vize_emit_factory_0>)({",
+                "const $emitFactory0 = (undefined as unknown as $EmitResolver<__Foo_8__library, typeof Foo>)(Foo); const $emitProps0 = (undefined as unknown as $EmitGate<__Foo_8__library, typeof Foo, typeof $emitFactory0>)({",
                 guarded,
             ),
             (
-                "const __vize_events_resolved_0 = (undefined as unknown as __vize_events_resolver_0)({",
+                "const $resolvedEvents0 = (undefined as unknown as $EventsResolver0)({",
                 guarded,
             ),
             (
-                "const __vize_resolved_Foo_props_0 = (undefined as unknown as $ResolvedContextProps)((undefined as unknown as $PropsResolver<typeof Foo>)({",
+                "const $resolvedProps_Foo_0 = (undefined as unknown as $ResolvedContextProps)((undefined as unknown as $PropsResolver<typeof Foo>)({",
                 guarded,
             ),
         ],

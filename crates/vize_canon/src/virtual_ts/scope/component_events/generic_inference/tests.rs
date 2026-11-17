@@ -38,7 +38,7 @@ fn generate(template: &str) -> vize_carton::String {
 fn a_guarded_inference_call_is_not_an_immediately_invoked_arrow() {
     let code = generate(r#"<Child v-if="enabled" :value="value" @save="onSave" />"#);
     assert_eq!(
-        code.matches("const __vize_emit_props_0 = (void 0, () => {\n")
+        code.matches("const $emitProps0 = (void 0, () => {\n")
             .count(),
         1,
         "{code}"
@@ -69,7 +69,7 @@ fn a_listener_block_prefix_is_restated_inside_the_arrow() {
         "{code}"
     );
     let arrow = after_block
-        .find("const __vize_emit_props_0 = (void 0, () => {\n")
+        .find("const $emitProps0 = (void 0, () => {\n")
         .unwrap_or_else(|| panic!("{code}"));
     let mut body = after_block.get(arrow..).unwrap_or_default().lines();
     assert_eq!(
@@ -88,7 +88,7 @@ fn a_listener_block_prefix_is_restated_inside_the_arrow() {
 }
 
 fn emit_props_declarations(code: &str) -> usize {
-    code.matches("const __vize_emit_props_").count()
+    code.matches("const $emitProps").count()
 }
 
 /// A callback reading a stable alias is checked in its branch guard block.

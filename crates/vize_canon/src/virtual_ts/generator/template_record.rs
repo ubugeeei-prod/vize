@@ -10,6 +10,7 @@ use super::fallthrough::{FallthroughComponentScope, ForwardedRoots};
 use crate::virtual_ts::helpers::shared_types::TEMPLATE_REF_INSTANCE;
 use crate::virtual_ts::scope::{REFS_RETURN_KEY, SLOTS_RETURN_KEY, instantiated_ref_starts};
 use vize_carton::{String, append};
+use vize_l0::ts_emit::generated_name::{ROOT_EL, TEMPLATE, TEMPLATE_REFS, TEMPLATE_SLOTS};
 use vize_relief::RootNode;
 
 /// The type of the template's own `$refs` and of the public instance's.
@@ -94,7 +95,7 @@ impl TemplateRecord {
 
     /// The captured template value, or the slots inside the record it is.
     pub(super) fn slots_value(&self) -> String {
-        let mut value = String::from("__vize_template");
+        let mut value = String::from(TEMPLATE.spelled());
         if self.any() {
             append!(value, ".{SLOTS_RETURN_KEY}");
         }
@@ -110,7 +111,7 @@ impl TemplateRecord {
         let helper = TEMPLATE_REF_INSTANCE.select(self.shared_refs);
         append!(
             instance,
-            "{helper}<typeof __vize_template.{REFS_RETURN_KEY}, \"{start}\", {component_type}>"
+            "{helper}<typeof {TEMPLATE}.{REFS_RETURN_KEY}, \"{start}\", {component_type}>"
         );
         instance
     }
@@ -124,16 +125,16 @@ impl TemplateRecord {
         has_root_el: bool,
     ) {
         if has_root_el {
-            fields.push("__vize_root_el".into());
+            fields.push(ROOT_EL.spelled().into());
         }
         if inferred_slots {
-            let mut slots = String::from("__vize_template_slots: ");
+            let mut slots = vize_carton::cstr!("{TEMPLATE_SLOTS}: ");
             slots.push_str(self.slots_value().as_str());
             fields.push(slots);
         }
         self.forwarded.push_return_field(fields);
         if self.component_dollar_refs {
-            fields.push("__vize_refs".into());
+            fields.push(TEMPLATE_REFS.spelled().into());
         }
     }
 }

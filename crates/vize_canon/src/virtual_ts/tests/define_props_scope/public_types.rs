@@ -48,19 +48,19 @@ fn setup_local_emits_and_expose_types_resolve_through_setup() {
     );
     assert_eq!(
         lines_naming(tail, "export type Emits"),
-        ["export type Emits = Awaited<ReturnType<typeof __setup>>[\"__vize_typed_emits\"];"],
+        ["export type Emits = Awaited<ReturnType<typeof __setup>>[\"$typedEmits\"];"],
         "{code}"
     );
     assert_eq!(
         lines_naming(tail, "export type Exposed"),
-        ["export type Exposed = Awaited<ReturnType<typeof __setup>>[\"__vize_typed_exposed\"];"],
+        ["export type Exposed = Awaited<ReturnType<typeof __setup>>[\"$typedExposed\"];"],
         "{code}"
     );
     assert_eq!(
-        lines_naming(&code, "const __vize_typed_"),
+        lines_naming(&code, "const $typed"),
         [
-            "const __vize_typed_exposed = undefined as unknown as WidgetExpose<WidgetProps>;",
-            "const __vize_typed_emits = undefined as unknown as WidgetEmits<WidgetProps>;",
+            "const $typedExposed = undefined as unknown as WidgetExpose<WidgetProps>;",
+            "const $typedEmits = undefined as unknown as WidgetEmits<WidgetProps>;",
         ],
         "{code}"
     );
@@ -80,7 +80,7 @@ const emit = defineEmits<{ update: [value: typeof def] }>();
     );
     assert_eq!(
         lines_naming(tail, "export type Emits"),
-        ["export type Emits = Awaited<ReturnType<typeof __setup>>[\"__vize_typed_emits\"];"],
+        ["export type Emits = Awaited<ReturnType<typeof __setup>>[\"$typedEmits\"];"],
         "{code}"
     );
 }
@@ -95,7 +95,7 @@ defineExpose<{ current: () => Local }>({ current: () => ({ item: props.item }) }
     assert_eq!(
         lines_naming(module_tail(&code), "export type Exposed"),
         [
-            "export type Exposed<T extends string = any> = Awaited<ReturnType<typeof __setup<T>>>[\"__vize_typed_exposed\"];"
+            "export type Exposed<T extends string = any> = Awaited<ReturnType<typeof __setup<T>>>[\"$typedExposed\"];"
         ],
         "{code}"
     );
@@ -120,9 +120,5 @@ defineExpose<Api>();
         ["export type Exposed = Api;"],
         "{code}"
     );
-    assert_eq!(
-        lines_naming(&code, "__vize_typed_"),
-        Vec::<&str>::new(),
-        "{code}"
-    );
+    assert_eq!(lines_naming(&code, "$typed"), Vec::<&str>::new(), "{code}");
 }

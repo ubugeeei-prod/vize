@@ -104,8 +104,8 @@ function onClick(event: string) {
     void __ctx; void $attrs; void $slots; void $refs; void $emit;
     void $listeners;void $children;void $scopedSlots;void $on;void $off;void $once;void $set;void $delete;void $createElement;void _c;
 
-  const __vize_events_nav_0 = undefined as unknown as $ComponentEvents<typeof MyItem> & Record<string, unknown>;
-  void __vize_events_nav_0.click;
+  const $eventsNav0 = undefined as unknown as $ComponentEvents<typeof MyItem> & Record<string, unknown>;
+  void $eventsNav0.click;
 
   // @click handler
   type __MyItem_8__listener_missing<__P, __Raw extends string | number | symbol> = [__Raw] extends [never] ? unknown[] : __P extends { [__K in __Raw]?: (...args: infer __A) => any } ? __A : unknown[];
@@ -120,10 +120,10 @@ function onClick(event: string) {
   type __MyItem_8_click_event = __MyItem_8_click_args extends infer __A extends unknown[] ? [__A] extends [[]] ? any : unknown[] extends __A ? any : $Vue2LooseEventArg<__A[0]> : never;
   type __MyItem_8_click_legacy_args = __MyItem_8_click_args extends [] ? any[] : unknown[] extends __MyItem_8_click_args ? any[] : $Vue2LooseEmitArgs<__MyItem_8_click_args>;
   type __MyItem_8_click_listener = (...args: __MyItem_8_click_legacy_args) => unknown;
-  void ((...__vize_args: Parameters<__MyItem_8_click_listener>) => {
-    const __vize_event = (__vize_args as unknown[])[0] as __MyItem_8_click_event; void __vize_event;
-    const __vize_handler_8_16: __MyItem_8_click_listener | null | undefined = (onClick);
-    if (__vize_handler_8_16) __vize_handler_8_16(...__vize_args);  // handler expression
+  void ((...$args: Parameters<__MyItem_8_click_listener>) => {
+    const $evt = ($args as unknown[])[0] as __MyItem_8_click_event; void $evt;
+    const $handler8_16: __MyItem_8_click_listener | null | undefined = (onClick);
+    if ($handler8_16) $handler8_16(...$args);  // handler expression
     // @vize-map: handler -> 16:23
   });
 
@@ -182,8 +182,8 @@ function onClick(event: string) {
         ...{} as { "onClick": never },
       });
       type $SlotContract_0 = $StructuralSlots<typeof MyItem>;
-      const __vize_required_slots_0: $RequiredSlots<$SlotContract_0, {}> = {};
-      void __vize_required_slots_0;
+      const $requiredSlots0: $RequiredSlots<$SlotContract_0, {}> = {};
+      void $requiredSlots0;
     },
   ];
 
@@ -407,8 +407,8 @@ function onClick(event: string) {
     void __ctx; void $attrs; void $slots; void $refs; void $emit;
     void $listeners;void $children;void $scopedSlots;void $on;void $off;void $once;void $set;void $delete;void $createElement;void _c;
 
-  const __vize_events_nav_0 = undefined as unknown as $ComponentEvents<typeof MyItem> & Record<string, unknown>;
-  void __vize_events_nav_0.click;
+  const $eventsNav0 = undefined as unknown as $ComponentEvents<typeof MyItem> & Record<string, unknown>;
+  void $eventsNav0.click;
 
   // @click handler
   type __MyItem_8__listener_missing<__P, __Raw extends string | number | symbol> = [__Raw] extends [never] ? unknown[] : __P extends { [__K in __Raw]?: (...args: infer __A) => any } ? __A : unknown[];
@@ -423,10 +423,10 @@ function onClick(event: string) {
   type __MyItem_8_click_event = __MyItem_8_click_args extends infer __A extends unknown[] ? [__A] extends [[]] ? any : unknown[] extends __A ? any : $Vue2LooseEventArg<__A[0]> : never;
   type __MyItem_8_click_legacy_args = __MyItem_8_click_args extends [] ? any[] : unknown[] extends __MyItem_8_click_args ? any[] : $Vue2LooseEmitArgs<__MyItem_8_click_args>;
   type __MyItem_8_click_listener = (...args: __MyItem_8_click_legacy_args) => unknown;
-  void ((...__vize_args: Parameters<__MyItem_8_click_listener>) => {
-    const __vize_event = (__vize_args as unknown[])[0] as __MyItem_8_click_event; void __vize_event;
-    const __vize_handler_8_16: __MyItem_8_click_listener | null | undefined = (onClick);
-    if (__vize_handler_8_16) __vize_handler_8_16(...__vize_args);  // handler expression
+  void ((...$args: Parameters<__MyItem_8_click_listener>) => {
+    const $evt = ($args as unknown[])[0] as __MyItem_8_click_event; void $evt;
+    const $handler8_16: __MyItem_8_click_listener | null | undefined = (onClick);
+    if ($handler8_16) $handler8_16(...$args);  // handler expression
     // @vize-map: handler -> 16:23
   });
 
@@ -485,8 +485,8 @@ function onClick(event: string) {
         ...{} as { "onClick": never },
       });
       type $SlotContract_0 = $StructuralSlots<typeof MyItem>;
-      const __vize_required_slots_0: $RequiredSlots<$SlotContract_0, {}> = {};
-      void __vize_required_slots_0;
+      const $requiredSlots0: $RequiredSlots<$SlotContract_0, {}> = {};
+      void $requiredSlots0;
     },
   ];
 
@@ -710,8 +710,8 @@ function onClick(event: string) {
     void __ctx; void $attrs; void $slots; void $refs; void $emit;
     void $listeners;void $children;void $scopedSlots;void $on;void $off;void $once;void $set;void $delete;void $createElement;void _c;
 
-  const __vize_events_nav_0 = undefined as unknown as $ComponentEvents<typeof MyItem> & Record<string, unknown>;
-  void __vize_events_nav_0.click;
+  const $eventsNav0 = undefined as unknown as $ComponentEvents<typeof MyItem> & Record<string, unknown>;
+  void $eventsNav0.click;
 
   // @click handler
   type __MyItem_8__listener_missing<__P, __Raw extends string | number | symbol> = [__Raw] extends [never] ? unknown[] : __P extends { [__K in __Raw]?: (...args: infer __A) => any } ? __A : unknown[];
@@ -728,10 +728,10 @@ function onClick(event: string) {
   type __MyItem_8_click_event = __MyItem_8_click_args extends infer __A extends unknown[] ? [__A] extends [[]] ? any : unknown[] extends __A ? any : $Vue2LooseEventArg<__A[0]> : never;
   type __MyItem_8_click_legacy_args = __MyItem_8_click_args extends [] ? any[] : unknown[] extends __MyItem_8_click_args ? any[] : $Vue2LooseEmitArgs<__MyItem_8_click_args>;
   type __MyItem_8_click_listener = (...args: __MyItem_8_click_legacy_args) => unknown;
-  void ((...__vize_args: Parameters<__MyItem_8_click_listener>) => {
-    const __vize_event = (__vize_args as unknown[])[0] as __MyItem_8_click_event; void __vize_event;
-    const __vize_handler_8_16: __MyItem_8_click_listener | null | undefined = (onClick);
-    if (__vize_handler_8_16) __vize_handler_8_16(...__vize_args);  // handler expression
+  void ((...$args: Parameters<__MyItem_8_click_listener>) => {
+    const $evt = ($args as unknown[])[0] as __MyItem_8_click_event; void $evt;
+    const $handler8_16: __MyItem_8_click_listener | null | undefined = (onClick);
+    if ($handler8_16) $handler8_16(...$args);  // handler expression
     // @vize-map: handler -> 16:23
   });
 
@@ -790,8 +790,8 @@ function onClick(event: string) {
         ...{} as { "onClick": never },
       });
       type $SlotContract_0 = $StructuralSlots<typeof MyItem>;
-      const __vize_required_slots_0: $RequiredSlots<$SlotContract_0, {}> = {};
-      void __vize_required_slots_0;
+      const $requiredSlots0: $RequiredSlots<$SlotContract_0, {}> = {};
+      void $requiredSlots0;
     },
   ];
 

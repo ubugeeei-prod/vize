@@ -69,7 +69,7 @@ fn is_root_constructor_slot(summary: &Croquis, scope: &Scope, usage: &ComponentU
 }
 
 /// The payload of an unbound slot (`<template #label>`): nothing. Its
-/// parameter is the synthetic `__vize_slot_props_N`, which nothing reads, so
+/// parameter is the synthetic `$slotProps_N`, which nothing reads, so
 /// the host inference over the child's constructor and slots factory would only
 /// cost time. The props pass already skips it (#11432). The one statement
 /// another check reads is the root usage's constructor-instance pair, which its

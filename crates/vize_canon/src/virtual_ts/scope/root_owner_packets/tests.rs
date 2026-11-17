@@ -106,7 +106,7 @@ fn diagnostics_only_navigation_keeps_slot_and_event_name_checks() {
     for packets in [false, true] {
         let editor = render_projection(SCRIPT, template, packets, true, false);
         let check = render_projection(SCRIPT, template, packets, true, true);
-        for navigation in ["__vize_props_nav_0", "__vize_events_nav_0"] {
+        for navigation in ["$propsNav0", "$eventsNav0"] {
             assert_eq!(
                 editor.0.matches(navigation).count(),
                 2,
@@ -118,25 +118,25 @@ fn diagnostics_only_navigation_keeps_slot_and_event_name_checks() {
                 "check omits every {navigation} packet"
             );
         }
-        for diagnostic in ["__vize_event_keys_0", "__vize_slots_nav_0"] {
+        for diagnostic in ["$eventKeys0", "$slotsNav0"] {
             assert_eq!(
                 check.0.matches(diagnostic).count(),
                 2,
                 "check retains one declaration and one use of {diagnostic}"
             );
         }
-        assert_eq!(editor.0.matches("__vize_slot_nav_0_0").count(), 2);
+        assert_eq!(editor.0.matches("$slotNav0_0").count(), 2);
         // The check names the slot through a type-only indexed access, so no
         // declaration joins the render control flow.
-        assert_eq!(check.0.matches("__vize_slot_nav_0_0").count(), 0);
+        assert_eq!(check.0.matches("$slotNav0_0").count(), 0);
         assert_eq!(
             check
                 .0
-                .matches("  type __vize_slots_nav_0 = $NavigationSlots<typeof Comp>;\n")
+                .matches("  type $slotsNav0 = $NavigationSlots<typeof Comp>;\n")
                 .count(),
             1
         );
-        let access = "  void (undefined as unknown as __vize_slots_nav_0['missing']);\n";
+        let access = "  void (undefined as unknown as $slotsNav0['missing']);\n";
         assert_eq!(check.0.matches(access).count(), 1, "{}", check.0);
         let name = template.find("#missing").unwrap() + 1;
         let quoted = check.0.find(access).unwrap() + access.find('\'').unwrap();
@@ -165,13 +165,13 @@ fn generic_components_keep_destructured_slot_names_in_the_check() {
     assert_eq!(
         check
             .0
-            .matches("  const { missing: __vize_slot_nav_0_0 } = __vize_slots_nav_0;\n")
+            .matches("  const { missing: $slotNav0_0 } = $slotsNav0;\n")
             .count(),
         1,
         "{}",
         check.0
     );
-    assert_eq!(check.0.matches("type __vize_slots_nav_0").count(), 0);
+    assert_eq!(check.0.matches("type $slotsNav0").count(), 0);
 }
 
 // Preserve every full mapped payload and semantic edge under the relocation;

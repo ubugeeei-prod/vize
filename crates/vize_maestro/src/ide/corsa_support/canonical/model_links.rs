@@ -1,6 +1,7 @@
 //! Follow native identities owned by one retained authored model declaration.
 
 use std::ops::Range;
+use vize_l0::ts_emit::generated_name::MODEL_EVENT_MARKER;
 
 use vize_croquis::{Drawer, DrawerOptions};
 
@@ -121,7 +122,9 @@ fn has_model_event(result: &VirtualTsResult, authored: &Range<usize>) -> bool {
         result
             .code
             .get(..generated)
-            .is_some_and(|prefix| prefix.ends_with("  /* __vize_model_event */ "))
+            .and_then(|prefix| prefix.strip_suffix(" */ "))
+            .and_then(|head| head.rsplit_once("  /* "))
+            .is_some_and(|(_, marker)| MODEL_EVENT_MARKER.is(marker))
     })
 }
 
@@ -326,9 +329,9 @@ mod tests {
                 + 2;
             let event = result
                 .code
-                .find(vize_l0::cstr!("/* __vize_model_event */ \"update:{name}\"").as_str())
+                .find(vize_l0::cstr!("/* $modelEvent */ \"update:{name}\"").as_str())
                 .unwrap()
-                + "/* __vize_model_event */ \"update:".len();
+                + vize_l0::cstr!("/* $modelEvent */ \"update:").len();
             let model_argument = result
                 .code
                 .find(vize_l0::cstr!("defineModel<string>({literal}").as_str())

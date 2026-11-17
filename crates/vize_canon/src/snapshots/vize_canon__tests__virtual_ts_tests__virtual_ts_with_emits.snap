@@ -156,9 +156,9 @@ function handleClick() {
 
 
   // @click handler
-  void ((__vize_event: PointerEvent) => {
-    const __vize_handler_7_19 = ((__vize_cb: ((_e: PointerEvent) => unknown) | null | undefined) => __vize_cb)((handleClick));
-    if (__vize_handler_7_19) __vize_handler_7_19(__vize_event);  // handler expression
+  void (($evt: PointerEvent) => {
+    const $handler7_19 = (($cb: ((_e: PointerEvent) => unknown) | null | undefined) => $cb)((handleClick));
+    if ($handler7_19) $handler7_19($evt);  // handler expression
     // @vize-map: handler -> 227:238
   });
 

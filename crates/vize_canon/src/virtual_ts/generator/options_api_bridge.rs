@@ -136,7 +136,7 @@ fn emit_options_api_bridge(
             }
             append!(
                 ts,
-                "void __vize_{}_{};",
+                "void {}_{};",
                 function.kind_prefix(),
                 function.safe_name
             );
@@ -201,7 +201,7 @@ fn emit_bridge_function(
     let gen_start = ts.len();
     append!(
         ts,
-        "  {modifier}function{star} __vize_{kind}_{}({params}) ",
+        "  {modifier}function{star} {kind}_{}({params}) ",
         function.safe_name
     );
     let body_gen_start = ts.len();
@@ -274,10 +274,10 @@ struct BridgeSpans {
 }
 
 impl OptionsFunction {
-    fn kind_prefix(&self) -> &'static str {
+    fn kind_prefix(&self) -> vize_l0::ts_emit::generated_name::GeneratedName {
         match self.kind {
-            OptionsFunctionKind::Computed => "computed",
-            OptionsFunctionKind::Method => "method",
+            OptionsFunctionKind::Computed => vize_l0::ts_emit::generated_name::OPTIONS_COMPUTED,
+            OptionsFunctionKind::Method => vize_l0::ts_emit::generated_name::OPTIONS_METHOD,
         }
     }
 }

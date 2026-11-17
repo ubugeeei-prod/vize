@@ -126,9 +126,9 @@ fn generated_model_prop_and_event_rows_retain_authored_ast_contents() {
             .expect("model prop");
         let event_start = output
             .code
-            .find("/* __vize_model_event */ \"update:saveItem\"")
+            .find("/* $modelEvent */ \"update:saveItem\"")
             .expect("model event")
-            + "/* __vize_model_event */ ".len();
+            + "/* $modelEvent */ ".len();
         let rows: Vec<_> = output
             .mapping
             .spans()

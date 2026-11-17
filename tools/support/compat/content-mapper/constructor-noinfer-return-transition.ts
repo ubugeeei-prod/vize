@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { beforeLibTypeShadowingAudit } from "./lib-type-shadowing-audit-transition.ts";
+import { beforeGeneratedNames } from "./generated-names-transition.ts";
 
 export const constructorNoInferReturnRecord =
   "tests/_fixtures/tooling/constructor-noinfer-return.json";
@@ -42,6 +43,7 @@ function load(): Transition {
 
 /** The pre-`NoInfer` bytes of a recorded producer's current image; older images pass through. */
 export function beforeConstructorNoInferReturn(path: string, current: string): string {
+  current = beforeGeneratedNames(path, current);
   current = beforeLibTypeShadowingAudit(path, current);
   const file = load().files.find((entry) => entry.path === path);
   if (!file) return current;

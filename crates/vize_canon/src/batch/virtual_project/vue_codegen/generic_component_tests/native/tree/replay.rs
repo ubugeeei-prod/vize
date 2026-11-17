@@ -151,7 +151,7 @@ pub(super) fn without_event_spreads(
     let mut erased = Vec::new();
     let mut kinds = [false; 2];
     for line in file.content.split_inclusive('\n') {
-        for (index, marker) in ["const __vize_emit_props_", "const __vize_events_resolved_"]
+        for (index, marker) in ["const $emitProps", "const $resolvedEvents"]
             .iter()
             .enumerate()
         {

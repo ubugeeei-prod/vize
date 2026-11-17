@@ -5,6 +5,7 @@
 
 use vize_canon::virtual_ts::ProjectionMapping;
 use vize_croquis::script_parser::{self, ScriptParseResult, ScriptParserOptions};
+use vize_l0::ts_emit::generated_name::{PATINA_PROMISE, PATINA_REACTIVITY};
 use vize_l0::{FxHashSet, String, ToCompactString, profile};
 
 use super::document::TypeAwareDocument;
@@ -25,7 +26,11 @@ mod tests;
 use prepared::PlainQueryPlan;
 pub(in crate::linter) use prepared::PreparedPlainModule;
 
-const PLAIN_HOST: &str = "function __vize_plain_host() {\n\n}\n\n// Invoke setup to verify types\n";
+const PLAIN_HOST: &str = concat!(
+    "function ",
+    vize_l0::generated_name!(PLAIN_HOST),
+    "() {\n\n}\n\n// Invoke setup to verify types\n"
+);
 
 pub(in crate::linter) fn append_plain_module_type_diagnostics(
     linter: &Linter,
@@ -275,14 +280,14 @@ fn augment_source(source: &str, slots: &[Slot]) -> (String, Vec<(u32, Probe)>) {
 
 fn promise_marker(index: usize, expression: &str) -> (String, u32) {
     let mut name = String::with_capacity(32);
-    name.push_str("__vize_patina_promise_");
+    vize_l0::append!(name, "{PATINA_PROMISE}");
     name.push_str(index.to_compact_string().as_str());
     marker_text(&name, expression, "function ", "() { return (", "); }\n")
 }
 
 fn reactivity_marker(index: usize, query: &ReactivityLossQuery, expression: &str) -> (String, u32) {
     let mut name = String::with_capacity(48);
-    name.push_str("__vize_patina_reactivity_");
+    vize_l0::append!(name, "{PATINA_REACTIVITY}");
     name.push_str(query.source_start.to_compact_string().as_str());
     name.push('_');
     name.push_str(query.source_end.to_compact_string().as_str());

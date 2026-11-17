@@ -66,7 +66,7 @@ fn repeated_slot_contract_is_emitted_once() {
             );
         }
         assert_eq!(
-            output.code.matches("const __vize_required_slots_").count(),
+            output.code.matches("const $requiredSlots").count(),
             4,
             "each use still checks its own slots; hoist={hoist}: {}",
             output.code
@@ -74,7 +74,7 @@ fn repeated_slot_contract_is_emitted_once() {
         let mut found_tags = Vec::new();
         for (idx, tag_range) in tag_ranges.iter().enumerate() {
             let required = required_slot_declaration(idx, hoist);
-            let used = cstr!("void __vize_required_slots_{idx};");
+            let used = cstr!("void $requiredSlots{idx};");
             let mapping = output
                 .mapping
                 .spans()
@@ -100,7 +100,7 @@ fn repeated_slot_contract_is_emitted_once() {
                 .expect("prop diagnostic anchors at the attribute name");
             assert_eq!(
                 &output.code[name_span.gen_range.clone()],
-                cstr!("__vize_prop_check_{idx}_label").as_str(),
+                cstr!("$prop{idx}_label").as_str(),
                 "TS2322 stays on the per-usage check; hoist={hoist}"
             );
             found_props.push(name_range.clone());
@@ -131,7 +131,7 @@ fn required_slot_declaration(idx: usize, hoist: bool) -> vize_carton::String {
     } else {
         "$RequiredSlots"
     };
-    cstr!("const __vize_required_slots_{idx}: {helper}<$SlotContract_{idx}, {{}}> = {{}};")
+    cstr!("const $requiredSlots{idx}: {helper}<$SlotContract_{idx}, {{}}> = {{}};")
 }
 
 fn keypad_ranges(template: &str) -> Vec<std::ops::Range<usize>> {

@@ -134,13 +134,13 @@ const { props, size } = useField()
     assert_eq!(
         exact_line_count(
             &code,
-            "  const __vize_props: __DefineProps<Props> = {} as __DefineProps<Props>;",
+            "  const $propsObj: __DefineProps<Props> = {} as __DefineProps<Props>;",
         ),
         1,
         "declared props must use the exact collision-free internal object:\n{code}",
     );
     assert_eq!(
-        exact_line_count(&code, r#"  const label = __vize_props["label"];"#),
+        exact_line_count(&code, r#"  const label = $propsObj["label"];"#),
         1,
         "declared prop locals must resolve through the internal object:\n{code}",
     );
@@ -162,7 +162,7 @@ const PROPS_SHADOW_ANCHOR: &str = "  // Anchor before the template scope shadows
 #[test]
 fn authored_setup_bindings_named_props_win_over_template_props_object() {
     let generated = "  const props: __DefineProps<Props> = {} as __DefineProps<Props>;";
-    let internal = "  const __vize_props: __DefineProps<Props> = {} as __DefineProps<Props>;";
+    let internal = "  const $propsObj: __DefineProps<Props> = {} as __DefineProps<Props>;";
     for (case, script) in [
         (
             "arrow",
@@ -205,7 +205,7 @@ fn authored_setup_bindings_named_props_win_over_template_props_object() {
         true,
     );
     assert_eq!(
-        exact_line_count(&prop, r#"  const props = __vize_props["props"];"#),
+        exact_line_count(&prop, r#"  const props = $propsObj["props"];"#),
         1,
         "a prop named `props` resolves to the prop value:\n{prop}"
     );
@@ -220,7 +220,7 @@ fn props_object_binding_keeps_its_template_name() {
         let code = generate_template_code(script, "<p>{{ props.seed }}</p>", true);
         let declared = |prefix: &str| code.lines().filter(|line| line.starts_with(prefix)).count();
         assert_eq!(declared("  const props: "), 1, "{script}:\n{code}");
-        assert_eq!(declared("  const __vize_props: "), 0, "{script}:\n{code}");
+        assert_eq!(declared("  const $propsObj: "), 0, "{script}:\n{code}");
         assert_eq!(
             exact_line_count(&code, PROPS_SHADOW_ANCHOR),
             1,
@@ -313,7 +313,7 @@ const probe = useTemplateRef('probe')
             exact_line_count(
                 code,
                 &format!(
-                    "  type $TemplateRefs = {{ \"box\": {prefix}$DomElement<\"div\">; \"child\": {prefix}$TemplateComponentRef<typeof Child>; \"probe\": {prefix}$TemplateRefInstance<typeof __vize_template.__vizeRefs, \"38\", typeof Child>; }};"
+                    "  type $TemplateRefs = {{ \"box\": {prefix}$DomElement<\"div\">; \"child\": {prefix}$TemplateComponentRef<typeof Child>; \"probe\": {prefix}$TemplateRefInstance<typeof $template.__vizeRefs, \"38\", typeof Child>; }};"
                 ),
             ),
             1,
@@ -323,7 +323,7 @@ const probe = useTemplateRef('probe')
             exact_line_count(
                 code,
                 &format!(
-                    "  var __vize_ref_38 = (undefined as unknown as {prefix}$RefInstanceFactory<typeof Child>)(Child)({{"
+                    "  var $ref38 = (undefined as unknown as {prefix}$RefInstanceFactory<typeof Child>)(Child)({{"
                 ),
             ),
             1,

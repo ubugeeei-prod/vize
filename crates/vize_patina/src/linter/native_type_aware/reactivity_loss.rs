@@ -1,3 +1,4 @@
+use vize_l0::ts_emit::generated_name::PATINA_REACTIVITY;
 mod spreads;
 use spreads::{computed_value_spread_spans, diagnostic_key, reactivity_loss_diagnostic};
 
@@ -126,7 +127,7 @@ fn push_reactivity_loss_marker(
     let insert_offset = marker_insert_offset(&virtual_ts.content)?;
 
     let mut marker_name = String::with_capacity(32);
-    marker_name.push_str("__vize_patina_reactivity_");
+    vize_l0::append!(marker_name, "{PATINA_REACTIVITY}");
     marker_name.push_str(diagnostic.source_start.to_compact_string().as_str());
     marker_name.push('_');
     marker_name.push_str(diagnostic.source_end.to_compact_string().as_str());

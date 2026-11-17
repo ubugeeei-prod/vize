@@ -3,6 +3,7 @@
 use super::{LEGACY_COMPONENT_INSTANCE_HELPER, needs_legacy_vue2_helpers};
 use crate::virtual_ts::generated_names as names;
 use vize_carton::{append, config::VueVersion};
+use vize_l0::ts_emit::generated_name::{ROOT_EL, TEMPLATE_REFS};
 
 pub(in crate::virtual_ts::generator) fn instance_helper(
     legacy_vue2: bool,
@@ -76,11 +77,11 @@ pub(in crate::virtual_ts::generator) fn instance_base(
         let setup = crate::virtual_ts::generated_names::setup_return("");
         ts.push_str("$MappedOmit<$ComponentPublicBase, ");
         match (has_root_el, has_refs) {
-            (true, false) => append!(*ts, "'$el'> & {{ $el: {setup}['__vize_root_el'] }}"),
-            (false, _) => append!(*ts, "'$refs'> & {{ $refs: {setup}['__vize_refs'] }}"),
+            (true, false) => append!(*ts, "'$el'> & {{ $el: {setup}['{ROOT_EL}'] }}"),
+            (false, _) => append!(*ts, "'$refs'> & {{ $refs: {setup}['{TEMPLATE_REFS}'] }}"),
             (true, true) => append!(
                 *ts,
-                "'$el' | '$refs'> & {{ $el: {setup}['__vize_root_el']; $refs: {setup}['__vize_refs'] }}"
+                "'$el' | '$refs'> & {{ $el: {setup}['{ROOT_EL}']; $refs: {setup}['{TEMPLATE_REFS}'] }}"
             ),
         }
     } else if needs_legacy_vue2_helpers(legacy_vue2, dialect) {

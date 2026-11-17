@@ -5,7 +5,7 @@ use crate::virtual_ts::{
 };
 use std::path::Path;
 
-const STATEMENT: &str = "export const view = __vize_jsx_expr__(__vize_jsx_component__(Widget)({\"count\": count, \"fooBar\": \"ok\", \"active\": true, \"名称\": name}));";
+const STATEMENT: &str = "export const view = $jsx($jsxComponent(Widget)({\"count\": count, \"fooBar\": \"ok\", \"active\": true, \"名称\": name}));";
 
 #[test]
 fn jsx_and_tsx_preserve_complete_quoted_and_unquoted_prop_name_coordinates() {

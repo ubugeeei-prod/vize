@@ -2,6 +2,7 @@
 //! `expr` is not a plain component identifier.
 
 use vize_carton::String;
+use vize_l0::ts_emit::generated_name::DYNAMIC_IS;
 
 use super::super::super::Drawer;
 use crate::scope::ScopeKind;
@@ -79,12 +80,12 @@ impl Drawer {
 /// The generated binding a dynamic `<component :is="expr">` resolves through
 /// when `expr` is not a plain component identifier.
 pub fn dynamic_component_alias(element_start: u32) -> String {
-    vize_carton::cstr!("__vize_dynamic_is_{element_start}")
+    vize_carton::cstr!("{}{element_start}", DYNAMIC_IS.as_str())
 }
 
 /// Whether a component usage name is a [`dynamic_component_alias`].
 pub fn is_dynamic_component_alias(name: &str) -> bool {
-    name.starts_with("__vize_dynamic_is_")
+    DYNAMIC_IS.is_member(name)
 }
 
 #[cfg(test)]

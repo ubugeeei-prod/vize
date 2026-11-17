@@ -3,6 +3,7 @@
 use crate::virtual_ts::types::VizeMapping;
 use std::ops::Range;
 use vize_carton::{append, cstr};
+use vize_l0::ts_emit::generated_name::LISTENER;
 
 pub(super) struct Listener<'a> {
     pub(super) name: &'a str,
@@ -32,7 +33,7 @@ pub(super) fn emit(
     // keeps the initializer's inferred type for the separate callability check.
     append!(*ts, "{indent}const {name} = ({{ ");
     let context_key_start = ts.len();
-    ts.push_str("__vize_listener");
+    vize_l0::append!(*ts, "{LISTENER}");
     let context_key = context_key_start..ts.len();
     ts.push_str(": (");
     let expression_start = ts.len();
@@ -40,7 +41,7 @@ pub(super) fn emit(
     let expression = expression_start..ts.len();
     append!(
         *ts,
-        ") }} satisfies {{ __vize_listener: {contextless} extends true ? unknown : ({annotation} | null | undefined) }}).__vize_listener;\n"
+        ") }} satisfies {{ {LISTENER}: {contextless} extends true ? unknown : ({annotation} | null | undefined) }}).{LISTENER};\n"
     );
     // This constraint cannot contextualize the authored callback. It accepts
     // callable references/arrays and rejects primitives, objects and classes.

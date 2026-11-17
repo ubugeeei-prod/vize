@@ -1,6 +1,7 @@
 //! Fallback scanning of Nuxt virtual modules (`#imports`, `#components`, ...) and path aliases.
 
 use std::path::{Path, PathBuf};
+use vize_l0::ts_emit::generated_name::MODULE_DEFAULT;
 
 use ignore::WalkBuilder;
 use oxc_allocator::Allocator;
@@ -323,8 +324,8 @@ fn render_module_stub(module_name: &str, imports: &ModuleImports) -> Option<Stri
 
     let mut stub = cstr!("declare module \"{module_name}\" {{\n");
     if imports.has_default {
-        stub.push_str("  const __vize_default: any;\n");
-        stub.push_str("  export default __vize_default;\n");
+        vize_l0::append!(stub, "  const {MODULE_DEFAULT}: any;\n");
+        vize_l0::append!(stub, "  export default {MODULE_DEFAULT};\n");
     }
     for name in names {
         if module_name == "#components" {
