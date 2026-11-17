@@ -1,5 +1,6 @@
 ---
 source: crates/vize/tests/check_cli.rs
+assertion_line: 2607
 expression: "serde_json::to_string_pretty(&snapshot).unwrap()"
 ---
 {

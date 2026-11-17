@@ -104,6 +104,7 @@ mod tests {
                 "compiledStrictPreamble",
             ),
         ] {
+            let physical = &super::super::with_defaults_undefined::preamble_before(physical);
             let preamble = &record[key];
             assert!(is_after(physical, preamble));
             let previous = preamble_before(physical);

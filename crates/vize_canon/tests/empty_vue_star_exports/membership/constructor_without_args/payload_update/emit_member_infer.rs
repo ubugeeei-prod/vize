@@ -87,7 +87,10 @@ mod tests {
         let record = load();
         for entry in record["files"].as_array().unwrap() {
             let path = entry["path"].as_str().unwrap();
-            let current = fs::read_to_string(support::repository().join(path)).unwrap();
+            let current = super::super::with_defaults_undefined::source_before(
+                path,
+                fs::read_to_string(support::repository().join(path)).unwrap(),
+            );
             let previous = inverse(&current, entry);
             assert_eq!(source_before(path, current.clone()), previous);
             assert_eq!(source_before(path, previous.clone()), previous);
@@ -110,7 +113,7 @@ mod tests {
             })
             .is_err()
         );
-        let other = "crates/vize_canon/src/virtual_ts/helpers/declarations/vue3-types.d.ts.txt";
+        let other = "crates/vize_canon/src/virtual_ts/helpers/declarations/vue2-types.d.ts.txt";
         let body = fs::read_to_string(support::repository().join(other)).unwrap();
         assert_eq!(source_before(other, body.clone()), body);
         let mut manifest = json!({ "provenance": { "existing": "unchanged" } });

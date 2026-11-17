@@ -4,6 +4,10 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { repoRoot } from "../_helpers/tool-commands.ts";
+import {
+  currentDefaultNativeType,
+  previousDefaultNativeType,
+} from "../../../tools/support/compat/content-mapper/with-defaults-undefined-transition.ts";
 
 type Identity = { sha256: string; bytes: number };
 type Output = {
@@ -45,6 +49,27 @@ assert.equal(
  * restores the exact predecessor; `forward` replays it.
  */
 export function noinferOutputTransition(current: Buffer, direction: "forward" | "inverse"): Buffer {
+  // #13179 is newer: undo it before this layer and replay it after.
+  if (direction === "inverse")
+    return noinferOnly(withDefaultsUndefined(current, "inverse"), direction);
+  return withDefaultsUndefined(noinferOnly(current, direction), "forward");
+}
+
+/** The #13179 `$DefaultNativeType` line of a declaration helper output, when it holds one. */
+function withDefaultsUndefined(current: Buffer, direction: "forward" | "inverse"): Buffer {
+  const [from, to] =
+    direction === "forward"
+      ? [previousDefaultNativeType, currentDefaultNativeType]
+      : [currentDefaultNativeType, previousDefaultNativeType];
+  const text = current.toString("utf8");
+  const count = text.split(from).length - 1;
+  if (count === 0) return current;
+  assert.equal(count, 1, "one #13179 declaration line");
+  assert.equal(text.split(to).length - 1, 0);
+  return Buffer.from(text.replace(from, () => to));
+}
+
+function noinferOnly(current: Buffer, direction: "forward" | "inverse"): Buffer {
   const [from, to] =
     direction === "forward" ? (["before", "after"] as const) : (["after", "before"] as const);
   const output = receipt.outputs.find((entry) =>

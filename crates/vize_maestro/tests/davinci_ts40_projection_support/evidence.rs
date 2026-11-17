@@ -1,12 +1,12 @@
 //! Authenticate the complete packets behind the reviewed #10933 transition.
 mod authored_component_infer;
-mod with_defaults_undefined;
 mod constructor_noinfer_return;
 mod mixed_vue2;
 mod receipt;
 mod shared_listener_args;
 mod unowned_owned_keys;
 mod verbatim_runs;
+mod with_defaults_undefined;
 
 use super::{capture_fixture, load_matrix};
 use receipt::{authenticate_join_receipt, authenticate_packets, authenticate_successor_receipt};
