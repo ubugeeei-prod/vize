@@ -10,10 +10,8 @@ use super::{
 };
 pub use crate::dialect::vue3::for_head::ForKeyword;
 use crate::dialect::vue3::for_head::{SplitError, split};
-
-mod native;
 mod validation;
-pub use native::{
+pub use parse::{
     AdmittedDenseForHead, NativeForInput, NativeForInputError, NativeForRefusal,
     RejectedNativeForInput,
 };
@@ -61,7 +59,7 @@ pub struct NativeForHead<'a> {
     aliases: Option<AliasOwner<'a>>,
     collection: Option<CollectionOwner<'a>>,
     hole: Option<ForHeadHole>,
-    origin: Option<native::ForOrigin<'a>>,
+    origin: Option<parse::ForOrigin<'a>>,
     native_refusal: Option<NativeForRefusal>,
 }
 
@@ -300,5 +298,6 @@ pub fn parse_vue_for_head_once<'a>(
     head
 }
 
+mod parse;
 #[cfg(test)]
 mod tests;

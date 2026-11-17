@@ -13,7 +13,7 @@ pub(crate) mod build;
 pub mod document;
 pub(crate) mod event;
 pub mod lex;
-pub(crate) mod native;
 pub mod parse;
 pub mod render;
 pub mod surface;
+pub(crate) mod view;

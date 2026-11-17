@@ -3,7 +3,7 @@
 // (JSX, TSX, TSRX, SFC, Pug) in a module path, a file name or a Rust identifier,
 // and they have no `lang/` module. L1 follows the target layout: one sibling per
 // markup grammar and per style language, and one Vue owner. No level module is
-// named by migration status (`native`, `compat`: `status:` entries), L1 code
+// named by migration status (`native`: `status:` entries), L1 code
 // names no product (`lint:` entries), and every htmlish ledger row has its
 // fixtures (`fixture:` entries).
 // Present differences are listed in docs/davinci/plan/input-placement-owed.json,
@@ -124,7 +124,7 @@ function l1Offenders(root: string): string[] {
   return found;
 }
 
-// Migration status is not a concept: no level module is named `native` or `compat`.
+// Migration status is not a concept: no level module is named `native`.
 const levelCrates = [
   "vize_l0",
   "vize_l1",
@@ -134,7 +134,7 @@ const levelCrates = [
   "vize_l3",
   "vize_l4",
 ];
-const statusSegment = /^(?:native|compat)(?:_|$)|_(?:native|compat)$/u;
+const statusSegment = /^native(?:_|$)|_native$/u;
 
 /** `status:<module>` for the outermost module whose name is a migration status. */
 function statusOffenders(root: string): string[] {

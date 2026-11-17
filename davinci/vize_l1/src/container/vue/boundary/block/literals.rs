@@ -1,12 +1,12 @@
 //! Skipping JavaScript string, template and regex literals while scanning
 //! `<script>` content for its closing tag.
 
-use super::compat::can_start_string_literal;
 use super::{BlockAttrs, advance_line, find_closing_tag_end, skip_regex_literal};
+use crate::container::vue::boundary::block::lexical::can_start_string_literal;
 use memchr::memmem;
 use vize_l0::expression_guard::scan::line_comment_terminator;
 
-pub(in crate::container::vue::compat) fn can_start_regex_literal(
+pub(in crate::container::vue::boundary) fn can_start_regex_literal(
     prev_significant_char: u8,
 ) -> bool {
     matches!(
@@ -56,7 +56,7 @@ pub(super) fn script_regex_end(
     Some(end)
 }
 
-pub(in crate::container::vue::compat) fn skip_script_string_literal(
+pub(in crate::container::vue::boundary) fn skip_script_string_literal(
     bytes: &[u8],
     mut pos: usize,
     len: usize,
