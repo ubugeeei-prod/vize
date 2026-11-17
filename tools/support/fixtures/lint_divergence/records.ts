@@ -8,6 +8,7 @@ import {
   realProjectLocationDivergence,
   type RealProjectLocationSource,
 } from "./real_project_locations.ts";
+import { unusedEmitPatinaReading } from "./unused_emit_names.ts";
 import {
   byteOrder,
   get,
@@ -210,6 +211,15 @@ export function baselineIntentionalReason(
     setupCallsGetCurrentInstance(source)
   )
     return "Patina treats every declared event as possibly emitted once <script setup> calls getCurrentInstance(): the instance's emit can be called from code the rule cannot inspect. eslint-plugin-vue still reports the events it does not see emitted.";
+  if (
+    finding.ruleId === "vue/no-unused-emit-declarations" &&
+    source !== undefined &&
+    source !== null
+  ) {
+    const event = /^`([^`]+)` is defined as emit but never used\.$/u.exec(finding.message)?.[1];
+    const reading = event === undefined ? null : unusedEmitPatinaReading(event, source);
+    if (reading !== null) return reading;
+  }
   if (finding.ruleId === "vue/no-shared-component-data")
     return "Patina intentionally merges vue/no-shared-component-data and vue/no-deprecated-data-object-declaration into one diagnostic for the same invalid data option.";
   if (
