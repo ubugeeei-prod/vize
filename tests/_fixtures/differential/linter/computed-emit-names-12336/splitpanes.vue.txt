@@ -1,0 +1,19 @@
+<script setup>
+const emit = defineEmits([
+  "ready",
+  "resize",
+  "unused",
+])
+
+const READY = "ready"
+emit(READY)
+
+const emitEvent = (name, data) => {
+  emit(name, { ...data })
+}
+emitEvent("resize")
+</script>
+
+<template>
+  <div />
+</template>

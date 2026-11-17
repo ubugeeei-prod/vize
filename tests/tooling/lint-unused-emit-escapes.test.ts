@@ -38,3 +38,34 @@ test("unused-emit reports without an instance call stay counted", () => {
   ])
     assert.equal(unused(sfc, "click:prepend"), null);
 });
+
+test("computed and Patina-resolved emit names classify upstream reports", () => {
+  const computed = `<script setup lang="ts">
+const emit = defineEmits(['ready', 'resize'])
+const emitEvent = (name: string) => {
+  emit(name, {})
+}
+</script>`;
+  assert.match(unused(computed, "ready") ?? "", /computed event name/u);
+  const template = `<script setup>
+const emit = defineEmits(['save', 'close'])
+</script>
+<template><button @click="emit(action)" /><p>emit(prose) only</p></template>`;
+  assert.match(unused(template, "close") ?? "", /computed event name/u);
+  const resolved = `<script setup lang="ts">
+const emit = defineEmits(['change', 'open', 'close', 'save', 'unused'])
+const CHANGE = 'change'
+const EVENTS = { save: 'save' } as const
+declare const isOpen: boolean
+emit(CHANGE)
+emit(isOpen ? 'open' : 'close')
+emit(EVENTS.save)
+</script>`;
+  for (const event of ["change", "open", "close", "save"])
+    assert.match(unused(resolved, event) ?? "", /resolves this event name/u, event);
+  assert.equal(unused(resolved, "unused"), null);
+  const literal = `<script setup>\nconst emit = defineEmits(['a', 'b'])\nemit('a')\nemit(\`a\`)\n</script>\n<template><p>emit(prose)</p></template>`;
+  assert.equal(unused(literal, "b"), null);
+  const nested = `<script setup>\nconst emit = defineEmits(['a', 'b'])\nfunction f() {\n  const A = 'a'\n  emit(A)\n}\n</script>`;
+  assert.match(unused(nested, "b") ?? "", /computed event name/u);
+});
