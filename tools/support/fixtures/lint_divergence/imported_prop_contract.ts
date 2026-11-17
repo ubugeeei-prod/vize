@@ -114,18 +114,17 @@ export function templateShadowFromImportedContract(
 
 /** No same-file type member or runtime key declares `name`, and the props reach an import. */
 function importedPropOnly(source: string, scripts: Range[], name: string): boolean {
-  // Slot and emit interfaces often repeat a prop name (`open`), so only the
-  // types the props reach count here.
-  const reached = new Set(
-    propsCalls(source).flatMap((call) => [
-      ...typeClosure(source, source.slice(call.typeArgument.start, call.typeArgument.end)),
-    ]),
-  );
   if (
-    declaresPropName(
-      source,
-      typeRegions(source, scripts, (typeName) => reached.has(typeName)),
-      name,
+    propsCalls(source).some((call) =>
+      declaresPropName(
+        source,
+        propsTypeRegions(
+          source,
+          scripts,
+          source.slice(call.typeArgument.start, call.typeArgument.end),
+        ),
+        name,
+      ),
     ) ||
     runtimeKeyRegions(source).some(mentions(source, name))
   )
@@ -232,7 +231,7 @@ export function escapeName(name: string): string {
 function importedOnly(source: string, scripts: Range[], call: PropsCall, name: string): boolean {
   const argument = source.slice(call.typeArgument.start, call.typeArgument.end);
   return (
-    !declaresPropName(source, typeRegions(source, scripts), name) &&
+    !declaresPropName(source, propsTypeRegions(source, scripts, argument), name) &&
     // A PascalCase "prop" named after a type the argument references is not a prop.
     !(/^[A-Z]/u.test(name) && typeClosure(source, argument).has(name)) &&
     reachesImport(source, scripts, argument)
@@ -320,6 +319,17 @@ function declaresPropName(source: string, regions: Range[], name: string): boole
     "u",
   );
   return regions.some((region) => declaration.test(source.slice(region.start, region.end)));
+}
+
+/**
+ * The type regions a props argument can draw members from. Slot, emit and
+ * context interfaces often repeat a prop name (`open`, `modal`), so only the
+ * types the argument reaches count; a closure cut at the visit cap counts all.
+ */
+function propsTypeRegions(source: string, scripts: Range[], argument: string): Range[] {
+  const reached = typeClosure(source, argument);
+  const all = reached.size >= maximumVisitedTypes;
+  return typeRegions(source, scripts, (typeName) => all || reached.has(typeName));
 }
 
 export function typeRegions(
@@ -451,6 +461,12 @@ function matchingBracket(source: string, open: number): number | null {
     const character = source[index] ?? "";
     if (character === "'" || character === '"' || character === "`")
       index = stringEnd(source, index);
+    // A comment can hold an apostrophe (`Vue's`) or a stray bracket.
+    else if (character === "/" && source[index + 1] === "/")
+      index = source.indexOf("\n", index) < 0 ? source.length : source.indexOf("\n", index);
+    else if (character === "/" && source[index + 1] === "*")
+      index =
+        source.indexOf("*/", index + 2) < 0 ? source.length : source.indexOf("*/", index + 2) + 1;
     else if (character in pairs) stack.push(pairs[character] ?? "");
     else if (character === stack.at(-1)) {
       stack.pop();

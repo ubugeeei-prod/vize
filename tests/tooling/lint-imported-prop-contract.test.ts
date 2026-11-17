@@ -114,6 +114,28 @@ const { shape = 'circle', square = false } = defineProps<Props>()
   assert.equal(importedBoolean(source, "false"), true);
 });
 
+test("only types the props argument reaches declare props", () => {
+  const source = `<script lang="ts">
+import type { MenuProps } from '@/Menu'
+export interface RootProps extends MenuProps { defaultOpen?: boolean }
+export interface RootContext { modal: Ref<boolean>; dir: Ref<Direction> }
+</script>
+<script setup lang="ts">
+const props = withDefaults(defineProps<RootProps>(), {
+  // Keep Vue's boolean coercion out of \`open\`.
+  modal: true,
+  defaultOpen: false,
+})
+</script>
+`;
+  assert.equal(importedDefault(source, "RootProps", "dir", 1), true);
+  assert.equal(importedBoolean(source, "true"), true);
+  assert.equal(importedBoolean(source, "false"), false);
+  const reached = source.replace("extends MenuProps {", "extends MenuProps, RootContext {");
+  assert.equal(importedDefault(reached, "RootProps", "dir", 1), false);
+  assert.equal(importedBoolean(reached, "true"), false);
+});
+
 test("a same-file contract without imports is never classified", () => {
   const source = `<script lang="ts">
 export interface Props { label?: string; open?: boolean }
