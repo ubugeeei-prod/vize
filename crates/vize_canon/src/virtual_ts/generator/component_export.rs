@@ -155,7 +155,7 @@ pub(super) fn emit_default_export_declaration(
     let emit_props_static = emits_info.static_emit_props_field();
     let event_map_static = emits_info.static_event_map_field();
     let authored_component = if authored_default == AuthoredDefaultKind::Component {
-        "$AuthoredComponent & "
+        "A & "
     } else {
         ""
     };
@@ -232,10 +232,17 @@ pub(super) fn emit_default_export_declaration(
         Some(name) => append!(*ts, "type {name} = "),
         None => ts.push_str("declare const __vize_component__: "),
     }
-    if authored_default != AuthoredDefaultKind::None {
-        // A normal script may export a primitive. Adding the generated Vue
-        // constructor to that value would change its authored public type.
-        ts.push_str("$AuthoredComponent extends object ? ");
+    // A normal script may export a primitive. Adding the generated Vue
+    // constructor to that value would change its authored public type.
+    match authored_default {
+        AuthoredDefaultKind::None => {}
+        // Bind the authored value by inference: a true branch that names the
+        // check type keeps it as a substitution type, and `keyof` over the
+        // component then stays deferred in every consumer (#13113).
+        AuthoredDefaultKind::Component => {
+            ts.push_str("$AuthoredComponent extends infer A extends object ? ");
+        }
+        AuthoredDefaultKind::Options => ts.push_str("$AuthoredComponent extends object ? "),
     }
     if let Some(GenericComponentContract {
         declaration: "",

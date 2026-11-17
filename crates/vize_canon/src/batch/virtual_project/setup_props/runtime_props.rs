@@ -93,7 +93,7 @@ pub(super) fn resolve_imported_runtime_props(
     visited: &mut RuntimePropVisitSet,
     cache: &RuntimePropResolveCache,
 ) -> Vec<PropDefinition> {
-    let Some(path) = resolve_runtime_import_path(importer, specifier) else {
+    let Some(path) = resolve_runtime_import_path(importer, specifier, cache) else {
         return Vec::new();
     };
     let key_path = path.canonicalize().unwrap_or_else(|_| path.clone());

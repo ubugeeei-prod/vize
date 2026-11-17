@@ -1,0 +1,5 @@
+<template>
+  <button class="task" @click="castEnd" tabindex="0" @keypress.enter="edit">open</button>
+  <LewPopover @show="showHandle" @hide="hideHandle" />
+  <Draggable @start="dragging = true" @end="onSortEnd" />
+</template>

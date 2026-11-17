@@ -1,0 +1,21 @@
+<script setup lang="ts">
+import type { Payload } from "virtual-service";
+
+declare global {
+  interface Window {
+    refreshLivePreview: (url: string | null) => void;
+  }
+}
+
+declare module "virtual-service" {
+  interface Payload {
+    label: string;
+  }
+}
+
+const payload: Payload = { id: "one", label: "ready" };
+window.refreshLivePreview("/preview");
+void payload;
+</script>
+
+<template><div /></template>

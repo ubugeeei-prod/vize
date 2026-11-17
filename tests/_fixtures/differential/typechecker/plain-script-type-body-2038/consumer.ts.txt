@@ -1,0 +1,4 @@
+import { DATA_TYPE, type RenderedBody } from "./PreviewMoshiQuestionCard.vue";
+
+const body: RenderedBody = { dataType: DATA_TYPE.ANSWER, data: "" };
+void body;

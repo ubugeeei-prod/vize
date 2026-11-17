@@ -1,0 +1,4 @@
+{
+  "compilerOptions": { "paths": { "@/*": ["./node/*"] } },
+  "include": ["vite.config.*"]
+}

@@ -10,7 +10,7 @@ Arguments:
   [PATTERNS]...
           Glob pattern(s) to match files supported by vize lint
 
-          [default: ./**/*.vue ./**/*.html ./**/*.htm ./**/*.js ./**/*.mjs ./**/*.cjs ./**/*.ts ./**/*.mts ./**/*.cts ./**/*.jsx ./**/*.tsx]
+          [default: ./**/*.vue ./**/*.html ./**/*.htm ./**/*.js ./**/*.mjs ./**/*.cjs ./**/*.ts ./**/*.mts ./**/*.cts ./**/*.jsx ./**/*.tsx ./**/*.tsrx]
 
 Options:
       --fix

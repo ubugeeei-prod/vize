@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true
+  },
+  "include": ["src/**/*.vue", ".nuxt/types/imports.d.ts"],
+  "contentMappers": [{ "package": "vize", "extensions": [".vue"] }]
+}

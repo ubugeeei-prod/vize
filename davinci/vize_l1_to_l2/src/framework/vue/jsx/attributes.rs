@@ -1,4 +1,5 @@
-//! Attributes: `Attribute`, `ui.bind` and `ui.on`, in authored order.
+//! Attributes: `Attribute`, `ui.bind`, `ui.on` and the `v-*` ops of
+//! [`super::directives`], in authored order.
 
 use oxc_ast::ast::{JSXAttribute, JSXAttributeItem, JSXAttributeName, JSXAttributeValue};
 use oxc_span::GetSpan;
@@ -8,14 +9,26 @@ use vize_l2::expr::ExprRef;
 use vize_l2::op::{Attribute, BindOp, BindingOp, DynamicName, OnOp};
 
 use super::children::contains_jsx;
+use super::directives::directive;
+use super::slots::{SlotsAttribute, V_SLOTS, slots_attribute, slots_object};
 use super::{Cx, JsxRefusal, span};
 
-/// The camelCase spelling of `v-slots`, which the JSX dialects accept too.
-const V_SLOTS_ALIAS: &str = "vSlots";
+/// Whose attributes these are: a directive lowers by its owner's kind.
+#[derive(Clone, Copy)]
+pub(super) enum Owner<'a, 'r, 'x> {
+    /// An intrinsic element; a native `v-model` reads its `type`.
+    Element {
+        tag: &'a str,
+        items: &'r [JSXAttributeItem<'x>],
+    },
+    Component,
+}
 
 pub(super) struct Props<'a> {
     pub(super) attributes: Vec<'a, Attribute<'a>>,
     pub(super) bindings: Vec<'a, BindingOp<'a>>,
+    /// The `v-slots` attribute, which lowers after the other props.
+    slots: Option<SlotsAttribute>,
 }
 
 impl<'a> Props<'a> {
@@ -23,7 +36,13 @@ impl<'a> Props<'a> {
         Self {
             attributes: Vec::new_in(&allocator),
             bindings: Vec::new_in(&allocator),
+            slots: None,
         }
+    }
+
+    /// Whether a `v-slots` object appends templates to the children.
+    pub(super) const fn has_slot_templates(&self) -> bool {
+        matches!(self.slots, Some(SlotsAttribute::Templates))
     }
 
     /// Whether the props name a dynamic component's `is`.
@@ -41,11 +60,12 @@ impl<'a> Props<'a> {
 pub(super) fn props<'a>(
     cx: &mut Cx<'a, '_>,
     items: &[JSXAttributeItem<'_>],
+    owner: Owner<'a, '_, '_>,
     out: &mut Props<'a>,
 ) -> Result<(), JsxRefusal> {
     for item in items {
         match item {
-            JSXAttributeItem::Attribute(attribute) => self::attribute(cx, attribute, out)?,
+            JSXAttributeItem::Attribute(attribute) => self::attribute(cx, attribute, owner, out)?,
             // `{...e}`: an ordered dynamic props source (`mergeProps`).
             JSXAttributeItem::SpreadAttribute(spread) => {
                 if contains_jsx(&spread.argument) {
@@ -57,20 +77,32 @@ pub(super) fn props<'a>(
             }
         }
     }
+    if let Some(SlotsAttribute::Forwarded(at)) = out.slots {
+        cx.mint();
+        out.bindings.push(slots_object(cx, at)?);
+    }
     Ok(())
 }
 
 fn attribute<'a>(
     cx: &mut Cx<'a, '_>,
     attribute: &JSXAttribute<'_>,
+    owner: Owner<'a, '_, '_>,
     out: &mut Props<'a>,
 ) -> Result<(), JsxRefusal> {
-    let directive = match &attribute.name {
-        JSXAttributeName::Identifier(name) => is_directive(cx.slice(name.span)?),
-        JSXAttributeName::NamespacedName(name) => is_directive(cx.slice(name.namespace.span)?),
+    let head = match &attribute.name {
+        JSXAttributeName::Identifier(name) => cx.slice(name.span)?,
+        JSXAttributeName::NamespacedName(name) => cx.slice(name.namespace.span)?,
     };
-    if directive {
-        return Err(JsxRefusal::Attribute);
+    if V_SLOTS.contains(&head) {
+        let slots = slots_attribute(attribute, owner)?;
+        return match out.slots.replace(slots) {
+            None => Ok(()),
+            Some(_) => Err(JsxRefusal::Attribute),
+        };
+    }
+    if head.starts_with("v-") {
+        return directive(cx, attribute, owner, out);
     }
     let name = cx.slice(attribute.name.span())?;
     let expression = match &attribute.value {
@@ -152,11 +184,6 @@ fn bind<'a>(
         },
         &cx.allocator,
     ))
-}
-
-/// A `v-*` directive or the `vSlots` alias, alone or as a namespace (`vSlots:default`).
-fn is_directive(name: &str) -> bool {
-    name.starts_with("v-") || name == V_SLOTS_ALIAS
 }
 
 /// `on` followed by an uppercase event character.

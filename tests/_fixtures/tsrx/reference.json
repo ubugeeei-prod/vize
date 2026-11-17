@@ -175,6 +175,81 @@
       }
     },
     {
+      "file": "tests/_fixtures/tsrx/mount/attributes.tsrx",
+      "code": "import { defineVaporComponent } from 'vue-jsx-vapor';\n\nexport const Field = defineVaporComponent(function Field(\n\t{ name, value, disabled, tone }: { name: string; value: string; disabled: boolean; tone: string }\n) {\n\tconst id = `field-${name}`;\n\n\treturn <div class={tone} data-name={name}><label for={id}>{name}</label><input id={id} type=\"text\" value={value} disabled={disabled} /><output aria-live=\"polite\" title={value.length > 3 ? 'long' : undefined}>{value}</output></div>;\n});",
+      "error": null
+    },
+    {
+      "file": "tests/_fixtures/tsrx/mount/counter.tsrx",
+      "code": "import { defineVaporComponent } from 'vue-jsx-vapor';\nimport { ref } from 'vue';\n\nconst Label = defineVaporComponent(function Label(props: { text: string; count: number }) {\n\treturn <span class=\"label\">{props.text}: {props.count}</span>;\n});\n\nconst Counter__static1 = <p class=\"none\">none</p>;\nconst Counter__static2 = <p class=\"some\">some</p>;\nconst Counter__static3 = <p class=\"many\">many</p>;\n\nexport const Counter = defineVaporComponent(function Counter({ title, step }: { title: string; step: number }) {\n\tconst count = ref(0);\n\tconst heading = title.toUpperCase();\n\n\treturn <section><h1>{heading}</h1><Label text={title} count={count.value} /><button onClick={() => count.value += step}>add</button>{count.value > 2\n\t\t\t? Counter__static3\n\t\t\t: count.value > 0 ? Counter__static2 : Counter__static1}</section>;\n});",
+      "error": null
+    },
+    {
+      "file": "tests/_fixtures/tsrx/mount/default.tsrx",
+      "code": "import { defineVaporComponent } from 'vue-jsx-vapor';\n\nconst Badge = defineVaporComponent(function Badge(props: { text: string }) {\n\treturn <b class=\"badge\">{props.text}</b>;\n});\n\nexport default defineVaporComponent(function App({ title, count }: { title: string; count: number }) {\n\tconst heading = title.toUpperCase();\n\n\treturn <section class=\"app\"><h1>{heading}</h1><Badge text={title} /><p>{count}</p></section>;\n});",
+      "error": null
+    },
+    {
+      "file": "tests/_fixtures/tsrx/mount/directive.tsrx",
+      "code": "import { defineVaporComponent } from 'vue-jsx-vapor';\n\n'use client';\n\nimport { ref } from 'vue';\n\nexport const Client = defineVaporComponent(function Client({ label }: { label: string }) {\n\tconst count = ref(0);\n\n\treturn <button onClick={() => count.value++}>{label}: {count.value}</button>;\n});",
+      "error": null
+    },
+    {
+      "file": "tests/_fixtures/tsrx/mount/dynamic.tsrx",
+      "code": "import { defineVaporComponent } from 'vue-jsx-vapor';\nimport { ref } from 'vue';\n\nconst Child = defineVaporComponent(function Child(props: { label: string }) {\n\treturn <span class=\"child\">{props.label}</span>;\n});\n\nexport const Host = defineVaporComponent(function Host({ tag }: { tag: string }) {\n\treturn <>{(() => {\n\t\t\tconst TsrxDynamic_1 = tag;\n\n\t\t\treturn <TsrxDynamic_1 class=\"host\" data-tag={tag}>{'dynamic '}<b>{tag}</b></TsrxDynamic_1>;\n\t\t})()}</>;\n});\n\nexport const Toggle = defineVaporComponent(function Toggle() {\n\tconst tag = ref<'section' | 'article'>('section');\n\n\treturn <><>{(() => {\n\t\t\t\tconst TsrxDynamic_2 = tag.value;\n\n\t\t\t\treturn <TsrxDynamic_2 class=\"toggle\">{tag.value}</TsrxDynamic_2>;\n\t\t\t})()}</><button onClick={() => {\n\t\t\ttag.value = tag.value === 'section' ? 'article' : 'section';\n\t\t}}>\n\t\t\ttoggle\n\t\t</button></>;\n});\n\nexport const Pick = defineVaporComponent(function Pick({ label }: { label: string }) {\n\tconst component = Child;\n\n\treturn <>{(() => {\n\t\t\tconst TsrxDynamic_3 = component;\n\n\t\t\treturn <TsrxDynamic_3 label={label} />;\n\t\t})()}</>;\n});",
+      "error": null
+    },
+    {
+      "file": "tests/_fixtures/tsrx/mount/empty.tsrx",
+      "code": "import { defineVaporComponent } from 'vue-jsx-vapor';\n\nconst List__static1 = <li class=\"none\">none</li>;\n\nexport const List = defineVaporComponent(function List({ items }: { items: string[] }) {\n\treturn <ul>{items.length === 0\n\t\t\t? (() => {\n\t\t\t\treturn List__static1;\n\t\t\t})()\n\t\t\t: items.map((item) => {\n\t\t\t\treturn <li key={item}>{item}</li>;\n\t\t\t})}</ul>;\n});\n\nexport const Cards = defineVaporComponent(function Cards({ rows }: { rows: { id: number; text: string }[] }) {\n\treturn <><h1>{rows.length}</h1>{rows.length === 0\n\t\t\t? (() => {\n\t\t\t\treturn <Card text=\"nothing\" />;\n\t\t\t})()\n\t\t\t: rows.map((row: { id: number; text: string }) => {\n\t\t\t\treturn <Card text={row.text} key={row.id} />;\n\t\t\t})}</>;\n});\n\nconst Card = defineVaporComponent(function Card({ text }: { text: string }) {\n\treturn <p class=\"card\">{text}</p>;\n});",
+      "error": null
+    },
+    {
+      "file": "tests/_fixtures/tsrx/mount/loops.tsrx",
+      "code": "import { defineVaporComponent, VaporFor } from 'vue-jsx-vapor';\n\nexport const Rows = defineVaporComponent(function Rows({ rows }: { rows: { id: number; text: string }[] }) {\n\treturn <VaporFor in={rows} getKey={(row, i) => row.id}>{(row, i) => <li class=\"row\">{i.value}: {row.value.text}</li>}</VaporFor>;\n});\n\nexport const Pairs = defineVaporComponent(function Pairs({ rows }: { rows: { id: number; text: string }[] }) {\n\treturn <VaporFor in={rows} getKey={({ id, text }) => id}>{(__vapor_item) => <Pair id={__vapor_item.value.id} text={__vapor_item.value.text} />}</VaporFor>;\n});\n\nconst Pair = defineVaporComponent(function Pair({ id, text }: { id: number; text: string }) {\n\treturn <p data-id={id}>{text}</p>;\n});\n\nexport const Nested = defineVaporComponent(function Nested({ rows }: { rows: { id: number; text: string }[] }) {\n\treturn <ul>{<VaporFor in={rows} getKey={(row) => row.id}>{(row) => <li>{row.value.text}</li>}</VaporFor>}</ul>;\n});\n\nexport const Values = defineVaporComponent(function Values({ items }: { items: string[] }) {\n\treturn <VaporFor in={items}>{(item) => <li class=\"value\">{item}</li>}</VaporFor>;\n});\n\nexport const Indexed = defineVaporComponent(function Indexed({ items }: { items: string[] }) {\n\treturn <VaporFor in={items} getKey={(item, i) => i}>{(item, i) => <li>{i.value}: {item.value}</li>}</VaporFor>;\n});\n\nexport const Owned = defineVaporComponent(function Owned({ rows }: { rows: { id: number; text: string }[] }) {\n\treturn <VaporFor in={rows} getKey={(row) => row.id}>{(row) => <Pair id={row.value.id} text={row.value.text} />}</VaporFor>;\n});\n\nexport const Terms = defineVaporComponent(function Terms({ rows }: { rows: { id: number; text: string }[] }) {\n\treturn <VaporFor in={rows} getKey={(row) => row.id}>{(row) => <><dt>{row.value.id}</dt><dd class=\"term\">{row.value.text}</dd></>}</VaporFor>;\n});\n\nexport const Labels = defineVaporComponent(function Labels({ items }: { items: string[] }) {\n\treturn <VaporFor in={items} getKey={(item, i) => i}>{(item, i) => <>{i.value}<b>{item.value}</b></>}</VaporFor>;\n});",
+      "error": null
+    },
+    {
+      "file": "tests/_fixtures/tsrx/mount/map.tsrx",
+      "code": "import { defineVaporComponent } from 'vue-jsx-vapor';\nimport { ref } from 'vue';\n\nexport const Items = defineVaporComponent(function Items({ items }: { items: string[] }) {\n\treturn <><h1>{items.length}</h1>{items.map((item, i) => <li class={i % 2 ? 'odd' : 'even'}>{i}: {item}</li>)}</>;\n});\n\nexport const Rows = defineVaporComponent(function Rows({ rows }: { rows: { id: number; text: string }[] }) {\n\tconst picked = ref(0);\n\n\treturn <><button onClick={() => picked.value += 1}>next</button>{rows.map(function (row) {\n\t\t\treturn <Row key={row.id} text={row.text} on={row.id === picked.value} />;\n\t\t})}</>;\n});\n\nconst Row = defineVaporComponent(function Row({ text, on }: { text: string; on: boolean }) {\n\treturn <p class={on ? 'on' : 'off'}>{text}</p>;\n});",
+      "error": null
+    },
+    {
+      "file": "tests/_fixtures/tsrx/mount/nested.tsrx",
+      "code": "import { defineVaporComponent } from 'vue-jsx-vapor';\nimport { ref } from 'vue';\n\nexport const Toggle = defineVaporComponent(function Toggle({ on, n }: { on: boolean; n: number }) {\n\treturn <><h1>{n}</h1>{on ? <em class=\"on\">yes {n}</em> : <span>no</span>}</>;\n});\n\nconst Modes__static1 = <hr />;\n\nexport const Modes = defineVaporComponent(function Modes({ mode, label }: { mode: string; label: string }) {\n\treturn <>{mode === 'a'\n\t\t\t? <Badge text={label} />\n\t\t\t: mode === 'b' ? <b>{label}</b> : null}{Modes__static1}</>;\n});\n\nconst Badge = defineVaporComponent(function Badge({ text }: { text: string }) {\n\treturn <i class=\"badge\">{text}</i>;\n});\n\nexport const Guard = defineVaporComponent(function Guard({ count, label }: { count: number; label: string }) {\n\treturn <>{count > 0 && <p data-label={label}>{label}</p>}</>;\n});\n\nexport const Disclosure = defineVaporComponent(function Disclosure({ title }: { title: string }) {\n\tconst open = ref(false);\n\n\treturn <><button onClick={() => open.value = !open.value}>{title}</button>{open.value && title.length > 3\n\t\t\t? <section class=\"long\">{title}</section>\n\t\t\t: open.value ? <section>short</section> : null}</>;\n});",
+      "error": null
+    },
+    {
+      "file": "tests/_fixtures/tsrx/mount/props.tsrx",
+      "code": "import {\n\tnormalize_spread_props_for_ref_attr as __normalize_spread_props_for_ref_attr\n} from '@tsrx/vue/ref';\n\nimport { defineVaporComponent } from 'vue-jsx-vapor';\n\nconst FALLBACK = 'fallback';\n\nexport const Defaults = defineVaporComponent(function Defaults(\n\t{\n\t\tlabel = 'none',\n\t\tcount = 1,\n\t\tflag = false,\n\t\ttags = ['a'],\n\t\tformat = (n: number) => `#${n}`,\n\t\tfallback = FALLBACK\n\t}: { \n\t\tlabel?: string;\n\t\tcount?: number;\n\t\tflag?: boolean;\n\t\ttags?: string[];\n\t\tformat?: (n: number) => string;\n\t\tfallback?: string\n\t }\n) {\n\treturn <p data-flag={String(flag)}>{label}: {format(count)} {tags.join(',')} {fallback}</p>;\n});\n\nexport const Renamed = defineVaporComponent(function Renamed(\n\t{ label: text, count: n = 2 }: { label: string; count?: number }\n) {\n\tconst doubled = n * 2;\n\n\treturn <p title={text}>{text}: {n} {doubled} {String(({ text }).text)}</p>;\n});\n\nexport const Rest = defineVaporComponent(function Rest({ label, ...rest }: { label: string }) {\n\tlet Rest__spread_props1 = __normalize_spread_props_for_ref_attr(rest);\n\n\treturn <p {...Rest__spread_props1} ref={Rest__spread_props1?.ref}>{label}</p>;\n});",
+      "error": null
+    },
+    {
+      "file": "tests/_fixtures/tsrx/mount/returns.tsrx",
+      "code": "import { defineVaporComponent } from 'vue-jsx-vapor';\nimport { ref } from 'vue';\n\nconst Child = defineVaporComponent(function Child(props: { text: string }) {\n\treturn <b class=\"child\">{props.text}</b>;\n});\n\nexport const Plain = defineVaporComponent(function Plain({ label, count }: { label: string; count: number }) {\n\tconst upper = label.toUpperCase();\n\n\treturn <p class=\"plain\" data-count={count}>{upper}: <Child text={label} /></p>;\n});\n\nexport const Arrow = defineVaporComponent(({ count }: { count: number }) => <span data-count={count}>{count * 2}</span>);\n\nexport const Grow = (props: { items: string[] }) => {\n\tconst size = ref(1);\n\n\treturn <div><button onClick={() => size.value += 1}>grow</button><p>{props.items.slice(0, size.value).join(',')}</p></div>;\n};",
+      "error": null
+    },
+    {
+      "file": "tests/_fixtures/tsrx/mount/shadow.tsrx",
+      "code": "import { defineVaporComponent, VaporFor } from 'vue-jsx-vapor';\n\nexport const Shadow = defineVaporComponent(function Shadow({ label, items }: { label: string; items: string[] }) {\n\tconst upper = label.toUpperCase();\n\tconst pick = (label: string) => label + upper;\n\n\tfunction twice(label: string) {\n\t\treturn label + label;\n\t}\n\n\tlet total = 0;\n\n\tfor (const label of items) {\n\t\ttotal += label.length;\n\t}\n\n\t{\n\t\tconst label = 'block';\n\n\t\ttotal += label.length;\n\t}\n\n\treturn <><h1 title={label}>{pick('x')} {twice('y')} {total}</h1><p>{items.map((label) => label.toUpperCase()).join(',')}</p>{<VaporFor in={items} getKey={(label) => label}>{(label) => <li>{label.value}</li>}</VaporFor>}</>;\n});",
+      "error": null
+    },
+    {
+      "file": "tests/_fixtures/tsrx/mount/slots.tsrx",
+      "code": "import { defineVaporComponent } from 'vue-jsx-vapor';\nimport { useSlots } from 'vue';\n\nconst Card = defineVaporComponent(function Card() {\n\tconst slots = useSlots();\n\n\treturn <>{slots.default?.()}</>;\n});\n\nexport const Panel = defineVaporComponent(function Panel({ title, count }: { title: string; count: number }) {\n\treturn <Card><h2 class=\"title\">{title}</h2><p>count: {count}</p></Card>;\n});",
+      "error": null
+    },
+    {
+      "file": "tests/_fixtures/tsrx/mount/typed.tsrx",
+      "code": "import { defineVaporComponent } from 'vue-jsx-vapor';\nimport { ref } from 'vue';\n\nexport const Typed = defineVaporComponent(function Typed({ size, label }: { size: number; label?: string }) {\n\tconst count = ref<number>(0);\n\n\treturn <button class=\"typed\" data-size={size as unknown as string} onClick={(event: Event) => count.value += event.type === 'click' ? size : 0}>{label!.toUpperCase()}: {count.value satisfies number + 1}<i>{['a', 'b'].map((x: string): string => x + size).join(',')}</i></button>;\n});",
+      "error": null
+    },
+    {
+      "file": "tests/_fixtures/tsrx/mount/values.tsrx",
+      "code": "import { defineVaporComponent } from 'vue-jsx-vapor';\n\nexport const Values = defineVaporComponent(function Values(\n\t{ text, count, flag, items }: { text: string; count: number; flag: boolean; items: string[] }\n) {\n\treturn <ul><li>Text: {text}</li><li>{count} and {count + 1}</li><li>{flag ? 'on' : 'off'}</li><li>{flag ? null : 0}</li><li>{items.join(', ')}</li></ul>;\n});",
+      "error": null
+    },
+    {
       "file": "tests/_fixtures/tsrx/syntax-adjacent-expr.tsrx",
       "code": "import { defineVaporComponent } from 'vue-jsx-vapor';\n\nexport const A = defineVaporComponent(function A({ a, b }: { a: string; b: string }) {\n\treturn <p>{a}{b}&nbsp;&#47;</p>;\n});",
       "error": null

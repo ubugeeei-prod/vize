@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "noEmit": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "target": "ESNext",
+    "types": []
+  },
+  "vueCompilerOptions": { "checkUnknownProps": true },
+  "contentMappers": [{ "package": "vize", "extensions": [".vue"] }],
+  "include": ["src/**/*.vue", "src/**/*.ts"]
+}

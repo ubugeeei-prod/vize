@@ -1,0 +1,5 @@
+<script setup lang="ts">
+// @ts-ignore intentional declaration
+declare const label: string;
+</script>
+<template><div /></template>

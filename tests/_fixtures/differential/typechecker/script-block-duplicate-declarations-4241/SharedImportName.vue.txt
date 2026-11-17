@@ -1,0 +1,15 @@
+<script lang="ts">
+import { ref } from 'vue';
+
+export const seed = ref(1);
+</script>
+
+<script lang="ts" setup>
+import { ref } from 'vue';
+
+const local = ref(seed.value);
+</script>
+
+<template>
+  <div>{{ local }}</div>
+</template>

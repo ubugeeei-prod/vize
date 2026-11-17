@@ -1,0 +1,4 @@
+<script setup lang="ts">
+const value = { kind: 'x' as 'x' | 'y' }
+</script>
+<template><div v-if="value.kind === 'x'" @click="() => value.kind">{{ value.kind }}</div></template>

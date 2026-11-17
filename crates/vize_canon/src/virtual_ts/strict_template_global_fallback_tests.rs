@@ -18,6 +18,7 @@ fn template_global_helper_uses_fallback_for_unknown_public_instance_members() {
         false,
         false,
         (None, None, None),
+        None,
     );
 
     assert!(ctx.contains("type $GlobalContextProperty<T, F>"), "{ctx}");

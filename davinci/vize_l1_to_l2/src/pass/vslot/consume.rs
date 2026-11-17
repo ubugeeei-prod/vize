@@ -288,7 +288,11 @@ fn visit<'a>(
             }
         }
         Op::For(for_op) => {
-            let views = region(walk, channels, &for_op.region.ops);
+            let mut views = region(walk, channels, &for_op.region.ops);
+            // A host loop's `@empty` region follows its body in page order.
+            if let Some(empty) = for_op.host.as_ref().and_then(|host| host.empty.as_ref()) {
+                views.extend(region(walk, channels, &empty.ops));
+            }
             let from_template = id.and_then(|id| channels.for_wrappers.get(id)).is_some();
             ChildView {
                 id,

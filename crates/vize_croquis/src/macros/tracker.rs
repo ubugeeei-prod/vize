@@ -1,6 +1,6 @@
 //! Focused [`MacroTracker`](super::MacroTracker) implementations.
 
-use super::{MacroTracker, ModelDefinition, PropDefinition};
+use super::{MacroTracker, ModelDefinition, PropDefinition, PropsDestructuredBindings};
 use vize_carton::CompactString;
 
 impl std::fmt::Debug for MacroTracker {
@@ -18,6 +18,7 @@ impl std::fmt::Debug for MacroTracker {
             .field("slots", &self.slots)
             .field("art", &self.art)
             .field("props_destructure", &self.props_destructure)
+            .field("props_object_local", &self.props_object_local)
             .field("top_level_awaits", &self.top_level_awaits)
             .field("next_id", &self.next_id)
             .field("define_props_idx", &self.define_props_idx)
@@ -38,6 +39,34 @@ impl MacroTracker {
     /// Record the name directly from the recognized macro's object AST.
     pub fn set_define_options_name(&mut self, name: Option<CompactString>) {
         self.define_options_name = name;
+    }
+
+    /// Set props destructure
+    #[inline]
+    pub fn set_props_destructure(&mut self, destructure: PropsDestructuredBindings) {
+        self.props_destructure = Some(destructure);
+    }
+
+    /// Get props destructure
+    #[inline]
+    pub fn props_destructure(&self) -> Option<&PropsDestructuredBindings> {
+        self.props_destructure.as_ref()
+    }
+
+    /// Record the identifier a `defineProps` or `withDefaults` call
+    /// initializes (`const props = defineProps()`).
+    #[inline]
+    pub fn set_props_object_local(&mut self, local: CompactString) {
+        self.props_object_local = Some(local);
+    }
+
+    /// The identifier bound to the props object itself, which Vue's
+    /// `compileScript` classes as `setup-reactive-const`. A destructure or an
+    /// unassigned call binds none, and an unrelated `props` binding is never
+    /// reported here.
+    #[inline]
+    pub fn props_object_local(&self) -> Option<&str> {
+        self.props_object_local.as_deref()
     }
 
     /// Replace the type argument of the recognized `defineProps` call at
@@ -108,6 +137,16 @@ impl MacroTracker {
             prop.prop_type = Some(prop_type.into());
         }
         true
+    }
+
+    /// Forget each prop type `unresolvable` rejects, keeping the prop itself.
+    #[inline]
+    pub(crate) fn forget_prop_types(&mut self, mut unresolvable: impl FnMut(&str) -> bool) {
+        for prop in &mut self.props {
+            if prop.prop_type.as_deref().is_some_and(&mut unresolvable) {
+                prop.prop_type = None;
+            }
+        }
     }
 
     /// Get a prop's written declaration range, relative to its script block.

@@ -27,15 +27,40 @@ function restoreFallthroughValueSuite(workflow: string): string {
   return workflow.replace(fallthroughFilter, "");
 }
 
-/** Restores content-mapper-conformance.yml before its sealed command-local edits. */
+// #13021 appended its library-generic fallthrough suite after #12458's.
+const libraryFallthroughFilter = " content_mapper_tsgo_cli::library_generic_fallthrough_13021::";
+
+function restoreLibraryFallthroughSuite(workflow: string): string {
+  assert.equal(workflow.split(libraryFallthroughFilter).length, 2, "library fallthrough suite");
+  const appended = fallthroughFilter + libraryFallthroughFilter + " --nocapture\n";
+  assert.equal(workflow.split(appended).length, 2, "library fallthrough suite command");
+  return workflow.replace(libraryFallthroughFilter, "");
+}
+
+// The packaged library-generic data-attr suite followed #13021's.
+const packagedDataAttrFilter = " content_mapper_tsgo_cli::packaged_generic_data_attrs::";
+
+function restorePackagedDataAttrSuite(workflow: string): string {
+  assert.equal(workflow.split(packagedDataAttrFilter).length, 2, "packaged data-attr suite");
+  const appended = libraryFallthroughFilter + packagedDataAttrFilter + " --nocapture\n";
+  assert.equal(workflow.split(appended).length, 2, "packaged data-attr suite command");
+  return workflow.replace(packagedDataAttrFilter, "");
+}
+
 // Reverse only the reviewed Rust 1.100.0 pin edit (#12954) on its two installers.
 function restoreRustToolchainPin(workflow: string): string {
   assert.equal(workflow.split('toolchain: "1.100.0"').length, 3);
   return workflow.replaceAll('toolchain: "1.100.0"', 'toolchain: "1.99.1"');
 }
 
+/** Restores content-mapper-conformance.yml before its sealed command-local edits. */
+
 export function restoreConformanceWorkflow(workflow: string): string {
   return restoreConformanceNativeStaging(
-    restoreFallthroughValueSuite(restoreExactTsgoTimeout(restoreRustToolchainPin(workflow))),
+    restoreFallthroughValueSuite(
+      restoreExactTsgoTimeout(
+        restoreLibraryFallthroughSuite(restorePackagedDataAttrSuite(restoreRustToolchainPin(workflow))),
+      ),
+    ),
   );
 }

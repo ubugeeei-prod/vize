@@ -9,7 +9,7 @@
 //! `ui.if` / `ui.for` stays one [`MarkupNode::If`] / [`MarkupNode::For`]. A
 //! merged text/interpolation run is split back into its recorded parts.
 
-use super::surface::{child_start, siblings_with_pre, token_range};
+use super::surface::{child_start, token_range};
 use super::walk::{L2Step, scope_region};
 use super::{L2ElementOp, L2Markup};
 use crate::ir::ByteRange;
@@ -97,8 +97,7 @@ fn walk_chain<'a>(
     visitor: &mut dyn FnMut(MarkupNode<'a>),
 ) {
     let (siblings, in_pre) = doc
-        .surface
-        .and_then(|tree| siblings_with_pre(tree, if_op.span.start))
+        .surface_siblings_at(if_op.span.start)
         .unwrap_or((&[], false));
     let source = doc.source;
     let mut gaps = siblings
@@ -156,10 +155,7 @@ pub(in crate::markup) fn walk_kept_gaps<'a>(
     let Some(allocator) = doc.allocator else {
         return;
     };
-    let Some((siblings, in_pre)) = doc
-        .surface
-        .and_then(|tree| siblings_with_pre(tree, if_op.span.start))
-    else {
+    let Some((siblings, in_pre)) = doc.surface_siblings_at(if_op.span.start) else {
         return;
     };
     for (index, child) in siblings.iter().enumerate() {

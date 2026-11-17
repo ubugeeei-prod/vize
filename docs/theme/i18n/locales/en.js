@@ -56,6 +56,7 @@
       "/rules/reference/parser-template": "Template syntax errors",
       "/rules/reference/parser-sfc": "SFC syntax errors",
       "/rules/reference/parser-jsx": "JSX syntax errors",
+      "/rules/reference/parser-tsrx": "TSRX syntax errors",
       "/rules/reference/type-project-configuration": "Project configuration errors",
       "/guide/check-performance": "Type-check performance",
       "/guide/oxlint": "Oxlint plugin",

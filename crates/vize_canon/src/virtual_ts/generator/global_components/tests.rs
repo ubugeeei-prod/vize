@@ -8,6 +8,7 @@ use vize_croquis::{Analyzer, AnalyzerOptions};
 
 mod dynamic_props;
 mod kebab_listener_11373;
+mod local_registrations_13111;
 mod registry_slot_owners;
 
 fn generate(script: &str, template: &str, check_unknown_components: bool) -> VirtualTsOutput {

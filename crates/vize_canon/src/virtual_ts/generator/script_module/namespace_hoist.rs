@@ -34,7 +34,10 @@
 //!    carries the `export` instead and the bridge skips the value line.
 
 use oxc_allocator::Allocator;
-use oxc_ast::ast::{Declaration, IdentifierReference, Statement, TSModuleDeclarationName};
+use oxc_ast::ast::{
+    AssignmentTarget, Declaration, Expression, IdentifierReference, Statement,
+    TSModuleDeclarationName,
+};
 use oxc_ast_visit::Visit;
 use oxc_parser::Parser;
 use oxc_span::{GetSpan, SourceType, Span};
@@ -83,6 +86,8 @@ impl NamespaceHoistPlan {
 
         let mut spans = Vec::new();
         let mut namespace_names = FxHashSet::default();
+        let mut functions = Vec::new();
+        let expandos = expando_targets(&parsed.program.body);
         for statement in &parsed.program.body {
             let Some((declaration, span)) = top_level_declaration(statement) else {
                 continue;
@@ -95,14 +100,25 @@ impl NamespaceHoistPlan {
                     }
                     spans.push((span.start, span.end));
                 }
-                Declaration::TSEnumDeclaration(_)
-                | Declaration::ClassDeclaration(_)
-                | Declaration::FunctionDeclaration(_) => {
+                Declaration::TSEnumDeclaration(_) | Declaration::ClassDeclaration(_) => {
                     if let Some(name) = merge_partner_name(declaration) {
                         namespace_names.insert(name);
                     }
                 }
+                Declaration::FunctionDeclaration(_) => {
+                    if let Some(name) = merge_partner_name(declaration) {
+                        functions.push(name);
+                    }
+                }
                 _ => {}
+            }
+        }
+        // TypeScript reads `f.prop = ...` as a declaration of `f`'s property
+        // only beside `f` in the same container. Such a function stays in
+        // `__setup()` with its assignments, unless a namespace merges with it.
+        for name in functions {
+            if !expandos.contains(&name) {
+                namespace_names.insert(name);
             }
         }
         if spans.is_empty() && namespace_names.is_empty() {
@@ -255,6 +271,30 @@ fn top_level_declaration<'a>(statement: &'a Statement<'a>) -> Option<(&'a Declar
             .as_declaration()
             .map(|declaration| (declaration, statement.span())),
     }
+}
+
+/// Names a top-level statement assigns a property of (`f.prop = 1`,
+/// `f["prop"] = 1`): JavaScript-style expando declarations.
+fn expando_targets(body: &[Statement<'_>]) -> FxHashSet<CompactString> {
+    body.iter()
+        .filter_map(|statement| {
+            let Statement::ExpressionStatement(statement) = statement else {
+                return None;
+            };
+            let Expression::AssignmentExpression(assignment) = &statement.expression else {
+                return None;
+            };
+            let object = match &assignment.left {
+                AssignmentTarget::StaticMemberExpression(member) => &member.object,
+                AssignmentTarget::ComputedMemberExpression(member) => &member.object,
+                _ => return None,
+            };
+            let Expression::Identifier(object) = object else {
+                return None;
+            };
+            Some(CompactString::new(object.name.as_str()))
+        })
+        .collect()
 }
 
 /// The name a namespace can merge with. `const`/`let` are absent on purpose:

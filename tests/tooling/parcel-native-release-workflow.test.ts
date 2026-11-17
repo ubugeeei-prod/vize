@@ -13,6 +13,7 @@ test("tagged releases publish every native Parcel package through OIDC", () => {
     on: {
       push: { tags: string[] };
       pull_request: unknown;
+      schedule: { cron: string }[];
       workflow_dispatch: {
         inputs: Record<string, { type: string; default: string | boolean }>;
       };
@@ -23,6 +24,8 @@ test("tagged releases publish every native Parcel package through OIDC", () => {
         permissions: Record<string, string>;
         uses: string;
         with: Record<string, string>;
+        needs?: string;
+        if?: string;
       }
     >;
   };
@@ -51,6 +54,42 @@ test("tagged releases publish every native Parcel package through OIDC", () => {
     "${{ (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) || inputs.publish == true }}",
   );
   assert.equal(job.with.version, "${{ inputs.version }}");
+});
+
+test("pull requests build per-platform packages only for native plugin changes", () => {
+  const parsed = parse(workflow) as {
+    on: { schedule: { cron: string }[] };
+    jobs: Record<
+      string,
+      {
+        if?: string;
+        needs?: string;
+        "runs-on"?: string;
+        outputs?: Record<string, string>;
+        steps?: Array<{ id?: string; uses?: string; with?: { filters?: string } }>;
+      }
+    >;
+  };
+  // Hosted macOS arm64 runners are capacity-limited; main still builds nightly.
+  assert.deepEqual(parsed.on.schedule, [{ cron: "37 2 * * *" }]);
+  const plan = parsed.jobs["packaging-changes"]!;
+  assert.equal(plan.if, "${{ github.event_name == 'pull_request' }}");
+  assert.equal(plan["runs-on"], "blacksmith-32vcpu-ubuntu-2404");
+  assert.deepEqual(plan.outputs, { packages: "${{ steps.changes.outputs.packages }}" });
+  const [detect] = plan.steps ?? [];
+  assert.equal(detect?.uses, "dorny/paths-filter@7b450fff21473bca461d4b92ce414b9d0420d706");
+  assert.equal(
+    detect?.with?.filters,
+    "packages:\n  - 'npm/builder/parcel-native/**'\n  - 'crates/vize_parcel_transformer/**'\n  - '.github/workflows/parcel-transformer.yml'\n",
+  );
+  const packages = parsed.jobs["native-plugin-packages"]!;
+  assert.equal(packages.needs, "packaging-changes");
+  assert.equal(
+    packages.if,
+    "${{ !cancelled() && (github.event_name != 'pull_request' || needs.packaging-changes.outputs.packages == 'true') }}",
+  );
+  // The Linux consumer still builds the native transformer on every change.
+  assert.equal(parsed.jobs["native-consumer"]?.if, undefined);
 });
 
 test("the guarded release dispatches Parcel publication from the immutable tag", () => {

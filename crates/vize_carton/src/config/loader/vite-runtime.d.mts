@@ -17,3 +17,15 @@ export function resolveViteConfigExport(
   env?: ConfigEnv,
   configDir?: string,
 ): Promise<unknown>;
+/** The native lint sidecar: resolve the plan once; the result runs each request. */
+export function openViteConfigPluginLint(
+  exported: unknown,
+  configPath: string,
+): Promise<(request: unknown) => unknown>;
+/** Registered key of the resolved plan, with callbacks, on a projected config object. */
+export const RESOLVED_PLUGIN_PLAN: unique symbol;
+/** `vize plugin inspect` view of an authored Vite export, refused capabilities included. */
+export function inspectViteConfigPlugins(
+  exported: unknown,
+  env?: ConfigEnv,
+): Promise<import("./plugin-inspect.js").PluginPlanInspection>;

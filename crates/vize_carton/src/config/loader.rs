@@ -26,6 +26,8 @@ mod js_literal;
 #[cfg(test)]
 mod js_literal_tests;
 mod js_observation;
+#[cfg(test)]
+mod js_observation_tests;
 mod jsx;
 mod language_server;
 #[cfg(test)]
@@ -35,6 +37,12 @@ mod lint_features;
 mod lsp_snapshot;
 mod parse;
 mod pkl;
+mod plugin_inspect;
+mod plugin_lint;
+pub use plugin_lint::{PluginLintSidecar, SidecarBudget, SidecarReply};
+#[cfg(test)]
+mod plugin_plan_tests;
+pub use plugin_inspect::inspect_config_plugins;
 #[cfg(test)]
 mod project_settings_tests;
 #[cfg(test)]

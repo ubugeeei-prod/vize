@@ -138,3 +138,113 @@ fn runtime_options_refuse_dynamic_computed_names_without_executing_them() {
     assert_eq!(mixed.prop_type.as_deref(), Some("boolean"));
     assert_eq!(mixed.default_value.as_deref(), Some("false"));
 }
+
+fn prop_types(result: &super::ScriptParseResult) -> Vec<(&str, Option<&str>, bool)> {
+    result
+        .macros
+        .props()
+        .iter()
+        .map(|prop| (prop.name.as_str(), prop.prop_type.as_deref(), prop.required))
+        .collect()
+}
+
+/// #13112: Vue infers any other constructor value as what it builds.
+#[test]
+fn constructor_values_type_props_from_the_value() {
+    let result = parse_script_setup(
+        r#"
+            import { Counter } from "./Counter";
+            import * as shapes from "./shapes";
+            defineProps({
+                counter: { type: Counter },
+                required: { type: Counter, required: true },
+                shorthand: Counter,
+                member: { type: shapes.Counter },
+                either: { type: [Counter, String] },
+                deep: [shapes.nested.Counter, Number],
+                optionalChain: { type: shapes?.Counter },
+                computed: { type: shapes["Counter"] },
+                call: { type: makeCounter() },
+            })
+        "#,
+    );
+    assert_eq!(
+        prop_types(&result),
+        [
+            ("counter", Some("__RuntimePropCtor<typeof Counter>"), false),
+            ("required", Some("__RuntimePropCtor<typeof Counter>"), true),
+            (
+                "shorthand",
+                Some("__RuntimePropCtor<typeof Counter>"),
+                false
+            ),
+            (
+                "member",
+                Some("__RuntimePropCtor<typeof shapes.Counter>"),
+                false
+            ),
+            (
+                "either",
+                Some("__RuntimePropCtor<typeof Counter> | string"),
+                false
+            ),
+            (
+                "deep",
+                Some("__RuntimePropCtor<typeof shapes.nested.Counter> | number"),
+                false
+            ),
+            ("optionalChain", None, false),
+            ("computed", None, false),
+            ("call", None, false),
+        ]
+    );
+}
+
+#[test]
+fn builtin_constructors_keep_their_spelling() {
+    let result = parse_script_setup(
+        "defineProps({ s: String, n: Number, b: Boolean, a: Array, o: Object, d: Date, f: Function, both: [String, Date] })",
+    );
+    assert_eq!(
+        prop_types(&result),
+        [
+            ("s", Some("string"), false),
+            ("n", Some("number"), false),
+            ("b", Some("boolean"), false),
+            ("a", Some("unknown[]"), false),
+            ("o", Some("Record<string, any>"), false),
+            ("d", Some("Date"), false),
+            ("f", Some("(...args: any[]) => any"), false),
+            ("both", Some("string | Date"), false),
+        ]
+    );
+}
+
+/// The props type is module scoped; Vue rejects setup locals in `defineProps`.
+#[test]
+fn setup_local_constructor_values_stay_untyped() {
+    let result = parse_script_setup(
+        r#"
+            import { Counter } from "./Counter";
+            class Local {}
+            defineProps({
+                local: { type: Local },
+                later: { type: Later },
+                mixed: { type: [Counter, Local] },
+                imported: { type: Counter },
+                global: { type: Map },
+            })
+            function Later() { return 1 }
+        "#,
+    );
+    assert_eq!(
+        prop_types(&result),
+        [
+            ("local", None, false),
+            ("later", None, false),
+            ("mixed", None, false),
+            ("imported", Some("__RuntimePropCtor<typeof Counter>"), false),
+            ("global", Some("__RuntimePropCtor<typeof Map>"), false),
+        ]
+    );
+}

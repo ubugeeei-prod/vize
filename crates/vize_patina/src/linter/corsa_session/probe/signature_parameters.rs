@@ -7,7 +7,7 @@ use corsa::{
 };
 use vize_l0::profile;
 
-pub(super) async fn load(
+pub(in crate::linter::corsa_session) async fn load(
     session: &ProjectSession,
     signature: &SignatureResponse,
 ) -> corsa::Result<Vec<Option<TypeResponse>>> {

@@ -119,6 +119,9 @@ pub struct Linter {
     /// Optional project config selected by `typeChecker.tsconfig`.
     #[cfg(not(target_arch = "wasm32"))]
     pub(crate) type_aware_tsconfig: Option<PathBuf>,
+    /// One disk view for imported macro types, shared by every file this
+    /// linter lints. `None` gives each file a fresh view.
+    pub(crate) type_sources: Option<super::run_type_sources::RunTypeSources>,
 }
 
 impl Linter {
@@ -233,6 +236,26 @@ impl Linter {
         self
     }
 
+    /// Read each file that imported macro types reach at most once for this
+    /// linter's lifetime, instead of once per linted SFC. Only for hosts whose
+    /// sources do not change while the linter lives, such as one CLI run.
+    /// Relative filenames name files under the working directory at this call.
+    #[inline]
+    pub fn with_run_scoped_type_sources(mut self) -> Self {
+        self.type_sources = Some(super::run_type_sources::RunTypeSources::for_current_dir());
+        self
+    }
+
+    /// Where an SFC's imported macro types resolve, when a rule needs them.
+    #[inline]
+    pub(crate) fn macro_type_resolution<'a>(
+        &'a self,
+        filename: &'a str,
+    ) -> Option<super::engine::MacroTypeResolution<'a>> {
+        self.has_resolved_macro_type_demand()
+            .then(|| super::engine::MacroTypeResolution::new(self.type_sources.as_ref(), filename))
+    }
+
     /// Get the current locale.
     #[inline]
     pub fn locale(&self) -> Locale {
@@ -304,6 +327,32 @@ impl Linter {
             .filter_map(|(rank, (rule, _))| {
                 rule.as_markup_rule()
                     .map(|rule| crate::markup::RankedMarkupRule::new(rank, rule))
+            })
+            .collect()
+    }
+
+    /// [`Self::markup_rules`] for the rules named in `names`, reading the
+    /// registry's ranks for that list instead of scanning every rule.
+    pub(crate) fn named_markup_rules(
+        &self,
+        count: usize,
+        names: &'static [&'static str],
+    ) -> Vec<crate::markup::RankedMarkupRule<'_>> {
+        let rules = self.registry.rules();
+        let rule_names = self.rule_names();
+        self.registry
+            .markup_ranks_named(names)
+            .iter()
+            .copied()
+            .filter(|&rank| rank < count)
+            .filter(|&rank| {
+                rule_names
+                    .get(rank)
+                    .is_some_and(|name| self.is_rule_enabled(name))
+            })
+            .filter_map(|rank| {
+                let rule = rules.get(rank)?.as_markup_rule()?;
+                Some(crate::markup::RankedMarkupRule::new(rank, rule))
             })
             .collect()
     }

@@ -2,6 +2,7 @@ mod bindings;
 mod emits;
 mod inherit_attrs;
 mod inheritance;
+mod registration_value;
 mod template_casing;
 
 use super::class_component::{class_from_export, collect_class_component_metadata};
@@ -436,14 +437,14 @@ fn collect_component_registrations_from_components_object<'a>(
                     continue;
                 };
                 let local_name = if property.shorthand {
-                    name
+                    CompactString::new(name)
                 } else {
-                    let Some(local_name) = local_name_from_expression(&property.value) else {
+                    let Some(local_name) = registration_value::local_name(&property.value) else {
                         continue;
                     };
                     local_name
                 };
-                let pair = (CompactString::new(name), CompactString::new(local_name));
+                let pair = (CompactString::new(name), local_name);
                 if seen.insert(pair.clone()) {
                     result.component_registrations.push(ComponentRegistration {
                         name: pair.0,
@@ -657,23 +658,6 @@ fn function_body_return_object<'a>(
     }
 
     None
-}
-
-fn local_name_from_expression<'a>(expression: &'a Expression<'a>) -> Option<&'a str> {
-    match expression {
-        Expression::Identifier(identifier) => Some(identifier.name.as_str()),
-        Expression::ParenthesizedExpression(parenthesized) => {
-            local_name_from_expression(&parenthesized.expression)
-        }
-        Expression::TSAsExpression(ts_as) => local_name_from_expression(&ts_as.expression),
-        Expression::TSSatisfiesExpression(ts_satisfies) => {
-            local_name_from_expression(&ts_satisfies.expression)
-        }
-        Expression::TSNonNullExpression(ts_non_null) => {
-            local_name_from_expression(&ts_non_null.expression)
-        }
-        _ => None,
-    }
 }
 
 /// Whether `callee` is a recognized component-options wrapper whose first

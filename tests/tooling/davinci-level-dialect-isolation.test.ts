@@ -213,7 +213,8 @@ test("each level has one registry and policy consumers do not rematch variants",
 // on public level APIs. No level crate names one or depends on one.
 const proofOfConceptInputs =
   /\b(?:solid|svelte|astro|angular|coffee(?:script)?|moonbit|python|poc_support)\b/iu;
-const publicLevelDependency = /^(?:vize_l[0-4](?:_to_l[0-4])?|oxc_\w+|poc-support)$/u;
+const publicLevelDependency =
+  /^(?:vize_l[0-4](?:_to_l[0-4])?|oxc_\w+|rustpython-parser|poc-support)$/u;
 
 function workspaceMembers(): string[] {
   const workspace = fs.readFileSync(path.join(repoRoot, "Cargo.toml"), "utf8");

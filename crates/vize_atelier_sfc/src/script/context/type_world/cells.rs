@@ -19,8 +19,36 @@ use std::panic::{AssertUnwindSafe, catch_unwind};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, OnceLock};
+use vize_carton::CompactString;
 
+use super::super::external_types::resolution::path_key;
 use super::{ResolvedDependency, TypeSourceSnapshot};
+
+/// A module a resolved dependency leads world walks to. Every walk of the
+/// snapshot keys it the same way and finds it in the same slot, so both are
+/// found once instead of on each visit.
+#[derive(Debug)]
+pub(super) struct Follow {
+    path: PathBuf,
+    /// `path_key(path)`: the module's key in every world.
+    pub(super) identity: CompactString,
+    slot: OnceLock<Option<Slot>>,
+}
+
+impl Follow {
+    pub(super) fn new(path: PathBuf) -> Self {
+        Self {
+            identity: path_key(&path),
+            path,
+            slot: OnceLock::new(),
+        }
+    }
+
+    /// The snapshot's slot for this module. A follow belongs to one snapshot.
+    fn slot(&self, sources: &TypeSourceSnapshot) -> Option<&Slot> {
+        self.slot.get_or_init(|| slot(&self.path, sources)).as_ref()
+    }
+}
 
 /// One dependency's resolution in a snapshot.
 #[derive(Debug, Default)]
@@ -66,13 +94,14 @@ fn slot(path: &Path, sources: &TypeSourceSnapshot) -> Option<Slot> {
     }))
 }
 
-/// Resolve `path` once per snapshot; later walks reuse the `Arc`.
+/// Resolve `follow` once per snapshot; later walks reuse the `Arc`.
 pub(super) fn read(
-    path: &Path,
+    follow: &Follow,
     sources: &TypeSourceSnapshot,
     resolve: fn(&Path, &TypeSourceSnapshot) -> Option<Arc<ResolvedDependency>>,
 ) -> Option<Arc<ResolvedDependency>> {
-    let slot = slot(path, sources)?;
+    let path = follow.path.as_path();
+    let slot = follow.slot(sources)?;
     if let Some(resolved) = slot.get() {
         return resolved.clone();
     }
@@ -89,20 +118,14 @@ pub(super) fn read(
 }
 
 /// Offer the modules a walk has just queued to walks that would otherwise wait.
-pub(super) fn want(follow: &[PathBuf], sources: &TypeSourceSnapshot) {
+pub(super) fn want(follow: &[Follow], sources: &TypeSourceSnapshot) {
     let mut queued = Vec::new();
-    {
-        let Ok(mut resolved) = sources.resolved.lock() else {
+    for follow in follow {
+        let Some(slot) = follow.slot(sources) else {
             return;
         };
-        for path in follow {
-            let slot = match resolved.get(path.as_path()) {
-                Some(slot) => slot,
-                None => resolved.entry(path.clone()).or_default(),
-            };
-            if slot.get().is_none() && !slot.claimed.load(Ordering::Acquire) {
-                queued.push((path.clone(), Arc::clone(slot)));
-            }
+        if slot.get().is_none() && !slot.claimed.load(Ordering::Acquire) {
+            queued.push((follow.path.clone(), Arc::clone(slot)));
         }
     }
     if queued.is_empty() {

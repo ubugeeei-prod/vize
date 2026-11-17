@@ -4,6 +4,8 @@ use std::{fs, io::ErrorKind};
 
 use vize_carton::{FxHashSet, profiler::global_profiler};
 
+#[cfg(test)]
+mod link_removal_tests;
 mod owned_write;
 pub(super) use owned_write::{must_replace, replace as replace_file};
 
@@ -98,21 +100,52 @@ fn file_bytes_match(path: &Path, expected: &[u8]) -> io::Result<bool> {
     }
 }
 
+/// How one cache entry is detached, decided from the entry itself (never its
+/// link target, which may be gone).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum Removal {
+    /// A real directory and its owned contents.
+    Tree,
+    /// A directory link: a Windows junction or directory symlink. Its own
+    /// entry is removed with `RemoveDirectoryW`; `DeleteFileW` refuses it with
+    /// `ERROR_ACCESS_DENIED`, and its target (a package store) is never walked.
+    #[cfg_attr(
+        not(any(windows, test)),
+        expect(dead_code, reason = "Unix unlinks every link like a file")
+    )]
+    DirectoryLink,
+    /// A file, or a link that the platform unlinks like one.
+    Leaf,
+}
+
+fn removal_for(file_type: fs::FileType) -> Removal {
+    #[cfg(windows)]
+    {
+        use std::os::windows::fs::FileTypeExt;
+        // Junctions and directory symlinks are name-surrogate reparse points:
+        // std reports them through `is_symlink`, and the directory attribute
+        // lives on the link itself, so this holds for a dangling link too.
+        if file_type.is_symlink_dir() {
+            return Removal::DirectoryLink;
+        }
+    }
+    if file_type.is_dir() && !file_type.is_symlink() {
+        Removal::Tree
+    } else {
+        Removal::Leaf
+    }
+}
+
 pub(super) fn remove_path(path: &Path) -> io::Result<()> {
     let metadata = match fs::symlink_metadata(path) {
         Ok(metadata) => metadata,
         Err(error) if error.kind() == ErrorKind::NotFound => return Ok(()),
-        Err(error) => return Err(error),
+        Err(error) => return Err(removal_error(path, error)),
     };
     let file_type = metadata.file_type();
-    #[cfg(windows)]
-    if (file_type.is_dir() || path.is_dir()) && fs::read_link(path).is_ok() {
-        // Junctions report as directories rather than symlinks. Remove the
-        // junction itself, never recursively delete its package-store target.
-        return fs::remove_dir(path);
-    }
-    if file_type.is_dir() && !file_type.is_symlink() {
-        match fs::remove_dir_all(path) {
+    let removal = removal_for(file_type);
+    let result = match removal {
+        Removal::Tree => match fs::remove_dir_all(path) {
             Ok(()) => {
                 global_profiler().record_fs_remove_dir_all();
                 Ok(())
@@ -121,9 +154,9 @@ pub(super) fn remove_path(path: &Path) -> io::Result<()> {
                 global_profiler().record_fs_remove_dir_all_failure();
                 Err(error)
             }
-        }
-    } else {
-        match fs::remove_file(path) {
+        },
+        Removal::DirectoryLink => fs::remove_dir(path),
+        Removal::Leaf => match fs::remove_file(path) {
             Ok(()) => {
                 global_profiler().record_counter("syscall.fs.remove_file.calls", 1);
                 Ok(())
@@ -134,8 +167,30 @@ pub(super) fn remove_path(path: &Path) -> io::Result<()> {
                 profiler.record_counter("syscall.fs.remove_file.failures", 1);
                 Err(error)
             }
+        },
+    };
+    match result {
+        Ok(()) => Ok(()),
+        Err(error) if error.kind() == ErrorKind::NotFound => Ok(()),
+        // A link reports no reliable kind on every platform and filesystem:
+        // detach the entry itself the other way before giving up. Neither
+        // call follows the link, so its target stays untouched.
+        Err(error) if file_type.is_symlink() => {
+            let retried = match removal {
+                Removal::DirectoryLink => fs::remove_file(path),
+                Removal::Leaf | Removal::Tree => fs::remove_dir(path),
+            };
+            retried.map_err(|_| removal_error(path, error))
         }
+        Err(error) => Err(removal_error(path, error)),
     }
+}
+
+/// Keep the OS error kind but name the cache entry, so a failed sync points
+/// at the exact mirror path instead of a bare `os error`.
+fn removal_error(path: &Path, error: io::Error) -> io::Error {
+    let message = vize_carton::cstr!("failed to remove cache entry {}: {error}", path.display());
+    io::Error::new(error.kind(), message.as_str())
 }
 
 /// Retire one previously owned cache file without following a new package

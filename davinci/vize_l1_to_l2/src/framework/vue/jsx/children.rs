@@ -1,17 +1,20 @@
 //! Tags and children: `ui.element`, `ui.component`, `ui.text`, `ui.jsx-child`.
+//! Expression children that are structural control flow go to
+//! [`super::control_flow`].
 
 use oxc_ast::ast::{JSXChild, JSXElement, JSXElementName, JSXExpression};
 use oxc_ast_visit::Visit;
 use oxc_span::GetSpan;
 use vize_l0::{Box, Vec};
 use vize_l2::artifact::OpFamily;
-use vize_l2::expr::ExprRef;
 use vize_l2::op::{
     BindOp, BindingOp, ComponentOp, DynamicName, ElementOp, InterpolationOp, Namespace, Op, Region,
     TextOp,
 };
 
-use super::attributes::{Props, props};
+use super::attributes::{Owner, Props, props};
+use super::control_flow::control_flow;
+use super::slots::{slot_children, v_slots_templates};
 use super::{Cx, JsxRefusal, span};
 
 /// The tag a dynamic component is rendered through.
@@ -40,21 +43,34 @@ pub(super) fn element<'a>(
             BindOp {
                 name: Some(DynamicName::Static("is")),
                 modifiers: Vec::new_in(&cx.allocator),
-                value: Some(ExprRef::parse_js_in(
-                    cx.allocator,
-                    cx.slice(value)?,
-                    span(value),
-                )),
+                value: Some(cx.expr(value)?),
                 span: span(value),
             },
             &cx.allocator,
         )));
     }
-    props(cx, &opening.attributes, &mut lowered)?;
+    // A lowercase `<component is>` keeps element directives, as in templates.
+    let owner = match tag {
+        Tag::Element(tag) => Owner::Element {
+            tag,
+            items: &opening.attributes,
+        },
+        Tag::Named(_) | Tag::Value(_) => Owner::Component,
+    };
+    props(cx, &opening.attributes, owner, &mut lowered)?;
     let mut ops = Vec::new_in(&cx.allocator);
     match tag {
         Tag::Element(_) => element_children(cx, &element.children, &mut ops)?,
-        Tag::Named(_) | Tag::Value(_) => component_children(cx, &element.children, &mut ops)?,
+        // A component's children are slot templates for the slot idioms (a
+        // sole function or object child), else its implicit default slot.
+        Tag::Named(_) | Tag::Value(_) => {
+            if !slot_children(cx, &element.children, &mut ops)? {
+                push_children(cx, &element.children, &mut ops)?;
+            }
+            if lowered.has_slot_templates() {
+                v_slots_templates(cx, &opening.attributes, &mut ops)?;
+            }
+        }
     }
     let children = Region { ops };
     let element_span = span(element.span);
@@ -104,7 +120,8 @@ fn tag<'a>(cx: &Cx<'a, '_>, name: &JSXElementName<'_>) -> Result<Tag<'a>, JsxRef
             }
             let bound = name != "Fragment"
                 && reference.reference_id.get().is_some_and(|reference| {
-                    cx.scoping
+                    cx.file
+                        .scoping
                         .is_some_and(|scoping| scoping.has_binding(reference))
                 });
             Ok(if bound {
@@ -120,8 +137,8 @@ fn tag<'a>(cx: &Cx<'a, '_>, name: &JSXElementName<'_>) -> Result<Tag<'a>, JsxRef
     }
 }
 
-/// An intrinsic element's children. A sole expression child is a JSX child
-/// value, which the renderer normalizes.
+/// An intrinsic element's children. A sole expression child that is not
+/// control flow is a JSX child value, which the renderer normalizes.
 fn element_children<'a>(
     cx: &mut Cx<'a, '_>,
     children: &[JSXChild<'_>],
@@ -136,39 +153,27 @@ fn element_children<'a>(
         }
         expression => expression,
     };
-    if expression.as_expression().is_none_or(contains_jsx) {
+    let Some(expression) = expression.as_expression() else {
+        return Err(JsxRefusal::Child);
+    };
+    if let Some(op) = control_flow(cx, expression, container.span)? {
+        ops.push(op);
+        return Ok(());
+    }
+    if contains_jsx(expression) {
         return Err(JsxRefusal::Child);
     }
     cx.mint();
     cx.observe(OpFamily::JsxChild);
-    let value = expression.span();
     ops.push(Op::JsxChildValue(Box::new_in(
         InterpolationOp {
-            expression: ExprRef::parse_js_in(cx.allocator, cx.slice(value)?, span(value)),
+            expression: cx.expr(expression.span())?,
             raw_html: false,
             span: span(container.span),
         },
         &cx.allocator,
     )));
     Ok(())
-}
-
-/// A component's children: its implicit default slot. Expression children
-/// carry the slot idioms, which land with their own slice.
-fn component_children<'a>(
-    cx: &mut Cx<'a, '_>,
-    children: &[JSXChild<'_>],
-    ops: &mut Vec<'a, Op<'a>>,
-) -> Result<(), JsxRefusal> {
-    let slot_idiom = children.iter().any(|child| {
-        matches!(child, JSXChild::ExpressionContainer(container)
-            if !matches!(container.expression,
-                JSXExpression::EmptyExpression(_) | JSXExpression::StringLiteral(_)))
-    });
-    if slot_idiom {
-        return Err(JsxRefusal::Child);
-    }
-    push_children(cx, children, ops)
 }
 
 /// Children in document order. A child fragment is spliced: it carries no
@@ -196,7 +201,13 @@ pub(super) fn push_children<'a>(
                     let content = cx.allocator.alloc_str(string.value.as_str());
                     ops.push(text_op(cx, content, string.span));
                 }
-                _ => return Err(JsxRefusal::Child),
+                expression => {
+                    let lowered = match expression.as_expression() {
+                        Some(expression) => control_flow(cx, expression, container.span)?,
+                        None => None,
+                    };
+                    ops.push(lowered.ok_or(JsxRefusal::Child)?);
+                }
             },
             JSXChild::Spread(_) => return Err(JsxRefusal::Child),
         }

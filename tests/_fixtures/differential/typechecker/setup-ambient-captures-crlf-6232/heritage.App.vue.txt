@@ -1,0 +1,6 @@
+<script setup lang="ts">
+class Base<T> { constructor(public value: T) {} }
+declare class Derived extends Base<string> { extra: number; }
+const label: string = new Derived('fixed').value;
+</script>
+<template>{{ label }}</template>

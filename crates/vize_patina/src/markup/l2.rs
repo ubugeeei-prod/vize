@@ -27,6 +27,7 @@ pub(super) mod binding;
 pub(super) mod bound;
 pub(super) mod children;
 pub(super) mod surface;
+mod surface_index;
 pub(super) mod texts;
 pub(super) mod walk;
 
@@ -55,6 +56,10 @@ pub struct L2Markup<'a> {
     allocator: Option<&'a Allocator>,
     pub(super) authored: Option<&'a SurfaceTree<'a>>,
     pub(super) surface: Option<&'a SurfaceTree<'a>>,
+    /// Element indexes of [`surface`](Self::surface) and
+    /// [`authored`](Self::authored); `None` keeps the root descent.
+    surface_index: Option<&'a [surface_index::IndexedElement<'a>]>,
+    authored_index: Option<&'a [surface_index::IndexedElement<'a>]>,
 }
 
 impl<'a> L2Markup<'a> {
@@ -70,6 +75,8 @@ impl<'a> L2Markup<'a> {
             allocator: Some(lowered.allocator),
             surface: Some(surface),
             authored: None,
+            surface_index: surface_index::build(lowered.allocator, surface),
+            authored_index: None,
         }
     }
 
@@ -85,6 +92,8 @@ impl<'a> L2Markup<'a> {
             allocator: None,
             surface: None,
             authored: None,
+            surface_index: None,
+            authored_index: None,
         }
     }
 
@@ -102,6 +111,8 @@ impl<'a> L2Markup<'a> {
             allocator: None,
             surface: None,
             authored: None,
+            surface_index: None,
+            authored_index: None,
         }
     }
 
@@ -157,10 +168,7 @@ impl<'a> L2Markup<'a> {
     /// lane's diagnostics address them). JSX projections keep the op span,
     /// which is the lowered root's own location.
     pub(super) fn open_tag_range(&self, span: vize_l0::Span) -> crate::ir::ByteRange {
-        let Some(element) = self
-            .surface
-            .and_then(|tree| surface::element_at(tree, span.start))
-        else {
+        let Some(element) = self.surface_element_at(span.start) else {
             return super::l2_range(span);
         };
         let gt = element.open.gt.text;
@@ -204,7 +212,7 @@ impl<'a> L2Markup<'a> {
         {
             return None;
         }
-        surface::element_at(self.surface?, span.start)
+        self.surface_element_at(span.start)
     }
 }
 
@@ -234,9 +242,8 @@ impl<'a> L2Template<'a> {
 
     /// The borrowed facade view of this artifact.
     pub fn markup(&self) -> L2Markup<'_> {
-        let mut markup = L2Markup::from_lowered(&self.lowered, &self.tree);
-        markup.authored = self.authored.as_ref().or(Some(&self.tree));
-        markup
+        L2Markup::from_lowered(&self.lowered, &self.tree)
+            .with_authored(self.authored.as_ref().unwrap_or(&self.tree))
     }
 
     /// The tokenizer errors the L1 parse reported.

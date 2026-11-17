@@ -1,0 +1,18 @@
+<script setup lang="ts">
+declare const math: Math;
+declare const numbers: NumberConstructor;
+declare const ids: string[];
+
+const viaType = math.max;
+const viaWindow = window.Math.max;
+const keys = window.Object.keys;
+const byName = Math.max;
+const parse = numbers.parseFloat;
+const now = window.Date.now;
+const push = ids.push;
+const last = ids.last;
+</script>
+
+<template>
+  <p>{{ [viaType, viaWindow, keys, byName, parse, now, push, last].length }}</p>
+</template>

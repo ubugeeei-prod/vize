@@ -11,12 +11,13 @@ use oxc_ast::{
     AstKind,
     ast::{Argument, BindingPattern, CallExpression, Expression, Program, Statement},
 };
-use oxc_semantic::{Semantic, SemanticBuilder};
+use oxc_semantic::Semantic;
 use oxc_span::{GetSpan, Span};
 use oxc_syntax::symbol::SymbolId;
 
-use super::{META, ScriptLintResult};
+use super::{META, ScriptLintResult, SfcScriptContext};
 use crate::diagnostic::LintDiagnostic;
+use crate::linter::sfc_scripts::BlockSemantic;
 use vize_l0::{CompactString, FxHashSet, cstr};
 
 /// Normal-script evidence, borrowed from the existing SFC script pass.
@@ -44,36 +45,38 @@ pub(super) fn check<'a>(
     source: &str,
     offset: usize,
     module: NoDupeKeysModuleScript<'a>,
-    resolved_type_world: Option<&vize_croquis::types::ResolvedTypeWorld>,
+    sfc: SfcScriptContext<'_>,
     result: &mut ScriptLintResult,
 ) {
     if !has_candidate(program) || matches!(module, NoDupeKeysModuleScript::Unavailable) {
         return;
     }
-    let built = SemanticBuilder::new().with_build_nodes(true).build(program);
+    let built = BlockSemantic::of(sfc.semantic_of(program), program, true);
     if !built.diagnostics.is_empty() {
         return;
     }
-    let semantic = built.semantic;
-    let module_semantic = match module {
+    let semantic = &built.semantic;
+    let module_built = match module {
         NoDupeKeysModuleScript::Parsed { program, .. } => {
-            let built = SemanticBuilder::new().with_build_nodes(true).build(program);
+            let built = BlockSemantic::of(sfc.semantic_of(program), program, true);
             if !built.diagnostics.is_empty() {
                 return;
             }
-            Some(built.semantic)
+            Some(built)
         }
         _ => None,
     };
+    let module_semantic = module_built.as_ref().map(|built| &built.semantic);
+    let resolved_type_world = sfc.resolved_type_world;
     let mut setup_result = ScriptLintResult::default();
     let mut declared_props = FxHashSet::default();
     // Every props-object reference and `defineProps` call also derives a model binding.
     let mut model_sources = Vec::new();
     let mut model_calls = Vec::new();
     for candidate in candidates(program) {
-        if macro_shadowed(program, &semantic, "defineProps")
-            || (candidate.wrapped && macro_shadowed(program, &semantic, "withDefaults"))
-            || module_semantic.as_ref().is_some_and(|semantic| {
+        if macro_shadowed(program, semantic, "defineProps")
+            || (candidate.wrapped && macro_shadowed(program, semantic, "withDefaults"))
+            || module_semantic.is_some_and(|semantic| {
                 let NoDupeKeysModuleScript::Parsed { program, .. } = module else {
                     return false;
                 };
@@ -86,9 +89,9 @@ pub(super) fn check<'a>(
         let prop_names = props::names(
             candidate.call,
             program,
-            &semantic,
+            semantic,
             module,
-            module_semantic.as_ref(),
+            module_semantic,
             source,
             resolved_type_world,
         );
@@ -105,28 +108,27 @@ pub(super) fn check<'a>(
             if renamed(candidate.pattern, &name) {
                 continue;
             }
-            if let Some(symbol) = root_value(&semantic, &name) {
-                if derived_from_props(&semantic, symbol, &prop_symbols, candidate.call.span, &name)
-                {
+            if let Some(symbol) = root_value(semantic, &name) {
+                if derived_from_props(semantic, symbol, &prop_symbols, candidate.call.span, &name) {
                     continue;
                 }
-                report(&semantic, symbol, &name, offset, &mut setup_result);
+                report(semantic, symbol, &name, offset, &mut setup_result);
             } else if let (Some(semantic), NoDupeKeysModuleScript::Parsed { offset, .. }) =
-                (module_semantic.as_ref(), module)
+                (module_semantic, module)
                 && let Some(symbol) = root_value(semantic, &name)
             {
                 report(semantic, symbol, &name, offset, &mut setup_result);
             }
         }
     }
-    if !macro_shadowed(program, &semantic, "defineModel") {
+    if !macro_shadowed(program, semantic, "defineModel") {
         for (model, pattern) in model_candidates(program) {
             let (name, name_span) = model_name(model);
             if !declared_props.insert(name.clone()) {
                 report_span(&name, name_span, offset, &mut setup_result);
                 continue;
             }
-            if let Some(symbol) = root_value(&semantic, &name) {
+            if let Some(symbol) = root_value(semantic, &name) {
                 let mut sources = model_sources.clone();
                 sources.extend(
                     pattern
@@ -137,11 +139,11 @@ pub(super) fn check<'a>(
                 );
                 let mut calls = model_calls.clone();
                 calls.push(model.span);
-                if !model_owns_binding(&semantic, symbol, &sources, &calls) {
-                    report(&semantic, symbol, &name, offset, &mut setup_result);
+                if !model_owns_binding(semantic, symbol, &sources, &calls) {
+                    report(semantic, symbol, &name, offset, &mut setup_result);
                 }
             } else if let (Some(semantic), NoDupeKeysModuleScript::Parsed { offset, .. }) =
-                (module_semantic.as_ref(), module)
+                (module_semantic, module)
                 && let Some(symbol) = root_value(semantic, &name)
             {
                 report(semantic, symbol, &name, offset, &mut setup_result);

@@ -1,0 +1,6 @@
+<script setup lang="ts">
+declare function label(value: string): string;
+declare function label(value: number): number;
+label(true);
+</script>
+<template><div /></template>

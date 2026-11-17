@@ -1,7 +1,10 @@
 use vize_carton::{CompactString, FxHashMap, FxHashSet, String, append, camelize, capitalize};
 use vize_croquis::{Croquis, ScopeData};
 
-use crate::virtual_ts::component_reference::{component_reference_alias, contains_compact_name};
+use crate::virtual_ts::component_reference::{
+    component_reference_alias, contains_compact_name, is_registered_component,
+    registered_component_reference,
+};
 use crate::virtual_ts::helpers::push_ts_string_literal;
 use crate::virtual_ts::scope::{ComponentBindingCheck, GlobalComponentCheck};
 use crate::virtual_ts::types::{VirtualTsCheckOptions, VirtualTsOptions, VizeMapping};
@@ -156,6 +159,9 @@ impl<'a> GlobalComponentPlan<'a> {
             // Vue resolves registry components in this exact order. Use the
             // same selected provider for props and slot payload ownership.
             let registry_keys = [pascal_name.as_str(), camel_name.as_str(), name];
+            // A key of the SFC's own `components` option is never unknown; a
+            // value it names owns the tag like any other binding.
+            let registered = is_registered_component(summary, candidates);
             if crate::virtual_ts::component_reference::has_dotted_component_value_binding(
                 summary,
                 syntactic_type_only_imported_names,
@@ -168,7 +174,15 @@ impl<'a> GlobalComponentPlan<'a> {
                     || (external_template_bindings.contains(candidate)
                         && !contains_compact_name(syntactic_type_only_imported_names, candidate))
                     || auto_import_stub_names.contains(candidate)
-            }) {
+            }) || (registered
+                && registered_component_reference(
+                    summary,
+                    options,
+                    syntactic_type_only_imported_names,
+                    candidates,
+                )
+                .is_some())
+            {
                 continue;
             }
 
@@ -181,6 +195,7 @@ impl<'a> GlobalComponentPlan<'a> {
             let art_source = art_component_source(summary, name);
             if let Some(diagnostics) = diagnostics.as_mut().filter(|_| {
                 !is_self
+                    && !registered
                     && art_source.is_none()
                     && !crate::virtual_ts::scope::is_owned_named_dynamic_component(
                         self.template_ast,

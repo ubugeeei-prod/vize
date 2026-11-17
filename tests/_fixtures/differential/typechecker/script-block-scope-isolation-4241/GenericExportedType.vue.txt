@@ -1,0 +1,13 @@
+<script lang="ts">
+const keys = ['a', 'b'] as const;
+
+export type Boxed<T> = { key: typeof keys[number]; value: T };
+</script>
+
+<script lang="ts" setup>
+const props = defineProps<{ boxed: Boxed<number> }>();
+</script>
+
+<template>
+  <div>{{ props.boxed.value }}</div>
+</template>

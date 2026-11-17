@@ -1,0 +1,10 @@
+<script setup lang="ts">
+import table from "virtual:table";
+
+const build = __BUILD__.toUpperCase();
+const first = table.first.toUpperCase();
+</script>
+
+<template>
+  <p>{{ build }} {{ first }}</p>
+</template>

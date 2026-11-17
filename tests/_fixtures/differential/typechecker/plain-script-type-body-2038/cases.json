@@ -1,0 +1,83 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 2038,
+  "regressionCommit": "fd87bb1274a781dad70c3599df9fd3365a1eb870",
+  "sourceRevision": "fd87bb1274a781dad70c3599df9fd3365a1eb870",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "exported-type-body",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/PreviewMoshiQuestionCard.vue",
+          "source": "PreviewMoshiQuestionCard.vue.txt"
+        },
+        {
+          "file": "src/consumer.ts",
+          "source": "consumer.ts.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/PreviewMoshiQuestionCard.vue",
+          "line": 2,
+          "column": 43,
+          "severity": 1,
+          "code": 2307,
+          "message": "Cannot find module '@nuxtjs/composition-api' or its corresponding type declarations."
+        }
+      ]
+    },
+    {
+      "id": "exported-type-body-literal-error",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/PreviewMoshiQuestionCard.vue",
+          "source": "PreviewMoshiQuestionCard.vue.txt"
+        },
+        {
+          "file": "src/consumer.ts",
+          "source": "consumer.invalid.ts.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/PreviewMoshiQuestionCard.vue",
+          "line": 2,
+          "column": 43,
+          "severity": 1,
+          "code": 2307,
+          "message": "Cannot find module '@nuxtjs/composition-api' or its corresponding type declarations."
+        },
+        {
+          "file": "src/consumer.ts",
+          "line": 3,
+          "column": 30,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '\"comment\"' is not assignable to type '\"answer\" | \"question\"'."
+        }
+      ]
+    }
+  ]
+}

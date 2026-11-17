@@ -1,0 +1,64 @@
+{
+  "entries": [
+    {
+      "manifest": {
+        "after": [],
+        "apiVersion": 2,
+        "backend": "js",
+        "before": [],
+        "cacheInputs": [],
+        "capabilities": [
+          {
+            "id": "sfc.custom-block",
+            "required": true,
+            "schemaVersion": 1,
+            "data": {
+              "type": "route"
+            }
+          }
+        ],
+        "fingerprint": "2222222222222222222222222222222222222222222222222222222222222222",
+        "name": "@acme/routes",
+        "options": {},
+        "permissions": [],
+        "stability": "experimental",
+        "supports": {},
+        "version": "1.0.0"
+      }
+    },
+    {
+      "manifest": {
+        "after": [],
+        "apiVersion": 2,
+        "backend": "js",
+        "before": [],
+        "cacheInputs": [],
+        "capabilities": [
+          {
+            "id": "sfc.custom-block",
+            "required": true,
+            "schemaVersion": 1,
+            "data": {
+              "type": "route",
+              "lang": "json"
+            }
+          }
+        ],
+        "fingerprint": "3333333333333333333333333333333333333333333333333333333333333333",
+        "name": "@other/routes",
+        "options": {},
+        "permissions": [],
+        "stability": "experimental",
+        "supports": {},
+        "version": "1.0.0"
+      }
+    }
+  ],
+  "runtime": "node",
+  "expect": {
+    "error": {
+      "code": "owner-conflict",
+      "message": "[plugin/owner-conflict] sfc.custom-block:route:json: @other/routes claims it, but @acme/routes owns sfc.custom-block:route for every language"
+    }
+  }
+}

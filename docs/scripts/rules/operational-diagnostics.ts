@@ -3,6 +3,7 @@ export const operationalDiagnosticPages = [
   ["parser/template", "parser-template"],
   ["parser/sfc", "parser-sfc"],
   ["parser/jsx", "parser-jsx"],
+  ["parser/tsrx", "parser-tsrx"],
   ["type/project-configuration", "type-project-configuration"],
 ] as const;
 

@@ -182,19 +182,7 @@ fn collect(
     if wants.tree.members {
         member_queries(node, plan);
     }
-    // Aggregator arrays and promise-method receivers are positions of their own.
-    let promise_kind = if node.kind == "ArrayExpression"
-        && matches!(role.promise, Some(("CallExpression", "arguments")))
-    {
-        "ArgumentArray"
-    } else if node.kind == "MemberExpression"
-        && matches!(role.promise, Some(("CallExpression", "callee")))
-        && promise::is_promise_method(node)
-    {
-        "PromiseMethodCallee"
-    } else {
-        node.kind.as_str()
-    };
+    let promise_kind = promise::position_kind(node, role.promise);
     let child_role = |key: &'_ str, index: usize| Role {
         promise: None,
         tree: wants_tree(wants.tree, node, key, index),

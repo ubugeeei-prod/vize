@@ -1,0 +1,182 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 6211,
+  "regressionCommit": "a7fcfb4a5a17a4db0cd5fc21326205da7d020e1f",
+  "sourceRevision": "a7fcfb4a5a17a4db0cd5fc21326205da7d020e1f",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "standard-library-types",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "standard-library-types.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "project-ambient-namespace",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/globals.d.ts",
+          "source": "globals.d.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "project-ambient-namespace.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "missing-type",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "missing-type.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 2,
+          "column": 22,
+          "severity": 1,
+          "code": 2304,
+          "message": "Cannot find name 'Missing'."
+        }
+      ]
+    },
+    {
+      "id": "generic-arity",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "generic-arity.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 2,
+          "column": 22,
+          "severity": 1,
+          "code": 2314,
+          "message": "Generic type 'Promise<T>' requires 1 type argument(s)."
+        }
+      ]
+    },
+    {
+      "id": "html-element-property",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "html-element-property.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 3,
+          "column": 7,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'toFixed' does not exist on type 'HTMLElement'."
+        }
+      ]
+    },
+    {
+      "id": "const-assignment",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "const-assignment.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 3,
+          "column": 1,
+          "severity": 1,
+          "code": 2588,
+          "message": "Cannot assign to 'value' because it is a constant."
+        }
+      ]
+    },
+    {
+      "id": "expect-error-missing-type",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "expect-error-missing-type.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "unused-expect-error",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "unused-expect-error.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 2,
+          "column": 1,
+          "severity": 1,
+          "code": 2578,
+          "message": "Unused '@ts-expect-error' directive."
+        }
+      ]
+    }
+  ]
+}

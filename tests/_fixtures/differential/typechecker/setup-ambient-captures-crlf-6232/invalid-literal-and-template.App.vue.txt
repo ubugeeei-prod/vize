@@ -1,0 +1,7 @@
+<script setup lang="ts">
+const local = 'fixed';
+declare const label: typeof local;
+const wrong: 'other' = label;
+label.toFixed();
+</script>
+<template>{{ label.toFixed() }}</template>

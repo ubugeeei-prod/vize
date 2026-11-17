@@ -1,0 +1,15 @@
+<script setup lang="ts">
+import OptionsNativeRoot from "./OptionsNativeRoot.vue";
+
+const log = (value: unknown) => console.log(value);
+function pick(key: string, path: string[]) {
+  log([key, path]);
+}
+</script>
+
+<template>
+  <OptionsNativeRoot @select="pick" />
+  <OptionsNativeRoot @click="(event) => log(event.clientX)" />
+  <OptionsNativeRoot @keydown="(event: string) => log(event)" />
+  <OptionsNativeRoot @change="(value: number) => log(value)" />
+</template>

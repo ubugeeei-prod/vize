@@ -2,6 +2,7 @@ use oxc_ast::ast::{Argument, CallExpression, Expression, ObjectExpression, Objec
 use oxc_span::GetSpan;
 use vize_carton::{FxHashMap, ToCompactString};
 use vize_croquis::macros::PropDefinition;
+use vize_croquis::script_parser::literal_boolean_type;
 
 use crate::batch::virtual_project::setup_props::syntax::{
     runtime_call_name, runtime_object_property_name, runtime_prop_shape_member_type,
@@ -93,10 +94,7 @@ fn collect_runtime_prop_options<'a>(
             ObjectPropertyKind::ObjectProperty(property) => {
                 match runtime_object_property_name(&property.key) {
                     Some("required") => {
-                        options.required = match &property.value {
-                            Expression::BooleanLiteral(value) => Some(value.value),
-                            _ => None,
-                        };
+                        options.required = literal_boolean_type(&property.value);
                     }
                     Some("default") => options.has_default = Some(true),
                     Some("type") => {

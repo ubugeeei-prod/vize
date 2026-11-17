@@ -1,9 +1,10 @@
 //! Shared `tsconfig.json` `paths` reading for editor features (#3915, #3917).
 //!
-//! Anchoring matches the session's rule: the nearest `tsconfig.json` governs;
-//! when it is a solution-style shell that declares no `paths` of its own, the
-//! first referenced project config that does wins (the create-vue app/node
-//! split has exactly one). `extends` merges the way TypeScript merges it: a
+//! Anchoring matches the compiler's rule: the nearest `tsconfig.json` governs;
+//! when it is a solution-style shell, the referenced project that owns the
+//! source governs instead (#13090). A source no single referenced project
+//! owns keeps the shell's own `paths`, then the first referenced project that
+//! declares some. `extends` merges the way TypeScript merges it: a
 //! later config replaces `paths` and `baseUrl` wholesale, and relative `paths`
 //! targets resolve against the effective `baseUrl` when any config in the
 //! chain declares one, otherwise against the directory of the config that
@@ -17,6 +18,7 @@
 
 mod load;
 use load::{inherited_paths, referenced_configs};
+mod ownership;
 
 use std::path::{Path, PathBuf};
 
@@ -34,6 +36,9 @@ pub(crate) fn project_paths(source_path: &Path) -> Option<ProjectPaths> {
         .skip(1)
         .find(|dir| dir.join("tsconfig.json").is_file())?;
     let shell = anchor.join("tsconfig.json");
+    if let Some(owner) = ownership::owning_reference(&shell, source_path) {
+        return paths_of(&owner, &mut Vec::new());
+    }
     let mut stack = Vec::new();
     if let Some(paths) = paths_of(&shell, &mut stack) {
         return Some(paths);
@@ -297,6 +302,138 @@ mod tests {
         assert_eq!(
             paths.entries,
             vec![("#c/*".to_string(), "../../src/*".to_string())]
+        );
+    }
+
+    #[test]
+    fn solution_selects_the_referenced_project_that_owns_the_source() {
+        let dir = temp_dir();
+        let root = dir.path();
+        fs::create_dir_all(root.join("src")).unwrap();
+        fs::create_dir_all(root.join("config")).unwrap();
+        // The node project comes first and declares a conflicting `@/*`.
+        fs::write(
+            root.join("tsconfig.json"),
+            r#"{ "files": [], "references": [{ "path": "./tsconfig.node.json" }, { "path": "./tsconfig.app.json" }] }"#,
+        )
+        .unwrap();
+        fs::write(
+            root.join("tsconfig.node.json"),
+            r#"{ "compilerOptions": { "paths": { "@/*": ["./node/*"] } }, "include": ["vite.config.*"] }"#,
+        )
+        .unwrap();
+        fs::write(
+            root.join("config/tsconfig.base.json"),
+            r#"{ "compilerOptions": { "paths": { "@/*": ["../src/*"] } } }"#,
+        )
+        .unwrap();
+        fs::write(
+            root.join("tsconfig.app.json"),
+            r#"{ "extends": "./config/tsconfig.base.json", "include": ["src/**/*.vue"] }"#,
+        )
+        .unwrap();
+
+        let app = super::project_paths(&root.join("src/App.vue")).unwrap();
+        assert_eq!(app.anchor, root.join("config"));
+        assert_eq!(
+            app.entries,
+            vec![("@/*".to_string(), "../src/*".to_string())]
+        );
+        let node = super::project_paths(&root.join("vite.config.ts")).unwrap();
+        assert_eq!(node.anchor, root);
+        assert_eq!(
+            node.entries,
+            vec![("@/*".to_string(), "./node/*".to_string())]
+        );
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn a_symlinked_source_directory_stays_owned_by_its_including_project() {
+        let dir = temp_dir();
+        let root = dir.path().join("app");
+        let shared = dir.path().join("shared/src");
+        fs::create_dir_all(&root).unwrap();
+        fs::create_dir_all(shared.join("nested")).unwrap();
+        fs::write(shared.join("App.vue"), "<template />\n").unwrap();
+        fs::write(shared.join("nested/Deep.vue"), "<template />\n").unwrap();
+        std::os::unix::fs::symlink(&shared, root.join("src")).unwrap();
+        fs::write(
+            root.join("tsconfig.json"),
+            r#"{ "files": [], "references": [{ "path": "./tsconfig.node.json" }, { "path": "./tsconfig.app.json" }] }"#,
+        )
+        .unwrap();
+        fs::write(
+            root.join("tsconfig.node.json"),
+            r#"{ "compilerOptions": { "paths": { "@/*": ["./node/*"] } }, "include": ["vite.config.*"] }"#,
+        )
+        .unwrap();
+        fs::write(
+            root.join("tsconfig.app.json"),
+            r#"{ "compilerOptions": { "paths": { "@/*": ["./src/*"] } }, "include": ["src/**/*.vue"] }"#,
+        )
+        .unwrap();
+
+        for source in ["src/App.vue", "src/nested/Deep.vue"] {
+            let paths = super::project_paths(&root.join(source)).unwrap();
+            assert_eq!(paths.anchor, root, "{source}");
+            assert_eq!(
+                paths.entries,
+                vec![("@/*".to_string(), "./src/*".to_string())],
+                "{source}"
+            );
+        }
+
+        // The captured graph is reused only while its configs are unchanged.
+        fs::write(
+            root.join("tsconfig.app.json"),
+            r#"{ "compilerOptions": { "paths": { "@/*": ["./src/*"] } }, "include": [] }"#,
+        )
+        .unwrap();
+        let unowned = super::project_paths(&root.join("src/App.vue")).unwrap();
+        assert_eq!(
+            unowned.entries,
+            vec![("@/*".to_string(), "./node/*".to_string())]
+        );
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn retargeting_a_symlinked_directory_selects_the_owner_again() {
+        let dir = temp_dir();
+        let root = dir.path();
+        for owned in ["app-src", "node-src"] {
+            fs::create_dir_all(root.join(owned)).unwrap();
+            fs::write(root.join(owned).join("App.vue"), "<template />\n").unwrap();
+        }
+        fs::write(
+            root.join("tsconfig.json"),
+            r#"{ "files": [], "references": [{ "path": "./tsconfig.node.json" }, { "path": "./tsconfig.app.json" }] }"#,
+        )
+        .unwrap();
+        fs::write(
+            root.join("tsconfig.node.json"),
+            r#"{ "compilerOptions": { "paths": { "@/*": ["./node-src/*"] } }, "include": ["node-src/**/*.vue"] }"#,
+        )
+        .unwrap();
+        fs::write(
+            root.join("tsconfig.app.json"),
+            r#"{ "compilerOptions": { "paths": { "@/*": ["./app-src/*"] } }, "include": ["app-src/**/*.vue"] }"#,
+        )
+        .unwrap();
+        let link = root.join("current");
+        let entries = |target: &str| {
+            let _ = fs::remove_file(&link);
+            std::os::unix::fs::symlink(root.join(target), &link).unwrap();
+            super::project_paths(&link.join("App.vue")).unwrap().entries
+        };
+        assert_eq!(
+            entries("app-src"),
+            vec![("@/*".to_string(), "./app-src/*".to_string())]
+        );
+        assert_eq!(
+            entries("node-src"),
+            vec![("@/*".to_string(), "./node-src/*".to_string())]
         );
     }
 }

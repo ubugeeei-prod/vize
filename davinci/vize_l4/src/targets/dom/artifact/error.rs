@@ -33,8 +33,8 @@ pub enum UnsupportedReason {
     /// A props surface the shipped `has_static_props` hoists but the L2
     /// hoist pass's narrower constant rule does not (P3-17).
     HoistConstantGap,
-    /// A host-syntax loop (retained head, optional `@empty` region) has no
-    /// DOM emission yet.
+    /// A host-syntax loop (retained head, optional `@empty` region) of a
+    /// shape with no DOM emission yet (`vfor/host.rs`).
     HostForLoop,
     HtmlExpressionNotJs,
     IfBranchShape,

@@ -1,0 +1,11 @@
+<script setup lang="ts">
+const timer = window.setTimeout;
+const { matchMedia } = window;
+const frame = self.requestAnimationFrame;
+const viaDocument = document.defaultView?.setTimeout;
+const storage = window.localStorage.getItem;
+</script>
+
+<template>
+  <p>{{ [timer, matchMedia, frame, viaDocument, storage].length }}</p>
+</template>

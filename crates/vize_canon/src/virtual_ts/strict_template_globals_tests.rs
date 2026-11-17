@@ -14,6 +14,7 @@ fn test_strict_template_context_keeps_router_but_not_unknown_plugin_globals() {
         false,
         false,
         (None, None, None),
+        None,
     );
 
     assert!(ctx.contains("type $StrictPublicInstanceGlobals = {"));

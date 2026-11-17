@@ -64,6 +64,11 @@ impl ConfigDocument {
         self.0.project_root.as_deref()
     }
 
+    /// The canonical plugin plan a Vite host resolved from `vue.plugins`, unverified.
+    pub fn plugin_plan(&self) -> Option<&serde_json::Value> {
+        self.0.plugin_plan.as_ref()
+    }
+
     /// Discard host identity when reading a dedicated native config file.
     ///
     /// This reserved key was formerly an ignored extension field; native files

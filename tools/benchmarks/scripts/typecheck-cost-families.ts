@@ -71,7 +71,7 @@ const SECTIONS: Array<[section: string, marker: RegExp]> = [
   ["setup-glue", /^\s*\/\/ =+ Setup Scope/u],
   ["setup-user", /^\s*\/\/ User setup code$/u],
   // The user code's own source map closes it.
-  ["setup-glue", /^ {2}\/\/ @vize-map: \d+:\d+ -> \d+:\d+$/u],
+  ["setup-glue", /^\s*\/\/ @vize-map: \d+:\d+ -> \d+:\d+$/u],
   ["template", /^\s*\/\/ =+ Template Scope/u],
   ["setup-glue", /^\s*\/\/ Compiler-macro results contribute/u],
   ["component-surface", /^\/\/ Invoke setup to verify types$/u],

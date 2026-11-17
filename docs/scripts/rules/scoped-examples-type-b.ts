@@ -95,11 +95,29 @@ export const typescriptEslintExamplesB: Record<string, RuleExample> = {
     "function getNumber(): Promise<number> {\n  return Promise.resolve(1);\n}\nasync function returnsInTry(): Promise<number> {\n  try {\n    return await getNumber();\n  } catch {\n    return 0;\n  }\n}",
     "return_await.rs",
   ),
-  "type/unbound-method": pair(
-    "class Counter {\n  value = 0;\n  increment(): void {\n    this.value += 1;\n  }\n}\nconst counter = new Counter();\nconst unbound = counter.increment;",
-    "class Counter {\n  value = 0;\n  increment(): void {\n    this.value += 1;\n  }\n}\nconst counter = new Counter();\ncounter.increment();",
-    "unbound_method.rs",
-  ),
+  "type/unbound-method": {
+    ...pair(
+      "class Counter {\n  value = 0;\n  increment(): void {\n    this.value += 1;\n  }\n}\nconst counter = new Counter();\nconst unbound = counter.increment;",
+      "class Counter {\n  value = 0;\n  increment(): void {\n    this.value += 1;\n  }\n}\nconst counter = new Counter();\ncounter.increment();",
+      "unbound_method.rs",
+    ),
+    eslintDifferenceHeading: {
+      en: "Differences from typescript-eslint",
+      ja: "typescript-eslint との違い",
+      "zh-CN": "与 typescript-eslint 的差异",
+      "pt-BR": "Diferenças em relação ao typescript-eslint",
+      fr: "Différences avec typescript-eslint",
+    },
+    eslintDifference: {
+      en: "Library methods read from the global object are not reported. This covers a receiver typed `Window & typeof globalThis` or `typeof globalThis`, including `window.setTimeout`, `const { matchMedia } = window`, `self.requestAnimationFrame` and `document.defaultView?.setTimeout`. Platform operations use the global object when they are called without a receiver, so these references run as written. A method that your own code adds to `Window` is still reported. So are another frame's `Window` (`parent.setTimeout`) and a method of an object reached through the global (`window.localStorage.getItem`). Set `checkGlobalObjectMethods: true` to report these references as typescript-eslint does.\n\nA built-in that is merged into (`declare global { interface Math {} }`) keeps its exemption, and `RegExp.escape` is exempt through any path to the `RegExp` constructor. The exemption follows the TypeScript library declarations, not the Node.js version that runs the linter.",
+      ja: "グローバルオブジェクトから読み出したライブラリのメソッドは報告しません。レシーバーの型が `Window & typeof globalThis` または `typeof globalThis` の場合が対象です。`window.setTimeout`、`const { matchMedia } = window`、`self.requestAnimationFrame`、`document.defaultView?.setTimeout` もこれに含まれます。プラットフォームの操作はレシーバーなしで呼ばれるとグローバルオブジェクトを使うため、書いたとおりに動きます。自分のコードで `Window` に追加したメソッドは引き続き報告します。別のフレームの `Window` (`parent.setTimeout`) や、グローバルからたどったオブジェクトのメソッド (`window.localStorage.getItem`) も同様です。`checkGlobalObjectMethods: true` を指定すると、typescript-eslint と同じくこれらも報告します。\n\n宣言をマージした組み込み (`declare global { interface Math {} }`) も除外の対象のままです。`RegExp.escape` は `RegExp` コンストラクターへのどの経路でも除外されます。除外は linter を動かす Node.js のバージョンではなく、TypeScript のライブラリ宣言に従います。",
+      "zh-CN":
+        "不报告从全局对象读取的库方法。这适用于类型为 `Window & typeof globalThis` 或 `typeof globalThis` 的接收者，包括 `window.setTimeout`、`const { matchMedia } = window`、`self.requestAnimationFrame` 和 `document.defaultView?.setTimeout`。平台操作在没有接收者时会使用全局对象，因此这些引用可以照常运行。你自己的代码添加到 `Window` 上的方法仍会被报告。另一个框架的 `Window`（`parent.setTimeout`）以及通过全局对象取得的对象的方法（`window.localStorage.getItem`）同样会被报告。设置 `checkGlobalObjectMethods: true` 后，这些引用会像在 typescript-eslint 中一样被报告。\n\n被合并了声明的内置对象（`declare global { interface Math {} }`）仍然享有豁免；通过任何指向 `RegExp` 构造函数的路径访问 `RegExp.escape` 都会被豁免。豁免依据的是 TypeScript 库的声明，而不是运行 linter 的 Node.js 版本。",
+      "pt-BR":
+        "Métodos da biblioteca lidos do objeto global não são reportados. Isso vale para um receptor tipado `Window & typeof globalThis` ou `typeof globalThis`, incluindo `window.setTimeout`, `const { matchMedia } = window`, `self.requestAnimationFrame` e `document.defaultView?.setTimeout`. Uma operação da plataforma chamada sem receptor usa o objeto global, então essas referências funcionam como escritas. Um método que o seu código adiciona a `Window` continua sendo reportado. O mesmo vale para o `Window` de outro frame (`parent.setTimeout`) e para o método de um objeto alcançado pelo objeto global (`window.localStorage.getItem`). Com `checkGlobalObjectMethods: true`, essas referências são reportadas como no typescript-eslint.\n\nUm objeto nativo que recebe uma declaração mesclada (`declare global { interface Math {} }`) mantém a isenção, e `RegExp.escape` fica isento por qualquer caminho até o construtor `RegExp`. A isenção segue as declarações da biblioteca do TypeScript, e não a versão do Node.js que executa o linter.",
+      fr: "Les méthodes de la bibliothèque lues sur l’objet global ne sont pas signalées. Cela concerne un receveur typé `Window & typeof globalThis` ou `typeof globalThis`, y compris `window.setTimeout`, `const { matchMedia } = window`, `self.requestAnimationFrame` et `document.defaultView?.setTimeout`. Une opération de la plateforme appelée sans receveur utilise l’objet global, donc ces références fonctionnent telles quelles. Une méthode que votre code ajoute à `Window` reste signalée. Il en va de même pour le `Window` d’un autre cadre (`parent.setTimeout`) et pour la méthode d’un objet atteint par l’objet global (`window.localStorage.getItem`). Avec `checkGlobalObjectMethods: true`, ces références sont signalées comme dans typescript-eslint.\n\nUn objet natif auquel une déclaration est fusionnée (`declare global { interface Math {} }`) garde son exemption, et `RegExp.escape` est exempté par tout chemin vers le constructeur `RegExp`. L’exemption suit les déclarations de la bibliothèque TypeScript, et non la version de Node.js qui exécute le linter.",
+    },
+  },
   "type/use-unknown-in-catch-callback-variable": pair(
     "function getNumber(): Promise<number> {\n  return Promise.resolve(1);\n}\ngetNumber().catch((error) => {\n  console.log(error);\n});",
     "function getNumber(): Promise<number> {\n  return Promise.resolve(1);\n}\ngetNumber().catch((error: unknown) => {\n  console.log(error);\n});",

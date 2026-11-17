@@ -26,7 +26,9 @@
     "sandbox-worker.js",
     "sandbox.d.ts",
     "visitor.js",
-    "visitor.d.ts"
+    "visitor.d.ts",
+    "v2.js",
+    "v2.d.ts"
   ],
   "type": "module",
   "sideEffects": false,
@@ -47,6 +49,10 @@
     "./visitor": {
       "types": "./visitor.d.ts",
       "default": "./visitor.js"
+    },
+    "./v2": {
+      "types": "./v2.d.ts",
+      "default": "./v2.js"
     }
   },
   "publishConfig": {

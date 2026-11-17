@@ -21,6 +21,7 @@ void test("operational diagnostic references retain their own English/Japanese a
     ["parser/template", "parser-template"],
     ["parser/sfc", "parser-sfc"],
     ["parser/jsx", "parser-jsx"],
+    ["parser/tsrx", "parser-tsrx"],
     ["type/project-configuration", "type-project-configuration"],
   ]);
   for (const [id, slug] of operationalDiagnosticPages) {

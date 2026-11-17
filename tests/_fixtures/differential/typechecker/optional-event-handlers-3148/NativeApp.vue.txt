@@ -1,0 +1,6 @@
+<script setup lang="ts">
+const item = {} as {
+  onClick?: (payload: PointerEvent) => Promise<void>
+}
+</script>
+<template><button @click="item.onClick">Click</button></template>

@@ -102,10 +102,10 @@ impl TsconfigOwnershipSnapshot {
     /// Only a unique owner wins. Unowned or ambiguous sources retain the root.
     /// Selection reads no configuration and does not validate capture freshness.
     pub fn select(&self, source: &Path, kind: TsconfigSourceKind) -> PathBuf {
-        let source = graph::normalize_path(source);
+        let spellings = vize_l0::typescript_ownership::source_spellings(source);
         unique_owner(&self.root, &self.project_paths, |path| {
             self.specs.get(path).is_some_and(|spec| {
-                spec.includes_normalized(&source, self.options.case_sensitive(), kind)
+                spec.includes_any(&spellings, self.options.case_sensitive(), kind)
             })
         })
     }

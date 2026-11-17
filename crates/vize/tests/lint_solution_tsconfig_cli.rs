@@ -43,7 +43,13 @@ fn lint(project: &Path, runtime: &str, source: &str) -> std::process::Output {
 }
 
 fn assert_clean(output: &std::process::Output, source: &str) {
-    assert_eq!(output.status.code(), Some(0), "stderr: {:?}", output.stderr);
+    assert_eq!(
+        output.status.code(),
+        Some(0),
+        "stdout: {}\nstderr: {}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
     assert_eq!(output.stderr, b"");
     let reports: Value = serde_json::from_slice(&output.stdout).unwrap();
     assert_eq!(
@@ -223,5 +229,87 @@ const result = unsafeValue.run();
             "type/no-unsafe-template-binding"
         ],
         "{reports:#}"
+    );
+}
+
+/// The two further shapes of #13077: a generated augmentation that neither
+/// imports its target nor is imported (reached through a `paths` alias), and a
+/// Vite-style `client.d.ts` that opens with a reference line and declares an
+/// ambient module.
+#[test]
+fn alias_augmentations_and_referencing_ambient_declarations_join_the_lint_program() {
+    let root = workspace();
+    let runtime: Option<String> = corsa_requirement::required_or_skip(corsa_path::resolve(root));
+    let Some(runtime) = runtime else { return };
+    let project = tempfile::tempdir().unwrap();
+    support::symlink_vue(root, project.path());
+    write(
+        project.path(),
+        "package.json",
+        r#"{"name":"alias-type-aware-lint","private":true,"type":"module"}"#,
+    );
+    write(
+        project.path(),
+        "tsconfig.json",
+        r#"{"compilerOptions":{"target":"ES2022","module":"ESNext","moduleResolution":"Bundler","strict":true,"noEmit":true,"skipLibCheck":true,"lib":["ES2022","DOM"],"paths":{"lib/*":["./lib/*"]}},"include":["src/**/*.ts","src/**/*.vue","lib/**/*.ts"]}"#,
+    );
+    write(
+        project.path(),
+        "lint.json",
+        r#"{"vue":{"linter":{"preset":"incremental","typeAware":true,"rules":{"type/no-unsafe-assignment":"error","type/no-unsafe-call":"error","type/no-unsafe-member-access":"error","type/no-unsafe-template-binding":"error"}}}}"#,
+    );
+    write(
+        project.path(),
+        "lib/table.ts",
+        "export interface KeyRegistry {\n  seed: true;\n}\n\nexport declare const ts: Readonly<Record<keyof KeyRegistry, string>>;\n",
+    );
+    write(
+        project.path(),
+        "src/keys.ts",
+        "declare module \"lib/table\" {\n  interface KeyRegistry {\n    account: true;\n  }\n}\n\nexport const TAG = \"us\";\n",
+    );
+    write(
+        project.path(),
+        "src/client.d.ts",
+        "/// <reference types=\"vue\" />\n\ndeclare const __BUILD__: string;\n\ndeclare module \"virtual:table\" {\n  const table: Readonly<Record<string, string>>;\n  export default table;\n}\n",
+    );
+    write(
+        project.path(),
+        "src/Alias.vue",
+        r#"<script setup lang="ts">
+import { ts } from "lib/table";
+
+const seed = ts.seed.toUpperCase();
+const account = ts.account.toUpperCase();
+</script>
+
+<template>
+  <p>{{ seed }} {{ account }}</p>
+</template>
+"#,
+    );
+    write(
+        project.path(),
+        "src/Client.vue",
+        r#"<script setup lang="ts">
+import table from "virtual:table";
+
+const build = __BUILD__.toUpperCase();
+const first = table.first.toUpperCase();
+</script>
+
+<template>
+  <p>{{ build }} {{ first }}</p>
+</template>
+"#,
+    );
+
+    assert_clean(
+        &lint(project.path(), &runtime, "src/Alias.vue"),
+        "src/Alias.vue",
+    );
+    assert_clean(
+        &lint(project.path(), &runtime, "src/Client.vue"),
+        "src/Client.vue",
     );
 }

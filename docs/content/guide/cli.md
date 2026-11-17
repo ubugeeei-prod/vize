@@ -89,6 +89,7 @@ When invoked without a command, `vize` defaults to `build`.
 | `inspector`      | Create playground compiler inspector payloads                     |
 | `clean`          | Remove Vize-generated cache artifacts                             |
 | `lib`            | Pull versioned UI/composable sources ([guide](./lib-pull.md))     |
+| `plugin`         | Inspect experimental plugin API v2 plans                          |
 | `ready`          | Run `fmt`, `lint`, `check`, and `build`                           |
 | `upgrade`        | Update the installed CLI                                          |
 | `check-server`   | Start the Unix JSON-RPC typecheck server                          |
@@ -104,6 +105,8 @@ vize build src/**/*.vue
 vize build --ssr
 vize build --profile src
 ```
+
+`vize build` compiles `.vue` and `.tsrx` files. A TSRX module goes through the TSRX compiler, which reports every syntax error and every construct or target it does not support yet at its line and column; a refused module never gets compiled code (with `--continue-on-error` it gets the same empty fallback module as any failed file). Its TypeScript is erased as in `.vue` scripts (`.js` output) unless `--script-ext preserve` keeps it (`.ts` output). The default pattern (`./**/*.vue`) selects `.vue` files only.
 
 Key options:
 
@@ -176,7 +179,7 @@ vize lint --preset opinionated src
 vize lint --help-level short src
 ```
 
-Key options:
+Default discovery lints Vue, HTML, JavaScript/TypeScript, JSX/TSX and TSRX files. Each markup region of a `.tsrx` module runs through the same markup rules as a JSX/TSX render root; script rules do not check the host TypeScript of a `.tsrx` module yet. Syntax errors, and constructs the lowering does not support yet, are [`parser/tsrx`](../rules/reference/parser-tsrx.md) errors. Key options:
 
 | Option                               | Description                                                                                                                             |
 | ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
@@ -380,6 +383,20 @@ be opened, logging continues on stderr only. `vize clean` does not remove user-c
 | `--scope node-modules` / `project` | Clean only `node_modules/.vize` or only `.vize`           |
 | `--force`                           | Also remove unknown entries by deleting the whole folder |
 | `-q, --quiet`                       | Suppress status output                                    |
+
+## Plugin
+
+```bash
+vize plugin inspect
+vize plugin inspect --config path/to/vite.config.ts
+```
+
+`vize plugin inspect` evaluates `vite.config.*` and prints, as JSON, the canonical plugin plan
+that `vue.plugins` resolves to: plugin order, ownership claims, capabilities, options,
+permissions, cache inputs and the per-product admission status. Plugin API v2 is experimental
+([status](https://github.com/ubugeeei-prod/vize/blob/main/docs/release/integrated-plugin-incubation.md)).
+Every other command refuses a plan that contains a capability some product consuming it does not implement yet;
+`inspect` still reports it so you can see why.
 
 ## Ready
 

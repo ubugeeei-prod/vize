@@ -87,3 +87,43 @@ defineSlots<{ default(p: { v: Props }): any }>();
         declaration.as_str()
     );
 }
+
+#[test]
+fn constructor_value_props_declare_the_checker_helpers_they_name() {
+    // #13112: a class-typed runtime prop names the checker's inference helper.
+    let declaration = generate_sfc(
+        r#"<script setup lang="ts">
+import { Counter } from "./Counter";
+defineProps({ counter: { type: Counter, required: true }, label: String });
+</script>"#,
+    );
+
+    assert_parseable(&declaration);
+    insta::assert_snapshot!("constructor_value_prop_declaration", declaration.as_str());
+    let checker =
+        include_str!("../../vize_canon/src/virtual_ts/helpers/declarations/core-types.d.ts.txt");
+    // The checker's own value-inference aliases, in their declared order.
+    let expected = helper_lines(checker)
+        .into_iter()
+        .filter(|line| {
+            ["Value<", "CtorInner<", "Ctor<"]
+                .iter()
+                .any(|name| line.starts_with(&*vize_carton::cstr!("type __RuntimeProp{name}")))
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(helper_lines(&declaration), expected, "{declaration}");
+
+    let builtin = generate_sfc(
+        r#"<script setup lang="ts">
+defineProps({ label: String });
+</script>"#,
+    );
+    assert_eq!(helper_lines(&builtin), Vec::<&str>::new(), "{builtin}");
+}
+
+fn helper_lines(source: &str) -> Vec<&str> {
+    source
+        .lines()
+        .filter(|line| line.starts_with("type __RuntimeProp"))
+        .collect()
+}

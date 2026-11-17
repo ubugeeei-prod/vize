@@ -41,7 +41,7 @@ impl LintPresetArg {
 pub struct LintArgs {
     /// Glob pattern(s) to match files supported by vize lint
     #[arg(
-        help = "Glob pattern(s) to match files supported by vize lint\n\n[default: ./**/*.vue ./**/*.html ./**/*.htm ./**/*.js ./**/*.mjs ./**/*.cjs ./**/*.ts ./**/*.mts ./**/*.cts ./**/*.jsx ./**/*.tsx]"
+        help = "Glob pattern(s) to match files supported by vize lint\n\n[default: ./**/*.vue ./**/*.html ./**/*.htm ./**/*.js ./**/*.mjs ./**/*.cjs ./**/*.ts ./**/*.mts ./**/*.cts ./**/*.jsx ./**/*.tsx ./**/*.tsrx]"
     )]
     pub patterns: Vec<String>,
 

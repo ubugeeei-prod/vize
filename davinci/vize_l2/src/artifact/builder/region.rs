@@ -95,6 +95,23 @@ impl<'a> RegionBuilder<'_, 'a> {
         self.builder.bind(name, name_span, value, span)
     }
 
+    /// Record that the lowering built an op of `family`, which selects the
+    /// passes that publish its facts (a component's slot grouping).
+    pub(crate) fn observe(&mut self, family: crate::artifact::OpFamily) {
+        self.builder.parts.features = self.builder.parts.features.observing(family);
+    }
+
+    /// Attach a binding whose name the lowering supplies, at the authored
+    /// value's `span`.
+    pub(crate) fn synthesized_bind(
+        &mut self,
+        name: &'a str,
+        value: ExprRef<'a>,
+        span: Span,
+    ) -> Result<NodeId, ArtifactError> {
+        self.builder.synthesized_bind(name, value, span)
+    }
+
     /// Attach an object spread before this owner's children.
     pub fn spread(&mut self, value: ExprRef<'a>, span: Span) -> Result<NodeId, ArtifactError> {
         self.builder.spread(value, span)
@@ -129,6 +146,15 @@ impl<'a> RegionBuilder<'_, 'a> {
         regions: impl FnOnce(&mut super::HostForBuilder<'_, 'a>, NodeId),
     ) -> Result<NodeId, ArtifactError> {
         self.builder.host_for(head, span, regions)
+    }
+    /// Create one array callback `ui.for`; the callback builds its region.
+    pub fn callback_for(
+        &mut self,
+        head: super::CallbackForHead<'a>,
+        span: Span,
+        children: impl FnOnce(&mut RegionBuilder<'_, 'a>, NodeId),
+    ) -> Result<NodeId, ArtifactError> {
+        self.builder.callback_for(head, span, children)
     }
     /// Create one `ui.if`; the callback adds its branches in authored order.
     pub fn conditional(

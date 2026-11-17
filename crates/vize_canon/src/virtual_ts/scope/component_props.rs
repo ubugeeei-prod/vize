@@ -49,9 +49,13 @@ pub(super) fn generate_component_props(
     semantic_links: &mut Vec<VizeSemanticLink>,
     ctx: &ComponentPropsContext<'_, '_>,
     checkable_usages: &[(usize, &ComponentUsage)],
-    owners: (&mut RootOwnerPackets, &RootCallbackOwners),
+    owners: (
+        &mut RootOwnerPackets,
+        &RootCallbackOwners,
+        &FxHashSet<usize>,
+    ),
 ) {
-    let (root_packets, callback_owners) = owners;
+    let (root_packets, callback_owners, spliced) = owners;
     let summary = ctx.summary;
     // Original eligibility/callback ownership remains untouched. The opt-in
     // supplementary rows only add previously un-emitted scalar assignments.
@@ -73,14 +77,8 @@ pub(super) fn generate_component_props(
         return;
     }
 
-    let mut components_by_scope: FxHashMap<u32, Vec<(usize, &ComponentUsage)>> =
-        FxHashMap::default();
-    for &(idx, usage) in checkable_usages {
-        components_by_scope
-            .entry(usage.scope_id.as_u32())
-            .or_default()
-            .push((idx, usage));
-    }
+    let components_by_scope =
+        super::expect_owner_splices::replayed_by_scope(checkable_usages, spliced);
 
     ts.push_str("\n  // Component props type declarations\n");
 

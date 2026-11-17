@@ -42,6 +42,10 @@ extern crate std;
 pub mod expr;
 pub mod framework;
 pub mod jsx;
+/// Language front ends with one public compile entry each.
+pub mod lang {
+    pub mod tsrx;
+}
 pub mod module;
 pub mod registry;
 pub mod runtime;

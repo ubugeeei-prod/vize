@@ -1,0 +1,119 @@
+{
+  "entries": [
+    {
+      "manifest": {
+        "after": [],
+        "apiVersion": 2,
+        "backend": "js",
+        "before": [],
+        "cacheInputs": [],
+        "capabilities": [
+          {
+            "id": "lint.rule",
+            "required": true,
+            "schemaVersion": 1,
+            "data": {
+              "id": "no-raw-color",
+              "messages": {
+                "found": "Found {name}."
+              },
+              "visit": [
+                "ui.element"
+              ]
+            }
+          }
+        ],
+        "fingerprint": "9999999999999999999999999999999999999999999999999999999999999999",
+        "name": "@acme/design-system",
+        "options": {
+          "strict": true,
+          "depth": 2,
+          "labels": [
+            "a",
+            "b"
+          ]
+        },
+        "permissions": [],
+        "stability": "experimental",
+        "supports": {},
+        "version": "1.0.0"
+      }
+    }
+  ],
+  "runtime": "node",
+  "expect": {
+    "digest": "a09b74a0d220e7fc56c0b18d19893c41a71e2817b8a6b9806af0c97cf2f247a5",
+    "plan": {
+      "claims": [
+        {
+          "key": "lint.rule:@acme/design-system/no-raw-color",
+          "owner": "@acme/design-system"
+        }
+      ],
+      "planSchema": 1,
+      "plugins": [
+        {
+          "after": [],
+          "apiVersion": 2,
+          "backend": "js",
+          "before": [],
+          "cacheInputs": [],
+          "capabilities": [
+            {
+              "data": {
+                "defaultLevel": "off",
+                "demands": [],
+                "docs": "",
+                "documents": [
+                  "template"
+                ],
+                "fixable": "none",
+                "id": "no-raw-color",
+                "messages": {
+                  "found": "Found {name}."
+                },
+                "visit": [
+                  "ui.element"
+                ]
+              },
+              "id": "lint.rule",
+              "key": "@acme/design-system/no-raw-color",
+              "required": true,
+              "schemaVersion": 1
+            }
+          ],
+          "fingerprint": "9999999999999999999999999999999999999999999999999999999999999999",
+          "index": 0,
+          "name": "@acme/design-system",
+          "options": {
+            "depth": 2,
+            "labels": [
+              "a",
+              "b"
+            ],
+            "strict": true
+          },
+          "permissions": [],
+          "skipped": [],
+          "stability": "experimental",
+          "supports": {
+            "outputs": [
+              "ssr",
+              "vapor",
+              "vdom"
+            ],
+            "runtimes": [
+              "bun",
+              "node"
+            ],
+            "vue": [
+              "2",
+              "3"
+            ]
+          },
+          "version": "1.0.0"
+        }
+      ]
+    }
+  }
+}

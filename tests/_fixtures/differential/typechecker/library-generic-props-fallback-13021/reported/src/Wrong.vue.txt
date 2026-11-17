@@ -1,0 +1,7 @@
+<script setup lang="ts">
+import { NoFallback } from "./libs";
+</script>
+
+<template>
+  <NoFallback :items="1" />
+</template>

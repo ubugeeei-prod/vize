@@ -1,0 +1,7 @@
+<script setup lang="ts">
+node.focus();
+declare const node: HTMLElement;
+declare function load<T extends HTMLElement>(value: T): Promise<T>;
+const result: Promise<HTMLElement> = load(node);
+</script>
+<template><div>{{ node.tagName }}{{ result }}</div></template>

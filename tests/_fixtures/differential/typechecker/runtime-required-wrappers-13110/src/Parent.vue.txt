@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import Imported from "./Imported.vue";
+import Wrapped from "./Wrapped.vue";
+</script>
+
+<template>
+  <Imported />
+  <Wrapped as-const="a" angle-const="b" parenthesized="c" satisfied="d" />
+</template>

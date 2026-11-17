@@ -50,6 +50,34 @@ export function withoutHostRuntimeReferences(source: string, relativePath: strin
       "host_config_matcher",
     );
   }
+  if (
+    file === "crates/vize_patina/src/plugin_batch/lint.rs" ||
+    file === "crates/vize_patina/src/plugin_batch/lint/rules.rs"
+  ) {
+    // Plugin lint jobs read the plan Carton verified; they own no config storage.
+    storage = storage.replace(
+      /^use vize_carton::config::plugin_plan::\{(?:PlannedCapability, PlannedPlugin(?:, VerifiedPluginPlan)?)\};$/gmu,
+      "host_plugin_plan",
+    );
+  }
+  if (file === "crates/vize_patina/src/plugin_batch/lint/host.rs") {
+    // The per-document host drives Carton's plugin sidecar for the plan Carton verified.
+    storage = storage.replace(
+      /^use vize_carton::config::plugin_plan::\{VerifiedPluginPlan, document_plugin_plan\};$/gmu,
+      "host_plugin_plan",
+    );
+    storage = storage.replace(
+      /^use vize_carton::config::\{PluginLintSidecar, SidecarBudget, SidecarReply\};$/gmu,
+      "host_plugin_sidecar",
+    );
+  }
+  if (file === "crates/vize_vitrine/src/napi/plugin_lint.rs") {
+    // Oxlint's plugin session loads its config through the same checked Carton loader.
+    storage = storage.replace(
+      /\bvize_carton::config::try_load_project_config_with_source\b(?=\()/gu,
+      "host_config_loader",
+    );
+  }
   if (file === "crates/vize/src/lint_plan/matcher.rs") {
     storage = storage.replace(
       /^pub\(crate\) use vize_carton::config::matcher::(?:GlobSequence|\{LintPlanScope, absolute_path, normalize_path\});$/gmu,

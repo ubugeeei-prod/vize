@@ -104,3 +104,38 @@ type Foo = {
         "module-scope imports must not move otherwise hoistable types into setup"
     );
 }
+
+#[test]
+fn types_naming_setup_classes_stay_with_them() {
+    // typescript-eslint v8.72.2 no-misused-promises invalid[66] in
+    // `<script setup>` (#12988): the heritage class lives in setup scope.
+    let result = parse_script_setup(
+        r#"
+import { Imported } from "./imported";
+class MyClass {
+    setThing(): void {}
+}
+interface ExtendsMyClass extends MyClass {
+    setThing(): Promise<void>;
+}
+type Instance = MyClass;
+type Indirect = { value: Instance };
+interface ExtendsImported extends Imported {}
+type Plain = { value: string };
+"#,
+    );
+
+    let hoisted = |name: &str| {
+        result
+            .type_exports
+            .iter()
+            .find(|export| export.name.as_str() == name)
+            .unwrap_or_else(|| panic!("{name} type export"))
+            .hoisted
+    };
+    assert!(!hoisted("ExtendsMyClass"));
+    assert!(!hoisted("Instance"));
+    assert!(!hoisted("Indirect"));
+    assert!(hoisted("ExtendsImported"));
+    assert!(hoisted("Plain"));
+}

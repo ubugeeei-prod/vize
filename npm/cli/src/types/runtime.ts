@@ -70,10 +70,25 @@ export type VueOptionsEntry = Pick<
   "name" | "basePath" | "files" | "ignores" | "compiler" | "linter"
 >;
 
+/**
+ * One `vue.plugins` entry: an experimental API v2 entry from `@vizejs/plugin-sdk/v2`
+ * or a v1 `definePlugin` rule plugin. `false`, `null` and `undefined` are skipped.
+ */
+export type VuePluginEntry =
+  | false
+  | null
+  | undefined
+  | { readonly name: string; readonly version: string };
+
 /** Section option values reuse the native types rather than a second schema. */
 export type VueOptions = Pick<VizeConfig, VueOptionKeys> & {
   version?: VueVersion;
   entries?: VueOptionsEntry[];
+  /**
+   * Experimental (#13074): resolved once into the canonical plugin plan that every
+   * Vize product reads. Later `withVue` calls replace the list. Defaults to none.
+   */
+  plugins?: readonly VuePluginEntry[];
 } & VueToolActions;
 
 export type UserConfigEntry = VizeConfigEntry & {

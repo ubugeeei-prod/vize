@@ -2160,6 +2160,11 @@
               "description": "Whether to skip checking whether `static` methods are correctly bound.",
               "default": false,
               "type": "boolean"
+            },
+            "checkGlobalObjectMethods": {
+              "description": "Whether to also report library methods read from the global object (`window.setTimeout`, `self.requestAnimationFrame`), as typescript-eslint does. They run unbound because platform operations fall back to the global object.",
+              "default": false,
+              "type": "boolean"
             }
           },
           "additionalProperties": false

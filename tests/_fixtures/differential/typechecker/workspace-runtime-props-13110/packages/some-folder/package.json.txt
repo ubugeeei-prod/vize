@@ -1,0 +1,7 @@
+{
+  "name": "renamed-props",
+  "private": true,
+  "type": "module",
+  "exports": "./index.ts",
+  "peerDependencies": { "vue": "*" }
+}

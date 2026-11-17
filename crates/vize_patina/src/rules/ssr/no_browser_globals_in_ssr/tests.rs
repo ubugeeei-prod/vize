@@ -328,3 +328,60 @@ fn script_reads_only_whole_or_escaped_browser_global_names() {
     );
     assert!(result.is_empty(), "{result:?}");
 }
+
+/// The character split `may_read` scanned tokens with before it scanned bytes.
+fn char_tokens(text: &str) -> Vec<&str> {
+    text.split(|c: char| !(c.is_ascii_alphanumeric() || c == '_' || c == '$'))
+        .filter(|token| !token.is_empty())
+        .collect()
+}
+
+#[test]
+fn byte_token_scan_matches_the_character_split() {
+    for text in [
+        "",
+        "window",
+        "a.window(b)",
+        "日本window語 top",
+        "αopen$β _document_ $x9",
+        "windowé €close\u{2028}print",
+        "  parent  ",
+        "x+y-z*1e9",
+        "\\u0077indow",
+    ] {
+        let escaped = text.contains('\\');
+        let mut scanned = Vec::new();
+        let read = NoBrowserGlobalsInSsr::may_read(text, |token| {
+            scanned.push(token.to_owned());
+            false
+        });
+        assert_eq!(read, escaped, "{text:?}");
+        let expected_tokens = if escaped {
+            Vec::new()
+        } else {
+            char_tokens(text)
+        };
+        assert_eq!(scanned, expected_tokens, "{text:?}");
+        let listed = char_tokens(text).into_iter().any(|token| {
+            super::BROWSER_GLOBALS.contains(&token) && !super::UNIVERSAL_GLOBALS.contains(&token)
+        });
+        let reads_static =
+            NoBrowserGlobalsInSsr::may_read(text, NoBrowserGlobalsInSsr::is_browser_global_static);
+        assert_eq!(reads_static, escaped || listed, "{text:?}");
+    }
+    for name in super::BROWSER_GLOBALS {
+        assert!(NoBrowserGlobalsInSsr::is_browser_global_static(name));
+    }
+    for name in [
+        "globalThis",
+        "self",
+        "Window",
+        "windows",
+        "",
+        "toppings",
+        "ωindow",
+        "CanvasRenderingContext2DXXXXXXXXX",
+    ] {
+        assert!(!NoBrowserGlobalsInSsr::is_browser_global_static(name));
+    }
+}

@@ -20,7 +20,10 @@ function withoutLockEdge(name: string, dependency: string) {
   const start = lock.indexOf(`name = "${name}"\n`);
   const end = lock.indexOf("\n[[package]]", start);
   const entry = lock.slice(start, end);
-  return lock.replace(entry, entry.replace(` "${dependency}",\n`, ""));
+  return lock.replace(
+    entry,
+    entry.replace(new RegExp(`^ "${dependency}(?: [^"]+)?",\\n`, "mu"), ""),
+  );
 }
 
 test("complete host integration has a byte-identical preflight plan", () => {

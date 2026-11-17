@@ -15,6 +15,7 @@ mod type_parameters;
 mod type_shape;
 use crate::linter::corsa_session::{ExpressionFact, ExpressionQuery};
 use corsa::lint::LintNode;
+pub(super) use promise::declaration_kind;
 pub(super) use queries::{Wants, queries};
 use serde_json::{Value, json};
 use vize_l0::FxHashMap;

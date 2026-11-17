@@ -1,0 +1,27 @@
+---
+source: crates/vize_croquis/tests/declaration_ts.rs
+expression: declaration.as_str()
+---
+import { Counter } from "./Counter";
+
+type __RuntimePropValue<T> = T extends (...args: any[]) => infer V ? V : T extends abstract new (...args: any[]) => infer V ? V : never;
+type __RuntimePropCtorInner<T> = T extends null | undefined ? never : T extends readonly (infer U)[] ? __RuntimePropCtorInner<U> : T extends { type: infer U } ? __RuntimePropCtorInner<U> : T extends StringConstructor ? string : T extends NumberConstructor ? number : T extends BooleanConstructor ? boolean : T extends ArrayConstructor ? unknown[] : T extends ObjectConstructor ? Record<string, any> : T extends DateConstructor ? Date : T extends FunctionConstructor ? (...args: any[]) => any : __RuntimePropValue<T>;
+type __RuntimePropCtor<T> = [__RuntimePropCtorInner<T>] extends [never] ? unknown : __RuntimePropCtorInner<T>;
+export type Props = {
+  counter: __RuntimePropCtor<typeof Counter>;
+  label?: string;
+};
+export type Emits = {};
+export type Slots = {};
+type __EmitShape<T> = T extends (...args: any[]) => any ? T : T extends Record<string, any> ? {
+  [K in keyof T]: T[K] extends (...args: infer A) => any ? A : T[K] extends any[] ? T[K] : any[];
+} : Record<string, any[]>;
+type __EmitArgs<T, K extends keyof T> = T[K] extends any[] ? T[K] : any[];
+type __EmitFn<T> = __EmitShape<T> extends (...args: any[]) => any ? __EmitShape<T> : (<K extends keyof __EmitShape<T>>(event: K, ...args: __EmitArgs<__EmitShape<T>, K>) => void);
+type $ComponentInstance = {
+  $props: Props;
+  $emit: __EmitFn<Emits>;
+  $slots: Slots;
+};
+declare const __vize_component__: new (...args: any[]) => $ComponentInstance;
+export default __vize_component__;

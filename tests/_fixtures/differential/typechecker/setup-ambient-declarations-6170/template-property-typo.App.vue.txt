@@ -1,0 +1,4 @@
+<script setup lang="ts">
+declare const label: string;
+</script>
+<template><div>{{ label.toFixed() }}</div></template>

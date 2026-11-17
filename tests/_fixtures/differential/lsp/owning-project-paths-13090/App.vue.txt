@@ -1,0 +1,11 @@
+<script setup lang="ts">
+import type { CardProps } from "@/props";
+import { formatLabel } from "@/format";
+import Child from "./Child.vue";
+
+defineProps<CardProps>();
+</script>
+
+<template>
+  <Child :label="formatLabel()" />
+</template>

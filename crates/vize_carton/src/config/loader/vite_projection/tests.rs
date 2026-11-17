@@ -138,3 +138,33 @@ fn actual_pattern_values_decline_but_empty_and_legacy_options_keep_the_literal_p
         assert_eq!(check(&value, schema, schema), expected);
     }
 }
+
+#[test]
+fn empty_plugin_lists_project_like_absent_ones_and_entries_decline_to_node() {
+    let source = |vue: Value| json!({ "vue": vue }).as_object().unwrap().clone();
+    let absent = project(
+        &source(json!({ "linter": { "preset": "essential" } })),
+        false,
+        "/p",
+    );
+    assert_eq!(
+        absent
+            .as_ref()
+            .map(|value| value["linter"]["preset"].clone()),
+        Some(json!("essential"))
+    );
+    for plugins in [json!([]), json!([false, null])] {
+        let listed = source(json!({ "linter": { "preset": "essential" }, "plugins": plugins }));
+        assert_eq!(project(&listed, false, "/p"), absent);
+    }
+    for plugins in [
+        json!([{ "name": "x", "version": "1" }]),
+        json!({}),
+        json!(null),
+    ] {
+        assert_eq!(
+            project(&source(json!({ "plugins": plugins })), false, "/p"),
+            None
+        );
+    }
+}

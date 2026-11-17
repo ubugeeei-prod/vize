@@ -17,8 +17,12 @@ use super::type_references::{
     resolve_type_package_declaration_files, resolve_type_reference_declaration_files,
 };
 
+mod content_mapper;
 mod top_level;
 
+pub(crate) use content_mapper::{
+    collect_content_mapper_ambient_declarations, collect_selected_nuxt_import_manifests,
+};
 use top_level::has_top_level_import_or_export;
 
 /// Collect ambient declaration files that belong to the tsconfig
@@ -48,26 +52,6 @@ pub(crate) fn collect_ambient_declaration_files(
         collect_tsconfig_type_declaration_files(&project_root, tsconfig_path);
     files.extend(explicit_type_declarations.iter().cloned());
     collect_ambient_declaration_files_from(project_root, files, explicit_type_declarations, None)
-}
-
-/// Return explicitly selected Nuxt import manifests for ownership discovery.
-///
-/// These generated declarations must not be forwarded as ambient program
-/// roots, but a named tsconfig can select a leaf manifest that declares Vue's
-/// global `useTemplateRef`. Ownership detection must observe that root before
-/// the forwarding filter removes it.
-pub(crate) fn collect_explicit_nuxt_import_manifests(
-    tsconfig_path: &Path,
-    cache: &mut TsconfigInputCache,
-) -> Vec<PathBuf> {
-    let Some(spec) = cache.load(tsconfig_path).cloned() else {
-        return Vec::new();
-    };
-    spec.files
-        .iter()
-        .map(|file| normalize_input_path(&file.resolve()))
-        .filter(|path| path.is_file() && is_nuxt_import_manifest_path(path))
-        .collect()
 }
 
 pub(crate) fn collect_hidden_ambient_declaration_files(
@@ -403,3 +387,6 @@ mod tests;
 
 #[cfg(test)]
 mod path_manifest_tests;
+
+#[cfg(test)]
+mod content_mapper_tests;

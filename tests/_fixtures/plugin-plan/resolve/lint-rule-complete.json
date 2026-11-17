@@ -1,0 +1,168 @@
+{
+  "entries": [
+    {
+      "manifest": {
+        "after": [],
+        "apiVersion": 2,
+        "backend": "js",
+        "before": [],
+        "cacheInputs": [
+          {
+            "name": "tokens",
+            "value": "v3"
+          }
+        ],
+        "capabilities": [
+          {
+            "id": "lint.rule",
+            "required": true,
+            "schemaVersion": 1,
+            "data": {
+              "id": "prefer-token",
+              "messages": {
+                "found": "Found {name}."
+              },
+              "visit": [
+                "ui.bind",
+                "ui.element"
+              ],
+              "docs": "Prefer tokens.",
+              "defaultLevel": "warn",
+              "fixable": "safe",
+              "documents": [
+                "template"
+              ],
+              "demands": [
+                "templateScopes",
+                "bindings"
+              ]
+            }
+          }
+        ],
+        "fingerprint": "9999999999999999999999999999999999999999999999999999999999999999",
+        "name": "@acme/design-system",
+        "options": {},
+        "permissions": [
+          {
+            "kind": "fs.read",
+            "paths": [
+              "src/tokens/**",
+              "design.json"
+            ]
+          },
+          {
+            "kind": "env",
+            "keys": [
+              "DESIGN_MODE"
+            ]
+          }
+        ],
+        "stability": "experimental",
+        "supports": {
+          "outputs": [
+            "vdom",
+            "ssr"
+          ],
+          "runtimes": [
+            "node",
+            "bun"
+          ],
+          "vue": [
+            "3"
+          ]
+        },
+        "version": "1.0.0"
+      }
+    }
+  ],
+  "runtime": "node",
+  "expect": {
+    "digest": "cb7589e8c067063f2ae761b4e7edce7164798629f19bebd9bc1b794122e4c976",
+    "plan": {
+      "claims": [
+        {
+          "key": "lint.rule:@acme/design-system/prefer-token",
+          "owner": "@acme/design-system"
+        }
+      ],
+      "planSchema": 1,
+      "plugins": [
+        {
+          "after": [],
+          "apiVersion": 2,
+          "backend": "js",
+          "before": [],
+          "cacheInputs": [
+            {
+              "name": "tokens",
+              "value": "v3"
+            }
+          ],
+          "capabilities": [
+            {
+              "data": {
+                "defaultLevel": "warn",
+                "demands": [
+                  "bindings",
+                  "templateScopes"
+                ],
+                "docs": "Prefer tokens.",
+                "documents": [
+                  "template"
+                ],
+                "fixable": "safe",
+                "id": "prefer-token",
+                "messages": {
+                  "found": "Found {name}."
+                },
+                "visit": [
+                  "ui.bind",
+                  "ui.element"
+                ]
+              },
+              "id": "lint.rule",
+              "key": "@acme/design-system/prefer-token",
+              "required": true,
+              "schemaVersion": 1
+            }
+          ],
+          "fingerprint": "9999999999999999999999999999999999999999999999999999999999999999",
+          "index": 0,
+          "name": "@acme/design-system",
+          "options": {},
+          "permissions": [
+            {
+              "kind": "env",
+              "keys": [
+                "DESIGN_MODE"
+              ]
+            },
+            {
+              "kind": "fs.read",
+              "paths": [
+                "design.json",
+                "src/tokens/**"
+              ]
+            }
+          ],
+          "skipped": [],
+          "stability": "experimental",
+          "supports": {
+            "outputs": [
+              "ssr",
+              "vdom"
+            ],
+            "runtimes": [
+              "bun",
+              "node"
+            ],
+            "vue": [
+              "3"
+            ]
+          },
+          "version": "1.0.0"
+        }
+      ]
+    }
+  }
+}

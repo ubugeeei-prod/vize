@@ -1,0 +1,10 @@
+<script setup lang="ts">
+const { seed } = defineProps<{ seed: number }>();
+
+const props = (value: number) => value + seed;
+const other = (value: number) => value + seed;
+</script>
+
+<template>
+  <p>{{ props(1) }} {{ other(1) }}</p>
+</template>
