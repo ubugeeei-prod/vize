@@ -22367,6 +22367,43 @@
       }
     },
     {
+      "id": "linter/valid-default-unknown-reference-12336",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "valid-default-unknown-reference-12336",
+        "files": [
+          {
+            "path": "Tour.vue.txt",
+            "role": "real-project-matrix-reduction",
+            "sha256": "2351d4e3d6a48be18e25c9fba2dea225ecb0e9a503bc20229fd4dac6a9298e3c"
+          },
+          {
+            "path": "rules.json",
+            "role": "rule-options",
+            "sha256": "c97738f2cb2b4daea39bfd230a5817a574fc150922dc19209c2400a3b257958b"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/vize-script-suppressions-11150",
       "state": "active",
       "targets": [
