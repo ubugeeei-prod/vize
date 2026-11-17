@@ -248,6 +248,14 @@ export function baselineIntentionalReason(
     if (tag !== undefined && vueSvgTags.has(tag))
       return "Vue's compiler treats this SVG element as native wherever it appears; eslint-plugin-vue parses it outside an <svg> ancestor as an HTML-namespace custom component and asks for a key.";
   }
+  if (
+    finding.ruleId === "vue/v-on-handler-style" &&
+    finding.message.startsWith("Prefer method handler over inline handler in v-on.") &&
+    source !== undefined &&
+    source !== null &&
+    assertedMethodHandler(finding, source)
+  )
+    return "Vue's compiler unwraps parentheses and TypeScript `as`/`satisfies`/`!` when it decides a v-on value is a method handler, so `(handleKeyDown as any)` is passed as the method itself; eslint-plugin-vue reads the wrapped expression as an inline handler.";
   if (finding.ruleId === "vue/no-shared-component-data")
     return "Patina intentionally merges vue/no-shared-component-data and vue/no-deprecated-data-object-declaration into one diagnostic for the same invalid data option.";
   if (
@@ -1113,6 +1121,17 @@ function scriptDeclares(name: string, source: string): boolean {
     `\\b(?:(?:const|let|var|function|class)\\s+${escaped}(?![\\w$])|import\\s+(?:type\\s+)?(?:${escaped}\\s*[,\\s]|[^;{}]*\\{[^{}]*(?<![\\w$.])${escaped}(?![\\w$]|\\s+as\\b)[^{}]*\\})[^;{}]*?\\bfrom\\b)|\\b(?:const|let|var)\\s*\\{[^}]*(?<![\\w$.])${escaped}(?![\\w$]|\\s*:)[^}]*\\}`,
     "u",
   ).test(source);
+}
+
+/** The reported v-on value is a member path under a TypeScript assertion. */
+function assertedMethodHandler(finding: LintRecord, source: string): boolean {
+  const text = authoredFindingText(finding, source)?.trim();
+  if (text === undefined) return false;
+  const path = String.raw`[A-Za-z_$][\w$]*(?:\s*\.\s*[A-Za-z_$][\w$]*)*`;
+  const asserted = new RegExp(`^\\(*\\s*${path}\\s*(?:(?:as|satisfies)\\s+[^()]+|!)\\s*\\)*$`, "u");
+  const opens = text.split("(").length - 1,
+    closes = text.split(")").length - 1;
+  return opens === closes && asserted.test(text);
 }
 
 function findingInScriptSetup(finding: LintRecord, source: string): boolean {
