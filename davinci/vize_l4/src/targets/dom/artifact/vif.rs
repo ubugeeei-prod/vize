@@ -301,7 +301,10 @@ fn emit_branch(
             super::emit_for_op(cx, for_op, id, Some(key))
         }
         [Op::OriginalFor(for_op)] => Err(EmitError::original_for_provider_unavailable(for_op)),
-        _ => Err(EmitError::unsupported_at(Reason::IfBranchShape, span)),
+        [] => Err(EmitError::unsupported_at(Reason::IfBranchShape, span)),
+        // A region with no single root (a conditional, text or several
+        // nodes) is one keyed fragment, as Vue wraps a multi-root branch.
+        ops => super::tpl::emit_branch_fragment(cx, ops, key),
     }
 }
 

@@ -153,8 +153,16 @@ fn dom_conditionals_over_nested_markup_render_its_branches_with_the_props_it_rea
         "import { defineComponent as _defineComponent, createElementVNode as _createElementVNode, Fragment as _Fragment, createCommentVNode as _createCommentVNode, renderList as _renderList } from \"vue\";\nexport const A = /* @__PURE__ */ _defineComponent(function A(__props) {\n\treturn (_ctx, _cache) => {\n  return (_createElementVNode(\"p\", null, [\n    (__props.ok)\n      ? (_createElementVNode(\"ul\", {\n        key: 0,\n        title: __props.x\n      }, [\n        (_createElementVNode(_Fragment, null, _renderList([1], (x) => {\n          return (_createElementVNode(\"li\", { key: x }, [\n            x\n          ]))\n        }), 128 /* KEYED_FRAGMENT */))\n      ], 8 /* PROPS */, [\"title\"]))\n      : _createCommentVNode(\"v-if\", true)\n  ]))\n};\n}, { props: [\"ok\", \"x\"] });\n"
     );
 
-    // A conditional as a branch's only node is refused by the DOM emitter.
+    // A conditional as a branch's only node is a keyed fragment, as Vue
+    // wraps `<template v-if>` around a nested `v-if`.
     let source = "export function A({ a, b }: { a: boolean; b: boolean }) @{\n\t<p>{a ? (b ? <i /> : <s />) : null}</p>\n}\n";
+    assert_eq!(
+        compile(source, &OPTIONS).unwrap().code.as_str(),
+        "import { defineComponent as _defineComponent, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createCommentVNode as _createCommentVNode } from \"vue\";\nexport const A = /* @__PURE__ */ _defineComponent(function A(__props) {\n\treturn (_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"p\", null, [\n    (__props.a)\n      ? (_openBlock(), _createElementBlock(_Fragment, { key: 0 }, [\n        (__props.b)\n          ? (_openBlock(), _createElementBlock(\"i\", { key: 0 }))\n          : (_openBlock(), _createElementBlock(\"s\", { key: 1 }))\n      ], 64 /* STABLE_FRAGMENT */))\n      : _createCommentVNode(\"v-if\", true)\n  ]))\n};\n}, { props: [\"a\", \"b\"] });\n"
+    );
+
+    // An empty branch has nothing to key and stays refused.
+    let source = "export function A({ a }: { a: boolean }) @{\n\t<p>{a ? <></> : null}</p>\n}\n";
     let [diagnostic] = diagnostics(source, &OPTIONS).try_into().unwrap();
     assert_eq!(diagnostic.code, Code::Emit(EmitIssue::Dom));
 }
@@ -169,15 +177,13 @@ fn dom_value_ands_render_a_falsy_left_as_the_child_and_key_their_region() {
         "import { defineComponent as _defineComponent, createElementVNode as _createElementVNode, createCommentVNode as _createCommentVNode } from \"vue\";\nexport const A = /* @__PURE__ */ _defineComponent(function A(__props) {\n\treturn (_ctx, _cache) => {\n  return (_createElementVNode(\"p\", null, [\n    (__props.ok)\n      ? (_createElementVNode(\"b\", { key: 0 }))\n      : _createCommentVNode(\"v-if\", true),\n    (__props.n)\n      && (_createElementVNode(\"i\", {\n        key: 1,\n        title: __props.label\n      }, [\n        __props.n\n      ], 8 /* PROPS */, [\"title\"]))\n  ]))\n};\n}, { props: [\"ok\", \"n\", \"label\"] });\n"
     );
 
-    // A value `&&` as a branch's only node, or over a conditional, is
-    // refused by the DOM emitter like a nested conditional.
-    for markup in ["{ok ? (n && <i />) : null}", "{n && (ok ? <i /> : <s />)}"] {
-        let source = format!(
-            "export function A({{ ok, n }}: {{ ok: boolean; n: number }}) @{{\n\t<p>{markup}</p>\n}}\n"
-        );
-        let [diagnostic] = diagnostics(&source, &OPTIONS).try_into().unwrap();
-        assert_eq!(diagnostic.code, Code::Emit(EmitIssue::Dom), "{markup}");
-    }
+    // A value `&&` as a branch's only node, or over a conditional, is a
+    // keyed fragment like a nested conditional.
+    let source = "export function A({ ok, n }: { ok: boolean; n: number }) @{\n\t<p>{ok ? (n && <i />) : null}{n && (ok ? <i /> : <s />)}</p>\n}\n";
+    assert_eq!(
+        compile(source, &OPTIONS).unwrap().code.as_str(),
+        "import { defineComponent as _defineComponent, createElementVNode as _createElementVNode, Fragment as _Fragment, createCommentVNode as _createCommentVNode } from \"vue\";\nexport const A = /* @__PURE__ */ _defineComponent(function A(__props) {\n\treturn (_ctx, _cache) => {\n  return (_createElementVNode(\"p\", null, [\n    (__props.ok)\n      ? (_createElementVNode(_Fragment, { key: 0 }, [\n        (__props.n)\n          && (_createElementVNode(\"i\", { key: 0 }))\n      ], 64 /* STABLE_FRAGMENT */))\n      : _createCommentVNode(\"v-if\", true),\n    (__props.n)\n      && (_createElementVNode(_Fragment, { key: 1 }, [\n        (__props.ok)\n          ? (_createElementVNode(\"i\", { key: 0 }))\n          : (_createElementVNode(\"s\", { key: 1 }))\n      ], 64 /* STABLE_FRAGMENT */))\n  ]))\n};\n}, { props: [\"ok\", \"n\"] });\n"
+    );
 }
 
 #[test]

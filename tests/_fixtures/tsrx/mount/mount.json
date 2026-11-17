@@ -395,6 +395,56 @@
       "component": "Drawn",
       "props": { "n": 0 },
       "steps": [{ "props": { "n": 2 } }, { "props": { "n": 0 } }]
+    },
+    {
+      "id": "branches/ternary",
+      "file": "tests/_fixtures/tsrx/mount/branches.tsrx",
+      "component": "Ternary",
+      "props": { "a": false, "b": false },
+      "steps": [{ "props": { "a": true } }, { "props": { "b": true } }, { "props": { "a": false } }, { "props": { "a": true } }]
+    },
+    {
+      "id": "branches/blocks",
+      "file": "tests/_fixtures/tsrx/mount/branches.tsrx",
+      "component": "Blocks",
+      "expected": "#13180",
+      "props": { "a": false, "b": false },
+      "steps": [{ "props": { "a": true } }, { "props": { "b": true } }, { "props": { "a": false } }, { "props": { "a": true } }]
+    },
+    {
+      "id": "branches/labels",
+      "file": "tests/_fixtures/tsrx/mount/branches.tsrx",
+      "component": "Labels",
+      "props": { "a": false, "b": false, "label": "x" },
+      "steps": [{ "props": { "a": true } }, { "props": { "b": true } }, { "props": { "a": false } }, { "props": { "a": true } }, { "props": { "label": "y" } }]
+    },
+    {
+      "id": "branches/several",
+      "file": "tests/_fixtures/tsrx/mount/branches.tsrx",
+      "component": "Several",
+      "props": { "a": false, "n": 1 },
+      "steps": [{ "props": { "a": true } }, { "props": { "n": 2 } }, { "props": { "a": false } }]
+    },
+    {
+      "id": "branches/texts",
+      "file": "tests/_fixtures/tsrx/mount/branches.tsrx",
+      "component": "Texts",
+      "props": { "a": false, "n": 1 },
+      "steps": [{ "props": { "a": true } }, { "props": { "n": 2 } }, { "props": { "a": false } }]
+    },
+    {
+      "id": "branches/and-if",
+      "file": "tests/_fixtures/tsrx/mount/branches.tsrx",
+      "component": "AndIf",
+      "props": { "a": false, "n": 0 },
+      "steps": [{ "props": { "n": 1 } }, { "props": { "a": true } }, { "props": { "n": 0 } }]
+    },
+    {
+      "id": "branches/if-and",
+      "file": "tests/_fixtures/tsrx/mount/branches.tsrx",
+      "component": "IfAnd",
+      "props": { "a": false, "n": 0 },
+      "steps": [{ "props": { "a": true } }, { "props": { "n": 2 } }, { "props": { "a": false } }]
     }
   ]
 }
