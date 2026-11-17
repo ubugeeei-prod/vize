@@ -23,6 +23,8 @@ use crate::markup::{MarkupContext, MarkupElement, MarkupRule, MarkupTraversal};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::{ElementNode, InterpolationNode};
 
+mod blocks;
+
 static META: RuleMeta = RuleMeta {
     name: "vue/no-multi-spaces",
     description: "Disallow multiple consecutive spaces",
@@ -45,6 +47,10 @@ impl Rule for NoMultiSpaces {
 
     fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
         Some(self)
+    }
+
+    fn run_on_sfc<'a>(&self, ctx: &mut LintContext<'a>) {
+        blocks::check(ctx);
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
