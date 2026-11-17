@@ -115,7 +115,14 @@ export function collectRunEvidence(root: string): Json {
     },
   };
 }
-export function runPatina(cwd: string, project: Json, args: Args, launch: Launch, files: string[]) {
+export function runPatina(
+  cwd: string,
+  project: Json,
+  args: Args,
+  launch: Launch,
+  files: string[],
+  ruleOptionsConfig: string | null = null,
+) {
   const excluded =
     get(project, "lintDivergenceExcludePaths") === null
       ? []
@@ -127,7 +134,7 @@ export function runPatina(cwd: string, project: Json, args: Args, launch: Launch
     ...inputs,
     "--format",
     "json",
-    "--no-config",
+    ...(ruleOptionsConfig === null ? ["--no-config"] : ["--config", ruleOptionsConfig]),
     "--preset",
     args.preset ?? "all",
   ];
