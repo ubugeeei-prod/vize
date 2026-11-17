@@ -26,7 +26,7 @@ on:
 
 permissions: { contents: read }
 concurrency:
-  group: perf-linter-quiet-${{ inputs.base_sha }}-${{ inputs.head_sha }}
+  group: perf-linter-quiet-${{ github.run_id }}
   cancel-in-progress: true
 env:
   BASE_SHA: ${{ github.event.pull_request.base.sha || inputs.base_sha }}
