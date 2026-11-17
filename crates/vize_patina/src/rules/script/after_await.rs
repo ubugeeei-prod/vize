@@ -29,9 +29,11 @@ use vize_l0::{CompactString, FxHashSet};
 
 use super::SfcScriptContext;
 
-/// Modules whose Composition API exports the rules track, as in
-/// eslint-plugin-vue.
-const VUE_MODULES: [&str; 3] = ["vue", "@vue/composition-api", "@vue/runtime-core"];
+/// Modules whose Composition API exports the rules track: eslint-plugin-vue's
+/// and `@vue/runtime-core`.
+fn is_vue_module(source: &str) -> bool {
+    source == "@vue/runtime-core" || super::composition_api::is_composition_api_module(source)
+}
 
 /// Lifecycle hooks that must be registered synchronously.
 pub(super) const LIFECYCLE_HOOKS: [&str; 11] = [
@@ -124,7 +126,7 @@ impl Imports {
                 continue;
             };
             if declaration.import_kind.is_type()
-                || !VUE_MODULES.contains(&declaration.source.value.as_str())
+                || !is_vue_module(declaration.source.value.as_str())
             {
                 continue;
             }

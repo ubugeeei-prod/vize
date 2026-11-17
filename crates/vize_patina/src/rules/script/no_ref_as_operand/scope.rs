@@ -276,9 +276,8 @@ pub(super) fn prime_scope_bindings(statements: &[Statement<'_>], frame: &mut Fra
             }
             Statement::ImportDeclaration(import) => {
                 if let Some(specifiers) = &import.specifiers {
-                    let vue = matches!(
+                    let vue = crate::rules::script::composition_api::is_composition_api_module(
                         import.source.value.as_str(),
-                        "vue" | "@vue/composition-api" | "#imports"
                     );
                     for specifier in specifiers {
                         let (name, binding) = match specifier {
@@ -321,9 +320,8 @@ fn imported_ref_type_names(statements: &[Statement<'_>]) -> vize_l0::FxHashSet<C
         let Statement::ImportDeclaration(import) = statement else {
             continue;
         };
-        if !matches!(
+        if !crate::rules::script::composition_api::is_composition_api_module(
             import.source.value.as_str(),
-            "vue" | "@vue/composition-api" | "#imports"
         ) {
             continue;
         }
