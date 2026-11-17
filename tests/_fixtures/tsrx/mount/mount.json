@@ -445,6 +445,35 @@
       "component": "IfAnd",
       "props": { "a": false, "n": 0 },
       "steps": [{ "props": { "a": true } }, { "props": { "n": 2 } }, { "props": { "a": false } }]
+    },
+    {
+      "id": "full/spread",
+      "file": "tests/_fixtures/tsrx/mount/full.tsrx",
+      "component": "Spread",
+      "props": { "id": "a", "title": "t" },
+      "steps": [{ "props": { "title": "u" } }, { "props": { "id": "b" } }]
+    },
+    {
+      "id": "full/merged",
+      "file": "tests/_fixtures/tsrx/mount/full.tsrx",
+      "component": "Merged",
+      "props": { "kind": "k", "title": "t" },
+      "steps": [{ "props": { "title": "u" } }, { "props": { "title": "v" } }]
+    },
+    {
+      "id": "full/stale",
+      "file": "tests/_fixtures/tsrx/mount/full.tsrx",
+      "component": "Merged",
+      "expected": "#13131",
+      "props": { "kind": "k", "title": "t" },
+      "steps": [{ "props": { "kind": "m" } }, { "props": { "id": "x" } }]
+    },
+    {
+      "id": "full/alias",
+      "file": "tests/_fixtures/tsrx/mount/full.tsrx",
+      "component": "Alias",
+      "props": { "title": "x", "extra": "e" },
+      "steps": [{ "props": { "title": "y" } }, { "props": { "extra": "f" } }]
     }
   ]
 }

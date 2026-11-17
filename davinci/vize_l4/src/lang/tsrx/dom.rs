@@ -26,7 +26,31 @@ use crate::targets::dom::artifact::{
 };
 
 /// Names the module writes besides the runtime helpers.
-const GENERATED: [&str; 5] = ["__props", "_ctx", "_cache", "_defineComponent", "_useAttrs"];
+const GENERATED: [&str; 7] = [
+    "__props",
+    "_ctx",
+    "_cache",
+    "_defineComponent",
+    "_useAttrs",
+    "_computed",
+    "_useFullProps",
+];
+
+/// The reference's `useFullProps()` (`vue-jsx-vapor`) for a component that
+/// declares props: one live view of the props and the attributes.
+const USE_FULL_PROPS: &str = "const _useFullProps = (props) => {
+	const attrs = _useAttrs();
+	const full = _computed(() => ({ ...props, ...attrs }));
+	return new Proxy({}, {
+		get: (_, key, receiver) => Reflect.get(full.value, key, receiver),
+		set: (_, key, value, receiver) => Reflect.set(full.value, key, value, receiver),
+		deleteProperty: (_, key) => Reflect.deleteProperty(full.value, key),
+		has: (_, key) => Reflect.has(full.value, key),
+		ownKeys: () => Object.keys(full.value),
+		getOwnPropertyDescriptor: () => ({ enumerable: true, configurable: true }),
+	});
+};
+";
 
 pub(super) fn module<'a>(
     allocator: &'a Allocator,
@@ -101,12 +125,16 @@ pub(super) fn module<'a>(
         renders.push((names, render));
     }
     let mut used = Names::of_program(module.program());
-    used.extend(renders.iter().flat_map(|(names, _)| names.free()));
-    if used
+    used.extend(renders.iter().flat_map(|(names, _)| names.uses()));
+    // Reported at the first host use or declaration of such a name.
+    let collision = used
         .iter()
-        .any(|name| GENERATED.contains(name) || helpers.imports().any(|(_, alias)| alias == *name))
-    {
-        return Err(fail(EmitIssue::GeneratedName, Span::new(0, 0)));
+        .filter(|(name, _)| {
+            GENERATED.contains(name) || helpers.imports().any(|(_, alias)| alias == *name)
+        })
+        .min_by_key(|(_, at)| at.start);
+    if let Some((_, at)) = collision {
+        return Err(fail(EmitIssue::GeneratedName, *at));
     }
 
     let mut out = String::with_capacity(source.len() * 2);
@@ -118,9 +146,16 @@ pub(super) fn module<'a>(
         out.push('\n');
     }
     out.push_str("import { defineComponent as _defineComponent");
-    if components
+    let merged = components
         .iter()
-        .any(|component| component.props.rest().is_some())
+        .any(|component| component.props.full().is_some_and(|(_, keys)| keys));
+    if merged {
+        out.push_str(", computed as _computed");
+    }
+    if merged
+        || components
+            .iter()
+            .any(|component| component.props.rest().is_some() || component.props.full().is_some())
     {
         out.push_str(", useAttrs as _useAttrs");
     }
@@ -131,6 +166,9 @@ pub(super) fn module<'a>(
         out.push_str(alias);
     }
     out.push_str(" } from \"vue\";\n");
+    if merged {
+        out.push_str(USE_FULL_PROPS);
+    }
     for (component, (names, render)) in components.iter().zip(&renders) {
         out.push_str(slice(source, cursor, component.span.start));
         definition(&mut out, source, component, names, render);
@@ -200,7 +238,7 @@ fn definition(
     out.push_str(slice(source, component.head.start, component.head.end));
     let params = component.params.span;
     match &component.props {
-        Props::Destructured { param, .. } => {
+        Props::Destructured { param, .. } | Props::Full { param, .. } => {
             out.push_str(slice(source, params.start, param.start));
             out.push_str("__props");
             out.push_str(slice(source, param.end, params.end));
@@ -300,12 +338,21 @@ fn body(
         Some(_) => (region, "", component.tail.end, component.span.end),
     };
     let mut cursor = start;
+    // The copied range opens the body's `{`.
     if let Some(rest) = component.props.rest() {
-        // The copied range opens the body's `{`.
         cursor += 1;
         out.push_str("{ const ");
         out.push_str(rest);
         out.push_str(" = _useAttrs();");
+    } else if let Some((name, keys)) = component.props.full() {
+        cursor += 1;
+        out.push_str("{ const ");
+        out.push_str(name);
+        out.push_str(if keys {
+            " = _useFullProps(__props);"
+        } else {
+            " = _useAttrs();"
+        });
     }
     let mut reads: Vec<_> = names
         .reads

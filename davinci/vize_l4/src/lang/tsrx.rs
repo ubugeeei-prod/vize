@@ -107,8 +107,8 @@ pub enum EmitIssue {
     /// of static keys, each bound to a name with an optional default the
     /// reference types, and an optional rest name (see `props.rs`).
     Parameters,
-    /// DOM: the props identifier read other than as `props.key`, or a
-    /// destructured prop used as a component tag.
+    /// DOM: the props identifier read as a value in an expression-bodied
+    /// arrow, or a destructured prop used as a component tag (#13280).
     PropsValue,
     /// DOM: a destructured prop's local declared again in the component's own
     /// scope (its setup outside nested functions and blocks). Nested scopes

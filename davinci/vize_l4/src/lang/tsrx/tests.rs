@@ -223,8 +223,14 @@ fn dom_component_parameters_outside_the_props_profile_are_refused() {
             "export const A = ({ a, ...rest }) => <p {...rest}>{a}</p>;\n",
             EmitIssue::Parameters,
         ),
+        // No setup to bind the props and attributes in.
         (
-            "export function A(props) @{\n\t<p {...props} />\n}\n",
+            "export const A = (props) => <p {...props} />;\n",
+            EmitIssue::PropsValue,
+        ),
+        // A destructured prop as a component tag (#13280).
+        (
+            "export function A({ Icon }) @{\n\t<Icon />\n}\n",
             EmitIssue::PropsValue,
         ),
         // A declaration in the component's own scope; nested scopes may shadow.
@@ -252,6 +258,16 @@ fn dom_component_parameters_outside_the_props_profile_are_refused() {
         let [diagnostic] = diagnostics(source, &OPTIONS).try_into().unwrap();
         assert_eq!(diagnostic.code, Code::Emit(issue), "{source}");
     }
+
+    // A generated name is reported where the host first declares or reads it.
+    let source =
+        "export function A({ n }: { n: number }) @{\n\tconst _cache = n;\n\t<p>{_cache}</p>\n}\n";
+    let [diagnostic] = diagnostics(source, &OPTIONS).try_into().unwrap();
+    assert_eq!(diagnostic.code, Code::Emit(EmitIssue::GeneratedName));
+    assert_eq!(
+        source.get(diagnostic.start as usize..diagnostic.end as usize),
+        Some("_cache")
+    );
 }
 
 #[test]

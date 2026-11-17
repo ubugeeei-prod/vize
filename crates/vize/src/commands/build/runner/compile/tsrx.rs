@@ -189,6 +189,7 @@ mod tests {
                 "mount/directive.tsrx",
                 "mount/dynamic.tsrx",
                 "mount/empty.tsrx",
+                "mount/full.tsrx",
                 "mount/loops.tsrx",
                 "mount/map.tsrx",
                 "mount/nested.tsrx",

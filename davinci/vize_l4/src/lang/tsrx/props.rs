@@ -2,6 +2,9 @@
 //! after the pinned reference (`vue-jsx-vapor` macros, `defineComponent`).
 //!
 //! - An identifier first parameter declares every `props.name` it reads.
+//!   Read as a value (`{...props}`), it is the props and the attributes
+//!   together, as the reference's `useFullProps()`: the attributes alone when
+//!   no key is read, else a live merged view (`_useFullProps`).
 //! - A destructured first parameter declares its keys, read reactively as
 //!   `__props.key` wherever the local name is read. A renamed key
 //!   (`{ label: text }`) reads its key. A default becomes the prop's runtime
@@ -14,7 +17,10 @@
 //! Refused (`Parameters`): more than one parameter, nested or computed
 //! patterns, a default the reference drops (any other expression), a default
 //! that reads a prop, a rest element on an expression-bodied arrow, and a
-//! renamed local that is another prop's key.
+//! renamed local that is another prop's key. Refused (`PropsValue`): the props
+//! identifier read as a value in an expression-bodied arrow, which has no
+//! setup to bind it in, and a destructured prop used as a component tag
+//! (#13280).
 
 use alloc::vec::Vec;
 use oxc_ast::ast::{BindingPattern, Expression, IdentifierReference, PropertyKey};
@@ -39,6 +45,13 @@ pub(super) enum Props<'a> {
     },
     /// `(props) => …`: every `props.name` read.
     Identifier {
+        keys: Vec<&'a str>,
+    },
+    /// `(props) => …` reading `props` as a value: every `props.name` read is
+    /// declared, and setup binds `name` to the props and the attributes.
+    Full {
+        param: Span,
+        name: &'a str,
         keys: Vec<&'a str>,
     },
 }
@@ -70,7 +83,9 @@ impl<'a> Props<'a> {
                 .iter()
                 .map(|prop| (prop.key, prop.options.as_ref()))
                 .collect(),
-            Self::Identifier { keys } => keys.iter().map(|key| (*key, None)).collect(),
+            Self::Identifier { keys } | Self::Full { keys, .. } => {
+                keys.iter().map(|key| (*key, None)).collect()
+            }
         }
     }
 
@@ -78,14 +93,22 @@ impl<'a> Props<'a> {
     pub(super) fn local(&self, name: &str) -> Option<&Prop<'a>> {
         match self {
             Self::Destructured { props, .. } => props.iter().find(|prop| prop.local == name),
-            Self::None | Self::Identifier { .. } => None,
+            Self::None | Self::Identifier { .. } | Self::Full { .. } => None,
         }
     }
 
     pub(super) fn rest(&self) -> Option<&'a str> {
         match self {
             Self::Destructured { rest, .. } => *rest,
-            Self::None | Self::Identifier { .. } => None,
+            Self::None | Self::Identifier { .. } | Self::Full { .. } => None,
+        }
+    }
+
+    /// The props identifier read as a value, and whether it declares keys.
+    pub(super) fn full(&self) -> Option<(&'a str, bool)> {
+        match self {
+            Self::Full { name, keys, .. } => Some((*name, !keys.is_empty())),
+            Self::None | Self::Destructured { .. } | Self::Identifier { .. } => None,
         }
     }
 }
@@ -110,12 +133,18 @@ pub(super) fn props<'a>(
     let pattern = match &param.pattern {
         BindingPattern::BindingIdentifier(id) => {
             let name = id.name.as_str();
+            let keys = names.member_keys(name);
             if let Some(use_) = names.value_reads(name).next() {
-                return Err((EmitIssue::PropsValue, use_));
+                if component.expression {
+                    return Err((EmitIssue::PropsValue, use_));
+                }
+                return Ok(Props::Full {
+                    param: span(param.span),
+                    name,
+                    keys,
+                });
             }
-            return Ok(Props::Identifier {
-                keys: names.member_keys(name),
-            });
+            return Ok(Props::Identifier { keys });
         }
         BindingPattern::ObjectPattern(pattern) => pattern,
         _ => return refuse,

@@ -73,8 +73,8 @@ impl<'a> Names<'a> {
         collector.names
     }
 
-    /// Every name the host program reads or declares.
-    pub(super) fn of_program(program: &'a Program<'a>) -> Vec<&'a str> {
+    /// Every name the host program reads or declares, at its range.
+    pub(super) fn of_program(program: &'a Program<'a>) -> Vec<(&'a str, Span)> {
         let mut collector = Collector {
             names: Self::default(),
             source: program.source_text,
@@ -87,9 +87,17 @@ impl<'a> Names<'a> {
         names
             .reads
             .iter()
-            .map(|read| read.name)
-            .chain(names.declared.iter().map(|(name, _)| *name))
+            .map(|read| (read.name, read.span))
+            .chain(names.declared.iter().copied())
             .collect()
+    }
+
+    /// Every name read or used as a tag, at its range.
+    pub(super) fn uses(&self) -> impl Iterator<Item = (&'a str, Span)> + '_ {
+        self.reads
+            .iter()
+            .map(|read| (read.name, read.span))
+            .chain(self.tags.iter().copied())
     }
 
     pub(super) fn value_reads<'s>(&'s self, name: &'s str) -> impl Iterator<Item = Span> + 's {
