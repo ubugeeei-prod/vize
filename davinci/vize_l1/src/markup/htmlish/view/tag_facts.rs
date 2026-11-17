@@ -1,4 +1,4 @@
-//! Default Vue 3 lint tag grammar, retained by original complete-header parsing.
+//! Tag facts of the default Vue 3 grammar, retained by original complete-header parsing.
 //! This fact is not DOM membership, runtime component resolution or File admission.
 
 use vize_l0::Span;
@@ -6,7 +6,7 @@ use vize_l0::Span;
 use super::{ElementView, NativeComponent};
 use crate::markup::{Element, htmlish::surface::TagKindFact};
 
-/// Original default Vue 3 lint category; no runtime tag resolution is implied.
+/// The original default Vue 3 tag category; no runtime tag resolution is implied.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TagFactsKind {
     Element,

@@ -1,12 +1,12 @@
-//! Normally owned bare default Vue 3 lint syntax, without Descriptor selection.
+//! A bare default Vue 3 component parsed with tag facts, without Descriptor selection.
 
 use super::{ChildrenView, NativeComponent};
 use crate::markup::ComponentSourceError;
 use vize_l0::{Allocator, SourceBlock};
 
-/// The exact original bare source and once-parsed lint-enabled component.
-/// This owner preserves source-backed lint-header receipts. It grants neither
-/// SFC selection, File admission, DOM semantics nor whole-product lint success.
+/// The exact original bare source and the component parsed once with tag facts.
+/// This owner preserves source-backed header facts. It grants neither SFC
+/// selection, File admission, DOM semantics nor any product's success.
 /// Parser errors and unsupported observations remain available unchanged.
 ///
 /// Raw parsed carriers cannot mint this owner:
@@ -44,7 +44,7 @@ impl core::fmt::Debug for ComponentTagFacts<'_> {
 
 impl<'a> ComponentTagFacts<'a> {
     /// Parse this exact original block once with the existing default Vue 3
-    /// lint sink. No source rewriting, SFC wrapping or alternate dialect occurs.
+    /// tag-facts sink. No source rewriting, SFC wrapping or alternate dialect occurs.
     pub fn parse_in(
         allocator: &'a Allocator,
         block: SourceBlock<'a>,
