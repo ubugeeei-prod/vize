@@ -4,12 +4,18 @@ use std::borrow::Cow;
 use std::path::{Component, Path, PathBuf};
 
 use vize_atelier_sfc::script::TypeSourceSnapshot;
+use vize_atelier_sfc::{TypeResolutionBatchGuard, begin_type_resolution_batch};
 
 /// The disk view every file of one run reads imported macro types through,
 /// and the working directory that run's relative filenames name.
 pub(crate) struct RunTypeSources {
     pub(crate) snapshot: TypeSourceSnapshot,
     root: Option<PathBuf>,
+    /// The run is one filesystem-stability window, as the snapshot already
+    /// assumes for the sources it reads. Project discovery and `tsconfig`
+    /// captures therefore validate their metadata once per run instead of
+    /// re-`stat`ing it, under one shared lock, for every import they resolve.
+    _batch: TypeResolutionBatchGuard,
 }
 
 impl RunTypeSources {
@@ -23,6 +29,7 @@ impl RunTypeSources {
         Self {
             snapshot: TypeSourceSnapshot::default(),
             root,
+            _batch: begin_type_resolution_batch(),
         }
     }
 

@@ -26,6 +26,14 @@ fn relative_filenames_become_absolute_importers_under_the_run_root() {
     ));
 }
 
+#[test]
+fn a_run_is_one_type_resolution_batch() {
+    // Epoch 0 is the no-batch sentinel that revalidates metadata on every
+    // lookup; a run's view holds a live generation for its whole lifetime.
+    assert_ne!(RunTypeSources::with_root(None)._batch.epoch(), 0);
+    assert_ne!(RunTypeSources::for_current_dir()._batch.epoch(), 0);
+}
+
 const CARD: &str = r#"<script setup lang="ts">
 import type { CardProps } from './types';
 defineProps<CardProps>();
