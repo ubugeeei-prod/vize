@@ -12,11 +12,13 @@ use oxc_ast::ast::{
 use vize_croquis::Croquis;
 use vize_croquis::macros::MacroKind;
 
-/// The file name without directories or extension
-/// (`"src/tree-item.vue"` -> `"tree-item"`).
+/// The file name without directories or its last extension
+/// (`"src/tree-item.vue"` -> `"tree-item"`). Vue's template compiler drops
+/// only the last one, so `router-link.demo.vue` is `RouterLink.demo`, never
+/// `<router-link>`.
 pub(super) fn file_stem(filename: &str) -> &str {
     let base = filename.rsplit(['/', '\\']).next().unwrap_or(filename);
-    base.split('.').next().unwrap_or(base)
+    base.rsplit_once('.').map_or(base, |(stem, _)| stem)
 }
 
 /// The component name declared via `defineOptions({ name: "..." })`, if any.
@@ -227,5 +229,7 @@ mod tests {
         assert_eq!(file_stem("src/components/tree-item.vue"), "tree-item");
         assert_eq!(file_stem("App.vue"), "App");
         assert_eq!(file_stem(r"win\path\Item.vue"), "Item");
+        assert_eq!(file_stem("demos/router-link.demo.vue"), "router-link.demo");
+        assert_eq!(file_stem("Item.stories.vue"), "Item.stories");
     }
 }
