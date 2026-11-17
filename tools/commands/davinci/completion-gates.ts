@@ -199,6 +199,11 @@ const measureRustOnlyFormal = (repo: Repo): Measured => {
   return { pass: lean.length === 0, detail: `${lean.length} Lean files or workflows` };
 };
 
+const measureInputPlacement = (repo: Repo): Measured => {
+  const count = allowlistEntries(repo, "docs/davinci/plan/input-placement-owed.json");
+  return { pass: count === 0, detail: `${count} owed input placements` };
+};
+
 const productAllowlistDir = "docs/davinci/plan/product-dependency-allowlists/";
 
 const measureProductDependencies = (repo: Repo): Measured => {
@@ -252,6 +257,7 @@ export const gates: readonly Gate[] = [
   { id: "levels.jsx", tier: 2, issues: [6885] },
   { id: "levels.l3", tier: 3, issues: [6839] },
   { id: "levels.l4", tier: 3, issues: [6840] },
+  { id: "levels.inputs", tier: 3, issues: [6839, 6840], measure: measureInputPlacement },
   { id: "products.formatter", tier: 4, issues: [6847] },
   { id: "products.linter", tier: 4, issues: [6848] },
   { id: "products.typechecker", tier: 4, issues: [6849] },
