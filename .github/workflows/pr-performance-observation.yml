@@ -13,6 +13,16 @@ on:
         description: Exact authored head commit; independent of the measurement driver
         required: true
         type: string
+      scenarios:
+        description: Comma-separated perf-linter-quiet scenarios
+        required: false
+        type: string
+        default: mk,mk-json,mk-all,mk-all-text,bench,ta
+      lsp_rounds:
+        description: LSP edit-loop sessions per side (0 skips)
+        required: false
+        type: string
+        default: "10"
 
 permissions: { contents: read }
 concurrency:
@@ -140,5 +150,5 @@ jobs:
           cat "$RUNNER_TEMP/perf-linter.md" >> "$GITHUB_STEP_SUMMARY"
         env:
           PERF_LINTER_RUNS: "30"
-          PERF_LINTER_SCENARIOS: mk,mk-json,mk-all,mk-all-text,bench,ta
-          PERF_LINTER_LSP_ROUNDS: "10"
+          PERF_LINTER_SCENARIOS: ${{ inputs.scenarios }}
+          PERF_LINTER_LSP_ROUNDS: ${{ inputs.lsp_rounds }}

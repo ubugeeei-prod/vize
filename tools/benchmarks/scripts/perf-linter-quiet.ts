@@ -24,10 +24,11 @@ const write = (line = "") => {
 
 type Sample = { wall: number; cpu: number; rss: number; code: number | null; sha: string; timedOut: boolean };
 
-function once(binary: string, cwd: string, args: string[]): Sample {
+function once(binary: string, cwd: string, args: string[], env: Record<string, string> = {}): Sample {
   const start = performance.now();
   const result = spawnSync("/usr/bin/time", ["-f", "%U %S %M", binary, ...args], {
     cwd,
+    env: { ...process.env, ...env },
     maxBuffer: 1 << 30,
     timeout: 180_000,
   });
@@ -57,12 +58,12 @@ const pct = (values: number[], q: number) => {
   return sorted[f] + (sorted[c] - sorted[f]) * (k - f);
 };
 
-function scenario(name: string, cwd: string, args: string[], count: number) {
-  for (const role of ["base", "head"] as const) once(bins[role], cwd, args);
+function scenario(name: string, cwd: string, args: string[], count: number, env: Record<string, string> = {}) {
+  for (const role of ["base", "head"] as const) once(bins[role], cwd, args, env);
   const samples: Record<"base" | "head", Sample[]> = { base: [], head: [] };
   for (let round = 0; round < count; round++) {
     const order = round % 2 === 0 ? (["base", "head"] as const) : (["head", "base"] as const);
-    for (const role of order) samples[role].push(once(bins[role], cwd, args));
+    for (const role of order) samples[role].push(once(bins[role], cwd, args, env));
   }
   const row = (role: "base" | "head") => {
     const xs = samples[role];
@@ -201,6 +202,16 @@ for (const spec of arg("scenarios", "mk,mk-json,mk-all,bench,ta").split(",")) {
   if (spec === "mk-all")
     scenario("misskey `--preset all --format json`", mk, ["lint", "src", "--preset", "all", "--format", "json"], runs);
   if (spec === "mk-all-text") scenario("misskey `--preset all` (text)", mk, ["lint", "src", "--preset", "all"], runs);
+  const threads = /^mk-json-t(\d+)$/.exec(spec);
+  if (threads)
+    scenario(`misskey \`--format json\`, RAYON_NUM_THREADS=${threads[1]}`, mk, ["lint", "src", "--format", "json"], runs, {
+      RAYON_NUM_THREADS: threads[1],
+    });
+  const benchThreads = /^bench-t(\d+)$/.exec(spec);
+  if (benchThreads)
+    scenario(`1000-SFC \`--format json\`, RAYON_NUM_THREADS=${benchThreads[1]}`, bench, ["lint", ".", "--format", "json"], runs, {
+      RAYON_NUM_THREADS: benchThreads[1],
+    });
   if (spec === "bench") scenario("1000-SFC benchmark `lint .` (text)", bench, ["lint", "."], runs);
   if (spec === "ta")
     scenario(
