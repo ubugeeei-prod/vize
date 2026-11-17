@@ -41868,6 +41868,35 @@
       }
     },
     {
+      "id": "typechecker/regression/installed-file-mirror-13044",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "inputs": [
+        {
+          "path": "installed-file-mirror-13044/input.json",
+          "sha256": "76118a82a168139a50b6d4f8759664b86a3d9cd307b9d74c49ec529f6e235879",
+          "role": "regression-reproduction"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "vize_canon batch::virtual_project::materialize_links::installed_file_mirror_tests::a_mirrored_installed_file_keeps_its_package_siblings_linked; controlled install whose one declaration the program names by path (Nuxt's generated ../node_modules/<pkg>/... references) keeps its package.json and sibling declarations linked, so a bare import of the same package resolves instead of reporting TS2307; no private project source"
+          }
+        ]
+      }
+    },
+    {
       "id": "typechecker/regression/legacy-external-component-props",
       "state": "active",
       "targets": [
@@ -42884,35 +42913,6 @@
               "ts"
             ],
             "selector": "check_package_import_redirects_cli::check_json_private_import_redirects_keep_imported_diagnostics; compile-included original five files and versioned private imports; input registration only, no diagnostic pack or native admission"
-          }
-        ]
-      }
-    },
-    {
-      "id": "typechecker/regression/installed-file-mirror-13044",
-      "state": "active",
-      "targets": [
-        "batch"
-      ],
-      "inputs": [
-        {
-          "path": "installed-file-mirror-13044/input.json",
-          "sha256": "76118a82a168139a50b6d4f8759664b86a3d9cd307b9d74c49ec529f6e235879",
-          "role": "regression-reproduction"
-        }
-      ],
-      "dialectCoverage": {
-        "state": "source-inspected",
-        "registryRef": null,
-        "evidence": [
-          {
-            "kind": "source-inspection",
-            "dialects": [
-              "vue3-sfc",
-              "html-template",
-              "ts"
-            ],
-            "selector": "vize_canon batch::virtual_project::materialize_links::installed_file_mirror_tests::a_mirrored_installed_file_keeps_its_package_siblings_linked; controlled install whose one declaration the program names by path (Nuxt's generated ../node_modules/<pkg>/... references) keeps its package.json and sibling declarations linked, so a bare import of the same package resolves instead of reporting TS2307; no private project source"
           }
         ]
       }
