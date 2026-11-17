@@ -29,8 +29,8 @@ mod setup_emits_dispatch_tests;
 
 use html_scripts::extract_inline_scripts;
 use prefilter::{
-    is_jsx_filename, is_typescript_filename, script_rule_applies_to_filename,
-    script_rule_applies_to_language, script_rule_applies_to_module, script_rule_may_match,
+    BlockMarkers, is_jsx_filename, is_typescript_filename, script_rule_applies_to_filename,
+    script_rule_applies_to_language, script_rule_applies_to_module, script_rule_may_match_in,
 };
 pub use registry::BuiltinScriptRuleMeta;
 use registry::{
@@ -168,13 +168,13 @@ fn resolved_rule<'a>(
 fn entry_may_match(
     linter: &Linter,
     entry: &BuiltinScriptRuleEntry,
-    source: &str,
+    markers: &BlockMarkers<'_>,
     filename: &str,
 ) -> bool {
     script_rule_applies_to_filename(entry.rule_name, filename)
-        && script_rule_applies_to_module(entry.rule_name, source, filename)
+        && script_rule_applies_to_module(entry.rule_name, markers, filename)
         && (linter.script_rule_overrides.contains_key(entry.rule_name)
-            || script_rule_may_match(entry.rule_name, source))
+            || script_rule_may_match_in(entry.rule_name, markers))
 }
 
 /// Run a single built-in script rule against a script block.
@@ -301,8 +301,9 @@ pub(crate) fn append_builtin_script_rules_for_source(
     // the same source to decide whether any rule matched, whether an AST was
     // needed, and again before dispatching every rule. Presets grow over time,
     // so that repeated fixed cost showed up even on clean files.
+    let markers = BlockMarkers::new(source);
     let matching: Vec<_> = active_builtin_script_rule_entries(linter, linter.vapor_mode)
-        .filter(|entry| entry_may_match(linter, entry, source, result.filename.as_str()))
+        .filter(|entry| entry_may_match(linter, entry, &markers, result.filename.as_str()))
         .collect();
     if matching.is_empty() {
         return;

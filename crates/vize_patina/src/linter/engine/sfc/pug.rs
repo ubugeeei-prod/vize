@@ -133,13 +133,21 @@ pub(in crate::linter::engine) fn map_result(
     result
 }
 
+/// Whether `source` contains `pug` or `jade` in any ASCII case.
+///
+/// Every SFC passes this gate. Comparing a window at every byte made it a
+/// percent of a whole lint run, so SIMD `memchr` jumps to each candidate
+/// first letter and only those positions are compared.
 fn mentions_pug_language(source: &str) -> bool {
-    source
-        .as_bytes()
-        .windows(3)
-        .any(|window| window.eq_ignore_ascii_case(b"pug"))
-        || source
-            .as_bytes()
-            .windows(4)
-            .any(|window| window.eq_ignore_ascii_case(b"jade"))
+    let bytes = source.as_bytes();
+    let spelled_at = |rest: &[u8], index: usize| {
+        bytes
+            .get(index + 1..index + 1 + rest.len())
+            .is_some_and(|tail| tail.eq_ignore_ascii_case(rest))
+    };
+    memchr::memchr2_iter(b'p', b'P', bytes).any(|index| spelled_at(b"ug", index))
+        || memchr::memchr2_iter(b'j', b'J', bytes).any(|index| spelled_at(b"ade", index))
 }
+
+#[cfg(test)]
+mod tests;

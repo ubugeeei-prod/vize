@@ -3,7 +3,7 @@
 use crate::diagnostic::{HelpRenderTarget, render_help};
 use crate::linter::LintResult;
 use vize_l0::cstr;
-use vize_l0::{FxHashMap, SmallVec, String};
+use vize_l0::{FxHashMap, FxHashSet, SmallVec, String};
 
 /// Cross-file rules whose pages the docs generator writes under `rules/project/`.
 /// `vize:croquis/*` comes from the cross-file catalogue; these ids are the
@@ -149,7 +149,7 @@ pub(super) fn diagnostic_views<'a>(
     results: &'a [LintResult],
     sources: &'a [(String, String)],
 ) -> Vec<DiagnosticView<'a>> {
-    let source_indices = source_indices(sources);
+    let source_indices = source_indices(results, sources);
     let mut views = Vec::new();
 
     for result in results {
@@ -208,9 +208,23 @@ pub(super) fn diagnostic_location(
         })
 }
 
-pub(super) fn source_indices(sources: &[(String, String)]) -> FxHashMap<&str, SourceLineIndex> {
+/// Line indices for the sources of `results` that have a diagnostic.
+///
+/// Only a diagnostic is ever located, and most linted files have none, so
+/// indexing every source scanned the whole input once more on the thread that
+/// writes the report.
+pub(super) fn source_indices<'s>(
+    results: &[LintResult],
+    sources: &'s [(String, String)],
+) -> FxHashMap<&'s str, SourceLineIndex> {
+    let located: FxHashSet<&str> = results
+        .iter()
+        .filter(|result| !result.diagnostics.is_empty())
+        .map(|result| result.filename.as_str())
+        .collect();
     sources
         .iter()
+        .filter(|(filename, _)| located.contains(filename.as_str()))
         .map(|(filename, source)| (filename.as_str(), SourceLineIndex::new(source.as_str())))
         .collect()
 }
@@ -263,11 +277,7 @@ impl SourceLineIndex {
         let mut line_starts = SmallVec::new();
         line_starts.push(0);
 
-        for (index, &byte) in bytes.iter().enumerate() {
-            if byte == b'\n' {
-                line_starts.push(index + 1);
-            }
-        }
+        line_starts.extend(memchr::memchr_iter(b'\n', bytes).map(|index| index + 1));
 
         let is_ascii = source.is_ascii();
         let mut utf16_adjustments = SmallVec::new();

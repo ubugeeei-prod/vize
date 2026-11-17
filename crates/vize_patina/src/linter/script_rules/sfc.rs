@@ -1,5 +1,6 @@
 use super::prefilter::{
-    descriptor_scripts_may_match_ecosystem_rule, has_only_active_ecosystem_script_rules,
+    BlockMarkers, descriptor_scripts_may_match_ecosystem_rule,
+    has_only_active_ecosystem_script_rules,
 };
 use super::registry::{RULE_NO_DUPE_KEYS, RULE_RETURN_IN_EMITS_VALIDATOR};
 use super::template_context;
@@ -165,13 +166,15 @@ pub(crate) fn append_builtin_script_diagnostics_with_template_context<'a>(
     // Resolve the byte prefilters once per block. Parse admission, cross-block
     // ownership, and final dispatch all consume this plan instead of rescanning
     // the same source for every decision.
+    let script_markers = script_source.map(|(source, _)| BlockMarkers::new(source));
+    let script_setup_markers = script_setup_source.map(|(source, _)| BlockMarkers::new(source));
     let planned: Vec<_> = active_builtin_script_rule_entries(linter, vapor_component)
         .map(|entry| {
-            let script_matches = script_source.is_some_and(|(source, _)| {
-                entry_may_match(linter, entry, source, result.filename.as_str())
+            let script_matches = script_markers.as_ref().is_some_and(|markers| {
+                entry_may_match(linter, entry, markers, result.filename.as_str())
             });
-            let setup_matches = script_setup_source.is_some_and(|(source, _)| {
-                entry_may_match(linter, entry, source, result.filename.as_str())
+            let setup_matches = script_setup_markers.as_ref().is_some_and(|markers| {
+                entry_may_match(linter, entry, markers, result.filename.as_str())
             });
             (entry, script_matches, setup_matches)
         })
