@@ -20879,6 +20879,43 @@
       }
     },
     {
+      "id": "linter/ssr-browser-globals-prop-evidence-12336",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "ssr-browser-globals-prop-evidence-12336",
+        "files": [
+          {
+            "path": "Popover.vue.txt",
+            "role": "glyph-lint-agreement-reduction",
+            "sha256": "92cbed06f540d72b034fd7e3974016b99a7082f8883c35d18e2de27ff67df753"
+          },
+          {
+            "path": "ModalError.vue.txt",
+            "role": "glyph-lint-agreement-reduction",
+            "sha256": "c5902203b22caf7b1e11122295a30891f1cc5abed07de67a681799b34dbe203b"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/static-class/adjacent-attribute",
       "state": "active",
       "targets": [
