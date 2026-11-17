@@ -1,5 +1,6 @@
 use super::{Allocator, LintPreset, Linter, ToCompactString};
 use crate::Severity;
+use vize_l0::config::VueVersion;
 
 #[test]
 fn test_lint_empty_template() {
@@ -45,23 +46,31 @@ fn test_lint_template_reports_fatal_parser_errors_and_gates_semantic_rules() {
 
 #[test]
 fn test_lint_template_reports_recoverable_parser_errors_without_gating_rules() {
-    let linter = Linter::new();
-    let result = linter.lint_template(r#"<div id="a" id="b"></div>"#, "test.vue");
+    // A duplicate attribute fails a Vue 3 build, so it is an error; a Vue 2
+    // build warns and keeps the last value, so it stays a warning there.
+    for (version, severity) in [
+        (None, Severity::Error),
+        (Some(VueVersion::V3), Severity::Error),
+        (Some(VueVersion::V2), Severity::Warning),
+    ] {
+        let linter = Linter::new().with_vue_version(version);
+        let result = linter.lint_template(r#"<div id="a" id="b"></div>"#, "test.vue");
 
-    let parser_diagnostic = result
-        .diagnostics
-        .iter()
-        .find(|diagnostic| diagnostic.rule_name == "parser/template")
-        .expect("recoverable template parser diagnostic should be reported");
-    assert_eq!(parser_diagnostic.severity, Severity::Warning);
-    assert!(parser_diagnostic.message.contains("Duplicate attribute"));
-    assert!(
-        result
+        let parser_diagnostic = result
             .diagnostics
             .iter()
-            .any(|diagnostic| diagnostic.rule_name == "vue/no-duplicate-attributes"),
-        "ordinary lint rules should still run after recoverable parser diagnostics"
-    );
+            .find(|diagnostic| diagnostic.rule_name == "parser/template")
+            .expect("recoverable template parser diagnostic should be reported");
+        assert_eq!(parser_diagnostic.severity, severity, "{version:?}");
+        assert!(parser_diagnostic.message.contains("Duplicate attribute"));
+        assert!(
+            result
+                .diagnostics
+                .iter()
+                .any(|diagnostic| diagnostic.rule_name == "vue/no-duplicate-attributes"),
+            "ordinary lint rules should still run after recoverable parser diagnostics"
+        );
+    }
 }
 
 #[test]

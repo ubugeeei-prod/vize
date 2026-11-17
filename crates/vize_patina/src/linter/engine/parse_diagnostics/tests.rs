@@ -33,13 +33,11 @@ fn legacy(source: &str) -> Vec<Observed> {
                     .min(source_len);
                 (start, end)
             };
+            // The Vue 3 dialect fails the build on every parser error,
+            // including the duplicate attribute the preserved parser recovers.
             Observed {
                 message: error.message.to_string(),
-                severity: if error.is_recoverable() {
-                    Severity::Warning
-                } else {
-                    Severity::Error
-                },
+                severity: Severity::Error,
                 start,
                 end,
             }
@@ -67,7 +65,7 @@ fn observe(source: &str, in_dom: bool) -> Vec<Observed> {
         crate::markup::L2Template::lower(&allocator, source)
     };
     let linter = Linter::new().with_enabled_rules(Some(vec![TEMPLATE_PARSE_RULE.into()]));
-    let mut result = Linter::l1_template_parse_lint_result("diagnostics.vue", source, &parsed);
+    let mut result = linter.l1_template_parse_lint_result("diagnostics.vue", source, &parsed);
     linter.append_compatibility_template_parse_diagnostics(&mut result, source, &parsed);
     result
         .diagnostics
@@ -174,6 +172,26 @@ fn an_in_dom_template_keeps_the_preserved_foster_notices() {
         "<math><annotation-xml><table><html></html></table></annotation-xml></math>",
     ] {
         assert_eq!(l1_in_dom(source), legacy(source), "{source}");
+    }
+}
+
+#[test]
+fn a_duplicate_attribute_is_a_warning_only_in_the_vue_2_dialect() {
+    let source = "<div first=one FIRST=two></div>";
+    let allocator = Allocator::new();
+    let parsed = crate::markup::L2Template::lower(&allocator, source);
+    for (version, severity) in [
+        (None, Severity::Error),
+        (Some(vize_l0::config::VueVersion::V2), Severity::Warning),
+    ] {
+        let linter = Linter::new().with_vue_version(version);
+        let result = linter.l1_template_parse_lint_result("diagnostics.vue", source, &parsed);
+        let severities: Vec<_> = result
+            .diagnostics
+            .iter()
+            .map(|diagnostic| diagnostic.severity)
+            .collect();
+        assert_eq!(severities, [severity], "{version:?}");
     }
 }
 

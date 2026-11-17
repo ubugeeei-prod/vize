@@ -72,7 +72,7 @@ fn duplicate_attributes_keep_every_original_warning_and_parser_notice() {
         for locale in LOCALES {
             let mut diagnostics = vec![
                 warning(locale, span(&source, "style='one'")),
-                parser("warning", &message, range),
+                parser("error", &message, range),
             ];
             if second_style {
                 diagnostics.push(warning(locale, span(&source, "style='two'")));

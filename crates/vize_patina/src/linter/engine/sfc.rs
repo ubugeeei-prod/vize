@@ -131,7 +131,7 @@ impl Linter {
         };
 
         let mut parse_result =
-            Self::l1_template_parse_lint_result(filename, &template.content, &l2);
+            self.l1_template_parse_lint_result(filename, &template.content, &l2);
         self.append_compatibility_template_parse_diagnostics(
             &mut parse_result,
             &template.content,
