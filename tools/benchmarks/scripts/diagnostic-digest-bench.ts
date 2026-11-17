@@ -22,7 +22,7 @@
 
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
 
@@ -304,7 +304,8 @@ async function main(): Promise<void> {
     const [name = "", bin = ""] = spec.split("=");
     if (!name || !existsSync(bin))
       throw new Error(`--bin wants <name>=<existing path>, got ${spec}`);
-    return { name, bin };
+    // Each scenario runs in its corpus directory, so a relative path would not resolve there.
+    return { name, bin: resolve(bin) };
   });
   if (
     !variants.some((variant) => variant.name === "base") ||
