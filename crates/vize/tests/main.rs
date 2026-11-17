@@ -62,6 +62,7 @@ mod check_importer_scoped_package_cli;
 mod check_instance_props_cli;
 mod check_jsx_component_contract_cli;
 mod check_jsx_slot_parameter_types_cli;
+mod check_kebab_global_component_ref_cli;
 mod check_legacy_vue2_class_bindings_cli;
 mod check_legacy_vue2_event_alias_cli;
 mod check_legacy_vue2_event_payload_cli;

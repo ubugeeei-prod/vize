@@ -434,3 +434,43 @@ const root = useTemplateRef("root");
         "the setup-scope registry must not reference the template-local alias:\n{code}",
     );
 }
+
+// #13237: a kebab tag no binding owns is resolved through `GlobalComponents`
+// under the keys Vue tries (PascalCase, camelCase, authored), like its props;
+// an unregistered tag stays its custom element. Only the component branch is
+// `null` before mount, in a `v-for` and in `$refs`.
+#[test]
+fn unbound_kebab_tags_resolve_global_components_before_custom_elements() {
+    let registry = registry_checked(
+        "import { useTemplateRef } from 'vue';\nconst kebab = useTemplateRef('kebab')",
+        r#"<my-child ref="kebab" /><my-child v-for="i in 2" ref="many" /><svg><my-shape ref="shape" /></svg>"#,
+        (&Croquis::default(), &VirtualTsOptions::default()),
+        (
+            VirtualTsCheckOptions {
+                infer_template_dollar_refs: true,
+                ..Default::default()
+            },
+            &TemplateRecord::default(),
+        ),
+    )
+    .unwrap();
+    let lookup = |null: &str| {
+        vize_l0::cstr!(
+            "(\"MyChild\" extends keyof import('vue').GlobalComponents ? $TemplateComponentRef<import('vue').GlobalComponents[\"MyChild\"]>{null} : (\"myChild\" extends keyof import('vue').GlobalComponents ? $TemplateComponentRef<import('vue').GlobalComponents[\"myChild\"]>{null} : (\"my-child\" extends keyof import('vue').GlobalComponents ? $TemplateComponentRef<import('vue').GlobalComponents[\"my-child\"]>{null} : $DomElement<\"my-child\">)))"
+        )
+    };
+    let (plain, nullable) = (lookup(""), lookup(" | null"));
+    assert_eq!(
+        registry.body.as_str(),
+        vize_l0::cstr!(
+            " \"kebab\": {plain}; \"many\": {nullable}[]; \"shape\": $DomElement<\"my-shape\", true>; "
+        )
+    );
+    assert_eq!(
+        registry.dollar_body.as_str(),
+        vize_l0::cstr!(
+            " \"kebab\": {nullable}; \"many\": {nullable}[]; \"shape\": $DomElement<\"my-shape\", true>; "
+        )
+    );
+    assert!(registry.includes_component && registry.includes_dom_element);
+}

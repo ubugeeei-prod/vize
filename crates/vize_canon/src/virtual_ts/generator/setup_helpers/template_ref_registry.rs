@@ -17,7 +17,9 @@ use vize_croquis::Croquis;
 use vize_relief::{ElementNode, ElementType, Namespace, PropNode, RootNode, TemplateChildNode};
 
 use crate::virtual_ts::{
-    component_reference::{component_binding_reference, resolved_component_binding_reference},
+    component_reference::{
+        component_binding_reference, global_component_type, resolved_component_binding_reference,
+    },
     helpers::shared_types::{DOM_ELEMENT, TEMPLATE_COMPONENT_REF},
     types::{VirtualTsCheckOptions, VirtualTsOptions},
 };
@@ -66,6 +68,10 @@ enum RegisteredRefKind {
         /// Template-relative start of the element, the identity of its usage.
         start: u32,
     },
+    /// A non-native tag no binding owns (`<my-child>`): the global component
+    /// Vue resolves it to, or the custom element it renders when
+    /// `GlobalComponents` registers none of its spellings.
+    GlobalOrElement { tag: String },
 }
 
 /// The rendered `$TemplateRefs` object-type body, or `None` when no
@@ -130,6 +136,21 @@ pub(super) fn template_ref_registry(
                 body.push_str(" | ");
                 dollar_body.push_str(" | ");
             }
+            if let RegisteredRefKind::GlobalOrElement { tag } = &entry.kind {
+                includes_dom_element = true;
+                includes_component = true;
+                let shared = record.shares_refs();
+                // Only the component branch is `null` until mounted.
+                let target = |nullable: bool| global_ref_target(tag.as_str(), shared, nullable);
+                if entry.in_v_for {
+                    append!(body, "{}[]", target(true));
+                    append!(dollar_body, "{}[]", target(true));
+                } else {
+                    body.push_str(target(false).as_str());
+                    dollar_body.push_str(target(true).as_str());
+                }
+                continue;
+            }
             let mut target = String::default();
             let nullable = match &entry.kind {
                 RegisteredRefKind::Element { tag, is_svg } => {
@@ -153,6 +174,7 @@ pub(super) fn template_ref_registry(
                     includes_instantiated |= target != declared;
                     true
                 }
+                RegisteredRefKind::GlobalOrElement { .. } => continue,
             };
             match (entry.in_v_for, nullable) {
                 (true, true) => {
@@ -283,9 +305,17 @@ fn collect_element(
                             reference_type: vize_carton::cstr!("typeof {reference}"),
                             start: element.loc.span.start,
                         })
-                        .unwrap_or_else(|| RegisteredRefKind::Element {
-                            tag: String::from(element.tag),
-                            is_svg: matches!(element.ns, Namespace::Svg),
+                        .unwrap_or_else(|| {
+                            if element.ns == Namespace::Html && !is_native_tag(element.tag) {
+                                RegisteredRefKind::GlobalOrElement {
+                                    tag: String::from(element.tag),
+                                }
+                            } else {
+                                RegisteredRefKind::Element {
+                                    tag: String::from(element.tag),
+                                    is_svg: matches!(element.ns, Namespace::Svg),
+                                }
+                            }
                         }),
                         ElementType::Component => RegisteredRefKind::Component {
                             reference_type: vize_carton::cstr!(
@@ -416,6 +446,24 @@ fn is_ascii_identifier(segment: &str) -> bool {
         .next()
         .is_some_and(|char| char == '_' || char == '$' || char.is_ascii_alphabetic())
         && chars.all(|char| char == '_' || char == '$' || char.is_ascii_alphanumeric())
+}
+
+/// The ref of a tag no binding owns, resolved through `GlobalComponents`
+/// exactly as its props are: `<my-child>` and `<MyChild>` hold the same
+/// instance, and an unregistered tag holds its custom element.
+fn global_ref_target(tag: &str, shared: bool, nullable: bool) -> String {
+    let component_helper = TEMPLATE_COMPONENT_REF.select(shared);
+    let mut tag_literal = crate::virtual_ts::TextBuf::default();
+    push_ts_string_literal(&mut tag_literal, tag);
+    let element = vize_carton::cstr!("{}<{tag_literal}>", DOM_ELEMENT.select(shared));
+    global_component_type(
+        tag,
+        |component| {
+            let null = if nullable { " | null" } else { "" };
+            vize_carton::cstr!("{component_helper}<{component}>{null}")
+        },
+        element.as_str(),
+    )
 }
 
 fn component_ref_kind_for_element_tag(

@@ -1,0 +1,19 @@
+<script setup lang="ts">
+import { useTemplateRef } from "vue"
+
+const looped = useTemplateRef("looped")
+const element = useTemplateRef("element")
+
+looped.value?.[0]?.focus()
+element.value?.getAttribute("id")
+
+function setChild(child: unknown) {
+  void child
+}
+</script>
+
+<template>
+  <my-child v-for="index in 2" :key="index" ref="looped" />
+  <my-child :ref="(child) => setChild(child)" />
+  <my-element ref="element" />
+</template>
