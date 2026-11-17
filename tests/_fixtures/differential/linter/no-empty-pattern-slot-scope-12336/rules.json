@@ -1,0 +1,3 @@
+{
+  "vue/no-empty-pattern": "warn"
+}
