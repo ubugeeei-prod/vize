@@ -240,7 +240,19 @@ pub fn lang_attr(source: &str, tag_start: usize) -> Option<&str> {
 /// template's close tag, so products route a source without parsing the
 /// whole descriptor first. `None` when there is no template, it is external
 /// (`src`), or the container is malformed before it.
+///
+/// Every SFC a product reads passes through here, almost always with an
+/// HTML template, so a pre-check answers that case first: when no
+/// `<template` open tag in the file spells a `lang` or `src` attribute, the
+/// descriptor's template (one of those tags) has neither, and it is HTML.
+/// The pre-check is one `memchr` pass over `<`; it never decides anything
+/// else, so the container walk stays the only source of a non-HTML answer.
 pub fn sfc_template_lang(source: &str) -> Option<Result<TemplateLang, UnsupportedLang<'_>>> {
+    match template_tags(source) {
+        TemplateTags::None => return None,
+        TemplateTags::Plain => return Some(Ok(TemplateLang::Html)),
+        TemplateTags::Attributed => {}
+    }
     let mut found = None;
     let _ = crate::container::vue::compat::split_blocks(source, |mut block| {
         if !block.tag_name.eq_ignore_ascii_case(b"template") {
@@ -258,6 +270,38 @@ pub fn sfc_template_lang(source: &str) -> Option<Result<TemplateLang, Unsupporte
     });
     let (tag_start, lang) = found?;
     Some(template_lang(lang).map_err(|unsupported| unsupported.located(source, tag_start)))
+}
+
+/// What the `<template` open tags of a file spell, for [`sfc_template_lang`].
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum TemplateTags {
+    /// No `<template` open tag at all.
+    None,
+    /// Only open tags with neither `lang` nor `src`.
+    Plain,
+    /// At least one tag spells `lang` or `src`, or cannot be read.
+    Attributed,
+}
+
+fn template_tags(source: &str) -> TemplateTags {
+    let bytes = source.as_bytes();
+    let mut seen = TemplateTags::None;
+    for at in memchr::memchr_iter(b'<', bytes) {
+        let named = bytes
+            .get(at + 1..at + 9)
+            .is_some_and(|name| name.eq_ignore_ascii_case(b"template"))
+            && bytes
+                .get(at + 9)
+                .is_none_or(|&next| next.is_ascii_whitespace() || matches!(next, b'>' | b'/'));
+        if !named {
+            continue;
+        }
+        seen = TemplateTags::Plain;
+        if crate::container::Vue.open_tag_has_attr(source, at, &["lang", "src"]) {
+            return TemplateTags::Attributed;
+        }
+    }
+    seen
 }
 
 #[cfg(test)]

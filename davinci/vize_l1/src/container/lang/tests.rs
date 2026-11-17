@@ -149,3 +149,32 @@ fn unsupported_sfc_template_lang_carries_its_authored_span() {
         .span();
     assert_eq!(span, Some(Span::new(15, 19)));
 }
+
+#[test]
+fn the_template_pre_check_only_short_cuts_html() {
+    for (source, expected) in [
+        ("<script>const a = 1</script>", None),
+        ("<template><p/></template>", Some(Ok(TemplateLang::Html))),
+        (
+            "<template v-if=\"a > b\" lang=\"pug\">p</template>",
+            Some(Ok(TemplateLang::Pug(PugProfile::Pug3))),
+        ),
+        (
+            "<TEMPLATE\n  lang=\"jade\"\n>p</TEMPLATE>",
+            Some(Ok(TemplateLang::Pug(PugProfile::Jade1))),
+        ),
+        // A nested template with a lang only costs the container walk.
+        (
+            "<template><template lang=\"x\"></template></template>",
+            Some(Ok(TemplateLang::Html)),
+        ),
+        ("<template src=\"./a.html\"></template>", None),
+        ("<template lang", None),
+    ] {
+        assert_eq!(
+            sfc_template_lang(source).map(|lang| lang.map_err(|u| u.authored())),
+            expected,
+            "{source}"
+        );
+    }
+}

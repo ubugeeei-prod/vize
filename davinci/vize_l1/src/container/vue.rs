@@ -72,6 +72,17 @@ impl Vue {
         Some(Span::new(end.checked_sub(len)?, end))
     }
 
+    /// Whether the open tag starting at `at` has an attribute named in
+    /// `names` (valued or bare), or cannot be read as an open tag at all.
+    #[must_use]
+    pub fn open_tag_has_attr(&self, source: &str, at: usize, names: &[&str]) -> bool {
+        let mut found = false;
+        let read = scan::read_open_boundary(source, at, |attr| {
+            found |= names.contains(&attr.name);
+        });
+        found || !matches!(read, Ok(Some(_)))
+    }
+
     /// Observe original blocks and descriptor policy in the same splitter pass.
     /// Public capture records cannot be converted into an admitted descriptor.
     pub fn observe_descriptor<'a>(
