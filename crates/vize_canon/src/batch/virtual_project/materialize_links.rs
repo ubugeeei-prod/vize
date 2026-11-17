@@ -107,6 +107,11 @@ impl VirtualProject {
             } else {
                 canonical_path(&link.real_dir)
             };
+            // A link onto its own path is never a package link: whatever
+            // the mirror owns there is the directory itself.
+            if real_dir == link.virtual_dir {
+                continue;
+            }
             desired.entry(link.virtual_dir).or_insert(real_dir);
         }
         // A resolved workspace alias is the identity authority at its exact

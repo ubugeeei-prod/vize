@@ -66,6 +66,43 @@ fn plan(
     plan_from_topologies(vec![(links, authorities)], &Default::default())
 }
 
+/// A nested alias whose coordinate, rebased through its selected parent, is
+/// already its target names no link (#13044: Vue Vben Admin's injected
+/// `form-ui/node_modules/@vben-core/shadcn-ui`). Planning one put a link onto
+/// the owned installation's own path, and materialization failed closed.
+/// The raw coordinate still rebases its own descendants.
+#[test]
+fn an_alias_rebased_onto_its_own_target_plans_no_link() {
+    let plan = plan(
+        vec![
+            link("consumer/node_modules/form", "owned/form"),
+            link(
+                "consumer/node_modules/form/node_modules/ui",
+                "owned/form/node_modules/ui",
+            ),
+            link(
+                "consumer/node_modules/form/node_modules/ui/node_modules/types",
+                "owned/types",
+            ),
+        ],
+        Default::default(),
+    );
+    assert_eq!(
+        plan.links,
+        vec![
+            link("consumer/node_modules/form", "owned/form"),
+            link(
+                "owned/form/node_modules/ui/node_modules/types",
+                "owned/types"
+            ),
+        ]
+    );
+    assert_eq!(
+        plan.targets.get(Path::new("owned/form/node_modules/ui")),
+        None
+    );
+}
+
 #[test]
 fn revision_tracks_exact_plan_bytes() {
     let first = plan(vec![link("alias", "owned")], Default::default());
