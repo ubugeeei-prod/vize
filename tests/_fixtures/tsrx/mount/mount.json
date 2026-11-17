@@ -309,6 +309,13 @@
       "component": "Client",
       "props": { "label": "n" },
       "steps": [{ "click": "button" }, { "props": { "label": "m" } }, { "click": "button" }]
+    },
+    {
+      "id": "shadow/scopes",
+      "file": "tests/_fixtures/tsrx/mount/shadow.tsrx",
+      "component": "Shadow",
+      "props": { "label": "p", "items": ["a", "bb"] },
+      "steps": [{ "props": { "label": "q" } }, { "props": { "items": ["ccc"] } }]
     }
   ]
 }

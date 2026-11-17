@@ -146,13 +146,11 @@ fn dom_conditionals_over_nested_markup_render_its_branches_with_the_props_it_rea
         "import { defineComponent as _defineComponent, createElementVNode as _createElementVNode, Fragment as _Fragment, createCommentVNode as _createCommentVNode } from \"vue\";\nexport const A = /* @__PURE__ */ _defineComponent(function A(__props) {\n\treturn (_ctx, _cache) => {\n  return (_createElementVNode(_Fragment, null, [\n    (__props.ok)\n      ? (_createElementVNode(\"b\", {\n        key: 0,\n        title: __props.label\n      }, [\n        __props.n\n      ], 8 /* PROPS */, [\"title\"]))\n      : (__props.n > 1)\n        ? (_createElementVNode(\"i\", { key: 1 }))\n      : _createCommentVNode(\"v-if\", true),\n    (__props.n === 0)\n      ? (_createElementVNode(\"s\", { key: 2 }, \"none\"))\n      : _createCommentVNode(\"v-if\", true)\n  ], 64 /* STABLE_FRAGMENT */))\n};\n}, { props: [\"ok\", \"n\", \"label\"] });\n"
     );
 
-    // Nested markup declares names like any other markup.
-    let source = "export function A({ ok, x }: { ok: boolean; x: string[] }) @{\n\t<p>{ok ? <ul>@for (const x of [1]) { <li>{x}</li> }</ul> : null}</p>\n}\n";
-    let [diagnostic] = diagnostics(source, &OPTIONS).try_into().unwrap();
-    assert_eq!(diagnostic.code, Code::Emit(EmitIssue::ShadowedProp));
+    // A loop in nested markup shadows a prop inside its body only.
+    let source = "export function A({ ok, x }: { ok: boolean; x: string[] }) @{\n\t<p>{ok ? <ul title={x}>@for (const x of [1]) { <li>{x}</li> }</ul> : null}</p>\n}\n";
     assert_eq!(
-        source.get(diagnostic.start as usize..diagnostic.end as usize),
-        Some("x")
+        compile(source, &OPTIONS).unwrap().code.as_str(),
+        "import { defineComponent as _defineComponent, createElementVNode as _createElementVNode, Fragment as _Fragment, createCommentVNode as _createCommentVNode, renderList as _renderList } from \"vue\";\nexport const A = /* @__PURE__ */ _defineComponent(function A(__props) {\n\treturn (_ctx, _cache) => {\n  return (_createElementVNode(\"p\", null, [\n    (__props.ok)\n      ? (_createElementVNode(\"ul\", {\n        key: 0,\n        title: __props.x\n      }, [\n        (_createElementVNode(_Fragment, null, _renderList([1], (x) => {\n          return (_createElementVNode(\"li\", { key: x }, [\n            x\n          ]))\n        }), 128 /* KEYED_FRAGMENT */))\n      ], 8 /* PROPS */, [\"title\"]))\n      : _createCommentVNode(\"v-if\", true)\n  ]))\n};\n}, { props: [\"ok\", \"x\"] });\n"
     );
 
     // A conditional as a branch's only node is refused by the DOM emitter.
@@ -202,8 +200,13 @@ fn dom_component_parameters_outside_the_props_profile_are_refused() {
             "export function A(props) @{\n\t<p {...props} />\n}\n",
             EmitIssue::PropsValue,
         ),
+        // A declaration in the component's own scope; nested scopes may shadow.
         (
-            "export function A({ a }) @{\n\t<p>{[1].map((a) => a)}</p>\n}\n",
+            "export function A({ a }) @{\n\tif (a) {\n\t\tvar a = 1;\n\t}\n\t<p>{a}</p>\n}\n",
+            EmitIssue::ShadowedProp,
+        ),
+        (
+            "export function A({ a }) @{\n\tfunction a() {}\n\t<p>{a}</p>\n}\n",
             EmitIssue::ShadowedProp,
         ),
         (
@@ -230,6 +233,21 @@ fn dom_prop_defaults_renames_and_rest_follow_the_reference_props_options() {
     assert_eq!(
         compile(source, &OPTIONS).unwrap().code.as_str(),
         "import { defineComponent as _defineComponent, useAttrs as _useAttrs, createElementVNode as _createElementVNode, normalizeProps as _normalizeProps, guardReactiveProps as _guardReactiveProps } from \"vue\";\nexport const A = /* @__PURE__ */ _defineComponent(function A(__props) { const rest = _useAttrs();\n\tconst f = { c: __props.b };\n\treturn (_ctx, _cache) => {\n  return (_createElementVNode(\"p\", _normalizeProps(_guardReactiveProps(rest)), [\n    __props.a,\n    __props.b,\n    __props.d,\n    __props.e,\n    f.c\n  ], 16 /* FULL_PROPS */))\n};\n}, { inheritAttrs: false, props: { \"a\": { required: true, type: String, default: 'x' }, \"b\": { default: undefined }, \"d\": { default: null }, \"e\": { type: Object, default: () => ({}) } } });\n"
+    );
+}
+
+#[test]
+fn dom_setup_reads_a_nested_scope_shadows_stay_local() {
+    let source = "export function A({ a, xs }: { a: string; xs: string[] }) @{\n\tconst f = (a: string) => a;\n\tfunction g(b = a) {\n\t\tvar a = b;\n\t\treturn a;\n\t}\n\tlet n = 0;\n\tfor (const a of xs) {\n\t\tn += a.length;\n\t}\n\ttry {\n\t\tn += a.length;\n\t} catch (a) {\n\t\tn = a;\n\t}\n\t{\n\t\tclass a {}\n\t\tn += new a() ? 1 : 0;\n\t}\n\tconst o = { a, m(a: string) { return a; } };\n\t<p>{f(a)}{g()}{n}{o.a}{xs.map((a) => a)}</p>\n}\n";
+    let code = compile(source, &OPTIONS).unwrap().code;
+    let setup = code
+        .split("return (_ctx, _cache)")
+        .next()
+        .and_then(|head| head.split("function A(__props) {").nth(1))
+        .unwrap();
+    assert_eq!(
+        setup,
+        "\n\tconst f = (a: string) => a;\n\tfunction g(b = __props.a) {\n\t\tvar a = b;\n\t\treturn a;\n\t}\n\tlet n = 0;\n\tfor (const a of __props.xs) {\n\t\tn += a.length;\n\t}\n\ttry {\n\t\tn += __props.a.length;\n\t} catch (a) {\n\t\tn = a;\n\t}\n\t{\n\t\tclass a {}\n\t\tn += new a() ? 1 : 0;\n\t}\n\tconst o = { a: __props.a, m(a: string) { return a; } };\n\t"
     );
 }
 

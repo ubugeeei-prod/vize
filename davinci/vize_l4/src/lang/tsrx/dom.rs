@@ -310,7 +310,7 @@ fn body(
     let mut reads: Vec<_> = names
         .reads
         .iter()
-        .filter(|read| read.setup)
+        .filter(|read| read.setup && !read.shadowed)
         .filter_map(|read| Some((read, component.props.local(read.name)?)))
         .collect();
     reads.sort_by_key(|(read, _)| read.span.start);

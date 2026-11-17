@@ -191,6 +191,7 @@ mod tests {
                 "mount/nested.tsrx",
                 "mount/props.tsrx",
                 "mount/returns.tsrx",
+                "mount/shadow.tsrx",
                 "mount/slots.tsrx",
                 "mount/typed.tsrx",
                 "mount/values.tsrx",

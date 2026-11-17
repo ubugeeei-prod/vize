@@ -225,6 +225,11 @@
       "error": null
     },
     {
+      "file": "tests/_fixtures/tsrx/mount/shadow.tsrx",
+      "code": "import { defineVaporComponent, VaporFor } from 'vue-jsx-vapor';\n\nexport const Shadow = defineVaporComponent(function Shadow({ label, items }: { label: string; items: string[] }) {\n\tconst upper = label.toUpperCase();\n\tconst pick = (label: string) => label + upper;\n\n\tfunction twice(label: string) {\n\t\treturn label + label;\n\t}\n\n\tlet total = 0;\n\n\tfor (const label of items) {\n\t\ttotal += label.length;\n\t}\n\n\t{\n\t\tconst label = 'block';\n\n\t\ttotal += label.length;\n\t}\n\n\treturn <><h1 title={label}>{pick('x')} {twice('y')} {total}</h1><p>{items.map((label) => label.toUpperCase()).join(',')}</p>{<VaporFor in={items} getKey={(label) => label}>{(label) => <li>{label.value}</li>}</VaporFor>}</>;\n});",
+      "error": null
+    },
+    {
       "file": "tests/_fixtures/tsrx/mount/slots.tsrx",
       "code": "import { defineVaporComponent } from 'vue-jsx-vapor';\nimport { useSlots } from 'vue';\n\nconst Card = defineVaporComponent(function Card() {\n\tconst slots = useSlots();\n\n\treturn <>{slots.default?.()}</>;\n});\n\nexport const Panel = defineVaporComponent(function Panel({ title, count }: { title: string; count: number }) {\n\treturn <Card><h2 class=\"title\">{title}</h2><p>count: {count}</p></Card>;\n});",
       "error": null
