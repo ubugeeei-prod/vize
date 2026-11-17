@@ -82,7 +82,7 @@ struct Checked {
 impl RangeIndex for Checked {
     fn insert(&mut self, range: &Range<usize>) {
         self.bits.insert(range);
-        self.ranges.insert(range);
+        RangeIndex::insert(&mut self.ranges, range);
     }
 
     fn overlaps(&self, probe: &Range<usize>) -> bool {
