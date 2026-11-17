@@ -117,6 +117,23 @@ test("fixture tool matrix requires an exact baseline tsconfig for performance ta
     assert.doesNotThrow(() =>
       validateTypecheckPerformanceTarget(generated, fixtureRoot, { requireBaseline: true }),
     );
+    // Generated inputs from more than one script run as ordered steps.
+    const steps = {
+      ...generated,
+      typecheckPerformance: {
+        ...generated.typecheckPerformance,
+        baseline: {
+          ...generated.typecheckPerformance.baseline,
+          prepare: [
+            ["pnpm", "stub"],
+            ["pnpm", "gen:version"],
+          ],
+        },
+      },
+    };
+    assert.doesNotThrow(() =>
+      validateTypecheckPerformanceTarget(steps, fixtureRoot, { requireBaseline: true }),
+    );
     assert.doesNotThrow(() =>
       validateTypecheckPerformanceTarget(
         { ...project, tsconfig: undefined, typecheckPerformance: { enabled: false } },
@@ -168,6 +185,42 @@ test("fixture tool matrix requires an exact baseline tsconfig for performance ta
           },
         },
         /baseline prepare must be a pnpm command argument array/,
+      ],
+      [
+        {
+          ...project,
+          typecheckPerformance: {
+            ...project.typecheckPerformance,
+            baseline: {
+              tsconfig: "generated.json",
+              prepare: [
+                ["pnpm", "stub"],
+                ["npm", "run", "gen"],
+              ],
+            },
+          },
+        },
+        /baseline prepare must be a pnpm command argument array or a list of them/,
+      ],
+      [
+        {
+          ...project,
+          typecheckPerformance: {
+            ...project.typecheckPerformance,
+            baseline: { tsconfig: "generated.json", prepare: [["pnpm", "stub"], "gen"] },
+          },
+        },
+        /baseline prepare must be a pnpm command argument array or a list of them/,
+      ],
+      [
+        {
+          ...project,
+          typecheckPerformance: {
+            ...project.typecheckPerformance,
+            baseline: { tsconfig: "generated.json", prepare: [] },
+          },
+        },
+        /baseline prepare must be a pnpm command argument array or a list of them/,
       ],
       [
         {
