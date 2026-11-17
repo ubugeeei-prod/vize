@@ -201,6 +201,12 @@ export function groupByIdentity(records: LintRecord[]): Map<string, LintRecord[]
   return groups;
 }
 const quotedName = (message: string): string | undefined => /'([^']*)'/.exec(message)?.[1];
+/** Vue's `isSVGTag` list (shared/domTagConfig): native wherever they appear. */
+const vueSvgTags = new Set(
+  "svg,animate,animateMotion,animateTransform,circle,clipPath,color-profile,defs,desc,discard,ellipse,feBlend,feColorMatrix,feComponentTransfer,feComposite,feConvolveMatrix,feDiffuseLighting,feDisplacementMap,feDistantLight,feDropShadow,feFlood,feFuncA,feFuncB,feFuncG,feFuncR,feGaussianBlur,feImage,feMerge,feMergeNode,feMorphology,feOffset,fePointLight,feSpecularLighting,feSpotLight,feTile,feTurbulence,filter,foreignObject,g,hatch,hatchpath,image,line,linearGradient,marker,mask,mesh,meshgradient,meshpatch,meshrow,metadata,mpath,path,pattern,polygon,polyline,radialGradient,rect,set,solidcolor,stop,switch,symbol,text,textPath,title,tspan,unknown,use,view".split(
+    ",",
+  ),
+);
 export function baselineIntentionalReason(
   finding: LintRecord,
   source?: string | null,
@@ -222,6 +228,11 @@ export function baselineIntentionalReason(
     const offset = findingOffset(finding, source);
     if (offset !== null && gluedFragmentDuplicate(finding.message, offset, source))
       return classFragmentReason;
+  }
+  if (finding.ruleId === "vue/v-if-else-key") {
+    const tag = /repeated component '([^']+)'/u.exec(finding.message)?.[1];
+    if (tag !== undefined && vueSvgTags.has(tag))
+      return "Vue's compiler treats this SVG element as native wherever it appears; eslint-plugin-vue parses it outside an <svg> ancestor as an HTML-namespace custom component and asks for a key.";
   }
   if (finding.ruleId === "vue/no-shared-component-data")
     return "Patina intentionally merges vue/no-shared-component-data and vue/no-deprecated-data-object-declaration into one diagnostic for the same invalid data option.";

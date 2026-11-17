@@ -165,3 +165,23 @@ const wrapped = cast(ref(null)) as Ref<HTMLElement>
   assert.equal(typedRef("ref(null)", 1), null);
   assert.equal(typedRef("ref(null)", 2), null);
 });
+
+test("SVG elements outside an <svg> ancestor are native to Vue", () => {
+  const keyed = (tag: string) =>
+    baselineIntentionalReason(
+      {
+        file: "src/Arrow.vue",
+        ruleId: "vue/v-if-else-key",
+        severity: "error",
+        line: 1,
+        column: 1,
+        endLine: 1,
+        endColumn: 2,
+        message: `Conditionally rendered repeated component '${tag}' expected to have a 'key' attribute.`,
+      },
+      '<template><Primitive><path v-if="a" /><path v-else /></Primitive></template>',
+    );
+  for (const tag of ["path", "g", "line", "polyline", "text"])
+    assert.match(keyed(tag) ?? "", /native/u);
+  for (const tag of ["MyIcon", "my-path", "Path"]) assert.equal(keyed(tag), null);
+});
