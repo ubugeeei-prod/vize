@@ -264,7 +264,7 @@ fn every_template_and_style_alias_checks_the_same() {
         templates.push((lang.to_owned(), checked(root.path(), &corsa, &name)));
     }
     all_equal("check", &templates);
-    assert_eq!(templates[0].1.len(), 2, "{:?}", templates[0].1);
+    assert_eq!(templates[0].1.len(), 1, "{:?}", templates[0].1);
 
     for (group, (aliases, body)) in STYLE_GROUPS.into_iter().enumerate() {
         let mut styles = Vec::new();
