@@ -62,7 +62,10 @@ const VUE_JSX_REFERENCE: &str = "/// <reference types=\"vue/jsx\" />";
 
 /// Hands each maximal run of ASCII whitespace and comments between code
 /// bytes, in text order, to `on_trivia(start, end, comments)`; `None` when
-/// the scan is unsure, whatever it handed out before.
+/// the scan is unsure, whatever it handed out before. A lone whitespace byte
+/// between two code bytes, where no comment or regular expression can start,
+/// is not handed out: one-byte trivia without a comment is already as short
+/// as it gets, and these are most of a projection's trivia runs.
 pub(super) fn trivia(
     text: &str,
     mut on_trivia: impl FnMut(usize, usize, &[Comment]),
@@ -75,6 +78,14 @@ pub(super) fn trivia(
     let mut braces: Vec<Brace> = Vec::new();
     let mut at = 0;
     loop {
+        // A closing JSX tag: its text is not code. `<` is plain code to the
+        // run scan, so the tag is found at its slash, before that slash can
+        // start a comment.
+        if bytes.get(at) == Some(&b'/')
+            && at.checked_sub(1).and_then(|index| bytes.get(index)) == Some(&b'<')
+        {
+            return None;
+        }
         // Trivia: whitespace and comments.
         let start = at;
         comments.clear();
@@ -92,7 +103,7 @@ pub(super) fn trivia(
                 }
                 (Some(b'/'), Some(b'*')) => {
                     let body = bytes.get(at + 2..)?;
-                    let end = at + 2 + body.windows(2).position(|pair| pair == b"*/")? + 2;
+                    let end = at + 2 + memchr::memmem::find(body, b"*/")? + 2;
                     comments.push(Comment {
                         start: at,
                         end,
@@ -129,27 +140,61 @@ pub(super) fn trivia(
             },
             // A closing JSX tag: its text is not code.
             b'<' if bytes.get(at + 1) == Some(&b'/') => return None,
-            _ => {
-                at = skip_until(bytes, at + 1, is_special);
-            }
+            _ => at = skip_code(bytes, at + 1),
         }
     }
 }
 
-/// The first index from `at` whose byte `stop` accepts, or the end.
-fn skip_until(bytes: &[u8], at: usize, stop: impl Fn(u8) -> bool) -> usize {
-    bytes
-        .get(at..)
-        .and_then(|rest| rest.iter().position(|byte| stop(*byte)))
-        .map_or(bytes.len(), |offset| at + offset)
+/// What a byte is to [`skip_code`].
+const PLAIN: u8 = 0;
+const SPACE: u8 = 1;
+const STOP: u8 = 2;
+
+/// Each byte's class: trivia whitespace, a byte the scan stops at (slashes,
+/// quotes, template ticks, braces), or plain code. `<` is code: a closing
+/// JSX tag is found at its slash. A table, as a `match` per byte costs the
+/// run scan about 40% more instructions.
+const CLASSES: [u8; 256] = {
+    let mut classes = [PLAIN; 256];
+    let mut byte = 0;
+    while byte < classes.len() {
+        if let Some((_, rest)) = classes.split_at_mut_checked(byte)
+            && let Some(slot) = rest.first_mut()
+        {
+            *slot = match byte as u8 {
+                b' ' | b'\t' | b'\n' | b'\r' => SPACE,
+                b'/' | b'"' | b'\'' | b'`' | b'{' | b'}' => STOP,
+                _ => PLAIN,
+            };
+        }
+        byte += 1;
+    }
+    classes
+};
+
+fn class(byte: u8) -> u8 {
+    CLASSES.get(usize::from(byte)).copied().unwrap_or(PLAIN)
 }
 
-/// Bytes the scan stops at: trivia, strings, templates, slashes, braces, `<`.
-fn is_special(byte: u8) -> bool {
-    matches!(
-        byte,
-        b' ' | b'\t' | b'\n' | b'\r' | b'/' | b'"' | b'\'' | b'`' | b'{' | b'}' | b'<'
-    )
+/// The end of the code run from `at`: the next byte the scan must look at,
+/// or the end. A lone whitespace byte between two code bytes is crossed, as
+/// the caller would hand it out as one-byte trivia with no comment, which a
+/// rewrite leaves as it is; one before `/` (a comment, a regular expression
+/// or a division) or before more whitespace ends the run.
+fn skip_code(bytes: &[u8], mut at: usize) -> usize {
+    loop {
+        while bytes.get(at).is_some_and(|byte| class(*byte) == PLAIN) {
+            at += 1;
+        }
+        match (bytes.get(at), bytes.get(at + 1)) {
+            (Some(byte), Some(next))
+                if class(*byte) == SPACE && class(*next) != SPACE && *next != b'/' =>
+            {
+                at += 1;
+            }
+            _ => return at,
+        }
+    }
 }
 
 /// Whether a `/` after the code byte at `previous` starts a regular expression.
@@ -187,10 +232,7 @@ fn line_comment_end(bytes: &[u8], at: usize) -> Option<usize> {
     let mut index = at;
     loop {
         let rest = bytes.get(index..)?;
-        let Some(offset) = rest
-            .iter()
-            .position(|byte| matches!(byte, b'\n' | b'\r' | 0xE2))
-        else {
+        let Some(offset) = memchr::memchr3(b'\n', b'\r', 0xE2, rest) else {
             return Some(bytes.len());
         };
         index += offset;
@@ -214,13 +256,10 @@ fn string_end(bytes: &[u8], at: usize) -> Option<usize> {
     let quote = *bytes.get(at)?;
     let mut index = at + 1;
     loop {
-        index = skip_until(bytes, index, |byte| {
-            byte == quote || matches!(byte, b'\\' | b'\n' | b'\r')
-        });
         match *bytes.get(index)? {
+            byte if byte == quote => return Some(index + 1),
             b'\\' => index += 2,
             b'\n' | b'\r' => return None,
-            byte if byte == quote => return Some(index + 1),
             _ => index += 1,
         }
     }
@@ -230,7 +269,6 @@ fn string_end(bytes: &[u8], at: usize) -> Option<usize> {
 /// past a `${`, which pushes a substitution.
 fn template_end(bytes: &[u8], mut at: usize, braces: &mut Vec<Brace>) -> Option<usize> {
     loop {
-        at = skip_until(bytes, at, |byte| matches!(byte, b'\\' | b'`' | b'$'));
         match *bytes.get(at)? {
             b'\\' => at += 2,
             b'`' => return Some(at + 1),
@@ -275,3 +313,6 @@ fn regex_end(bytes: &[u8], at: usize) -> Option<usize> {
                 .count(),
     )
 }
+
+#[cfg(test)]
+mod tests;
