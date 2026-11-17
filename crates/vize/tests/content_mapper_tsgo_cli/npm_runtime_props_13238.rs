@@ -254,10 +254,10 @@ fn standard_tsgo_types_template_props_from_declared_runtime_props() {
         mapper_lines(&tsgo, root),
         (Some(2), NEGATIVE_REPORTS.map(CompactString::from).to_vec())
     );
-    assert_eq!(
-        cli_lines(&tsgo, root),
-        (Some(1), NEGATIVE_REPORTS.map(CompactString::from).to_vec())
-    );
+    // `cli_lines` sorts its rows as text, so `(10,9)` precedes `(8,15)`.
+    let mut cli_reports = NEGATIVE_REPORTS.map(CompactString::from).to_vec();
+    cli_reports.sort();
+    assert_eq!(cli_lines(&tsgo, root), (Some(1), cli_reports));
 }
 
 /// A wrong member, an optional prop's `undefined`, an undeclared name (with
