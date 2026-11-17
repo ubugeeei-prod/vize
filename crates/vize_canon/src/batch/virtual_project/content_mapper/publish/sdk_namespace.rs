@@ -8,8 +8,9 @@
 //! per file. Generated `__vize*` names are reserved, so authored code cannot
 //! capture the namespace.
 //!
-//! The file keeps one module reference per rewritten type reference, as
-//! empty type-only imports after the namespace import. tsgo assigns files to
+//! The file keeps module references for the rewritten type references, as
+//! empty type-only imports after the namespace import, as many as the bytes
+//! the rewrite saved pay for, so no file grows. tsgo assigns files to
 //! checkers by a weight that counts a file's module references
 //! (`file.Imports()`, `compiler/checkerpool.go`) and links files by them; the
 //! SDK references track a file's template contract work, its expensive part.
@@ -30,8 +31,8 @@ use super::GenericCopies;
 const PRIVATE_REFERENCE: &str = "import(\"vize:virtual-ts\").";
 const NAMESPACE_REFERENCE: &str = "__vizeSdk.";
 const NAMESPACE_IMPORT: &str = "import type * as __vizeSdk from \"vize/virtual-ts\";\n";
-/// One per rewritten reference beyond the namespace import's own.
-const WEIGHT_IMPORT: &str = "import type {} from \"vize/virtual-ts\";\n";
+/// Module references kept for tsgo's checker partition.
+const WEIGHT_IMPORT: &str = "import type{}from\"vize/virtual-ts\";\n";
 const SAVED: usize = PRIVATE_REFERENCE.len() - NAMESPACE_REFERENCE.len();
 /// Fewer references than this keep their import types: the namespace import
 /// itself is a statement to check.
@@ -135,7 +136,12 @@ pub(super) fn name_sdk_through_namespace(
 }
 
 fn rewrite(code: &str, starts: &[usize], separator: bool) -> Option<CompactString> {
-    let weights = starts.len().saturating_sub(1);
+    // As many weight imports as the shrunk references pay for, at most one
+    // per rewritten reference beyond the namespace import's own.
+    let weights = (starts.len() * SAVED)
+        .saturating_sub(NAMESPACE_IMPORT.len() + usize::from(separator))
+        / WEIGHT_IMPORT.len();
+    let weights = weights.min(starts.len().saturating_sub(1));
     let mut out = CompactString::with_capacity(
         code.len() - starts.len() * SAVED
             + NAMESPACE_IMPORT.len()
