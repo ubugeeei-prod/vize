@@ -71,3 +71,71 @@ test("custom-event-name-casing keeps the model prop name after update:", () => {
   assert.equal(reported("selected-date"), null);
   assert.equal(reported("close-dialog:done"), null);
 });
+
+/** A finding over the `occurrence`-th match of `text` in `markup`. */
+function classFinding(
+  markup: string,
+  ruleId: string,
+  text: string,
+  message: string,
+  occurrence = 0,
+) {
+  let start = -1;
+  for (let seen = 0; seen <= occurrence; seen++) start = markup.indexOf(text, start + 1);
+  assert.ok(start >= 0, text);
+  const before = markup.slice(0, start).split("\n");
+  return {
+    file: "src/Classes.vue",
+    ruleId,
+    severity: "warning",
+    line: before.length,
+    column: (before.at(-1)?.length ?? 0) + 1,
+    endLine: before.length,
+    endColumn: (before.at(-1)?.length ?? 0) + 1 + text.length,
+    message,
+  };
+}
+
+test("a class repeated only through an identifier key is Patina's finding", () => {
+  const markup = `<template>
+  <ul :class="{ hidden: wide }" class="hidden sm:flex" />
+  <ul :class="['grid', { grid: cond }]" />
+  <ul :class="{ 'flex': cond }" class="flex" />
+  <ul :class="{ gap }" class="gap gap" />
+</template>
+`;
+  const patina = (text: string, name: string, occurrence = 0) =>
+    patinaIntentionalReason(
+      classFinding(
+        markup,
+        "html/no-duplicate-class",
+        text,
+        `[vize:html/no-duplicate-class] Duplicate class name '${name}'`,
+        occurrence,
+      ),
+      markup,
+    );
+  assert.match(patina("<ul", "hidden") ?? "", /identifier object key/u);
+  assert.match(patina("['grid', { grid: cond }]", "grid") ?? "", /identifier object key/u);
+  // A string-literal key and a static value repeated on its own are upstream's too.
+  assert.equal(patina("<ul", "flex", 2), null);
+  assert.equal(patina("<ul", "gap", 3), null);
+});
+
+test("a fragment glued to an interpolation is not a whole class", () => {
+  const markup = `<template>
+  <a :class="\`text-\${color}-500 hover:text-\${color}-600 focus:text-\${color}-600\`" />
+  <i :class="[\`node--\${size}\`, \`node--\${type}\`]" />
+  <b :class="['px-2 ', \`px-2 \${size}\`]" />
+</template>
+`;
+  const upstream = (text: string, name: string) =>
+    baselineIntentionalReason(
+      classFinding(markup, "vue/no-duplicate-class-names", text, `Duplicate class name '${name}'.`),
+      markup,
+    );
+  assert.match(upstream("`text-", "-600") ?? "", /glued to a \$\{\} interpolation/u);
+  assert.match(upstream("[`node--", "node--") ?? "", /glued to a \$\{\} interpolation/u);
+  // A whole token bounded by whitespace is a class Patina also compares.
+  assert.equal(upstream("['px-2 '", "px-2"), null);
+});
