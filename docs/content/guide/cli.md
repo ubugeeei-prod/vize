@@ -179,7 +179,7 @@ vize lint --preset opinionated src
 vize lint --help-level short src
 ```
 
-Default discovery lints Vue, HTML, JavaScript/TypeScript, JSX/TSX and TSRX files. Each markup region of a `.tsrx` module runs through the same markup rules as a JSX/TSX render root; script rules do not check the host TypeScript of a `.tsrx` module yet. Syntax errors, and constructs the lowering does not support yet, are [`parser/tsrx`](../rules/reference/parser-tsrx.md) errors. Key options:
+Default discovery lints Vue, HTML, JavaScript/TypeScript, JSX/TSX and TSRX files. Each markup region of a `.tsrx` module runs through the same markup rules as a JSX/TSX render root; script rules do not check the host TypeScript of a `.tsrx` module yet. Syntax errors, and constructs the lowering does not support yet, are [`parser/tsrx`](../rules/reference/parser-tsrx.md) errors. The Node API (`lint`, `lintPatinaSfc`) and the language server lint `.tsrx` modules the same way. Key options:
 
 | Option                               | Description                                                                                                                             |
 | ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |

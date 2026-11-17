@@ -54,5 +54,5 @@ lint の対象から外し、メッセージ全体とともにその構文を報
 
 - [CLI による lint](../../guide/cli.md#lint)
 - [ネイティブの lint 実行設定](../../guide/lint-execution.md)
-- [診断変換のソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize/src/commands/lint/tsrx.rs)
+- [診断変換のソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/linter/engine/tsrx.rs)
 - [TSRX の変換処理](https://github.com/ubugeeei-prod/vize/blob/main/davinci/vize_l2/src/lang/tsrx.rs)

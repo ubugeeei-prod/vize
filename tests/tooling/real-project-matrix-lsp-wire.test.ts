@@ -75,6 +75,43 @@ test("passive native LSP capture retains the complete original Matrix workflow",
     'test -s "$FIXTURE_REPORT_DIR/lint-divergence-summary.json"',
     "",
   ].join("\n");
+  // #13066 bounds the ESLint baseline memory: one diagnostic-only input, the
+  // shard limits, a resource record and report hashes around the same command.
+  assert.deepEqual(current.on.workflow_dispatch.inputs.lint_baseline_reference_mode, {
+    description: "ESLint scorecard memory mode; unbounded-6g is diagnostic only",
+    required: false,
+    default: "bounded",
+    type: "choice",
+    options: ["bounded", "unbounded-6g"],
+  });
+  delete current.on.workflow_dispatch.inputs.lint_baseline_reference_mode;
+  const unbounded = "inputs.lint_baseline_reference_mode == 'unbounded-6g'";
+  const boundedEnv = {
+    LINT_BASELINE_REFERENCE_MODE: "${{ inputs.lint_baseline_reference_mode || 'bounded' }}",
+    LINT_BASELINE_SHARD_MAX_BYTES: "8388608",
+    LINT_BASELINE_SHARD_MAX_FILES: "32",
+    LINT_BASELINE_SHARD_MAX_OUTPUT_BYTES: "268435456",
+    NODE_OPTIONS: `\${{ ${unbounded} && '--max-old-space-size=6144' || '' }}`,
+    VIZE_LINT_BASELINE_PROGRESS: "1",
+    VIZE_LINT_BASELINE_UNBOUNDED: `\${{ ${unbounded} && '1' || '0' }}`,
+  };
+  assert.deepEqual(lint.env, { ...oldLint.env, ...boundedEnv });
+  for (const key of Object.keys(boundedEnv)) delete lint.env[key];
+  const boundedRun = [
+    '/usr/bin/time --verbose --output "$FIXTURE_REPORT_DIR/lint-divergence-resource.txt" \\',
+    `  ${nodeRun.split("\n").slice(0, 5).join("\n")}`,
+    'test -s "$FIXTURE_REPORT_DIR/lint-divergence-summary.json"',
+    'LC_ALL=C sha256sum "$FIXTURE_REPORT_DIR"/*-lint-divergence.json \\',
+    '  > "$FIXTURE_REPORT_DIR/lint-divergence-hashes.txt"',
+    "",
+  ].join("\n");
+  assert.equal(lint.run, boundedRun);
+  lint.run = nodeRun;
+  const shardUpload = steps.find(
+    (step) => step.with?.name === "real-project-matrix-${{ matrix.shard }}",
+  );
+  assert.equal(shardUpload?.with["include-hidden-files"], false);
+  delete shardUpload.with["include-hidden-files"];
   assert.ok([oldLint.run, nodeRun].includes(lint.run));
   assert.deepEqual(lint, { ...oldLint, run: lint.run });
   lint.run = oldLint.run;

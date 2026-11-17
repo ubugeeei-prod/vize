@@ -19,15 +19,36 @@ import {
   writeFileSync,
 } from "node:fs";
 import type { BigIntStats, Dirent } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { basename, dirname, join, resolve } from "node:path";
 
 export const manifestName = ".vize-source-mtimes.json";
 const schema = "vize.rust-source-mtimes";
 const version = 1;
 const blob = /^[0-9a-f]{40}(?:[0-9a-f]{24})?$/;
 // Cargo leaves these large directories under each profile; freshness evidence
-// lives only in `.fingerprint`.
+// lives only in `.fingerprint` (Cargo 1.99) or in each unit's
+// `build/<package>/<hash>/fingerprint` (Cargo 1.100).
 const skippedTargetDirectories = new Set(["build", "deps", "examples", "incremental", "doc"]);
+
+/** Cargo 1.100 unit fingerprint directories: `<profile>/build/<package>/<hash>/fingerprint`. */
+export function unitFingerprintDirectories(profile: string): string[] {
+  const build = join(profile, "build");
+  const directories: string[] = [];
+  let packages: Dirent[];
+  try {
+    packages = readdirSync(build, { withFileTypes: true });
+  } catch {
+    return directories;
+  }
+  for (const pkg of packages) {
+    if (!pkg.isDirectory()) continue;
+    for (const unit of readdirSync(join(build, pkg.name), { withFileTypes: true })) {
+      const fingerprint = join(build, pkg.name, unit.name, "fingerprint");
+      if (unit.isDirectory() && existsSync(fingerprint)) directories.push(fingerprint);
+    }
+  }
+  return directories;
+}
 
 /** A tracked file's content (Git blob ID) and the whole-second mtime it was given. */
 type FileRecord = [blob: string, mtime: number];
@@ -94,6 +115,8 @@ function visitFingerprintDirectories(target: string, visitor: (path: string) => 
       const path = join(directory, entry.name);
       if (entry.name === ".fingerprint") {
         visitor(path);
+      } else if (entry.name === "build") {
+        for (const fingerprint of unitFingerprintDirectories(directory)) visitor(fingerprint);
       } else if (depth < 4 && !skippedTargetDirectories.has(entry.name)) {
         visit(path, depth + 1);
       }
@@ -156,6 +179,17 @@ function invalidateUnownedWorkspaceArtifacts(
   let removed = 0;
   const seen: string[] = [];
   visitFingerprintDirectories(target, (path) => {
+    if (basename(path) === "fingerprint") {
+      // Cargo 1.100 layout: `build/<package>/<hash>/fingerprint` holds one
+      // unit, and its package directory names the owner.
+      const owner = basename(dirname(dirname(path)));
+      if (seen.length < 5) seen.push(owner);
+      if (owners.has(owner)) {
+        rmSync(path, { recursive: true });
+        removed++;
+      }
+      return;
+    }
     for (const unit of readdirSync(path)) {
       if (seen.length < 5) seen.push(unit);
       const match = /^(.*)-[0-9a-f]{16}$/u.exec(unit);

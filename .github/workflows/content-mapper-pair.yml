@@ -76,6 +76,7 @@ jobs:
     env:
       BASE: ${{ inputs.base }}
       HEAD: ${{ inputs.head }}
+      RUSTUP_TOOLCHAIN: "1.100.0"
       PAIR_OS: linux
       PAIR_EXE: vize
     steps: &build-steps
@@ -91,7 +92,7 @@ jobs:
         uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1
         with: { arch: amd64 }
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
-        with: { toolchain: "1.99.1" }
+        with: { toolchain: "1.100.0" }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         if: env.PAIR_OS == 'linux'
         with: { wild-version: "0.9.0" }
@@ -100,10 +101,12 @@ jobs:
         run: |
           set -euo pipefail
           target="$RUNNER_TEMP/pair-target"
+          mkdir -p pair-bin
           for side in base head; do
             sha=$BASE; [[ $side == head ]] && sha=$HEAD
             git fetch --no-tags --depth=1 "https://github.com/$GITHUB_REPOSITORY.git" "$sha"
             git worktree add --detach "$RUNNER_TEMP/src-$side" "$sha"
+            (cd "$RUNNER_TEMP/src-$side" && rustc -Vv) > "pair-bin/$side-rustc.txt"
             # One target directory: the second build recompiles only what differs.
             (cd "$RUNNER_TEMP/src-$side" && CARGO_TARGET_DIR="$target" cargo build --profile ci-opt -p vize --bin vize)
             mkdir -p "pair-bin/$side"

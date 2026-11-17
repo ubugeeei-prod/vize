@@ -178,7 +178,7 @@ vize lint --preset opinionated src
 vize lint --help-level short src
 ```
 
-デフォルトのファイル探索では Vue、HTML、JavaScript/TypeScript、JSX/TSX、TSRX を lint します。`.tsrx` モジュールの各マークアップ領域には、JSX/TSX の描画ルートと同じマークアップのルールが適用されます。`.tsrx` モジュールのホストの TypeScript は、まだスクリプトのルールで検査されません。構文エラーと、変換処理がまだ対応していない構文は [`parser/tsrx`](../rules/reference/parser-tsrx.md) のエラーになります。
+デフォルトのファイル探索では Vue、HTML、JavaScript/TypeScript、JSX/TSX、TSRX を lint します。`.tsrx` モジュールの各マークアップ領域には、JSX/TSX の描画ルートと同じマークアップのルールが適用されます。`.tsrx` モジュールのホストの TypeScript は、まだスクリプトのルールで検査されません。構文エラーと、変換処理がまだ対応していない構文は [`parser/tsrx`](../rules/reference/parser-tsrx.md) のエラーになります。Node API（`lint`、`lintPatinaSfc`）と言語サーバーも、`.tsrx` モジュールを同じように lint します。
 
 | オプション                           | 説明                                                                                                                                |
 | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |

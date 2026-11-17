@@ -2,10 +2,10 @@
 # Ratchet: existing ceilings may only decrease; rows may never disappear.
 # Numeric caps retain Rust 1.98 source c225f11707b6e42c08ea5379df255fb3ddb5e5cd.
 # Original numeric provenance: https://github.com/ubugeeei-prod/vize/actions/runs/37163400887
-# Rust 1.99.1 metadata cites a complete same-input measurement, without changing caps.
+# Rust 1.100.0 metadata cites a complete same-input measurement, without changing caps.
 schema_version = 1
-source_commit = "e40813b3306bf85e5f61d96b19ebd432cae10334"
-recorded_run = "https://github.com/ubugeeei-prod/vize/actions/runs/39370420052"
+source_commit = "aa9ab054fd272578f142dfd2c789d0e1869c7b86"
+recorded_run = "https://github.com/ubugeeei-prod/vize/actions/runs/43351845175"
 
 [methodology]
 allocator = "counting-mimalloc-reserve128m-preinit64m-purgeoff-v1"
@@ -15,7 +15,7 @@ guest_context = "fixed-env-fixed-argv0-v1"
 libc = "glibc 2.39"
 libc_dispatch = "glibc.cpu.hwcaps=-AVX,-AVX2,-AVX512F,-AVX512VL,-AVX512BW,-AVX_Fast_Unaligned_Load,-ERMS,-FSRM,-Prefer_ERMS,-Prefer_FSRM,-SSSE3,-SSE4_1,-SSE4_2"
 profile = "ci-opt"
-rustc = "rustc 1.99.1 (58cf8f9c3 2026-10-13)"
+rustc = "rustc 1.100.0 (0ef1bc386 2026-11-09)"
 target = "x86_64-unknown-linux-gnu"
 valgrind = "valgrind-3.22.0"
 window_protocol = "callgrind-client-call-boundary-v1"

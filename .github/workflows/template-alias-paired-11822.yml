@@ -92,7 +92,7 @@ jobs:
           cache: false
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with:
-          toolchain: "1.99.1"
+          toolchain: "1.100.0"
       - name: Qualify public driver and install independent public provider
         working-directory: driver
         run: |

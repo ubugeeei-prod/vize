@@ -289,12 +289,13 @@ export function checkMeasurement(report, budget) {
 }
 
 export function ratchetBudgets(current, base) {
-  // A toolchain/environment refresh cannot silently replace a ratchet.
-  ratchetInstructionMethodology(current, base);
+  // A toolchain/environment refresh cannot silently replace a ratchet. Only a
+  // reviewed compiler re-baseline may raise a listed cap, to its reviewed count.
+  const raises = ratchetInstructionMethodology(current, base);
   for (const [id, row] of Object.entries(base.instruction)) {
     assert.ok(current.instruction[id], `instruction budget dropped: ${id}`);
     assert.ok(
-      current.instruction[id].instructions <= row.instructions,
+      current.instruction[id].instructions <= Math.max(row.instructions, raises[id] ?? 0),
       `instruction budget loosened: ${id}`,
     );
   }

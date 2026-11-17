@@ -1,15 +1,16 @@
 //! Lint text-edit application for the native API.
 
 use std::{fs, path::Path};
+use vize_l0::dialect::FileKind;
 use vize_l0::{String, ToCompactString};
 
 const LINT_EXTENSIONS: &[&str] = &[
-    "vue", "html", "htm", "js", "mjs", "cjs", "ts", "mts", "cts", "jsx", "tsx",
+    "vue", "html", "htm", "js", "mjs", "cjs", "ts", "mts", "cts", "jsx", "tsx", "tsrx",
 ];
 
 #[cfg(feature = "napi")]
 pub(super) const LINT_EXTENSIONS_DISPLAY: &str =
-    ".vue, .html, .htm, .js, .mjs, .cjs, .ts, .mts, .cts, .jsx, or .tsx";
+    ".vue, .html, .htm, .js, .mjs, .cjs, .ts, .mts, .cts, .jsx, .tsx, or .tsrx";
 
 pub(super) fn lint_file_with_optional_fix(
     linter: &vize_patina::Linter,
@@ -53,6 +54,8 @@ pub(super) fn lint_source(
 ) -> vize_patina::LintResult {
     if is_standalone_html_filename(filename) {
         linter.lint_standalone_html(source, filename)
+    } else if FileKind::of_path(Path::new(filename)) == Some(FileKind::Tsrx) {
+        linter.lint_tsrx(source, filename)
     } else if is_script_filename(filename) {
         linter.lint_script(source, filename)
     } else {
@@ -162,6 +165,25 @@ mod tests {
             assert!(is_script_filename(filename));
             assert!(is_lintable_extension(extension));
         }
+    }
+
+    #[test]
+    fn tsrx_modules_lint_through_the_tsrx_entry() {
+        assert!(is_lintable_extension("tsrx"));
+        assert!(!is_script_filename("List.tsrx"));
+        let linter = Linter::new();
+        let source = "export function List({ items }: { items: string[] }) @{\n  <ul>\n    @for (const item of items) {\n      <li  title={item}>{item}</li>\n    }\n  </ul>\n}\n";
+        let rows = |result: vize_patina::LintResult| -> Vec<_> {
+            result
+                .diagnostics
+                .iter()
+                .map(|diagnostic| (diagnostic.rule_name, diagnostic.start, diagnostic.end))
+                .collect()
+        };
+        let routed = rows(lint_source(&linter, source, "List.tsrx"));
+        assert_eq!(routed, rows(linter.lint_tsrx(source, "List.tsrx")));
+        let rules: Vec<_> = routed.iter().map(|(rule, _, _)| *rule).collect();
+        assert_eq!(rules, ["vue/require-v-for-key", "vue/no-multi-spaces"]);
     }
 
     #[test]

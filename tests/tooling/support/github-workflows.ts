@@ -30,6 +30,25 @@ export function restorePinnedWildAction(
   return restored;
 }
 
+/** Reverse the reviewed Rust 1.100.0 pin (#12954) in step inputs and environments. */
+export function restoreRustToolchainPin(
+  steps: Array<{ with?: Record<string, unknown>; env?: Record<string, unknown> }>,
+  original: string,
+): number {
+  let restored = 0;
+  for (const step of steps) {
+    if (step.with?.toolchain === "1.100.0") {
+      step.with.toolchain = original;
+      restored += 1;
+    }
+    if (step.env?.RUSTUP_TOOLCHAIN === "1.100.0") {
+      step.env.RUSTUP_TOOLCHAIN = original;
+      restored += 1;
+    }
+  }
+  return restored;
+}
+
 /** Inspect the actual caller and its closed full-only callee without rewriting jobs. */
 export function checkWorkflowJobSources(
   caller = readRepoFile(".github", "workflows", "check.yml"),

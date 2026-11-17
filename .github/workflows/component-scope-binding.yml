@@ -20,6 +20,7 @@ jobs:
     env:
       EVENT_BASE_SHA: ${{ github.event.pull_request.base.sha }}
       PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      RUSTUP_TOOLCHAIN: "1.100.0"
       CARGO_BUILD_JOBS: "24"
       CARGO_INCREMENTAL: "0"
       RAYON_NUM_THREADS: "8"
@@ -29,7 +30,7 @@ jobs:
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with: { node-version-file: package.json, package-manager-cache: false }
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0
-        with: { toolchain: "1.99.1" }
+        with: { toolchain: "1.100.0" }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
         with: { wild-version: "0.9.0" }
       - name: Authenticate actual merge parents and untouched normal products
@@ -56,6 +57,7 @@ jobs:
             if [[ "$role" == base ]]; then source_root="$RUNNER_TEMP/component-scope-binding-base"; fi
             git -C "$source_root" diff --exit-code
             git -C "$source_root" rev-parse HEAD > "$EVIDENCE/$role.source"
+            (cd "$source_root" && rustc -Vv) > "$EVIDENCE/$role-rustc.txt"
             (cd "$source_root" && CARGO_TARGET_DIR="$RUNNER_TEMP/component-$role-normal-target" cargo build --locked --profile ci-opt -p vize --bin vize --message-format=json) > "$EVIDENCE/$role-normal-build.jsonl"
             python3 - "$role" <<'PY'
           import json, pathlib, os, sys, hashlib, shutil
@@ -70,7 +72,6 @@ jobs:
           PY
           done
           node --input-type=module -e 'import fs from "node:fs";const p=process.env.EVIDENCE;const b=Object.fromEntries(["base","head"].map(k=>[k,JSON.parse(fs.readFileSync(p+"/"+k+"-normal-binary.json"))]));if(JSON.parse(fs.readFileSync(p+"/provenance.json")).observerPurpose!=="correctness"&&b.base.sha256===b.head.sha256)throw Error("identical binaries");fs.writeFileSync(p+"/binaries.json",JSON.stringify(b,null,2));'
-          rustc -Vv > "$EVIDENCE/rustc.txt"
           uname -a > "$EVIDENCE/kernel.txt"
           lscpu > "$EVIDENCE/cpu.txt"
       - name: Add identical explicit profiling-only source observers

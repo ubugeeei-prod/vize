@@ -43,7 +43,7 @@ jobs:
     runs-on: blacksmith-32vcpu-ubuntu-2404
     timeout-minutes: 30
     env:
-      RUSTUP_TOOLCHAIN: "1.99.0"
+      RUSTUP_TOOLCHAIN: "1.100.0"
       VIZE_N8N_CAPTURE_BASELINE: f5699c195e627ad26aa1c8efd4a59266120cd9b9
       VIZE_N8N_REPAIR_ANCHOR: 311e3c8a0e1a42d91381ba3769ef9fcfc6c1f826
     steps:
@@ -57,7 +57,7 @@ jobs:
           cache: true
           run-install: false
       - uses: dtolnay/rust-toolchain@7e38f4b43b4db5c8dd498af069a4f6196df1d067 # stable
-        with: { toolchain: "1.99.0" }
+        with: { toolchain: "1.100.0" }
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with:
           wild-version: "0.9.0"
@@ -88,7 +88,7 @@ jobs:
           const { before, after } = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
           assert.equal(before.rustc, after.rustc, 'both source phases require the same actual compiler');
           assert.equal(before.cargo, after.cargo, 'both source phases require the same actual Cargo');
-          assert.match(after.rustc, /^rustc 1\.99\.0 \(b940084d7 2026-09-28\)/u);
+          assert.match(after.rustc, /^rustc 1\.100\.0 \(0ef1bc386 2026-11-09\)/u);
           assert.notEqual(before.binary.sha256, after.binary.sha256, 'distinct production states require distinct producers');
           NODE
       - name: Verify whole legacy slot binding producer handoff

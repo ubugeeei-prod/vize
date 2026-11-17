@@ -36,10 +36,7 @@ pub(super) fn should_skip_prop_for_if(
                 return true;
             }
             // Skip v-if/v-else-if/v-else directives
-            if matches!(dir.name, "if" | "else-if" | "else") {
-                return true;
-            }
-            false
+            matches!(dir.name, "if" | "else-if" | "else")
         }
     }
 }

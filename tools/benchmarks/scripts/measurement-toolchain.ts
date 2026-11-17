@@ -4,7 +4,7 @@ import path from "node:path";
 import { parseTomlLite } from "../../support/compat/davinci/toml-lite.ts";
 
 // Measurements use the contributor pin; a toolchain bump re-baselines them in the same PR.
-export const MEASUREMENT_RUST = "1.99.1";
+export const MEASUREMENT_RUST = "1.100.0";
 
 export function measurementToolchain(root: string): string {
   const text = fs.readFileSync(path.join(root, "rust-toolchain.toml"), "utf8");

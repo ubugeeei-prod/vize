@@ -44,11 +44,11 @@ jobs:
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with: { node-version: "26.6.0" }
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
-        with: { toolchain: "1.99.1" }
+        with: { toolchain: "1.100.0" }
       - uses: ./qualification/.github/actions/setup-wild-http-recovery
         with: { wild-version: "0.9.0" }
       - uses: ./.github/actions/setup-rust-sticky-cache
-        with: { key: nextest-ci, cache-key-suffix: Linux-X64-1.99.1 }
+        with: { key: nextest-ci, cache-key-suffix: Linux-X64-1.100.0 }
       - name: Record the exact producer before execution
         shell: bash
         run: |

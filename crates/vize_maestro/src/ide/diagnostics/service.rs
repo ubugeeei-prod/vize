@@ -2,7 +2,7 @@
 
 use crate::ide::ecosystem;
 use crate::server::ServerState;
-use crate::utils::{is_jsx_path, is_plain_script_path, is_standalone_html_path};
+use crate::utils::{is_jsx_path, is_plain_script_path, is_standalone_html_path, is_tsrx_path};
 use tower_lsp::lsp_types::{Diagnostic, DiagnosticSeverity, NumberOrString, Range, Url};
 
 use super::{LineIndex, Severity};
@@ -80,6 +80,21 @@ impl DiagnosticService {
                     lint_diags.len()
                 );
                 diagnostics.extend(lint_diags);
+            }
+            return diagnostics;
+        }
+
+        // A `.tsrx` module is not an SFC: its parse and lowering diagnostics
+        // are `parser/tsrx` lint diagnostics from the one TSRX lint entry.
+        if is_tsrx_path(path) {
+            if features.lint {
+                diagnostics.extend(Self::collect_lint_diagnostics(
+                    state,
+                    uri,
+                    &content,
+                    features.ecosystem,
+                    &line_index,
+                ));
             }
             return diagnostics;
         }

@@ -23,6 +23,13 @@ pub fn is_jsx_path(path: &str) -> bool {
     path.ends_with(".jsx") || path.ends_with(".tsx")
 }
 
+/// A TSRX module (`.tsrx`), routed by its file kind.
+#[inline]
+pub(crate) fn is_tsrx_path(path: &str) -> bool {
+    vize_l0::dialect::FileKind::of_path(std::path::Path::new(path))
+        == Some(vize_l0::dialect::FileKind::Tsrx)
+}
+
 /// Authored non-JSX scripts use their existing native script diagnostic path.
 #[inline]
 pub(crate) fn is_plain_script_path(path: &str) -> bool {
