@@ -266,12 +266,19 @@ for (const spec of arg("scenarios", "mk,mk-json,mk-all,bench,ta").split(",")) {
   // `strace-tN`: syscall counts of one JSON lint with N workers (scheduler yields and futex waits).
   const straceThreads = /^strace-t(\d+)$/.exec(spec);
   if (straceThreads) {
-    const result = spawnSync("strace", ["-f", "-c", "-o", "/dev/stderr", bins.base, "lint", "src", "--format", "json"], {
+    const traceFile = `/tmp/strace-${straceThreads[1]}.txt`;
+    const result = spawnSync("strace", ["-f", "-c", "-o", traceFile, bins.base, "lint", "src", "--format", "json"], {
       cwd: mk,
       maxBuffer: 1 << 30,
       env: { ...process.env, RAYON_NUM_THREADS: straceThreads[1] },
     });
-    const lines = (result.stderr?.toString() ?? "").split("\n").filter((line) => /calls|-----|total|sched_yield|futex|read|openat|mmap|munmap|madvise|statx|newfstatat|getdents|clone|mprotect/.test(line));
+    let traced = "";
+    try {
+      traced = readFileSync(traceFile, "utf8");
+    } catch {
+      traced = `strace failed: ${result.error ?? ""} ${(result.stderr?.toString() ?? "").slice(0, 400)}`;
+    }
+    const lines = traced.split("\n").slice(0, 40);
     write(["", `syscalls with RAYON_NUM_THREADS=${straceThreads[1]}:`, "", "```", ...lines, "```", ""].join("\n"));
   }
   if (spec === "startup") {
