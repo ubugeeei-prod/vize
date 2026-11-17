@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h6-unused-prop-script-only-use-3416",
+    history: "598cc56b57718b31f1d0783657ac0655fdb6b83a",
+    source: "<script setup lang=\"ts\">\nconst { msg } = defineProps<{ msg: string }>();\nconst upper = msg.toUpperCase();\n</script>\n\n<template>\n  <div>{{ upper }}</div>\n</template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "vue/no-unused-properties",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h9-array-index-key-dynamic-arg-2402",
+    history: "3047068fcbdeca56987f813d5d28d0bf3d71cf08",
+    source: "<li v-for=\"(item, index) in list\" :[key]=\"index\">{{ item }}</li>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/no-array-index-key",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

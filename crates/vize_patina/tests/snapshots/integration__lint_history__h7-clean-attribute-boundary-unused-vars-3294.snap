@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h7-clean-attribute-boundary-unused-vars-3294",
+    history: "3c6e6362133dbd59843f5b4e2630812a1ab23909",
+    source: "<template><div version=\"1.1\" class=\"x\"><span v-for=\"(item, index) in items\" :key=\"item\">{{ item }}</span></div></template>",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "vue/no-unused-vars",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/no-unused-vars",
+                severity: Warning,
+                message: "Key variable 'index' is defined by v-for but never used",
+                start: 59,
+                end: 64,
+                help: Some(
+                    "Consider removing the key variable or prefix it with underscore: _key",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/no-unused-vars",
+                    severity: Warning,
+                    message: "Key variable 'index' is defined by v-for but never used",
+                    start: 59,
+                    end: 64,
+                    help: Some(
+                        "Consider removing the key variable or prefix it with underscore: _key",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

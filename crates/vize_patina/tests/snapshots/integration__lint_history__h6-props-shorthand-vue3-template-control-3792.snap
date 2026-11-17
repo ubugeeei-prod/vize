@@ -1,0 +1,63 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h6-props-shorthand-vue3-template-control-3792",
+    history: "486322ff3d90fa7d484cd663a31795fe8c2fcd14",
+    source: "<MyComponent :foo=\"foo\" />",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/prefer-props-shorthand",
+    vue_version: Some(
+        "3",
+    ),
+    vapor: None,
+    diagnostics: 1,
+    fixes: 1,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/prefer-props-shorthand",
+                severity: Warning,
+                message: "Use shorthand syntax for same-name prop binding",
+                start: 13,
+                end: 23,
+                help: Some(
+                    "Use shorthand prop syntax",
+                ),
+                labels: [],
+                fix: Some(
+                    Fix {
+                        message: "Use shorthand prop syntax",
+                        edits: [
+                            TextEdit {
+                                start: 17,
+                                end: 23,
+                                new_text: "",
+                            },
+                        ],
+                    },
+                ),
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [
+        Application {
+            diagnostic_index: 0,
+            source: "<MyComponent :foo />",
+            result: LintResult {
+                filename: "History.vue",
+                diagnostics: [],
+                error_count: 0,
+                warning_count: 0,
+            },
+        },
+    ],
+    unchanged_requery: None,
+}

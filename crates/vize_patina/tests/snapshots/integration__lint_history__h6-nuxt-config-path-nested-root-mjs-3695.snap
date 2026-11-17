@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h6-nuxt-config-path-nested-root-mjs-3695",
+    history: "8cfb25e08e87cb39861a20d87476a438f8b9791c",
+    source: "export default defineNuxtConfig({ ssr: true, modules: [] })",
+    filename: "apps/web/nuxt.config.mjs",
+    entry: "script",
+    rule: "nuxt/nuxt-config-keys-order",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 1,
+}
+Observation {
+    initial: LintResult {
+        filename: "apps/web/nuxt.config.mjs",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "nuxt/nuxt-config-keys-order",
+                severity: Error,
+                message: "Expected config key \"ssr\" to come after \"modules\"",
+                start: 34,
+                end: 43,
+                help: None,
+                labels: [],
+                fix: Some(
+                    Fix {
+                        message: "Sort Nuxt config keys",
+                        edits: [
+                            TextEdit {
+                                start: 33,
+                                end: 56,
+                                new_text: " modules: [], ssr: true",
+                            },
+                        ],
+                    },
+                ),
+            },
+        ],
+        error_count: 1,
+        warning_count: 0,
+    },
+    applications: [
+        Application {
+            diagnostic_index: 0,
+            source: "export default defineNuxtConfig({ modules: [], ssr: true })",
+            result: LintResult {
+                filename: "apps/web/nuxt.config.mjs",
+                diagnostics: [],
+                error_count: 0,
+                warning_count: 0,
+            },
+        },
+    ],
+    unchanged_requery: None,
+}

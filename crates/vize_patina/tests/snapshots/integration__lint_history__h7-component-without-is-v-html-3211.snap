@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h7-component-without-is-v-html-3211",
+    history: "f310d1cfdcc86110c868c55265489e77f45f187d",
+    source: "<component v-html=\"content\" />",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/no-v-text-v-html-on-component",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/no-v-text-v-html-on-component",
+                severity: Error,
+                message: "v-html cannot be used on component <component>",
+                start: 11,
+                end: 27,
+                help: Some(
+                    "**Why:** Components have their own rendering logic. `v-text`/`v-html` would overwrite the component's content unexpectedly.\n\n**Fix:** Pass content via props or slots:\n```vue\n<!-- Instead of -->\n<MyComponent v-html=\"content\" />\n\n<!-- Use slots -->\n<MyComponent><div v-html=\"content\" /></MyComponent>\n```",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 1,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/no-v-text-v-html-on-component",
+                    severity: Error,
+                    message: "v-html cannot be used on component <component>",
+                    start: 11,
+                    end: 27,
+                    help: Some(
+                        "**Why:** Components have their own rendering logic. `v-text`/`v-html` would overwrite the component's content unexpectedly.\n\n**Fix:** Pass content via props or slots:\n```vue\n<!-- Instead of -->\n<MyComponent v-html=\"content\" />\n\n<!-- Use slots -->\n<MyComponent><div v-html=\"content\" /></MyComponent>\n```",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 1,
+            warning_count: 0,
+        },
+    ),
+}

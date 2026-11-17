@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h10-v-bind-dynamic-shorthand-2380",
+    history: "0cfe613fec9ce07c967f5dfb8194e32d3efa3b1f",
+    source: "<div :[name]></div>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/valid-v-bind",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/valid-v-bind",
+                severity: Error,
+                message: "v-bind requires an expression",
+                start: 5,
+                end: 12,
+                help: Some(
+                    "**Fix:** Provide a value to bind:\n```vue\n<!-- Shorthand -->\n<img :src=\"imageUrl\" :alt=\"imageAlt\">\n\n<!-- Full syntax -->\n<img v-bind:src=\"imageUrl\">\n\n<!-- Bind multiple attributes -->\n<div v-bind=\"{ id: itemId, class: itemClass }\"></div>\n```",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 1,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/valid-v-bind",
+                    severity: Error,
+                    message: "v-bind requires an expression",
+                    start: 5,
+                    end: 12,
+                    help: Some(
+                        "**Fix:** Provide a value to bind:\n```vue\n<!-- Shorthand -->\n<img :src=\"imageUrl\" :alt=\"imageAlt\">\n\n<!-- Full syntax -->\n<img v-bind:src=\"imageUrl\">\n\n<!-- Bind multiple attributes -->\n<div v-bind=\"{ id: itemId, class: itemClass }\"></div>\n```",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 1,
+            warning_count: 0,
+        },
+    ),
+}

@@ -1,0 +1,71 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h12-permitted-contents-div-in-ul-control-1749",
+    history: "026b42b911d407bc279df127f0d4fae792134732",
+    source: "<ul><div>not li</div></ul>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/permitted-contents",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/permitted-contents",
+                severity: Error,
+                message: "<div> is not permitted as a child of <ul>",
+                start: 4,
+                end: 8,
+                help: Some(
+                    "**Why:** the HTML standard's content models define which elements may contain which. The browser builds this DOM as written, but the document is non-conforming: assistive technology, validators and future parsers may treat it differently.\n\n**Fix:** use an element the parent permits (phrasing content such as `<span>` inside `<p>`/`<span>`, `<li>` inside lists), or restructure so interactive elements are not nested.",
+                ),
+                labels: [
+                    Label {
+                        message: "<ul> is open here",
+                        start: 0,
+                        end: 3,
+                    },
+                ],
+                fix: None,
+            },
+        ],
+        error_count: 1,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/permitted-contents",
+                    severity: Error,
+                    message: "<div> is not permitted as a child of <ul>",
+                    start: 4,
+                    end: 8,
+                    help: Some(
+                        "**Why:** the HTML standard's content models define which elements may contain which. The browser builds this DOM as written, but the document is non-conforming: assistive technology, validators and future parsers may treat it differently.\n\n**Fix:** use an element the parent permits (phrasing content such as `<span>` inside `<p>`/`<span>`, `<li>` inside lists), or restructure so interactive elements are not nested.",
+                    ),
+                    labels: [
+                        Label {
+                            message: "<ul> is open here",
+                            start: 0,
+                            end: 3,
+                        },
+                    ],
+                    fix: None,
+                },
+            ],
+            error_count: 1,
+            warning_count: 0,
+        },
+    ),
+}

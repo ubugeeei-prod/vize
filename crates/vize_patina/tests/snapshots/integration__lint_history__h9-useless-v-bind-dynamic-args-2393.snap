@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h9-useless-v-bind-dynamic-args-2393",
+    history: "ec1618d06acb9b4cec5112a988a79c2d0f025461",
+    source: "<div :[attr]=\"'bar'\" v-bind:[other]=\"'baz'\"></div>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/no-useless-v-bind",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

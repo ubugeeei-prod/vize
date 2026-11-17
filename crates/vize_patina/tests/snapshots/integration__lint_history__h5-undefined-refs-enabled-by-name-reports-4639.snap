@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h5-undefined-refs-enabled-by-name-reports-4639",
+    history: "aa3c42f0b3830550d0c45f11a6b5875199a60b56",
+    source: "<script setup>\nconst known = 1\n</script>\n<template>\n  <p>{{ known }} {{ missing }}</p>\n</template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "vue/no-undefined-refs",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/no-undefined-refs",
+                severity: Warning,
+                message: "Variable 'missing' is not defined",
+                start: 72,
+                end: 79,
+                help: Some(
+                    "Define in <script setup> or ensure it's imported",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/no-undefined-refs",
+                    severity: Warning,
+                    message: "Variable 'missing' is not defined",
+                    start: 72,
+                    end: 79,
+                    help: Some(
+                        "Define in <script setup> or ensure it's imported",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h12-v-for-alias-unused-without-script-control-1782",
+    history: "a2e2c83261035e346dce270d442b54bf171cb3a3",
+    source: "<template><div v-for=\"value in values\">hello</div></template>",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "vue/no-unused-vars",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/no-unused-vars",
+                severity: Warning,
+                message: "Variable 'value' is defined by v-for but never used",
+                start: 22,
+                end: 27,
+                help: Some(
+                    "If the variable is intentionally unused, prefix it with underscore: _item",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/no-unused-vars",
+                    severity: Warning,
+                    message: "Variable 'value' is defined by v-for but never used",
+                    start: 22,
+                    end: 27,
+                    help: Some(
+                        "If the variable is intentionally unused, prefix it with underscore: _item",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

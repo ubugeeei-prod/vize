@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h8-role-presentation-dynamic-href-arg-2421",
+    history: "12ae02196ee5f667c994e6c8d5ca9a8ae7e9e74e",
+    source: "<a :[href]=\"url\" role=\"presentation\">Home</a>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "a11y/no-role-presentation-on-focusable",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

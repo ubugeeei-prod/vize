@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h10-v-memo-same-element-v-for-2366",
+    history: "09588226e0a8d674c58e337aa6e6df245fc8be00",
+    source: "<div v-for=\"item in items\" :key=\"item.id\" v-memo=\"[item]\"></div>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/valid-v-memo",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

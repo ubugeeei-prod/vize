@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h9-true-shorthand-dynamic-args-2394",
+    history: "f631674a16d5a2221b9950a1f07e7000a4fe658e",
+    source: "<MyComponent :[prop]=\"true\" v-bind:[other]=\"true\" />",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/prefer-true-attribute-shorthand",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

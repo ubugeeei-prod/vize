@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h5-no-useless-mustaches-whitespace-text-node-4991",
+    history: "86d379248ef409b7a6b5c66ee12ec086c7013e0b",
+    source: "<span>A</span>\n{{ \" \" }}\n<span>B</span>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/no-useless-mustaches",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

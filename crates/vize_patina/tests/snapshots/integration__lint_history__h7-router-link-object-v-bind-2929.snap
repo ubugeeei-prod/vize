@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h7-router-link-object-v-bind-2929",
+    history: "000f75dd9a574e58686c8010d17d9589ded64873",
+    source: "<RouterLink v-bind=\"linkProps\" />",
+    filename: "History.vue",
+    entry: "template",
+    rule: "ecosystem/router-link-require-to",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

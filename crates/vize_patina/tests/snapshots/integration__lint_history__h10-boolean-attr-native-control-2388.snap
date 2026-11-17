@@ -1,0 +1,61 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h10-boolean-attr-native-control-2388",
+    history: "3a5402af3e958ee5ac65391806d3ef68e575f6a5",
+    source: "<input disabled=\"disabled\" />",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/no-boolean-attr-value",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 1,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/no-boolean-attr-value",
+                severity: Warning,
+                message: "Boolean attribute \"disabled\" should not have value \"disabled\"",
+                start: 7,
+                end: 26,
+                help: Some(
+                    "Remove the value. Use just disabled instead of disabled=\"...\".",
+                ),
+                labels: [],
+                fix: Some(
+                    Fix {
+                        message: "Remove the value. Use just disabled instead of disabled=\"...\".",
+                        edits: [
+                            TextEdit {
+                                start: 15,
+                                end: 26,
+                                new_text: "",
+                            },
+                        ],
+                    },
+                ),
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [
+        Application {
+            diagnostic_index: 0,
+            source: "<input disabled />",
+            result: LintResult {
+                filename: "History.vue",
+                diagnostics: [],
+                error_count: 0,
+                warning_count: 0,
+            },
+        },
+    ],
+    unchanged_requery: None,
+}

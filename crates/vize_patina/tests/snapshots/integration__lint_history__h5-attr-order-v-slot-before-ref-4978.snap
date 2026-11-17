@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h5-attr-order-v-slot-before-ref-4978",
+    history: "1ab272292ebee370d20e0fc81dacc32aad7f4f95",
+    source: "<Comp v-slot=\"{ item }\" ref=\"r\"></Comp>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/attribute-order",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

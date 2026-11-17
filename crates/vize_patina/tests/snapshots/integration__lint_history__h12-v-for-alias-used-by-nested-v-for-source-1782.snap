@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h12-v-for-alias-used-by-nested-v-for-source-1782",
+    history: "a2e2c83261035e346dce270d442b54bf171cb3a3",
+    source: "<script setup>\nconst groups = new Map()\n</script>\n<template>\n  <template v-for=\"[key, values] in groups\" :key=\"key\">\n    <span v-for=\"value in values\" :key=\"value\">{{ value }}</span>\n  </template>\n</template>",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "vue/no-unused-vars",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

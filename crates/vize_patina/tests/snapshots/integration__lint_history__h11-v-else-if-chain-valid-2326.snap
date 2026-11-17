@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-v-else-if-chain-valid-2326",
+    history: "c04e878b4c87422584774ad9e5eb94c4c7e39482",
+    source: "<div v-if=\"foo\"></div><div v-else-if=\"bar\"></div><div v-else></div>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/valid-v-else",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

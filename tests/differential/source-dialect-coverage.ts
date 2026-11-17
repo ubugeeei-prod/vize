@@ -103,7 +103,8 @@ export function sourceInspectedDialectCoverage(
       dialects.add("html-template");
     } else if (extension === ".tsx") dialects.add("tsx");
     else if (extension === ".jsx") dialects.add("jsx");
-    else if (extension === ".ts") dialects.add("ts");
+    else if (extension === ".ts" || extension === ".mts" || extension === ".cts")
+      dialects.add("ts");
     else if (extension === ".js" || extension === ".mjs" || extension === ".cjs") {
       dialects.add("js");
     }

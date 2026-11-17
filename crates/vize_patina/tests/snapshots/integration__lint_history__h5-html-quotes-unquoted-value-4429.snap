@@ -1,0 +1,61 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h5-html-quotes-unquoted-value-4429",
+    history: "80bbc1007488009374a829428df4c10064a5f56e",
+    source: "<div class=bare></div>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/html-quotes",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 1,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/html-quotes",
+                severity: Warning,
+                message: "Expected double quotes but found single quotes",
+                start: 11,
+                end: 15,
+                help: Some(
+                    "Use consistent quote style for HTML attribute values.",
+                ),
+                labels: [],
+                fix: Some(
+                    Fix {
+                        message: "Use double quotes",
+                        edits: [
+                            TextEdit {
+                                start: 11,
+                                end: 15,
+                                new_text: "\"bare\"",
+                            },
+                        ],
+                    },
+                ),
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [
+        Application {
+            diagnostic_index: 0,
+            source: "<div class=\"bare\"></div>",
+            result: LintResult {
+                filename: "History.vue",
+                diagnostics: [],
+                error_count: 0,
+                warning_count: 0,
+            },
+        },
+    ],
+    unchanged_requery: None,
+}

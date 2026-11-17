@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-v-model-component-file-type-control-2358",
+    history: "75d90bff8c6ae9b0b7101c47e047eb483d0a5970",
+    source: "<MyFileInput type=\"file\" v-model=\"file\" />",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/valid-v-model",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

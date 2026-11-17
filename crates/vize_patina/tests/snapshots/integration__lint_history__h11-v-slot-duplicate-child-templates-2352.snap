@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h11-v-slot-duplicate-child-templates-2352",
+    history: "4e85e71d12cacef33938d44ad16eacc1b83a429a",
+    source: "<MyComponent>\n                <template #header>Header A</template>\n                <template #header>Header B</template>\n            </MyComponent>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/valid-v-slot",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/valid-v-slot",
+                severity: Error,
+                message: "v-slot can only be used on components or template elements",
+                start: 94,
+                end: 101,
+                help: Some(
+                    "Use v-slot on a component or a template element inside a component",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 1,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/valid-v-slot",
+                    severity: Error,
+                    message: "v-slot can only be used on components or template elements",
+                    start: 94,
+                    end: 101,
+                    help: Some(
+                        "Use v-slot on a component or a template element inside a component",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 1,
+            warning_count: 0,
+        },
+    ),
+}

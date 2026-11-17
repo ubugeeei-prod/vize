@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h6-nuxt-config-order-nuxt2-trailing-spread-reports-3794",
+    history: "9a40950d0c83f9de8a4a6603009683b1bd0187c8",
+    source: "export default defineNuxtConfig({ plugins: [], modules: [], vize: { compatibility: { nuxtVersion: 2 } }, ...override })",
+    filename: "nuxt.config.ts",
+    entry: "script",
+    rule: "nuxt/nuxt-config-keys-order",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 1,
+}
+Observation {
+    initial: LintResult {
+        filename: "nuxt.config.ts",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "nuxt/nuxt-config-keys-order",
+                severity: Error,
+                message: "Expected config key \"plugins\" to come after \"modules\"",
+                start: 34,
+                end: 45,
+                help: None,
+                labels: [],
+                fix: Some(
+                    Fix {
+                        message: "Sort Nuxt config keys",
+                        edits: [
+                            TextEdit {
+                                start: 33,
+                                end: 116,
+                                new_text: " modules: [], plugins: [], vize: { compatibility: { nuxtVersion: 2 } }, ...override",
+                            },
+                        ],
+                    },
+                ),
+            },
+        ],
+        error_count: 1,
+        warning_count: 0,
+    },
+    applications: [
+        Application {
+            diagnostic_index: 0,
+            source: "export default defineNuxtConfig({ modules: [], plugins: [], vize: { compatibility: { nuxtVersion: 2 } }, ...override })",
+            result: LintResult {
+                filename: "nuxt.config.ts",
+                diagnostics: [],
+                error_count: 0,
+                warning_count: 0,
+            },
+        },
+    ],
+    unchanged_requery: None,
+}

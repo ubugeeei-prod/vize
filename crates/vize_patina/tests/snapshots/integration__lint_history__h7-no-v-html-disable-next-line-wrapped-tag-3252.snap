@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h7-no-v-html-disable-next-line-wrapped-tag-3252",
+    history: "882c9867aec8b9fff8ed24d46491c4d27eb8e81b",
+    source: "<!-- eslint-disable-next-line vue/no-v-html -->\n<div\n  class=\"a-really-long-class-name\"\n  v-html=\"content\"\n></div>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/no-v-html",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

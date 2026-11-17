@@ -1,0 +1,83 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h12-plain-ts-script-get-current-instance-1963",
+    history: "038809588c2395c9c612d2d1feb684fbabde8d3b",
+    source: "import { getCurrentInstance } from \"vue\";\n\nconst instance = getCurrentInstance();\n",
+    filename: "vite.config.ts",
+    entry: "script",
+    rule: "script/no-get-current-instance",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 2,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "vite.config.ts",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "script/no-get-current-instance",
+                severity: Error,
+                message: "getCurrentInstance import is not supported in Vapor-oriented components",
+                start: 9,
+                end: 27,
+                help: Some(
+                    "Remove getCurrentInstance() usage and replace instance access with explicit Composition API state such as useAttrs(), useSlots(), provide/inject, or template refs.",
+                ),
+                labels: [],
+                fix: None,
+            },
+            LintDiagnostic {
+                rule_name: "script/no-get-current-instance",
+                severity: Error,
+                message: "getCurrentInstance() is not supported in Vapor-oriented components",
+                start: 60,
+                end: 78,
+                help: Some(
+                    "Avoid instance-level access in Vapor mode because getCurrentInstance() returns null. Prefer explicit Composition API bindings, provide/inject, template refs, or lifecycle hooks instead.",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 2,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "vite.config.ts",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "script/no-get-current-instance",
+                    severity: Error,
+                    message: "getCurrentInstance import is not supported in Vapor-oriented components",
+                    start: 9,
+                    end: 27,
+                    help: Some(
+                        "Remove getCurrentInstance() usage and replace instance access with explicit Composition API state such as useAttrs(), useSlots(), provide/inject, or template refs.",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+                LintDiagnostic {
+                    rule_name: "script/no-get-current-instance",
+                    severity: Error,
+                    message: "getCurrentInstance() is not supported in Vapor-oriented components",
+                    start: 60,
+                    end: 78,
+                    help: Some(
+                        "Avoid instance-level access in Vapor mode because getCurrentInstance() returns null. Prefer explicit Composition API bindings, provide/inject, template refs, or lifecycle hooks instead.",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 2,
+            warning_count: 0,
+        },
+    ),
+}

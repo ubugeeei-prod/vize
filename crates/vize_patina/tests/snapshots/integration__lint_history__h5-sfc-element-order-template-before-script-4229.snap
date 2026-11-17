@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h5-sfc-element-order-template-before-script-4229",
+    history: "4a6d20cd9f5b59f80b3c9c1d3bafc97fbac72a09",
+    source: "<template><div></div></template>\n<script setup></script>",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "vue/sfc-element-order",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

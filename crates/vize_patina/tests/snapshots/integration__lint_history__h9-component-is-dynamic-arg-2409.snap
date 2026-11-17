@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h9-component-is-dynamic-arg-2409",
+    history: "c8ddb770705feb13ff294cdfb261b58afc559aa9",
+    source: "<component :[is]=\"currentComponent\" />",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/require-component-is",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/require-component-is",
+                severity: Error,
+                message: "<component> requires a `:is` or `is` attribute",
+                start: 0,
+                end: 38,
+                help: Some(
+                    "**Why:** The `<component>` element is a dynamic component placeholder. Without `is`, Vue cannot determine which component to render.\n\n**Fix:**\n```vue\n<component :is=\"currentComponent\" />\n<component is=\"MyComponent\" />\n```",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 1,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/require-component-is",
+                    severity: Error,
+                    message: "<component> requires a `:is` or `is` attribute",
+                    start: 0,
+                    end: 38,
+                    help: Some(
+                        "**Why:** The `<component>` element is a dynamic component placeholder. Without `is`, Vue cannot determine which component to render.\n\n**Fix:**\n```vue\n<component :is=\"currentComponent\" />\n<component is=\"MyComponent\" />\n```",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 1,
+            warning_count: 0,
+        },
+    ),
+}

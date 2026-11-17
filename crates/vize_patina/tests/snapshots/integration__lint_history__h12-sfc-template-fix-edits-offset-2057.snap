@@ -1,0 +1,61 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h12-sfc-template-fix-edits-offset-2057",
+    history: "54ba6d4e2b5b8330f31cde3da403df6645972a8f",
+    source: "<template><button v-on:click=\"save\">Save</button></template>",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "vue/v-on-style",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 1,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/v-on-style",
+                severity: Warning,
+                message: "Prefer shorthand `@` over `v-on:`",
+                start: 18,
+                end: 35,
+                help: Some(
+                    "Use `@event=\"handler\"` instead of `v-on:event=\"handler\"`",
+                ),
+                labels: [],
+                fix: Some(
+                    Fix {
+                        message: "Use shorthand syntax",
+                        edits: [
+                            TextEdit {
+                                start: 18,
+                                end: 35,
+                                new_text: "@click=\"save\"",
+                            },
+                        ],
+                    },
+                ),
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [
+        Application {
+            diagnostic_index: 0,
+            source: "<template><button @click=\"save\">Save</button></template>",
+            result: LintResult {
+                filename: "History.vue",
+                diagnostics: [],
+                error_count: 0,
+                warning_count: 0,
+            },
+        },
+    ],
+    unchanged_requery: None,
+}

@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h7-mutating-props-unshadowed-prop-v-model-2927",
+    history: "7b11533440c8e2578aed1b4827852aa072d5655f",
+    source: "<script setup lang=\"ts\">\nconst props = defineProps<{ enabled?: boolean }>()\n</script>\n\n<template>\n  <Switch v-model=\"enabled\" />\n</template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "vue/no-mutating-props",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/no-mutating-props",
+                severity: Error,
+                message: "Unexpected mutation of prop 'enabled' via v-model",
+                start: 117,
+                end: 124,
+                help: Some(
+                    "Use a local ref or emit an event instead of mutating props directly",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 1,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/no-mutating-props",
+                    severity: Error,
+                    message: "Unexpected mutation of prop 'enabled' via v-model",
+                    start: 117,
+                    end: 124,
+                    help: Some(
+                        "Use a local ref or emit an event instead of mutating props directly",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 1,
+            warning_count: 0,
+        },
+    ),
+}

@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h12-vize-docs-comment-alone-sfc-unsafe-url-control",
+    history: "498c5f93e058cfa0050f5e308fda5373b682fbbe",
+    source: "<script setup lang=\"ts\">\nconst url = \"https://vuefes.jp/\";\n</script>\n\n<template>\n  <!-- @vize:docs trusted URL from bundled conference data -->\n  <a :href=\"url\">Vue Fes</a>\n</template>",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "vue/no-unsafe-url",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/no-unsafe-url",
+                severity: Warning,
+                message: "Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
+                start: 149,
+                end: 160,
+                help: Some(
+                    "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/no-unsafe-url",
+                    severity: Warning,
+                    message: "Dynamic :href binding may be vulnerable to XSS via javascript: protocol",
+                    start: 149,
+                    end: 160,
+                    help: Some(
+                        "Consider using <router-link :to=\"...\"> or sanitize URLs with @braintree/sanitize-url",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

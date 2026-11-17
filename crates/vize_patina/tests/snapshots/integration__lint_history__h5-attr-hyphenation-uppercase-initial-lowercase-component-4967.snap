@@ -1,0 +1,165 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h5-attr-hyphenation-uppercase-initial-lowercase-component-4967",
+    history: "80c4bfd6260bb2d891460a19a273ab5c28e5e8d4",
+    source: "<div><MyComponent DOMId=\"value\" /><draggable itemKey=\"id\" /></div>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/attribute-hyphenation",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 2,
+    fixes: 2,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/attribute-hyphenation",
+                severity: Warning,
+                message: "Attribute should be hyphenated",
+                start: 18,
+                end: 31,
+                help: Some(
+                    "Use kebab-case for attribute names",
+                ),
+                labels: [],
+                fix: Some(
+                    Fix {
+                        message: "Use kebab-case for attribute names",
+                        edits: [
+                            TextEdit {
+                                start: 18,
+                                end: 23,
+                                new_text: "D-o-m-id",
+                            },
+                        ],
+                    },
+                ),
+            },
+            LintDiagnostic {
+                rule_name: "vue/attribute-hyphenation",
+                severity: Warning,
+                message: "Attribute should be hyphenated",
+                start: 45,
+                end: 57,
+                help: Some(
+                    "Use kebab-case for attribute names",
+                ),
+                labels: [],
+                fix: Some(
+                    Fix {
+                        message: "Use kebab-case for attribute names",
+                        edits: [
+                            TextEdit {
+                                start: 45,
+                                end: 52,
+                                new_text: "item-key",
+                            },
+                        ],
+                    },
+                ),
+            },
+        ],
+        error_count: 0,
+        warning_count: 2,
+    },
+    applications: [
+        Application {
+            diagnostic_index: 0,
+            source: "<div><MyComponent D-o-m-id=\"value\" /><draggable itemKey=\"id\" /></div>",
+            result: LintResult {
+                filename: "History.vue",
+                diagnostics: [
+                    LintDiagnostic {
+                        rule_name: "vue/attribute-hyphenation",
+                        severity: Warning,
+                        message: "Attribute should be hyphenated",
+                        start: 18,
+                        end: 34,
+                        help: Some(
+                            "Use kebab-case for attribute names",
+                        ),
+                        labels: [],
+                        fix: Some(
+                            Fix {
+                                message: "Use kebab-case for attribute names",
+                                edits: [
+                                    TextEdit {
+                                        start: 18,
+                                        end: 26,
+                                        new_text: "D-o-m-id",
+                                    },
+                                ],
+                            },
+                        ),
+                    },
+                    LintDiagnostic {
+                        rule_name: "vue/attribute-hyphenation",
+                        severity: Warning,
+                        message: "Attribute should be hyphenated",
+                        start: 48,
+                        end: 60,
+                        help: Some(
+                            "Use kebab-case for attribute names",
+                        ),
+                        labels: [],
+                        fix: Some(
+                            Fix {
+                                message: "Use kebab-case for attribute names",
+                                edits: [
+                                    TextEdit {
+                                        start: 48,
+                                        end: 55,
+                                        new_text: "item-key",
+                                    },
+                                ],
+                            },
+                        ),
+                    },
+                ],
+                error_count: 0,
+                warning_count: 2,
+            },
+        },
+        Application {
+            diagnostic_index: 1,
+            source: "<div><MyComponent DOMId=\"value\" /><draggable item-key=\"id\" /></div>",
+            result: LintResult {
+                filename: "History.vue",
+                diagnostics: [
+                    LintDiagnostic {
+                        rule_name: "vue/attribute-hyphenation",
+                        severity: Warning,
+                        message: "Attribute should be hyphenated",
+                        start: 18,
+                        end: 31,
+                        help: Some(
+                            "Use kebab-case for attribute names",
+                        ),
+                        labels: [],
+                        fix: Some(
+                            Fix {
+                                message: "Use kebab-case for attribute names",
+                                edits: [
+                                    TextEdit {
+                                        start: 18,
+                                        end: 23,
+                                        new_text: "D-o-m-id",
+                                    },
+                                ],
+                            },
+                        ),
+                    },
+                ],
+                error_count: 0,
+                warning_count: 1,
+            },
+        },
+    ],
+    unchanged_requery: None,
+}

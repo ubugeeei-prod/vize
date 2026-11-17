@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h8-aria-unsupported-dynamic-role-arg-2425",
+    history: "606cb3d4e6a83e552394d50b79ea6f7ea0f02141",
+    source: "<script :[role]=\"role\"></script>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "a11y/aria-unsupported-elements",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

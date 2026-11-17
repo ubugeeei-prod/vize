@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h8-void-link-static-href-2435",
+    history: "25de9546c221a885dc347ca8409ba420220db16e",
+    source: "<script setup>\nimport { Link } from \"@void/vue\";\n</script>\n<template><Link href=\"/settings\">Settings</Link></template>",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "ecosystem/void-link-require-href",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

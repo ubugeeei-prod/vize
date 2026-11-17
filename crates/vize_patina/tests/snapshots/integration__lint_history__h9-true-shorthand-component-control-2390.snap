@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h9-true-shorthand-component-control-2390",
+    history: "bc0c34d9ddec008b9b6e315b69dd6e9d0b87cd39",
+    source: "<Draggable :list=\"[]\" item-key=\"id\" :force-fallback=\"true\" />",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/prefer-true-attribute-shorthand",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/prefer-true-attribute-shorthand",
+                severity: Warning,
+                message: "':force-fallback' bound to true can be written as the shorthand 'force-fallback'",
+                start: 36,
+                end: 58,
+                help: Some(
+                    "Drop the ='true' binding and write the attribute name on its own.",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/prefer-true-attribute-shorthand",
+                    severity: Warning,
+                    message: "':force-fallback' bound to true can be written as the shorthand 'force-fallback'",
+                    start: 36,
+                    end: 58,
+                    help: Some(
+                        "Drop the ='true' binding and write the attribute name on its own.",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

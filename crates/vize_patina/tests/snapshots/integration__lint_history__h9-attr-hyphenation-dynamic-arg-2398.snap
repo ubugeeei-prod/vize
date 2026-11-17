@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h9-attr-hyphenation-dynamic-arg-2398",
+    history: "b1c80b1016d114eafdbbc4871d675bccd1575e30",
+    source: "<MyComponent :[myProp]=\"value\" />",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/attribute-hyphenation",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

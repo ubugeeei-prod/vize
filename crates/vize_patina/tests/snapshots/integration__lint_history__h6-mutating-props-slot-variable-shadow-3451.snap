@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h6-mutating-props-slot-variable-shadow-3451",
+    history: "28d6ecece001dfd932f3ae6b6b430372dfd6da70",
+    source: "<script setup lang=\"ts\">\ndefineProps<{ msg: string }>();\n</script>\n\n<template>\n  <Child v-slot=\"{ msg }\">\n    <button @click=\"msg = 'x'\">go</button>\n  </Child>\n</template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "vue/no-mutating-props",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

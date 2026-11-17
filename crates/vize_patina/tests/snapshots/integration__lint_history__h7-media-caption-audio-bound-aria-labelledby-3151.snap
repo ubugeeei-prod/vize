@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h7-media-caption-audio-bound-aria-labelledby-3151",
+    history: "43bb1309b29d42e5f9eef7707536581addd82bba",
+    source: "<audio src=\"podcast.mp3\" :aria-labelledby=\"labelId\"></audio>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "a11y/media-has-caption",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

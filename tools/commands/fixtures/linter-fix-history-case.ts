@@ -205,7 +205,11 @@ function finalize(specs: Spec[]) {
     : {};
   for (const spec of specs) {
     for (const item of spec.cases) {
-      if (item.entry !== "sfc") continue;
+      if (item.entry !== "sfc") {
+        // A case that moved off the SFC entry no longer has an SFC outcome.
+        delete reasons[`current-api/${item.id}`];
+        continue;
+      }
       const fixture = loaded.cases.find((row: any) => row.id === `linter/current-api/${item.id}`);
       reasons[`current-api/${item.id}`] = expectedNativeReason(fixture);
     }

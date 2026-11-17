@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h6-nuxt-config-path-component-options-3695",
+    history: "8cfb25e08e87cb39861a20d87476a438f8b9791c",
+    source: "<script lang=\"ts\">\nexport default defineComponent({ name: \"DataTable\", model: {} })\n</script>\n",
+    filename: "components/DataTable.vue",
+    entry: "sfc",
+    rule: "nuxt/nuxt-config-keys-order",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "components/DataTable.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "components/DataTable.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}
