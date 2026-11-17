@@ -1,0 +1,16 @@
+<script setup lang="ts">
+interface Props {
+  width?: number
+  label: string
+  required?: boolean
+}
+
+const props = defineProps<Props>()
+const unusedLocal = 1
+</script>
+
+<template>
+  <label>
+    {{ label }} {{ width }} {{ required }}
+  </label>
+</template>

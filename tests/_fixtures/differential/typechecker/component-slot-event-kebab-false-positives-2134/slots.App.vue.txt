@@ -1,0 +1,18 @@
+<script setup lang="ts">
+import Child from './Child.vue'
+</script>
+
+<template>
+<div>
+  <Child>
+    <template #default="{ item }">
+      {{ item }}
+    </template>
+  </Child>
+  <Child>
+    <template #default="{ other }">
+      {{ other }}
+    </template>
+  </Child>
+</div>
+</template>

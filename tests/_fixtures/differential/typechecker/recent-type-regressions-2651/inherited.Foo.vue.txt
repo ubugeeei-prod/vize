@@ -1,0 +1,10 @@
+<script setup lang="ts">
+import type { BaseProps as ImportedProps } from "./Base.vue";
+
+interface Props extends ImportedProps {}
+defineProps<Props>();
+</script>
+
+<template>
+  {{ decorative }}
+</template>

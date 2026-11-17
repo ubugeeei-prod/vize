@@ -1,0 +1,2 @@
+import Child from "./Child.vue";
+export const NumberChild = Child<number>;

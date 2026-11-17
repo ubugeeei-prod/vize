@@ -1,0 +1,126 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 1566,
+  "regressionCommit": "beeb9d20faa6f952a8137b60f531cc37088deccd",
+  "sourceRevision": "beeb9d20faa6f952a8137b60f531cc37088deccd",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "recoverable-repair-keeps-template-checked",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "repair-clean.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "recoverable-repair-keeps-dependent-diagnostic",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "repair-missing.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 6,
+          "column": 6,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'missing' does not exist on the component instance."
+        }
+      ]
+    },
+    {
+      "id": "recoverable-repair-template-first-keeps-dependent-diagnostic",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/RecoverableTemplateRepair.vue",
+          "source": "repair-missing-template-first.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/RecoverableTemplateRepair.vue",
+          "line": 3,
+          "column": 6,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'missing' does not exist on the component instance."
+        }
+      ]
+    },
+    {
+      "id": "vfor-component-props-narrowed-by-enclosing-vif",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "guarded.App.vue.txt"
+        },
+        {
+          "file": "src/test.vue",
+          "source": "test.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "vfor-component-props-without-enclosing-vif",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "unguarded.App.vue.txt"
+        },
+        {
+          "file": "src/test.vue",
+          "source": "test.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 10,
+          "column": 12,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'string | number' is not assignable to type 'string'.\nType 'number' is not assignable to type 'string'."
+        }
+      ]
+    }
+  ]
+}

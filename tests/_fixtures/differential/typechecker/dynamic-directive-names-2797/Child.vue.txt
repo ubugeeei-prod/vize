@@ -1,0 +1,8 @@
+<script setup lang="ts">
+defineProps<{ staticProp: string }>()
+defineEmits<{ save: [] }>()
+</script>
+
+<template>
+  <div />
+</template>

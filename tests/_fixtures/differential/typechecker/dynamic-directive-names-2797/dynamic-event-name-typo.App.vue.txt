@@ -1,0 +1,12 @@
+<script setup lang="ts">
+import Child from './Child.vue'
+const staticValue = 'fixed'
+const dynamicValue = 'runtime'
+const propName = 'staticProp'
+const eventName = 'save'
+const handler = () => {}
+</script>
+
+<template>
+  <Child :static-prop="staticValue" :[propName]="dynamicValue" @save="handler" @[eventNam]="handler" />
+</template>

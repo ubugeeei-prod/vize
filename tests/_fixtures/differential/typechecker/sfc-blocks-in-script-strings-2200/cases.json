@@ -1,0 +1,90 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 2200,
+  "regressionCommit": "53c5d6e507b52decb903214322ab56e0312dbec0",
+  "sourceRevision": "53c5d6e507b52decb903214322ab56e0312dbec0",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "template-literal-sfc-sample",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Accordion.vue",
+          "source": "Accordion.vue.txt"
+        },
+        {
+          "file": "src/AccordionContent.vue",
+          "source": "Accordion.vue.txt"
+        },
+        {
+          "file": "src/AccordionHeader.vue",
+          "source": "Accordion.vue.txt"
+        },
+        {
+          "file": "src/AccordionPanel.vue",
+          "source": "Accordion.vue.txt"
+        },
+        {
+          "file": "src/BasicDoc.vue",
+          "source": "BasicDoc.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "real-import-still-resolved",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Accordion.vue",
+          "source": "Accordion.vue.txt"
+        },
+        {
+          "file": "src/AccordionContent.vue",
+          "source": "Accordion.vue.txt"
+        },
+        {
+          "file": "src/AccordionHeader.vue",
+          "source": "Accordion.vue.txt"
+        },
+        {
+          "file": "src/AccordionPanel.vue",
+          "source": "Accordion.vue.txt"
+        },
+        {
+          "file": "src/BasicDoc.vue",
+          "source": "missing-import.BasicDoc.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/BasicDoc.vue",
+          "line": 6,
+          "column": 28,
+          "severity": 1,
+          "code": 2307,
+          "message": "Cannot find module './AccordionPannel.vue' or its corresponding type declarations."
+        }
+      ]
+    }
+  ]
+}

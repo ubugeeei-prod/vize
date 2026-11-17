@@ -1,0 +1,4 @@
+<script setup lang="ts">
+const user = { title: 'Ada' }
+</script>
+<template>{{ user.title + title }}</template>

@@ -1,0 +1,26 @@
+<script lang="ts">
+export interface FooProps {
+  modelValue?: string
+  as?: string
+}
+</script>
+
+<script setup lang="ts">
+type ReadModelValueOptions<TValue> = {
+  props: {
+    modelValue: TValue | undefined
+  }
+}
+
+function readModelValue<TValue>(options: ReadModelValueOptions<TValue>) {
+  return options.props.modelValue
+}
+
+const props = withDefaults(defineProps<FooProps>(), {
+  as: 'input',
+})
+
+readModelValue<number>({ props })
+</script>
+
+<template>{{ props.modelValue }}</template>

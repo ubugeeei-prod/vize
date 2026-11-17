@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 1283,
+  "regressionCommit": "938a1b11ad3cab1e103544e7c0ef1e56abd7a3c6",
+  "sourceRevision": "938a1b11ad3cab1e103544e7c0ef1e56abd7a3c6",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "member-and-binding-share-name-defined",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "defined.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "undefined-name-after-same-named-member",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "undefined.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 4,
+          "column": 27,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'title' does not exist on the component instance."
+        }
+      ]
+    },
+    {
+      "id": "historical-js-setup-dom-global-name",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "historical.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

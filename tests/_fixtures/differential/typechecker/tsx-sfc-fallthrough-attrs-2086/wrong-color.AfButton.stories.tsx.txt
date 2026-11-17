@@ -1,0 +1,10 @@
+import AfButton from './AfButton.vue';
+
+export const Example = () => (
+  <AfButton
+    class="af-mb-2"
+    style="width: 200px"
+    color="tertiary"
+    onClick={(event: MouseEvent) => event.preventDefault()}
+  />
+);

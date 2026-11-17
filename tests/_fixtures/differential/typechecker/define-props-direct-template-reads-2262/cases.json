@@ -1,0 +1,101 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 2262,
+  "regressionCommit": "a85f3da23989f8208edb7a01407aebfe19e8264a",
+  "sourceRevision": "a85f3da23989f8208edb7a01407aebfe19e8264a",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "direct-template-prop-reads",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.no-unused-locals.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "App.vue.txt"
+        },
+        {
+          "file": "src/WithDefaults.vue",
+          "source": "WithDefaults.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 9,
+          "column": 7,
+          "severity": 1,
+          "code": 6133,
+          "message": "'unusedLocal' is declared but its value is never read."
+        },
+        {
+          "file": "src/WithDefaults.vue",
+          "line": 10,
+          "column": 7,
+          "severity": 1,
+          "code": 6133,
+          "message": "'unusedLocal' is declared but its value is never read."
+        }
+      ]
+    },
+    {
+      "id": "component-signature-consumes-props",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.no-unused-locals.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "no-template-read.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "optional-direct-prop-member-access",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.no-unused-locals.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "optional-prop-member.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 9,
+          "column": 7,
+          "severity": 1,
+          "code": 6133,
+          "message": "'unusedLocal' is declared but its value is never read."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 14,
+          "column": 20,
+          "severity": 1,
+          "code": 18048,
+          "message": "'width' is possibly 'undefined'."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,117 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 2258,
+  "regressionCommit": "da3b5e70aeb728b4f5a063354c6284c7e9970eb7",
+  "sourceRevision": "da3b5e70aeb728b4f5a063354c6284c7e9970eb7",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "suppressed-import-and-bare-package-vue-shim",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.shim.json.txt"
+        },
+        {
+          "file": "ts-shim.d.ts",
+          "source": "ts-shim.d.ts.txt"
+        },
+        {
+          "file": "node_modules/emoji-mart-vue-fast/src/components/Emoji.vue",
+          "source": "Emoji.vue.txt"
+        },
+        {
+          "file": "src/SchoolExamScoreChart.vue",
+          "source": "SchoolExamScoreChart.vue.txt"
+        },
+        {
+          "file": "src/TeacherSharedCommentReactionBtn.vue",
+          "source": "TeacherSharedCommentReactionBtn.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "unsuppressed-unresolved-import",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.shim.json.txt"
+        },
+        {
+          "file": "ts-shim.d.ts",
+          "source": "ts-shim.d.ts.txt"
+        },
+        {
+          "file": "node_modules/emoji-mart-vue-fast/src/components/Emoji.vue",
+          "source": "Emoji.vue.txt"
+        },
+        {
+          "file": "src/SchoolExamScoreChart.vue",
+          "source": "unsuppressed.SchoolExamScoreChart.vue.txt"
+        },
+        {
+          "file": "src/TeacherSharedCommentReactionBtn.vue",
+          "source": "TeacherSharedCommentReactionBtn.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/SchoolExamScoreChart.vue",
+          "line": 3,
+          "column": 19,
+          "severity": 1,
+          "code": 2307,
+          "message": "Cannot find module 'chart.js/auto/auto' or its corresponding type declarations."
+        }
+      ]
+    },
+    {
+      "id": "bare-package-vue-import-uses-shim-type",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.shim.json.txt"
+        },
+        {
+          "file": "ts-shim.d.ts",
+          "source": "ts-shim.d.ts.txt"
+        },
+        {
+          "file": "node_modules/emoji-mart-vue-fast/src/components/Emoji.vue",
+          "source": "Emoji.vue.txt"
+        },
+        {
+          "file": "src/SchoolExamScoreChart.vue",
+          "source": "SchoolExamScoreChart.vue.txt"
+        },
+        {
+          "file": "src/TeacherSharedCommentReactionBtn.vue",
+          "source": "shim-typed.TeacherSharedCommentReactionBtn.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/TeacherSharedCommentReactionBtn.vue",
+          "line": 4,
+          "column": 7,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'unknown' is not assignable to type 'string'."
+        }
+      ]
+    }
+  ]
+}

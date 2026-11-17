@@ -1,0 +1,14 @@
+<script lang="ts">
+import BaseButton from './BaseButton.vue'
+
+export default {
+    name: 'Button',
+    extends: BaseButton
+}
+</script>
+
+<template>
+<component v-if="!asChild" :is="as" :class="cx('root')">
+  <span v-if="label">{{ label }}</span>
+</component>
+</template>

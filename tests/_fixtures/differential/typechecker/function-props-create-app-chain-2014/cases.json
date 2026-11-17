@@ -1,0 +1,96 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 2014,
+  "regressionCommit": "cec7d50748ea10603b2dbf3242d832d01b7cfe5e",
+  "sourceRevision": "cec7d50748ea10603b2dbf3242d832d01b7cfe5e",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "inline-function-prop-and-create-app-chain",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/components/Comp1.vue",
+          "source": "Comp1.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "App.vue.txt"
+        },
+        {
+          "file": "src/main.ts",
+          "source": "main.ts.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "inline-function-prop-in-v-if-branch",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/components/Comp1.vue",
+          "source": "Comp1.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "v-if.App.vue.txt"
+        },
+        {
+          "file": "src/main.ts",
+          "source": "main.ts.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "inline-function-prop-wrong-parameter-use",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/components/Comp1.vue",
+          "source": "Comp1.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "wrong-body.App.vue.txt"
+        },
+        {
+          "file": "src/main.ts",
+          "source": "main.ts.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 6,
+          "column": 43,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'toUpperCase' does not exist on type 'number'."
+        }
+      ]
+    }
+  ]
+}

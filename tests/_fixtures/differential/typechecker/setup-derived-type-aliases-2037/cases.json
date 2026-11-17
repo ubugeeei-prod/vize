@@ -1,0 +1,111 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 2037,
+  "regressionCommit": "e9bfbcc91101021a20a5496ebdcf1740c99e7539",
+  "sourceRevision": "e9bfbcc91101021a20a5496ebdcf1740c99e7539",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "transitive-typeof-alias-props",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.paths.json.txt"
+        },
+        {
+          "file": "src/shared/objectOperationUtil.ts",
+          "source": "objectOperationUtil.ts.txt"
+        },
+        {
+          "file": "src/domain/models/form.ts",
+          "source": "form.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "props-alias.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "transitive-typeof-alias-wrong-state",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.paths.json.txt"
+        },
+        {
+          "file": "src/shared/objectOperationUtil.ts",
+          "source": "objectOperationUtil.ts.txt"
+        },
+        {
+          "file": "src/domain/models/form.ts",
+          "source": "form.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "props-alias-wrong-state.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 18,
+          "column": 7,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '\"TextbookInput\"' is not assignable to type 'FormViewState'."
+        }
+      ]
+    },
+    {
+      "id": "local-alias-before-ref-usage",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.paths.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "ref-alias.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "local-alias-ref-wrong-literal",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.paths.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "ref-alias-wrong-literal.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 11,
+          "column": 48,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '\"Other\"' is not assignable to parameter of type 'DialogOpenStatus'."
+        }
+      ]
+    }
+  ]
+}

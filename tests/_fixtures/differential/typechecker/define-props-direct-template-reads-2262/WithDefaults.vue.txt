@@ -1,0 +1,15 @@
+<script setup lang="ts">
+interface Props {
+  count?: number
+  label: string
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  count: 0,
+})
+const unusedLocal = 1
+</script>
+
+<template>
+  <button>{{ label }}: {{ count }}</button>
+</template>

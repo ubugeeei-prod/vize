@@ -1,0 +1,1 @@
+export interface BaseProps { as?: string; decorative?: boolean; }

@@ -1,0 +1,86 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 1814,
+  "regressionCommit": "5bcfe78a5be8845d60d43a3b63eb0aa5111b3d7f",
+  "sourceRevision": "5bcfe78a5be8845d60d43a3b63eb0aa5111b3d7f",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "historical-props-and-ref",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "props-and-ref.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "historical-ref-only",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "ref-only.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "unwrapped-ref-number-member",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "unwrapped-member.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "unwrapped-ref-has-no-value-member",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "ref-value-member.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 8,
+          "column": 18,
+          "severity": 1,
+          "code": 2551,
+          "message": "Property 'value' does not exist on type 'number'. Did you mean 'valueOf'?"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+<script setup lang="ts">
+import { ElBadge } from './element-plus'
+
+const rows = [1, 2]
+</script>
+
+<template>
+  <el-badge><template #content="{ value }">{{ value.toFixed(1) }}</template></el-badge>
+  <div v-for="row in rows" :key="row">
+    <el-badge><template #content="{ value }">{{ value + row }}</template></el-badge>
+  </div>
+</template>

@@ -27,6 +27,13 @@
 /crates/vize_carton/src/config/loader/vite-runtime-validation.js
 /crates/vize_carton/src/config/loader/plugin-*.js
 /crates/vize_carton/src/config/loader/plugin-registry.json
+# Runtime JSON imports: the planner follows an import edge only when its
+# target exists in this checkout.
+/playground/e2e/fixtures/generated-code-snapshot-successors-*.json
+/tests/_fixtures/vue-benchmarks-upstream.json
+/tests/_fixtures/differential/lint/legacy-instance-apis-9217/template-compiler-provenance.json
+/tests/_fixtures/differential/typechecker/fix-history-packs.json
+/tests/_fixtures/differential/typechecker/vue2-rename-context-custody/*successor.json
 /.github/
 /tools/
 /npm/

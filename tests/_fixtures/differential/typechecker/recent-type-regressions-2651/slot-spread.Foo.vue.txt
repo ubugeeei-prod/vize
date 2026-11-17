@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import Base from "./Base.vue";
+</script>
+
+<template>
+  <Base v-slot="slotData">
+    <slot v-bind="{ ...slotData }" />
+  </Base>
+</template>

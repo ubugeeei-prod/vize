@@ -1,0 +1,13 @@
+<script lang="ts">
+// FIXME: types
+// @ts-ignore
+import Chart from "chart.js/auto/auto";
+
+export default {
+  mounted() {
+    void Chart;
+  },
+};
+</script>
+
+<template><canvas /></template>

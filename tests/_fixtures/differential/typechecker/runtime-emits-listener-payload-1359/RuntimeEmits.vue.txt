@@ -1,0 +1,10 @@
+<script setup lang="ts">
+import { emitObject } from './emits';
+
+const emit = defineEmits({
+    ...emitObject,
+});
+</script>
+<template>
+    <button @click="emit('ok')">OK</button>
+</template>

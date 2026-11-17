@@ -1,0 +1,10 @@
+<script setup lang="ts">
+import Child from "./Child.vue"
+const bind = 1
+const sync = 2
+const fooBar = 3
+</script>
+
+<template>
+  <Child v-bind:bind="bind" :sync.camel="sync" :foo-bar="fooBar" />
+</template>

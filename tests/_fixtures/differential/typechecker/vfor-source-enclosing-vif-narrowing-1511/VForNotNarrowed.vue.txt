@@ -1,0 +1,11 @@
+<script setup lang="ts">
+const elems = { a: [1], b: ["a"] } as const;
+const key = "a" as "a" | "b";
+function wantsString(value: string) { void value; }
+</script>
+
+<template>
+  <button v-for="value in elems[key]" :key="value">
+    {{ wantsString(value) }}
+  </button>
+</template>

@@ -1,0 +1,13 @@
+<template>
+  <p>Value: {{ textConverter(value) }}</p>
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue';
+
+defineProps<{
+  textConverter: (value: number) => string;
+}>();
+
+const value = ref(0.5);
+</script>

@@ -1,0 +1,34 @@
+<script lang="ts">
+import { defineComponent } from 'vue'
+
+function useFakeStore() {
+  return {
+    ready: false,
+    items: [] as Array<{ id: number; label: string }>,
+  }
+}
+
+export default defineComponent({
+  setup() {
+    const store = useFakeStore()
+    return { store }
+  },
+  data() {
+    return { count: 0 }
+  },
+  computed: {
+    status() {
+      return this.store.ready
+    },
+  },
+  methods: {
+    bump(step: number) {
+      this.count = this.count + step
+      return this.status
+    },
+  },
+})
+</script>
+<template>
+  <button @click="bump(1)">{{ status }} {{ store.ready }} {{ count }}</button>
+</template>

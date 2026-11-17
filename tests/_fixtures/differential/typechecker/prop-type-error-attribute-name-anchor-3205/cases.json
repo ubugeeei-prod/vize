@@ -1,0 +1,199 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 3205,
+  "regressionCommit": "55227fa84922109af547beb1f6dc7a00d7c2dbba",
+  "sourceRevision": "55227fa84922109af547beb1f6dc7a00d7c2dbba",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "cross-file-literal-mismatch-anchors-at-name",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "cross-file.Child.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "cross-file.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Parent.vue",
+          "line": 6,
+          "column": 11,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'string' is not assignable to type 'number'."
+        }
+      ]
+    },
+    {
+      "id": "check-server-multibyte-matching-prop",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "check-server.App.vue.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "check-server-numeric.Child.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "check-server-multibyte-mismatch-anchors-at-name",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "check-server.App.vue.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "check-server-string.Child.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 7,
+          "column": 27,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type 'string'."
+        }
+      ]
+    },
+    {
+      "id": "prefixed-and-modified-names-match",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "prefixes.App.vue.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "prefixes-number.Child.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "prefixed-and-modified-names-mismatch-anchor-at-names",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "prefixes.App.vue.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "prefixes-string.Child.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 9,
+          "column": 17,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type 'string'."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 9,
+          "column": 30,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type 'string'."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 9,
+          "column": 49,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type 'string'."
+        }
+      ]
+    },
+    {
+      "id": "utf8-static-label-matching-prop",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "utf8.App.vue.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "utf8-number.Child.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "utf8-static-label-mismatch-anchors-at-name",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "utf8.App.vue.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "utf8-string.Child.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 7,
+          "column": 23,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type 'string'."
+        }
+      ]
+    }
+  ]
+}
