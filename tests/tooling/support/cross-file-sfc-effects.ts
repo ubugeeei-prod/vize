@@ -54,6 +54,9 @@ function run(
   return stdout;
 }
 
+// The newest release whose packets the source must reproduce. Re-pin it when an
+// intended output change lands (#12255 made public columns UTF-16).
+const PUBLIC_VERSION = "0.778.0";
 const expected = expectedBuildIdentity(repo);
 assert.equal(expected.sourceRevision, process.env.EXPECTED_SOURCE_SHA);
 const sourceReceipt = JSON.parse(
@@ -67,7 +70,10 @@ const consumer = fs.realpathSync(
 );
 fs.writeFileSync(
   path.join(consumer, "package.json"),
-  JSON.stringify({ private: true, dependencies: { vize: "0.565.0", "@vizejs/wasm": "0.565.0" } }),
+  JSON.stringify({
+    private: true,
+    dependencies: { vize: PUBLIC_VERSION, "@vizejs/wasm": PUBLIC_VERSION },
+  }),
 );
 run("install", "npm", ["install", "--ignore-scripts", "--no-audit", "--no-fund"], consumer, false);
 fs.copyFileSync(
@@ -82,7 +88,7 @@ for (const [key, raw] of Object.entries(packages)) {
   if (!(key === "node_modules/vize" || key.startsWith("node_modules/@vizejs/"))) continue;
   const entry = record(raw);
   const name = key.slice("node_modules/".length);
-  assert.equal(entry.version, "0.565.0", name);
+  assert.equal(entry.version, PUBLIC_VERSION, name);
   const installedPath = path.join(consumer, key, "package.json");
   if (!fs.existsSync(installedPath)) {
     assert.equal(
@@ -92,9 +98,12 @@ for (const [key, raw] of Object.entries(packages)) {
     );
     continue;
   }
-  const response = await fetch(`https://registry.npmjs.org/${encodeURIComponent(name)}/0.565.0`, {
-    signal: AbortSignal.timeout(30_000),
-  });
+  const response = await fetch(
+    `https://registry.npmjs.org/${encodeURIComponent(name)}/${PUBLIC_VERSION}`,
+    {
+      signal: AbortSignal.timeout(30_000),
+    },
+  );
   assert.equal(response.status, 200, name);
   const manifest = record(await response.json());
   const dist = record(manifest.dist);
@@ -102,7 +111,7 @@ for (const [key, raw] of Object.entries(packages)) {
   assert.equal(entry.integrity, dist.integrity, name);
   const installed = record(JSON.parse(fs.readFileSync(installedPath, "utf8")));
   assert.equal(installed.name, name);
-  assert.equal(installed.version, "0.565.0");
+  assert.equal(installed.version, PUBLIC_VERSION);
   packageIdentities.push({
     name,
     manifest,
@@ -117,7 +126,7 @@ const publicBinary = path.join(consumer, "node_modules/vize/bin/vize");
 save("public-entrypoint.json", { path: publicBinary, sha256: hash(fs.readFileSync(publicBinary)) });
 assert.equal(
   run("public-version", publicBinary, ["--version"], consumer).toString("utf8"),
-  "vize 0.565.0\n",
+  `vize ${PUBLIC_VERSION}\n`,
 );
 assert.equal(
   run("source-version", sourceBinary, ["--version"], repo).toString("utf8"),
@@ -271,7 +280,7 @@ assert.deepEqual(cases[0].files, cases.at(-1)?.files, "repair must restore all e
 save("qualification.json", {
   passed: true,
   source: expected,
-  publicVersion: "0.565.0",
+  publicVersion: PUBLIC_VERSION,
   scenarios: observations.length,
   observations,
   optOutDiagnosticSha256: hash(afterOff),
