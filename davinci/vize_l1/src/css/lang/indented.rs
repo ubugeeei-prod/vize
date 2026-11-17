@@ -37,14 +37,17 @@ pub(super) fn stylus(source: &str) -> Lexis {
     }
 }
 
-/// Stylus accepts CSS braces. Outside comments and strings, a block brace
-/// ends a line (`.a {`) or, in a one-line rule (`.a { color: red; }`),
-/// follows whitespace and encloses a `;` or a `: `; an interpolation
+/// Stylus accepts CSS braces. Outside comments, strings and unquoted
+/// `url(…)` payloads, a block brace ends a line (`.a {`) or, in a one-line
+/// rule (`.a { color: red; }`), follows whitespace and its `}` encloses a `;`
+/// or a `: ` (in a string too: `.a {content:"a;b"}`); an interpolation
 /// (`.item-{i}`, `{prop}: 1`) does neither. The choice is per block, so a
 /// block that mixes braced and indented rules is read one way only.
 fn is_braced_stylus(source: &str) -> bool {
     let code = code_lines(source);
-    code.lines().any(|line| {
+    // `code` keeps every byte offset of `source`, so the same range of a
+    // line of each is the same authored bytes.
+    source.lines().zip(code.lines()).any(|(authored, line)| {
         if line.trim_end().ends_with('{') {
             return true;
         }
@@ -53,59 +56,121 @@ fn is_braced_stylus(source: &str) -> bool {
             byte == b'{'
                 && at > 0
                 && bytes.get(at - 1).is_some_and(u8::is_ascii_whitespace)
-                && line.get(at + 1..).is_some_and(|rest| {
-                    let inner = rest.split('}').next().unwrap_or_default();
-                    rest.contains('}') && (inner.contains(';') || inner.contains(": "))
-                })
+                && line
+                    .get(at + 1..)
+                    .and_then(|rest| rest.find('}'))
+                    .and_then(|close| authored.get(at + 1..at + 1 + close))
+                    .is_some_and(|inner| inner.contains(';') || inner.contains(": "))
         })
     })
 }
 
-/// `source` with comments and string contents blanked, line breaks kept.
+/// `source` with comments, string contents and unquoted `url(…)` payloads
+/// blanked byte for byte, line breaks kept, so every offset is the authored
+/// one. A payload is opaque as the structure lexer reads it: `//`, braces
+/// and `;` in it are data.
 fn code_lines(source: &str) -> String {
-    let mut code = String::default();
-    let mut chars = source.chars().peekable();
-    let mut quote = None;
-    while let Some(ch) = chars.next() {
-        match (quote, ch) {
-            (Some(open), _) if ch == open => {
-                quote = None;
-                code.push(ch);
+    let bytes = source.as_bytes();
+    let mut code = bytes.to_vec();
+    let mut blank = |from: usize, to: usize| {
+        for byte in code.get_mut(from..to).into_iter().flatten() {
+            if *byte != b'\n' {
+                *byte = b' ';
             }
-            (Some(_), '\\') => {
-                code.push(' ');
-                if chars.next().is_some() {
-                    code.push(' ');
+        }
+    };
+    let mut index = 0;
+    while let Some(&byte) = bytes.get(index) {
+        index = match byte {
+            b'"' | b'\'' => {
+                let close = string_close(bytes, index);
+                blank(index + 1, close);
+                close + 1
+            }
+            b'/' if bytes.get(index + 1) == Some(&b'/') => {
+                let end = find(bytes, index, b"\n").unwrap_or(bytes.len());
+                blank(index, end);
+                end
+            }
+            b'/' if bytes.get(index + 1) == Some(&b'*') => {
+                let end = find(bytes, index + 2, b"*/").map_or(bytes.len(), |at| at + 2);
+                blank(index, end);
+                end
+            }
+            b'u' | b'U' => match url_payload(bytes, index) {
+                Some((from, close)) => {
+                    blank(from, close);
+                    close + 1
                 }
-            }
-            (Some(_), '\n') => code.push('\n'),
-            (Some(_), _) => code.push(' '),
-            (None, '"' | '\'') => {
-                quote = Some(ch);
-                code.push(ch);
-            }
-            (None, '/') if chars.peek() == Some(&'/') => {
-                while chars.peek().is_some_and(|next| *next != '\n') {
-                    chars.next();
-                }
-            }
-            (None, '/') if chars.peek() == Some(&'*') => {
-                chars.next();
-                let mut last = ' ';
-                for next in chars.by_ref() {
-                    if next == '\n' {
-                        code.push('\n');
-                    }
-                    if last == '*' && next == '/' {
-                        break;
-                    }
-                    last = next;
-                }
-            }
-            (None, _) => code.push(ch),
+                None => index + 1,
+            },
+            _ => index + 1,
+        };
+    }
+    // Blanks start and end at ASCII bytes, so whole characters stay whole.
+    core::str::from_utf8(&code)
+        .map(String::from)
+        .unwrap_or_default()
+}
+
+/// The index of the quote closing the string opened at `open`, or the end.
+fn string_close(bytes: &[u8], open: usize) -> usize {
+    let quote = bytes.get(open).copied();
+    let mut cursor = open + 1;
+    while let Some(&byte) = bytes.get(cursor) {
+        if byte == b'\\' {
+            cursor += 2;
+            continue;
+        }
+        if Some(byte) == quote {
+            return cursor;
+        }
+        cursor += 1;
+    }
+    bytes.len()
+}
+
+/// The payload start and the index of the `)` (or the end) of an unquoted
+/// `url(` that starts at `index`.
+fn url_payload(bytes: &[u8], index: usize) -> Option<(usize, usize)> {
+    let starts_name = index
+        .checked_sub(1)
+        .and_then(|previous| bytes.get(previous))
+        .is_none_or(|&previous| {
+            !(previous.is_ascii_alphanumeric()
+                || matches!(previous, b'-' | b'_')
+                || !previous.is_ascii())
+        });
+    let named = bytes
+        .get(index..index + 4)
+        .is_some_and(|name| name.eq_ignore_ascii_case(b"url("));
+    if !starts_name || !named {
+        return None;
+    }
+    let mut from = index + 4;
+    while bytes.get(from).is_some_and(u8::is_ascii_whitespace) {
+        from += 1;
+    }
+    if matches!(bytes.get(from), Some(b'\'' | b'"')) {
+        return None;
+    }
+    let mut cursor = from;
+    while let Some(&byte) = bytes.get(cursor) {
+        match byte {
+            b')' => return Some((from, cursor)),
+            b'\\' => cursor += 2,
+            _ => cursor += 1,
         }
     }
-    code
+    Some((from, bytes.len()))
+}
+
+fn find(bytes: &[u8], from: usize, needle: &[u8]) -> Option<usize> {
+    bytes
+        .get(from..)?
+        .windows(needle.len())
+        .position(|window| window == needle)
+        .map(|offset| from + offset)
 }
 
 /// `=name` and `+name` spell `@mixin` and `@include`.

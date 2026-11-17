@@ -95,7 +95,7 @@ pub(super) fn rule_preludes<'s>(sheet: &'s StyleSheet<'_>) -> impl Iterator<Item
 /// `css/no-id-selectors` has always had. Arguments of functional
 /// pseudo-classes (`:not(#a)`) and attribute values (`[href="#a"]`) are not
 /// selectors of the rule, and interpolation (`#{…}`) is not an ID token.
-/// Comments are masked first, so a `//` comment cannot open a block.
+/// Line comments are masked first, so a `//` comment cannot open a block.
 pub(super) fn key_compound_ids(sheet: &StyleSheet<'_>, prelude: Span) -> Vec<Span> {
     let text = masked(sheet, prelude);
     let mut input = ParserInput::new(&text);
@@ -145,13 +145,20 @@ pub(super) fn key_compound_ids(sheet: &StyleSheet<'_>, prelude: Span) -> Vec<Spa
     ids
 }
 
-/// The text of `span` with every comment of the block replaced by spaces of
-/// the same byte length, so token offsets stay authored offsets.
+/// The text of `span` with the block's preprocessor comments (`// …`, and an
+/// indented Sass `/*` without `*/`) replaced by spaces of the same byte
+/// length, so token offsets stay authored offsets. A terminated `/* … */`
+/// stays a comment token, which separates nothing: `#a/**/.b` is one
+/// compound.
 fn masked(sheet: &StyleSheet<'_>, span: Span) -> String {
     let mut text = String::from(sheet.text(span));
     for comment in sheet.comments() {
         let comment = comment.span();
         if comment.end <= span.start || span.end <= comment.start {
+            continue;
+        }
+        let body = sheet.text(comment);
+        if body.starts_with("/*") && body.len() >= 4 && body.ends_with("*/") {
             continue;
         }
         let from = comment.start.max(span.start) - span.start;

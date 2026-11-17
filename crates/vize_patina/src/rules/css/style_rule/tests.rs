@@ -128,6 +128,10 @@ fn id_selectors_are_top_level_selector_tokens() {
         ),
         ["#s"]
     );
+    // A block comment separates no compounds; whitespace beside it does.
+    assert_eq!(ids(css, "#a/**/.b { color: red; }"), ["#a"]);
+    assert_eq!(ids(css, "#a/**/#b { color: red; }"), ["#b", "#a"]);
+    assert_eq!(ids(css, "#a /**/ .b { color: red; }"), Vec::<String>::new());
 }
 
 #[test]
@@ -140,4 +144,15 @@ fn preprocessor_selectors_report_ids_as_written() {
     assert_eq!(ids(StyleLanguage::Sass, sass), ["#main"]);
     let stylus = "#main\n  color #fff\n";
     assert_eq!(ids(StyleLanguage::Stylus, stylus), ["#main"]);
+    // One-line braced Stylus rules whose markers sit in a string or after an
+    // unquoted `url(//…)` are still rules.
+    for stylus in [
+        "#main {content:\"a;b\"}\n",
+        "#main { background: url(http://example.com/a.png) !important }\n",
+    ] {
+        assert_eq!(ids(StyleLanguage::Stylus, stylus), ["#main"], "{stylus}");
+    }
+    // A line comment in an SCSS selector is masked, so it ends the compound.
+    let scss = "#a // note\n.b { color: red; }";
+    assert_eq!(ids(StyleLanguage::Scss, scss), Vec::<String>::new());
 }

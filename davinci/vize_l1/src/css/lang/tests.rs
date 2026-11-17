@@ -199,6 +199,16 @@ fn stylus_resolves_indented_parents_and_skips_functions_and_loops() {
         ),
         ["a"]
     );
+    // A `;` in a string still marks a one-line rule, and an unquoted `url(…)`
+    // payload is data, not a `//` comment that hides the closing brace.
+    for source in [
+        ".main {content:\"a;b\"}\n",
+        ".main { color: red }\n",
+        ".main { background: url(http://example.com/a.png) !important }\n",
+        ".main { background: URL( //cdn.test/{a}.png ) }\n",
+    ] {
+        assert_eq!(names(Stylus, source), ["main"], "{source}");
+    }
 }
 
 #[test]
