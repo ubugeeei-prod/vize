@@ -7,7 +7,7 @@ import { existsSync, readdirSync, rmSync } from "node:fs";
 import type { Dirent } from "node:fs";
 import { join } from "node:path";
 
-import { manifestName } from "./source-mtimes.ts";
+import { manifestName, unitFingerprintDirectories } from "./source-mtimes.ts";
 
 // Cargo's own state inside one profile directory (`target/<profile>` or
 // `target/<triple>/<profile>`). Top-level files there are uplifted copies that
@@ -26,7 +26,11 @@ const entries = (directory: string): Dirent[] => {
   }
 };
 
-const isProfile = (directory: string) => existsSync(join(directory, ".fingerprint"));
+// Cargo 1.99 keeps `.fingerprint`; Cargo 1.100 keeps one `fingerprint` per unit
+// under `build/<package>/<hash>`. Both survive pruning.
+const isProfile = (directory: string) =>
+  existsSync(join(directory, ".fingerprint")) ||
+  (existsSync(join(directory, "build")) && unitFingerprintDirectories(directory).length > 0);
 
 function containsProfile(directory: string, depth: number): boolean {
   if (isProfile(directory)) return true;

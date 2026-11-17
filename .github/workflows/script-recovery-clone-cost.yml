@@ -33,7 +33,7 @@ jobs:
         with: { persist-credentials: false }
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with: { node-version: "26.6.0" }
-      - run: rustup toolchain install 1.99.1 --profile minimal
+      - run: rustup toolchain install 1.100.0 --profile minimal
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
         with: { wild-version: "0.9.0" }
       - uses: ./.github/actions/setup-rust-sticky-cache
@@ -45,13 +45,13 @@ jobs:
           set -euo pipefail
           mkdir -p functional-evidence
           git rev-parse HEAD > functional-evidence/source.sha
-          rustc +1.99.1 -vV > functional-evidence/rustc.txt
+          rustc +1.100.0 -vV > functional-evidence/rustc.txt
           lscpu > functional-evidence/cpu.txt
           python3 -c 'import json,os; print(json.dumps({"runner":{k:os.environ.get(k) for k in ("RUNNER_NAME","RUNNER_OS","RUNNER_ARCH","RUNNER_ENVIRONMENT","CARGO_BUILD_JOBS")},"affinity":sorted(os.sched_getaffinity(0)),"scope":"untimed parser packets and counter laws; no throughput comparison"}))' > functional-evidence/resources.json
           node tools/benchmarks/scripts/recovery_cost_contract.ts | tee functional-evidence/recovery-class-controls.log
           node tools/benchmarks/scripts/compare_recovery_clone.ts --self-test | tee functional-evidence/clone-class-controls.log
-          cargo +1.99.1 test --locked --profile ci -p vize_croquis script_parser::recovery --message-format json -- --nocapture 2>&1 | tee functional-evidence/parser-packets.log
-          cargo +1.99.1 test --locked --profile ci -p vize_l0 --test source_operations_profile --features micro-profiling --message-format json 2>&1 | tee functional-evidence/source-counter-laws.log
+          cargo +1.100.0 test --locked --profile ci -p vize_croquis script_parser::recovery --message-format json -- --nocapture 2>&1 | tee functional-evidence/parser-packets.log
+          cargo +1.100.0 test --locked --profile ci -p vize_l0 --test source_operations_profile --features micro-profiling --message-format json 2>&1 | tee functional-evidence/source-counter-laws.log
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         if: always()
         with:
@@ -73,7 +73,7 @@ jobs:
         with: { persist-credentials: false }
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with: { node-version: "26.6.0" }
-      - run: rustup toolchain install 1.99.1 --profile minimal
+      - run: rustup toolchain install 1.100.0 --profile minimal
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
         with: { wild-version: "0.9.0" }
       - uses: ./.github/actions/setup-rust-sticky-cache
@@ -95,7 +95,7 @@ jobs:
           test "$(git -C "$RUNNER_TEMP/recovery-allocation-base" rev-parse HEAD)" = "$allocation_base_sha"
           cp davinci/vize_l0/examples/source_recovery_clone_benchmark.rs "$RUNNER_TEMP/recovery-allocation-base/davinci/vize_l0/examples/"
           git diff --name-status "$allocation_base_sha" HEAD > allocation-evidence/source-diff.txt
-          rustc +1.99.1 -vV > allocation-evidence/rustc.txt
+          rustc +1.100.0 -vV > allocation-evidence/rustc.txt
           lscpu > allocation-evidence/cpu.txt
           python3 - <<'PYIDENTITY'
           import hashlib, json, os, pathlib
@@ -116,7 +116,7 @@ jobs:
           for role in base head; do
             source="$GITHUB_WORKSPACE"
             if [[ "$role" == base ]]; then source="$RUNNER_TEMP/recovery-allocation-base"; fi
-            cargo +1.99.1 build --locked --profile ci-opt --manifest-path "$source/Cargo.toml" --target-dir "$GITHUB_WORKSPACE/target/recovery-allocation-$role-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" -p vize_l0 --example source_recovery_clone_benchmark --features micro-profiling --message-format json > "allocation-evidence/profile-build-$role.jsonl"
+            cargo +1.100.0 build --locked --profile ci-opt --manifest-path "$source/Cargo.toml" --target-dir "$GITHUB_WORKSPACE/target/recovery-allocation-$role-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" -p vize_l0 --example source_recovery_clone_benchmark --features micro-profiling --message-format json > "allocation-evidence/profile-build-$role.jsonl"
             cp "target/recovery-allocation-$role-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT/ci-opt/examples/source_recovery_clone_benchmark" "allocation-evidence/instrumented-$role"
             for scenario in irreparable valid repairable; do
               "allocation-evidence/instrumented-$role" 8 4096 profile "$scenario" > "allocation-evidence/profile-$scenario-$role-4096.json"
@@ -170,7 +170,7 @@ jobs:
         run: node tools/benchmarks/scripts/compare_recovery_clone.ts --self-test
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with: { node-version: "26.6.0" }
-      - run: rustup toolchain install 1.99.1 --profile minimal
+      - run: rustup toolchain install 1.100.0 --profile minimal
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203
         with: { wild-version: "0.9.0" }
       - uses: ./.github/actions/setup-rust-sticky-cache
@@ -198,20 +198,20 @@ jobs:
           cp davinci/vize_l0/examples/source_recovery_clone_benchmark.rs "$RUNNER_TEMP/recovery-base/davinci/vize_l0/examples/"
           sha256sum davinci/vize_l0/examples/source_recovery_clone_benchmark.rs "$RUNNER_TEMP/recovery-base/davinci/vize_l0/examples/source_recovery_clone_benchmark.rs" > evidence/carriers.sha256
           test "$(cut -d' ' -f1 evidence/carriers.sha256 | sort -u | wc -l)" -eq 1
-          rustc +1.99.1 -vV > evidence/rustc.txt
+          rustc +1.100.0 -vV > evidence/rustc.txt
           lscpu > evidence/cpu.txt
       - name: Compare complete parser packets and exact source counter controls
         run: |
           set -euo pipefail
-          cargo +1.99.1 test --locked --profile ci -p vize_croquis script_parser::recovery 2>&1 | tee evidence/recovery-packets.log
-          cargo +1.99.1 test --locked --profile ci -p vize_l0 --test source_operations_profile --features micro-profiling 2>&1 | tee evidence/callsite-controls.log
+          cargo +1.100.0 test --locked --profile ci -p vize_croquis script_parser::recovery 2>&1 | tee evidence/recovery-packets.log
+          cargo +1.100.0 test --locked --profile ci -p vize_l0 --test source_operations_profile --features micro-profiling 2>&1 | tee evidence/callsite-controls.log
       - name: Build independent baseline and candidate targets with equal flags
         run: |
           set -euo pipefail
           for role in base head; do
             source="$GITHUB_WORKSPACE"
             if [[ "$role" == base ]]; then source="$RUNNER_TEMP/recovery-base"; fi
-            cargo +1.99.1 build --locked --profile ci-opt --manifest-path "$source/Cargo.toml" --target-dir "$GITHUB_WORKSPACE/target/recovery-clone-$role-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" -p vize_l0 --example source_recovery_clone_benchmark --message-format json > "evidence/build-$role.jsonl"
+            cargo +1.100.0 build --locked --profile ci-opt --manifest-path "$source/Cargo.toml" --target-dir "$GITHUB_WORKSPACE/target/recovery-clone-$role-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" -p vize_l0 --example source_recovery_clone_benchmark --message-format json > "evidence/build-$role.jsonl"
             cp "target/recovery-clone-$role-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT/ci-opt/examples/source_recovery_clone_benchmark" "evidence/normal-$role"
             sha256sum "$source/Cargo.lock" "$source/crates/vize_croquis/src/script_parser/recovery.rs" > "evidence/inputs-$role.sha256"
           done
@@ -253,7 +253,7 @@ jobs:
           for role in base head; do
             source="$GITHUB_WORKSPACE"
             if [[ "$role" == base ]]; then source="$RUNNER_TEMP/recovery-base"; fi
-            cargo +1.99.1 build --locked --profile ci-opt --manifest-path "$source/Cargo.toml" --target-dir "$GITHUB_WORKSPACE/target/recovery-clone-$role-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" -p vize_l0 --example source_recovery_clone_benchmark --features micro-profiling --message-format json > "evidence/profile-build-$role.jsonl"
+            cargo +1.100.0 build --locked --profile ci-opt --manifest-path "$source/Cargo.toml" --target-dir "$GITHUB_WORKSPACE/target/recovery-clone-$role-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" -p vize_l0 --example source_recovery_clone_benchmark --features micro-profiling --message-format json > "evidence/profile-build-$role.jsonl"
             cp "target/recovery-clone-$role-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT/ci-opt/examples/source_recovery_clone_benchmark" "evidence/instrumented-$role"
             for scenario in irreparable valid repairable; do
               taskset -c "$cpus" "evidence/instrumented-$role" 8 4096 profile "$scenario" > "evidence/profile-$scenario-$role-4096.json"

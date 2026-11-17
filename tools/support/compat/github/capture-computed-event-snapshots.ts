@@ -49,7 +49,8 @@ export function selectCanonTestBinary(raw: string, root: string): string {
     )
       continue;
     const binary = fs.realpathSync(executable);
-    const relative = path.relative(fs.realpathSync(path.join(root, "target/ci/deps")), binary);
+    // Cargo 1.99 writes target/ci/deps; Cargo 1.100 writes target/ci/build/<package>/<hash>/out.
+    const relative = path.relative(fs.realpathSync(path.join(root, "target/ci")), binary);
     assert(
       relative && !relative.startsWith("..") && !path.isAbsolute(relative),
       "foreign test binary",

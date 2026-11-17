@@ -73,16 +73,26 @@ jobs:
           node --input-type=module <<'JS'
           import assert from 'node:assert/strict';
           import { createHash } from 'node:crypto';
-          import { readFileSync, readdirSync, realpathSync, writeFileSync } from 'node:fs';
+          import { existsSync, readFileSync, readdirSync, realpathSync, writeFileSync } from 'node:fs';
           import path from 'node:path';
           const capture = path.join(process.env.RUNNER_TEMP, 'constructor-emitter');
+          // Cargo 1.99 writes <profile>/deps/<name>-<hash>; Cargo 1.100 writes
+          // <profile>/build/<package>/<hash>/out/<name>-<hash>.
+          const unitExecutables = (profile, pattern) => {
+            const directories = [path.join(profile, 'deps')];
+            const units = path.join(profile, 'build');
+            for (const pkg of existsSync(units) ? readdirSync(units) : [])
+              for (const hash of readdirSync(path.join(units, pkg)))
+                directories.push(path.join(units, pkg, hash, 'out'));
+            return directories.filter(directory => existsSync(directory)).flatMap(directory =>
+              readdirSync(directory).filter(name => pattern.test(name)).map(name => path.join(directory, name)));
+          };
           const sha256 = file => createHash('sha256').update(readFileSync(file)).digest('hex');
           const rows = ['base', 'head'].map(side => {
             const target = realpathSync(path.join(process.env.RUNNER_TEMP, `constructor-target-${side}`));
-            const directory = path.join(target, 'ci/deps');
-            const candidates = readdirSync(directory).filter(name => /^constructor_emission_projection-[a-f0-9]+$/.test(name));
+            const candidates = unitExecutables(path.join(target, 'ci'), /^constructor_emission_projection-[a-f0-9]+$/);
             assert.equal(candidates.length, 1);
-            const binary = realpathSync(path.join(directory, candidates[0]));
+            const binary = realpathSync(candidates[0]);
             assert.ok(binary.startsWith(target + path.sep));
             return { side, source: side === 'base' ? process.env.BASE_SHA : process.env.HEAD_SHA, target, binary, sha256: sha256(binary) };
           });
@@ -128,8 +138,19 @@ jobs:
           node --input-type=module <<'JS'
           import assert from 'node:assert/strict';
           import { createHash } from 'node:crypto';
-          import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
+          import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
           import path from 'node:path';
+          // Cargo 1.99 writes <profile>/deps/<name>-<hash>; Cargo 1.100 writes
+          // <profile>/build/<package>/<hash>/out/<name>-<hash>.
+          const unitExecutables = (profile, pattern) => {
+            const directories = [path.join(profile, 'deps')];
+            const units = path.join(profile, 'build');
+            for (const pkg of existsSync(units) ? readdirSync(units) : [])
+              for (const hash of readdirSync(path.join(units, pkg)))
+                directories.push(path.join(units, pkg, hash, 'out'));
+            return directories.filter(directory => existsSync(directory)).flatMap(directory =>
+              readdirSync(directory).filter(name => pattern.test(name)).map(name => path.join(directory, name)));
+          };
           const directory = `${process.env.RUNNER_TEMP}/constructor-emitter`;
           const read = name => JSON.parse(readFileSync(`${directory}/${name}`));
           const base = read('profile-base.json'), head = read('profile-head.json');
@@ -155,10 +176,9 @@ jobs:
           const sha256 = path => createHash('sha256').update(readFileSync(path)).digest('hex');
           const binaries = ['base', 'head'].map(side => {
             const target = path.join(process.env.RUNNER_TEMP, `constructor-target-${side}`);
-            const directory = path.join(target, 'ci-opt/deps');
-            const candidates = readdirSync(directory).filter(name => /^generic_parameter_profile-[a-f0-9]+$/.test(name));
+            const candidates = unitExecutables(path.join(target, 'ci-opt'), /^generic_parameter_profile-[a-f0-9]+$/);
             assert.equal(candidates.length, 1);
-            const binary = path.join(directory, candidates[0]);
+            const binary = candidates[0];
             return { side, binary, sha256: sha256(binary) };
           });
           assert.notEqual(binaries[0].binary, binaries[1].binary);

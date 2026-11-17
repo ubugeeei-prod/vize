@@ -38,7 +38,7 @@ jobs:
           persist-credentials: false
       - uses: dtolnay/rust-toolchain@d1031067263f94b142dd6c0ce24c5eb9d02d52a0 # stable
         with:
-          toolchain: "1.99.1"
+          toolchain: "1.100.0"
           components: clippy
       - uses: wild-linker/action@0bbbfa5df4380cab8e63cb8505a1ce65e1d10203 # v0.9.0
         with:

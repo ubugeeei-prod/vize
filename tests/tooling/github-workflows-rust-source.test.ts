@@ -11,6 +11,7 @@ import { requiredUiConformance } from "./support/ui-conformance-contract.ts";
 import {
   readRepoFile,
   requireDailySourceContracts,
+  restoreRustToolchainPin,
   type DailyRustSourceWorkflow,
   type DailySourceStep,
 } from "./support/github-workflows.ts";
@@ -352,6 +353,7 @@ function requireSplitRustRecipes(
   for (const [id, expected] of Object.entries(oldHashes)) {
     const job = structuredClone(source[id]);
     if (id === "pr-rust-build") {
+      assert.equal(restoreRustToolchainPin(job.steps, "1.99.1"), 1);
       const wild = job.steps.find(
         (step) => step.uses === "./.github/actions/setup-wild-http-recovery",
       );

@@ -217,7 +217,7 @@ fn source(root: &Path, tree: &BTreeMap<String, GitFile>, file: &str) -> Result<V
 // Measurements use the contributor pin. Each arm authenticates its complete
 // Git blob before comparing the unchanged measurement recipe.
 const TOOLCHAIN_FILE: &str = "rust-toolchain.toml";
-const MEASUREMENT_RUST: &str = "1.99.1";
+const MEASUREMENT_RUST: &str = "1.100.0";
 fn source_toml(
     root: &Path,
     tree: &BTreeMap<String, GitFile>,
