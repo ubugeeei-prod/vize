@@ -1,0 +1,83 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h15-unused-components-spread-and-alias-bindings-612",
+    history: "dab7edca29ef07b68ef81e11b19e3bf9ad8bc900",
+    source: "<script lang=\"ts\">\nimport LocalButton from './LocalButton.vue'\nimport SharedBadge from './SharedBadge.vue'\nimport LateCard from './LateCard.vue'\nimport { defineComponent } from 'vue'\n\nconst component = defineComponent(options)\nconst sharedComponents = {\n    SharedBadge,\n}\nconst components = {\n    ...sharedComponents,\n    PrimaryButton: LocalButton,\n    LocalButton,\n    'late-card': LateCard as any,\n}\nconst options = {\n    components,\n}\n\nexport default component\n</script>\n\n<template>\n  <PrimaryButton />\n  <late-card />\n</template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "vue/no-unused-components",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 2,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/no-unused-components",
+                severity: Warning,
+                message: "Component 'LocalButton' is registered but never used in template",
+                start: 355,
+                end: 366,
+                help: Some(
+                    "Remove the unused import or use the component in your template",
+                ),
+                labels: [],
+                fix: None,
+            },
+            LintDiagnostic {
+                rule_name: "vue/no-unused-components",
+                severity: Warning,
+                message: "Component 'SharedBadge' is registered but never used in template",
+                start: 258,
+                end: 269,
+                help: Some(
+                    "Remove the unused import or use the component in your template",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 2,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/no-unused-components",
+                    severity: Warning,
+                    message: "Component 'LocalButton' is registered but never used in template",
+                    start: 355,
+                    end: 366,
+                    help: Some(
+                        "Remove the unused import or use the component in your template",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+                LintDiagnostic {
+                    rule_name: "vue/no-unused-components",
+                    severity: Warning,
+                    message: "Component 'SharedBadge' is registered but never used in template",
+                    start: 258,
+                    end: 269,
+                    help: Some(
+                        "Remove the unused import or use the component in your template",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 2,
+        },
+    ),
+}

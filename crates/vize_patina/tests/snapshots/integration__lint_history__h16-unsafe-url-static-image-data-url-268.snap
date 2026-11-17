@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h16-unsafe-url-static-image-data-url-268",
+    history: "f6ccb0e08a9d5a1024b7c07c2ad13f0989098cee",
+    source: "<img src=\"data:image/png;base64,iVBORw0KGgo=\">",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/no-unsafe-url",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

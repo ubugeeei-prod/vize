@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h13-aria-unsupported-div-bound-aria-label-valid-1251",
+    history: "ee4d5841cea2c1299f2e03f8eb0cf6f739d2feef",
+    source: "<div :aria-label=\"label\"></div>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "a11y/aria-unsupported-elements",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

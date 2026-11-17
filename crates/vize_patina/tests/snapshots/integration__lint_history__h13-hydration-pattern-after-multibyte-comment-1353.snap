@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h13-hydration-pattern-after-multibyte-comment-1353",
+    history: "51d09e41414254b548603dbfcdc9330c17d82a58",
+    source: "<div :data-seed=\"// 乱数を使う\nMath.random()\"></div>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "ssr/no-hydration-mismatch",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "ssr/no-hydration-mismatch",
+                severity: Warning,
+                message: "'Math.random' in attribute binding may cause hydration mismatch",
+                start: 5,
+                end: 50,
+                help: Some(
+                    "Use useId() for unique IDs, or wrap in <ClientOnly> for client-only values",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "ssr/no-hydration-mismatch",
+                    severity: Warning,
+                    message: "'Math.random' in attribute binding may cause hydration mismatch",
+                    start: 5,
+                    end: 50,
+                    help: Some(
+                        "Use useId() for unique IDs, or wrap in <ClientOnly> for client-only values",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

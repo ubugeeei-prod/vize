@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h16-unused-components-kebab-usage-303",
+    history: "f6f692cad55299e155289c85964a17028c49c3f4",
+    source: "<script setup>\nimport MyButton from './MyButton.vue'\n</script>\n\n<template>\n  <my-button />\n</template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "vue/no-unused-components",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

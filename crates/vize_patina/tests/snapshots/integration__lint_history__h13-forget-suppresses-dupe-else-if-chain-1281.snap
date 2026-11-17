@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h13-forget-suppresses-dupe-else-if-chain-1281",
+    history: "9ea1ce34e85021bba45a4cc2d0a42f6b35dd085b",
+    source: "<!-- @vize:forget duplicate condition is intentional -->\n<div v-if=\"a\"></div>\n<div v-else-if=\"a\"></div>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/no-dupe-v-else-if",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

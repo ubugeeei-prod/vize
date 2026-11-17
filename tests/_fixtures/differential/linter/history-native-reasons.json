@@ -419,6 +419,198 @@
     "kind": "UnsupportedVueVersion",
     "detail": "UnsupportedVueVersion { requested: V2 }"
   },
+  "current-api/h13-sfc-closed-template-block-control-1258": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-unused-vars\" }"
+  },
+  "current-api/h13-sfc-template-parse-error-at-sfc-offset-1250": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-unused-vars\" }"
+  },
+  "current-api/h13-sfc-unclosed-template-block-1258": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-unused-vars\" }"
+  },
+  "current-api/h14-component-registration-script-setup-imports-938": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/require-component-registration\" }"
+  },
+  "current-api/h14-component-registration-unimported-widget-938": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/require-component-registration\" }"
+  },
+  "current-api/h14-placeholder-multi-word-define-options-name-864": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/multi-word-component-names\" }"
+  },
+  "current-api/h14-placeholder-unsafe-url-attr-name-864": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-unsafe-url\" }"
+  },
+  "current-api/h14-scoped-style-real-block-with-string-literal-838": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/require-scoped-style\" }"
+  },
+  "current-api/h14-scoped-style-string-literal-only-838": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/require-scoped-style\" }"
+  },
+  "current-api/h14-unused-components-script-setup-reference-940": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-unused-components\" }"
+  },
+  "current-api/h14-unused-components-shadowed-script-reference-940": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-unused-components\" }"
+  },
+  "current-api/h14-unused-v-for-alias-source-span-895": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-unused-vars\" }"
+  },
+  "current-api/h15-mutating-props-define-props-object-control-326": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-mutating-props\" }"
+  },
+  "current-api/h15-mutating-props-destructured-member-v-model-323": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-mutating-props\" }"
+  },
+  "current-api/h15-mutating-props-dynamic-key-v-model-327": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-mutating-props\" }"
+  },
+  "current-api/h15-mutating-props-local-prefix-names-323": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-mutating-props\" }"
+  },
+  "current-api/h15-mutating-props-local-props-object-326": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-mutating-props\" }"
+  },
+  "current-api/h15-mutating-props-nested-v-model-323": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-mutating-props\" }"
+  },
+  "current-api/h15-mutating-props-unlisted-record-v-model-327": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-mutating-props\" }"
+  },
+  "current-api/h15-unused-components-component-binding-export-612": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-unused-components\" }"
+  },
+  "current-api/h15-unused-components-define-component-options-binding-612": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-unused-components\" }"
+  },
+  "current-api/h15-unused-components-options-binding-export-612": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-unused-components\" }"
+  },
+  "current-api/h15-unused-components-options-binding-used-612": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-unused-components\" }"
+  },
+  "current-api/h15-unused-components-spread-and-alias-bindings-612": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-unused-components\" }"
+  },
+  "current-api/h16-fast-extract-nested-template-292": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/require-v-for-key\" }"
+  },
+  "current-api/h16-fast-extract-template-prefix-custom-block-292": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/require-v-for-key\" }"
+  },
+  "current-api/h16-fast-extract-template-string-in-script-292": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/require-v-for-key\" }"
+  },
+  "current-api/h16-unused-components-kebab-usage-303": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-unused-components\" }"
+  },
+  "current-api/h16-unused-components-local-pascal-constant-303": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-unused-components\" }"
+  },
+  "current-api/h16-unused-components-options-alias-unused-303": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-unused-components\" }"
+  },
+  "current-api/h16-unused-components-options-alias-used-303": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-unused-components\" }"
+  },
+  "current-api/h16-unused-components-unused-vue-import-303": {
+    "api": "--native-current-api",
+    "entry": "sfc",
+    "kind": "UnprovidedRule",
+    "detail": "UnprovidedRule { rule: \"vue/no-unused-components\" }"
+  },
   "current-api/h2-no-inline-style-prop-driven-binding-6018": {
     "api": "--native-current-api",
     "entry": "sfc",

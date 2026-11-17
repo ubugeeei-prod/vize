@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h15-mutating-props-dynamic-key-v-model-327",
+    history: "24ebf1eb748c5a12fc9c195f1b9ae6614d27ae59",
+    source: "<script setup lang=\"ts\">\nconst props = defineProps<{ user: { name: string } }>()\nconst key = 'user' as keyof typeof props\n</script>\n\n<template>\n  <input v-model=\"props[key].name\" />\n</template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "vue/no-mutating-props",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/no-mutating-props",
+                severity: Error,
+                message: "Unexpected mutation of prop 'props[key].name' via v-model",
+                start: 162,
+                end: 177,
+                help: Some(
+                    "Use a local ref or emit an event instead of mutating props directly",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 1,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/no-mutating-props",
+                    severity: Error,
+                    message: "Unexpected mutation of prop 'props[key].name' via v-model",
+                    start: 162,
+                    end: 177,
+                    help: Some(
+                        "Use a local ref or emit an event instead of mutating props directly",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 1,
+            warning_count: 0,
+        },
+    ),
+}

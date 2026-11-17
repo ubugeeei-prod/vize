@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h15-unused-components-options-binding-used-612",
+    history: "dab7edca29ef07b68ef81e11b19e3bf9ad8bc900",
+    source: "<script>\nimport { defineComponent } from 'vue'\nimport LocalButton from './LocalButton.vue'\n\nconst options = { components: { LocalButton } }\nexport default defineComponent(options)\n</script>\n\n<template>\n  <LocalButton />\n</template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "vue/no-unused-components",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h15-mutating-props-define-props-object-control-326",
+    history: "4c1c93ee7525b48ed843fefd51d26fd1a129cb24",
+    source: "<script setup lang=\"ts\">\nconst props = defineProps<{ user: { name: string } }>()\n</script>\n\n<template>\n  <input v-model=\"props.user.name\" />\n</template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "vue/no-mutating-props",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/no-mutating-props",
+                severity: Error,
+                message: "Unexpected mutation of prop 'props.user.name' via v-model",
+                start: 121,
+                end: 136,
+                help: Some(
+                    "Use a local ref or emit an event instead of mutating props directly",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 1,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/no-mutating-props",
+                    severity: Error,
+                    message: "Unexpected mutation of prop 'props.user.name' via v-model",
+                    start: 121,
+                    end: 136,
+                    help: Some(
+                        "Use a local ref or emit an event instead of mutating props directly",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 1,
+            warning_count: 0,
+        },
+    ),
+}

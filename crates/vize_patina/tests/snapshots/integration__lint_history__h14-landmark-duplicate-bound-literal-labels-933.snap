@@ -1,0 +1,83 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h14-landmark-duplicate-bound-literal-labels-933",
+    history: "3b0703d70f2ab448176c05138930e4498a0030d1",
+    source: "<nav :aria-label=\"'Links'\">nav1</nav><nav v-bind:aria-label=\"'Links'\">nav2</nav>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "a11y/landmark-roles",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 2,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "a11y/landmark-roles",
+                severity: Warning,
+                message: "Multiple \"navigation\" landmarks found without distinct labels",
+                start: 0,
+                end: 27,
+                help: Some(
+                    "When multiple landmarks of the same type exist, each should have a unique aria-label or aria-labelledby to help users distinguish them.",
+                ),
+                labels: [],
+                fix: None,
+            },
+            LintDiagnostic {
+                rule_name: "a11y/landmark-roles",
+                severity: Warning,
+                message: "Multiple \"navigation\" landmarks found without distinct labels",
+                start: 37,
+                end: 70,
+                help: Some(
+                    "When multiple landmarks of the same type exist, each should have a unique aria-label or aria-labelledby to help users distinguish them.",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 2,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "a11y/landmark-roles",
+                    severity: Warning,
+                    message: "Multiple \"navigation\" landmarks found without distinct labels",
+                    start: 0,
+                    end: 27,
+                    help: Some(
+                        "When multiple landmarks of the same type exist, each should have a unique aria-label or aria-labelledby to help users distinguish them.",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+                LintDiagnostic {
+                    rule_name: "a11y/landmark-roles",
+                    severity: Warning,
+                    message: "Multiple \"navigation\" landmarks found without distinct labels",
+                    start: 37,
+                    end: 70,
+                    help: Some(
+                        "When multiple landmarks of the same type exist, each should have a unique aria-label or aria-labelledby to help users distinguish them.",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 2,
+        },
+    ),
+}

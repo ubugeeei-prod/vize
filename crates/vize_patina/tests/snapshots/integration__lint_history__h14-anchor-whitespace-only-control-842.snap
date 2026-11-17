@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h14-anchor-whitespace-only-control-842",
+    history: "b3d39da0ab4e8ec21050bde9d57fece3cb968e34",
+    source: "<a href=\"/\">   </a>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "a11y/anchor-has-content",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "a11y/anchor-has-content",
+                severity: Warning,
+                message: "<a> elements must have accessible content",
+                start: 0,
+                end: 12,
+                help: Some(
+                    "**Fix options:**\n\n1. Add text content:\n```vue\n<a href=\"/about\">About Us</a>\n```\n\n2. Add aria-label for icon-only links:\n```vue\n<a href=\"/settings\" aria-label=\"Settings\">\n  <IconSettings />\n</a>\n```\n\n3. Include image with alt:\n```vue\n<a href=\"/\"><img src=\"logo.png\" alt=\"Home\"></a>\n```",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "a11y/anchor-has-content",
+                    severity: Warning,
+                    message: "<a> elements must have accessible content",
+                    start: 0,
+                    end: 12,
+                    help: Some(
+                        "**Fix options:**\n\n1. Add text content:\n```vue\n<a href=\"/about\">About Us</a>\n```\n\n2. Add aria-label for icon-only links:\n```vue\n<a href=\"/settings\" aria-label=\"Settings\">\n  <IconSettings />\n</a>\n```\n\n3. Include image with alt:\n```vue\n<a href=\"/\"><img src=\"logo.png\" alt=\"Home\"></a>\n```",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

@@ -1,0 +1,83 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h15-mutating-props-unlisted-record-v-model-327",
+    history: "24ebf1eb748c5a12fc9c195f1b9ae6614d27ae59",
+    source: "<script setup lang=\"ts\">\nconst props = defineProps<Record<string, string>>()\nconst field = 'title'\n</script>\n\n<template>\n  <input v-model=\"props.title\" />\n  <input v-model=\"props[field]\" />\n</template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "vue/no-mutating-props",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 2,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/no-mutating-props",
+                severity: Error,
+                message: "Unexpected mutation of prop 'props.title' via v-model",
+                start: 139,
+                end: 150,
+                help: Some(
+                    "Use a local ref or emit an event instead of mutating props directly",
+                ),
+                labels: [],
+                fix: None,
+            },
+            LintDiagnostic {
+                rule_name: "vue/no-mutating-props",
+                severity: Error,
+                message: "Unexpected mutation of prop 'props[field]' via v-model",
+                start: 173,
+                end: 185,
+                help: Some(
+                    "Use a local ref or emit an event instead of mutating props directly",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 2,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/no-mutating-props",
+                    severity: Error,
+                    message: "Unexpected mutation of prop 'props.title' via v-model",
+                    start: 139,
+                    end: 150,
+                    help: Some(
+                        "Use a local ref or emit an event instead of mutating props directly",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+                LintDiagnostic {
+                    rule_name: "vue/no-mutating-props",
+                    severity: Error,
+                    message: "Unexpected mutation of prop 'props[field]' via v-model",
+                    start: 173,
+                    end: 185,
+                    help: Some(
+                        "Use a local ref or emit an event instead of mutating props directly",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 2,
+            warning_count: 0,
+        },
+    ),
+}

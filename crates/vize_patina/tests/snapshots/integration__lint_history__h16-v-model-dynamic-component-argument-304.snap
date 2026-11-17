@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h16-v-model-dynamic-component-argument-304",
+    history: "f623a794514477804c2865aeccd7133cafd7cd26",
+    source: "<component :is=\"overlay\" v-model:open=\"open\" />",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/valid-v-model",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

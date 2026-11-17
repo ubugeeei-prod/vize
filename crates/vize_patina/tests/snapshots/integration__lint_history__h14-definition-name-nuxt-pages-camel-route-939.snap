@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h14-definition-name-nuxt-pages-camel-route-939",
+    history: "695e0c4777a0a3dcbbde8a2b48f6b81cc942cb6e",
+    source: "<div>Content</div>",
+    filename: "pages/jobBoard.vue",
+    entry: "template",
+    rule: "vue/component-definition-name-casing",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "pages/jobBoard.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "pages/jobBoard.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

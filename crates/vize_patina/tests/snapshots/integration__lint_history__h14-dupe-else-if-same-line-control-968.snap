@@ -1,0 +1,83 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h14-dupe-else-if-same-line-control-968",
+    history: "b67e1cfb4ab8ece295482e19a8c6d20a539e6900",
+    source: "<!-- note -->\n<div v-if=\"a\"></div><div v-else-if=\"a\"></div><div v-else-if=\"a\"></div>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/no-dupe-v-else-if",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 2,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/no-dupe-v-else-if",
+                severity: Error,
+                message: "This condition is a duplicate of a condition in the same v-if/v-else-if chain",
+                start: 39,
+                end: 52,
+                help: Some(
+                    "Remove or modify the duplicate condition",
+                ),
+                labels: [],
+                fix: None,
+            },
+            LintDiagnostic {
+                rule_name: "vue/no-dupe-v-else-if",
+                severity: Error,
+                message: "This condition is a duplicate of a condition in the same v-if/v-else-if chain",
+                start: 64,
+                end: 77,
+                help: Some(
+                    "Remove or modify the duplicate condition",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 2,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/no-dupe-v-else-if",
+                    severity: Error,
+                    message: "This condition is a duplicate of a condition in the same v-if/v-else-if chain",
+                    start: 39,
+                    end: 52,
+                    help: Some(
+                        "Remove or modify the duplicate condition",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+                LintDiagnostic {
+                    rule_name: "vue/no-dupe-v-else-if",
+                    severity: Error,
+                    message: "This condition is a duplicate of a condition in the same v-if/v-else-if chain",
+                    start: 64,
+                    end: 77,
+                    help: Some(
+                        "Remove or modify the duplicate condition",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 2,
+            warning_count: 0,
+        },
+    ),
+}

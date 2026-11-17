@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h15-unused-components-component-binding-export-612",
+    history: "dab7edca29ef07b68ef81e11b19e3bf9ad8bc900",
+    source: "<script>\nimport { defineComponent } from 'vue'\nimport LocalButton from './LocalButton.vue'\n\nconst component = defineComponent({ components: { LocalButton } })\nexport default component\n</script>\n\n<template>\n  <div />\n</template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "vue/no-unused-components",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/no-unused-components",
+                severity: Warning,
+                message: "Component 'LocalButton' is registered but never used in template",
+                start: 142,
+                end: 153,
+                help: Some(
+                    "Remove the unused import or use the component in your template",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/no-unused-components",
+                    severity: Warning,
+                    message: "Component 'LocalButton' is registered but never used in template",
+                    start: 142,
+                    end: 153,
+                    help: Some(
+                        "Remove the unused import or use the component in your template",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h13-template-closed-list-unused-vars-control-1250",
+    history: "cf2fe2e5408c530a0e673e872203b4b132d27b3c",
+    source: "<ul>\n  <li v-for=\"(item, index) in items\" :key=\"item\">{{ item }}</li>\n</ul>\n",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/no-unused-vars",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/no-unused-vars",
+                severity: Warning,
+                message: "Key variable 'index' is defined by v-for but never used",
+                start: 25,
+                end: 30,
+                help: Some(
+                    "Consider removing the key variable or prefix it with underscore: _key",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/no-unused-vars",
+                    severity: Warning,
+                    message: "Key variable 'index' is defined by v-for but never used",
+                    start: 25,
+                    end: 30,
+                    help: Some(
+                        "Consider removing the key variable or prefix it with underscore: _key",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

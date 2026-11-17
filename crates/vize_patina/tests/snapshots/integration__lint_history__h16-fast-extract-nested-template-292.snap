@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h16-fast-extract-nested-template-292",
+    history: "ad7960fa26c4b623efc4549f0e26b6712f0e598e",
+    source: "<template><template #default><ul><li v-for=\"item in items\">{{ item }}</li></ul></template></template>",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "vue/require-v-for-key",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/require-v-for-key",
+                severity: Error,
+                message: "Elements in iteration expect to have 'v-bind:key' directives. Element: <li>",
+                start: 33,
+                end: 59,
+                help: Some(
+                    "**Why:** The `:key` attribute helps Vue's virtual DOM efficiently track and update list items.\n\n**Fix:** Add a unique identifier as the key:\n```vue\n<li v-for=\"item in items\" :key=\"item.id\">\n  {{ item.name }}\n</li>\n```\n\n**Best practices:**\n- Use unique, stable identifiers (like database IDs)\n- Avoid using array index as key when list order may change\n- Keys must be primitive values (string or number)",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 1,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/require-v-for-key",
+                    severity: Error,
+                    message: "Elements in iteration expect to have 'v-bind:key' directives. Element: <li>",
+                    start: 33,
+                    end: 59,
+                    help: Some(
+                        "**Why:** The `:key` attribute helps Vue's virtual DOM efficiently track and update list items.\n\n**Fix:** Add a unique identifier as the key:\n```vue\n<li v-for=\"item in items\" :key=\"item.id\">\n  {{ item.name }}\n</li>\n```\n\n**Best practices:**\n- Use unique, stable identifiers (like database IDs)\n- Avoid using array index as key when list order may change\n- Keys must be primitive values (string or number)",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 1,
+            warning_count: 0,
+        },
+    ),
+}

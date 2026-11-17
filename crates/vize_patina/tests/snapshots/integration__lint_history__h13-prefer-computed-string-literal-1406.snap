@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h13-prefer-computed-string-literal-1406",
+    history: "2c9665f76d5c4b568552addc0e6c174a2a14f164",
+    source: "\nconst example = \"watch(count, (val) => { doubled.value = val * 2 })\"\nconsole.log(example)\n",
+    filename: "History.ts",
+    entry: "script",
+    rule: "script/prefer-computed",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.ts",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.ts",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

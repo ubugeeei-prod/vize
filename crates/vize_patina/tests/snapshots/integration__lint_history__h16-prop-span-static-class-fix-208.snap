@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h16-prop-span-static-class-fix-208",
+    history: "f5d043a84ccefe91a0aaf1b9c292437c73cf38b4",
+    source: "<div :class=\"'static-class'\"></div>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vapor/prefer-static-class",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 1,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vapor/prefer-static-class",
+                severity: Warning,
+                message: "Prefer static class attribute over dynamic :class binding for constant values",
+                start: 6,
+                end: 28,
+                help: None,
+                labels: [],
+                fix: Some(
+                    Fix {
+                        message: "Replace with static class attribute",
+                        edits: [
+                            TextEdit {
+                                start: 5,
+                                end: 28,
+                                new_text: "class=\"static-class\"",
+                            },
+                        ],
+                    },
+                ),
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [
+        Application {
+            diagnostic_index: 0,
+            source: "<div class=\"static-class\"></div>",
+            result: LintResult {
+                filename: "History.vue",
+                diagnostics: [],
+                error_count: 0,
+                warning_count: 0,
+            },
+        },
+    ],
+    unchanged_requery: None,
+}

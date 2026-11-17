@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h14-unused-components-script-setup-reference-940",
+    history: "99b523f535135d1a39039ee1462fdc524131a63b",
+    source: "<script setup lang=\"ts\">\nimport { computed } from 'vue'\nimport Child from './DynamicChild.vue'\n\nconst current = computed(() => Child)\n</script>\n\n<template>\n  <div>{{ current }}</div>\n</template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "vue/no-unused-components",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

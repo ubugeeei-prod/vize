@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h14-scoped-style-real-block-with-string-literal-838",
+    history: "4beda71d71dedfc15d0ea8eacb4a587f43ecd606",
+    source: "<script setup lang=\"ts\">\nconst ssrStyles = computed(() => `<style>${styles}</style>`);\n</script>\n\n<template><div>Hello</div></template>\n<style>\n.button { color: red; }\n</style>\n",
+    filename: "Component.vue",
+    entry: "sfc",
+    rule: "vue/require-scoped-style",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "Component.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/require-scoped-style",
+                severity: Warning,
+                message: "Style blocks should use `scoped` or `module` attribute to prevent CSS leaking",
+                start: 136,
+                end: 143,
+                help: Some(
+                    "Add `scoped` or `module` to the style block: `<style scoped>` or `<style module>`",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "Component.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/require-scoped-style",
+                    severity: Warning,
+                    message: "Style blocks should use `scoped` or `module` attribute to prevent CSS leaking",
+                    start: 136,
+                    end: 143,
+                    help: Some(
+                        "Add `scoped` or `module` to the style block: `<style scoped>` or `<style module>`",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

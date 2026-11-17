@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h14-unsafe-url-slot-href-prop-837",
+    history: "b8e40e4539afeaa71cea7ccec2a3e4c89aab1ed4",
+    source: "<slot name=\"link\" :href=\"url\" />",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/no-unsafe-url",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

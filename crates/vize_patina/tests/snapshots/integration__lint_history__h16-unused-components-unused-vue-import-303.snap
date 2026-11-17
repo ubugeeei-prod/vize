@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h16-unused-components-unused-vue-import-303",
+    history: "f6f692cad55299e155289c85964a17028c49c3f4",
+    source: "<script setup>\nimport MyButton from './MyButton.vue'\n</script>\n\n<template>\n  <div>Hello</div>\n</template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "vue/no-unused-components",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/no-unused-components",
+                severity: Warning,
+                message: "Component 'MyButton' is registered but never used in template",
+                start: 22,
+                end: 30,
+                help: Some(
+                    "Remove the unused import or use the component in your template",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 0,
+        warning_count: 1,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/no-unused-components",
+                    severity: Warning,
+                    message: "Component 'MyButton' is registered but never used in template",
+                    start: 22,
+                    end: 30,
+                    help: Some(
+                        "Remove the unused import or use the component in your template",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 0,
+            warning_count: 1,
+        },
+    ),
+}

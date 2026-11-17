@@ -2894,5 +2894,561 @@
   "linter/current-api/h10-v-model-member-control-2378": {
     "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h10-v-model-member-control-2378.snap",
     "sha256": "a92de4854c900630d5ab201c09a6fb67b57b14e7841f475df6670e84b8a7be0f"
+  },
+  "linter/current-api/h14-unsafe-url-hash-template-href-843": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h14-unsafe-url-hash-template-href-843.snap",
+    "sha256": "dc46da06561d20283cf54265a4edc2a82d04ef3325cc77c0d84c931ab2d3eb89"
+  },
+  "linter/current-api/h14-unsafe-url-hash-concat-href-843": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h14-unsafe-url-hash-concat-href-843.snap",
+    "sha256": "f7b8540f510ab105dbd33b2c3f016fe1e7ec6c5f3e07c91d2000e0de689da0c1"
+  },
+  "linter/current-api/h14-unsafe-url-non-hash-template-href-843": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h14-unsafe-url-non-hash-template-href-843.snap",
+    "sha256": "982a44d6d9efea780b9981a699b5696f46d19d678c3359e0122f4923651d5583"
+  },
+  "linter/current-api/h14-unsafe-url-hash-template-iframe-src-843": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h14-unsafe-url-hash-template-iframe-src-843.snap",
+    "sha256": "6672d489b109cf744f607e305684e5b569e52437bb73214e2ccd031cfe722dac"
+  },
+  "linter/current-api/h14-component-registration-script-setup-imports-938": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h14-component-registration-script-setup-imports-938.snap",
+    "sha256": "9e3c87531028c152fd79279a39e3e9b61b1d7df0dcf4779b38e5769299e332d6"
+  },
+  "linter/current-api/h14-component-registration-unimported-widget-938": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h14-component-registration-unimported-widget-938.snap",
+    "sha256": "bf118cd89709c8094f76497aa46926a0200706c5859e3ed43619ea45eabb9280"
+  },
+  "linter/current-api/h14-permitted-contents-motion-li-in-ul-892": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h14-permitted-contents-motion-li-in-ul-892.snap",
+    "sha256": "9aa38ff8ea224d4d45c60cc79b8dd8d7e305ecae7469a8303f26930b8e5f8984"
+  },
+  "linter/current-api/h14-permitted-contents-motion-div-in-ul-892": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h14-permitted-contents-motion-div-in-ul-892.snap",
+    "sha256": "2e829e8e4f762d99a39d6ad3928921b08be4b4c6f3c0feceb5595d55c96010d1"
+  },
+  "linter/current-api/h13-aria-role-bound-template-literal-typo-1233": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h13-aria-role-bound-template-literal-typo-1233.snap",
+    "sha256": "37dc65e6c0eae3604fafe7fd37c2ed173a16a9b1e2a8473317f6e8c9844e43fa"
+  },
+  "linter/current-api/h13-aria-role-bound-compound-expression-1233": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h13-aria-role-bound-compound-expression-1233.snap",
+    "sha256": "0d6bb56ed4cc239bb3a524625ad6d4cf961382292bf9214377f28e952b0fac22"
+  },
+  "linter/current-api/h13-ssr-globals-globalthis-interpolation-1232": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h13-ssr-globals-globalthis-interpolation-1232.snap",
+    "sha256": "9b656d63d73989691b9be032b59d63761ae84f39aea648e4d3b7388e074964d1"
+  },
+  "linter/current-api/h13-ssr-globals-self-directive-1232": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h13-ssr-globals-self-directive-1232.snap",
+    "sha256": "18967158e7bd45bcfb82651d91fe0ca6840d62a70080bb82f13c63fa17edf808"
+  },
+  "linter/current-api/h13-ssr-globals-window-control-1232": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h13-ssr-globals-window-control-1232.snap",
+    "sha256": "46e29c867f32d25e4bd749a022972d6d48586fef45d8174ac32cded9fb185690"
+  },
+  "linter/current-api/h13-hydration-double-quoted-text-1268": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h13-hydration-double-quoted-text-1268.snap",
+    "sha256": "e7e775add56aa9cf3c31815e7e3f020526fea901454d97fc6594a34caf52734b"
+  },
+  "linter/current-api/h13-hydration-process-env-member-substring-1268": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h13-hydration-process-env-member-substring-1268.snap",
+    "sha256": "547879052a9b16916500c22c07c6b03d94f1fe4a061ba6de2b8053fe7d2834d3"
+  },
+  "linter/current-api/h13-hydration-get-time-longer-name-1268": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h13-hydration-get-time-longer-name-1268.snap",
+    "sha256": "6f01bdcf87743f0bd614ac3a31129bce99f1a4df3ac806d5ad326c9fd61647e4"
+  },
+  "linter/current-api/h13-hydration-member-get-time-call-1268": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h13-hydration-member-get-time-call-1268.snap",
+    "sha256": "cdca7d97c900d50348ac463f9dff93b29f7abad951162197b14f141f004e74b5"
+  },
+  "linter/current-api/h14-unused-v-for-alias-source-span-895": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h14-unused-v-for-alias-source-span-895.snap",
+    "sha256": "fe6e72b1537fa949ed242d6d92488e7b24e1be0695dcc81a7d88c70685886430"
+  },
+  "linter/current-api/h15-mutating-props-dynamic-key-v-model-327": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h15-mutating-props-dynamic-key-v-model-327.snap",
+    "sha256": "f61cc145c5cd4b035324e531a6bd9591123389973a3b296989d46742845a7680"
+  },
+  "linter/current-api/h15-mutating-props-unlisted-record-v-model-327": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h15-mutating-props-unlisted-record-v-model-327.snap",
+    "sha256": "a2c9e7ba8edfb3137bc5645dba50226eb624017994f05b359aac0687b5dc7039"
+  },
+  "linter/current-api/h13-prefer-computed-string-literal-1406": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h13-prefer-computed-string-literal-1406.snap",
+    "sha256": "3e1637f0b00e37ecfa2ad5b4f180a7b647399ec01c282e8b77387375c525c4e8"
+  },
+  "linter/current-api/h13-prefer-computed-comment-1406": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h13-prefer-computed-comment-1406.snap",
+    "sha256": "020675791a3df03b7efb30c814bfbdc7bf28adc2bab9383ccbffbd8dfb1fddff"
+  },
+  "linter/current-api/h13-prefer-computed-value-comparison-1406": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h13-prefer-computed-value-comparison-1406.snap",
+    "sha256": "b5a557a635a485275ab5abe35fb2db77a43ea4384b8bc490b0da967781df0b2a"
+  },
+  "linter/current-api/h13-prefer-computed-assignment-after-watch-1406": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h13-prefer-computed-assignment-after-watch-1406.snap",
+    "sha256": "0a339e335c5fc32137183df1d528c71f7730f2322f8f9ab7e23d3aae71f227c2"
+  },
+  "linter/current-api/h13-prefer-computed-unwatch-callee-1406": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h13-prefer-computed-unwatch-callee-1406.snap",
+    "sha256": "de18a775cb8402f495d6e75b46e4c8f249fc3c42dadc667e088e67b98ec13dd8"
+  },
+  "linter/current-api/h13-prefer-computed-aliased-watch-import-1406": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h13-prefer-computed-aliased-watch-import-1406.snap",
+    "sha256": "b10213a98b10e3d37edb26ff48a67ab7d6d43d34f754eaf44031fdb485a0070b"
+  },
+  "linter/current-api/h13-prefer-computed-space-before-paren-1406": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h13-prefer-computed-space-before-paren-1406.snap",
+    "sha256": "45fc3dfffb3c07ce052676903771a4d7bee6cdd780a462a1f4c89bfda82cd2d9"
+  },
+  "linter/current-api/h13-prefer-computed-assignment-beyond-200-bytes-1406": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h13-prefer-computed-assignment-beyond-200-bytes-1406.snap",
+    "sha256": "ae68f0e948379fe6344c27540a844caffc1752e3396a11869da41f374de6ed0a"
+  },
+  "linter/current-api/h13-prefer-computed-function-expression-callback-1406": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h13-prefer-computed-function-expression-callback-1406.snap",
+    "sha256": "4dddb8be30bbd013a9c06565e2736cb42b289585d77566444eca7068cba9bbd1"
+  },
+  "linter/current-api/h14-landmark-dynamic-labels-933": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h14-landmark-dynamic-labels-933.snap",
+    "sha256": "5fe7d05aed8a886e0e23685ed228bceea1702d18093ff2bd5d64be466d7b0bdc"
+  },
+  "linter/current-api/h14-landmark-bound-literal-labels-933": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h14-landmark-bound-literal-labels-933.snap",
+    "sha256": "2340a07f8a9eff9164ee2d2a4b8b798bbe50ab3b2b74347c17dbe6b613f09af7"
+  },
+  "linter/current-api/h14-landmark-duplicate-bound-literal-labels-933": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h14-landmark-duplicate-bound-literal-labels-933.snap",
+    "sha256": "ddb3ba298f02d8e96eb08e7360315bacd49101ae2fdc6397b0b1facda927f62f"
+  },
+  "linter/current-api/h16-click-key-events-kebab-component-300": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h16-click-key-events-kebab-component-300.snap",
+    "sha256": "5c4a9616be37795cd864bc725d1a082138f85b458ebcb9163972682ea5479a86"
+  },
+  "linter/current-api/h16-click-key-events-div-control-300": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h16-click-key-events-div-control-300.snap",
+    "sha256": "33f3f32386f8eb8bd78b3ac9944d9b0c431eb0d47e6d61197e2a76f08caa46d1"
+  },
+  "linter/current-api/h16-static-interactions-kebab-component-300": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h16-static-interactions-kebab-component-300.snap",
+    "sha256": "126460a0b6eaac70f3b3aed18320c6e5b0f81a8cad8b82b0136e21e792347324"
+  },
+  "linter/current-api/h16-static-interactions-div-control-300": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h16-static-interactions-div-control-300.snap",
+    "sha256": "86fb421227a44ade65d255ca4b659f41e8f551b2ae952d68b63190527b654c8c"
+  },
+  "linter/current-api/h16-ssr-globals-typeof-guard-272": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h16-ssr-globals-typeof-guard-272.snap",
+    "sha256": "684623a4dd9d033d0ef51f8c2580055c5a0b8110b5d8ce63c0881f4289773a2c"
+  },
+  "linter/current-api/h16-ssr-globals-parenthesized-typeof-directive-272": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h16-ssr-globals-parenthesized-typeof-directive-272.snap",
+    "sha256": "42fc19571c6e0491191623d60f07c580bd1db4f20f775f997baca85646e28c10"
+  },
+  "linter/current-api/h16-ssr-globals-typeof-member-control-272": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h16-ssr-globals-typeof-member-control-272.snap",
+    "sha256": "21ec28926fa01bac808fb26a7a82a875aeceb117ef1fa5661f31c91f309f15eb"
+  },
+  "linter/current-api/h14-scoped-style-string-literal-only-838": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h14-scoped-style-string-literal-only-838.snap",
+    "sha256": "23e910792e6271d026da571b9cfb1f701624ec88695d2cbaea984f2095f8a812"
+  },
+  "linter/current-api/h14-scoped-style-real-block-with-string-literal-838": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h14-scoped-style-real-block-with-string-literal-838.snap",
+    "sha256": "c0443b6eb55e9a14a896dd549e23c665f5a3a801dc6c57f4b5a82794e07a6c00"
+  },
+  "linter/current-api/h15-mutating-props-local-props-object-326": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h15-mutating-props-local-props-object-326.snap",
+    "sha256": "b49139c9bccb6670691a596477ea7935d436a3ec593af2b41a12036fd5588c6e"
+  },
+  "linter/current-api/h15-mutating-props-define-props-object-control-326": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h15-mutating-props-define-props-object-control-326.snap",
+    "sha256": "6d074069de0631f854ac15c636f6891bb2d576abe77584ba4240eff00103e74e"
+  },
+  "linter/current-api/h13-hydration-multibyte-comment-no-panic-1353": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h13-hydration-multibyte-comment-no-panic-1353.snap",
+    "sha256": "63c84a686d22b3b2cd173778c673f3657493ad999fc9c4c86324d5b188a5cfe8"
+  },
+  "linter/current-api/h13-hydration-pattern-after-multibyte-comment-1353": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h13-hydration-pattern-after-multibyte-comment-1353.snap",
+    "sha256": "edee71655829a849274d692504a213b98d13eaf0a6bbeb4833c563056fe453f9"
+  },
+  "linter/current-api/h14-placeholder-multi-word-define-options-name-864": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h14-placeholder-multi-word-define-options-name-864.snap",
+    "sha256": "a6522ebf3f428cd3994055955d9fb1f269dcc8507e0e56871cfff11f4be5a42f"
+  },
+  "linter/current-api/h14-placeholder-unsafe-url-attr-name-864": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h14-placeholder-unsafe-url-attr-name-864.snap",
+    "sha256": "e53ad57abf11adeae214d508677f07c52c9c4c1b80f10c3dc4fd99b89bd4f904"
+  },
+  "linter/current-api/h14-placeholder-multi-word-filename-item-864": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h14-placeholder-multi-word-filename-item-864.snap",
+    "sha256": "e8134b61c118c67ea922242d6fc37d632dce78baacb6586509a01317302dc499"
+  },
+  "linter/current-api/h14-definition-name-nuxt-pages-route-939": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h14-definition-name-nuxt-pages-route-939.snap",
+    "sha256": "71012baea0b0930fadd5da6fb73cdf75d0dd28188869bf458bd610848dd5a031"
+  },
+  "linter/current-api/h14-definition-name-nuxt-app-pages-route-939": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h14-definition-name-nuxt-app-pages-route-939.snap",
+    "sha256": "c81b1a5fbf23f2ce20567c3d9885cba2adaa0c02a5bdccc26f1c7281dba641d7"
+  },
+  "linter/current-api/h14-definition-name-nuxt-src-pages-route-939": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h14-definition-name-nuxt-src-pages-route-939.snap",
+    "sha256": "33b2a1de8d385c088c1c99e77bbf0618f4210f5b3d7174e18b90db12eb89a637"
+  },
+  "linter/current-api/h14-definition-name-nuxt-pages-camel-route-939": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h14-definition-name-nuxt-pages-camel-route-939.snap",
+    "sha256": "b909c8b72d2a2d70570c3ec4c5aa5373669b610abfa95118e0e672709d37e876"
+  },
+  "linter/current-api/h14-definition-name-components-camel-control-939": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h14-definition-name-components-camel-control-939.snap",
+    "sha256": "162eefaf3fd378ac89e11cfc39865350277d3aa9aacd46fb86748c0014f2bb85"
+  },
+  "linter/current-api/h14-permitted-contents-anchor-flow-in-main-900": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h14-permitted-contents-anchor-flow-in-main-900.snap",
+    "sha256": "1eadba8ee4b31f76802ddea4964f35bbfe57dcd00974212859e840dd9ce2c9ab"
+  },
+  "linter/current-api/h14-permitted-contents-anchor-flow-in-paragraph-900": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h14-permitted-contents-anchor-flow-in-paragraph-900.snap",
+    "sha256": "4b0ff7f6a8da896a35ac7641288ecc1a4d910af2f5bf816dfe6b58dd2089a2ac"
+  },
+  "linter/current-api/h13-aria-hidden-anchor-without-href-1242": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h13-aria-hidden-anchor-without-href-1242.snap",
+    "sha256": "36e861620a87c8bffc42fddc63b10667d6e64aa9de1c7b462a3656ef18c5b7b7"
+  },
+  "linter/current-api/h13-aria-hidden-anchor-with-href-1242": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h13-aria-hidden-anchor-with-href-1242.snap",
+    "sha256": "7b189b67262a1e1b8360240b7308033ccbc9a8920383f916b308c1006a0ef276"
+  },
+  "linter/current-api/h13-aria-hidden-anchor-with-bound-href-1242": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h13-aria-hidden-anchor-with-bound-href-1242.snap",
+    "sha256": "a7744818508e796e4df3ad84ecbf6758d9b85c5e0424a2b70ba5df7bbbfed6b9"
+  },
+  "linter/current-api/h13-role-presentation-anchor-without-href-1242": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h13-role-presentation-anchor-without-href-1242.snap",
+    "sha256": "8bccd1252e32f07f6da50aff1cbb4921bdee37bc75cc3c2e2d8e18f14c5afebd"
+  },
+  "linter/current-api/h13-role-presentation-anchor-with-href-1242": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h13-role-presentation-anchor-with-href-1242.snap",
+    "sha256": "e4dc7de727c5991cc4b7cf311133cb7f4b659403e3e2d44487b1260489262308"
+  },
+  "linter/current-api/h13-role-presentation-anchor-with-bound-href-1242": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h13-role-presentation-anchor-with-bound-href-1242.snap",
+    "sha256": "ab64a1b493a65c0bfe2862c9194c7725507919201ab1c7ece7018e4edbd565ff"
+  },
+  "linter/current-api/h16-anchor-mixed-case-javascript-275": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h16-anchor-mixed-case-javascript-275.snap",
+    "sha256": "e815a28dcef853ef0d1a9ff5f9ff0e09590cde039859cbd2dfff0b0e4428efb0"
+  },
+  "linter/current-api/h16-anchor-obfuscated-javascript-275": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h16-anchor-obfuscated-javascript-275.snap",
+    "sha256": "97077f4b94094b46e51fcd20640b579e8c5bb841ef35f8a3f6f5a7059aad32ee"
+  },
+  "linter/current-api/h16-anchor-similar-scheme-275": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h16-anchor-similar-scheme-275.snap",
+    "sha256": "26ac07f0956029bf3760fbd955cea60e572c59eb1a0e8f64fcf0386d45e3a9c7"
+  },
+  "linter/current-api/h16-anchor-javascript-in-path-275": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h16-anchor-javascript-in-path-275.snap",
+    "sha256": "c92d301ca41da8d5aba7a5b0e2c870fdecbc53464af5ed81d7e379ec7e0bfb63"
+  },
+  "linter/current-api/h14-unused-components-script-setup-reference-940": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h14-unused-components-script-setup-reference-940.snap",
+    "sha256": "3d2b2fd384a91d71230cfcad74a2649bb524cd5e3e0a30b852da971c8c2ef7a7"
+  },
+  "linter/current-api/h14-unused-components-shadowed-script-reference-940": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h14-unused-components-shadowed-script-reference-940.snap",
+    "sha256": "be351e44bfdec7a91a759434c8a5e5e936c2afc9f09c62634ebbc56f7e47b48b"
+  },
+  "linter/current-api/h13-ignore-region-suppresses-dupe-else-if-1281": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h13-ignore-region-suppresses-dupe-else-if-1281.snap",
+    "sha256": "4041a52f96e865768412e8556b45ff3eb6e216f02c0a5a858122b1aeb35f8a36"
+  },
+  "linter/current-api/h13-forget-suppresses-dupe-else-if-chain-1281": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h13-forget-suppresses-dupe-else-if-chain-1281.snap",
+    "sha256": "d179da4700ad2cbf80928452b6d5305f894bc76f2dac2fcda625110075fce552"
+  },
+  "linter/current-api/h13-dupe-else-if-unsuppressed-control-1281": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h13-dupe-else-if-unsuppressed-control-1281.snap",
+    "sha256": "bba1633f470fbd1eebed6c87c37bd32b31df111610815158afcb390b3409021a"
+  },
+  "linter/current-api/h13-sfc-unclosed-template-block-1258": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h13-sfc-unclosed-template-block-1258.snap",
+    "sha256": "2278be0b55a51643fc9043f2c3e67e3f05bfac7c5090f51e3aecd42c947849f4"
+  },
+  "linter/current-api/h13-sfc-closed-template-block-control-1258": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h13-sfc-closed-template-block-control-1258.snap",
+    "sha256": "a8943382649031143e0f9d45b06def39dc16d08206709cc4886baa1c860a6125"
+  },
+  "linter/current-api/h16-fast-extract-template-prefix-custom-block-292": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h16-fast-extract-template-prefix-custom-block-292.snap",
+    "sha256": "d17e12af17db1af8a1d74eb8eeba3680c8bfdd4ca7e71d3d42a07bc090675d7d"
+  },
+  "linter/current-api/h16-fast-extract-template-string-in-script-292": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h16-fast-extract-template-string-in-script-292.snap",
+    "sha256": "f4028f3fc4695c299997e00b333e9477b3648b000a50f7fa3e3945f690f69164"
+  },
+  "linter/current-api/h16-fast-extract-nested-template-292": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h16-fast-extract-nested-template-292.snap",
+    "sha256": "8cf51886c382e1341b3215d44076dc1f3a33e948c863855b8ffdebf2482ca869"
+  },
+  "linter/current-api/h14-anchor-default-slot-content-842": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h14-anchor-default-slot-content-842.snap",
+    "sha256": "e6a7caeaee5d038eaf2f21a97a4d693050b1da7a5926f9ebdd54ecad27f6074e"
+  },
+  "linter/current-api/h14-anchor-whitespace-only-control-842": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h14-anchor-whitespace-only-control-842.snap",
+    "sha256": "ad648b62a168cc5a0ce887eeabd7fac09209f8abbafd9c02fa78276961996c33"
+  },
+  "linter/current-api/h14-heading-default-slot-content-842": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h14-heading-default-slot-content-842.snap",
+    "sha256": "5d8e17e72b86a2b960cdb06596ea714195771dfb7c941d60b69234f91f51d23f"
+  },
+  "linter/current-api/h14-heading-empty-control-842": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h14-heading-empty-control-842.snap",
+    "sha256": "a83c27e00142ad9b77e3705fe5c5fc19b19ac6e6bf5085ab75bdbd1f8c7acfc6"
+  },
+  "linter/current-api/h14-v-if-with-v-for-substring-identifier-968": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h14-v-if-with-v-for-substring-identifier-968.snap",
+    "sha256": "ee7b87348a075118cc8951cfedeb62199cf51c7d43e53e980c9bcfcf72336e24"
+  },
+  "linter/current-api/h14-v-if-with-v-for-real-identifier-968": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h14-v-if-with-v-for-real-identifier-968.snap",
+    "sha256": "e51325d9f9d3e9a28315ffdec981181bf66543044d2181fe39317ad4ec636d35"
+  },
+  "linter/current-api/h14-vize-expected-run-on-template-dupe-else-if-968": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h14-vize-expected-run-on-template-dupe-else-if-968.snap",
+    "sha256": "9d9f72a3c9fd31762d0de64118644df2933b92d661839c1f851071b16bdf7d47"
+  },
+  "linter/current-api/h14-vize-expected-whole-line-dupe-else-if-968": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h14-vize-expected-whole-line-dupe-else-if-968.snap",
+    "sha256": "5cddd384c630b8572ba1b3ab47fda9bf1f56a9711fef84d7510c0690b0e161cc"
+  },
+  "linter/current-api/h14-vize-level-warn-whole-line-dupe-else-if-968": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h14-vize-level-warn-whole-line-dupe-else-if-968.snap",
+    "sha256": "1966b2cc5dea8c7c6f4877b0f2a6ad3898fdcf3b8b16176bdb97b10c1cf3334c"
+  },
+  "linter/current-api/h14-dupe-else-if-same-line-control-968": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h14-dupe-else-if-same-line-control-968.snap",
+    "sha256": "8519a5223585a4b08a85a833a03be8b0683125b390ee0c4ee95fd287af90472d"
+  },
+  "linter/current-api/h14-vize-expected-v-if-with-v-for-line-968": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h14-vize-expected-v-if-with-v-for-line-968.snap",
+    "sha256": "6500e632bc6ccfaf37094b62608686bdf1f942af1a58d4f541020569d4af9584"
+  },
+  "linter/current-api/h14-unsafe-url-slot-data-prop-837": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h14-unsafe-url-slot-data-prop-837.snap",
+    "sha256": "d9b7fa2984c10e49dd1399452a0acb32774706088804dd9dfd8bce32985c9a39"
+  },
+  "linter/current-api/h14-unsafe-url-slot-href-prop-837": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h14-unsafe-url-slot-href-prop-837.snap",
+    "sha256": "ee0d2c376754113cffd95d75bf23d1149d768a717c829076db2bb28dfe476bb0"
+  },
+  "linter/current-api/h14-unsafe-url-object-data-control-837": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h14-unsafe-url-object-data-control-837.snap",
+    "sha256": "c17578157af93e2ead4029524c4850f06c35c50a566a85a0e319856781fbce9e"
+  },
+  "linter/current-api/h16-ssr-globals-regex-literal-273": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h16-ssr-globals-regex-literal-273.snap",
+    "sha256": "6a2e3b601062cefeab419ca1b101eb851adf70f849a9d7deb6c5dc14989e205f"
+  },
+  "linter/current-api/h16-ssr-globals-block-comment-273": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h16-ssr-globals-block-comment-273.snap",
+    "sha256": "f756114fce720c952ec2b91da70115d16381d610f9fd9d4a4b63e15138646c9f"
+  },
+  "linter/current-api/h16-ssr-globals-division-control-273": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h16-ssr-globals-division-control-273.snap",
+    "sha256": "91a25c7dd2d111087ddd33ed1724741fd72003d14ef03bc30dbd6e24b80f4528"
+  },
+  "linter/current-api/h15-mutating-props-nested-v-model-323": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h15-mutating-props-nested-v-model-323.snap",
+    "sha256": "d41988bf8aeea7e7eca995f8b162704ad2b0a677dd2bdb5f1c7ac710bcfee7b1"
+  },
+  "linter/current-api/h15-mutating-props-destructured-member-v-model-323": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h15-mutating-props-destructured-member-v-model-323.snap",
+    "sha256": "5c60bacb9d13993a51ef8999b63d8488a44cfada7e6ec06c42436e7d84b8c106"
+  },
+  "linter/current-api/h15-mutating-props-local-prefix-names-323": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h15-mutating-props-local-prefix-names-323.snap",
+    "sha256": "c5ef0cac30b04e38b769898829c5ef05a0af207a8e30545acf41b34476754e57"
+  },
+  "linter/current-api/h13-template-fatal-parse-gates-unused-vars-1250": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h13-template-fatal-parse-gates-unused-vars-1250.snap",
+    "sha256": "9f096109bb4f4b692d72163465724b065d70612bc00b64a07face5837f308dfc"
+  },
+  "linter/current-api/h13-template-closed-list-unused-vars-control-1250": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h13-template-closed-list-unused-vars-control-1250.snap",
+    "sha256": "f607747273708fd65693d26eea534e10043c441e0bf99d287eba284c80c480d1"
+  },
+  "linter/current-api/h13-template-recoverable-duplicate-attribute-1250": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h13-template-recoverable-duplicate-attribute-1250.snap",
+    "sha256": "1fc37b22beed46597496dae6f3add8fedf976cb47abcdf594e2ca0504419c78f"
+  },
+  "linter/current-api/h13-template-self-closing-div-no-parser-warning-1250": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h13-template-self-closing-div-no-parser-warning-1250.snap",
+    "sha256": "25c8f495a76c044f427be7c6389b7329d2a43143f656624db32046f2a471d6d2"
+  },
+  "linter/current-api/h13-sfc-template-parse-error-at-sfc-offset-1250": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h13-sfc-template-parse-error-at-sfc-offset-1250.snap",
+    "sha256": "451b82d6f431cc6ca9fbcc9ea0c7463263d70d4b94d7db4bf85bac95ad54119d"
+  },
+  "linter/current-api/h15-unused-components-define-component-options-binding-612": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h15-unused-components-define-component-options-binding-612.snap",
+    "sha256": "0e487a302892f30450af3a7bc502a0c296c491a3136a238307a0672d698ac6c5"
+  },
+  "linter/current-api/h15-unused-components-component-binding-export-612": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h15-unused-components-component-binding-export-612.snap",
+    "sha256": "9655cb7272222d49e3704cc494aae360d48cc781b3f38337e862e46abc9e5f7c"
+  },
+  "linter/current-api/h15-unused-components-options-binding-export-612": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h15-unused-components-options-binding-export-612.snap",
+    "sha256": "b68098b23c1eb3a37d1ebef5f6b49b7e1d2ea4ecacda3e93a346d4cc0a65153e"
+  },
+  "linter/current-api/h15-unused-components-spread-and-alias-bindings-612": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h15-unused-components-spread-and-alias-bindings-612.snap",
+    "sha256": "4f1a3ffe819da45dbe7acc527ce4a129ec10a2ea3c850bc0f48982637bdbaa27"
+  },
+  "linter/current-api/h15-unused-components-options-binding-used-612": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h15-unused-components-options-binding-used-612.snap",
+    "sha256": "e4e1761862457311bf7fc90fe3756c3dd522c67f69d07c77e838d830d26dc176"
+  },
+  "linter/current-api/h13-hydration-single-quoted-text-1234": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h13-hydration-single-quoted-text-1234.snap",
+    "sha256": "785b9edb25dec8247899ac065a997d5dc2f415371aebfccd920b8871988e7a30"
+  },
+  "linter/current-api/h13-hydration-template-literal-raw-text-1234": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h13-hydration-template-literal-raw-text-1234.snap",
+    "sha256": "4c0bf407d71dcec0b4ec8051152da421b237abf814505251793ab00fe26703f5"
+  },
+  "linter/current-api/h13-hydration-template-literal-embedded-date-now-1234": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h13-hydration-template-literal-embedded-date-now-1234.snap",
+    "sha256": "d13438e7cedf709ea4fb2c775ded6abfc15e07ca487b404fb988fff58e082df7"
+  },
+  "linter/current-api/h13-hydration-unrelated-member-chain-1234": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h13-hydration-unrelated-member-chain-1234.snap",
+    "sha256": "47cb566d1c77d73cb42c27e95b5553ac335be1578b4af3e0b4ee5c418f6d2ded"
+  },
+  "linter/current-api/h13-hydration-import-meta-env-1234": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h13-hydration-import-meta-env-1234.snap",
+    "sha256": "58a63ad3b93e4df73438a70b1a6d417a22393f7fb5f40df208823d7214ffd778"
+  },
+  "linter/current-api/h13-role-required-props-bound-literal-checkbox-1231": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h13-role-required-props-bound-literal-checkbox-1231.snap",
+    "sha256": "f1be74894c777d772f62937cd581a2412b71241e773708fdcdf6326d7db59c58"
+  },
+  "linter/current-api/h13-role-required-props-static-checkbox-control-1231": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h13-role-required-props-static-checkbox-control-1231.snap",
+    "sha256": "64b371d698c970a9509c3e0eaa9e06ec85c04d689bafa8ebbb45e7640e4c27bb"
+  },
+  "linter/current-api/h13-role-required-props-bound-literal-checkbox-checked-1231": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h13-role-required-props-bound-literal-checkbox-checked-1231.snap",
+    "sha256": "39789ee823d0d34b6777e9ef70e88fc14e5f7d69b58ceae2a18d037895ee322d"
+  },
+  "linter/current-api/h13-role-required-props-bound-dynamic-role-1231": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h13-role-required-props-bound-dynamic-role-1231.snap",
+    "sha256": "299018df771ae8ee35ddebd0aa8fde7c2279c2dae55eddf4e8365739822b6aae"
+  },
+  "linter/current-api/h13-parser-nested-comment-1065": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h13-parser-nested-comment-1065.snap",
+    "sha256": "2bf7350ce24bf1fc7443d26f59ddf31574d3d58c5cb1f8d658aa32604b2a1462"
+  },
+  "linter/current-api/h13-parser-processing-instruction-1065": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h13-parser-processing-instruction-1065.snap",
+    "sha256": "dde540c78c43c7b6a0705a1c863d5f5c0fd960c0467f6de330b6c22dc5eecc5e"
+  },
+  "linter/current-api/h13-parser-solidus-before-attribute-1065": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h13-parser-solidus-before-attribute-1065.snap",
+    "sha256": "0ffff89531f9f347aa4818dffea4b95650b8251404b899df48961d049ef3424b"
+  },
+  "linter/current-api/h13-parser-duplicate-attribute-case-insensitive-1065": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h13-parser-duplicate-attribute-case-insensitive-1065.snap",
+    "sha256": "fb4008c64bb9375b3f85e892a60ec62314fb705cb75315e0b2fa939ec3dd49a1"
+  },
+  "linter/current-api/h13-aria-unsupported-meta-bound-aria-hidden-1251": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h13-aria-unsupported-meta-bound-aria-hidden-1251.snap",
+    "sha256": "03d546d447055c173dd3e73ebc48687a78f65b6ede2fc15aebfaa0a543ac95a3"
+  },
+  "linter/current-api/h13-aria-unsupported-script-bound-role-1251": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h13-aria-unsupported-script-bound-role-1251.snap",
+    "sha256": "0c373450906cbf34eaab4c3e2fecc4ec65db4e331dcbdd55ebc43cc6da43ac46"
+  },
+  "linter/current-api/h13-aria-unsupported-meta-static-aria-hidden-control-1251": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h13-aria-unsupported-meta-static-aria-hidden-control-1251.snap",
+    "sha256": "cf2d6b6ee975b4b6090471dcb9ab67686ec2ce839fbf188bf38f7a4f399cac6e"
+  },
+  "linter/current-api/h13-aria-unsupported-div-bound-aria-label-valid-1251": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h13-aria-unsupported-div-bound-aria-label-valid-1251.snap",
+    "sha256": "2649a1bb10f698eb9e2d536262231e781e0e47538ad8554cb6e1a72db414e45d"
+  },
+  "linter/current-api/h16-prop-span-static-class-fix-208": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h16-prop-span-static-class-fix-208.snap",
+    "sha256": "6ec48261b4a7a3c8bc206ada18af6bdbbfda88a7146304846bcf6255d80576df"
+  },
+  "linter/current-api/h16-prop-span-v-html-spaced-equals-208": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h16-prop-span-v-html-spaced-equals-208.snap",
+    "sha256": "76175ea63db3627610bb8e6b4376a6f9ff72ce8f2b2f08cc02e474b294aa445a"
+  },
+  "linter/current-api/h16-prop-span-v-html-quoted-208": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h16-prop-span-v-html-quoted-208.snap",
+    "sha256": "df73c0c82799e2ef4e10a96d48928e097683cc801982f37f5535feef27d27c91"
+  },
+  "linter/current-api/h16-prop-span-valueless-v-html-208": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h16-prop-span-valueless-v-html-208.snap",
+    "sha256": "92604f0f7e28b3e7b9ad5d08ae52c966f79861dd420692d4bd2309746a4e10bc"
+  },
+  "linter/current-api/h16-v-model-dynamic-component-argument-304": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h16-v-model-dynamic-component-argument-304.snap",
+    "sha256": "b0e9a4da3d41434a3fc8c1da8d0f6dae211f4fb75909fcc58b493987a6d1d87b"
+  },
+  "linter/current-api/h16-v-model-native-argument-control-304": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h16-v-model-native-argument-control-304.snap",
+    "sha256": "05e8efd18c9d7cf4b888968e82bcd3080cab9083c931f6c464310a4421b14158"
+  },
+  "linter/current-api/h16-v-model-div-control-304": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h16-v-model-div-control-304.snap",
+    "sha256": "aa9094f6bfb1e0db9bc84a37ed74b152be1a4858a347292b2d86bf3873df62f1"
+  },
+  "linter/current-api/h16-unsafe-url-static-javascript-src-268": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h16-unsafe-url-static-javascript-src-268.snap",
+    "sha256": "9b116c0bcafa81b6584c36a2c6f7167e96eb1e62cd52d65cc3d27b6c705edb31"
+  },
+  "linter/current-api/h16-unsafe-url-static-obfuscated-href-268": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h16-unsafe-url-static-obfuscated-href-268.snap",
+    "sha256": "bf18769f35e24129e03ca37a68960f458794c44eb14a82ecaace09f03e504fc4"
+  },
+  "linter/current-api/h16-unsafe-url-static-vbscript-formaction-268": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h16-unsafe-url-static-vbscript-formaction-268.snap",
+    "sha256": "dd26322121ed1a71438aefd073544b29cb30371cbf193992ae9fedeeb25e4da3"
+  },
+  "linter/current-api/h16-unsafe-url-static-html-data-url-268": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h16-unsafe-url-static-html-data-url-268.snap",
+    "sha256": "808cd469ddd94ce527460886539d1016dc715b631dba84bff6138aafea41bf33"
+  },
+  "linter/current-api/h16-unsafe-url-static-image-data-url-268": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h16-unsafe-url-static-image-data-url-268.snap",
+    "sha256": "8722f1506044c1ef92ca7976f63f750d15a4de7939eba6385c87995ed902b019"
+  },
+  "linter/current-api/h16-unused-components-unused-vue-import-303": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h16-unused-components-unused-vue-import-303.snap",
+    "sha256": "7d975e4836b110d33ce22dd9a4bf7ea0a7a9f5a351d082cf590b33c14180ecef"
+  },
+  "linter/current-api/h16-unused-components-local-pascal-constant-303": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h16-unused-components-local-pascal-constant-303.snap",
+    "sha256": "95ddf3d6f6ab7ed98f1efcb9a476dd31107b81666243b6fe84c37b14d93206c5"
+  },
+  "linter/current-api/h16-unused-components-kebab-usage-303": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h16-unused-components-kebab-usage-303.snap",
+    "sha256": "4932c2092ccf9c3092fb182b53d77dcb68b8b77b951cdae674138fa362b671aa"
+  },
+  "linter/current-api/h16-unused-components-options-alias-used-303": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h16-unused-components-options-alias-used-303.snap",
+    "sha256": "b5842098218e0e5e7a279a8252f391d5f96474ffdc6ffa4c2af1cdfcc2a06db0"
+  },
+  "linter/current-api/h16-unused-components-options-alias-unused-303": {
+    "path": "crates/vize_patina/tests/snapshots/integration__lint_history__h16-unused-components-options-alias-unused-303.snap",
+    "sha256": "1a4e1ce52540f141babfdaa74ce017da650fd312c5279e98059d60e077522dbd"
   }
 }

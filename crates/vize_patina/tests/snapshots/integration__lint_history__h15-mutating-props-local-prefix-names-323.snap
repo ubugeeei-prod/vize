@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h15-mutating-props-local-prefix-names-323",
+    history: "c8a041c44c2414d0f61caba529e40c2142081710",
+    source: "<script setup lang=\"ts\">\nimport { reactive } from 'vue'\n\ndefineProps<{ count: number }>()\nconst propsState = reactive({ count: 0 })\nconst counter = reactive({ value: 0 })\n</script>\n\n<template>\n  <input v-model=\"propsState.count\" />\n  <input v-model=\"counter.value\" />\n</template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    rule: "vue/no-mutating-props",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}

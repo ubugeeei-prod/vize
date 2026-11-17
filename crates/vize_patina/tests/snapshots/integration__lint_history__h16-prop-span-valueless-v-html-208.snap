@@ -1,0 +1,59 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h16-prop-span-valueless-v-html-208",
+    history: "f5d043a84ccefe91a0aaf1b9c292437c73cf38b4",
+    source: "<div v-html />",
+    filename: "History.vue",
+    entry: "template",
+    rule: "vue/valid-v-html",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 1,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [
+            LintDiagnostic {
+                rule_name: "vue/valid-v-html",
+                severity: Error,
+                message: "v-html directives require that attribute value",
+                start: 5,
+                end: 11,
+                help: Some(
+                    "Add an expression to the v-html directive and remove any argument or modifier",
+                ),
+                labels: [],
+                fix: None,
+            },
+        ],
+        error_count: 1,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [
+                LintDiagnostic {
+                    rule_name: "vue/valid-v-html",
+                    severity: Error,
+                    message: "v-html directives require that attribute value",
+                    start: 5,
+                    end: 11,
+                    help: Some(
+                        "Add an expression to the v-html directive and remove any argument or modifier",
+                    ),
+                    labels: [],
+                    fix: None,
+                },
+            ],
+            error_count: 1,
+            warning_count: 0,
+        },
+    ),
+}

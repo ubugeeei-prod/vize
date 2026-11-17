@@ -1,0 +1,33 @@
+---
+source: crates/vize_patina/tests/lint_history.rs
+expression: first_bytes
+---
+Case {
+    id: "h16-ssr-globals-block-comment-273",
+    history: "b91e4496aed6014da9c382cbc49f09e7c2e18827",
+    source: "<div>{{ value /* window */ }}</div>",
+    filename: "History.vue",
+    entry: "template",
+    rule: "ssr/no-browser-globals-in-ssr",
+    vue_version: None,
+    vapor: None,
+    diagnostics: 0,
+    fixes: 0,
+}
+Observation {
+    initial: LintResult {
+        filename: "History.vue",
+        diagnostics: [],
+        error_count: 0,
+        warning_count: 0,
+    },
+    applications: [],
+    unchanged_requery: Some(
+        LintResult {
+            filename: "History.vue",
+            diagnostics: [],
+            error_count: 0,
+            warning_count: 0,
+        },
+    ),
+}
