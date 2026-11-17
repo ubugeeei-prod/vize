@@ -50,8 +50,7 @@ pub(super) fn hover_attribute_documented(
     }
 
     let import_path = crate::ide::definition::helpers::find_import_path(ctx, &component_name)?;
-    let resolved_path =
-        crate::ide::definition::helpers::resolve_import_path(ctx.uri, &import_path)?;
+    let resolved_path = crate::ide::definition::helpers::resolve_import_path_in(ctx, &import_path)?;
     let component_uri = tower_lsp::lsp_types::Url::from_file_path(&resolved_path).ok()?;
     let component_content = ctx
         .state

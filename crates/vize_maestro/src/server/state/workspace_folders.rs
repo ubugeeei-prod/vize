@@ -106,6 +106,7 @@ impl ServerState {
         }
         self.lint_hover_cache.clear();
         self.package_route_resolver.lock().clear();
+        self.component_route_resolver.lock().clear();
         self.global_component_references.invalidate();
         // Invalidate batch cache when workspace changes
         self.batch_cache.invalidate();

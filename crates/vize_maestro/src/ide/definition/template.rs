@@ -237,7 +237,7 @@ pub(crate) fn find_component_prop_definition(
     let resolved_path = super::component_import::resolve_component_file(ctx, &component_name)
         .or_else(|| {
             let import_path = super::art::component_path(ctx, &component_name)?;
-            helpers::resolve_import_path(ctx.uri, &import_path)
+            helpers::resolve_import_path_in(ctx, &import_path)
         })?;
     let component_content = std::fs::read_to_string(&resolved_path).ok()?;
 
@@ -374,7 +374,7 @@ pub(crate) fn find_component_definition(
     }
 
     if let Some(import_path) = super::art::component_path(ctx, tag_name)
-        && let Some(resolved) = helpers::resolve_import_path(ctx.uri, &import_path)
+        && let Some(resolved) = helpers::resolve_import_path_in(ctx, &import_path)
         && let Some(location) = component_file_location(ctx, &resolved)
     {
         return Some(GotoDefinitionResponse::Scalar(location));
