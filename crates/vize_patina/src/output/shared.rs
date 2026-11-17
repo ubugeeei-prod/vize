@@ -188,8 +188,13 @@ pub(super) fn diagnostic_location(
     end: u32,
     source_indices: &FxHashMap<&str, SourceLineIndex>,
 ) -> DiagnosticLocation {
-    source_indices
-        .get(filename)
+    locate(source_indices.get(filename), start, end)
+}
+
+/// One-based location of `start..end` in an indexed source, or byte columns on
+/// line 1 without one.
+pub(super) fn locate(index: Option<&SourceLineIndex>, start: u32, end: u32) -> DiagnosticLocation {
+    index
         .map(|source| {
             let (line, column) = source.offset_to_line_col(start);
             let (end_line, end_column) = source.offset_to_line_col(end);
@@ -272,7 +277,7 @@ pub(super) struct SourceLineIndex {
 }
 
 impl SourceLineIndex {
-    fn new(source: &str) -> Self {
+    pub(super) fn new(source: &str) -> Self {
         let bytes = source.as_bytes();
         let mut line_starts = SmallVec::new();
         line_starts.push(0);
