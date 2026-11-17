@@ -218,6 +218,109 @@ async function lsp(root: string, file: string, rounds: number, edits: number) {
   }
 }
 
+type Renames = { latencies: number[]; sha: string };
+
+// One LSP session: open `file`, then time `requests` workspace/willRenameFiles
+// requests for renaming `from` to `to` (relative to root). The sha covers the
+// last returned edit, canonicalized.
+function renameSession(binary: string, root: string, file: string, from: string, to: string, requests: number): Promise<Renames> {
+  return new Promise((resolve, reject) => {
+    const child = spawn(binary, ["lsp"], { cwd: root, stdio: ["pipe", "pipe", "ignore"] });
+    let buffer = Buffer.alloc(0);
+    const queue: any[] = [];
+    const waiters: ((message: any) => void)[] = [];
+    const send = (message: unknown) => {
+      const body = Buffer.from(JSON.stringify(message));
+      child.stdin.write(`Content-Length: ${body.length}\r\n\r\n`);
+      child.stdin.write(body);
+    };
+    child.stdout.on("data", (data: Buffer) => {
+      buffer = Buffer.concat([buffer, data]);
+      for (;;) {
+        const separator = buffer.indexOf("\r\n\r\n");
+        if (separator < 0) return;
+        const length = Number(/content-length: *(\d+)/i.exec(buffer.subarray(0, separator).toString())?.[1]);
+        if (buffer.length < separator + 4 + length) return;
+        const message = JSON.parse(buffer.subarray(separator + 4, separator + 4 + length).toString());
+        buffer = buffer.subarray(separator + 4 + length);
+        if (message.method && message.id !== undefined) {
+          send({ jsonrpc: "2.0", id: message.id, result: null });
+          continue;
+        }
+        queue.push(message);
+        while (waiters.length && queue.length) waiters.shift()!(queue.shift());
+      }
+    });
+    child.on("error", reject);
+    const next = () => (queue.length ? Promise.resolve(queue.shift()) : new Promise<any>((done) => waiters.push(done)));
+    const response = async (id: number) => {
+      for (;;) {
+        const message = await next();
+        if (message.id === id) return message;
+      }
+    };
+    const uri = "file://" + join(root, file);
+    (async () => {
+      send({
+        jsonrpc: "2.0",
+        id: 1,
+        method: "initialize",
+        params: {
+          processId: process.pid,
+          rootUri: "file://" + root,
+          capabilities: { workspace: { fileOperations: { willRename: true } } },
+          workspaceFolders: [{ uri: "file://" + root, name: "r" }],
+        },
+      });
+      await response(1);
+      send({ jsonrpc: "2.0", method: "initialized", params: {} });
+      const text = readFileSync(join(root, file), "utf8");
+      send({ jsonrpc: "2.0", method: "textDocument/didOpen", params: { textDocument: { uri, languageId: "vue", version: 1, text } } });
+      const latencies: number[] = [];
+      let last: unknown = null;
+      for (let i = 0; i < requests; i++) {
+        const id = 100 + i;
+        const start = performance.now();
+        send({
+          jsonrpc: "2.0",
+          id,
+          method: "workspace/willRenameFiles",
+          params: { files: [{ oldUri: "file://" + join(root, from), newUri: "file://" + join(root, to) }] },
+        });
+        last = (await response(id)).result;
+        latencies.push(performance.now() - start);
+      }
+      const changes = (last as any)?.changes ?? {};
+      const canonical = JSON.stringify(
+        Object.keys(changes)
+          .sort()
+          .map((key) => [key.replace("file://" + root, ""), changes[key]]),
+      );
+      child.kill();
+      resolve({ latencies, sha: createHash("sha256").update(canonical).digest("hex").slice(0, 16) });
+    })().catch(reject);
+  });
+}
+
+async function renames(root: string, file: string, from: string, to: string, rounds: number, requests: number) {
+  const sessions: Record<"base" | "head", Renames[]> = { base: [], head: [] };
+  await renameSession(bins.base, root, file, from, to, 2);
+  await renameSession(bins.head, root, file, from, to, 2);
+  for (let round = 0; round < rounds; round++) {
+    const order = round % 2 === 0 ? (["base", "head"] as const) : (["head", "base"] as const);
+    for (const role of order) sessions[role].push(await renameSession(bins[role], root, file, from, to, requests));
+  }
+  write(`| willRenameFiles ${from} → ${to} | ${rounds}×${requests} | role | first p50 | later p50 / p95 | edit sha |`);
+  write("| --- | --- | --- | --- | --- | --- |");
+  for (const role of ["base", "head"] as const) {
+    const first = sessions[role].map((s) => s.latencies[0]);
+    const later = sessions[role].flatMap((s) => s.latencies.slice(1));
+    write(
+      `| | | ${role} | ${pct(first, 0.5).toFixed(1)} ms | ${pct(later, 0.5).toFixed(1)} / ${pct(later, 0.95).toFixed(1)} ms | ${[...new Set(sessions[role].map((s) => s.sha))].join(",")} |`,
+    );
+  }
+}
+
 const mk = arg("mk");
 const mkta = arg("mkta");
 const bench = arg("bench");
@@ -406,6 +509,10 @@ for (const spec of arg("scenarios", "mk,mk-json,mk-all,bench,ta").split(",")) {
       ["lint", "src", "--strict-reactivity", "--format", "json"],
       runs,
     );
+}
+if (arg("scenarios", "").split(",").includes("rename")) {
+  write();
+  await renames(mk, "src/components/MkButton.vue", "src/components/MkButton.vue", "src/components/MkButtonRenamed.vue", 10, 5);
 }
 if (arg("lsp-rounds", "0") !== "0") {
   write();
