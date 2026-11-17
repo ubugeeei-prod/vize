@@ -96,7 +96,9 @@ fn emit_chain(cx: &mut EmitCx<'_>, if_op: &IfOp<'_>, id: Option<NodeId>) -> Resu
 /// `ui.and`: `(left) && <branch>`. JavaScript evaluates `left` once and
 /// yields it when falsy, and the renderer normalizes that value as a child
 /// (`0` as text, `false` and `null` as nothing); a truthy `left` yields the
-/// region's root, keyed like a one-branch `ui.if`.
+/// region's root, keyed like a one-branch `ui.if`. Kept out of line: template
+/// dispatchers never reach it.
+#[inline(never)]
 pub(super) fn emit_and(cx: &mut EmitCx<'_>, and: &AndOp<'_>) -> Result<(), EmitError> {
     let key = next_if_key(cx).to_compact_string();
     let left = cx.prefixed_expr(&and.left, Site::Expression)?;

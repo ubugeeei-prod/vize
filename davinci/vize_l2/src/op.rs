@@ -87,9 +87,6 @@ pub enum Op<'a> {
     Comment(Box<'a, CommentOp<'a>>),
     /// `ui.if` - structured conditional; every branch owns its region.
     If(Box<'a, IfOp<'a>>),
-    /// `ui.and` - `left && <region>` as a child: `left` is evaluated once and
-    /// renders as a child value when falsy.
-    And(Box<'a, AndOp<'a>>),
     /// `ui.for` - structured iteration; the repeated content is one owned
     /// region.
     For(Box<'a, ForOp<'a>>),
@@ -97,6 +94,10 @@ pub enum Op<'a> {
     OriginalFor(Box<'a, OriginalForOp<'a>>),
     /// `ui.slot` - a slot outlet owning its fallback region.
     Slot(Box<'a, SlotOp<'a>>),
+    /// `ui.and` - `left && <region>` as a child: `left` is evaluated once and
+    /// renders as a child value when falsy. Last, so the other variants keep
+    /// their discriminants.
+    And(Box<'a, AndOp<'a>>),
 }
 
 impl Op<'_> {
