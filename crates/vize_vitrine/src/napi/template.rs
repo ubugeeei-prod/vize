@@ -189,6 +189,7 @@ pub fn compile_vapor(template: String, options: Option<CompilerOptions>) -> Resu
         self_component: opts.experimental_self_component.unwrap_or(false),
         source_map: opts.source_map.unwrap_or(false),
         source_map_filename: opts.filename.clone().map(Into::into),
+        ..VaporCompilerExperimentalOptions::default()
     };
     let result = whitespace.apply(|| {
         compile_vapor_with_custom_elements_template_syntax_and_experimental_options(

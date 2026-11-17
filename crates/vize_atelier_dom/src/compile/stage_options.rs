@@ -149,10 +149,13 @@ pub(super) fn source_may_bind_declared_directive(
     source: &str,
     contracts: &vize_l0::config::DirectiveContracts,
 ) -> bool {
-    contracts.as_slice().iter().any(|contract| {
-        source
-            .match_indices(contract.name.as_str())
-            .any(|(at, _)| source.as_bytes().get(at.saturating_sub(2)..at) == Some(b"v-"))
+    let bytes = source.as_bytes();
+    source.match_indices("v-").any(|(at, _)| {
+        let rest = bytes.get(at + 2..).unwrap_or_default();
+        contracts
+            .as_slice()
+            .iter()
+            .any(|contract| rest.starts_with(contract.name.as_bytes()))
     })
 }
 

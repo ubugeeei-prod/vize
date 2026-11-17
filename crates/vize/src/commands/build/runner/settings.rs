@@ -109,6 +109,8 @@ pub(super) struct CompileFileSettings {
     pub(super) vapor: bool,
     pub(super) custom_renderer: bool,
     pub(super) custom_elements: Vec<String>,
+    /// The verified `vue.plugins` plan, admitted once the inputs are known.
+    pub(super) plugin_plan: Option<crate::config::plugin_plan::VerifiedPluginPlan>,
     /// `vue.plugins` directive contracts, shared by every file's compile.
     pub(super) directive_contracts: DirectiveContracts,
     pub(super) template_syntax: TemplateSyntaxMode,
@@ -195,12 +197,6 @@ impl CompileFileSettings {
             .collect();
         let ssr = args.ssr || build_config.ssr.unwrap_or(false);
         let vapor = args.vapor || build_config.vapor.unwrap_or(false);
-        let vapor_files = vapor || compiler_scopes_enable_vapor(&build_config.compiler_entries);
-        let directive_contracts = super::plugins::directive_contracts(
-            build_config.plugin_plan.as_ref(),
-            ssr,
-            vapor_files,
-        );
         let (plan, mode) = davinci_ice::compile_plan(ssr, vapor);
         let budget = davinci_ice::plan_budget(plan);
         let inject = args.davinci_inject_panic.as_deref().map(|spec| {
@@ -226,7 +222,8 @@ impl CompileFileSettings {
             vapor,
             custom_renderer: args.custom_renderer,
             custom_elements: resolve_custom_elements(args, build_config.custom_elements),
-            directive_contracts,
+            plugin_plan: build_config.plugin_plan,
+            directive_contracts: DirectiveContracts::EMPTY,
             template_syntax: args
                 .template_syntax
                 .map(Into::into)
@@ -362,10 +359,6 @@ impl CompileFileSettings {
         }
         hash_bytes(&bytes)
     }
-}
-
-fn compiler_scopes_enable_vapor(entries: &[CompilerConfigEntry]) -> bool {
-    entries.iter().any(|entry| entry.vapor == Some(true))
 }
 
 fn scoped_whitespace(value: Option<&str>) -> Option<(WhitespaceStrategy, bool, bool)> {

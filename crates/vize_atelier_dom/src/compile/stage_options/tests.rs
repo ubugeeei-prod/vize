@@ -88,3 +88,33 @@ fn supported(options: DomCompilerOptions) -> bool {
 fn is_custom_element(tag: &str) -> bool {
     tag.starts_with("x-")
 }
+
+#[test]
+fn declared_directive_scan_finds_every_v_prefixed_spelling() {
+    use super::source_may_bind_declared_directive;
+    use vize_l0::config::{DirectiveContract, DirectiveContracts};
+    let table = |name: &str| {
+        DirectiveContracts::new(vec![DirectiveContract {
+            plugin: "@acme/p".into(),
+            name: name.into(),
+            modifiers: Vec::new(),
+        }])
+    };
+    // Overlapping `v-` prefixes must not hide the full spelling (`v-v-v`).
+    assert!(source_may_bind_declared_directive(
+        "<div v-v-v/>",
+        &table("v-v")
+    ));
+    assert!(source_may_bind_declared_directive(
+        "<a v-track.once>",
+        &table("track")
+    ));
+    assert!(!source_may_bind_declared_directive(
+        "<a track v-focus>",
+        &table("track")
+    ));
+    assert!(!source_may_bind_declared_directive(
+        "<a v-track>",
+        &DirectiveContracts::EMPTY
+    ));
+}
