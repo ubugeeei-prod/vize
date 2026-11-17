@@ -175,7 +175,9 @@ fn path_to_tsconfig_target(path: &Path) -> CompactString {
 }
 
 pub fn normalize_path_lexically(path: &Path) -> PathBuf {
-    let mut normalized = PathBuf::new();
+    // Dropping `.`, `..` and repeated separators never lengthens a path, so
+    // one buffer of the input's length holds every pushed component.
+    let mut normalized = PathBuf::with_capacity(path.as_os_str().len());
     for component in path.components() {
         match component {
             std::path::Component::CurDir => {}
