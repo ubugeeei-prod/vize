@@ -286,3 +286,32 @@ const props = withDefaults(defineProps<Props>(), {
     .replace("defineProps<Props>()", "defineProps<StatefulProps<T> & {\n  clearValue?: T\n}>()");
   assert.equal(requireDefault(inline), null);
 });
+
+test("an asserted method handler is Vue's method handler", () => {
+  const handler = (value: string) => {
+    const sfc = `<template>\n  <div @keydown="${value}" />\n</template>`;
+    const start = sfc.indexOf(value);
+    return baselineIntentionalReason(
+      {
+        file: "src/SelectContentImpl.vue",
+        ruleId: "vue/v-on-handler-style",
+        severity: "warning",
+        line: 2,
+        column: start - sfc.lastIndexOf("\n", start),
+        endLine: 2,
+        endColumn: start - sfc.lastIndexOf("\n", start) + value.length,
+        message:
+          "Prefer method handler over inline handler in v-on. Note that you may need to create a new method.",
+      },
+      sfc,
+    );
+  };
+  for (const value of ["(handleKeyDown as any)", "(menu.onKeydown satisfies Handler)", "handler!"])
+    assert.match(handler(value) ?? "", /unwraps parentheses and TypeScript/u, value);
+  for (const value of [
+    "handleKeyDown($event)",
+    "(handleKeyDown as (e: Event) => void)",
+    "open = true",
+  ])
+    assert.equal(handler(value), null, value);
+});
