@@ -278,3 +278,36 @@ await test("the source plan keeps complete Git selection outside its sparse work
       put(selected, helper, saved);
     });
 });
+
+// The tooling planner follows a runtime import only when its target exists in
+// the sparse planner checkout. A missing JSON target silently shrinks the
+// planned matrix below what every shard selects, and each shard then refuses.
+await test("the source plan checkout carries every runtime JSON import target", () => {
+  const patterns = readFileSync(join(root, sparseCheckoutPath), "utf8")
+    .split("\n")
+    .filter((line) => line.startsWith("/"))
+    .map((line) => {
+      const glob = line
+        .slice(1)
+        .replace(/[.+^${}()|[\]\\]/g, "\\$&")
+        .replaceAll("**/", "\u0000")
+        .replaceAll("*", "[^/]*")
+        .replaceAll("\u0000", "(?:.*/)?");
+      return new RegExp(`^${glob}${line.endsWith("/") ? "" : "$"}`);
+    });
+  const scripts = ["tests", "tools", "docs", "npm", "editors/vscode/test"].flatMap((dir) =>
+    ["ts", "mts", "cts", "js", "mjs", "cjs"].map((extension) => `${dir}/*.${extension}`),
+  );
+  const sources = git(root, "ls-files", "--", ...scripts).split("\n");
+  const missing: string[] = [];
+  for (const file of sources) {
+    const source = readFileSync(join(root, file), "utf8");
+    for (const [, specifier] of source.matchAll(
+      /^import\s+\w+\s+from\s+"(\.[^"]+\.json)"\s+with\s*\{\s*type:\s*"json"\s*\}/gm,
+    )) {
+      const target = join(dirname(file), specifier);
+      if (!patterns.some((pattern) => pattern.test(target))) missing.push(`${file} -> ${target}`);
+    }
+  }
+  assert.deepEqual(missing, []);
+});
