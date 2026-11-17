@@ -20,7 +20,9 @@ use crate::types::{BindingMetadata, BindingType};
 /// `methods` and `inject` as options. A name declared by several groups,
 /// in the component or its mixins, binds as the instance proxy resolves it:
 /// a `setup()` return (setup state, so no option binding) before `data`,
-/// before `props`, before the other options. Vue 3 has no `filters`.
+/// before `props`, before the other options. Vue 3 has no `filters`. A
+/// component with an escaped string key (`'v\u0061lue'`) forwards nothing:
+/// the facts do not decode it, so its group could outrank a listed member.
 pub(in crate::compile) fn options_api(
     content: &str,
     lang: Option<&str>,
@@ -49,7 +51,11 @@ fn observe(content: &str, lang: Option<&str>) -> Option<BindingMetadata> {
     let facts = observer.finish().ok()?;
     // Each name keeps the binding of its highest-ranked group.
     let mut ranked: FxHashMap<String, (u8, Option<BindingType>)> = FxHashMap::default();
-    for member in &facts.component()?.members {
+    let component = facts.component()?;
+    if !component.escaped.is_empty() {
+        return None;
+    }
+    for member in &component.members {
         let (rank, binding) = match member.kind {
             OptionMemberKind::Setup => (3, None),
             OptionMemberKind::Data | OptionMemberKind::AsyncData => (2, Some(BindingType::Data)),
@@ -162,5 +168,9 @@ export default {
         assert!(options_api("export default { props: ['p'", None).is_none());
         assert!(options_api("export default {}", None).is_none());
         assert!(options_api("export default factory({ props: ['p'] })", None).is_none());
+        // An escaped key could be a data member that outranks the prop.
+        let escaped =
+            "export default { props: ['value'], data() { return { 'v\x5cu0061lue': 1 } } }";
+        assert!(options_api(escaped, None).is_none());
     }
 }
