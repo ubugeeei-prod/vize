@@ -189,14 +189,15 @@ fn preprocessor_blocks_survive_formatting_byte_identical() {
 }
 
 #[test]
-fn css_rules_report_only_the_plain_css_block() {
+fn css_rules_report_the_preprocessor_block_as_written_and_the_plain_css_block() {
     for (lang, scoped, module, _) in FIXTURES {
         let dir = project(lang, scoped, module);
         let source = component(lang, scoped, module);
-        let legacy_line = source[..source.find(".legacy").unwrap()]
-            .matches('\n')
-            .count()
-            + 1;
+        let line_of =
+            |needle: &str| source[..source.find(needle).unwrap()].matches('\n').count() + 1;
+        // `css/no-important` reads the authored preprocessor block, not its CSS.
+        let preprocessor_line = line_of("v-bind(accent) !important");
+        let legacy_line = line_of(".legacy");
         let output = vize(
             dir.path(),
             &[
@@ -223,7 +224,10 @@ fn css_rules_report_only_the_plain_css_block() {
             .collect();
         assert_eq!(
             messages,
-            [("css/no-important".to_owned(), legacy_line as u64)],
+            [
+                ("css/no-important".to_owned(), preprocessor_line as u64),
+                ("css/no-important".to_owned(), legacy_line as u64)
+            ],
             "{lang}: {}",
             details(&output)
         );

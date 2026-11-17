@@ -64,8 +64,16 @@ pub(super) fn important_flags(sheet: &StyleSheet<'_>, value: Span) -> Vec<Span> 
         let Ok(token) = parser.next_including_whitespace_and_comments() else {
             break;
         };
-        if !matches!(token, Token::Delim('!')) {
-            continue;
+        match token {
+            Token::Delim('!') => {}
+            Token::Function(_)
+            | Token::ParenthesisBlock
+            | Token::SquareBracketBlock
+            | Token::CurlyBracketBlock => {
+                skip_block(&mut parser);
+                continue;
+            }
+            _ => continue,
         }
         let important = parser.try_parse(|parser| {
             parser.expect_ident_matching("important")?;
@@ -90,6 +98,16 @@ pub(super) fn important_flags(sheet: &StyleSheet<'_>, value: Span) -> Vec<Span> 
         }
     }
     flags
+}
+
+/// After a function or bracketed block token, its contents are read with
+/// the next token unless consumed now, which would record that token's
+/// start inside the block. Call it only right after such a token.
+fn skip_block(parser: &mut Parser<'_, '_>) {
+    let _: Result<(), cssparser::ParseError<'_, ()>> = parser.parse_nested_block(|nested| {
+        while nested.next_including_whitespace_and_comments().is_ok() {}
+        Ok(())
+    });
 }
 
 #[cfg(test)]

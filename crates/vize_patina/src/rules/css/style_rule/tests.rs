@@ -25,6 +25,11 @@ fn css_flags_are_terminal_top_level_value_tokens() {
         flags(css, ".a { width: 1px !/**/IMPORTANT; }"),
         ["!/**/IMPORTANT"]
     );
+    // A function before the flag is consumed whole.
+    assert_eq!(
+        flags(css, "a{opacity:min(10%,90%)!important}"),
+        ["!important"]
+    );
     assert_eq!(
         flags(css, ".a { &:hover { color: red !important; } }"),
         ["!important"]
