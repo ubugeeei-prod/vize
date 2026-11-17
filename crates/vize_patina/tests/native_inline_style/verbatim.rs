@@ -2,7 +2,7 @@ use super::support::{
     LOCALES, NeverLookup, complete, expected, parity, registered, selected, span, warning,
 };
 use vize_l0::{Allocator, Span, cstr};
-use vize_l1::markup::NativeLintTagRefusal;
+use vize_l1::markup::TagFactsRefusal;
 use vize_patina::native::{NativeLintRefusal, NativeSyntaxLint};
 
 #[test]
@@ -49,7 +49,7 @@ fn ambiguous_pre_receipts_refuse_without_erasing_complete_registered_warnings() 
             assert_eq!(
                 lint.no_inline_style(element, &NeverLookup).err(),
                 Some(NativeLintRefusal::LintTag {
-                    reason: NativeLintTagRefusal::AmbiguousVerbatim
+                    reason: TagFactsRefusal::AmbiguousVerbatim
                 })
             );
         }
@@ -76,7 +76,7 @@ fn inherited_template_retains_the_original_provider_refusal() {
     assert_eq!(
         lint.no_inline_style(&element, &NeverLookup).err(),
         Some(NativeLintRefusal::LintTag {
-            reason: NativeLintTagRefusal::InheritedTemplate
+            reason: TagFactsRefusal::InheritedTemplate
         })
     );
     for locale in LOCALES {

@@ -2,14 +2,14 @@
 
 use vize_l0::diag::{Advisory, Diagnostic, DiagnosticPart, MessageLookup, PartKind, Stage};
 use vize_l1::markup::{
-    NativeElement,
+    ElementView,
     entity::{EntityContext, decode_one},
 };
 
 use super::{IFRAME_HAS_TITLE_RULE, NativeLintFinding, NativeLintRefusal, header};
 
 pub(super) fn check(
-    element: &NativeElement<'_, '_>,
+    element: &ElementView<'_, '_>,
     messages: &impl MessageLookup,
 ) -> Result<Option<NativeLintFinding>, NativeLintRefusal> {
     let range = header::opening_range(element)?;

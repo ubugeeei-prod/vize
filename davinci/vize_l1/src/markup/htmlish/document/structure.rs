@@ -3,7 +3,7 @@
 
 use vize_l0::{Namespace, Span, Vec};
 
-use super::{DocumentLexicalRefusal, NativeDocument};
+use super::{DocumentLexicalRefusal, ParsedDocument};
 
 mod attribute;
 mod build;
@@ -119,7 +119,7 @@ pub enum DocumentHtmlRefusal {
 /// ```
 #[derive(Debug)]
 pub struct DocumentHtmlStructure<'o, 'a> {
-    owner: &'o NativeDocument<'a>,
+    owner: &'o ParsedDocument<'a>,
     elements: Vec<'a, Element>,
     body_tail_text: Option<Span>,
     /// The current node at `</body>`, which receives later whitespace.
@@ -133,7 +133,7 @@ impl<'o, 'a> DocumentHtmlStructure<'o, 'a> {
     pub const MAX_OPENING_BYTES: u32 = 16 * 1024;
 
     #[must_use]
-    pub fn owner(&self) -> &'o NativeDocument<'a> {
+    pub fn owner(&self) -> &'o ParsedDocument<'a> {
         self.owner
     }
 
@@ -172,7 +172,7 @@ impl<'s, 'o, 'a> DocumentHtmlElement<'s, 'o, 'a> {
     }
 
     #[must_use]
-    pub fn owner(&self) -> &'o NativeDocument<'a> {
+    pub fn owner(&self) -> &'o ParsedDocument<'a> {
         self.tree.owner
     }
 
@@ -258,7 +258,7 @@ impl<'s, 'o, 'a> DocumentHtmlElement<'s, 'o, 'a> {
 }
 
 pub(super) fn construct<'o, 'a>(
-    owner: &'o NativeDocument<'a>,
+    owner: &'o ParsedDocument<'a>,
 ) -> Result<DocumentHtmlStructure<'o, 'a>, DocumentHtmlRefusal> {
     build::construct(owner)
 }

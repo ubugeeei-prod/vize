@@ -259,7 +259,7 @@ pub(super) fn element_type(
     {
         return ElementType::Template;
     }
-    if vize_l1::dialect::vue3::is_lint_component(tag, true) {
+    if vize_l1::dialect::vue3::is_component_tag(tag, true) {
         ElementType::Component
     } else {
         ElementType::Element

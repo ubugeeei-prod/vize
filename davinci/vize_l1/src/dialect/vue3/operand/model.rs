@@ -1,6 +1,6 @@
 //! Supported model shape selected from the already decomposed original head.
 
-use crate::markup::{DirectiveName, DirectivePrefix, NativeAttributeOperandError};
+use crate::markup::{AttributeOperandError, DirectiveName, DirectivePrefix};
 use vize_l0::{SourceBlock, Span};
 
 #[derive(Clone, Copy)]
@@ -17,7 +17,7 @@ pub(crate) struct ModelParts {
 pub(crate) fn model_parts(
     parts: Option<DirectiveName>,
     block: SourceBlock<'_>,
-) -> Result<Option<ModelParts>, NativeAttributeOperandError> {
+) -> Result<Option<ModelParts>, AttributeOperandError> {
     let Some(head) = parts else {
         return Ok(None);
     };
@@ -25,7 +25,7 @@ pub(crate) fn model_parts(
         return Ok(None);
     }
     if head.arg.is_some() {
-        return Err(NativeAttributeOperandError::UnsupportedDirective);
+        return Err(AttributeOperandError::UnsupportedDirective);
     }
     let modifier = if head.name.end == block.end() && head.modifiers.start == head.modifiers.end {
         None
@@ -35,10 +35,10 @@ pub(crate) fn model_parts(
             ".trim" => ModelModifier::Trim(span),
             ".lazy" => ModelModifier::Lazy(span),
             ".number" => ModelModifier::Number(span),
-            _ => return Err(NativeAttributeOperandError::UnsupportedDirective),
+            _ => return Err(AttributeOperandError::UnsupportedDirective),
         })
     } else {
-        return Err(NativeAttributeOperandError::UnsupportedDirective);
+        return Err(AttributeOperandError::UnsupportedDirective);
     };
     Ok(Some(ModelParts { modifier }))
 }

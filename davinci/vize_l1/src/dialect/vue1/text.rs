@@ -3,7 +3,7 @@
 pub(super) mod sink;
 
 use crate::embed::source::{DecodeSegmentKind, prepare_text_value};
-use crate::embed::syntax::{NativeSyntax, parse_once};
+use crate::embed::syntax::{EmbedSyntax, parse_once};
 use crate::embed::{Embed, EmbedSource, Grammar, Lang, Shape};
 use vize_l0::{Allocator, SourceBlock, Span};
 
@@ -38,7 +38,7 @@ pub struct TextBinding<'a> {
     raw_content: &'a str,
     cst_start: u32,
     source: Option<EmbedSource<'a>>,
-    syntax: Option<NativeSyntax<'a>>,
+    syntax: Option<EmbedSyntax<'a>>,
     boundary: Option<TextBoundaryKind>,
 }
 
@@ -55,7 +55,7 @@ impl<'a> TextBinding<'a> {
     pub const fn source(&self) -> Option<EmbedSource<'a>> {
         self.source
     }
-    pub fn syntax(&self) -> Option<&NativeSyntax<'a>> {
+    pub fn syntax(&self) -> Option<&EmbedSyntax<'a>> {
         self.syntax.as_ref()
     }
     pub const fn boundary(&self) -> Option<TextBoundaryKind> {

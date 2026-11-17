@@ -2,7 +2,7 @@
 
 use serde_json::{Value, json};
 use vize_l0::{Allocator, SourceRoot, Span, String};
-use vize_l1::markup::htmlish::document::{DocumentHtmlNode, DocumentHtmlRefusal, NativeDocument};
+use vize_l1::markup::htmlish::document::{DocumentHtmlNode, DocumentHtmlRefusal, ParsedDocument};
 
 const CORPUS: &str = include_str!("fixtures/document/html-implied-ends-and-tables.json");
 const VOID: [&str; 3] = ["hr", "col", "br"];
@@ -15,7 +15,7 @@ fn implied_ends_and_table_modes_match_complete_browser_packets() {
         let label = case["name"].as_str().unwrap();
         let source = case["source"].as_str().unwrap();
         let arena = Allocator::default();
-        let owner = NativeDocument::lex_in(&arena, SourceRoot::new(source).unwrap());
+        let owner = ParsedDocument::lex_in(&arena, SourceRoot::new(source).unwrap());
         let tree = owner.html_structure().expect(label);
         let elements: Vec<_> = tree.elements().collect();
         let actual: Vec<_> = elements
@@ -152,7 +152,7 @@ fn transitions_without_authored_tags_refuse_with_typed_reasons() {
     ] {
         let source = vize_l0::cstr!("<!DOCTYPE html><html><head></head><body>{body}</body></html>");
         let arena = Allocator::default();
-        let owner = NativeDocument::lex_in(&arena, SourceRoot::new(&source).unwrap());
+        let owner = ParsedDocument::lex_in(&arena, SourceRoot::new(&source).unwrap());
         assert_eq!(owner.html_structure().unwrap_err(), refusal, "{body}");
     }
 }

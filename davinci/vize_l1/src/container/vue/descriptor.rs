@@ -13,7 +13,7 @@ mod policy;
 mod template;
 pub(super) mod vue1;
 pub(super) mod vue2;
-pub use template::{NativeTemplateFrameNameRefusal, NativeTemplateFrameNames, TemplateView};
+pub use template::{TemplateFrameNameRefusal, TemplateFrameNames, TemplateView};
 use template::{TemplateNamePair, TemplateSelection};
 pub use vue1::{Vue1DescriptorObservation, Vue1DescriptorRefusal, Vue1TemplateView};
 pub use vue2::{

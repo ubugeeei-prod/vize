@@ -1,13 +1,13 @@
 //! Original attribute-value preparation without expression or target admission.
 
 use super::origin::Origin;
-use super::{NativeAttribute, NativeAttributeOperandError, NativeTemplateComponent};
+use super::{AttributeOperandError, AttributeView, NativeTemplateComponent};
 use crate::embed::{EmbedSource, prepare_attribute_value};
 use vize_l0::Span;
 
 mod failure;
 mod frame;
-pub use failure::NativeAttributeValueFailure;
+pub use failure::AttributeValueFailure;
 use frame::Frame;
 
 /// A normally owned receipt from one original attribute preparation event.
@@ -16,18 +16,18 @@ use frame::Frame;
 /// It does not classify a directive, validate a target name or complete a File.
 ///
 /// ```compile_fail
-/// use vize_l1::markup::NativeAttributeValue;
+/// use vize_l1::markup::AttributeValueOperand;
 /// fn requires_clone<T: Clone>() {}
-/// requires_clone::<NativeAttributeValue<'static>>();
+/// requires_clone::<AttributeValueOperand<'static>>();
 /// ```
 ///
 /// ```compile_fail
-/// use vize_l1::{embed::EmbedSource, markup::NativeAttributeValue};
-/// fn fabricated(source: EmbedSource<'static>) -> NativeAttributeValue<'static> {
-///     NativeAttributeValue { origin: panic!(), frame: panic!(), source }
+/// use vize_l1::{embed::EmbedSource, markup::AttributeValueOperand};
+/// fn fabricated(source: EmbedSource<'static>) -> AttributeValueOperand<'static> {
+///     AttributeValueOperand { origin: panic!(), frame: panic!(), source }
 /// }
 /// ```
-pub struct NativeAttributeValue<'a> {
+pub struct AttributeValueOperand<'a> {
     origin: Origin<'a>,
     frame: Frame,
     source: EmbedSource<'a>,
@@ -40,8 +40,8 @@ impl<'a> NativeTemplateComponent<'a> {
     /// No JavaScript parse or target-specific name policy is involved.
     pub fn observe_attribute_value(
         &self,
-        attribute: NativeAttribute<'_, 'a>,
-    ) -> Result<NativeAttributeValue<'a>, NativeAttributeValueFailure<'a>> {
+        attribute: AttributeView<'_, 'a>,
+    ) -> Result<AttributeValueOperand<'a>, AttributeValueFailure<'a>> {
         let prepare = || {
             Origin::check_original_header(self, &attribute)?;
             let origin = Origin::from_attribute(self, &attribute)?;
@@ -51,18 +51,18 @@ impl<'a> NativeTemplateComponent<'a> {
                 origin.block.root_source(),
                 origin.value_span,
             )
-            .map_err(NativeAttributeOperandError::Source)?;
-            Ok(NativeAttributeValue {
+            .map_err(AttributeOperandError::Source)?;
+            Ok(AttributeValueOperand {
                 origin,
                 frame,
                 source,
             })
         };
-        prepare().map_err(|kind| NativeAttributeValueFailure::original(kind, &attribute))
+        prepare().map_err(|kind| AttributeValueFailure::original(kind, &attribute))
     }
 }
 
-impl<'a> NativeAttributeValue<'a> {
+impl<'a> AttributeValueOperand<'a> {
     /// Readonly source coordinates alone do not transfer original-token authority.
     #[must_use]
     pub const fn source(&self) -> EmbedSource<'a> {
@@ -99,11 +99,11 @@ impl<'a> NativeAttributeValue<'a> {
     pub fn admitted_for<'s>(
         &'s self,
         selected: &'s NativeTemplateComponent<'a>,
-        attribute: NativeAttribute<'s, 'a>,
-    ) -> Option<NativeAttributeValueView<'s, 'a>> {
+        attribute: AttributeView<'s, 'a>,
+    ) -> Option<AttributeValueView<'s, 'a>> {
         self.origin
             .matches(selected, &attribute)
-            .then_some(NativeAttributeValueView {
+            .then_some(AttributeValueView {
                 owner: self,
                 selected,
                 attribute,
@@ -118,22 +118,22 @@ impl<'a> NativeAttributeValue<'a> {
 
 /// An original value observation at its actual current header event.
 /// The borrowed join has no File, Element factory or target eligibility authority.
-pub struct NativeAttributeValueView<'s, 'a> {
-    owner: &'s NativeAttributeValue<'a>,
+pub struct AttributeValueView<'s, 'a> {
+    owner: &'s AttributeValueOperand<'a>,
     selected: &'s NativeTemplateComponent<'a>,
-    attribute: NativeAttribute<'s, 'a>,
+    attribute: AttributeView<'s, 'a>,
 }
-impl<'s, 'a> NativeAttributeValueView<'s, 'a> {
+impl<'s, 'a> AttributeValueView<'s, 'a> {
     #[must_use]
     pub fn selected(&self) -> &'s NativeTemplateComponent<'a> {
         self.selected
     }
     #[must_use]
-    pub fn attribute(&self) -> &NativeAttribute<'s, 'a> {
+    pub fn attribute(&self) -> &AttributeView<'s, 'a> {
         &self.attribute
     }
     #[must_use]
-    pub fn observation(&self) -> &'s NativeAttributeValue<'a> {
+    pub fn observation(&self) -> &'s AttributeValueOperand<'a> {
         self.owner
     }
 }

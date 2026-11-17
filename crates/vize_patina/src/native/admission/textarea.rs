@@ -3,12 +3,12 @@
 use super::{NativeTemplateAttribute, NativeTemplateOwnerProfile, Refusal, select::Parent};
 use crate::native::template::NativeTemplateAttributeKind;
 use vize_l0::Span;
-use vize_l1::markup::{ElementClose, NativeElement};
+use vize_l1::markup::{ElementClose, ElementView};
 
 pub(super) fn check(
     profile: NativeTemplateOwnerProfile,
     parent: Parent,
-    element: &NativeElement<'_, '_>,
+    element: &ElementView<'_, '_>,
     attributes: &[NativeTemplateAttribute<'_, '_>],
     opening: Span,
 ) -> Result<bool, Refusal> {

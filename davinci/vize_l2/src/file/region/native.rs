@@ -8,9 +8,7 @@ use crate::lang::js::file::native::{
     NativeRouteState, NativeTemplateIssue, NativeTemplateIssueKind,
 };
 use vize_l0::id::NodeId;
-use vize_l1::markup::{
-    NativeChild, NativeChildren, NativeRootText, NativeTemplateComponent, SurfaceChild,
-};
+use vize_l1::markup::{ChildView, ChildrenView, NativeTemplateComponent, RootText, SurfaceChild};
 
 mod attribute_value;
 mod body;
@@ -80,7 +78,7 @@ impl<'s, 'a> NativeTemplateWalk<'s, 'a> {
     pub fn selected(&self) -> &'s NativeTemplateComponent<'a> {
         self.selected
     }
-    pub fn child(&mut self, child: NativeChild<'_, 'a>) -> Result<NodeId, NativeTemplateIssue> {
+    pub fn child(&mut self, child: ChildView<'_, 'a>) -> Result<NodeId, NativeTemplateIssue> {
         if !matches!(self.state, NativeRouteState::Walking)
             || self.root.facts.template_walk.interruption().is_some()
         {
@@ -112,8 +110,8 @@ impl<'s, 'a> NativeTemplateWalk<'s, 'a> {
     /// Ordinary events and every existing direct caller retain `child` behavior.
     pub fn child_with_tail<'o>(
         &mut self,
-        child: NativeChild<'o, 'a>,
-        tail: &mut NativeChildren<'o, 'a>,
+        child: ChildView<'o, 'a>,
+        tail: &mut ChildrenView<'o, 'a>,
     ) -> Result<NodeId, NativeTemplateIssue> {
         if self.cursor != 0
             || self.expected != 2
@@ -149,7 +147,7 @@ impl<'s, 'a> NativeTemplateWalk<'s, 'a> {
     /// receipt. Omitted source text advances custody without creating an op.
     pub fn root_text(
         &mut self,
-        receipt: &NativeRootText<'a>,
+        receipt: &RootText<'a>,
     ) -> Result<Option<NodeId>, NativeTemplateIssue> {
         if !matches!(self.state, NativeRouteState::Walking)
             || self.root.facts.template_walk.interruption().is_some()
@@ -180,7 +178,7 @@ impl<'s, 'a> NativeTemplateWalk<'s, 'a> {
     /// neither a raw expression nor a nested child can advance this cursor.
     pub fn root_interpolation(
         &mut self,
-        child: NativeChild<'_, 'a>,
+        child: ChildView<'_, 'a>,
         input: crate::lang::js::NativeInterpolationInput<'a>,
     ) -> Result<NodeId, NativeTemplateIssue> {
         let check = if !matches!(self.state, NativeRouteState::Walking)
@@ -214,7 +212,7 @@ impl<'s, 'a> NativeTemplateWalk<'s, 'a> {
     /// source profile confers no native target output eligibility.
     pub fn root_text_value(
         &mut self,
-        child: NativeChild<'_, 'a>,
+        child: ChildView<'_, 'a>,
     ) -> Result<NodeId, NativeTemplateIssue> {
         if !matches!(self.state, NativeRouteState::Walking)
             || self.root.facts.template_walk.interruption().is_some()

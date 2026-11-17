@@ -5,7 +5,7 @@ use alloc::vec::Vec;
 use vize_l0::{Allocator, SourceRoot, Span, String};
 
 use super::{Refusal, construct_as};
-use crate::markup::htmlish::document::{DocumentHtmlNode, NativeDocument};
+use crate::markup::htmlish::document::{DocumentHtmlNode, ParsedDocument};
 use crate::markup::{Component, Document, Profile};
 
 type Shape = Vec<(&'static str, Option<usize>, bool)>;
@@ -21,7 +21,7 @@ fn envelope(body: &str) -> String {
 fn shape<P: Profile>(body: &str) -> Result<Shape, Refusal> {
     let source = envelope(body);
     let arena = Allocator::default();
-    let owner = NativeDocument::lex_in(&arena, SourceRoot::new(&source).expect("small source"));
+    let owner = ParsedDocument::lex_in(&arena, SourceRoot::new(&source).expect("small source"));
     let tree = construct_as::<P>(&owner)?;
     let elements: Vec<_> = tree.elements().collect();
     Ok(elements
@@ -165,7 +165,7 @@ fn html_names_fold_case_only_under_the_document_profile() {
 fn whitespace_after_body_joins_the_open_implied_end_element() {
     let source = "<!DOCTYPE html><html><head></head><body><p>a</body>\n</html>";
     let arena = Allocator::default();
-    let owner = NativeDocument::lex_in(&arena, SourceRoot::new(source).expect("small"));
+    let owner = ParsedDocument::lex_in(&arena, SourceRoot::new(source).expect("small"));
     let tree = owner.html_structure().expect("implied p end");
     let elements: Vec<_> = tree.elements().collect();
     let [_, _, body, p] = elements.as_slice() else {

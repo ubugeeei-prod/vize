@@ -5,7 +5,7 @@ use vize_l0::config::{VueDialect, VueVersion};
 use vize_l0::{Allocator, String};
 use vize_l1::container::Vue;
 use vize_l1::container::vue::DescriptorOptions;
-use vize_l1::markup::{NativeChildren, NativeInterpolationOperand, NativeTemplateComponent};
+use vize_l1::markup::{ChildrenView, InterpolationOperand, NativeTemplateComponent};
 use vize_l1::markup::{SurfaceChild, SurfaceParseOptions};
 
 mod array;
@@ -36,13 +36,11 @@ fn selected<'a>(arena: &'a Allocator, source: &'a str) -> NativeTemplateComponen
         .unwrap()
 }
 
-fn operands<'a>(
-    selected: &NativeTemplateComponent<'a>,
-) -> std::vec::Vec<NativeInterpolationOperand<'a>> {
+fn operands<'a>(selected: &NativeTemplateComponent<'a>) -> std::vec::Vec<InterpolationOperand<'a>> {
     fn visit<'a>(
         selected: &NativeTemplateComponent<'a>,
-        children: NativeChildren<'_, 'a>,
-        output: &mut std::vec::Vec<NativeInterpolationOperand<'a>>,
+        children: ChildrenView<'_, 'a>,
+        output: &mut std::vec::Vec<InterpolationOperand<'a>>,
     ) {
         for child in children {
             match child.surface() {

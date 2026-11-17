@@ -8,7 +8,7 @@ use oxc_span::SourceType;
 use vize_l0::Span;
 
 use super::{
-    CommentView, DiagnosticView, EmbedHole, EmbedSource, Grammar, NativeSyntax, Shape, SourceError,
+    CommentView, DiagnosticView, EmbedHole, EmbedSource, EmbedSyntax, Grammar, Shape, SourceError,
     coordinates::Coordinates,
 };
 
@@ -118,8 +118,8 @@ impl<'a> RetainedSlotParams<'a> {
 }
 
 pub(super) fn into_slot_params<'a>(
-    mut syntax: NativeSyntax<'a>,
-) -> Result<RetainedSlotParams<'a>, Box<NativeSyntax<'a>>> {
+    mut syntax: EmbedSyntax<'a>,
+) -> Result<RetainedSlotParams<'a>, Box<EmbedSyntax<'a>>> {
     if syntax.grammar.shape != Shape::SlotParams {
         return Err(Box::new(syntax));
     }
@@ -134,7 +134,7 @@ pub(super) fn into_slot_params<'a>(
     } else {
         None
     };
-    let NativeSyntax {
+    let EmbedSyntax {
         grammar,
         source_type,
         coordinates,

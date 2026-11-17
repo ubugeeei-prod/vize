@@ -35,7 +35,7 @@ pub struct ComponentParse<'a> {
     tree: SurfaceTree<'a>,
     authored: Option<SurfaceTree<'a>>,
     errors: Vec<'a, SurfaceError>,
-    // NativeSyntax owns parser diagnostics. Ordinary Vec runs their destructors;
+    // EmbedSyntax owns parser diagnostics. Ordinary Vec runs their destructors;
     // an arena Vec of these observations would leak their owned storage.
     bindings: OwnedVec<TextBinding<'a>>,
     unsupported: OwnedVec<TextBoundary>,

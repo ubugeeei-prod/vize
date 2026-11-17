@@ -3,8 +3,7 @@
 use std::vec::Vec as OwnedVec;
 use vize_l0::{Allocator, Vec};
 use vize_l1::markup::{
-    NativeAttributeBindingExpression, NativeAttributeExpression, NativeInterpolationOperand,
-    NativeTemplateComponent,
+    AttributeBindingExpression, AttributeExpression, InterpolationOperand, NativeTemplateComponent,
 };
 
 use super::super::template::Cursor;
@@ -35,9 +34,9 @@ pub use failure::{
 /// ```
 pub struct ObservedNativeTemplateDocument<'p, 'a> {
     original: &'p NativeTemplateComponent<'a>,
-    operands: OwnedVec<NativeInterpolationOperand<'a>>,
-    attributes: OwnedVec<NativeAttributeExpression<'a>>,
-    bindings: OwnedVec<NativeAttributeBindingExpression<'a>>,
+    operands: OwnedVec<InterpolationOperand<'a>>,
+    attributes: OwnedVec<AttributeExpression<'a>>,
+    bindings: OwnedVec<AttributeBindingExpression<'a>>,
     document: Doc<'a>,
 }
 
@@ -60,15 +59,15 @@ impl<'p, 'a> ObservedNativeTemplateDocument<'p, 'a> {
         self.original
     }
     /// Borrow interpolation operands in their observed source order.
-    pub fn operands(&self) -> &[NativeInterpolationOperand<'a>] {
+    pub fn operands(&self) -> &[InterpolationOperand<'a>] {
         &self.operands
     }
     /// Borrow conditional directive operands in their observed source order.
-    pub fn attribute_operands(&self) -> &[NativeAttributeExpression<'a>] {
+    pub fn attribute_operands(&self) -> &[AttributeExpression<'a>] {
         &self.attributes
     }
     /// Borrow binding directive operands in their observed source order.
-    pub fn binding_operands(&self) -> &[NativeAttributeBindingExpression<'a>] {
+    pub fn binding_operands(&self) -> &[AttributeBindingExpression<'a>] {
         &self.bindings
     }
     pub(in crate::native_doc) fn into_observations(self) -> (Observed<'a>, Doc<'a>) {
@@ -96,8 +95,8 @@ impl<'p, 'a> ObservedNativeTemplateDocument<'p, 'a> {
         self,
     ) -> (
         &'p NativeTemplateComponent<'a>,
-        OwnedVec<NativeInterpolationOperand<'a>>,
-        OwnedVec<NativeAttributeExpression<'a>>,
+        OwnedVec<InterpolationOperand<'a>>,
+        OwnedVec<AttributeExpression<'a>>,
         Doc<'a>,
     ) {
         (self.original, self.operands, self.attributes, self.document)
@@ -121,7 +120,7 @@ impl<'p, 'a> ObservedNativeTemplateDocument<'p, 'a> {
         self,
     ) -> (
         &'p NativeTemplateComponent<'a>,
-        OwnedVec<NativeInterpolationOperand<'a>>,
+        OwnedVec<InterpolationOperand<'a>>,
         Doc<'a>,
     ) {
         (self.original, self.operands, self.document)

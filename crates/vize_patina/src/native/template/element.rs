@@ -1,7 +1,7 @@
 //! Sealed temporary observations from the single original admitted header.
 
 use vize_l0::{SmallVec, Span};
-use vize_l1::markup::{DirectiveName, NativeAttribute, NativeElement};
+use vize_l1::markup::{AttributeView, DirectiveName, ElementView};
 
 use super::super::header::{AttributeBinding, CheckedAttribute};
 use super::NativeTemplateAttributeProfile;
@@ -98,7 +98,7 @@ impl<'o, 'a> NativeTemplateAttribute<'o, 'a> {
 
     /// Returns the original attribute observation retained by the checked header.
     #[must_use]
-    pub fn original(&self) -> &NativeAttribute<'o, 'a> {
+    pub fn original(&self) -> &AttributeView<'o, 'a> {
         self.checked.original()
     }
     /// Returns the complete original attribute range.
@@ -136,7 +136,7 @@ impl<'o, 'a> NativeTemplateAttribute<'o, 'a> {
 /// let proof = NativeTemplateElement {};
 /// ```
 pub struct NativeTemplateElement<'o, 'a> {
-    original: NativeElement<'o, 'a>,
+    original: ElementView<'o, 'a>,
     attributes: SmallVec<[NativeTemplateAttribute<'o, 'a>; 8]>,
     closed_select: bool,
     closed_textarea: bool,
@@ -145,7 +145,7 @@ pub struct NativeTemplateElement<'o, 'a> {
 
 impl<'o, 'a> NativeTemplateElement<'o, 'a> {
     pub(in crate::native) fn new(
-        original: NativeElement<'o, 'a>,
+        original: ElementView<'o, 'a>,
         attributes: SmallVec<[NativeTemplateAttribute<'o, 'a>; 8]>,
     ) -> Self {
         Self {
@@ -196,7 +196,7 @@ impl<'o, 'a> NativeTemplateElement<'o, 'a> {
 
     /// Returns the original element observation.
     #[must_use]
-    pub fn original(&self) -> &NativeElement<'o, 'a> {
+    pub fn original(&self) -> &ElementView<'o, 'a> {
         &self.original
     }
     /// Returns the ordered checked attributes retained from the original header.

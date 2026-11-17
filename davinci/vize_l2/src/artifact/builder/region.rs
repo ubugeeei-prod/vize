@@ -59,7 +59,7 @@ impl<'a> RegionBuilder<'_, 'a> {
     pub(crate) fn begin_native_else(
         &mut self,
         node: NodeId,
-        input: &vize_l1::markup::NativeAttributeElse<'a>,
+        input: &vize_l1::markup::AttributeElse<'a>,
     ) -> Result<(), ArtifactError> {
         self.builder.begin_native_else(node, input)
     }

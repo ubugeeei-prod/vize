@@ -3,7 +3,7 @@
 use serde_json::{Value, json};
 use vize_l0::{Allocator, SourceRoot, Span, String};
 use vize_l1::markup::htmlish::document::{
-    DocumentHtmlNode, DocumentHtmlRefusal as Refusal, DocumentTokenKind, NativeDocument,
+    DocumentHtmlNode, DocumentHtmlRefusal as Refusal, DocumentTokenKind, ParsedDocument,
 };
 
 const CORPUS: &str = include_str!("fixtures/document/html-select.json");
@@ -20,7 +20,7 @@ fn select_packets_retain_complete_original_tags_frames_attributes_and_child_node
         let label = case["name"].as_str().unwrap();
         let source = case["source"].as_str().unwrap();
         let arena = Allocator::default();
-        let owner = NativeDocument::lex_in(&arena, SourceRoot::new(source).unwrap());
+        let owner = ParsedDocument::lex_in(&arena, SourceRoot::new(source).unwrap());
         assert_eq!(owner.source(), source);
         if let Some(refusal) = case.get("refusal") {
             let coordinates = refusal["span"].as_array().unwrap();
@@ -149,7 +149,7 @@ fn unfinished_select_frames_and_cross_table_transitions_keep_precise_refusals() 
             Refusal::ImpliedEnd(at)
         };
         let arena = Allocator::default();
-        let owner = NativeDocument::lex_in(&arena, SourceRoot::new(&source).unwrap());
+        let owner = ParsedDocument::lex_in(&arena, SourceRoot::new(&source).unwrap());
         assert_eq!(owner.html_structure().unwrap_err(), expected, "{body}");
     }
 }

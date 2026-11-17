@@ -5,7 +5,7 @@ use crate::file::NativeTextValuePolicyError as Policy;
 use crate::file::{NativeFileTextValue, NativeFileTextValueState as State};
 use crate::lang::js::NativeTemplateIssueKind as Kind;
 use vize_l0::id::NodeId;
-use vize_l1::markup::{NativeChild, NativeTemplateComponent, TokenStatus};
+use vize_l1::markup::{ChildView, NativeTemplateComponent, TokenStatus};
 
 #[cfg(test)]
 mod interruption;
@@ -14,7 +14,7 @@ mod tests;
 
 pub(super) fn construct<'a>(
     selected: &NativeTemplateComponent<'a>,
-    child: NativeChild<'_, 'a>,
+    child: ChildView<'_, 'a>,
     region: &mut RootRegion<'_, 'a, NativeVisibility>,
     cursor: usize,
     expected: usize,

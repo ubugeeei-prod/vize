@@ -3,7 +3,7 @@
 use serde_json::{Value, json};
 use vize_l0::{Allocator, SourceRoot, Span, String};
 use vize_l1::markup::htmlish::document::{
-    DocumentHtmlNode, DocumentHtmlRefusal as Refusal, NativeDocument,
+    DocumentHtmlNode, DocumentHtmlRefusal as Refusal, ParsedDocument,
 };
 
 const CORPUS: &str = include_str!("fixtures/document/html-special-text.json");
@@ -16,7 +16,7 @@ fn special_text_packets_match_chromium_and_the_shipped_parser() {
         let label = case["name"].as_str().unwrap();
         let source = case["source"].as_str().unwrap();
         let arena = Allocator::default();
-        let owner = NativeDocument::lex_in(&arena, SourceRoot::new(source).unwrap());
+        let owner = ParsedDocument::lex_in(&arena, SourceRoot::new(source).unwrap());
         let tree = owner.html_structure().expect(label);
         let elements: Vec<_> = tree.elements().collect();
         let actual_elements: Vec<_> = elements
@@ -102,7 +102,7 @@ fn unsupported_special_text_edges_keep_precise_refusals() {
         let source = envelope(head, body);
         let start = source.find(name).unwrap() as u32;
         let arena = Allocator::default();
-        let owner = NativeDocument::lex_in(&arena, SourceRoot::new(&source).unwrap());
+        let owner = ParsedDocument::lex_in(&arena, SourceRoot::new(&source).unwrap());
         assert_eq!(
             owner.html_structure().unwrap_err(),
             Refusal::UnsupportedElement(Span::new(start, start + name.len() as u32)),
@@ -115,7 +115,7 @@ fn unsupported_special_text_edges_keep_precise_refusals() {
     ] {
         let source = envelope("", body);
         let arena = Allocator::default();
-        let owner = NativeDocument::lex_in(&arena, SourceRoot::new(&source).unwrap());
+        let owner = ParsedDocument::lex_in(&arena, SourceRoot::new(&source).unwrap());
         assert_eq!(owner.html_structure().unwrap_err(), Refusal::VueSyntax);
     }
     for body in [
@@ -126,7 +126,7 @@ fn unsupported_special_text_edges_keep_precise_refusals() {
     ] {
         let source = envelope("", body);
         let arena = Allocator::default();
-        let owner = NativeDocument::lex_in(&arena, SourceRoot::new(&source).unwrap());
+        let owner = ParsedDocument::lex_in(&arena, SourceRoot::new(&source).unwrap());
         assert_eq!(
             owner.html_structure().unwrap_err(),
             Refusal::NonHtmlToken,

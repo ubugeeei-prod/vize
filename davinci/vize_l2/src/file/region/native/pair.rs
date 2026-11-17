@@ -11,7 +11,7 @@ use crate::op::{Attribute, Namespace};
 use core::ops::DerefMut;
 use vize_l0::{Span, Vec, id::NodeId};
 use vize_l1::markup::{
-    NativeChild, NativeChildren, NativeElement, NativeTemplateComponent, SurfaceChild,
+    ChildView, ChildrenView, ElementView, NativeTemplateComponent, SurfaceChild,
 };
 
 #[cfg(test)]
@@ -23,8 +23,8 @@ mod text_tests;
 
 pub(super) fn construct<'o, 'a: 'b, 'b, R>(
     selected: &NativeTemplateComponent<'a>,
-    child: NativeChild<'o, 'a>,
-    tail: &mut NativeChildren<'o, 'a>,
+    child: ChildView<'o, 'a>,
+    tail: &mut ChildrenView<'o, 'a>,
     region: &mut FileRegion<'_, 'b, 'a, R, NativeVisibility>,
 ) -> Result<(NodeId, usize), Kind>
 where
@@ -131,7 +131,7 @@ where
 
 fn observe_else<'a: 'b, 'b, R>(
     selected: &NativeTemplateComponent<'a>,
-    original: &NativeElement<'_, 'a>,
+    original: &ElementView<'_, 'a>,
     index: usize,
     region: &mut FileRegion<'_, 'b, 'a, R, NativeVisibility>,
 ) -> Result<(), Kind>
@@ -177,7 +177,7 @@ where
 }
 
 fn branch_body<'a: 'b, 'b, R>(
-    original: NativeElement<'_, 'a>,
+    original: ElementView<'_, 'a>,
     selected: &NativeTemplateComponent<'a>,
     span: Span,
     attributes: Vec<'a, Attribute<'a>>,
@@ -206,7 +206,7 @@ where
 
 /// Original empty/singleton body, or one Text and one checked interpolation.
 struct BranchBody<'selected, 'owner, 'result, 'a> {
-    original: NativeElement<'owner, 'a>,
+    original: ElementView<'owner, 'a>,
     selected: &'selected NativeTemplateComponent<'a>,
     result: &'result mut Result<(), Kind>,
 }

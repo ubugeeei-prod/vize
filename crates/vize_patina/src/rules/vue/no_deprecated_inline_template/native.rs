@@ -6,13 +6,13 @@ use crate::native::template::{
     NativeTemplateAttributeKind, NativeTemplateElement, NativeTemplateLintContext,
     NativeTemplateLintRefusal, NativeTemplateRule,
 };
-use vize_l1::markup::NativeLintComponent;
+use vize_l1::markup::ComponentTagFacts;
 
 impl NativeTemplateRule for NoDeprecatedInlineTemplate {
     fn run_on_template<'a>(
         &self,
         context: &mut NativeTemplateLintContext<'_, 'a>,
-        owner: &NativeLintComponent<'a>,
+        owner: &ComponentTagFacts<'a>,
     ) -> Result<(), NativeTemplateLintRefusal> {
         if !core::ptr::eq(context.owner(), owner) {
             return Err(NativeTemplateLintRefusal::SourceMismatch);

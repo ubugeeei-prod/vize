@@ -1,6 +1,6 @@
 use vize_l0::{Allocator, SourceRoot};
 
-use super::{DocumentLexicalRefusal, DocumentTokenKind as Kind, NativeDocument};
+use super::{DocumentLexicalRefusal, DocumentTokenKind as Kind, ParsedDocument};
 use crate::markup::entity::DecodedEntity;
 
 fn root(source: &str) -> SourceRoot<'_> {
@@ -11,7 +11,7 @@ fn root(source: &str) -> SourceRoot<'_> {
 fn multiscalar_entity_values_keep_one_original_authored_callback() {
     let source = "é<div a='&NotEqualTilde;'>&NotEqualTilde;</div>";
     let allocator = Allocator::default();
-    let owner = NativeDocument::lex_in(&allocator, root(source));
+    let owner = ParsedDocument::lex_in(&allocator, root(source));
     assert!(owner.normal_completion().is_ok());
     let entities = owner
         .tokens()
@@ -43,7 +43,7 @@ fn multiscalar_entity_values_keep_one_original_authored_callback() {
 fn numeric_entity_payloads_preserve_actual_unicode_corrections() {
     let source = "&#0;&#x80;&#xD800;&#1114112;&#x1F642;&#13;";
     let allocator = Allocator::default();
-    let owner = NativeDocument::lex_in(&allocator, root(source));
+    let owner = ParsedDocument::lex_in(&allocator, root(source));
     let expected = [
         ("&#0;", '\u{fffd}'),
         ("&#x80;", '€'),
@@ -64,7 +64,7 @@ fn numeric_entity_payloads_preserve_actual_unicode_corrections() {
 fn entity_payload_readback_never_decodes_the_following_literal_again() {
     let source = "&amp;amp;";
     let allocator = Allocator::default();
-    let owner = NativeDocument::lex_in(&allocator, root(source));
+    let owner = ParsedDocument::lex_in(&allocator, root(source));
     assert_eq!(owner.tokens().len(), 2);
     for (token, expected) in owner.tokens().zip([
         (Kind::TextEntity, "&amp;", Some(DecodedEntity::Named("&"))),
@@ -81,7 +81,7 @@ fn entity_payload_readback_never_decodes_the_following_literal_again() {
 fn attribute_ambiguity_retains_the_actual_single_decode_context() {
     let source = "<div a='&copy= &copy; &notin;'>&copy= &copy;</div>";
     let allocator = Allocator::default();
-    let owner = NativeDocument::lex_in(&allocator, root(source));
+    let owner = ParsedDocument::lex_in(&allocator, root(source));
     assert!(owner.normal_completion().is_ok());
     let entities = owner
         .tokens()
@@ -109,7 +109,7 @@ fn attribute_ambiguity_retains_the_actual_single_decode_context() {
 fn non_entity_observations_have_no_manufactured_scalar_value() {
     let source = "<!DOCTYPE html><div title='plain'>text<!--comment-->{{ count }}</div>";
     let allocator = Allocator::default();
-    let owner = NativeDocument::lex_in(&allocator, root(source));
+    let owner = ParsedDocument::lex_in(&allocator, root(source));
     assert!(owner.normal_completion().is_ok());
     assert!(owner.tokens().all(|token| token.decoded_entity().is_none()));
     assert_eq!(owner.source(), source);
@@ -119,7 +119,7 @@ fn non_entity_observations_have_no_manufactured_scalar_value() {
 fn moving_the_original_owner_reborrows_the_same_entity_payload_and_source() {
     let source = "&ThickSpace;";
     let allocator = Allocator::default();
-    let owner = NativeDocument::lex_in(&allocator, root(source));
+    let owner = ParsedDocument::lex_in(&allocator, root(source));
     let moved = owner;
     for _ in 0..2 {
         let token = moved.tokens().next().expect("sole original reference");
@@ -141,7 +141,7 @@ fn moving_the_original_owner_reborrows_the_same_entity_payload_and_source() {
 fn retained_entity_values_do_not_erase_original_recovered_syntax() {
     let source = "<div title='&amp;";
     let allocator = Allocator::default();
-    let owner = NativeDocument::lex_in(&allocator, root(source));
+    let owner = ParsedDocument::lex_in(&allocator, root(source));
     let token = owner
         .tokens()
         .find(|token| token.kind() == Kind::AttributeEntity)

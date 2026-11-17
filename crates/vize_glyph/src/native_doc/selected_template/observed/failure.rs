@@ -5,12 +5,11 @@ use super::binding::{BindingCustody, ObservedNativeTemplateBindingFailureParts};
 use std::{boxed::Box, vec::Vec};
 use vize_l0::Span;
 use vize_l1::markup::{
-    NativeAttributeBindingExpression, NativeAttributeExpression, NativeAttributeExpressionFailure,
-    NativeAttributeOperandError,
+    AttributeBindingExpression, AttributeExpression, AttributeExpressionFailure,
+    AttributeOperandError,
 };
 use vize_l1::markup::{
-    NativeInterpolationError, NativeInterpolationFailure, NativeInterpolationOperand,
-    NativeTemplateComponent,
+    InterpolationError, InterpolationFailure, InterpolationOperand, NativeTemplateComponent,
 };
 
 use super::super::NativeTemplateRefusal;
@@ -36,7 +35,7 @@ pub enum ObservedNativeTemplateRefusal {
         /// Zero-based conditional observation ordinal.
         index: usize,
         /// Typed operand error reported by the observer.
-        kind: NativeAttributeOperandError,
+        kind: AttributeOperandError,
     },
     /// Observing a binding directive expression failed.
     Binding {
@@ -45,7 +44,7 @@ pub enum ObservedNativeTemplateRefusal {
         /// Zero-based binding observation ordinal.
         index: usize,
         /// Typed operand error reported by the observer.
-        kind: NativeAttributeOperandError,
+        kind: AttributeOperandError,
     },
     /// Observing an interpolation expression failed.
     Interpolation {
@@ -54,7 +53,7 @@ pub enum ObservedNativeTemplateRefusal {
         /// Zero-based interpolation observation ordinal.
         index: usize,
         /// Typed interpolation error reported by the observer.
-        kind: NativeInterpolationError,
+        kind: InterpolationError,
     },
 }
 
@@ -62,22 +61,22 @@ pub enum ObservedNativeTemplateRefusal {
 /// Added binding custody is released; use `into_binding_parts` to retain it.
 pub type ObservedNativeTemplateFailureParts<'p, 'a> = (
     &'p NativeTemplateComponent<'a>,
-    Vec<NativeInterpolationOperand<'a>>,
-    Vec<NativeAttributeExpression<'a>>,
+    Vec<InterpolationOperand<'a>>,
+    Vec<AttributeExpression<'a>>,
     ObservedNativeTemplateRefusal,
-    Option<NativeInterpolationFailure<'a>>,
-    Option<NativeAttributeExpressionFailure<'a>>,
+    Option<InterpolationFailure<'a>>,
+    Option<AttributeExpressionFailure<'a>>,
 );
 
 /// No partial Doc is exposed. Successfully minted rejected operands remain in
 /// this owned prefix; an actual observer failure is retained separately.
 pub struct ObservedNativeTemplateFailure<'p, 'a> {
     original: &'p NativeTemplateComponent<'a>,
-    operands: Vec<NativeInterpolationOperand<'a>>,
+    operands: Vec<InterpolationOperand<'a>>,
     refusal: ObservedNativeTemplateRefusal,
-    interpolation_failure: Option<NativeInterpolationFailure<'a>>,
-    attributes: Vec<NativeAttributeExpression<'a>>,
-    attribute_failure: Option<Box<(Span, usize, NativeAttributeExpressionFailure<'a>)>>,
+    interpolation_failure: Option<InterpolationFailure<'a>>,
+    attributes: Vec<AttributeExpression<'a>>,
+    attribute_failure: Option<Box<(Span, usize, AttributeExpressionFailure<'a>)>>,
     binding_custody: Option<Box<BindingCustody<'a>>>,
 }
 
@@ -121,28 +120,28 @@ impl<'p, 'a> ObservedNativeTemplateFailure<'p, 'a> {
         self.original
     }
     /// Borrow the successfully observed interpolation prefix.
-    pub fn operands(&self) -> &[NativeInterpolationOperand<'a>] {
+    pub fn operands(&self) -> &[InterpolationOperand<'a>] {
         &self.operands
     }
     /// Borrow the successfully observed conditional directive prefix.
-    pub fn attribute_operands(&self) -> &[NativeAttributeExpression<'a>] {
+    pub fn attribute_operands(&self) -> &[AttributeExpression<'a>] {
         &self.attributes
     }
     /// Borrow the conditional observer failure, if one caused refusal.
-    pub fn attribute_failure(&self) -> Option<&NativeAttributeExpressionFailure<'a>> {
+    pub fn attribute_failure(&self) -> Option<&AttributeExpressionFailure<'a>> {
         self.attribute_failure
             .as_deref()
             .map(|(_, _, failure)| failure)
     }
     /// Borrow the successfully observed binding directive prefix.
-    pub fn binding_operands(&self) -> &[NativeAttributeBindingExpression<'a>] {
+    pub fn binding_operands(&self) -> &[AttributeBindingExpression<'a>] {
         self.binding_custody
             .as_deref()
             .map(|custody| custody.bindings.as_slice())
             .unwrap_or(&[])
     }
     /// Borrow the binding observer failure, if one caused refusal.
-    pub fn binding_failure(&self) -> Option<&NativeAttributeExpressionFailure<'a>> {
+    pub fn binding_failure(&self) -> Option<&AttributeExpressionFailure<'a>> {
         self.binding_custody
             .as_deref()
             .and_then(|custody| custody.failure.as_ref())
@@ -169,7 +168,7 @@ impl<'p, 'a> ObservedNativeTemplateFailure<'p, 'a> {
         self.refusal
     }
     /// Borrow the interpolation observer failure, if one caused refusal.
-    pub fn interpolation_failure(&self) -> Option<&NativeInterpolationFailure<'a>> {
+    pub fn interpolation_failure(&self) -> Option<&InterpolationFailure<'a>> {
         self.interpolation_failure.as_ref()
     }
     /// Transfer interpolation/conditional prefixes and both actual failure owners.
@@ -208,9 +207,9 @@ impl<'p, 'a> ObservedNativeTemplateFailure<'p, 'a> {
         self,
     ) -> (
         &'p NativeTemplateComponent<'a>,
-        Vec<NativeInterpolationOperand<'a>>,
+        Vec<InterpolationOperand<'a>>,
         ObservedNativeTemplateRefusal,
-        Option<NativeInterpolationFailure<'a>>,
+        Option<InterpolationFailure<'a>>,
     ) {
         (
             self.original,

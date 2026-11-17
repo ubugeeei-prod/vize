@@ -8,9 +8,7 @@ use vize_l0::{
 };
 use vize_l1::{
     container::{Vue, vue::DescriptorOptions},
-    markup::{
-        NativeChildren, NativeTemplateComponent, SurfaceParseOptions, check_fidelity, render,
-    },
+    markup::{ChildrenView, NativeTemplateComponent, SurfaceParseOptions, check_fidelity, render},
 };
 use vize_patina::{
     LintResult, Linter, RuleRegistry,
@@ -134,7 +132,7 @@ pub fn parser(severity: &str, message: &str, range: Span) -> Value {
 // the supplied element and never walks or reparses the component body.
 fn collect<'a>(
     lint: &NativeSyntaxLint<'_, 'a>,
-    children: NativeChildren<'_, 'a>,
+    children: ChildrenView<'_, 'a>,
     locale: Locale,
     output: &mut Vec<NativeLintFinding>,
 ) -> Result<(), NativeLintRefusal> {

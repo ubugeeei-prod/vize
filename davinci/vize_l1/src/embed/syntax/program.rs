@@ -5,7 +5,7 @@ use oxc_parser::Parser;
 use oxc_span::SourceType;
 use vize_l0::Allocator;
 
-use super::{EmbedHole, EmbedSource, Grammar, Lang, NativeSyntax, Shape, coordinates::Coordinates};
+use super::{EmbedHole, EmbedSource, EmbedSyntax, Grammar, Lang, Shape, coordinates::Coordinates};
 
 /// An authored program's goal, selected before parsing. No Unambiguous retry.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -58,9 +58,9 @@ pub fn parse_program_once<'a>(
     allocator: &'a Allocator,
     source: EmbedSource<'a>,
     options: ProgramOptions,
-) -> NativeSyntax<'a> {
+) -> EmbedSyntax<'a> {
     let source_type = options.source_type();
-    let mut syntax = NativeSyntax {
+    let mut syntax = EmbedSyntax {
         grammar: Grammar {
             shape: Shape::Program,
             lang: options.lang,

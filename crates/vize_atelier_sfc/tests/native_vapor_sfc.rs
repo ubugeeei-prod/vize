@@ -246,7 +246,7 @@ fn completed_original_click_file_is_refused_by_vapor_decisions() {
 
 #[test]
 fn original_numeric_for_refusal_keeps_the_actual_rejected_head() {
-    use vize_l1::embed::syntax::NativeForRefusal;
+    use vize_l1::embed::syntax::ForRefusal;
     use vize_l2::{file::RejectedFileFor, lang::js::NativeTemplateIssueKind};
     let arena = Allocator::default();
     let source = r#"<template><div v-for="item in 2"/></template>"#;
@@ -265,7 +265,7 @@ fn original_numeric_for_refusal_keeps_the_actual_rejected_head() {
     let [RejectedFileFor::Syntax(head)] = file.rejected_for_heads() else {
         panic!("retain the actual unsupported original For syntax");
     };
-    assert_eq!(head.kind, NativeForRefusal::CollectionShape);
+    assert_eq!(head.kind, ForRefusal::CollectionShape);
     let syntax = head.operand().syntax();
     assert_eq!(syntax.source().text(), "item in 2");
     assert!(core::ptr::eq(syntax.source().authored_root(), source));

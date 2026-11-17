@@ -13,7 +13,7 @@ mod walk;
 
 use vize_armature::parser::{TemplateSyntax, TemplateSyntaxFacts, TemplateSyntaxRecord};
 use vize_l0::{CompactString, Span};
-use vize_l1::embed::syntax::{NativeForHead, RetainedHandlerBody, RetainedSlotParams};
+use vize_l1::embed::syntax::{ForHead, RetainedHandlerBody, RetainedSlotParams};
 use vize_relief::RootNode;
 use vize_relief::{JsExpression, RetainedJsAst};
 
@@ -98,7 +98,7 @@ enum SyntaxKind<'record, 'source> {
     Expression(Option<JsExpression<'source>>),
     SlotRetained(Option<&'record RetainedJsAst<'source>>),
     SlotNative(Option<&'record RetainedSlotParams<'source>>),
-    For(&'record NativeForHead<'source>),
+    For(&'record ForHead<'source>),
     HandlerExpression(JsExpression<'source>),
     Handler(&'record RetainedHandlerBody<'source>),
     LegacySlot(&'record RetainedSlotParams<'source>),

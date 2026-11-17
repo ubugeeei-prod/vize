@@ -41,11 +41,9 @@ fn the_original_first_header_distinguishes_absent_boolean_empty_and_opaque_bindi
             },
         ),
     ] {
-        let root = NativeLintComponent::parse_in(
-            &allocator,
-            SourceRoot::new(source).unwrap().whole_block(),
-        )
-        .unwrap();
+        let root =
+            ComponentTagFacts::parse_in(&allocator, SourceRoot::new(source).unwrap().whole_block())
+                .unwrap();
         let linter = Linter::new();
         let mut seen = 0;
         admission::children_with_owner_profile(
@@ -81,7 +79,7 @@ fn token_issuer_is_the_actual_linter_and_frozen_callback_not_its_metadata_name()
     let allocator = Allocator::new();
     let source = "<select required><option value='a'>A</option></select>";
     let root =
-        NativeLintComponent::parse_in(&allocator, SourceRoot::new(source).unwrap().whole_block())
+        ComponentTagFacts::parse_in(&allocator, SourceRoot::new(source).unwrap().whole_block())
             .unwrap();
     let linter = Linter::new();
     let other_linter = Linter::new();
@@ -150,8 +148,8 @@ fn another_select_in_the_same_component_foreign_component_and_equal_copied_data_
     let allocator = Allocator::new();
     let source = "<select><option value='a'>A</option></select><select><option value='a'>A</option></select>";
     let block = SourceRoot::new(source).unwrap().whole_block();
-    let root = NativeLintComponent::parse_in(&allocator, block).unwrap();
-    let foreign = NativeLintComponent::parse_in(&allocator, block).unwrap();
+    let root = ComponentTagFacts::parse_in(&allocator, block).unwrap();
+    let foreign = ComponentTagFacts::parse_in(&allocator, block).unwrap();
     let linter = Linter::new();
     let mut preceding: Option<NativeFirstOptionData<'_, '_>> = None;
     let mut seen = 0;
@@ -228,11 +226,9 @@ fn empty_owner_needs_a_real_callback_and_later_refusal_never_issues_a_select_tok
             0,
         ),
     ] {
-        let root = NativeLintComponent::parse_in(
-            &allocator,
-            SourceRoot::new(source).unwrap().whole_block(),
-        )
-        .unwrap();
+        let root =
+            ComponentTagFacts::parse_in(&allocator, SourceRoot::new(source).unwrap().whole_block())
+                .unwrap();
         let linter = Linter::new();
         let mut seen = 0;
         let result = admission::children_with_owner_profile(

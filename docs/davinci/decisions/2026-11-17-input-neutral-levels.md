@@ -342,9 +342,10 @@ vize_l4/src/
   `style/` children are the shared readers plus one module per language.
   The existing `davinci-l1-dialect-isolation` test keeps checking that core
   modules do not reference dialect policy, now against `framework/vue`.
-- **Every level crate:** no module path segment named by migration status
-  (`native`). In L1, no non-test code names a product (`lint` as an
-  identifier word).
+- **Every level crate:** no module path segment, and no declared type,
+  function, constant or static, named by migration status (`native`; owed as
+  `status:` modules and `ident:` files). In L1, no non-test code names a
+  product (`lint` as an identifier word).
 - **Fixtures:** every owed row of the Document/SFC difference table is listed
   as a `fixture:` entry until its fixture lands.
 - **Ratchet.** Every present difference is listed, one path per entry, in

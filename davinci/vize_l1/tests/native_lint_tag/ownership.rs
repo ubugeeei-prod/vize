@@ -5,7 +5,7 @@ fn absolute_original_tag_spans_keep_selected_roles_and_unicode_prefixes() {
     let source = "<!--🦀--><script lang=ts>const fake='<INPUT autofocus />'</script><template>日本語<div><input autofocus /><AÉFoo/></div></template><script setup lang=ts>const other='<slot />'</script>";
     let arena = Allocator::default();
     let owner = selected(&arena, source);
-    assert_eq!(owner.grammar(), NativeTemplateGrammar::TypeScriptModule);
+    assert_eq!(owner.grammar(), TemplateGrammar::TypeScriptModule);
     assert!(core::ptr::eq(
         owner.component().block().root_source(),
         source
@@ -20,7 +20,7 @@ fn absolute_original_tag_spans_keep_selected_roles_and_unicode_prefixes() {
     );
     let div = owner.children().nth(1).unwrap().into_element().unwrap();
     let input = div.children().next().unwrap().into_element().unwrap();
-    let receipt = input.lint_tag().unwrap();
+    let receipt = input.tag_facts().unwrap();
     let start = u32::try_from(source.find("<input autofocus").unwrap() + 1).unwrap();
     assert_eq!(receipt.span(), Span::new(start, start + 5));
     assert_eq!(
@@ -38,8 +38,8 @@ fn equal_sources_keep_distinct_owners_and_short_receipts_survive_reborrowing() {
     let original_surface = {
         let first = owner.children().next().unwrap().into_element().unwrap();
         let other = foreign.children().next().unwrap().into_element().unwrap();
-        let receipt = first.lint_tag().unwrap();
-        let other_receipt = other.lint_tag().unwrap();
+        let receipt = first.tag_facts().unwrap();
+        let other_receipt = other.tag_facts().unwrap();
         assert_eq!(receipt.kind(), other_receipt.kind());
         assert_eq!(receipt.span(), other_receipt.span());
         assert!(!core::ptr::eq(
@@ -52,7 +52,7 @@ fn equal_sources_keep_distinct_owners_and_short_receipts_survive_reborrowing() {
     };
     let moved = core::hint::black_box(owner);
     let first = moved.children().next().unwrap().into_element().unwrap();
-    let receipt = first.lint_tag().unwrap();
+    let receipt = first.tag_facts().unwrap();
     assert!(core::ptr::eq(receipt.element(), original_surface));
     assert!(core::ptr::eq(receipt.component(), moved.component()));
     assert_eq!(
@@ -70,7 +70,7 @@ fn arbitrary_native_blocks_and_raw_compatibility_construction_cannot_mint_select
     let arbitrary = NativeComponent::parse_in(&arena, block).unwrap();
     let arbitrary_div = arbitrary.children().next().unwrap().into_element().unwrap();
     assert!(matches!(
-        arbitrary_div.lint_tag(),
+        arbitrary_div.tag_facts(),
         Err(Refusal::Unavailable)
     ));
     assert_eq!(arbitrary.block(), block);
@@ -108,7 +108,7 @@ fn incomplete_headers_refuse_without_erasing_recovery_or_claiming_body_completio
     let arena = Allocator::default();
     let owner = selected(&arena, source);
     let div = owner.children().next().unwrap().into_element().unwrap();
-    assert!(matches!(div.lint_tag(), Err(Refusal::IncompleteHeader)));
+    assert!(matches!(div.tag_facts(), Err(Refusal::IncompleteHeader)));
     assert!(div.surface().open.gt.is_missing());
     assert!(!owner.component().carrier().errors.is_empty());
     assert_eq!(owner.component().block().source(), "<div title='unfinished");
@@ -120,7 +120,7 @@ fn incomplete_headers_refuse_without_erasing_recovery_or_claiming_body_completio
         NativeComponent::parse_in(&arena, SourceRoot::new("<div").unwrap().whole_block()).unwrap();
     let incomplete = arbitrary.children().next().unwrap().into_element().unwrap();
     assert!(matches!(
-        incomplete.lint_tag(),
+        incomplete.tag_facts(),
         Err(Refusal::IncompleteHeader)
     ));
     let complete_header = selected(&arena, "<template><div></template>");
@@ -131,7 +131,7 @@ fn incomplete_headers_refuse_without_erasing_recovery_or_claiming_body_completio
         .into_element()
         .unwrap();
     assert!(matches!(div.surface().close, ElementClose::Missing));
-    assert_eq!(div.lint_tag().unwrap().kind(), Kind::Element);
+    assert_eq!(div.tag_facts().unwrap().kind(), Kind::Element);
     assert_eq!(
         check_fidelity(&complete_header.component().carrier().tree),
         Ok(())

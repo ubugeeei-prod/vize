@@ -10,7 +10,7 @@ use vize_l0::{
     Span,
     diag::{Diagnostic, MessageLookup},
 };
-use vize_l1::markup::{NativeElement, NativeLintTagRefusal, NativeTemplateComponent};
+use vize_l1::markup::{ElementView, NativeTemplateComponent, TagFactsRefusal};
 
 mod admission;
 mod aria_unsupported_elements;
@@ -98,7 +98,7 @@ pub enum NativeLintRefusal {
     /// A literal-context lint tag prevents an authenticated interpretation.
     LintTag {
         /// Producer-supplied reason for refusing the lint tag.
-        reason: NativeLintTagRefusal,
+        reason: TagFactsRefusal,
     },
     /// HTML table recovery makes the element's parent context ambiguous.
     TableContext {
@@ -187,7 +187,7 @@ impl<'o, 'a> NativeSyntaxLint<'o, 'a> {
     /// No detached evidence, caller key, source, span or tag kind is accepted.
     pub fn header_facts<'e>(
         &'e self,
-        element: &NativeElement<'e, 'a>,
+        element: &ElementView<'e, 'a>,
     ) -> Result<header_facts::NativeHeaderFacts<'e, 'a>, header_facts::NativeHeaderFactError> {
         if !core::ptr::eq(self.owner.component(), element.component()) {
             return Err(header_facts::NativeHeaderFactError::Header(
@@ -204,7 +204,7 @@ impl<'o, 'a> NativeSyntaxLint<'o, 'a> {
     /// Values remain opaque; this does not certify expression semantics.
     pub fn img_alt(
         &self,
-        element: &NativeElement<'_, 'a>,
+        element: &ElementView<'_, 'a>,
         messages: &impl MessageLookup,
     ) -> Result<Option<NativeLintFinding>, NativeLintRefusal> {
         if !core::ptr::eq(self.owner.component(), element.component()) {
@@ -220,7 +220,7 @@ impl<'o, 'a> NativeSyntaxLint<'o, 'a> {
     /// Every original header is checked before a result, as in `img_alt`.
     pub fn iframe_has_title(
         &self,
-        element: &NativeElement<'_, 'a>,
+        element: &ElementView<'_, 'a>,
         messages: &impl MessageLookup,
     ) -> Result<Option<NativeLintFinding>, NativeLintRefusal> {
         if !core::ptr::eq(self.owner.component(), element.component()) {
@@ -234,7 +234,7 @@ impl<'o, 'a> NativeSyntaxLint<'o, 'a> {
     /// A later unsupported header refuses the entire result.
     pub fn tabindex_no_positive(
         &self,
-        element: &NativeElement<'_, 'a>,
+        element: &ElementView<'_, 'a>,
         messages: &impl MessageLookup,
     ) -> Result<Vec<NativeLintFinding>, NativeLintRefusal> {
         if !core::ptr::eq(self.owner.component(), element.component()) {
@@ -247,7 +247,7 @@ impl<'o, 'a> NativeSyntaxLint<'o, 'a> {
     /// full attribute ranges and actual default lint component exemptions.
     pub fn no_autofocus(
         &self,
-        element: &NativeElement<'_, 'a>,
+        element: &ElementView<'_, 'a>,
         messages: &impl MessageLookup,
     ) -> Result<Vec<NativeLintFinding>, NativeLintRefusal> {
         if !core::ptr::eq(self.owner.component(), element.component()) {
@@ -260,7 +260,7 @@ impl<'o, 'a> NativeSyntaxLint<'o, 'a> {
     /// values. Any unsupported original header refuses the entire result.
     pub fn no_access_key(
         &self,
-        element: &NativeElement<'_, 'a>,
+        element: &ElementView<'_, 'a>,
         messages: &impl MessageLookup,
     ) -> Result<Vec<NativeLintFinding>, NativeLintRefusal> {
         if !core::ptr::eq(self.owner.component(), element.component()) {
@@ -273,7 +273,7 @@ impl<'o, 'a> NativeSyntaxLint<'o, 'a> {
     /// The original provider's ambiguous lint category remains a typed refusal.
     pub fn no_distracting_elements(
         &self,
-        element: &NativeElement<'_, 'a>,
+        element: &ElementView<'_, 'a>,
         messages: &impl MessageLookup,
     ) -> Result<Option<NativeLintFinding>, NativeLintRefusal> {
         if !core::ptr::eq(self.owner.component(), element.component()) {
@@ -287,7 +287,7 @@ impl<'o, 'a> NativeSyntaxLint<'o, 'a> {
     /// catalog lookup. This opt-in rule does not evaluate values or inspect body.
     pub fn deprecated_element(
         &self,
-        element: &NativeElement<'_, 'a>,
+        element: &ElementView<'_, 'a>,
         messages: &impl MessageLookup,
     ) -> Result<Option<NativeLintFinding>, NativeLintRefusal> {
         if !core::ptr::eq(self.owner.component(), element.component()) {
@@ -301,7 +301,7 @@ impl<'o, 'a> NativeSyntaxLint<'o, 'a> {
     /// ranges; a later unsupported head refuses before any catalog lookup.
     pub fn deprecated_attr(
         &self,
-        element: &NativeElement<'_, 'a>,
+        element: &ElementView<'_, 'a>,
         messages: &impl MessageLookup,
     ) -> Result<Vec<NativeLintFinding>, NativeLintRefusal> {
         if !core::ptr::eq(self.owner.component(), element.component()) {
@@ -316,7 +316,7 @@ impl<'o, 'a> NativeSyntaxLint<'o, 'a> {
     /// require separate authority before whole-file/default integration.
     pub fn no_v_html(
         &self,
-        element: &NativeElement<'_, 'a>,
+        element: &ElementView<'_, 'a>,
         messages: &impl MessageLookup,
     ) -> Result<Vec<NativeLintFinding>, NativeVHtmlLintError> {
         if !core::ptr::eq(self.owner.component(), element.component()) {
@@ -330,7 +330,7 @@ impl<'o, 'a> NativeSyntaxLint<'o, 'a> {
     /// original header must be admitted before any lookup or finding.
     pub fn no_inline_style(
         &self,
-        element: &NativeElement<'_, 'a>,
+        element: &ElementView<'_, 'a>,
         messages: &impl MessageLookup,
     ) -> Result<Vec<NativeLintFinding>, NativeLintRefusal> {
         if !core::ptr::eq(self.owner.component(), element.component()) {

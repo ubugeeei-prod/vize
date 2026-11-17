@@ -5,7 +5,7 @@ use super::{
     selected::{self, SelectedMode},
 };
 use vize_l0::Allocator;
-use vize_l1::{container::vue::DescriptorOptions, embed::Lang, markup::NativeTemplateGrammar};
+use vize_l1::{container::vue::DescriptorOptions, embed::Lang, markup::TemplateGrammar};
 use vize_l2::lang::js::{NativeSelectedSetup, NativeTemplateView};
 
 #[cfg(test)]
@@ -62,8 +62,8 @@ impl<'a> NativeSelectedSetupSfcObservation<'a> {
         let view = original.view().ok()?;
         let file = view.file()?;
         let expected = match descriptor.template_lang() {
-            Lang::Js => NativeTemplateGrammar::JavaScriptModule,
-            Lang::Ts => NativeTemplateGrammar::TypeScriptModule,
+            Lang::Js => TemplateGrammar::JavaScriptModule,
+            Lang::Ts => TemplateGrammar::TypeScriptModule,
         };
         if selected.ordinary().is_some()
             || selected.has_styles()

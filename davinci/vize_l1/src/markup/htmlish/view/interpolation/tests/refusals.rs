@@ -1,6 +1,6 @@
 use super::{Allocator, selected};
 use crate::embed::syntax::EmbedHole;
-use crate::markup::NativeInterpolationError;
+use crate::markup::InterpolationError;
 
 #[test]
 fn sibling_independent_equal_source_and_copied_source_cannot_join_the_origin() {
@@ -23,7 +23,7 @@ fn sibling_independent_equal_source_and_copied_source_cannot_join_the_origin() {
     );
     assert!(matches!(
         owner.observe_interpolation_expression(other.children().next().unwrap()),
-        Err(error) if error.kind() == NativeInterpolationError::ForeignComponent
+        Err(error) if error.kind() == InterpolationError::ForeignComponent
     ));
     let copied = vize_l0::String::from(source);
     let foreign = selected(&arena, copied.as_str()).unwrap();
@@ -103,7 +103,7 @@ fn missing_delimiter_has_no_selected_admission_and_verbatim_text_cannot_parse() 
     let parent = owner.children().next().unwrap().into_element().unwrap();
     assert!(matches!(
         owner.observe_interpolation_expression(parent.children().next().unwrap()),
-        Err(error) if error.kind() == NativeInterpolationError::NotInterpolation
+        Err(error) if error.kind() == InterpolationError::NotInterpolation
     ));
     assert!(parent.surface().open.is_verbatim());
 }
@@ -122,7 +122,7 @@ fn missing_parent_frame_is_refused_even_without_diagnostic_rows() {
     ));
     assert!(matches!(
         owner.observe_interpolation_expression(parent.children().next().unwrap()),
-        Err(error) if error.kind() == NativeInterpolationError::RecoveredComponent
+        Err(error) if error.kind() == InterpolationError::RecoveredComponent
     ));
     assert_eq!(owner.component().block().root_source(), source);
 }

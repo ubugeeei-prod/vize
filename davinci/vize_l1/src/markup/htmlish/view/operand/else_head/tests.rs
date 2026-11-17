@@ -1,6 +1,6 @@
 use crate::container::Vue;
 use crate::container::vue::DescriptorOptions;
-use crate::markup::{NativeAttributeOperandError as Error, NativeTemplateComponent};
+use crate::markup::{AttributeOperandError as Error, NativeTemplateComponent};
 use vize_l0::Allocator;
 use vize_l0::config::{VueDialect, VueVersion};
 

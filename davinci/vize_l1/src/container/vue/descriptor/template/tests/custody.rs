@@ -51,7 +51,7 @@ fn a_foreign_original_row_with_equal_index_and_buffer_cannot_forge_this_view() {
     };
     assert_eq!(
         forged.frame_names().unwrap_err(),
-        NativeTemplateFrameNameRefusal::SourceMismatch
+        TemplateFrameNameRefusal::SourceMismatch
     );
     assert!(!genuine.frame_names().unwrap().accepts(&forged));
 }
@@ -133,6 +133,6 @@ fn corrupted_private_geometry_refuses_without_inferring_a_new_name() {
     let view = owner.admitted().unwrap().template().unwrap();
     assert_eq!(
         view.frame_names().unwrap_err(),
-        NativeTemplateFrameNameRefusal::SourceMismatch
+        TemplateFrameNameRefusal::SourceMismatch
     );
 }

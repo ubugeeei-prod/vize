@@ -4,7 +4,7 @@ use vize_l1::{
         EmbedSource,
         syntax::{ProgramOptions, parse_program_once},
     },
-    markup::{NativeTemplateGrammar, NativeTextValueError},
+    markup::{TemplateGrammar, TextValueError},
 };
 
 #[test]
@@ -13,12 +13,12 @@ fn original_ordinary_js_and_ts_programs_keep_script_refusal_and_whole_text_resul
         (
             "<script>export default {};</script><template>&amp;lt;</template>",
             false,
-            NativeTemplateGrammar::JavaScriptModule,
+            TemplateGrammar::JavaScriptModule,
         ),
         (
             "<script lang='ts'>export default {};</script><template>&amp;lt;</template>",
             true,
-            NativeTemplateGrammar::TypeScriptModule,
+            TemplateGrammar::TypeScriptModule,
         ),
     ] {
         let arena = Allocator::default();
@@ -163,61 +163,61 @@ fn original_special_parent_failures_are_parked_before_root_extent_policy() -> Te
     for (source, expected, span, inherited) in [
         (
             "<template><script>&amp;</script></template>",
-            NativeTextValueError::RawTextParent,
+            TextValueError::RawTextParent,
             Span::new(18, 23),
             false,
         ),
         (
             "<template><stYle>&amp;</stYle></template>",
-            NativeTextValueError::RawTextParent,
+            TextValueError::RawTextParent,
             Span::new(17, 22),
             false,
         ),
         (
             "<template><sTyLe>&amp;</sTyLe></template>",
-            NativeTextValueError::RawTextParent,
+            TextValueError::RawTextParent,
             Span::new(17, 22),
             false,
         ),
         (
             "<template><StYlE>&amp;</StYlE></template>",
-            NativeTextValueError::RawTextParent,
+            TextValueError::RawTextParent,
             Span::new(17, 22),
             false,
         ),
         (
             "<template><title>&amp;</title></template>",
-            NativeTextValueError::RcDataParent,
+            TextValueError::RcDataParent,
             Span::new(17, 22),
             false,
         ),
         (
             "<template><teXtArEa>&amp;</teXtArEa></template>",
-            NativeTextValueError::RcDataParent,
+            TextValueError::RcDataParent,
             Span::new(20, 25),
             false,
         ),
         (
             "<template><tExTaReA>&amp;</tExTaReA></template>",
-            NativeTextValueError::RcDataParent,
+            TextValueError::RcDataParent,
             Span::new(20, 25),
             false,
         ),
         (
             "<template><TEXTAREA>&amp;</TEXTAREA></template>",
-            NativeTextValueError::RcDataParent,
+            TextValueError::RcDataParent,
             Span::new(20, 25),
             false,
         ),
         (
             "<template><p v-pre>&amp;</p></template>",
-            NativeTextValueError::Verbatim,
+            TextValueError::Verbatim,
             Span::new(19, 24),
             false,
         ),
         (
             "<template><div v-pre><span>&amp;</span></div></template>",
-            NativeTextValueError::Verbatim,
+            TextValueError::Verbatim,
             Span::new(27, 32),
             true,
         ),

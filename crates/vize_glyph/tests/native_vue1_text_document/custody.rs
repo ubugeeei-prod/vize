@@ -3,7 +3,7 @@
 use vize_glyph::native_doc::{PrintOptions, vue1_text_document};
 use vize_l0::{Allocator, SourceRoot, Span, String};
 use vize_l1::dialect::vue1::surface;
-use vize_l1::embed::{Grammar, source::DecodeSegmentKind, syntax::NativeSyntax};
+use vize_l1::embed::{Grammar, source::DecodeSegmentKind, syntax::EmbedSyntax};
 
 #[derive(Debug, PartialEq)]
 struct Facts {
@@ -26,7 +26,7 @@ struct Facts {
     diagnostics: std::vec::Vec<(*const u8, usize)>,
 }
 
-fn facts(syntax: &NativeSyntax<'_>) -> Facts {
+fn facts(syntax: &EmbedSyntax<'_>) -> Facts {
     let view = syntax.borrow_expression().unwrap();
     let source = view.source();
     Facts {

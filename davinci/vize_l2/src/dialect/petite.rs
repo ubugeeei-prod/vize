@@ -6,7 +6,7 @@ use vize_l1::{
     embed::{DecodeSegmentKind, EmbedSource, SourceError, prepare_attribute_value},
     markup::{
         QuoteType,
-        htmlish::document::{DocumentPetiteDirectiveKind, DocumentPetiteRefusal, NativeDocument},
+        htmlish::document::{DocumentPetiteDirectiveKind, DocumentPetiteRefusal, ParsedDocument},
     },
 };
 
@@ -32,10 +32,10 @@ pub enum PetiteDocumentRefusal {
 ///
 /// ```
 /// use vize_l0::{Allocator, SourceRoot};
-/// use vize_l1::markup::htmlish::document::NativeDocument;
+/// use vize_l1::markup::htmlish::document::ParsedDocument;
 /// use vize_l2::dialect::petite::{PetiteDocument, PetiteScopeShape};
 /// let arena = Allocator::default();
-/// let owner = NativeDocument::lex_in(
+/// let owner = ParsedDocument::lex_in(
 ///     &arena,
 ///     SourceRoot::new("<div v-scope=\"{ count: 0 }\"></div>").unwrap(),
 /// );
@@ -50,7 +50,7 @@ pub enum PetiteDocumentRefusal {
 /// requires_clone::<PetiteDocument<'static, 'static>>();
 /// ```
 pub struct PetiteDocument<'o, 'a> {
-    owner: &'o NativeDocument<'a>,
+    owner: &'o ParsedDocument<'a>,
     directives: Vec<'a, PetiteDirective<'a>>,
 }
 
@@ -108,7 +108,7 @@ impl<'o, 'a> PetiteDocument<'o, 'a> {
     /// Lower the completed original Document event tape exactly once.
     pub fn lower_in(
         allocator: &'a Allocator,
-        owner: &'o NativeDocument<'a>,
+        owner: &'o ParsedDocument<'a>,
     ) -> Result<Self, PetiteDocumentRefusal> {
         let mut directives = Vec::new_in(&allocator);
         let original = owner
@@ -163,7 +163,7 @@ impl<'o, 'a> PetiteDocument<'o, 'a> {
     }
 
     #[must_use]
-    pub const fn owner(&self) -> &'o NativeDocument<'a> {
+    pub const fn owner(&self) -> &'o ParsedDocument<'a> {
         self.owner
     }
 

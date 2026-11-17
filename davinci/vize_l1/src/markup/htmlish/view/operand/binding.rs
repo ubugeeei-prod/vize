@@ -1,37 +1,37 @@
 //! Distinct original binding expression and same-event short admission.
 
-use super::{NativeAttribute, NativeAttributeHead, NativeTemplateComponent, Origin};
+use super::{AttributeHead, AttributeView, NativeTemplateComponent, Origin};
 use crate::embed::syntax::RetainedExpression;
 use oxc_parser::AdmittedExpression;
 use vize_l0::Span;
 
 mod head;
-pub use head::NativeStaticBindingHead;
+pub use head::StaticBindingHead;
 
 /// Normally owned original value and argument, without conditional relabelling.
 /// Its private Origin is derived only from the same selected original header.
 /// This grants no File, target, quote policy or whole formatter authority.
 ///
 /// ```compile_fail
-/// use vize_l1::markup::NativeAttributeBindingExpression;
+/// use vize_l1::markup::AttributeBindingExpression;
 /// fn requires_clone<T: Clone>() {}
-/// requires_clone::<NativeAttributeBindingExpression<'static>>();
+/// requires_clone::<AttributeBindingExpression<'static>>();
 /// ```
 ///
 /// ```compile_fail
 /// use vize_l0::Span;
-/// use vize_l1::markup::NativeAttributeBindingExpression;
-/// fn replace_argument(mut owner: NativeAttributeBindingExpression<'_>) {
+/// use vize_l1::markup::AttributeBindingExpression;
+/// fn replace_argument(mut owner: AttributeBindingExpression<'_>) {
 ///     owner.argument = Span::new(0, 0);
 /// }
 /// ```
-pub struct NativeAttributeBindingExpression<'a> {
+pub struct AttributeBindingExpression<'a> {
     origin: Origin<'a>,
     argument: Span,
     syntax: RetainedExpression<'a>,
 }
 
-impl<'a> NativeAttributeBindingExpression<'a> {
+impl<'a> AttributeBindingExpression<'a> {
     /// Complete retained syntax also remains available for local syntax holes.
     #[must_use]
     pub fn syntax(&self) -> &RetainedExpression<'a> {
@@ -58,13 +58,13 @@ impl<'a> NativeAttributeBindingExpression<'a> {
     pub fn admitted_for<'s>(
         &'s self,
         selected: &'s NativeTemplateComponent<'a>,
-        attribute: NativeAttribute<'s, 'a>,
-    ) -> Option<NativeAttributeBindingExpressionView<'s, 'a>> {
+        attribute: AttributeView<'s, 'a>,
+    ) -> Option<AttributeBindingExpressionView<'s, 'a>> {
         if !self.origin.matches(selected, &attribute) {
             return None;
         }
         self.syntax.admitted_expression()?;
-        Some(NativeAttributeBindingExpressionView {
+        Some(AttributeBindingExpressionView {
             owner: self,
             selected,
             attribute,
@@ -80,41 +80,41 @@ impl<'a> NativeAttributeBindingExpression<'a> {
 /// Short readonly join borrowed from the same private original binding owner.
 ///
 /// ```compile_fail
-/// use vize_l1::markup::{NativeAttribute, NativeAttributeBindingExpression,
-///     NativeAttributeBindingExpressionView, NativeTemplateComponent};
-/// fn forge<'s, 'a>(owner: &'s NativeAttributeBindingExpression<'a>,
-///     selected: &'s NativeTemplateComponent<'a>, attribute: NativeAttribute<'s, 'a>
-/// ) -> NativeAttributeBindingExpressionView<'s, 'a> {
-///     NativeAttributeBindingExpressionView { owner, selected, attribute }
+/// use vize_l1::markup::{AttributeView, AttributeBindingExpression,
+///     AttributeBindingExpressionView, NativeTemplateComponent};
+/// fn forge<'s, 'a>(owner: &'s AttributeBindingExpression<'a>,
+///     selected: &'s NativeTemplateComponent<'a>, attribute: AttributeView<'s, 'a>
+/// ) -> AttributeBindingExpressionView<'s, 'a> {
+///     AttributeBindingExpressionView { owner, selected, attribute }
 /// }
 /// ```
 ///
 /// ```compile_fail
-/// use vize_l1::markup::{NativeAttribute, NativeAttributeBindingExpression,
-///     NativeAttributeBindingExpressionView, NativeTemplateComponent};
-/// fn escape<'s, 'a>(owner: NativeAttributeBindingExpression<'a>,
-///     selected: &'s NativeTemplateComponent<'a>, attribute: NativeAttribute<'s, 'a>
-/// ) -> NativeAttributeBindingExpressionView<'s, 'a> {
+/// use vize_l1::markup::{AttributeView, AttributeBindingExpression,
+///     AttributeBindingExpressionView, NativeTemplateComponent};
+/// fn escape<'s, 'a>(owner: AttributeBindingExpression<'a>,
+///     selected: &'s NativeTemplateComponent<'a>, attribute: AttributeView<'s, 'a>
+/// ) -> AttributeBindingExpressionView<'s, 'a> {
 ///     owner.admitted_for(selected, attribute).unwrap()
 /// }
 /// ```
-pub struct NativeAttributeBindingExpressionView<'s, 'a> {
-    owner: &'s NativeAttributeBindingExpression<'a>,
+pub struct AttributeBindingExpressionView<'s, 'a> {
+    owner: &'s AttributeBindingExpression<'a>,
     selected: &'s NativeTemplateComponent<'a>,
-    attribute: NativeAttribute<'s, 'a>,
+    attribute: AttributeView<'s, 'a>,
 }
 
-impl<'s, 'a> NativeAttributeBindingExpressionView<'s, 'a> {
+impl<'s, 'a> AttributeBindingExpressionView<'s, 'a> {
     #[must_use]
     pub fn selected(&self) -> &'s NativeTemplateComponent<'a> {
         self.selected
     }
     #[must_use]
-    pub fn attribute(&self) -> &NativeAttribute<'s, 'a> {
+    pub fn attribute(&self) -> &AttributeView<'s, 'a> {
         &self.attribute
     }
     #[must_use]
-    pub fn operand(&self) -> &'s NativeAttributeBindingExpression<'a> {
+    pub fn operand(&self) -> &'s AttributeBindingExpression<'a> {
         self.owner
     }
     #[must_use]

@@ -2,13 +2,13 @@ use oxc_ast::ast::Expression;
 use oxc_parser::ParseOptions;
 use vize_l0::{Allocator, SourceFrameError, SourceRoot, Span};
 
-use super::{NativeForHead, NativeForInput, NativeForInputError, NativeForRefusal};
+use super::{ForHead, ForInput, ForInputError, ForRefusal};
 use crate::embed::{Embed, EmbedSource, Grammar, Lang, Shape};
 
 mod refused;
 
-fn observe<'a>(arena: &'a Allocator, text: &'a str, lang: Lang) -> NativeForHead<'a> {
-    NativeForInput::attribute_in(
+fn observe<'a>(arena: &'a Allocator, text: &'a str, lang: Lang) -> ForHead<'a> {
+    ForInput::attribute_in(
         arena,
         SourceRoot::new(text).unwrap().whole_block(),
         text,
@@ -27,7 +27,7 @@ fn intrinsic_head_keeps_actual_unicode_block_value_two_roots_and_profiles() {
     let root = SourceRoot::new(file).unwrap();
     let block = root.block(file.get(3..file.len() - 3).unwrap(), 3).unwrap();
     for lang in [Lang::Js, Lang::Ts] {
-        let head = NativeForInput::attribute_in(&arena, block, value, lang)
+        let head = ForInput::attribute_in(&arena, block, value, lang)
             .unwrap()
             .observe();
         let alias = head.aliases().unwrap().unwrap();
@@ -98,10 +98,10 @@ fn foreign_equal_bytes_and_outside_block_values_keep_the_original_rejection() {
     let outside = text.get(14..).unwrap();
     let bytes = arena.allocated_bytes();
     for raw in [equal.as_str(), outside] {
-        let error = NativeForInput::attribute_in(&arena, block, raw, Lang::Ts)
+        let error = ForInput::attribute_in(&arena, block, raw, Lang::Ts)
             .err()
             .unwrap();
-        assert_eq!(error.error(), NativeForInputError::ForeignValue);
+        assert_eq!(error.error(), ForInputError::ForeignValue);
         assert_eq!(error.source_block(), block);
         assert_eq!(error.authored_value().as_ptr(), raw.as_ptr());
         assert_eq!(error.authored_value().len(), raw.len());
@@ -118,14 +118,14 @@ fn valid_partial_extent_is_only_local_source_proof_not_an_attribute_receipt() {
     let full = "item in items trailing";
     let partial = full.get(..13).unwrap();
     let block = SourceRoot::new(full).unwrap().whole_block();
-    let partial_head = NativeForInput::attribute_in(&arena, block, partial, Lang::Js)
+    let partial_head = ForInput::attribute_in(&arena, block, partial, Lang::Js)
         .unwrap()
         .observe();
     let admitted = partial_head.admitted_dense().unwrap();
     assert_eq!(admitted.authored_value_span(), Span::new(0, 13));
     assert_eq!(admitted.authored_value().as_ptr(), full.as_ptr());
     assert_ne!(admitted.authored_value().len(), full.len());
-    let complete = NativeForInput::attribute_in(&arena, block, full, Lang::Js)
+    let complete = ForInput::attribute_in(&arena, block, full, Lang::Js)
         .unwrap()
         .observe();
     assert!(complete.admitted_dense().is_none());
@@ -149,10 +149,7 @@ fn raw_dense_and_duplicate_names_do_not_mint_missing_origin_or_semantic_proofs()
         },
     );
     assert!(raw.dense().is_some());
-    assert_eq!(
-        raw.native_refusal(),
-        Some(NativeForRefusal::UnpreparedSource)
-    );
+    assert_eq!(raw.for_refusal(), Some(ForRefusal::UnpreparedSource));
     assert!(raw.admitted_dense().is_none());
     let duplicate = observe(&arena, "(item,item) in items", Lang::Js);
     assert_eq!(

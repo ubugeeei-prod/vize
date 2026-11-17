@@ -6,8 +6,7 @@ use vize_glyph::native_doc::{
 };
 use vize_l0::{Allocator, Span};
 use vize_l1::markup::{
-    NativeAttributeExpression, NativeAttributeOperandError, NativeInterpolationOperand,
-    NativeTemplateComponent,
+    AttributeExpression, AttributeOperandError, InterpolationOperand, NativeTemplateComponent,
 };
 
 #[test]
@@ -74,8 +73,8 @@ fn complete_named_document_transfer_keeps_all_three_original_families_and_old_fo
     .unwrap();
     let (original, interpolations, attributes, document): (
         &NativeTemplateComponent<'_>,
-        Vec<NativeInterpolationOperand<'_>>,
-        Vec<NativeAttributeExpression<'_>>,
+        Vec<InterpolationOperand<'_>>,
+        Vec<AttributeExpression<'_>>,
         Doc<'_>,
     ) = document.into_full_parts();
     assert!(core::ptr::eq(original, &selected));
@@ -104,7 +103,7 @@ fn complete_named_failure_transfer_keeps_current_binding_or_actual_failure_and_o
             ObservedNativeTemplateRefusal::Binding {
                 span: Span::new(51, 54),
                 index: 1,
-                kind: NativeAttributeOperandError::IncompleteValue,
+                kind: AttributeOperandError::IncompleteValue,
             },
             1,
             true,
@@ -135,7 +134,7 @@ fn complete_named_failure_transfer_keeps_current_binding_or_actual_failure_and_o
         assert!(parts.interpolation_failure.is_none());
         assert_eq!(parts.binding_failure.is_some(), actual_failure);
         if let Some(failure) = &parts.binding_failure {
-            assert_eq!(failure.kind(), NativeAttributeOperandError::IncompleteValue);
+            assert_eq!(failure.kind(), AttributeOperandError::IncompleteValue);
             assert!(failure.syntax().is_none());
         }
         assert_eq!(

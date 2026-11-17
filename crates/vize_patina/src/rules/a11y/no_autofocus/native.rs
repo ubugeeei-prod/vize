@@ -6,7 +6,7 @@ use crate::native::template::{
     NativeTemplateElement, NativeTemplateLintContext, NativeTemplateLintRefusal as Refusal,
     NativeTemplateRule,
 };
-use vize_l1::markup::NativeLintComponent;
+use vize_l1::markup::ComponentTagFacts;
 
 impl NativeTemplateRule for NoAutofocus {
     fn attribute_profile(&self) -> Profile {
@@ -16,7 +16,7 @@ impl NativeTemplateRule for NoAutofocus {
     fn run_on_template<'a>(
         &self,
         context: &mut NativeTemplateLintContext<'_, 'a>,
-        root: &NativeLintComponent<'a>,
+        root: &ComponentTagFacts<'a>,
     ) -> Result<(), Refusal> {
         if !core::ptr::eq(context.owner(), root) {
             return Err(Refusal::SourceMismatch);

@@ -136,7 +136,7 @@ fn preparation_failure_unwind_keeps_the_original_failure_and_cannot_revive_walk(
     same(failure.span().slice(source), "{{ 7 }}")?;
     same(
         failure.failure().kind(),
-        vize_l1::markup::NativeInterpolationError::RecoveredComponent,
+        vize_l1::markup::InterpolationError::RecoveredComponent,
     )?;
     check(file.template_interruption().is_some())
 }

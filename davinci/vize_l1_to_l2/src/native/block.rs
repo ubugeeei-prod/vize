@@ -6,7 +6,7 @@ use super::{
 };
 use alloc::{boxed::Box, vec::Vec};
 use vize_l0::{Allocator, SourceBlock, Span, diag::Diagnostic};
-use vize_l1::embed::{Lang, SourceError, syntax::NativeSyntax};
+use vize_l1::embed::{Lang, SourceError, syntax::EmbedSyntax};
 use vize_l1::markup::{ComponentParse, ComponentSourceError};
 use vize_l2::artifact::ComponentFactory;
 use vize_l2::op::Namespace;
@@ -42,7 +42,7 @@ pub struct NativeProduced<'a> {
     pub holes: Vec<NativeHole>,
     pub diagnostics: Vec<Diagnostic>,
     pub embeds: Vec<NativeEmbed<'a>>,
-    pub rejected_syntax: Vec<NativeSyntax<'a>>,
+    pub rejected_syntax: Vec<EmbedSyntax<'a>>,
 }
 
 impl NativeProduced<'_> {

@@ -5,7 +5,7 @@ use vize_l0::{Allocator, SourceRoot};
 fn retains_original_scope_and_effect_frames() {
     let source = r#"<DIV v-scope="{ n: 1 }"><button v-effect='n++'></button></DIV>"#;
     let arena = Allocator::default();
-    let owner = NativeDocument::lex_in(&arena, SourceRoot::new(source).unwrap());
+    let owner = ParsedDocument::lex_in(&arena, SourceRoot::new(source).unwrap());
     let mut directives = owner.petite_directives().unwrap();
     let scope = directives.next().unwrap().unwrap();
     assert_eq!(scope.kind(), DocumentPetiteDirectiveKind::Scope);
@@ -24,7 +24,7 @@ fn retains_original_scope_and_effect_frames() {
 fn preserves_argument_modifiers_and_entity_events() {
     let arena = Allocator::default();
     let source = r#"<div v-scope:arg.one.two="{ label: '&amp;' }"></div>"#;
-    let owner = NativeDocument::lex_in(&arena, SourceRoot::new(source).unwrap());
+    let owner = ParsedDocument::lex_in(&arena, SourceRoot::new(source).unwrap());
     let directive = owner.petite_directives().unwrap().next().unwrap().unwrap();
     assert_eq!(directive.argument().unwrap().source(), Some("arg"));
     assert!(
@@ -44,7 +44,7 @@ fn preserves_argument_modifiers_and_entity_events() {
 fn distinguishes_valueless_and_empty_values() {
     let source = "<div v-scope v-effect=\"\"></div>";
     let arena = Allocator::default();
-    let owner = NativeDocument::lex_in(&arena, SourceRoot::new(source).unwrap());
+    let owner = ParsedDocument::lex_in(&arena, SourceRoot::new(source).unwrap());
     let mut directives = owner.petite_directives().unwrap();
     assert!(directives.next().unwrap().unwrap().value().is_none());
     assert_eq!(
@@ -63,7 +63,7 @@ fn distinguishes_valueless_and_empty_values() {
 #[test]
 fn refuses_recovered_lexical_input() {
     let arena = Allocator::default();
-    let owner = NativeDocument::lex_in(
+    let owner = ParsedDocument::lex_in(
         &arena,
         SourceRoot::new("<div v-scope='unterminated").unwrap(),
     );

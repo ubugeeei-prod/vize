@@ -1,7 +1,7 @@
-use super::{EmbedHole, ForHeadHole, ForHeadPart, NativeForHead, RetainedSlotParams, SourceError};
+use super::{EmbedHole, ForHead, ForHeadHole, ForHeadPart, RetainedSlotParams, SourceError};
 use oxc_ast::ast::FormalParameter;
 
-pub(super) fn refused(head: &NativeForHead<'_>) -> Option<ForHeadHole> {
+pub(super) fn refused(head: &ForHead<'_>) -> Option<ForHeadHole> {
     let aliases = match head.aliases() {
         Some(Ok(aliases)) => aliases,
         _ => return Some(ForHeadHole::RejectedPart(ForHeadPart::Aliases)),

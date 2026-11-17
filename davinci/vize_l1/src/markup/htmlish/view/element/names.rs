@@ -1,12 +1,12 @@
 //! Authored tag names borrowed from one original Element CST projection.
 
-use super::{NativeComponent, NativeElement, Parent};
+use super::{ElementView, NativeComponent, Parent};
 use crate::markup::{Element, ElementClose, SurfaceChild, Token};
 use vize_l0::{SourceBlock, Span};
 
 /// The original construction outcome, without an invented closing name.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum NativeElementClosingName {
+pub enum ElementClosingName {
     Present(Span),
     Missing,
     Implicit,
@@ -16,7 +16,7 @@ pub enum NativeElementClosingName {
 
 /// No source or completed grammar is inferred from recovered syntax.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum NativeElementNameRefusal {
+pub enum ElementNameRefusal {
     Recovered { offset: u32 },
     UnsupportedComponent,
     IncompleteOpening,
@@ -30,8 +30,8 @@ pub enum NativeElementNameRefusal {
 ///
 /// Raw elements and source coordinates cannot mint this receipt:
 /// ```compile_fail
-/// use vize_l1::markup::NativeElementNames;
-/// fn forge() { let _ = NativeElementNames { opening: Default::default() }; }
+/// use vize_l1::markup::ElementNames;
+/// fn forge() { let _ = ElementNames { opening: Default::default() }; }
 /// ```
 /// The actual original owner must remain alive:
 /// ```compile_fail
@@ -44,26 +44,26 @@ pub enum NativeElementNameRefusal {
 /// drop(owner);
 /// let _ = names.opening();
 /// ```
-pub struct NativeElementNames<'o, 'a> {
+pub struct ElementNames<'o, 'a> {
     component: &'o NativeComponent<'a>,
     element: &'o Element<'a>,
     parent: Parent<'o, 'a>,
     ordinal: usize,
     opening: Span,
-    closing: NativeElementClosingName,
+    closing: ElementClosingName,
 }
 
-impl core::fmt::Debug for NativeElementNames<'_, '_> {
+impl core::fmt::Debug for ElementNames<'_, '_> {
     fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         formatter
-            .debug_struct("NativeElementNames")
+            .debug_struct("ElementNames")
             .field("opening", &self.opening)
             .field("closing", &self.closing)
             .finish_non_exhaustive()
     }
 }
 
-impl<'o, 'a> NativeElementNames<'o, 'a> {
+impl<'o, 'a> ElementNames<'o, 'a> {
     #[must_use]
     pub fn component(&self) -> &'o NativeComponent<'a> {
         self.component
@@ -81,12 +81,12 @@ impl<'o, 'a> NativeElementNames<'o, 'a> {
         self.opening
     }
     #[must_use]
-    pub const fn closing(&self) -> NativeElementClosingName {
+    pub const fn closing(&self) -> ElementClosingName {
         self.closing
     }
     /// Rejoin the same actual element; equal source buffers/ordinals do not suffice.
     #[must_use]
-    pub fn accepts(&self, element: &NativeElement<'_, 'a>) -> bool {
+    pub fn accepts(&self, element: &ElementView<'_, 'a>) -> bool {
         core::ptr::eq(self.component, element.component)
             && core::ptr::eq(self.element, element.element)
             && self.ordinal == element.ordinal
@@ -98,7 +98,7 @@ impl<'o, 'a> NativeElementNames<'o, 'a> {
     }
 }
 
-impl<'o, 'a> NativeElement<'o, 'a> {
+impl<'o, 'a> ElementView<'o, 'a> {
     /// Project the original CST at this existing child visit, without a walk,
     /// parser, source scan, allocation or stored per-node name record.
     ///
@@ -109,20 +109,20 @@ impl<'o, 'a> NativeElement<'o, 'a> {
     /// without rescanning them or changing the original matching policy.
     /// Missing/implicit/void/self-closing outcomes remain distinct. Every
     /// original spelling survives; no namespace or dialect case fold is added.
-    pub fn names(&self) -> Result<NativeElementNames<'o, 'a>, NativeElementNameRefusal> {
+    pub fn names(&self) -> Result<ElementNames<'o, 'a>, ElementNameRefusal> {
         let component = self.component;
         let block = component.block();
         let carrier = component.carrier();
         if let Some(error) = carrier.errors.first() {
-            return Err(NativeElementNameRefusal::Recovered {
+            return Err(ElementNameRefusal::Recovered {
                 offset: block
                     .start()
                     .checked_add(error.offset)
-                    .ok_or(NativeElementNameRefusal::SourceMismatch)?,
+                    .ok_or(ElementNameRefusal::SourceMismatch)?,
             });
         }
         if carrier.authored.is_some() || !carrier.unsupported.is_empty() {
-            return Err(NativeElementNameRefusal::UnsupportedComponent);
+            return Err(ElementNameRefusal::UnsupportedComponent);
         }
         let original = match self.parent {
             Parent::Root => component.root_child_at(self.ordinal),
@@ -132,11 +132,11 @@ impl<'o, 'a> NativeElement<'o, 'a> {
             || !matches!(original, Some(SurfaceChild::Element(element))
                 if core::ptr::eq(element.as_ref(), self.element))
         {
-            return Err(NativeElementNameRefusal::SourceMismatch);
+            return Err(ElementNameRefusal::SourceMismatch);
         }
         let open = &self.element.open;
         if open.lt_name.is_missing() || open.gt.is_missing() {
-            return Err(NativeElementNameRefusal::IncompleteOpening);
+            return Err(ElementNameRefusal::IncompleteOpening);
         }
         let opening_token = token_span(block, &open.lt_name)?;
         let opening = open
@@ -144,36 +144,36 @@ impl<'o, 'a> NativeElement<'o, 'a> {
             .text
             .strip_prefix('<')
             .filter(|name| !name.is_empty())
-            .ok_or(NativeElementNameRefusal::SourceMismatch)?;
+            .ok_or(ElementNameRefusal::SourceMismatch)?;
         let opening = block
             .span_of(opening)
             .filter(|span| block.contains_block_span(*span))
-            .ok_or(NativeElementNameRefusal::SourceMismatch)?;
+            .ok_or(ElementNameRefusal::SourceMismatch)?;
         let open_gt = token_span(block, &open.gt)?;
         if opening.start != opening_token.start + 1
             || open.gt.text != ">"
             || opening.end > open_gt.start
         {
-            return Err(NativeElementNameRefusal::SourceMismatch);
+            return Err(ElementNameRefusal::SourceMismatch);
         }
         let closing = match &self.element.close {
-            ElementClose::Missing => NativeElementClosingName::Missing,
-            ElementClose::Implicit => NativeElementClosingName::Implicit,
+            ElementClose::Missing => ElementClosingName::Missing,
+            ElementClose::Implicit => ElementClosingName::Implicit,
             ElementClose::NotExpected if open.slash.is_some() => {
                 let slash = open
                     .slash
                     .as_ref()
-                    .ok_or(NativeElementNameRefusal::SourceMismatch)?;
+                    .ok_or(ElementNameRefusal::SourceMismatch)?;
                 let span = token_span(block, slash)?;
                 if slash.is_missing() || slash.text != "/" || span.end > open_gt.start {
-                    return Err(NativeElementNameRefusal::IncompleteOpening);
+                    return Err(ElementNameRefusal::IncompleteOpening);
                 }
-                NativeElementClosingName::SelfClosing
+                ElementClosingName::SelfClosing
             }
-            ElementClose::NotExpected => NativeElementClosingName::Void,
+            ElementClose::NotExpected => ElementClosingName::Void,
             ElementClose::Present(close) => {
                 if close.lt_slash_name.is_missing() || close.gt.is_missing() {
-                    return Err(NativeElementNameRefusal::IncompleteClosing);
+                    return Err(ElementNameRefusal::IncompleteClosing);
                 }
                 let token = token_span(block, &close.lt_slash_name)?;
                 let gt = token_span(block, &close.gt)?;
@@ -183,28 +183,28 @@ impl<'o, 'a> NativeElement<'o, 'a> {
                     .len()
                     .checked_sub((opening.end - opening.start) as usize)
                     .filter(|start| *start >= 2)
-                    .ok_or(NativeElementNameRefusal::SourceMismatch)?;
+                    .ok_or(ElementNameRefusal::SourceMismatch)?;
                 let name = close
                     .lt_slash_name
                     .text
                     .get(start..)
-                    .ok_or(NativeElementNameRefusal::SourceMismatch)?;
+                    .ok_or(ElementNameRefusal::SourceMismatch)?;
                 let span = block
                     .span_of(name)
                     .filter(|span| block.contains_block_span(*span))
-                    .ok_or(NativeElementNameRefusal::SourceMismatch)?;
+                    .ok_or(ElementNameRefusal::SourceMismatch)?;
                 if !close.lt_slash_name.text.starts_with("</")
                     || close.gt.text != ">"
                     || span.end != token.end
                     || token.start < open_gt.end
                     || span.end > gt.start
                 {
-                    return Err(NativeElementNameRefusal::SourceMismatch);
+                    return Err(ElementNameRefusal::SourceMismatch);
                 }
-                NativeElementClosingName::Present(span)
+                ElementClosingName::Present(span)
             }
         };
-        Ok(NativeElementNames {
+        Ok(ElementNames {
             component,
             element: self.element,
             parent: self.parent,
@@ -215,16 +215,16 @@ impl<'o, 'a> NativeElement<'o, 'a> {
     }
 }
 
-fn token_span(block: SourceBlock<'_>, token: &Token<'_>) -> Result<Span, NativeElementNameRefusal> {
+fn token_span(block: SourceBlock<'_>, token: &Token<'_>) -> Result<Span, ElementNameRefusal> {
     block
         .span_of(token.text)
         .filter(|span| block.contains_block_span(*span))
-        .ok_or(NativeElementNameRefusal::SourceMismatch)
+        .ok_or(ElementNameRefusal::SourceMismatch)
 }
 
 #[cfg(test)]
 mod tests {
-    use super::{NativeElementClosingName as Closing, NativeElementNameRefusal as Refusal};
+    use super::{ElementClosingName as Closing, ElementNameRefusal as Refusal};
     use crate::container::{Vue, vue::DescriptorOptions};
     use crate::markup::{ElementClose, check_fidelity};
     use crate::markup::{NativeComponent, NativeTemplateComponent};
@@ -329,7 +329,7 @@ mod tests {
         assert!(names.accepts(&element));
         assert!(!names.accepts(&other));
         // Even a dev-only fabricated direct tuple cannot bypass the original slot.
-        let fabricated = super::NativeElement::from_child(
+        let fabricated = super::ElementView::from_child(
             &owner,
             super::Parent::Root,
             other.ordinal(),

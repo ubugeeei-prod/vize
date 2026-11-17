@@ -12,14 +12,14 @@ use oxc_parser::{EmbeddingGoal, EmbeddingInput, EmbeddingObservation};
 use oxc_span::SourceType;
 use vize_l0::{Allocator, Span};
 
-use super::super::{Embed, EmbedSource, Grammar, Lang, NativeSyntax, Shape, parse_once};
+use super::super::{Embed, EmbedSource, EmbedSyntax, Grammar, Lang, Shape, parse_once};
 
 mod custody;
 mod historical;
 mod profile;
 mod stock;
 
-fn syntax<'a>(arena: &'a Allocator, text: &'a str, shape: Shape) -> NativeSyntax<'a> {
+fn syntax<'a>(arena: &'a Allocator, text: &'a str, shape: Shape) -> EmbedSyntax<'a> {
     parse_once(
         arena,
         Embed {

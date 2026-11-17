@@ -9,7 +9,7 @@ use crate::op::Namespace;
 use core::ops::DerefMut;
 use vize_l0::{Span, ensure_sufficient_stack, id::NodeId};
 use vize_l1::markup::{
-    ElementClose, NativeChild, NativeElement, NativeTemplateComponent, SurfaceChild,
+    ChildView, ElementClose, ElementView, NativeTemplateComponent, SurfaceChild,
 };
 
 mod conditional;
@@ -18,7 +18,7 @@ mod model;
 
 pub(super) fn construct<'a: 'b, 'b, R>(
     selected: &NativeTemplateComponent<'a>,
-    child: NativeChild<'_, 'a>,
+    child: ChildView<'_, 'a>,
     region: &mut FileRegion<'_, 'b, 'a, R, NativeVisibility>,
 ) -> Result<NodeId, Kind>
 where
@@ -29,7 +29,7 @@ where
 
 fn construct_guarded<'a: 'b, 'b, R>(
     selected: &NativeTemplateComponent<'a>,
-    child: NativeChild<'_, 'a>,
+    child: ChildView<'_, 'a>,
     region: &mut FileRegion<'_, 'b, 'a, R, NativeVisibility>,
 ) -> Result<NodeId, Kind>
 where
@@ -75,7 +75,7 @@ where
 
 fn element<'a: 'b, 'b, R>(
     selected: &NativeTemplateComponent<'a>,
-    original: NativeElement<'_, 'a>,
+    original: ElementView<'_, 'a>,
     region: &mut FileRegion<'_, 'b, 'a, R, NativeVisibility>,
 ) -> Result<NodeId, Kind>
 where
@@ -87,7 +87,7 @@ where
 }
 
 /// Same original geometry gate for the ordinary and paired root receivers.
-pub(super) fn element_span(original: &NativeElement<'_, '_>) -> Result<Span, Kind> {
+pub(super) fn element_span(original: &ElementView<'_, '_>) -> Result<Span, Kind> {
     let surface = original.surface();
     let tag = surface.tag();
     // No caller tag, namespace, attribute list or body enters this route.
@@ -128,7 +128,7 @@ pub(super) fn element_span(original: &NativeElement<'_, '_>) -> Result<Span, Kin
 }
 
 pub(super) fn element_prepared<'a: 'b, 'b, R>(
-    original: NativeElement<'_, 'a>,
+    original: ElementView<'_, 'a>,
     selected: &NativeTemplateComponent<'a>,
     span: Span,
     mut header: header::Header<'a>,
@@ -151,7 +151,7 @@ where
 }
 
 pub(super) fn element_ready<'a: 'b, 'b, R>(
-    original: NativeElement<'_, 'a>,
+    original: ElementView<'_, 'a>,
     selected: &NativeTemplateComponent<'a>,
     span: Span,
     header: header::ReadyHeader<'a>,
@@ -189,7 +189,7 @@ where
 }
 
 struct OriginalBody<'selected, 'owner, 'result, 'a> {
-    original: NativeElement<'owner, 'a>,
+    original: ElementView<'owner, 'a>,
     selected: &'selected NativeTemplateComponent<'a>,
     handlers: alloc::vec::Vec<ObservedHandler<'a>>,
     result: &'result mut Result<(), Kind>,

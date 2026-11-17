@@ -3,7 +3,7 @@
 use serde_json::{Value, json};
 use vize_l0::{Allocator, Namespace, SourceRoot, Span, String};
 use vize_l1::markup::htmlish::document::{
-    DocumentHtmlNode, DocumentHtmlRefusal as Refusal, NativeDocument,
+    DocumentHtmlNode, DocumentHtmlRefusal as Refusal, ParsedDocument,
 };
 
 const CORPUS: &str = include_str!("fixtures/document/html-foreign-content.json");
@@ -24,7 +24,7 @@ fn foreign_packets_retain_complete_namespaces_frames_attributes_and_nodes() {
         let label = case["name"].as_str().unwrap();
         let source = case["source"].as_str().unwrap();
         let arena = Allocator::default();
-        let owner = NativeDocument::lex_in(&arena, SourceRoot::new(source).unwrap());
+        let owner = ParsedDocument::lex_in(&arena, SourceRoot::new(source).unwrap());
         assert_eq!(owner.source(), source);
         if let Some(refusal) = case.get("refusal") {
             let expected = match refusal["kind"].as_str().unwrap() {
@@ -118,7 +118,7 @@ fn unclosed_and_cross_namespace_foreign_frames_refuse_without_recovery_claims() 
         let needle = vize_l0::cstr!("</{token}>");
         let start = source.find(needle.as_str()).unwrap() + 2;
         let arena = Allocator::default();
-        let owner = NativeDocument::lex_in(&arena, SourceRoot::new(&source).unwrap());
+        let owner = ParsedDocument::lex_in(&arena, SourceRoot::new(&source).unwrap());
         let at = Span::new(start as u32, (start + token.len()) as u32);
         let expected = if unsupported {
             Refusal::UnsupportedElement(at)

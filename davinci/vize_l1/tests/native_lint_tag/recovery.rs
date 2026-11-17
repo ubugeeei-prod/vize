@@ -10,9 +10,9 @@ fn literal_receipts_capture_actual_header_entry_before_interactive_recovery() {
         let owner = selected(&arena, &source);
         let outer = owner.children().next().unwrap().into_element().unwrap();
         assert!(matches!(outer.surface().close, ElementClose::Implicit));
-        assert!(!outer.lint_tag().unwrap().header_is_literal());
+        assert!(!outer.tag_facts().unwrap().header_is_literal());
         let inner = owner.children().nth(1).unwrap().into_element().unwrap();
-        let receipt = inner.lint_tag().unwrap();
+        let receipt = inner.tag_facts().unwrap();
         assert!(receipt.header_is_literal());
         assert!(receipt.in_recovery_context());
         assert!(inner.surface().open.is_verbatim());
@@ -26,8 +26,8 @@ fn literal_receipts_capture_actual_header_entry_before_interactive_recovery() {
             .last()
             .unwrap();
         assert_eq!(last.surface().tag(), "meta");
-        assert!(!last.lint_tag().unwrap().header_is_literal());
-        assert!(!last.lint_tag().unwrap().in_recovery_context());
+        assert!(!last.tag_facts().unwrap().header_is_literal());
+        assert!(!last.tag_facts().unwrap().in_recovery_context());
         assert_eq!(check_fidelity(&owner.component().carrier().tree), Ok(()));
     }
 }
@@ -43,14 +43,14 @@ fn original_recovery_ancestry_is_conservative_without_legacy_tree_substitution()
         let arena = Allocator::default();
         let owner = selected(&arena, &source);
         let parent = owner.children().next().unwrap().into_element().unwrap();
-        assert!(!parent.lint_tag().unwrap().in_recovery_context());
+        assert!(!parent.tag_facts().unwrap().in_recovery_context());
         let meta = parent.children().next().unwrap().into_element().unwrap();
-        let receipt = meta.lint_tag().unwrap();
+        let receipt = meta.tag_facts().unwrap();
         assert!(receipt.header_is_literal());
         assert!(receipt.in_recovery_context());
         assert!(core::ptr::eq(receipt.element(), meta.surface()));
         let outside = owner.children().nth(1).unwrap().into_element().unwrap();
-        assert!(!outside.lint_tag().unwrap().in_recovery_context());
+        assert!(!outside.tag_facts().unwrap().in_recovery_context());
         assert_eq!(check_fidelity(&owner.component().carrier().tree), Ok(()));
     }
 }
@@ -63,11 +63,11 @@ fn self_closing_nested_interactive_headers_retain_the_actual_original_scope() {
         let owner = selected(&arena, &source);
         let parent = owner.children().next().unwrap().into_element().unwrap();
         let inner = parent.children().next().unwrap().into_element().unwrap();
-        assert!(inner.lint_tag().unwrap().header_is_literal());
-        assert!(inner.lint_tag().unwrap().in_recovery_context());
+        assert!(inner.tag_facts().unwrap().header_is_literal());
+        assert!(inner.tag_facts().unwrap().in_recovery_context());
         let meta = parent.children().nth(1).unwrap().into_element().unwrap();
-        assert!(meta.lint_tag().unwrap().header_is_literal());
-        assert!(meta.lint_tag().unwrap().in_recovery_context());
+        assert!(meta.tag_facts().unwrap().header_is_literal());
+        assert!(meta.tag_facts().unwrap().in_recovery_context());
         assert_eq!(check_fidelity(&owner.component().carrier().tree), Ok(()));
     }
 }
@@ -86,9 +86,9 @@ fn genuine_original_depth_is_bounded_before_over_limit_pre_can_issue_facts() {
         original = original.children().next().unwrap().into_element().unwrap();
     }
     assert_eq!(original.surface().tag(), "div");
-    assert!(original.lint_tag().unwrap().in_recovery_context());
+    assert!(original.tag_facts().unwrap().in_recovery_context());
     let meta = original.children().next().unwrap().into_element().unwrap();
-    let receipt = meta.lint_tag().unwrap();
+    let receipt = meta.tag_facts().unwrap();
     assert_eq!(receipt.kind(), Kind::Element);
     assert!(receipt.header_is_literal());
     assert!(receipt.in_recovery_context());

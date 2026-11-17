@@ -7,7 +7,7 @@ use vize_glyph::native_doc::{
 };
 use vize_l0::{Allocator, Span};
 use vize_l1::container::vue::ScriptRole;
-use vize_l1::{embed::Lang, markup::NativeTemplateGrammar};
+use vize_l1::{embed::Lang, markup::TemplateGrammar};
 
 #[test]
 fn genuine_setup_ts_profile_keeps_original_lower_binding_but_whole_sfc_refuses_its_script_role() {
@@ -27,7 +27,7 @@ fn genuine_setup_ts_profile_keeps_original_lower_binding_but_whole_sfc_refuses_i
     );
     assert!(owner.selected().is_none());
     let selected = selected(&arena, source, policy);
-    assert_eq!(selected.grammar(), NativeTemplateGrammar::TypeScriptModule);
+    assert_eq!(selected.grammar(), TemplateGrammar::TypeScriptModule);
     let failure = observed_native_template_document_with_policy(
         &selected,
         &arena,

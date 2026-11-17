@@ -1,5 +1,5 @@
 use vize_l0::{Allocator, SourceBlock, Span};
-use vize_l1::embed::syntax::{NativeSyntax, ProgramOptions, parse_program_once};
+use vize_l1::embed::syntax::{EmbedSyntax, ProgramOptions, parse_program_once};
 use vize_l1::embed::{EmbedSource, Lang};
 use vize_l2::file::FileArtifact;
 use vize_l2::lang::js::{FileProducer, ProgramInput, ProgramScope};
@@ -8,7 +8,7 @@ pub fn syntax<'a>(
     arena: &'a Allocator,
     block: SourceBlock<'a>,
     lang: Lang,
-) -> Option<NativeSyntax<'a>> {
+) -> Option<EmbedSyntax<'a>> {
     Some(parse_program_once(
         arena,
         EmbedSource::authored(block.root_source(), block.span()).ok()?,

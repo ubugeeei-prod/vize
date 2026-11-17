@@ -72,7 +72,7 @@ fn reborrow_preserves_foreign_component_refusal_and_original_event() {
     };
     assert_eq!(
         failure.kind(),
-        super::NativeAttributeOperandError::ForeignComponent
+        super::AttributeOperandError::ForeignComponent
     );
     assert!(core::ptr::eq(attribute.component(), foreign.component()));
     let operand = foreign
@@ -136,7 +136,7 @@ fn reborrow_never_promotes_unquoted_slash_recovery_to_header_admission() {
     };
     assert_eq!(
         failure.kind(),
-        super::NativeAttributeOperandError::RecoveredComponent
+        super::AttributeOperandError::RecoveredComponent
     );
     assert!(failure.syntax().is_none());
     assert!(matches!(

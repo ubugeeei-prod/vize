@@ -12,7 +12,7 @@ use vize_l0::{
     },
     fact::{FactConsumer, FactError, FactManager, FactTable, FactView},
 };
-use vize_l1::markup::{Element, NativeElement, NativeTemplateComponent};
+use vize_l1::markup::{Element, ElementView, NativeTemplateComponent};
 
 use super::{NativeLintRefusal, header, header_rules};
 
@@ -72,7 +72,7 @@ pub struct NativeHeaderFacts<'o, 'a> {
 impl<'o, 'a> NativeHeaderFacts<'o, 'a> {
     pub(super) fn new(
         owner: &'o NativeTemplateComponent<'a>,
-        element: &NativeElement<'o, 'a>,
+        element: &ElementView<'o, 'a>,
     ) -> Result<Self, NativeHeaderFactError> {
         let header_key =
             u32::try_from(element.ordinal()).map_err(|_| NativeLintRefusal::SourceMismatch)?;

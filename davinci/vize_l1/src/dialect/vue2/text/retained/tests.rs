@@ -67,7 +67,7 @@ fn syntax_facts<'o, 'a: 'o>(
     )
 }
 
-fn original_syntax(syntax: &NativeSyntax<'_>) -> String {
+fn original_syntax(syntax: &EmbedSyntax<'_>) -> String {
     let admission = syntax
         .borrow_expression()
         .map(|view| (view.parser_prefix(), vize_l0::cstr!("{:?}", view.options())));

@@ -8,7 +8,7 @@ use crate::native::{
 use crate::vue_file::{NativeTemplateProfile, VueFileRegion};
 use alloc::boxed::Box;
 use vize_l0::{SourceBlock, diag::Diagnostic};
-use vize_l1::embed::syntax::NativeSyntax;
+use vize_l1::embed::syntax::EmbedSyntax;
 use vize_l2::artifact::ArtifactError;
 use vize_l2::file::TemplateIssue;
 
@@ -92,7 +92,7 @@ impl<'a> RejectedNativeVueComponent<'a> {
         self.pending.observations().embeds()
     }
     #[must_use]
-    pub fn rejected_syntax(&self) -> &[NativeSyntax<'a>] {
+    pub fn rejected_syntax(&self) -> &[EmbedSyntax<'a>] {
         self.pending.observations().rejected_syntax()
     }
 }

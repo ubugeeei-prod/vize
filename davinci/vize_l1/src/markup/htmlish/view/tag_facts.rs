@@ -1,14 +1,14 @@
-//! Default Vue 3 lint tag grammar, retained by original complete-header parsing.
+//! Tag facts of the default Vue 3 grammar, retained by original complete-header parsing.
 //! This fact is not DOM membership, runtime component resolution or File admission.
 
 use vize_l0::Span;
 
-use super::{NativeComponent, NativeElement};
-use crate::markup::{Element, htmlish::surface::LintTagFact};
+use super::{ElementView, NativeComponent};
+use crate::markup::{Element, htmlish::surface::TagKindFact};
 
-/// Original default Vue 3 lint category; no runtime tag resolution is implied.
+/// The original default Vue 3 tag category; no runtime tag resolution is implied.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum NativeLintTagKind {
+pub enum TagFactsKind {
     Element,
     Component,
     Slot,
@@ -17,7 +17,7 @@ pub enum NativeLintTagKind {
 
 /// No kind is fabricated when a constructor or lexical policy cannot prove it.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum NativeLintTagRefusal {
+pub enum TagFactsRefusal {
     Unavailable,
     AmbiguousVerbatim,
     InheritedTemplate,
@@ -29,24 +29,24 @@ pub enum NativeLintTagRefusal {
 /// No raw tag, category, element, source or profile can be supplied by a caller.
 ///
 /// ```compile_fail
-/// use vize_l1::markup::NativeLintTag;
+/// use vize_l1::markup::TagFacts;
 /// fn requires_clone<T: Clone>() {}
-/// requires_clone::<NativeLintTag<'static, 'static>>();
+/// requires_clone::<TagFacts<'static, 'static>>();
 /// ```
-pub struct NativeLintTag<'o, 'a> {
+pub struct TagFacts<'o, 'a> {
     component: &'o NativeComponent<'a>,
     element: &'o Element<'a>,
-    kind: NativeLintTagKind,
+    kind: TagFactsKind,
     span: Span,
     header_literal: bool,
     table_context: bool,
     recovery_context: bool,
 }
 
-impl core::fmt::Debug for NativeLintTag<'_, '_> {
+impl core::fmt::Debug for TagFacts<'_, '_> {
     fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         formatter
-            .debug_struct("NativeLintTag")
+            .debug_struct("TagFacts")
             .field("kind", &self.kind)
             .field("span", &self.span)
             .field("header_literal", &self.header_literal)
@@ -56,7 +56,7 @@ impl core::fmt::Debug for NativeLintTag<'_, '_> {
     }
 }
 
-impl<'o, 'a> NativeLintTag<'o, 'a> {
+impl<'o, 'a> TagFacts<'o, 'a> {
     #[must_use]
     pub fn component(&self) -> &'o NativeComponent<'a> {
         self.component
@@ -66,7 +66,7 @@ impl<'o, 'a> NativeLintTag<'o, 'a> {
         self.element
     }
     #[must_use]
-    pub fn kind(&self) -> NativeLintTagKind {
+    pub fn kind(&self) -> TagFactsKind {
         self.kind
     }
     /// Absolute original tag-name range, without the opening `<`.
@@ -101,38 +101,38 @@ impl<'o, 'a> NativeLintTag<'o, 'a> {
     }
 }
 
-impl<'o, 'a> NativeElement<'o, 'a> {
-    pub fn lint_tag(&self) -> Result<NativeLintTag<'o, 'a>, NativeLintTagRefusal> {
+impl<'o, 'a> ElementView<'o, 'a> {
+    pub fn tag_facts(&self) -> Result<TagFacts<'o, 'a>, TagFactsRefusal> {
         let element = self.surface();
         if element.open.lt_name.is_missing() || element.open.gt.is_missing() {
-            return Err(NativeLintTagRefusal::IncompleteHeader);
+            return Err(TagFactsRefusal::IncompleteHeader);
         }
-        let kind = match element.open.lint_tag() {
-            Some(LintTagFact::Element) => NativeLintTagKind::Element,
-            Some(LintTagFact::Component) => NativeLintTagKind::Component,
-            Some(LintTagFact::Slot) => NativeLintTagKind::Slot,
-            Some(LintTagFact::Template) => NativeLintTagKind::Template,
-            Some(LintTagFact::AmbiguousVerbatim) => {
-                return Err(NativeLintTagRefusal::AmbiguousVerbatim);
+        let kind = match element.open.tag_facts() {
+            Some(TagKindFact::Element) => TagFactsKind::Element,
+            Some(TagKindFact::Component) => TagFactsKind::Component,
+            Some(TagKindFact::Slot) => TagFactsKind::Slot,
+            Some(TagKindFact::Template) => TagFactsKind::Template,
+            Some(TagKindFact::AmbiguousVerbatim) => {
+                return Err(TagFactsRefusal::AmbiguousVerbatim);
             }
-            Some(LintTagFact::InheritedTemplate) => {
-                return Err(NativeLintTagRefusal::InheritedTemplate);
+            Some(TagKindFact::InheritedTemplate) => {
+                return Err(TagFactsRefusal::InheritedTemplate);
             }
-            None => return Err(NativeLintTagRefusal::Unavailable),
+            None => return Err(TagFactsRefusal::Unavailable),
         };
         let block = self.component().block();
         let span = block
             .span_of(element.tag())
             .filter(|span| block.contains_block_span(*span))
-            .ok_or(NativeLintTagRefusal::SourceMismatch)?;
-        Ok(NativeLintTag {
+            .ok_or(TagFactsRefusal::SourceMismatch)?;
+        Ok(TagFacts {
             component: self.component(),
             element,
             kind,
             span,
-            header_literal: element.open.lint_header_is_literal(),
-            table_context: element.open.lint_in_table_context(),
-            recovery_context: element.open.lint_in_recovery_context(),
+            header_literal: element.open.header_is_literal(),
+            table_context: element.open.in_table_context(),
+            recovery_context: element.open.in_recovery_context(),
         })
     }
 }

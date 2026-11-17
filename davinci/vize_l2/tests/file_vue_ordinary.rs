@@ -9,7 +9,7 @@ use vize_l1::{
     },
     embed::{
         EmbedSource,
-        syntax::{NativeSyntax, ProgramOptions, parse_program_once},
+        syntax::{EmbedSyntax, ProgramOptions, parse_program_once},
     },
     markup::SurfaceParseOptions,
 };
@@ -25,7 +25,7 @@ mod vue_ordinary_cases;
 
 struct Observed<'a> {
     descriptor: DescriptorObservation<'a>,
-    syntax: NativeSyntax<'a>,
+    syntax: EmbedSyntax<'a>,
 }
 impl<'a> Observed<'a> {
     fn new(arena: &'a Allocator, source: &'a str) -> Result<Self, &'static str> {

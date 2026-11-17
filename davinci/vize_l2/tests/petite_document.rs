@@ -1,6 +1,6 @@
 use vize_armature::{ExpressionNode, PropNode, TemplateChildNode, parse_document};
 use vize_l0::{Allocator, SourceRoot};
-use vize_l1::markup::htmlish::document::NativeDocument;
+use vize_l1::markup::htmlish::document::ParsedDocument;
 use vize_l2::dialect::petite::{PetiteDirective, PetiteDirectiveKind, PetiteDocument};
 
 fn expression<'a>(expression: &Option<ExpressionNode<'a>>) -> Option<&'a str> {
@@ -64,7 +64,7 @@ fn walk_legacy<'a>(
 
 fn assert_matches(source: &str) {
     let allocator = Allocator::default();
-    let owner = NativeDocument::lex_in(&allocator, SourceRoot::new(source).unwrap());
+    let owner = ParsedDocument::lex_in(&allocator, SourceRoot::new(source).unwrap());
     let semantic = PetiteDocument::lower_in(&allocator, &owner).unwrap();
     let (legacy, errors) = parse_document(&allocator, source);
     assert!(errors.is_empty(), "legacy document errors: {errors:?}");

@@ -6,7 +6,7 @@ use vize_glyph::native_doc::{
 };
 use vize_l0::Allocator;
 use vize_l1::embed::{Grammar, Lang, Shape, syntax::RetainedExpression};
-use vize_l1::markup::{NativeChildren, NativeTemplateComponent};
+use vize_l1::markup::{ChildrenView, NativeTemplateComponent};
 use vize_l1::{container::Vue, markup::SurfaceChild};
 
 pub(super) fn options(width: usize, indent: usize, ending: LineEnding) -> NativeSfcOptions {
@@ -33,7 +33,7 @@ pub(super) fn selected<'a>(
 pub(super) fn assert_bindings(owner: &NativeSfcObservation<'_>) {
     fn walk<'a>(
         owner: &NativeSfcObservation<'a>,
-        children: NativeChildren<'_, 'a>,
+        children: ChildrenView<'_, 'a>,
         index: &mut usize,
     ) {
         let selected = owner.selected().unwrap();

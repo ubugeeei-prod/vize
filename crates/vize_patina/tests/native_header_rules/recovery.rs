@@ -13,7 +13,7 @@ fn ignored_form_refusal_keeps_complete_facade_warnings_and_original_parser_error
     let lint = NativeSyntaxLint::new(&owner).unwrap();
     let outer = owner.children().next().unwrap().into_element().unwrap();
     let form = outer.children().next().unwrap().into_element().unwrap();
-    let receipt = form.lint_tag().unwrap();
+    let receipt = form.tag_facts().unwrap();
     assert!(receipt.in_recovery_context());
     for rule in HeaderRule::ALL {
         assert_eq!(

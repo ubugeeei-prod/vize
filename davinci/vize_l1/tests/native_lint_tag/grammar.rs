@@ -42,7 +42,7 @@ fn kind_metadata_does_not_change_existing_attribute_quote_or_mode_facts() {
     let arena = Allocator::default();
     let owner = selected(&arena, source);
     let div = owner.children().next().unwrap().into_element().unwrap();
-    assert_eq!(div.lint_tag().unwrap().kind(), Kind::Element);
+    assert_eq!(div.tag_facts().unwrap().kind(), Kind::Element);
     assert!(!div.surface().open.is_verbatim());
     for (attribute, quote) in div.attributes().zip(["'", "\"", ""]) {
         let value = attribute.surface().value.as_ref().unwrap();
@@ -187,14 +187,14 @@ fn inherited_literal_headers_are_distinct_from_own_pre_freezing() {
         let arena = Allocator::default();
         let owner = selected(&arena, &source);
         let div = owner.children().next().unwrap().into_element().unwrap();
-        assert_eq!(div.lint_tag().unwrap().kind(), Kind::Element);
-        assert!(!div.lint_tag().unwrap().header_is_literal());
+        assert_eq!(div.tag_facts().unwrap().kind(), Kind::Element);
+        assert!(!div.tag_facts().unwrap().header_is_literal());
         assert!(div.surface().open.is_verbatim());
         let inherited = div.children().next().unwrap().into_element().unwrap();
-        assert!(inherited.lint_tag().unwrap().header_is_literal());
+        assert!(inherited.tag_facts().unwrap().header_is_literal());
         assert!(inherited.surface().open.is_verbatim());
         let sibling = owner.children().nth(1).unwrap().into_element().unwrap();
-        assert!(!sibling.lint_tag().unwrap().header_is_literal());
+        assert!(!sibling.tag_facts().unwrap().header_is_literal());
         assert!(!sibling.surface().open.is_verbatim());
         assert_eq!(check_fidelity(&owner.component().carrier().tree), Ok(()));
     }

@@ -8,7 +8,7 @@ use vize_l1::container::{
 };
 use vize_l1::embed::{
     EmbedSource,
-    syntax::{NativeSyntax, ProgramOptions, parse_program_once},
+    syntax::{EmbedSyntax, ProgramOptions, parse_program_once},
 };
 use vize_l1::markup::SurfaceParseOptions;
 use vize_l2::file::{
@@ -23,7 +23,7 @@ mod invocations;
 
 struct Observed<'a> {
     descriptor: DescriptorObservation<'a>,
-    syntax: NativeSyntax<'a>,
+    syntax: EmbedSyntax<'a>,
 }
 
 impl<'a> Observed<'a> {

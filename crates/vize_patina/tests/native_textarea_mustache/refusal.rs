@@ -1,6 +1,6 @@
 use super::support::{LOCALES, complete, error, expected, parser, registered, selected, span};
 use vize_l0::{Allocator, Span, cstr};
-use vize_l1::markup::NativeLintTagRefusal;
+use vize_l1::markup::TagFactsRefusal;
 use vize_patina::native::{
     NativeLintRefusal, NativeSyntaxLint, header_facts::NativeHeaderFactError,
 };
@@ -120,7 +120,7 @@ fn modified_pre_requires_ambiguous_refusal_even_when_native_child_is_literal_tex
         assert_eq!(
             lint.header_facts(&element).err(),
             Some(NativeHeaderFactError::Header(NativeLintRefusal::LintTag {
-                reason: NativeLintTagRefusal::AmbiguousVerbatim
+                reason: TagFactsRefusal::AmbiguousVerbatim
             }))
         );
         for locale in LOCALES {
@@ -140,7 +140,7 @@ fn inherited_modified_pre_cannot_grant_false_marker_absence() {
     assert_eq!(
         lint.header_facts(&element).err(),
         Some(NativeHeaderFactError::Header(NativeLintRefusal::LintTag {
-            reason: NativeLintTagRefusal::AmbiguousVerbatim
+            reason: TagFactsRefusal::AmbiguousVerbatim
         }))
     );
     for locale in LOCALES {

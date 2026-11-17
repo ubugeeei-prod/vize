@@ -25,13 +25,12 @@ mod program;
 mod shapes;
 mod views;
 mod wrapped;
-pub use admission::NATIVE_SYNTAX_UNIT_LIMIT;
-pub use borrowed::NativeExpressionView;
+pub use admission::EMBED_SYNTAX_UNIT_LIMIT;
+pub use borrowed::ExpressionView;
 use coordinates::Coordinates;
 pub use for_head::{
-    AdmittedDenseForHead, DenseForHeadView, ForHeadHole, ForHeadPart, ForKeyword, NativeForHead,
-    NativeForInput, NativeForInputError, NativeForRefusal, RejectedNativeForInput,
-    parse_vue_for_head_once,
+    AdmittedDenseForHead, DenseForHeadView, ForHead, ForHeadHole, ForHeadPart, ForInput,
+    ForInputError, ForKeyword, ForRefusal, RejectedForInput, parse_vue_for_head_once,
 };
 pub use handler::RetainedHandlerBody;
 pub use handoff::RetainedExpression;
@@ -61,7 +60,7 @@ pub enum EmbedHole {
 /// views remain available, including their corrected decoded/authored spans.
 /// AST spans must pass through `decoded_span` / `authored_span`; these are syntax
 /// artifacts rather than semantic validation or resolved identifiers.
-pub struct NativeSyntax<'a> {
+pub struct EmbedSyntax<'a> {
     grammar: Grammar,
     source_type: SourceType,
     coordinates: Coordinates<'a>,
@@ -71,9 +70,9 @@ pub struct NativeSyntax<'a> {
     hole: Option<EmbedHole>,
 }
 
-impl core::fmt::Debug for NativeSyntax<'_> {
+impl core::fmt::Debug for EmbedSyntax<'_> {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        f.debug_struct("NativeSyntax")
+        f.debug_struct("EmbedSyntax")
             .field("grammar", &self.grammar)
             .field("source_type", &self.source_type)
             .field("source", &self.source())
@@ -83,7 +82,7 @@ impl core::fmt::Debug for NativeSyntax<'_> {
     }
 }
 
-impl<'a> NativeSyntax<'a> {
+impl<'a> EmbedSyntax<'a> {
     #[must_use]
     pub const fn grammar(&self) -> Grammar {
         self.grammar
@@ -230,7 +229,7 @@ fn parser_length(length: usize, extra: usize) -> Option<usize> {
 /// Wrapped shapes keep their conservative admission and OXC safety guard.
 /// Composite shapes, Flow and file language resolution remain unfinished. Actual
 /// syntax diagnostics are retained, not discarded on failure.
-pub fn parse_once<'a>(allocator: &'a Allocator, embed: Embed<'a>) -> NativeSyntax<'a> {
+pub fn parse_once<'a>(allocator: &'a Allocator, embed: Embed<'a>) -> EmbedSyntax<'a> {
     if embed.grammar.shape == Shape::Program {
         return parse_program_once(
             allocator,

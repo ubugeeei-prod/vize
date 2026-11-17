@@ -5,7 +5,7 @@ use crate::lang::js::{NativeHandlerInput, RejectedNativeHandlerInput};
 use crate::op::{HandlerId, OnHandlerRef, OnOp};
 use crate::resolution::{HandlerResolution, ResolutionError};
 use alloc::boxed::Box;
-use vize_l1::markup::NativeAttributeHandlerFailure;
+use vize_l1::markup::AttributeHandlerFailure;
 
 pub(crate) struct HandlerRecord<'a> {
     pub original: core::ptr::NonNull<OnOp<'a>>,
@@ -23,7 +23,7 @@ pub(crate) struct PendingHandler<'a> {
 /// Complete original observations remain readable after a header refusal.
 #[derive(Debug)]
 pub enum RejectedFileHandler<'a> {
-    Observation(NativeAttributeHandlerFailure<'a>),
+    Observation(AttributeHandlerFailure<'a>),
     Syntax(Box<RejectedNativeHandlerInput<'a>>),
     Resolution {
         input: Box<NativeHandlerInput<'a>>,

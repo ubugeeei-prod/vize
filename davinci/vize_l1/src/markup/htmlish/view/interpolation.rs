@@ -4,8 +4,8 @@ use alloc::boxed::Box;
 use oxc_parser::AdmittedExpression;
 use vize_l0::Span;
 
-use super::{NativeChild, NativeTemplateComponent, NativeTemplateGrammar};
-use crate::embed::syntax::{NativeSyntax, RetainedExpression, parse_once};
+use super::{ChildView, NativeTemplateComponent, TemplateGrammar};
+use crate::embed::syntax::{EmbedSyntax, RetainedExpression, parse_once};
 use crate::embed::{Embed, Grammar, Lang, Shape, SourceError, prepare_vue_interpolation_in};
 use crate::markup::{ElementClose, SurfaceChild};
 
@@ -14,7 +14,7 @@ use origin::Origin;
 
 /// Preparation refusal leaves the original selected surface owner untouched.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum NativeInterpolationError {
+pub enum InterpolationError {
     ForeignComponent,
     NotInterpolation,
     RecoveredComponent,
@@ -26,22 +26,22 @@ pub enum NativeInterpolationError {
 
 /// Unexpected parser shapes remain normally owned with all observations.
 #[derive(Debug)]
-pub struct NativeInterpolationFailure<'a> {
-    kind: NativeInterpolationError,
-    syntax: Option<Box<NativeSyntax<'a>>>,
+pub struct InterpolationFailure<'a> {
+    kind: InterpolationError,
+    syntax: Option<Box<EmbedSyntax<'a>>>,
 }
-impl NativeInterpolationFailure<'_> {
+impl InterpolationFailure<'_> {
     #[must_use]
-    pub const fn kind(&self) -> NativeInterpolationError {
+    pub const fn kind(&self) -> InterpolationError {
         self.kind
     }
     #[must_use]
-    pub fn syntax(&self) -> Option<&NativeSyntax<'_>> {
+    pub fn syntax(&self) -> Option<&EmbedSyntax<'_>> {
         self.syntax.as_deref()
     }
 }
-impl<'a> From<NativeInterpolationError> for NativeInterpolationFailure<'a> {
-    fn from(kind: NativeInterpolationError) -> Self {
+impl<'a> From<InterpolationError> for InterpolationFailure<'a> {
+    fn from(kind: InterpolationError) -> Self {
         Self { kind, syntax: None }
     }
 }
@@ -50,11 +50,11 @@ impl<'a> From<NativeInterpolationError> for NativeInterpolationFailure<'a> {
 /// No raw interpolation, AST, language, source pair or allocator can mint it.
 ///
 /// ```compile_fail
-/// use vize_l1::markup::NativeInterpolationOperand;
+/// use vize_l1::markup::InterpolationOperand;
 /// fn requires_clone<T: Clone>() {}
-/// requires_clone::<NativeInterpolationOperand<'static>>();
+/// requires_clone::<InterpolationOperand<'static>>();
 /// ```
-pub struct NativeInterpolationOperand<'a> {
+pub struct InterpolationOperand<'a> {
     origin: Origin<'a>,
     syntax: RetainedExpression<'a>,
 }
@@ -65,21 +65,21 @@ impl<'a> NativeTemplateComponent<'a> {
     /// The stock expression parse uses this selected owner's Module JS/TS role.
     pub fn observe_interpolation_expression(
         &self,
-        child: NativeChild<'_, 'a>,
-    ) -> Result<NativeInterpolationOperand<'a>, NativeInterpolationFailure<'a>> {
+        child: ChildView<'_, 'a>,
+    ) -> Result<InterpolationOperand<'a>, InterpolationFailure<'a>> {
         if !core::ptr::eq(child.component(), self.component()) {
-            return Err(NativeInterpolationError::ForeignComponent.into());
+            return Err(InterpolationError::ForeignComponent.into());
         }
         let SurfaceChild::Interpolation(interpolation) = child.surface() else {
-            return Err(NativeInterpolationError::NotInterpolation.into());
+            return Err(InterpolationError::NotInterpolation.into());
         };
         let carrier = self.component().carrier();
         if !carrier.errors.is_empty() || !carrier.unsupported.is_empty() {
-            return Err(NativeInterpolationError::RecoveredComponent.into());
+            return Err(InterpolationError::RecoveredComponent.into());
         }
         if let Some(parent) = child.parent_element() {
             if parent.open.is_verbatim() {
-                return Err(NativeInterpolationError::Verbatim.into());
+                return Err(InterpolationError::Verbatim.into());
             }
             if parent.open.lt_name.is_missing()
                 || parent.open.gt.is_missing()
@@ -96,7 +96,7 @@ impl<'a> NativeTemplateComponent<'a> {
                     ElementClose::Implicit | ElementClose::NotExpected => false,
                 }
             {
-                return Err(NativeInterpolationError::RecoveredComponent.into());
+                return Err(InterpolationError::RecoveredComponent.into());
             }
         }
         let origin = Origin::from_child(self, &child, interpolation)?;
@@ -105,10 +105,10 @@ impl<'a> NativeTemplateComponent<'a> {
             origin.block.root_source(),
             origin.content_span,
         )
-        .map_err(NativeInterpolationError::Source)?;
+        .map_err(InterpolationError::Source)?;
         let lang = match self.grammar() {
-            NativeTemplateGrammar::JavaScriptModule => Lang::Js,
-            NativeTemplateGrammar::TypeScriptModule => Lang::Ts,
+            TemplateGrammar::JavaScriptModule => Lang::Js,
+            TemplateGrammar::TypeScriptModule => Lang::Ts,
         };
         let syntax = parse_once(
             self.component().allocator(),
@@ -121,15 +121,15 @@ impl<'a> NativeTemplateComponent<'a> {
             },
         )
         .into_expression()
-        .map_err(|syntax| NativeInterpolationFailure {
-            kind: NativeInterpolationError::UnexpectedShape,
+        .map_err(|syntax| InterpolationFailure {
+            kind: InterpolationError::UnexpectedShape,
             syntax: Some(syntax),
         })?;
-        Ok(NativeInterpolationOperand { origin, syntax })
+        Ok(InterpolationOperand { origin, syntax })
     }
 }
 
-impl<'a> NativeInterpolationOperand<'a> {
+impl<'a> InterpolationOperand<'a> {
     #[must_use]
     pub fn syntax(&self) -> &RetainedExpression<'a> {
         &self.syntax
@@ -152,13 +152,13 @@ impl<'a> NativeInterpolationOperand<'a> {
     pub fn admitted_for<'s>(
         &'s self,
         selected: &'s NativeTemplateComponent<'a>,
-        child: NativeChild<'s, 'a>,
-    ) -> Option<NativeInterpolationView<'s, 'a>> {
+        child: ChildView<'s, 'a>,
+    ) -> Option<InterpolationView<'s, 'a>> {
         if !self.origin.matches(selected, &child) {
             return None;
         }
         self.syntax.admitted_expression()?;
-        Some(NativeInterpolationView {
+        Some(InterpolationView {
             owner: self,
             selected,
             child,
@@ -172,22 +172,22 @@ impl<'a> NativeInterpolationOperand<'a> {
 }
 
 /// Short original interpolation/operand join, not a completed body or File.
-pub struct NativeInterpolationView<'s, 'a> {
-    owner: &'s NativeInterpolationOperand<'a>,
+pub struct InterpolationView<'s, 'a> {
+    owner: &'s InterpolationOperand<'a>,
     selected: &'s NativeTemplateComponent<'a>,
-    child: NativeChild<'s, 'a>,
+    child: ChildView<'s, 'a>,
 }
-impl<'s, 'a> NativeInterpolationView<'s, 'a> {
+impl<'s, 'a> InterpolationView<'s, 'a> {
     #[must_use]
     pub fn selected(&self) -> &'s NativeTemplateComponent<'a> {
         self.selected
     }
     #[must_use]
-    pub fn child(&self) -> &NativeChild<'s, 'a> {
+    pub fn child(&self) -> &ChildView<'s, 'a> {
         &self.child
     }
     #[must_use]
-    pub fn operand(&self) -> &'s NativeInterpolationOperand<'a> {
+    pub fn operand(&self) -> &'s InterpolationOperand<'a> {
         self.owner
     }
     #[must_use]
