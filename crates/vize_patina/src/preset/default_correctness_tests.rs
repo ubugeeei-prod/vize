@@ -176,6 +176,8 @@ fn configured_vue_versions_preserve_complete_supported_syntax_baselines() {
 
 const DUPLICATE_CLASS_RULE: &str = "html/no-duplicate-class";
 
+/// A Vue file reports once on the value, listing every name, as
+/// eslint-plugin-vue does; JSX and HTML report each name on the attribute.
 fn duplicate_class_findings(
     source: &str,
     filename: &str,
@@ -184,13 +186,36 @@ fn duplicate_class_findings(
 ) -> Value {
     let start = source.find(attribute).unwrap() as u32;
     let end = start + attribute.len() as u32;
-    json!({
-        "filename": filename, "error_count": 0, "warning_count": names.len(),
-        "diagnostics": names.iter().map(|name| json!({
+    let finding = |start: u32, message: String| {
+        json!({
             "rule_name": DUPLICATE_CLASS_RULE, "severity": "warning",
-            "message": format!("Duplicate class name '{name}'"),
+            "message": message,
             "start": start, "end": end, "help": null, "fix": null, "labels": []
-        })).collect::<Vec<_>>()
+        })
+    };
+    let diagnostics = if filename.ends_with(".vue") && !names.is_empty() {
+        let value = start + attribute.find('=').unwrap() as u32 + 1;
+        let message = match names {
+            [name] => format!("Duplicate class name '{name}'"),
+            names => format!(
+                "Duplicate class names {}",
+                names
+                    .iter()
+                    .map(|name| format!("'{name}'"))
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            ),
+        };
+        vec![finding(value, message)]
+    } else {
+        names
+            .iter()
+            .map(|name| finding(start, format!("Duplicate class name '{name}'")))
+            .collect()
+    };
+    json!({
+        "filename": filename, "error_count": 0, "warning_count": diagnostics.len(),
+        "diagnostics": diagnostics
     })
 }
 
