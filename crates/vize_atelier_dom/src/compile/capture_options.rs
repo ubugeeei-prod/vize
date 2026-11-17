@@ -73,6 +73,10 @@ pub(super) fn record_dom_options(
         ),
     );
     capture.option("self-component", bool_id(experimental.self_component));
+    // Recorded only when declared, so captures without plugins are unchanged.
+    if !codegen.directives.is_empty() {
+        capture.option("declared-directives", cstr!("{:?}", codegen.directives));
+    }
     capture.option("runtime-module-name", codegen.runtime_module_name.as_str());
     capture.option("runtime-global-name", codegen.runtime_global_name.as_str());
     capture.option(

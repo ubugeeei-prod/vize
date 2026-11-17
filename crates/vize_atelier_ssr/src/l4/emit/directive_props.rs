@@ -7,7 +7,8 @@ use vize_l2::op::{self as l2, DynamicName};
 use vize_l4::targets::dom::artifact::TransformContent;
 
 use super::{Emitter, Result};
-use crate::codegen::element::props::{is_valid_js_identifier, quoted_js_string};
+use crate::codegen::element::modifier_flags;
+use crate::codegen::element::props::quoted_js_string;
 
 impl Emitter<'_, '_, '_, '_, '_, '_> {
     /// `_ssrGetDirectiveProps(_ctx, dir[, value[, arg[, modifiers]]])`.
@@ -36,25 +37,18 @@ impl Emitter<'_, '_, '_, '_, '_, '_> {
             out.push_str(", ");
             out.push_str(argument);
         }
-        if !directive.modifiers.is_empty() {
+        let flags = modifier_flags(
+            &self.ctx.options.directives,
+            directive.name,
+            directive.modifiers.iter().copied(),
+        );
+        if !flags.is_empty() {
             if argument.is_none() {
                 if value.is_none() {
                     out.push_str(", void 0");
                 }
                 out.push_str(", void 0");
             }
-            let flags = directive
-                .modifiers
-                .iter()
-                .map(|modifier| {
-                    let key = if is_valid_js_identifier(modifier) {
-                        modifier.to_compact_string()
-                    } else {
-                        quoted_js_string(modifier)
-                    };
-                    cstr!("{key}: true")
-                })
-                .collect::<std::vec::Vec<_>>();
             out.push_str(&cstr!(", {{ {} }}", flags.join(", ")));
         }
         out.push(')');

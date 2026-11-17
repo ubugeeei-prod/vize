@@ -36,6 +36,9 @@ pub(super) enum DomLegacyReason {
     PatternedTemplate,
     /// The experimental self-component codegen context is on.
     SelfComponent,
+    /// The source may bind a declared `vue.directive` (#13074), whose
+    /// default modifiers only the shipped lane emits.
+    DeclaredDirective,
     /// A custom renderer target.
     CustomRenderer,
     /// The requested whitespace strategy is not implemented by L2 lowering.
@@ -62,6 +65,7 @@ impl DomLegacyReason {
             Self::Ssr => "ssr",
             Self::PatternedTemplate => "patterned-template",
             Self::SelfComponent => "self-component",
+            Self::DeclaredDirective => "declared-directive",
             Self::CustomRenderer => "custom-renderer",
             Self::Whitespace => "whitespace",
             Self::Croquis => "analysis-context",
@@ -82,6 +86,7 @@ impl DomLegacyReason {
             Self::Ssr => "l2.dom.legacy.ssr",
             Self::PatternedTemplate => "l2.dom.legacy.patterned_template",
             Self::SelfComponent => "l2.dom.legacy.self_component",
+            Self::DeclaredDirective => "l2.dom.legacy.declared_directive",
             Self::CustomRenderer => "l2.dom.legacy.custom_renderer",
             Self::Whitespace => "l2.dom.legacy.whitespace",
             Self::Croquis => "l2.dom.legacy.croquis",

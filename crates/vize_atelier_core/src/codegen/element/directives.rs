@@ -146,18 +146,37 @@ fn generate_custom_directive_entry(ctx: &mut CodegenContext, dir: &crate::Direct
         }
     }
 
-    if !dir.modifiers.is_empty() {
+    // A declared directive's absent modifiers that default to `true` follow
+    // the authored ones (#13074).
+    let defaults: Vec<vize_l0::String> =
+        vize_l0::config::declared_directive(&ctx.options.directives, dir.name)
+            .map(|contract| {
+                contract
+                    .absent_defaults(|name| {
+                        dir.modifiers
+                            .iter()
+                            .any(|modifier| modifier.content == name)
+                    })
+                    .map(vize_l0::String::from)
+                    .collect()
+            })
+            .unwrap_or_default();
+    if !dir.modifiers.is_empty() || !defaults.is_empty() {
         if expression.is_none() && dir.arg.is_none() {
             ctx.push(", void 0, void 0");
         } else if dir.arg.is_none() {
             ctx.push(", void 0");
         }
         ctx.push(", { ");
-        for (j, modifier) in dir.modifiers.iter().enumerate() {
+        let modifiers = dir.modifiers.iter().map(|modifier| modifier.content);
+        for (j, modifier) in modifiers
+            .chain(defaults.iter().map(vize_l0::String::as_str))
+            .enumerate()
+        {
             if j > 0 {
                 ctx.push(", ");
             }
-            ctx.push(modifier.content);
+            ctx.push(modifier);
             ctx.push(": true");
         }
         ctx.push(" }");

@@ -95,3 +95,71 @@ impl DirectiveContract {
         Ok(normalized)
     }
 }
+
+impl DirectiveContract {
+    /// The absent modifiers that default to `true`, in declared order. A
+    /// compiler emits them after the authored ones.
+    pub fn absent_defaults(
+        &self,
+        is_authored: impl Fn(&str) -> bool,
+    ) -> impl Iterator<Item = &str> {
+        self.modifiers
+            .iter()
+            .filter(move |modifier| modifier.default && !is_authored(&modifier.name))
+            .map(|modifier| modifier.name.as_str())
+    }
+}
+
+/// The contract of `v-<name>`, if one is declared. Names match exactly, as
+/// Vue resolves a kebab-case directive registration.
+pub fn declared_directive<'a>(
+    contracts: &'a [DirectiveContract],
+    name: &str,
+) -> Option<&'a DirectiveContract> {
+    contracts.iter().find(|contract| contract.name == name)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{DirectiveContract, DirectiveModifier, declared_directive};
+
+    fn track() -> DirectiveContract {
+        let modifier = |name: &str, default| DirectiveModifier {
+            name: name.into(),
+            optional: true,
+            default,
+        };
+        DirectiveContract {
+            plugin: "@acme/tracking".into(),
+            name: "track-event".into(),
+            modifiers: vec![
+                modifier("once", false),
+                modifier("passive", true),
+                modifier("sync", true),
+            ],
+        }
+    }
+
+    #[test]
+    fn only_the_declared_name_finds_the_contract() {
+        let contracts = [track()];
+        assert_eq!(
+            declared_directive(&contracts, "track-event").map(|contract| contract.name.as_str()),
+            Some("track-event")
+        );
+        for name in ["trackEvent", "track"] {
+            assert_eq!(declared_directive(&contracts, name), None, "{name}");
+        }
+        assert_eq!(declared_directive(&[], "track-event"), None);
+    }
+
+    #[test]
+    fn absent_defaults_follow_declared_order() {
+        let contract = track();
+        let authored = ["sync"];
+        let defaults: Vec<&str> = contract
+            .absent_defaults(|name| authored.contains(&name))
+            .collect();
+        assert_eq!(defaults, ["passive"]);
+    }
+}

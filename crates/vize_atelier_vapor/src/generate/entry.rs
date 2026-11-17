@@ -50,6 +50,8 @@ pub struct VaporGenerateExperimentalOptions<'a> {
     pub source_map: bool,
     /// Filename recorded in the Source Map v3 `file` and `sources` fields.
     pub source_map_filename: Option<&'a str>,
+    /// Declared `vue.directive` contracts (#13074).
+    pub directives: &'a [vize_l0::config::DirectiveContract],
 }
 
 /// Generate Vapor code from IR
@@ -131,6 +133,7 @@ pub(crate) fn generate_vapor_with_spans_and_runtime(
     ctx.is_ts = is_ts;
     ctx.component_name = experimental_options.component_name;
     ctx.experimental_self_component = experimental_options.self_component;
+    ctx.directive_contracts = experimental_options.directives;
     ctx.spans = spans;
     if spans.is_some() {
         ctx.out = EmitDocument::with_capacity(4096, true);

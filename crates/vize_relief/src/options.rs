@@ -196,6 +196,10 @@ pub struct CodegenOptions {
     pub binding_metadata: Option<BindingMetadata>,
     /// Whether to cache inline event handlers
     pub cache_handlers: bool,
+    /// Declared `vue.directive` contracts (#13074). A declared directive's
+    /// absent modifiers that default to `true` are emitted after the
+    /// authored ones. Empty without plugins.
+    pub directives: Vec<vize_l0::config::DirectiveContract>,
 }
 
 impl Default for CodegenOptions {
@@ -215,6 +219,7 @@ impl Default for CodegenOptions {
             inline: false,
             binding_metadata: None,
             cache_handlers: false,
+            directives: Vec::new(),
         }
     }
 }

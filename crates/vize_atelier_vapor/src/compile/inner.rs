@@ -72,6 +72,7 @@ pub(super) fn compile_vapor_inner_scoped_captured<'a, C: CaptureSink>(
         experimental_options,
         scope_id,
         "vue",
+        &[],
         capture,
     )
 }
@@ -89,6 +90,7 @@ pub(super) fn compile_vapor_inner_scoped_captured_with_runtime<'a, C: CaptureSin
     experimental_options: VaporCompilerExperimentalOptions,
     scope_id: Option<&str>,
     runtime_module_name: &str,
+    directives: &[vize_l0::config::DirectiveContract],
     capture: &mut C,
 ) -> (VaporCompileResult, std::vec::Vec<CompilerError>) {
     vize_carton::ensure_sufficient_stack(|| {
@@ -101,6 +103,7 @@ pub(super) fn compile_vapor_inner_scoped_captured_with_runtime<'a, C: CaptureSin
             experimental_options,
             scope_id,
             runtime_module_name,
+            directives,
             capture,
         )
     })
@@ -119,6 +122,7 @@ fn compile_vapor_inner_with_stack<'a, C: CaptureSink>(
     experimental_options: VaporCompilerExperimentalOptions,
     scope_id: Option<&str>,
     runtime_module_name: &str,
+    directives: &[vize_l0::config::DirectiveContract],
     capture: &mut C,
 ) -> (VaporCompileResult, std::vec::Vec<CompilerError>) {
     #[cfg(feature = "davinci-benchmark")]
@@ -182,6 +186,7 @@ fn compile_vapor_inner_with_stack<'a, C: CaptureSink>(
             errors,
             spans,
             runtime_module_name,
+            directives,
         )
     };
     if let VaporL3BridgeStatus::Accepted(artifact) = l3_bridge_status {
@@ -355,6 +360,7 @@ fn generate(
     error_messages: Vec<String>,
     spans: Option<&VaporSourceSpans>,
     runtime_module_name: &str,
+    directives: &[vize_l0::config::DirectiveContract],
 ) -> VaporCompileResult {
     let result = crate::generate::generate_vapor_with_spans_and_runtime(
         ir,
@@ -366,6 +372,7 @@ fn generate(
             self_component: experimental_options.self_component,
             source_map: experimental_options.source_map,
             source_map_filename: experimental_options.source_map_filename.as_deref(),
+            directives,
         },
         spans,
         runtime_module_name,

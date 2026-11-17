@@ -38,6 +38,8 @@ fn codegen(options: &CodegenOptions) -> Value {
         inline,
         binding_metadata,
         cache_handlers,
+        // Added after these captures; `snapshot` refuses a non-empty table.
+        directives: _,
     } = options;
     json!({ "mode": match mode { vize_atelier_core::options::CodegenMode::Function => "Function",
         vize_atelier_core::options::CodegenMode::Module => "Module" },
@@ -54,6 +56,9 @@ pub fn snapshot(
     codegen_options: &CodegenOptions,
     mode: SfcScriptOutputMode,
 ) -> Result<Value, Box<dyn std::error::Error>> {
+    if !codegen_options.directives.is_empty() {
+        return Err("these captures declare no plugin directives".into());
+    }
     let SfcCompileOptions {
         parse: compile_parse,
         script,

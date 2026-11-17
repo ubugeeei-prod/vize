@@ -41,6 +41,7 @@ pub(crate) fn compile_template_block_vapor(
         is_ts,
         ..
     } = ctx;
+    super::directive_contracts::check(template, &codegen_options.directives)?;
 
     // Build Vapor compiler options
     let vapor_opts = VaporCompilerOptions {

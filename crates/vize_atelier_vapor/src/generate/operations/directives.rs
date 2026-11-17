@@ -56,18 +56,29 @@ fn directive_value(ctx: &GenerateContext, directive: &DirectiveIRNode<'_>) -> St
     }
 }
 
-fn directive_modifiers(directive: &DirectiveIRNode<'_>) -> Option<String> {
-    if directive.dir.modifiers.is_empty() {
+/// Authored modifiers, then a declared directive's absent modifiers that
+/// default to `true` (#13074).
+fn directive_modifiers(ctx: &GenerateContext, directive: &DirectiveIRNode<'_>) -> Option<String> {
+    let authored = || {
+        directive
+            .dir
+            .modifiers
+            .iter()
+            .map(|modifier| modifier.content)
+    };
+    let defaults = vize_l0::config::declared_directive(ctx.directive_contracts, directive.dir.name)
+        .into_iter()
+        .flat_map(|contract| {
+            contract.absent_defaults(|name| authored().any(|modifier| modifier == name))
+        });
+    let modifiers = authored()
+        .chain(defaults)
+        .map(|modifier| cstr!("\"{}\": true", escape_js_string_literal(modifier)))
+        .collect::<std::vec::Vec<_>>();
+    if modifiers.is_empty() {
         return None;
     }
-
-    let modifiers = directive
-        .dir
-        .modifiers
-        .iter()
-        .map(|modifier| cstr!("\"{}\": true", escape_js_string_literal(modifier.content)))
-        .collect::<std::vec::Vec<_>>()
-        .join(", ");
+    let modifiers = modifiers.join(", ");
 
     Some(cstr!("{{ {} }}", modifiers))
 }
@@ -110,7 +121,7 @@ pub(super) fn generate_directive(ctx: &mut GenerateContext, directive: &Directiv
 
     let value = directive_value(ctx, directive);
     let arg = directive_arg(ctx, directive);
-    let modifiers = directive_modifiers(directive);
+    let modifiers = directive_modifiers(ctx, directive);
 
     if directive.builtin {
         let name = &directive.name;

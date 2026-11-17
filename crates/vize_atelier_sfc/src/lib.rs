@@ -140,6 +140,8 @@ pub use vize_atelier_dom::compile_template;
 #[cfg(test)]
 mod compile_tests;
 #[cfg(test)]
+mod directive_contract_tests;
+#[cfg(test)]
 mod experimental_tests;
 #[cfg(test)]
 mod parse_tests;

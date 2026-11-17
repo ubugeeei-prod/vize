@@ -7,6 +7,7 @@ mod component;
 mod component_props;
 mod css_root;
 mod directive_props;
+pub(crate) use directive_props::modifier_flags;
 mod merged;
 mod plain;
 pub(crate) mod props;

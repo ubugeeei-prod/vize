@@ -81,6 +81,8 @@ pub(crate) struct GenerateContext<'a> {
     pub(crate) component_name: Option<&'a str>,
     /// Treat the reserved `<Self>` tag as a reference to the current SFC.
     pub(crate) experimental_self_component: bool,
+    /// Declared `vue.directive` contracts; empty without plugins.
+    pub(crate) directive_contracts: &'a [vize_l0::config::DirectiveContract],
     /// Authored anchors beyond the IR; `Some` only for map-requesting compiles.
     pub(crate) spans: Option<&'a super::spans::VaporSourceSpans>,
 }
@@ -123,6 +125,7 @@ impl<'a> GenerateContext<'a> {
             jsx_children: false,
             component_name: None,
             experimental_self_component: false,
+            directive_contracts: &[],
             spans: None,
         }
     }

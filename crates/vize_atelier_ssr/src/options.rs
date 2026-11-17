@@ -30,6 +30,12 @@ pub struct SsrCompilerOptions {
     #[serde(default)]
     pub component_name: Option<String>,
 
+    /// Declared `vue.directive` contracts (#13074): a declared directive's
+    /// absent modifiers that default to `true` follow the authored ones.
+    /// Host-supplied, never part of the serialized option payload.
+    #[serde(skip)]
+    pub directives: Vec<vize_l0::config::DirectiveContract>,
+
     /// Whether to inline template
     #[serde(default)]
     pub inline: bool,

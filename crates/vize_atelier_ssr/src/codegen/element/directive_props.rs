@@ -7,7 +7,33 @@ use super::{
     DirectiveNode, ExpressionNode, RuntimeHelper, SsrCodegenContext, String, ToCompactString, cstr,
 };
 use vize_atelier_core::BindingType;
+use vize_l0::config::{DirectiveContract, declared_directive};
 use vize_l0::{camelize, capitalize};
+
+/// `key: true` per authored modifier, then per absent modifier a declared
+/// directive defaults to `true` (#13074). Empty without modifiers.
+pub(crate) fn modifier_flags<'m>(
+    contracts: &[DirectiveContract],
+    name: &str,
+    authored: impl Iterator<Item = &'m str> + Clone,
+) -> std::vec::Vec<String> {
+    let flag = |modifier: &str| -> String {
+        let key = if super::props::is_valid_js_identifier(modifier) {
+            modifier.to_compact_string()
+        } else {
+            quoted_js_string(modifier)
+        };
+        cstr!("{key}: true")
+    };
+    let defaults: std::vec::Vec<String> = declared_directive(contracts, name)
+        .into_iter()
+        .flat_map(|contract| {
+            contract.absent_defaults(|modifier| authored.clone().any(|name| name == modifier))
+        })
+        .map(flag)
+        .collect();
+    authored.map(flag).chain(defaults).collect()
+}
 
 impl SsrCodegenContext<'_> {
     /// `_ssrGetDirectiveProps(_ctx, dir[, value[, arg[, modifiers]]])` with
@@ -40,25 +66,18 @@ impl SsrCodegenContext<'_> {
             out.push_str(", ");
             out.push_str(arg);
         }
-        if !dir.modifiers.is_empty() {
+        let flags = modifier_flags(
+            &self.options.directives,
+            dir.name,
+            dir.modifiers.iter().map(|modifier| modifier.content),
+        );
+        if !flags.is_empty() {
             if arg.is_none() {
                 if exp.is_none() {
                     out.push_str(", void 0");
                 }
                 out.push_str(", void 0");
             }
-            let flags = dir
-                .modifiers
-                .iter()
-                .map(|modifier| {
-                    let key = if super::props::is_valid_js_identifier(modifier.content) {
-                        modifier.content.to_compact_string()
-                    } else {
-                        quoted_js_string(modifier.content)
-                    };
-                    cstr!("{key}: true")
-                })
-                .collect::<std::vec::Vec<_>>();
             out.push_str(&cstr!(", {{ {} }}", flags.join(", ")));
         }
         out.push(')');

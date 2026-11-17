@@ -140,6 +140,23 @@ pub(super) fn source_may_contain_patterned_template_syntax(source: &str) -> bool
     source.contains("v-match") || source.contains("v-when") || source.contains("v-case")
 }
 
+/// A superset scan for `v-<name>` of any declared directive. Without
+/// declared directives it reads nothing.
+pub(super) fn source_may_contain_declared_directive(
+    source: &str,
+    contracts: &[vize_l0::config::DirectiveContract],
+) -> bool {
+    contracts.iter().any(|contract| {
+        source
+            .match_indices(contract.name.as_str())
+            .any(|(index, _)| {
+                source
+                    .get(..index)
+                    .is_some_and(|before| before.ends_with("v-"))
+            })
+    })
+}
+
 /// `@vize:` comments stay on the legacy lane: its parser retains them as
 /// children even with `comments` off, affecting child-slot emission; L2
 /// drops them. This superset scan prevents output drift (P3-17).

@@ -89,6 +89,7 @@ pub fn compile_vapor_with_sfc_context_and_codegen_options<'a, C: CaptureSink>(
         experimental_options,
         scope_id,
         codegen_options.runtime_module_name.as_str(),
+        &codegen_options.directives,
         capture,
     )
 }

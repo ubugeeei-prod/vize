@@ -5,7 +5,9 @@ mod document;
 mod model;
 mod normalize;
 pub use crate::dialect::VueDialect;
-pub use directive::{DirectiveContract, DirectiveContractError, DirectiveModifier};
+pub use directive::{
+    DirectiveContract, DirectiveContractError, DirectiveModifier, declared_directive,
+};
 pub use document::ConfigDocument;
 pub use model::{
     AllowListOptions, AnchorHasContentOptions, ArrowParens, AttributeHyphenationConfig,

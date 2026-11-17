@@ -5,6 +5,7 @@
 
 use vize_l0::dump::capture::StageCapture;
 use vize_l0::{String, ToCompactString, profile};
+mod directive_contracts;
 mod duplicates;
 mod extraction;
 mod string_tracking;
@@ -143,6 +144,7 @@ pub(crate) fn compile_template_block_with_capture(
         authored_source,
         pug_source_map,
     } = ctx;
+    directive_contracts::check(template, &codegen_options.directives)?;
     let compiler_options = options.compiler_options.as_ref();
     let scope_attr = if apply_scope_id {
         let mut attr = String::with_capacity(scope_id.len() + 7);
@@ -162,6 +164,7 @@ pub(crate) fn compile_template_block_with_capture(
             experimental_patterned_template: compiler_options
                 .is_some_and(|opts| opts.experimental_patterned_template),
             component_name: component_name.map(|name| name.to_compact_string()),
+            directives: codegen_options.directives.clone(),
             inline: false,
             is_ts,
             custom_renderer: options.custom_renderer,
