@@ -59,6 +59,7 @@ fn structural_children_cross_boundary(
                     && children_cross_boundary(ns, &branch.region)
             })
         }),
+        Op::And(and) => ensure_sufficient_stack(|| children_cross_boundary(ns, &and.region)),
         Op::For(for_op) => ensure_sufficient_stack(|| children_cross_boundary(ns, &for_op.region)),
         Op::OriginalFor(for_op) => {
             ensure_sufficient_stack(|| children_cross_boundary(ns, &for_op.region))
@@ -95,6 +96,7 @@ fn child_crosses(ns: Namespace, child: &Op<'_>) -> bool {
             .branches
             .iter()
             .any(|branch| ensure_sufficient_stack(|| children_cross_boundary(ns, &branch.region))),
+        Op::And(and) => ensure_sufficient_stack(|| children_cross_boundary(ns, &and.region)),
         Op::For(for_op) => ensure_sufficient_stack(|| children_cross_boundary(ns, &for_op.region)),
         Op::OriginalFor(for_op) => {
             ensure_sufficient_stack(|| children_cross_boundary(ns, &for_op.region))
@@ -113,7 +115,7 @@ fn child_namespace_crosses(element: &ElementOp<'_>) -> bool {
         && element.children.ops.iter().any(|op| {
             matches!(
                 op,
-                Op::Element(_) | Op::If(_) | Op::For(_) | Op::OriginalFor(_)
+                Op::Element(_) | Op::If(_) | Op::And(_) | Op::For(_) | Op::OriginalFor(_)
             )
         })
 }

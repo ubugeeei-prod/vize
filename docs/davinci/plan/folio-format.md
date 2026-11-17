@@ -239,6 +239,7 @@ below):
 | `ui.text <quoted> @s:e`                                                                 |                                                                                |
 | `ui.interpolation <expr> @s:e`                                                          |                                                                                |
 | `ui.if @s:e`                                                                            | `branch [<expr> ]@s:e` lines beneath                                           |
+| `ui.and <expr> @s:e`                                                                    | region beneath; a falsy `<expr>` renders as a child value                      |
 | `ui.for source=<expr> value=<expr>[ key=<expr>][ index=<expr>] @s:e`                    | region beneath                                                                 |
 | `ui.slot name=<quoted>\|name=<expr> @s:e`                                               | fallback region beneath                                                        |
 | `ui.model read=<expr> write=<expr> @s:e`                                                | `attr` lines beneath                                                           |

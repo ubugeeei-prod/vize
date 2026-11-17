@@ -109,6 +109,7 @@ fn emit_slot_child(cx: &mut EmitCx<'_>, op: &Op<'_>) -> Result<(), EmitError> {
         | Op::JsxChildValue(_)
         | Op::Comment(_)
         | Op::If(_)
+        | Op::And(_)
         | Op::For(_)
         | Op::OriginalFor(_)
         | Op::Slot(_) => emit_array_child(cx, op, false, false),

@@ -48,7 +48,7 @@ pub mod text;
 pub mod vue;
 
 pub use bind::{BindOp, OnOp};
-pub use control::{ForBinding, ForOp, HostFor, IfBranch, IfOp};
+pub use control::{AndOp, ForBinding, ForOp, HostFor, IfBranch, IfOp};
 mod original_for;
 pub use element::{Attribute, ComponentOp, ElementOp, Namespace};
 pub use handler::{HandlerId, OnHandlerRef};
@@ -87,6 +87,9 @@ pub enum Op<'a> {
     Comment(Box<'a, CommentOp<'a>>),
     /// `ui.if` - structured conditional; every branch owns its region.
     If(Box<'a, IfOp<'a>>),
+    /// `ui.and` - `left && <region>` as a child: `left` is evaluated once and
+    /// renders as a child value when falsy.
+    And(Box<'a, AndOp<'a>>),
     /// `ui.for` - structured iteration; the repeated content is one owned
     /// region.
     For(Box<'a, ForOp<'a>>),
@@ -109,6 +112,7 @@ impl Op<'_> {
             Self::JsxChildValue(_) => "ui.jsx-child",
             Self::Comment(_) => "ui.comment",
             Self::If(_) => "ui.if",
+            Self::And(_) => "ui.and",
             Self::For(_) => "ui.for",
             Self::OriginalFor(_) => "ui.for",
             Self::Slot(_) => "ui.slot",

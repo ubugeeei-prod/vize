@@ -175,6 +175,10 @@ impl<'rule, 'ctx, 'mc, 'a, R: MarkupRule + ?Sized> MarkupDocumentVisitor<'rule, 
                     }
                     children::walk_kept_gaps(doc, if_op, &mut |text| self.text(text));
                 }
+                Op::And(and) => {
+                    self.conditional(MarkupConditional::from_l2_and(and, doc));
+                    self.visit_l2_step(doc, scope_region(doc, and.span, &and.region.ops));
+                }
                 Op::For(for_op) => {
                     self.list(MarkupList::from_l2(for_op, doc));
                     self.visit_l2_step(doc, scope_region(doc, for_op.span, &for_op.region.ops));

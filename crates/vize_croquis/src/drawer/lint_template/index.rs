@@ -52,6 +52,10 @@ pub(super) fn collect_region<'a>(
                 expressions.extend(for_op.binding.index);
                 collect_region(&for_op.region, expressions, elements);
             }
+            Op::And(and) => {
+                expressions.push(and.left);
+                collect_region(&and.region, expressions, elements);
+            }
             Op::OriginalFor(for_op) => collect_region(&for_op.region, expressions, elements),
             Op::Slot(slot) => {
                 collect_dynamic_name(slot.name, expressions);

@@ -52,6 +52,10 @@ enum Owner<'a> {
     CallbackFor {
         binding: crate::op::ForBinding<'a>,
     },
+    /// `left && <region>`, whose children are its region.
+    And {
+        left: ExprRef<'a>,
+    },
 }
 
 impl Owner<'_> {
@@ -65,10 +69,12 @@ impl Owner<'_> {
                 | Self::HostFor { .. }
                 | Self::HostRegion
                 | Self::CallbackFor { .. }
+                | Self::And { .. }
         )
     }
 }
 
+mod and;
 mod binding;
 mod callback_for;
 pub use callback_for::CallbackForHead;

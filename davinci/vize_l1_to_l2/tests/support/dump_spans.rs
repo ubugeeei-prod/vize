@@ -54,6 +54,11 @@ fn assert_op(source: &str, root: SourceRoot<'_>, op: &DumpOp, context: &str) {
             assert_for_binding(source, root, &for_op.binding, context);
             assert_ops(source, root, &for_op.ops, context);
         }
+        DumpOp::And(and) => {
+            assert_span(source, root, and.span, "and", context);
+            assert_expr(source, root, &and.left, context);
+            assert_ops(source, root, &and.ops, context);
+        }
         DumpOp::OriginalFor(for_op) => {
             assert_span(source, root, for_op.span, "original for", context);
             assert_ops(source, root, &for_op.ops, context);

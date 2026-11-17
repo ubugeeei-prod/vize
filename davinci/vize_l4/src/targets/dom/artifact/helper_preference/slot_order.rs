@@ -55,6 +55,7 @@ fn conditional_slot_template_has_direct_v_for(region: &Region<'_>) -> bool {
         Op::Element(_)
         | Op::Component(_)
         | Op::Slot(_)
+        | Op::And(_)
         | Op::For(_)
         | Op::OriginalFor(_)
         | Op::Text(_)
@@ -94,6 +95,7 @@ fn op_has_transition(op: &Op<'_>) -> bool {
             .branches
             .iter()
             .any(|branch| region_has_transition(&branch.region)),
+        Op::And(and) => region_has_transition(&and.region),
         Op::For(for_op) => region_has_transition(&for_op.region),
         Op::OriginalFor(for_op) => region_has_transition(&for_op.region),
         Op::Slot(slot) => region_has_transition(&slot.fallback),
@@ -112,6 +114,7 @@ fn op_has_transition_group(op: &Op<'_>) -> bool {
             .branches
             .iter()
             .any(|branch| region_has_transition_group(&branch.region)),
+        Op::And(and) => region_has_transition_group(&and.region),
         Op::For(for_op) => region_has_transition_group(&for_op.region),
         Op::OriginalFor(for_op) => region_has_transition_group(&for_op.region),
         Op::Slot(slot) => region_has_transition_group(&slot.fallback),
@@ -137,6 +140,7 @@ fn dynamic_slot_carrier_has_slot_outlet(region: &Region<'_>) -> bool {
         Op::Element(_)
         | Op::Component(_)
         | Op::Slot(_)
+        | Op::And(_)
         | Op::Text(_)
         | Op::Interpolation(_)
         | Op::JsxChildValue(_)
@@ -182,6 +186,7 @@ fn first_op_slot_order_marker(op: &Op<'_>) -> Option<SlotOrderMarker> {
             .branches
             .iter()
             .find_map(|branch| first_slot_order_marker(&branch.region)),
+        Op::And(and) => first_slot_order_marker(&and.region),
         Op::For(for_op) => first_slot_order_marker(&for_op.region),
         Op::OriginalFor(for_op) => first_slot_order_marker(&for_op.region),
         Op::Text(_) | Op::Interpolation(_) | Op::JsxChildValue(_) | Op::Comment(_) => None,
@@ -195,6 +200,7 @@ pub(super) fn op_is_direct_slot_carrier(op: &Op<'_>) -> bool {
             .branches
             .iter()
             .any(|branch| direct_slot_carrier_precedes_slot_outlet(&branch.region)),
+        Op::And(and) => direct_slot_carrier_precedes_slot_outlet(&and.region),
         Op::For(for_op) => direct_slot_carrier_precedes_slot_outlet(&for_op.region),
         Op::OriginalFor(for_op) => direct_slot_carrier_precedes_slot_outlet(&for_op.region),
         Op::Component(_)
@@ -225,6 +231,7 @@ fn op_has_direct_slot_carrier(op: &Op<'_>) -> bool {
             .branches
             .iter()
             .any(|branch| region_has_direct_slot_carrier(&branch.region)),
+        Op::And(and) => region_has_direct_slot_carrier(&and.region),
         Op::For(for_op) => region_has_direct_slot_carrier(&for_op.region),
         Op::OriginalFor(for_op) => region_has_direct_slot_carrier(&for_op.region),
         Op::Slot(_)
@@ -246,6 +253,7 @@ fn component_tree_has_slot_carrier(region: &Region<'_>) -> bool {
             .branches
             .iter()
             .any(|branch| component_tree_has_slot_carrier(&branch.region)),
+        Op::And(and) => component_tree_has_slot_carrier(&and.region),
         Op::For(for_op) => component_tree_has_slot_carrier(&for_op.region),
         Op::OriginalFor(for_op) => component_tree_has_slot_carrier(&for_op.region),
         Op::Slot(_)
@@ -268,6 +276,7 @@ fn op_has_slot_outlet(op: &Op<'_>) -> bool {
             .branches
             .iter()
             .any(|branch| has_slot_outlet(&branch.region)),
+        Op::And(and) => has_slot_outlet(&and.region),
         Op::For(for_op) => has_slot_outlet(&for_op.region),
         Op::OriginalFor(for_op) => has_slot_outlet(&for_op.region),
         Op::Slot(_) => true,

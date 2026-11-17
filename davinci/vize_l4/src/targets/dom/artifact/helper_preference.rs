@@ -181,6 +181,8 @@ fn prefer_op_helpers(
                 prefer_if_branch_helpers(buf, cx, walk, &branch.region, slot_context);
             }
         }
+        // A falsy `left` is the child itself: no comment placeholder.
+        Op::And(and) => prefer_if_branch_helpers(buf, cx, walk, &and.region, slot_context),
         Op::For(for_op) => {
             if cx.authored_for.get() == u32::MAX {
                 cx.authored_for.set(visit);

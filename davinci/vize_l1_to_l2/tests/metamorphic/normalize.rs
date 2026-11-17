@@ -75,6 +75,7 @@ fn walk_region(ops: &mut [DumpOp]) {
                     walk_region(&mut branch.ops);
                 }
             }
+            DumpOp::And(and) => walk_region(&mut and.ops),
             DumpOp::For(for_op) => walk_region(&mut for_op.ops),
             DumpOp::OriginalFor(for_op) => walk_region(&mut for_op.ops),
             DumpOp::Slot(slot) => {

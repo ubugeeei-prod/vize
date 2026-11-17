@@ -113,6 +113,13 @@ fn op_has_legacy_hoist(
                 allow_component_props_hoist,
             )
         }),
+        Op::And(and) => branch_roots_have_legacy_hoist(
+            walk,
+            &and.region.ops,
+            facts,
+            wrappers,
+            allow_component_props_hoist,
+        ),
         Op::For(for_op) => for_children_have_legacy_hoist(
             walk,
             &for_op.region.ops,

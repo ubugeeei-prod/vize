@@ -43,6 +43,19 @@ fn visit_region_guarded(
                 score(interpolation.expression, id, depth, facts);
             }
             Op::If(if_op) => visit_if(walk, if_op, id, depth, facts),
+            Op::And(and) => {
+                // `left && <region>` decides like a one-branch `if`.
+                facts.push(Contribution {
+                    span: and.left.span(),
+                    kind: DecisionKind::If,
+                    op: id,
+                    nesting: depth,
+                    cyclomatic: 1,
+                    cognitive: 1 + depth,
+                });
+                score(and.left, id, depth, facts);
+                visit_nested(walk, &and.region.ops, depth + 1, facts);
+            }
             Op::For(for_op) => {
                 // Rule `for`: one decision (continue or exit), a structure.
                 // The source evaluates once, outside the repeated body.

@@ -80,7 +80,7 @@ fn op(cx: &mut Cx<'_>, op: &Op<'_>, items: &mut Items) -> Result<(), JsxModuleRe
             items.next(cx);
             control::child(cx, op)
         }
-        Op::Interpolation(_) | Op::Comment(_) | Op::OriginalFor(_) | Op::Slot(_) => {
+        Op::Interpolation(_) | Op::Comment(_) | Op::OriginalFor(_) | Op::Slot(_) | Op::And(_) => {
             Err(JsxModuleRefusal::Unsupported(op.mnemonic()))
         }
     }

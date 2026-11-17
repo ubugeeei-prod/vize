@@ -216,6 +216,10 @@ fn op_branch_key_count(cx: &EmitCx<'_>, op: &Op<'_>, walk: &mut PageWalk) -> u32
             }
             u32::try_from(if_op.branches.len()).unwrap_or(u32::MAX)
         }
+        Op::And(and) => {
+            skip_ops_for_count(walk, &and.region.ops);
+            1
+        }
         Op::For(for_op) => region_branch_key_count(cx, &for_op.region, walk),
         Op::OriginalFor(for_op) => region_branch_key_count(cx, &for_op.region, walk),
         Op::Slot(slot) => {

@@ -13,7 +13,7 @@ use vize_l0::{Span, String, cstr};
 
 use crate::dump::codec::Grammar;
 use crate::dump::owned::{
-    Attribute, Bind, Branch, Comment, Component, Element, For, ForBinding, HostFor, If,
+    And, Attribute, Bind, Branch, Comment, Component, Element, For, ForBinding, HostFor, If,
     Interpolation, Model, Name, On, Op, OriginalFor, Slot, SlotContent, SlotsObject, Text,
     VueCloak, VueCssBind, VueDirective, VueHtml, VueMemo, VueOnce, VueShow, VueSlotScope, VueSync,
     VueText,
@@ -124,6 +124,7 @@ pub(in crate::dump) fn parse_item(
             branches: alloc::vec::Vec::new(),
             span: final_span(rest, line_no)?,
         }))),
+        "ui.and" => and(rest, line_no),
         "ui.for" => for_op(rest, line_no),
         "ui.slot" => slot(rest, line_no),
         "ui.bind" => crate::dump::parse::binding_line::bind(rest, line_no),
@@ -163,6 +164,15 @@ fn attr(rest: &str, line_no: usize) -> Result<Item, DumpError> {
         (None, tail_span(after, line_no)?)
     };
     Ok(Item::Attr(Attribute { name, value, span }))
+}
+
+fn and(rest: &str, line_no: usize) -> Result<Item, DumpError> {
+    let (left, tail) = take_expr(rest, line_no)?;
+    Ok(Item::Op(Op::And(And {
+        left,
+        ops: alloc::vec::Vec::new(),
+        span: tail_span(tail, line_no)?,
+    })))
 }
 
 fn branch(rest: &str, line_no: usize) -> Result<Item, DumpError> {

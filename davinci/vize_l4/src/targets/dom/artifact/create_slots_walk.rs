@@ -77,6 +77,7 @@ pub(super) fn advance_after_op(walk: &mut PageWalk, op: &Op<'_>) {
                 advance_after_ops(walk, &branch.region.ops);
             }
         }
+        Op::And(and) => advance_after_ops(walk, &and.region.ops),
         Op::For(for_op) => advance_after_ops(walk, &for_op.region.ops),
         Op::OriginalFor(for_op) => advance_after_ops(walk, &for_op.region.ops),
         Op::Slot(slot) => {
@@ -155,6 +156,7 @@ fn skip_op(cx: &mut EmitCx<'_>, op: &Op<'_>) {
                 skip_ops(cx, &branch.region.ops);
             }
         }
+        Op::And(and) => skip_ops(cx, &and.region.ops),
         Op::For(for_op) => skip_ops(cx, &for_op.region.ops),
         Op::OriginalFor(for_op) => skip_ops(cx, &for_op.region.ops),
         Op::Slot(slot) => {

@@ -268,6 +268,12 @@ pub fn shape_of_l2(ops: &[DumpOp], out: &mut vize_l0::String) {
                     out.push(']');
                 }
             }
+            DumpOp::And(and) => {
+                out.push('a');
+                out.push('(');
+                shape_of_l2(&and.ops, out);
+                out.push(')');
+            }
             DumpOp::For(for_op) => {
                 out.push('f');
                 out.push('(');

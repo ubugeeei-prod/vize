@@ -44,6 +44,8 @@ pub enum Op {
     Comment(Comment),
     /// `ui.if`.
     If(If),
+    /// `ui.and`.
+    And(And),
     /// `ui.for`.
     For(For),
     /// `ui.for` retaining an original owner reference for diagnostics only.
@@ -148,6 +150,17 @@ pub struct Branch {
     /// The condition; `None` for the unconditional branch.
     pub condition: Option<Expr>,
     /// The branch's owned region.
+    pub ops: Vec<Op>,
+    /// Source range.
+    pub span: Span,
+}
+
+/// Mirror of [`crate::op::AndOp`].
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct And {
+    /// The value tested and, when falsy, rendered.
+    pub left: Expr,
+    /// The region a truthy `left` renders.
     pub ops: Vec<Op>,
     /// Source range.
     pub span: Span,
@@ -286,6 +299,11 @@ fn own_op_guarded(op: &IrOp<'_>) -> Op {
                 .collect(),
             span: if_op.span,
         }),
+        IrOp::And(and) => Op::And(And {
+            left: own_expr(&and.left),
+            ops: own_region(&and.region),
+            span: and.span,
+        }),
         IrOp::For(for_op) => Op::For(For {
             binding: ForBinding {
                 source: own_expr(&for_op.binding.source),
@@ -365,6 +383,7 @@ fn count_op_guarded(op: &Op) -> u64 {
             1 + for_op.ops.iter().chain(empty).map(count_op).sum::<u64>()
         }
         Op::OriginalFor(for_op) => 1 + for_op.ops.iter().map(count_op).sum::<u64>(),
+        Op::And(and) => 1 + and.ops.iter().map(count_op).sum::<u64>(),
         Op::Slot(slot) => {
             1 + slot.bindings.len() as u64 + slot.fallback.iter().map(count_op).sum::<u64>()
         }

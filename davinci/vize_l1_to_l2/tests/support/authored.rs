@@ -89,6 +89,11 @@ fn assert_op(source: &str, root: SourceRoot<'_>, op: &Op<'_>) {
             assert_for_binding(source, root, for_op.binding);
             assert_region(source, root, &for_op.region);
         }
+        Op::And(and) => {
+            assert_span(source, root, and.span, "and");
+            assert_expr(source, root, and.left);
+            assert_region(source, root, &and.region);
+        }
         Op::OriginalFor(for_op) => {
             assert_span(source, root, for_op.span, "original for");
             assert_region(source, root, &for_op.region);
