@@ -7,7 +7,7 @@ mod render;
 mod rendered;
 use crate::SourceLocation;
 pub use render::CompilerErrorWithSource;
-pub use rendered::{RenderedCompilerError, parse_rendered_error_list};
+pub use rendered::{RenderedCompilerError, RenderedSpan, parse_rendered_error_list};
 use thiserror::Error;
 use vize_l0::{CompactString, ToCompactString};
 /// Compiler error

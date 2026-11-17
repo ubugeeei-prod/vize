@@ -48,14 +48,13 @@ mod tests {
         let located: std::vec::Vec<_> = details
             .iter()
             .map(|detail| {
-                let (start, end) = detail.span.unwrap();
-                (
-                    detail.code.as_str(),
-                    template
-                        .content
-                        .get(start as usize..end as usize)
-                        .unwrap_or_default(),
-                )
+                let span = detail.span.as_ref().unwrap();
+                let covered = template
+                    .content
+                    .get(span.start as usize..span.end as usize)
+                    .unwrap_or_default();
+                assert_eq!(covered, span.text);
+                (detail.code.as_str(), covered)
             })
             .collect();
         assert_eq!(

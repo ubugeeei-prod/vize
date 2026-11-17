@@ -100,7 +100,8 @@ pub(super) fn partition(errors: &[CompileError], color: bool) -> (Vec<&CompileEr
 }
 
 /// `error`'s file, when every error it lists is a known template error in the
-/// file's own HTML template.
+/// file's own HTML template, and the file on disk still holds the text each
+/// error covered when it was compiled.
 fn locate(error: &CompileError) -> Option<Located> {
     if error.phase != ErrorPhase::Compile {
         return None;
@@ -125,8 +126,13 @@ fn locate(error: &CompileError) -> Option<Located> {
     let mut errors = Vec::with_capacity(details.len());
     for detail in &details {
         let hint = for_template_error(&detail.code, &detail.message)?;
-        let (start, end) = detail.span?;
-        let (start, end) = (base + start as usize, base + end as usize);
+        let span = detail.span.as_ref()?;
+        let (start, end) = (base + span.start as usize, base + span.end as usize);
+        // The file may have changed since it was compiled: only a span that
+        // still covers the text the compile reported is shown as its source.
+        if source.get(start..end) != Some(span.text.as_str()) {
+            return None;
+        }
         let (line, column) = file.location(start);
         errors.push(LocatedError {
             hint,

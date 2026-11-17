@@ -19,8 +19,20 @@ pub struct RenderedCompilerError {
     pub code: String,
     /// The message, unescaped.
     pub message: String,
-    /// Start and end byte offsets, when the error had a location.
-    pub span: Option<(u32, u32)>,
+    /// Where the error points, when it had a location.
+    pub span: Option<RenderedSpan>,
+}
+
+/// A rendered location: byte offsets and the text they covered when the list
+/// was rendered, so a reader can confirm it still has that source.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RenderedSpan {
+    /// Start byte offset.
+    pub start: u32,
+    /// End byte offset.
+    pub end: u32,
+    /// The covered text, unescaped.
+    pub text: String,
 }
 
 /// Read a `Debug`-rendered `[CompilerError { … }, …]` list back.
@@ -66,9 +78,9 @@ impl<'a> Reader<'a> {
             self.literal(", end: ")?;
             let end = self.position()?;
             self.literal(", source: ")?;
-            self.string()?;
+            let text = self.string()?;
             self.literal(" })")?;
-            Some((start, end))
+            Some(RenderedSpan { start, end, text })
         };
         self.literal(" }")?;
         Some(RenderedCompilerError {
@@ -161,7 +173,7 @@ mod tests {
     use core::fmt::Write as _;
 
     use super::super::{CompilerError, CompilerErrorWithSource, ErrorCode};
-    use super::{RenderedCompilerError, parse_rendered_error_list};
+    use super::{RenderedCompilerError, RenderedSpan, parse_rendered_error_list};
     use crate::relief::SourceLocation;
     use vize_l0::String;
 
@@ -204,7 +216,11 @@ mod tests {
                             code
                         },
                         message: error.message.clone(),
-                        span: error.loc.as_ref().map(|loc| (loc.span.start, loc.span.end)),
+                        span: error.loc.as_ref().map(|loc| RenderedSpan {
+                            start: loc.span.start,
+                            end: loc.span.end,
+                            text: loc.span.slice(source).into(),
+                        }),
                     })
                     .collect()
             )

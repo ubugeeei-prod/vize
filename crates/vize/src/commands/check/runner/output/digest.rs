@@ -8,6 +8,7 @@ use std::{fs, path::Path};
 use vize_canon::{BatchDiagnostic, SfcBlockType};
 use vize_l0::String;
 use vize_l0::diag::Severity;
+use vize_l0::line_index::LineBreaks;
 
 use crate::render::digest::{DigestOptions, Finding, Representative, attribute_end, render_digest};
 use crate::render::hints::{HINTS, Hint, for_template_type_diagnostic};
@@ -68,7 +69,7 @@ pub(super) fn render(cwd: &Path, digests: &mut [Digest<'_>], color: bool) -> Str
             let file = text.as_deref().map(|text| SourceFile::new(&path, text));
             for diagnostic in file_diagnostics {
                 let subject = file.as_ref().and_then(|file| {
-                    let start = file.offset_of(diagnostic.line, diagnostic.column)?;
+                    let start = position(file.text(), diagnostic.line, diagnostic.column)?;
                     file.text()
                         .get(start..attribute_end(file.text(), start))
                         .filter(|subject| !subject.is_empty())
@@ -95,7 +96,7 @@ pub(super) fn render(cwd: &Path, digests: &mut [Digest<'_>], color: bool) -> Str
             .map(|(path, text)| SourceFile::new(path, text));
         let representative = file.as_ref().and_then(|file| {
             let first = digest.diagnostics.first()?;
-            let start = file.offset_of(first.line, first.column)?;
+            let start = position(file.text(), first.line, first.column)?;
             Some(Representative {
                 file,
                 start,
@@ -117,6 +118,21 @@ pub(super) fn render(cwd: &Path, digests: &mut [Digest<'_>], color: bool) -> Str
         );
     }
     out
+}
+
+/// Byte offset of a checker position, only where every line-break convention
+/// in play agrees on it: TypeScript counts LS, PS and a lone CR as breaks, the
+/// LSP a lone CR, and the frame renderer LF alone (CRLF is one break in all
+/// three). A file that has any of the others keeps its listed `line:column`
+/// but shows no subject or frame rather than one from another line.
+fn position(text: &str, line: u32, column: u32) -> Option<usize> {
+    let lone_cr = text
+        .match_indices('\r')
+        .any(|(at, _)| text.as_bytes().get(at + 1) != Some(&b'\n'));
+    if lone_cr || text.contains(['\u{2028}', '\u{2029}']) {
+        return None;
+    }
+    LineBreaks::Lsp.position_to_offset(text, line, column)
 }
 
 fn severity(severity: u8) -> Severity {

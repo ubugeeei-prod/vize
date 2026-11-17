@@ -149,8 +149,12 @@ pub fn hint(id: &str) -> Option<&'static Hint> {
 /// on the props object Vize's projection builds for one element, so its key
 /// is an authored attribute or listener and its type says whose props were
 /// checked: `$ComponentCheckProps<…>` for a component, Vue's
-/// `…Attributes & ReservedProps` for a native element, and a component's
-/// emits for a listener.
+/// `…Attributes & ReservedProps` for a native element, and for a listener the
+/// event-key object Vize projects from the component's emits
+/// (`{ [K in keyof ComponentEvents<…> as `on${…}`]?: unknown }`, printed as
+/// `{ onUpload?: unknown; }`). An `onX` key checked against any other type —
+/// a nested object literal in a binding — is not a listener and stays
+/// unclassified.
 #[must_use]
 pub fn for_template_type_diagnostic(code: Option<u32>, message: &str) -> Option<&'static Hint> {
     if code != Some(2353) {
@@ -161,7 +165,7 @@ pub fn for_template_type_diagnostic(code: Option<u32>, message: &str) -> Option<
         ids::UNDECLARED_COMPONENT_ATTR
     } else if target.contains("ReservedProps>") {
         ids::UNKNOWN_ELEMENT_ATTR
-    } else if is_listener_key(key) {
+    } else if is_listener_key(key) && is_event_keys_type(target) {
         ids::UNDECLARED_COMPONENT_EVENT
     } else {
         return None;
@@ -195,6 +199,30 @@ fn is_listener_key(key: &str) -> bool {
         .is_some_and(|first| first.is_ascii_uppercase())
 }
 
+/// The printed event-key type: every member an optional listener key of type
+/// `unknown` (`{ onUpload?: unknown; "onUpdate:modelValue"?: unknown; }`), with
+/// TypeScript's `... N more ...` elision allowed.
+fn is_event_keys_type(target: &str) -> bool {
+    let Some(body) = target
+        .strip_prefix("{ ")
+        .and_then(|rest| rest.strip_suffix(" }"))
+    else {
+        return false;
+    };
+    let mut members = body
+        .split(';')
+        .map(str::trim)
+        .filter(|member| !member.is_empty())
+        .peekable();
+    members.peek().is_some()
+        && members.all(|member| {
+            member.starts_with("...")
+                || member
+                    .strip_suffix("?: unknown")
+                    .is_some_and(|name| is_listener_key(name.trim_matches('"')))
+        })
+}
+
 #[cfg(test)]
 mod tests {
     use super::{HINTS, for_template_error, for_template_type_diagnostic, ids};
@@ -219,13 +247,17 @@ mod tests {
             ),
             Some(ids::UNKNOWN_ELEMENT_ATTR)
         );
-        assert_eq!(
-            id(
-                2353,
-                "Object literal may only specify known properties, and '\"onClick\"' does not exist in type '{ onUpload?: unknown; }'."
-            ),
-            Some(ids::UNDECLARED_COMPONENT_EVENT)
-        );
+        for message in [
+            "Object literal may only specify known properties, and '\"onClick\"' does not exist in type '{ onUpload?: unknown; }'.",
+            "Object literal may only specify known properties, and '\"onClick\"' does not exist in type '{ \"onUpdate:modelValue\"?: unknown; }'.",
+            "Object literal may only specify known properties, and '\"onClick\"' does not exist in type '{ onChange?: unknown; ... 3 more ...; onKeydown?: unknown; }'.",
+        ] {
+            assert_eq!(
+                id(2353, message),
+                Some(ids::UNDECLARED_COMPONENT_EVENT),
+                "{message}"
+            );
+        }
     }
 
     #[test]
@@ -236,6 +268,15 @@ mod tests {
                 "Object literal may only specify known properties, and '\"one\"' does not exist in type '{ two: number; }'.",
             ),
             (2353, "Object literal may only specify known properties."),
+            // An `onX` key of a nested object literal is not a listener.
+            (
+                2353,
+                "Object literal may only specify known properties, and '\"onClick\"' does not exist in type '{ label: string; }'.",
+            ),
+            (
+                2353,
+                "Object literal may only specify known properties, and '\"onClick\"' does not exist in type '{}'.",
+            ),
             (
                 2322,
                 "Object literal may only specify known properties, and '\"alt\"' does not exist in type 'Partial<HTMLAttributes & ReservedProps>'.",

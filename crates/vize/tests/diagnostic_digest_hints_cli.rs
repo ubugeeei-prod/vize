@@ -330,13 +330,14 @@ fn json_diagnostics(output: &Output) -> Vec<String> {
         .collect()
 }
 
-/// The quoted key of each excess-property diagnostic a check hint groups.
-fn check_subject(id: &str) -> &'static str {
+/// The quoted keys of the excess-property diagnostics a check hint groups in
+/// the fixture.
+fn check_subjects(id: &str) -> &'static [&'static str] {
     match id {
-        ids::UNDECLARED_COMPONENT_ATTR => "'\"behavior\"'",
-        ids::UNKNOWN_ELEMENT_ATTR => "'\"alt\"'",
-        ids::UNDECLARED_COMPONENT_EVENT => "'\"onOpen\"'",
-        other => panic!("{other}: add the check fixture's subject"),
+        ids::UNDECLARED_COMPONENT_ATTR => &["'\"behavior\"'", "'\"theme\"'"],
+        ids::UNKNOWN_ELEMENT_ATTR => &["'\"alt\"'"],
+        ids::UNDECLARED_COMPONENT_EVENT => &["'\"onOpen\"'"],
+        other => panic!("{other}: add the check fixture's subjects"),
     }
 }
 
@@ -370,31 +371,37 @@ fn check_groups_attribute_diagnostics_with_hints() {
     let _ = fs::remove_dir_all(root);
 }
 
-/// Settings of a `vize check` hint: each removes the diagnostics that hint
-/// groups and leaves the other kinds reported.
+/// Settings of a `vize check` hint: each removes exactly the diagnostics of
+/// the hints it configures, and every other diagnostic the fixture reports —
+/// other kinds, and the unrelated binding error — stays as it was.
 fn verify_check_hint(hint: &Hint, corsa: &str) {
+    let baseline_root = check_project(&format!("check-hint-base-{}", hint.id.replace('/', "-")));
+    let baseline = json_diagnostics(&check(&baseline_root, corsa, &["--format", "json"]));
+    let _ = fs::remove_dir_all(baseline_root);
     for setting in hint.settings {
         let root = check_project(&format!("check-hint-{}", hint.id.replace('/', "-")));
         match setting.place {
             Place::Tsconfig => merge_tsconfig(&root, setting.snippet),
             place => panic!("{}: verify {place:?} for check hints", hint.id),
         }
-        let output = check(&root, corsa, &["--format", "json"]);
-        let diagnostics = json_diagnostics(&output).join("\n");
-        assert_eq!(
-            diagnostics.matches(check_subject(hint.id)).count(),
-            0,
-            "{}: {}",
-            hint.id,
-            diagnostics
-        );
-        let others = HINTS
+        let configured: Vec<&str> = HINTS
             .iter()
-            .filter(|other| other.settings != hint.settings && is_check_hint(other.id))
-            .map(|other| check_subject(other.id));
-        for subject in others {
-            assert!(diagnostics.matches(subject).count() > 0, "{subject} stays");
-        }
+            .filter(|other| is_check_hint(other.id) && other.settings.contains(setting))
+            .flat_map(|other| check_subjects(other.id).iter().copied())
+            .collect();
+        let grouped = |diagnostic: &String| {
+            configured
+                .iter()
+                .any(|subject| diagnostic.matches(subject).count() > 0)
+        };
+        let expected: Vec<String> = baseline.iter().filter(|d| !grouped(d)).cloned().collect();
+        assert!(
+            baseline.len() > expected.len(),
+            "{}: the fixture reports the grouped kind",
+            hint.id
+        );
+        let after = json_diagnostics(&check(&root, corsa, &["--format", "json"]));
+        assert_eq!(after, expected, "{} via {}", hint.id, setting.snippet);
         let _ = fs::remove_dir_all(root);
     }
 }

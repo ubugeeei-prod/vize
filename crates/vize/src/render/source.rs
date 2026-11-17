@@ -48,13 +48,6 @@ impl<'a> SourceFile<'a> {
         self.text
     }
 
-    /// Byte offset of a zero-based line and UTF-16 column, the coordinates a
-    /// type checker and the LSP report.
-    #[must_use]
-    pub fn offset_of(&self, line: u32, column: u32) -> Option<usize> {
-        self.index.line_col_to_offset(line, column)
-    }
-
     /// `offset` clamped into the text and snapped down to a `char` boundary.
     pub(crate) fn clamp(&self, offset: u32) -> usize {
         let mut offset = (offset as usize).min(self.text.len());
