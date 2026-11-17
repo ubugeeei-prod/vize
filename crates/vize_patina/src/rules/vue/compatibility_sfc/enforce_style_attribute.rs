@@ -57,16 +57,15 @@ impl Rule for EnforceStyleAttribute {
     }
 
     fn run_on_sfc<'a>(&self, ctx: &mut LintContext<'a>) {
+        // eslint-plugin-vue tests plain, scoped and module in turn, reports
+        // the whole first offending `<style>` element, and stops there.
         let finding = ctx.sfc_descriptor().and_then(|descriptor| {
             descriptor.styles.iter().find_map(|style| {
-                let allowed = if style.scoped {
-                    self.allow_scoped
-                } else if style.module.is_some() {
-                    self.allow_module
-                } else {
-                    self.allow_plain
-                };
-                (!allowed).then_some((style.loc.tag_start as u32, style.loc.start as u32))
+                let module = style.module.is_some();
+                let denied = (!style.scoped && !module && !self.allow_plain)
+                    || (style.scoped && !self.allow_scoped)
+                    || (module && !self.allow_module);
+                denied.then_some((style.loc.tag_start as u32, style.loc.tag_end as u32))
             })
         });
         if let Some((start, end)) = finding {
