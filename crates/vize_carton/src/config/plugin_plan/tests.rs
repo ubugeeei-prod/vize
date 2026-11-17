@@ -157,3 +157,94 @@ fn admission_refuses_unimplemented_capabilities_per_product() {
         empty.admit(product, Some("vapor")).unwrap();
     }
 }
+
+#[test]
+fn declared_directives_lower_to_one_normalization_table() {
+    use crate::config::{DirectiveContract, DirectiveContractError, DirectiveModifier};
+    let (_, fixture) = fixtures("resolve")
+        .into_iter()
+        .find(|(path, _)| path.ends_with("declared-capabilities.json"))
+        .unwrap();
+    let expect = &fixture["expect"];
+    let plan = verify_plugin_plan(&expect["plan"], expect["digest"].as_str()).unwrap();
+    let modifier = |name: &str, optional, default| DirectiveModifier {
+        name: name.into(),
+        optional,
+        default,
+    };
+    let track = DirectiveContract {
+        plugin: "@acme/tracking".into(),
+        name: "track".into(),
+        modifiers: vec![
+            modifier("once", true, false),
+            modifier("passive", true, true),
+            modifier("strict", false, false),
+        ],
+    };
+    assert_eq!(plan.directives().unwrap(), vec![track.clone()]);
+
+    // Authored order first, then absent modifiers that default to true.
+    assert_eq!(
+        track.normalized_modifiers(&["strict"]),
+        Ok(vec!["strict", "passive"])
+    );
+    assert_eq!(
+        track.normalized_modifiers(&["passive", "strict", "once"]),
+        Ok(vec!["passive", "strict", "once"])
+    );
+    let missing = track.normalized_modifiers(&["once"]).unwrap_err();
+    assert_eq!(
+        missing,
+        DirectiveContractError::MissingModifier {
+            directive: "track".into(),
+            modifier: "strict".into(),
+        }
+    );
+    assert_eq!(
+        crate::cstr!("{missing}"),
+        "v-track requires the modifier `strict`"
+    );
+    let unknown = track
+        .normalized_modifiers(&["strict", "bogus"])
+        .unwrap_err();
+    assert_eq!(
+        crate::cstr!("{unknown}"),
+        "v-track does not declare the modifier `bogus`"
+    );
+}
+
+/// The declared-capabilities fixture reduced to its one directive plugin.
+fn directive_only_plan() -> super::VerifiedPluginPlan {
+    let (_, fixture) = fixtures("resolve")
+        .into_iter()
+        .find(|(path, _)| path.ends_with("declared-capabilities.json"))
+        .unwrap();
+    let mut tracking = fixture["expect"]["plan"]["plugins"][2].clone();
+    tracking["index"] = json!(0);
+    let plan = json!({
+        "claims": [{ "key": "vue.directive:track", "owner": "@acme/tracking" }],
+        "planSchema": 1,
+        "plugins": [tracking],
+    });
+    verify_plugin_plan(&plan, None).unwrap()
+}
+
+#[test]
+fn a_capability_is_refused_until_every_consumer_implements_it() {
+    let plan = directive_only_plan();
+    // Lint and the editor implement directive contracts; the compiler and the
+    // type checker do not, so no product may load the plan yet.
+    for product in ["lint", "lsp", "format"] {
+        plan.admit(product, None).unwrap();
+    }
+    for product in ["compiler", "typecheck"] {
+        assert_eq!(
+            plan.admit(product, None).unwrap_err().code,
+            "capability-unadmitted"
+        );
+    }
+    assert_eq!(
+        crate::cstr!("{}", plan.refuse_unimplemented().unwrap_err()),
+        "[plugin/capability-unadmitted] @acme/tracking: vue.directive `track` is not implemented by compiler, typecheck yet; run `vize plugin inspect` for the plan"
+    );
+}

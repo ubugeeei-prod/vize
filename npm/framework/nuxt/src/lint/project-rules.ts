@@ -138,7 +138,7 @@ export async function readProjectLintRuleSets(
   return {
     ...(entries.length > 0 ? { entries } : {}),
     ...(jsPlugins.length > 0 ? { jsPlugins } : {}),
-    ...(project.pluginRuleIds.size > 0 ? { pluginRules: true as const } : {}),
+    ...(project.pluginLint ? { pluginRules: true as const } : {}),
     ...(vize ? { vize } : {}),
     ...(Object.keys(oxlint).length > 0 ? { oxlint } : {}),
     ...(oxlintOverrides.length > 0 ? { oxlintOverrides } : {}),
@@ -150,6 +150,8 @@ interface ProjectConfig {
   entries: ProjectLinterEntry[];
   /** Public IDs of every `vue.plugins` lint rule. */
   pluginRuleIds: ReadonlySet<string>;
+  /** Whether `vue.plugins` adds lint work: plugin rules or declared directives. */
+  pluginLint: boolean;
   linter?: ProjectLinterConfig;
   oxlint?: unknown;
   oxlintConfigDir?: string;
@@ -157,17 +159,18 @@ interface ProjectConfig {
 
 async function readProjectConfig(rootDir: string): Promise<ProjectConfig> {
   const loaded = await loadProjectViteConfigSource(rootDir);
-  if (!loaded) return { entries: [], pluginRuleIds: new Set() };
+  if (!loaded) return { entries: [], pluginRuleIds: new Set(), pluginLint: false };
   const parsed = loaded.source;
   const rawVue = parsed.vue && typeof parsed.vue === "object" ? parsed.vue : undefined;
-  const pluginRuleIds = hasPluginEntries(rawVue)
-    ? await lintPluginRuleIds(loaded.exported)
-    : new Set<string>();
+  const { pluginRuleIds, pluginLint } = hasPluginEntries(rawVue)
+    ? await lintPluginPlan(loaded.exported)
+    : { pluginRuleIds: new Set<string>(), pluginLint: false };
   const rawLinter = rawVue && "linter" in rawVue ? projectLinter(rawVue.linter) : undefined;
   const entries = rawVue && "entries" in rawVue ? projectEntries(rawVue.entries) : [];
   return {
     entries,
     pluginRuleIds,
+    pluginLint,
     linter: rawLinter,
     oxlint: parsed.lint,
     oxlintConfigDir: loaded.configDir,
@@ -180,18 +183,41 @@ function hasPluginEntries(vue: object | undefined): boolean {
   return !(Array.isArray(plugins) && plugins.every((entry) => entry === false || entry == null));
 }
 
-// oxlint-plugin-vize hosts the lint capabilities. Any other capability that lint
-// consumes but does not implement fails closed, as it does in `vize lint`.
-async function lintPluginRuleIds(exported: unknown): Promise<ReadonlySet<string>> {
+// oxlint-plugin-vize hosts the lint capabilities. A capability that lint does not
+// implement, or that another product consuming it does not implement yet, fails
+// closed, as it does in `vize lint`.
+async function lintPluginPlan(
+  exported: unknown,
+): Promise<{ pluginRuleIds: ReadonlySet<string>; pluginLint: boolean }> {
   const inspection = await inspectViteConfigPlugins(exported, {
     command: "lint",
     mode: "development",
   });
-  const refused = inspection.admission.lint?.refused[0];
+  const lint = inspection.admission.lint;
+  const refused = lint?.refused[0];
   if (refused) {
     throw new Error(
       `[plugin/capability-unadmitted] ${refused.plugin}: lint does not implement ${refused.capability} \`${refused.key}\` yet`,
     );
+  }
+  for (const plugin of inspection.plugins) {
+    for (const capability of plugin.capabilities) {
+      const missing = Object.entries(inspection.admission)
+        .filter(([, admission]) =>
+          admission.refused.some(
+            (entry) =>
+              entry.plugin === plugin.name &&
+              entry.capability === capability.id &&
+              entry.key === capability.key,
+          ),
+        )
+        .map(([product]) => product);
+      if (missing.length > 0) {
+        throw new Error(
+          `[plugin/capability-unadmitted] ${plugin.name}: ${capability.id} \`${capability.key}\` is not implemented by ${missing.join(", ")} yet; run \`vize plugin inspect\` for the plan`,
+        );
+      }
+    }
   }
   const ids = new Set<string>();
   for (const plugin of inspection.plugins) {
@@ -205,7 +231,7 @@ async function lintPluginRuleIds(exported: unknown): Promise<ReadonlySet<string>
       }
     }
   }
-  return ids;
+  return { pluginRuleIds: ids, pluginLint: lint?.status === "ready" };
 }
 
 function projectLinter(value: unknown): ProjectLinterConfig | undefined {

@@ -5,6 +5,8 @@
 //! rules add no work. A document is lowered once; every enabled job gets its
 //! batch from the same records and facts, and all jobs cross into the trusted
 //! JS sidecar in one request. Answers map back to host-owned authored spans.
+//! Declared `vue.directive` contracts are checked natively on the same
+//! records and never cross into JS.
 
 #![expect(
     clippy::disallowed_types,
@@ -17,17 +19,19 @@ mod rules;
 
 use serde_json::Value;
 use vize_carton::config::plugin_plan::{PlannedCapability, PlannedPlugin, VerifiedPluginPlan};
-use vize_l0::config::LintRuleSeverity;
+use vize_l0::config::{DirectiveContract, LintRuleSeverity};
 use vize_l0::fact::FactManager;
 use vize_l0::{FxHashMap, FxHashSet, String, cstr};
 
 use super::batch::{BuiltBatch, PluginSpec, build_batch};
+use super::directives::{DIRECTIVE_CONTRACT_RULE, directive_contract_diagnostics};
 use super::document::PluginDocument;
 use super::facts::REGISTRY;
 use crate::LintDiagnostic;
 use rules::Rules;
 
 const PLUGIN_RULE_DOCS: &str = "docs/release/integrated-plugin-incubation.md#plugin-lint-rules";
+const DIRECTIVE_DOCS: &str = "docs/release/integrated-plugin-incubation.md#decisions";
 
 /// A JSON member, or `null` when absent.
 fn field<'v>(value: &'v Value, key: &str) -> &'v Value {
@@ -73,6 +77,7 @@ struct Job {
 pub struct PluginLintJobs {
     digest: String,
     jobs: Vec<Job>,
+    directives: Vec<DirectiveContract>,
 }
 
 /// One Vue document lowered once, with its batch for every job.
@@ -81,6 +86,8 @@ pub struct LoweredDocument {
     pub document: PluginDocument,
     /// Its batch for every job, in job order.
     pub batches: Vec<BuiltBatch>,
+    /// Diagnostics found without JS: directive contract violations.
+    pub native: Vec<LintDiagnostic>,
 }
 
 /// One job's answer: its JS time and the diagnostics of each document.
@@ -92,7 +99,8 @@ pub struct JobAnswer {
 }
 
 impl PluginLintJobs {
-    /// Plan the jobs `product` runs; `None` when no plugin rule is enabled.
+    /// Plan the jobs `product` runs; `None` when no plugin rule is enabled
+    /// and no directive is declared.
     pub fn plan(
         plan: &VerifiedPluginPlan,
         severities: &FxHashMap<String, LintRuleSeverity>,
@@ -112,7 +120,8 @@ impl PluginLintJobs {
                 jobs.push(job_for(plugin, capability, rules)?);
             }
         }
-        if jobs.is_empty() {
+        let directives = plan.directives().map_err(|error| cstr!("{error}"))?;
+        if jobs.is_empty() && directives.is_empty() {
             return Ok(None);
         }
         // Plugin rules document themselves through `meta.docs` help; their
@@ -121,12 +130,22 @@ impl PluginLintJobs {
             jobs.iter()
                 .flat_map(|job| job.rules.ids())
                 .map(|id| (id, String::from(PLUGIN_RULE_DOCS)))
+                .chain(
+                    (!directives.is_empty())
+                        .then(|| (DIRECTIVE_CONTRACT_RULE, String::from(DIRECTIVE_DOCS))),
+                )
                 .collect(),
         );
         Ok(Some(Self {
             digest: plan.digest().into(),
             jobs,
+            directives,
         }))
+    }
+
+    /// Whether any job runs in JS. Without one, no sidecar is needed.
+    pub fn crosses(&self) -> bool {
+        !self.jobs.is_empty()
     }
 
     /// The plan digest the sidecar must answer for.
@@ -172,7 +191,12 @@ impl PluginLintJobs {
                     .map_err(|error| cstr!("[plugin/plan-invalid] {}: {error}", job.plugin))
             })
             .collect::<Result<Vec<_>, String>>()?;
-        Ok(Some(LoweredDocument { document, batches }))
+        let native = directive_contract_diagnostics(&document, &self.directives);
+        Ok(Some(LoweredDocument {
+            document,
+            batches,
+            native,
+        }))
     }
 
     /// One sidecar request carrying every job over `documents`.

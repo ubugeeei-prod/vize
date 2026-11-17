@@ -395,7 +395,7 @@ vize plugin inspect --config path/to/vite.config.ts
 that `vue.plugins` resolves to: plugin order, ownership claims, capabilities, options,
 permissions, cache inputs and the per-product admission status. Plugin API v2 is experimental
 ([status](https://github.com/ubugeeei-prod/vize/blob/main/docs/release/integrated-plugin-incubation.md)).
-Every other command refuses a plan that contains a capability no Vize product implements yet;
+Every other command refuses a plan that contains a capability some product consuming it does not implement yet;
 `inspect` still reports it so you can see why.
 
 ## Ready

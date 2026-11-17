@@ -57,6 +57,10 @@ pub struct PluginNode {
     /// A `ui.for`'s alias positions.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub alias: Option<ForAlias>,
+    /// A `vue.directive`'s modifiers, as authored. Host-side only, so the
+    /// frozen batch packets are unchanged.
+    #[serde(skip)]
+    pub modifiers: Vec<String>,
 }
 
 /// The authored text of a `ui.for`'s three alias positions.
@@ -174,6 +178,7 @@ impl Walk {
             value: None,
             attrs: Vec::new(),
             alias: None,
+            modifiers: Vec::new(),
         };
         fill(&mut node);
         self.nodes.push(node);
@@ -259,6 +264,13 @@ impl Walk {
             self.push(Some(owner), binding.mnemonic(), span, |node| {
                 node.name = name;
                 node.value = value;
+                if let BindingOp::VueDirective(directive) = binding {
+                    node.modifiers = directive
+                        .modifiers
+                        .iter()
+                        .map(|modifier| (*modifier).to_owned())
+                        .collect();
+                }
             });
         }
     }

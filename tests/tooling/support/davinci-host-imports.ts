@@ -63,7 +63,7 @@ export function withoutHostRuntimeReferences(source: string, relativePath: strin
   if (file === "crates/vize_patina/src/plugin_batch/lint/host.rs") {
     // The per-document host drives Carton's plugin sidecar for the plan Carton verified.
     storage = storage.replace(
-      /^use vize_carton::config::plugin_plan::document_plugin_plan;$/gmu,
+      /^use vize_carton::config::plugin_plan::\{VerifiedPluginPlan, document_plugin_plan\};$/gmu,
       "host_plugin_plan",
     );
     storage = storage.replace(

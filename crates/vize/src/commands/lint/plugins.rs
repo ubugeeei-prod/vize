@@ -4,9 +4,13 @@
 //! Every job crosses into the trusted JS sidecar in one request per pass. The
 //! sidecar starts when the pass is planned, so Node startup and config
 //! evaluation overlap the built-in lint pass, and `--fix` passes reuse it.
+//! A plan whose only lint work is native (declared directive contracts) never
+//! starts one.
 
 mod fix;
 mod receipt;
+#[cfg(test)]
+mod tests;
 
 use std::path::{Path, PathBuf};
 use std::time::Instant;
@@ -26,12 +30,12 @@ pub(super) fn rule_ids(plan: &VerifiedPluginPlan) -> Vec<String> {
 }
 
 pub(super) struct PluginLint {
-    sidecar: std::sync::Mutex<crate::config::PluginLintSidecar>,
+    sidecar: Option<std::sync::Mutex<crate::config::PluginLintSidecar>>,
     jobs: PluginLintJobs,
 }
 
 impl PluginLint {
-    /// Plan the lint jobs of `plan`; `None` when no plugin rule is enabled.
+    /// Plan the lint jobs of `plan`; `None` when it adds no lint work.
     pub(super) fn plan(
         plan: &VerifiedPluginPlan,
         severities: &FxHashMap<String, crate::config::LintRuleSeverity>,
@@ -40,12 +44,14 @@ impl PluginLint {
         let Some(jobs) = PluginLintJobs::plan(plan, severities, "lint")? else {
             return Ok(None);
         };
-        Ok(Some(Self {
-            sidecar: std::sync::Mutex::new(crate::config::PluginLintSidecar::start(
-                &sidecar_config(config_path)?,
-            )?),
-            jobs,
-        }))
+        let sidecar = if jobs.crosses() {
+            Some(std::sync::Mutex::new(
+                crate::config::PluginLintSidecar::start(&sidecar_config(config_path)?)?,
+            ))
+        } else {
+            None
+        };
+        Ok(Some(Self { sidecar, jobs }))
     }
 
     /// `(plugin, key)` per job, in receipt order.
@@ -65,7 +71,8 @@ impl PluginLint {
         receipt_result.map(|()| receipt)
     }
 
-    /// One plugin pass over `only` (or every result): one sidecar crossing.
+    /// One plugin pass over `only` (or every result): one sidecar crossing
+    /// when any job runs in JS.
     fn pass(
         &self,
         results: &mut [super::cross_file::CliLintFileResult],
@@ -90,27 +97,32 @@ impl PluginLint {
             .collect::<Result<Vec<_>, String>>()?;
         let mut documents = Vec::with_capacity(lowered.len());
         for outcome in lowered {
-            let (index, lowered) = match outcome {
+            let (index, mut lowered) = match outcome {
                 Ok(lowered) => lowered,
                 Err(filename) => {
                     receipt.skipped.push(filename);
                     continue;
                 }
             };
+            if let Some((_, _, _, result)) = results.get_mut(index) {
+                push_diagnostics(result, std::mem::take(&mut lowered.native));
+            }
             for (position, built) in lowered.batches.iter().enumerate() {
                 receipt.record_batch(position, built.nodes, built.json.len());
             }
             documents.push((index, lowered));
         }
         receipt.documents += documents.len();
+        let Some(sidecar_slot) = self.sidecar.as_ref() else {
+            return Ok(());
+        };
         if documents.is_empty() {
             return Ok(());
         }
         let lowered: Vec<_> = documents.iter().map(|(_, lowered)| lowered).collect();
         let request = self.jobs.request(&lowered)?;
         let sidecar = Instant::now();
-        let response = self
-            .sidecar
+        let response = sidecar_slot
             .lock()
             .map_err(|_| {
                 String::from("[plugin/plan-invalid] plan: the plugin lint sidecar is unavailable")
@@ -124,17 +136,24 @@ impl PluginLint {
             for ((index, _), diagnostics) in documents.iter().zip(answer.documents) {
                 receipt.record_reports(position, diagnostics.len());
                 if let Some((_, _, _, result)) = results.get_mut(*index) {
-                    for diagnostic in diagnostics {
-                        match diagnostic.severity {
-                            Severity::Error => result.error_count += 1,
-                            Severity::Warning => result.warning_count += 1,
-                        }
-                        result.diagnostics.push(diagnostic);
-                    }
+                    push_diagnostics(result, diagnostics);
                 }
             }
         }
         Ok(())
+    }
+}
+
+fn push_diagnostics(
+    result: &mut vize_patina::LintResult,
+    diagnostics: Vec<vize_patina::LintDiagnostic>,
+) {
+    for diagnostic in diagnostics {
+        match diagnostic.severity {
+            Severity::Error => result.error_count += 1,
+            Severity::Warning => result.warning_count += 1,
+        }
+        result.diagnostics.push(diagnostic);
     }
 }
 

@@ -111,7 +111,10 @@ export interface PluginSetupApi {
     block(type: string, contract?: { lang?: string }): void;
   };
   readonly vue: {
-    /** Declared only: no product admits custom directives yet. Modifiers default to none. */
+    /**
+     * Lint and the language server check modifier contracts; the plan loads once
+     * the compiler and type checker implement directives too. Modifiers default to none.
+     */
     directive(
       name: string,
       contract?: { modifiers?: Readonly<Record<string, PluginDirectiveModifier>> },
