@@ -8,7 +8,7 @@ import {
   duplicateKeyFromImportedContract,
   importedPropCollisionReason,
   importedPropContractReason,
-  requiredDefaultFromImportedContract,
+  propFindingFromImportedContract,
   templateShadowFromImportedContract,
 } from "./imported_prop_contract.ts";
 import {
@@ -525,6 +525,8 @@ const patinaIntentionalRuleIds = new Set([
   "vue/no-static-inline-styles",
   "vue/no-template-shadow",
   "vue/no-shadow-native-events",
+  "script/no-required-prop-with-default",
+  "vue/prop-name-casing",
   "script/no-unused-emit-declarations",
   "vue/no-unused-components",
   "vue/no-unused-vars",
@@ -959,12 +961,15 @@ function importedPropContractFinding(finding: LintRecord, source: string): strin
   const start = findingOffset(finding, source),
     end = findingEndOffset(finding, source);
   if (start === null || end === null || end < start) return null;
-  const accepted =
-    finding.ruleId === "script/require-default-prop"
-      ? requiredDefaultFromImportedContract(finding.message, start, end, source)
-      : finding.ruleId === "script/no-boolean-default"
-        ? booleanDefaultFromImportedContract(start, end, source)
-        : null;
+  const accepted = [
+    "script/require-default-prop",
+    "script/no-required-prop-with-default",
+    "vue/prop-name-casing",
+  ].includes(finding.ruleId)
+    ? propFindingFromImportedContract(finding.message, start, end, source)
+    : finding.ruleId === "script/no-boolean-default"
+      ? booleanDefaultFromImportedContract(start, end, source)
+      : null;
   if (accepted !== null) return accepted ? importedPropContractReason : null;
   if (
     ["vue/no-shadow-native-events", "script/no-unused-emit-declarations"].includes(

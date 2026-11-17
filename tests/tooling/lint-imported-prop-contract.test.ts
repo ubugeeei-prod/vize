@@ -3,7 +3,7 @@ import { test } from "node:test";
 
 import {
   booleanDefaultFromImportedContract,
-  requiredDefaultFromImportedContract,
+  propFindingFromImportedContract,
 } from "../../tools/support/fixtures/lint_divergence/imported_prop_contract.ts";
 import { patinaIntentionalReason } from "../../tools/support/fixtures/lint_divergence/records.ts";
 
@@ -70,7 +70,7 @@ function range(source: string, text: string, occurrence = 0): [number, number] {
   return [start, start + text.length];
 }
 const importedDefault = (source: string, text: string, prop: string, occurrence = 0) =>
-  requiredDefaultFromImportedContract(
+  propFindingFromImportedContract(
     `Prop '${prop}' requires a default value.`,
     ...range(source, text, occurrence),
     source,
@@ -153,4 +153,40 @@ const style = computed(() => ({ size: props.size, extra: 1 }))
   assert.equal(importedDefault(source, "Props", "size", 4), true);
   assert.equal(importedDefault(source, "Props", "extra", 4), false);
   assert.equal(importedBoolean(source, "false"), true);
+});
+
+test("props named in other imported-contract rules classify, a type name never does", () => {
+  const source = `<script setup lang="ts">
+import type { SettingProps } from './types'
+import type { ScalarFloatingOptions } from '../ScalarFloating'
+withDefaults(defineProps<SettingProps & ScalarFloatingOptions>(), {
+  formSchema: () => [],
+})
+</script>`;
+  const reason = (ruleId: string, message: string) =>
+    patinaIntentionalReason(
+      at(source, ruleId, "SettingProps & ScalarFloatingOptions", message),
+      source,
+    );
+  assert.match(
+    reason(
+      "script/no-required-prop-with-default",
+      "[vize:script/no-required-prop-with-default] Prop 'formSchema' is required but also declares a default",
+    ) ?? "",
+    imported,
+  );
+  assert.match(
+    reason(
+      "vue/prop-name-casing",
+      '[vize:vue/prop-name-casing] Prop "onUpdate:visible" is not in camelCase',
+    ) ?? "",
+    imported,
+  );
+  assert.equal(
+    reason(
+      "vue/prop-name-casing",
+      '[vize:vue/prop-name-casing] Prop "ScalarFloatingOptions" is not in camelCase',
+    ),
+    null,
+  );
 });

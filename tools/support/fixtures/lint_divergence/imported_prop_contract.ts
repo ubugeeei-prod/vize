@@ -31,14 +31,18 @@ interface PropsCall {
 const identifier = /[A-Za-z_$][\w$]*/gu;
 const maximumVisitedTypes = 64;
 
-/** `require-default-prop` reports on the type argument and names the prop. */
-export function requiredDefaultFromImportedContract(
+/**
+ * A finding on the `defineProps<T>` type argument that names the prop:
+ * `require-default-prop`, `no-required-prop-with-default` and
+ * `prop-name-casing` report there.
+ */
+export function propFindingFromImportedContract(
   message: string,
   start: number,
   end: number,
   source: string,
 ): boolean {
-  const name = /Prop '([^']+)'/u.exec(message)?.[1];
+  const name = /Prop (?:'([^']+)'|"([^"]+)")/u.exec(message)?.slice(1).find(Boolean);
   if (name === undefined) return false;
   const scripts = scriptBlocks(source);
   return propsCalls(source).some(
@@ -216,9 +220,12 @@ export function escapeName(name: string): string {
 }
 
 function importedOnly(source: string, scripts: Range[], call: PropsCall, name: string): boolean {
+  const argument = source.slice(call.typeArgument.start, call.typeArgument.end);
   return (
     !declaresPropName(source, typeRegions(source, scripts), name) &&
-    reachesImport(source, scripts, source.slice(call.typeArgument.start, call.typeArgument.end))
+    // A PascalCase "prop" named after a type the argument references is not a prop.
+    !(/^[A-Z]/u.test(name) && typeClosure(source, argument).has(name)) &&
+    reachesImport(source, scripts, argument)
   );
 }
 
