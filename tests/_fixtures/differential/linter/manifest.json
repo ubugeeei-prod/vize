@@ -16141,6 +16141,43 @@
       }
     },
     {
+      "id": "linter/decorator-inline-registration-12336",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "decorator-inline-registration-12336",
+        "files": [
+          {
+            "path": "BasicSetting.vue.txt",
+            "role": "real-project-matrix-reduction",
+            "sha256": "c66a5c417095aae55c8656f5f92c5491da257846d63799a26984094a04c4f1bb"
+          },
+          {
+            "path": "rules.json",
+            "role": "rule-options",
+            "sha256": "52ecf0ef404d50a77f58b959c458ac811c0b6fb24714d7ba64e0f6f3935ac4b4"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/define-expose-last-6097",
       "state": "active",
       "targets": [
