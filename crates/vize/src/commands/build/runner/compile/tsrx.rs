@@ -201,6 +201,7 @@ mod tests {
                 "syntax-compare.tsrx",
                 "syntax-empty-container.tsrx",
                 "syntax-for-destructure.tsrx",
+                "syntax-generic-tags.tsrx",
                 "syntax-gt-text.tsrx",
                 "syntax-template-literal-attr.tsrx",
                 "syntax-trailing-semi-render.tsrx",

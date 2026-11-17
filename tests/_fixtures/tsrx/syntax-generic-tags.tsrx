@@ -1,0 +1,18 @@
+function List<T>({ items }: { items: T[] }) @{
+	<ul>{items.length}</ul>
+}
+
+function Box<T>({ value }: { value: T }) @{
+	<p>{String(value)}</p>
+}
+
+export function App() @{
+	<section>
+		<List<string> items={['a']} />
+		<List <number> items={[1]} />
+		<Box<Array<number>> value={[1]}>text</Box>
+		<Box<Array<number>>>text</Box>
+		<UI.List<string> items={['b']} />
+		<div<string> />
+	</section>
+}

@@ -2,7 +2,10 @@
 //! module source; every embedded expression, statement and binding is the
 //! host parser's own AST node from the same parse.
 
-use oxc_ast::ast::{BindingIdentifier, Expression, ForStatementLeft, FormalParameters, Statement};
+use oxc_ast::ast::{
+    BindingIdentifier, Expression, ForStatementLeft, FormalParameters, Statement,
+    TSTypeParameterInstantiation,
+};
 use vize_l0::{Box, Span, Vec};
 
 /// One markup value: what a region, a render output or a markup child holds.
@@ -71,6 +74,9 @@ pub struct Element<'a> {
     /// From `<` through the closing tag's `>` (or the self-closing `/>`).
     pub span: Span,
     pub name: TagName<'a>,
+    /// Type arguments after a static name (`<List<string> …>`), the host
+    /// parser's own node. Only the opening tag carries them.
+    pub type_arguments: Option<Box<'a, TSTypeParameterInstantiation<'a>>>,
     pub attributes: Vec<'a, Attribute<'a>>,
     pub children: Vec<'a, Child<'a>>,
     /// `<style>` / `<script>` body kept as raw text.

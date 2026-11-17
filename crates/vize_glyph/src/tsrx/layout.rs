@@ -123,6 +123,10 @@ impl MarkupFormatter<'_, '_> {
     fn opening(&self, element: &Element<'_>, depth: usize) -> Result<String, FormatError> {
         let mut head = String::from("<");
         head.push_str(self.tag_name(&element.name)?.as_str());
+        // Type arguments stay as authored, against the name (`<List<T>`).
+        if let Some(arguments) = &element.type_arguments {
+            head.push_str(self.slice_oxc(arguments.span)?);
+        }
         let mut attributes = std::vec::Vec::with_capacity(element.attributes.len());
         let mut multiline = false;
         for attribute in &element.attributes {

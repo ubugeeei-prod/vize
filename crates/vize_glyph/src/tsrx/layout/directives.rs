@@ -267,7 +267,7 @@ impl MarkupFormatter<'_, '_> {
             .ok_or_else(layout_error)
     }
 
-    fn slice_oxc(&self, span: OxcSpan) -> Result<&str, FormatError> {
+    pub(super) fn slice_oxc(&self, span: OxcSpan) -> Result<&str, FormatError> {
         self.source
             .get(span.start as usize..span.end as usize)
             .ok_or_else(layout_error)

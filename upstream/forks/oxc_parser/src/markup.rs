@@ -73,6 +73,7 @@ trait MarkupHost<'a> {
     fn for_of_head(&mut self) -> Option<(ForStatementLeft<'a>, Expression<'a>)>;
     fn binding_identifier(&mut self) -> BindingIdentifier<'a>;
     fn formal_parameters(&mut self) -> ArenaBox<'a, FormalParameters<'a>>;
+    fn type_arguments(&mut self) -> Option<ArenaBox<'a, TSTypeParameterInstantiation<'a>>>;
     fn fatal(&mut self, diagnostic: OxcDiagnostic);
     fn failed(&self) -> bool;
 }
@@ -137,6 +138,12 @@ impl<'a> MarkupCursor<'_, 'a> {
         self.host.formal_parameters()
     }
 
+    /// Parse `<Type, …>` type arguments at the current `<` (a TSRX tag's
+    /// `<List<T>>`). Returns `None`, leaving the token, when it is not a `<`.
+    pub fn type_arguments(&mut self) -> Option<ArenaBox<'a, TSTypeParameterInstantiation<'a>>> {
+        self.host.type_arguments()
+    }
+
     /// Report an error that ends the parse.
     pub fn fatal(&mut self, diagnostic: OxcDiagnostic) {
         self.host.fatal(diagnostic);
@@ -195,6 +202,10 @@ impl<'a, C: Config> MarkupHost<'a> for ParserImpl<'a, C> {
             FormalParameterKind::FormalParameter,
         );
         parameters
+    }
+
+    fn type_arguments(&mut self) -> Option<ArenaBox<'a, TSTypeParameterInstantiation<'a>>> {
+        self.try_parse_type_arguments()
     }
 
     fn fatal(&mut self, diagnostic: OxcDiagnostic) {

@@ -85,6 +85,36 @@
       }
     },
     {
+      "file": "tests/_fixtures/tsrx/errors/generic-closing-tag.tsrx",
+      "code": null,
+      "error": {
+        "code": "TS1005",
+        "start": 129,
+        "end": null,
+        "message": "'>' expected. (6:33)"
+      }
+    },
+    {
+      "file": "tests/_fixtures/tsrx/errors/generic-dynamic-tag.tsrx",
+      "code": null,
+      "error": {
+        "code": "TS1012",
+        "start": 47,
+        "end": null,
+        "message": "Unexpected token (2:5)"
+      }
+    },
+    {
+      "file": "tests/_fixtures/tsrx/errors/generic-empty-arguments.tsrx",
+      "code": null,
+      "error": {
+        "code": "TS1012",
+        "start": 31,
+        "end": null,
+        "message": "Unexpected token (2:6)"
+      }
+    },
+    {
       "file": "tests/_fixtures/tsrx/errors/index-after-key.tsrx",
       "code": null,
       "error": {
@@ -277,6 +307,11 @@
     {
       "file": "tests/_fixtures/tsrx/syntax-for-destructure.tsrx",
       "code": "import { defineVaporComponent, VaporFor } from 'vue-jsx-vapor';\n\nexport const A = defineVaporComponent(function A({ o }: { o: Record<string, number> }) {\n\treturn <ul>{<VaporFor in={Object.entries(o)} getKey={([k, v]) => k}>{(__vapor_item) => <li>{__vapor_item.value[0]}={__vapor_item.value[1]}</li>}</VaporFor>}</ul>;\n});",
+      "error": null
+    },
+    {
+      "file": "tests/_fixtures/tsrx/syntax-generic-tags.tsrx",
+      "code": "import { defineVaporComponent } from 'vue-jsx-vapor';\n\nconst List = defineVaporComponent(function List<T,>({ items }: { items: T[] }) {\n\treturn <ul>{items.length}</ul>;\n});\n\nconst Box = defineVaporComponent(function Box<T,>({ value }: { value: T }) {\n\treturn <p>{String(value)}</p>;\n});\n\nexport const App = defineVaporComponent(function App() {\n\treturn <section><List<string> items={['a']} /><List<number> items={[1]} /><Box<Array<number>> value={[1]}>text</Box><Box<Array<number>>>text</Box><UI.List<string> items={['b']} /><div<string> /></section>;\n});",
       "error": null
     },
     {

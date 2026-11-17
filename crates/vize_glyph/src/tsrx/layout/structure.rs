@@ -36,6 +36,7 @@ fn node_eq(left: &Node<'_>, left_source: &str, right: &Node<'_>, right_source: &
     match (left, right) {
         (Node::Element(left), Node::Element(right)) => {
             tag_eq(&left.name, left_source, &right.name, right_source)
+                && left.type_arguments.content_eq(&right.type_arguments)
                 && left.attributes.len() == right.attributes.len()
                 && left
                     .attributes
