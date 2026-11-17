@@ -6,7 +6,7 @@
 //! compiler options, and `transform` projects one Vue SFC into virtual
 //! TypeScript for an opened project handle.
 
-use std::io::{self, BufRead, BufReader, BufWriter, Read, Write};
+use std::io::{self, BufRead, BufReader, BufWriter, Read};
 
 use clap::Args;
 use serde::Deserialize;
@@ -96,24 +96,24 @@ impl io::Write for ReplyStdout {
     fn write(&mut self, bytes: &[u8]) -> io::Result<usize> {
         match self {
             #[cfg(unix)]
-            Self::Raw(file) => file.write(bytes),
-            Self::Std(stdout) => stdout.write(bytes),
+            Self::Raw(file) => io::Write::write(file, bytes),
+            Self::Std(stdout) => io::Write::write(stdout, bytes),
         }
     }
 
     fn write_vectored(&mut self, bytes: &[io::IoSlice<'_>]) -> io::Result<usize> {
         match self {
             #[cfg(unix)]
-            Self::Raw(file) => file.write_vectored(bytes),
-            Self::Std(stdout) => stdout.write_vectored(bytes),
+            Self::Raw(file) => io::Write::write_vectored(file, bytes),
+            Self::Std(stdout) => io::Write::write_vectored(stdout, bytes),
         }
     }
 
     fn flush(&mut self) -> io::Result<()> {
         match self {
             #[cfg(unix)]
-            Self::Raw(file) => file.flush(),
-            Self::Std(stdout) => stdout.flush(),
+            Self::Raw(file) => io::Write::flush(file),
+            Self::Std(stdout) => io::Write::flush(stdout),
         }
     }
 }
