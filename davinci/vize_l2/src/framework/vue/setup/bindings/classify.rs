@@ -1,6 +1,6 @@
 //! Vue's initializer and macro-call binding classification rules.
 
-use super::super::super::{MacroKind, lookup};
+use super::super::super::{MacroKind, lookup, unwrap_ts};
 use super::SetupBindingKind;
 use oxc_ast::ast::{CallExpression, Expression, VariableDeclarationKind};
 
@@ -22,7 +22,7 @@ pub(super) fn is_const_macro_call(call: &CallExpression<'_>) -> bool {
 
 /// `defineProps()` or `withDefaults(defineProps(), ...)`, through TS wrappers.
 pub(super) fn destructures_props(init: &Expression<'_>) -> bool {
-    let Expression::CallExpression(call) = transparent(init) else {
+    let Expression::CallExpression(call) = unwrap_ts(init) else {
         return false;
     };
     is_callee(call, super::super::super::DEFINE_PROPS)
@@ -36,21 +36,9 @@ pub(super) fn destructures_props(init: &Expression<'_>) -> bool {
 
 /// The call an initializer evaluates to, through TS wrappers and parentheses.
 pub(super) fn call<'e, 'a>(expression: &'e Expression<'a>) -> Option<&'e CallExpression<'a>> {
-    match transparent(expression) {
+    match unwrap_ts(expression) {
         Expression::CallExpression(call) => Some(call),
         _ => None,
-    }
-}
-
-fn transparent<'e, 'a>(expression: &'e Expression<'a>) -> &'e Expression<'a> {
-    match expression {
-        Expression::ParenthesizedExpression(inner) => transparent(&inner.expression),
-        Expression::TSAsExpression(inner) => transparent(&inner.expression),
-        Expression::TSSatisfiesExpression(inner) => transparent(&inner.expression),
-        Expression::TSTypeAssertion(inner) => transparent(&inner.expression),
-        Expression::TSNonNullExpression(inner) => transparent(&inner.expression),
-        Expression::TSInstantiationExpression(inner) => transparent(&inner.expression),
-        other => other,
     }
 }
 
@@ -74,7 +62,7 @@ pub(super) fn by_initializer(
 }
 
 fn can_never_be_ref(init: &Expression<'_>) -> bool {
-    match transparent(init) {
+    match unwrap_ts(init) {
         Expression::StringLiteral(_)
         | Expression::NumericLiteral(_)
         | Expression::BooleanLiteral(_)
@@ -99,7 +87,7 @@ fn can_never_be_ref(init: &Expression<'_>) -> bool {
 }
 
 pub(super) fn is_static_node(init: &Expression<'_>) -> bool {
-    match transparent(init) {
+    match unwrap_ts(init) {
         Expression::StringLiteral(_)
         | Expression::NumericLiteral(_)
         | Expression::BooleanLiteral(_)
