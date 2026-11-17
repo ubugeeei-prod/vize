@@ -146,6 +146,16 @@
     (insert (json-serialize (vconcat (reverse vize-real--cases))
                             :null-object nil :false-object :json-false))))
 
+(defun vize-real--await-exit (shutdown conn &rest args)
+  "Give CONN's server time to read `exit' and stop before SHUTDOWN kills it.
+jsonrpc deletes the process right after Eglot sends `exit'; that kill can
+land before the transcript tap has read the notification."
+  (ignore-errors
+    (let ((deadline (+ (float-time) 5)))
+      (while (and (jsonrpc-running-p conn) (< (float-time) deadline))
+        (accept-process-output nil 0.05))))
+  (apply shutdown conn args))
+
 (ert-deftest vize-eglot-real-vite-and-reference-ownership ()
   (let ((eglot-sync-connect t)
         (eglot-connect-timeout 60)
@@ -186,7 +196,10 @@
                               (vize-real--change-config "tsconfig.legacy.json" "{\"vueCompilerOptions\":"))
             (vize-real--case "reference-valid-target-recovery" legacy modern nil nil
                               (vize-real--change-config "tsconfig.legacy.json" legacy-source))))
-      (when server (ignore-errors (eglot-shutdown server nil 10)))
+      (when server
+        (advice-add 'jsonrpc-shutdown :around #'vize-real--await-exit)
+        (unwind-protect (ignore-errors (eglot-shutdown server nil 10))
+          (advice-remove 'jsonrpc-shutdown #'vize-real--await-exit)))
       (dolist (buffer (list legacy modern))
         (when (buffer-live-p buffer)
           (with-current-buffer buffer (set-buffer-modified-p nil))
