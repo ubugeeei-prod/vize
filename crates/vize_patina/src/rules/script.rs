@@ -3,6 +3,7 @@
 
 mod after_await;
 mod component_options;
+mod composition_api;
 mod component_options_name_casing;
 mod custom_event_name_casing;
 mod define_emits_declaration;
