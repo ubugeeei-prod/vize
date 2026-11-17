@@ -169,7 +169,7 @@ impl<'resolver, 'ctx, 'ast> PropVisitor<'resolver, 'ctx, 'ast> {
                         let ObjectPropertyKind::ObjectProperty(prop) = prop else {
                             continue;
                         };
-                        self.note_key(&prop.key, prop.span.start, self.current);
+                        self.note_key(&prop.key, prop.span, self.current);
                     }
                 }
                 Expression::ArrayExpression(array) => self.array_names(array),
@@ -185,7 +185,7 @@ impl<'resolver, 'ctx, 'ast> PropVisitor<'resolver, 'ctx, 'ast> {
                     let ObjectPropertyKind::ObjectProperty(property) = property else {
                         continue;
                     };
-                    self.note_key(&property.key, property.span.start, self.current);
+                    self.note_key(&property.key, property.span, self.current);
                 }
             }
             Argument::ArrayExpression(array) => self.array_names(array),
@@ -213,8 +213,8 @@ impl<'resolver, 'ctx, 'ast> PropVisitor<'resolver, 'ctx, 'ast> {
         }
     }
 
-    fn note_key(&mut self, key: &PropertyKey<'ast>, anchor: u32, block: usize) {
-        if let Some(prop) = named(key, anchor, block) {
+    fn note_key(&mut self, key: &PropertyKey<'ast>, node: Span, block: usize) {
+        if let Some(prop) = named(key, node, block) {
             self.note(&prop.name, prop.span, prop.anchor, prop.block);
         }
     }
@@ -347,12 +347,12 @@ impl<'ctx, 'ast> TypeResolver<'ctx, 'ast> {
         for member in members {
             match member {
                 TSSignature::TSPropertySignature(signature) => {
-                    if let Some(prop) = named(&signature.key, signature.span.start, block) {
+                    if let Some(prop) = named(&signature.key, signature.span, block) {
                         props.push(prop);
                     }
                 }
                 TSSignature::TSMethodSignature(signature) => {
-                    if let Some(prop) = named(&signature.key, signature.span.start, block) {
+                    if let Some(prop) = named(&signature.key, signature.span, block) {
                         props.push(prop);
                     }
                 }
@@ -448,17 +448,17 @@ fn extend_unique(props: &mut Vec<Prop>, incoming: Vec<Prop>) {
     }
 }
 
-fn named(key: &PropertyKey<'_>, anchor: u32, block: usize) -> Option<Prop> {
+/// eslint-plugin-vue reports the whole prop node, not its key.
+fn named(key: &PropertyKey<'_>, node: Span, block: usize) -> Option<Prop> {
     let name = match key {
         PropertyKey::StaticIdentifier(identifier) => identifier.name.as_str(),
         PropertyKey::StringLiteral(literal) => literal.value.as_str(),
         _ => return None,
     };
-    let span = key.span();
     Some(Prop {
         name: String::from(name),
-        span,
-        anchor: anchor.min(span.start),
+        span: node,
+        anchor: node.start.min(key.span().start),
         block,
     })
 }

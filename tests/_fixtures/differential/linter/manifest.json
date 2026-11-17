@@ -16497,6 +16497,53 @@
       }
     },
     {
+      "id": "linter/eslint-vue-report-nodes-12336",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "eslint-vue-report-nodes-12336",
+        "files": [
+          {
+            "path": "Options.vue.txt",
+            "role": "real-project-matrix-reduction",
+            "sha256": "cbe2799aa72af316b02116c33178b73abc073734b5662c6b5d05e402d1ae50e5"
+          },
+          {
+            "path": "Literals.vue.txt",
+            "role": "real-project-matrix-reduction",
+            "sha256": "be6212cef640693e3d09af0a0dd064b8e58d450a2ebef81a8f220dcb58dcf6d6"
+          },
+          {
+            "path": "Props.vue.txt",
+            "role": "real-project-matrix-reduction",
+            "sha256": "002fc89fe2c9cecbbf36e364a2853f55e329a67d3e94f44cf78b9d8f39f18f9b"
+          },
+          {
+            "path": "rules.json",
+            "role": "rule-options",
+            "sha256": "32cc48da341c092d2a83c6862f7bf0601b5159f44cd51bf86a5e416692b96e1a"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/explicit-slots-imported-intersection-12599",
       "state": "active",
       "targets": [
