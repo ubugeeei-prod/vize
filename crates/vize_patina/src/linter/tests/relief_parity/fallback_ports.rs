@@ -3,6 +3,7 @@
 
 use crate::rule::Rule;
 use crate::rules::a11y::{LandmarkRoles, RoleImgHasName};
+use crate::rules::html::IdDuplication;
 use crate::rules::vue::A11yImgAlt;
 
 fn a11y_family() -> Vec<Box<dyn Rule>> {
@@ -48,4 +49,30 @@ fn ported_a11y_rules_match_their_relief_hooks() {
 #[test]
 fn ported_landmark_roles_match_its_relief_document_on_jsx() {
     super::assert_parity(landmark_family, &[], A11Y_JSX);
+}
+
+fn id_family() -> Vec<Box<dyn Rule>> {
+    vec![Box::new(IdDuplication)]
+}
+
+const ID_TEMPLATES: &[&str] = &[
+    r#"<div id="a">A</div><div id="a">B</div><div id="a">C</div><div :id="a">D</div><div id>E</div>"#,
+    r#"<div v-if="x"><i id="r"></i></div><div v-else-if="y"><i id="r"></i></div><div v-else><i id="r"></i><b id="r"></b></div><p id="r"></p>"#,
+    "<p id=\"g\" v-if=\"x\">a</p>\n<!-- gap -->\n<p id=\"g\" v-else>b</p>\n<p id=\"g\">c</p>",
+    r#"<template v-if="x"><i id="t"></i></template><template v-else><i id="t"></i></template><Comp id="c" /><Comp id="c" />"#,
+    r#"<ul><li v-for="item in items" id="row">{{ item }}</li></ul><div id="row"></div><div v-pre id="row"></div>"#,
+    r#"<div id="a &amp; b"></div><div id="a &amp; b"></div><div id=" a"></div><div id="a"></div>"#,
+];
+
+const ID_JSX: &[&str] = &[
+    r#"const A = () => <><div id="a" /><div id="a" /><div id={a} /><div id="a" /></>;"#,
+    r#"const A = () => <div>{ok ? <i id="r" /> : <i id="r" />}<b id="r" />{ok && <s id="s" />}<s id="s" /></div>;"#,
+    r#"const A = () => <div>{a ? (b ? <i id="n" /> : <i id="n" />) : <i id="n" />}<Comp id="c" /><Comp id="c" /></div>;"#,
+    r#"const A = () => <ul>{items.map((item) => <li id="row" key={item}>{item}</li>)}<li id="row" /></ul>;"#,
+    r#"function A() { const one = <p id="x" />; return <section id="x">{one}<p id="x" /></section>; }"#,
+];
+
+#[test]
+fn ported_id_duplication_matches_its_relief_hooks() {
+    super::assert_parity(id_family, ID_TEMPLATES, ID_JSX);
 }

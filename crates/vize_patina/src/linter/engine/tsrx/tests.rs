@@ -214,3 +214,28 @@ fn landmark_roles_report_on_tsrx_and_respect_exclusive_regions() {
     let start = u32::try_from(duplicate.find("<main>b</main>").unwrap()).unwrap();
     assert_eq!(rows(&result), [("a11y/landmark-roles", start, start + 14)]);
 }
+
+#[test]
+fn id_duplication_reports_on_tsrx_and_respects_exclusive_regions() {
+    // Moved off the JSX lowering fallback (#6848), so it now lints TSRX too.
+    let source = "export function Rows({ ok, items }: { ok: boolean; items: string[] }) @{
+  <div>
+    <p id=\"a\">a</p>
+    {ok ? <i id=\"b\">x</i> : <i id=\"b\">y</i>}
+    @for (const item of items; key item) {
+      <span id=\"c\">{item}</span>
+    } @empty {
+      <span id=\"c\">none</span>
+    }
+    <b id=\"a\">again</b>
+  </div>
+}
+";
+    let linter = linter_with(vec![Box::new(crate::rules::html::IdDuplication)]);
+    let result = lint_tsrx(&linter, source, "Rows.tsrx");
+    let first = u32::try_from(source.find("id=\"a\">a<").unwrap()).unwrap();
+    let again = u32::try_from(source.find("id=\"a\">again").unwrap()).unwrap();
+    assert_eq!(rows(&result), [("html/id-duplication", again, again + 6)]);
+    let label = &result.diagnostics[0].labels[0];
+    assert_eq!((label.start, label.end), (first, first + 6));
+}

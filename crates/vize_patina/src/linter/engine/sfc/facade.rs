@@ -100,6 +100,7 @@ pub(in crate::linter::engine) const RULES: &[&str] = &[
     "vue/no-v-text",
     "a11y/role-img-has-name",
     "vue/a11y-img-alt",
+    "html/id-duplication",
 ];
 
 pub(in crate::linter::engine) struct Dispatch<'a> {

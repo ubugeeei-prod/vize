@@ -116,6 +116,10 @@ fn migrated_sfc_rules_preserve_diagnostics_and_fixes() {
             r#"<template><img src="/a.png"></template>"#,
             "vue/a11y-img-alt",
         ),
+        (
+            r#"<template><div><i id="a"></i><b id="a"></b></div></template>"#,
+            "html/id-duplication",
+        ),
     ] {
         let result = linter().lint_sfc(sfc, "test.vue");
         assert!(
@@ -153,6 +157,8 @@ fn migrated_sfc_rules_preserve_diagnostics_and_fixes() {
         r#"<!-- from "@void/vue" --><Link/><Link href="/posts" method="CREATE"/><Link href="/posts" method="DELETE" prefetch/>"#,
         r#"<span role="img"></span><img src="a" alt="" role="img"><img :src="s" role="img" :alt="label"><i role="img presentation" title=" "></i>"#,
         r#"<img src="a"><img src="a" alt><img :alt="x"><img v-bind:alt="x"><img :[alt]="x"><Img src="a">"#,
+        r#"<div v-if="x"><i id="r"></i></div><div v-else><i id="r"></i><b id="r"></b></div><p id="r"></p><Comp id="c" /><Comp id="c" />"#,
+        "<p id=\"g\" v-if=\"x\">a</p>\n<!-- gap -->\n<p id=\"g\" v-else>b</p>\n<p id=\"g\">c</p><div id=\"a &amp; b\"></div><div id=\"a &amp; b\"></div>",
         "<!-- eslint-disable-next-line vue/prefer-props-shorthand -->\n<MyComponent :foo=\"foo\"/>",
         "<!-- eslint-disable-next-line vue/no-useless-v-bind -->\n<div :title=\"'static'\"/>",
         "<!-- eslint-disable-next-line vue/no-multiple-objects-in-class -->\n<div :class=\"[{ active }, { hidden }]\"/>",
@@ -183,6 +189,7 @@ fn migrated_sfc_rules_preserve_diagnostics_and_fixes() {
         "<!-- eslint-disable-next-line ecosystem/nuxt-prefer-nuxt-link -->\n<a href=\"/settings\">Settings</a>",
         "<!-- eslint-disable-next-line a11y/role-img-has-name -->\n<span role=\"img\"></span>",
         "<!-- eslint-disable-next-line vue/a11y-img-alt -->\n<img src=\"a\">",
+        "<div id=\"x\"></div>\n<!-- eslint-disable-next-line html/id-duplication -->\n<div id=\"x\"></div>",
         r#"<div v-pre><textarea>{{ raw }}</textarea></div>"#,
     ] {
         compare_template(source);
