@@ -21172,6 +21172,42 @@
       }
     },
     {
+      "id": "linter/self-name-multi-dot-12336",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "self-name-multi-dot-12336",
+        "files": [
+          {
+            "path": "router-link.demo.vue.txt",
+            "role": "real-project-matrix-reduction",
+            "sha256": "8614cdc82e48230fbcbbafd92c11b0e6f1834949025b64b11538e6421069d247"
+          },
+          {
+            "path": "rules.json",
+            "role": "rule-options",
+            "sha256": "52ecf0ef404d50a77f58b959c458ac811c0b6fb24714d7ba64e0f6f3935ac4b4"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/setup-enum-computed-keys-12998",
       "state": "active",
       "targets": [

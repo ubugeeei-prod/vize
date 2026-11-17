@@ -1,4 +1,5 @@
 mod local_bindings;
+mod multi_dot_file;
 
 use super::{RequireComponentRegistration, pascal_to_kebab};
 use crate::{LintPreset, Linter};
