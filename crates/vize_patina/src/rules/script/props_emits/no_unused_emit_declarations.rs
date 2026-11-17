@@ -72,7 +72,7 @@ use vize_l0::{CompactString, FxHashSet};
 use super::super::vue_object::VueObjects;
 use super::super::{ScriptLintResult, ScriptRule, ScriptRuleMeta, SfcScriptContext};
 use super::require_explicit_emits::setup_context;
-use super::template_emits::collect_template_emitted_events;
+use super::template_emits::{collect_template_emitted_events, template_emit_escapes};
 use crate::diagnostic::{LintDiagnostic, Severity};
 
 mod keys;
@@ -136,15 +136,18 @@ impl ScriptRule for NoUnusedEmitDeclarations {
                 escaped = collector.escaped;
             }
             collect_define_model_events(program, &mut used);
+            // `getCurrentInstance()` hands out the instance, whose `emit` any
+            // module can call.
+            let mut instance = InstanceAccess::default();
+            instance.visit_program(program);
+            escaped |= instance.found;
 
             // Top-level `<script setup>` bindings are template-visible, so emit
             // calls in template expressions count as usage too (#3209).
             if let Some(template) = sfc.template_source {
-                collect_template_emitted_events(
-                    template,
-                    declaration.binding.unwrap_or(""),
-                    &mut used,
-                );
+                let binding = declaration.binding.unwrap_or("");
+                collect_template_emitted_events(template, binding, &mut used);
+                escaped |= template_emit_escapes(template, binding);
             }
 
             for event in &declaration.events {
@@ -403,6 +406,25 @@ impl<'a> Visit<'a> for EmittedCollector<'_, '_> {
             return;
         }
         self.escaped = true;
+    }
+}
+
+/// Whether the program calls `getCurrentInstance()`.
+#[derive(Default)]
+struct InstanceAccess {
+    found: bool,
+}
+
+impl<'a> Visit<'a> for InstanceAccess {
+    fn visit_call_expression(&mut self, it: &CallExpression<'a>) {
+        if matches!(
+            &it.callee,
+            Expression::Identifier(callee) if callee.name.as_str() == "getCurrentInstance"
+        ) {
+            self.found = true;
+            return;
+        }
+        walk_call_expression(self, it);
     }
 }
 
