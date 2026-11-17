@@ -29,11 +29,15 @@ pub(in crate::linter) enum EnumCheckAsk {
         returned: Span,
         receiver: Option<Span>,
         is_async: bool,
+        /// Bit-flag leaves of the returned expression, as for `Pair`.
+        safe_operands: Vec<Span>,
     },
     Heritage {
         sender: Span,
         member: CompactString,
         sources: Vec<HeritageSource>,
+        /// Bit-flag leaves of the initializer, as for `Pair`.
+        safe_operands: Vec<Span>,
     },
     Computed {
         object: Span,
@@ -61,6 +65,8 @@ pub(in crate::linter) struct EnumCallArgument {
     /// The spread operand, otherwise the same span as `node`.
     pub expression: Span,
     pub spread: bool,
+    /// Bit-flag leaves of a non-spread argument, as for `Pair`.
+    pub safe_operands: Vec<Span>,
 }
 
 impl EnumCheckAsk {
@@ -84,6 +90,7 @@ impl EnumCheckAsk {
                 function,
                 returned,
                 receiver,
+                safe_operands,
                 ..
             } => {
                 add(*function);
@@ -91,13 +98,22 @@ impl EnumCheckAsk {
                 if let Some(receiver) = receiver {
                     add(*receiver);
                 }
+                for operand in safe_operands {
+                    add(*operand);
+                }
             }
             Self::Heritage {
-                sender, sources, ..
+                sender,
+                sources,
+                safe_operands,
+                ..
             } => {
                 add(*sender);
                 for source in sources {
                     add(source.span);
+                }
+                for operand in safe_operands {
+                    add(*operand);
                 }
             }
             Self::Computed { object, property } => {
@@ -115,6 +131,9 @@ impl EnumCallAsk {
         for argument in &self.arguments {
             add(argument.node);
             add(argument.expression);
+            for operand in &argument.safe_operands {
+                add(*operand);
+            }
         }
     }
 }

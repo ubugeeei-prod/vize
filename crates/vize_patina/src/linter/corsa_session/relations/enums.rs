@@ -4,6 +4,7 @@
 //! Structural members, contextual types, resolved signatures and computed
 //! enum keys need paired checker types, so they are resolved here in the same
 //! expression batch as the other relation rules.
+mod computed;
 mod deep;
 mod types;
 
@@ -13,8 +14,8 @@ pub(in crate::linter) use types::{
 
 use super::checker::{CALL, CONSTRUCT, Checker};
 use super::{Located, Span};
-use crate::linter::corsa_session::boolean::checker_node_text;
-use corsa::api::{NodeHandle, SignatureResponse, TypeResponse};
+use computed::computed_receivers;
+use corsa::api::{SignatureResponse, TypeResponse};
 use deep::{enum_names, mismatch, number_index, reference_arguments};
 
 pub(super) async fn check(
@@ -37,33 +38,22 @@ pub(super) async fn check(
                     checker.contextual(handle).await
                 }
             }?;
-            if mismatch(checker, &sender, &receiver).await {
-                if !safe_operands.is_empty() {
-                    let mut safe = true;
-                    for operand in safe_operands {
-                        let Some(operand) = located.ty(translate(*operand)).cloned() else {
-                            safe = false;
-                            break;
-                        };
-                        if mismatch(checker, &operand, &receiver).await {
-                            safe = false;
-                            break;
-                        }
-                    }
-                    if safe {
-                        return None;
-                    }
-                }
-                result(checker, &receiver).await
-            } else {
-                None
-            }
+            let flow = Flow {
+                located,
+                translate,
+                safe_operands,
+            };
+            flow.unsafe_to(checker, &sender, &receiver)
+                .await
+                .then_some(())?;
+            result(checker, &receiver).await
         }
         EnumCheckAsk::Return {
             function,
             returned,
             receiver,
             is_async,
+            safe_operands,
         } => {
             let mut sender = located.ty(translate(*returned))?.clone();
             let explicit = receiver
@@ -86,12 +76,20 @@ pub(super) async fn check(
                 receiver = awaited(checker, &receiver).await;
                 sender = awaited(checker, &sender).await;
             }
-            mismatch(checker, &sender, &receiver).await.then_some(())?;
+            let flow = Flow {
+                located,
+                translate,
+                safe_operands,
+            };
+            flow.unsafe_to(checker, &sender, &receiver)
+                .await
+                .then_some(())?;
             result(checker, &receiver).await
         }
         EnumCheckAsk::Heritage {
             sender,
             member,
+            safe_operands,
             sources,
         } => {
             let sender = located.ty(translate(*sender))?.clone();
@@ -134,8 +132,13 @@ pub(super) async fn check(
             if receivers.is_empty() {
                 return None;
             }
+            let flow = Flow {
+                located,
+                translate,
+                safe_operands,
+            };
             for receiver in &receivers {
-                if !mismatch(checker, &sender, receiver).await {
+                if !flow.unsafe_to(checker, &sender, receiver).await {
                     return None;
                 }
             }
@@ -175,8 +178,13 @@ pub(super) async fn call(
                 checker, located, argument, translate, &signature, position, remaining,
             )
             .await;
+            let flow = Flow {
+                located,
+                translate,
+                safe_operands: &argument.safe_operands,
+            };
             if let Some(receiver) = receiver
-                && mismatch(checker, &sender, &receiver).await
+                && flow.unsafe_to(checker, &sender, &receiver).await
             {
                 let answer = result(checker, &receiver).await;
                 if let Some(reply) = replies.get_mut(index) {
@@ -308,11 +316,50 @@ async fn awaited(checker: &mut Checker<'_>, ty: &TypeResponse) -> TypeResponse {
         .unwrap_or_else(|| ty.clone())
 }
 
+/// One sender expression and the operands that make it a bit flag.
+struct Flow<'a> {
+    located: &'a Located,
+    translate: &'a dyn Fn(Span) -> Span,
+    /// Primitive leaves of a bitwise expression (empty for any other).
+    safe_operands: &'a [Span],
+}
+
+impl Flow<'_> {
+    /// typescript-eslint `isUnsafeAssignment`: an enum mismatch that is not a
+    /// bit flag of the receiver's own members (`Flags.A | Flags.B`), in every
+    /// position the rule checks.
+    async fn unsafe_to(
+        &self,
+        checker: &mut Checker<'_>,
+        sender: &TypeResponse,
+        receiver: &TypeResponse,
+    ) -> bool {
+        if !mismatch(checker, sender, receiver).await {
+            return false;
+        }
+        if self.safe_operands.is_empty() {
+            return true;
+        }
+        for operand in self.safe_operands {
+            let Some(operand) = self.located.ty((self.translate)(*operand)).cloned() else {
+                return true;
+            };
+            if mismatch(checker, &operand, receiver).await {
+                return true;
+            }
+        }
+        false
+    }
+}
+
 async fn result(checker: &mut Checker<'_>, receiver: &TypeResponse) -> Option<EnumMismatch> {
     results(checker, std::slice::from_ref(receiver)).await
 }
 
-async fn results(checker: &mut Checker<'_>, receivers: &[TypeResponse]) -> Option<EnumMismatch> {
+pub(super) async fn results(
+    checker: &mut Checker<'_>,
+    receivers: &[TypeResponse],
+) -> Option<EnumMismatch> {
     let mut names = Vec::new();
     for receiver in receivers {
         names.extend(enum_names(checker, receiver).await);
@@ -320,109 +367,4 @@ async fn results(checker: &mut Checker<'_>, receivers: &[TypeResponse]) -> Optio
     names.sort_unstable();
     names.dedup();
     (!names.is_empty()).then_some(EnumMismatch { names })
-}
-
-async fn computed_receivers(
-    checker: &mut Checker<'_>,
-    object: &TypeResponse,
-    sender: &TypeResponse,
-) -> Option<EnumMismatch> {
-    let object = checker.apparent(object).await;
-    let mut receivers = checker
-        .session()
-        .client()
-        .get_index_infos_of_type(
-            checker.session().snapshot().handle.clone(),
-            checker.session().project_handle(),
-            object.id.clone(),
-        )
-        .await
-        .unwrap_or_default()
-        .into_iter()
-        .map(|info| info.key_type)
-        .collect::<Vec<_>>();
-    for property in checker.properties(&object).await {
-        for declaration in property
-            .declarations
-            .iter()
-            .chain(property.value_declaration.iter())
-        {
-            if let Some(ty) = computed_declaration_type(checker, declaration).await
-                && !receivers.iter().any(|known| known.id == ty.id)
-            {
-                receivers.push(ty);
-            }
-        }
-    }
-    if receivers.is_empty() {
-        return None;
-    }
-    for receiver in &receivers {
-        if !mismatch(checker, sender, receiver).await && checker.assignable(sender, receiver).await
-        {
-            return None;
-        }
-    }
-    results(checker, &receivers).await
-}
-
-async fn computed_declaration_type(
-    checker: &mut Checker<'_>,
-    declaration: &NodeHandle,
-) -> Option<TypeResponse> {
-    let path = declaration.declaring_path()?;
-    let position = {
-        let encoded = checker.source_file(path.as_str()).await?;
-        computed_key_position(encoded.as_bytes(), declaration)?
-    };
-    checker
-        .session()
-        .get_type_at_position(path.as_str(), position)
-        .await
-        .ok()
-        .flatten()
-}
-
-fn computed_key_position(data: &[u8], declaration: &NodeHandle) -> Option<u32> {
-    let (source, pos, end) = match declaration.parse() {
-        Ok(parsed) => {
-            let (source, _, _) = checker_node_text(data, 1).ok()?;
-            (source, parsed.pos, parsed.end)
-        }
-        Err(_) => {
-            let index = declaration
-                .as_str()
-                .split('.')
-                .next()?
-                .parse::<usize>()
-                .ok()?;
-            checker_node_text(data, index).ok()?
-        }
-    };
-    let start = utf16_to_byte(source, pos)?;
-    let stop = utf16_to_byte(source, end)?;
-    let text = source.get(start..stop)?;
-    let open = text.find('[')?;
-    let close = text.get(open + 1..)?.find(']')?.saturating_add(open + 1);
-    let colon = text.find(':').unwrap_or(text.len());
-    if close > colon {
-        return None;
-    }
-    let inside = text.get(open + 1..close)?;
-    let leading = inside.len().saturating_sub(inside.trim_start().len());
-    let mapped = inside.find(" in ").map(|offset| offset + 4);
-    let relative = open + 1 + mapped.unwrap_or(leading);
-    let prefix = text.get(..relative)?;
-    Some(pos.saturating_add(prefix.encode_utf16().count() as u32))
-}
-
-fn utf16_to_byte(text: &str, offset: u32) -> Option<usize> {
-    let mut units = 0u32;
-    for (index, character) in text.char_indices() {
-        if units >= offset {
-            return Some(index);
-        }
-        units += character.len_utf16() as u32;
-    }
-    (units >= offset).then_some(text.len())
 }

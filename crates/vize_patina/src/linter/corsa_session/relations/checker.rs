@@ -69,6 +69,8 @@ pub(super) struct Checker<'a> {
     pub(super) enum_names: FxHashMap<TypeHandle, Vec<CompactString>>,
     pub(super) enum_constituents: FxHashMap<TypeHandle, Vec<TypeResponse>>,
     pub(super) generic_types: FxHashMap<TypeHandle, bool>,
+    /// Enum key types an object's computed member access is checked against.
+    pub(super) computed_keys: FxHashMap<TypeHandle, Vec<TypeResponse>>,
 }
 
 impl<'a> Checker<'a> {
@@ -87,6 +89,7 @@ impl<'a> Checker<'a> {
             enum_names: FxHashMap::default(),
             enum_constituents: FxHashMap::default(),
             generic_types: FxHashMap::default(),
+            computed_keys: FxHashMap::default(),
         }
     }
 

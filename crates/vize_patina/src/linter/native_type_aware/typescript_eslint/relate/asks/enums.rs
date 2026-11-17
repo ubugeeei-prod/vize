@@ -118,10 +118,7 @@ impl<'v> Walk<'_, '_, 'v> {
         let Some(ask) = (|| {
             let sender_span = (self.map)(span(sender)?)?;
             let receiver_span = (self.map)(span(receiver)?)?;
-            let safe_operands = bitwise_operands(sender)
-                .into_iter()
-                .map(|operand| (self.map)(operand))
-                .collect::<Option<Vec<_>>>()?;
+            let safe_operands = self.mapped_operands(sender)?;
             Some(EnumCheckAsk::Pair {
                 sender: sender_span,
                 receiver: if contextual {
@@ -138,6 +135,15 @@ impl<'v> Walk<'_, '_, 'v> {
             .enum_checks
             .push(EnumTarget::new(target_key, target_span, message));
         self.pending.request.enum_checks.push(ask);
+    }
+
+    /// The generated spans of `value`'s bit-flag leaves (empty unless it is
+    /// a bitwise expression); `None` when one does not map.
+    fn mapped_operands(&self, value: &Value) -> Option<Vec<Span>> {
+        bitwise_operands(value)
+            .into_iter()
+            .map(|operand| (self.map)(operand))
+            .collect()
     }
 
     fn enum_array(&mut self, value: &Value) {
@@ -232,6 +238,7 @@ impl<'v> Walk<'_, '_, 'v> {
                     .get("async")
                     .and_then(Value::as_bool)
                     .unwrap_or(false),
+                safe_operands: self.mapped_operands(returned)?,
             })
         })() else {
             return;
@@ -281,10 +288,11 @@ impl<'v> Walk<'_, '_, 'v> {
                 });
             }
         }
-        let (Some(target_key), Some(target_span), Some(sender)) = (
+        let (Some(target_key), Some(target_span), Some(sender), Some(safe_operands)) = (
             key(member),
             span(member),
             span(value).and_then(|span| (self.map)(span)),
+            self.mapped_operands(value),
         ) else {
             return;
         };
@@ -301,6 +309,7 @@ impl<'v> Walk<'_, '_, 'v> {
                 sender,
                 member: name,
                 sources,
+                safe_operands,
             });
     }
 
@@ -330,10 +339,16 @@ impl<'v> Walk<'_, '_, 'v> {
             } else {
                 Some(argument)
             };
-            let (Some(node_span), Some(expression_span), Some(report_span)) = (
+            let safe_operands = if spread {
+                Some(Vec::new())
+            } else {
+                self.mapped_operands(argument)
+            };
+            let (Some(node_span), Some(expression_span), Some(report_span), Some(safe_operands)) = (
                 span(argument).and_then(|span| (self.map)(span)),
                 expression.and_then(span).and_then(|span| (self.map)(span)),
                 span(argument),
+                safe_operands,
             ) else {
                 return;
             };
@@ -341,6 +356,7 @@ impl<'v> Walk<'_, '_, 'v> {
                 node: node_span,
                 expression: expression_span,
                 spread,
+                safe_operands,
             });
             targets.push(EnumTarget::new(target_key, report_span, ARGUMENT));
         }
@@ -385,6 +401,11 @@ fn static_member_name(member: &Value) -> Option<CompactString> {
         return None;
     }
     let key = member.get("key")?;
+    // `#fruit` is not the inherited `fruit`: private names never implement
+    // or override a heritage member.
+    if kind(key) == "PrivateIdentifier" {
+        return None;
+    }
     key.get("name")
         .or_else(|| key.get("value"))
         .and_then(Value::as_str)

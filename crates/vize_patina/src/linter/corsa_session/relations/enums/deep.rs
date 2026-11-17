@@ -366,7 +366,7 @@ pub(super) async fn enum_names(checker: &mut Checker<'_>, ty: &TypeResponse) -> 
     }
     let mut visited = FxHashSet::default();
     let mut names = Vec::new();
-    collect_enum_names(checker, ty.clone(), &mut visited, &mut names, 0).await;
+    collect_enum_names(checker, ty.clone(), &mut visited, &mut names).await;
     names.sort_unstable();
     names.dedup();
     checker.enum_names.insert(ty.id.clone(), names.clone());
@@ -378,12 +378,11 @@ fn collect_enum_names<'a>(
     ty: TypeResponse,
     visited: &'a mut FxHashSet<TypeHandle>,
     names: &'a mut Vec<CompactString>,
-    depth: u8,
 ) -> Boxed<'a, ()> {
+    // typescript-eslint `describeEnumTypes` walks without a depth bound; the
+    // visited set ends recursive types. A bound here could hide the enum of
+    // a member the bounded comparison reached by a shorter path.
     Box::pin(async move {
-        if depth > MAX_DEPTH {
-            return;
-        }
         let ty = checker.base_constraint(&ty).await.unwrap_or(ty);
         if !visited.insert(ty.id.clone()) {
             return;
@@ -396,14 +395,14 @@ fn collect_enum_names<'a>(
             }
         }
         for argument in reference_arguments(checker, &ty).await {
-            collect_enum_names(checker, argument, visited, names, depth + 1).await;
+            collect_enum_names(checker, argument, visited, names).await;
         }
         if let Some(element) = number_index(checker, &ty).await {
-            collect_enum_names(checker, element, visited, names, depth + 1).await;
+            collect_enum_names(checker, element, visited, names).await;
         }
         for property in checker.properties(&ty).await {
             if let Some(property) = checker.type_of_symbol(&property).await {
-                collect_enum_names(checker, property, visited, names, depth + 1).await;
+                collect_enum_names(checker, property, visited, names).await;
             }
         }
     })
