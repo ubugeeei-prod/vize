@@ -54,9 +54,13 @@ function run(
   return stdout;
 }
 
-// The newest release whose packets the source must reproduce. Re-pin it when an
-// intended output change lands (#12255 made public columns UTF-16).
-const PUBLIC_VERSION = "0.778.0";
+// The pre-fix release: its plain reports must still show the reactive-graph
+// regression the source fixes.
+const PUBLIC_VERSION = "0.565.0";
+// The newest release, whose JSON diagnostics the source must reproduce byte for
+// byte. v0.565.0 predates intended output changes (#12255 made public columns
+// UTF-16 code units; rule help URLs moved), so it cannot serve that check.
+const CURRENT_VERSION = "0.778.0";
 const expected = expectedBuildIdentity(repo);
 assert.equal(expected.sourceRevision, process.env.EXPECTED_SOURCE_SHA);
 const sourceReceipt = JSON.parse(
@@ -132,6 +136,26 @@ assert.equal(
   run("source-version", sourceBinary, ["--version"], repo).toString("utf8"),
   expected.cliVersion + "\n",
 );
+const currentConsumer = fs.realpathSync(
+  fs.mkdtempSync(path.join(os.tmpdir(), "vize-cross-file-effects-current-")),
+);
+fs.writeFileSync(
+  path.join(currentConsumer, "package.json"),
+  JSON.stringify({ private: true, dependencies: { vize: CURRENT_VERSION } }),
+);
+run(
+  "install-current",
+  "npm",
+  ["install", "--ignore-scripts", "--no-audit", "--no-fund"],
+  currentConsumer,
+  false,
+);
+assert.equal(statuses.get("install-current"), 0);
+const currentBinary = path.join(currentConsumer, "node_modules/vize/bin/vize");
+assert.equal(
+  run("current-version", currentBinary, ["--version"], currentConsumer).toString("utf8"),
+  `vize ${CURRENT_VERSION}\n`,
+);
 const publicRequire = createRequire(path.join(consumer, "package.json"));
 const native: unknown = publicRequire("@vizejs/native");
 assert.equal(typeof record(native).runCli, "function");
@@ -200,8 +224,8 @@ for (const test of cases) {
   checkWasm(test, oracle);
   const flags = ["lint", "--no-config", "--cross-file-complexity", "--help-level", "short"];
   const beforeJson = run(
-    `${test.id}.public-json`,
-    publicBinary,
+    `${test.id}.current-json`,
+    currentBinary,
     [...flags, "--format", "json", "*.vue"],
     project,
   );
@@ -212,7 +236,7 @@ for (const test of cases) {
     project,
   );
   assert.deepEqual(afterJson, beforeJson, `${test.id}: complete diagnostic packet`);
-  assert.equal(statuses.get(`${test.id}.source-json`), statuses.get(`${test.id}.public-json`));
+  assert.equal(statuses.get(`${test.id}.source-json`), statuses.get(`${test.id}.current-json`));
   if (test.diagnostics) {
     const diagnostics: unknown = JSON.parse(beforeJson.toString("utf8"));
     assert.ok(Array.isArray(diagnostics));
@@ -266,7 +290,7 @@ for (const test of cases) {
   save("observations.json", observations);
 }
 const noCrossFlags = ["lint", "--no-config", "--format", "json", "*.vue"];
-const beforeOff = run("opt-out.public", publicBinary, noCrossFlags, project);
+const beforeOff = run("opt-out.current", currentBinary, noCrossFlags, project);
 const afterOff = run(
   "opt-out.source",
   sourceBinary,
@@ -274,13 +298,14 @@ const afterOff = run(
   project,
 );
 assert.deepEqual(afterOff, beforeOff);
-assert.equal(statuses.get("opt-out.source"), statuses.get("opt-out.public"));
+assert.equal(statuses.get("opt-out.source"), statuses.get("opt-out.current"));
 profileCheck("opt-out.source", 0, 0, true);
 assert.deepEqual(cases[0].files, cases.at(-1)?.files, "repair must restore all exact input bytes");
 save("qualification.json", {
   passed: true,
   source: expected,
   publicVersion: PUBLIC_VERSION,
+  currentVersion: CURRENT_VERSION,
   scenarios: observations.length,
   observations,
   optOutDiagnosticSha256: hash(afterOff),
