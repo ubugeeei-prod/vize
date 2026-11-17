@@ -177,6 +177,8 @@ fn find_closing_double(bytes: &[u8], start: usize, ch: u8) -> Option<usize> {
 pub(crate) fn strip_markdown(text: &str) -> String {
     let mut result = String::with_capacity(text.len());
     let mut in_code_block = false;
+    // Two scratch lines reused for the marker passes below.
+    let (mut once, mut twice) = (String::default(), String::default());
 
     for line in text.lines() {
         let trimmed = line.trim();
@@ -216,12 +218,91 @@ pub(crate) fn strip_markdown(text: &str) -> String {
             .or_else(|| trimmed.strip_prefix("# "))
             .unwrap_or(trimmed);
 
-        // Strip bold/italic markers and inline code backticks
-        let content = content.replace("**", "").replace("__", "").replace('`', "");
-        result.push_str(content.trim());
+        // Strip bold/italic markers and inline code backticks, pass by pass
+        // as `replace` would (removing `**` can join a `__`).
+        if !content.contains(['*', '_', '`']) {
+            result.push_str(content.trim());
+            continue;
+        }
+        remove_into(content, "**", &mut once);
+        remove_into(&once, "__", &mut twice);
+        remove_into(&twice, "`", &mut once);
+        result.push_str(once.trim());
     }
 
     // Trim trailing whitespace/newlines
-    let trimmed = result.trim_end();
-    trimmed.to_compact_string()
+    let kept = result.trim_end().len();
+    result.truncate(kept);
+    result
+}
+
+/// `source.replace(marker, "")` into a reused buffer.
+fn remove_into(source: &str, marker: &str, out: &mut String) {
+    out.clear();
+    for part in source.split(marker) {
+        out.push_str(part);
+    }
+}
+
+#[cfg(test)]
+mod strip_markdown_tests {
+    use super::strip_markdown;
+    use vize_l0::ToCompactString;
+
+    /// The pass-by-pass `replace` chain `strip_markdown` used to allocate.
+    fn by_replace(text: &str) -> vize_l0::String {
+        let mut result = vize_l0::String::default();
+        let mut in_code_block = false;
+        for line in text.lines() {
+            let trimmed = line.trim();
+            if trimmed.starts_with("```") {
+                in_code_block = !in_code_block;
+                continue;
+            }
+            if in_code_block {
+                if !result.is_empty() {
+                    result.push('\n');
+                }
+                result.push_str("  ");
+                result.push_str(trimmed);
+                continue;
+            }
+            if trimmed.is_empty() {
+                if !result.is_empty() && !result.ends_with('\n') {
+                    result.push('\n');
+                }
+                continue;
+            }
+            if !result.is_empty() && !result.ends_with('\n') {
+                result.push('\n');
+            }
+            let content = trimmed
+                .strip_prefix("### ")
+                .or_else(|| trimmed.strip_prefix("## "))
+                .or_else(|| trimmed.strip_prefix("# "))
+                .unwrap_or(trimmed);
+            let content = content.replace("**", "").replace("__", "").replace('`', "");
+            result.push_str(content.trim());
+        }
+        result.trim_end().to_compact_string()
+    }
+
+    #[test]
+    fn matches_the_replace_chain() {
+        for text in [
+            "",
+            "plain help",
+            "**Why:** keys help `v-for` track items.",
+            "_**_ joined markers",
+            "__**bold**__ and `` `nested` ``",
+            "** spaced ** `  code  `",
+            "# Title\n\n## Sub **x**\n### `three`",
+            "#  Title with two spaces",
+            "```vue\n<li v-for=\"i in items\" :key=\"i.id\">\n```\n**Fix:** add a key",
+            "a*b_c `d`\n\n\n  trailing  \n\n",
+            "\u{1F600} **emoji** __ä__",
+        ] {
+            assert_eq!(strip_markdown(text), by_replace(text), "{text:?}");
+        }
+    }
 }
