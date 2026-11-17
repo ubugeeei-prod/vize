@@ -14,6 +14,11 @@ import { collectVueInputPaths, parseArgs, selectedProjects, type Args } from "./
 import { BaselineArtifactStage, removeStagedBaselineArtifacts } from "./baseline_stage.ts";
 import { isolationRoot, relocatePaths, withIsolatedFixture } from "./isolation.ts";
 import {
+  matrixRuleOptions,
+  writeMatrixRuleOptionsConfig,
+  type MatrixRuleOption,
+} from "./matrix_rule_options.ts";
+import {
   errorMessage,
   get,
   object,
@@ -71,6 +76,10 @@ function measureProject(
   ruleMap: Json,
   comparable: ReturnType<typeof selectComparableRules>,
   project: Json,
+  ruleOptions: { overrides: readonly MatrixRuleOption[]; config: string | null } = {
+    overrides: [],
+    config: null,
+  },
 ): JsonObject | null {
   const id = projectString(project, "id"),
     fixtureDir = path.resolve(root, projectString(project, "fixturePath"));
@@ -116,7 +125,7 @@ function measureMirror(
   const patina =
     files.length === 0
       ? { results: [], findings: [] }
-      : runPatina(cwd, project, args, launch, files);
+      : runPatina(cwd, project, args, launch, files, ruleOptions.config);
   const json = path.join(args.outputDir, `${id}-lint-divergence.json`),
     markdown = path.join(args.outputDir, `${id}-lint-divergence.md`),
     stage = new BaselineArtifactStage(args.outputDir, { from: cwd, to: fixtureDir });
@@ -156,6 +165,9 @@ function measureMirror(
       revision: get(project, "revision"),
       preset: selectedPreset,
       evidence,
+      patinaRuleOptions: Object.fromEntries(
+        ruleOptions.overrides.map(({ patinaRule, options }) => [patinaRule, options]),
+      ),
       files: { comparedCount: files.length, expectedCount },
       baseline: {
         package: get(ruleMap, "upstream", "package"),
@@ -209,7 +221,9 @@ export function runLintDivergenceReport(argv: string[] = process.argv.slice(2)):
   if (!projects.length) throw new Error("No linter-covered project matched the selection");
   const launch = resolveVizeLaunch(root, args.vizeBin),
     evidence = collectRunEvidence(root),
-    comparable = selectComparableRules(ruleMap, args.preset, args.measureCoverageGap);
+    comparable = selectComparableRules(ruleMap, args.preset, args.measureCoverageGap),
+    overrides = matrixRuleOptions(root, ruleMap),
+    ruleOptions = { overrides, config: writeMatrixRuleOptionsConfig(overrides) };
   try {
     fs.mkdirSync(args.outputDir, { recursive: true });
   } catch (error) {
@@ -218,7 +232,16 @@ export function runLintDivergenceReport(argv: string[] = process.argv.slice(2)):
   removePriorArtifacts(args.outputDir, projects);
   const artifacts: Json[] = [];
   for (const project of projects) {
-    const artifact = measureProject(root, args, launch, evidence, ruleMap, comparable, project);
+    const artifact = measureProject(
+      root,
+      args,
+      launch,
+      evidence,
+      ruleMap,
+      comparable,
+      project,
+      ruleOptions,
+    );
     if (artifact !== null) artifacts.push(artifact);
   }
   writeIndex(root, args.outputDir, args.preset, evidence, artifacts);
