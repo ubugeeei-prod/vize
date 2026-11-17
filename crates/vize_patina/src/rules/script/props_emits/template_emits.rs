@@ -15,8 +15,9 @@
 //! hide a report. Recognized call forms mirror the script-side collector — a
 //! whole-identifier callee (`emit(...)`, never `bus.emit(...)`) invoked with a
 //! string-literal first argument — plus the template-only `$emit` helper,
-//! which dispatches the same declared events. Dynamic event names
-//! (`emit(name)`) record nothing, matching the script-side treatment.
+//! which dispatches the same declared events. A dynamic event name
+//! (`emit(name)`) records nothing but escapes the analysis, matching the
+//! script-side treatment.
 
 use vize_l0::{CompactString, FxHashSet};
 
@@ -45,7 +46,31 @@ pub(super) fn template_emit_escapes(template: &str, binding: &str) -> bool {
             // `@click="emit"` calls it with the native event, which names no
             // declared event.
             .filter(|name| !(handler && expression.trim() == *name))
-            .any(|name| value_reference(expression, name))
+            .any(|name| value_reference(expression, name) || computed_call(expression, name))
+    })
+}
+
+/// Whether `expression` calls `callee` with a first argument that is not a
+/// quoted literal, so the emitted name is computed.
+fn computed_call(expression: &str, callee: &str) -> bool {
+    let bytes = expression.as_bytes();
+    expression.match_indices(callee).any(|(index, _)| {
+        let before = index.checked_sub(1).and_then(|i| bytes.get(i).copied());
+        let after = index + callee.len();
+        if before.is_some_and(|byte| is_identifier_byte(byte) || byte == b'.')
+            || bytes.get(after).copied().is_some_and(is_identifier_byte)
+        {
+            return false;
+        }
+        let mut cursor = skip_ascii_whitespace(bytes, after);
+        if bytes.get(cursor) == Some(&b'?') && bytes.get(cursor + 1) == Some(&b'.') {
+            cursor = skip_ascii_whitespace(bytes, cursor + 2);
+        }
+        if bytes.get(cursor) != Some(&b'(') {
+            return false;
+        }
+        let argument = skip_ascii_whitespace(bytes, cursor + 1);
+        !matches!(bytes.get(argument), None | Some(b')' | b'\'' | b'"'))
     })
 }
 
