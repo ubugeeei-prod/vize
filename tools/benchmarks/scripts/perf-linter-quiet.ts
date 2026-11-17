@@ -50,6 +50,25 @@ function once(binary: string, cwd: string, args: string[], env: Record<string, s
   };
 }
 
+// Exact instruction count of one run under Callgrind (no cache simulation), threads serialized.
+function instructions(binary: string, cwd: string, args: string[]): number {
+  const result = spawnSync(
+    "valgrind",
+    ["--tool=callgrind", "--callgrind-out-file=/dev/null", "--cache-sim=no", binary, ...args],
+    { cwd, maxBuffer: 1 << 30, env: { ...process.env, RAYON_NUM_THREADS: "1" } },
+  );
+  const match = /Collected : (\d+)/.exec(result.stderr?.toString() ?? "");
+  return match ? Number(match[1]) : NaN;
+}
+
+function irScenario(name: string, cwd: string, args: string[]) {
+  const base = instructions(bins.base, cwd, args);
+  const head = instructions(bins.head, cwd, args);
+  write(`| ${name} | callgrind Ir, 1 thread | base | ${base.toLocaleString("en-US")} | | | | | |`);
+  write(`| | | head | ${head.toLocaleString("en-US")} | | | | | |`);
+  write(`| | | head/base | ${(head / base).toFixed(4)} (${(((head - base) / base) * 100).toFixed(2)} %) | | | | | |`);
+}
+
 const pct = (values: number[], q: number) => {
   const sorted = [...values].sort((a, b) => a - b);
   const k = (sorted.length - 1) * q;
@@ -212,6 +231,11 @@ for (const spec of arg("scenarios", "mk,mk-json,mk-all,bench,ta").split(",")) {
     scenario(`1000-SFC \`--format json\`, RAYON_NUM_THREADS=${benchThreads[1]}`, bench, ["lint", ".", "--format", "json"], runs, {
       RAYON_NUM_THREADS: benchThreads[1],
     });
+  if (spec === "ir-mk") irScenario("misskey `--format json` instructions", mk, ["lint", "src", "--format", "json"]);
+  if (spec === "ir-mk-text") irScenario("misskey text instructions", mk, ["lint", "src"]);
+  if (spec === "ir-bench") irScenario("1000-SFC `--format json` instructions", bench, ["lint", ".", "--format", "json"]);
+  if (spec === "ir-ta")
+    irScenario("misskey type-aware instructions", mkta, ["lint", "src", "--strict-reactivity", "--format", "json"]);
   if (spec === "bench") scenario("1000-SFC benchmark `lint .` (text)", bench, ["lint", "."], runs);
   if (spec === "ta")
     scenario(

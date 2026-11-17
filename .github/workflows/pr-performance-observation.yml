@@ -17,7 +17,7 @@ on:
         description: Comma-separated perf-linter-quiet scenarios
         required: false
         type: string
-        default: mk,mk-json,mk-all,mk-all-text,bench,ta
+        default: mk,mk-json,mk-all,mk-all-text,bench,ta,ir-mk,ir-mk-text,ir-bench
       lsp_rounds:
         description: LSP edit-loop sessions per side (0 skips)
         required: false
@@ -113,6 +113,8 @@ jobs:
           const pair = verifyPrPerformanceBuildPair('performance-observation/build/base.json', 'performance-observation/build/head.json');
           writeFileSync('performance-observation/build/pair.json', JSON.stringify(pair, null, 2) + '\n');
           JS
+      - name: Install Callgrind for exact instruction counts
+        run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends valgrind
       - name: Prepare misskey, type-aware and benchmark corpora
         working-directory: driver
         run: |
