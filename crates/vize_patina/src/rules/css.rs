@@ -39,11 +39,14 @@ mod prefer_nested_selectors;
 mod prefer_slotted;
 mod require_font_display;
 mod strip_comments;
+mod style_rule;
 pub(crate) mod value_tokens;
 
 pub use strip_comments::strip_vize_comments;
+pub use style_rule::StyleRule;
 
 use vize_l0::FxHashSet;
+use vize_l1::css::lang::StyleLanguage;
 
 use lightningcss::stylesheet::StyleSheet;
 use memchr::memmem;
@@ -309,22 +312,26 @@ impl DisabledRules {
     }
 }
 
-/// Linter for style blocks using lightning-css
+/// Linter for style blocks: lightningcss rules read plain CSS, and
+/// [`StyleRule`]s read the L1 structure of every style language.
 pub struct CssLinter {
     rules: Vec<Box<dyn CssRule>>,
+    style_rules: Vec<Box<dyn StyleRule>>,
 }
 
 impl CssLinter {
     /// Create a new CSS linter with no rules
     pub fn new() -> Self {
-        Self { rules: Vec::new() }
+        Self {
+            rules: Vec::new(),
+            style_rules: Vec::new(),
+        }
     }
 
     /// Create a CSS linter with all available rules
     pub fn with_all_rules() -> Self {
         Self {
             rules: vec![
-                Box::new(NoImportant),
                 Box::new(NoIdSelectors),
                 Box::new(PreferLogicalProperties),
                 Box::new(RequireFontDisplay),
@@ -335,6 +342,7 @@ impl CssLinter {
                 Box::new(NoUtilityClasses),
                 Box::new(PreferSlotted),
             ],
+            style_rules: vec![Box::new(NoImportant)],
         }
     }
 
@@ -343,16 +351,38 @@ impl CssLinter {
         self.rules.push(rule);
     }
 
-    /// Lint a style block
+    /// Add a rule that reads the L1 structure of every style language.
+    pub fn add_style_rule(&mut self, rule: Box<dyn StyleRule>) {
+        self.style_rules.push(rule);
+    }
+
+    /// Whether any rule reads a block of `language`: structure rules read
+    /// every language, lightningcss rules plain CSS only.
+    pub fn reads(&self, language: StyleLanguage) -> bool {
+        !self.style_rules.is_empty() || (language == StyleLanguage::Css && !self.rules.is_empty())
+    }
+
+    /// Lint a plain CSS style block
     pub fn lint(&self, source: &str, offset: usize) -> CssLintResult {
         self.lint_with_options(source, offset, true)
     }
 
-    /// Lint a style block with options
+    /// Lint a plain CSS style block with options
     pub fn lint_with_options(
         &self,
         source: &str,
         offset: usize,
+        respect_disable_comments: bool,
+    ) -> CssLintResult {
+        self.lint_block(source, offset, StyleLanguage::Css, respect_disable_comments)
+    }
+
+    /// Lint a style block of `language` that starts at file offset `offset`.
+    pub fn lint_block(
+        &self,
+        source: &str,
+        offset: usize,
+        language: StyleLanguage,
         respect_disable_comments: bool,
     ) -> CssLintResult {
         let mut result = CssLintResult::default();
@@ -364,17 +394,28 @@ impl CssLinter {
             None
         };
 
-        // Parse CSS with lightning-css
-        let stylesheet = match crate::rules::css_engine::parse_stylesheet(source) {
-            Ok(ss) => ss,
-            Err(_) => {
-                // If parsing fails, skip CSS linting
-                return result;
+        // The structure is read without evaluating anything; an unbalanced
+        // block or an unterminated string or comment has no reliable one.
+        if !self.style_rules.is_empty()
+            && let Ok(base) = u32::try_from(offset)
+        {
+            let sheet = language.structure(source, base);
+            if sheet.is_balanced() && sheet.is_terminated() {
+                for rule in &self.style_rules {
+                    rule.check(&sheet, &mut result);
+                }
             }
-        };
+        }
 
-        for rule in &self.rules {
-            rule.check(source, &stylesheet, offset, &mut result);
+        // Parse plain CSS with lightning-css; if parsing fails, those rules
+        // are skipped.
+        if language == StyleLanguage::Css
+            && !self.rules.is_empty()
+            && let Ok(stylesheet) = crate::rules::css_engine::parse_stylesheet(source)
+        {
+            for rule in &self.rules {
+                rule.check(source, &stylesheet, offset, &mut result);
+            }
         }
 
         // Filter out disabled diagnostics

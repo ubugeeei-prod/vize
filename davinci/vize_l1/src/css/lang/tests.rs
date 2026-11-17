@@ -182,6 +182,15 @@ fn stylus_resolves_indented_parents_and_skips_functions_and_loops() {
         names(Stylus, ".brace {\n  &-x {\n    color red\n  }\n}\n"),
         ["brace", "brace-x"]
     );
+    // One-line braced rules are braced; a spaced interpolation is not a block.
+    assert_eq!(
+        names(Stylus, ".one { margin: 0; }\n.two { color red; }\n"),
+        ["one", "two"]
+    );
+    assert_eq!(
+        names(Stylus, ".a\n  width {n}px\n.b\n  color red\n"),
+        ["a", "b"]
+    );
 }
 
 #[test]

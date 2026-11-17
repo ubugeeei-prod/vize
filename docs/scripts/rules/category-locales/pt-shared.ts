@@ -23,6 +23,8 @@ export const portugueseShared: Record<string, string> = {
   "error / warning (with default)": "error / warning (com valor padrão)",
   "Analyzed component graph and the supported facts described below":
     "Grafo de componentes analisado e fatos suportados descritos abaixo",
+  "CSS, SCSS, Sass, Less and Stylus style blocks, as written (not preprocessed)":
+    "Blocos style em CSS, SCSS, Sass, Less e Stylus, como escritos (sem pré-processador)",
   "Plain CSS style blocks (scss, sass, less and stylus blocks are skipped)":
     "Blocos style em CSS puro (blocos scss, sass, less e stylus são ignorados)",
   "HTML documents detected as petite-vue; ordinary Vue SFCs are outside this rule's scope.":

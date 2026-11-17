@@ -226,6 +226,10 @@ export function scopeLabel(rule: RuleMetadata, example: RuleExample, ja: boolean
     return ja
       ? "petite-vue と判定された HTML 文書。通常の Vue SFC は対象外です。"
       : "HTML documents detected as petite-vue; ordinary Vue SFCs are outside this rule's scope.";
+  if (rule.metaType === "CssRuleMeta" && rule.everyStyleLanguage)
+    return ja
+      ? "CSS・SCSS・Sass・Less・Stylus の style ブロック（書かれたまま。プリプロセッサは実行しません）"
+      : "CSS, SCSS, Sass, Less and Stylus style blocks, as written (not preprocessed)";
   if (rule.metaType === "CssRuleMeta")
     return ja
       ? "プレーン CSS の style ブロック（scss・sass・less・stylus のブロックは対象外）"

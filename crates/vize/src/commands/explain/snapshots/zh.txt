@@ -1304,7 +1304,7 @@ css/no-important · lint 规则
 不建议在 CSS 中使用 !important
 
 精度层级: exact
-适用范围: declarations and selectors of <style> blocks as parsed by lightningcss
+适用范围: the authored structure of <style> blocks in every style language, as the L1 style reader reads it
 严重级别: 警告
 类别: css
 自动修复: 不支持
