@@ -117,8 +117,9 @@ pub(super) fn evaluate(
     listeners.insert("VariableDeclarator");
     if corsa_rules.contains(&"no-unsafe-enum-assignment") {
         // The upstream rule also listens to computed member access. Corsa's
-        // compact listener is supplemented by the paired checker relation.
-        listeners.insert("MemberExpression");
+        // compact listener is supplemented by the paired checker relation,
+        // whose reports attach to the computed member nodes.
+        listeners.insert(tree::COMPUTED_MEMBER_LISTENER);
     }
     if wants.empty_object() {
         listeners.extend(gaps::EMPTY_OBJECT_LISTENERS);

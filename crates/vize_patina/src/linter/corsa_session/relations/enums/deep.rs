@@ -92,16 +92,17 @@ fn deep_mismatch<'a>(
             return false;
         }
         if let Some(receiver) = number_index(checker, &receiver).await
+            && may_hold_enum(&receiver)
             && let Some(sender) = number_index(checker, &sender).await
             && deep_mismatch(
-            checker,
-            sender,
-            receiver,
-            visited,
-            depth + 1,
-            generic || within_generic_members,
-        )
-        .await
+                checker,
+                sender,
+                receiver,
+                visited,
+                depth + 1,
+                generic || within_generic_members,
+            )
+            .await
         {
             return true;
         }
@@ -118,19 +119,28 @@ fn deep_mismatch<'a>(
         if receiver_properties.is_empty() {
             return false;
         }
-        let sender = checker.apparent(&sender).await;
-        let sender_properties = checker.properties(&sender).await;
+        // The sender's members are read once a receiver member can hold an
+        // enum at all.
+        let mut sender_properties = None;
         for receiver_property in receiver_properties {
+            let Some(receiver) = checker.type_of_symbol(&receiver_property).await else {
+                continue;
+            };
+            if !may_hold_enum(&receiver) {
+                continue;
+            }
+            if sender_properties.is_none() {
+                let apparent = checker.apparent(&sender).await;
+                sender_properties = Some(checker.properties(&apparent).await);
+            }
             let Some(sender_property) = sender_properties
                 .iter()
+                .flatten()
                 .find(|property| property.name == receiver_property.name)
             else {
                 continue;
             };
-            let Some(receiver) = checker.type_of_symbol(&receiver_property).await else {
-                continue;
-            };
-            if sender_property.id == receiver_property.id || !may_hold_enum(&receiver) {
+            if sender_property.id == receiver_property.id {
                 continue;
             }
             let Some(sender) = checker.type_of_symbol(sender_property).await else {
