@@ -221,3 +221,28 @@ fn font_faces_without_font_display_are_reported_at_the_keyword() {
         ["@font-face"]
     );
 }
+
+#[test]
+fn declarations_keep_the_scope_the_lightningcss_lane_checked() {
+    let logical = |source| {
+        findings(
+            Box::new(PreferLogicalProperties),
+            StyleLanguage::Css,
+            source,
+        )
+    };
+    // Keyframes, @font-face and @container blocks were not checked.
+    assert_eq!(
+        logical("@keyframes k { from { left: 0; } }\n@container (width > 1px) { .a { left: 0; } }"),
+        Vec::<String>::new()
+    );
+    assert_eq!(
+        logical("@media print { .a { .b { right: 0; } } }"),
+        ["right"]
+    );
+    let display = |source| findings(Box::new(RequireFontDisplay), StyleLanguage::Css, source);
+    assert_eq!(
+        display("@container (width > 1px) { @font-face { font-family: A; } }"),
+        Vec::<String>::new()
+    );
+}

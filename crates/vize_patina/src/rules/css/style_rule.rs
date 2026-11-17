@@ -80,6 +80,15 @@ pub(super) fn in_style_scope(sheet: &StyleSheet<'_>, node: &StyleNode) -> bool {
     true
 }
 
+/// Every rule's selector span, in any scope, in document order.
+pub(super) fn all_rule_preludes<'s>(sheet: &'s StyleSheet<'_>) -> impl Iterator<Item = Span> + 's {
+    sheet
+        .nodes()
+        .iter()
+        .filter(|node| sheet.kind(node) == StyleNodeKind::Rule)
+        .map(|node| node.prelude())
+}
+
 /// Every rule's selector span in the checked scope, in document order.
 pub(super) fn rule_preludes<'s>(sheet: &'s StyleSheet<'_>) -> impl Iterator<Item = Span> + 's {
     sheet
