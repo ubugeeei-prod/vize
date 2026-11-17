@@ -245,6 +245,8 @@ fn transform_with_shared_sources(
         copies.shift_generated(code.len() - unprefixed_len);
     }
 
+    // Echo ownership is read on the analyzed text (see `directive_table`).
+    let analyzed_mappings = authored.is_derived().then(|| mappings.clone());
     authored.remap_mappings(&mut mappings);
     for diagnostic in &mut diagnostics {
         (diagnostic.line, diagnostic.column) =
@@ -263,29 +265,22 @@ fn transform_with_shared_sources(
     for echo in &mut diagnostic_echoes {
         echo.authored = authored.to_authored(echo.authored.clone());
     }
+    let directives = content_mapper_diagnostic_directives(
+        &authored,
+        &descriptor,
+        &code,
+        &spans,
+        &diagnostic_echoes,
+        &diagnostic_primaries,
+        generic_copies.as_ref(),
+        analyzed_mappings.as_deref().unwrap_or(&mappings),
+        &mapping_meta,
+        &callback_primaries,
+        loose_unknown_props,
+    );
     Ok(ContentMapperTransform {
         extension: CONTENT_MAPPER_VIRTUAL_EXTENSION,
-        // Directive comments are read from HTML templates and SFC blocks only.
-        diagnostic_directives: with_owned_input_echoes(
-            (!authored.is_derived())
-                .then(|| {
-                    content_mapper_diagnostic_directives(
-                        content,
-                        &code,
-                        &descriptor,
-                        &spans,
-                        &diagnostic_echoes,
-                        &diagnostic_primaries,
-                        generic_copies.as_ref(),
-                        &mappings,
-                        &mapping_meta,
-                        &callback_primaries,
-                        loose_unknown_props,
-                    )
-                })
-                .flatten(),
-            &diagnostic_echoes,
-        ),
+        diagnostic_directives: with_owned_input_echoes(directives, &diagnostic_echoes),
         mappings: spans,
         semantic_links: protocol_semantic_links(&semantic_links),
         diagnostics: diagnostics
