@@ -22099,6 +22099,42 @@
       }
     },
     {
+      "id": "linter/template-expression-disable-12336",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "template-expression-disable-12336",
+        "files": [
+          {
+            "path": "callout.vue.txt",
+            "role": "real-project-matrix-reduction",
+            "sha256": "68f0cf7a8ae30d490f09ce31e73c6075b4ce6585a780c8d76d80c23107d1f16e"
+          },
+          {
+            "path": "rules.json",
+            "role": "rule-options",
+            "sha256": "5248874f9a041f425d3da421a36a400507f2a3d5063be95ead08a79558a049b2"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/template-script-shadow-10822",
       "state": "active",
       "targets": [
