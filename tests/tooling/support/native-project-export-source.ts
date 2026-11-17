@@ -34,6 +34,9 @@ const pluginLintSessionExport =
 const configStdinCapabilityExport =
   "module.exports.supportsCliConfigStdin = nativeBinding.supportsCliConfigStdin;\n";
 const compileTsrxExport = "module.exports.compileTsrx = nativeBinding.compileTsrx;\n";
+// #13074: Vite hosts register a resolved `vue.plugins` plan once.
+const registerPluginPlanExport =
+  "module.exports.registerPluginPlan = nativeBinding.registerPluginPlan;\n";
 const sha256 = (body: Buffer) => createHash("sha256").update(body).digest("hex");
 
 /** Keep the original authenticated loader law through the exact public additions. */
@@ -91,6 +94,15 @@ export function originalNativeLoaderModule(name: string, body: Buffer): Buffer {
     2,
     "TSRX compile export retains its canonical initialization position",
   );
+  assert.equal(
+    text.split(
+      "module.exports.printCssAst = nativeBinding.printCssAst;\n" +
+        registerPluginPlanExport +
+        "module.exports.resolveDesignTokenReferences = nativeBinding.resolveDesignTokenReferences;\n",
+    ).length,
+    2,
+    "plugin plan registration retains its canonical initialization position",
+  );
   const before =
     "module.exports.typeCheckWithVirtualTsVisitors = nativeBinding.typeCheckWithVirtualTsVisitors;\n";
   const after =
@@ -108,6 +120,7 @@ export function originalNativeLoaderModule(name: string, body: Buffer): Buffer {
       .replace(typeResolutionBatchFunctionExport, "")
       .replace(configStdinCapabilityExport, "")
       .replace(compileTsrxExport, "")
+      .replace(registerPluginPlanExport, "")
       .replace(addedExports, ""),
   );
   assert.equal(original.length, reference.bytes, "complete original native loader length");
