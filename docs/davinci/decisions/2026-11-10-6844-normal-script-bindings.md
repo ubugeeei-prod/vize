@@ -36,9 +36,37 @@ The oracle is Croquis on the repository corpus (`tests/vue_options_facts.rs`,
 declaration named like a `data` member hides that member in Croquis. Vue
 reads the instance there, so those rows are Croquis defects.
 
+## Compiler switch: Options API bindings
+
+The SFC compiler reads the template bindings of a normal `<script>` without
+`<script setup>` from `OptionsFacts` (`compile/bindings/options.rs`), and
+`collect_options_api_bindings` with its Croquis call is gone. The prepared
+script content is parsed once by L1 with the block's `lang`, as the setup
+route does. Members bind as Vue's `compileScript` does: `props` as `props`,
+`data` (and Nuxt 2 `asyncData`) as `data`, `computed`, `methods` and
+`inject` as `options`, and Vue 3 `filters` bind nothing. A name declared
+by several groups, in the component or a mixin, binds as Vue's instance
+proxy resolves it: a `setup()` return (setup state, so no option binding)
+before `data`, before `props`, before the other options. Croquis let the
+last member read win, so a mixin's `data` member could hide a `setup()`
+return. Only a prop's kebab-case key also binds its camel case; Croquis
+camelized every group, so `'kebab-key'` in `data` bound a `kebabKey` that
+the instance does not have. A script the levels refuse forwards no bindings,
+so its template reads members through `_ctx`, which resolves the same
+members at runtime; nothing falls back to Croquis.
+
+On the repository corpus (83 normal-script SFCs in the DOM, SSR and Vapor
+shapes) the output is byte-identical except the four Croquis-defect files
+above, where a module constant spelled like a `data` member now leaves the
+member bound (`$data.filters` instead of `_ctx.filters`), as in Vue, and
+`tests/fixtures/typechecker/options-api-computed-setters/WrappedOptions.vue`,
+whose props `foo-bar` and `plain` are also computed names: they now read
+`$props.fooBar`/`$props.plain` (props win over computed in the instance
+proxy, and Vue does not define a computed that shadows a prop).
+
 ## Open
 
 This is not S7 completion. The compiler route that replaces
-`collect_normal_script_bindings` / `collect_options_api_bindings` remains
-open. Until it lands with corpus and product acceptance, the existing
-normal-script compiler collectors remain unchanged.
+`collect_normal_script_bindings` (a paired `<script setup>`'s view of the
+normal script) with `OrdinaryFacts` remains open, and so do the Patina,
+Maestro and Canon readers of Croquis' Options API descriptor.
