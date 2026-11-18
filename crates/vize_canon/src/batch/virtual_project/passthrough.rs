@@ -125,14 +125,15 @@ fn extract_relative_module_specifiers(source: &str) -> Vec<CompactString> {
     let mut i = 0;
 
     while i < len {
-        let Some(next) = memchr::memchr3(b'f', b'i', b'r', &bytes[i..]) else {
+        let Some(next) = memchr::memchr3(b'f', b'i', b'r', bytes.get(i..).unwrap_or_default())
+        else {
             break;
         };
         i += next;
-        let keyword_len = match bytes[i] {
-            b'f' if matches_keyword(bytes, i, b"from") => 4,
-            b'i' if matches_keyword(bytes, i, b"import") => 6,
-            b'r' if matches_keyword(bytes, i, b"require") => 7,
+        let keyword_len = match bytes.get(i).copied() {
+            Some(b'f') if matches_keyword(bytes, i, b"from") => 4,
+            Some(b'i') if matches_keyword(bytes, i, b"import") => 6,
+            Some(b'r') if matches_keyword(bytes, i, b"require") => 7,
             _ => {
                 i += 1;
                 continue;
