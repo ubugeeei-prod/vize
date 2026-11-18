@@ -1,5 +1,5 @@
 use super::{Code, CompileOptions, Diagnostic, EmitIssue, Target, compile};
-use vize_l2::lang::tsrx::TsrxIssueKind;
+use vize_l1_to_l2::framework::vue::tsrx::TsrxIssueKind;
 
 const OPTIONS: CompileOptions<'static> = CompileOptions {
     filename: "App.tsrx",

@@ -22,7 +22,7 @@ use oxc_ast_visit::Visit;
 use oxc_syntax::scope::ScopeFlags;
 use vize_l0::Span;
 use vize_l1::markup::tsrx::{Node, Region, RegionSite, TsrxModule};
-use vize_l2::lang::tsrx::TsrxRegion;
+use vize_l1_to_l2::framework::vue::tsrx::TsrxRegion;
 
 use super::EmitIssue;
 use super::props::{self, Props};

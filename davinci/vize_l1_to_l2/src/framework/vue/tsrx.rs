@@ -43,9 +43,9 @@ use oxc_span::GetSpan;
 use vize_l0::{Allocator, Span};
 use vize_l1::markup::tsrx::{RegionSite, TsrxModule};
 
-use crate::artifact::{Artifact, ArtifactError, Builder};
-use crate::expr::JsExpr;
-use crate::expr::js::{JsCoordinateError, JsCoordinates};
+use vize_l2::artifact::{Artifact, ArtifactError, Builder};
+use vize_l2::expr::JsExpr;
+use vize_l2::expr::js::{JsCoordinateError, JsCoordinates};
 
 mod check;
 mod emit;

@@ -18,7 +18,7 @@ use vize_l0::Span;
 use vize_l1::markup::tsrx::{
     Attribute, AttributeValue, Block, Child, Element, Node, RegionSite, TagName, TsrxModule,
 };
-use vize_l2::lang::tsrx::is_component;
+use vize_l1_to_l2::framework::vue::tsrx::is_component;
 
 use super::component::Component;
 use super::scopes;

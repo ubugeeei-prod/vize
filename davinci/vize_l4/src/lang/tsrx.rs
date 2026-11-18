@@ -14,7 +14,7 @@
 use alloc::{vec, vec::Vec};
 use vize_l0::{Allocator, String, cstr};
 use vize_l1::markup::tsrx;
-use vize_l2::lang::tsrx::{TsrxIssueKind, lower};
+use vize_l1_to_l2::framework::vue::tsrx::{TsrxIssueKind, lower};
 
 mod component;
 mod dom;

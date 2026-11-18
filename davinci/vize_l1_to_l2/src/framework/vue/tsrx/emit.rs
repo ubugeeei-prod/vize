@@ -9,9 +9,9 @@ use vize_l1::markup::tsrx::{
 
 use super::nested::{self, Folded};
 use super::{TsrxIssue, TsrxIssueKind, expression, is_component, text};
-use crate::artifact::{ArtifactError, HostForHead, OpFamily, RegionBuilder};
-use crate::expr::ExprRef;
-use crate::op::{self, Namespace};
+use vize_l2::artifact::{ArtifactError, HostForHead, OpFamily, RegionBuilder};
+use vize_l2::expr::ExprRef;
+use vize_l2::op::{self, Namespace};
 
 /// The component a dynamic tag renders through.
 const DYNAMIC_COMPONENT: &str = "component";
