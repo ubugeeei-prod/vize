@@ -26,7 +26,10 @@ fn collect_template_referenced_names(
     let mut names = FxHashSet::default();
     // Keep broad TypeScript references for authored unused-binding behavior,
     // but only runtime reads may drive synthetic value captures and anchors.
-    let mut value_names = FxHashSet::default();
+    let mut value_names = summary
+        .template_expression_reads
+        .clone()
+        .unwrap_or_default();
     let mut expressions = FxHashSet::default();
 
     if let Some(template_ast) = template_ast {
@@ -51,39 +54,13 @@ fn collect_template_referenced_names(
         value_names.insert(binding);
     }
 
-    for expression in &summary.template_expressions {
-        collect_expression_identifiers(
-            &mut value_names,
-            &mut expressions,
-            expression.content.as_str(),
-        );
-        if let Some(guard) = expression.vif_guard.as_ref() {
-            collect_expression_identifiers(&mut value_names, &mut expressions, guard.as_str());
-        }
+    if summary.template_expression_reads.is_none() {
+        collect_legacy_expression_identifiers(summary, &mut value_names, &mut expressions);
     }
 
     for usage in vize_croquis::facts::component_usage_slice(summary) {
         names.insert(usage.name.as_str().into());
         value_names.insert(usage.name.as_str().into());
-        if let Some(guard) = usage.vif_guard.as_ref() {
-            collect_expression_identifiers(&mut value_names, &mut expressions, guard.as_str());
-        }
-        for prop in &usage.props {
-            if prop.is_dynamic
-                && let Some(value) = prop.value.as_ref()
-            {
-                collect_expression_identifiers(&mut value_names, &mut expressions, value.as_str());
-            }
-        }
-        for event in &usage.events {
-            if let Some(handler) = event.handler.as_ref() {
-                collect_expression_identifiers(
-                    &mut value_names,
-                    &mut expressions,
-                    handler.as_str(),
-                );
-            }
-        }
     }
 
     for component in vize_croquis::facts::used_component_name_list(summary) {
@@ -95,31 +72,10 @@ fn collect_template_referenced_names(
         match scope.data() {
             ScopeData::VFor(data) => {
                 collect_pattern_default_identifiers(&mut value_names, data.value_alias.as_str());
-                collect_expression_identifiers(
-                    &mut value_names,
-                    &mut expressions,
-                    data.source.as_str(),
-                );
-                if let Some(key_expression) = data.key_expression.as_ref() {
-                    collect_expression_identifiers(
-                        &mut value_names,
-                        &mut expressions,
-                        key_expression.as_str(),
-                    );
-                }
             }
             ScopeData::VSlot(data) => {
                 if let Some(pattern) = data.props_pattern.as_ref() {
                     collect_pattern_default_identifiers(&mut value_names, pattern.as_str());
-                }
-            }
-            ScopeData::EventHandler(data) => {
-                if let Some(handler) = data.handler_expression.as_ref() {
-                    collect_expression_identifiers(
-                        &mut value_names,
-                        &mut expressions,
-                        handler.as_str(),
-                    );
                 }
             }
             _ => {}
@@ -128,6 +84,54 @@ fn collect_template_referenced_names(
 
     names.extend(value_names.iter().cloned());
     (names, value_names)
+}
+
+fn collect_legacy_expression_identifiers(
+    summary: &Croquis,
+    names: &mut FxHashSet<String>,
+    expressions: &mut FxHashSet<String>,
+) {
+    for expression in &summary.template_expressions {
+        collect_expression_identifiers(names, expressions, expression.content.as_str());
+        if let Some(guard) = expression.vif_guard.as_ref() {
+            collect_expression_identifiers(names, expressions, guard.as_str());
+        }
+    }
+
+    for usage in vize_croquis::facts::component_usage_slice(summary) {
+        if let Some(guard) = usage.vif_guard.as_ref() {
+            collect_expression_identifiers(names, expressions, guard.as_str());
+        }
+        for prop in &usage.props {
+            if prop.is_dynamic
+                && let Some(value) = prop.value.as_ref()
+            {
+                collect_expression_identifiers(names, expressions, value.as_str());
+            }
+        }
+        for event in &usage.events {
+            if let Some(handler) = event.handler.as_ref() {
+                collect_expression_identifiers(names, expressions, handler.as_str());
+            }
+        }
+    }
+
+    for scope in summary.scopes.iter() {
+        match scope.data() {
+            ScopeData::VFor(data) => {
+                collect_expression_identifiers(names, expressions, data.source.as_str());
+                if let Some(key_expression) = data.key_expression.as_ref() {
+                    collect_expression_identifiers(names, expressions, key_expression.as_str());
+                }
+            }
+            ScopeData::EventHandler(data) => {
+                if let Some(handler) = data.handler_expression.as_ref() {
+                    collect_expression_identifiers(names, expressions, handler.as_str());
+                }
+            }
+            _ => {}
+        }
+    }
 }
 
 /// A destructuring default (`{ val = fallback }`) is a template read of the
@@ -158,5 +162,55 @@ fn collect_expression_identifiers(
     }
     for identifier in vize_croquis::drawer::extract_identifiers_oxc(expression) {
         names.insert(identifier.as_str().into());
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::collect_template_referenced_names;
+    use vize_croquis::{Analyzer, AnalyzerOptions};
+
+    #[test]
+    fn retained_expression_reads_match_the_legacy_reparse_union() {
+        let script = r#"
+import Card from './Card.vue'
+const show = true
+const rows = [{ id: 1 }]
+const field = 'value'
+const fallback = { name: 'fallback' }
+const click = (value: string) => value
+const format = (row: { id: number }, index: number) => `${row.id}:${index}`
+const external = 'outside'
+const vFocus = {}
+"#;
+        let template = r#"
+<Card v-if="show && rows.length" :value="field" @click="() => click(field)" v-focus>
+  <template #default="{ item = fallback }">
+    <span v-for="(row, index) in rows" :key="row.id" :title="format(row, index)">
+      {{ item.name }} {{ external }}
+    </span>
+  </template>
+</Card>
+"#;
+        let allocator = vize_carton::Allocator::new();
+        let (root, errors) = vize_armature::parse(&allocator, template);
+        assert!(errors.is_empty(), "{errors:?}");
+        let mut analyzer = Analyzer::with_options(AnalyzerOptions::full());
+        analyzer.analyze_script_setup(script);
+        analyzer.analyze_template(&root);
+        let mut summary = analyzer.finish();
+
+        assert!(summary.template_expression_reads.is_some());
+        let retained = collect_template_referenced_names(&summary, Some(&root), None);
+        summary.template_expression_reads = None;
+        let legacy = collect_template_referenced_names(&summary, Some(&root), None);
+
+        assert_eq!(retained, legacy);
+        for expected in [
+            "show", "rows", "field", "click", "fallback", "row", "index", "format", "item",
+            "external", "Card", "vFocus",
+        ] {
+            assert!(retained.1.contains(expected), "missing {expected}");
+        }
     }
 }

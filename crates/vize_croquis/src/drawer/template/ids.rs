@@ -194,8 +194,11 @@ impl Drawer {
                 .as_ref()
                 .and_then(|reuse| reuse.petite_expression_names(expr))
         {
-            self.ident_cache
-                .insert(CompactString::new(content), names.to_vec());
+            let names = names.to_vec();
+            if let Some(reads) = self.croquis.template_expression_reads.as_mut() {
+                reads.extend(names.iter().cloned());
+            }
+            self.ident_cache.insert(CompactString::new(content), names);
         }
         self.check_expression_text_refs(content, retained.as_ref(), base_offset, scope_vars, true);
     }
@@ -249,6 +252,9 @@ impl Drawer {
                     extract_identifiers_retained(content, retained)
                 }
             );
+            if let Some(reads) = self.croquis.template_expression_reads.as_mut() {
+                reads.extend(computed.iter().cloned());
+            }
             self.ident_cache
                 .insert(CompactString::new(content), computed);
         }
