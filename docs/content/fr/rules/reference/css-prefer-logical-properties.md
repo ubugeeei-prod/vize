@@ -58,4 +58,4 @@ Lancez ensuite `vp run lint`.
 
 - [Règles CSS](../css.md)
 - [Toutes les règles](../all.md)
-- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/prefer_logical_properties.rs#L11)
+- [Code source](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/css/prefer_logical_properties.rs#L12)

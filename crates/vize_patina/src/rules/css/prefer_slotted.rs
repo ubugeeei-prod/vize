@@ -52,13 +52,18 @@ impl StyleRule for PreferSlotted {
     }
 
     fn check(&self, sheet: &StyleSheet<'_>, result: &mut CssLintResult) {
-        let whole = Span::new(
-            sheet.nodes().first().map_or(0, |node| node.span().start),
-            sheet.nodes().last().map_or(0, |node| node.span().end),
-        );
-        let code = without_comments(sheet, whole);
-        let slotted = code.contains("::v-slotted") || code.contains(":slotted");
+        // Masking only blanks bytes, so a selector without one of the
+        // patterns in its authored text has none once masked either.
+        let candidate = |text: &str| {
+            text.contains("slot") || DEPRECATED_DEEP.iter().any(|deep| text.contains(deep))
+        };
+        // Whether the block uses `::v-slotted`/`:slotted`, read only once a
+        // `slot` selector needs it.
+        let mut slotted: Option<bool> = None;
         for prelude in all_rule_preludes(sheet) {
+            if !candidate(sheet.text(prelude)) {
+                continue;
+            }
             let text = without_comments(sheet, prelude);
             let bytes = text.as_bytes();
             let at = |offset: usize, len: usize| {
@@ -86,6 +91,17 @@ impl StyleRule for PreferSlotted {
                     }
                 }
             }
+            if !text.contains("slot") {
+                continue;
+            }
+            let slotted = *slotted.get_or_insert_with(|| {
+                let whole = Span::new(
+                    sheet.nodes().first().map_or(0, |node| node.span().start),
+                    sheet.nodes().last().map_or(0, |node| node.span().end),
+                );
+                let code = without_comments(sheet, whole);
+                code.contains("::v-slotted") || code.contains(":slotted")
+            });
             if slotted {
                 continue;
             }
