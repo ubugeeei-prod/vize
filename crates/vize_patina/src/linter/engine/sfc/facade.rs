@@ -107,6 +107,7 @@ pub(in crate::linter::engine) const RULES: &[&str] = &[
     "vue/no-lone-template",
     "vue/no-child-content",
     "vapor/no-inline-template",
+    "vue/no-script-non-standard-lang",
 ];
 
 pub(in crate::linter::engine) struct Dispatch<'a> {

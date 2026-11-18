@@ -266,3 +266,27 @@ fn vue_markup_rules_report_on_tsrx_markup() {
         ]
     );
 }
+
+#[test]
+fn script_lang_text_reports_once_on_tsrx() {
+    // The rule reads the module source; regions share it, so one report remains.
+    let source = "const tag = '<script lang=\"coffee\">';
+
+export function A() @{
+  <p>a</p>
+}
+
+export function B() @{
+  <p>b</p>
+}
+";
+    let linter = linter_with(vec![Box::new(
+        crate::rules::opinionated::vue::NoScriptNonStandardLang,
+    )]);
+    let result = lint_tsrx(&linter, source, "Script.tsrx");
+    let start = u32::try_from(source.find("<script").unwrap()).unwrap();
+    assert_eq!(
+        rows(&result),
+        [("vue/no-script-non-standard-lang", start, start + 22)]
+    );
+}

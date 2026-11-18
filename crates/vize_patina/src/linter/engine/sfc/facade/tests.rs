@@ -50,13 +50,14 @@ fn linter() -> Linter {
         .registry
         .register(Box::new(crate::rules::vue::A11yImgAlt));
     // Preset-dependent rules join once, so no rule reports twice.
-    let ported: [Box<dyn crate::rule::Rule>; 6] = [
+    let ported: [Box<dyn crate::rule::Rule>; 7] = [
         Box::new(crate::rules::vue::NoTemplateKey),
         Box::new(crate::rules::vue::NoVForTemplateKey),
         Box::new(crate::rules::vue::NoVForTemplateKeyOnChild),
         Box::new(crate::rules::vue::NoLoneTemplate),
         Box::new(crate::rules::vue::NoChildContent),
         Box::new(crate::rules::vapor::NoInlineTemplate),
+        Box::new(crate::rules::opinionated::vue::NoScriptNonStandardLang),
     ];
     for rule in ported {
         if !linter.registry.has_rule(rule.meta().name) {

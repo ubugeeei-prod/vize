@@ -38,6 +38,7 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::{LintDiagnostic, Severity};
+use crate::markup::{MarkupContext, MarkupDocument, MarkupRule, MarkupTraversal};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::RootNode;
 
@@ -56,12 +57,37 @@ const ALLOWED_LANGS: &[&str] = &["ts", "tsx", "js", "jsx", "typescript"];
 #[derive(Default)]
 pub struct NoScriptNonStandardLang;
 
+impl MarkupRule for NoScriptNonStandardLang {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn traversal(&self) -> MarkupTraversal {
+        MarkupTraversal::Document
+    }
+
+    fn enter_document(&self, ctx: &mut MarkupContext<'_, '_>, _document: &MarkupDocument) {
+        Self::check(ctx.lint());
+    }
+}
+
 impl Rule for NoScriptNonStandardLang {
     fn meta(&self) -> &'static RuleMeta {
         &META
     }
 
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
+    }
+
     fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, _root: &RootNode<'a>) {
+        Self::check(ctx);
+    }
+}
+
+impl NoScriptNonStandardLang {
+    /// Report every `<script>` tag in the source whose `lang` is non-standard.
+    fn check(ctx: &mut LintContext<'_>) {
         let source = ctx.source;
 
         // Find all <script tags
@@ -94,9 +120,7 @@ impl Rule for NoScriptNonStandardLang {
             }
         }
     }
-}
 
-impl NoScriptNonStandardLang {
     /// Extract the lang attribute value from a tag string
     fn extract_lang_value(tag_content: &str) -> Option<&str> {
         // Look for lang="..." or lang='...'

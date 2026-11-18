@@ -4,6 +4,7 @@
 use crate::rule::Rule;
 use crate::rules::a11y::{LandmarkRoles, RoleImgHasName};
 use crate::rules::html::IdDuplication;
+use crate::rules::opinionated::vue::NoScriptNonStandardLang;
 use crate::rules::vapor::NoInlineTemplate;
 use crate::rules::vue::{
     A11yImgAlt, NoChildContent, NoLoneTemplate, NoTemplateKey, NoVForTemplateKey,
@@ -89,6 +90,7 @@ fn vue_family() -> Vec<Box<dyn Rule>> {
         Box::new(NoLoneTemplate),
         Box::new(NoChildContent),
         Box::new(NoInlineTemplate),
+        Box::new(NoScriptNonStandardLang),
     ]
 }
 
@@ -101,12 +103,14 @@ const VUE_TEMPLATES: &[&str] = &[
     r#"<template slot="old">s</template><template slot-scope="p">p</template><template :slot="name">n</template><template scope="q">q</template><Template>c</Template>"#,
     r#"<div v-html="html">child</div><div v-text="text"><!-- c --></div><div v-html="html">  </div><p v-text="t">{{ x }}</p><p v-html="h"><b v-if="x" /></p>"#,
     r#"<ul><li v-html="a">one<li>two</ul><div v-html="raw"></div><MyComp inline-template><p>x</p></MyComp><div INLINE-TEMPLATE></div>"#,
+    r#"<div>{{ '<script lang="coffee">' }}</div><p>'<script lang="ts">'</p>"#,
 ];
 
 const VUE_JSX: &[&str] = &[
     r#"const A = () => <><div v-html={html}>child</div><div v-text={text}>{value}</div><div v-html={raw} /></>;"#,
     r#"const A = () => <div v-html={html}>{ok && <b />}{items.map((i) => <i key={i} />)}</div>;"#,
     r#"const A = () => <><template key="a"><p /></template><MyComp inline-template /><div inline-template="x" /></>;"#,
+    "const s = '<script lang=\"coffee\">';\nconst A = () => <div />;\nconst B = () => <p />;",
 ];
 
 #[test]
