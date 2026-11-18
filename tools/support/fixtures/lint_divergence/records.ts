@@ -679,6 +679,13 @@ export function patinaIntentionalReason(
     typedDefaultComesFromComposedContract(finding, source)
   )
     return "Patina resolves optional props inherited through local interface heritage or intersections; eslint-plugin-vue does not expand that composed prop contract.";
+  if (
+    ["script/no-boolean-default", "script/require-default-prop", "vue/no-mutating-props"].includes(
+      finding.ruleId,
+    ) &&
+    definePropsUsesPartialContract(source)
+  )
+    return "Patina expands a defineProps contract wrapped in TypeScript's Partial utility; eslint-plugin-vue does not extract props through that mapped type.";
   const importedContract = importedPropContractFinding(finding, source);
   if (importedContract !== null) return importedContract;
   if (
@@ -712,6 +719,8 @@ export function patinaIntentionalReason(
   }
   if (finding.ruleId === "vue/next-tick-style" && findingInScriptSetup(finding, source))
     return "Patina also checks <script setup>, as requested in #12450 and kept in #12670; eslint-plugin-vue's defineVueVisitor only visits component option objects.";
+  if (finding.ruleId === "vue/next-tick-style" && usesWrappedOptionsApi(source))
+    return "Patina recognizes the component options passed through the project's local component factory; eslint-plugin-vue's Vue visitor does not enter that wrapper.";
   if (finding.ruleId === "script/require-typed-ref" && refCallUnderTypeAssertion(finding, source))
     return "Patina requires a type argument even when a type assertion follows the ref call (#12069): `ref(null) as unknown as Ref<T>` is an unchecked cast, while eslint-plugin-vue counts any as/satisfies assertion as typed.";
   if (finding.ruleId === "html/no-duplicate-class") {
@@ -947,7 +956,22 @@ function usesAutoImportedComputed(source: string): boolean {
 }
 
 function usesWrappedOptionsApi(source: string): boolean {
-  return /\bexport\s+default\s+new\s+[A-Z_$][\w$]*\s*\(\s*\{[\s\S]*?\bcomputed\s*:/u.test(source);
+  const wrapper =
+    /\bexport\s+default\s+(?:new\s+)?([A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*)\s*\(\s*\{/u.exec(
+      source,
+    )?.[1];
+  return wrapper !== undefined && !["defineComponent", "Vue.extend"].includes(wrapper);
+}
+
+function definePropsUsesPartialContract(source: string): boolean {
+  const argument = /\bdefineProps\s*<\s*([A-Za-z_$][\w$]*)/u.exec(source)?.[1];
+  if (argument === undefined) return false;
+  if (argument === "Partial") return true;
+  const escaped = argument.replace(/[$]/gu, "\\$");
+  return new RegExp(
+    `\\btype\\s+${escaped}\\b(?:\\s*<[^;={}]*>)?\\s*=\\s*(?:Readonly\\s*<\\s*)?Partial\\s*<`,
+    "u",
+  ).test(source);
 }
 
 function mismatchedCaseClosingTag(finding: LintRecord, source: string): boolean {

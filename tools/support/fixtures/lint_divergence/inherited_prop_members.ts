@@ -48,8 +48,10 @@ const maximumVisitedTypes = 32;
  * extending it is reached from the defineProps type argument.
  */
 export function inheritedPropMember(offset: number, source: string): boolean {
-  const header = /\binterface\s+([A-Za-z_$][\w$]*)[^{}]*\{[^{}]*$/u.exec(source.slice(0, offset));
-  const name = header?.[1];
+  const before = source.slice(0, offset);
+  const header = /\binterface\s+([A-Za-z_$][\w$]*)[^{}]*\{[^{}]*$/u.exec(before);
+  const alias = /\btype\s+([A-Za-z_$][\w$]*)[^=]*=\s*\{[^{}]*$/u.exec(before);
+  const name = header?.[1] ?? alias?.[1];
   const argument = /\bdefineProps\s*<([^()]*?)>\s*\(/u.exec(source)?.[1];
   if (name === undefined || argument === undefined) return false;
   const word = new RegExp(`(?<![\\w$])${name.replace(/\$/gu, "\\$")}(?![\\w$])`, "gu");
@@ -58,6 +60,10 @@ export function inheritedPropMember(offset: number, source: string): boolean {
     const at = mention.index ?? 0;
     if (/\binterface\s+$/u.test(source.slice(Math.max(0, at - 20), at))) {
       if (at !== (header?.index ?? -1) + (header?.[0].indexOf(name) ?? 0)) return false;
+      continue;
+    }
+    if (/\btype\s+$/u.test(source.slice(Math.max(0, at - 20), at))) {
+      if (at !== (alias?.index ?? -1) + (alias?.[0].indexOf(name) ?? 0)) return false;
       continue;
     }
     const heir = /\binterface\s+([A-Za-z_$][\w$]*)[^{}]*\bextends\b[^{}]*$/u.exec(

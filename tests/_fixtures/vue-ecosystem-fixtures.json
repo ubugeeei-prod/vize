@@ -178,6 +178,12 @@
         "lockfile": "pnpm-lock.yaml",
         "baseline": {
           "tsconfig": "packages/hoppscotch-common/tsconfig.json",
+          "prepare": [
+            ["pnpm", "--filter", "@hoppscotch/codemirror-lang-graphql", "prepare"],
+            ["pnpm", "--filter", "@hoppscotch/data", "build"],
+            ["pnpm", "--filter", "@hoppscotch/js-sandbox", "build"],
+            ["pnpm", "--filter", "@hoppscotch/kernel", "build"]
+          ],
           "excludedInputs": [
             {
               "path": "packages/hoppscotch-common/src/types/post-request.d.ts",
@@ -612,7 +618,7 @@
           "symbol": "dataP",
           "usageAnchor": ":data-p=\"dataP\"",
           "declarationAnchor": "dataP() {",
-          "hoverContains": ["const dataP: string | undefined"],
+          "hoverContains": ["const dataP: any"],
           "sharesComponentImporter": true,
           "renameTo": "__vizeRenamedDataP"
         },
@@ -2767,7 +2773,7 @@
           {
             "id": "renderer",
             "tsconfig": "src/renderer/tsconfig.json",
-            "corpusGlobs": ["src/renderer/**/*.vue"]
+            "corpusGlobs": ["src/renderer/**/*.vue", "src/renderer/types/**/*.d.ts"]
           },
           {
             "id": "lyric",

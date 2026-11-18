@@ -51,6 +51,20 @@ test("a control-character point immediately before Patina's byte range pairs", (
   assert.equal(pairs.length, 1);
 });
 
+test("a duplicate attribute with matching severity pairs", () => {
+  const pairs = pairRuleLocationDivergences(
+    [
+      record(
+        60,
+        65,
+        "[vize:parser/template] Duplicate attribute `class`. Keeping the repeated attribute so parsing can continue.",
+      ),
+    ],
+    [record(60, 60, "Parsing error: duplicate-attribute.")],
+  );
+  assert.equal(pairs.length, 1);
+});
+
 test("parse errors with another code, position or severity stay apart", () => {
   const positives = () => [
     record(

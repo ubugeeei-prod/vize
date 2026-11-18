@@ -12,7 +12,28 @@ import {
   FakeAuthoredLspSession,
 } from "./support/fake-authored-lsp-session.ts";
 import { exerciseAuthoredFileLifecycle } from "./support/real-project-lsp-file-lifecycle.ts";
+import { normalizeLifecycleRepairDiagnostics } from "./support/real-project-lsp-file-lifecycle-utils.ts";
 import type { LspAuthoredOracle } from "./support/real-project-lsp-report.ts";
+
+test("lifecycle repair diagnostics ignore unrelated project cascades", () => {
+  const lifecycle = fixtureOracle().fileLifecycle;
+  const published: PublishDiagnosticsParams = {
+    diagnostics: [
+      diagnostic(2307, "Cannot find module './Child.vue' or its corresponding type declarations."),
+      diagnostic(
+        2307,
+        "Cannot find module '@transient/package' or its corresponding type declarations.",
+      ),
+      diagnostic(7006, "Parameter 'value' implicitly has an 'any' type."),
+    ],
+    uri: "file:///workspace/Importer.vue",
+    version: 3,
+  };
+
+  assert.equal(normalizeLifecycleRepairDiagnostics(published, lifecycle).length, 1);
+  published.diagnostics.shift();
+  assert.deepEqual(normalizeLifecycleRepairDiagnostics(published, lifecycle), []);
+});
 
 test("authored file lifecycle creates, renames, deletes, and repairs a dependency", async () => {
   const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "vize-authored-file-lifecycle-"));
@@ -99,8 +120,8 @@ const childValue = 1
       "delete diagnostics wait must skip stale same-version payloads",
     );
     assert.ok(
-      session.events.some((event) => event.endsWith(":stale-repair-skipped")),
-      "repair diagnostics wait must skip incomplete same-version payloads",
+      session.events.some((event) => event.endsWith(":stale-repair")),
+      "repair diagnostics wait must ignore unrelated same-version diagnostics",
     );
     assert.equal(fs.existsSync(path.join(workspace, "$OracleChild.vue")), false);
     assert.equal(fs.existsSync(path.join(workspace, "$OracleRenamedChild.vue")), false);
@@ -218,5 +239,18 @@ function rangeAt(source: string, offset: number, length: number): LspRange {
   return {
     start: offsetToPosition(source, offset),
     end: offsetToPosition(source, offset + length),
+  };
+}
+
+function diagnostic(code: number, message: string) {
+  return {
+    code,
+    message,
+    range: {
+      start: { character: 0, line: 1 },
+      end: { character: 1, line: 1 },
+    },
+    severity: 1,
+    source: "vize/types",
   };
 }

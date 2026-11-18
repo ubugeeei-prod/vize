@@ -49,6 +49,8 @@ test("a member the props inherit through extends is classified", () => {
     .replace("defineProps<NumberProps | StringProps>()", "defineProps<Props>()")
     .replace("const props", "type Props = NumberProps | StringProps\nconst props");
   assert.match(reason(aliased, "disabled") ?? "", inherited);
+  const objectAlias = slider.replace("interface BaseProps", "type BaseProps =");
+  assert.match(reason(objectAlias, "disabled") ?? "", inherited);
 });
 
 test("members eslint-plugin-vue reads itself stay counted", () => {

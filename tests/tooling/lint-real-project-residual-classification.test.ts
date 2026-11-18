@@ -10,6 +10,7 @@ import {
   redeclaredDerivedPropMemberReason,
 } from "../../tools/support/fixtures/lint_divergence/inherited_prop_members.ts";
 import { baselineParserIntentionalReason } from "../../tools/support/fixtures/lint_divergence/parser_intentional.ts";
+import { patinaIntentionalReason } from "../../tools/support/fixtures/lint_divergence/records.ts";
 
 test("a same-named imported prop default is a narrow setup namespace collision", () => {
   const message = "[vize:script/no-dupe-keys] Duplicated key 'filterOption'";
@@ -69,5 +70,38 @@ test("case-distinct native events and fragment-root SVG namespaces classify pars
       namespace,
     ) ?? "",
     /fragment-root SVG/u,
+  );
+});
+
+test("mapped Partial props and wrapped Options API calls classify as deeper coverage", () => {
+  const partial = `<script setup lang="ts">
+type Props = Partial<{ enabled: boolean; label: string }>
+withDefaults(defineProps<Props>(), { enabled: false })
+</script>`;
+  const finding = (ruleId: string, line: number) => ({
+    file: "src/Probe.vue",
+    ruleId,
+    severity: "warning",
+    line,
+    column: 1,
+    endLine: line,
+    endColumn: 2,
+    message: `[vize:${ruleId}] finding`,
+  });
+  for (const rule of [
+    "script/no-boolean-default",
+    "script/require-default-prop",
+    "vue/no-mutating-props",
+  ]) {
+    assert.match(patinaIntentionalReason(finding(rule, 3), partial) ?? "", /Partial utility/u);
+  }
+
+  const wrapped = `<script>
+import { nextTick } from 'vue'
+export default create({ setup() { nextTick(() => {}) } })
+</script>`;
+  assert.match(
+    patinaIntentionalReason(finding("vue/next-tick-style", 3), wrapped) ?? "",
+    /local component factory/u,
   );
 });

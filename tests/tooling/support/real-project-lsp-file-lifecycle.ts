@@ -23,6 +23,7 @@ import type {
   LspAuthoredOracle,
 } from "./real-project-lsp-report.ts";
 import {
+  lifecycleRepairDiagnostics,
   normalizeLifecycleRepairDiagnostics,
   reservedPath,
   waitForDiagnostics,
@@ -208,7 +209,7 @@ export async function exerciseAuthoredFileLifecycle(
       deletedDocumentSymbols: responseEvidence(deletedDocumentSymbols, 0, workspaceDir),
       deletedImporterDiagnostics: diagnosticEvidence(deletedDiagnostics.diagnostics),
       deletedWorkspaceSymbols: responseEvidence(deletedWorkspaceSymbols, 0, workspaceDir),
-      repairedDiagnostics: diagnosticEvidence(repaired.diagnostics),
+      repairedDiagnostics: diagnosticEvidence(lifecycleRepairDiagnostics(repaired, lifecycle)),
       renameEdit: responseEvidence(renameEdit, 1, workspaceDir),
       renamedDefinition: responseEvidence(renamedDefinition, 1, workspaceDir),
       renamedFile: lifecycle.renamedFile,

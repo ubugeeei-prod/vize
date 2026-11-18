@@ -371,7 +371,7 @@ fn write_project_artifact(
         project_id.clone(),
         &fixture_root,
         &vize_run.payload["parsed"],
-        &baseline.run.output,
+        vue_tsc_diagnostic_output(&baseline.run),
         &typecheck_source_roots,
         &documented_differences,
     )?;
@@ -385,7 +385,7 @@ fn write_project_artifact(
     } else {
         evaluate_vue_program_coverage(
             &vize_run.payload["parsed"],
-            &coverage_baseline.run.output,
+            vue_tsc_diagnostic_output(&coverage_baseline.run),
             &fixture_root,
             &typecheck_source_roots,
         )?
@@ -394,13 +394,16 @@ fn write_project_artifact(
     let configuration = if let Some(reason) = baseline.run_error.as_deref() {
         unavailable_baseline_configuration(reason)
     } else {
-        evaluate_baseline_configuration(&baseline.run.output)?
+        evaluate_baseline_configuration(vue_tsc_diagnostic_output(&baseline.run))?
     };
     context.phase("baseline ambient interpretation")?;
     let ambient = if let Some(reason) = coverage_baseline.run_error.as_deref() {
         unavailable_baseline_ambient_environment(reason)
     } else {
-        evaluate_baseline_ambient_environment(&coverage_baseline.run.output, &fixture_root)?
+        evaluate_baseline_ambient_environment(
+            vue_tsc_diagnostic_output(&coverage_baseline.run),
+            &fixture_root,
+        )?
     };
     // A diagnostic exit alone is not an unusable baseline: semantic findings are
     // the comparison's input. Ask the same official provider for diagnostics
@@ -428,7 +431,7 @@ fn write_project_artifact(
                 "Typecheck divergence baseline is unusable for {project_id} — {INSTRUMENT_FAILURE_CLASSIFICATION}: {reason}"
             ))
         };
-        match baseline_usability::parse_diagnostics(&baseline.run.output) {
+        match baseline_usability::parse_diagnostics(vue_tsc_diagnostic_output(&baseline.run)) {
             Ok(diagnostics) if !diagnostics.is_empty() => {}
             Ok(_) => {
                 return reject(
@@ -456,8 +459,7 @@ fn write_project_artifact(
                 Vec::new(),
             );
         }
-        let mut probe_args = baseline_args.clone();
-        probe_args.push("--noCheck".to_string());
+        let probe_args = pre_semantic_probe_args(&baseline_args);
         let probe = match context.capture(
             &args.vue_tsc_bin,
             &probe_args,
@@ -505,8 +507,7 @@ fn write_project_artifact(
                 Vec::new(),
             );
         }
-        let parsed =
-            baseline_usability::parse_diagnostics(&format!("{}\n{}", probe.stdout, probe.stderr));
+        let parsed = baseline_usability::parse_diagnostics(&probe.stdout);
         if !probe.status.success() || !matches!(&parsed, Ok(diagnostics) if diagnostics.is_empty())
         {
             let (kind, reason) = if !matches!(probe.status.code(), Some(0 | 1 | 2)) {
@@ -1200,7 +1201,6 @@ struct ToolRun {
     status: i32,
     stdout: String,
     stderr: String,
-    output: String,
     duration_ms: u128,
     parsed: Option<Value>,
 }
@@ -2116,7 +2116,7 @@ fn observe_mutation_state(
         project_string(ctx.project, "id")?,
         ctx.fixture_root,
         parsed,
-        &baseline.output,
+        vue_tsc_diagnostic_output(&baseline),
         &source_roots,
         ctx.documented_differences,
     )?;
@@ -3490,7 +3490,6 @@ fn failed_tool_run(command: &Path, args: &[String], duration_ms: u128, reason: &
         status: -1,
         stdout: String::new(),
         stderr: reason.to_string(),
-        output: format!("\n{reason}"),
         duration_ms,
         parsed: None,
     }
@@ -3521,12 +3520,19 @@ fn run_capture_limited(
     Ok(ToolRun {
         command: display_command(command, args),
         status,
-        output: format!("{}\n{}", run.stdout, run.stderr),
         stdout: run.stdout,
         stderr: run.stderr,
         duration_ms: run.duration_ms,
         parsed: None,
     })
+}
+
+fn vue_tsc_diagnostic_output(run: &ToolRun) -> &str {
+    // vue-tsc writes TypeScript's diagnostic protocol to stdout. Vue plugin
+    // resolution notices can appear on stderr even when a generated child
+    // config overrides the parent plugin successfully; they are evidence, not
+    // diagnostics to compare or parse.
+    &run.stdout
 }
 fn timeout_error(label: &str, timeout_ms: u64) -> String {
     format!("{label} failed to run: spawn timed out after {timeout_ms}ms")
@@ -5538,6 +5544,28 @@ fn file_list_hash(files: &[String]) -> String {
     )
 }
 
+fn pre_semantic_probe_args(baseline_args: &[String]) -> Vec<String> {
+    let mut args = baseline_args.to_vec();
+    args.extend(
+        [
+            "--noCheck",
+            // `composite` implies declaration emit. TypeScript otherwise runs
+            // declaration portability checks after `--noCheck` and mistakes
+            // those semantic findings for pre-semantic instrument failures.
+            "--composite",
+            "false",
+            "--declaration",
+            "false",
+            "--declarationMap",
+            "false",
+            "--emitDeclarationOnly",
+            "false",
+        ]
+        .map(str::to_string),
+    );
+    args
+}
+
 fn parse_budget_mode(value: &str) -> Result<String, String> {
     if value == "enforce" || value == "record-only" {
         Ok(value.to_string())
@@ -5742,6 +5770,43 @@ mod native_hint_contract_tests {
 #[cfg(test)]
 mod native_baseline_contract_tests {
     use super::*;
+
+    #[test]
+    fn pre_semantic_probe_disables_declaration_diagnostics() {
+        assert_eq!(
+            pre_semantic_probe_args(&["--noEmit".to_string()]),
+            [
+                "--noEmit",
+                "--noCheck",
+                "--composite",
+                "false",
+                "--declaration",
+                "false",
+                "--declarationMap",
+                "false",
+                "--emitDeclarationOnly",
+                "false",
+            ]
+            .map(str::to_string),
+        );
+    }
+
+    #[test]
+    fn vue_tsc_stderr_is_not_part_of_the_diagnostic_protocol() {
+        let run = ToolRun {
+            command: "vue-tsc".to_string(),
+            status: 2,
+            stdout: "src/App.vue(1,2): error TS2322: Type 'number' is not assignable to type 'string'.\n".to_string(),
+            stderr: "[Vue] Resolve plugin path failed: vue-router/volar/sfc-route-blocks\n"
+                .to_string(),
+            duration_ms: 1,
+            parsed: None,
+        };
+        let diagnostics =
+            baseline_usability::parse_diagnostics(vue_tsc_diagnostic_output(&run)).unwrap();
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0]["code"], 2322);
+    }
 
     #[test]
     fn large_baseline_continuations_preserve_whole_diagnostics_and_exclusions() {
