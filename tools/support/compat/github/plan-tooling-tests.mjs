@@ -58,8 +58,7 @@ export function localImportInputs(file, cwd = root, visited = new Set(), typed =
     }
     const candidates = typed ? typeImportCandidates(literal) : [literal];
     const dependency = candidates.find(
-      (candidate) =>
-        existsSync(join(cwd, candidate)) && (!typed || statSync(join(cwd, candidate)).isFile()),
+      (candidate) => existsSync(join(cwd, candidate)) && statSync(join(cwd, candidate)).isFile(),
     );
     if (typed) files.push(...candidates);
     if (literal.startsWith("..") || !dependency) {
