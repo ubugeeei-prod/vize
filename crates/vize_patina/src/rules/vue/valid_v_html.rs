@@ -52,6 +52,10 @@ impl MarkupRule for ValidVHtml {
         META.name
     }
 
+    fn traversal(&self) -> crate::markup::MarkupTraversal {
+        crate::markup::MarkupTraversal::Directives
+    }
+
     fn enter_directive<'a>(
         &self,
         ctx: &mut MarkupContext<'_, 'a>,
