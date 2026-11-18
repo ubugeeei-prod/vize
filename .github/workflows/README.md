@@ -34,7 +34,7 @@ surfaces and are not routine CI-refactor targets.
 | 04    | [Type checking and content mapping](#04-type-checking-and-content-mapping)             | 16        |
 | 05    | [Language services and editors](#05-language-services-and-editors)                     | 23        |
 | 06    | [SFC, JSX, and compiler correctness](#06-sfc-jsx-and-compiler-correctness)             | 40        |
-| 07    | [Davinci, Canon, and Level](#07-davinci-canon-and-level)                               | 23        |
+| 07    | [Davinci, Canon, and Level](#07-davinci-canon-and-level)                               | 24        |
 | 08    | [Builders and framework integrations](#08-builders-and-framework-integrations)         | 23        |
 | 09    | [Lint, format, and developer tooling](#09-lint-format-and-developer-tooling)           | 14        |
 | 10    | [Applications and UI packages](#10-applications-and-ui-packages)                       | 4         |
@@ -283,14 +283,15 @@ Davinci migration, Canon ownership, Level lowering, and cross-file graph contrac
 | 07.13 | Cross-file retained import updates            | [`cross-file-source-updates.yml`](./cross-file-source-updates.yml)             |
 | 07.14 | Cross-file WASM effect grammars               | [`cross-file-wasm-effects.yml`](./cross-file-wasm-effects.yml)                 |
 | 07.15 | Canonical Davinci corpus                      | [`davinci-canonical-corpus.yml`](./davinci-canonical-corpus.yml)               |
-| 07.16 | Davinci Incremental                           | [`davinci-incremental.yml`](./davinci-incremental.yml)                         |
-| 07.17 | Davinci Kani                                  | [`davinci-kani.yml`](./davinci-kani.yml)                                       |
-| 07.18 | Davinci Plugin SDK                            | [`davinci-plugin-sdk.yml`](./davinci-plugin-sdk.yml)                           |
-| 07.19 | Davinci reference backends                    | [`davinci-reference.yml`](./davinci-reference.yml)                             |
-| 07.20 | Davinci unused bindings                       | [`davinci-unused-bindings.yml`](./davinci-unused-bindings.yml)                 |
-| 07.21 | Level deletion readiness                      | [`level-deletion-readiness.yml`](./level-deletion-readiness.yml)               |
-| 07.22 | Level dependencies                            | [`level-dependencies.yml`](./level-dependencies.yml)                           |
-| 07.23 | Level HTML content model                      | [`level-html-content-model.yml`](./level-html-content-model.yml)               |
+| 07.16 | Davinci Creusot                               | [`davinci-creusot.yml`](./davinci-creusot.yml)                                 |
+| 07.17 | Davinci Incremental                           | [`davinci-incremental.yml`](./davinci-incremental.yml)                         |
+| 07.18 | Davinci Kani                                  | [`davinci-kani.yml`](./davinci-kani.yml)                                       |
+| 07.19 | Davinci Plugin SDK                            | [`davinci-plugin-sdk.yml`](./davinci-plugin-sdk.yml)                           |
+| 07.20 | Davinci reference backends                    | [`davinci-reference.yml`](./davinci-reference.yml)                             |
+| 07.21 | Davinci unused bindings                       | [`davinci-unused-bindings.yml`](./davinci-unused-bindings.yml)                 |
+| 07.22 | Level deletion readiness                      | [`level-deletion-readiness.yml`](./level-deletion-readiness.yml)               |
+| 07.23 | Level dependencies                            | [`level-dependencies.yml`](./level-dependencies.yml)                           |
+| 07.24 | Level HTML content model                      | [`level-html-content-model.yml`](./level-html-content-model.yml)               |
 
 ## 08 Builders and framework integrations
 
