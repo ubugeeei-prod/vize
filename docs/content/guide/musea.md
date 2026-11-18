@@ -132,6 +132,68 @@ Render-function components can also be referenced from `.ts`, `.tsx`, `.js`, or 
 import the value and render it normally. Musea reads statically declared runtime
 `props` and `emits` for analysis and the props panel.
 
+### Migrating from implicit Art targets
+
+This release removes the implicit component registration previously created by `defineArt()` and
+the synthetic `<Self>` component. Import and render the real component so Vue owns its props,
+attrs, emits, slots, and editor types.
+
+Before:
+
+```art-vue
+<script setup lang="ts">
+import Counter from "./Counter.vue";
+
+defineArt(Counter, {
+  title: "Counter",
+  category: "Examples",
+});
+</script>
+
+<art title="Counter">
+  <variant
+    name="Default"
+    :args="{ initial: 0, step: 1 }"
+    :attrs="{ 'aria-label': 'Counter example' }"
+  >
+    <Self />
+  </variant>
+</art>
+```
+
+After:
+
+```art-vue
+<script setup lang="ts">
+import Counter from "./Counter.vue";
+
+defineArtMeta({ category: "Examples" });
+</script>
+
+<art>
+  <variant name="Default">
+    <Counter :initial="0" :step="1" aria-label="Counter example" />
+  </variant>
+</art>
+```
+
+Apply these changes to each `.art.vue` file:
+
+1. Replace `<Self>` with the imported component tag used by that variant.
+2. Remove `defineArt(Component, metadata)` when every variant has one unambiguous target. Move
+   metadata to optional `defineArtMeta(metadata)`. Keep `defineArt(Target, metadata?)` only when an
+   intentional multi-component composition makes inference ambiguous.
+3. Replace the removed string form `defineArt("./Counter.vue", ...)` with a normal component import.
+4. Move `args`, props, and fallthrough attrs onto the component tag. `variant :props` and `:attrs`
+   remain compatibility shorthands for generated integrations, but direct bindings are the typed
+   authoring API.
+5. Remove redundant `<art title>` and metadata `title` values when the inferred binding or filename
+   is the intended display name.
+
+Run the gallery and `musea-vrt test` after converting a file. If an explicit title changes, review
+its snapshot identity and follow the [snapshot migration guide](./musea-snapshots.md) before
+updating baselines.
+
 ### Variant-local state
 
 Root `<script setup>` state is isolated per variant by default. Each variant receives its own setup

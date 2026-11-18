@@ -36,6 +36,7 @@
       "/guide/content-mapper": "Content Mapper",
       "/guide/compiler-inspector": "编译器检查器",
       "/guide/experimentals": "实验性功能",
+      "/guide/musea-testing": "Musea 交互测试",
       "/guide/musea-globals": "全局预览控件",
       "/guide/musea-capture": "稳定的截图",
       "/guide/musea-snapshots": "快照迁移",

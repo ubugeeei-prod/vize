@@ -138,6 +138,61 @@ const pressed = ref(false);
 
 render 関数で書いたコンポーネントも、`.ts`、`.tsx`、`.js`、`.jsx` から値を import して、そのままタグとして使えます。Musea は静的に宣言された runtime `props` と `emits` を分析画面と props パネルに表示します。
 
+<span id="暗黙の-art-対象から移行する"></span>
+
+### 暗黙の Art 対象から移行する
+
+このリリースでは、`defineArt()` が作っていた暗黙のコンポーネント登録と、合成された `<Self>` を廃止します。実際のコンポーネントを import してそのタグを描画することで、props、attrs、emits、slots、エディターの型を通常の Vue と同じ契約にします。
+
+変更前:
+
+```art-vue
+<script setup lang="ts">
+import Counter from "./Counter.vue";
+
+defineArt(Counter, {
+  title: "Counter",
+  category: "Examples",
+});
+</script>
+
+<art title="Counter">
+  <variant
+    name="Default"
+    :args="{ initial: 0, step: 1 }"
+    :attrs="{ 'aria-label': 'Counter example' }"
+  >
+    <Self />
+  </variant>
+</art>
+```
+
+変更後:
+
+```art-vue
+<script setup lang="ts">
+import Counter from "./Counter.vue";
+
+defineArtMeta({ category: "Examples" });
+</script>
+
+<art>
+  <variant name="Default">
+    <Counter :initial="0" :step="1" aria-label="Counter example" />
+  </variant>
+</art>
+```
+
+各 `.art.vue` に次の変更を適用します。
+
+1. `<Self>` を、そのバリアントで使う import 済みのコンポーネントタグに置き換えます。
+2. すべてのバリアントから対象を一意に推論できる場合は、`defineArt(Component, metadata)` を削除します。メタデータが必要なら、省略可能な `defineArtMeta(metadata)` へ移します。複数コンポーネントを意図的に組み合わせて対象が曖昧になる場合だけ、`defineArt(Target, metadata?)` を残します。
+3. 廃止した文字列形式 `defineArt("./Counter.vue", ...)` は、通常のコンポーネント import に置き換えます。
+4. `args`、props、fallthrough attrs をコンポーネントタグへ移します。`variant :props` と `:attrs` は生成系の互換用として残りますが、手書きでは直接 binding する API を使います。
+5. 推論される binding 名またはファイル名を表示名に使う場合は、重複した `<art title>` と metadata の `title` を削除します。
+
+変換後はギャラリーと `musea-vrt test` を実行してください。明示的な title が変わる場合は、baseline を更新する前に snapshot の識別子を確認し、[snapshot の移行ガイド](./musea-snapshots.md)に従ってください。
+
 <span id="バリアントローカル状態"></span>
 
 ### バリアントごとの状態
