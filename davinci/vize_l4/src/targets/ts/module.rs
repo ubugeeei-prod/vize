@@ -10,7 +10,7 @@ use alloc::vec::Vec;
 use oxc_ast::ast::{JSXElement, JSXFragment, Program};
 use oxc_ast_visit::{Visit, walk};
 use vize_l0::Span;
-use vize_l2::component::{ComponentDef, Exec, RenderScope};
+use vize_l2::module::{ComponentDef, Exec, RenderScope};
 
 use super::MODULE_SUFFIX;
 use super::ops;

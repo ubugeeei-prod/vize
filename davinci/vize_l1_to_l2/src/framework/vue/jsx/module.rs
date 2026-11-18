@@ -18,7 +18,7 @@ use oxc_ast_visit::{Visit, walk};
 use oxc_semantic::Scoping;
 use oxc_syntax::scope::ScopeFlags;
 use vize_l0::{Allocator, Span};
-use vize_l2::component::{ComponentDef, Exec};
+use vize_l2::module::{ComponentDef, Exec};
 
 use super::{
     BooleanBindings, JsxComponent, JsxDialect, JsxFile, JsxRefusal, JsxRoot, lower_component, span,

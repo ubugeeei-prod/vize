@@ -23,7 +23,7 @@ use vize_l1_to_l2::framework::vue::jsx::{
     EnteredFunction, FunctionNode, JsxComponent, JsxRoot, ModuleVisitor, PrologueIssue,
     RootContext, walk_module,
 };
-use vize_l2::component::Exec;
+use vize_l2::module::Exec;
 use vize_relief::RootNode;
 
 /// Lower every outermost JSX root in `program` into a [`LoweredRoot`].

@@ -44,7 +44,7 @@ pub struct JsxL2Root<'a> {
 }
 
 impl<'a> JsxL2Root<'a> {
-    fn from_component(def: vize_l2::component::ComponentDef<'a>) -> Self {
+    fn from_component(def: vize_l2::module::ComponentDef<'a>) -> Self {
         Self {
             source: def.body.source,
             root: def.body.root,

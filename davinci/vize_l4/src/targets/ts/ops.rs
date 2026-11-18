@@ -13,8 +13,8 @@
 //!
 //! `ui.text` and static attributes write nothing, as today.
 
-use vize_l2::component::ComponentDef;
 use vize_l2::expr::ExprRef;
+use vize_l2::module::ComponentDef;
 use vize_l2::op::{BindOp, BindingOp, DynamicName, ElementOp, OnHandlerRef, OnOp, Op, Region};
 
 use super::control;
