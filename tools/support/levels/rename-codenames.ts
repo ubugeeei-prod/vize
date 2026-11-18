@@ -167,6 +167,21 @@ function words(text: string, from: number, to: number): { start: number; end: nu
   return found;
 }
 
+const programTitle = NAME[0].toUpperCase() + NAME.slice(1);
+const phraseStart = /(?:^|[\n.!?:;"'`/#*|>-])[ \t]*$/u;
+
+/**
+ * The capitalized program name in prose is a modifier ("the X lane", "X ICE machinery"): it
+ * becomes `level`, capitalized only where a phrase starts. A plan item ("X P1-7") names the plan.
+ */
+function renameInProse(text: string, start: number, end: number, scope: Scope): string {
+  const word = text.slice(start, end);
+  if (!scope.program || word !== programTitle) return renameWord(word, scope);
+  const opening = phraseStart.test(text.slice(Math.max(0, start - 80), start));
+  const noun = /^ P\d/u.test(text.slice(end, end + 3)) ? "plan" : "level";
+  return opening ? noun[0].toUpperCase() + noun.slice(1) : noun;
+}
+
 function replaceWords(
   text: string,
   from: number,
@@ -177,7 +192,7 @@ function replaceWords(
     cursor = from;
   for (const { start, end } of words(text, from, to)) {
     out += text.slice(cursor, start);
-    out += renameWord(text.slice(start, end), scope(start, end));
+    out += renameInProse(text, start, end, scope(start, end));
     cursor = end;
   }
   return out + text.slice(cursor, to);
@@ -316,7 +331,8 @@ function rewriteKeptPaths(
     const bare = body.replace(/\/$/u, "");
     const relative = /^\.{1,2}\//u.test(bare);
     const target = relative ? path.posix.normalize(path.posix.join(dir, bare)) : bare;
-    if (target.startsWith("../")) return token;
+    // A bare top-level directory names the program's place in history, not a file to reach.
+    if (target.startsWith("../") || !target.includes("/")) return token;
     const moved = renamePath(target, limit);
     if (moved === target || !(known.has(target) || known.has(moved))) return token;
     if (!relative) return renamePath(body, limit) + trail;
