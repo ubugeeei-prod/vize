@@ -100,7 +100,7 @@ impl TemplateRefKeyChecks<'_> {
             });
             output.push_str(callee);
             if !call.imported {
-                append!(output, " as {}Global)", self.helper);
+                append!(output, " as {})", call.cast_target(self.helper));
             }
             cursor = range.end;
         }

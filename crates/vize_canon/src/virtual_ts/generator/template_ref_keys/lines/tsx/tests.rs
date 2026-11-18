@@ -60,6 +60,7 @@ fn template_ref_callee_and_arrow_share_original_coordinates() {
             callee: start..end,
             name: "useTemplateRef".into(),
             imported,
+            owner_checked: false,
             statement_start: 0,
             literal: None,
         }];

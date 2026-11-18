@@ -15,7 +15,20 @@ impl TemplateRefUsage {
                 "  const {name} = (undefined as unknown as $UseTemplateRef);\n"
             );
         }
-        if self.calls.iter().all(|call| call.imported) {
+        // A binding imported through another module (`#imports`, a `paths`
+        // alias, a re-export chain) is Vue's exactly when its type is Vue's
+        // own `useTemplateRef`; a same-name user function keeps its signature.
+        if self.calls.iter().any(|call| call.owner_checked) {
+            append!(
+                *ts,
+                "  type {name}Owns<_F> = (<_G>() => _G extends _F ? 1 : 2) extends (<_G>() => _G extends typeof import('vue').useTemplateRef ? 1 : 2) ? true : false;\n  type {name}For<_F> = {name}Owns<_F> extends true ? $UseTemplateRef : _F;\n"
+            );
+        }
+        if self
+            .calls
+            .iter()
+            .all(|call| call.imported || call.owner_checked)
+        {
             return;
         }
         // Collection admits globals only with explicit Vue ownership. Retain

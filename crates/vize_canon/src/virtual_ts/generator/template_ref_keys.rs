@@ -47,6 +47,9 @@ struct InferredCall {
     callee: std::ops::Range<usize>,
     name: String,
     imported: bool,
+    /// Imported from another module (`#imports`, a re-export of Vue's): the
+    /// binding's own type decides whether it is Vue's `useTemplateRef`.
+    owner_checked: bool,
     /// Where the top-level statement holding the call starts.
     statement_start: usize,
     /// A key can be nonliteral; its call still needs the inferred signature.
@@ -62,10 +65,12 @@ impl TemplateRefUsage {
         script: &str,
         configured_global: bool,
     ) -> Self {
+        let (imports, reexports) = template_ref_imports(program);
         let mut collector = Collector {
             script,
             scoping,
-            imports: vue_imports(program),
+            imports,
+            reexports,
             calls: Vec::new(),
             function_depth: 0,
             statement_depth: 0,
@@ -77,7 +82,7 @@ impl TemplateRefUsage {
         // specialization; otherwise retain the original call and diagnostics.
         collector
             .calls
-            .retain(|call| call.imported || configured_global);
+            .retain(|call| call.imported || call.owner_checked || configured_global);
         collector.calls.sort_by_key(|call| call.callee.start);
         Self {
             helper: if collector.calls.is_empty() {
@@ -139,6 +144,14 @@ impl TemplateRefKeyChecks<'_> {
             }
             if call.imported {
                 ts.push_str("void (null! as $TemplateRefs[");
+            } else if call.owner_checked {
+                let record = crate::virtual_ts::generated_names::lib("Record");
+                append!(
+                    *ts,
+                    "void (null! as ({}Owns<typeof {}> extends true ? $TemplateRefs : {record}<string, never>)[",
+                    self.helper,
+                    call.name
+                );
             } else {
                 // A missing global produces the checker's error-type `any`.
                 // Keep that on the object side of the conditional: using it
@@ -162,29 +175,47 @@ impl TemplateRefKeyChecks<'_> {
     }
 }
 
-fn vue_imports(program: &Program<'_>) -> Vec<SymbolId> {
-    program
-        .body
-        .iter()
-        .filter_map(|statement| {
-            let Statement::ImportDeclaration(import) = statement else {
-                return None;
-            };
-            (import.source.value == "vue" && import.import_kind != ImportOrExportKind::Type)
-                .then_some(import.specifiers.as_ref())
-                .flatten()
-        })
-        .flat_map(|specifiers| specifiers.iter())
-        .filter_map(|specifier| {
+/// `useTemplateRef` value imports: those from `vue`, and those from any other
+/// module (`#imports`, a `paths` alias, a re-export), whose type decides.
+fn template_ref_imports(program: &Program<'_>) -> (Vec<SymbolId>, Vec<SymbolId>) {
+    let mut vue = Vec::new();
+    let mut other = Vec::new();
+    for statement in &program.body {
+        let Statement::ImportDeclaration(import) = statement else {
+            continue;
+        };
+        if import.import_kind == ImportOrExportKind::Type {
+            continue;
+        }
+        let owned = if import.source.value == "vue" {
+            &mut vue
+        } else {
+            &mut other
+        };
+        for specifier in import.specifiers.iter().flatten() {
             let ImportDeclarationSpecifier::ImportSpecifier(named) = specifier else {
-                return None;
+                continue;
             };
-            (named.import_kind != ImportOrExportKind::Type
-                && named.imported.name() == "useTemplateRef")
-                .then(|| named.local.symbol_id.get())
-                .flatten()
-        })
-        .collect()
+            if named.import_kind != ImportOrExportKind::Type
+                && named.imported.name() == "useTemplateRef"
+                && let Some(symbol) = named.local.symbol_id.get()
+            {
+                owned.push(symbol);
+            }
+        }
+    }
+    (vue, other)
+}
+
+impl InferredCall {
+    /// The type a non-replaced callee is cast to.
+    fn cast_target(&self, helper: &str) -> String {
+        if self.owner_checked {
+            cstr!("{helper}For<typeof {}>", self.name)
+        } else {
+            cstr!("{helper}Global")
+        }
+    }
 }
 
 /// Reserve lexical bindings and unresolved globals so the helper cannot capture
@@ -219,7 +250,7 @@ fn helper_name(scoping: &Scoping) -> String {
 }
 
 fn occupies_helper(name: &str, candidate: &str) -> bool {
-    ["", "Source", "IsVue", "Global"]
+    ["", "Source", "IsVue", "Global", "Owns", "For"]
         .iter()
         .any(|suffix| name.strip_prefix(candidate) == Some(suffix))
 }
@@ -228,6 +259,7 @@ struct Collector<'s> {
     script: &'s str,
     scoping: &'s Scoping,
     imports: Vec<SymbolId>,
+    reexports: Vec<SymbolId>,
     calls: Vec<InferredCall>,
     function_depth: usize,
     statement_depth: usize,
@@ -281,10 +313,14 @@ impl<'a> Visit<'a> for Collector<'_> {
                     .get_reference(reference)
                     .symbol_id()
                     .map_or(callee.name == "useTemplateRef", |symbol| {
-                        self.imports.contains(&symbol)
+                        self.imports.contains(&symbol) || self.reexports.contains(&symbol)
                     })
             })
         {
+            let symbol = callee
+                .reference_id
+                .get()
+                .and_then(|reference| self.scoping.get_reference(reference).symbol_id());
             let literal = self
                 .statement_opens_its_line()
                 .then(|| {
@@ -304,9 +340,8 @@ impl<'a> Visit<'a> for Collector<'_> {
                         .get(callee.span.start as usize..callee.span.end as usize)
                         .unwrap_or(callee.name.as_str()),
                 ),
-                imported: callee.reference_id.get().is_some_and(|reference| {
-                    self.scoping.get_reference(reference).symbol_id().is_some()
-                }),
+                imported: symbol.is_some_and(|symbol| self.imports.contains(&symbol)),
+                owner_checked: symbol.is_some_and(|symbol| self.reexports.contains(&symbol)),
                 statement_start: self.statement_start,
                 literal,
             });
