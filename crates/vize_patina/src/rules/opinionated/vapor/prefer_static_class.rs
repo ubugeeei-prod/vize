@@ -28,6 +28,7 @@ use crate::markup::{MarkupBinding, MarkupBindingKind, MarkupContext, MarkupEleme
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use crate::rules::opinionated::class_values::unconditional_static_parts;
 use oxc_ast::ast::Expression;
+use oxc_span::GetSpan;
 use vize_armature::patterns::attribute_source_span;
 use vize_l0::String;
 use vize_relief::{DirectiveNode, ElementNode, ExpressionNode, PropNode};
@@ -95,21 +96,26 @@ impl MarkupRule for PreferStaticClass {
         });
 
         let message = ctx.lint().t("vapor/prefer-static-class.message");
-        if literal.is_some() && has_static_class {
+        // eslint-plugin-vue reports the literal itself, not the binding.
+        let literal_range = retained
+            .as_ref()
+            .and_then(|retained| retained.authored_range(retained.ast.without_parentheses().span()))
+            .unwrap_or(binding.range());
+        if literal.is_some() && has_static_class && ctx.is_template() {
+            let help = ctx.lint().t("vapor/prefer-static-class.help");
+            ctx.lint().warn_at_with_help(message, literal_range, help);
+        } else if literal.is_some() && has_static_class {
             let help = ctx.lint().t("vapor/prefer-static-class.help");
             ctx.lint().warn_at_with_help(message, binding.range(), help);
         } else if let Some(value) = literal
             && ctx.is_template()
         {
-            let Some(argument) = binding.argument_range() else {
-                return;
-            };
             let range = binding.range();
             report_static_class(
                 ctx.lint(),
                 message.as_ref(),
                 value,
-                argument.start,
+                literal_range,
                 range.start,
                 range.end,
             );
@@ -152,10 +158,9 @@ impl Rule for PreferStaticClass {
             return;
         }
 
-        let arg = match &directive.arg {
-            Some(ExpressionNode::Simple(s)) if s.content == "class" => s,
-            _ => return,
-        };
+        if !matches!(&directive.arg, Some(ExpressionNode::Simple(s)) if s.content == "class") {
+            return;
+        }
         if directive
             .modifiers
             .iter()
@@ -175,7 +180,28 @@ impl Rule for PreferStaticClass {
         };
 
         let parsed = simple.js_ast.and_then(|ast| ast.as_expression());
+        let start = simple.loc.span.start as usize;
+        let end = simple.loc.span.end as usize;
+        let authored = ctx.source.get(start..end).unwrap_or_default();
         if let Some(value) = whole_literal_value(simple.content.trim(), parsed.map(|p| p.ast)) {
+            // eslint-plugin-vue reports the literal itself, not the binding.
+            let literal_range = parsed
+                .and_then(|parsed| {
+                    attribute_source_span(
+                        authored,
+                        simple.content,
+                        parsed.ast.without_parentheses().span(),
+                    )
+                })
+                .map_or(
+                    ByteRange::new(simple.loc.span.start, simple.loc.span.end),
+                    |span| {
+                        ByteRange::new(
+                            simple.loc.span.start + span.start,
+                            simple.loc.span.start + span.end,
+                        )
+                    },
+                );
             // Check if element already has a static class attribute
             let has_static_class = element.props.iter().any(|p| {
                 matches!(p, PropNode::Attribute(attr) if attr.name.eq_ignore_ascii_case("class"))
@@ -189,23 +215,20 @@ impl Rule for PreferStaticClass {
                     ctx,
                     message.as_ref(),
                     value,
-                    arg.loc.span.start,
+                    literal_range,
                     directive.loc.span.start,
                     directive.loc.span.end,
                 );
             } else {
-                ctx.warn_with_help(
+                ctx.warn_at_with_help(
                     message,
-                    &directive.loc,
+                    literal_range,
                     ctx.t("vapor/prefer-static-class.help"),
                 );
             }
         } else if let Some(parsed) = parsed {
             let mut parts = Vec::new();
             unconditional_static_parts(parsed.ast, &mut parts);
-            let start = simple.loc.span.start as usize;
-            let end = simple.loc.span.end as usize;
-            let authored = ctx.source.get(start..end).unwrap_or_default();
             for part in parts
                 .into_iter()
                 .filter(|part| !part.text.trim().is_empty())
@@ -230,12 +253,12 @@ fn report_static_class(
     ctx: &mut LintContext<'_>,
     message: &str,
     value: &str,
-    argument_start: u32,
+    literal: ByteRange,
     binding_start: u32,
     binding_end: u32,
 ) {
     let mut diagnostic =
-        crate::diagnostic::LintDiagnostic::warn(META.name, message, argument_start, binding_end);
+        crate::diagnostic::LintDiagnostic::warn(META.name, message, literal.start, literal.end);
     // A double quote cannot be written into the double-quoted attribute.
     if !value.contains('"') {
         let mut replacement = String::from("class=\"");
@@ -381,5 +404,36 @@ mod tests {
             "test.vue",
         );
         assert_eq!(result.warning_count, 2, "{:?}", result.diagnostics);
+    }
+
+    /// The nodes eslint-plugin-vue 10.12.0 reports for the same template.
+    #[test]
+    fn reports_the_static_class_nodes_eslint_plugin_vue_reports() {
+        let template = concat!(
+            "<div>",
+            "<div :class=\"`a b ${x} c`\" />",
+            "<div :class=\"'static'\" />",
+            "<div :class=\"['p', { q: true, 'r': true, [`s`]: true, t: x }, `u${x}`]\" />",
+            "<div :class=\"`v__${x}`\" />",
+            "<div class=\"w\" :class=\"`y`\" />",
+            "</div>"
+        );
+        let result = create_linter().lint_template(template, "test.vue");
+        let mut ranges: Vec<_> = result
+            .diagnostics
+            .iter()
+            .map(|diagnostic| (diagnostic.start, diagnostic.end))
+            .collect();
+        ranges.sort_unstable();
+        let reported: Vec<_> = ranges
+            .iter()
+            .filter_map(|&(start, end)| template.get(start as usize..end as usize))
+            .collect();
+        assert_eq!(
+            reported,
+            [
+                "`a b ${", "} c`", "'static'", "'p'", "q", "'r'", "`s`", "`y`"
+            ]
+        );
     }
 }

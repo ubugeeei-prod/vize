@@ -3,6 +3,7 @@ use crate::{
 };
 use vize_l0::ToCompactString;
 
+mod byte_order_mark;
 mod documentation;
 
 #[test]

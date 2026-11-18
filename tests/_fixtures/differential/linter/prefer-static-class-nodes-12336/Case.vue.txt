@@ -1,0 +1,12 @@
+<script setup lang="ts">
+const x = 'dynamic'
+</script>
+
+<template>
+  <div :class="`a b ${x} c`" />
+  <div :class="'static'" />
+  <div :class="['p', { q: true, 'r': true, [`s`]: true, t: x }, `u${x}`]" />
+  <div :class="`v__${x}`" />
+  <div class="w" :class="`y`" />
+  <div :class="`callout t-editor__callout callout__${x}`" />
+</template>

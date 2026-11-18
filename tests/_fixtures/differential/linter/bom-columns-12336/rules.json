@@ -1,0 +1,3 @@
+{
+  "vue/block-lang": ["warn", { "script": { "allowNoLang": true } }]
+}
