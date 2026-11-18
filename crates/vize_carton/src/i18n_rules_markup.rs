@@ -244,7 +244,7 @@ static ENTRIES: &[(&str, &str, &str, &str)] = &[
     ),
     (
         "musea/require-component.description",
-        "Require component attribute in <art> block",
+        "Require a resolvable target component for an <art> block",
         "<art> ブロックに component 属性を必須にする",
         "要求 <art> 块带有 component 属性",
     ),
