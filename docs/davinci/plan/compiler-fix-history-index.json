@@ -41,7 +41,7 @@
     "sha256": "ec657f7de901d068ba81cb8927d5bfd06c262cb00ce8fae880c58e85f063564f"
   },
   "dispositions": {
-    "path": "docs/davinci/plan/compiler-fix-history-dispositions.json",
+    "path": "crates/vize_atelier_sfc/tests/fixtures/compile-history/dispositions.json",
     "sha256": "b5c62f530e75b73133e1910153a85ec8070110af68f7b9151fc60a72164dae5d"
   },
   "wholeFixReviewedSubjects": 0,
