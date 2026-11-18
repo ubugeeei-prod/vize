@@ -169,6 +169,7 @@ mod custom_directive_original_cli;
 mod davinci_reduce_cli;
 mod davinci_repro_cli;
 mod davinci_ts40_projection_cli;
+mod diagnostic_digest_hints_cli;
 mod diagnostic_render;
 mod doctor_barrel_props_cli;
 mod doctor_browser_origin_cli;

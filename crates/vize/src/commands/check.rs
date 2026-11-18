@@ -95,6 +95,11 @@ pub struct CheckArgs {
     #[arg(short, long)]
     pub quiet: bool,
 
+    /// Print every diagnostic in full instead of one hinted block per kind
+    /// (attributes a component does not declare, ...)
+    #[arg(long)]
+    pub verbose: bool,
+
     /// Profile mode - output Virtual TS and timing to node_modules/.vize directory
     #[arg(long)]
     pub profile: bool,

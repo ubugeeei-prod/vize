@@ -41,6 +41,7 @@ fn declaration_check_args(args: &BuildArgs, patterns: Vec<std::string::String>) 
         no_check_emits: false,
         no_check_template_bindings: false,
         quiet: false,
+        verbose: args.verbose,
         profile: false,
         corsa_path: None,
         servers: None,

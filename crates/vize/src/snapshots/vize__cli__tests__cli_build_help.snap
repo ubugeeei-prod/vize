@@ -89,6 +89,9 @@ Options:
       --continue-on-error
           Continue on errors (collect all errors and show at end)
 
+      --verbose
+          Print every compile error in full instead of one hinted block per kind (self-closing HTML elements under strict template syntax, ...)
+
       --dump-dir <DIR>
           Write observed native compiler stages for each built SFC into DIR
 

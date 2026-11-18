@@ -1,5 +1,12 @@
 use std::{path::Path, sync::Mutex};
 
+use std::io::IsTerminal as _;
+
+use vize_fresco::{
+    ColorSupport, TerminalCapabilities, TerminalCapabilityProbe, TerminalProfileOptions,
+};
+use vize_l0::String;
+
 use super::super::config::{CompileError, CompileOutput, ErrorPhase};
 
 pub(super) fn record_error(errors: &Mutex<Vec<CompileError>>, error: CompileError) {
@@ -8,16 +15,27 @@ pub(super) fn record_error(errors: &Mutex<Vec<CompileError>>, error: CompileErro
     }
 }
 
-/// Print collected read/parse/compile errors grouped by phase.
-pub(super) fn report_errors(errors: &[CompileError]) {
-    if errors.is_empty() {
+/// Print collected read/parse/compile errors grouped by phase. Unless
+/// `verbose`, files whose errors are all template errors the hint table knows
+/// print as one hinted block per kind first ([`super::digest`]).
+pub(super) fn report_errors(all_errors: &[CompileError], verbose: bool) {
+    if all_errors.is_empty() {
         return;
     }
     eprintln!();
     eprintln!(
         "\x1b[31m\u{2717} {} error(s) occurred:\x1b[0m",
-        errors.len()
+        all_errors.len()
     );
+    let (errors, digests) = if verbose {
+        (all_errors.iter().collect(), String::default())
+    } else {
+        vize_l0::profile!(
+            "cli.build.report.digest",
+            super::digest::partition(all_errors, stderr_color())
+        )
+    };
+    eprint!("{digests}");
     eprintln!();
 
     let read_errors: Vec<_> = errors
@@ -95,6 +113,12 @@ pub(super) fn report_errors(errors: &[CompileError]) {
         }
         eprintln!();
     }
+}
+
+fn stderr_color() -> bool {
+    let probe = TerminalCapabilityProbe::from_process(80, 24, std::io::stderr().is_terminal());
+    let capabilities = TerminalCapabilities::resolve(&probe, TerminalProfileOptions::default());
+    capabilities.color().value() != ColorSupport::Monochrome
 }
 
 pub(super) fn fallback_output(source: &Path, error: &CompileError) -> CompileOutput {
