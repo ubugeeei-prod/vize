@@ -1027,7 +1027,7 @@
       "rules": {
         "vue/use-v-on-exact": "warn"
       },
-      "baselineHelperSha256": "e01e8d014b71ceac85cbd0569509af3e2eb6c9312bf6c0281dfb4d14fa7474a9"
+      "baselineHelperSha256": "96df8bbfb2db0f3c96153007e6a0fd38c7f8813e3896422a884702b717c911ea"
     },
     "captures": [
       {

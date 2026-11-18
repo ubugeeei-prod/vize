@@ -72,6 +72,49 @@ export function selectComparableRules(ruleMap, preset, { includeUnimplemented = 
   return { rules, skippedByPreset };
 }
 
+/**
+ * Give every script node, token and comment the `loc` its own `range` names.
+ *
+ * vue-eslint-parser 10.4 can return `<script setup>` nodes whose `loc` lines
+ * disagree with their `range` when the SFC also has a plain `<script>`
+ * (scalar's `CodeInput.vue`: every setup node 29 lines low). Rules report
+ * `loc`, so the reference would point at lines that do not hold the node.
+ * Ranges are right, and template nodes are untouched.
+ */
+export function realignScriptLocations(ast, code) {
+  const starts = [0];
+  for (const match of code.matchAll(/\r\n|[\r\n\u2028\u2029]/gu))
+    starts.push((match.index ?? 0) + match[0].length);
+  const position = (offset) => {
+    let low = 0,
+      high = starts.length - 1;
+    while (low < high) {
+      const middle = (low + high + 1) >> 1;
+      if (starts[middle] <= offset) low = middle;
+      else high = middle - 1;
+    }
+    return { line: low + 1, column: offset - starts[low] };
+  };
+  const seen = new Set();
+  const realign = (node) => {
+    if (node === null || typeof node !== "object" || seen.has(node)) return;
+    seen.add(node);
+    if (Array.isArray(node)) {
+      for (const item of node) realign(item);
+      return;
+    }
+    if (Array.isArray(node.range) && node.loc != null) {
+      node.loc.start = position(node.range[0]);
+      node.loc.end = position(node.range[1]);
+    }
+    for (const [key, value] of Object.entries(node))
+      if (key !== "parent" && key !== "templateBody" && key !== "loc" && key !== "range")
+        realign(value);
+  };
+  realign(ast);
+  return ast;
+}
+
 export function baselineConfig(runtime, rules) {
   // A .vue path is an unknown extension to the TypeScript parser: jsx=true
   // therefore parses even lang="ts" as TSX and rejects valid <T> assertions
@@ -85,11 +128,19 @@ export function baselineConfig(runtime, rules) {
       });
     },
   };
+  const vueParser = {
+    ...runtime.vueParser,
+    parseForESLint(code, options) {
+      const result = runtime.vueParser.parseForESLint(code, options);
+      realignScriptLocations(result.ast, code);
+      return result;
+    },
+  };
   return [
     {
       files: ["**/*.vue"],
       languageOptions: {
-        parser: runtime.vueParser,
+        parser: vueParser,
         parserOptions: {
           parser: { js: runtime.scriptParser, ts: typescript, tsx: runtime.scriptParser },
           ecmaVersion: "latest",
