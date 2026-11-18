@@ -203,6 +203,10 @@ function __museaInitAddons(container, variantName, extraCaptureEvents = []) {
     if (!e.data?.type?.startsWith('musea:')) return;
     const { type, payload } = e.data;
     switch (type) {
+      case 'musea:request-ready': {
+        window.parent.postMessage({ type: 'musea:ready', payload: {} }, parentOrigin);
+        break;
+      }
       case 'musea:set-background': {
         if (payload.pattern === 'checkerboard') {
           document.body.style.background = '';
