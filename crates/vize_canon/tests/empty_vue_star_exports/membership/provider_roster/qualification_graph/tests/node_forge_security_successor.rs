@@ -20,9 +20,15 @@ fn inputs() -> Inputs {
         predecessor: eslint_vue_scorecard::update(),
         predecessor_bytes: fs::read(support::corpus().join(eslint_vue_scorecard::UPDATE)).unwrap(),
         update: node_forge_security_update(),
-        lock: runtime_security::reconstruct_lock_predecessor(&current_lock).unwrap(),
+        lock: runtime_security::reconstruct_lock_predecessor(
+            &picomatch_security::reconstruct_lock_predecessor(&current_lock).unwrap(),
+        )
+        .unwrap(),
         package: fs::read(support::repository().join("package.json")).unwrap(),
-        workspace: runtime_security::reconstruct_workspace_predecessor(&current_workspace).unwrap(),
+        workspace: runtime_security::reconstruct_workspace_predecessor(
+            &picomatch_security::reconstruct_workspace_predecessor(&current_workspace).unwrap(),
+        )
+        .unwrap(),
     }
 }
 

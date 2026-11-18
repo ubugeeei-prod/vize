@@ -1,0 +1,3 @@
+<template>
+  <p>{{ $t(1) }}</p>
+</template>

@@ -27,6 +27,11 @@ impl TextStyle {
         }
     }
 
+    /// Whether this stream renders ANSI colour.
+    pub(super) const fn color(self) -> bool {
+        self.color
+    }
+
     pub(super) fn red(self, text: impl fmt::Display) -> String {
         self.paint("31", text)
     }

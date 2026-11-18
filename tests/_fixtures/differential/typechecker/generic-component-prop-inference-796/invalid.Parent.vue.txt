@@ -1,0 +1,7 @@
+<script setup lang="ts">
+import GenericList from './GenericList.vue'
+</script>
+
+<template>
+  <GenericList :items="['a', 'b']" :selected="42" />
+</template>

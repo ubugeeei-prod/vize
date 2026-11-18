@@ -9,7 +9,8 @@
 //!
 //! | Class member                  | Binding type | Options API equivalent |
 //! |-------------------------------|--------------|------------------------|
-//! | `@Prop`-style field/accessor  | `Props`      | `props`                |
+//! | `@Prop`/`@Model` field        | `Props`      | `props`                |
+//! | `@PropSync`-style field       | `Options`    | `computed`             |
 //! | other property field/accessor | `Data`       | `data()`               |
 //! | method                        | `Options`    | `methods`              |
 //! | `get` / `set` accessor        | `Options`    | `computed`             |
@@ -28,8 +29,11 @@
 //!
 //! Member-level decorators are interpreted as follows:
 //!
-//! - `@Prop`-style decorators (`@Prop`/`@PropSync`/`@Model`/`@VModel`) map a
-//!   field/accessor to a prop binding (see #1431). A plain `@Prop` additionally
+//! - `@Prop` and `@Model` map a field/accessor to a prop binding (see #1431):
+//!   the field is the prop itself. `@PropSync`/`@ModelSync`/`@VModel` declare
+//!   a prop of another name and make the field a computed wrapper over it, so
+//!   the field binds like a `computed` member (`BindingType::Options`), as the
+//!   compiler's native options facts classify it. A plain `@Prop` additionally
 //!   records a declared prop contract (name / type / required / default) so
 //!   parent templates get the same usage-site checks a `defineProps` component
 //!   gets — see `class_component_props` (#3298).
@@ -199,6 +203,11 @@ fn class_field_binding_type(decorators: &[Decorator<'_>]) -> BindingType {
         .any(|decorator| member_decorator_name(decorator).is_some_and(is_prop_like_decorator_name))
     {
         BindingType::Props
+    } else if decorators.iter().any(|decorator| {
+        member_decorator_name(decorator).is_some_and(is_computed_wrapper_decorator_name)
+    }) {
+        // The field is a computed get/set pair over a prop of another name.
+        BindingType::Options
     } else if decorators
         .iter()
         .any(|decorator| member_decorator_name(decorator).is_some_and(is_inject_decorator_name))
@@ -225,7 +234,11 @@ fn member_decorator_name<'a>(decorator: &'a Decorator<'a>) -> Option<&'a str> {
 }
 
 fn is_prop_like_decorator_name(name: &str) -> bool {
-    matches!(name, "Prop" | "PropSync" | "Model" | "ModelSync" | "VModel")
+    matches!(name, "Prop" | "Model")
+}
+
+fn is_computed_wrapper_decorator_name(name: &str) -> bool {
+    matches!(name, "PropSync" | "ModelSync" | "VModel")
 }
 
 fn is_inject_decorator_name(name: &str) -> bool {

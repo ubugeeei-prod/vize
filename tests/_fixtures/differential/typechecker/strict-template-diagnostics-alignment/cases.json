@@ -1,0 +1,326 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": null,
+  "regressionCommit": "1acdeec5fc51a7f1d270fef08c4c65467e7f0821",
+  "sourceRevision": "1acdeec5fc51a7f1d270fef08c4c65467e7f0821",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "external-esm-augmentation-applies",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "package.json",
+          "source": "package.json.txt"
+        },
+        {
+          "file": "node_modules/dual-pkg/package.json",
+          "source": "dual-pkg.package.json.txt"
+        },
+        {
+          "file": "node_modules/dual-pkg/dist/esm/index.d.ts",
+          "source": "dual-pkg.index.d.ts.txt"
+        },
+        {
+          "file": "node_modules/dual-pkg/dist/cjs/index.d.ts",
+          "source": "dual-pkg.index.d.ts.txt"
+        },
+        {
+          "file": "node_modules/dual-pkg/dist/esm/api/index.d.ts",
+          "source": "dual-pkg.api.index.d.ts.txt"
+        },
+        {
+          "file": "node_modules/dual-pkg/dist/cjs/api/index.d.ts",
+          "source": "dual-pkg.api.index.d.ts.txt"
+        },
+        {
+          "file": "node_modules/dual-pkg/dist/esm/index.js",
+          "source": "empty.js.txt"
+        },
+        {
+          "file": "node_modules/dual-pkg/dist/cjs/index.js",
+          "source": "empty.js.txt"
+        },
+        {
+          "file": "node_modules/dual-pkg/dist/esm/api/index.js",
+          "source": "empty.js.txt"
+        },
+        {
+          "file": "node_modules/dual-pkg/dist/cjs/api/index.js",
+          "source": "empty.js.txt"
+        },
+        {
+          "file": "src/global.d.ts",
+          "source": "global.d.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "esm.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "external-esm-augmented-member-misuse-invalid",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "package.json",
+          "source": "package.json.txt"
+        },
+        {
+          "file": "node_modules/dual-pkg/package.json",
+          "source": "dual-pkg.package.json.txt"
+        },
+        {
+          "file": "node_modules/dual-pkg/dist/esm/index.d.ts",
+          "source": "dual-pkg.index.d.ts.txt"
+        },
+        {
+          "file": "node_modules/dual-pkg/dist/cjs/index.d.ts",
+          "source": "dual-pkg.index.d.ts.txt"
+        },
+        {
+          "file": "node_modules/dual-pkg/dist/esm/api/index.d.ts",
+          "source": "dual-pkg.api.index.d.ts.txt"
+        },
+        {
+          "file": "node_modules/dual-pkg/dist/cjs/api/index.d.ts",
+          "source": "dual-pkg.api.index.d.ts.txt"
+        },
+        {
+          "file": "node_modules/dual-pkg/dist/esm/index.js",
+          "source": "empty.js.txt"
+        },
+        {
+          "file": "node_modules/dual-pkg/dist/cjs/index.js",
+          "source": "empty.js.txt"
+        },
+        {
+          "file": "node_modules/dual-pkg/dist/esm/api/index.js",
+          "source": "empty.js.txt"
+        },
+        {
+          "file": "node_modules/dual-pkg/dist/cjs/api/index.js",
+          "source": "empty.js.txt"
+        },
+        {
+          "file": "src/global.d.ts",
+          "source": "global.d.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "esm.invalid.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 7,
+          "column": 16,
+          "severity": 1,
+          "code": 2551,
+          "message": "Property 'nam' does not exist on type 'Extra'. Did you mean 'name'?"
+        }
+      ]
+    },
+    {
+      "id": "v-if-inside-v-for-template-sees-alias",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "vif-vfor.valid.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "same-element-v-if-before-v-for-alias-invalid",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "vif-vfor.invalid.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 8,
+          "column": 15,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'attribute' does not exist on the component instance."
+        }
+      ]
+    },
+    {
+      "id": "component-event-modifier-pair",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "events.Child.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "events-modifier-pair.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "spread-listener-prop-stays-checked-invalid",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "events.Child.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "events-spread.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 15,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{ onClick: string; onKeydown: never; }' is not assignable to parameter of type '$ComponentCheckProps<$EmitPropsFromOptions<{ keydown: (event: KeyboardEvent) => any; click: () => any; }>, $PublicComponentAttrs & Record<...>>'.\nType '{ onClick: string; onKeydown: never; }' is not assignable to type '{ readonly onClick?: (() => any) | undefined; readonly onKeydown?: ((event: KeyboardEvent) => any) | undefined; }'.\nTypes of property 'onClick' are incompatible.\nType 'string' is not assignable to type '() => any'."
+        }
+      ]
+    },
+    {
+      "id": "generic-slot-authored-default",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "generic.Child.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "generic-default.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "generic-slot-authored-default-mismatch-invalid",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "generic.Child.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "generic-default-mismatch.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 11,
+          "column": 46,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '\"a\" | undefined' is not assignable to parameter of type '\"b\" | undefined'.\nType '\"a\"' is not assignable to type '\"b\"'."
+        }
+      ]
+    },
+    {
+      "id": "explicit-ts-import-adjacent-declaration",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "node_modules/i18n-lite/dist/runtime/types.d.ts",
+          "source": "i18n-types.d.ts.txt"
+        },
+        {
+          "file": "src/i18n-plugin.d.ts",
+          "source": "i18n-plugin.d.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "i18n.valid.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "explicit-ts-import-adjacent-declaration-invalid",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "node_modules/i18n-lite/dist/runtime/types.d.ts",
+          "source": "i18n-types.d.ts.txt"
+        },
+        {
+          "file": "src/i18n-plugin.d.ts",
+          "source": "i18n-plugin.d.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "i18n.invalid.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 6,
+          "column": 12,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type 'number' is not assignable to parameter of type 'string'."
+        }
+      ]
+    }
+  ]
+}

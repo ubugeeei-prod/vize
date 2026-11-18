@@ -1,0 +1,12 @@
+<script setup lang="ts">
+interface Props {
+  baz: string;
+}
+
+const someDefinition = {
+  foo: 'fooVal',
+} as const;
+
+const props = defineProps<Props & { items: typeof someDefinition }>();
+const foo: number = props.items.foo;
+</script>

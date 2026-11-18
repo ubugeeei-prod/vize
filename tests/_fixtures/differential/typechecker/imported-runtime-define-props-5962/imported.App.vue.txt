@@ -1,0 +1,27 @@
+<script setup lang="ts">
+import { importedProps } from './props'
+
+const props = defineProps(importedProps)
+
+function acceptsBoolean(value: boolean) {
+  return value
+}
+
+function acceptsNumber(value: number) {
+  return value
+}
+
+const ariaLabel: string | undefined = props.ariaLabel
+const emptyCount = props.emptyValues?.length ?? 0
+const valueOnClear: unknown = props.valueOnClear
+
+acceptsBoolean(props.disabled)
+acceptsBoolean(props.singlePanel)
+acceptsNumber(props.pageCount)
+acceptsNumber(props.pagerCount)
+void valueOnClear
+</script>
+
+<template>
+  <button :aria-label="ariaLabel" :disabled="disabled">{{ singlePanel ? title.toUpperCase() : title }} {{ pageCount + pagerCount + emptyCount }}</button>
+</template>

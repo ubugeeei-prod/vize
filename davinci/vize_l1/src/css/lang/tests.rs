@@ -18,24 +18,6 @@ fn complete(language: StyleLanguage, source: &str) -> bool {
 }
 
 #[test]
-fn lang_values_name_one_dialect_each() {
-    for (lang, expected) in [
-        (None, Some(Css)),
-        (Some("css"), Some(Css)),
-        (Some("postcss"), Some(Css)),
-        (Some("scss"), Some(Scss)),
-        (Some("SCSS"), Some(Scss)),
-        (Some("sass"), Some(Sass)),
-        (Some("less"), Some(Less)),
-        (Some("stylus"), Some(Stylus)),
-        (Some("styl"), Some(Stylus)),
-        (Some(""), None),
-    ] {
-        assert_eq!(StyleLanguage::from_lang(lang), expected, "{lang:?}");
-    }
-}
-
-#[test]
 fn css_is_complete_unless_interpolation_is_left_in_it() {
     assert_eq!(
         names(Css, ".a, .b:hover { }\n@media print { .c {} }"),

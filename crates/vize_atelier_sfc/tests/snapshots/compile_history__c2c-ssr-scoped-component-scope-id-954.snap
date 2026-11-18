@@ -1,0 +1,43 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c2c-ssr-scoped-component-scope-id-954",
+    history: "7b31e8b879397e315cadc923f209f2b8297604f4",
+    source: "<template>\n  <NuxtLink to=\"/news\" class=\"news__link\"><span>News</span></NuxtLink>\n</template>\n\n<style scoped>\n.news__link { color: red; }\n</style>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "ssr",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { ssrRenderComponent as _ssrRenderComponent } from \"@vue/server-renderer\"\nimport { createElementVNode as _createElementVNode, resolveComponent as _resolveComponent, mergeProps as _mergeProps, withCtx as _withCtx } from \"vue\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(_ssrRenderComponent(_resolveComponent(\"NuxtLink\"), _mergeProps({ to: \"/news\", class: \"news__link\" }, _attrs), {\n    default: _withCtx((_, _push, _parent, _scopeId) => {\n      if (_push) {\n        _push(`<span data-v-4045eae1>News</span>`)\n      } else {\n        return [_createElementVNode(\"span\", { \"data-v-4045eae1\": \"\" }, \"News\")]\n      }\n    }),\n    _: 1\n  }, _parent))\n}\n\nconst _sfc_main = {}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main",
+            css: Some(
+                ".news__link[data-v-4045eae1]{ color: red; }\n",
+            ),
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

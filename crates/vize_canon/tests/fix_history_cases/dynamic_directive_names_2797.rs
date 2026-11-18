@@ -12,6 +12,11 @@ fn dynamic_directive_names_stay_expressions_not_contract_keys() {
             "static-prop-beside-dynamic-name-still-checked",
             "dynamic-prop-value-still-checked",
             "dynamic-event-name-expression-still-checked",
+            "runtime-prop-name-may-satisfy-required-prop",
+            "runtime-prop-name-value-checked-against-its-prop",
+            "string-prop-name-supplies-no-required-prop",
+            "runtime-prop-name-beside-static-props",
+            "v-for-runtime-prop-name",
         ],
     );
 }

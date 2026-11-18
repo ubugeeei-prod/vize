@@ -53,7 +53,7 @@ fn registry_checked(
     super::template_ref_registry(
         summary,
         options,
-        super::super::SetupHelperPlan::collect(summary, Some(script), false, false)
+        super::super::SetupHelperPlan::collect(summary, Some(script), false, Default::default())
             .template_refs
             .needs_registry(),
         Some(&root),
@@ -370,10 +370,11 @@ const inner = useTemplateRef("inner");
     let template = r#"<component :is="current.component" ref="inner" />"#;
     let allocator = Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
+    let croquis = Croquis::default();
     let registry = super::template_ref_registry(
-        &Croquis::default(),
+        &croquis,
         &VirtualTsOptions::default(),
-        super::super::SetupHelperPlan::collect(&Croquis::default(), Some(script), false, false)
+        super::super::SetupHelperPlan::collect(&croquis, Some(script), false, Default::default())
             .template_refs
             .needs_registry(),
         Some(&root),

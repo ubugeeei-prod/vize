@@ -9,6 +9,10 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import {
+  TARGET_SEPARATOR,
+  typecheckUnits,
+} from "../../tools/support/compat/fixtures/typecheck-targets.ts";
 import { renderNativeAcceptanceMarkdown, summarizeNativeAcceptance } from "./acceptance-rates.mjs";
 import {
   assertSortedCases,
@@ -217,9 +221,19 @@ function lspLane(project: Json | undefined): Lane {
   };
 }
 
+// A project's later typecheck targets report as their own `<project>@<target>`
+// entry at the project's revision, and each is its own typechecker row.
+function projectsFor(product: string, registry: Json[]): Json[] {
+  return product === "typechecker"
+    ? registry.flatMap((project) => typecheckUnits(project as Json & { id: string }))
+    : registry;
+}
+
 // Every reported project must be pinned and reported once, at its revision.
 function indexShards(shards: Shard[], projects: Json[]) {
-  const pinned = new Map(projects.map((project) => [project.id, project]));
+  const pinned = new Map(
+    projectsFor("typechecker", projects).map((project) => [project.id, project]),
+  );
   const matrix = new Map<string, { shard: Shard; project: Json }>();
   const lsp = new Map<string, Json>();
   const seenShards = new Set<number>();
@@ -312,15 +326,21 @@ export function writeRealProjectResults({
   };
   const outputs = [];
   for (const product of realProjectProducts) {
-    const projects = registry.value.projects
-      .filter((project: Json) => project.coverage.includes(product.coverage))
-      .sort((a: Json, b: Json) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+    const caseId = (project: Json) =>
+      `${product.product}/real/${project.id.replace(TARGET_SEPARATOR, "/")}`;
+    const covered = registry.value.projects.filter((project: Json) =>
+      project.coverage.includes(product.coverage),
+    );
+    const projects = projectsFor(product.product, covered).sort((a: Json, b: Json) =>
+      caseId(a) < caseId(b) ? -1 : caseId(a) > caseId(b) ? 1 : 0,
+    );
     const cases = projects.map((project: Json) => {
       const fixture: Json = {
-        id: `${product.product}/real/${project.id}`,
+        id: caseId(project),
         state: "active",
         targets: [...product.targets],
-        projectId: project.id,
+        // A typecheck target's row stays owned by its pinned registry project.
+        projectId: project.typecheckTarget?.project ?? project.id,
       };
       const coverage = dialectCoverage(ledger.value, project.fixturePath);
       if (coverage) fixture.dialectCoverage = normalizeDialectCoverage(coverage, fixture.id);

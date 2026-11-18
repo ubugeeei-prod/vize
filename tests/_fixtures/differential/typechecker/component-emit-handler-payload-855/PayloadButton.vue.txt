@@ -1,0 +1,9 @@
+<script setup lang="ts">
+const emit = defineEmits<{
+  change: [value: string]
+}>()
+</script>
+
+<template>
+  <button @click="emit('change', 'next')">Change</button>
+</template>

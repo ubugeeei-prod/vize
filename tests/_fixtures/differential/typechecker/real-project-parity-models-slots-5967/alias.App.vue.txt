@@ -1,0 +1,4 @@
+<script setup lang="ts">
+import type { Item } from "@/components/app/list/List.vue"
+defineProps<{ items: Item[] }>()
+</script>

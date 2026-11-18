@@ -12,6 +12,17 @@ mod reuse_tests {
         built_as_authored(&root, source)
     }
 
+    /// Whether a tree the HTML tree construction repaired would be reused.
+    fn repaired_reused(source: &str) -> bool {
+        let allocator = Allocator::with_capacity(source.len() * 8 + 4096);
+        let options = vize_armature::ParserOptions {
+            html_tree_construction: true,
+            ..vize_armature::ParserOptions::default()
+        };
+        let (root, _) = Parser::with_options(&allocator, source, options).parse();
+        built_as_authored(&root, source)
+    }
+
     /// Whenever the linter's (`Standard`) parse is reused, its skeleton is the
     /// one the non-repairing re-read builds.
     fn assert_equivalent(source: &str) -> bool {
@@ -32,6 +43,8 @@ mod reuse_tests {
             "<div><p>text <b>bold</b></p><img src=\"a.png\"><br><input /></div>",
             "<ul><li v-for=\"i in l\" :key=\"i\">{{ i }}</li></ul>",
             "<table><tbody><tr><td>cell</td></tr></tbody></table>",
+            // Vue keeps a direct row; the component parse implies no `tbody`.
+            "<table><tr><td>row</td></tr></table>",
             "<svg viewBox=\"0 0 1 1\"><path d=\"M0 0\" /><foreignObject><div>x</div></foreignObject></svg>",
             "<MyCard title=\"x\"><template #footer><button>ok</button></template></MyCard>",
             "<!-- comment --><p>a</p>\n<p>b</p >",
@@ -42,11 +55,10 @@ mod reuse_tests {
     }
 
     #[test]
-    fn repaired_templates_are_read_again() {
+    fn repaired_trees_are_read_again() {
         for source in [
             "<p><div>block</div></p>",
             "<p>unclosed<p>second</p>",
-            "<table><tr><td>row</td></tr></table>",
             "<table><div>fostered</div></table>",
             "<table>text</table>",
             "<ul><li>a<li>b</li></li></ul>",
@@ -55,7 +67,7 @@ mod reuse_tests {
             "<select><option>a<option>b</option></option></select>",
             "<b><p>formatting</b></p>",
         ] {
-            assert!(!reused(source), "{source}");
+            assert!(!repaired_reused(source), "{source}");
         }
     }
 
@@ -93,7 +105,7 @@ mod reuse_tests {
         let name = |tag: &str| tag.split(' ').next().unwrap_or(tag).to_owned();
         let open = |tag: &str| ["<", tag, ">"].concat();
         let close = |tag: &str| ["</", &name(tag), ">"].concat();
-        let mut reused = 0;
+        let mut read_again = Vec::new();
         let mut total = 0;
         for outer in TAGS {
             for inner in TAGS.iter().chain(VOID.iter()) {
@@ -116,12 +128,24 @@ mod reuse_tests {
                         .concat()
                     };
                     total += 1;
-                    reused += usize::from(assert_equivalent(&source));
+                    if !assert_equivalent(&source) {
+                        read_again.push(source);
+                    }
                 }
             }
         }
-        // 2335 of the 2592 nestings are left as authored by the linter's parse.
+        // The linter's parse builds a Vue template as written, so it is reused
+        // for every nesting but a `<textarea>` in a `<textarea>`: the first end
+        // tag closes the outer one and leaves the second stray.
         assert_eq!(total, 24 * 27 * 4);
-        assert_eq!(reused, 2335, "reused {reused} of {total}");
+        assert_eq!(
+            read_again,
+            [
+                "<textarea><textarea>t</textarea></textarea>",
+                "<textarea><span><textarea>t</textarea></span></textarea>",
+                "<textarea><div><textarea>t</textarea></div></textarea>",
+                "<textarea><tr><textarea>t</textarea></tr></textarea>",
+            ]
+        );
     }
 }

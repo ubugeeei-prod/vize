@@ -59,6 +59,22 @@ pub use tree::{
     PugTagPart, PugText, PugTextPiece, PugTree, PugUnexpected,
 };
 
+/// Which language of the pug family a template is written in. The
+/// block-language registry (`crate::container::lang`) resolves it from the
+/// block's `lang`; both are read by this one grammar.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+pub enum PugProfile {
+    /// `pug`: pug 3, what Vue's toolchain renders `lang="pug"` with.
+    #[default]
+    Pug3,
+    /// `jade`: the legacy jade 1.x language Vue's toolchain renders
+    /// `lang="jade"` with (`@vue/consolidate` loads the `jade` package).
+    /// Its constructs pug 3 removed (`- each`, the `mixin name()` call) are
+    /// read with jade's meaning; the lowering reports every construct whose
+    /// jade 1.x output differs from what it emits.
+    Jade1,
+}
+
 /// Parse pug template content (as it sits between the SFC's `<template
 /// lang="pug">` tags) into its lossless surface tree.
 ///
@@ -68,7 +84,16 @@ pub fn parse_pug<'a>(
     allocator: &'a Allocator,
     source: &'a str,
 ) -> (PugTree<'a>, Vec<'a, PugError>) {
-    parse_pug_within(allocator, source, u32::MAX as usize)
+    parse_pug_profiled(allocator, source, PugProfile::Pug3)
+}
+
+/// [`parse_pug`] for a template written in `profile`.
+pub fn parse_pug_profiled<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+    profile: PugProfile,
+) -> (PugTree<'a>, Vec<'a, PugError>) {
+    parse_pug_within(allocator, source, u32::MAX as usize, profile)
 }
 
 /// [`parse_pug`] with the addressable-size limit as a parameter, so the
@@ -77,6 +102,7 @@ fn parse_pug_within<'a>(
     allocator: &'a Allocator,
     source: &'a str,
     limit: usize,
+    profile: PugProfile,
 ) -> (PugTree<'a>, Vec<'a, PugError>) {
     let mut errors = Vec::new_in(&allocator);
     // L1 addresses sources with `u32` offsets. A larger source keeps byte
@@ -96,20 +122,23 @@ fn parse_pug_within<'a>(
             source,
             nodes: Vec::new_in(&allocator),
             eof,
+            profile,
         };
         return (tree, errors);
     }
     let logical = logical::Logical::new(allocator, source);
     let mut tokens = Vec::new_in(&allocator);
     let mut lex_errors = Vec::new_in(&allocator);
-    lex::lex(allocator, logical.text, &mut tokens, &mut lex_errors);
+    let jade = profile == PugProfile::Jade1;
+    lex::lex(allocator, logical.text, &mut tokens, &mut lex_errors, jade);
     for &(code, at) in lex_errors.iter() {
         errors.push(PugError {
             code,
             offset: logical.at(at as usize),
         });
     }
-    let tree = build::build(allocator, source, &logical, &tokens, &mut errors);
+    let mut tree = build::build(allocator, source, &logical, &tokens, &mut errors);
+    tree.profile = profile;
     errors.sort_by_key(|error| error.offset);
     debug_assert!(
         check_pug_fidelity(&tree).is_ok(),

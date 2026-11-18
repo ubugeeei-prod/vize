@@ -21,8 +21,56 @@ fn usage_with_global(script: &str, configured_global: bool) -> TemplateRefUsage 
         &parsed.program,
         built.semantic.scoping(),
         script,
-        configured_global,
+        crate::virtual_ts::TemplateRefOwnership {
+            global: configured_global,
+            imports_alias: false,
+        },
     )
+}
+
+fn usage_with_imports_alias(script: &str, imports_alias: bool) -> TemplateRefUsage {
+    let allocator = Allocator::default();
+    let parsed = Parser::new(&allocator, script, SourceType::ts()).parse();
+    assert!(parsed.diagnostics.is_empty());
+    let built = SemanticBuilder::new().build(&parsed.program);
+    TemplateRefUsage::collect(
+        &parsed.program,
+        built.semantic.scoping(),
+        script,
+        crate::virtual_ts::TemplateRefOwnership {
+            global: false,
+            imports_alias,
+        },
+    )
+}
+
+#[test]
+fn imports_alias_reexport_of_vue_infers_template_refs() {
+    let script = "import { useTemplateRef } from '#imports'
+const form = useTemplateRef('form')
+";
+    let plan = usage_with_imports_alias(script, true);
+    assert!(plan.needs_registry());
+    assert_eq!(plan.calls.len(), 1);
+    assert!(plan.calls.iter().all(|call| call.imported));
+    // Without provider evidence the alias keeps its own contract (#10980).
+    assert!(!usage_with_imports_alias(script, false).needs_registry());
+    for script in [
+        "import type { useTemplateRef } from '#imports'
+const form = useTemplateRef('form')
+",
+        "import { useTemplateRef } from '#app'
+const form = useTemplateRef('form')
+",
+        "import { ref as useTemplateRef } from '#imports'
+const form = useTemplateRef('form')
+",
+    ] {
+        assert!(
+            !usage_with_imports_alias(script, true).needs_registry(),
+            "{script}"
+        );
+    }
 }
 
 fn generate(script: &str) -> String {
@@ -117,7 +165,7 @@ fn authored_helpers_and_nested_shadow_bindings_are_not_specialized() {
             &vize_croquis::Croquis::default(),
             Some(script),
             false,
-            false,
+            Default::default(),
         );
         assert!(!plan.template_refs.needs_registry(), "{script}");
     }
@@ -126,7 +174,7 @@ fn authored_helpers_and_nested_shadow_bindings_are_not_specialized() {
         &vize_croquis::Croquis::default(),
         Some(script),
         false,
-        false,
+        Default::default(),
     );
     assert!(plan.template_refs.needs_registry());
 }

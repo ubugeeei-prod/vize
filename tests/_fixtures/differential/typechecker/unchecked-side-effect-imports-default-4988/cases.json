@@ -1,0 +1,112 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 4988,
+  "regressionCommit": "27dd5c8df22182f088f827bfcedd121f009cb118",
+  "sourceRevision": "27dd5c8df22182f088f827bfcedd121f009cb118",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "unspecified-option-leaves-side-effect-imports-unchecked",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/x.css",
+          "source": "x.css.txt"
+        },
+        {
+          "file": "src/notes.md",
+          "source": "notes.md.txt"
+        },
+        {
+          "file": "src/t.ts",
+          "source": "t.ts.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "explicit-false-leaves-side-effect-imports-unchecked",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.opt-out.json.txt"
+        },
+        {
+          "file": "src/x.css",
+          "source": "x.css.txt"
+        },
+        {
+          "file": "src/notes.md",
+          "source": "notes.md.txt"
+        },
+        {
+          "file": "src/t.ts",
+          "source": "t.ts.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "explicit-opt-in-checks-side-effect-imports-invalid",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.opt-in.json.txt"
+        },
+        {
+          "file": "src/x.css",
+          "source": "x.css.txt"
+        },
+        {
+          "file": "src/notes.md",
+          "source": "notes.md.txt"
+        },
+        {
+          "file": "src/t.ts",
+          "source": "t.ts.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/t.ts",
+          "line": 1,
+          "column": 8,
+          "severity": 1,
+          "code": 2882,
+          "message": "Cannot find module or type declarations for side-effect import of './x.css'."
+        },
+        {
+          "file": "src/t.ts",
+          "line": 2,
+          "column": 8,
+          "severity": 1,
+          "code": 2882,
+          "message": "Cannot find module or type declarations for side-effect import of './missing.css'."
+        },
+        {
+          "file": "src/t.ts",
+          "line": 3,
+          "column": 8,
+          "severity": 1,
+          "code": 2882,
+          "message": "Cannot find module or type declarations for side-effect import of './notes.md'."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c3c-p-not-auto-closed-across-template-1307",
+    history: "fbcad4f99102880234c00f6e301f4321ae23d517",
+    source: "<p><template><p>inner</p></template>outer</p>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: Some(
+            true,
+        ),
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, createTextVNode as _createTextVNode } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"p\", null, [\n    _createElementVNode(\"template\", null, [\n      _createElementVNode(\"p\", null, \"inner\")\n    ]),\n    _createTextVNode(\"outer\")\n  ]))\n}",
+    map: None,
+}

@@ -53,6 +53,8 @@ pub(in crate::batch::virtual_project) struct GlobalTemplateRef {
     pub(in crate::batch::virtual_project) explicit: Option<bool>,
     /// The program declares the global as Vue's own export (Nuxt's auto-imports).
     pub(in crate::batch::virtual_project) ambient: bool,
+    /// `#imports` resolves to a module that re-exports Vue's `useTemplateRef`.
+    pub(in crate::batch::virtual_project) imports_alias: bool,
 }
 
 impl GlobalTemplateRef {
@@ -68,6 +70,22 @@ impl super::super::VirtualProject {
     /// `composables.useTemplateRef`, the call then reads the template's refs.
     pub(crate) fn set_ambient_vue_template_ref(&mut self, declared: bool) {
         self.global_template_ref.ambient = declared;
+    }
+
+    /// The program's `#imports` module re-exports Vue's `useTemplateRef`
+    /// (Nuxt's generated alias does), so a named import from it is Vue's.
+    pub(crate) fn set_imports_alias_vue_template_ref(&mut self, reexported: bool) {
+        self.global_template_ref.imports_alias = reexported;
+    }
+
+    /// Which `useTemplateRef` callees besides a `vue` import are Vue's own.
+    pub(in crate::batch::virtual_project) fn template_ref_ownership(
+        &self,
+    ) -> crate::virtual_ts::TemplateRefOwnership {
+        crate::virtual_ts::TemplateRefOwnership {
+            global: self.global_template_ref.enabled(),
+            imports_alias: self.global_template_ref.imports_alias,
+        }
     }
 }
 

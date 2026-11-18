@@ -367,7 +367,7 @@ await test("historical anchors and the pinned integrated product tree remain qua
   assert.equal(report.currentContracts.changes.length, 1);
   assert.deepEqual(
     report.currentCheckoutLayers.map((layer) => layer.changes.length),
-    [2],
+    [2, 4],
   );
   assert.equal(report.vsixInfrastructure.changes.length, 7);
   assert.equal(report.historicalBaselineRevision, "2934b35b18393c188b3da5f8e50595299589fb8c");

@@ -1,0 +1,24 @@
+<script setup lang="ts">
+defineProps<{
+  as?: string
+}>()
+
+const value = 'demo'
+const onFocus = (target: HTMLElement) => {
+  target.dataset.focused = 'true'
+}
+</script>
+
+<template>
+  <div
+    :data-value="(value as any)"
+    :style="{
+      ['--demo-value' as any]: value,
+    }"
+    v-on="{
+      focusin: (event: FocusEvent) => {
+        onFocus(event.target as HTMLElement)
+      },
+    }"
+  />
+</template>

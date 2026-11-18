@@ -12,6 +12,8 @@ use crate::support;
 
 use support::{assert_transformed_sound, with_transformed};
 use vize_l0::Allocator;
+use vize_l1_to_l2::lower::{LegacyCaps, LowerPolicy, lower_with_caps_and_comment_policy};
+use vize_l2::op::Op;
 use vize_l4::targets::dom::artifact::emit_dom;
 
 fn shipped(source: &str) -> String {
@@ -36,11 +38,48 @@ fn emitted(source: &str) -> String {
 
 fn assert_shipped_parity(source: &str) {
     assert_transformed_sound(source, "component table normalization");
-    assert_eq!(emitted(source), shipped(source), "{source}");
+    let emitted = emitted(source);
+    assert_eq!(emitted, shipped(source), "{source}");
+    // Vue's compiler emits the authored rows; no owner is implied.
+    assert_eq!(
+        emitted.matches("\"tbody\"").count(),
+        source.matches("<tbody").count()
+    );
+    assert_eq!(
+        emitted.matches("\"tr\"").count(),
+        source.matches("<tr").count()
+    );
+}
+
+/// Element tags of `ops`, depth first, as written in the L2 tree.
+fn tags<'a>(ops: &[Op<'a>], out: &mut Vec<&'a str>) {
+    for op in ops {
+        if let Op::Element(element) = op {
+            out.push(element.tag);
+            tags(&element.children.ops, out);
+        }
+    }
+}
+
+fn implied_tags(source: &str) -> Vec<String> {
+    let allocator = Allocator::new();
+    let (tree, errors) = vize_l1::markup::parse(&allocator, source);
+    let lowered = lower_with_caps_and_comment_policy::<Vec<vize_l2::provenance::ProvenanceRecord>>(
+        &allocator,
+        &tree,
+        &errors,
+        LegacyCaps::VUE3,
+        LowerPolicy::compile(false).with_implied_table_sections(),
+        &[],
+        None,
+    );
+    let mut out = Vec::new();
+    tags(&lowered.artifact.root.ops, &mut out);
+    out.into_iter().map(str::to_owned).collect()
 }
 
 #[test]
-fn direct_table_rows_gain_implicit_tbody() {
+fn direct_table_rows_stay_authored() {
     assert_shipped_parity(
         r#"<table><tr><th>{{ title }}</th><td class="value">x</td></tr><tr><td>y</td></tr></table>"#,
     );
@@ -54,13 +93,29 @@ fn row_group_cells_remain_direct_authored_children() {
 }
 
 #[test]
-fn direct_table_cells_gain_implicit_tbody_and_tr() {
+fn direct_table_cells_stay_authored() {
     assert_shipped_parity(r#"<table><th>Token</th><td>{{ value }}</td></table>"#);
 }
 
 #[test]
-fn structural_rows_stay_inside_the_implicit_tbody() {
+fn structural_rows_stay_direct_table_children() {
     assert_shipped_parity(
         r#"<table><tr v-for="item in rows" :key="item.id"><td>{{ item.label }}</td></tr><tr v-if="footer"><td>done</td></tr><tr v-else><td>empty</td></tr></table>"#,
+    );
+}
+
+#[test]
+fn implied_table_sections_policy_keeps_the_html_owners() {
+    assert_eq!(
+        implied_tags("<table><tr><td>a</td></tr></table>"),
+        ["table", "tbody", "tr", "td"]
+    );
+    assert_eq!(
+        implied_tags("<table><th>a</th><td>b</td></table>"),
+        ["table", "tbody", "tr", "th", "td"]
+    );
+    assert_eq!(
+        implied_tags("<table><thead><th>a</th></thead></table>"),
+        ["table", "thead", "th"]
     );
 }

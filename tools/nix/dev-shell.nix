@@ -100,11 +100,42 @@
           echo "Then: vp build:testbox / vp test:testbox / vp lint:testbox; stop with vp testbox:stop"
         '';
       });
+
+      # `nix develop .#parallel-frontend`: opt-in for local check/clippy/test
+      # loops only. rustc's parallel frontend is nightly-only
+      # (`-Zunstable-options --jobs-frontend=N`); the default shell, CI, release
+      # builds and measurements keep the pinned `rust-toolchain.toml` compiler
+      # (docs/davinci/decisions/2026-11-17-rust-parallel-frontend.md). The flag
+      # is appended so the Darwin link flags survive, and the target directory
+      # is per thread count. Run the final clippy and tests in the default shell.
+      parallelFrontendToolchain = pkgs.rust-bin.nightly."2026-11-16".default.override {
+        extensions = [
+          "clippy"
+          "rust-src"
+          "rustfmt"
+        ];
+      };
+
+      parallelFrontendDevShell = devShell.overrideAttrs (previous: {
+        nativeBuildInputs = [
+          parallelFrontendToolchain
+        ]
+        ++ lib.remove rustDevToolchain (previous.nativeBuildInputs or [ ]);
+        RUST_SRC_PATH = "${parallelFrontendToolchain}/lib/rustlib/src/rust/library";
+        shellHook = (previous.shellHook or "") + ''
+          export VIZE_JOBS_FRONTEND="''${VIZE_JOBS_FRONTEND:-8}"
+          export RUSTFLAGS="''${RUSTFLAGS:+$RUSTFLAGS }-Zunstable-options --jobs-frontend=$VIZE_JOBS_FRONTEND"
+          export CARGO_TARGET_DIR="''${CARGO_TARGET_DIR:-$VIZE_WORKSPACE_ROOT/target/nightly-frontend-j$VIZE_JOBS_FRONTEND}"
+          echo "Parallel frontend: $(rustc --version), --jobs-frontend=$VIZE_JOBS_FRONTEND, target $CARGO_TARGET_DIR"
+          echo "Not for CI, release builds or measurements; run the final clippy and tests in the default shell."
+        '';
+      });
     in
     {
       devShells = {
         default = devShell;
         testbox = testboxDevShell;
+        parallel-frontend = parallelFrontendDevShell;
       };
 
       checks.shell = devShell.inputDerivation;

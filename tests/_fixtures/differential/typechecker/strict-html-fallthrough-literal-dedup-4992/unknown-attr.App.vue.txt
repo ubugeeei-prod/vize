@@ -1,0 +1,10 @@
+<script setup lang="ts">
+import Wrapper from './Wrapper.vue'
+</script>
+
+<template>
+  <Wrapper id="password" type="password" accept=".png" />
+  <Wrapper aria-label="ok" aria-activedescendant="x" />
+  <Wrapper data-test-id="wrapped" />
+  <Wrapper depressed />
+</template>

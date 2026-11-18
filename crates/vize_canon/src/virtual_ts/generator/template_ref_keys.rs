@@ -60,12 +60,12 @@ impl TemplateRefUsage {
         program: &Program<'_>,
         scoping: &Scoping,
         script: &str,
-        configured_global: bool,
+        ownership: crate::virtual_ts::TemplateRefOwnership,
     ) -> Self {
         let mut collector = Collector {
             script,
             scoping,
-            imports: vue_imports(program),
+            imports: vue_imports(program, ownership.imports_alias),
             calls: Vec::new(),
             function_depth: 0,
             statement_depth: 0,
@@ -77,7 +77,7 @@ impl TemplateRefUsage {
         // specialization; otherwise retain the original call and diagnostics.
         collector
             .calls
-            .retain(|call| call.imported || configured_global);
+            .retain(|call| call.imported || ownership.global);
         collector.calls.sort_by_key(|call| call.callee.start);
         Self {
             helper: if collector.calls.is_empty() {
@@ -162,7 +162,9 @@ impl TemplateRefKeyChecks<'_> {
     }
 }
 
-fn vue_imports(program: &Program<'_>) -> Vec<SymbolId> {
+/// Value imports of Vue's own `useTemplateRef`: from `vue`, or from `#imports`
+/// when the project resolved that alias to a re-export of Vue's.
+fn vue_imports(program: &Program<'_>, imports_alias: bool) -> Vec<SymbolId> {
     program
         .body
         .iter()
@@ -170,7 +172,11 @@ fn vue_imports(program: &Program<'_>) -> Vec<SymbolId> {
             let Statement::ImportDeclaration(import) = statement else {
                 return None;
             };
-            (import.source.value == "vue" && import.import_kind != ImportOrExportKind::Type)
+            (import.import_kind != ImportOrExportKind::Type
+                && (import.source.value == "vue"
+                    || (imports_alias
+                        && import.source.value
+                            == crate::virtual_ts::TemplateRefOwnership::IMPORTS_ALIAS)))
                 .then_some(import.specifiers.as_ref())
                 .flatten()
         })

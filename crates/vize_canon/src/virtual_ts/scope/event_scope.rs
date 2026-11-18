@@ -25,6 +25,7 @@ mod event_targets;
 
 use super::context::{EventHandlerExprContext, ScopeGenContext};
 use super::event_handler::{event_name_source_range, generate_event_handler_expressions};
+pub(super) use event_targets::is_vnode_hook;
 use event_targets::{
     dynamic_component_custom_event, needs_typed_handler_assignment, transition_hook_signature,
     vnode_hook_signature,

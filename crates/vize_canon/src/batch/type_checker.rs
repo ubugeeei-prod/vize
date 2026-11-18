@@ -175,6 +175,12 @@ impl BatchTypeChecker {
         self.project.set_ambient_vue_template_ref(declared);
     }
 
+    /// The program's `#imports` module re-exports Vue's `useTemplateRef`, so
+    /// a named import of it from that alias is Vue's composable.
+    pub fn set_imports_alias_vue_template_ref(&mut self, reexported: bool) {
+        self.project.set_imports_alias_vue_template_ref(reexported);
+    }
+
     /// Preserve importer-scoped package identities in the virtual project.
     pub fn set_package_routes(
         &mut self,

@@ -98,7 +98,7 @@ fn table_context_is_conservative_across_original_foreign_namespace_frames() {
 }
 
 #[test]
-fn actual_interactive_recovery_ends_table_context_before_the_next_header() {
+fn nested_interactive_tag_in_a_cell_ends_table_context_with_the_table() {
     let arena = Allocator::default();
     let owner = selected(
         &arena,
@@ -115,6 +115,7 @@ fn actual_interactive_recovery_ends_table_context_before_the_next_header() {
             ("input", false)
         ]
     );
+    // Built as written: the outer anchor owns its end tag.
     let first = owner.children().next().unwrap().into_element().unwrap();
-    assert!(matches!(first.surface().close, ElementClose::Implicit));
+    assert!(matches!(first.surface().close, ElementClose::Present(_)));
 }

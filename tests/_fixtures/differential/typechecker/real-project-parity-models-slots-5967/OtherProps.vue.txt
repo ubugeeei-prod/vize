@@ -1,0 +1,7 @@
+<script setup lang="ts">
+import type { Props } from "./types";
+type Other = { count: number };
+
+defineProps<Other>();
+defineModel<string>();
+</script>

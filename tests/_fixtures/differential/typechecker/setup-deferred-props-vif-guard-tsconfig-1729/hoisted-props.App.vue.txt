@@ -1,0 +1,11 @@
+<script setup lang="ts">
+interface Props {
+  baz: string;
+}
+
+const someDefinition = {
+  foo: 'fooVal',
+} as const;
+
+defineProps<Props & { items: typeof someDefinition }>();
+</script>

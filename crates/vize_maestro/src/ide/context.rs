@@ -283,7 +283,7 @@ fn root_match_subject_at(
         || offset >= template.loc.start
         || !template.has_root_match()
         || template.src.is_some()
-        || template.lang.as_deref().is_some_and(|lang| lang != "html")
+        || !vize_l1::container::lang::is_html_template(template.lang.as_deref())
     {
         return false;
     }

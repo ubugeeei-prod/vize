@@ -1,7 +1,10 @@
 //! Tests for the Vue template parser.
 #![expect(clippy::disallowed_macros, reason = "fixtures are built with format!")]
 
+mod authored_structure;
+mod document_repairs;
 mod document_tail;
+mod table_rows;
 mod table_section_cells;
 use super::{
     parse, parse_document, parse_document_with_options, parse_with_options,
@@ -1406,32 +1409,10 @@ fn test_parse_custom_renderer_non_html_element_keeps_self_closing_flag() {
 }
 
 #[test]
-fn test_parse_table_inserts_implicit_tbody() {
-    let allocator = Allocator::new();
-    let (root, errors) = parse(&allocator, "<table><tr><td>x</td></tr></table>");
-
-    assert!(errors.is_empty(), "unexpected errors: {errors:?}");
-    let TemplateChildNode::Element(table) = &root.children[0] else {
-        panic!("Expected table");
-    };
-    assert_eq!(table.children.len(), 1);
-    let TemplateChildNode::Element(tbody) = &table.children[0] else {
-        panic!("Expected implicit tbody");
-    };
-    assert_eq!(tbody.tag, "tbody");
-    let TemplateChildNode::Element(tr) = &tbody.children[0] else {
-        panic!("Expected tr");
-    };
-    let TemplateChildNode::Element(td) = &tr.children[0] else {
-        panic!("Expected td");
-    };
-    assert!(matches!(&td.children[0], TemplateChildNode::Text(text) if text.content == "x"));
-}
-
-#[test]
 fn test_parse_table_foster_parents_unexpected_element() {
     let allocator = Allocator::new();
-    let (root, errors) = parse(&allocator, "<table><div>hello</div></table>");
+    // Document mode: a component template keeps the div inside the table.
+    let (root, errors) = parse_document(&allocator, "<table><div>hello</div></table>");
 
     assert!(
         errors
@@ -1452,10 +1433,7 @@ fn test_parse_table_cell_keeps_normal_body_content() {
     let TemplateChildNode::Element(table) = &root.children[0] else {
         panic!("Expected table");
     };
-    let TemplateChildNode::Element(tbody) = &table.children[0] else {
-        panic!("Expected tbody");
-    };
-    let TemplateChildNode::Element(tr) = &tbody.children[0] else {
+    let TemplateChildNode::Element(tr) = &table.children[0] else {
         panic!("Expected tr");
     };
     let TemplateChildNode::Element(td) = &tr.children[0] else {
@@ -1464,10 +1442,12 @@ fn test_parse_table_cell_keeps_normal_body_content() {
     assert!(matches!(&td.children[0], TemplateChildNode::Element(div) if div.tag == "div"));
 }
 
+/// Document mode: the HTML tree construction repairs this; see
+/// `tests::authored_structure` for the component template.
 #[test]
 fn test_parse_adoption_agency_repairs_misnested_formatting() {
     let allocator = Allocator::new();
-    let (root, errors) = parse(&allocator, "<b>aaa<i>bbb</b>ccc</i>");
+    let (root, errors) = parse_document(&allocator, "<b>aaa<i>bbb</b>ccc</i>");
 
     assert!(
         errors
@@ -1495,67 +1475,12 @@ fn test_parse_adoption_agency_repairs_misnested_formatting() {
     );
 }
 
-#[test]
-fn test_parse_in_body_omits_p_and_li_end_tags() {
-    let allocator = Allocator::new();
-    let (root, errors) = parse(&allocator, "<p>a<p>b<ul><li>c<li>d</ul>");
-
-    assert!(errors.is_empty(), "unexpected errors: {errors:?}");
-    assert_eq!(root.children.len(), 3);
-    assert!(matches!(&root.children[0], TemplateChildNode::Element(p) if p.tag == "p"));
-    assert!(matches!(&root.children[1], TemplateChildNode::Element(p) if p.tag == "p"));
-    let TemplateChildNode::Element(ul) = &root.children[2] else {
-        panic!("Expected ul");
-    };
-    assert_eq!(ul.children.len(), 2);
-    assert!(matches!(&ul.children[0], TemplateChildNode::Element(li) if li.tag == "li"));
-    assert!(matches!(&ul.children[1], TemplateChildNode::Element(li) if li.tag == "li"));
-}
-
-#[test]
-fn test_parse_nested_list_items_respect_list_item_scope() {
-    for list_tag in ["ol", "ul"] {
-        let allocator = Allocator::new();
-        let source = format!(
-            "<{list_tag}><li><span>outer</span><{list_tag}><li>inner</li></{list_tag}></li></{list_tag}>"
-        );
-        let (root, errors) = parse(&allocator, &source);
-
-        assert!(
-            errors.is_empty(),
-            "unexpected errors for {list_tag}: {errors:?}"
-        );
-        assert_eq!(root.children.len(), 1);
-        let TemplateChildNode::Element(list) = &root.children[0] else {
-            panic!("Expected {list_tag}");
-        };
-        assert_eq!(list.tag, list_tag);
-        assert_eq!(list.children.len(), 1);
-
-        let TemplateChildNode::Element(outer_li) = &list.children[0] else {
-            panic!("Expected outer li");
-        };
-        assert_eq!(outer_li.tag, "li");
-        assert_eq!(outer_li.children.len(), 2);
-        assert!(
-            matches!(&outer_li.children[0], TemplateChildNode::Element(span) if span.tag == "span")
-        );
-
-        let TemplateChildNode::Element(inner_list) = &outer_li.children[1] else {
-            panic!("Expected nested {list_tag}");
-        };
-        assert_eq!(inner_list.tag, list_tag);
-        assert_eq!(inner_list.children.len(), 1);
-        assert!(
-            matches!(&inner_list.children[0], TemplateChildNode::Element(li) if li.tag == "li")
-        );
-    }
-}
-
+/// Document mode: the HTML tree construction repairs this; see
+/// `tests::authored_structure` for the component template.
 #[test]
 fn test_parse_nested_anchor_and_button_are_split() {
     let allocator = Allocator::new();
-    let (anchor_root, anchor_errors) = parse(
+    let (anchor_root, anchor_errors) = parse_document(
         &allocator,
         r#"<a href="/">outer<a href="/foo">inner</a></a>"#,
     );
@@ -1570,7 +1495,7 @@ fn test_parse_nested_anchor_and_button_are_split() {
     assert!(matches!(&anchor_root.children[1], TemplateChildNode::Element(a) if a.tag == "a"));
 
     let (button_root, button_errors) =
-        parse(&allocator, "<button>aaa<button>bbb</button></button>");
+        parse_document(&allocator, "<button>aaa<button>bbb</button></button>");
     assert!(
         button_errors
             .iter()
@@ -1585,10 +1510,12 @@ fn test_parse_nested_anchor_and_button_are_split() {
     );
 }
 
+/// Document mode: the HTML tree construction repairs this; see
+/// `tests::authored_structure` for the component template.
 #[test]
 fn test_parse_nested_form_start_tag_is_ignored() {
     let allocator = Allocator::new();
-    let (root, errors) = parse(&allocator, "<form><input><form><input></form></form>");
+    let (root, errors) = parse_document(&allocator, "<form><input><form><input></form></form>");
 
     assert!(
         errors
@@ -1842,10 +1769,13 @@ fn test_parse_foreign_object_resets_namespace_for_self_closing_check() {
 /// intervening `<template>` block. `<p><template>…<p>…</p></template></p>` is
 /// accepted by `@vue/compiler-sfc`; vize must not emit a false `InvalidEndTag`
 /// for the outer `</p>`.
+/// Document mode: the HTML tree construction repairs this; see
+/// `tests::authored_structure` for the component template.
 #[test]
 fn test_parse_p_auto_close_does_not_cross_template_boundary() {
     let allocator = Allocator::new();
-    let (root, errors) = parse(&allocator, "<p><template><p>inner</p></template>outer</p>");
+    let (root, errors) =
+        parse_document(&allocator, "<p><template><p>inner</p></template>outer</p>");
 
     assert!(
         !errors.iter().any(|e| e.code == ErrorCode::InvalidEndTag),
@@ -1872,10 +1802,12 @@ fn test_parse_p_auto_close_does_not_cross_template_boundary() {
 /// A nested `<p>` directly inside another `<p>` (no scope boundary between
 /// them) still auto-closes the outer `<p>` — the button-scope guard must not
 /// suppress the legitimate recovery.
+/// Document mode: the HTML tree construction repairs this; see
+/// `tests::authored_structure` for the component template.
 #[test]
 fn test_parse_nested_p_without_boundary_still_auto_closes() {
     let allocator = Allocator::new();
-    let (root, errors) = parse(&allocator, "<p>first<p>second</p>");
+    let (root, errors) = parse_document(&allocator, "<p>first<p>second</p>");
 
     assert!(
         !errors.iter().any(|e| e.code == ErrorCode::InvalidEndTag),

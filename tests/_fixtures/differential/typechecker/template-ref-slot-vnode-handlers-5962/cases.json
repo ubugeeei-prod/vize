@@ -1,0 +1,206 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 5962,
+  "regressionCommit": "788000753c5c6bab73faedebc979a18d6db735e2",
+  "sourceRevision": "788000753c5c6bab73faedebc979a18d6db735e2",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "slot-outlet-listeners-use-declared-slot-props",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "slot-listeners.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "slot-outlet-listener-payload-mismatch",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "slot-listeners-mismatch.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 21,
+          "column": 9,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '(value: number, visible: boolean) => void' is not assignable to type '(value: string, visible: boolean) => unknown'.\nTypes of parameters 'value' and 'value' are incompatible.\nType 'string' is not assignable to type 'number'."
+        }
+      ]
+    },
+    {
+      "id": "component-ref-callback-contextual",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "ref-callback.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "component-ref-callback-keeps-ts-ignore",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "ref-callback-ts-ignore.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "component-ref-callback-without-ts-ignore",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "ref-callback-no-ts-ignore.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 13,
+          "column": 27,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property '$el' does not exist on type 'Element | ComponentPublicInstance'.\nProperty '$el' does not exist on type 'Element'."
+        }
+      ]
+    },
+    {
+      "id": "unresolved-global-component-ref-callback",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "unresolved-global-ref-callback.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 8,
+          "column": 4,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'el-cascader-menu' does not exist on type '{}'."
+        }
+      ]
+    },
+    {
+      "id": "vnode-hook-receives-vnode",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/vue-shim.d.ts",
+          "source": "vue-shim.d.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "vnode.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/vue-shim.d.ts",
+          "line": 5,
+          "column": 5,
+          "severity": 1,
+          "code": 2717,
+          "message": "Subsequent property declarations must have the same type.  Property 'type' must be of type 'VNodeTypes', but here has type 'unknown'."
+        }
+      ]
+    },
+    {
+      "id": "vnode-hook-handler-expects-mouse-event",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/vue-shim.d.ts",
+          "source": "vue-shim.d.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "vnode-mouse-event.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 10,
+          "column": 16,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '(vnode: MouseEvent) => void' is not assignable to type '(vnode: VNode<RendererNode, RendererElement, { [key: string]: any; }>) => any'.\nTypes of parameters 'vnode' and 'vnode' are incompatible.\nType 'VNode<RendererNode, RendererElement, { [key: string]: any; }>' is missing the following properties from type 'MouseEvent': altKey, button, buttons, clientX, and 43 more."
+        },
+        {
+          "file": "src/vue-shim.d.ts",
+          "line": 5,
+          "column": 5,
+          "severity": 1,
+          "code": 2717,
+          "message": "Subsequent property declarations must have the same type.  Property 'type' must be of type 'VNodeTypes', but here has type 'unknown'."
+        }
+      ]
+    }
+  ]
+}

@@ -69,7 +69,7 @@ Regras de correção da predefinição `essential`.
 | <span id="vue-valid-v-slot"></span>[`vue/valid-v-slot`](./reference/vue-valid-v-slot.md) | Exigir diretivas `v-slot` válidas. |  |
 | <span id="vue-valid-v-text"></span>[`vue/valid-v-text`](./reference/vue-valid-v-text.md) | Exigir diretivas `v-text` válidas. |  |
 
-## Padrão (27)
+## Padrão (28)
 
 Adicionadas por `happy-path`, a predefinição padrão.
 
@@ -93,6 +93,7 @@ Adicionadas por `happy-path`, a predefinição padrão.
 | <span id="vue-no-unused-setup-bindings"></span>[`vue/no-unused-setup-bindings`](./reference/vue-no-unused-setup-bindings.md) | Proibir variáveis de script setup que nunca são lidas. |  |
 | <span id="vue-no-use-v-else-with-v-for"></span>[`vue/no-use-v-else-with-v-for`](./reference/vue-no-use-v-else-with-v-for.md) | Proibir `v-else-if` ou `v-else` no mesmo elemento que `v-for`. |  |
 | <span id="vue-permitted-contents"></span>[`vue/permitted-contents`](./reference/vue-permitted-contents.md) | Aplicar as regras do modelo de conteúdo HTML. |  |
+| <span id="vue-prefer-pug-lang"></span>[`vue/prefer-pug-lang`](./reference/vue-prefer-pug-lang.md) | Preferir lang="pug" à linguagem de template legada jade 1.x. | ✓ |
 | <span id="vue-prop-name-casing"></span>[`vue/prop-name-casing`](./reference/vue-prop-name-casing.md) | Aplicar um padrão de maiúsculas e minúsculas aos nomes de props declaradas. |  |
 | <span id="vue-require-scoped-style"></span>[`vue/require-scoped-style`](./reference/vue-require-scoped-style.md) | Exigir o atributo scoped nas tags style. |  |
 | <span id="vue-sfc-element-order"></span>[`vue/sfc-element-order`](./reference/vue-sfc-element-order.md) | Aplicar uma ordem consistente aos elementos de nível superior dos SFCs. |  |

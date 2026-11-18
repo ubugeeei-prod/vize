@@ -1,0 +1,12 @@
+import type { DefineComponent } from 'vue'
+export {}
+
+declare module 'vue' {
+  interface GlobalComponents {
+    Story: DefineComponent<{
+      layout?:
+        | { type: 'grid'; width?: string | number }
+        | { type: 'single'; iframe?: boolean }
+    }>
+  }
+}

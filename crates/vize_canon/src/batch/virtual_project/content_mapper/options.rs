@@ -14,7 +14,8 @@ pub struct ContentMapperTransformOptions {
     pub(super) shared_virtual_module: bool,
     /// Project only what diagnostics read, as `vize check` does.
     pub(super) diagnostics_only: bool,
-    pub(in crate::batch::virtual_project) configured_global_template_ref: bool,
+    pub(in crate::batch::virtual_project) configured_global_template_ref:
+        crate::virtual_ts::TemplateRefOwnership,
     pub(in crate::batch::virtual_project) global_template_ref_explicit: bool,
     /// The project's `vueCompilerOptions`, resolved exactly as `vize check`
     /// resolves them (`vue_check_options::resolve`, #11688).
@@ -31,7 +32,10 @@ impl Default for ContentMapperTransformOptions {
             external_component_type_helpers: false,
             shared_virtual_module: false,
             diagnostics_only: false,
-            configured_global_template_ref: false,
+            configured_global_template_ref: crate::virtual_ts::TemplateRefOwnership {
+                global: false,
+                imports_alias: false,
+            },
             global_template_ref_explicit: false,
             checks: VirtualTsCheckOptions::default(),
         }
@@ -113,8 +117,16 @@ impl ContentMapperTransformOptions {
     #[must_use]
     pub const fn with_ambient_global_template_ref(mut self, declared: bool) -> Self {
         if !self.global_template_ref_explicit {
-            self.configured_global_template_ref = declared;
+            self.configured_global_template_ref.global = declared;
         }
+        self
+    }
+
+    /// Admit a named import from `#imports` when that module re-exports Vue's
+    /// own `useTemplateRef` (Nuxt's generated alias does).
+    #[must_use]
+    pub const fn with_imports_alias_template_ref(mut self, reexported: bool) -> Self {
+        self.configured_global_template_ref.imports_alias = reexported;
         self
     }
 }

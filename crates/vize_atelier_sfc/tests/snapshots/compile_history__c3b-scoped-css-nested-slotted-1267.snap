@@ -1,0 +1,43 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c3b-scoped-css-nested-slotted-1267",
+    history: "04a762c97eb06a921682839de2175ea6586c3e81",
+    source: "<template>\n  <div class=\"host\"><slot /></div>\n</template>\n\n<style scoped>\n.host { :slotted(.foo) { color: red; } }\n</style>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { renderSlot as _renderSlot, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nconst _hoisted_1 = { class: \"host\" }\n\nexport function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"div\", _hoisted_1, [\n    _renderSlot(_ctx.$slots, \"default\")\n  ]))\n}",
+            css: Some(
+                "\n .host .foo[data-v-4045eae1-s]{color: red;}",
+            ),
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

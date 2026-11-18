@@ -1,0 +1,41 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c1b-ssr-slot-outlet-bound-props-188",
+    history: "674a26c7082581bfe10399c331cac1214aa35227",
+    source: "<template><slot v-bind=\"formState\" :status=\"status\">fallback content</slot></template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "ssr",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { ssrRenderSlot as _ssrRenderSlot } from \"@vue/server-renderer\"\nimport { mergeProps as _mergeProps } from \"vue\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _ssrRenderSlot(_ctx.$slots, \"default\", _mergeProps(_ctx.formState, { status: _ctx.status }), () => {\n    _push(`fallback content`)\n  }, _push, _parent)\n}\n\nconst _sfc_main = {}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

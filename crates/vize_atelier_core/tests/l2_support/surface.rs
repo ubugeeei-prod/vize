@@ -47,9 +47,8 @@
 //!   closed residual counter pinned at zero, and
 //!   `models_pattern_scope` is an owner under a slot scope with
 //!   destructuring params: the legacy lane enumerates the pattern's
-//!   names, L2 deliberately does not until the #4365 seam — the
-//!   on-scope verdicts can differ, so the class is counted, never
-//!   compared.
+//!   names with its own scanner, L2 with the lowering's parameter-goal
+//!   walk (#4365), so the class is counted, never compared.
 
 use vize_l0::String;
 
@@ -81,8 +80,9 @@ pub struct SurfaceCounters {
     pub models_invalid: u64,
     /// Closed residual: dynamic-argument component models are compared.
     pub models_dynamic_arg: u64,
-    /// An owner under a destructuring-params slot scope: model verdicts
-    /// may differ (#4365), counted per owner, never compared.
+    /// An owner under a destructuring-params slot scope: the two lanes
+    /// enumerate the pattern with different scanners (#4365), counted
+    /// per owner, never compared.
     pub models_pattern_scope: u64,
     /// Branch-key bindings excluded here because the chain projection
     /// owns them.

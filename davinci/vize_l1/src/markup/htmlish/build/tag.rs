@@ -112,8 +112,9 @@ impl<'a, const RAW: bool, const TAG_FACTS: bool, const STRUCTURAL_DIAGNOSTICS: b
                 self.directive_errors(attr.name.text);
             }
         }
-        let ignored_start =
-            STRUCTURAL_DIAGNOSTICS && self.recovery.is_repeated_form(&self.stack, tag);
+        let ignored_start = STRUCTURAL_DIAGNOSTICS
+            && self.in_dom
+            && self.recovery.is_repeated_form(&self.stack, tag);
         if ignored_start {
             lt_name.mark_ignored_start();
         }
@@ -132,7 +133,7 @@ impl<'a, const RAW: bool, const TAG_FACTS: bool, const STRUCTURAL_DIAGNOSTICS: b
                 .push(crate::markup::SurfaceError::ignored_repeated_form(span));
         }
         if STRUCTURAL_DIAGNOSTICS
-            && self.fosters
+            && self.in_dom
             && !self_closing
             && !is_void_tag(tag)
             && self
@@ -204,7 +205,7 @@ impl<'a, const RAW: bool, const TAG_FACTS: bool, const STRUCTURAL_DIAGNOSTICS: b
         let gt_pos = self.find_byte(b'>', e, self.src.len());
         let name = crate::slice::range(self.src, s, e);
         self.flush_gap(lt_start);
-        let adoption_depth = STRUCTURAL_DIAGNOSTICS
+        let adoption_depth = (STRUCTURAL_DIAGNOSTICS && self.in_dom)
             .then(|| self.recovery.adoption(&self.stack, name))
             .flatten();
         let matched = if STRUCTURAL_DIAGNOSTICS {

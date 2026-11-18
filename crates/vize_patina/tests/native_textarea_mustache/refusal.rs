@@ -97,7 +97,7 @@ fn repeated_attribute_refusal_retains_complete_original_warning_then_marker_erro
             complete(&registered(source, locale)),
             expected(vec![
                 parser(
-                    "warning",
+                    "error",
                     "Duplicate attribute `TITLE`. Keeping the repeated attribute so parsing can continue.",
                     repeated
                 ),

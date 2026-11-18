@@ -19,6 +19,9 @@ Case {
         cache_handlers: None,
         comments: None,
         source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
     },
     errors: 0,
 }

@@ -1,0 +1,15 @@
+<template></template>
+
+<script setup lang="ts">
+const someDefinition = {
+  foo: 'fooVal',
+} as const;
+
+type SomeGenericType<T extends Record<string, unknown>> = {
+  baz: string;
+  items: T;
+};
+
+const props = defineProps<SomeGenericType<typeof someDefinition>>();
+const foo: number = props.items.foo;
+</script>

@@ -1,0 +1,37 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c2d-dynamic-component-v-if-no-is-prop-1014",
+    history: "6ff5652a8a49c3d74b2212131b73166fbc8ec7a4",
+    source: "<Component :is=\"current\" v-if=\"ok\" :foo=\"foo\" />",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: Some(
+            "function",
+        ),
+        prefix_identifiers: None,
+        hoist_static: Some(
+            true,
+        ),
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "const { resolveDynamicComponent: _resolveDynamicComponent, openBlock: _openBlock, createBlock: _createBlock, createCommentVNode: _createCommentVNode } = Vue\n",
+    code: "function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (ok)\n    ? (_openBlock(), _createBlock(_resolveDynamicComponent(current), {\n      key: 0,\n      foo: foo\n    }, null, 8 /* PROPS */, [\"foo\"]))\n    : _createCommentVNode(\"v-if\", true)\n}",
+    map: None,
+}

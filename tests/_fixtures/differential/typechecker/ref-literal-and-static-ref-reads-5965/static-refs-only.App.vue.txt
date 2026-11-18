@@ -1,0 +1,9 @@
+<script setup lang="ts">
+const activatorRef = null
+const menuRef = null
+const decoy = null
+</script>
+
+<template>
+  <div ref="activatorRef"><div ref="menuRef" /></div>
+</template>

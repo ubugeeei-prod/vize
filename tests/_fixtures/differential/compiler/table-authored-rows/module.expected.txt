@@ -1,0 +1,20 @@
+import { ssrInterpolate as _ssrInterpolate, ssrRenderList as _ssrRenderList } from "@vue/server-renderer"
+
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(`<!--[--><table class="grid"><tr><th>Name</th></tr>`)
+  _push(`<!--[-->`)
+  _ssrRenderList(_ctx.rows, (row) => {
+    _push(`<tr><td>${_ssrInterpolate(row.name)}</td></tr>`)
+  })
+  _push(`<!--]-->`)
+  _push(`<!--[-->`)
+  _ssrRenderList(_ctx.extra, (row) => {
+    _push(`<tr><td>${_ssrInterpolate(row.name)}</td></tr>`)
+  })
+  _push(`<!--]-->`)
+  _push(`<td>${_ssrInterpolate(_ctx.total)}</td></table><table><thead><tr><th>Note</th></tr></thead><tbody><tr><td>${_ssrInterpolate(_ctx.note)}</td></tr></tbody></table><!--]-->`)
+}
+
+const _sfc_main = {}
+_sfc_main.ssrRender = ssrRender
+export default _sfc_main

@@ -1,0 +1,50 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c1b-ssr-scoped-slot-props-and-template-import-188",
+    history: "674a26c7082581bfe10399c331cac1214aa35227",
+    source: "<script setup lang=\"ts\">\nimport { valibotResolver } from \"@primevue/forms/resolvers/valibot\";\nconst schema = {};\n</script>\n\n<template>\n  <PForm :resolver=\"schema ? valibotResolver(schema) : undefined\">\n    <template #item=\"{ data: speaker }\">\n      <div :style=\"{ backgroundImage: `url(${speaker.avatarUrl})` }\">{{ speaker.name }}</div>\n    </template>\n  </PForm>\n</template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "ssr",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { ssrInterpolate as _ssrInterpolate, ssrRenderComponent as _ssrRenderComponent, ssrRenderStyle as _ssrRenderStyle } from \"@vue/server-renderer\"\nimport { createElementVNode as _createElementVNode, resolveComponent as _resolveComponent, toDisplayString as _toDisplayString, mergeProps as _mergeProps, withCtx as _withCtx } from \"vue\"\n\n\nfunction ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  _push(_ssrRenderComponent(_resolveComponent(\"PForm\"), _mergeProps({ resolver: $setup.schema ? $setup.valibotResolver($setup.schema) : undefined }, _attrs), {\n    item: _withCtx(({ data: speaker }, _push, _parent, _scopeId) => {\n      if (_push) {\n        _push(`<div style=\"${_ssrRenderStyle({ backgroundImage: `url(${speaker.avatarUrl})` })}\">${_ssrInterpolate(speaker.name)}</div>`)\n      } else {\n        return [_createElementVNode(\"div\", { style: { backgroundImage: `url(${speaker.avatarUrl})` } }, _toDisplayString(speaker.name), 1 /* TEXT */)]\n      }\n    }),\n    _: 1\n  }, _parent))\n}\nimport { valibotResolver } from '@primevue/forms/resolvers/valibot'\n\n\nexport default {\n  __name: 'History',\n  ssrRender: ssrRender,\n  setup(__props, { expose: __expose }) {\n  __expose();\n\nconst schema = {};\n\nconst __returned__ = { valibotResolver, schema }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "valibotResolver": SetupMaybeRef,
+                        "schema": SetupConst,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

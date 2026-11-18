@@ -1,0 +1,4 @@
+export const useEmptyValuesProps = {
+  emptyValues: Array,
+  valueOnClear: { type: [String, Boolean], default: undefined },
+} as const

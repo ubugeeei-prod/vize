@@ -91,7 +91,7 @@ impl Linter {
             .as_deref()
             .filter(|_| !fatal)
             .map(|script| analysis::variant(&l2, script, self.has_unused_bindings_demand()));
-        let mut parsed = Self::l1_template_parse_lint_result(filename, source, &l2);
+        let mut parsed = self.l1_template_parse_lint_result(filename, source, &l2);
         offset_result(&mut parsed, offset);
         let linted = l2.lint_template().with_compatibility_root(|root| {
             self.lint_template_root(

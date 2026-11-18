@@ -1,0 +1,123 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": null,
+  "regressionCommit": "a196265bb40236b6aecacfd128c4e9094d9326db",
+  "sourceRevision": "a196265bb40236b6aecacfd128c4e9094d9326db",
+  "projectOptions": {
+    "vuePackage": "absent"
+  },
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "template-handler-mismatches",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/InlineHandlerError.vue",
+          "source": "InlineHandlerError.vue.txt"
+        },
+        {
+          "file": "src/WrongEventHandler.vue",
+          "source": "WrongEventHandler.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/InlineHandlerError.vue",
+          "line": 12,
+          "column": 33,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type 'number' is not assignable to parameter of type 'string'."
+        },
+        {
+          "file": "src/WrongEventHandler.vue",
+          "line": 8,
+          "column": 19,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '(name: string) => void' is not assignable to parameter of type '(_e: PointerEvent) => unknown'.\nTypes of parameters 'name' and '_e' are incompatible.\nType 'PointerEvent' is not assignable to type 'string'."
+        }
+      ]
+    },
+    {
+      "id": "template-handlers-matching",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/InlineHandlerError.vue",
+          "source": "valid.InlineHandlerError.vue.txt"
+        },
+        {
+          "file": "src/WrongEventHandler.vue",
+          "source": "valid.WrongEventHandler.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "runtime-stub-template-ref-errors",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/UseTemplateRefError.vue",
+          "source": "UseTemplateRefError.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/UseTemplateRefError.vue",
+          "line": 4,
+          "column": 18,
+          "severity": 1,
+          "code": 2304,
+          "message": "Cannot find name 'useTemplateRef'."
+        }
+      ]
+    },
+    {
+      "id": "runtime-stub-template-ref-valid",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/UseTemplateRefError.vue",
+          "source": "valid.UseTemplateRefError.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/UseTemplateRefError.vue",
+          "line": 4,
+          "column": 18,
+          "severity": 1,
+          "code": 2304,
+          "message": "Cannot find name 'useTemplateRef'."
+        }
+      ]
+    }
+  ]
+}

@@ -5,6 +5,7 @@
 //! Options6/9 retain named BEFORE history and require separate full production
 //! AFTER witnesses for the declared complete-attribute correction.
 
+use super::tokenizer_authored_structure_witness as authored;
 use super::tokenizer_empty_value_witness as empty_value;
 use super::tokenizer_first_newline_witness as correction;
 use super::{Parser, WhitespaceStrategy};
@@ -20,6 +21,7 @@ struct Oracle {
     attribute_corrections: bool,
     correction_hits: u8,
     empty_value_hits: u128,
+    authored_hits: u8,
 }
 
 impl Oracle {
@@ -51,6 +53,22 @@ impl Oracle {
         if let Some((_, bit)) = corrected {
             self.correction_hits |= bit;
         }
+        let authored = (self.corrections || self.attribute_corrections)
+            .then(|| {
+                authored::corrected_digest(
+                    self.corrections,
+                    self.index,
+                    fields,
+                    context,
+                    options,
+                    expected,
+                )
+            })
+            .flatten();
+        if let Some((_, bit)) = authored {
+            assert_eq!(self.authored_hits & bit, 0, "each authored context once");
+            self.authored_hits |= bit;
+        }
         if let Some(capture) = &mut self.capture {
             let option_fields = cstr!("{options:?}");
             write_capture(
@@ -71,6 +89,7 @@ impl Oracle {
             .as_ref()
             .map(|(digest, _)| digest.as_slice())
             .or_else(|| empty.as_ref().map(|(digest, _)| digest.as_slice()))
+            .or_else(|| authored.as_ref().map(|(digest, _)| digest.as_slice()))
             .or(expected);
         if Some(digest.as_slice()) != required {
             self.mismatches += 1;
@@ -109,6 +128,17 @@ impl Oracle {
             },
             "all 66 exact empty-value corrections must participate"
         );
+        assert_eq!(
+            self.authored_hits,
+            if self.corrections {
+                authored::FIXTURE_HITS
+            } else if self.attribute_corrections {
+                authored::OPTION_HITS
+            } else {
+                0
+            },
+            "every authored-structure correction must participate"
+        );
     }
 }
 
@@ -125,6 +155,7 @@ fn oracle(expected: &'static [u8], name: &str) -> Oracle {
         attribute_corrections: name == "options.bin",
         correction_hits: 0,
         empty_value_hits: 0,
+        authored_hits: 0,
     }
 }
 
@@ -238,8 +269,8 @@ fn complete_fixture_asts_and_utf8_cuts_keep_the_frozen_tokenizer_contract() {
     cases.finish(&hash.digest());
     assert_eq!(
         hash.digest(),
-        empty_value::AFTER_AGGREGATE,
-        "authentic bf006 source: exact 66 empty-value corrections; original #7889 history retained"
+        authored::FIXTURES_AGGREGATE,
+        "authentic bf006 source: exact 66 empty-value corrections and 4 authored-structure corrections; original #7889 history retained"
     );
 }
 
@@ -319,9 +350,7 @@ fn live_v_pre_recovery_and_dialect_options_keep_the_frozen_parser_contract() {
     cases.finish(&hash.digest());
     assert_eq!(
         hash.digest(),
-        [
-            139, 236, 84, 26, 227, 6, 37, 205, 133, 21, 41, 76, 178, 19, 23, 75
-        ],
-        "captured source: 5bca3a881"
+        authored::OPTIONS_AGGREGATE,
+        "captured source: 5bca3a881, with 1 authored-structure correction"
     );
 }

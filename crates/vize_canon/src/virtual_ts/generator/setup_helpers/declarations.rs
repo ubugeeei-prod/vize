@@ -29,7 +29,7 @@ impl SetupHelperPlan {
         summary: &Croquis,
         source: Option<&str>,
         preserve_event_navigation: bool,
-        configured_global_template_ref: bool,
+        configured_global_template_ref: crate::virtual_ts::TemplateRefOwnership,
     ) -> Self {
         shadowed_helpers(
             summary,
@@ -194,7 +194,7 @@ fn shadowed_helpers(
     summary: &Croquis,
     source: Option<&str>,
     preserve_event_navigation: bool,
-    configured_global_template_ref: bool,
+    configured_global_template_ref: crate::virtual_ts::TemplateRefOwnership,
 ) -> SetupHelperPlan {
     let mut plan = SetupHelperPlan {
         shadowed: FxHashSet::default(),
@@ -252,7 +252,7 @@ fn read_helpers(
     summary: &Croquis,
     source: &str,
     preserve_event_navigation: bool,
-    configured_global_template_ref: bool,
+    configured_global_template_ref: crate::virtual_ts::TemplateRefOwnership,
 ) -> SetupHelperPlan {
     if parsed.panicked {
         return plan;
@@ -321,7 +321,7 @@ mod template_ref_fallback_tests {
                 &vize_croquis::Croquis::default(),
                 Some(source),
                 false,
-                false,
+                Default::default(),
             );
             for hoisted in [false, true] {
                 let mut generated = crate::virtual_ts::TextBuf::default();
@@ -355,7 +355,7 @@ mod template_ref_fallback_tests {
             &vize_croquis::Croquis::default(),
             Some("const count = 1;"),
             false,
-            false,
+            Default::default(),
         );
         let mut generated = crate::virtual_ts::TextBuf::default();
         emit(&mut generated, &plan, false, false, false, false);

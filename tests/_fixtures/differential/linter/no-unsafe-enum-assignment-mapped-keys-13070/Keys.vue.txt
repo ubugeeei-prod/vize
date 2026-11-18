@@ -1,0 +1,18 @@
+<script setup lang="ts">
+import { Fruit, holder, keyed } from "./keys";
+
+type Keyed = { [key in Fruit]: string };
+declare const aliased: Keyed;
+declare const record: Record<Fruit, string>;
+declare const optional: { keyed?: { [key in Fruit]: string } };
+function generic<K extends Fruit>(map: { [P in K]: string }, key: number) {
+  return map[key];
+}
+keyed[0];
+holder.keyed[0];
+aliased[0];
+record[0];
+optional.keyed?.[0];
+holder.keyed[Fruit.Apple];
+void generic;
+</script>

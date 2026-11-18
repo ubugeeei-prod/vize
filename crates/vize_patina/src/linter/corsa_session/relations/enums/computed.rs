@@ -1,18 +1,27 @@
 //! Computed enum-key access: `obj[key]` against the enum keys an object
-//! declares (index signature keys and computed member names).
-use super::super::checker::Checker;
+//! declares (mapped type keys, index signature keys and computed member names).
+use super::super::checker::{Checker, flags};
 use super::deep::mismatch;
 use super::{EnumMismatch, results};
-use crate::linter::corsa_session::boolean::checker_node_text;
+use crate::linter::corsa_session::boolean::{CheckerSyntax, checker_node_text, syntax_kind};
 use corsa::api::{NodeHandle, TypeResponse};
+
+/// `ObjectFlags.Mapped`.
+const MAPPED: u32 = 1 << 5;
 
 pub(super) async fn computed_receivers(
     checker: &mut Checker<'_>,
+    object_node: Option<&NodeHandle>,
     object: &TypeResponse,
     sender: &TypeResponse,
 ) -> Option<EnumMismatch> {
-    let object = checker.apparent(object).await;
-    let receivers = computed_keys(checker, &object).await;
+    let mut receivers = mapped_keys(checker, object_node, object).await;
+    let apparent = checker.apparent(object).await;
+    for key in computed_keys(checker, &apparent).await {
+        if !receivers.iter().any(|known| known.id == key.id) {
+            receivers.push(key);
+        }
+    }
     if receivers.is_empty() {
         return None;
     }
@@ -23,6 +32,96 @@ pub(super) async fn computed_receivers(
         }
     }
     results(checker, &receivers).await
+}
+
+/// typescript-eslint `getMappedKeyConstraintTypes`: the constraint of a
+/// mapped type the accessed object's symbol is declared with
+/// (`declare const foo: { [key in Fruit]: string }`). Only a mapped object
+/// type can come from such a declaration, so no other type asks for one.
+async fn mapped_keys(
+    checker: &mut Checker<'_>,
+    object_node: Option<&NodeHandle>,
+    object: &TypeResponse,
+) -> Vec<TypeResponse> {
+    let Some(object_node) = object_node else {
+        return Vec::new();
+    };
+    let mapped = |ty: &TypeResponse| ty.object_flags.unwrap_or(0) & MAPPED != 0;
+    // An optional member's type adds `undefined` to its declared mapped type.
+    let declared_mapped = if object.flags & flags::UNION != 0 {
+        checker.union_parts(object).await.iter().any(mapped)
+    } else {
+        mapped(object)
+    };
+    if !declared_mapped {
+        return Vec::new();
+    }
+    let Some(symbol) = checker
+        .symbols_at(vec![object_node.clone()])
+        .await
+        .into_iter()
+        .next()
+        .flatten()
+    else {
+        return Vec::new();
+    };
+    let mut receivers = Vec::new();
+    for declaration in &symbol.declarations {
+        let Some(path) = declaration.declaring_path() else {
+            continue;
+        };
+        let constraint = {
+            let Some(encoded) = checker.source_file(path.as_str()).await else {
+                continue;
+            };
+            CheckerSyntax::read(encoded.as_bytes())
+                .ok()
+                .and_then(|syntax| mapped_constraint(&syntax, declaration))
+        };
+        let Some(constraint) = constraint else {
+            continue;
+        };
+        let ty = checker
+            .session()
+            .client()
+            .get_type_from_type_node(
+                checker.session().snapshot().handle.clone(),
+                checker.session().project_handle(),
+                constraint,
+            )
+            .await
+            .ok()
+            .flatten();
+        if let Some(ty) = ty
+            && !receivers
+                .iter()
+                .any(|known: &TypeResponse| known.id == ty.id)
+        {
+            receivers.push(ty);
+        }
+    }
+    receivers
+}
+
+/// The constraint node of the mapped type annotating `declaration` (a getter,
+/// parameter, property or variable), as the encoder orders their children.
+fn mapped_constraint(syntax: &CheckerSyntax<'_>, declaration: &NodeHandle) -> Option<NodeHandle> {
+    let index = syntax.index_of(declaration)?;
+    let type_bit = match syntax.kind(index)? {
+        syntax_kind::VARIABLE_DECLARATION => 2,
+        syntax_kind::PROPERTY_SIGNATURE | syntax_kind::PROPERTY_DECLARATION => 3,
+        syntax_kind::PARAMETER | syntax_kind::GET_ACCESSOR => 4,
+        _ => return None,
+    };
+    let annotation = syntax.property(index, type_bit)?;
+    if syntax.kind(annotation)? != syntax_kind::MAPPED_TYPE {
+        return None;
+    }
+    let parameter = syntax.property(annotation, 1)?;
+    if syntax.kind(parameter)? != syntax_kind::TYPE_PARAMETER {
+        return None;
+    }
+    syntax.handle(syntax.property(parameter, 2)?)
 }
 
 /// The key types an object's computed access is checked against: its index

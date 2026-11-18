@@ -1,0 +1,11 @@
+<script setup lang="ts">
+import PayloadButton from './PayloadButton.vue'
+
+function handleValue(value: number): void {
+  console.log(value)
+}
+</script>
+
+<template>
+  <PayloadButton @change="handleValue" />
+</template>

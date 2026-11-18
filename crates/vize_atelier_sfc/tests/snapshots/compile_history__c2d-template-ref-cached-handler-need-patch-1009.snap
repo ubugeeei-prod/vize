@@ -1,0 +1,37 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c2d-template-ref-cached-handler-need-patch-1009",
+    history: "7b3b5e5079b79582101745f0ad5efb4aa85ca920",
+    source: "<div ref=\"container\" @scroll=\"onScroll\"></div>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: Some(
+            true,
+        ),
+        hoist_static: None,
+        cache_handlers: Some(
+            true,
+        ),
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"div\", {\n    ref: \"container\",\n    onScroll: _cache[0] || (_cache[0] = (...args) => (_ctx.onScroll && _ctx.onScroll(...args)))\n  }, null, 544 /* NEED_HYDRATION, NEED_PATCH */))\n}",
+    map: None,
+}

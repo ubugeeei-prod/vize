@@ -364,7 +364,10 @@ pub const PINNED_BATTERY_CENSUS: BatteryCensus = BatteryCensus {
         // Accessibility and explicit-slot parity retain six trace lines.
         + 6
         // Native `is` attribute-name coverage retains five trace lines.
-        + 5,
+        + 5
+        // Authored table rows drop the eighteen trace lines that belonged only
+        // to a parser-implied `tbody` or `tr`; every authored node is kept.
+        - 18,
     restructured: 0,
     jsx: JsxComparison {
         roots: 14,

@@ -143,12 +143,10 @@ fn css_regions(content: &str, descriptor: &vize_atelier_sfc::SfcDescriptor<'_>) 
         .iter()
         .map(|block| CssRegion {
             range: (block.loc.start, block.loc.end),
-            mode: match block.lang.as_deref() {
-                Some("sass") => scan::CssMode::IndentedDeclarations,
-                Some("stylus" | "styl") => scan::CssMode::StylusDeclarations,
-                Some("css") | None => scan::CssMode::Stylesheet,
-                Some(_) => scan::CssMode::Preprocessor,
-            },
+            // A lang the registry does not know still gets the broad
+            // preprocessor scan for color literals.
+            mode: vize_l1::container::lang::style_lang(block.lang.as_deref())
+                .map_or(scan::CssMode::Preprocessor, scan::CssMode::of),
         })
         .collect();
 

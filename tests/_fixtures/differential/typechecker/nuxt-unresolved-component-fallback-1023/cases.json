@@ -1,0 +1,104 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 1023,
+  "regressionCommit": "2160612c4b9dbe2dca53ba99c6bea154bbe95c82",
+  "sourceRevision": "2160612c4b9dbe2dca53ba99c6bea154bbe95c82",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "unresolved-component-prop-unchecked",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "nuxt-global-component-prop-matches",
+      "inputs": [
+        {
+          "file": "nuxt.config.ts",
+          "source": "nuxt.config.ts.txt"
+        },
+        {
+          "file": "tsconfig.json",
+          "source": "nuxt-root.tsconfig.json.txt"
+        },
+        {
+          "file": ".nuxt/tsconfig.json",
+          "source": "nuxt-generated.tsconfig.json.txt"
+        },
+        {
+          "file": ".nuxt/components.d.ts",
+          "source": "nuxt-generated.components.d.ts.txt"
+        },
+        {
+          "file": "components/AutoCard.vue",
+          "source": "string.AutoCard.vue.txt"
+        },
+        {
+          "file": "app.vue",
+          "source": "App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "nuxt-global-component-prop-mismatch",
+      "inputs": [
+        {
+          "file": "nuxt.config.ts",
+          "source": "nuxt.config.ts.txt"
+        },
+        {
+          "file": "tsconfig.json",
+          "source": "nuxt-root.tsconfig.json.txt"
+        },
+        {
+          "file": ".nuxt/tsconfig.json",
+          "source": "nuxt-generated.tsconfig.json.txt"
+        },
+        {
+          "file": ".nuxt/components.d.ts",
+          "source": "nuxt-generated.components.d.ts.txt"
+        },
+        {
+          "file": "components/AutoCard.vue",
+          "source": "number.AutoCard.vue.txt"
+        },
+        {
+          "file": "app.vue",
+          "source": "App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "app.vue",
+          "line": 6,
+          "column": 14,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'string' is not assignable to type 'number'."
+        }
+      ]
+    }
+  ]
+}

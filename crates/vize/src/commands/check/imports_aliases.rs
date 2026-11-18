@@ -366,5 +366,10 @@ pub(in crate::commands) fn mapper_override_candidates(
     )
 }
 
+mod vue_template_ref;
+pub(super) use vue_template_ref::{
+    imports_alias_reexports_vue_template_ref, imports_alias_vue_template_ref,
+};
+
 #[cfg(test)]
 mod tests;

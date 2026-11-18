@@ -5,7 +5,7 @@ description: "Vize のリンターに含まれるすべてのルールを、カ�
 
 # 全 lint ルール
 
-## Vue ルール (169)
+## Vue ルール (170)
 
 | ルール | 検出する内容 | プリセット | 自動修正 |
 | --- | --- | --- | --- |
@@ -128,6 +128,7 @@ description: "Vize のリンターに含まれるすべてのルールを、カ�
 | <span id="vue-prefer-const"></span>[`vue/prefer-const`](./reference/vue-prefer-const.md) | スクリプトとテンプレートが再代入しないバインディングを const にします。 | `nuxt`, `opinionated` |  |
 | <span id="vue-prefer-prop-type-boolean-first"></span>[`vue/prefer-prop-type-boolean-first`](./reference/vue-prefer-prop-type-boolean-first.md) | prop の型コンストラクター配列で Boolean を先頭に置きます。 | — |  |
 | <span id="vue-prefer-props-shorthand"></span>[`vue/prefer-props-shorthand`](./reference/vue-prefer-props-shorthand.md) | Vue 3.4 の同名 prop バインディングの省略形を使います。 | `nuxt`, `opinionated` | ✓ |
+| <span id="vue-prefer-pug-lang"></span>[`vue/prefer-pug-lang`](./reference/vue-prefer-pug-lang.md) | 旧 jade 1.x の template と、pug 3 と意味が異なる記述を検出します。 | `happy-path` | ✓ |
 | <span id="vue-prefer-single-event-payload"></span>[`vue/prefer-single-event-payload`](./reference/vue-prefer-single-event-payload.md) | カスタムイベントのペイロードを1つにまとめます。 | — |  |
 | <span id="vue-prefer-template"></span>[`vue/prefer-template`](./reference/vue-prefer-template.md) | 文字列連結の代わりにテンプレートリテラルを使います。 | — |  |
 | <span id="vue-prefer-true-attribute-shorthand"></span>[`vue/prefer-true-attribute-shorthand`](./reference/vue-prefer-true-attribute-shorthand.md) | true を指定するバインディングを真偽属性の省略形にします。 | `nuxt`, `opinionated` |  |

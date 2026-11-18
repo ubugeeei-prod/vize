@@ -1,0 +1,19 @@
+import { useEmptyValuesProps } from '@element-plus/hooks'
+import { layoutProps, sharedProps } from './shared'
+
+function buildProps<T extends Record<string, unknown>>(props: T): T {
+  return props
+}
+
+function useAriaProps<const T extends string>(names: readonly T[]) {
+  return {} as { readonly [K in T]: { readonly type: StringConstructor } }
+}
+
+export const importedProps = buildProps({
+  ...sharedProps,
+  ...layoutProps,
+  ...useEmptyValuesProps,
+  ...useAriaProps(['ariaLabel']),
+  pageCount: { type: Number, required: true },
+  pagerCount: { type: Number, default: 7 },
+} as const)

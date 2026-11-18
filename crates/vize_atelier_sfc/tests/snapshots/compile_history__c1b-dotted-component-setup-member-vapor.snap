@@ -1,0 +1,50 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c1b-dotted-component-setup-member-vapor",
+    history: "5fe51651dea8c38ee164ed6a955162758d7b034d",
+    source: "<script setup lang=\"ts\">\nimport { Form, Input } from \"ant-design-vue\";\n</script>\n\n<template>\n  <Form.Item label=\"Teacher\">\n    <Input />\n  </Form.Item>\n</template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "vapor",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { defineVaporComponent as _defineVaporComponent } from 'vue'\nimport { createComponentWithFallback as _createComponentWithFallback } from 'vue';\n\n\nfunction render(_ctx, $props, $emit, $attrs, $slots) {\n  const _component_Input = _ctx.Input\n  const _component_Form_Item = _ctx.Form.Item\n  const n1 = _createComponentWithFallback(_component_Form_Item, { label: () => (\"Teacher\") }, {\n    \"default\": () => {\n      const n0 = _createComponentWithFallback(_component_Input)\n      return n0\n    }\n  }, true)\n  return n1\n}\nconst __vaporRender = render\nimport { Form, Input } from 'ant-design-vue'\n\n\nexport default /*@__PURE__*/_defineVaporComponent({\n  __name: 'History',\n  render: __vaporRender,\n  setup(__props, { expose: __expose }) {\n  __expose();\n\n\nconst __returned__ = { Form, Input }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n})",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "Form": SetupMaybeRef,
+                        "Input": SetupMaybeRef,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

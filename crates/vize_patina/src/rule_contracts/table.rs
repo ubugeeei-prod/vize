@@ -14,6 +14,9 @@ const UNUSED_SETUP: Domain = Domain::new(
     "valid inline script-setup declarations with no resolved script, template or style v-bind read; external blocks, eval and unsupported syntax are outside",
 );
 const BLOCKS: Domain = Domain::new("the SFC's top-level blocks, their order and their attributes");
+const JADE_PROFILE: Domain = Domain::new(
+    "a lang=\"jade\" template's lang value and the jade 1.x constructs the pug lowering reads under the jade profile",
+);
 const FILE_TEXT: Domain =
     Domain::new("the authored text of one linted file, including every SFC block");
 const CSS_TEXT: Domain =
@@ -389,6 +392,7 @@ pub static RULE_CONTRACTS: &[RuleEntry] = &[
     row!("vue/prefer-const", Exact, SCRIPT_TEMPLATE, Warning),
     row!("vue/prefer-prop-type-boolean-first", Exact, OPTIONS, Warning),
     row!("vue/prefer-props-shorthand", Exact, STYLE, Warning),
+    row!("vue/prefer-pug-lang", Exact, JADE_PROFILE, Warning),
     row!("vue/prefer-single-event-payload", Complete, VUE_COMPAT_SCRIPT, Warning),
     row!("vue/prefer-template", Complete, TEMPLATE_EXPRESSION_SYNTAX, Warning),
     row!("vue/prefer-true-attribute-shorthand", Exact, STYLE, Warning),

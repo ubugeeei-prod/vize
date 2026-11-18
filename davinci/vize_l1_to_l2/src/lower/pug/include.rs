@@ -14,7 +14,7 @@ use alloc::vec::Vec as StdVec;
 use vize_l0::{Allocator, Span, String, cstr};
 use vize_l1::markup::pug::{
     PugBlock, PugHtmlItem, PugInline, PugNode, PugRefusal, PugRefused, PugTag, PugTextPiece,
-    PugTree, parse_pug,
+    PugTree,
 };
 
 use super::emit::Emitter;
@@ -245,7 +245,12 @@ impl<'t> Emitter<'t> {
             self.includes.dependencies.push(name.clone());
         }
         let arena = self.includes.arena;
-        let pug = path.ends_with(".pug") || path.ends_with(".jade");
+        let pug = path.rsplit_once('.').is_some_and(|(_, extension)| {
+            matches!(
+                vize_l1::container::lang::markup_extension(extension),
+                Some(vize_l1::container::lang::TemplateLang::Pug(_))
+            )
+        });
         if !pug {
             if !directive.block.is_empty() {
                 let message = String::from("Raw inclusion cannot contain a block");
@@ -256,7 +261,8 @@ impl<'t> Emitter<'t> {
             return;
         }
         let source = arena.alloc_str(&content);
-        let (tree, errors) = parse_pug(arena, source);
+        // An included file is rendered by the including template's engine.
+        let (tree, errors) = vize_l1::markup::pug::parse_pug_profiled(arena, source, self.profile);
         let tree: &'t PugTree<'t> = arena.as_oxc().alloc(tree);
         self.includes.active.push(name.clone());
         self.includes.files.push(File {

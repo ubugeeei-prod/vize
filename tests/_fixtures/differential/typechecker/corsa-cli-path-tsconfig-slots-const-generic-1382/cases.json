@@ -1,0 +1,245 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 1382,
+  "regressionCommit": "1fdbb7ad0c88d27a55d4fa9056b2140916d2ac17",
+  "sourceRevision": "1fdbb7ad0c88d27a55d4fa9056b2140916d2ac17",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "annotated-slot-props-keep-user-annotation",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "annotated-slot.App.vue.txt"
+        },
+        {
+          "file": "src/Draggable.vue",
+          "source": "annotated-slot.Draggable.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "annotated-slot-props-mismatch-child-slot-type",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "annotated-slot.App.vue.txt"
+        },
+        {
+          "file": "src/Draggable.vue",
+          "source": "annotated-slot.number-id.Draggable.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 8,
+          "column": 22,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '(_: { element: Tag; }) => any' is not assignable to parameter of type '(props: { element: { id: number; }; }) => any'.\nTypes of parameters '_' and 'props' are incompatible.\nType '{ element: { id: number; }; }' is not assignable to type '{ element: Tag; }'.\nThe types of 'element.id' are incompatible between these types.\nType 'number' is not assignable to type 'string'."
+        }
+      ]
+    },
+    {
+      "id": "const-generic-component",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "const-generic.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "const-generic-component-wrong-member",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "const-generic.wrong-member.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 8,
+          "column": 23,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'toFixed' does not exist on type 'T[]'."
+        }
+      ]
+    },
+    {
+      "id": "extends-array-chain-inlined",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "extends.tsconfig.json.txt"
+        },
+        {
+          "file": "tsconfig.base.json",
+          "source": "extends.tsconfig.base.json.txt"
+        },
+        {
+          "file": "node_modules/@shared/tsconfig/tsconfig.dom.json",
+          "source": "extends.package-tsconfig.dom.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "extends.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 1,
+          "column": 31,
+          "severity": 1,
+          "code": 6133,
+          "message": "'count' is declared but its value is never read."
+        }
+      ]
+    },
+    {
+      "id": "extends-array-chain-inherits-strict",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "extends.tsconfig.json.txt"
+        },
+        {
+          "file": "tsconfig.base.json",
+          "source": "extends.tsconfig.base.json.txt"
+        },
+        {
+          "file": "node_modules/@shared/tsconfig/tsconfig.dom.json",
+          "source": "extends.package-tsconfig.dom.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "extends.strict-null.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 2,
+          "column": 7,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'null' is not assignable to type 'number'."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 2,
+          "column": 7,
+          "severity": 1,
+          "code": 6133,
+          "message": "'count' is declared but its value is never read."
+        }
+      ]
+    },
+    {
+      "id": "custom-type-roots-reanchored",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "type-roots.tsconfig.json.txt"
+        },
+        {
+          "file": "types/app-globals/index.d.ts",
+          "source": "type-roots.app-globals.d.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "type-roots.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "custom-type-roots-global-wrong-type",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "type-roots.tsconfig.json.txt"
+        },
+        {
+          "file": "types/app-globals/index.d.ts",
+          "source": "type-roots.app-globals.d.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "type-roots.wrong-type.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 2,
+          "column": 7,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'string' is not assignable to type 'number'."
+        }
+      ]
+    },
+    {
+      "id": "custom-type-roots-missing-entry-fileless-diagnostic",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "type-roots.missing-entry.tsconfig.json.txt"
+        },
+        {
+          "file": "types/app-globals/index.d.ts",
+          "source": "type-roots.app-globals.d.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "type-roots.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "tsconfig.json",
+          "line": 1,
+          "column": 1,
+          "severity": 1,
+          "code": 2688,
+          "message": "Cannot find type definition file for 'missing-globals'.\nThe file is in the program because:\nEntry point of type library 'missing-globals' specified in compilerOptions"
+        }
+      ]
+    }
+  ]
+}

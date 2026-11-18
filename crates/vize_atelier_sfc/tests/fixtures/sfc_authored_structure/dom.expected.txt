@@ -1,0 +1,37 @@
+import { withModifiers as _withModifiers, toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createTextVNode as _createTextVNode } from "vue"
+
+const _hoisted_1 = /*#__PURE__*/ _createElementVNode("button", null, "Search")
+const _hoisted_2 = { href: "/outer" }
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock(_Fragment, null, [
+    _createElementVNode("form", {
+      onSubmit: _withModifiers(_ctx.save, ["prevent"])
+    }, [
+      _createElementVNode("form", {
+        onSubmit: _withModifiers(_ctx.search, ["prevent"])
+      }, [
+        _hoisted_1
+      ], 40 /* PROPS, NEED_HYDRATION */, ["onSubmit"])
+    ], 40 /* PROPS, NEED_HYDRATION */, ["onSubmit"]),
+    _createElementVNode("a", _hoisted_2, [...(_cache[0] || (_cache[0] = [
+      _createElementVNode("a", { href: "/inner" }, "inner", -1 /* CACHED */)
+    ]))]),
+    _createElementVNode("button", { onClick: _ctx.outer }, [
+      _createElementVNode("button", { onClick: _ctx.inner }, _toDisplayString(_ctx.label), 9 /* TEXT, PROPS */, ["onClick"])
+    ], 8 /* PROPS */, ["onClick"]),
+    _createElementVNode("p", null, [
+      _createElementVNode("ul", null, [
+        _createElementVNode("li", null, _toDisplayString(_ctx.item), 1 /* TEXT */)
+      ])
+    ]),
+    _createElementVNode("p", null, [
+      _createTextVNode("one"),
+      _cache[1] || (_cache[1] = _createElementVNode("div", null, "two", -1 /* CACHED */)),
+      _cache[2] || (_cache[2] = _createElementVNode("p", null, "three", -1 /* CACHED */))
+    ]),
+    _createElementVNode("table", null, [
+      _createElementVNode("div", null, _toDisplayString(_ctx.note), 1 /* TEXT */)
+    ])
+  ], 64 /* STABLE_FRAGMENT */))
+}

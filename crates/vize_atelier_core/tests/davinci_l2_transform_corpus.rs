@@ -89,9 +89,11 @@ fn the_l2_transform_lane_holds_over_the_corpus() {
                 ons_spread: 1,
                 directives: 2,
                 models: 4,
-                models_invalid: 2,
+                // The L2 pass enumerates a destructured slot scope like the legacy
+                // lane, so the battery's `{ row }` model drops in both lanes.
+                models_invalid: 3,
                 models_dynamic_arg: 0,
-                models_pattern_scope: 2,
+                models_pattern_scope: 1,
                 keys_excluded: 2,
                 builtins_excluded: 3,
                 wrapper_attrs: 2,
@@ -100,8 +102,11 @@ fn the_l2_transform_lane_holds_over_the_corpus() {
                 values_compound: 0,
             },
             hoist: HoistCounters {
-                elements: 99,
-                whole: 15,
+                // #6266 made the single child of a `<template v-if>` the
+                // branch block (as @vue/compiler-dom does), so it no longer
+                // hoists; the plain witness was re-pinned there, this one missed.
+                elements: 96,
+                whole: 12,
                 props: 7,
                 wrapper_hoists: 0,
                 comments_elements: 4,

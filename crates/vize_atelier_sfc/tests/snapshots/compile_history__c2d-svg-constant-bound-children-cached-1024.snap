@@ -1,0 +1,37 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c2d-svg-constant-bound-children-cached-1024",
+    history: "b8417399d5aa391b264fb9fb7e02970abe2a72b9",
+    source: "<svg xmlns=\"http://www.w3.org/2000/svg\"><rect :x=\"1\" /><rect x=\"1\" /></svg>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: Some(
+            "function",
+        ),
+        prefix_identifiers: None,
+        hoist_static: Some(
+            true,
+        ),
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "const { createElementVNode: _createElementVNode, openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue\n\nconst _hoisted_1 = { xmlns: \"http://www.w3.org/2000/svg\" }\n",
+    code: "function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"svg\", _hoisted_1, [...(_cache[0] || (_cache[0] = [\n    _createElementVNode(\"rect\", { x: 1 }, null, -1 /* CACHED */),\n    _createElementVNode(\"rect\", { x: \"1\" }, null, -1 /* CACHED */)\n  ]))]))\n}",
+    map: None,
+}

@@ -1,0 +1,7 @@
+declare module 'vue' {
+  interface GlobalComponents {
+    Differences: typeof import('./components/Differences.vue')['default']
+  }
+}
+
+export {}

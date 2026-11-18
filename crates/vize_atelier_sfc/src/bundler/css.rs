@@ -65,7 +65,7 @@ pub fn wrap_scoped_preprocessor_style(
     let Some(lang) = lang else {
         return String::from(content);
     };
-    if lang == "css" {
+    if vize_l1::container::lang::is_css_style(Some(lang)) {
         return String::from(content);
     }
 

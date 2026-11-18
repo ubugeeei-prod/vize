@@ -180,7 +180,7 @@ fn original_duplicate_case_fixture_refuses_instead_of_losing_parser_advisory() {
         vec![
             tabindex_warning("tabindex='1'"),
             serde_json::json!({
-                "rule_name": "parser/template", "severity": "warning",
+                "rule_name": "parser/template", "severity": "error",
                 "message": "Duplicate attribute `tabIndex`. Keeping the repeated attribute so parsing can continue.",
                 "start": start, "end": start + 8, "help": null, "labels": [], "fix": null,
             }),

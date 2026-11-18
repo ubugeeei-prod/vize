@@ -1,0 +1,1 @@
+export { type BaseProps } from "./Base.vue";

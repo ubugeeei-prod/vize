@@ -1,0 +1,7 @@
+<script setup lang="ts">
+defineProps<{ label: string }>()
+defineEmits<{ save: [value: string] }>()
+defineSlots<{ default(props: { value: string }): unknown }>()
+</script>
+
+<template><slot :value="label" /></template>

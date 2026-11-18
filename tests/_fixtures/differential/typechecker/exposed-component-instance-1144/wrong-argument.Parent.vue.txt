@@ -1,0 +1,19 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+import Child from './Child.vue'
+import TypedChild from './TypedChild.vue'
+
+const child = ref<InstanceType<typeof Child> | null>(null)
+const typed = ref<InstanceType<typeof TypedChild> | null>(null)
+
+function close() {
+  child.value?.hide()
+  typed.value?.open('1')
+}
+</script>
+
+<template>
+  <Child ref="child" />
+  <TypedChild ref="typed" />
+  <button @click="close">Close</button>
+</template>

@@ -1,0 +1,43 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c2b-scoped-nested-rules-flatten-811",
+    history: "15a4d097abfcd74284db60e4ab32cea4bbcdd505",
+    source: "<template>\n  <div id=\"pages-store\">\n    <h1>Store</h1>\n    <hr class=\"divider\">\n  </div>\n</template>\n\n<style scoped>\n#pages-store { row-gap: 1.5rem; @media (--mobile) { row-gap: 1rem; } h1 { margin: 0; } :deep(.divider) { border: 0; } }\n</style>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nconst _hoisted_1 = { id: \"pages-store\" }\n\nexport function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"div\", _hoisted_1, [...(_cache[0] || (_cache[0] = [\n    _createElementVNode(\"h1\", null, \"Store\", -1 /* CACHED */),\n    _createElementVNode(\"hr\", { class: \"divider\" }, null, -1 /* CACHED */)\n  ]))]))\n}",
+            css: Some(
+                "\n#pages-store[data-v-4045eae1]{row-gap: 1.5rem;} @media (--mobile) {#pages-store[data-v-4045eae1]{row-gap: 1rem;}} #pages-store h1[data-v-4045eae1]{margin: 0;} #pages-store[data-v-4045eae1] .divider{border: 0;}",
+            ),
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

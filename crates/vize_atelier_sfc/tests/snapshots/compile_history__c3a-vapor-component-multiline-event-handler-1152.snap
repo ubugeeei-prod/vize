@@ -1,0 +1,41 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c3a-vapor-component-multiline-event-handler-1152",
+    history: "bdb87a997744e16a934446a265a22edd2b7299b1",
+    source: "<template>\n<MyComponent\n  @click.stop=\"\n    hoge();\n    hoge();\n  \"\n/>\n</template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "vapor",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { resolveComponent as _resolveComponent, createComponentWithFallback as _createComponentWithFallback, withModifiers as _withModifiers } from 'vue';\nfunction render(_ctx, $props, $emit, $attrs, $slots) {\n  const _component_MyComponent = _resolveComponent(\"MyComponent\")\n  const n0 = _createComponentWithFallback(_component_MyComponent, { onClick: () => (_withModifiers($event => {\n_ctx.hoge();\n    _ctx.hoge();\n}, [\"stop\"])) }, null, true)\n  return n0\n}\nconst _sfc_main = { __vapor: true }\n_sfc_main.render = render\nexport default _sfc_main",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

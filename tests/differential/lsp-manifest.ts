@@ -247,6 +247,14 @@ export function loadLspManifest(manifestPath: string): LoadedLspManifest {
         assert(Array.isArray(expected) && expected.length === 2, "both actions are required");
         requests = expected as LspFixture["requests"];
       }
+    } else if (data.method === "textDocument/linkedEditingRange") {
+      assert(
+        Array.isArray(expected) && expected.length > 0,
+        "authored linked-editing requests required",
+      );
+      requests = (expected as { position: unknown; result: unknown }[]).map(
+        ({ position, result }) => ({ params: { position }, result }),
+      );
     } else if (data.method === "textDocument/rename") {
       assert(
         Array.isArray(expected) && expected.length === 2,

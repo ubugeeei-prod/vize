@@ -1,0 +1,53 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c1a-ref-with-generic-type-should-be-stripped-ts-39",
+    history: "a303a49c86ef410093ac0b69231e463c7fd9d325",
+    source: "<script setup lang=\"ts\">\nimport { ref } from 'vue'\n\ninterface User {\n  name: string\n  age: number\n}\n\nconst user = ref<User | null>(null)\nconst users = ref<User[]>([])\n</script>\n\n<template>\n  <div v-if=\"user\">{{ user.name }}</div>\n</template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: Some(
+            true,
+        ),
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { defineComponent as _defineComponent } from 'vue'\nimport { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode } from \"vue\"\n\nimport { ref } from 'vue'\n\ninterface User {\n  name: string\n  age: number\n}\n\n\nexport default /*@__PURE__*/_defineComponent({\n  __name: 'History',\n  setup(__props) {\n\nconst user = ref<User | null>(null)\nconst users = ref<User[]>([])\n\nreturn (_ctx: any,_cache: any) => {\n  return (user.value)\n    ? (_openBlock(), _createElementBlock(\"div\", { key: 0 }, _toDisplayString(user.value.name), 1 /* TEXT */))\n    : _createCommentVNode(\"v-if\", true)\n}\n}\n\n})",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "ref": SetupConst,
+                        "user": SetupRef,
+                        "users": SetupRef,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

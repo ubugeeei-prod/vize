@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import { collectRunEvidence, type RunEvidence } from "./run-evidence.ts";
 import { resolveVizeLaunch, runToolWithHeartbeat } from "./tool-matrix-run.mjs";
 import { validateTypecheckPerformanceTarget } from "./tool-matrix-typecheck-target.ts";
+import { typecheckUnits } from "./typecheck-targets.ts";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(here, "..", "..", "..", "..");
@@ -141,7 +142,13 @@ async function main(): Promise<void> {
     summary: {
       projectCount: projects.length,
       toolCount: tools.length,
-      runCount: projects.length * tools.length,
+      runCount: projects.reduce(
+        (count, project) =>
+          count +
+          tools.length +
+          (tools.includes("typechecker") ? typecheckUnits(project).length - 1 : 0),
+        0,
+      ),
       plannedRuns: 0,
       okRuns: 0,
       findingsRuns: 0,
@@ -159,12 +166,24 @@ async function main(): Promise<void> {
       revision: project.revision,
       runs: [],
     };
+    // Later typecheck targets report as their own `<project>@<target>` entry.
+    const targetReports: MatrixReport["projects"][number][] = [];
     for (const tool of tools) {
-      const run = (await runToolWithHeartbeat(project, tool, args, launch, outputDir)) as MatrixRun;
-      projectReport.runs.push(run);
-      report.summary[summaryKey(run.status)] += 1;
+      const units = tool === "typechecker" ? typecheckUnits(project) : [project];
+      for (const [index, unit] of units.entries()) {
+        const run = (await runToolWithHeartbeat(unit, tool, args, launch, outputDir)) as MatrixRun;
+        if (index === 0) projectReport.runs.push(run);
+        else
+          targetReports.push({
+            id: unit.id,
+            fixturePath: project.fixturePath,
+            revision: project.revision,
+            runs: [run],
+          });
+        report.summary[summaryKey(run.status)] += 1;
+      }
     }
-    report.projects.push(projectReport);
+    report.projects.push(projectReport, ...targetReports);
   }
 
   const jsonPath = join(outputDir, "summary.json");

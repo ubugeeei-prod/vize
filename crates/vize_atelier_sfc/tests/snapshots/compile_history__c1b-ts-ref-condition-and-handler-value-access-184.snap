@@ -1,0 +1,52 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c1b-ts-ref-condition-and-handler-value-access-184",
+    history: "cabe0290d0bd7edd5f730eaeacf5f677f54664e9",
+    source: "\n<template>\n  <div>\n    <template v-if=\"folder == null\">\n      <MkButton @click=\"isRootSelected = true\" />\n    </template>\n    <template v-else>\n      <MkButton\n        v-if=\"!selectedFolders.some(f => f.id === folder!.id)\"\n        @click=\"selectedFolders.push(folder)\"\n      />\n      <MkButton\n        v-else\n        @click=\"selectedFolders = selectedFolders.filter(f => f.id !== folder!.id)\"\n      />\n    </template>\n  </div>\n</template>\n\n<script setup lang=\"ts\">\nimport { ref } from 'vue'\n\nconst folder = ref<{ id: string } | null>(null)\nconst selectedFolders = ref<{ id: string }[]>([])\nconst isRootSelected = ref(false)\n</script>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, Fragment as _Fragment } from \"vue\"\n\nimport { ref } from 'vue'\n\n\nexport default {\n  __name: 'History',\n  setup(__props) {\n\nconst folder = ref(null);\nconst selectedFolders = ref([]);\nconst isRootSelected = ref(false);\n\nreturn (_ctx, _cache) => {\n  const _component_MkButton = _resolveComponent(\"MkButton\")\n\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    (folder.value == null)\n      ? (_openBlock(), _createBlock(_component_MkButton, {\n        key: 0,\n        onClick: _cache[0] || (_cache[0] = $event => (isRootSelected.value = true))\n      }))\n      : (_openBlock(), _createElementBlock(_Fragment, { key: 1 }, [\n        (!selectedFolders.value.some((f) => f.id === folder.value.id))\n          ? (_openBlock(), _createBlock(_component_MkButton, {\n            key: 0,\n            onClick: _cache[1] || (_cache[1] = $event => (selectedFolders.value.push(folder.value)))\n          }))\n          : (_openBlock(), _createBlock(_component_MkButton, {\n            key: 1,\n            onClick: _cache[2] || (_cache[2] = $event => (selectedFolders.value = selectedFolders.value.filter((f) => f.id !== folder.value.id)))\n          }))\n      ], 64 /* STABLE_FRAGMENT */))\n  ]))\n}\n}\n\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "ref": SetupConst,
+                        "folder": SetupRef,
+                        "isRootSelected": SetupRef,
+                        "selectedFolders": SetupRef,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

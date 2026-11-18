@@ -61,15 +61,18 @@ test("fixture tool matrix plans every registered project across all four require
     assert.match(markdown, /\bRequested\b/);
     assert.match(markdown, /\bTransitive Authored\b/);
     assert.match(markdown, /\bTransitive Dependencies\b/);
+    // vuetify and lx-music-desktop each add one `<project>@<target>` typecheck unit.
     assert.equal(report.summary.projectCount, 150);
     assert.equal(report.summary.toolCount, 4);
-    assert.equal(report.summary.runCount, 600);
-    assert.equal(report.summary.plannedRuns, 600);
-    assert.equal(report.projects.length, 150);
+    assert.equal(report.summary.runCount, 602);
+    assert.equal(report.summary.plannedRuns, 602);
+    assert.equal(report.projects.length, 152);
     for (const project of report.projects) {
       assert.deepEqual(
         project.runs.map((entry: { tool: string }) => entry.tool),
-        ["compiler", "typechecker", "linter", "formatter"],
+        project.id.includes("@")
+          ? ["typechecker"]
+          : ["compiler", "typechecker", "linter", "formatter"],
         `${project.id} should exercise every requested tool`,
       );
       for (const entry of project.runs) {
@@ -281,7 +284,10 @@ test("fixture tool matrix shards every project exactly once with balanced sizes"
       const report = JSON.parse(fs.readFileSync(path.join(outputDir, "summary.json"), "utf8"));
       assert.equal(report.command.shardIndex, index);
       assert.equal(report.command.shardCount, 11);
-      assert.equal(report.summary.runCount, report.summary.projectCount * 4);
+      // A later typecheck target is one extra run, beside its project.
+      const targets = report.projects.filter((project: { id: string }) => project.id.includes("@"));
+      assert.equal(report.summary.runCount, report.summary.projectCount * 4 + targets.length);
+      assert.equal(report.projects.length, report.summary.projectCount + targets.length);
       shardSizes.push(report.summary.projectCount);
       for (const project of report.projects) {
         assert.equal(
@@ -291,11 +297,18 @@ test("fixture tool matrix shards every project exactly once with balanced sizes"
         );
         projectIds.add(project.id);
       }
+      for (const target of targets) {
+        assert.equal(
+          report.projects.some((project: { id: string }) => project.id === target.id.split("@")[0]),
+          true,
+          `${target.id} must run in its project's shard`,
+        );
+      }
     } finally {
       fs.rmSync(outputDir, { recursive: true, force: true });
     }
   }
-  assert.equal(projectIds.size, 150);
+  assert.equal(projectIds.size, 152);
   assert.deepEqual(
     [...new Set(shardSizes)].sort((a, b) => a - b),
     [13, 14],

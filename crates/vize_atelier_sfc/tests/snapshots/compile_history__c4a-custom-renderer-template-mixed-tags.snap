@@ -1,0 +1,37 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c4a-custom-renderer-template-mixed-tags",
+    history: "a09d82cf408aedcba34f0a245ea4cf8005fd8cd5",
+    source: "<mesh><TresMesh></TresMesh><tres-light></tres-light><div></div></mesh>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: Some(
+            true,
+        ),
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: Some(
+            true,
+        ),
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, createVNode as _createVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_TresMesh = _resolveComponent(\"TresMesh\")\n  const _component_tres_light = _resolveComponent(\"tres-light\")\n  \n  return (_openBlock(), _createElementBlock(\"mesh\", null, [\n    _createVNode(_component_TresMesh),\n    _createVNode(_component_tres_light),\n    (_openBlock(), _createElementBlock(\"div\"))\n  ]))\n}",
+    map: None,
+}

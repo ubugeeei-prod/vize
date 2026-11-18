@@ -108,7 +108,10 @@ impl<'a> AliasGoal<'a> {
     }
 }
 
-fn visit_bindings<'a>(
+/// Visit every name a parameter goal declares, in source order: nested
+/// object and array patterns, default-valued positions (the binding side
+/// only) and rest elements. The visitor stops the walk by answering `false`.
+pub(crate) fn visit_bindings<'a>(
     parameters: &FormalParameters<'a>,
     visit: &mut impl FnMut(&BindingIdentifier<'a>) -> bool,
 ) -> bool {

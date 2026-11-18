@@ -1,0 +1,35 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c4b-slot-outlet-ternary-vbind-optional-chain",
+    history: "93809d83b6d08f33237614ff16ee8f8d0ed8392c",
+    source: "<slot v-bind=\"external ? { isActive: undefined } : { isActive: scope?.isActive }\" />",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: Some(
+            "function",
+        ),
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "const { renderSlot: _renderSlot, normalizeProps: _normalizeProps, guardReactiveProps: _guardReactiveProps } = Vue\n",
+    code: "function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return _renderSlot(_ctx.$slots, \"default\", _normalizeProps(_guardReactiveProps(external ? { isActive: undefined } : { isActive: scope?.isActive })))\n}",
+    map: None,
+}

@@ -1,0 +1,37 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c3c-looped-slot-key-index-dynamic-args-1294",
+    history: "8779e7238169efecc52d508d1621b96dbedb8e92",
+    source: "<Comp>\n  <template v-for=\"(item, idx) in list\" #default>\n    <div :[idx]=\"item\"></div>\n  </template>\n  <template v-for=\"(val, key) in obj\" #item>\n    <button @[key]=\"val\"></button>\n  </template>\n</Comp>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: Some(
+            "function",
+        ),
+        prefix_identifiers: Some(
+            true,
+        ),
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "const { resolveComponent: _resolveComponent, createElementVNode: _createElementVNode, normalizeProps: _normalizeProps, toHandlerKey: _toHandlerKey, openBlock: _openBlock, createBlock: _createBlock, renderList: _renderList, createSlots: _createSlots, withCtx: _withCtx } = Vue\n",
+    code: "function render(_ctx, _cache, $props, $setup, $data, $options) {\n  const _component_Comp = _resolveComponent(\"Comp\")\n  \n  return (_openBlock(), _createBlock(_component_Comp, null, _createSlots({ _: 2 /* DYNAMIC */ }, [\n    _renderList(_ctx.list, (item, idx) => {\n      return {\n        name: \"default\",\n        fn: _withCtx(() => [\n          _createElementVNode(\"div\", _normalizeProps({ [idx || \"\"]: item }), null, 16 /* FULL_PROPS */)\n        ])\n      }\n    }),\n    _renderList(_ctx.obj, (val, key) => {\n      return {\n        name: \"item\",\n        fn: _withCtx(() => [\n          _createElementVNode(\"button\", { [_toHandlerKey(key)]: val }, null, 16 /* FULL_PROPS */)\n        ])\n      }\n    })\n  ]), 1024 /* DYNAMIC_SLOTS */))\n}",
+    map: None,
+}

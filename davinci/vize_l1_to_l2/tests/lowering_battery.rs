@@ -213,10 +213,12 @@ fn the_battery_aggregates_are_pinned() {
     // `lower.text-fact` provenance records for battery text-bearing nodes and
     // one `lower.if` record for the battery's branch root.
     // (Series-4 history: condense/merge re-pinned 89 -> 78 ops,
-    // 107 -> 101 records.)
+    // 107 -> 101 records.) A Vue template keeps its authored structure, so
+    // `sibling_li_closes` leaves both `<li>` open: one more missing end tag
+    // (27 -> 28 diagnostics).
     assert_eq!(
         (ops, diagnostics, provenance, scopes),
-        (83, 27, 106, 1),
+        (83, 28, 106, 1),
         "battery census moved: re-pin deliberately"
     );
 }

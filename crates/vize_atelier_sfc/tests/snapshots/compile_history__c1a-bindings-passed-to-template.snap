@@ -1,0 +1,55 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c1a-bindings-passed-to-template",
+    history: "e8d8484247daec291b4f25bd202a7f81747f7f33",
+    source: "<script setup lang=\"ts\">\nimport { ref } from 'vue';\nimport MonacoEditor from './MonacoEditor.vue';\nconst selectedPreset = ref('test');\nconst options = ref({ ssr: false });\nfunction handleChange(val: string) { selectedPreset.value = val; }\n</script>\n<template>\n  <div>{{ selectedPreset }}</div>\n  <select :value=\"selectedPreset\" @change=\"handleChange($event.target.value)\">\n    <option value=\"a\">A</option>\n  </select>\n  <input type=\"checkbox\" v-model=\"options.ssr\" />\n  <MonacoEditor />\n</template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: Some(
+            true,
+        ),
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { defineComponent as _defineComponent } from 'vue'\nimport { vModelCheckbox as _vModelCheckbox, withDirectives as _withDirectives, toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, createVNode as _createVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment } from \"vue\"\n\nconst _hoisted_1 = /*#__PURE__*/ _createElementVNode(\"option\", { value: \"a\" }, \"A\")\n\nimport { ref } from 'vue';\nimport MonacoEditor from './MonacoEditor.vue';\n\n\nexport default /*@__PURE__*/_defineComponent({\n  __name: 'History',\n  setup(__props) {\n\nconst selectedPreset = ref('test');\nconst options = ref({ ssr: false });\nfunction handleChange(val: string) { selectedPreset.value = val; }\n\nreturn (_ctx: any,_cache: any) => {\n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    _createElementVNode(\"div\", null, _toDisplayString(selectedPreset.value), 1 /* TEXT */),\n    _createElementVNode(\"select\", {\n      value: selectedPreset.value,\n      onChange: _cache[0] || (_cache[0] = ($event: any) => (handleChange($event.target.value)))\n    }, [\n      _hoisted_1\n    ], 40 /* PROPS, NEED_HYDRATION */, [\"value\"]),\n    _withDirectives(_createElementVNode(\"input\", {\n      type: \"checkbox\",\n      \"onUpdate:modelValue\": _cache[1] || (_cache[1] = ($event: any) => ((options.value.ssr) = $event))\n    }, null, 512 /* NEED_PATCH */), [\n      [_vModelCheckbox, options.value.ssr]\n    ]),\n    _createVNode(MonacoEditor)\n  ], 64 /* STABLE_FRAGMENT */))\n}\n}\n\n})",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "options": SetupRef,
+                        "ref": SetupConst,
+                        "selectedPreset": SetupRef,
+                        "handleChange": SetupConst,
+                        "MonacoEditor": SetupConst,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

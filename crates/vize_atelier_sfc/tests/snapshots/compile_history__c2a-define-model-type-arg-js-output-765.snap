@@ -1,0 +1,50 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c2a-define-model-type-arg-js-output-765",
+    history: "f110960b5311c150831079eeddccc6cbb548606b",
+    source: "\n<template>\n  <div>{{ fx }}</div>\n</template>\n\n<script setup lang=\"ts\">\ninterface Layer { fxId: string }\nconst layer = defineModel<Layer>('layer', { required: true });\n\nconst fx = layer.value.fxId;\nif (fx == null) {\n  throw new Error('not found');\n}\n</script>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { useModel as _useModel } from 'vue'\nimport { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock, unref as _unref } from \"vue\"\n\n\nexport default {\n  __name: 'History',\n  props: {\n    \"layer\": { type: Object, ...{ required: true } },\n    \"layerModifiers\": {},\n  },\n  emits: [\"update:layer\"],\n  setup(__props) {\n\nconst layer = _useModel(__props, \"layer\")\nconst fx = layer.value.fxId;\nif (fx == null) {\n  throw new Error(\"not found\");\n}\n\nreturn (_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"div\", null, _toDisplayString(_unref(fx)), 1 /* TEXT */))\n}\n}\n\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "layer": SetupRef,
+                        "fx": SetupMaybeRef,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

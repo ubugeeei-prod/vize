@@ -259,7 +259,7 @@ fn slot(
 fn is_html_template(source: &BlockSource) -> bool {
     source.kind == BlockKind::Template
         && source.attr("src").is_none()
-        && source.attr("lang").is_none_or(|lang| lang == "html")
+        && vize_l1::container::lang::is_html_template(source.attr("lang"))
 }
 
 /// The L1 artifact of a block: `Some` for an HTML template block.

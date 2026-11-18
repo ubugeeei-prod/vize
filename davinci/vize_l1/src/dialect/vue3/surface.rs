@@ -138,8 +138,9 @@ pub fn parse_component_with_options<'a>(
     projection::<false>(allocator, source, options, false)
 }
 
-/// Parse once and retain an authored projection when interactive-tag recovery
-/// changes the tree. Both projections use the same native event stream.
+/// Parse once and retain an authored projection when the construction repairs
+/// the tree. A Vue 3 component template is built as written, so the projection
+/// is always `None`; the pair keeps the shape the Vue 1/2 surfaces share.
 pub fn parse_component_with_authored<'a>(
     allocator: &'a Allocator,
     source: &'a str,

@@ -26,16 +26,19 @@
 //! against the alias **texts** of enclosing `v-for` scopes and the
 //! enumerated prop names of enclosing `v-slot` scopes. The pass mirrors
 //! it structurally: a `ui.for` region opens a frame holding its
-//! value/key/index source texts (texts, not enumerated names — exactly
-//! what `enter_v_for_scope` registers), and a slot carrier (component,
+//! value/key/index source texts (exactly what `enter_v_for_scope`
+//! registers; a destructuring text also declares the names it binds,
+//! enumerated only when a model's read is spelled in it, as Vue's
+//! `addIdentifiers` registers them), and a slot carrier (component,
 //! or `template` element, with children and a params-bearing
 //! `ui.slot-content`) opens a frame over its children holding the
-//! params' simple-identifier name. A destructuring params pattern
-//! contributes no name — the one-scanner rule (#4365): the L2 lane
-//! enumerates pattern bindings nowhere until the `enumerate_bindings`
-//! seam lands, so the legacy lane's pattern-name enumeration is
-//! deliberately not imitated; the differential lane counts the class
-//! (`models_pattern_scope`) instead of comparing inside it.
+//! params' simple-identifier name, or its destructuring pattern. A
+//! pattern frame declares every name the params' parameter goal binds —
+//! nested, default-valued and rest positions alike, as Vue's
+//! `trackSlotScopes` registers them — enumerated by the lowering's own
+//! parameter walk ([`crate::lower::visit_bindings`], the one-scanner rule,
+//! #4365). The parse runs only for a model whose read the pattern spells,
+//! so a template without such a model pays nothing.
 //!
 //! # Classification (the review point)
 //!
@@ -75,11 +78,13 @@
 
 use alloc::vec::Vec as StdVec;
 
+use vize_l0::Allocator;
 use vize_l0::diag::Diagnostic;
 use vize_l0::pass::{Fusability, PassDesc, PassKind, Preserved};
 use vize_l0::side_table::SideTable;
 use vize_l0::{String, ensure_sufficient_stack};
 pub use vize_l2::analysis::model_facts::{ModelFacts, ModelFault};
+use vize_l2::expr::ExprRef;
 use vize_l2::op::{BindingOp, Op};
 use vize_l2::provenance::ProvenanceSink;
 
@@ -124,6 +129,7 @@ pub const DESC: PassDesc = PassDesc::new(
 #[must_use]
 pub fn run(lowered: &mut Lowered<'_, impl ProvenanceSink>) -> SideTable<ModelFacts> {
     let Lowered {
+        allocator,
         artifact: ArtifactParts {
             root, provenance, ..
         },
@@ -132,18 +138,21 @@ pub fn run(lowered: &mut Lowered<'_, impl ProvenanceSink>) -> SideTable<ModelFac
         ..
     } = lowered;
     let mut channels = Channels {
+        allocator,
         diagnostics,
         provenance,
         facts: SideTable::new(),
     };
     let mut walk = PageWalk::new();
-    let mut env: StdVec<String> = StdVec::new();
+    let mut env: StdVec<ScopeName<'_>> = StdVec::new();
     region(&mut walk, &mut channels, &mut env, &root.ops);
     assert_accounting(&walk, *op_count, NAME);
     channels.facts
 }
 
 pub(super) struct Channels<'l, P> {
+    /// The compile arena, for a pattern frame's on-demand parameter parse.
+    pub(super) allocator: &'l Allocator,
     pub(super) diagnostics: &'l mut StdVec<Diagnostic>,
     pub(super) provenance: &'l mut P,
     pub(super) facts: SideTable<ModelFacts>,
@@ -152,7 +161,7 @@ pub(super) struct Channels<'l, P> {
 fn region<'a>(
     walk: &mut PageWalk,
     channels: &mut Channels<'_, impl ProvenanceSink>,
-    env: &mut StdVec<String>,
+    env: &mut StdVec<ScopeName<'a>>,
     ops: &[Op<'a>],
 ) {
     ensure_sufficient_stack(|| region_guarded(walk, channels, env, ops));
@@ -161,7 +170,7 @@ fn region<'a>(
 fn region_guarded<'a>(
     walk: &mut PageWalk,
     channels: &mut Channels<'_, impl ProvenanceSink>,
-    env: &mut StdVec<String>,
+    env: &mut StdVec<ScopeName<'a>>,
     ops: &[Op<'a>],
 ) {
     for op in ops {
@@ -172,7 +181,7 @@ fn region_guarded<'a>(
 fn visit<'a>(
     walk: &mut PageWalk,
     channels: &mut Channels<'_, impl ProvenanceSink>,
-    env: &mut StdVec<String>,
+    env: &mut StdVec<ScopeName<'a>>,
     op: &Op<'a>,
 ) {
     let id = walk.mint();
@@ -202,17 +211,18 @@ fn visit<'a>(
         Op::For(for_op) => {
             // The legacy `enter_v_for_scope` registers the alias texts
             // (value even when it is a pattern; key and index when
-            // authored) — mirrored as texts, never enumerated names.
+            // authored) — mirrored as texts; `check` enumerates a
+            // destructuring text lazily, so this arm stays unchanged.
             let before = env.len();
             let value = for_op.binding.value.source();
             if !value.is_empty() {
-                env.push(String::from(value));
+                env.push(ScopeName::Text(String::from(value)));
             }
             for expr in [&for_op.binding.key, &for_op.binding.index]
                 .into_iter()
                 .flatten()
             {
-                env.push(String::from(expr.source()));
+                env.push(ScopeName::Text(String::from(expr.source())));
             }
             region(walk, channels, env, &for_op.region.ops);
             env.truncate(before);
@@ -233,30 +243,33 @@ fn visit<'a>(
     }
 }
 
+/// One frame entry of the scope environment.
+pub(super) enum ScopeName<'a> {
+    /// A `v-for` alias text, or a simple-identifier slot-props name. A
+    /// destructuring alias text is enumerated on demand like a pattern.
+    Text(String),
+    /// A destructuring slot-props pattern, enumerated on demand.
+    Pattern(&'a str),
+}
+
 /// Mint an owner's binding ids in page order, validate its models, and
-/// return the slot-scope name its first params-bearing `ui.slot-content`
+/// return the slot scope its first params-bearing `ui.slot-content`
 /// would open over the owner's children (the legacy
 /// `enter_v_slot_scope_if_needed` reads the first `v-slot` only).
 fn owner_bindings<'a>(
     walk: &mut PageWalk,
     channels: &mut Channels<'_, impl ProvenanceSink>,
-    env: &StdVec<String>,
+    env: &StdVec<ScopeName<'a>>,
     bindings: &[BindingOp<'a>],
-) -> Option<String> {
-    let mut slot_name: Option<Option<String>> = None;
+) -> Option<ScopeName<'a>> {
+    let mut slot_name: Option<Option<ScopeName<'a>>> = None;
     for binding in bindings {
         let id = walk.mint();
         match binding {
             BindingOp::Model(model) => check_model(channels, env, id, model),
             BindingOp::SlotContent(content) => {
                 if slot_name.is_none() {
-                    slot_name = Some(
-                        content
-                            .params
-                            .as_ref()
-                            .and_then(crate::lower::simple_identifier)
-                            .map(String::from),
-                    );
+                    slot_name = Some(content.params.as_ref().and_then(slot_scope));
                 }
             }
             BindingOp::Bind(_)
@@ -277,11 +290,25 @@ fn owner_bindings<'a>(
     slot_name.flatten()
 }
 
-/// Push a slot-scope name around `body` when one applies.
-fn with_slot_scope(
-    env: &mut StdVec<String>,
-    name: Option<String>,
-    body: impl FnOnce(&mut StdVec<String>),
+/// The scope a params position opens: its simple identifier, or its
+/// pattern text. A foreign dialect's params stay unenumerated.
+fn slot_scope<'a>(params: &ExprRef<'a>) -> Option<ScopeName<'a>> {
+    if let Some(name) = crate::lower::simple_identifier(params) {
+        return Some(ScopeName::Text(String::from(name)));
+    }
+    match params {
+        ExprRef::Foreign(_) => None,
+        ExprRef::Js(_) | ExprRef::Filter(_) | ExprRef::Opaque(_) => {
+            Some(ScopeName::Pattern(params.source()))
+        }
+    }
+}
+
+/// Push a slot scope around `body` when one applies.
+fn with_slot_scope<'a>(
+    env: &mut StdVec<ScopeName<'a>>,
+    name: Option<ScopeName<'a>>,
+    body: impl FnOnce(&mut StdVec<ScopeName<'a>>),
 ) {
     match name {
         Some(name) => {

@@ -1,0 +1,10 @@
+<script setup lang="ts">
+import MyList from './MyList.vue'
+
+const slot = 'items'
+const items = ['a', 'b']
+</script>
+
+<template>
+  <MyList :items="items" v-slot:[slot]="{ item }">{{ item }}</MyList>
+</template>

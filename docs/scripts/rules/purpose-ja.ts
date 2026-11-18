@@ -297,6 +297,7 @@ export const purposeJa: Readonly<Record<string, string>> = {
   "vue/no-template-key": "v-for 用ではない template の key 指定を検出します。",
   "vue/no-template-lang": "template の lang 指定を避ける方針を示します。",
   "vue/no-template-shadow": "テンプレート変数が外側の名前を隠す箇所を検出します。",
+  "vue/prefer-pug-lang": "旧 jade 1.x の template と、pug 3 と意味が異なる記述を検出します。",
   "vue/no-template-target-blank": "target=_blank の外部リンクに適切な rel を指定します。",
   "vue/no-textarea-mustache": "textarea 内の mustache を検出し、v-model の使用を勧めます。",
   "vue/no-undefined-refs": "テンプレート内の未定義変数参照を検出します。",

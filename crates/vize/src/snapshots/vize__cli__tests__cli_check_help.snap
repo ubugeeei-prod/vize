@@ -49,6 +49,9 @@ Options:
   -q, --quiet
           Quiet mode - only show summary
 
+      --verbose
+          Print every diagnostic in full instead of one hinted block per kind (attributes a component does not declare, ...)
+
       --profile
           Profile mode - output Virtual TS and timing to node_modules/.vize directory
 

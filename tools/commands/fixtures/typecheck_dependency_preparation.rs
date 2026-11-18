@@ -13,7 +13,8 @@ pub(super) fn read_and_validate_dependency_preparation(
     project: &Value,
     summary: &Value,
 ) -> Result<Value, String> {
-    let project_id = project_string(project, "id")?;
+    // Typecheck targets of one project share its single install.
+    let project_id = super::typecheck_source_project_id(project)?;
     let path = report_dir.join(format!("{project_id}-typecheck-dependencies.json"));
     let raw = common::read_text(&path).map_err(|_| {
         format!("Missing typecheck dependency preparation evidence for {project_id}")

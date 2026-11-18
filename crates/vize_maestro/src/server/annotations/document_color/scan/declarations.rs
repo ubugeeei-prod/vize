@@ -12,6 +12,19 @@ pub(in crate::server::annotations::document_color) enum CssMode {
 }
 
 impl CssMode {
+    /// The scan mode of a style block in this registry-resolved language.
+    pub(in crate::server::annotations::document_color) fn of(
+        language: vize_l1::container::lang::StyleLanguage,
+    ) -> Self {
+        use vize_l1::container::lang::StyleLanguage;
+        match language {
+            StyleLanguage::Css => Self::Stylesheet,
+            StyleLanguage::Scss | StyleLanguage::Less => Self::Preprocessor,
+            StyleLanguage::Sass => Self::IndentedDeclarations,
+            StyleLanguage::Stylus => Self::StylusDeclarations,
+        }
+    }
+
     pub(super) fn accepts_root_declarations(self) -> bool {
         self != Self::Stylesheet
     }

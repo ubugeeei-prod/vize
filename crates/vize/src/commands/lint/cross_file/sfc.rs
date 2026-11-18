@@ -96,7 +96,9 @@ pub(super) fn analyze_sfc_for_cross_file(
         let template_ast = if parse_errors.iter().any(|error| !error.is_recoverable()) {
             None
         } else {
-            offsets.fallthrough_root = fallthrough_root(&root);
+            if vize_l1::container::lang::is_html_template(template.lang.as_deref()) {
+                offsets.fallthrough_root = fallthrough_root(&root);
+            }
             Some(&root)
         };
         capture_sfc(&descriptor, template_ast, SfcCroquisOptions::full())
@@ -112,7 +114,8 @@ pub(super) fn analyze_sfc_for_cross_file(
     // analysis is never promoted into a proof; external/preprocessed sources and
     // custom blocks retain the existing conservative duplicate-ID behavior.
     let inline_template = descriptor.template.as_ref().is_some_and(|template| {
-        template.src.is_none() && matches!(template.lang.as_deref(), None | Some("html"))
+        template.src.is_none()
+            && vize_l1::container::lang::is_html_template(template.lang.as_deref())
     });
     let inline_scripts = [descriptor.script.as_ref(), descriptor.script_setup.as_ref()]
         .into_iter()

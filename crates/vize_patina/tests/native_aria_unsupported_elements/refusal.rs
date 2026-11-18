@@ -99,7 +99,7 @@ fn repeated_original_attribute_notice_requires_whole_result_refusal() {
             expected(vec![
                 error(locale, span(source, "role='one'"), "meta", "role"),
                 parser(
-                    "warning",
+                    "error",
                     "Duplicate attribute `ROLE`. Keeping the repeated attribute so parsing can continue.",
                     repeated
                 ),

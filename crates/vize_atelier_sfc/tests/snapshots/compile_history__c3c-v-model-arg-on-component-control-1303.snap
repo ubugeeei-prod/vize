@@ -1,0 +1,35 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c3c-v-model-arg-on-component-control-1303",
+    history: "2622994054ec41230e319711aaff77ccf2c27cb2",
+    source: "<Comp v-model:foo=\"bar\" />",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: Some(
+            true,
+        ),
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_Comp = _resolveComponent(\"Comp\")\n  \n  return (_openBlock(), _createBlock(_component_Comp, {\n    foo: _ctx.bar,\n    \"onUpdate:foo\": $event => ((_ctx.bar) = $event)\n  }, null, 8 /* PROPS */, [\"foo\", \"onUpdate:foo\"]))\n}",
+    map: None,
+}

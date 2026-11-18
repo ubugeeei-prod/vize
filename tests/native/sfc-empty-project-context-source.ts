@@ -113,12 +113,35 @@ pub(crate) fn dependencies_to_napi(dependencies: &[impl AsRef<str>]) -> Option<V
     assert.equal(blob(reference), "96073dbb55954781d825974cb3beff77b3fb9085");
     return reference;
   }
-  if (
-    file !== "crates/vize_atelier_sfc/src/compile/entry/root_match.rs" ||
-    blob(bytes) !== "ebff50833e6b9b5fb2998bc7adf8a3874160eaf3"
-  )
-    return bytes;
-  let text = Buffer.from(bytes).toString("utf8");
+  if (file !== "crates/vize_atelier_sfc/src/compile/entry/root_match.rs") return bytes;
+  let source = bytes;
+  let text = Buffer.from(source).toString("utf8");
+  // The jade profile forwards the pug lowering's warnings to the compile result.
+  if (blob(bytes) === "a3d329411a5c3d0d4b85bd6ea8995757a82e7fdd") {
+    for (const [current, reference] of [
+      [
+        "    let (descriptor, mut dependencies, pug_source_map, pug_warnings) =\n",
+        "    let (descriptor, mut dependencies, pug_source_map) =\n",
+      ],
+      ["    result.warnings.extend(pug_warnings);\n", ""],
+    ]) {
+      assert.equal(text.split(current!).length, 2, "unique reviewed jade-profile edit");
+      text = text.replace(current!, reference!);
+    }
+    source = Buffer.from(text);
+    assert.equal(blob(source), "33e52e3d7b419f1af96562e7bbe078d9d6dfb54a");
+  }
+  // #13231 resolves the template lang through the block-language registry.
+  if (blob(source) === "33e52e3d7b419f1af96562e7bbe078d9d6dfb54a") {
+    const current =
+      "    if template.src.is_some()\n        || !vize_l1::container::lang::is_html_template(template.lang.as_deref())\n    {\n";
+    assert.equal(text.split(current).length, 2, "unique reviewed block-language edit");
+    text = text.replace(
+      current,
+      '    if template.src.is_some() || template.lang.as_deref().is_some_and(|lang| lang != "html") {\n',
+    );
+    assert.equal(blob(Buffer.from(text)), "ebff50833e6b9b5fb2998bc7adf8a3874160eaf3");
+  } else if (blob(source) !== "ebff50833e6b9b5fb2998bc7adf8a3874160eaf3") return bytes;
   for (const [current, reference] of [
     [
       "    Allocator, ParseMode, ParserOptions, PropNode, TemplateChildNode,",

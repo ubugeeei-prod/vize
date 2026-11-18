@@ -1,0 +1,8 @@
+<script setup lang="ts">
+const row = { item: 1, label: 'ok' };
+const wrong = { item: 'wrong' };
+defineSlots<{ row(props: { item: number; label: string }): unknown }>();
+</script>
+<template>
+  <slot name="row" v-bind="{ ...row, ...wrong }" />
+</template>

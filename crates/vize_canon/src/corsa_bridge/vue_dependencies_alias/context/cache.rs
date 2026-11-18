@@ -282,6 +282,37 @@ impl SessionCache {
         union
     }
 
+    /// Keep only `current` in this project, as a fresh session would, and drop
+    /// the other hosts' compiled contexts: their mirror files leave with them,
+    /// so each one rebuilds on its next request.
+    pub(super) fn retire_other_project_members(
+        &mut self,
+        virtual_root: &Path,
+        current: &RevisionKey,
+    ) {
+        let Some(members) = self.project_members.get_mut(virtual_root) else {
+            return;
+        };
+        let mut retired = vize_carton::FxHashSet::default();
+        members.retain(|key, _| {
+            let keep = key == current;
+            if !keep {
+                retired.insert(vize_carton::path::canonicalize_non_verbatim(
+                    &key.source_path,
+                ));
+            }
+            keep
+        });
+        retired.remove(&vize_carton::path::canonicalize_non_verbatim(
+            &current.source_path,
+        ));
+        self.slots.retain(|key, _| {
+            !retired.contains(&vize_carton::path::canonicalize_non_verbatim(
+                &key.source_path,
+            ))
+        });
+    }
+
     pub(super) fn record_project_member(
         &mut self,
         virtual_root: PathBuf,
@@ -378,6 +409,9 @@ mod catalog_tests;
 
 #[cfg(test)]
 mod overlay_tests;
+
+#[cfg(test)]
+mod union_conflict_tests;
 
 #[cfg(test)]
 mod overlay_profile;

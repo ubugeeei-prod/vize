@@ -5,7 +5,7 @@ use std::collections::BTreeSet;
 use tower_lsp::lsp_types::{
     CompletionItem, CompletionItemKind, Documentation, MarkupContent, MarkupKind,
 };
-use vize_l1::css::{AuthoredClasses, lang::StyleLanguage};
+use vize_l1::css::AuthoredClasses;
 
 use crate::ide::IdeContext;
 
@@ -35,7 +35,8 @@ pub(crate) fn css_module_class_completions(ctx: &IdeContext) -> Option<Vec<Compl
         if style.module.as_deref() != Some(module) || style.src.is_some() {
             continue;
         }
-        let names = StyleLanguage::from_lang(style.lang.as_deref())
+        let names = vize_l1::container::lang::style_lang(style.lang.as_deref())
+            .ok()
             .and_then(|language| language.authored_classes(&style.content))
             .map(AuthoredClasses::into_names);
         classes.extend(names.into_iter().flatten());

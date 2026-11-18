@@ -1,4 +1,8 @@
-//! Table foster parenting and implicit table section/row insertion.
+//! Table foster parenting, implicit table section/row insertion and the
+//! closing of open table parts. They run only in document mode or when the
+//! caller asks for HTML tree construction
+//! (`ParserOptions::html_tree_construction`); a Vue component template keeps
+//! its authored table structure, as Vue's compiler does.
 
 use vize_l0::Vec;
 use vize_relief::ElementNode;
@@ -19,6 +23,7 @@ impl<'a> Parser<'a> {
 
     pub(super) fn should_foster_text(&self, content: &str) -> bool {
         !self.template_syntax.is_quirks()
+            && self.html_tree_construction()
             && self.open_table_count > 0
             && content
                 .chars()
@@ -28,6 +33,7 @@ impl<'a> Parser<'a> {
 
     pub(super) fn should_foster_start_tag(&self, tag: &str, is_html_element: bool) -> bool {
         !self.template_syntax.is_quirks()
+            && self.html_tree_construction()
             && is_html_element
             && self.open_table_count > 0
             && self.is_in_table_insertion_context()
@@ -74,7 +80,10 @@ impl<'a> Parser<'a> {
     }
 
     pub(super) fn handle_in_table_start_tag(&mut self, tag: &str, offset: usize) {
-        if self.open_table_count == 0 || self.template_syntax.is_quirks() {
+        if self.open_table_count == 0
+            || self.template_syntax.is_quirks()
+            || !self.html_tree_construction()
+        {
             return;
         }
 

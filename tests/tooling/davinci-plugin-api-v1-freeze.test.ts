@@ -1,6 +1,9 @@
 // Plugin API v1 is frozen (#13074): every packet a v1 plugin exchanges with the
 // native host must stay byte-identical while API v2 incubates beside it.
-// Regenerate only for an intentional, versioned v1 break:
+// A change to the v1 protocol (packet schema, fields, framing) needs a
+// versioned v1 break. A correction of the template tree a plugin sees, which
+// aligns the parse with Vue, may regenerate the golden when the change is
+// recorded under "v1 freeze scope" in docs/release/integrated-plugin-incubation.md:
 //   VIZE_PLUGIN_API_V1_FREEZE=write node --test tests/tooling/davinci-plugin-api-v1-freeze.test.ts
 import assert from "node:assert/strict";
 import { readFileSync, writeFileSync } from "node:fs";

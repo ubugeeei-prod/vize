@@ -1,0 +1,8 @@
+<script setup lang="ts">
+import { sharedProps as secondProps } from './props'
+
+const props = defineProps(secondProps)
+const value: number = props.label
+</script>
+
+<template>{{ value }} {{ label.toUpperCase() }}</template>

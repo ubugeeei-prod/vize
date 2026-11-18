@@ -14,6 +14,7 @@ mod executor;
 mod import_rewriter;
 mod internal_type_names;
 mod vue_template_ref_global;
+mod vue_template_ref_module;
 pub(crate) use import_rewriter::{ModuleSpecifierFactsCache, declaration_module_path};
 pub(crate) mod import_rewriter_alias;
 #[cfg(test)]
@@ -74,6 +75,7 @@ pub use virtual_project::{
 };
 pub use virtual_specifier_message::{AUTHORED_VUE_TS_SENTINEL, restore_virtual_vue_specifiers};
 pub use vue_template_ref_global::declares_vue_template_ref_global;
+pub use vue_template_ref_module::reexports_vue_template_ref;
 
 pub(crate) use virtual_specifier_message::AUTHORED_VUE_TS_ALIAS_SENTINEL;
 

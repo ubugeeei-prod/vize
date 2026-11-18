@@ -207,6 +207,8 @@ Vite 通常跳过`import.meta.*`替换虚拟模块（前缀为 `\0`）。Vize �
 
 `<style lang="scss">`、`sass`、`less` 和 `stylus` 按 Vue 的顺序处理：先运行预处理器，再由 Vize 为其输出添加作用域并解析 `v-bind()`。`<style module>` 的类名映射由打包器的 CSS Modules 流水线生成。与 `@vitejs/plugin-vue` 一样，请在项目中安装预处理器包（`sass` 或 `sass-embedded`、`less`、`stylus`）。`<template lang="pug">` 由 Vize 自身编译，无需额外的包。旧版 `<template lang="jade">` 写法也可在相同场景中作为别名使用。
 
+Vize 的所有工具都通过同一个注册表、不区分 ASCII 大小写地解析 `lang`：`jade` 即 `pug`，`styl` 即 `stylus`，`postcss`、空的 `lang` 或省略 `lang` 即普通 CSS。Vize 没有对应语法的模板 `lang`（例如 `haml`）绝不会被当作 HTML 读取：编译器在 `lang` 值处报告 `TEMPLATE_LANG_UNSUPPORTED`，代码检查和类型检查会跳过该模板。
+
 | 场景                                                     | scss / sass / less / stylus                                                                  | pug / jade           |
 | -------------------------------------------------------- | -------------------------------------------------------------------------------------------- | -------------------- |
 | Vite                                                     | 由 Vite 预处理，Vize 为结果添加作用域                                                        | 原生                 |

@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import { inject, type Ref } from 'vue';
+const injected = inject<Ref<number>>('count');
+const accept = (_: number) => {};
+</script>
+<template>
+  <p>{{ accept(injected) }}</p>
+  <p v-if="injected">{{ accept(injected) }}</p>
+</template>

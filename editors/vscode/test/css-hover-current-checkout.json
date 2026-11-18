@@ -38,6 +38,73 @@
           }
         }
       ]
+    },
+    {
+      "name": "block-language-registry-13231",
+      "baseRevision": "d2e5698377ea327a9228036d2ba294f8b04597bb",
+      "reviewedRevision": "82da6ce388d916b595281ef7a51ac0faa5645ba0",
+      "changes": [
+        {
+          "path": "crates/vize_maestro/src/ide/style.rs",
+          "before": {
+            "path": "crates/vize_maestro/src/ide/style.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "80fb88cec40965a81ac4dc8cc70fafc7f0db2f25"
+          },
+          "after": {
+            "path": "crates/vize_maestro/src/ide/style.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "47cb8b0ebeb4235061469e72a87bc25c352da18c"
+          }
+        },
+        {
+          "path": "crates/vize_maestro/src/server/annotations/document_color.rs",
+          "before": {
+            "path": "crates/vize_maestro/src/server/annotations/document_color.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "bdff217702dc931f39590da27b7440740af87ed9"
+          },
+          "after": {
+            "path": "crates/vize_maestro/src/server/annotations/document_color.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "b96d082313864ad825e3fe99e0fc56204866011b"
+          }
+        },
+        {
+          "path": "crates/vize_maestro/src/server/annotations/document_color/hover.rs",
+          "before": {
+            "path": "crates/vize_maestro/src/server/annotations/document_color/hover.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "9d4960a6e2cce8934b68b1c959f218a8a4cb7a1c"
+          },
+          "after": {
+            "path": "crates/vize_maestro/src/server/annotations/document_color/hover.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "c52f9fde9378f11d64efd5a9b997224eaa1aab60"
+          }
+        },
+        {
+          "path": "crates/vize_maestro/src/server/annotations/document_color/scan/declarations.rs",
+          "before": {
+            "path": "crates/vize_maestro/src/server/annotations/document_color/scan/declarations.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "98fa277b9f51a4282e0a33053d31675759dfb01c"
+          },
+          "after": {
+            "path": "crates/vize_maestro/src/server/annotations/document_color/scan/declarations.rs",
+            "mode": "100644",
+            "type": "blob",
+            "oid": "b7dd567035e22c0d037458eec43b1ca88a680c0b"
+          }
+        }
+      ]
     }
   ]
 }

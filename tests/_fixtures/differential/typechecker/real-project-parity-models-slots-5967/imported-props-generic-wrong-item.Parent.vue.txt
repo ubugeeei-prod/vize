@@ -1,0 +1,11 @@
+<script setup lang="ts">
+import ImportedProps from './ImportedProps.vue'
+import OtherProps from './OtherProps.vue'
+import GenericProps from './GenericProps.vue'
+</script>
+
+<template>
+  <ImportedProps :items="[{ id: 1 }]" model-value="x" />
+  <OtherProps :count="1" model-value="y" />
+  <GenericProps :items="[{ id: 1 }]" model-value="z" />
+</template>

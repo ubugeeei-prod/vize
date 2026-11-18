@@ -124,6 +124,7 @@ vize build --profile src
 | `-j, --threads`               | スレッド数を指定する                                                   |
 | `--profile`                   | 処理時間のプロファイルを表示する                                       |
 | `--continue-on-error`         | エラー後もコンパイルを続け、最後に失敗を報告する                       |
+| `--verbose` | 種類ごとのヒント付きブロックではなく、各コンパイルエラーを全文で表示する |
 
 `<style lang="scss">`・`sass`・`less`・`stylus` のブロックは、Vite と同じく、プロジェクトにインストールされたプリプロセッサ（`sass` または `sass-embedded`、`less`、`stylus`）でコンパイルしてからスコープを付けます。プリプロセッサのエラーは `.vue` ファイル内の行を指します。Node やパッケージが見つからない場合は、ブロックをそのまま出力して警告を表示します。
 
@@ -253,6 +254,7 @@ vize check --profile src
 | `--no-check-props`  | props の型チェックを省く                                     |
 | `--no-check-emits`  | emit の型チェックを省く                                      |
 | `--no-check-template-bindings` | テンプレートのバインディングのチェックを省く      |
+| `--verbose` | 種類ごとのヒント付きブロックではなく、各診断を全文で表示する |
 | `-q, --quiet`       | 概要だけを表示する                                           |
 | `--profile`         | `node_modules/.vize` にプロファイルを書き込む                |
 | `--corsa-path`      | ネイティブ TypeScript（Corsa）実行ファイルのパスを指定する   |

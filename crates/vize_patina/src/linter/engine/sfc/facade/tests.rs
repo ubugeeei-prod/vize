@@ -43,6 +43,12 @@ fn linter() -> Linter {
     linter
         .registry
         .register(Box::new(crate::rules::ecosystem::VueRouterPreferNamedLink));
+    linter
+        .registry
+        .register(Box::new(crate::rules::a11y::RoleImgHasName));
+    linter
+        .registry
+        .register(Box::new(crate::rules::vue::A11yImgAlt));
     linter.registry.mark_has_exit_element_rules();
     linter
 }
@@ -102,6 +108,14 @@ fn migrated_sfc_rules_preserve_diagnostics_and_fixes() {
             r#"<script setup>import { Link } from "@void/vue";</script><template><Link href="/posts" method="CREATE"/></template>"#,
             "ecosystem/void-link-valid-method",
         ),
+        (
+            r#"<template><span role="img"></span></template>"#,
+            "a11y/role-img-has-name",
+        ),
+        (
+            r#"<template><img src="/a.png"></template>"#,
+            "vue/a11y-img-alt",
+        ),
     ] {
         let result = linter().lint_sfc(sfc, "test.vue");
         assert!(
@@ -137,6 +151,8 @@ fn migrated_sfc_rules_preserve_diagnostics_and_fixes() {
         r#"<RouterLink to="/users"/><RouterLink :to="'/settings'"/><RouterLink :to="{ path: '/account' }"/>"#,
         r#"<a href="/settings">Settings</a><a href="/report.pdf" download>Report</a>"#,
         r#"<!-- from "@void/vue" --><Link/><Link href="/posts" method="CREATE"/><Link href="/posts" method="DELETE" prefetch/>"#,
+        r#"<span role="img"></span><img src="a" alt="" role="img"><img :src="s" role="img" :alt="label"><i role="img presentation" title=" "></i>"#,
+        r#"<img src="a"><img src="a" alt><img :alt="x"><img v-bind:alt="x"><img :[alt]="x"><Img src="a">"#,
         "<!-- eslint-disable-next-line vue/prefer-props-shorthand -->\n<MyComponent :foo=\"foo\"/>",
         "<!-- eslint-disable-next-line vue/no-useless-v-bind -->\n<div :title=\"'static'\"/>",
         "<!-- eslint-disable-next-line vue/no-multiple-objects-in-class -->\n<div :class=\"[{ active }, { hidden }]\"/>",
@@ -165,6 +181,8 @@ fn migrated_sfc_rules_preserve_diagnostics_and_fixes() {
         "<!-- eslint-disable-next-line ecosystem/void-link-valid-method -->\n<!-- from \"@void/vue\" --><Link href=\"/posts\" method=\"CREATE\"/>",
         "<!-- eslint-disable-next-line ecosystem/vue-router-prefer-named-link -->\n<RouterLink to=\"/users\"/>",
         "<!-- eslint-disable-next-line ecosystem/nuxt-prefer-nuxt-link -->\n<a href=\"/settings\">Settings</a>",
+        "<!-- eslint-disable-next-line a11y/role-img-has-name -->\n<span role=\"img\"></span>",
+        "<!-- eslint-disable-next-line vue/a11y-img-alt -->\n<img src=\"a\">",
         r#"<div v-pre><textarea>{{ raw }}</textarea></div>"#,
     ] {
         compare_template(source);

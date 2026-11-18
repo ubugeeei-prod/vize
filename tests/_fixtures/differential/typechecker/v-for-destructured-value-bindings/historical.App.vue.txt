@@ -1,0 +1,10 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+interface Item { id: number; name: string }
+const items = ref<Item[]>([])
+</script>
+<template>
+  <div v-for="{ id, name } in items" :key="id">
+    {{ id }}: {{ name }}
+  </div>
+</template>

@@ -1,0 +1,7 @@
+<script setup lang="ts">
+defineProps<{ beta: number }>()
+</script>
+
+<template>
+  <div>{{ beta }}</div>
+</template>

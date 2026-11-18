@@ -1,0 +1,3 @@
+<script setup lang="ts">
+const count: string = 1
+</script>

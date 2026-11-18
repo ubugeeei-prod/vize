@@ -1,0 +1,129 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 855,
+  "regressionCommit": "46e967b5b5b1c6cdbb903fa5c85cd42c8f0d058a",
+  "sourceRevision": "46e967b5b5b1c6cdbb903fa5c85cd42c8f0d058a",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "zero-arg-event-accepts-defaulted-handler",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/ZeroArgButton.vue",
+          "source": "ZeroArgButton.vue.txt"
+        },
+        {
+          "file": "src/ComponentZeroArgHandler.vue",
+          "source": "ComponentZeroArgHandler.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "tuple-emit-payload-matching-handler",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/PayloadButton.vue",
+          "source": "PayloadButton.vue.txt"
+        },
+        {
+          "file": "src/ComponentPayloadHandler.vue",
+          "source": "ComponentPayloadHandler.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "tuple-emit-payload-wrong-handler",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/PayloadButton.vue",
+          "source": "PayloadButton.vue.txt"
+        },
+        {
+          "file": "src/WrongComponentPayloadHandler.vue",
+          "source": "WrongComponentPayloadHandler.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/WrongComponentPayloadHandler.vue",
+          "line": 10,
+          "column": 19,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '(value: number) => void' is not assignable to type '(value: string) => any'.\nTypes of parameters 'value' and 'value' are incompatible.\nType 'string' is not assignable to type 'number'."
+        }
+      ]
+    },
+    {
+      "id": "overload-emit-payload-matching-handler",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/OverloadPayloadButton.vue",
+          "source": "OverloadPayloadButton.vue.txt"
+        },
+        {
+          "file": "src/OverloadPayloadHandler.vue",
+          "source": "OverloadPayloadHandler.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "overload-emit-payload-wrong-handler",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/OverloadPayloadButton.vue",
+          "source": "OverloadPayloadButton.vue.txt"
+        },
+        {
+          "file": "src/WrongOverloadPayloadHandler.vue",
+          "source": "WrongOverloadPayloadHandler.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/WrongOverloadPayloadHandler.vue",
+          "line": 10,
+          "column": 27,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '(id: string) => void' is not assignable to type '(id: number) => any'.\nTypes of parameters 'id' and 'id' are incompatible.\nType 'number' is not assignable to type 'string'."
+        }
+      ]
+    }
+  ]
+}

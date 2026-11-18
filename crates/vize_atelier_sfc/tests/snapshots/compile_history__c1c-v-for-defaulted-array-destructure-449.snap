@@ -1,0 +1,35 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c1c-v-for-defaulted-array-destructure-449",
+    history: "faafbc8b90b6b0d0bf62e3dee3a3075f7aa02186",
+    source: "<div v-for=\"[first = fallback, { id: secondId = makeId() }] in pairs\">{{ first }}-{{ secondId }}</div>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: Some(
+            true,
+        ),
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, renderList as _renderList } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(_ctx.pairs, ([first = _ctx.fallback, { id: secondId = _ctx.makeId() }]) => {\n    return (_openBlock(), _createElementBlock(\"div\", null, _toDisplayString(first) + \"-\" + _toDisplayString(secondId), 1 /* TEXT */))\n  }), 256 /* UNKEYED_FRAGMENT */))\n}",
+    map: None,
+}

@@ -48,6 +48,7 @@ mod escaped_value_tests;
 mod eval;
 mod heads;
 mod include;
+mod jade;
 mod literal;
 mod map;
 mod mixin;
@@ -63,7 +64,7 @@ use alloc::vec::Vec as StdVec;
 
 use vize_l0::diag::{Diagnostic, Severity};
 use vize_l0::{Allocator, Span, String};
-use vize_l1::markup::pug::{PugError, PugErrorCode, PugTree, parse_pug};
+use vize_l1::markup::pug::{PugError, PugErrorCode, PugProfile, PugTree, parse_pug_profiled};
 
 pub use include::{MAX_INCLUDE_BYTES, PugIncludes};
 pub use map::PugSourceMap;
@@ -192,8 +193,18 @@ pub fn derive_template_source(source: &str) -> PugTemplate {
 /// [`derive_template_source`] with an explicit [`PugRendering`].
 #[must_use]
 pub fn derive_template_source_with(source: &str, rendering: PugRendering) -> PugTemplate {
+    derive_template_source_profiled(source, rendering, PugProfile::Pug3)
+}
+
+/// [`derive_template_source_with`] for a template written in `profile`.
+#[must_use]
+pub fn derive_template_source_profiled(
+    source: &str,
+    rendering: PugRendering,
+    profile: PugProfile,
+) -> PugTemplate {
     let allocator = Allocator::default();
-    let (tree, errors) = parse_pug(&allocator, source);
+    let (tree, errors) = parse_pug_profiled(&allocator, source, profile);
     derive_template_with(&tree, &errors, rendering)
 }
 
@@ -205,8 +216,20 @@ pub fn derive_template_source_including(
     filename: &str,
     reader: &mut dyn PugIncludes,
 ) -> PugTemplate {
+    derive_template_source_including_profiled(source, rendering, filename, reader, PugProfile::Pug3)
+}
+
+/// [`derive_template_source_including`] for a template written in `profile`.
+#[must_use]
+pub fn derive_template_source_including_profiled(
+    source: &str,
+    rendering: PugRendering,
+    filename: &str,
+    reader: &mut dyn PugIncludes,
+    profile: PugProfile,
+) -> PugTemplate {
     let allocator = Allocator::default();
-    let (tree, errors) = parse_pug(&allocator, source);
+    let (tree, errors) = parse_pug_profiled(&allocator, source, profile);
     derive_template_including(&tree, &errors, rendering, Some(filename), Some(reader))
 }
 

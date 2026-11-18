@@ -51,14 +51,7 @@ impl Rule for NoPreprocessorLang {
         let spans: Vec<_> = descriptor
             .styles
             .iter()
-            .filter(|style| {
-                style.lang.as_deref().is_some_and(|lang| {
-                    matches!(
-                        lang.to_ascii_lowercase().as_str(),
-                        "sass" | "scss" | "less" | "stylus" | "styl"
-                    )
-                })
-            })
+            .filter(|style| vize_l1::container::lang::is_preprocessor_style(style.lang.as_deref()))
             .map(|style| (style.loc.tag_start as u32, style.loc.start as u32))
             .collect();
 

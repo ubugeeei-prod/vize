@@ -98,16 +98,13 @@ function inspectObserverLog(observer, bytes, identity, evidence) {
     assert.equal(evidence.parsed, expectedFiles, "DOM parse inventory changed");
     assert.equal(evidence.unreadable, 0, "Unreadable DOM inputs");
     assert(evidence.patchFactEntries > 0, "DOM proved no patch materialization");
-    assert.equal(
-      evidence.oldErrorSkips,
-      expectedOldErrorSkips,
-      "Original DOM skip allowlist changed",
-    );
-    assert.deepEqual(
-      evidence.oldErrorReasons,
-      expectedOldErrorReasons,
-      "Original DOM reasons changed",
-    );
+    // A capture recorded before an allowlist change carries its own list.
+    const oldErrors = identity.oldErrors ?? {
+      skips: expectedOldErrorSkips,
+      reasons: expectedOldErrorReasons,
+    };
+    assert.equal(evidence.oldErrorSkips, oldErrors.skips, "Original DOM skip allowlist changed");
+    assert.deepEqual(evidence.oldErrorReasons, oldErrors.reasons, "Original DOM reasons changed");
     assert.equal(evidence.s2Refusals, 0, "DOM refused original inputs");
     assert.equal(evidence.divergences, 0, "DOM diverged");
   } else if (observer === "ssr-pug") {

@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import { NormalMenu } from './menu'
+
+const emit = defineEmits<{ enter: [value: unknown] }>()
+</script>
+
+<template>
+  <NormalMenu @enter="(menu) => emit('enter', menu)" />
+</template>

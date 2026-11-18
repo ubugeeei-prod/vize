@@ -1,0 +1,21 @@
+<script lang="ts">
+class Point {
+  constructor(public x: number, public y: number) {}
+}
+</script>
+
+<script setup lang="ts">
+const props = defineProps({
+  origin: {
+    type: Point,
+    required: true,
+  },
+});
+
+const originX: number = props.origin.x;
+void originX;
+</script>
+
+<template>
+  <span>{{ origin.y.toFixed(1) }}</span>
+</template>

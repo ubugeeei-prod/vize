@@ -1,0 +1,7 @@
+<script setup lang="ts">
+import Child from "./Child.vue"
+const refs: unknown[] = []
+</script>
+<template>
+  <Child :ref="(item) => refs.push(item)" />
+</template>

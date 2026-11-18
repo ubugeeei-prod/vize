@@ -27,7 +27,7 @@ pub(super) fn write_template_block(
     // indentation-sensitive source into unrelated HTML text nodes and can
     // flatten the program while still reaching a formatter fixed point.
     let language = block.lang();
-    let native_html = language.is_none_or(|lang| lang.eq_ignore_ascii_case("html"));
+    let native_html = vize_l1::container::lang::is_html_template(language);
     let authored_markdown = language.is_some_and(|lang| lang.eq_ignore_ascii_case("md"));
     let opening_tag = opening_tag::raw_templated_opening_tag(source, &block.loc);
     let content = opening_tag::content_after_opening_tag(

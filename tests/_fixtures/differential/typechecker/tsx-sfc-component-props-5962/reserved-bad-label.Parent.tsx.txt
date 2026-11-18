@@ -1,0 +1,5 @@
+import Child from './Child.vue'
+
+const childRef = (value: InstanceType<typeof Child> | null) => { void value }
+
+export default () => <Child key="save" ref={childRef} label={1} />

@@ -1,0 +1,9 @@
+<script setup lang="ts">
+const model = defineModel<string>({ required: true })
+const count = defineModel<number>('count', { default: 0 })
+</script>
+
+<template>
+  <input v-model="model" />
+  <button @click="$emit('update:count', String(count))">{{ count }}</button>
+</template>

@@ -1,0 +1,13 @@
+<script setup lang="ts">
+import type { api } from 'dual-pkg'
+
+const props = defineProps<{ status: api.Status }>()
+
+function label(extra: api.Extra) {
+  return extra.nam
+}
+</script>
+
+<template>
+  <span>{{ props.status.extras?.map(label).join(',') }}</span>
+</template>

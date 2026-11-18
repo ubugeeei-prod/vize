@@ -136,6 +136,11 @@ pub struct BuildArgs {
     #[arg(long)]
     pub continue_on_error: bool,
 
+    /// Print every compile error in full instead of one hinted block per kind
+    /// (self-closing HTML elements under strict template syntax, ...)
+    #[arg(long)]
+    pub verbose: bool,
+
     /// Write observed native compiler stages for each built SFC into DIR
     #[arg(long, value_name = "DIR")]
     pub dump_dir: Option<PathBuf>,

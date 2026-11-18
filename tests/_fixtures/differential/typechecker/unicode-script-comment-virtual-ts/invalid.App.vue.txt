@@ -1,0 +1,14 @@
+<script setup lang="ts">
+import { debounce } from './debounce'
+const reasgnSubMenuOpen = debounce(() => {
+  console.log(1222222222222222222222222222222);
+}, 100);
+
+// あいうえおかきくけこさしすせそたちつてとなにぬねの
+const heightLimit: number = "65vh";
+// はひふへほまみむめもやいゆえよらりるれろわをん
+</script>
+
+<template>
+  <div>{{ heightLimit }}</div>
+</template>

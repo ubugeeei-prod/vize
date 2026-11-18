@@ -93,16 +93,20 @@ pub(crate) struct Lexer<'a, 'o> {
     interpolation_allowed: bool,
     interpolated: bool,
     ended: bool,
+    /// The `jade` 1.x profile: `- each` / `- for` lines are iteration.
+    jade: bool,
 }
 
-/// Lex the whole logical text.
+/// Lex the whole logical text; `jade` selects the jade 1.x profile.
 pub(crate) fn lex<'a>(
     allocator: &'a Allocator,
     src: &'a str,
     out: &mut Vec<'a, Tok>,
     errors: &mut Vec<'a, (PugErrorCode, u32)>,
+    jade: bool,
 ) {
     let mut lexer = Lexer::new(allocator, src, 0, src.len(), out, errors, false);
+    lexer.jade = jade;
     lexer.run();
 }
 
@@ -130,6 +134,7 @@ impl<'a, 'o> Lexer<'a, 'o> {
             interpolation_allowed: true,
             interpolated,
             ended: false,
+            jade: false,
         }
     }
 

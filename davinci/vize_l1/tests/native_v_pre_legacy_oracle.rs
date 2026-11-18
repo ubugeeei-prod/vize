@@ -117,35 +117,34 @@ fn native_recovered_scopes_match_live_legacy_ast_interpolation_admission() {
 }
 
 #[test]
-fn authored_vue_scopes_classify_known_legacy_recovery_differences() {
-    for (source, native_expected, legacy_expected) in [
+fn nested_interactive_scopes_keep_the_authored_owner_in_both_parsers() {
+    // Vue builds nested interactive tags as written, so an outer `v-pre`
+    // owner keeps its whole subtree verbatim in both parsers.
+    for (source, expected) in [
         (
             "<a v-pre><span>{{before}}<a>{{after}}</a>{{tail}}</span></a>{{end}}",
             vec!["end"],
-            vec!["after", "tail", "end"],
         ),
         (
             "<button v-pre><button>{{after}}</button>{{tail}}</button>{{end}}",
             vec!["end"],
-            vec!["after", "tail", "end"],
+        ),
+        (
+            "<a v-pre><a v-pre>{{inner}}</a>{{tail}}</a>{{end}}",
+            vec!["end"],
         ),
         (
             "<svg><foreignObject><button v-pre><button>{{after}}</button></button></foreignObject></svg>{{tail}}",
             vec!["tail"],
-            vec!["after", "tail"],
         ),
         (
             "<section><a><span><a></a><span v-pre>{{inside}}</span>{{tail}}</span></a></section>",
             vec!["tail"],
-            vec![],
         ),
     ] {
         let (native, legacy) = interpolation_policy(source);
-        assert_eq!(native, native_expected, "Vue authored scope: {source}");
-        assert_eq!(
-            legacy, legacy_expected,
-            "retained legacy behavior: {source}"
-        );
+        assert_eq!(native, expected, "Vue authored scope: {source}");
+        assert_eq!(legacy, expected, "legacy authored scope: {source}");
     }
 }
 
@@ -178,23 +177,4 @@ fn same_tag_pre_proves_unrelated_directive_heads_are_raw_regardless_of_order() {
         assert_eq!(values, ["tail"], "{source}");
         assert_ast_policy(&source);
     }
-}
-
-#[test]
-fn native_keeps_authored_outer_pre_where_legacy_loses_its_owner() {
-    // Vue's outer lexical scope survives HTML repair. The legacy parser still
-    // loses that owner; production routes retain that behavior until migrated.
-    let source = "<a v-pre><a v-pre>{{inner}}</a>{{tail}}</a>{{end}}";
-    let allocator = Allocator::new();
-    let parsed = parse_component(&allocator, source).unwrap();
-    let legacy_allocator = vize_armature::Allocator::new();
-    let (legacy, _) = parse(&legacy_allocator, source);
-    let mut native_values = Vec::new();
-    let mut legacy_values = Vec::new();
-    native_interpolations(&parsed.tree.children, &mut native_values);
-    legacy_interpolations(&legacy.children, &mut legacy_values);
-    assert_eq!(native_values, ["end"]);
-    assert_eq!(legacy_values, ["inner", "tail", "end"]);
-    assert!(parsed.unsupported.is_empty());
-    assert_eq!(check_fidelity(&parsed.tree), Ok(()));
 }

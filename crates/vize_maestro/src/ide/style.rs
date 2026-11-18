@@ -21,6 +21,7 @@ pub(crate) use resolve::{resolve, resolve_catalog};
 
 use super::IdeContext;
 use tower_lsp::lsp_types::{Position, Range};
+use vize_l1::container::lang::StyleLanguage;
 
 /// How a style block's CSS knowledge reads the cursor.
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -46,10 +47,10 @@ impl Syntax {
 /// Borrow the region already located by the resident SFC descriptor.
 fn region<'a>(ctx: &'a IdeContext<'_>, index: usize) -> Option<(&'a str, usize, Syntax)> {
     let style = ctx.descriptor()?.styles.get(index)?;
-    let standard_css = match style.lang.as_deref() {
-        None | Some("css" | "scss" | "less" | "postcss") => Syntax::Braced,
-        Some("sass" | "stylus" | "styl") => Syntax::Indented,
-        Some(_) => Syntax::Other,
+    let standard_css = match vize_l1::container::lang::style_lang(style.lang.as_deref()) {
+        Ok(StyleLanguage::Css | StyleLanguage::Scss | StyleLanguage::Less) => Syntax::Braced,
+        Ok(StyleLanguage::Sass | StyleLanguage::Stylus) => Syntax::Indented,
+        Err(_) => Syntax::Other,
     };
     let start = style.loc.start;
     let end = style.loc.end;

@@ -154,7 +154,8 @@ impl SfcDirectiveState {
                     });
                 }
                 BlockDomain::Style(lang) => {
-                    let allow_line_comments = StyleLanguage::from_lang(lang)
+                    let allow_line_comments = vize_l1::container::lang::style_lang(lang)
+                        .ok()
                         .is_some_and(StyleLanguage::has_line_comments);
                     let mut lexer = StyleDirectiveLexer::new(allow_line_comments);
                     block.scan(content, first_line, |line, _| lexer.scan_line(line));
@@ -184,7 +185,7 @@ impl SfcDirectiveState {
         }
         state.template_exact = descriptor.template.as_ref().and_then(|template| {
             if template.src.is_some()
-                || !template.lang.as_deref().is_none_or(|lang| lang == "html")
+                || !vize_l1::container::lang::is_html_template(template.lang.as_deref())
                 || !template.content.contains("@vize:forget")
             {
                 return None;

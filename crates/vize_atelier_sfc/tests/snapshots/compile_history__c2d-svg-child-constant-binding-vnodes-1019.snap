@@ -1,0 +1,35 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c2d-svg-child-constant-binding-vnodes-1019",
+    history: "65442a1da21c543740b1b1afbb3828d246a80ff9",
+    source: "<svg xmlns=\"http://www.w3.org/2000/svg\"><rect :x=\"1\" /><rect x=\"1\" /></svg>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: Some(
+            true,
+        ),
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"svg\", { xmlns: \"http://www.w3.org/2000/svg\" }, [\n    _createElementVNode(\"rect\", { x: 1 }),\n    _createElementVNode(\"rect\", { x: \"1\" })\n  ]))\n}",
+    map: None,
+}

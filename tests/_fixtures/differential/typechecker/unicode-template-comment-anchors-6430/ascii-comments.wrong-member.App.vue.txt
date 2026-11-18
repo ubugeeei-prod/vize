@@ -1,0 +1,7 @@
+<script setup lang="ts">
+const label = 'ready'
+</script>
+
+<template>
+  <span :title="/* ラベル */ label">{{ /* label */ label.toFixed() + /* x */ label.toFixed() }}</span>
+</template>

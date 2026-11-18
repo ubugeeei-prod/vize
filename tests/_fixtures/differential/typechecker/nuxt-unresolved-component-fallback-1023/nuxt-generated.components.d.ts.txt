@@ -1,0 +1,7 @@
+declare module 'vue' {
+  export interface GlobalComponents {
+    AutoCard: typeof import('../components/AutoCard.vue')['default']
+  }
+}
+
+export {}

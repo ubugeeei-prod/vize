@@ -78,7 +78,9 @@ fn is_transition_hook(event_name: &str) -> bool {
     )
 }
 
-fn is_vnode_hook(event_name: &str) -> bool {
+/// A Vue vnode hook (`@vue:mounted`, legacy `@vnode-mounted`): it compiles
+/// to an `onVnode*` `VNodeProps` key, not to a component event.
+pub(in crate::virtual_ts::scope) fn is_vnode_hook(event_name: &str) -> bool {
     let rest = event_name
         .strip_prefix("vue:")
         .or_else(|| event_name.strip_prefix("vnode-"))

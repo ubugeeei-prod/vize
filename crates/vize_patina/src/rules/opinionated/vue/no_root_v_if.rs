@@ -111,10 +111,7 @@ impl Rule for NoRootVIf {
             return;
         };
         if template.src.is_some()
-            || template
-                .lang
-                .as_deref()
-                .is_some_and(|lang| !lang.eq_ignore_ascii_case("html"))
+            || !vize_l1::container::lang::is_html_template(template.lang.as_deref())
         {
             return;
         }

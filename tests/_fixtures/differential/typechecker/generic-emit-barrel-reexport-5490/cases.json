@@ -1,0 +1,112 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 5490,
+  "regressionCommit": "b31b1e64630621cf00cb2d5cd6189e0cf80acdd9",
+  "sourceRevision": "b31b1e64630621cf00cb2d5cd6189e0cf80acdd9",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "enum-member-prop-specializes-barrel-emit",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/dialogs/types.ts",
+          "source": "dialogs.types.ts.txt"
+        },
+        {
+          "file": "src/dialogs/Dialog.vue",
+          "source": "dialogs.Dialog.vue.txt"
+        },
+        {
+          "file": "src/dialogs/index.ts",
+          "source": "dialogs.index.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "barrel.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "mismatched-enum-member-rejects-barrel-listener",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/dialogs/types.ts",
+          "source": "dialogs.types.ts.txt"
+        },
+        {
+          "file": "src/dialogs/Dialog.vue",
+          "source": "dialogs.Dialog.vue.txt"
+        },
+        {
+          "file": "src/dialogs/index.ts",
+          "source": "dialogs.index.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "barrel.mismatched-member.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 27,
+          "column": 6,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '({ contentsInfo, questionItems, }: { contentsInfo: { normalId: string; }; questionItems: { normalQuestionId: string; }[]; }) => void' is not assignable to type '(value: { contentsInfo: { textbookId: number; }; questionItems: { textbookQuestionId: number; }[]; }) => any'.\nTypes of parameters '__0' and 'value' are incompatible.\nType '{ contentsInfo: { textbookId: number; }; questionItems: { textbookQuestionId: number; }[]; }' is not assignable to type '{ contentsInfo: { normalId: string; }; questionItems: { normalQuestionId: string; }[]; }'.\nTypes of property 'contentsInfo' are incompatible.\nProperty 'normalId' is missing in type '{ textbookId: number; }' but required in type '{ normalId: string; }'."
+        }
+      ]
+    },
+    {
+      "id": "published-package-sfc-keeps-ambient-stub",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "node_modules/@scope/dialogs/package.json",
+          "source": "dialogs.package.json.txt"
+        },
+        {
+          "file": "node_modules/@scope/dialogs/src/types.ts",
+          "source": "dialogs.types.ts.txt"
+        },
+        {
+          "file": "node_modules/@scope/dialogs/src/Dialog.vue",
+          "source": "dialogs.Dialog.vue.txt"
+        },
+        {
+          "file": "node_modules/@scope/dialogs/src/index.ts",
+          "source": "dialogs.index.ts.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "package.mismatched-member.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    }
+  ]
+}

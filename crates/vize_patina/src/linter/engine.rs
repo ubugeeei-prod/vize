@@ -444,7 +444,7 @@ impl Linter {
         );
         let has_fatal_parse_errors = self.has_fatal_template_parse_errors(&l2);
 
-        let mut parse_result = Self::l1_template_parse_lint_result(filename, source, &l2);
+        let mut parse_result = self.l1_template_parse_lint_result(filename, source, &l2);
         self.append_compatibility_template_parse_diagnostics(&mut parse_result, source, &l2);
         let lint_result = l2.lint_template().with_compatibility_root(|root| {
             self.lint_template_root(

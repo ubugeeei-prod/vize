@@ -1,0 +1,51 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c2d-leading-union-separator-object-type-1021",
+    history: "d2b5432d72812fc048c9384434a6f02d4e9edbc7",
+    source: "<script setup lang=\"ts\">\ntype ButtonVariant =\n  | { type: \"link\"; href: string }\n  | { type: \"button\"; onClick: () => void }\n\ndefineProps<{\n  variant: ButtonVariant\n}>()\n</script>\n\n<template>\n  <div>{{ variant.type }}</div>\n</template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: Some(
+            true,
+        ),
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { defineComponent as _defineComponent } from 'vue'\nimport { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\n\ntype ButtonVariant =\n  | { type: \"link\"; href: string }\n  | { type: \"button\"; onClick: () => void }\n\n\nexport default /*@__PURE__*/_defineComponent({\n  __name: 'History',\n  props: {\n    variant: { type: Object, required: true }\n  },\n  setup(__props: any) {\n\n\nreturn (_ctx: any,_cache: any) => {\n  return (_openBlock(), _createElementBlock(\"div\", null, _toDisplayString(__props.variant.type), 1 /* TEXT */))\n}\n}\n\n})",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "variant": Props,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

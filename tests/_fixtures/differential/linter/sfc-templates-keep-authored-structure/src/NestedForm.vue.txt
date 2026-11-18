@@ -1,0 +1,18 @@
+<script setup lang="ts">
+import { ref } from "vue";
+
+const query = ref("");
+function save() {}
+function search(value: string) {
+  return value;
+}
+</script>
+
+<template>
+  <form @submit.prevent="save">
+    <input name="title" />
+    <form @submit.prevent="() => search(query)">
+      <input v-model="query" name="query" />
+    </form>
+  </form>
+</template>

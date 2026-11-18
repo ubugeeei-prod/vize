@@ -1,0 +1,9 @@
+<script setup lang="ts">
+defineExpose<{ open: (id: number) => void }>({
+  open: (id) => console.log(id),
+})
+</script>
+
+<template>
+  <div />
+</template>

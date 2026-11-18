@@ -17,13 +17,7 @@ pub(in crate::server::annotations) fn hover(ctx: &IdeContext<'_>) -> Option<Hove
     let style = ctx.descriptor()?.styles.get(index)?;
     // Unknown preprocessors do not gain hover admission from the color
     // provider's intentionally broader generic scanner.
-    let mode = match style.lang.as_deref() {
-        None | Some("css" | "postcss") => scan::CssMode::Stylesheet,
-        Some("scss" | "less") => scan::CssMode::Preprocessor,
-        Some("sass") => scan::CssMode::IndentedDeclarations,
-        Some("stylus" | "styl") => scan::CssMode::StylusDeclarations,
-        Some(_) => return None,
-    };
+    let mode = scan::CssMode::of(vize_l1::container::lang::style_lang(style.lang.as_deref()).ok()?);
     let selected = vize_l0::profile!(
         "maestro.css_color_hover.select",
         scan::color_at(

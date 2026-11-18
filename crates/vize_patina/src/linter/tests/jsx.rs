@@ -10,9 +10,9 @@
 //!    relief AST produced by `vize_atelier_jsx::lower_source`.
 //!
 //! The first group of tests targets the IR pass (the `#1499` common path); the
-//! `fallback_*` tests keep an unmigrated rule (`vue/a11y-img-alt`, which only has
-//! a legacy `Rule` impl) firing over the lowering path; and `no_jsx_equivalent_*`
-//! documents that a directive with no JSX analogue is silently skipped.
+//! `fallback_*` tests keep a template-visitor-only test rule firing over the
+//! lowering path; and `no_jsx_equivalent_*` documents that a directive with no
+//! JSX analogue is silently skipped.
 
 use crate::linter::{LintResult, Linter};
 use crate::rule::{Rule, RuleRegistry};
@@ -325,56 +325,91 @@ fn migrated_rule_reports_once_not_per_backend() {
 }
 
 // ===========================================================================
-// Fallback pass: an unmigrated rule still runs over the lowered relief AST.
+// Fallback pass: a rule with no markup entry still runs over the lowered
+// relief AST.
+// ===========================================================================
+
+static LEGACY_IMG_META: crate::rule::RuleMeta = crate::rule::RuleMeta {
+    name: "test/legacy-img",
+    description: "Report every <img> through the template visitor only",
+    category: crate::rule::RuleCategory::Recommended,
+    fixable: false,
+    default_severity: crate::diagnostic::Severity::Warning,
+};
+
+/// A template-visitor-only rule, so the fallback lane keeps a witness when
+/// real rules move to the markup facade.
+struct LegacyImg;
+
+impl Rule for LegacyImg {
+    fn meta(&self) -> &'static crate::rule::RuleMeta {
+        &LEGACY_IMG_META
+    }
+
+    fn enter_element<'a>(
+        &self,
+        ctx: &mut crate::context::LintContext<'a>,
+        element: &vize_relief::ElementNode<'a>,
+    ) {
+        if element.tag == "img" {
+            ctx.warn("legacy img", &element.loc);
+        }
+    }
+}
+
+#[test]
+fn fallback_rule_runs_over_the_lowered_root() {
+    let linter = linter_with(Box::new(LegacyImg));
+    for (filename, lang) in [("test.jsx", JsxLang::Jsx), ("test.tsx", JsxLang::Tsx)] {
+        let source = r#"const A = () => <div><img src="/x.jpg"/></div>;"#;
+        let result = linter.lint_jsx(source, filename, lang);
+        assert_eq!(
+            diagnostic_rules(&result),
+            vec!["test/legacy-img"],
+            "{filename}: {:?}",
+            result.diagnostics
+        );
+        let diagnostic = &result.diagnostics[0];
+        assert_eq!(
+            &source[diagnostic.start as usize..diagnostic.end as usize],
+            r#"<img src="/x.jpg"/>"#
+        );
+    }
+}
+
+// ===========================================================================
+// `vue/a11y-img-alt` moved from the fallback to the markup facade.
 // ===========================================================================
 
 #[test]
-fn fallback_img_without_alt_is_flagged() {
-    // `vue/a11y-img-alt` has only a legacy `Rule` impl (no markup projection),
-    // so it is served by the lowering fallback and must still fire.
+fn migrated_a11y_img_alt_flags_img_without_alt() {
     let linter = linter_with(Box::new(A11yImgAlt));
-    let result = linter.lint_jsx(
-        r#"const A = () => <img src="/x.jpg"/>;"#,
-        "test.jsx",
-        JsxLang::Jsx,
-    );
-
-    assert_eq!(
-        result.warning_count, 1,
-        "<img> without alt should be flagged via fallback: {:?}",
-        result.diagnostics
-    );
-    assert_eq!(diagnostic_rules(&result), vec!["vue/a11y-img-alt"]);
+    for (filename, lang) in [("test.jsx", JsxLang::Jsx), ("test.tsx", JsxLang::Tsx)] {
+        let result = linter.lint_jsx(r#"const A = () => <img src="/x.jpg"/>;"#, filename, lang);
+        assert_eq!(
+            diagnostic_rules(&result),
+            vec!["vue/a11y-img-alt"],
+            "{filename}: {:?}",
+            result.diagnostics
+        );
+    }
 }
 
 #[test]
-fn fallback_img_with_alt_is_not_flagged() {
+fn migrated_a11y_img_alt_accepts_static_and_bound_alt() {
     let linter = linter_with(Box::new(A11yImgAlt));
-    let result = linter.lint_jsx(
+    for source in [
         r#"const A = () => <img src="/x.jpg" alt=""/>;"#,
-        "test.jsx",
-        JsxLang::Jsx,
-    );
-    assert_eq!(
-        result.warning_count, 0,
-        "<img> with alt should be clean: {:?}",
-        result.diagnostics
-    );
-}
-
-#[test]
-fn fallback_tsx_img_without_alt_is_flagged() {
-    let linter = linter_with(Box::new(A11yImgAlt));
-    let result = linter.lint_jsx(
-        r#"const A = () => <img src="/x.jpg"/>;"#,
-        "test.tsx",
-        JsxLang::Tsx,
-    );
-    assert_eq!(
-        result.warning_count, 1,
-        "TSX fallback must flag: {:?}",
-        result.diagnostics
-    );
+        r#"const A = () => <img src="/x.jpg" alt={label}/>;"#,
+        r#"const A = () => <Img src="/x.jpg"/>;"#,
+    ] {
+        let result = linter.lint_jsx(source, "test.jsx", JsxLang::Jsx);
+        assert_eq!(
+            result.warning_count, 0,
+            "{source}: {:?}",
+            result.diagnostics
+        );
+    }
 }
 
 // ===========================================================================
@@ -408,12 +443,12 @@ fn no_jsx_equivalent_v_html_is_skipped() {
 
 #[test]
 fn ir_and_fallback_rules_coexist() {
-    // ImgAlt (markup IR) and A11yImgAlt (fallback) both target <img> without
+    // ImgAlt (markup IR) and LegacyImg (fallback) both target <img> without
     // alt. A single `lint_jsx` call must fire both — one through each path —
     // proving the two passes compose without dropping or duplicating either.
     let mut registry = RuleRegistry::new();
     registry.register(Box::new(ImgAlt));
-    registry.register(Box::new(A11yImgAlt));
+    registry.register(Box::new(LegacyImg));
     let linter = Linter::with_registry(registry);
 
     let result = linter.lint_jsx(
@@ -428,6 +463,6 @@ fn ir_and_fallback_rules_coexist() {
     );
     assert_eq!(
         diagnostic_rules(&result),
-        vec!["a11y/img-alt", "vue/a11y-img-alt"]
+        vec!["a11y/img-alt", "test/legacy-img"]
     );
 }

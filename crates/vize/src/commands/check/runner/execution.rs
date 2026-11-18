@@ -269,6 +269,9 @@ pub(super) fn prepare_program(
                 .collect::<Vec<_>>(),
         ),
     );
+    checker.set_imports_alias_vue_template_ref(input.tsconfig_path.as_deref().is_some_and(
+        crate::commands::check::tsconfig_inputs::imports_alias_reexports_vue_template_ref,
+    ));
     checker
         .scan_paths(&program_files)
         .map_err(|error| cstr!("{}", error))?;

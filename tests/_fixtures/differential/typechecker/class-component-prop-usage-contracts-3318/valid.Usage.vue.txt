@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import Widget from './Widget.vue'
+import List from './List.vue'
+</script>
+
+<template>
+  <Widget />
+  <List :items="[{ id: 1 }]" />
+</template>

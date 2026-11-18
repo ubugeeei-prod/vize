@@ -37,19 +37,17 @@ pub enum L1InputDialect {
 }
 
 impl L1InputDialect {
-    /// Dialect of an SFC template block from its `lang` attribute.
+    /// Dialect of an SFC template block from its `lang` attribute, as the
+    /// block-language registry (`vize_l1::container::lang`) resolves it.
     ///
-    /// `pug` and its legacy `jade` alias select the pug surface. Every other
-    /// lang, including absent, is the Vue template surface the derived HTML
-    /// also lowers through.
-    pub fn from_template_lang(lang: Option<&str>) -> Self {
-        if lang.is_some_and(|lang| {
-            let lang = lang.trim();
-            lang.eq_ignore_ascii_case("pug") || lang.eq_ignore_ascii_case("jade")
-        }) {
-            Self::Pug
-        } else {
-            Self::VueTemplate
+    /// The pug grammar (`pug` or its legacy `jade` name) selects the pug
+    /// surface; the HTML grammar selects the Vue template surface the derived
+    /// HTML also lowers through. A lang no in-tree grammar reads has no L1
+    /// dialect: the template stays opaque.
+    pub fn from_template_lang(lang: Option<&str>) -> Option<Self> {
+        match vize_l1::container::lang::template_lang(lang).ok()? {
+            vize_l1::container::lang::TemplateLang::Html => Some(Self::VueTemplate),
+            vize_l1::container::lang::TemplateLang::Pug(_) => Some(Self::Pug),
         }
     }
 }

@@ -28,6 +28,15 @@ fn rendered(tree: &SurfaceTree<'_>) -> String {
     out
 }
 
+/// The tree the HTML parser builds (Vapor); a Vue template keeps the authored one.
+fn parse_html<'a>(allocator: &'a Allocator, source: &'a str) -> SurfaceTree<'a> {
+    let options = SurfaceParseOptions {
+        html_tree_construction: true,
+        ..SurfaceParseOptions::default()
+    };
+    parse_with_options(allocator, source, options).0
+}
+
 fn assert_fidelity(source: &str, context: &str) {
     let allocator = Allocator::new();
     let (tree, _errors) = parse(&allocator, source);
@@ -123,6 +132,94 @@ fn only_an_in_dom_template_is_fostered() {
     }
 }
 
+fn shape(children: &[SurfaceChild<'_>]) -> String {
+    let mut out = String::default();
+    for child in children {
+        if let SurfaceChild::Element(element) = child {
+            if !out.is_empty() {
+                out.push_str(" ");
+            }
+            out.push_str(element.tag());
+            let inner = shape(&element.children);
+            if !inner.is_empty() {
+                out.push_str("(");
+                out.push_str(inner.as_str());
+                out.push_str(")");
+            }
+        }
+    }
+    out
+}
+
+#[test]
+fn a_vue_template_keeps_its_authored_structure() {
+    // Vue builds a template as written. Only a browser parsing in-DOM HTML
+    // implies end tags, ignores a nested form and runs the adoption agency.
+    let allocator = Allocator::new();
+    let ignored = "HTML tree construction ignored this start tag because an equivalent element is already open.";
+    let adoption =
+        "Misnested formatting end tag was repaired using the adoption agency recovery path.";
+    let invalid = "Invalid end tag.";
+    let cases: [(&str, &str, &[&str], &str, &[&str]); 4] = [
+        (
+            "<p><ul><li>x</li></ul></p>",
+            "p(ul(li))",
+            &[],
+            "p ul(li)",
+            &[invalid],
+        ),
+        (
+            "<form @submit=\"a\"><form @submit=\"b\"><input></form></form>",
+            "form(form(input))",
+            &[],
+            "form(form(input))",
+            &[ignored, invalid],
+        ),
+        // Vue also reports the `<p>` left open; L1 leaves optional end tags to
+        // `vue/html-end-tags`.
+        (
+            "<div><b><p>x</b></p></div>",
+            "div(b(p))",
+            &[invalid],
+            "div(b(p))",
+            &[adoption, invalid],
+        ),
+        (
+            "<div><a href=\"#a\"><a href=\"#b\">x</a></a></div>",
+            "div(a(a))",
+            &[],
+            "div(a a)",
+            &[],
+        ),
+    ];
+    let messages = |source: &str, errors: &[vize_l1::markup::SurfaceError]| {
+        errors
+            .iter()
+            .map(|error| error.message(source))
+            .collect::<Vec<String>>()
+    };
+    for (source, template_shape, template_messages, in_dom_shape, in_dom_messages) in cases {
+        let (template, _, template_errors) = parse_with_authored_diagnostics(&allocator, source);
+        let (in_dom, _, in_dom_errors) = parse_in_dom_with_authored_diagnostics(&allocator, source);
+        assert_eq!(
+            shape(&template.children).as_str(),
+            template_shape,
+            "{source}"
+        );
+        assert_eq!(
+            messages(source, &template_errors),
+            template_messages,
+            "{source}"
+        );
+        assert_eq!(shape(&in_dom.children).as_str(), in_dom_shape, "{source}");
+        assert_eq!(
+            messages(source, &in_dom_errors),
+            in_dom_messages,
+            "{source}"
+        );
+    }
+}
+
 #[test]
 fn an_interactive_element_without_an_end_tag_is_missing_one() {
     let allocator = Allocator::new();
@@ -199,7 +296,9 @@ fn nested_interactive_content_keeps_fidelity_without_missing_close_holes() {
         "<div><button><div><button>bbb</button></div></button></div>",
     ] {
         let allocator = Allocator::new();
-        let (tree, _errors) = parse(&allocator, source);
+        let (authored, _errors) = parse(&allocator, source);
+        assert_eq!(hole_counts(&authored), HoleCounts::default(), "{source}");
+        let tree = parse_html(&allocator, source);
         assert_eq!(rendered(&tree), source);
         assert_eq!(check_fidelity(&tree), Ok(()));
         assert_eq!(
@@ -232,7 +331,10 @@ fn assert_direct_nested_interactive_close_order(
     redundant_close: &str,
 ) {
     let allocator = Allocator::new();
-    let (tree, _errors) = parse(&allocator, source);
+    let (authored, _errors) = parse(&allocator, source);
+    assert_eq!(hole_counts(&authored), HoleCounts::default(), "{source}");
+    assert_eq!(authored.children.len(), 1, "{source}: nested");
+    let tree = parse_html(&allocator, source);
     assert_eq!(rendered(&tree), source);
     assert_eq!(check_fidelity(&tree), Ok(()));
     assert_eq!(

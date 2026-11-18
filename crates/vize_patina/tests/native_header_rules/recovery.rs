@@ -1,12 +1,13 @@
 use super::support::{
-    HeaderRule, LOCALES, NeverLookup, complete, expected, parser, registered, selected, span,
-    warning,
+    HeaderRule, LOCALES, NeverLookup, complete, expected, registered, selected, span, warning,
 };
 use vize_l0::Allocator;
 use vize_patina::native::{NativeLintRefusal, NativeSyntaxLint};
 
 #[test]
-fn ignored_form_refusal_keeps_complete_facade_warnings_and_original_parser_error() {
+fn nested_form_refusal_keeps_complete_facade_warnings_without_a_parser_error() {
+    // Vue keeps the nested form, so its attributes are linted and no parser
+    // error is reported.
     let source = "<template><form><form autofocus accesskey='a' /></form></template>";
     let arena = Allocator::default();
     let owner = selected(&arena, source);
@@ -23,11 +24,7 @@ fn ignored_form_refusal_keeps_complete_facade_warnings_and_original_parser_error
             })
         );
         for locale in LOCALES {
-            let mut diagnostics = vec![parser(
-                "error",
-                "HTML tree construction ignored this start tag because an equivalent element is already open.",
-                span(source, "<form autofocus accesskey='a' />"),
-            )];
+            let mut diagnostics = Vec::new();
             if !matches!(rule, HeaderRule::Distracting) {
                 let range = if matches!(rule, HeaderRule::AccessKey) {
                     span(source, "accesskey='a'")
