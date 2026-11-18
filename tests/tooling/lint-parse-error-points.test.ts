@@ -43,6 +43,14 @@ test("a zero-width parse error point inside Patina's token range pairs", () => {
   assert.equal(pairs.length, 4);
 });
 
+test("a control-character point immediately before Patina's byte range pairs", () => {
+  const pairs = pairRuleLocationDivergences(
+    [record(39, 40, "[vize:parser/template] Control character in input stream.")],
+    [record(38, 38, "Parsing error: control-character-in-input-stream.")],
+  );
+  assert.equal(pairs.length, 1);
+});
+
 test("parse errors with another code, position or severity stay apart", () => {
   const positives = () => [
     record(

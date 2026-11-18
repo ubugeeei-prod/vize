@@ -6,6 +6,16 @@ import {
   componentRegistrationPatinaIntentionalReason,
 } from "../../fixtures/lint_divergence/component_registration_intentional.ts";
 import {
+  importedSetupPropCollision,
+  importedSetupPropCollisionReason,
+} from "../../fixtures/lint_divergence/imported_prop_contract.ts";
+import {
+  redeclaredDerivedPropMember,
+  redeclaredDerivedPropMemberReason,
+} from "../../fixtures/lint_divergence/inherited_prop_members.ts";
+import { baselineParserIntentionalReason } from "../../fixtures/lint_divergence/parser_intentional.ts";
+import { unusedEmitPatinaReading } from "../../fixtures/lint_divergence/unused_emit_names.ts";
+import {
   indexRealProjectLocationSource,
   realProjectLocationDivergence,
   realProjectLocationRules,
@@ -318,6 +328,16 @@ function patinaIntentionalReason(finding: LintRecord, cwd: string, project: stri
     return "Patina preserves linting for Vue files with UTS scripts; vue-eslint-parser rejects the UTS block before eslint-plugin-vue can run mapped rules.";
   const componentReason = componentRegistrationPatinaIntentionalReason(finding, source, project);
   if (componentReason !== null) return componentReason;
+  if (
+    finding.ruleId === "script/no-dupe-keys" &&
+    importedSetupPropCollision(finding.message, source)
+  )
+    return importedSetupPropCollisionReason;
+  if (finding.ruleId === "vue/require-prop-comment") {
+    const offset = findingOffset(finding, source);
+    if (offset !== null && redeclaredDerivedPropMember(offset, source))
+      return redeclaredDerivedPropMemberReason;
+  }
   if (finding.ruleId === "vue/no-setup-props-reactivity-loss")
     return "Patina's complete contract follows root-scope prop values through nested containers, call arguments, and assignments that eslint-plugin-vue does not inspect.";
   if (
@@ -543,12 +563,16 @@ function registeredComponentIsProvablyAbsent(finding: LintRecord, source: string
   return !new RegExp(`<\\s*(?:${escaped}|${escapedKebab})(?=[\\s/>])`, "iu").test(executable);
 }
 
-function templateEmitsDeclaredEvent(finding: LintRecord, source: string): boolean {
-  if (!/<template\b/iu.test(source)) return false;
+function templateEmitReason(finding: LintRecord, source: string): string | null {
+  if (!/<template\b/iu.test(source)) return null;
   const event = /["'`]([^"'`]+)["'`]/u.exec(finding.message)?.[1];
-  if (event === undefined) return false;
+  if (event === undefined) return null;
+  const reading = unusedEmitPatinaReading(event, source);
+  if (reading !== null) return reading;
   const escaped = event.replace(/[.*+?^${}()|[\]\\]/gu, "\\$&");
-  return new RegExp(`\\$emit\\s*\\(\\s*["']${escaped}["']`, "u").test(source);
+  return new RegExp(`\\$emit\\s*\\(\\s*["']${escaped}["']`, "u").test(source)
+    ? "Patina reads the authored template expression and sees this declared event being emitted; eslint-plugin-vue does not expose that template call to this rule."
+    : null;
 }
 
 function instanceEventsApiMayBeOverridden(finding: LintRecord, source: string): boolean {
@@ -894,6 +918,8 @@ function baselineIntentionalReason(finding: LintRecord, cwd: string): string | n
   } catch {
     return null;
   }
+  const parser = baselineParserIntentionalReason(finding, source);
+  if (parser !== null) return parser;
   const componentRegistration = componentRegistrationBaselineIntentionalReason(finding, source);
   if (componentRegistration !== null) return componentRegistration;
   if (
@@ -935,11 +961,10 @@ function baselineIntentionalReason(finding: LintRecord, cwd: string): string | n
     /<p\b[^>]*>[\s\S]{0,4000}<div\b/iu.test(source)
   )
     return "Patina refuses an unused-component conclusion after invalid paragraph content forces HTML tree recovery; repair the malformed template before relying on component-use analysis.";
-  if (
-    finding.ruleId === "vue/no-unused-emit-declarations" &&
-    templateEmitsDeclaredEvent(finding, source)
-  )
-    return "Patina reads the authored template expression and sees this declared event being emitted; eslint-plugin-vue does not expose that template call to this rule.";
+  if (finding.ruleId === "vue/no-unused-emit-declarations") {
+    const reason = templateEmitReason(finding, source);
+    if (reason !== null) return reason;
+  }
   if (
     finding.ruleId === "vue/no-deprecated-events-api" &&
     instanceEventsApiMayBeOverridden(finding, source)

@@ -15,10 +15,14 @@ import {
   heritageOnlyPropReason,
   inheritedPropMember,
   inheritedPropMemberReason,
+  redeclaredDerivedPropMember,
+  redeclaredDerivedPropMemberReason,
 } from "./inherited_prop_members.ts";
 import {
   booleanDefaultFromImportedContract,
   duplicateKeyFromImportedContract,
+  importedSetupPropCollision,
+  importedSetupPropCollisionReason,
   importedPropCollisionReason,
   importedPropContractReason,
   propFindingFromImportedContract,
@@ -30,6 +34,7 @@ import {
   emitFindingFromImportedContract,
   undeclaredSlotFromImportedContract,
 } from "./imported_macro_contract.ts";
+import { baselineParserIntentionalReason } from "./parser_intentional.ts";
 import {
   indexRealProjectLocationSource,
   realProjectLocationDivergence,
@@ -234,6 +239,8 @@ export function baselineIntentionalReason(
   source?: string | null,
 ): string | null {
   if (source !== undefined && source !== null) {
+    const parser = baselineParserIntentionalReason(finding, source);
+    if (parser !== null) return parser;
     const componentRegistration = componentRegistrationBaselineIntentionalReason(finding, source);
     if (componentRegistration !== null) return componentRegistration;
   }
@@ -675,6 +682,11 @@ export function patinaIntentionalReason(
   const importedContract = importedPropContractFinding(finding, source);
   if (importedContract !== null) return importedContract;
   if (
+    finding.ruleId === "script/no-dupe-keys" &&
+    importedSetupPropCollision(finding.message, source)
+  )
+    return importedSetupPropCollisionReason;
+  if (
     finding.ruleId === "script/require-default-prop" &&
     inlineExtensionBesideDefaultsSpread(finding, source)
   )
@@ -693,7 +705,10 @@ export function patinaIntentionalReason(
     return heritageOnlyPropReason;
   if (finding.ruleId === "vue/require-prop-comment") {
     const offset = findingOffset(finding, source);
-    if (offset !== null && inheritedPropMember(offset, source)) return inheritedPropMemberReason;
+    if (offset !== null) {
+      if (inheritedPropMember(offset, source)) return inheritedPropMemberReason;
+      if (redeclaredDerivedPropMember(offset, source)) return redeclaredDerivedPropMemberReason;
+    }
   }
   if (finding.ruleId === "vue/next-tick-style" && findingInScriptSetup(finding, source))
     return "Patina also checks <script setup>, as requested in #12450 and kept in #12670; eslint-plugin-vue's defineVueVisitor only visits component option objects.";
@@ -1170,17 +1185,19 @@ function unusedEmitUpstreamMiss(message: string, source: string): string | null 
  * code and pairs with Patina's expression error.
  */
 function parseErrorPointInRange(positive: LintRecord, negative: LintRecord): boolean {
+  const code = /^Parsing error: (?:x-)?([a-z]+(?:-[a-z]+)+)\.$/u.exec(negative.message)?.[1];
+  const pointInRange = negative.column >= positive.column && negative.column <= positive.endColumn;
+  const controlCharacterPrecedesRange =
+    code === "control-character-in-input-stream" && negative.column + 1 === positive.column;
   if (
     negative.line !== negative.endLine ||
     negative.column !== negative.endColumn ||
     positive.line !== negative.line ||
     positive.endLine !== positive.line ||
-    negative.column < positive.column ||
-    negative.column > positive.endColumn
+    (!pointInRange && !controlCharacterPrecedesRange)
   )
     return false;
   const patina = positive.message.replace(/^\[[^\]]*\]\s*/u, "").toLowerCase();
-  const code = /^Parsing error: (?:x-)?([a-z]+(?:-[a-z]+)+)\.$/u.exec(negative.message)?.[1];
   return code === undefined
     ? negative.message.startsWith("Parsing error: ") &&
         patina.startsWith("error parsing javascript expression")

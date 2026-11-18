@@ -7,6 +7,38 @@
 export const inheritedPropMemberReason =
   "Patina reads props a defineProps type inherits through a same-file interface `extends` clause; eslint-plugin-vue never follows interface heritage, so it does not see this member.";
 
+export const redeclaredDerivedPropMemberReason =
+  "Patina checks a prop explicitly redeclared by the defineProps interface even when that interface also extends a local base contract; eslint-plugin-vue skips these repeated derived members once interface heritage is present.";
+
+/**
+ * The finding is on a member explicitly repeated by the defineProps interface
+ * and by one of its same-file base object contracts.
+ */
+export function redeclaredDerivedPropMember(offset: number, source: string): boolean {
+  const before = source.slice(0, offset);
+  const header = /\binterface\s+([A-Za-z_$][\w$]*)\s+extends\s+([^{}]+)\{[^{}]*$/u.exec(before);
+  const derived = header?.[1],
+    bases = header?.[2];
+  if (derived === undefined || bases === undefined) return false;
+  const root = /\bdefineProps\s*<\s*([A-Za-z_$][\w$]*)/u.exec(source)?.[1];
+  if (root !== derived) return false;
+  const member = /^\s*([A-Za-z_$][\w$]*)\s*\??\s*:/u.exec(source.slice(offset))?.[1];
+  if (member === undefined) return false;
+  for (const base of bases.matchAll(identifier)) {
+    const escapedBase = base[0].replace(/\$/gu, "\\$");
+    const escapedMember = member.replace(/\$/gu, "\\$");
+    const alias = new RegExp(`\\btype\\s+${escapedBase}\\b[^=]*=\\s*\\{([^{}]*)\\}`, "u").exec(
+      source,
+    )?.[1];
+    if (
+      alias !== undefined &&
+      new RegExp(`(?:^|[,;])\\s*${escapedMember}\\s*\\??\\s*:`, "u").test(alias)
+    )
+      return true;
+  }
+  return false;
+}
+
 const identifier = /[A-Za-z_$][\w$]*/gu;
 const maximumVisitedTypes = 32;
 

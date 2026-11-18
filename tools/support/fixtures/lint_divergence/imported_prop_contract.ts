@@ -18,6 +18,29 @@ export const importedPropContractReason =
 export const importedPropCollisionReason =
   "Patina resolves props declared by a contract imported from another module, so a same-named binding or template variable collides with one; the eslint-plugin-vue baseline runs without type-aware parser services, so those props are unknown to it.";
 
+export const importedSetupPropCollisionReason =
+  "Patina includes imported script-setup values in the template namespace, so an imported helper that is also the default for a same-named prop is a duplicate key; eslint-plugin-vue does not include that import in this rule's setup namespace.";
+
+/** A value import is also used as the default for a same-named prop. */
+export function importedSetupPropCollision(message: string, source: string): boolean {
+  const name = /^\[vize:[^\]]+\] Duplicated key '([^']+)'/u.exec(message)?.[1];
+  if (name === undefined) return false;
+  const escaped = escapeName(name);
+  const valueImport = new RegExp(
+    `\\bimport\\s+(?!type\\b)(?:[^;{}]*,\\s*)?\\{[^{}]*(?<![\\w$])${escaped}(?![\\w$]|\\s+as\\b)[^{}]*\\}\\s*from\\b`,
+    "u",
+  );
+  const sameNamedDefault = new RegExp(
+    `\\b${escaped}\\s*:\\s*\\(\\s*\\)\\s*=>\\s*${escaped}(?![\\w$])`,
+    "u",
+  );
+  return (
+    valueImport.test(source) &&
+    /\bwithDefaults\s*\(\s*defineProps\s*</u.test(source) &&
+    sameNamedDefault.test(source)
+  );
+}
+
 interface Range {
   start: number;
   end: number;

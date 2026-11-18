@@ -15,22 +15,24 @@ const identifier = String.raw`[A-Za-z_$][\w$]*`;
 
 /** Why Patina reports `event` as used where eslint-plugin-vue does not. */
 export function unusedEmitPatinaReading(event: string, source: string): string | null {
+  const script = scriptSetup(source);
+  if (script === null || !/\bdefineEmits\s*(?:<|\()/u.test(script)) return null;
   const binding = new RegExp(
     `\\b(?:const|let|var)\\s+(${identifier})\\s*=\\s*defineEmits\\b`,
     "u",
-  ).exec(source)?.[1];
-  const script = scriptSetup(source);
-  if (binding === undefined || script === null) return null;
+  ).exec(script)?.[1];
   const consts = constNames(script);
   let computed = false;
   const resolved = new Set<string>();
-  for (const argument of callArguments(script, binding)) {
-    const names = argumentNames(argument, consts);
-    if (names === null) computed = true;
-    else if (!literal(argument)) for (const name of names) resolved.add(name);
+  if (binding !== undefined) {
+    for (const argument of callArguments(script, binding)) {
+      const names = argumentNames(argument, consts);
+      if (names === null) computed = true;
+      else if (!literal(argument)) for (const name of names) resolved.add(name);
+    }
   }
   const template = templateText(source);
-  for (const callee of [binding, "$emit"])
+  for (const callee of [...(binding === undefined ? [] : [binding]), "$emit"])
     for (const argument of callArguments(template, callee))
       if (argument !== "" && !/^['"]/u.test(argument)) computed = true;
   if (computed) return computedEmitReason;

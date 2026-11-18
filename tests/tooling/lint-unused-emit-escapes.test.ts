@@ -69,3 +69,13 @@ emit(EVENTS.save)
   const nested = `<script setup>\nconst emit = defineEmits(['a', 'b'])\nfunction f() {\n  const A = 'a'\n  emit(A)\n}\n</script>`;
   assert.match(unused(nested, "b") ?? "", /computed event name/u);
 });
+
+test("a dynamic template $emit classifies an unbound defineEmits declaration", () => {
+  const sfc = `<script setup>
+defineEmits(['rename', 'delete'])
+const menu = [{ name: 'rename' }, { name: 'delete' }]
+</script>
+<template><button v-for="item in menu" @click="$emit(item.name)" /></template>`;
+  for (const event of ["rename", "delete"])
+    assert.match(unused(sfc, event) ?? "", /computed event name/u, event);
+});
