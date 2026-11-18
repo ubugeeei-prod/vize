@@ -1,0 +1,11 @@
+{
+  "profile": [],
+  "proofs": {
+    "Coma": {
+      "vc_the_value_axis_is_a_strict_chain": {
+        "prover": "alt-ergo",
+        "time": 0.01
+      }
+    }
+  }
+}

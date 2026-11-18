@@ -1,0 +1,14 @@
+[package]
+name = "vize_l3_lattice_proofs"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[lib]
+path = "../../../../davinci/vize_l3/src/lattice/creusot.rs"
+
+[dependencies]
+creusot-std = { workspace = true }
+
+[lints]
+workspace = true
