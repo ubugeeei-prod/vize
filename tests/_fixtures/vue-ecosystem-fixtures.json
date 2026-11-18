@@ -407,6 +407,7 @@
         "lsp"
       ],
       "diff": "curator-compare",
+      "lspRequestTimeoutMs": 240000,
       "lspAuthoredOracle": {
         "templateBinding": {
           "file": "components/comment/demo/editor.vue",
