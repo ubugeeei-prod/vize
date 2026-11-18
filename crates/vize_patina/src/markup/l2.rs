@@ -229,8 +229,44 @@ impl<'a> L2Template<'a> {
     /// Parse `source` into L1 and lower it into L2, keeping authored comments
     /// as `ui.comment` ops (the child list the lint parser sees).
     pub fn lower(allocator: &'a Allocator, source: &'a str) -> Self {
-        let (tree, authored, errors) =
-            vize_l1::markup::parse_with_authored_diagnostics(allocator, source);
+        Self::from_parse(
+            allocator,
+            vize_l1::markup::parse_with_authored_diagnostics(allocator, source),
+        )
+    }
+
+    /// [`Self::lower`] for a template the browser parses as HTML first
+    /// (standalone HTML), whose diagnostics also report foster parenting.
+    pub fn lower_in_dom(allocator: &'a Allocator, source: &'a str) -> Self {
+        Self::from_parse(
+            allocator,
+            vize_l1::markup::parse_in_dom_with_authored_diagnostics(allocator, source),
+        )
+    }
+
+    /// A standalone HTML document is parsed by the browser before Vue reads it,
+    /// so its tables foster misplaced content; a Vue template is not.
+    pub(crate) fn lower_for(
+        allocator: &'a Allocator,
+        source: &'a str,
+        kind: crate::context::TemplateDocumentKind,
+    ) -> Self {
+        match kind {
+            crate::context::TemplateDocumentKind::StandaloneHtml => {
+                Self::lower_in_dom(allocator, source)
+            }
+            crate::context::TemplateDocumentKind::VueTemplate => Self::lower(allocator, source),
+        }
+    }
+
+    fn from_parse(
+        allocator: &'a Allocator,
+        (tree, authored, errors): (
+            SurfaceTree<'a>,
+            Option<SurfaceTree<'a>>,
+            vize_l0::Vec<'a, SurfaceError>,
+        ),
+    ) -> Self {
         let lowered = lower_preserving_comments(allocator, &tree, &errors);
         Self {
             tree,

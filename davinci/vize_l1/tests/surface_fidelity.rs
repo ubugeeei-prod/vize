@@ -18,7 +18,8 @@ use vize_l0::ErrorCode;
 use vize_l0::{Allocator, String};
 use vize_l1::markup::{
     ElementClose, HoleCounts, SurfaceChild, SurfaceParseOptions, SurfaceTree, check_fidelity,
-    hole_counts, parse, parse_with_authored_diagnostics, parse_with_options, render,
+    hole_counts, parse, parse_in_dom_with_authored_diagnostics, parse_with_authored_diagnostics,
+    parse_with_options, render,
 };
 
 fn rendered(tree: &SurfaceTree<'_>) -> String {
@@ -97,6 +98,29 @@ fn structural_diagnostics_are_an_explicit_product_opt_in() {
     assert_eq!(complete.len(), 2);
     assert!(matches!(complete[0].code, ErrorCode::EofInTag));
     assert!(matches!(complete[1].code, ErrorCode::MissingEndTag));
+}
+
+#[test]
+fn only_an_in_dom_template_is_fostered() {
+    // Vue builds a template as written; a browser parsing in-DOM HTML moves
+    // content a table cannot hold before it.
+    let allocator = Allocator::new();
+    let foster = "Foster parenting moved this element before the nearest open table.";
+    for source in [
+        "<table><div>x</div></table>",
+        "<table class=\"table\"><draggable tag=\"tbody\"><tr><td>1</td></tr></draggable></table>",
+    ] {
+        let (_, _, template) = parse_with_authored_diagnostics(&allocator, source);
+        let (_, _, in_dom) = parse_in_dom_with_authored_diagnostics(&allocator, source);
+        let messages = |errors: &[vize_l1::markup::SurfaceError]| {
+            errors
+                .iter()
+                .map(|error| error.message(source))
+                .collect::<Vec<String>>()
+        };
+        assert_eq!(messages(&template), Vec::<String>::new(), "{source}");
+        assert_eq!(messages(&in_dom), [foster], "{source}");
+    }
 }
 
 #[test]

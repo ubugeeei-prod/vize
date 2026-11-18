@@ -23,6 +23,19 @@ pub use crate::dialect::vue3::surface::{
     parse_component_with_authored, parse_component_with_options,
 };
 
+/// Which structural recoveries the tree construction reports.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Structure {
+    /// Only the tokenizer's errors (the historical surface contract).
+    Off,
+    /// A Vue template, which Vue's compiler builds as written: no foster
+    /// parenting, which only a browser's HTML parse applies.
+    Template,
+    /// A template the browser parses as HTML first (in-DOM, standalone HTML):
+    /// content a table cannot hold is fostered before it.
+    InDom,
+}
+
 /// Parse-time switches L1 owns for the L2 consumers.
 #[derive(Clone, Copy, Default, PartialEq, Eq)]
 pub struct SurfaceParseOptions {
@@ -97,7 +110,7 @@ pub fn parse_with_options_and_caps<'a>(
         options,
         authored,
         caps.raw_html_interpolation,
-        false,
+        Structure::Off,
     );
     (authored_tree.unwrap_or(tree), errors)
 }
@@ -119,7 +132,7 @@ pub fn parse_with_authored<'a>(
         SurfaceParseOptions::default(),
         true,
         false,
-        false,
+        Structure::Off,
     )
 }
 
@@ -143,7 +156,28 @@ pub fn parse_with_authored_diagnostics<'a>(
         SurfaceParseOptions::default(),
         true,
         false,
+        Structure::Template,
+    )
+}
+
+/// [`parse_with_authored_diagnostics`] for a template the browser parses as
+/// HTML before Vue reads it (in-DOM, standalone HTML), so the diagnostics
+/// also report foster parenting, which a Vue template never undergoes.
+pub fn parse_in_dom_with_authored_diagnostics<'a>(
+    allocator: &'a Allocator,
+    source: &'a str,
+) -> (
+    SurfaceTree<'a>,
+    Option<SurfaceTree<'a>>,
+    Vec<'a, SurfaceError>,
+) {
+    parse_projection(
+        allocator,
+        source,
+        SurfaceParseOptions::default(),
         true,
+        false,
+        Structure::InDom,
     )
 }
 
@@ -153,30 +187,16 @@ fn parse_projection<'a>(
     options: SurfaceParseOptions,
     authored: bool,
     raw_interpolation: bool,
-    structural_diagnostics: bool,
+    structure: Structure,
 ) -> (
     SurfaceTree<'a>,
     Option<SurfaceTree<'a>>,
     Vec<'a, SurfaceError>,
 ) {
     if raw_interpolation {
-        parse_projection_mode::<true>(
-            allocator,
-            source,
-            options,
-            authored,
-            true,
-            structural_diagnostics,
-        )
+        parse_projection_mode::<true>(allocator, source, options, authored, true, structure)
     } else {
-        parse_projection_mode::<false>(
-            allocator,
-            source,
-            options,
-            authored,
-            false,
-            structural_diagnostics,
-        )
+        parse_projection_mode::<false>(allocator, source, options, authored, false, structure)
     }
 }
 
@@ -186,7 +206,7 @@ fn parse_projection_mode<'a, const RAW: bool>(
     options: SurfaceParseOptions,
     authored: bool,
     raw_interpolation: bool,
-    structural_diagnostics: bool,
+    structure: Structure,
 ) -> (
     SurfaceTree<'a>,
     Option<SurfaceTree<'a>>,
@@ -196,7 +216,7 @@ fn parse_projection_mode<'a, const RAW: bool>(
         allocator,
         source,
         authored,
-        structural_diagnostics,
+        structure,
         |events, errors| {
             let recorder = Recorder { events, errors };
             let sink = NamespaceSink::new(allocator, source, recorder);
@@ -231,7 +251,11 @@ pub(crate) fn construct<'a, const RAW: bool>(
     Vec<'a, SurfaceError>,
 ) {
     construct_with_tag_facts_and_diagnostics::<RAW, false>(
-        allocator, source, authored, false, record,
+        allocator,
+        source,
+        authored,
+        Structure::Off,
+        record,
     )
 }
 
@@ -239,7 +263,7 @@ fn construct_with_diagnostics<'a, const RAW: bool>(
     allocator: &'a Allocator,
     source: &'a str,
     authored: bool,
-    structural_diagnostics: bool,
+    structure: Structure,
     record: impl FnOnce(&mut Vec<'a, Event>, &mut Vec<'a, SurfaceError>),
 ) -> (
     SurfaceTree<'a>,
@@ -247,11 +271,7 @@ fn construct_with_diagnostics<'a, const RAW: bool>(
     Vec<'a, SurfaceError>,
 ) {
     construct_with_tag_facts_and_diagnostics::<RAW, false>(
-        allocator,
-        source,
-        authored,
-        structural_diagnostics,
-        record,
+        allocator, source, authored, structure, record,
     )
 }
 
@@ -268,7 +288,11 @@ pub(crate) fn construct_with_tag_facts<'a, const RAW: bool, const TAG_FACTS: boo
     Vec<'a, SurfaceError>,
 ) {
     construct_with_tag_facts_and_diagnostics::<RAW, TAG_FACTS>(
-        allocator, source, authored, false, record,
+        allocator,
+        source,
+        authored,
+        Structure::Off,
+        record,
     )
 }
 
@@ -276,7 +300,7 @@ fn construct_with_tag_facts_and_diagnostics<'a, const RAW: bool, const TAG_FACTS
     allocator: &'a Allocator,
     source: &'a str,
     authored: bool,
-    structural_diagnostics: bool,
+    structure: Structure,
     record: impl FnOnce(&mut Vec<'a, Event>, &mut Vec<'a, SurfaceError>),
 ) -> (
     SurfaceTree<'a>,
@@ -298,15 +322,16 @@ fn construct_with_tag_facts_and_diagnostics<'a, const RAW: bool, const TAG_FACTS
     // directive heads separately. Ordinary surface callers also retain the
     // historical lexer-only contract; replacing product owners opt in to the
     // complete parser/template vector explicitly.
-    let (tree, repaired) = if TAG_FACTS || !structural_diagnostics {
+    let (tree, repaired) = if TAG_FACTS || structure == Structure::Off {
         let mut ignored = Vec::new_in(&allocator);
-        build::<RAW, TAG_FACTS, false>(allocator, source, &events, &mut ignored, true)
+        build::<RAW, TAG_FACTS, false>(allocator, source, &events, &mut ignored, true, false)
     } else {
-        build::<RAW, TAG_FACTS, true>(allocator, source, &events, &mut errors, true)
+        let fosters = structure == Structure::InDom;
+        build::<RAW, TAG_FACTS, true>(allocator, source, &events, &mut errors, true, fosters)
     };
     let authored = (authored && repaired).then(|| {
         let mut ignored = Vec::new_in(&allocator);
-        build::<RAW, TAG_FACTS, false>(allocator, source, &events, &mut ignored, false).0
+        build::<RAW, TAG_FACTS, false>(allocator, source, &events, &mut ignored, false, false).0
     });
     errors.sort_by_key(|error| error.encounter);
     debug_assert!(

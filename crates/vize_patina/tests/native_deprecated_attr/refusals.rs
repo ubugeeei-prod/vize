@@ -150,13 +150,6 @@ fn fostered_and_valid_table_descendants_refuse_without_dropping_registered_findi
         );
         for locale in LOCALES {
             let mut diagnostics = Vec::new();
-            if foster {
-                diagnostics.push(parser(
-                    "error",
-                    "Foster parenting moved this element before the nearest open table.",
-                    span(source, "<div align='yes'>"),
-                ));
-            }
             diagnostics.push(warning(
                 locale,
                 span(source, head),

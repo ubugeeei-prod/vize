@@ -20869,6 +20869,43 @@
       }
     },
     {
+      "id": "linter/sfc-tables-are-not-fostered",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "sfc-tables-are-not-fostered",
+        "files": [
+          {
+            "path": "src/DraggableTable.vue.txt",
+            "role": "issue-authored-sfc-regression",
+            "sha256": "3ef6c57d726a94c4b13ed10d450f030262e11999d8d3b7f068103ff94328d871"
+          },
+          {
+            "path": "src/MisplacedCell.vue.txt",
+            "role": "issue-authored-sfc-control",
+            "sha256": "9035ca3c084f422edb3cd536e9c6d52bfe8b0a88ee6128cf569e9d8a5073d8db"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/sibling-script-import-reads-10616",
       "state": "active",
       "targets": [

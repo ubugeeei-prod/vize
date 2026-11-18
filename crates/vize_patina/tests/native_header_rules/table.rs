@@ -1,12 +1,12 @@
 use super::support::{
-    HeaderRule, LOCALES, NeverLookup, complete, expected, parity, parser, registered, selected,
-    span, warning,
+    HeaderRule, LOCALES, NeverLookup, complete, expected, parity, registered, selected, span,
+    warning,
 };
 use vize_l0::{Allocator, cstr};
 use vize_patina::native::{NativeLintRefusal, NativeSyntaxLint};
 
 #[test]
-fn original_foster_notice_refuses_the_whole_header_before_any_lookup() {
+fn original_table_context_refuses_the_whole_header_before_any_lookup() {
     for tag in ["html", "marquee"] {
         let opening = cstr!("<{tag} autofocus accesskey='a'>");
         let source = cstr!("<template><table>{opening}</{tag}></table></template>");
@@ -26,11 +26,7 @@ fn original_foster_notice_refuses_the_whole_header_before_any_lookup() {
                 })
             );
             for locale in LOCALES {
-                let mut diagnostics = vec![parser(
-                    "error",
-                    "Foster parenting moved this element before the nearest open table.",
-                    span(&source, &opening),
-                )];
+                let mut diagnostics = Vec::new();
                 if tag == "marquee" || !matches!(rule, HeaderRule::Distracting) {
                     let range = if matches!(rule, HeaderRule::Distracting) {
                         span(&source, &opening)

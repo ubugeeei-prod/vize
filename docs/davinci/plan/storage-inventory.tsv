@@ -116,7 +116,7 @@ l1	analysis	davinci/vize_l1/src/markup/htmlish/view/text/tests/ownership.rs	1	0	
 l1	analysis	davinci/vize_l1/src/markup/htmlish/view/text_value/tests/ownership.rs	1	0	1	0	0	0	0	0
 l1	-	davinci/vize_l1/src/markup/htmlish/event.rs	0	0	0	0	1	2	0	0
 l1	-	davinci/vize_l1/src/markup/htmlish/event/tests.rs	0	0	0	0	1	4	0	0
-l1	-	davinci/vize_l1/src/markup/htmlish/parse.rs	0	0	0	0	1	26	0	0
+l1	-	davinci/vize_l1/src/markup/htmlish/parse.rs	0	0	0	0	1	27	0	0
 l1	-	davinci/vize_l1/src/markup/htmlish/parse/error.rs	0	0	3	0	0	0	0	0
 l1	-	davinci/vize_l1/src/markup/htmlish/parse/namespace.rs	0	0	0	0	1	2	0	0
 l1	-	davinci/vize_l1/src/markup/pug.rs	0	0	0	0	1	6	0	0

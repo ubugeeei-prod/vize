@@ -1,0 +1,16 @@
+<script setup lang="ts">
+import { ref } from "vue";
+import { VueDraggableNext as Draggable } from "vue-draggable-next";
+
+const rows = ref([{ id: 1, name: "one" }]);
+</script>
+
+<template>
+  <table class="table">
+    <draggable v-model="rows" tag="tbody">
+      <tr v-for="row in rows" :key="row.id">
+        <td>{{ row.name }}</td>
+      </tr>
+    </draggable>
+  </table>
+</template>

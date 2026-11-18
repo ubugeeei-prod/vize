@@ -70,6 +70,7 @@ pub(crate) fn build<
     events: &[Event],
     errors: &mut Vec<'a, crate::markup::SurfaceError>,
     repair_interactive: bool,
+    fosters: bool,
 ) -> (SurfaceTree<'a>, bool) {
     let mut b = Builder::<RAW, TAG_FACTS, STRUCTURAL_DIAGNOSTICS> {
         src,
@@ -82,6 +83,7 @@ pub(crate) fn build<
         stack: Vec::new_in(&allocator),
         recovery: scope::Recovery::new(allocator, repair_interactive),
         repaired: false,
+        fosters,
     };
     b.run();
     // EOF: bytes the tokenizer consumed without reporting structure
@@ -131,6 +133,8 @@ struct Builder<'a, 'e, const RAW: bool, const TAG_FACTS: bool, const STRUCTURAL_
     stack: Vec<'a, Frame<'a>>,
     recovery: scope::Recovery<'a>,
     repaired: bool,
+    /// Report foster parenting: only for an in-DOM template.
+    fosters: bool,
 }
 
 impl<'a, const RAW: bool, const TAG_FACTS: bool, const STRUCTURAL_DIAGNOSTICS: bool>
