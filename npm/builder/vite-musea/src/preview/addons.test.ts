@@ -84,6 +84,14 @@ void test("preview addon messages stay on the preview origin", () => {
   assert.doesNotMatch(MUSEA_ADDONS_INIT_CODE, /postMessage\([^)]*,\s*['"]\*['"]\)/);
 });
 
+void test("preview readiness can be requested after iframe load", () => {
+  assert.match(MUSEA_ADDONS_INIT_CODE, /case 'musea:request-ready'/);
+  assert.match(
+    MUSEA_ADDONS_INIT_CODE,
+    /case 'musea:request-ready':[\s\S]*postMessage\(\{ type: 'musea:ready'/u,
+  );
+});
+
 void test("the a11y runner reports failures back to the gallery instead of throwing away the request", () => {
   // The gallery keys pending requests by requestId and times them out after
   // 30s. A runner that throws without posting a result turns a clear error into

@@ -219,6 +219,13 @@ function onReadyMessage(event: MessageEvent) {
   }
 }
 
+function requestIframeReady() {
+  const iframe = iframeRef.value;
+  if (!iframe) return;
+  iframeReady.value = false;
+  sendMessage(iframe, "musea:request-ready");
+}
+
 onMounted(() => {
   window.addEventListener("message", onReadyMessage);
 });
@@ -404,6 +411,7 @@ const controlKindOptions = [
                 :src="safeUrl(previewUrl)"
                 title="Live component preview"
                 sandbox="allow-scripts allow-same-origin"
+                @load="requestIframeReady"
               />
             </div>
           </div>
