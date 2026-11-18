@@ -334,11 +334,14 @@ function rewriteKeptPaths(
   const dir = path.posix.dirname(file);
   return text.replace(pathToken, (token: string) => {
     anyPattern.lastIndex = 0;
-    if (!token.includes("/") || !anyPattern.test(token)) return token;
+    if (!anyPattern.test(token)) return token;
     const body = token.replace(/[.]+$/u, "");
     const trail = token.slice(body.length);
     const bare = body.replace(/\/$/u, "");
-    const relative = /^\.{1,2}\//u.test(bare);
+    // A file name names its sibling in the same directory (`[x.md](./x.md)`).
+    const sibling = !bare.includes("/") && bare.includes(".");
+    if (!bare.includes("/") && !sibling) return token;
+    const relative = sibling || /^\.{1,2}\//u.test(bare);
     const target = relative ? path.posix.normalize(path.posix.join(dir, bare)) : bare;
     // A bare top-level directory names the program's place in history, not a file to reach.
     if (target.startsWith("../") || !target.includes("/")) return token;
