@@ -36,7 +36,9 @@ impl IndexedHookMask {
         while self.words.len() <= word {
             self.words.push(0);
         }
-        self.words[word] |= 1 << (rank % u64::BITS as usize);
+        if let Some(bits) = self.words.get_mut(word) {
+            *bits |= 1 << (rank % u64::BITS as usize);
+        }
     }
 }
 
