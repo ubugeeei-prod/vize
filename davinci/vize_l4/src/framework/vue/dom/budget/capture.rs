@@ -198,6 +198,7 @@ pub(super) fn emit_dom_source_captured<'a, O: PassObserver, C: CaptureSink>(
             SurfaceParseOptions {
                 experimental_in_tag_comments: options.experimental_in_tag_comments,
                 syntax,
+                html_tree_construction: false,
             },
             caps,
         );

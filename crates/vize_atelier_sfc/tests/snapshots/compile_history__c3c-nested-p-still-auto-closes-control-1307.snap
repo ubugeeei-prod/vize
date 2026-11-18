@@ -29,7 +29,7 @@ Case {
 }
 Template {
     errors: [],
-    preamble: "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment } from \"vue\"\n",
-    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    _createElementVNode(\"p\", null, \"first\"),\n    _createElementVNode(\"p\", null, \"second\")\n  ], 64 /* STABLE_FRAGMENT */))\n}",
+    preamble: "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, createTextVNode as _createTextVNode } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"p\", null, [\n    _createTextVNode(\"first\"),\n    _createElementVNode(\"p\", null, \"second\")\n  ]))\n}",
     map: None,
 }

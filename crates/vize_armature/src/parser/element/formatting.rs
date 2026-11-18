@@ -1,4 +1,5 @@
-//! Adoption-agency recovery for misnested formatting end tags.
+//! Adoption-agency recovery for misnested formatting end tags, for documents
+//! and callers that ask for HTML tree construction only.
 
 use vize_l0::Vec;
 use vize_relief::ElementNode;
@@ -12,7 +13,7 @@ impl<'a> Parser<'a> {
         start: usize,
         end: usize,
     ) -> bool {
-        if !Self::is_formatting_tag(tag) {
+        if !self.html_tree_construction() || !Self::is_formatting_tag(tag) {
             return false;
         }
         if self

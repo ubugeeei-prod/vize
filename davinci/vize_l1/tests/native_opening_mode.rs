@@ -67,7 +67,7 @@ fn native_opening_facts_include_own_inherited_void_and_self_closing_modes() {
 }
 
 #[test]
-fn recovery_keeps_authored_lexical_owner_for_both_projections() {
+fn nested_interactive_tags_keep_the_authored_lexical_owner() {
     let source = "<a v-pre><span>{{before}}<a>{{after}}</a>{{tail}}</span></a><p>{{end}}</p>";
     let allocator = Allocator::new();
     let parsed = parse_component_with_authored(&allocator, source).unwrap();
@@ -76,12 +76,8 @@ fn recovery_keeps_authored_lexical_owner_for_both_projections() {
         [("a", true), ("span", true), ("a", true), ("p", false)]
     );
     assert_eq!(check_fidelity(&parsed.tree), Ok(()));
-    let authored = parsed.authored.as_ref().unwrap();
-    assert_eq!(
-        modes(&authored.children),
-        [("a", true), ("span", true), ("a", true), ("p", false)]
-    );
-    assert_eq!(check_fidelity(authored), Ok(()));
+    // Built as written: no repaired tree, so no second projection.
+    assert!(parsed.authored.is_none());
 }
 
 #[test]

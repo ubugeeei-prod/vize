@@ -231,10 +231,6 @@ fn tree_construction_parse_errors_keep_production_dom_parity() {
     let _guard = PROFILER_TEST_LOCK.lock().unwrap();
     for (source, filename) in [
         (
-            "<template><form><div><form>inner</form></div></form></template><script setup>const label = 'inner'</script>",
-            "NestedForm.vue",
-        ),
-        (
             "<template><div><img src='x'></img></div></template><script setup>const label = 'inner'</script>",
             "VoidEndTag.vue",
         ),

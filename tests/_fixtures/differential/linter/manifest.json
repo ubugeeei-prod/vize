@@ -20967,6 +20967,37 @@
       }
     },
     {
+      "id": "linter/sfc-authored-structure-reuse",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "sfc-authored-structure-reuse",
+        "files": [
+          {
+            "path": "Repaired.vue.txt",
+            "role": "formerly-repaired-nesting-reuse",
+            "sha256": "30e2ea1ae86b308d41823f76701f10e795f0627659ebd628ac5d0ff33a599459"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/sfc-tables-are-not-fostered",
       "state": "active",
       "targets": [

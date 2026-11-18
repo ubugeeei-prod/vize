@@ -55,10 +55,12 @@ fn lowering_corpus_is_total() {
     // Re-pinned when compound text and v-for facts became
     // lowering-published: four committed battery fixtures record
     // `lower.text-fact`, and the v-for battery fixture records
-    // `lower.for-fact` before the transform table.
+    // `lower.for-fact` before the transform table. A Vue template keeps its
+    // authored structure, so `sibling_li_closes` leaves both `<li>` open: one
+    // more missing end tag (27 -> 28 diagnostics).
     assert_eq!(
         (ops, diagnostics, provenance, scopes),
-        (83, 27, 106, 1),
+        (83, 28, 106, 1),
         "battery census moved: re-pin in both lanes deliberately"
     );
 

@@ -166,7 +166,7 @@ fn five_pre_recovery_sources_keep_the_authored_v_pre_owner_without_parser_errors
         ),
         (
             "<template><p v-pre><div><meta :role='x' /></div></p></template>",
-            &[1][..],
+            &[0, 0][..],
         ),
         (
             "<template><a v-pre><a /><meta :role='x' /></a></template>",
@@ -174,11 +174,11 @@ fn five_pre_recovery_sources_keep_the_authored_v_pre_owner_without_parser_errors
         ),
         (
             "<template><select><option v-pre><option><meta :role='x' /></option></option></select></template>",
-            &[0, 1][..],
+            &[0, 0, 0][..],
         ),
         (
             "<template><select><optgroup v-pre><optgroup><meta :role='x' /></optgroup></optgroup></select></template>",
-            &[0, 1][..],
+            &[0, 0, 0][..],
         ),
     ] {
         let arena = Allocator::default();

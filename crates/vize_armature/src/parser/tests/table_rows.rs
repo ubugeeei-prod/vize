@@ -1,6 +1,6 @@
 //! Rows and cells written directly in a `<table>`: a component template keeps
 //! them as authored (Vue's compiler emits `table > tr`); a document and an
-//! explicit `implied_table_sections` parse get the HTML parser's owners.
+//! explicit `html_tree_construction` parse get the HTML parser's owners.
 
 use super::{find_element, parse, parse_document, parse_with_options};
 use vize_l0::Allocator;
@@ -65,9 +65,9 @@ fn document_parse_inserts_implicit_tbody() {
 }
 
 #[test]
-fn implied_table_sections_restore_the_html_owners() {
+fn html_tree_construction_restore_the_html_owners() {
     let options = || ParserOptions {
-        implied_table_sections: true,
+        html_tree_construction: true,
         ..ParserOptions::default()
     };
     let allocator = Allocator::new();
