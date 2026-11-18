@@ -35,13 +35,6 @@ type Workflow = {
   jobs: Record<string, { steps: Step[]; if?: unknown; "continue-on-error"?: unknown }>;
 };
 
-const rustFiles = (dir: string): string[] =>
-  fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
-    const full = path.join(dir, entry.name);
-    if (entry.isDirectory()) return rustFiles(full);
-    return entry.name.endsWith(".rs") ? [full] : [];
-  });
-
 /** Each proof package's library root, which sits next to its kernel. */
 function proofRoots(): string[] {
   const workspace = fs.readFileSync(path.join(crateDir, "Cargo.toml"), "utf8");
