@@ -1,0 +1,7 @@
+src/Comp.vue(18,8): error TS18048: 'optional' is possibly 'undefined'.
+src/Comp.vue(18,55): error TS18048: 'obj' is possibly 'undefined'.
+src/Comp.vue(19,30): error TS2345: Argument of type 'string' is not assignable to parameter of type 'number'.
+src/Comp.vue(19,41): error TS18048: 'date' is possibly 'undefined'.
+src/Comp.vue(19,66): error TS2339: Property 'b' does not exist on type '{ a: number; }'.
+src/Comp.vue(21,14): error TS2339: Property 'toUpperCase' does not exist on type 'string | number'.
+  Property 'toUpperCase' does not exist on type 'number'.

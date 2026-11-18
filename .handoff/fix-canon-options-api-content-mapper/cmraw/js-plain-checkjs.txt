@@ -1,0 +1,4 @@
+src/Comp.vue(15,10): error TS7006: Parameter 'n' implicitly has an 'any' type.
+src/Comp.vue(24,12): error TS2551: Property 'toFixed' does not exist on type 'string'. Did you mean 'fixed'?
+src/Comp.vue(24,33): error TS2551: Property 'toFixed' does not exist on type 'string'. Did you mean 'fixed'?
+src/Comp.vue(24,49): error TS2339: Property 'nope' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<ExtractPropTypes<{ msg: { type: StringConstructor; required: true; }; count: { type: NumberConstructor; default: number; }; }>, ...>, ... 24 more ..., ...>'.

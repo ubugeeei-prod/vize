@@ -1,0 +1,1 @@
+src/Comp.vue(9,64): error TS2339: Property 'c' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{ a?: any; b?: any; }, {}>, {}, { own: number; }, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, ... 18 more ..., ...>'.

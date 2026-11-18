@@ -22,6 +22,8 @@ pub(crate) struct SetupHelperPlan {
     pub(super) with_defaults_docs: bool,
     /// Hoisted editor modules keep their own `__DefineProps` owner alias.
     module_local_props: bool,
+    /// An Options API template's `$emit` is its authored instance's.
+    options_instance_emit: bool,
 }
 
 impl SetupHelperPlan {
@@ -57,6 +59,8 @@ impl SetupHelperPlan {
             || options.component_name.is_some())
             && summary.macros.with_defaults_expression().is_some();
         plan.module_local_props = options.local_component_ownership_helpers;
+        plan.options_instance_emit =
+            super::super::options_api::reads_instance_emit(summary, options);
         plan
     }
 
@@ -103,6 +107,9 @@ impl SetupHelperPlan {
         let ty = match (base, models) {
             (Some(base), Some(models)) => vize_carton::cstr!("{base} & {models}"),
             (Some(ty), None) | (None, Some(ty)) => ty,
+            (None, None) if self.options_instance_emit => {
+                String::from(super::super::options_api::INSTANCE_EMIT_TYPE)
+            }
             (None, None) => return None,
         };
         Some(vize_carton::cstr!("(void 0) as unknown as {ty}"))
@@ -208,6 +215,7 @@ fn shadowed_helpers(
         }),
         with_defaults_docs: false,
         module_local_props: false,
+        options_instance_emit: false,
     };
     if !SETUP_MACRO_HELPERS
         .iter()

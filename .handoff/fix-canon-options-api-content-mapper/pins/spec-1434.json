@@ -1,0 +1,162 @@
+{
+  "pack": "class-component-decorators-1434",
+  "module": "class_component_decorators_1434",
+  "test": "class_component_default_export_keeps_its_decorators",
+  "regressionCommit": "37b62dd501f041f8ea49684c412ac8912fa81b21",
+  "historicalIssue": 1434,
+  "checkerOptions": {
+    "optionsApi": true
+  },
+  "sources": {
+    "Panel.sync.vue.txt": "<script lang=\"ts\">\nimport { Vue } from 'vue-class-component'\nimport { Component, ModelSync, Prop, PropSync, VModel } from 'vue-property-decorator'\n\n@Component\nexport default class Panel extends Vue {\n  @Prop() readonly title!: string\n  @PropSync('open') synced!: boolean\n  @ModelSync('checked', 'change') checkedValue!: boolean\n  @VModel() text!: string\n  count = 0\n  get doubled() {\n    return this.count * 2\n  }\n  get ratio() {\n    return this.count\n  }\n  set ratio(value: number) {\n    this.count = value\n  }\n}\n</script>\n<template><button @click=\"synced = !synced; checkedValue = true; text = 'a'; ratio = 2; count++\">{{ title }}{{ doubled }}</button></template>\n",
+    "Panel.sync-invalid.vue.txt": "<script lang=\"ts\">\nimport { Vue } from 'vue-class-component'\nimport { Component, PropSync } from 'vue-property-decorator'\n\n@Component\nexport default class Panel extends Vue {\n  @PropSync('open') synced!: boolean\n  count = 0\n  get doubled() {\n    return this.count * 2\n  }\n}\n</script>\n<template><button @click=\"synced = 'yes'; doubled = 3\">{{ count }}</button></template>\n",
+    "vue-property-decorator.sync.index.d.ts.txt": "export declare function Component<T extends abstract new (...args: any[]) => unknown>(\n  target: T,\n  context?: ClassDecoratorContext<T>,\n): T\nexport declare function Prop(\n  options?: unknown,\n): (target: undefined, context: ClassFieldDecoratorContext) => void\nexport declare function PropSync(\n  propName: string,\n  options?: unknown,\n): (target: undefined, context: ClassFieldDecoratorContext) => void\nexport declare function ModelSync(\n  propName: string,\n  event: string,\n  options?: unknown,\n): (target: undefined, context: ClassFieldDecoratorContext) => void\nexport declare function VModel(\n  options?: unknown,\n): (target: undefined, context: ClassFieldDecoratorContext) => void\n"
+  },
+  "cases": [
+    {
+      "id": "decorated-class-default-export",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Counter.vue",
+          "source": "Counter.vue.txt"
+        },
+        {
+          "file": "node_modules/vue-class-component/package.json",
+          "source": "vue-class-component.package.json.txt"
+        },
+        {
+          "file": "node_modules/vue-class-component/index.d.ts",
+          "source": "vue-class-component.index.d.ts.txt"
+        },
+        {
+          "file": "node_modules/vue-property-decorator/package.json",
+          "source": "vue-property-decorator.package.json.txt"
+        },
+        {
+          "file": "node_modules/vue-property-decorator/index.d.ts",
+          "source": "vue-property-decorator.index.d.ts.txt"
+        }
+      ]
+    },
+    {
+      "id": "decorated-class-member-wrong-type",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Counter.vue",
+          "source": "Counter.script-invalid.vue.txt"
+        },
+        {
+          "file": "node_modules/vue-class-component/package.json",
+          "source": "vue-class-component.package.json.txt"
+        },
+        {
+          "file": "node_modules/vue-class-component/index.d.ts",
+          "source": "vue-class-component.index.d.ts.txt"
+        },
+        {
+          "file": "node_modules/vue-property-decorator/package.json",
+          "source": "vue-property-decorator.package.json.txt"
+        },
+        {
+          "file": "node_modules/vue-property-decorator/index.d.ts",
+          "source": "vue-property-decorator.index.d.ts.txt"
+        }
+      ]
+    },
+    {
+      "id": "decorated-class-template-wrong-argument",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Counter.vue",
+          "source": "Counter.template-invalid.vue.txt"
+        },
+        {
+          "file": "node_modules/vue-class-component/package.json",
+          "source": "vue-class-component.package.json.txt"
+        },
+        {
+          "file": "node_modules/vue-class-component/index.d.ts",
+          "source": "vue-class-component.index.d.ts.txt"
+        },
+        {
+          "file": "node_modules/vue-property-decorator/package.json",
+          "source": "vue-property-decorator.package.json.txt"
+        },
+        {
+          "file": "node_modules/vue-property-decorator/index.d.ts",
+          "source": "vue-property-decorator.index.d.ts.txt"
+        }
+      ]
+    },
+    {
+      "id": "sync-fields-and-setters-assignable",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Panel.vue",
+          "source": "Panel.sync.vue.txt"
+        },
+        {
+          "file": "node_modules/vue-class-component/package.json",
+          "source": "vue-class-component.package.json.txt"
+        },
+        {
+          "file": "node_modules/vue-class-component/index.d.ts",
+          "source": "vue-class-component.index.d.ts.txt"
+        },
+        {
+          "file": "node_modules/vue-property-decorator/package.json",
+          "source": "vue-property-decorator.package.json.txt"
+        },
+        {
+          "file": "node_modules/vue-property-decorator/index.d.ts",
+          "source": "vue-property-decorator.sync.index.d.ts.txt"
+        }
+      ]
+    },
+    {
+      "id": "sync-field-wrong-type-and-getter-only",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Panel.vue",
+          "source": "Panel.sync-invalid.vue.txt"
+        },
+        {
+          "file": "node_modules/vue-class-component/package.json",
+          "source": "vue-class-component.package.json.txt"
+        },
+        {
+          "file": "node_modules/vue-class-component/index.d.ts",
+          "source": "vue-class-component.index.d.ts.txt"
+        },
+        {
+          "file": "node_modules/vue-property-decorator/package.json",
+          "source": "vue-property-decorator.package.json.txt"
+        },
+        {
+          "file": "node_modules/vue-property-decorator/index.d.ts",
+          "source": "vue-property-decorator.sync.index.d.ts.txt"
+        }
+      ]
+    }
+  ]
+}

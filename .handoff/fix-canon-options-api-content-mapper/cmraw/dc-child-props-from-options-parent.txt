@@ -1,0 +1,8 @@
+src/Parent.vue(17,21): error TS2322: Type '(v: string) => string' is not assignable to type '(n: number) => any'.
+  Types of parameters 'v' and 'n' are incompatible.
+    Type 'number' is not assignable to type 'string'.
+src/Parent.vue(13,11): error TS2322: Type 'number' is not assignable to type 'string'.
+src/Parent.vue(15,20): error TS2322: Type '"c"' is not assignable to type '"a" | "b" | undefined'.
+src/Parent.vue(16,28): error TS2322: Type 'number' is not assignable to type 'string'.
+src/Parent.vue(14,4): error TS2345: Argument of type '{}' is not assignable to parameter of type 'ComponentPropsForTemplate<__Child_CheckProps_0, VueTemplatePublicAttrsType & Record<string, unknown>>'.
+  Property 'title' is missing in type '{}' but required in type '{ readonly title: string; readonly size?: number | undefined; readonly kind?: "a" | "b" | undefined; readonly tags?: string[] | undefined; readonly onPick?: ((n: number) => any) | undefined; }'.

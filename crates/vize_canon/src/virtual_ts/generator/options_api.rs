@@ -10,13 +10,16 @@ use vize_croquis::facts::used_component_name_list;
 use super::options_api_support::is_safe_value_identifier;
 use vize_carton::{CompactString, FxHashSet, String};
 
+mod class_members;
 mod computed;
 mod default_export;
+mod instance_emit;
 mod variables;
 
 #[cfg(test)]
 pub(super) use default_export::find_default_export_targets;
 pub(super) use default_export::{OptionsApiScriptFacts, analyze_options_api_script};
+pub(super) use instance_emit::{INSTANCE_EMIT_TYPE, reads_instance_emit};
 pub(super) use variables::emit_options_api_variables;
 
 fn unresolved_extends_template_names(

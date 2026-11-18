@@ -1,0 +1,5 @@
+src/MixedErrors.vue(12,14): error TS2339: Property 'toUpperCase' does not exist on type 'number'.
+src/MixedErrors.vue(12,40): error TS2345: Argument of type 'number' is not assignable to parameter of type 'string'.
+src/MixedErrors.vue(12,55): error TS2551: Property 'toFixed' does not exist on type 'string'. Did you mean 'fixed'?
+src/MixedErrors.vue(13,18): error TS2551: Property 'toFixed' does not exist on type 'string'. Did you mean 'fixed'?
+src/MixedErrors.vue(13,45): error TS2345: Argument of type 'string' is not assignable to parameter of type 'number'.

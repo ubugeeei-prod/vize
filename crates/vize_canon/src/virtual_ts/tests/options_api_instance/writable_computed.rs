@@ -310,5 +310,6 @@ export default {
     );
 }
 
+mod class_component;
 mod setter_fixtures;
 mod wrapped_options;

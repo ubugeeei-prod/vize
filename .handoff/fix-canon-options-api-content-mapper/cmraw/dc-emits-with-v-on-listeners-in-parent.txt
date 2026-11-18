@@ -1,0 +1,1 @@
+src/Parent.vue(13,20): error TS2339: Property 'missingHandler' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, { v: string; }, {}, { onChanged(): void; }, ComponentOptionsMixin, ComponentOptionsMixin, ... 18 more ..., ...>'.

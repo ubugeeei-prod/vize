@@ -1,0 +1,4 @@
+src/Comp.vue(9,12): error TS2339: Property 'nope' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<ExtractPropTypes<{ title: { type: StringConstructor; required: true; }; }>, "change"[]>, {}, { n: number; }, ... 22 more ..., ...>'.
+src/Comp.vue(10,12): error TS2540: Cannot assign to 'title' because it is a read-only property.
+src/Comp.vue(11,18): error TS2345: Argument of type '"unknown"' is not assignable to parameter of type '"change"'.
+src/Comp.vue(12,13): error TS2322: Type 'number' is not assignable to type 'string'.

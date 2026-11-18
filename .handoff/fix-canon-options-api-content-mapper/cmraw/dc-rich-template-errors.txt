@@ -1,0 +1,9 @@
+src/Rich.vue(37,14): error TS2551: Property 'toFixed' does not exist on type 'string'. Did you mean 'fixed'?
+src/Rich.vue(38,14): error TS2339: Property 'toUpperCase' does not exist on type 'number'.
+src/Rich.vue(41,18): error TS2339: Property 'nope' does not exist on type 'Item'.
+src/Rich.vue(42,14): error TS2551: Property 'toFixed' does not exist on type 'string'. Did you mean 'fixed'?
+src/Rich.vue(43,14): error TS2339: Property 'length' does not exist on type 'number'.
+src/Rich.vue(44,8): error TS18048: 'maybe' is possibly 'undefined'.
+src/Rich.vue(45,8): error TS2367: This comparison appears to be unintentional because the types '"a" | "b" | undefined' and '"c"' have no overlap.
+src/Rich.vue(40,25): error TS2345: Argument of type 'string' is not assignable to parameter of type 'number'.
+src/Rich.vue(39,8): error TS2339: Property 'unknownName' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<ExtractPropTypes<{ title: { type: StringConstructor; required: true; }; count: { type: NumberConstructor; default: number; }; items: { type: PropType<Item[]>; default: ...; }; ... 4 more ...; maybe: StringConstructor; }>, ...>, ... 24 more ..., ...>'.

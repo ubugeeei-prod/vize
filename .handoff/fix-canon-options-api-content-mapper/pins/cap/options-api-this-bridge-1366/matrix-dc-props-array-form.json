@@ -1,0 +1,1 @@
+[{"file":"src/Comp.vue","line":9,"column":64,"severity":1,"code":2339,"message":"Property 'c' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{ a?: any; b?: any; }, {}>, {}, { own: number; }, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, ... 18 more ..., ...>'."}]

@@ -1,0 +1,3 @@
+src/Comp.vue(12,46): error TS2339: Property '$missingGlobal' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, { amount: number; }, {}, { label(): string; }, ComponentOptionsMixin, ComponentOptionsMixin, ... 18 more ..., ...>'.
+src/Comp.vue(12,11): error TS2345: Argument of type 'number' is not assignable to parameter of type 'string'.
+src/Comp.vue(12,35): error TS2345: Argument of type 'string' is not assignable to parameter of type 'number'.

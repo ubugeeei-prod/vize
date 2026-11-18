@@ -93,6 +93,74 @@
           "message": "Property 'toUpperCase' does not exist on type 'number'."
         }
       ]
+    },
+    {
+      "id": "emits-object-template-dollar-emit",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "emits.valid.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "emits-object-template-dollar-emit-wrong-payload",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "emits.invalid.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 13,
+          "column": 25,
+          "severity": 1,
+          "code": 2769,
+          "message": "No overload matches this call.\nThe last overload gave the following error.\nArgument of type '\"save\"' is not assignable to parameter of type '\"close\"'."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 14,
+          "column": 25,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '\"missing\"' is not assignable to parameter of type '\"close\"'."
+        }
+      ]
+    },
+    {
+      "id": "emits-array-template-dollar-emit-unknown-event",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "emits.array.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 9,
+          "column": 25,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '\"other\"' is not assignable to parameter of type '\"close\" | \"open\"'."
+        }
+      ]
     }
   ]
 }

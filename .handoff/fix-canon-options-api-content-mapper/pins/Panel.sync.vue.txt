@@ -1,0 +1,23 @@
+<script lang="ts">
+import { Vue } from 'vue-class-component'
+import { Component, ModelSync, Prop, PropSync, VModel } from 'vue-property-decorator'
+
+@Component
+export default class Panel extends Vue {
+  @Prop() readonly title!: string
+  @PropSync('open') synced!: boolean
+  @ModelSync('checked', 'change') checkedValue!: boolean
+  @VModel() text!: string
+  count = 0
+  get doubled() {
+    return this.count * 2
+  }
+  get ratio() {
+    return this.count
+  }
+  set ratio(value: number) {
+    this.count = value
+  }
+}
+</script>
+<template><button @click="synced = !synced; checkedValue = true; text = 'a'; ratio = 2; count++">{{ title }}{{ doubled }}</button></template>

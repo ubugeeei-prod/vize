@@ -1,0 +1,588 @@
+{
+  "pack": "options-api-this-bridge-1366",
+  "module": "options_api_this_bridge_1366",
+  "test": "options_api_this_resolves_across_setup_data_computed_methods",
+  "regressionCommit": "b01ecf39085b5d14a01335749ddc7178d3b894d7",
+  "historicalIssue": 1366,
+  "checkerOptions": {
+    "optionsApi": true
+  },
+  "sources": {
+    "matrix/dc-child-props-from-options-parent/src/Child.vue.txt": "<script lang=\"ts\">\nimport { defineComponent, type PropType } from 'vue'\nexport default defineComponent({\n  props: {\n    title: { type: String, required: true },\n    size: { type: Number, default: 1 },\n    kind: { type: String as PropType<'a' | 'b'>, default: 'a' },\n    tags: { type: Array as PropType<string[]> },\n  },\n  emits: { pick: (n: number) => true },\n})\n</script>\n\n<template><div>{{ title }}{{ size }}{{ kind }}{{ tags }}</div></template>\n",
+    "matrix/dc-child-props-from-options-parent/src/Parent.vue.txt": "<script lang=\"ts\">\nimport { defineComponent } from 'vue'\nimport Child from './Child.vue'\nexport default defineComponent({\n  components: { Child },\n  data() { return { n: 1, s: 'x' } },\n  methods: { onPick(n: number) { this.n = n } },\n})\n</script>\n\n<template>\n  <Child title=\"ok\" :size=\"n\" kind=\"b\" :tags=\"[s]\" @pick=\"onPick\" />\n  <Child :title=\"n\" />\n  <Child />\n  <Child title=\"x\" kind=\"c\" />\n  <Child title=\"x\" :tags=\"[n]\" />\n  <Child title=\"x\" @pick=\"(v: string) => v\" />\n</template>\n",
+    "matrix/dc-child-props-from-options-parent/tsconfig.json.txt": "{\n  \"compilerOptions\": {\n    \"target\": \"ESNext\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"strict\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"jsx\": \"preserve\",\n    \"lib\": [\n      \"ESNext\",\n      \"DOM\"\n    ],\n    \"types\": [],\n    \"experimentalDecorators\": true\n  },\n  \"include\": [\n    \"src/**/*.ts\",\n    \"src/**/*.vue\",\n    \"src/**/*.js\",\n    \"src/**/*.d.ts\"\n  ],\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ]\n}",
+    "matrix/dc-child-props-from-setup-parent/src/Child.vue.txt": "<script lang=\"ts\">\nimport { defineComponent, type PropType } from 'vue'\nexport default defineComponent({\n  props: {\n    title: { type: String, required: true },\n    size: { type: Number, default: 1 },\n    kind: { type: String as PropType<'a' | 'b'>, default: 'a' },\n  },\n  emits: { pick: (n: number) => true },\n})\n</script>\n\n<template><div>{{ title }}{{ size }}{{ kind }}</div></template>\n",
+    "matrix/dc-child-props-from-setup-parent/src/Parent.vue.txt": "<script setup lang=\"ts\">\nimport { ref } from 'vue'\nimport Child from './Child.vue'\nconst n = ref(1)\nfunction onPick(v: number) { n.value = v }\n</script>\n\n<template>\n  <Child title=\"ok\" :size=\"n\" @pick=\"onPick\" />\n  <Child :title=\"n\" />\n  <Child />\n  <Child title=\"x\" kind=\"c\" />\n  <Child title=\"x\" @pick=\"(v: string) => v\" />\n</template>\n",
+    "matrix/dc-child-props-from-setup-parent/tsconfig.json.txt": "{\n  \"compilerOptions\": {\n    \"target\": \"ESNext\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"strict\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"jsx\": \"preserve\",\n    \"lib\": [\n      \"ESNext\",\n      \"DOM\"\n    ],\n    \"types\": [],\n    \"experimentalDecorators\": true\n  },\n  \"include\": [\n    \"src/**/*.ts\",\n    \"src/**/*.vue\",\n    \"src/**/*.js\",\n    \"src/**/*.d.ts\"\n  ],\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ]\n}",
+    "matrix/dc-data-arrow-and-this/src/Comp.vue.txt": "<script lang=\"ts\">\nimport { defineComponent } from 'vue'\nexport default defineComponent({\n  props: { seed: { type: Number, required: true } },\n  data: () => ({ a: 1, b: 'x' as string | null }),\n  computed: {\n    fromSeed(): number { return this.seed + this.a },\n  },\n  methods: {\n    async load(): Promise<number> { return this.a },\n  },\n})\n</script>\n\n<template>\n  <div @click=\"load\">\n    {{ a.toFixed() }} {{ b?.length }} {{ b.length }} {{ fromSeed }}\n    <span v-if=\"b\">{{ b.toUpperCase() }}</span>\n  </div>\n</template>\n",
+    "matrix/dc-data-arrow-and-this/tsconfig.json.txt": "{\n  \"compilerOptions\": {\n    \"target\": \"ESNext\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"strict\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"jsx\": \"preserve\",\n    \"lib\": [\n      \"ESNext\",\n      \"DOM\"\n    ],\n    \"types\": [],\n    \"experimentalDecorators\": true\n  },\n  \"include\": [\n    \"src/**/*.ts\",\n    \"src/**/*.vue\",\n    \"src/**/*.js\",\n    \"src/**/*.d.ts\"\n  ],\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ]\n}",
+    "matrix/dc-emits-with-v-on-listeners-in-parent/src/Child.vue.txt": "<script lang=\"ts\">\nimport { defineComponent } from 'vue'\nexport default defineComponent({\n  emits: ['changed', 'update:value'],\n  props: { value: String },\n})\n</script>\n\n<template><div /></template>\n",
+    "matrix/dc-emits-with-v-on-listeners-in-parent/src/Parent.vue.txt": "<script lang=\"ts\">\nimport { defineComponent } from 'vue'\nimport Child from './Child.vue'\nexport default defineComponent({\n  components: { Child },\n  data() { return { v: 'x' } },\n  methods: { onChanged() {} },\n})\n</script>\n\n<template>\n  <Child @changed=\"onChanged\" v-model:value=\"v\" @unknown-event=\"onChanged\" />\n  <Child @changed=\"missingHandler\" />\n</template>\n",
+    "matrix/dc-emits-with-v-on-listeners-in-parent/tsconfig.json.txt": "{\n  \"compilerOptions\": {\n    \"target\": \"ESNext\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"strict\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"jsx\": \"preserve\",\n    \"lib\": [\n      \"ESNext\",\n      \"DOM\"\n    ],\n    \"types\": [],\n    \"experimentalDecorators\": true\n  },\n  \"include\": [\n    \"src/**/*.ts\",\n    \"src/**/*.vue\",\n    \"src/**/*.js\",\n    \"src/**/*.d.ts\"\n  ],\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ]\n}",
+    "matrix/dc-global-properties/src/Comp.vue.txt": "<script lang=\"ts\">\nimport { defineComponent } from 'vue'\nexport default defineComponent({\n  data() { return { amount: 1 } },\n  methods: { label() { return this.$t('x') + this.$filters.money(this.amount) } },\n})\n</script>\n\n<template>\n  <div>\n    {{ $t('hello') }} {{ $filters.money(amount) }}\n    {{ $t(1) }} {{ $filters.money('x') }} {{ $missingGlobal }}\n  </div>\n</template>\n",
+    "matrix/dc-global-properties/src/globals.d.ts.txt": "export {}\ndeclare module 'vue' {\n  interface ComponentCustomProperties {\n    $t: (key: string) => string\n    $filters: { money(n: number): string }\n  }\n}\n",
+    "matrix/dc-global-properties/tsconfig.json.txt": "{\n  \"compilerOptions\": {\n    \"target\": \"ESNext\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"strict\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"jsx\": \"preserve\",\n    \"lib\": [\n      \"ESNext\",\n      \"DOM\"\n    ],\n    \"types\": [],\n    \"experimentalDecorators\": true\n  },\n  \"include\": [\n    \"src/**/*.ts\",\n    \"src/**/*.vue\",\n    \"src/**/*.js\",\n    \"src/**/*.d.ts\"\n  ],\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ]\n}",
+    "matrix/dc-mixins-extends/src/Mixed.vue.txt": "<script lang=\"ts\">\nimport { defineComponent } from 'vue'\nimport { counter, named, base } from './mixins'\nexport default defineComponent({\n  mixins: [counter, named],\n  extends: base,\n  data() { return { own: true } },\n})\n</script>\n\n<template>\n  <div>\n    {{ count.toFixed() }} {{ double }} {{ label.toUpperCase() }} {{ own }}\n    <button @click=\"increment\">+</button>\n    {{ greet('x') }} {{ baseValue.toUpperCase() }} {{ baseMethod(1) }}\n  </div>\n</template>\n",
+    "matrix/dc-mixins-extends/src/MixedErrors.vue.txt": "<script lang=\"ts\">\nimport { defineComponent } from 'vue'\nimport { counter, named, base } from './mixins'\nexport default defineComponent({\n  mixins: [counter, named],\n  extends: base,\n})\n</script>\n\n<template>\n  <div>\n    {{ count.toUpperCase() }} {{ greet(1) }} {{ label.toFixed() }}\n    {{ baseValue.toFixed() }} {{ baseMethod('x') }} {{ notInMixin }}\n  </div>\n</template>\n",
+    "matrix/dc-mixins-extends/src/mixins.ts.txt": "import { defineComponent } from 'vue'\nexport const counter = defineComponent({\n  data() { return { count: 0 } },\n  computed: { double(): number { return this.count * 2 } },\n  methods: { increment() { this.count++ } },\n})\nexport const named = defineComponent({\n  props: { label: { type: String, required: true } },\n  methods: { greet(who: string) { return this.label + who } },\n})\nexport const base = {\n  data() { return { baseValue: 'b' } },\n  methods: { baseMethod(n: number) { return n } },\n}\n",
+    "matrix/dc-mixins-extends/tsconfig.json.txt": "{\n  \"compilerOptions\": {\n    \"target\": \"ESNext\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"strict\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"jsx\": \"preserve\",\n    \"lib\": [\n      \"ESNext\",\n      \"DOM\"\n    ],\n    \"types\": [],\n    \"experimentalDecorators\": true\n  },\n  \"include\": [\n    \"src/**/*.ts\",\n    \"src/**/*.vue\",\n    \"src/**/*.js\",\n    \"src/**/*.d.ts\"\n  ],\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ]\n}",
+    "matrix/dc-name-recursive-and-emits-template/src/Tree.vue.txt": "<script lang=\"ts\">\nimport { defineComponent, type PropType } from 'vue'\ninterface Node { label: string; children?: Node[] }\nexport default defineComponent({\n  name: 'Tree',\n  props: { node: { type: Object as PropType<Node>, required: true } },\n  emits: ['select'],\n})\n</script>\n\n<template>\n  <div @click=\"$emit('select', node)\">\n    {{ node.label }}\n    <Tree v-for=\"c in node.children\" :key=\"c.label\" :node=\"c\" @select=\"$emit('select', $event)\" />\n  </div>\n</template>\n",
+    "matrix/dc-name-recursive-and-emits-template/tsconfig.json.txt": "{\n  \"compilerOptions\": {\n    \"target\": \"ESNext\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"strict\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"jsx\": \"preserve\",\n    \"lib\": [\n      \"ESNext\",\n      \"DOM\"\n    ],\n    \"types\": [],\n    \"experimentalDecorators\": true\n  },\n  \"include\": [\n    \"src/**/*.ts\",\n    \"src/**/*.vue\",\n    \"src/**/*.js\",\n    \"src/**/*.d.ts\"\n  ],\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ]\n}",
+    "matrix/dc-options-only-render-no-template/src/Comp.vue.txt": "<script lang=\"ts\">\nimport { defineComponent, h } from 'vue'\nexport default defineComponent({\n  props: { a: { type: String, required: true } },\n  render() { return h('div', this.a.toFixed()) },\n})\n</script>\n",
+    "matrix/dc-options-only-render-no-template/tsconfig.json.txt": "{\n  \"compilerOptions\": {\n    \"target\": \"ESNext\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"strict\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"jsx\": \"preserve\",\n    \"lib\": [\n      \"ESNext\",\n      \"DOM\"\n    ],\n    \"types\": [],\n    \"experimentalDecorators\": true\n  },\n  \"include\": [\n    \"src/**/*.ts\",\n    \"src/**/*.vue\",\n    \"src/**/*.js\",\n    \"src/**/*.d.ts\"\n  ],\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ]\n}",
+    "matrix/dc-props-array-form/src/Comp.vue.txt": "<script lang=\"ts\">\nimport { defineComponent } from 'vue'\nexport default defineComponent({\n  props: ['a', 'b'],\n  data() { return { own: 1 } },\n})\n</script>\n\n<template><div>{{ a.whatever }} {{ b }} {{ own.toFixed() }} {{ c }}</div></template>\n",
+    "matrix/dc-props-array-form/src/Parent.vue.txt": "<script setup lang=\"ts\">\nimport Comp from './Comp.vue'\n</script>\n\n<template>\n  <Comp a=\"1\" :b=\"2\" />\n  <Comp :c=\"3\" />\n</template>\n",
+    "matrix/dc-props-array-form/tsconfig.json.txt": "{\n  \"compilerOptions\": {\n    \"target\": \"ESNext\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"strict\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"jsx\": \"preserve\",\n    \"lib\": [\n      \"ESNext\",\n      \"DOM\"\n    ],\n    \"types\": [],\n    \"experimentalDecorators\": true\n  },\n  \"include\": [\n    \"src/**/*.ts\",\n    \"src/**/*.vue\",\n    \"src/**/*.js\",\n    \"src/**/*.d.ts\"\n  ],\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ]\n}",
+    "matrix/dc-props-type-only-constructor/src/Comp.vue.txt": "<script lang=\"ts\">\nimport { defineComponent } from 'vue'\nclass Point { constructor(public x: number, public y: number) {} }\nexport default defineComponent({\n  props: {\n    s: String, n: Number, b: Boolean, a: Array, o: Object, f: Function, sym: Symbol, p: Point,\n  },\n})\n</script>\n\n<template>\n  <div>{{ s?.length }} {{ n?.toFixed() }} {{ b }} {{ a?.length }} {{ o }} {{ p?.x }} {{ p?.z }}</div>\n</template>\n",
+    "matrix/dc-props-type-only-constructor/tsconfig.json.txt": "{\n  \"compilerOptions\": {\n    \"target\": \"ESNext\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"strict\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"jsx\": \"preserve\",\n    \"lib\": [\n      \"ESNext\",\n      \"DOM\"\n    ],\n    \"types\": [],\n    \"experimentalDecorators\": true\n  },\n  \"include\": [\n    \"src/**/*.ts\",\n    \"src/**/*.vue\",\n    \"src/**/*.js\",\n    \"src/**/*.d.ts\"\n  ],\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ]\n}",
+    "matrix/dc-required-optional-props-strict/src/Comp.vue.txt": "<script lang=\"ts\">\nimport { defineComponent, type PropType } from 'vue'\nexport default defineComponent({\n  props: {\n    optional: String,\n    withDefault: { type: String, default: 'x' },\n    obj: { type: Object as PropType<{ a: number }> },\n    req: { type: Object as PropType<{ a: number }>, required: true },\n    fn: { type: Function as PropType<(n: number) => string>, required: true },\n    date: { type: Date },\n    union: { type: [String, Number] as PropType<string | number>, required: true },\n  },\n})\n</script>\n\n<template>\n  <div>\n    {{ optional.length }} {{ withDefault.length }} {{ obj.a }} {{ req.a.toFixed() }}\n    {{ fn(1).length }} {{ fn('x') }} {{ date.getTime() }} {{ req.b }}\n    <template v-if=\"typeof union === 'string'\">{{ union.toUpperCase() }}</template>\n    {{ union.toUpperCase() }}\n  </div>\n</template>\n",
+    "matrix/dc-required-optional-props-strict/tsconfig.json.txt": "{\n  \"compilerOptions\": {\n    \"target\": \"ESNext\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"strict\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"jsx\": \"preserve\",\n    \"lib\": [\n      \"ESNext\",\n      \"DOM\"\n    ],\n    \"types\": [],\n    \"experimentalDecorators\": true\n  },\n  \"include\": [\n    \"src/**/*.ts\",\n    \"src/**/*.vue\",\n    \"src/**/*.js\",\n    \"src/**/*.d.ts\"\n  ],\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ]\n}",
+    "matrix/dc-rich-clean/src/Rich.vue.txt": "<script lang=\"ts\">\nimport { defineComponent, type PropType } from 'vue'\ninterface Item { id: number; name: string }\nexport default defineComponent({\n  props: {\n    title: { type: String, required: true },\n    count: { type: Number, default: 0 },\n    items: { type: Array as PropType<Item[]>, default: () => [] },\n    mode: { type: String as PropType<'a' | 'b'>, validator: (v: string) => ['a', 'b'].includes(v) },\n    flag: Boolean,\n    loose: null,\n    multi: [String, Number],\n    maybe: String,\n  },\n  emits: ['change'],\n  data() {\n    return { local: 1, list: [] as string[] }\n  },\n  computed: {\n    upper(): string { return this.title.toUpperCase() },\n    rw: {\n      get(): number { return this.count },\n      set(v: number) { this.local = v },\n    },\n  },\n  methods: {\n    inc(by: number) { this.local += by; this.$emit('change') },\n  },\n  watch: {\n    count(n: number) { this.local = n },\n  },\n})\n</script>\n\n<template>\n  <div :title=\"title.toUpperCase()\">\n    {{ count.toFixed(2) }} {{ items.map((i) => i.name).join() }} {{ mode }}\n    {{ flag ? 'y' : 'n' }} {{ upper.length }} {{ rw.toFixed() }} {{ local + 1 }}\n    {{ list.length }} {{ multi }} {{ loose }} {{ maybe?.length }}\n    <button @click=\"inc(1)\">+</button>\n    <input v-model=\"rw\" type=\"number\" />\n    <span v-for=\"item in items\" :key=\"item.id\">{{ item.name.toUpperCase() }}</span>\n  </div>\n</template>\n",
+    "matrix/dc-rich-clean/tsconfig.json.txt": "{\n  \"compilerOptions\": {\n    \"target\": \"ESNext\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"strict\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"jsx\": \"preserve\",\n    \"lib\": [\n      \"ESNext\",\n      \"DOM\"\n    ],\n    \"types\": [],\n    \"experimentalDecorators\": true\n  },\n  \"include\": [\n    \"src/**/*.ts\",\n    \"src/**/*.vue\",\n    \"src/**/*.js\",\n    \"src/**/*.d.ts\"\n  ],\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ]\n}",
+    "matrix/dc-rich-template-errors/src/Rich.vue.txt": "<script lang=\"ts\">\nimport { defineComponent, type PropType } from 'vue'\ninterface Item { id: number; name: string }\nexport default defineComponent({\n  props: {\n    title: { type: String, required: true },\n    count: { type: Number, default: 0 },\n    items: { type: Array as PropType<Item[]>, default: () => [] },\n    mode: { type: String as PropType<'a' | 'b'>, validator: (v: string) => ['a', 'b'].includes(v) },\n    flag: Boolean,\n    loose: null,\n    multi: [String, Number],\n    maybe: String,\n  },\n  emits: ['change'],\n  data() {\n    return { local: 1, list: [] as string[] }\n  },\n  computed: {\n    upper(): string { return this.title.toUpperCase() },\n    rw: {\n      get(): number { return this.count },\n      set(v: number) { this.local = v },\n    },\n  },\n  methods: {\n    inc(by: number) { this.local += by; this.$emit('change') },\n  },\n  watch: {\n    count(n: number) { this.local = n },\n  },\n})\n</script>\n\n<template>\n  <div>\n    {{ title.toFixed() }}\n    {{ count.toUpperCase() }}\n    {{ unknownName }}\n    <button @click=\"inc('x')\">+</button>\n    {{ items[0]!.nope }}\n    {{ upper.toFixed() }}\n    {{ local.length }}\n    {{ maybe.length }}\n    {{ mode === 'c' }}\n  </div>\n</template>\n",
+    "matrix/dc-rich-template-errors/tsconfig.json.txt": "{\n  \"compilerOptions\": {\n    \"target\": \"ESNext\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"strict\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"jsx\": \"preserve\",\n    \"lib\": [\n      \"ESNext\",\n      \"DOM\"\n    ],\n    \"types\": [],\n    \"experimentalDecorators\": true\n  },\n  \"include\": [\n    \"src/**/*.ts\",\n    \"src/**/*.vue\",\n    \"src/**/*.js\",\n    \"src/**/*.d.ts\"\n  ],\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ]\n}",
+    "matrix/dc-script-errors/src/Comp.vue.txt": "<script lang=\"ts\">\nimport { defineComponent } from 'vue'\nexport default defineComponent({\n  props: { title: { type: String, required: true } },\n  emits: ['change'],\n  data() { return { n: 1 } },\n  methods: {\n    run() {\n      this.nope()\n      this.title = 'x'\n      this.$emit('unknown')\n      const s: string = this.n\n      return s\n    },\n  },\n})\n</script>\n\n<template>\n  <div>{{ title }}</div>\n</template>\n",
+    "matrix/dc-script-errors/tsconfig.json.txt": "{\n  \"compilerOptions\": {\n    \"target\": \"ESNext\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"strict\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"jsx\": \"preserve\",\n    \"lib\": [\n      \"ESNext\",\n      \"DOM\"\n    ],\n    \"types\": [],\n    \"experimentalDecorators\": true\n  },\n  \"include\": [\n    \"src/**/*.ts\",\n    \"src/**/*.vue\",\n    \"src/**/*.js\",\n    \"src/**/*.d.ts\"\n  ],\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ]\n}",
+    "matrix/dc-setup-plus-options/src/Comp.vue.txt": "<script lang=\"ts\">\nimport { defineComponent, ref, computed } from 'vue'\nexport default defineComponent({\n  props: { start: { type: Number, default: 0 } },\n  setup(props) {\n    const n = ref(props.start)\n    const label = computed(() => String(n.value))\n    function bump(by: number) { n.value += by }\n    return { n, label, bump }\n  },\n  data() { return { extra: 'e' } },\n  computed: { both(): string { return this.label + this.extra } },\n  methods: { twice() { this.bump(2); return this.n * 2 } },\n})\n</script>\n\n<template>\n  <div>\n    {{ n.toFixed() }} {{ label.toUpperCase() }} {{ both.length }} {{ twice() }} {{ start }}\n    <button @click=\"bump(1)\">+</button>\n  </div>\n</template>\n",
+    "matrix/dc-setup-plus-options/src/CompErrors.vue.txt": "<script lang=\"ts\">\nimport { defineComponent, ref } from 'vue'\nexport default defineComponent({\n  setup() {\n    const n = ref(1)\n    return { n, bump: (by: number) => { n.value += by } }\n  },\n  data() { return { extra: 'e' } },\n})\n</script>\n\n<template>\n  <div>\n    {{ n.toUpperCase() }} {{ extra.toFixed() }}\n    <button @click=\"bump('x')\">+</button>\n  </div>\n</template>\n",
+    "matrix/dc-setup-plus-options/tsconfig.json.txt": "{\n  \"compilerOptions\": {\n    \"target\": \"ESNext\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"strict\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"jsx\": \"preserve\",\n    \"lib\": [\n      \"ESNext\",\n      \"DOM\"\n    ],\n    \"types\": [],\n    \"experimentalDecorators\": true\n  },\n  \"include\": [\n    \"src/**/*.ts\",\n    \"src/**/*.vue\",\n    \"src/**/*.js\",\n    \"src/**/*.d.ts\"\n  ],\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ]\n}",
+    "matrix/dc-slots-type/src/List.vue.txt": "<script lang=\"ts\">\nimport { defineComponent, type PropType, type SlotsType } from 'vue'\nexport default defineComponent({\n  props: { items: { type: Array as PropType<string[]>, required: true } },\n  slots: Object as SlotsType<{ default: { item: string; index: number }; empty: {} }>,\n})\n</script>\n\n<template>\n  <ul>\n    <li v-for=\"(item, index) in items\" :key=\"index\"><slot :item=\"item\" :index=\"index\" /></li>\n    <slot v-if=\"!items.length\" name=\"empty\" />\n  </ul>\n</template>\n",
+    "matrix/dc-slots-type/src/Use.vue.txt": "<script lang=\"ts\">\nimport { defineComponent } from 'vue'\nimport List from './List.vue'\nexport default defineComponent({ components: { List } })\n</script>\n\n<template>\n  <List :items=\"['a']\" v-slot=\"{ item, index }\">{{ item.toUpperCase() }} {{ index.toFixed() }}</List>\n  <List :items=\"['a']\" v-slot=\"{ item }\">{{ item.toFixed() }}</List>\n  <List :items=\"[1]\" />\n</template>\n",
+    "matrix/dc-slots-type/tsconfig.json.txt": "{\n  \"compilerOptions\": {\n    \"target\": \"ESNext\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"strict\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"jsx\": \"preserve\",\n    \"lib\": [\n      \"ESNext\",\n      \"DOM\"\n    ],\n    \"types\": [],\n    \"experimentalDecorators\": true\n  },\n  \"include\": [\n    \"src/**/*.ts\",\n    \"src/**/*.vue\",\n    \"src/**/*.js\",\n    \"src/**/*.d.ts\"\n  ],\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ]\n}",
+    "matrix/dc-template-v-for-on-computed-and-methods/src/Comp.vue.txt": "<script lang=\"ts\">\nimport { defineComponent } from 'vue'\nexport default defineComponent({\n  data() { return { rows: [{ id: 1, name: 'a' }] } },\n  computed: { sorted(): { id: number; name: string }[] { return [...this.rows] } },\n  methods: { fmt(r: { id: number }) { return r.id.toFixed() } },\n})\n</script>\n\n<template>\n  <ul>\n    <li v-for=\"r in sorted\" :key=\"r.id\">{{ fmt(r) }} {{ r.name.toUpperCase() }} {{ r.missing }}</li>\n    <li v-for=\"(r, i) in rows\" :key=\"i\">{{ i.toFixed() }} {{ fmt({ id: 'x' }) }}</li>\n  </ul>\n</template>\n",
+    "matrix/dc-template-v-for-on-computed-and-methods/tsconfig.json.txt": "{\n  \"compilerOptions\": {\n    \"target\": \"ESNext\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"strict\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"jsx\": \"preserve\",\n    \"lib\": [\n      \"ESNext\",\n      \"DOM\"\n    ],\n    \"types\": [],\n    \"experimentalDecorators\": true\n  },\n  \"include\": [\n    \"src/**/*.ts\",\n    \"src/**/*.vue\",\n    \"src/**/*.js\",\n    \"src/**/*.d.ts\"\n  ],\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ]\n}",
+    "matrix/dc-watch-variants/src/Comp.vue.txt": "<script lang=\"ts\">\nimport { defineComponent } from 'vue'\nexport default defineComponent({\n  data() { return { a: { b: 1 }, list: [1, 2] } },\n  watch: {\n    'a.b': { handler: 'onChange', deep: true, immediate: true },\n    list: [{ handler(v: number[]) { return v.length } }, 'onChange'],\n    a(v: { b: number }) { this.onChange(v.b) },\n  },\n  methods: { onChange(v: number) { return v } },\n})\n</script>\n\n<template><div>{{ a.b }} {{ list.length }}</div></template>\n",
+    "matrix/dc-watch-variants/tsconfig.json.txt": "{\n  \"compilerOptions\": {\n    \"target\": \"ESNext\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"strict\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"jsx\": \"preserve\",\n    \"lib\": [\n      \"ESNext\",\n      \"DOM\"\n    ],\n    \"types\": [],\n    \"experimentalDecorators\": true\n  },\n  \"include\": [\n    \"src/**/*.ts\",\n    \"src/**/*.vue\",\n    \"src/**/*.js\",\n    \"src/**/*.d.ts\"\n  ],\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ]\n}",
+    "matrix/dc-with-satisfies-and-const/src/Comp.vue.txt": "<script lang=\"ts\">\nimport { defineComponent } from 'vue'\nconst Comp = defineComponent({\n  props: { a: { type: String, required: true } },\n  data() { return { b: 1 } },\n})\nexport default Comp\n</script>\n\n<template><div>{{ a.toUpperCase() }} {{ b.toFixed() }} {{ a.toFixed() }} {{ c }}</div></template>\n",
+    "matrix/dc-with-satisfies-and-const/tsconfig.json.txt": "{\n  \"compilerOptions\": {\n    \"target\": \"ESNext\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"strict\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"jsx\": \"preserve\",\n    \"lib\": [\n      \"ESNext\",\n      \"DOM\"\n    ],\n    \"types\": [],\n    \"experimentalDecorators\": true\n  },\n  \"include\": [\n    \"src/**/*.ts\",\n    \"src/**/*.vue\",\n    \"src/**/*.js\",\n    \"src/**/*.d.ts\"\n  ],\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ]\n}",
+    "matrix/functional-component/src/Fn.ts.txt": "import { h, type FunctionalComponent } from 'vue'\nexport const Fn: FunctionalComponent<{ msg: string }, { pick: (n: number) => void }> = (props, { emit }) =>\n  h('div', { onClick: () => emit('pick', 1) }, props.msg)\nFn.props = ['msg']\nFn.emits = ['pick']\n",
+    "matrix/functional-component/src/Use.vue.txt": "<script lang=\"ts\">\nimport { defineComponent } from 'vue'\nimport { Fn } from './Fn'\nexport default defineComponent({\n  components: { Fn },\n  methods: { onPick(n: number) { return n } },\n})\n</script>\n\n<template>\n  <Fn msg=\"a\" @pick=\"onPick\" />\n  <Fn :msg=\"1\" />\n</template>\n",
+    "matrix/functional-component/tsconfig.json.txt": "{\n  \"compilerOptions\": {\n    \"target\": \"ESNext\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"strict\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"jsx\": \"preserve\",\n    \"lib\": [\n      \"ESNext\",\n      \"DOM\"\n    ],\n    \"types\": [],\n    \"experimentalDecorators\": true\n  },\n  \"include\": [\n    \"src/**/*.ts\",\n    \"src/**/*.vue\",\n    \"src/**/*.js\",\n    \"src/**/*.d.ts\"\n  ],\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ]\n}",
+    "matrix/js-plain-checkjs/src/Comp.vue.txt": "<script>\nexport default {\n  props: {\n    msg: { type: String, required: true },\n    count: { type: Number, default: 0 },\n  },\n  emits: ['done'],\n  data() {\n    return { local: 1, text: 'a' }\n  },\n  computed: {\n    upper() { return this.msg.toUpperCase() },\n  },\n  methods: {\n    bump(n) { this.local += n },\n  },\n}\n</script>\n\n<template>\n  <div>\n    {{ msg.toUpperCase() }} {{ count.toFixed() }} {{ local }} {{ upper.length }}\n    <button @click=\"bump(1)\">+</button>\n    {{ msg.toFixed() }} {{ text.toFixed() }} {{ nope }}\n  </div>\n</template>\n",
+    "matrix/js-plain-checkjs/tsconfig.json.txt": "{\n  \"compilerOptions\": {\n    \"target\": \"ESNext\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"strict\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"jsx\": \"preserve\",\n    \"lib\": [\n      \"ESNext\",\n      \"DOM\"\n    ],\n    \"types\": [],\n    \"allowJs\": true,\n    \"checkJs\": true\n  },\n  \"include\": [\n    \"src/**/*.ts\",\n    \"src/**/*.vue\",\n    \"src/**/*.js\"\n  ],\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ]\n}",
+    "matrix/js-plain-no-checkjs/src/Comp.vue.txt": "<script>\nexport default {\n  props: { msg: String },\n  data() { return { n: 1 } },\n}\n</script>\n\n<template><div>{{ msg.toFixed() }} {{ n.toUpperCase() }} {{ nope }}</div></template>\n",
+    "matrix/js-plain-no-checkjs/src/Use.vue.txt": "<script setup lang=\"ts\">\nimport Comp from './Comp.vue'\n</script>\n\n<template><Comp :msg=\"1\" /></template>\n",
+    "matrix/js-plain-no-checkjs/tsconfig.json.txt": "{\n  \"compilerOptions\": {\n    \"target\": \"ESNext\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"strict\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"lib\": [\n      \"ESNext\",\n      \"DOM\"\n    ],\n    \"types\": [],\n    \"allowJs\": true\n  },\n  \"include\": [\n    \"src/**/*.ts\",\n    \"src/**/*.vue\"\n  ],\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ]\n}",
+    "matrix/mixed-dc-normal-script-and-setup/src/Comp.vue.txt": "<script lang=\"ts\">\nimport { defineComponent } from 'vue'\nimport Icon from './Icon.vue'\nexport const shared = 1\nexport default defineComponent({\n  components: { Icon },\n})\n</script>\n\n<script setup lang=\"ts\">\ndefineProps<{ name: string }>()\n</script>\n\n<template>\n  <Icon :name=\"name\" /> {{ shared }}\n  <Icon :name=\"1\" />\n</template>\n",
+    "matrix/mixed-dc-normal-script-and-setup/src/Icon.vue.txt": "<script setup lang=\"ts\">\ndefineProps<{ name: string }>()\n</script>\n\n<template><i>{{ name }}</i></template>\n",
+    "matrix/mixed-dc-normal-script-and-setup/tsconfig.json.txt": "{\n  \"compilerOptions\": {\n    \"target\": \"ESNext\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"strict\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"jsx\": \"preserve\",\n    \"lib\": [\n      \"ESNext\",\n      \"DOM\"\n    ],\n    \"types\": [],\n    \"experimentalDecorators\": true\n  },\n  \"include\": [\n    \"src/**/*.ts\",\n    \"src/**/*.vue\",\n    \"src/**/*.js\",\n    \"src/**/*.d.ts\"\n  ],\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ]\n}",
+    "matrix/mixed-options-and-setup/src/Comp.vue.txt": "<script lang=\"ts\">\nexport default {\n  name: 'Mixed',\n  inheritAttrs: false,\n}\n</script>\n\n<script setup lang=\"ts\">\nconst props = defineProps<{ label: string; count?: number }>()\nconst emit = defineEmits<{ pick: [n: number] }>()\n</script>\n\n<template>\n  <div v-bind=\"$attrs\" @click=\"emit('pick', 1)\">\n    {{ label.toUpperCase() }} {{ props.count?.toFixed() }} {{ $attrs.id }}\n    {{ label.toFixed() }} {{ count.toFixed() }}\n  </div>\n</template>\n",
+    "matrix/mixed-options-and-setup/src/Use.vue.txt": "<script lang=\"ts\">\nimport { defineComponent } from 'vue'\nimport Comp from './Comp.vue'\nexport default defineComponent({\n  components: { Comp },\n  methods: { onPick(n: number) { return n } },\n})\n</script>\n\n<template>\n  <Comp label=\"x\" @pick=\"onPick\" />\n  <Comp :label=\"1\" />\n</template>\n",
+    "matrix/mixed-options-and-setup/tsconfig.json.txt": "{\n  \"compilerOptions\": {\n    \"target\": \"ESNext\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"strict\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"jsx\": \"preserve\",\n    \"lib\": [\n      \"ESNext\",\n      \"DOM\"\n    ],\n    \"types\": [],\n    \"experimentalDecorators\": true\n  },\n  \"include\": [\n    \"src/**/*.ts\",\n    \"src/**/*.vue\",\n    \"src/**/*.js\",\n    \"src/**/*.d.ts\"\n  ],\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ]\n}",
+    "matrix/plain-child-props-from-setup-parent/src/Child.vue.txt": "<script lang=\"ts\">\nexport default {\n  props: {\n    title: { type: String, required: true },\n    size: { type: Number, default: 1 },\n  },\n  emits: ['pick'],\n}\n</script>\n\n<template><div>{{ title }}{{ size }}</div></template>\n",
+    "matrix/plain-child-props-from-setup-parent/src/Parent.vue.txt": "<script setup lang=\"ts\">\nimport Child from './Child.vue'\n</script>\n\n<template>\n  <Child title=\"ok\" :size=\"2\" @pick=\"() => {}\" />\n  <Child :title=\"1\" />\n  <Child />\n</template>\n",
+    "matrix/plain-child-props-from-setup-parent/tsconfig.json.txt": "{\n  \"compilerOptions\": {\n    \"target\": \"ESNext\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"strict\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"jsx\": \"preserve\",\n    \"lib\": [\n      \"ESNext\",\n      \"DOM\"\n    ],\n    \"types\": [],\n    \"experimentalDecorators\": true\n  },\n  \"include\": [\n    \"src/**/*.ts\",\n    \"src/**/*.vue\",\n    \"src/**/*.js\",\n    \"src/**/*.d.ts\"\n  ],\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ]\n}",
+    "matrix/plain-rich-clean/src/Rich.vue.txt": "<script lang=\"ts\">\nimport { defineComponent, type PropType } from 'vue'\ninterface Item { id: number; name: string }\nexport default {\n  props: {\n    title: { type: String, required: true },\n    count: { type: Number, default: 0 },\n    items: { type: Array as PropType<Item[]>, default: () => [] },\n    mode: { type: String as PropType<'a' | 'b'>, validator: (v: string) => ['a', 'b'].includes(v) },\n    flag: Boolean,\n    loose: null,\n    multi: [String, Number],\n    maybe: String,\n  },\n  emits: ['change'],\n  data() {\n    return { local: 1, list: [] as string[] }\n  },\n  computed: {\n    upper(): string { return this.title.toUpperCase() },\n    rw: {\n      get(): number { return this.count },\n      set(v: number) { this.local = v },\n    },\n  },\n  methods: {\n    inc(by: number) { this.local += by; this.$emit('change') },\n  },\n  watch: {\n    count(n: number) { this.local = n },\n  },\n}\n</script>\n\n<template>\n  <div :title=\"title.toUpperCase()\">\n    {{ count.toFixed(2) }} {{ items.map((i) => i.name).join() }} {{ mode }}\n    {{ flag ? 'y' : 'n' }} {{ upper.length }} {{ rw.toFixed() }} {{ local + 1 }}\n    {{ list.length }} {{ multi }} {{ loose }} {{ maybe?.length }}\n    <button @click=\"inc(1)\">+</button>\n    <input v-model=\"rw\" type=\"number\" />\n    <span v-for=\"item in items\" :key=\"item.id\">{{ item.name.toUpperCase() }}</span>\n  </div>\n</template>\n",
+    "matrix/plain-rich-clean/tsconfig.json.txt": "{\n  \"compilerOptions\": {\n    \"target\": \"ESNext\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"strict\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"jsx\": \"preserve\",\n    \"lib\": [\n      \"ESNext\",\n      \"DOM\"\n    ],\n    \"types\": [],\n    \"experimentalDecorators\": true\n  },\n  \"include\": [\n    \"src/**/*.ts\",\n    \"src/**/*.vue\",\n    \"src/**/*.js\",\n    \"src/**/*.d.ts\"\n  ],\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ]\n}",
+    "matrix/plain-rich-template-errors/src/Rich.vue.txt": "<script lang=\"ts\">\nimport { defineComponent, type PropType } from 'vue'\ninterface Item { id: number; name: string }\nexport default {\n  props: {\n    title: { type: String, required: true },\n    count: { type: Number, default: 0 },\n    items: { type: Array as PropType<Item[]>, default: () => [] },\n    mode: { type: String as PropType<'a' | 'b'>, validator: (v: string) => ['a', 'b'].includes(v) },\n    flag: Boolean,\n    loose: null,\n    multi: [String, Number],\n    maybe: String,\n  },\n  emits: ['change'],\n  data() {\n    return { local: 1, list: [] as string[] }\n  },\n  computed: {\n    upper(): string { return this.title.toUpperCase() },\n    rw: {\n      get(): number { return this.count },\n      set(v: number) { this.local = v },\n    },\n  },\n  methods: {\n    inc(by: number) { this.local += by; this.$emit('change') },\n  },\n  watch: {\n    count(n: number) { this.local = n },\n  },\n}\n</script>\n\n<template>\n  <div>\n    {{ title.toFixed() }}\n    {{ count.toUpperCase() }}\n    {{ unknownName }}\n    <button @click=\"inc('x')\">+</button>\n    {{ items[0]!.nope }}\n    {{ upper.toFixed() }}\n    {{ local.length }}\n    {{ maybe.length }}\n    {{ mode === 'c' }}\n  </div>\n</template>\n",
+    "matrix/plain-rich-template-errors/tsconfig.json.txt": "{\n  \"compilerOptions\": {\n    \"target\": \"ESNext\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"strict\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"jsx\": \"preserve\",\n    \"lib\": [\n      \"ESNext\",\n      \"DOM\"\n    ],\n    \"types\": [],\n    \"experimentalDecorators\": true\n  },\n  \"include\": [\n    \"src/**/*.ts\",\n    \"src/**/*.vue\",\n    \"src/**/*.js\",\n    \"src/**/*.d.ts\"\n  ],\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ]\n}",
+    "matrix/plain-ts-template-errors-in-script-member/src/Comp.vue.txt": "<script lang=\"ts\">\nexport default {\n  props: { a: { type: String, required: true } },\n  data() { return { b: 1 } },\n  computed: { c(): string { return this.a + this.b } },\n  methods: { m(x: number) { return x + this.b } },\n}\n</script>\n\n<template>\n  <div>{{ a.toUpperCase() }} {{ c.length }} {{ m(1) }} {{ m('x') }} {{ b.length }}</div>\n</template>\n",
+    "matrix/plain-ts-template-errors-in-script-member/tsconfig.json.txt": "{\n  \"compilerOptions\": {\n    \"target\": \"ESNext\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"strict\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"jsx\": \"preserve\",\n    \"lib\": [\n      \"ESNext\",\n      \"DOM\"\n    ],\n    \"types\": [],\n    \"experimentalDecorators\": true\n  },\n  \"include\": [\n    \"src/**/*.ts\",\n    \"src/**/*.vue\",\n    \"src/**/*.js\",\n    \"src/**/*.d.ts\"\n  ],\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ]\n}",
+    "matrix/provide-inject-keys-and-setup/src/Comp.vue.txt": "<script lang=\"ts\">\nimport { defineComponent, inject, provide } from 'vue'\nimport { themeKey } from './keys'\nexport default defineComponent({\n  setup() {\n    provide(themeKey, { dark: true })\n    const theme = inject(themeKey)!\n    return { theme }\n  },\n  inject: { injected: { from: themeKey as symbol, default: () => ({ dark: false }) } },\n})\n</script>\n\n<template><div>{{ theme.dark }} {{ theme.light }}</div></template>\n",
+    "matrix/provide-inject-keys-and-setup/src/keys.ts.txt": "import type { InjectionKey } from 'vue'\nexport const themeKey: InjectionKey<{ dark: boolean }> = Symbol('theme')\n",
+    "matrix/provide-inject-keys-and-setup/tsconfig.json.txt": "{\n  \"compilerOptions\": {\n    \"target\": \"ESNext\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"strict\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"jsx\": \"preserve\",\n    \"lib\": [\n      \"ESNext\",\n      \"DOM\"\n    ],\n    \"types\": [],\n    \"experimentalDecorators\": true\n  },\n  \"include\": [\n    \"src/**/*.ts\",\n    \"src/**/*.vue\",\n    \"src/**/*.js\",\n    \"src/**/*.d.ts\"\n  ],\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ]\n}",
+    "matrix/ts-consumers-of-options-component/src/Child.vue.txt": "<script lang=\"ts\">\nimport { defineComponent } from 'vue'\nexport default defineComponent({\n  props: { title: { type: String, required: true }, size: { type: Number, default: 1 } },\n  emits: { pick: (n: number) => true },\n  data() { return { open: false } },\n  methods: { toggle(force?: boolean) { this.open = force ?? !this.open; return this.open } },\n})\n</script>\n\n<template><div>{{ title }}</div></template>\n",
+    "matrix/ts-consumers-of-options-component/src/SetupParent.vue.txt": "<script setup lang=\"ts\">\nimport { useTemplateRef, onMounted } from 'vue'\nimport Child from './Child.vue'\nconst child = useTemplateRef<InstanceType<typeof Child>>('child')\nonMounted(() => {\n  child.value?.toggle()\n  child.value?.toggle('x')\n  const n: number = child.value!.title\n  return n\n})\n</script>\n\n<template>\n  <Child ref=\"child\" title=\"t\" />\n</template>\n",
+    "matrix/ts-consumers-of-options-component/src/use.ts.txt": "import { createApp, type ComponentPublicInstance } from 'vue'\nimport Child from './Child.vue'\ntype I = InstanceType<typeof Child>\ndeclare const inst: I\nconst t: string = inst.title\nconst s: number = inst.size\nconst o: boolean = inst.toggle(true)\nconst bad: number = inst.title\ninst.toggle('x')\ninst.$emit('pick', 1)\ninst.$emit('pick', 'x')\nconst p: I['$props'] = { title: 'a' }\nconst p2: I['$props'] = { title: 1 }\ncreateApp(Child, { title: 'x' })\nexport const used: unknown[] = [t, s, o, bad, p, p2, inst as ComponentPublicInstance]\n",
+    "matrix/ts-consumers-of-options-component/tsconfig.json.txt": "{\n  \"compilerOptions\": {\n    \"target\": \"ESNext\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"strict\": true,\n    \"noEmit\": true,\n    \"skipLibCheck\": true,\n    \"jsx\": \"preserve\",\n    \"lib\": [\n      \"ESNext\",\n      \"DOM\"\n    ],\n    \"types\": [],\n    \"experimentalDecorators\": true\n  },\n  \"include\": [\n    \"src/**/*.ts\",\n    \"src/**/*.vue\",\n    \"src/**/*.js\",\n    \"src/**/*.d.ts\"\n  ],\n  \"contentMappers\": [\n    {\n      \"package\": \"vize\",\n      \"extensions\": [\n        \".vue\"\n      ]\n    }\n  ]\n}"
+  },
+  "cases": [
+    {
+      "id": "options-api-this-across-blocks",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/OptionsBridge.vue",
+          "source": "OptionsBridge.vue.txt"
+        }
+      ]
+    },
+    {
+      "id": "options-api-template-method-wrong-argument",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/OptionsBridge.vue",
+          "source": "template-wrong-arg.OptionsBridge.vue.txt"
+        }
+      ]
+    },
+    {
+      "id": "options-api-method-body-wrong-data-assignment",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/OptionsBridge.vue",
+          "source": "method-wrong-assignment.OptionsBridge.vue.txt"
+        }
+      ]
+    },
+    {
+      "id": "matrix-dc-child-props-from-options-parent",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "matrix/dc-child-props-from-options-parent/tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "matrix/dc-child-props-from-options-parent/src/Child.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "matrix/dc-child-props-from-options-parent/src/Parent.vue.txt"
+        }
+      ]
+    },
+    {
+      "id": "matrix-dc-child-props-from-setup-parent",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "matrix/dc-child-props-from-setup-parent/tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "matrix/dc-child-props-from-setup-parent/src/Child.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "matrix/dc-child-props-from-setup-parent/src/Parent.vue.txt"
+        }
+      ]
+    },
+    {
+      "id": "matrix-dc-data-arrow-and-this",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "matrix/dc-data-arrow-and-this/tsconfig.json.txt"
+        },
+        {
+          "file": "src/Comp.vue",
+          "source": "matrix/dc-data-arrow-and-this/src/Comp.vue.txt"
+        }
+      ]
+    },
+    {
+      "id": "matrix-dc-emits-with-v-on-listeners-in-parent",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "matrix/dc-emits-with-v-on-listeners-in-parent/tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "matrix/dc-emits-with-v-on-listeners-in-parent/src/Child.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "matrix/dc-emits-with-v-on-listeners-in-parent/src/Parent.vue.txt"
+        }
+      ]
+    },
+    {
+      "id": "matrix-dc-global-properties",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "matrix/dc-global-properties/tsconfig.json.txt"
+        },
+        {
+          "file": "src/Comp.vue",
+          "source": "matrix/dc-global-properties/src/Comp.vue.txt"
+        },
+        {
+          "file": "src/globals.d.ts",
+          "source": "matrix/dc-global-properties/src/globals.d.ts.txt"
+        }
+      ]
+    },
+    {
+      "id": "matrix-dc-mixins-extends",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "matrix/dc-mixins-extends/tsconfig.json.txt"
+        },
+        {
+          "file": "src/Mixed.vue",
+          "source": "matrix/dc-mixins-extends/src/Mixed.vue.txt"
+        },
+        {
+          "file": "src/MixedErrors.vue",
+          "source": "matrix/dc-mixins-extends/src/MixedErrors.vue.txt"
+        },
+        {
+          "file": "src/mixins.ts",
+          "source": "matrix/dc-mixins-extends/src/mixins.ts.txt"
+        }
+      ]
+    },
+    {
+      "id": "matrix-dc-name-recursive-and-emits-template",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "matrix/dc-name-recursive-and-emits-template/tsconfig.json.txt"
+        },
+        {
+          "file": "src/Tree.vue",
+          "source": "matrix/dc-name-recursive-and-emits-template/src/Tree.vue.txt"
+        }
+      ]
+    },
+    {
+      "id": "matrix-dc-options-only-render-no-template",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "matrix/dc-options-only-render-no-template/tsconfig.json.txt"
+        },
+        {
+          "file": "src/Comp.vue",
+          "source": "matrix/dc-options-only-render-no-template/src/Comp.vue.txt"
+        }
+      ]
+    },
+    {
+      "id": "matrix-dc-props-array-form",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "matrix/dc-props-array-form/tsconfig.json.txt"
+        },
+        {
+          "file": "src/Comp.vue",
+          "source": "matrix/dc-props-array-form/src/Comp.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "matrix/dc-props-array-form/src/Parent.vue.txt"
+        }
+      ]
+    },
+    {
+      "id": "matrix-dc-props-type-only-constructor",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "matrix/dc-props-type-only-constructor/tsconfig.json.txt"
+        },
+        {
+          "file": "src/Comp.vue",
+          "source": "matrix/dc-props-type-only-constructor/src/Comp.vue.txt"
+        }
+      ]
+    },
+    {
+      "id": "matrix-dc-required-optional-props-strict",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "matrix/dc-required-optional-props-strict/tsconfig.json.txt"
+        },
+        {
+          "file": "src/Comp.vue",
+          "source": "matrix/dc-required-optional-props-strict/src/Comp.vue.txt"
+        }
+      ]
+    },
+    {
+      "id": "matrix-dc-rich-clean",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "matrix/dc-rich-clean/tsconfig.json.txt"
+        },
+        {
+          "file": "src/Rich.vue",
+          "source": "matrix/dc-rich-clean/src/Rich.vue.txt"
+        }
+      ]
+    },
+    {
+      "id": "matrix-dc-rich-template-errors",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "matrix/dc-rich-template-errors/tsconfig.json.txt"
+        },
+        {
+          "file": "src/Rich.vue",
+          "source": "matrix/dc-rich-template-errors/src/Rich.vue.txt"
+        }
+      ]
+    },
+    {
+      "id": "matrix-dc-script-errors",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "matrix/dc-script-errors/tsconfig.json.txt"
+        },
+        {
+          "file": "src/Comp.vue",
+          "source": "matrix/dc-script-errors/src/Comp.vue.txt"
+        }
+      ]
+    },
+    {
+      "id": "matrix-dc-setup-plus-options",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "matrix/dc-setup-plus-options/tsconfig.json.txt"
+        },
+        {
+          "file": "src/Comp.vue",
+          "source": "matrix/dc-setup-plus-options/src/Comp.vue.txt"
+        },
+        {
+          "file": "src/CompErrors.vue",
+          "source": "matrix/dc-setup-plus-options/src/CompErrors.vue.txt"
+        }
+      ]
+    },
+    {
+      "id": "matrix-dc-slots-type",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "matrix/dc-slots-type/tsconfig.json.txt"
+        },
+        {
+          "file": "src/List.vue",
+          "source": "matrix/dc-slots-type/src/List.vue.txt"
+        },
+        {
+          "file": "src/Use.vue",
+          "source": "matrix/dc-slots-type/src/Use.vue.txt"
+        }
+      ]
+    },
+    {
+      "id": "matrix-dc-template-v-for-on-computed-and-methods",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "matrix/dc-template-v-for-on-computed-and-methods/tsconfig.json.txt"
+        },
+        {
+          "file": "src/Comp.vue",
+          "source": "matrix/dc-template-v-for-on-computed-and-methods/src/Comp.vue.txt"
+        }
+      ]
+    },
+    {
+      "id": "matrix-dc-watch-variants",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "matrix/dc-watch-variants/tsconfig.json.txt"
+        },
+        {
+          "file": "src/Comp.vue",
+          "source": "matrix/dc-watch-variants/src/Comp.vue.txt"
+        }
+      ]
+    },
+    {
+      "id": "matrix-dc-with-satisfies-and-const",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "matrix/dc-with-satisfies-and-const/tsconfig.json.txt"
+        },
+        {
+          "file": "src/Comp.vue",
+          "source": "matrix/dc-with-satisfies-and-const/src/Comp.vue.txt"
+        }
+      ]
+    },
+    {
+      "id": "matrix-functional-component",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "matrix/functional-component/tsconfig.json.txt"
+        },
+        {
+          "file": "src/Fn.ts",
+          "source": "matrix/functional-component/src/Fn.ts.txt"
+        },
+        {
+          "file": "src/Use.vue",
+          "source": "matrix/functional-component/src/Use.vue.txt"
+        }
+      ]
+    },
+    {
+      "id": "matrix-js-plain-checkjs",
+      "inputs": [
+        {
+          "file": "src/Comp.vue",
+          "source": "matrix/js-plain-checkjs/src/Comp.vue.txt"
+        },
+        {
+          "file": "tsconfig.json",
+          "source": "matrix/js-plain-checkjs/tsconfig.json.txt"
+        }
+      ]
+    },
+    {
+      "id": "matrix-js-plain-no-checkjs",
+      "inputs": [
+        {
+          "file": "src/Comp.vue",
+          "source": "matrix/js-plain-no-checkjs/src/Comp.vue.txt"
+        },
+        {
+          "file": "src/Use.vue",
+          "source": "matrix/js-plain-no-checkjs/src/Use.vue.txt"
+        },
+        {
+          "file": "tsconfig.json",
+          "source": "matrix/js-plain-no-checkjs/tsconfig.json.txt"
+        }
+      ]
+    },
+    {
+      "id": "matrix-mixed-dc-normal-script-and-setup",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "matrix/mixed-dc-normal-script-and-setup/tsconfig.json.txt"
+        },
+        {
+          "file": "src/Comp.vue",
+          "source": "matrix/mixed-dc-normal-script-and-setup/src/Comp.vue.txt"
+        },
+        {
+          "file": "src/Icon.vue",
+          "source": "matrix/mixed-dc-normal-script-and-setup/src/Icon.vue.txt"
+        }
+      ]
+    },
+    {
+      "id": "matrix-mixed-options-and-setup",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "matrix/mixed-options-and-setup/tsconfig.json.txt"
+        },
+        {
+          "file": "src/Comp.vue",
+          "source": "matrix/mixed-options-and-setup/src/Comp.vue.txt"
+        },
+        {
+          "file": "src/Use.vue",
+          "source": "matrix/mixed-options-and-setup/src/Use.vue.txt"
+        }
+      ]
+    },
+    {
+      "id": "matrix-plain-child-props-from-setup-parent",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "matrix/plain-child-props-from-setup-parent/tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "matrix/plain-child-props-from-setup-parent/src/Child.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "matrix/plain-child-props-from-setup-parent/src/Parent.vue.txt"
+        }
+      ]
+    },
+    {
+      "id": "matrix-plain-rich-clean",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "matrix/plain-rich-clean/tsconfig.json.txt"
+        },
+        {
+          "file": "src/Rich.vue",
+          "source": "matrix/plain-rich-clean/src/Rich.vue.txt"
+        }
+      ]
+    },
+    {
+      "id": "matrix-plain-rich-template-errors",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "matrix/plain-rich-template-errors/tsconfig.json.txt"
+        },
+        {
+          "file": "src/Rich.vue",
+          "source": "matrix/plain-rich-template-errors/src/Rich.vue.txt"
+        }
+      ]
+    },
+    {
+      "id": "matrix-plain-ts-template-errors-in-script-member",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "matrix/plain-ts-template-errors-in-script-member/tsconfig.json.txt"
+        },
+        {
+          "file": "src/Comp.vue",
+          "source": "matrix/plain-ts-template-errors-in-script-member/src/Comp.vue.txt"
+        }
+      ]
+    },
+    {
+      "id": "matrix-provide-inject-keys-and-setup",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "matrix/provide-inject-keys-and-setup/tsconfig.json.txt"
+        },
+        {
+          "file": "src/Comp.vue",
+          "source": "matrix/provide-inject-keys-and-setup/src/Comp.vue.txt"
+        },
+        {
+          "file": "src/keys.ts",
+          "source": "matrix/provide-inject-keys-and-setup/src/keys.ts.txt"
+        }
+      ]
+    },
+    {
+      "id": "matrix-ts-consumers-of-options-component",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "matrix/ts-consumers-of-options-component/tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "matrix/ts-consumers-of-options-component/src/Child.vue.txt"
+        },
+        {
+          "file": "src/SetupParent.vue",
+          "source": "matrix/ts-consumers-of-options-component/src/SetupParent.vue.txt"
+        },
+        {
+          "file": "src/use.ts",
+          "source": "matrix/ts-consumers-of-options-component/src/use.ts.txt"
+        }
+      ]
+    }
+  ]
+}

@@ -37,6 +37,76 @@
         }
       ],
       "diagnostics": []
+    },
+    {
+      "id": "extends-sfc-inherited-member-types",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/BaseButton.vue",
+          "source": "BaseButton.vue.txt"
+        },
+        {
+          "file": "src/Button.vue",
+          "source": "Button.wrong-members.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Button.vue",
+          "line": 11,
+          "column": 48,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type 'number' is not assignable to parameter of type 'string'."
+        },
+        {
+          "file": "src/Button.vue",
+          "line": 12,
+          "column": 31,
+          "severity": 1,
+          "code": 2551,
+          "message": "Property 'toFixed' does not exist on type 'string'. Did you mean 'fixed'?"
+        }
+      ]
+    },
+    {
+      "id": "mixins-sfc-inherited-member-types",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/BaseButton.vue",
+          "source": "BaseButton.vue.txt"
+        },
+        {
+          "file": "src/Button.vue",
+          "source": "Button.mixin-wrong-members.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Button.vue",
+          "line": 12,
+          "column": 36,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type 'number' is not assignable to parameter of type 'string'."
+        },
+        {
+          "file": "src/Button.vue",
+          "line": 13,
+          "column": 31,
+          "severity": 1,
+          "code": 2551,
+          "message": "Property 'toFixed' does not exist on type 'string'. Did you mean 'fixed'?"
+        }
+      ]
     }
   ]
 }

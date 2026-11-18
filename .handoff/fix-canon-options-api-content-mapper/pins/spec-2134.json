@@ -1,0 +1,26 @@
+{
+  "pack": "options-extends-inherited-names-2134",
+  "module": "options_extends_inherited_names_2134",
+  "test": "options_api_extends_base_exposes_inherited_template_names",
+  "regressionCommit": "bd113bbccb2be992217f99d60b620f3715e4f1b5",
+  "historicalIssue": 2134,
+  "checkerOptions": { "optionsApi": true },
+  "sources": {
+    "Button.wrong-members.vue.txt": "<script lang=\"ts\">\nimport BaseButton from './BaseButton.vue'\n\nexport default {\n    name: 'Button',\n    extends: BaseButton\n}\n</script>\n\n<template>\n<component v-if=\"!asChild\" :is=\"as\" :class=\"cx(1)\">\n  <span v-if=\"label\">{{ label.toFixed() }}</span>\n</component>\n</template>\n",
+    "Button.mixin-wrong-members.vue.txt": "<script lang=\"ts\">\nimport { defineComponent } from 'vue'\nimport BaseButton from './BaseButton.vue'\n\nexport default defineComponent({\n    name: 'Button',\n    mixins: [BaseButton]\n})\n</script>\n\n<template>\n<button v-if=\"!asChild\" :class=\"cx(2)\">\n  <span v-if=\"label\">{{ label.toFixed() }}</span>\n</button>\n</template>\n"
+  },
+  "cases": [
+    { "id": "extends-base-template-names", "inputs": [
+      { "file": "tsconfig.json", "source": "tsconfig.json.txt" },
+      { "file": "src/BaseButton.vue", "source": "BaseButton.vue.txt" },
+      { "file": "src/Button.vue", "source": "Button.vue.txt" } ] },
+    { "id": "extends-sfc-inherited-member-types", "inputs": [
+      { "file": "tsconfig.json", "source": "tsconfig.json.txt" },
+      { "file": "src/BaseButton.vue", "source": "BaseButton.vue.txt" },
+      { "file": "src/Button.vue", "source": "Button.wrong-members.vue.txt" } ] },
+    { "id": "mixins-sfc-inherited-member-types", "inputs": [
+      { "file": "tsconfig.json", "source": "tsconfig.json.txt" },
+      { "file": "src/BaseButton.vue", "source": "BaseButton.vue.txt" },
+      { "file": "src/Button.vue", "source": "Button.mixin-wrong-members.vue.txt" } ] }
+  ]
+}

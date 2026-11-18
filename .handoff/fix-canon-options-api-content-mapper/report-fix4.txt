@@ -1,0 +1,238 @@
+DIFF async-and-global-components (vue-tsc 3)
+  [cm] MISSING src/Host.vue:10:16 TS2322 :: Type 'number' is not assignable to type 'string'.
+  [cm] MISSING src/Host.vue:12:17 TS2322 :: Type 'number' is not assignable to type 'string'.
+  [cm] MISSING src/Host.vue:13:18 TS2322 :: Type 'number' is not assignable to type 'string'.
+  [cm] EXTRA   src/Child.vue:1:1 TS18069 :: The content mapper 'vize' failed to transform this file.
+  [cm] EXTRA   src/Host.vue:1:1 TS18069 :: The content mapper 'vize' failed to transform this file.
+  [check] MISSING src/Host.vue:10:16 TS2322 :: Type 'number' is not assignable to type 'string'.
+DIFF class-vue-facing-decorator (vue-tsc 12)
+  [cm] MISSING src/Comp.vue:4:22 TS2528 :: A module cannot have multiple default exports.
+  [cm] MISSING src/Comp.vue:17:8 TS2339 :: Property 'msg' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsM
+  [cm] MISSING src/Comp.vue:17:32 TS2339 :: Property 'size' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptions
+  [cm] MISSING src/Comp.vue:17:53 TS2339 :: Property 'count' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOption
+  [cm] MISSING src/Comp.vue:17:75 TS2339 :: Property 'double' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptio
+  [cm] MISSING src/Comp.vue:18:21 TS2339 :: Property 'inc' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsM
+  [cm] MISSING src/Comp.vue:19:21 TS2339 :: Property 'pick' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptions
+  [cm] MISSING src/CompErrors.vue:4:22 TS2528 :: A module cannot have multiple default exports.
+  [cm] MISSING src/CompErrors.vue:13:8 TS2339 :: Property 'msg' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsM
+  [cm] MISSING src/CompErrors.vue:13:28 TS2339 :: Property 'count' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOption
+  [cm] MISSING src/CompErrors.vue:13:54 TS2339 :: Property 'nope' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptions
+  [cm] MISSING src/CompErrors.vue:14:21 TS2339 :: Property 'inc' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsM
+  [cm] EXTRA   src/Comp.vue:1:1 TS18069 :: The content mapper 'vize' failed to transform this file.
+  [cm] EXTRA   src/CompErrors.vue:1:1 TS18069 :: The content mapper 'vize' failed to transform this file.
+  [check] MISSING src/Comp.vue:4:22 TS2528 :: A module cannot have multiple default exports.
+  [check] MISSING src/Comp.vue:17:8 TS2339 :: Property 'msg' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsM
+  [check] MISSING src/Comp.vue:17:32 TS2339 :: Property 'size' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptions
+  [check] MISSING src/Comp.vue:17:53 TS2339 :: Property 'count' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOption
+  [check] MISSING src/Comp.vue:17:75 TS2339 :: Property 'double' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptio
+  [check] MISSING src/Comp.vue:18:21 TS2339 :: Property 'inc' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsM
+  [check] MISSING src/Comp.vue:19:21 TS2339 :: Property 'pick' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptions
+  [check] MISSING src/CompErrors.vue:4:22 TS2528 :: A module cannot have multiple default exports.
+  [check] MISSING src/CompErrors.vue:13:8 TS2339 :: Property 'msg' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsM
+  [check] MISSING src/CompErrors.vue:13:28 TS2339 :: Property 'count' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOption
+  [check] MISSING src/CompErrors.vue:14:21 TS2339 :: Property 'inc' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsM
+  [check] EXTRA   src/CompErrors.vue:13:12 TS2551 :: Property 'toFixed' does not exist on type 'string'. Did you mean 'fixed'? (source: {{ msg.toFixed() }} {{ count.toUpperCase() }} {{ nope }})
+  [check] EXTRA   src/CompErrors.vue:13:34 TS2339 :: Property 'toUpperCase' does not exist on type 'number'. (source: {{ msg.toFixed() }} {{ count.toUpperCase() }} {{ nope }})
+  [check] EXTRA   src/CompErrors.vue:14:25 TS2345 :: Argument of type 'string' is not assignable to parameter of type 'number'. (source: <button @click="inc('x')">+</button>; binding: @click)
+DIFF class-vue-property-decorator (vue-tsc 17)
+  [cm] MISSING src/Comp.vue:3:36 TS2305 :: Module '"vue-property-decorator"' has no exported member 'PropSync'.
+  [cm] MISSING src/Comp.vue:5:22 TS2528 :: A module cannot have multiple default exports.
+  [cm] MISSING src/Comp.vue:20:8 TS2339 :: Property 'msg' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsM
+  [cm] MISSING src/Comp.vue:20:32 TS2339 :: Property 'size' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptions
+  [cm] MISSING src/Comp.vue:20:53 TS2339 :: Property 'count' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOption
+  [cm] MISSING src/Comp.vue:20:75 TS2339 :: Property 'double' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptio
+  [cm] MISSING src/Comp.vue:21:8 TS2339 :: Property 'value' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOption
+  [cm] MISSING src/Comp.vue:21:20 TS2339 :: Property 'syncedOpen' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentO
+  [cm] MISSING src/Comp.vue:22:21 TS2339 :: Property 'inc' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsM
+  [cm] MISSING src/Comp.vue:23:21 TS2339 :: Property 'pick' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptions
+  [cm] MISSING src/Comp.vue:24:21 TS2339 :: Property 'syncedOpen' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentO
+  [cm] MISSING src/Comp.vue:24:35 TS2339 :: Property 'syncedOpen' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentO
+  [cm] MISSING src/CompErrors.vue:5:22 TS2528 :: A module cannot have multiple default exports.
+  [cm] MISSING src/CompErrors.vue:14:8 TS2339 :: Property 'msg' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsM
+  [cm] MISSING src/CompErrors.vue:14:28 TS2339 :: Property 'count' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOption
+  [cm] MISSING src/CompErrors.vue:14:54 TS2339 :: Property 'nope' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptions
+  [cm] MISSING src/CompErrors.vue:15:21 TS2339 :: Property 'inc' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsM
+  [cm] EXTRA   src/Comp.vue:1:1 TS18069 :: The content mapper 'vize' failed to transform this file.
+  [cm] EXTRA   src/CompErrors.vue:1:1 TS18069 :: The content mapper 'vize' failed to transform this file.
+  [check] MISSING src/Comp.vue:5:22 TS2528 :: A module cannot have multiple default exports.
+  [check] MISSING src/Comp.vue:20:8 TS2339 :: Property 'msg' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsM
+  [check] MISSING src/Comp.vue:20:32 TS2339 :: Property 'size' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptions
+  [check] MISSING src/Comp.vue:20:53 TS2339 :: Property 'count' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOption
+  [check] MISSING src/Comp.vue:20:75 TS2339 :: Property 'double' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptio
+  [check] MISSING src/Comp.vue:21:8 TS2339 :: Property 'value' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOption
+  [check] MISSING src/Comp.vue:21:20 TS2339 :: Property 'syncedOpen' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentO
+  [check] MISSING src/Comp.vue:22:21 TS2339 :: Property 'inc' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsM
+  [check] MISSING src/Comp.vue:23:21 TS2339 :: Property 'pick' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptions
+  [check] MISSING src/Comp.vue:24:21 TS2339 :: Property 'syncedOpen' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentO
+  [check] MISSING src/Comp.vue:24:35 TS2339 :: Property 'syncedOpen' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentO
+  [check] MISSING src/CompErrors.vue:5:22 TS2528 :: A module cannot have multiple default exports.
+  [check] MISSING src/CompErrors.vue:14:8 TS2339 :: Property 'msg' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsM
+  [check] MISSING src/CompErrors.vue:14:28 TS2339 :: Property 'count' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOption
+  [check] MISSING src/CompErrors.vue:15:21 TS2339 :: Property 'inc' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsM
+  [check] EXTRA   src/CompErrors.vue:14:12 TS2551 :: Property 'toFixed' does not exist on type 'string'. Did you mean 'fixed'? (source: {{ msg.toFixed() }} {{ count.toUpperCase() }} {{ nope }})
+  [check] EXTRA   src/CompErrors.vue:14:34 TS2339 :: Property 'toUpperCase' does not exist on type 'number'. (source: {{ msg.toFixed() }} {{ count.toUpperCase() }} {{ nope }})
+  [check] EXTRA   src/CompErrors.vue:15:25 TS2345 :: Argument of type 'string' is not assignable to parameter of type 'number'. (source: <button @click="inc('x')">+</button>; binding: @click)
+DIFF dc-child-props-from-options-parent (vue-tsc 5)
+  [cm] MISSING src/Parent.vue:13:11 TS2322 :: Type 'number' is not assignable to type 'string'.
+  [cm] MISSING src/Parent.vue:14:4 TS2345 :: Argument of type '{}' is not assignable to parameter of type 'Partial<{ size: number; kind: "a" | "b"; }> & Omit<{ readonly title: string; readonly size: number
+  [cm] MISSING src/Parent.vue:15:20 TS2322 :: Type '"c"' is not assignable to type '"a" | "b" | undefined'.
+  [cm] MISSING src/Parent.vue:16:28 TS2322 :: Type 'number' is not assignable to type 'string'.
+  [cm] MISSING src/Parent.vue:17:21 TS2322 :: Type '(v: string) => string' is not assignable to type '(n: number) => any'.
+  [cm] EXTRA   src/Child.vue:1:1 TS18069 :: The content mapper 'vize' failed to transform this file.
+  [cm] EXTRA   src/Parent.vue:1:1 TS18069 :: The content mapper 'vize' failed to transform this file.
+ok   dc-child-props-from-setup-parent (vue-tsc 4)
+DIFF dc-components-directives (vue-tsc 2)
+  [cm] MISSING src/Host.vue:18:13 TS2322 :: Type 'number' is not assignable to type 'string'.
+  [check] MISSING src/Host.vue:18:13 TS2322 :: Type 'number' is not assignable to type 'string'.
+ok   dc-data-arrow-and-this (vue-tsc 1)
+DIFF dc-emits-object (vue-tsc 5)
+  [cm] MISSING src/Child.vue:16:21 TS2769 :: No overload matches this call.
+  [cm] MISSING src/Child.vue:19:40 TS2769 :: No overload matches this call.
+  [cm] EXTRA   src/Child.vue:16:27 TS2769 :: No overload matches this call.
+  [cm] EXTRA   src/Child.vue:19:46 TS2769 :: No overload matches this call.
+  [check] MISSING src/Child.vue:16:21 TS2769 :: No overload matches this call.
+  [check] MISSING src/Child.vue:19:40 TS2769 :: No overload matches this call.
+  [check] EXTRA   src/Child.vue:16:27 TS2769 :: No overload matches this call.
+  [check] EXTRA   src/Child.vue:19:46 TS2769 :: No overload matches this call.
+ok   dc-emits-with-v-on-listeners-in-parent (vue-tsc 1)
+DIFF dc-expose-and-refs (vue-tsc 1)
+  [cm] MISSING src/Child.vue:10:30 TS2339 :: Property 'v' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, { v: number; }, {}, { reset(): void; hidden(): 1; }, C
+  [check] MISSING src/Child.vue:10:30 TS2339 :: Property 'v' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, { v: number; }, {}, { reset(): void; hidden(): 1; }, C
+ok   dc-global-properties (vue-tsc 3)
+DIFF dc-inject-provide (vue-tsc 6)
+  [cm] MISSING src/Arr.vue:9:11 TS2339 :: Property 'foo' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsM
+  [cm] MISSING src/Arr.vue:9:21 TS2339 :: Property 'bar' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsM
+  [cm] MISSING src/Comp.vue:16:11 TS2339 :: Property 'theme' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, { x: number; }, {}, {}, ComponentOptionsMixin, Com
+  [cm] MISSING src/Comp.vue:16:23 TS2339 :: Property 'api' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, { x: number; }, {}, {}, ComponentOptionsMixin, Compo
+  [check] MISSING src/Arr.vue:9:11 TS2339 :: Property 'foo' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsM
+  [check] MISSING src/Arr.vue:9:21 TS2339 :: Property 'bar' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsM
+  [check] MISSING src/Comp.vue:16:11 TS2339 :: Property 'theme' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, { x: number; }, {}, {}, ComponentOptionsMixin, Com
+  [check] MISSING src/Comp.vue:16:23 TS2339 :: Property 'api' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, { x: number; }, {}, {}, ComponentOptionsMixin, Compo
+ok   dc-instance-dollar-members (vue-tsc 2)
+ok   dc-mixins-extends (vue-tsc 5)
+ok   dc-name-recursive-and-emits-template (vue-tsc 0)
+ok   dc-options-only-render-no-template (vue-tsc 1)
+ok   dc-pinia-map-helpers (vue-tsc 3)
+ok   dc-props-array-form (vue-tsc 1)
+ok   dc-props-type-only-constructor (vue-tsc 1)
+ok   dc-required-optional-props-strict (vue-tsc 6)
+ok   dc-rich-clean (vue-tsc 0)
+ok   dc-rich-template-errors (vue-tsc 9)
+ok   dc-script-errors (vue-tsc 4)
+ok   dc-setup-plus-options (vue-tsc 3)
+ok   dc-slots-type (vue-tsc 2)
+DIFF dc-template-assignments (vue-tsc 2)
+  [cm] MISSING src/Comp.vue:13:21 TS2540 :: Cannot assign to 'count' because it is a read-only property.
+  [cm] EXTRA   src/Comp.vue:13:21 TS2588 :: Cannot assign to 'count' because it is a constant.
+  [cm] EXTRA   src/Comp.vue:14:21 TS2588 :: Cannot assign to 'ro' because it is a constant.
+  [check] MISSING src/Comp.vue:13:21 TS2540 :: Cannot assign to 'count' because it is a read-only property.
+  [check] EXTRA   src/Comp.vue:13:21 TS2588 :: Cannot assign to 'count' because it is a constant. (source: <button @click="count++">prop</button>; binding: @click)
+  [check] EXTRA   src/Comp.vue:14:21 TS2588 :: Cannot assign to 'ro' because it is a constant. (source: <button @click="ro = 2">computed</button>; binding: @click)
+ok   dc-template-v-for-on-computed-and-methods (vue-tsc 2)
+ok   dc-vue-router (vue-tsc 2)
+ok   dc-vuex-map-helpers (vue-tsc 1)
+ok   dc-watch-variants (vue-tsc 0)
+ok   dc-with-satisfies-and-const (vue-tsc 2)
+ok   emits-array-template-payloads (vue-tsc 2)
+ok   extends-from-sfc (vue-tsc 6)
+ok   functional-component (vue-tsc 1)
+DIFF generic-define-component-function (vue-tsc 1)
+  [cm] MISSING src/Use.vue:10:26 TS2322 :: Type 'string' is not assignable to type '1'.
+  [check] MISSING src/Use.vue:10:26 TS2322 :: Type 'string' is not assignable to type '1'.
+DIFF js-dc-checkjs (vue-tsc 5)
+  [cm] MISSING src/Comp.vue:26:26 TS2345 :: Argument of type 'string' is not assignable to parameter of type 'number'.
+  [cm] EXTRA   src/Comp.vue:17:10 TS7006 :: Parameter 'n' implicitly has an 'any' type.
+  [check] MISSING src/Comp.vue:26:26 TS2345 :: Argument of type 'string' is not assignable to parameter of type 'number'.
+  [check] EXTRA   src/Comp.vue:17:10 TS7006 :: Parameter 'n' implicitly has an 'any' type.
+DIFF js-jsdoc-data-and-this (vue-tsc 1)
+  [cm] MISSING src/Comp.vue:22:26 TS2345 :: Argument of type 'number' is not assignable to parameter of type 'string'.
+  [cm] EXTRA   src/Comp.vue:13:10 TS7006 :: Parameter 'item' implicitly has an 'any' type.
+  [cm] EXTRA   src/Comp.vue:13:33 TS2345 :: Argument of type 'any' is not assignable to parameter of type 'never'.
+  [check] MISSING src/Comp.vue:22:26 TS2345 :: Argument of type 'number' is not assignable to parameter of type 'string'.
+  [check] EXTRA   src/Comp.vue:13:10 TS7006 :: Parameter 'item' implicitly has an 'any' type.
+  [check] EXTRA   src/Comp.vue:13:33 TS2345 :: Argument of type 'any' is not assignable to parameter of type 'never'.
+DIFF js-jsdoc-methods-plain (vue-tsc 5)
+  [cm] MISSING src/Comp.vue:6:13 TS2353 :: Object literal may only specify known properties, and 'type' does not exist in type 'PropType<Row[]>'.
+  [cm] MISSING src/Comp.vue:13:22 TS2532 :: Object is possibly 'undefined'.
+  [cm] MISSING src/Comp.vue:17:17 TS2322 :: Type 'string' is not assignable to type 'null'.
+  [cm] MISSING src/Comp.vue:30:50 TS2345 :: Argument of type 'string' is not assignable to parameter of type 'number'.
+  [cm] EXTRA   src/Comp.vue:17:10 TS7006 :: Parameter 'row' implicitly has an 'any' type.
+  [cm] EXTRA   src/Comp.vue:22:9 TS7006 :: Parameter 'a' implicitly has an 'any' type.
+  [cm] EXTRA   src/Comp.vue:22:12 TS7006 :: Parameter 'b' implicitly has an 'any' type.
+  [cm] EXTRA   src/Comp.vue:29:35 TS18046 :: 'r' is of type 'unknown'.
+  [cm] EXTRA   src/Comp.vue:29:61 TS18046 :: 'r' is of type 'unknown'.
+  [check] MISSING src/Comp.vue:6:13 TS2353 :: Object literal may only specify known properties, and 'type' does not exist in type 'PropType<Row[]>'.
+  [check] MISSING src/Comp.vue:13:22 TS2532 :: Object is possibly 'undefined'.
+  [check] MISSING src/Comp.vue:17:17 TS2322 :: Type 'string' is not assignable to type 'null'.
+  [check] MISSING src/Comp.vue:30:50 TS2345 :: Argument of type 'string' is not assignable to parameter of type 'number'.
+  [check] EXTRA   src/Comp.vue:17:10 TS7006 :: Parameter 'row' implicitly has an 'any' type.
+  [check] EXTRA   src/Comp.vue:22:9 TS7006 :: Parameter 'a' implicitly has an 'any' type.
+  [check] EXTRA   src/Comp.vue:22:12 TS7006 :: Parameter 'b' implicitly has an 'any' type.
+  [check] EXTRA   src/Comp.vue:29:35 TS18046 :: 'r' is of type 'unknown'. (source: <span v-for="r in rows" :key="r.id" @click="pick(r)">{{ r.name }}</span>; binding: 'key')
+  [check] EXTRA   src/Comp.vue:29:61 TS18046 :: 'r' is of type 'unknown'. (source: <span v-for="r in rows" :key="r.id" @click="pick(r)">{{ r.name }}</span>)
+ok   js-plain-checkjs (vue-tsc 4)
+ok   js-plain-no-checkjs (vue-tsc 1)
+ok   mixed-dc-normal-script-and-setup (vue-tsc 1)
+ok   mixed-options-and-setup (vue-tsc 3)
+DIFF model-and-kebab-on-options-child (vue-tsc 5)
+  [cm] MISSING src/Form.vue:17:19 TS2339 :: Property 'Field' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, { text: string; num: number; total: number; }, {},
+  [cm] EXTRA   src/Form.vue:17:42 TS2322 :: Type 'string' is not assignable to type 'number'.
+  [check] MISSING src/Form.vue:17:19 TS2339 :: Property 'Field' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, { text: string; num: number; total: number; }, {},
+  [check] EXTRA   src/Form.vue:17:42 TS2322 :: Type 'string' is not assignable to type 'number'. (source: <component :is="Field" v-model="text" :max-length="'x'" />; binding: 'max-length')
+DIFF options-component-casing-registrations (vue-tsc 4)
+  [cm] MISSING src/Host.vue:15:16 TS2322 :: Type 'string' is not assignable to type 'number'.
+  [check] MISSING src/Host.vue:15:16 TS2322 :: Type 'string' is not assignable to type 'number'.
+DIFF pin-1433-emits (vue-tsc 3)
+  [cm] MISSING src/Invalid.vue:13:19 TS2769 :: No overload matches this call.
+  [cm] EXTRA   src/Invalid.vue:13:25 TS2769 :: No overload matches this call.
+  [check] MISSING src/Invalid.vue:13:19 TS2769 :: No overload matches this call.
+  [check] EXTRA   src/Invalid.vue:13:25 TS2769 :: No overload matches this call.
+ok   pin-2134-extends (vue-tsc 2)
+DIFF pin-2134-mixins (vue-tsc 1)
+  [cm] MISSING src/Button.vue:12:36 TS2551 :: Property 'toFixed' does not exist on type 'string'. Did you mean 'fixed'?
+  [cm] EXTRA   src/Button.vue:12:33 TS2304 :: Cannot find name 'as'.
+  [check] MISSING src/Button.vue:12:36 TS2551 :: Property 'toFixed' does not exist on type 'string'. Did you mean 'fixed'?
+  [check] EXTRA   src/Button.vue:12:33 TS2339 :: Property 'as' does not exist on the component instance. (source: <component v-if="!asChild" :is="as.toFixed()" :class="cx('root')">; binding: 'is')
+ok   plain-child-props-from-setup-parent (vue-tsc 2)
+DIFF plain-object-generic-annotation (vue-tsc 0)
+  [cm] EXTRA   src/Comp.vue:9:27 TS2339 :: Property 'anything' does not exist on type '{}'.
+  [check] EXTRA   src/Comp.vue:9:27 TS2339 :: Property 'anything' does not exist on type '{}'. (source: <template><div>{{ n }} {{ anything }}</div></template>)
+ok   plain-rich-clean (vue-tsc 0)
+ok   plain-rich-template-errors (vue-tsc 9)
+ok   plain-ts-emits-object-template (vue-tsc 2)
+ok   plain-ts-template-errors-in-script-member (vue-tsc 2)
+DIFF proj-class-component (vue-tsc 8)
+  [cm] MISSING src/App.vue:8:22 TS2528 :: A module cannot have multiple default exports.
+  [cm] MISSING src/App.vue:19:12 TS2339 :: Property 'heading' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOpti
+  [cm] MISSING src/HelloDecorator.vue:6:22 TS2528 :: A module cannot have multiple default exports.
+  [cm] MISSING src/HelloDecorator.vue:25:33 TS2339 :: Property 'increment' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOp
+  [cm] MISSING src/HelloDecorator.vue:25:47 TS2339 :: Property 'greeting' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOpt
+  [cm] MISSING src/TypeErrorDecorator.vue:6:22 TS2528 :: A module cannot have multiple default exports.
+  [cm] MISSING src/TypeErrorDecorator.vue:16:12 TS2339 :: Property 'formatted' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOp
+  [check] MISSING src/App.vue:8:22 TS2528 :: A module cannot have multiple default exports.
+  [check] MISSING src/App.vue:19:12 TS2339 :: Property 'heading' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOpti
+  [check] MISSING src/HelloDecorator.vue:6:22 TS2528 :: A module cannot have multiple default exports.
+  [check] MISSING src/HelloDecorator.vue:25:33 TS2339 :: Property 'increment' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOp
+  [check] MISSING src/HelloDecorator.vue:25:47 TS2339 :: Property 'greeting' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOpt
+  [check] MISSING src/TypeErrorDecorator.vue:6:22 TS2528 :: A module cannot have multiple default exports.
+  [check] MISSING src/TypeErrorDecorator.vue:16:12 TS2339 :: Property 'formatted' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOp
+ok   proj-options-api (vue-tsc 1)
+ok   provide-inject-keys-and-setup (vue-tsc 1)
+DIFF strict-flags-rich (vue-tsc 5)
+  [cm] MISSING src/Parent.vue:4:1 TS6133 :: 'UnusedChild' is declared but its value is never read.
+  [cm] EXTRA   src/Parent.vue:4:8 TS6133 :: 'UnusedChild' is declared but its value is never read.
+  [check] MISSING src/Parent.vue:4:1 TS6133 :: 'UnusedChild' is declared but its value is never read.
+  [check] EXTRA   src/Parent.vue:4:8 TS6133 :: 'UnusedChild' is declared but its value is never read.
+DIFF strict-templates-options (vue-tsc 3)
+  [cm] MISSING src/Parent.vue:9:20 TS2353 :: Object literal may only specify known properties, and 'unknownProp' does not exist in type 'Partial<{}> & Omit<{ readonly title: string; readonly onPick?: ((...
+  [check] MISSING src/Parent.vue:9:20 TS2353 :: Object literal may only specify known properties, and 'unknownProp' does not exist in type 'Partial<{}> & Omit<{ readonly title: string; readonly onPick?: ((...
+ok   ts-consumers-of-options-component (vue-tsc 6)
+DIFF vue27-define-component (vue-tsc 5)
+  [cm] MISSING src/Parent.vue:10:12 TS2322 :: Type 'number' is not assignable to type 'string'.
+  [check] EXTRA   src/Comp.vue:10:55 TS2339 :: Property '$emit' does not exist on type '$This'.
+DIFF vue27-plain-object-filters (vue-tsc 2)
+  [check] MISSING src/Comp.vue:10:19 TS2339 :: Property 'money' does not exist on type 'Vue3Instance<{ label: string; }, Readonly<ExtractPropTypes<{ price: { type: NumberConstructor; required: true; }; }>>, 
+  [check] MISSING src/Comp.vue:10:63 TS2551 :: Property 'toFixed' does not exist on type 'string'. Did you mean 'fixed'?
+ok   vue27-vue-extend (vue-tsc 2)
+
+62 cases, 23 diverging

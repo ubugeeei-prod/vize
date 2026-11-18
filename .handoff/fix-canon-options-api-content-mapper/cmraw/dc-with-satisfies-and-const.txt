@@ -1,0 +1,2 @@
+src/Comp.vue(10,61): error TS2551: Property 'toFixed' does not exist on type 'string'. Did you mean 'fixed'?
+src/Comp.vue(10,77): error TS2339: Property 'c' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<ExtractPropTypes<{ a: { type: StringConstructor; required: true; }; }>, {}>, {}, { b: number; }, {}, {}, ComponentOptionsMixin, ... 19 more ..., ...>'.

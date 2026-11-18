@@ -1,0 +1,19 @@
+export declare function Component<T extends abstract new (...args: any[]) => unknown>(
+  target: T,
+  context?: ClassDecoratorContext<T>,
+): T
+export declare function Prop(
+  options?: unknown,
+): (target: undefined, context: ClassFieldDecoratorContext) => void
+export declare function PropSync(
+  propName: string,
+  options?: unknown,
+): (target: undefined, context: ClassFieldDecoratorContext) => void
+export declare function ModelSync(
+  propName: string,
+  event: string,
+  options?: unknown,
+): (target: undefined, context: ClassFieldDecoratorContext) => void
+export declare function VModel(
+  options?: unknown,
+): (target: undefined, context: ClassFieldDecoratorContext) => void

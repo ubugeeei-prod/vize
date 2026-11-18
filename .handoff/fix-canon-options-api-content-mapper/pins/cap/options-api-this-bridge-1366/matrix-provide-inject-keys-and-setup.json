@@ -1,0 +1,1 @@
+[{"file":"src/Comp.vue","line":14,"column":42,"severity":1,"code":2339,"message":"Property 'light' does not exist on type '{ dark: boolean; }'."}]

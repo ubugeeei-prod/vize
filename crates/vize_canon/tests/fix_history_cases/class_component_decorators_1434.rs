@@ -11,6 +11,8 @@ fn class_component_default_export_keeps_its_decorators() {
             "decorated-class-default-export",
             "decorated-class-member-wrong-type",
             "decorated-class-template-wrong-argument",
+            "sync-fields-and-setters-assignable",
+            "sync-field-wrong-type-and-getter-only",
         ],
     );
 }

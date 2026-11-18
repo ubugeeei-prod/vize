@@ -61,8 +61,11 @@ const VUE_COMPONENT_OPTIONS_MEMBERS_AFTER_SETUP: &str = "  render?: Function;
   __isFragment?: never;
   __isTeleport?: never;
   __isSuspense?: never;
-  __defaults?: any;
-  __vapor?: boolean;
+";
+
+const VUE_COMPONENT_OPTIONS_DEFAULTS: &str = "  __defaults?: any;\n";
+
+const VUE_COMPONENT_OPTIONS_MEMBERS_AFTER_DEFAULTS: &str = "  __vapor?: boolean;
   __multiRoot?: boolean;
   __isKeepAlive?: boolean;
   __isBuiltIn?: boolean;
@@ -80,10 +83,21 @@ const FALLTHROUGH_COMPONENT_CONTRACT_CAPACITY: usize = 384;
 /// `TS2339` for everything but `Function`'s own members. Only the non-generic
 /// spelling therefore carries [`COMPONENT_OPTIONS_INDEX_SIGNATURE`], which
 /// keeps generic components reporting exactly what `vue-tsc` reports.
+///
+/// An authored component default export (`defineComponent({...})`, a wrapped
+/// options object, a class) is intersected into the export as itself, and it
+/// already carries Vue's own `setup` and `__defaults`. Vue's `extends: Base` /
+/// `mixins: [Base]` inference reads its props from `setup` and its prop
+/// defaults from `__defaults` (`MixinToOptionTypes`). A second structural
+/// `setup` beside the authored one stops `typeof Base` matching
+/// `ComponentOptionsBase`, and `__defaults?: any` turns every inherited prop
+/// into an optional `any`, so each inherited member lost its type (#13270).
+/// That export keeps the authored members alone.
 fn emit_vue_component_options_type(
     ts: &mut crate::virtual_ts::TextBuf,
     has_generic_params: bool,
     static_raw_props_ref: Option<&str>,
+    authored_component: bool,
 ) {
     ts.push_str("type $VueComponentOptions = {\n");
     if !has_generic_params {
@@ -92,7 +106,7 @@ fn emit_vue_component_options_type(
     ts.push_str(VUE_COMPONENT_OPTIONS_MEMBERS_BEFORE_SETUP);
     if has_generic_params {
         ts.push_str("  setup?: any;\n");
-    } else {
+    } else if !authored_component {
         // Vue's `h()` overloads infer their `P` from `ComponentOptionsBase<P>`.
         // Keeping this member as `any` makes the options half of the generated
         // intersection match `ComponentOptions<any>`, bypassing the precise
@@ -107,6 +121,13 @@ fn emit_vue_component_options_type(
     crate::virtual_ts::generated_names::push_lib_text(
         ts,
         VUE_COMPONENT_OPTIONS_MEMBERS_AFTER_SETUP,
+    );
+    if !authored_component {
+        ts.push_str(VUE_COMPONENT_OPTIONS_DEFAULTS);
+    }
+    crate::virtual_ts::generated_names::push_lib_text(
+        ts,
+        VUE_COMPONENT_OPTIONS_MEMBERS_AFTER_DEFAULTS,
     );
 }
 
@@ -149,7 +170,12 @@ pub(super) fn emit_default_export_declaration(
     ),
     component_type: Option<&str>,
 ) {
-    emit_vue_component_options_type(ts, generic_component_params.is_some(), static_raw_props_ref);
+    emit_vue_component_options_type(
+        ts,
+        generic_component_params.is_some(),
+        static_raw_props_ref,
+        authored_default == AuthoredDefaultKind::Component,
+    );
     let static_slots_ref =
         static_slots.then(|| crate::virtual_ts::generated_names::declared("$Slots"));
     let emit_props_static = emits_info.static_emit_props_field();

@@ -1,0 +1,1 @@
+[{"file":"src/Comp.vue","line":5,"column":37,"severity":1,"code":2551,"message":"Property 'toFixed' does not exist on type 'string'. Did you mean 'fixed'?"}]

@@ -1,0 +1,2 @@
+src/Comp.vue(12,86): error TS2339: Property 'missing' does not exist on type '{ id: number; name: string; }'.
+src/Comp.vue(13,68): error TS2322: Type 'string' is not assignable to type 'number'.

@@ -1,0 +1,1 @@
+[{"file":"src/Parent.vue","line":13,"column":20,"severity":1,"code":2339,"message":"Property 'missingHandler' does not exist on type 'CreateComponentPublicInstanceWithMixins<ToResolvedProps<{}, {}>, {}, { v: string; }, {}, { onChanged(): void; }, ComponentOptionsMixin, ComponentOptionsMixin, ... 18 more ..., ...>'."}]

@@ -1,0 +1,24 @@
+test batch::executor::tests::nested_generated_config::both_batch_session_paths_use_the_nested_config_and_keep_exact_warm_deltas ... FAILED
+test batch::virtual_project::mapping::materialized_sources::default_key_tests::materialized_vue_documents_retain_private_default_key_endpoints ... FAILED
+test batch::virtual_project::tests::package_route_source_paths::route_source_index_preserves_scopes_dependencies_and_canonical_collisions ... FAILED
+test batch::virtual_project::tests::test_register_vue_file_rewrites_options_api_export_default ... FAILED
+test batch::virtual_project::tsconfig_gen::compiler_inputs::tests::validation_aggregates_keep_duplicate_roles_conflicts_and_fresh_reads ... FAILED
+test batch::virtual_project::tsconfig_gen::compiler_snapshot::tests::admitted_absence_rejects_primary_or_fallback_configuration_creation_during_capture ... FAILED
+test batch::virtual_project::tsconfig_gen::compiler_snapshot::tests::captured_auto_vue_target_and_solution_shell_do_not_reread_live_configuration ... FAILED
+test batch::virtual_project::tsconfig_gen::compiler_snapshot::tests::concurrent_base_change_rejects_mixed_options_paths_and_vue_target ... FAILED
+test batch::virtual_project::typed_router::config_tests::admitted_snapshot_uses_the_same_typed_router_opt_in_and_keeps_its_revision ... FAILED
+test batch::virtual_project::typed_router::config_tests::extends_plugins_follow_replacement_and_clear_rules ... FAILED
+test batch::virtual_project::typed_router::config_tests::plugin_root_overrides_effective_compiler_root ... FAILED
+test corsa_bridge::vue_document::build::tests::fingerprint_hit_hashes_changed_files_and_a_miss_hashes_the_mirror ... FAILED
+test corsa_bridge::vue_document::build::tests::identical_source_in_separate_roots_keeps_authored_membership ... FAILED
+test in_memory_checks_own_directives_from_the_current_document ... FAILED
+test lsp_client::session::tests::canon_batch_preserves_physical_identity_only_for_a_complete_existing_project ... FAILED
+test membership::constructor_without_args::payload_update::authored_component_infer::tests::recorded_producer_restores_its_exact_predecessor ... FAILED
+test membership::constructor_without_args::payload_update::component_export_memmem::tests::recorded_producers_restore_their_exact_predecessors ... FAILED
+test membership::constructor_without_args::payload_update::lib_type_qualification_listeners::tests::recorded_producers_restore_their_exact_predecessors ... FAILED
+test membership::constructor_without_args::payload_update::lib_type_qualification::tests::recorded_producers_restore_their_exact_predecessors ... FAILED
+test membership::constructor_without_args::payload_update::lib_type_shadowing_audit::tests::recorded_producers_restore_their_exact_predecessors ... FAILED
+test membership::constructor_without_args::payload_update::shared_usage_gates::tests::recorded_producers_and_preambles_restore_their_exact_predecessors ... FAILED
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.32s
+test result: FAILED. 3283 passed; 15 failed; 9 ignored; 0 measured; 0 filtered out; finished in 76.71s
+test virtual_ts::class_component_props_tests::test_renaming_prop_decorators_keep_the_class_instance_bridge ... FAILED

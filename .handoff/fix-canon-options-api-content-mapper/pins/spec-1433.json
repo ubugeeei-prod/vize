@@ -1,0 +1,108 @@
+{
+  "pack": "options-template-instance-bindings-1433",
+  "module": "options_template_instance_bindings_1433",
+  "test": "options_api_template_bindings_keep_instance_types",
+  "regressionCommit": "87701cf384daf9ccb001e3ab5ea19f74e7938397",
+  "historicalIssue": 1433,
+  "checkerOptions": {
+    "optionsApi": true
+  },
+  "sources": {
+    "emits.valid.App.vue.txt": "<script lang=\"ts\">\nimport { defineComponent } from 'vue'\n\nexport default defineComponent({\n  emits: {\n    save: (id: number) => id > 0,\n    close: null,\n  },\n})\n</script>\n\n<template>\n  <button @click=\"$emit('save', 1)\">save</button>\n  <button @click=\"$emit('close')\">close</button>\n</template>\n",
+    "emits.invalid.App.vue.txt": "<script lang=\"ts\">\nimport { defineComponent } from 'vue'\n\nexport default defineComponent({\n  emits: {\n    save: (id: number) => id > 0,\n    close: null,\n  },\n})\n</script>\n\n<template>\n  <button @click=\"$emit('save', 'x')\">save</button>\n  <button @click=\"$emit('missing')\">missing</button>\n</template>\n",
+    "emits.array.App.vue.txt": "<script lang=\"ts\">\nexport default {\n  emits: ['open', 'close'],\n}\n</script>\n\n<template>\n  <button @click=\"$emit('open', 1)\">open</button>\n  <button @click=\"$emit('other')\">other</button>\n</template>\n"
+  },
+  "cases": [
+    {
+      "id": "data-binding-number-method",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "data.valid.App.vue.txt"
+        }
+      ]
+    },
+    {
+      "id": "data-binding-wrong-argument",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "data.invalid.App.vue.txt"
+        }
+      ]
+    },
+    {
+      "id": "props-data-computed-methods-instance",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "members.valid.App.vue.txt"
+        }
+      ]
+    },
+    {
+      "id": "method-return-wrong-member",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "members.invalid.App.vue.txt"
+        }
+      ]
+    },
+    {
+      "id": "emits-object-template-dollar-emit",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "emits.valid.App.vue.txt"
+        }
+      ]
+    },
+    {
+      "id": "emits-object-template-dollar-emit-wrong-payload",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "emits.invalid.App.vue.txt"
+        }
+      ]
+    },
+    {
+      "id": "emits-array-template-dollar-emit-unknown-event",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "emits.array.App.vue.txt"
+        }
+      ]
+    }
+  ]
+}

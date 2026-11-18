@@ -1,0 +1,1 @@
+src/Comp.vue(14,42): error TS2339: Property 'light' does not exist on type '{ dark: boolean; }'.

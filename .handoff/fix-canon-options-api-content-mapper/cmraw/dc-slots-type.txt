@@ -1,0 +1,2 @@
+src/Use.vue(9,50): error TS2551: Property 'toFixed' does not exist on type 'string'. Did you mean 'fixed'?
+src/Use.vue(10,18): error TS2322: Type 'number' is not assignable to type 'string'.

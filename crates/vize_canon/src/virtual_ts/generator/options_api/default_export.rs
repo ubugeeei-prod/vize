@@ -6,7 +6,8 @@ use vize_carton::{FxHashSet, String};
 use vize_croquis::script_parser::with_shared_parse;
 
 use super::{
-    component_options_from_program, computed::writable_computed_names, has_unresolved_extends,
+    class_members::extend_writable_class_members, component_options_from_program,
+    computed::writable_computed_names, has_unresolved_extends,
 };
 
 /// Owned results shared by default-export rewriting and Options API bindings.
@@ -38,6 +39,8 @@ pub(in crate::virtual_ts::generator) fn analyze_options_api_script(
         if options_api && let Some(options) = component_options_from_program(&parsed.program) {
             facts.writable_computed = writable_computed_names(&parsed.program, options);
             facts.has_unresolved_extends = has_unresolved_extends(script, &parsed.program, options);
+        } else if options_api {
+            extend_writable_class_members(&parsed.program, &mut facts.writable_computed);
         }
         facts
     })

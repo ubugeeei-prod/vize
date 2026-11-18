@@ -1,0 +1,1 @@
+src/Comp.vue(17,42): error TS18047: 'b' is possibly 'null'.

@@ -1,0 +1,1 @@
+src/Comp.vue(12,92): error TS2339: Property 'z' does not exist on type 'Point'.

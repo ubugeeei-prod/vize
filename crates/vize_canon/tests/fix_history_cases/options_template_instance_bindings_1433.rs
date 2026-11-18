@@ -12,6 +12,9 @@ fn options_api_template_bindings_keep_instance_types() {
             "data-binding-wrong-argument",
             "props-data-computed-methods-instance",
             "method-return-wrong-member",
+            "emits-object-template-dollar-emit",
+            "emits-object-template-dollar-emit-wrong-payload",
+            "emits-array-template-dollar-emit-unknown-event",
         ],
     );
 }
