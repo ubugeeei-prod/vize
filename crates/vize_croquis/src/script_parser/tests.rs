@@ -740,18 +740,12 @@ export default class HelloWorld extends Vue {
 
     assert_eq!(result.component_shape, ComponentShape::ClassApi);
 
-    // `@Prop`/`@Model` fields are the props themselves -> Props.
+    // `@Prop`/`@Model` fields are props; the sync decorators make computeds.
     assert_eq!(result.bindings.get("msg"), Some(BindingType::Props));
     assert_eq!(result.bindings.get("modelValue"), Some(BindingType::Props));
-
-    // `@PropSync`/`@ModelSync`/`@VModel` fields are computed wrappers over a
-    // prop of another name -> Options (computed-like).
-    assert_eq!(
-        result.bindings.get("syncedTitle"),
-        Some(BindingType::Options)
-    );
-    assert_eq!(result.bindings.get("checked"), Some(BindingType::Options));
-    assert_eq!(result.bindings.get("selected"), Some(BindingType::Options));
+    for name in ["syncedTitle", "checked", "selected"] {
+        assert_eq!(result.bindings.get(name), Some(BindingType::Options));
+    }
 
     // Undecorated fields -> Data (TS `private`/`protected` are erased at
     // runtime, so the template still resolves them; the canonical Vue CLI
