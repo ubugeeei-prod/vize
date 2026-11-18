@@ -370,17 +370,13 @@ const inner = useTemplateRef("inner");
     let template = r#"<component :is="current.component" ref="inner" />"#;
     let allocator = Allocator::new();
     let (root, _) = vize_armature::parse(&allocator, template);
+    let croquis = Croquis::default();
     let registry = super::template_ref_registry(
-        &Croquis::default(),
+        &croquis,
         &VirtualTsOptions::default(),
-        super::super::SetupHelperPlan::collect(
-            &Croquis::default(),
-            Some(script),
-            false,
-            Default::default(),
-        )
-        .template_refs
-        .needs_registry(),
+        super::super::SetupHelperPlan::collect(&croquis, Some(script), false, Default::default())
+            .template_refs
+            .needs_registry(),
         Some(&root),
         &type_only,
         (VirtualTsCheckOptions::default(), &TemplateRecord::default()),

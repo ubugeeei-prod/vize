@@ -135,14 +135,6 @@ impl VirtualProject {
         self.global_template_ref.enabled()
     }
 
-    /// Which `useTemplateRef` callees besides a `vue` import are Vue's own.
-    pub(crate) fn template_ref_ownership(&self) -> crate::virtual_ts::TemplateRefOwnership {
-        crate::virtual_ts::TemplateRefOwnership {
-            global: self.global_template_ref.enabled(),
-            imports_alias: self.global_template_ref.imports_alias,
-        }
-    }
-
     /// Register a supported file path.
     pub(super) fn rewriter(&self) -> &crate::batch::import_rewriter::ImportRewriter {
         &self.rewriter

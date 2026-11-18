@@ -77,6 +77,16 @@ impl super::super::VirtualProject {
     pub(crate) fn set_imports_alias_vue_template_ref(&mut self, reexported: bool) {
         self.global_template_ref.imports_alias = reexported;
     }
+
+    /// Which `useTemplateRef` callees besides a `vue` import are Vue's own.
+    pub(in crate::batch::virtual_project) fn template_ref_ownership(
+        &self,
+    ) -> crate::virtual_ts::TemplateRefOwnership {
+        crate::virtual_ts::TemplateRefOwnership {
+            global: self.global_template_ref.enabled(),
+            imports_alias: self.global_template_ref.imports_alias,
+        }
+    }
 }
 
 /// What `vueCompilerOptions.composables.useTemplateRef` says about an
