@@ -388,17 +388,44 @@ impl<'a> SsrCodegenContext<'a> {
 /// The name a static `v-slot` argument spells. Vue's parser keeps every
 /// `.segment` of a slot argument in the name (`#item.alpha` is the slot
 /// `item.alpha`); a dynamic or missing argument has no static name.
+#[inline]
 pub(super) fn static_slot_name(dir: &vize_atelier_core::DirectiveNode<'_>) -> Option<String> {
-    let Some(vize_atelier_core::ExpressionNode::Simple(arg)) = &dir.arg else {
-        return None;
-    };
-    if !arg.is_static {
-        return None;
+    let head = static_slot_head(dir)?;
+    Some(if dir.modifiers.is_empty() {
+        String::new(head)
+    } else {
+        dotted_slot_name(head, dir)
+    })
+}
+
+/// [`static_slot_name`] as a quoted JS literal. A name without `.segment`s
+/// (nearly every slot) is quoted straight from the argument, with no
+/// intermediate name.
+#[inline]
+pub(super) fn quoted_static_slot_name(
+    dir: &vize_atelier_core::DirectiveNode<'_>,
+) -> Option<String> {
+    let head = static_slot_head(dir)?;
+    Some(if dir.modifiers.is_empty() {
+        quoted_js_string(head)
+    } else {
+        quoted_js_string(&dotted_slot_name(head, dir))
+    })
+}
+
+#[inline]
+fn static_slot_head<'d>(dir: &'d vize_atelier_core::DirectiveNode<'_>) -> Option<&'d str> {
+    match &dir.arg {
+        Some(vize_atelier_core::ExpressionNode::Simple(arg)) if arg.is_static => Some(arg.content),
+        _ => None,
     }
-    let mut name = String::new(arg.content);
+}
+
+fn dotted_slot_name(head: &str, dir: &vize_atelier_core::DirectiveNode<'_>) -> String {
+    let mut name = String::new(head);
     for modifier in dir.modifiers.iter() {
         name.push('.');
         name.push_str(modifier.content);
     }
-    Some(name)
+    name
 }

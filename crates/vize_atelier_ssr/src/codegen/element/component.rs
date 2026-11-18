@@ -392,8 +392,8 @@ impl<'a> SsrCodegenContext<'a> {
     /// The slot-name expression for a `createSlots` entry: a quoted literal for
     /// static names, or the raw bound expression for dynamic `#[name]` slots.
     pub(super) fn slot_entry_name(&mut self, dir: &DirectiveNode<'a>) -> String {
-        if let Some(name) = super::slot_fn::static_slot_name(dir) {
-            return quoted_js_string(&name);
+        if let Some(name) = super::slot_fn::quoted_static_slot_name(dir) {
+            return name;
         }
         match &dir.arg {
             Some(arg) => {
