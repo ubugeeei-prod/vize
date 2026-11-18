@@ -361,6 +361,14 @@ export function plannedMoves(paths: readonly string[]): Map<string, string> {
   return moves;
 }
 
+function removeEmptyParents(cwd: string, file: string): void {
+  for (let dir = path.dirname(file); dir !== "."; dir = path.dirname(dir)) {
+    const full = path.join(cwd, dir);
+    if (!fs.existsSync(full) || fs.readdirSync(full).length > 0) return;
+    fs.rmdirSync(full);
+  }
+}
+
 const textFile = (bytes: Buffer) => !bytes.subarray(0, 8000).includes(0);
 
 function contentTargets(cwd: string): string[] {
@@ -375,7 +383,16 @@ export function run(mode: string, cwd = root): string[] {
     const moves = plannedMoves(tracked(cwd).map(({ path: file }) => file));
     for (const [from, to] of moves) {
       fs.mkdirSync(path.join(cwd, path.dirname(to)), { recursive: true });
-      execFileSync("git", ["mv", "-k", from, to], { cwd });
+      fs.renameSync(path.join(cwd, from), path.join(cwd, to));
+      removeEmptyParents(cwd, from);
+    }
+    // One index update for every move: `git mv` per file rewrites the whole index each time.
+    const pathspecs = [...moves].flat();
+    if (pathspecs.length > 0) {
+      execFileSync("git", ["add", "-A", "--pathspec-from-file=-", "--pathspec-file-nul"], {
+        cwd,
+        input: pathspecs.map((file) => `:(literal)${file}`).join("\0"),
+      });
     }
     return [...moves.keys()];
   }
