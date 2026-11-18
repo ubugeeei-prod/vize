@@ -20,7 +20,22 @@ use super::{
     VUE_MODULE_STUBS_FILE, VirtualProject,
 };
 
+const EDITOR_UNION_ALIAS_CONFLICT: &str =
+    "Conflicting workspace package alias targets in editor union";
+
 impl VirtualProject {
+    /// Another union member placed one of this revision's workspace alias
+    /// leaves at a different owned target. Nothing was written.
+    pub(crate) fn is_editor_union_alias_conflict(error: &crate::CorsaError) -> bool {
+        matches!(
+            error,
+            crate::CorsaError::Io(error)
+                if error.kind() == std::io::ErrorKind::InvalidData
+                    && vize_carton::ToCompactString::to_compact_string(error)
+                        == EDITOR_UNION_ALIAS_CONFLICT
+        )
+    }
+
     /// Materialize the virtual project to disk for diagnostics collection.
     ///
     /// The materialized tree is a cache, but Corsa observes it as a real project.
@@ -167,7 +182,7 @@ impl VirtualProject {
             }) {
                 return Err(std::io::Error::new(
                     std::io::ErrorKind::InvalidData,
-                    "Conflicting workspace package alias targets in editor union",
+                    EDITOR_UNION_ALIAS_CONFLICT,
                 )
                 .into());
             }
