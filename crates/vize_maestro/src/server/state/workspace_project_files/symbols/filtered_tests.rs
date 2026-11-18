@@ -1,32 +1,38 @@
 //! Disabled matches cannot consume the session's global result limit.
-use super::{FxHashMap, Url, collect_sources_filtered};
+use std::sync::Arc;
+
+use super::{Url, collect_sources_filtered};
 use vize_l0::cstr;
 
 #[test]
 fn filter_precedes_ranking_limit_and_imports_only_sources_with_matches() {
     let enabled = Url::parse("file:///workspace/b/enabled.ts").unwrap();
     let unmatched = Url::parse("file:///workspace/idle/unmatched.ts").unwrap();
-    let mut sources = FxHashMap::default();
+    let mut sources = Vec::new();
     for index in 0..150 {
         let uri = Url::parse(&cstr!("file:///workspace/a/disabled-{index}.ts")).unwrap();
-        sources.insert(uri, "export const target = 1;".to_owned());
+        sources.push((uri, Arc::new("export const target = 1;".to_owned())));
     }
-    sources.insert(
+    sources.push((
         enabled.clone(),
-        "export const targetEnabled = 1;".to_owned(),
-    );
-    sources.insert(unmatched.clone(), "export const unrelated = 1;".to_owned());
+        Arc::new("export const targetEnabled = 1;".to_owned()),
+    ));
+    sources.push((
+        unmatched.clone(),
+        Arc::new("export const unrelated = 1;".to_owned()),
+    ));
     let visited = std::sync::Mutex::new(Vec::new());
     let symbols = collect_sources_filtered(
-        Vec::new(),
+        &[],
         &sources,
         &[],
         "target",
-        |_| None,
+        |_| Option::<String>::None,
         |uri| {
             visited.lock().unwrap().push(uri.clone());
             *uri == enabled
         },
+        None,
     );
     assert_eq!(symbols.len(), 1);
     assert_eq!(symbols[0].location.uri, enabled);

@@ -32,6 +32,7 @@ impl ServerState {
             virtual_gen: RwLock::new(VirtualCodeGenerator::new()),
             virtual_docs_cache: DashMap::new(),
             binding_occurrences: DashMap::new(),
+            workspace_symbol_cache: std::sync::Arc::new(DashMap::new()),
             lint_hover_cache: DashMap::new(),
             open_imports: crate::server::importers::OpenImportIndex::with_package_routes(
                 package_route_resolver.clone(),

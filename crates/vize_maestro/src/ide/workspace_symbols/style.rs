@@ -1,5 +1,37 @@
 //! Selector names for workspace symbols from `<style>` rule preludes.
 
+use tower_lsp::lsp_types::{SymbolInformation, SymbolKind, Url};
+
+use super::WorkspaceSymbolsService;
+
+impl WorkspaceSymbolsService {
+    /// Collect symbols from style content.
+    pub(super) fn collect_style_symbols(
+        uri: &Url,
+        style: &str,
+        base_line: u32,
+        query: &str,
+        container: Option<&str>,
+        symbols: &mut Vec<SymbolInformation>,
+    ) {
+        for (offset, marker, name) in css_selector_names(style) {
+            if !name.to_lowercase().contains(query) {
+                continue;
+            }
+            let line_idx = style
+                .get(..offset)
+                .map_or(0, |before| before.matches('\n').count());
+            symbols.push(Self::create_symbol(
+                format!("{marker}{name}"),
+                SymbolKind::STRING,
+                uri.clone(),
+                base_line + line_idx as u32 - 1,
+                container,
+            ));
+        }
+    }
+}
+
 /// `.class` and `#id` names in rule preludes, with their offsets.
 /// Declaration values (`#fff`, `.5s`, `url(a.png)`), comments and
 /// strings are not selectors.

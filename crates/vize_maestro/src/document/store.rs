@@ -9,6 +9,8 @@
 mod closed;
 mod edits;
 mod structural_navigation;
+mod text_batches;
+mod text_snapshot;
 mod uri_snapshot;
 
 use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
@@ -17,6 +19,7 @@ use std::sync::{Arc, OnceLock};
 use dashmap::DashMap;
 use tower_lsp::lsp_types::{TextDocumentContentChangeEvent, Url};
 
+use self::text_snapshot::TextSnapshotCache;
 use self::uri_snapshot::UriSnapshotCache;
 use super::DocumentText;
 use super::edit_cancel::EditCancellation;
@@ -165,6 +168,10 @@ pub(crate) struct DocumentPositionSnapshot {
 pub struct DocumentStore {
     documents: Arc<DashMap<Url, Document>>,
     uri_snapshots: Arc<UriSnapshotCache>,
+    text_snapshots: Arc<TextSnapshotCache>,
+    text_revision: Arc<AtomicU64>,
+    vue_text_snapshots: Arc<TextSnapshotCache>,
+    vue_revision: Arc<AtomicU64>,
     revision: Arc<AtomicU64>,
     mutations: Arc<AtomicUsize>,
     edits: Arc<EditCancellation>,
@@ -182,6 +189,10 @@ impl DocumentStore {
         Self {
             documents: Arc::new(DashMap::new()),
             uri_snapshots: Arc::default(),
+            text_snapshots: Arc::default(),
+            text_revision: Arc::new(AtomicU64::new(0)),
+            vue_text_snapshots: Arc::default(),
+            vue_revision: Arc::new(AtomicU64::new(0)),
             revision: Arc::new(AtomicU64::new(0)),
             mutations: Arc::new(AtomicUsize::new(0)),
             edits: Arc::default(),
@@ -194,6 +205,10 @@ impl DocumentStore {
         let uri_set = self.uri_snapshots.mutation(&uri, None);
         let doc = Document::new(uri.clone(), content, version, language_id);
         self.documents.insert(uri.clone(), doc);
+        self.text_revision.fetch_add(1, Ordering::Release);
+        if is_vue_uri(&uri) {
+            self.vue_revision.fetch_add(1, Ordering::Release);
+        }
         self.revision.fetch_add(1, Ordering::Release);
         uri_set.opened(uri);
     }
@@ -206,6 +221,10 @@ impl DocumentStore {
         let _mutation = self.source_set_mutation();
         let uri_set = self.uri_snapshots.mutation(uri, None);
         if self.documents.remove(uri).is_some() {
+            self.text_revision.fetch_add(1, Ordering::Release);
+            if is_vue_uri(uri) {
+                self.vue_revision.fetch_add(1, Ordering::Release);
+            }
             self.revision.fetch_add(1, Ordering::Release);
             uri_set.closed(uri);
         }
@@ -245,6 +264,10 @@ impl DocumentStore {
         // mistaken for this one; a fresh stamp keeps the two unrelatable.
         document.revision = next_revision();
         self.documents.insert(new_uri.clone(), document);
+        self.text_revision.fetch_add(1, Ordering::Release);
+        if is_vue_uri(old_uri) || is_vue_uri(&new_uri) {
+            self.vue_revision.fetch_add(1, Ordering::Release);
+        }
         self.revision.fetch_add(1, Ordering::Release);
         uri_set.renamed(old_uri, new_uri);
         true
@@ -262,6 +285,10 @@ impl DocumentStore {
         document.petite_vue_detected = OnceLock::new();
         document.text_snapshot = OnceLock::new();
         document.structural_snapshot = OnceLock::new();
+        self.text_revision.fetch_add(1, Ordering::Release);
+        if is_vue_uri(uri) {
+            self.vue_revision.fetch_add(1, Ordering::Release);
+        }
         self.revision.fetch_add(1, Ordering::Release);
         Some(document)
     }
@@ -328,6 +355,10 @@ impl DocumentStore {
             return false;
         }
         let _mutation = self.source_set_mutation();
+        self.text_revision.fetch_add(1, Ordering::Release);
+        if is_vue_uri(uri) {
+            self.vue_revision.fetch_add(1, Ordering::Release);
+        }
         for change in changes {
             doc.apply_change(&change, version);
         }
@@ -394,51 +425,6 @@ impl DocumentStore {
         snapshot
     }
 
-    /// Shared snapshots of open Vue documents, holding no shard guard on return.
-    ///
-    /// Workspace-wide editor features parse these snapshots after the map read
-    /// has finished. Each text is the document revision's resident `Arc`, so a
-    /// search does not copy every open Vue buffer. Keeping a `DashMap` guard
-    /// alive while parsing is not an `.await`, but it can still stall other LSP
-    /// handlers that need the same shard's write lock and then make later
-    /// readers wait behind that writer.
-    pub fn vue_texts(&self) -> Vec<(Url, Arc<String>)> {
-        vize_l0::micro_count!("lsp.document_store.vue_texts.calls", 1);
-        let snapshots = vize_l0::micro_span!("lsp.document_store.vue_texts.clone_snapshot", {
-            let mut snapshots = self
-                .documents
-                .iter()
-                .filter_map(|document| {
-                    let uri = document.key();
-                    uri.path()
-                        .ends_with(".vue")
-                        .then(|| (uri.clone(), document.value().text_snapshot()))
-                })
-                .collect::<Vec<_>>();
-            snapshots.sort_by(|(left, _), (right, _)| left.as_str().cmp(right.as_str()));
-            snapshots
-        });
-        vize_l0::micro_count!(
-            "lsp.document_store.vue_texts.returned_items",
-            snapshots.len()
-        );
-        vize_l0::micro_count!(
-            "lsp.document_store.vue_texts.returned_uri_utf8_bytes",
-            snapshots
-                .iter()
-                .map(|(uri, _)| uri.as_str().len() as u64)
-                .sum::<u64>()
-        );
-        vize_l0::micro_count!(
-            "lsp.document_store.vue_texts.returned_text_utf8_bytes",
-            snapshots
-                .iter()
-                .map(|(_, text)| text.len() as u64)
-                .sum::<u64>()
-        );
-        snapshots
-    }
-
     /// Get the number of open documents.
     pub fn len(&self) -> usize {
         self.documents.len()
@@ -453,6 +439,11 @@ impl DocumentStore {
     pub fn iter(&self) -> dashmap::iter::Iter<'_, Url, Document> {
         self.documents.iter()
     }
+}
+
+#[inline]
+fn is_vue_uri(uri: &Url) -> bool {
+    uri.path().ends_with(".vue")
 }
 
 struct SourceSetMutation<'a>(&'a DocumentStore);

@@ -6,6 +6,7 @@
     reason = "tower-lsp SymbolInformation takes std String names built with format!/to_string"
 )]
 
+mod cache;
 mod descriptor;
 #[cfg(feature = "native")]
 mod disk;
@@ -23,6 +24,8 @@ use tower_lsp::lsp_types::{Location, Position, Range, SymbolInformation, SymbolK
 use crate::server::ServerState;
 use vize_l0::cstr;
 
+pub(crate) use cache::CachedDocumentSymbols;
+
 /// Workspace symbols service.
 pub struct WorkspaceSymbolsService;
 
@@ -35,8 +38,14 @@ impl WorkspaceSymbolsService {
         // Search in all open documents. Snapshot the text before parsing so a
         // workspace-wide request never keeps a DashMap document guard alive
         // while doing SFC work (#3952).
-        for (uri, content) in state.documents.vue_texts() {
-            Self::collect_symbols_from_document(&uri, &content, &query_lower, &mut symbols);
+        for (uri, content) in state.documents.vue_texts().iter() {
+            Self::collect_cached_open_source(
+                &state.workspace_symbol_cache,
+                uri,
+                content,
+                &query_lower,
+                &mut symbols,
+            );
         }
 
         #[cfg(feature = "native")]
@@ -46,10 +55,6 @@ impl WorkspaceSymbolsService {
     }
 
     /// Collect symbols from a single document.
-    #[expect(
-        deprecated,
-        reason = "SymbolInformation.deprecated is deprecated in favor of tags"
-    )]
     fn collect_symbols_from_document(
         uri: &Url,
         content: &str,
@@ -59,7 +64,19 @@ impl WorkspaceSymbolsService {
         let Some(descriptor) = descriptor::parse(uri.path(), content) else {
             return;
         };
+        Self::collect_symbols_from_descriptor(uri, &descriptor, query, symbols);
+    }
 
+    #[expect(
+        deprecated,
+        reason = "SymbolInformation.deprecated is deprecated in favor of tags"
+    )]
+    fn collect_symbols_from_descriptor(
+        uri: &Url,
+        descriptor: &vize_atelier_sfc::SfcDescriptor<'_>,
+        query: &str,
+        symbols: &mut Vec<SymbolInformation>,
+    ) {
         // Extract component name from file path
         if let Some(component_name) = Self::extract_component_name(uri)
             && component_name.to_lowercase().contains(query)
@@ -126,7 +143,7 @@ impl WorkspaceSymbolsService {
         // workspace symbol search surfaces component contracts, not just
         // script bindings. Foundation for #697 — currently covers emits and
         // slot names; provide/inject and template refs follow the same shape.
-        Self::collect_vue_specific_symbols(uri, &descriptor, query, symbols);
+        Self::collect_vue_specific_symbols(uri, descriptor, query, symbols);
     }
 
     /// Surface Vue-specific entities (emits, slots) discovered by Croquis.
@@ -430,32 +447,6 @@ impl WorkspaceSymbolsService {
                     container,
                 ));
             }
-        }
-    }
-
-    /// Collect symbols from style content.
-    fn collect_style_symbols(
-        uri: &Url,
-        style: &str,
-        base_line: u32,
-        query: &str,
-        container: Option<&str>,
-        symbols: &mut Vec<SymbolInformation>,
-    ) {
-        for (offset, marker, name) in style::css_selector_names(style) {
-            if !name.to_lowercase().contains(query) {
-                continue;
-            }
-            let line_idx = style
-                .get(..offset)
-                .map_or(0, |before| before.matches('\n').count());
-            symbols.push(Self::create_symbol(
-                format!("{marker}{name}"),
-                SymbolKind::STRING,
-                uri.clone(),
-                base_line + line_idx as u32 - 1,
-                container,
-            ));
         }
     }
 
