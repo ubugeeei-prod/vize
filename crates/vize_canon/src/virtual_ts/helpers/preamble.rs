@@ -118,6 +118,8 @@ macro_rules! shared_preamble_text {
             include_str!("declarations/shared-emit-inference.d.ts.txt"),
             include_str!("declarations/shared-listener-args.d.ts.txt"),
             include_str!("declarations/component-checks.d.ts.txt"),
+            include_str!("declarations/jsx-context.d.ts.txt"),
+            include_str!("declarations/jsx-components.d.ts.txt"),
             include_str!("declarations/shared-macros.d.ts.txt"),
             include_str!("pattern_matching.d.ts")
         )
@@ -140,3 +142,19 @@ pub const DECLARATION_HELPERS_DTS: &str = concat!(
     // open instead of depending on Vue's `NativeElements` (native_props.rs).
     "type $ComponentGlobalHtmlAttrs = { [key: string]: unknown };\n",
 );
+
+#[cfg(test)]
+mod tests {
+    use super::{SHARED_PREAMBLE_DTS, SHARED_PREAMBLE_STRICT_DTS};
+
+    #[test]
+    fn shared_preambles_publish_the_jsx_component_and_context_contracts() {
+        let component = crate::virtual_ts::JSX_COMPONENT_HELPER;
+        for preamble in [SHARED_PREAMBLE_DTS, SHARED_PREAMBLE_STRICT_DTS] {
+            assert!(preamble.contains(component));
+            assert!(preamble.contains(
+                "type Ctx<Emits = {}, Slots = {}> = { emit: __EmitFn<Emits>; slots: Slots; attrs: Record<string, unknown>; };"
+            ));
+        }
+    }
+}
