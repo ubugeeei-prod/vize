@@ -1,0 +1,35 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c3c-v-on-once-not-merged-1299",
+    history: "84de90c726607b7391b5f60f09dfdd0ad461e4d2",
+    source: "<div @click=\"a\" @click.once=\"b\"></div>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: Some(
+            "function",
+        ),
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "const { openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue\n",
+    code: "function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", {\n    onClick: a,\n    onClickOnce: b\n  }, null, 40 /* PROPS, NEED_HYDRATION */, [\"onClick\", \"onClickOnce\"]))\n}",
+    map: None,
+}

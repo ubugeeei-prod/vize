@@ -1,0 +1,51 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c1a-v-if-with-v-model-on-input-39",
+    history: "a303a49c86ef410093ac0b69231e463c7fd9d325",
+    source: "<script setup>\nimport { ref } from 'vue'\nconst show = ref(true)\nconst text = ref('')\n</script>\n\n<template>\n  <input v-if=\"show\" v-model=\"text\" />\n</template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { vModelText as _vModelText, withDirectives as _withDirectives, openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode } from \"vue\"\n\nimport { ref } from 'vue'\n\n\nexport default {\n  __name: 'History',\n  setup(__props) {\n\nconst show = ref(true)\nconst text = ref('')\n\nreturn (_ctx, _cache) => {\n  return (show.value)\n    ? _withDirectives((_openBlock(), _createElementBlock(\"input\", {\n      key: 0,\n      \"onUpdate:modelValue\": _cache[0] || (_cache[0] = $event => ((text).value = $event))\n    }, null, 512 /* NEED_PATCH */)), [\n      [_vModelText, text.value]\n    ])\n    : _createCommentVNode(\"v-if\", true)\n}\n}\n\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "text": SetupRef,
+                        "ref": SetupConst,
+                        "show": SetupRef,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

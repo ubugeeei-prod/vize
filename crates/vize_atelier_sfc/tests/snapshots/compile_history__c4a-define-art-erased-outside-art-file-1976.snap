@@ -1,0 +1,47 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c4a-define-art-erased-outside-art-file-1976",
+    history: "06fe8eb5a16ca8f1d759874dc298a79d573ef32e",
+    source: "<script setup lang=\"ts\">\ndefineArt(\"./CmsButton.vue\", {\n  title: \"CmsButton\",\n  category: \"Components\",\n  status: \"draft\",\n  tags: [\"button\", \"form\"],\n});\n</script>\n\n<art>\n  <variant name=\"Primary\" default>\n    <CmsButton color=\"primary\">Primary</CmsButton>\n  </variant>\n</art>\n",
+    filename: "CmsButton.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "\nexport default {\n  __name: 'CmsButton',\n  setup(__props, { expose: __expose }) {\n  __expose();\n\n\n}\n\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {},
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

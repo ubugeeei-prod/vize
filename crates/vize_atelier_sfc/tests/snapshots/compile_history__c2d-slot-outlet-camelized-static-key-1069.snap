@@ -1,0 +1,35 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c2d-slot-outlet-camelized-static-key-1069",
+    history: "8012a0eb2bb2cdec1f04ac85c9c0bb785e6e470b",
+    source: "<slot item-label=\"static\" :item-value=\"dynamic\"></slot>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: Some(
+            true,
+        ),
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { renderSlot as _renderSlot } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return _renderSlot(_ctx.$slots, \"default\", { itemLabel: \"static\", itemValue: _ctx.dynamic })\n}",
+    map: None,
+}

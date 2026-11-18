@@ -1,0 +1,41 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c3c-ssr-dynamic-v-for-slot-create-slots-1349",
+    history: "b62246f640d6457fee61a836823cf817e9b8f8cc",
+    source: "<template>\n  <Child>\n    <template v-for=\"(_, name) in slots\" #[name]=\"slotData\">\n      <slot :name=\"name\" v-bind=\"slotData\" />\n    </template>\n    <template #trailing=\"{ ui }\">\n      <div>{{ ui }}</div>\n    </template>\n  </Child>\n</template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "ssr",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { ssrInterpolate as _ssrInterpolate, ssrRenderComponent as _ssrRenderComponent, ssrRenderSlot as _ssrRenderSlot } from \"@vue/server-renderer\"\nimport { createElementVNode as _createElementVNode, resolveComponent as _resolveComponent, renderList as _renderList, renderSlot as _renderSlot, createSlots as _createSlots, toDisplayString as _toDisplayString, mergeProps as _mergeProps, withCtx as _withCtx } from \"vue\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _push(_ssrRenderComponent(_resolveComponent(\"Child\"), _attrs, _createSlots({\n    trailing: _withCtx(({ ui }, _push, _parent, _scopeId) => {\n      if (_push) {\n        _push(`<div>${_ssrInterpolate(ui)}</div>`)\n      } else {\n        return [_createElementVNode(\"div\", null, _toDisplayString(ui), 1 /* TEXT */)]\n      }\n    }),\n    _: 2 /* DYNAMIC */\n  }, [\n    _renderList(_ctx.slots, (_, name) => {\n      return {\n        name: name,\n        fn: _withCtx((slotData, _push, _parent, _scopeId) => {\n          if (_push) {\n            _ssrRenderSlot(_ctx.$slots, name, _mergeProps(slotData), null, _push, _parent, _scopeId)\n          } else {\n            return [_renderSlot(_ctx.$slots, name, _mergeProps(slotData), undefined, true)]\n          }\n        })\n      }\n    })\n  ]), _parent))\n}\n\nconst _sfc_main = {}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

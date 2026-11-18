@@ -1,0 +1,48 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c1c-parse-missing-dynamic-arg-end-347",
+    history: "731cce813a41207950923d89099ac2c87047c0b6",
+    source: "<div :[foo=\"bar\"></div>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: Some(
+            true,
+        ),
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 1,
+}
+Template {
+    errors: [
+        CompilerError {
+            code: MissingDynamicDirectiveArgumentEnd,
+            message: "Dynamic directive argument is missing its closing `]`; inferred the argument end at the next tag boundary.",
+            loc: Some(
+                SourceLocation {
+                    span: Span {
+                        start: 10,
+                        end: 11,
+                    },
+                },
+            ),
+        },
+    ],
+    preamble: "",
+    code: "",
+    map: None,
+}

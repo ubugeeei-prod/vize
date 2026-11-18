@@ -1,0 +1,48 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c3c-v-model-static-arg-on-element-1303",
+    history: "2622994054ec41230e319711aaff77ccf2c27cb2",
+    source: "<input v-model:foo=\"bar\" />",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: Some(
+            true,
+        ),
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 1,
+}
+Template {
+    errors: [
+        CompilerError {
+            code: VModelArgOnElement,
+            message: "v-model argument is not supported on plain elements.",
+            loc: Some(
+                SourceLocation {
+                    span: Span {
+                        start: 7,
+                        end: 24,
+                    },
+                },
+            ),
+        },
+    ],
+    preamble: "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"input\"))\n}",
+    map: None,
+}

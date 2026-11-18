@@ -1,0 +1,48 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c2c-duplicate-attribute-hoisted-first-wins-958",
+    history: "c74b96775a408c4dd33d2ec05e8168f6de8bc61c",
+    source: "<div><div id=\"a\" id=\"b\">x</div></div>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: Some(
+            true,
+        ),
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 1,
+}
+Template {
+    errors: [
+        CompilerError {
+            code: DuplicateAttribute,
+            message: "Duplicate attribute `id`. Keeping the repeated attribute so parsing can continue.",
+            loc: Some(
+                SourceLocation {
+                    span: Span {
+                        start: 17,
+                        end: 19,
+                    },
+                },
+            ),
+        },
+    ],
+    preamble: "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    _createElementVNode(\"div\", { id: \"a\" }, \"x\")\n  ]))\n}",
+    map: None,
+}

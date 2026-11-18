@@ -1,0 +1,43 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c2b-scoped-deep-after-child-combinator-813",
+    history: "3cdafe9a541f81dca0ff59b8820941ef293678a7",
+    source: "<template>\n  <ul class=\"sponsors__item\"><li class=\"sponsor\">A</li></ul>\n</template>\n\n<style scoped>\n.sponsors__item > :deep(.sponsor) { width: 100%; }\n</style>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nconst _hoisted_1 = { class: \"sponsors__item\" }\n\nexport function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"ul\", _hoisted_1, [...(_cache[0] || (_cache[0] = [\n    _createElementVNode(\"li\", { class: \"sponsor\" }, \"A\", -1 /* CACHED */)\n  ]))]))\n}",
+            css: Some(
+                ".sponsors__item[data-v-4045eae1] > .sponsor{ width: 100%; }\n",
+            ),
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

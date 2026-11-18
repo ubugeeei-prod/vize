@@ -1,0 +1,35 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c1c-keepalive-static-component-tag-432",
+    history: "7a57bab23e05429dc879cabe918ee34929332299",
+    source: "<KeepAlive><Component /></KeepAlive>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: Some(
+            true,
+        ),
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { openBlock as _openBlock, createBlock as _createBlock, KeepAlive as _KeepAlive } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createBlock(_KeepAlive, null, [\n    (_openBlock(), _createBlock(_component_Component))\n  ], 1024 /* DYNAMIC_SLOTS */))\n}",
+    map: None,
+}

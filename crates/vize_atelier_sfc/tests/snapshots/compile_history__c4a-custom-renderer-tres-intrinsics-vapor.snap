@@ -1,0 +1,54 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c4a-custom-renderer-tres-intrinsics-vapor",
+    history: "a09d82cf408aedcba34f0a245ea4cf8005fd8cd5",
+    source: "<script setup lang=\"ts\">\nimport { Primitive } from \"@tresjs/core\";\nconst visible = true;\n</script>\n\n<template>\n  <mesh>\n    <group v-if=\"visible\">\n      <primitive />\n    </group>\n  </mesh>\n</template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "vapor",
+    options: Options {
+        prod: None,
+        preserve_ts: Some(
+            true,
+        ),
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: Some(
+            true,
+        ),
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { defineVaporComponent as _defineVaporComponent } from 'vue'\nimport { createComponentWithFallback as _createComponentWithFallback, setInsertionState as _setInsertionState, createIf as _createIf, template as _template } from 'vue';\n\nconst t0 = _template(\"<group></group>\", true)\nconst t1 = _template(\"<mesh></mesh>\", true)\n\nfunction render(_ctx, $props, $emit, $attrs, $slots) {\n  const _component_primitive = _ctx.Primitive\n  const n0 = t1()\n  _setInsertionState(n0)\n  const n1 = _createIf(() => (visible), () => {\n    const n4 = t0()\n    _setInsertionState(n4)\n    const n3 = _createComponentWithFallback(_component_primitive)\n    return n4\n  })\n  return n0\n}\nconst __vaporRender = render\n\nimport { Primitive } from \"@tresjs/core\";\n\nconst visible = true;\n\nexport default /*@__PURE__*/_defineVaporComponent({\n  __name: 'History',\n  render: __vaporRender,\n  setup(__props, { expose: __expose }) {\n  __expose();\n\n\nconst __returned__ = { visible, Primitive }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n})",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "visible": LiteralConst,
+                        "Primitive": SetupMaybeRef,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

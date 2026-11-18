@@ -1,0 +1,35 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c1b-nested-custom-directive-with-v-show-template-184",
+    history: "cabe0290d0bd7edd5f730eaeacf5f677f54664e9",
+    source: "<div><button v-show=\"ok\" v-appear=\"shouldEnableInfiniteScroll ? fetchOlder : null\" @click=\"fetchOlder\">Load more</button></div>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: Some(
+            true,
+        ),
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveDirective as _resolveDirective, withDirectives as _withDirectives, createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, vShow as _vShow } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _directive_appear = _resolveDirective(\"appear\")\n  \n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    _withDirectives(_createElementVNode(\"button\", { onClick: _ctx.fetchOlder }, \"Load more\", 8 /* PROPS */, [\"onClick\"]), [\n      [_directive_appear, _ctx.shouldEnableInfiniteScroll ? _ctx.fetchOlder : null],\n      [_vShow, _ctx.ok]\n    ])\n  ]))\n}",
+    map: None,
+}

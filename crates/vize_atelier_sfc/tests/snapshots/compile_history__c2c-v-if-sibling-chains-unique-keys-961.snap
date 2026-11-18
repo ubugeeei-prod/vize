@@ -1,0 +1,33 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c2c-v-if-sibling-chains-unique-keys-961",
+    history: "0e44eb7e4d3b74936c1972d9ca774dfc6a712986",
+    source: "<div><div v-if=\"a\">A</div><div v-else>B</div><div v-if=\"c\">C</div><div v-else>D</div></div>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    (a)\n      ? (_openBlock(), _createElementBlock(\"div\", { key: 0 }, \"A\"))\n      : (_openBlock(), _createElementBlock(\"div\", { key: 1 }, \"B\")),\n    (c)\n      ? (_openBlock(), _createElementBlock(\"div\", { key: 2 }, \"C\"))\n      : (_openBlock(), _createElementBlock(\"div\", { key: 3 }, \"D\"))\n  ]))\n}",
+    map: None,
+}

@@ -1,0 +1,52 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c4d-quirks-static-branch-key-duplicate-2937",
+    history: "7049991bc913751d3f48603983160bc743ccf5a5",
+    source: "<div v-if=\"ok\" key=\"same\"/><div v-else key=\"same\"/>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: Some(
+            "function",
+        ),
+        prefix_identifiers: None,
+        hoist_static: Some(
+            true,
+        ),
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: Some(
+            "quirks",
+        ),
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 1,
+}
+Template {
+    errors: [
+        CompilerError {
+            code: VIfSameKey,
+            message: "v-if/v-else-if branches must use unique keys.",
+            loc: Some(
+                SourceLocation {
+                    span: Span {
+                        start: 39,
+                        end: 49,
+                    },
+                },
+            ),
+        },
+    ],
+    preamble: "const { openBlock: _openBlock, createElementBlock: _createElementBlock, createCommentVNode: _createCommentVNode } = Vue\n",
+    code: "function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (ok)\n    ? (_openBlock(), _createElementBlock(\"div\", { key: \"same\" }))\n    : (_openBlock(), _createElementBlock(\"div\", { key: \"same\" }))\n}",
+    map: None,
+}

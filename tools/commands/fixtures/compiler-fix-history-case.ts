@@ -34,6 +34,9 @@ const OPTIONS = new Set([
   "cacheHandlers",
   "comments",
   "sourceMap",
+  "templateSyntax",
+  "customRenderer",
+  "vueVersion",
 ]);
 
 type Case = {

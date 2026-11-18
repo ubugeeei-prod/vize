@@ -1,0 +1,46 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c3a-native-v-model-without-expression-1246",
+    history: "3f991f9952d00ee7b5734c16d22e4b1cb2a127c3",
+    source: "<input v-model />",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 1,
+}
+Template {
+    errors: [
+        CompilerError {
+            code: VModelNoExpression,
+            message: "v-model is missing expression.",
+            loc: Some(
+                SourceLocation {
+                    span: Span {
+                        start: 7,
+                        end: 14,
+                    },
+                },
+            ),
+        },
+    ],
+    preamble: "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"input\"))\n}",
+    map: None,
+}

@@ -1,0 +1,52 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c1d-css-v-bind-quoted-expression-parentheses-ssr",
+    history: "bceaba19325ecb355e037b2cb066279cff2283a6",
+    source: "<script setup>\nconst parentBg = 'red'\nconst textCountPercentage = 64\n</script>\n\n<template>\n  <div class=\"root\">Box</div>\n</template>\n\n<style scoped>\n.header {\n  background-color: color(from v-bind(\"parentBg ?? 'var(--bg)'\") srgb r g b / 0.85);\n}\n\n.textCountGraph {\n  background-image: conic-gradient(\n    var(--countColor) 0% v-bind(\"Math.min(100, textCountPercentage) + '%'\"),\n    rgba(0, 0, 0, .2) v-bind(\"Math.min(100, textCountPercentage) + '%'\") 100%\n  );\n}\n</style>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "ssr",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { useCssVars as _useCssVars, unref as _unref } from 'vue'\nimport { ssrRenderAttrs as _ssrRenderAttrs } from \"@vue/server-renderer\"\nimport { mergeProps as _mergeProps } from \"vue\"\n\n\nfunction ssrRender(_ctx, _push, _parent, _attrs, $props, $setup, $data, $options) {\n  const _cssVars = { style: {\":--v35344c3e\": ($setup.parentBg ?? 'var(--bg)'), \":--v1e4c17f6\": (Math.min(100, $setup.textCountPercentage) + '%')} }\n  _attrs = _mergeProps(_attrs, _cssVars)\n  _push(`<div${_ssrRenderAttrs(_mergeProps({ class: \"root\" }, _attrs))} data-v-4045eae1>Box</div>`)\n}\n\nconst parentBg = 'red'\nconst textCountPercentage = 64\n\nexport default {\n  __name: 'History',\n  ssrRender: ssrRender,\n  setup(__props, { expose: __expose }) {\n  __expose();\n\n_useCssVars(_ctx => ({\n  \"v35344c3e\": (parentBg ?? 'var(--bg)'),\n  \"v1e4c17f6\": (Math.min(100, textCountPercentage) + '%')\n}))\n\n\nconst __returned__ = { parentBg, textCountPercentage }\nObject.defineProperty(__returned__, '__isScriptSetup', { enumerable: false, value: true })\nreturn __returned__\n}\n\n}",
+            css: Some(
+                ".header[data-v-4045eae1]{\n  background-color: color(from var(--v35344c3e) srgb r g b / 0.85);\n}.textCountGraph[data-v-4045eae1]{\n  background-image: conic-gradient(\n    var(--countColor) 0% var(--v1e4c17f6),\n    rgba(0, 0, 0, .2) var(--v1e4c17f6) 100%\n  );\n}\n",
+            ),
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "parentBg": LiteralConst,
+                        "textCountPercentage": LiteralConst,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

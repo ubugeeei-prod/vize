@@ -1,0 +1,52 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c1a-import-used-type-and-runtime-128",
+    history: "7f2aecfd9b6b9e742b083515b487ff0be90a952e",
+    source: "<script setup lang=\"ts\">\nimport { SomeClass } from './mod'\n\nconst instance: SomeClass = new SomeClass()\n</script>\n\n<template>\n  <div>{{ instance }}</div>\n</template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: Some(
+            true,
+        ),
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { defineComponent as _defineComponent } from 'vue'\nimport { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock, unref as _unref } from \"vue\"\n\nimport { SomeClass } from './mod'\n\n\nexport default /*@__PURE__*/_defineComponent({\n  __name: 'History',\n  setup(__props) {\n\nconst instance: SomeClass = new SomeClass()\n\nreturn (_ctx: any,_cache: any) => {\n  return (_openBlock(), _createElementBlock(\"div\", null, _toDisplayString(_unref(instance)), 1 /* TEXT */))\n}\n}\n\n})",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "instance": SetupMaybeRef,
+                        "SomeClass": SetupMaybeRef,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)
