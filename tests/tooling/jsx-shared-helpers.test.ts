@@ -47,7 +47,7 @@ test("the published ambient set declares every JSX shared helper once", () => {
   for (const helper of helperNames.slice(1)) assert.ok(components.includes(helper), helper);
 });
 
-test("older source custody sees the exact pre-publication preamble", () => {
+test("older source custody sees the exact pre-publication sources", () => {
   const relative = "crates/vize_canon/src/virtual_ts/helpers/preamble.rs";
   const current = fs.readFileSync(path.join(root, relative), "utf8");
   const previous = beforeJsxSharedHelpersSource(relative, current);
@@ -55,6 +55,10 @@ test("older source custody sees the exact pre-publication preamble", () => {
   assert.ok(!previous.includes("declarations/jsx-context.d.ts.txt"));
   assert.ok(!previous.includes("declarations/jsx-components.d.ts.txt"));
   assert.equal(beforeJsxSharedHelpersSource("unrelated.ts", current), current);
+  const globals = fs.readFileSync(globalsPath, "utf8");
+  const previousGlobals = beforeJsxSharedHelpersSource("npm/cli/virtual-ts-globals.d.ts", globals);
+  assert.equal(Buffer.byteLength(previousGlobals), 18_023);
+  assert.equal(previousGlobals.includes("__vize_jsx_component__"), false);
 });
 
 test("the ambient helpers preserve component, emit, and slot diagnostics", () => {
