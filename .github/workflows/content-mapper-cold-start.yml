@@ -9,7 +9,11 @@ on:
       - tests/tooling/content-mapper-process-receipt.test.ts
       - tools/support/compat/content-mapper/process-receipt.ts
       - tools/support/release/type-admission-mapper-host.ts
-  merge_group: # The merge queue deliberately reruns the full qualification.
+  # Still the full qualification of every main commit (no paths), but post-merge:
+  # not a required check, so a queue run gated nothing while it competed with
+  # every queue entry for runners. cancel-in-progress coalesces merge bursts.
+  push:
+    branches: [main]
   workflow_dispatch:
 
 concurrency:

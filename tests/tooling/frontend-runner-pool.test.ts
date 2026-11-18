@@ -78,12 +78,27 @@ function context(event: string, dependencies: string, cancelled: boolean) {
   };
 }
 
-function restoreMaximumRunner(job: Job, original: Job) {
-  if (job["runs-on"] === original["runs-on"]) return false;
+// Zero-compute plan and report jobs moved back to hosted Ubuntu so they skip the
+// 32-vCPU queue; every other field of these jobs stays reviewed below.
+const hostedZeroComputeJobs = new Set([
+  "iteration-plan",
+  "test-report",
+  "pr-source-plan",
+  "affected-tooling-report",
+  "source-report",
+]);
+
+function restoreMaximumRunner(id: string, job: Job, original: Job) {
+  if (job["runs-on"] === original["runs-on"]) return 0;
+  if (hostedZeroComputeJobs.has(id) && job["runs-on"] === hosted) {
+    assert.equal(original["runs-on"], maximumRunner);
+    job["runs-on"] = original["runs-on"];
+    return 0;
+  }
   assert.equal(original["runs-on"], hosted);
   assert.equal(job["runs-on"], maximumRunner);
   job["runs-on"] = original["runs-on"];
-  return true;
+  return 1;
 }
 
 const providerStep = {
@@ -161,7 +176,7 @@ test("maximum non-release runners preserve every original job contract", () => {
     for (const [id, original] of Object.entries(before.jobs)) {
       const current = restored.jobs[id];
       assert(current, id);
-      restoredHostedJobs += Number(restoreMaximumRunner(current, original));
+      restoredHostedJobs += restoreMaximumRunner(id, current, original);
     }
     let restoredWildSteps = 0;
     if (specification.name === "check") {
@@ -213,7 +228,7 @@ test("maximum non-release runners preserve every original job contract", () => {
         target = restored.jobs[id];
       assert(original && updated && target, id);
       assert.equal(original["runs-on"], maximumRunner);
-      assert.equal(updated["runs-on"], maximumRunner);
+      assert.equal(updated["runs-on"], hostedZeroComputeJobs.has(id) ? hosted : maximumRunner);
       selectedJobs += 1;
     }
     for (const [id, job] of Object.entries(before.jobs)) {
@@ -233,7 +248,7 @@ test("maximum non-release runners preserve every original job contract", () => {
   }
   assert.equal(selectedJobs, 7);
   assert.equal(protectedJobs, 25);
-  assert.equal(restoredHostedJobs, 4);
+  assert.equal(restoredHostedJobs, 1);
 });
 
 test("history selection refuses missing, duplicate, moved and unknown command changes", () => {

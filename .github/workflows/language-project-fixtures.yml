@@ -17,8 +17,11 @@ on:
       - tests/_fixtures/tooling/typescript-classification-*/**
       - editors/vscode/test/suite/classification-provider.cjs
       - tests/_fixtures/differential/typechecker/**
-  merge_group:
-    types: [checks_requested]
+  # Not a required check, so a queue run gated nothing while it competed with
+  # every queue entry for runners. Each main commit is still validated in full;
+  # cancel-in-progress coalesces a burst of merges into one run of the newest.
+  push:
+    branches: [main]
   workflow_dispatch:
 permissions: { contents: read }
 concurrency:
