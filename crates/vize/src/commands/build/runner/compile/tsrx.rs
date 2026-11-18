@@ -183,6 +183,7 @@ mod tests {
                 "components.tsrx",
                 "mount/and.tsrx",
                 "mount/attributes.tsrx",
+                "mount/branches.tsrx",
                 "mount/counter.tsrx",
                 "mount/default.tsrx",
                 "mount/directive.tsrx",

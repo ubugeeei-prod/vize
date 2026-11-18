@@ -60,6 +60,16 @@ pub(super) fn emit_if_template_branch(
     )
 }
 
+/// A non-template branch region without a single root: one keyed
+/// `STABLE_FRAGMENT` over its ops.
+pub(super) fn emit_branch_fragment(
+    cx: &mut EmitCx<'_>,
+    ops: &[Op<'_>],
+    key: &str,
+) -> Result<(), EmitError> {
+    emit_inner_fragment(cx, ops, Some(key), &[], None, ChildMode::ForceArray)
+}
+
 /// A single child is the branch block itself, static or not: a branch has to
 /// be a block, so Vue never hoists it out from under the branch key.
 fn should_unwrap_if(ops: &[Op<'_>]) -> bool {
