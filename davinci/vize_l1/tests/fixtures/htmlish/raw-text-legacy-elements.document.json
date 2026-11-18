@@ -1,0 +1,48 @@
+{
+  "row": "raw-text-legacy-elements",
+  "dialect": "document",
+  "source": "<!DOCTYPE html><html><head></head><body><xmp><b>a</b></xmp><iframe><b>c</b></iframe></body></html>",
+  "oracle": {
+    "name": "parse5",
+    "version": "7.3.0"
+  },
+  "elements": [
+    [
+      "html",
+      null,
+      []
+    ],
+    [
+      "head",
+      0,
+      []
+    ],
+    [
+      "body",
+      0,
+      []
+    ],
+    [
+      "xmp",
+      2,
+      []
+    ],
+    [
+      "iframe",
+      2,
+      []
+    ]
+  ],
+  "texts": [
+    [
+      3,
+      "<b>a</b>"
+    ],
+    [
+      4,
+      "<b>c</b>"
+    ]
+  ],
+  "comments": [],
+  "errors": []
+}

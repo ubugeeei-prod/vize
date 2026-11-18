@@ -253,14 +253,36 @@ ledger:
 - every named switch is a constant of `Profile`;
 - every divergence names its decision, fixture and exemption.
 
-One divergence is deliberate and is in the ledger, and one design commitment
-holds alongside it:
+The oracle packets under `davinci/vize_l1/tests/fixtures/htmlish/` hold one
+source per row and dialect and the tree its oracle builds (parse5 for
+`document`, `@vue/compiler-dom` for `vue`), written by
+`tools/commands/davinci/htmlish-oracle.ts` and checked current by the ledger
+test. `davinci/vize_l1/tests/htmlish_ledger.rs` parses each source with L1 and
+requires the oracle's elements, text, comments and error presence, or a listed
+divergence. A packet that starts to match must leave that list.
+
+These divergences are deliberate and are in the ledger, and one design
+commitment holds alongside them:
 
 - **Error recovery** (divergence `error-recovery`). Parsing never stops at a
   structural error. Malformed input becomes typed holes (the L1 hole policy),
   so the editor, the linter and the formatter keep working on code being
   typed. An oracle that rejects an input is compared only on inputs it
   accepts.
+- **Document refusal** (divergence `document-structure-refusal`). The
+  Document structure builder refuses, with a typed reason, a source whose
+  browser tree it does not build exactly yet (recovered syntax, `</br>`,
+  `plaintext`, `xmp`/`iframe`, `template` contents, script-data escapes). It
+  never returns an approximate tree.
+- **Vue-template recovery follows HTML** (divergences `vue-implied-end-tags`,
+  `comment-bang-close`). In a Vue template, vize closes `p`, `li` and the
+  other optional-end elements at the start tags HTML's in-body rules name, as
+  the shipped template parser does, and closes a comment at `--!>`. The Vue
+  oracle keeps authored nesting and reads a comment to `-->`.
+- **Vue-template diagnostics follow HTML** (divergences
+  `vue-void-end-tag-reported`, `vue-declaration-reported`). vize reports
+  `</br>` and `<!DOCTYPE html>` in a Vue template; the Vue oracle drops both
+  silently. The tree is the same.
 - **Document is the browser tree** (commitment). The Document profile models real WHATWG
   tree construction: implied end tags, foster parenting, the `select` rules
   and the adoption agency where the structure builder admits them. A Document
@@ -268,7 +290,7 @@ holds alongside it:
 
 Owed: an oracle differential fuzzer (generated htmlish inputs run through vize
 and both oracles, honoring each divergence's `fuzzExempt`), and real-file
-comparisons over the hydrated project corpus. Both are part of step 2d.
+comparisons over the hydrated project corpus. Both remain in step 2d.
 
 ### Migration-status names are not concepts
 

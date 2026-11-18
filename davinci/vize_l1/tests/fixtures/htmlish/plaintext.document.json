@@ -1,0 +1,39 @@
+{
+  "row": "plaintext",
+  "dialect": "document",
+  "source": "<!DOCTYPE html><html><head></head><body><plaintext><b>a</b></plaintext></body></html>",
+  "oracle": {
+    "name": "parse5",
+    "version": "7.3.0"
+  },
+  "elements": [
+    [
+      "html",
+      null,
+      []
+    ],
+    [
+      "head",
+      0,
+      []
+    ],
+    [
+      "body",
+      0,
+      []
+    ],
+    [
+      "plaintext",
+      2,
+      []
+    ]
+  ],
+  "texts": [
+    [
+      3,
+      "<b>a</b></plaintext></body></html>"
+    ]
+  ],
+  "comments": [],
+  "errors": []
+}

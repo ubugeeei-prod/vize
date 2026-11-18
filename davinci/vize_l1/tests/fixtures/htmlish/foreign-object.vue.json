@@ -1,0 +1,34 @@
+{
+  "row": "foreign-object",
+  "dialect": "vue",
+  "source": "<svg><foreignObject><div>a</div></foreignObject></svg>",
+  "oracle": {
+    "name": "@vue/compiler-dom",
+    "version": "3.5.35"
+  },
+  "elements": [
+    [
+      "svg",
+      null,
+      []
+    ],
+    [
+      "foreignObject",
+      0,
+      []
+    ],
+    [
+      "div",
+      1,
+      []
+    ]
+  ],
+  "texts": [
+    [
+      2,
+      "a"
+    ]
+  ],
+  "comments": [],
+  "errors": []
+}

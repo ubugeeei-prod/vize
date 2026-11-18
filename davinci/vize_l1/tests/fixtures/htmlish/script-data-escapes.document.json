@@ -1,0 +1,39 @@
+{
+  "row": "script-data-escapes",
+  "dialect": "document",
+  "source": "<!DOCTYPE html><html><head><script><!--<script></script>--></script></head><body></body></html>",
+  "oracle": {
+    "name": "parse5",
+    "version": "7.3.0"
+  },
+  "elements": [
+    [
+      "html",
+      null,
+      []
+    ],
+    [
+      "head",
+      0,
+      []
+    ],
+    [
+      "script",
+      1,
+      []
+    ],
+    [
+      "body",
+      0,
+      []
+    ]
+  ],
+  "texts": [
+    [
+      2,
+      "<!--<script></script>-->"
+    ]
+  ],
+  "comments": [],
+  "errors": []
+}

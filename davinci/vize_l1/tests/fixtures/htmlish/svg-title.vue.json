@@ -1,0 +1,34 @@
+{
+  "row": "svg-title",
+  "dialect": "vue",
+  "source": "<svg><title><b>a</b></title></svg>",
+  "oracle": {
+    "name": "@vue/compiler-dom",
+    "version": "3.5.35"
+  },
+  "elements": [
+    [
+      "svg",
+      null,
+      []
+    ],
+    [
+      "title",
+      0,
+      []
+    ],
+    [
+      "b",
+      1,
+      []
+    ]
+  ],
+  "texts": [
+    [
+      2,
+      "a"
+    ]
+  ],
+  "comments": [],
+  "errors": []
+}

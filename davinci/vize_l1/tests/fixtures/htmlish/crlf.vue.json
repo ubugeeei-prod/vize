@@ -1,0 +1,29 @@
+{
+  "row": "crlf",
+  "dialect": "vue",
+  "source": "<div title=\"a\r\nb\">c\r\nd\re</div>",
+  "oracle": {
+    "name": "@vue/compiler-dom",
+    "version": "3.5.35"
+  },
+  "elements": [
+    [
+      "div",
+      null,
+      [
+        [
+          "title",
+          "a\r\nb"
+        ]
+      ]
+    ]
+  ],
+  "texts": [
+    [
+      0,
+      "c\r\nd\re"
+    ]
+  ],
+  "comments": [],
+  "errors": []
+}
