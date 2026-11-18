@@ -49,6 +49,9 @@ struct Args {
 fn main() -> ExitCode {
     common::main_result(run())
 }
+const CONFIGURATION_ONLY_ERROR: &str =
+    "configuration-only typechecker run is not semantic qualification";
+
 fn run() -> Result<(), String> {
     let root = common::repo_root()?;
     let args = parse_args(env::args().skip(1).collect(), &root)?;
@@ -89,7 +92,8 @@ fn run() -> Result<(), String> {
     }
     let mut artifacts = Vec::new();
     let mut failures = Vec::new();
-    for project in selected {
+    let mut configuration_failures = Vec::new();
+    for project in &selected {
         match supervise_project(&root, &args, project) {
             Ok(Some(artifact)) => {
                 if let Some(detail) = budget_failure_detail(&artifact) {
@@ -98,8 +102,16 @@ fn run() -> Result<(), String> {
                 artifacts.push(artifact);
             }
             Ok(None) => failures.push(format!("Typecheck divergence baseline is unusable for {} — {INSTRUMENT_FAILURE_CLASSIFICATION}: whole-project deadline exhausted",project_string(project,"id")?)),
+            // One configuration-only unit must not hide the other units'
+            // results. It still fails the run in every budget mode.
+            Err(error) if error.starts_with(CONFIGURATION_ONLY_ERROR) => {
+                configuration_failures.push(error);
+            }
             Err(error) => return Err(error),
         }
+    }
+    if !configuration_failures.is_empty() {
+        return Err(configuration_failures.join("\n"));
     }
     if !failures.is_empty() && args.budget_mode == "enforce" {
         return Err(failures.join("\n"));
@@ -183,6 +195,24 @@ fn write_project_artifact(
     quarantine_previous_typecheck_artifacts(&args.report_dir, &project_id)?;
     let fixture_root = root.join(project_string(project, "fixturePath")?);
     let summary = read_and_validate_summary(root, &args.report_dir, project)?;
+    if let Some(marker) = project.pointer("/typecheckPerformance/configurationOnly") {
+        // The marker trusts no summary status alone: the typechecker artifact
+        // must validate against it, and a semantic run is left to the status
+        // check below.
+        match read_and_validate_vize_run(root, &args.report_dir, project, &summary) {
+            Err(error) if error != format!("{CONFIGURATION_ONLY_ERROR} for {project_id}") => {
+                return Err(error);
+            }
+            _ => {}
+        }
+        return record_configuration_only_unit(
+            root,
+            &args.report_dir,
+            &project_id,
+            marker,
+            &summary,
+        );
+    }
     let vize_run = read_and_validate_vize_run(root, &args.report_dir, project, &summary)?;
     let preparation =
         read_and_validate_dependency_preparation(root, &args.report_dir, project, &summary)?;
@@ -606,6 +636,51 @@ fn write_project_artifact(
     println!("Wrote {}", display_relative(root, &markdown_path));
     Ok(artifact)
 }
+/// A target registered configuration-only records its reason instead of a
+/// comparison. It must still be configuration-only: once it reaches semantic
+/// comparison, its marker is stale and has to be removed.
+fn record_configuration_only_unit(
+    root: &Path,
+    report_dir: &Path,
+    project_id: &str,
+    marker: &Value,
+    summary: &Value,
+) -> Result<Value, String> {
+    let status = summary
+        .get("projects")
+        .and_then(Value::as_array)
+        .and_then(|projects| {
+            projects
+                .iter()
+                .find(|entry| entry.get("id").and_then(Value::as_str) == Some(project_id))
+        })
+        .and_then(|entry| entry.get("runs").and_then(Value::as_array))
+        .and_then(|runs| {
+            runs.iter()
+                .find(|run| run.get("tool").and_then(Value::as_str) == Some("typechecker"))
+        })
+        .and_then(|run| run.get("status").and_then(Value::as_str))
+        .ok_or_else(|| format!("Fixture matrix summary has no typechecker run for {project_id}"))?;
+    let issue = marker.get("issue").and_then(Value::as_u64).unwrap_or(0);
+    if status != "configuration" {
+        return Err(format!(
+            "{project_id} is registered configuration-only (#{issue}) but its typechecker run is {status}; remove the marker"
+        ));
+    }
+    let artifact = json!({
+        "schema": "vize.fixtureTypecheckConfigurationOnly",
+        "version": 1,
+        "project": project_id,
+        "reason": marker.get("reason").cloned().unwrap_or(Value::Null),
+        "issue": issue,
+        "budget": {"verdict": "configuration-only"},
+    });
+    let path = report_dir.join(format!("{project_id}-typecheck-configuration-only.json"));
+    common::write_json_pretty(&path, &artifact)?;
+    println!("Wrote {}", display_relative(root, &path));
+    Ok(artifact)
+}
+
 /// Reusing a report directory must not leave an earlier accepted comparison at
 /// the live path when this attempt fails. Preserve only this collector's owned
 /// files, under names that cannot be mistaken for current matrix reports.
@@ -833,9 +908,7 @@ fn read_and_validate_vize_run(
                 "Fixture matrix typechecker setup evidence is inconsistent for {project_id}"
             ));
         }
-        return Err(format!(
-            "configuration-only typechecker run is not semantic qualification for {project_id}"
-        ));
+        return Err(format!("{CONFIGURATION_ONLY_ERROR} for {project_id}"));
     }
     require_exact_keys(
         &payload,
@@ -902,9 +975,7 @@ fn read_and_validate_vize_run(
         ));
     }
     if expected_status == "configuration" {
-        return Err(format!(
-            "configuration-only typechecker run is not semantic qualification for {project_id}"
-        ));
+        return Err(format!("{CONFIGURATION_ONLY_ERROR} for {project_id}"));
     }
     let source = json!({
         "payloadSha256": sha256(&raw_payload),
@@ -3840,7 +3911,10 @@ fn evaluate_budget(
 
 fn budget_failure_detail(artifact: &Value) -> Option<String> {
     let budget = &artifact["budget"];
-    if budget.get("verdict").and_then(Value::as_str) == Some("passed") {
+    if matches!(
+        budget.get("verdict").and_then(Value::as_str),
+        Some("passed" | "configuration-only")
+    ) {
         return None;
     }
     let project = artifact["project"].as_str().unwrap_or("?");
@@ -4253,10 +4327,7 @@ fn print_help() {
     );
 }
 
-fn select_typecheck_projects<'a>(
-    registry: &'a Value,
-    args: &Args,
-) -> Result<Vec<&'a Value>, String> {
+fn select_typecheck_projects(registry: &Value, args: &Args) -> Result<Vec<Value>, String> {
     let projects = registry
         .get("projects")
         .and_then(Value::as_array)
@@ -4264,12 +4335,67 @@ fn select_typecheck_projects<'a>(
     Ok(projects
         .iter()
         .enumerate()
-        .filter_map(|(index, project)| {
-            (index % args.shard_count == args.shard_index
-                && has_enabled_typecheck_performance(project))
-            .then_some(project)
+        .filter(|(index, project)| {
+            index % args.shard_count == args.shard_index
+                && has_enabled_typecheck_performance(project)
         })
+        .flat_map(|(_, project)| typecheck_units(project))
         .collect())
+}
+
+/// `typecheckPerformance.targets` as typecheck units, mirroring
+/// `typecheck-targets.ts`: the first unit keeps the project id and later
+/// units are `<project>@<target>`, each with its own tsconfig and corpus.
+fn typecheck_units(project: &Value) -> Vec<Value> {
+    let Some(targets) = project
+        .pointer("/typecheckPerformance/targets")
+        .and_then(Value::as_array)
+        .filter(|targets| !targets.is_empty())
+    else {
+        return vec![project.clone()];
+    };
+    let id = project
+        .get("id")
+        .and_then(Value::as_str)
+        .unwrap_or("project");
+    targets
+        .iter()
+        .enumerate()
+        .map(|(index, target)| {
+            let target_id = target.get("id").and_then(Value::as_str).unwrap_or("target");
+            let mut unit = project.clone();
+            let tsconfig = target.get("tsconfig").cloned().unwrap_or(Value::Null);
+            unit["id"] = Value::String(if index == 0 {
+                id.to_string()
+            } else {
+                format!("{id}@{target_id}")
+            });
+            unit["tsconfig"] = tsconfig.clone();
+            unit["typecheckTarget"] = json!({"project": id, "target": target_id});
+            let performance = &mut unit["typecheckPerformance"];
+            if let Some(object) = performance.as_object_mut() {
+                object.remove("targets");
+            }
+            performance["corpusGlobs"] = target.get("corpusGlobs").cloned().unwrap_or(Value::Null);
+            if performance.get("baseline").is_some() {
+                performance["baseline"]["tsconfig"] =
+                    target.get("baselineTsconfig").cloned().unwrap_or(tsconfig);
+            }
+            if let Some(marker) = target.get("configurationOnly") {
+                performance["configurationOnly"] = marker.clone();
+            }
+            unit
+        })
+        .collect()
+}
+
+/// The registry project a unit came from; its dependency preparation is shared.
+fn typecheck_source_project_id(project: &Value) -> Result<String, String> {
+    project
+        .pointer("/typecheckTarget/project")
+        .and_then(Value::as_str)
+        .map(str::to_string)
+        .map_or_else(|| project_string(project, "id"), Ok)
 }
 
 fn has_enabled_typecheck_performance(project: &Value) -> bool {
@@ -5193,6 +5319,74 @@ mod native_baseline_contract_tests {
             divergence_error(
                 "diagnostic range and code must be positive safe integers: src/App.vue"
             ),
+        );
+    }
+}
+
+#[cfg(test)]
+mod typecheck_target_tests {
+    use super::*;
+
+    #[test]
+    fn targets_become_units_that_keep_the_first_id_and_share_the_install() {
+        let project = json!({
+            "id": "suite",
+            "tsconfig": "packages/lib/tsconfig.json",
+            "typecheckPerformance": {
+                "enabled": true,
+                "baseline": {"prepare": ["pnpm", "stub"]},
+                "targets": [
+                    {"id": "lib", "tsconfig": "packages/lib/tsconfig.json", "corpusGlobs": ["packages/lib/**/*.vue"]},
+                    {"id": "docs", "tsconfig": "packages/docs/tsconfig.json", "corpusGlobs": ["packages/docs/**/*.vue"],
+                     "configurationOnly": {"reason": "generated data", "issue": 1}}
+                ]
+            }
+        });
+        let units = typecheck_units(&project);
+        assert_eq!(units.len(), 2);
+        assert_eq!(units[0]["id"], "suite");
+        assert_eq!(units[1]["id"], "suite@docs");
+        assert_eq!(units[1]["tsconfig"], "packages/docs/tsconfig.json");
+        assert_eq!(
+            units[1]["typecheckPerformance"]["corpusGlobs"],
+            json!(["packages/docs/**/*.vue"])
+        );
+        assert_eq!(
+            units[1]["typecheckPerformance"]["baseline"]["tsconfig"],
+            "packages/docs/tsconfig.json"
+        );
+        assert_eq!(
+            units[1]["typecheckPerformance"]["baseline"]["prepare"],
+            json!(["pnpm", "stub"])
+        );
+        assert!(
+            units[0]["typecheckPerformance"]
+                .get("configurationOnly")
+                .is_none()
+        );
+        assert_eq!(
+            units[1]["typecheckPerformance"]["configurationOnly"]["issue"],
+            1
+        );
+        assert!(
+            units
+                .iter()
+                .all(|unit| unit["typecheckPerformance"].get("targets").is_none())
+        );
+        assert_eq!(typecheck_source_project_id(&units[1]).unwrap(), "suite");
+
+        let plain = json!({"id": "plain", "typecheckPerformance": {"enabled": true}});
+        assert_eq!(typecheck_units(&plain), vec![plain.clone()]);
+        assert_eq!(typecheck_source_project_id(&plain).unwrap(), "plain");
+    }
+
+    #[test]
+    fn a_configuration_only_unit_never_breaches_the_budget() {
+        assert_eq!(
+            budget_failure_detail(
+                &json!({"project": "suite@docs", "budget": {"verdict": "configuration-only"}})
+            ),
+            None
         );
     }
 }
