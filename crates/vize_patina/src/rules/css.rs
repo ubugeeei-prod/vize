@@ -100,6 +100,7 @@ impl CssLintResult {
     /// Add a warning of `rule` over `start..end` with `help`. Every `css/*`
     /// rule reports through this one out-of-line constructor instead of
     /// inlining its own.
+    #[cold]
     #[inline(never)]
     pub(crate) fn warn(
         &mut self,
