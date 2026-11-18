@@ -196,6 +196,15 @@ fn write_project_artifact(
     let fixture_root = root.join(project_string(project, "fixturePath")?);
     let summary = read_and_validate_summary(root, &args.report_dir, project)?;
     if let Some(marker) = project.pointer("/typecheckPerformance/configurationOnly") {
+        // The marker trusts no summary status alone: the typechecker artifact
+        // must validate against it, and a semantic run is left to the status
+        // check below.
+        match read_and_validate_vize_run(root, &args.report_dir, project, &summary) {
+            Err(error) if error != format!("{CONFIGURATION_ONLY_ERROR} for {project_id}") => {
+                return Err(error);
+            }
+            _ => {}
+        }
         return record_configuration_only_unit(
             root,
             &args.report_dir,
