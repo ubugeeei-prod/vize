@@ -4291,6 +4291,24 @@
     "errors": 0
   },
   {
+    "id": "c3d-class-component-sync-decorators-instance-1431",
+    "history": "0d111ee143f23a59ecd847604691854a18f286e4",
+    "source": "<script lang=\"ts\">\nimport { Component, Model, ModelSync, Prop, PropSync, VModel, Vue } from 'vue-property-decorator'\n\n@Component\nexport default class HelloWorld extends Vue {\n  count = 0\n  @Prop() private msg!: string\n  @Model('change') checked!: boolean\n  @PropSync('title') syncedTitle!: string\n  @ModelSync('value', 'input') synced!: string\n  @VModel() selected!: string\n}\n</script>\n\n<template>\n  <div>{{ msg }} {{ checked }} {{ syncedTitle }} {{ synced }} {{ selected }} {{ count }}</div>\n</template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "dom",
+    "errors": 0
+  },
+  {
+    "id": "c3d-class-component-sync-decorators-instance-ssr-1431",
+    "history": "0d111ee143f23a59ecd847604691854a18f286e4",
+    "source": "<script lang=\"ts\">\nimport { Component, Model, ModelSync, Prop, PropSync, VModel, Vue } from 'vue-property-decorator'\n\n@Component\nexport default class HelloWorld extends Vue {\n  count = 0\n  @Prop() private msg!: string\n  @Model('change') checked!: boolean\n  @PropSync('title') syncedTitle!: string\n  @ModelSync('value', 'input') synced!: string\n  @VModel() selected!: string\n}\n</script>\n\n<template>\n  <div>{{ msg }} {{ checked }} {{ syncedTitle }} {{ synced }} {{ selected }} {{ count }}</div>\n</template>\n",
+    "filename": "History.vue",
+    "entry": "sfc",
+    "target": "ssr",
+    "errors": 0
+  },
+  {
     "id": "c3c-looped-slot-index-alias-dynamic-bind-1295",
     "history": "1165a6fffc830ac438eebccc7870b30f153a05a4",
     "source": "<Comp><template v-for=\"(item, idx) in list\" #default><div :[idx]=\"item\"></div></template></Comp>",

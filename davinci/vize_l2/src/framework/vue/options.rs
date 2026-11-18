@@ -32,12 +32,13 @@ pub enum ComponentShape {
 /// The option group, or the class member, that declares a member.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum OptionMemberKind {
-    /// `props`, or a field decorated `@Prop`, `@PropSync`, `@Model`,
-    /// `@ModelSync` or `@VModel`.
+    /// `props`, or a field decorated `@Prop` or `@Model`.
     Prop,
     /// `inject`, or a field decorated `@Inject` or `@InjectReactive`.
     Inject,
-    /// `computed`, or a class accessor.
+    /// `computed`, a class accessor, or a field decorated `@PropSync`,
+    /// `@ModelSync` or `@VModel` (the computed wrapper over a prop of
+    /// another name).
     Computed,
     /// `methods`, or a class method.
     Method,
