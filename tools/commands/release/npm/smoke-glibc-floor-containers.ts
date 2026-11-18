@@ -106,7 +106,7 @@ export function containerScript(options: ContainerSmokeOptions): string {
       "mkdir -p /tmp/vize-global/bin",
       "corepack enable --install-directory /tmp/vize-global/bin",
       "npm install --global --allow-scripts=bun bun@1.3.14 vite-plus@0.1.24",
-      `node tools/commands/release/npm/smoke-release-install.ts --prepare-manifests --runtime-checks npm/native npm/native/npm/${platform} npm/cli npm/builder/unplugin npm/builder/vite`,
+      `node tools/commands/release/npm/smoke-release-install.ts --prepare-manifests --runtime-checks npm/native npm/native/npm/* npm/cli npm/builder/unplugin npm/builder/vite`,
     );
   }
   return lines.join("\n");
