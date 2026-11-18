@@ -23,20 +23,22 @@
 //! # The scope environment (hygiene consumption, third form)
 //!
 //! The legacy check is `ctx.is_in_scope(value_exp)`: whole trimmed text
-//! against the alias texts and bound names of enclosing `v-for` scopes
-//! and the enumerated prop names of enclosing `v-slot` scopes. The pass
-//! mirrors it structurally: a `ui.for` region opens a frame holding its
-//! value/key/index source texts, plus each destructuring alias as a
-//! pattern (Vue's `addIdentifiers` declares every name it binds), and a
-//! slot carrier (component, or `template` element, with children and a
-//! params-bearing `ui.slot-content`) opens a frame over its children
-//! holding the params' simple-identifier name, or its destructuring
-//! pattern. A pattern frame declares every name the params' parameter
-//! goal binds — nested, default-valued and rest positions alike, as
-//! Vue's `trackSlotScopes` registers them — enumerated by the lowering's
-//! own parameter walk ([`crate::lower::visit_bindings`], the one-scanner
-//! rule, #4365). The parse runs only for a model whose read the pattern
-//! spells, so a template without such a model pays nothing.
+//! against the alias **texts** of enclosing `v-for` scopes and the
+//! enumerated prop names of enclosing `v-slot` scopes. The pass mirrors
+//! it structurally: a `ui.for` region opens a frame holding its
+//! value/key/index source texts (exactly what `enter_v_for_scope`
+//! registers; a destructuring text also declares the names it binds,
+//! enumerated only when a model's read is spelled in it, as Vue's
+//! `addIdentifiers` registers them), and a slot carrier (component,
+//! or `template` element, with children and a params-bearing
+//! `ui.slot-content`) opens a frame over its children holding the
+//! params' simple-identifier name, or its destructuring pattern. A
+//! pattern frame declares every name the params' parameter goal binds —
+//! nested, default-valued and rest positions alike, as Vue's
+//! `trackSlotScopes` registers them — enumerated by the lowering's own
+//! parameter walk ([`crate::lower::visit_bindings`], the one-scanner rule,
+//! #4365). The parse runs only for a model whose read the pattern spells,
+//! so a template without such a model pays nothing.
 //!
 //! # Classification (the review point)
 //!
@@ -209,17 +211,18 @@ fn visit<'a>(
         Op::For(for_op) => {
             // The legacy `enter_v_for_scope` registers the alias texts
             // (value even when it is a pattern; key and index when
-            // authored), and a pattern alias also declares every name it
-            // binds, as Vue's `addIdentifiers` registers them.
+            // authored) — mirrored as texts; `check` enumerates a
+            // destructuring text lazily, so this arm stays unchanged.
             let before = env.len();
-            if !for_op.binding.value.source().is_empty() {
-                push_for_alias(env, &for_op.binding.value);
+            let value = for_op.binding.value.source();
+            if !value.is_empty() {
+                env.push(ScopeName::Text(String::from(value)));
             }
             for expr in [&for_op.binding.key, &for_op.binding.index]
                 .into_iter()
                 .flatten()
             {
-                push_for_alias(env, expr);
+                env.push(ScopeName::Text(String::from(expr.source())));
             }
             region(walk, channels, env, &for_op.region.ops);
             env.truncate(before);
@@ -242,10 +245,10 @@ fn visit<'a>(
 
 /// One frame entry of the scope environment.
 pub(super) enum ScopeName<'a> {
-    /// A `v-for` alias text, or a simple-identifier slot-props name.
+    /// A `v-for` alias text, or a simple-identifier slot-props name. A
+    /// destructuring alias text is enumerated on demand like a pattern.
     Text(String),
-    /// A destructuring `v-for` alias or slot-props pattern, enumerated on
-    /// demand.
+    /// A destructuring slot-props pattern, enumerated on demand.
     Pattern(&'a str),
 }
 
@@ -297,20 +300,6 @@ fn slot_scope<'a>(params: &ExprRef<'a>) -> Option<ScopeName<'a>> {
         ExprRef::Foreign(_) => None,
         ExprRef::Js(_) | ExprRef::Filter(_) | ExprRef::Opaque(_) => {
             Some(ScopeName::Pattern(params.source()))
-        }
-    }
-}
-
-/// Push a `v-for` alias position's scope: its text, and, for a pattern,
-/// the pattern enumerated on demand like a slot scope's.
-/// A foreign dialect's alias stays unenumerated.
-fn push_for_alias<'a>(env: &mut StdVec<ScopeName<'a>>, alias: &ExprRef<'a>) {
-    env.push(ScopeName::Text(String::from(alias.source())));
-    match alias {
-        ExprRef::Js(_) if crate::lower::simple_identifier(alias).is_some() => {}
-        ExprRef::Foreign(_) => {}
-        ExprRef::Js(_) | ExprRef::Filter(_) | ExprRef::Opaque(_) => {
-            env.push(ScopeName::Pattern(alias.source()));
         }
     }
 }
