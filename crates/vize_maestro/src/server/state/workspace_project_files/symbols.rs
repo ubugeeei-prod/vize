@@ -324,6 +324,8 @@ async fn yield_to_source_changes() {
     .await;
 }
 
+#[cfg(all(test, feature = "micro-profiling"))]
+mod allocation_tests;
 #[cfg(test)]
 mod filtered_tests;
 #[cfg(test)]
