@@ -1,0 +1,36 @@
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(_ssrRenderComponent(_resolveComponent("Comp"), _attrs, _createSlots({
+    "a.b.c": _withCtx((_, _push, _parent, _scopeId) => {
+      if (_push) {
+        _push(`abc`)
+      } else {
+        return [_createTextVNode("abc")]
+      }
+    }),
+    _: 2 /* DYNAMIC */
+  }, [
+    (_ctx.ok) ? {
+      name: "item.alpha",
+      fn: _withCtx((_, _push, _parent, _scopeId) => {
+        if (_push) {
+          _push(`ifslot`)
+        } else {
+          return [_createTextVNode("ifslot")]
+        }
+      }),
+      key: "0"
+    } : undefined,
+    _renderList(_ctx.names, (n) => {
+      return {
+        name: n,
+        fn: _withCtx((_, _push, _parent, _scopeId) => {
+          if (_push) {
+            _push(`${_ssrInterpolate(n)}`)
+          } else {
+            return [_createTextVNode(_toDisplayString(n))]
+          }
+        })
+      }
+    })
+  ]), _parent))
+}

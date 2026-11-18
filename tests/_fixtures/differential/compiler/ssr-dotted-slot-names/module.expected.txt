@@ -1,0 +1,38 @@
+import { ssrInterpolate as _ssrInterpolate, ssrRenderComponent as _ssrRenderComponent } from "@vue/server-renderer"
+import { createElementVNode as _createElementVNode, createTextVNode as _createTextVNode, resolveComponent as _resolveComponent, createSlots as _createSlots, toDisplayString as _toDisplayString, withCtx as _withCtx } from "vue"
+
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(_ssrRenderComponent(_resolveComponent("Comp"), _attrs, _createSlots({
+    "item.alpha": _withCtx(({ x }, _push, _parent, _scopeId) => {
+      if (_push) {
+        _push(`<b>${_ssrInterpolate(x)}</b>`)
+      } else {
+        return [_createElementVNode("b", null, _toDisplayString(x), 1 /* TEXT */)]
+      }
+    }),
+    "a.b.c": _withCtx((_, _push, _parent, _scopeId) => {
+      if (_push) {
+        _push(`abc`)
+      } else {
+        return [_createTextVNode("abc")]
+      }
+    }),
+    _: 2 /* DYNAMIC */
+  }, [
+    (_ctx.ok) ? {
+      name: "row.top",
+      fn: _withCtx((_, _push, _parent, _scopeId) => {
+        if (_push) {
+          _push(`row`)
+        } else {
+          return [_createTextVNode("row")]
+        }
+      }),
+      key: "0"
+    } : undefined
+  ]), _parent))
+}
+
+const _sfc_main = {}
+_sfc_main.ssrRender = ssrRender
+export default _sfc_main
