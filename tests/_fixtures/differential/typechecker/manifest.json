@@ -1317,12 +1317,12 @@
         {
           "file": "src/MyCard.art.vue",
           "path": "art-variant-implicit-component-9854/src/MyCard.art.vue.txt",
-          "sha256": "8244d93074da638cd1c9f7a93845de4e7cf146f4da11b7c170ac7eff39ae3eea"
+          "sha256": "b6c6dc086ac6e64f43027bac64babeae43574d97a1e21a44ee1c0606a6ffb170"
         },
         {
           "file": "src/MyCardExplicit.art.vue",
           "path": "art-variant-implicit-component-9854/src/MyCardExplicit.art.vue.txt",
-          "sha256": "224008e13f14210912b95eadfed63f36f18ffc1ee8108261f418d0f11bc9600a"
+          "sha256": "6c156bf1d74f2908e534ce1d81ac6c2c94feba8c74d721cce7ef7e7683a2914b"
         }
       ],
       "dialectCoverage": {
@@ -1374,7 +1374,7 @@
         {
           "file": "src/MyCardValid.art.vue",
           "path": "art-variant-implicit-component-9854/src/MyCardValid.art.vue.txt",
-          "sha256": "766c26dee563a4eb211aded1d2f54a97d5dae4e0a40dfbd3bad655eb3d1bf834"
+          "sha256": "eb1f6e90c25e13d8ee0d914636d413b5e34b163dbe76f890cb34e6afd83cc230"
         }
       ],
       "dialectCoverage": {
@@ -6599,7 +6599,7 @@
         {
           "file": "src/MyCard.art.vue",
           "path": "content-mapper-musea-art-10186/src/MyCard.art.vue.txt",
-          "sha256": "8244d93074da638cd1c9f7a93845de4e7cf146f4da11b7c170ac7eff39ae3eea"
+          "sha256": "9115b294b3278ac595d8f74cb61871e6da5be0b4916b7a3eee76067a2f10a269"
         }
       ],
       "dialectCoverage": {

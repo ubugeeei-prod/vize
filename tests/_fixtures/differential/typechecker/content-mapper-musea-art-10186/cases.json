@@ -36,7 +36,7 @@
       "diagnostics": [
         {
           "file": "src/MyCard.art.vue",
-          "line": 6,
+          "line": 5,
           "column": 34,
           "severity": 1,
           "code": 2322,
@@ -44,7 +44,7 @@
         },
         {
           "file": "src/MyCard.art.vue",
-          "line": 7,
+          "line": 6,
           "column": 28,
           "severity": 1,
           "code": 2345,

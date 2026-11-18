@@ -18,14 +18,14 @@ const reference = {
 const inputHashes = [
   ["tsconfig.json.txt", "e36b280dce185f4be85cbff1838c0ee06d8d7a46b38b3e63df995c0decd7b13b"],
   ["src/MyCard.vue.txt", "455de116ba8d563f320c6b90d5a655a7c9cef4d8305e00e6705adf289420df35"],
-  ["src/MyCard.art.vue.txt", "8244d93074da638cd1c9f7a93845de4e7cf146f4da11b7c170ac7eff39ae3eea"],
+  ["src/MyCard.art.vue.txt", "b6c6dc086ac6e64f43027bac64babeae43574d97a1e21a44ee1c0606a6ffb170"],
   [
     "src/MyCardExplicit.art.vue.txt",
-    "224008e13f14210912b95eadfed63f36f18ffc1ee8108261f418d0f11bc9600a",
+    "6c156bf1d74f2908e534ce1d81ac6c2c94feba8c74d721cce7ef7e7683a2914b",
   ],
   [
     "src/MyCardValid.art.vue.txt",
-    "766c26dee563a4eb211aded1d2f54a97d5dae4e0a40dfbd3bad655eb3d1bf834",
+    "eb1f6e90c25e13d8ee0d914636d413b5e34b163dbe76f890cb34e6afd83cc230",
   ],
 ];
 export type ArtDiagnosticAuthority = {
@@ -48,7 +48,7 @@ export function selectArtDiagnosticAuthority(
   const authored = manifest.cases.filter((item: TypecheckerCase) => item.pack === artDisplayPack);
   assert.equal(
     sha256(Buffer.from(JSON.stringify(authored))),
-    "58c3fa196b473259fdc5d0aed95897db45de542eebfae250b91815348639034d",
+    "9f8d32fa2c56c8b5342c15bd64a38bc5b22448a8c9f3bdacfe28d4d0ac03a9d4",
     "the complete two original Art manifest entries stay frozen",
   );
   const { diagnostics: _diagnostics, ...context } = fixture;

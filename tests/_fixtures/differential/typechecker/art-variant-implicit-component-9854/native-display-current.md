@@ -2,11 +2,11 @@
 
 The Art inputs now import their demonstrated component directly. The implicit
 cases omit `defineArt`, while the explicit case uses `defineArt(MyCard, ...)`.
-`native-display-current.json` retains the complete current two-case contract;
-the added import spacing moves the implicit-case diagnostic lines by one.
-Order, severity, codes, both wrong-value messages and the complete missing-title
-explanation stay exact. The valid implicit subject remains clean. Actual
-diagnostics are compared directly with this full vector.
+`native-display-current.json` retains the complete current two-case contract.
+The migrated inputs preserve the original diagnostic positions, order, severity,
+codes, both wrong-value messages and the complete missing-title explanation. The
+valid implicit subject remains clean. Actual diagnostics are compared directly
+with this full vector.
 
 The diagnostic payload underlying the current vector was observed by the required native Full Rust test at source
 `c4ee353b79611126138a82fb68ae187dd171ef70`, with TypeScript 7.0.2 and the locked
@@ -26,8 +26,8 @@ No ellipsis replacement or general pretty-print normalization is permitted.
 A same-provider local comparison used the existing published vize 0.608.0 and
 source 197682982b425f5bb6187a48db7c1455e918d964 binary. The production Rust sources
 are identical to c4ee; later differences are snapshots and consumer tooling.
-Both cases return identical complete authored CLI diagnostics apart from the
-documented source-line shift: four errors for the invalid pair and zero for the valid subject. Every generated
+Both cases return identical complete authored CLI diagnostics: four errors for
+the invalid pair and zero for the valid subject. Every generated
 file is identical except the reviewed module-scope Slots export statement.
 This comparison is local functional evidence, separate from successor CI and
 acceptance of a future containing public release.

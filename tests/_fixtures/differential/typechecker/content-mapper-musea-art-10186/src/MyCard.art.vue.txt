@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import MyCard from "./MyCard.vue";
-defineArt(MyCard, { title: "MyCard" });
+import MyCard from "./MyCard.vue"; defineArt(MyCard, { title: "MyCard" });
 </script>
 <art>
   <variant name="Wrong"><MyCard :title="123" /></variant>

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import MyCard from "./MyCard.vue";
-
 </script>
 <art>
   <variant name="Valid"><MyCard title="ok" /></variant>
