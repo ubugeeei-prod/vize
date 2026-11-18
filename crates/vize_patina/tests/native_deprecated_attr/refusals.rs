@@ -84,7 +84,7 @@ fn duplicates_refuse_before_lookup_and_keep_unsorted_complete_parser_product_ord
         for locale in LOCALES {
             let mut diagnostics = vec![
                 warning(locale, span(&source, "align='one'"), "div", "align", ALIGN),
-                parser("warning", &message, range),
+                parser("error", &message, range),
             ];
             if second_warns {
                 diagnostics.push(warning(

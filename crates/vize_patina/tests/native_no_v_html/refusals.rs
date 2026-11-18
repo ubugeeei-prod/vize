@@ -196,7 +196,7 @@ fn duplicate_static_attributes_preserve_parser_warning_and_product_order() {
             expected(vec![
                 warning(locale, span(source, "v-html='first'")),
                 parser(
-                    "warning",
+                    "error",
                     "Duplicate attribute `ID`. Keeping the repeated attribute so parsing can continue.",
                     repeated
                 ),

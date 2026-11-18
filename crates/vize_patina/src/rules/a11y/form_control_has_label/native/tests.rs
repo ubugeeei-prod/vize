@@ -195,15 +195,15 @@ fn duplicate_static_hidden_and_type_keep_whole_legacy_packets_but_refuse_native_
         } else {
             expected.diagnostics.first_mut().unwrap().end = u32::try_from(source.len()).unwrap();
         }
-        // The legacy parser retains both attributes and its full recoverable
-        // warning. merge_lint_results orders by (start,end), so the element's
-        // start-0 rule finding precedes the second attribute's parser warning.
-        expected.diagnostics.push(crate::LintDiagnostic::warn(
+        // The parser retains both attributes and reports the duplicate as an
+        // error, as Vue 3 does. merge_lint_results orders by (start,end), so the
+        // element's start-0 rule finding precedes the second attribute's error.
+        expected.diagnostics.push(crate::LintDiagnostic::error(
             "parser/template",
             format!("Duplicate attribute `{name}`. Keeping the repeated attribute so parsing can continue."),
             start, start + u32::try_from(name.len()).unwrap(),
         ));
-        expected.warning_count += 1;
+        expected.error_count += 1;
         for _ in 0..2 {
             let legacy = linter.lint_template(source, "Duplicate.vue");
             assert_eq!(format!("{legacy:#?}"), format!("{expected:#?}"), "{source}");

@@ -16295,6 +16295,37 @@
       }
     },
     {
+      "id": "linter/duplicate-attribute-dialects",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "duplicate-attribute-dialects",
+        "files": [
+          {
+            "path": "src/Duplicate.vue.txt",
+            "role": "issue-authored-vue3-duplicate-attribute",
+            "sha256": "65049f694b4e7a4f57465da50f994b53ed50e1cdfb8d169840e564adea62258b"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/dynamic-event-owner-11728",
       "state": "active",
       "targets": [

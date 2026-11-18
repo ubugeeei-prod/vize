@@ -5,12 +5,12 @@
   "allowStyle": true,
   "expected": {
     "filename": "static-duplicate.vue",
-    "errorCount": 1,
-    "warningCount": 1,
+    "errorCount": 2,
+    "warningCount": 0,
     "diagnostics": [
       {
         "rule": "parser/template",
-        "severity": "Warning",
+        "severity": "Error",
         "message": "Duplicate attribute `id`. Keeping the repeated attribute so parsing can continue.",
         "start": 12,
         "end": 14,
