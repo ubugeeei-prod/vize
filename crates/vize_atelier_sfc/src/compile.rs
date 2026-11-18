@@ -38,9 +38,7 @@ use crate::types::{
 };
 use vize_atelier_core::{CodegenOptions, TemplateSyntaxMode, options::CustomElementMatcher};
 
-use self::bindings::{
-    collect_normal_script_bindings, merge_normal_script_bindings, register_setup_enum_bindings,
-};
+use self::bindings::{merge_normal_script_bindings, register_setup_enum_bindings};
 use self::diagnostics::create_v_model_reactive_const_warning;
 pub(crate) use self::helpers::is_ts_lang;
 use self::helpers::{
@@ -431,10 +429,7 @@ fn compile_sfc_inner(
     // This enables proper component resolution (e.g., `import { Form as PForm }`)
     // and identifier prefix resolution (avoiding incorrect `_ctx.` prefix).
     if let Some(script) = descriptor.script.as_ref() {
-        let normal_script_bindings = profile!(
-            "atelier.sfc.normal_script.register_bindings",
-            collect_normal_script_bindings(&script.content)
-        );
+        let normal_script_bindings = bindings::ordinary(&script.content, script.lang.as_deref());
         merge_normal_script_bindings(&mut script_bindings, &normal_script_bindings);
         merge_normal_script_bindings(&mut ctx.bindings, &normal_script_bindings);
         synthetic_inline_dollar_emit &= !normal_script_bindings.bindings.contains_key("$emit");

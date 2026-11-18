@@ -4,145 +4,15 @@
 //! `<script>` blocks.
 
 mod options;
+mod ordinary;
 mod vapor;
 pub(super) use options::options_api;
+pub(super) use ordinary::ordinary;
 pub(super) use vapor::for_vapor;
 
-use oxc_ast::ast::{
-    BindingPattern, Declaration, Expression, ImportDeclarationSpecifier, Program, Statement,
-    VariableDeclaration, VariableDeclarationKind,
-};
-use vize_l0::ToCompactString;
+use oxc_ast::ast::{Program, Statement};
 
 use crate::types::{BindingMetadata, BindingType};
-
-/// Collect bindings from normal `<script>` block.
-///
-/// When both `<script>` and `<script setup>` exist, top-level imports and
-/// declarations from the normal script are accessible in the template.
-/// Uses OXC parser for accurate import and declaration extraction (handles
-/// `import { Form as PForm }`, default imports, and namespace imports).
-pub(super) fn collect_normal_script_bindings(content: &str) -> BindingMetadata {
-    use oxc_allocator::Allocator;
-    use oxc_span::SourceType;
-
-    let allocator = Allocator::default();
-    let source_type = SourceType::from_path("script.ts").unwrap_or_default();
-    let ret = crate::script::parse_script_text(&allocator, content, source_type);
-    let mut bindings = BindingMetadata::default();
-
-    if ret.panicked {
-        return bindings;
-    }
-
-    for stmt in ret.program.body.iter() {
-        match stmt {
-            // Register import bindings: import { Foo, Bar as Baz } from '...'
-            Statement::ImportDeclaration(decl) => {
-                // Skip type-only imports (import type { ... } from '...')
-                if decl.import_kind.is_type() {
-                    continue;
-                }
-                // Imported runtime values can be refs, except Vue helpers and SFC defaults.
-                let source = decl.source.value.as_str();
-                if let Some(specifiers) = &decl.specifiers {
-                    for spec in specifiers {
-                        match spec {
-                            ImportDeclarationSpecifier::ImportSpecifier(s) => {
-                                // Skip type-only specifiers
-                                if s.import_kind.is_type() {
-                                    continue;
-                                }
-                                let local = s.local.name.to_compact_string();
-                                bindings.bindings.entry(local).or_insert(
-                                    if source == "vue"
-                                        || (s.imported.name().as_str() == "default"
-                                            && source.ends_with(".vue"))
-                                    {
-                                        BindingType::SetupConst
-                                    } else {
-                                        BindingType::SetupMaybeRef
-                                    },
-                                );
-                            }
-                            ImportDeclarationSpecifier::ImportDefaultSpecifier(s) => {
-                                let local = s.local.name.to_compact_string();
-                                bindings.bindings.entry(local).or_insert(
-                                    if source == "vue" || source.ends_with(".vue") {
-                                        BindingType::SetupConst
-                                    } else {
-                                        BindingType::SetupMaybeRef
-                                    },
-                                );
-                            }
-                            ImportDeclarationSpecifier::ImportNamespaceSpecifier(s) => {
-                                let local = s.local.name.to_compact_string();
-                                bindings
-                                    .bindings
-                                    .entry(local)
-                                    .or_insert(BindingType::SetupConst);
-                            }
-                        }
-                    }
-                }
-            }
-            Statement::VariableDeclaration(var_decl) => {
-                register_variable_declaration(var_decl, &mut bindings);
-            }
-            Statement::FunctionDeclaration(func) => {
-                if let Some(id) = &func.id {
-                    bindings
-                        .bindings
-                        .entry(id.name.to_compact_string())
-                        .or_insert(BindingType::SetupConst);
-                }
-            }
-            Statement::ClassDeclaration(class) => {
-                if let Some(id) = &class.id {
-                    bindings
-                        .bindings
-                        .entry(id.name.to_compact_string())
-                        .or_insert(BindingType::SetupConst);
-                }
-            }
-            Statement::TSEnumDeclaration(enumeration) if !enumeration.declare => {
-                crate::script::register_enum(&mut bindings, enumeration);
-            }
-            Statement::ExportNamedDeclaration(decl) => {
-                if let Some(ref declaration) = decl.declaration {
-                    match declaration {
-                        Declaration::VariableDeclaration(var_decl) => {
-                            register_variable_declaration(var_decl, &mut bindings);
-                        }
-                        Declaration::FunctionDeclaration(func) => {
-                            if let Some(id) = &func.id {
-                                bindings
-                                    .bindings
-                                    .entry(id.name.to_compact_string())
-                                    .or_insert(BindingType::SetupConst);
-                            }
-                        }
-                        Declaration::ClassDeclaration(class) => {
-                            if let Some(id) = &class.id {
-                                bindings
-                                    .bindings
-                                    .entry(id.name.to_compact_string())
-                                    .or_insert(BindingType::SetupConst);
-                            }
-                        }
-                        Declaration::TSEnumDeclaration(enumeration) if !enumeration.declare => {
-                            crate::script::register_enum(&mut bindings, enumeration);
-                        }
-                        _ => {}
-                    }
-                }
-            }
-            _ => {}
-        }
-    }
-
-    bindings
-}
 
 /// Preserve the script compiler's static enum classification in the template
 /// metadata. The setup facts record runtime enum names as setup constants; the
@@ -154,112 +24,6 @@ pub(super) fn register_setup_enum_bindings(bindings: &mut BindingMetadata, progr
             && !enumeration.declare
         {
             crate::script::register_enum(bindings, enumeration);
-        }
-    }
-}
-
-fn register_variable_declaration(
-    var_decl: &VariableDeclaration<'_>,
-    bindings: &mut BindingMetadata,
-) {
-    for declarator in &var_decl.declarations {
-        let binding_type = infer_variable_binding_type(var_decl.kind, declarator.init.as_ref());
-        register_binding_pattern(&declarator.id, binding_type, bindings);
-    }
-}
-
-fn infer_variable_binding_type(
-    kind: VariableDeclarationKind,
-    init: Option<&Expression<'_>>,
-) -> BindingType {
-    let Some(init) = init else {
-        return match kind {
-            VariableDeclarationKind::Const
-            | VariableDeclarationKind::Using
-            | VariableDeclarationKind::AwaitUsing => BindingType::SetupConst,
-            VariableDeclarationKind::Let | VariableDeclarationKind::Var => BindingType::SetupLet,
-        };
-    };
-
-    if let Expression::CallExpression(call) = init
-        && let Expression::Identifier(callee) = &call.callee
-    {
-        match callee.name.as_str() {
-            "ref" | "shallowRef" | "customRef" | "toRef" | "toRefs" | "computed"
-            | "useTemplateRef" => return BindingType::SetupRef,
-            "reactive" | "shallowReactive" | "readonly" | "shallowReadonly" => {
-                return BindingType::SetupReactiveConst;
-            }
-            _ => {}
-        }
-    }
-
-    if kind == VariableDeclarationKind::Const {
-        if is_literal(init) {
-            return BindingType::LiteralConst;
-        }
-        if matches!(
-            init,
-            Expression::ArrowFunctionExpression(_)
-                | Expression::FunctionExpression(_)
-                | Expression::ObjectExpression(_)
-                | Expression::ArrayExpression(_)
-        ) {
-            return BindingType::SetupConst;
-        }
-    }
-
-    match kind {
-        VariableDeclarationKind::Const => BindingType::SetupMaybeRef,
-        VariableDeclarationKind::Let | VariableDeclarationKind::Var => BindingType::SetupLet,
-        VariableDeclarationKind::Using | VariableDeclarationKind::AwaitUsing => {
-            BindingType::SetupConst
-        }
-    }
-}
-
-fn is_literal(expr: &Expression<'_>) -> bool {
-    match unwrap_type_only_wrappers(expr) {
-        Expression::StringLiteral(_)
-        | Expression::NumericLiteral(_)
-        | Expression::BooleanLiteral(_)
-        | Expression::NullLiteral(_)
-        | Expression::BigIntLiteral(_) => true,
-        Expression::TemplateLiteral(tl) => tl.expressions.is_empty(),
-        _ => false,
-    }
-}
-
-fn register_binding_pattern(
-    pattern: &BindingPattern<'_>,
-    binding_type: BindingType,
-    bindings: &mut BindingMetadata,
-) {
-    match pattern {
-        BindingPattern::BindingIdentifier(id) => {
-            bindings
-                .bindings
-                .entry(id.name.to_compact_string())
-                .or_insert(binding_type);
-        }
-        BindingPattern::ObjectPattern(obj) => {
-            for prop in obj.properties.iter() {
-                register_binding_pattern(&prop.value, binding_type, bindings);
-            }
-            if let Some(rest) = obj.rest.as_ref() {
-                register_binding_pattern(&rest.argument, binding_type, bindings);
-            }
-        }
-        BindingPattern::ArrayPattern(arr) => {
-            for element in arr.elements.iter().flatten() {
-                register_binding_pattern(element, binding_type, bindings);
-            }
-            if let Some(rest) = arr.rest.as_ref() {
-                register_binding_pattern(&rest.argument, binding_type, bindings);
-            }
-        }
-        BindingPattern::AssignmentPattern(assign) => {
-            register_binding_pattern(&assign.left, binding_type, bindings);
         }
     }
 }
@@ -311,24 +75,9 @@ pub(super) fn copy_setup_state_bindings(
     }
 }
 
-/// Strip type-only wrappers (`as`, `satisfies`, `!`, parentheses), matching
-/// Vue's `unwrapTSNode`: `const HREF = "#main" satisfies Href` is as literal
-/// as `const HREF = "#main"`.
-fn unwrap_type_only_wrappers<'e, 'a>(mut expr: &'e Expression<'a>) -> &'e Expression<'a> {
-    loop {
-        expr = match expr {
-            Expression::ParenthesizedExpression(inner) => &inner.expression,
-            Expression::TSAsExpression(inner) => &inner.expression,
-            Expression::TSSatisfiesExpression(inner) => &inner.expression,
-            Expression::TSNonNullExpression(inner) => &inner.expression,
-            _ => return expr,
-        };
-    }
-}
-
 #[cfg(test)]
 mod tests {
-    use super::{collect_normal_script_bindings, merge_normal_script_bindings};
+    use super::{merge_normal_script_bindings, ordinary};
     use crate::types::{BindingMetadata, BindingType};
 
     #[test]
@@ -347,7 +96,7 @@ import type TypeOnly from "./types";
 import type { OtherType } from "./types";
 import { type MixedType, runtimeValue } from "./mixed";
 "#;
-        let bindings = collect_normal_script_bindings(source);
+        let bindings = ordinary(source, Some("ts"));
         for name in [
             "label",
             "handler",
