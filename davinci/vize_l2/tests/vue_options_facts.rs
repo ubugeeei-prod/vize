@@ -328,6 +328,9 @@ fn class_components_read_decorators_and_instance_members() {
 export default class Panel extends Vue {
   @Prop() readonly p!: string
   @PropSync('q') sq!: string
+  @Model('change') m!: boolean
+  @ModelSync('v', 'input') ms!: string
+  @VModel() vm!: string
   @Inject() readonly i!: string
   @Emit() changed() {}
   title = ''
@@ -352,7 +355,10 @@ export default class Panel extends Vue {
         [
             (Prop, text("dp")),
             (Prop, text("p")),
-            (Prop, text("sq")),
+            (Computed, text("sq")),
+            (Prop, text("m")),
+            (Computed, text("ms")),
+            (Computed, text("vm")),
             (Inject, text("i")),
             (Method, text("changed")),
             (Data, text("title")),
