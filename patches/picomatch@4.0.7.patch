@@ -1,0 +1,72 @@
+diff --git a/lib/parse.js b/lib/parse.js
+index 29207512c60183b4bb9bf5112be3b9b5f4a9a9fd..c990525adc41cfedd0a7243b3eadbe2b957bf94b 100644
+--- a/lib/parse.js
++++ b/lib/parse.js
+@@ -284,6 +284,28 @@ const repeatedExtglobRecursion = pattern => {
+   return depth;
+ };
+ 
++// For a single branch of literals and stars, a star can absorb any further
++// repetitions of that branch. Keep paths, quoting and other glob/regex syntax
++// out of this rewrite: they need their own analysis.
++const isSelfRepeatingStarBranch = branch => {
++  return branch.includes('*') &&
++    !branch.includes('**') &&
++    !/[\\/"?()[\]{}|!+@]/.test(branch);
++};
++
++// Glob star tokens of an extglob body. A star that opens a nested extglob is
++// followed by its extglob paren; literalized nested bodies have no output.
++const hasGlobStarToken = (tokens, start) => {
++  for (let i = start; i < tokens.length; i++) {
++    const tok = tokens[i];
++    const next = tokens[i + 1];
++    if (!tok.output || (tok.type !== 'star' && tok.type !== 'globstar')) continue;
++    if (tok.type === 'star' && next && next.type === 'paren' && next.extglob === true) continue;
++    return true;
++  }
++  return false;
++};
++
+ const analyzeRepeatedExtglob = (body, options) => {
+   if (options.maxExtglobRecursion === false) {
+     return { risky: false };
+@@ -343,7 +365,13 @@ const analyzeRepeatedExtglob = (body, options) => {
+       : { risky: true };
+   }
+ 
+-  return { risky: false };
++  if (branches.length === 1 && isSelfRepeatingStarBranch(branches[0])) {
++    // Collapsing changes repeated captures. Use the existing literal fallback
++    // instead of exposing a backtracking expression in capture mode.
++    return options.capture === true ? { risky: true } : { risky: false, collapse: true };
++  }
++
++  return { risky: false, single: branches.length === 1 };
+ };
+ 
+ /**
+@@ -541,6 +569,12 @@ const parse = (input, options) => {
+     const body = input.slice(token.startIndex + 2, state.index);
+     const analysis = analyzeRepeatedExtglob(body, opts);
+ 
++    // Any other glob star in a lone repeated branch nests an unbounded
++    // quantifier inside the repetition: use the literal fallback.
++    if (analysis.single === true && hasGlobStarToken(tokens, token.tokensIndex + 1)) {
++      analysis.risky = true;
++    }
++
+     if ((token.type === 'plus' || token.type === 'star') && analysis.risky) {
+       const safeOutput = analysis.safeOutput
+         ? (token.output ? '' : ONE_CHAR) + (opts.capture ? `(${analysis.safeOutput})` : analysis.safeOutput)
+@@ -565,6 +599,10 @@ const parse = (input, options) => {
+       return;
+     }
+ 
++    if (analysis.collapse === true && (token.type === 'plus' || token.type === 'star')) {
++      token.close = token.type === 'plus' ? ')' : ')?';
++    }
++
+     let output = token.close + (opts.capture ? ')' : '');
+     let rest;
+ 
