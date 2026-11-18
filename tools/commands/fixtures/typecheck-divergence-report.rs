@@ -3732,7 +3732,11 @@ fn validate_typechecker_output(
     let mut transitive_authored_files = Vec::new();
     let mut transitive_dependency_files = Vec::new();
     if let Some(expected_files) = expected_files {
-        validate_manifest_input(expected_files, "requested fixture inputs", is_vue_sfc)?;
+        validate_manifest_input(
+            expected_files,
+            "requested fixture inputs",
+            is_typecheck_source,
+        )?;
         let authored_files = authored_files.unwrap_or(expected_files);
         validate_manifest_input(
             authored_files,
@@ -3988,10 +3992,6 @@ fn require_exact_keys(value: &Value, expected: &[&str], message: &str) -> Result
         return Err(message.to_string());
     }
     Ok(())
-}
-
-fn is_vue_sfc(file: &str) -> bool {
-    file.ends_with(".vue")
 }
 
 fn is_typecheck_source(file: &str) -> bool {

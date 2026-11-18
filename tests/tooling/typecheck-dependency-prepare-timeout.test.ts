@@ -107,7 +107,7 @@ test("dependency prepare bounds a baseline prepare process that ignores SIGTERM"
   }
 });
 
-test("Misskey declaration preparation rejects failed, missing and empty emitter output", () => {
+test("Misskey preparation rejects failed, missing and empty build output", () => {
   const prepare = [
     "pnpm",
     "--filter",
@@ -129,11 +129,13 @@ test("Misskey declaration preparation rejects failed, missing and empty emitter 
     "--emitDeclarationOnly",
     "true",
   ];
-  for (const [emitted, exitCode, message] of [
-    ["export {};", 9, /baseline prepare exited with status 9/],
-    [null, 0, /misskey-js declaration output is missing/],
-    ["", 0, /declaration output must be a nonempty regular file/],
-    ["export {};", 0, null],
+  for (const [declaration, runtime, exitCode, message] of [
+    ["export {};", "export {};", 9, /baseline prepare exited with status 9/],
+    [null, null, 0, /misskey-js declaration output is missing/],
+    ["", "export {};", 0, /declaration output must be a nonempty regular file/],
+    ["export {};", null, 0, /i18n runtime output is missing/],
+    ["export {};", "", 0, /runtime output must be a nonempty regular file/],
+    ["export {};", "export {};", 0, null],
   ] as const) {
     const fixture = setup();
     try {
@@ -156,13 +158,15 @@ test("Misskey declaration preparation rejects failed, missing and empty emitter 
         fixture.invocationPath,
         "10.0.0",
         `if (managerArgs[0] === "install") { ${successBody} } else {
-          const emitted = ${JSON.stringify(emitted)};
-          if (emitted !== null) {
+          const declaration = ${JSON.stringify(declaration)};
+          const runtime = ${JSON.stringify(runtime)};
+          if (declaration !== null) {
             for (const name of ["misskey-js", "misskey-reversi", "misskey-bubble-game", "i18n"]) {
               fs.mkdirSync("packages/" + name + "/built", { recursive: true });
-              fs.writeFileSync("packages/" + name + "/built/index.d.ts", emitted);
+              fs.writeFileSync("packages/" + name + "/built/index.d.ts", declaration);
             }
           }
+          if (runtime !== null) fs.writeFileSync("packages/i18n/built/index.js", runtime);
           process.exit(${exitCode});
         }`,
         { spec: "pnpm@10.0.0" },

@@ -486,6 +486,454 @@
       "baseline": null,
       "issue": 5722,
       "reason": "This adjacent validation rule has the same VaValue scoped-slot contextual-typing gap as the preceding callback; the exact Vize-only diagnostic remains separately accounted for until the shared propagation fix lands."
+    },
+    {
+      "project": "element-plus",
+      "file": "packages/components/carousel/src/carousel-item.vue",
+      "severity": "error",
+      "line": 35,
+      "column": 3,
+      "vize": null,
+      "baseline": {
+        "code": 6133,
+        "message": "'carouselItemRef' is declared but its value is never read."
+      },
+      "issue": 11386,
+      "reason": "vue-tsc reports TS6133 for a setup binding named by a static template ref, but Vue’s inline renderer reads that binding through its ref_key and ref fields. Vize counts that real template read (#11386), so the exact baseline-only row remains a reviewed provider difference."
+    },
+    {
+      "project": "element-plus",
+      "file": "packages/components/carousel/src/carousel.vue",
+      "severity": "error",
+      "line": 122,
+      "column": 3,
+      "vize": null,
+      "baseline": {
+        "code": 6133,
+        "message": "'root' is declared but its value is never read."
+      },
+      "issue": 11386,
+      "reason": "vue-tsc reports TS6133 for a setup binding named by a static template ref, but Vue’s inline renderer reads that binding through its ref_key and ref fields. Vize counts that real template read (#11386), so the exact baseline-only row remains a reviewed provider difference."
+    },
+    {
+      "project": "element-plus",
+      "file": "packages/components/cascader/src/cascader.vue",
+      "severity": "error",
+      "line": 483,
+      "column": 9,
+      "vize": null,
+      "baseline": {
+        "code": 6133,
+        "message": "'wrapperRef' is declared but its value is never read."
+      },
+      "issue": 11386,
+      "reason": "vue-tsc reports TS6133 for a setup binding named by a static template ref, but Vue’s inline renderer reads that binding through its ref_key and ref fields. Vize counts that real template read (#11386), so the exact baseline-only row remains a reviewed provider difference."
+    },
+    {
+      "project": "element-plus",
+      "file": "packages/components/color-picker-panel/src/components/sv-panel.vue",
+      "severity": "error",
+      "line": 34,
+      "column": 3,
+      "vize": null,
+      "baseline": {
+        "code": 6133,
+        "message": "'cursorRef' is declared but its value is never read."
+      },
+      "issue": 11386,
+      "reason": "vue-tsc reports TS6133 for a setup binding named by a static template ref, but Vue’s inline renderer reads that binding through its ref_key and ref fields. Vize counts that real template read (#11386), so the exact baseline-only row remains a reviewed provider difference."
+    },
+    {
+      "project": "element-plus",
+      "file": "packages/components/date-picker-panel/src/date-picker-com/basic-date-table.vue",
+      "severity": "error",
+      "line": 71,
+      "column": 3,
+      "vize": null,
+      "baseline": {
+        "code": 6133,
+        "message": "'tbodyRef' is declared but its value is never read."
+      },
+      "issue": 11386,
+      "reason": "vue-tsc reports TS6133 for a setup binding named by a static template ref, but Vue’s inline renderer reads that binding through its ref_key and ref fields. Vize counts that real template read (#11386), so the exact baseline-only row remains a reviewed provider difference."
+    },
+    {
+      "project": "element-plus",
+      "file": "packages/components/date-picker-panel/src/date-picker-com/panel-date-range.vue",
+      "severity": "error",
+      "line": 531,
+      "column": 3,
+      "vize": null,
+      "baseline": {
+        "code": 6133,
+        "message": "'leftCurrentViewRef' is declared but its value is never read."
+      },
+      "issue": 11386,
+      "reason": "vue-tsc reports TS6133 for a setup binding named by a static template ref, but Vue’s inline renderer reads that binding through its ref_key and ref fields. Vize counts that real template read (#11386), so the exact baseline-only row remains a reviewed provider difference."
+    },
+    {
+      "project": "element-plus",
+      "file": "packages/components/date-picker-panel/src/date-picker-com/panel-date-range.vue",
+      "severity": "error",
+      "line": 532,
+      "column": 3,
+      "vize": null,
+      "baseline": {
+        "code": 6133,
+        "message": "'rightCurrentViewRef' is declared but its value is never read."
+      },
+      "issue": 11386,
+      "reason": "vue-tsc reports TS6133 for a setup binding named by a static template ref, but Vue’s inline renderer reads that binding through its ref_key and ref fields. Vize counts that real template read (#11386), so the exact baseline-only row remains a reviewed provider difference."
+    },
+    {
+      "project": "element-plus",
+      "file": "packages/components/input-tag/src/input-tag.vue",
+      "severity": "error",
+      "line": 189,
+      "column": 3,
+      "vize": null,
+      "baseline": {
+        "code": 6133,
+        "message": "'inputRef' is declared but its value is never read."
+      },
+      "issue": 11386,
+      "reason": "vue-tsc reports TS6133 for a setup binding named by a static template ref, but Vue’s inline renderer reads that binding through its ref_key and ref fields. Vize counts that real template read (#11386), so the exact baseline-only row remains a reviewed provider difference."
+    },
+    {
+      "project": "element-plus",
+      "file": "packages/components/input-tag/src/input-tag.vue",
+      "severity": "error",
+      "line": 191,
+      "column": 3,
+      "vize": null,
+      "baseline": {
+        "code": 6133,
+        "message": "'tagTooltipRef' is declared but its value is never read."
+      },
+      "issue": 11386,
+      "reason": "vue-tsc reports TS6133 for a setup binding named by a static template ref, but Vue’s inline renderer reads that binding through its ref_key and ref fields. Vize counts that real template read (#11386), so the exact baseline-only row remains a reviewed provider difference."
+    },
+    {
+      "project": "element-plus",
+      "file": "packages/components/input-tag/src/input-tag.vue",
+      "severity": "error",
+      "line": 215,
+      "column": 9,
+      "vize": null,
+      "baseline": {
+        "code": 6133,
+        "message": "'calculatorRef' is declared but its value is never read."
+      },
+      "issue": 11386,
+      "reason": "vue-tsc reports TS6133 for a setup binding named by a static template ref, but Vue’s inline renderer reads that binding through its ref_key and ref fields. Vize counts that real template read (#11386), so the exact baseline-only row remains a reviewed provider difference."
+    },
+    {
+      "project": "element-plus",
+      "file": "packages/components/input-tag/src/input-tag.vue",
+      "severity": "error",
+      "line": 217,
+      "column": 3,
+      "vize": null,
+      "baseline": {
+        "code": 6133,
+        "message": "'dropIndicatorRef' is declared but its value is never read."
+      },
+      "issue": 11386,
+      "reason": "vue-tsc reports TS6133 for a setup binding named by a static template ref, but Vue’s inline renderer reads that binding through its ref_key and ref fields. Vize counts that real template read (#11386), so the exact baseline-only row remains a reviewed provider difference."
+    },
+    {
+      "project": "element-plus",
+      "file": "packages/components/input-tag/src/input-tag.vue",
+      "severity": "error",
+      "line": 232,
+      "column": 3,
+      "vize": null,
+      "baseline": {
+        "code": 6133,
+        "message": "'collapseItemRef' is declared but its value is never read."
+      },
+      "issue": 11386,
+      "reason": "vue-tsc reports TS6133 for a setup binding named by a static template ref, but Vue’s inline renderer reads that binding through its ref_key and ref fields. Vize counts that real template read (#11386), so the exact baseline-only row remains a reviewed provider difference."
+    },
+    {
+      "project": "element-plus",
+      "file": "packages/components/input-tag/src/input-tag.vue",
+      "severity": "error",
+      "line": 233,
+      "column": 3,
+      "vize": null,
+      "baseline": {
+        "code": 6133,
+        "message": "'innerRef' is declared but its value is never read."
+      },
+      "issue": 11386,
+      "reason": "vue-tsc reports TS6133 for a setup binding named by a static template ref, but Vue’s inline renderer reads that binding through its ref_key and ref fields. Vize counts that real template read (#11386), so the exact baseline-only row remains a reviewed provider difference."
+    },
+    {
+      "project": "element-plus",
+      "file": "packages/components/radio/src/radio-button.vue",
+      "severity": "error",
+      "line": 54,
+      "column": 9,
+      "vize": null,
+      "baseline": {
+        "code": 6133,
+        "message": "'radioRef' is declared but its value is never read."
+      },
+      "issue": 11386,
+      "reason": "vue-tsc reports TS6133 for a setup binding named by a static template ref, but Vue’s inline renderer reads that binding through its ref_key and ref fields. Vize counts that real template read (#11386), so the exact baseline-only row remains a reviewed provider difference."
+    },
+    {
+      "project": "element-plus",
+      "file": "packages/components/radio/src/radio.vue",
+      "severity": "error",
+      "line": 58,
+      "column": 9,
+      "vize": null,
+      "baseline": {
+        "code": 6133,
+        "message": "'radioRef' is declared but its value is never read."
+      },
+      "issue": 11386,
+      "reason": "vue-tsc reports TS6133 for a setup binding named by a static template ref, but Vue’s inline renderer reads that binding through its ref_key and ref fields. Vize counts that real template read (#11386), so the exact baseline-only row remains a reviewed provider difference."
+    },
+    {
+      "project": "element-plus",
+      "file": "packages/components/slider/src/button.vue",
+      "severity": "error",
+      "line": 69,
+      "column": 3,
+      "vize": null,
+      "baseline": {
+        "code": 6133,
+        "message": "'button' is declared but its value is never read."
+      },
+      "issue": 11386,
+      "reason": "vue-tsc reports TS6133 for a setup binding named by a static template ref, but Vue’s inline renderer reads that binding through its ref_key and ref fields. Vize counts that real template read (#11386), so the exact baseline-only row remains a reviewed provider difference."
+    },
+    {
+      "project": "element-plus",
+      "file": "packages/components/slider/src/button.vue",
+      "severity": "error",
+      "line": 70,
+      "column": 3,
+      "vize": null,
+      "baseline": {
+        "code": 6133,
+        "message": "'tooltip' is declared but its value is never read."
+      },
+      "issue": 11386,
+      "reason": "vue-tsc reports TS6133 for a setup binding named by a static template ref, but Vue’s inline renderer reads that binding through its ref_key and ref fields. Vize counts that real template read (#11386), so the exact baseline-only row remains a reviewed provider difference."
+    },
+    {
+      "project": "element-plus",
+      "file": "packages/components/slider/src/slider.vue",
+      "severity": "error",
+      "line": 150,
+      "column": 3,
+      "vize": null,
+      "baseline": {
+        "code": 6133,
+        "message": "'slider' is declared but its value is never read."
+      },
+      "issue": 11386,
+      "reason": "vue-tsc reports TS6133 for a setup binding named by a static template ref, but Vue’s inline renderer reads that binding through its ref_key and ref fields. Vize counts that real template read (#11386), so the exact baseline-only row remains a reviewed provider difference."
+    },
+    {
+      "project": "element-plus",
+      "file": "packages/components/slider/src/slider.vue",
+      "severity": "error",
+      "line": 151,
+      "column": 3,
+      "vize": null,
+      "baseline": {
+        "code": 6133,
+        "message": "'firstButton' is declared but its value is never read."
+      },
+      "issue": 11386,
+      "reason": "vue-tsc reports TS6133 for a setup binding named by a static template ref, but Vue’s inline renderer reads that binding through its ref_key and ref fields. Vize counts that real template read (#11386), so the exact baseline-only row remains a reviewed provider difference."
+    },
+    {
+      "project": "element-plus",
+      "file": "packages/components/slider/src/slider.vue",
+      "severity": "error",
+      "line": 152,
+      "column": 3,
+      "vize": null,
+      "baseline": {
+        "code": 6133,
+        "message": "'secondButton' is declared but its value is never read."
+      },
+      "issue": 11386,
+      "reason": "vue-tsc reports TS6133 for a setup binding named by a static template ref, but Vue’s inline renderer reads that binding through its ref_key and ref fields. Vize counts that real template read (#11386), so the exact baseline-only row remains a reviewed provider difference."
+    },
+    {
+      "project": "element-plus",
+      "file": "packages/components/splitter/src/splitter.vue",
+      "severity": "error",
+      "line": 33,
+      "column": 9,
+      "vize": null,
+      "baseline": {
+        "code": 6133,
+        "message": "'containerEl' is declared but its value is never read."
+      },
+      "issue": 11386,
+      "reason": "vue-tsc reports TS6133 for a setup binding named by a static template ref, but Vue’s inline renderer reads that binding through its ref_key and ref fields. Vize counts that real template read (#11386), so the exact baseline-only row remains a reviewed provider difference."
+    },
+    {
+      "project": "element-plus",
+      "file": "packages/components/time-picker/src/common/picker-range-trigger.vue",
+      "severity": "error",
+      "line": 86,
+      "column": 9,
+      "vize": null,
+      "baseline": {
+        "code": 6133,
+        "message": "'wrapperRef' is declared but its value is never read."
+      },
+      "issue": 11386,
+      "reason": "vue-tsc reports TS6133 for a setup binding named by a static template ref, but Vue’s inline renderer reads that binding through its ref_key and ref fields. Vize counts that real template read (#11386), so the exact baseline-only row remains a reviewed provider difference."
+    },
+    {
+      "project": "element-plus",
+      "file": "packages/components/tree-v2/src/tree.vue",
+      "severity": "error",
+      "line": 106,
+      "column": 3,
+      "vize": null,
+      "baseline": {
+        "code": 6133,
+        "message": "'listRef' is declared but its value is never read."
+      },
+      "issue": 11386,
+      "reason": "vue-tsc reports TS6133 for a setup binding named by a static template ref, but Vue’s inline renderer reads that binding through its ref_key and ref fields. Vize counts that real template read (#11386), so the exact baseline-only row remains a reviewed provider difference."
+    },
+    {
+      "project": "element-plus",
+      "file": "packages/components/time-picker/src/common/picker.vue",
+      "severity": "error",
+      "line": 60,
+      "column": 22,
+      "vize": {
+        "code": 2339,
+        "message": "Property 'ariaLabel' does not exist on the component instance. (source: :aria-label=\"ariaLabel\")"
+      },
+      "baseline": null,
+      "issue": 5722,
+      "reason": "Vize does not yet expose this imported runtime prop declaration in template scope while vue-tsc accepts the same source; the exact Vize-only row is tracked for follow-up under issue 5722."
+    },
+    {
+      "project": "element-plus",
+      "file": "packages/components/time-picker/src/common/picker.vue",
+      "severity": "error",
+      "line": 113,
+      "column": 22,
+      "vize": {
+        "code": 2339,
+        "message": "Property 'ariaLabel' does not exist on the component instance. (source: :aria-label=\"ariaLabel\")"
+      },
+      "baseline": null,
+      "issue": 5722,
+      "reason": "Vize does not yet expose this imported runtime prop declaration in template scope while vue-tsc accepts the same source; the exact Vize-only row is tracked for follow-up under issue 5722."
+    },
+    {
+      "project": "element-plus",
+      "file": "packages/components/tree/src/tree-node.vue",
+      "severity": "error",
+      "line": 59,
+      "column": 35,
+      "vize": {
+        "code": 2322,
+        "message": "Type 'Function | undefined' is not assignable to type '((...args: any[]) => any) | undefined'. Type 'Function' is not assignable to type '(...args: any[]) => any'. Type 'Function' provides no match for the signature '(...args: any[]): any'. (source: <node-content :node=\"node\" :render-content=\"renderContent\" />; binding: 'render-content')"
+      },
+      "baseline": null,
+      "issue": 5722,
+      "reason": "Vize preserves the broad Function-constructor prop type at this component boundary while vue-tsc accepts the normalized callable prop; the exact Vize-only row is tracked for follow-up under issue 5722."
+    },
+    {
+      "project": "elk",
+      "file": "app/components/nav/NavFooter.vue",
+      "severity": "error",
+      "line": 79,
+      "column": 23,
+      "vize": null,
+      "baseline": {
+        "code": 18046,
+        "message": "'config.value' is of type 'unknown'."
+      },
+      "issue": 5722,
+      "reason": "vue-tsc checks Elk through Nuxt's generated app program and retains an unknown RuntimeConfig ref wrapper at this template access; Vize checks the authored Nuxt projection without that generated wrapper, so this exact baseline-only row remains tracked under issue 5722."
+    },
+    {
+      "project": "elk",
+      "file": "app/components/nav/NavFooter.vue",
+      "severity": "error",
+      "line": 81,
+      "column": 55,
+      "vize": null,
+      "baseline": {
+        "code": 18046,
+        "message": "'config.value' is of type 'unknown'."
+      },
+      "issue": 5722,
+      "reason": "This is the second template access through the same unknown RuntimeConfig ref wrapper introduced by Nuxt's generated vue-tsc program; Vize's authored Nuxt projection has no equivalent wrapper, and the exact provider-only row is tracked under issue 5722."
+    },
+    {
+      "project": "elk",
+      "file": "app/components/publish/PublishEmojiPicker.client.vue",
+      "severity": "error",
+      "line": 3,
+      "column": 29,
+      "vize": null,
+      "baseline": {
+        "code": 2307,
+        "message": "Cannot find module 'virtual:emoji-mart-lang-importer' or its corresponding type declarations."
+      },
+      "issue": 5722,
+      "reason": "Elk supplies this build-time virtual module through its Nuxt/Vite plugin rather than a source declaration; vue-tsc's generated app program reports the unresolved provider while Vize's authored Nuxt projection does not, so the exact baseline-only row is tracked under issue 5722."
+    },
+    {
+      "project": "elk",
+      "file": "app/components/status/StatusEmojiReaction.vue",
+      "severity": "error",
+      "line": 11,
+      "column": 43,
+      "vize": null,
+      "baseline": {
+        "code": 2694,
+        "message": "Namespace '\"/home/runner/_work/vize/vize/tests/_fixtures/_git/elk/node_modules/.pnpm/masto@7.12.0/node_modules/masto/dist/esm/mastodon/entities/v1/index\"' has no exported member 'FedibirdEmojiReaction'."
+      },
+      "issue": 5722,
+      "reason": "The pinned Elk source names a Fedibird extension absent from its pinned masto 7.12 namespace, which vue-tsc exposes through Nuxt's generated app program while Vize's authored Nuxt projection does not; the exact baseline-only row is tracked under issue 5722."
+    },
+    {
+      "project": "elk",
+      "file": "app/components/status/StatusEmojiReaction.vue",
+      "severity": "error",
+      "line": 15,
+      "column": 39,
+      "vize": null,
+      "baseline": {
+        "code": 2694,
+        "message": "Namespace '\"/home/runner/_work/vize/vize/tests/_fixtures/_git/elk/node_modules/.pnpm/masto@7.12.0/node_modules/masto/dist/esm/mastodon/entities/v1/index\"' has no exported member 'FedibirdEmojiReaction'."
+      },
+      "issue": 5722,
+      "reason": "This second helper repeats the pinned Fedibird namespace member that masto 7.12 does not export; vue-tsc's generated Nuxt program reports it while Vize's authored projection does not, so the exact baseline-only row remains tracked under issue 5722."
+    },
+    {
+      "project": "elk",
+      "file": "app/components/status/StatusEmojiReaction.vue",
+      "severity": "error",
+      "line": 23,
+      "column": 35,
+      "vize": null,
+      "baseline": {
+        "code": 2339,
+        "message": "Property 'emojiReactions' does not exist on type '{ id: string; uri: string; createdAt: string; editedAt: string | null; account: { id: string; username: string; acct: string; url: string; displayName: string; note: string; avatar: string; avatarStatic: string; ... 19 more ...; featureApproval: { ...; }; }; ... 28 more ...; pinned?: boolean | ... 1 more ... | undef...'."
+      },
+      "issue": 5722,
+      "reason": "The pinned masto Status type lacks Elk's Fedibird emojiReactions extension, which vue-tsc surfaces through the generated Nuxt app program while Vize's authored Nuxt projection does not; the exact baseline-only row is retained under issue 5722."
     }
   ]
 }

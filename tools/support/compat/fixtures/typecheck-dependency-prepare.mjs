@@ -263,7 +263,7 @@ async function runBaselinePrepare(project, fixtureRoot, timeoutMs, managerRunner
     stderr += prepared.stderr ?? "";
   }
   const durationMs = Date.now() - startedAt;
-  if (project.id === "misskey") validateMisskeyDeclarations(fixtureRoot);
+  if (project.id === "misskey") validateMisskeyBuildOutputs(fixtureRoot);
   return {
     command,
     durationMs,
@@ -287,7 +287,7 @@ async function runBaselineCommand(command, fixtureRoot, timeoutMs, managerRunner
   return runTypecheckCommand(command[0], command.slice(1), commandOptions(options));
 }
 
-function validateMisskeyDeclarations(fixtureRoot) {
+function validateMisskeyBuildOutputs(fixtureRoot) {
   for (const packageName of ["misskey-js", "misskey-reversi", "misskey-bubble-game", "i18n"]) {
     const declaration = join(fixtureRoot, "packages", packageName, "built", "index.d.ts");
     if (!existsSync(declaration)) {
@@ -297,6 +297,14 @@ function validateMisskeyDeclarations(fixtureRoot) {
     if (!metadata.isFile() || metadata.size === 0) {
       throw new Error(`${packageName} declaration output must be a nonempty regular file`);
     }
+  }
+  const i18nRuntime = join(fixtureRoot, "packages", "i18n", "built", "index.js");
+  if (!existsSync(i18nRuntime)) {
+    throw new Error("i18n runtime output is missing");
+  }
+  const runtimeMetadata = statSync(i18nRuntime);
+  if (!runtimeMetadata.isFile() || runtimeMetadata.size === 0) {
+    throw new Error("i18n runtime output must be a nonempty regular file");
   }
 }
 

@@ -151,6 +151,29 @@ void test("formatter verifier binds the source CLI to every selected real projec
   assert.equal(formatterDeletionAdapter.verifyComparison(row, fixture, report), true);
 });
 
+void test("formatter verifier keeps later typecheck targets out of formatter evidence", () => {
+  const input = control();
+  input.registryProjects[0].typecheckPerformance = {
+    targets: [
+      { id: "app", tsconfig: "tsconfig.json", corpusGlobs: ["src/**/*.vue"] },
+      { id: "docs", tsconfig: "docs/tsconfig.json", corpusGlobs: ["docs/**/*.vue"] },
+    ],
+  };
+  input.matrix.command.tools.push("typechecker");
+  input.matrix.projects.splice(1, 0, {
+    id: "with-vue@docs",
+    revision: input.registryProjects[0].revision,
+    runs: [{ tool: "typechecker", status: "configuration", fileCount: 2 }],
+  });
+
+  const artifact = assessFormatterDeletionShard(input);
+  assert.equal(artifact.status, "ready");
+  assert.deepEqual(
+    artifact.projects.map((project) => project.id),
+    ["with-vue", "without-vue"],
+  );
+});
+
 void test("formatter verifier records genuine corpus gaps but never grants readiness credit", () => {
   for (const summaryChanges of [
     { violationCount: 1 },
