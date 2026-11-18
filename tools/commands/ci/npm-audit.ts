@@ -3,10 +3,12 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { advisoryId, verifyInstalledForge } from "../../support/security/node-forge-proof.ts";
-import { assertCleanAuditReport } from "../../support/security/npm-audit-findings.ts";
+import { assertAuditReport } from "../../support/security/npm-audit-findings.ts";
 import { verifyInstalledBraces } from "../../support/security/braces-proof.ts";
 import { bracesAdvisoryId } from "../../support/security/braces-lock.ts";
 import { verifyDependencyIntegrity } from "../../support/security/dependency-integrity.ts";
+import { picomatchAdvisoryId } from "../../support/security/picomatch-lock.ts";
+import { verifyInstalledPicomatch } from "../../support/security/picomatch-proof.ts";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 const result = spawnSync(
@@ -27,7 +29,7 @@ if (result.error || result.signal || result.status === null) {
 if (result.status !== 0 && result.status !== 1) process.exit(result.status);
 try {
   const report = JSON.parse(result.stdout);
-  assertCleanAuditReport(report, result.status);
+  const accepted = assertAuditReport(report, result.status);
   const proof = verifyInstalledForge(root);
   const braces = verifyInstalledBraces(root);
   const dependencies = verifyDependencyIntegrity(root);
@@ -44,6 +46,17 @@ try {
     "npm-audit: upstream Braces remains 3.0.3; detached npm fixture installs and external browser/CDN copies are outside this root pnpm proof",
   );
   console.log("npm-audit: verified transitive dependency integrity", JSON.stringify(dependencies));
+  // Always attested, so the patch cannot silently drift while the advisory is
+  // absent; a reported finding is recognized only after this proof passes.
+  const picomatch = verifyInstalledPicomatch(root);
+  console.log(
+    "npm-audit: verified installed picomatch extglob remediation",
+    JSON.stringify({ advisory: picomatchAdvisoryId, ...picomatch }),
+  );
+  if (accepted.includes(picomatchAdvisoryId))
+    console.log(
+      "npm-audit: recognized the reported picomatch finding only after the installed-source proof; bundled copies inside other packages are outside this root pnpm proof",
+    );
 } catch (error) {
   console.error("npm-audit: unresolved finding or invalid source attestation:", error);
   process.exit(result.status || 1);
