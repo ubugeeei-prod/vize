@@ -1,0 +1,33 @@
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(_ssrRenderComponent(_resolveComponent("Outer"), _attrs, {
+    default: _withCtx((_, _push, _parent, _scopeId) => {
+      if (_push) {
+        _push(_ssrRenderComponent(_resolveComponent("Comp"), null, _createSlots({
+          "item.alpha": _withCtx((_, _push, _parent, _scopeId) => {
+            if (_push) {
+              _push(`x`)
+            } else {
+              return [_createTextVNode("x")]
+            }
+          }),
+          _: 2 /* DYNAMIC */
+        }, [
+          (_ctx.ok) ? {
+            name: "a.b",
+            fn: _withCtx((_, _push, _parent, _scopeId) => {
+              if (_push) {
+                _push(`y`)
+              } else {
+                return [_createTextVNode("y")]
+              }
+            }),
+            key: "0"
+          } : undefined
+        ]), _parent, _scopeId))
+      } else {
+        return [_createVNode(_resolveComponent("Comp"), null, _createSlots({ "item.alpha": _withCtx((_) => [_createTextVNode("x")]), _: 2 /* DYNAMIC */ }, [(_ctx.ok) ? { name: "a.b", fn: _withCtx((_) => [_createTextVNode("y")]), key: "0" } : undefined]))]
+      }
+    }),
+    _: 1
+  }, _parent))
+}

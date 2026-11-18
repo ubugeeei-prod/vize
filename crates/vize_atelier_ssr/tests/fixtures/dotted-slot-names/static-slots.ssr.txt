@@ -1,0 +1,26 @@
+function ssrRender(_ctx, _push, _parent, _attrs) {
+  _push(_ssrRenderComponent(_resolveComponent("Comp"), _attrs, {
+    "item.alpha": _withCtx(({ x }, _push, _parent, _scopeId) => {
+      if (_push) {
+        _push(`<b>${_ssrInterpolate(x)}</b>`)
+      } else {
+        return [_createElementVNode("b", null, _toDisplayString(x), 1 /* TEXT */)]
+      }
+    }),
+    "a.b.c": _withCtx((_, _push, _parent, _scopeId) => {
+      if (_push) {
+        _push(`abc`)
+      } else {
+        return [_createTextVNode("abc")]
+      }
+    }),
+    plain: _withCtx((_, _push, _parent, _scopeId) => {
+      if (_push) {
+        _push(`p`)
+      } else {
+        return [_createTextVNode("p")]
+      }
+    }),
+    _: 1
+  }, _parent))
+}
