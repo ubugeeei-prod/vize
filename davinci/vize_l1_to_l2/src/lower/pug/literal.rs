@@ -22,39 +22,56 @@ pub(super) fn is_js_space(ch: char) -> bool {
 /// but its bytes would depend on the SFC dedent the L1 view applies).
 pub(super) fn string_literal(text: &str, quote: char) -> Option<String> {
     let body = text.get(1..)?.strip_suffix(quote)?;
-    let template = quote == '`';
     let mut out = String::with_capacity(body.len());
-    let mut chars = body.chars().peekable();
-    while let Some(ch) = chars.next() {
-        match ch {
-            '\n' | '\r' => return None,
-            c if c == quote => return None,
-            '$' if template && chars.peek() == Some(&'{') => return None,
-            '\\' => {
-                let escaped = chars.next()?;
-                match escaped {
-                    'n' => out.push('\n'),
-                    'r' => out.push('\r'),
-                    't' => out.push('\t'),
-                    'b' => out.push('\u{8}'),
-                    'f' => out.push('\u{c}'),
-                    'v' => out.push('\u{b}'),
-                    '0' if !chars.peek().is_some_and(char::is_ascii_digit) => out.push('\0'),
-                    '0'..='7' => return None,
-                    '8' | '9' if template => return None,
-                    'x' => out.push(hex_escape(&mut chars, 2)?),
-                    'u' => out.push(unicode_escape(&mut chars)?),
-                    '\n' | '\r' | '\u{2028}' | '\u{2029}' => return None,
-                    other => out.push(other),
-                }
-            }
-            other => out.push(other),
-        }
-    }
+    cook_body(body, quote, |ch, _| out.push(ch))?;
     Some(out)
 }
 
-fn hex_digits(chars: &mut core::iter::Peekable<core::str::Chars<'_>>, count: usize) -> Option<u32> {
+/// Cook a literal's `body` (its quotes stripped), passing each cooked
+/// char with the byte range of `body` that spells it; `None` wherever
+/// [`string_literal`] refuses.
+pub(super) fn cook_body(
+    body: &str,
+    quote: char,
+    mut sink: impl FnMut(char, core::ops::Range<usize>),
+) -> Option<()> {
+    let template = quote == '`';
+    let mut chars = body.chars();
+    loop {
+        let start = body.len() - chars.as_str().len();
+        let Some(ch) = chars.next() else {
+            return Some(());
+        };
+        let cooked = match ch {
+            '\n' | '\r' => return None,
+            c if c == quote => return None,
+            '$' if template && peek(&chars) == Some('{') => return None,
+            '\\' => match chars.next()? {
+                'n' => '\n',
+                'r' => '\r',
+                't' => '\t',
+                'b' => '\u{8}',
+                'f' => '\u{c}',
+                'v' => '\u{b}',
+                '0' if !peek(&chars).is_some_and(|next| next.is_ascii_digit()) => '\0',
+                '0'..='7' => return None,
+                '8' | '9' if template => return None,
+                'x' => hex_escape(&mut chars, 2)?,
+                'u' => unicode_escape(&mut chars)?,
+                '\n' | '\r' | '\u{2028}' | '\u{2029}' => return None,
+                other => other,
+            },
+            other => other,
+        };
+        sink(cooked, start..body.len() - chars.as_str().len());
+    }
+}
+
+fn peek(chars: &core::str::Chars<'_>) -> Option<char> {
+    chars.as_str().chars().next()
+}
+
+fn hex_digits(chars: &mut core::str::Chars<'_>, count: usize) -> Option<u32> {
     let mut value = 0u32;
     for _ in 0..count {
         value = value * 16 + chars.next()?.to_digit(16)?;
@@ -62,17 +79,14 @@ fn hex_digits(chars: &mut core::iter::Peekable<core::str::Chars<'_>>, count: usi
     Some(value)
 }
 
-fn hex_escape(
-    chars: &mut core::iter::Peekable<core::str::Chars<'_>>,
-    count: usize,
-) -> Option<char> {
+fn hex_escape(chars: &mut core::str::Chars<'_>, count: usize) -> Option<char> {
     char::from_u32(hex_digits(chars, count)?)
 }
 
 /// `\uXXXX` (pairing a surrogate escape with a following low one) or
 /// `\u{X…}`; a lone surrogate has no `String` form and is refused.
-fn unicode_escape(chars: &mut core::iter::Peekable<core::str::Chars<'_>>) -> Option<char> {
-    let unit = if chars.peek() == Some(&'{') {
+fn unicode_escape(chars: &mut core::str::Chars<'_>) -> Option<char> {
+    let unit = if peek(chars) == Some('{') {
         chars.next();
         let mut value = 0u32;
         let mut digits = 0;

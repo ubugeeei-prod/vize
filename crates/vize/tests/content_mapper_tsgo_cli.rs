@@ -48,6 +48,7 @@ mod packaged_generic_data_attrs;
 mod project_declarations;
 mod projection_modes;
 mod props_binding;
+mod pug_escaped_attribute_values_13295;
 mod pug_prop_expression_duplicates_13284;
 mod pug_refusal;
 mod quoted_generic_parameters;

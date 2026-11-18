@@ -33,7 +33,7 @@ const REPORTED: [(&str, &str); 4] = [
 const EXPECTED: &str = "src/parent.vue(9,19): error TS2339: Property 'inElement' does not exist on type '{ a: number; }'.\n\
 src/parent.vue(8,21): error TS2339: Property 'inComponent' does not exist on type '{ a: number; }'.\n";
 
-const PAIR_COMPONENTS: [(&str, &str); 2] = [
+pub(super) const PAIR_COMPONENTS: [(&str, &str); 2] = [
     (
         "src/pairs/Child.vue",
         r#"<script setup lang="ts">
@@ -192,14 +192,14 @@ const PAIRS: [(&str, usize, &str, &str); 20] = [
     ),
 ];
 
-fn write(root: &Path, path: &str, contents: &str) {
+pub(super) fn write(root: &Path, path: &str, contents: &str) {
     let path = root.join(path);
     fs::create_dir_all(path.parent().unwrap()).unwrap();
     fs::write(path, contents).unwrap();
 }
 
 /// `(file, line, column, code, message)` for every tsgo diagnostic.
-fn mapper_rows(
+pub(super) fn mapper_rows(
     tsgo: &Path,
     root: &Path,
 ) -> Vec<(CompactString, usize, usize, CompactString, CompactString)> {
@@ -228,7 +228,7 @@ fn mapper_rows(
 }
 
 /// `file(line,col) TScode` rows from `vize check`.
-fn cli_lines(tsgo: &Path, root: &Path) -> Vec<CompactString> {
+pub(super) fn cli_lines(tsgo: &Path, root: &Path) -> Vec<CompactString> {
     let cli = Command::new(env!("CARGO_BIN_EXE_vize"))
         .current_dir(root)
         .env("CORSA_PATH", tsgo)
