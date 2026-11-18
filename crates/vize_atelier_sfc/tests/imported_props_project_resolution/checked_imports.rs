@@ -37,7 +37,7 @@ fn unresolved_parents_preserve_relative_imports_and_resolved_aliases() {
 fn a_generated_parent_invalidates_the_partial_project_capture() {
     use super::{compile, expected, write};
     use vize_atelier_sfc::script::SfcTypeProject;
-    let _edits = super::revalidating_edits();
+    let _edits = super::batch_window::revalidating_edits();
     let project = project();
     let config = project.path().join("tsconfig.json");
     write(
@@ -175,7 +175,7 @@ fn new_source_windows_detect_same_length_edits_with_unchanged_mtime() {
         .unwrap()
         .set_times(std::fs::FileTimes::new().set_modified(stamp.0))
         .unwrap();
-    let _alone = super::held_batch();
+    let _alone = super::batch_window::held_batch();
     let _batch = begin_type_resolution_batch();
     assert_eq!(props(), expected("String"));
     assert_eq!(props(), expected("String"));

@@ -1,11 +1,11 @@
 use std::path::Path;
-use std::sync::{PoisonError, RwLock, RwLockReadGuard, RwLockWriteGuard};
 
 use oxc_ast::ast::{Expression, ObjectProperty, ObjectPropertyKind};
 use oxc_ast_visit::{Visit, walk};
 use vize_atelier_sfc::{SfcCompileOptions, SfcParseOptions, compile_sfc, parse_sfc};
 use vize_carton::{String, ToCompactString, cstr};
 
+mod batch_window;
 mod checked_imports;
 mod conditions;
 mod references;
@@ -59,23 +59,6 @@ impl<'a> Visit<'a> for RuntimeProps {
         }
         walk::walk_object_property(self, property);
     }
-}
-
-/// A type-resolution batch is process-wide: while one test holds it, caches
-/// validated in its generation skip metadata checks. Tests that edit files
-/// after a resolution share this lock; the test holding a batch takes it alone.
-static TYPE_RESOLUTION_BATCH: RwLock<()> = RwLock::new(());
-
-fn revalidating_edits() -> RwLockReadGuard<'static, ()> {
-    TYPE_RESOLUTION_BATCH
-        .read()
-        .unwrap_or_else(PoisonError::into_inner)
-}
-
-fn held_batch() -> RwLockWriteGuard<'static, ()> {
-    TYPE_RESOLUTION_BATCH
-        .write()
-        .unwrap_or_else(PoisonError::into_inner)
 }
 
 fn write(root: &Path, name: &str, source: &str) {
@@ -212,7 +195,7 @@ fn generated_nuxt_config_owns_app_alias_targets() {
 
 #[test]
 fn paths_edit_invalidates_a_positive_resolution_while_old_target_remains() {
-    let _edits = revalidating_edits();
+    let _edits = batch_window::revalidating_edits();
     let project = project();
     assert_eq!(
         compile(
@@ -291,7 +274,7 @@ fn exact_alias_precedes_wildcards_and_targets_keep_declared_order() {
 
 #[test]
 fn earlier_paths_target_created_after_a_compile_replaces_the_old_fallback() {
-    let _edits = revalidating_edits();
+    let _edits = batch_window::revalidating_edits();
     let project = project();
     write(
         project.path(),
@@ -329,7 +312,7 @@ fn earlier_paths_target_created_after_a_compile_replaces_the_old_fallback() {
 fn selected_project_snapshots_share_capture_but_isolate_overlay_resolution() {
     use std::sync::Arc;
     use vize_atelier_sfc::script::{SfcTypeProject, TypeSourceSnapshot};
-    let _edits = revalidating_edits();
+    let _edits = batch_window::revalidating_edits();
     let project = project();
     let config = project.path().join("tsconfig.json");
     let first = SfcTypeProject::from_tsconfig(&config).expect("capture first project");

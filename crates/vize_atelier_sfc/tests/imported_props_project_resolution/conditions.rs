@@ -125,7 +125,7 @@ fn wildcard_source_exports_keep_exact_and_null_subpath_boundaries() {
 
 #[test]
 fn condition_edits_replace_an_existing_cached_target_and_empty_override_disables_it() {
-    let _edits = super::revalidating_edits();
+    let _edits = super::batch_window::revalidating_edits();
     let project = project(
         r#"{"exports":{".":{"source":"./src/index.ts","development":"./src/development.ts","default":"./dist/index.js"}}}"#,
     );
@@ -163,7 +163,7 @@ fn condition_edits_replace_an_existing_cached_target_and_empty_override_disables
 
 #[test]
 fn unconfigured_source_and_explicit_null_condition_do_not_expose_physical_types() {
-    let _edits = super::revalidating_edits();
+    let _edits = super::batch_window::revalidating_edits();
     let project =
         project(r#"{"exports":{".":{"source":"./src/index.ts","default":"./dist/index.js"}}}"#);
     write(
