@@ -281,6 +281,13 @@
         "packageManager": "pnpm",
         "packageManagerVersion": "11.5.0",
         "lockfile": "pnpm-lock.yaml",
+        "baseline": {
+          "tsconfig": "tsconfig.web.json",
+          "prepare": [
+            ["pnpm", "stub"],
+            ["pnpm", "gen:version"]
+          ]
+        },
         "hangTimeoutMs": 2400000,
         "corpusGlobs": ["packages/**/*.vue", "ssr-testing/**/*.vue"],
         "maxFalsePositiveRatio": 0.05,
@@ -1303,7 +1310,10 @@
         "lockfile": "pnpm-lock.yaml",
         "baseline": {
           "tsconfig": ".nuxt/tsconfig.app.json",
-          "prepare": ["pnpm", "exec", "nuxt", "prepare"]
+          "prepare": [
+            ["pnpm", "run", "prepare-translation-status"],
+            ["pnpm", "exec", "nuxt", "prepare"]
+          ]
         },
         "hangTimeoutMs": 2400000,
         "maxFalsePositiveRatio": 0.02,

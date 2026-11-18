@@ -105,7 +105,12 @@ test("large typechecker fixtures have performance safeguards and bench wiring", 
   const baseline = registry.projects.find((project) => project.id === "elk")?.typecheckPerformance
     ?.baseline;
   assert.equal(baseline?.tsconfig, ".nuxt/tsconfig.app.json");
-  assert.deepEqual(baseline?.prepare, ["pnpm", "exec", "nuxt", "prepare"]);
+  // `nuxt prepare` writes .nuxt; elk's own prepare script writes the
+  // translation status that `~~/elk-translation-status.json` imports.
+  assert.deepEqual(baseline?.prepare, [
+    ["pnpm", "run", "prepare-translation-status"],
+    ["pnpm", "exec", "nuxt", "prepare"],
+  ]);
 });
 
 test("release typechecker baselines have enough runner budget", () => {

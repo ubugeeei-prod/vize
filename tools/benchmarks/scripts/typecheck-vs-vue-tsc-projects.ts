@@ -25,7 +25,7 @@ interface RegistryProject {
   typecheckPerformance?: {
     packageManager: string;
     packageManagerVersion: string;
-    baseline?: { tsconfig?: string; prepare?: string[] };
+    baseline?: { tsconfig?: string; prepare?: string[] | string[][] };
   };
 }
 
@@ -94,10 +94,18 @@ export function prepareRealProject(
     performance.packageManagerVersion,
   );
   run(manager, [...prefix, ...installArgs(performance.packageManager, root)], root);
-  const prepare = performance.baseline?.prepare;
-  if (prepare) run(manager, [...prefix, ...prepare.slice(1)], root);
+  for (const step of registryPrepareSteps(performance.baseline?.prepare))
+    run(manager, [...prefix, ...step.slice(1)], root);
   writeFileSync(stamp, `${project.revision}\n`);
   return { id, cwd: root, tsconfig };
+}
+
+/** `baseline.prepare` is one command or an ordered list of them. */
+export function registryPrepareSteps(prepare: string[] | string[][] | undefined): string[][] {
+  if (prepare == null || prepare.length === 0) return [];
+  return prepare.every((step) => Array.isArray(step))
+    ? (prepare as string[][])
+    : [prepare as string[]];
 }
 
 /**

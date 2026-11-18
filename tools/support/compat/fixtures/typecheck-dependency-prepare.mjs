@@ -4,7 +4,10 @@ import { existsSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { validateTypecheckPerformanceTarget } from "./tool-matrix-typecheck-target.ts";
+import {
+  baselinePrepareCommands,
+  validateTypecheckPerformanceTarget,
+} from "./tool-matrix-typecheck-target.ts";
 import { runTypecheckCommand } from "./typecheck-command-runner.mjs";
 import { isolateFixtureTypePackages } from "./typecheck-baseline-isolation.ts";
 import {
@@ -245,22 +248,32 @@ function isolateFixture(project, fixtureRoot) {
 async function runBaselinePrepare(project, fixtureRoot, timeoutMs, managerRunner) {
   const command = project.typecheckPerformance.baseline?.prepare;
   if (command == null) return null;
+  const commands = baselinePrepareCommands(command);
+  if (commands == null) throw new Error("baseline prepare must be a command or a list of them");
   const startedAt = Date.now();
-  const prepared = await runBaselineCommand(command, fixtureRoot, timeoutMs, managerRunner);
+  let stdout = "";
+  let stderr = "";
+  // Commands run in order; each one sees the inputs the previous one generated.
+  for (const [index, step] of commands.entries()) {
+    const label = commands.length === 1 ? "baseline prepare" : `baseline prepare step ${index + 1}`;
+    const prepared = await runBaselineCommand(step, fixtureRoot, timeoutMs, managerRunner);
+    if (prepared.error != null) {
+      throw new Error(`${label} failed to run: ${errorMessage(prepared.error)}`);
+    }
+    if (prepared.status !== 0) {
+      throw new Error(`${label} exited with status ${prepared.status}`);
+    }
+    stdout += prepared.stdout ?? "";
+    stderr += prepared.stderr ?? "";
+  }
   const durationMs = Date.now() - startedAt;
-  if (prepared.error != null) {
-    throw new Error(`baseline prepare failed to run: ${errorMessage(prepared.error)}`);
-  }
-  if (prepared.status !== 0) {
-    throw new Error(`baseline prepare exited with status ${prepared.status}`);
-  }
   if (project.id === "misskey") validateMisskeyDeclarations(fixtureRoot);
   return {
     command,
     durationMs,
-    exitCode: prepared.status,
-    stdoutSha256: sha256(prepared.stdout ?? ""),
-    stderrSha256: sha256(prepared.stderr ?? ""),
+    exitCode: 0,
+    stdoutSha256: sha256(stdout),
+    stderrSha256: sha256(stderr),
   };
 }
 
