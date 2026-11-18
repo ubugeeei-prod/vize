@@ -4,6 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { ratchetInstructionMethodology } from "./instruction-methodology-transition.mjs";
 import { parseTomlLite } from "../../support/compat/levels/toml-lite.ts";
+import { renameWord } from "../../support/levels/rename-codenames.ts";
 
 export const ID = /^[A-Za-z0-9._-]+$/;
 export const METHODOLOGY_KEYS = [
@@ -292,10 +293,13 @@ export function ratchetBudgets(current, base) {
   // A toolchain/environment refresh cannot silently replace a ratchet. Only a
   // reviewed compiler re-baseline may raise a listed cap, to its reviewed count.
   const raises = ratchetInstructionMethodology(current, base);
-  for (const [id, row] of Object.entries(base.instruction)) {
-    assert.ok(current.instruction[id], `instruction budget dropped: ${id}`);
+  for (const [baseId, row] of Object.entries(base.instruction)) {
+    // A base from before the codename rename names its rows by their old spelling.
+    const id = current.instruction[baseId] ? baseId : renameWord(baseId);
+    assert.ok(current.instruction[id], `instruction budget dropped: ${baseId}`);
     assert.ok(
-      current.instruction[id].instructions <= Math.max(row.instructions, raises[id] ?? 0),
+      current.instruction[id].instructions <=
+        Math.max(row.instructions, raises[id] ?? raises[baseId] ?? 0),
       `instruction budget loosened: ${id}`,
     );
   }
