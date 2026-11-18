@@ -32,8 +32,11 @@ fn vue_texts_snapshot_holds_no_shard_lock() {
     store.apply_changes(&vue_uri, vec![full_change("<template>after</template>")], 2);
 
     assert_eq!(
-        snapshots,
-        vec![(vue_uri.clone(), "<template>before</template>".to_string())]
+        snapshots
+            .iter()
+            .map(|(uri, source)| (uri.clone(), source.as_str()))
+            .collect::<Vec<_>>(),
+        vec![(vue_uri.clone(), "<template>before</template>")]
     );
     assert_eq!(
         store.text(&vue_uri).as_deref(),

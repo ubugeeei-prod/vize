@@ -124,7 +124,7 @@ impl ServerState {
             options: self.canonical_vue_document_options(),
             overlays: overlays
                 .iter()
-                .map(|(path, content)| (path.clone(), Arc::clone(content)))
+                .map(|(path, content)| (path.clone(), Arc::from(content.as_str())))
                 .collect(),
             virtual_ts_options,
             requested_sources: Vec::new(),

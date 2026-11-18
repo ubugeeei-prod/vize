@@ -8,9 +8,10 @@
 //! starts, which is what #3442 is about.
 //!
 //! Between two consecutive passes at most one document can have changed, so the
-//! overlays for the rest are already known. This cache keeps them as `Arc<str>`
-//! and rebuilds only the entries whose [`Document::revision`] moved, turning the
-//! steady-state pass into pointer work.
+//! overlays for the rest are already known. This cache shares each document's
+//! resident `Arc<String>` and rebuilds only the entries whose
+//! [`Document::revision`] moved, turning the steady-state pass into pointer
+//! work without copying the edited buffer a second time.
 //!
 //! [`Document::revision`]: crate::document::Document::revision
 #![cfg(feature = "native")]
@@ -35,7 +36,7 @@ struct OverlayEntry {
     /// documents closed since.
     seen: u64,
     /// Shared so a pass can hand out the text without copying it.
-    text: Arc<str>,
+    text: Arc<String>,
 }
 
 #[derive(Default)]
@@ -46,16 +47,16 @@ struct OverlayCacheState {
     /// Complete result for one stable open-document set. Repeated language
     /// features can clone this pointer without walking every document again.
     snapshot_revision: Option<u64>,
-    snapshot: Arc<[(PathBuf, Arc<str>)]>,
+    snapshot: Arc<[(PathBuf, Arc<String>)]>,
 }
 
 /// Cached overlay set, refreshed incrementally per diagnostics pass.
 #[derive(Default)]
 pub(crate) struct CorsaOverlayCache {
     state: RwLock<OverlayCacheState>,
-    /// Count of documents whose text this cache has materialized. Rises by one
-    /// per changed document per pass once warm, which is the property the
-    /// perf tests assert (a wall-clock bound could not).
+    /// Count of document revisions this cache has captured. Rises by one per
+    /// changed document per pass once warm, which is the property the perf
+    /// tests assert (a wall-clock bound could not).
     materializations: AtomicU64,
     #[cfg(test)]
     snapshot_rebuilds: AtomicU64,
@@ -65,8 +66,8 @@ impl CorsaOverlayCache {
     /// The last projectable overlay set for the currently open documents.
     ///
     /// Reuses the cached text of every document whose revision is unchanged and
-    /// materializes only the rest, so a pass following a single edit copies one
-    /// document rather than all of them. An unprojectable revision retains the
+    /// captures only the rest. A captured revision shares the document's
+    /// resident flat buffer. An unprojectable revision retains the
     /// previous bytes; a newly opened unprojectable document is omitted.
     /// Documents opened since the last pass are added, documents closed since
     /// are dropped.
@@ -79,7 +80,7 @@ impl CorsaOverlayCache {
         &self,
         documents: &DocumentStore,
         projectable: impl Fn(&Url, &str) -> bool,
-    ) -> Arc<[(PathBuf, Arc<str>)]> {
+    ) -> Arc<[(PathBuf, Arc<String>)]> {
         let revision = documents.stable_revision();
         let mut state = self.state.write();
         if revision.is_some()
@@ -116,7 +117,7 @@ impl CorsaOverlayCache {
                     // actually cached. Re-reading under a fresh guard could
                     // pair a stamp with text from a later edit and pin a stale
                     // overlay until the next change.
-                    let text: Arc<str> = Arc::from(document.value().text());
+                    let text = document.value().text_snapshot();
                     self.materializations.fetch_add(1, Ordering::Relaxed);
                     if projectable(document.key(), &text) {
                         state.entries.insert(
@@ -200,7 +201,7 @@ impl ServerState {
     /// The last projectable Corsa overlay set for the currently open documents.
     ///
     /// See [`CorsaOverlayCache::snapshot`].
-    pub(crate) fn corsa_overlays(&self) -> Arc<[(PathBuf, Arc<str>)]> {
+    pub(crate) fn corsa_overlays(&self) -> Arc<[(PathBuf, Arc<String>)]> {
         self.corsa_overlays.snapshot(&self.documents, |uri, text| {
             !uri.path().ends_with(".vue")
                 || matches!(

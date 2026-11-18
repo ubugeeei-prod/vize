@@ -146,7 +146,7 @@ impl DiagnosticService {
             return Ok(vec![]);
         }
 
-        // Own the document text up front: every `.await` below (bridge
+        // Share the exact document revision up front: every `.await` below (bridge
         // acquisition, the background declaration scan, the bridge calls) can
         // hand the single executor thread to another queued handler, and a live
         // `documents.get` shard guard would deadlock the server against that
@@ -154,7 +154,7 @@ impl DiagnosticService {
         let Some((revision, content)) = state
             .documents
             .get(uri)
-            .map(|document| (document.revision(), document.text()))
+            .map(|document| (document.revision(), document.text_snapshot()))
         else {
             tracing::warn!("document not found: {}", uri);
             return Ok(vec![]);
@@ -181,7 +181,7 @@ impl DiagnosticService {
         let cached_overlays = state.corsa_overlays();
         let overlays = cached_overlays
             .iter()
-            .map(|(path, text)| (path.clone(), &**text))
+            .map(|(path, text)| (path.clone(), text.as_str()))
             .collect::<Vec<(std::path::PathBuf, &str)>>();
         let document_options = CorsaVueVirtualDocumentOptions {
             options_api,
@@ -193,7 +193,7 @@ impl DiagnosticService {
         };
         #[cfg(test)]
         custody::record(state, uri, "prepared", || {
-            serde_json::json!({"source":content,"revision":revision,
+            serde_json::json!({"source":content.as_str(),"revision":revision,
                 "stamp":vize_l0::cstr!("{:?}",state.corsa_request_stamp()),
                 "document_options":vize_l0::cstr!("{document_options:?}"),
                 "virtual_options":vize_l0::cstr!("{virtual_ts_options:?}")})

@@ -15,7 +15,7 @@ use vize_maestro::document::DocumentStore;
 static ALLOCATOR: vize_l0::profiler::ProfilingAllocator<std::alloc::System> =
     vize_l0::profiler::ProfilingAllocator::from_allocator(std::alloc::System);
 
-type Snapshot = (Arc<[Url]>, Vec<(Url, String)>);
+type Snapshot = (Arc<[Url]>, Vec<(Url, Arc<String>)>);
 
 #[derive(Clone, Copy)]
 struct Expected {
@@ -249,8 +249,91 @@ fn assert_shared_uri_snapshot_allocation_law() {
     );
 }
 
+#[cfg(feature = "micro-profiling")]
+fn assert_shared_vue_text_batch_allocation_law() {
+    use vize_l0::profiler::{
+        allocation_snapshot, reset_allocation_counters, set_allocation_tracking_enabled,
+    };
+
+    const DOCUMENTS: usize = 64;
+    const READS: u64 = 32;
+    let segment = "<template>\r\n<div title=\"日本😀\">value</div>\r\n</template>\r\n";
+    let source = segment.repeat(256 * 1024 / segment.len() + 1);
+    let payload_bytes = source.len() as u64 * DOCUMENTS as u64;
+    let store = DocumentStore::new();
+    for index in 0..DOCUMENTS {
+        store.open(
+            uri(vize_l0::cstr!("file:///fixture/batch/{index:03}.vue").as_str()),
+            source.clone(),
+            1,
+            String::from("vue"),
+        );
+    }
+
+    // Seed the metric sites and every revision's flat text outside both
+    // measured windows. This Vec models the old owned-String result exactly.
+    let seeded = store.vue_texts();
+    assert_eq!(seeded.len(), DOCUMENTS);
+    for (document_uri, text) in &seeded {
+        let resident = store.text_snapshot(document_uri).unwrap();
+        assert!(Arc::ptr_eq(text, &resident));
+    }
+
+    reset_allocation_counters();
+    set_allocation_tracking_enabled(true);
+    for _ in 0..READS {
+        let owned = store
+            .vue_texts()
+            .into_iter()
+            .map(|(document_uri, text)| (document_uri, text.as_str().to_owned()))
+            .collect::<Vec<_>>();
+        std::hint::black_box(&owned);
+    }
+    let legacy_owned = allocation_snapshot();
+    set_allocation_tracking_enabled(false);
+
+    reset_allocation_counters();
+    set_allocation_tracking_enabled(true);
+    for _ in 0..READS {
+        let shared = store.vue_texts();
+        for ((expected_uri, expected), (actual_uri, actual)) in seeded.iter().zip(&shared) {
+            assert_eq!(expected_uri, actual_uri);
+            assert!(Arc::ptr_eq(expected, actual));
+        }
+        std::hint::black_box(&shared);
+    }
+    let shared = allocation_snapshot();
+    set_allocation_tracking_enabled(false);
+
+    let copied_payload_bytes = READS.saturating_mul(payload_bytes);
+    assert!(legacy_owned.requested_bytes() >= copied_payload_bytes);
+    assert!(
+        shared.requested_bytes() < copied_payload_bytes / 100,
+        "shared batches must allocate only result metadata, not document payloads"
+    );
+    assert_eq!(legacy_owned.allocation_failures(), 0);
+    assert_eq!(shared.allocation_failures(), 0);
+    println!(
+        "document_vue_batch_allocation={}",
+        serde_json::json!({
+            "documents": DOCUMENTS,
+            "reads": READS,
+            "payloadBytesPerRead": payload_bytes,
+            "legacyOwned": {
+                "allocationCalls": legacy_owned.allocation_calls(),
+                "requestedBytes": legacy_owned.requested_bytes(),
+            },
+            "shared": {
+                "allocationCalls": shared.allocation_calls(),
+                "requestedBytes": shared.requested_bytes(),
+            },
+            "law": "workspace Vue batches share every resident revision buffer",
+        })
+    );
+}
+
 #[test]
-fn snapshot_producers_keep_owned_results_and_exact_utf8_payloads() {
+fn snapshot_producers_keep_shared_results_and_exact_utf8_payloads() {
     let store = DocumentStore::new();
     let empty = capture(
         &store,
@@ -354,12 +437,13 @@ fn snapshot_producers_keep_owned_results_and_exact_utf8_payloads() {
         ]
     );
     // The earlier returned strings remain owned after edits and renames.
-    assert_eq!(original[0].1[0].1, "日本😀\r\n");
-    assert_eq!(original[0].1[1].1, "abc\r\n");
+    assert_eq!(original[0].1[0].1.as_str(), "日本😀\r\n");
+    assert_eq!(original[0].1[1].1.as_str(), "abc\r\n");
 
     #[cfg(feature = "micro-profiling")]
     {
         assert_shared_text_snapshot_allocation_law();
         assert_shared_uri_snapshot_allocation_law();
+        assert_shared_vue_text_batch_allocation_law();
     }
 }

@@ -28,21 +28,29 @@ struct PendingForget {
 pub(crate) struct TemplateCommentDirectives<'t, 'a> {
     surface: &'t SurfaceTree<'a>,
     directives: Vec<CommentDirective<'a>>,
+    has_directive_marker: bool,
 }
 
 impl<'t, 'a> TemplateCommentDirectives<'t, 'a> {
     pub(crate) fn new(surface: &'t SurfaceTree<'a>) -> Self {
+        let has_directive_marker = source_may_contain_directive(surface.source);
         let mut directives = Vec::new();
-        collect_directives(surface.source, &surface.children, &mut directives);
-        directives.sort_unstable_by_key(|directive| directive.span.start);
+        if has_directive_marker {
+            collect_directives(surface.source, &surface.children, &mut directives);
+            directives.sort_unstable_by_key(|directive| directive.span.start);
+        }
         Self {
             surface,
             directives,
+            has_directive_marker,
         }
     }
 
     /// Register suppression-only effects before template-level callbacks run.
     pub(crate) fn prescan(&self, ctx: &mut LintContext<'_>) {
+        if !self.has_directive_marker {
+            return;
+        }
         self.prescan_children(ctx, &self.surface.children);
     }
 
@@ -198,6 +206,13 @@ impl<'t, 'a> TemplateCommentDirectives<'t, 'a> {
         }
         targets
     }
+}
+
+/// Ordinary templates have no comment policy. A comment opener is checked
+/// first so their hot path scans the source once, not once per marker.
+fn source_may_contain_directive(source: &str) -> bool {
+    source.contains("<!--")
+        && (source.contains("@vize:") || source.contains("eslint-") || source.contains("oxlint-"))
 }
 
 fn collect_directives<'a>(
@@ -394,4 +409,32 @@ fn offset(source: &str, slice: &str) -> u32 {
     let offset = (slice.as_ptr() as usize).saturating_sub(source.as_ptr() as usize);
     debug_assert!(offset <= source.len() && offset <= u32::MAX as usize);
     offset as u32
+}
+
+#[cfg(test)]
+mod tests {
+    use super::source_may_contain_directive;
+
+    #[test]
+    fn directive_probe_rejects_ordinary_templates_and_comments() {
+        for source in [
+            "<main><p>Hello</p></main>",
+            "<main title='@vize:todo'>Hello</main>",
+            "<!-- ordinary comment --><main />",
+            "<main title='eslint-disable'>Hello</main>",
+        ] {
+            assert!(!source_may_contain_directive(source), "{source}");
+        }
+    }
+
+    #[test]
+    fn directive_probe_admits_each_supported_comment_marker() {
+        for source in [
+            "<!-- @vize:todo later -->",
+            "<!-- eslint-disable vue/no-v-html -->",
+            "<!-- oxlint-disable vue/no-v-html -->",
+        ] {
+            assert!(source_may_contain_directive(source), "{source}");
+        }
+    }
 }

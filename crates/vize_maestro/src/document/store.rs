@@ -394,13 +394,15 @@ impl DocumentStore {
         snapshot
     }
 
-    /// Owned snapshots of open Vue documents, holding no shard guard on return.
+    /// Shared snapshots of open Vue documents, holding no shard guard on return.
     ///
     /// Workspace-wide editor features parse these snapshots after the map read
-    /// has finished. Keeping a `DashMap` guard alive while parsing is not an
-    /// `.await`, but it can still stall other LSP handlers that need the same
-    /// shard's write lock and then make later readers wait behind that writer.
-    pub fn vue_texts(&self) -> Vec<(Url, String)> {
+    /// has finished. Each text is the document revision's resident `Arc`, so a
+    /// search does not copy every open Vue buffer. Keeping a `DashMap` guard
+    /// alive while parsing is not an `.await`, but it can still stall other LSP
+    /// handlers that need the same shard's write lock and then make later
+    /// readers wait behind that writer.
+    pub fn vue_texts(&self) -> Vec<(Url, Arc<String>)> {
         vize_l0::micro_count!("lsp.document_store.vue_texts.calls", 1);
         let snapshots = vize_l0::micro_span!("lsp.document_store.vue_texts.clone_snapshot", {
             let mut snapshots = self
@@ -410,7 +412,7 @@ impl DocumentStore {
                     let uri = document.key();
                     uri.path()
                         .ends_with(".vue")
-                        .then(|| (uri.clone(), document.value().text()))
+                        .then(|| (uri.clone(), document.value().text_snapshot()))
                 })
                 .collect::<Vec<_>>();
             snapshots.sort_by(|(left, _), (right, _)| left.as_str().cmp(right.as_str()));

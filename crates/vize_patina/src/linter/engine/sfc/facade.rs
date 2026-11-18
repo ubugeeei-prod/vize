@@ -9,7 +9,7 @@ use crate::linter::config::Linter;
 use crate::markup::{MarkupContext, MarkupDocument, MarkupRules};
 use crate::visitor::LintVisitor;
 use vize_croquis::Croquis;
-use vize_l0::profile;
+use vize_l0::{SmallVec, profile};
 use vize_relief::RootNode;
 
 /// Exact diagnostic, help, label and fix parity is checked by the SFC battery.
@@ -130,10 +130,22 @@ pub(in crate::linter::engine) fn dispatch_template_rules<'a>(
         return;
     }
 
-    let mut keep = vec![true; input.rule_count];
-    for rule in &selected {
-        if let Some(slot) = keep.get_mut(rule.rank()) {
-            *slot = false;
+    let mut legacy = SmallVec::<[usize; 128]>::new();
+    let mut selected_index = 0;
+    for rank in 0..input.rule_count {
+        while selected
+            .get(selected_index)
+            .is_some_and(|rule| rule.rank() < rank)
+        {
+            selected_index += 1;
+        }
+        if selected
+            .get(selected_index)
+            .is_some_and(|rule| rule.rank() == rank)
+        {
+            selected_index += 1;
+        } else {
+            legacy.push(rank);
         }
     }
     let markup = input.l2.markup();
@@ -143,7 +155,7 @@ pub(in crate::linter::engine) fn dispatch_template_rules<'a>(
         document = document.with_analysis(analysis);
     }
     {
-        let mut visitor = LintVisitor::with_rule_filter(ctx, rules, names, exit, &keep)
+        let mut visitor = LintVisitor::with_rule_indices(ctx, rules, names, exit, &legacy)
             .with_template_directives(&directives);
         profile!("patina.template.visit", visitor.visit_root(input.root));
     }

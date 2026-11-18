@@ -22,7 +22,7 @@ pub(super) async fn open_virtual_project(
     let cached_overlays = ctx.state.corsa_overlays();
     let overlays = cached_overlays
         .iter()
-        .map(|(path, content)| (path.clone(), &**content))
+        .map(|(path, content)| (path.clone(), content.as_str()))
         .collect::<Vec<_>>();
     let virtual_ts_options = ctx.state.virtual_ts_options();
     let document = bridge

@@ -35,7 +35,7 @@ pub struct SourceSnapshot {
     revision: u64,
     version: i32,
     language_id: Arc<str>,
-    source: Arc<str>,
+    source: Arc<String>,
 }
 
 impl SourceSnapshot {
@@ -123,7 +123,7 @@ impl SourceSnapshotCache {
                 revision: document.revision(),
                 version: document.version,
                 language_id: Arc::from(document.language_id.as_str()),
-                source: Arc::from(document.text()),
+                source: document.text_snapshot(),
             })
         });
         if entry.revision != document.revision()
@@ -136,7 +136,7 @@ impl SourceSnapshotCache {
                 revision: document.revision(),
                 version: document.version,
                 language_id: Arc::from(document.language_id.as_str()),
-                source: Arc::from(document.text()),
+                source: document.text_snapshot(),
             });
         }
         Ok(Arc::clone(&entry))

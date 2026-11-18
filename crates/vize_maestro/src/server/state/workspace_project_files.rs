@@ -41,7 +41,7 @@ struct CachedSources {
     generation: u64,
     content_generation: u64,
     roots: Vec<PathBuf>,
-    sources: Arc<[(Url, Arc<str>)]>,
+    sources: Arc<[(Url, Arc<String>)]>,
 }
 
 impl Inventory {
@@ -58,7 +58,7 @@ impl Inventory {
         roots: &[PathBuf],
         generation: u64,
         content_generation: u64,
-    ) -> Option<Vec<(Url, Arc<str>)>> {
+    ) -> Option<Vec<(Url, Arc<String>)>> {
         self.sources
             .read()
             .as_ref()
@@ -71,7 +71,7 @@ impl Inventory {
     }
 }
 
-fn read_sources(uris: &[Url], retired: &[PathBuf]) -> (Vec<(Url, Arc<str>)>, bool) {
+fn read_sources(uris: &[Url], retired: &[PathBuf]) -> (Vec<(Url, Arc<String>)>, bool) {
     let mut complete = true;
     let sources = uris
         .iter()
@@ -81,7 +81,7 @@ fn read_sources(uris: &[Url], retired: &[PathBuf]) -> (Vec<(Url, Arc<str>)>, boo
                 return None;
             }
             match std::fs::read_to_string(path) {
-                Ok(source) => Some((uri.clone(), Arc::from(source))),
+                Ok(source) => Some((uri.clone(), Arc::new(source))),
                 Err(_) => {
                     complete = false;
                     None
@@ -147,7 +147,9 @@ impl ServerState {
             .collect()
     }
 
-    pub(crate) async fn discover_workspace_project_source_snapshots(&self) -> Vec<(Url, Arc<str>)> {
+    pub(crate) async fn discover_workspace_project_source_snapshots(
+        &self,
+    ) -> Vec<(Url, Arc<String>)> {
         let inventory = &self.workspace_project_files;
         let sources = loop {
             let roots = self.project_source_roots();
@@ -237,7 +239,7 @@ impl ServerState {
                 .is_ok_and(|path| is_project_source(&path))
                 && let Some(source) = self.documents.text_snapshot(uri)
             {
-                sources.insert(uri.clone(), Arc::from(source.as_str()));
+                sources.insert(uri.clone(), source);
             }
         }
         let mut sources = sources.into_iter().collect::<Vec<_>>();
@@ -279,7 +281,7 @@ impl ServerState {
         roots: &[PathBuf],
         generation: u64,
         content_generation: u64,
-        sources: &[(Url, Arc<str>)],
+        sources: &[(Url, Arc<String>)],
     ) {
         if !self.project_source_content_snapshot_current(roots, generation, content_generation) {
             return;
@@ -298,7 +300,7 @@ impl ServerState {
         roots: &[PathBuf],
         generation: u64,
         content_generation: u64,
-    ) -> Option<(Vec<(Url, Arc<str>)>, bool)> {
+    ) -> Option<(Vec<(Url, Arc<String>)>, bool)> {
         let retired = self.workspace_project_files.retired.read().clone();
         let sources = background(move || read_sources(&uris, &retired))
             .await
