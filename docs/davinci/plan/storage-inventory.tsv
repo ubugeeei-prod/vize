@@ -341,7 +341,7 @@ l1_to_l2	-	davinci/vize_l1_to_l2/src/dialect/legalize/on.rs	0	0	0	0	1	2	0	0
 l1_to_l2	-	davinci/vize_l1_to_l2/src/dialect/legalize/slot.rs	0	0	0	0	1	2	0	0
 l1_to_l2	-	davinci/vize_l1_to_l2/src/dialect/legalize/sync.rs	0	0	1	2	1	5	0	0
 l1_to_l2	-	davinci/vize_l1_to_l2/src/dialect/legalize/tree.rs	0	0	0	0	1	1	0	0
-l1_to_l2	pass	davinci/vize_l1_to_l2/src/pass/vmodel.rs	1	9	1	4	0	0	0	0
+l1_to_l2	pass	davinci/vize_l1_to_l2/src/pass/vmodel.rs	1	10	1	3	0	0	0	0
 l1_to_l2	pass	davinci/vize_l1_to_l2/src/pass/vmodel/check.rs	1	1	1	4	0	0	0	0
 l1_to_l2	pass	davinci/vize_l1_to_l2/src/pass/vslot.rs	1	1	0	0	0	0	0	0
 l1_to_l2	pass	davinci/vize_l1_to_l2/src/pass/vslot/consume.rs	1	7	1	6	0	0	0	0
