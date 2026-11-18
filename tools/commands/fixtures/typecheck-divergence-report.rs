@@ -4635,6 +4635,14 @@ fn collect_ambient_declaration_files(dir: &Path, files: &mut Vec<PathBuf>) -> Re
     if !dir.exists() {
         return Ok(());
     }
+    if dir.file_name().and_then(|name| name.to_str()).is_some_and(|name| {
+        matches!(
+            name,
+            "node_modules" | ".yarn" | "dist" | ".vize" | ".vize-baseline"
+        )
+    }) {
+        return Ok(());
+    }
     for entry in
         fs::read_dir(dir).map_err(|error| format!("cannot read {}: {error}", dir.display()))?
     {
@@ -5761,17 +5769,21 @@ mod baseline_materialization_tests {
         fs::create_dir_all(&config_dir).unwrap();
         fs::write(lib.join("src/App.vue"), "<template />\n").unwrap();
         fs::write(lib.join("ambient.d.ts"), "export {};\n").unwrap();
+        fs::create_dir_all(lib.join(".vize")).unwrap();
+        fs::write(lib.join(".vize/generated.d.ts"), "export {};\n").unwrap();
         fs::write(docs.join("leak.d.ts"), "export {};\n").unwrap();
+        let ambient_roots = [lib.clone(), lib.join(".vize")];
         let files = baseline_files(
             &config_dir,
             &fixture,
             &json!({"fileCount": 1, "files": [{"file": "packages/lib/src/App.vue"}]}),
-            std::slice::from_ref(&lib),
+            &ambient_roots,
         )
         .unwrap();
         assert!(files.iter().any(|file| file.ends_with("/src/App.vue")));
         assert!(files.iter().any(|file| file.ends_with("/ambient.d.ts")));
         assert!(files.iter().all(|file| !file.contains("packages/docs")));
+        assert!(files.iter().all(|file| !file.contains("/.vize/")));
         fs::remove_dir_all(fixture).unwrap();
     }
 

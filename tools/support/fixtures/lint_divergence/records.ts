@@ -1132,12 +1132,18 @@ function findingInsideScriptBlock(finding: LintRecord, source: string): boolean 
 
 /** The reported `ref(...)` call, through wrapping parentheses, is the operand of `as` or `satisfies`. */
 function refCallUnderTypeAssertion(finding: LintRecord, source: string): boolean {
-  let start = findingOffset(finding, source),
-    end = findingEndOffset(finding, source);
-  if (start === null || end === null || !/^(?:ref|shallowRef)\b/u.test(source.slice(start, end)))
+  const findingStart = findingOffset(finding, source),
+    findingEnd = findingEndOffset(finding, source);
+  if (
+    findingStart === null ||
+    findingEnd === null ||
+    !/^(?:ref|shallowRef)\b/u.test(source.slice(findingStart, findingEnd))
+  )
     return false;
+  let start: number = findingStart,
+    end: number = findingEnd;
   for (;;) {
-    const after = /^\s*/u.exec(source.slice(end))?.[0].length ?? 0;
+    const after: number = /^\s*/u.exec(source.slice(end))?.[0].length ?? 0;
     if (/^(?:as|satisfies)\s/u.test(source.slice(end + after))) return true;
     const before = source.slice(0, start).trimEnd();
     // Grouping parentheses only: `cast(ref())` is a call argument.
@@ -1188,7 +1194,7 @@ function parseErrorPointInRange(positive: LintRecord, negative: LintRecord): boo
   const code = /^Parsing error: (?:x-)?([a-z]+(?:-[a-z]+)+)\.$/u.exec(negative.message)?.[1];
   const pointInRange = negative.column >= positive.column && negative.column <= positive.endColumn;
   const controlCharacterPrecedesRange =
-    code === "control-character-in-input-stream" && negative.column + 1 === positive.column;
+    code === "control-character-in-input-stream" && Number(negative.column) + 1 === positive.column;
   if (
     negative.line !== negative.endLine ||
     negative.column !== negative.endColumn ||

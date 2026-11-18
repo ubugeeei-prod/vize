@@ -31,7 +31,12 @@ export function baselineParserIntentionalReason(
   if (finding.message === "Parsing error: x-invalid-namespace.") {
     const opening = authoredOpening(finding, source);
     const tag = opening === null ? undefined : /^<\s*([A-Za-z][\w:.-]*)/u.exec(opening)?.[1];
-    if (tag !== undefined && nativeForeignTags.has(tag) && /\sxmlns\s*=/u.test(opening))
+    if (
+      opening !== null &&
+      tag !== undefined &&
+      nativeForeignTags.has(tag) &&
+      /\sxmlns\s*=/u.test(opening)
+    )
       return "Patina recognizes this fragment-root SVG element as native and accepts its authored SVG namespace declaration; vue-eslint-parser loses the foreign-element context and reports x-invalid-namespace.";
   }
   return null;
