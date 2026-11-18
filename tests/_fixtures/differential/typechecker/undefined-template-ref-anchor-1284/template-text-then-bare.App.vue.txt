@@ -1,0 +1,7 @@
+<script setup lang="ts">
+const obj = { missing: 1 }
+</script>
+
+<template>
+  <p>{{ `missing ${ "missing" } missing` + /* missing */ missing }}</p>
+</template>

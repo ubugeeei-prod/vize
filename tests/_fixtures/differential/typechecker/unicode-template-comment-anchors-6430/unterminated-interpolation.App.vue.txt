@@ -1,0 +1,7 @@
+<script setup lang="ts">
+const label = 'ready'
+</script>
+
+<template>
+  <span :title="label">{{ /* ラベル}}</span>
+</template>

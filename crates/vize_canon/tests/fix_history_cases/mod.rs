@@ -228,6 +228,7 @@ pub(super) mod undefined_template_ref_anchor_1284;
 pub(super) mod undefined_template_ref_offsets_1283;
 pub(super) mod undefined_unknown_listener_2956;
 pub(super) mod unicode_script_comment_virtual_ts;
+pub(super) mod unicode_template_comment_anchors_6430;
 pub(super) mod unknown_component_slots_11027;
 pub(super) mod unnamed_inner_slot_outer_payload_5693;
 pub(super) mod use_template_ref_registry_3910;

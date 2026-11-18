@@ -53,6 +53,52 @@
           "message": "Property 'missing' does not exist on the component instance."
         }
       ]
+    },
+    {
+      "id": "undefined-after-same-named-string",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "string-then-bare.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 6,
+          "column": 21,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'missing' does not exist on the component instance."
+        }
+      ]
+    },
+    {
+      "id": "undefined-after-same-named-template-and-comment-text",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "template-text-then-bare.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 6,
+          "column": 58,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'missing' does not exist on the component instance."
+        }
+      ]
     }
   ]
 }
