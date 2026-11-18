@@ -233,6 +233,31 @@ fn reports_tag_open_errors_the_preserved_parser_recovers_silently() {
 }
 
 #[test]
+fn reports_control_characters_in_the_input_stream() {
+    // HTML tokenizers report every control code point except ASCII
+    // whitespace and U+0000, in text, attribute values and comments alike.
+    let source = "<p title=\"a\u{1b}\">\u{b}a\u{7f}b<!--\u{85}-->\t\u{c}\r\n</p>";
+    let control = |text: &str| {
+        let start = source.find(text).unwrap() as u32;
+        Observed {
+            message: "Control character in input stream.".into(),
+            severity: Severity::Error,
+            start,
+            end: start + text.len() as u32,
+        }
+    };
+    assert_eq!(
+        l1(source),
+        vec![
+            control("\u{1b}"),
+            control("\u{b}"),
+            control("\u{7f}"),
+            control("\u{85}"),
+        ]
+    );
+}
+
+#[test]
 fn reports_invalid_numeric_character_references() {
     let source = "<p>&#; &#x; &#1234567; &#0; &#3; &#xD800; &#xFFFE; &#65 &#9; &#x41;</p><p title=\"&#0;\">x</p>";
     let actual = l1(source);

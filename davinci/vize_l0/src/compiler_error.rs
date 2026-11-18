@@ -96,6 +96,9 @@ pub enum ErrorCode {
     /// A custom directive binding breaks the contract a `vue.plugins` entry
     /// declares for it: an undeclared or a missing required modifier.
     DirectiveContract = 1009,
+    /// The input holds a control code point other than ASCII whitespace or
+    /// U+0000, as HTML's `control-character-in-input-stream`.
+    ControlCharacterInInputStream = 1010,
 }
 
 impl ErrorCode {
@@ -190,6 +193,7 @@ impl ErrorCode {
             Self::SurrogateCharacterReference => "Surrogate character reference.",
             Self::NoncharacterCharacterReference => "Noncharacter character reference.",
             Self::DirectiveContract => "Directive binding breaks its declared contract.",
+            Self::ControlCharacterInInputStream => "Control character in input stream.",
         }
     }
 
@@ -205,6 +209,7 @@ impl ErrorCode {
                     | Self::ControlCharacterReference
                     | Self::SurrogateCharacterReference
                     | Self::NoncharacterCharacterReference
+                    | Self::ControlCharacterInInputStream
             )
     }
 

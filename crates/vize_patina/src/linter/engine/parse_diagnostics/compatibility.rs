@@ -11,6 +11,7 @@ use vize_l2::expr::{ExprRef, OpaqueReason};
 use vize_l2::op::{BindingOp, Op};
 
 mod expressions;
+mod input_stream;
 mod markup;
 mod references;
 
@@ -183,7 +184,7 @@ impl Linter {
             source,
             template,
         );
-        markup::tag_open_errors(template.surface(), &mut |code, span| {
+        let mut report = |code: ErrorCode, span: Span| {
             result.error_count += 1;
             result.diagnostics.push(LintDiagnostic::error(
                 TEMPLATE_PARSE_RULE,
@@ -191,7 +192,9 @@ impl Linter {
                 span.start,
                 span.end,
             ));
-        });
+        };
+        markup::tag_open_errors(template.surface(), &mut report);
+        input_stream::control_characters(source, &mut report);
         for span in invalid_expression_spans(template) {
             result.error_count += 1;
             result.diagnostics.push(LintDiagnostic::error(
