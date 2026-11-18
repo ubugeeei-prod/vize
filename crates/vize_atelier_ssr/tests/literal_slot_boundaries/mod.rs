@@ -152,11 +152,30 @@ fn public_dom_and_vapor_preserve_actual_ca_default_modules() {
     // This baseline is copied from the authentic old provider observation,
     // never from corrective current output. The historical sixteen-row file
     // stays immutable; its six post-regression literal non-SSR rows are history.
-    let expected: serde_json::Value = serde_json::from_str(include_str!(concat!(
+    let mut expected: serde_json::Value = serde_json::from_str(include_str!(concat!(
         env!("CARGO_MANIFEST_DIR"),
         "/../../tests/_fixtures/differential/compiler/v-pre-literal-boundary/public-default-ca.expected.json"
     ))).expect("eight authentic-ca default public packets");
     assert_eq!(expected.as_array().unwrap().len(), 8);
+    // #13314: Vue keeps a v-pre slot a plain element. Only the six literal rows'
+    // code is corrected; every other field and both normal-outlet rows stay authentic.
+    let corrections: serde_json::Value = serde_json::from_str(include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../tests/_fixtures/differential/compiler/v-pre-literal-boundary/public-default-13314.corrections.json"
+    ))).expect("six reviewed corrections");
+    let corrections = corrections["rows"].as_array().unwrap();
+    assert_eq!(corrections.len(), 6);
+    for correction in corrections {
+        let row = expected
+            .as_array_mut()
+            .unwrap()
+            .iter_mut()
+            .find(|row| row["name"] == correction["name"] && row["kind"] == correction["kind"])
+            .expect("a corrected authentic-ca row");
+        assert_ne!(row["name"], "normal-outlet");
+        assert_ne!(row["result"]["code"], correction["code"]);
+        row["result"]["code"] = correction["code"].clone();
+    }
     let mut observed = Vec::new();
     for &(name, source, _) in CASES {
         for kind in ["dom", "vapor"] {

@@ -1,0 +1,36 @@
+{
+  "issue": "https://github.com/ubugeeei-prod/vize/issues/13314",
+  "scope": "Reviewed corrections to the immutable authentic-ca default packets. Vue refines a tag type only outside v-pre, so these six literal slot rows now render the plain slot element and its verbatim text; every other field and both normal-outlet rows keep their authentic-ca values.",
+  "rows": [
+    {
+      "name": "own-empty",
+      "kind": "dom",
+      "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"slot\"))\n}"
+    },
+    {
+      "name": "own-empty",
+      "kind": "vapor",
+      "code": "import { template as _template } from 'vue';\nconst t0 = _template(\"<slot></slot>\", true)\n\nfunction render(_ctx, $props, $emit, $attrs, $slots) {\n  const n0 = t0()\n  return n0\n}\nconst _sfc_main = { __vapor: true }\n_sfc_main.render = render\nexport default _sfc_main"
+    },
+    {
+      "name": "inherited-empty",
+      "kind": "dom",
+      "code": "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    _createElementVNode(\"slot\")\n  ]))\n}"
+    },
+    {
+      "name": "inherited-empty",
+      "kind": "vapor",
+      "code": "import { template as _template } from 'vue';\nconst t0 = _template(\"<div><slot></slot></div>\", true)\n\nfunction render(_ctx, $props, $emit, $attrs, $slots) {\n  const n0 = t0()\n  return n0\n}\nconst _sfc_main = { __vapor: true }\n_sfc_main.render = render\nexport default _sfc_main"
+    },
+    {
+      "name": "original-nonempty",
+      "kind": "dom",
+      "code": "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nexport function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"slot\", null, \"{{ not }} an interpolation\"))\n}"
+    },
+    {
+      "name": "original-nonempty",
+      "kind": "vapor",
+      "code": "import { template as _template } from 'vue';\nconst t0 = _template(\"<slot>{{ not }} an interpolation</slot>\", true)\n\nfunction render(_ctx, $props, $emit, $attrs, $slots) {\n  const n0 = t0()\n  return n0\n}\nconst _sfc_main = { __vapor: true }\n_sfc_main.render = render\nexport default _sfc_main"
+    }
+  ]
+}
