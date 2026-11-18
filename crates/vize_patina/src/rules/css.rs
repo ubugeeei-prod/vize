@@ -96,6 +96,21 @@ impl CssLintResult {
         }
         self.diagnostics.push(diagnostic);
     }
+
+    /// Add a warning of `rule` over `start..end` with `help`. Every `css/*`
+    /// rule reports through this one out-of-line constructor instead of
+    /// inlining its own.
+    #[inline(never)]
+    pub(crate) fn warn(
+        &mut self,
+        rule: &'static str,
+        message: &'static str,
+        help: &'static str,
+        start: u32,
+        end: u32,
+    ) {
+        self.add_diagnostic(LintDiagnostic::warn(rule, message, start, end).with_help(help));
+    }
 }
 
 /// Trait for CSS lint rules

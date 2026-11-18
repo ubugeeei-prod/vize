@@ -4,7 +4,7 @@
 
 use vize_l1::css::{StyleNodeKind, StyleSheet};
 
-use crate::diagnostic::{LintDiagnostic, Severity};
+use crate::diagnostic::Severity;
 
 use super::style_rule::in_style_scope;
 use super::{CssLintResult, CssRuleMeta, StyleRule};
@@ -49,16 +49,12 @@ impl StyleRule for RequireFontDisplay {
                         if sheet.text(name).eq_ignore_ascii_case("font-display"))
                 });
             if !has_font_display {
-                result.add_diagnostic(
-                    LintDiagnostic::warn(
-                        META.name,
-                        "@font-face rule is missing font-display property",
-                        node.prelude().start,
-                        name.end,
-                    )
-                    .with_help(
-                        "Add `font-display: swap;` to prevent FOIT (Flash of Invisible Text)",
-                    ),
+                result.warn(
+                    META.name,
+                    "@font-face rule is missing font-display property",
+                    "Add `font-display: swap;` to prevent FOIT (Flash of Invisible Text)",
+                    node.prelude().start,
+                    name.end,
                 );
             }
         }
