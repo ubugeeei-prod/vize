@@ -510,7 +510,6 @@
       "tests/tooling/js-native-prepared.test.mjs": 3339,
       "tests/tooling/js-package-test-groups.test.ts": 522,
       "tests/tooling/jsx-ecosystem-fixtures.test.ts": 37,
-      "tests/tooling/l3-vapor-counter-rename.test.ts": 159,
       "tests/tooling/l4-dom-props-reference.test.ts": 98,
       "tests/tooling/l4-native-file-dom-reference.test.ts": 230,
       "tests/tooling/l4-native-ssr-reference.test.ts": 89,

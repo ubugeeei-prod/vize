@@ -196,7 +196,7 @@ onMounted(async () => {
           :class="['main-tab', { active: mainTab === 'levels' }]"
           @click="() => (mainTab = 'levels')"
         >
-          <span class="tab-name">Level</span>
+          <span class="tab-name">Levels</span>
           <span class="tab-desc">stages</span>
         </button>
       </div>
