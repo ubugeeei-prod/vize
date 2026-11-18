@@ -10,7 +10,15 @@ use crate::batch::virtual_project::{VirtualFile, VirtualProject};
 
 #[expect(clippy::disallowed_types, reason = "dependency API uses std String")]
 impl VirtualProject {
-    fn source_authored_vue_ts_specifier(&self, source: &Path, specifier: &str) -> bool {
+    fn source_authored_vue_ts_specifier(
+        &self,
+        source: &Path,
+        specifier: &str,
+        may_have_authored_vue_ts: bool,
+    ) -> bool {
+        if !may_have_authored_vue_ts {
+            return false;
+        }
         let specifier = specifier
             .strip_suffix(crate::batch::AUTHORED_VUE_TS_ALIAS_SENTINEL)
             .unwrap_or(specifier);
@@ -25,8 +33,11 @@ impl VirtualProject {
         generated_vue: bool,
         specifier: &str,
         aliases: &[(std::string::String, std::string::String)],
+        may_have_authored_vue_ts: bool,
     ) -> Option<PathBuf> {
-        if generated_vue && !self.source_authored_vue_ts_specifier(source, specifier) {
+        if generated_vue
+            && !self.source_authored_vue_ts_specifier(source, specifier, may_have_authored_vue_ts)
+        {
             return resolve_generated_dependency(
                 specifier,
                 source.parent()?,
@@ -45,8 +56,10 @@ impl VirtualProject {
         specifier: &str,
         aliases: &[(std::string::String, std::string::String)],
         probes: &PassthroughProbes,
+        may_have_authored_vue_ts: bool,
     ) -> Option<PathBuf> {
-        let generated = generated_vue && !self.source_authored_vue_ts_specifier(source, specifier);
+        let generated = generated_vue
+            && !self.source_authored_vue_ts_specifier(source, specifier, may_have_authored_vue_ts);
         resolve_dependency_listed(
             specifier,
             source.parent()?,
@@ -61,12 +74,14 @@ impl VirtualProject {
         file: &VirtualFile,
         specifier: &str,
         aliases: &[(std::string::String, std::string::String)],
+        may_have_authored_vue_ts: bool,
     ) -> Option<PathBuf> {
         self.resolve_source_dependency(
             &file.original_path,
             file.source_map.sfc_map.is_some(),
             specifier,
             aliases,
+            may_have_authored_vue_ts,
         )
     }
 
@@ -75,8 +90,13 @@ impl VirtualProject {
         file: &VirtualFile,
         specifier: &str,
         aliases: &[(std::string::String, std::string::String)],
+        may_have_authored_vue_ts: bool,
     ) -> (Option<PathBuf>, Vec<PathBuf>) {
-        let authored_vue_ts = self.source_authored_vue_ts_specifier(&file.original_path, specifier);
+        let authored_vue_ts = self.source_authored_vue_ts_specifier(
+            &file.original_path,
+            specifier,
+            may_have_authored_vue_ts,
+        );
         if file.source_map.sfc_map.is_some() && !authored_vue_ts {
             return resolve_generated_dependency_with_inputs(
                 specifier,

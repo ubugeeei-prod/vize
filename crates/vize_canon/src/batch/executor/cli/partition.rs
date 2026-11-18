@@ -8,7 +8,7 @@ use super::import_resolution::resolve_virtual_import;
 use super::union_find::UnionFind;
 use super::{ShardPlan, declares_program_wide_types, is_ambient_declaration};
 use crate::batch::{VirtualFile, VirtualProject};
-use vize_carton::{FxHashMap, String, cstr};
+use vize_carton::{FxHashMap, SmallVec, String, cstr};
 
 mod alias_modules;
 mod dependency_visibility;
@@ -16,6 +16,8 @@ mod shared_leaves;
 
 #[cfg(test)]
 mod alias_shards;
+#[cfg(test)]
+mod import_scan_tests;
 #[cfg(test)]
 mod weight_work;
 
@@ -268,24 +270,46 @@ fn partition(project: &VirtualProject, servers: usize, allow_leaves: bool) -> Sh
 /// `import('<spec>')`, `import '<spec>'`, `require('<spec>')`. A lexical scan
 /// is enough here — the result only feeds the shard cost model.
 fn import_specifiers(content: &str) -> Vec<&str> {
-    let mut specifiers = Vec::new();
-    for token in ["from ", "import(", "import ", "require("] {
-        for (at, _) in content.match_indices(token) {
+    const TOKENS: [&[u8]; 4] = [b"from ", b"import(", b"import ", b"require("];
+
+    let bytes = content.as_bytes();
+    let mut matches: SmallVec<[(usize, &str); 8]> = SmallVec::new();
+    let mut cursor = 0;
+    while let Some(next) =
+        memchr::memchr3(b'f', b'i', b'r', bytes.get(cursor..).unwrap_or_default())
+    {
+        let at = cursor + next;
+        let tail = bytes.get(at..).unwrap_or_default();
+        let token_index = match tail.first().copied() {
+            Some(b'f') if tail.starts_with(TOKENS[0]) => Some(0),
+            Some(b'i') if tail.starts_with(TOKENS[1]) => Some(1),
+            Some(b'i') if tail.starts_with(TOKENS[2]) => Some(2),
+            Some(b'r') if tail.starts_with(TOKENS[3]) => Some(3),
+            _ => None,
+        };
+        if let Some(token_index) = token_index {
             let rest = content
-                .get(at + token.len()..)
+                .get(at + TOKENS[token_index].len()..)
                 .unwrap_or_default()
                 .trim_start();
-            let Some((quote, rest)) = ['\'', '"']
+            if let Some((quote, rest)) = ['\'', '"']
                 .into_iter()
                 .find_map(|quote| Some((quote, rest.strip_prefix(quote)?)))
-            else {
-                continue;
-            };
-            let Some((specifier, _)) = rest.split_once(quote) else {
-                continue;
-            };
-            specifiers.push(specifier);
+                && let Some((specifier, _)) = rest.split_once(quote)
+            {
+                matches.push((token_index, specifier));
+            }
         }
+        // Advance one byte to retain `match_indices`' lexical behavior even if
+        // a future token overlaps another candidate at the same location.
+        cursor = at + 1;
+    }
+
+    let mut specifiers = Vec::with_capacity(matches.len());
+    for token_index in 0..TOKENS.len() {
+        specifiers.extend(matches.iter().filter_map(|&(matched_token, specifier)| {
+            (matched_token == token_index).then_some(specifier)
+        }));
     }
     specifiers
 }
