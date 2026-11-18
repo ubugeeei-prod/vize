@@ -200,8 +200,12 @@ function selectDocumentedDifferences(values, projectId, cwd) {
     }
     const file = normalizePath(value.file, cwd, `${label}.file`);
     if (!file.endsWith(".vue")) invalid(`${label} must reference a .vue file`);
-    if (value.severity !== "error" && value.severity !== "warning") {
-      invalid(`${label}.severity must be error or warning`);
+    if (
+      value.severity !== "error" &&
+      value.severity !== "warning" &&
+      value.severity !== "hint"
+    ) {
+      invalid(`${label}.severity must be error, warning, or hint`);
     }
     const severity = value.severity;
     const line = positiveInteger(value.line, `${label}.line`);

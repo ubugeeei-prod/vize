@@ -2757,8 +2757,12 @@ fn parse_documented_difference(
     let severity = value
         .get("severity")
         .and_then(Value::as_str)
-        .filter(|value| *value == "error" || *value == "warning")
-        .ok_or_else(|| divergence_error(&format!("{label}.severity must be error or warning")))?
+        .filter(|value| *value == "error" || *value == "warning" || *value == "hint")
+        .ok_or_else(|| {
+            divergence_error(&format!(
+                "{label}.severity must be error, warning, or hint"
+            ))
+        })?
         .to_string();
     let line = positive_json_integer(value.get("line"), &format!("{label}.line"))?;
     let column = positive_json_integer(value.get("column"), &format!("{label}.column"))?;
@@ -5699,6 +5703,39 @@ mod native_hint_contract_tests {
         assert_eq!(mismatch["summary"]["sharedCount"], 0);
         assert_eq!(mismatch["summary"]["falsePositiveCount"], 1);
         assert_eq!(mismatch["summary"]["falseNegativeCount"], 1);
+    }
+
+    #[test]
+    fn documented_vize_hints_cancel_the_exact_divergence() {
+        let cwd = env::current_dir().unwrap();
+        let report = output("hint:77:22 [TS6385] 'typescript' is deprecated.");
+        let difference = parse_documented_difference(
+            &json!({
+                "project": "hints",
+                "file": "src/App.vue",
+                "severity": "hint",
+                "line": 77,
+                "column": 22,
+                "vize": { "code": 6385, "message": "'typescript' is deprecated." },
+                "baseline": null,
+                "issue": 13298,
+                "reason": "Vize preserves this language-service deprecation hint while the batch baseline omits it."
+            }),
+            0,
+        )
+        .unwrap();
+        let comparison = compare_typecheck_diagnostics(
+            "hints".to_string(),
+            &cwd,
+            &report,
+            "",
+            &[],
+            &[difference],
+        )
+        .unwrap();
+        assert_eq!(comparison["summary"]["documentedDifferenceCount"], 1);
+        assert_eq!(comparison["summary"]["falsePositiveCount"], 0);
+        assert_eq!(comparison["summary"]["falseNegativeCount"], 0);
     }
 
     #[test]

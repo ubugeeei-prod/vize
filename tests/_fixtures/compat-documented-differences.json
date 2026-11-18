@@ -934,6 +934,1980 @@
       },
       "issue": 5722,
       "reason": "The pinned masto Status type lacks Elk's Fedibird emojiReactions extension, which vue-tsc surfaces through the generated Nuxt app program while Vize's authored Nuxt projection does not; the exact baseline-only row is retained under issue 5722."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/MonacoScriptEditor.vue",
+      "severity": "hint",
+      "line": 77,
+      "column": 22,
+      "vize": {
+        "code": 6385,
+        "message": "'typescript' is deprecated."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/MonacoScriptEditor.vue",
+      "severity": "hint",
+      "line": 82,
+      "column": 42,
+      "vize": {
+        "code": 6385,
+        "message": "'typescript' is deprecated."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/MonacoScriptEditor.vue",
+      "severity": "hint",
+      "line": 83,
+      "column": 32,
+      "vize": {
+        "code": 6385,
+        "message": "'typescript' is deprecated."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/MonacoScriptEditor.vue",
+      "severity": "hint",
+      "line": 87,
+      "column": 32,
+      "vize": {
+        "code": 6385,
+        "message": "'typescript' is deprecated."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/MonacoScriptEditor.vue",
+      "severity": "hint",
+      "line": 94,
+      "column": 22,
+      "vize": {
+        "code": 6385,
+        "message": "'typescript' is deprecated."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/MonacoScriptEditor.vue",
+      "severity": "hint",
+      "line": 142,
+      "column": 22,
+      "vize": {
+        "code": 6385,
+        "message": "'typescript' is deprecated."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/MonacoScriptEditor.vue",
+      "severity": "hint",
+      "line": 204,
+      "column": 39,
+      "vize": {
+        "code": 6385,
+        "message": "'typescript' is deprecated."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/app/PaneLayout.vue",
+      "severity": "hint",
+      "line": 113,
+      "column": 28,
+      "vize": {
+        "code": 6387,
+        "message": "The signature '(key: string, value: string): Promise<void>' of 'persistenceService.setLocalConfig' is deprecated."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/app/PaneLayout.vue",
+      "severity": "hint",
+      "line": 138,
+      "column": 46,
+      "vize": {
+        "code": 6387,
+        "message": "The signature '(name: string): Promise<string | null | undefined>' of 'persistenceService.getLocalConfig' is deprecated."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/collections/ImportExport.vue",
+      "severity": "hint",
+      "line": 838,
+      "column": 19,
+      "vize": {
+        "code": 80007,
+        "message": "'await' has no effect on the type of this expression."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/collections/Properties.vue",
+      "severity": "hint",
+      "line": 415,
+      "column": 28,
+      "vize": {
+        "code": 6387,
+        "message": "The signature '(key: string, value: string): Promise<void>' of 'persistenceService.setLocalConfig' is deprecated."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/collections/Properties.vue",
+      "severity": "hint",
+      "line": 434,
+      "column": 30,
+      "vize": {
+        "code": 6387,
+        "message": "The signature '(key: string): Promise<void>' of 'persistenceService.removeLocalConfig' is deprecated."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/collections/Properties.vue",
+      "severity": "hint",
+      "line": 491,
+      "column": 28,
+      "vize": {
+        "code": 6387,
+        "message": "The signature '(key: string): Promise<void>' of 'persistenceService.removeLocalConfig' is deprecated."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/collections/Properties.vue",
+      "severity": "hint",
+      "line": 498,
+      "column": 28,
+      "vize": {
+        "code": 6387,
+        "message": "The signature '(key: string): Promise<void>' of 'persistenceService.removeLocalConfig' is deprecated."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/collections/SaveRequest.vue",
+      "severity": "hint",
+      "line": 125,
+      "column": 3,
+      "vize": {
+        "code": 6385,
+        "message": "'isHoppRESTRequest' is deprecated."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/collections/SaveRequest.vue",
+      "severity": "hint",
+      "line": 342,
+      "column": 10,
+      "vize": {
+        "code": 6387,
+        "message": "The signature '(x: unknown): x is { name: string; params: { value: string; key: string; active: boolean; description: string; }[]; headers: { value: string; key: string; active: boolean; description: string; }[]; method: string; preRequestScript: string; ... 9 more ...; _ref_id?: string | undefined; }' of 'isHoppRESTRequest' is deprecated."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/collections/SaveRequest.vue",
+      "severity": "hint",
+      "line": 380,
+      "column": 10,
+      "vize": {
+        "code": 6387,
+        "message": "The signature '(x: unknown): x is { name: string; params: { value: string; key: string; active: boolean; description: string; }[]; headers: { value: string; key: string; active: boolean; description: string; }[]; method: string; preRequestScript: string; ... 9 more ...; _ref_id?: string | undefined; }' of 'isHoppRESTRequest' is deprecated."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/collections/SaveRequest.vue",
+      "severity": "hint",
+      "line": 412,
+      "column": 10,
+      "vize": {
+        "code": 6387,
+        "message": "The signature '(x: unknown): x is { name: string; params: { value: string; key: string; active: boolean; description: string; }[]; headers: { value: string; key: string; active: boolean; description: string; }[]; method: string; preRequestScript: string; ... 9 more ...; _ref_id?: string | undefined; }' of 'isHoppRESTRequest' is deprecated."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/collections/SaveRequest.vue",
+      "severity": "hint",
+      "line": 444,
+      "column": 10,
+      "vize": {
+        "code": 6387,
+        "message": "The signature '(x: unknown): x is { name: string; params: { value: string; key: string; active: boolean; description: string; }[]; headers: { value: string; key: string; active: boolean; description: string; }[]; method: string; preRequestScript: string; ... 9 more ...; _ref_id?: string | undefined; }' of 'isHoppRESTRequest' is deprecated."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/collections/SaveRequest.vue",
+      "severity": "hint",
+      "line": 456,
+      "column": 10,
+      "vize": {
+        "code": 6387,
+        "message": "The signature '(x: unknown): x is { name: string; params: { value: string; key: string; active: boolean; description: string; }[]; headers: { value: string; key: string; active: boolean; description: string; }[]; method: string; preRequestScript: string; ... 9 more ...; _ref_id?: string | undefined; }' of 'isHoppRESTRequest' is deprecated."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/collections/SaveRequest.vue",
+      "severity": "hint",
+      "line": 468,
+      "column": 10,
+      "vize": {
+        "code": 6387,
+        "message": "The signature '(x: unknown): x is { name: string; params: { value: string; key: string; active: boolean; description: string; }[]; headers: { value: string; key: string; active: boolean; description: string; }[]; method: string; preRequestScript: string; ... 9 more ...; _ref_id?: string | undefined; }' of 'isHoppRESTRequest' is deprecated."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/collections/documentation/sections/RequestBody.vue",
+      "severity": "hint",
+      "line": 66,
+      "column": 27,
+      "vize": {
+        "code": 6385,
+        "message": "'parseRawKeyValueEntries' is deprecated."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/collections/documentation/sections/RequestBody.vue",
+      "severity": "hint",
+      "line": 96,
+      "column": 43,
+      "vize": {
+        "code": 6385,
+        "message": "'parseRawKeyValueEntries' is deprecated."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/collections/graphql/ImportExport.vue",
+      "severity": "hint",
+      "line": 70,
+      "column": 19,
+      "vize": {
+        "code": 80007,
+        "message": "'await' has no effect on the type of this expression."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/collections/graphql/ImportExport.vue",
+      "severity": "hint",
+      "line": 113,
+      "column": 19,
+      "vize": {
+        "code": 80007,
+        "message": "'await' has no effect on the type of this expression."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/collections/graphql/index.vue",
+      "severity": "hint",
+      "line": 253,
+      "column": 30,
+      "vize": {
+        "code": 6387,
+        "message": "The signature '(name: string): Promise<string | null | undefined>' of 'persistenceService.getLocalConfig' is deprecated."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/collections/graphql/index.vue",
+      "severity": "hint",
+      "line": 269,
+      "column": 32,
+      "vize": {
+        "code": 6387,
+        "message": "The signature '(name: string): Promise<string | null | undefined>' of 'persistenceService.getLocalConfig' is deprecated."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/collections/graphql/index.vue",
+      "severity": "hint",
+      "line": 291,
+      "column": 30,
+      "vize": {
+        "code": 6387,
+        "message": "The signature '(key: string): Promise<void>' of 'persistenceService.removeLocalConfig' is deprecated."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/collections/index.vue",
+      "severity": "error",
+      "line": 39,
+      "column": 11,
+      "vize": {
+        "code": 2322,
+        "message": "Type 'string | undefined' is not assignable to type 'string'. Type 'undefined' is not assignable to type 'string'. (source: collectionID: $event.collection._ref_id,)"
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Vize reports this pinned Hoppscotch diagnostic while vue-tsc accepts the same source; the exact Vize-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/collections/index.vue",
+      "severity": "error",
+      "line": 107,
+      "column": 8,
+      "vize": {
+        "code": 2322,
+        "message": "Type '(payload: { folderPath: string | undefined; folder: HoppCollection | TeamCollection; }) => void' is not assignable to type '(payload: { folder: TeamCollection; }) => any'. Types of parameters 'payload' and 'payload' are incompatible. Property 'folderPath' is missing in type '{ folder: TeamCollection; }' but required in type '{ folderPath: string | undefined; folder: TeamCollection | ({ name: string; headers: { value: string; key: string; active: boolean; description: string; }[] | { value: string; key: string; active: boolean; description: string; }[]; ... 8 more ...; _ref_id?: string | undefined; } & { ...; }); }'. (source: @edit-folder=\"editFolder\"; binding: @edit-folder)"
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Vize reports this pinned Hoppscotch diagnostic while vue-tsc accepts the same source; the exact Vize-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/collections/index.vue",
+      "severity": "error",
+      "line": 108,
+      "column": 8,
+      "vize": {
+        "code": 2322,
+        "message": "Type '(payload: { folderPath: string | undefined; requestIndex: string; request: HoppRESTRequest; }) => void' is not assignable to type '(payload: { requestIndex: string; request: { name: string; params: { value: string; key: string; active: boolean; description: string; }[]; headers: { value: string; key: string; active: boolean; description: string; }[]; ... 11 more ...; _ref_id?: string | undefined; }; }) => any'. Types of parameters 'payload' and 'payload' are incompatible. Property 'folderPath' is missing in type '{ requestIndex: string; request: { name: string; params: { value: string; key: string; active: boolean; description: string; }[]; headers: { value: string; key: string; active: boolean; description: string; }[]; ... 11 more ...; _ref_id?: string | undefined; }; }' but required in type '{ folderPath: string | undefined; requestIndex: string; request: { name: string; params: { value: string; key: string; active: boolean; description: string; }[]; headers: { value: string; key: string; active: boolean; description: string; }[]; ... 11 more ...; _ref_id?: string | undefined; }; }'. (source: @edit-request=\"editRequest\"; binding: @edit-request)"
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Vize reports this pinned Hoppscotch diagnostic while vue-tsc accepts the same source; the exact Vize-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/collections/index.vue",
+      "severity": "hint",
+      "line": 569,
+      "column": 30,
+      "vize": {
+        "code": 6387,
+        "message": "The signature '(name: string): Promise<string | null | undefined>' of 'persistenceService.getLocalConfig' is deprecated."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/collections/index.vue",
+      "severity": "hint",
+      "line": 585,
+      "column": 32,
+      "vize": {
+        "code": 6387,
+        "message": "The signature '(name: string): Promise<string | null | undefined>' of 'persistenceService.getLocalConfig' is deprecated."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/collections/index.vue",
+      "severity": "hint",
+      "line": 607,
+      "column": 30,
+      "vize": {
+        "code": 6387,
+        "message": "The signature '(key: string): Promise<void>' of 'persistenceService.removeLocalConfig' is deprecated."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/environments/index.vue",
+      "severity": "hint",
+      "line": 87,
+      "column": 10,
+      "vize": {
+        "code": 6385,
+        "message": "'getService' is deprecated."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/environments/index.vue",
+      "severity": "hint",
+      "line": 310,
+      "column": 34,
+      "vize": {
+        "code": 6387,
+        "message": "The signature '(service: typeof SecretEnvironmentService): SecretEnvironmentService' of 'getService' is deprecated."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/environments/index.vue",
+      "severity": "hint",
+      "line": 311,
+      "column": 40,
+      "vize": {
+        "code": 6387,
+        "message": "The signature '(service: typeof CurrentValueService): CurrentValueService' of 'getService' is deprecated."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/firebase/Login.vue",
+      "severity": "hint",
+      "line": 347,
+      "column": 32,
+      "vize": {
+        "code": 6387,
+        "message": "The signature '(key: string, value: string): Promise<void>' of 'persistenceService.setLocalConfig' is deprecated."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/graphql/Headers.vue",
+      "severity": "hint",
+      "line": 446,
+      "column": 49,
+      "vize": {
+        "code": 6385,
+        "message": "'(): string' is deprecated."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/graphql/Headers.vue",
+      "severity": "hint",
+      "line": 447,
+      "column": 52,
+      "vize": {
+        "code": 6385,
+        "message": "'(): string' is deprecated."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/graphql/RequestOptions.vue",
+      "severity": "error",
+      "line": 192,
+      "column": 34,
+      "vize": {
+        "code": 2769,
+        "message": "No overload matches this call. The last overload gave the following error. Type 'GQLResponseEvent | undefined' is not assignable to type 'GQLResponseEvent'. Type 'undefined' is not assignable to type 'GQLResponseEvent'."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Vize reports this pinned Hoppscotch diagnostic while vue-tsc accepts the same source; the exact Vize-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/graphql/RequestOptions.vue",
+      "severity": "error",
+      "line": 192,
+      "column": 61,
+      "vize": {
+        "code": 2769,
+        "message": "No overload matches this call. The last overload gave the following error. Type '{ type: \"response\"; time: number; operationName: string | undefined; operationType: OperationType; data: string; rawQuery?: RunQueryOptions | undefined; document?: { ...; } | undefined; } | { ...; } | undefined' is not assignable to type 'GQLResponseEvent'. Type 'undefined' is not assignable to type 'GQLResponseEvent'."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Vize reports this pinned Hoppscotch diagnostic while vue-tsc accepts the same source; the exact Vize-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/graphql/RequestOptions.vue",
+      "severity": "error",
+      "line": 220,
+      "column": 31,
+      "vize": {
+        "code": 2769,
+        "message": "No overload matches this call. The last overload gave the following error. Argument of type '{ type: string; error: { message: string; type: string; component: ComponentPublicInstanceConstructor<any, any, any, any, ComputedOptions, MethodOptions> | FunctionalComponent<...> | { ...; } | undefined; }; }[]' is not assignable to parameter of type 'GQLResponseEvent[]'. Type '{ type: string; error: { message: string; type: string; component: ComponentPublicInstanceConstructor<any, any, any, any, ComputedOptions, MethodOptions> | FunctionalComponent<...> | { ...; } | undefined; }; }' is not assignable to type 'GQLResponseEvent'. Type '{ type: string; error: { message: string; type: string; component: ComponentPublicInstanceConstructor<any, any, any, any, ComputedOptions, MethodOptions> | FunctionalComponent<...> | { ...; } | undefined; }; }' is not assignable to type '{ type: \"error\"; error: { type: string; message: string; component?: Component | undefined; }; }'. Types of property 'type' are incompatible. Type 'string' is not assignable to type '\"error\"'."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Vize reports this pinned Hoppscotch diagnostic while vue-tsc accepts the same source; the exact Vize-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/history/Personal.vue",
+      "severity": "error",
+      "line": 104,
+      "column": 10,
+      "vize": {
+        "code": 2345,
+        "message": "Missing required prop `responseMeta`. (source: <component)"
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Vize reports this pinned Hoppscotch diagnostic while vue-tsc accepts the same source; the exact Vize-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/history/Personal.vue",
+      "severity": "error",
+      "line": 107,
+      "column": 12,
+      "vize": {
+        "code": 2322,
+        "message": "Type 'number' is not assignable to type 'string'. (source: :id=\"index\"; binding: 'id')"
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Vize reports this pinned Hoppscotch diagnostic while vue-tsc accepts the same source; the exact Vize-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/history/Personal.vue",
+      "severity": "hint",
+      "line": 325,
+      "column": 3,
+      "vize": {
+        "code": 6133,
+        "message": "'entries' is declared but its value is never read."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/http/Codegen.vue",
+      "severity": "hint",
+      "line": 149,
+      "column": 10,
+      "vize": {
+        "code": 6385,
+        "message": "'asyncComputed' is deprecated."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/http/Codegen.vue",
+      "severity": "hint",
+      "line": 286,
+      "column": 21,
+      "vize": {
+        "code": 6385,
+        "message": "'asyncComputed' is deprecated."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/http/KeyValue.vue",
+      "severity": "error",
+      "line": 68,
+      "column": 49,
+      "vize": {
+        "code": 18047,
+        "message": "'$event.target' is possibly 'null'. (source: @update:value=\"emit('update:description', $event.target.value)\")"
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Vize reports this pinned Hoppscotch diagnostic while vue-tsc accepts the same source; the exact Vize-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/http/KeyValue.vue",
+      "severity": "error",
+      "line": 68,
+      "column": 63,
+      "vize": {
+        "code": 2339,
+        "message": "Property 'value' does not exist on type 'EventTarget'. (source: @update:value=\"emit('update:description', $event.target.value)\")"
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Vize reports this pinned Hoppscotch diagnostic while vue-tsc accepts the same source; the exact Vize-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/http/URLEncodedParams.vue",
+      "severity": "hint",
+      "line": 194,
+      "column": 3,
+      "vize": {
+        "code": 6385,
+        "message": "'parseRawKeyValueEntries' is deprecated."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/http/URLEncodedParams.vue",
+      "severity": "hint",
+      "line": 247,
+      "column": 9,
+      "vize": {
+        "code": 6385,
+        "message": "'parseRawKeyValueEntries' is deprecated."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/http/authorization/OAuth2.vue",
+      "severity": "hint",
+      "line": 798,
+      "column": 32,
+      "vize": {
+        "code": 6387,
+        "message": "The signature '(key: string, value: string): Promise<void>' of 'persistenceService.setLocalConfig' is deprecated."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/http/test/RunnerModal.vue",
+      "severity": "hint",
+      "line": 319,
+      "column": 12,
+      "vize": {
+        "code": 80007,
+        "message": "'await' has no effect on the type of this expression."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/lenses/renderers/HTMLLensRenderer.vue",
+      "severity": "hint",
+      "line": 192,
+      "column": 31,
+      "vize": {
+        "code": 6387,
+        "message": "The signature '(name: string): Promise<string | null | undefined>' of 'persistenceService.getLocalConfig' is deprecated."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/lenses/renderers/HTMLLensRenderer.vue",
+      "severity": "hint",
+      "line": 202,
+      "column": 28,
+      "vize": {
+        "code": 6387,
+        "message": "The signature '(key: string, value: string): Promise<void>' of 'persistenceService.setLocalConfig' is deprecated."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/mockServer/EditMockServer.vue",
+      "severity": "hint",
+      "line": 293,
+      "column": 5,
+      "vize": {
+        "code": 80007,
+        "message": "'await' has no effect on the type of this expression."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/mockServer/MockServerDashboard.vue",
+      "severity": "hint",
+      "line": 351,
+      "column": 5,
+      "vize": {
+        "code": 80007,
+        "message": "'await' has no effect on the type of this expression."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/settings/InterceptorErrorPlaceholder.vue",
+      "severity": "error",
+      "line": 29,
+      "column": 12,
+      "vize": {
+        "code": 2322,
+        "message": "Type 'FunctionalComponent<SVGAttributes, {}, any, {}> | null' is not assignable to type 'Record<string, any> | undefined'. Type 'null' is not assignable to type 'Record<string, any> | undefined'. (source: :info-icon=\"hasChromeExtInstalled ? IconCheckCircle : null\"; binding: 'info-icon')"
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Vize reports this pinned Hoppscotch diagnostic while vue-tsc accepts the same source; the exact Vize-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/share/Request.vue",
+      "severity": "hint",
+      "line": 103,
+      "column": 27,
+      "vize": {
+        "code": 6385,
+        "message": "'translateToNewRequest' is deprecated."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/share/Request.vue",
+      "severity": "hint",
+      "line": 141,
+      "column": 43,
+      "vize": {
+        "code": 6385,
+        "message": "'translateToNewRequest' is deprecated."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/teams/Invite.vue",
+      "severity": "hint",
+      "line": 648,
+      "column": 18,
+      "vize": {
+        "code": 6385,
+        "message": "'task' is deprecated."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/layouts/default.vue",
+      "severity": "hint",
+      "line": 123,
+      "column": 31,
+      "vize": {
+        "code": 6387,
+        "message": "The signature '(name: string): Promise<string | null | undefined>' of 'persistenceService.getLocalConfig' is deprecated."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/layouts/default.vue",
+      "severity": "hint",
+      "line": 134,
+      "column": 38,
+      "vize": {
+        "code": 6387,
+        "message": "The signature '(key: string, value: string): Promise<void>' of 'persistenceService.setLocalConfig' is deprecated."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/layouts/default.vue",
+      "severity": "hint",
+      "line": 144,
+      "column": 38,
+      "vize": {
+        "code": 6387,
+        "message": "The signature '(key: string, value: string): Promise<void>' of 'persistenceService.setLocalConfig' is deprecated."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/pages/e/_id.vue",
+      "severity": "hint",
+      "line": 46,
+      "column": 3,
+      "vize": {
+        "code": 6385,
+        "message": "'safelyExtractRESTRequest' is deprecated."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/pages/e/_id.vue",
+      "severity": "hint",
+      "line": 99,
+      "column": 36,
+      "vize": {
+        "code": 6387,
+        "message": "The signature '(x: unknown, defaultReq: { name: string; params: { value: string; key: string; active: boolean; description: string; }[]; headers: { value: string; key: string; active: boolean; description: string; }[]; method: string; preRequestScript: string; ... 9 more ...; _ref_id?: string | undefined; }): { ...; }' of 'safelyExtractRESTRequest' is deprecated."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/pages/index.vue",
+      "severity": "hint",
+      "line": 137,
+      "column": 31,
+      "vize": {
+        "code": 6385,
+        "message": "'safelyExtractRESTRequest' is deprecated."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/pages/index.vue",
+      "severity": "hint",
+      "line": 212,
+      "column": 52,
+      "vize": {
+        "code": 6387,
+        "message": "The signature '(x: unknown, defaultReq: { name: string; params: { value: string; key: string; active: boolean; description: string; }[]; headers: { value: string; key: string; active: boolean; description: string; }[]; method: string; preRequestScript: string; ... 9 more ...; _ref_id?: string | undefined; }): { ...; }' of 'safelyExtractRESTRequest' is deprecated."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/pages/oauth.vue",
+      "severity": "hint",
+      "line": 72,
+      "column": 30,
+      "vize": {
+        "code": 6387,
+        "message": "The signature '(name: string): Promise<string | null | undefined>' of 'persistenceService.getLocalConfig' is deprecated."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/pages/oauth.vue",
+      "severity": "hint",
+      "line": 105,
+      "column": 30,
+      "vize": {
+        "code": 6387,
+        "message": "The signature '(key: string, value: string): Promise<void>' of 'persistenceService.setLocalConfig' is deprecated."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/pages/r/_id.vue",
+      "severity": "hint",
+      "line": 200,
+      "column": 10,
+      "vize": {
+        "code": 6385,
+        "message": "'safelyExtractRESTRequest' is deprecated."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/pages/r/_id.vue",
+      "severity": "hint",
+      "line": 293,
+      "column": 16,
+      "vize": {
+        "code": 6387,
+        "message": "The signature '(x: unknown, defaultReq: { name: string; params: { value: string; key: string; active: boolean; description: string; }[]; headers: { value: string; key: string; active: boolean; description: string; }[]; method: string; preRequestScript: string; ... 9 more ...; _ref_id?: string | undefined; }): { ...; }' of 'safelyExtractRESTRequest' is deprecated."
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Pinned Hoppscotch exposes a Vize language-service hint that vue-tsc batch output omits; the exact Vize-only row is tracked under issue 13298 after semantic baseline preparation."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/pages/settings.vue",
+      "severity": "error",
+      "line": 259,
+      "column": 22,
+      "vize": {
+        "code": 2339,
+        "message": "Property 'id' does not exist on type 'Component'. Property 'id' does not exist on type 'ComponentPublicInstanceConstructor<any, any, any, any, ComputedOptions, MethodOptions>'. (source: :key=\"item.id\")"
+      },
+      "baseline": null,
+      "issue": 13298,
+      "reason": "Vize reports this pinned Hoppscotch diagnostic while vue-tsc accepts the same source; the exact Vize-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/app/Footer.vue",
+      "severity": "error",
+      "line": 59,
+      "column": 25,
+      "vize": null,
+      "baseline": {
+        "code": 2304,
+        "message": "Cannot find name 'hide'."
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/app/Footer.vue",
+      "severity": "error",
+      "line": 69,
+      "column": 21,
+      "vize": null,
+      "baseline": {
+        "code": 2304,
+        "message": "Cannot find name 'hide'."
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/app/Footer.vue",
+      "severity": "error",
+      "line": 83,
+      "column": 27,
+      "vize": null,
+      "baseline": {
+        "code": 2304,
+        "message": "Cannot find name 'hide'."
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/app/Footer.vue",
+      "severity": "error",
+      "line": 94,
+      "column": 23,
+      "vize": null,
+      "baseline": {
+        "code": 2304,
+        "message": "Cannot find name 'hide'."
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/app/Footer.vue",
+      "severity": "error",
+      "line": 105,
+      "column": 25,
+      "vize": null,
+      "baseline": {
+        "code": 2304,
+        "message": "Cannot find name 'hide'."
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/app/Footer.vue",
+      "severity": "error",
+      "line": 112,
+      "column": 25,
+      "vize": null,
+      "baseline": {
+        "code": 2304,
+        "message": "Cannot find name 'hide'."
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/app/Footer.vue",
+      "severity": "error",
+      "line": 120,
+      "column": 21,
+      "vize": null,
+      "baseline": {
+        "code": 2304,
+        "message": "Cannot find name 'hide'."
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/app/Footer.vue",
+      "severity": "error",
+      "line": 129,
+      "column": 25,
+      "vize": null,
+      "baseline": {
+        "code": 2304,
+        "message": "Cannot find name 'hide'."
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/app/Footer.vue",
+      "severity": "error",
+      "line": 136,
+      "column": 21,
+      "vize": null,
+      "baseline": {
+        "code": 2304,
+        "message": "Cannot find name 'hide'."
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/app/Footer.vue",
+      "severity": "error",
+      "line": 154,
+      "column": 17,
+      "vize": null,
+      "baseline": {
+        "code": 2551,
+        "message": "Property 'value' does not exist on type 'true'. Did you mean 'valueOf'?"
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/app/GitHubStarButton.vue",
+      "severity": "error",
+      "line": 6,
+      "column": 17,
+      "vize": null,
+      "baseline": {
+        "code": 2551,
+        "message": "Property 'value' does not exist on type 'Readonly<\"light\" | \"dark\" | \"black\">'. Did you mean 'valueOf'?"
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/app/GitHubStarButton.vue",
+      "severity": "error",
+      "line": 7,
+      "column": 21,
+      "vize": null,
+      "baseline": {
+        "code": 2551,
+        "message": "Property 'value' does not exist on type 'Readonly<\"light\" | \"dark\" | \"black\">'. Did you mean 'valueOf'?"
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/app/Header.vue",
+      "severity": "error",
+      "line": 404,
+      "column": 7,
+      "vize": null,
+      "baseline": {
+        "code": 6133,
+        "message": "'headerRef' is declared but its value is never read."
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/app/Inspection.vue",
+      "severity": "error",
+      "line": 12,
+      "column": 27,
+      "vize": null,
+      "baseline": {
+        "code": 6133,
+        "message": "'hide' is declared but its value is never read."
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/app/Inspection.vue",
+      "severity": "error",
+      "line": 65,
+      "column": 23,
+      "vize": null,
+      "baseline": {
+        "code": 2304,
+        "message": "Cannot find name 'hide'."
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/app/spotlight/Entry.vue",
+      "severity": "error",
+      "line": 42,
+      "column": 19,
+      "vize": null,
+      "baseline": {
+        "code": 2698,
+        "message": "Spread types may only be created from object types."
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/collections/MyCollections.vue",
+      "severity": "error",
+      "line": 396,
+      "column": 47,
+      "vize": null,
+      "baseline": {
+        "code": 2551,
+        "message": "Property 'value' does not exist on type 'Readonly<\"light\" | \"dark\" | \"black\">'. Did you mean 'valueOf'?"
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/collections/MyCollections.vue",
+      "severity": "error",
+      "line": 426,
+      "column": 47,
+      "vize": null,
+      "baseline": {
+        "code": 2551,
+        "message": "Property 'value' does not exist on type 'Readonly<\"light\" | \"dark\" | \"black\">'. Did you mean 'valueOf'?"
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/collections/MyCollections.vue",
+      "severity": "error",
+      "line": 447,
+      "column": 47,
+      "vize": null,
+      "baseline": {
+        "code": 2551,
+        "message": "Property 'value' does not exist on type 'Readonly<\"light\" | \"dark\" | \"black\">'. Did you mean 'valueOf'?"
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/collections/TeamCollections.vue",
+      "severity": "error",
+      "line": 440,
+      "column": 47,
+      "vize": null,
+      "baseline": {
+        "code": 2551,
+        "message": "Property 'value' does not exist on type 'Readonly<\"light\" | \"dark\" | \"black\">'. Did you mean 'valueOf'?"
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/collections/TeamCollections.vue",
+      "severity": "error",
+      "line": 479,
+      "column": 47,
+      "vize": null,
+      "baseline": {
+        "code": 2551,
+        "message": "Property 'value' does not exist on type 'Readonly<\"light\" | \"dark\" | \"black\">'. Did you mean 'valueOf'?"
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/collections/TeamCollections.vue",
+      "severity": "error",
+      "line": 505,
+      "column": 47,
+      "vize": null,
+      "baseline": {
+        "code": 2551,
+        "message": "Property 'value' does not exist on type 'Readonly<\"light\" | \"dark\" | \"black\">'. Did you mean 'valueOf'?"
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/collections/Variables.vue",
+      "severity": "error",
+      "line": 96,
+      "column": 49,
+      "vize": null,
+      "baseline": {
+        "code": 2551,
+        "message": "Property 'value' does not exist on type 'Readonly<\"light\" | \"dark\" | \"black\">'. Did you mean 'valueOf'?"
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/collections/documentation/sections/CurlView.vue",
+      "severity": "error",
+      "line": 225,
+      "column": 7,
+      "vize": null,
+      "baseline": {
+        "code": 6133,
+        "message": "'curlCodeContainer' is declared but its value is never read."
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/collections/graphql/index.vue",
+      "severity": "error",
+      "line": 70,
+      "column": 41,
+      "vize": null,
+      "baseline": {
+        "code": 2551,
+        "message": "Property 'value' does not exist on type 'Readonly<\"light\" | \"dark\" | \"black\">'. Did you mean 'valueOf'?"
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/environments/my/Details.vue",
+      "severity": "error",
+      "line": 331,
+      "column": 7,
+      "vize": null,
+      "baseline": {
+        "code": 6133,
+        "message": "'options' is declared but its value is never read."
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/environments/my/index.vue",
+      "severity": "error",
+      "line": 60,
+      "column": 41,
+      "vize": null,
+      "baseline": {
+        "code": 2551,
+        "message": "Property 'value' does not exist on type 'Readonly<\"light\" | \"dark\" | \"black\">'. Did you mean 'valueOf'?"
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/environments/teams/Details.vue",
+      "severity": "error",
+      "line": 342,
+      "column": 7,
+      "vize": null,
+      "baseline": {
+        "code": 6133,
+        "message": "'options' is declared but its value is never read."
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/environments/teams/index.vue",
+      "severity": "error",
+      "line": 80,
+      "column": 41,
+      "vize": null,
+      "baseline": {
+        "code": 2551,
+        "message": "Property 'value' does not exist on type 'Readonly<\"light\" | \"dark\" | \"black\">'. Did you mean 'valueOf'?"
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/firebase/Logout.vue",
+      "severity": "error",
+      "line": 45,
+      "column": 7,
+      "vize": null,
+      "baseline": {
+        "code": 6133,
+        "message": "'logoutItem' is declared but its value is never read."
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/graphql/Authorization.vue",
+      "severity": "error",
+      "line": 84,
+      "column": 41,
+      "vize": null,
+      "baseline": {
+        "code": 2551,
+        "message": "Property 'value' does not exist on type 'Readonly<\"light\" | \"dark\" | \"black\">'. Did you mean 'valueOf'?"
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/graphql/Headers.vue",
+      "severity": "error",
+      "line": 215,
+      "column": 41,
+      "vize": null,
+      "baseline": {
+        "code": 2551,
+        "message": "Property 'value' does not exist on type 'Readonly<\"light\" | \"dark\" | \"black\">'. Did you mean 'valueOf'?"
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/graphql/RequestOptions.vue",
+      "severity": "error",
+      "line": 192,
+      "column": 14,
+      "vize": null,
+      "baseline": {
+        "code": 2769,
+        "message": "No overload matches this call."
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/graphql/RequestOptions.vue",
+      "severity": "error",
+      "line": 220,
+      "column": 7,
+      "vize": null,
+      "baseline": {
+        "code": 2769,
+        "message": "No overload matches this call."
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/graphql/ResponseMeta.vue",
+      "severity": "error",
+      "line": 32,
+      "column": 43,
+      "vize": null,
+      "baseline": {
+        "code": 2551,
+        "message": "Property 'value' does not exist on type 'Readonly<\"light\" | \"dark\" | \"black\">'. Did you mean 'valueOf'?"
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/graphql/Sidebar.vue",
+      "severity": "error",
+      "line": 57,
+      "column": 43,
+      "vize": null,
+      "baseline": {
+        "code": 2551,
+        "message": "Property 'value' does not exist on type 'Readonly<\"light\" | \"dark\" | \"black\">'. Did you mean 'valueOf'?"
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/graphql/Sidebar.vue",
+      "severity": "error",
+      "line": 76,
+      "column": 8,
+      "vize": null,
+      "baseline": {
+        "code": 2345,
+        "message": "Argument of type '{ page: \"graphql\"; }' is not assignable to parameter of type '{ readonly page: \"rest\" | \"graphql\"; readonly selectedTab: string; } & VNodeProps & AllowedComponentProps & ComponentCustomProps & Record<...>'."
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/graphql/SubscriptionLog.vue",
+      "severity": "error",
+      "line": 87,
+      "column": 7,
+      "vize": null,
+      "baseline": {
+        "code": 6133,
+        "message": "'container' is declared but its value is never read."
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/history/Personal.vue",
+      "severity": "error",
+      "line": 105,
+      "column": 16,
+      "vize": null,
+      "baseline": {
+        "code": 2345,
+        "message": "Argument of type '{ id: number; key: string; entry: HistoryEntry; showMore: boolean; onAddToCollection: any; onUseEntry: any; onDeleteEntry: any; onToggleStar: any; }' is not assignable to parameter of type '(({ readonly entry: GQLHistoryEntry; readonly showMore: boolean; readonly \"onDelete-entry\"?: (() => any) | undefined; readonly \"onToggle-star\"?: (() => any) | undefined; } & VNodeProps & AllowedComponentProps & ComponentCustomProps) | ({ ...; } & ... 2 more ... & ComponentCustomProps)) & Record<...>'."
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/history/Personal.vue",
+      "severity": "error",
+      "line": 120,
+      "column": 41,
+      "vize": null,
+      "baseline": {
+        "code": 2551,
+        "message": "Property 'value' does not exist on type 'Readonly<\"light\" | \"dark\" | \"black\">'. Did you mean 'valueOf'?"
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/history/Personal.vue",
+      "severity": "error",
+      "line": 126,
+      "column": 41,
+      "vize": null,
+      "baseline": {
+        "code": 2551,
+        "message": "Property 'value' does not exist on type 'Readonly<\"light\" | \"dark\" | \"black\">'. Did you mean 'valueOf'?"
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/http/Authorization.vue",
+      "severity": "error",
+      "line": 84,
+      "column": 41,
+      "vize": null,
+      "baseline": {
+        "code": 2551,
+        "message": "Property 'value' does not exist on type 'Readonly<\"light\" | \"dark\" | \"black\">'. Did you mean 'valueOf'?"
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/http/BodyParameters.vue",
+      "severity": "error",
+      "line": 225,
+      "column": 41,
+      "vize": null,
+      "baseline": {
+        "code": 2551,
+        "message": "Property 'value' does not exist on type 'Readonly<\"light\" | \"dark\" | \"black\">'. Did you mean 'valueOf'?"
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/http/Headers.vue",
+      "severity": "error",
+      "line": 229,
+      "column": 43,
+      "vize": null,
+      "baseline": {
+        "code": 2551,
+        "message": "Property 'value' does not exist on type 'Readonly<\"light\" | \"dark\" | \"black\">'. Did you mean 'valueOf'?"
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/http/Parameters.vue",
+      "severity": "error",
+      "line": 89,
+      "column": 43,
+      "vize": null,
+      "baseline": {
+        "code": 2551,
+        "message": "Property 'value' does not exist on type 'Readonly<\"light\" | \"dark\" | \"black\">'. Did you mean 'valueOf'?"
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/http/Request.vue",
+      "severity": "error",
+      "line": 324,
+      "column": 7,
+      "vize": null,
+      "baseline": {
+        "code": 6133,
+        "message": "'copyRequestAction' is declared but its value is never read."
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/http/Request.vue",
+      "severity": "error",
+      "line": 325,
+      "column": 7,
+      "vize": null,
+      "baseline": {
+        "code": 6133,
+        "message": "'saveRequestAction' is declared but its value is never read."
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/http/RequestVariables.vue",
+      "severity": "error",
+      "line": 154,
+      "column": 43,
+      "vize": null,
+      "baseline": {
+        "code": 2551,
+        "message": "Property 'value' does not exist on type 'Readonly<\"light\" | \"dark\" | \"black\">'. Did you mean 'valueOf'?"
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/http/ResponseMeta.vue",
+      "severity": "error",
+      "line": 34,
+      "column": 43,
+      "vize": null,
+      "baseline": {
+        "code": 2551,
+        "message": "Property 'value' does not exist on type 'Readonly<\"light\" | \"dark\" | \"black\">'. Did you mean 'valueOf'?"
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/http/ResponseMeta.vue",
+      "severity": "error",
+      "line": 54,
+      "column": 43,
+      "vize": null,
+      "baseline": {
+        "code": 2551,
+        "message": "Property 'value' does not exist on type 'Readonly<\"light\" | \"dark\" | \"black\">'. Did you mean 'valueOf'?"
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/http/ResponseMeta.vue",
+      "severity": "error",
+      "line": 67,
+      "column": 43,
+      "vize": null,
+      "baseline": {
+        "code": 2551,
+        "message": "Property 'value' does not exist on type 'Readonly<\"light\" | \"dark\" | \"black\">'. Did you mean 'valueOf'?"
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/http/URLEncodedParams.vue",
+      "severity": "error",
+      "line": 56,
+      "column": 21,
+      "vize": null,
+      "baseline": {
+        "code": 7006,
+        "message": "Parameter 'param' implicitly has an 'any' type."
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/http/URLEncodedParams.vue",
+      "severity": "error",
+      "line": 163,
+      "column": 43,
+      "vize": null,
+      "baseline": {
+        "code": 2551,
+        "message": "Property 'value' does not exist on type 'Readonly<\"light\" | \"dark\" | \"black\">'. Did you mean 'valueOf'?"
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/lenses/renderers/HTMLLensRenderer.vue",
+      "severity": "error",
+      "line": 149,
+      "column": 7,
+      "vize": null,
+      "baseline": {
+        "code": 6133,
+        "message": "'containerRef' is declared but its value is never read."
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/lenses/renderers/HTMLLensRenderer.vue",
+      "severity": "error",
+      "line": 196,
+      "column": 9,
+      "vize": null,
+      "baseline": {
+        "code": 6133,
+        "message": "'previewFrame' is declared but its value is never read."
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/lenses/renderers/JSONLensRenderer.vue",
+      "severity": "error",
+      "line": 325,
+      "column": 7,
+      "vize": null,
+      "baseline": {
+        "code": 6133,
+        "message": "'containerRef' is declared but its value is never read."
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/lenses/renderers/RawLensRenderer.vue",
+      "severity": "error",
+      "line": 139,
+      "column": 7,
+      "vize": null,
+      "baseline": {
+        "code": 6133,
+        "message": "'containerRef' is declared but its value is never read."
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/lenses/renderers/XMLLensRenderer.vue",
+      "severity": "error",
+      "line": 126,
+      "column": 7,
+      "vize": null,
+      "baseline": {
+        "code": 6133,
+        "message": "'containerRef' is declared but its value is never read."
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/mockServer/MockServerDashboard.vue",
+      "severity": "error",
+      "line": 46,
+      "column": 45,
+      "vize": null,
+      "baseline": {
+        "code": 2551,
+        "message": "Property 'value' does not exist on type 'Readonly<\"light\" | \"dark\" | \"black\">'. Did you mean 'valueOf'?"
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/share/index.vue",
+      "severity": "error",
+      "line": 37,
+      "column": 43,
+      "vize": null,
+      "baseline": {
+        "code": 2551,
+        "message": "Property 'value' does not exist on type 'Readonly<\"light\" | \"dark\" | \"black\">'. Did you mean 'valueOf'?"
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/components/share/index.vue",
+      "severity": "error",
+      "line": 75,
+      "column": 43,
+      "vize": null,
+      "baseline": {
+        "code": 2551,
+        "message": "Property 'value' does not exist on type 'Readonly<\"light\" | \"dark\" | \"black\">'. Did you mean 'valueOf'?"
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/pages/settings.vue",
+      "severity": "error",
+      "line": 51,
+      "column": 25,
+      "vize": null,
+      "baseline": {
+        "code": 2551,
+        "message": "Property 'value' does not exist on type 'boolean'. Did you mean 'valueOf'?"
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/pages/settings.vue",
+      "severity": "error",
+      "line": 74,
+      "column": 26,
+      "vize": null,
+      "baseline": {
+        "code": 2551,
+        "message": "Property 'value' does not exist on type 'boolean'. Did you mean 'valueOf'?"
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/pages/settings.vue",
+      "severity": "error",
+      "line": 83,
+      "column": 23,
+      "vize": null,
+      "baseline": {
+        "code": 2551,
+        "message": "Property 'value' does not exist on type 'boolean'. Did you mean 'valueOf'?"
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/pages/settings.vue",
+      "severity": "error",
+      "line": 205,
+      "column": 47,
+      "vize": null,
+      "baseline": {
+        "code": 2339,
+        "message": "Property 'preference' does not exist on type 'Readonly<\"light\" | \"dark\" | \"black\">'."
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/pages/settings.vue",
+      "severity": "error",
+      "line": 206,
+      "column": 37,
+      "vize": null,
+      "baseline": {
+        "code": 2339,
+        "message": "Property 'preference' does not exist on type 'Readonly<\"light\" | \"dark\" | \"black\">'."
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
+    },
+    {
+      "project": "hoppscotch",
+      "file": "packages/hoppscotch-common/src/pages/settings.vue",
+      "severity": "error",
+      "line": 207,
+      "column": 50,
+      "vize": null,
+      "baseline": {
+        "code": 2551,
+        "message": "Property 'value' does not exist on type 'Readonly<\"light\" | \"dark\" | \"black\">'. Did you mean 'valueOf'?"
+      },
+      "issue": 13298,
+      "reason": "vue-tsc reports this pinned Hoppscotch diagnostic while Vize accepts the same source; the exact baseline-only row is tracked under issue 13298."
     }
   ]
 }
