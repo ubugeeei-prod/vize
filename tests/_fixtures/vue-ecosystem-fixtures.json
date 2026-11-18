@@ -174,7 +174,7 @@
         "enabled": true,
         "compareTo": "vue-tsc",
         "packageManager": "pnpm",
-        "packageManagerVersion": "10.33.4",
+        "packageManagerVersion": "10.34.2",
         "lockfile": "pnpm-lock.yaml",
         "baseline": {
           "tsconfig": "packages/hoppscotch-common/tsconfig.json",
