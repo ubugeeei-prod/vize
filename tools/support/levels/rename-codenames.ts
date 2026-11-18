@@ -15,6 +15,7 @@
  * commit; `--check` is then empty.
  */
 import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -35,9 +36,17 @@ const parsedCapture =
   /^(?:tests\/tooling\/fixtures\/canonical-observer-logs|tests\/fixtures\/l3-reference|crates\/vize\/tests\/fixtures\/dump_cli)\//u;
 /** Records that pin git trees at past revisions name the paths those trees had. */
 const pinnedTrees = /^editors\/vscode\/test\/css-hover-source-custody\.json$/u;
+/**
+ * Frozen copies of past files are captures too: a source or config file saved as `.txt` or
+ * `.fixture`, and the frozen-source and source-custody trees that pin such copies.
+ */
+const frozenCopy =
+  /\.(?:rs|ts|mts|mjs|js|json|toml|lock|ya?ml|tsv|vue|md)\.(?:txt|fixture)$|(?:^|\/)(?:frozen-source|source-custody)\//u;
 /** Captured output of a past run is history and keeps its bytes. */
 export const keepsBytes = (file: string): boolean =>
-  pinnedTrees.test(file) || (capture.test(file) && !parsedCapture.test(file));
+  pinnedTrees.test(file) ||
+  (frozenCopy.test(file) && !parsedCapture.test(file)) ||
+  (capture.test(file) && !parsedCapture.test(file));
 
 interface LevelName {
   /** Lowercase spelling for snake, kebab and plain words. */
@@ -444,8 +453,65 @@ export function run(mode: string, cwd = root): string[] {
       cwd,
       stdio: "ignore",
     });
+    stale.push(...repin(cwd));
   }
-  return stale;
+  return [...new Set(stale)];
+}
+
+const sha256 = (bytes: Buffer) => createHash("sha256").update(bytes).digest("hex");
+const gitBlob = (bytes: Buffer) =>
+  createHash("sha1").update(`blob ${bytes.length}\0`).update(bytes).digest("hex");
+
+/**
+ * Re-records the whole-file digests (SHA-256 and git blob ids) that name a file the rewrite
+ * changed, in every file that still follows the rename. A record whose pins change changes its
+ * own digest, so this repeats until nothing moves. Captures and the kept history keep theirs.
+ */
+function repin(cwd: string): string[] {
+  const pinned = new Set<string>();
+  const holders = contentTargets(cwd).filter((file) => !keptHistory(file));
+  const last = new Map<string, readonly string[]>();
+  for (let round = 0; round < 8; round++) {
+    const replacements = new Map<string, string>();
+    const changed = execFileSync("git", ["diff", "--name-only", "-z"], {
+      cwd,
+      encoding: "utf8",
+      maxBuffer: 1 << 28,
+    })
+      .split("\0")
+      .filter(Boolean);
+    for (const file of changed) {
+      const full = path.join(cwd, file);
+      if (!fs.existsSync(full)) continue;
+      const recorded =
+        last.get(file) ??
+        ((bytes) => [sha256(bytes), gitBlob(bytes)])(
+          execFileSync("git", ["show", `:${file}`], { cwd, maxBuffer: 1 << 30 }),
+        );
+      const bytes = fs.readFileSync(full);
+      const current = [sha256(bytes), gitBlob(bytes)];
+      current.forEach((to, index) => {
+        if (recorded[index] !== to) replacements.set(recorded[index], to);
+      });
+      last.set(file, current);
+    }
+    if (replacements.size === 0) break;
+    const digest = new RegExp([...replacements.keys()].join("|"), "gu");
+    for (const file of holders) {
+      const full = path.join(cwd, file);
+      const bytes = fs.readFileSync(full);
+      if (!textFile(bytes)) continue;
+      const text = bytes.toString("utf8");
+      digest.lastIndex = 0;
+      if (!digest.test(text)) continue;
+      fs.writeFileSync(
+        full,
+        text.replace(digest, (from) => replacements.get(from) ?? from),
+      );
+      pinned.add(file);
+    }
+  }
+  return [...pinned];
 }
 
 const generators = [
