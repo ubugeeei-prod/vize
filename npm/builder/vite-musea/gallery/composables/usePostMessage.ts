@@ -1,4 +1,4 @@
-import { onUnmounted, type Ref } from "vue";
+import { onUnmounted, toRaw, type Ref } from "vue";
 
 export interface MuseaMessage {
   type: string;
@@ -8,7 +8,33 @@ export interface MuseaMessage {
 export function sendMessage(iframe: HTMLIFrameElement, type: string, payload: unknown = {}): void {
   const targetOrigin = resolvePreviewPostMessageOrigin(iframe.src, window.location.origin);
   if (!targetOrigin) return;
-  iframe.contentWindow?.postMessage({ type, payload }, targetOrigin);
+  iframe.contentWindow?.postMessage({ type, payload: toPostMessagePayload(payload) }, targetOrigin);
+}
+
+/** Vue proxies are not structured-cloneable, even when they wrap an empty object. */
+export function toPostMessagePayload<T>(value: T, seen = new WeakMap<object, unknown>()): T {
+  if (typeof value !== "object" || value === null) return value;
+
+  const raw = toRaw(value) as object;
+  const cached = seen.get(raw);
+  if (cached) return cached as T;
+
+  if (Array.isArray(raw)) {
+    const clone: unknown[] = [];
+    seen.set(raw, clone);
+    clone.push(...raw.map((entry) => toPostMessagePayload(entry, seen)));
+    return clone as T;
+  }
+
+  const prototype = Object.getPrototypeOf(raw);
+  if (prototype !== Object.prototype && prototype !== null) return raw as T;
+
+  const clone: Record<string, unknown> = {};
+  seen.set(raw, clone);
+  for (const [key, entry] of Object.entries(raw)) {
+    clone[key] = toPostMessagePayload(entry, seen);
+  }
+  return clone as T;
 }
 
 /**
