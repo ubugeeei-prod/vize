@@ -28,11 +28,11 @@ pub use crate::dialect::vue3::surface::{
 enum Structure {
     /// Only the tokenizer's errors (the historical surface contract).
     Off,
-    /// A Vue template, which Vue's compiler builds as written: no foster
-    /// parenting, which only a browser's HTML parse applies.
+    /// A Vue template, which Vue's compiler builds as written: no implied
+    /// end tags, ignored nested forms, adoption agency or foster parenting.
     Template,
-    /// A template the browser parses as HTML first (in-DOM, standalone HTML):
-    /// content a table cannot hold is fostered before it.
+    /// A template the browser parses as HTML first (in-DOM, standalone HTML),
+    /// with the HTML tree construction's fix-ups.
     InDom,
 }
 
@@ -161,8 +161,9 @@ pub fn parse_with_authored_diagnostics<'a>(
 }
 
 /// [`parse_with_authored_diagnostics`] for a template the browser parses as
-/// HTML before Vue reads it (in-DOM, standalone HTML), so the diagnostics
-/// also report foster parenting, which a Vue template never undergoes.
+/// HTML before Vue reads it (in-DOM, standalone HTML), so the tree and the
+/// diagnostics follow the HTML tree construction, which a Vue template never
+/// undergoes.
 pub fn parse_in_dom_with_authored_diagnostics<'a>(
     allocator: &'a Allocator,
     source: &'a str,
@@ -326,8 +327,8 @@ fn construct_with_tag_facts_and_diagnostics<'a, const RAW: bool, const TAG_FACTS
         let mut ignored = Vec::new_in(&allocator);
         build::<RAW, TAG_FACTS, false>(allocator, source, &events, &mut ignored, true, false)
     } else {
-        let fosters = structure == Structure::InDom;
-        build::<RAW, TAG_FACTS, true>(allocator, source, &events, &mut errors, true, fosters)
+        let in_dom = structure == Structure::InDom;
+        build::<RAW, TAG_FACTS, true>(allocator, source, &events, &mut errors, in_dom, in_dom)
     };
     let authored = (authored && repaired).then(|| {
         let mut ignored = Vec::new_in(&allocator);

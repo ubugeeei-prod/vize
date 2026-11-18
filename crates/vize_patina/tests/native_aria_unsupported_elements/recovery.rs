@@ -1,14 +1,10 @@
 use super::support::{
-    LOCALES, NeverLookup, collect, complete, error, expected, parser, registered, selected, span,
+    LOCALES, NeverLookup, collect, complete, expected, parser, registered, selected, span,
 };
 use vize_l0::{Allocator, cstr};
 use vize_patina::native::{
     NativeLintRefusal, NativeSyntaxLint, header_facts::NativeHeaderFactError,
 };
-
-const IGNORED: &str =
-    "HTML tree construction ignored this start tag because an equivalent element is already open.";
-const INVALID_END: &str = "Invalid end tag.";
 
 fn refused(source: &str, path: &[usize]) {
     let arena = Allocator::default();
@@ -63,64 +59,38 @@ fn refused(source: &str, path: &[usize]) {
 }
 
 #[test]
-fn genuine_pre_recovery_refusal_retains_every_original_parser_and_aria_error() {
-    // `aria`: the registered route reports `:role` only when it stays a live
-    // binding. Every recovered v-pre owner keeps it as a literal attribute,
-    // including across implied p, option and optgroup end tags, as Vue does.
-    for (source, path, ignored, invalid_end, aria) in [
+fn pre_recovery_refusal_keeps_the_authored_v_pre_owner_without_parser_errors() {
+    // Vue builds these templates as written: each `<meta>` stays inside its
+    // v-pre owner, so `:role` is a literal attribute and no parser error is
+    // reported. Only the native tag facts still treat the shape as a
+    // recovery context, so the native route refuses.
+    for (source, path) in [
         (
             "<template><form><form v-pre><meta :role='x' /></form></form></template>",
             &[0, 0, 0][..],
-            Some("<form v-pre>"),
-            Some("</form></template>"),
-            false,
         ),
         (
             "<template><p v-pre><div><meta :role='x' /></div></p></template>",
             &[1][..],
-            None,
-            Some("</p>"),
-            false,
         ),
         (
             "<template><a v-pre><a /><meta :role='x' /></a></template>",
             &[0, 1][..],
-            None,
-            None,
-            false,
         ),
         (
             "<template><select><option v-pre><option><meta :role='x' /></option></option></select></template>",
             &[0, 1][..],
-            None,
-            Some("</option></select>"),
-            false,
         ),
         (
             "<template><select><optgroup v-pre><optgroup><meta :role='x' /></optgroup></optgroup></select></template>",
             &[0, 1][..],
-            None,
-            Some("</optgroup></select>"),
-            false,
         ),
     ] {
         refused(source, path);
         for locale in LOCALES {
-            let mut diagnostics = Vec::new();
-            if let Some(head) = ignored {
-                diagnostics.push(parser("error", IGNORED, span(source, head)));
-            }
-            if aria {
-                diagnostics.push(error(locale, span(source, ":role='x'"), "meta", "role"));
-            }
-            if let Some(tail) = invalid_end {
-                let mut range = span(source, tail);
-                range.end = range.start + u32::try_from(tail.find('>').unwrap() + 1).unwrap();
-                diagnostics.push(parser("error", INVALID_END, range));
-            }
             assert_eq!(
                 complete(&registered(source, locale)),
-                expected(diagnostics),
+                expected(Vec::new()),
                 "{source}: {locale:?}"
             );
         }
