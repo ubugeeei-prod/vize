@@ -38,7 +38,7 @@
   "noCompileBehaviorFixSubjects": 71,
   "currentApiCohort": {
     "path": "crates/vize_atelier_sfc/tests/fixtures/compile-history/cases.json",
-    "sha256": "2c426317edad9f5fadfc4b4352289b0cf23ef174783529258647dcea459c9247"
+    "sha256": "014c80a69e122921230ab32625a7ae093bcf326b51572219c2ebe94148024214"
   },
   "dispositions": {
     "path": "crates/vize_atelier_sfc/tests/fixtures/compile-history/dispositions.json",
@@ -84,7 +84,7 @@
   ],
   "index": {
     "path": "docs/davinci/plan/compiler-fix-history.tsv",
-    "sha256": "1669ccf16f36d6d7fd177429d958e9fb50884ba2d3992f3ba25a20ca39265d83"
+    "sha256": "66ee11b081029385199bca13070eb6fbe38bcb6a08574c46bb9b036c2e9e8374"
   },
   "semanticDenominator": null,
   "nativeAcceptance": 0,

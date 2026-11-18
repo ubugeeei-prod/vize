@@ -82,18 +82,83 @@ fn the_carriers_own_model_is_outside_its_slot_scope() {
 }
 
 #[test]
-fn a_pattern_params_scope_contributes_no_names() {
-    // The one-scanner rule (#4365): the L2 lane enumerates pattern
-    // bindings nowhere yet, so — unlike the legacy lane, which
-    // enumerates `{ row }` — no scope name exists to match. The
-    // differential lane counts this class (`models_pattern_scope`)
-    // instead of comparing inside it; this pin is the recorded weaker
-    // behaviour, kept loud on purpose.
-    let source = r#"<Card v-slot="{ row }"><input v-model="row"></Card>"#;
-    with_transformed(source, |lowered, _, facts, _| {
-        assert_eq!(lowered.diagnostics, vec![]);
-        assert!(facts.model_faults.is_empty());
-    });
+fn a_pattern_params_scope_declares_every_bound_name() {
+    // Vue's `trackSlotScopes` registers each name the params pattern
+    // binds: nested, default-valued, renamed and rest positions, on a
+    // component's own `v-slot` and on a `<template #slot>` alike.
+    for (name, source) in [
+        (
+            "object",
+            r#"<Card v-slot="{ row }"><input v-model="row"></Card>"#,
+        ),
+        (
+            "template",
+            r#"<Card><template #default="{ row }"><input v-model="row"></template></Card>"#,
+        ),
+        (
+            "nested",
+            r#"<Card v-slot="{ a: { row } }"><input v-model="row"></Card>"#,
+        ),
+        (
+            "default",
+            r#"<Card v-slot="{ row = 1 }"><input v-model="row"></Card>"#,
+        ),
+        (
+            "renamed",
+            r#"<Card v-slot="{ item: row }"><input v-model="row"></Card>"#,
+        ),
+        (
+            "rest",
+            r#"<Card v-slot="{ a, ...row }"><input v-model="row"></Card>"#,
+        ),
+        (
+            "array-rest",
+            r#"<Card v-slot="[a, ...row]"><input v-model="row"></Card>"#,
+        ),
+        (
+            "annotated",
+            r#"<Card v-slot="{ row }: Props"><input v-model="row"></Card>"#,
+        ),
+        (
+            "inner-loop",
+            r#"<Card v-slot="{ row }"><p v-for="x in xs"><input v-model="row"></p></Card>"#,
+        ),
+    ] {
+        with_transformed(source, |lowered, _, facts, _| {
+            let messages = lowered
+                .diagnostics
+                .iter()
+                .map(|diagnostic| diagnostic.message.as_str())
+                .collect::<Vec<_>>();
+            assert_eq!(messages, [vmodel::ON_SCOPE_MESSAGE], "{name}");
+            let faults = facts
+                .model_faults
+                .sorted_entries()
+                .into_iter()
+                .map(|(_, fact)| fact.fault)
+                .collect::<Vec<_>>();
+            assert_eq!(faults, [ModelFault::OnScope], "{name}");
+        });
+        assert_transformed_sound(source, name);
+    }
+}
+
+#[test]
+fn a_pattern_scope_leaves_other_reads_valid() {
+    // A property key, a default value's read, a member of a bound name
+    // and an unparsable pattern declare nothing the model writes.
+    for source in [
+        r#"<Card v-slot="{ item: row }"><input v-model="item"></Card>"#,
+        r#"<Card v-slot="{ row = draft }"><input v-model="draft"></Card>"#,
+        r#"<Card v-slot="{ row }"><input v-model="row.value"></Card>"#,
+        r#"<Card v-slot="{ rows }"><input v-model="row"></Card>"#,
+        r#"<Card v-slot="{ row"><input v-model="row"></Card>"#,
+    ] {
+        with_transformed(source, |lowered, _, facts, _| {
+            assert_eq!(lowered.diagnostics, vec![], "{source}");
+            assert!(facts.model_faults.is_empty(), "{source}");
+        });
+    }
 }
 
 #[test]
