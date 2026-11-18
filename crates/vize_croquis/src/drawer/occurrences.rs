@@ -102,13 +102,9 @@ impl Drawer {
             }
             Some(capture.packet)
         });
-        let template_expression_reads = self
-            .croquis
-            .template_expression_reads
-            .is_some()
-            .then_some(self.ident_cache);
+        let retain_reads = self.croquis.template_expression_reads.is_some();
         let mut croquis = self.croquis;
-        croquis.template_expression_reads = template_expression_reads;
+        croquis.template_expression_reads = retain_reads.then_some(self.ident_cache);
         if retain && demanded {
             croquis.setup_context.set_ssr_occurrences(packet.clone());
             croquis
