@@ -44,21 +44,17 @@ fn direct_table_rows_and_cells_stay_authored_like_vue() {
         )
     );
 
-    let dom = compile(false, false);
     // Only the authored `tbody` is created; every row keeps its authored parent.
-    assert_eq!(dom.matches("\"tbody\"").count(), 1, "{dom}");
-    assert_eq!(dom.matches("\"tr\"").count(), 5, "{dom}");
-    assert!(
-        dom.contains("{ class: \"grid\" }, [\n      _createElementVNode(\"tr\""),
-        "{dom}"
+    assert_eq!(
+        compile(false, false),
+        include_str!("fixtures/table_authored_rows/dom.expected.txt")
     );
 }
 
 #[test]
 fn vapor_templates_keep_the_tbody_that_inner_html_inserts() {
-    let vapor = compile(false, true);
-    assert!(
-        vapor.contains("<table class=\\\"grid\\\"><tbody><tr><th>Name</th></tr>"),
-        "{vapor}"
+    assert_eq!(
+        compile(false, true),
+        include_str!("fixtures/table_authored_rows/vapor.expected.txt")
     );
 }
