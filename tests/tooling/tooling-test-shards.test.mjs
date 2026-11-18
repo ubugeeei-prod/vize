@@ -64,7 +64,7 @@ for (const tier of ["pr", "merge"]) {
 }
 
 void test("timed packing uses the fewest runners within the target and bounds the longest", () => {
-  // Unmeasured files share one conservative estimate, so 10 of them fit one runner.
+  // Unmeasured files share one conservative estimate; the PR budget fits a fixed count.
   const unmeasured = (size) =>
     Array.from({ length: size }, (_, index) => `tests/tooling/new-${index}.test.ts`);
   const estimate = estimateToolingTestMs("pr", "tests/tooling/new-0.test.ts");
@@ -147,7 +147,9 @@ void test("only shards that own a native runtime consumer build the addon", () =
   const plain = plan(files);
   const first = toolingShardMatrix(plain).include[0];
   assert.equal(toolingShardNativeBuildRequired(plain, `${first.index}/${first.total}`), false);
-  const splitNative = files.slice(0, 7);
+  // One more unmeasured native consumer than a single runner's budget holds.
+  const perRunner = Math.floor(TOOLING_SHARD_TARGET_MS.pr / estimateToolingTestMs("pr", files[0]));
+  const splitNative = files.slice(0, perRunner + 1);
   const split = plan(files, "pr", undefined, splitNative);
   assert.equal(
     toolingShardMatrix(split).include.filter(({ index, total }) =>

@@ -32,6 +32,18 @@ const approvedRunnerLabels = new Set([
   "windows-2025",
 ]);
 
+// Zero-compute plan and report jobs run on hosted Ubuntu so they never wait
+// behind 32-vCPU build jobs at the Blacksmith concurrency cap (see #10975).
+// They only read plans, gate `needs`, or publish reports: no Rust toolchain,
+// sticky disk or build cache.
+const hostedZeroComputeJobs: Readonly<Record<string, readonly string[]>> = {
+  "check.yml": ["iteration-plan", "test-report"],
+  "pr-rust-checks.yml": ["rust-source-report"],
+  "pr-rust-products.yml": ["rust-product-report"],
+  "pr-source-checks.yml": ["pr-source-plan", "affected-tooling-report", "source-report"],
+};
+const hostedZeroComputeRunner = "ubuntu-24.04";
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value != null && typeof value === "object" && !Array.isArray(value);
 }
@@ -44,11 +56,15 @@ function valuesForMatrixKey(value: unknown, key: string): string[] {
   );
 }
 
-function workflowRunnerLabels(source: string): string[] {
+function workflowRunnerLabels(source: string, hostedJobs: readonly string[] = []): string[] {
   const workflow = parse(source) as unknown;
   assert.ok(isRecord(workflow) && isRecord(workflow.jobs), "workflow must define jobs");
-  return Object.values(workflow.jobs).flatMap((value) => {
+  return Object.entries(workflow.jobs).flatMap(([id, value]) => {
     assert.ok(isRecord(value), "workflow job must be a mapping");
+    if (hostedJobs.includes(id)) {
+      assert.equal(value["runs-on"], hostedZeroComputeRunner, id);
+      return [];
+    }
     const declared = Array.isArray(value["runs-on"]) ? value["runs-on"] : [value["runs-on"]];
     const strategy = isRecord(value.strategy) ? value.strategy : {};
     return declared.flatMap((runner) => {
@@ -123,7 +139,7 @@ test("non-release workflows use maximum Blacksmith runner classes", () => {
     .filter((file) => /\.ya?ml$/.test(file) && workflowGroupId(file) !== "02")
     .flatMap((file) => {
       const source = readRepoFile(`.github/workflows/${file}`);
-      return workflowRunnerLabels(source)
+      return workflowRunnerLabels(source, hostedZeroComputeJobs[file])
         .filter((runner) => !approvedRunnerLabels.has(runner))
         .map((runner) => `${file}: ${runner}`);
     });

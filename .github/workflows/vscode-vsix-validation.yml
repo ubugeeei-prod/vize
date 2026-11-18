@@ -9,8 +9,11 @@ on:
       - tools/support/lib.rs
       - tools/support/editors/vsix_configuration.rs
       - tests/tooling/vscode-vsix-configuration.test.ts
-  merge_group:
-    types: [checks_requested]
+  # Not a required check, so a queue run gated nothing while it competed with
+  # every queue entry for runners. Each main commit is still validated in full;
+  # cancel-in-progress coalesces a burst of merges into one run of the newest.
+  push:
+    branches: [main]
   workflow_dispatch:
 
 concurrency:

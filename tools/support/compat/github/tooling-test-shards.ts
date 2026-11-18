@@ -16,10 +16,12 @@ export function toolingTestFiles(cwd = fileURLToPath(new URL("../../../../", imp
 // checkouts; every runner still executes its own files serially. Measured timings only decide
 // where a file runs and how many runners a plan needs, never whether it runs.
 export const MAX_TOOLING_SHARDS = 32;
-// PR and queue shards pay the shared checkout/setup cost, while only native
-// consumers build the addon. A 60s PR test budget keeps the affected lane
-// below the three-minute PR target without increasing the merge target.
-export const TOOLING_SHARD_TARGET_MS = Object.freeze({ pr: 60_000, merge: 100_000 });
+// PR and queue shards pay the shared checkout/setup cost (about 60-90s each),
+// while only native consumers build the addon. At the Blacksmith concurrency
+// cap every extra shard is another job waiting for a 32-vCPU slot, so a 120s
+// PR test budget halves the shard count; the affected lane still finishes
+// before the Rust lanes that gate the same source report.
+export const TOOLING_SHARD_TARGET_MS = Object.freeze({ pr: 120_000, merge: 100_000 });
 export const TOOLING_TIMINGS_SCHEMA = "vize-tooling-test-timings-v1";
 // The table names every tooling test, so it lives beside them.
 export const TOOLING_TIMINGS_PATH = new URL(

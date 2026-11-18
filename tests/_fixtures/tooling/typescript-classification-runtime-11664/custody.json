@@ -66,8 +66,8 @@
       },
       "after": {
         "path": ".github/workflows/language-project-fixtures.yml",
-        "sha256": "51dbe610c42f2dbb065792591d50319c0be5f42b4af8caa01c1c95d7f73a7227",
-        "bytes": 2066
+        "sha256": "b65d5501a7657919f10949f6b721967460dfa76d1bc24c95d53cc2eaf153374a",
+        "bytes": 2287
       },
       "gzip": {
         "path": "tests/_fixtures/tooling/typescript-classification-runtime-11664/language-project-fixtures.before.yml.gz",
@@ -83,8 +83,8 @@
       },
       "after": {
         "path": ".github/workflows/typescript-plugin.yml",
-        "sha256": "9fada591f5cfa5b27bff33bdf2cf83a4795df657d63b97cb4577577a7aa62466",
-        "bytes": 4518
+        "sha256": "8e175b8a01082bc72fc3e6bfb73af101c338618f7ddc8685745fc556c0fe5b78",
+        "bytes": 4739
       },
       "gzip": {
         "path": "tests/_fixtures/tooling/typescript-classification-runtime-11664/typescript-plugin.before.yml.gz",
@@ -100,8 +100,8 @@
       },
       "after": {
         "path": ".github/workflows/typescript-provider-vsix.yml",
-        "sha256": "a34cfe030a65676b818589ae92861c28af64a0937febefc5368d15a84fefd9b0",
-        "bytes": 10477
+        "sha256": "d22338f949d4e20c373c8a7feab76b19d07c2a297858b2336a41e3401ec9e46e",
+        "bytes": 10698
       },
       "gzip": {
         "path": "tests/_fixtures/tooling/typescript-classification-runtime-11664/typescript-provider-vsix.before.yml.gz",

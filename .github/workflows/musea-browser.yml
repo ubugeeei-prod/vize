@@ -1,8 +1,10 @@
 name: Musea accessibility and capture
 on:
   pull_request: {}
-  merge_group:
-    types: [checks_requested]
+  # Not a required check, so a queue run gated nothing while it competed with
+  # every queue entry for runners. main gets a post-merge run per commit instead.
+  push:
+    branches: [main]
   schedule:
     - cron: "43 3 * * *"
   workflow_dispatch:
@@ -11,7 +13,9 @@ permissions:
   contents: read
 
 concurrency:
-  group: musea-browser-${{ github.event.pull_request.number || github.ref }}
+  # The planner selects from one commit's diff, so a push run must never be
+  # coalesced into a newer one that would not select the same integrations.
+  group: musea-browser-${{ github.event.pull_request.number || (github.event_name == 'push' && github.sha) || github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -36,7 +40,7 @@ jobs:
       - name: Select changed product inputs
         id: plan
         env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.merge_group.base_sha }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
         run: |
           if [[ "$BASE_SHA" =~ ^[a-f0-9]{40}$ && ! "$BASE_SHA" =~ ^0+$ ]]; then
             git fetch --no-tags --depth=1 origin "$BASE_SHA"
