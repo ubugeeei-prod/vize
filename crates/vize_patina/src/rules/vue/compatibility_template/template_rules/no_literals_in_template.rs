@@ -3,9 +3,12 @@
 use super::shared::static_argument;
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::ir::ByteRange;
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use crate::visitor::has_free_reference;
 use oxc_ast::ast::Expression;
+use oxc_span::GetSpan;
+use vize_armature::patterns::attribute_source_span;
 use vize_relief::{DirectiveNode, ElementNode, ExpressionNode};
 
 static META: RuleMeta = RuleMeta {
@@ -44,8 +47,9 @@ impl Rule for NoLiteralsInTemplate {
         };
         // Like the reference, only the top-level expression counts, and a
         // literal reading a `v-for` or slot variable cannot move to script.
+        let literal = parsed.ast.without_parentheses();
         if matches!(
-            parsed.ast.without_parentheses(),
+            literal,
             Expression::ObjectExpression(_)
                 | Expression::ArrayExpression(_)
                 | Expression::FunctionExpression(_)
@@ -53,9 +57,19 @@ impl Rule for NoLiteralsInTemplate {
         ) && !(ctx.v_for_vars().next().is_some()
             && has_free_reference(expression, |name| ctx.is_v_for_var(name)))
         {
-            ctx.warn_with_help(
+            // eslint-plugin-vue reports the literal node, not the whole value.
+            let start = expression.loc.span.start;
+            let authored = ctx
+                .source
+                .get(start as usize..expression.loc.span.end as usize)
+                .unwrap_or_default();
+            let range = attribute_source_span(authored, expression.content, literal.span())
+                .map_or(ByteRange::new(start, expression.loc.span.end), |span| {
+                    ByteRange::new(start + span.start, start + span.end)
+                });
+            ctx.warn_at_with_help(
                 "Unexpected literal in a template binding",
-                &expression.loc,
+                range,
                 "Move the literal to a script binding so Vue can reuse the same value",
             );
         }

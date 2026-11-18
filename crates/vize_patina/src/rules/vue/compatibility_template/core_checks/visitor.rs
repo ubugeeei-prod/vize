@@ -197,23 +197,22 @@ impl<'a> Visit<'a> for CoreVisitor<'_, '_> {
         {
             self.report(key.span());
         }
+        // eslint-plugin-vue reports the `console` object of the member.
         if self.kind == CoreKind::NoConsole
-            && matches!(member.object.get_inner_expression(),
-                Expression::Identifier(identifier) if identifier.name == "console")
+            && let Expression::Identifier(identifier) = member.object.get_inner_expression()
+            && identifier.name == "console"
         {
-            self.report(member.span);
+            self.report(identifier.span);
         }
         walk::walk_computed_member_expression(self, member);
     }
 
     fn visit_static_member_expression(&mut self, member: &StaticMemberExpression<'a>) {
         if self.kind == CoreKind::NoConsole
-            && matches!(
-                member.object.get_inner_expression(),
-                Expression::Identifier(identifier) if identifier.name == "console"
-            )
+            && let Expression::Identifier(identifier) = member.object.get_inner_expression()
+            && identifier.name == "console"
         {
-            self.report(member.span);
+            self.report(identifier.span);
         }
         walk::walk_static_member_expression(self, member);
     }
