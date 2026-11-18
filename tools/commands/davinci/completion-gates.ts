@@ -9,6 +9,8 @@ import { fileURLToPath } from "node:url";
 
 import {
   keepsBytes,
+  keptHistory,
+  knownPaths,
   levelHits,
   renamePath,
   rewriteText,
@@ -97,10 +99,13 @@ export const scanCodenames = (repo: Repo): CodenameReport => {
   };
   let paths = 0,
     lines = 0;
+  const known = knownPaths(repo.paths);
   for (const file of repo.paths) {
     if (gateFiles.has(file)) continue;
-    // Markdown under docs/ may keep the level codenames as aliases; every path moves.
-    const levels = !(file.startsWith("docs/") && file.endsWith(".md"));
+    // Markdown under docs/ may keep the level codenames as aliases; every path moves. The kept
+    // docs are history: only their references to moved paths count.
+    const history = keptHistory(file);
+    const levels = !history && !(file.startsWith("docs/") && file.endsWith(".md"));
     const named = [
       ...levelHits(file),
       ...(renamePath(file, programOnly) === file ? [] : [program]),
@@ -113,10 +118,12 @@ export const scanCodenames = (repo: Repo): CodenameReport => {
     const text = keepsBytes(file) ? null : repo.read(file);
     if (text === null) continue;
     const before = text.split("\n");
-    const after = rewriteText(file, text, programOnly).split("\n");
+    const after = rewriteText(file, text, programOnly, known).split("\n");
+    const moved = history ? rewriteText(file, text, undefined, known).split("\n") : [];
     before.forEach((line, index) => {
       // `//! L3 - reactivity IR (codename: Impeto)` is the alias form for level codenames.
       const found: string[] = levels && !/codename/i.test(line) ? levelHits(line) : [];
+      if (history && moved[index] !== line) found.push(...levelHits(line));
       if (after[index] !== line) found.push(program);
       if (found.length) {
         lines++;

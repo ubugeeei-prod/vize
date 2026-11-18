@@ -120,7 +120,20 @@ export interface Scope {
 }
 const everything: Scope = { program: true, levels: true };
 
+/**
+ * Whole words with a fixed replacement, checked before the generic rules: the deprecated feature
+ * aliases name the features they alias, and the dissolved `vize_*` substrate crates name the level
+ * crate that took their contents.
+ */
+const fixedWords: Readonly<Record<string, string>> = {
+  [`${NAME}-differential`]: "legacy-differential",
+  [`${NAME}-dom-differential`]: "legacy-dom-differential",
+  [`vize_${NAME}`]: "vize_l0",
+  [`vize_${NAME}_derive`]: "vize_l0_derive",
+};
+
 export function renameWord(value: string, scope: Scope = everything): string {
+  if (scope.program && Object.hasOwn(fixedWords, value)) return fixedWords[value];
   let out = value;
   if (scope.levels) {
     out = out.replace(levelPattern, (match, at: number) =>
@@ -211,9 +224,17 @@ function aliasLines(text: string): [number, number][] {
  * aliases and historical names (published packages, old wire headers); only file paths follow
  * their moves. Other data under docs/ names current code and follows fully.
  */
-export function rewriteText(file: string, text: string, limit: Scope = everything): string {
+export function rewriteText(
+  file: string,
+  text: string,
+  limit: Scope = everything,
+  known?: ReadonlySet<string>,
+): string {
   anyPattern.lastIndex = 0;
   if (!anyPattern.test(text)) return text;
+  if (keptHistory(file)) {
+    return known ? rewriteKeptPaths(file, text, limit, known) : text;
+  }
   const markdown = file.endsWith(".md");
   const keptProse = markdown && file.startsWith(kept + "/");
   const docs = markdown && file.startsWith("docs/");
@@ -247,6 +268,63 @@ export function rewriteText(file: string, text: string, limit: Scope = everythin
   }
   free(text.length);
   return out;
+}
+
+/**
+ * Plan data under the kept docs that tools read against current code (inventories, budgets,
+ * allowlists, schemas) follows the rename fully. Fix histories and records pin past revisions.
+ */
+const liveKeptData = (file: string): boolean =>
+  file.startsWith(kept + "/plan/") &&
+  !file.endsWith(".md") &&
+  !/fix-history|-records?\//u.test(file);
+
+/** A kept-docs file whose names stay as written, apart from references to moved paths. */
+export const keptHistory = (file: string): boolean =>
+  file.startsWith(kept + "/") && !liveKeptData(file);
+
+/** Tracked files and every directory that holds one, for path references. */
+export function knownPaths(files: readonly string[]): Set<string> {
+  const known = new Set<string>();
+  for (const file of files) {
+    known.add(file);
+    for (let at = file.indexOf("/"); at !== -1; at = file.indexOf("/", at + 1)) {
+      known.add(file.slice(0, at));
+    }
+  }
+  return known;
+}
+
+const pathToken = /(?<![A-Za-z0-9_.\/-])(?:\.{1,2}\/)*[A-Za-z0-9_.-]+(?:\/[A-Za-z0-9_.-]+)*\/?/gu;
+
+/**
+ * The kept docs are history: their prose and names stay. Only a reference to a tracked path that
+ * moves follows it, so links keep resolving; a path that no longer exists stays as written.
+ */
+function rewriteKeptPaths(
+  file: string,
+  text: string,
+  limit: Scope,
+  known: ReadonlySet<string>,
+): string {
+  const dir = path.posix.dirname(file);
+  return text.replace(pathToken, (token: string) => {
+    anyPattern.lastIndex = 0;
+    if (!token.includes("/") || !anyPattern.test(token)) return token;
+    const body = token.replace(/[.]+$/u, "");
+    const trail = token.slice(body.length);
+    const bare = body.replace(/\/$/u, "");
+    const relative = /^\.{1,2}\//u.test(bare);
+    const target = relative ? path.posix.normalize(path.posix.join(dir, bare)) : bare;
+    if (target.startsWith("../")) return token;
+    const moved = renamePath(target, limit);
+    if (moved === target || !(known.has(target) || known.has(moved))) return token;
+    if (!relative) return renamePath(body, limit) + trail;
+    // A relative link keeps its spelling; only its words that the move renames change.
+    const into = target === kept || target.startsWith(kept + "/");
+    const scope = { program: limit.program && !into, levels: limit.levels };
+    return replaceWords(body, 0, body.length, () => scope) + trail;
+  });
 }
 
 interface Tracked {
@@ -305,14 +383,16 @@ export function run(mode: string, cwd = root): string[] {
     throw new Error("usage: rename-codenames.ts --check|--move|--rewrite");
   }
   const stale: string[] = [];
-  const moves = plannedMoves(tracked(cwd).map(({ path: file }) => file));
+  const files = tracked(cwd).map(({ path: file }) => file);
+  const moves = plannedMoves(files);
+  const known = knownPaths(files);
   stale.push(...moves.keys());
   for (const file of contentTargets(cwd)) {
     const full = path.join(cwd, file);
     const bytes = fs.readFileSync(full);
     if (!textFile(bytes)) continue;
     const text = bytes.toString("utf8");
-    const next = rewriteText(file, text);
+    const next = rewriteText(file, text, everything, known);
     if (next === text) continue;
     stale.push(file);
     if (mode === "--rewrite") fs.writeFileSync(full, next);
