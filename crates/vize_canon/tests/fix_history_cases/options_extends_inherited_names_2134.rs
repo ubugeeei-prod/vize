@@ -7,6 +7,13 @@ fn options_api_extends_base_exposes_inherited_template_names() {
         "fix_history_cases::options_extends_inherited_names_2134::options_api_extends_base_exposes_inherited_template_names",
         "bd113bbccb2be992217f99d60b620f3715e4f1b5",
         Some(2134),
-        &["extends-base-template-names"],
+        &[
+            "extends-base-template-names",
+            "extends-sfc-method-argument-checked",
+            "mixins-sfc-method-arguments-checked",
+            "extends-define-component-result",
+            "extends-plain-options-object",
+            "own-method-overrides-inherited-signature",
+        ],
     );
 }

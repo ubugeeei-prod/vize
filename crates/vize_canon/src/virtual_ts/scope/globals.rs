@@ -259,7 +259,9 @@ pub(super) fn generate_undefined_refs(
             // the authored expression is checked against it the way `vue-tsc`
             // checks `__VLS_ctx.<name>`; only a name the instance lacks stays
             // `any`, and that name reports exactly once, from the read below.
-            ts.push_str(AUTHORED_INSTANCE_PRELUDE);
+            ts.push_str(AUTHORED_INSTANCE_PRELUDE_OPEN);
+            ts.push_str(template_binding_access.authored_instance_type());
+            ts.push_str(AUTHORED_INSTANCE_PRELUDE_CLOSE);
             emitted_instance = true;
         }
 
@@ -339,7 +341,8 @@ const PUBLIC_INSTANCE_RECEIVER: &str = "__vize_public_instance";
 /// intersection instance types. A generated-only block keeps the helper type
 /// and receiver out of authored template type expressions. The `var` bindings
 /// remain function-scoped, with their annotations resolved inside this block.
-const AUTHORED_INSTANCE_PRELUDE: &str = "  { // Generated inherited-member declarations only.\n  const __vize_template_instance = undefined as unknown as (typeof __default__ extends abstract new (...args: any) => infer __I ? __I : {});\n  void __vize_template_instance;\n  type $AuthoredInstanceMember<__K extends string> = __K extends keyof typeof __vize_template_instance ? (typeof __vize_template_instance)[__K] : any;\n";
+const AUTHORED_INSTANCE_PRELUDE_OPEN: &str = "  { // Generated inherited-member declarations only.\n  const __vize_template_instance = undefined as unknown as ";
+const AUTHORED_INSTANCE_PRELUDE_CLOSE: &str = ";\n  void __vize_template_instance;\n  type $AuthoredInstanceMember<__K extends string> = __K extends keyof typeof __vize_template_instance ? (typeof __vize_template_instance)[__K] : any;\n";
 
 /// Same-name shorthand (`:aria-labelledby`) stores the camelized binding while
 /// the authored token is longer. A prefix range overlaps the attribute and is

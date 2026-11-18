@@ -41,6 +41,7 @@ pub use generic_parameters::{GenericParameters, authored_generic_range};
 mod helpers;
 pub use helpers::shared_types::SHARED_VIRTUAL_TYPE_EXPORTS;
 mod import_meta;
+mod inherited_members;
 #[cfg(feature = "native")]
 mod instantiated_component_prop;
 #[cfg(feature = "native")]

@@ -1,0 +1,17 @@
+import { defineComponent } from 'vue'
+
+export const definedBase = defineComponent({
+  methods: {
+    shout(name: string): string {
+      return name
+    },
+  },
+})
+
+export const plainBase = {
+  methods: {
+    whisper(name: string): string {
+      return name
+    },
+  },
+}

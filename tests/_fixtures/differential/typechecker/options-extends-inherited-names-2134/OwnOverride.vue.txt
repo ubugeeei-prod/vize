@@ -1,0 +1,16 @@
+<script lang="ts">
+import BaseButton from './BaseButton.vue'
+
+export default {
+  extends: BaseButton,
+  methods: {
+    cx(key: number): string {
+      return String(key)
+    },
+  },
+}
+</script>
+
+<template>
+  <span :class="cx(1)">{{ label }}</span>
+</template>

@@ -7,6 +7,7 @@
 use super::{helpers::is_reserved_identifier, props::collect_template_prop_names};
 
 mod authored_calls;
+mod authored_inherited;
 mod contextual;
 mod diagnostic_prefixes;
 use diagnostic_prefixes::DiagnosticPrefixes;
@@ -83,6 +84,8 @@ pub(crate) struct TemplateBindingAccess<'a> {
     instance: Option<InstanceStorage<'a>>,
     diagnostic_prefixes: DiagnosticPrefixes<'a>,
     scope_id: ScopeId,
+    /// SFC `mixins:` / `extends:` members of the authored instance (#13270).
+    authored_inherited: Option<std::rc::Rc<str>>,
 }
 
 impl Default for TemplateBindingAccess<'_> {
@@ -93,6 +96,7 @@ impl Default for TemplateBindingAccess<'_> {
             instance: None,
             diagnostic_prefixes: DiagnosticPrefixes::default(),
             scope_id: ScopeId::ROOT,
+            authored_inherited: None,
         }
     }
 }
@@ -329,14 +333,16 @@ impl<'a> TemplateBindingAccess<'a> {
     }
 
     pub(crate) fn emit_instance_receiver_alias(&self, output: &mut crate::virtual_ts::TextBuf) {
+        self.emit_authored_inherited(output);
         if let Some(instance) = self.instance.as_ref().map(InstanceStorage::get)
             && instance.receiver != "__ctx"
         {
             if matches!(instance.owner, InstanceOwner::AuthoredCalls { .. }) {
                 vize_carton::append!(
                     *output,
-                    "  const {name} = undefined as unknown as (typeof __default__ extends abstract new (...args: any) => infer __I ? __I : {{}});\n",
-                    name = instance.receiver
+                    "  const {name} = undefined as unknown as {ty};\n",
+                    name = instance.receiver,
+                    ty = self.authored_instance_type(),
                 );
             } else {
                 vize_carton::append!(
@@ -358,6 +364,7 @@ impl<'a> TemplateBindingAccess<'a> {
                 .map(|instance| InstanceStorage::Borrowed(instance.get())),
             diagnostic_prefixes: DiagnosticPrefixes::Borrowed(self.diagnostic_prefixes.get()),
             scope_id,
+            authored_inherited: self.authored_inherited.clone(),
         }
     }
 

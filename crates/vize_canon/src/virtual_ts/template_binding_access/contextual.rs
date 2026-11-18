@@ -18,6 +18,7 @@ impl TemplateBindingAccess<'_> {
                 self.diagnostic_prefixes.get(),
             ),
             scope_id: self.scope_id,
+            authored_inherited: self.authored_inherited.clone(),
         }
     }
 }

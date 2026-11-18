@@ -1,0 +1,11 @@
+<script lang="ts">
+import { plainBase } from './bases'
+
+export default {
+  extends: plainBase,
+}
+</script>
+
+<template>
+  <p>{{ whisper('ok') }} {{ whisper(4) }}</p>
+</template>

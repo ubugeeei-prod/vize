@@ -1,0 +1,11 @@
+<script lang="ts">
+import { definedBase } from './bases'
+
+export default {
+  extends: definedBase,
+}
+</script>
+
+<template>
+  <p>{{ shout('ok') }} {{ shout(3) }}</p>
+</template>

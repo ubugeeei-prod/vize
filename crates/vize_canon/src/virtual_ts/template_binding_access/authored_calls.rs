@@ -20,19 +20,21 @@ impl<'a> TemplateBindingAccess<'a> {
                 .scopes
                 .iter()
                 .any(|scope| scope.kind == vize_croquis::ScopeKind::ScriptSetup);
-        let result = Self::collect(summary, source.options_api).with_instance_globals(
-            summary,
-            source.virtual_ts_options,
-            source.setup_spread_bindings,
-            source.check_options.infer_template_dollar_el,
-            source.check_options.check_template_bindings
-                && !source.legacy_vue2
-                && !source.virtual_ts_options.strict_instance_globals
-                && source
-                    .template_ast
-                    .is_some_and(|root| root.source.contains('$'))
-                && !authored,
-        );
+        let result = Self::collect(summary, source.options_api)
+            .with_instance_globals(
+                summary,
+                source.virtual_ts_options,
+                source.setup_spread_bindings,
+                source.check_options.infer_template_dollar_el,
+                source.check_options.check_template_bindings
+                    && !source.legacy_vue2
+                    && !source.virtual_ts_options.strict_instance_globals
+                    && source
+                        .template_ast
+                        .is_some_and(|root| root.source.contains('$'))
+                    && !authored,
+            )
+            .with_authored_inherited(authored.then_some(source.script_content).flatten());
         if !authored
             || !source.check_options.check_template_bindings
             || source.template_ast.is_none()

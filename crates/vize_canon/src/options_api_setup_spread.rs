@@ -177,7 +177,7 @@ fn object_has_spread(object: &ObjectExpression<'_>) -> bool {
         .any(|property| matches!(property, ObjectPropertyKind::SpreadProperty(_)))
 }
 
-fn option_expression_property<'a>(
+pub(crate) fn option_expression_property<'a>(
     object: &'a ObjectExpression<'a>,
     key_name: &str,
 ) -> Option<&'a Expression<'a>> {
@@ -192,7 +192,7 @@ fn option_expression_property<'a>(
     })
 }
 
-fn component_options_from_program<'a>(
+pub(crate) fn component_options_from_program<'a>(
     program: &'a Program<'a>,
 ) -> Option<&'a ObjectExpression<'a>> {
     program.body.iter().find_map(|statement| {

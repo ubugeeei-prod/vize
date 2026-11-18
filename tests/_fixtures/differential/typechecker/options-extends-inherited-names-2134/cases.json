@@ -37,6 +37,132 @@
         }
       ],
       "diagnostics": []
+    },
+    {
+      "id": "extends-sfc-method-argument-checked",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/BaseButton.vue",
+          "source": "BaseButton.vue.txt"
+        },
+        {
+          "file": "src/Button.vue",
+          "source": "Button.wrong-argument.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Button.vue",
+          "line": 11,
+          "column": 48,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type 'number' is not assignable to parameter of type 'string'."
+        }
+      ]
+    },
+    {
+      "id": "mixins-sfc-method-arguments-checked",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/BaseButton.vue",
+          "source": "BaseButton.vue.txt"
+        },
+        {
+          "file": "src/MixinButton.vue",
+          "source": "MixinButton.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/MixinButton.vue",
+          "line": 12,
+          "column": 35,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type 'number' is not assignable to parameter of type 'string'."
+        }
+      ]
+    },
+    {
+      "id": "extends-define-component-result",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/bases.ts",
+          "source": "bases.ts.txt"
+        },
+        {
+          "file": "src/ExtendsDefined.vue",
+          "source": "ExtendsDefined.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/ExtendsDefined.vue",
+          "line": 10,
+          "column": 33,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type 'number' is not assignable to parameter of type 'string'."
+        }
+      ]
+    },
+    {
+      "id": "extends-plain-options-object",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/bases.ts",
+          "source": "bases.ts.txt"
+        },
+        {
+          "file": "src/ExtendsPlain.vue",
+          "source": "ExtendsPlain.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/ExtendsPlain.vue",
+          "line": 10,
+          "column": 37,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type 'number' is not assignable to parameter of type 'string'."
+        }
+      ]
+    },
+    {
+      "id": "own-method-overrides-inherited-signature",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/BaseButton.vue",
+          "source": "BaseButton.vue.txt"
+        },
+        {
+          "file": "src/OwnOverride.vue",
+          "source": "OwnOverride.vue.txt"
+        }
+      ],
+      "diagnostics": []
     }
   ]
 }
