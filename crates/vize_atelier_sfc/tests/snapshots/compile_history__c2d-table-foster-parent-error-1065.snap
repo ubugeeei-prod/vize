@@ -23,24 +23,11 @@ Case {
         custom_renderer: None,
         vue_version: None,
     },
-    errors: 1,
+    errors: 0,
 }
 Template {
-    errors: [
-        CompilerError {
-            code: ExtendPoint,
-            message: "Foster parenting moved this element before the nearest open table.",
-            loc: Some(
-                SourceLocation {
-                    span: Span {
-                        start: 7,
-                        end: 12,
-                    },
-                },
-            ),
-        },
-    ],
-    preamble: "",
-    code: "",
+    errors: [],
+    preamble: "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"table\", null, [\n    _createElementVNode(\"div\", null, \"hello\")\n  ]))\n}",
     map: None,
 }

@@ -23,36 +23,11 @@ Case {
         custom_renderer: None,
         vue_version: None,
     },
-    errors: 2,
+    errors: 0,
 }
 Template {
-    errors: [
-        CompilerError {
-            code: ExtendPoint,
-            message: "Nested anchor start tag closed the previous anchor before inserting the new one.",
-            loc: Some(
-                SourceLocation {
-                    span: Span {
-                        start: 0,
-                        end: 12,
-                    },
-                },
-            ),
-        },
-        CompilerError {
-            code: ExtendPoint,
-            message: "HTML tree construction ignored this end tag because the element was already closed before a nested start tag.",
-            loc: Some(
-                SourceLocation {
-                    span: Span {
-                        start: 41,
-                        end: 45,
-                    },
-                },
-            ),
-        },
-    ],
-    preamble: "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment } from \"vue\"\n",
-    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    _createElementVNode(\"a\", { href: \"/\" }, \"outer\"),\n    _createElementVNode(\"a\", { href: \"/foo\" }, \"inner\")\n  ], 64 /* STABLE_FRAGMENT */))\n}",
+    errors: [],
+    preamble: "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, createTextVNode as _createTextVNode } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"a\", { href: \"/\" }, [\n    _createTextVNode(\"outer\"),\n    _createElementVNode(\"a\", { href: \"/foo\" }, \"inner\")\n  ]))\n}",
     map: None,
 }

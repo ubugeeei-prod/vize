@@ -38,7 +38,7 @@
   "noCompileBehaviorFixSubjects": 71,
   "currentApiCohort": {
     "path": "crates/vize_atelier_sfc/tests/fixtures/compile-history/cases.json",
-    "sha256": "ec657f7de901d068ba81cb8927d5bfd06c262cb00ce8fae880c58e85f063564f"
+    "sha256": "2c426317edad9f5fadfc4b4352289b0cf23ef174783529258647dcea459c9247"
   },
   "dispositions": {
     "path": "crates/vize_atelier_sfc/tests/fixtures/compile-history/dispositions.json",

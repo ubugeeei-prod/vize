@@ -23,18 +23,30 @@ Case {
         custom_renderer: None,
         vue_version: None,
     },
-    errors: 1,
+    errors: 2,
 }
 Template {
     errors: [
         CompilerError {
-            code: ExtendPoint,
-            message: "Misnested formatting end tag was repaired using the adoption agency recovery path.",
+            code: MissingEndTag,
+            message: "Element is missing end tag.",
             loc: Some(
                 SourceLocation {
                     span: Span {
-                        start: 12,
-                        end: 16,
+                        start: 6,
+                        end: 9,
+                    },
+                },
+            ),
+        },
+        CompilerError {
+            code: InvalidEndTag,
+            message: "Invalid end tag.",
+            loc: Some(
+                SourceLocation {
+                    span: Span {
+                        start: 19,
+                        end: 23,
                     },
                 },
             ),

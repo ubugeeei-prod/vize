@@ -27,7 +27,7 @@ Case {
 }
 Template {
     errors: [],
-    preamble: "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment } from \"vue\"\n",
-    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    _createElementVNode(\"p\", null, \"a\"),\n    _createElementVNode(\"p\", null, \"b\"),\n    _createElementVNode(\"ul\", null, [\n      _createElementVNode(\"li\", null, \"c\"),\n      _createElementVNode(\"li\", null, \"d\")\n    ])\n  ], 64 /* STABLE_FRAGMENT */))\n}",
+    preamble: "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, createTextVNode as _createTextVNode } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"p\", null, [\n    _createTextVNode(\"a\"),\n    _createElementVNode(\"p\", null, [\n      _createTextVNode(\"b\"),\n      _createElementVNode(\"ul\", null, [\n        _createElementVNode(\"li\", null, [\n          _createTextVNode(\"c\"),\n          _createElementVNode(\"li\", null, \"d\")\n        ])\n      ])\n    ])\n  ]))\n}",
     map: None,
 }

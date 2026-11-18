@@ -1,16 +1,5 @@
 const OLD_LANE_INVALID_FIXTURES: &[(&str, &[&str])] = &[
     (
-        "crater/resources/scripts/admin/views/settings/PreferencesSetting.vue",
-        &[
-            "ExtendPoint",
-            "InvalidEndTag",
-            "InvalidEndTag",
-            "InvalidEndTag",
-            "MissingEndTag",
-            "MissingEndTag",
-        ],
-    ),
-    (
         "dashy/src/components/Widgets/MvgConnection.vue",
         &["VIfSameKey"],
     ),
@@ -44,16 +33,8 @@ const OLD_LANE_INVALID_FIXTURES: &[(&str, &[&str])] = &[
         ],
     ),
     (
-        "habitica/website/client/src/components/static/privacy.vue",
-        &["InvalidEndTag"],
-    ),
-    (
         "heyui/src/components/carousel/carousel.vue",
         &["VIfSameKey"],
-    ),
-    (
-        "heyui/src/components/table/table.vue",
-        &["VElseNoAdjacentIf"],
     ),
     ("tdesign/site/src/pages/design/fonts.vue", &["VIfSameKey"]),
     (
@@ -68,10 +49,7 @@ const OLD_LANE_INVALID_FIXTURES: &[(&str, &[&str])] = &[
         "vue2-elm/src/page/shop/shop.vue",
         &["MissingWhitespaceBetweenAttributes"],
     ),
-    (
-        "vuesax/docs/.vuepress/theme/Home.vue",
-        &["InvalidEndTag", "InvalidEndTag"],
-    ),
+    ("vuesax/docs/.vuepress/theme/Home.vue", &["InvalidEndTag"]),
     (
         "vuesax/docs/.vuepress/theme/homePatreons.vue",
         &["InvalidEndTag"],

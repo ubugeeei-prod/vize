@@ -23,36 +23,11 @@ Case {
         custom_renderer: None,
         vue_version: None,
     },
-    errors: 2,
+    errors: 0,
 }
 Template {
-    errors: [
-        CompilerError {
-            code: ExtendPoint,
-            message: "Nested button start tag closed the previous button before inserting the new one.",
-            loc: Some(
-                SourceLocation {
-                    span: Span {
-                        start: 0,
-                        end: 8,
-                    },
-                },
-            ),
-        },
-        CompilerError {
-            code: ExtendPoint,
-            message: "HTML tree construction ignored this end tag because the element was already closed before a nested start tag.",
-            loc: Some(
-                SourceLocation {
-                    span: Span {
-                        start: 31,
-                        end: 40,
-                    },
-                },
-            ),
-        },
-    ],
-    preamble: "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment } from \"vue\"\n",
-    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    _createElementVNode(\"button\", null, \"aaa\"),\n    _createElementVNode(\"button\", null, \"bbb\")\n  ], 64 /* STABLE_FRAGMENT */))\n}",
+    errors: [],
+    preamble: "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, createTextVNode as _createTextVNode } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"button\", null, [\n    _createTextVNode(\"aaa\"),\n    _createElementVNode(\"button\", null, \"bbb\")\n  ]))\n}",
     map: None,
 }

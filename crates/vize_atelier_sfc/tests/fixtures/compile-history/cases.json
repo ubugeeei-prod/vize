@@ -3869,7 +3869,7 @@
     "filename": "History.vue",
     "entry": "template",
     "target": "dom",
-    "errors": 1
+    "errors": 0
   },
   {
     "id": "c2d-adoption-agency-misnested-error-1065",
@@ -3878,7 +3878,7 @@
     "filename": "History.vue",
     "entry": "template",
     "target": "dom",
-    "errors": 1
+    "errors": 2
   },
   {
     "id": "c2d-omitted-p-li-end-tags-1065",
@@ -3896,7 +3896,7 @@
     "filename": "History.vue",
     "entry": "template",
     "target": "dom",
-    "errors": 2
+    "errors": 0
   },
   {
     "id": "c2d-nested-button-split-1065",
@@ -3905,7 +3905,7 @@
     "filename": "History.vue",
     "entry": "template",
     "target": "dom",
-    "errors": 2
+    "errors": 0
   },
   {
     "id": "c2d-nested-form-start-tag-ignored-1065",
@@ -3914,7 +3914,7 @@
     "filename": "History.vue",
     "entry": "template",
     "target": "dom",
-    "errors": 2
+    "errors": 0
   },
   {
     "id": "c2d-duplicate-attribute-case-insensitive-1065",

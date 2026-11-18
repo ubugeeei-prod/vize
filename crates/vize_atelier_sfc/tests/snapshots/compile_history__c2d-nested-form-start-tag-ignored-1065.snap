@@ -23,36 +23,11 @@ Case {
         custom_renderer: None,
         vue_version: None,
     },
-    errors: 2,
+    errors: 0,
 }
 Template {
-    errors: [
-        CompilerError {
-            code: ExtendPoint,
-            message: "HTML tree construction ignored this start tag because an equivalent element is already open.",
-            loc: Some(
-                SourceLocation {
-                    span: Span {
-                        start: 13,
-                        end: 19,
-                    },
-                },
-            ),
-        },
-        CompilerError {
-            code: InvalidEndTag,
-            message: "Invalid end tag.",
-            loc: Some(
-                SourceLocation {
-                    span: Span {
-                        start: 33,
-                        end: 40,
-                    },
-                },
-            ),
-        },
-    ],
-    preamble: "",
-    code: "",
+    errors: [],
+    preamble: "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"form\", null, [\n    _createElementVNode(\"input\"),\n    _createElementVNode(\"form\", null, [\n      _createElementVNode(\"input\")\n    ])\n  ]))\n}",
     map: None,
 }
