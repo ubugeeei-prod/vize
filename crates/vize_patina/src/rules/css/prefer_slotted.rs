@@ -26,7 +26,7 @@
 use vize_l0::Span;
 use vize_l1::css::StyleSheet;
 
-use crate::diagnostic::{LintDiagnostic, Severity};
+use crate::diagnostic::Severity;
 
 use super::style_rule::{all_rule_preludes, without_comments};
 use super::{CssLintResult, CssRuleMeta, StyleRule};
@@ -77,16 +77,12 @@ impl StyleRule for PreferSlotted {
                     let next = bytes.get(offset + pattern.len());
                     if next.is_none_or(u8::is_ascii_whitespace) {
                         let span = at(offset, pattern.len());
-                        result.add_diagnostic(
-                            LintDiagnostic::warn(
-                                META.name,
-                                "Deprecated deep selector syntax",
-                                span.start,
-                                span.end,
-                            )
-                            .with_help(
-                                "Use :deep(.class) or ::v-deep(.class) with parentheses in Vue 3",
-                            ),
+                        result.warn(
+                            META.name,
+                            "Deprecated deep selector syntax",
+                            "Use :deep(.class) or ::v-deep(.class) with parentheses in Vue 3",
+                            span.start,
+                            span.end,
                         );
                     }
                 }
@@ -117,14 +113,12 @@ impl StyleRule for PreferSlotted {
                 });
                 if starts && ends {
                     let span = at(offset, 4);
-                    result.add_diagnostic(
-                        LintDiagnostic::warn(
-                            META.name,
-                            "Consider using ::v-slotted() to style slot content in scoped styles",
-                            span.start,
-                            span.end,
-                        )
-                        .with_help("Use `::v-slotted(selector)` to explicitly target content passed to slots"),
+                    result.warn(
+                        META.name,
+                        "Consider using ::v-slotted() to style slot content in scoped styles",
+                        "Use `::v-slotted(selector)` to explicitly target content passed to slots",
+                        span.start,
+                        span.end,
                     );
                 }
             }

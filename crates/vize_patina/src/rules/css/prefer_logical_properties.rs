@@ -4,7 +4,7 @@
 
 use vize_l1::css::{StyleNodeKind, StyleSheet};
 
-use crate::diagnostic::{LintDiagnostic, Severity};
+use crate::diagnostic::Severity;
 
 use super::style_rule::in_style_scope;
 use super::{CssLintResult, CssRuleMeta, StyleRule};
@@ -49,16 +49,12 @@ impl StyleRule for PreferLogicalProperties {
             {
                 continue;
             }
-            result.add_diagnostic(
-                LintDiagnostic::warn(
-                    META.name,
-                    "Consider using logical properties for better RTL support",
-                    name.start,
-                    name.end,
-                )
-                .with_help(
-                    "Use logical properties like margin-inline-start instead of margin-left",
-                ),
+            result.warn(
+                META.name,
+                "Consider using logical properties for better RTL support",
+                "Use logical properties like margin-inline-start instead of margin-left",
+                name.start,
+                name.end,
             );
         }
     }
