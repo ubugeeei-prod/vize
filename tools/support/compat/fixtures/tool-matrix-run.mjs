@@ -7,6 +7,11 @@ import { fileURLToPath } from "node:url";
 
 import { expectedCompilerOutputs } from "./tool-matrix-compiler-paths.ts";
 import {
+  matrixRuleOptions,
+  matrixVueVersion,
+  writeMatrixConfig,
+} from "../../fixtures/lint_divergence/matrix_rule_options.ts";
+import {
   displayCommand,
   toolArgs,
   typecheckCorpusGlobs,
@@ -26,6 +31,13 @@ import {
 } from "./tool-matrix-typechecker.ts";
 import { typecheckerRunStatus, typecheckerSetupFailure } from "./typechecker-qualification.ts";
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..", "..", "..");
+const lintRuleMap = JSON.parse(
+  readFileSync(join(repoRoot, "tests", "_fixtures", "patina-eslint-vue-rule-map.json"), "utf8"),
+);
+const compatibilityLedger = JSON.parse(
+  readFileSync(join(repoRoot, "tests", "_fixtures", "fixture-compatibility-ledger.json"), "utf8"),
+);
+const lintMatrixRuleOptions = matrixRuleOptions(repoRoot, lintRuleMap);
 export function runTool(project, tool, args, launch, outputDir) {
   const prepared = prepareToolRun(project, tool, args, launch, outputDir);
   if (prepared.run != null) return prepared.run;
@@ -79,9 +91,11 @@ function prepareToolRun(project, tool, args, launch, outputDir) {
     cwd,
     fixtureExists,
   );
+  const linterMatrixConfig = prepareLinterMatrixConfig(project, tool, args, fixtureExists);
   const commandArgs = [
     ...launch.prefix,
     ...toolArgs(project, tool, compilerOutputDir ?? "<compiler-output>", {
+      linterConfigPath: linterMatrixConfig?.commandPath,
       typecheckTsconfigPath: typecheckerFixtureTsconfig?.relativePath,
     }),
   ];
@@ -115,6 +129,7 @@ function prepareToolRun(project, tool, args, launch, outputDir) {
     formatterStateBefore,
     outputDir,
     project,
+    linterMatrixConfig,
     typecheckerFixtureTsconfig,
     tool,
   };
@@ -127,6 +142,20 @@ function cleanupToolRun(prepared) {
   if (prepared.typecheckerFixtureTsconfig?.absolutePath != null) {
     rmSync(prepared.typecheckerFixtureTsconfig.absolutePath, { force: true });
   }
+  if (prepared.linterMatrixConfig?.absolutePath != null) {
+    rmSync(dirname(prepared.linterMatrixConfig.absolutePath), { recursive: true, force: true });
+  }
+}
+
+function prepareLinterMatrixConfig(project, tool, args, fixtureExists) {
+  if (tool !== "linter") return null;
+  const vueVersion = matrixVueVersion(compatibilityLedger, project.fixturePath);
+  if (lintMatrixRuleOptions.length === 0 && vueVersion === null) return null;
+  if (args.dryRun || !fixtureExists) {
+    return { absolutePath: null, commandPath: "<linter-matrix-config>" };
+  }
+  const absolutePath = writeMatrixConfig(lintMatrixRuleOptions, vueVersion);
+  return absolutePath === null ? null : { absolutePath, commandPath: absolutePath };
 }
 
 function prepareTypecheckerFixtureTsconfig(project, tool, args, cwd, fixtureExists) {
