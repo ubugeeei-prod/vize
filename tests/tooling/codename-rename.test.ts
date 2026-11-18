@@ -191,4 +191,8 @@ void test("captured output keeps its bytes unless a live test parses it", () => 
   assert.equal(keepsBytes("tests/fixtures/l3-reference/slot-reference.lowered.jsonl"), false);
   assert.equal(keepsBytes("crates/vize/tests/fixtures/dump_cli/elided.stderr"), false);
   assert.equal(keepsBytes("editors/vscode/test/css-hover-source-custody.json"), true);
+  assert.equal(keepsBytes("tests/_fixtures/tooling/frozen-source/base/Cargo.toml.txt"), true);
+  assert.equal(keepsBytes("tests/tooling/fixtures/runner-pool/check.before.yml.txt"), true);
+  assert.equal(keepsBytes("tests/_fixtures/a/source-custody/ledger-after.tsv.fixture"), true);
+  assert.equal(keepsBytes("tests/_fixtures/a/notes.txt"), false);
 });
