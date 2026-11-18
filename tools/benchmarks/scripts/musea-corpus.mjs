@@ -69,8 +69,7 @@ function scriptSetupBlock(index) {
   const legacy = usesLegacyArtAttributes(index);
   const defineArtCall = legacy
     ? ""
-    : `defineArt("./${component}.vue", {
-  title: "${component}",
+    : `defineArtMeta({
   description: "Generated art file ${index} for the Musea benchmark lane.",
   category: "Bench",
   status: "${["ready", "draft", "deprecated"][index % 3]}",

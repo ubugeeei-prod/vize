@@ -120,7 +120,8 @@ mod tests {
     #[test]
     fn test_valid_with_define_art() {
         let source = r#"<script setup>
-defineArt("./Button.vue", { title: "Button" });
+import Button from "./Button.vue";
+defineArt(Button, { title: "Button" });
 </script>
 <art></art>"#;
         let rule = RequireTitle;

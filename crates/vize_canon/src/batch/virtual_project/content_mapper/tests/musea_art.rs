@@ -5,7 +5,6 @@ use super::generate_vue_content_mapper_transform;
 use crate::virtual_ts::VirtualTsOptions;
 
 const DEFINE_ART_STUB: &str = "declare function defineArt<T extends ((abstract new (...args: never[]) => { $props: unknown }) | ((...args: never[]) => unknown))>(component: T, options?: Record<string, unknown>): void;";
-const SUBJECT_STUB: &str = r#"declare const MyCard: typeof import("./MyCard.vue").default;"#;
 
 #[test]
 fn musea_art_file_declares_define_art_and_types_its_explicit_component() {
@@ -31,13 +30,9 @@ defineArt(MyCard, { title: "MyCard" });
         "the mapper must provide exactly one Musea file-kind global:\n{}",
         art.text,
     );
-    assert_eq!(
-        art.text
-            .lines()
-            .filter(|line| *line == SUBJECT_STUB)
-            .count(),
-        1,
-        "the art subject must retain the component's real prop type:\n{}",
+    assert!(
+        !art.text.contains("declare const MyCard:"),
+        "an imported Art subject must not gain a synthetic component binding:\n{}",
         art.text,
     );
     assert_eq!(

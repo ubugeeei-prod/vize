@@ -38,7 +38,9 @@ export const Mystery = { decorators: [withFoo] };
     assert_eq!(
         generated,
         r#"<script setup lang="ts">
-defineArt("./AfButton.vue", {
+import AfButton from "./AfButton.vue";
+
+defineArtMeta({
   category: "Base",
   title: "AfButton",
 });
@@ -252,7 +254,9 @@ export const First = { name: "Custom Name", render: () => <Box a="x" /> };
         stdout,
         r#"// Box.art.vue
 <script setup lang="ts">
-defineArt("./Box.vue", {
+import Box from "./Box.vue";
+
+defineArtMeta({
   title: "Box",
 });
 </script>
@@ -296,7 +300,9 @@ export const Big = { args: { size: "lg", count: 3 } };
     assert_eq!(
         generated,
         r#"<script setup lang="ts">
-defineArt("./Plain.vue", {
+import Plain from "./Plain.vue";
+
+defineArtMeta({
   category: "Group",
   title: "Plain",
 });

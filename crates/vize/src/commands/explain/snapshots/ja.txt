@@ -1718,16 +1718,17 @@ artブロックにtitle属性を必須にする
 ドキュメント: docs/content/rules/reference/musea-require-title.md
 
 不正な例:
-  <art component="./Button.vue">
+  <art>
     <!-- missing title -->
   </art>
 
 正しい例:
   <script setup>
-  defineArt("./Button.vue", { title: "Button" });
+  import Button from "./Button.vue";
   </script>
   
   <art>
+    <variant name="Default"><Button /></variant>
   </art>
 
 ヒント:

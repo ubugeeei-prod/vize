@@ -43,7 +43,7 @@ fn generate(script: &str, template: &str, check_unknown_components: bool) -> Vir
 }
 
 #[test]
-fn define_art_string_source_types_its_implicit_variant_component() {
+fn define_art_string_source_does_not_register_an_implicit_variant_component() {
     fn registry_probes(code: &str) -> Vec<&str> {
         code.lines()
             .filter_map(|line| {
@@ -64,20 +64,17 @@ fn define_art_string_source_types_its_implicit_variant_component() {
     );
     assert_eq!(
         registry_probes(&checked.code),
-        vec!["variant"],
-        "unknown-component checking may probe the variant element but not the implicit art subject"
+        vec!["variant", "MyCard"],
+        "unknown-component checking must probe the unimported Art subject"
     );
 
     for output in [&default, &checked] {
-        assert_eq!(
-            output
+        assert!(
+            !output
                 .code
-                .lines()
-                .filter_map(|line| line.strip_prefix("declare const MyCard: "))
-                .collect::<Vec<_>>(),
-            vec![r#"typeof import("./MyCard.vue").default;"#],
-            "the implicit art subject must resolve exactly to its authored module:\n{}",
-            output.code,
+                .contains(r#"typeof import("./MyCard.vue").default"#),
+            "a string source must not synthesize a component binding:\n{}",
+            output.code
         );
     }
 }

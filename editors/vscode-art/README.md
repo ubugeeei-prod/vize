@@ -10,7 +10,7 @@ go-to-definition, and references inside `*.art.vue`.
 - Syntax highlighting for `<art>` and `<variant>` blocks
 - Syntax highlighting for root `<script setup>` and the `isolate` attribute
 - Highlighting for Art-specific attributes (`title`, `component`, `description`, etc.)
-- Highlighting for variant attributes (`name`, `default`, `args`, etc.)
+- Highlighting for variant attributes (`name`, `default`, `props`, `attrs`, `play`, etc.)
 - Embedded language support for `<script>` (TypeScript) and `<style>` (CSS)
 - Vue template syntax highlighting inside variants
 
@@ -19,8 +19,9 @@ go-to-definition, and references inside `*.art.vue`.
 ```vue
 <!-- Button.art.vue -->
 <script setup lang="ts">
-defineArt("./Button.vue", {
-  title: "Button",
+import Button from "./Button.vue";
+
+defineArtMeta({
   category: "UI",
 });
 </script>
@@ -35,11 +36,11 @@ defineArt("./Button.vue", {
 </art>
 ```
 
-`defineArt(source, options)` is a compiler macro. It is the preferred way to declare the target
-component and metadata without writing a component import. The source string supports path
-completion, missing-file diagnostics, document links, and go-to-definition. Root `<script setup>`
-state is isolated per variant by default; add `isolate="false"` to share one setup instance across
-all variants.
+Musea infers the target from the imported component tag shared by every variant. `defineArtMeta()`
+is optional, as is `title`; the title defaults to the inferred component binding or filename.
+Use `defineArt(Button, metadata?)` only when an intentionally ambiguous composition needs an
+explicit target. Root `<script setup>` state is isolated per variant by default; add
+`isolate="false"` to share one setup instance across all variants.
 
 ## Installation
 
@@ -67,8 +68,8 @@ Then press F5 in VS Code to launch the Extension Development Host.
 
 ### Art Block (`<art>`)
 
-- `title` - Component title (compatibility metadata, otherwise use `defineArt`)
-- `component` - Path to component file (compatibility metadata, otherwise use `defineArt`)
+- `title` - Optional component-title override
+- `component` - Compatibility path override
 - `description` - Component description
 - `category` - Category for grouping
 - `tags` - Comma-separated tags
@@ -79,7 +80,9 @@ Then press F5 in VS Code to launch the Extension Development Host.
 
 - `name` - Variant name (required)
 - `default` - Boolean flag for default variant
-- `args` - JSON object with prop values
+- `props` - Compatibility object for component prop values; direct component attributes are preferred
+- `attrs` - Compatibility object for fallthrough attributes; direct component attributes are preferred
+- `play` - Typed interaction test
 - `viewport` - Viewport preset
 - `skip-vrt` - Skip visual regression testing
 

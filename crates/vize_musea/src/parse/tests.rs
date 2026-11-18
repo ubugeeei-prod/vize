@@ -167,8 +167,10 @@ import Meter from "./Meter.vue";
 <art><variant name="Composition"><Counter /><Meter /></variant></art>
 "#;
     let error = parse_art(&allocator, source, ArtParseOptions::default()).unwrap_err();
-    assert!(matches!(error, ArtParseError::AmbiguousTarget { .. }));
-    assert!(error.to_string().contains("defineArt(Target)"));
+    let ArtParseError::AmbiguousTarget { candidates } = error else {
+        panic!("expected ambiguous target error");
+    };
+    assert_eq!(candidates.as_str(), "Counter, Meter");
 }
 
 #[test]

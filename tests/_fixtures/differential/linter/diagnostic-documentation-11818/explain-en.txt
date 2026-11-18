@@ -1747,7 +1747,7 @@ valid:
   }
 === musea/require-component
 musea/require-component · lint rule
-Require component attribute in <art> block
+Require a resolvable target component for an <art> block
 
 tier: exact
 domain: <art> and <variant> blocks of .art.vue files
@@ -1757,7 +1757,7 @@ autofix: no
 docs: docs/content/rules/reference/musea-require-component.md
 === musea/require-title
 musea/require-title · lint rule
-Require title attribute in <art> block
+Require a resolvable display title for an <art> block
 
 tier: exact
 domain: <art> and <variant> blocks of .art.vue files
@@ -1767,16 +1767,17 @@ autofix: no
 docs: docs/content/rules/reference/musea-require-title.md
 
 invalid:
-  <art component="./Button.vue">
+  <art>
     <!-- missing title -->
   </art>
 
 valid:
   <script setup>
-  defineArt("./Button.vue", { title: "Button" });
+  import Button from "./Button.vue";
   </script>
   
   <art>
+    <variant name="Default"><Button /></variant>
   </art>
 
 help:

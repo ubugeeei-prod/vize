@@ -132,13 +132,13 @@ fn infer_art_target<'a>(
         shared
     };
     if candidates.len() > 1 {
-        let names = candidates
+        let mut names = candidates
             .iter()
             .map(|(name, _)| name.as_str())
-            .collect::<std::vec::Vec<_>>()
-            .join(", ");
+            .collect::<std::vec::Vec<_>>();
+        names.sort_unstable();
         return Err(ArtParseError::AmbiguousTarget {
-            candidates: names.into(),
+            candidates: names.join(", ").into(),
         });
     }
     let Some((name, source)) = candidates.first().copied() else {

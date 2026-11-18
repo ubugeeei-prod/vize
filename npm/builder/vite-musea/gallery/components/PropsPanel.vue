@@ -32,7 +32,7 @@ const props = defineProps<{
   variants: ArtVariant[];
   selectedVariantName?: string;
 }>();
-const emit = defineEmits<{ (event: "select-variant", name: string): void }>();
+const emit = defineEmits<{ (event: "selectVariant", name: string): void }>();
 
 const MonacoEditor = defineAsyncComponent(() => import("./MonacoEditor.vue"));
 const route = useRoute();
@@ -468,7 +468,7 @@ const controlKindOptions = [
                 <select
                   class="variant-select"
                   :value="selectedVariant?.name"
-                  @change="emit('select-variant', ($event.target as HTMLSelectElement).value)"
+                  @change="emit('selectVariant', ($event.target as HTMLSelectElement).value)"
                 >
                   <option v-for="variant in variants" :key="variant.name" :value="variant.name">
                     {{ variant.name }}{{ variant.isDefault ? " · Default" : "" }}

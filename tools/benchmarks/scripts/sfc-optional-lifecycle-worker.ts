@@ -98,7 +98,7 @@ export const componentSource =
   members +
   " }>();</script><template><div>{{ props.required }}</div></template>";
 export const artSource =
-  '<script setup lang="ts">defineArt("./SpacingProbe.vue", { title: "Optional Spacing" })</script><art><variant name="Default"><SpacingProbe :required="1" /></variant></art>';
+  '<script setup lang="ts">import SpacingProbe from "./SpacingProbe.vue"</script><art><variant name="Default"><SpacingProbe :required="1" /></variant></art>';
 const names = [
   "spaced",
   "tabbed",

@@ -8,7 +8,7 @@ import { safeUrl } from "../utils/safeUrl";
 import MdiIcon from "./MdiIcon.vue";
 
 const props = defineProps<{ artPath: string; variant: ArtVariant; variants: ArtVariant[] }>();
-const emit = defineEmits<{ (event: "select-variant", name: string): void }>();
+const emit = defineEmits<{ (event: "selectVariant", name: string): void }>();
 const iframeRef = useTemplateRef<HTMLIFrameElement>("iframeRef");
 const ready = ref(false);
 const status = ref<"idle" | "running" | "passed" | "failed" | "skipped">("idle");
@@ -123,7 +123,7 @@ onUnmounted(() => {
             <span>Variant</span>
             <select
               :value="variant.name"
-              @change="emit('select-variant', ($event.target as HTMLSelectElement).value)"
+              @change="emit('selectVariant', ($event.target as HTMLSelectElement).value)"
             >
               <option v-for="item in variants" :key="item.name" :value="item.name">
                 {{ item.name }}{{ item.isDefault ? " · Default" : "" }}

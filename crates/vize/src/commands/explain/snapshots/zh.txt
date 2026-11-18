@@ -1780,16 +1780,17 @@ musea/require-title · lint 规则
 文档: docs/content/rules/reference/musea-require-title.md
 
 错误示例:
-  <art component="./Button.vue">
+  <art>
     <!-- missing title -->
   </art>
 
 正确示例:
   <script setup>
-  defineArt("./Button.vue", { title: "Button" });
+  import Button from "./Button.vue";
   </script>
   
   <art>
+    <variant name="Default"><Button /></variant>
   </art>
 
 帮助:

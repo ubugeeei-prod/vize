@@ -94,7 +94,9 @@ fn variant_opening_tag_offers_variant_attributes() {
     let items = complete_at("Button.art.vue", &source, offset);
     let labels = labels(&items);
 
-    for expected in ["name", "default", "args", "viewport", "skip-vrt"] {
+    for expected in [
+        "name", "default", "props", "attrs", "play", "viewport", "skip-vrt",
+    ] {
         assert!(labels.contains(&expected), "missing {expected}: {labels:?}");
     }
     assert!(
@@ -102,8 +104,8 @@ fn variant_opening_tag_offers_variant_attributes() {
         "art attribute leaked: {labels:?}"
     );
     assert_eq!(
-        item(&items, "args").insert_text.as_deref(),
-        Some("args='{\"$1\": $2}'")
+        item(&items, "props").insert_text.as_deref(),
+        Some(":props=\"{ $1: $2 }\"")
     );
     assert_eq!(
         item(&items, "default").insert_text.as_deref(),
@@ -118,7 +120,7 @@ fn between_variants_offers_variant_snippets_but_no_second_art_block() {
     let labels = labels(&items);
 
     assert!(labels.contains(&"variant"), "{labels:?}");
-    assert!(labels.contains(&"variant with args"), "{labels:?}");
+    assert!(labels.contains(&"variant with props"), "{labels:?}");
     assert!(!labels.contains(&"art"), "{labels:?}");
     assert_eq!(
         item(&items, "variant").insert_text.as_deref(),

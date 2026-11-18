@@ -111,6 +111,7 @@ createApp(Card, { label: "Runtime component" }).mount("#app");`,
               {
                 name: "Default",
                 template: '<Card label="Preview component" />',
+                props: { label: "Preview component" },
                 isDefault: true,
                 skipVrt: false,
               },
