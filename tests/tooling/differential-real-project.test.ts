@@ -297,9 +297,9 @@ test("a later typecheck target is pinned at its project's revision as its own ro
     );
     const docs = typechecker.report.rows.find(
       (row: any) => row.id === "typechecker/real/alpha/docs",
-    );
+    )!;
     assert.equal(docs.legacy.state, "completed");
-    assert.equal(docs.legacy.observation.fileCount, 2);
+    assert.equal(docs.legacy.observation?.fileCount, 2);
     for (const { product, report } of outputs) {
       if (product !== "typechecker") assert.equal(report.summary.plannedCases, 3, product);
     }

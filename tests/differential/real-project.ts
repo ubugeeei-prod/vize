@@ -225,7 +225,7 @@ function lspLane(project: Json | undefined): Lane {
 // entry at the project's revision, and each is its own typechecker row.
 function projectsFor(product: string, registry: Json[]): Json[] {
   return product === "typechecker"
-    ? registry.flatMap((project) => typecheckUnits(project))
+    ? registry.flatMap((project) => typecheckUnits(project as Json & { id: string }))
     : registry;
 }
 
