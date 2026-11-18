@@ -54,4 +54,4 @@ export default defineConfig({}).withVue({
 
 - [Vue ルール](../vue.md)
 - [全ルール](../all.md)
-- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_v_for_template_key_on_child.rs#L30)
+- [ソースコード](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_v_for_template_key_on_child.rs#L33)

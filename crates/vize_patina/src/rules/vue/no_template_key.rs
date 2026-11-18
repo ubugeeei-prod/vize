@@ -23,8 +23,9 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::{MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule, MarkupTraversal};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::{ElementNode, PropNode};
+use vize_relief::ElementNode;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-template-key",
@@ -37,50 +38,60 @@ static META: RuleMeta = RuleMeta {
 /// Disallow a `key` attribute on `<template>`.
 pub struct NoTemplateKey;
 
+fn check(ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
+    // Only check <template> elements
+    if !element.is_unqualified_tag_exact("template") {
+        return;
+    }
+
+    let mut has_v_for = false;
+    element.walk_authored_directive_ranges("for", &mut |_| has_v_for = true);
+    if has_v_for {
+        return;
+    }
+
+    // Check for key attribute or :key directive
+    element.walk_bindings(&mut |binding| {
+        let is_key = match binding.kind() {
+            MarkupBindingKind::Attribute => binding.is_unqualified_arg_exact("key"),
+            MarkupBindingKind::Bind => binding.is_static_unqualified_arg_exact("key"),
+            MarkupBindingKind::On | MarkupBindingKind::Model | MarkupBindingKind::Custom => false,
+        };
+        if is_key {
+            ctx.error_at_with_help(
+                ctx.t("vue/no-template-key.message"),
+                binding.range(),
+                ctx.t("vue/no-template-key.help"),
+            );
+        }
+    });
+}
+
+impl MarkupRule for NoTemplateKey {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn traversal(&self) -> MarkupTraversal {
+        MarkupTraversal::Elements
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        check(ctx.lint(), element);
+    }
+}
+
 impl Rule for NoTemplateKey {
     fn meta(&self) -> &'static RuleMeta {
         &META
     }
 
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
+    }
+
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        // Only check <template> elements
-        if element.tag != "template" {
-            return;
-        }
-
-        let has_v_for = element.props.iter().any(|prop| match prop {
-            PropNode::Directive(dir) => dir.name == "for",
-            _ => false,
-        });
-
-        // Check for key attribute or :key directive
-        for prop in element.props.iter() {
-            match prop {
-                PropNode::Attribute(attr) => {
-                    if attr.name == "key" && !has_v_for {
-                        ctx.error_with_help(
-                            ctx.t("vue/no-template-key.message"),
-                            &attr.loc,
-                            ctx.t("vue/no-template-key.help"),
-                        );
-                    }
-                }
-                PropNode::Directive(dir) => {
-                    if dir.name == "bind"
-                        && let Some(vize_relief::ExpressionNode::Simple(arg)) = &dir.arg
-                        && arg.is_static
-                        && arg.content == "key"
-                        && !has_v_for
-                    {
-                        ctx.error_with_help(
-                            ctx.t("vue/no-template-key.message"),
-                            &dir.loc,
-                            ctx.t("vue/no-template-key.help"),
-                        );
-                    }
-                }
-            }
-        }
+        check(ctx, &MarkupElement::new(element));
     }
 }
 

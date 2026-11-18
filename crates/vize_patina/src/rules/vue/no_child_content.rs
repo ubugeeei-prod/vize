@@ -24,8 +24,10 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::ir::ByteRange;
+use crate::markup::{MarkupContext, MarkupElement, MarkupNode, MarkupRule, MarkupTraversal};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::{ElementNode, PropNode, TemplateChildNode};
+use vize_relief::ElementNode;
 
 use super::authored_closing;
 
@@ -42,38 +44,67 @@ static META: RuleMeta = RuleMeta {
 pub struct NoChildContent;
 
 impl NoChildContent {
-    /// Returns true if the element has v-html or v-text, and the directive name ("html" or "text")
-    fn has_v_html_or_v_text(element: &ElementNode) -> Option<&'static str> {
-        for prop in &element.props {
-            if let PropNode::Directive(dir) = prop {
-                if dir.name == "html" {
-                    return Some("html");
-                }
-                if dir.name == "text" {
-                    return Some("text");
-                }
+    /// The first of `v-html` / `v-text` on the element ("html" or "text").
+    fn has_v_html_or_v_text(element: &MarkupElement<'_>) -> Option<&'static str> {
+        let mut found = None;
+        element.walk_directives(&mut |directive| {
+            if found.is_none() {
+                found = match directive.name() {
+                    "html" => Some("html"),
+                    "text" => Some("text"),
+                    _ => None,
+                };
             }
-        }
-        None
+        });
+        found
     }
 
-    fn has_child_content(element: &ElementNode) -> bool {
-        for child in &element.children {
-            match child {
-                TemplateChildNode::Text(text) if !text.content.trim().is_empty() => {
-                    return true;
-                }
-                TemplateChildNode::Element(_)
-                | TemplateChildNode::Comment(_)
-                | TemplateChildNode::Interpolation(_)
-                | TemplateChildNode::If(_)
-                | TemplateChildNode::For(_) => {
-                    return true;
-                }
-                _ => {}
-            }
+    fn has_child_content(element: &MarkupElement<'_>) -> bool {
+        let mut found = false;
+        element.walk_children(&mut |child| {
+            found |= match child {
+                MarkupNode::Text(text) => text.is_significant(),
+                MarkupNode::Element(_)
+                | MarkupNode::Comment(_)
+                | MarkupNode::Interpolation(_)
+                | MarkupNode::If(_)
+                | MarkupNode::For(_) => true,
+                MarkupNode::Other(_) => false,
+            };
+        });
+        found
+    }
+
+    fn check(ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
+        if let Some(directive_name) = Self::has_v_html_or_v_text(element)
+            && Self::has_child_content(element)
+        {
+            let open = element.range();
+            let range = authored_closing::find(ctx.source, open.end, element.tag())
+                .map_or(open, |closing| ByteRange::new(open.end, closing.start));
+            ctx.error_at_with_help(
+                ctx.t_fmt(
+                    "vue/no-child-content.message",
+                    &[("directive", directive_name)],
+                ),
+                range,
+                ctx.t("vue/no-child-content.help"),
+            );
         }
-        false
+    }
+}
+
+impl MarkupRule for NoChildContent {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn traversal(&self) -> MarkupTraversal {
+        MarkupTraversal::Elements
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        Self::check(ctx.lint(), element);
     }
 }
 
@@ -82,24 +113,12 @@ impl Rule for NoChildContent {
         &META
     }
 
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
+    }
+
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        if let Some(directive_name) = Self::has_v_html_or_v_text(element)
-            && Self::has_child_content(element)
-        {
-            let loc = authored_closing::find(ctx.source, element.loc.span.end, element.tag)
-                .map(|closing| {
-                    vize_relief::SourceLocation::new(element.loc.span.end, closing.start)
-                })
-                .unwrap_or_else(|| element.loc.clone());
-            ctx.error_with_help(
-                ctx.t_fmt(
-                    "vue/no-child-content.message",
-                    &[("directive", directive_name)],
-                ),
-                &loc,
-                ctx.t("vue/no-child-content.help"),
-            );
-        }
+        Self::check(ctx, &MarkupElement::new(element));
     }
 }
 

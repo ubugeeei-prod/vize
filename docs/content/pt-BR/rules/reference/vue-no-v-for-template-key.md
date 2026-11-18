@@ -52,4 +52,4 @@ Depois, execute `vp run lint`.
 
 - [Regras Vue](../vue.md)
 - [Todas as regras](../all.md)
-- [Código-fonte](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_v_for_template_key.rs#L33)
+- [Código-fonte](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/vue/no_v_for_template_key.rs#L34)

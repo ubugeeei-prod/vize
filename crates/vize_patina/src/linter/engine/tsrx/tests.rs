@@ -239,3 +239,30 @@ fn id_duplication_reports_on_tsrx_and_respects_exclusive_regions() {
     let label = &result.diagnostics[0].labels[0];
     assert_eq!((label.start, label.end), (first, first + 6));
 }
+
+#[test]
+fn vue_markup_rules_report_on_tsrx_markup() {
+    // Moved off the JSX lowering fallback (#6848), so they now lint TSRX too.
+    let source = "export function Shell() @{
+  <section>
+    <template><p>lone</p></template>
+    <div inline-template=\"x\">old</div>
+  </section>
+}
+";
+    let linter = linter_with(vec![
+        Box::new(crate::rules::vue::NoLoneTemplate),
+        Box::new(crate::rules::vapor::NoInlineTemplate),
+    ]);
+    let result = lint_tsrx(&linter, source, "Shell.tsrx");
+    let at = |text: &str| u32::try_from(source.find(text).unwrap()).unwrap();
+    let template = at("<template>");
+    let inline = at("inline-template");
+    assert_eq!(
+        rows(&result),
+        [
+            ("vue/no-lone-template", template, template + 32),
+            ("vapor/no-inline-template", inline, inline + 19),
+        ]
+    );
+}

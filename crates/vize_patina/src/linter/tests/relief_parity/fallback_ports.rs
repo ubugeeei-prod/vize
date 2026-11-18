@@ -4,7 +4,11 @@
 use crate::rule::Rule;
 use crate::rules::a11y::{LandmarkRoles, RoleImgHasName};
 use crate::rules::html::IdDuplication;
-use crate::rules::vue::A11yImgAlt;
+use crate::rules::vapor::NoInlineTemplate;
+use crate::rules::vue::{
+    A11yImgAlt, NoChildContent, NoLoneTemplate, NoTemplateKey, NoVForTemplateKey,
+    NoVForTemplateKeyOnChild,
+};
 
 fn a11y_family() -> Vec<Box<dyn Rule>> {
     vec![Box::new(RoleImgHasName), Box::new(A11yImgAlt)]
@@ -75,4 +79,37 @@ const ID_JSX: &[&str] = &[
 #[test]
 fn ported_id_duplication_matches_its_relief_hooks() {
     super::assert_parity(id_family, ID_TEMPLATES, ID_JSX);
+}
+
+fn vue_family() -> Vec<Box<dyn Rule>> {
+    vec![
+        Box::new(NoTemplateKey),
+        Box::new(NoVForTemplateKey),
+        Box::new(NoVForTemplateKeyOnChild),
+        Box::new(NoLoneTemplate),
+        Box::new(NoChildContent),
+        Box::new(NoInlineTemplate),
+    ]
+}
+
+const VUE_TEMPLATES: &[&str] = &[
+    r#"<template key="a"><p>x</p></template><template :key="b"><p>y</p></template><template v-bind:key="c" v-if="ok"><p>z</p></template>"#,
+    r#"<template v-for="item in items" :key="item.id"><li>{{ item }}</li></template><template v-for="item in items" key="k"><li /></template>"#,
+    r#"<template v-for="item in items"><li :key="item.id">{{ item }}</li><li v-if="item.ok" :key="item.id" /><li v-bind:key="item.id" /></template>"#,
+    r#"<template v-for="item in items" :key="item"><li :key="item" /></template><template v-for=""><li :key="x" /></template>"#,
+    r#"<template><p>lone</p></template><template v-if="a">a</template><template v-else>b</template><Comp><template #header>h</template><template v-slot:default>d</template></Comp>"#,
+    r#"<template slot="old">s</template><template slot-scope="p">p</template><template :slot="name">n</template><template scope="q">q</template><Template>c</Template>"#,
+    r#"<div v-html="html">child</div><div v-text="text"><!-- c --></div><div v-html="html">  </div><p v-text="t">{{ x }}</p><p v-html="h"><b v-if="x" /></p>"#,
+    r#"<ul><li v-html="a">one<li>two</ul><div v-html="raw"></div><MyComp inline-template><p>x</p></MyComp><div INLINE-TEMPLATE></div>"#,
+];
+
+const VUE_JSX: &[&str] = &[
+    r#"const A = () => <><div v-html={html}>child</div><div v-text={text}>{value}</div><div v-html={raw} /></>;"#,
+    r#"const A = () => <div v-html={html}>{ok && <b />}{items.map((i) => <i key={i} />)}</div>;"#,
+    r#"const A = () => <><template key="a"><p /></template><MyComp inline-template /><div inline-template="x" /></>;"#,
+];
+
+#[test]
+fn ported_vue_rules_match_their_relief_hooks() {
+    super::assert_parity(vue_family, VUE_TEMPLATES, VUE_JSX);
 }

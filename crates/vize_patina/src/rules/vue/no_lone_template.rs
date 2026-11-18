@@ -26,8 +26,9 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::{MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule, MarkupTraversal};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::{ElementNode, ExpressionNode, PropNode};
+use vize_relief::ElementNode;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-lone-template",
@@ -43,38 +44,59 @@ pub struct NoLoneTemplate;
 
 impl NoLoneTemplate {
     /// Check if the template has a valid directive that justifies its existence
-    fn has_valid_directive(element: &ElementNode) -> bool {
-        for prop in &element.props {
-            match prop {
-                PropNode::Directive(dir)
-                    if matches!(
-                        dir.name,
-                        "if" | "else-if" | "else" | "for" | "slot" | "slot-scope" | "scope"
-                    ) =>
-                {
-                    return true;
-                }
-                PropNode::Directive(dir)
-                    if dir.name == "bind" && Self::is_static_slot_arg(&dir.arg) =>
-                {
-                    return true;
-                }
-                PropNode::Attribute(attr)
-                    if matches!(attr.name, "slot" | "slot-scope" | "scope") =>
-                {
-                    return true;
-                }
-                _ => {}
-            }
+    fn has_valid_directive(element: &MarkupElement<'_>) -> bool {
+        let mut valid = false;
+        for name in [
+            "if",
+            "else-if",
+            "else",
+            "for",
+            "slot",
+            "slot-scope",
+            "scope",
+        ] {
+            element.walk_authored_directive_ranges(name, &mut |_| valid = true);
         }
-        false
+        element.walk_bindings(&mut |binding| {
+            valid |= match binding.kind() {
+                MarkupBindingKind::Bind => binding.is_static_unqualified_arg_exact("slot"),
+                MarkupBindingKind::Attribute => ["slot", "slot-scope", "scope"]
+                    .into_iter()
+                    .any(|name| binding.is_unqualified_arg_exact(name)),
+                MarkupBindingKind::On | MarkupBindingKind::Model | MarkupBindingKind::Custom => {
+                    false
+                }
+            };
+        });
+        valid
     }
 
-    fn is_static_slot_arg(arg: &Option<ExpressionNode<'_>>) -> bool {
-        matches!(
-            arg,
-            Some(ExpressionNode::Simple(simple)) if simple.is_static && simple.content == "slot"
-        )
+    fn check(ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
+        if !element.is_unqualified_tag_exact("template") {
+            return;
+        }
+
+        if !Self::has_valid_directive(element) {
+            ctx.warn_at_with_help(
+                ctx.t("vue/no-lone-template.message"),
+                element.range(),
+                ctx.t("vue/no-lone-template.help"),
+            );
+        }
+    }
+}
+
+impl MarkupRule for NoLoneTemplate {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn traversal(&self) -> MarkupTraversal {
+        MarkupTraversal::Elements
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        Self::check(ctx.lint(), element);
     }
 }
 
@@ -83,18 +105,12 @@ impl Rule for NoLoneTemplate {
         &META
     }
 
-    fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        if element.tag != "template" {
-            return;
-        }
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
+    }
 
-        if !Self::has_valid_directive(element) {
-            ctx.warn_with_help(
-                ctx.t("vue/no-lone-template.message"),
-                &element.loc,
-                ctx.t("vue/no-lone-template.help"),
-            );
-        }
+    fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
+        Self::check(ctx, &MarkupElement::new(element));
     }
 }
 

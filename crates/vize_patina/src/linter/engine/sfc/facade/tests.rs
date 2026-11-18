@@ -49,6 +49,20 @@ fn linter() -> Linter {
     linter
         .registry
         .register(Box::new(crate::rules::vue::A11yImgAlt));
+    // Preset-dependent rules join once, so no rule reports twice.
+    let ported: [Box<dyn crate::rule::Rule>; 6] = [
+        Box::new(crate::rules::vue::NoTemplateKey),
+        Box::new(crate::rules::vue::NoVForTemplateKey),
+        Box::new(crate::rules::vue::NoVForTemplateKeyOnChild),
+        Box::new(crate::rules::vue::NoLoneTemplate),
+        Box::new(crate::rules::vue::NoChildContent),
+        Box::new(crate::rules::vapor::NoInlineTemplate),
+    ];
+    for rule in ported {
+        if !linter.registry.has_rule(rule.meta().name) {
+            linter.registry.register(rule);
+        }
+    }
     linter.registry.mark_has_exit_element_rules();
     linter
 }
@@ -120,6 +134,30 @@ fn migrated_sfc_rules_preserve_diagnostics_and_fixes() {
             r#"<template><div><i id="a"></i><b id="a"></b></div></template>"#,
             "html/id-duplication",
         ),
+        (
+            r#"<template><div><template key="a"><p /></template></div></template>"#,
+            "vue/no-template-key",
+        ),
+        (
+            r#"<template><ul><template v-for="i in items" :key="i"><li /></template></ul></template>"#,
+            "vue/no-v-for-template-key",
+        ),
+        (
+            r#"<template><ul><template v-for="i in items"><li :key="i" /></template></ul></template>"#,
+            "vue/no-v-for-template-key-on-child",
+        ),
+        (
+            r#"<template><div><template><p>x</p></template></div></template>"#,
+            "vue/no-lone-template",
+        ),
+        (
+            r#"<template><div v-html="html">child</div></template>"#,
+            "vue/no-child-content",
+        ),
+        (
+            r#"<template><MyComp inline-template><p /></MyComp></template>"#,
+            "vapor/no-inline-template",
+        ),
     ] {
         let result = linter().lint_sfc(sfc, "test.vue");
         assert!(
@@ -159,6 +197,9 @@ fn migrated_sfc_rules_preserve_diagnostics_and_fixes() {
         r#"<img src="a"><img src="a" alt><img :alt="x"><img v-bind:alt="x"><img :[alt]="x"><Img src="a">"#,
         r#"<div v-if="x"><i id="r"></i></div><div v-else><i id="r"></i><b id="r"></b></div><p id="r"></p><Comp id="c" /><Comp id="c" />"#,
         "<p id=\"g\" v-if=\"x\">a</p>\n<!-- gap -->\n<p id=\"g\" v-else>b</p>\n<p id=\"g\">c</p><div id=\"a &amp; b\"></div><div id=\"a &amp; b\"></div>",
+        r#"<template key="a"><p>x</p></template><template :key="b" v-if="ok"><p>y</p></template><template v-for="item in items" :key="item.id"><li>{{ item }}</li></template>"#,
+        r#"<template v-for="item in items"><li :key="item.id">{{ item }}</li><li v-if="item.ok" :key="item.id" /></template><template><p>lone</p></template><Comp><template #header>h</template></Comp>"#,
+        r#"<div v-html="html">child</div><div v-text="text"><!-- c --></div><ul><li v-html="a">one<li>two</ul><MyComp inline-template><p>x</p></MyComp><div INLINE-TEMPLATE></div>"#,
         "<!-- eslint-disable-next-line vue/prefer-props-shorthand -->\n<MyComponent :foo=\"foo\"/>",
         "<!-- eslint-disable-next-line vue/no-useless-v-bind -->\n<div :title=\"'static'\"/>",
         "<!-- eslint-disable-next-line vue/no-multiple-objects-in-class -->\n<div :class=\"[{ active }, { hidden }]\"/>",
@@ -190,6 +231,12 @@ fn migrated_sfc_rules_preserve_diagnostics_and_fixes() {
         "<!-- eslint-disable-next-line a11y/role-img-has-name -->\n<span role=\"img\"></span>",
         "<!-- eslint-disable-next-line vue/a11y-img-alt -->\n<img src=\"a\">",
         "<div id=\"x\"></div>\n<!-- eslint-disable-next-line html/id-duplication -->\n<div id=\"x\"></div>",
+        "<!-- eslint-disable-next-line vue/no-template-key -->\n<template key=\"a\"><p /></template>",
+        "<!-- eslint-disable-next-line vue/no-v-for-template-key -->\n<template v-for=\"i in items\" key=\"k\"><li /></template>",
+        "<template v-for=\"i in items\">\n<!-- eslint-disable-next-line vue/no-v-for-template-key-on-child -->\n<li :key=\"i\" /></template>",
+        "<!-- eslint-disable-next-line vue/no-lone-template -->\n<template><p /></template>",
+        "<!-- eslint-disable-next-line vue/no-child-content -->\n<div v-html=\"html\">child</div>",
+        "<!-- eslint-disable-next-line vapor/no-inline-template -->\n<MyComp inline-template />",
         r#"<div v-pre><textarea>{{ raw }}</textarea></div>"#,
     ] {
         compare_template(source);

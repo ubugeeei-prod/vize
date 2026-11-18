@@ -60,4 +60,4 @@ Depois, execute `vp run lint`.
 
 - [Regras de Vapor](../vapor.md)
 - [Todas as regras](../all.md)
-- [Código-fonte](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vapor/no_inline_template.rs#L31)
+- [Código-fonte](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/opinionated/vapor/no_inline_template.rs#L32)

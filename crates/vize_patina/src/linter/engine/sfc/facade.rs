@@ -101,6 +101,12 @@ pub(in crate::linter::engine) const RULES: &[&str] = &[
     "a11y/role-img-has-name",
     "vue/a11y-img-alt",
     "html/id-duplication",
+    "vue/no-template-key",
+    "vue/no-v-for-template-key",
+    "vue/no-v-for-template-key-on-child",
+    "vue/no-lone-template",
+    "vue/no-child-content",
+    "vapor/no-inline-template",
 ];
 
 pub(in crate::linter::engine) struct Dispatch<'a> {

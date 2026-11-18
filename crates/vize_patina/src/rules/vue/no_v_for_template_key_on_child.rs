@@ -24,8 +24,11 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::{
+    MarkupBindingKind, MarkupContext, MarkupElement, MarkupNode, MarkupRule, MarkupTraversal,
+};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::{ElementNode, ExpressionNode, PropNode, TemplateChildNode};
+use vize_relief::ElementNode;
 
 static META: RuleMeta = RuleMeta {
     name: "vue/no-v-for-template-key-on-child",
@@ -39,53 +42,43 @@ static META: RuleMeta = RuleMeta {
 pub struct NoVForTemplateKeyOnChild;
 
 impl NoVForTemplateKeyOnChild {
-    /// Whether `element` carries a `v-for` directive.
-    fn has_v_for(element: &ElementNode) -> bool {
-        element.props.iter().any(|prop| match prop {
-            PropNode::Directive(dir) => dir.name == "for",
-            PropNode::Attribute(_) => false,
-        })
+    /// Whether `element` carries an authored directive called `name`.
+    fn has_directive(element: &MarkupElement<'_>, name: &str) -> bool {
+        let mut found = false;
+        element.walk_authored_directive_ranges(name, &mut |_| found = true);
+        found
     }
 
     /// Vue's compiler checks this rule after `v-if` / `v-for` transforms, so a
     /// child with its own structural directive is no longer a plain direct
     /// element child for this diagnostic.
-    fn has_child_control_flow(element: &ElementNode) -> bool {
-        element.props.iter().any(|prop| match prop {
-            PropNode::Directive(dir) => {
-                matches!(dir.name, "if" | "else" | "else-if" | "for")
-            }
-            PropNode::Attribute(_) => false,
-        })
+    fn has_child_control_flow(element: &MarkupElement<'_>) -> bool {
+        ["if", "else", "else-if", "for"]
+            .into_iter()
+            .any(|name| Self::has_directive(element, name))
     }
 
-    /// Return the `:key`/`v-bind:key` directive on `element`, if any.
+    /// The range of the first `:key`/`v-bind:key` binding on `element`.
     ///
     /// Only the bound form is considered: the Vue 3 breaking change is about the
     /// dynamic `key` binding migrating from the child up to the `<template>`.
-    fn key_binding<'a, 'b>(element: &'b ElementNode<'a>) -> Option<&'b PropNode<'a>> {
-        element.props.iter().find(|prop| match prop {
-            PropNode::Directive(dir) => {
-                dir.name == "bind"
-                    && matches!(
-                        dir.arg.as_ref(),
-                        Some(ExpressionNode::Simple(s)) if s.content == "key"
-                    )
+    fn key_binding(element: &MarkupElement<'_>) -> Option<crate::ir::ByteRange> {
+        let mut key = None;
+        element.walk_bindings(&mut |binding| {
+            if key.is_none()
+                && binding.kind() == MarkupBindingKind::Bind
+                && binding.is_unqualified_arg_exact("key")
+            {
+                key = Some(binding.range());
             }
-            PropNode::Attribute(_) => false,
-        })
-    }
-}
-
-impl Rule for NoVForTemplateKeyOnChild {
-    fn meta(&self) -> &'static RuleMeta {
-        &META
+        });
+        key
     }
 
-    fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
+    fn check(ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
         // Only `<template v-for>` carries its key on itself; everything else is
         // free to key its children however it likes.
-        if element.tag != "template" || !Self::has_v_for(element) {
+        if !element.is_unqualified_tag_exact("template") || !Self::has_directive(element, "for") {
             return;
         }
 
@@ -97,21 +90,49 @@ impl Rule for NoVForTemplateKeyOnChild {
             return;
         }
 
-        for child in &element.children {
-            let TemplateChildNode::Element(child) = child else {
-                continue;
+        element.walk_children(&mut |child| {
+            let MarkupNode::Element(child) = child else {
+                return;
             };
-            if Self::has_child_control_flow(child) {
-                continue;
+            if Self::has_child_control_flow(&child) {
+                return;
             }
-            if let Some(prop) = Self::key_binding(child) {
-                ctx.error_with_help(
+            if let Some(range) = Self::key_binding(&child) {
+                ctx.error_at_with_help(
                     ctx.t("vue/no-v-for-template-key-on-child.message"),
-                    prop.loc(),
+                    range,
                     ctx.t("vue/no-v-for-template-key-on-child.help"),
                 );
             }
-        }
+        });
+    }
+}
+
+impl MarkupRule for NoVForTemplateKeyOnChild {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn traversal(&self) -> MarkupTraversal {
+        MarkupTraversal::Elements
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        Self::check(ctx.lint(), element);
+    }
+}
+
+impl Rule for NoVForTemplateKeyOnChild {
+    fn meta(&self) -> &'static RuleMeta {
+        &META
+    }
+
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
+        Self::check(ctx, &MarkupElement::new(element));
     }
 }
 

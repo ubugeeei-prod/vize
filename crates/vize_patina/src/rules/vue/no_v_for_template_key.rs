@@ -25,8 +25,9 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::{MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule, MarkupTraversal};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::{ElementNode, ExpressionNode, PropNode};
+use vize_relief::ElementNode;
 
 const MESSAGE: &str = "'<template v-for>' cannot be keyed. Place the key on real elements instead.";
 
@@ -41,23 +42,42 @@ static META: RuleMeta = RuleMeta {
 /// Disallow `key` on `<template v-for>`.
 pub struct NoVForTemplateKey;
 
-fn has_v_for(element: &ElementNode<'_>) -> bool {
-    element
-        .props
-        .iter()
-        .any(|prop| matches!(prop, PropNode::Directive(directive) if directive.name == "for"))
+fn check(ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
+    if !element.is_unqualified_tag_exact("template") {
+        return;
+    }
+    let mut has_v_for = false;
+    element.walk_authored_directive_ranges("for", &mut |_| has_v_for = true);
+    if !has_v_for {
+        return;
+    }
+    let mut key = None;
+    element.walk_bindings(&mut |binding| {
+        let is_key = match binding.kind() {
+            MarkupBindingKind::Attribute => binding.is_unqualified_arg_exact("key"),
+            MarkupBindingKind::Bind => binding.is_static_unqualified_arg_exact("key"),
+            MarkupBindingKind::On | MarkupBindingKind::Model | MarkupBindingKind::Custom => false,
+        };
+        if is_key && key.is_none() {
+            key = Some(binding.range());
+        }
+    });
+    if let Some(range) = key {
+        ctx.error_at(MESSAGE, range);
+    }
 }
 
-fn is_key(prop: &PropNode<'_>) -> bool {
-    match prop {
-        PropNode::Attribute(attribute) => attribute.name == "key",
-        PropNode::Directive(directive) => {
-            directive.name == "bind"
-                && matches!(
-                    directive.arg.as_ref(),
-                    Some(ExpressionNode::Simple(argument)) if argument.is_static && argument.content == "key"
-                )
-        }
+impl MarkupRule for NoVForTemplateKey {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn traversal(&self) -> MarkupTraversal {
+        MarkupTraversal::Elements
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        check(ctx.lint(), element);
     }
 }
 
@@ -66,13 +86,12 @@ impl Rule for NoVForTemplateKey {
         &META
     }
 
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
+    }
+
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        if element.tag != "template" || !has_v_for(element) {
-            return;
-        }
-        if let Some(prop) = element.props.iter().find(|prop| is_key(prop)) {
-            ctx.error(MESSAGE, prop.loc());
-        }
+        check(ctx, &MarkupElement::new(element));
     }
 }
 
