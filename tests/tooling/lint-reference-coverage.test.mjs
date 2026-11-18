@@ -21,7 +21,7 @@ const hash = (bytes) => createHash("sha256").update(bytes).digest("hex");
 const requireBench = createRequire(path.join(root, "tools/benchmarks/scripts/package.json"));
 
 await test("reviewed coverage preserves complete frozen packets and exact source identities", () => {
-  assert.equal(contract.cases.length, 2);
+  assert.equal(contract.cases.length, 4);
   for (const entry of contract.cases) {
     const source = fs.readFileSync(path.join(fixtures, entry.source));
     const bytes = gunzipSync(fs.readFileSync(path.join(fixtures, entry.packet)));
@@ -31,7 +31,10 @@ await test("reviewed coverage preserves complete frozen packets and exact source
     assert.equal(packet.project, entry.project);
     assert.equal(packet.revision, entry.revision);
     assert.equal(packet.preset, entry.preset);
-    assert.deepEqual(entry.compatiblePresets, ["ecosystem", "all-mapped"]);
+    assert.deepEqual(
+      entry.compatiblePresets,
+      entry.preset === "all-mapped" ? ["all-mapped"] : ["ecosystem", "all-mapped"],
+    );
     assert.deepEqual(packet.divergence.falsePositives, [entry.finding]);
     assert.equal(packet.budget.maxFalsePositiveCount, 0);
     assert.equal(packet.budget.maxFalseNegativeCount, 0);
@@ -226,8 +229,27 @@ await test("actual report retains complete raw packets and scores a neighboring 
       const hasFalseNegatives = packet.divergence.falseNegatives.length > 0;
       const allMapped = run([entry.finding], "record-only", 0, "all-mapped");
       assert.equal(allMapped.preset, "all-mapped");
-      assert.deepEqual(allMapped.divergence.falsePositives, [entry.finding]);
-      assert.deepEqual(allMapped.divergence.referenceCoverageExpectations, []);
+      assert.deepEqual(allMapped.divergence.falsePositives, []);
+      assert.equal(allMapped.divergence.patinaOutsideBaselineSurface.length, 1);
+      const scorecardCase = contract.cases.find(
+        (candidate) => candidate.project === entry.project && candidate.preset === "all-mapped",
+      );
+      assert.ok(scorecardCase);
+      assert.equal(
+        allMapped.divergence.patinaOutsideBaselineSurface[0].referenceCoverage.case,
+        scorecardCase.id,
+      );
+      assert.deepEqual(
+        allMapped.divergence.referenceCoverageExpectations.map(
+          ({ case: caseId, expectedCount, observedCount, passed }) => ({
+            case: caseId,
+            expectedCount,
+            observedCount,
+            passed,
+          }),
+        ),
+        [{ case: scorecardCase.id, expectedCount: 1, observedCount: 1, passed: true }],
+      );
       const missing = run([], "enforce", hasFalseNegatives ? 1 : 0);
       assert.deepEqual(missing.raw.patinaFindings, []);
       assert.deepEqual(missing.divergence.falseNegatives, packet.divergence.falseNegatives);
