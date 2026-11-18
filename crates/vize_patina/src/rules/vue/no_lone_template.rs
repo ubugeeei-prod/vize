@@ -83,6 +83,10 @@ impl Rule for NoLoneTemplate {
         &META
     }
 
+    fn template_hooks(&self) -> crate::rule::RuleHooks {
+        crate::rule::RuleHooks::ELEMENT
+    }
+
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
         if element.tag != "template" {
             return;

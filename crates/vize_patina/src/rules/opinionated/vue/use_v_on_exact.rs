@@ -124,6 +124,10 @@ impl Rule for UseVOnExact {
         &META
     }
 
+    fn template_hooks(&self) -> crate::rule::RuleHooks {
+        crate::rule::RuleHooks::ELEMENT
+    }
+
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
         let component = is_custom_component(ctx, element);
         let mut handlers = Vec::new();

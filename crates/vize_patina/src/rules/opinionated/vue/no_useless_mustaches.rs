@@ -53,6 +53,10 @@ impl Rule for NoUselessMustaches {
         &META
     }
 
+    fn template_hooks(&self) -> crate::rule::RuleHooks {
+        crate::rule::RuleHooks::INTERPOLATION
+    }
+
     fn check_interpolation<'a>(
         &self,
         ctx: &mut LintContext<'a>,

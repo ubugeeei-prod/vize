@@ -5,8 +5,8 @@
 use crate::context::{
     CallbackSite, ElementContext, LintContext, TemplateCommentDirectives, process_vize_directive,
 };
-use crate::rule::Rule;
-use vize_l0::{CompactString, profile};
+use crate::rule::{Rule, RuleHooks};
+use vize_l0::{CompactString, SmallVec, profile};
 use vize_relief::{ElementNode, PropNode, TemplateChildNode};
 
 pub use crate::visitor_scope::{
@@ -25,6 +25,58 @@ pub(super) enum RuleSelection<'rules> {
     Indices(&'rules [usize]),
 }
 
+#[derive(Default)]
+pub(super) struct IndexedHookMask {
+    words: SmallVec<[u64; 2]>,
+}
+
+impl IndexedHookMask {
+    fn insert(&mut self, rank: usize) {
+        let word = rank / u64::BITS as usize;
+        while self.words.len() <= word {
+            self.words.push(0);
+        }
+        self.words[word] |= 1 << (rank % u64::BITS as usize);
+    }
+}
+
+#[derive(Default)]
+struct IndexedRulePlans {
+    template: IndexedHookMask,
+    element: IndexedHookMask,
+    exit: IndexedHookMask,
+    directive: IndexedHookMask,
+    for_node: IndexedHookMask,
+    if_node: IndexedHookMask,
+    interpolation: IndexedHookMask,
+}
+
+impl IndexedRulePlans {
+    fn new(rules: &[Box<dyn Rule>], indices: &[usize]) -> Self {
+        let mut plans = Self::default();
+        for &rank in indices {
+            let Some(rule) = rules.get(rank) else {
+                continue;
+            };
+            let hooks = rule.template_hooks();
+            for (hook, mask) in [
+                (RuleHooks::TEMPLATE, &mut plans.template),
+                (RuleHooks::ELEMENT, &mut plans.element),
+                (RuleHooks::EXIT, &mut plans.exit),
+                (RuleHooks::DIRECTIVE, &mut plans.directive),
+                (RuleHooks::FOR, &mut plans.for_node),
+                (RuleHooks::IF, &mut plans.if_node),
+                (RuleHooks::INTERPOLATION, &mut plans.interpolation),
+            ] {
+                if hooks.contains(hook) {
+                    mask.insert(rank);
+                }
+            }
+        }
+        plans
+    }
+}
+
 /// Visit the AST and run all rules
 pub struct LintVisitor<'a, 'ctx, 'rules> {
     ctx: &'ctx mut LintContext<'a>,
@@ -35,6 +87,8 @@ pub struct LintVisitor<'a, 'ctx, 'rules> {
     /// compact ranks so every callback skips facade rules without scanning the
     /// full registry. JSX retains its existing boolean partition.
     selection: RuleSelection<'rules>,
+    /// Callback masks keyed by registry rank for the legacy subset.
+    indexed_plans: IndexedRulePlans,
     track_aria_hidden_inert: bool,
     template_directives: Option<&'ctx TemplateCommentDirectives<'ctx, 'a>>,
 }
@@ -54,6 +108,7 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
             rule_names,
             run_exit_element_rules,
             selection: RuleSelection::All,
+            indexed_plans: IndexedRulePlans::default(),
             track_aria_hidden_inert: rule_names.contains(&"a11y/no-aria-hidden-on-focusable"),
             template_directives: None,
         }
@@ -79,6 +134,7 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
             rule_names,
             run_exit_element_rules,
             selection: RuleSelection::Mask(keep_mask),
+            indexed_plans: IndexedRulePlans::default(),
             track_aria_hidden_inert: rule_names.iter().enumerate().any(|(index, name)| {
                 *name == "a11y/no-aria-hidden-on-focusable"
                     && Self::rule_active(RuleSelection::Mask(keep_mask), index)
@@ -96,12 +152,14 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
         run_exit_element_rules: bool,
         indices: &'rules [usize],
     ) -> Self {
+        let indexed_plans = IndexedRulePlans::new(rules, indices);
         Self {
             ctx,
             rules,
             rule_names,
             run_exit_element_rules,
             selection: RuleSelection::Indices(indices),
+            indexed_plans,
             track_aria_hidden_inert: indices
                 .iter()
                 .any(|&index| rule_names.get(index) == Some(&"a11y/no-aria-hidden-on-focusable")),
@@ -148,6 +206,7 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
                         self.rules,
                         self.rule_names,
                         selection,
+                        &self.indexed_plans.interpolation,
                         CallbackSite::Interpolation(interp.loc.span.start),
                         |_, rule, ctx| rule.check_interpolation(ctx, interp),
                     );
@@ -242,6 +301,7 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
                 self.rules,
                 self.rule_names,
                 selection,
+                &self.indexed_plans.element,
                 CallbackSite::Element(el.loc.span.start),
                 |_, rule, ctx| rule.enter_element(ctx, el),
             );
@@ -258,6 +318,7 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
                         self.rules,
                         self.rule_names,
                         selection,
+                        &self.indexed_plans.directive,
                         CallbackSite::Directive(el.loc.span.start, dir.loc.span.start),
                         |_, rule, ctx| rule.check_directive(ctx, el, dir),
                     );
@@ -278,6 +339,7 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
                     self.rules,
                     self.rule_names,
                     selection,
+                    &self.indexed_plans.exit,
                     CallbackSite::ExitElement(el.loc.span.start),
                     |_, rule, ctx| rule.exit_element(ctx, el),
                 );

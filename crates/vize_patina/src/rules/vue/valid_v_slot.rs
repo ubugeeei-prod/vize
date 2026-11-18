@@ -95,6 +95,10 @@ impl Rule for ValidVSlot {
         &META
     }
 
+    fn template_hooks(&self) -> crate::rule::RuleHooks {
+        crate::rule::RuleHooks::ELEMENT.union(crate::rule::RuleHooks::DIRECTIVE)
+    }
+
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
         if Self::is_custom_component(element) {
             check_child_slot_templates(ctx, element);
@@ -420,6 +424,10 @@ impl ValidVSlot {
 impl Rule for ConfiguredValidVSlot {
     fn meta(&self) -> &'static RuleMeta {
         ValidVSlot.meta()
+    }
+
+    fn template_hooks(&self) -> crate::rule::RuleHooks {
+        crate::rule::RuleHooks::ELEMENT.union(crate::rule::RuleHooks::DIRECTIVE)
     }
 
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {

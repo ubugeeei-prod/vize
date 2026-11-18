@@ -1,6 +1,6 @@
 //! Specialize editor bookkeeping outside the ordinary per-rule hot loop.
 
-use super::{LintVisitor, RuleSelection};
+use super::{IndexedHookMask, LintVisitor, RuleSelection};
 use crate::context::{CallbackSite, LintContext};
 use crate::rule::Rule;
 
@@ -11,14 +11,15 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
         rules: &[Box<dyn Rule>],
         names: &[&'static str],
         selection: RuleSelection<'_>,
+        indexed_mask: &IndexedHookMask,
         site: CallbackSite,
         visit: impl FnMut(usize, &dyn Rule, &mut LintContext<'a>),
     ) {
         if ctx.callback_order_enabled() {
             ctx.record_callback_site(site);
-            Self::callback_rules_inner::<true>(ctx, rules, names, selection, visit);
+            Self::callback_rules_inner::<true>(ctx, rules, names, selection, indexed_mask, visit);
         } else {
-            Self::callback_rules_inner::<false>(ctx, rules, names, selection, visit);
+            Self::callback_rules_inner::<false>(ctx, rules, names, selection, indexed_mask, visit);
         }
     }
 
@@ -28,6 +29,7 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
         rules: &[Box<dyn Rule>],
         names: &[&'static str],
         selection: RuleSelection<'_>,
+        indexed_mask: &IndexedHookMask,
         mut visit: impl FnMut(usize, &dyn Rule, &mut LintContext<'a>),
     ) {
         match selection {
@@ -52,16 +54,24 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
                     visit(index, rule.as_ref(), ctx);
                 }
             }
-            RuleSelection::Indices(indices) => {
-                for &index in indices {
-                    let Some((rule, name)) = rules.get(index).zip(names.get(index).copied()) else {
-                        continue;
-                    };
-                    if ORDERED {
-                        ctx.set_callback_rule(index);
+            RuleSelection::Indices(_) => {
+                for (word_index, &word) in indexed_mask.words.iter().enumerate() {
+                    let mut remaining = word;
+                    while remaining != 0 {
+                        let bit = remaining.trailing_zeros() as usize;
+                        remaining &= remaining - 1;
+                        let index = word_index * u64::BITS as usize + bit;
+                        let Some((rule, name)) = rules.get(index).zip(names.get(index).copied())
+                        else {
+                            continue;
+                        };
+
+                        if ORDERED {
+                            ctx.set_callback_rule(index);
+                        }
+                        ctx.current_rule = name;
+                        visit(index, rule.as_ref(), ctx);
                     }
-                    ctx.current_rule = name;
-                    visit(index, rule.as_ref(), ctx);
                 }
             }
         }

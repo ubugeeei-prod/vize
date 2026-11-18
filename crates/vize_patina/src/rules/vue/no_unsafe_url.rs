@@ -209,6 +209,10 @@ impl Rule for NoUnsafeUrl {
         &META
     }
 
+    fn template_hooks(&self) -> crate::rule::RuleHooks {
+        crate::rule::RuleHooks::ELEMENT.union(crate::rule::RuleHooks::DIRECTIVE)
+    }
+
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
         if is_router_link_tag(element.tag) {
             return;
