@@ -39,6 +39,8 @@ pub(crate) struct Cx<'a, P> {
     /// compound text ops. Compile-only paths reparse those parts in the
     /// emitter and must not pay for an earlier duplicate parse.
     pub(crate) retain_consumed_expressions: bool,
+    /// Whether direct table rows and cells gain implied `tbody`/`tr` owners.
+    implied_table_sections: bool,
     pub diagnostics: Vec<Diagnostic>,
     /// Decisions, kept only when the consumer chose a recording sink.
     pub provenance: P,
@@ -86,6 +88,7 @@ impl<'a, P: ProvenanceSink> Cx<'a, P> {
             v_pre_depth: 0,
             preserve_comments: policy.preserve_comments,
             retain_consumed_expressions: policy.retain_consumed_expressions,
+            implied_table_sections: policy.implied_table_sections,
             diagnostics: Vec::new(),
             provenance: P::default(),
             scopes: SideTable::new(),
@@ -138,6 +141,10 @@ impl<'a, P: ProvenanceSink> Cx<'a, P> {
 
     pub(crate) fn preserve_comments(&self) -> bool {
         self.preserve_comments
+    }
+
+    pub(crate) fn implied_table_sections(&self) -> bool {
+        self.implied_table_sections
     }
 
     /// Enter/leave a condense-suppressing `<pre>` around its children.

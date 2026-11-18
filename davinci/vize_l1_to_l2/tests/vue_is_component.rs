@@ -225,7 +225,7 @@ fn reserved_static_casts_keep_authored_identity_in_both_semantic_paths() {
 }
 
 #[test]
-fn verbatim_table_rows_keep_the_native_implicit_wrapper() {
+fn verbatim_table_rows_stay_direct_native_rows() {
     for source in [
         "<table><tr v-pre is=\"vue:my-row\"><td>x</td></tr></table>",
         "<table><tr is=\"vue:my-row\" v-pre><td>x</td></tr></table>",
@@ -235,11 +235,7 @@ fn verbatim_table_rows_keep_the_native_implicit_wrapper() {
                 panic!("table")
             };
             assert_eq!(table.tag, "table");
-            let [Op::Element(tbody)] = table.children.ops.as_slice() else {
-                panic!("implicit tbody")
-            };
-            assert_eq!(tbody.tag, "tbody");
-            let [Op::Element(row)] = tbody.children.ops.as_slice() else {
+            let [Op::Element(row)] = table.children.ops.as_slice() else {
                 panic!("native row")
             };
             assert_eq!(row.tag, "tr");

@@ -32,6 +32,8 @@ mod reuse_tests {
             "<div><p>text <b>bold</b></p><img src=\"a.png\"><br><input /></div>",
             "<ul><li v-for=\"i in l\" :key=\"i\">{{ i }}</li></ul>",
             "<table><tbody><tr><td>cell</td></tr></tbody></table>",
+            // Vue keeps a direct row; the component parse implies no `tbody`.
+            "<table><tr><td>row</td></tr></table>",
             "<svg viewBox=\"0 0 1 1\"><path d=\"M0 0\" /><foreignObject><div>x</div></foreignObject></svg>",
             "<MyCard title=\"x\"><template #footer><button>ok</button></template></MyCard>",
             "<!-- comment --><p>a</p>\n<p>b</p >",
@@ -46,7 +48,6 @@ mod reuse_tests {
         for source in [
             "<p><div>block</div></p>",
             "<p>unclosed<p>second</p>",
-            "<table><tr><td>row</td></tr></table>",
             "<table><div>fostered</div></table>",
             "<table>text</table>",
             "<ul><li>a<li>b</li></li></ul>",
@@ -120,8 +121,9 @@ mod reuse_tests {
                 }
             }
         }
-        // 2335 of the 2592 nestings are left as authored by the linter's parse.
+        // 2340 of the 2592 nestings are left as authored by the linter's parse;
+        // five more put a row or cell directly in a `table` and imply no `tbody`.
         assert_eq!(total, 24 * 27 * 4);
-        assert_eq!(reused, 2335, "reused {reused} of {total}");
+        assert_eq!(reused, 2340, "reused {reused} of {total}");
     }
 }

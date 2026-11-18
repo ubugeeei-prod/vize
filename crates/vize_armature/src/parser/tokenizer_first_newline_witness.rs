@@ -64,6 +64,7 @@ fn default_fixture_options(options: &ParserOptions) -> bool {
         on_warn,
         comments,
         experimental_in_tag_comments,
+        implied_table_sections,
         dialect,
     } = options;
     let defaults = ParserOptions::default();
@@ -80,5 +81,6 @@ fn default_fixture_options(options: &ParserOptions) -> bool {
         && on_warn.is_none()
         && *comments
         && !*experimental_in_tag_comments
+        && !*implied_table_sections
         && *dialect == VueVersion::V3
 }
