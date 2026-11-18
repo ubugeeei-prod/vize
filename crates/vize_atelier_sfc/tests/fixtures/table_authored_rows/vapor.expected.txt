@@ -1,0 +1,44 @@
+import { child as _child, next as _next, txt as _txt, toDisplayString as _toDisplayString, setText as _setText, nthChild as _nthChild, setInsertionState as _setInsertionState, renderEffect as _renderEffect, createFor as _createFor, template as _template } from 'vue';
+const t0 = _template("<tr><td> </td></tr>")
+const t1 = _template("<tr><td> </td></tr>")
+const t2 = _template("<table class=\"grid\"><tbody><tr><th>Name</th></tr><!----><!----><tr><td> </td></tr></tbody></table>")
+const t3 = _template("<table><thead><tr><th>Note</th></tr></thead><tbody><tr><td> </td></tr></tbody></table>")
+
+function render(_ctx, $props, $emit, $attrs, $slots) {
+  const n1 = t2()
+  const n15 = t3()
+  const n0 = _child(n1)
+  const n3 = _next(_child(n0))
+  const n8 = _nthChild(n0, 2)
+  const n2 = _nthChild(n0, 3)
+  const n13 = _child(n2)
+  const n14 = _next(_child(n15))
+  const n16 = _child(n14)
+  const n17 = _child(n16)
+  const x13 = _txt(n13)
+  const x17 = _txt(n17)
+  _setInsertionState(n0, n3)
+  const n4 = _createFor(() => (_ctx.rows), (_for_item0) => {
+    const n7 = t0()
+    const n6 = _child(n7)
+    const x6 = _txt(n6)
+    _renderEffect(() => _setText(x6, _toDisplayString(_for_item0.value.name)))
+    return n7
+  }, (row) => (row.id), 8 /* IS_SINGLE_NODE */)
+  _setInsertionState(n0, n8)
+  const n9 = _createFor(() => (_ctx.extra), (_for_item0) => {
+    const n12 = t1()
+    const n11 = _child(n12)
+    const x11 = _txt(n11)
+    _renderEffect(() => _setText(x11, _toDisplayString(_for_item0.value.name)))
+    return n12
+  }, (row) => (row.id), 8 /* IS_SINGLE_NODE */)
+  _renderEffect(() => {
+    _setText(x13, _toDisplayString(_ctx.total))
+    _setText(x17, _toDisplayString(_ctx.note))
+  })
+  return [n1, n15]
+}
+const _sfc_main = { __vapor: true }
+_sfc_main.render = render
+export default _sfc_main
