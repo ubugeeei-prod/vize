@@ -36,11 +36,18 @@ impl StyleRule for RequireFontDisplay {
             {
                 continue;
             }
-            let has_font_display = nodes.iter().any(|child| {
-                child.parent() == Some(index)
-                    && matches!(sheet.kind(child), StyleNodeKind::Declaration { name, .. }
+            // Descendants follow their at-rule in document order.
+            let end = node.span().end;
+            let has_font_display = nodes
+                .get(index + 1..)
+                .unwrap_or_default()
+                .iter()
+                .take_while(|child| child.span().start < end)
+                .any(|child| {
+                    child.parent() == Some(index)
+                        && matches!(sheet.kind(child), StyleNodeKind::Declaration { name, .. }
                         if sheet.text(name).eq_ignore_ascii_case("font-display"))
-            });
+                });
             if !has_font_display {
                 result.add_diagnostic(
                     LintDiagnostic::warn(

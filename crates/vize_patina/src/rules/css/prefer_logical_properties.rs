@@ -41,13 +41,11 @@ impl StyleRule for PreferLogicalProperties {
             let StyleNodeKind::Declaration { name, .. } = sheet.kind(node) else {
                 continue;
             };
-            if !in_style_scope(sheet, node) {
-                continue;
-            }
             let text = sheet.text(name);
             if !PHYSICAL
                 .iter()
                 .any(|(physical, _)| text.eq_ignore_ascii_case(physical))
+                || !in_style_scope(sheet, node)
             {
                 continue;
             }
