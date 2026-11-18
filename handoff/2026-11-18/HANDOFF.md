@@ -63,6 +63,28 @@ groups × ~80 jobs nothing finished, so I dequeued the tail and fed it back in o
   acceptance gated on the proof. Blocks every dependency-changing PR (e.g. #13231).
 - Real-project lint lane and Davinci branches: see their sections below.
 
+## Real-project lint lane (stopped; everything pushed)
+Full handoff: `.handoff/real-project-lint.md` on branch `wip/real-project-lint-handoff` @ 60fb4f8551 (never merge;
+it also has every PR body under `.handoff/pr-bodies/` and helper scripts under `.handoff/tools/`, e.g.
+`merge-manifest.mjs` for manifest conflicts). The exact integration merge behind the measurement is
+`wip/real-project-lint-integration` @ 490db0a419.
+- In the queue: #13278, #13287, #13293. Merged today: #13271, #13273, #13286, #13291, #13312.
+- Open next, in order: (1) `fix/lint-divergence-harness` @ 55903363c6 (body `pr-harness.md`), (2)
+  `fix/lint-divergence-classifications` @ fd7c545e2e (body `pr-classifications.md`), then one PR each:
+  `fix/patina-no-props-shadow-sibling-script` 1a4bafeae5, `fix/patina-unused-emits-escapes` 3b1d5ef099,
+  `fix/patina-decorator-components-registration` 652004dbd4, `fix/patina-no-duplicate-class-upstream-nodes`
+  6401b5e2f3, `fix/patina-no-multi-spaces-block-tags` cea3d12937, `fix/patina-nuxtjs-composition-api` 40cf391f68,
+  `fix/patina-no-empty-pattern-slot-scope` b5ef38de52, `fix/croquis-trailing-operator-member` c66096eef4 (watch the
+  croquis instruction ceiling), `fix/patina-self-name-last-extension` 7b9ee94672,
+  `fix/patina-no-dupe-keys-model-binding-once` 6e4cf25318, `fix/patina-valid-default-unknown-reference` 093e5d1b6c,
+  `fix/patina-content-outside-block-text-only` 8a3229c4a2, `fix/patina-template-expression-disable-comments`
+  a50faf1f18 (stacked on #13287).
+- Before each: rebase on main, resolve manifests with `.handoff/tools/merge-manifest.mjs`, run patina tests, clippy,
+  the docs generator and the differential/gate tests.
+- Remaining after all of that: Davinci HTML-tree items, the mint-ui control character (#13309), and the two
+  `reference-coverage-8849` custody cases to re-review under eslint-plugin-vue 10.12.0 from a CI all-mapped run.
+- Superseded branches that can be deleted are listed in the lane's handoff.
+
 ## Davinci (lead + workers all stopped; everything pushed)
 Gates: 17/45 at the last measurement. In the queue: #13304 (foster parenting only for in-DOM), #13303 (S7 #6844),
 #13309 (control character), #13279 (TSRX keyed fragments), plus #13289, #13257, #13305.
