@@ -1,0 +1,10 @@
+<script lang="ts">
+import { Vue, Prop } from 'vue-property-decorator'
+
+export default class Widget extends Vue {
+  @Prop() readonly label!: string;
+  @Prop({ type: Number }) readonly size?: number;
+}
+</script>
+
+<template><div>{{ label }}{{ size }}</div></template>

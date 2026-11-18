@@ -1,0 +1,52 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c3c-generic-interface-pick-heritage-jsdoc-1357",
+    history: "ee31598c93abfe7c104b6a491f8f3907c5472b8e",
+    source: "<script setup lang=\"ts\">\ntype UseResizableProps = {\n  /**\n   * The id.\n   * @defaultValue useId()\n   */\n  id?: string\n  /**\n   * The side.\n   * @defaultValue 'left'\n   */\n  side?: 'left' | 'right'\n  minSize?: number\n  storage?: 'cookie' | 'local'\n  unit?: '%' | 'rem' | 'px'\n}\n\ninterface DashboardSidebarProps<T extends string = string> extends Pick<UseResizableProps, 'id' | 'side' | 'minSize'> {\n  mode?: T\n}\n\ndefineProps<DashboardSidebarProps>()\n</script>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "\nexport default {\n  __name: 'History',\n  props: {\n    id: { type: String, required: false },\n    side: { type: String, required: false },\n    minSize: { type: Number, required: false },\n    mode: { type: null, required: false }\n  },\n  setup(__props, { expose: __expose }) {\n  __expose();\n\n\n}\n\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "minSize": Props,
+                        "side": Props,
+                        "mode": Props,
+                        "id": Props,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

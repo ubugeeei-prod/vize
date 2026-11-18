@@ -1,0 +1,7 @@
+{
+  "extends": ["@shared/tsconfig/tsconfig.dom.json", "./tsconfig.base.json"],
+  "compilerOptions": {
+    "jsx": "react-jsx"
+  },
+  "files": ["src/real-tree-only.ts"]
+}

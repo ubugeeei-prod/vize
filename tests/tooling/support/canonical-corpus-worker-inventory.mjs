@@ -34,13 +34,21 @@ export function canonicalWorkerInventory(fileCount = 42998, repositoryCount = 14
 }
 
 // Original historical logs remain byte-exact parser controls. This synthetic
-// finalizer control grows their file/gitlink fields to the committed current size.
+// finalizer control grows their file/gitlink fields to the committed current size
+// and moves the original-lane skips to the current allowlist (SFC templates
+// keep authored table rows and structure, so fewer files fail the original lane).
 // Added synthetic inputs remain unverified; no native coverage is fabricated.
 export function canonicalWorkerLog(observer, fileCount, repositoryCount) {
   return Buffer.from(
     readFileSync(`tests/tooling/fixtures/canonical-observer-logs/${observer}.log`, "utf8")
       .replaceAll("submodules=147", `submodules=${repositoryCount}`)
       .replaceAll("42998", String(fileCount))
+      .replaceAll("old_error_skips=16", "old_error_skips=13")
+      .replaceAll(
+        '"ExtendPoint": 1, "InvalidEndTag": 20, "MissingEndTag": 10, ',
+        '"InvalidEndTag": 15, "MissingEndTag": 8, ',
+      )
+      .replaceAll('"VElseNoAdjacentIf": 1, ', "")
       .replace(
         /(davinci native-only acceptance:[^\n]*unverified=)(\d+)/g,
         (_, prefix, count) => `${prefix}${Number(count) + fileCount - 42998}`,

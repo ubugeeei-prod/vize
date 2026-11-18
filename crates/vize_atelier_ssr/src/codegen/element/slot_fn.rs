@@ -384,3 +384,21 @@ impl<'a> SsrCodegenContext<'a> {
         })
     }
 }
+
+/// The name a static `v-slot` argument spells. Vue's parser keeps every
+/// `.segment` of a slot argument in the name (`#item.alpha` is the slot
+/// `item.alpha`); a dynamic or missing argument has no static name.
+pub(super) fn static_slot_name(dir: &vize_atelier_core::DirectiveNode<'_>) -> Option<String> {
+    let Some(vize_atelier_core::ExpressionNode::Simple(arg)) = &dir.arg else {
+        return None;
+    };
+    if !arg.is_static {
+        return None;
+    }
+    let mut name = String::new(arg.content);
+    for modifier in dir.modifiers.iter() {
+        name.push('.');
+        name.push_str(modifier.content);
+    }
+    Some(name)
+}

@@ -374,11 +374,12 @@ mod tests {
     }
 
     #[test]
-    fn original_missing_and_implicit_closes_remain_distinct_from_present_tokens() {
+    fn original_missing_closes_remain_distinct_from_present_tokens() {
         let arena = Allocator::default();
         for (source, expected) in [
             ("<p>text", Closing::Missing),
-            ("<a><a>inner</a></a>", Closing::Implicit),
+            // Built as written: the outer anchor owns the last end tag.
+            ("<a><a>inner</a></a>", Closing::Present(Span::new(17, 18))),
         ] {
             let owner =
                 NativeComponent::parse_in(&arena, SourceRoot::new(source).unwrap().whole_block())

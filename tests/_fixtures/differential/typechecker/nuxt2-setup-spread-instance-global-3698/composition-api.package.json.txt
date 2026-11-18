@@ -1,0 +1,14 @@
+{
+  "name": "@nuxtjs/composition-api",
+  "version": "0.26.0",
+  "main": "./dist/runtime/index.js",
+  "module": "./dist/runtime/index.mjs",
+  "types": "./dist/runtime/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/runtime/index.mjs",
+      "require": "./dist/runtime/index.js"
+    },
+    "./package.json": "./package.json"
+  }
+}

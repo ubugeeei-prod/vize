@@ -1,0 +1,35 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c4c-looped-dynamic-slot-name-v-for-alias-2733",
+    history: "abebeb93c53eb13213b9238e55b498200ef6b893",
+    source: "<Wrapper>\n  <template v-for=\"(_, s) of $slots\" :key=\"s\" #[s]=\"scope\">\n    <slot :name=\"s\" v-bind=\"scope\" />\n  </template>\n</Wrapper>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: Some(
+            true,
+        ),
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { resolveComponent as _resolveComponent, renderSlot as _renderSlot, normalizeProps as _normalizeProps, guardReactiveProps as _guardReactiveProps, openBlock as _openBlock, createBlock as _createBlock, renderList as _renderList, createSlots as _createSlots, withCtx as _withCtx } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_Wrapper = _resolveComponent(\"Wrapper\")\n  \n  return (_openBlock(), _createBlock(_component_Wrapper, null, _createSlots({ _: 2 /* DYNAMIC */ }, [\n    _renderList(_ctx.$slots, (_, s) => {\n      return {\n        name: s,\n        fn: _withCtx((scope) => [\n          _renderSlot(_ctx.$slots, s, _normalizeProps(_guardReactiveProps(scope)))\n        ])\n      }\n    })\n  ]), 1024 /* DYNAMIC_SLOTS */))\n}",
+    map: None,
+}

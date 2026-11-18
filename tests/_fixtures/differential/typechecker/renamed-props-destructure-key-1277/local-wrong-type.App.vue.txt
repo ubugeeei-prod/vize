@@ -1,0 +1,7 @@
+<script setup lang="ts">
+const { foo: bar } = defineProps<{ foo: string }>()
+const n: number = bar
+void n
+</script>
+
+<template>{{ foo }} {{ bar }}</template>

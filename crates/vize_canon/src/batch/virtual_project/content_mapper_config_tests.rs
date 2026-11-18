@@ -115,6 +115,7 @@ fn configured_template_ref_composable_reaches_the_mapper_projection() {
         configuration
             .transform_options
             .configured_global_template_ref
+            .global
     );
     let transformed = generate_vue_content_mapper_transform_with_options(
         Path::new("App.vue"),
@@ -146,6 +147,7 @@ fn explicit_template_ref_configuration_overrides_ambient_authority() {
             .transform_options
             .with_ambient_global_template_ref(true)
             .configured_global_template_ref
+            .global
     );
 }
 

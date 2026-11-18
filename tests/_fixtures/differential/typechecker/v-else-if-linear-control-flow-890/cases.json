@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 890,
+  "regressionCommit": "f34d9e6da1aeb4ce0b641cb1a3c74c1840ca53b7",
+  "sourceRevision": "f34d9e6da1aeb4ce0b641cb1a3c74c1840ca53b7",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "discriminated-union-else-if-chain",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "union.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "status-if-else-if-else-chain",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "status.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "else-if-branch-reads-other-variant",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "invalid.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 13,
+          "column": 51,
+          "severity": 1,
+          "code": 2551,
+          "message": "Property 'value0' does not exist on type '{ value1: string; }'. Did you mean 'value1'?"
+        }
+      ]
+    }
+  ]
+}

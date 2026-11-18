@@ -121,6 +121,7 @@ Options clés :
 | `-j, --threads`               | Remplacement du nombre de fils                                                                |
 | `--profile`                   | Profil de timing d’impression                                                                 |
 | `--continue-on-error`         | Continuez à compiler et signalez les échecs à la fin                                          |
+| `--verbose` | Affiche chaque erreur de compilation en entier au lieu d’un bloc d’aide par type |
 
 ## Format
 

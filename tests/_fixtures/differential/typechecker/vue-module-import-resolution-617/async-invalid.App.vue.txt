@@ -1,0 +1,8 @@
+<script setup lang="ts">
+const payload = await Promise.resolve({ label: "ready" });
+const label: number = payload.label;
+</script>
+
+<template>
+  <div>{{ label }}</div>
+</template>

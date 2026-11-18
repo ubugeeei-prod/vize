@@ -48,6 +48,8 @@ patchedDependencies:
   "@ox-content/vite-plugin@3.8.2": "patches/@ox-content__vite-plugin@3.8.2.patch"
   "braces@3.0.3": "patches/braces@3.0.3.patch"
   deepmerge@4.3.1: patches/deepmerge@4.3.1.patch
+  picomatch@2.3.2: patches/picomatch@2.3.2.patch
+  picomatch@4.0.7: patches/picomatch@4.0.7.patch
   "vscode-languageclient@9.0.1": "patches/vscode-languageclient@9.0.1.patch"
 
 overrides:

@@ -10,13 +10,13 @@
 )]
 
 use serde::Deserialize;
-use vize_atelier_core::{CodegenMode, CompilerError};
-use vize_atelier_dom::{DomCompilerOptions, compile_template_with_options};
+use vize_atelier_core::{CodegenMode, CompilerError, TemplateSyntaxMode};
+use vize_atelier_dom::{DomCompilerOptions, compile_template_with_template_syntax};
 use vize_atelier_sfc::{
     ScriptCompileOptions, SfcCompileOptions, SfcCompileResult, SfcError, SfcParseOptions,
-    StyleCompileOptions, TemplateCompileOptions, compile_sfc, parse_sfc,
+    StyleCompileOptions, TemplateCompileOptions, compile_sfc_with_template_syntax, parse_sfc,
 };
-use vize_l0::{Allocator, String};
+use vize_l0::{Allocator, String, config::VueVersion};
 
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -57,6 +57,26 @@ struct Options {
     comments: Option<bool>,
     /// Emit a source map.
     source_map: Option<bool>,
+    /// Template syntax recovery: `standard` (default), `strict` or `quirks`.
+    template_syntax: Option<String>,
+    /// Compile for a custom renderer instead of the DOM runtime.
+    custom_renderer: Option<bool>,
+    /// SFC: Vue dialect, `3` (default), `2.7` or `2`.
+    vue_version: Option<String>,
+}
+
+fn template_syntax(case: &Case) -> TemplateSyntaxMode {
+    match case
+        .options
+        .template_syntax
+        .as_deref()
+        .unwrap_or("standard")
+    {
+        "standard" => TemplateSyntaxMode::Standard,
+        "strict" => TemplateSyntaxMode::Strict,
+        "quirks" => TemplateSyntaxMode::Quirks,
+        mode => panic!("unknown fixture template syntax: {mode}"),
+    }
 }
 
 #[derive(Debug)]
@@ -120,6 +140,13 @@ fn compile_whole_sfc(case: &Case) -> Observation {
             vapor,
             is_prod,
             is_ts,
+            custom_renderer: case.options.custom_renderer.unwrap_or(false),
+            dialect: match case.options.vue_version.as_deref().unwrap_or("3") {
+                "3" => VueVersion::V3,
+                "2.7" => VueVersion::V2_7,
+                "2" => VueVersion::V2,
+                version => panic!("unknown fixture Vue version: {version}"),
+            },
             ..TemplateCompileOptions::default()
         },
         style: StyleCompileOptions {
@@ -131,7 +158,11 @@ fn compile_whole_sfc(case: &Case) -> Observation {
         vapor,
         scope_id: None,
     };
-    Observation::Sfc(compile_sfc(&descriptor, options))
+    Observation::Sfc(compile_sfc_with_template_syntax(
+        &descriptor,
+        options,
+        template_syntax(case),
+    ))
 }
 
 fn compile_bare_template(case: &Case) -> Observation {
@@ -147,7 +178,7 @@ fn compile_bare_template(case: &Case) -> Observation {
         mode => panic!("unknown fixture codegen mode: {mode}"),
     };
     let allocator = Allocator::new();
-    let (_, errors, codegen) = compile_template_with_options(
+    let (_, errors, codegen) = compile_template_with_template_syntax(
         &allocator,
         &case.source,
         DomCompilerOptions {
@@ -157,8 +188,10 @@ fn compile_bare_template(case: &Case) -> Observation {
             cache_handlers: options.cache_handlers.unwrap_or(false),
             comments: options.comments.unwrap_or(false),
             source_map: options.source_map.unwrap_or(false),
+            custom_renderer: options.custom_renderer.unwrap_or(false),
             ..DomCompilerOptions::default()
         },
+        template_syntax(case),
     );
     Observation::Template {
         errors,
@@ -181,7 +214,11 @@ fn full_current_compile_results() {
     let cases: Vec<Case> =
         serde_json::from_str(include_str!("fixtures/compile-history/cases.json"))
             .expect("strict fixture schema");
-    assert_eq!(cases.len(), 4, "every reviewed case must remain registered");
+    assert_eq!(
+        cases.len(),
+        573,
+        "every reviewed case must remain registered"
+    );
     // Every case runs before the error counts are judged, so one run reports
     // all mismatches as an `id -> observed` JSON object.
     let mut mismatched = serde_json::Map::new();

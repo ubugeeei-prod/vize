@@ -1,0 +1,12 @@
+<script setup lang="ts">
+import Child from './Child.vue'
+let selected = ''
+</script>
+
+<template>
+  <Child
+    file-id="avatar"
+    :validate="async f => f.id.length > 0"
+    @update="f => selected = f.id.toFixed()"
+  />
+</template>

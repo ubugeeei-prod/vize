@@ -1,0 +1,9 @@
+<script setup lang="ts" generic="M extends string">
+type SlotProps<T> = T extends string ? { modelValue: T } : Record<string, unknown>
+defineSlots<{ default(props: SlotProps<M>): unknown }>()
+const slotProps = undefined as unknown as SlotProps<M>
+</script>
+
+<template>
+  <slot v-bind="slotProps" />
+</template>

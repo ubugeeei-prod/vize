@@ -1,0 +1,129 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 6237,
+  "regressionCommit": "2b0a8604c1d33afa766153b9fcb11292b9ecf95e",
+  "sourceRevision": "2b0a8604c1d33afa766153b9fcb11292b9ecf95e",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "inline-exports-lf-consumer",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "lf.App.vue.txt"
+        },
+        {
+          "file": "src/index.ts",
+          "source": "valid.index.ts.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "inline-exports-crlf-consumer",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "crlf.App.vue.txt"
+        },
+        {
+          "file": "src/index.ts",
+          "source": "valid.index.ts.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "inline-exports-consumer-wrong-type",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "lf.App.vue.txt"
+        },
+        {
+          "file": "src/index.ts",
+          "source": "invalid.index.ts.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/index.ts",
+          "line": 2,
+          "column": 7,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type 'string'."
+        }
+      ]
+    },
+    {
+      "id": "export-keywords-in-strings-comments-and-multiline",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Strip.vue",
+          "source": "Strip.vue.txt"
+        },
+        {
+          "file": "src/index.ts",
+          "source": "strip-valid.index.ts.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "multiline-export-consumer-wrong-type",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Strip.vue",
+          "source": "Strip.vue.txt"
+        },
+        {
+          "file": "src/index.ts",
+          "source": "strip-invalid.index.ts.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/index.ts",
+          "line": 3,
+          "column": 7,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type 'string'."
+        }
+      ]
+    }
+  ]
+}

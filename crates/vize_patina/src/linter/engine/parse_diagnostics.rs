@@ -33,7 +33,11 @@ fn sfc_parse_span(parse_error: &SfcError, source_len: usize) -> (u32, u32) {
 }
 
 impl Linter {
+    /// Every template parse error is an error, as Vue's compiler rejects it.
+    /// A duplicate attribute is a warning only in the Vue 2 dialect, where Vize
+    /// builds it the way Vue 2 does: it warns and keeps the last value.
     pub(crate) fn l1_template_parse_lint_result(
+        &self,
         filename: &str,
         source: &str,
         template: &L2Template<'_>,
@@ -42,10 +46,13 @@ impl Linter {
         let mut diagnostics = Vec::with_capacity(parse_errors.len());
         let mut error_count = 0;
         let mut warning_count = 0;
+        let legacy = self
+            .requested_vue_version
+            .is_some_and(vize_l0::config::VueVersion::is_legacy);
 
         for parse_error in parse_errors {
             let span = parse_error.span(source.len() as u32);
-            let diagnostic = if parse_error.is_recoverable() {
+            let diagnostic = if legacy && parse_error.is_recoverable() {
                 warning_count += 1;
                 LintDiagnostic::warn(
                     TEMPLATE_PARSE_RULE,

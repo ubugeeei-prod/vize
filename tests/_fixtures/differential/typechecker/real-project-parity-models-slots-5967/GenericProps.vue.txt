@@ -1,0 +1,7 @@
+<script setup lang="ts">
+import type { Props } from "./types";
+type Item = { id: string };
+
+defineProps<Props<Item>>();
+defineModel<string>();
+</script>

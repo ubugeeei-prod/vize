@@ -1,0 +1,52 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c4a-custom-renderer-tres-intrinsics-dom",
+    history: "a09d82cf408aedcba34f0a245ea4cf8005fd8cd5",
+    source: "\n<script setup lang=\"ts\">\nimport { Primitive } from '@tresjs/core'\nconst visible = true\n</script>\n\n<template>\n  <mesh>\n    <group v-if=\"visible\">\n      <primitive />\n    </group>\n  </mesh>\n</template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: Some(
+            true,
+        ),
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { createVNode as _createVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode, unref as _unref } from \"vue\"\n\nimport { Primitive } from '@tresjs/core'\n\nconst visible = true;\n\nexport default {\n  __name: 'History',\n  setup(__props) {\n\n\nreturn (_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"mesh\", null, [\n    (visible)\n      ? (_openBlock(), _createElementBlock(\"group\", { key: 0 }, [\n        _createVNode(_unref(Primitive))\n      ]))\n      : _createCommentVNode(\"v-if\", true)\n  ]))\n}\n}\n\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "visible": LiteralConst,
+                        "Primitive": SetupMaybeRef,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

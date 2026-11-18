@@ -1,0 +1,153 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 347,
+  "regressionCommit": "731cce813a41207950923d89099ac2c87047c0b6",
+  "sourceRevision": "731cce813a41207950923d89099ac2c87047c0b6",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "missing-equals-static-prop-recovered",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "missing-equals.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 6,
+          "column": 15,
+          "severity": 1,
+          "code": null,
+          "message": "Template parse error: Attribute name contains an invalid character; inferred the nearest attribute boundary and continued."
+        }
+      ]
+    },
+    {
+      "id": "missing-equals-static-prop-wrong-type",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "missing-equals.wrong-type.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 6,
+          "column": 23,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'string' is not assignable to type 'number'."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 6,
+          "column": 15,
+          "severity": 1,
+          "code": null,
+          "message": "Template parse error: Attribute name contains an invalid character; inferred the nearest attribute boundary and continued."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 6,
+          "column": 28,
+          "severity": 1,
+          "code": null,
+          "message": "Template parse error: Attribute name contains an invalid character; inferred the nearest attribute boundary and continued."
+        }
+      ]
+    },
+    {
+      "id": "missing-dynamic-argument-end-recovered",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "dynamic-arg.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 9,
+          "column": 34,
+          "severity": 1,
+          "code": null,
+          "message": "Template parse error: Dynamic directive argument is missing its closing `]`; inferred the argument end at the next tag boundary."
+        }
+      ]
+    },
+    {
+      "id": "missing-dynamic-argument-end-unknown-value",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "dynamic-arg.missing-value.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 9,
+          "column": 36,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'missingValue' does not exist on the component instance."
+        },
+        {
+          "file": "src/App.vue",
+          "line": 9,
+          "column": 34,
+          "severity": 1,
+          "code": null,
+          "message": "Template parse error: Dynamic directive argument is missing its closing `]`; inferred the argument end at the next tag boundary."
+        }
+      ]
+    }
+  ]
+}

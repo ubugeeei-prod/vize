@@ -1,0 +1,16 @@
+<script setup lang="ts">
+const keys = ['go'] as const
+const handlers = {
+  go: (name: string) => name.trim(),
+  'a]b': (name: string) => name.trim(),
+}
+const maybe = handlers as typeof handlers | undefined
+const ハンドラ = { 押す: (name: string) => name.trim() }
+</script>
+
+<template>
+  <button @click="handlers[keys[0]]">Nested</button>
+  <button @click="handlers['a]b']">Quoted</button>
+  <button @click="maybe?.['go']">Optional</button>
+  <button @click="ハンドラ.押す">Unicode</button>
+</template>

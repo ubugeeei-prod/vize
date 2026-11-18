@@ -1,0 +1,2 @@
+import App from './Missing.vue';
+void App;

@@ -1,0 +1,10 @@
+<script setup lang="ts" generic="T extends string = string">
+const props = defineProps<{ item: T }>()
+defineEmits<{ pick: [value: T] }>()
+defineSlots<{ default(props: { item: T }): unknown }>()
+defineExpose({ current: (): T => props.item })
+</script>
+
+<template>
+  <slot :item="item" />
+</template>

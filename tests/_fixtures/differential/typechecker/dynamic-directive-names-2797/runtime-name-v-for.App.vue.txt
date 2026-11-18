@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import Child from './Child.vue'
+const names = ['someMessage'] as const
+const value = 'hello'
+</script>
+
+<template>
+  <Child v-for="name in names" :key="name" :[name]="value" />
+</template>

@@ -1,0 +1,43 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c4c-scoped-css-flat-trailing-universal-control-2685",
+    history: "1f59101b9c48df01ca9542b297f6b74638f986bd",
+    source: "<template>\n  <div class=\"dialog__action-buttons\"><button>OK</button></div>\n</template>\n\n<style scoped>\n.dialog__action-buttons > * { flex: 1; }\n.dialog__action-buttons>*:hover { flex: 1; }\n</style>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nconst _hoisted_1 = { class: \"dialog__action-buttons\" }\n\nexport function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"div\", _hoisted_1, [...(_cache[0] || (_cache[0] = [\n    _createElementVNode(\"button\", null, \"OK\", -1 /* CACHED */)\n  ]))]))\n}",
+            css: Some(
+                ".dialog__action-buttons[data-v-4045eae1] > *{ flex: 1; }.dialog__action-buttons[data-v-4045eae1]>*:hover{ flex: 1; }\n",
+            ),
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

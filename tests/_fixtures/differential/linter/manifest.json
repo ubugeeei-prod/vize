@@ -16295,6 +16295,37 @@
       }
     },
     {
+      "id": "linter/duplicate-attribute-dialects",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "duplicate-attribute-dialects",
+        "files": [
+          {
+            "path": "src/Duplicate.vue.txt",
+            "role": "issue-authored-vue3-duplicate-attribute",
+            "sha256": "65049f694b4e7a4f57465da50f994b53ed50e1cdfb8d169840e564adea62258b"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/dynamic-event-owner-11728",
       "state": "active",
       "targets": [
@@ -16551,6 +16582,37 @@
             "path": "options.json",
             "role": "rule-options",
             "sha256": "dfb20315f4ccc644e42a3b63b441a92000aff077b9c25a72aaee713bc5695f74"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/eslint-disable-mapped-aliases-12336",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "eslint-disable-mapped-aliases-12336",
+        "files": [
+          {
+            "path": "Case.vue.txt",
+            "role": "real-project-matrix-reduction",
+            "sha256": "efbc5c714aabe14491547a27c1dbbd6ee7fc3a2cea2e428dc54c8b5e067a5eb3"
           }
         ]
       },
@@ -18106,6 +18168,42 @@
             "dialects": [
               "vue3-sfc",
               "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/no-unsafe-enum-assignment-mapped-keys-13070",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "no-unsafe-enum-assignment-mapped-keys-13070",
+        "files": [
+          {
+            "path": "Keys.vue.txt",
+            "role": "mapped-enum-key-receivers-and-controls",
+            "sha256": "471be1ffd3435f0a175a2319c38b981430b728c15ed27d9726a8f9fbe97fc26d"
+          },
+          {
+            "path": "keys.ts.txt",
+            "role": "mapped-enum-key-declaring-module",
+            "sha256": "61b32a7198f2a55d1811e968f6e6e72dbd2e401b897666b221a7522d16cbcf73"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
               "ts"
             ],
             "selector": "linter manifest pinned authored sources"
@@ -20869,6 +20967,37 @@
       }
     },
     {
+      "id": "linter/sfc-authored-structure-reuse",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "sfc-authored-structure-reuse",
+        "files": [
+          {
+            "path": "Repaired.vue.txt",
+            "role": "formerly-repaired-nesting-reuse",
+            "sha256": "30e2ea1ae86b308d41823f76701f10e795f0627659ebd628ac5d0ff33a599459"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/sfc-tables-are-not-fostered",
       "state": "active",
       "targets": [
@@ -20886,6 +21015,48 @@
             "path": "src/MisplacedCell.vue.txt",
             "role": "issue-authored-sfc-control",
             "sha256": "9035ca3c084f422edb3cd536e9c6d52bfe8b0a88ee6128cf569e9d8a5073d8db"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "linter/sfc-templates-keep-authored-structure",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "sfc-templates-keep-authored-structure",
+        "files": [
+          {
+            "path": "src/NestedForm.vue.txt",
+            "role": "issue-authored-sfc-regression",
+            "sha256": "7df3bc327894b2bb881330d8342f4e914f3d3710ef15ac9dccda500ea1336b38"
+          },
+          {
+            "path": "src/ParagraphList.vue.txt",
+            "role": "issue-authored-sfc-regression",
+            "sha256": "81d36a1c4a459ef5ab48f8093c2b70be96561c340d96acbc492cf16786e5cc83"
+          },
+          {
+            "path": "src/MisnestedFormatting.vue.txt",
+            "role": "issue-authored-sfc-control",
+            "sha256": "dd562d654b202d8eaf4495463d127e33eeaf2ddd56997e2894d55dd7be87e173"
           }
         ]
       },
@@ -21473,6 +21644,37 @@
       }
     },
     {
+      "id": "linter/table-authored-rows",
+      "state": "active",
+      "targets": [
+        "lint"
+      ],
+      "inputs": {
+        "root": "table-authored-rows",
+        "files": [
+          {
+            "path": "TableAuthoredRows.vue.txt",
+            "role": "regression-reproduction",
+            "sha256": "c236101abebe58467f9369cdfc84402a52e73784ca416814a1b5181b32cc5737"
+          }
+        ]
+      },
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template"
+            ],
+            "selector": "linter manifest pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
       "id": "linter/table-section-cells-12307",
       "state": "active",
       "targets": [
@@ -21927,7 +22129,7 @@
           {
             "path": "cases.json",
             "role": "upstream-selected-corpus",
-            "sha256": "182cde3f2becb723f1016c05f6b85735ea15c40034db33a1ccb75be86dfd4f58"
+            "sha256": "cea066515aa17e25a1be094a73ac7ce1d3ff10304f50be82614fe9d59ddb4d1d"
           }
         ]
       },

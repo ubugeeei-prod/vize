@@ -1,0 +1,35 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c1d-conditional-slot-outlet-vbind-object-key-merge",
+    history: "403e1d77e1ef17e8a1cfa94c8228df5a78175dbb",
+    source: "<slot v-if=\"show\" name=\"updater\" v-bind=\"{ number, update }\" />",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: Some(
+            "function",
+        ),
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "const { renderSlot: _renderSlot, mergeProps: _mergeProps, openBlock: _openBlock, createCommentVNode: _createCommentVNode } = Vue\n",
+    code: "function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (show)\n    ? _renderSlot(_ctx.$slots, \"updater\", _mergeProps({ number, update }, { key: 0 }))\n    : _createCommentVNode(\"v-if\", true)\n}",
+    map: None,
+}

@@ -1,0 +1,8 @@
+<script setup lang="ts">
+type Extract = string;
+const row = { item: { id: 1, label: 'ok' } };
+defineSlots<{ row(props: { item: { id: number; label: string } }): unknown }>();
+</script>
+<template>
+  <slot name="row" v-bind="row" />
+</template>

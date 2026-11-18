@@ -1,0 +1,7 @@
+<script setup lang="ts">
+import { formatCount } from './format'
+</script>
+
+<template>
+  <p>{{ formatCount('1') }}</p>
+</template>

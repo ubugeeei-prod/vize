@@ -55,12 +55,11 @@ fn duplicate_static_headers_preserve_whole_parser_warning_and_root_metadata() {
             linter.lint_native_template(source, FILE).unwrap_err(),
             Refusal::Header(NativeLintRefusal::DuplicateAttribute { span: repeated })
         );
-        let mut duplicate = parser(
+        let duplicate = parser(
             "Duplicate attribute `ID`. Keeping the repeated attribute so parsing can continue.",
             repeated.start,
             repeated.end,
         );
-        duplicate["severity"] = "warning".into();
         assert_eq!(
             complete(&linter.lint_template(source, FILE)),
             expected(FILE, vec![root_warning(locale), duplicate])

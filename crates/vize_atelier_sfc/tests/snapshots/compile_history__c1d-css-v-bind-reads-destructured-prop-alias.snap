@@ -1,0 +1,54 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c1d-css-v-bind-reads-destructured-prop-alias",
+    history: "13c6ad221fbbf0f557ae50559db08fa998eaf727",
+    source: "<script setup lang=\"ts\">\nconst { color: bannerColor } = defineProps<{\n  color: string\n}>()\n</script>\n\n<template>\n  <div class=\"root\"></div>\n</template>\n\n<style scoped>\n.root {\n  color: v-bind(bannerColor);\n}\n</style>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { useCssVars as _useCssVars } from 'vue'\nimport { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nconst _hoisted_1 = { class: \"root\" }\n\nexport default {\n  __name: 'History',\n  props: {\n    color: { type: String, required: true }\n  },\n  setup(__props) {\n\n_useCssVars(_ctx => ({\n  \"4045eae1-bannerColor\": (__props.color)\n}))\n\n\nreturn (_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"div\", _hoisted_1))\n}\n}\n\n}",
+            css: Some(
+                ".root[data-v-4045eae1]{\n  color: var(--4045eae1-bannerColor);\n}\n",
+            ),
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "bannerColor": PropsAliased,
+                        "color": Props,
+                    },
+                    props_aliases: {
+                        "bannerColor": "color",
+                    },
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

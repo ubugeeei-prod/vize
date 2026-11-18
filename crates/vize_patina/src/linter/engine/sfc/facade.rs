@@ -98,6 +98,8 @@ pub(in crate::linter::engine) const RULES: &[&str] = &[
     "vue/valid-v-html",
     "vue/valid-v-show",
     "vue/no-v-text",
+    "a11y/role-img-has-name",
+    "vue/a11y-img-alt",
 ];
 
 pub(in crate::linter::engine) struct Dispatch<'a> {

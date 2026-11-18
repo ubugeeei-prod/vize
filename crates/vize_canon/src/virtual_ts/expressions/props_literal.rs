@@ -22,6 +22,8 @@ use vize_croquis::{
 };
 use vize_l0::ts;
 
+mod dynamic_names;
+pub(crate) use dynamic_names::is_dynamic_name_binding;
 mod entry_marks;
 mod prop_entry;
 pub(crate) use entry_marks::{literal_carries_value, named_entry_marks};
@@ -88,6 +90,15 @@ pub(crate) fn append_props_literal(
             ts.push_str(": never },\n");
         }
     }
+
+    dynamic_names::append_dynamic_name_entries(
+        ts,
+        mappings,
+        usage,
+        template_binding_access,
+        source_context,
+        expr_indent,
+    );
 
     let class_bindings = collect_generated_class_bindings(usage, template_binding_access);
     let merge_class_bindings = class_bindings.len() > 1;

@@ -1,0 +1,4 @@
+{
+  "name": "@vueuse/core",
+  "types": "index.d.ts"
+}

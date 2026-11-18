@@ -141,15 +141,16 @@ names the fix. Each case compiles one authored input through a public entry:
 `compile_sfc` for a whole SFC (DOM, SSR or Vapor target), or
 `compile_template_with_options` for bare DOM markup. A small option set covers
 production output, preserved TypeScript, standalone module output, codegen mode,
-identifier prefixing, static hoisting, handler caching, comments and source
-maps. `crates/vize_atelier_sfc/tests/compile_history.rs` snapshots every public
+identifier prefixing, static hoisting, handler caching, comments, source maps,
+template syntax mode (standard, strict or quirks), custom renderers and the
+Vue dialect (3, 2.7 or 2). `crates/vize_atelier_sfc/tests/compile_history.rs` snapshots every public
 result field: code, CSS, map, errors, warnings, bindings, macro artifacts and
 dependencies for an SFC, or errors, preamble, code and map for a template. It
 also pins each case's error count.
 
 A fix whose change has no compiled-output effect (CLI plumbing, LSP-only work,
-or a refactor with byte-identical output) is recorded in
-[`compiler-fix-history-dispositions.json`](../plan/compiler-fix-history-dispositions.json)
+or a refactor with byte-identical output) is recorded beside the cohort in
+[`compile-history/dispositions.json`](../../../crates/vize_atelier_sfc/tests/fixtures/compile-history/dispositions.json)
 as `no-compile-behavior`. Each entry gives the reason and the current tests
 that cover the change.
 

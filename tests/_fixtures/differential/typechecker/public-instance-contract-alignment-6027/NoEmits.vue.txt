@@ -1,0 +1,7 @@
+<script setup lang="ts">
+function ping(): string {
+  return 'pong'
+}
+
+defineExpose({ ping })
+</script>

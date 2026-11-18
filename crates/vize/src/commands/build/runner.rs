@@ -9,6 +9,7 @@ mod collect;
 mod compile;
 mod compile_stats;
 mod declarations;
+mod digest;
 mod fallback;
 mod output;
 mod plugins;
@@ -260,7 +261,7 @@ pub(crate) fn run(args: BuildArgs) {
 
     // Show collected errors
     let errors = errors.into_inner().unwrap_or_default();
-    fallback::report_errors(&errors);
+    fallback::report_errors(&errors, args.verbose);
 
     // Before the failure exit below, so failed compiles still report what ran.
     args.profile_export.finish("build", args.profile);

@@ -1,7 +1,10 @@
 //! Authored and normalized surfaces share bytes and diagnostics.
 
 use vize_l0::{Allocator, CompactString};
-use vize_l1::markup::{SurfaceChild, SurfaceTree, check_fidelity, parse, parse_with_authored};
+use vize_l1::markup::{
+    SurfaceChild, SurfaceParseOptions, SurfaceTree, check_fidelity, parse, parse_with_authored,
+    parse_with_options,
+};
 
 fn paths(tree: &SurfaceTree<'_>) -> Vec<(CompactString, usize)> {
     fn walk(children: &[SurfaceChild<'_>], depth: usize, rows: &mut Vec<(CompactString, usize)>) {
@@ -15,6 +18,18 @@ fn paths(tree: &SurfaceTree<'_>) -> Vec<(CompactString, usize)> {
     let mut rows = Vec::new();
     walk(&tree.children, 0, &mut rows);
     rows
+}
+
+/// The tree the HTML parser builds (Vapor) instead of the authored one.
+fn html_paths(source: &str) -> Vec<(CompactString, usize)> {
+    let allocator = Allocator::new();
+    let options = SurfaceParseOptions {
+        html_tree_construction: true,
+        ..SurfaceParseOptions::default()
+    };
+    let (tree, _) = parse_with_options(&allocator, source, options);
+    assert!(check_fidelity(&tree).is_ok(), "{source}");
+    paths(&tree)
 }
 
 #[test]
@@ -36,15 +51,15 @@ fn nested_interactive_tags_keep_the_authored_parent_relation() {
         let (normal, authored, errors) = parse_with_authored(&allocator, &source);
         assert!(errors.is_empty());
         assert!(check_fidelity(&normal).is_ok());
-        let authored = authored.expect("must retain the authored tree");
-        assert!(check_fidelity(&authored).is_ok());
+        // The Vue template is built as written, so no second projection.
+        assert!(authored.is_none(), "{source}");
         assert_eq!(
             paths(&normal),
-            [(tag.into(), 0), ("span".into(), 1), (tag.into(), 0)]
+            [(tag.into(), 0), ("span".into(), 1), (tag.into(), 2)]
         );
         assert_eq!(
-            paths(&authored),
-            [(tag.into(), 0), ("span".into(), 1), (tag.into(), 2)]
+            html_paths(&source),
+            [(tag.into(), 0), ("span".into(), 1), (tag.into(), 0)]
         );
     }
 }
@@ -99,18 +114,23 @@ fn malformed_authored_projections_preserve_the_same_tokenizer_diagnostics() {
 }
 
 #[test]
-fn optional_end_tags_close_like_the_shipped_parser() {
-    let cases: [(&str, &[(&str, usize)]); 8] = [
+fn optional_end_tags_nest_as_authored_and_close_on_the_html_lane() {
+    // (source, authored as Vue builds it, as the HTML parser builds it)
+    type Rows = &'static [(&'static str, usize)];
+    let cases: [(&str, Rows, Rows); 8] = [
         (
             "<ul><li>a<li>b</li></ul>",
+            &[("ul", 0), ("li", 1), ("li", 2)],
             &[("ul", 0), ("li", 1), ("li", 1)],
         ),
         (
             "<dl><dt>a<dd>b<dt>c</dl>",
+            &[("dl", 0), ("dt", 1), ("dd", 2), ("dt", 3)],
             &[("dl", 0), ("dt", 1), ("dd", 1), ("dt", 1)],
         ),
         (
             "<select><option>a<option>b</select>",
+            &[("select", 0), ("option", 1), ("option", 2)],
             &[("select", 0), ("option", 1), ("option", 1)],
         ),
         (
@@ -120,29 +140,44 @@ fn optional_end_tags_close_like_the_shipped_parser() {
                 ("select", 0),
                 ("optgroup", 1),
                 ("option", 2),
+                ("optgroup", 3),
+            ],
+            &[
+                ("select", 0),
+                ("optgroup", 1),
+                ("option", 2),
                 ("optgroup", 2),
             ],
         ),
-        ("<p>a<div>b</div>", &[("p", 0), ("div", 0)]),
-        ("<p>a<p>b", &[("p", 0), ("p", 0)]),
+        (
+            "<p>a<div>b</div>",
+            &[("p", 0), ("div", 1)],
+            &[("p", 0), ("div", 0)],
+        ),
+        ("<p>a<p>b", &[("p", 0), ("p", 1)], &[("p", 0), ("p", 0)]),
         // A list or a component between the items is a scope boundary.
         (
             "<ul><li><ul><li>x</li></ul></li></ul>",
+            &[("ul", 0), ("li", 1), ("ul", 2), ("li", 3)],
             &[("ul", 0), ("li", 1), ("ul", 2), ("li", 3)],
         ),
         (
             "<li><Comp><li>x</li></Comp></li>",
             &[("li", 0), ("Comp", 1), ("li", 2)],
+            &[("li", 0), ("Comp", 1), ("li", 2)],
         ),
     ];
-    for (source, expected) in cases {
-        let allocator = Allocator::new();
-        let (normal, _, _) = parse_with_authored(&allocator, source);
-        assert!(check_fidelity(&normal).is_ok(), "{source}");
-        let expected: Vec<(CompactString, usize)> = expected
-            .iter()
+    let rows = |rows: Rows| -> Vec<(CompactString, usize)> {
+        rows.iter()
             .map(|(tag, depth)| ((*tag).into(), *depth))
-            .collect();
-        assert_eq!(paths(&normal), expected, "{source}");
+            .collect()
+    };
+    for (source, authored, html) in cases {
+        let allocator = Allocator::new();
+        let (normal, projection, _) = parse_with_authored(&allocator, source);
+        assert!(check_fidelity(&normal).is_ok(), "{source}");
+        assert!(projection.is_none(), "{source}");
+        assert_eq!(paths(&normal), rows(authored), "{source}");
+        assert_eq!(html_paths(source), rows(html), "html: {source}");
     }
 }

@@ -1,0 +1,6 @@
+<script setup lang="ts">
+const { foo: bar } = defineProps<{ foo: string }>()
+void bar
+</script>
+
+<template>{{ foo.toFixed(2) }} {{ bar }}</template>

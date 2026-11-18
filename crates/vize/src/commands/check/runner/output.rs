@@ -15,6 +15,7 @@ use super::{
 use crate::commands::check::path_cache::CanonicalPathCache;
 
 mod declarations;
+mod digest;
 mod json;
 mod profile;
 use declarations::emit_declarations;
@@ -165,7 +166,26 @@ fn report_executions(
             }
         }
     }
-    let diagnostics = render_diagnostics(&reported_raw, args.format != "json");
+    // Text output prints the kinds the hint table knows as one block each;
+    // every other format and `--verbose` keep each diagnostic in full.
+    let digested = args.format != "json" && !args.verbose && !args.quiet;
+    let (listed, mut digests) = if digested {
+        vize_l0::profile!("cli.check.report.digest", digest::partition(&reported_raw))
+    } else {
+        (Vec::new(), Vec::new())
+    };
+    let diagnostics = render_diagnostics(
+        if digested { &listed } else { &reported_raw },
+        args.format != "json",
+    );
+    let digest_text = vize_l0::profile!(
+        "cli.check.report.digest",
+        digest::render(
+            cwd,
+            &mut digests,
+            super::text_style::TextStyle::stdout().color(),
+        )
+    );
     let diagnostics_render_time = diagnostics_render_start.elapsed();
     let total_errors = reported_raw
         .iter()
@@ -224,6 +244,7 @@ fn report_executions(
         args,
         &virtual_files,
         &diagnostics,
+        &digest_text,
         total_errors,
         total_warnings,
         total_time,
@@ -240,6 +261,7 @@ fn print_text(
     args: &CheckArgs,
     virtual_files: &[&vize_canon::VirtualFile],
     diagnostics: &RenderedDiagnostics,
+    digests: &str,
     total_errors: usize,
     total_warnings: usize,
     total_time: Duration,
@@ -265,6 +287,7 @@ fn print_text(
                 println!("  {diagnostic}");
             }
         }
+        print!("{digests}");
     }
 
     let status = if total_errors > 0 {

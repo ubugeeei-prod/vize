@@ -1,9 +1,10 @@
 //! Which parse the checker reads (Davinci P4-11a).
 //!
 //! The checker needs the template **as authored**. The linter's own
-//! (`Standard`) parse repairs tree construction in a few situations; where it
-//! repaired nothing, its tree already is the authored one and parsing the
-//! template a second time is pure cost on the linter's hot path.
+//! (`Standard`) parse builds a Vue 3 template as written, but repairs tree
+//! construction for a document or a Vue 1/2 template, and a stray end tag can
+//! leave source no node covers. Where its tree already is the authored one,
+//! parsing the template a second time is pure cost on the linter's hot path.
 //!
 //! A repair always leaves a trace in the node locations, which cover each
 //! element's start tag: an implicitly closed element is not followed (after

@@ -146,7 +146,7 @@ impl ContentMapperTransformOptions {
         let global_template_ref =
             super::tsconfig_gen::vue_compiler_options::configured_global_template_ref(options);
         self.global_template_ref_explicit = global_template_ref.is_some();
-        self.configured_global_template_ref = global_template_ref.unwrap_or(false);
+        self.configured_global_template_ref.global = global_template_ref.unwrap_or(false);
         let (target, manifest) =
             super::tsconfig_gen::vue_compiler_options::vue_target_from_options_with_dependencies(
                 config_file_name.parent().unwrap_or(Path::new(".")),

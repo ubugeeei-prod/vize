@@ -1,0 +1,5 @@
+<script setup lang="ts">
+const model = defineModel<string>("quote\"line\u2028")
+const length: number = model.value
+void length;
+</script>

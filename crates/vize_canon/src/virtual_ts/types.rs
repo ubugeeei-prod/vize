@@ -220,6 +220,23 @@ impl<'a> AuthoredScriptMetadata<'a> {
     }
 }
 
+/// Which `useTemplateRef` callees besides a direct `vue` import are Vue's own
+/// composable. Ownership comes from provider origin, never from a structural
+/// signature match (#10980).
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct TemplateRefOwnership {
+    /// The unimported global: `vueCompilerOptions.composables.useTemplateRef`,
+    /// or a program declaration of the global as Vue's export.
+    pub global: bool,
+    /// A named import from `#imports`, whose module re-exports Vue's.
+    pub imports_alias: bool,
+}
+
+impl TemplateRefOwnership {
+    /// The alias whose module is consulted for `imports_alias` (Nuxt's).
+    pub const IMPORTS_ALIAS: &'static str = "#imports";
+}
+
 #[derive(Debug, Clone, Copy, Default)]
 pub(crate) struct VirtualTsGenerationOptions<'a> {
     pub(crate) diagnostic_ownership:
@@ -261,9 +278,8 @@ pub(crate) struct VirtualTsGenerationOptions<'a> {
     /// Preserve TypeScript's user-authored unused local/import diagnostics by
     /// avoiding broad synthetic setup-binding references.
     pub(crate) preserve_unused_diagnostics: bool,
-    /// Effective `vueCompilerOptions.composables.useTemplateRef` authority for
-    /// the ambient global with that exact semantic name.
-    pub(crate) configured_global_template_ref: bool,
+    /// Which `useTemplateRef` callees besides a direct `vue` import are Vue's.
+    pub(crate) configured_global_template_ref: TemplateRefOwnership,
     /// Extra names referenced by template-like custom blocks. Used only by
     /// unused-local preservation so non-template blocks can mark setup
     /// bindings as read without opting into full template type checks.

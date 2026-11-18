@@ -83,10 +83,10 @@ fn duplicate_header_refuses_before_element_callbacks_and_keeps_original_full_war
             parser(
                 "Duplicate attribute `ID`. Keeping the repeated attribute so parsing can continue.",
                 span(source, "ID"),
-                "warning",
+                "error",
             ),
         );
-        expected["warning_count"] = 4.into();
+        expected["error_count"] = 1.into();
         assert_eq!(
             complete(&configured.lint_template(source, "exact.vue")),
             expected

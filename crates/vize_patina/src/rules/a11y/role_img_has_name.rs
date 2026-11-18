@@ -6,8 +6,9 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::{MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule, MarkupTraversal};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use vize_relief::{ElementNode, ExpressionNode, PropNode};
+use vize_relief::ElementNode;
 
 use super::helpers::string_literal_value;
 
@@ -27,37 +28,34 @@ const HELP: &str =
 #[derive(Default)]
 pub struct RoleImgHasName;
 
+#[derive(Clone, Copy)]
 enum Attr<'a> {
     Missing,
     Dynamic,
     Static(&'a str),
 }
 
-fn attribute<'a>(element: &'a ElementNode<'a>, name: &str) -> Attr<'a> {
-    for prop in &element.props {
-        match prop {
-            PropNode::Attribute(attr) if attr.name == name => {
-                return Attr::Static(attr.value.as_ref().map(|value| value.content).unwrap_or(""));
+/// The first static attribute or statically named bind called `name`.
+fn attribute<'a>(element: &MarkupElement<'a>, name: &str) -> Attr<'a> {
+    let mut found = None;
+    element.walk_bindings(&mut |binding| {
+        if found.is_some() {
+            return;
+        }
+        match binding.kind() {
+            MarkupBindingKind::Attribute if binding.is_unqualified_arg_exact(name) => {
+                found = Some(Attr::Static(binding.static_value().unwrap_or("")));
             }
-            PropNode::Directive(dir) if dir.name == "bind" => {
-                let Some(ExpressionNode::Simple(arg)) = &dir.arg else {
-                    continue;
-                };
-                if !arg.is_static || arg.content != name {
-                    continue;
-                }
-                let Some(ExpressionNode::Simple(expression)) = &dir.exp else {
-                    return Attr::Dynamic;
-                };
-                if let Some(value) = string_literal_value(expression.content) {
-                    return Attr::Static(value);
-                }
-                return Attr::Dynamic;
+            MarkupBindingKind::Bind if binding.is_static_unqualified_arg_exact(name) => {
+                found = Some(match binding.expression().and_then(string_literal_value) {
+                    Some(value) => Attr::Static(value),
+                    None => Attr::Dynamic,
+                });
             }
             _ => {}
         }
-    }
-    Attr::Missing
+    });
+    found.unwrap_or(Attr::Missing)
 }
 
 fn role_is_img(value: &str) -> bool {
@@ -72,11 +70,34 @@ fn supplies_name(attr: Attr<'_>) -> bool {
     }
 }
 
-fn has_accessible_name(element: &ElementNode<'_>) -> bool {
+fn has_accessible_name(element: &MarkupElement<'_>) -> bool {
     supplies_name(attribute(element, "aria-label"))
         || supplies_name(attribute(element, "aria-labelledby"))
         || supplies_name(attribute(element, "title"))
-        || (element.tag == "img" && supplies_name(attribute(element, "alt")))
+        || (element.is_unqualified_tag_exact("img") && supplies_name(attribute(element, "alt")))
+}
+
+fn check(ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
+    let Attr::Static(role) = attribute(element, "role") else {
+        return;
+    };
+    if role_is_img(role) && !has_accessible_name(element) {
+        ctx.warn_at_with_help(MESSAGE, element.range(), HELP);
+    }
+}
+
+impl MarkupRule for RoleImgHasName {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn traversal(&self) -> MarkupTraversal {
+        MarkupTraversal::Elements
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        check(ctx.lint(), element);
+    }
 }
 
 impl Rule for RoleImgHasName {
@@ -84,13 +105,12 @@ impl Rule for RoleImgHasName {
         &META
     }
 
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
+    }
+
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        let Attr::Static(role) = attribute(element, "role") else {
-            return;
-        };
-        if role_is_img(role) && !has_accessible_name(element) {
-            ctx.warn_with_help(MESSAGE, &element.loc, HELP);
-        }
+        check(ctx, &MarkupElement::new(element));
     }
 }
 

@@ -1,0 +1,35 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c1c-v-for-with-v-if-fragment-key-432",
+    history: "7a57bab23e05429dc879cabe918ee34929332299",
+    source: "<div v-for=\"item in items\" :key=\"item.id\" v-if=\"item.active\">{{ item.name }}</div>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: Some(
+            true,
+        ),
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createCommentVNode as _createCommentVNode, renderList as _renderList } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_ctx.item.active)\n    ? (_openBlock(true), _createElementBlock(_Fragment, { key: 0 }, _renderList(_ctx.items, (item) => {\n      return (_openBlock(), _createElementBlock(\"div\", { key: item.id }, _toDisplayString(item.name), 1 /* TEXT */))\n    }), 128 /* KEYED_FRAGMENT */))\n    : _createCommentVNode(\"v-if\", true)\n}",
+    map: None,
+}

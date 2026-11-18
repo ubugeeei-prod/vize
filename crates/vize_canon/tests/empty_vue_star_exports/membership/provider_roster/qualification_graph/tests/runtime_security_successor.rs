@@ -14,13 +14,16 @@ struct Inputs {
 }
 
 fn inputs() -> Inputs {
+    let current_lock = fs::read(support::repository().join("pnpm-lock.yaml")).unwrap();
+    let current_workspace = fs::read(support::repository().join(WORKSPACE)).unwrap();
     Inputs {
         predecessor: node_forge_security::update(),
         predecessor_bytes: fs::read(support::corpus().join(node_forge_security::UPDATE)).unwrap(),
         update: runtime_security_update(),
-        lock: fs::read(support::repository().join("pnpm-lock.yaml")).unwrap(),
+        lock: picomatch_security::reconstruct_lock_predecessor(&current_lock).unwrap(),
         package: fs::read(support::repository().join("package.json")).unwrap(),
-        workspace: fs::read(support::repository().join(WORKSPACE)).unwrap(),
+        workspace: picomatch_security::reconstruct_workspace_predecessor(&current_workspace)
+            .unwrap(),
     }
 }
 
@@ -45,8 +48,8 @@ fn exact_runtime_security_successor_reconstructs_the_frozen_graph() {
         Ok(())
     );
     assert_eq!(
-        authorize(&super::super::super::load(), &input.lock, &input.package),
-        Ok(Some(input.update.clone()))
+        runtime_security::authorize_successor(&input.lock, &input.package, &input.workspace),
+        Ok(input.update.clone())
     );
 
     let previous_lock = runtime_security::reconstruct_lock_predecessor(&input.lock).unwrap();

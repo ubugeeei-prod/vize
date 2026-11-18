@@ -1,0 +1,5 @@
+export enum Fruit {
+  Apple,
+}
+export declare const keyed: { [key in Fruit]: string };
+export declare const holder: { keyed: { [key in Fruit]: string } };

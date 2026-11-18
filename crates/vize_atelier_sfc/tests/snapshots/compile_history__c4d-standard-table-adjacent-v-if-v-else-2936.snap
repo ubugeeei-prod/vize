@@ -1,0 +1,37 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c4d-standard-table-adjacent-v-if-v-else-2936",
+    history: "bfeeff6e63c0798d871257810ddec5adfc03ce26",
+    source: "<table>\n  <template v-if=\"hasRows\"><tr><td>row</td></tr></template>\n  <tr v-else><td>empty</td></tr>\n</table>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: Some(
+            "function",
+        ),
+        prefix_identifiers: None,
+        hoist_static: Some(
+            true,
+        ),
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "const { createElementVNode: _createElementVNode, openBlock: _openBlock, createElementBlock: _createElementBlock, createCommentVNode: _createCommentVNode } = Vue\n\nconst _hoisted_1 = /*#__PURE__*/ _createElementVNode(\"td\", null, \"row\")\nconst _hoisted_2 = /*#__PURE__*/ _createElementVNode(\"td\", null, \"empty\")\n",
+    code: "function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"table\", null, [\n    (hasRows)\n      ? (_openBlock(), _createElementBlock(\"tr\", { key: 0 }, [\n        _hoisted_1\n      ]))\n      : (_openBlock(), _createElementBlock(\"tr\", { key: 1 }, [\n        _hoisted_2\n      ]))\n  ]))\n}",
+    map: None,
+}

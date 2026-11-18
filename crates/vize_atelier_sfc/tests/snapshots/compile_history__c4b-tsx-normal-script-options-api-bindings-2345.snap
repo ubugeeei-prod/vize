@@ -1,0 +1,41 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c4b-tsx-normal-script-options-api-bindings-2345",
+    history: "1286cef9c234eefd086406fc6063448edbd04853",
+    source: "<script lang=\"tsx\">\nexport default {\n  data() {\n    return { count: 0 }\n  },\n  computed: {\n    label() {\n      return `Count: ${this.count}`\n    }\n  },\n  methods: {\n    renderBadge() {\n      return <span class=\"badge\">{this.count}</span>\n    }\n  }\n}\n</script>\n\n<template>\n  <p :title=\"label\" @click=\"renderBadge\">{{ count }}</p>\n</template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "export default {\n  data() {\n    return { count: 0 };\n  },\n  computed: { label() {\n    return `Count: ${this.count}`;\n  } },\n  methods: { renderBadge() {\n    return <span class=\"badge\">{this.count}</span>;\n  } }\n};\n\nimport { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nfunction _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"p\", {\n    title: $options.label,\n    onClick: (...args) => (_ctx.renderBadge && _ctx.renderBadge(...args))\n  }, _toDisplayString($data.count), 9 /* TEXT, PROPS */, [\"title\", \"onClick\"]))\n}\n_sfc_main.render = _sfc_render\nexport default _sfc_main",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

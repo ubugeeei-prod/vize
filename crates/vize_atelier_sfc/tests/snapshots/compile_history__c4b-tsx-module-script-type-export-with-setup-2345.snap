@@ -1,0 +1,50 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c4b-tsx-module-script-type-export-with-setup-2345",
+    history: "1286cef9c234eefd086406fc6063448edbd04853",
+    source: "<script lang=\"tsx\">\nexport type Foo = { label: string };\nexport const renderFoo = (foo: Foo) => <span>{foo.label}</span>;\n</script>\n\n<script setup lang=\"tsx\">\ndefineProps<{ foo?: Foo }>();\n</script>\n\n<template>\n  <div />\n</template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\n\nexport type Foo = { label: string };\nexport const renderFoo = (foo: Foo) => <span>{foo.label}</span>;\n\nexport default {\n  __name: 'History',\n  props: {\n    foo: { type: Object, required: false }\n  },\n  setup(__props) {\n\n\nreturn (_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"div\"))\n}\n}\n\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "foo": Props,
+                        "renderFoo": SetupConst,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

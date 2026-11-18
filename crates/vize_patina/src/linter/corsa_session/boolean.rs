@@ -12,6 +12,7 @@ mod nodes;
 
 pub(in crate::linter) use nodes::locations_each as checker_node_locations;
 pub(in crate::linter) use nodes::node_text as checker_node_text;
+pub(in crate::linter) use nodes::{Syntax as CheckerSyntax, syntax_kind};
 
 // TypeScript 7 TypeFlags, from microsoft/typescript-go internal/checker/types.go.
 // Aliases/unions are classified by assignability, not by their rendered names.

@@ -1,0 +1,11 @@
+<script setup lang="ts">
+type WidgetProps = {
+  items: typeof widgetDefinitions;
+};
+
+const widgetDefinitions = {
+  clock: {},
+} as const;
+
+defineProps<WidgetProps>();
+</script>

@@ -99,6 +99,9 @@ pub(crate) fn parser_options(options: &VaporCompilerOptions) -> ParserOptions {
         experimental_in_tag_comments: options.experimental_in_tag_comments,
         is_pre_tag: |tag| tag == "pre",
         get_namespace,
+        // `template()` strings are parsed again by `innerHTML`; node paths must
+        // see the tree the browser builds from them.
+        html_tree_construction: true,
         ..ParserOptions::default()
     }
 }

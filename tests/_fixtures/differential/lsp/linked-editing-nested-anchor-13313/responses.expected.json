@@ -1,0 +1,62 @@
+[
+  {
+    "position": {
+      "line": 0,
+      "character": 11
+    },
+    "result": {
+      "ranges": [
+        {
+          "start": {
+            "line": 0,
+            "character": 11
+          },
+          "end": {
+            "line": 0,
+            "character": 12
+          }
+        },
+        {
+          "start": {
+            "line": 0,
+            "character": 27
+          },
+          "end": {
+            "line": 0,
+            "character": 28
+          }
+        }
+      ]
+    }
+  },
+  {
+    "position": {
+      "line": 0,
+      "character": 14
+    },
+    "result": {
+      "ranges": [
+        {
+          "start": {
+            "line": 0,
+            "character": 14
+          },
+          "end": {
+            "line": 0,
+            "character": 15
+          }
+        },
+        {
+          "start": {
+            "line": 0,
+            "character": 23
+          },
+          "end": {
+            "line": 0,
+            "character": 24
+          }
+        }
+      ]
+    }
+  }
+]

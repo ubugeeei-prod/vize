@@ -1,0 +1,3 @@
+export const sharedProps = {
+  label: { type: String, required: true },
+} as const

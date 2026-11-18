@@ -1,0 +1,35 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c2b-numeric-component-v-for-block-886",
+    history: "5dbda8a789a20f1c2eb0caab2c3bee23e2c446c2",
+    source: "<Child v-for=\"(id, index) in 4\" :key=\"id\" :label=\"String(index)\" />",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: Some(
+            "function",
+        ),
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "const { resolveComponent: _resolveComponent, openBlock: _openBlock, createBlock: _createBlock, createElementBlock: _createElementBlock, Fragment: _Fragment, renderList: _renderList } = Vue\n",
+    code: "function render(_ctx, _cache, $props, $setup, $data, $options) {\n  const _component_Child = _resolveComponent(\"Child\")\n  \n  return (_openBlock(), _createElementBlock(_Fragment, null, _renderList(4, (id, index) => {\n    return (_openBlock(), _createBlock(_component_Child, {\n      key: id,\n      label: String(index)\n    }, null, 8 /* PROPS */, [\"label\"]))\n  }), 64 /* STABLE_FRAGMENT */))\n}",
+    map: None,
+}

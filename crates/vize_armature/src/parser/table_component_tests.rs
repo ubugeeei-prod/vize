@@ -24,10 +24,8 @@ fn dynamic_component_stays_inside_its_authored_table_loop() {
         panic!("authored table");
     };
     assert_eq!(table.tag, "table");
-    let TemplateChildNode::Element(section) = &table.children[0] else {
-        panic!("implicit table section");
-    };
-    let TemplateChildNode::Element(row) = &section.children[0] else {
+    // Vue keeps the authored row directly under the table.
+    let TemplateChildNode::Element(row) = &table.children[0] else {
         panic!("authored row");
     };
     assert_eq!(row.tag, "tr");
@@ -39,12 +37,22 @@ fn dynamic_component_stays_inside_its_authored_table_loop() {
     assert!(errors.is_empty(), "{errors:?}");
 }
 
+/// Foster parenting is HTML tree construction; a component template keeps
+/// the authored table, as Vue does.
+fn html_tree_construction() -> ParserOptions {
+    ParserOptions {
+        html_tree_construction: true,
+        ..ParserOptions::default()
+    }
+}
+
 #[test]
 fn native_table_recovery_still_fosters_invalid_html_children() {
     let allocator = Allocator::new();
-    let (root, _) = parse(
+    let (root, _) = parse_with_options(
         &allocator,
         "<table><tr><div>invalid HTML</div></tr></table>",
+        html_tree_construction(),
     );
     assert_eq!(root.children.len(), 2);
     let TemplateChildNode::Element(div) = &root.children[0] else {
@@ -60,9 +68,10 @@ fn native_table_recovery_still_fosters_invalid_html_children() {
 #[test]
 fn frozen_component_remains_a_literal_html_element() {
     let allocator = Allocator::new();
-    let (root, _, _) = Parser::new(
+    let (root, _, _) = Parser::with_options(
         &allocator,
         "<table v-pre><tr><component>literal</component></tr></table>",
+        html_tree_construction(),
     )
     .parse_with_frozen_elements();
     assert_eq!(root.children.len(), 2);
@@ -78,7 +87,7 @@ fn configured_custom_element_keeps_its_native_table_policy() {
     let allocator = Allocator::new();
     let options = ParserOptions {
         is_custom_element: Some(|tag| tag == "component"),
-        ..ParserOptions::default()
+        ..html_tree_construction()
     };
     let (root, _) = parse_with_options(
         &allocator,

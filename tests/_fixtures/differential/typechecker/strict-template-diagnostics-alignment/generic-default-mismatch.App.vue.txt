@@ -1,0 +1,13 @@
+<script setup lang="ts">
+import Child from './Child.vue'
+
+function takesB(value: 'b' | undefined) {
+  return value
+}
+</script>
+
+<template>
+  <Child>
+    <template #default="{ value }">{{ takesB(value) }}</template>
+  </Child>
+</template>

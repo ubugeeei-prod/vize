@@ -1,0 +1,19 @@
+<script lang="ts">
+import type { ContentProps } from './content'
+
+export interface WrapperProps extends ContentProps {}
+</script>
+
+<script setup lang="ts">
+import { Content } from './content'
+
+const props = defineProps<WrapperProps>()
+</script>
+
+<template>
+  <Content
+    :as-child="props.asChild"
+    :as="as"
+    :force-mount="props.forceMount"
+  />
+</template>

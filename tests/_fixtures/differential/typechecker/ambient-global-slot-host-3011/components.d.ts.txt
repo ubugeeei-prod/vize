@@ -1,0 +1,7 @@
+declare module 'vue' {
+  interface GlobalComponents {
+    ElBadge: typeof import('./components/ElBadge.vue')['default']
+  }
+}
+
+export {}

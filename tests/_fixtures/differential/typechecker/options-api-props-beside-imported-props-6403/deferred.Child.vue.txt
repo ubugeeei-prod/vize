@@ -1,0 +1,16 @@
+<script lang="ts">
+import type { Props } from "./types";
+import Widget from "./Widget.vue";
+
+const sharedProps = {
+  meta: { type: Object, required: true as const },
+};
+export default {
+  components: { Widget },
+  props: { ...sharedProps },
+};
+</script>
+
+<template>
+  <Widget />
+</template>

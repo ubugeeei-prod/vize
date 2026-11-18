@@ -1,0 +1,84 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c1c-parse-mixed-broken-input-347",
+    history: "731cce813a41207950923d89099ac2c87047c0b6",
+    source: "<div v-><1bad></1bad><span id=a>ok</span></div>{{ broken",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: Some(
+            true,
+        ),
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 4,
+}
+Template {
+    errors: [
+        CompilerError {
+            code: MissingDirectiveName,
+            message: "Directive `v-` is missing a name. Ignoring it so the rest of the tag can be parsed.",
+            loc: Some(
+                SourceLocation {
+                    span: Span {
+                        start: 5,
+                        end: 7,
+                    },
+                },
+            ),
+        },
+        CompilerError {
+            code: InvalidFirstCharacterOfTagName,
+            message: "Tag name starts with an invalid character; treating the malformed tag as text.",
+            loc: Some(
+                SourceLocation {
+                    span: Span {
+                        start: 16,
+                        end: 17,
+                    },
+                },
+            ),
+        },
+        CompilerError {
+            code: InvalidEndTag,
+            message: "Invalid end tag.",
+            loc: Some(
+                SourceLocation {
+                    span: Span {
+                        start: 14,
+                        end: 21,
+                    },
+                },
+            ),
+        },
+        CompilerError {
+            code: MissingInterpolationEnd,
+            message: "Interpolation is missing its closing delimiter `}}`; treating the unfinished interpolation as text.",
+            loc: Some(
+                SourceLocation {
+                    span: Span {
+                        start: 56,
+                        end: 56,
+                    },
+                },
+            ),
+        },
+    ],
+    preamble: "",
+    code: "",
+    map: None,
+}

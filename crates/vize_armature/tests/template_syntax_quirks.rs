@@ -68,11 +68,20 @@ fn quirks_preserves_vue_tree_shape_for_html_recovery_cases() {
 
     for (name, source) in cases {
         let allocator = Allocator::new();
-        let (_, standard_errors) = parse_with_options(&allocator, source, ParserOptions::default());
+        let html = ParserOptions {
+            html_tree_construction: true,
+            ..ParserOptions::default()
+        };
+        let (_, html_errors) = parse_with_options(&allocator, source, html);
         assert!(
-            !standard_errors.is_empty(),
+            !html_errors.is_empty(),
             "{name} should exercise HTML recovery"
         );
+        // A standard component template keeps the authored tree too.
+        let (standard_root, standard_errors) =
+            parse_with_options(&allocator, source, ParserOptions::default());
+        assert!(standard_errors.is_empty(), "{name}: {standard_errors:?}");
+        assert_eq!(standard_root.children.len(), 1, "{name}");
 
         let (root, quirks_errors) = parse_with_options_and_template_syntax(
             &allocator,

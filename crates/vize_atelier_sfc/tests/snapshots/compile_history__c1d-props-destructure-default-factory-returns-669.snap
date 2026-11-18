@@ -1,0 +1,51 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c1d-props-destructure-default-factory-returns-669",
+    history: "af7273e70c0ac72451646299e58c6c5271bd6c27",
+    source: "<script setup lang=\"ts\">\nconst {\n  items = () => [],\n  options = () => ({ dense: true }),\n  formatter = () => \"ok\",\n} = defineProps<{\n  items?: string[]\n  options?: { dense: boolean }\n  formatter?: () => string\n}>()\n</script>\n\n<template>\n  <div>{{ items.length }} {{ options.dense }} {{ formatter() }}</div>\n</template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\n\nexport default {\n  __name: 'History',\n  props: {\n    items: { type: Array, required: false, default: () => [] },\n    options: { type: Object, required: false, default: () => ({ dense: true }) },\n    formatter: { type: Function, required: false, default: () => \"ok\" }\n  },\n  setup(__props) {\n\n\nreturn (_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"div\", null, _toDisplayString(__props.items.length) + \" \" + _toDisplayString(__props.options.dense) + \" \" + _toDisplayString(__props.formatter()), 1 /* TEXT */))\n}\n}\n\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "options": Props,
+                        "formatter": Props,
+                        "items": Props,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

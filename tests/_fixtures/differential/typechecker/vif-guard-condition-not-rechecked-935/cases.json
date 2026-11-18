@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 935,
+  "regressionCommit": "bc0e6f324f11239797c25a07e966f41e2c2dd4fc",
+  "sourceRevision": "bc0e6f324f11239797c25a07e966f41e2c2dd4fc",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "vif-condition-not-rechecked-in-own-guard",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "valid.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "nested-vif-compares-excluded-literal",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "invalid.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 3,
+          "column": 17,
+          "severity": 1,
+          "code": 2367,
+          "message": "This comparison appears to be unintentional because the types '\"followers\" | \"home\" | \"specified\"' and '\"public\"' have no overlap."
+        }
+      ]
+    }
+  ]
+}

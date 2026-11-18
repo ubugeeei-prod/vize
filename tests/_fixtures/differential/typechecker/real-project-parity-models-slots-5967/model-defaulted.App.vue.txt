@@ -1,0 +1,5 @@
+<script setup lang="ts">
+const model = defineModel({ default: "", type: String })
+const value: string = model.value
+void value
+</script>

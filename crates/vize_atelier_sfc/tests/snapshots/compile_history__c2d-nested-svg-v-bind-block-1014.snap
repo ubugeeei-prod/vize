@@ -1,0 +1,37 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c2d-nested-svg-v-bind-block-1014",
+    history: "6ff5652a8a49c3d74b2212131b73166fbc8ec7a4",
+    source: "<div><svg xmlns=\"http://www.w3.org/2000/svg\" :width=\"w\" /></div>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: Some(
+            "function",
+        ),
+        prefix_identifiers: None,
+        hoist_static: Some(
+            true,
+        ),
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "const { openBlock: _openBlock, createElementBlock: _createElementBlock } = Vue\n",
+    code: "function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    (_openBlock(), _createElementBlock(\"svg\", {\n      xmlns: \"http://www.w3.org/2000/svg\",\n      width: w\n    }, null, 8 /* PROPS */, [\"width\"]))\n  ]))\n}",
+    map: None,
+}

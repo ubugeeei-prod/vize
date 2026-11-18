@@ -1,0 +1,22 @@
+<script setup lang="ts">
+defineSlots<{
+  default(props: {
+    onPick?: (value: number, visible: boolean) => unknown
+    onSetPickerOption?: (name: string, value: number) => unknown
+  }): unknown
+}>()
+
+function onPick(value: number, visible: boolean) {
+  value.toFixed()
+  visible.valueOf()
+}
+
+function onSetPickerOption(name: string, value: number) {
+  name.toUpperCase()
+  value.toFixed()
+}
+</script>
+
+<template>
+  <slot @pick="onPick" @set-picker-option="onSetPickerOption" />
+</template>

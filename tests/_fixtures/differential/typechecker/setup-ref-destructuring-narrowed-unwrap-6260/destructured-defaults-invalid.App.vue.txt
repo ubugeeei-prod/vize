@@ -1,0 +1,11 @@
+<script setup lang="ts">
+import { ref } from 'vue';
+const objs = ref([{ val: 'x' } as { val?: string }]);
+const nested = ref([{ a: { b: 1 } as { b?: number } }]);
+const fallback = ref(0);
+const accept = (_: string) => {};
+</script>
+<template>
+  <div v-for="{ val = fallback } in objs">{{ accept(val) }}</div>
+  <div v-for="{ a: { b = fallback } } in nested">{{ accept(b) }}</div>
+</template>

@@ -1,0 +1,41 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c4b-options-api-method-handler-live-lookup-modifiers-2265",
+    history: "7ae31c3258c73433ccfa9397fbee16c2331f0593",
+    source: "<script>\nexport default {\n  methods: {\n    onFocus(event) {\n      this.$emit(\"focus\", event)\n    },\n    onBlur(event) {\n      this.$emit(\"blur\", event)\n    }\n  }\n}\n</script>\n\n<template>\n  <input id=\"test\" @focus=\"onFocus\" @blur.stop=\"onBlur\" />\n</template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "\nconst _sfc_main = {\n  methods: {\n    onFocus(event) {\n      this.$emit(\"focus\", event)\n    },\n    onBlur(event) {\n      this.$emit(\"blur\", event)\n    }\n  }\n}\n\nimport { withModifiers as _withModifiers, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nfunction _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"input\", {\n    id: \"test\",\n    onFocus: (...args) => (_ctx.onFocus && _ctx.onFocus(...args)),\n    onBlur: _withModifiers((...args) => (_ctx.onBlur && _ctx.onBlur(...args)), [\"stop\"])\n  }, null, 40 /* PROPS, NEED_HYDRATION */, [\"onFocus\", \"onBlur\"]))\n}\n_sfc_main.render = _sfc_render\nexport default _sfc_main",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

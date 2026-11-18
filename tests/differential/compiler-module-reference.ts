@@ -27,8 +27,8 @@ const successors = new Map([
     "compiler/sfc/nested-dynamic-vfor-11728",
     {
       inputs: "98dfe1e7089c06012fcfcfe53a376ff3bdeb8dc8d1a963570deef103ff1f99eb",
-      before: "ba96f9acc62d4201bb1079d6216e6330446ebc7ce345fb236487151e61d81378",
-      after: "ba5145fcce6fc6ceb25128cd24c17fadb7f34023c5eb67e4af2e1a0c67629862",
+      before: "9ec912628628de1f8c53c3f3744bacefc18d00d42f611a06e5c27eb10ef7862f",
+      after: "698efb7eb40aa0469c00844ebc6e8ba51dd5812d74759f1d8d1b08464b969697",
       file: "nested-dynamic-vfor-11728/module.raw.expected.txt",
     },
   ],

@@ -53,7 +53,7 @@ fn test_lint_template_reports_recoverable_parser_errors_without_gating_rules() {
         .iter()
         .find(|diagnostic| diagnostic.rule_name == "parser/template")
         .expect("recoverable template parser diagnostic should be reported");
-    assert_eq!(parser_diagnostic.severity, Severity::Warning);
+    assert_eq!(parser_diagnostic.severity, Severity::Error);
     assert!(parser_diagnostic.message.contains("Duplicate attribute"));
     assert!(
         result

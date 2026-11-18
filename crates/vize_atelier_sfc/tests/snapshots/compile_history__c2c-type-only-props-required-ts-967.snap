@@ -1,0 +1,53 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c2c-type-only-props-required-ts-967",
+    history: "a907953d4863caa9c297947d5d1267bd08b9534e",
+    source: "<script setup lang=\"ts\">\ndefineProps<{\n  a: string\n  b?: number\n  c: string | undefined\n  onChange(e: Event): void\n}>()\n</script>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: Some(
+            true,
+        ),
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { defineComponent as _defineComponent } from 'vue'\n\nexport default /*@__PURE__*/_defineComponent({\n  __name: 'History',\n  props: {\n    a: { type: String, required: true },\n    b: { type: Number, required: false },\n    c: { type: String, required: true },\n    onChange: { type: Function, required: true }\n  },\n  setup(__props: any, { expose: __expose }) {\n  __expose();\n\n\n}\n\n})",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "a": Props,
+                        "b": Props,
+                        "c": Props,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

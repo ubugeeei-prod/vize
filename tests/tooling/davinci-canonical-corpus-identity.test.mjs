@@ -316,6 +316,20 @@ await test("historical raw observers are parser controls and all full counters r
   const inventory = {
     files: historicalFiles,
     gitlinks: Array.from({ length: historicalGitlinks }),
+    // Captured before SFC templates kept authored table rows, which made one
+    // `v-else` beside table rows compile in the original lane.
+    oldErrors: {
+      skips: 16,
+      reasons: {
+        ExtendPoint: 1,
+        InvalidEndTag: 20,
+        MissingEndTag: 10,
+        MissingWhitespaceBetweenAttributes: 4,
+        VElseNoAdjacentIf: 1,
+        VIfSameKey: 4,
+        VSlotDuplicateSlotNames: 1,
+      },
+    },
   };
   const incomplete = JSON.parse(readFileSync(join(root, "incomplete-capture.json"), "utf8"));
   assert.equal(

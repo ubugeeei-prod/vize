@@ -136,3 +136,81 @@ fn an_unkeyed_host_loop_needs_a_key_on_its_items() {
     assert_eq!(rows(&result), [("vue/require-v-for-key", start, end)]);
     assert_eq!((start, end), (67, 123));
 }
+
+fn linter_with(rules: Vec<Box<dyn crate::rule::Rule>>) -> Linter {
+    let mut registry = crate::rule::RuleRegistry::new();
+    for rule in rules {
+        registry.register(rule);
+    }
+    Linter::with_registry(registry)
+}
+
+#[test]
+fn image_name_rules_report_on_tsrx_markup() {
+    // Moved off the JSX lowering fallback (#6848), so they now lint TSRX too.
+    let source = "export function Badge({ src }: { src: string }) @{
+  <p><span role=\"img\"></span><img src={src} /><img src={src} alt=\"\" role=\"img\" /></p>
+}
+";
+    let linter = linter_with(vec![
+        Box::new(crate::rules::a11y::RoleImgHasName),
+        Box::new(crate::rules::vue::A11yImgAlt),
+    ]);
+    let result = lint_tsrx(&linter, source, "Badge.tsrx");
+    let span = |text: &str| {
+        let start = u32::try_from(source.find(text).unwrap()).unwrap();
+        (start, start + u32::try_from(text.len()).unwrap())
+    };
+    let role = span("<span role=\"img\"></span>");
+    let bare = span("<img src={src} />");
+    let empty = span("<img src={src} alt=\"\" role=\"img\" />");
+    assert_eq!(
+        rows(&result),
+        [
+            ("a11y/role-img-has-name", role.0, role.1),
+            ("vue/a11y-img-alt", bare.0, bare.1),
+            ("a11y/role-img-has-name", empty.0, empty.1),
+        ]
+    );
+}
+
+#[test]
+fn landmark_roles_report_on_tsrx_and_respect_exclusive_regions() {
+    // Conditional arms and a host loop's `@empty` region never render together.
+    let source = "export function Page({ ok, items }: { ok: boolean; items: string[] }) @{
+  <div>
+    <nav>one</nav>
+    <nav>two</nav>
+    {ok ? <main>a</main> : <main>b</main>}
+    @for (const item of items; key item) {
+      <aside>{item}</aside>
+    } @empty {
+      <aside>none</aside>
+    }
+  </div>
+}
+";
+    let linter = linter_with(vec![Box::new(crate::rules::a11y::LandmarkRoles)]);
+    let result = lint_tsrx(&linter, source, "Page.tsrx");
+    let span = |text: &str| {
+        let start = u32::try_from(source.find(text).unwrap()).unwrap();
+        (start, start + u32::try_from(text.len()).unwrap())
+    };
+    let one = span("<nav>one</nav>");
+    let two = span("<nav>two</nav>");
+    assert_eq!(
+        rows(&result),
+        [
+            ("a11y/landmark-roles", one.0, one.1),
+            ("a11y/landmark-roles", two.0, two.1),
+        ]
+    );
+
+    let duplicate = "export function Page() @{
+  <div><main>a</main><main>b</main></div>
+}
+";
+    let result = lint_tsrx(&linter, duplicate, "Page.tsrx");
+    let start = u32::try_from(duplicate.find("<main>b</main>").unwrap()).unwrap();
+    assert_eq!(rows(&result), [("a11y/landmark-roles", start, start + 14)]);
+}

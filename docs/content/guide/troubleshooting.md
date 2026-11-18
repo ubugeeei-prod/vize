@@ -60,6 +60,9 @@ Use `"strict"` to fail on invalid syntax, or `"quirks"` when a project relies on
 tags as self-closing leaves. Valid void elements such as `<input />`, `<img />`, `<br />`, and
 `<meta />` do not need quirks.
 
+Under strict mode, `vize build` reports these errors as one block: every location, one source
+frame, and a hint with the settings above. `vize build --verbose` prints each file's errors in full.
+
 ## Native Type Package Resolution
 
 `vize check` resolves Vue and Vite type packages from the checked project before it uses bundled

@@ -1,0 +1,43 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c1d-scoped-legacy-v-deep-after-combinator-579",
+    history: "83fa8ce9dc50ab0c690c48130115d7f51e2cfd28",
+    source: "<template>\n  <div class=\"parent\"><span class=\"child\">a</span><span class=\"child\">b</span></div>\n</template>\n\n<style scoped>\n.parent > ::v-deep(.child:nth-child(2)) { color: red; }\n</style>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nconst _hoisted_1 = { class: \"parent\" }\n\nexport function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"div\", _hoisted_1, [...(_cache[0] || (_cache[0] = [\n    _createElementVNode(\"span\", { class: \"child\" }, \"a\", -1 /* CACHED */),\n    _createElementVNode(\"span\", { class: \"child\" }, \"b\", -1 /* CACHED */)\n  ]))]))\n}",
+            css: Some(
+                ".parent[data-v-4045eae1] > .child:nth-child(2){ color: red; }\n",
+            ),
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

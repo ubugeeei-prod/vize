@@ -1,0 +1,11 @@
+<script setup lang="ts">
+class Point {
+  constructor(public x: number) {}
+}
+enum Status { Idle, Ready }
+const props = defineProps<{ point: Point; status: Status }>()
+</script>
+
+<template>
+  <div>{{ props.point.x }} {{ status === Status.Ready }}</div>
+</template>

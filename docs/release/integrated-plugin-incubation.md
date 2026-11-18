@@ -53,6 +53,15 @@ use the same codes.
 Each choice below is the conservative option. It can be relaxed later without
 invalidating a plan that is valid today.
 
+- **v1 freeze scope.** The v1 packet freeze pins the v1 protocol: packet schema,
+  fields and framing. Changing them needs a versioned v1 break. A correction of
+  the template tree a plugin sees, which aligns the parse with Vue, may
+  regenerate the golden, recorded here with the API version unchanged:
+  - #13307: an SFC template keeps its authored table rows, as Vue does. So
+    `<table><tr>` no longer yields an implied `tbody` node. In the packets of
+    `lint/team-conventions`, `lint/two-plugins-audited` and `lint/fact-provider`,
+    which read `TODO_LIST`, every later node id and parent index moves down by
+    one.
 - **Canonical data.** Plans are compact JSON with object keys in UTF-8 byte order.
   Numbers must be safe integers; other numbers are refused, so JS and Rust need no
   floating-point formatting agreement. Lone surrogates, accessors, symbols,

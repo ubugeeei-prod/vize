@@ -1,0 +1,11 @@
+<script setup lang="ts">
+import OverloadPayloadButton from './OverloadPayloadButton.vue'
+
+function handleSelect(id: number): void {
+  console.log(id)
+}
+</script>
+
+<template>
+  <OverloadPayloadButton @select="handleSelect" />
+</template>

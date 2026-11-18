@@ -1,0 +1,12 @@
+<script setup lang="ts">
+import Provider from "./Provider.vue";
+import type { LinkBehavior } from "./Provider.vue";
+
+defineProps<{
+  behavior?: LinkBehavior;
+}>();
+</script>
+
+<template>
+  <Provider :behavior="behavior" />
+</template>

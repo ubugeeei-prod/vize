@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": null,
+  "regressionCommit": "48fd1ce241e33b85d57f54c969c27319edcfc3e7",
+  "sourceRevision": "48fd1ce241e33b85d57f54c969c27319edcfc3e7",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "define-component-default-export",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/OptionsApi.vue",
+          "source": "valid.OptionsApi.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "define-component-default-export-wrong-name-type",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/OptionsApi.vue",
+          "source": "invalid.OptionsApi.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/OptionsApi.vue",
+          "line": 5,
+          "column": 3,
+          "severity": 1,
+          "code": 2769,
+          "message": "No overload matches this call.\nThe last overload gave the following error.\nType 'number' is not assignable to type 'string'."
+        }
+      ]
+    }
+  ]
+}

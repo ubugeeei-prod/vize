@@ -1,0 +1,69 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c1b-v-model-reactive-const-demoted-184",
+    history: "cabe0290d0bd7edd5f730eaeacf5f677f54664e9",
+    source: "<template>\n  <Comp v-model=\"reactiveObject\" />\n</template>\n\n<script lang=\"ts\" setup>\nimport { reactive } from 'vue';\n\nconst reactiveObject = reactive({ foo: 'bar' });\n</script>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock, isRef as _isRef } from \"vue\"\n\nimport { reactive } from 'vue'\n\n\nexport default {\n  __name: 'History',\n  setup(__props) {\n\nlet reactiveObject = reactive({ foo: \"bar\" });\n\nreturn (_ctx, _cache) => {\n  const _component_Comp = _resolveComponent(\"Comp\")\n\n  return (_openBlock(), _createBlock(_component_Comp, {\n    modelValue: reactiveObject,\n    \"onUpdate:modelValue\": _cache[0] || (_cache[0] = $event => ((_isRef(reactiveObject) ? (reactiveObject.value) = $event : (reactiveObject) = $event)))\n  }, null, 8 /* PROPS */, [\"modelValue\"]))\n}\n}\n\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [
+                SfcError {
+                    message: "`v-model` cannot update the const reactive binding `reactiveObject`. The compiler transformed it to `let` so the update can work.",
+                    code: Some(
+                        "V_MODEL_CONST_REACTIVE_DEMOTED",
+                    ),
+                    loc: Some(
+                        BlockLocation {
+                            start: 84,
+                            end: 167,
+                            tag_start: 60,
+                            tag_end: 176,
+                            start_line: 5,
+                            start_column: 25,
+                            end_line: 9,
+                            end_column: 1,
+                        },
+                    ),
+                },
+            ],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "reactiveObject": SetupLet,
+                        "reactive": SetupConst,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

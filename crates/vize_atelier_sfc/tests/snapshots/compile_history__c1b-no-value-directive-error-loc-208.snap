@@ -1,0 +1,60 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c1b-no-value-directive-error-loc-208",
+    history: "f5d043a84ccefe91a0aaf1b9c292437c73cf38b4",
+    source: "<div v-if />",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: Some(
+            true,
+        ),
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 2,
+}
+Template {
+    errors: [
+        CompilerError {
+            code: ExtendPoint,
+            message: "Invalid self-closing syntax on non-void HTML element was rewritten as an empty element with an explicit end tag.",
+            loc: Some(
+                SourceLocation {
+                    span: Span {
+                        start: 0,
+                        end: 12,
+                    },
+                },
+            ),
+        },
+        CompilerError {
+            code: VIfNoExpression,
+            message: "v-if/v-else-if is missing expression.",
+            loc: Some(
+                SourceLocation {
+                    span: Span {
+                        start: 5,
+                        end: 9,
+                    },
+                },
+            ),
+        },
+    ],
+    preamble: "import { openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_openBlock(), _createElementBlock(\"div\"))\n}",
+    map: None,
+}

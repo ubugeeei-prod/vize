@@ -1,0 +1,34 @@
+import { toDisplayString as _toDisplayString, createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, renderList as _renderList } from "vue"
+
+export function render(_ctx, _cache) {
+  return (_openBlock(), _createElementBlock(_Fragment, null, [
+    _createElementVNode("table", { class: "grid" }, [
+      _createElementVNode("tr", null, [
+        _createElementVNode("th", null, "Name")
+      ]),
+      (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(_ctx.rows, (row) => {
+        return (_openBlock(), _createElementBlock("tr", { key: row.id }, [
+          _createElementVNode("td", null, _toDisplayString(row.name), 1 /* TEXT */)
+        ]))
+      }), 128 /* KEYED_FRAGMENT */)),
+      (_openBlock(true), _createElementBlock(_Fragment, null, _renderList(_ctx.extra, (row) => {
+        return (_openBlock(), _createElementBlock("tr", { key: row.id }, [
+          _createElementVNode("td", null, _toDisplayString(row.name), 1 /* TEXT */)
+        ]))
+      }), 128 /* KEYED_FRAGMENT */)),
+      _createElementVNode("td", null, _toDisplayString(_ctx.total), 1 /* TEXT */)
+    ]),
+    _createElementVNode("table", null, [
+      _createElementVNode("thead", null, [
+        _createElementVNode("tr", null, [
+          _createElementVNode("th", null, "Note")
+        ])
+      ]),
+      _createElementVNode("tbody", null, [
+        _createElementVNode("tr", null, [
+          _createElementVNode("td", null, _toDisplayString(_ctx.note), 1 /* TEXT */)
+        ])
+      ])
+    ])
+  ], 64 /* STABLE_FRAGMENT */))
+}

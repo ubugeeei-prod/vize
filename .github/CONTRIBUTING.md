@@ -18,6 +18,8 @@ RUSTFLAGS="${RUSTFLAGS:-} -Zunstable-options --jobs-frontend=8" \
 
 Keep the separate target directory, use 8 threads (16 and 32 are slower), and append to `RUSTFLAGS` so the Nix shell's Darwin link flags survive; call rustup's `cargo` because the Nix shell's has no toolchain selector. Nightly Clippy lints differ from the pinned gate, so run the final `clippy` and tests with the pinned toolchain before pushing.
 
+Without rustup, `nix develop .#parallel-frontend` provides the same nightly with those settings applied: it appends `-Zunstable-options --jobs-frontend=$VIZE_JOBS_FRONTEND` (default 8) to `RUSTFLAGS` and uses `target/nightly-frontend-j<N>`. On the shared 15-CPU macOS machine it shortens a `vize_canon`-only re-check (about 21 s to 13 s at load 40 to 50) but not clean whole-graph builds, which already saturate the cores and spend about 20% more CPU. The default shell is unchanged.
+
 Install dependencies from the workspace root:
 
 ```sh
