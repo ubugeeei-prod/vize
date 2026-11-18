@@ -7,7 +7,7 @@
  *
  * Each image runs in Docker with the workspace at /work.
  * - `packages` installs the packed `@vizejs/native`, its platform package,
- *   `vize`, and `@vizejs/vite-plugin` with `smoke-release-install.ts
+ *   `vize`, `@vizejs/unplugin` and `@vizejs/vite-plugin` with `smoke-release-install.ts
  *   --runtime-checks` (`vize --version`, `check`, `lint`, `init`, and a
  *   `vite build`) on the Node.js at `--node-dir` (the runner's by default).
  * - `binding` only loads the platform binding and compiles an SFC, for images
@@ -106,7 +106,7 @@ export function containerScript(options: ContainerSmokeOptions): string {
       "mkdir -p /tmp/vize-global/bin",
       "corepack enable --install-directory /tmp/vize-global/bin",
       "npm install --global --allow-scripts=bun bun@1.3.14 vite-plus@0.1.24",
-      `node tools/commands/release/npm/smoke-release-install.ts --prepare-manifests --runtime-checks npm/native npm/native/npm/${platform} npm/cli npm/builder/vite`,
+      `node tools/commands/release/npm/smoke-release-install.ts --prepare-manifests --runtime-checks npm/native npm/native/npm/${platform} npm/cli npm/builder/unplugin npm/builder/vite`,
     );
   }
   return lines.join("\n");

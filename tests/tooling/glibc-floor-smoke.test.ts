@@ -60,7 +60,7 @@ test("each container mode runs the artifact it names", () => {
   const packages = containerScript(options("packages"));
   assert.equal(
     packages.split("\n").at(-1),
-    "node tools/commands/release/npm/smoke-release-install.ts --prepare-manifests --runtime-checks npm/native npm/native/npm/linux-x64-gnu npm/cli npm/builder/vite",
+    "node tools/commands/release/npm/smoke-release-install.ts --prepare-manifests --runtime-checks npm/native npm/native/npm/linux-x64-gnu npm/cli npm/builder/unplugin npm/builder/vite",
   );
 });
 
