@@ -321,8 +321,10 @@ function verifyCssSnapshot(repoRoot, expectedRevision, pinnedProduct) {
   assert.equal(currentCheckout.version, 1);
   const currentCheckoutLayers = currentCheckout.layers;
   assert.equal(currentCheckoutLayers[0]?.name, "shared-document-snapshots-11054");
+  // Later layers (the #13374 CSS catalog) are pinned by their own reviewed blobs.
+  const [first, second] = currentCheckoutLayers;
   assert.deepEqual(
-    currentCheckoutLayers.flatMap((layer) => layer.changes.map(({ path: name }) => name)),
+    [first, second].flatMap((layer) => layer.changes.map(({ path: name }) => name)),
     [
       "crates/vize_maestro/src/server/annotations.rs",
       "crates/vize_maestro/src/server/handlers/typed.rs",

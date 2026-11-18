@@ -27,8 +27,8 @@ pub(super) enum Selected {
 impl Selected {
     pub(super) fn label(self) -> &'static str {
         match self {
-            Self::Entry(_, entry) => entry.name,
-            Self::Value(_, value) | Self::Color(_, value) => value.name,
+            Self::Entry(_, entry) => entry.name(),
+            Self::Value(_, value) | Self::Color(_, value) => value.name(),
             Self::Wide(_, value) => value.name,
             Self::Function(_, value) => {
                 if value.name == "var" {
@@ -52,11 +52,11 @@ impl Selected {
 
     fn identity(self) -> (&'static str, &'static str, Option<&'static str>) {
         match self {
-            Self::Entry(kind, entry) => (kind, entry.name, None),
-            Self::Value(property, value) => ("value", value.name, Some(property.name)),
-            Self::Wide(property, value) => ("wide", value.name, Some(property.name)),
-            Self::Color(property, value) => ("color", value.name, Some(property.name)),
-            Self::Function(property, value) => ("function", value.name, Some(property.name)),
+            Self::Entry(kind, entry) => (kind, entry.name(), None),
+            Self::Value(property, value) => ("value", value.name(), Some(property.name())),
+            Self::Wide(property, value) => ("wide", value.name, Some(property.name())),
+            Self::Color(property, value) => ("color", value.name(), Some(property.name())),
+            Self::Function(property, value) => ("function", value.name, Some(property.name())),
             Self::Vue(feature) => ("vue", feature.name, None),
         }
     }
@@ -140,7 +140,10 @@ fn decode(payload: &Value) -> Option<Selected> {
             let property = property()?;
             Selected::Value(
                 property,
-                property.values.iter().find(|value| value.name == name)?,
+                property
+                    .values()
+                    .iter()
+                    .find(|value| value.name() == name)?,
             )
         }
         "wide" => Selected::Wide(property()?, values::lookup(&values::WIDE, name)?),
