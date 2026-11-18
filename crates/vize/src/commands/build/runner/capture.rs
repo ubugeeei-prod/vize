@@ -29,24 +29,12 @@ impl BuildCapture {
         descriptor: &SfcDescriptor<'_>,
     ) -> Self {
         let template = descriptor.template.as_ref();
-        // Pug and its legacy Jade spelling are preprocessed; every inline
-        // template is then passed to the Vue template parser.
-        let authored_lower = template
-            .and_then(|template| template.lang.as_deref())
-            .unwrap_or("vue-template")
-            .to_ascii_lowercase();
-        let authored_syntax = if authored_lower
-            .bytes()
-            .next()
-            .is_some_and(|byte| byte.is_ascii_lowercase())
-            && authored_lower
-                .bytes()
-                .all(|byte| byte.is_ascii_lowercase() || byte.is_ascii_digit() || byte == b'-')
-        {
-            authored_lower.as_str()
-        } else {
-            "vue-template"
-        };
+        // The registry names the authored grammar; pug (or its legacy jade
+        // spelling) is preprocessed and every inline template is then passed
+        // to the Vue template parser.
+        let authored_syntax = vize_curator::inspector::sfc_authored_syntax(
+            template.and_then(|template| template.lang.as_deref()),
+        );
         if template.is_some_and(|block| block.src.is_some())
             || descriptor
                 .script

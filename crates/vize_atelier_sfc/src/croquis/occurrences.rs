@@ -137,7 +137,7 @@ fn analyze_sfc_descriptor_with_occurrences_impl(
         && template.is_some_and(|template| {
             descriptor.template.as_ref().is_some_and(|block| {
                 block.src.is_none()
-                    && block.lang.as_deref().is_none_or(|lang| lang == "html")
+                    && vize_l1::container::lang::is_html_template(block.lang.as_deref())
                     && template.source() == block.content.as_ref()
             })
         });

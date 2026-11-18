@@ -16,7 +16,9 @@ use core::ops::Range;
 
 use vize_l0::String;
 
-use super::{PugRendering, PugTemplate, derive_template_source_with};
+use super::{
+    PugRendering, PugTemplate, derive_template_source_profiled, derive_template_source_with,
+};
 
 /// The host source with one pug block replaced by its derived template.
 #[derive(Debug, Clone)]
@@ -35,6 +37,15 @@ impl PugBlockView {
     /// A template the lowering refuses has no view: `Err` carries the
     /// derivation with its diagnostics.
     pub fn new(host: &str, body: Range<usize>) -> Result<Self, PugTemplate> {
+        Self::new_profiled(host, body, vize_l1::markup::pug::PugProfile::Pug3)
+    }
+
+    /// [`Self::new`] for a block written in `profile`.
+    pub fn new_profiled(
+        host: &str,
+        body: Range<usize>,
+        profile: vize_l1::markup::pug::PugProfile,
+    ) -> Result<Self, PugTemplate> {
         let (Some(before), Some(pug), Some(after)) = (
             host.get(..body.start),
             host.get(body.clone()),
@@ -42,7 +53,7 @@ impl PugBlockView {
         ) else {
             return Err(refuse_range());
         };
-        let template = derive_template_source_with(pug, PugRendering::AuthoredOrder);
+        let template = derive_template_source_profiled(pug, PugRendering::AuthoredOrder, profile);
         if template.has_errors() {
             return Err(template);
         }

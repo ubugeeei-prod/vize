@@ -103,7 +103,7 @@ pub(super) fn payload_stage_feed(files: &[InspectorSourceFile]) -> serde_json::V
         };
         if let Some(template) = descriptor.template.as_ref() {
             pages.push(l1_page(file.path.as_str(), template.content.as_ref()));
-            let html = template.lang.as_deref().is_none_or(|lang| lang == "html");
+            let html = vize_l1::container::lang::is_html_template(template.lang.as_deref());
             if template.src.is_none() && html {
                 remarks.extend(template_remarks(
                     file.path.as_str(),

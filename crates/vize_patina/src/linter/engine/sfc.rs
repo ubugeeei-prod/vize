@@ -168,7 +168,7 @@ impl Linter {
                 &mut result,
                 (!has_fatal_parse_errors
                     && template.src.is_none()
-                    && template.lang.as_deref().is_none_or(|lang| lang == "html"))
+                    && vize_l1::container::lang::is_html_template(template.lang.as_deref()))
                 .then_some(l2.surface()),
             );
         }

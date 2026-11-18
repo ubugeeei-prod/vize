@@ -93,7 +93,7 @@ pub fn production(facts: &cfg::ComplexityFacts) -> Naive {
 fn template_of(source: &str) -> Result<(&str, u32), &'static str> {
     let descriptor = parse_sfc(source, SfcParseOptions::default()).map_err(|_| "no-template")?;
     let template = descriptor.template.as_ref().ok_or("no-template")?;
-    if template.lang.as_deref().is_some_and(|lang| lang != "html") {
+    if !vize_l1::container::lang::is_html_template(template.lang.as_deref()) {
         return Err("foreign-lang");
     }
     let (start, end) = (template.loc.start, template.loc.end);

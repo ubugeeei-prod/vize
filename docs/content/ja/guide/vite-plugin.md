@@ -258,6 +258,8 @@ Nuxt と連携できるよう、プラグインは Vite の環境ごとに `defi
 
 `<style lang="scss">`・`sass`・`less`・`stylus` は Vue と同じ順序で処理します。まずプリプロセッサを実行し、その出力に Vize がスコープを付けて `v-bind()` を解決します。`<style module>` のクラス名は、バンドラーの CSS Modules 処理が生成します。`@vitejs/plugin-vue` と同じく、プリプロセッサのパッケージ（`sass` または `sass-embedded`、`less`、`stylus`）をプロジェクトにインストールしてください。`<template lang="pug">` は Vize 自身がコンパイルするため、追加のパッケージは不要です。従来の `<template lang="jade">` も同じ対象でエイリアスとして利用できます。
 
+Vize のすべてのツールは、1 つのレジストリで `lang` を ASCII の大文字・小文字を区別せずに解釈します。`jade` は `pug`、`styl` は `stylus`、`postcss`・空の `lang`・`lang` なしは通常の CSS です。Vize が文法を持たないテンプレートの `lang`（例: `haml`）は HTML として読みません。コンパイラーは `lang` の値の位置に `TEMPLATE_LANG_UNSUPPORTED` を報告し、リンターと型チェッカーはテンプレートを対象外にします。
+
 | 対象                                                     | scss / sass / less / stylus                                                                                                | pug / jade                 |
 | -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
 | Vite                                                     | Vite が前処理し、その結果に Vize がスコープを付ける                                                                        | ネイティブ                 |
@@ -271,8 +273,8 @@ Nuxt と連携できるよう、プラグインは Vite の環境ごとに `defi
 #### 対応する Pug / Jade の範囲
 
 Pug 対応は Vize に組み込まれており、プロジェクトの JavaScript を実行せず、
-ローカルの `pug` パッケージも必要としません。`lang="jade"` は大文字・小文字を
-区別しない同一実装のエイリアスです。決定的に処理できる次の範囲をサポートします。
+ローカルの `pug` パッケージも必要としません。`lang="jade"` は同じ実装を
+jade 1.x のプロファイルで読みます。決定的に処理できる次の範囲をサポートします。
 
 - 要素、コンポーネント、class / id の短縮記法、属性、Vue ディレクティブ、
   interpolation、slot、テキストブロック
@@ -298,6 +300,23 @@ JavaScript、`while` / `case`、template inheritance、filter、filtered / roote
 外部 `<template src>` の Pug は未対応です。派生 HTML の編集を常に可逆変換できないため、
 Pug template 内の autofix は生成せず、Pug 専用 printer も提供しません。この境界は
 `pug` と `jade` で同一です。
+
+#### jade プロファイル
+
+Vue 自身のツールチェーンは `lang="jade"` を pug ではなく旧 `jade` 1.x パッケージで描画し、
+2 つの言語には違いがあります。`lang="jade"` のとき Vize は作者の意図を保ち、違いを必ず報告します。
+`lang="pug"` は pug 3 とまったく同じに動作します。
+
+| jade 1.x の記述 | `lang="jade"` での Vize の扱い |
+| --- | --- |
+| `- each item in items` / `- for …` | 反復します。警告と、ダッシュを取り除く修正を示します（pug 3 は拒否します）。 |
+| 本体のない `mixin name(args)` | mixin を呼び出します。警告と、`+name(args)` への修正を示します。 |
+| `each item of items` | pug 3 と同じく反復し、jade 1.x はリテラルの `<each>` 要素を描画すると警告します。 |
+| `a(href="/users/#{id}")` | 記述どおりの文字列を保ちます。jade 1.x はビルド時に `undefined` へ補間すると警告し、`` :href="`/users/${id}`" `` への修正を示します。 |
+
+コンパイラーはそれぞれを該当箇所の `JADE_PROFILE` 警告として報告します。リンターはそれらと
+`lang` の値を `vue/prefer-pug-lang` で報告し、jade 固有の記述が残っていなければ `lang` を
+`pug` に書き換える修正を示します。jade を使い続ける場合は、このルールを設定または無効にします。
 
 Real Project Matrix では dho-web-client や Wave UI など Pug を多用する application を
 compile・type check・lint・format で検証し、同じ workflow で Pug の LSP / SSR observer

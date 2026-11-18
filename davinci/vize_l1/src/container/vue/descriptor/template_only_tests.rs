@@ -34,6 +34,10 @@ fn allocation_free_template_owner_matches_the_general_original_descriptor() {
         "<template lang=html>",
         "<template lang='html'>",
         "<template lang=\"html\">",
+        // The block-language registry matches `lang` ASCII case-insensitively
+        // and reads an empty value as the default grammar.
+        "<template lang=HTML>",
+        "<template lang=\"\">",
     ] {
         for (first, second, closing, tail) in tokens.iter().flat_map(|first| {
             tokens.iter().flat_map(move |second| {
@@ -76,7 +80,6 @@ fn allocation_free_template_owner_matches_the_general_original_descriptor() {
     }
     for source in [
         "<template lang=pug>x</template>",
-        "<template lang=HTML>x</template>",
         "<template lang='h&#116;ml'>x</template>",
         "<template lang=html lang=html>x</template>",
         "<template src=x>x</template>",

@@ -31,7 +31,8 @@ fn collect_style_regions(
     }
 
     let bytes = block.content.as_bytes();
-    let line_comments = StyleLanguage::from_lang(block.lang.as_deref())
+    let line_comments = vize_l1::container::lang::style_lang(block.lang.as_deref())
+        .ok()
         .is_some_and(StyleLanguage::has_line_comments);
     let mut state = ScanState::Code;
     let mut line = content_start_line;

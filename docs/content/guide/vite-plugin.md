@@ -251,6 +251,8 @@ For Nuxt compatibility, the plugin isolates `define` values per Vite environment
 
 `<style lang="scss">`, `sass`, `less` and `stylus` follow Vue's order: the preprocessor runs first, then Vize scopes its output and resolves `v-bind()`. `<style module>` class maps come from your bundler's CSS-module pipeline. Install the preprocessor package (`sass` or `sass-embedded`, `less`, `stylus`) in your project, as you would with `@vitejs/plugin-vue`. `<template lang="pug">` is compiled by Vize itself, so no extra package is needed. The legacy `<template lang="jade">` spelling is accepted as an alias on the same surfaces.
 
+Every Vize tool resolves `lang` through one registry, ASCII case-insensitively: `jade` is `pug`, `styl` is `stylus`, and `postcss`, an empty `lang` or no `lang` is plain CSS. A template `lang` with no Vize grammar (for example `haml`) is never read as HTML: the compiler reports `TEMPLATE_LANG_UNSUPPORTED` at the `lang` value, and the linter and type checker leave the template out.
+
 | Surface                                                 | scss / sass / less / stylus                                                                                                         | pug / jade                          |
 | ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
 | Vite                                                    | Vite preprocesses; Vize scopes the result                                                                                           | Native                              |
@@ -264,8 +266,8 @@ For Nuxt compatibility, the plugin isolates `define` values per Vite environment
 #### Supported Pug and Jade subset
 
 Pug support is built into Vize; it does not execute the project's JavaScript or
-require a local `pug` package. `lang="jade"` is a case-insensitive alias for the
-same implementation. The supported deterministic subset includes:
+require a local `pug` package. `lang="jade"` is read by the same implementation
+under a jade 1.x profile. The supported deterministic subset includes:
 
 - elements, components, class/id shorthand, attributes, Vue directives,
   interpolation, slots and text blocks;
@@ -292,6 +294,25 @@ filters, filtered or rooted includes, and external `<template src>` Pug. Pug
 template autofixes are withheld because a derived HTML edit cannot always be
 mapped back losslessly, and there is no language-aware Pug printer. These
 boundaries apply equally to `pug` and `jade`.
+
+#### The jade profile
+
+Vue's own toolchain renders `lang="jade"` with the legacy `jade` 1.x package,
+not pug, and the two languages differ. Under `lang="jade"` Vize keeps the
+author's intent and says so, never silently; `lang="pug"` behaves exactly as
+pug 3 does.
+
+| jade 1.x construct | Vize under `lang="jade"` |
+| --- | --- |
+| `- each item in items` / `- for …` | Iterates, with a warning and a fix that drops the dash (pug 3 refuses it). |
+| a bodiless `mixin name(args)` | Calls the mixin, with a warning and a fix to `+name(args)`. |
+| `each item of items` | Iterates as pug 3 does, warning that jade 1.x renders a literal `<each>` element. |
+| `a(href="/users/#{id}")` | Keeps the text as written, warning that jade 1.x interpolates it at build time to `undefined`, with a fix to `` :href="`/users/${id}`" ``. |
+
+The compiler reports each as a `JADE_PROFILE` warning at the construct. The
+linter reports them, and the `lang` value itself, through
+`vue/prefer-pug-lang`, whose fix renames the `lang` to `pug` once nothing
+jade-only is left; configure or turn off that rule to keep jade.
 
 The Real Project Matrix exercises Pug-heavy applications including
 dho-web-client and Wave UI across compile, type-check, lint and format checks;

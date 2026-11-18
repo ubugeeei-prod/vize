@@ -326,6 +326,10 @@ function verifyCssSnapshot(repoRoot, expectedRevision, pinnedProduct) {
     [
       "crates/vize_maestro/src/server/annotations.rs",
       "crates/vize_maestro/src/server/handlers/typed.rs",
+      "crates/vize_maestro/src/ide/style.rs",
+      "crates/vize_maestro/src/server/annotations/document_color.rs",
+      "crates/vize_maestro/src/server/annotations/document_color/hover.rs",
+      "crates/vize_maestro/src/server/annotations/document_color/scan/declarations.rs",
     ],
   );
   const foregroundCheckout = composeForegroundPreparationCheckout(

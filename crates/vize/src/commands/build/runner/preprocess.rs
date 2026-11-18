@@ -18,8 +18,6 @@ use vize_atelier_sfc::SfcDescriptor;
 use vize_l0::{FxHashMap, String, cstr};
 use vize_l1::container::vue::boundary::{CompatBlock, split_blocks, tag_name_eq};
 
-const PREPROCESSOR_LANGS: [&str; 5] = ["scss", "sass", "less", "stylus", "styl"];
-
 /// One block's preprocessing result.
 pub(super) enum StyleOutcome {
     Css(String),
@@ -130,13 +128,6 @@ fn pending_blocks(path: &PathBuf) -> Vec<Pending> {
     let Ok(source) = vize_carton::source_io::read_to_string(path) else {
         return Vec::new();
     };
-    // Cheap pre-check: most SFCs have no preprocessor block.
-    if !PREPROCESSOR_LANGS
-        .iter()
-        .any(|lang| source.contains(cstr!("lang=\"{lang}\"").as_str()))
-    {
-        return Vec::new();
-    }
     // The L1 block walk is the one the compile's descriptor is built from, so
     // style indices line up with `SfcDescriptor::styles`.
     let mut pending = Vec::new();
@@ -145,10 +136,15 @@ fn pending_blocks(path: &PathBuf) -> Vec<Pending> {
         if !tag_name_eq(block.tag_name, b"style") {
             return true;
         }
-        let lang = block.attrs.get("lang").map(|lang| lang.as_ref());
-        if let Some(lang) = lang.filter(|lang| PREPROCESSOR_LANGS.contains(lang))
+        // The registry resolves the lang (any case, any alias); the job
+        // carries its canonical name, which `preprocess.mjs` keys on.
+        let lang =
+            vize_l1::container::lang::style_lang(block.attrs.get("lang").map(|lang| lang.as_ref()));
+        if let Ok(lang) = lang
+            && lang != vize_l1::container::lang::StyleLanguage::Css
             && !block.attrs.contains_key("src")
         {
+            let lang = vize_l1::container::lang::style_name(lang);
             pending.push(Pending {
                 file: path.clone(),
                 absolute: std::path::absolute(path).unwrap_or_else(|_| path.clone()),

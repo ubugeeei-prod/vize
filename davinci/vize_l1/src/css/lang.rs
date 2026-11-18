@@ -11,7 +11,8 @@ mod css;
 mod indented;
 mod nested;
 
-/// The language of one style block.
+/// The language of one style block. A block's `lang` value is resolved to
+/// one by the block-language registry, `crate::container::lang::style_lang`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum StyleLanguage {
     /// Absent `lang`, `css` or `postcss`.
@@ -27,26 +28,6 @@ pub enum StyleLanguage {
 }
 
 impl StyleLanguage {
-    /// The language a block's `lang` value names, ASCII case-insensitively.
-    /// Any other value has no dialect and stays opaque.
-    #[must_use]
-    pub fn from_lang(lang: Option<&str>) -> Option<Self> {
-        let Some(lang) = lang else {
-            return Some(Self::Css);
-        };
-        [
-            ("css", Self::Css),
-            ("postcss", Self::Css),
-            ("scss", Self::Scss),
-            ("sass", Self::Sass),
-            ("less", Self::Less),
-            ("stylus", Self::Stylus),
-            ("styl", Self::Stylus),
-        ]
-        .into_iter()
-        .find_map(|(name, language)| lang.eq_ignore_ascii_case(name).then_some(language))
-    }
-
     /// Whether `//` starts a line comment: in every preprocessor, not in CSS.
     #[must_use]
     pub const fn has_line_comments(self) -> bool {

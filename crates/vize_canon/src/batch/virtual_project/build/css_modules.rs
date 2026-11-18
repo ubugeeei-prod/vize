@@ -8,7 +8,7 @@ use vize_carton::{String as CompactString, ToCompactString};
 use crate::virtual_ts::{
     CSS_MODULE_GLOBAL_MARKER, ResolveStyleClassNames, TemplateGlobal, VirtualTsOptions,
 };
-use vize_l1::css::{AuthoredClasses, lang::StyleLanguage};
+use vize_l1::css::AuthoredClasses;
 
 pub(crate) fn virtual_ts_options_for_descriptor(
     base: &VirtualTsOptions,
@@ -73,7 +73,8 @@ pub(crate) fn style_scoped_class_names(
         if !included || style.src.is_some() {
             continue;
         }
-        let classes = StyleLanguage::from_lang(style.lang.as_deref())
+        let classes = vize_l1::container::lang::style_lang(style.lang.as_deref())
+            .ok()
             .and_then(|language| language.authored_classes(&style.content))
             .map(AuthoredClasses::into_names);
         for class_name in classes.unwrap_or_default() {
@@ -134,7 +135,7 @@ fn css_module_block_shape(
     style: &vize_atelier_sfc::SfcStyleBlock<'_>,
     resolve_style_imports: bool,
 ) -> Option<CssModuleShape> {
-    let language = StyleLanguage::from_lang(style.lang.as_deref())?;
+    let language = vize_l1::container::lang::style_lang(style.lang.as_deref()).ok()?;
     if contains_dynamic_css_module_exports(&style.content) {
         return None;
     }

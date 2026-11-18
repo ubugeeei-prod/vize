@@ -120,11 +120,12 @@ impl<'a> StyleSyntax<'a> {
             error: None,
             issue: None,
         };
-        if original
-            .attrs()
-            .iter()
-            .any(|attr| attr.name == "lang" && attr.value != Some("css"))
-        {
+        if original.attrs().iter().any(|attr| {
+            attr.name == "lang"
+                && !attr
+                    .value
+                    .is_some_and(|lang| crate::container::lang::is_css_style(Some(lang)))
+        }) {
             syntax.issue = Some(StyleIssue {
                 code: StyleIssueCode::UnsupportedLanguage,
                 span: source.span(),

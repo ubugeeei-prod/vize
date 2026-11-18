@@ -178,7 +178,8 @@ impl<'a> Policy<'a> {
                     }
                     Some("js") if script => lang = Lang::Js,
                     Some("ts") if script => lang = Lang::Ts,
-                    Some("html") if template => {}
+                    Some(value)
+                        if template && crate::container::lang::is_html_template(Some(value)) => {}
                     Some(value) if style && !value.is_empty() => {}
                     _ => self.issue(Code::UnsupportedLanguage, Some(index), attr.span),
                 },

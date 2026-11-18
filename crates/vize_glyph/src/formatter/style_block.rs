@@ -8,7 +8,7 @@ pub(super) fn write_style_block(
     options: &FormatOptions,
     source: &str,
 ) -> Result<(), FormatError> {
-    let is_plain_css = block.lang().is_none_or(|lang| lang == "css");
+    let is_plain_css = vize_l1::container::lang::is_css_style(block.lang());
     let opening_tag = opening_tag::raw_templated_opening_tag(source, &block.loc);
     let content = opening_tag::content_after_opening_tag(
         source,
@@ -93,5 +93,9 @@ pub(super) fn write_style_block(
 /// Sass (SCSS syntax) and Less share CSS string and comment syntax; the
 /// indented Sass and Stylus dialects are left alone, as Prettier does.
 fn scss_or_less(lang: Option<&str>) -> bool {
-    lang.is_some_and(|lang| lang.eq_ignore_ascii_case("scss") || lang.eq_ignore_ascii_case("less"))
+    matches!(
+        vize_l1::container::lang::style_lang(lang),
+        Ok(vize_l1::container::lang::StyleLanguage::Scss
+            | vize_l1::container::lang::StyleLanguage::Less)
+    )
 }

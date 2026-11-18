@@ -484,7 +484,10 @@ fn pug_template_body_bounds(content: &str, cursor: usize) -> Option<(usize, usiz
         return None;
     }
 
-    if !template_start_tag_lang_is_pug(template.get(..=tag_end).unwrap_or_default()) {
+    if !vize_l1::container::lang::is_pug_template(vize_l1::container::lang::lang_attr(
+        content,
+        template_start,
+    )) {
         return None;
     }
 
@@ -494,82 +497,6 @@ fn pug_template_body_bounds(content: &str, cursor: usize) -> Option<(usize, usiz
         .find("</template")
         .map_or(content.len(), |index| body_start + index);
     (cursor <= body_end).then_some((body_start, body_end))
-}
-
-fn template_start_tag_lang_is_pug(start_tag: &str) -> bool {
-    let lower = start_tag.to_ascii_lowercase();
-    let bytes = lower.as_bytes();
-    let mut search = 0usize;
-
-    while let Some(relative) = lower.get(search..).and_then(|rest| rest.find("lang")) {
-        let name_start = search + relative;
-        let name_end = name_start + "lang".len();
-        search = name_end;
-
-        if name_start
-            .checked_sub(1)
-            .and_then(|prev| bytes.get(prev))
-            .is_some_and(|&byte| is_attribute_name_byte(byte))
-        {
-            continue;
-        }
-        if bytes
-            .get(name_end)
-            .is_some_and(|byte| is_attribute_name_byte(*byte))
-        {
-            continue;
-        }
-
-        let mut pos = name_end;
-        while bytes
-            .get(pos)
-            .is_some_and(|byte| byte.is_ascii_whitespace())
-        {
-            pos += 1;
-        }
-        if bytes.get(pos) != Some(&b'=') {
-            continue;
-        }
-        pos += 1;
-        while bytes
-            .get(pos)
-            .is_some_and(|byte| byte.is_ascii_whitespace())
-        {
-            pos += 1;
-        }
-
-        let value = match bytes.get(pos) {
-            Some(&quote @ (b'"' | b'\'')) => {
-                pos += 1;
-                let value_start = pos;
-                while bytes.get(pos).is_some_and(|byte| *byte != quote) {
-                    pos += 1;
-                }
-                lower.get(value_start..pos).unwrap_or_default()
-            }
-            Some(_) => {
-                let value_start = pos;
-                while bytes
-                    .get(pos)
-                    .is_some_and(|byte| !byte.is_ascii_whitespace() && *byte != b'>')
-                {
-                    pos += 1;
-                }
-                lower.get(value_start..pos).unwrap_or_default()
-            }
-            None => continue,
-        };
-
-        if matches!(value, "pug" | "jade") {
-            return true;
-        }
-    }
-
-    false
-}
-
-fn is_attribute_name_byte(byte: u8) -> bool {
-    byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'_' | b':')
 }
 
 #[expect(clippy::string_slice, reason = "tests assert by panicking")]

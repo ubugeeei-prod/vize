@@ -113,10 +113,7 @@ fn locate(error: &CompileError) -> Option<Located> {
     let source = String::from(fs::read_to_string(&error.path).ok()?);
     let descriptor = parse_sfc(&source, SfcParseOptions::default()).ok()?;
     let template = descriptor.template.as_ref()?;
-    let html = template
-        .lang
-        .as_deref()
-        .is_none_or(|lang| lang.eq_ignore_ascii_case("html"));
+    let html = vize_l1::container::lang::is_html_template(template.lang.as_deref());
     let base = template.loc.start;
     let authored = source.get(base..template.loc.end) == Some(&*template.content);
     if !html || template.src.is_some() || !authored || details.is_empty() {
