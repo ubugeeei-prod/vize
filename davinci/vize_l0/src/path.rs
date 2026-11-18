@@ -48,12 +48,16 @@ pub fn physical_path(path: &Path) -> PathBuf {
 ///
 /// `PathBuf` ordering walks components, so sorting every repeat is slow. Byte
 /// copies are dropped first with a byte sort, then only unique paths take the
-/// component-ordered sort, giving the same order and the same set under
-/// `Path` equality.
+/// component-ordered sort. A byte-order tie-break preserves the exact stable
+/// representative for component-equivalent spellings without stable-sort
+/// scratch allocation.
 pub fn sort_dedup_paths(paths: &mut Vec<PathBuf>) {
     paths.sort_unstable_by(|left, right| left.as_os_str().cmp(right.as_os_str()));
     paths.dedup_by(|left, right| left.as_os_str() == right.as_os_str());
-    paths.sort();
+    paths.sort_unstable_by(|left, right| {
+        left.cmp(right)
+            .then_with(|| left.as_os_str().cmp(right.as_os_str()))
+    });
     paths.dedup();
 }
 
@@ -112,9 +116,11 @@ mod tests {
     #[test]
     fn sort_dedup_paths_matches_component_sort_and_dedup() {
         let input = [
-            "/r/a-b", "/r/a/b", "/r/a", "/r/a/b", "/r/a-b", "/r/a.b", "/r/a/b",
+            "/r/a-b", "/r/a/./b", "/r/a/b", "/r/a", "/r/a/b", "/r/a-b", "/r/a.b", "/r/a//b",
         ];
         let mut expected: Vec<PathBuf> = input.iter().map(PathBuf::from).collect();
+        expected.sort_unstable_by(|left, right| left.as_os_str().cmp(right.as_os_str()));
+        expected.dedup_by(|left, right| left.as_os_str() == right.as_os_str());
         expected.sort();
         expected.dedup();
         let mut actual: Vec<PathBuf> = input.iter().map(PathBuf::from).collect();
