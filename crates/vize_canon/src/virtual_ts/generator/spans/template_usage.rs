@@ -28,7 +28,7 @@ fn collect_template_referenced_names(
     // but only runtime reads may drive synthetic value captures and anchors.
     let retained_reads = summary.template_expression_reads.as_ref();
     let mut value_names: FxHashSet<String> = retained_reads
-        .map(|reads| reads.iter().cloned().collect())
+        .map(|reads| reads.values().flatten().cloned().collect())
         .unwrap_or_default();
     let mut expressions = FxHashSet::default();
 

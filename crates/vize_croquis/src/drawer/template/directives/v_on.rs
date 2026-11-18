@@ -152,9 +152,6 @@ impl Drawer {
                 None => {
                     let identifiers = extract_identifiers_oxc(guard.as_str());
                     let references = identifiers.iter().any(|identifier| identifier == name);
-                    if let Some(reads) = self.croquis.template_expression_reads.as_mut() {
-                        reads.extend(identifiers.iter().cloned());
-                    }
                     self.ident_cache.insert(guard.clone(), identifiers);
                     references
                 }
