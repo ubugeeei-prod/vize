@@ -3,7 +3,7 @@ import test from "node:test";
 
 import { reactive } from "vue";
 
-import { snapshotMessageRecord } from "./usePostMessage.ts";
+import { ownRecordValue, snapshotMessageRecord } from "./usePostMessage.ts";
 
 void test("props message snapshots unwrap Vue proxies and retain own prototype names", () => {
   const attrs = reactive(
@@ -43,4 +43,23 @@ void test("props message snapshots recursively unwrap nested Vue proxies", () =>
 
   assert.deepEqual(payload, { nested: { items: [{ label: "Nested" }] } });
   assert.doesNotThrow(() => structuredClone(payload));
+});
+
+void test("props message snapshots omit non-cloneable JSON values", () => {
+  const payload = snapshotMessageRecord({
+    callback: () => "ignored",
+    nested: { symbol: Symbol("ignored"), label: "Retained" },
+  });
+
+  assert.deepEqual(payload, { nested: { label: "Retained" } });
+  assert.doesNotThrow(() => structuredClone(payload));
+});
+
+void test("own record reads retain Vue-instrumented prototype names", () => {
+  const values = reactive(
+    JSON.parse('{"constructor":"Authored constructor","hasOwnProperty":"Authored method"}'),
+  );
+
+  assert.equal(ownRecordValue(values, "constructor"), "Authored constructor");
+  assert.equal(ownRecordValue(values, "hasOwnProperty"), "Authored method");
 });

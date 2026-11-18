@@ -16,7 +16,18 @@ export function snapshotMessageRecord(value: Record<string, unknown>): Record<st
   return snapshotMessageValue(value, new WeakMap()) as Record<string, unknown>;
 }
 
+export function ownRecordValue(value: Record<string, unknown>, key: string): unknown {
+  const directDescriptor = Object.getOwnPropertyDescriptor(value, key);
+  if (directDescriptor && "value" in directDescriptor) return directDescriptor.value;
+  const raw = toRaw(value);
+  const descriptor = Object.getOwnPropertyDescriptor(raw, key);
+  return descriptor && "value" in descriptor ? descriptor.value : Reflect.get(raw, key);
+}
+
+const OMITTED_MESSAGE_VALUE = Symbol("omitted message value");
+
 function snapshotMessageValue(value: unknown, seen: WeakMap<object, unknown>): unknown {
+  if (typeof value === "function" || typeof value === "symbol") return OMITTED_MESSAGE_VALUE;
   if (typeof value !== "object" || value === null) return value;
   const raw = toRaw(value);
   const cached = seen.get(raw);
@@ -25,7 +36,10 @@ function snapshotMessageValue(value: unknown, seen: WeakMap<object, unknown>): u
   if (Array.isArray(raw)) {
     const clone: unknown[] = [];
     seen.set(raw, clone);
-    for (const entry of raw) clone.push(snapshotMessageValue(entry, seen));
+    for (const entry of raw) {
+      const snapshot = snapshotMessageValue(entry, seen);
+      clone.push(snapshot === OMITTED_MESSAGE_VALUE ? undefined : snapshot);
+    }
     return clone;
   }
 
@@ -35,12 +49,13 @@ function snapshotMessageValue(value: unknown, seen: WeakMap<object, unknown>): u
   const clone: Record<string, unknown> = {};
   seen.set(raw, clone);
   for (const key of Object.keys(raw)) {
-    const descriptor = Object.getOwnPropertyDescriptor(raw, key);
-    const entry = descriptor && "value" in descriptor ? descriptor.value : Reflect.get(raw, key);
+    const entry = ownRecordValue(raw, key);
+    const snapshot = snapshotMessageValue(entry, seen);
+    if (snapshot === OMITTED_MESSAGE_VALUE) continue;
     Object.defineProperty(clone, key, {
       configurable: true,
       enumerable: true,
-      value: snapshotMessageValue(entry, seen),
+      value: snapshot,
       writable: true,
     });
   }

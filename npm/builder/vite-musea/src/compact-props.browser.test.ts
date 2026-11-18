@@ -241,16 +241,21 @@ void test(
         );
         assert.deepEqual(observed.restoredValues, values);
         await page.locator(".props-reset").click();
-        const empty = Object.fromEntries(vector.names.map((name) => [name, ""]));
-        observed.clearedRendered = await rendered(page, view(empty));
+        const reset = Object.fromEntries(
+          vector.names.map((name) => [
+            name,
+            Object.hasOwn(authoredDefaults, name) ? authoredDefaults[name] : "",
+          ]),
+        );
+        observed.clearedRendered = await rendered(page, view(reset));
         observed.clearedSaved = await page.evaluate((key) => localStorage.getItem(key), storageKey);
         assert.equal(observed.clearedSaved, null);
         await openProps();
-        observed.clearedReloadRendered = await rendered(page, view(empty));
+        observed.clearedReloadRendered = await rendered(page, view(reset));
         observed.clearedReloadValues = JSON.parse(
           (await page.locator(".props-json-code code").textContent())!,
         );
-        assert.deepEqual(observed.clearedReloadValues, empty);
+        assert.deepEqual(observed.clearedReloadValues, reset);
         await page.screenshot({ path: path.join(output, `${prefix}.png`), fullPage: true });
         await copiedPage.screenshot({
           path: path.join(output, `${prefix}-copied.png`),

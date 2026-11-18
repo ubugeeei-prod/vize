@@ -13,7 +13,7 @@ import { useRoute, useRouter } from "vue-router";
 import { usePalette } from "../composables/usePalette";
 import { useArts } from "../composables/useArts";
 import { getPreviewUrl, vMuseaGlobals } from "../api";
-import { sendMessage, snapshotMessageRecord } from "../composables/usePostMessage";
+import { ownRecordValue, sendMessage, snapshotMessageRecord } from "../composables/usePostMessage";
 import { indentUsage, usagePropsAttributes, usageScript } from "../utils/usageCode";
 import { safeUrl } from "../utils/safeUrl";
 import { getControlComponent } from "./controlComponent";
@@ -88,13 +88,14 @@ const selectedVariant = computed(
     props.variants.find((variant) => variant.isDefault) ??
     props.variants[0],
 );
-const variantValues = computed<Record<string, unknown>>(() =>
-  Object.fromEntries(
-    Object.entries(selectedVariant.value?.props ?? selectedVariant.value?.args ?? {}).filter(
-      ([name]) => name !== "viewport",
-    ),
-  ),
-);
+const variantValues = computed<Record<string, unknown>>(() => {
+  const authored = selectedVariant.value?.props ?? selectedVariant.value?.args ?? {};
+  return Object.fromEntries(
+    Object.keys(authored)
+      .filter((name) => name !== "viewport")
+      .map((name) => [name, ownRecordValue(authored, name)]),
+  );
+});
 const variantAttrs = computed<Record<string, unknown>>(() => selectedVariant.value?.attrs ?? {});
 
 // Code mode state
@@ -548,7 +549,7 @@ const controlKindOptions = [
                         :min="control.range?.min"
                         :max="control.range?.max"
                         :step="control.range?.step"
-                        :model-value="values[control.name]"
+                        :model-value="ownRecordValue(values, control.name)"
                         @update:model-value="(v: unknown) => setValue(control.name, v)"
                       />
                     </div>
@@ -592,7 +593,7 @@ const controlKindOptions = [
                       :min="control.range?.min"
                       :max="control.range?.max"
                       :step="control.range?.step"
-                      :model-value="values[control.name]"
+                      :model-value="ownRecordValue(values, control.name)"
                       @update:model-value="(v: unknown) => setValue(control.name, v)"
                     />
                   </div>
