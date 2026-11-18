@@ -29,10 +29,15 @@ export function toPostMessagePayload<T>(value: T, seen = new WeakMap<object, unk
   const prototype = Object.getPrototypeOf(raw);
   if (prototype !== Object.prototype && prototype !== null) return raw as T;
 
-  const clone: Record<string, unknown> = {};
+  const clone: Record<string, unknown> = Object.create(prototype);
   seen.set(raw, clone);
   for (const [key, entry] of Object.entries(raw)) {
-    clone[key] = toPostMessagePayload(entry, seen);
+    Object.defineProperty(clone, key, {
+      configurable: true,
+      enumerable: true,
+      value: toPostMessagePayload(entry, seen),
+      writable: true,
+    });
   }
   return clone as T;
 }

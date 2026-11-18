@@ -6,16 +6,19 @@ import { reactive } from "vue";
 import { toPostMessagePayload } from "./usePostMessage.ts";
 
 void test("postMessage payloads recursively unwrap Vue proxies", () => {
-  const attrs = reactive({
-    empty: {},
-    nested: [{ label: "Edited 🎨" }],
-  });
+  const attrs = reactive(
+    JSON.parse(
+      '{"empty":{},"nested":[{"label":"Edited 🎨","__proto__":{"retained":true}}],"__proto__":{"nested":true},"constructor":"Authored constructor","hasOwnProperty":"Authored method name"}',
+    ),
+  );
   const payload = toPostMessagePayload({ props: { label: "Edited 🎨" }, attrs });
 
-  assert.deepEqual(payload, {
-    props: { label: "Edited 🎨" },
-    attrs: { empty: {}, nested: [{ label: "Edited 🎨" }] },
-  });
+  assert.deepEqual(
+    payload,
+    JSON.parse(
+      '{"props":{"label":"Edited 🎨"},"attrs":{"empty":{},"nested":[{"label":"Edited 🎨","__proto__":{"retained":true}}],"__proto__":{"nested":true},"constructor":"Authored constructor","hasOwnProperty":"Authored method name"}}',
+    ),
+  );
   assert.doesNotThrow(() => structuredClone(payload));
 });
 
