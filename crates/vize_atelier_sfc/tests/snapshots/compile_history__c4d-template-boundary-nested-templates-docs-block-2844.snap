@@ -1,0 +1,41 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c4d-template-boundary-nested-templates-docs-block-2844",
+    history: "870f2ff63f8cdd8fe4806e9d3d7ae7bd18550f15",
+    source: "<template>\n  <template\n    v-if=\"show\"\n    data-marker=\"> <template> </template>\"\n  >\n    <template-card data-close=\"</template>\">\n      <x-template>custom element</x-template>\n    </template-card>\n    <template data-marker=\"/>\">\n      nested template\n    </template>\n  </template>\n  <template data-marker=\"</template>\" />\n  <div>after</div>\n</template>\n\n<docs>{\"marker\":\"<template>\"}</docs>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { resolveComponent as _resolveComponent, createElementVNode as _createElementVNode, createVNode as _createVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createCommentVNode as _createCommentVNode, createTextVNode as _createTextVNode, withCtx as _withCtx } from \"vue\"\n\nconst _hoisted_1 = /*#__PURE__*/ _createElementVNode(\"template\", { \"data-marker\": \"/>\" }, \" nested template \")\nconst _hoisted_2 = { \"data-marker\": \"</template>\" }\n\nexport function render(_ctx, _cache) {\n  const _component_x_template = _resolveComponent(\"x-template\")\n  const _component_template_card = _resolveComponent(\"template-card\")\n  \n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    (_ctx.show)\n      ? (_openBlock(), _createElementBlock(_Fragment, { key: 0 }, [\n        _createVNode(_component_template_card, { \"data-close\": \"</template>\" }, {\n          default: _withCtx(() => [\n            _createVNode(_component_x_template, null, {\n              default: _withCtx(() => [\n                _createTextVNode(\"custom element\")\n              ]),\n              _: 1 /* STABLE */\n            })\n          ]),\n          _: 1 /* STABLE */\n        }),\n        _hoisted_1\n      ], 64 /* STABLE_FRAGMENT */))\n      : _createCommentVNode(\"v-if\", true),\n    _createElementVNode(\"template\", _hoisted_2),\n    _createElementVNode(\"div\", null, \"after\")\n  ], 64 /* STABLE_FRAGMENT */))\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

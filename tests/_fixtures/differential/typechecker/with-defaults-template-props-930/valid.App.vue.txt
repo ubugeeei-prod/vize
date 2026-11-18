@@ -1,0 +1,19 @@
+<template>
+  <svg>
+    <line :stroke-width="props.thickness / 2" />
+    <text>{{ label.toUpperCase() }} {{ props.label.toUpperCase() }}</text>
+  </svg>
+</template>
+
+<script setup lang="ts">
+const props = withDefaults(defineProps<{
+  thickness?: number;
+  label?: string;
+  raw?: string;
+}>(), {
+  thickness: 0.1,
+  label: 'ok',
+});
+
+const { thickness, label } = props;
+</script>

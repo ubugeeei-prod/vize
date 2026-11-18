@@ -1,0 +1,10 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+import { formatCount } from './format'
+
+const count = ref('1')
+</script>
+
+<template>
+  <p>{{ formatCount(count) }}</p>
+</template>

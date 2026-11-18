@@ -1,0 +1,3 @@
+<template>
+  <button class="btn" type="submit" class="btn-primary">Save</button>
+</template>

@@ -26,13 +26,18 @@ pub use crate::dialect::vue3::surface::{
 /// Which structural recoveries the tree construction reports.
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum Structure {
-    /// Only the tokenizer's errors (the historical surface contract).
+    /// Only the tokenizer's errors (the historical surface contract), over the
+    /// tree as authored: what Vue 3's compiler builds from a template.
     Off,
-    /// A Vue template, which Vue's compiler builds as written: no foster
-    /// parenting, which only a browser's HTML parse applies.
+    /// Only the tokenizer's errors, over the tree the HTML parser builds
+    /// (implied end tags, nested-interactive repair): markup that `innerHTML`
+    /// parses again (Vapor) and the Vue 1/2 parsers, which close them too.
+    Repaired,
+    /// A Vue template, which Vue's compiler builds as written: no implied
+    /// end tags, ignored nested forms, adoption agency or foster parenting.
     Template,
-    /// A template the browser parses as HTML first (in-DOM, standalone HTML):
-    /// content a table cannot hold is fostered before it.
+    /// A template the browser parses as HTML first (in-DOM, standalone HTML),
+    /// with the HTML tree construction's fix-ups.
     InDom,
 }
 
@@ -44,6 +49,12 @@ pub struct SurfaceParseOptions {
     /// File-wide recovery policy. Quirks keeps authored tree shape and accepts
     /// adjacent attributes without the standard missing-whitespace diagnostic.
     pub syntax: TemplateSyntaxMode,
+    /// Build the tree the HTML parser would (implied end tags, nested
+    /// interactive repair) instead of the authored one. Off by default: Vue's
+    /// compiler builds a component template as written. Vapor turns it on
+    /// because its template strings are parsed again by `innerHTML`. Quirks
+    /// always keeps the authored tree.
+    pub html_tree_construction: bool,
 }
 
 // Keep the established public Debug surface stable while the canonical file
@@ -103,21 +114,28 @@ pub fn parse_with_options_and_caps<'a>(
     options: SurfaceParseOptions,
     caps: LegacyCaps,
 ) -> (SurfaceTree<'a>, Vec<'a, SurfaceError>) {
-    let authored = options.syntax.is_quirks();
+    // Vue 1/2 parsers close optional end tags as the HTML parser does.
+    let html = options.html_tree_construction || caps.needs_sugar();
+    let structure = if html && !options.syntax.is_quirks() {
+        Structure::Repaired
+    } else {
+        Structure::Off
+    };
     let (tree, authored_tree, errors) = parse_projection(
         allocator,
         source,
         options,
-        authored,
+        false,
         caps.raw_html_interpolation,
-        Structure::Off,
+        structure,
     );
     (authored_tree.unwrap_or(tree), errors)
 }
 
 /// Parse once, retaining a non-repairing authored projection when the normal
-/// surface construction implicitly closes a nested interactive element.
-/// Both projections share the tokenizer's event stream and source slices.
+/// surface construction repairs the tree. A Vue 3 template is built as written,
+/// so the projection is always `None` here; the pair keeps the shape the
+/// repairing Vue 1/2 surfaces share.
 pub fn parse_with_authored<'a>(
     allocator: &'a Allocator,
     source: &'a str,
@@ -161,8 +179,9 @@ pub fn parse_with_authored_diagnostics<'a>(
 }
 
 /// [`parse_with_authored_diagnostics`] for a template the browser parses as
-/// HTML before Vue reads it (in-DOM, standalone HTML), so the diagnostics
-/// also report foster parenting, which a Vue template never undergoes.
+/// HTML before Vue reads it (in-DOM, standalone HTML), so the tree and the
+/// diagnostics follow the HTML tree construction, which a Vue template never
+/// undergoes.
 pub fn parse_in_dom_with_authored_diagnostics<'a>(
     allocator: &'a Allocator,
     source: &'a str,
@@ -254,7 +273,8 @@ pub(crate) fn construct<'a, const RAW: bool>(
         allocator,
         source,
         authored,
-        Structure::Off,
+        // Vue 1/2 close optional end tags like the HTML parser.
+        Structure::Repaired,
         record,
     )
 }
@@ -322,12 +342,14 @@ fn construct_with_tag_facts_and_diagnostics<'a, const RAW: bool, const TAG_FACTS
     // directive heads separately. Ordinary surface callers also retain the
     // historical lexer-only contract; replacing product owners opt in to the
     // complete parser/template vector explicitly.
-    let (tree, repaired) = if TAG_FACTS || structure == Structure::Off {
+    let (tree, repaired) = if TAG_FACTS || matches!(structure, Structure::Off | Structure::Repaired)
+    {
         let mut ignored = Vec::new_in(&allocator);
-        build::<RAW, TAG_FACTS, false>(allocator, source, &events, &mut ignored, true, false)
+        let repair = structure == Structure::Repaired;
+        build::<RAW, TAG_FACTS, false>(allocator, source, &events, &mut ignored, repair, false)
     } else {
-        let fosters = structure == Structure::InDom;
-        build::<RAW, TAG_FACTS, true>(allocator, source, &events, &mut errors, true, fosters)
+        let in_dom = structure == Structure::InDom;
+        build::<RAW, TAG_FACTS, true>(allocator, source, &events, &mut errors, in_dom, in_dom)
     };
     let authored = (authored && repaired).then(|| {
         let mut ignored = Vec::new_in(&allocator);

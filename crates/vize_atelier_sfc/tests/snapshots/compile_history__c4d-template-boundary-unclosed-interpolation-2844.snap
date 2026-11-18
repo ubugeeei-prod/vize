@@ -1,0 +1,49 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c4d-template-boundary-unclosed-interpolation-2844",
+    history: "870f2ff63f8cdd8fe4806e9d3d7ae7bd18550f15",
+    source: "<template>\n  <div>{{ unclosed\n</template>\n<style>.ok {}</style>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 1,
+}
+Sfc(
+    Err(
+        SfcError {
+            message: "Template compilation errors: [CompilerError { code: MissingInterpolationEnd, message: \"Interpolation is missing its closing delimiter `}}`; treating the unfinished interpolation as text.\", loc: Some(SourceLocation { start: Position { offset: 20, line: 3, column: 1 }, end: Position { offset: 20, line: 3, column: 1 }, source: \"\" }) }, CompilerError { code: MissingEndTag, message: \"Element is missing end tag.\", loc: Some(SourceLocation { start: Position { offset: 3, line: 2, column: 3 }, end: Position { offset: 8, line: 2, column: 8 }, source: \"<div>\" }) }]",
+            code: Some(
+                "TEMPLATE_ERROR",
+            ),
+            loc: Some(
+                BlockLocation {
+                    start: 10,
+                    end: 30,
+                    tag_start: 0,
+                    tag_end: 41,
+                    start_line: 1,
+                    start_column: 11,
+                    end_line: 3,
+                    end_column: 1,
+                },
+            ),
+        },
+    ),
+)

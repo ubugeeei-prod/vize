@@ -1,0 +1,3 @@
+import { café, next, last } from './Strip.vue';
+const total: number = café + next + last;
+const label: string = last;

@@ -29,17 +29,17 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::{LintDiagnostic, Severity};
+use crate::ir::TemplateSyntax;
+use crate::markup::{
+    MarkupBindingKind, MarkupBranch, MarkupContext, MarkupDocument, MarkupElement, MarkupRule,
+    MarkupTraversal,
+};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
-use crate::rules::a11y::helpers::get_static_or_bound_literal_attribute_value;
+use crate::rules::a11y::markup_helpers::get_static_or_bound_literal_markup_value;
 use vize_l0::FxHashMap;
 use vize_l0::String;
 use vize_l0::ToCompactString;
-use vize_relief::{
-    ElementNode, ElementType, ExpressionNode, PropNode, RootNode, TemplateChildNode,
-};
-
-mod branches;
-use branches::{BranchChoice, can_coexist, walk_elements};
+use vize_relief::RootNode;
 
 static META: RuleMeta = RuleMeta {
     name: "a11y/landmark-roles",
@@ -58,7 +58,7 @@ struct LandmarkInfo {
     label: Option<LandmarkLabel>,
     start: u32,
     end: u32,
-    branches: Vec<BranchChoice>,
+    branches: Vec<MarkupBranch>,
 }
 
 enum LandmarkLabel {
@@ -78,22 +78,26 @@ const EXPLICIT_LANDMARK_ROLES: [&str; 8] = [
     "search",
 ];
 
-/// Get the landmark role for an element (from tag or explicit role attribute)
-fn get_landmark_role<'a>(element: &ElementNode<'a>) -> Option<&'static str> {
-    // Check explicit role attribute first
-    for prop in &element.props {
-        if let PropNode::Attribute(attr) = prop
-            && attr.name == "role"
-            && let Some(value) = &attr.value
+/// The landmark role of an element: its first valued static `role`, else the
+/// tag's implicit role.
+fn get_landmark_role(element: &MarkupElement<'_>) -> Option<&'static str> {
+    let mut explicit = None;
+    element.walk_bindings(&mut |binding| {
+        if explicit.is_none()
+            && binding.kind() == MarkupBindingKind::Attribute
+            && binding.is_unqualified_arg_exact("role")
         {
-            return EXPLICIT_LANDMARK_ROLES
-                .into_iter()
-                .find(|role| *role == value.content);
+            explicit = binding.static_value();
         }
+    });
+    if let Some(value) = explicit {
+        return EXPLICIT_LANDMARK_ROLES
+            .into_iter()
+            .find(|role| *role == value);
     }
 
     // Implicit roles from tags
-    match element.tag {
+    match element.tag() {
         "main" => Some("main"),
         "nav" => Some("navigation"),
         "aside" => Some("complementary"),
@@ -106,22 +110,18 @@ fn get_landmark_role<'a>(element: &ElementNode<'a>) -> Option<&'static str> {
     }
 }
 
-fn has_bound_attribute(element: &ElementNode, name: &str) -> bool {
-    for prop in &element.props {
-        if let PropNode::Directive(dir) = prop
-            && dir.name == "bind"
-            && let Some(ExpressionNode::Simple(arg)) = &dir.arg
-            && arg.content == name
-        {
-            return true;
-        }
-    }
-    false
+fn has_bound_attribute(element: &MarkupElement<'_>, name: &str) -> bool {
+    let mut found = false;
+    element.walk_bindings(&mut |binding| {
+        found |=
+            binding.kind() == MarkupBindingKind::Bind && binding.is_unqualified_arg_exact(name);
+    });
+    found
 }
 
-fn get_label(element: &ElementNode) -> Option<LandmarkLabel> {
+fn get_label(element: &MarkupElement<'_>) -> Option<LandmarkLabel> {
     for name in ["aria-label", "aria-labelledby", "title"] {
-        if let Some(value) = get_static_or_bound_literal_attribute_value(element, name)
+        if let Some(value) = get_static_or_bound_literal_markup_value(element, name)
             && !value.trim().is_empty()
         {
             return Some(LandmarkLabel::Static(value.to_compact_string()));
@@ -135,30 +135,32 @@ fn get_label(element: &ElementNode) -> Option<LandmarkLabel> {
     None
 }
 
-fn collect_landmarks<'a>(children: &[TemplateChildNode<'a>], landmarks: &mut Vec<LandmarkInfo>) {
-    walk_elements(children, &mut Vec::new(), &mut |el, branches| {
-        if el.tag_type != ElementType::Component
-            && let Some(role) = get_landmark_role(el)
+fn collect_landmarks(document: &MarkupDocument<'_>) -> Vec<LandmarkInfo> {
+    let mut landmarks = Vec::new();
+    document.walk_branched_elements(&mut |element, branches| {
+        if !element.is_component()
+            && let Some(role) = get_landmark_role(&element)
         {
+            let range = element.range();
             landmarks.push(LandmarkInfo {
                 role: role.to_compact_string(),
-                label: get_label(el),
-                start: el.loc.span.start,
-                end: el.loc.span.end,
+                label: get_label(&element),
+                start: range.start,
+                end: range.end,
                 branches: branches.to_vec(),
             });
         }
     });
+    landmarks
 }
 
-impl Rule for LandmarkRoles {
-    fn meta(&self) -> &'static RuleMeta {
-        &META
-    }
+fn can_coexist(left: &LandmarkInfo, right: &LandmarkInfo) -> bool {
+    MarkupBranch::can_coexist(&left.branches, &right.branches)
+}
 
-    fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, root: &RootNode<'a>) {
-        let mut landmarks: Vec<LandmarkInfo> = Vec::new();
-        collect_landmarks(&root.children, &mut landmarks);
+impl LandmarkRoles {
+    fn check_document(ctx: &mut LintContext<'_>, document: &MarkupDocument<'_>) {
+        let landmarks = collect_landmarks(document);
 
         // Check 1: Duplicate main landmarks
         let mains: Vec<&LandmarkInfo> = landmarks.iter().filter(|l| l.role == "main").collect();
@@ -167,7 +169,7 @@ impl Rule for LandmarkRoles {
                 if !mains
                     .iter()
                     .take(index)
-                    .any(|prior| can_coexist(&prior.branches, &main.branches))
+                    .any(|prior| can_coexist(prior, main))
                 {
                     continue;
                 }
@@ -200,8 +202,7 @@ impl Rule for LandmarkRoles {
                     .filter(|landmark| {
                         landmark.label.is_none()
                             && group.iter().any(|other| {
-                                other.start != landmark.start
-                                    && can_coexist(&other.branches, &landmark.branches)
+                                other.start != landmark.start && can_coexist(other, landmark)
                             })
                     })
                     .collect();
@@ -229,8 +230,7 @@ impl Rule for LandmarkRoles {
                 for duplicate_group in static_labels.values().filter(|labels| labels.len() > 1) {
                     for landmark in duplicate_group {
                         if !duplicate_group.iter().any(|other| {
-                            other.start != landmark.start
-                                && can_coexist(&other.branches, &landmark.branches)
+                            other.start != landmark.start && can_coexist(other, landmark)
                         }) {
                             continue;
                         }
@@ -246,6 +246,40 @@ impl Rule for LandmarkRoles {
                 }
             }
         }
+    }
+}
+
+impl MarkupRule for LandmarkRoles {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn traversal(&self) -> MarkupTraversal {
+        MarkupTraversal::Document
+    }
+
+    fn enter_document(&self, ctx: &mut MarkupContext<'_, '_>, document: &MarkupDocument) {
+        Self::check_document(ctx.lint(), document);
+    }
+}
+
+impl Rule for LandmarkRoles {
+    fn meta(&self) -> &'static RuleMeta {
+        &META
+    }
+
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
+    }
+
+    fn jsx_needs_lowering(&self) -> bool {
+        // Landmarks are compared within each render root, across the branches
+        // its conditionals choose between.
+        true
+    }
+
+    fn run_on_template<'a>(&self, ctx: &mut LintContext<'a>, root: &RootNode<'a>) {
+        Self::check_document(ctx, &MarkupDocument::new(root, TemplateSyntax::Vue));
     }
 }
 

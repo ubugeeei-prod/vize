@@ -1,0 +1,51 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c1b-nested-custom-directive-with-v-show-sfc-184",
+    history: "cabe0290d0bd7edd5f730eaeacf5f677f54664e9",
+    source: "\n<template>\n  <div>\n    <button\n      v-show=\"ok\"\n      v-appear=\"shouldEnableInfiniteScroll ? fetchOlder : null\"\n      @click=\"fetchOlder\"\n    >\n      Load more\n    </button>\n  </div>\n</template>\n\n<script setup lang=\"ts\">\nconst ok = true\nconst shouldEnableInfiniteScroll = true\nconst fetchOlder = () => {}\n</script>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { resolveDirective as _resolveDirective, withDirectives as _withDirectives, createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, vShow as _vShow } from \"vue\"\n\nconst ok = true;\nconst shouldEnableInfiniteScroll = true;\n\nexport default {\n  __name: 'History',\n  setup(__props) {\n\nconst fetchOlder = () => {};\n\nreturn (_ctx, _cache) => {\n  const _directive_appear = _resolveDirective(\"appear\")\n\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    _withDirectives(_createElementVNode(\"button\", { onClick: fetchOlder }, \" Load more \", 512 /* NEED_PATCH */), [\n      [_directive_appear, shouldEnableInfiniteScroll ? fetchOlder : null],\n      [_vShow, ok]\n    ])\n  ]))\n}\n}\n\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "fetchOlder": SetupConst,
+                        "ok": LiteralConst,
+                        "shouldEnableInfiniteScroll": LiteralConst,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

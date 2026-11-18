@@ -133,7 +133,7 @@ pub(in crate::linter) fn prepare_with_descriptor<'a>(
             )
         );
         let mut parse_result =
-            Linter::l1_template_parse_lint_result(filename, &template.content, l2);
+            linter.l1_template_parse_lint_result(filename, &template.content, l2);
         linter.append_compatibility_template_parse_diagnostics(
             &mut parse_result,
             &template.content,

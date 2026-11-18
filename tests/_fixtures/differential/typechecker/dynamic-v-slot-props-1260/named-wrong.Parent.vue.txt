@@ -1,0 +1,9 @@
+<script setup lang="ts">
+import MultiList from './MultiList.vue'
+
+const slot = 'counts'
+</script>
+
+<template>
+  <MultiList v-slot:[slot]="{ item }">{{ item.toUpperCase() }}</MultiList>
+</template>

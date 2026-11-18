@@ -25,7 +25,8 @@ const INDEX = "docs/davinci/plan/compiler-fix-history.tsv";
 const RECEIPT = "docs/davinci/plan/compiler-fix-history-index.json";
 const REVIEWS = "docs/davinci/plan/compiler-fix-history-reviews.json";
 export const COHORT = "crates/vize_atelier_sfc/tests/fixtures/compile-history/cases.json";
-export const DISPOSITIONS = "docs/davinci/plan/compiler-fix-history-dispositions.json";
+export const DISPOSITIONS =
+  "crates/vize_atelier_sfc/tests/fixtures/compile-history/dispositions.json";
 const PINNED = "current-api-pinned";
 const NO_BEHAVIOR = "no-compile-behavior";
 const FIX = /^fix(?:\([^)]*\))?!?:/;

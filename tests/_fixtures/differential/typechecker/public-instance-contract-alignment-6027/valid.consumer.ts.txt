@@ -1,0 +1,29 @@
+import Public from "./Public.vue";
+import type { ComponentPublicInstance } from "vue";
+import Generic from "./Generic.vue";
+import NoEmits from "./NoEmits.vue";
+
+type GenericComponentInstance<T> = T extends new (...args: any[]) => infer R ? R : never;
+declare function usePrimitiveElement<T extends ComponentPublicInstance>(): {
+  primitiveElement: T | undefined;
+};
+type PublicInstance = InstanceType<typeof Public>;
+declare const instance: PublicInstance;
+const publicPrimitive = usePrimitiveElement<GenericComponentInstance<typeof Public>>();
+
+instance.$emit("select", "ok");
+instance.$emit("clear");
+instance.$slots.default?.({ value: "ok" });
+instance.close(true);
+
+const noEmitsPrimitive = usePrimitiveElement<GenericComponentInstance<typeof NoEmits>>();
+
+declare const generic: InstanceType<typeof Generic>;
+const genericItem: string = generic.$props.item;
+const genericPrimitive = usePrimitiveElement<GenericComponentInstance<typeof Generic>>();
+generic.$emit("pick", "ok");
+
+void publicPrimitive;
+void noEmitsPrimitive;
+void genericItem;
+void genericPrimitive;

@@ -1,0 +1,51 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c1d-css-v-bind-shares-template-unref-import-601",
+    history: "d504eb94cad1c3989b4648b3e4730a95ae437627",
+    source: "<script setup>\nlet color = 'tomato'\n</script>\n\n<template>\n  <div class=\"box\">{{ color }}</div>\n</template>\n\n<style scoped>\n.box {\n  color: v-bind(color);\n}\n</style>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { useCssVars as _useCssVars } from 'vue'\nimport { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock, unref as _unref } from \"vue\"\n\nconst _hoisted_1 = { class: \"box\" }\n\nexport default {\n  __name: 'History',\n  setup(__props) {\n\n_useCssVars(_ctx => ({\n  \"4045eae1-color\": (_unref(color))\n}))\n\nlet color = 'tomato'\n\nreturn (_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"div\", _hoisted_1, _toDisplayString(_unref(color)), 1 /* TEXT */))\n}\n}\n\n}",
+            css: Some(
+                ".box[data-v-4045eae1]{\n  color: var(--4045eae1-color);\n}\n",
+            ),
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "color": SetupLet,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

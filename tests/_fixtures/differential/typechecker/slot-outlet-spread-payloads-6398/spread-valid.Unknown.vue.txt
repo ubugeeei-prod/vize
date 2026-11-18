@@ -1,0 +1,8 @@
+<script setup lang="ts">
+defineSlots<{ [name: string]: (props: unknown) => unknown }>();
+const slotName = 'default';
+const slotProps = undefined as unknown;
+</script>
+<template>
+  <slot :name="slotName" v-bind="slotProps" />
+</template>

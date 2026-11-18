@@ -1,0 +1,297 @@
+{
+  "version": 1,
+  "kind": "exact-provider-qualification-picomatch-security-successor",
+  "previousProviderQualificationRecord": {
+    "path": "tests/_fixtures/differential/typechecker/empty-vue-star-exports/malformed-membership/provider-runtime-security-update-12959.json",
+    "bytes": 241007,
+    "sha256": "88dfbe561c318caec623d15fbac24d125689246c1e5efc2ff71fe7eb2137ce0d",
+    "gitBlob": "daf43c3905de39a38d24d4b302d7ca55f7d0640b"
+  },
+  "previousQualificationLock": {
+    "path": "pnpm-lock.yaml",
+    "bytes": 1116813,
+    "sha256": "db73c715328f8b947398bb4245472d7b3af5176f1e35f1bc927bdfa6c5046695",
+    "gitBlob": "fdb26182e684cbe9613f860772d0ea290a0e1d6e"
+  },
+  "previousQualificationPackage": {
+    "path": "package.json",
+    "bytes": 1053,
+    "sha256": "52985c3134183a70ebcf42236092cb2fd2dd815cb301b2a23ec74c4cc391de04",
+    "gitBlob": "d09b87f41fd10ff14c122a0e65e8a9d7d03e838a"
+  },
+  "previousWorkspaceManifest": {
+    "path": "pnpm-workspace.yaml",
+    "bytes": 9699,
+    "sha256": "1ad1da87f15327379c25b46f85fa457674039194d253c85941eea1d6339f52fd",
+    "gitBlob": "bfd095057324e42aedd9e550d039c88fec80193a"
+  },
+  "finalQualificationLock": {
+    "path": "pnpm-lock.yaml",
+    "bytes": 1120523,
+    "sha256": "4a6739cb54b76477adabbb3f79b9e49457cfec604668bb85cd34a060d2165247",
+    "gitBlob": "4a40b471b70443e48d58d7b1b66f1a8a58187e5b"
+  },
+  "finalQualificationPackage": {
+    "path": "package.json",
+    "bytes": 1053,
+    "sha256": "52985c3134183a70ebcf42236092cb2fd2dd815cb301b2a23ec74c4cc391de04",
+    "gitBlob": "d09b87f41fd10ff14c122a0e65e8a9d7d03e838a"
+  },
+  "workspaceManifest": {
+    "path": "pnpm-workspace.yaml",
+    "bytes": 9797,
+    "sha256": "1e78b6b2d2d07a40f668aa868a9d3265151d7fe88907466dfc5683003cc87b3a",
+    "gitBlob": "ae95c53b0858223094b5ebefe9a29e47fcb3f55e"
+  },
+  "lockReplacements": [
+    {
+      "offset": 10903,
+      "before": "  deepmerge@4.3.1: f24df4b40d35b586a5fb81a5e778a8328ad0479e12d1828ea585dc2cce1965bd\n",
+      "after": "  deepmerge@4.3.1: f24df4b40d35b586a5fb81a5e778a8328ad0479e12d1828ea585dc2cce1965bd\n  picomatch@2.3.2: 465376b36bcea4ee299ad72d4a4e2aeae248b6d7746af3e51ef336ecad3f2a06\n  picomatch@4.0.7: ed03f84a8ec301c3a74404210aa22dc09aec09ce1141f7ceabe10bc1b0f08056\n"
+    },
+    {
+      "offset": 29668,
+      "before": "        version: 4.0.7\n",
+      "after": "        version: 4.0.7(patch_hash=ed03f84a8ec301c3a74404210aa22dc09aec09ce1141f7ceabe10bc1b0f08056)\n"
+    },
+    {
+      "offset": 698036,
+      "before": "      picomatch: 4.0.7\n",
+      "after": "      picomatch: 4.0.7(patch_hash=ed03f84a8ec301c3a74404210aa22dc09aec09ce1141f7ceabe10bc1b0f08056)\n"
+    },
+    {
+      "offset": 765686,
+      "before": "      picomatch: 4.0.7\n",
+      "after": "      picomatch: 4.0.7(patch_hash=ed03f84a8ec301c3a74404210aa22dc09aec09ce1141f7ceabe10bc1b0f08056)\n"
+    },
+    {
+      "offset": 766022,
+      "before": "      picomatch: 4.0.7\n",
+      "after": "      picomatch: 4.0.7(patch_hash=ed03f84a8ec301c3a74404210aa22dc09aec09ce1141f7ceabe10bc1b0f08056)\n"
+    },
+    {
+      "offset": 774147,
+      "before": "      fdir: 6.5.0(picomatch@4.0.7)\n",
+      "after": "      fdir: 6.5.0(picomatch@4.0.7(patch_hash=ed03f84a8ec301c3a74404210aa22dc09aec09ce1141f7ceabe10bc1b0f08056))\n"
+    },
+    {
+      "offset": 774313,
+      "before": "      picomatch: 4.0.7\n",
+      "after": "      picomatch: 4.0.7(patch_hash=ed03f84a8ec301c3a74404210aa22dc09aec09ce1141f7ceabe10bc1b0f08056)\n"
+    },
+    {
+      "offset": 775691,
+      "before": "      picomatch: 4.0.7\n",
+      "after": "      picomatch: 4.0.7(patch_hash=ed03f84a8ec301c3a74404210aa22dc09aec09ce1141f7ceabe10bc1b0f08056)\n"
+    },
+    {
+      "offset": 781628,
+      "before": "      picomatch: 4.0.7\n",
+      "after": "      picomatch: 4.0.7(patch_hash=ed03f84a8ec301c3a74404210aa22dc09aec09ce1141f7ceabe10bc1b0f08056)\n"
+    },
+    {
+      "offset": 782106,
+      "before": "      picomatch: 4.0.7\n",
+      "after": "      picomatch: 4.0.7(patch_hash=ed03f84a8ec301c3a74404210aa22dc09aec09ce1141f7ceabe10bc1b0f08056)\n"
+    },
+    {
+      "offset": 829995,
+      "before": "      picomatch: 4.0.7\n",
+      "after": "      picomatch: 4.0.7(patch_hash=ed03f84a8ec301c3a74404210aa22dc09aec09ce1141f7ceabe10bc1b0f08056)\n"
+    },
+    {
+      "offset": 869773,
+      "before": "      picomatch: 4.0.7\n",
+      "after": "      picomatch: 4.0.7(patch_hash=ed03f84a8ec301c3a74404210aa22dc09aec09ce1141f7ceabe10bc1b0f08056)\n"
+    },
+    {
+      "offset": 870105,
+      "before": "      picomatch: 4.0.7\n",
+      "after": "      picomatch: 4.0.7(patch_hash=ed03f84a8ec301c3a74404210aa22dc09aec09ce1141f7ceabe10bc1b0f08056)\n"
+    },
+    {
+      "offset": 888462,
+      "before": "      picomatch: 2.3.2\n",
+      "after": "      picomatch: 2.3.2(patch_hash=465376b36bcea4ee299ad72d4a4e2aeae248b6d7746af3e51ef336ecad3f2a06)\n"
+    },
+    {
+      "offset": 897560,
+      "before": "      picomatch: 4.0.7\n",
+      "after": "      picomatch: 4.0.7(patch_hash=ed03f84a8ec301c3a74404210aa22dc09aec09ce1141f7ceabe10bc1b0f08056)\n"
+    },
+    {
+      "offset": 923586,
+      "before": "  fdir@6.5.0(picomatch@4.0.7):\n",
+      "after": "  fdir@6.5.0(picomatch@4.0.7(patch_hash=ed03f84a8ec301c3a74404210aa22dc09aec09ce1141f7ceabe10bc1b0f08056)):\n"
+    },
+    {
+      "offset": 923720,
+      "before": "      picomatch: 4.0.7\n",
+      "after": "      picomatch: 4.0.7(patch_hash=ed03f84a8ec301c3a74404210aa22dc09aec09ce1141f7ceabe10bc1b0f08056)\n"
+    },
+    {
+      "offset": 943144,
+      "before": "      picomatch: 2.3.2\n",
+      "after": "      picomatch: 2.3.2(patch_hash=465376b36bcea4ee299ad72d4a4e2aeae248b6d7746af3e51ef336ecad3f2a06)\n"
+    },
+    {
+      "offset": 965864,
+      "before": "      picomatch: 4.0.7\n",
+      "after": "      picomatch: 4.0.7(patch_hash=ed03f84a8ec301c3a74404210aa22dc09aec09ce1141f7ceabe10bc1b0f08056)\n"
+    },
+    {
+      "offset": 1004791,
+      "before": "  picomatch@2.3.2: {}\n",
+      "after": "  picomatch@2.3.2(patch_hash=465376b36bcea4ee299ad72d4a4e2aeae248b6d7746af3e51ef336ecad3f2a06): {}\n"
+    },
+    {
+      "offset": 1004891,
+      "before": "  picomatch@4.0.7: {}\n",
+      "after": "  picomatch@4.0.7(patch_hash=ed03f84a8ec301c3a74404210aa22dc09aec09ce1141f7ceabe10bc1b0f08056): {}\n"
+    },
+    {
+      "offset": 1013219,
+      "before": "      picomatch: 2.3.2\n",
+      "after": "      picomatch: 2.3.2(patch_hash=465376b36bcea4ee299ad72d4a4e2aeae248b6d7746af3e51ef336ecad3f2a06)\n"
+    },
+    {
+      "offset": 1018515,
+      "before": "      picomatch: 4.0.7\n",
+      "after": "      picomatch: 4.0.7(patch_hash=ed03f84a8ec301c3a74404210aa22dc09aec09ce1141f7ceabe10bc1b0f08056)\n"
+    },
+    {
+      "offset": 1031197,
+      "before": "      fdir: 6.5.0(picomatch@4.0.7)\n      picomatch: 4.0.7\n",
+      "after": "      fdir: 6.5.0(picomatch@4.0.7(patch_hash=ed03f84a8ec301c3a74404210aa22dc09aec09ce1141f7ceabe10bc1b0f08056))\n      picomatch: 4.0.7(patch_hash=ed03f84a8ec301c3a74404210aa22dc09aec09ce1141f7ceabe10bc1b0f08056)\n"
+    },
+    {
+      "offset": 1032484,
+      "before": "      picomatch: 4.0.7\n",
+      "after": "      picomatch: 4.0.7(patch_hash=ed03f84a8ec301c3a74404210aa22dc09aec09ce1141f7ceabe10bc1b0f08056)\n"
+    },
+    {
+      "offset": 1033448,
+      "before": "      picomatch: 4.0.7\n",
+      "after": "      picomatch: 4.0.7(patch_hash=ed03f84a8ec301c3a74404210aa22dc09aec09ce1141f7ceabe10bc1b0f08056)\n"
+    },
+    {
+      "offset": 1041830,
+      "before": "      picomatch: 4.0.7\n",
+      "after": "      picomatch: 4.0.7(patch_hash=ed03f84a8ec301c3a74404210aa22dc09aec09ce1141f7ceabe10bc1b0f08056)\n"
+    },
+    {
+      "offset": 1043492,
+      "before": "      picomatch: 4.0.7\n",
+      "after": "      picomatch: 4.0.7(patch_hash=ed03f84a8ec301c3a74404210aa22dc09aec09ce1141f7ceabe10bc1b0f08056)\n"
+    },
+    {
+      "offset": 1044906,
+      "before": "      picomatch: 4.0.7\n",
+      "after": "      picomatch: 4.0.7(patch_hash=ed03f84a8ec301c3a74404210aa22dc09aec09ce1141f7ceabe10bc1b0f08056)\n"
+    },
+    {
+      "offset": 1046442,
+      "before": "      picomatch: 4.0.7\n",
+      "after": "      picomatch: 4.0.7(patch_hash=ed03f84a8ec301c3a74404210aa22dc09aec09ce1141f7ceabe10bc1b0f08056)\n"
+    },
+    {
+      "offset": 1048566,
+      "before": "      picomatch: 4.0.7\n",
+      "after": "      picomatch: 4.0.7(patch_hash=ed03f84a8ec301c3a74404210aa22dc09aec09ce1141f7ceabe10bc1b0f08056)\n"
+    },
+    {
+      "offset": 1050343,
+      "before": "      picomatch: 4.0.7\n",
+      "after": "      picomatch: 4.0.7(patch_hash=ed03f84a8ec301c3a74404210aa22dc09aec09ce1141f7ceabe10bc1b0f08056)\n"
+    },
+    {
+      "offset": 1051041,
+      "before": "      picomatch: 4.0.7\n",
+      "after": "      picomatch: 4.0.7(patch_hash=ed03f84a8ec301c3a74404210aa22dc09aec09ce1141f7ceabe10bc1b0f08056)\n"
+    },
+    {
+      "offset": 1052369,
+      "before": "      picomatch: 4.0.7\n",
+      "after": "      picomatch: 4.0.7(patch_hash=ed03f84a8ec301c3a74404210aa22dc09aec09ce1141f7ceabe10bc1b0f08056)\n"
+    },
+    {
+      "offset": 1053082,
+      "before": "      picomatch: 4.0.7\n",
+      "after": "      picomatch: 4.0.7(patch_hash=ed03f84a8ec301c3a74404210aa22dc09aec09ce1141f7ceabe10bc1b0f08056)\n"
+    },
+    {
+      "offset": 1054310,
+      "before": "      picomatch: 4.0.7\n",
+      "after": "      picomatch: 4.0.7(patch_hash=ed03f84a8ec301c3a74404210aa22dc09aec09ce1141f7ceabe10bc1b0f08056)\n"
+    },
+    {
+      "offset": 1055583,
+      "before": "      picomatch: 4.0.7\n",
+      "after": "      picomatch: 4.0.7(patch_hash=ed03f84a8ec301c3a74404210aa22dc09aec09ce1141f7ceabe10bc1b0f08056)\n"
+    },
+    {
+      "offset": 1056793,
+      "before": "      picomatch: 4.0.7\n",
+      "after": "      picomatch: 4.0.7(patch_hash=ed03f84a8ec301c3a74404210aa22dc09aec09ce1141f7ceabe10bc1b0f08056)\n"
+    },
+    {
+      "offset": 1057884,
+      "before": "      picomatch: 4.0.7\n",
+      "after": "      picomatch: 4.0.7(patch_hash=ed03f84a8ec301c3a74404210aa22dc09aec09ce1141f7ceabe10bc1b0f08056)\n"
+    },
+    {
+      "offset": 1064965,
+      "before": "      picomatch: 4.0.7\n",
+      "after": "      picomatch: 4.0.7(patch_hash=ed03f84a8ec301c3a74404210aa22dc09aec09ce1141f7ceabe10bc1b0f08056)\n"
+    },
+    {
+      "offset": 1085373,
+      "before": "      picomatch: 4.0.7\n",
+      "after": "      picomatch: 4.0.7(patch_hash=ed03f84a8ec301c3a74404210aa22dc09aec09ce1141f7ceabe10bc1b0f08056)\n"
+    },
+    {
+      "offset": 1085898,
+      "before": "      picomatch: 4.0.7\n",
+      "after": "      picomatch: 4.0.7(patch_hash=ed03f84a8ec301c3a74404210aa22dc09aec09ce1141f7ceabe10bc1b0f08056)\n"
+    },
+    {
+      "offset": 1087023,
+      "before": "      picomatch: 4.0.7\n",
+      "after": "      picomatch: 4.0.7(patch_hash=ed03f84a8ec301c3a74404210aa22dc09aec09ce1141f7ceabe10bc1b0f08056)\n"
+    },
+    {
+      "offset": 1088536,
+      "before": "      picomatch: 4.0.7\n",
+      "after": "      picomatch: 4.0.7(patch_hash=ed03f84a8ec301c3a74404210aa22dc09aec09ce1141f7ceabe10bc1b0f08056)\n"
+    },
+    {
+      "offset": 1098235,
+      "before": "      picomatch: 4.0.7\n",
+      "after": "      picomatch: 4.0.7(patch_hash=ed03f84a8ec301c3a74404210aa22dc09aec09ce1141f7ceabe10bc1b0f08056)\n"
+    },
+    {
+      "offset": 1100282,
+      "before": "      picomatch: 4.0.7\n",
+      "after": "      picomatch: 4.0.7(patch_hash=ed03f84a8ec301c3a74404210aa22dc09aec09ce1141f7ceabe10bc1b0f08056)\n"
+    }
+  ],
+  "workspaceReplacements": [
+    {
+      "offset": 1411,
+      "before": "  deepmerge@4.3.1: patches/deepmerge@4.3.1.patch\n",
+      "after": "  deepmerge@4.3.1: patches/deepmerge@4.3.1.patch\n  picomatch@2.3.2: patches/picomatch@2.3.2.patch\n  picomatch@4.0.7: patches/picomatch@4.0.7.patch\n"
+    }
+  ],
+  "verification": {
+    "command": "node tools/commands/ci/npm-audit.ts",
+    "frozenInstall": "vp install --frozen-lockfile --prefer-offline",
+    "patches": {
+      "picomatch@2.3.2": "465376b36bcea4ee299ad72d4a4e2aeae248b6d7746af3e51ef336ecad3f2a06",
+      "picomatch@4.0.7": "ed03f84a8ec301c3a74404210aa22dc09aec09ce1141f7ceabe10bc1b0f08056"
+    },
+    "advisoryRemediated": "GHSA-fc5q-39xc-vjpf",
+    "upstreamFix": "https://github.com/micromatch/picomatch/pull/266"
+  },
+  "nativeAcceptanceCredit": false,
+  "scope": "Authorize only the picomatch 2.3.2 and 4.0.7 pnpm patch hashes and patched references for GHSA-fc5q-39xc-vjpf. No other package or peer resolution changes; the complete predecessor lockfile and workspace manifest remain reconstructible byte for byte."
+}

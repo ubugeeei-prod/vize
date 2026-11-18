@@ -1,0 +1,51 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c1d-css-v-bind-ignores-strings-and-comments",
+    history: "13c6ad221fbbf0f557ae50559db08fa998eaf727",
+    source: "<script setup>\nconst color = 'red'\n</script>\n\n<template>\n  <i class=\"icon\"></i><span class=\"label\">x</span>\n</template>\n\n<style scoped>\n.icon::before {\n  content: \"v-bind(icon)\";\n  color: v-bind(color /* keep ) inside comments */);\n}\n\n/* background: v-bind(bg); */\n.label {\n  background: 'v-bind(bg)';\n}\n</style>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { useCssVars as _useCssVars, unref as _unref } from 'vue'\nimport { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock, Fragment as _Fragment } from \"vue\"\n\nconst _hoisted_1 = { class: \"icon\" }\nconst _hoisted_2 = { class: \"label\" }\n\nconst color = 'red'\n\nexport default {\n  __name: 'History',\n  setup(__props) {\n\n_useCssVars(_ctx => ({\n  \"abfd3b9c\": (color /* keep ) inside comments */)\n}))\n\n\nreturn (_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(_Fragment, null, [\n    _createElementVNode(\"i\", _hoisted_1),\n    _createElementVNode(\"span\", _hoisted_2, \"x\")\n  ], 64 /* STABLE_FRAGMENT */))\n}\n}\n\n}",
+            css: Some(
+                ".icon[data-v-4045eae1]::before{\n  content: \"v-bind(icon)\";\n  color: var(--abfd3b9c);\n}\n\n/* background: v-bind(bg); */\n.label[data-v-4045eae1]{\n  background: 'v-bind(bg)';\n}\n",
+            ),
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "color": LiteralConst,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

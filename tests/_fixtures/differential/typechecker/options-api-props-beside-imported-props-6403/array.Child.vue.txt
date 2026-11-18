@@ -1,0 +1,11 @@
+<script lang="ts">
+import type { Props } from "./types";
+
+export default {
+  props: ["initial", "label"],
+};
+</script>
+
+<template>
+  <div />
+</template>

@@ -1,0 +1,49 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c2a-inline-hoisted-bare-attrs-empty-string-805",
+    history: "c1c3243caa5a779a4ca665ee52938fc351f538e3",
+    source: "<script setup>\nconst title = 'x'\n</script>\n\n<template>\n  <section><h2 sr-only font-bold flex=\"~ gap-1\"><span block /></h2></section>\n</template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { createElementVNode as _createElementVNode, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nconst title = 'x'\n\nexport default {\n  __name: 'History',\n  setup(__props) {\n\n\nreturn (_ctx, _cache) => {\n  return (_openBlock(), _createElementBlock(\"section\", null, [...(_cache[0] || (_cache[0] = [\n    _createElementVNode(\"h2\", {\n      \"sr-only\": \"\",\n      \"font-bold\": \"\",\n      flex: \"~ gap-1\"\n    }, [\n      _createElementVNode(\"span\", { block: \"\" }, null)\n    ], -1 /* CACHED */)\n  ]))]))\n}\n}\n\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "title": LiteralConst,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

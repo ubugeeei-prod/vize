@@ -1,0 +1,11 @@
+<template>
+  <div v-if="$q">
+    None
+  </div>
+</template>
+
+<script setup lang="ts">
+function functionCall(): any {}
+
+const $q = functionCall()
+</script>

@@ -1,0 +1,173 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 1133,
+  "regressionCommit": "4185649de7c5a859eedde74984d7eb253deae618",
+  "sourceRevision": "4185649de7c5a859eedde74984d7eb253deae618",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "model-component-template",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "model-component-wrong-update-emit",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "wrong-emit.Child.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Child.vue",
+          "line": 8,
+          "column": 25,
+          "severity": 1,
+          "code": 2769,
+          "message": "No overload matches this call.\nThe last overload gave the following error.\nArgument of type '\"update:count\"' is not assignable to parameter of type '\"update:modelValue\"'."
+        }
+      ]
+    },
+    {
+      "id": "parent-models-and-emits",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        },
+        {
+          "file": "src/EmitsChild.vue",
+          "source": "EmitsChild.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "valid.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "parent-wrong-model-type",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        },
+        {
+          "file": "src/EmitsChild.vue",
+          "source": "EmitsChild.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "wrong-model-type.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Parent.vue",
+          "line": 20,
+          "column": 33,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'string' is not assignable to type 'number'."
+        }
+      ]
+    },
+    {
+      "id": "parent-wrong-update-handler",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        },
+        {
+          "file": "src/EmitsChild.vue",
+          "source": "EmitsChild.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "wrong-update-handler.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Parent.vue",
+          "line": 21,
+          "column": 53,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type '(value: number) => void' is not assignable to type '(value: string | undefined) => any'.\nTypes of parameters 'value' and 'value' are incompatible.\nType 'string | undefined' is not assignable to type 'number'.\nType 'undefined' is not assignable to type 'number'."
+        }
+      ]
+    },
+    {
+      "id": "parent-missing-required-model",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "Child.vue.txt"
+        },
+        {
+          "file": "src/EmitsChild.vue",
+          "source": "EmitsChild.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "missing-required.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Parent.vue",
+          "line": 20,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{ \"onUpdate:count\": never; count: number; }' is not assignable to parameter of type '$ComponentCheckProps<__Child_CheckProps_0, $PublicComponentAttrs & Record<string, unknown>>'.\nProperty '\"modelValue\"' is missing in type '{ \"onUpdate:count\": never; count: number; }' but required in type '{ readonly modelValue: string; readonly modelModifiers?: Partial<Record<string, true>> | undefined; readonly count?: number | undefined; readonly countModifiers?: Partial<Record<...>> | undefined; readonly \"onUpdate:count\"?: ((value: number) => any) | undefined; readonly \"onUpdate:modelValue\"?: ((value: string) => a...'."
+        }
+      ]
+    }
+  ]
+}

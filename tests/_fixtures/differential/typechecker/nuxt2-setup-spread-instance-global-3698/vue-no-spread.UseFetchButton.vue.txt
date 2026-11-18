@@ -1,0 +1,13 @@
+<script lang="ts">
+import { defineComponent } from 'vue'
+
+export default defineComponent({
+    setup() {
+        return { refreshFromSetup: () => {} }
+    },
+})
+</script>
+
+<template>
+  <button @click="$fetch">Refresh</button>
+</template>

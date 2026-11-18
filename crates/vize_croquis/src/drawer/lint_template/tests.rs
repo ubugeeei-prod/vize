@@ -235,10 +235,36 @@ fn l1_l2_compatibility_retains_whitespace_wrapped_expression() {
 fn l1_l2_projection_omits_tree_construction_ignored_start_tags() {
     let source = "<form><form v-html='x'><span>kept</span></form></form>";
     let allocator = Allocator::default();
-    let (legacy, _) = Parser::new(&allocator, source).parse();
-    let (surface, _, errors) = vize_l1::markup::parse_with_authored_diagnostics(&allocator, source);
+    let html = vize_relief::options::ParserOptions {
+        html_tree_construction: true,
+        ..vize_relief::options::ParserOptions::default()
+    };
+    let (legacy, _) = Parser::with_options(&allocator, source, html).parse();
+    // Only an in-DOM parse ignores the nested form, as a browser does; a Vue
+    // template keeps it.
+    let (surface, _, errors) =
+        vize_l1::markup::parse_in_dom_with_authored_diagnostics(&allocator, source);
     let lowered = lower_preserving_comments(&allocator, &surface, &errors);
     assert!(surface.children.iter().any(|child| matches!(child, vize_l1::markup::SurfaceChild::Element(element) if element.children.iter().any(|child| matches!(child, vize_l1::markup::SurfaceChild::Element(element) if element.open.is_ignored_start())))));
+
+    let mut expected = Drawer::for_lint();
+    expected.draw_template(&legacy);
+    let mut actual = Drawer::for_lint();
+    actual.draw_lint_template(lint_template(&surface, &lowered));
+    assert_eq!(
+        actual.finish().semantic_snapshot(),
+        expected.finish().semantic_snapshot()
+    );
+}
+
+#[test]
+fn l1_l2_projection_keeps_a_vue_templates_nested_form_like_the_legacy_parse() {
+    let source = "<form><form v-html='x'><span>kept</span></form></form>";
+    let allocator = Allocator::default();
+    let (legacy, _) = Parser::new(&allocator, source).parse();
+    let (surface, _, errors) = vize_l1::markup::parse_with_authored_diagnostics(&allocator, source);
+    assert!(errors.is_empty(), "{errors:?}");
+    let lowered = lower_preserving_comments(&allocator, &surface, &errors);
 
     let mut expected = Drawer::for_lint();
     expected.draw_template(&legacy);

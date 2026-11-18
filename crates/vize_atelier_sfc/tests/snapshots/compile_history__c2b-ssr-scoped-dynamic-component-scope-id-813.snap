@@ -1,0 +1,43 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c2b-ssr-scoped-dynamic-component-scope-id-813",
+    history: "3cdafe9a541f81dca0ff59b8820941ef293678a7",
+    source: "<template>\n  <component :is=\"tag\"><span>Logo</span></component>\n</template>\n\n<style scoped>\nspan { color: red; }\n</style>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "ssr",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { ssrRenderVNode as _ssrRenderVNode, ssrRenderComponent as _ssrRenderComponent } from \"@vue/server-renderer\"\nimport { createVNode as _createVNode, createElementVNode as _createElementVNode, resolveDynamicComponent as _resolveDynamicComponent, withCtx as _withCtx } from \"vue\"\n\nfunction ssrRender(_ctx, _push, _parent, _attrs) {\n  _ssrRenderVNode(_push, _createVNode(_resolveDynamicComponent(_ctx.tag), _attrs, { default: _withCtx(() => [_createElementVNode(\"span\", { \"data-v-4045eae1\": \"\" }, \"Logo\")]), _: 1 }), _parent)\n}\n\nconst _sfc_main = {}\n_sfc_main.ssrRender = ssrRender\nexport default _sfc_main",
+            css: Some(
+                "span[data-v-4045eae1]{ color: red; }\n",
+            ),
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

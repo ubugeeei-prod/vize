@@ -1,0 +1,11 @@
+<script setup lang="ts">
+import { useMouse } from '@vueuse/core'
+
+const { x, y } = useMouse()
+</script>
+
+<template>
+  <div>
+    Mouse position: {{ x.toFixed(0) }}, {{ y.toFixed(0) }}
+  </div>
+</template>

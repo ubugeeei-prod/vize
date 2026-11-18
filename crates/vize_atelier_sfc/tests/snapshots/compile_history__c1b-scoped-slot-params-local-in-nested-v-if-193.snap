@@ -1,0 +1,51 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c1b-scoped-slot-params-local-in-nested-v-if-193",
+    history: "b7e4915426a53ebb377faaba886c78fc8c6a0be4",
+    source: "<script setup lang=\"ts\">\nimport { Table } from \"ant-design-vue\";\nconst columns = [{ key: \"name\" }, { key: \"phone\" }];\nconst dataSource = [{ name: \"Lin\", phone: \"123\" }];\n</script>\n\n<template>\n  <Table :columns=\"columns\" :data-source=\"dataSource\">\n    <template #bodyCell=\"{ column, record }\">\n      <template v-if=\"column.key === 'name'\">\n        {{ record.name }}\n      </template>\n      <template v-else-if=\"column.key === 'phone'\">\n        {{ record.phone }}\n      </template>\n    </template>\n  </Table>\n</template>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { toDisplayString as _toDisplayString, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, Fragment as _Fragment, createCommentVNode as _createCommentVNode, createTextVNode as _createTextVNode, unref as _unref, withCtx as _withCtx } from \"vue\"\n\nimport { Table } from 'ant-design-vue'\n\n\nexport default {\n  __name: 'History',\n  setup(__props) {\n\nconst columns = [{ key: \"name\" }, { key: \"phone\" }];\nconst dataSource = [{\n  name: \"Lin\",\n  phone: \"123\"\n}];\n\nreturn (_ctx, _cache) => {\n  return (_openBlock(), _createBlock(_unref(Table), {\n    columns: columns,\n    \"data-source\": dataSource\n  }, {\n    bodyCell: _withCtx(({ column, record }) => [\n      (column.key === 'name')\n        ? (_openBlock(), _createElementBlock(_Fragment, { key: 0 }, [\n          _createTextVNode(_toDisplayString(record.name), 1 /* TEXT */)\n        ], 64 /* STABLE_FRAGMENT */))\n        : (column.key === 'phone')\n          ? (_openBlock(), _createElementBlock(_Fragment, { key: 1 }, [\n            _createTextVNode(_toDisplayString(record.phone), 1 /* TEXT */)\n          ], 64 /* STABLE_FRAGMENT */))\n        : _createCommentVNode(\"v-if\", true)\n    ]),\n    _: 1 /* STABLE */\n  }, 8 /* PROPS */, [\"columns\", \"data-source\"]))\n}\n}\n\n}",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "columns": SetupConst,
+                        "dataSource": SetupConst,
+                        "Table": SetupMaybeRef,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

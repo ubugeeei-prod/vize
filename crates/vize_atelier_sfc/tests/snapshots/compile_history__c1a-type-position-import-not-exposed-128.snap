@@ -1,0 +1,53 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c1a-type-position-import-not-exposed-128",
+    history: "7f2aecfd9b6b9e742b083515b487ff0be90a952e",
+    source: "<script setup lang=\"ts\">\nimport { SomeType } from './types'\n\ninterface Props {\n  items: SomeType[]\n}\n\nconst props = defineProps<Props>()\n</script>\n\n<template>\n  <div>{{ props.items.length }}</div>\n</template>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: Some(
+            true,
+        ),
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { defineComponent as _defineComponent } from 'vue'\nimport { toDisplayString as _toDisplayString, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\nimport { SomeType } from './types'\n\ninterface Props {\n  items: SomeType[]\n}\n\n\nexport default /*@__PURE__*/_defineComponent({\n  __name: 'History',\n  props: {\n    items: { type: Array, required: true }\n  },\n  setup(__props: any) {\n\nconst props = __props\n\nreturn (_ctx: any,_cache: any) => {\n  return (_openBlock(), _createElementBlock(\"div\", null, _toDisplayString(props.items.length), 1 /* TEXT */))\n}\n}\n\n})",
+            css: None,
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "SomeType": SetupMaybeRef,
+                        "props": SetupReactiveConst,
+                        "items": Props,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

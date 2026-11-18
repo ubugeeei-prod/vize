@@ -1,0 +1,88 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 3011,
+  "regressionCommit": "22a49aca2fb9331217d59511fbd6cf4f2414cd04",
+  "sourceRevision": "22a49aca2fb9331217d59511fbd6cf4f2414cd04",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "unresolved-slot-host-any-fallback",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "missing.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "ambient-pascal-slot-host-typed-slot",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/components.d.ts",
+          "source": "components.d.ts.txt"
+        },
+        {
+          "file": "src/components/ElBadge.vue",
+          "source": "ElBadge.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "label.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "ambient-pascal-slot-host-missing-member",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/components.d.ts",
+          "source": "components.d.ts.txt"
+        },
+        {
+          "file": "src/components/ElBadge.vue",
+          "source": "ElBadge.vue.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "missing.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 2,
+          "column": 53,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'missing' does not exist on type '{ label: string; }'."
+        }
+      ]
+    }
+  ]
+}

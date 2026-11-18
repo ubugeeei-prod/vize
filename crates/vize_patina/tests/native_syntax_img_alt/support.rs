@@ -126,8 +126,14 @@ pub fn tabindex_reference(source: &str, locale: Locale) -> Vec<Value> {
         .with_disabled_rules(vec!["parser/template".into()])
         .with_locale(locale)
         .lint_sfc(source, "native.vue");
-    assert_eq!(result.error_count, 0);
-    assert_eq!(result.warning_count, result.diagnostics.len());
+    // Every parser diagnostic is a Vue 3 error; every rule finding a warning.
+    let parser = result
+        .diagnostics
+        .iter()
+        .filter(|diagnostic| diagnostic.rule_name == "parser/template")
+        .count();
+    assert_eq!(result.error_count, parser);
+    assert_eq!(result.warning_count, result.diagnostics.len() - parser);
     result.diagnostics.iter().map(legacy).collect()
 }
 

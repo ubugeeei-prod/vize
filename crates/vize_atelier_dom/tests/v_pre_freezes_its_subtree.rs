@@ -161,32 +161,26 @@ fn implied_end_tags_keep_the_vue_v_pre_scope() {
             r#"return (_openBlock(), _createElementBlock("select", null, [ _createElementVNode("optgroup", null, [ _createElementVNode("optgroup", null, [ _createElementVNode("meta", { ":role": "x" }) ]) ]) ])) }"#,
         ),
     ] {
-        let allocator = Allocator::new();
-        let (_, errors, selected) = compile_template(&allocator, source);
-        assert_eq!(
-            errors.len(),
-            1,
-            "standard diagnostics: {source}: {errors:?}"
-        );
-        assert_eq!(
-            errors[0].code,
-            vize_atelier_core::errors::ErrorCode::InvalidEndTag,
-            "standard diagnostic: {source}"
-        );
-        assert!(selected.code.is_empty(), "standard must not emit: {source}");
-
-        let quirks_allocator = Allocator::new();
-        let (_, quirks_errors, quirks) = compile_template_with_template_syntax(
-            &quirks_allocator,
-            source,
-            DomCompilerOptions::default(),
-            TemplateSyntaxMode::Quirks,
-        );
-        assert!(
-            quirks_errors.is_empty(),
-            "quirks diagnostics: {source}: {quirks_errors:?}"
-        );
-        assert_eq!(render_body(&quirks.code), expected, "{source}");
+        // A component template keeps its authored structure in standard
+        // mode too, so both modes compile it as Vue does, without errors.
+        for syntax in [TemplateSyntaxMode::Standard, TemplateSyntaxMode::Quirks] {
+            let allocator = Allocator::new();
+            let (_, errors, compiled) = compile_template_with_template_syntax(
+                &allocator,
+                source,
+                DomCompilerOptions::default(),
+                syntax,
+            );
+            assert!(
+                errors.is_empty(),
+                "{syntax:?} diagnostics: {source}: {errors:?}"
+            );
+            assert_eq!(
+                render_body(&compiled.code),
+                expected,
+                "{syntax:?}: {source}"
+            );
+        }
     }
 }
 

@@ -69,6 +69,7 @@ pub use no_refer_to_non_existent_id::NoReferToNonExistentId;
 pub use no_role_presentation_on_focusable::NoRolePresentationOnFocusable;
 pub use no_static_element_interactions::NoStaticElementInteractions;
 pub use role_has_required_aria_props::RoleHasRequiredAriaProps;
+pub use role_img_has_name::RoleImgHasName;
 pub use tabindex_no_positive::TabindexNoPositive;
 
 /// Keep the narrow image-only rule available to explicit configurations, while

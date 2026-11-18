@@ -1,0 +1,14 @@
+<template>
+  <table class="grid">
+    <tr><th>Name</th></tr>
+    <tr v-for="row in rows" :key="row.id"><td>{{ row.name }}</td></tr>
+    <template v-for="row in extra" :key="row.id">
+      <tr><td>{{ row.name }}</td></tr>
+    </template>
+    <td>{{ total }}</td>
+  </table>
+  <table>
+    <thead><tr><th>Note</th></tr></thead>
+    <tbody><tr><td>{{ note }}</td></tr></tbody>
+  </table>
+</template>

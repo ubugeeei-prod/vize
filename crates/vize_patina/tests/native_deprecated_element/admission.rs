@@ -66,8 +66,12 @@ fn actual_pre_recovery_context_refuses_without_granting_whole_file_completion() 
     let arena = Allocator::default();
     let owner = selected(&arena, source);
     let lint = NativeSyntaxLint::new(&owner).unwrap();
-    // `<div>` closes the `<p>`, but its header was lexed under `v-pre`.
-    let element = owner.children().nth(1).unwrap().into_element().unwrap();
+    // The `<div>` header was lexed under `v-pre` inside a `<p>`, so the native
+    // tag facts treat it as a recovery context. Vue keeps the `<div>` inside
+    // the `<p>`, as the native tree does, so the complete result has no parser
+    // error.
+    let paragraph = owner.children().next().unwrap().into_element().unwrap();
+    let element = paragraph.children().next().unwrap().into_element().unwrap();
     assert_eq!(element.surface().tag(), "div");
     let receipt = element.tag_facts().unwrap();
     assert!(receipt.header_is_literal());
@@ -81,10 +85,7 @@ fn actual_pre_recovery_context_refuses_without_granting_whole_file_completion() 
     for locale in LOCALES {
         assert_eq!(
             complete(&registered(source, locale)),
-            expected(vec![
-                warning(locale, span(source, "<center />"), "center"),
-                parser("error", "Invalid end tag.", span(source, "</p>")),
-            ])
+            expected(vec![warning(locale, span(source, "<center />"), "center")])
         );
     }
 }

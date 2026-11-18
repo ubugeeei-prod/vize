@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "noEmit": true,
+    "paths": {
+      "@nuxtjs/composition-api": ["./node_modules/@nuxtjs/composition-api/dist/runtime/index.d.ts"]
+    }
+  },
+  "include": ["components/**/*.vue"]
+}

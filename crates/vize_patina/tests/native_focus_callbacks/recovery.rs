@@ -61,7 +61,7 @@ fn static_case_duplicate_header_preserves_complete_original_parser_warning_and_e
                 parser(
                     "Duplicate attribute `AUTOFOCUS`. Keeping the repeated attribute so parsing can continue.",
                     Span::new(15, 24),
-                    Severity::Warning,
+                    Severity::Error,
                 ),
             ]),
         );

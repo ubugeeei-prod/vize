@@ -29,6 +29,7 @@ import {
   runPackageManager,
 } from "./typecheck-package-manager.ts";
 import { prepareTypecheckSetupProject } from "./typecheck-setup-prepare.ts";
+import { typecheckUnitTsconfigs } from "./typecheck-targets.ts";
 
 export { installArguments } from "./typecheck-package-manager.ts";
 
@@ -192,14 +193,7 @@ async function preparePerformanceProject({ args, commitSha, project }) {
  * type-reference walks cannot climb into Vize (run 31979524200).
  */
 export function isolationTsconfigPaths(project) {
-  const paths = [];
-  const seen = new Set();
-  for (const candidate of [project.typecheckPerformance?.baseline?.tsconfig, project.tsconfig]) {
-    if (typeof candidate !== "string" || seen.has(candidate)) continue;
-    seen.add(candidate);
-    paths.push(candidate);
-  }
-  return paths;
+  return typecheckUnitTsconfigs(project);
 }
 
 function isolateFixture(project, fixtureRoot) {

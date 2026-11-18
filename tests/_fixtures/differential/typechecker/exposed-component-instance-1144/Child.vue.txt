@@ -1,0 +1,11 @@
+<script setup lang="ts">
+defineExpose({
+  hide: () => {
+    console.log()
+  },
+})
+</script>
+
+<template>
+  <div />
+</template>

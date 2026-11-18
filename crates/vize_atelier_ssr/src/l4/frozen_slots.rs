@@ -282,25 +282,38 @@ mod tests {
 
     #[test]
     fn recovered_provider_mismatches_refuse_complete_custody_without_root_mutation() {
-        for (source, message) in [
-            (
-                "<p v-pre><div><Child></Child></div><p></p>",
-                "Frozen lowering custody contains an unmatched or non-frozen opening.",
-            ),
-            (
-                "<button v-pre><button></button></button>",
-                "Frozen lowering custody contains an unmatched or non-frozen opening.",
-            ),
+        // Only HTML tree construction repairs these, so a repaired provider
+        // disagrees with an authored one in either direction.
+        const MISSING: &str = "Frozen lowering custody is missing an authored frozen opening.";
+        const UNMATCHED: &str =
+            "Frozen lowering custody contains an unmatched or non-frozen opening.";
+        for (source, legacy_repaired, message) in [
+            ("<p v-pre><div><Child></Child></div><p></p>", true, MISSING),
             (
                 "<form v-pre><form><Child></Child></form></form>",
-                "Frozen lowering custody is missing an authored frozen opening.",
+                true,
+                MISSING,
             ),
+            (
+                "<p v-pre><div><Child></Child></div><p></p>",
+                false,
+                UNMATCHED,
+            ),
+            ("<button v-pre><button></button></button>", false, UNMATCHED),
         ] {
             let arena = Allocator::new();
+            let legacy = vize_relief::options::ParserOptions {
+                html_tree_construction: legacy_repaired,
+                ..vize_relief::options::ParserOptions::default()
+            };
             let (root, _parser_errors, carrier) =
-                Parser::new(&arena, source).parse_with_frozen_elements();
+                Parser::with_options(&arena, source, legacy).parse_with_frozen_elements();
             let before = vize_l0::cstr!("{root:#?}");
-            let (tree, errors) = vize_l1::markup::parse(&arena, source);
+            let native = vize_l1::markup::SurfaceParseOptions {
+                html_tree_construction: !legacy_repaired,
+                ..vize_l1::markup::SurfaceParseOptions::default()
+            };
+            let (tree, errors) = vize_l1::markup::parse_with_options(&arena, source, native);
             let tree_before = vize_l0::cstr!("{tree:#?}");
             let template =
                 FrozenTemplate::new(&root, source, &carrier).expect("actual original parser join");
@@ -314,10 +327,33 @@ mod tests {
                     )
                     .err(),
                 Some(message),
-                "{source}"
+                "{source}: legacy repaired {legacy_repaired}"
             );
             assert_eq!(vize_l0::cstr!("{root:#?}"), before);
             assert_eq!(vize_l0::cstr!("{tree:#?}"), tree_before);
+        }
+    }
+
+    #[test]
+    fn authored_providers_agree_on_nested_frozen_openings() {
+        for source in [
+            "<p v-pre><div><Child></Child></div><p></p>",
+            "<button v-pre><button></button></button>",
+            "<form v-pre><form><Child></Child></form></form>",
+        ] {
+            let arena = Allocator::new();
+            let (root, _parser_errors, carrier) =
+                Parser::new(&arena, source).parse_with_frozen_elements();
+            let (tree, errors) = vize_l1::markup::parse(&arena, source);
+            let template =
+                FrozenTemplate::new(&root, source, &carrier).expect("actual original parser join");
+            let lowered = template.lower(
+                &arena,
+                &tree,
+                &errors,
+                &vize_l0::config::NO_DIRECTIVE_CONTRACTS,
+            );
+            assert!(lowered.is_ok(), "{source}: {:?}", lowered.err());
         }
     }
 }

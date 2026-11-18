@@ -1,0 +1,43 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c2c-scoped-component-client-scope-attr-954",
+    history: "7b31e8b879397e315cadc923f209f2b8297604f4",
+    source: "<template>\n  <NuxtLink to=\"/news\" class=\"news__link\"><span>News</span></NuxtLink>\n</template>\n\n<style scoped>\n.news__link { color: red; }\n</style>\n",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { resolveComponent as _resolveComponent, createElementVNode as _createElementVNode, openBlock as _openBlock, createBlock as _createBlock, withCtx as _withCtx } from \"vue\"\n\nconst _hoisted_1 = /*#__PURE__*/ _createElementVNode(\"span\", { \"data-v-4045eae1\": \"\" }, \"News\")\n\nexport function render(_ctx, _cache) {\n  const _component_NuxtLink = _resolveComponent(\"NuxtLink\")\n  \n  return (_openBlock(), _createBlock(_component_NuxtLink, {\n    to: \"/news\",\n    class: \"news__link\"\n  }, {\n    default: _withCtx(() => [\n      _hoisted_1\n    ]),\n    _: 1 /* STABLE */\n  }))\n}",
+            css: Some(
+                ".news__link[data-v-4045eae1]{ color: red; }\n",
+            ),
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: None,
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

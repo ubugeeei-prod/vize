@@ -1,0 +1,8 @@
+<script setup lang="ts">
+type Name = (typeof names)[number]
+const names = ['a', 'b', 'c'] as const
+const value: Name = 'd'
+</script>
+<template>
+    <div>{{ value }}</div>
+</template>

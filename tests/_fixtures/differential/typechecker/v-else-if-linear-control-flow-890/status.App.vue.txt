@@ -1,0 +1,13 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+const status = ref('loading')
+const message = ref('')
+</script>
+
+<template>
+  <div>
+  <div v-if="status === 'loading'">Loading</div>
+  <div v-else-if="status === 'error'">{{ message }}</div>
+  <div v-else>Done</div>
+</div>
+</template>

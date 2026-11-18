@@ -1,6 +1,6 @@
 //! Every non-JSX case of typescript-eslint v8.72.2's
-//! `no-unsafe-enum-assignment.test.ts` (#12994), with the exact packets
-//! upstream reports. The cases left are tracked in #13070.
+//! `no-unsafe-enum-assignment.test.ts` (#12994, #13070), with the exact
+//! packets upstream reports, in `<script>` and in `<script setup>`.
 use super::super::{corsa_available, lint_sfc_with_corsa};
 use crate::{LintPreset, Linter};
 use serde::Deserialize;
@@ -37,9 +37,6 @@ struct Case {
     id: String,
     code: String,
     expected: Vec<Packet>,
-    /// Why vize cannot decide the case yet; it must stay silent until then.
-    #[serde(default)]
-    vize_gap: Option<String>,
 }
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Eq, PartialOrd, Ord)]
@@ -82,10 +79,6 @@ fn every_upstream_case_reports_upstream_packets() {
     let cases: Vec<Case> = serde_json::from_value(corpus["cases"].clone()).expect("cases");
     assert_eq!(corpus["caseCount"], cases.len());
     assert_eq!(cases.len(), 247);
-    assert_eq!(
-        cases.iter().filter(|case| case.vize_gap.is_some()).count(),
-        7
-    );
 
     let workspace = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../target/vize-tests");
     std::fs::create_dir_all(&workspace).expect("test workspace");
@@ -100,12 +93,29 @@ fn every_upstream_case_reports_upstream_packets() {
     let linter = Linter::with_preset(LintPreset::Opinionated)
         .with_enabled_rules(Some(vec!["type/no-unsafe-enum-assignment".into()]));
     let mut mismatches = Vec::new();
-    for (index, case) in cases.iter().enumerate() {
-        let source = format!(
-            "<script lang=\"ts\">\n{}\nexport {{}};\n</script>\n",
-            case.code
+    // A module's `export` cannot sit in `<script setup>`.
+    let blocks = cases.iter().enumerate().flat_map(|(index, case)| {
+        let script = (
+            index,
+            case,
+            "script",
+            format!(
+                "<script lang=\"ts\">\n{}\nexport {{}};\n</script>\n",
+                case.code
+            ),
         );
-        let path = source_dir.join(format!("case-{index:03}.vue"));
+        let setup = (!case.code.contains("export")).then(|| {
+            (
+                index,
+                case,
+                "setup",
+                format!("<script setup lang=\"ts\">\n{}\n</script>\n", case.code),
+            )
+        });
+        std::iter::once(script).chain(setup)
+    });
+    for (index, case, block, source) in blocks {
+        let path = source_dir.join(format!("case-{index:03}-{block}.vue"));
         std::fs::write(&path, &source).expect("case source");
         let result =
             lint_sfc_with_corsa(&linter, &source, path.to_str().expect("UTF-8 fixture path"));
@@ -126,16 +136,11 @@ fn every_upstream_case_reports_upstream_packets() {
             })
             .collect::<Vec<_>>();
         actual.sort();
-        // A documented gap pins today's silence, so closing it updates the corpus.
-        let mut expected = if case.vize_gap.is_some() {
-            Vec::new()
-        } else {
-            case.expected.clone()
-        };
+        let mut expected = case.expected.clone();
         expected.sort();
         if actual != expected {
             mismatches.push(format!(
-                "{}: expected {expected:?}, got {actual:?}",
+                "{} in <{block}>: expected {expected:?}, got {actual:?}",
                 case.id
             ));
         }

@@ -1,0 +1,16 @@
+<script setup lang="ts">
+import { messageDefaults, type MessageProps } from './defaults'
+import { omit } from './omit'
+
+const props = withDefaults(
+  defineProps<MessageProps>(),
+  omit(messageDefaults, 'appendTo')
+)
+
+const repeat = props.repeatNum.toFixed()
+const upper = props.label.toUpperCase()
+</script>
+
+<template>
+  <span>{{ repeatNum.toFixed() }} {{ label.toUpperCase() }} {{ repeat }} {{ upper }}</span>
+</template>

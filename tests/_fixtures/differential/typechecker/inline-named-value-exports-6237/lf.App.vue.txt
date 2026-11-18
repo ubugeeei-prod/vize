@@ -1,0 +1,5 @@
+<script lang="ts">
+const emoji = '😀'; export /* kept */ const café = 1; export class Counter { value = café; }
+const counter: Counter = new Counter();
+</script>
+<template><div /></template>

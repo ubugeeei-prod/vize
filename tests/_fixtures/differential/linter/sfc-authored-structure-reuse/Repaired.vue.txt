@@ -1,0 +1,6 @@
+<template>
+  <p><div>block</div></p>
+  <p>unclosed<p>second</p>
+  <b><p>formatting</b></p>
+  <select><option>a<option>b</option></option></select>
+</template>

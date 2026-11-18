@@ -1,0 +1,13 @@
+<script lang="ts">
+export interface Item {
+  id: number
+}
+</script>
+
+<script setup lang="ts">
+defineProps<{ items: Item[] }>()
+</script>
+
+<template>
+  <ul><li v-for="item in items" :key="item.id">{{ item.id }}</li></ul>
+</template>

@@ -1,0 +1,31 @@
+<script setup lang="ts">
+defineProps<{
+  someValue: string
+  optionalValue?: boolean
+}>()
+
+defineModel<number>({ required: true })
+defineModel<string>('title', { default: 'ready' })
+defineModel<boolean>('enabled')
+
+defineEmits<{
+  select: [value: string]
+  clear: []
+}>()
+
+defineSlots<{
+  default(props: { value: string }): unknown
+}>()
+
+function close(force = false): boolean {
+  return force
+}
+
+defineExpose({ close })
+</script>
+
+<template>
+  <button @click="$emit('select', someValue)">
+    <slot :value="someValue" />
+  </button>
+</template>

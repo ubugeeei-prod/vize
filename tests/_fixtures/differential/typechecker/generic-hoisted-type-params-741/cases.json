@@ -1,0 +1,86 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 741,
+  "regressionCommit": "fb8eba1cfeced92863464d715a38744cf52f9607",
+  "sourceRevision": "fb8eba1cfeced92863464d715a38744cf52f9607",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "hoisted-alias-references-generic",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Generic.vue",
+          "source": "Generic.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "hoisted-alias-without-space-before-equals",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Generic.vue",
+          "source": "compact.Generic.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "hoisted-interface-references-generic",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Generic.vue",
+          "source": "interface.Generic.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "hoisted-alias-member-type-checked",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/Generic.vue",
+          "source": "invalid.Generic.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Generic.vue",
+          "line": 12,
+          "column": 54,
+          "severity": 1,
+          "code": 2551,
+          "message": "Property 'toFixed' does not exist on type 'string'. Did you mean 'fixed'?"
+        }
+      ]
+    }
+  ]
+}

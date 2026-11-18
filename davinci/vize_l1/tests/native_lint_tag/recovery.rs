@@ -1,7 +1,7 @@
 use super::*;
 
 #[test]
-fn literal_receipts_capture_actual_header_entry_before_interactive_recovery() {
+fn literal_receipts_capture_actual_header_entry_of_nested_interactive_tags() {
     for tag in ["a", "button"] {
         let source = cstr!(
             "<template><{tag} v-pre><{tag} :role='x'></{tag}></{tag}><meta role /></template>"
@@ -9,9 +9,10 @@ fn literal_receipts_capture_actual_header_entry_before_interactive_recovery() {
         let arena = Allocator::default();
         let owner = selected(&arena, &source);
         let outer = owner.children().next().unwrap().into_element().unwrap();
-        assert!(matches!(outer.surface().close, ElementClose::Implicit));
+        // Built as written: the inner element stays in the outer one.
+        assert!(matches!(outer.surface().close, ElementClose::Present(_)));
         assert!(!outer.tag_facts().unwrap().header_is_literal());
-        let inner = owner.children().nth(1).unwrap().into_element().unwrap();
+        let inner = outer.children().next().unwrap().into_element().unwrap();
         let receipt = inner.tag_facts().unwrap();
         assert!(receipt.header_is_literal());
         assert!(receipt.in_recovery_context());

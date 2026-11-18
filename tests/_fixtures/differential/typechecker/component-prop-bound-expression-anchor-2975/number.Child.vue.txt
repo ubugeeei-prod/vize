@@ -1,0 +1,9 @@
+<script setup lang="ts">
+defineProps<{
+  code: number
+}>()
+</script>
+
+<template>
+  <span>{{ code }}</span>
+</template>

@@ -181,6 +181,7 @@ pub(crate) fn lower_source_for_vapor_captured<'a, C: CaptureSink>(
                 source,
                 SurfaceParseOptions {
                     experimental_in_tag_comments: options.experimental_in_tag_comments,
+                    html_tree_construction: true,
                     ..SurfaceParseOptions::default()
                 },
             )
@@ -192,7 +193,19 @@ pub(crate) fn lower_source_for_vapor_captured<'a, C: CaptureSink>(
         });
         let s2 = bridge_profile!(
             "atelier.vapor.bridge.s1_to_s2",
-            vize_l1_to_l2::lower(&scratch, &tree, &errors)
+            // Vapor templates are parsed again by `innerHTML`: keep the
+            // `tbody`/`tr` owners the legacy Vapor parse implies too.
+            vize_l1_to_l2::lower::lower_with_caps_and_comment_policy::<
+                std::vec::Vec<vize_l2::provenance::ProvenanceRecord>,
+            >(
+                &scratch,
+                &tree,
+                &errors,
+                vize_l1_to_l2::lower::LegacyCaps::VUE3,
+                vize_l1_to_l2::lower::LowerPolicy::compile(false).with_implied_table_sections(),
+                &[],
+                None,
+            )
         );
         capture.page(Level::L2, "lower", || {
             vize_l2::dump::render_full_page(&vize_l2::dump::Page::of(&s2.artifact.root.ops))

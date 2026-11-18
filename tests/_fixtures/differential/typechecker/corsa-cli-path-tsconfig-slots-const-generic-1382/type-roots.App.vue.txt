@@ -1,0 +1,3 @@
+<script setup lang="ts">
+const version: string = APP_VERSION
+</script>

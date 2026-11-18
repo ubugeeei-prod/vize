@@ -72,14 +72,33 @@ pub(super) fn materialize_cached_revision(
     let current = if narrow {
         mirror.materialize_fingerprint_hit(&previous)
     } else {
-        let current = mirror.materialize_editor_union_with_plan(
+        let mut current = mirror.materialize_editor_union_with_plan(
             &previous,
             &union.files,
             &union.package_links,
             &union.query_paths,
             union.requires_arbitrary_extensions,
-            workspace_alias_plan,
+            workspace_alias_plan.clone(),
         );
+        // Another open host can place one workspace alias leaf at a different
+        // owned target. Hold this host alone, as a fresh session would, rather
+        // than fail and make the caller respawn the backend.
+        if current.as_ref().is_err_and(
+            crate::batch::virtual_project::VirtualProject::is_editor_union_alias_conflict,
+        ) {
+            cache.retire_other_project_members(mirror.virtual_root(), &revision);
+            let mut query_paths = member_query_paths.clone();
+            query_paths.sort();
+            query_paths.dedup();
+            current = mirror.materialize_editor_union_with_plan(
+                &previous,
+                &Default::default(),
+                &Default::default(),
+                &query_paths,
+                false,
+                workspace_alias_plan,
+            );
+        }
         mirror.discard_incremental_materialization();
         current
     }

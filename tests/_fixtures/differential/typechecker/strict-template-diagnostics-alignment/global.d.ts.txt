@@ -1,0 +1,5 @@
+import 'dual-pkg';
+declare module 'dual-pkg/api/index.js' {
+  interface Extra { name: string }
+  interface Status { extras?: Extra[] }
+}

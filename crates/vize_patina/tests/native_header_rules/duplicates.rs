@@ -17,7 +17,7 @@ fn duplicate_unrelated_static_attributes_refuse_even_when_components_are_exempt(
         let element = owner.children().next().unwrap().into_element().unwrap();
         let repeated = span(&source, "ID");
         let duplicate = parser(
-            "warning",
+            "error",
             "Duplicate attribute `ID`. Keeping the repeated attribute so parsing can continue.",
             repeated,
         );
@@ -72,7 +72,7 @@ fn duplicate_target_case_keeps_original_findings_and_parser_notice_in_the_oracle
                 complete(&registered(&source, locale, rule)),
                 expected(vec![
                     warning(rule, locale, span(&source, &cstr!("{name}='one'")), "input"),
-                    parser("warning", &message, duplicate_span)
+                    parser("error", &message, duplicate_span)
                 ])
             );
         }
@@ -106,7 +106,7 @@ fn inherited_pre_duplicate_raw_directive_spellings_keep_the_parser_notice() {
             expected(vec![
                 warning(rule, Locale::En, finding_span, "marquee"),
                 parser(
-                    "warning",
+                    "error",
                     "Duplicate attribute `:TITLE`. Keeping the repeated attribute so parsing can continue.",
                     repeated
                 )

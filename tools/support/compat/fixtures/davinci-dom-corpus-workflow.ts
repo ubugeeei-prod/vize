@@ -11,7 +11,7 @@ export const artifactDir = "real-project-davinci-dom-corpus";
 export const corpusRoot = "tests/_fixtures/_git";
 export const expectedGitlinks = 149;
 export const expectedDomOutputComparisons = 150;
-export const expectedOldErrorSkips = 16;
+export const expectedOldErrorSkips = 13;
 type ReasonCounts = Record<string, number>;
 type RunCommand = (command: string, args: readonly string[]) => string;
 type RunOptions = Omit<SpawnSyncOptionsWithStringEncoding, "encoding">;
@@ -46,11 +46,9 @@ interface CorpusValidation {
 }
 
 export const expectedOldErrorReasons = {
-  ExtendPoint: 1,
-  InvalidEndTag: 20,
-  MissingEndTag: 10,
+  InvalidEndTag: 15,
+  MissingEndTag: 8,
   MissingWhitespaceBetweenAttributes: 4,
-  VElseNoAdjacentIf: 1,
   VIfSameKey: 4,
   VSlotDuplicateSlotNames: 1,
 } satisfies ReasonCounts;

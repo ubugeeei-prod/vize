@@ -110,7 +110,7 @@ fn unrelated_static_duplicates_refuse_even_on_exempt_or_nonmatching_tags() {
                 diagnostics.push(warning(locale, span(&source, &opening), tag));
             }
             diagnostics.push(parser(
-                "warning",
+                "error",
                 "Duplicate attribute `ID`. Keeping the repeated attribute so parsing can continue.",
                 repeated,
             ));
@@ -142,7 +142,7 @@ fn inherited_literal_duplicates_preserve_the_original_parser_warning() {
             expected(vec![
                 warning(locale, span(&source, opening), "center"),
                 parser(
-                    "warning",
+                    "error",
                     "Duplicate attribute `:TITLE`. Keeping the repeated attribute so parsing can continue.",
                     repeated
                 ),

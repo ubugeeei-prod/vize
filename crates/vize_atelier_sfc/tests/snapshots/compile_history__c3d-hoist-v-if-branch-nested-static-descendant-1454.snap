@@ -1,0 +1,37 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c3d-hoist-v-if-branch-nested-static-descendant-1454",
+    history: "94129899e023dbcea8b9c7a1d02f4fa38d9c2d81",
+    source: "<div><p v-if=\"ok\"><span class=\"a\"><b>x</b></span></p></div>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: Some(
+            "function",
+        ),
+        prefix_identifiers: None,
+        hoist_static: Some(
+            true,
+        ),
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "const { createElementVNode: _createElementVNode, openBlock: _openBlock, createElementBlock: _createElementBlock, createCommentVNode: _createCommentVNode } = Vue\n\nconst _hoisted_1 = /*#__PURE__*/ _createElementVNode(\"span\", { class: \"a\" }, [_createElementVNode(\"b\", null, \"x\")])\n",
+    code: "function render(_ctx, _cache, $props, $setup, $data, $options) {\n  return (_openBlock(), _createElementBlock(\"div\", null, [\n    (ok)\n      ? (_openBlock(), _createElementBlock(\"p\", { key: 0 }, [\n        _hoisted_1\n      ]))\n      : _createCommentVNode(\"v-if\", true)\n  ]))\n}",
+    map: None,
+}

@@ -1,0 +1,104 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 6025,
+  "regressionCommit": "84b9245085683c9eb12f28afadf1278ee93fa27b",
+  "sourceRevision": "84b9245085683c9eb12f28afadf1278ee93fa27b",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "historical-literal-enum-comparison",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "historical.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 7,
+          "column": 11,
+          "severity": 1,
+          "code": 2367,
+          "message": "This comparison appears to be unintentional because the types 'Status.Idle' and 'Status.Ready' have no overlap."
+        }
+      ]
+    },
+    {
+      "id": "script-setup-enum-read-in-template",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "widened.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "script-setup-enum-missing-member",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "missing-member.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 8,
+          "column": 29,
+          "severity": 1,
+          "code": 2339,
+          "message": "Property 'Missing' does not exist on type 'typeof Status'."
+        }
+      ]
+    },
+    {
+      "id": "script-setup-enum-wrong-argument",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "wrong-argument.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 9,
+          "column": 44,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '\"Ready\"' is not assignable to parameter of type 'Status'."
+        }
+      ]
+    }
+  ]
+}

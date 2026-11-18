@@ -1,0 +1,13 @@
+<script lang="ts">
+export type LinkBehavior = "window" | "browser" | null;
+</script>
+
+<script setup lang="ts">
+defineProps<{
+  behavior?: LinkBehavior;
+}>();
+</script>
+
+<template>
+  <a><slot /></a>
+</template>

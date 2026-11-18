@@ -1,0 +1,7 @@
+<script setup lang="ts">
+defineProps<{ direction: 'rtl' | 'ltr' }>()
+</script>
+
+<template>
+  <div :dir="direction" />
+</template>

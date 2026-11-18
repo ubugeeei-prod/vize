@@ -1,0 +1,10 @@
+<script lang="ts">
+import { Vue, Prop } from 'vue-property-decorator'
+
+export default class List extends Vue {
+  @Prop({ type: Array, required: true }) readonly items!: Array<{ id: number }>;
+  @Prop({ type: Number, default: 0 }) readonly offset!: number;
+}
+</script>
+
+<template><div>{{ items }}{{ offset }}</div></template>

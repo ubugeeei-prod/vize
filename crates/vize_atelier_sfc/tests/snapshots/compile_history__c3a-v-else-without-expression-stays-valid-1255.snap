@@ -1,0 +1,35 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c3a-v-else-without-expression-stays-valid-1255",
+    history: "80b48da33433b29b1129ec2e5424b0b829401f6a",
+    source: "<div v-if=\"ok\">yes</div><div v-else>no</div>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: Some(
+            true,
+        ),
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Template {
+    errors: [],
+    preamble: "import { openBlock as _openBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  return (_ctx.ok)\n    ? (_openBlock(), _createElementBlock(\"div\", { key: 0 }, \"yes\"))\n    : (_openBlock(), _createElementBlock(\"div\", { key: 1 }, \"no\"))\n}",
+    map: None,
+}

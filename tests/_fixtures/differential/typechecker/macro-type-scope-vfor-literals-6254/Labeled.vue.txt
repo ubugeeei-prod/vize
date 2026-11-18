@@ -1,0 +1,10 @@
+<script setup lang="ts">
+const state = { count: 1 }
+type State = typeof state
+defineProps<{ label: 'typeof state'; value: number /* State */ }>()
+const snapshot: State = state
+</script>
+
+<template>
+  <div>{{ label }} {{ value }} {{ snapshot.count }}</div>
+</template>

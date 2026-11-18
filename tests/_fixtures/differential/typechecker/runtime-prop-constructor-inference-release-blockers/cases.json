@@ -1,0 +1,95 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": null,
+  "regressionCommit": "498c5f93e058cfa0050f5e308fda5373b682fbbe",
+  "sourceRevision": "498c5f93e058cfa0050f5e308fda5373b682fbbe",
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "runtime-prop-type-array-computed-record-types",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "runtime-prop-type.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "runtime-prop-type-array-wrong-element-type",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "runtime-prop-type.wrong-element.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 34,
+          "column": 51,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type 'Talk[]' is not assignable to parameter of type 'Speaker[]'.\nType 'Talk' is missing the following properties from type 'Speaker': name, talks"
+        }
+      ]
+    },
+    {
+      "id": "computed-map-values-record-types",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "computed-map.App.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "computed-map-values-wrong-element-type",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/App.vue",
+          "source": "computed-map.wrong-element.App.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/App.vue",
+          "line": 31,
+          "column": 51,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type 'Talk[]' is not assignable to parameter of type 'Speaker[]'.\nType 'Talk' is missing the following properties from type 'Speaker': name, talks"
+        }
+      ]
+    }
+  ]
+}

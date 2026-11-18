@@ -251,6 +251,7 @@ pub(super) fn emit_dom_source_with_options_and_observer<'a, O: PassObserver>(
             SurfaceParseOptions {
                 experimental_in_tag_comments: options.experimental_in_tag_comments,
                 syntax,
+                html_tree_construction: false,
             },
             caps,
         );

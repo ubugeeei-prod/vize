@@ -164,7 +164,7 @@ fn duplicate_original_header_refuses_with_absolute_geometry_and_full_legacy_warn
                 None
             )]
         );
-        let parser = serde_json::json!({ "rule_name": "parser/template", "severity": "warning",
+        let parser = serde_json::json!({ "rule_name": "parser/template", "severity": "error",
             "message": "Duplicate attribute `REF`. Keeping the repeated attribute so parsing can continue.",
             "start": repeated.start, "end": repeated.end, "help": null, "labels": [], "fix": null });
         assert_eq!(

@@ -1,0 +1,13 @@
+<script lang="ts">
+import type { PrimitiveProps } from '../primitive'
+
+export interface ContentProps extends PrimitiveProps {
+  forceMount?: boolean
+}
+</script>
+
+<script setup lang="ts">
+defineProps<ContentProps>()
+</script>
+
+<template><div /></template>

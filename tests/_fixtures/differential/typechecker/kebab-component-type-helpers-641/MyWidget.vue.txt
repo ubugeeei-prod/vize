@@ -1,0 +1,8 @@
+<script setup lang="ts">
+defineProps<{ label: string }>()
+defineEmits<{ 'update:modelValue': [value: string] }>()
+</script>
+
+<template>
+  <div>{{ label }}</div>
+</template>

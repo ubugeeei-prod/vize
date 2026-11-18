@@ -67,6 +67,12 @@ pub struct ParserOptions {
     pub on_warn: Option<fn(crate::CompilerError)>,
     pub comments: bool,
     pub experimental_in_tag_comments: bool,
+    /// Apply the HTML parser's tree-construction fix-ups to a component
+    /// template: implied end tags and table owners, nested form, anchor and
+    /// button repair, the adoption agency and foster parenting. Off by
+    /// default: Vue's compiler builds a template as written. Vapor turns it on
+    /// because its template strings are parsed again by `innerHTML`.
+    pub html_tree_construction: bool,
     /// Vue dialect the source is written in, resolved once per file from
     /// `vue.version`. Defaults to [`VueVersion::V3`]; any legacy line is opt-in
     /// behind the `legacy` cargo feature. Parsing/tokenizing only consults this
@@ -92,6 +98,7 @@ impl Default for ParserOptions {
             on_warn: None,
             comments: true,
             experimental_in_tag_comments: false,
+            html_tree_construction: false,
             dialect: VueVersion::V3,
         }
     }

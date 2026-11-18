@@ -27,6 +27,7 @@
 
 use crate::context::LintContext;
 use crate::diagnostic::Severity;
+use crate::markup::{MarkupBindingKind, MarkupContext, MarkupElement, MarkupRule, MarkupTraversal};
 use crate::rule::{Rule, RuleCategory, RuleMeta};
 use vize_relief::ElementNode;
 
@@ -42,36 +43,52 @@ static META: RuleMeta = RuleMeta {
 #[derive(Default)]
 pub struct A11yImgAlt;
 
+fn check(ctx: &mut LintContext<'_>, element: &MarkupElement<'_>) {
+    if !element.is_unqualified_tag_exact("img") {
+        return;
+    }
+
+    // A static `alt` or any `alt` bind, dynamic or not.
+    let mut has_alt = false;
+    element.walk_bindings(&mut |binding| {
+        has_alt |= matches!(
+            binding.kind(),
+            MarkupBindingKind::Attribute | MarkupBindingKind::Bind
+        ) && binding.is_unqualified_arg_exact("alt");
+    });
+
+    if !has_alt {
+        let message = ctx.t("vue/a11y-img-alt.message").into_owned();
+        let help = ctx.t("vue/a11y-img-alt.help").into_owned();
+        ctx.warn_at_with_help(message, element.range(), help);
+    }
+}
+
+impl MarkupRule for A11yImgAlt {
+    fn name(&self) -> &'static str {
+        META.name
+    }
+
+    fn traversal(&self) -> MarkupTraversal {
+        MarkupTraversal::Elements
+    }
+
+    fn enter_element<'a>(&self, ctx: &mut MarkupContext<'_, 'a>, element: &MarkupElement<'a>) {
+        check(ctx.lint(), element);
+    }
+}
+
 impl Rule for A11yImgAlt {
     fn meta(&self) -> &'static RuleMeta {
         &META
     }
 
+    fn as_markup_rule(&self) -> Option<&dyn MarkupRule> {
+        Some(self)
+    }
+
     fn enter_element<'a>(&self, ctx: &mut LintContext<'a>, element: &ElementNode<'a>) {
-        if element.tag != "img" {
-            return;
-        }
-
-        // Check for alt attribute (static or dynamic)
-        let has_alt = element.props.iter().any(|prop| match prop {
-            vize_relief::PropNode::Attribute(attr) => attr.name == "alt",
-            vize_relief::PropNode::Directive(dir) => {
-                if dir.name == "bind" {
-                    matches!(
-                        &dir.arg,
-                        Some(vize_relief::ExpressionNode::Simple(s)) if s.content == "alt"
-                    )
-                } else {
-                    false
-                }
-            }
-        });
-
-        if !has_alt {
-            let message = ctx.t("vue/a11y-img-alt.message").into_owned();
-            let help = ctx.t("vue/a11y-img-alt.help").into_owned();
-            ctx.warn_with_help(message, &element.loc, help);
-        }
+        check(ctx, &MarkupElement::new(element));
     }
 }
 

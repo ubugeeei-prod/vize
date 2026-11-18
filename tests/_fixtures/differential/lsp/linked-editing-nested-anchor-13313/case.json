@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "id": "lsp/regression/linked-editing-nested-anchor-13313",
+  "provenance": {
+    "fixCommit": "2aa5ca5cc2406202d44c14f98c4ae33aea9db964",
+    "witnessPath": "crates/vize_maestro/src/source_project/navigation/tests/linked.rs",
+    "witnessTest": "original_missing_implicit_void_and_self_closing_do_not_guess_a_second_name",
+    "inputOrigin": "Authored nested anchor from the #13313 authored-structure change",
+    "contractOrigin": "Vue keeps a nested <a> as written, so each start tag name links to its own authored end tag name"
+  },
+  "input": {
+    "source": "NestedAnchor.vue.txt",
+    "runtimePath": "NestedAnchor.vue",
+    "sha256": "47122d6791071d0588d29b5f4e4bfe3441f63c03919c2ea3becc6da1ebf7c761"
+  },
+  "expected": {
+    "source": "responses.expected.json",
+    "sha256": "c9f4a873cdbd8ae46776fdb23ca0884e0203fa3710f8b8d8e6796db347a4af45"
+  },
+  "method": "textDocument/linkedEditingRange",
+  "documentVersion": 1,
+  "scope": "Shipped tag-pair response; the experimental native route answers the same since #13313"
+}

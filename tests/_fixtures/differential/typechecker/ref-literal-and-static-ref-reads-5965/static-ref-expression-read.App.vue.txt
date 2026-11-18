@@ -1,0 +1,8 @@
+<script setup lang="ts">
+const activatorRef = null
+const decoy = null
+</script>
+
+<template>
+  <div ref="activatorRef">{{ activatorRef }}</div>
+</template>

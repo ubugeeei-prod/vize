@@ -1,0 +1,49 @@
+---
+source: crates/vize/tests/diagnostic_digest_hints_cli.rs
+expression: "normalize_check_output(&text(&output.stdout), &root)"
+---
+
+<project>/src/App.vue
+  error:9:9 [TS2339] Property 'missing' does not exist on the component instance. (source: <p>{{ missing.toFixed() }}</p>)
+
+error[type/undeclared-component-attr]: 2 errors in 1 file: attributes the component neither declares nor forwards
+  src/App.vue:6:20 behavior, 7:20 theme
+ --> src/App.vue:6:20
+  |
+6 |   <Panel title="a" behavior="window" @close="() => {}" @open="() => {}" />
+  |                    ^^^^^^^^ `behavior` is not a prop of this component, and it does not fall through to a single root element
+  |
+hint: Declare it with `defineProps`, or forward it from a single root element (without `inheritAttrs: false`).
+      To stop checking attributes a component does not declare:
+        tsconfig.json  "vueCompilerOptions": { "checkUnknownProps": false }
+      docs: https://vizejs.dev/guide/configuration-reference#vue-type-resolution
+      --verbose prints each finding with its full message.
+
+error[type/unknown-element-attr]: 1 error in 1 file: attributes the HTML or SVG element does not define
+  src/App.vue:8:9 alt
+ --> src/App.vue:8:9
+  |
+8 |   <span alt="x">text</span>
+  |         ^^^ `alt` is not an attribute of this element
+  |
+hint: Use the element's own attribute (check the spelling), or a `data-*` attribute for custom data.
+      To stop checking attributes an element does not define:
+        tsconfig.json  "vueCompilerOptions": { "checkUnknownProps": false }
+      docs: https://vizejs.dev/guide/configuration-reference#vue-type-resolution
+      --verbose prints each finding with its full message.
+
+error[type/undeclared-component-event]: 1 error in 1 file: listeners for events the component does not declare
+  src/App.vue:6:57 open
+ --> src/App.vue:6:57
+  |
+6 |   <Panel title="a" behavior="window" @close="() => {}" @open="() => {}" />
+  |                                                         ^^^^ the component declares no event for `open`
+  |
+hint: Declare the event with `defineEmits`, or move the listener to the element that emits it.
+      To stop checking listeners for undeclared events:
+        tsconfig.json  "vueCompilerOptions": { "checkUnknownEvents": false }
+      docs: https://vizejs.dev/guide/configuration-reference#vue-type-resolution
+      --verbose prints each finding with its full message.
+
+✗ Type checked 2 files in <duration> (collect: <duration>, imports: <duration>, gen: <duration>, corsa: <duration>)
+  5 error(s)

@@ -138,7 +138,7 @@ pub const MALFORMED: &[Fixture] = &[
     malformed("cdata_in_svg", "<svg><![CDATA[a < b]]></svg>", 0, 0, 0),
     malformed("unquoted_slash_value", "<a href=/x/y>z</a>", 0, 0, 0),
     malformed("case_insensitive_close", "<DIV>x</div>", 0, 0, 0),
-    // Implied end tags, as the shipping parser applies them: a sibling
-    // `<li>` closes the open one, so only the last stays open at EOF.
-    malformed("sibling_li_closes", "<li>a<li>b", 0, 1, 0),
+    // No implied end tags in a Vue template, as Vue's compiler builds it:
+    // the sibling `<li>` nests in the open one, so both stay open at EOF.
+    malformed("sibling_li_closes", "<li>a<li>b", 0, 2, 0),
 ];

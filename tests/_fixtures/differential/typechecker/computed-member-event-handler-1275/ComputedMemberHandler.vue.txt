@@ -1,0 +1,7 @@
+<script setup lang="ts">
+const handlers = { x: 42 } as const
+</script>
+
+<template>
+  <button @click="handlers['x']">Click me</button>
+</template>

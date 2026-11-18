@@ -1,0 +1,15 @@
+<script setup lang="ts">
+const model = defineModel({
+  type: String,
+  required: true,
+  get(value: string) {
+    return value.length
+  },
+  set(value: number) {
+    return String(value)
+  },
+})
+const read: number = model.value
+model.value = 42
+void read
+</script>

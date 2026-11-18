@@ -1,0 +1,168 @@
+{
+  "version": 1,
+  "issue": 6879,
+  "historicalIssue": 6403,
+  "regressionCommit": "beb84df46db611f6bf017fa6803af8cf84e6d59e",
+  "sourceRevision": "beb84df46db611f6bf017fa6803af8cf84e6d59e",
+  "checkerOptions": {
+    "optionsApi": true
+  },
+  "diagnosticContract": {
+    "requiredTier": "T1",
+    "positionBase": 1,
+    "positions": "authored UTF16 start",
+    "comparison": "all production diagnostics in returned order",
+    "missingFields": [
+      "end",
+      "relatedInformation",
+      "raw backend diagnostics"
+    ],
+    "native": "unsupported"
+  },
+  "cases": [
+    {
+      "id": "array-props-beside-imported-props-type",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/types.ts",
+          "source": "types.ts.txt"
+        },
+        {
+          "file": "src/Widget.vue",
+          "source": "Widget.vue.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "array-with-usage.Child.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "array.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "array-props-without-component-usage",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/types.ts",
+          "source": "types.ts.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "array.Child.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "array.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "deferred-object-props-beside-imported-props-type",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/types.ts",
+          "source": "types.ts.txt"
+        },
+        {
+          "file": "src/Widget.vue",
+          "source": "Widget.vue.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "deferred.Child.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "deferred.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": []
+    },
+    {
+      "id": "deferred-object-props-wrong-type",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/types.ts",
+          "source": "types.ts.txt"
+        },
+        {
+          "file": "src/Widget.vue",
+          "source": "Widget.vue.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "deferred.Child.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "deferred-wrong-type.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Parent.vue",
+          "line": 6,
+          "column": 11,
+          "severity": 1,
+          "code": 2322,
+          "message": "Type 'number' is not assignable to type 'Record<string, any>'."
+        }
+      ]
+    },
+    {
+      "id": "deferred-object-props-missing-required",
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "source": "tsconfig.json.txt"
+        },
+        {
+          "file": "src/types.ts",
+          "source": "types.ts.txt"
+        },
+        {
+          "file": "src/Widget.vue",
+          "source": "Widget.vue.txt"
+        },
+        {
+          "file": "src/Child.vue",
+          "source": "deferred.Child.vue.txt"
+        },
+        {
+          "file": "src/Parent.vue",
+          "source": "deferred-missing.Parent.vue.txt"
+        }
+      ],
+      "diagnostics": [
+        {
+          "file": "src/Parent.vue",
+          "line": 6,
+          "column": 4,
+          "severity": 1,
+          "code": 2345,
+          "message": "Argument of type '{}' is not assignable to parameter of type '$ComponentCheckProps<__Child_CheckProps_0, $PublicComponentAttrs & Record<string, unknown>>'.\nProperty 'meta' is missing in type '{}' but required in type '{ readonly meta: Record<string, any>; }'."
+        }
+      ]
+    }
+  ]
+}

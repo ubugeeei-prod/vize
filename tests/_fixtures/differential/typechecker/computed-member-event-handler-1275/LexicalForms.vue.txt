@@ -1,0 +1,16 @@
+<script setup lang="ts">
+const keys = ['go'] as const
+const handlers = {
+  go: (event: PointerEvent) => event.preventDefault(),
+  'a]b': (event: PointerEvent) => event.preventDefault(),
+}
+const maybe = handlers as typeof handlers | undefined
+const ハンドラ = { 押す: (event: PointerEvent) => event.preventDefault() }
+</script>
+
+<template>
+  <button @click="handlers[keys[0]]">Nested</button>
+  <button @click="handlers['a]b']">Quoted</button>
+  <button @click="maybe?.['go']">Optional</button>
+  <button @click="ハンドラ.押す">Unicode</button>
+</template>

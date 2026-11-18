@@ -1,0 +1,54 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c1d-css-v-bind-reads-define-props",
+    history: "13c6ad221fbbf0f557ae50559db08fa998eaf727",
+    source: "<script setup lang=\"ts\">\nwithDefaults(defineProps<{\n  icon: string\n  color: string\n  offset: number\n}>(), {})\n</script>\n\n<template>\n  <div v-panel :class=\"$style.root\">\n    <img :src=\"icon\" />\n  </div>\n</template>\n\n<style module lang=\"scss\">\n.root {\n  background: linear-gradient(\n    180deg,\n    color(from v-bind(color) srgb r g b / 0.1),\n    color(from v-bind(color) srgb r g b / 0)\n  );\n  padding-top: v-bind(\"offset + 'px'\");\n}\n</style>",
+    filename: "History.vue",
+    entry: "sfc",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: None,
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 0,
+}
+Sfc(
+    Ok(
+        SfcCompileResult {
+            code: "import { useCssVars as _useCssVars } from 'vue'\nimport { useCssModule as _useCssModule } from 'vue'\nimport { resolveDirective as _resolveDirective, withDirectives as _withDirectives, createElementVNode as _createElementVNode, normalizeClass as _normalizeClass, openBlock as _openBlock, createElementBlock as _createElementBlock } from \"vue\"\n\n\nexport default {\n  __name: 'History',\n  __cssModules: {\n    \"$style\": {\n      \"root\": \"Qr8Cbq_root\"\n    }\n  },\n  props: {\n    icon: { type: String, required: true },\n    color: { type: String, required: true },\n    offset: { type: Number, required: true }\n  },\n  setup(__props) {\n\n_useCssVars(_ctx => ({\n  \"4045eae1-color\": (__props.color),\n  \"v7e3298ff\": (__props.offset + 'px')\n}))\n\nconst $style = _useCssModule()\n\n\nreturn (_ctx, _cache) => {\n  const _directive_panel = _resolveDirective(\"panel\")\n\n  return _withDirectives((_openBlock(), _createElementBlock(\"div\", {\n    class: _normalizeClass($style.root)\n  }, [\n    _createElementVNode(\"img\", { src: __props.icon }, null, 8 /* PROPS */, [\"src\"])\n  ], 2 /* CLASS */)), [\n    [_directive_panel]\n  ])\n}\n}\n\n}",
+            css: Some(
+                ".Qr8Cbq_root {\n  background: linear-gradient(180deg,\n    color(from var(--4045eae1-color) srgb r g b / .1),\n    color(from var(--4045eae1-color) srgb r g b / 0));\n  padding-top: var(--v7e3298ff);\n}\n",
+            ),
+            map: None,
+            errors: [],
+            warnings: [],
+            bindings: Some(
+                BindingMetadata {
+                    bindings: {
+                        "$style": SetupConst,
+                        "icon": Props,
+                        "color": Props,
+                        "offset": Props,
+                    },
+                    props_aliases: {},
+                    is_script_setup: true,
+                },
+            ),
+            macro_artifacts: [],
+            dependencies: [],
+        },
+    ),
+)

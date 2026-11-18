@@ -1,0 +1,16 @@
+<script setup lang="ts">
+import { ref } from 'vue'
+
+const enum ModalWindowState {
+  None,
+  ProfileEdit,
+  PasswordChange,
+}
+
+const modalWindowState = ref(ModalWindowState.None)
+</script>
+
+<template>
+  <ModalWindow :opened="modalWindowState === ModalWindowState.ProfileEdit" />
+  <ModalWindow :opened="modalWindowState === 'PasswordChange'" />
+</template>

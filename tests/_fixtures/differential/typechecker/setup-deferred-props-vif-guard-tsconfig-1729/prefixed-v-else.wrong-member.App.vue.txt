@@ -1,0 +1,16 @@
+<script setup lang="ts">
+const isOpen = true
+type Item =
+  | { kind: 'anchor'; hash: string; key: string }
+  | { kind: 'page'; to: string; key: string }
+const navItems: Item[] = []
+</script>
+
+<template>
+<div v-if="isOpen">
+  <div v-for="item in navItems" :key="item.key">
+    <span v-if="item.kind === 'page'">{{ item.to }}</span>
+    <span v-else>{{ item.to }}</span>
+  </div>
+</div>
+</template>

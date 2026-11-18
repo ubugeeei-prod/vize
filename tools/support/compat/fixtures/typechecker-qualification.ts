@@ -4,6 +4,9 @@ const diagnosticPattern = /^error:[1-9]\d*:[1-9]\d* \[TS(\d+)\] /u;
 const unavailableInputCodes = new Set([
   2307, 2318, 2688, 2792, 5083, 6053, 6059, 6305, 6307, 18002, 18003,
 ]);
+// Deprecated and removed compiler options (TS5101, TS5102, TS5107, TS5108)
+// introduce no `any`. They stay in the compared set; both checkers must agree.
+const optionNoticeCodes = new Set([5101, 5102, 5107, 5108]);
 
 export type TypecheckerRunStatus = "ok" | "configuration" | "findings";
 
@@ -66,6 +69,7 @@ export function typecheckerRunStatus(
       if (typeof diagnostic !== "string") continue;
       const match = diagnosticPattern.exec(diagnostic);
       if (match == null) continue;
+      if (optionNoticeCodes.has(Number(match[1]))) continue;
       // Missing modules/generated declarations can introduce `any` into later
       // checks. An authored error elsewhere cannot qualify this partial run.
       if (

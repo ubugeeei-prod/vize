@@ -1,0 +1,48 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c4c-default-slot-with-extraneous-element-control-2496",
+    history: "6b5ee003f4a671158889bb977a8bcc4a8945d4c6",
+    source: "<Comp><template #default>Body</template><span>x</span></Comp>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: Some(
+            true,
+        ),
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 1,
+}
+Template {
+    errors: [
+        CompilerError {
+            code: VSlotExtraneousDefaultSlotChildren,
+            message: "Extraneous children found when component already has an explicit default slot.",
+            loc: Some(
+                SourceLocation {
+                    span: Span {
+                        start: 40,
+                        end: 46,
+                    },
+                },
+            ),
+        },
+    ],
+    preamble: "import { resolveComponent as _resolveComponent, openBlock as _openBlock, createBlock as _createBlock, createTextVNode as _createTextVNode, withCtx as _withCtx } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_Comp = _resolveComponent(\"Comp\")\n  \n  return (_openBlock(), _createBlock(_component_Comp, null, {\n    default: _withCtx(() => [\n      _createTextVNode(\"Body\")\n    ]),\n    _: 1 /* STABLE */\n  }))\n}",
+    map: None,
+}

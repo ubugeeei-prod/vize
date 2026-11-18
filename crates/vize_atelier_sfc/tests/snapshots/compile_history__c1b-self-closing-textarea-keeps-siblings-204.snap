@@ -1,0 +1,48 @@
+---
+source: crates/vize_atelier_sfc/tests/compile_history.rs
+expression: first_bytes
+---
+Case {
+    id: "c1b-self-closing-textarea-keeps-siblings-204",
+    history: "3a87d25f029f731be72705a19787743a996640eb",
+    source: "<Primitive :class=\"ui.root({ class: [uiProp?.root, props.class] })\"><textarea :class=\"ui.base({ class: uiProp?.base })\" /><slot :ui=\"ui\" /><span v-if=\"isLeading || !!avatar || !!slots.leading\"><slot><UIcon v-if=\"isLeading && leadingIconName\" /><UAvatar v-else-if=\"!!avatar\" /></slot></span></Primitive>",
+    filename: "History.vue",
+    entry: "template",
+    target: "dom",
+    options: Options {
+        prod: None,
+        preserve_ts: None,
+        standalone: None,
+        mode: None,
+        prefix_identifiers: Some(
+            true,
+        ),
+        hoist_static: None,
+        cache_handlers: None,
+        comments: None,
+        source_map: None,
+        template_syntax: None,
+        custom_renderer: None,
+        vue_version: None,
+    },
+    errors: 1,
+}
+Template {
+    errors: [
+        CompilerError {
+            code: ExtendPoint,
+            message: "Invalid self-closing syntax on non-void HTML element was rewritten as an empty element with an explicit end tag.",
+            loc: Some(
+                SourceLocation {
+                    span: Span {
+                        start: 68,
+                        end: 122,
+                    },
+                },
+            ),
+        },
+    ],
+    preamble: "import { resolveComponent as _resolveComponent, createElementVNode as _createElementVNode, renderSlot as _renderSlot, normalizeClass as _normalizeClass, openBlock as _openBlock, createBlock as _createBlock, createElementBlock as _createElementBlock, createCommentVNode as _createCommentVNode, withCtx as _withCtx } from \"vue\"\n",
+    code: "export function render(_ctx, _cache) {\n  const _component_UIcon = _resolveComponent(\"UIcon\")\n  const _component_UAvatar = _resolveComponent(\"UAvatar\")\n  const _component_Primitive = _resolveComponent(\"Primitive\")\n  \n  return (_openBlock(), _createBlock(_component_Primitive, {\n    class: _normalizeClass(_ctx.ui.root({ class: [_ctx.uiProp?.root, _ctx.props.class] }))\n  }, {\n    default: _withCtx(() => [\n      _createElementVNode(\"textarea\", {\n        class: _normalizeClass(_ctx.ui.base({ class: _ctx.uiProp?.base }))\n      }, null, 2 /* CLASS */),\n      _renderSlot(_ctx.$slots, \"default\", { ui: _ctx.ui }),\n      (_ctx.isLeading || !!_ctx.avatar || !!_ctx.slots.leading)\n        ? (_openBlock(), _createElementBlock(\"span\", { key: 0 }, [\n          _renderSlot(_ctx.$slots, \"default\", {}, () => [\n            (_ctx.isLeading && _ctx.leadingIconName)\n              ? (_openBlock(), _createBlock(_component_UIcon, { key: 0 }))\n              : (!!_ctx.avatar)\n                ? (_openBlock(), _createBlock(_component_UAvatar, { key: 1 }))\n              : _createCommentVNode(\"v-if\", true)\n          ])\n        ]))\n        : _createCommentVNode(\"v-if\", true)\n    ]),\n    _: 3 /* FORWARDED */\n  }, 8 /* PROPS */, [\"class\"]))\n}",
+    map: None,
+}

@@ -151,9 +151,10 @@ pub(super) async fn check(
             results(checker, &receivers).await
         }
         EnumCheckAsk::Computed { object, property } => {
+            let node = located.handle(translate(*object));
             let object = located.ty(translate(*object))?.clone();
             let sender = located.ty(translate(*property))?.clone();
-            computed_receivers(checker, &object, &sender).await
+            computed_receivers(checker, node, &object, &sender).await
         }
     }
 }
