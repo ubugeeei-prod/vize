@@ -63,8 +63,12 @@ void test("linter preflight validates later typecheck targets without treating t
     ],
   };
   input.matrix.value.projects.splice(1, 0, target);
-  input.matrix.value.summary.runCount++;
-  input.matrix.value.summary.configurationRuns++;
+  const runCount = input.matrix.value.summary.runCount;
+  const configurationRuns = input.matrix.value.summary.configurationRuns;
+  assert(typeof runCount === "number");
+  assert(typeof configurationRuns === "number");
+  input.matrix.value.summary.runCount = runCount + 1;
+  input.matrix.value.summary.configurationRuns = configurationRuns + 1;
 
   const artifact = assessLinterDeletionShard(input);
   assert.deepEqual(
