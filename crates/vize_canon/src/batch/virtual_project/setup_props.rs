@@ -26,13 +26,25 @@ pub(super) fn augment_type_based_props_from_script_context(
     path: &Path,
     cache: &RuntimePropResolveCache,
 ) {
-    let path_string = path.to_string_lossy();
-    merge_resolved_props_into_croquis_with_sources(
-        croquis,
-        descriptor,
-        path_string.as_ref(),
-        &cache.type_sources,
-    );
+    // The batch projection consumes the resolved world only to expand typed
+    // `defineProps<T>()`. Building it for script-only SFCs, runtime props, or
+    // components without props walks and parses the type graph without
+    // contributing any generated TypeScript. Keep those common cases on the
+    // already-complete Croquis facts.
+    if croquis
+        .macros
+        .define_props()
+        .and_then(|call| call.type_args.as_ref())
+        .is_some()
+    {
+        let path_string = path.to_string_lossy();
+        merge_resolved_props_into_croquis_with_sources(
+            croquis,
+            descriptor,
+            path_string.as_ref(),
+            &cache.type_sources,
+        );
+    }
     merge_imported_runtime_props_into_croquis(croquis, descriptor, path, cache);
 
     let script_setup_source = descriptor
@@ -138,6 +150,38 @@ fn merge_resolved_runtime_props_into_croquis(croquis: &mut Croquis, props: Vec<P
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn augment(source: &str) -> Croquis {
+        let descriptor =
+            vize_atelier_sfc::parse_sfc(source, vize_atelier_sfc::SfcParseOptions::default())
+                .unwrap();
+        let mut croquis = vize_atelier_sfc::croquis::analyze_sfc_descriptor(
+            &descriptor,
+            None,
+            vize_atelier_sfc::croquis::SfcCroquisOptions::full(),
+        );
+        augment_type_based_props_from_script_context(
+            &mut croquis,
+            &descriptor,
+            Path::new("/project/src/Component.vue"),
+            &RuntimePropResolveCache::default(),
+        );
+        croquis
+    }
+
+    #[test]
+    fn batch_builds_the_type_world_only_for_typed_props() {
+        for source in [
+            "<script setup lang=\"ts\">const count = 1;</script>",
+            "<script setup lang=\"ts\">defineProps({ label: String });</script>",
+        ] {
+            assert!(augment(source).types.resolved_world().is_none(), "{source}");
+        }
+
+        let typed = augment("<script setup lang=\"ts\">defineProps<{ label: string }>();</script>");
+        assert!(typed.types.resolved_world().is_some());
+        assert!(typed.macros.props().iter().any(|prop| prop.name == "label"));
+    }
 
     #[test]
     fn resolved_runtime_defaults_keep_presence_separate_from_authored_metadata() {
