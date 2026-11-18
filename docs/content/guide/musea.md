@@ -100,9 +100,9 @@ directly to `musea()`.
 ```art-vue
 <script setup lang="ts">
 import { ref } from "vue";
+import MyButton from "./MyButton.vue";
 
-defineArt("./MyButton.vue", {
-  title: "MyButton",
+defineArtMeta({
   category: "Components",
   status: "ready",
   tags: ["button", "ui", "input"],
@@ -122,19 +122,15 @@ const pressed = ref(false);
 </art>
 ```
 
-`defineArt(source, options)` is a compiler macro. It declares the component that Musea should load,
-plus metadata that used to live on `<art>`. Prefer a relative component path string such as
-`defineArt("./MyButton.vue", { title: "MyButton" })`; Musea imports that component in generated
-runtime code and the language server uses the same source for prop and slot inference.
-The source string participates in path completion, unresolved-file diagnostics, document links, and
-go-to-definition.
+The demonstrated component is inferred from the imported tag shared by every variant. Vue therefore
+checks props, emits, and slots exactly as it does in an ordinary SFC. `defineArtMeta()` is optional;
+use it only to override inferred metadata. `title` defaults to the inferred component binding name.
+For an intentionally ambiguous composition, `defineArt(MyButton, metadata?)` remains available as
+an explicit target escape hatch.
 
 Render-function components can also be referenced from `.ts`, `.tsx`, `.js`, or `.jsx` files:
-`defineArt("./MyButton.ts", { title: "MyButton" })`. Musea imports the module's default export
-and reads statically declared runtime `props` and `emits` for the analysis and props panel.
-
-`<art title="..." component="...">` still works for compatibility, and explicit `<art>` attributes
-override `defineArt` metadata when both are present.
+import the value and render it normally. Musea reads statically declared runtime
+`props` and `emits` for analysis and the props panel.
 
 ### Variant-local state
 
@@ -144,8 +140,7 @@ instance, so refs and computed values in one variant do not leak into another:
 ```art-vue
 <script setup lang="ts">
 import { computed, ref } from "vue";
-
-defineArt("./Counter.vue", { title: "Counter" });
+import Counter from "./Counter.vue";
 
 const count = ref(0);
 const doubled = computed(() => count.value * 2);
@@ -167,8 +162,7 @@ instance across every variant:
 ```art-vue
 <script setup lang="ts" isolate="false">
 import { ref } from "vue";
-
-defineArt("./Counter.vue", { title: "Counter" });
+import Counter from "./Counter.vue";
 
 const sharedCount = ref(0);
 </script>
@@ -178,18 +172,20 @@ const sharedCount = ref(0);
 
 | Element / Macro                  | Purpose                                |
 | -------------------------------- | -------------------------------------- |
-| `defineArt(source, options)`     | Target component and art metadata      |
-| `defineArt(...).title`           | Display name                           |
-| `defineArt(...).category`        | Sidebar grouping                       |
-| `defineArt(...).status`          | Optional status badge                  |
-| `defineArt(...).tags`            | Search and filtering tags              |
+| Imported component tag          | Inferred, Vue-typed target             |
+| `defineArtMeta(options)`         | Optional gallery metadata              |
+| `defineArtMeta(...).title`       | Optional display-name override         |
+| `defineArtMeta(...).category`    | Sidebar grouping                       |
+| `defineArtMeta(...).status`      | Optional status badge                  |
+| `defineArtMeta(...).tags`        | Search and filtering tags              |
+| `defineArt(component, options?)` | Explicit target for ambiguous Art      |
 | `<script setup>`                 | Variant-local setup state by default   |
 | `<script setup isolate="false">` | Shared setup state across all variants |
 | `<art>`                          | Root variants block                    |
-| `<art title component ...>`      | Compatibility metadata attributes      |
 | `<variant>`                      | Named component variation              |
 | `default`                        | Marks the default variant              |
-| `args`, `viewport`, `skip-vrt`   | Optional variant configuration         |
+| `play`                           | Typed interaction test                 |
+| `viewport`, `skip-vrt`           | Optional visual test configuration     |
 
 Keep art files close to the component when variants are part of the component's contract:
 
@@ -218,7 +214,8 @@ musea({
 });
 ```
 
-Inside inline art, use `<Self>` to render the host component.
+Inside inline art, render the host using its normal inferred SFC name, such as `<Button>` in
+`Button.vue`.
 
 ## Gallery Features
 
@@ -233,11 +230,154 @@ Musea can surface:
 - visual regression testing helpers
 - Storybook-compatible output when requested
 
+## Interaction Tests
+
+Author component values directly on the component and browser behavior on its variant. Static
+props and attrs seed the Props panel, permalinks, and VRT metadata without duplicating the example.
+The entire example stays in one `.art.vue` file:
+
+```art-vue
+<script setup lang="ts">
+import Counter from "./Counter.vue";
+</script>
+
+<art>
+  <variant
+    name="Interactive"
+    :play="async ({ canvas, user, expect }) => {
+      await user.click(canvas.getByRole('button', { name: 'Increment' }));
+      expect(canvas.getByText('Count: 1')).toBeVisible();
+    }"
+    default
+  >
+    <Counter :initial="0" :step="1" aria-label="Counter example" />
+  </variant>
+</art>
+```
+
+Inline `play` expressions are contextually checked as `MuseaPlay`; `canvas`, `user`, `expect`, and
+`step` therefore keep their concrete types without parameter annotations. Direct component inputs
+are checked by Vue against `Counter` itself. Musea statically serializes
+literal values for the Props workspace and never evaluates project code while discovering the
+gallery. Dynamic bindings still render normally but are intentionally not persisted as UI state.
+
+For generated or template-less integrations, `:props` and `:attrs` remain available as
+compatibility shorthands. Hand-authored Art should prefer values directly on the component tag.
+
+Wrap meaningful phases with `step()` when a test has more than one interaction. Musea records each
+step, user action, assertion, target element, and duration in the gallery result timeline:
+
+```art-vue
+:play="async ({ canvas, user, expect, step }) => {
+  await step('increment', async () => {
+    await user.click(canvas.getByRole('button', { name: 'Increment' }));
+    expect(canvas.getByText('Count: 1')).toBeVisible();
+  });
+}"
+```
+
+Use `definePlay()` only when multiple variants share an interaction or the function is easier to
+read by name:
+
+```art-vue
+<script setup lang="ts">
+import CheckoutForm from "./CheckoutForm.vue";
+
+const submits = definePlay(async ({ canvas, user, expect }) => {
+  await user.click(canvas.getByRole("button", { name: "Submit" }));
+  expect(canvas.getByText("Saved")).toBeVisible();
+});
+</script>
+
+<art>
+  <variant name="Valid" :play="submits"><CheckoutForm /></variant>
+  <variant name="Prefilled" :play="submits">
+    <CheckoutForm email="hello@example.com" />
+  </variant>
+</art>
+```
+
+### CLI and Vitest
+
+Run only colocated play tests—without screenshot or pixel-comparison work—from the CLI:
+
+```sh
+musea-vrt test --workers 8
+musea-vrt test --json --output .vize
+```
+
+The runner launches Chromium once and runs variants concurrently. JSON output uses the same
+structured trace as the gallery. VRT uses this play state before capture, so an interaction failure
+also stops its visual snapshot.
+
+Vitest can register every play function as an ordinary test. Its watch mode, name filtering,
+reporters, retries, and CI annotations therefore keep working:
+
+```ts
+import { afterAll, beforeAll, describe, test } from "vitest";
+import { loadMuseaArtFiles, registerMuseaTests } from "@vizejs/vite-plugin-musea/test";
+
+const artFiles = await loadMuseaArtFiles({ root: process.cwd() });
+
+registerMuseaTests(
+  { describe, test, beforeAll, afterAll },
+  {
+    artFiles,
+    baseUrl: "http://localhost:5173",
+    workers: 4,
+  },
+);
+```
+
+The configured Musea/Vite preview server must be running at `baseUrl`; Vitest owns test lifecycle
+and reporting, while Musea owns component mounting, scoped queries, interactions, and trace data.
+
+The Test tab runs the function inside the isolated preview and reports its duration and assertion
+failure. `canvas` scopes role, text, label, and selector queries to that preview. `user`
+supports click, double-click, clear, type, and select operations; `expect` includes common value,
+DOM, visibility, text, attribute, class, and checked-state assertions.
+
+### Play context
+
+| Value               | API                                                                                                                       |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `canvas`            | `getByRole`, `getAllByRole`, `queryByRole`, text and label equivalents, `querySelector`, `querySelectorAll`               |
+| `canvas.element`    | The preview root `HTMLElement`                                                                                            |
+| `user`              | `click`, `dblClick`, `clear`, `type`, `selectOptions`                                                                     |
+| `expect(value)`     | `toBe`, `toEqual`, truthiness, containment, DOM presence, visibility, text, value, checked state, attributes, and classes |
+| `expect(value).not` | Negates any matcher                                                                                                       |
+
+Every interaction returns a `Promise`, so authored input should be awaited. A Test-tab rerun reloads
+the iframe first, preventing state from the previous run from leaking into the next one. The
+compatibility alias `userEvent` points to the same typed object as `user`.
+
+### Component inputs and variant behavior
+
+| Surface                  | Contract                               | Purpose                                  |
+| ------------------------ | -------------------------------------- | ---------------------------------------- |
+| `<Target ...>` bindings  | Target component's normal Vue contract | Props and fallthrough attrs              |
+| `<variant :play>`        | `MuseaPlay`                            | Inline interaction or `definePlay()`     |
+| `<variant viewport>`     | `WIDTHxHEIGHT` or `WIDTHxHEIGHT@SCALE` | Per-variant VRT viewport                 |
+
+Musea extracts statically serializable target bindings into the gallery, static export, and VRT
+worker. Calls and other dynamic bindings still render through Vue but are not serialized. `play` is
+syntax-checked as one TypeScript expression before it is embedded. Compatibility `:props` and
+`:attrs` shorthands accept JSON-like literals and are merged before explicit target bindings.
+
+When a variant has `play`, `musea-vrt` runs it after preview readiness and before
+`capture.beforeCapture`, settling, masks, and screenshot capture. A rejected play fails that VRT
+job without creating or updating its baseline. Use a variant without `play` when the baseline
+should describe the initial state.
+
 ## Props Palette
 
 ![Musea Props Panel](/musea-props.png)
 
-The palette pipeline can infer interactive controls from component metadata and art definitions.
+The palette pipeline infers interactive controls from component metadata and the target bindings.
+Choose a variant in the Props header to load its preview and use its authored component props as
+the initial control values. Fallthrough attrs are passed separately. Saved or shared values still
+take precedence, and Reset returns to the selected variant's authored values. The older `args`
+spelling remains readable for migration.
 
 Typed `defineProps` and runtime object/array declarations use native SFC metadata. String,
 number, boolean, array, and object defaults retain their JSON types; authored variant values take

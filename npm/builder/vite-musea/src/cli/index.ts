@@ -30,13 +30,13 @@ import { formatCliError } from "./errors.js";
 import type { ArtFileInfo } from "../types/index.js";
 import { parseArtFile, parseWorkers } from "./utils.js";
 import { scanArtFiles } from "../utils.js";
-import { runVrt, runApprove, runClean, runGenerate } from "./commands.js";
+import { runVrt, runApprove, runClean, runGenerate, runInteractionTests } from "./commands.js";
 import { loadMuseaConfiguration } from "./config.js";
 import { loadHostedGallery } from "./hosted.js";
 import { runServe } from "./serve.js";
 import type { MuseaVrtOptions } from "../types/index.js";
 
-type Command = "run" | "approve" | "clean" | "generate" | "serve";
+type Command = "run" | "test" | "approve" | "clean" | "generate" | "serve";
 
 export interface CliOptions {
   command: Command;
@@ -93,6 +93,9 @@ export function parseArgs(args: string[]): CliOptions {
     const sub = args[0];
     if (sub === "serve") {
       options.command = "serve";
+      i = 1;
+    } else if (sub === "test") {
+      options.command = "test";
       i = 1;
     } else if (sub === "approve") {
       options.command = "approve";
@@ -201,6 +204,7 @@ Usage:
 
 Commands:
   (default)             Run VRT tests
+  test                  Run colocated play tests without screenshots
   approve [pattern]     Approve failed snapshots and update baselines
                         Optional pattern filters which snapshots to approve
   clean                 Remove orphaned snapshots (no matching art/variant)
@@ -226,6 +230,9 @@ Options:
 Examples:
   # Run VRT tests
   musea-vrt
+
+  # Run interaction tests only
+  musea-vrt test --workers 8
 
   # Update baseline snapshots
   musea-vrt -u
@@ -308,6 +315,7 @@ async function main(): Promise<void> {
     options.previewUrls = hosted.previewUrls;
     options.snapshotIdentities = hosted.snapshotIdentities;
     if (options.command === "run") await runVrt(options, hosted.arts);
+    else if (options.command === "test") await runInteractionTests(options, hosted.arts);
     else if (options.command === "approve") await runApprove(options, hosted.arts);
     else if (options.command === "clean") await runClean(options, hosted.arts);
     return;
@@ -338,6 +346,9 @@ async function main(): Promise<void> {
     switch (options.command) {
       case "run":
         await runVrt(options, artFiles);
+        break;
+      case "test":
+        await runInteractionTests(options, artFiles);
         break;
       case "approve":
         await runApprove(options, artFiles);

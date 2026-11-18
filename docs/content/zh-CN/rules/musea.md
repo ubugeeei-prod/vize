@@ -17,8 +17,8 @@ description: "检查 Musea 的 `.art.vue` 故事、变体和设计令牌用法�
 | --- | --- | --- |
 | <span id="musea-no-empty-variant"></span>[`musea/no-empty-variant`](./reference/musea-no-empty-variant.md) | 禁止空的 &lt;variant&gt; 块。 |  |
 | <span id="musea-prefer-design-tokens"></span>[`musea/prefer-design-tokens`](./reference/musea-prefer-design-tokens.md) | 优先使用设计令牌 CSS 变量，而不是硬编码的原始值。 |  |
-| <span id="musea-require-component"></span>[`musea/require-component`](./reference/musea-require-component.md) | 要求 &lt;art&gt; 块具有 component 属性。 |  |
-| <span id="musea-require-title"></span>[`musea/require-title`](./reference/musea-require-title.md) | 要求 &lt;art&gt; 块具有 title 属性。 |  |
+| <span id="musea-require-component"></span>[`musea/require-component`](./reference/musea-require-component.md) | 要求 &lt;art&gt; 块具有可解析的目标组件。 |  |
+| <span id="musea-require-title"></span>[`musea/require-title`](./reference/musea-require-title.md) | 要求 &lt;art&gt; 块具有可解析的显示标题。 |  |
 | <span id="musea-unique-variant-names"></span>[`musea/unique-variant-names`](./reference/musea-unique-variant-names.md) | 要求 variant 名称唯一。 |  |
 | <span id="musea-valid-variant"></span>[`musea/valid-variant`](./reference/musea-valid-variant.md) | 要求 &lt;variant&gt; 块具有 name 属性。 |  |
 

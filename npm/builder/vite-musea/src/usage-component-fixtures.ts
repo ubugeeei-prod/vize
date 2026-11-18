@@ -39,5 +39,5 @@ export function usageArtSource(fixture: UsageComponentCase, componentSource: str
       ? `<script setup lang="ts">\n${fixture.scriptSetup}\n</script>\n`
       : "";
   const component = fixture.componentAttribute ? ` component="${fixture.componentAttribute}"` : "";
-  return `${script}\n<art title="${fixture.title}"${component}><variant name="Default" default><Self label="Seed" constructor="Seed constructor" hasOwnProperty="Seed method" /></variant></art>`;
+  return `${script}\n<art title="${fixture.title}"${component}><variant name="Default" default><${fixture.componentTagName} label="Seed" constructor="Seed constructor" hasOwnProperty="Seed method" /></variant></art>`;
 }

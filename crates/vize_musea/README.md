@@ -12,19 +12,20 @@ support.
 ## Highlights
 
 - Parse `*.art.vue` files into `ArtDescriptor`
-- Read `defineArt(source, options)` compiler-macro metadata from root `<script setup>`
+- Infer the target from imported component tags and read optional `defineArtMeta(options)` metadata
 - Transform art files into Vue and Storybook-compatible outputs
 - Generate Markdown docs, catalogs, and prop palettes
 - Autogenerate art variants and VRT configuration data
 
 ## Art Authoring
 
-The preferred `.art.vue` shape keeps metadata and the target component in `defineArt`:
+The preferred `.art.vue` shape uses ordinary Vue imports and component tags:
 
 ```vue
 <script setup lang="ts">
-defineArt("./Button.vue", {
-  title: "Button",
+import Button from "./Button.vue";
+
+defineArtMeta({
   category: "UI",
   tags: ["button"],
 });
@@ -37,8 +38,9 @@ defineArt("./Button.vue", {
 </art>
 ```
 
-`<art title="..." component="...">` remains supported for compatibility. When both are present,
-explicit `<art>` attributes override `defineArt` values.
+The target and default title are inferred as `Button`. `defineArtMeta()` is optional, while
+`defineArt(Button)` remains an explicit escape hatch for ambiguous compositions.
+`<art title="..." component="...">` remains supported for compatibility.
 
 ## Key Entry Points
 

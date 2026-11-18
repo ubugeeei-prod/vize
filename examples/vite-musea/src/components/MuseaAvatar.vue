@@ -8,13 +8,6 @@ const props = defineProps<{
   size?: "sm" | "md" | "lg";
 }>();
 
-defineArt("./MuseaAvatar.vue", {
-  title: "Avatar",
-  category: "Components",
-  tags: ["avatar", "user", "profile"],
-  status: "ready",
-});
-
 const initials = computed(() => {
   if (!props.name) return "?";
   return props.name
@@ -88,25 +81,25 @@ const safeSrc = computed(() => safeUrl(props.src));
 }
 </style>
 
-<art>
+<art title="Avatar" category="Components" tags="avatar,user,profile" status="ready">
   <variant name="Default" default>
-    <Self name="Jane Doe" />
+    <MuseaAvatar name="Jane Doe" />
   </variant>
   <variant name="With Image">
-    <Self name="Jane Doe" src="https://i.pravatar.cc/80?img=1" />
+    <MuseaAvatar name="Jane Doe" src="https://i.pravatar.cc/80?img=1" />
   </variant>
   <variant name="Sizes">
     <div style="display: flex; gap: 0.75rem; align-items: center">
-      <Self name="SM" size="sm" />
-      <Self name="MD" size="md" />
-      <Self name="LG" size="lg" />
+      <MuseaAvatar name="SM" size="sm" />
+      <MuseaAvatar name="MD" size="md" />
+      <MuseaAvatar name="LG" size="lg" />
     </div>
   </variant>
   <variant name="Group">
     <div style="display: flex; margin-left: 0">
-      <Self name="Alice" style="margin-left: 0; border: 2px solid var(--musea-paper)" />
-      <Self name="Bob" style="margin-left: -8px; border: 2px solid var(--musea-paper)" />
-      <Self name="Charlie" style="margin-left: -8px; border: 2px solid var(--musea-paper)" />
+      <MuseaAvatar name="Alice" style="margin-left: 0; border: 2px solid var(--musea-paper)" />
+      <MuseaAvatar name="Bob" style="margin-left: -8px; border: 2px solid var(--musea-paper)" />
+      <MuseaAvatar name="Charlie" style="margin-left: -8px; border: 2px solid var(--musea-paper)" />
     </div>
   </variant>
 </art>

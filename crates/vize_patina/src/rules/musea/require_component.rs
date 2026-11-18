@@ -2,15 +2,15 @@
 //!
 //! Require a target component for an `<art>` block.
 //!
-//! The component may be declared with `<art component="./Button.vue">` or with
-//! `defineArt("./Button.vue", ...)`.
+//! The component is normally inferred from an imported tag rendered by the variants.
+//! `<art component="...">` and `defineArt(Component)` remain explicit escape hatches.
 
-use super::{MuseaLintResult, MuseaRule, MuseaRuleMeta};
+use super::{MuseaLintResult, MuseaRule, MuseaRuleMeta, art_rule_info};
 use crate::diagnostic::{LintDiagnostic, Severity};
 
 static META: MuseaRuleMeta = MuseaRuleMeta {
     name: "musea/require-component",
-    description: "Require component attribute in <art> block",
+    description: "Require a resolvable target component for an <art> block",
     default_severity: Severity::Warning,
 };
 
@@ -36,7 +36,7 @@ impl MuseaRule for RequireComponent {
 
         if !art_tag.contains("component=")
             && !art_tag.contains("component =")
-            && !define_art_has_component(source)
+            && !art_rule_info(source).has_component
         {
             result.add_diagnostic(
                 LintDiagnostic::warn(
@@ -49,20 +49,6 @@ impl MuseaRule for RequireComponent {
             );
         }
     }
-}
-
-fn define_art_has_component(source: &str) -> bool {
-    let Ok(descriptor) = vize_atelier_sfc::parse_sfc(source, Default::default()) else {
-        return false;
-    };
-    let Some(script_setup) = descriptor.script_setup.as_ref() else {
-        return false;
-    };
-
-    vize_croquis::script_parser::parse_script_setup(script_setup.content.as_ref())
-        .macros
-        .define_art()
-        .is_some_and(|art| art.component_source.is_some())
 }
 
 #[cfg(test)]
@@ -93,6 +79,18 @@ mod tests {
 defineArt("./Button.vue", { title: "Button" });
 </script>
 <art></art>"#;
+        let rule = RequireComponent;
+        let mut result = MuseaLintResult::default();
+        rule.check(source, &mut result);
+        assert_eq!(result.warning_count, 0);
+    }
+
+    #[test]
+    fn test_valid_with_inferred_component() {
+        let source = r#"<script setup>
+import Button from "./Button.vue";
+</script>
+<art><variant name="Default"><Button /></variant></art>"#;
         let rule = RequireComponent;
         let mut result = MuseaLintResult::default();
         rule.check(source, &mut result);

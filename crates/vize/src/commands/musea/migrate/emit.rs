@@ -40,7 +40,8 @@ pub(super) fn emit_art(
     content.push_str("<script setup lang=\"ts\">\n");
     append!(
         content,
-        "defineArt(\"{}\", {{\n",
+        "import {} from \"{}\";\n\ndefineArtMeta({{\n",
+        component_tag,
         escape_js_string(component_path)
     );
     let (category, title) = split_title(module.title.as_deref(), component_tag);

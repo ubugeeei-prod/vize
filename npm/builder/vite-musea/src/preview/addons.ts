@@ -237,7 +237,7 @@ function __museaInitAddons(container, variantName, extraCaptureEvents = []) {
       case 'musea:set-props': {
         // Store props for remount - handled by preview module
         if (window.__museaSetProps) {
-          window.__museaSetProps(payload.props || {});
+          window.__museaSetProps(payload.props || {}, payload.attrs || {});
         }
         break;
       }
@@ -323,5 +323,65 @@ function __museaInitAddons(container, variantName, extraCaptureEvents = []) {
 
   // Notify parent that iframe is ready
   window.parent.postMessage({ type: 'musea:ready', payload: {} }, parentOrigin);
+}
+`;
+
+/** Interaction-test bridge, emitted only for variants that author a play function. */
+export const MUSEA_PLAY_INIT_CODE = `
+function __museaInitPlay(container, variantName) {
+  const parentOrigin = window.location.origin;
+  let playRunning = null;
+  window.__museaRunPlay = async () => {
+    if (typeof window.__museaPlay !== 'function') {
+      return { status: 'skipped', duration: 0 };
+    }
+    if (playRunning) return playRunning;
+    const startedAt = performance.now();
+    const context = __museaCreatePlayContext(container);
+    playRunning = Promise.resolve()
+      .then(() => window.__museaPlay(context))
+      .then(() => ({
+        status: 'passed',
+        duration: Math.round(performance.now() - startedAt),
+        report: context.__museaReport()
+      }))
+      .catch((error) => {
+        const failure = error instanceof Error ? error : new Error(String(error));
+        failure.museaDuration = Math.round(performance.now() - startedAt);
+        failure.museaReport = context.__museaReport();
+        throw failure;
+      })
+      .finally(() => { playRunning = null; });
+    return playRunning;
+  };
+
+  window.addEventListener('message', (event) => {
+    if (event.source !== window.parent || event.origin !== parentOrigin) return;
+    if (event.data?.type !== 'musea:run-play') return;
+    const payload = event.data.payload;
+    const requestId = typeof payload?.requestId === 'string' ? payload.requestId : undefined;
+    (async () => {
+      try {
+        const result = await window.__museaRunPlay();
+        window.parent.postMessage({
+          type: 'musea:play-result',
+          payload: { requestId, variantName, ...result }
+        }, parentOrigin);
+      } catch (error) {
+        window.parent.postMessage({
+          type: 'musea:play-result',
+          payload: {
+            requestId,
+            variantName,
+            status: 'failed',
+            duration: Number(error?.museaDuration) || 0,
+            error: error instanceof Error ? error.message : String(error),
+            stack: error instanceof Error ? error.stack : undefined,
+            report: error?.museaReport
+          }
+        }, parentOrigin);
+      }
+    })();
+  });
 }
 `;

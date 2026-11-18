@@ -24,9 +24,12 @@ export function createVrtJobs(
         continue;
       }
 
-      const viewports = variant.args?.viewport
-        ? [variant.args.viewport as ViewportConfig]
-        : defaultViewports;
+      const legacyViewport = variant.args?.viewport as ViewportConfig | undefined;
+      const viewports = variant.viewport
+        ? [variant.viewport]
+        : legacyViewport
+          ? [legacyViewport]
+          : defaultViewports;
 
       for (const viewport of viewports) {
         jobs.push({ art, variantName: variant.name, viewport });

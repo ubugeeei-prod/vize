@@ -14,6 +14,7 @@ import DocumentationPanel from "../components/DocumentationPanel.vue";
 import A11yBadge from "../components/A11yBadge.vue";
 import A11yPanel from "../components/A11yPanel.vue";
 import VrtPanel from "../components/VrtPanel.vue";
+import TestPanel from "../components/TestPanel.vue";
 import AddonToolbar from "../components/AddonToolbar.vue";
 import ActionsPanel from "../components/ActionsPanel.vue";
 import FullscreenPreview from "../components/FullscreenPreview.vue";
@@ -32,7 +33,7 @@ const {
 } = useActions();
 const { setCurrentVariant } = useEventCapture();
 
-const activeTab = ref<"variants" | "props" | "docs" | "a11y" | "vrt">(
+const activeTab = ref<"variants" | "props" | "test" | "docs" | "a11y" | "vrt">(
   route.query[MUSEA_PROPS_QUERY] === undefined ? "variants" : "props",
 );
 const actionCount = computed(() => events.value.length);
@@ -240,6 +241,18 @@ onUnmounted(() => {
         <button
           type="button"
           class="tab-btn"
+          :class="{ active: activeTab === 'test' }"
+          :aria-pressed="activeTab === 'test'"
+          @click="() => selectTab('test')"
+        >
+          Test
+          <span v-if="art.variants.some((variant) => variant.play)" class="tab-count">
+            {{ art.variants.filter((variant) => variant.play).length }}
+          </span>
+        </button>
+        <button
+          type="button"
+          class="tab-btn"
           :class="{ active: activeTab === 'variants' }"
           :aria-pressed="activeTab === 'variants'"
           @click="() => selectTab('variants')"
@@ -303,7 +316,7 @@ onUnmounted(() => {
               <span v-if="variant.isDefault" class="variant-section-badge">Default</span>
             </div>
 
-            <VariantCard :art-path="art.path" :variant :component-name="art.metadata.title" />
+            <VariantCard :art-path="art.path" :variant />
           </section>
         </div>
 
@@ -320,7 +333,17 @@ onUnmounted(() => {
       <PropsPanel
         v-if="activeTab === 'props'"
         :art-path="art.path"
-        :default-variant-name="art.variants.find((v) => v.isDefault)?.name || art.variants[0]?.name"
+        :variants="art.variants"
+        :selected-variant-name="selectedVariant?.name"
+        @select-variant="(name) => (selectedVariantName = name)"
+      />
+
+      <TestPanel
+        v-if="activeTab === 'test' && selectedVariant"
+        :art-path="art.path"
+        :variant="selectedVariant"
+        :variants="art.variants"
+        @select-variant="(name) => (selectedVariantName = name)"
       />
 
       <DocumentationPanel v-if="activeTab === 'docs'" :art-path="art.path" />
@@ -496,6 +519,21 @@ onUnmounted(() => {
 .tab-btn.active {
   color: var(--musea-accent);
   border-bottom-color: var(--musea-accent);
+}
+
+.tab-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.125rem;
+  height: 1.125rem;
+  margin-inline-start: 0.25rem;
+  padding-inline: 0.3125rem;
+  border-radius: 999px;
+  background: var(--musea-accent-subtle);
+  color: var(--musea-accent);
+  font-size: 0.625rem;
+  font-weight: 700;
 }
 
 .action-count-badge {

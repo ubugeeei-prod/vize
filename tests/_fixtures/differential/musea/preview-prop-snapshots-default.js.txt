@@ -232,7 +232,7 @@ function __museaInitAddons(container, variantName, extraCaptureEvents = []) {
       case 'musea:set-props': {
         // Store props for remount - handled by preview module
         if (window.__museaSetProps) {
-          window.__museaSetProps(payload.props || {});
+          window.__museaSetProps(payload.props || {}, payload.attrs || {});
         }
         break;
       }
@@ -324,6 +324,7 @@ function __museaInitAddons(container, variantName, extraCaptureEvents = []) {
 let currentApp = null;
 // Replace raw JSON snapshots so every literal prop name stays an own key.
 const propsOverride = shallowRef({});
+const attrsOverride = shallowRef({});
 const slotsOverride = reactive({ default: '' });
 
 function renderError(title, error) {
@@ -352,8 +353,9 @@ function renderError(title, error) {
 
 
 
-window.__museaSetProps = (props) => {
+window.__museaSetProps = (props, attrs = {}) => {
   propsOverride.value = { ...props };
+  attrsOverride.value = { ...attrs };
 };
 
 window.__museaSetSlots = (slots) => {
@@ -386,8 +388,9 @@ async function mount() {
 
     // Override set-props to remount with raw component + props
     const TargetComponent = RawComponent || VariantComponent;
-    window.__museaSetProps = (props) => {
+    window.__museaSetProps = (props, attrs = {}) => {
       propsOverride.value = { ...props };
+      attrsOverride.value = { ...attrs };
       remountWithProps(TargetComponent);
     };
     window.__museaSetSlots = (slots) => {
@@ -414,7 +417,7 @@ async function remountWithProps(Component) {
         for (const [name, content] of Object.entries(slotsOverride)) {
           if (content) slotFns[name] = () => h('span', String(content));
         }
-        return h(Component, { ...propsOverride.value }, slotFns);
+        return h(Component, { ...attrsOverride.value, ...propsOverride.value }, slotFns);
       };
     }
   });

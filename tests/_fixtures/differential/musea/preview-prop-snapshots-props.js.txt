@@ -233,7 +233,7 @@ function __museaInitAddons(container, variantName, extraCaptureEvents = []) {
       case 'musea:set-props': {
         // Store props for remount - handled by preview module
         if (window.__museaSetProps) {
-          window.__museaSetProps(payload.props || {});
+          window.__museaSetProps(payload.props || {}, payload.attrs || {});
         }
         break;
       }

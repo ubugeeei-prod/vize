@@ -1,11 +1,11 @@
 ---
 title: "musea/require-component"
-description: "art ブロックに対象の component を指定します。"
+description: "art ブロックの対象 component を解決できるようにします。"
 ---
 
 # `musea/require-component`
 
-art ブロックに対象の component を指定します。
+art ブロックの対象 component を解決できるようにします。
 
 | 既定の重大度 | プリセット | 自動修正 | オプション |
 | --- | --- | --- | --- |
@@ -17,23 +17,23 @@ art ブロックに対象の component を指定します。
 
 art に title はありますが、プレビューする component の指定がありません。
 
-```vue annotate="remove:1"
+```vue annotate="remove:1,2"
 <art title="Button">
-  <variant name="primary" />
+  <variant name="primary"><div /></variant>
 </art>
 ```
 
 ## 良い例
 
-defineArt で ./Button.vue を art の component として指定します。
+variant で import した Button を描画し、art の対象を特定します。
 
-```vue annotate="add:1,2,3,4,5"
+```vue annotate="add:1,2,3,4,5,6"
 <script setup>
-defineArt("./Button.vue", { title: "Button" });
+import Button from "./Button.vue";
 </script>
 
 <art>
-  <variant name="primary" />
+  <variant name="primary"><Button /></variant>
 </art>
 ```
 

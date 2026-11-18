@@ -113,11 +113,62 @@ defineArt("./base-button.vue", {
 }
 
 #[test]
-fn test_missing_title_error() {
+fn test_parse_define_art_meta_without_target() {
+    let allocator = Allocator::new();
+    let source = r#"
+<script setup lang="ts">
+import Counter from "./Counter.vue";
+defineArtMeta({
+  title: "Interactive Counter",
+  category: "Components",
+  tags: ["counter", "input"],
+});
+</script>
+<art><variant name="Default"><Counter /></variant></art>
+"#;
+    let desc = parse_art(&allocator, source, ArtParseOptions::default()).unwrap();
+    assert_eq!(desc.metadata.title, "Interactive Counter");
+    assert_eq!(desc.metadata.category, Some("Components"));
+    assert_eq!(desc.metadata.tags.as_slice(), ["counter", "input"]);
+    assert_eq!(desc.metadata.component, Some("./Counter.vue"));
+}
+
+#[test]
+fn test_missing_title_is_inferred_by_the_consumer() {
     let allocator = Allocator::new();
     let source = r#"<art><variant name="Test"></variant></art>"#;
-    let result = parse_art(&allocator, source, ArtParseOptions::default());
-    assert!(matches!(result, Err(ArtParseError::MissingTitle)));
+    let result = parse_art(&allocator, source, ArtParseOptions::default()).unwrap();
+    assert_eq!(result.metadata.title, "");
+}
+
+#[test]
+fn test_target_and_title_are_inferred_from_the_shared_imported_tag() {
+    let allocator = Allocator::new();
+    let source = r#"
+<script setup lang="ts">import Counter from "./Counter.vue";</script>
+<art>
+  <variant name="Default"><Counter :initial="0" /></variant>
+  <variant name="Disabled"><Counter disabled /></variant>
+</art>
+"#;
+    let result = parse_art(&allocator, source, ArtParseOptions::default()).unwrap();
+    assert_eq!(result.metadata.title, "Counter");
+    assert_eq!(result.metadata.component, Some("./Counter.vue"));
+}
+
+#[test]
+fn test_ambiguous_target_requires_define_art() {
+    let allocator = Allocator::new();
+    let source = r#"
+<script setup lang="ts">
+import Counter from "./Counter.vue";
+import Meter from "./Meter.vue";
+</script>
+<art><variant name="Composition"><Counter /><Meter /></variant></art>
+"#;
+    let error = parse_art(&allocator, source, ArtParseOptions::default()).unwrap_err();
+    assert!(matches!(error, ArtParseError::AmbiguousTarget { .. }));
+    assert!(error.to_string().contains("defineArt(Target)"));
 }
 
 #[test]

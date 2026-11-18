@@ -13,6 +13,7 @@ void test("generatePreviewModule emits Vue 2 preview runtime when requested", ()
   assert.match(code, /import Vue, \{ reactive, shallowRef \} from 'vue';/);
   assert.match(code, /new Vue\(\{ render: \(h\) => h\(VariantComponent\) \}\)/);
   assert.match(code, /currentApp\.\$destroy\(\);/);
+  assert.match(code, /attrs: \{ \.\.\.attrsOverride\.value \}/);
 });
 
 void test("generatePreviewModuleWithProps emits Vue 2 prop binding when requested", () => {

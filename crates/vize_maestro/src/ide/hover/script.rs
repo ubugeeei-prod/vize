@@ -326,8 +326,12 @@ impl HoverService {
     pub(super) fn hover_vue_macro(word: &str) -> Option<Hover> {
         let (signature, description) = match word {
             "defineArt" => (
-                "function defineArt<T>(component: T | string, options?: ArtOptions): void",
-                "Musea compiler macro to declare the art target component and metadata.",
+                "function defineArt<T>(component: T, options?: ArtOptions): void",
+                "Musea compiler macro to select an explicit target when template inference is ambiguous.",
+            ),
+            "defineArtMeta" => (
+                "function defineArtMeta(options: ArtOptions): void",
+                "Musea compiler macro for optional gallery metadata.",
             ),
             "defineProps" => (
                 "function defineProps<T>(): T",

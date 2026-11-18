@@ -13,13 +13,6 @@ const emit = defineEmits<{
   "update:modelValue": [value: string];
 }>();
 
-defineArt("./MuseaInput.vue", {
-  title: "Input",
-  category: "Forms",
-  tags: ["input", "form", "text"],
-  status: "ready",
-});
-
 function onInput(event: Event) {
   emit("update:modelValue", (event.target as HTMLInputElement).value);
 }
@@ -92,20 +85,20 @@ function onInput(event: Event) {
 }
 </style>
 
-<art>
+<art title="Input" category="Forms" tags="input,form,text" status="ready">
   <variant name="Default" default>
-    <Self label="Text input" placeholder="Enter text..." />
+    <MuseaInput label="Text input" placeholder="Enter text..." />
   </variant>
   <variant name="With Value">
-    <Self label="Text input" model-value="Hello, Musea!" placeholder="Enter text..." />
+    <MuseaInput label="Text input" model-value="Hello, Musea!" placeholder="Enter text..." />
   </variant>
   <variant name="Search">
-    <Self label="Search" type="search" placeholder="Search..." />
+    <MuseaInput label="Search" type="search" placeholder="Search..." />
   </variant>
   <variant name="With Error">
-    <Self label="Email" model-value="bad@" error="Invalid email address" placeholder="Enter email..." />
+    <MuseaInput label="Email" model-value="bad@" error="Invalid email address" placeholder="Enter email..." />
   </variant>
   <variant name="Disabled">
-    <Self label="Disabled input" model-value="Read only" disabled placeholder="Disabled input" />
+    <MuseaInput label="Disabled input" model-value="Read only" disabled placeholder="Disabled input" />
   </variant>
 </art>

@@ -41,7 +41,7 @@
 //! let allocator = Allocator::new();
 //! let source = r#"
 //! <script setup lang="ts">
-//! defineArt("./Button.vue", { title: "Button" });
+//! import Button from "./Button.vue";
 //! </script>
 //!
 //! <art>

@@ -16,6 +16,7 @@ pub const DEFINE_SLOTS: &str = "defineSlots";
 pub const DEFINE_MODEL: &str = "defineModel";
 pub const WITH_DEFAULTS: &str = "withDefaults";
 pub const DEFINE_ART: &str = "defineArt";
+pub const DEFINE_ART_META: &str = "defineArtMeta";
 /// How a macro participates in the script setup compilation lifecycle.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum MacroLifecycle {
@@ -72,6 +73,11 @@ pub static BUILTIN_MACROS: &[&str] = &[
 pub static ECOSYSTEM_COMPILE_TIME_MACROS: &[MacroDefinition] = &[
     MacroDefinition {
         name: DEFINE_ART,
+        lifecycle: MacroLifecycle::AnalyzeAndErase,
+        artifact_kind: None,
+    },
+    MacroDefinition {
+        name: DEFINE_ART_META,
         lifecycle: MacroLifecycle::AnalyzeAndErase,
         artifact_kind: None,
     },
@@ -213,7 +219,7 @@ impl MacroKind {
             DEFINE_SLOTS => Some(Self::DefineSlots),
             DEFINE_MODEL => Some(Self::DefineModel),
             WITH_DEFAULTS => Some(Self::WithDefaults),
-            DEFINE_ART => Some(Self::Custom),
+            DEFINE_ART | DEFINE_ART_META => Some(Self::Custom),
             _ => None,
         }
     }
@@ -548,6 +554,10 @@ mod tests {
             macro_lifecycle("defineArt"),
             Some(MacroLifecycle::AnalyzeAndErase)
         );
+        assert_eq!(
+            macro_lifecycle("defineArtMeta"),
+            Some(MacroLifecycle::AnalyzeAndErase)
+        );
         assert_eq!(macro_lifecycle("notAMacro"), None);
         assert_eq!(macro_lifecycle("useTemplateRef"), None);
 
@@ -556,6 +566,11 @@ mod tests {
         assert!(is_runtime_erased_macro("defineArt"));
         assert!(!is_artifact_macro("defineArt"));
         assert_eq!(macro_artifact_kind("defineArt"), None);
+        assert!(is_compile_time_macro("defineArtMeta"));
+        assert!(is_ecosystem_compile_time_macro("defineArtMeta"));
+        assert!(is_runtime_erased_macro("defineArtMeta"));
+        assert!(!is_artifact_macro("defineArtMeta"));
+        assert_eq!(macro_artifact_kind("defineArtMeta"), None);
         assert!(is_compile_time_macro("definePage"));
         assert!(is_ecosystem_compile_time_macro("definePage"));
         assert!(is_runtime_erased_macro("definePage"));
@@ -592,6 +607,7 @@ mod tests {
         assert!(runtime_erased_macro_names().any(|name| name == "defineRouteRules"));
         assert!(!runtime_erased_macro_names().any(|name| name == "defineLazyHydrationComponent"));
         assert!(runtime_erased_macro_names().any(|name| name == "defineArt"));
+        assert!(runtime_erased_macro_names().any(|name| name == "defineArtMeta"));
         assert!(artifact_macro_names().any(|name| name == "definePage"));
         assert!(artifact_macro_names().any(|name| name == "definePageMeta"));
         assert!(artifact_macro_names().any(|name| name == "defineRouteRules"));

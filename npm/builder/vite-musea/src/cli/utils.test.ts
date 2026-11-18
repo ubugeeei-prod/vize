@@ -95,13 +95,13 @@ void test("parseArtFile returns null when native parse fails", async () => {
   };
 
   try {
-    const artPath = writeArtFile(root, "<art></art>");
+    const artPath = writeArtFile(root, "<template><div /></template>");
     const parsed = await parseArtFile(artPath);
     assert.equal(parsed, null);
     assert.equal(errors.length, 1);
     assert.equal(
       errors[0],
-      `[musea] Failed to process Button.art.vue: Missing required 'title' attribute in <art> block`,
+      `[musea] Failed to process Button.art.vue: No <art> block found in file`,
     );
   } finally {
     console.error = error;

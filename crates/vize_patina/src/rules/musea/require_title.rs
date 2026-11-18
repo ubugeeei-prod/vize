@@ -2,14 +2,14 @@
 //!
 //! Require a title for an `<art>` block.
 //!
-//! A title may be provided by `<art title="...">` or by `defineArt("./Button.vue", { title: "..." })`.
-//! If `defineArt` omits `title`, the inferred component name is used as the display fallback.
+//! A title may be provided by `<art title="...">`, `defineArtMeta({ title: "..." })`, or
+//! inferred from the imported component rendered by the variants.
 //!
 //! ## Examples
 //!
 //! ### Invalid
 //! ```vue
-//! <art component="./Button.vue">
+//! <art>
 //!   <!-- missing title -->
 //! </art>
 //! ```
@@ -17,20 +17,21 @@
 //! ### Valid
 //! ```vue
 //! <script setup>
-//! defineArt("./Button.vue", { title: "Button" });
+//! import Button from "./Button.vue";
 //! </script>
 //!
 //! <art>
+//!   <variant name="Default"><Button /></variant>
 //! </art>
 //! ```
 
-use super::{MuseaLintResult, MuseaRule, MuseaRuleMeta};
+use super::{MuseaLintResult, MuseaRule, MuseaRuleMeta, art_rule_info};
 use crate::diagnostic::{LintDiagnostic, Severity};
 use vize_l0::cstr;
 
 static META: MuseaRuleMeta = MuseaRuleMeta {
     name: "musea/require-title",
-    description: "Require title attribute in <art> block",
+    description: "Require a resolvable display title for an <art> block",
     default_severity: Severity::Error,
 };
 
@@ -57,7 +58,7 @@ impl MuseaRule for RequireTitle {
         let art_tag = tag_content.get(..tag_end).unwrap_or_default();
 
         // Check for title attribute or defineArt metadata.
-        if !has_attribute(art_tag, "title") && !define_art_has_title(source) {
+        if !has_attribute(art_tag, "title") && !art_rule_info(source).has_title {
             result.add_diagnostic(
                 LintDiagnostic::error(
                     META.name,
@@ -69,20 +70,6 @@ impl MuseaRule for RequireTitle {
             );
         }
     }
-}
-
-fn define_art_has_title(source: &str) -> bool {
-    let Ok(descriptor) = vize_atelier_sfc::parse_sfc(source, Default::default()) else {
-        return false;
-    };
-    let Some(script_setup) = descriptor.script_setup.as_ref() else {
-        return false;
-    };
-
-    vize_croquis::script_parser::parse_script_setup(script_setup.content.as_ref())
-        .macros
-        .define_art()
-        .is_some_and(|art| art.title.is_some() || !art.component_name.is_empty())
 }
 
 /// Check if a tag has an attribute (simple check)
@@ -134,6 +121,30 @@ mod tests {
     fn test_valid_with_define_art() {
         let source = r#"<script setup>
 defineArt("./Button.vue", { title: "Button" });
+</script>
+<art></art>"#;
+        let rule = RequireTitle;
+        let mut result = MuseaLintResult::default();
+        rule.check(source, &mut result);
+        assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
+    fn test_valid_with_inferred_component_title() {
+        let source = r#"<script setup>
+import Button from "./Button.vue";
+</script>
+<art><variant name="Default"><Button /></variant></art>"#;
+        let rule = RequireTitle;
+        let mut result = MuseaLintResult::default();
+        rule.check(source, &mut result);
+        assert_eq!(result.error_count, 0);
+    }
+
+    #[test]
+    fn test_valid_with_define_art_meta_title() {
+        let source = r#"<script setup>
+defineArtMeta({ title: "Button" });
 </script>
 <art></art>"#;
         let rule = RequireTitle;

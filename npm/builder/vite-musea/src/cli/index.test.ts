@@ -5,8 +5,16 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
+import { parseArgs } from "./index.ts";
 
 const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+
+void test("test subcommand selects the interaction-only runner", () => {
+  const options = parseArgs(["test", "--workers", "8", "--json"]);
+  assert.equal(options.command, "test");
+  assert.equal(options.workers, 8);
+  assert.equal(options.json, true);
+});
 
 void test("runs when invoked through a symlinked pnpm bin entrypoint", async (t) => {
   const workspace = await fs.promises.mkdtemp(path.join(os.tmpdir(), "musea-vrt-bin-"));

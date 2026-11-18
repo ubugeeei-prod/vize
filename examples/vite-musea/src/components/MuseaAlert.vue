@@ -13,13 +13,6 @@ const emit = defineEmits<{
 function closeAlert() {
   emit("close");
 }
-
-defineArt("./MuseaAlert.vue", {
-  title: "Alert",
-  category: "Feedback",
-  tags: ["alert", "message", "feedback"],
-  status: "ready",
-});
 </script>
 
 <template>
@@ -110,20 +103,20 @@ defineArt("./MuseaAlert.vue", {
 }
 </style>
 
-<art>
+<art title="Alert" category="Feedback" tags="alert,message,feedback" status="ready">
   <variant name="Default" default>
-    <Self>This is a default informational alert.</Self>
+    <MuseaAlert>This is a default informational alert.</MuseaAlert>
   </variant>
   <variant name="Success">
-    <Self variant="success">Operation completed successfully.</Self>
+    <MuseaAlert variant="success">Operation completed successfully.</MuseaAlert>
   </variant>
   <variant name="Warning">
-    <Self variant="warning">Please review before proceeding.</Self>
+    <MuseaAlert variant="warning">Please review before proceeding.</MuseaAlert>
   </variant>
   <variant name="Error">
-    <Self variant="error">Something went wrong. Please try again.</Self>
+    <MuseaAlert variant="error">Something went wrong. Please try again.</MuseaAlert>
   </variant>
   <variant name="With Close Button">
-    <Self variant="success" closable>This alert can be dismissed.</Self>
+    <MuseaAlert variant="success" closable>This alert can be dismissed.</MuseaAlert>
   </variant>
 </art>

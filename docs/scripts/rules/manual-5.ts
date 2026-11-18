@@ -16,24 +16,24 @@ export const manual5: Record<string, RuleExample> = {
   "musea/require-component": {
     bad: {
       language: "vue",
-      source: '<art title="Button">\n  <variant name="primary" />\n</art>',
+      source: '<art title="Button">\n  <variant name="primary"><div /></variant>\n</art>',
     },
     good: {
       language: "vue",
       source:
-        '<script setup>\ndefineArt("./Button.vue", { title: "Button" });\n</script>\n\n<art>\n  <variant name="primary" />\n</art>',
+        '<script setup>\nimport Button from "./Button.vue";\n</script>\n\n<art>\n  <variant name="primary"><Button /></variant>\n</art>',
     },
     evidence: "docs/content/rules/musea.md",
   },
   "musea/require-title": {
     bad: {
       language: "vue",
-      source: '<art component="./Button.vue">\n  <variant name="primary" />\n</art>',
+      source: '<art>\n  <variant name="primary"><div /></variant>\n</art>',
     },
     good: {
       language: "vue",
       source:
-        '<script setup>\ndefineArt("./Button.vue", { title: "Button" });\n</script>\n\n<art>\n  <variant name="primary" />\n</art>',
+        '<script setup>\nimport Button from "./Button.vue";\n</script>\n\n<art>\n  <variant name="primary"><Button /></variant>\n</art>',
     },
     evidence: "docs/content/rules/musea.md",
   },

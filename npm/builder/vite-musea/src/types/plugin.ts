@@ -100,7 +100,7 @@ export interface MuseaOptions {
   /**
    * Enable inline <art> blocks in regular .vue SFC files.
    * When enabled, regular .vue files containing <art> blocks will be
-   * included in the gallery. Use <Self> to reference the host component.
+   * included in the gallery. Reference the host by its normal SFC component name.
    * @default false
    */
   inlineArt?: boolean;

@@ -305,13 +305,38 @@ pub(in crate::script_parser) fn extract_define_art(
     };
 
     if let Some(options) = call.arguments.get(1).and_then(argument_object) {
-        art.title = object_string_property(options, "title");
-        art.description = object_string_property(options, "description");
-        art.category = object_string_property(options, "category");
-        art.status = object_string_property(options, "status");
-        art.order = object_u32_property(options, "order");
-        fill_define_art_tags(options, &mut art.tags);
+        fill_art_metadata(options, &mut art);
     }
 
     Some(art)
+}
+
+/// `defineArtMeta(options)` metadata without an explicit component target.
+pub(in crate::script_parser) fn extract_define_art_meta(
+    call: &CallExpression<'_>,
+) -> Option<ArtDefinition> {
+    let options = call.arguments.first().and_then(argument_object)?;
+    let mut art = ArtDefinition {
+        component_name: CompactString::new(""),
+        component_source: None,
+        component_source_span: None,
+        component_source_value_span: None,
+        title: None,
+        description: None,
+        category: None,
+        tags: Vec::new(),
+        status: None,
+        order: None,
+    };
+    fill_art_metadata(options, &mut art);
+    Some(art)
+}
+
+fn fill_art_metadata(options: &oxc_ast::ast::ObjectExpression<'_>, art: &mut ArtDefinition) {
+    art.title = object_string_property(options, "title");
+    art.description = object_string_property(options, "description");
+    art.category = object_string_property(options, "category");
+    art.status = object_string_property(options, "status");
+    art.order = object_u32_property(options, "order");
+    fill_define_art_tags(options, &mut art.tags);
 }

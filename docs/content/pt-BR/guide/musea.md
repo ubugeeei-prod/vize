@@ -197,7 +197,7 @@ musea({
 });
 ```
 
-Dentro da arte em linha, use `<Self>` para renderizar o componente host.
+Na arte inline, use o nome SFC normal do componente host, por exemplo `<Button>` em `Button.vue`.
 
 ## Recursos da Galeria
 

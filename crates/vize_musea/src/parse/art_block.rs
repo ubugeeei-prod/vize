@@ -35,7 +35,7 @@ pub(crate) fn parse_metadata<'a>(
     let title = attr_value(open, "title")
         .or_else(|| define_art.and_then(|metadata| metadata.title))
         .or_else(|| define_art.and_then(|metadata| metadata.component_name))
-        .ok_or(ArtParseError::MissingTitle)?;
+        .unwrap_or("");
 
     // Optional attributes - all borrowed from source
     let description = attr_value(open, "description")

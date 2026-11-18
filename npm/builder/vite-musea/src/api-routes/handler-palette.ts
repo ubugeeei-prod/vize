@@ -17,6 +17,7 @@ import { parseScriptSetupForArt } from "../art-module.js";
 import { resolveArtComponent } from "../art-component.js";
 import { analyzeScriptComponent } from "../script-component-analysis.js";
 import { decodeUrlComponent, HttpError, isVueSourcePath } from "../security.js";
+import { sourceWithOptionalArtTitle } from "../plugin/art-processing.js";
 
 type PaletteControl = {
   name: string;
@@ -61,13 +62,14 @@ export async function handleArtPalette(
     const binding = loadNative();
     let palette: PaletteResponse;
     if (binding.generateArtPalette) {
-      const generated = binding.generateArtPalette(source, {
+      const generated = binding.generateArtPalette(sourceWithOptionalArtTitle(source), {
         filename: readableArtPath,
       });
       // N-API object fields are camelCase; the gallery/export contract uses
       // default_value. Normalize actual native data before SFC defaults merge.
       palette = {
         ...generated,
+        title: art.metadata.title,
         controls: generated.controls.map(({ defaultValue, ...control }) => ({
           ...control,
           ...(defaultValue !== undefined ? { default_value: defaultValue } : {}),

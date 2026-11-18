@@ -290,7 +290,7 @@ defineProps<{
 
 <art title="Inline Button">
   <variant name="Default">
-    <Self tone="brand" :disabled="false" />
+    <InlineButton tone="brand" :disabled="false" />
   </variant>
 </art>
 `,

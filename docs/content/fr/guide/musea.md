@@ -197,7 +197,7 @@ musea({
 });
 ```
 
-Dans l’art en ligne, utilisez `<Self>` pour rendre le composant hôte.
+Dans l’art en ligne, utilisez le nom SFC normal du composant hôte, par exemple `<Button>` dans `Button.vue`.
 
 ## Caractéristiques de la galerie
 

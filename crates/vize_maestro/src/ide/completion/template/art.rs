@@ -1,5 +1,5 @@
 //! Art (`*.art.vue`) and inline `<art>` block completions: art/variant blocks,
-//! their attributes, the `<Self>` reference, and script-block snippets.
+//! their attributes and script-block snippets.
 
 use tower_lsp::lsp_types::{
     CompletionItem, CompletionItemKind, CompletionResponse, Documentation, InsertTextFormat,
@@ -54,7 +54,6 @@ pub(crate) fn complete_inline_art(ctx: &IdeContext) -> Option<CompletionResponse
         items_vec.extend(variant_attribute_completions());
     } else if should_suggest_variant_block(before_cursor) {
         items_vec.extend(variant_block_completions());
-        items_vec.push(self_component_completion());
     }
 
     if items_vec.is_empty() {
@@ -76,7 +75,7 @@ fn art_block_completions() -> Vec<CompletionItem> {
         insert_text_format: Some(InsertTextFormat::SNIPPET),
         documentation: Some(Documentation::MarkupContent(MarkupContent {
             kind: MarkupKind::Markdown,
-            value: "**Art Block**\n\nDefines component variants. Metadata and target component are declared with `defineArt` in `<script setup>`.\n\n```vue\n<script setup lang=\"ts\">\ndefineArt(\"./Button.vue\", { title: \"Button\" });\n</script>\n\n<art>\n  <variant name=\"Primary\" default>\n    <Button>Click</Button>\n  </variant>\n</art>\n```".to_string(),
+            value: "**Art Block**\n\nDefines component variants. The target is inferred from the imported component used by each variant. Optional metadata uses `defineArtMeta`.\n\n```vue\n<script setup lang=\"ts\">\nimport Button from \"./Button.vue\";\ndefineArtMeta({ category: \"Components\" });\n</script>\n\n<art>\n  <variant name=\"Primary\" default>\n    <Button>Click</Button>\n  </variant>\n</art>\n```".to_string(),
         })),
         ..Default::default()
     }]
@@ -85,7 +84,7 @@ fn art_block_completions() -> Vec<CompletionItem> {
 /// Art attribute completions inside <art> tag.
 fn art_attribute_completions() -> Vec<CompletionItem> {
     vec![
-        items::attr_item("title", "Component title (required)", "title=\"$1\""),
+        items::attr_item("title", "Optional component title override", "title=\"$1\""),
         items::attr_item("component", "Path to component file", "component=\"$1\""),
         items::attr_item("description", "Component description", "description=\"$1\""),
         items::attr_item(
@@ -119,11 +118,11 @@ fn variant_block_completions() -> Vec<CompletionItem> {
             ..Default::default()
         },
         CompletionItem {
-            label: "variant with args".to_string(),
+            label: "variant with props".to_string(),
             kind: Some(CompletionItemKind::SNIPPET),
-            detail: Some("Create variant with args".to_string()),
+            detail: Some("Create variant with typed props".to_string()),
             insert_text: Some(
-                "<variant name=\"$1\" args='{\"$2\": $3}'>\n\t$0\n</variant>".to_string(),
+                "<variant name=\"$1\" :props=\"{ $2: $3 }\">\n\t$0\n</variant>".to_string(),
             ),
             insert_text_format: Some(InsertTextFormat::SNIPPET),
             ..Default::default()
@@ -136,7 +135,13 @@ fn variant_attribute_completions() -> Vec<CompletionItem> {
     vec![
         items::attr_item("name", "Variant name (required)", "name=\"$1\""),
         items::attr_item("default", "Mark as default variant", "default"),
-        items::attr_item("args", "Props as JSON", "args='{\"$1\": $2}'"),
+        items::attr_item("props", "Typed component props", ":props=\"{ $1: $2 }\""),
+        items::attr_item("attrs", "Fallthrough attributes", ":attrs=\"{ '$1': $2 }\""),
+        items::attr_item(
+            "play",
+            "Typed interaction test",
+            ":play=\"async ({ canvas, user, expect }) => { $1 }\"",
+        ),
         items::attr_item(
             "viewport",
             "Viewport dimensions (WxH or WxH@scale)",
@@ -144,22 +149,6 @@ fn variant_attribute_completions() -> Vec<CompletionItem> {
         ),
         items::attr_item("skip-vrt", "Skip visual regression test", "skip-vrt"),
     ]
-}
-
-/// Completion item for <Self> component reference in inline art blocks.
-fn self_component_completion() -> CompletionItem {
-    CompletionItem {
-        label: "Self".to_string(),
-        kind: Some(CompletionItemKind::CLASS),
-        detail: Some("Reference to the host component".to_string()),
-        insert_text: Some("<Self $1>$0</Self>".to_string()),
-        insert_text_format: Some(InsertTextFormat::SNIPPET),
-        documentation: Some(Documentation::MarkupContent(MarkupContent {
-            kind: MarkupKind::Markdown,
-            value: "**`<Self>`**\n\nReferences the host component in inline art blocks.\nReplaced with the component name at build time.".to_string(),
-        })),
-        ..Default::default()
-    }
 }
 
 /// Script block completions for Art files.
@@ -170,7 +159,7 @@ fn art_script_completions() -> Vec<CompletionItem> {
             kind: Some(CompletionItemKind::SNIPPET),
             detail: Some("Add script setup block".to_string()),
             insert_text: Some(
-                "<script setup lang=\"ts\">\ndefineArt(\"$1\", {\n\ttitle: \"$2\",\n});\n</script>"
+                "<script setup lang=\"ts\">\ndefineArtMeta({\n\ttitle: \"$1\",\n});\n</script>"
                     .to_string(),
             ),
             insert_text_format: Some(InsertTextFormat::SNIPPET),

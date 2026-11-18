@@ -167,26 +167,22 @@ defineProps<{ label: string }>()
 
 <art title="Self button">
   <variant name="Default" default>
-    <Self label="Hi" />
+    <SelfButton label="Hi" />
   </variant>
 
 </art>
 "#;
 
 #[test]
-fn inline_art_between_variants_offers_variant_and_self_snippets() {
+fn inline_art_between_variants_offers_only_variant_snippets() {
     let offset = INLINE_ART.find("\n</art>").unwrap();
     let items = complete_at("SelfButton.vue", INLINE_ART, offset);
     let labels = labels(&items);
 
     assert!(labels.contains(&"variant"), "{labels:?}");
-    assert!(labels.contains(&"Self"), "{labels:?}");
+    assert!(!labels.contains(&"Self"), "{labels:?}");
     assert!(!labels.contains(&"art"), "{labels:?}");
     assert!(!labels.contains(&"script setup"), "{labels:?}");
-    assert_eq!(
-        item(&items, "Self").insert_text.as_deref(),
-        Some("<Self $1>$0</Self>")
-    );
 }
 
 #[test]
@@ -203,7 +199,7 @@ fn inline_art_opening_tag_offers_art_metadata_attributes() {
 #[test]
 fn an_article_tag_in_a_variant_is_not_an_art_opening_tag() {
     // `<article` starts with `<art`; its attributes must not be art metadata.
-    let source = INLINE_ART.replace("<Self label=\"Hi\" />", "<article cl");
+    let source = INLINE_ART.replace("<SelfButton label=\"Hi\" />", "<article cl");
     let offset = source.find("<article cl").unwrap() + "<article cl".len();
     let items = complete_at("SelfButton.vue", &source, offset);
     let labels = labels(&items);
@@ -214,7 +210,7 @@ fn an_article_tag_in_a_variant_is_not_an_art_opening_tag() {
 
 #[test]
 fn a_hyphenated_variant_component_is_not_a_variant_opening_tag() {
-    let source = INLINE_ART.replace("<Self label=\"Hi\" />", "<variant-card si");
+    let source = INLINE_ART.replace("<SelfButton label=\"Hi\" />", "<variant-card si");
     let offset = source.find("<variant-card si").unwrap() + "<variant-card si".len();
     let items = complete_at("SelfButton.vue", &source, offset);
     let labels = labels(&items);

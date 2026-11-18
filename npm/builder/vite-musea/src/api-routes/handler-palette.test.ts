@@ -80,7 +80,7 @@ defineProps<{
 
 <art title="Inline Input">
   <variant name="Default">
-    <Self model-value="Seed" tone="brand" :disabled="true" />
+    <InlineInput model-value="Seed" tone="brand" :disabled="true" />
   </variant>
 </art>
 `,
@@ -121,7 +121,7 @@ void test("script component art exposes runtime props in analysis and palette", 
   try {
     await fs.promises.writeFile(
       artPath,
-      `<script setup lang="ts">defineArt("./my-button.ts", { title: "MyButton" })</script>
+      `<script setup lang="ts">import MyButton from "./my-button.ts"; defineArt(MyButton, { title: "MyButton" })</script>
 <art><variant name="Default" default><MyButton label="Hello" /></variant></art>`,
     );
     await fs.promises.writeFile(

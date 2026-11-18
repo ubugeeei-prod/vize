@@ -12,6 +12,7 @@ import { MuseaVrtRunner, generateVrtReport, generateVrtJsonReport } from "../vrt
 import type { ExtendedVrtOptions, VrtSummary } from "../vrt.js";
 import { normalizeVrtWorkerCount } from "../vrt.js";
 import type { A11yOptions, ArtFileInfo, MuseaVrtOptions } from "../types/index.js";
+import { formatMuseaTestFailure, MuseaTestRunner } from "../test-runner.js";
 
 import type { CliOptions } from "./index.js";
 
@@ -206,6 +207,47 @@ export async function runVrt(options: CliOptions, artFiles: ArtFileInfo[]): Prom
       console.log("  CI mode: Exiting with error due to failures or errors\n");
       process.exitCode = 1;
     }
+  } finally {
+    await runner.close();
+  }
+}
+
+export async function runInteractionTests(
+  options: CliOptions,
+  artFiles: ArtFileInfo[],
+): Promise<void> {
+  const count = artFiles.reduce(
+    (total, art) => total + art.variants.filter((variant) => Boolean(variant.play)).length,
+    0,
+  );
+  console.log(`  Running ${count} interaction test(s)\n`);
+  const configured = createVrtOptions(options);
+  const runner = new MuseaTestRunner({
+    workers: configured.workers,
+    previewBasePath: configured.previewBasePath,
+    previewUrls: configured.previewUrls,
+    launchOptions: configured.launchOptions,
+  });
+
+  try {
+    await runner.init();
+    const results = await runner.runAllTests(artFiles, options.baseUrl);
+    for (const result of results) {
+      const mark = result.status === "passed" ? "✓" : result.status === "failed" ? "✗" : "-";
+      console.log(`  ${mark} ${result.artPath} › ${result.variantName} (${result.duration} ms)`);
+      if (result.status === "failed") console.log(formatMuseaTestFailure(result));
+    }
+
+    const failed = results.filter((result) => result.status === "failed");
+    const passed = results.filter((result) => result.status === "passed");
+    console.log(`\n  ${passed.length} passed, ${failed.length} failed\n`);
+    if (options.json) {
+      await fs.promises.mkdir(options.output, { recursive: true });
+      const reportPath = path.join(options.output, "test-report.json");
+      await fs.promises.writeFile(reportPath, JSON.stringify({ results }, null, 2));
+      console.log(`  JSON report: ${reportPath}\n`);
+    }
+    if (failed.length > 0) process.exitCode = 1;
   } finally {
     await runner.close();
   }

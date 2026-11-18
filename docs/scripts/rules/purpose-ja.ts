@@ -67,8 +67,8 @@ export const purposeJa: Readonly<Record<string, string>> = {
   "musea/no-empty-variant": "内容のない variant ブロックを検出します。",
   "musea/prefer-design-tokens":
     "CSS に直接記述した値が登録済みのデザイントークンの値に一致する場合、対応する CSS 変数で表現します。",
-  "musea/require-component": "art ブロックに対象の component を指定します。",
-  "musea/require-title": "art ブロックに title を指定します。",
+  "musea/require-component": "art ブロックの対象 component を解決できるようにします。",
+  "musea/require-title": "art ブロックの表示 title を解決できるようにします。",
   "musea/unique-variant-names": "同じ Art ファイル内の variant 名を一意にします。",
   "musea/valid-variant": "variant ブロックに name を指定します。",
   "nuxt/no-nuxt-config-test-key":

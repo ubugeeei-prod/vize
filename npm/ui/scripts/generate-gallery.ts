@@ -104,8 +104,9 @@ export function renderFamilyStory(
       (example, index) =>
         `import ${bindings[index]} from ${JSON.stringify(posixRelative(storyDirectory, example))};`,
     ),
+    `import ${entry.canonicalName} from ${JSON.stringify(posixRelative(storyDirectory, target))};`,
     "",
-    `defineArt(${JSON.stringify(posixRelative(storyDirectory, target))}, {`,
+    `defineArt(${entry.canonicalName}, {`,
     `  title: ${JSON.stringify(meta.title)},`,
     `  category: ${JSON.stringify(meta.category)},`,
     `  status: ${JSON.stringify(meta.status)},`,

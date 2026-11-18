@@ -25,11 +25,14 @@ import {
 } from "../utils/propsPermalink";
 import SlotEditor from "./SlotEditor.vue";
 import HighlightedCode from "./HighlightedCode.vue";
+import type { ArtVariant } from "../../src/types/index.js";
 
 const props = defineProps<{
   artPath: string;
-  defaultVariantName?: string;
+  variants: ArtVariant[];
+  selectedVariantName?: string;
 }>();
+const emit = defineEmits<{ (event: "select-variant", name: string): void }>();
 
 const MonacoEditor = defineAsyncComponent(() => import("./MonacoEditor.vue"));
 const route = useRoute();
@@ -79,6 +82,20 @@ const retainedUnsupported = computed(() =>
 );
 const controlsMode = ref<"controls" | "code">("controls");
 const saveStatus = ref<"idle" | "saved">("idle");
+const selectedVariant = computed(
+  () =>
+    props.variants.find((variant) => variant.name === props.selectedVariantName) ??
+    props.variants.find((variant) => variant.isDefault) ??
+    props.variants[0],
+);
+const variantValues = computed<Record<string, unknown>>(() =>
+  Object.fromEntries(
+    Object.entries(selectedVariant.value?.props ?? selectedVariant.value?.args ?? {}).filter(
+      ([name]) => name !== "viewport",
+    ),
+  ),
+);
+const variantAttrs = computed<Record<string, unknown>>(() => selectedVariant.value?.attrs ?? {});
 
 // Code mode state
 const codeEditorContent = ref("");
@@ -92,17 +109,17 @@ const newPropDefault = ref("");
 const newPropError = ref<string | null>(null);
 
 const previewUrl = computed(() => {
-  if (!props.defaultVariantName) return "";
-  return getPreviewUrl(props.artPath, props.defaultVariantName);
+  if (!selectedVariant.value) return "";
+  return getPreviewUrl(props.artPath, selectedVariant.value.name);
 });
 
 watch(
-  [() => props.artPath, () => route.query[MUSEA_PROPS_QUERY]],
-  ([path, shared]) => {
+  [() => props.artPath, () => selectedVariant.value?.name, () => route.query[MUSEA_PROPS_QUERY]],
+  ([path, _variant, shared]) => {
     const parsed = shared === undefined ? null : readPropsPermalink(shared, path);
     shareError.value = parsed?.error ?? null;
     shareStatus.value = "";
-    if (path) void load(path, parsed?.state?.palette);
+    if (path) void load(path, parsed?.state?.palette, variantValues.value);
     iframeReady.value = false;
     slotContent.value = parsed?.state?.slots ?? {};
     controlsMode.value = "controls";
@@ -116,7 +133,7 @@ watch(
   (newValues) => {
     const iframe = iframeRef.value;
     if (!iframe || !iframeReady.value) return;
-    sendMessage(iframe, "musea:set-props", { props: newValues });
+    sendMessage(iframe, "musea:set-props", { props: newValues, attrs: variantAttrs.value });
   },
   { deep: true },
 );
@@ -191,8 +208,11 @@ function onReadyMessage(event: MessageEvent) {
   // Send initial props if any
   const iframe = iframeRef.value;
   if (!iframe) return;
-  if (Object.keys(appliedValues.value).length > 0) {
-    sendMessage(iframe, "musea:set-props", { props: appliedValues.value });
+  if (Object.keys(appliedValues.value).length > 0 || Object.keys(variantAttrs.value).length > 0) {
+    sendMessage(iframe, "musea:set-props", {
+      props: appliedValues.value,
+      attrs: variantAttrs.value,
+    });
   }
   if (Object.keys(slotContent.value).length > 0) {
     sendMessage(iframe, "musea:set-slots", { slots: slotContent.value });
@@ -213,7 +233,7 @@ function onResetValues() {
     const { [MUSEA_PROPS_QUERY]: _shared, ...query } = route.query;
     void router.replace({ query, hash: route.hash });
   }
-  resetValues();
+  resetValues(variantValues.value);
   clearSavedValues(props.artPath);
   slotContent.value = {};
   controlsMode.value = "controls";
@@ -222,7 +242,10 @@ function onResetValues() {
   shareStatus.value = "";
   const iframe = iframeRef.value;
   if (!iframe || !iframeReady.value) return;
-  sendMessage(iframe, "musea:set-props", { props: appliedValues.value });
+  sendMessage(iframe, "musea:set-props", {
+    props: appliedValues.value,
+    attrs: variantAttrs.value,
+  });
   sendMessage(iframe, "musea:set-slots", { slots: {} });
 }
 
@@ -438,7 +461,21 @@ const controlKindOptions = [
         <!-- Right: Controls -->
         <div class="props-split-right">
           <div class="props-header">
-            <h3 class="props-title">Props Controls</h3>
+            <div class="props-heading">
+              <h3 class="props-title">Props Controls</h3>
+              <label class="variant-select-label">
+                <span>Variant</span>
+                <select
+                  class="variant-select"
+                  :value="selectedVariant?.name"
+                  @change="emit('select-variant', ($event.target as HTMLSelectElement).value)"
+                >
+                  <option v-for="variant in variants" :key="variant.name" :value="variant.name">
+                    {{ variant.name }}{{ variant.isDefault ? " · Default" : "" }}
+                  </option>
+                </select>
+              </label>
+            </div>
             <div class="props-header-actions">
               <div class="props-mode-toggle">
                 <button
@@ -745,6 +782,32 @@ const controlKindOptions = [
 .props-title {
   font-size: 0.875rem;
   font-weight: 600;
+}
+
+.props-heading {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.variant-select-label {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  color: var(--musea-text-muted);
+  font-size: 0.6875rem;
+  font-weight: 600;
+}
+
+.variant-select {
+  max-width: 12rem;
+  border: 1px solid var(--musea-border);
+  border-radius: var(--musea-radius-sm);
+  padding: 0.375rem 1.75rem 0.375rem 0.5rem;
+  background: var(--musea-bg-primary);
+  color: var(--musea-text);
+  font: inherit;
 }
 
 .props-header-actions {

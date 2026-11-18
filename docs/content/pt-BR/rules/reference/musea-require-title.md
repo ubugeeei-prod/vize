@@ -1,11 +1,11 @@
 ---
 title: "musea/require-title"
-description: "Exigir o atributo title no bloco &lt;art&gt;."
+description: "Exigir um título de exibição resolvível no bloco &lt;art&gt;."
 ---
 
 # `musea/require-title`
 
-Exigir o atributo title no bloco &lt;art&gt;.
+Exigir um título de exibição resolvível no bloco &lt;art&gt;.
 
 | Severidade padrão | Predefinições | Correção automática | Opções |
 | --- | --- | --- | --- |
@@ -15,25 +15,25 @@ Aplicável a: Blocos art, variant e style de arquivos .art.vue do Musea.
 
 ## Incorreto
 
-O bloco art identifica Button.vue, mas não fornece um título.
+O bloco art não tem metadados explícitos nem um componente que permita inferir o título.
 
-```vue annotate="remove:1"
-<art component="./Button.vue">
-  <variant name="primary" />
+```vue annotate="remove:2"
+<art>
+  <variant name="primary"><div /></variant>
 </art>
 ```
 
 ## Correto
 
-As opções de defineArt fornecem o título Button para o bloco art.
+O destino Button importado fornece o título de exibição inferido.
 
-```vue annotate="add:1,2,3,4,5"
+```vue annotate="add:1,2,3,4,6"
 <script setup>
-defineArt("./Button.vue", { title: "Button" });
+import Button from "./Button.vue";
 </script>
 
 <art>
-  <variant name="primary" />
+  <variant name="primary"><Button /></variant>
 </art>
 ```
 
@@ -58,4 +58,4 @@ Depois, execute `vp run lint`.
 
 - [Regras Musea](../musea.md)
 - [Todas as regras](../all.md)
-- [Código-fonte](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/require_title.rs#L31)
+- [Código-fonte](https://github.com/ubugeeei-prod/vize/blob/main/crates/vize_patina/src/rules/musea/require_title.rs#L32)
