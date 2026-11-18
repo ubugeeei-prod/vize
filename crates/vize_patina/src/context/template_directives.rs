@@ -208,11 +208,12 @@ impl<'t, 'a> TemplateCommentDirectives<'t, 'a> {
     }
 }
 
-/// Ordinary templates have no comment policy. A comment opener is checked
+/// Ordinary templates have no comment policy. Comment openers are checked
 /// first so their hot path scans the source once, not once per marker.
 fn source_may_contain_directive(source: &str) -> bool {
-    source.contains("<!--")
-        && (source.contains("@vize:") || source.contains("eslint-") || source.contains("oxlint-"))
+    let has_lint_marker = source.contains("eslint-") || source.contains("oxlint-");
+    (source.contains("<!--") && (source.contains("@vize:") || has_lint_marker))
+        || (has_lint_marker && (source.contains("//") || source.contains("/*")))
 }
 
 fn collect_directives<'a>(
@@ -433,6 +434,8 @@ mod tests {
             "<!-- @vize:todo later -->",
             "<!-- eslint-disable vue/no-v-html -->",
             "<!-- oxlint-disable vue/no-v-html -->",
+            "<main :class=\"// eslint-disable-next-line vue/no-v-html\n value\" />",
+            "<main>{{ /* oxlint-disable vue/no-v-html */ value }}</main>",
         ] {
             assert!(source_may_contain_directive(source), "{source}");
         }
