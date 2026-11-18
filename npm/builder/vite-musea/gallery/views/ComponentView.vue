@@ -409,4 +409,6 @@ onUnmounted(() => {
   </div>
 </template>
 
-<style scoped src="./ComponentView.css"></style>
+<style scoped>
+@import "./ComponentView.css";
+</style>

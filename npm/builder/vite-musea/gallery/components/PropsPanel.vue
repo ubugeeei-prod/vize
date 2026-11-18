@@ -711,4 +711,6 @@ const controlKindOptions = [
   </div>
 </template>
 
-<style scoped src="./PropsPanel.css"></style>
+<style scoped>
+@import "./PropsPanel.css";
+</style>
