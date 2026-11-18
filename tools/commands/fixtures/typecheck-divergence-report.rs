@@ -383,9 +383,10 @@ fn write_project_artifact(
     {
         unavailable_vue_program_coverage(&vize_run.payload["parsed"], &fixture_root, reason)?
     } else {
+        let coverage_output = combined_tool_output(&coverage_baseline.run);
         evaluate_vue_program_coverage(
             &vize_run.payload["parsed"],
-            vue_tsc_diagnostic_output(&coverage_baseline.run),
+            &coverage_output,
             &fixture_root,
             &typecheck_source_roots,
         )?
@@ -3533,6 +3534,10 @@ fn vue_tsc_diagnostic_output(run: &ToolRun) -> &str {
     // config overrides the parent plugin successfully; they are evidence, not
     // diagnostics to compare or parse.
     &run.stdout
+}
+
+fn combined_tool_output(run: &ToolRun) -> String {
+    format!("{}\n{}", run.stdout, run.stderr)
 }
 fn timeout_error(label: &str, timeout_ms: u64) -> String {
     format!("{label} failed to run: spawn timed out after {timeout_ms}ms")
