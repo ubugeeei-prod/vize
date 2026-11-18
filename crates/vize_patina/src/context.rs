@@ -71,8 +71,9 @@ pub struct LintContext<'a> {
     /// Parent element stack and current static inertness for aria-hidden checks.
     pub(crate) element_stack: Vec<ElementContext>,
     pub(crate) aria_hidden_inert: bool,
-    /// Variables in current scope (from v-for).
-    pub(crate) scope_variables: FxHashSet<CompactString>,
+    /// Variables in current template scope, counted so a nested slot or
+    /// `v-for` binding cannot remove an outer binding with the same name.
+    pub(crate) scope_variables: FxHashMap<CompactString, u32>,
     /// Cached error count for fast access.
     pub(crate) error_count: usize,
     /// Cached warning count for fast access.
@@ -167,7 +168,7 @@ impl<'a> LintContext<'a> {
             current_rule: "",
             element_stack: Vec::with_capacity(Self::INITIAL_STACK_CAPACITY),
             aria_hidden_inert: false,
-            scope_variables: FxHashSet::default(),
+            scope_variables: FxHashMap::default(),
             error_count: 0,
             warning_count: 0,
             compatibility_parses: compatibility_parses::CompatibilityParses::default(),
@@ -225,7 +226,7 @@ impl<'a> LintContext<'a> {
             current_rule: "",
             element_stack: Vec::with_capacity(Self::INITIAL_STACK_CAPACITY),
             aria_hidden_inert: false,
-            scope_variables: FxHashSet::default(),
+            scope_variables: FxHashMap::default(),
             error_count: 0,
             warning_count: 0,
             compatibility_parses: compatibility_parses::CompatibilityParses::default(),

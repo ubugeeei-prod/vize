@@ -227,6 +227,19 @@ fn a_shadowing_parameter_is_not_a_v_for_read() {
 }
 
 #[test]
+fn a_same_named_slot_does_not_remove_an_outer_v_for_binding() {
+    let template = r#"<div v-for="item in rows">
+  <Picker><template #default="{ item }">{{ item.label }}</template></Picker>
+  <button @change="
+    (value) => {
+      update(item, value)
+    }
+  " />
+</div>"#;
+    assert!(handlers(serde_json::json!(["method", "inline-function"]), template).is_empty());
+}
+
+#[test]
 fn config_rule_options_reach_the_rule_and_keep_localized_messages() {
     let options: ConfigLintRuleOptions = serde_json::from_value(serde_json::json!({
         "vue/v-on-handler-style": ["method", "inline-function"]

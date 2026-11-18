@@ -167,7 +167,7 @@ impl<'a> LintContext<'a> {
     pub fn push_element(&mut self, ctx: ElementContext) {
         // Add v-for vars to scope
         for var in &ctx.v_for_vars {
-            self.scope_variables.insert(var.clone());
+            *self.scope_variables.entry(var.clone()).or_default() += 1;
         }
         self.element_stack.push(ctx);
     }
@@ -178,7 +178,13 @@ impl<'a> LintContext<'a> {
         if let Some(ctx) = self.element_stack.pop() {
             // Remove v-for vars from scope
             for var in &ctx.v_for_vars {
-                self.scope_variables.remove(var);
+                let remove = self.scope_variables.get_mut(var).is_some_and(|count| {
+                    *count -= 1;
+                    *count == 0
+                });
+                if remove {
+                    self.scope_variables.remove(var);
+                }
             }
             Some(ctx)
         } else {
@@ -203,7 +209,7 @@ impl<'a> LintContext<'a> {
     /// Check if a variable is defined by a parent v-for.
     #[inline]
     pub fn is_v_for_var(&self, name: &str) -> bool {
-        self.scope_variables.contains(name)
+        self.scope_variables.contains_key(name)
     }
 
     /// Check if a variable is defined by a PARENT v-for (excluding current element).
