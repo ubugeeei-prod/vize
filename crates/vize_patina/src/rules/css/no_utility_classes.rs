@@ -27,7 +27,7 @@ use memchr::memmem;
 
 use lightningcss::stylesheet::StyleSheet;
 
-use crate::diagnostic::Severity;
+use crate::diagnostic::{LintDiagnostic, Severity};
 
 use super::{CssLintResult, CssRule, CssRuleMeta};
 
@@ -148,12 +148,16 @@ impl CssRule for NoUtilityClasses {
                     );
 
                 if is_selector_start && is_exact_match && !ignored.contains(absolute_pos) {
-                    result.warn(
-                        META.name,
-                        "Utility class should be in global styles, not component styles",
-                        "Use semantic class names in components, or import utility classes from a global stylesheet",
-                        (offset + absolute_pos) as u32,
-                        (offset + end_pos) as u32,
+                    result.add_diagnostic(
+                        LintDiagnostic::warn(
+                            META.name,
+                            "Utility class should be in global styles, not component styles",
+                            (offset + absolute_pos) as u32,
+                            (offset + end_pos) as u32,
+                        )
+                        .with_help(
+                            "Use semantic class names in components, or import utility classes from a global stylesheet",
+                        ),
                     );
                 }
 
@@ -190,12 +194,16 @@ impl CssRule for NoUtilityClasses {
                         end += 1;
                     }
 
-                    result.warn(
-                        META.name,
-                        "Utility class should be in global styles, not component styles",
-                        "Use semantic class names in components, or import utility classes from a global stylesheet",
-                        (offset + absolute_pos) as u32,
-                        (offset + end) as u32,
+                    result.add_diagnostic(
+                        LintDiagnostic::warn(
+                            META.name,
+                            "Utility class should be in global styles, not component styles",
+                            (offset + absolute_pos) as u32,
+                            (offset + end) as u32,
+                        )
+                        .with_help(
+                            "Use semantic class names in components, or import utility classes from a global stylesheet",
+                        ),
                     );
                 }
 

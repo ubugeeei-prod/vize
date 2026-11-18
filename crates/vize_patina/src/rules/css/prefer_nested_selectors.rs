@@ -7,7 +7,7 @@ use std::borrow::Cow;
 use lightningcss::stylesheet::StyleSheet;
 use vize_l0::String;
 
-use crate::diagnostic::Severity;
+use crate::diagnostic::{LintDiagnostic, Severity};
 
 use super::{CssLintResult, CssRule, CssRuleMeta};
 
@@ -191,12 +191,14 @@ fn append_prelude_segment(
 }
 
 fn report(start: usize, end: usize, offset: usize, result: &mut CssLintResult) {
-    result.warn(
-        META.name,
-        "Consider using CSS nesting for descendant selectors",
-        "Use CSS nesting syntax to nest child selectors inside parent selectors",
-        u32::try_from(offset + start).unwrap_or(u32::MAX),
-        u32::try_from(offset + end).unwrap_or(u32::MAX),
+    result.add_diagnostic(
+        LintDiagnostic::warn(
+            META.name,
+            "Consider using CSS nesting for descendant selectors",
+            u32::try_from(offset + start).unwrap_or(u32::MAX),
+            u32::try_from(offset + end).unwrap_or(u32::MAX),
+        )
+        .with_help("Use CSS nesting syntax to nest child selectors inside parent selectors"),
     );
 }
 

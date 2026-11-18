@@ -13,7 +13,7 @@
 use lightningcss::stylesheet::StyleSheet;
 use memchr::memmem;
 
-use crate::diagnostic::Severity;
+use crate::diagnostic::{LintDiagnostic, Severity};
 
 use super::{CssLintResult, CssRule, CssRuleMeta, value_tokens::ValueTokens};
 
@@ -42,12 +42,16 @@ impl CssRule for NoVBindPerformance {
             return;
         }
         for (start, end) in ValueTokens::new(source).bindings {
-            result.warn(
-                META.name,
-                "v-bind() installs runtime CSS variable updates",
-                "Vue lowers CSS v-bind() to per-instance reactive CSS custom property updates. Prefer static CSS, computed classes for finite variants, or a template :style binding when a prop-driven value is unavoidable.",
-                (offset + start) as u32,
-                (offset + end) as u32,
+            result.add_diagnostic(
+                LintDiagnostic::warn(
+                    META.name,
+                    "v-bind() installs runtime CSS variable updates",
+                    (offset + start) as u32,
+                    (offset + end) as u32,
+                )
+                .with_help(
+                    "Vue lowers CSS v-bind() to per-instance reactive CSS custom property updates. Prefer static CSS, computed classes for finite variants, or a template :style binding when a prop-driven value is unavoidable.",
+                ),
             );
         }
     }

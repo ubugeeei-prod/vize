@@ -22,7 +22,7 @@ use lightningcss::stylesheet::StyleSheet;
 use lightningcss::values::color::CssColor;
 use lightningcss::values::length::{LengthPercentage, LengthValue};
 
-use crate::diagnostic::Severity;
+use crate::diagnostic::{LintDiagnostic, Severity};
 
 use super::declaration_positions::DeclarationPositions;
 use super::{CssLintResult, CssRule, CssRuleMeta};
@@ -195,12 +195,14 @@ impl NoHardcodedValues {
         };
 
         if is_hardcoded {
-            result.warn(
-                META.name,
-                "Consider using a CSS variable for this color value",
-                "Use var(--color-name) for consistent theming",
-                span.0,
-                span.1,
+            result.add_diagnostic(
+                LintDiagnostic::warn(
+                    META.name,
+                    "Consider using a CSS variable for this color value",
+                    span.0,
+                    span.1,
+                )
+                .with_help("Use var(--color-name) for consistent theming"),
             );
         }
     }
@@ -220,12 +222,14 @@ impl NoHardcodedValues {
                         if *value == 0.0
                 ))
         {
-            result.warn(
-                META.name,
-                "Consider using a CSS variable for font-size",
-                "Use var(--font-size-name) or relative units (rem, em)",
-                span.0,
-                span.1,
+            result.add_diagnostic(
+                LintDiagnostic::warn(
+                    META.name,
+                    "Consider using a CSS variable for font-size",
+                    span.0,
+                    span.1,
+                )
+                .with_help("Use var(--font-size-name) or relative units (rem, em)"),
             );
         }
     }
@@ -244,12 +248,14 @@ impl NoHardcodedValues {
             );
 
             if is_hardcoded {
-                result.warn(
-                    META.name,
-                    "Consider using a CSS variable for z-index",
-                    "Use var(--z-index-name) for consistent layering",
-                    span.0,
-                    span.1,
+                result.add_diagnostic(
+                    LintDiagnostic::warn(
+                        META.name,
+                        "Consider using a CSS variable for z-index",
+                        span.0,
+                        span.1,
+                    )
+                    .with_help("Use var(--z-index-name) for consistent layering"),
                 );
             }
         }
