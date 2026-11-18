@@ -33,12 +33,21 @@ pub enum MarkupTraversal {
     ElementsAndText,
     /// Call element entries and interpolation / expression nodes.
     ElementsAndInterpolations,
+    /// Call element entries and directive-like bindings.
+    ElementsAndDirectives,
     /// Visit bindings without empty element, directive or text callbacks.
     Bindings,
     /// Visit directive-like bindings without unrelated callbacks.
     Directives,
     /// Visit authored attributes and list scopes without unrelated callbacks.
     AttributesAndLists,
+    /// Multi-rule batch: every hook except bindings and conditionals.
+    ///
+    /// The batch folds binding dispatch into its element callback to preserve
+    /// registry order without walking the same bindings twice.
+    Batch,
+    /// A multi-rule batch that also needs conditional scopes.
+    BatchWithConditionals,
     /// All work happens in `enter_document`; no tree walk is needed.
     Document,
 }
@@ -49,18 +58,30 @@ impl MarkupTraversal {
     pub(crate) const fn enters_elements(self) -> bool {
         matches!(
             self,
-            Self::Full | Self::Elements | Self::ElementsAndText | Self::ElementsAndInterpolations
+            Self::Full
+                | Self::Elements
+                | Self::ElementsAndText
+                | Self::ElementsAndInterpolations
+                | Self::ElementsAndDirectives
+                | Self::Batch
+                | Self::BatchWithConditionals
         )
     }
 
     /// `exit_element`, and `enter_text` for text nodes.
     pub(crate) const fn keeps_text_and_exits(self) -> bool {
-        matches!(self, Self::Full | Self::ElementsAndText)
+        matches!(
+            self,
+            Self::Full | Self::ElementsAndText | Self::Batch | Self::BatchWithConditionals
+        )
     }
 
     /// `enter_attributes` and `enter_list`.
     pub(crate) const fn keeps_attributes_and_lists(self) -> bool {
-        matches!(self, Self::Full | Self::AttributesAndLists)
+        matches!(
+            self,
+            Self::Full | Self::AttributesAndLists | Self::Batch | Self::BatchWithConditionals
+        )
     }
 
     pub(crate) const fn enters_bindings(self) -> bool {
@@ -68,15 +89,28 @@ impl MarkupTraversal {
     }
 
     pub(crate) const fn enters_interpolations(self) -> bool {
-        matches!(self, Self::Full | Self::ElementsAndInterpolations)
+        matches!(
+            self,
+            Self::Full
+                | Self::ElementsAndInterpolations
+                | Self::Batch
+                | Self::BatchWithConditionals
+        )
     }
 
     pub(crate) const fn enters_directives(self) -> bool {
-        matches!(self, Self::Full | Self::Directives)
+        matches!(
+            self,
+            Self::Full
+                | Self::Directives
+                | Self::ElementsAndDirectives
+                | Self::Batch
+                | Self::BatchWithConditionals
+        )
     }
 
     pub(crate) const fn enters_conditionals(self) -> bool {
-        matches!(self, Self::Full)
+        matches!(self, Self::Full | Self::BatchWithConditionals)
     }
 }
 
