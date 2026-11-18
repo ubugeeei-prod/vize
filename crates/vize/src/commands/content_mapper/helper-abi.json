@@ -111,7 +111,7 @@
         },
         {
           "path": "virtual-ts-globals.d.ts",
-          "sha256": "a2a97f39a9564a06a2c77c2e6ae0e98d0e9d58b0600949f54a8882cbf8f0d4c5"
+          "sha256": "d2cc4d1e40b40dac7e6362a3532ba92e9cefc4d7272a345f73f096919aba390e"
         },
         {
           "path": "virtual-ts-listeners.d.ts",
@@ -171,7 +171,7 @@
         },
         {
           "path": "virtual-ts-globals.d.ts",
-          "sha256": "a2a97f39a9564a06a2c77c2e6ae0e98d0e9d58b0600949f54a8882cbf8f0d4c5"
+          "sha256": "d2cc4d1e40b40dac7e6362a3532ba92e9cefc4d7272a345f73f096919aba390e"
         },
         {
           "path": "virtual-ts-listeners.d.ts",
@@ -219,7 +219,7 @@
         },
         {
           "path": "virtual-ts-globals.d.ts",
-          "sha256": "a2a97f39a9564a06a2c77c2e6ae0e98d0e9d58b0600949f54a8882cbf8f0d4c5"
+          "sha256": "d2cc4d1e40b40dac7e6362a3532ba92e9cefc4d7272a345f73f096919aba390e"
         },
         {
           "path": "virtual-ts-listeners.d.ts",
