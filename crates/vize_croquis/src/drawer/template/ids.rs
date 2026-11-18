@@ -318,6 +318,34 @@ impl Drawer {
 /// `'missing'` string must not anchor the undefined `missing` read after it.
 fn find_identifier_offset(content: &str, ident: &str, start: usize) -> Option<usize> {
     let bytes = content.as_bytes();
+    let needle = ident.as_bytes();
+    let first = *needle.first()?;
+    let from = start.min(bytes.len());
+    for found in memchr::memchr_iter(first, bytes.get(from..).unwrap_or_default()) {
+        let offset = from + found;
+        if !bytes
+            .get(offset..)
+            .is_some_and(|rest| rest.starts_with(needle))
+            || !is_identifier_match(bytes, offset, needle.len())
+        {
+            continue;
+        }
+        // Without a quote or slash before it, the first word match is code.
+        let prefix = bytes.get(..offset).unwrap_or_default();
+        if memchr::memchr3(b'\'', b'"', b'`', prefix).is_none()
+            && memchr::memchr(b'/', prefix).is_none()
+        {
+            return Some(offset);
+        }
+        return find_code_offset(content, ident, start);
+    }
+    None
+}
+
+/// The first word-bounded, non-member occurrence of `ident` at or after
+/// `start` outside quoted, template-literal and comment text.
+fn find_code_offset(content: &str, ident: &str, start: usize) -> Option<usize> {
+    let bytes = content.as_bytes();
     let first = *ident.as_bytes().first()?;
     // Brace depths at which an open `${` returns to template-literal text.
     let mut substitutions: Vec<usize> = Vec::new();
