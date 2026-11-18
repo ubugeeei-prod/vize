@@ -289,8 +289,8 @@ async function expectNullDocumentSymbols(
   );
 }
 
-async function expectNullResponse(
-  session: OracleSession,
+export async function expectNullResponse(
+  session: Pick<OracleSession, "request">,
   method: string,
   params: unknown,
   message: string,
@@ -300,12 +300,22 @@ async function expectNullResponse(
   let response: unknown = undefined;
   do {
     const remainingMs = Math.max(1, deadline - Date.now());
-    response = await session.request(method, params, Math.min(remainingMs, 5000));
+    try {
+      response = await session.request(method, params, Math.min(remainingMs, 5000));
+    } catch (error) {
+      if (!isRequestTimeout(error, method) || Date.now() >= deadline) throw error;
+      await sleep(Math.min(100, Math.max(1, deadline - Date.now())));
+      continue;
+    }
     if (response === null) return null;
     await sleep(Math.min(100, Math.max(1, deadline - Date.now())));
   } while (Date.now() < deadline);
   assert.equal(response, null, message);
   return null;
+}
+
+function isRequestTimeout(error: unknown, method: string): boolean {
+  return error instanceof Error && error.message.startsWith(`Timed out waiting for ${method}`);
 }
 
 function assertRenameEdit(

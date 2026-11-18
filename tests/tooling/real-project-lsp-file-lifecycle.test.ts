@@ -11,7 +11,10 @@ import {
   assertOrderedEvents,
   FakeAuthoredLspSession,
 } from "./support/fake-authored-lsp-session.ts";
-import { exerciseAuthoredFileLifecycle } from "./support/real-project-lsp-file-lifecycle.ts";
+import {
+  exerciseAuthoredFileLifecycle,
+  expectNullResponse,
+} from "./support/real-project-lsp-file-lifecycle.ts";
 import { normalizeLifecycleRepairDiagnostics } from "./support/real-project-lsp-file-lifecycle-utils.ts";
 import type { LspAuthoredOracle } from "./support/real-project-lsp-report.ts";
 
@@ -33,6 +36,41 @@ test("lifecycle repair diagnostics ignore unrelated project cascades", () => {
   assert.equal(normalizeLifecycleRepairDiagnostics(published, lifecycle).length, 1);
   published.diagnostics.shift();
   assert.deepEqual(normalizeLifecycleRepairDiagnostics(published, lifecycle), []);
+});
+
+test("eventual-null lifecycle requests retry transient request deadlines", async () => {
+  const timeouts: number[] = [];
+  const session = {
+    async request(method: string, _params: unknown, timeoutMs?: number) {
+      timeouts.push(timeoutMs ?? 0);
+      if (timeouts.length === 1) throw new Error(`Timed out waiting for ${method}`);
+      return null;
+    },
+  };
+
+  assert.equal(
+    await expectNullResponse(
+      session,
+      "textDocument/definition",
+      { textDocument: { uri: "file:///workspace/Importer.vue" } },
+      "deleted dependency definition must disappear",
+      1_000,
+    ),
+    null,
+  );
+  assert.equal(timeouts.length, 2);
+  assert.ok(timeouts.every((timeout) => timeout > 0 && timeout <= 1_000));
+  await assert.rejects(
+    () =>
+      expectNullResponse(
+        { request: async () => Promise.reject(new Error("transport closed")) },
+        "textDocument/definition",
+        {},
+        "deleted dependency definition must disappear",
+        1_000,
+      ),
+    /transport closed/,
+  );
 });
 
 test("authored file lifecycle creates, renames, deletes, and repairs a dependency", async () => {
