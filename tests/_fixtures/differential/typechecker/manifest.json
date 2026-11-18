@@ -69137,7 +69137,7 @@
       "sourceRevision": "eb62d44acada562ca55ed5da9d26b10c348e90c0",
       "packReference": {
         "path": "undefined-template-ref-anchor-1284/cases.json",
-        "sha256": "592b0c6248ace638e9b682251228dc7d1f34d584278adfc6f1caf36b2a325e06"
+        "sha256": "2604014eebb1b52202f1070ce94a60b1d5a9763d6420d4c9edfc3afefa54fafa"
       },
       "inputs": [
         {
@@ -69184,7 +69184,7 @@
       "sourceRevision": "eb62d44acada562ca55ed5da9d26b10c348e90c0",
       "packReference": {
         "path": "undefined-template-ref-anchor-1284/cases.json",
-        "sha256": "592b0c6248ace638e9b682251228dc7d1f34d584278adfc6f1caf36b2a325e06"
+        "sha256": "2604014eebb1b52202f1070ce94a60b1d5a9763d6420d4c9edfc3afefa54fafa"
       },
       "inputs": [
         {
@@ -69196,6 +69196,100 @@
           "file": "src/App.vue",
           "path": "undefined-template-ref-anchor-1284/member-then-bare.App.vue.txt",
           "sha256": "52942e87bf77ca81b921c6604b593e9d2d4011ea35d51d93aa8213e413e04822"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/undefined-template-ref-anchor-1284/undefined-after-same-named-string",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "undefined-template-ref-anchor-1284",
+      "case": "undefined-after-same-named-string",
+      "test": "fix_history_cases::undefined_template_ref_anchor_1284::undefined_template_ref_anchors_bare_identifier",
+      "regressionCommit": "eb62d44acada562ca55ed5da9d26b10c348e90c0",
+      "sourceRevision": "eb62d44acada562ca55ed5da9d26b10c348e90c0",
+      "packReference": {
+        "path": "undefined-template-ref-anchor-1284/cases.json",
+        "sha256": "2604014eebb1b52202f1070ce94a60b1d5a9763d6420d4c9edfc3afefa54fafa"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "undefined-template-ref-anchor-1284/tsconfig.json.txt",
+          "sha256": "1c527226a15d6c5b6204ece1efc333308251f5e6c21680b355aaaf811d333047"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "undefined-template-ref-anchor-1284/string-then-bare.App.vue.txt",
+          "sha256": "40ae8331c162e659bdcc70572e4ace53a0b847be76da164dd160b4007caf39fc"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/undefined-template-ref-anchor-1284/undefined-after-same-named-template-and-comment-text",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "undefined-template-ref-anchor-1284",
+      "case": "undefined-after-same-named-template-and-comment-text",
+      "test": "fix_history_cases::undefined_template_ref_anchor_1284::undefined_template_ref_anchors_bare_identifier",
+      "regressionCommit": "eb62d44acada562ca55ed5da9d26b10c348e90c0",
+      "sourceRevision": "eb62d44acada562ca55ed5da9d26b10c348e90c0",
+      "packReference": {
+        "path": "undefined-template-ref-anchor-1284/cases.json",
+        "sha256": "2604014eebb1b52202f1070ce94a60b1d5a9763d6420d4c9edfc3afefa54fafa"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "undefined-template-ref-anchor-1284/tsconfig.json.txt",
+          "sha256": "1c527226a15d6c5b6204ece1efc333308251f5e6c21680b355aaaf811d333047"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "undefined-template-ref-anchor-1284/template-text-then-bare.App.vue.txt",
+          "sha256": "81cf8ab7d99f0ddf68d8989a9fe9cae1bda20413a640e850e4df271ce18dd590"
         }
       ],
       "dialectCoverage": {
@@ -70249,6 +70343,241 @@
           "file": "src/App.vue",
           "path": "unicode-script-comment-virtual-ts/invalid.App.vue.txt",
           "sha256": "5449034ec99ee240944eee49425bef04aa113ce6d412abcc45898db8ef8d6dec"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/unicode-template-comment-anchors-6430/terminated-multibyte-leading-comments",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "unicode-template-comment-anchors-6430",
+      "case": "terminated-multibyte-leading-comments",
+      "test": "fix_history_cases::unicode_template_comment_anchors_6430::template_comments_keep_authored_diagnostic_anchors",
+      "regressionCommit": "8d5a60647d265c898efca2c3597ff59071df9e18",
+      "sourceRevision": "8d5a60647d265c898efca2c3597ff59071df9e18",
+      "packReference": {
+        "path": "unicode-template-comment-anchors-6430/cases.json",
+        "sha256": "b5ceb5af82c25004c1270f3dfbeb3ce764ebe1c395cb0c12ed9c571404b8e66c"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "unicode-template-comment-anchors-6430/tsconfig.json.txt",
+          "sha256": "1c527226a15d6c5b6204ece1efc333308251f5e6c21680b355aaaf811d333047"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "unicode-template-comment-anchors-6430/terminated.App.vue.txt",
+          "sha256": "f157c07ad41d08617c54a174b6a0664227aac26da9042590a310e4baa070298a"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/unicode-template-comment-anchors-6430/terminated-multibyte-comment-wrong-member",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "unicode-template-comment-anchors-6430",
+      "case": "terminated-multibyte-comment-wrong-member",
+      "test": "fix_history_cases::unicode_template_comment_anchors_6430::template_comments_keep_authored_diagnostic_anchors",
+      "regressionCommit": "8d5a60647d265c898efca2c3597ff59071df9e18",
+      "sourceRevision": "8d5a60647d265c898efca2c3597ff59071df9e18",
+      "packReference": {
+        "path": "unicode-template-comment-anchors-6430/cases.json",
+        "sha256": "b5ceb5af82c25004c1270f3dfbeb3ce764ebe1c395cb0c12ed9c571404b8e66c"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "unicode-template-comment-anchors-6430/tsconfig.json.txt",
+          "sha256": "1c527226a15d6c5b6204ece1efc333308251f5e6c21680b355aaaf811d333047"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "unicode-template-comment-anchors-6430/terminated.wrong-member.App.vue.txt",
+          "sha256": "4b3150be33553c154091cf2f7f35ce485080c4aab74083515b9c35dfdc92a7b7"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/unicode-template-comment-anchors-6430/ascii-comments-wrong-member",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "unicode-template-comment-anchors-6430",
+      "case": "ascii-comments-wrong-member",
+      "test": "fix_history_cases::unicode_template_comment_anchors_6430::template_comments_keep_authored_diagnostic_anchors",
+      "regressionCommit": "8d5a60647d265c898efca2c3597ff59071df9e18",
+      "sourceRevision": "8d5a60647d265c898efca2c3597ff59071df9e18",
+      "packReference": {
+        "path": "unicode-template-comment-anchors-6430/cases.json",
+        "sha256": "b5ceb5af82c25004c1270f3dfbeb3ce764ebe1c395cb0c12ed9c571404b8e66c"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "unicode-template-comment-anchors-6430/tsconfig.json.txt",
+          "sha256": "1c527226a15d6c5b6204ece1efc333308251f5e6c21680b355aaaf811d333047"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "unicode-template-comment-anchors-6430/ascii-comments.wrong-member.App.vue.txt",
+          "sha256": "2e03cde773c0b9e90738a17bd60c3c611cc7fcbf090816a716bce38875fc861d"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/unicode-template-comment-anchors-6430/unterminated-multibyte-comment-attribute",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "unicode-template-comment-anchors-6430",
+      "case": "unterminated-multibyte-comment-attribute",
+      "test": "fix_history_cases::unicode_template_comment_anchors_6430::template_comments_keep_authored_diagnostic_anchors",
+      "regressionCommit": "8d5a60647d265c898efca2c3597ff59071df9e18",
+      "sourceRevision": "8d5a60647d265c898efca2c3597ff59071df9e18",
+      "packReference": {
+        "path": "unicode-template-comment-anchors-6430/cases.json",
+        "sha256": "b5ceb5af82c25004c1270f3dfbeb3ce764ebe1c395cb0c12ed9c571404b8e66c"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "unicode-template-comment-anchors-6430/tsconfig.json.txt",
+          "sha256": "1c527226a15d6c5b6204ece1efc333308251f5e6c21680b355aaaf811d333047"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "unicode-template-comment-anchors-6430/unterminated-attr.App.vue.txt",
+          "sha256": "32c155d0a2e318701fd71ce0492a91a3ed0790f5a016cf09919f2b3d43548c29"
+        }
+      ],
+      "dialectCoverage": {
+        "state": "source-inspected",
+        "registryRef": null,
+        "evidence": [
+          {
+            "kind": "source-inspection",
+            "dialects": [
+              "vue3-sfc",
+              "html-template",
+              "ts"
+            ],
+            "selector": "batch-typechecker-fixture-v1 pinned authored sources"
+          }
+        ]
+      }
+    },
+    {
+      "id": "typechecker/unicode-template-comment-anchors-6430/unterminated-multibyte-comment-interpolation",
+      "state": "active",
+      "targets": [
+        "batch"
+      ],
+      "adapters": {
+        "legacy": "batch-typechecker-fixture-v1",
+        "native": null
+      },
+      "pack": "unicode-template-comment-anchors-6430",
+      "case": "unterminated-multibyte-comment-interpolation",
+      "test": "fix_history_cases::unicode_template_comment_anchors_6430::template_comments_keep_authored_diagnostic_anchors",
+      "regressionCommit": "8d5a60647d265c898efca2c3597ff59071df9e18",
+      "sourceRevision": "8d5a60647d265c898efca2c3597ff59071df9e18",
+      "packReference": {
+        "path": "unicode-template-comment-anchors-6430/cases.json",
+        "sha256": "b5ceb5af82c25004c1270f3dfbeb3ce764ebe1c395cb0c12ed9c571404b8e66c"
+      },
+      "inputs": [
+        {
+          "file": "tsconfig.json",
+          "path": "unicode-template-comment-anchors-6430/tsconfig.json.txt",
+          "sha256": "1c527226a15d6c5b6204ece1efc333308251f5e6c21680b355aaaf811d333047"
+        },
+        {
+          "file": "src/App.vue",
+          "path": "unicode-template-comment-anchors-6430/unterminated-interpolation.App.vue.txt",
+          "sha256": "0737ebbb29223ecca0de7caf4cc9554add0e09c266b673498d61f29c53a494fc"
         }
       ],
       "dialectCoverage": {

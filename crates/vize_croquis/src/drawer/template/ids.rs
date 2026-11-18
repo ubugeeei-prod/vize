@@ -312,24 +312,95 @@ impl Drawer {
     }
 }
 
+/// The first code occurrence of `ident` at or after `start`.
+///
+/// Quoted text, template-literal text and comments are not code: an earlier
+/// `'missing'` string must not anchor the undefined `missing` read after it.
 fn find_identifier_offset(content: &str, ident: &str, start: usize) -> Option<usize> {
     let bytes = content.as_bytes();
-    let ident_bytes = ident.as_bytes();
-    let mut search_start = start.min(content.len());
-
-    while search_start <= content.len() {
-        let found = content
-            .get(search_start..)
-            .unwrap_or_default()
-            .find(ident)?;
-        let offset = search_start + found;
-        if is_identifier_match(bytes, offset, ident_bytes.len()) {
-            return Some(offset);
+    let first = *ident.as_bytes().first()?;
+    // Brace depths at which an open `${` returns to template-literal text.
+    let mut substitutions: Vec<usize> = Vec::new();
+    let mut braces = 0usize;
+    let mut in_template_text = false;
+    let mut index = 0;
+    while let Some(&byte) = bytes.get(index) {
+        if in_template_text {
+            match byte {
+                b'\\' => index += 2,
+                b'`' => {
+                    in_template_text = false;
+                    index += 1;
+                }
+                b'$' if bytes.get(index + 1) == Some(&b'{') => {
+                    substitutions.push(braces);
+                    braces += 1;
+                    in_template_text = false;
+                    index += 2;
+                }
+                _ => index += 1,
+            }
+            continue;
         }
-        search_start = offset + ident.len();
+        match byte {
+            b'\'' | b'"' => index = skip_quoted(bytes, index),
+            b'`' => {
+                in_template_text = true;
+                index += 1;
+            }
+            b'/' if bytes.get(index + 1) == Some(&b'/') => {
+                index = bytes
+                    .get(index..)
+                    .and_then(|rest| rest.iter().position(|&byte| byte == b'\n'))
+                    .map_or(bytes.len(), |end| index + end);
+            }
+            b'/' if bytes.get(index + 1) == Some(&b'*') => {
+                index = content
+                    .get(index + 2..)
+                    .and_then(|rest| rest.find("*/"))
+                    .map_or(bytes.len(), |end| index + 2 + end + 2);
+            }
+            b'{' => {
+                braces += 1;
+                index += 1;
+            }
+            b'}' => {
+                braces = braces.saturating_sub(1);
+                if substitutions.last() == Some(&braces) {
+                    substitutions.pop();
+                    in_template_text = true;
+                }
+                index += 1;
+            }
+            _ if byte == first
+                && index >= start
+                && content
+                    .get(index..)
+                    .is_some_and(|rest| rest.starts_with(ident))
+                && is_identifier_match(bytes, index, ident.len()) =>
+            {
+                return Some(index);
+            }
+            _ => index += 1,
+        }
     }
 
     None
+}
+
+/// The offset just past the string literal opened at `start`.
+fn skip_quoted(bytes: &[u8], start: usize) -> usize {
+    let quote = bytes.get(start).copied();
+    let mut index = start + 1;
+    while let Some(&byte) = bytes.get(index) {
+        index += 1;
+        if byte == b'\\' {
+            index += 1;
+        } else if Some(byte) == quote || byte == b'\n' {
+            break;
+        }
+    }
+    index.min(bytes.len())
 }
 
 fn is_identifier_match(bytes: &[u8], offset: usize, len: usize) -> bool {

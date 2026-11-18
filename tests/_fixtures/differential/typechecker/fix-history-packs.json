@@ -1076,6 +1076,10 @@
     "test": "fix_history_cases::unicode_script_comment_virtual_ts::unicode_script_comments_do_not_break_virtual_ts",
     "sourceRevision": "2ac861d0d2247fc4e715117468e4cf874b9ebd04"
   },
+  "unicode-template-comment-anchors-6430": {
+    "test": "fix_history_cases::unicode_template_comment_anchors_6430::template_comments_keep_authored_diagnostic_anchors",
+    "sourceRevision": "8d5a60647d265c898efca2c3597ff59071df9e18"
+  },
   "unnamed-inner-slot-outer-payload-5693": {
     "test": "fix_history_cases::unnamed_inner_slot_outer_payload_5693::unnamed_inner_slot_keeps_outer_scoped_slot_payload",
     "sourceRevision": "8e8ec535688244d062f15880e2e1295a862c8795"
