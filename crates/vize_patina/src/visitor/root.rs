@@ -31,13 +31,13 @@ impl<'a, 'ctx, 'rules> LintVisitor<'a, 'ctx, 'rules> {
         // Run template-level checks under one profiling span. Rule dispatch
         // happens for every file, so profiling once around the callback batch is
         // cheaper than creating a span for every individual rule callback.
-        let keep_mask = self.keep_mask;
+        let selection = self.selection;
         profile!("patina.rules.run_on_template", {
             Self::callback_rules(
                 self.ctx,
                 self.rules,
                 self.rule_names,
-                keep_mask,
+                selection,
                 CallbackSite::Template,
                 |_, rule, ctx| rule.run_on_template(ctx, root),
             );

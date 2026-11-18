@@ -23,16 +23,15 @@ pub use state::{DisabledRange, ElementContext, SsrMode};
 pub(crate) use template_directives::{TemplateCommentDirectives, process_vize_directive};
 
 use crate::diagnostic::{HelpLevel, LintDiagnostic, Severity};
-use memchr::memchr_iter;
-use std::borrow::Cow;
+use std::{borrow::Cow, cell::OnceCell};
 use vize_atelier_sfc::SfcDescriptor;
 use vize_carton::i18n::{Locale, t, t_fmt};
 use vize_croquis::Croquis;
-use vize_l0::String;
 use vize_l0::{
     Allocator, CompactString, FxHashMap, FxHashSet, dialect::VueDialect,
     directive::DirectiveSeverity,
 };
+use vize_l0::{SmallVec, String};
 
 pub(crate) use eslint_directive::SuppressionSource;
 use eslint_directive::{ExactSuppressionState, InlineSuppressionState};
@@ -69,7 +68,7 @@ pub struct LintContext<'a> {
     /// Current rule name (set by visitor before calling rule methods).
     pub current_rule: &'static str,
     /// Parent element stack and current static inertness for aria-hidden checks.
-    pub(crate) element_stack: Vec<ElementContext>,
+    pub(crate) element_stack: SmallVec<[ElementContext; 8]>,
     pub(crate) aria_hidden_inert: bool,
     /// Variables in current scope (from v-for).
     pub(crate) scope_variables: FxHashSet<CompactString>,
@@ -93,14 +92,14 @@ pub struct LintContext<'a> {
     no_inline_config: bool,
     /// Late template capabilities that actually ran in this context.
     executed_template_rules: Vec<&'static str>,
-    /// Line offsets for fast line number lookup.
-    line_offsets: Vec<u32>,
+    /// Line offsets, built only when a diagnostic or directive needs a line.
+    line_offsets: OnceCell<Vec<u32>>,
     /// Optional set of enabled rule names (if None, all rules are enabled).
-    enabled_rules: Option<FxHashSet<String>>,
+    enabled_rules: Option<Cow<'a, FxHashSet<String>>>,
     /// Rule names disabled by host configuration.
-    config_disabled_rules: FxHashSet<String>,
+    config_disabled_rules: Cow<'a, FxHashSet<String>>,
     /// Rule severities overridden by host configuration.
-    config_rule_severities: FxHashMap<String, Severity>,
+    config_rule_severities: Cow<'a, FxHashMap<String, Severity>>,
     /// Optional semantic analysis from croquis.
     pub(crate) analysis: Option<&'a Croquis>,
     custom_elements: Option<&'a vize_relief::options::CustomElementMatcher>,
@@ -137,10 +136,8 @@ pub struct LintContext<'a> {
 }
 
 impl<'a> LintContext<'a> {
-    /// Initial capacity for diagnostics vector.
+    /// Most lint results stay within one allocation at this size.
     const INITIAL_DIAGNOSTICS_CAPACITY: usize = 16;
-    /// Initial capacity for element stack.
-    const INITIAL_STACK_CAPACITY: usize = 32;
 
     /// Create a new lint context with arena allocator.
     #[inline]
@@ -165,7 +162,7 @@ impl<'a> LintContext<'a> {
             diagnostics: Vec::with_capacity(Self::INITIAL_DIAGNOSTICS_CAPACITY),
             callback_order: None,
             current_rule: "",
-            element_stack: Vec::with_capacity(Self::INITIAL_STACK_CAPACITY),
+            element_stack: SmallVec::new(),
             aria_hidden_inert: false,
             scope_variables: FxHashSet::default(),
             error_count: 0,
@@ -178,10 +175,10 @@ impl<'a> LintContext<'a> {
             inline_suppressions: InlineSuppressionState::default(),
             no_inline_config: false,
             executed_template_rules: Vec::new(),
-            line_offsets: Self::compute_line_offsets(source),
+            line_offsets: OnceCell::new(),
             enabled_rules: None,
-            config_disabled_rules: FxHashSet::default(),
-            config_rule_severities: FxHashMap::default(),
+            config_disabled_rules: Cow::Owned(FxHashSet::default()),
+            config_rule_severities: Cow::Owned(FxHashMap::default()),
             analysis: None,
             custom_elements: None,
             art_script_analysis: None,
@@ -223,7 +220,7 @@ impl<'a> LintContext<'a> {
             diagnostics: Vec::with_capacity(Self::INITIAL_DIAGNOSTICS_CAPACITY),
             callback_order: None,
             current_rule: "",
-            element_stack: Vec::with_capacity(Self::INITIAL_STACK_CAPACITY),
+            element_stack: SmallVec::new(),
             aria_hidden_inert: false,
             scope_variables: FxHashSet::default(),
             error_count: 0,
@@ -236,10 +233,10 @@ impl<'a> LintContext<'a> {
             inline_suppressions: InlineSuppressionState::default(),
             no_inline_config: false,
             executed_template_rules: Vec::new(),
-            line_offsets: Self::compute_line_offsets(source),
+            line_offsets: OnceCell::new(),
             enabled_rules: None,
-            config_disabled_rules: FxHashSet::default(),
-            config_rule_severities: FxHashMap::default(),
+            config_disabled_rules: Cow::Owned(FxHashSet::default()),
+            config_rule_severities: Cow::Owned(FxHashMap::default()),
             analysis: Some(analysis),
             custom_elements: None,
             art_script_analysis: None,
@@ -381,19 +378,32 @@ impl<'a> LintContext<'a> {
     /// If set to None (default), all rules are enabled.
     #[inline]
     pub fn set_enabled_rules(&mut self, enabled: Option<FxHashSet<String>>) {
-        self.enabled_rules = enabled;
+        self.enabled_rules = enabled.map(Cow::Owned);
     }
 
     /// Set globally disabled rules from host configuration.
     #[inline]
     pub fn set_config_disabled_rules(&mut self, disabled: FxHashSet<String>) {
-        self.config_disabled_rules = disabled;
+        self.config_disabled_rules = Cow::Owned(disabled);
     }
 
     /// Set globally configured rule severities from host configuration.
     #[inline]
     pub fn set_config_rule_severities(&mut self, severities: FxHashMap<String, Severity>) {
-        self.config_rule_severities = severities;
+        self.config_rule_severities = Cow::Owned(severities);
+    }
+
+    /// Borrow one linter's immutable rule selection for this short-lived pass.
+    #[inline]
+    pub(crate) fn set_rule_config(
+        &mut self,
+        enabled: Option<&'a FxHashSet<String>>,
+        disabled: &'a FxHashSet<String>,
+        severities: &'a FxHashMap<String, Severity>,
+    ) {
+        self.enabled_rules = enabled.map(Cow::Borrowed);
+        self.config_disabled_rules = Cow::Borrowed(disabled);
+        self.config_rule_severities = Cow::Borrowed(severities);
     }
 
     /// Check if a rule is enabled.
@@ -424,28 +434,6 @@ impl<'a> LintContext<'a> {
     #[inline]
     pub fn t_fmt(&self, key: &str, vars: &[(&str, &str)]) -> String {
         t_fmt(self.locale, key, vars).into()
-    }
-
-    /// Compute line offsets for fast line number lookup.
-    ///
-    /// Diagnostics ask for byte-offset-to-line conversion repeatedly during one
-    /// lint pass. Building this table once with `memchr` turns those lookups
-    /// into binary searches instead of rescanning the source for every report.
-    fn compute_line_offsets(source: &str) -> Vec<u32> {
-        let mut offsets = vec![0];
-        for offset in memchr_iter(b'\n', source.as_bytes()) {
-            offsets.push((offset + 1) as u32);
-        }
-        offsets
-    }
-
-    /// Get line number (1-indexed) from byte offset.
-    #[inline]
-    pub fn offset_to_line(&self, offset: u32) -> u32 {
-        match self.line_offsets.binary_search(&offset) {
-            Ok(line) => (line + 1) as u32,
-            Err(line) => line as u32,
-        }
     }
 
     /// Get the allocator.

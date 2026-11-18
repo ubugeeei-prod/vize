@@ -316,7 +316,7 @@ impl Linter {
         &self,
         count: usize,
         keep: impl Fn(&'static str, &dyn crate::rule::Rule) -> bool,
-    ) -> Vec<crate::markup::RankedMarkupRule<'_>> {
+    ) -> vize_l0::SmallVec<[crate::markup::RankedMarkupRule<'_>; 96]> {
         self.registry
             .rules()
             .iter()
@@ -337,7 +337,7 @@ impl Linter {
         &self,
         count: usize,
         names: &'static [&'static str],
-    ) -> Vec<crate::markup::RankedMarkupRule<'_>> {
+    ) -> vize_l0::SmallVec<[crate::markup::RankedMarkupRule<'_>; 96]> {
         let rules = self.registry.rules();
         let rule_names = self.rule_names();
         self.registry
