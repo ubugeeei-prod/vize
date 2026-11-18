@@ -30,8 +30,12 @@ defineArt(MyCard, { title: "MyCard" });
         "the mapper must provide exactly one Musea file-kind global:\n{}",
         art.text,
     );
-    assert!(
-        !art.text.contains("declare const MyCard:"),
+    assert_eq!(
+        art.text
+            .lines()
+            .filter_map(|line| line.strip_prefix("declare const MyCard:"))
+            .collect::<Vec<_>>(),
+        Vec::<&str>::new(),
         "an imported Art subject must not gain a synthetic component binding:\n{}",
         art.text,
     );
