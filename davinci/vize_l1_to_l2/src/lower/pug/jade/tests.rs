@@ -1,7 +1,6 @@
-use alloc::borrow::ToOwned;
-use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 
+use vize_l0::String;
 use vize_l0::diag::{PartKind, Severity};
 use vize_l1::markup::pug::PugProfile;
 
@@ -19,13 +18,13 @@ fn findings(source: &str, template: &PugTemplate) -> Vec<(Severity, String, Opti
         .map(|diagnostic| {
             let at = source
                 .get(diagnostic.span.start as usize..diagnostic.span.end as usize)
-                .unwrap_or_default()
-                .to_owned();
+                .map(String::from)
+                .unwrap_or_default();
             let fix = diagnostic
                 .parts
                 .iter()
                 .find(|part| part.kind == PartKind::Suggestion)
-                .map(|part| part.message.to_string());
+                .map(|part| part.message.clone());
             (diagnostic.severity(), at, fix)
         })
         .collect()
@@ -42,8 +41,16 @@ fn dashed_iteration_is_jade_iteration_with_a_fix() {
     assert_eq!(
         findings(source, &jade),
         [
-            (Severity::Warning, "- ".to_owned(), Some(String::new())),
-            (Severity::Warning, "- ".to_owned(), Some(String::new())),
+            (
+                Severity::Warning,
+                String::from("- "),
+                Some(String::default())
+            ),
+            (
+                Severity::Warning,
+                String::from("- "),
+                Some(String::default())
+            ),
         ]
     );
     // pug 3 still refuses the dash.
@@ -59,8 +66,8 @@ fn a_bodiless_mixin_is_jade_s_legacy_call() {
         findings(source, &jade),
         [(
             Severity::Warning,
-            "mixin foo('a')".to_owned(),
-            Some("+foo('a')".to_owned())
+            String::from("mixin foo('a')"),
+            Some(String::from("+foo('a')"))
         )]
     );
     assert!(derive(source, PugProfile::Pug3).has_errors());
@@ -74,7 +81,7 @@ fn each_of_iterates_and_warns_that_jade_renders_a_literal_element() {
     assert_eq!(jade.html, pug.html);
     assert_eq!(
         findings(source, &jade),
-        [(Severity::Warning, "each item of [1, 2]".to_owned(), None)]
+        [(Severity::Warning, String::from("each item of [1, 2]"), None)]
     );
     assert_eq!(findings(source, &pug), []);
 }
@@ -90,8 +97,8 @@ fn attribute_interpolation_is_kept_and_warned_with_a_binding_fix() {
         findings(source, &jade),
         [(
             Severity::Warning,
-            "#{id}".to_owned(),
-            Some(":href=\"`/users/${id}`\"".to_owned())
+            String::from("#{id}"),
+            Some(String::from(":href=\"`/users/${id}`\""))
         )]
     );
     assert_eq!(findings(source, &pug), []);
@@ -102,7 +109,7 @@ fn attribute_interpolation_is_kept_and_warned_with_a_binding_fix() {
     let quoted = "a(title='say \"#{name}\"') x\n";
     assert_eq!(
         findings(quoted, &derive(quoted, PugProfile::Jade1)),
-        [(Severity::Warning, "#{name}".to_owned(), None)]
+        [(Severity::Warning, String::from("#{name}"), None)]
     );
 }
 

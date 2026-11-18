@@ -315,6 +315,7 @@ This is triage of a class-registration gap, not a zero-FN claim.
 - `vue/prefer-const`
 - `vue/prefer-prop-type-boolean-first`
 - `vue/prefer-props-shorthand`
+- `vue/prefer-pug-lang`
 - `vue/prefer-true-attribute-shorthand`
 - `vue/prop-name-casing`
 - `vue/require-default-export`
