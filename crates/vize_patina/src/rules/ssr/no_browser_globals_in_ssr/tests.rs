@@ -207,7 +207,7 @@ fn test_still_reports_runtime_browser_name_next_to_type() {
     assert_eq!(result.len(), 1, "{result:?}");
 }
 
-fn lint_sfc_with_only_this_rule(source: &str) -> Vec<CompactString> {
+pub(super) fn lint_sfc_with_only_this_rule(source: &str) -> Vec<CompactString> {
     let mut registry = RuleRegistry::new();
     registry.add(Box::new(NoBrowserGlobalsInSsr));
     Linter::with_registry(registry)
