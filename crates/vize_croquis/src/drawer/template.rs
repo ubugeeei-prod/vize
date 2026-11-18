@@ -49,6 +49,8 @@ impl Drawer {
         if !self.options.analyze_template_scopes && !self.options.track_usage {
             return self;
         }
+        self.ident_cache.clear();
+        self.croquis.template_expression_reads = self.checks_binding_reads().then(Default::default);
         self.template_source = root.source.into();
 
         // Count root-level elements
