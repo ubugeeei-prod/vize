@@ -21,6 +21,7 @@ mod check_absolute_paths_cli;
 mod check_allowjs_imports_cli;
 mod check_ambient_export_assignment_cli;
 mod check_ambient_imports_cli;
+mod check_ancestor_node_modules_cli;
 mod check_base_url_cli;
 mod check_batch_file_invalidation_cli;
 mod check_canon_boolean_tsx_regressions_cli;
