@@ -9,49 +9,8 @@ pub(in crate::lower) struct RootAttributes<'a, 'b> {
     owner: &'b ElementNode<'a>,
     has_static_attr: bool,
     has_object_binding: bool,
-    dynamic_attrs: DynamicAttrs<'a>,
+    dynamic_attrs: FxHashSet<&'a str>,
     non_reactive: bool,
-}
-
-/// The names of an element's `v-bind:name` bindings, whose static
-/// counterparts the template skips. A mask of the names' lengths sits beside
-/// the set: a static attribute whose length no binding has cannot be
-/// overridden, so it pays no hash lookup. Wide elements (many static
-/// attributes beside a few bindings) skip nearly every probe.
-#[derive(Default)]
-pub(super) struct DynamicAttrs<'a> {
-    names: FxHashSet<&'a str>,
-    /// Bit `len % 64` set for every name; zero exactly when `names` is empty.
-    lengths: u64,
-}
-
-impl<'a> DynamicAttrs<'a> {
-    fn length_bit(name: &str) -> u64 {
-        1 << (name.len() % 64)
-    }
-
-    fn insert(&mut self, name: &'a str) {
-        self.lengths |= Self::length_bit(name);
-        self.names.insert(name);
-    }
-
-    fn is_empty(&self) -> bool {
-        self.lengths == 0
-    }
-
-    fn contains(&self, name: &str) -> bool {
-        self.lengths & Self::length_bit(name) != 0 && self.names.contains(name)
-    }
-}
-
-impl<'a> FromIterator<&'a str> for DynamicAttrs<'a> {
-    fn from_iter<I: IntoIterator<Item = &'a str>>(names: I) -> Self {
-        let mut attrs = Self::default();
-        for name in names {
-            attrs.insert(name);
-        }
-        attrs
-    }
 }
 
 impl<'a, 'b> RootAttributes<'a, 'b> {
@@ -60,7 +19,7 @@ impl<'a, 'b> RootAttributes<'a, 'b> {
             owner: el,
             has_static_attr: false,
             has_object_binding: false,
-            dynamic_attrs: DynamicAttrs::default(),
+            dynamic_attrs: FxHashSet::default(),
             non_reactive: inherited,
         }
     }
@@ -97,10 +56,10 @@ pub(super) fn collect_dynamic_attrs<'a>(
     has_object_binding: &mut bool,
     non_reactive: &mut bool,
     derive_non_reactive: bool,
-) -> DynamicAttrs<'a> {
+) -> FxHashSet<&'a str> {
     if matches!(el.props.as_slice(), [PropNode::Attribute(_)]) {
         *has_static_attr = true;
-        DynamicAttrs::default()
+        vize_carton::FxHashSet::default()
     } else {
         el.props
             .iter()
@@ -166,12 +125,27 @@ pub(super) fn write_attributes(
     let uses_computed = has_static_attr
         && (has_object_binding || !dynamic_attrs.is_empty())
         && super::super::super::merged_props::uses_computed_props(el);
+    // A binding overrides the static attribute it names. A static attribute
+    // whose length no `v-bind` argument has cannot be named by one, so a mask
+    // of those lengths (bit `len % 32`) settles most attributes without hashing.
+    let mut bound_lengths = 0_u32;
+    if has_static_attr && !uses_computed && !dynamic_attrs.is_empty() {
+        for prop in el.props.iter() {
+            if let PropNode::Directive(dir) = prop
+                && dir.name == "bind"
+                && let Some(ExpressionNode::Simple(key)) = dir.arg.as_ref()
+            {
+                bound_lengths |= 1 << (key.content.len() % 32);
+            }
+        }
+    }
     for prop in el.props.iter() {
         if let PropNode::Attribute(attr) = prop {
             if uses_computed || super::is_runtime_only_attr(attr.name) {
                 continue;
             }
-            if dynamic_attrs.contains(attr.name) {
+            let maybe_bound = bound_lengths & (1 << (attr.name.len() % 32)) != 0;
+            if maybe_bound && dynamic_attrs.contains(attr.name) {
                 continue;
             }
             template.push_str(" ");

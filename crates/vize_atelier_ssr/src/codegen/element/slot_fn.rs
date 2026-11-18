@@ -12,7 +12,7 @@ use super::{
     extract_destructure_params,
 };
 
-use vize_atelier_core::ForNode;
+use vize_atelier_core::{DirectiveNode, ExpressionNode, ForNode};
 
 impl<'a> SsrCodegenContext<'a> {
     pub(super) fn process_component_slot_property<'node>(
@@ -385,43 +385,62 @@ impl<'a> SsrCodegenContext<'a> {
     }
 }
 
+/// A slot name: the authored argument itself, or the argument joined with its
+/// `.segment`s. Nearly every name is the argument, so it is borrowed.
+pub(super) enum SlotName<'n> {
+    Plain(&'n str),
+    Dotted(String),
+}
+
+impl std::ops::Deref for SlotName<'_> {
+    type Target = str;
+
+    fn deref(&self) -> &str {
+        match self {
+            Self::Plain(name) => name,
+            Self::Dotted(name) => name,
+        }
+    }
+}
+
 /// The name a static `v-slot` argument spells. Vue's parser keeps every
 /// `.segment` of a slot argument in the name (`#item.alpha` is the slot
 /// `item.alpha`); a dynamic or missing argument has no static name.
-#[inline]
-pub(super) fn static_slot_name(dir: &vize_atelier_core::DirectiveNode<'_>) -> Option<String> {
-    let head = static_slot_head(dir)?;
-    Some(if dir.modifiers.is_empty() {
-        String::new(head)
-    } else {
-        dotted_slot_name(head, dir)
-    })
-}
-
-/// [`static_slot_name`] as a quoted JS literal. A name without `.segment`s
-/// (nearly every slot) is quoted straight from the argument, with no
-/// intermediate name.
-#[inline]
-pub(super) fn quoted_static_slot_name(
-    dir: &vize_atelier_core::DirectiveNode<'_>,
-) -> Option<String> {
-    let head = static_slot_head(dir)?;
-    Some(if dir.modifiers.is_empty() {
-        quoted_js_string(head)
-    } else {
-        quoted_js_string(&dotted_slot_name(head, dir))
-    })
-}
-
-#[inline]
-fn static_slot_head<'d>(dir: &'d vize_atelier_core::DirectiveNode<'_>) -> Option<&'d str> {
+#[inline(always)]
+pub(super) fn static_slot_name<'n>(dir: &'n DirectiveNode<'_>) -> Option<SlotName<'n>> {
     match &dir.arg {
-        Some(vize_atelier_core::ExpressionNode::Simple(arg)) if arg.is_static => Some(arg.content),
+        Some(ExpressionNode::Simple(arg)) if arg.is_static && dir.modifiers.is_empty() => {
+            Some(SlotName::Plain(arg.content))
+        }
+        Some(ExpressionNode::Simple(arg)) if arg.is_static => {
+            Some(SlotName::Dotted(dotted_slot_name(arg.content, dir)))
+        }
         _ => None,
     }
 }
 
-fn dotted_slot_name(head: &str, dir: &vize_atelier_core::DirectiveNode<'_>) -> String {
+/// The quoted JS literal for the static slot argument `head`, for
+/// `createSlots` entries. A plain name is quoted straight from the argument;
+/// a dotted one is joined out of line, so the common path keeps no joined name.
+#[inline(always)]
+pub(super) fn quoted_static_slot_name(head: &str, dir: &DirectiveNode<'_>) -> String {
+    if dir.modifiers.is_empty() {
+        quoted_js_string(head)
+    } else {
+        quoted_dotted_slot_name(head, dir)
+    }
+}
+
+#[cold]
+#[inline(never)]
+fn quoted_dotted_slot_name(head: &str, dir: &DirectiveNode<'_>) -> String {
+    quoted_js_string(&dotted_slot_name(head, dir))
+}
+
+/// `head` joined with every `.segment` the parser stored as a modifier.
+#[cold]
+#[inline(never)]
+fn dotted_slot_name(head: &str, dir: &DirectiveNode<'_>) -> String {
     let mut name = String::new(head);
     for modifier in dir.modifiers.iter() {
         name.push('.');
