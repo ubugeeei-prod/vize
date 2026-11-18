@@ -10,7 +10,7 @@ mod cache;
 mod descriptor;
 #[cfg(feature = "native")]
 mod disk;
-mod rank;
+pub(crate) mod rank;
 #[cfg(feature = "native")]
 mod script;
 #[cfg(feature = "native")]
@@ -32,26 +32,26 @@ pub struct WorkspaceSymbolsService;
 impl WorkspaceSymbolsService {
     /// Search for symbols matching a query.
     pub fn search(state: &ServerState, query: &str) -> Vec<SymbolInformation> {
-        let mut symbols = Vec::new();
         let query_lower = query.to_lowercase();
+        let mut selection = rank::SymbolSelection::new(&query_lower);
 
         // Search in all open documents. Snapshot the text before parsing so a
         // workspace-wide request never keeps a DashMap document guard alive
         // while doing SFC work (#3952).
         for (uri, content) in state.documents.vue_texts().iter() {
-            Self::collect_cached_open_source(
+            Self::select_cached_open_source(
                 &state.workspace_symbol_cache,
                 uri,
                 content,
-                &query_lower,
-                &mut symbols,
+                || true,
+                &mut selection,
             );
         }
 
         #[cfg(feature = "native")]
-        disk::collect(state, &query_lower, &mut symbols);
+        disk::collect(state, &query_lower, &mut selection);
 
-        rank::sort(symbols, &query_lower)
+        selection.finish()
     }
 
     /// Collect symbols from a single document.

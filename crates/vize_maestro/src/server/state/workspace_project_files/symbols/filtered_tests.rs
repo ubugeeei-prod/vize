@@ -1,7 +1,7 @@
 //! Disabled matches cannot consume the session's global result limit.
 use std::sync::Arc;
 
-use super::{Url, collect_sources_filtered};
+use super::{SymbolCacheSnapshot, Url, collect_sources_filtered};
 use vize_l0::cstr;
 
 #[test]
@@ -40,4 +40,26 @@ fn filter_precedes_ranking_limit_and_imports_only_sources_with_matches() {
     let visited = visited.into_inner().unwrap();
     assert_eq!(visited.len(), 151);
     assert!(!visited.contains(&unmatched));
+
+    let cache = dashmap::DashMap::new();
+    let cached_visited = std::sync::Mutex::new(Vec::new());
+    let cached = collect_sources_filtered(
+        &[],
+        &sources,
+        &[],
+        "target",
+        |_| Option::<String>::None,
+        |uri| {
+            cached_visited.lock().unwrap().push(uri.clone());
+            *uri == enabled
+        },
+        Some(SymbolCacheSnapshot {
+            documents: &cache,
+            disk_generation: None,
+        }),
+    );
+    assert_eq!(cached, symbols);
+    let cached_visited = cached_visited.into_inner().unwrap();
+    assert_eq!(cached_visited.len(), 151);
+    assert!(!cached_visited.contains(&unmatched));
 }
