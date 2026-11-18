@@ -230,6 +230,8 @@ jobs:
         continue-on-error: true
         timeout-minutes: 60 # Green shards take at most 14 min; one project may use its 40.
         env:
+          # Qualify Vize on the one supported checker, not a fixture's own preview.
+          CORSA_PATH: ${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc
           CORE_TOOLS_TIMEOUT_MS: ${{ inputs.core_tools_timeout_ms || '2400000' }}
         run: |
           node tools/support/compat/fixtures/tool-matrix-report.ts \
@@ -350,6 +352,7 @@ jobs:
         timeout-minutes: 100
         env:
           BUDGET_MODE: ${{ inputs.typecheck_divergence_mode || 'enforce' }}
+          CORSA_PATH: ${{ github.workspace }}/node_modules/@typescript/typescript-linux-x64/lib/tsc
           VIZE_TYPECHECK_DIVERGENCE_PROGRESS: "1"
         run: |
           rust-script tools/commands/fixtures/typecheck-divergence-report.rs \
