@@ -341,6 +341,7 @@ export function assertRecordOnlyObservations(
     baseline: {
       command: artifact.baseline.command,
       version: "3.3.4",
+      excludedInputs: [],
       exitCode: expected.baselineOutput === "" ? 0 : 2,
       runError: null,
       stdout: expected.baselineOutput,
