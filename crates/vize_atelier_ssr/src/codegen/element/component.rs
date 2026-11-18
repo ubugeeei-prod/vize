@@ -392,8 +392,10 @@ impl<'a> SsrCodegenContext<'a> {
     /// The slot-name expression for a `createSlots` entry: a quoted literal for
     /// static names, or the raw bound expression for dynamic `#[name]` slots.
     pub(super) fn slot_entry_name(&mut self, dir: &DirectiveNode<'a>) -> String {
+        if let Some(name) = super::slot_fn::static_slot_name(dir) {
+            return quoted_js_string(&name);
+        }
         match &dir.arg {
-            Some(ExpressionNode::Simple(arg)) if arg.is_static => quoted_js_string(arg.content),
             Some(arg) => {
                 // The dynamic slot name often references a `v-for` callback alias
                 // (`#[name]`), which is a local binding rather than a `_ctx.`
@@ -455,11 +457,8 @@ impl<'a> SsrCodegenContext<'a> {
                 continue;
             }
 
-            let name = match &dir.arg {
-                Some(ExpressionNode::Simple(arg)) if arg.is_static => String::new(arg.content),
-                Some(_) => "default".to_compact_string(),
-                None => "default".to_compact_string(),
-            };
+            let name = super::slot_fn::static_slot_name(dir)
+                .unwrap_or_else(|| "default".to_compact_string());
             let props_pattern = self.slot_props_pattern(dir);
             let mut params = FxHashSet::default();
             if let Some(pattern) = props_pattern.as_deref() {
